@@ -1,6 +1,6 @@
 // Host-mounted dialogue controller; no save store and no fallback artwork.
 // The host must resolve approved art, own scene transitions, and call render after gameplay.
-export function mountDialogue({root,engine,campaign,language,resolvePortrait,onPersist,onClose,onAwaitAction}) {
+export function mountDialogue({root,engine,campaign,language,resolvePortrait,onPersist,onClose,onAwaitAction,onLanguage}) {
  if(!root||typeof resolvePortrait!=="function"||typeof onPersist!=="function")throw Error("Dialogue host adapter incomplete");
  const el=(tag,cls)=>{const e=document.createElement(tag);if(cls)e.className=cls;return e};
  const panel=el("section","res-dialogue"),art=el("img","res-portrait"),body=el("div","res-body"),name=el("h2","res-speaker"),line=el("p","res-line"),choices=el("div","res-choices"),tools=el("div","res-controls"),history=el("div","res-history");
@@ -13,9 +13,9 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  function next(){const v=engine.view();if(!v.current||!v.lineReady||v.cursor>=v.current.lines.length)return;const l=v.current.lines[v.cursor];if(persist(engine.nextLine())){sessionHistory.push(l);render()}}
  function skip(){const v=engine.view();if(!v.current)return;while(engine.view().lineReady&&engine.view().cursor<v.current.lines.length){const l=v.current.lines[engine.view().cursor];if(!persist(engine.nextLine()))break;sessionHistory.push(l)}render()}
  function button(id,fn){const b=el("button");b.type="button";b.addEventListener("click",fn);tools.append(b);buttons[id]=b;return b}
- button("next",next);button("auto",()=>{automatic=!automatic;render()});button("skip",skip);button("history",()=>{showHistory=!showHistory;render()});button("close",()=>{dispose();onClose?.()});
+ button("next",next);button("auto",()=>{automatic=!automatic;render()});button("skip",skip);button("history",()=>{showHistory=!showHistory;render()});button("close",()=>{dispose();onClose?.()});if(onLanguage)button("language",()=>onLanguage(lang()==="zh"?"en":"zh"));
  const speedSelect=el("select");for(const n of [.75,1,1.5,2]){const o=el("option");o.value=n;o.textContent=n+"×";speedSelect.append(o)}speedSelect.value="1";speedSelect.addEventListener("change",()=>{speed=Number(speedSelect.value);render()});tools.append(speedSelect);
- function render(){if(disposed)return;stop();const v=engine.view(),s=v.current,k=lang(),w=words[k];panel.setAttribute("aria-label",w.scene);for(const id of Object.keys(buttons))buttons[id].textContent=id==="auto"&&automatic?w.stop:w[id];speedSelect.setAttribute("aria-label",w.speed);choices.replaceChildren();history.replaceChildren();history.hidden=!showHistory;
+ function render(){if(disposed)return;stop();const v=engine.view(),s=v.current,k=lang(),w=words[k];panel.setAttribute("aria-label",w.scene);for(const id of Object.keys(buttons))buttons[id].textContent=id==="language"?(k==="zh"?"EN":"中文"):id==="auto"&&automatic?w.stop:w[id];speedSelect.setAttribute("aria-label",w.speed);choices.replaceChildren();history.replaceChildren();history.hidden=!showHistory;
  if(!s){dispose();onClose?.();return}if(lastScene!==s.id){lastScene=s.id;sessionHistory=[]}const l=v.lineReady?s.lines[v.cursor]:null;
  const choiceVisible=!v.choice&&s.choices.length&&(s.choiceTiming==="beforeAction"||v.cursor===s.lines.length);
  if(choiceVisible)for(const c of s.choices){const b=el("button");b.type="button";b.textContent=c.label[k];b.addEventListener("click",()=>{if(persist(engine.choose(c.id)))render()});choices.append(b)}

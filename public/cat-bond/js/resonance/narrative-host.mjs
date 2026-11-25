@@ -23,7 +23,7 @@ function install(){
   if(dialogue&&slot===State.S&&openedScene===v.current.id){dialogue.render();return true}
   close();slot=State.S;openedScene=v.current.id;
   root=document.createElement("div");root.className="cb-story-overlay res-host";root.dataset.scene=openedScene;stage.append(root);
-  dialogue=mountDialogue({root,engine:runtime,campaign,language:lang,resolvePortrait:portrait,onPersist:()=>{},onClose:close,onAwaitAction:()=>{scheduleFinish()}});
+  dialogue=mountDialogue({root,engine:runtime,campaign,language:lang,resolvePortrait:portrait,onPersist:()=>{},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value),onAwaitAction:()=>{scheduleFinish()}});
   return true;
  }
  function scheduleFinish(){

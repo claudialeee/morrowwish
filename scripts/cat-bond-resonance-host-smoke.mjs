@@ -21,6 +21,8 @@ try{
    await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,null,{timeout:15000});
    await page.locator("#panel.open .dex-cell").first().click();
    await page.waitForFunction(()=>window.__game?.scene==="map"&&State.S.cats.length>0,null,{timeout:15000});
+   assert.equal(await page.evaluate(()=>typeof window.CatBondStory),"undefined","Legacy narrative must not mount");
+   assert.equal(await page.locator("#cb-story-tracker").count(),0);assert.equal(await page.evaluate(()=>!!window.CatBondCloudSave),true,"Encrypted cloud API preserved");
    // Fixture advances only through the canonical engine; it is not a release path or fake screenshot.
    await page.evaluate(async()=>{
     const {campaign}=await import("/cat-bond/js/resonance/campaign.mjs"),{makeEngine}=await import("/cat-bond/js/resonance/engine.mjs");
@@ -40,13 +42,13 @@ try{
    await page.waitForFunction(()=>document.querySelector(".res-host .res-portrait")?.naturalWidth>100);
    const line=page.locator(".res-host .res-line");
    assert.match(await line.textContent(),p.lang==="zh"?/灯亮了/:/If the light comes on/);
-   await page.evaluate(()=>MorrowwishI18n.set(MorrowwishI18n.get()==="zh"?"en":"zh"));
+   await panel.getByRole("button",{name:p.lang==="zh"?"EN":"中文",exact:true}).click();
    assert.match(await line.textContent(),p.lang==="zh"?/If the light comes on/:/灯亮了/);
-   await page.evaluate(l=>MorrowwishI18n.set(l),p.lang);
+   await panel.getByRole("button",{name:p.lang==="zh"?"中文":"EN",exact:true}).click();
    const fits=await panel.evaluate(el=>{const b=el.getBoundingClientRect();return b.left>=-1&&b.top>=-1&&b.right<=innerWidth+1&&b.bottom<=innerHeight+1});
    assert.ok(fits,"Dialogue overflows viewport "+p.name);
    await page.screenshot({path:dir+"/"+p.name+"-dialogue.png"});
-   for(let i=0;i<5;i++)await page.getByRole("button",{name:p.lang==="zh"?"继续":"Continue",exact:true}).click();
+   for(let i=0;i<5;i++)await panel.getByRole("button",{name:p.lang==="zh"?"继续":"Continue",exact:true}).click();
    assert.equal(await page.locator(".res-host .res-choices button").count(),2);
    await page.screenshot({path:dir+"/"+p.name+"-choice.png"});
    await page.getByRole("button",{name:p.choice,exact:true}).click();
@@ -64,7 +66,7 @@ try{
    assert.equal(await page.evaluate(id=>CatBondResonance.view().trust[id],p.npc),2);
    assert.deepEqual(errors,[],"Browser JS errors");
    console.log(p.name+": normal boot, seeded story, bilingual dialogue, portrait loaded, choice, trust, quest gate and reload PASS");
-  }catch(e){await page.screenshot({path:dir+"/"+p.name+"-failure.png"}).catch(()=>{});throw e}
+  }catch(e){console.error("Browser diagnostics",p.name,errors,await page.evaluate(()=>({scene:window.__game?.scene,cats:window.State?.S?.cats?.length,legacy:!!window.CatBondStory,current:window.CatBondResonance?.view()?.current?.id,body:document.body.innerText.slice(0,400)})).catch(()=>null));await page.screenshot({path:dir+"/"+p.name+"-failure.png"}).catch(()=>{});throw e}
   finally{await ctx.close()}
  }
 }finally{await browser.close()}

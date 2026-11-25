@@ -2,6 +2,9 @@
    The original cat art, combat engine, local save key and five region maps stay intact. */
 (()=>{
 'use strict';
+// The canonical RPG host supersedes only narrative hooks; the encrypted cloud
+// transport and three-slot wrappers remain unchanged.
+const canonicalNarrative=window.CAT_BOND_NARRATIVE_CANON==="The Last Resonance";
 const SAVE_KEY='catbond_save_v1';
 const SLOT_KEY='catbond_save_slots_v1';
 const ACTIVE_SLOT_KEY='catbond_active_slot_v1';
@@ -1026,7 +1029,7 @@ function syncExploreMenuActions(){
  const actions=document.querySelector('#panel .explore-menu-actions');
  if(!actions)return;
  for(const [action,icon,zh,en] of [
-  ['journal','📖','故事手册','Story journal'],
+  ...(canonicalNarrative?[]:[['journal','📖','故事手册','Story journal']]),
   ['slots','💾','存档管理','Save slots'],
   ['system','⚙','系统设置','System settings']
  ]){
@@ -1085,8 +1088,8 @@ function installIntro(){
    }
   }
  }
-window.addEventListener('DOMContentLoaded',installIntro,{once:true});
-window.addEventListener('morrowwish-language-change',updateTracker);
+if(!canonicalNarrative){window.addEventListener('DOMContentLoaded',installIntro,{once:true});
+window.addEventListener('morrowwish-language-change',updateTracker);}
 window.addEventListener('pagehide',()=>{if(localStorage.getItem(CLOUD_KEY))syncNow(false,State.activeSlot());});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&localStorage.getItem(CLOUD_KEY))queueSync(State.activeSlot());});
 
@@ -1297,6 +1300,7 @@ function npcDraw(ctx,npc,time){
  ctx.fillStyle='#465345';ctx.font='900 11px system-ui';ctx.fillText(mark,npc.x+30,npc.y-81+bob);
  ctx.restore();
 }
+if(!canonicalNarrative){
 window.CatBondNPC={
  forRegion:id=>NPC_CAST.filter(n=>n.region===id),
  talk:npcTalk,draw:npcDraw,onRegionEntered:npcEntered,onDiscovery:npcFound
@@ -1305,5 +1309,6 @@ window.CatBondStory={
  startPrologue,onRegionEntered,onRegionDiscovery,openJournal,showBossReveal,showBossRetry,onBossPhase,
  onBossVictory,playEnding,updateTracker
 };
+}
 window.CatBondCloudSave={openPanel:openCloudPanelImpl,openSlots:openSlotManager,queue:queueSync,syncNow};
 })();

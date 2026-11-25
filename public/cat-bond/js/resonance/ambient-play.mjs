@@ -10,7 +10,7 @@ function install(){
  function render(){
   if(!overlay||!session)return;
   const data=session.game,step=data.steps[session.stage()];overlay.replaceChildren();
-  const header=el("header","res-ambient-head");header.append(el("h2","",data[locale()]));const closeBtn=el("button","","×");closeBtn.type="button";closeBtn.setAttribute("aria-label",t("关闭","Close"));closeBtn.onclick=close;header.append(closeBtn);overlay.append(header);
+  const header=el("header","res-ambient-head");header.append(el("h2","",data[locale()]));const closeBtn=el("button","","×");closeBtn.type="button";closeBtn.setAttribute("aria-label",t("关闭","Close"));closeBtn.onclick=close;const controls=el("div","res-ambient-tools");const langBtn=el("button","",locale()==="zh"?"EN":"中文");langBtn.type="button";langBtn.onclick=()=>window.MorrowwishI18n?.set?.(locale()==="zh"?"en":"zh");controls.append(langBtn,closeBtn);header.append(controls);overlay.append(header);
   if(persisted){const result=el("section","res-ambient-result");result.append(el("h3","",actor.name[locale()]),el("p","",actor.event.text[locale()]),el("small","",t("信任 +1","Trust +1")));const b=el("button","",t("返回探索","Return to exploration"));b.onclick=close;result.append(b);overlay.append(result);return}
   const hint=el("p","res-ambient-hint",step?step[locale()]:t("已完成操作，请重试保存。","Action completed. Retry saving."));overlay.append(hint);
   const board=el("div","res-ambient-board");board.style.backgroundImage='url("'+new URL("workbench.svg",rootUrl).href+'")';overlay.append(board);
