@@ -968,7 +968,7 @@ function openSlotManager(){
   }).join('');
   list.querySelectorAll('[data-save]').forEach(btn=>btn.onclick=async()=>{
    const id=btn.dataset.save,slot=window.State.listSaveSlots().find(x=>x.id===id);
-   if(slot?.exists&&!confirm(t('覆盖存档位 ','Overwrite Save Slot ')+slot.number+t('？其他两个存档不会改变。','? The other two slots will remain unchanged.')))return;
+   if(slot?.exists&&!await window.CatBondConfirm.slot('overwrite',slot.number))return;
    const result=window.State.saveToSlot(id,{overwriteConfirmed:!!slot?.exists});
    if(!result?.ok){say(t('本机存档写入失败，请检查浏览器存储空间。','Local save failed. Check available browser storage and retry.'));return;}
    say(t('已保存到存档位 ','Saved to Slot ')+slot.number);
@@ -977,16 +977,16 @@ function openSlotManager(){
   });
   list.querySelectorAll('[data-remove-save]').forEach(btn=>btn.onclick=async()=>{
    const id=btn.dataset.removeSave,slot=State.listSaveSlots().find(x=>x.id===id);
-   if(!slot?.exists||!confirm(t('永久删除存档位 ','Delete save slot ')+slot.number+t('？其他存档不受影响。','? Other slots are unaffected.')))return;
+   if(!slot?.exists||!await window.CatBondConfirm.slot('delete',slot.number))return;
    const result=State.deleteSaveSlot(id,{confirmed:true});
    if(!result.ok){say(t('未删除存档。请返回标题画面后重试。','Save not deleted. Return to the title and retry.'));return;}
    render();
    say(t('存档已删除。','Save deleted.'));
    void queueSync(id,true).catch(()=>{});
   });
-  list.querySelectorAll('[data-load]').forEach(btn=>btn.onclick=()=>{
+  list.querySelectorAll('[data-load]').forEach(btn=>btn.onclick=async()=>{
    const id=btn.dataset.load;
-   if(!confirm(t('读取存档位 ','Load Save Slot ')+window.State.listSaveSlots().find(x=>x.id===id)?.number+t(' 并重新载入游戏？当前进度会先自动保存到原存档位。',' and restart the game? Current progress will first be saved to its active slot.')))return;
+   const selected=window.State.listSaveSlots().find(x=>x.id===id);if(!selected?.readable||!await window.CatBondConfirm.slot('load',selected.number))return;
    if(playing){const saved=window.State.save();if(!saved?.ok){say(t('当前进度保存失败，未切换存档。','Could not save the current progress; the active slot was not changed.'));return;}}
    try{sessionStorage.setItem('catbond_resume_slot_v1',id);}
    catch(error){say(t('无法启动读档，请重试。','Could not prepare the load operation. Please retry.'));return;}

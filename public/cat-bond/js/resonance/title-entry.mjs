@@ -40,15 +40,16 @@ function errorPanel(game,reason,retry){
 }
 export async function startCanonicalOpening(game,{onWorld}={}){
  if(active)active.dispose();
+ window.CatBondOpeningCover?.show();
  const rootState=window.State?.S,slot=window.State?.activeSlot?.();
- if(!rootState||!slot)return {ok:false,reason:'no-active-slot'};
+ if(!rootState||!slot){window.CatBondOpeningCover?.hide();return {ok:false,reason:'no-active-slot'};}
  window.__CAT_BOND_CANONICAL_ACTIVE__=true;
  const same=()=>window.State.S===rootState&&window.State.activeSlot()===slot;
  let closed=false,controller=null,root=null,removeError=null,launching=false,runtime=null;
  const persistCheckpoint=pending=>{if(!same()||!pending?.snapshot)return;const previous=rootState.openingPresentation;rootState.openingPresentation={slot,revision:pending.revision,snapshot:pending.snapshot};if(!window.State.save()?.ok){if(previous===undefined)delete rootState.openingPresentation;else rootState.openingPresentation=previous;}};
  const onPageHide=()=>{if(same())persistCheckpoint(controller?.snapshot?.());dispose();};
  const onSlotChange=()=>{if(!same())dispose();};
- const dispose=()=>{if(closed)return;closed=true;controller?.dispose();root?.remove();removeError?.();window.removeEventListener('cat-bond-resonance-changed',onSlotChange);window.removeEventListener('pagehide',onPageHide);window.removeEventListener('cat-bond-active-save-changed',onSlotChange);};
+ const dispose=()=>{if(closed)return;closed=true;controller?.dispose();root?.remove();removeError?.();window.CatBondOpeningCover?.hide();window.removeEventListener('cat-bond-resonance-changed',onSlotChange);window.removeEventListener('pagehide',onPageHide);window.removeEventListener('cat-bond-active-save-changed',onSlotChange);};
  const live=()=>{if(closed)return false;if(!same()){dispose();return false;}return true;};
  active={dispose};
  window.addEventListener('cat-bond-resonance-changed',onSlotChange);

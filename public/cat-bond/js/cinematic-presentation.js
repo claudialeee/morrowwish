@@ -28,6 +28,9 @@
 .cbcp-stage::before{content:'';position:absolute;inset:-15px;background:var(--cbcp-backplate,none) center/cover no-repeat;filter:blur(14px) brightness(.52);opacity:.85;pointer-events:none}
 .cbcp-fx{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
 .cbcp-subtitle-wrap[hidden]{display:none!important}
+.cbcp-stage[data-subtitle="false"] .cbcp-vignette{background:radial-gradient(ellipse at center,transparent 72%,rgba(5,12,19,.18) 100%)}
+.cbcp-stage[data-subtitle="false"] .cbcp-art-stack{inset:0}
+.cbcp-stage{cursor:pointer;touch-action:manipulation}
 .cbcp-subtitle-wrap{padding:12px 18px;background:linear-gradient(90deg,transparent,rgba(7,14,24,.78) 16%,rgba(7,14,24,.78) 84%,transparent)}
 @media(orientation:portrait) and (max-width:680px){
   .cbcp-stage::before{content:'';position:absolute;inset:-15px;background:var(--cbcp-backplate,none) center/cover no-repeat;filter:blur(14px) brightness(.52);opacity:.85;pointer-events:none}
@@ -156,7 +159,7 @@
                 <button class="cbcp-tool cbcp-skip" type="button"></button>
               </div>
             </div>
-            <div class="cbcp-subtitle-wrap" aria-live="polite">
+            <div class="cbcp-subtitle-wrap" aria-live="polite" hidden>
               <span class="cbcp-speaker"></span><p class="cbcp-subtitle"></p>
             </div>
           </div>
@@ -183,7 +186,8 @@
       this.nodes.language.addEventListener('click', () => this.requestLanguage(this.currentLanguage() === 'zh' ? 'en' : 'zh'));
       this.nodes.pause.addEventListener('click', () => this.paused ? this.resume() : this.pause());
       this.nodes.skip.addEventListener('click', () => this.skip());
-      this.nodes.continue.addEventListener('click', () => this.next());
+      this.nodes.continue.addEventListener('click', () => this.next(true));
+      this.nodes.stage.addEventListener('click', event => {if(!event.target.closest('button,a,input,select,textarea'))this.next(true);});
       this.updateControls();
     }
 
@@ -400,7 +404,9 @@
       this.nodes.subtitle.textContent = line || '';
       this.nodes.speaker.hidden = !speaker;
       this.nodes.subtitle.hidden = !line;
-      this.nodes.subtitle.closest(".cbcp-subtitle-wrap").hidden = !speaker && !line;
+      const hasSubtitle=!!(speaker||line);
+      this.nodes.subtitle.closest(".cbcp-subtitle-wrap").hidden = !hasSubtitle;
+      this.nodes.stage.dataset.subtitle=String(hasSubtitle);
     }
 
     renderProgress() {
@@ -424,11 +430,12 @@
       this.nodes.pause.disabled=!this.frameReady;
       this.nodes.skip.disabled=!this.frameReady;
       this.nodes.skip.hidden = !this.scene?.allowSkip;
-      const manual = this.scene?.mode === 'manual' || !(Number(this.scene?.frames?.[this.frameIndex]?.durationMs) > 0);
       this.nodes.continue.textContent = this.frameIndex < (this.scene?.frames?.length || 1) - 1
         ? (lang === 'zh' ? '继续' : 'Continue')
         : (lang === 'zh' ? '完成' : 'Finish');
-      this.nodes.continue.hidden = !manual && this.scene?.mode !== 'manual';
+      this.nodes.continue.hidden = !this.scene;
+      this.nodes.continue.disabled = !this.frameReady;
+      this.nodes.continue.setAttribute('aria-label',lang==='zh'?'下一幕':'Next shot');
     }
 
     startTimer(remainingOverride) {
@@ -447,8 +454,8 @@
       this.frameStartedAt = 0;
     }
 
-    next() {
-      if (!this.scene || !this.frameReady || this.paused) return;
+    next(manual = false) {
+      if (!this.scene || !this.frameReady || (this.paused && !manual)) return;
       this.clearTimer();
       if (this.frameIndex < this.scene.frames.length - 1) {
         this.frameIndex += 1;
@@ -586,7 +593,7 @@
       if (event.key === 'Escape') {
         if (this.scene.allowSkip) { event.preventDefault(); this.skip(); }
       } else if (event.key === ' ' || event.key === 'Enter') {
-        if (this.scene.mode === 'manual') { event.preventDefault(); this.next(); }
+        if (!event.repeat) { event.preventDefault(); this.next(true); }
       }
     }
 

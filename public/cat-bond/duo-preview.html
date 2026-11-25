@@ -58,6 +58,14 @@ html.duo-embedded #locked{margin:6px 0 0}
  html.duo-embedded .controls{margin:6px 0 3px}
  html.duo-embedded .controls button{min-height:40px}
 }
+@media(max-height:480px) and (orientation:landscape){
+ html.duo-embedded body{padding:4px 6px;overflow:auto}
+ html.duo-embedded .viewer{padding:3px}
+ html.duo-embedded #duo-canvas{width:min(100%,calc((100dvh - 132px)*16/9))!important;height:auto!important;max-height:calc(100dvh - 132px)!important}
+ html.duo-embedded .controls{margin:4px 0}
+ html.duo-embedded .controls button,html.duo-embedded .tier-controls button{min-height:34px;padding:4px 8px}
+ html.duo-embedded #trust-note{margin:3px 0}
+}
 </style>
 </head>
 <body><main>

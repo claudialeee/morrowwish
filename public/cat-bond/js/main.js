@@ -97,22 +97,20 @@ window.addEventListener('DOMContentLoaded', () => {
     slotPanel.classList.add('is-open');slotPanel.setAttribute('aria-hidden','false');
     const language=slotPanel.querySelector('[data-slot-language]');
     if(language){language.textContent=en?'中文':'English';language.setAttribute('aria-label',en?'Switch to Chinese':'切换到英文');}
-    slotList.querySelectorAll('[data-title-delete]').forEach(button=>button.onclick=()=>{
+    slotList.querySelectorAll('[data-title-delete]').forEach(button=>button.onclick=async()=>{
       const id=button.dataset.titleDelete;
       const selected=State.listSaveSlots().find(s=>s.id===id);
-      if(!selected?.exists||!confirm(en?'Permanently delete Slot '+selected.number+'?':'永久删除存档位 '+selected.number+'？'))return;
+      if(!selected?.exists||!await window.CatBondConfirm.slot('delete',selected.number))return;
       const result=State.deleteSaveSlot(id,{confirmed:true});
-      if(!result.ok){alert(en?'Could not delete this save.':'无法删除此存档。');return;}
+      if(!result.ok){await window.CatBondConfirm.notice({zh:'无法删除此存档。',en:'Could not delete this save.'});return;}
       openSlots(slotMode);
     });
-    slotList.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',()=>{
+    slotList.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',async()=>{
       const id=button.dataset.slot;
       if(slotMode==='new'){
         const selected=State.listSaveSlots().find(s=>s.id===id);
         const occupied=!!selected?.exists;
-        if(occupied&&!window.confirm(en
-          ?'Overwrite Save Slot '+selected.number+'? Its existing adventure will be replaced. The other two slots will remain untouched.'
-          :'确定覆盖存档位 '+selected.number+'？原有冒险将被替换，另外两个存档位不会受到影响。'))return;
+        if(occupied&&!await window.CatBondConfirm.slot('overwrite',selected.number))return;
         beginGame('new',id,occupied);
       }else beginGame('continue',id);
     }));
@@ -135,13 +133,14 @@ window.addEventListener('DOMContentLoaded', () => {
         if(!State.startNewGame(slotId,{overwriteConfirmed}))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'无法创建存档，请检查存储空间或覆盖确认。':'Could not create the save. Check storage space or overwrite confirmation.');
       }else if(!State.loadSlot(slotId))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'存档为空或已损坏，无法读取。':'The selected save is empty or damaged');
       window.__CAT_BOND_CANONICAL_ACTIVE__=!!window.CatBondTitlePrologue?.available?.();
+      if(window.__CAT_BOND_CANONICAL_ACTIVE__)window.CatBondOpeningCover.show();
       game.start();
       closeSlots();
       document.getElementById('intro').classList.add('hide');
       window.__CAT_BOND_STARTED__=true;
       window.arcadeMetric?.('bond_entered',{mode,slot:slotId});
     }catch(error){
-      starting=false;
+      starting=false;window.CatBondOpeningCover.hide();
       console.error('Cat Bond start failed',error);
       const hint=document.getElementById('start-error');
       if(hint){hint.hidden=false;hint.textContent=(window.MorrowwishI18n?.get?.()==='zh'?'游戏启动失败，请刷新页面重试：':'Game failed to start. Please refresh: ')+(error?.message||'');}
@@ -351,15 +350,15 @@ function installCatBondSystemMenu(){
    }
    menu.querySelector('.cb-system-rows').append(levels);
   }
-  menu.querySelectorAll('[data-system]').forEach(btn=>bindMenuPress(btn,()=>{
+  menu.querySelectorAll('[data-system]').forEach(btn=>bindMenuPress(btn,async()=>{
    const id=btn.dataset.system,selectors={language:'.mw-settings-language',effects:'.mw-settings-sfx',music:'.mw-settings-music',fullscreen:'#mw-fullscreen-toggle',share:'.mw-settings-share'};
    if(id==='close'){close();toggle.focus();return;}
    if(id==='slots'){close();window.CatBondCloudSave?.openSlots?.();return;}
    if(id==='skills'){close();window.__game?.toggleBattleSkillGuide?.(true);return;}
    if(id==='title'){
-    if(!confirm(t('保存当前进度并返回标题画面？','Save current progress and return to title?')))return;
+    if(!await window.CatBondConfirm.ask({title:{zh:'返回标题画面？',en:'Return to title?'},message:{zh:'当前冒险将先保存。',en:'Your current adventure will be saved first.'},accept:{zh:'保存并返回',en:'Save and return'}}))return;
     const result=State.save();
-    if(!result?.ok){alert(t('保存失败，未返回标题。','Save failed. The game remains open.'));return;}
+    if(!result?.ok){await window.CatBondConfirm.notice({zh:'保存失败，未返回标题。',en:'Save failed. The game remains open.'});return;}
     State.hardReset();location.reload();return;
    }
    if(id==='language'&&!native(selectors.language)){window.MorrowwishI18n?.set?.(zh()?'en':'zh');render();return;}

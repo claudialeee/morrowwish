@@ -157,12 +157,14 @@ for(const profile of [
   await page.waitForFunction(()=>!!window.State.getSaveSlot('slot2'));
   await screenshot('in-game-save-manager');
   await page.locator('[data-load="slot2"]').click();
+  await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true&&window.State.activeSlot()==='slot2',{timeout:30000});
   await waitMap();
   assert.equal(await page.evaluate(()=>window.State.S.cats[0].uid),first);
   // A real title-menu navigation, not a special test entry.
   await page.locator('#map-menu').click();
   await page.locator('[data-system="title"]').click();
+  await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__,{timeout:30000});
   // Start the third slot through the actual title picker, preserving the two earlier adventures.
   await page.locator('#intro-start').click();
@@ -174,6 +176,7 @@ for(const profile of [
   await page.reload();await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__);
   await page.locator('#intro-continue').click();
   await page.locator('[data-title-delete="slot1"]').click();
+  await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.State.getSaveSlot('slot1')===null);
   assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot2').data.state.cats[0].uid),first);
   assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot3').data.state.cats.length),0);

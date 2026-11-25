@@ -1,0 +1,33 @@
+/* Shared parchment, aged brass and olive palette sampled in spirit from the illustrated garden. */
+:root{--rpg-paper:#fff7e5;--rpg-pale:#eee2c6;--rpg-ink:#493e2b;--rpg-gold:#ac8951;--rpg-olive:#59634a;--rpg-wood:#514431}
+.cb-confirm-dialog{box-sizing:border-box;width:min(420px,calc(100vw - 30px));max-height:calc(100dvh - 24px);overflow:auto;padding:24px;border:1px solid #bda16b;border-radius:12px;background:linear-gradient(150deg,#fff9ea,#eee1c5);color:#493e2b;box-shadow:0 16px 60px #29201688;font:15px/1.6 system-ui}
+.cb-confirm-dialog::backdrop{background:#29241799;backdrop-filter:blur(3px)}
+.cb-confirm-dialog h2{font:700 23px/1.3 Georgia,"Songti SC",serif;margin:0 0 12px}
+.cb-confirm-dialog p{margin:0 0 20px}
+.cb-confirm-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.cb-confirm-actions button{min-height:44px;padding:8px 18px;border:1px solid #ae9467;border-radius:6px;background:#fff8e9;color:#493e2b;font:650 14px system-ui;cursor:pointer}
+.cb-confirm-actions .cb-confirm-primary{background:#59634a;color:#fff7e5}
+.cb-confirm-actions .cb-confirm-danger{background:#87563e;color:#fff7e5}
+.cb-confirm-actions button:focus-visible{outline:2px solid #896b35;outline-offset:2px}
+#stage #cb-opening-cover{position:absolute;inset:0;z-index:2299;background:#171710;pointer-events:auto}
+#stage{--cbv-night:#514431;--cbv-night-hover:#6b593e;--cbv-night-text:#fff5dd;--cbv-night-line:#bca16b;--cbv-paper:#f2e6cc;--cbv-paper-light:#fff8e8;--cbv-paper-ink:#493e2b;--cbv-muted:#766c55}
+#stage #map-menu,#stage #cb-system-toggle,#stage.cb-sunlit-garden #yard-actions .fab,#stage.rb-canonical.cb-sunlit-garden #yard-actions #sg-book-entry,#stage .rb-world-entry,#stage .sg-prologue-guide button,#stage .rw-system-nav button{background:linear-gradient(155deg,#fff5db,#d9c398)!important;color:#493e2b!important;border:1px solid #a98a53!important;box-shadow:0 2px 8px #35271540!important;text-shadow:none!important;border-radius:8px!important}
+#stage #map-menu,#stage #cb-system-toggle{min-height:38px!important;font-weight:700!important}
+#stage .sg-prologue-guide,#stage .rw-objective,#stage .res-host .res-body{background:#514431ee!important;color:#fff5dd!important;border-color:#bda16b!important}
+#stage #panel.rb-open .rb-navigation{background:#eadcc0!important;color:#493e2b!important;box-shadow:0 2px 7px #67502c26}
+#stage #panel.rb-open .rb-masthead{background:linear-gradient(90deg,#fff7e8 4%,#f0e1c4ed 65%,#e6d1a7aa),url("../assets/resonance-world-v2/harbor-mist.webp") center 45%/cover!important;border-bottom:1px solid #bda16b}
+#stage #panel.rb-open .rb-brand small,#stage #panel.rb-open .rb-brand strong{color:#5a4830!important}
+#stage #panel.rb-open .rb-tabs{background:#e6d7b8!important;border-bottom-color:#ab8951}
+#stage #panel.rb-open .rb-tab{color:#584b35!important;background:transparent!important;border-radius:0!important}
+#stage #panel.rb-open .rb-tab[aria-current="page"]{background:#fff7e5!important;color:#493e2b!important;border-bottom-color:#9a763c!important}
+#stage #panel.rb-open :is(.rb-close,.rb-home,.rb-action,.rb-craft-link){background:#f5e7c8!important;color:#493e2b!important;border-color:#ac8951!important}
+#stage .cb-system-card,#stage .cb-slot-manager-card,#stage #intro .cb-save-picker-card{background:linear-gradient(145deg,#fff7e5,#eee1c5)!important;color:#493e2b!important;border-color:#bda16b!important}
+#stage .cb-system-card h2,#stage .cb-system-card header button,#stage .cb-slot-manager-card :is(h2,.cb-cloud-lead,.cb-cloud-footnote,.cb-cloud-eyebrow),#stage #intro .cb-save-picker-card :is(h2,.cb-save-picker-desc,.cb-save-picker-kicker,.cb-save-picker-close){color:#493e2b!important}
+#stage .cb-system-rows button,#stage .cb-slot-manager-row,#stage #intro .cb-save-slot{background:#f1e4c9!important;color:#493e2b!important;border-color:#bda16b!important}
+#stage .cb-system-rows :is(small,output){color:#675638!important}
+#stage .cb-slot-manager-row :is(strong,span,small),#stage #intro .cb-save-slot :is(strong,small,span){color:#493e2b!important}
+#stage #intro .cb-save-slot.empty-slot{background:#f9efd9!important;border-color:#bda16b!important}
+#stage #intro .cb-intro-actions button#intro-continue{background:#f1e4c9!important;color:#493e2b!important}
+#stage .cb-slot-manager-actions button{background:#fff7e5!important;color:#493e2b!important;border-color:#bda16b!important}
+#stage .cb-slot-manager-actions button[data-remove-save]{background:#f2dfd0!important;color:#783f2d!important}
+#stage .cb-system-rows input[type=range]{accent-color:#77633c!important}
