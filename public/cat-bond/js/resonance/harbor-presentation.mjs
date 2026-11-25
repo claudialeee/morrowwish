@@ -1,7 +1,7 @@
 // Misttide Harbor staging. Reuses the painted harbor and canonical puzzle state.
 import {symbol,puzzleWords} from "./world-mechanisms.mjs";
-const ink="#112a37", cream="#f5e8cb", amber="#f1d198", teal="#a4e0d4";
-const TAU=Math.PI*2, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const cream="#f5e8cb", amber="#f1d198", teal="#a4e0d4";
+const TAU=Math.PI*2;
 const reduced=()=>typeof matchMedia==="function"&&matchMedia("(prefers-reduced-motion: reduce)").matches;
 function path(c,p){c.beginPath();p.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));}
 function shape(c,p,fill){path(c,p);c.closePath();c.fillStyle=fill;c.fill();}
@@ -41,23 +41,18 @@ export function harborObjective(v,lang){
  const line=s==="harbor:H-01"?["沿石径找到领航员栖蓝。","Follow the stone path to Qilan."]:
  s==="harbor:H-02"?["前往灯塔，与岬灯谈谈旧风暴。","Visit the lighthouse and ask Jiedeng about the old storm."]:
  s==="harbor:H-03"?["沿东岸追踪退潮刻痕，取回救援日志。","Follow the ebb marks on the eastern shore and recover the rescue log."]:
- s==="harbor:H-04"?v.choice==="rescue"&&has("rescue:storm-boat")?["先打开潮汐闸门，协助栖蓝救援。","Open the tide gate and help Qilan with the rescue first."]:has("puzzle:beam-mirrors")?["前往灯塔校准镜面，照亮航路。","Align the lighthouse mirrors to light the channel."]:["返回码头，引导救援船入港。","Return to the quay and guide the rescue boat to safety."]:
+ s==="harbor:H-04"?!v.choice?["与领航员或守灯人商议救援顺序。","Speak to the navigator or keeper to choose the rescue order."]:v.choice==="rescue"&&has("rescue:storm-boat")?["先打开潮汐闸门，协助栖蓝救援。","Open the tide gate and help Qilan with the rescue first."]:has("puzzle:beam-mirrors")?["前往灯塔校准镜面，照亮航路。","Align the lighthouse mirrors to light the channel."]:["返回码头，引导救援船入港。","Return to the quay and guide the rescue boat to safety."]:
  s==="harbor:H-05"?has("repair:harbor")?["修复灯塔圣所。","Restore the lighthouse sanctuary."]:has("melody:harbor")?["邀请栖蓝和岬灯，与港口居民合奏归潮调。","Invite Qilan and Jiedeng to perform Returning Tides together."]:["聆听暮铃的话。","Listen to Muling."]:
  v.melodies.includes("harbor")?["灯塔复明 · 补给航线已开放，可前往眠根林。","Beacon restored · Supply route open; travel to Rootsleep Forest."]:null;
  return line?.[zh?0:1]||"";
-}
-export function harborAssist(p,v){
- if(!p)return;
- const methods=v.support.find(x=>x.region==="harbor")?.methods||[];
- if(p.operation==="rescue:storm-boat"&&methods.includes("navigator-trust"))p.assist="qilan";
- if(p.operation==="puzzle:beam-mirrors"&&methods.includes("keeper-trust"))p.assist="jiedeng";
 }
 export function harborPuzzleHint(p,lang){
  const l=lang==="zh"?0:1;
  if(p.type==="rescue"){
   const step=p.values.length;
-  if(p.assisted&&p.mistakes===0)return ["栖蓝稳住了船，按当前航标继续。","Qilan steadied the boat. Continue at the current marker."][l];
-  return [["退潮后打开闸门并固定救援缆绳。","Open the tide gate at ebb and secure the rescue line."],["闸门已开，向栖蓝发出通航信号。","The gate is open. Signal Qilan to enter the channel."],["信号已收到，引导救援船驶入安全水域。","Signal received. Guide the boat into safe water."]][Math.min(step,2)][l];
+  const gateTurns=p.goal.indexOf(2),remaining=Math.max(0,gateTurns-step);
+  const hint=remaining?[ "转动闸门绞盘，剩余 "+remaining+" 格。","Turn the tide-gate winch: "+remaining+" notch(es) remaining."]:step===gateTurns?["闸门已完全打开。发出通航信号。","The gate is fully open. Signal the channel."]:step===gateTurns+1?["引导栖蓝穿过狭窄闸口。","Guide Qilan through the narrow gate."]:step===gateTurns+2?["继续引导，避开浅滩，靠近安全码头。","Guide past the shoal toward the safe quay."]:["发出靠岸确认信号。","Signal to confirm docking."];
+  return (p.assistedAt===step?(l?"Qilan steadies the boat. ":"栖蓝稳住了船。"):"")+hint[l];
  }
  if(p.assist==="jiedeng"){const i=p.values.findIndex((n,j)=>n!==p.goal[j]);if(i>=0)return ["岬灯：先校准","Jiedeng: align "][l]+puzzleWords.mirrors[2][i][l];}
  if(p.type==="tide")return ["顺着刻痕和石阶找到日志匣。","Trace the marks and steps to the logbook chest."][l];
@@ -83,16 +78,19 @@ function mirrors(c,p,l){
  }
 }
 function rescue(c,p,l,t){
- const step=p.values.length, x=280+step*132, y=191-Math.sin(t*1.8)*2;
- // A navigation cross-section, not another quest state: tide gate, signal and boat respond to input.
+ const step=p.values.length, gateTurns=p.goal.indexOf(2),open=Math.min(1,step/gateTurns),guided=p.values.filter(n=>n===1).length,x=260+guided*204,y=191-Math.sin(t*1.8)*2;
+ // Tide-gate opening, channel clearance and vessel position are controlled by the player's actual inputs.
  box(c,174,134,612,83,"#122b3a","#688a96");
  for(let i=0;i<5;i++)stroke(c,[[193,169+i*9],[766,169+i*9]],"rgba(132,206,209,.17)",1);
- const gx=416;stroke(c,[[gx-10,153],[gx-10,203],[gx+10,203],[gx+10,153]],"#bba785",4);
- const gy=step?150:181;for(let i=0;i<3;i++)stroke(c,[[gx-9,gy+i*7],[gx+9,gy+i*7]],amber,4);
- const lamp=step>=2?teal:"#6b7a83";circle(c,590,149,5,lamp);if(step>=2){glow(c,590,149,25,"rgba(164,224,212,.6)");stroke(c,[[590,153],[694,178]],teal,2);}
+ const gx=416;stroke(c,[[gx-10,151],[gx-10,205],[gx+10,205],[gx+10,151]],"#bba785",4);
+ const gy=180-open*31;for(let i=0;i<3;i++)stroke(c,[[gx-9,gy+i*7],[gx+9,gy+i*7]],amber,4);
+ const lamp=step>gateTurns?teal:"#6b7a83";circle(c,590,149,5,lamp);if(step>gateTurns){glow(c,590,149,25,"rgba(164,224,212,.6)");stroke(c,[[590,153],[694,178]],teal,2);}
+ // Mark the shoal and final safe quay.
+ shape(c,[[555,205],[571,186],[590,205]],"#728582");stroke(c,[[707,170],[746,170],[746,207]],"#c5aa80",5);
  stroke(c,[[x-55,y+7],[x-21,y+7]],"rgba(185,224,222,.52)",2);
  shape(c,[[x-19,y-2],[x+22,y-2],[x+11,y+10],[x-11,y+10]],"#a98863");stroke(c,[[x,y-3],[x,y-28]],cream,2);shape(c,[[x+2,y-27],[x+18,y-5],[x+2,y-5]],"#e5d4ac");
- for(let i=0;i<3;i++){const w=puzzleWords.rescue[2][i][l];button(c,[288,480,672][i],291,i,w,["gate","wing","bell"][i],p.goal[step]===i);}
+ for(let i=0;i<3;i++){const w=puzzleWords.rescue[2][i][l];button(c,[288,480,672][i],291,i,w,["gate","wing","bell"][i],false);}
+ text(c,(l?"Gate ":"闸门 ")+Math.round(open*100)+"%  ·  "+(l?"Channel ":"航道 ")+(guided)+"/2",480,373,16,teal);
 }
 function sequence(c,p,l,t,cast){
  const words=puzzleWords[p.type],icons=p.type==="tide"?["gate","chest","book"]:["bell","bell","bell"];
@@ -107,7 +105,7 @@ export function paintHarborPuzzle(c,p,lang,cast,frame){
  box(c,118,63,724,414,"rgba(17,42,55,.92)","#bfa575");
  text(c,words[0][l],480,98,26,cream);text(c,harborPuzzleHint(p,lang),480,119,15,teal,"center",675);
  if(p.type==="mirrors")mirrors(c,p,l);else if(p.type==="rescue")rescue(c,p,l,t);else sequence(c,p,l,t,cast);
- if(p.type==="rescue")text(c,(l?"Rescue stage ":"救援阶段 ")+(p.values.length+1)+"/3",480,398,17,teal);
+ if(p.type==="rescue")text(c,(l?"Rescue stage ":"救援阶段 ")+(p.values.length+1)+"/"+p.goal.length,480,398,17,teal);
  if(p.mistakes)text(c,(l?"Try again · ":"重新尝试 · ")+p.mistakes,480,449,14,"#edbb9e");
  c.restore();return true;
 }

@@ -5,3 +5,5 @@
 .rw-harbor-status{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .rw-harbor-guide{padding:6px 10px;border-left:2px solid #a4d6ca;box-sizing:border-box;background:#152d3c}
 @media(max-width:700px){.rw-harbor-status,.rw-harbor-guide{font-size:12px}.rw-world[data-region="harbor"] .rw-puzzle-controls .rw-button{flex:1 1 40%}}
+
+.rw-world[data-harbor-puzzle="true"] .rw-shell{animation:none}

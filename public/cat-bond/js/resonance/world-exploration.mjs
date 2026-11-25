@@ -1,5 +1,5 @@
 import { campaign } from "./campaign.mjs";
-import {harborAssist} from "./harbor-presentation.mjs";
+
 // Actual walkable region mechanics. Story progression is never stored here.
 export const layouts={
  harbor:{
@@ -26,6 +26,7 @@ export const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const segment=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy)));return {p:[a[0]+t*dx,a[1]+t*dy],t};};
 const closest=(path,p)=>path.slice(1).map((b,i)=>({i,...segment(p,path[i],b)})).sort((a,b)=>distance(a.p,p)-distance(b.p,p))[0];
 const stages=["sendA","receiveB","sendB","receiveA"];
+function harborAssist(p,v){if(!p)return;const methods=v.support?.find(x=>x.region==="harbor")?.methods||[];if(p.operation==="rescue:storm-boat"){p.goal=v.choice==="calibrate"?[0,2,1,1,2]:[0,0,2,1,1,2];if(methods.includes("navigator-trust"))p.assist="qilan";}if(p.operation==="puzzle:beam-mirrors"&&methods.includes("keeper-trust"))p.assist="jiedeng";}
 export const puzzleSpecs={
  "explore:tide-logbook":{type:"tide",initial:[],goal:[2,0,1]},
  "puzzle:beam-mirrors":{type:"mirrors",initial:[0,1,0],goal:[2,3,1],mod:4},
@@ -53,7 +54,7 @@ export function movePuzzle(p,i){
  if(!p||p.solved||!Number.isInteger(i)||i<0||i>2)return false;
  if(["mirrors","stars","water","routing"].includes(p.type)){p.values[i]=(p.values[i]+1)%p.mod;}
  else if(["blueprint","memory","rescue","melody","tide","scent"].includes(p.type)){
-  if(i===p.goal[p.values.length])p.values.push(i);else if(p.type==="rescue"&&p.assist==="qilan"&&!p.assisted){p.assisted=true;}else{p.values=[];p.response=[];p.mistakes++;}
+  if(i===p.goal[p.values.length])p.values.push(i);else if(p.type==="rescue"&&p.assist==="qilan"&&!p.assisted){p.assisted=true;p.assistedAt=p.values.length;}else{p.values=[];p.response=[];p.mistakes++;}
   if(p.type==="melody")p.response=p.values.map((n,j)=>({actor:p.participants?.[j%2],reply:(n+1)%3}));
  }
  else if(p.type==="heat"){if(i===0){p.values[0]+=5;p.values[1]+=5;}else if(i===1)p.values[1]-=5;else p.values=[...p.initial];if(p.values[0]>70||p.values[1]>45||p.values[1]<0){p.values=[...p.initial];p.mistakes++;}}
