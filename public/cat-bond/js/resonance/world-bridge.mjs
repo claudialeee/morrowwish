@@ -113,7 +113,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(!q?.repaired||!q.actors.some(a=>a.id===id&&!a.visited)||!token||!api.isCurrentAction(token)||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("postgame-visit-unavailable");
   const change=x=>({...x,interactions:{...x.interactions,[homeVisitKey(region,id)]:true}});
   if(q.actors.some(a=>a.id!==id&&!a.visited))return physical(change);
-  const r=api.postgame({...q.reunion,verified:true,token},patch(change,{coins:40,fish:3}));cachedRoot=null;return r;
+  const reward={coins:40,fish:3},r=api.postgame({...q.reunion,verified:true,token},patch(change,reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function recordWorld(sceneId,op,proof){
   const api=resolveNarrative(),v=view(),region=v.current?.chapter,w=world();
