@@ -129,3 +129,15 @@
  .rw-world[data-region="harbor"].rw-forest-landscape .rw-head{margin:0;padding-bottom:6px}
  .rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-guide,.rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-status{margin:5px 0;font-size:11px}
 }
+
+/* Wide Skyspine maps are full-frame: no scroll clipping of the lower island,
+   the flight course or the landing ring. Only the existing objective rail scrolls. */
+@media(orientation:landscape) and (min-width:720px) and (min-height:501px){
+ .rw-world.rw-sky-region.rw-sky-landscape:not([hidden]){display:grid;grid-template-columns:minmax(0,2.55fr) minmax(255px,1fr);grid-template-rows:auto minmax(0,1fr);gap:12px 16px;padding:54px 16px 16px;overflow:hidden;align-items:center;background:radial-gradient(ellipse at 25% 0,#41647b,#203c55 55%,#14273e)}
+ .rw-sky-region .rw-head{grid-column:1/-1;grid-row:1;width:100%;max-width:none;margin:0;padding-bottom:9px}
+ .rw-sky-region .rw-shell{grid-column:1;grid-row:2;width:100%;max-width:min(100%,calc((100dvh - 190px)*16/9));margin:0;justify-self:center}
+ .rw-sky-region .rw-sky-rail{grid-column:2;grid-row:2;align-self:stretch;height:100%;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;box-sizing:border-box;scrollbar-width:thin;padding:0 4px 8px 0;touch-action:pan-y}
+ .rw-sky-region .rw-objective{display:grid;grid-template-columns:1fr;gap:8px;margin:0 0 10px}.rw-sky-region .rw-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}.rw-sky-region .rw-metric{padding:2px 4px}
+ .rw-sky-region .rw-controls,.rw-sky-region .rw-world-actions,.rw-sky-region .rw-cargo{justify-content:flex-start;margin:8px 0;gap:6px}
+ .rw-sky-region .rw-puzzle-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:0}.rw-sky-region .rw-sky-flight-status,.rw-sky-region .rw-puzzle-controls>.rw-button:last-child{grid-column:1/-1}.rw-sky-region .rw-puzzle-controls .rw-button{min-width:0;padding:7px 5px}
+}

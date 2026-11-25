@@ -575,7 +575,7 @@ try {
     await button('Party',page.locator('.rw-system-nav')).click();await page.locator('#map-squad-best').click();await page.locator('#map-squad-save').click();await page.locator('#panel.open').waitFor({state:'hidden'});
     await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='forge')?.unlocked));await shot('forge-garden-restoration');await page.locator('#fab-map').click();
     await button('Skyspine Isles').click();await page.waitForFunction(()=>WorldMap.currentRegion==='sky');
-    await page.locator('.rw-sky-region[data-art-ready="true"]').waitFor();await shot('sky-arrival');
+    await page.locator('.rw-sky-region[data-art-ready="true"]').waitFor();const skyRect=await page.locator('.rw-surface').boundingBox();assert(skyRect&&skyRect.y>=0&&skyRect.y+skyRect.height<=options.viewport.height+1,'Skyspine painting must be entirely visible on arrival');await shot('sky-arrival');
     await ship('sky','Wind vanes and flight parts');
     async function skyDialogue(id,choice){
       const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();
@@ -591,6 +591,7 @@ try {
         }
         if(id==='sky:S-04'&&seen===11){
           await dlg.locator('.res-sky-pendant-shot[data-ready="true"]').waitFor();
+          const shotLayout=await dlg.evaluate(root=>{const r=root.querySelector('.res-sky-pendant-shot').getBoundingClientRect(),parts=[root.querySelector('.res-portrait'),root.querySelector('.res-body')].filter(el=>el&&!el.hidden);return parts.every(el=>{const p=el.getBoundingClientRect();return Math.min(r.right,p.right)<=Math.max(r.left,p.left)+1||Math.min(r.bottom,p.bottom)<=Math.max(r.top,p.top)+1;});});assert(shotLayout,'Pendant cutaway must not cover the speaker or dialogue');
           await dlg.locator('[data-sky-taps="1"]').waitFor();await shot('sky-pendant-tap-one');
           await dlg.locator('[data-sky-taps="2"]').waitFor();await shot('sky-pendant-tap-two');
         }
@@ -700,7 +701,21 @@ try {
     await button('Catdex',page.locator('.rw-system-nav')).click();await page.getByText('Skyspine flight record',{exact:true}).waitFor();await shot('sky-catdex');await page.locator('#panel .panel-dismiss').click();
     await button('Workshop',page.locator('.rw-system-nav')).click();await page.getByText(/Skyspine wind calibration/).waitFor();await shot('sky-workshop');await page.locator('#panel .panel-dismiss').click();
     await page.evaluate(()=>MorrowwishI18n.set('zh'));await page.getByText(/第四章已完成 · 月镜书库已解锁/).waitFor();await shot('sky-release-zh');await page.evaluate(()=>MorrowwishI18n.set('en'));
-    await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='sky')?.unlocked));await shot('sky-garden');
+    await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='sky')?.unlocked));const guide=page.getByRole('button',{name:/Skip/}).filter({visible:true});if(await guide.count()===1)await guide.click();
+    await shot('sky-garden');
+    const homeScene=page.locator('#scene');
+    for(const [id,x,y] of [['lingyu',.65,.46],['yuanfan',.70,.57]]){
+      const rect=await homeScene.boundingBox();
+      const point={x:rect.x+rect.width*x,y:rect.y+rect.height*y};
+      if(options.hasTouch)await page.touchscreen.tap(point.x,point.y);else await page.mouse.click(point.x,point.y);
+      const convo=page.locator('.res-home-conversation');await convo.waitFor();
+      assert.equal(await convo.locator('.res-speaker').innerText(),id==='lingyu'?'Lingyu':'Yuanfan');
+      const line=await convo.locator('.res-line').innerText();
+      if(id==='lingyu'&&name==='portrait')assert(line.includes('training together'));
+      if(id==='yuanfan'&&name!=='portrait')assert(line.includes('take the lead')||line.includes('lead'));
+      await button('中文',convo).click();await convo.getByRole('button',{name:'关闭',exact:true}).waitFor();await shot('sky-home-'+id+'-zh');
+      await convo.getByRole('button',{name:'English',exact:true}).click();await button('Close',convo).click();
+    }
     await page.locator('#fab-map').click();await button('Rootsleep Forest').click();
 
     // Save isolation: detached controls and the old region must not survive a slot switch,
