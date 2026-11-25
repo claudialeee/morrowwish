@@ -1,7 +1,7 @@
 // Canonical NPC presence and companion presentation adapter.
 // Does not duplicate quest, trust, region progression, or the Muling arc.
 import {campaign} from "./campaign.mjs";
-import {mountHomeConversation} from "./home-conversations.mjs";
+import {mountHomeConversation,skyChapterVisitors} from "./home-conversations.mjs";
 const root=new URL("../../assets/npc/",import.meta.url);
 const load=name=>{const img=new Image();img.src=new URL(name,root).href;return img};
 const residentImages=new Map();
@@ -23,14 +23,14 @@ function install(){
  const api=window.CatBondResonance;if(!api)return;
  function talk(id,region,requestedScene){
   const v=api.view();if(requestedScene&&requestedScene!==v.current?.id)return false;
-  if(region==="garden"&&v.ending)return mountHomeConversation(id,api);
+  if(region==="garden"&&(v.ending||skyChapterVisitors(v).includes(id)))return mountHomeConversation(id,api);
   const r=v.current?api.recordNPC({sceneId:v.current.id,npcId:id,region}):{ok:false};
   if(r.ok){api.showCurrent();return true}
   const p=api.npcProfile(id);
   if(p){const a=api.ambientAvailable(region).filter(a=>a.npc===id);if(a.length){window.dispatchEvent(new CustomEvent("cat-bond-resonance-npc-profile",{detail:{...p,ambient:a}}));return true}}
   return false;
  }
- const gardenAdapter={getHomeNpcs:()=>api.residents("garden"),drawHomeNpc(ctx,npc,position){return drawResident(ctx,npc.id,position)},interactHomeNpc:id=>talk(id,"garden")};
+ const gardenAdapter={getHomeNpcs:()=>{const existing=api.residents("garden");const extra=skyChapterVisitors(api.view()).filter(id=>!existing.some(n=>n.id===id)).map(id=>api.npcProfile(id)).filter(Boolean);return [...existing,...extra];},drawHomeNpc(ctx,npc,position){return drawResident(ctx,npc.id,position)},interactHomeNpc:id=>talk(id,"garden")};
  window.SunlitGarden?.registerNarrativeAdapter?.(gardenAdapter);
  window.CatBondResonanceNPC=Object.freeze({residents:api.residents,profile:api.npcProfile,talk,drawResident,gardenAdapter});
 }

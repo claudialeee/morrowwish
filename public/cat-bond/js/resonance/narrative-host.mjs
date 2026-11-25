@@ -20,7 +20,7 @@ function install(){
  function close(){keyExchange?.dispose();keyExchange=null;dialogue?.dispose();dialogue=null;root?.remove();root=null;openedScene=null;slot=null;}
  function show(){
   const v=runtime.view(),game=window.__game;
-  if(!v.current||game?.scene==="battle"||v.completed.includes("forge:E-04"))return false;
+  if(!v.current||game?.scene==="battle"||v.completed.includes("sky:S-05"))return false;
   if(slot===State.S&&openedScene===v.current.id&&(dialogue||keyExchange)){(dialogue||keyExchange).render();return true}
   close();slot=State.S;openedScene=v.current.id;
   root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";root.dataset.scene=openedScene;stage.append(root);
