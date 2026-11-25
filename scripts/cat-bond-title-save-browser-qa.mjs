@@ -20,7 +20,7 @@ for(const profile of [
  const checkVisible=async selector=>{await page.locator(selector).first().waitFor({state:'visible',timeout:15000});};
  const waitMap=()=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:15000});
  const openInGameSlots=async()=>{
-  await page.locator('#cb-system-toggle').click();
+  await page.locator('#map-menu').click();
   await page.locator('[data-system="slots"]').click();
   await checkVisible('.cb-slot-manager');
  };
@@ -133,13 +133,13 @@ for(const profile of [
   assert.ok(await page.evaluate(()=>State.S.battlePrefs.teamUids.includes(State.S.cats[0].uid)));
   await book.click();
   await page.locator('[data-book-tab="bag"]').click();
-  await page.locator('#cb-system-toggle').click();
+  await page.locator('#map-menu').click();
   await page.locator('[data-system="language"]').click();
   await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='zh');
   await page.locator('[data-system="close"]').click();
   assert.match(await page.locator('.rb-brand strong').innerText(),/星铃之书/);
   await screenshot('book-zh');
-  await page.locator('#cb-system-toggle').click();
+  await page.locator('#map-menu').click();
   await page.locator('[data-system="language"]').click();
   await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='en');
   await page.locator('[data-system="close"]').click();
@@ -174,7 +174,7 @@ for(const profile of [
   await waitMap();
   assert.equal(await page.evaluate(()=>window.State.S.cats[0].uid),first);
   // A real title-menu navigation, not a special test entry.
-  await page.locator('#cb-system-toggle').click();
+  await page.locator('#map-menu').click();
   await page.locator('[data-system="title"]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__,{timeout:30000});
   // Start the third slot through the actual title picker, preserving the two earlier adventures.

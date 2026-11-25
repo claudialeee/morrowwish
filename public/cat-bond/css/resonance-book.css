@@ -63,12 +63,29 @@
 #stage.rb-canonical.cb-sunlit-garden #yard-actions .fab{flex-shrink:0}
 @media(max-height:500px) and (orientation:landscape){.rb-navigation{position:static}.rb-tabs{overflow-x:auto}.rb-tab{min-height:40px}}
 
-/* The Book replaces exploration management, not the independent system menu.
-   Keep save/load reachable in the atlas, in a region, and inside cultivation. */
-html:not(.cb-cg) #stage.rb-canonical:has(#intro.hide) #cb-system-toggle{
- display:inline-flex!important;align-items:center!important;justify-content:center!important;
- right:calc(env(safe-area-inset-right,0px) + 124px)!important;
-}
-@media(max-width:420px){html:not(.cb-cg) #stage.rb-canonical:has(#intro.hide) #cb-system-toggle{right:calc(env(safe-area-inset-right,0px) + 112px)!important}}
-#stage.rb-canonical:has(.res-host,.cbcp-root:not([hidden]),.rw-world[data-ceremony]:not([hidden])) #cb-system-toggle{visibility:hidden!important;pointer-events:none!important}
+/* The existing top-rail menu opens the system settings; the title and
+ battle keep their original independent toggle. No duplicate menu button. */
+#stage.rb-canonical:has(#intro.hide):not(:has(#battle-ui.on)) #cb-system-toggle{display:none!important}
+#stage.rb-canonical:has(.res-host,.cbcp-root:not([hidden]),.rw-world[data-ceremony]:not([hidden])) #map-menu{visibility:hidden!important;pointer-events:none!important}
+#stage.rb-canonical:has(#panel.rb-open.open) #cb-yard-return{visibility:hidden!important;pointer-events:none!important}
 #stage.rb-canonical.cb-sunlit-garden:has(#intro.hide) .scene-title{visibility:hidden}
+/* Keep the real watercolor kitten artwork the focal point, not the old
+ generic dashboard cells. The existing thumbnail renderer reads CSS size. */
+#stage #panel.rb-open>.card.rb-card{background:linear-gradient(160deg,#fff8e9 0%,#efe4cf 100%)!important}
+#stage #panel.rb-open .dex-grid{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
+#stage #panel.rb-open .dex-grid .dex-cell{min-width:0;min-height:155px;border:1px solid #cbb68c!important;border-radius:10px!important;background:linear-gradient(155deg,#fffcf1,#f1e5cf)!important;box-shadow:0 2px 7px #4e3f2520;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 5px}
+#stage #panel.rb-open .dex-grid .dex-cell canvas{display:block;width:100px!important;height:105px!important;max-width:100%;max-height:none!important}
+#stage #panel.rb-open .dex-grid .dex-cell .name{color:#254346;font-weight:750}
+#stage #panel.rb-open .dex-grid .dex-cell.locked{background:#e8ddcb!important;box-shadow:none;opacity:.72}
+#stage #panel.rb-open .dex-grid .dex-cell.locked canvas{height:68px!important;background:radial-gradient(ellipse at center,#c6b39255 0%,transparent 64%)}
+#stage #panel.rb-open .mastery-summary{border-color:#cbb68c;background:linear-gradient(120deg,#f6e8c7,#f5f0df)}
+@media(max-width:700px){
+ #stage #panel.rb-open .dex-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ #stage #panel.rb-open .dex-grid .dex-cell{min-height:126px;padding:6px 3px}
+ #stage #panel.rb-open .dex-grid .dex-cell canvas{width:80px!important;height:83px!important}
+ #stage #panel.rb-open .dex-grid .dex-cell.locked canvas{height:56px!important}
+}
+@media(max-height:500px) and (orientation:landscape){
+ #stage #panel.rb-open .dex-grid .dex-cell{min-height:118px}
+ #stage #panel.rb-open .dex-grid .dex-cell canvas{width:76px!important;height:78px!important}
+}
