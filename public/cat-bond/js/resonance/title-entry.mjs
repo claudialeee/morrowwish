@@ -44,9 +44,12 @@ export async function startCanonicalOpening(game,{onWorld}={}){
  window.__CAT_BOND_CANONICAL_ACTIVE__=true;
  const same=()=>window.State.S===rootState&&window.State.activeSlot()===slot;
  let closed=false,controller=null,root=null,removeError=null,launching=false,runtime=null;
- const dispose=()=>{closed=true;controller?.dispose();root?.remove();removeError?.();};
- const live=()=>!closed&&same();
+ const onSlotChange=()=>{if(!same())dispose();};
+ const dispose=()=>{if(closed)return;closed=true;controller?.dispose();root?.remove();removeError?.();window.removeEventListener('cat-bond-resonance-changed',onSlotChange);window.removeEventListener('pagehide',dispose);};
+ const live=()=>{if(closed)return false;if(!same()){dispose();return false;}return true;};
  active={dispose};
+ window.addEventListener('cat-bond-resonance-changed',onSlotChange);
+ window.addEventListener('pagehide',dispose,{once:true});
  const showError=reason=>{if(!live())return;controller?.cancel?.();removeError?.();removeError=errorPanel(game,reason,()=>{removeError=null;if(controller&&typeof advance==='function')advance();else{dispose();startCanonicalOpening(game,{onWorld})}});};
  const toGarden=()=>{
   game.scene='yard';game.battle=null;game.rebuildYard?.();game.showYardChrome?.();game.refreshHUD?.();
@@ -56,6 +59,9 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   const [{campaign},{createSlotRuntime}]=await Promise.all([import('./campaign.mjs'),import('./slot-runtime.mjs')]);
   if(!live())return {ok:false,reason:'slot-changed'};
   runtime=createSlotRuntime(window.State,{notify:detail=>window.dispatchEvent(new CustomEvent('cat-bond-resonance-changed',{detail}))});
+  const initialized=runtime.initialize();
+  if(!initialized.ok)throw Error(initialized.reason||'narrative-slot-initialization-failed');
+  if(!live())return {ok:false,reason:'slot-changed'};
   const initial=runtime.view();
   const initialMode=classifyPrologue(initial);
   // A save that already left the cinematic part does not require downloading
@@ -63,13 +69,13 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   // with the garden/world host, and never get manufactured by this module.
   const handoff=mode=>{
    controller?.dispose();controller=null;root?.remove();root=null;
-   if(mode==='garden'){toGarden();return;}
+   if(mode==='garden'){toGarden();dispose();return;}
    if(mode==='departure'){
     game.openWorldMap?.();
     window.CatBondResonance?.showCurrent?.();
-    return;
+    dispose();return;
    }
-   onWorld?.();
+   try{onWorld?.();}finally{dispose();}
   };
   if(initialMode!=='cinematic'){handoff(initialMode);return {ok:true,mode:initialMode};}
   const [{mountResonanceCinematics},manifest]=await Promise.all([
@@ -107,4 +113,4 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   return {ok:false,reason:error.message||'canonical-opening-failed'};
  }
 }
-window.CatBondTitlePrologue=Object.freeze({start:startCanonicalOpening,available:()=>!!(window.CatBondResonance||window.CatBondCanonicalWorld),dispose:()=>active?.dispose()});
+window.CatBondTitlePrologue=Object.freeze({start:startCanonicalOpening,available:()=>!!(window.__CAT_BOND_CANONICAL_RELEASE__||window.CatBondResonance||window.CatBondCanonicalWorld),dispose:()=>active?.dispose()});
