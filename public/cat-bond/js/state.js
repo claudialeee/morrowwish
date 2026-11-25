@@ -469,7 +469,7 @@ function listSaveSlots() {
     // Only the formal engine's slot-local snapshot supplies narrative metadata.
     const story = data?.resonance || {};
     const fragments = Array.isArray(story.melodies) ? story.melodies.length : 0;
-    const regionCount = Object.values(data?.worldmap?.regions || {}).filter(r => Number(r?.explored) > 0).length;
+    const regionCount = Array.isArray(story.sanctuaries) ? story.sanctuaries.length : 0;
     // New narrative code may supply localized chapter metadata directly. Do
     // not label a legacy save with a chapter from the retired campaign.
     const chapterKey=typeof story.scene==='string'?story.scene.split(':')[0]:'';
@@ -482,7 +482,8 @@ function listSaveSlots() {
       Number.isInteger(chapterNumber)&&chapterNumber>0?'Chapter '+chapterNumber:
       data?.cats?.length?'Adventure in progress':'Not started';
     const chapter=chapterLabelZh;
-    const regionId = data?.worldmap?.current || 'home';
+    const sceneRegion=['harbor','forest','forge','sky','library','starfall'].includes(chapterKey)?chapterKey:'garden';
+    const regionId = data?.resonance ? (data.resonanceExploration?.location || sceneRegion) : (data?.worldmap?.current || 'home');
     const region = typeof WorldMap !== 'undefined' ? WorldMap.REGIONS?.find(item => item.id === regionId) : null;
     const names = regionNames[regionId] || [region?.name || regionId, region?.sub || region?.nameEn || regionId];
     const playTimeMs = Math.max(0, Number(data?.playTimeMs) || 0);
@@ -508,6 +509,7 @@ function listSaveSlots() {
       regionLabelEn: names[1],
       playTimeMs,
       gameTimeLabel,
+      gameTimeLabelZh: hours ? hours+'小时 '+minutes+'分钟' : minutes+'分钟',
       storyProgress: fragments + '/6',
       active: id === activeSlot()
     };
@@ -607,12 +609,17 @@ function replaceSaveSlots(entries, activeId, deletedEntries = {}) {
   for (const id of SAVE_SLOT_IDS) {
     if (!slots[id] && Number(deletedEntries[id]?.deletedAt)>0) deleted[id]={deletedAt:Number(deletedEntries[id].deletedAt)};
   }
-  const result = writeSlots({ version: SAVE_BOOK_VERSION, slots, deleted });
-  if (!result.ok) return result;
   const nextActive = SAVE_SLOT_IDS.includes(activeId) && slots[activeId]
     ? activeId
     : (SAVE_SLOT_IDS.find(id => slots[id]) || 'slot1');
-  if (!setActiveSlot(nextActive)) return { ok: false, reason: 'active_slot_unavailable' };
+  const previousActive=activeSlot();
+  // Select before changing the canonical book. If selecting fails, no slot is touched.
+  if (nextActive!==previousActive && !setActiveSlot(nextActive)) return {ok:false,reason:'active_slot_unavailable'};
+  const result = writeSlots({ version: SAVE_BOOK_VERSION, slots, deleted });
+  if (!result.ok) {
+    if(nextActive!==previousActive)setActiveSlot(previousActive);
+    return result;
+  }
   try {
     const snapshot = slots[nextActive]?.data;
     const mirror = snapshot?.snapshotVersion === 1 && isSaveObject(snapshot.state) ? snapshot.state : snapshot;
