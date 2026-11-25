@@ -41,3 +41,9 @@ html body #game-root #stage{width:100%!important;height:100%!important;max-width
 #stage .rw-world .rw-fit-rail:not(:has(.rw-puzzle-controls)){scrollbar-width:thin}
 #stage .rw-world .rw-fit-rail:has(.rw-puzzle-controls){scrollbar-width:thin}
 #stage .rw-world .rw-brand{pointer-events:none}
+
+#stage .rw-world .rw-brand{max-width:100%}
+#stage .rw-world .rw-fit-summary{display:block!important;max-width:100%;overflow-wrap:normal;line-height:1.3}
+#stage .rw-world .rw-fit-rail .rw-button,#stage .rw-world .rw-fit-rail .rw-system-nav button{min-height:44px!important;border-radius:8px!important}
+#stage .rw-world .rw-fit-rail .rw-metrics{gap:8px}
+#stage #panel .cat-capture-card .first-adventure-tip{background:transparent!important;border:0!important;padding:4px 2px!important}

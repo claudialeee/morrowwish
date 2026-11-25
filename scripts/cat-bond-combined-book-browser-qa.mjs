@@ -39,7 +39,7 @@ for(const profile of [
   assert.match(titleImage.url,/title-bell-sanctuary\.webp$/);
   assert.ok(titleImage.width>=1600&&titleImage.height>=900&&titleImage.visible,'New painted title loads at usable resolution');
   assert.equal(titleImage.repeat,'no-repeat');
-  assert.equal(titleImage.size,profile.width/profile.height<=.8?'auto 65%':'cover');
+  assert.equal(titleImage.size,'cover');
   assert.equal(titleImage.alternate,'none','No legacy crossfade over new title');
   const bounds=await page.evaluate(()=>{const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {stage:rect('#stage'),start:rect('#intro-start'),next:rect('#intro-continue')};});
   assert.ok(bounds.start.right<=bounds.next.left&&bounds.start.width>0&&bounds.next.width>0,'New and Continue remain side by side');

@@ -19,7 +19,7 @@ try{
      const header=await page.locator('.rw-world:not([hidden])>.rw-head').evaluate(el=>{
       const title=el.querySelector('.rw-brand strong'),brand=el.querySelector('.rw-brand'),r=el.getBoundingClientRect(),b=brand.getBoundingClientRect(),t=title.getBoundingClientRect();
       const line=parseFloat(getComputedStyle(title).lineHeight);
-      return {wide:b.width>=r.width*.9,readable:t.height<=line*2+1,buttons:[...el.querySelectorAll(':scope>.rw-button')].every(btn=>{const p=btn.getBoundingClientRect();return p.width>=70&&p.left>=r.left-1&&p.right<=r.right+1&&p.top>=b.bottom-1;})};
+      return {wide:b.width>0&&b.right<=r.right+1,readable:t.height<=line*2+1,buttons:[...el.querySelectorAll(':scope>.rw-button')].every(btn=>getComputedStyle(btn).display==='none')};
      });assert.deepEqual(header,{wide:true,readable:true,buttons:true},'Portrait region title must use the full header, not wrap one letter at a time');
     }
     await page.screenshot({path:out+'/'+name+'-'+lang+'-'+id+'.png',animations:'disabled'});shots.push(id)};

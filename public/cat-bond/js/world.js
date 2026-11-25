@@ -68,11 +68,11 @@ function gardenArtworkRect(W,H){
 function gardenGround(W,H){
  const f=gardenArtworkRect(W,H),margin=Math.min(56,f.width*.22);
  const top=f.y+Math.min(f.height*.54,Math.max(0,f.height-88)),bottom=f.y+Math.max(top-f.y+20,f.height-72);
- return {left:f.x+margin,right:f.x+f.width-margin,top,bottom:Math.min(H-10,f.y+f.height,bottom)};
+ return {left:Math.max(12,f.x+margin),right:Math.min(W-12,f.x+f.width-margin),top:Math.max(50,top),bottom:Math.min(H-10,f.y+f.height,bottom)};
 }
 function gardenPlot(W,H){
  const f=gardenArtworkRect(W,H),margin=Math.min(56,Math.max(Math.min(30,f.width*.18),f.width*.10)),top=f.y+Math.min(f.height*.50,Math.max(0,f.height-96)),bottom=f.y+Math.max(top-f.y+20,f.height-56);
- return {left:f.x+margin,top,width:Math.max(1,f.width-2*margin),height:Math.max(1,Math.min(H-10,f.y+f.height,bottom)-top)};
+ const left=Math.max(12,f.x+margin),right=Math.min(W-12,f.x+f.width-margin),visibleTop=Math.max(50,top);return {left,top:visibleTop,width:Math.max(1,right-left),height:Math.max(1,Math.min(H-10,f.y+f.height,bottom)-visibleTop)};
 }
 function legacyGardenPlot(W,H){
  const left=Math.min(56,Math.max(30,W*.10)),top=Math.min(H*.50,H-96);
@@ -80,7 +80,7 @@ function legacyGardenPlot(W,H){
 }
 function gardenBushBounds(W,H){
  const f=gardenArtworkRect(W,H),margin=Math.min(70,f.width*.20),top=f.y+Math.min(f.height*.58,Math.max(0,f.height-90));
- return {left:f.x+margin,right:f.x+f.width-margin,top,bottom:Math.min(f.y+f.height,Math.max(top+10,f.y+f.height-Math.max(126,f.height*.16)))};
+ return {left:Math.max(15,f.x+margin),right:Math.min(W-15,f.x+f.width-margin),top:Math.max(50,top),bottom:Math.min(H-12,f.y+f.height,Math.max(top+10,f.y+f.height-Math.max(126,f.height*.16)))};
 }
 const clampPlot=n=>Math.max(0,Math.min(1,n));
 function projectGardenBuildings(builds,W,H,sourceW=W,sourceH=H,legacy=false){

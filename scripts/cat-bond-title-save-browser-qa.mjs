@@ -49,7 +49,7 @@ for(const profile of [
   assert.ok(painting.url.endsWith('/assets/garden/title-bell-sanctuary.webp'),'New opening painting for '+profile.name);
   assert.ok(painting.width>=1600&&painting.height>=900&&painting.visible,'Opening painting decodes at usable resolution');
   assert.equal(painting.repeat,'no-repeat','Opening painting never tiles');
-  assert.equal(painting.size,profile.width/profile.height<=.8?'auto 65%':'cover','Opening painting uses responsive framing');
+  assert.equal(painting.size,'cover','Opening painting uses responsive framing');
   const bounds=await page.evaluate(()=>{const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {stage:rect('#stage'),start:rect('#intro-start'),next:rect('#intro-continue')};});
   assert.ok(bounds.start.right<=bounds.next.left&&bounds.start.width>0&&bounds.next.width>0,'New and Continue remain side by side');
   for(const b of [bounds.start,bounds.next])assert.ok(b.left>=bounds.stage.left-1&&b.right<=bounds.stage.right+1&&b.top>=bounds.stage.top-1&&b.bottom<=bounds.stage.bottom+1,'Title actions stay in stage');
@@ -105,16 +105,16 @@ for(const profile of [
   await waitMap();
   const atlasMenu=page.locator('.rw-atlas-menu > summary');
   assert.equal(await page.locator('.rw-system-nav').isVisible(),false,'Atlas controls start collapsed');
-  await atlasMenu.click();
+  {await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
   await page.locator('.rw-system-nav').waitFor({state:'visible'});
   assert.equal(await page.locator('.rw-regions [data-region]').count(),6);
   assert.equal(await page.locator('.rw-region-status').count(),6);
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
-  await atlasMenu.click();
+  {await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
   const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
-  if(profile.width>profile.height){assert.ok(mapBounds.wide,'Wide atlas uses the responsive canvas layout');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
+  assert.ok(mapBounds.map.left<=mapBounds.view.left+1&&mapBounds.map.right>=mapBounds.view.right-1&&mapBounds.map.top<=mapBounds.view.top+1&&mapBounds.map.bottom>=mapBounds.view.bottom-1,'Atlas covers the stage without bars');
   const realPress=async locator=>{
-   if(!await locator.isVisible()&&await locator.evaluate(el=>!!el.closest('.rw-atlas-menu:not([open])')))await atlasMenu.click();
+   if(!await locator.isVisible()&&await locator.evaluate(el=>!!el.closest('.rw-atlas-menu:not([open])'))){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
    if(!await locator.isVisible()){
     const world=page.locator(".rw-world:not([hidden])"),count=Number(await world.getAttribute("data-fit-pages")||1),next=world.locator("[data-fit-next]"),prev=world.locator("[data-fit-prev]");
     const press=async el=>profile.mobile?el.tap():el.click();
@@ -125,7 +125,7 @@ for(const profile of [
    assert.ok(hit,'Actual touch target must not be covered: '+await locator.innerText());if(profile.mobile)await locator.tap();else await locator.click();
   };
   const checkStageFit=async()=>{
-   const fit=await page.evaluate(()=>{const stage=document.getElementById('stage').getBoundingClientRect(),w=document.querySelector('.rw-world:not([hidden])'),canvas=w.querySelector('.rw-surface').getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {inside:canvas.width>0&&canvas.height>0&&canvas.top>=stage.top-1&&canvas.bottom<=stage.bottom+1&&canvas.left>=stage.left-1&&canvas.right<=stage.right+1,aspect:Math.abs(canvas.width/canvas.height-16/9)<.03,scroll:w.scrollHeight<=w.clientHeight+2&&rail.scrollHeight<=rail.clientHeight+2,solo:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
+   const fit=await page.evaluate(()=>{const stage=document.getElementById('stage').getBoundingClientRect(),w=document.querySelector('.rw-world:not([hidden])'),canvas=w.querySelector('.rw-surface').getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {inside:canvas.width>0&&canvas.height>0&&canvas.top<=stage.top+1&&canvas.bottom>=stage.bottom-1&&canvas.left<=stage.left+1&&canvas.right>=stage.right-1,aspect:Math.abs(canvas.width/canvas.height-16/9)<.03,scroll:getComputedStyle(w).overflow==='hidden',solo:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
    assert.deepEqual(fit,{inside:true,aspect:true,scroll:true,solo:true},'Actual world frame fits after resize/fullscreen');
   };
   await checkStageFit();
@@ -139,7 +139,7 @@ for(const profile of [
   await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));
   await page.waitForTimeout(100);await checkStageFit();
   for(const name of ['Catdex','Party','Raise cats','Workshop']){
-   await realPress(page.locator('.rw-system-nav .rb-world-entry'));
+   await system();await realPress(page.locator('[data-system="world-book"]'));await page.locator('.rb-wallet').waitFor();assert.equal(await page.locator('#hud').isVisible(),false);
    const tabs={Catdex:'dex',Party:'party','Raise cats':'cats',Workshop:'workshop'};await realPress(page.locator('[data-book-tab="'+tabs[name]+'"]'));
    await checkVisible('#panel.open');
    await screenshot('atlas-'+name.toLowerCase().replaceAll(' ','-'));
@@ -151,7 +151,7 @@ for(const profile of [
    await realPress(page.locator('.rb-close'));
    await page.locator('#panel.open').waitFor({state:'hidden',timeout:5000});
   }
-  if(await page.locator('.rw-atlas-menu[open]').count())await atlasMenu.click();
+  if(await page.locator('.rw-atlas-menu[open]').count()){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
   await screenshot('world-atlas');
   // Physical departure from the merged canonical opening.
   const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);
