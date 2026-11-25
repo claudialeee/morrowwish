@@ -18,7 +18,13 @@ for(const profile of [
  const {name,full,...options}=profile,context=await browser.newContext(options),page=await context.newPage();
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const waitScene=id=>page.waitForFunction(id=>window.CatBondResonance?.view()?.current?.id===id,id,{timeout:150000});
- const screenshot=id=>page.screenshot({path:output+'/'+name+'-'+id+'.png'});
+ const screenshot=async id=>{
+  if(await page.locator('.cbcp-root:not([hidden])').count()){
+   await page.waitForFunction(()=>{const img=[...document.querySelectorAll('.cbcp-root:not([hidden]) .cbcp-art')].at(-1);if(!img||!img.complete||!img.naturalWidth)return false;const s=getComputedStyle(img),r=img.getBoundingClientRect();return Number(s.opacity)>=.95&&r.width>=100&&r.height>=100;});
+  }
+  if(id==='atlas'||id==='harbor')await page.waitForFunction(()=>!document.body.innerText.includes('Loading environment artwork')&&!document.body.innerText.includes('正在加载场景美术'));
+  await page.screenshot({path:output+'/'+name+'-'+id+'.png'});
+ };
  const ready=()=>page.waitForFunction(()=>document.querySelector('.cbcp-root:not([hidden])')?.dataset.ready==='true'&&document.querySelector('.cbcp-art')?.naturalWidth>0&&!document.querySelector('.cbcp-skip')?.disabled);
  const guide=page.locator('.sg-prologue-guide');
  try{
@@ -31,6 +37,7 @@ for(const profile of [
   await page.locator('.cbcp-pause').click();
   const checkpoint=await page.evaluate(()=>State.S.openingPresentation.snapshot);
   assert.equal(checkpoint.paused,true);
+  assert.ok(checkpoint.frameId?.startsWith('prologue:P-01-region-'));
   await page.locator('.cbcp-language').click();
   assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),locale==='zh'?'en':'zh');
   await page.locator('.cbcp-language').click();
@@ -58,7 +65,7 @@ for(const profile of [
    while(await page.evaluate(()=>CatBondResonance.view().current?.id)==='prologue:P-02'){
     const sub=await page.locator('.cbcp-subtitle').textContent().catch(()=>null);
     if(sub)seen.add(sub);
-    if(await page.locator('.cbcp-speaker').textContent().catch(()=>null)==='Bellkeeper')throw Error('Premature identity disclosure');
+    if(['Bellkeeper','无名守铃者'].includes(await page.locator('.cbcp-speaker').textContent().catch(()=>null)))throw Error('Premature identity disclosure');
     await page.waitForTimeout(180);
    }
    assert.deepEqual([...seen],exactLines('prologue:P-02'),'All canonical sacrifice subtitles observed in order');
@@ -71,6 +78,7 @@ for(const profile of [
   assert.equal(await page.evaluate(()=>State.S.cats.length),1);
   await guide.getByRole('button',{name:tr('与暮铃交谈','Talk to Muling'),exact:true}).click();
   const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');
+  await awakening.waitFor();await screenshot('awakening-dialogue');
   for(const line of exactLines('prologue:P-04')){await awakening.locator('.res-line').waitFor();assert.equal(await awakening.locator('.res-line').textContent(),line);await awakening.getByRole('button',{name:tr('继续','Continue'),exact:true}).click();}
   const bell=page.locator('.res-garden-bell');await bell.waitFor();await screenshot('garden-bell');
   const b=await bell.boundingBox(),x=Math.floor(b.x+b.width/2),y=Math.floor(b.y+b.height/3);
@@ -78,6 +86,7 @@ for(const profile of [
   else{await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y+62,{steps:8});await page.mouse.up();}
   await waitScene('prologue:P-05');
   const journey=page.locator('.res-host[data-scene="prologue:P-05"]');
+  await journey.waitFor();await screenshot('journey-dialogue');
   for(const line of exactLines('prologue:P-05')){await journey.locator('.res-line').waitFor();assert.equal(await journey.locator('.res-line').textContent(),line);await journey.getByRole('button',{name:tr('继续','Continue'),exact:true}).click();}
   await guide.getByRole('button',{name:tr('前往世界地图','World map'),exact:true}).click();
   const atlas=page.locator('.rw-surface');await atlas.waitFor();await screenshot('atlas');

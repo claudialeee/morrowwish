@@ -28,8 +28,9 @@
 .cbcp-fx{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
 .cbcp-subtitle-wrap{padding:12px 18px;background:linear-gradient(90deg,transparent,rgba(7,14,24,.78) 16%,rgba(7,14,24,.78) 84%,transparent)}
 @media(orientation:portrait) and (max-width:680px){
- .cbcp-stage .cbcp-art-stack{position:absolute;inset:17% 0 22%;overflow:hidden}
- .cbcp-stage .cbcp-art{object-fit:contain}
+  .cbcp-stage::before{content:'';position:absolute;inset:-15px;background:var(--cbcp-backplate,none) center/cover no-repeat;filter:blur(14px) brightness(.52);opacity:.85;pointer-events:none}
+ .cbcp-stage .cbcp-art-stack{position:absolute;inset:12% 0 19%;overflow:hidden}
+ .cbcp-stage .cbcp-art{object-fit:contain;background:transparent}
  .cbcp-stage .cbcp-subtitle-wrap{bottom:3%;padding:9px 6px}
 }
 @media(prefers-reduced-motion:reduce){.cbcp-fx{display:none}}
@@ -166,6 +167,7 @@
           </div>
         </div>`;
       this.nodes = {
+        stage:this.root.querySelector('.cbcp-stage'),
         stack: this.root.querySelector('.cbcp-art-stack'),
         kicker: this.root.querySelector('.cbcp-kicker'),
         title: this.root.querySelector('.cbcp-title'),
@@ -265,9 +267,12 @@
         try { await image.decode?.(); } catch (_) { fail(); return; }
         if (token !== this.renderToken || !this.scene) { image.remove(); return; }
         this.activeImage = frame.image;
+        this.nodes.stage.style.setProperty('--cbcp-backplate',`url("${frame.image}")`);
         this.applyCamera(image, frame.camera, 1, frame.shotDurationMs||frame.durationMs, frame.transitionMs, (frame.shotOffsetMs||0)+this.frameElapsedMs);
         requestAnimationFrame(() => {
           if (token !== this.renderToken) return;
+          // Never spend the first painted shot (or a restored paused shot) behind a blank fade.
+          if(!previous.length||this.paused)image.style.transitionDuration='0ms';
           image.style.opacity = '1';
           for (const node of previous) {
             node.style.opacity = '0';
@@ -548,6 +553,7 @@
       const fx=this.root.querySelector('.cbcp-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);
       this.frameReady = false;this.root.dataset.ready='false';delete this.root.dataset.frameId;
       this.nodes.stack.replaceChildren();
+      this.nodes.stage.style.removeProperty('--cbcp-backplate');
       this.paused = false;
       this.frameElapsedMs = 0;
       this.root.hidden = true;
