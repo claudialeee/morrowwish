@@ -726,26 +726,30 @@ function healAllCats() {
   return count;
 }
 function useMedkitForHealth(cat) {
-  if(!cat)return {ok:false,reason:'cat'};
+  if(!cat||!S.cats.includes(cat))return {ok:false,reason:'cat'};
   if(difficulty()==='casual')return {ok:false,reason:'full'};
   const before=catHpFraction(cat);
   if(before>=.999)return {ok:false,reason:'full'};
   if((S.medkits||0)<1)return {ok:false,reason:'medkit'};
+  const wallet=S.medkits,oldAt=cat._hpAt,oldFrac=cat._hpFrac;
   S.medkits--;
   const after=Math.min(1,before+FISH_HEAL_FRACTION);
   setBattleHealth(cat,after);
-  save();
+  let saved=false;try{saved=save()?.ok===true}catch{}
+  if(!saved){S.medkits=wallet;if(oldFrac===undefined)delete cat._hpFrac;else cat._hpFrac=oldFrac;if(oldAt===undefined)delete cat._hpAt;else cat._hpAt=oldAt;return {ok:false,reason:'save-failed'};}
   return {ok:true,cost:1,before,after};
 }
 function useMedkitForTeam(cats) {
-  const unique=[...new Map((cats||[]).filter(Boolean).map(c=>[c.uid,c])).values()];
+  const unique=[...new Map((cats||[]).filter(c=>c&&S.cats.includes(c)).map(c=>[c.uid,c])).values()];
   if(difficulty()==='casual')return {ok:false,reason:'full'};
   const wounded=unique.map(c=>({cat:c,before:catHpFraction(c)})).filter(x=>x.before<.999);
   if(!wounded.length)return {ok:false,reason:'full'};
   if((S.medkits||0)<wounded.length)return {ok:false,reason:'medkit',cost:wounded.length};
+  const wallet=S.medkits,old=wounded.map(x=>({cat:x.cat,hp:x.cat._hpFrac,at:x.cat._hpAt}));
   S.medkits-=wounded.length;
   for(const x of wounded)setBattleHealth(x.cat,Math.min(1,x.before+FISH_HEAL_FRACTION));
-  save();
+  let saved=false;try{saved=save()?.ok===true}catch{}
+  if(!saved){S.medkits=wallet;for(const x of old){if(x.hp===undefined)delete x.cat._hpFrac;else x.cat._hpFrac=x.hp;if(x.at===undefined)delete x.cat._hpAt;else x.cat._hpAt=x.at;}return {ok:false,reason:'save-failed'};}
   return {ok:true,cost:wounded.length,count:wounded.length};
 }
 
@@ -774,7 +778,9 @@ function dailyAvailable() {
   return now.toDateString() !== last.toDateString();
 }
 function claimDaily() {
+  if(!dailyAvailable())return {ok:false,reward:{coins:0,fish:0},streak:S.streak};
   const prev = S.lastDaily || 0;
+  const before={lastDaily:S.lastDaily,streak:S.streak,coins:S.coins,fish:S.fish};
   const oneDay = 864e5;
   const gapDays = Math.floor((Date.now() - prev) / oneDay);
   S.streak = (prev && gapDays <= 2) ? S.streak + 1 : 1;
@@ -786,7 +792,9 @@ function claimDaily() {
     fish: (2 + Math.floor(S.streak / 2)) + (S.streak % 7 === 0 ? 5 : (S.streak % 3 === 0 ? 1 : 0)),
   };
   S.coins += reward.coins; S.fish += reward.fish;
-  return { reward, streak: S.streak };
+  let saved=false;try{saved=save()?.ok===true}catch{}
+  if(!saved){Object.assign(S,before);return {ok:false,reward:{coins:0,fish:0},streak:S.streak};}
+  return { ok:true, reward, streak: S.streak };
 }
 
 // Difficulty affects ordinary player skills, incoming enemy damage and HP.

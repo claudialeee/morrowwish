@@ -46,7 +46,7 @@ function drawGardenArtwork(ctx,img,w,h){
 
 // Original environment prop sprites, shared by placed facilities and placement preview.
 const GARDEN_BUSH=new Image();GARDEN_BUSH.src='assets/garden/foliage.svg?v=1';
-const GARDEN_PROPS = Object.fromEntries(['scratcher','cave','cattree','catnip','hammock'].map(id=>{
+const GARDEN_PROPS = Object.fromEntries(['scratcher','cave','cattree','catnip','hammock','garden-lantern','moonflower-planter'].map(id=>{
   const image=new Image();image.src='assets/garden/'+id+'.svg?v=1';return [id,image];
 }));
 function drawGardenProp(ctx,id,x,y,depth){
@@ -484,7 +484,16 @@ const BUILDINGS = [
     },
   },
 ];
-const BUILDINGS_BY_ID = Object.fromEntries(BUILDINGS.map(b => [b.id, b]));
+// Decorative objects use the same physical placement and camera projection,
+ // but have no production, levels, cat jobs or narrative unlock side effects.
+const DECORATIONS=Object.freeze([
+ {id:'garden-lantern',name:'暖光庭灯',nameEn:'Amber garden lantern',desc:'带有星铃纹样的庭灯，只用于装饰。',descEn:'A warm lantern engraved with the Star Bell motif. Decorative only.',icon:'',cost:18,decorative:true,draw(){}},
+ {id:'moonflower-planter',name:'月花陶盆',nameEn:'Moonflower planter',desc:'种着月白色和淡紫花朵的陶盆，只用于装饰。',descEn:'A glazed pot of ivory and violet flowers. Decorative only.',icon:'',cost:14,decorative:true,draw(){}}
+]);
+const BUILDINGS_BY_ID = Object.fromEntries([...BUILDINGS,...DECORATIONS].map(b => [b.id, b]));
+const gardenDecorations=()=>Array.isArray(State.S.sunlitGarden?.decorations)?State.S.sunlitGarden.decorations:[];
+const gardenObjects=()=>[...(State.S.yardBuildings||[]),...gardenDecorations()];
+
 // Localized facility purpose and real, limited production. Building a toy
 // is now a growth choice, not just permanently adding a small emoji prop.
 // Only 🪙 coins and 🐠 fish are produced now: the old yarn facility earns coins
@@ -574,7 +583,7 @@ class YardScene {
     move(this.bushes);move(this.butterflies);move(this.clouds);
     move(this.flowers);move(this.petals);move(this.fireflies);
     move(this.lootBubbles);move(this.petParticles);move(this.floatTexts);
-    projectGardenBuildings(State.S.yardBuildings,W,H,oldW,oldH);
+    projectGardenBuildings(gardenObjects(),W,H,oldW,oldH);
     if(this.placement){
       this.placement.x*=fx;this.placement.y*=fy;
       this.movePlacement(this.placement.x,this.placement.y);
@@ -608,7 +617,7 @@ class YardScene {
       this._newBuildToVisit=null;this._duoFacility=null;this._buildScan=2;this._lootScan=0;
       window.UI?.updateBuildingPlacement?.();
     }
-    projectGardenBuildings(State.S.yardBuildings,W,H);
+    projectGardenBuildings(gardenObjects(),W,H);
     if(!this.bushes||this.bushes.length===0)this.buildScenery();
     const roster=State.S.cats||[];
     const representatives=new Map();
@@ -849,7 +858,7 @@ class YardScene {
     // front of / behind their play-structures
     const drawables = [];
     for (const b of this.bushes) drawables.push({ y: b.y, kind: 'bush', ref: b });
-    for (const b of (State.S.yardBuildings || [])) drawables.push({ y: b.y, kind: 'building', ref: b });
+    for (const b of gardenObjects()) drawables.push({ y: b.y, kind: 'building', ref: b });
     // While visibly using a structure, render the kitten in front of its object
     // (scratching/rolling/lounging) — EXCEPT a 'behind' use (tucked inside the cave),
     // where it must render behind the dome so only its front half peeks out.
@@ -952,7 +961,9 @@ class YardScene {
     const def = BUILDINGS_BY_ID[b.type];
     if (!def) return;
     const depth = 0.8 + (b.y / this.game.H) * 0.5;
+    if(this.placement?.relocating===b)return;
     if(!drawGardenProp(ctx,b.type,b.x,b.y,depth))def.draw(ctx, b.x, b.y, depth, this.game.t);
+    if(def.decorative)return;
     const lvl=buildingLevel(b);
     const playing=this.entities.filter(e=>e._playBuilding===b&&e._playBuildT>0);
     if(playing.length){
@@ -1037,7 +1048,7 @@ class YardScene {
   }
   // Invite an actual visible kitten to a specific facility immediately.
   inviteCatToBuilding(b){
-    if(this._duoFacility||!(State.S.yardBuildings||[]).includes(b)||!this.entities?.length)return false;
+    if(this._duoFacility||this.placement?.relocating===b||!(State.S.yardBuildings||[]).includes(b)||!this.entities?.length)return false;
     const available=this.entities.filter(e=>!e._gardenTask&&!(e._playBuildT>0)&&!e._buildTarget);
     if(!available.length)return false;
     const nearest=available.sort((a,c)=>
@@ -1051,7 +1062,7 @@ class YardScene {
   // No new relationship database or story flag: the existing pair state
   // records the benefit only after both physical visits complete.
   inviteDuoToBuilding(b){
-    if(this._duoFacility||window.GardenProjects?.active?.()||!(State.S.yardBuildings||[]).includes(b))return false;
+    if(this._duoFacility||this.placement?.relocating===b||window.GardenProjects?.active?.()||!(State.S.yardBuildings||[]).includes(b))return false;
     const pair=window.CatRelations?.chosen?.()||[];
     if(pair.length!==2||pair.some(c=>window.Raising?.isBusy?.(c.uid)))return false;
     if(CatRelations.mood(pair[0],pair[1])==='sulky')return false;
@@ -1124,7 +1135,7 @@ class YardScene {
       }
     }
     this.updateDuoFacility();
-    if(this._duoFacility)return; // no unrelated cat may interrupt a duo visit
+    if(this._duoFacility||this.placement?.relocating)return; // no new visits while placing an existing facility
     this._buildScan = (this._buildScan == null ? 2 : this._buildScan) - dt;
     if (this._buildScan > 0) return;
     this._buildScan = 4 + Math.random() * 4;   // next look ~4-8s; don't thrash pathing
@@ -1244,7 +1255,7 @@ class YardScene {
   freeBuildingSpot() {
     const { W, H } = this.game;
     const top = Math.min(H*.50,H-96), bot = Math.max(top+20,H-56);
-    const builds = State.S.yardBuildings || [];
+    const builds = gardenObjects();
     let best = null, bestGap = -1;
     for (let i = 0; i < 24; i++) {
       const x = 70 + Math.random() * Math.max(1, W - 140);
@@ -1275,22 +1286,30 @@ class YardScene {
   }
   // Physical placement: charge only on mouse click or touch release at
   // the exact canvas coordinate. Bounds and overlap are cross-device.
-  buildingSpotValid(x,y) {
+  buildingSpotValid(x,y,ignore=null) {
     const {W,H}=this.game;
     // Five structures must fit even in a short phone yard, below the fence.
       const top=Math.min(H*.50,H-96),bottom=Math.max(top+20,H-56);
     const side=Math.min(56,Math.max(30,W*.10));
     if(!Number.isFinite(x)||!Number.isFinite(y)||
         x<side||x>W-side||y<top||y>bottom)return false;
-    if((State.S.yardBuildings||[]).some(b=>Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<57))return false;
+    if(gardenObjects().some(b=>b!==ignore&&Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<57))return false;
     if(this.bushes.some(b=>Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<32))return false;
+    if(window.SunlitGarden?.placementBlocked?.(x,y))return false;
     return true;
+  }
+  beginRelocation(index,decorative=false){
+    const b=(decorative?gardenDecorations():State.S.yardBuildings)?.[index];
+    if(this.game.scene!=='yard'||!b||this.placement||this._duoFacility?.building===b||this.entities.some(e=>e._playBuilding===b||e._buildTarget===b))return false;
+    this.placement={type:b.type,x:b.x,y:b.y,valid:false,relocating:b,owner:State.S};
+    this.movePlacement(b.x,b.y);return true;
   }
   beginPlacement(type){
     const def=BUILDINGS_BY_ID[type];
-    if(!def||(State.S.coins||0)<def.cost)return false;
+    if(this.game.scene!=='yard'||this.placement||!def||(State.S.coins||0)<def.cost)return false;
+    if(def.decorative&&!GARDEN_PROPS[type]?.naturalWidth)return false;
     const spot=this.freeBuildingSpot();
-    this.placement={type,x:spot.x,y:spot.y,valid:false};
+    this.placement={type,x:spot.x,y:spot.y,valid:false,owner:State.S};
     this.movePlacement(spot.x,spot.y);
     return true;
   }
@@ -1303,13 +1322,24 @@ class YardScene {
     // to the grass boundary made a tap above it silently jump elsewhere.
     this.placement.x=Math.max(0,Math.min(W,x));
     this.placement.y=Math.max(0,Math.min(H,y));
-    this.placement.valid=this.buildingSpotValid(this.placement.x,this.placement.y);
+    this.placement.valid=this.buildingSpotValid(this.placement.x,this.placement.y,this.placement.relocating);
     return this.placement.valid;
   }
   cancelPlacement(){this.placement=null;}
   confirmPlacement(){
     const p=this.placement;
-    if(!p||!p.valid)return false;
+    if(!p||!p.valid||p.owner!==State.S||this.game.scene!=='yard')return false;
+    if(p.relocating){
+      const b=p.relocating;
+      if(p.owner!==State.S||this.game.scene!=='yard'||!gardenObjects().includes(b)||
+        !this.buildingSpotValid(p.x,p.y,b)||this._duoFacility?.building===b||this.entities.some(e=>e._playBuilding===b||e._buildTarget===b))return false;
+      const old={...b};b.x=p.x;b.y=p.y;
+      delete b.gardenU;delete b.gardenV;
+      projectGardenBuildings([b],this.game.W,this.game.H);
+      let saved=false;try{saved=State.save()?.ok===true}catch{}
+      if(!saved){for(const k of Object.keys(b))delete b[k];Object.assign(b,old);return false;}
+      this.placement=null;return true;
+    }
     const success=this.buildStructure(p.type,{x:p.x,y:p.y});
     if(success)this.placement=null;
     return success;
@@ -1337,24 +1367,39 @@ class YardScene {
     ctx.beginPath();ctx.roundRect(p.x-40,p.y-106,80,24,10);ctx.fill();ctx.stroke();
     ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#365943';
     const en=window.MorrowwishI18n?.get?.()!=='zh';
-    ctx.fillText(p.valid?(en?'✓ Tap to build':'✓ 点击建造'):(en?'× Blocked':'× 有遮挡'),p.x,p.y-94);
+    ctx.fillText(p.valid?(p.relocating?(en?'✓ Move here':'✓ 移到这里'):(en?'✓ Tap to build':'✓ 点击建造')):(en?'× Blocked':'× 有遮挡'),p.x,p.y-94);
     ctx.restore();
   }
   buildStructure(type,spot=null){
     const def=BUILDINGS_BY_ID[type];if(!def||(State.S.coins||0)<def.cost)return false;
     const chosen=spot||this.freeBuildingSpot();
     if(!this.buildingSpotValid(chosen.x,chosen.y))return false;
-    State.S.coins-=def.cost;
-    const b={type,x:chosen.x,y:chosen.y,level:1,lastRewardAt:0};
+    if(this.game.scene!=='yard'||(def.decorative&&!GARDEN_PROPS[type]?.naturalWidth))return false;
+    const s=State.S,coins=s.coins,oldGarden=s.sunlitGarden,oldDecor=oldGarden?.decorations,oldBuildings=s.yardBuildings;
+    s.coins-=def.cost;
+    const b={type,x:chosen.x,y:chosen.y,...(def.decorative?{}:{level:1,lastRewardAt:0})};
     projectGardenBuildings([b],this.game.W,this.game.H);
-    (State.S.yardBuildings=State.S.yardBuildings||[]).push(b);
+    if(def.decorative){s.sunlitGarden??={schema:1};s.sunlitGarden.decorations=[...gardenDecorations(),b]}
+    else s.yardBuildings=[...(s.yardBuildings||[]),b];
+    let saved=false;try{saved=State.save()?.ok===true}catch{}
+    if(!saved){s.coins=coins;s.yardBuildings=oldBuildings;if(oldGarden===undefined)delete s.sunlitGarden;else {s.sunlitGarden=oldGarden;if(oldDecor===undefined)delete oldGarden.decorations;else oldGarden.decorations=oldDecor;}return false}
+    if(def.decorative)return true;
     this._newBuildToVisit=b;this._buildScan=.12;
     this.inviteCatToBuilding(b);
     // Return the nearest available cat to this facility quickly, instead of
     // forcing a several-second random wait.
-    State.save();
     window.arcadeMetric?.('bond_yard_build',{type,cost:def.cost,manual:!!spot});
     return true;
+  }
+  removeDecoration(index){
+    if(this.game.scene!=='yard'||this.placement)return {ok:false};
+    const s=State.S,previous=gardenDecorations(),b=previous[index],def=BUILDINGS_BY_ID[b?.type];
+    if(!def?.decorative)return {ok:false};
+    const coins=s.coins,refund=Math.floor(def.cost/2);
+    s.sunlitGarden.decorations=previous.filter((_,i)=>i!==index);s.coins+=refund;
+    let saved=false;try{saved=State.save()?.ok===true}catch{}
+    if(!saved){s.sunlitGarden.decorations=previous;s.coins=coins;return {ok:false}}
+    return {ok:true,refund};
   }
   // Remove a placed structure by index, refunding half its cost.
   removeStructure(index) {
@@ -1464,4 +1509,4 @@ class YardScene {
   }
 }
 
-window.World = { YardScene, CatEntity, BUILDINGS, BUILDINGS_BY_ID, BUILDING_PRODUCTION, buildingLevel, upgradeCost, drawGardenProp };
+window.World = { YardScene, CatEntity, BUILDINGS, DECORATIONS, gardenDecorations, BUILDINGS_BY_ID, BUILDING_PRODUCTION, buildingLevel, upgradeCost, drawGardenProp };
