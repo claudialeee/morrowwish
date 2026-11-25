@@ -11,7 +11,7 @@
 .cb-confirm-actions button:focus-visible{outline:2px solid #896b35;outline-offset:2px}
 #stage #cb-opening-cover{position:absolute;inset:0;z-index:2299;background:#171710;pointer-events:auto}
 #stage{--cbv-night:#514431;--cbv-night-hover:#6b593e;--cbv-night-text:#fff5dd;--cbv-night-line:#bca16b;--cbv-paper:#f2e6cc;--cbv-paper-light:#fff8e8;--cbv-paper-ink:#493e2b;--cbv-muted:#766c55}
-#stage #map-menu,#stage #cb-system-toggle,#stage.cb-sunlit-garden #yard-actions .fab,#stage.rb-canonical.cb-sunlit-garden #yard-actions #sg-book-entry,#stage .rb-world-entry,#stage .sg-prologue-guide button,#stage .rw-system-nav button{background:linear-gradient(155deg,#fff5db,#d9c398)!important;color:#493e2b!important;border:1px solid #a98a53!important;box-shadow:0 2px 8px #35271540!important;text-shadow:none!important;border-radius:8px!important}
+#stage #map-menu,#stage #cb-system-toggle,#stage.cb-sunlit-garden #yard-actions .fab,#stage.rb-canonical.cb-sunlit-garden #yard-actions #sg-book-entry,#stage .rb-world-entry,#stage .sg-prologue-guide button,#stage .rw-system-nav button{background:#f1e3c4!important;color:#493e2b!important;border:1px solid #a98a53!important;box-shadow:0 2px 8px #35271540!important;text-shadow:none!important;border-radius:8px!important}
 #stage #map-menu,#stage #cb-system-toggle{min-height:38px!important;font-weight:700!important}
 #stage .sg-prologue-guide,#stage .rw-objective,#stage .res-host .res-body{background:#514431ee!important;color:#fff5dd!important;border-color:#bda16b!important}
 #stage #panel.rb-open .rb-navigation{background:#eadcc0!important;color:#493e2b!important;box-shadow:0 2px 7px #67502c26}
@@ -34,12 +34,14 @@
 
 /* Override the more-specific original header rules as well as fullscreen and portal reparenting. */
 #stage #map-actions > #map-menu,html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #map-menu,html.cb-cg #stage #cg-top-tools #map-menu,
-#stage #hud .hud-pill,#stage .hud-pill{background:linear-gradient(155deg,#fff5db,#e4cfaa)!important;border-color:#a98a53!important;color:#493e2b!important;box-shadow:0 2px 7px #35271533!important;text-shadow:none!important}
+#stage #hud .hud-pill,#stage .hud-pill{background:#f1e3c4!important;border-color:#a98a53!important;color:#493e2b!important;box-shadow:0 2px 7px #35271533!important;text-shadow:none!important}
 #stage .hud-pill{border:1px solid #a98a53!important;border-radius:8px!important}
 #stage .sg-build-toggle,#stage .sg-build-button,#stage .sg-build-actions button{background:#f3e5c6!important;color:#493e2b!important;border-color:#a98a53!important}
 
-#stage .sg-hotspot{background:linear-gradient(155deg,#fff5db,#d9c398)!important;color:#493e2b!important;border-color:#a98a53!important;text-shadow:none!important;box-shadow:0 2px 8px #35271540!important}
+#stage .sg-hotspot{background:#f1e3c4!important;color:#493e2b!important;border-color:#a98a53!important;text-shadow:none!important;box-shadow:0 2px 8px #35271540!important}
 #stage .sg-hotspot-label{color:#493e2b!important}
 #stage .sg-hotspot-facilities{left:var(--sg-facility-x,29%)!important;top:var(--sg-facility-y,34%)!important}
 #stage .res-garden-bell{left:var(--sg-bell-x,20%)!important;top:var(--sg-bell-y,22%)!important}
 #stage .res-bell-label{background:#514431ee;color:#fff5dd;border:1px solid #bda16b}
+
+#stage #yard-actions .fab:hover,#stage #map-actions > #map-menu:hover,#stage .sg-hotspot:hover{background-color:#e5d1a7!important}

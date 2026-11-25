@@ -73,12 +73,26 @@ try{
     await scene('prologue:P-05');await dialogue('prologue:P-05');
     await button('World map','前往世界地图',page.locator('.sg-prologue-guide')).click();await page.locator('.rw-surface').waitFor();await shot('atlas');
     const nav=page.locator('.rw-system-nav');
-    for(const [en,zh,id] of [['Catdex','猫咪图鉴','catdex'],['Party','出战队伍','party'],['Raise cats','猫咪养成','cultivation'],['Workshop','工坊','workshop']]){
-     await button(en,zh,nav).click();await page.locator('#panel.open>.card').waitFor();await checkTheme();await shot(id);
-     if(id==='cultivation'){
-      await page.locator('#panel [data-cat-view="duo"]').click();await shot('duo-bond');
+    const book=nav.getByRole('button',{name:tr('Resonance Book','星铃之书'),exact:true,includeHidden:true});
+    const reveal=async target=>{
+      if(await target.isVisible())return;
+      const world=page.locator('.rw-world:not([hidden])'),prev=world.locator('[data-fit-prev]'),next=world.locator('[data-fit-next]');
+      const count=Number(await world.getAttribute('data-fit-pages')||1);
+      for(let i=0;i<count&&!await target.isVisible()&&await prev.isVisible()&&await prev.isEnabled();i++)await prev.click();
+      for(let i=0;i<count&&!await target.isVisible()&&await next.isVisible()&&await next.isEnabled();i++)await next.click();
+      await target.waitFor({state:'visible'});
+    };
+    for(const [en,zh,id,tab] of [['Catdex','猫咪图鉴','catdex','dex'],['Party','出战队伍','party','party'],['Raise cats','猫咪养成','cultivation','cats'],['Workshop','工坊','workshop','workshop']]){
+     if(await book.count()){
+      await reveal(book);await book.click();await page.locator('[data-book-tab="'+tab+'"]').click();
+      await page.locator('#panel.open.rb-open>.card').waitFor();await checkTheme();await shot(id);
+      if(id==='cultivation'){await page.locator('[data-book-tab="duo"]').click();await shot('duo-bond');}
+      await page.locator('#panel .rb-close').click();await page.locator('#panel.open').waitFor({state:'hidden'});
+     }else{
+      const legacy=button(en,zh,nav);await reveal(legacy);await legacy.click();await page.locator('#panel.open>.card').waitFor();await checkTheme();await shot(id);
+      if(id==='cultivation'){await page.locator('#panel [data-cat-view="duo"]').click();await shot('duo-bond');}
+      await closePanel();
      }
-     await closePanel();
     }
     // The same normally created save can meet a wild cat in the first
     // available region. Do not seed an encounter, stats, or story evidence.
@@ -90,7 +104,7 @@ try{
     await scene('harbor:H-01');
     await page.locator('.rw-world[data-region="harbor"] .rw-surface').waitFor();
     await shot('harbor-exploration');
-    await button('Approach wild cat','接近野猫').click();
+    await reveal(button('Approach wild cat','接近野猫'));await button('Approach wild cat','接近野猫').click();
     await page.locator('#bp-go').waitFor({state:'visible',timeout:20000});
     await shot('battle-preparation');
     await page.locator('#bp-go').click();
