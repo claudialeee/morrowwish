@@ -4,10 +4,12 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  if(!root||typeof resolvePortrait!=="function"||typeof onPersist!=="function")throw Error("Dialogue host adapter incomplete");
  const el=(tag,cls)=>{const e=document.createElement(tag);if(cls)e.className=cls;return e};
  const panel=el("section","res-dialogue"),art=el("img","res-portrait"),body=el("div","res-body"),name=el("h2","res-speaker"),line=el("p","res-line"),choices=el("div","res-choices"),tools=el("div","res-controls"),history=el("div","res-history");
- panel.setAttribute("role","region");line.setAttribute("aria-live","polite");art.alt="";history.hidden=true;body.append(name,line,choices,tools,history);panel.append(art,body);root.append(panel);
+ const context=el('p','res-prologue-context');context.style.cssText='font-size:clamp(11px,1.5vw,14px);line-height:1.4;color:#e3c68f;margin:0 0 8px';
+ panel.setAttribute("role","region");line.setAttribute("aria-live","polite");art.alt="";history.hidden=true;body.append(context,name,line,choices,tools,history);panel.append(art,body);root.append(panel);
  const buttons={};let timer=0,automatic=false,showHistory=false,disposed=false,lastScene=null,sessionHistory=[],speed=1;
  const words={zh:{next:"继续",auto:"自动",stop:"停止自动",skip:"跳过对白",history:"对白记录",close:"关闭",wait:"继续探索以推进剧情",speed:"播放速度",scene:"剧情对话"},en:{next:"Continue",auto:"Auto",stop:"Stop auto",skip:"Skip dialogue",history:"History",close:"Close",wait:"Continue exploring to advance the story",speed:"Playback speed",scene:"Story dialogue"}};
  const lang=()=>language()==="zh"?"zh":"en";
+ const displayName=(id,s,k)=>id==='player'&&campaign.scenes.findIndex(x=>x.id===s.id)<campaign.scenes.findIndex(x=>x.id==='library:M-03')?(k==='zh'?'你':'You'):campaign.cast[id].name[k];
  const persist=r=>{if(!r.ok){panel.dataset.error=r.reason||"save-failed";line.setAttribute("aria-label",lang()==="zh"?"保存或推进失败，请重试":"Unable to save or advance. Retry.");return false}delete panel.dataset.error;line.removeAttribute("aria-label");onPersist(r.state);return true};
  function stop(){clearTimeout(timer);timer=0}
  function next(){const v=engine.view();if(!v.current||!v.lineReady||v.cursor>=v.current.lines.length)return;const l=v.current.lines[v.cursor];if(persist(engine.nextLine())){sessionHistory.push(l);render()}}
@@ -17,13 +19,14 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  const speedSelect=el("select");for(const n of [.75,1,1.5,2]){const o=el("option");o.value=n;o.textContent=n+"×";speedSelect.append(o)}speedSelect.value="1";speedSelect.addEventListener("change",()=>{speed=Number(speedSelect.value);render()});tools.append(speedSelect);
  function render(){if(disposed)return;stop();const v=engine.view(),s=v.current,k=lang(),w=words[k];panel.setAttribute("aria-label",w.scene);for(const id of Object.keys(buttons))buttons[id].textContent=id==="language"?(k==="zh"?"EN":"中文"):id==="auto"&&automatic?w.stop:w[id];speedSelect.setAttribute("aria-label",w.speed);choices.replaceChildren();history.replaceChildren();history.hidden=!showHistory;
  if(!s){dispose();onClose?.();return}if(lastScene!==s.id){lastScene=s.id;sessionHistory=[]}const l=v.lineReady?s.lines[v.cursor]:null;
+ context.hidden=!(s.id==='prologue:P-05'&&v.cursor===0);context.textContent=context.hidden?'':(k==='zh'?'暮铃告诉你，六地的猫正在失去记忆。她邀请你一起恢复圣所。':'Muling explains that cats across the six regions are losing their memories. She asks you to help restore the sanctuaries.');
  const choiceVisible=!v.choice&&s.choices.length&&(s.choiceTiming==="beforeAction"||v.cursor===s.lines.length);
  if(choiceVisible)for(const c of s.choices){const b=el("button");b.type="button";b.textContent=c.label[k];b.addEventListener("click",()=>{if(persist(engine.choose(c.id)))render()});choices.append(b)}
- if(l){const actor=campaign.cast[l.speaker],url=l.narration?null:resolvePortrait(l.speaker,s.id,v.cursor);if(!url){panel.hidden=false;art.hidden=true;art.removeAttribute("src");name.textContent=l.narration?s.title[k]:actor.name[k];line.textContent=l.text[k];if(l.narration)delete panel.dataset.missingPortrait;else panel.dataset.missingPortrait=l.speaker}else{panel.hidden=false;art.src=url;art.hidden=false;delete panel.dataset.missingPortrait;name.textContent=actor.name[k];line.textContent=l.text[k]}}
+ if(l){const actor=campaign.cast[l.speaker],url=l.narration?null:resolvePortrait(l.speaker,s.id,v.cursor);if(!url){panel.hidden=false;art.hidden=true;art.removeAttribute("src");name.textContent=l.narration?s.title[k]:displayName(l.speaker,s,k);line.textContent=l.text[k];if(l.narration)delete panel.dataset.missingPortrait;else panel.dataset.missingPortrait=l.speaker}else{panel.hidden=false;art.src=url;art.hidden=false;delete panel.dataset.missingPortrait;name.textContent=displayName(l.speaker,s,k);line.textContent=l.text[k]}}
  else{panel.hidden=false;const last=choiceVisible?s.lines[Math.max(0,v.cursor-1)]:null,url=last?resolvePortrait(last.speaker,s.id,Math.max(0,v.cursor-1)):null;art.hidden=!url;if(url)art.src=url;else art.removeAttribute("src");delete panel.dataset.missingPortrait;name.textContent=choiceVisible?(k==="zh"?"你的选择":"Your choice"):s.title[k];line.textContent=choiceVisible?s.title[k]:w.wait}
  for(const id of ["next","skip","auto"])buttons[id].hidden=!!choiceVisible;speedSelect.hidden=!!choiceVisible;
  buttons.next.disabled=!l||!!choiceVisible;buttons.skip.disabled=!l||!!choiceVisible;buttons.auto.disabled=!l||!!choiceVisible;buttons.history.setAttribute("aria-pressed",String(showHistory));
- for(const h of sessionHistory){const p=el("p");p.textContent=(h.narration?s.title[k]:campaign.cast[h.speaker].name[k])+" · "+h.text[k];history.append(p)}
+ for(const h of sessionHistory){const p=el("p");p.textContent=(h.narration?s.title[k]:displayName(h.speaker,s,k))+" · "+h.text[k];history.append(p)}
  if(automatic&&l&&!choiceVisible)timer=setTimeout(next,Math.max(850,Math.min(5500,(800+l.text[k].length*48)/speed)));
  if(!l&&!choiceVisible)onAwaitAction?.({reason:"gameplay-or-scene-transition",scene:s.id,objective:v.objective});
  }

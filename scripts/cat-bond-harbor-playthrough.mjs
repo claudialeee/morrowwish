@@ -59,7 +59,6 @@ try {
     await shot('title');
     await page.locator('#intro-start').click();
     await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-    await page.locator('#panel .cat-starter-card .dex-cell').first().click();
     for (const id of ['prologue:P-01','prologue:P-02','prologue:P-03']) {
       await scene(id);
       await page.locator('.cbcp-art').first().waitFor();
@@ -85,6 +84,9 @@ try {
     }
 
     await scene('prologue:P-04');
+    await page.locator('#panel .cat-starter-card .dex-cell').first().click();
+    await button('Talk to Muling',page.locator('.sg-prologue-guide')).click();
+    await readDialogue('prologue:P-04');
     const bell = page.locator('.res-garden-bell');
     await bell.waitFor();
     await shot('garden');
@@ -101,9 +103,9 @@ try {
       await page.mouse.move(x,y+62,{steps:8});
       await page.mouse.up();
     }
-    await readDialogue('prologue:P-04');
     await scene('prologue:P-05');
     await readDialogue('prologue:P-05');
+    await button('World map',page.locator('.sg-prologue-guide')).click();
     await shot('atlas');
     await tapLandmark(.5,.18);
     await scene('harbor:H-01');
