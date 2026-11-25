@@ -103,3 +103,16 @@
  .rw-world[data-region="harbor"].rw-forest-landscape .rw-head{margin:0;padding-bottom:6px}
  .rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-guide,.rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-status{margin:5px 0;font-size:11px}
 }
+
+/* Narrow atlas controls remain reachable with a finger, independently of the painting. */
+.rw-system-nav .rw-button{touch-action:manipulation;min-width:0;overflow-wrap:anywhere}
+@media(max-width:700px) and (orientation:portrait){
+ .rw-world:not([data-region]):not(.rw-forest-region) .rw-system-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .rw-world:not([data-region]):not(.rw-forest-region) .rw-system-nav .rw-button{min-height:44px;padding:5px 4px;font-size:11px}
+ .rw-world:not([data-region]):not(.rw-forest-region) .rw-head .rw-button{min-height:40px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ .rw-atlas-wide .rw-system-nav .rw-button{min-height:44px}
+ .rw-atlas-wide .rw-atlas-rail{scroll-padding-block:8px}
+}
+

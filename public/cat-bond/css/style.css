@@ -5542,3 +5542,20 @@ body.cb-exploring #stage #yard-actions{
 
 /* Canonical opening guide; only visible in the physical garden, never a story overlay. */
 .sg-prologue-guide{position:absolute;left:12px;bottom:clamp(62px,12%,110px);width:min(340px,calc(100% - 24px));box-sizing:border-box;display:grid;gap:6px;padding:12px 15px;background:linear-gradient(125deg,rgba(18,36,43,.94),rgba(40,60,58,.91));border:1px solid #b9a271;border-radius:7px;color:#f9efd8;box-shadow:0 5px 18px #132b3244;pointer-events:auto;z-index:2;font:500 12px/1.4 system-ui,sans-serif}.sg-prologue-guide[hidden]{display:none!important}.sg-prologue-guide strong{font:600 17px/1.2 Georgia,'Songti SC',serif;color:#ffedc8}.sg-prologue-guide>div{display:flex;gap:6px;flex-wrap:wrap}.sg-prologue-guide button{min-height:36px;padding:6px 10px;border:1px solid #cbb181;border-radius:4px;background:#3b5655;color:#fff0d2;font:600 12px system-ui;cursor:pointer}.sg-prologue-guide button:focus-visible{outline:2px solid #fff0ce;outline-offset:2px}@media(max-height:460px) and (orientation:landscape){.sg-prologue-guide{bottom:calc(100px + env(safe-area-inset-bottom,0px));left:12px;width:min(330px,48%);padding:8px 10px;gap:4px}.sg-prologue-guide strong{font-size:14px}.sg-prologue-guide button{min-height:40px;font-size:11px}}@media(max-width:520px) and (orientation:portrait){.sg-prologue-guide{bottom:15%;left:8px;width:calc(100% - 16px);padding:10px}.sg-prologue-guide button{min-height:42px}}
+
+/* Optional panels over the canonical map occupy the available play area, not
+   the garden's reserved bottom dock. Keep the actual dismiss control clear
+   of the utility rail and the Catdex list independently scrollable. */
+#stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"]){
+ bottom:max(8px,env(safe-area-inset-bottom,0px))!important;z-index:60;overscroll-behavior:contain;
+}
+#stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"])>.card{min-width:0;max-width:100%;box-sizing:border-box;overscroll-behavior:contain;scroll-padding:8px}
+#stage:has(.rw-world:not([hidden])) #panel .dex-cell:not(.locked){touch-action:manipulation;min-height:90px}
+@media(max-width:360px){
+ #stage:has(.rw-world:not([hidden])) #panel .cat-highlight-card{padding:12px}
+ #stage:has(.rw-world:not([hidden])) #panel .cat-highlight-card .dex-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ #stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"]){padding-top:48px!important}
+ #stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"])>.panel-dismiss{width:44px;height:44px;min-width:44px;min-height:44px}
+}

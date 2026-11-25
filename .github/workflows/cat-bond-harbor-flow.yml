@@ -12,6 +12,11 @@ on:
 permissions:
   contents: read
 
+# Only the newest acceptance run for a given PR is useful; never cancel another PR.
+concurrency:
+  group: cat-bond-harbor-acceptance-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   harbor:
     runs-on: ubuntu-24.04
