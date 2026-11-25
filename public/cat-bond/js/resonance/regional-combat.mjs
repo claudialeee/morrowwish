@@ -234,19 +234,26 @@ function install(){
   }});return true;
  }
  window.addEventListener("cat-bond-resonance-battle-request",event=>{const x=event.detail;if(x?.sceneId===libraryScene&&x.operation===libraryOp&&x.region==="library"&&!prepareLibrary(window.__game))window.__game?.toast?.({zh:"先核验书库的全部记忆档案。",en:"Verify all library memory records first."});});
+ function showLibraryResult(game,owner,recovery,outcome){
+  const ui=window.UI;if(!ui?.panel||window.State.S!==owner)return;
+  const win=outcome==="win",retry=!win,title=win?["守档幻象已消散","Archive echo defeated"]:outcome==="retreat"?["已从镜影战斗撤退","Retreated from the archive echo"]:outcome==="save-failed"?["战斗记录未保存","Battle result not saved"]:["队伍在镜影战斗中落败","Squad defeated by the archive echo"];
+  const detail=win?["真实记忆已核实。壁画中的身份线索可以继续调查。","The original memory is verified. Continue investigating the identity shown in the mural."]:["猫咪和档案进度已保留。休整或更换上阵猫咪后可以再次挑战。","Your cats and archive progress are preserved. Rest or change your team before trying again."];
+  ui.panel('<span class="card-close">×</span><h2 class="center">'+tr(title)+'</h2><p class="sub">'+tr(detail)+'</p>'+(win?'<p class="center">+38 '+tr(["金币","coins"])+' · +2 '+tr(["小鱼干","fish"])+' · 28 XP</p>':'')+(ui.battleRecoveryMarkup?.(recovery)||'')+'<div class="btn-row" style="justify-content:center">'+(retry?'<button type="button" class="btn gold" id="library-retry-encounter">'+tr(["再次挑战","Retry encounter"])+'</button>':'')+'<button type="button" class="btn '+(retry?'ghost':'gold')+'" id="library-battle-ok">'+tr(["继续探索","Continue exploring"])+'</button></div>');
+  const ok=document.getElementById("library-battle-ok"),again=document.getElementById("library-retry-encounter");if(ok)ok.onclick=()=>ui.closeAll();if(again)again.onclick=()=>{ui.closeAll();if(owner!==window.State.S||!prepareLibrary(game))game.toast({zh:"请重新前往守档幻象所在的回廊。",en:"Return to the archive echo's gallery to retry."});};
+ }
  const end=GP.endBattle;
  GP.endBattle=function(){
   const b=this.battle,ruins=b?.postgameRuins,host=window.CatBondResonance;
   if(b?.libraryEncounter){
-   const f=b.libraryEncounter,root=window.State.S,valid=f.root===root&&host?.isCurrentAction?.(f.token),win=b.result==="win"&&f.cleared;let saved=false;
+   const f=b.libraryEncounter,root=window.State.S,valid=f.root===root&&host?.isCurrentAction?.(f.token),win=b.result==="win"&&f.cleared,recovery={mode:window.State.difficulty(),fromMap:true,team:[]};let saved=false;
    if(valid){const oldCoins=root.coins,oldFish=root.fish,oldCats=(root.cats||[]).map(c=>[c,JSON.parse(JSON.stringify(c))]),oldShowcase=root.firstDuoShowcasePending;
-    try{for(const fighter of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){if(!fighter.cat||fighter._reinforcement)continue;if(window.State.difficulty()==="hardcore")window.State.setBattleHealth(fighter.cat,fighter.alive?Math.max(.15,Math.min(1,fighter.hp/fighter.maxhp)):.15);else{delete fighter.cat._hpFrac;delete fighter.cat._hpAt;}}if(window.State.difficulty()!=="hardcore")window.State.healAllCats?.();if(b._firstDuoShowcase&&b.duoUses>0)root.firstDuoShowcasePending=false;
+    try{const seen=new Set();for(const fighter of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){if(!fighter.cat||fighter._reinforcement||seen.has(fighter.cat.uid))continue;seen.add(fighter.cat.uid);const before=fighter.alive?Math.max(.15,Math.min(1,fighter.hp/fighter.maxhp)):.15,after=recovery.mode==="hardcore"?window.State.setBattleHealth(fighter.cat,before):1;if(after===1){delete fighter.cat._hpFrac;delete fighter.cat._hpAt;}recovery.team.push({name:window.State.catName(fighter.cat),before:Math.round(before*100),after:Math.round(after*100)});}if(window.State.difficulty()!=="hardcore")window.State.healAllCats?.();if(b._firstDuoShowcase&&b.duoUses>0)root.firstDuoShowcasePending=false;
      if(win){root.coins=(root.coins||0)+38;root.fish=(root.fish||0)+2;const participants=new Map([...(b.team||[]),...(b._benchFighters?.values?.()||[])].filter(f=>f.cat&&!f._reinforcement).map(f=>[f.cat.uid,f.cat]));for(const c of participants.values()){window.State.addXp?.(c,28);c.battlesWon=(c.battlesWon||0)+1;}saved=!!host.recordEvidence({sceneId:libraryScene,operation:libraryOp,region:"library",verified:true,outcome:"win",token:f.token})?.ok;}else saved=!!window.State.save()?.ok;
      if(!saved)throw Error("Library outcome save rejected");
     }catch(err){root.coins=oldCoins;root.fish=oldFish;root.firstDuoShowcasePending=oldShowcase;for(const [c,old] of oldCats){for(const k of Object.keys(c))if(!(k in old))delete c[k];Object.assign(c,old);}console.error(err);}
    }
    document.getElementById("cb-region-combat")?.remove();document.getElementById("battle-ui")?.classList.remove("on");const duo=document.getElementById("duo-burst");if(duo)duo.hidden=true;this.setBattleHelpVisible?.(false);this.battle=null;this._returnScene=null;this.scene="map";document.body.classList.add("cb-exploring");this.refreshHUD?.();window.WorldMap?.resumeRegion?.(false);
-   this.toast(win&&saved?{zh:"守档幻象消散。壁画已经核实。",en:"The archive echo dissolves. The mural is verified."}:win?{zh:"剧情保存失败，请再次挑战。",en:"Story save failed. Retry the encounter."}:{zh:"幻象仍在，休整后再来。",en:"The echo remains. Rest and retry."});return;
+   window.MorrowwishMusic?.switchScene?.("map");if(valid){if(win&&saved)window.MorrowwishAudio?.effect?.("combat_win");showLibraryResult(this,root,recovery,saved?(win?"win":b._voluntaryFlee?"retreat":"defeat"):"save-failed");}return;
   }
   let committed=null;
   if(ruins&&b.done&&b.result==="win"&&ruins.root===window.State.S&&host?.isCurrentAction?.(ruins.token)&&!host.view().postgame.includes(ruinsTask.id)){
