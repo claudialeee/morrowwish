@@ -89,7 +89,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  }
  const openingShots=await cinematic('starfall:F-05');await scene('finale:B-01');
  const before=await page.evaluate(()=>JSON.stringify(State.S.resonance));await beginBattle('Approach the Star Bell');
- await shot('B-01-retreat');await page.locator('#btn-flee').click();await finishBattle();
+ await shot('B-01-retreat');assert.equal(await page.locator('[data-finale-regions] meter').count(),6);await page.locator('#btn-flee').click();await finishBattle();
  assert.equal(await page.evaluate(()=>JSON.stringify(State.S.resonance)),before,'Retreat must not award any story progress');
  await beginBattle('Approach the Star Bell');await shot('B-01-inward-locks');await finishBattle();await check('battle:inward-gates');await dialogue('finale:B-01');await scene('finale:B-02');
  await beginBattle('Approach the Star Bell',false);
@@ -113,7 +113,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  if(await page.locator('#battle-ui.on').isVisible()&&!naturalDefeat)await page.locator('#btn-flee').click();
  await finishBattle();
  assert.ok((await view()).objective.includes('battle:central-echo'),'Uncompleted support cannot commit victory');
- const rewardBefore=await page.evaluate(()=>State.S.coins);await beginBattle('Approach the Star Bell');await shot('B-03-ring');
+ const rewardBefore=await page.evaluate(()=>State.S.coins);await beginBattle('Approach the Star Bell');await shot('B-03-ring');assert.equal(await page.locator('[data-finale-regions] meter').count(),6);
  const supported=new Set();for(let i=0;i<360;i++){const a=await page.evaluate(()=>__game.battle?.resonanceFinale?.nodes?.filter(n=>n.done).map(n=>n.region)||null);if(!a)break;for(const x of a)if(!supported.has(x)){supported.add(x);await shot('B-03-support-'+x);}await page.waitForTimeout(400);}
  await finishBattle();await check('battle:central-echo');assert.equal((await view()).completed.includes('finale:B-03'),false);assert.equal((await page.evaluate(()=>CatBondResonance.snapshot().support)).length,6);assert.equal(await page.evaluate(()=>State.S.coins),rewardBefore+180);await dialogue('finale:B-03');
  await button('Help Muling release the last lock').click();const latch=button('Hold the bell chain');await latch.waitFor();await latch.focus();await page.keyboard.down('Space');await page.waitForTimeout(1700);await page.keyboard.up('Space');
