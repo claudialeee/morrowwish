@@ -45,7 +45,7 @@ export async function decodeCinematicImages(scene){
 }
 
 export function mountResonanceCinematics({root,rendererFactory,engine,campaign,manifest,getSlotKey,onPersist,onResolved,onError,language,onLanguageChange,preload=decodeCinematicImages}){
-  if(!root||typeof rendererFactory!=='function'||!engine?.view||!engine?.snapshot||typeof getSlotKey!=='function'||typeof onPersist!=='function')throw Error('Missing canonical host dependencies');
+  if(!root||typeof rendererFactory!=='function'||!engine?.view||!engine?.snapshot||typeof getSlotKey!=='function'||(typeof engine.evidence!=='function'&&typeof onPersist!=='function'))throw Error('Missing canonical host dependencies');
   let active=null,sequence=0,disposed=false;
   const valid=run=>!disposed&&active===run&&getSlotKey()===run.slot&&engine.view().current?.id===run.id&&engine.snapshot().revision===run.revision;
   const report=reason=>{onError?.({reason});return bad(reason)};
@@ -55,14 +55,15 @@ export function mountResonanceCinematics({root,rendererFactory,engine,campaign,m
     const run=active;if(!run||event.sceneId!==run.id||!valid(run))return;
     active=null;
     const current=engine.view().current;
-    const persist=result=>{if(!result?.ok)throw Error(result?.reason||'narrative-operation-rejected');onPersist(result.state)};
+    const transactional=typeof engine.evidence==='function';
+    const persist=result=>{if(!result?.ok)throw Error(result?.reason||'narrative-operation-rejected');if(!transactional)onPersist(result.state)};
     try{
       while(engine.view().current?.id===run.id&&engine.view().cursor<current.lines.length){
         if(!engine.view().lineReady)throw Error('dialogue-awaits-gameplay');
         persist(engine.nextLine());
       }
       for(const op of current.requires.filter(x=>x.startsWith('cinematic:'))){
-        if(engine.view().objective.includes(op))persist(engine.record(run.id,op));
+        if(engine.view().objective.includes(op))persist(transactional?engine.evidence({sceneId:run.id,operation:op,region:current.chapter,verified:true}):engine.record(run.id,op));
       }
       // Host owns finish() and all non-cinematic event transitions.
       onResolved?.({sceneId:run.id,skipped,slot:run.slot,remaining:engine.view().objective});
@@ -87,5 +88,6 @@ export function mountResonanceCinematics({root,rendererFactory,engine,campaign,m
   }
   function interrupt(){if(!active||!valid(active))return null;return {slot:active.slot,revision:active.revision,snapshot:renderer.interrupt()};}
   function dispose(){disposed=true;sequence++;active=null;renderer.destroy();if(typeof window!=='undefined')window.removeEventListener('morrowwish-language-change',syncLanguage)}
-  return {playCurrent,interrupt,dispose};
+  function cancel(){sequence++;active=null;renderer.stop();}
+  return {playCurrent,interrupt,cancel,dispose};
 }

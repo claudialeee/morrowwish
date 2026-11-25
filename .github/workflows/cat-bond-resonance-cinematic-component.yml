@@ -1,0 +1,33 @@
+name: Cat Bond Resonance cinematic component QA
+on:
+  push:
+    branches: [rpg/cinematic-art-direction]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: resonance-cinematic-component-qa
+  cancel-in-progress: true
+jobs:
+  component:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/check-cat-bond-cinematics.mjs
+      - run: |
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install chromium
+      - run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cinematic-qa.log 2>&1 &
+          sleep 2
+          node scripts/check-resonance-cinematic-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cinematic-component-fixtures-not-game-art
+          path: artifacts/resonance-cinematic-component/
+          retention-days: 7
