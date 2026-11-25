@@ -7,7 +7,8 @@ if(!games.has(route))return;
 const KEY='morrowwish-audio-enabled';
 let enabled=true;
 try{const stored=localStorage.getItem(KEY);enabled=stored===null?localStorage.getItem('lab-muted')!=='1':stored==='1'}catch{}
-let ctx=null,master=null,unlocked=false,voices=0,effects=0,control=null;
+let ctx=null,master=null,unlocked=false,voices=0,effects=0,control=null,fxVolume=1;
+function setVolume(v){if(route!=='cat-bond')return 1;fxVolume=Math.max(0,Math.min(1,Number(v)||0));if(ctx&&master&&enabled)master.gain.setTargetAtTime(.20*fxVolume,ctx.currentTime,.015);return fxVolume;}
 const lang=()=>route==='pocket-aquarium'?(document.querySelector('.languages button.active')?.id==='zh'?'zh':'en'):(window.MorrowwishI18n?.get?.()==='zh'||document.documentElement.lang.startsWith('zh')?'zh':'en');
 const copy=()=>lang()==='zh'?(enabled?'音效：开':'音效：关'):(enabled?'Sound effects: On':'Sound effects: Off');
 function sync(){
@@ -20,13 +21,13 @@ function sync(){
 }
 function ensure(){if(ctx)return true;try{
  const A=window.AudioContext||window.webkitAudioContext;if(!A)return false;
- ctx=new A();master=ctx.createGain();master.gain.value=enabled?.20:0;
+ ctx=new A();master=ctx.createGain();master.gain.value=enabled?.20*fxVolume:0;
  const comp=ctx.createDynamicsCompressor();comp.threshold.value=-22;comp.knee.value=10;comp.ratio.value=2;comp.attack.value=.007;comp.release.value=.11;
  master.connect(comp);comp.connect(ctx.destination);return true;
 }catch{return false}}
 function start(){if(!enabled||!ensure())return false;
  try{ctx.resume()?.catch?.(()=>{})}catch{}
- unlocked=true;master.gain.setTargetAtTime(.20,ctx.currentTime,.015);return true;
+ unlocked=true;master.gain.setTargetAtTime(.20*fxVolume,ctx.currentTime,.015);return true;
 }
 function stop(){if(ctx&&master)master.gain.setTargetAtTime(.00001,ctx.currentTime,.006)}
 function toggle(){
@@ -264,7 +265,7 @@ function effect(kind='tap'){
 }
 function note(freq){if(enabled&&unlocked)sfx(69+12*Math.log2(Math.max(40,freq)/440),'pop')}
 function status(){return{profile:route,enabled,unlocked,playing:false,backgroundMusic:false,oscillators:voices,loopSteps:0,effects,audioState:ctx?.state||'not-created',combatSounds:route==='cat-bond'?combatKinds.size:0,duoSignatureCount:route==='cat-bond'?Object.keys(duoSoundCatalog).length:0,duoSignatureEvents,lastSignature,skillSignatureEvents,lastSkillSignature}}
-window.MorrowwishAudio={start,toggle,effect,note,status,sync,duoSignature,skillSignature,isEnabled:()=>enabled};
+window.MorrowwishAudio={start,toggle,effect,note,status,sync,duoSignature,skillSignature,isEnabled:()=>enabled,...(route==='cat-bond'?{setVolume}:{})};
 // Browsers allow Web Audio only after a user gesture. Unlocking does NOT play a sound.
 function gesture(e){
  if(e.type==='keydown'&&['Tab','Escape','Shift','Alt','Control','Meta'].includes(e.key))return;
