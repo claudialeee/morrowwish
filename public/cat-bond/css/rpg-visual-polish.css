@@ -295,3 +295,90 @@
 @media (prefers-reduced-motion:reduce) {
  #stage #intro .cb-title-landscape,#stage #intro .cb-title-landscape::after {animation:none!important;}
 }
+
+/* Actual 702ab14 screenshots exposed the late legacy !important rainbow
+   styling. Override the visual properties only; leave visibility, ordering,
+   pointer events, hit areas, and all book-owner navigation untouched. */
+#stage #tabbar {
+  background:transparent!important;background-image:none!important;
+  box-shadow:none!important;border:0!important;
+}
+#stage #tabbar .tab,#stage #yard-actions .fab {
+  background:#243b43ef!important;color:#f6ead4!important;
+  border:1px solid #b39b73!important;border-radius:8px!important;
+  box-shadow:0 3px 10px #101e2452!important;text-shadow:none!important;
+  transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease!important;
+}
+#stage #tabbar .tab .ico {filter:none;color:inherit;}
+#stage #tabbar .tab::before,#stage #tabbar .tab::after,#stage #yard-actions .fab::after {content:none!important;}
+#stage #tabbar .tab.active,#stage #tabbar .tab[aria-selected="true"],
+#stage #yard-actions .fab[aria-pressed="true"] {
+  background:#3c5a52!important;border-color:#d8b980!important;
+  color:#fff4d9!important;box-shadow:inset 0 0 0 1px #b58c55!important;
+  transform:none!important;
+}
+#stage #fab-map.map-fab {color:#f6ead4!important;border-radius:8px!important;}
+#stage #tabbar .tab:active,#stage #yard-actions .fab:active {transform:none!important;box-shadow:inset 0 2px 5px #101e2488!important;}
+#stage #tabbar .tab:focus-visible,#stage #yard-actions .fab:focus-visible {outline:2px solid #e6c99b!important;outline-offset:2px!important;}
+#stage #hud .hud-pill,#stage #hud .hud-pill:nth-child(2),#stage .scene-title {
+  background:#20343ce8!important;border:1px solid #b39b73!important;color:#f6ead4!important;
+  border-radius:6px!important;box-shadow:0 2px 6px #14282e44!important;text-shadow:none!important;
+}
+#stage #first-quest {
+  background:#243b43eb!important;color:#f6ead4!important;border:1px solid #b39b73!important;
+  border-radius:8px!important;box-shadow:0 3px 10px #101e2444!important;
+}
+#stage #panel .btn:not(.ghost),#stage #panel .btn.gold,#stage #panel .btn.primary {
+  background:#dbc18f!important;color:#263b35!important;border:1px solid #a58a5e!important;
+  border-radius:8px!important;box-shadow:0 2px 4px #17253220!important;
+}
+#stage #panel .btn.ghost {
+  background:#f4ead6!important;color:#304540!important;border:1px solid #b6a88a!important;
+  border-radius:8px!important;box-shadow:none!important;
+}
+#stage #panel .btn:disabled {opacity:.55!important;cursor:not-allowed;}
+#stage #panel .btn:focus-visible {outline:2px solid #947648!important;outline-offset:2px!important;}
+#stage #panel .btn:not(:disabled):active {box-shadow:inset 0 2px 5px #17253240!important;}
+#stage #panel .capture-mode-option[aria-checked="true"] {
+  background:#d6e2d5!important;color:#304540!important;border:1px solid #688879!important;
+}
+#stage #panel .work-earn-header,#stage #panel .workshop-row.work-money {
+  background:#eee3c9;border:1px solid #bfa77b;border-radius:8px;
+}
+#stage #panel .work-earn-stats>span {background:#fbf6e9;border:1px solid #cbbda2;border-radius:6px;}
+#stage #panel .workshop-row {border-radius:8px;}
+#stage #yard-placement-dock #yard-placement-cancel {
+  background:#f4ead6!important;color:#304540!important;border:1px solid #b6a88a!important;
+}
+html[data-mw-settings-game="cat-bond"] #stage #mw-game-settings button,
+html[data-mw-settings-game="cat-bond"] #stage #cb-header-actions > button,
+#stage #cb-system-toggle {
+  background:#243b43ee!important;color:#f6ead4!important;
+  border:1px solid #b39b73!important;box-shadow:0 2px 5px #101e2440!important;
+  border-radius:6px!important;text-shadow:none!important;
+}
+html[data-mw-settings-game="cat-bond"] #stage #mw-game-settings button:focus-visible,
+html[data-mw-settings-game="cat-bond"] #stage #cb-header-actions > button:focus-visible {
+  outline:2px solid #e6c99b!important;outline-offset:1px;
+}
+@media(hover:hover){
+ #stage #tabbar .tab:not(:disabled):hover,#stage #yard-actions .fab:not(:disabled):hover {
+  background:#36535a!important;border-color:#e6c99b!important;transform:none!important;
+ }
+ #stage #panel .btn:not(.ghost):not(:disabled):hover {background:#ecd2a0!important;}
+ #stage #panel .btn.ghost:not(:disabled):hover {background:#e6dbc3!important;}
+}
+/* The atlas has no bottom garden dock. Give its optional sheets back that
+   reserved space on short landscape screens; the close button remains in
+   the existing protected header row and the card itself remains scrollable. */
+@media(orientation:landscape) and (max-height:530px){
+ #stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"]):not(.rb-open) {
+  bottom:max(6px,env(safe-area-inset-bottom,0px))!important;
+ }
+ #stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"]):not(.rb-open)>.card {
+  width:min(92%,760px);min-height:0!important;max-height:100%!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #stage #tabbar .tab,#stage #yard-actions .fab {transition:none!important;}
+}

@@ -24,6 +24,24 @@ try{
     }
     if(await box.isVisible()&&await button('Close','关闭',box).isVisible())await button('Close','关闭',box).click();
    };
+   const candidate=()=>page.locator('link[href*="rpg-visual-polish.css"]').count();
+   const checkTheme=async()=>{
+    if(!await candidate())return;
+    const result=await page.evaluate(()=>{
+     const isVisible=e=>e&&e.getBoundingClientRect().width>0&&e.getBoundingClientRect().height>0&&getComputedStyle(e).visibility!=='hidden';
+     const tabs=[...document.querySelectorAll('#tabbar .tab,#yard-actions .fab')].filter(isVisible);
+     const actions=[...document.querySelectorAll('#panel.open .btn:not(.ghost):not(:disabled)')].filter(isVisible);
+     const invalidTabs=tabs.filter(e=>getComputedStyle(e).backgroundImage!=='none').map(e=>e.id||e.textContent);
+     const invalidActions=actions.filter(e=>getComputedStyle(e).backgroundImage!=='none').map(e=>e.id||e.textContent);
+     const card=document.querySelector('#panel.open:not([data-mandatory="true"]):not(.rb-open)>.card');
+     const atlas=document.querySelector('.rw-world:not([hidden])');
+     const panel=card&&atlas&&innerHeight<=530&&innerWidth>innerHeight?card.getBoundingClientRect():null;
+     return {invalidTabs,invalidActions,panelHeight:panel?.height??null};
+    });
+    assert.deepEqual(result.invalidTabs,[],'Garden controls must not inherit legacy rainbow gradients');
+    assert.deepEqual(result.invalidActions,[],'Primary action must not inherit the legacy pink/lilac gradient');
+    if(result.panelHeight!==null)assert.ok(result.panelHeight>=180,'Landscape optional card needs a usable scroll viewport');
+   };
    const closePanel=async()=>{await page.locator('#panel>.panel-dismiss').click();await page.locator('#panel.open').waitFor({state:'hidden'});};
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',route=>/^(data:|blob:)/.test(route.request().url())||route.request().url().startsWith(origin+'/')?route.continue():route.abort());
@@ -44,7 +62,7 @@ try{
     await starter.click();await button('Talk to Muling','与暮铃交谈',page.locator('.sg-prologue-guide')).click();
     await page.locator('.res-host[data-scene="prologue:P-04"]').waitFor();await shot('muling-dialogue');
     await dialogue('prologue:P-04');
-    const bell=page.locator('.res-garden-bell');await bell.waitFor();await shot('garden');
+    const bell=page.locator('.res-garden-bell');await bell.waitFor();await checkTheme();await shot('garden');
     const rect=await bell.boundingBox(),x=Math.floor(rect.x+rect.width/2),y=Math.floor(rect.y+rect.height/3);
     if(options.hasTouch){
      const cdp=await ctx.newCDPSession(page);
@@ -56,7 +74,7 @@ try{
     await button('World map','前往世界地图',page.locator('.sg-prologue-guide')).click();await page.locator('.rw-surface').waitFor();await shot('atlas');
     const nav=page.locator('.rw-system-nav');
     for(const [en,zh,id] of [['Catdex','猫咪图鉴','catdex'],['Party','出战队伍','party'],['Raise cats','猫咪养成','cultivation'],['Workshop','工坊','workshop']]){
-     await button(en,zh,nav).click();await page.locator('#panel.open>.card').waitFor();await shot(id);
+     await button(en,zh,nav).click();await page.locator('#panel.open>.card').waitFor();await checkTheme();await shot(id);
      if(id==='cultivation'){
       await page.locator('#panel [data-cat-view="duo"]').click();await shot('duo-bond');
      }
