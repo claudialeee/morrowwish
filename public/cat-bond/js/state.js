@@ -177,7 +177,7 @@ function saveChecksum(raw) {
   return (hash >>> 0).toString(16).padStart(8, '0');
 }
 function emptySaveBook() {
-  return { version: SAVE_BOOK_VERSION, updatedAt: 0, slots: {} };
+  return { version: SAVE_BOOK_VERSION, updatedAt: 0, slots: {}, deleted: {} };
 }
 function upgradeSaveBook(parsed) {
   if (!isSaveObject(parsed) || !isSaveObject(parsed.slots)) return emptySaveBook();
@@ -245,7 +245,8 @@ function writeSlots(book) {
   const next = {
     version: SAVE_BOOK_VERSION,
     updatedAt: Date.now(),
-    slots: isSaveObject(book?.slots) ? book.slots : {}
+    slots: isSaveObject(book?.slots) ? book.slots : {},
+    deleted: isSaveObject(book?.deleted) ? book.deleted : {}
   };
   const raw = JSON.stringify(next);
   try {
@@ -274,7 +275,7 @@ function writeSlots(book) {
   return { ok: true };
 }
 function migrateLegacySave(book = readSlots()) {
-  if (SAVE_SLOT_IDS.some(id => book.slots?.[id])) return book;
+  if (SAVE_SLOT_IDS.some(id => book.slots?.[id] || book.deleted?.[id])) return book;
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
@@ -316,6 +317,7 @@ function persistSlot(id, data, options = {}) {
   const revision = (Number(previous?.revision) || 0) + 1;
   try {
     book.slots[id] = makeSlotRecord(data, options.savedAt, revision);
+    if (book.deleted) delete book.deleted[id];
   } catch (error) {
     return { ok: false, reason: 'invalid_data', error: String(error?.message || error) };
   }
@@ -561,7 +563,27 @@ function importSaveSlot(slotId, data, metadata = {}) {
   if (!SAVE_SLOT_IDS.includes(slotId) || !isSaveObject(data)) return { ok: false, reason: 'invalid_data' };
   return persistSlot(slotId, data, { allowOverwrite: true, savedAt: metadata.savedAt, overwriteConfirmed: true });
 }
-function replaceSaveSlots(entries, activeId) {
+function deletedSaveSlot(id) {
+  if (!SAVE_SLOT_IDS.includes(id)) return null;
+  const item = readSlots().deleted?.[id];
+  return item && !readSlots().slots[id] ? cloneSaveData(item) : null;
+}
+function deleteSaveSlot(id, options = {}) {
+  if (!SAVE_SLOT_IDS.includes(id)) return {ok:false, reason:'invalid_slot'};
+  if (!options.confirmed) return {ok:false, reason:'confirmation_required'};
+  if (S.gameStarted && id === activeSlot()) return {ok:false, reason:'active_slot'};
+  const book = migrateLegacySave();
+  if (!book.slots[id]) return {ok:false, reason:'empty_slot'};
+  delete book.slots[id];
+  book.deleted = {...book.deleted, [id]:{deletedAt:Date.now()}};
+  const result = writeSlots(book);
+  if (!result.ok) return result;
+  // Prevent a recovered backup from reviving the explicitly removed save.
+  try { localStorage.setItem(SAVE_BACKUP_KEY, JSON.stringify(book)); }
+  catch (_) { try { localStorage.removeItem(SAVE_BACKUP_KEY); } catch (_) {} }
+  return {ok:true, slotId:id};
+}
+function replaceSaveSlots(entries, activeId, deletedEntries = {}) {
   if (!isSaveObject(entries)) return { ok: false, reason: 'invalid_slots' };
   const slots = {};
   for (const id of SAVE_SLOT_IDS) {
@@ -572,7 +594,11 @@ function replaceSaveSlots(entries, activeId) {
     try { slots[id] = makeSlotRecord(data, value.savedAt || data.lastSeen, value.revision || 1); }
     catch (error) { return { ok: false, reason: 'invalid_data', slotId: id, error: String(error?.message || error) }; }
   }
-  const result = writeSlots({ version: SAVE_BOOK_VERSION, slots });
+  const deleted = {};
+  for (const id of SAVE_SLOT_IDS) {
+    if (!slots[id] && Number(deletedEntries[id]?.deletedAt)>0) deleted[id]={deletedAt:Number(deletedEntries[id].deletedAt)};
+  }
+  const result = writeSlots({ version: SAVE_BOOK_VERSION, slots, deleted });
   if (!result.ok) return result;
   const nextActive = SAVE_SLOT_IDS.includes(activeId) && slots[activeId]
     ? activeId
@@ -615,7 +641,9 @@ const SaveManager = Object.freeze({
   load: loadSlot,
   startNew: startNewGame,
   importSlot: importSaveSlot,
-  replaceSlots: replaceSaveSlots
+  replaceSlots: replaceSaveSlots,
+  deleteSlot: deleteSaveSlot,
+  getDeletedSlot: deletedSaveSlot
 });
 window.SaveManager = SaveManager;
 // Expedition health: casual battles always restore everyone to full HP.
@@ -747,7 +775,7 @@ window.State = {
   makeCat, addXp, xpToNext, catPower, bondTier, catName,
   save, load, hardReset, applyIdle, dailyAvailable, claimDaily,
   listSaveSlots, startNewGame, loadSlot, saveToSlot, setActiveSlot, activeSlot, SAVE_SLOT_IDS, SAVE_SLOTS_KEY, ACTIVE_SLOT_KEY,
-  getSaveSlot: SaveManager.getSlot, importSaveSlot, replaceSaveSlots, registerSaveAdapter,
+  getSaveSlot: SaveManager.getSlot, importSaveSlot, replaceSaveSlots, registerSaveAdapter, deleteSaveSlot, deletedSaveSlot,
   difficulty, difficultyMult, setDifficulty, DIFFICULTY_MULTS,
   HEALTH_REGEN_MS, FISH_HEAL_FRACTION, catHpFraction, setBattleHealth,
   healAllCats, useMedkitForHealth, useMedkitForTeam,
