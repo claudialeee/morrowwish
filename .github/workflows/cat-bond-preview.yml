@@ -18,7 +18,9 @@ concurrency:
 jobs:
   preview:
     # Preparing this workflow must never publish. Only an explicit release invocation can.
-    if: github.ref == 'refs/heads/cat-bond-preview' && (github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Publish verified Cat Bond preview: '))
+    if: >-
+      github.ref == 'refs/heads/cat-bond-preview' &&
+      (github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Publish verified Cat Bond preview: '))
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
