@@ -1325,6 +1325,7 @@ const UI = {
     const cards=stations.map(st=>{
       const cost=Raising.upgradeCost(st.id);
       const [name,usage]=descriptions[st.type]||[st.name,st.desc];
+      const skyBonus=st.skyCalibrated?(en?" · Skyspine wind calibration: +25% luck production":" · 云脊风向校准：好运产出 +25%"):"";
       const unit=st.res==='coins'?'🪙':this.resIcon(st.res);
       const wait=st.active&&st.stored<1&&st.ratePerHour>0
         ?(en?' · First unit in ~':' · 约')+Math.ceil(60/st.ratePerHour)+(en?' min':' 分钟得到首份资源'):'';
@@ -1332,7 +1333,7 @@ const UI = {
         <div class="st-ico">${st.icon}</div>
         <div class="st-main">
           <div class="st-name">${name} <span class="tiny">${this.levelText(st.level)}</span></div>
-          <p class="work-usage">${usage}</p>
+          <p class="work-usage">${usage}${skyBonus}</p>
           <div class="work-income">${en?'Production':'产出'}：<b>${Number(st.ratePerHour||0).toFixed(1)} ${unit}/${en?'hour':'小时'}</b></div>
           <div class="work-employee">${st.active
             ?(en?'Working cat: ':'上班猫咪：')+st.catName
@@ -2333,12 +2334,23 @@ const UI = {
       ?State.S.cats.find(cat=>cat.uid===story.recordedUid):null;
     const recordName=String(recordCat?State.catName(recordCat):(en?'The Bellkeeper':'守铃者'))
       .replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    const canonical=State.S.resonance;
+    const flightRecord=canonical?.evidence?.["sky:S-02"]?.includes("explore:flight-recorder")||canonical?.completed?.includes("sky:S-02");
+    const pendantRecord=canonical?.completed?.includes("sky:S-04");
+    const skyRecords=(flightRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Skyspine flight record":"云脊飞行记录"}</strong><small>${en?"Yuanfan cut the cargo line after Lingyu misread the wind, saving both couriers.":"翎羽误判风向后，远帆切断货索，救下两位信使。"}</small></span><b>${en?"Verified":"已核实"}</b></section>`:"")+(pendantRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Muling · familiar habit":"暮铃 · 熟悉的习惯"}</strong><small>${en?"When she is uneasy, she taps her old bell pendant twice.":"心神不宁时，她会轻敲旧铃坠两次。"}</small></span><b>${en?"Observed":"已观察"}</b></section>`:"");
     const forgeRecord=State.S.resonance?.completed?.includes("forge:E-03")
       ?`<section class="cb-dex-forge-record" data-dex-record="forge"><img src="assets/combat/forge-guardian-painted.webp" alt=""><div><small>${en?'REGIONAL FIELD RECORD':'地区见闻'}</small><strong>${en?'Furnace Guardian':'熔炉机械守卫'}</strong><p>${en?'The safety mechanism has been stabilized. Its three heat and pressure stages are recorded here; it is a machine, not a collectible breed.':'安全机关已稳定，三阶段炉温与压力记录已收录。机械守卫不是可收集猫咪品种。'}</p><span>${en?'Encounter complete · Emberforge City':'挑战完成 · 赤炉环城'}</span></div></section>`:'';
-    const storyRecord=!window.__CAT_BOND_CANONICAL_ACTIVE__&&story?.playerRecorded
+    const resonance=State.S.resonance,canonicalMemory=resonance?.schema===1?[
+      [resonance.completed.includes("library:M-03"),en?"The first Bellkeeper":"第一任守铃者",en?"The mirror archive reveals your identity.":"月镜档案揭示了你的身份。"],
+      [resonance.evidence?.["starfall:F-02"]?.includes("explore:catastrophe-record"),en?"The Starfall Record":"星坠记录",en?"The impact broke the bell tongue and damaged six sanctuaries.":"陨星撞击使铃舌破碎，六座圣所同时受损。"],
+      [resonance.evidence?.["starfall:F-02"]?.includes("cinematic:starfall-memory"),en?"The Choice":"当年的抉择",en?"You willingly entered the emergency anchor to preserve the seal.":"你主动走进应急锚室维持封印。"],
+      [State.S.resonanceExploration?.pickups?.["starfall:starfall-hidden-record"],en?"The unsent navigation record":"未寄出的航行记录",en?"Neighbor routes can answer without central control.":"相邻航路无需中央控制也能互相回应。"],
+      [resonance.completed.includes("starfall:F-04"),en?"The reciprocal ring":"六地归环",en?"Six melodies and all 24 exchanges have been completed.":"六首旋律和24步交流均已完成。"]
+    ].filter(([unlocked])=>unlocked).map(([,title,description])=>`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${title}</strong><small>${description}</small></span></section>`).join(""):null;
+    const storyRecord=canonicalMemory!==null?canonicalMemory:!window.__CAT_BOND_CANONICAL_ACTIVE__&&story?.playerRecorded
       ?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?'The Last Page':'最后一页'}</strong><small>${en?'The Bellkeeper: ':'守铃者：'}${recordName}</small></span><b>${en?'Complete':'已完成'}</b></section>`:'';
     this.panel(`<span class="card-close">×</span>
-      <h2>Catdex <span class="tiny">${owned}/${total}</span></h2>
+      <h2>${en?"Catdex":"猫咪图鉴"} <span class="tiny">${owned}/${total}</span></h2>
       <p class="sub">${en?'Discover breeds and earn an S-rank Golden Paw for each one.'
         :'发现不同猫咪，为每个品种挑战 S 级「金爪徽章」。'}</p>
       <div class="mastery-summary">
@@ -2348,6 +2360,7 @@ const UI = {
         <small>${en?'Permanent rarity-weight boost':'当前永久稀有权重加成'}：+${Math.round(mastery.luckBonus*100)}%</small>
       </div>
       <div class="dex-grid">${cells}</div>
+      ${skyRecords?`<details class="cb-dex-sky-records"><summary>${en?'Skyspine journey records':'云脊旅途见闻'} <span>${Number(!!flightRecord)+Number(!!pendantRecord)}/2</span></summary>${skyRecords}</details>`:''}
       ${forgeRecord}
       ${storyRecord}
       ${this.reactionCodexHtml(en)}`);
@@ -3152,14 +3165,20 @@ const UI = {
       '<p>'+detail+'</p>'+(rows?'<div class="battle-recovery-team">'+rows+'</div>':'')+'</section>';
   },
   openBattleRecoveryResult(recovery){
-    const en=this.isEnglish(),exploring=this.game?.scene==='map';
-    this.panel('<span class="card-close">×</span><h2 class="center">'+
-      (en?'The wild cat got away':'野生猫猫跑掉了')+'</h2>'+
+    const en=this.isEnglish(),exploring=this.game?.scene==='map',sky=recovery.sky;
+    const title=sky?(sky.outcome==='retreat'?(en?'Retreated from the gale':'已从风切战斗撤退'):(en?'Squad defeated in the gale':'队伍在风切战斗中落败')):(en?'The wild cat got away':'野生猫猫跑掉了');
+    const canRetry=!!sky&&exploring&&sky.owner===State.S&&window.WorldMap?.currentRegion==='sky';
+    this.panel('<span class="card-close">×</span><h2 class="center">'+title+'</h2>'+
+      (sky?'<p class="sub">'+(en?'Your cats and story progress are safe. Change your party or retry when ready.':'猫咪及剧情进度已保留。可以调整队伍，再次迎战。')+'</p>':'')+
       this.battleRecoveryMarkup(recovery)+
-      '<div class="btn-row" style="justify-content:center"><button type="button" class="btn gold" id="battle-recovery-ok">'+
+      '<div class="btn-row" style="justify-content:center">'+
+      (canRetry?'<button type="button" class="btn gold" id="sky-retry-encounter">'+(en?'Retry encounter':'再次挑战')+'</button>':'')+
+      '<button type="button" class="btn '+(canRetry?'ghost':'gold')+'" id="battle-recovery-ok">'+
       (en?(exploring?'Continue exploring':'Back to yard'):(exploring?'继续探索':'回庭院'))+
       '</button></div>');
     document.getElementById('battle-recovery-ok').onclick=()=>this.closeAll();
+    const retry=document.getElementById('sky-retry-encounter');
+    if(retry)retry.onclick=()=>{this.closeAll();if(!window.WorldMap?.retrySkyEncounter?.(sky.species,sky.owner))this.game?.toast({zh:'请在云脊群岛重新接近野猫。',en:'Approach the wild cat again in Skyspine.'});};
   },
 
   // Repeatable *skill* challenge, deliberately separate from capturing cats.
