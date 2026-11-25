@@ -326,7 +326,6 @@ function installCatBondSystemMenu(){
     ['effects',t('音效','Sound effects'),active('.mw-settings-sfx')?t('开启','On'):t('关闭','Off')],
     ...(native('#mw-fullscreen-toggle')?[['fullscreen',t('全屏','Fullscreen'),active('#mw-fullscreen-toggle')?t('退出','Exit'):t('进入','Enter')]]:[]),
     ['share',t('分享游戏','Share game'),''],
-    ['cloud',t('云存档','Cloud saves'),''],
     ['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),''],
     ...(!title?[['title',t('返回标题画面','Return to title'),'']]:[])
   ];
@@ -334,7 +333,7 @@ function installCatBondSystemMenu(){
   menu.querySelectorAll('[data-system]').forEach(btn=>btn.onclick=()=>{
    const id=btn.dataset.system,selectors={language:'.mw-settings-language',effects:'.mw-settings-sfx',music:'.mw-settings-music',fullscreen:'#mw-fullscreen-toggle',share:'.mw-settings-share'};
    if(id==='close'){close();toggle.focus();return;}
-   if(id==='cloud'||id==='slots'){close();window.CatBondCloudSave?.[id==='cloud'?'openPanel':'openSlots']?.();return;}
+   if(id==='slots'){close();window.CatBondCloudSave?.openSlots?.();return;}
    if(id==='title'){
     if(!confirm(t('保存当前进度并返回标题画面？','Save current progress and return to title?')))return;
     const result=State.save();
