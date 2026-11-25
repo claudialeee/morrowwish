@@ -406,6 +406,10 @@ jobs:
                && grep -Fq "platforms.sort((a,b)=>(a.id==='itch')-(b.id==='itch')" /tmp/mw-studio-live.html \
                  && grep -Fq 'id="archived-first-round-posts"' /tmp/mw-studio-live.html \
                  && grep -Fq "renderVideoMatrix(archivedPosts,'capturedAt')" /tmp/mw-studio-live.html \
+                 && grep -Fq 'id="date-preset"' /tmp/mw-studio-live.html \
+                 && grep -Fq 'observed(hm.uniqueBrowsers)' /tmp/mw-studio-live.html \
+                 && grep -Fq 'withinRange(p.checkedAt)' /tmp/mw-studio-live.html \
+                 && ! grep -Fq 'metricCard(t("statFinished")' /tmp/mw-studio-live.html \
                  && ! grep -Eq 'id="future-channels"|id="future-channel-list"|channelFuture:|Poki:|GamePix:|GameDistribution:' /tmp/mw-studio-live.html \
                  && ! grep -Fq 'instagram-historical' /tmp/mw-studio-live.html; then
                 ready=1; break
@@ -413,7 +417,7 @@ jobs:
               sleep 5
             done
             test "$ready" = 1 || { echo "::error::Dashboard on $origin still contains unreleased/old promotional material or an old asset version"; exit 1; }
-            echo "Verified live dashboard on $origin: five launched channels; no old or future promotional entries"
+            echo "Verified live dashboard on $origin: per-game metrics, whole-dashboard date filter, two traffic KPIs, five launched channels"
           done
       - name: Verify live D1 telemetry ingestion for six games without adding player stats
         run: |
