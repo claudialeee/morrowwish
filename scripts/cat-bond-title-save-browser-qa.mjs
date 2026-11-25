@@ -17,7 +17,7 @@ for(const profile of [
  page.on('pageerror',error=>errors.push(error.message));
  page.on('dialog',dialog=>dialog.accept());
  const screenshot=name=>page.screenshot({path:output+'/'+profile.name+'-'+name+'.png'});
- const checkVisible=async selector=>{await page.locator(selector).waitFor({state:'visible',timeout:15000});};
+ const checkVisible=async selector=>{await page.locator(selector).first().waitFor({state:'visible',timeout:15000});};
  const waitMap=()=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:15000});
  const openInGameSlots=async()=>{
   await page.locator('#map-menu').click();
