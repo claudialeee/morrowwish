@@ -148,7 +148,9 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if(window.Raising)Raising.init();
-    if(mode==='new'||State.S.cats.length===0){
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(mode==='new'||State.S.cats.length===0)){
+      enterAdventure(()=>{State.save();game.openWorldMap();});
+    }else if(mode==='new'||State.S.cats.length===0){
       UI.openStarter(id=>{
         const starter=State.makeCat(id,{affinity:20});
         if(window.Raising)Raising.decorateNewCat(starter);

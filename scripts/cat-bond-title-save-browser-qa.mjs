@@ -75,23 +75,28 @@ for(const profile of [
   assert.match(await page.locator('#intro-slot-heading').innerText(),/Choose a slot/);
   await screenshot('three-slots-en');
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-  await checkVisible('#panel.open .dex-cell');
-  await page.locator('#panel.open .dex-cell').first().click();
   for(const n of [1,2,3]){
    await page.waitForFunction(n=>CatBondResonance.view().current?.id==='prologue:P-0'+n&&document.querySelector('.cbcp-art')?.naturalWidth>0&&document.querySelector('.cbcp-skip')&&!document.querySelector('.cbcp-skip').disabled,n);
    await page.locator('.cbcp-skip').click();
   }
+  await checkVisible('#panel.open .dex-cell');await page.locator('#panel.open .dex-cell').first().click();
+  await page.locator('.sg-prologue-guide').getByRole('button',{name:'Talk to Muling'}).click();
+  const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');await awakening.getByRole('button',{name:'Skip dialogue',exact:true}).click();
   const bell=page.locator('.res-garden-bell');await bell.waitFor();
   const rect=await bell.boundingBox();const x=Math.floor(rect.x+rect.width/2),y=Math.floor(rect.y+rect.height/3);
   if(profile.mobile){const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+62}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}
   else{await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y+62,{steps:8});await page.mouse.up();}
-  for(const id of ['prologue:P-04','prologue:P-05']){const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();const skip=dlg.getByRole('button',{name:'Skip dialogue',exact:true});if(await skip.isVisible()&&await skip.isEnabled())await skip.click();const close=dlg.getByRole('button',{name:'Close',exact:true});if(await close.isVisible())await close.click();}
+  for(const id of ['prologue:P-05']){const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();const skip=dlg.getByRole('button',{name:'Skip dialogue',exact:true});if(await skip.isVisible()&&await skip.isEnabled())await skip.click();const close=dlg.getByRole('button',{name:'Close',exact:true});if(await close.isVisible())await close.click();}
+  await page.locator('.sg-prologue-guide').getByRole('button',{name:'World map'}).click();
   await waitMap();
   await page.locator('.rw-system-nav').waitFor();
   assert.equal(await page.locator('.rw-regions [data-region]').count(),6);
   assert.equal(await page.locator('.rw-region-status').count(),6);
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
   await screenshot('world-atlas');
+  // Physical departure from the merged canonical opening.
+  const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);
+  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01');
   const first=await page.evaluate(()=>window.State.getSaveSlot('slot1').data.state.cats[0].uid);
   assert.ok(first);
   await openInGameSlots();
@@ -116,7 +121,8 @@ for(const profile of [
   // Start the third slot through the actual title picker, preserving the two earlier adventures.
   await page.locator('#intro-start').click();
   await page.locator('#intro-slot-list [data-slot="slot3"]').click();
-  await checkVisible('#panel.open .dex-cell');
+  await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true&&window.State.activeSlot()==='slot3');
+  await checkVisible('#cb-canonical-opening');
   assert.equal(await page.evaluate(()=>State.activeSlot()),'slot3');
   assert.equal(await page.evaluate(()=>State.S.cats.length),0);
   await page.reload();await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__);
