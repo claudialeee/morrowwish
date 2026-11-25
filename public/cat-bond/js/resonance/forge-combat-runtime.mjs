@@ -242,6 +242,7 @@ function renderHud(game,b){
   const s=b.forgeState,en=window.MorrowwishI18n?.get?.()!=="zh",e=b.enemies?.find(x=>x.visualKind==="forge-guardian");
   const set=(sel,value)=>{const n=p.querySelector(sel);if(n&&n.textContent!==value)n.textContent=value;};
   set("[data-forge-title]",en?"EMBERFORGE · E-03":"赤炉环城 · E-03");
+  const enemyLabel=document.getElementById("wild-name");if(enemyLabel)enemyLabel.textContent=en?"EMBERFORGE · FURNACE GUARDIAN":"赤炉环城 · 熔炉机械守卫";
   set("[data-forge-phase]",en?["HEAT TEST","OVERDRIVE","CRITICAL"][s.phase]:"热压测试 · "+(s.phase+1)+"/3");
   set("[data-forge-objective]",en?"Vent the core, then strike while exposed.":"先泄压，再攻击暴露的炉心。");
   set("[data-forge-heat-label]",en?"FURNACE PRESSURE":"炉内压力");
@@ -263,12 +264,17 @@ function showResult(game,b,outcome,returnToMap){
     retreat?(en?"The team withdrew safely. The encounter can be attempted again.":"队伍已安全撤离，可以重新挑战。"):
     (en?"Recover, adjust your lineup, and try again.":"先恢复状态、调整队伍，再尝试挑战。");
   overlay.innerHTML='<div class="cb-forge-result-card"><div class="cb-forge-result-kicker">EMBERFORGE · E-03</div><h2></h2><p></p><div class="cb-forge-rewards" hidden></div><div class="cb-forge-result-actions"><button type="button" data-forge-return></button><button type="button" data-forge-retry></button></div></div>';
-  overlay.querySelector("h2").textContent=title;overlay.querySelector("p").textContent=desc;
+  const titleNode=overlay.querySelector("h2"),descNode=overlay.querySelector("p");
+  titleNode.textContent=title;descNode.textContent=desc;
+  titleNode.dataset.forgeZh=win?"熔炉试验完成":retreat?"已撤退":"队伍需要休整";
+  titleNode.dataset.forgeEn=win?"FURNACE STABILIZED":retreat?"WITHDRAWN":"THE SQUAD NEEDS REST";
+  descNode.dataset.forgeZh=win?"机械守卫停止运转，炉心已经稳定。":retreat?"队伍已安全撤离，可以重新挑战。":"先恢复状态、调整队伍，再尝试挑战。";
+  descNode.dataset.forgeEn=win?"The guardian is quiet. The forge can be examined safely.":retreat?"The team withdrew safely. The encounter can be attempted again.":"Recover, adjust your lineup, and try again.";
   const rewards=overlay.querySelector(".cb-forge-rewards");
-  if(win){rewards.hidden=false;rewards.textContent=en?"Rewards · 80 coins · 2 fish · battle XP":"奖励 · 80 金币 · 2 小鱼干 · 猫咪战斗经验";}
+  if(win){rewards.hidden=false;rewards.textContent=en?"Rewards · 80 coins · 2 fish · battle XP":"奖励 · 80 金币 · 2 小鱼干 · 猫咪战斗经验";rewards.dataset.forgeZh="奖励 · 80 金币 · 2 小鱼干 · 猫咪战斗经验";rewards.dataset.forgeEn="Rewards · 80 coins · 2 fish · battle XP";}
   const back=overlay.querySelector("[data-forge-return]"),retry=overlay.querySelector("[data-forge-retry]");
-  back.textContent=en?"Return to the world":"返回世界";
-  retry.textContent=en?"Retry encounter":"再次挑战";retry.hidden=win;
+  back.textContent=en?"Return to the world":"返回世界";back.dataset.forgeZh="返回世界";back.dataset.forgeEn="Return to the world";
+  retry.textContent=en?"Retry encounter":"再次挑战";retry.dataset.forgeZh="再次挑战";retry.dataset.forgeEn="Retry encounter";retry.hidden=win;
   back.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();if(returnToMap){game.scene="map";window.WorldMap?.resumeRegion?.(false);}else{game.scene="yard";game.showYardChrome?.();}});
   retry.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();launch(game,{retry:true});});
   document.getElementById("stage")?.append(overlay);game._forgeResultOpen=true;
@@ -382,5 +388,9 @@ window.CatBondForgeCombat={
 };
 const flee=document.getElementById("btn-flee");
 flee?.addEventListener("click",()=>{if(window.__game?.battle?.storyEncounter)window.__game.battle.forgeRetreat=true;},true);
-window.addEventListener("morrowwish-language-change",()=>{if(window.__game?.battle?.storyEncounter)renderHud(window.__game,window.__game.battle);});
+window.addEventListener("morrowwish-language-change",()=>{
+  const game=window.__game;if(game?.battle?.storyEncounter)renderHud(game,game.battle);
+  const en=window.MorrowwishI18n?.get?.()!=="zh";
+  document.querySelectorAll("#cb-forge-result [data-forge-zh][data-forge-en]").forEach(node=>{node.textContent=en?node.dataset.forgeEn:node.dataset.forgeZh;});
+});
 })();
