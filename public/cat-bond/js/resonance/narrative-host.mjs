@@ -1,5 +1,5 @@
 import {campaign} from "./campaign.mjs";
-import {createSlotRuntime} from "./slot-runtime.mjs";
+import {getSlotRuntime} from "./slot-runtime.mjs";
 import {mountDialogue} from "./dialogue-ui.mjs";
 const lang=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const portraitRoot=new URL("../../assets/npc/",import.meta.url);
@@ -17,7 +17,7 @@ function install(){
  if(!stage||!State||window.CatBondResonance)return;
  let dialogue=null,root=null,slot=null,openedScene=null,scheduled=false;
  const announce=detail=>{const savedSlot=State.S;queueMicrotask(()=>{if(savedSlot!==State.S)return;window.dispatchEvent(new CustomEvent("cat-bond-resonance-changed",{detail}));if(detail.trustChanges?.length){const names=detail.trustChanges.map(c=>({zh:campaign.cast[c.id].name.zh+" "+(c.delta>0?"+":"")+c.delta,en:campaign.cast[c.id].name.en+" "+(c.delta>0?"+":"")+c.delta}));window.__game?.toast?.({zh:"信任变化 · "+names.map(n=>n.zh).join(" / "),en:"Trust changed · "+names.map(n=>n.en).join(" / ")});}})};
- const runtime=createSlotRuntime(State,{notify:announce});
+ const runtime=getSlotRuntime(State);runtime.subscribe(announce);
  function close(){dialogue?.dispose();dialogue=null;root?.remove();root=null;openedScene=null;slot=null;}
  function show(){
   const v=runtime.view(),game=window.__game;
@@ -56,6 +56,6 @@ function install(){
  window.addEventListener("cat-bond-resonance-support-result",event=>{runtime.support(event.detail)});
  window.addEventListener("cat-bond-resonance-postgame-result",event=>{runtime.postgame(event.detail)});
  // Map and cinematic hosts can present the current scene without granting evidence.
- window.CatBondResonance=Object.freeze({initialize:runtime.initialize,npcProfile:runtime.npcProfile,residents:runtime.residents,isMulingFollowing:runtime.follows,view:runtime.view,snapshot:runtime.snapshot,showCurrent:show,close,recordEvidence:runtime.evidence,recordNPC:runtime.recordNPC,ambient:runtime.ambient,support:runtime.support,postgame:runtime.postgame,supportProfile:runtime.supportProfile,ambientAvailable:runtime.ambientAvailable});
+ window.CatBondResonance=Object.freeze({captureAction:runtime.capture,exchange:runtime.exchange,initialize:runtime.initialize,npcProfile:runtime.npcProfile,residents:runtime.residents,isMulingFollowing:runtime.follows,view:runtime.view,snapshot:runtime.snapshot,showCurrent:show,close,recordEvidence:runtime.evidence,recordNPC:runtime.recordNPC,ambient:runtime.ambient,support:runtime.support,postgame:runtime.postgame,supportProfile:runtime.supportProfile,ambientAvailable:runtime.ambientAvailable});
 }
 if(document.readyState==="complete")install();else document.addEventListener("DOMContentLoaded",install,{once:true});

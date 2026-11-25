@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {campaign} from "../public/cat-bond/js/resonance/campaign.mjs";
 import {makeEngine} from "../public/cat-bond/js/resonance/engine.mjs";
-import {createSlotRuntime} from "../public/cat-bond/js/resonance/slot-runtime.mjs";
+import {createSlotRuntime,getSlotRuntime} from "../public/cat-bond/js/resonance/slot-runtime.mjs";
 function fixture(target){
  let e=makeEngine(campaign);
  for(const scene of campaign.scenes){
@@ -39,3 +39,17 @@ active=second;assert.equal(runtime.view().current.id,"prologue:P-05");assert.ok(
 assert.ok(runtime.evidence({sceneId:"prologue:P-05",operation:"travel:harbor",region:"harbor",verified:true}).ok);
 active=first;assert.equal(runtime.view().current.id,"harbor:H-03");assert.equal(runtime.view().trust.qilan,2);
 console.log("Canonical slot runtime PASS: choice, quest, evidence, region gate, rollback, retired sample state, relationship, alternate slot");
+
+const shared=getSlotRuntime(State);assert.equal(getSlotRuntime(State),shared);
+const lease=shared.capture();const original=JSON.stringify(active);
+active=second;assert.equal(shared.nextLine(lease).reason,"stale-action");assert.equal(shared.evidence({sceneId:"prologue:P-05",operation:"travel:harbor",region:"harbor",verified:true,token:lease}).reason,"stale-action");
+active={resonance:fixture("harbor:H-03"),coins:10,fish:2,resonanceExploration:{location:"harbor",interactions:{}}};
+const token=shared.capture(),proof={sceneId:"harbor:H-03",operation:"explore:tide-logbook",region:"harbor",verified:true,token};
+const old=JSON.stringify(active);let events=0;shared.subscribe(()=>events++);
+const physical=w=>({coins:w.coins+8,fish:w.fish+1,resonanceExploration:{...w.resonanceExploration,interactions:{logbook:true}}});
+failSave=true;assert.equal(shared.evidence(proof,physical).reason,"quota");assert.equal(JSON.stringify(active),old);assert.equal(events,0);
+failSave=false;assert.ok(shared.evidence(proof,physical).ok);assert.equal(events,1);assert.equal(active.coins,18);assert.equal(active.fish,3);assert.equal(active.resonanceExploration.interactions.logbook,true);
+assert.equal(shared.evidence(proof,physical).ok,false);assert.equal(active.coins,18);assert.equal(events,1);
+for(let i=0;i<shared.view().current.lines.length;i++)assert.ok(shared.nextLine(token).ok);
+assert.ok(shared.finish(token).ok);assert.equal(shared.nextLine(token).reason,"stale-action");
+console.log("Shared slot transaction: stale slot/scene rejected, atomic physical state/reward rollback, duplicate rejection and notification verified");
