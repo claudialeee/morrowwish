@@ -16,7 +16,7 @@ const result=(function test(sources){
  let steps=0;for(const r of M.REGIONS){if(!U.enterRegion(r.id))throw Error("locked region "+r.id);while(M.next(state())?.region===r.id){const n=M.next(state()),a=n.pending[0];if(a==="ring-ready"){for(const l of M.LINKS){for(const [k,id] of [["abSent",l.a],["abReceived",l.b],["baSent",l.b],["baReceived",l.a]]){if(state().links[l.id][k])continue;U.enterRegion(id);const before=JSON.stringify(state().links[l.id]);const row=descendants(stage).filter(e=>e.className==="lr-row").find(e=>e.children[0]?.tagName==="span"&&e.children[0].textContent===M.REGIONS.find(x=>x.id===(id===l.a?l.b:l.a)).en);if(!row)throw Error("no exchange row");const b=row.children.find(e=>e.tagName==="button"&&!e.disabled&&e.textContent.startsWith(k.endsWith("Sent")?"Send":"Accept"));if(!b)throw Error("no exchange "+l.id+k);b.listeners.click();count++;if(before===JSON.stringify(state().links[l.id]))throw Error("exchange did not advance");}}U.enterRegion(r.id);exact(labels[a]);drain();}
  else if(a.startsWith("meet:")){const id=a.slice(5);click(t=>t.startsWith(D.cast[id][1]));drain();}
  else if(a==="choice")exact(D.choices[r.choices[0]][1]);
- else if(a==="local-response"){for(const id of r.npcs)click(t=>t.startsWith(D.cast[id][1]+" · "));}
+ else if(a==="local-response"){for(const id of r.npcs)click(t=>t.startsWith(D.cast[id][1]));}
  else if(P.definition(r.id,a))solve(P.definition(r.id,a));
  else {exact(labels[a]);drain();}
  steps++;if(M.next(state())?.scene===n.scene&&M.next(state())?.pending.includes(a))throw Error("action not recorded "+a+" / "+n.scene);if(steps>150)throw Error("stalled");
