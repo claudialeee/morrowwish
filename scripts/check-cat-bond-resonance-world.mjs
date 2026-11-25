@@ -1,16 +1,17 @@
 import fs from "node:fs";
-const paths=["resonance/campaign.mjs","resonance/engine.mjs","resonance/world-bridge.mjs","resonance/world-exploration.mjs","state.js"];
+const paths=["resonance/campaign.mjs","resonance/engine.mjs","resonance/slot-runtime.mjs","resonance/world-bridge.mjs","resonance/world-exploration.mjs","state.js"];
 const src=paths.map(p=>fs.readFileSync(new URL("../public/cat-bond/js/"+p,import.meta.url),"utf8"));
 console.log(JSON.stringify((function test(src){
  const clean=s=>s.replace(/^import .*;$/gm,"").replace(/\bexport\s+/g,"");
  const campaign=new Function(clean(src[0])+"\nreturn campaign")();
  const makeEngine=new Function(clean(src[1])+"\nreturn makeEngine")();
- const createWorldBridge=new Function("campaign","makeEngine",clean(src[2])+"\nreturn createWorldBridge")(campaign,makeEngine);
- const {createExplorer,exchangeOptions,layouts}=new Function("campaign",clean(src[3])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign);
+ const getSlotRuntime=new Function("campaign","makeEngine",clean(src[2])+"\nreturn getSlotRuntime")(campaign,makeEngine);
+ const createWorldBridge=new Function("campaign","getSlotRuntime",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime);
+ const {createExplorer,exchangeOptions,layouts}=new Function("campaign",clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign);
  const storage=new Map(),ls={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},window={};
- new Function("window","localStorage",src[4])(window,ls);
+ new Function("window","localStorage",src[5])(window,ls);
  const State=window.State,assert=(x,m)=>{if(!x)throw Error(m)},ok=(r,m)=>assert(r?.ok,m+": "+r?.reason);
- assert(State.startNewGame("slot1"),"slot1");let b=createWorldBridge(State),physical=0,walking=0,deliveries=0,puzzles=0,localInvites=0,rewards=0,fixture=0;
+ assert(State.startNewGame("slot1"),"slot1");let b=createWorldBridge(State),runtime=getSlotRuntime(State),notified=0;runtime.subscribe(()=>notified++);let physical=0,walking=0,deliveries=0,puzzles=0,localInvites=0,rewards=0,fixture=0;
  function host(fn){const e=makeEngine(campaign,State.S.resonance),r=fn(e);ok(r,"host fixture");State.S.resonance=r.state;ok(State.save(),"fixture save");fixture++;}
  function walk(x,p){let old=x.position;x.walk(...p);let ticks=0;while(x.moving&&ticks++<1000)x.tick(.05);assert(!x.moving&&x.near(p),"walk arrival "+p);walking+=ticks;return old;}
  function solve(x){let p=x.puzzle;assert(p,"puzzle not mounted");const n=p.type;
@@ -38,10 +39,10 @@ console.log(JSON.stringify((function test(src){
  assert(b.view().current.id==="finale:B-01","did not reach finale: "+b.view().current.id);
  assert(b.view().ring&&b.view().melodies.length===6&&b.view().sanctuaries.length===6,"ring or sanctuaries incomplete");assert(deliveries===24&&localInvites===12,"wrong exchange/participation counts");
  assert(!State.S.lastResonanceWorld,"parallel story state still created");
- const old=State.S.resonance,oldW=JSON.stringify(b.world());
- assert(State.startNewGame("slot2"),"slot2");assert(b.view().current.id==="prologue:P-01"&&!b.world().location,"slot2 leaked");
+ const old=State.S.resonance,oldW=JSON.stringify(b.world());const oldExplorer=createExplorer(b,b.world().location),oldToken=runtime.capture();
+ assert(State.startNewGame("slot2"),"slot2");assert(!oldExplorer.walk(.2,.2),"stale world explorer can move");assert(!runtime.nextLine(oldToken).ok,"stale scene lease accepted");assert(b.view().current.id==="prologue:P-01"&&!b.world().location,"slot2 leaked");
  assert(State.startNewGame("slot3"),"slot3");assert(b.view().current.id==="prologue:P-01","slot3 leaked");
  assert(State.loadSlot("slot1"),"restore slot1");assert(b.view().current.id==="finale:B-01"&&JSON.stringify(b.world())===oldW,"slot1 restore");
  const before=JSON.stringify(State.S.resonanceExploration),failed=createWorldBridge({get S(){return State.S},save:()=>({ok:false,reason:"quota"})});assert(!failed.enter("harbor").ok&&JSON.stringify(State.S.resonanceExploration)===before,"failed save did not roll back");
- return {physical,puzzles,walkingTicks:walking,deliveries,localInvites,rewards,fixtureTransitions:fixture,slots:3,canonicalFinale:b.view().current.id};
+ assert(notified===physical+deliveries,"unexpected shared runtime notification count "+notified);return {physical,puzzles,walkingTicks:walking,deliveries,localInvites,rewards,fixtureTransitions:fixture,slots:3,sharedRuntimeNotifications:notified,canonicalFinale:b.view().current.id};
 })(src)));
