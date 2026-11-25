@@ -2268,7 +2268,7 @@ class CaptureBattle {
     // impact accents through resolveHit and per-skill signatures.
     const RANGE = 64, ARC = .74;
     this.vfx.slash(f.x, f.y, aim, col, RANGE * (skill?.heavy ? 1.62 : 1.27), ARC * 1.02,
-      {heavy: !!skill?.heavy});
+      {heavy: !!skill?.heavy,element:skill?.element});
     let hit = false, dealtTotal = 0;
     for (const e of this.liveEnemies()) {
       const d = Math.hypot(e.x - f.x, e.y - f.y);
