@@ -2580,14 +2580,17 @@ class CaptureBattle {
       const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);   // mobile/AI/ally: target
       if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
     }
-    // METEOR (陨石术): a sky-drop, not a horizontal lob — the flaming rock FALLS from above
-    // onto the landing point (owner: "应该是从天而降"). Spawn it high above tx and send it
-    // straight down as a fireball, with a growing target reticle so it reads as incoming.
+    // METEOR (陨石术): a sky-drop that HOMES onto the enemy, not a free-aimed lob — the flaming
+    // rock FALLS diagonally from above and lands on the target cat (owner: 斜斜地从上面掉下来砸中).
     const sky = sk && (sk.id === 'meteor' || (sk.field && sk.element === 'fire' && sk.kind === 'aoe'));
     if (sky) {
-      // 陨石术 DIAGONAL sky-fall (owner: 一个陨石斜斜地从上面掉下来砸中): originate high up and
-      // to one side of the landing point, so the rock streaks in at ~60° instead of dropping
-      // straight down. Side is chosen away from the arena edge so it stays on-screen.
+      // Lock the landing point onto the locked/nearest enemy regardless of cursor. The meteor
+      // must hit a cat; aiming it at the empty cursor (which rests by the top UI) made it land
+      // "全在右上角" and never connect. Fall back to the free-aimed point only if no enemy exists.
+      const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);
+      if (tgt) { tx = tgt.x; ty = tgt.y; }
+      // DIAGONAL sky-fall: originate high up and to one roomier side of the landing point so the
+      // rock streaks in at ~35-60° instead of dropping straight down.
       const dropX = 300, dropY = 440;                              // diagonal offset of the spawn point
       const side = (tx > this.W * 0.5) ? -1 : 1;                   // come in from the roomier side
       const sx = clamp(tx - side * dropX, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
@@ -2595,7 +2598,9 @@ class CaptureBattle {
       const ang = Math.atan2(ty - sy, tx - sx), dist = Math.hypot(tx - sx, ty - sy);
       const speed = 640;                                           // fast incoming
       const p = this.spawnProj(sx, sy, ang, speed, dmg, 'me', col, 15, 'meteor', sk, dist / speed + 0.02);
-      p.burst = { r: R, dmg, skill: sk, col, tx, ty };             // detonates at the landing point on expiry
+      // Home the burst onto the target: if it's still alive on impact, re-read its live position
+      // so a moving cat still gets hit; otherwise detonate at the telegraphed ground point.
+      p.burst = { r: R, dmg, skill: sk, col, tx, ty, homeTo: tgt || null };
       p._meteor = true;                                            // heavy fiery comet trail (added in update loop)
       // landing telegraph: a shrinking reticle on the ground where the rock will hit
       this.vfx.ring(tx, ty, { r0: R, vr: -R * 1.4, life: dist / speed + 0.02, color: col, width: 3 });
@@ -2613,6 +2618,9 @@ class CaptureBattle {
   burstAt(p) {
     const b = p.burst; if (!b) return;
     const side = p.owner === 'wild' ? 'wild' : 'me';
+    // Homing lob (meteor): if its target is still alive, detonate on the cat's LIVE position so a
+    // moving enemy is still struck squarely rather than at the stale telegraph point.
+    if (b.homeTo && b.homeTo.alive && (b.homeTo.hp > 0)) { b.tx = b.homeTo.x; b.ty = b.homeTo.y; }
     this.vfx.shockwave(b.tx, b.ty, b.col);
     this.vfx.ring(b.tx, b.ty, { r0: 12, vr: b.r * 6, life: 0.4, color: b.col, width: 7 });
     this.vfx.burst(b.tx, b.ty, { count: this.game.isTouch ? 12 : 22, color: b.col, speed: 240, life: 0.5, r: 4 });
