@@ -120,7 +120,7 @@ if(!dashboard.includes('id="game-details"')||!dashboard.includes('id="focus-grid
    !dashboard.includes('const nativeNum=(n,id,published)=>')||
    !dashboard.includes('n==null')||
    !dashboard.includes('hasData?count(r.pageviews):""')||
-   !dashboard.includes('displayOrder.includes(g.game)'))
+   !dashboard.includes('displayOrder.includes(x.game)'))
  throw Error('Dashboard must show meaningful results and leave missing data blank');
 // Primary dashboard must preserve visit-to-start and start-to-finish context
 // and not show unsupported portals as native social-view channels.
