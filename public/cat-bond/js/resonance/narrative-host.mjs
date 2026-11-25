@@ -20,7 +20,15 @@ function install(){
  function close(){keyExchange?.dispose();keyExchange=null;dialogue?.dispose();dialogue=null;root?.remove();root=null;openedScene=null;slot=null;}
  function show(){
   const v=runtime.view(),game=window.__game;
-  if(!v.current||game?.scene==="battle")return false;
+  if(!v.current||game?.scene==="battle"||document.getElementById("cb-finale-result"))return false;
+  // Cinematic-only scenes have a physical entrance and an approved shot sequence.
+  // Reading their dialogue in the journal must never consume the cinematic cursor.
+  if(v.current.chapter!=="prologue"&&v.current.requires.some(op=>op.startsWith("cinematic:"))){
+   game?.toast?.({zh:"前往星坠原中央星铃，选择观看剧情。",en:"Visit the central Star Bell in Starfall and choose Watch the story scene."});return false;
+  }
+  if(v.current.chapter==="epilogue"&&game?.scene!=="yard"){
+   game?.toast?.({zh:"回到阳光花园，与暮铃交谈。",en:"Return to Sunlit Garden and speak with Muling."});return false;
+  }
   if(slot===State.S&&openedScene===v.current.id&&(dialogue||keyExchange)){(dialogue||keyExchange).render();return true}
   close();slot=State.S;openedScene=v.current.id;
   root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";root.dataset.scene=openedScene;stage.append(root);
@@ -35,20 +43,36 @@ function install(){
  function showKey(action){
   if(keyExchange||!root||!runtime.isCurrentAction(action))return;
   dialogue?.dispose();dialogue=null;
-  keyExchange=mountKeyExchange({root,language:lang,portrait:portrait("muling","epilogue:E-03",3),isCurrent:()=>runtime.isCurrentAction(action),commit:()=>runtime.completeNPCScene({sceneId:"epilogue:E-03",operation:"npc:second-garden-key",npcId:"muling",region:"garden",verified:true,token:action}),onComplete:()=>{close();scheduleFinish()},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value)});
+  keyExchange=mountKeyExchange({root,language:lang,portrait:portrait("muling","epilogue:E-03",3),isCurrent:()=>window.__game?.scene==="yard"&&runtime.isCurrentAction(action),commit:()=>window.__game?.scene!=="yard"?{ok:false,reason:"wrong-location"}:runtime.completeNPCScene({sceneId:"epilogue:E-03",operation:"npc:second-garden-key",npcId:"muling",region:"garden",verified:true,token:action}),onComplete:()=>{close();scheduleFinish()},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value)});
+ }
+ function showEndingTitle(){
+  const ending=document.createElement("section");ending.className="cb-story-overlay is-visible res-ending-title";
+  ending.setAttribute("role","dialog");ending.setAttribute("aria-modal","true");
+  Object.assign(ending.style,{position:"absolute",inset:"0",zIndex:"40",display:"grid",placeItems:"center",overflow:"hidden",background:"#152237"});
+  const art=document.createElement("img");art.src=new URL("../../assets/cinematics/prologue/garden-at-dawn.webp",import.meta.url).href;
+  art.alt="";Object.assign(art.style,{position:"absolute",inset:"0",width:"100%",height:"100%",objectFit:"cover",opacity:".80"});
+  const card=document.createElement("div");Object.assign(card.style,{position:"relative",textAlign:"center",padding:"24px",color:"#fff5dc",textShadow:"0 3px 20px #142239",background:"linear-gradient(90deg,transparent,#152237aa,transparent)",maxWidth:"95%"});
+  const title=document.createElement("h2");title.textContent="THE BELL RINGS AGAIN";title.style.font="700 clamp(24px,5vw,54px) Georgia,serif";title.style.letterSpacing=".10em";
+  const sub=document.createElement("p"),button=document.createElement("button");button.type="button";card.append(title,sub,button);ending.append(art,card);stage.append(ending);
+  function render(){sub.textContent=lang()==="zh"?"星铃再次响起":"The world answers again";button.textContent=lang()==="zh"?"回到阳光花园":"Return to Sunlit Garden";}
+  function dismiss(){ending.remove();window.removeEventListener("cat-bond-active-save-changed",dismiss);window.removeEventListener("morrowwish-language-change",render);}
+  button.onclick=dismiss;window.addEventListener("cat-bond-active-save-changed",dismiss);window.addEventListener("morrowwish-language-change",render);render();button.focus();
+  if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){art.animate([{transform:"scale(1.035)"},{transform:"scale(1.085)"}],{duration:6500,fill:"forwards"});card.animate([{opacity:0,transform:"translateY(12px)"},{opacity:1,transform:"translateY(0)"}],{duration:1100,fill:"forwards"});}
+  window.MorrowwishAudio?.note?.(523.25,.8,.15);
  }
  function scheduleFinish(){
   if(scheduled)return;scheduled=true;const scheduledRoot=State.S;queueMicrotask(()=>{scheduled=false;
    if(scheduledRoot!==State.S)return;
    if(slot&&slot!==State.S){close();return}
    const v=runtime.view();if(!v.current)return;
+   if(["epilogue:E-02","epilogue:E-03"].includes(v.current.id)&&window.__game?.scene!=="yard"){if(root)close();return;}
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.cursor===v.current.lines.length){
     if(v.current.id==="epilogue:E-02"&&v.objective.includes("npc:public-accountability")){const r=runtime.completeNPCScene({sceneId:v.current.id,operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:runtime.capture()});if(!r.ok)return;scheduleFinish();return}
     if(v.current.id==="epilogue:E-03"&&v.objective.includes("npc:second-garden-key")){showKey(runtime.capture());return}
     if(v.objective.length&&(!v.current.choices.length||v.choice)){close();return;}
    }
    if(v.cursor===v.current.lines.length&&!v.objective.length&&(!v.current.choices.length||v.choice)){
-    const old=v.current.id,r=runtime.finish();if(r.ok&&openedScene===old)close();
+    const old=v.current.id,r=runtime.finish();if(r.ok){if(openedScene===old)close();if(old==="epilogue:E-03")showEndingTitle();}
    }
   })
  }
@@ -72,6 +96,6 @@ function install(){
  window.addEventListener("cat-bond-resonance-support-result",event=>{runtime.support(event.detail)});
  window.addEventListener("cat-bond-resonance-postgame-result",event=>{runtime.postgame(event.detail)});
  // Map and cinematic hosts can present the current scene without granting evidence.
- window.CatBondResonance=Object.freeze({captureAction:runtime.capture,isCurrentAction:runtime.isCurrentAction,exchange:runtime.exchange,initialize:runtime.initialize,npcProfile:runtime.npcProfile,residents:runtime.residents,isMulingFollowing:runtime.follows,view:runtime.view,snapshot:runtime.snapshot,showCurrent:show,close,recordEvidence:runtime.evidence,commitFinaleVictory:runtime.commitFinaleVictory,recordNPC:runtime.recordNPC,ambient:runtime.ambient,support:runtime.support,postgame:runtime.postgame,supportProfile:runtime.supportProfile,ambientAvailable:runtime.ambientAvailable});
+ window.CatBondResonance=Object.freeze({captureAction:runtime.capture,isCurrentAction:runtime.isCurrentAction,exchange:runtime.exchange,initialize:runtime.initialize,npcProfile:runtime.npcProfile,residents:runtime.residents,isMulingFollowing:runtime.follows,view:runtime.view,snapshot:runtime.snapshot,showCurrent:show,close,recordEvidence:runtime.evidence,commitFinaleVictory:runtime.commitFinaleVictory,commitRuinsVictory:runtime.commitRuinsVictory,recordNPC:runtime.recordNPC,ambient:runtime.ambient,support:runtime.support,postgame:runtime.postgame,supportProfile:runtime.supportProfile,ambientAvailable:runtime.ambientAvailable});
 }
 if(document.readyState==="complete")install();else document.addEventListener("DOMContentLoaded",install,{once:true});

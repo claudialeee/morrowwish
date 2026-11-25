@@ -1778,6 +1778,8 @@ class CaptureBattle {
     // fighter's smoothed velocity so allies glide instead of twitching. Note the old
     // code moved by the RAW (unnormalized) mx/my — magnitude varied wildly frame to
     // frame; smoothSteer normalizes to a unit heading, so speed is now steady too.
+    const assignment=this.resonanceFinale&&window.CatBondFinaleCombat?.guardSteering?.(this,f);
+    if(assignment){mx=assignment.x;my=assignment.y;evasive=false;if(!mx&&!my){f._svx=0;f._svy=0;}}
     const dir = this.smoothSteer(f, mx, my, evasive ? 22 : 8);
     if (dir) { f._moveFacing = Math.atan2(dir.y,dir.x); if(f.reflectT>0)f._wallDesiredAngle=Math.atan2(tgt.y-f.y,tgt.x-f.x); }
     // Freeze a cat's REAL position while it's performing the duo-combo run: its SPRITE is drawn along a
@@ -5647,12 +5649,14 @@ class CaptureBattle {
       // last ~3s — re-applying its best recent damage like rewinding a clock.
       if (info.rewind) {
         let lo = e.hp; for (const h of e._hpHist) if (h.hp < lo) lo = h.hp;
-        if (lo < e.hp) { const d = e.hp - lo; e.hp = lo; this.vfx.text(e.x, e.y - 40, '⏪ 回溯 -' + Math.round(d), info.color, 16); this.vfx.ring(e.x, e.y, { r0: 10, vr: 480, life: 0.5, color: info.color, width: 5 }); if (e.hp <= 0 && e.alive) { e.alive = false; this._lastDropped = e; this.spawnBurst(e.x, e.y, '💫', info.color, 12); } }
+        if (this.resonanceFinale && lo < e.hp) { this.hurtEnemy(e,e.hp-lo,e.x,e.y,true); }
+        else if (lo < e.hp) { const d = e.hp - lo; e.hp = lo; this.vfx.text(e.x, e.y - 40, '⏪ 回溯 -' + Math.round(d), info.color, 16); this.vfx.ring(e.x, e.y, { r0: 10, vr: 480, life: 0.5, color: info.color, width: 5 }); if (e.hp <= 0 && e.alive) { e.alive = false; this._lastDropped = e; this.spawnBurst(e.x, e.y, '💫', info.color, 12); } }
         delete e.status[tg]; e.tags = (e.tags || []).filter(t => t !== tg); continue;
       }
       // damage-over-time
       if (info.dps) {
         const d = e.maxhp * info.dps * dt;
+        if(this.resonanceFinale){this.hurtEnemy(e,d,e.x,e.y,true);continue;}
         e.hp = Math.max(0, e.hp - d);
         if (Math.random() < dt * 3) this.vfx.text(e.x + (Math.random() * 16 - 8), e.y - 18, '-' + Math.max(1, Math.round(e.maxhp * info.dps)), info.color, 10);
         if (e.hp <= 0 && e.alive) { e.alive = false; this._lastDropped = e; this.spawnBurst(e.x, e.y, '💫', info.color, 10); this.game.toast(e.sp.name + ' 倒下了！'); }
@@ -6618,7 +6622,9 @@ class CaptureBattle {
         ctx.translate(-e.x, -(e.y + 33 * crouch));
       }
       window.CatBondWardArt?.draw(ctx,e,e.x,e.y,this.t,this.catScale('enemy'),'back');
-      if(e.regionalEnemy && window.CatBondRegionalArt?.drawManifestation(ctx,e,this)){
+      if(this.resonanceFinale && window.CatBondFinaleCombat?.drawEnemy?.(ctx,e,this)){
+        // Canonical finale character/ritual presentation.
+      }else if(e.regionalEnemy && window.CatBondRegionalArt?.drawManifestation(ctx,e,this)){
         // Authored non-collectible manifestation sprite.
       }else if(e.visualKind==='forge-guardian' && window.CatBondForgeCombat?.drawEnemy){
         window.CatBondForgeCombat.drawEnemy(ctx,e,this);

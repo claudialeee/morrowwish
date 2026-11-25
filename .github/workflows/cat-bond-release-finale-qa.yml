@@ -1,0 +1,46 @@
+name: Cat Bond finale real player preview (no deploy)
+on:
+  push:
+    branches: ['rpg/release-finale']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: finale-normal-player-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  normal-player:
+    if: github.ref == 'refs/heads/rpg/release-finale'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 42
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [desktop, portrait, landscape]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Normal new-save campaign and staging ending, no production traffic
+        env:
+          CAT_BOND_FULL_PLAYTHROUGH: '1'
+          CAT_BOND_PROFILE: ${{ matrix.profile }}
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cat-bond-finale-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-harbor-playthrough.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: finale-real-player-${{ matrix.profile }}
+          path: artifacts/cat-bond-finale/
+          if-no-files-found: warn
+          retention-days: 7
