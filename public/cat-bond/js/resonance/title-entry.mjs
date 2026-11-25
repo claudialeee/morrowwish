@@ -44,16 +44,21 @@ export async function startCanonicalOpening(game,{onWorld}={}){
  window.__CAT_BOND_CANONICAL_ACTIVE__=true;
  const same=()=>window.State.S===rootState&&window.State.activeSlot()===slot;
  let closed=false,controller=null,root=null,removeError=null,launching=false,runtime=null;
+ const persistCheckpoint=pending=>{if(!same()||!pending?.snapshot)return;const previous=rootState.openingPresentation;rootState.openingPresentation={slot,revision:pending.revision,snapshot:pending.snapshot};if(!window.State.save()?.ok){if(previous===undefined)delete rootState.openingPresentation;else rootState.openingPresentation=previous;}};
+ const onPageHide=()=>{if(same())persistCheckpoint(controller?.snapshot?.());dispose();};
  const onSlotChange=()=>{if(!same())dispose();};
- const dispose=()=>{if(closed)return;closed=true;controller?.dispose();root?.remove();removeError?.();window.removeEventListener('cat-bond-resonance-changed',onSlotChange);window.removeEventListener('pagehide',dispose);};
+ const dispose=()=>{if(closed)return;closed=true;controller?.dispose();root?.remove();removeError?.();window.removeEventListener('cat-bond-resonance-changed',onSlotChange);window.removeEventListener('pagehide',onPageHide);window.removeEventListener('cat-bond-active-save-changed',onSlotChange);};
  const live=()=>{if(closed)return false;if(!same()){dispose();return false;}return true;};
  active={dispose};
  window.addEventListener('cat-bond-resonance-changed',onSlotChange);
- window.addEventListener('pagehide',dispose,{once:true});
+ window.addEventListener('pagehide',onPageHide,{once:true});window.addEventListener('cat-bond-active-save-changed',onSlotChange);
  const showError=reason=>{if(!live())return;controller?.cancel?.();removeError?.();removeError=errorPanel(game,reason,()=>{removeError=null;if(controller&&typeof advance==='function')advance();else{dispose();startCanonicalOpening(game,{onWorld})}});};
  const toGarden=()=>{
   game.scene='yard';game.battle=null;game.rebuildYard?.();game.showYardChrome?.();game.refreshHUD?.();
-  window.dispatchEvent(new Event('cat-bond-garden-entered'));
+  const entered=()=>{game.rebuildYard?.();game.refreshHUD?.();window.dispatchEvent(new Event('cat-bond-garden-entered'));};
+  if(rootState.cats.length){entered();return;}
+  const collect=()=>window.UI.openStarter(id=>{if(!same())return;const starter=window.State.makeCat(id,{affinity:20});window.Raising?.decorateNewCat?.(starter);const previous=rootState.dex[id];rootState.cats.push(starter);rootState.dex[id]=(previous||0)+1;if(!window.State.save()?.ok){rootState.cats.pop();if(previous===undefined)delete rootState.dex[id];else rootState.dex[id]=previous;game.toast({zh:'保存失败，请再试一次。',en:'Save failed. Please try again.'});queueMicrotask(collect);return;}window.arcadeMetric?.('bond_starter_chosen',{starter:id});entered();});
+  collect();
  };
  let advance;
  try{
@@ -71,11 +76,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   const handoff=mode=>{
    controller?.dispose();controller=null;root?.remove();root=null;
    if(mode==='garden'){toGarden();dispose();return;}
-   if(mode==='departure'){
-    game.openWorldMap?.();
-    window.CatBondResonance?.showCurrent?.();
-    dispose();return;
-   }
+   if(mode==='departure'){toGarden();dispose();return;}
    try{
     onWorld?.();
     if(initial.current?.chapter===rootState.resonanceExploration?.location)window.WorldMap?.resumeRegion?.();
@@ -92,13 +93,16 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   root=document.createElement('div');root.id='cb-canonical-opening';document.getElementById('stage').append(root);
   controller=mountResonanceCinematics({
    root,rendererFactory:renderer.create,engine:runtime,campaign,manifest,
+   openingRelease:true,
    staging:window.__CAT_BOND_INTEGRATION_ART__===true,
+   onCheckpoint:persistCheckpoint,
    getSlotKey:()=>window.State.activeSlot(),language:lang,
    onLanguageChange:next=>window.MorrowwishI18n?.set?.(next),
    onResolved:result=>{
     if(!live())return;
     const finished=finishCinematicScene(runtime,result.sceneId);
     if(!finished.ok){showError(finished.reason);return;}
+    delete rootState.openingPresentation;window.State.save();
     queueMicrotask(()=>{if(live())advance();});
    },
    onError:result=>showError(result?.reason||'cinematic-failed')
@@ -108,7 +112,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
    const mode=classifyPrologue(runtime.view());
    if(mode!=='cinematic'){handoff(mode);return;}
    launching=true;
-   try{const result=await controller.playCurrent();if(!result.ok&&live())showError(result.reason);return result;}
+   try{const saved=rootState.openingPresentation,view=runtime.view();const resume=saved?.slot===slot&&saved.revision===view.revision&&saved.snapshot?.sceneId===view.current.id&&Number.isInteger(saved.snapshot.frameIndex)&&saved.snapshot.frameIndex>=0&&Number.isFinite(saved.snapshot.elapsedMs)&&saved.snapshot.elapsedMs>=0?{slot,revision:saved.revision,snapshot:{...saved.snapshot,paused:true}}:null;const result=await controller.playCurrent(resume);if(!result.ok&&live()){delete rootState.openingPresentation;window.State.save();showError(result.reason);}return result;}
    catch(e){const reason=e.message||'cinematic-failed';showError(reason);return {ok:false,reason};}
    finally{launching=false;}
   };
