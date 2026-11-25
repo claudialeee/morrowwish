@@ -16,7 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!forgePreviewRequested || window.__CB_FORGE_PREVIEW_LAUNCHED__) return;
     window.__CB_FORGE_PREVIEW_LAUNCHED__ = true;
     setTimeout(() => {
-      try { window.CatBondForgeCombat?.launch(game); }
+      try { window.CatBondForgeCombat?.launch(game,{preview:true}); }
       catch (error) { window.__CB_FORGE_PREVIEW_LAUNCHED__ = false; console.error('Forge preview launch failed', error); }
     }, 350);
   };

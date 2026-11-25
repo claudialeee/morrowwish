@@ -83,7 +83,7 @@ function tickHazards(b,e,dt){
     h.age+=dt;h.life-=dt;h.delay=Math.max(0,(h.delay||0)-dt);h.tick-=dt;
     if(h.delay<=0&&h.tick<=0){
       for(let i=0;i<b.team.length;i++){
-        const f=b.team[i];if(!f.alive||dist(f,h)>h.r+(f.r||18))continue;
+        const f=b.team[i];if(!f.alive||Math.hypot((f.x-h.x)/(h.r+(f.r||18)),(f.y-h.y)/(h.r*.42+(f.r||18)))>1)continue;
         const n=h.hitCounts[i]||0,max=h.kind==="steam"?2:1;if(n>=max)continue;
         h.hitCounts[i]=n+1;
         b.resolveHit(f,"wild",{element:"fire",isBasic:true,name:h.kind==="hammer"?"重锤冲击":"高温蒸汽"},h.damage,h.x,h.y);
@@ -164,8 +164,8 @@ function drawEnemy(ctx,e,b){
   ctx.fillStyle="rgba(5,10,14,.42)";ctx.beginPath();ctx.ellipse(e.x,e.y+5,size*.43,size*.105,0,0,Math.PI*2);ctx.fill();
   if(img.complete&&img.naturalWidth){
     const bob=Math.sin(b.t*4.2)*2.2,tilt=e.telegraph>0?-.025*Math.sin(b.t*30):.012*Math.sin(b.t*2.4);
-    ctx.translate(e.x,e.y-size*.52+bob);ctx.rotate(tilt);
-    ctx.drawImage(img,-size/2,-size/2,size,size);
+    ctx.save();ctx.translate(e.x,e.y-size*.52+bob);ctx.rotate(tilt);
+    ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();
   }else{
     const draw=window.CatMotion?.draw||window.CatArt?.drawCat;
     draw?.(ctx,e.x,e.y,{species:e.sp,scale:b.catScale("enemy"),face:e.face,t:e.t,pose:e.pose,mood:"alert"});
@@ -271,51 +271,68 @@ function showResult(game,b,outcome,returnToMap){
   descNode.dataset.forgeZh=win?"机械守卫停止运转，炉心已经稳定。":retreat?"队伍已安全撤离，可以重新挑战。":"先恢复状态、调整队伍，再尝试挑战。";
   descNode.dataset.forgeEn=win?"The guardian is quiet. The forge can be examined safely.":retreat?"The team withdrew safely. The encounter can be attempted again.":"Recover, adjust your lineup, and try again.";
   const rewards=overlay.querySelector(".cb-forge-rewards");
-  if(win){rewards.hidden=false;rewards.textContent=en?"Rewards · 80 coins · 2 fish · battle XP":"奖励 · 80 金币 · 2 小鱼干 · 猫咪战斗经验";rewards.dataset.forgeZh="奖励 · 80 金币 · 2 小鱼干 · 猫咪战斗经验";rewards.dataset.forgeEn="Rewards · 80 coins · 2 fish · battle XP";}
+  if(win&&b.forgeRewardGranted){rewards.hidden=false;rewards.textContent=en?"Rewards · 80 coins · 2 fish · battle XP":"奖励 · 80 金币 · 2 小鱼干 · 猫咪战斗经验";rewards.dataset.forgeZh="奖励 · 80 金币 · 2 小鱼干 · 猫咪战斗经验";rewards.dataset.forgeEn="Rewards · 80 coins · 2 fish · battle XP";}
+  if(win&&!b.forgeRewardGranted){rewards.hidden=false;rewards.dataset.forgeZh=b.forgeContext?.preview?"调试胜利，不写入存档。":"剧情进度未提交，请返回后重试。";rewards.dataset.forgeEn=b.forgeContext?.preview?"Preview win: no save changes.":"Story progress not committed. Return and retry.";rewards.textContent=en?rewards.dataset.forgeEn:rewards.dataset.forgeZh;}
   const back=overlay.querySelector("[data-forge-return]"),retry=overlay.querySelector("[data-forge-retry]");
   back.textContent=en?"Return to the world":"返回世界";back.dataset.forgeZh="返回世界";back.dataset.forgeEn="Return to the world";
-  retry.textContent=en?"Retry encounter":"再次挑战";retry.dataset.forgeZh="再次挑战";retry.dataset.forgeEn="Retry encounter";retry.hidden=win;
-  back.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();if(returnToMap){game.scene="map";window.WorldMap?.resumeRegion?.(false);}else{game.scene="yard";game.showYardChrome?.();}});
-  retry.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();launch(game,{retry:true});});
+  retry.textContent=en?"Retry encounter":"再次挑战";retry.dataset.forgeZh="再次挑战";retry.dataset.forgeEn="Retry encounter";retry.hidden=win&&!!b.forgeRewardGranted;
+  back.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();if(b.forgeContext?.returnToWorld){b.forgeContext.returnToWorld({outcome,committed:!!b.forgeRewardGranted});}else if(returnToMap){game.scene="map";window.WorldMap?.resumeRegion?.(false);}else{game.scene="yard";game.showYardChrome?.();}});
+  retry.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();try{window.CatBondForgeCombat.launch(game,b.forgeContext);}catch(error){toast(game,"无法重试：存档或剧情已变化。","Retry unavailable: save or story has changed.");console.error(error);}});
   document.getElementById("stage")?.append(overlay);game._forgeResultOpen=true;
 }
+function currentForgeContext(game,options){
+  const slot=window.State?.S;
+  if(!slot)throw Error("No active save slot");
+  if(options?.preview===true){
+    if(new URLSearchParams(location.search).get("combat")!=="forge")throw Error("Debug preview is not enabled");
+    return {preview:true,slot,returnToWorld:null};
+  }
+  const engine=options?.engine;
+  if(!engine||typeof engine.view!=="function"||typeof engine.snapshot!=="function"||typeof engine.record!=="function")throw Error("Chat 4 active narrative engine required");
+  if(options.slot&&options.slot!==slot)throw Error("Stale save slot");
+  const snapshot=engine.snapshot(),view=engine.view();
+  if(JSON.stringify(snapshot)!==JSON.stringify(slot.resonance))throw Error("Narrative engine does not match active slot");
+  if(view.current?.id!==FORGE_ENCOUNTER.id||!view.objective?.includes(FORGE_ENCOUNTER.operation)||view.objective.includes("puzzle:heat-pressure"))throw Error("Forge battle unavailable: complete heat-pressure puzzle first");
+  return {preview:false,slot,engine,revision:snapshot.revision,returnToWorld:typeof options.returnToWorld==="function"?options.returnToWorld:null};
+}
 function finishEncounter(game,b){
-  const outcome=b.forgeOutcome||"defeat",win=outcome==="win",returnToMap=game._returnScene==="map";
-  try{b.commitAiProfile?.(win);}catch(_){}
-  const recovery={mode:window.State?.difficulty?.()||"casual",fromMap:returnToMap,team:[]};
-  const seen=new Set();
-  try{
-    for(const f of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){
-      if(!f?.cat||f._reinforcement||seen.has(f.cat.uid))continue;seen.add(f.cat.uid);
-      const before=f.alive?Math.max(.15,Math.min(1,f.hp/f.maxhp)):.15;
-      const after=returnToMap&&recovery.mode==="hardcore"?window.State.setBattleHealth(f.cat,before):1;
-      if(after===1){delete f.cat._hpFrac;delete f.cat._hpAt;}
-      recovery.team.push({name:window.State.catName(f.cat),before:Math.round(before*100),after:Math.round(after*100)});
+  if(b.forgeFinished)return;b.forgeFinished=true;
+  const outcome=b.forgeOutcome||"defeat",win=outcome==="win",returnToMap=game._returnScene==="map",ctx=b.forgeContext;
+  const slot=window.State.S,valid=ctx?.slot===slot&&!ctx.preview;
+  b.forgeRewardGranted=false;
+  if(valid){
+    if(win){
+      try{
+        const before=ctx.engine.snapshot();
+        if(before.revision!==ctx.revision||JSON.stringify(before)!==JSON.stringify(slot.resonance))throw Error("Stale narrative revision");
+        const result=ctx.engine.record(FORGE_ENCOUNTER.id,FORGE_ENCOUNTER.operation);
+        if(!result.ok)throw Error(result.reason);
+        slot.resonance=result.state;
+        slot.coins=(slot.coins||0)+80;slot.fish=(slot.fish||0)+2;
+        const cats=[...(b.team||[]),...(b._benchFighters?.values?.()||[])].filter(f=>f?.cat&&!f._reinforcement).map(f=>f.cat);
+        for(const cat of new Map(cats.map(c=>[c.uid,c])).values()){window.State.addXp?.(cat,42);cat.battlesWon=(cat.battlesWon||0)+1;window.Skills?.autoLearn?.(cat);}
+        b.forgeRewardGranted=true;
+      }catch(error){console.error("[Forge] narrative victory rejected",error);}
     }
-    if(recovery.mode==="casual")window.State.healAllCats?.();
-  }catch(error){console.error("[Forge] battle recovery failed",error);}
-  game._battleRecovery=recovery;
+    try{
+      const seen=new Set(),hardcore=window.State.difficulty()==="hardcore";
+      for(const f of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){
+        if(!f?.cat||f._reinforcement||seen.has(f.cat.uid))continue;seen.add(f.cat.uid);
+        if(returnToMap&&hardcore)window.State.setBattleHealth(f.cat,f.alive?Math.max(.15,Math.min(1,f.hp/f.maxhp)):.15);
+        else{delete f.cat._hpFrac;delete f.cat._hpAt;}
+      }
+      if(!hardcore)window.State.healAllCats?.();
+      if(b._firstDuoShowcase&&b.duoUses>0)slot.firstDuoShowcasePending=false;
+      window.State.save();
+    }catch(error){console.error("[Forge] recovery/save failed",error);b.forgeRewardGranted=false;}
+    window.arcadeMetric?.(win?"game_complete":"game_over",{region:"forge",storyEncounter:FORGE_ENCOUNTER.operation,outcome});
+  }
   document.getElementById("battle-ui")?.classList.remove("on");
   const duo=document.getElementById("duo-burst");if(duo)duo.hidden=true;
-  game.setBattleHelpVisible?.(false);
-  game._returnScene=null;
-  if(returnToMap){game.scene="map";document.body.classList.add("cb-exploring");window.WorldMap?.resumeRegion?.(false);}
-  else{game.scene="yard";game.showYardChrome?.();}
-  game.yard?.refreshYardSwitch?.();game.refreshCollectionGoal?.();
-  if(win){
-    window.State.S.coins=(window.State.S.coins||0)+80;
-    window.State.S.fish=(window.State.S.fish||0)+2;
-    const cats=[...(b.team||[]),...(b._benchFighters?.values?.()||[])].map(f=>f?.cat).filter(Boolean);
-    for(const cat of new Map(cats.map(c=>[c.uid,c])).values())window.State.addXp?.(cat,42);
-    const engine=game._forgeNarrativeEngine;
-    if(engine?.record){
-      const result=engine.record(FORGE_ENCOUNTER.id,FORGE_ENCOUNTER.operation);
-      if(result.ok){window.State.S.resonance=result.state;game._forgeNarrativeRecord="PASS";}
-      else{game._forgeNarrativeRecord="REJECTED: "+result.reason;console.warn("[Forge] narrative adapter rejected victory",result.reason);}
-    }else game._forgeNarrativeRecord="NOT CONNECTED";
-    window.arcadeMetric?.("game_complete",{region:"forge",storyEncounter:FORGE_ENCOUNTER.operation});
-  }else if(!retreat){window.arcadeMetric?.("game_over",{region:"forge",storyEncounter:FORGE_ENCOUNTER.operation});}
-  window.State.save();game.refreshHUD?.();game.battle=null;removeHud();
+  game.setBattleHelpVisible?.(false);game._returnScene=null;game.battle=null;removeHud();
+  game.scene=returnToMap?"map":"yard";
+  if(returnToMap)document.body.classList.add("cb-exploring");else game.showYardChrome?.();
+  game.refreshHUD?.();
   showResult(game,b,outcome,returnToMap);
 }
 const originalEnd=GP.endBattle;
@@ -325,10 +342,12 @@ GP.endBattle=function(){
 };
 const originalStart=GP.startBattle;
 GP.startBattle=function(team,wildSpecies,opts={}){
+  if(opts.storyEncounter!=="forge-guardian")return originalStart.call(this,team,wildSpecies,opts);
+  const context=currentForgeContext(this,opts.forgeContext);
   const result=originalStart.call(this,team,wildSpecies,opts);
-  if(opts.storyEncounter!=="forge-guardian"||!this.battle)return result;
+  if(!this.battle)throw Error("Forge battle was not created");
   const b=this.battle,enemy=b.enemies?.[0];if(!enemy)throw new Error("Forge guardian failed to spawn");
-  b.storyEncounter=true;b.storyEncounterId=FORGE_ENCOUNTER.id;b.forgeState=createForgeState();
+  b.storyEncounter=true;b.storyEncounterId=FORGE_ENCOUNTER.id;b.forgeState=createForgeState();b.forgeContext=context;
   b._forgeReturnScene=this._returnScene||"yard";b._forgeTeam=(team||[]).slice();
   b._analyticsRegion="forge";b.captureReady=false;
   const teamHp=(b.team||[]).reduce((n,f)=>n+(f.maxhp||0),0);
@@ -367,6 +386,7 @@ window.CatBondForgeCombat={
   rules:{createForgeState,tickForgeState,useForgeSupport,forgeDamageScale},
   launch(game=window.__game,options={}){
     if(!game||!window.State?.S)throw new Error("Start or load a save slot before launching the Forge encounter.");
+    const context=currentForgeContext(game,options);
     if(game.battle)throw new Error("A battle is already active.");
     const preferred=window.UI?.getPreferredBattleTeam?.()||[];
     const team=preferred.length?preferred:(window.State.S.cats||[]).slice(0,5);
@@ -375,17 +395,13 @@ window.CatBondForgeCombat={
     game._returnScene="map";
     game._battleTheme={region:"forge",sky1:"#172532",sky2:"#405967",ground:"#4b4138",ground2:"#222b32",accent:"#b96e49"};
     const boss=bossSpecies();
-    game.startBattle(team,boss,{storyEncounter:"forge-guardian",pack:[boss]});
+    game.startBattle(team,boss,{storyEncounter:"forge-guardian",pack:[boss],forgeContext:context});
     return game.battle;
   },
-  bindNarrative(engine){
-    if(!engine||typeof engine.record!=="function")throw new Error("A Chat 4 narrative engine instance is required.");
-    if(!window.State?.S)throw new Error("No active save slot.");
-    window.__game._forgeNarrativeEngine=engine;
-    return true;
-  },
+  canLaunch(game,options){try{currentForgeContext(game,options);return !game.battle;}catch{return false;}},
   drawBackground,drawEnemy,drawBossEffects
 };
+GP.startResonanceBattle=function(operation,context){if(operation!==FORGE_ENCOUNTER.operation)return false;return window.CatBondForgeCombat.launch(this,context);};
 const flee=document.getElementById("btn-flee");
 flee?.addEventListener("click",()=>{if(window.__game?.battle?.storyEncounter)window.__game.battle.forgeRetreat=true;},true);
 window.addEventListener("morrowwish-language-change",()=>{
