@@ -55,3 +55,21 @@
 @media(max-width:760px){.lr-map-brief{grid-template-columns:1fr;gap:10px;padding:13px}.lr-map-metrics{grid-template-columns:repeat(3,1fr)}.lr-region-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.lr-region-card-copy strong{font-size:14px}.lr-region-card-copy small{font-size:10px}.lr-region-hero{min-height:190px}.lr-npc-grid{grid-template-columns:1fr}.lr-dialog{grid-template-columns:76px minmax(0,1fr);gap:10px;padding:11px}.lr-dialog .lr-portrait{width:72px;height:72px}.lr-dialog-copy h3{font-size:19px}.lr-dialog-copy p{font-size:14px}.lr-dialog>.lr-action{grid-column:1 / -1;justify-self:stretch}.lr-atlas{height:clamp(260px,43dvh,470px)}}
 @media(max-width:420px){.lr-head{padding-right:108px}.lr-head strong{font-size:14px}.lr-region-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lr-region-card{aspect-ratio:1.2}.lr-region-card-copy{left:8px;bottom:7px}.lr-region-card-copy strong{font-size:12px}.lr-region-card-copy small{font-size:9px}.lr-portrait{width:64px;height:64px;flex-basis:64px}.lr-npc-card{padding:8px;gap:9px}.lr-npc-copy strong{font-size:15px}.lr-npc-copy small{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.lr-region-card,.lr-npc-card,.lr-action{transition:none}}
+
+/* Runtime framing: keep the game's global controls in their own safe strip. */
+.lr-head{position:relative;min-height:112px;align-items:flex-end;padding:54px 238px 13px 20px;gap:14px}
+.lr-head strong{order:1;flex:0 1 auto;min-width:160px}
+.lr-head button{order:2;margin:0 auto 0 4px;white-space:nowrap}
+.lr-head span{order:3;margin-left:auto;white-space:nowrap}
+body.cb-exploring .cb-home,
+body.cb-exploring #stage #cb-header #cb-yard-return{display:none!important}
+.lr-atlas{width:min(100%,calc(56vh * 16 / 9));height:min(56vh,620px);aspect-ratio:16/9;margin:0 auto}
+.lr-map-brief{max-width:1180px;margin-left:auto;margin-right:auto}
+.lr-region-grid{max-width:1180px;margin-left:auto;margin-right:auto}
+.lr-region-hero{animation:lr-arrive .62s cubic-bezier(.2,.75,.2,1) both}
+.lr-dialog{animation:lr-dialog-in .36s ease-out both}
+.lr-puzzle,.lr-exchange{animation:lr-arrive .3s ease-out both}
+@keyframes lr-arrive{from{opacity:0;transform:translateY(13px);filter:brightness(.78)}to{opacity:1;transform:translateY(0);filter:brightness(1)}}
+@keyframes lr-dialog-in{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:760px){.lr-head{min-height:100px;padding:52px 112px 10px 12px;gap:8px}.lr-head strong{font-size:14px;min-width:0}.lr-head button{font-size:11px;padding:7px 9px}.lr-head span{display:none}.lr-atlas{width:100%;height:auto;max-height:320px;aspect-ratio:16/9}}
+@media(prefers-reduced-motion:reduce){.lr-region-hero,.lr-dialog,.lr-puzzle,.lr-exchange{animation:none}}
