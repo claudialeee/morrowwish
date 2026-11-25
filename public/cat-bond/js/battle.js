@@ -2267,7 +2267,7 @@ class CaptureBattle {
     // 170px crescent + extra pre-hit particle fan. Only real contact gets
     // impact accents through resolveHit and per-skill signatures.
     const RANGE = 64, ARC = .74;
-    this.vfx.slash(f.x, f.y, aim, col, RANGE * .87, ARC * .92,
+    this.vfx.slash(f.x, f.y, aim, col, RANGE * (skill?.heavy ? 1.62 : 1.27), ARC * 1.02,
       {heavy: !!skill?.heavy});
     let hit = false, dealtTotal = 0;
     for (const e of this.liveEnemies()) {
@@ -2410,6 +2410,7 @@ class CaptureBattle {
   // Detonate a lobbed AOE at its landing point: everyone inside R takes the hit.
   burstAt(p) {
     const b = p.burst; if (!b) return;
+    if(b.skill?.id==='meteor')window.CatBondSkillFX?.meteorImpact(this,b);
     const side = p.owner === 'wild' ? 'wild' : 'me';
     this.vfx.shockwave(b.tx, b.ty, b.col);
     this.vfx.ring(b.tx, b.ty, { r0: 12, vr: b.r * 6, life: 0.4, color: b.col, width: 7 });
@@ -3657,6 +3658,9 @@ class CaptureBattle {
       if(b._ox==null)continue;
       // paint only up to the first enemy the stream hits (visual; damage uses b._ex/_ey)
       const _vend=this.beamVisualEnd(b), _ex0=b._ex, _ey0=b._ey;
+      // Sweeping fire penetrates; water uses first visible contact. No damage mutation.
+      if(window.CatBondSkillFX?.drawCombatBeam(ctx,b,this.t,
+        b.sk?.id==='flameSweep'?_ex0:_vend.ex,b.sk?.id==='flameSweep'?_ey0:_vend.ey))continue;
       b._ex=_vend.ex; b._ey=_vend.ey;
       const k=Math.max(0,b.t/b.max);
       if(b.sk?.id==='thunderStream'){
@@ -5911,6 +5915,7 @@ class CaptureBattle {
 
     // projectiles with glow
     for (const p of this.projectiles) {
+      if(window.CatBondSkillFX?.drawMeteorFlight(ctx,p,this.t))continue;
       // ADDITIVE TAPERED RIBBON trail from the position history (bright/wide head →
       // transparent tail), drawn under the body. Round caps hide the segment seams.
       const h = p._hist;
