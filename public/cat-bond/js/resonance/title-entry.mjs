@@ -76,7 +76,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   const handoff=mode=>{
    controller?.dispose();controller=null;root?.remove();root=null;
    if(mode==='garden'){toGarden();dispose();return;}
-   if(mode==='departure'){toGarden();dispose();return;}
+   if(mode==='departure'){if(runtime.view().objective.includes('travel:harbor'))toGarden();else onWorld?.();dispose();return;}
    try{
     onWorld?.();
     if(initial.current?.chapter===rootState.resonanceExploration?.location)window.WorldMap?.resumeRegion?.();
