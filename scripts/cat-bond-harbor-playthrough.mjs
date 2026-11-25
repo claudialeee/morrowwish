@@ -377,13 +377,19 @@ try {
     await button('Rootsleep Forest').click();
     await button('World atlas',page.locator('.rw-head')).click();
     await button('Emberforge City').click();
-    assert.equal(await page.evaluate(()=>WorldMap.mode),'map');
-    await page.getByText('Chapter II complete. The route to Emberforge is unlocked; the story continues in a future update. Your save is preserved.',{exact:true}).waitFor();
+    await page.waitForFunction(()=>WorldMap.mode==='region'&&WorldMap.currentRegion==='forge');
+    await scene('forge:E-01');
+    await page.locator('.rw-current strong').filter({hasText:'The Silent Furnace'}).waitFor();
     await page.evaluate(()=>MorrowwishI18n.set('zh'));
-    await page.getByText('第二章已完成。赤炉环城航线已解锁，故事将在后续更新中继续。存档已保留。',{exact:true}).waitFor();
-    assert.equal(await page.getByText('Chapter II complete. The route to Emberforge is unlocked; the story continues in a future update. Your save is preserved.',{exact:true}).count(),0);
+    await page.locator('.rw-current strong').filter({hasText:'沉寂的熔炉'}).waitFor();
     await page.evaluate(()=>MorrowwishI18n.set('en'));
-    await button('Rootsleep Forest').click();
+    await shot('forest-to-forge');
+    await button('Talk to Xiaomao').click();
+    await page.locator('.res-host[data-scene="forge:E-01"] .res-line').waitFor({state:'visible'});
+    await shot('forge-arrival-dialogue');
+    await readDialogue('forge:E-01');
+    await scene('forge:E-02');
+    await travel('Rootsleep Forest');
     // Save isolation: detached controls and the old region must not survive a slot switch,
     // even if a queued callback is invoked synchronously before the next animation frame.
     await button('World atlas',page.locator('.rw-head')).click();
@@ -399,7 +405,7 @@ try {
     });
     assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest'],slot:'slot1'});
     assert.deepEqual(errors,[]);
-    results.push({profile:name, captured, ...state, forestComplete:true});
+    results.push({profile:name, captured, ...state, forestComplete:true,forgeEntered:true});
     await context.close();
   }
 } finally {
