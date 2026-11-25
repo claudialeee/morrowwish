@@ -6,13 +6,14 @@ const root=new URL("../../assets/npc/",import.meta.url);
 const load=name=>{const img=new Image();img.src=new URL(name,root).href;return img};
 const frames=[load("muling-follow-sprite.svg"),load("muling-follow-step-a.svg"),load("muling-follow-step-b.svg")];
 const residentImages=new Map();
+const mulingGarden=load('../cinematics/characters/muling/traveler-neutral.webp');
 function residentImage(id){
  if(!campaign.regions.includes(campaign.cast[id]?.region))return null;
  if(!residentImages.has(id))residentImages.set(id,load(id+"-painted.webp"));
  return residentImages.get(id);
 }
 function drawResident(ctx,id,{x,y,scale=1,time=0}){
- if(id==="muling")return drawMuling(ctx,{x,y,scale,time});
+ if(id==='muling'){if(!mulingGarden.complete||!mulingGarden.naturalWidth)return false;const h=132*scale,w=h*mulingGarden.naturalWidth/mulingGarden.naturalHeight;ctx.save();ctx.shadowColor='rgba(24,27,39,.25)';ctx.shadowBlur=9;ctx.drawImage(mulingGarden,x-w/2,y-h,w,h);ctx.restore();return true;}
  const image=residentImage(id);
  if(!image?.complete||!image.naturalWidth)return false;
  const height=84*scale,width=height*image.naturalWidth/image.naturalHeight;
