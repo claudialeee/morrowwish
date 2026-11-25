@@ -50,11 +50,11 @@
   }
   function ensureRoot(){
     if(root||!document.getElementById('stage'))return root;
-    root=document.createElement('nav');root.id='sunlit-garden-hotspots';root.className='sg-hotspots';
+    root=document.createElement('nav');root.id='sunlit-garden-hotspots';root.className='sg-hotspots';root.inert=true;
     root.setAttribute('aria-label','Sunlit Garden locations');
     for(const item of HOTSPOTS){
       const b=document.createElement('button');b.type='button';b.className='sg-hotspot sg-hotspot-'+item.id;
-      b.dataset.gardenAction=item.id;b.style.left=item.left;b.style.top=item.top;
+      b.dataset.gardenAction=item.id;
       b.innerHTML='<span class="sg-hotspot-icon" aria-hidden="true"></span><span class="sg-hotspot-label"></span>';
       b.addEventListener('click',()=>{if(active&&game?.scene==='yard')item.action?.();});
       root.append(b);
@@ -77,9 +77,10 @@
         s.sunlitGarden.lastVisitedAt=Date.now();window.State?.save?.();
       }
     }
+    if(root)root.inert=false;
     root?.classList.add('is-active');document.getElementById('stage')?.classList.add('cb-sunlit-garden');renderLabels();
   }
-  function leave(){active=false;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];}
+  function leave(){active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];}
   function registerNarrativeAdapter(adapter){
     if(!adapter||typeof adapter.getHomeNpcs!=='function'||typeof adapter.drawHomeNpc!=='function'||
        typeof adapter.interactHomeNpc!=='function')return false;
@@ -102,6 +103,8 @@
   }
   function draw(ctx,width,height,time){
     if(!active||game?.scene!=='yard')return;
+    root?.classList.toggle('is-placing',!!game.yard?.placement);
+    if(root)root.inert=!!game.yard?.placement;
     const p=canonicalProgress();
     SANCTUARIES.forEach((item,i)=>{if(p.sanctuaries.includes(item.id))
       drawRestoredBed(ctx,width*item.x,height*(i%2===0?.88:.92),Math.max(.58,Math.min(1,width/1200)),item.color,time+i);});

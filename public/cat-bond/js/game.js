@@ -967,6 +967,7 @@ class Game {
     }
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
+    window.SunlitGarden?.leave?.();
     this.scene = 'battle';
     if(this.yard?.placement){this.yard.cancelPlacement();window.UI?.updateBuildingPlacement?.();}
     window.MorrowwishMusic?.switchScene?.('battle');

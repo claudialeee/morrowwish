@@ -5513,3 +5513,7 @@ body.cb-exploring #stage #yard-actions{
   .sg-hotspot-workshop{left:79%;top:43%}
   .sg-hotspot-bond{left:78%;top:72%}
 }
+
+/* Invisible and placement-mode garden controls must never steal canvas input. */
+.sg-hotspots:not(.is-active),.sg-hotspots.is-placing{visibility:hidden;pointer-events:none}
+.sg-hotspots:not(.is-active) .sg-hotspot,.sg-hotspots.is-placing .sg-hotspot{pointer-events:none}

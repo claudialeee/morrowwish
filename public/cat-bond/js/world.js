@@ -23,6 +23,18 @@ function drawCover(ctx, img, w, h) {
   ctx.restore();
 }
 
+// Original environment prop sprites, shared by placed facilities and placement preview.
+const GARDEN_PROPS = Object.fromEntries(['scratcher','cave','cattree','catnip','hammock'].map(id=>{
+  const image=new Image();image.src='assets/garden/'+id+'.svg?v=1';return [id,image];
+}));
+function drawGardenProp(ctx,id,x,y,depth){
+  const img=GARDEN_PROPS[id];
+  if(!img?.complete||!img.naturalWidth)return false;
+  // All plates share a 160x200 coordinate space, contact line y=183.
+  const factor=depth*.48;
+  ctx.drawImage(img,x-80*factor,y-183*factor,160*factor,200*factor);
+  return true;
+}
 class CatEntity {
   constructor(cat, W, H) {
     this.cat = cat;                 // reference to state cat instance
@@ -910,7 +922,7 @@ class YardScene {
     const def = BUILDINGS_BY_ID[b.type];
     if (!def) return;
     const depth = 0.8 + (b.y / this.game.H) * 0.5;
-    def.draw(ctx, b.x, b.y, depth, this.game.t);
+    if(!drawGardenProp(ctx,b.type,b.x,b.y,depth))def.draw(ctx, b.x, b.y, depth, this.game.t);
     const lvl=buildingLevel(b);
     const playing=this.entities.filter(e=>e._playBuilding===b&&e._playBuildT>0);
     if(playing.length){
@@ -1218,7 +1230,8 @@ class YardScene {
     }
     ctx.setLineDash([]);
     ctx.globalAlpha=.86;
-    def.draw(ctx,p.x,p.y,.8+(p.y/this.game.H)*.5,this.game.t);
+    const depth=.8+(p.y/this.game.H)*.5;
+    if(!drawGardenProp(ctx,p.type,p.x,p.y,depth))def.draw(ctx,p.x,p.y,depth,this.game.t);
     ctx.globalAlpha=1;
     ctx.fillStyle=p.valid?'#f5ffed':'#fff2ee';
     ctx.strokeStyle=p.valid?'#3a826a':'#ae535d';ctx.lineWidth=2;
