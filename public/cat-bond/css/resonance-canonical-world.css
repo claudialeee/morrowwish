@@ -78,3 +78,31 @@
  .rw-atlas-wide .rw-system-nav .rw-button,.rw-atlas-wide .rw-regions .rw-button{font-size:11px;min-height:38px;padding:5px 7px}
  .rw-atlas-wide .rw-hint,.rw-atlas-wide .rw-next{font-size:11px}
 }
+
+/* Skyspine owns its responsive flight layout; do not alter forest or atlas styles. */
+.rw-sky-flight-status{flex-basis:100%;margin:0;color:#d7eee8;line-height:1.4;font-size:13px;text-align:center}
+.rw-sky-region .rw-shell{animation:none}
+@media(max-width:700px) and (orientation:portrait){
+ .rw-world.rw-sky-region:not([hidden]){display:flex;flex-direction:column;gap:7px;padding:60px 9px 36px;overflow:auto;background:radial-gradient(ellipse at 25% 0,#41647b,#203c55 55%,#14273e)}
+ .rw-sky-region>.rw-head,.rw-sky-region>.rw-shell,.rw-sky-region>.rw-objective,.rw-sky-region>.rw-notice,.rw-sky-region>.rw-hint,.rw-sky-region>.rw-controls,.rw-sky-region>.rw-current-actions,.rw-sky-region>.rw-cargo{flex:0 0 auto;width:100%;max-width:none;margin:0;box-sizing:border-box}
+ .rw-sky-region>.rw-head{order:0;padding-bottom:7px}
+ .rw-sky-region>.rw-shell{order:1}
+ .rw-sky-region>.rw-puzzle-controls{order:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .rw-sky-region .rw-sky-flight-status{grid-column:1/-1;font-size:12px}
+ .rw-sky-region>.rw-puzzle-controls>.rw-button:last-child{grid-column:1/-1}
+ .rw-sky-region>.rw-objective{order:3;padding:8px;gap:5px}
+ .rw-sky-region>.rw-notice{order:4}.rw-sky-region>.rw-hint{order:5}.rw-sky-region>.rw-current-actions{order:6}.rw-sky-region>.rw-world-actions{order:7}.rw-sky-region>.rw-cargo{order:8}
+ .rw-sky-region .rw-button{min-height:44px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ .rw-world.rw-sky-landscape{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(190px,1fr);grid-template-rows:auto minmax(0,1fr);align-items:center;gap:6px 10px;padding:43px 10px 10px;overflow:hidden;background:radial-gradient(ellipse at 25% 0,#41647b,#203c55 55%,#14273e)}
+ .rw-sky-landscape .rw-head{grid-column:1/-1;margin:0;max-width:none;padding:0 0 6px;gap:8px}
+ .rw-sky-landscape .rw-brand strong{font-size:20px}.rw-sky-landscape .rw-head .rw-button{min-height:32px;padding:4px 9px}
+ .rw-sky-landscape .rw-shell{grid-column:1;grid-row:2;justify-self:center;width:100%;max-width:min(100%,calc((100dvh - 100px)*16/9));margin:0}
+ .rw-sky-landscape .rw-sky-rail{grid-column:2;grid-row:2;height:100%;min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;touch-action:pan-y;padding:0 4px 6px}
+ .rw-sky-landscape .rw-objective{display:grid;grid-template-columns:1fr;gap:5px;padding:7px;margin:0 0 6px}.rw-sky-landscape .rw-current strong{font-size:15px}
+ .rw-sky-landscape .rw-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:2px}.rw-sky-landscape .rw-metric{padding:1px 3px}
+ .rw-sky-landscape .rw-puzzle-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0 0 6px}.rw-sky-landscape .rw-sky-flight-status,.rw-sky-landscape .rw-puzzle-controls>.rw-button:last-child{grid-column:1/-1}
+ .rw-sky-landscape .rw-controls .rw-button,.rw-sky-landscape .rw-cargo .rw-button{min-height:38px;font-size:11px;padding:5px 6px}
+ .rw-sky-landscape .rw-notice,.rw-sky-landscape .rw-hint,.rw-sky-landscape .rw-next,.rw-sky-landscape .rw-sky-flight-status{font-size:11px;line-height:1.35;margin:5px 0}
+}

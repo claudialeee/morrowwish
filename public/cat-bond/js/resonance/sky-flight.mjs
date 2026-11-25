@@ -1,9 +1,9 @@
 // Skyspine flight simulation. Ephemeral controls; only canonical world evidence is saved.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const routes={
- "explore:flight-recorder":[.66,.32,.60],
- "puzzle:joint-flight":[.36,.65,.39],
- "repair:sky":[.62,.36,.55]
+ "explore:flight-recorder":[.68,.29,.66],
+ "puzzle:joint-flight":[.29,.72,.31],
+ "repair:sky":[.67,.30,.64]
 };
 export const skyPartsReady=v=>!!v.links?.["forge:sky"]?.includes("receiveB");
 export const skyLaunch={ "explore:flight-recorder":[.18,.55],"puzzle:joint-flight":[.41,.51],"repair:sky":[.67,.50] };
@@ -11,16 +11,16 @@ export const skyLanding={ "explore:flight-recorder":[.41,.51],"puzzle:joint-flig
 export function newSkyFlight(operation,choice){
  const route=routes[operation];if(!route)return null;
  const training=operation==="puzzle:joint-flight"&&choice==="train";
- return {operation,choice,training,route:[...route],x:0,y:.5,target:.5,velocity:0,gate:0,passed:[],elapsed:0,attempts:0,started:false,solved:false,notice:"ready",lastSteer:0};
+ return {operation,choice,training,route:[...route],x:0,y:.5,target:.5,velocity:0,gate:0,passed:[],elapsed:0,attempts:0,started:false,solved:false,notice:"ready",lastSteer:0,steerTravel:0};
 }
 export function steerSkyFlight(f,y){
  if(!f||f.solved||!Number.isFinite(y))return false;
- f.target=clamp(y,.15,.85);f.started=true;f.notice="flying";f.lastSteer++;return true;
+ const target=clamp(y,.15,.85),change=Math.abs(target-f.target);if(change>.015){f.lastSteer++;f.steerTravel+=change;}f.target=target;f.started=true;f.notice="flying";return true;
 }
 export const skyWind=f=>Math.sin(f.x*13+1.1)*.13+Math.sin(f.x*27)*.04;
 const gateX=[.24,.49,.74];
 function reset(f,notice){
- Object.assign(f,{x:0,y:.5,target:.5,velocity:0,gate:0,passed:[],elapsed:0,started:false,notice,lastSteer:0,attempts:f.attempts+1});
+ Object.assign(f,{x:0,y:.5,target:.5,velocity:0,gate:0,passed:[],elapsed:0,started:false,notice,lastSteer:0,steerTravel:0,attempts:f.attempts+1});
 }
 export function tickSkyFlight(f,dt){
  if(!f?.started||f.solved||!Number.isFinite(dt)||dt<=0)return false;
@@ -37,18 +37,18 @@ export function tickSkyFlight(f,dt){
   f.passed.push({index:f.gate,y:f.y});f.gate++;
  }
  if(f.x>=1){
-  if(f.gate!==3||Math.abs(f.y-.5)>.13||f.lastSteer<2){reset(f,"landing");return false;}
+  if(f.gate!==3||Math.abs(f.y-.5)>.13||(f.lastSteer<3||f.steerTravel<.4)){reset(f,"landing");return false;}
   f.solved=true;f.notice="landed";return true;
  }
  return false;
 }
 export function skyFlightProof(f){
  if(!f?.solved)return null;
- return {operation:f.operation,choice:f.choice,attempts:f.attempts,elapsed:f.elapsed,passed:f.passed.map(p=>({...p})),landing:f.y,steers:f.lastSteer};
+ return {operation:f.operation,choice:f.choice,attempts:f.attempts,elapsed:f.elapsed,passed:f.passed.map(p=>({...p})),landing:f.y,steers:f.lastSteer,steerTravel:f.steerTravel};
 }
 export function validSkyFlightProof(operation,choice,proof){
  const f=newSkyFlight(operation,choice);
- if(!f||proof?.operation!==operation||proof.choice!==choice||!Number.isInteger(proof.attempts)||proof.attempts<0||!Number.isFinite(proof.elapsed)||proof.elapsed<(f.training?11.6:9.8)||!Number.isInteger(proof.steers)||proof.steers<2||!Number.isFinite(proof.landing)||Math.abs(proof.landing-.5)>.13||proof.passed?.length!==3)return false;
+ if(!f||proof?.operation!==operation||proof.choice!==choice||!Number.isInteger(proof.attempts)||proof.attempts<0||!Number.isFinite(proof.elapsed)||proof.elapsed<(f.training?11.6:9.8)||!Number.isInteger(proof.steers)||proof.steers<3||!Number.isFinite(proof.steerTravel)||proof.steerTravel<.4||!Number.isFinite(proof.landing)||Math.abs(proof.landing-.5)>.13||proof.passed?.length!==3)return false;
  const tolerance=(f.training?.19:.14)+Math.min(proof.attempts,3)*.02;
  return proof.passed.every((p,i)=>p.index===i&&Number.isFinite(p.y)&&Math.abs(p.y-f.route[i])<=tolerance);
 }
@@ -107,6 +107,7 @@ export function paintSkyFlight(ctx,f,img,W,H,lang,drawCat,drawNpc){
 export function paintSkyWeather(ctx,v,frame,W,H,img){
  const t=frame/60,restored=v.melodies.includes("sky");ctx.save();if(img)cloudLayers(ctx,img,t,W,H);
  for(let i=0;i<8;i++){const x=((i*.231+t*.012)%1)*W,y=(.13+(i*.173)% .64)*H;const g=ctx.createRadialGradient(x,y,0,x,y,100);g.addColorStop(0,"#f1f9ff36");g.addColorStop(1,"#f1f9ff00");ctx.fillStyle=g;ctx.fillRect(x-100,y-100,200,200);}
+ const op=v.objective.find(o=>skyLaunch[o]);if(op){const a=skyLaunch[op],b=skyLanding[op];ctx.strokeStyle=skyPartsReady(v)?"#fff2b3d9":"#b1bdc9a0";ctx.lineWidth=2.5;ctx.setLineDash([7,10]);ctx.lineDashOffset=-t*28;ctx.beginPath();ctx.moveTo(a[0]*W,a[1]*H);ctx.quadraticCurveTo((a[0]+b[0])*.5*W,Math.min(a[1],b[1])*H-32,b[0]*W,b[1]*H);ctx.stroke();ctx.setLineDash([]);}
  if(restored){const layers=img&&getLayers(ctx,img);if(layers){const x=((t*.015)%1.1)-.1;ctx.globalAlpha=.78;ctx.drawImage(layers.airship,x*W,.13*H+Math.sin(t*.7)*5,W*.11,H*.11);ctx.globalAlpha=1;}ctx.strokeStyle="#c6fae0b0";ctx.lineWidth=2;ctx.setLineDash([8,12]);ctx.lineDashOffset=-t*23;ctx.beginPath();ctx.moveTo(.18*W,.55*H);ctx.quadraticCurveTo(.52*W,.24*H,.89*W,.24*H);ctx.stroke();ctx.setLineDash([]);}
  ctx.restore();
 }
