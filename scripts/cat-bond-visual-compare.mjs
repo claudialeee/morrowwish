@@ -57,6 +57,30 @@ try{
     await page.goto(origin+'/cat-bond/?lang='+lang);
     await page.waitForFunction(()=>window.WorldMap===window.CatBondCanonicalWorld&&window.CatBondResonance&&window.__game&&window.CatBondArtworkStatus?.breedsLoaded&&window.CatBondArtworkStatus?.jiafeiLoaded,null,{timeout:30000});
     assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),lang);
+    if(out.endsWith('/after')){
+     const portraits=await page.evaluate(async()=>{
+      const manifest=await fetch('/cat-bond/assets/cinematics/asset-manifest.json').then(r=>r.json());
+      const assets=manifest.assets.filter(a=>a.kind==='character-portrait'&&a.dialogueRuntimeAllowed===true);
+      return Promise.all(assets.map(async a=>{
+       const response=await fetch('/cat-bond/'+a.path);if(!response.ok)throw Error('Portrait missing: '+a.path);
+       const blob=await response.blob(),bitmap=await createImageBitmap(blob);
+       const c=document.createElement('canvas');c.width=bitmap.width;c.height=bitmap.height;
+       const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(bitmap,0,0);bitmap.close();
+       const data=ctx.getImageData(0,0,c.width,c.height).data;
+       let clear=0,opaque=0;for(let i=3;i<data.length;i+=4){if(data[i]===0)clear++;if(data[i]>240)opaque++;}
+       return {id:a.id,size:blob.size,expectedBytes:a.bytes,dimensions:c.width+'x'+c.height,expectedDimensions:a.canvas,clear:clear/(c.width*c.height),opaque:opaque/(c.width*c.height),type:blob.type};
+      }));
+     });
+     assert.equal(portraits.length,19,'Every new painted character portrait must be checked');
+     assert.equal(new Set(portraits.map(p=>p.id)).size,19);
+     for(const p of portraits){
+      assert.equal(p.size,p.expectedBytes,'Stale or wrong portrait: '+p.id);
+      assert.equal(p.dimensions,p.expectedDimensions,'Wrong portrait dimensions: '+p.id);
+      assert.ok(p.clear>.05&&p.opaque>.15,'Missing transparent background or subject: '+p.id);
+      assert.match(p.type,/image\/webp/);
+     }
+     await fs.writeFile(out+'/'+name+'-'+lang+'-portrait-assets.json',JSON.stringify(portraits,null,2));
+    }
     await page.locator('#intro-start').waitFor();await shot('title');
     await page.locator('#intro-start').click();await page.locator('#intro-slot-list [data-slot="slot1"]').waitFor();await shot('slots');
     await page.locator('#intro-slot-list [data-slot="slot1"]').click();
@@ -68,7 +92,19 @@ try{
     }
     await scene('prologue:P-04');const starter=page.locator('#panel .cat-starter-card .dex-cell').first();await starter.waitFor();await shot('starter');
     await starter.click();await button('Talk to Muling','与暮铃交谈',page.locator('.sg-prologue-guide')).click();
-    await page.locator('.res-host[data-scene="prologue:P-04"]').waitFor();await shot('muling-dialogue');
+    const firstDialogue=page.locator('.res-host[data-scene="prologue:P-04"]');await firstDialogue.waitFor();
+    await shot('player-dialogue');
+    // Capture Muling's actual dialogue, not the player's first line.
+    for(let i=0;i<12;i++){
+     if(await firstDialogue.locator('.res-dialogue').getAttribute('data-speaker')==='muling')break;
+     await button('Continue','继续',firstDialogue).click();
+    }
+    assert.equal(await firstDialogue.locator('.res-dialogue').getAttribute('data-speaker'),'muling');
+    const mulingArt=firstDialogue.locator('img.res-portrait');
+    await mulingArt.waitFor({state:'visible'});
+    await mulingArt.evaluate(img=>img.decode());
+    if(out.endsWith('/after'))assert.match(await mulingArt.getAttribute('src'),/traveler-(warm|neutral|dry|nervous|worried|determined)\.webp$/);
+    await shot('muling-dialogue');
     await dialogue('prologue:P-04');
     const bell=page.locator('.res-garden-bell');await bell.waitFor();await checkTheme();await shot('garden');
     const rect=await bell.boundingBox(),x=Math.floor(rect.x+rect.width/2),y=Math.floor(rect.y+rect.height/3);
