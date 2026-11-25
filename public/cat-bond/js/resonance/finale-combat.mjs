@@ -240,6 +240,10 @@ function install(){
     }
     return 0;
   }
+  // An automatic strike can arrive on the same frame as a measured reply or
+  // mode switch. Verify the observed record before damage can remove that
+  // group; paint() alone is too late when a fast hit defeats the echo.
+  if(e.finaleActor==="echo"&&this.autoMode&&f.clueOpen)verifyEchoRecord(this,e);
   const r=hurt.call(this,e,e.finaleActor==="echo"&&e.dexVerified?dmg*1.25:dmg,...args);
   if(e.finaleActor==="gate"&&!e.alive){
     const n=f.nodes[e.gateIndex];n.done=true;n.integrity=Math.max(1,n.integrity);
