@@ -22,6 +22,7 @@ try {
     await page.route('**/*', route => route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
     await page.goto(origin+'/cat-bond/?lang=en');
     await page.waitForFunction(() => window.WorldMap === window.CatBondCanonicalWorld && window.CatBondResonance && window.__game);
+    assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),false,'Production entry must not enable unreviewed staging art');
     const button = (name, scope = page) => scope.getByRole('button',{name,exact:true});
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
     const shot = id => page.screenshot({path:out+'/'+name+'-'+id+'.png'});
@@ -397,7 +398,7 @@ try {
     await shot('forge-test-ready');
     await button('Forge guardian').click();
     await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();
-    await page.locator('#battle-ui.on').waitFor();await page.locator('#cb-forge-hud').waitFor();
+    await page.locator('#battle-ui.on').waitFor();try{await page.locator('#cb-forge-hud').waitFor();}catch(e){await shot('forge-boss-entry-failed');console.error('Forge entry failed',await page.evaluate(()=>({scene:__game.scene,story:__game.battle?.storyEncounter,forge:!!__game.battle?.forgeState,errors:document.getElementById('toasts')?.textContent})));throw e;}
     assert.equal(await page.evaluate(()=>__game.battle.forgeState.assist),name==='portrait'?'jinpo':'xiaomao');
     const forgeTutorial=page.locator('#battle-tutorial-skip');if(await forgeTutorial.isVisible())await forgeTutorial.click();
     await shot('forge-boss');

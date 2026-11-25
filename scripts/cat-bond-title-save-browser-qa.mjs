@@ -93,6 +93,16 @@ for(const profile of [
   assert.equal(await page.locator('.rw-regions [data-region]').count(),6);
   assert.equal(await page.locator('.rw-region-status').count(),6);
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
+  const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
+  if(profile.name!=='phone-portrait'){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
+  for(const name of ['Catdex','Party','Raise cats','Workshop']){
+   await page.locator('.rw-system-nav').getByRole('button',{name,exact:true}).click();
+   await checkVisible('#panel.open');
+   await screenshot('atlas-'+name.toLowerCase().replaceAll(' ','-'));
+   const close=page.locator('#panel .close-btn,#panel [data-close],#panel .panel-close,#panel-close').first();
+   if(await close.isVisible())await close.click();else await page.keyboard.press('Escape');
+   await page.locator('#panel.open').waitFor({state:'hidden',timeout:5000});
+  }
   await screenshot('world-atlas');
   // Physical departure from the merged canonical opening.
   const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);

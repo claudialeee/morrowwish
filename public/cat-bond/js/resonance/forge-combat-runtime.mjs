@@ -300,11 +300,11 @@ function currentForgeContext(game,options){
   const engine=window.CatBondResonance;
   if(!engine||typeof engine.view!=="function"||typeof engine.snapshot!=="function"||typeof engine.recordEvidence!=="function"||typeof engine.captureAction!=="function"||typeof engine.isCurrentAction!=="function")throw Error("Chat 4 active narrative host required");
   if(options?.engine&&options.engine!==engine)throw Error("Noncanonical narrative host");
-  if(options.slot&&options.slot!==slot)throw Error("Stale save slot");
+  if(options?.slot&&options.slot!==slot)throw Error("Stale save slot");
   const snapshot=engine.snapshot(),view=engine.view();
   if(JSON.stringify(snapshot)!==JSON.stringify(slot.resonance))throw Error("Narrative engine does not match active slot");
   if(game.scene!=="map"||slot.resonanceExploration?.location!=="forge"||view.current?.id!==FORGE_ENCOUNTER.id||!view.objective?.includes(FORGE_ENCOUNTER.operation)||view.objective.includes("puzzle:heat-pressure"))throw Error("Forge battle unavailable: reach the forge and complete the heat-pressure puzzle first");
-  return {preview:false,slot,engine,token:engine.captureAction(),revision:snapshot.revision,returnToWorld:typeof options.returnToWorld==="function"?options.returnToWorld:null};
+  return {preview:false,slot,engine,token:engine.captureAction(),revision:snapshot.revision,returnToWorld:typeof options?.returnToWorld==="function"?options.returnToWorld:null};
 }
 function finishEncounter(game,b){
   if(b.forgeFinished)return;b.forgeFinished=true;
