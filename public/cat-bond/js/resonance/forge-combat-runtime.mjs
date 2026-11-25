@@ -288,7 +288,7 @@ function showResult(game,b,outcome,returnToMap){
   back.textContent=en?"Return to the world":"返回世界";back.dataset.forgeZh="返回世界";back.dataset.forgeEn="Return to the world";
   retry.textContent=en?"Retry encounter":"再次挑战";retry.dataset.forgeZh="再次挑战";retry.dataset.forgeEn="Retry encounter";retry.hidden=win&&!!b.forgeRewardGranted;
   back.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();if(b.forgeContext?.returnToWorld){b.forgeContext.returnToWorld({outcome,committed:!!b.forgeRewardGranted});if(b.forgeRewardGranted)window.CatBondResonance?.showCurrent?.();}else if(returnToMap){game.scene="map";window.WorldMap?.resumeRegion?.(false);}else{game.scene="yard";game.showYardChrome?.();}});
-  retry.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();try{window.CatBondForgeCombat.launch(game,b.forgeContext);}catch(error){toast(game,"无法重试：存档或剧情已变化。","Retry unavailable: save or story has changed.");console.error(error);}});
+  retry.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();try{if(!window.CatBondForgeCombat.prepare(game))throw Error("Encounter no longer available");}catch(error){toast(game,"无法重试：存档或剧情已变化。","Retry unavailable: save or story has changed.");console.error(error);}});
   document.getElementById("stage")?.append(overlay);game._forgeResultOpen=true;
 }
 function currentForgeContext(game,options){

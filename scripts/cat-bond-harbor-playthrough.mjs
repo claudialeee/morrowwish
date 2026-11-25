@@ -443,6 +443,25 @@ try {
     await puzzle('Furnace controls',['Heat','Heat','Heat','Heat','Vent','Vent','Vent']);
     await page.waitForSelector('.rw-forge-region[data-art-ready="true"]');await shot('forge-test-ready');
     await button('Forge guardian').click();
+    if(name==='desktop'){
+      // A real, intentionally underprepared attempt: one cat, manual mode,
+      // no attacks or support. No game state, HP, clock or save writes.
+      await page.locator('#battle-team-details summary').click();
+      const selected=page.locator('#panel .map-squad-choice[aria-pressed="true"]');
+      while(await selected.count()>1)await selected.first().click();
+      await page.locator('#panel [data-battle-auto="false"]').click();
+      await page.locator('#bp-go').click();
+      await page.locator('#cb-forge-hud').waitFor();
+      const intro=page.locator('#battle-tutorial-skip');if(await intro.isVisible())await intro.click();
+      await page.waitForFunction(()=>__game.battle?.team.length===1&&!__game.battle.autoMode);
+      await page.waitForFunction(()=>__game.battle?.forgeState?.cast?.kind==='hammerfall');await shot('forge-hammer-warning');
+      await page.locator('#cb-forge-result').waitFor({timeout:200000});
+      assert.equal(await page.locator('#cb-forge-result h2').innerText(),'THE SQUAD NEEDS REST');
+      assert.equal(await page.evaluate(()=>CatBondResonance.view().objective.includes('battle:forge-guardian')),true);
+      await shot('forge-defeat');
+      await page.locator('[data-forge-retry]').click();
+      await page.locator('#bp-best-team').click();
+    }
     await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();
     await page.locator('#battle-ui.on').waitFor();try{await page.locator('#cb-forge-hud').waitFor();}catch(e){await shot('forge-boss-entry-failed');console.error('Forge entry failed',await page.evaluate(()=>({scene:__game.scene,story:__game.battle?.storyEncounter,forge:!!__game.battle?.forgeState,errors:document.getElementById('toasts')?.textContent})));throw e;}
     assert.equal(await page.evaluate(()=>__game.battle.forgeState.assist),name==='portrait'?'jinpo':'xiaomao');
@@ -451,7 +470,7 @@ try {
     await page.locator('#btn-flee').click();
     await page.locator('#cb-forge-result').waitFor();
     assert.equal(await page.locator('#cb-forge-result h2').innerText(),'WITHDRAWN');await shot('forge-retreat');
-    await page.locator('[data-forge-retry]').click();await page.locator('#battle-ui.on').waitFor();await page.locator('#cb-forge-hud').waitFor();
+    await page.locator('[data-forge-retry]').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();await page.locator('#cb-forge-hud').waitFor();
     if(await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();assert.equal(await page.evaluate(()=>__game.battle.autoMode),false);
     await page.locator('[data-forge-support-button]').click();await page.waitForFunction(()=>__game.battle.forgeState.ventOpen>0&&__game.battle.forgeState.supportCharges===1);await shot('forge-boss-vent');
     if(options.hasTouch){const cdp=await context.newCDPSession(page);const c=await page.locator('#scene').boundingBox();const x=c.x+c.width*.20,y=c.y+c.height*.65;await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+38,y}]});await page.waitForTimeout(300);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}else{await page.keyboard.down('d');await page.waitForTimeout(300);await page.keyboard.up('d');}
