@@ -95,6 +95,54 @@ try{
    await page.waitForFunction(()=>CatBondResonance.view().current?.id==="prologue:P-04"&&!CatBondResonance.view().objective.includes("explore:garden-bell"));
    assert.ok(await page.locator(".res-host .res-dialogue").isVisible());
    await page.screenshot({path:dir+"/"+p.name+"-awakening.png"});
+   // E-02/E-03 browser fixture: the actual canonical dialogue and key gesture
+   // are exercised, but the preceding unintegrated campaign is not claimed played.
+   await page.evaluate(async()=>{
+    CatBondResonance.close();
+    const {campaign}=await import("/cat-bond/js/resonance/campaign.mjs"),{makeEngine}=await import("/cat-bond/js/resonance/engine.mjs");
+    const e=makeEngine(campaign),ok=r=>{if(!r.ok)throw Error("Ending fixture: "+r.reason)};
+    const links=()=>{for(const [a,b,x,y] of campaign.links)for(let i=0;i<4;i++)e.exchange({a,b,stage:["sendA","receiveB","sendB","receiveA"][i],actor:[a,b,b,a][i],action:[x,x,y,y][i]})};
+    for(const sc of campaign.scenes){if(sc.id==="epilogue:E-02")break;
+      if(sc.choiceTiming==="beforeAction"&&sc.choices.length)ok(e.choose(sc.choices[0].id));
+      if(sc.id==="finale:B-03")for(let i=0;i<6;i++)ok(e.supportAction(campaign.regions[i],campaign.support[i]));
+      for(const op of sc.requires.filter(o=>o!=="mechanism:muling-unlock"))ok(e.record(sc.id,op));
+      if(sc.id==="starfall:F-04")links();
+      for(const l of sc.lines)ok(e.nextLine());
+      if(sc.choiceTiming==="afterDialogue"&&sc.choices.length)ok(e.choose(sc.choices[0].id));
+      if(sc.requires.includes("mechanism:muling-unlock"))ok(e.record(sc.id,"mechanism:muling-unlock"));
+      ok(e.finish());links();
+    }
+    State.S.resonance=e.snapshot();State.S.resonanceExploration={location:"starfall",positions:{},interactions:{}};ok(State.save());WorldMap.exitToYard();
+    CatBondResonanceNPC.talk("muling","garden");
+   });
+   await panel.waitFor({state:"visible"});
+   assert.match(await line.textContent(),p.lang==="zh"?/削弱了封印/:/weakened the seal/);
+   await page.screenshot({path:dir+"/"+p.name+"-accountability.png"});
+   for(let i=0;i<3;i++)await panel.getByRole("button",{name:p.lang==="zh"?"继续":"Continue",exact:true}).click();
+   await page.waitForFunction(()=>CatBondResonance.view().current?.id==="epilogue:E-03");
+   assert.equal(await page.evaluate(()=>CatBondResonance.view().muling),"accountable");
+   await page.evaluate(()=>CatBondResonanceNPC.talk("muling","garden"));
+   await panel.waitFor({state:"visible"});
+   for(let i=0;i<6;i++)await panel.getByRole("button",{name:p.lang==="zh"?"继续":"Continue",exact:true}).click();
+   const keyPanel=page.locator(".res-key-panel"),key=keyPanel.locator(".res-key-piece"),receiver=keyPanel.locator(".res-key-recipient");
+   await keyPanel.waitFor({state:"visible"});
+   await page.waitForFunction(()=>document.querySelector(".res-key-recipient img")?.naturalWidth>100&&document.querySelector(".res-key-piece img")?.naturalWidth>100);
+   assert.equal(await page.evaluate(()=>CatBondResonance.view().ending),false);
+   await keyPanel.getByRole("button",{name:p.lang==="zh"?"EN":"中文",exact:true}).click();
+   assert.match(await keyPanel.locator("h2").textContent(),p.lang==="zh"?/second garden key/:/第二把花园钥匙/);
+   await keyPanel.getByRole("button",{name:p.lang==="zh"?"中文":"EN",exact:true}).click();
+   await page.screenshot({path:dir+"/"+p.name+"-second-key.png"});
+   await drag(key,null,-32);
+   assert.equal(await page.evaluate(()=>CatBondResonance.view().ending),false,"Invalid drop must not complete");
+   await drag(key,receiver);
+   await page.waitForFunction(()=>CatBondResonance.view().ending);
+   assert.equal(await page.evaluate(()=>CatBondResonance.view().muling),"reconciled");
+   await page.reload({waitUntil:"domcontentloaded"});
+   await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
+   await page.locator("#intro-continue").click();
+   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+   await page.waitForFunction(()=>window.__CAT_BOND_STARTED__&&CatBondResonance.view().ending);
+   assert.equal(await page.evaluate(()=>CatBondResonance.view().muling),"reconciled");
    assert.deepEqual(errors,[],"Browser JS errors");
    console.log(p.name+": normal boot, seeded story, bilingual dialogue, portrait loaded, choice, trust, quest gate and reload PASS");
   }catch(e){console.error("Browser diagnostics",p.name,errors,await page.evaluate(()=>({scene:window.__game?.scene,cats:window.State?.S?.cats?.length,legacy:!!window.CatBondStory,current:window.CatBondResonance?.view()?.current?.id,body:document.body.innerText.slice(0,400)})).catch(()=>null));await page.screenshot({path:dir+"/"+p.name+"-failure.png"}).catch(()=>{});throw e}
