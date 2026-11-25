@@ -50,3 +50,31 @@
  .rw-forest-region>.rw-current-actions{order:6}.rw-forest-region>.rw-world-actions{order:7;justify-content:flex-start}
  .rw-forest-region>.rw-cargo{order:8}.rw-forest-region .rw-button{min-height:44px}
 }
+
+/* The atlas is a single complete painting, not a vertically clipped web page.
+   Wide screens keep all six map locations visible while the quest rail scrolls. */
+@media (orientation:landscape) and (min-width:720px){
+ .rw-world.rw-atlas-wide{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(230px,1fr);grid-template-rows:auto minmax(0,1fr);gap:10px 14px;align-items:center;overflow:hidden;padding:54px 16px 16px}
+ .rw-atlas-wide .rw-head{grid-column:1/-1;grid-row:1;width:100%;max-width:none;margin:0;padding-bottom:9px}
+ .rw-atlas-wide .rw-shell{grid-column:1;grid-row:2;justify-self:center;width:100%;max-width:min(100%,calc((100dvh - 150px)*16/9));max-height:100%;margin:0;animation:none}
+ .rw-atlas-wide .rw-atlas-rail{grid-column:2;grid-row:2;min-width:0;min-height:0;height:100%;overflow:auto;overscroll-behavior:contain;box-sizing:border-box;scrollbar-width:thin;padding:0 4px 6px 0;touch-action:pan-y}
+ .rw-atlas-wide .rw-objective{display:grid;grid-template-columns:1fr;margin:0 0 10px;gap:6px}
+ .rw-atlas-wide .rw-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+ .rw-atlas-wide .rw-metric{padding:2px 4px}
+ .rw-atlas-wide .rw-regions{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
+ .rw-atlas-wide .rw-system-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:0 0 8px}
+ .rw-atlas-wide .rw-system-nav .rw-button{min-height:38px}
+ .rw-atlas-wide .rw-controls,.rw-atlas-wide .rw-hint,.rw-atlas-wide .rw-notice{margin:6px 0;max-width:none}
+}
+@media(max-height:500px) and (orientation:landscape) and (min-width:720px){
+ .rw-world.rw-atlas-wide{padding:42px 9px 9px;gap:5px 8px;grid-template-columns:minmax(0,1.65fr) minmax(210px,1fr)}
+ .rw-atlas-wide .rw-head{padding-bottom:4px;gap:5px}
+ .rw-atlas-wide .rw-brand strong{font-size:18px}
+ .rw-atlas-wide .rw-head .rw-button{min-height:30px;font-size:11px;padding:4px 8px}
+ .rw-atlas-wide .rw-shell{max-width:min(100%,calc((100dvh - 100px)*16/9))}
+ .rw-atlas-wide .rw-objective{padding:7px;margin-bottom:5px}
+ .rw-atlas-wide .rw-current strong{font-size:14px}
+ .rw-atlas-wide .rw-metric b{font-size:15px}
+ .rw-atlas-wide .rw-system-nav .rw-button,.rw-atlas-wide .rw-regions .rw-button{font-size:11px;min-height:38px;padding:5px 7px}
+ .rw-atlas-wide .rw-hint,.rw-atlas-wide .rw-next{font-size:11px}
+}
