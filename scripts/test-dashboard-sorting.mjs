@@ -223,3 +223,82 @@ for(const language of ['zh','en'])for(const fixture of [
    'Verified zero activity remains zero when real visits exist');
 }
 console.log('Reset-safe game table gate: orphan session rows empty; missing fields blank; confirmed zeros retained.');
+
+
+// First-round native metrics must reconcile at every level: 28 individual rows,
+// the matching seven-game/four-platform matrix, and platform subtotals.
+const nativeSnapshot=JSON.parse(fs.readFileSync('promotion/social-metrics-snapshot.json','utf8'));
+const firstRound=nativeSnapshot.publicationRounds.rounds.find(round=>round.id==='morning-first');
+const firstRoundPlatforms=['youtube','instagram','tiktok','bluesky'];
+assert.equal(firstRound?.posts.length,28,'first-round archive contains exactly 28 posts');
+assert.equal(new Set(firstRound.posts.map(post=>post.game+'|'+post.platform)).size,28,
+ 'first-round archive has one unique post for each game/platform pair');
+for(const game of sevenIds)for(const platform of firstRoundPlatforms)
+ assert.equal(firstRound.posts.filter(post=>post.game===game&&post.platform===platform).length,1,
+  'exactly one archived post for '+game+' / '+platform);
+
+assert.ok(html.includes('id="archived-first-round-game-rows"'),
+ 'first-round archive must have the same per-game native-metrics matrix');
+assert.ok(html.includes('firstRoundGameMetricsTitle:')&&html.includes('firstRoundGameMetricsNote:'),
+ 'first-round matrix needs explicit bilingual labeling');
+assert.ok(inlineScript.includes("renderVideoMatrix(verifiedVideos,'checkedAt')")&&
+ inlineScript.includes("renderVideoMatrix(archivedPosts,'capturedAt')"),
+ 'current and archived rounds must use the same matrix renderer with separate timestamps');
+assert.ok(inlineScript.includes('archivedPostsInMatrixOrder.map(post=>'),
+ 'the 28-row detail table must follow the same game/platform order as the matrix');
+
+const matrixStart=inlineScript.indexOf('const verifiedPlatforms=');
+const matrixEnd=inlineScript.indexOf('$("video-metrics-detail")',matrixStart);
+assert.ok(matrixStart>=0&&matrixEnd>matrixStart,'Shared native-metrics matrix renderer missing');
+const matrixEnv={lang:'en',gameNames:Object.fromEntries(sevenIds.map(id=>[id,{zh:id,en:id}])),
+ escapeHTML:value=>String(value??''),format:value=>String(value)};
+vm.runInNewContext(inlineScript.slice(matrixStart,matrixEnd)+';globalThis.drawMatrix=renderVideoMatrix;',matrixEnv);
+const firstRoundMatrix=matrixEnv.drawMatrix(firstRound.posts,'capturedAt');
+const matrixRows=[...firstRoundMatrix.matchAll(/<tr>([\s\S]*?)<\/tr>/g)];
+assert.equal(matrixRows.length,7,'first-round matrix renders seven game rows');
+const metricLabels={views:'Views',likes:'Likes',comments:'Comments',shares:'Shares',reposts:'Reposts',replies:'Replies',quotes:'Quotes'};
+const metricFields={youtube:['views','likes','comments'],instagram:['views','likes','comments','shares'],
+ tiktok:['views','likes','comments','shares'],bluesky:['likes','reposts','replies','quotes']};
+for(const game of sevenIds){
+ const row=matrixRows.find(match=>match[1].includes('>'+game+'</td>'));
+ assert.ok(row,'first-round matrix row missing '+game);
+ const cells=[...row[1].matchAll(/<td(?:\s[^>]*)?>([\s\S]*?)<\/td>/g)].map(match=>match[1]);
+ assert.equal(cells.length,5,'matrix row has game plus four platform cells for '+game);
+ for(let index=0;index<firstRoundPlatforms.length;index++){
+  const platform=firstRoundPlatforms[index];
+  const post=firstRound.posts.find(item=>item.game===game&&item.platform===platform);
+  assert.ok(cells[index+1].includes(post.url),'matrix link must be the exact archived post for '+game+'/'+platform);
+  for(const key of metricFields[platform]){
+   if(Number.isSafeInteger(post[key]))
+    assert.ok(cells[index+1].includes(metricLabels[key]+' '+post[key]),
+     'matrix metric must match the individual archive row: '+game+'/'+platform+'/'+key);
+   else assert.ok(!cells[index+1].includes(metricLabels[key]+' '),
+     'unknown native metric must remain blank: '+game+'/'+platform+'/'+key);
+  }
+ }
+}
+
+const summaryStart=inlineScript.indexOf('const summarizeArchivedPosts=');
+const summaryEnd=inlineScript.indexOf('const archivedPosts=',summaryStart);
+assert.ok(summaryStart>=0&&summaryEnd>summaryStart,'Archive summary must be derived from individual post rows');
+const summaryEnv={};
+vm.runInNewContext(inlineScript.slice(summaryStart,summaryEnd)+';globalThis.summarize=summarizeArchivedPosts;',summaryEnv);
+const calculated=summaryEnv.summarize(firstRound.posts,firstRoundPlatforms,firstRound.platforms);
+const summaryKeys={youtube:['views','likes','comments'],instagram:['views','likes','comments','shares'],
+ tiktok:['views','likes','comments','shares'],bluesky:['views','likes','reposts','replies','quotes']};
+for(const summary of calculated){
+ const stored=firstRound.platforms[summary.platform];
+ assert.equal(summary.posts,stored.posts,summary.platform+' archived post count reconciles');
+ for(const key of summaryKeys[summary.platform])
+  assert.equal(summary[key],stored[key],summary.platform+' '+key+' subtotal reconciles to all 7 post rows');
+}
+assert.equal(calculated.find(row=>row.platform==='bluesky').comments,null,
+ 'Bluesky replies must not be mislabeled as comments');
+assert.equal(calculated.find(row=>row.platform==='youtube').shares,null,
+ 'YouTube does not expose a native shares metric in this report');
+const partialRows=firstRound.posts.map(post=>post.platform==='youtube'&&post.game==='cat-bond'?{...post,views:null}:post);
+assert.equal(summaryEnv.summarize(partialRows,['youtube'])[0].views,null,
+ 'an incomplete first-round metric subtotal must remain blank, never become zero');
+assert.ok(inlineScript.includes("post.platform==='bluesky'&&key==='comments'"),
+ 'Bluesky comments must remain blank; replies use their own native field');
+console.log('First-round 28-post detail, per-game native matrix and platform subtotals reconcile from one archived data set.');
