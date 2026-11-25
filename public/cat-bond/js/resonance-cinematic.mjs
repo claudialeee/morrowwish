@@ -1,0 +1,113 @@
+// Production adapter to the single Chat 4 engine. No storage, no independent campaign, no legacy fallback.
+// The host passes its active engine, campaign, current slot identity and persistence callback.
+// Only independently accepted raster assets can be selected; missing art must never unlock narrative evidence.
+const bad=reason=>({ok:false,reason});
+const isBilingual=x=>typeof x?.zh==='string'&&x.zh.trim()&&typeof x?.en==='string'&&x.en.trim();
+const raster=/^assets\/cinematics\/[a-z0-9/_-]+\.(?:webp|png|avif|jpe?g)$/;
+export function buildCanonicalScene({view,campaign,manifest,staging=false,openingRelease=false}) {
+  const scene=view?.current;
+  if(!scene||campaign?.canon!=='The Last Resonance')return bad('no-canon-scene');
+  const canonical=campaign.scenes.find(x=>x.id===scene.id);
+  if(!canonical||JSON.stringify(canonical)!==JSON.stringify(scene))return bad('noncanonical-scene');
+  if(scene.choices.length&&scene.choiceTiming==='beforeAction'&&!view.choice)return bad('choice-pending');
+  if(!scene.requires.some(op=>op.startsWith('cinematic:')) && view.objective.length)return bad('gameplay-pending');
+  if(scene.lines.length&&!view.lineReady&&view.cursor<scene.lines.length)return bad('dialogue-awaits-gameplay');
+  const approved=manifest?.approvedShots?.[scene.id];
+  const release=openingRelease&&!approved&&/^prologue:P-0[123]$/.test(scene.id)&&manifest?.prologueReleaseShots?.[scene.id];
+  const useStaging=staging&&!approved&&!release;
+  const shots=approved||release||(useStaging?manifest?.stagingShots?.[scene.id]:null);
+  if(!Array.isArray(shots)||shots.length<2)return bad('approved-shot-sequence-missing');
+  const assets=new Map((manifest.assets||[]).map(a=>[a.id,a]));
+  const unique=new Set(),covered=[],frames=[];
+  for(const [i,shot] of shots.entries()){
+    const asset=assets.get(shot.assetId);
+    const allowed=release
+      ?asset?.status==='candidate'&&asset.stagingAllowed===true&&asset.runtimeAllowed===false&&manifest.prologueReleaseAuthorization?.assets?.includes(asset.id)
+      :useStaging
+      ?asset?.status==='candidate'&&asset.stagingAllowed===true&&asset.runtimeAllowed===false
+      :asset?.status==='approved'&&asset.runtimeAllowed===true&&asset.visualReview?.evidence&&asset.visualReview.result==='PASS';
+    if(!allowed||asset.sceneKey!==scene.id||!raster.test(asset.path))return bad('unapproved-shot');
+    if(unique.has(asset.path))return bad('repeated-shot-art');unique.add(asset.path);
+    if(!isBilingual(shot.alt)||!Number.isFinite(shot.durationMs)||shot.durationMs<1200||shot.durationMs>20000||!Array.isArray(shot.lines))return bad('invalid-shot');
+    const base={id:scene.id+'-shot-'+i,image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,focus:shot.focus,transitionMs:shot.transitionMs||520,effect:shot.effect};
+    if(!shot.lines.length)frames.push({...base,shotDurationMs:base.durationMs,shotOffsetMs:0});
+    const duration=index=>Math.max(2600,Math.min(11000,1100+scene.lines[index].text.en.length*70));
+    const total=shot.lines.reduce((sum,index)=>sum+(scene.lines[index]?duration(index):0),0)+(shot.effect==='seal'?4200:0);
+    let offset=0;
+    for(const index of shot.lines){
+      if(!Number.isInteger(index)||!scene.lines[index])return bad('invalid-canon-line-index');
+      covered.push(index);
+      const ms=duration(index),start=offset;offset+=ms;
+      if(index<view.cursor)continue;
+      const line=scene.lines[index],actor=campaign.cast[line.speaker];
+      if(!isBilingual(line.text)||!isBilingual(actor?.name))return bad('missing-canon-localization');
+      const speaker=scene.id==='prologue:P-02'&&line.speaker==='player'?{zh:'陌生的猫',en:'Unknown cat'}:actor.name;
+      frames.push({...base,id:base.id+'-line-'+index,durationMs:ms,shotDurationMs:total,shotOffsetMs:start,subtitle:{zh:{speaker:speaker.zh,text:line.text.zh},en:{speaker:speaker.en,text:line.text.en}}});
+    }
+    if(shot.effect==='seal')frames.push({...base,id:base.id+'-closure',durationMs:4200,shotDurationMs:total,shotOffsetMs:offset});
+  }
+  if(covered.length!==scene.lines.length||covered.some((v,i)=>v!==i))return bad('incomplete-or-reordered-dialogue');
+  if(!frames.length)return bad('nothing-to-play');
+  return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.id==='prologue:P-02'?{zh:'抉择',en:'The Choice'}:scene.title,chapter:{zh:'猫猫纽带',en:'Cat Bond'},mode:'auto',allowSkip:true,frames}};
+}
+
+export async function decodeCinematicImages(scene){
+  const urls=[...new Set(scene.frames.flatMap(f=>[f.image,...(f.layers||[]).map(l=>l.image)]))];
+  // Sequential bounded decoding prevents a chapter from allocating all image memory at once.
+  for(const url of urls){
+    const image=new Image();image.src=url;await image.decode();
+    if(!image.naturalWidth||!image.naturalHeight)throw Error('Empty cinematic image: '+url);
+  }
+}
+
+export function mountResonanceCinematics({root,rendererFactory,engine,campaign,manifest,getSlotKey,onPersist,onResolved,onError,language,onLanguageChange,staging=false,openingRelease=false,onCheckpoint,preload=decodeCinematicImages}){
+  if(!root||typeof rendererFactory!=='function'||!engine?.view||!engine?.snapshot||typeof getSlotKey!=='function'||(typeof engine.evidence!=='function'&&typeof onPersist!=='function'))throw Error('Missing canonical host dependencies');
+  let active=null,sequence=0,disposed=false;
+  const valid=run=>!disposed&&active===run&&getSlotKey()===run.slot&&engine.view().current?.id===run.id&&engine.snapshot().revision===run.revision;
+  const report=reason=>{onError?.({reason});return bad(reason)};
+  // Scene results are committed only through the official engine.
+  // World/puzzle/combat operations are NEVER recorded by this presentation layer.
+  function resolve(event,skipped){
+    const run=active;if(!run||event.sceneId!==run.id||!valid(run))return;
+    active=null;
+    const current=engine.view().current;
+    const transactional=typeof engine.evidence==='function';
+    const persist=result=>{if(!result?.ok)throw Error(result?.reason||'narrative-operation-rejected');if(!transactional)onPersist(result.state)};
+    try{
+      while(engine.view().current?.id===run.id&&engine.view().cursor<current.lines.length){
+        if(!engine.view().lineReady)throw Error('dialogue-awaits-gameplay');
+        persist(engine.nextLine());
+      }
+      for(const op of current.requires.filter(x=>x.startsWith('cinematic:'))){
+        if(engine.view().objective.includes(op))persist(transactional?engine.evidence({sceneId:run.id,operation:op,region:current.chapter,verified:true}):engine.record(run.id,op));
+      }
+      // Host owns finish() and all non-cinematic event transitions.
+      onResolved?.({sceneId:run.id,skipped,slot:run.slot,remaining:engine.view().objective});
+    }catch(error){onError?.({sceneId:run.id,reason:error.message});}
+  }
+  const renderer=rendererFactory(root,{language,onLanguageChange,onCheckpoint:snapshot=>{const run=active;if(run&&valid(run))onCheckpoint?.({slot:run.slot,revision:run.revision,snapshot});},onComplete:e=>resolve(e,false),onSkip:e=>resolve(e,true),onError:e=>{active=null;onError?.(e)}});
+  const syncLanguage=()=>renderer.setLanguage?.(typeof language==='function'?language():language||'zh');
+  if(typeof window!=='undefined')window.addEventListener('morrowwish-language-change',syncLanguage);
+  async function playCurrent(resume=null){
+    if(disposed)return bad('disposed');
+    const id=++sequence;renderer.stop();active=null;
+    const view=engine.view(),result=buildCanonicalScene({view,campaign,manifest,staging,openingRelease});
+    if(!result.ok)return report(result.reason);
+    const run={id:view.current.id,slot:getSlotKey(),revision:engine.snapshot().revision,sequence:id};
+    if(resume&&(resume.slot!==run.slot||resume.revision!==run.revision||resume.snapshot?.sceneId!==run.id))return report('stale-cinematic-snapshot');
+    active=run;
+    try{await preload(result.scene)}catch(e){if(!valid(run))return bad('stale-slot-or-scene');active=null;return report('cinematic-image-load-failed')}
+    if(sequence!==id||!valid(run)){if(active===run)active=null;return bad('stale-slot-or-scene')}
+    try{
+      if(resume&&(!Number.isInteger(resume.snapshot.frameIndex)||resume.snapshot.frameIndex<0||resume.snapshot.frameIndex>=result.scene.frames.length||!Number.isFinite(resume.snapshot.elapsedMs)||resume.snapshot.elapsedMs<0)){active=null;return report('invalid-cinematic-checkpoint');}
+      renderer.register(result.scene);
+      const started=resume?renderer.restore(resume.snapshot):renderer.play(run.id);
+      if(started===false){active=null;return report('cinematic-start-failed');}
+      return {ok:true,sceneId:run.id};
+    }catch(error){active=null;renderer.stop();return report('cinematic-start-failed');}
+  }
+  function interrupt(){if(!active||!valid(active))return null;return {slot:active.slot,revision:active.revision,snapshot:renderer.interrupt()};}
+  function dispose(){disposed=true;sequence++;active=null;renderer.destroy();if(typeof window!=='undefined')window.removeEventListener('morrowwish-language-change',syncLanguage)}
+  function cancel(){sequence++;active=null;renderer.stop();}
+  return {playCurrent,interrupt,cancel,dispose,snapshot:()=>active&&valid(active)?{slot:active.slot,revision:active.revision,snapshot:renderer.snapshot?.()}:null};
+}

@@ -1,3 +1,4 @@
+import {finishCanonicalOpening} from './cat-bond-test-start.mjs';
 // Browser language gate: all 15 games, two languages, phone + desktop.
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
@@ -69,6 +70,9 @@ try{
     await scan(page,slug,lang,'save slots');
     await page.locator('#intro-slot-list [data-slot="slot1"]').click({timeout:7000});
     await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,{timeout:12000});
+    if(await page.evaluate(()=>!!window.__CAT_BOND_CANONICAL_ACTIVE__)){
+     await finishCanonicalOpening(page,{onStage:stage=>scan(page,slug,lang,stage)});
+    }else{
     await scan(page,slug,lang,'starter');
     if(await page.locator('#panel.open .dex-cell').first().isVisible()){
      await page.locator('#panel.open .dex-cell').first().click({timeout:7000});
@@ -76,7 +80,7 @@ try{
      await page.locator('.cb-story-overlay.is-visible .cb-story-skip').click({timeout:7000});
      await page.waitForFunction(()=>window.__game?.scene==='map',{timeout:12000});
      await scan(page,slug,lang,'world map');
-    }
+    }}
    }
    if(slug==='pocket-aquarium'&&await page.locator('#start').isVisible()){
     await page.locator('#start').click({timeout:7000});

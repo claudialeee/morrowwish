@@ -1,3 +1,4 @@
+import {finishCanonicalOpening} from './cat-bond-test-start.mjs';
 // CrazyGames real-input preflight, on the same HTML5 game build as production.
 // Unlike state-machine smoke tests, this uses native mouse/touch to start
 // each real encounter. Test-position reads are observational only.
@@ -101,6 +102,9 @@ try{
       await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
       const firstSlot=page.locator('#intro-slot-list [data-slot="slot1"]');
       if(touch)await firstSlot.tap();else await firstSlot.click();
+      await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true);
+      const canonical=await page.evaluate(()=>!!window.__CAT_BOND_CANONICAL_ACTIVE__);
+      if(canonical)await finishCanonicalOpening(page);else{
       await page.waitForSelector('#panel.open .dex-cell',{timeout:20000});
       assert.equal(await page.locator('#intro').isVisible(),false,'Start must dismiss intro');
       const starter=page.locator('#panel.open .dex-cell').first();
@@ -112,11 +116,12 @@ try{
       if(!(await skip.isVisible())){if(touch)await prologue.locator('.cb-story-next').tap();else await prologue.locator('.cb-story-next').click();}
       if(touch)await skip.tap();else await skip.click();
       await prologue.waitFor({state:'detached',timeout:10000});
-      await page.waitForFunction(()=>window.__game?.scene==='map'&&WorldMap.mode==='map'&&WorldMap.atlasTargets.length===5);
+      await page.waitForFunction(()=>window.__game?.scene==='map'&&WorldMap.mode==='map'&&WorldMap.atlasTargets.length===5);}
       assert.equal(await page.locator('#panel.open').count(),0,'Atlas is the primary RPG screen');
       // Real canvas back affordance in the portal (the host owns fullscreen).
+      if(canonical)await page.locator('.rw-head').getByRole('button',{name:'Sunlit Garden'}).click();else{
       const back=await page.evaluate(()=>{const r=document.getElementById('scene').getBoundingClientRect();return{x:r.left+28,y:r.top+24};});
-      if(touch)await page.touchscreen.tap(back.x,back.y);else await page.mouse.click(back.x,back.y);
+      if(touch)await page.touchscreen.tap(back.x,back.y);else await page.mouse.click(back.x,back.y);}
       await page.waitForFunction(()=>window.__game?.scene==='yard',{timeout:10000});
       // Scene state flips before the map panel's close transition and yard
       // chrome have finished updating. Assert the actual rendered yard, not

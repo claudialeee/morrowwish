@@ -10,6 +10,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if(introBreedCount && Number.isInteger(totalBreeds) && totalBreeds>0){
     introBreedCount.textContent=`🐾 收集 ${totalBreeds} 种猫`;
   }
+  const canonicalBuild=document.querySelector('meta[name="cat-bond-campaign"][content="last-resonance"]')!==null;
+  if(canonicalBuild)window.__CAT_BOND_CANONICAL_ACTIVE__=true;
   const game = new Game();
   window.__game = game;
   UI.init(game);
@@ -51,7 +53,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const slotList=document.getElementById('intro-slot-list');
   const slotHeading=document.getElementById('intro-slot-heading');
   let slotMode='continue';
-  const closeSlots=()=>{slotPanel?.classList.remove('is-open');slotPanel?.setAttribute('aria-hidden','true');};
+  const closeSlots=()=>{slotPanel?.classList.remove('is-open');slotPanel?.setAttribute('aria-hidden','true');document.getElementById(slotMode==='new'?'intro-start':'intro-continue')?.focus();};
   const escapeText=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const openSlots=mode=>{
     slotMode=mode;
@@ -93,6 +95,8 @@ window.addEventListener('DOMContentLoaded', () => {
         '<div class="cb-save-slot-actions"><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button></div></article>';
     }).join('');
     slotPanel.classList.add('is-open');slotPanel.setAttribute('aria-hidden','false');
+    const language=slotPanel.querySelector('[data-slot-language]');
+    if(language){language.textContent=en?'中文':'English';language.setAttribute('aria-label',en?'Switch to Chinese':'切换到英文');}
     slotList.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',()=>{
       const id=button.dataset.slot;
       if(slotMode==='new'){
@@ -105,13 +109,24 @@ window.addEventListener('DOMContentLoaded', () => {
       }else beginGame('continue',id);
     }));
   };
+  const enterAdventure=done=>{
+    if(window.CatBondTitlePrologue?.available?.()){
+      window.CatBondTitlePrologue.start(game,{onWorld:done});return;
+    }
+    // The isolated legacy build remains a test baseline only. When formal
+    // modules are present the canonical entry is exclusive, even on error.
+    if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue)window.CatBondStory.startPrologue(done);
+    else done();
+  };
   const beginGame=(mode,slotId,overwriteConfirmed=false)=>{
     if(starting)return;
     starting=true;
     try{
+      if(canonicalBuild&&(!window.CatBondTitlePrologue?.available?.()||!window.CatBondResonance||!window.CatBondCanonicalWorld))throw Error(window.MorrowwishI18n?.get?.()==='zh'?'正式剧情模块未加载，请刷新重试。':'The story modules did not load. Refresh and try again.');
       if(mode==='new'){
         if(!State.startNewGame(slotId,{overwriteConfirmed}))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'无法创建存档，请检查存储空间或覆盖确认。':'Could not create the save. Check storage space or overwrite confirmation.');
       }else if(!State.loadSlot(slotId))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'存档为空或已损坏，无法读取。':'The selected save is empty or damaged');
+      window.__CAT_BOND_CANONICAL_ACTIVE__=!!window.CatBondTitlePrologue?.available?.();
       game.start();
       closeSlots();
       document.getElementById('intro').classList.add('hide');
@@ -125,7 +140,9 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if(window.Raising)Raising.init();
-    if(mode==='new'||State.S.cats.length===0){
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(mode==='new'||State.S.cats.length===0)){
+      enterAdventure(()=>{State.save();game.openWorldMap();});
+    }else if(mode==='new'||State.S.cats.length===0){
       UI.openStarter(id=>{
         const starter=State.makeCat(id,{affinity:20});
         if(window.Raising)Raising.decorateNewCat(starter);
@@ -136,18 +153,16 @@ window.addEventListener('DOMContentLoaded', () => {
         };
         // Let the player choose their actual companion first; the cinematic
         // then stages that cat waking beneath the garden bench.
-        if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){
-          window.CatBondStory.startPrologue(enterWorld);
-        }else enterWorld();
+        enterAdventure(enterWorld);
         window.arcadeMetric?.('bond_starter_chosen',{starter:id});
       });
     }else{
       const report=window.Raising?Raising.applyOffline(Date.now()):State.applyIdle();
       game.rebuildYard();game.refreshHUD();
-      if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){window.CatBondStory.startPrologue(()=>{State.save();game.openWorldMap();});}else game.openWorldMap();
+      enterAdventure(()=>{State.save();game.openWorldMap();});
       const has=o=>o&&Object.values(o).some(v=>v>0);
       const worthShowing=report&&report.minutes>=1&&(has(report.produced)||has(report.gains)||(report.visitors&&report.visitors.length));
-      if(worthShowing)setTimeout(()=>UI.openWelcomeBack(report),400);
+      if(worthShowing&&!window.__CAT_BOND_CANONICAL_ACTIVE__)setTimeout(()=>UI.openWelcomeBack(report),400);
     }
   };
   const renderIntroLocale=()=>{
@@ -170,6 +185,13 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('intro-start')?.addEventListener('click',()=>openSlots('new'));
   document.getElementById('intro-continue')?.addEventListener('click',()=>openSlots('continue'));
   document.getElementById('intro-slot-close')?.addEventListener('click',closeSlots);
+  slotPanel?.querySelector('[data-slot-language]')?.addEventListener('click',()=>{
+    const i18n=window.MorrowwishI18n;
+    i18n?.set?.(i18n.get?.()==='zh'?'en':'zh');
+  });
+  window.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&slotPanel?.classList.contains('is-open')){event.preventDefault();closeSlots();}
+  });
   // In-game Load Game returns to the selected slot after a clean page restart.
   const resumeKey='catbond_resume_slot_v1';
   let resumeSlot=null;
@@ -304,17 +326,16 @@ function installCatBondSystemMenu(){
   const rows=[
     ['language',t('语言','Language'),t('中文','English')],
     ['effects',t('音效','Sound effects'),active('.mw-settings-sfx')?t('开启','On'):t('关闭','Off')],
-    ['music',t('音乐','Music'),active('.mw-settings-music')?t('开启','On'):t('关闭','Off')],
     ...(native('#mw-fullscreen-toggle')?[['fullscreen',t('全屏','Fullscreen'),active('#mw-fullscreen-toggle')?t('退出','Exit'):t('进入','Enter')]]:[]),
     ['share',t('分享游戏','Share game'),''],
-    ['cloud',t('云存档','Cloud saves'),''],
-    ...(!title?[['slots',t('保存 / 读取游戏','Save / Load game'),''],['title',t('返回标题画面','Return to title'),'']]:[])
+    ['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),''],
+    ...(!title?[['title',t('返回标题画面','Return to title'),'']]:[])
   ];
   menu.innerHTML='<div class="cb-system-card"><header><h2>'+t('系统菜单','System menu')+'</h2><button type="button" data-system="close" aria-label="'+t('关闭','Close')+'">×</button></header><div class="cb-system-rows">'+rows.map(([id,label,value])=>'<button type="button" data-system="'+id+'"><span>'+label+'</span><small>'+value+'</small></button>').join('')+'</div></div>';
   menu.querySelectorAll('[data-system]').forEach(btn=>btn.onclick=()=>{
    const id=btn.dataset.system,selectors={language:'.mw-settings-language',effects:'.mw-settings-sfx',music:'.mw-settings-music',fullscreen:'#mw-fullscreen-toggle',share:'.mw-settings-share'};
    if(id==='close'){close();toggle.focus();return;}
-   if(id==='cloud'||id==='slots'){close();window.CatBondCloudSave?.[id==='cloud'?'openPanel':'openSlots']?.();return;}
+   if(id==='slots'){close();window.CatBondCloudSave?.openSlots?.();return;}
    if(id==='title'){
     if(!confirm(t('保存当前进度并返回标题画面？','Save current progress and return to title?')))return;
     const result=State.save();

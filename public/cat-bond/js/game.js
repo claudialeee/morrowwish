@@ -127,6 +127,9 @@ class Game {
   }
 
   openWorldMap() {
+    const story=window.CatBondResonance?.view?.(),id=story?.current?.id;
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(id==='prologue:P-04'||(id==='prologue:P-05'&&story.cursor<story.current.lines.length))){this.toast({zh:'先完成与暮铃的交谈和花园调查。',en:'Talk to Muling and investigate the garden before leaving.'});return false;}
+    window.SunlitGarden?.leave?.();
     // Clear messages from the garden encounter tutorial before navigating.
     // The global toast queue otherwise covers the exploration map and cats
     // for two seconds, despite the garden UI correctly being hidden.
@@ -152,6 +155,7 @@ class Game {
     document.getElementById('tabbar').classList.remove('hidden');
     document.getElementById('hud').classList.remove('hidden');
     this.yard?.refreshYardSwitch();
+    window.SunlitGarden?.enter?.();
   }
 
   rebuildYard() {
@@ -433,6 +437,7 @@ class Game {
     this.refreshYardSurprise();
     const hint=document.getElementById('first-quest');
     if(!hint)return;
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&window.CatBondResonance?.view?.().current?.chapter==='prologue'){hint.hidden=true;const help=document.getElementById('guide-help');if(help)help.hidden=true;this._tourTarget?.classList.remove('cb-guide-target');this._tourTarget=null;return;}
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const count=State.S.catchCount||0;
     const firstCapture=(State.S.cats?.length||0)>0&&count===0;
@@ -828,6 +833,7 @@ class Game {
       if(valid)window.UI?.confirmBuildingPlacement?.();
       return;
     }
+    if (window.SunlitGarden?.handleTap?.(x, y)) return;
     const hit = this.yard.handleTap(x, y);
     if (!hit) return;
     if (hit.type === 'building') {
@@ -964,6 +970,7 @@ class Game {
     }
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
+    window.SunlitGarden?.leave?.();
     this.scene = 'battle';
     if(this.yard?.placement){this.yard.cancelPlacement();window.UI?.updateBuildingPlacement?.();}
     window.MorrowwishMusic?.switchScene?.('battle');

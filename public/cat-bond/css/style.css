@@ -5424,3 +5424,121 @@ body.cb-exploring #stage #yard-actions{
  .cb-intro-actions button{min-height:72px;padding:7px 3px}
  .cb-intro-actions button strong{font-size:11px}
 }
+
+
+/* Sunlit Garden — cinematic home UI. The environment is authored artwork in
+   assets/sunlit-garden-cinematic.svg; these rules only position real controls. */
+#stage.cb-sunlit-garden #hud{
+  background:linear-gradient(180deg,rgba(22,39,37,.70),rgba(22,39,37,.18));
+  border-bottom:1px solid rgba(223,197,145,.25);backdrop-filter:blur(8px);
+}
+#stage.cb-sunlit-garden .hud-pill{
+  color:#f6ecd8;background:rgba(29,48,44,.76);border:1px solid rgba(219,192,139,.35);
+  box-shadow:0 5px 18px rgba(16,31,28,.16);
+}
+#stage.cb-sunlit-garden .scene-title{
+  color:#f5e8cf;text-shadow:0 2px 12px rgba(13,29,25,.8);
+  letter-spacing:.12em;font-family:Georgia,"Noto Serif SC",serif;
+}
+#stage.cb-sunlit-garden #tabbar{
+  gap:7px;padding:8px 12px max(8px,env(safe-area-inset-bottom,0px));
+  background:linear-gradient(180deg,rgba(24,43,39,.16),rgba(20,37,34,.88));
+  border-top:1px solid rgba(226,202,156,.3);backdrop-filter:blur(10px);
+}
+#stage.cb-sunlit-garden #tabbar .tab{
+  min-width:70px;min-height:54px;padding:6px 12px;color:#e7dfcb;
+  background:rgba(38,61,53,.64);border:1px solid rgba(223,198,150,.18);
+  border-radius:12px;box-shadow:0 4px 13px rgba(13,28,24,.15);
+}
+#stage.cb-sunlit-garden #tabbar .tab.active{
+  color:#fff0cc;background:linear-gradient(145deg,rgba(135,111,72,.9),rgba(69,83,64,.92));
+  border-color:rgba(240,211,158,.72);
+  box-shadow:0 0 0 1px rgba(255,236,193,.14),0 6px 18px rgba(13,28,24,.25);
+}
+#stage.cb-sunlit-garden #tabbar .tab .ico{color:#e6c98d}
+#stage.cb-sunlit-garden #yard-actions{right:14px;bottom:calc(88px + env(safe-area-inset-bottom,0px));gap:8px}
+#stage.cb-sunlit-garden #yard-actions .fab{
+  width:48px;height:48px;min-width:48px;min-height:48px;color:#f6e8c8;
+  background:linear-gradient(145deg,rgba(52,73,60,.94),rgba(31,51,46,.94));
+  border:1px solid rgba(225,194,134,.66);
+  box-shadow:0 5px 16px rgba(12,28,24,.34),inset 0 1px rgba(255,255,255,.15);
+}
+#stage.cb-sunlit-garden #yard-actions .fab small{font-size:9px;letter-spacing:.04em;color:#f1dfb9}
+.sg-hotspots{position:absolute;inset:0;z-index:19;pointer-events:none;opacity:0;transition:opacity .22s ease}
+.sg-hotspots.is-active{opacity:1}
+.sg-hotspot{
+  position:absolute;display:flex;align-items:center;gap:8px;min-height:38px;padding:7px 12px;
+  color:#f6ecd5;background:linear-gradient(145deg,rgba(34,54,47,.9),rgba(22,39,36,.86));
+  border:1px solid rgba(225,197,143,.68);border-radius:999px;
+  box-shadow:0 7px 20px rgba(13,27,23,.28),inset 0 1px rgba(255,255,255,.12);
+  font:750 12px/1.15 system-ui,sans-serif;letter-spacing:.015em;
+  text-shadow:0 1px 5px rgba(0,0,0,.65);white-space:nowrap;pointer-events:auto;cursor:pointer;
+  touch-action:manipulation;transform:translate(-50%,-50%);
+  transition:transform .18s ease,filter .18s ease,border-color .18s ease;
+}
+.sg-hotspot:hover{transform:translate(-50%,-53%);filter:brightness(1.16);border-color:#f2dba9}
+.sg-hotspot:active{transform:translate(-50%,-48%) scale(.97)}
+.sg-hotspot:focus-visible{outline:3px solid #f0d49a;outline-offset:3px}
+.sg-hotspot-icon{display:grid;place-items:center;width:23px;height:23px;color:#e8c98d;font-size:19px;line-height:1}
+.sg-hotspot-label{color:#f6ecd5}
+.sg-hotspot-cats{left:12%;top:57%}
+.sg-hotspot-facilities{left:29%;top:34%}
+.sg-hotspot-catdex{left:55%;top:36%}
+.sg-hotspot-workshop{left:81%;top:43%}
+.sg-hotspot-bond{left:77%;top:71%}
+#stage.cb-sunlit-garden #fab-map{
+  width:64px;height:54px;min-width:64px;min-height:54px;border-radius:14px;font-size:20px;
+  background:linear-gradient(145deg,#8a744d,#4c6250);border:1px solid rgba(244,215,161,.9);
+}
+#stage.cb-sunlit-garden #fab-map small{font-size:9px;line-height:1.1}
+@media(max-width:700px){
+  #stage.cb-sunlit-garden #hud{gap:5px;padding:6px 8px}
+  #stage.cb-sunlit-garden #hud .hud-pill{font-size:11px;padding:5px 7px}
+  #stage.cb-sunlit-garden #tabbar{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding:5px 5px max(6px,env(safe-area-inset-bottom,0px))}
+  #stage.cb-sunlit-garden #tabbar .tab{min-width:0;width:100%;min-height:45px;padding:4px 2px;font-size:10px;border-radius:9px}
+  #stage.cb-sunlit-garden #tabbar .tab .ico{font-size:18px}
+  #stage.cb-sunlit-garden #yard-actions{
+    left:8px;right:auto;bottom:calc(60px + env(safe-area-inset-bottom,0px));
+    display:flex;flex-direction:row;gap:5px;max-width:calc(100% - 16px);
+  }
+  #stage.cb-sunlit-garden #yard-actions .fab{width:40px;height:40px;min-width:40px;min-height:40px;font-size:17px;border-radius:12px}
+  #stage.cb-sunlit-garden #yard-actions .fab small{font-size:8px}
+  .sg-hotspot{min-height:36px;padding:6px 9px;gap:5px;font-size:10px}
+  .sg-hotspot-icon{width:20px;height:20px;font-size:16px}
+  .sg-hotspot-cats{left:12%;top:57%}.sg-hotspot-facilities{left:27%;top:34%}
+  .sg-hotspot-catdex{left:55%;top:36%}.sg-hotspot-workshop{left:83%;top:43%}
+  .sg-hotspot-bond{left:77%;top:71%}
+}
+@media(max-width:430px){
+  .sg-hotspot{min-height:34px;padding:5px 7px;font-size:9px}
+  .sg-hotspot-label{max-width:66px;overflow:hidden;text-overflow:ellipsis}
+  .sg-hotspot-cats{left:11%;top:57%}.sg-hotspot-facilities{left:28%;top:34%}
+  .sg-hotspot-catdex{left:55%;top:36%}.sg-hotspot-workshop{left:84%;top:43%}
+  .sg-hotspot-bond{left:78%;top:71%}
+}
+@media(orientation:landscape) and (max-height:530px){
+  #stage.cb-sunlit-garden #yard-actions{right:8px;left:auto;bottom:calc(74px + env(safe-area-inset-bottom,0px));flex-direction:row}
+  #stage.cb-sunlit-garden #yard-actions .fab{width:38px;height:38px;min-width:38px;min-height:38px}
+  .sg-hotspot{min-height:32px;padding:4px 8px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.sg-hotspots,.sg-hotspot{transition:none}}
+
+@media(orientation:portrait) and (max-width:700px){
+  .sg-hotspot-cats{left:15%;top:67%}
+  .sg-hotspot-facilities{left:25%;top:32%}
+  .sg-hotspot-catdex{left:54%;top:53%}
+  .sg-hotspot-workshop{left:79%;top:43%}
+  .sg-hotspot-bond{left:78%;top:72%}
+}
+
+/* Invisible and placement-mode garden controls must never steal canvas input. */
+.sg-hotspots:not(.is-active),.sg-hotspots.is-placing{visibility:hidden;pointer-events:none}
+.sg-hotspots:not(.is-active) .sg-hotspot,.sg-hotspots.is-placing .sg-hotspot{pointer-events:none}
+
+/* Garden restoration controls; physical scene assets are independent illustrations. */
+.sg-project-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.sg-project-grid button{min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;white-space:normal;font-size:12px;padding:6px}.sg-project-grid img{width:100%;height:80px;object-fit:contain}.sg-project-grid small{font-size:10px}.sg-project-art{height:110px;width:100px;object-fit:contain;float:right;margin:0 0 6px 8px}#sg-project-panel select{max-width:100%;margin:8px;padding:6px;border-radius:8px}
+#sg-project-panel .btn{margin:4px}@media(max-width:420px){.sg-project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sg-project-grid img{height:68px}}
+
+/* Canonical opening guide; only visible in the physical garden, never a story overlay. */
+.sg-prologue-guide{position:absolute;left:12px;bottom:clamp(62px,12%,110px);width:min(340px,calc(100% - 24px));box-sizing:border-box;display:grid;gap:6px;padding:12px 15px;background:linear-gradient(125deg,rgba(18,36,43,.94),rgba(40,60,58,.91));border:1px solid #b9a271;border-radius:7px;color:#f9efd8;box-shadow:0 5px 18px #132b3244;pointer-events:auto;z-index:2;font:500 12px/1.4 system-ui,sans-serif}.sg-prologue-guide[hidden]{display:none!important}.sg-prologue-guide strong{font:600 17px/1.2 Georgia,'Songti SC',serif;color:#ffedc8}.sg-prologue-guide>div{display:flex;gap:6px;flex-wrap:wrap}.sg-prologue-guide button{min-height:36px;padding:6px 10px;border:1px solid #cbb181;border-radius:4px;background:#3b5655;color:#fff0d2;font:600 12px system-ui;cursor:pointer}.sg-prologue-guide button:focus-visible{outline:2px solid #fff0ce;outline-offset:2px}@media(max-height:460px) and (orientation:landscape){.sg-prologue-guide{bottom:calc(100px + env(safe-area-inset-bottom,0px));left:12px;width:min(330px,48%);padding:8px 10px;gap:4px}.sg-prologue-guide strong{font-size:14px}.sg-prologue-guide button{min-height:40px;font-size:11px}}@media(max-width:520px) and (orientation:portrait){.sg-prologue-guide{bottom:15%;left:8px;width:calc(100% - 16px);padding:10px}.sg-prologue-guide button{min-height:42px}}

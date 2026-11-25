@@ -147,7 +147,11 @@ jobs:
           node scripts/cat-bond-interaction-language-qa.mjs
           # Actual mouse/touch on ten official CrazyGames viewport sizes.
           node scripts/cat-bond-crazygames-real-input.mjs
-          node scripts/cat-bond-rpg-cinematic-smoke.mjs
+          if grep -q 'name="cat-bond-campaign" content="last-resonance"' public/cat-bond/index.html; then
+            node scripts/cat-bond-release-prologue-qa.mjs
+          else
+            node scripts/cat-bond-rpg-cinematic-smoke.mjs
+          fi
           # Actual end-user DOM, not only the aggregator or source-string tests.
           node scripts/test-dashboard-history-browser.mjs
       - name: Save CrazyGames yard menu layout screenshots
@@ -207,7 +211,13 @@ jobs:
           expected_story=$(grep -oE 'js/story-cloud.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
           expected_game=$(grep -oE 'js/game.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
           expected_battle=$(grep -oE 'js/battle.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
-          expected_worldmap=$(grep -oE 'js/worldmap.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          if grep -q 'name="cat-bond-campaign" content="last-resonance"' public/cat-bond/index.html; then
+            expected_worldmap=$(grep -oE 'js/resonance/integration-entry.mjs[?]v=[^"]+' public/cat-bond/index.html | head -1)
+            worldmap_source=public/cat-bond/js/resonance/integration-entry.mjs
+          else
+            expected_worldmap=$(grep -oE 'js/worldmap.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+            worldmap_source=public/cat-bond/js/worldmap.js
+          fi
           expected_painted=$(grep -oE 'js/painted-regions.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
           expected_ui=$(grep -oE 'js/ui.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
           expected_i18n=$(grep -oE 'js/i18n.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
@@ -237,7 +247,7 @@ jobs:
               && cmp -s public/cat-bond/js/story-cloud.js /tmp/catbond-live-story.js \
               && cmp -s public/cat-bond/js/game.js /tmp/catbond-live-game.js \
               && cmp -s public/cat-bond/js/battle.js /tmp/catbond-live-battle.js \
-              && cmp -s public/cat-bond/js/worldmap.js /tmp/catbond-live-worldmap.js \
+              && cmp -s "$worldmap_source" /tmp/catbond-live-worldmap.js \
               && cmp -s public/cat-bond/js/painted-regions.js /tmp/catbond-live-painted.js \
               && cmp -s public/cat-bond/js/ui.js /tmp/catbond-live-ui.js \
               && cmp -s public/cat-bond/js/i18n.js /tmp/catbond-live-i18n.js; then
