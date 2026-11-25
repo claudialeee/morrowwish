@@ -39,7 +39,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['css/style.css?v=three-slot-save-manager-20261124-v1','js/main.js?v=resonance-title-20261124-v3','js/state.js?v=atomic-save-book-20261124-v6','js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v8','id="intro-start"','id="intro-continue"','js/game.js?v=overworld-first-20261124-v2','js/worldmap.js?v=last-page-interactive-overworld-20261124-v5','js/battle.js?v=']],
+ ['entry points and cache versions',index,['css/style.css?v=three-slot-save-manager-20261124-v1','js/main.js?v=resonance-title-20261124-v4','js/state.js?v=atomic-save-book-20261124-v7','js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v9','id="intro-start"','id="intro-continue"','js/game.js?v=overworld-first-20261124-v2','js/worldmap.js?v=last-page-interactive-overworld-20261124-v5','js/battle.js?v=']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
@@ -132,6 +132,16 @@ assert.equal(damaged.readable,false);
 assert.equal(damaged.corrupt,true,'corrupt save should be detected and blocked from loading');
 const cloudRestore=bootSaveManager();
 const remoteSnapshot=cloudRestore.getSaveSlot('slot3').data;
+const originalBook=localValues.get(storageKey);
+rejectStorageKey=cloudRestore.ACTIVE_SLOT_KEY;
+assert.equal(cloudRestore.replaceSaveSlots({slot2:{data:remoteSnapshot}},'slot2').ok,false,'active-slot metadata failure must not replace any saves');
+rejectStorageKey=null;
+assert.equal(localValues.get(storageKey),originalBook);
+rejectStorageKey=storageKey;
+assert.equal(cloudRestore.replaceSaveSlots({slot2:{data:remoteSnapshot}},'slot2').ok,false,'slot book failure must restore old active slot');
+rejectStorageKey=null;
+assert.equal(cloudRestore.activeSlot(),'slot3');
+assert.equal(localValues.get(storageKey),originalBook);
 assert.equal(cloudRestore.replaceSaveSlots({slot2:{data:remoteSnapshot,savedAt:Date.now()}},'slot2').ok,true,'cloud restore must atomically replace the local save book');
 const restoredCloudBook=bootSaveManager();
 assert.equal(restoredCloudBook.activeSlot(),'slot2');
