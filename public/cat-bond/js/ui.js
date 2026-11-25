@@ -3488,29 +3488,40 @@ const UI = {
   },
 
   // ---------- starter picker (first run) ----------
-  openStarter(onPick) {
-    const options = GameData.SPECIES.filter(s => s.rarity === 'N').slice(0, 3);
-    const english=window.MorrowwishI18n?.get?.()!=='zh';
-    const chips = options.map(sp => `<button type="button" class="dex-cell" data-id="${sp.id}" aria-label="选择 ${GameData.speciesName(sp)}">
-      <canvas width="90" height="76"></canvas>
-      <div class="tiny starter-element">${this.game.elemIcon(Skills.elementOf(sp.id))} ${english
-        ?({fire:'Fire',grass:'Nature',water:'Water'}[Skills.elementOf(sp.id)]||'Element')
-        :({fire:'火系',grass:'草系',water:'水系'}[Skills.elementOf(sp.id)]||'元素')}</div>
-      <div class="name">${GameData.speciesName(sp)}</div>
-      <div class="rarity rarity-N">普通</div>
-      <div class="tiny">${sp.desc}</div>
-    </button>`).join('');
+  openStarter(onPick,{storyOpening=false}={}) {
+    const storyBreeds={
+      jinjc:['英短金渐层','Golden Shaded British Shorthair'],
+      yunduo:['布偶猫','Ragdoll'],
+    };
+    const options=storyOpening
+      ?Object.keys(storyBreeds).map(id=>GameData.speciesById(id))
+      :GameData.SPECIES.filter(sp=>sp.rarity==='N').slice(0,3);
+    const english=window.MorrowwishI18n?.get?.()!=='zh',locale=english?1:0;
+    const elements={fire:['火系','Fire'],grass:['草系','Nature'],water:['水系','Water'],light:['光系','Light']};
+    const chips=options.map(sp=>{
+      const element=Skills.elementOf(sp.id);
+      const breed=storyOpening?storyBreeds[sp.id][locale]:'';
+      const portrait=storyOpening
+        ?`<img class="starter-portrait" src="assets/starter-portraits/${sp.id}.webp" alt="" width="180" height="180">`
+        :'<canvas width="90" height="76"></canvas>';
+      return `<button type="button" class="dex-cell" data-id="${sp.id}" aria-label="${breed||GameData.speciesName(sp)}">
+        ${portrait}
+        <div class="tiny starter-element">${this.game.elemIcon(element)} ${elements[element]?.[locale]||''}</div>
+        <div class="name">${GameData.speciesName(sp)}</div>
+        ${storyOpening?`<div class="tiny">${breed}</div>`:`<div class="rarity rarity-N">普通</div><div class="tiny">${sp.desc}</div>`}
+      </button>`;
+    }).join('');
     const p = document.getElementById('panel');
-    p.innerHTML = `<div class="card cat-highlight-card cat-starter-card"><h2 class="center">选择你的第一只猫猫</h2>
+    p.innerHTML = `<div class="card cat-highlight-card cat-starter-card${storyOpening?' cat-story-starter-card':''}"><h2 class="center">选择你的第一只猫猫</h2>
       <p class="sub center">每只猫有自己的元素技能。收服第一位伙伴后，还会觉醒新招式！</p>
       <div class="dex-grid">${chips}</div></div>`;
     p.dataset.mandatory = 'true';
     p.classList.add('open');
     p.onclick = null;
     p.querySelectorAll('.dex-cell').forEach(cell => {
-      const sp = GameData.speciesById(cell.dataset.id);
-      CatArt.renderCatThumb(cell.querySelector('canvas'), sp);
-      cell.onclick = () => { this.closeAll(); onPick(sp.id); };
+      const canvas=cell.querySelector('canvas');
+      if(canvas)CatArt.renderCatThumb(canvas,GameData.speciesById(cell.dataset.id));
+      cell.onclick = () => { this.closeAll(); onPick(cell.dataset.id); };
     });
   },
 };
