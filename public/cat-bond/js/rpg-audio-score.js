@@ -59,7 +59,7 @@ function arrange(id){
   for(let j=0;j<rhythm;j++){const dt=j*4/rhythm;add(t+dt,Math.min(.8,4/rhythm),degree(key-12,mode,c+arp[(j+bar)%arp.length]),acc==='drum'?'piano':acc,.32+(j%3===0?.15:0),j%2?.39:-.39);}
   if(battle){for(const beat of [0,1.5,2.5])add(t+beat,.28,beat===0?36:43,'drum',beat===0?.95:.48,-.1);}
   if(bar%2===0){
-   const selected=climax?R[Math.floor(bar/4)%6]:motif;
+   const selected=id==='finale3'?R[Math.floor(bar/4)%6]:climax?(bar<4||bar>=20?'star':R[(Math.floor(bar/4)-1)%6]):motif;
    const phrase=motifs[selected];let at=t;
    for(let j=0;j<phrase.length;j++){
     const [d,len]=phrase[j],variation=(bar%8===6&&j>=phrase.length-3)?-1:0;

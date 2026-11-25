@@ -6,7 +6,7 @@ const key='cat-bond-rpg-audio-v1',clamp=n=>Math.max(0,Math.min(1,Number(n)||0));
 let prefs={enabled:true,music:.65,fx:.8};
 try{const old=JSON.parse(localStorage.getItem(key)||'null');if(old)prefs={enabled:old.enabled!==false,music:clamp(old.music),fx:clamp(old.fx)};else prefs.enabled=localStorage.getItem('morrowwish-music-enabled')!=='0';}catch{}
 function save(){try{localStorage.setItem(key,JSON.stringify(prefs));}catch{}}
-let ctx,bus,ambBus,active=null,pending=null,serial=0,desired='title',unlocked=false,hidden=document.hidden,paused=false,blocked=false,unavailable=false,duckUntil=0,amb=null,ambId='',ceremony=null,root=null,seen=new Set(),lastFx,ambientTick=0,cache=new Map(),started=false;
+let ctx,bus,ambBus,active=null,pending=null,serial=0,desired='title',unlocked=false,hidden=document.hidden,paused=false,blocked=false,unavailable=false,duckUntil=0,amb=null,ambId='',ceremony=null,root=null,seen=new Set(),lastFx,ambientTick=0,cache=new Map(),started=false,renderQueue=Promise.resolve(),stopped=false;
 const regions=score.regions;
 const now=()=>ctx?.currentTime||0;
 function ensure(){
@@ -16,12 +16,12 @@ function ensure(){
 function target(node,value,sec=.12){if(!node||!ctx)return;const t=now();node.gain.cancelScheduledValues(t);node.gain.setTargetAtTime(value,t,sec);}
 function mix(){
  const cinematic=document.querySelector('.cbcp-root:not([hidden])'),talk=document.querySelector('.res-host.is-visible,.res-npc-dialogue');
- target(bus,prefs.enabled&&!hidden&&!paused?prefs.music*(now()<duckUntil?.28:talk&&!cinematic?.48:.82):0);
+ target(bus,prefs.enabled&&!hidden&&!paused?prefs.music*(now()<duckUntil?.28:cinematic?.65:talk?.48:.82):0);
  target(ambBus,!hidden&&!paused&&window.MorrowwishAudio?.isEnabled?.()!==false?prefs.fx*.18:0);
 }
 async function getBuffer(id){
  if(cache.has(id)){const v=cache.get(id);cache.delete(id);cache.set(id,v);return v;}
- const task=score.render(id);cache.set(id,task);
+ const task=renderQueue.then(()=>score.render(id));renderQueue=task.catch(()=>{});cache.set(id,task);
  try{const b=await task;while(cache.size>3){const first=cache.keys().next().value;if(first===id)break;cache.delete(first);}return b;}catch(e){cache.delete(id);throw e;}
 }
 function dispose(s,fade=.7){
@@ -30,7 +30,7 @@ function dispose(s,fade=.7){
 function clear(){++serial;pending=null;dispose(active,.12);active=null;}
 function select(id){
  desired=id;
- if(!ctx||!unlocked||!prefs.enabled||hidden||paused)return;
+ if(!ctx||!unlocked||!prefs.enabled||hidden||paused||stopped)return;
  if(active?.id===id&&!active.stopping){if(pending&&pending.id!==id){++serial;pending=null;}return;}
  if(pending?.id===id)return;
  const token=++serial;pending={id,token};
@@ -105,7 +105,7 @@ function tick(){
 }
 function start(){
  if(!ensure())return false;
- started=true;
+ started=true;stopped=false;if(hidden||paused)return true;
  try{const p=ctx.resume();p.then(()=>{unlocked=ctx.state==='running';blocked=!unlocked;tick();}).catch(()=>{blocked=true;});}catch{blocked=true;}
  return true;
 }
@@ -114,10 +114,10 @@ function setVolume(v){prefs.music=clamp(v);save();mix();return prefs.music;}
 function setEffectsVolume(v){prefs.fx=clamp(v);save();tick();return prefs.fx;}
 function sync(){tick();}
 function visibility(){hidden=document.hidden;if(hidden){++serial;pending=null;ctx?.suspend().catch(()=>{});}else if(started&&!paused)start();tick();}
-function gesture(e){if(e.type==='keydown'&&['Tab','Shift','Control','Alt','Meta','Escape'].includes(e.key))return;if(!unlocked||ctx?.state!=='running'&&!paused)start();}
+function gesture(e){if(e.type==='keydown'&&['Tab','Shift','Control','Alt','Meta','Escape'].includes(e.key))return;if(!paused&&!hidden&&(!unlocked||ctx?.state!=='running'))start();}
 document.addEventListener('pointerdown',gesture,{capture:true,passive:true});document.addEventListener('keydown',gesture,true);
 document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',()=>{hidden=true;++serial;pending=null;ctx?.suspend().catch(()=>{});});window.addEventListener('pageshow',visibility);
 window.addEventListener('cat-bond-resonance-changed',tick);window.addEventListener('cat-bond-active-save-changed',()=>{root=null;ceremony=null;tick();});
 setInterval(tick,250);
-window.MorrowwishMusic=Object.freeze({start,stop:()=>{clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?'original-score:'+active.id:null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,audioState:ctx?.state||'not-created',cache:cache.size,pending:pending?.id||null,ambient:ambId})});
+window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?'original-score:'+active.id:null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,audioState:ctx?.state||'not-created',cache:cache.size,pending:pending?.id||null,ambient:ambId})});
 })();
