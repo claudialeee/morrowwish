@@ -10,7 +10,7 @@ for(const p of ["public/cat-bond/assets/combat/emberforge-arena.svg","public/cat
 assert.ok(html.indexOf("forge-combat-runtime.mjs")<html.indexOf("js/main.js"));
 assert.match(html,/css\/forge-combat\.css/);
 assert.match(main,/new URLSearchParams\(location\.search\)\.get\('combat'\) === 'forge'/);
-assert.match(runtime,/battle:forge-guardian/);
+assert.match(rules,/operation:\\s*"battle:forge-guardian"/);
 assert.match(runtime,/bindNarrative\(engine\)/);
 assert.match(runtime,/engine\.record\(FORGE_ENCOUNTER\.id,FORGE_ENCOUNTER\.operation\)/);
 assert.match(runtime,/if\(!this\.storyEncounter\)return originalAI\.call/);
