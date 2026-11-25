@@ -1020,7 +1020,9 @@ export const campaign = {
         "puzzle:paired-water-gates"
       ],
       "choices": [],
-      "lineGate": ["puzzle:paired-water-gates"],
+      "lineGate": [
+        "puzzle:paired-water-gates"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
@@ -1080,7 +1082,10 @@ export const campaign = {
         "melody:forest"
       ],
       "choices": [],
-      "lineGate": ["repair:forest","melody:forest"],
+      "lineGate": [
+        "repair:forest",
+        "melody:forest"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
@@ -1582,7 +1587,9 @@ export const campaign = {
         "explore:sealed-archive"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": [
+        "npc:archive-dispute"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
@@ -1723,7 +1730,9 @@ export const campaign = {
         "npc:identity-confrontation"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": [
+        "npc:identity-confrontation"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
@@ -1920,7 +1929,9 @@ export const campaign = {
           "method": "verified-records"
         }
       ],
-      "lineGate": [],
+      "lineGate": [
+        "npc:two-routes"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
