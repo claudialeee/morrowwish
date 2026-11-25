@@ -27,7 +27,7 @@ console.log('Isolated combat rules assertions:',testRules(buildCombatRules));
 
 import assert from "node:assert/strict";
 import {campaign} from "../public/cat-bond/js/resonance/campaign.mjs";
-import {supportEffects} from "../public/cat-bond/js/resonance/finale-combat.mjs";
+import {supportEffects,echoHabit,rhythm,identifyEcho} from "../public/cat-bond/js/resonance/finale-combat.mjs";
 
 // Exercise the helper called by the actual phase-three battle loop and pulse handler.
 const baseline=supportEffects({},null);
@@ -52,3 +52,14 @@ assert.ok(supportEffects(profile,null,{bonded:true,pledge:true}).required<before
 assert.deepEqual(supportEffects({methods:["precise-beacon","precise-beacon"],trust:profile.trust},null),before);
 assert.deepEqual(supportEffects({methods:["anger"],trust:{}},null),baseline);
 console.log("Live finale support calculation: canonical alternatives, garden care, duo promises and duplicate-method guard passed");
+
+const personalities=["clever","mischievous","glutton","diligent","gentle","shy","lazy"];
+assert.equal(new Set(personalities.map(personality=>echoHabit({personality}))).size,personalities.length);
+for(const personality of personalities){
+ const habit=echoHabit({personality});
+ const normal=rhythm("finale:B-02",false,habit),copied=rhythm("finale:B-02",true,habit);
+ assert.equal(identifyEcho(habit,normal[1]-normal[0]),false);
+ assert.equal(identifyEcho(habit,copied[1]-copied[0]),true);
+ assert.equal(identifyEcho(habit,null),false);
+}
+console.log("Individual Catdex rhythm and measured-mismatch regression passed");

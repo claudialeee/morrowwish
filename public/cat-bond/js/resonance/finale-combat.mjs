@@ -25,9 +25,16 @@ export function nodePositions(W,H,top,bottom){
  const h=Math.max(1,H-top-bottom),r=Math.min(W*.30,h*.34);
  return REGIONS.map((region,i)=>({region,action:ACTIONS[i],x:W*.5+Math.cos(i*Math.PI/3-Math.PI/2)*r,y:top+h*.5+Math.sin(i*Math.PI/3-Math.PI/2)*r,color:COLORS[i],integrity:100,progress:0,done:false}));
 }
-export function rhythm(phase,impostor){
- // Both images use the same species and palette. The anomaly is the response timing.
- return impostor?[.24,.92]:[.24,1.52];
+// The existing individual cat personality supplies its characteristic bell response.
+export function echoHabit(cat){
+ return ({clever:1.08,mischievous:1.16,glutton:1.24,diligent:1.32,gentle:1.40,shy:1.48,lazy:1.56})[cat?.personality]??1.28;
+}
+export function rhythm(phase,impostor,habit=1.28){
+ // Both copies resemble the same collected cat; their timing reveals the mismatch.
+ return [.24,impostor?.24+habit-.60:.24+habit];
+}
+export function identifyEcho(expected,observed){
+ return Number.isFinite(expected)&&Number.isFinite(observed)&&Math.abs(expected-observed)>.20;
 }
 export function supportEffects(profile,project,{bonded=false,pledge=false}={}){
  const methods=Array.isArray(profile?.methods)?profile.methods:[];
@@ -116,7 +123,8 @@ function install(){
      e.maxhp=Math.max(55,Math.round(alive(b).reduce((n,x)=>n+x.maxhp,0)*(id==="finale:B-01"?(i===0?1:.20):id==="finale:B-02"?.32:1.6)));e.hp=e.maxhp;
      e.poiseMax=e.maxhp;e.poise=e.poiseMax;
      if(id==="finale:B-01"){e.finaleActor=i===0?"muling":"gate";e.gateIndex=i-1;e.combatName=i===0?["暮铃","Muling"]:["逆响锁","Inward lock"];}
-     else if(id==="finale:B-02"){e.finaleActor="echo";e.echoGroup=Math.floor(i/2);e.impostor=(i%2)===((f.revision+e.echoGroup)%2);e.echoObserved=0;e.echoFirstBeat=null;e.echoGap=null;}
+     else if(id==="finale:B-02"){e.finaleActor="echo";e.echoGroup=Math.floor(i/2);e.impostor=(i%2)===((f.revision+e.echoGroup)%2);e.echoObserved=0;e.echoFirstBeat=null;e.echoGap=null;
+      e.echoCat=fighters[e.echoGroup]||fighters[0];e.echoHabit=echoHabit(e.echoCat);e.dexVerified=false;}
      else{e.finaleActor="central";e.combatName=["空白回响","Hollow Echo"];}
    });
    if(id==="finale:B-03"){const done=host().snapshot().support||[];for(const n of f.nodes)n.done=done.includes(n.region);}
@@ -134,8 +142,17 @@ function install(){
   };
   document.getElementById("battle-ui")?.append(el);requestAnimationFrame(()=>positionObjectiveHud(el));
  }
+ function verifyCatdex(b){
+  const f=b.resonanceFinale;if(!f?.clueOpen||f.id!=="finale:B-02")return;
+  for(const e of b.liveEnemies()){
+   if(e.finaleActor!=="echo"||e.dexVerified||!e.echoCat||!(window.State.S.dex?.[e.echoCat.species]>0)||!identifyEcho(e.echoHabit,e.echoGap))continue;
+   e.dexVerified=true;
+   b.vfx.ring(e.x,e.y,{r0:16,vr:150,life:.55,color:"#9edcd2",width:4});
+  }
+ }
  function paint(b){
   const f=b.resonanceFinale,el=document.getElementById("cb-finale-hud");if(!el||!f)return;
+  verifyCatdex(b);
   const set=(sel,t)=>{const n=el.querySelector(sel);if(n&&n.textContent!==t)n.textContent=t;};
   set("[data-finale-title]",tr(...sceneTitle[f.id]));
   const first=f.id==="finale:B-01",second=f.id==="finale:B-02";
@@ -157,13 +174,13 @@ function install(){
    const groups=[0,1].filter(group=>!f.confirmed.has(group));
    const entries=groups.map(group=>{
     const echoes=b.enemies.filter(e=>e.echoGroup===group);
-    const sp=echoes[0]?.sp;
+    const cat=echoes[0]?.echoCat;
     const area=group===0?tr("左侧","Left pair"):tr("右侧","Right pair");
-    if(!sp||!(window.State.S.dex?.[sp.id]>0))return area+" · "+tr("Catdex 暂无记录","No Catdex record");
-    const intervals=echoes.map(e=>e.echoGap===null?"…":e.echoGap.toFixed(1));
-    return area+" · "+window.GameData.speciesName(sp)+" · "+intervals.join(" / ")+" "+tr("秒","s");
+    if(!cat||!(window.State.S.dex?.[cat.species]>0))return area+" · "+tr("Catdex 暂无记录","No Catdex record");
+    const intervals=echoes.map(e=>e.echoGap===null?"…":e.echoGap.toFixed(2)+(e.dexVerified?" ×":""));
+    return area+" · "+window.State.catName(cat)+" · "+tr("习惯 ","Habit ")+echoHabit(cat).toFixed(2)+"s · "+intervals.join(" / ")+"s";
    });
-   record.textContent=[tr("真身相隔 1.3 秒。每组从左到右。","Genuine gap: 1.3 s. Read each pair left to right."),...entries].join(" · ");
+   record.textContent=[tr("按从左到右比较实测节拍；验证异常后，对该回响伤害 +25%。","Compare measured beats left to right. Verified mismatch: +25% damage to that echo."),...entries].join(" · ");
   }
  }
  function points(b){
@@ -195,7 +212,7 @@ function install(){
     if(this.t-(e._wrongAt??-99)>1.8){e._wrongAt=this.t;this.vfx.ring(e.x,e.y,{r0:18,vr:130,life:.45,color:"#b9ced8",width:3});}
     return 0;
   }
-  const r=hurt.call(this,e,dmg,...args);
+  const r=hurt.call(this,e,e.finaleActor==="echo"&&e.dexVerified?dmg*1.25:dmg,...args);
   if(e.finaleActor==="gate"&&!e.alive){
     const n=f.nodes[e.gateIndex];n.done=true;n.integrity=Math.max(1,n.integrity);
     if(f.cast?.node===e.gateIndex)f.cast=null;
@@ -254,7 +271,7 @@ function install(){
    }
    let newClue=false;
    for(const e of b.liveEnemies()){
-    const [firstBeat,secondBeat]=rhythm(f.id,e.impostor);
+    const [firstBeat,secondBeat]=rhythm(f.id,e.impostor,e.echoHabit);
     if(prev<firstBeat&&beat>=firstBeat){
      e.echoFirstBeat=firstBeat;
      b.vfx.ring(e.x,e.y,{r0:10,vr:150,life:.50,color:"#d7c7a8",width:3});
