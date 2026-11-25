@@ -6,7 +6,7 @@ a{color:var(--green);text-decoration:none}button,input,select{font:inherit}butto
 .tag{display:inline-block;margin-top:35px;font-size:11px;color:var(--green);font-weight:900;letter-spacing:.14em}.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:22px;margin-bottom:25px}.hero h1{font-size:clamp(29px,4.5vw,52px);letter-spacing:-.055em;margin:8px 0}.hero p{max-width:660px;color:var(--muted);font-size:13px;line-height:1.7;margin:0}.period{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.period select,.period button,.auth input{background:#1a3352;border:1px solid #395979;color:#e9f4ff;padding:11px 13px;border-radius:10px}.period button{color:#0b2b36;background:var(--green);border:0;font-weight:900}
 .auth{padding:21px;max-width:590px;border:1px solid #365778;background:var(--surface);border-radius:18px}.auth h2{font-size:21px;margin:0 0 8px}.auth p{color:var(--muted);font-size:12px;line-height:1.6}.auth form{display:flex;gap:8px;flex-wrap:wrap}.auth input{flex:1;min-width:190px}.auth button{background:var(--green);color:#082c36;border:0;border-radius:10px;padding:11px 18px;font-weight:850}.status{font-size:12px;color:#b8d4e9;margin:13px 0 22px;min-height:19px}.status.error{color:#ff9aa9}
 [hidden]{display:none!important}
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 27px}.stat{padding:19px;background:linear-gradient(150deg,#192f4d,#12243d);border:1px solid #325171;border-radius:15px}.stat .label{font-size:11px;color:var(--muted);letter-spacing:.02em;line-height:1.4}.stat .big{font-size:clamp(27px,3vw,39px);line-height:1.25;font-weight:900;letter-spacing:-.035em;margin:8px 0 3px;font-variant-numeric:tabular-nums}.stat .note{font-size:10px;color:#79b9c5}.section{margin:20px 0 28px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:12px}.section h2{font-size:20px;letter-spacing:-.025em;margin:0}.description{font-size:12px;color:var(--muted)}.panel{border:1px solid var(--line);background:#11223a;border-radius:17px;padding:16px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 27px}.stat{padding:19px;background:linear-gradient(150deg,#192f4d,#12243d);border:1px solid #325171;border-radius:15px}.stat .label{font-size:11px;color:var(--muted);letter-spacing:.02em;line-height:1.4}.stat .big{font-size:clamp(27px,3vw,39px);line-height:1.25;font-weight:900;letter-spacing:-.035em;margin:8px 0 3px;font-variant-numeric:tabular-nums}.stat .note{font-size:10px;color:#79b9c5}.section{margin:20px 0 28px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:12px}.section h2{font-size:20px;letter-spacing:-.025em;margin:0}.description{font-size:12px;color:var(--muted)}.panel{border:1px solid var(--line);background:#11223a;border-radius:17px;padding:16px}
 .legend{font-size:11px;color:#afc9df;display:flex;gap:14px;justify-content:flex-end}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}.legend .a{background:var(--green)}.legend .b{background:var(--blue)}
 .graph{min-height:208px;display:flex;align-items:end;gap:12px;overflow-x:auto;padding:15px 0 7px}.day-col{flex:1;min-width:62px;display:flex;flex-direction:column;align-items:center;gap:9px}.bars{height:145px;display:flex;align-items:end;justify-content:center;gap:4px;width:100%;border-bottom:1px solid #54708e66}.bar{width:19px;min-height:2px;border-radius:6px 6px 0 0;transition:height .15s}.bar.pv{background:var(--green)}.bar.vis{background:var(--blue)}.day-count{font-size:11px;color:#cfe3f1;white-space:nowrap}.day-date{font-size:10px;color:#8eaac3}
 .table-wrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}.table th{color:#99bbd5;font-weight:800;background:#1a3453}.table th,.table td{text-align:right;padding:13px 11px;border-bottom:1px solid #29435e}.table th:first-child,.table td:first-child{text-align:left;position:sticky;left:0;background:#142943;z-index:1}.table tr:hover td{background:#203b56}.table tr:hover td:first-child{background:#203b56}.table .game-name{font-weight:750}.table small{font-size:10px;color:var(--muted);margin-left:7px}.table .focus td:first-child{color:#a4f6dc}
@@ -77,7 +77,7 @@ a{color:#a56a83}a:hover{color:#684f7f}
 <section class="auth" id="login"><h2 data-i18n="accessTitle"></h2><p data-i18n="accessHint"></p><form id="loginForm"><input id="secret" type="password" autocomplete="off" data-i18n-placeholder="passwordPlaceholder" aria-label="Analytics access code" required><button type="submit" data-i18n="accessButton"></button></form></section><div class="status" id="status" role="status"></div>
 <div id="report" hidden><div class="stats" id="stats"></div>
 
-<section class="section"><div class="section-head"><h2 data-i18n="gamesTitle"></h2><div class="description" data-i18n="gamesDesc"></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th data-i18n="colGame"></th><th data-i18n="colPv"></th><th data-i18n="colStarts"></th><th data-i18n="colEnds"></th><th data-i18n="colRetries"></th><th data-i18n="colVisitStart"></th><th data-i18n="colStartFinish"></th><th data-i18n="colVisitFinish"></th></tr></thead><tbody id="games"></tbody></table></div><p class="description" data-i18n="bondHistoryNote" style="margin:9px 2px 0;line-height:1.6"></p></section>
+<section class="section"><div class="section-head"><h2 data-i18n="gamesTitle"></h2><div class="description" data-i18n="gamesDesc"></div></div><div class="panel table-wrap"><table class="table"><thead><tr><th data-i18n="colGame"></th><th data-i18n="colPv"></th><th data-i18n="colStarts"></th><th data-i18n="colEnds"></th><th data-i18n="colRetries"></th><th data-i18n="colVisitStart"></th><th data-i18n="colStartFinish"></th><th data-i18n="colVisitFinish"></th><th data-i18n="statVisitors"></th><th data-i18n="statSession"></th><th data-i18n="statD1"></th><th data-i18n="statShares"></th></tr></thead><tbody id="games"></tbody></table></div><p class="description" data-i18n="bondHistoryNote" style="margin:9px 2px 0;line-height:1.6"></p></section>
 
 <section class="section" id="promotion-channels">
  <div class="section-head"><h2 data-i18n="channelTitle"></h2><p class="description" data-i18n="channelDesc"></p></div>
@@ -128,9 +128,9 @@ intro:"只看真实访问、开局、结算，以及哪个渠道带来玩家。"
 today:"今天",dateRange:"统计日期 · PT",dateAll:"全部时间",dateYesterday:"昨天",date30:"最近 30 天",dateCustom:"自定义",dateStart:"开始",dateEnd:"结束",dateApply:"应用",dateApplied:"当前统计：{start} 至 {end} · PT",dateInvalid:"请选择有效的开始和结束日期。",dateBlocked:"暂时无法读取新日期范围，当前仍显示上次成功的数据。",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 天",refresh:"刷新数据",resetMetrics:"重置统计",resetConfirm:"确定永久清除所有历史看板统计吗？包括访问、开局、结算及推广归因。游戏存档与推广配置不会删除。",resetting:"正在清除历史统计……",resetDone:"历史统计已清除，已开始重新记录。",resetFailed:"重置失败，请刷新看板后重试。",
 accessTitle:"工作室专用看板",accessHint:"输入数据看板访问码。访问码仅保存在当前浏览器标签页。",passwordPlaceholder:"数据看板访问码",accessButton:"查看数据",
 ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",loaded:"已更新 {date} · 所有游戏数据已合并",error:"读取失败：{error}",invalidPassword:"访问码不正确。请重新输入。",
-trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"开玩、结算按单次游戏页访问去重：开玩＝该次访问进入游戏，结算＝该次访问至少出现一次正常结算画面，胜负都算；同次访问多局只计一次。猫猫纽带的开玩以玩家点击开始、进入游戏世界为准，不按战斗次数计算。没有对应埋点时留空。游戏页每次真实加载计一次浏览，重复打开和刷新均计入；首页浏览量单独列出。点击表头可排序。",playtestGuide:"“完成”＝游戏出现正常结算画面，胜负都算。括号中的百分比为当前所选日期的转化参考值，不代表独立玩家。",gameMore:"各游戏 · 玩法明细",focusDesc:"七款游戏各保留三项核心玩法指标；转化率见上方总表，没有记录的指标保持空白。",trendMore:"查看流量趋势",
+trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"开玩、结算按单次游戏页访问去重：开玩＝该次访问进入游戏，结算＝该次访问至少出现一次正常结算画面，胜负都算；同次访问多局只计一次。猫猫纽带的开玩以玩家点击开始、进入游戏世界为准，不按战斗次数计算。没有对应埋点时留空。游戏页每次真实加载计一次浏览，重复打开和刷新均计入；首页浏览量单独列出。独立浏览器、平均会话时长、次日回访率及分享均按单款游戏计算；回访指次日再次访问同一游戏。点击表头可排序。",playtestGuide:"“完成”＝游戏出现正常结算画面，胜负都算。括号中的百分比为当前所选日期的转化参考值，不代表独立玩家。",gameMore:"各游戏 · 玩法明细",focusDesc:"七款游戏各保留三项核心玩法指标；转化率见上方总表，没有记录的指标保持空白。",trendMore:"查看流量趋势",
 colGame:"游戏",colPv:"游戏页浏览量",colVisitStart:"访问开玩率",colStartFinish:"开玩结算率",colVisitFinish:"访问结算率",colVisitors:"访客",colStarts:"开玩",colRetries:"重玩",colTime:"平均会话",colEnds:"结算",colDone:"获胜/通关",notAvailable:"",colShares:"分享",colConversion:"开玩率",signalTitle:"玩法观察",signalDesc:"七款游戏各保留三项核心指标；有玩家投票后，再显示简短体验反馈。新埋点不补录历史数据。",feelPrefix:"玩家感受",feelFun:"好玩",feelConfusing:"没看懂",feelNotFun:"不好玩",catSignal:"猫猫绝对无辜！",townSignal:"小镇物语",fishSignal:"口袋水族箱",catRoom1:"第一关通过",catRoom8:"第八关通过",catCaught:"被发现",townWin:"成功建镇",townLose:"建镇失败",townConfusing:"反馈：看不懂",fishGood:"S / A 评级",fishFed:"成功投喂",fishFinished:"完整结束 60 秒",signalWait:"",
-homeFunnelLabel:"主页游戏点击：{clickers}/{visits} 次访问点击了游戏 · {rate}",homeFunnelYouTube:"YouTube 引流：{clickers}/{visits} 次访问点击了游戏 · {rate}",homeFunnelGames:"封面点击：捣蛋猫 {paws} · 自由小镇 {town} · 猫猫纽带 {bond} · 平行人生 {elsewhere}",homeFunnelNew:"仅统计本次更新后的新访问，不补录旧数据。",homeFunnelEmpty:"",channelTitle:"推广渠道 · 真实效果",channelDesc:"平台原生数据按游戏合并展示；Bluesky 显示点赞、转发、回复和引用，不把互动数冒充播放量。网站访问和游戏事件按所选日期统计；平台原生数据仍是最近一次累计快照。",videoDetailTitle:"各游戏短视频 · 原生指标",videoDetailNote:"晚间重发视频的原生指标；首发数据另存于下方。Bluesky 仅显示互动数。",
+homeFunnelLabel:"主页游戏点击：{clickers}/{visits} 次访问点击了游戏 · {rate}",homeFunnelYouTube:"YouTube 引流：{clickers}/{visits} 次访问点击了游戏 · {rate}",homeFunnelGames:"封面点击：捣蛋猫 {paws} · 自由小镇 {town} · 猫猫纽带 {bond} · 平行人生 {elsewhere}",homeFunnelNew:"仅统计本次更新后的新访问，不补录旧数据。",homeFunnelEmpty:"",channelTitle:"推广渠道 · 真实效果",channelDesc:"平台原生数据按游戏合并展示；Bluesky 显示点赞、转发、回复和引用，不把互动数冒充播放量。网站访问和游戏事件按所选日期统计；原生指标仅展示所选日期内实际采集的累计快照，不是区间新增量。",videoDetailTitle:"各游戏短视频 · 原生指标",videoDetailNote:"所选日期内采集的原生累计快照；无对应历史快照则留空。Bluesky 仅显示互动数。",
 
 
 
@@ -149,9 +149,9 @@ intro:"Track real visits, starts, finishes and which channels bring players.",
 today:"Today",dateRange:"Date range · PT",dateAll:"All time",dateYesterday:"Yesterday",date30:"Last 30 days",dateCustom:"Custom",dateStart:"Start",dateEnd:"End",dateApply:"Apply",dateApplied:"Showing {start} to {end} · PT",dateInvalid:"Choose a valid start and end date.",dateBlocked:"New range temporarily unavailable; showing the last successful data.",day3:"Last 3 days",day7:"Last 7 days",day14:"Last 14 days",refresh:"Refresh",resetMetrics:"Reset metrics",resetConfirm:"Permanently delete all historic dashboard metrics (visits, game starts, finishes and campaign attribution)? Player saves and promotion settings will remain.",resetting:"Clearing historic metrics…",resetDone:"Historic metrics cleared. Tracking has restarted.",resetFailed:"Reset failed. Refresh the dashboard and try again.",
 accessTitle:"Private studio dashboard",accessHint:"Enter your Analytics access code. It is saved only in this browser tab.",passwordPlaceholder:"Analytics access code",accessButton:"View analytics",
 ready:"Ready.",loading:"Combining website traffic and gameplay events…",loaded:"Updated {date} · All game data in one dashboard",error:"Could not load: {error}",invalidPassword:"Incorrect access code. Please try again.",
-trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Play and Finish count each game-page visit once: Play means the player entered gameplay during that visit; Finish means the visit reached at least one normal results screen, win or loss. Multiple rounds in one visit count once. For Cat Bond, Play means pressing Start to enter the game world—not starting a battle. Missing tracking stays blank. Every real game-page load counts as one pageview, including refreshes and repeat opens; homepage views are shown separately.",playtestGuide:"Finished means a normal results screen, win or lose. Percentages are approximate conversions for the selected date range, not unique-player measures.",gameMore:"All games · gameplay details",focusDesc:"Three core gameplay metrics per game; conversion rates remain in the table above. Missing records stay blank.",trendMore:"Traffic trends",
+trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Play and Finish count each game-page visit once: Play means the player entered gameplay during that visit; Finish means the visit reached at least one normal results screen, win or loss. Multiple rounds in one visit count once. For Cat Bond, Play means pressing Start to enter the game world—not starting a battle. Missing tracking stays blank. Every real game-page load counts as one pageview, including refreshes and repeat opens; homepage views are shown separately. Browser counts, session duration, next-day return and shares are calculated separately for each game. A return means revisiting the same game the next day.",playtestGuide:"Finished means a normal results screen, win or lose. Percentages are approximate conversions for the selected date range, not unique-player measures.",gameMore:"All games · gameplay details",focusDesc:"Three core gameplay metrics per game; conversion rates remain in the table above. Missing records stay blank.",trendMore:"Traffic trends",
 colGame:"Game",colPv:"Game pageviews",colVisitStart:"Visit-to-play rate",colStartFinish:"Play-to-finish rate",colVisitFinish:"Visit-to-finish rate",colVisitors:"Visitors",colStarts:"Played",colRetries:"Replays",colTime:"Avg. session",colEnds:"Finished",colDone:"Wins / clears",notAvailable:"",colShares:"Shares",colConversion:"Start rate",signalTitle:"Gameplay signals",signalDesc:"Three useful signals per game, plus a compact player-vote summary when available. New tracking does not backfill past play.",feelPrefix:"Player votes",feelFun:"Fun",feelConfusing:"Confusing",feelNotFun:"Not fun",catSignal:"Pawsibly Innocent!",townSignal:"Tiny Town",fishSignal:"Pocket Aquarium",catRoom1:"Room 1 cleared",catRoom8:"Room 8 cleared",catCaught:"Times caught",townWin:"Successful towns",townLose:"Failed towns",townConfusing:"Confusing feedback",fishGood:"S / A grades",fishFed:"Successful feeds",fishFinished:"Completed 60s",signalWait:"",
-homeFunnelLabel:"Homepage game clicks: {clickers}/{visits} visits chose a game · {rate}",homeFunnelYouTube:"YouTube traffic: {clickers}/{visits} visits chose a game · {rate}",homeFunnelGames:"Cover clicks: Pawsibly {paws} · Tiny Town {town} · Cat Bond {bond} · Elsewhere {elsewhere}",homeFunnelNew:"Only new visits since this release; no historical backfill.",homeFunnelEmpty:"",channelTitle:"Promotion · actual results",channelDesc:"Native platform metrics are combined by game. Bluesky shows likes, reposts, replies and quotes, never a fabricated view count. Site visits and gameplay events follow the selected dates; native platform metrics remain the latest cumulative snapshots.",videoDetailTitle:"Native short-video metrics by game",videoDetailNote:"Native metrics for the evening reposts. First-release metrics are archived below. Bluesky shows interactions only.",
+homeFunnelLabel:"Homepage game clicks: {clickers}/{visits} visits chose a game · {rate}",homeFunnelYouTube:"YouTube traffic: {clickers}/{visits} visits chose a game · {rate}",homeFunnelGames:"Cover clicks: Pawsibly {paws} · Tiny Town {town} · Cat Bond {bond} · Elsewhere {elsewhere}",homeFunnelNew:"Only new visits since this release; no historical backfill.",homeFunnelEmpty:"",channelTitle:"Promotion · actual results",channelDesc:"Native platform metrics are combined by game. Bluesky shows likes, reposts, replies and quotes, never a fabricated view count. Site visits and gameplay events follow the selected dates; native metrics show cumulative snapshots actually captured within those dates, not period increments.",videoDetailTitle:"Native short-video metrics by game",videoDetailNote:"Cumulative native snapshots captured in the selected dates. Missing historical snapshots stay blank. Bluesky shows interactions only.",
 
 
 
@@ -317,29 +317,10 @@ function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)
 const homePageviews=games.find(x=>x.game==="hub")?.pageviews;
 const homeKnown=homePageviews!=null&&Number.isFinite(Number(homePageviews))&&Number(homePageviews)>0;
 const displayOrder=['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
-const hm=r.headlineMetrics||{};
-const valid=n=>n!=null&&Number.isFinite(Number(n))&&Number(n)>=0;
-const count=n=>valid(n)?format(n):"";
-const headlineRate=(a,b)=>valid(a)&&valid(b)&&Number(b)>0&&Number(a)<=Number(b)?format(pct(a,b))+"%":"";
-const tracked=games.filter(g=>displayOrder.includes(g.game)&&Number(g.pageviews)>0&&
- g.visitFunnel&&["pageviews","startedViews","finishedViews"].every(k=>valid(g.visitFunnel[k]))&&
- Number(g.visitFunnel.pageviews)>0&&Number(g.visitFunnel.finishedViews)<=Number(g.visitFunnel.startedViews)&&
- Number(g.visitFunnel.startedViews)<=Number(g.visitFunnel.pageviews));
-const sums=tracked.reduce((a,g)=>{for(const k of ["pageviews","startedViews","finishedViews"])a[k]+=Number(g.visitFunnel[k]);return a;},{pageviews:0,startedViews:0,finishedViews:0});
-const funnelNote=t("statFunnelNote",{n:tracked.length,visits:format(sums.pageviews)});
+const count=n=>n!=null&&Number.isFinite(Number(n))&&Number(n)>=0?format(n):"";
 $("stats").innerHTML=[
  metricCard(t("statPv"),hasData?count(r.pageviews):"",t("statPvNote")),
- metricCard(t("statHome"),homeKnown?count(homePageviews):"",t("statHomeNote")),
- metricCard(t("statStarts"),tracked.length?count(sums.startedViews):"",t("statStartsNote")),
- metricCard(t("statFinished"),tracked.length?count(sums.finishedViews):"",t("statFinishedNote")),
- metricCard(t("statRetries"),hasData?count(r.retries):"",t("statRetriesNote")),
- metricCard(t("statVisitors"),count(hm.uniqueBrowsers),t("statVisitorsNote")),
- metricCard(t("statSession"),valid(hm.avgSessionSeconds)?t("seconds",{n:format(hm.avgSessionSeconds)}):"",t("statSessionNote")),
- metricCard(t("statD1"),headlineRate(hm.d1Returned,hm.d1Eligible),t("statD1Note",{n:valid(hm.d1Eligible)?format(hm.d1Eligible):"—"})),
- metricCard(t("statShares"),count(hm.shareClicks),t("statSharesNote")),
- metricCard(t("colVisitStart"),headlineRate(sums.startedViews,sums.pageviews),funnelNote),
- metricCard(t("colStartFinish"),headlineRate(sums.finishedViews,sums.startedViews),funnelNote),
- metricCard(t("colVisitFinish"),headlineRate(sums.finishedViews,sums.pageviews),funnelNote)
+ metricCard(t("statHome"),homeKnown?count(homePageviews):"",t("statHomeNote"))
  ].join("");
 const visibleGames=new Map(games.filter(x=>displayOrder.includes(x.game)).map(x=>[x.game,x]));
 $("games").innerHTML=displayOrder.map(gameId=>{
@@ -357,13 +338,27 @@ $("games").innerHTML=displayOrder.map(gameId=>{
  const c1=conv(cv.startedViews,cv.pageviews);
  const c2=conv(cv.finishedViews,cv.startedViews);
  const c3=conv(cv.finishedViews,cv.pageviews);
+ const hm=x.headlineMetrics||{};
+ const observed=n=>known&&n!=null&&Number.isFinite(Number(n))&&Number(n)>=0?format(n):'';
+ const duration=observed(hm.avgSessionSeconds);
+ const d1=known&&Number(hm.d1Eligible)>0&&hm.d1Returned!=null&&Number(hm.d1Returned)>=0&&Number(hm.d1Returned)<=Number(hm.d1Eligible)?format(pct(hm.d1Returned,hm.d1Eligible))+'%':'';
  const nm=gameNames[x.game]||x.game,label=typeof nm==="string"?nm:nm[lang],url="/"+encodeURIComponent(x.game)+"/";
- return '<tr class="'+(['pawsibly-innocent','elsewhere','tiny-town'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td>'+startCell+'</td><td>'+finishedCell+'</td><td>'+num('retries')+'</td><td>'+c1+'</td><td>'+c2+'</td><td>'+c3+'</td></tr>';
+ return '<tr class="'+(['pawsibly-innocent','elsewhere','tiny-town'].includes(x.game)?'focus':'')+'"><td><a class="game-name" href="'+url+'">'+escapeHTML(label)+'</a></td><td>'+num('pageviews')+'</td><td>'+startCell+'</td><td>'+finishedCell+'</td><td>'+num('retries')+'</td><td>'+c1+'</td><td>'+c2+'</td><td>'+c3+'</td><td>'+observed(hm.uniqueBrowsers)+'</td><td>'+(duration!==''?t('seconds',{n:duration}):'')+'</td><td>'+d1+'</td><td>'+observed(hm.shareClicks)+'</td></tr>';
 }).join("");
 const channels=Array.isArray(j.byChannel)?j.byChannel:[];
 const sourceAliases={itch:['itch','itch.io','itchio','itch.zone'],youtube:['youtube','youtube.com','youtu.be','m.youtube.com'],tiktok:['tiktok','tiktok.com'],instagram:['instagram','instagram.com','l.instagram.com'],bluesky:['bluesky','bsky.app','bsky.social']};
 const siteFor=id=>channels.filter(x=>(sourceAliases[id]||[]).some(s=>String(x.source||'').toLowerCase()===s||String(x.source||'').toLowerCase().endsWith('.'+s)));
 const totalOf=(rows,k)=>rows.reduce((n,x)=>n+Number(x[k]||0),0);
+const rangeFiltered=reportQuery!==BASE_QUERY;
+const withinRange=value=>{
+ if(!rangeFiltered)return true;
+ if(!value||!j.range?.start||!j.range?.end)return false;
+ let day;
+ if(/^\d{4}-\d{2}-\d{2}$/.test(value))day=value;
+ else {const d=new Date(value);if(!Number.isFinite(d.getTime()))return false;
+ const p=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(d).map(x=>[x.type,x.value]));day=p.year+"-"+p.month+"-"+p.day;}
+ return day>=j.range.start&&day<=j.range.end;
+};
 const pulse=j.socialPulse||{},reportedPlatforms=Array.isArray(pulse.platforms)?pulse.platforms:[];
 const fallbackIds=['youtube','tiktok','instagram','bluesky','itch'];
 const platformNames={itch:'itch.io',youtube:'YouTube Shorts',tiktok:'TikTok',instagram:'Instagram Reels',bluesky:'Bluesky'};
@@ -384,6 +379,7 @@ const igNativePosts=(pulse.metricScope?.verifiedPosts||[]).filter(p=>
  p.platform==='instagram'&&p.approved===true&&p.publicVerified===true&&p.checkedAt&&
  Number.isSafeInteger(p.views)&&p.views>=0);
 const nativeNum=(n,id,published)=>{
+ if(rangeFiltered){const items=(pulse.metricScope?.verifiedPosts||[]).filter(p=>p.platform===id&&p.approved===true&&p.publicVerified===true&&withinRange(p.checkedAt));return items.length&&["youtube","tiktok","instagram"].includes(id)&&items.every(p=>Number.isSafeInteger(p.views)&&p.views>=0)?format(items.reduce((sum,p)=>sum+p.views,0)):"";}
  if(!nativeStates[id]?.checkedAt||!["youtube","tiktok","instagram"].includes(id)||published===0)return "";
  if(id==='instagram'&&(n==null||!Number.isFinite(Number(n)))&&igNativePosts.length){
   const total=igNativePosts.reduce((sum,p)=>sum+p.views,0);
@@ -409,12 +405,13 @@ const nativeLabels={
 };
 const localDate=value=>new Date(value).toLocaleString(lang==='zh'?'zh-CN':'en-US');
 const nativeStateLabel=(name,state)=>{
+  if(rangeFiltered&&!withinRange(state?.checkedAt))return name+': '+(lang==='zh'?'区间内无快照':'No snapshot in range');
  const status=nativeLabels[state?.status]?.[lang==='zh'?0:1]||(lang==='zh'?'数据源未响应':'source unavailable');
  const count=state?.checkedAt?' · '+state.postMetricsCount+'/'+state.expectedPosts+' · '+localDate(state.checkedAt):'';
  return name+': '+status+count;
 };
 $("social-pulse-note").textContent=nativeSources.map(([name,state])=>nativeStateLabel(name,state)).join(' | ');
-const verifiedVideos=Array.isArray(pulse.metricScope?.verifiedPosts)?pulse.metricScope.verifiedPosts.filter(p=>p.publicVerified===true&&p.approved===true):[];
+const verifiedVideos=Array.isArray(pulse.metricScope?.verifiedPosts)?pulse.metricScope.verifiedPosts.filter(p=>p.publicVerified===true&&p.approved===true&&(!rangeFiltered||withinRange(p.checkedAt))):[];
 const verifiedPlatforms=['youtube','instagram','tiktok','bluesky'];
 const videoGames=['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
 const videoMetricLabels=lang==='zh'?{views:'播放',likes:'点赞',comments:'评论',shares:'分享',reposts:'转发',replies:'回复',quotes:'引用'}:{views:'Views',likes:'Likes',comments:'Comments',shares:'Shares',reposts:'Reposts',replies:'Replies',quotes:'Quotes'};
@@ -446,9 +443,9 @@ const summarizeArchivedPosts=(posts,platforms,snapshots={})=>platforms.map(platf
   reposts:platform==='bluesky'?total('reposts'):null,replies:platform==='bluesky'?total('replies'):null,
   quotes:platform==='bluesky'?total('quotes'):null,capturedAt};
 });
-const archivedPosts=Array.isArray(archivedRound?.posts)?archivedRound.posts:[];
-const archivedSummary=summarizeArchivedPosts(archivedPosts,archivedPlatforms,archivedRound?.platforms||{});
-$("archived-first-round").hidden=!archivedRound;
+const archivedPosts=Array.isArray(archivedRound?.posts)?archivedRound.posts.filter(p=>withinRange(p.capturedAt)):[];
+const archivedSummary=summarizeArchivedPosts(archivedPosts,archivedPlatforms,rangeFiltered?{}:archivedRound?.platforms||{});
+$("archived-first-round").hidden=!archivedRound||!archivedPosts.length;
 $("archived-first-round-rows").innerHTML=archivedRound?archivedSummary.filter(summary=>summary.posts>0).map(summary=>{
  return '<tr><td>'+escapeHTML(platformNames[summary.platform]||summary.platform)+'</td><td>'+format(summary.posts)+'</td><td>'+archivedMetric(summary,'views')+'</td><td>'+archivedMetric(summary,'likes')+'</td><td>'+archivedMetric(summary,'comments')+'</td><td>'+archivedMetric(summary,'shares')+'</td><td>'+archivedMetric(summary,'reposts')+'</td><td>'+archivedMetric(summary,'replies')+'</td><td>'+archivedMetric(summary,'quotes')+'</td><td>'+escapeHTML(archivedTime(summary.capturedAt))+'</td></tr>';
 }).join(''):'';
