@@ -25,6 +25,15 @@
 .cbcp-stage{position:relative;isolation:isolate;overflow:hidden;min-height:0;background:radial-gradient(ellipse at 50% 42%,#52616a 0%,#263744 54%,#101d28 100%)}
 .cbcp-art,.cbcp-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;will-change:transform,opacity;transform-origin:center;transition:transform 5600ms cubic-bezier(.2,.55,.24,1),opacity 520ms ease}
 .cbcp-layer{pointer-events:none}
+.cbcp-fx{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+.cbcp-subtitle-wrap{padding:12px 18px;background:linear-gradient(90deg,transparent,rgba(7,14,24,.78) 16%,rgba(7,14,24,.78) 84%,transparent)}
+@media(orientation:portrait) and (max-width:680px){
+ .cbcp-stage .cbcp-art-stack{position:absolute;inset:17% 0 22%;overflow:hidden}
+ .cbcp-stage .cbcp-art{object-fit:contain}
+ .cbcp-stage .cbcp-subtitle-wrap{bottom:3%;padding:9px 6px}
+}
+@media(prefers-reduced-motion:reduce){.cbcp-fx{display:none}}
+
 .cbcp-vignette{position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(0deg,rgba(6,15,22,.83),transparent 36%,rgba(6,15,22,.14) 100%),radial-gradient(ellipse at center,transparent 42%,rgba(5,12,19,.42) 100%)}
 .cbcp-topline{position:absolute;z-index:6;top:clamp(10px,2.2vw,26px);left:clamp(12px,3vw,36px);right:clamp(12px,3vw,36px);display:flex;align-items:flex-start;justify-content:space-between;gap:14px;pointer-events:none}
 .cbcp-heading{max-width:min(70%,720px);text-shadow:0 2px 18px rgba(0,0,0,.65)}
@@ -110,6 +119,7 @@
       this.renderToken = 0;
       this.activeImage = null;
       this.frameReady = false;
+      this.fxRAF=0;
       this._onKeyDown = event => this.handleKeyDown(event);
       this._onVisibility = () => {
         if (document.hidden && this.scene && !this.paused) this.pause();
@@ -135,7 +145,7 @@
         <div class="cbcp-shell" role="dialog" aria-modal="true" aria-label="Cat Bond cinematic">
           <div class="cbcp-stage">
             <div class="cbcp-art-stack"></div>
-            <div class="cbcp-vignette"></div>
+            <canvas class="cbcp-fx" aria-hidden="true"></canvas><div class="cbcp-vignette"></div>
             <div class="cbcp-topline">
               <div class="cbcp-heading"><span class="cbcp-kicker"></span><h2 class="cbcp-title"></h2></div>
               <div class="cbcp-tools">
@@ -228,9 +238,12 @@
         this.renderProgress();
         this.updateControls();
         this.nodes.continue.disabled = false;
+        if(this.activeEffect!==frame.effect||this.activeEffectImage!==frame.image){this.activeEffect=frame.effect;this.activeEffectImage=frame.image;if(!this.paused)this.playEffect(frame.effect);}
         this.playSfx(frame.sfx);
+        this.startAtmosphere();
         this.options.onFrameChange?.({sceneId:this.scene.id,frameIndex:this.frameIndex,frameId:frame.id||null});
         if (!this.paused) this.startTimer();
+        this.options.onCheckpoint?.(this.snapshot());
       };
       // A subtitle change on the same authored shot must not restart zoom or fade.
       if (this.activeImage === frame.image && this.nodes.stack.querySelector('.cbcp-art')) { ready(); return; }
@@ -247,7 +260,7 @@
         try { await image.decode?.(); } catch (_) { fail(); return; }
         if (token !== this.renderToken || !this.scene) { image.remove(); return; }
         this.activeImage = frame.image;
-        this.applyCamera(image, frame.camera, 1, frame.durationMs, frame.transitionMs);
+        this.applyCamera(image, frame.camera, 1, frame.shotDurationMs||frame.durationMs, frame.transitionMs, (frame.shotOffsetMs||0)+this.frameElapsedMs);
         requestAnimationFrame(() => {
           if (token !== this.renderToken) return;
           image.style.opacity = '1';
@@ -274,17 +287,79 @@
       image.src = frame.image;
     }
 
-    applyCamera(node, camera, depth = 1, durationMs = 5600, transitionMs = 520) {
+    applyCamera(node, camera, depth = 1, durationMs = 5600, transitionMs = 520, offset=0) {
       const reduced = prefersReducedMotion();
       const from = camera?.from || { x: 0, y: 0, scale: 1.02 };
       const to = camera?.to || { x: 0, y: 0, scale: 1.06 };
       const factor = reduced ? 0 : clamp(depth, 0, 1.5);
-      node.style.transition = `transform ${clamp(durationMs || 5600, 1200, 12000)}ms cubic-bezier(.2,.55,.24,1), opacity ${clamp(transitionMs ?? 520, 320, 900)}ms ease`;
-      node.style.transform = `translate3d(${Number(from.x || 0) * factor}%,${Number(from.y || 0) * factor}%,0) scale(${reduced ? 1 : Number(from.scale || 1.02)})`;
-      if (!reduced) requestAnimationFrame(() => {
-        if (!node.isConnected) return;
-        node.style.transform = `translate3d(${Number(to.x || 0) * factor}%,${Number(to.y || 0) * factor}%,0) scale(${Number(to.scale || 1.06)})`;
-      });
+      node.style.transition = `opacity ${clamp(transitionMs ?? 520, 320, 1000)}ms ease`;
+      const transform=p=>`translate3d(${Number(p.x||0)*factor}%,${Number(p.y||0)*factor}%,0) scale(${reduced?1:Number(p.scale||1)})`;
+      node.style.transform=transform(to);
+      if(!reduced&&node.animate){
+        const animation=node.animate([{transform:transform(from)},{transform:transform(to)}],{duration:Math.max(1200,durationMs||5600),fill:'both',easing:'cubic-bezier(.2,.55,.24,1)'});
+        animation.currentTime=Math.min(offset,Math.max(1200,durationMs||5600));
+        if(this.paused)animation.pause();
+      }
+    }
+
+    playEffect(effect){
+      // Existing game sound controls remain authoritative. No background music.
+      const audio=window.MorrowwishAudio;
+      if(effect==='impact')audio?.effect?.('discover');
+      if(effect==='seal')audio?.note?.(196,.35,.15);
+      if(effect==='seasons')audio?.note?.(440,.65,.15);
+    }
+
+    startAtmosphere(){
+      if(this.fxRAF||this.paused||prefersReducedMotion()||!this.scene?.frames[this.frameIndex]?.effect)return;
+      const canvas=this.root.querySelector('.cbcp-fx');
+      const ctx=canvas?.getContext('2d');
+      if(!ctx)return;
+      const draw=()=>{
+        this.fxRAF=0;
+        if(!this.scene||this.paused)return;
+        const frame=this.scene.frames[this.frameIndex];
+        if(!frame.effect)return;
+        const w=Math.max(1,Math.round(canvas.clientWidth)),h=Math.max(1,Math.round(canvas.clientHeight));
+        if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
+        ctx.clearRect(0,0,w,h);
+        const elapsed=(frame.shotOffsetMs||0)+this.frameElapsedMs+(this.frameStartedAt?performance.now()-this.frameStartedAt:0);
+        const p=clamp(elapsed/(frame.shotDurationMs||frame.durationMs||1),0,1),t=elapsed/1000;
+        const glow=(x,y,r,color)=>{const g=ctx.createRadialGradient(x,y,0,x,y,Math.max(1,r));g.addColorStop(0,color);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fillRect(0,0,w,h)};
+        const seed=i=>((Math.sin(i*97.17+4.71)*43758.54)%1+1)%1;
+        const particles=(count,color,speed,down=false)=>{
+          ctx.fillStyle=color;
+          for(let i=0;i<count;i++){const x=((seed(i)*w+Math.sin(t*.6+i)*15+w)%w),y=((seed(i+99)*h+(down?1:-1)*t*speed)%h+h)%h;
+            ctx.globalAlpha=.18+.55*seed(i+55);ctx.beginPath();ctx.ellipse(x,y,1+2*seed(i+21),down?3:1+2*seed(i+22),0,0,Math.PI*2);ctx.fill();}
+          ctx.globalAlpha=1;
+        };
+        if(frame.effect==='impact'){
+          // Six sanctuary glows answer in order; then the falling star strikes the bell.
+          const sites=[[.53,.30],[.61,.24],[.70,.28],[.81,.38],[.90,.31],[.96,.43]];
+          sites.forEach(([x,y],i)=>{const strength=Math.max(0,1-Math.abs(p*9-i)*.85);glow(x*w,y*h,w*.045,'rgba(255,205,113,'+strength*.8+')')});
+          const travel=clamp((p-.35)/.32,0,1);
+          if(p>.35&&p<.69){ctx.strokeStyle='rgba(255,220,165,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(w*(.93-.66*travel),h*(.02+.38*travel));ctx.lineTo(w*(1.04-.66*travel),h*(-.05+.38*travel));ctx.stroke()}
+          if(p>.67){const k=(p-.67)/.33;glow(w*.28,h*.43,w*(.10+k*.75),'rgba(255,220,174,'+Math.max(0,.85-k)+')');ctx.strokeStyle='rgba(238,201,144,'+(1-k)*.65+')';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(w*.28,h*.43,w*(.03+k*.7),h*(.02+k*.38),0,0,Math.PI*2);ctx.stroke();}
+          particles(36,'#ffdba4',20);
+        }else if(frame.effect==='blackout'){
+          const g=ctx.createLinearGradient(0,0,w,0);g.addColorStop(0,'rgba(12,19,43,'+p*.74+')');g.addColorStop(1,'rgba(37,24,65,'+p*.4+')');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+          for(let i=0;i<4;i++){ctx.strokeStyle='rgba(150,165,228,'+.11*(1-p)+')';ctx.beginPath();for(let x=0;x<w;x+=8){const y=h*(.49+i*.085)+Math.sin(x*.025-t*3+i)*5; x===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}ctx.stroke()}
+        }else if(frame.effect==='storm'){particles(50,'#b8d7f9',90,true);glow(w*.87,h*.34,w*.46,'rgba(255,193,98,'+(.12+Math.sin(t*2)*.05)+')')}
+        else if(frame.effect==='seal'){
+          particles(52,'#fce3a2',18);const q=clamp((elapsed-(frame.shotDurationMs-4200))/4200,0,1);
+          if(q>0){const x=w*.52;glow(x,h*.54,w*.45,'rgba(255,209,115,'+q*.55+')');const gap=w*.53*(1-q);ctx.fillStyle='rgba(11,19,34,'+q*.82+')';ctx.fillRect(0,0,Math.max(0,x-gap),h);ctx.fillRect(x+gap,0,w,h);ctx.strokeStyle='rgba(255,225,164,'+q*(1-q)*3+')';ctx.lineWidth=2;ctx.strokeRect(x-gap,0,gap*2,h)}
+        }else if(frame.effect==='rain'){
+          ctx.strokeStyle='rgba(193,221,246,.28)';ctx.lineWidth=1;
+          for(let i=0;i<70;i++){const x=seed(i)*w,y=(seed(i+78)*h+t*210)%h;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-6,y+23);ctx.stroke()}
+          glow(w*.84,h*.3,w*.3,'rgba(255,175,77,'+(.1+Math.sin(t*3)*.035)+')');
+        }else if(frame.effect==='seasons'){
+          const colors=['#f6c86c','#e6a46b','#d9eaff','#ffe5b9'];const season=Math.min(3,Math.floor(p*4));
+          glow(w*.78,h*.15,w*.75,['rgba(236,198,100,.18)','rgba(222,138,58,.22)','rgba(180,211,255,.25)','rgba(255,227,147,.3)'][season]);
+          particles(45,colors[season],season===2?24:35,true);
+        }
+        this.fxRAF=requestAnimationFrame(draw);
+      };
+      this.fxRAF=requestAnimationFrame(draw);
     }
 
     renderSubtitle() {
@@ -362,16 +437,23 @@
       }
       this.clearTimer();
       this.paused = true;
+      if(this.fxRAF)cancelAnimationFrame(this.fxRAF);this.fxRAF=0;
+      this.nodes.stack.getAnimations?.({subtree:true}).forEach(a=>a.pause());
+      this.audio?.pause();
       this.updateControls();
+      this.options.onCheckpoint?.(this.snapshot());
       return this.snapshot();
     }
 
     resume() {
       if (!this.scene || !this.paused) return this;
       this.paused = false;
+      this.nodes.stack.getAnimations?.({subtree:true}).forEach(a=>a.play());
       this.updateControls();
+      this.startAtmosphere();
       const duration = Number(this.scene.frames[this.frameIndex]?.durationMs) || 0;
       this.startTimer(Math.max(0, duration - this.frameElapsedMs));
+      this.options.onCheckpoint?.(this.snapshot());
       return this;
     }
 
@@ -447,6 +529,9 @@
       this.scene = null;
       this.renderToken++;
       this.activeImage = null;
+      this.activeEffect=null;this.activeEffectImage=null;
+      if(this.fxRAF)cancelAnimationFrame(this.fxRAF);this.fxRAF=0;
+      const fx=this.root.querySelector('.cbcp-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);
       this.frameReady = false;
       this.nodes.stack.replaceChildren();
       this.paused = false;
