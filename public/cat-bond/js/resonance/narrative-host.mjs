@@ -2,11 +2,12 @@ import {campaign} from "./campaign.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
 import {mountDialogue} from "./dialogue-ui.mjs";
 import {mountKeyExchange} from "./key-exchange.mjs";
+import {isLibraryReveal,mountLibraryReveal} from "./library-reveal.mjs";
 const lang=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const portraitRoot=new URL("../../assets/npc/",import.meta.url);
 const playerPortraits=new Map();
 function portrait(id,scene,cursor){
- if(id==="player"){const sp=window.State?.S?.cats?.[0]?.species;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;if(!playerPortraits.has(sp)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp));playerPortraits.set(sp,c.toDataURL("image/png"));}return playerPortraits.get(sp)}
+ if(id==="player"){const sp=window.State?.S?.cats?.[0]?.species;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;if(!playerPortraits.has(sp)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp),window.State.S.cats[0]);playerPortraits.set(sp,c.toDataURL("image/png"));}return playerPortraits.get(sp)}
  if(id==="muling")return new URL("../cinematics/characters/muling/traveler-neutral.webp",portraitRoot).href;
  if(campaign.regions.includes(campaign.cast[id]?.region))return new URL(id+"-painted.webp",portraitRoot).href;
  return null;
@@ -14,10 +15,10 @@ function portrait(id,scene,cursor){
 function install(){
  const stage=document.getElementById("stage"),State=window.State;
  if(!stage||!State||window.CatBondResonance)return;
- let dialogue=null,root=null,slot=null,openedScene=null,scheduled=false,keyExchange=null;
+ let dialogue=null,root=null,slot=null,openedScene=null,scheduled=false,keyExchange=null,libraryReveal=null;
  const announce=detail=>{const savedSlot=State.S;queueMicrotask(()=>{if(savedSlot!==State.S)return;window.dispatchEvent(new CustomEvent("cat-bond-resonance-changed",{detail}));if(detail.trustChanges?.length){const names=detail.trustChanges.map(c=>({zh:campaign.cast[c.id].name.zh+" "+(c.delta>0?"+":"")+c.delta,en:campaign.cast[c.id].name.en+" "+(c.delta>0?"+":"")+c.delta}));window.__game?.toast?.({zh:"信任变化 · "+names.map(n=>n.zh).join(" / "),en:"Trust changed · "+names.map(n=>n.en).join(" / ")});}})};
  const runtime=getSlotRuntime(State);runtime.subscribe(announce);
- function close(){keyExchange?.dispose();keyExchange=null;dialogue?.dispose();dialogue=null;root?.remove();root=null;openedScene=null;slot=null;}
+ function close(){libraryReveal?.dispose();libraryReveal=null;keyExchange?.dispose();keyExchange=null;dialogue?.dispose();dialogue=null;root?.remove();root=null;openedScene=null;slot=null;}
  function show(){
   const v=runtime.view(),game=window.__game;
   if(!v.current||game?.scene==="battle")return false;
@@ -25,11 +26,12 @@ function install(){
   close();slot=State.S;openedScene=v.current.id;
   root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";root.dataset.scene=openedScene;stage.append(root);
   const action=runtime.capture();
+  if(isLibraryReveal(openedScene))libraryReveal=mountLibraryReveal(root,portrait);
   if(v.current.id==="epilogue:E-03"&&v.cursor===v.current.lines.length&&v.objective.includes("npc:second-garden-key")){showKey(action);return true}
   // Bind each overlay to the slot and scene it opened in. Even a click in the
   // interval before the slot-change listener runs cannot write to another slot.
   const boundEngine={view:()=>runtime.isCurrentAction(action)?runtime.view():{current:null},choose:id=>runtime.choose(id,action),nextLine:()=>runtime.nextLine(action)};
-  dialogue=mountDialogue({root,engine:boundEngine,campaign,language:lang,resolvePortrait:portrait,onPersist:()=>{},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value),onAwaitAction:()=>{scheduleFinish()}});
+  dialogue=mountDialogue({root,engine:boundEngine,campaign,language:lang,resolvePortrait:portrait,onRender:(view,k)=>libraryReveal?.render(view,k),onPersist:()=>{},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value),onAwaitAction:()=>{scheduleFinish()}});
   return true;
  }
  function showKey(action){
