@@ -85,7 +85,7 @@ function mount(){
    const other=line.speaker==="qilan"?"jiedeng":"qilan";
    setPortrait(other,other==="qilan"?"curious":"guarded","companion");
    $(".cb-harbor-speaker").textContent=harborSample.cast[line.speaker].name[lang()];
-   $(".cb-harbor-line").textContent=line.text[lang()];
+   $(".cb-harbor-line").textContent=line.text?.[lang()] ?? line[lang()];
    $(".cb-harbor-hint").textContent=w.hint;
    $(".cb-harbor-actions").hidden=false;choices.hidden=true;quest.hidden=true;dialogue.hidden=false;
    $(".cb-harbor-primary").textContent=w.next;$(".cb-harbor-secondary").textContent=w.close;
