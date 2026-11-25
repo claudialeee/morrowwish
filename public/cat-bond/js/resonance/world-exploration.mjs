@@ -75,7 +75,7 @@ export function exchangeOptions(bridge,region,links){
 }
 export function createExplorer(bridge,region,{deferForestMelody=false,deferHarborMelody=false}={}){
  const layout=layouts[region];if(!layout)throw Error("Unknown region");
- const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],path=layout.paths;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set(region==="harbor"?bridge.harborInvited():[]);
+ const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],path=layout.paths;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set(region==="harbor"?bridge.harborInvited():region==="forest"?bridge.forestInvited():[]);
  pos=closest(path,pos).p;
  function walk(x,y){
   if(!Number.isFinite(x)||!Number.isFinite(y)||puzzle||!live())return false;
@@ -137,7 +137,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   if(result.ok)cargo=null;return result;
  }
  function localNpcs(){const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];return Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({...n,point:layout.castPoints?.[n.id]||(i===0?lerp(path[1],path[2],.44):lerp(path[3],path[4],.46))}));}
- function inviteNpc(id){const n=localNpcs().find(n=>n.id===id),v=bridge.view();if(!n||!near(n.point)||!v.objective.includes("melody:"+region))return {ok:false,reason:"npc-not-available"};if(region==="harbor"){const result=bridge.inviteHarbor(id,n.point,bridge.capture());if(!result.ok)return result;}invited.add(id);return {ok:true};}
+ function inviteNpc(id){const n=localNpcs().find(n=>n.id===id),v=bridge.view();if(!n||!near(n.point)||!v.objective.includes("melody:"+region))return {ok:false,reason:"npc-not-available"};if(region==="harbor"||region==="forest"){const result=region==="harbor"?bridge.inviteHarbor(id,n.point,bridge.capture()):bridge.inviteForest(id,n.point,bridge.capture());if(!result.ok)return result;}invited.add(id);return {ok:true};}
  function rewardPoints(){return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}

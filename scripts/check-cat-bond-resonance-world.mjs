@@ -35,7 +35,7 @@ console.log(JSON.stringify((function test(src){
   }
   for(const op of ops){if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
-   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}}
+   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(s.chapter==="forest"){const restored=createExplorer(b,"forest");assert(restored.invited.length===2&&restored.invited.includes("yahe")&&restored.invited.includes("yuchuan"),"forest invitations must survive reload");}}
    if(op==="explore:tide-logbook"){
     walk(x,p);assert(x.interact(op).reason==="incomplete-tide-trail","cannot bypass tide trail");
     let trail=x;
