@@ -114,17 +114,23 @@ try{
    assert.equal(await archive.evaluate(el=>el.open),true,'Archive should expand on demand');
    assert.equal(await archive.locator('#archived-first-round-rows tr').count(),4,
      'First-round platform totals must retain all four native platforms');
-   assert.equal(await archive.locator('#archived-first-round-posts tr').count(),28,
+   assert.equal(await archive.locator('#archived-first-round-posts tr').count(),7,
+     'First-round archive must render seven games in the matching layout');
+   assert.equal(await archive.locator('#archived-first-round-posts a').count(),28,
      'First-round archive must retain all 28 individual video records');
+   assert.deepEqual(await archive.locator('#archived-first-round-posts').locator('..').locator('thead th').allTextContents(),
+     [language==='zh'?'游戏':'Game','YouTube','Instagram','TikTok','Bluesky'],
+     'Archive uses the same game and platform columns as current native metrics');
    const archiveHeaders=await archive.locator('table').first().locator('thead th').allTextContents();
    assert.equal(archiveHeaders[0],language==='zh'?'平台':'Platform',
      'First-round archive table headings must be localized');
    const postDetails=archive.locator('details').first();
    assert.equal(await postDetails.evaluate(el=>el.open),false,'Individual deleted video records must also start collapsed');
    await postDetails.locator('summary').click();
-   assert.equal(await page.locator('#archived-first-round-posts a').first().innerText(),
-     language==='zh'?'打开原帖':'Open original post',
-     'Archived post links must have localized labels');
+   assert.ok((await page.locator('#archived-first-round-posts a').first().innerText()).includes(language==='zh'?'播放 13':'Views 13'),
+     'Archived post shows localized native metrics');
+   assert.equal(await page.locator('#archived-first-round-posts a').first().getAttribute('href'),'https://example.com/first-round/0',
+     'Archived metrics retain original post link');
    assert.equal(await page.locator('#games-total').count(),0,'Seven-game aggregate row must be removed');
    assert.equal(await page.locator('#games tfoot').count(),0,'Game table must not render a totals footer');
    assert.equal(await page.locator('#games tr').count(),7,'All seven individual game rows must remain');

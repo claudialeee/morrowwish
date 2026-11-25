@@ -481,7 +481,7 @@ function listSaveSlots() {
     // not label a legacy save with a chapter from the retired campaign.
     const chapterKey=typeof story.scene==='string'?story.scene.split(':')[0]:'';
     const chapterNumber=['prologue','harbor','forest','forge','sky','library','starfall','finale'].indexOf(chapterKey);
-    const explicitChapter=chapterKey==='prologue'?{zh:'序章',en:'Prologue'}:chapterKey==='finale'?{zh:'终章',en:'Finale'}:null;
+    const explicitChapter=chapterKey==='prologue'?{zh:'序章',en:'Prologue'}:chapterKey==='finale'?{zh:'终章',en:'Finale'}:chapterKey==='epilogue'?{zh:'尾声',en:'Epilogue'}:null;
     const chapterLabelZh=typeof explicitChapter?.zh==='string'?explicitChapter.zh:
       Number.isInteger(chapterNumber)&&chapterNumber>0?'第 '+chapterNumber+' 章':
       data?.cats?.length?'冒险进行中':'尚未开始';
