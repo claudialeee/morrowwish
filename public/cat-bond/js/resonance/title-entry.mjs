@@ -95,7 +95,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   controller=mountResonanceCinematics({
    root,rendererFactory:renderer.create,engine:runtime,campaign,manifest,
    openingRelease:true,
-   staging:window.__CAT_BOND_INTEGRATION_ART__===true,
+   staging:false, // Opening may use only explicitly authorized release art.
    onCheckpoint:persistCheckpoint,
    getSlotKey:()=>window.State.activeSlot(),language:lang,
    onLanguageChange:next=>window.MorrowwishI18n?.set?.(next),

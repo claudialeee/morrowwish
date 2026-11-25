@@ -48,6 +48,15 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   }
   if(covered.length!==scene.lines.length||covered.some((v,i)=>v!==i))return bad('incomplete-or-reordered-dialogue');
   if(!frames.length)return bad('nothing-to-play');
+  // The six existing painted world plates establish the six sanctuaries before
+  // the original Star Bell image. They are not substitutes for any of the six
+  // owner-selected opening paintings, nor a general staging-art bypass.
+  if(release&&scene.id==='prologue:P-01'){
+    const montage=manifest.openingRegionMontage;
+    const ids=['harbor','forest','forge','sky','library','starfall'];
+    if(!Array.isArray(montage)||montage.length!==ids.length||montage.some((s,i)=>s.id!==ids[i]||s.image!=='assets/resonance-world-v2/'+ids[i]+'.webp'||!isBilingual(s.title)||!Number.isFinite(s.note)||s.durationMs!==1800))return bad('invalid-opening-region-montage');
+    frames.unshift(...montage.map(s=>({id:'prologue:P-01-region-'+s.id,image:s.image,alt:s.title,kicker:s.title,durationMs:s.durationMs,transitionMs:420,camera:{from:{x:0,y:0,scale:1.03},to:{x:0,y:0,scale:1.09}},effect:'sanctuary',note:s.note})));
+  }
   return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.id==='prologue:P-02'?{zh:'抉择',en:'The Choice'}:scene.title,chapter:{zh:'猫猫纽带',en:'Cat Bond'},mode:'auto',allowSkip:true,frames}};
 }
 
@@ -99,9 +108,18 @@ export function mountResonanceCinematics({root,rendererFactory,engine,campaign,m
     try{await preload(result.scene)}catch(e){if(!valid(run))return bad('stale-slot-or-scene');active=null;return report('cinematic-image-load-failed')}
     if(sequence!==id||!valid(run)){if(active===run)active=null;return bad('stale-slot-or-scene')}
     try{
-      if(resume&&(!Number.isInteger(resume.snapshot.frameIndex)||resume.snapshot.frameIndex<0||resume.snapshot.frameIndex>=result.scene.frames.length||!Number.isFinite(resume.snapshot.elapsedMs)||resume.snapshot.elapsedMs<0)){active=null;return report('invalid-cinematic-checkpoint');}
+      let checkpoint=resume?.snapshot;
+      if(checkpoint){
+        // Stable authored frame identity survives insertion of the six-region
+        // montage. Old P-01 checkpoints had only the two original shots.
+        const index=checkpoint.frameId?result.scene.frames.findIndex(f=>f.id===checkpoint.frameId)
+          :run.id==='prologue:P-01'&&openingRelease&&result.scene.frames[0]?.effect==='sanctuary'
+          ?checkpoint.frameIndex+6:checkpoint.frameIndex;
+        if(!Number.isInteger(index)||index<0||index>=result.scene.frames.length||!Number.isFinite(checkpoint.elapsedMs)||checkpoint.elapsedMs<0){active=null;return report('invalid-cinematic-checkpoint');}
+        checkpoint={...checkpoint,frameIndex:index,elapsedMs:Math.min(checkpoint.elapsedMs,Math.max(0,result.scene.frames[index].durationMs-1))};
+      }
       renderer.register(result.scene);
-      const started=resume?renderer.restore(resume.snapshot):renderer.play(run.id);
+      const started=checkpoint?renderer.restore(checkpoint):renderer.play(run.id);
       if(started===false){active=null;return report('cinematic-start-failed');}
       return {ok:true,sceneId:run.id};
     }catch(error){active=null;renderer.stop();return report('cinematic-start-failed');}

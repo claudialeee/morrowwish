@@ -22,6 +22,7 @@ try {
     await page.route('**/*', route => /^(data:|blob:)/.test(route.request().url())||route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
     await page.goto(origin+'/cat-bond/?lang=en');
     await page.waitForFunction(() => window.WorldMap === window.CatBondCanonicalWorld && window.CatBondResonance && window.__game);
+    assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),false,'Production entry must not enable unreviewed staging art');
     const button = (name, scope = page) => scope.getByRole('button',{name,exact:true});
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
     const shot = id => page.screenshot({path:out+'/'+name+'-'+id+'.png'});
@@ -82,7 +83,11 @@ try {
         await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
         if(['yahe','yuchuan','muling'].includes(line.speaker)){
           const portrait=dialogue.locator('.res-portrait');
-          await portrait.waitFor({state:'visible'});await portrait.evaluate(img=>img.decode());
+          await portrait.waitFor({state:'visible'});
+          const expected=line.speaker==='muling'?'/cinematics/characters/muling/traveler-neutral.webp':'/npc/'+line.speaker+'-painted.webp';
+          try{await page.waitForFunction(({actor,expected})=>{const d=document.querySelector('.res-host .res-dialogue'),img=d?.querySelector('.res-portrait');return d?.dataset.speaker===actor&&img?.complete&&img.naturalWidth>0&&img.currentSrc.endsWith(expected)}, {actor:line.speaker,expected}, {timeout:12000});await portrait.evaluate(img=>img.decode());}
+          catch(e){await shot(id.replace(':','-')+'-portrait-failure-'+line.speaker);console.error('Actual dialogue portrait failed',await portrait.evaluate(img=>({src:img.src,current:img.currentSrc,complete:img.complete,width:img.naturalWidth})));throw e;}
+          if(line.speaker==='muling'&&id==='forest:R-04'&&!observed.includes('muling'))await shot('forest-muling-portrait');
         }
         await dialogue.locator('[data-res-language]').click();
         assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),'zh');
@@ -227,6 +232,7 @@ try {
     await readDialogue('harbor:H-04',calibrate?'Calibrate the lighthouse first':'Prioritize rescue');
     const rescue=() => puzzle('Storm boat',calibrate?['Secure','Signal','Guide','Guide','Signal']:['Secure','Secure','Signal','Guide','Guide','Signal']);
     const mirrors=() => puzzle('Lighthouse mirrors',['Left mirror','Left mirror','Center mirror','Center mirror','Right mirror']);
+    assert.equal(await page.evaluate(()=>CatBondResonance.view().choice),calibrate?'calibrate':'rescue');
     if (calibrate) {await mirrors();await rescue();} else {await rescue();await mirrors();}
     await scene('harbor:H-05');
     await checkObjective('repair:harbor');
@@ -244,14 +250,17 @@ try {
     }
     await button('Invite Jiedeng').click();
     await button('Invite Jiedeng').waitFor({state:'hidden'});
+    const rewardBefore=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish}));
     await button('Returning Tides').click();
     const harborMelodyControls=page.locator('.rw-puzzle-controls');await harborMelodyControls.waitFor();
     await button('Middle',harborMelodyControls).click(); // wrong note: retry must not commit a melody
     assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false);
     for(const input of ['Low','High','Middle'])await button(input,harborMelodyControls).click();
     await page.locator('.rw-world[data-ceremony="harbor"]').waitFor();
-    await page.locator('.rw-surface').scrollIntoViewIfNeeded();await shot('harbor-ceremony');
+    await page.locator('.rw-surface').scrollIntoViewIfNeeded();await page.waitForTimeout(750);await shot('harbor-ceremony');
+    await page.waitForTimeout(650);await shot('harbor-ceremony-late');
     await harborMelodyControls.waitFor({state:'hidden'});
+    assert.deepEqual(await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish})),{coins:rewardBefore.coins+35,fish:rewardBefore.fish+3},'Returning Tides grants its one-time canonical reward');
     await readDialogue('harbor:H-05');
     await scene('forest:R-01');
     await page.locator('.rw-shell').scrollIntoViewIfNeeded();
