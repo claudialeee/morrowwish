@@ -224,6 +224,8 @@
       const lang = this.currentLanguage();
       const token = ++this.renderToken;
       this.frameReady = false;
+      this.root.dataset.ready='false';
+      this.updateControls();
       this.nodes.continue.disabled = true;
       const fail = () => {
         if (token !== this.renderToken || !this.scene) return;
@@ -234,14 +236,15 @@
       const ready = () => {
         if (token !== this.renderToken || !this.scene) return;
         this.frameReady = true;
-        this.nodes.kicker.textContent = localized(this.scene.kicker, lang) || localized(this.scene.chapter, lang);
+        this.root.dataset.ready='true';this.root.dataset.frameId=frame.id||'';
+        this.nodes.kicker.textContent = localized(frame.kicker||this.scene.kicker, this.currentLanguage()) || localized(this.scene.chapter, this.currentLanguage());
         this.nodes.title.textContent = localized(this.scene.title, this.currentLanguage());
         this.renderSubtitle();
         this.renderProgress();
         this.updateControls();
         this.nodes.continue.disabled = false;
-        if(this.activeEffect!==frame.effect||this.activeEffectImage!==frame.image){this.activeEffect=frame.effect;this.activeEffectImage=frame.image;if(!this.paused)this.playEffect(frame.effect);}
-        this.playSfx(frame.sfx);
+        if(this.activeEffect!==frame.effect||this.activeEffectImage!==frame.image){this.activeEffect=frame.effect;this.activeEffectImage=frame.image;if(!this.paused)this.playEffect(frame.effect,frame);}
+        if(!this.paused)this.playSfx(frame.sfx);
         this.startAtmosphere();
         this.options.onFrameChange?.({sceneId:this.scene.id,frameIndex:this.frameIndex,frameId:frame.id||null});
         if (!this.paused) this.startTimer();
@@ -304,9 +307,11 @@
       }
     }
 
-    playEffect(effect){
+    playEffect(effect,frame){
       // Existing game sound controls remain authoritative. No background music.
       const audio=window.MorrowwishAudio;
+      if(effect==='sanctuary')audio?.note?.(frame.note,.7,.13);
+      if(effect==='impact'||effect==='blackout')audio?.note?.(196,.7,.16);
       if(effect==='impact')audio?.effect?.('discover');
       if(effect==='seal')audio?.note?.(196,.35,.15);
       if(effect==='seasons')audio?.note?.(440,.65,.15);
@@ -335,7 +340,8 @@
             ctx.globalAlpha=.18+.55*seed(i+55);ctx.beginPath();ctx.ellipse(x,y,1+2*seed(i+21),down?3:1+2*seed(i+22),0,0,Math.PI*2);ctx.fill();}
           ctx.globalAlpha=1;
         };
-        if(frame.effect==='impact'){
+        if(frame.effect==='sanctuary'){glow(w*.5,h*.46,w*.42,'rgba(247,211,139,'+(.05+.08*Math.sin(p*Math.PI))+')');particles(15,'#fce3a2',12);}
+        else if(frame.effect==='impact'){
           // Six sanctuary glows answer in order; then the falling star strikes the bell.
           const sites=[[.53,.30],[.61,.24],[.70,.28],[.81,.38],[.90,.31],[.96,.43]];
           sites.forEach(([x,y],i)=>{const strength=Math.max(0,1-Math.abs(p*9-i)*.85);glow(x*w,y*h,w*.045,'rgba(255,205,113,'+strength*.8+')')});
@@ -392,6 +398,9 @@
       this.nodes.language.setAttribute('aria-label', lang === 'zh' ? '切换到英文' : 'Switch to Chinese');
       this.nodes.pause.textContent = this.paused ? (lang === 'zh' ? '继续播放' : 'Resume') : (lang === 'zh' ? '暂停' : 'Pause');
       this.nodes.skip.textContent = lang === 'zh' ? '跳过' : 'Skip';
+      this.root.dataset.paused=String(this.paused);
+      this.nodes.pause.disabled=!this.frameReady;
+      this.nodes.skip.disabled=!this.frameReady;
       this.nodes.skip.hidden = !this.scene?.allowSkip;
       const manual = this.scene?.mode === 'manual' || !(Number(this.scene?.frames?.[this.frameIndex]?.durationMs) > 0);
       this.nodes.continue.textContent = this.frameIndex < (this.scene?.frames?.length || 1) - 1
@@ -464,6 +473,7 @@
       return {
         sceneId: this.scene.id,
         frameIndex: this.frameIndex,
+        frameId: this.scene.frames[this.frameIndex]?.id||null,
         elapsedMs: Math.round(this.frameElapsedMs + (!this.paused && this.frameStartedAt ? performance.now() - this.frameStartedAt : 0)),
         paused: this.paused
       };
@@ -495,7 +505,9 @@
       this.forcedLanguage = this.language;
       if (this.scene) {
         this.nodes.title.textContent = localized(this.scene.title, this.currentLanguage());
-        this.nodes.kicker.textContent = localized(this.scene.kicker, this.currentLanguage()) || localized(this.scene.chapter, this.currentLanguage());
+        const frame=this.scene.frames[this.frameIndex];
+        this.nodes.kicker.textContent = localized(frame?.kicker||this.scene.kicker, this.currentLanguage()) || localized(this.scene.chapter, this.currentLanguage());
+        for(const image of this.nodes.stack.querySelectorAll('.cbcp-art'))if(image.getAttribute('src')===frame?.image)image.alt=localized(frame.alt,this.currentLanguage());
         this.renderSubtitle();
       }
       this.updateControls();
@@ -534,7 +546,7 @@
       this.activeEffect=null;this.activeEffectImage=null;
       if(this.fxRAF)cancelAnimationFrame(this.fxRAF);this.fxRAF=0;
       const fx=this.root.querySelector('.cbcp-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);
-      this.frameReady = false;
+      this.frameReady = false;this.root.dataset.ready='false';delete this.root.dataset.frameId;
       this.nodes.stack.replaceChildren();
       this.paused = false;
       this.frameElapsedMs = 0;
