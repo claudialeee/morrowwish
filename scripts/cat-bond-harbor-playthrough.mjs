@@ -114,6 +114,7 @@ try {
     await scene('harbor:H-01');
     await page.locator('.rw-shell').evaluate(shell=>Promise.allSettled(shell.getAnimations().map(animation=>animation.finished)));
     await shot('harbor');
+    assert.ok(await page.locator('.rw-world').evaluate(e=>e.getBoundingClientRect().top>=40),'Harbor scroll viewport stays below fixed game controls');
     await button('Talk to Qilan').click();
     await readDialogue('harbor:H-01');
     await scene('harbor:H-02');
@@ -192,6 +193,8 @@ try {
     await puzzle('Returning Tides',['Low','High','Middle']);
     await readDialogue('harbor:H-05');
     await scene('forest:R-01');
+    await page.locator('.rw-shell').scrollIntoViewIfNeeded();
+    assert.equal(await page.locator('.rw-shell').evaluate(e=>getComputedStyle(e).animationName),'none');
     await shot('harbor-restored');
     assert.equal(await page.evaluate(()=>State.S.resonance.choices['harbor:H-02']),comfort?'comfort':'ask');
     await page.evaluate(()=>MorrowwishI18n.set('zh'));

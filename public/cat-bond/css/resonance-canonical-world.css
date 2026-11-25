@@ -7,3 +7,8 @@
 @media(max-width:700px){.rw-harbor-status,.rw-harbor-guide{font-size:12px}.rw-world[data-region="harbor"] .rw-puzzle-controls .rw-button{flex:1 1 40%}}
 
 .rw-world[data-harbor-puzzle="true"] .rw-shell{animation:none}
+
+/* Harbor scroll viewport stays below persistent game controls, including after a rerender. */
+.rw-world[data-region="harbor"]{top:48px;padding-top:14px;scroll-padding-top:8px}
+.rw-world[data-region="harbor"] .rw-shell{animation:none}
+@media(max-height:500px) and (orientation:landscape){.rw-world[data-region="harbor"]{top:44px;padding-top:6px}.rw-world[data-region="harbor"] .rw-head{gap:6px;margin-bottom:7px;padding-bottom:6px}.rw-world[data-region="harbor"] .rw-objective{margin-bottom:6px}}
