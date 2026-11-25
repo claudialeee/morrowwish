@@ -15,7 +15,7 @@ export const layouts={
    "melody:harbor":[.131,.341,"归潮调","Returning Tides"]
   }
  },
- forest:{name:["眠根林","Rootsleep Forest"],paths:[[.1,.86],[.29,.73],[.29,.4],[.53,.36],[.75,.61],[.88,.23]],features:{"explore:scent-trail":[.29,.4,"气味踪迹","Scent trail"],"puzzle:paired-water-gates":[.75,.61,"双猫水闸","Paired water gates"],"repair:forest":[.88,.23,"古根圣所","Ancient-root sanctuary"],"melody:forest":[.88,.23,"相枝调","Living Roots"]}},
+ forest:{name:["眠根林","Rootsleep Forest"],paths:[[.095,.90],[.20,.84],[.31,.73],[.35,.64],[.31,.58],[.265,.53],[.25,.49],[.30,.43],[.39,.40],[.53,.40],[.56,.47],[.64,.53],[.69,.53],[.77,.44],[.83,.37],[.81,.32],[.83,.27],[.88,.24],[.89,.20]],castPoints:{yahe:[.30,.43],yuchuan:[.64,.53]},features:{"explore:scent-trail":[.69,.53,"气味踪迹","Scent trail"],"puzzle:paired-water-gates":[.69,.53,"双猫水闸","Paired water gates"],"repair:forest":[.89,.20,"古根圣所","Ancient-root sanctuary"],"melody:forest":[.89,.20,"相枝调","Living Roots"]}},
  forge:{name:["赤炉环城","Emberforge City"],castPoints:{xiaomao:[.53,.50]},paths:[[.1,.86],[.35,.76],[.35,.50],[.63,.50],[.74,.40],[.88,.30]],features:{"puzzle:safety-blueprint":[.35,.50,"安全图纸","Safety blueprint"],"puzzle:heat-pressure":[.63,.50,"炉心控制台","Furnace controls"],"repair:forge":[.88,.30,"炉心圣所","Hearth sanctuary"],"melody:forge":[.88,.30,"承火调","Song of Ember"],"battle:forge-guardian":[.74,.40,"守炉者","Forge guardian"]}},
  sky:{name:["云脊群岛","Skyspine Isles"],paths:[[.10,.80],[.10,.70],[.16,.61],[.18,.55],[.41,.51],[.58,.55],[.67,.50],[.72,.43],[.74,.36],[.84,.30],[.89,.24]],features:{"explore:flight-recorder":[.41,.51,"飞行记录仪","Flight recorder"],"puzzle:joint-flight":[.58,.55,"双猫滑翔台","Joint gliding platform"],"repair:sky":[.89,.24,"风翼圣所","Windwing sanctuary"],"melody:sky":[.89,.24,"逐风调","Open Sky"]}},
  library:{name:["月镜书库","Moonmirror Library"],paths:[[.10,.83],[.17,.73],[.22,.60],[.46,.58],[.50,.42],[.76,.40],[.82,.36],[.89,.29]],features:{"puzzle:mirror-records":[.46,.58,"镜面档案","Mirror records"],"explore:routing-record":[.76,.40,"路由记录","Routing record"],"repair:library":[.89,.29,"月镜圣所","Moonmirror sanctuary"],"melody:library":[.89,.29,"照影调","Reflections"]}},
@@ -26,7 +26,6 @@ const segment=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,
 const closest=(path,p)=>path.slice(1).map((b,i)=>({i,...segment(p,path[i],b)})).sort((a,b)=>distance(a.p,p)-distance(b.p,p))[0];
 const stages=["sendA","receiveB","sendB","receiveA"];
 export const puzzleSpecs={
- "explore:scent-trail":{type:"scent",initial:[],goal:[1,0,2]},
  "explore:tide-logbook":{type:"tide",initial:[],goal:[2,0,1]},
  "puzzle:beam-mirrors":{type:"mirrors",initial:[0,1,0],goal:[2,3,1],mod:4},
  "puzzle:paired-water-gates":{type:"water",initial:[0,0,0],goal:[1,1,1],mod:2},
@@ -83,6 +82,7 @@ export function createExplorer(bridge,region){
  }
  function near(p){return live()&&!dest&&distance(pos,p)<.072;}
  function interact(op){
+  if(op==="explore:scent-trail"){const step=bridge.scentStep();return step?traceScent(step.index):{ok:false,reason:"walk-to-scent"};}
   const v=bridge.view(),f=layout.features[op];if(!f||v.current?.chapter!==region||!v.objective.includes(op)||!near(f))return {ok:false,reason:"walk-to-objective"};
   if(op.startsWith("battle:"))return {ok:false,reason:"battle-host-required"};
   if(v.current.id==="harbor:H-04"){
@@ -95,6 +95,7 @@ export function createExplorer(bridge,region){
   if(!op.startsWith("explore:"))return {ok:false,reason:"unimplemented"};
   return complete();
  }
+ function traceScent(index){const step=bridge.scentStep();if(!step||step.index!==index||!near(step.point))return {ok:false,reason:"walk-to-scent"};return bridge.traceScent(index,bridge.capture());}
  function complete(){
   if(!active)return {ok:false,reason:"no-interaction"};const f=layout.features[active.operation];
   if(!near(f)||(puzzle&&!puzzle.solved))return {ok:false,reason:"incomplete-physical-action"};
@@ -118,5 +119,5 @@ export function createExplorer(bridge,region){
  function rewardPoints(){return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}
- return {walk,tick,interact,operate,cancel,complete,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
+ return {walk,tick,interact,operate,cancel,complete,traceScent,scentStep:()=>bridge.scentStep(),startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
 }

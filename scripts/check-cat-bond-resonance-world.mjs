@@ -35,7 +35,13 @@ console.log(JSON.stringify((function test(src){
   for(const op of ops){if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
    if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}}
-   walk(x,p);const r=x.interact(op);ok(r,op);if(r.puzzle)solve(x);assert(!b.view().objective.includes(op),"unrecorded "+op);physical++;
+   if(op==="explore:scent-trail"){
+    assert(!x.traceScent(2).ok,"cannot skip to medicine");
+    let trail=x;
+    for(let i=0;i<3;i++){const step=trail.scentStep();assert(step?.index===i,"ordered scent waypoint");assert(!trail.traceScent((i+1)%3).ok,"out-of-order scent");walk(trail,step.point);ok(trail.traceScent(i),"trace scent");trail=createExplorer(b,s.chapter);}
+    assert(!trail.scentStep(),"completed trail must not reopen");
+   }else{walk(x,p);const r=x.interact(op);ok(r,op);if(r.puzzle)solve(x);}
+   assert(!b.view().objective.includes(op),"unrecorded "+op);physical++;
    if(physical===1){const p=x.rewardPoints()[0];walk(x,p.point);const cash=State.S.coins;ok(x.pickup(p.id),"cache reward");assert(State.S.coins>cash&&!x.pickup(p.id).ok,"duplicate reward");rewards++;}
   }else host(e=>e.record(s.id,op));}
   if(s.id==="starfall:F-04")links();

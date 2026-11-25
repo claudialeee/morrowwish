@@ -3,6 +3,13 @@ import {campaign} from "./campaign.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
+const scentTrail=Object.freeze([
+ {point:[.31,.58],name:["湿苔上的气味","Scent on damp moss"],clue:["湿苔上留下了药箱经过的痕迹。沿上方林道继续追踪。","The medicine crate passed through the damp moss. Follow the upper path."]},
+ {point:[.39,.40],name:["林间药草痕迹","Herbs on the canopy path"],clue:["药草散落在通往根系水道的路上。","Loose herbs lead toward the root channel."]},
+ {point:[.69,.53],name:["根系药材藏处","Medicine at the root channel"],clue:["药材被送去治疗地下根系。","The missing medicine was diverted to treat the underground roots."]}
+]);
+const scentKey=i=>"forest:R-02:scent:"+i;
+const scentAt=(w,i)=>{const p=w.positions.forest,q=scentTrail[i]?.point;return !!p&&!!q&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
 export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(State)}={}){
  let cachedRoot,cachedStory,cachedApi,cachedView;
  function view(){const api=resolveNarrative();if(!api?.view)throw Error("Canonical narrative host not mounted");const root=State.S;if(cachedRoot===root&&cachedStory===root.resonance&&cachedApi===api&&cachedView)return cachedView;cachedRoot=root;cachedStory=root.resonance;cachedApi=api;return cachedView=api.view();}
@@ -27,11 +34,26 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  }
  function position(region,x,y){if(world().location!==region||!campaign.regions.includes(region)||!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>1||y<0||y>1)return fail("invalid-position");return physical(w=>({...w,positions:{...w.positions,[region]:{x,y}}}));}
  function patch(change,reward){return prior=>{const w=prior.resonanceExploration||{};return {resonanceExploration:change(clone(w)),coins:(prior.coins||0)+(reward.coins||0),fish:(prior.fish||0)+(reward.fish||0)};};}
+ function scentStep(){
+  const v=view(),w=world();
+  if(v.current?.id!=="forest:R-02"||w.location!=="forest"||!v.objective.includes("explore:scent-trail"))return null;
+  const index=scentTrail.findIndex((_,i)=>!w.interactions[scentKey(i)]);
+  return index<0?null:{...clone(scentTrail[index]),index,total:scentTrail.length};
+ }
+ function traceScent(index,token){
+  const step=scentStep(),w=world(),api=resolveNarrative();
+  if(!step||step.index!==index||!token||!api.isCurrentAction(token)||!scentAt(w,index))return fail("walk-to-scent");
+  if(!view().choice)return fail("choice-pending");
+  if(index===scentTrail.length-1)return recordWorld("forest:R-02","explore:scent-trail",{sceneId:"forest:R-02",operation:"explore:scent-trail",region:"forest",verified:true,token});
+  const r=physical(x=>({...x,interactions:{...x.interactions,[scentKey(index)]:true}}));
+  return r.ok?{...r,pending:true}:r;
+ }
  function recordWorld(sceneId,op,proof){
   const api=resolveNarrative(),v=view(),region=v.current?.chapter,w=world();
   if(v.current?.id!==sceneId||w.location!==region||!campaign.regions.includes(region)||!v.objective.includes(op)||proof?.sceneId!==sceneId||proof.operation!==op||proof.region!==region||proof.verified!==true)return fail("invalid-world-evidence");
   if(!/^(explore|puzzle|rescue|repair|melody):/.test(op))return fail("owned-by-other-module");
   if(w.interactions[sceneId+":"+op])return fail("already-completed");
+  if(op==="explore:scent-trail"&&(!scentTrail.slice(0,-1).every((_,i)=>w.interactions[scentKey(i)])||!scentAt(w,scentTrail.length-1)))return fail("incomplete-scent-trail");
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
@@ -44,5 +66,5 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   const reward={coins:10,fish:1},r=api.exchange({a,b,stage:s.stage,actor:s.actor,action:s.action,verified:true,token:proof.token},patch(x=>({...x,cargo:null}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function pickupReward(region,id){const w=world();if(w.location!==region||!/^cache-[12]$/.test(id)||w.pickups[region+":"+id])return fail("already-collected");return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
- return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
+ return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,scentStep,traceScent,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
 }
