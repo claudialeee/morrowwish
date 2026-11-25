@@ -165,7 +165,7 @@ try {
       if(choice){await button(choice,dialogue).click();}
       const observed=[];
       while(await dialogue.isVisible()){
-        const line=await page.evaluate(expected=>{const v=CatBondResonance.view();return v.current?.id===expected&&v.lineReady?{...v.current.lines[v.cursor],cursor:v.cursor}:null},id);
+        const line=await page.evaluate(expected=>{const v=CatBondResonance.view();return v.current?.id===expected&&v.lineReady&&v.current.lines[v.cursor]?{...v.current.lines[v.cursor],cursor:v.cursor}:null},id);
         if(!line)break;
         await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
         if(['yahe','yuchuan','muling'].includes(line.speaker)){
