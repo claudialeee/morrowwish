@@ -105,3 +105,24 @@
 .rb-recovery-actions .rb-action{min-height:40px;padding:5px 9px;font-size:12px}
 
 .rb-dex-archive{margin:14px 0;padding:14px;border:1px solid #cbb68c;border-radius:10px;background:#fff8e8;color:#30484b}.rb-dex-archive h3{margin:0 0 10px;color:#345052;font-family:Georgia,serif}.rb-dex-entry{border-top:1px solid #d5c6a8;padding:9px 0}.rb-dex-entry p,.rb-dex-rhythms p{margin:4px 0;color:#655a48;font-size:13px;line-height:1.55}.rb-dex-rhythms{margin-top:8px}.rb-dex-rhythms summary{font-weight:700;cursor:pointer;min-height:34px}.rb-dex-rhythms .rb-stat{margin-top:5px}
+
+/* Portal uses the same five live garden actions as the website, with the
+   Book replacing the five legacy management tabs. Keep host chrome separate. */
+html.cb-cg #stage.rb-canonical.cb-sunlit-garden #cg-yard-dock > #tabbar{display:none!important}
+html.cb-cg #stage.rb-canonical.cb-sunlit-garden #cg-yard-dock #fab-build{display:none!important}
+html.cb-cg #stage.rb-canonical.cb-sunlit-garden #cg-yard-dock > #yard-actions{
+ left:auto!important;right:max(8px,env(safe-area-inset-right,0px))!important;
+ bottom:max(8px,env(safe-area-inset-bottom,0px))!important;flex-direction:row!important;
+ align-items:center!important;max-width:calc(100% - 16px)!important;gap:5px!important;
+}
+html.cb-cg #stage.rb-canonical.cb-sunlit-garden #cg-yard-dock #sg-book-entry{
+ width:clamp(88px,15vw,138px)!important;min-width:88px!important;max-width:138px!important;
+ height:44px!important;min-height:44px!important;max-height:54px!important;
+ color:#f9e8c4!important;background:linear-gradient(145deg,#304950,#172e37)!important;
+ border:1px solid #d4b786!important;font:700 12px/1.15 system-ui!important;
+}
+@media(max-width:360px){
+ html.cb-cg #stage.rb-canonical.cb-sunlit-garden #cg-yard-dock > #yard-actions{gap:3px!important}
+ html.cb-cg #stage.rb-canonical.cb-sunlit-garden #cg-yard-dock #yard-actions .fab:not(#sg-book-entry){width:42px!important;height:44px!important}
+}
+#stage #panel.rb-open .rb-reset.cb-reset-armed{background:#ffe9e3;color:#862e2e;border-color:#b85d56}

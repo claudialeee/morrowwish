@@ -19,19 +19,21 @@ const tabs=[
  ["records","成就","Records"]
 ];
 const node=(tag,cl,txt)=>{const e=document.createElement(tag);if(cl)e.className=cl;if(txt!==undefined)e.textContent=txt;return e};
-let active=null,installed=false,oldFocus=null;
+let active=null,installed=false,oldFocus=null,worldLock=null;
+function lockWorld(){const world=stage()?.querySelector('.rw-world');if(world&&!world.inert){world.inert=true;worldLock=world}}
+function unlockWorld(){if(worldLock){worldLock.inert=false;worldLock=null}}
 function blocked(){const g=game();return !g||!["map","yard"].includes(g.scene)||!!g.battle||!!g.yard?.placement||
  !!stage()?.querySelector(".res-host,.cbcp-root:not([hidden]),.rw-world:not([hidden])[data-ceremony],#intro:not(.hide)")||
  panel()?.dataset.mandatory==="true"||!!document.querySelector(".cb-slot-manager");}
 function alive(){return !!active&&active.owner===state()&&active.scene===game()?.scene&&!blocked()}
 function sound(open){window.MorrowwishAudio?.effect?.("page");window.MorrowwishMusic?.duckFor?.(open?650:300);window.dispatchEvent(new CustomEvent("cat-bond-resonance-book-changed",{detail:{open,scene:game()?.scene}}))}
 function button(label,fn,cls="rb-action"){const b=node("button",cls,label);b.type="button";b.onclick=()=>{if(alive()&&b.isConnected)fn()};return b}
-function clear(){active=null;panel()?.classList.remove("rb-open");const root=panel()?.querySelector(".rb-navigation");root?.remove();oldFocus=null}
+function clear(){active=null;unlockWorld();panel()?.classList.remove("rb-open");const root=panel()?.querySelector(".rb-navigation");root?.remove();oldFocus=null}
 function dismiss(){if(!active)return;window.UI.closeAll()}
 function attach(){
  if(!alive())return;
  const p=panel(),card=p?.querySelector(":scope > .card");if(!card||!p.classList.contains("open"))return;
- p.classList.add("rb-open");card.classList.add("rb-card");
+ p.classList.add("rb-open");card.classList.add("rb-card");lockWorld();
  const previous=card.querySelector(":scope > .rb-navigation");previous?.remove();card.querySelector(":scope > .rb-craft-link")?.remove();
  const n=node("section","rb-navigation");n.setAttribute("translate","no");
  const mast=node("header","rb-masthead");
@@ -116,7 +118,7 @@ function records(){
  const rows=node("div","rb-inventory"),discovered=Object.values(s.dex||{}).filter(n=>n>0).length;
  for(const [zh,en,v] of [["发现品种","Breeds discovered",discovered+"/"+window.GameData.SPECIES.length],["金爪徽章","Golden Paw medals",Object.values(s.masteryBadges||{}).filter(Boolean).length],["捕捉次数","Captures",s.catchCount||0],["猫咪互动","Cat interactions",s.petCount||0],["恢复圣所","Restored sanctuaries",(s.resonance?.sanctuaries?.length||0)+"/6"],["旋律","Melodies",(s.resonance?.melodies?.length||0)+"/6"]])rows.append(stat(tr(zh,en),v));
  host.append(rows,node("p","",tr("品种与战斗评级奖励仍可在 Catdex 查看和领取。","Collection and battle-grade rewards remain available in Catdex.")),button(tr("查看 Catdex","Open Catdex"),()=>select("dex")));
- const reset=node("button","rb-reset",tr("安全重启游戏","Safe restart"));reset.type="button";host.append(reset);window.CatBondBindResetButton?.(reset);
+ const reset=node("button","rb-reset",tr("安全重启游戏","Safe restart"));reset.type="button";reset.id="cb-menu-reset";host.append(reset);window.CatBondBindResetButton?.(reset);
 }
 function select(id,focusCraft=false){
  if(!alive())return false;const tab=tabs.find(t=>t[0]===id);if(!tab)return false;

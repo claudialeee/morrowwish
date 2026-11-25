@@ -10,7 +10,9 @@ let failed=false;
 for(const profile of [
  {name:'desktop',width:1280,height:800,mobile:false},
  {name:'phone-portrait',width:390,height:844,mobile:true},
- {name:'phone-landscape',width:844,height:390,mobile:true}
+ {name:'phone-landscape',width:844,height:390,mobile:true},
+ {name:'compact-phone',width:320,height:568,mobile:true},
+ {name:'portal-phone',width:390,height:844,mobile:true,portal:true}
 ]){
  const context=await browser.newContext({viewport:{width:profile.width,height:profile.height},isMobile:profile.mobile,hasTouch:profile.mobile});
  const page=await context.newPage(),errors=[];
@@ -31,7 +33,7 @@ for(const profile of [
   assert.equal(await page.locator('.cb-slot-manager [data-slot-sync], [data-recovery-code], .cb-cloud-code-row').count(),0,'No manual cloud or recovery-code controls');
  };
  try{
-  await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
+  await page.goto(origin+'/cat-bond/?lang=zh'+(profile.portal?'&utm_source=crazygames&utm_medium=portal':''),{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&window.CatBondArtworkStatus?.breedsLoaded===true,{timeout:30000});
   const titleImage=await page.evaluate(async()=>{
    const background=getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundImage;
@@ -57,11 +59,12 @@ for(const profile of [
   await page.locator('[data-system="close"]').click();
   assert.match(await page.locator('#intro-start').innerText(),/New Adventure/);
   await screenshot('title-en');
-  await page.locator('#mw-fullscreen-toggle').click();
+  if(profile.portal){assert.equal(await page.locator('#mw-fullscreen-toggle').isVisible(),false,'Portal owns fullscreen')}
+  else{await page.locator('#mw-fullscreen-toggle').click();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
   await screenshot('fullscreen-title');
   await page.locator('#mw-fullscreen-toggle').click();
-  await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));
+  await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));}
   await page.locator('#intro-start').click();
   await checkVisible('#intro-slot-panel.is-open');
   await checkVisible('#intro-slot-list [data-slot]');
@@ -80,6 +83,11 @@ for(const profile of [
    await page.locator('.cbcp-skip').click();
   }
   await checkVisible('#panel.open .dex-cell');await page.locator('#panel.open .dex-cell').first().click();
+  assert.equal(await page.locator('#tabbar').isVisible(),false,'Legacy management tabs are replaced by Book');
+  assert.equal(await page.locator('#fab-build').isVisible(),false,'Building belongs to garden facilities');
+  const dock=await page.evaluate(()=>[...document.querySelectorAll('#yard-actions button')].filter(b=>b.getClientRects().length&&getComputedStyle(b).display!=='none').map(b=>{const q=b.getBoundingClientRect();return {id:b.id,left:q.left,right:q.right,top:q.top,bottom:q.bottom,hit:b.contains(document.elementFromPoint(q.x+q.width/2,q.y+q.height/2))}}));
+  assert.equal(dock.length,5,'Only the five real garden actions are visible');
+  assert.ok(dock.every(q=>q.left>=-1&&q.right<=profile.width+1&&q.top>=0&&q.bottom<=profile.height+1&&q.hit),'Garden actions are visible, in bounds and clickable: '+JSON.stringify(dock));
   await page.locator('#sg-book-entry').click();
   await checkVisible('#panel.rb-open.open');
   await page.locator('[data-book-tab="workshop"]').click();
@@ -115,10 +123,11 @@ for(const profile of [
   assert.equal(await page.locator('.rw-region-status').count(),6);
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
   const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
-  if(profile.name!=='phone-portrait'){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
+  if(profile.width>profile.height){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
   assert.equal(await page.locator('.rw-system-nav button').count(),2,'Atlas exposes only Book and Journal');
   const book=page.locator('.rw-system-nav .rb-world-entry');
   await book.click();await checkVisible('#panel.rb-open.open');
+  assert.equal(await page.locator('.rw-world').evaluate(el=>el.inert),true,'Book blocks underlying keyboard and pointer exploration');
   for(const tab of ['dex','party','cats','workshop','duo','bag','shop','daily','records']){
    await page.locator('[data-book-tab="'+tab+'"]').click();
    await checkVisible('#panel.rb-open.open');
@@ -159,6 +168,7 @@ for(const profile of [
   await page.locator('.rb-close').click();
   await page.locator('#panel.open').waitFor({state:'hidden'});
   assert.equal(await page.evaluate(()=>window.__game.scene),'map');
+  assert.equal(await page.locator('.rw-world').evaluate(el=>el.inert),false,'Closing Book restores real atlas input');
   await screenshot('world-atlas');
   // Physical departure from the merged canonical opening.
   const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);

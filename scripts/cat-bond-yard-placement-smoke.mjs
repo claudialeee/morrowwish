@@ -33,12 +33,14 @@ try{
   assert.equal(init.coins,500);
   assert.match(init.catsNav,/猫咪/,'bottom cat hub must show the solo and duo features');
   assert.equal(init.hidden,true,'do not keep the broad top combined banner');
-  const duoVisible=await page.locator('.tab[data-tab="cats"]').isVisible();
-  assert.equal(duoVisible,true,'cat-and-duo hub must be reachable from bottom navigation');
-  const rect=await page.locator('.tab[data-tab="cats"]').boundingBox();
+  const canonical=await page.evaluate(()=>!!window.ResonanceBook);
+  const entry=page.locator(canonical?'#sg-book-entry':'.tab[data-tab="cats"]');
+  assert.equal(await entry.isVisible(),true,'cat-and-duo hub must be reachable from garden navigation');
+  const rect=await entry.boundingBox();
+  if(canonical){await entry.click();await page.locator('[data-book-tab="duo"]').click();await page.locator('.rb-close').click();}
   const stage=await page.locator('#stage').boundingBox();
   assert.ok(rect.y>stage.y+stage.height*.55,'cat hub should live below the main yard');
-  await page.evaluate(()=>UI.openBuild());
+  if(canonical)await page.locator('[data-garden-action="facilities"]').click();else await page.evaluate(()=>UI.openBuild());
   const select=await page.locator('[data-build="scratcher"]');
   assert.equal(await select.isVisible(),true);
   await select.click();
