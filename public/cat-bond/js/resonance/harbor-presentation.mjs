@@ -56,7 +56,7 @@ export function harborPuzzleHint(p,lang){
  }
  if(p.assist==="jiedeng"){const i=p.values.findIndex((n,j)=>n!==p.goal[j]);if(i>=0)return ["岬灯：先校准","Jiedeng: align "][l]+puzzleWords.mirrors[2][i][l];}
  if(p.type==="tide")return ["顺着刻痕和石阶找到日志匣。","Trace the marks and steps to the logbook chest."][l];
- if(p.type==="melody")return ["听见归潮调的第一音，让两位居民回应。","Sound the first notes and let both residents answer."][l];
+ if(p.type==="melody")return ["按上方音符的顺序敲响铃音，聆听居民回应。","Play the notes in the displayed order and hear the residents answer."][l];
  return puzzleWords[p.type][1][l];
 }
 function button(c,x,y,i,word,icon,active,drawIcon){
@@ -93,10 +93,20 @@ function rescue(c,p,l,t){
  text(c,(l?"Gate ":"闸门 ")+Math.round(open*100)+"%  ·  "+(l?"Channel ":"航道 ")+(guided)+"/2",480,373,16,teal);
 }
 function sequence(c,p,l,t,cast){
- const words=puzzleWords[p.type],icons=p.type==="tide"?["gate","chest","book"]:["bell","bell","bell"];
- p.goal.forEach((n,i)=>{const x=400+80*i,y=180;const lit=i<p.values.length;glow(c,x,y,34,lit?"rgba(164,224,212,.30)":"rgba(240,210,148,.10)");circle(c,x,y,18,lit?"#34716d":"#284658");symbol(c,icons[n],x,y,.65,lit?teal:amber);});
- for(let i=0;i<3;i++)button(c,[288,480,672][i],286,i,words[2][i][l],icons[i],p.goal[p.values.length]===i);
- if(p.type==="melody"&&p.response.length){const a=p.response.at(-1),name=cast[a.actor]?.name?.[l?"en":"zh"]||"";text(c,name+(l?" answers":" · 回应")+"  "+["♪","♫","♬"][a.reply],480,392,20,teal);}
+ const words=puzzleWords[p.type],melody=p.type==="melody",icons=melody?["bell","bell","bell"]:["gate","chest","book"],notes=["♪","♫","♬"],colors=["#a8ded7","#e7c48b","#c6bbe6"];
+ if(melody){
+  const actors=p.participants||[],last=p.response.at(-1);
+  // Both characters are the actual invited residents, using their existing painted art.
+  for(let k=0;k<actors.length;k++){const id=actors[k],x=k?774:186;const active=last?.actor===id;glow(c,x,205,48,active?"rgba(240,211,153,.25)":"rgba(160,219,210,.08)");
+   if(typeof window!=="undefined")window.CatBondResonanceNPC?.drawResident?.(c,id,{x,y:237,scale:1.12,time:t});
+   text(c,cast[id]?.name?.[l?"en":"zh"]||"",x,248,13,active?amber:cream);
+  }
+  const wave=p.values.length?0.5+0.5*Math.sin(t*3):0;
+  for(let k=0;k<p.values.length;k++){const y=209+k*7;c.beginPath();c.ellipse(480,y,75+k*23+wave*9,10+k*4,0,0,TAU);c.strokeStyle="rgba(178,226,205,.25)";c.lineWidth=1.5;c.stroke();}
+ }
+ p.goal.forEach((n,i)=>{const x=400+80*i,y=180,lit=i<p.values.length;glow(c,x,y,34,lit?"rgba(164,224,212,.30)":"rgba(240,210,148,.10)");circle(c,x,y,18,lit?"#34716d":"#284658");if(melody)text(c,notes[n],x,y,21,colors[n]);else symbol(c,icons[n],x,y,.65,lit?teal:amber);});
+ for(let i=0;i<3;i++){const x=[288,480,672][i],y=286;button(c,x,y,i,words[2][i][l],icons[i],!melody&&p.goal[p.values.length]===i,melody?()=>{symbol(c,"bell",x,y,1.05,colors[i]);text(c,notes[i],x+25,y-15,17,colors[i]);}:null);}
+ if(melody&&p.response.length){const a=p.response.at(-1),name=cast[a.actor]?.name?.[l?"en":"zh"]||"";text(c,name+(l?" answers":" · 回应")+"  "+notes[a.reply],480,392,20,teal);}
 }
 export function paintHarborPuzzle(c,p,lang,cast,frame){
  if(!["tide","mirrors","rescue","melody"].includes(p.type))return false;
