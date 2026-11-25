@@ -385,7 +385,8 @@ try {
     await button('Returning Tides').click();
     const harborMelodyControls=page.locator('.rw-puzzle-controls');await harborMelodyControls.waitFor();
     await button('Play example',harborMelodyControls).click();
-    await page.waitForFunction(()=>!document.querySelector('.rw-melody-demo')?.disabled);
+    await harborMelodyControls.and(page.locator('[data-demo-state="complete"]')).waitFor({state:'visible'});
+    assert.deepEqual(await harborMelodyControls.locator('.rw-quality-step').allTextContents(),['1 ●','2 ✿','3 ◆'],'Example shows all three actual note shapes without submission');
     assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false,'Demo never commits melody');
     await button('Starlight · Middle',harborMelodyControls).click(); // wrong note: retry must not commit a melody
     assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false);
@@ -534,8 +535,8 @@ try {
     await button('Invite Yuchuan').click();
     await button('Invite Yuchuan').waitFor({state:'hidden'});
     await button('Living Roots').click();const melodyControls=page.locator('.rw-puzzle-controls');await melodyControls.waitFor();
-    const playExample=melodyControls.locator('.rw-melody-demo');await playExample.click();await playExample.waitFor();await page.waitForFunction(()=>!document.querySelector('.rw-melody-demo')?.disabled);
-    assert.equal(await melodyControls.locator('.rw-quality-step').count(),3);
+    const playExample=melodyControls.locator('.rw-melody-demo');await playExample.click();await playExample.waitFor();await melodyControls.and(page.locator('[data-demo-state="complete"]')).waitFor({state:'visible'});
+    assert.deepEqual(await melodyControls.locator('.rw-quality-step').allTextContents(),['1 ◆','2 ●','3 ✿'],'Forest example remains visible for silent and audio play');
     const key=i=>melodyControls.locator('[data-note="'+i+'"]');
     await key(1).click();await key(2).click(); // wrong second note preserves first
     assert.match(await melodyControls.locator('.rw-quality-step').first().textContent(),/✓/);

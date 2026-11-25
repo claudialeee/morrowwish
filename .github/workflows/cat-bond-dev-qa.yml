@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: cat-bond-dev-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -31,6 +32,8 @@ jobs:
         with:
           node-version: '22'
       - id: scope
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/cat-bond-ci-scope.mjs
   map:
     needs: changes

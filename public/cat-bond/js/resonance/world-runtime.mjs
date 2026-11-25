@@ -38,11 +38,11 @@ function install(){
  function addMelodyControls(row,p){
   if(demoPuzzle!==p.operation){stopDemo();demoPuzzle=p.operation;}
   row.classList.add("rw-quality-puzzle");const phrase=E("div","rw-quality-phrase");phrase.setAttribute("role","status");
-  const updatePhrase=()=>{phrase.replaceChildren(E("span","",demoActive?tr("聆听示范","Listen to the example"):p.mistakes?tr("试试当前这一格","Try the current step"):tr("播放示范，按顺序跟奏","Play the example, then echo it")));
+  const updatePhrase=()=>{row.dataset.demoState=demoActive?"playing":demoShown?"complete":"ready";phrase.replaceChildren(E("span","",demoActive?tr("聆听示范","Listen to the example"):p.mistakes?tr("试试当前这一格","Try the current step"):tr("播放示范，按顺序跟奏","Play the example, then echo it")));
    p.goal.forEach((n,j)=>{const done=j<p.values.length,visible=done||demoShown||j===demoIndex||(p.mistakes>0&&j===p.values.length);const step=E("span","rw-quality-step",(j+1)+" "+(visible?melodyShapes[n]:"·")+(done?" ✓":""));step.dataset.current=String(j===(demoActive?demoIndex:p.values.length));phrase.append(step);});};
   const keys=p.goal.map((_,i)=>{const b=B(melodyShapes[i]+" "+tr(...melodyNames[i]),()=>operate(i),!!ceremony||demoActive);b.setAttribute("aria-label",tr(...melodyNames[i])+" · "+tr(...[["低音","Low"],["中音","Middle"],["高音","High"]][i]));b.dataset.note=String(i);return b;});
   const keypad=E("div","rw-quality-cards");keypad.append(...keys);
-  const demo=B(tr("播放示范","Play example"),()=>{if(demoActive)return;demoActive=true;const token=++demoGeneration,owner=State.S;demo.disabled=true;keys.forEach(b=>b.disabled=true);
+  const demo=B(tr("播放示范","Play example"),()=>{if(demoActive)return;demoActive=true;const token=++demoGeneration,owner=State.S;demo.disabled=true;keys.forEach(b=>b.disabled=true);updatePhrase();
    const demoExplorer=explorer;const live=()=>token===demoGeneration&&owner===State.S&&game.scene==="map"&&explorer===demoExplorer&&explorer?.puzzle?.operation===p.operation&&row.isConnected;
    p.goal.forEach((n,j)=>setTimeout(()=>{if(!live())return;demoIndex=j;updatePhrase();keys.forEach((b,i)=>b.dataset.highlight=String(i===n));melodyNote(p,n);draw();},j*650));
    setTimeout(()=>{if(!live())return;demoActive=false;demoShown=true;demoIndex=-1;demo.disabled=false;keys.forEach(b=>{b.disabled=false;delete b.dataset.highlight;});updatePhrase();draw();},p.goal.length*650);
@@ -183,7 +183,7 @@ function install(){
   pager.append(prev,counter,next);pager.hidden=true;rail.append(pager);host.append(rail);
   fitRail();
  }
- let game,bridge,explorer,host,canvas,ctx,slot,mode="map",revision="",frame=0,encounter,exit,notice="",pending=null,wild=null,wildRegion=null,spawnDelay=0,zoom=1.25,pan=[-.125,-.125],followCamera=true,drag=null,pointers=new Map(),pinch=0,dragged=false,selectedRoute=null,art={},ceremony=null,forgeMarkers=[];
+ let game,bridge,explorer,host,canvas,ctx,slot,mode="map",revision="",frame=0,encounter,exit,notice="",pending=null,wild=null,wildRegion=null,spawnDelay=0,zoom=1,pan=[0,0],followCamera=false,drag=null,pointers=new Map(),pinch=0,dragged=false,selectedRoute=null,art={},ceremony=null,forgeMarkers=[];
  const E=(tag,cl,t)=>{const e=document.createElement(tag);if(cl)e.className=cl;if(t!==undefined)e.textContent=t;return e},B=(t,fn,disabled=false)=>{const e=E("button","rw-button",t);e.type="button";e.disabled=disabled;const owner=State.S;const activate=()=>{if(!e.disabled&&owner===State.S&&e.isConnected&&game?.scene==="map")return fn()};let touch=null,lastTouch=-Infinity;
  // Native touch gesture activation: a stationary finger opens the real world control.
  // Scrolling, pinching, cancellation, detached controls and stale save slots never activate.
@@ -192,7 +192,7 @@ function install(){
  e.addEventListener("touchcancel",()=>{touch=null;},{passive:true});
  e.addEventListener("touchend",event=>{const start=touch;touch=null;if(!start||event.touches.length||e.disabled||!e.isConnected||owner!==State.S||game?.scene!=="map")return;const t=[...event.changedTouches].find(t=>t.identifier===start.id);if(!t||Math.hypot(t.clientX-start.x,t.clientY-start.y)>10||!e.contains(document.elementFromPoint(t.clientX,t.clientY)))return;event.preventDefault();lastTouch=performance.now();activate();},{passive:false});
  e.onclick=event=>{if(event?.detail!==0&&performance.now()-lastTouch<750)return;return activate();};return e};
- function current(){if(slot!==State.S){stopDemo();regionMenuOpen=false;atlasMenuOpen=false;waterHintPuzzle=null;waterHint=null;ceremony=null;slot=State.S;bridge=createWorldBridge(State);explorer=null;mode="map";pending=null;wild=null;wildRegion=null;spawnDelay=0;zoom=1.25;pan=[-.125,-.125];followCamera=true;notice="";selectedRoute=null;revision="";drag=null;dragged=false;pinch=0;pointers.clear();}return bridge;}
+ function current(){if(slot!==State.S){stopDemo();regionMenuOpen=false;atlasMenuOpen=false;waterHintPuzzle=null;waterHint=null;ceremony=null;slot=State.S;bridge=createWorldBridge(State);explorer=null;mode="map";pending=null;wild=null;wildRegion=null;spawnDelay=0;zoom=1;pan=[0,0];followCamera=false;notice="";selectedRoute=null;revision="";drag=null;dragged=false;pinch=0;pointers.clear();}return bridge;}
  const sync=()=>{let v=current().view();return v.current?.id+":"+v.cursor+":"+v.choice+":"+v.objective.join(",")+":"+JSON.stringify(v.links)+":"+JSON.stringify(v.postgame)+":"+JSON.stringify(State.S.resonance?.ambientDone||[])};
  function init(g){game=g;current();if(host)return;host=E("section","rw-world");image("forge");host.hidden=true;document.getElementById("stage").append(host);for(let ev of ["morrowwish-language-change","cat-bond-resonance-changed"])window.addEventListener(ev,()=>{if(game.scene==="map")render()});
   if(typeof window.ResizeObserver==="function"){fitObserver=new window.ResizeObserver(scheduleFit);fitObserver.observe(host.parentElement);}
