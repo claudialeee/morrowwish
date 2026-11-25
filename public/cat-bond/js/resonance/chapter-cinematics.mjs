@@ -5,9 +5,16 @@ import {mountResonanceCinematics,starfallReleaseReady,buildCanonicalScene} from 
 const language=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const manifestURL=new URL("../../assets/cinematics/asset-manifest.json",import.meta.url);
 let active=null,releaseManifest=null;
-// Candidate paintings may be exercised only by an explicitly opted-in loopback development build.
-// This never changes the independent production approval result or any save schema.
-const developmentPreview=()=>['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).get('rpgDev')==='1';
+// Candidate paintings are restricted to an explicitly opted-in loopback build or
+// the isolated owner preview. Its build injects the disabled analytics collector
+// and serves no production Worker/D1 or cloud-save endpoints. Never grant this
+// permission on the production hostname or via a URL query parameter alone.
+// This never changes the independent production approval result or save schema.
+const developmentPreview=()=>{
+ const local=['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).get('rpgDev')==='1';
+ const isolated=location.origin==='https://cat-bond-preview.morrowwish.pages.dev'&&window.ARCADE_COLLECTOR==='/api/preview-disabled';
+ return local||isolated;
+};
 const developmentReady=()=>developmentPreview()&&['starfall:F-02','starfall:F-05','finale:B-04','epilogue:E-01'].every(id=>{const current=campaign.scenes.find(s=>s.id===id);return !!current&&buildCanonicalScene({campaign,manifest:releaseManifest,view:{current,choice:null,objective:current.requires.filter(o=>o.startsWith('cinematic:')),cursor:0,lineReady:true},staging:true}).ok;});
 async function refreshReleaseManifest(){try{const response=await fetch(manifestURL);if(response.ok){releaseManifest=await response.json();window.dispatchEvent(new Event("cat-bond-resonance-changed"));}}catch{/* Invalid manifest remains locked. */}}
 refreshReleaseManifest();
