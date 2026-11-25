@@ -1109,22 +1109,36 @@ if(cgEmbed&&document.head){
   html.cg-play .board-layout{width:100%!important;height:100%!important;margin:0!important;display:block!important}
   html.cg-play #stage{box-sizing:border-box!important;width:100%!important;height:100dvh!important;max-width:none!important;max-height:none!important;aspect-ratio:auto!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;background:radial-gradient(ellipse at 50% 45%,#fff0e2,#e6d4e8)!important}
   html.cg-play #stage>.in-game-top{width:100%!important;max-width:990px!important;min-height:43px!important;padding:4px 9px!important;flex:0 0 auto!important}
-  html.cg-play #stage>.playfield{box-sizing:border-box!important;width:min(100%,calc((100dvh - 138px)*10/7))!important;height:auto!important;max-width:100%!important;max-height:calc(100dvh - 138px)!important;aspect-ratio:10/7!important;flex:0 1 auto!important;margin:0 auto!important}
+  html.cg-play #stage>.playfield{box-sizing:border-box!important;width:var(--paw-board-width,100%)!important;height:var(--paw-board-height,auto)!important;max-width:100%!important;max-height:none!important;aspect-ratio:10/7!important;flex:0 0 auto!important;margin:0 auto!important;align-self:center!important}
+  @media(min-width:701px){
+   html.cg-play .single-screen-game .in-game-head-row{display:grid!important;grid-template-columns:minmax(0,1fr) max-content max-content!important;grid-template-areas:"room status tools"!important;gap:6px!important}
+   html.cg-play .single-screen-game .in-game-head-row .stage-left{grid-area:room!important}
+   html.cg-play .single-screen-game .in-game-head-row #heistStatus{grid-area:status!important}
+   html.cg-play .single-screen-game .in-game-head-row #stageControls{grid-area:tools!important}
+  }
   html.cg-play #stage>.playfield canvas{width:100%!important;height:100%!important;aspect-ratio:10/7!important}
   @media(max-width:850px){
    html.cg-play #bonusQuick .bonus-star,html.cg-play #bonusQuickProgress{display:none!important}
    html.cg-play #bonusQuick{padding:3px 6px!important;gap:0!important}
    html.cg-play #bonusQuickText{white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;max-height:none!important}
   }
+  html.cg-play .stealth-actionbar{padding:4px 9px!important;margin:0!important;min-height:0!important;gap:6px!important}
+  html.cg-play .stealth-actionbar .board-yarn{min-height:38px!important;padding:5px 9px!important}
   html.cg-play .game-menu{inset:0!important}
   html.cg-play .menu-shell{max-height:98%!important}
   @media(max-height:390px){
    html.cg-play #stage>.in-game-top{min-height:37px!important}
-   html.cg-play #stage>.playfield{width:min(100%,calc((100dvh - 130px)*10/7))!important;max-height:calc(100dvh - 130px)!important}
+
   }
 `;
 
  document.head.appendChild(css);
+ // Measure the real HUD, including translated and newly mounted settings.
+ // The 10:7 canvas never stretches or shrinks independently of its width.
+ const stage=document.getElementById("stage"),hud=stage?.querySelector(".in-game-top");
+ const fitBoard=()=>{if(!stage||!hud)return;const frame=stage.getBoundingClientRect(),header=hud.getBoundingClientRect();const height=Math.max(1,Math.min(frame.height-header.height-2,frame.width*7/10));stage.style.setProperty("--paw-board-height",height+"px");stage.style.setProperty("--paw-board-width",(height*10/7)+"px");};
+ requestAnimationFrame(fitBoard);window.addEventListener("resize",fitBoard);
+ if(typeof ResizeObserver!=="undefined"&&stage&&hud){const observer=new ResizeObserver(fitBoard);observer.observe(stage);observer.observe(hud);}
  // Progress and warning now live in the existing board HUD.
 }
 

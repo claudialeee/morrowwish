@@ -25,7 +25,7 @@ const nextRelease=v=>v.completed.includes("forge:E-04");
 function pickWild(ids){const species=ids.map(id=>GameData.speciesById(id)).filter(Boolean),tiers=[...new Set(species.map(s=>s.rarity))];const weights=tiers.map(t=>GameData.RARITY[t]?.weight||0);let roll=Math.random()*weights.reduce((a,b)=>a+b,0),tier=tiers.at(-1);for(let i=0;i<tiers.length;i++){roll-=weights[i];if(roll<0){tier=tiers[i];break;}}const group=species.filter(s=>s.rarity===tier);return group[Math.floor(Math.random()*group.length)];}
 const regions=nodes.map(([id,x,y],i)=>({id,x,y,name:layouts[id].name[0],sub:layouts[id].name[1],speciesPool:pools[id],difficulty:i+1,theme:{region:id},unlock:i?{after:nodes[i-1][0]}:null}));
 function install(){
- let fitPage=0,fitKey="",fitObserver=null,fitFrame=0;
+ let fitPage=0,fitKey="",fitNotice="",fitObserver=null,fitFrame=0;
  function scheduleFit(){if(fitFrame)return;fitFrame=requestAnimationFrame(()=>{fitFrame=0;fitRail();});}
  function fitRail(){
   if(!host||host.hidden||!host.isConnected)return;
@@ -87,8 +87,10 @@ function install(){
  function makeFitRail(head,shell){
   const rail=E("aside","rw-fit-rail "+(mode==="map"?"rw-atlas-rail":"rw-forest-rail"));
   rail.setAttribute("aria-label",tr("剧情与探索操作","Story and exploration controls"));
-  const priority=el=>el.matches(".rw-forge-release")?-1:el.matches(".rw-puzzle-controls,.rw-world-actions,.rw-system-nav")?0:el.matches(".rw-objective")?1:el.matches(".rw-regions,.rw-cargo")?2:el.matches(".rw-controls")?3:4;
+  const priority=el=>el.matches(".rw-notice")?-2:el.matches(".rw-forge-release")?-1:el.matches(".rw-puzzle-controls,.rw-world-actions,.rw-system-nav")?0:el.matches(".rw-objective")?1:el.matches(".rw-regions,.rw-cargo")?2:el.matches(".rw-controls")?3:4;
   const items=[...host.children].filter(n=>n!==head&&n!==shell);
+  const message=items.find(n=>n.matches(".rw-notice"));const messageText=message?.textContent||"";
+  if(messageText!==fitNotice){fitNotice=messageText;if(messageText){fitPage=0;message.setAttribute("role","status");message.setAttribute("aria-live","polite");}}
   const puzzle=items.find(el=>el.matches(".rw-puzzle-controls")),guide=items.find(el=>el.matches(".rw-harbor-guide"));
   if(puzzle&&guide){puzzle.prepend(guide);items.splice(items.indexOf(guide),1);}
   items.sort((a,b)=>priority(a)-priority(b));
@@ -149,7 +151,7 @@ function install(){
   img.src=new URL(id==="harbor-ceremony"?"../../assets/cinematics/prologue/harbor-at-twilight.webp":"../../assets/resonance-world-v2/"+(id==="harbor"?"harbor-mist":id)+".webp",import.meta.url).href;
   return img;
  }
- function render(){if(!host)return;if(!window.CatBondResonance?.view){host.replaceChildren(E("p","rw-notice",tr("正式剧情正在初始化","Initializing the canonical story")));host.hidden=game.scene!=="map";return;}const b=current(),v=b.view(),w=b.world();revision=sync();host.replaceChildren();host.hidden=game.scene!=="map";if(ceremony)host.dataset.ceremony=ceremony.region;else delete host.dataset.ceremony;const forestRegion=mode==="region"&&w.location==="forest",forgeRegion=mode==="region"&&w.location==="forge",regionStep=mode+"/"+w.location+"/"+(v.current?.id||"")+"/"+(explorer?.puzzle?.operation||"explore");if(fitKey!==regionStep){fitKey=regionStep;fitPage=0;}host.dataset.regionStep=regionStep;host.classList.toggle("rw-forest-region",forestRegion);host.classList.toggle("rw-forge-region",forgeRegion);
+ function render(){if(!host)return;if(!window.CatBondResonance?.view){host.replaceChildren(E("p","rw-notice",tr("正式剧情正在初始化","Initializing the canonical story")));host.hidden=game.scene!=="map";return;}const b=current(),v=b.view(),w=b.world();revision=sync();host.replaceChildren();host.hidden=game.scene!=="map";if(ceremony)host.dataset.ceremony=ceremony.region;else delete host.dataset.ceremony;const forestRegion=mode==="region"&&w.location==="forest",forgeRegion=mode==="region"&&w.location==="forge",regionStep=mode+"/"+w.location+"/"+(v.current?.id||"")+"/"+(explorer?.puzzle?.operation||"explore");if(fitKey!==regionStep){fitKey=regionStep;fitPage=0;fitNotice="";}host.dataset.regionStep=regionStep;host.classList.toggle("rw-forest-region",forestRegion);host.classList.toggle("rw-forge-region",forgeRegion);
  const head=E("header","rw-head"),brand=E("div","rw-brand");brand.append(E("small","",tr("猫猫纽带","CAT BOND")),E("strong","",mode==="map"?tr("最后的回响","The Last Resonance"):tr(...layouts[w.location].name)));head.append(brand,B(tr("世界地图","World atlas"),enterMap,mode==="map"||!!ceremony),B(tr("阳光花园","Sunlit Garden"),exitToYard,!!ceremony));host.append(head);
  if(mode==="map"){
   const nav=E("nav","rw-system-nav");
