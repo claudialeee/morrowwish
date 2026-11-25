@@ -20,21 +20,18 @@ function install(){
   const v=api.view();if(v.current?.id!=="prologue:P-04"||!v.objective.includes("explore:garden-bell"))return;
   const r=api.recordEvidence({sceneId:"prologue:P-04",operation:"explore:garden-bell",region:"garden",verified:true,token});
   if(!r.ok){bell.querySelector(".res-bell-label").textContent=tr("保存失败，再拉一次","Save failed. Pull again.");return}
-  window.MorrowwishAudio?.effect?.("discover");window.MorrowwishAudio?.note?.(660,.6,.2);closeBell();api.showCurrent();
+  window.MorrowwishAudio?.effect?.("discover");window.MorrowwishAudio?.note?.(660,.6,.2);closeBell();
  }
  function refresh(){
   const game=window.__game;
   if(!window.__CAT_BOND_STARTED__||game?.scene!=="yard"){closeBell();return;}
   const view=api.view();
   if(view.current?.id==="prologue:P-04"){
-   if(view.objective.includes("explore:garden-bell"))drawBell();
-   else{closeBell();if(view.cursor<view.current.lines.length)api.showCurrent();}
+   if(view.objective.includes("explore:garden-bell")&&view.cursor===view.current.lines.length)drawBell();
+   else closeBell();
   }else{
    closeBell();
-   if(view.current?.id==="prologue:P-05"){
-    game.openWorldMap();
-    api.showCurrent();
-   }
+   if(view.current?.id==='prologue:P-05'&&view.cursor<view.current.lines.length)api.showCurrent();
   }
  }
  window.addEventListener("cat-bond-garden-entered",refresh);
