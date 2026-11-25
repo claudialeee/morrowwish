@@ -612,10 +612,10 @@ try {
       const p=b?.duoCinematic?(b.duoCinematic.max-b.duoCinematic.t)/b.duoCinematic.max:0;
       return p>=.33&&p<=.65&&l?.effectPhase>=.30&&l.effectPhase<=.67&&
         l.originalArt&&l.paintingDrawCount===1&&l.actorLayerCount===0&&
-        document.querySelector('#cb-forge-hud')?.dataset.duoArt==='true';
+        document.querySelector('#cb-forge-hud')?.dataset.cinematic==='true';
     });
     await shot('forge-duo-original-art');
-    await page.waitForFunction(()=>{const b=__game.battle;return b&&!b.duoCinematic&&b.duoUses>0&&document.querySelector('#cb-forge-hud')?.dataset.duoArt==='false'});
+    await page.waitForFunction(()=>{const b=__game.battle;return b&&!b.duoCinematic&&b.duoUses>0&&document.querySelector('#cb-forge-hud')?.dataset.cinematic==='false'});
     assert.equal(await page.evaluate(()=>CatBondDuoHero.assetSource),'63-original-painted-storyboards');
     if(!await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();
     // Natural combat only: no HP, time, save or engine writes.

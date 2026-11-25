@@ -14,6 +14,18 @@ try{const old=JSON.parse(localStorage.getItem(key)||'null');if(old)prefs={enable
 function save(){try{localStorage.setItem(key,JSON.stringify(prefs));}catch{}}
 let ctx,bus,ambBus,active=null,pending=null,serial=0,desired='title',unlocked=false,hidden=document.hidden,paused=false,blocked=false,unavailable=false,duckUntil=0,amb=null,ambId='',ceremony=null,root=null,seen=new Set(),lastFx,ambientTick=0,cache=new Map(),started=false,renderQueue=Promise.resolve(),stopped=false,visualCeremony='',supportSeen=new Set(),supportRoot=null,voiceNodes=new Set(),lastErrorAt=0,cinematicVoiceNodes=new Set(),lastSceneKey='',lastNarrativeRevision=-1,lastCompleted=0,lastSanctuaries=new Set(),lastEvidence=new Set(),lastBattle=null,retiring=null,musicSources=new Set(),foleyNodes=new Set(),performedVisual=new Set(),cacheBytes=new Map();
 const regions=score.regions;
+// Preserve the soundtrack's authored melody and duration of sanctuary replies, but make exploratory scoring lighter.
+function musicMix(id){
+ const dramatic=id==='betrayal'||id==='finale1'||id==='finale2'||id.startsWith('boss-');
+ const ceremony=id.startsWith('song-');
+ return {low:dramatic?-2:ceremony?-3:-6,high:dramatic?1:2.8,rate:ceremony?1:dramatic?1.025:id==='title'||id==='opening'||id==='library'?1.09:1.045};
+}
+function connectMusic(source,gain,id){
+ const profile=musicMix(id);if(source.playbackRate)source.playbackRate.value=profile.rate;
+ if(typeof ctx.createBiquadFilter!=='function'){source.connect(gain);gain.connect(bus);return [];}
+ const bass=ctx.createBiquadFilter(),air=ctx.createBiquadFilter();bass.type='lowshelf';bass.frequency.value=210;bass.gain.value=profile.low;air.type='highshelf';air.frequency.value=1900;air.gain.value=profile.high;
+ source.connect(bass);bass.connect(air);air.connect(gain);gain.connect(bus);return [bass,air];
+}
 const now=()=>ctx?.currentTime||0;
 function ensure(){
  if(ctx)return true;
@@ -23,7 +35,7 @@ function target(node,value,sec=.12){if(!node||!ctx)return;const t=now();node.gai
 function mix(){
  const cinematic=document.querySelector('.cbcp-root:not([hidden])'),talk=document.querySelector('.res-host.is-visible,.res-npc-dialogue');
  target(bus,prefs.enabled&&!hidden&&!paused?prefs.music*(now()<duckUntil?.28:cinematic?.65:talk?.48:.82):0);
- target(ambBus,!hidden&&!paused&&window.MorrowwishAudio?.isEnabled?.()!==false?prefs.fx*.32:0);
+ target(ambBus,!hidden&&!paused&&window.MorrowwishAudio?.isEnabled?.()!==false?prefs.fx*.23:0);
 }
 async function getBuffer(id){
  if(cache.has(id)){const v=cache.get(id);cache.delete(id);cache.set(id,v);return v;}
@@ -64,9 +76,9 @@ function select(id){
  getBuffer(id).then(buffer=>{
   if(token!==serial||desired!==id||!prefs.enabled||hidden||paused)return;
   pending=null;const old=active,source=ctx.createBufferSource(),gain=ctx.createGain(),t=now();
-  source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(1,t+.72);source.connect(gain);gain.connect(bus);
-  const next={id,source,gain,buffer,started:t,stopping:false};active=next;
-  musicSources.add(next);source.onended=()=>{musicSources.delete(next);if(retiring===next)retiring=null;source.disconnect();gain.disconnect();if(active===next){active=null;if(ceremony?.id===id){if(ceremony.visual&&ceremony.root===root)performedVisual.add(ceremony.region);ceremony=null;}tick();}trimCache(desired);};
+  source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(1,t+.72);const filters=connectMusic(source,gain,id);
+  const next={id,source,gain,buffer,filters,started:t,stopping:false};active=next;
+  musicSources.add(next);source.onended=()=>{musicSources.delete(next);if(retiring===next)retiring=null;source.disconnect();gain.disconnect();for(const filter of filters)filter.disconnect();if(active===next){active=null;if(ceremony?.id===id){if(ceremony.visual&&ceremony.root===root)performedVisual.add(ceremony.region);ceremony=null;}tick();}trimCache(desired);};
   source.start();if(retiring&&retiring!==old){try{retiring.source.stop(now()+.025);}catch{}}retiring=old;dispose(old,.8);blocked=false;unavailable=false;
   if(ceremony?.id===id)ceremony.started=true;
  }).catch(()=>{if(token===serial){pending=null;unavailable=true;lastErrorAt=Date.now();}});
@@ -74,7 +86,7 @@ function select(id){
 function noise(region){
  const sr=24000,len=Math.round(sr*12),b=ctx.createBuffer(2,len,sr),profile={
   garden:{wind:.20,water:.24,leaves:.23,rumble:0},harbor:{wind:.18,water:.78,leaves:0,rumble:.09},forest:{wind:.14,water:.28,leaves:.64,rumble:0},
-  forge:{wind:.07,water:0,leaves:.14,rumble:.77},sky:{wind:.83,water:0,leaves:.02,rumble:.08},library:{wind:.045,water:0,leaves:.13,rumble:.02},starfall:{wind:.53,water:0,leaves:.18,rumble:.16}
+  forge:{wind:.07,water:0,leaves:.14,rumble:.38},sky:{wind:.83,water:0,leaves:.02,rumble:.08},library:{wind:.045,water:0,leaves:.13,rumble:.02},starfall:{wind:.53,water:0,leaves:.18,rumble:.16}
  }[region];if(!profile)return null;
  for(let ch=0;ch<2;ch++){
   let seed=1997+ch*321,x=0,y=0,z=0;const a=b.getChannelData(ch);
@@ -136,7 +148,7 @@ function foley(id){
 }
 function read(){
  const game=window.__game,state=window.State?.S,story=state?.resonance,id=story?.scene||'',region=window.WorldMap?.mode==='region'?window.WorldMap.currentRegion:null;
- const cinematic=document.querySelector('.cbcp-root:not([hidden])'),dialogue=document.querySelector('.res-host.is-visible,.res-npc-dialogue');
+ const cinematic=document.querySelector('.cbcp-root:not([hidden]),#cb-opening-cover'),dialogue=document.querySelector('.res-host.is-visible,.res-npc-dialogue');
  const finale=game?.scene==='battle'?game.battle?.resonanceFinale?.id:null;
  if(finale)return {id:({'finale:B-01':'finale1','finale:B-02':'finale2','finale:B-03':'finale3'})[finale]||'battle',amb:''};
  if(game?.scene==='battle'){
@@ -144,7 +156,9 @@ function read(){
   return {id:(b?.storyEncounter||b?.enemies?.some(e=>e.isBoss))&&regions.includes(reg)?'boss-'+reg:'battle',amb:''};
  }
  if(cinematic){
-  if(id.startsWith('prologue:'))return{id:'opening',amb:''};
+  if(id==='prologue:P-01')return{id:'opening',amb:''};
+  if(id==='prologue:P-02')return{id:'muling',amb:''};
+  if(id==='prologue:P-03')return{id:'ending',amb:''};
   if(id==='library:M-03')return{id:'identity',amb:''};
   if(id==='library:M-04'||id==='starfall:F-03')return{id:'betrayal',amb:''};
   if(id==='sky:S-04')return{id:'muling',amb:''};

@@ -33,6 +33,8 @@ for(const profile of [
   await page.locator('#intro-start').click();
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
   await waitScene('prologue:P-01');await ready();
+  assert.equal(await page.locator('.cbcp-subtitle-wrap').isVisible(),false,'Montage with no subtitle must have no obstruction');
+  assert.equal(await page.locator('#cb-opening-cover').count(),1,'Opening cover stays mounted throughout all cinematic transitions');
   assert.equal(await page.evaluate(()=>State.S.cats.length),0,'Opening before starter');
   await page.locator('.cbcp-pause').click();
   const checkpoint=await page.evaluate(()=>State.S.openingPresentation.snapshot);
@@ -53,6 +55,7 @@ for(const profile of [
   assert.equal(await page.locator('.cbcp-pause').textContent(),tr('继续播放','Resume'));
   assert.equal(await page.evaluate(()=>State.S.openingPresentation.snapshot.frameId),checkpoint.frameId);
   await page.locator('.cbcp-pause').click();
+  if(!full){const before=await page.locator('.cbcp-root').getAttribute('data-frame-id');await page.locator('.cbcp-stage').click({position:{x:25,y:120}});await page.waitForFunction(old=>document.querySelector('.cbcp-root')?.dataset.frameId&&document.querySelector('.cbcp-root').dataset.frameId!==old,before);}
   if(full){
    for(const region of campaign.regions){await page.waitForFunction(id=>document.querySelector('.cbcp-root')?.dataset.frameId==='prologue:P-01-region-'+id,region);await screenshot('sanctuary-'+region);}
    await page.waitForFunction(()=>document.querySelector('.cbcp-root')?.dataset.frameId==='prologue:P-01-shot-0');await page.waitForTimeout(6200);await screenshot('impact');
