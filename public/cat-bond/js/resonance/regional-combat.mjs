@@ -61,7 +61,33 @@ function positionObjectiveHud(panel){
 function install(){
  const BP=window.Battle?.CaptureBattle?.prototype,GP=window.Game?.prototype;
  if(!BP||!GP||window.CatBondRegionalArt)return;
- loadArt();window.CatBondRegionalArt=Object.freeze({drawScene,drawManifestation});
+ loadArt();
+ const ruinsTask={id:"postgame:ruins",operation:"postgame:ruins-victory"};
+ function ruinsAvailable(game){
+  const v=window.CatBondResonance?.view(),pos=window.State.S.resonanceExploration?.positions?.starfall;
+  return v?.ending&&game?.scene==="map"&&!game.battle&&window.WorldMap.currentRegion==="starfall"&&pos&&Math.hypot(pos.x-.23,pos.y-.78)<.072;
+ }
+ function prepareRuins(game){
+  if(!ruinsAvailable(game))return false;
+  const root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam();
+  if(!team.length)return false;
+  // A real optional capture challenge, not another manifestation of the defeated Hollow Echo.
+  // Select a legendary breed that is least represented in the player's collection.
+  const owned=id=>root.cats.filter(cat=>cat.species===id).length;
+  const legends=window.GameData.SPECIES.filter(sp=>sp.rarity==="SSR").sort((a,b)=>owned(a.id)-owned(b.id)||a.id.localeCompare(b.id));
+  const wild=legends[0];if(!wild)return false;
+  const companions=["wumao","bosi"].map(id=>window.GameData.speciesById(id)).filter(Boolean);
+  const title={zh:"星铃废墟 · 传说挑战",en:"Star Bell Ruins · Legendary challenge"};
+  window.UI.openBattleModePrompt(team,wild,{origin:"map",storyTitle:[title.zh,title.en],onStart:fighters=>{
+   if(root!==window.State.S||!ruinsAvailable(game)||!fighters.length)return;
+   const token=host.captureAction();
+   game._returnScene="map";game._battleTheme={region:"starfall",sky1:"#16273b",sky2:"#596985",ground:"#393f55",ground2:"#1d2436",accent:"#d8c397"};
+   game.startBattle(fighters,wild,{pack:[wild,...companions]});
+   if(game.battle)game.battle.postgameRuins={root,token};
+  }});
+  return true;
+ }
+ window.CatBondRegionalArt=Object.freeze({drawScene,drawManifestation,prepareRuins});
  const bg=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){if(this.regionalCombat&&drawScene(ctx,W,H,this.regionalCombat.region))return;return bg.call(this,ctx,W,H);};
  function notice(b,zh,en){b.game.toast({zh,en});}
@@ -188,7 +214,18 @@ function install(){
  const drawBattle=BP.draw;
  BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat)draw(this,ctx);return result;};
  const end=GP.endBattle;
- GP.endBattle=function(){if(this.battle?.regionalCombat)document.getElementById("cb-region-combat")?.remove();return end.call(this);};
+ GP.endBattle=function(){
+  const b=this.battle,ruins=b?.postgameRuins,host=window.CatBondResonance;
+  let committed=null;
+  if(ruins&&b.done&&b.result==="win"&&ruins.root===window.State.S&&host?.isCurrentAction?.(ruins.token)&&!host.view().postgame.includes(ruinsTask.id)){
+   committed=host.postgame({...ruinsTask,verified:true,token:ruins.token});
+  }
+  if(b?.regionalCombat)document.getElementById("cb-region-combat")?.remove();
+  const result=end.call(this);
+  if(committed?.ok)this.toast({zh:"星铃废墟挑战完成。",en:"Star Bell Ruins challenge complete."});
+  else if(committed&&!committed.ok)this.toast({zh:"挑战记录未保存，可以再次挑战。",en:"Challenge record was not saved. You can retry."});
+  return result;
+ };
  window.addEventListener("resize",()=>requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-region-combat"))));
  window.addEventListener("morrowwish-language-change",()=>{const b=window.__game?.battle;if(b?.regionalCombat){paintHud(b);requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-region-combat")));}});
 }
