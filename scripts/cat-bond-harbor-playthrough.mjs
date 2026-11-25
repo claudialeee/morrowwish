@@ -507,13 +507,13 @@ try {
     await page.getByText('Reinforced tools equipped · +25%',{exact:true}).waitFor();
     assert.equal(await page.evaluate(()=>Raising.stationsView().find(s=>s.id==='st_forge')?.reinforced),true);
     await shot('forge-workshop');await page.locator('#panel .panel-dismiss').click();
-    await button('Catdex',page.locator('.rw-system-nav')).click();await page.locator('#panel.open').waitFor();await shot('forge-catdex');await page.locator('#panel .panel-dismiss').click();
+    await button('Catdex',page.locator('.rw-system-nav')).click();await page.locator('#panel.open').waitFor();const record=page.locator('[data-dex-record="forge"]');await record.scrollIntoViewIfNeeded();await record.getByText('Furnace Guardian',{exact:true}).waitFor();await record.locator('img').evaluate(img=>img.decode());await shot('forge-catdex');await page.locator('#panel .panel-dismiss').click();
     await button('Party',page.locator('.rw-system-nav')).click();await page.locator('#map-squad-best').click();await page.locator('#map-squad-save').click();await page.locator('#panel.open').waitFor({state:'hidden'});
     await page.getByText('Chapter III complete. Skyspine Isles is unlocked for a future update. Keep exploring the three regions, trading cargo and tending your garden.',{exact:true}).waitFor();
     await page.evaluate(()=>MorrowwishI18n.set('zh'));
     await page.getByText('第三章已完成。云脊群岛航线已解锁，故事将在后续更新中继续。你仍可探索三地、交流物资与经营花园。',{exact:true}).waitFor();
     await page.evaluate(()=>MorrowwishI18n.set('en'));
-    await button('Rootsleep Forest').click();
+    await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='forge')?.unlocked));await shot('forge-garden-restoration');await page.locator('#fab-map').click();await button('Rootsleep Forest').click();
     // Save isolation: detached controls and the old region must not survive a slot switch,
     // even if a queued callback is invoked synchronously before the next animation frame.
     await button('World atlas',page.locator('.rw-head')).click();
