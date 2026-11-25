@@ -2112,7 +2112,7 @@ export const campaign = {
         "npc:central-ruin"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": ["npc:central-ruin"],
       "choiceTiming": "afterDialogue"
     },
     {

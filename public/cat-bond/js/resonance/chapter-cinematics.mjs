@@ -58,3 +58,4 @@ async function play(sceneId){
 }
 window.CatBondChapterCinematics=Object.freeze({play});
 window.addEventListener("pagehide",()=>active?.dispose());
+window.addEventListener("cat-bond-active-save-changed",()=>active?.dispose());
