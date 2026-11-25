@@ -28,4 +28,10 @@ music.setEnabled(false);await settle();assert.equal(music.status().playing,false
 music.setEnabled(true);await settle();assert.equal(music.status().track,'harbor');
 for(const next of ['forest','forge','sky','library','starfall']){region=next;music.sync();await settle();}
 assert.equal(music.status().track,'starfall');assert.ok(music.status().activeMusicSources<=2);
+// A later-region performance must play, and an explicit skip must not cause replay after the canonical commit.
+visual='starfall';music.sync();await settle();assert.equal(music.status().track,'song-starfall');
+assert.equal(music.skipCeremony('forest'),false,'cannot skip another region');
+assert.equal(music.skipCeremony('starfall'),true);await settle();
+visual='';state.resonance.melodies.push('starfall');state.resonance.revision++;music.sync();await settle();
+assert.equal(music.status().track,'starfall');assert.equal(requests.filter(x=>x==='song-starfall').length,1,'no replay after explicit skip');
 console.log('Audio lifecycle regression PASS');
