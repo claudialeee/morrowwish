@@ -9,6 +9,7 @@ let active=null;
 async function play(sceneId){
  const game=window.__game, slot=window.State.S, runtime=getSlotRuntime(window.State);
  const view=runtime.view();
+ if(sceneId.startsWith("starfall:")){const pos=slot.resonanceExploration?.positions?.starfall;if(slot.resonanceExploration?.location!=="starfall"||!pos||Math.hypot(pos.x-.92,pos.y-.30)>=.072)return false;}
  if(active||game.scene!=="map"||view.current?.id!==sceneId||!view.objective.length||!view.objective.every(op=>op.startsWith("cinematic:")))return false;
  const token=runtime.capture(), controller={dispose:null};
  const current=()=>active===controller&&window.State.S===slot&&runtime.isCurrentAction(token);

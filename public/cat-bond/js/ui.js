@@ -2260,10 +2260,17 @@ const UI = {
       ?State.S.cats.find(cat=>cat.uid===story.recordedUid):null;
     const recordName=String(recordCat?State.catName(recordCat):(en?'The Bellkeeper':'守铃者'))
       .replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-    const storyRecord=story?.playerRecorded
+    const resonance=State.S.resonance,canonicalMemory=resonance?.schema===1?[
+      [resonance.completed.includes("library:M-03"),en?"The first Bellkeeper":"第一任守铃者",en?"The mirror archive reveals your identity.":"月镜档案揭示了你的身份。"],
+      [resonance.evidence?.["starfall:F-02"]?.includes("explore:catastrophe-record"),en?"The Starfall Record":"星坠记录",en?"The impact broke the bell tongue and damaged six sanctuaries.":"陨星撞击使铃舌破碎，六座圣所同时受损。"],
+      [resonance.evidence?.["starfall:F-02"]?.includes("cinematic:starfall-memory"),en?"The Choice":"当年的抉择",en?"You willingly entered the emergency anchor to preserve the seal.":"你主动走进应急锚室维持封印。"],
+      [State.S.resonanceExploration?.pickups?.["starfall:starfall-hidden-record"],en?"The unsent navigation record":"未寄出的航行记录",en?"Neighbor routes can answer without central control.":"相邻航路无需中央控制也能互相回应。"],
+      [resonance.completed.includes("starfall:F-04"),en?"The reciprocal ring":"六地归环",en?"Six melodies and all 24 exchanges have been completed.":"六首旋律和24步交流均已完成。"]
+    ].filter(([unlocked])=>unlocked).map(([,title,description])=>`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${title}</strong><small>${description}</small></span></section>`).join(""):null;
+    const storyRecord=canonicalMemory!==null?canonicalMemory:story?.playerRecorded
       ?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?'The Last Page':'最后一页'}</strong><small>${en?'The Bellkeeper: ':'守铃者：'}${recordName}</small></span><b>${en?'Complete':'已完成'}</b></section>`:'';
     this.panel(`<span class="card-close">×</span>
-      <h2>图鉴 <span class="tiny">${owned}/${total}</span></h2>
+      <h2>${en?"Catdex":"猫咪图鉴"} <span class="tiny">${owned}/${total}</span></h2>
       <p class="sub">${en?'Discover breeds and earn an S-rank Golden Paw for each one.'
         :'发现不同猫咪，为每个品种挑战 S 级「金爪徽章」。'}</p>
       <div class="mastery-summary">

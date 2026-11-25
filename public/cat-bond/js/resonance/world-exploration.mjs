@@ -69,7 +69,8 @@ export function movePuzzle(p,i){
  p.solved=p.values.length===p.goal.length&&p.values.every((n,j)=>n===p.goal[j]);return p.solved;
 }
 export function exchangeOptions(bridge,region,links){
- const v=bridge.view();
+ const v=bridge.view(),pending=bridge.world().cargo;
+ if(pending)return [];
  return links.flatMap(([a,b,forward,back])=>{
   const sequence=v.links[a+":"+b]||[],i=sequence.length,actor=[a,b,b,a][i];
   const spec=bridge.cargoSpec(a,b);return spec&&actor===region?[spec]:[];
@@ -141,7 +142,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
  }
  function localNpcs(){const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];return Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({...n,point:layout.castPoints?.[n.id]||(i===0?lerp(path[1],path[2],.44):lerp(path[3],path[4],.46))}));}
  function inviteNpc(id){const n=localNpcs().find(n=>n.id===id),v=bridge.view();if(!n||!near(n.point)||!v.objective.includes("melody:"+region))return {ok:false,reason:"npc-not-available"};if(region==="harbor"||region==="forest"||region==="starfall"){const result=region==="harbor"?bridge.inviteHarbor(id,n.point,bridge.capture()):region==="forest"?bridge.inviteForest(id,n.point,bridge.capture()):bridge.inviteStarfall(id,n.point,bridge.capture());if(!result.ok)return result;}invited.add(id);return {ok:true};}
- function rewardPoints(){return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
+ function rewardPoints(){const hidden=region==="starfall"&&bridge.view().completed.includes("starfall:F-02")?[{id:"starfall-hidden-record",point:[.41,.58]}]:[];return [...hidden,{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}
  return {walk,tick,interact,operate,cancel,complete,traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};

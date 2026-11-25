@@ -21,6 +21,7 @@ function install(){
  function show(){
   const v=runtime.view(),game=window.__game;
   if(!v.current||game?.scene==="battle")return false;
+  if(v.current.chapter==="starfall"&&(window.WorldMap?.currentRegion!=="starfall"||window.WorldMap?.mode!=="region")){game?.toast?.({zh:"请前往星坠原继续剧情。",en:"Travel to Starfall to continue the story."});return false;}
   if(["starfall:F-02","starfall:F-05"].includes(v.current.id)&&v.objective.some(op=>op.startsWith("cinematic:"))){game?.toast?.({zh:"请在星坠原完成调查并前往中央遗迹观看演出。",en:"Complete the investigation in Starfall and approach the central ruins for the cinematic."});return false;}
   if(slot===State.S&&openedScene===v.current.id&&(dialogue||keyExchange)){(dialogue||keyExchange).render();return true}
   close();slot=State.S;openedScene=v.current.id;
