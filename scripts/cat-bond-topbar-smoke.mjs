@@ -1,6 +1,7 @@
 // Real-browser release gate for the Cat Bond yard/map navigation and mobile top rail.
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
+import {startNewAdventure} from './cat-bond-test-start.mjs';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 try {
   for(const width of [320,390,1280]){
@@ -9,8 +10,9 @@ try {
     const page=await context.newPage();
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
-    await page.goto('http://127.0.0.1:8765/cat-bond/?autodev&lang=zh',{waitUntil:'domcontentloaded',timeout:30000});
-    await page.waitForFunction(()=>window.__game?.scene==='yard'&&window.State?.S?.cats?.length>=3&&
+    await page.goto('http://127.0.0.1:8765/cat-bond/?lang=zh',{waitUntil:'domcontentloaded',timeout:30000});
+    await startNewAdventure(page,{scene:'yard'});
+    await page.waitForFunction(()=>window.__game?.scene==='yard'&&window.State?.S?.cats?.length>=1&&
       !!document.querySelector('#cb-header-actions #hud')&&!!document.querySelector('#cb-header-actions #map-menu'),
       null,{timeout:25000});
     const measure=()=>page.evaluate(()=>{

@@ -1472,6 +1472,7 @@ const UI = {
           · ${en?'Two cats playing builds trust':'两猫轮流玩会提升默契'}</p></div>
         <div class="st-btns">
           <button class="btn ghost tiny-btn" data-visit="${i}">${en?'Let cats play':'叫猫来玩'}</button>
+          <button class="btn ghost tiny-btn" data-duo-visit="${i}" ${(window.CatRelations?.chosen?.()||[]).length===2?'':'disabled'}>${en?'Invite duo':'邀请双猫'}</button>
           <button class="btn gold tiny-btn" data-upgrade="${i}"
             ${next===null||coins<next?'disabled':''}>${next===null?(en?'Max Lv.':'已满级'):(en?'Upgrade':'升级')+' '+next+'🪙'}</button>
           <button class="btn ghost tiny-btn" data-remove="${i}">${en?'Remove':'拆除'}</button>
@@ -1512,6 +1513,14 @@ const UI = {
       this.closeAll();
       if(!ok)this.game.toast(en?'Catch a cat first!':'先收集猫咪，它才会过来玩！');
       else this.game.toast(en?'Look! A kitten is coming to play':'看！有猫咪跑来玩啦！');
+    });
+    host.querySelectorAll('[data-duo-visit]').forEach(btn=>btn.onclick=()=>{
+      const b=State.S.yardBuildings?.[Number(btn.dataset.duoVisit)];
+      if(!b)return;
+      const ok=this.game.yard.inviteDuoToBuilding(b);
+      this.closeAll();
+      this.game.toast(ok?(en?'Your chosen duo is on its way.':'选中的双猫正在过来！'):
+        (en?'Choose a duo that is not working or sulking.':'请选择未工作、未闹别扭的双猫。'));
     });
     host.querySelectorAll('[data-upgrade]').forEach(btn => btn.onclick = () => {
       const result=this.game.yard.upgradeStructure(+btn.dataset.upgrade);
