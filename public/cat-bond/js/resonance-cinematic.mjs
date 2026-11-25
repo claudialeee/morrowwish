@@ -21,11 +21,12 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   const unique=new Set(),covered=[],frames=[];
   for(const [i,shot] of shots.entries()){
     const asset=assets.get(shot.assetId);
+    const independentlyApproved=asset?.status==='approved'&&asset.runtimeAllowed===true&&asset.visualReview?.evidence&&asset.visualReview.result==='PASS';
     const allowed=release
-      ?asset?.status==='candidate'&&asset.stagingAllowed===true&&asset.runtimeAllowed===false&&manifest.prologueReleaseAuthorization?.assets?.includes(asset.id)
+      ?manifest.prologueReleaseAuthorization?.assets?.includes(asset?.id)&&(independentlyApproved||(asset?.status==='candidate'&&asset.stagingAllowed===true&&asset.runtimeAllowed===false))
       :useStaging
       ?asset?.status==='candidate'&&asset.stagingAllowed===true&&asset.runtimeAllowed===false
-      :asset?.status==='approved'&&asset.runtimeAllowed===true&&asset.visualReview?.evidence&&asset.visualReview.result==='PASS';
+      :independentlyApproved;
     const recalled=(useStaging||!!approved)&&scene.id==='starfall:F-02'&&['opening-star-bell','opening-keepers-choice','opening-broken-bell-tongue'].includes(asset?.id)&&/^prologue:P-0[12]$/.test(asset.sceneKey);
     if(!allowed||(!recalled&&asset.sceneKey!==scene.id)||!raster.test(asset.path))return bad('unapproved-shot');
     if(unique.has(asset.path))return bad('repeated-shot-art');unique.add(asset.path);
@@ -63,11 +64,11 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
 
 // Pure permission check: no save, story mutation, staging or URL override.
 export function starfallReleaseReady(campaign,manifest){
- return ["starfall:F-02","starfall:F-05"].every(id=>{
+ try{return ["starfall:F-02","starfall:F-05"].every(id=>{
   const current=campaign.scenes.find(s=>s.id===id);
   if(!current||!manifest?.approvedShots?.[id])return false;
   return buildCanonicalScene({campaign,manifest,view:{current,choice:null,objective:current.requires.filter(o=>o.startsWith("cinematic:")),cursor:0,lineReady:true},staging:false}).ok;
- });
+ });}catch{return false;}
 }
 export async function decodeCinematicImages(scene){
   const urls=[...new Set(scene.frames.flatMap(f=>[f.image,...(f.layers||[]).map(l=>l.image)]))];
