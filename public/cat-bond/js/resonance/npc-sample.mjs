@@ -1,8 +1,8 @@
-import { campaign } from "./campaign.mjs";
+import { harborSample } from "./harbor-sample-data.mjs";
 import { BRANCH_DIALOGUE, createHarborState, normalizeHarborState, advanceHarborState, chooseHarborState } from "./harbor-sample-state.mjs";
 
 const ROOT="/cat-bond/assets/npc/";
-const SCENE=campaign.scenes.find(s=>s.id==="harbor:H-02");
+const SCENE=harborSample.scene;
 const FACE={
  jiedeng:["guarded","worried","guarded","worried","soft"],
  qilan:["annoyed","annoyed","determined","determined","warm"]
@@ -50,7 +50,7 @@ function mount(){
  }
  function setPortrait(id,face,slot){
   const img=$(slot==="main"?".cb-harbor-portrait":".cb-harbor-companion");
-  const npc=campaign.cast[id];if(!npc||!img)return;
+  const npc=harborSample.cast[id];if(!npc||!img)return;
   img.src=portrait(id,face);img.alt=npc.name[lang()];
   const figure=img.closest("figure");figure.querySelector("figcaption").textContent=npc.name[lang()];
   figure.classList.toggle("active",slot==="main");
@@ -60,7 +60,7 @@ function mount(){
   $(".cb-harbor-relations h3").textContent=w.trust;
   for(const id of ["qilan","jiedeng"]){
    const el=$('.cb-harbor-relation[data-npc="'+id+'"]'),value=p.trust[id]||0;
-   el.querySelector(".cb-harbor-npc-name").textContent=campaign.cast[id].name[lang()];
+   el.querySelector(".cb-harbor-npc-name").textContent=harborSample.cast[id].name[lang()];
    el.querySelector("b").textContent="+"+value;
    el.querySelector(".cb-harbor-meter i").style.width=Math.min(100,Math.max(0,value/10*100))+"%";
   }
@@ -84,7 +84,7 @@ function mount(){
    setPortrait(line.speaker,face,"main");
    const other=line.speaker==="qilan"?"jiedeng":"qilan";
    setPortrait(other,other==="qilan"?"curious":"guarded","companion");
-   $(".cb-harbor-speaker").textContent=campaign.cast[line.speaker].name[lang()];
+   $(".cb-harbor-speaker").textContent=harborSample.cast[line.speaker].name[lang()];
    $(".cb-harbor-line").textContent=line.text[lang()];
    $(".cb-harbor-hint").textContent=w.hint;
    $(".cb-harbor-actions").hidden=false;choices.hidden=true;quest.hidden=true;dialogue.hidden=false;
