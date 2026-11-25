@@ -171,7 +171,7 @@ function drawEnemy(ctx,e,b){
     draw?.(ctx,e.x,e.y,{species:e.sp,scale:b.catScale("enemy"),face:e.face,t:e.t,pose:e.pose,mood:"alert"});
   }
   // The chest furnace follows heat and the exposed-core window.
-  const exposed=(b.forgeState?.ventOpen||0)>0,rad=size*(exposed?.24:.18),cx=e.x,cy=e.y-size*.39;
+  const exposed=(b.forgeState?.ventOpen||0)>0,rad=size*(exposed ? 0.24 : 0.18),cx=e.x,cy=e.y-size*.39;
   const pulse=.78+.22*Math.sin(b.t*8);
   const g=ctx.createRadialGradient(cx,cy,1,cx,cy,rad);
   g.addColorStop(0,exposed?"rgba(255,238,178,.9)":"rgba(255,163,83,.72)");
@@ -185,19 +185,19 @@ function drawBossEffects(ctx,b){
   ctx.save();
   for(const h of e.forgeHazards||[]){
     const ready=h.delay<=0,fade=Math.max(.08,Math.min(1,h.life/(h.kind==="steam"?2.8:.65)));
-    ctx.globalAlpha=ready?.48:.25;
+    ctx.globalAlpha=ready ? 0.48 : 0.25;
     ctx.fillStyle=ready?"#f06b3e":"#e6a05f";
     ctx.beginPath();ctx.ellipse(h.x,h.y,h.r,h.r*.42,0,0,Math.PI*2);ctx.fill();
     ctx.globalAlpha=.8;ctx.strokeStyle=ready?"#ffb06b":"#f1d4a0";ctx.lineWidth=ready?3:2;
     ctx.setLineDash(ready?[]:[8,7]);ctx.beginPath();ctx.ellipse(h.x,h.y,h.r*(ready?1:.72),h.r*.42*(ready?1:.72),0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-    if(!ready){ctx.globalAlpha=.85;ctx.strokeStyle="#fff0cf";ctx.lineWidth=3;ctx.beginPath();ctx.arc(h.x,h.y,h.r*.72,-Math.PI/2,-Math.PI/2+Math.PI*2*(1-h.delay/(h.kind==="steam"?.82:.56)));ctx.stroke();}
+    if(!ready){ctx.globalAlpha=.85;ctx.strokeStyle="#fff0cf";ctx.lineWidth=3;ctx.beginPath();ctx.arc(h.x,h.y,h.r*.72,-Math.PI/2,-Math.PI/2+Math.PI*2*(1-h.delay/(h.kind==="steam" ? 0.82 : 0.56)));ctx.stroke();}
     ctx.globalAlpha=fade;
   }
   const state=b.forgeState;
   if(state&&state.heat>=65&&state.ventOpen<=0){ctx.globalAlpha=.38;ctx.strokeStyle="#e78c55";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(e.x,e.y,57,24,0,0,Math.PI*2);ctx.stroke();}
   const c=e.forgeCast;
   if(c){
-    const k=Math.max(0,Math.min(1,1-c.remaining/(c.phase===2?.88:c.phase===1?1.02:1.18)));
+    const k=Math.max(0,Math.min(1,1-c.remaining/(c.phase===2 ? 0.88 : c.phase===1 ? 1.02 : 1.18)));
     ctx.globalAlpha=.8;ctx.strokeStyle="#ffd29a";ctx.lineWidth=3;
     if(c.kind==="hammerfall"){
       const x=c.target?.x??e.x,y=c.target?.y??e.y;
