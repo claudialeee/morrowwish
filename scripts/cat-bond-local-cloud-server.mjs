@@ -26,7 +26,8 @@ const server=http.createServer(async(req,res)=>{
   }
   if(url.pathname.startsWith('/api/')){res.writeHead(200,{'content-type':'application/json'}).end('{}');return;}
   let target=path.resolve(root,'.'+decodeURIComponent(url.pathname));
-  if(!target.startsWith(root)){res.writeHead(403).end();return;}
+  const relative=path.relative(root,target);
+  if(relative==='..'||relative.startsWith('..'+path.sep)||path.isAbsolute(relative)){res.writeHead(403).end();return;}
   if((await fs.stat(target)).isDirectory())target=path.join(target,'index.html');
   const content=await fs.readFile(target);
   res.writeHead(200,{'content-type':types[path.extname(target)]||'application/octet-stream','cache-control':'no-store'});res.end(content);
