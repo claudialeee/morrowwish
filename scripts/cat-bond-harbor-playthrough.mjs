@@ -121,8 +121,12 @@ try {
     await mapActivity.waitFor();
     const mapBoard = page.locator('.res-ambient-map');
     async function dragMarker(target) {
-      const marker = await mapBoard.locator('[data-piece="marker"]').boundingBox();
-      const destination = await mapBoard.locator('[data-piece="'+target+'"]').boundingBox();
+      const markerButton = mapBoard.locator('[data-piece="marker"]');
+      const targetButton = mapBoard.locator('[data-piece="'+target+'"]');
+      await Promise.all([markerButton,targetButton].map(control=>control.locator('img').evaluate(image=>image.decode())));
+      const marker = await markerButton.boundingBox();
+      const destination = await targetButton.boundingBox();
+      assert.ok(marker?.height && destination?.height,'Route marker and destination must be visible');
       const from = {x:marker.x+marker.width/2,y:marker.y+marker.height/2};
       const to = {x:destination.x+destination.width/2,y:destination.y+destination.height/2};
       if (options.hasTouch) {
@@ -140,6 +144,7 @@ try {
     }
     await shot('muling-map');
     await dragMarker('lighthouse');
+    await page.getByText('Drag the route marker to the pier in the east',{exact:true}).waitFor();
     await dragMarker('pier');
     await button('Return to exploration').click();
     await button('Talk to Jiedeng').click();

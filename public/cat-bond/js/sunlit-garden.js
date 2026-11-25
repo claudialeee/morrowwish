@@ -70,6 +70,7 @@
     return api;
   }
   function enter(){
+    game ||= window.__game;
     if(!game||game.scene!=='yard')return;
     ensureRoot();
     const slotState=state();
