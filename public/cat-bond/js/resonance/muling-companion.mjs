@@ -20,7 +20,7 @@ function mount(){
  </div>
  <footer class="cb-muling-footer"><span class="cb-muling-count"></span><span class="cb-muling-memory"></span></footer>`;
  stage.append(overlay);
- let previousScene="yard",active=false,mode="choose",interactionId=null,lineIndex=0,justCompleted=false;
+ let previousScene="yard",previousFocus=null,active=false,mode="choose",interactionId=null,lineIndex=0,justCompleted=false;
  const $=s=>overlay.querySelector(s),w=()=>words[lang()];
  function getState(){const root=window.State?.S;if(!root)return null;if(!root.npcStories)root.npcStories={};root.npcStories.mulingCompanion=normalizeMulingState(root.npcStories.mulingCompanion);return root.npcStories.mulingCompanion}
  function save(){try{window.State?.save?.()}catch(e){console.warn("Muling companion save failed",e)}}
@@ -47,14 +47,14 @@ function mount(){
    $(".cb-muling-memory").textContent=justCompleted?t.completed:"";
   }else{
    $(".cb-muling-speaker").textContent="暮铃 · Muling";
-   $(".cb-muling-line").textContent=mode==="choose"?t.choose:(justCompleted?t.completed:t.choose);
+   $(".cb-muling-line").textContent=justCompleted?t.completed:t.choose;
    $(".cb-muling-hint").textContent=t.hint;
    setPortrait("neutral");$(".cb-muling-actions").hidden=true;
-   $(".cb-muling-footer").classList.remove("is-memory");$(".cb-muling-memory").textContent="";
+   $(".cb-muling-footer").classList.toggle("is-memory",justCompleted);$(".cb-muling-memory").textContent=justCompleted?t.completed:"";
   }
  }
- function open(){if(active)return;previousScene=game.scene||"yard";if(previousScene==="battle")return;active=true;mode="choose";interactionId=null;lineIndex=0;overlay.hidden=false;game.scene="story";document.body.classList.add("cb-muling-open");render();overlay.querySelector('[data-muling-action="close"]').focus()}
- function close(){if(!active)return;active=false;overlay.hidden=true;document.body.classList.remove("cb-muling-open");game.scene=previousScene==="story"?"yard":previousScene;save();launch.focus()}
+ function open(){if(active)return;previousScene=game.scene||"yard";previousFocus=document.activeElement;if(previousScene==="battle")return;active=true;mode="choose";interactionId=null;lineIndex=0;overlay.hidden=false;game.scene="story";document.body.classList.add("cb-muling-open");render();overlay.querySelector('[data-muling-action="close"]').focus()}
+ function close(){if(!active)return;active=false;overlay.hidden=true;document.body.classList.remove("cb-muling-open");game.scene=previousScene==="story"?"yard":previousScene;save();if(previousFocus?.isConnected)previousFocus.focus();else launch.focus()}
  function advance(){const p=getState(),item=activeInteraction();if(!item||mode!=="dialogue")return;if(lineIndex<item.lines.length-1){lineIndex++;render();return}const next=completeMulingInteraction(p,item.id);window.State.S.npcStories.mulingCompanion=next;save();mode="choose";lineIndex=0;justCompleted=!p.completed.includes(item.id);render()}
  function click(e){const action=e.target.closest("[data-muling-action]")?.dataset.mulingAction;if(!action)return;if(action==="close")close();else if(action==="next")advance();else if(action==="back"){mode="choose";interactionId=null;lineIndex=0;render()}else if(action==="follow"){const p=getState();window.State.S.npcStories.mulingCompanion=setMulingFollowing(p,!p.following);save();render()}else if(action==="language"){window.MorrowwishI18n?.set?.(lang()==="zh"?"en":"zh");render()}}
  overlay.addEventListener("click",click);overlay.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();close()}else if(e.key==="Enter"&&mode==="dialogue"){e.preventDefault();advance()}});
