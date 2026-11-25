@@ -1,0 +1,43 @@
+name: Cat Bond Starfall — isolated portrait art review
+on:
+  push:
+    branches: [rpg/starfall-portrait-refinement]
+    paths:
+      - 'public/cat-bond/js/cinematic-presentation.js'
+      - 'scripts/cat-bond-starfall-art-review.mjs'
+      - '.github/workflows/cat-bond-starfall-portrait-review.yml'
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-starfall-portrait-art-review
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Render candidate art without gameplay or permission overrides
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starfall-art-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/cat-bond-starfall-art-review.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cat-bond-starfall-portrait-review
+          path: artifacts/cat-bond-starfall/visual-review/
+          if-no-files-found: error
+          retention-days: 7
