@@ -1,14 +1,16 @@
 import fs from "node:fs";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary,catdexRecord} from "../public/cat-bond/js/resonance/library-mechanisms.mjs";
-const paths=["resonance/campaign.mjs","resonance/engine.mjs","resonance/slot-runtime.mjs","resonance/world-bridge.mjs","resonance/world-exploration.mjs","state.js"];
+const paths=["resonance/campaign.mjs","resonance/engine.mjs","resonance/slot-runtime.mjs","resonance/world-bridge.mjs","resonance/world-exploration.mjs","state.js","resonance/sky-flight.mjs"];
 const src=paths.map(p=>fs.readFileSync(new URL("../public/cat-bond/js/"+p,import.meta.url),"utf8"));
 console.log(JSON.stringify((function test(src){
  const clean=s=>s.replace(/^import .*;$/gm,"").replace(/\bexport\s+/g,"");
  const campaign=new Function(clean(src[0])+"\nreturn campaign")();
  const makeEngine=new Function(clean(src[1])+"\nreturn makeEngine")();
  const getSlotRuntime=new Function("campaign","makeEngine",clean(src[2])+"\nreturn getSlotRuntime")(campaign,makeEngine);
- const createWorldBridge=new Function("campaign","getSlotRuntime","libraryPoints","libraryInvitations","libraryBlocked","libraryPuzzle","catdexRecord",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime,libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord);
- const {createExplorer,exchangeOptions,layouts}=new Function("campaign","libraryPoints","libraryInvitations","libraryBlocked","libraryPuzzle","advanceLibrary",clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign,libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary);
+ const flight=new Function(clean(src[6])+"\nreturn {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache}")();
+ const {skyLaunch,skyLanding}=flight;
+ const createWorldBridge=new Function("campaign","getSlotRuntime","validSkyFlightProof","skyLaunch","skyLanding","skyPartsReady","skySurvey","skySurveyCache","libraryPoints","libraryInvitations","libraryBlocked","libraryPuzzle","catdexRecord",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime,flight.validSkyFlightProof,skyLaunch,skyLanding,flight.skyPartsReady,flight.skySurvey,flight.skySurveyCache,libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord);
+ const {createExplorer,exchangeOptions,layouts}=new Function("campaign",...Object.keys(flight),"libraryPoints","libraryInvitations","libraryBlocked","libraryPuzzle","advanceLibrary",clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign,...Object.values(flight),libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary);
  const storage=new Map(),ls={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},window={};
  new Function("window","localStorage",src[5])(window,ls);
  const State=window.State,assert=(x,m)=>{if(!x)throw Error(m)},ok=(r,m)=>assert(r?.ok,m+": "+r?.reason);
@@ -19,14 +21,21 @@ console.log(JSON.stringify((function test(src){
   if(n==="pairedWater"){ok(x.operate(1),"lower cannot open without pressure");assert(x.puzzle.values[1]===0,"premature lower opening");ok(x.operate(0),"raise");ok(x.operate(0),"stable");ok(x.operate(1),"open lower");ok(x.operate(0),"overpressure");assert(x.puzzle.values[1]===0,"overpressure closes lower");ok(x.operate(0),"reset pressure");ok(x.operate(0),"raise");ok(x.operate(0),"stable");ok(x.operate(1),"open lower");ok(x.operate(2),"joint clearance");}
   else if(["mirrors","water","stars","routing","libraryMirrors"].includes(n)){for(let i=0;i<3;i++){while(x.puzzle&&x.puzzle.values[i]!==p.goal[i])ok(x.operate(i),"dial");}}
   else if(n==="heat"){while(x.puzzle&&x.puzzle.values[0]<p.goal[0])ok(x.operate(0),"heat");while(x.puzzle&&x.puzzle.values[1]>p.goal[1])ok(x.operate(1),"vent");}
-  else if(n==="flight"){for(const w of p.wind)ok(x.operate(1-w),"flight");}
+  else if(n==="skyFlight"){
+   for(let i=0;i<100;i++)x.flightTick(.05);assert(x.puzzle.flight.x===0,"idle flight must not advance");
+   ok(x.operate(1),"launch");for(let i=0;i<400&&x.puzzle?.flight.started;i++)x.flightTick(.05);assert(x.puzzle?.flight.attempts>0,"no steering must fail");
+   let result;for(let i=0;i<400&&x.puzzle;i++){const f=x.puzzle.flight,t=f.x<.24?f.route[0]:f.x<.49?f.route[1]:f.x<.74?f.route[2]:.5;if(!f.started||f.target!==t)assert(x.flightSteer(t),"steer");const r=x.flightTick(.05);if(r){ok(r,"flight landing");result=r;}}
+   assert(result?.ok,"flight not completed");
+  }
   else{ok(x.operate((p.goal[0]+1)%3),"wrong sequence");assert(x.puzzle&&x.puzzle.values.length===0,"wrong sequence advanced");for(const i of p.goal)ok(x.operate(i),"sequence");}
   assert(!x.puzzle,"unsolved mechanism "+n);puzzles++;
  }
- function links(){for(const [a,z] of campaign.links){for(let i=0;i<4;i++){const region=[a,z,z,a][i];ok(b.enter(region),"travel exchange");let x=createExplorer(b,region),o=exchangeOptions(b,region,campaign.links).find(o=>o.a===a&&o.b===z);assert(o,"missing ordered exchange "+a+":"+z+":"+i);walk(x,x.cargoPoints()[o.from]);ok(x.startCargo(o),"pick cargo");assert(!x.deliverCargo().ok,"delivery without walking");x=createExplorer(b,region);assert(x.cargo?.stage===o.stage,"cargo not saved");walk(x,x.cargoPoints()[o.to]);ok(x.deliverCargo(),"deliver");assert(!x.cargo,"cargo not cleared");deliveries++;}}}
+ function transfer(a,z,i){const region=[a,z,z,a][i];ok(b.enter(region),"travel exchange");let x=createExplorer(b,region),o=exchangeOptions(b,region,campaign.links).find(o=>o.a===a&&o.b===z);assert(o,"missing ordered exchange "+a+":"+z+":"+i);walk(x,x.cargoPoints()[o.from]);ok(x.startCargo(o),"pick cargo");assert(!x.deliverCargo().ok,"delivery without walking");x=createExplorer(b,region);assert(x.cargo?.stage===o.stage,"cargo not saved");walk(x,x.cargoPoints()[o.to]);ok(x.deliverCargo(),"deliver");assert(!x.cargo,"cargo not cleared");deliveries++;}
+ function links(){for(const [a,z] of campaign.links){for(let i=(b.view().links[a+":"+z]||[]).length;i<4;i++)transfer(a,z,i);}}
  for(let scene=0;scene<34;scene++){
   let v=b.view(),s=v.current;if(!s||s.id==="finale:B-01")break;
   if(s.choices.length&&s.choiceTiming==="beforeAction")host(e=>e.choose(s.choices[0].id));
+  if(s.id==="sky:S-02"){ok(b.enter("sky"),"enter before cargo");const x=createExplorer(b,"sky");walk(x,skyLaunch["explore:flight-recorder"]);assert(x.interact("explore:flight-recorder").reason==="sky-parts-required","flight requires forge parts");transfer("forge","sky",0);transfer("forge","sky",1);assert(!b.cargoSpec("forge","sky"),"cannot send flight data before route restoration");}
   if(s.id==="library:M-02"){State.S.cats.push({uid:"library-fixture",species:"nainai",personality:"gentle",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});State.S.dex.nainai=1;ok(b.enter("library"),"enter library");const x=createExplorer(b,"library");walk(x,x.layout.features["puzzle:mirror-records"]);assert(x.interact("puzzle:mirror-records").reason==="library-previous-station","must solve mirror gallery first");}
   const ops=s.id==="harbor:H-04"?[...s.requires].reverse():s.requires;
   if(s.id==="harbor:H-04"){
@@ -37,7 +46,7 @@ console.log(JSON.stringify((function test(src){
   }
   for(const op of ops){if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
-   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(s.chapter==="library"){const restored=createExplorer(b,"library");assert(restored.invited.length===2,"library invitations persist");}if(s.chapter==="forest"){const restored=createExplorer(b,"forest");assert(restored.invited.length===2&&restored.invited.includes("yahe")&&restored.invited.includes("yuchuan"),"forest invitations must survive reload");}}
+   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(s.chapter==="library"){const restored=createExplorer(b,"library");assert(restored.invited.length===2,"library invitations persist");}if(["forest","sky"].includes(s.chapter)){const restored=createExplorer(b,s.chapter);assert(restored.invited.length===2&&x.localNpcs().every(n=>restored.invited.includes(n.id)),s.chapter+" invitations must survive reload");}}
    if(op==="explore:tide-logbook"){
     walk(x,p);assert(x.interact(op).reason==="incomplete-tide-trail","cannot bypass tide trail");
     let trail=x;
@@ -45,6 +54,10 @@ console.log(JSON.stringify((function test(src){
      const step=trail.tideStep();assert(step?.index===i,"ordered tide waypoint");assert(!trail.traceTide((i+1)%2).ok,"out-of-order tide mark");walk(trail,step.point);ok(trail.traceTide(i),"inspect tide mark");trail=createExplorer(b,s.chapter);
     }
     assert(!trail.tideStep(),"completed tide trail must not reopen");walk(trail,p);ok(trail.interact(op),"recover logbook");solve(trail);
+   }else if(op==="puzzle:safety-blueprint"){
+    walk(x,p);assert(x.interact(op).reason==="incomplete-forge-parts","cannot bypass old workshop");let trail=x;
+    for(let i=0;i<3;i++){const step=trail.forgeStep();assert(step?.index===i,"ordered workshop clue");assert(!trail.collectForgePart((i+1)%3).ok,"cannot skip clue");walk(trail,step.point);ok(trail.collectForgePart(i),"recover part");trail=createExplorer(b,"forge");}
+    assert(!trail.forgeStep(),"workshop parts persist");walk(trail,p);ok(trail.interact(op),"reassemble blueprint");solve(trail);
    }else if(op==="explore:scent-trail"){
     assert(!x.traceScent(2).ok,"cannot skip to medicine");
     let trail=x;
@@ -55,7 +68,7 @@ console.log(JSON.stringify((function test(src){
     State.S.cats.push({uid:"forest-fixture",species:"nainai",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});const gate=x.pairedGate();assert(gate&&!gate.ready,"upper gate available");walk(x,gate.point);ok(x.holdUpperGate(),"hold upper gate");
     assert(!x.holdUpperGate().ok,"duplicate upper gate action");const restored=createExplorer(b,s.chapter);assert(restored.pairedGate().ready,"paired gate persists");
     walk(restored,p);ok(restored.interact(op),"lower gate");assert(restored.puzzle.pair.upper==="forest-fixture"&&restored.puzzle.pair.lower==="muling","two separate actors");assert(!b.recordWorld(s.id,op,{sceneId:s.id,operation:op,region:s.chapter,verified:true,token:b.capture()}).ok,"cannot bypass paired flow");solve(restored);State.S.cats=State.S.cats.filter(c=>c.uid!=="forest-fixture");
-   }else{walk(x,p);const r=x.interact(op);ok(r,op);if(r.puzzle)solve(x);}
+   }else{walk(x,skyLaunch[op]||p);if(skyLaunch[op]){assert(!b.recordWorld(s.id,op,{sceneId:s.id,operation:op,region:s.chapter,verified:true,token:b.capture()}).ok,"cannot bypass flight");}const r=x.interact(op);ok(r,op);if(r.puzzle)solve(x);if(skyLanding[op]){assert(x.near(skyLanding[op]),"flight must land at actual destination");assert(createExplorer(b,s.chapter).near(skyLanding[op]),"landing must persist");}}
    assert(!b.view().objective.includes(op),"unrecorded "+op);physical++;
    if(physical===1){const p=x.rewardPoints()[0];walk(x,p.point);const cash=State.S.coins;ok(x.pickup(p.id),"cache reward");assert(State.S.coins>cash&&!x.pickup(p.id).ok,"duplicate reward");rewards++;}
   }else host(e=>e.record(s.id,op));}
@@ -63,6 +76,14 @@ console.log(JSON.stringify((function test(src){
   while(b.view().cursor<s.lines.length)host(e=>e.nextLine());
   if(s.choices.length&&!b.view().choice)host(e=>e.choose(s.choices[0].id));
   host(e=>e.finish());
+  if(s.id==="sky:S-05"){
+   ok(b.enter("sky"),"return to sky");let x=createExplorer(b,"sky"),survey=x.survey();assert(survey&&!survey.remote,"survey unlocked");assert(!x.startSurvey().ok,"must reach takeoff");assert(!b.pickupReward("sky","survey-cache").ok,"cache cannot be claimed from main island");
+   walk(x,survey.from);assert(!b.finishSurvey(survey.operation,null,b.capture()).ok,"cannot skip flight");const story=JSON.stringify(State.S.resonance);ok(x.startSurvey(),"takeoff");solve(x);assert(x.survey().remote&&x.near(survey.to),"actual island landing");
+   assert(State.loadSlot("slot1"),"reload on island");x=createExplorer(b,"sky");assert(x.survey().remote&&x.near(survey.to),"remote landing persists");assert(!x.pickup("survey-cache").ok,"cache requires exploring path");const cache=x.rewardPoints()[0];walk(x,cache.point);const coins=State.S.coins,fish=State.S.fish;ok(x.pickup(cache.id),"collect hidden cache");assert(State.S.coins===coins+45&&State.S.fish===fish+4&&!x.pickup(cache.id).ok,"one-time reward");
+   assert(State.loadSlot("slot1"),"reload after cache");x=createExplorer(b,"sky");assert(!x.survey().cache,"cache stays collected");let back=x.survey();walk(x,back.from);ok(x.startSurvey(),"return takeoff");solve(x);assert(!x.survey().remote&&x.near(back.to),"return to dock");assert(JSON.stringify(State.S.resonance)===story,"optional flight must not mutate story");
+   // Repeat the optional flight to confirm it remains available without duplicating treasure.
+   walk(x,x.survey().from);ok(x.startSurvey(),"repeat takeoff");solve(x);assert(x.survey().remote&&!x.survey().cache,"repeat island without duplicate cache");walk(x,x.survey().from);ok(x.startSurvey(),"repeat return");solve(x);assert(!x.survey().remote,"repeat return");
+  }
  }
  assert(b.view().current.id==="finale:B-01","did not reach finale: "+b.view().current.id);
  assert(b.view().ring&&b.view().melodies.length===6&&b.view().sanctuaries.length===6,"ring or sanctuaries incomplete");assert(deliveries===24&&localInvites===12,"wrong exchange/participation counts");
