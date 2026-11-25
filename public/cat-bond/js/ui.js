@@ -1269,7 +1269,7 @@ const UI = {
     this.game?.completeFirstAdventureStep?.('workshop');
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const stations=Raising.stationsView().filter(st=>st.res)
-      .sort((a,b)=>['sun','fishing','yarn','watch'].indexOf(a.type)-['sun','fishing','yarn','watch'].indexOf(b.type));
+      .sort((a,b)=>['sun','fishing','yarn','watch','forge'].indexOf(a.type)-['sun','fishing','yarn','watch','forge'].indexOf(b.type));
     const sun=stations.find(st=>st.type==='sun');
     const rate=Number(sun?.ratePerHour||0);
     const pending=stations.reduce((n,st)=>n+st.stored,0);
@@ -1278,6 +1278,7 @@ const UI = {
       sun:[en?'Earn coins':'晒太阳赚金币',en?'Spend coins on feeding, buildings and upgrades':'金币用于喂猫、建造、升级工坊'],
       fishing:[en?'Catch fish':'钓小鱼',en?'Fish feed cats, train levels and buy rare-cat lures':'小鱼用于喂猫、练级、买稀有诱饵'],
       yarn:[en?'Earn coins':'织物赚金币',en?'More coins for upgrades and stat training':'金币用于升级与属性特训'],
+      forge:[en?'Emberforge smithy':'赤炉锻造台',en?'Forge tools using Xiaomao’s safe design. Reinforced tools increase this station’s production by 25%.':'依照小铆的新安全设计锻造工具。强化工具提升此工位产出 25%。'],
       watch:[en?'Collect luck':'瞭望好运',en?'Boost the next rare-cat sighting':'好运用于提高下一次野猫的稀有机会'],
     };
     const cards=stations.map(st=>{
@@ -1290,16 +1291,18 @@ const UI = {
         <div class="st-ico">${st.icon}</div>
         <div class="st-main">
           <div class="st-name">${name} <span class="tiny">${this.levelText(st.level)}</span></div>
-          <p class="work-usage">${usage}</p>
+          <p class="work-usage">${usage}${st.skyCalibrated?(en?" · Skyspine wind calibration: +25% luck production":" · 云脊风向校准：好运产出 +25%"):""}</p>
           <div class="work-income">${en?'Production':'产出'}：<b>${Number(st.ratePerHour||0).toFixed(1)} ${unit}/${en?'hour':'小时'}</b></div>
           <div class="work-employee">${st.active
             ?(en?'Working cat: ':'上班猫咪：')+st.catName
             :(en?'No cat assigned — Assign one to start':'还没派猫上岗，点击「派猫」才会开始赚钱')}
             ${wait}</div>
           <div class="st-bar"><span style="width:${Math.round(st.pct*100)}%"></span></div>
+          ${st.type==="forge"?`<div class="work-usage">${st.reinforced?(en?"Reinforced tools equipped · +25%":"已装备强化工具 · +25%"):(en?"Recipe: reinforced tools · 45 coins + 2 fish":"配方：强化工具 · 45 金币 + 2 小鱼干")}</div>`:""}
           <div class="work-pending">${en?'Uncollected':'待收取'}：<b>${st.stored} ${unit}</b> / ${st.cap}</div>
         </div>
         <div class="st-btns">
+          ${st.type==="forge"&&!st.reinforced?`<button class="btn gold tiny-btn" data-act="forge-tools" ${State.S.coins<45||State.S.fish<2?"disabled":""}>${en?"Craft tools":"锻造工具"}</button>`:""}
           <button class="btn gold tiny-btn" data-act="collect" data-id="${st.id}" ${st.stored<1?'disabled':''}>${en?'Collect':'收取'}</button>
           <button class="btn ghost tiny-btn" data-act="assign" data-id="${st.id}">${en?'Assign':'派猫'}</button>
           <button class="btn ghost tiny-btn" data-act="upgrade" data-id="${st.id}">${en?'Upgrade':'升级'}<small>${cost.coins}🪙</small></button>
@@ -1349,6 +1352,7 @@ const UI = {
   workshopAct(act,id){
     const R=window.Raising;if(!R)return;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
+    if(act==='forge-tools'){const result=R.forgeTools();this.game.toast(result.ok?(en?'Reinforced tools crafted':'强化工具已锻造'):(en?'Crafting failed; check your materials':'锻造失败，请检查材料'));this.game.refreshHUD();this.openWorkshop();return;}
     if(act==='collect'||act==='collect-all'){
       const got=act==='collect-all'?R.collectAll():R.collect(id);
       const total=act==='collect-all'?Object.values(got).reduce((n,v)=>n+v,0):(got?.amount||0);
@@ -2263,6 +2267,12 @@ const UI = {
       ?State.S.cats.find(cat=>cat.uid===story.recordedUid):null;
     const recordName=String(recordCat?State.catName(recordCat):(en?'The Bellkeeper':'守铃者'))
       .replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    const forgeRecord=State.S.resonance?.completed?.includes("forge:E-03")
+      ?`<section class="cb-dex-forge-record" data-dex-record="forge"><img src="assets/combat/forge-guardian-painted.webp" alt=""><div><small>${en?'REGIONAL FIELD RECORD':'地区见闻'}</small><strong>${en?'Furnace Guardian':'熔炉机械守卫'}</strong><p>${en?'The safety mechanism has been stabilized. Its three heat and pressure stages are recorded here; it is a machine, not a collectible breed.':'安全机关已稳定，三阶段炉温与压力记录已收录。机械守卫不是可收集猫咪品种。'}</p><span>${en?'Encounter complete · Emberforge City':'挑战完成 · 赤炉环城'}</span></div></section>`:'';
+    const canonical=State.S.resonance;
+    const flightRecord=canonical?.evidence?.["sky:S-02"]?.includes("explore:flight-recorder")||canonical?.completed?.includes("sky:S-02");
+    const pendantRecord=canonical?.completed?.includes("sky:S-04");
+    const skyRecords=(flightRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Skyspine flight record":"云脊飞行记录"}</strong><small>${en?"Yuanfan cut the cargo line after Lingyu misread the wind, saving both couriers.":"翎羽误判风向后，远帆切断货索，救下两位信使。"}</small></span><b>${en?"Verified":"已核实"}</b></section>`:"")+(pendantRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Muling · familiar habit":"暮铃 · 熟悉的习惯"}</strong><small>${en?"When she is uneasy, she taps her old bell pendant twice.":"心神不宁时，她会轻敲旧铃坠两次。"}</small></span><b>${en?"Observed":"已观察"}</b></section>`:"");
     const storyRecord=story?.playerRecorded
       ?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?'The Last Page':'最后一页'}</strong><small>${en?'The Bellkeeper: ':'守铃者：'}${recordName}</small></span><b>${en?'Complete':'已完成'}</b></section>`:'';
     this.panel(`<span class="card-close">×</span>
@@ -2276,8 +2286,9 @@ const UI = {
         <small>${en?'Permanent rarity-weight boost':'当前永久稀有权重加成'}：+${Math.round(mastery.luckBonus*100)}%</small>
       </div>
       <div class="dex-grid">${cells}</div>
+      ${forgeRecord}
       ${libraryRecord}
-      ${storyRecord}
+      ${storyRecord}${skyRecords}
       ${this.reactionCodexHtml(en)}`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.querySelectorAll('#panel .dex-cell').forEach(cell => {
@@ -2722,7 +2733,7 @@ const UI = {
         this.battleTeamSummary(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en))+'</span></summary>'+
       '<p class="sub">'+(en?'2 cats start; up to 3 reserves. Tap cats to change the team or reorder below.':'2 只首发，最多 3 只替补。点击猫咪更换队伍，也可调整顺序。')+'</p>'+
       this.squadPickerMarkup(selected)+'</details>';
-    const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
+    const label=opts.storyTitle?(opts.storyTitle[en?1:0]):opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
     const encounterLvl=wildSp.encounterLevel||
       window.Battle?.CaptureBattle?.previewWildLevel?.(
@@ -2730,7 +2741,7 @@ const UI = {
     this.panel(`<span class="card-close">×</span>
       <h2>${label}</h2>
       <p class="sub" style="font-weight:750;color:#765e85">
-        ${en?'Wild cat':'野生猫咪'} · Lv.${encounterLvl} ·
+        ${opts.storyTitle?(en?'Story encounter':'剧情战斗'):(en?'Wild cat':'野生猫咪')} · Lv.${encounterLvl} ·
         <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>
       </p>
       ${this.matchupWarning(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en)}
@@ -2820,6 +2831,7 @@ const UI = {
       State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true,
         skillsIntroSeen:true,teamUids:[...selected]};
       State.save();this.closeAll();
+      if(typeof opts.onStart==='function'){opts.onStart(fighters.length?fighters:team);return;}
       if(opts.mastery){this.game.startMasteryChallenge(wildSp,true,fighters);return;}
       if(opts.origin==='map'){
         this.game._returnScene='map';this.game._battleTheme=opts.theme||null;
@@ -3059,14 +3071,20 @@ const UI = {
       '<p>'+detail+'</p>'+(rows?'<div class="battle-recovery-team">'+rows+'</div>':'')+'</section>';
   },
   openBattleRecoveryResult(recovery){
-    const en=this.isEnglish(),exploring=this.game?.scene==='map';
-    this.panel('<span class="card-close">×</span><h2 class="center">'+
-      (en?'The wild cat got away':'野生猫猫跑掉了')+'</h2>'+
+    const en=this.isEnglish(),exploring=this.game?.scene==='map',sky=recovery.sky;
+    const title=sky?(sky.outcome==='retreat'?(en?'Retreated from the gale':'已从风切战斗撤退'):(en?'Squad defeated in the gale':'队伍在风切战斗中落败')):(en?'The wild cat got away':'野生猫猫跑掉了');
+    const canRetry=!!sky&&exploring&&sky.owner===State.S&&window.WorldMap?.currentRegion==='sky';
+    this.panel('<span class="card-close">×</span><h2 class="center">'+title+'</h2>'+
+      (sky?'<p class="sub">'+(en?'Your cats and story progress are safe. Change your party or retry when ready.':'猫咪及剧情进度已保留。可以调整队伍，再次迎战。')+'</p>':'')+
       this.battleRecoveryMarkup(recovery)+
-      '<div class="btn-row" style="justify-content:center"><button type="button" class="btn gold" id="battle-recovery-ok">'+
+      '<div class="btn-row" style="justify-content:center">'+
+      (canRetry?'<button type="button" class="btn gold" id="sky-retry-encounter">'+(en?'Retry encounter':'再次挑战')+'</button>':'')+
+      '<button type="button" class="btn '+(canRetry?'ghost':'gold')+'" id="battle-recovery-ok">'+
       (en?(exploring?'Continue exploring':'Back to yard'):(exploring?'继续探索':'回庭院'))+
       '</button></div>');
     document.getElementById('battle-recovery-ok').onclick=()=>this.closeAll();
+    const retry=document.getElementById('sky-retry-encounter');
+    if(retry)retry.onclick=()=>{this.closeAll();if(!window.WorldMap?.retrySkyEncounter?.(sky.species,sky.owner))this.game?.toast({zh:'请在云脊群岛重新接近野猫。',en:'Approach the wild cat again in Skyspine.'});};
   },
 
   // Repeatable *skill* challenge, deliberately separate from capturing cats.
