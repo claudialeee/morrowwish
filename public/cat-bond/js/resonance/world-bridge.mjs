@@ -1,6 +1,6 @@
 // Chat 3 physical-world adapter. Chat 4 owns the sole narrative mutation path.
 import {campaign} from "./campaign.mjs";
-import {validSkyFlightProof,skyLaunch,skyLanding} from "./sky-flight.mjs";
+import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady} from "./sky-flight.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
@@ -121,7 +121,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(v.current?.id!==sceneId||w.location!==region||!campaign.regions.includes(region)||!v.objective.includes(op)||proof?.sceneId!==sceneId||proof.operation!==op||proof.region!==region||proof.verified!==true)return fail("invalid-world-evidence");
   if(!/^(explore|puzzle|rescue|repair|melody):/.test(op))return fail("owned-by-other-module");
   if(w.interactions[sceneId+":"+op])return fail("already-completed");
-  if(region==="sky"&&skyLaunch[op]){const p=w.positions.sky,q=skyLaunch[op];if(!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072||!validSkyFlightProof(op,v.choice??null,proof.flightProof))return fail("incomplete-flight");}
+  if(region==="sky"&&skyLaunch[op]){if(!skyPartsReady(v))return fail("sky-parts-required");const p=w.positions.sky,q=skyLaunch[op];if(!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072||!validSkyFlightProof(op,v.choice??null,proof.flightProof))return fail("incomplete-flight");}
   if(op==="explore:tide-logbook"&&(!tideTrail.every((_,i)=>w.interactions[tideKey(i)])||!tideNear(w,[.87,.748])))return fail("incomplete-tide-trail");
   if(op==="explore:scent-trail"&&(!scentTrail.slice(0,-1).every((_,i)=>w.interactions[scentKey(i)])||!scentAt(w,scentTrail.length-1)))return fail("incomplete-scent-trail");
   if(op==="puzzle:paired-water-gates"){
@@ -143,7 +143,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  function inviteForest(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={yahe:[.30,.43],yuchuan:[.64,.53]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="forest"||v.current?.id!=="forest:R-04"||v.objective.includes("repair:forest")||!v.objective.includes("melody:forest")||!token||!api.isCurrentAction(token)||!atForest(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["forest:R-04:invite:"+id]:true}}));}
  function skyInvited(){const v=view(),w=world();return v.current?.id==="sky:S-05"||v.completed.includes("sky:S-05")?["lingyu","yuanfan"].filter(id=>w.interactions["sky:S-05:invite:"+id]):[];}
  function inviteSky(id,point,token){const api=resolveNarrative(),v=view(),w=world(),p=w.positions.sky,q={lingyu:[.16,.61],yuanfan:[.18,.55]}[id];if(!q||point[0]!==q[0]||point[1]!==q[1]||w.location!=="sky"||v.current?.id!=="sky:S-05"||v.objective.includes("repair:sky")||!v.objective.includes("melody:sky")||!token||!api.isCurrentAction(token)||!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072)return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["sky:S-05:invite:"+id]:true}}));}
- function cargoSpec(a,b){const l=campaign.links.find(([x,y])=>x===a&&y===b);if(!l)return null;const v=view(),i=(v.links[a+":"+b]||[]).length,actor=[a,b,b,a][i];if(i>=4||!v.regions.includes(a)||!v.regions.includes(b))return null;const end=a==="starfall"?"starfall:F-02":campaign.scenes.filter(s=>s.chapter===a).at(-1)?.id;if(!v.completed.includes(end))return null;return {a,b,stage:stages[i],actor,action:l[i<2?2:3],from:i%2===0?0:1,to:i%2===0?1:0};}
+ function cargoSpec(a,b){const l=campaign.links.find(([x,y])=>x===a&&y===b);if(!l)return null;const v=view(),i=(v.links[a+":"+b]||[]).length,actor=[a,b,b,a][i];if(i>=4||!v.regions.includes(a)||!v.regions.includes(b))return null;const end=a==="starfall"?"starfall:F-02":campaign.scenes.filter(s=>s.chapter===a).at(-1)?.id;if(!v.completed.includes(end)||a==="forge"&&b==="sky"&&i>=2&&!v.completed.includes("sky:S-05"))return null;return {a,b,stage:stages[i],actor,action:l[i<2?2:3],from:i%2===0?0:1,to:i%2===0?1:0};}
  function pickupCargo(option){const w=world(),s=option&&cargoSpec(option.a,option.b);if(w.cargo)return fail("cargo-busy");if(!s||w.location!==s.actor||!["a","b","stage","actor","action","from","to"].every(k=>option[k]===s[k]))return fail("invalid-cargo");return physical(x=>({...x,cargo:s}));}
  function exchange(a,b,proof){const api=resolveNarrative(),s=cargoSpec(a,b),w=world();if(!s||!w.cargo||w.location!==s.actor||proof?.region!==s.actor||proof.stage!==s.stage||proof.action!==s.action||proof.verified!==true||!["a","b","stage","actor","action","from","to"].every(k=>w.cargo[k]===s[k]))return fail("exchange-evidence-missing");
   if(typeof api?.exchange!=="function"||!proof.token)return fail("canonical-exchange-unavailable");

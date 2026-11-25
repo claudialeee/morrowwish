@@ -1,5 +1,5 @@
 import { campaign } from "./campaign.mjs";
-import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding} from "./sky-flight.mjs";
+import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady} from "./sky-flight.mjs";
 // Actual walkable region mechanics. Story progression is never stored here.
 export const layouts={
  harbor:{
@@ -97,6 +97,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferSkyMe
    if(op!==first&&v.objective.includes(first))return {ok:false,reason:v.choice==="rescue"?"rescue-first":"beacon-first"};
   }
   if(op.startsWith("melody:")&&!localNpcs().every(n=>invited.has(n.id)))return {ok:false,reason:"invite-local-cats"};
+  if(region==="sky"&&skyLaunch[op]&&!skyPartsReady(v))return {ok:false,reason:"sky-parts-required"};
   if(op==="puzzle:joint-flight"&&!v.choice)return {ok:false,reason:"choice-pending"};
   active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};puzzle=createPuzzle(op,v.choice??null);if(region==="harbor")harborAssist(puzzle,v);if(puzzle?.type==="pairedWater")puzzle.pair=bridge.pairedGate().pair;if(puzzle?.type==="melody")puzzle.participants=[...invited];
   if(puzzle)return {ok:true,puzzle:true};

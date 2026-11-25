@@ -6,9 +6,9 @@ console.log(JSON.stringify((function test(src){
  const campaign=new Function(clean(src[0])+"\nreturn campaign")();
  const makeEngine=new Function(clean(src[1])+"\nreturn makeEngine")();
  const getSlotRuntime=new Function("campaign","makeEngine",clean(src[2])+"\nreturn getSlotRuntime")(campaign,makeEngine);
- const flight=new Function(clean(src[6])+"\nreturn {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,validSkyFlightProof,skyLaunch,skyLanding}")();
+ const flight=new Function(clean(src[6])+"\nreturn {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady}")();
  const {skyLaunch,skyLanding}=flight;
- const createWorldBridge=new Function("campaign","getSlotRuntime","validSkyFlightProof","skyLaunch","skyLanding",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime,flight.validSkyFlightProof,skyLaunch,skyLanding);
+ const createWorldBridge=new Function("campaign","getSlotRuntime","validSkyFlightProof","skyLaunch","skyLanding","skyPartsReady",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime,flight.validSkyFlightProof,skyLaunch,skyLanding,flight.skyPartsReady);
  const {createExplorer,exchangeOptions,layouts}=new Function("campaign",...Object.keys(flight),clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign,...Object.values(flight));
  const storage=new Map(),ls={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},window={};
  new Function("window","localStorage",src[5])(window,ls);
@@ -29,10 +29,12 @@ console.log(JSON.stringify((function test(src){
   else{ok(x.operate((p.goal[0]+1)%3),"wrong sequence");assert(x.puzzle&&x.puzzle.values.length===0,"wrong sequence advanced");for(const i of p.goal)ok(x.operate(i),"sequence");}
   assert(!x.puzzle,"unsolved mechanism "+n);puzzles++;
  }
- function links(){for(const [a,z] of campaign.links){for(let i=0;i<4;i++){const region=[a,z,z,a][i];ok(b.enter(region),"travel exchange");let x=createExplorer(b,region),o=exchangeOptions(b,region,campaign.links).find(o=>o.a===a&&o.b===z);assert(o,"missing ordered exchange "+a+":"+z+":"+i);walk(x,x.cargoPoints()[o.from]);ok(x.startCargo(o),"pick cargo");assert(!x.deliverCargo().ok,"delivery without walking");x=createExplorer(b,region);assert(x.cargo?.stage===o.stage,"cargo not saved");walk(x,x.cargoPoints()[o.to]);ok(x.deliverCargo(),"deliver");assert(!x.cargo,"cargo not cleared");deliveries++;}}}
+ function transfer(a,z,i){const region=[a,z,z,a][i];ok(b.enter(region),"travel exchange");let x=createExplorer(b,region),o=exchangeOptions(b,region,campaign.links).find(o=>o.a===a&&o.b===z);assert(o,"missing ordered exchange "+a+":"+z+":"+i);walk(x,x.cargoPoints()[o.from]);ok(x.startCargo(o),"pick cargo");assert(!x.deliverCargo().ok,"delivery without walking");x=createExplorer(b,region);assert(x.cargo?.stage===o.stage,"cargo not saved");walk(x,x.cargoPoints()[o.to]);ok(x.deliverCargo(),"deliver");assert(!x.cargo,"cargo not cleared");deliveries++;}
+ function links(){for(const [a,z] of campaign.links){for(let i=(b.view().links[a+":"+z]||[]).length;i<4;i++)transfer(a,z,i);}}
  for(let scene=0;scene<34;scene++){
   let v=b.view(),s=v.current;if(!s||s.id==="finale:B-01")break;
   if(s.choices.length&&s.choiceTiming==="beforeAction")host(e=>e.choose(s.choices[0].id));
+  if(s.id==="sky:S-02"){ok(b.enter("sky"),"enter before cargo");const x=createExplorer(b,"sky");walk(x,skyLaunch["explore:flight-recorder"]);assert(x.interact("explore:flight-recorder").reason==="sky-parts-required","flight requires forge parts");transfer("forge","sky",0);transfer("forge","sky",1);assert(!b.cargoSpec("forge","sky"),"cannot send flight data before route restoration");}
   const ops=s.id==="harbor:H-04"?[...s.requires].reverse():s.requires;
   if(s.id==="harbor:H-04"){
    ok(b.enter("harbor"),"enter Harbor");

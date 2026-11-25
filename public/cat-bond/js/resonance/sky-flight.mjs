@@ -5,6 +5,7 @@ const routes={
  "puzzle:joint-flight":[.36,.65,.39],
  "repair:sky":[.62,.36,.55]
 };
+export const skyPartsReady=v=>!!v.links?.["forge:sky"]?.includes("receiveB");
 export const skyLaunch={ "explore:flight-recorder":[.18,.55],"puzzle:joint-flight":[.41,.51],"repair:sky":[.67,.50] };
 export const skyLanding={ "explore:flight-recorder":[.41,.51],"puzzle:joint-flight":[.58,.55],"repair:sky":[.89,.24] };
 export function newSkyFlight(operation,choice){
@@ -97,7 +98,7 @@ export function paintSkyFlight(ctx,f,img,W,H,lang,drawCat,drawNpc){
  if(f.operation==="puzzle:joint-flight"){const lead=f.choice==="lead";drawGlider(ctx,img,x+.045,y-.035,W,H,f.velocity);drawNpc(lead?"yuanfan":"lingyu",x+.045,y-.035,.64);drawGlider(ctx,img,x-.055,y+.07,W,H,f.velocity);drawNpc(lead?"lingyu":"yuanfan",x-.055,y+.07,.61);}
  drawGlider(ctx,img,x,y,W,H,f.velocity);drawCat(x,y);cloudLayers(ctx,img,f.elapsed,W,H,true);
  ctx.font="600 22px system-ui";ctx.textAlign="center";ctx.fillStyle="#fff2d1";ctx.fillText(t("穿过风圈，抵达安全降落区","Cross the wind gates and land safely"),W/2,34);
- ctx.font="600 17px system-ui";ctx.fillText(t("风向 ","Wind ")+(wind>0?"↓":"↑")+" "+Math.round(Math.abs(wind)*100)+"   "+(f.x>.42&&f.x<.57?t("上升气流 · ","Updraft · "):"")+t("航标 ","Gates ")+f.gate+"/3",W/2,62);
+ ctx.font="600 17px system-ui";ctx.fillText(t("风向仪 ","Wind gauge ")+(wind>0?"↓":"↑")+" "+Math.round(Math.abs(wind)*100)+"   "+(f.x>.42&&f.x<.57?t("上升气流 · ","Updraft · "):"")+t("航标 ","Gates ")+f.gate+"/3",W/2,62);
  const notices={ready:t("点击或拖动选择飞行高度；方向键 ↑ ↓","Tap or drag to steer altitude; ↑ ↓ keys"),miss:t("错过风圈，重新起飞 · 风圈已放宽","Missed a gate. Relaunch · wider gates"),edge:t("遇到强气流，重新起飞","Strong gust. Relaunch"),landing:t("降落高度不安全，重新起飞","Unsafe landing. Relaunch"),flying:t("保持在下一个风圈内，最后回到中央","Aim for the next gate, then return to center"),landed:t("安全降落","Safe landing")};
  const logs=zh?["旧风标：事故前，翎羽误判侧风。","断裂货索：远帆主动切断货物绳索。","记录仪：两只猫因此幸存。"]:["Old wind gauge: Lingyu misread the crosswind.","Severed cargo line: Yuanfan cut it deliberately.","Recorder: both siblings survived because of it."];
  if(f.operation==="explore:flight-recorder"&&f.gate>0&&f.notice==="flying"){ctx.fillStyle="#172d45e5";ctx.fillRect(0,H-74,W,28);ctx.fillStyle="#fff2d1";ctx.fillText(logs[f.gate-1],W/2,H-54,W-24);}
