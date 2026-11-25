@@ -134,7 +134,7 @@ for(const locale of ['zh','en'])for(const v2 of [false,true]){
  for(const snippet of ['<b>73</b>','<b>57</b>','<b>46</b>'])
    assert.ok(card.includes(snippet),locale+' compact Cat Bond metric missing '+snippet);
  if(v2)assert.ok(card.includes('3 / 4 · 75%'),'New cohort must be separate');
- const tableCode=inlineScript.slice(inlineScript.indexOf('const displayOrder='),
+ const tableCode=inlineScript.match(/const displayOrder=\[[^\n]+\];/)?.[0]+'\n'+inlineScript.slice(inlineScript.indexOf('const visibleGames='),
   inlineScript.indexOf('\nconst channels=Array.isArray'));
  vm.runInNewContext('const games=globalThis.fixture;\n'+tableCode,{...env,fixture:[bond]});
  const main=dom.games.innerHTML;
@@ -206,7 +206,7 @@ for(const language of ['zh','en'])for(const fixture of [
  const env={lang:language,fixture:[fixture],gameNames:{'flip-dash':{zh:'翻转冲刺',en:'Flip Dash'}},
   escapeHTML:s=>String(s??''),format:n=>String(n),pct:(a,b)=>b?Math.round(a*1000/b)/10:0,
   t:key=>key,$:id=>(nodes[id]??={innerHTML:''})};
- const script=inlineScript.slice(inlineScript.indexOf('const displayOrder='),
+ const script=inlineScript.match(/const displayOrder=\[[^\n]+\];/)?.[0]+'\n'+inlineScript.slice(inlineScript.indexOf('const visibleGames='),
   inlineScript.indexOf('\nconst channels=Array.isArray'));
  vm.runInNewContext('const games=globalThis.fixture;\n'+script,env);
  const segment=nodes.games.innerHTML.split('href="/flip-dash/"')[1]?.split('</tr>')[0];
