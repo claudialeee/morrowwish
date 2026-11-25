@@ -276,6 +276,25 @@ for(const [day,run] of [['2026-11-22','story-a'],['2026-11-23','story-b']]){
 const storyRange=await (await api(rangeRequest('2026-11-22','2026-11-22','elsewhere-summary'),rangeEnv)).json();
 assert.equal(storyRange.summary.runs,1,'Elsewhere uses the exact same selected range');
 assert.deepEqual(storyRange.range,firstDay.range);
+// A browser that plays a different game on the next day is not a same-game return.
+rows.splice(0,rows.length);
+seed('shared','2026-11-22','town1');seed('shared','2026-11-22','town1','session',{seconds:30,shares:0});
+seed('shared','2026-11-23','bond1');rows.at(-1).game='cat-bond';
+seed('shared','2026-11-23','bond1','session',{seconds:90,shares:3});rows.at(-1).game='cat-bond';
+seed('other','2026-11-22','bond2');rows.at(-1).game='cat-bond';
+seed('other','2026-11-23','bond3');rows.at(-1).game='cat-bond';
+const scoped=await (await api(rangeRequest('2026-11-22','2026-11-23'),env)).json();
+const townMetrics=scoped.byGame.find(g=>g.game==='tiny-town').headlineMetrics;
+const bondMetrics=scoped.byGame.find(g=>g.game==='cat-bond').headlineMetrics;
+assert.deepEqual(townMetrics,{uniqueBrowsers:1,untrackedBrowserVisits:0,avgSessionSeconds:30,measuredSessionCount:1,shareClicks:0,d1Eligible:1,d1Returned:0});
+assert.equal(bondMetrics.uniqueBrowsers,2);
+assert.equal(bondMetrics.avgSessionSeconds,90);
+assert.equal(bondMetrics.shareClicks,3);
+assert.equal(bondMetrics.d1Returned,1);
+assert.equal(bondMetrics.d1Eligible,1);
+const singleGameDay=await (await api(rangeRequest('2026-11-22','2026-11-22'),env)).json();
+assert.equal(singleGameDay.byGame.find(g=>g.game==='cat-bond').headlineMetrics.avgSessionSeconds,null);
+assert.equal(singleGameDay.byGame.find(g=>g.game==='tiny-town').headlineMetrics.avgSessionSeconds,30);
 rows.splice(0,rows.length);
 const missingResponse=await api(cachedReq(),env);
 assert.deepEqual((await missingResponse.json()).rollup.headlineMetrics,{

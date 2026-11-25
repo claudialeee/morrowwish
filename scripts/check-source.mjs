@@ -112,7 +112,9 @@ if(!miniUpgrade.includes('event("run_start"') ||
    !miniUpgrade.includes('event("run_end",{duration:seconds')) throw Error('Mini-game run events must reach the unified tracker');
 if(!dashboard.includes('id="game-details"')||!dashboard.includes('id="focus-grid"')||
    !dashboard.includes('metricCard(t("statPv")')||
-   !dashboard.includes('metricCard(t("statFinished")')||
+   !dashboard.includes('data-i18n="statD1"')||
+   !dashboard.includes('observed(hm.uniqueBrowsers)')||
+   dashboard.includes('metricCard(t("statFinished")')||
    dashboard.includes('data-i18n="colDone"')||
    dashboard.includes('data-i18n="channelState"')||
    !dashboard.includes('const nativeNum=(n,id,published)=>')||

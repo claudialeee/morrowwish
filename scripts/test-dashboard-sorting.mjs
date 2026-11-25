@@ -25,6 +25,7 @@ for(const locale of ['zh','en']){
   metricCard:(name,value,note)=>'<div data-name="'+name+'">'+value+'</div>'};
  vm.runInNewContext(statsPrefix+"}\nrender({rollup:{pageviews:123,gameStarts:8,retries:2},byGame:[{game:'hub',pageviews:37},{game:'cat-bond',ends:3}]});",env);
  const html=nodes.stats.innerHTML;
+ assert.equal((html.match(/<div data-name=/g)||[]).length,2,'Only website pageview cards remain');
  assert.ok(html.startsWith('<div data-name="'+pvLabel+'">123</div>'),locale+' overall pageviews must show 123 first');
  assert.ok(html.includes('<div data-name="'+homeLabel+'">37</div>'),locale+' homepage KPI must show 37 views');
  assert.ok(html.indexOf('<div data-name="'+pvLabel+'">123</div>')<html.indexOf('<div data-name="'+homeLabel+'">37</div>'),
@@ -212,7 +213,7 @@ for(const language of ['zh','en'])for(const fixture of [
  const segment=nodes.games.innerHTML.split('href="/flip-dash/"')[1]?.split('</tr>')[0];
  assert.ok(segment,'Flip Dash row exists even with no metric data');
  const cells=[...segment.matchAll(/<td>(.*?)<\/td>/g)].map(m=>m[1]);
- assert.equal(cells.length,7,'All game columns still render');
+ assert.equal(cells.length,11,'All eleven game metrics render');
  if(fixture.pageviews===0)
   assert.ok(cells.every(c=>c===''),'Post-reset session-only event must leave every metric blank');
  else if(fixture.starts===null)
