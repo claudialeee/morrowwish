@@ -3,13 +3,13 @@
  "use strict";
  // Coordinates are normalized to the original art's fixed 1600×1200 design grid.
  // The renderer receives finished art from the asset pipeline; no legacy landscape fallback.
- const W=1600,H=1200;
+ const W=1600,H=900;
  const regions=[
-  {id:"harbor",x:800,y:160},{id:"forest",x:1250,y:380},
-  {id:"forge",x:1250,y:850},{id:"sky",x:800,y:1040},
-  {id:"library",x:350,y:850},{id:"starfall",x:350,y:380}
+  {id:"harbor",x:800,y:162},{id:"forest",x:1250,y:316},
+  {id:"forge",x:1250,y:645},{id:"sky",x:800,y:778},
+  {id:"library",x:350,y:645},{id:"starfall",x:350,y:316}
  ];
- const bell={id:"star-bell",x:800,y:600};
+ const bell={id:"star-bell",x:800,y:470};
  const roads=regions.map((a,i)=>{const b=regions[(i+1)%6];return {id:a.id+"-"+b.id,a,b};});
  const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
  function camera(width,height){
