@@ -805,7 +805,8 @@ const UI = {
     if(!a||!b||a.uid===b.uid)return false;
     const key=[a.uid,b.uid].sort().join(':');
     const rel=State.S.duoRelations?.pairs?.[key];
-    if(Number(rel?.value)<20)return false;
+    if(!State.S.cats.includes(a)||!State.S.cats.includes(b)||!(Number(rel?.value)>=20))return false;
+    const owner=State.S,slot=State.activeSlot();
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const art=CatRelations.title(a,b);
     const url=new URL('duo-preview.html',window.location.href);
@@ -813,8 +814,9 @@ const UI = {
     url.searchParams.set('b',b.uid);
     url.searchParams.set('lang',english?'en':'zh');
     url.searchParams.set('embedded','1');
+    url.searchParams.set('slot',slot);
     url.searchParams.set('preview','original-three-tier-20261123-v4');
-    document.getElementById('cb-duo-viewer')?.remove();
+    document.querySelector('#cb-duo-viewer .cb-duo-viewer-close')?.click();
     const previousFocus=document.activeElement;
     const overlay=document.createElement('div');
     overlay.id='cb-duo-viewer';
@@ -848,8 +850,11 @@ const UI = {
     };
     const dismiss=()=>{
       document.removeEventListener('keydown',keydown,true);
-      overlay.remove();previousFocus?.focus?.();
+      window.removeEventListener('cat-bond-active-save-changed',onSlotChange);
+      overlay.remove();if(previousFocus?.isConnected&&State.S===owner)previousFocus.focus();
     };
+    const onSlotChange=()=>{if(State.S!==owner||State.activeSlot()!==slot)dismiss()};
+    window.addEventListener('cat-bond-active-save-changed',onSlotChange);
     closeButton.addEventListener('click',dismiss);
     overlay.addEventListener('click',e=>{if(e.target===overlay)dismiss()});
     document.addEventListener('keydown',keydown,true);
@@ -1031,7 +1036,7 @@ const UI = {
         </section></div>
       <div class="btn-row">
         ${showPairChooser?'':('<button class="btn gold" id="duo-choose" '+(!ok?'disabled':'')+'>'+(selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档'))+'</button>')}
-        <button class="btn" id="duo-play" ${!ok||sec>0||(State.S.medkits||0)<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
+        <button class="btn" id="duo-play" ${!ok||sec>0||(State.S.fish||0)<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
         ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`,preserveScroll);
@@ -1092,7 +1097,7 @@ const UI = {
         this.game.refreshYardSurprise();this.openBondPanel();
       }
     };
-    document.getElementById('duo-play').onclick=()=>{CatRelations.choose(a,b);const v=CatRelations.play(a,b);
+    document.getElementById('duo-play').onclick=()=>{const v=CatRelations.play(a,b);
       if(v.ok){
         this.game.toast(v.memoryUnlocked?(en?'🧶 A new duo memory!':'🧶 解锁双猫回忆：毛线团的秘密'):
           (en?'💞 Friendship +13!':'💞 双猫默契 +13！'));
@@ -1100,6 +1105,7 @@ const UI = {
       }
       else if(v.reason==='cooldown')this.game.toast(en?'Let them rest a moment':'猫猫想休息一会儿');
       else if(v.reason==='fish')this.game.toast(en?'Not enough fish':'小鱼不够啦');
+      else if(v.reason==='save-failed')this.game.toast(en?'Save failed. No fish spent.':'保存失败，未消耗小鱼干。');
       this._duoPicked=[a.uid,b.uid];this.game.refreshYardSurprise();this.openBondPanel();
     };
     // The duo page is reachable directly from the adventure guide without a
@@ -2282,10 +2288,10 @@ const UI = {
       ?State.S.cats.find(cat=>cat.uid===story.recordedUid):null;
     const recordName=String(recordCat?State.catName(recordCat):(en?'The Bellkeeper':'守铃者'))
       .replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-    const storyRecord=story?.playerRecorded
+    const storyRecord=!window.__CAT_BOND_CANONICAL_ACTIVE__&&story?.playerRecorded
       ?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?'The Last Page':'最后一页'}</strong><small>${en?'The Bellkeeper: ':'守铃者：'}${recordName}</small></span><b>${en?'Complete':'已完成'}</b></section>`:'';
     this.panel(`<span class="card-close">×</span>
-      <h2>图鉴 <span class="tiny">${owned}/${total}</span></h2>
+      <h2>Catdex <span class="tiny">${owned}/${total}</span></h2>
       <p class="sub">${en?'Discover breeds and earn an S-rank Golden Paw for each one.'
         :'发现不同猫咪，为每个品种挑战 S 级「金爪徽章」。'}</p>
       <div class="mastery-summary">

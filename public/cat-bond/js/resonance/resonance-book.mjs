@@ -1,6 +1,7 @@
 // One presentation layer over the existing UI, State, Raising and CatRelations.
 // No cloned cats, separate inventory, storage, or narrative progress.
 import {recipes,craftSupply} from "./book-recipes.mjs";
+import {echoHabit} from "./finale-combat.mjs";
 const tr=(zh,en)=>window.MorrowwishI18n?.get?.()==="zh"?zh:en;
 const panel=()=>document.getElementById("panel");
 const game=()=>window.__game;
@@ -42,10 +43,34 @@ function attach(){
  const nav=node("nav","rb-tabs");nav.setAttribute("aria-label",tr("养成分类","Companion categories"));
  for(const [id,zh,en] of tabs){const b=button(tr(zh,en),()=>select(id),"rb-tab");b.dataset.bookTab=id;b.setAttribute("aria-current",active.tab===id?"page":"false");nav.append(b)}
  n.append(nav);card.prepend(n);
+ if(active.tab==="dex"&&card.querySelector(".mastery-summary"))appendArchive(card);
  if(active.tab==="workshop"&&card.querySelector(".st-list")){
    const craft=button(tr("制作配方","Crafting recipes"),()=>select("bag",true),"rb-craft-link");
    n.after(craft);
  }
+}
+function appendArchive(card){
+ card.querySelector(".rb-dex-archive")?.remove();
+ const s=state(),p=s.resonance,completed=new Set(p?.completed||[]);
+ const entries=[
+  ["library:M-02",["镜厅记录","Mirror room records"],["已辨认镜面中的记录；真实记忆与影像必须交叉验证。","Mirror records examined. Memories and images must be cross-checked."]],
+  ["library:M-03",["身份揭晓","Identity revealed"],["暮铃确认曾认识旅行者；旅行者曾将自己留在星铃中。","Muling confirmed knowing the traveler, who once left themself inside the Star Bell."]],
+  ["starfall:F-02",["星坠记录","Starfall records"],["已调查星图与灾变记录。","Star map and catastrophe records investigated."]],
+  ["starfall:F-03",["中央星铃计划","The central bell plan"],["暮铃想借众猫的记忆让旅行者归来。","Muling intended to use every cat's memories to bring the traveler back."]],
+  ["finale:B-02",["空白回响","Hollow Echo"],["已通过回应节拍辨别回响。","The echoes have been distinguished using their reply rhythms."]],
+  ["epilogue:E-03",["最后一页","The last page"],["六地再次回应，新的家园旅程开始。","The six regions answer again. A new journey at home begins."]]
+ ].filter(([id])=>completed.has(id));
+ if(!entries.length)return;
+ const archive=node("section","rb-dex-archive");archive.setAttribute("translate","no");
+ const title=node("h3","",tr("旅途档案","Journey archive"));archive.append(title);
+ for(const [id,label,description] of entries){const row=node("div","rb-dex-entry");row.dataset.archiveScene=id;row.append(node("strong","",tr(...label)),node("p","",tr(...description)));archive.append(row);}
+ if(completed.has("library:M-02")){
+  const notes=node("details","rb-dex-rhythms");notes.append(node("summary","",tr("伙伴的回应节拍","Companion reply rhythms")));
+  notes.append(node("p","",tr("每只已收录猫咪的习惯节拍，取自真实战斗判别规则。","Each recorded companion's rhythm uses the actual battle identification rule.")));
+  for(const cat of s.cats.filter(x=>s.dex?.[x.species]>0))notes.append(stat(window.State.catName(cat),echoHabit(cat).toFixed(2)+" s"));
+  archive.append(notes);
+ }
+ card.querySelector(".mastery-summary").after(archive);
 }
 function shell(){window.UI.panel('<span class="card-close">×</span><section class="rb-content"></section>');return panel().querySelector(".rb-content")}
 function stat(label,value){const row=node("div","rb-stat");row.append(node("span","",label),node("strong","",String(value)));return row}

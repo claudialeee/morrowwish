@@ -103,3 +103,5 @@
 .rb-health::-moz-progress-bar{background:#598b69}
 .rb-recovery-actions{display:flex;flex-wrap:wrap;gap:5px}
 .rb-recovery-actions .rb-action{min-height:40px;padding:5px 9px;font-size:12px}
+
+.rb-dex-archive{margin:14px 0;padding:14px;border:1px solid #cbb68c;border-radius:10px;background:#fff8e8;color:#30484b}.rb-dex-archive h3{margin:0 0 10px;color:#345052;font-family:Georgia,serif}.rb-dex-entry{border-top:1px solid #d5c6a8;padding:9px 0}.rb-dex-entry p,.rb-dex-rhythms p{margin:4px 0;color:#655a48;font-size:13px;line-height:1.55}.rb-dex-rhythms{margin-top:8px}.rb-dex-rhythms summary{font-weight:700;cursor:pointer;min-height:34px}.rb-dex-rhythms .rb-stat{margin-top:5px}

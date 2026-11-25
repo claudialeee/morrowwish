@@ -205,14 +205,21 @@ function pet(cat){
   }
   return result;
 }
-function play(a,b){const p=pair(a,b);if(!p)return {ok:false,reason:'pair'};
- // Playing together now costs 1 🐠 fish (the old 零食/treats currency folded into fish).
- if(State.S.fish<1)return {ok:false,reason:'fish'};
- if(Date.now()-p.lastPlay<60000)return {ok:false,reason:'cooldown'};
- State.S.fish--;p.lastPlay=Date.now();p.sulkyUntil=0;p.sulkyPending=false;const v=grow(a,b,13);a.joy=Math.min(100,(a.joy||0)+10);b.joy=Math.min(100,(b.joy||0)+10);const m=remember(a,b,'play-together');
- v.value=p.value;
- State.save();
- window.arcadeMetric?.('bond_duo_play',{value:v.value});return {ok:true,...v,memoryUnlocked:m.ok?'play-together':null};
+function play(a,b){
+ if(!a||!b||a.uid===b.uid||!State.S.cats.includes(a)||!State.S.cats.includes(b))return {ok:false,reason:'pair'};
+ const root=State.S,d=db(),key=[a.uid,b.uid].sort().join(':'),prior=d.pairs[key];
+ if(root.fish<1)return {ok:false,reason:'fish'};
+ if(Date.now()-(prior?.lastPlay||0)<60000)return {ok:false,reason:'cooldown'};
+ const backup={pair:prior?JSON.parse(JSON.stringify(prior)):null,active:d.active.slice(),fish:root.fish,joyA:a.joy,joyB:b.joy};
+ const p=pair(a,b),old=p.value;root.fish--;p.lastPlay=Date.now();p.sulkyUntil=0;p.sulkyPending=false;
+ d.active=[a.uid,b.uid];grow(a,b,13);a.joy=Math.min(100,(a.joy||0)+10);b.joy=Math.min(100,(b.joy||0)+10);
+ if(!Array.isArray(p.memories))p.memories=[];
+ const first=!p.memories.includes('play-together');if(first){p.memories.push('play-together');grow(a,b,4);}
+ let saved=false;try{saved=State.S===root&&State.save()?.ok===true}catch{}
+ if(!saved){root.fish=backup.fish;a.joy=backup.joyA;b.joy=backup.joyB;d.active=backup.active;if(prior){for(const k of Object.keys(p))delete p[k];Object.assign(p,backup.pair);}else delete d.pairs[key];return {ok:false,reason:'save-failed'};}
+ if(first)window.arcadeMetric?.('bond_duo_memory',{region:'play-together',trust:p.value,total:p.memories.length});
+ window.arcadeMetric?.('bond_duo_play',{value:p.value});
+ return {ok:true,value:p.value,levelUp:[20,60,90].some(n=>old<n&&p.value>=n),memoryUnlocked:first?'play-together':null};
 }
 window.CatRelations={db,pair,grow,chosen,choose,title,secretStory,active,pet,play,personality,mood,moodLabel,soothe,unresolved,memoryList,memoryInfo,remember,MEMORY_CATALOG,DUO_ARTS};
 })();
