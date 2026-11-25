@@ -6618,7 +6618,9 @@ class CaptureBattle {
         ctx.translate(-e.x, -(e.y + 33 * crouch));
       }
       window.CatBondWardArt?.draw(ctx,e,e.x,e.y,this.t,this.catScale('enemy'),'back');
-      if(e.regionalEnemy && window.CatBondRegionalArt?.drawManifestation(ctx,e,this)){
+      if(this.resonanceFinale && window.CatBondFinaleCombat?.drawEnemy?.(ctx,e,this)){
+        // Canonical finale character/ritual presentation.
+      }else if(e.regionalEnemy && window.CatBondRegionalArt?.drawManifestation(ctx,e,this)){
         // Authored non-collectible manifestation sprite.
       }else if(e.visualKind==='forge-guardian' && window.CatBondForgeCombat?.drawEnemy){
         window.CatBondForgeCombat.drawEnemy(ctx,e,this);

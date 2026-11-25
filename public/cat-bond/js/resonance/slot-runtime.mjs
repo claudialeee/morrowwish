@@ -93,7 +93,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
     if(!result.ok)return result;
    }
    return engine.record(sceneId,operation);
-  },{token});
+  },{token,physical:old=>({coins:(old.coins||0)+180,fish:(old.fish||0)+8})});
  }
  function support({region,action,verified,token}={}){if(verified!==true)return fail("support-unverified");if(!token)return fail("action-token-required");return transaction(e=>e.supportAction(region,action),{token})}
  function exchange({a,b,stage,actor,action,verified,token}={},physical){if(verified!==true||!token)return fail("exchange-unverified");if(State.S.resonanceExploration?.location!==actor)return fail("wrong-map-location");return transaction(e=>e.exchange({a,b,stage,actor,action}),{token,physical})}
