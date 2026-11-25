@@ -6,9 +6,134 @@ import {isLibraryReveal,mountLibraryReveal} from "./library-reveal.mjs";
 const lang=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const portraitRoot=new URL("../../assets/npc/",import.meta.url);
 const playerPortraits=new Map();
+// Authored facial acting: indexed by canonical scene and dialogue line; no story-state changes.
+const mulingExpressions={
+  "prologue:P-02": {
+    "0": "determined",
+    "2": "worried",
+    "4": "determined",
+    "6": "determined",
+    "8": "worried",
+    "10": "warm",
+    "12": "warm",
+    "14": "warm"
+  },
+  "prologue:P-04": {
+    "1": "warm",
+    "3": "warm",
+    "5": "warm",
+    "7": "warm",
+    "9": "determined"
+  },
+  "prologue:P-05": {
+    "1": "dry",
+    "3": "neutral",
+    "5": "warm"
+  },
+  "harbor:H-01": {
+    "1": "warm",
+    "3": "dry",
+    "5": "warm"
+  },
+  "harbor:H-05": {
+    "1": "neutral",
+    "3": "dry",
+    "5": "warm"
+  },
+  "forest:R-04": {
+    "1": "warm",
+    "3": "neutral",
+    "5": "determined"
+  },
+  "forge:E-01": {
+    "3": "warm",
+    "5": "dry"
+  },
+  "forge:E-04": {
+    "3": "neutral",
+    "5": "neutral",
+    "7": "determined"
+  },
+  "sky:S-04": {
+    "1": "warm",
+    "3": "warm",
+    "5": "warm",
+    "7": "nervous",
+    "9": "worried",
+    "11": "nervous"
+  },
+  "library:M-03": {
+    "1": "nervous",
+    "3": "dry",
+    "5": "nervous",
+    "7": "worried",
+    "9": "worried",
+    "11": "warm",
+    "13": "worried",
+    "14": "neutral"
+  },
+  "library:M-04": {
+    "1": "worried",
+    "3": "nervous",
+    "5": "determined",
+    "7": "worried"
+  },
+  "library:M-05": {
+    "1": "neutral",
+    "3": "neutral",
+    "5": "worried",
+    "7": "determined"
+  },
+  "starfall:F-03": {
+    "0": "nervous",
+    "2": "neutral",
+    "4": "worried",
+    "6": "neutral",
+    "8": "worried",
+    "10": "worried",
+    "12": "determined",
+    "14": "nervous"
+  },
+  "starfall:F-04": {
+    "1": "neutral",
+    "3": "warm"
+  },
+  "starfall:F-05": {
+    "0": "worried",
+    "2": "determined"
+  },
+  "finale:B-01": {
+    "0": "determined",
+    "2": "determined"
+  },
+  "finale:B-02": {
+    "0": "determined"
+  },
+  "finale:B-03": {
+    "0": "warm",
+    "2": "warm"
+  },
+  "finale:B-04": {
+    "0": "warm",
+    "2": "worried",
+    "4": "warm"
+  },
+  "epilogue:E-02": {
+    "0": "worried",
+    "1": "determined",
+    "5": "warm"
+  },
+  "epilogue:E-03": {
+    "0": "warm",
+    "2": "nervous",
+    "3": "warm",
+    "4": "warm"
+  }
+};
+
 function portrait(id,scene,cursor){
  if(id==="player"){const sp=window.State?.S?.cats?.[0]?.species;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;const key=JSON.stringify([window.State.S.cats[0].uid,sp,window.State.S.cats[0].appearance,window.State.S.cats[0].variant]);if(!playerPortraits.has(key)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp),window.State.S.cats[0]);playerPortraits.set(key,c.toDataURL("image/png"));}return playerPortraits.get(key)}
- if(id==="muling")return new URL("../cinematics/characters/muling/traveler-neutral.webp",portraitRoot).href;
+ if(id==="muling"){const mood=mulingExpressions[scene]?.[cursor]??"warm";return new URL("../cinematics/characters/muling/traveler-"+mood+".webp",portraitRoot).href;}
  if(campaign.regions.includes(campaign.cast[id]?.region))return new URL(id+"-painted.webp",portraitRoot).href;
  return null;
 }
