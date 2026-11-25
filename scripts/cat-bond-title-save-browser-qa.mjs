@@ -16,7 +16,7 @@ for(const profile of [
  const page=await context.newPage(),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
  page.on('dialog',dialog=>dialog.accept());
- const screenshot=name=>page.screenshot({path:output+'/'+profile.name+'-'+name+'.png'});
+ const screenshot=name=>page.screenshot({path:output+'/'+profile.name+'-'+name+'.png',animations:'disabled'});
  const checkVisible=async selector=>{await page.locator(selector).first().waitFor({state:'visible',timeout:15000});};
  const waitMap=()=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:15000});
  const openInGameSlots=async()=>{
@@ -32,6 +32,13 @@ for(const profile of [
  try{
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&window.CatBondArtworkStatus?.breedsLoaded===true,{timeout:30000});
+  const titleImage=await page.evaluate(async()=>{
+   const background=getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundImage;
+   const image=new Image();image.src='assets/title/star-bell-dawn.svg';await image.decode();
+   return {background,width:image.naturalWidth,height:image.naturalHeight};
+  });
+  assert.match(titleImage.background,/star-bell-dawn\.svg/);
+  assert.deepEqual([titleImage.width,titleImage.height],[2400,1350]);
   await screenshot('title-zh');
   await page.locator('#cb-system-toggle').click();
   await page.locator('[data-system="language"]').click();
@@ -40,8 +47,17 @@ for(const profile of [
   assert.match(await page.locator('#intro-start').innerText(),/New Adventure/);
   await screenshot('title-en');
   await page.locator('#intro-start').click();
+  await checkVisible('#intro-slot-panel.is-open');
+  await checkVisible('#intro-slot-list [data-slot]');
   assert.equal(await page.locator('#intro-slot-list [data-slot]').count(),3);
-  await screenshot('three-slots');
+  await page.locator('[data-slot-language]').click();
+  await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='zh');
+  assert.match(await page.locator('#intro-slot-heading').innerText(),/存档位/);
+  await screenshot('three-slots-zh');
+  await page.locator('[data-slot-language]').click();
+  await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='en');
+  assert.match(await page.locator('#intro-slot-heading').innerText(),/Choose a slot/);
+  await screenshot('three-slots-en');
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
   await checkVisible('#panel.open .dex-cell');
   await page.locator('#panel.open .dex-cell').first().click();
@@ -53,6 +69,12 @@ for(const profile of [
   const first=await page.evaluate(()=>window.State.getSaveSlot('slot1').data.state.cats[0].uid);
   assert.ok(first);
   await openInGameSlots();
+  await page.locator('.cb-slot-manager [data-modal-language]').click();
+  await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='zh');
+  assert.match(await page.locator('.cb-slot-manager h2').innerText(),/存档位/);
+  await screenshot('in-game-save-manager-zh');
+  await page.locator('.cb-slot-manager [data-modal-language]').click();
+  await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='en');
   await page.locator('[data-save="slot2"]').click();
   await page.waitForFunction(()=>!!window.State.getSaveSlot('slot2'));
   await screenshot('in-game-save-manager');
