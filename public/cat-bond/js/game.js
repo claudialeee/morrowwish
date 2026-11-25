@@ -579,7 +579,9 @@ class Game {
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       const label=en?'☰ Menu':'☰ 菜单';
       if(menuBtn.textContent!==label)menuBtn.textContent=label;
-      menuBtn.setAttribute('aria-label',en?'Open exploration menu':'打开探险管理菜单');
+      const bookEnabled=!!window.ResonanceBook;
+      menuBtn.setAttribute('aria-label',bookEnabled?(en?'Open system menu':'打开系统菜单'):(en?'Open exploration menu':'打开探险管理菜单'));
+      menuBtn.setAttribute('aria-controls',bookEnabled?'cb-system-menu':'panel');
     }
     if(this.scene==='map' && this.t>=(this._nextExploreHealthTick||0)){
       this._nextExploreHealthTick=this.t+1;

@@ -144,7 +144,7 @@ try{
             width:r.width,height:r.height};
         };
         const buttons=[...tabs.querySelectorAll('button'),
-          ...actions.querySelectorAll('button')];
+          ...actions.querySelectorAll('button')].filter(el=>el.getClientRects().length&&getComputedStyle(el).display!=='none');
         const visible=buttons.map(el=>{
           const r=el.getBoundingClientRect();
           const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
@@ -164,7 +164,8 @@ try{
       }
       assert.ok(menuLayout?.directParent,
         'CrazyGames menu buttons must share the same dock: '+JSON.stringify(menuLayout));
-      assert.equal(menuLayout.count,10,'Exactly 5 tabs + 5 garden actions');
+      assert.equal(menuLayout.count,canonical?5:10,canonical?'Book and four garden actions':'Exactly 5 tabs + 5 garden actions');
+      if(canonical){assert.equal(await page.locator('#tabbar').isVisible(),false);assert.equal(await page.locator('#fab-build').isVisible(),false);assert.ok(menuLayout.visible.some(x=>x.button==='sg-book-entry'));}
       assert.equal(await page.locator('#cg-yard-dock').isVisible(),true,
         'Both independent yard-only navigation groups must appear only in the yard');
       await checkEnglish(page,'yard',width);
@@ -190,6 +191,12 @@ try{
           r.top>=0&&r.bottom<=height+1&&item.clickable&&item.contentFits,
           'Yard control must be visible and clickable: '+JSON.stringify(item));
       }
+      if(canonical){
+        assert.ok(menuLayout.actions.bottom>=height-25,'Canonical garden dock is at bottom');
+        await page.locator('#sg-book-entry').click();await page.locator('#panel.rb-open.open').waitFor();
+        assert.equal(await page.locator('[data-book-tab]').count(),9);
+        await page.locator('.rb-close').click();
+      }else{
       // Match the actual Morrow Wish website: FIVE bottom-centre tabs in
       // a horizontal row + FIVE separate vertically stacked right-hand FABs.
       // The previous QA asserted two right-side columns and validated a
@@ -214,6 +221,7 @@ try{
         assert.ok(gardenButtons[i].rect.top>=gardenButtons[i-1].rect.bottom-2 &&
           Math.abs(gardenButtons[i].rect.left-gardenButtons[0].rect.left)<3,
           'The five garden FABs must form a right-side vertical stack: '+JSON.stringify(gardenButtons));
+      }
       }
       // Yard hide-and-seek is now an optional sanctuary activity, not an
       // automatic first-run spawn. Start it through the real garden action.
@@ -460,10 +468,11 @@ try{
         fs.mkdirSync(dir,{recursive:true});
         await page.screenshot({path:dir+'/'+width+'x'+height+'-map.png'});
         await page.locator('#cg-top-tools #map-menu').click();
-        await page.locator('#panel.open .explore-menu').waitFor({state:'visible',timeout:10000});
+        if(canonical){await page.locator('#cb-system-menu [data-system="slots"]').waitFor();await page.locator('#cb-system-menu [data-system="close"]').click();await page.locator('.rw-system-nav .rb-world-entry').click();await page.locator('[data-book-tab="records"]').click();}
+        else await page.locator('#panel.open .explore-menu').waitFor({state:'visible',timeout:10000});
         const reset=page.locator('#panel.open #cb-menu-reset');
         await reset.waitFor({state:'visible',timeout:10000});
-        assert.match(await reset.textContent(),/Reset game/i,
+        assert.match(await reset.textContent(),/Reset game|Safe restart/i,
           'Both portal and main website menus must expose a subtle reset action');
         // First click only arms a safe restart; it must not erase game progress.
         const saveProgress=()=>page.evaluate(()=>{

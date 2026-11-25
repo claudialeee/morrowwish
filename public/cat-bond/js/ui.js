@@ -228,6 +228,12 @@ const UI = {
     window.arcadeMetric?.('bond_yard_placement_preview',{type});
     return true;
   },
+  startBuildingRelocation(index,decorative=false){
+    if(!this.game?.yard?.beginRelocation(index,decorative)){this.game.toast(this.isEnglish()?'Wait until the facility is free.':'请等猫咪使用完该设施。');return false;}
+    this.closeAll();this.game._yardPlacementTouchId=null;
+    document.getElementById('yard-placement-dock').hidden=false;
+    document.body.classList.add('cb-placing-building');this.updateBuildingPlacement();return true;
+  },
   updateBuildingPlacement(){
     const p=this.game?.yard?.placement;
     const status=document.getElementById('yard-placement-status');
@@ -238,9 +244,10 @@ const UI = {
       return;
     }
     const en=this.isEnglish(),def=World.BUILDINGS_BY_ID[p.type];
-    const name=en?(World.BUILDING_PRODUCTION?.[p.type]?.nameEn||def?.name||'Structure'):(def?.name||'设施');
+    const name=en?(World.BUILDING_PRODUCTION?.[p.type]?.nameEn||def?.nameEn||def?.name||'Structure'):(def?.name||'设施');
     const compact=window.matchMedia?.('(max-width:700px), (pointer:coarse)')?.matches;
     // One tap/click builds immediately; a touch drag can adjust until release.
+    if(p.relocating){status.textContent=name+(en?' · Choose a new location':' · 选择新位置')+(p.valid?(en?' · Ready':' · 可移动'):(en?' · Blocked':' · 有遮挡'));document.getElementById('yard-placement-cancel').textContent=en?'Cancel':'取消';return;}
     status.textContent=compact
       ?(name+(en?' · Tap to build / drag to move':' · 轻触即建造／拖动选位置')+
         (p.valid?(en?' · ✓ Free spot':' · ✓ 可建造'):(en?' · × Blocked':' · × 有遮挡')))
@@ -251,7 +258,7 @@ const UI = {
   confirmBuildingPlacement(){
     const en=this.isEnglish(),p=this.game?.yard?.placement;
     if(!p||!p.valid)return false;
-    const name=World.BUILDINGS_BY_ID[p.type]?.name||p.type;
+    const def=World.BUILDINGS_BY_ID[p.type],name=(en?(World.BUILDING_PRODUCTION?.[p.type]?.nameEn||def?.nameEn):def?.name)||p.type;
     if(!this.game.yard.confirmPlacement()){
       this.updateBuildingPlacement();
       this.game.toast(en?'Cannot build here':'此处无法建造');
@@ -259,7 +266,7 @@ const UI = {
     }
     this.updateBuildingPlacement();
     this.game.refreshHUD();
-    this.game.toast(en?'Placed '+name+' · watch your cats play!':'已建造 '+name+' · 看猫猫过来玩！');
+    this.game.toast(p.relocating?(en?'Moved '+name:'已移动 '+name):(def?.decorative?(en?'Placed '+name:'已布置 '+name):(en?'Placed '+name+' · watch your cats play!':'已建造 '+name+' · 看猫猫过来玩！')));
     window.MorrowwishAudio?.effect?.('discover');
     return true;
   },
@@ -610,6 +617,8 @@ const UI = {
   },
 
   medkitFailureText(result,en){
+    if(result?.reason==='save-failed')return en?'Save failed. No first-aid kits were spent.':'保存失败，未消耗急救包。';
+    if(result?.reason==='cat')return en?'Companion is no longer in this save.':'该猫咪已不在当前存档。';
     return result?.reason==='medkit'
       ?(en?'Need '+(result.cost||1)+' first-aid kits. Buy them in the shop.':'急救包不足（需要 '+(result.cost||1)+' 个），可去小卖部购买。')
       :(en?'All cats are at full HP.':'猫猫血量已经满啦！');
@@ -796,7 +805,8 @@ const UI = {
     if(!a||!b||a.uid===b.uid)return false;
     const key=[a.uid,b.uid].sort().join(':');
     const rel=State.S.duoRelations?.pairs?.[key];
-    if(Number(rel?.value)<20)return false;
+    if(!State.S.cats.includes(a)||!State.S.cats.includes(b)||!(Number(rel?.value)>=20))return false;
+    const owner=State.S,slot=State.activeSlot();
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const art=CatRelations.title(a,b);
     const url=new URL('duo-preview.html',window.location.href);
@@ -804,8 +814,9 @@ const UI = {
     url.searchParams.set('b',b.uid);
     url.searchParams.set('lang',english?'en':'zh');
     url.searchParams.set('embedded','1');
+    url.searchParams.set('slot',slot);
     url.searchParams.set('preview','original-three-tier-20261123-v4');
-    document.getElementById('cb-duo-viewer')?.remove();
+    document.querySelector('#cb-duo-viewer .cb-duo-viewer-close')?.click();
     const previousFocus=document.activeElement;
     const overlay=document.createElement('div');
     overlay.id='cb-duo-viewer';
@@ -839,8 +850,11 @@ const UI = {
     };
     const dismiss=()=>{
       document.removeEventListener('keydown',keydown,true);
-      overlay.remove();previousFocus?.focus?.();
+      window.removeEventListener('cat-bond-active-save-changed',onSlotChange);
+      overlay.remove();if(previousFocus?.isConnected&&State.S===owner)previousFocus.focus();
     };
+    const onSlotChange=()=>{if(State.S!==owner||State.activeSlot()!==slot)dismiss()};
+    window.addEventListener('cat-bond-active-save-changed',onSlotChange);
     closeButton.addEventListener('click',dismiss);
     overlay.addEventListener('click',e=>{if(e.target===overlay)dismiss()});
     document.addEventListener('keydown',keydown,true);
@@ -1022,9 +1036,9 @@ const UI = {
         </section></div>
       <div class="btn-row">
         ${showPairChooser?'':('<button class="btn gold" id="duo-choose" '+(!ok?'disabled':'')+'>'+(selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档'))+'</button>')}
-        <button class="btn" id="duo-play" ${!ok||sec>0||(State.S.medkits||0)<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
+        <button class="btn" id="duo-play" ${!ok||sec>0||(State.S.fish||0)<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
         ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
-      <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
+      <p class="tiny" id="duo-play-status" role="status">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`,preserveScroll);
     this.catHubTabs('duo');
     document.querySelectorAll('#panel [data-duo-index]').forEach(btn=>btn.onclick=()=>{
@@ -1062,7 +1076,8 @@ const UI = {
     });
     document.getElementById('duo-choose').onclick=()=>{
       if(!ok)return;
-      CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];
+      if(!CatRelations.choose(a,b)){this.game.toast(en?'Could not save this duo. Please retry.':'未能保存双猫搭档，请重试。');return;}
+      this._duoPicked=[a.uid,b.uid];
       this.game.yard?.entities?.filter(e=>[a.uid,b.uid].includes(e.cat.uid))
         .forEach(e=>{e.emote('💞',3);e.pettedGlow=1.5;});
       this.game.refreshHUD();
@@ -1083,7 +1098,7 @@ const UI = {
         this.game.refreshYardSurprise();this.openBondPanel();
       }
     };
-    document.getElementById('duo-play').onclick=()=>{CatRelations.choose(a,b);const v=CatRelations.play(a,b);
+    document.getElementById('duo-play').onclick=()=>{const v=CatRelations.play(a,b);
       if(v.ok){
         this.game.toast(v.memoryUnlocked?(en?'🧶 A new duo memory!':'🧶 解锁双猫回忆：毛线团的秘密'):
           (en?'💞 Friendship +13!':'💞 双猫默契 +13！'));
@@ -1091,12 +1106,29 @@ const UI = {
       }
       else if(v.reason==='cooldown')this.game.toast(en?'Let them rest a moment':'猫猫想休息一会儿');
       else if(v.reason==='fish')this.game.toast(en?'Not enough fish':'小鱼不够啦');
+      else if(v.reason==='save-failed')this.game.toast(en?'Save failed. No fish spent.':'保存失败，未消耗小鱼干。');
       this._duoPicked=[a.uid,b.uid];this.game.refreshYardSurprise();this.openBondPanel();
     };
     // The duo page is reachable directly from the adventure guide without a
     // navigation-stack entry. Its visible “Back to adventure” control must
     // return to that guide, not silently jump to the unrelated solo cat hub.
-    document.getElementById('duo-return').onclick=()=>this._navStack.length?this.navigateBack():this.openJourney();
+    document.getElementById('duo-return').onclick=()=>{
+      if(window.ResonanceBook?.isOpen?.()){this.closeAll();return;}
+      return this._navStack.length?this.navigateBack():this.openJourney();
+    };
+    // Cooldown expires on the real open panel without forcing players to
+    // close and reopen it. Old callbacks cannot affect another pair or save.
+    const playControl=document.getElementById('duo-play'),playStatus=document.getElementById('duo-play-status'),owner=State.S;
+    const updatePlay=()=>{
+      if(!playControl?.isConnected||State.S!==owner||!document.getElementById('panel')?.classList.contains('open'))return;
+      const live=owner.duoRelations?.pairs?.[[a.uid,b.uid].sort().join(':')];
+      const remain=Math.max(0,Math.ceil((60000-(Date.now()-(live?.lastPlay||0)))/1000));
+      const english=window.MorrowwishI18n?.get?.()!=='zh';
+      playControl.disabled=!owner.cats.includes(a)||!owner.cats.includes(b)||remain>0||owner.fish<1;
+      playStatus.textContent=remain?(english?'Play again in '+remain+'s':'下次一起玩需 '+remain+' 秒'):(english?'Petting also builds friendship.':'在庭院撸猫也能提升默契。');
+      if(remain>0)setTimeout(updatePlay,Math.min(1000,Math.max(100,remain*1000)));
+    };
+    if(sec>0)updatePlay();
   },
 
   // ---- 欢迎回来 (offline raising report) ----
@@ -1302,6 +1334,7 @@ const UI = {
         <div class="st-btns">
           <button class="btn gold tiny-btn" data-act="collect" data-id="${st.id}" ${st.stored<1?'disabled':''}>${en?'Collect':'收取'}</button>
           <button class="btn ghost tiny-btn" data-act="assign" data-id="${st.id}">${en?'Assign':'派猫'}</button>
+          ${st.active?'<button class="btn ghost tiny-btn" data-act="unassign" data-id="'+st.id+'">'+(en?'Recall cat':'召回猫咪')+'</button>':''}
           <button class="btn ghost tiny-btn" data-act="upgrade" data-id="${st.id}">${en?'Upgrade':'升级'}<small>${cost.coins}🪙</small></button>
           <button class="btn ghost tiny-btn" data-act="upgrade5" data-id="${st.id}"
             ${State.S.coins<cost.coins?'disabled':''}>
@@ -1382,6 +1415,16 @@ const UI = {
         (en?'Not enough materials':'升级材料不足'));
       if(upgraded)State.save();
       this.game.refreshHUD();this.openWorkshop();
+    }else if(act==='unassign'){
+      const st=State.S.raising?.stations?.find(x=>x.id===id);
+      if(!st?.assignedUid)return;
+      const uid=st.assignedUid,done=R.unassignCat(id);
+      if(!done?.ok)return;
+      let saved=false;try{saved=State.save()?.ok===true}catch{}
+      if(!saved)st.assignedUid=uid;
+      else this.game.rebuildYard?.();
+      this.game.toast(saved?(en?'Companion recalled. Stored resources remain available.':'猫咪已召回，未领取的资源仍然保留。'):(en?'Save failed. Companion assignment unchanged.':'保存失败，派工状态未改变。'));
+      this.openWorkshop();
     }else if(act==='assign'){
       this.navigateTo(()=>this.openCatPicker(en?'Choose a working cat':'选择上工的猫',uid=>{
         const x=R.assignCat(id,uid);
@@ -1430,10 +1473,15 @@ const UI = {
   // Spend coins to place cat trees / scratchers / caves etc. Resident cats walk
   // over and play with them, lifting their mood. Reuses the panel() + st-row UI.
   openBuild() {
+    if(this.game?.scene!=='yard')return;
+    const owner=State.S;
     const B = window.World?.BUILDINGS || [];
     const en = window.MorrowwishI18n?.get?.() !== 'zh';
     const placed = State.S.yardBuildings || [];
     const coins = State.S.coins || 0;
+    const decor=World.gardenDecorations(),definitions=World.DECORATIONS;
+    const decorCards=definitions.map(def=>`<article class="sg-decor-card"><img src="assets/garden/${def.id}.svg" alt=""><div><strong>${en?def.nameEn:def.name}</strong><p>${en?def.descEn:def.desc}</p><small>${def.cost} ${en?'coins':'金币'}</small></div><button type="button" class="btn gold tiny-btn" data-build="${def.id}" ${coins>=def.cost?'':'disabled'}>${en?'Choose spot':'选位置布置'}</button></article>`).join('');
+    const decorRows=decor.map((d,i)=>{const def=World.BUILDINGS_BY_ID[d.type];if(!def?.decorative)return '';return `<article class="sg-decor-card"><img src="assets/garden/${def.id}.svg" alt=""><strong>${en?def.nameEn:def.name}</strong><div class="sg-decor-actions"><button class="btn ghost tiny-btn" data-decor-move="${i}">${en?'Move':'移动'}</button><button class="btn ghost tiny-btn" data-decor-remove="${i}">${en?'Remove':'移除'}</button></div></article>`}).join('');
     const counts = {};
     for (const p of placed) counts[p.type] = (counts[p.type] || 0) + 1;
     const cards = B.map(def => {
@@ -1475,6 +1523,7 @@ const UI = {
           <button class="btn ghost tiny-btn" data-duo-visit="${i}" ${(window.CatRelations?.chosen?.()||[]).length===2?'':'disabled'}>${en?'Invite duo':'邀请双猫'}</button>
           <button class="btn gold tiny-btn" data-upgrade="${i}"
             ${next===null||coins<next?'disabled':''}>${next===null?(en?'Max Lv.':'已满级'):(en?'Upgrade':'升级')+' '+next+'🪙'}</button>
+          <button class="btn ghost tiny-btn" data-relocate="${i}">${en?'Move':'移动'}</button>
           <button class="btn ghost tiny-btn" data-remove="${i}">${en?'Remove':'拆除'}</button>
         </div>
       </div>`;
@@ -1486,9 +1535,11 @@ const UI = {
       <p class="sub">${en?'Choose a facility, then tap a free spot in your yard to place it. Cats physically walk over, play and earn resources.'
         :'先选设施，再点击草坪直接建造；手机可拖动调整位置。猫咪会走过去玩，产出资源和默契奖励。'}</p>
       <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
-      <button class="btn ghost" data-garden-projects type="button">${en?'Garden restoration':'花园复兴'}</button>
+      <div class="btn-row"><button class="btn ghost" data-garden-projects type="button">${en?'Garden restoration':'花园复兴'}</button><button class="btn ghost" data-garden-decor type="button">${en?'Decorations':'装饰布置'}</button></div>
       <div class="st-list">${cards}</div>
-      ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}`);
+      ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}
+      <section class="sg-decor-section" aria-label="${en?'Garden decoration':'家园装饰'}"><h3>${en?'Decorations':'装饰布置'}</h3><p class="sub">${en?'Make this garden your own. Decorations do not produce resources or affect story progress.':'自由布置属于你的花园。装饰不产出资源，也不改变剧情进度。'}</p><div class="sg-decor-grid">${decorCards}</div>${decorRows?'<h3>'+(en?'Placed decorations':'已布置装饰')+'</h3><div class="sg-decor-grid">'+decorRows+'</div>':''}</section>`);
+
     const host = document.getElementById('panel');
     // Render REAL facility artwork into a scene-style blueprint preview. It
     // matches what players will place in the yard instead of a misleading
@@ -1503,12 +1554,15 @@ const UI = {
       cx.fillStyle='#a9cda8';cx.beginPath();cx.ellipse(w*.50,h*.94,w*.47,h*.17,0,0,Math.PI*2);cx.fill();
       if(!World.drawGardenProp?.(cx,def.id,w*.5,h*.89,1.15))def.draw(cx,w*.5,h*.89,1.15,1.3);
     });
-    host.querySelector('[data-garden-projects]')?.addEventListener('click',()=>window.GardenProjects?.open?.());
+    host.querySelector('[data-garden-projects]')?.addEventListener('click',e=>{if(State.S===owner&&e.currentTarget.isConnected)window.GardenProjects?.open?.()});
+    host.querySelector('[data-garden-decor]')?.addEventListener('click',()=>host.querySelector('.sg-decor-section')?.scrollIntoView({block:'start'}));
     host.querySelectorAll('[data-build]').forEach(btn => btn.onclick = () => {
+      if(State.S!==owner||!btn.isConnected)return;
       const def = window.World?.BUILDINGS_BY_ID?.[btn.dataset.build];
       this.startBuildingPlacement(btn.dataset.build);
     });
     host.querySelectorAll('[data-visit]').forEach(btn => btn.onclick = () => {
+      if(State.S!==owner||!btn.isConnected)return;
       const b=State.S.yardBuildings?.[Number(btn.dataset.visit)];
       if(!b)return;
       const ok=this.game.yard.inviteCatToBuilding(b);
@@ -1517,6 +1571,7 @@ const UI = {
       else this.game.toast(en?'Look! A kitten is coming to play':'看！有猫咪跑来玩啦！');
     });
     host.querySelectorAll('[data-duo-visit]').forEach(btn=>btn.onclick=()=>{
+      if(State.S!==owner||!btn.isConnected)return;
       const b=State.S.yardBuildings?.[Number(btn.dataset.duoVisit)];
       if(!b)return;
       const ok=this.game.yard.inviteDuoToBuilding(b);
@@ -1525,13 +1580,18 @@ const UI = {
         (en?'Choose a duo that is not working or sulking.':'请选择未工作、未闹别扭的双猫。'));
     });
     host.querySelectorAll('[data-upgrade]').forEach(btn => btn.onclick = () => {
+      if(State.S!==owner||!btn.isConnected)return;
       const result=this.game.yard.upgradeStructure(+btn.dataset.upgrade);
       this.game.refreshHUD();
       this.game.toast(result.ok?(en?'Facility upgraded to Lv.':'设施升级到 Lv.')+result.level:
         (en?'Not enough coins / max level':'金币不足或已满级'));
       this.openBuild();
     });
+    host.querySelectorAll('[data-relocate]').forEach(btn=>btn.onclick=()=>{if(State.S===owner&&btn.isConnected)this.startBuildingRelocation(Number(btn.dataset.relocate))});
+    host.querySelectorAll('[data-decor-move]').forEach(btn=>btn.onclick=()=>{if(btn.isConnected&&State.S===owner)this.startBuildingRelocation(Number(btn.dataset.decorMove),true)});
+    host.querySelectorAll('[data-decor-remove]').forEach(btn=>btn.onclick=()=>{if(!btn.isConnected||State.S!==owner)return;const r=this.game.yard.removeDecoration(Number(btn.dataset.decorRemove));this.game.refreshHUD();this.game.toast(r.ok?(en?'Removed · +':'已移除 · +')+r.refund+(en?' coins':' 金币'):(en?'Could not save removal.':'未能保存移除操作。'));this.openBuild()});
     host.querySelectorAll('[data-remove]').forEach(btn => btn.onclick = () => {
+      if(State.S!==owner||!btn.isConnected)return;
       const refund = this.game.yard.removeStructure(+btn.dataset.remove);
       this.game.refreshHUD();
       this.game.toast((en ? '♻️ Removed · +' : '♻️ 已拆除 · 返还 ') + refund + ' 🪙');
@@ -2260,10 +2320,10 @@ const UI = {
       ?State.S.cats.find(cat=>cat.uid===story.recordedUid):null;
     const recordName=String(recordCat?State.catName(recordCat):(en?'The Bellkeeper':'守铃者'))
       .replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-    const storyRecord=story?.playerRecorded
+    const storyRecord=!window.__CAT_BOND_CANONICAL_ACTIVE__&&story?.playerRecorded
       ?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?'The Last Page':'最后一页'}</strong><small>${en?'The Bellkeeper: ':'守铃者：'}${recordName}</small></span><b>${en?'Complete':'已完成'}</b></section>`:'';
     this.panel(`<span class="card-close">×</span>
-      <h2>图鉴 <span class="tiny">${owned}/${total}</span></h2>
+      <h2>Catdex <span class="tiny">${owned}/${total}</span></h2>
       <p class="sub">${en?'Discover breeds and earn an S-rank Golden Paw for each one.'
         :'发现不同猫咪，为每个品种挑战 S 级「金爪徽章」。'}</p>
       <div class="mastery-summary">
@@ -2355,8 +2415,9 @@ const UI = {
       <p class="tiny center" style="margin-top:10px">奖励随连签天数增长</p>`);
     const btn = document.getElementById('claim');
     if (btn && avail) btn.onclick = () => {
-      const { reward, streak } = State.claimDaily();
-      State.save(); this.game.refreshHUD();
+      const { ok, reward, streak } = State.claimDaily();
+      if(!ok){this.game.toast(this.isEnglish()?'Reward not claimed. Please retry if available.':'奖励未领取，请在可领取时重试。');this.openDaily();return;}
+      this.game.refreshHUD();
       const msg = `+${reward.coins}🪙 +${reward.fish}🐠小鱼`;
       this.game.toast(`签到成功！${msg}`);
       this.openDaily();

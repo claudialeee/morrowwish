@@ -273,6 +273,30 @@ try {
     await page.locator('.rw-shell').scrollIntoViewIfNeeded();
     assert.equal(await page.locator('.rw-shell').evaluate(e=>getComputedStyle(e).animationName),'none');
     await shot('harbor-restored');
+    // Earned sanctuary unlock: use real in-region Book UI, never modify State.
+    // The region, exact saved position, completed objectives and reward state
+    // must survive navigation, crafting and dismissal.
+    const regionSnapshot=()=>page.evaluate(()=>({
+      scene:CatBondResonance.view().current?.id,region:WorldMap.currentRegion,mode:WorldMap.mode,
+      position:State.S.resonanceExploration?.positions?.harbor,
+      completed:State.S.resonance.completed.slice(),
+      melodies:State.S.resonance.melodies.slice(),
+      sanctuaries:State.S.resonance.sanctuaries.slice()
+    }));
+    const beforeBook=await regionSnapshot();
+    await page.locator('.rw-head .rb-world-entry').click();
+    await page.locator('[data-book-tab="bag"]').click();
+    const harborRecipe=page.locator('[data-book-recipe="harbor-kit"]');
+    assert.ok(await harborRecipe.isEnabled(),'Earned Harbor sanctuary unlocks its real recipe');
+    assert.ok(await page.locator('[data-book-recipe="forest-lure"]').isDisabled(),'Forest recipe remains locked');
+    const oldWallet=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish,medkits:State.S.medkits}));
+    await harborRecipe.click();
+    assert.deepEqual(await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish,medkits:State.S.medkits})),{coins:oldWallet.coins-28,fish:oldWallet.fish-2,medkits:oldWallet.medkits+2});
+    await shot('harbor-unlocked-recipe');
+    await page.locator('.rb-close').click();
+    await page.locator('#panel.open').waitFor({state:'hidden'});
+    assert.deepEqual(await regionSnapshot(),beforeBook,'Book management does not move the traveler or advance story');
+    console.log('PASS earned Harbor recipe and unchanged regional position '+name);
     assert.equal(await page.evaluate(()=>State.S.resonance.choices['harbor:H-02']),comfort?'comfort':'ask');
     await page.evaluate(()=>MorrowwishI18n.set('zh'));
     await page.getByText('灯塔 · 已复明',{exact:true}).waitFor();
@@ -398,6 +422,18 @@ try {
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().sanctuaries),['harbor','forest']);
     assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('forge')),true);
     await shot('forest-complete');
+    await page.locator('.rw-head .rb-world-entry').click();
+    await page.locator('[data-book-tab="bag"]').click();
+    const forestRecipe=page.locator('[data-book-recipe="forest-lure"]');
+    assert.ok(await forestRecipe.isEnabled(),'Earned Forest sanctuary unlocks its real recipe');
+    assert.ok(await page.locator('[data-book-recipe="forge-kit"]').isDisabled(),'Forge remains gated until its own sanctuary');
+    const beforeLures=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish,lures:State.S.luckLure||0}));
+    await forestRecipe.click();
+    assert.deepEqual(await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish,lures:State.S.luckLure||0})),{coins:beforeLures.coins-12,fish:beforeLures.fish-2,lures:beforeLures.lures+2});
+    await shot('forest-unlocked-recipe');
+    await page.locator('.rb-close').click();
+    assert.equal(await page.evaluate(()=>WorldMap.currentRegion),'forest');
+    console.log('PASS earned Forest recipe '+name);
     if(name==='desktop'){
       await button('Approach wild cat').click();
       await page.locator('#panel [data-battle-auto="true"]').click();
