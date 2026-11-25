@@ -1,5 +1,5 @@
 # CAT BOND — THE LAST RESONANCE
-## Main Story Script · Scene-by-scene draft · Canon 1.0 · 2026-11-24
+## Main Story Script · Scene-by-scene draft · Canon 1.0 · warm dialogue revision 2026-11-25
 
 This script follows the canonical rules in 01-NARRATIVE-BIBLE.md. It covers the complete main-campaign dramatic spine and all critical dialogue/reveal scenes. Optional side quests, ambient barks, combat barks, and every individual NPC schedule line are separate writing passes; they must not contradict this script.
 
@@ -496,13 +496,20 @@ Show the named NPCs living with the consequences of their choices. Do not reduce
 ### E-02 — Muling Takes Responsibility
 Muling publicly admits that she weakened the seal and intended to merge every cat's memories. Some NPCs are angry. Others are willing to work beside her but not ready to forgive her. She accepts this without demanding a reward.
 
+暮铃: “是我削弱了封印，原本想把每只猫的记忆汇入中央星铃。给大家添了危险，我很抱歉。”
+暮铃: “我带来了各地的修复清单。大家可以按自己的意愿参与。”
+岬灯: “先一起把灯路修好吧。安全通航之后，我们再慢慢建立信任。”
+芽禾: “我愿意一起修复水道。也要让受到影响的伙伴自己决定。”
+墨页: “我们会把原来的记录和新的修复记录都保存好。”
+暮铃: “谢谢大家给我参与修复的机会。我会把答应的事情做好，不催任何人原谅我。”
+
 ### E-03 — Sunlit Garden
 The garden is alive again. Cats from all six regions visit and settle in.
 
 Muling: “欢迎回到阳光花园！还记得这里吗？”  
 Player: “当然！连这里的阳光都很熟悉。”  
-Muling: “我把第二把钥匙带来了。还有些修复工作要做。”  
-Player: “那就一件一件来，大家都能参与。”  
+Muling: “那把花园钥匙，我也能有一份吗？”  
+Player: “当然！这里也有你的一席之地。”  
 Muling: “今天可以先一起喝杯茶吗？”  
 Player: “好呀！明天还有新的旅程等着我们。”
 
