@@ -237,15 +237,14 @@ for(const game of sevenIds)for(const platform of firstRoundPlatforms)
  assert.equal(firstRound.posts.filter(post=>post.game===game&&post.platform===platform).length,1,
   'exactly one archived post for '+game+' / '+platform);
 
-assert.ok(html.includes('id="archived-first-round-game-rows"'),
+assert.ok(html.includes('id="archived-first-round-posts"'),
  'first-round archive must have the same per-game native-metrics matrix');
-assert.ok(html.includes('firstRoundGameMetricsTitle:')&&html.includes('firstRoundGameMetricsNote:'),
- 'first-round matrix needs explicit bilingual labeling');
+assert.ok(!html.includes('id="archived-first-round-game-rows"'),'No duplicate first-round matrix');
 assert.ok(inlineScript.includes("renderVideoMatrix(verifiedVideos,'checkedAt')")&&
  inlineScript.includes("renderVideoMatrix(archivedPosts,'capturedAt')"),
  'current and archived rounds must use the same matrix renderer with separate timestamps');
-assert.ok(inlineScript.includes('archivedPostsInMatrixOrder.map(post=>'),
- 'the 28-row detail table must follow the same game/platform order as the matrix');
+assert.ok(inlineScript.includes('$("archived-first-round-posts").innerHTML=archivedRound?renderVideoMatrix'),
+ 'replace the original details table rather than adding another table');
 
 const matrixStart=inlineScript.indexOf('const verifiedPlatforms=');
 const matrixEnd=inlineScript.indexOf('$("video-metrics-detail")',matrixStart);
@@ -289,8 +288,12 @@ const summaryKeys={youtube:['views','likes','comments'],instagram:['views','like
 for(const summary of calculated){
  const stored=firstRound.platforms[summary.platform];
  assert.equal(summary.posts,stored.posts,summary.platform+' archived post count reconciles');
- for(const key of summaryKeys[summary.platform])
-  assert.equal(summary[key],stored[key],summary.platform+' '+key+' subtotal reconciles to all 7 post rows');
+ for(const key of summaryKeys[summary.platform]){
+  const individual=firstRound.posts.filter(post=>post.platform===summary.platform);
+  const expected=individual.every(post=>Number.isSafeInteger(post[key]))?individual.reduce((sum,post)=>sum+post[key],0):null;
+  assert.equal(summary[key],expected,summary.platform+' '+key+' subtotal reconciles to all 7 post rows');
+  if(Object.hasOwn(stored,key))assert.equal(summary[key],stored[key],summary.platform+' '+key+' retains saved subtotal');
+ }
 }
 assert.equal(calculated.find(row=>row.platform==='bluesky').comments,null,
  'Bluesky replies must not be mislabeled as comments');
@@ -299,6 +302,6 @@ assert.equal(calculated.find(row=>row.platform==='youtube').shares,null,
 const partialRows=firstRound.posts.map(post=>post.platform==='youtube'&&post.game==='cat-bond'?{...post,views:null}:post);
 assert.equal(summaryEnv.summarize(partialRows,['youtube'])[0].views,null,
  'an incomplete first-round metric subtotal must remain blank, never become zero');
-assert.ok(inlineScript.includes("post.platform==='bluesky'&&key==='comments'"),
- 'Bluesky comments must remain blank; replies use their own native field');
+assert.ok(inlineScript.includes("platform==='bluesky'?['likes','reposts','replies','quotes']"),
+ 'Bluesky uses only native interactions, not comments or views');
 console.log('First-round 28-post detail, per-game native matrix and platform subtotals reconcile from one archived data set.');
