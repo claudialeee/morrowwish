@@ -81,18 +81,11 @@ try{
     // The open home labels must update immediately with the shared language event.
     const hasI18n=await page.evaluate(()=>!!window.MorrowwishI18n?.get);
     if(hasI18n){
-      await page.evaluate(()=>{
-        window.__gardenOriginalLangGet=window.MorrowwishI18n.get.bind(window.MorrowwishI18n);
-        window.MorrowwishI18n.get=()=> 'en';
-        window.dispatchEvent(new Event('morrowwish-language-change'));
-      });
+      await page.evaluate(()=>window.MorrowwishI18n.set('en'));
       await page.waitForFunction(()=>document.querySelector('.sg-hotspot-workshop .sg-hotspot-label')?.textContent==='Workshop');
       const labels=await page.locator('.sg-hotspot .sg-hotspot-label').allTextContents();
       assert.deepEqual(labels,['Cats','Facilities','Catdex','Workshop','Duo Bond']);
-      await page.evaluate(()=>{
-        window.MorrowwishI18n.get=window.__gardenOriginalLangGet;
-        window.dispatchEvent(new Event('morrowwish-language-change'));
-      });
+      await page.evaluate(()=>window.MorrowwishI18n.set('zh'));
     }
 
     await page.locator('#fab-map').click();
@@ -156,13 +149,42 @@ try{
   await page.screenshot({path:out+'/duo-second-visit.png'});
   await page.waitForFunction(()=>!__game.yard._duoFacility,null,{timeout:15000});
   assert.ok(await page.evaluate(()=>CatRelations.pair(...CatRelations.chosen()).value)>trustBefore,'two real visits grow the existing chosen duo trust');
-  await page.evaluate(()=>{const old=State.activeSlot(),other=State.SAVE_SLOT_IDS.find(id=>id!==old);if(!State.startNewGame(other,{overwriteConfirmed:true}))throw Error('second slot failed')});
+  // Story progression fixture only: the garden must READ it and never
+  // write to it. The normal construction/tending UI performs actual actions.
+  await page.evaluate(()=>{State.S.resonance={schema:1,scene:'harbor:H-05',completed:[],evidence:{},choices:{},trust:{},links:{},sanctuaries:['harbor'],melodies:['harbor'],support:[],returned:[],postgame:[],ambientDone:[],cursor:0,revision:0};State.save()});
+  const canon=await page.evaluate(()=>JSON.stringify(State.S.resonance));
+  await page.locator('.sg-hotspot-facilities').click();
+  await page.locator('[data-garden-projects]').click();
+  await page.locator('[data-garden-project="harbor"]').click();
+  await page.locator('[data-restore-project="harbor"]').click();
+  await page.waitForFunction(()=>State.S.sunlitGarden.projects.harbor?.level===1);
+  await page.evaluate(()=>MorrowwishI18n.set('zh'));
+  await page.waitForFunction(()=>document.querySelector('#sg-project-panel h3')?.textContent==='潮汐泉');
+  await page.evaluate(()=>MorrowwishI18n.set('en'));
+  await page.waitForFunction(()=>document.querySelector('#sg-project-panel h3')?.textContent==='Tidewater Fountain');
+  const chosen=await page.locator('#sg-project-panel select').inputValue();
+  const xpBefore=await page.evaluate(uid=>{const c=State.S.cats.find(x=>x.uid===uid);return [c.level,c.xp]},chosen);
+  await page.locator('[data-tend-project="harbor"]').click();
+  await page.waitForFunction(()=>GardenProjects.active(),null,{timeout:10000});
+  await page.waitForFunction(()=>__game.yard.entities.some(e=>e._gardenRest),null,{timeout:30000});
+  await page.screenshot({path:out+'/restoration-tending-phone.png'});
+  await page.waitForFunction(()=>State.S.sunlitGarden.projects.harbor.visits===1,null,{timeout:15000});
+  const xpAfter=await page.evaluate(uid=>{const c=State.S.cats.find(x=>x.uid===uid);return [c.level,c.xp]},chosen);
+  assert.ok(xpAfter[0]>xpBefore[0]||xpAfter[1]>xpBefore[1],'physical tending grants real XP');
+  assert.equal(await page.evaluate(()=>JSON.stringify(State.S.resonance)),canon,'home projects never change canonical story state');
+  for(const other of await page.evaluate(slot=>State.SAVE_SLOT_IDS.filter(id=>id!==slot),saved.slot)){
+    await page.evaluate(id=>{if(!State.startNewGame(id,{overwriteConfirmed:true}))throw Error('new slot failed')},other);
+    await page.waitForFunction(()=>__game.yard._gardenState===State.S);
+    assert.equal(await page.evaluate(()=>State.S.yardBuildings.length),0,'new slot must not inherit buildings');
+    assert.equal(await page.evaluate(()=>Object.keys(State.S.sunlitGarden?.projects||{}).length),0,'new slot must not inherit garden restoration');
+  }
   await page.waitForFunction(()=>__game.yard._gardenState===State.S);
   assert.equal(await page.evaluate(()=>State.S.yardBuildings.length),0,'new slot must not inherit buildings');
   assert.equal(await page.evaluate(()=>__game.yard.entities.length),0,'new slot must not retain previous resident cats');
   await page.evaluate(slot=>{if(!State.loadSlot(slot))throw Error('reload failed')},saved.slot);
   await page.waitForFunction(()=>__game.yard._gardenState===State.S);
   assert.equal(await page.evaluate(()=>State.S.yardBuildings[0].level),2,'original slot preserves upgrade');
+  assert.equal(await page.evaluate(()=>State.S.sunlitGarden.projects.harbor.visits),1,'original slot preserves actual tending growth');
   await context.close();
   console.log('SUNLIT GARDEN FACILITY SAVE QA PASS');
   assert.deepEqual(pageErrors,[],'garden scene must not produce uncaught browser errors');
