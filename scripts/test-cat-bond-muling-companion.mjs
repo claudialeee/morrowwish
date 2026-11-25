@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import {MULING_INTERACTIONS,createMulingState,normalizeMulingState,completeMulingInteraction,setMulingFollowing} from "../public/cat-bond/js/resonance/muling-companion-data.mjs";
+assert.equal(MULING_INTERACTIONS.length,5);
+let s=createMulingState();assert.equal(s.following,true);
+s=completeMulingInteraction(s,"bitter-tea");assert.equal(s.trust,1);assert.deepEqual(s.completed,["bitter-tea"]);
+s=completeMulingInteraction(s,"bitter-tea");assert.equal(s.trust,1,"replay cannot farm trust");
+s=setMulingFollowing(s,false);assert.equal(s.following,false);
+assert.equal(normalizeMulingState(JSON.parse(JSON.stringify(s))).trust,1);
+assert.equal(MULING_INTERACTIONS.find(x=>x.id==="broken-bells").lines[1].text.zh.includes("坏掉不等于没有价值"),true);
+assert.equal(MULING_INTERACTIONS.find(x=>x.id==="map-check").lines[1].text.zh,"地图没有变。");
+assert.equal(MULING_INTERACTIONS.find(x=>x.id==="cooking").lines[3].text.zh,"……别尝。");
+assert.equal(MULING_INTERACTIONS.find(x=>x.id==="pendant-tap").lines[0].text.zh.includes("敲两下"),true);
+console.log("Muling companion PASS",{interactions:MULING_INTERACTIONS.length,oneTimeTrust:true,followingToggle:true,saveRestore:true});

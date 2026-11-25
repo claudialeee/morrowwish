@@ -1,0 +1,60 @@
+/* Muling companion interaction and roaming sprite. */
+.cb-muling-launch{background:linear-gradient(145deg,#c6c4d8,#65668e)!important;color:#f7f0df!important;border:1px solid #e1d9c6!important;display:flex;flex-direction:column;gap:0}
+.cb-muling-launch small{font:900 9px/1.05 system-ui}
+.cb-muling-companion{position:absolute;inset:0;z-index:92;overflow:hidden;color:#f5efdf;background:#172237;font-family:Georgia,"Noto Serif SC",serif}
+.cb-muling-companion[hidden]{display:none}
+.cb-muling-bg-wrap,.cb-muling-bg,.cb-muling-bg-shade{position:absolute;inset:0;width:100%;height:100%}
+.cb-muling-bg{object-fit:cover;filter:brightness(.72) saturate(.84)}
+.cb-muling-bg-shade{background:linear-gradient(90deg,rgba(13,24,40,.18),rgba(13,24,40,.5)),linear-gradient(0deg,rgba(12,20,34,.94),transparent 58%,rgba(12,20,34,.36))}
+.cb-muling-header{position:absolute;z-index:3;top:clamp(12px,3vh,30px);left:clamp(14px,3vw,40px);right:clamp(14px,3vw,40px);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cb-muling-kicker{font:800 10px system-ui;letter-spacing:.2em;color:#d9c69f}
+.cb-muling-title{font:600 clamp(19px,2.3vw,29px) Georgia,"Noto Serif SC",serif;color:#f8eed9;margin-top:4px}
+.cb-muling-tools{display:flex;gap:7px}
+.cb-muling-tools button{min-width:42px;min-height:40px;padding:8px 12px;border:1px solid rgba(221,202,160,.7);border-radius:99px;background:rgba(19,30,49,.72);color:#f7edd9;cursor:pointer}
+.cb-muling-content{position:absolute;z-index:2;inset:13% 3% 10%;display:grid;grid-template-columns:minmax(240px,39%) minmax(300px,1fr);grid-template-rows:1fr auto;gap:14px 24px;align-items:end}
+.cb-muling-portrait-wrap{grid-row:1/3;align-self:stretch;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;margin:0;min-height:0}
+.cb-muling-portrait{height:100%;max-height:690px;max-width:100%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 15px 22px rgba(0,0,0,.42));transition:opacity .18s,transform .25s}
+.cb-muling-portrait-wrap figcaption{font:800 11px system-ui;letter-spacing:.13em;color:#e8d2a3;text-shadow:0 2px 8px #10182a;margin-top:-4px}
+.cb-muling-side{align-self:end;padding:14px;border:1px solid rgba(222,202,160,.48);border-radius:14px;background:rgba(18,31,48,.78);backdrop-filter:blur(10px);box-shadow:0 14px 34px rgba(0,0,0,.24)}
+.cb-muling-status{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;margin-bottom:12px;color:#e8d6b2;font:800 11px system-ui}
+.cb-muling-trust-bar{grid-column:1/-1;height:6px;border-radius:99px;background:#4d5360;overflow:hidden}
+.cb-muling-trust-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#9a9ac2,#e7c98d);transition:width .4s}
+.cb-muling-habit-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.cb-muling-habit{min-height:43px;padding:8px 10px;border:1px solid rgba(213,197,162,.46);border-radius:8px;background:rgba(255,255,255,.06);color:#f5eddf;text-align:left;font:700 11px/1.35 system-ui;cursor:pointer}
+.cb-muling-habit:hover,.cb-muling-habit:focus-visible{background:rgba(198,178,133,.19);outline:2px solid #e9d2a2;outline-offset:2px}
+.cb-muling-follow{margin-top:10px;width:100%;min-height:42px;padding:8px 10px;border:1px solid #b9a27c;border-radius:8px;background:rgba(197,171,124,.14);color:#f2dfb7;font:800 11px system-ui;cursor:pointer}
+.cb-muling-dialogue{grid-column:2;grid-row:2;padding:18px 22px;border:1px solid rgba(227,205,158,.75);border-radius:14px;background:linear-gradient(125deg,rgba(16,30,47,.96),rgba(32,42,57,.94));box-shadow:0 18px 48px rgba(0,0,0,.38)}
+.cb-muling-speaker{font:800 12px system-ui;letter-spacing:.14em;color:#e6c98f}
+.cb-muling-line{font:500 clamp(15px,1.5vw,19px)/1.6 Georgia,"Noto Serif SC",serif;min-height:2.8em;margin:8px 0}
+.cb-muling-hint{font:600 10px/1.4 system-ui;color:#c0c5bd}
+.cb-muling-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.cb-muling-actions[hidden]{display:none}
+.cb-muling-primary,.cb-muling-secondary{min-height:43px;padding:8px 15px;border-radius:8px;font:800 11px system-ui;cursor:pointer}
+.cb-muling-primary{border:1px solid #f1d9a5;background:linear-gradient(135deg,#f3dfb7,#c49a61);color:#27313e}
+.cb-muling-secondary{border:1px solid rgba(221,202,160,.5);background:rgba(255,255,255,.06);color:#f6edda}
+.cb-muling-footer{position:absolute;z-index:3;left:clamp(14px,3vw,40px);right:clamp(14px,3vw,40px);bottom:12px;display:flex;justify-content:space-between;gap:10px;color:#d6c59f;font:700 10px system-ui;pointer-events:none}
+.cb-muling-footer.is-memory .cb-muling-memory{color:#fff0c5}
+.cb-muling-companion button:focus-visible{outline:2px solid #fff0bd;outline-offset:3px}
+@media(max-width:700px){
+ .cb-muling-header{top:max(10px,env(safe-area-inset-top));left:12px;right:12px}
+ .cb-muling-title{font-size:17px}
+ .cb-muling-tools{gap:4px}.cb-muling-tools button{min-width:40px;padding:7px 9px;font-size:11px}
+ .cb-muling-content{inset:12% 10px 8%;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,38%) auto auto;gap:8px}
+ .cb-muling-portrait-wrap{grid-row:1;grid-column:1;min-height:0}
+ .cb-muling-portrait{height:100%;max-height:32vh;width:auto;max-width:65vw}
+ .cb-muling-portrait-wrap figcaption{font-size:9px}
+ .cb-muling-side{grid-row:2;grid-column:1;padding:8px 9px}
+ .cb-muling-status{margin-bottom:6px;font-size:10px}
+ .cb-muling-habit-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .cb-muling-habit{min-height:40px;padding:6px 5px;font-size:10px;text-align:center}
+ .cb-muling-follow{min-height:38px;margin-top:6px}
+ .cb-muling-dialogue{grid-row:3;grid-column:1;padding:11px 13px}
+ .cb-muling-line{font-size:14px;min-height:2.7em;margin:5px 0}
+ .cb-muling-footer{bottom:max(8px,env(safe-area-inset-bottom));font-size:9px}
+}
+@media(max-height:560px) and (orientation:landscape){
+ .cb-muling-content{inset:12% 2% 9%;grid-template-columns:27% 1fr;grid-template-rows:1fr auto;gap:7px 14px}
+ .cb-muling-portrait{max-height:70vh}
+ .cb-muling-side{padding:7px}.cb-muling-habit{min-height:34px;font-size:10px}
+ .cb-muling-dialogue{padding:9px 13px}.cb-muling-line{font-size:13px;min-height:2em}
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#7897a0"/><stop offset=".42" stop-color="#d6c5a2"/><stop offset="1" stop-color="#f3d9a9"/></linearGradient><linearGradient id="stone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a69b82"/><stop offset="1" stop-color="#5d6557"/></linearGradient><linearGradient id="table" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#94765a"/><stop offset="1" stop-color="#4c3d34"/></linearGradient><radialGradient id="sun"><stop stop-color="#fff2c7" stop-opacity=".8"/><stop offset="1" stop-color="#fff2c7" stop-opacity="0"/></radialGradient><filter id="glow"><feGaussianBlur stdDeviation="24"/></filter></defs>
+<rect width="1600" height="900" fill="url(#sky)"/><circle cx="360" cy="185" r="300" fill="url(#sun)"/>
+<!-- distant garden walls and arches -->
+<path d="M0 380 Q200 260 420 330 Q650 230 850 338 Q1100 260 1300 332 Q1450 290 1600 360 V900 H0Z" fill="#52695b"/>
+<path d="M0 485 Q230 420 440 470 Q690 390 910 470 Q1190 400 1600 475 V900 H0Z" fill="#6e8066"/>
+<path d="M180 465 V230 Q180 110 320 110 Q460 110 460 230 V465" fill="none" stroke="#887f69" stroke-width="34"/>
+<path d="M205 460 V236 Q205 140 320 140 Q435 140 435 236 V460" fill="none" stroke="#d0c19c" stroke-width="12"/>
+<path d="M1120 465 V270 Q1120 165 1240 165 Q1360 165 1360 270 V465" fill="none" stroke="#887f69" stroke-width="30"/>
+<path d="M1144 460 V276 Q1144 194 1240 194 Q1336 194 1336 276 V460" fill="none" stroke="#d0c19c" stroke-width="10"/>
+<!-- trees and branches -->
+<g fill="#3d5b4a"><path d="M0 420 Q30 220 150 175 Q120 300 178 420Z M1300 425 Q1330 185 1490 135 Q1450 310 1540 430Z"/></g>
+<g fill="#6e8b68"><circle cx="90" cy="200" r="95"/><circle cx="185" cy="160" r="105"/><circle cx="1420" cy="165" r="115"/><circle cx="1530" cy="225" r="98"/></g>
+<g fill="#e5c1a3" opacity=".8"><circle cx="65" cy="184" r="10"/><circle cx="124" cy="125" r="12"/><circle cx="188" cy="194" r="11"/><circle cx="1410" cy="142" r="10"/><circle cx="1500" cy="195" r="12"/></g>
+<!-- old bell arch and garden bell -->
+<path d="M655 520 V260 Q655 190 730 190 Q805 190 805 260 V520" fill="none" stroke="url(#stone)" stroke-width="30"/>
+<path d="M675 520 V264 Q675 210 730 210 Q785 210 785 264 V520" fill="none" stroke="#c9b48a" stroke-width="7"/>
+<path d="M730 218 L730 286" stroke="#8b6b42" stroke-width="8"/><path d="M700 284 Q730 263 760 284 L754 331 Q730 351 706 331Z" fill="#b78b4d" stroke="#6c4b2d" stroke-width="6"/><path d="M715 297 L745 320 M745 297 L715 320" stroke="#f3dfaa" stroke-width="3"/>
+<!-- garden path -->
+<path d="M540 900 Q620 700 740 570 Q860 690 1010 900Z" fill="#bca98a"/><path d="M600 900 Q675 710 740 620 Q830 720 940 900" fill="none" stroke="#e4d6b8" stroke-width="18" opacity=".6"/>
+<!-- table with tea, map and broken bells -->
+<path d="M980 610 L1490 610 L1450 665 L1010 665Z" fill="url(#table)" stroke="#3c332d" stroke-width="7"/><path d="M1045 664 L1030 900 M1425 664 L1440 900" stroke="#4a3930" stroke-width="24"/>
+<path d="M1110 574 Q1180 536 1260 576 L1250 620 L1120 620Z" fill="#d8d0bb" stroke="#786d5c" stroke-width="5"/>
+<path d="M1128 581 Q1180 552 1242 581" fill="none" stroke="#6b8790" stroke-width="5"/>
+<path d="M1295 573 Q1340 548 1380 578 L1375 622 L1300 622Z" fill="#c9a77a" stroke="#59483a" stroke-width="5"/>
+<path d="M1310 585 L1363 610 M1363 585 L1310 610" stroke="#f2dfb0" stroke-width="3"/>
+<path d="M900 582 Q940 540 1000 582 L990 640 L910 640Z" fill="#e5e0d3" stroke="#6f6b5c" stroke-width="5"/><path d="M917 583 Q950 596 983 583" stroke="#805c43" stroke-width="4" fill="none"/>
+<path d="M920 566 Q950 544 978 566" fill="none" stroke="#b58a5a" stroke-width="6"/>
+<!-- flowers and low walls -->
+<g fill="#3c624d"><path d="M0 690 Q160 620 280 700 L320 900 H0Z M1280 690 Q1430 620 1600 700 V900 H1300Z"/></g>
+<g fill="#e8b8b0"><circle cx="62" cy="710" r="13"/><circle cx="112" cy="676" r="11"/><circle cx="188" cy="725" r="13"/><circle cx="1350" cy="708" r="12"/><circle cx="1430" cy="674" r="11"/><circle cx="1510" cy="720" r="13"/></g>
+<g fill="#f1d58c"><circle cx="34" cy="785" r="9"/><circle cx="226" cy="770" r="10"/><circle cx="1310" cy="790" r="9"/><circle cx="1538" cy="780" r="10"/></g>
+<!-- drifting dust motes -->
+<g fill="#fff2cf" opacity=".7"><circle cx="510" cy="220" r="4"/><circle cx="580" cy="330" r="3"/><circle cx="920" cy="240" r="4"/><circle cx="1040" cy="180" r="3"/><circle cx="760" cy="420" r="4"/></g>
+</svg>
