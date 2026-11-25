@@ -1,5 +1,6 @@
 // Chat 3 physical-world adapter. Chat 4 owns the sole narrative mutation path.
 import {campaign} from "./campaign.mjs";
+import {validSkyFlightProof} from "./sky-flight.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
@@ -120,6 +121,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(v.current?.id!==sceneId||w.location!==region||!campaign.regions.includes(region)||!v.objective.includes(op)||proof?.sceneId!==sceneId||proof.operation!==op||proof.region!==region||proof.verified!==true)return fail("invalid-world-evidence");
   if(!/^(explore|puzzle|rescue|repair|melody):/.test(op))return fail("owned-by-other-module");
   if(w.interactions[sceneId+":"+op])return fail("already-completed");
+  if(region==="sky"&&["explore:flight-recorder","puzzle:joint-flight","repair:sky"].includes(op)&&!validSkyFlightProof(op,v.choice??null,proof.flightProof))return fail("incomplete-flight");
   if(op==="explore:tide-logbook"&&(!tideTrail.every((_,i)=>w.interactions[tideKey(i)])||!tideNear(w,[.87,.748])))return fail("incomplete-tide-trail");
   if(op==="explore:scent-trail"&&(!scentTrail.slice(0,-1).every((_,i)=>w.interactions[scentKey(i)])||!scentAt(w,scentTrail.length-1)))return fail("incomplete-scent-trail");
   if(op==="puzzle:paired-water-gates"){

@@ -1,4 +1,5 @@
 import { campaign } from "./campaign.mjs";
+import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof} from "./sky-flight.mjs";
 // Actual walkable region mechanics. Story progression is never stored here.
 export const layouts={
  harbor:{
@@ -17,7 +18,7 @@ export const layouts={
  },
  forest:{name:["眠根林","Rootsleep Forest"],paths:[[.095,.90],[.20,.84],[.31,.73],[.35,.64],[.31,.58],[.265,.53],[.25,.49],[.30,.43],[.27,.35],[.29,.31],[.36,.31],[.42,.28],[.44,.36],[.39,.40],[.53,.40],[.56,.47],[.64,.53],[.69,.53],[.77,.44],[.83,.37],[.81,.32],[.83,.27],[.88,.24],[.89,.20]],castPoints:{yahe:[.30,.43],yuchuan:[.64,.53]},features:{"explore:scent-trail":[.69,.53,"气味踪迹","Scent trail"],"puzzle:paired-water-gates":[.69,.53,"双猫水闸","Paired water gates"],"repair:forest":[.89,.20,"古根圣所","Ancient-root sanctuary"],"melody:forest":[.89,.20,"相枝调","Living Roots"]}},
  forge:{name:["赤炉环城","Emberforge City"],castPoints:{xiaomao:[.53,.50]},paths:[[.1,.86],[.35,.76],[.35,.50],[.63,.50],[.74,.40],[.88,.30]],features:{"puzzle:safety-blueprint":[.35,.50,"安全图纸","Safety blueprint"],"puzzle:heat-pressure":[.63,.50,"炉心控制台","Furnace controls"],"repair:forge":[.88,.30,"炉心圣所","Hearth sanctuary"],"melody:forge":[.88,.30,"承火调","Song of Ember"],"battle:forge-guardian":[.74,.40,"守炉者","Forge guardian"]}},
- sky:{name:["云脊群岛","Skyspine Isles"],paths:[[.10,.80],[.10,.70],[.16,.61],[.18,.55],[.41,.51],[.58,.55],[.67,.50],[.72,.43],[.74,.36],[.84,.30],[.89,.24]],features:{"explore:flight-recorder":[.41,.51,"飞行记录仪","Flight recorder"],"puzzle:joint-flight":[.58,.55,"双猫滑翔台","Joint gliding platform"],"repair:sky":[.89,.24,"风翼圣所","Windwing sanctuary"],"melody:sky":[.89,.24,"逐风调","Open Sky"]}},
+ sky:{name:["云脊群岛","Skyspine Isles"],castPoints:{lingyu:[.16,.61],yuanfan:[.18,.55]},paths:[[.10,.80],[.10,.70],[.16,.61],[.18,.55],[.41,.51],[.58,.55],[.67,.50],[.72,.43],[.74,.36],[.84,.30],[.89,.24]],features:{"explore:flight-recorder":[.41,.51,"飞行记录仪","Flight recorder"],"puzzle:joint-flight":[.58,.55,"双猫滑翔台","Joint gliding platform"],"repair:sky":[.89,.24,"风翼圣所","Windwing sanctuary"],"melody:sky":[.89,.24,"逐风调","Open Sky"]}},
  library:{name:["月镜书库","Moonmirror Library"],paths:[[.10,.83],[.17,.73],[.22,.60],[.46,.58],[.50,.42],[.76,.40],[.82,.36],[.89,.29]],features:{"puzzle:mirror-records":[.46,.58,"镜面档案","Mirror records"],"explore:routing-record":[.76,.40,"路由记录","Routing record"],"repair:library":[.89,.29,"月镜圣所","Moonmirror sanctuary"],"melody:library":[.89,.29,"照影调","Reflections"]}},
  starfall:{name:["星坠原","Starfall Expanse"],paths:[[.10,.90],[.23,.78],[.34,.68],[.41,.58],[.42,.52],[.51,.58],[.68,.55],[.78,.48],[.78,.40],[.84,.33],[.92,.30]],features:{"puzzle:star-map":[.42,.52,"星图仪","Star chart"],"explore:catastrophe-record":[.34,.68,"灾变记录","Catastrophe record"],"puzzle:distributed-routing":[.84,.33,"分布式观星仪","Distributed observatory"],"repair:starfall":[.92,.30,"星原圣所","Starfall sanctuary"],"melody:starfall":[.92,.30,"续星调","Beyond Stars"]}}
 };
@@ -45,7 +46,8 @@ export const puzzleSpecs={
 };
 const melodyGoals={harbor:[0,2,1],forest:[1,0,2],forge:[2,1,0],sky:[1,2,0],library:[2,0,1],starfall:[0,1,2]};
 function harborAssist(p,v){if(!p)return;const methods=v.support?.find(x=>x.region==="harbor")?.methods||[];if(p.operation==="rescue:storm-boat"){p.goal=v.choice==="calibrate"?[0,2,1,1,2]:[0,0,2,1,1,2];if(methods.includes("navigator-trust"))p.assist="qilan";}if(p.operation==="puzzle:beam-mirrors"&&methods.includes("keeper-trust"))p.assist="jiedeng";}
-export function createPuzzle(op){
+export function createPuzzle(op,choice=null){
+ const flight=newSkyFlight(op,choice);if(flight)return {type:"skyFlight",operation:op,flight,solved:false};
  const spec=puzzleSpecs[op]||(op.startsWith("melody:")&&melodyGoals[op.split(":")[1]]?{type:"melody",initial:[],goal:melodyGoals[op.split(":")[1]],response:[]}:null);
  return spec&&{...spec,operation:op,values:[...spec.initial],response:[],mistakes:0,solved:false};
 }
@@ -98,7 +100,8 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
    if(op!==first&&v.objective.includes(first))return {ok:false,reason:v.choice==="rescue"?"rescue-first":"beacon-first"};
   }
   if(op.startsWith("melody:")&&!localNpcs().every(n=>invited.has(n.id)))return {ok:false,reason:"invite-local-cats"};
-  active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};puzzle=createPuzzle(op);if(region==="harbor")harborAssist(puzzle,v);if(puzzle?.type==="pairedWater")puzzle.pair=bridge.pairedGate().pair;if(puzzle?.type==="melody")puzzle.participants=[...invited];
+  if(op==="puzzle:joint-flight"&&!v.choice)return {ok:false,reason:"choice-pending"};
+  active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};puzzle=createPuzzle(op,v.choice??null);if(region==="harbor")harborAssist(puzzle,v);if(puzzle?.type==="pairedWater")puzzle.pair=bridge.pairedGate().pair;if(puzzle?.type==="melody")puzzle.participants=[...invited];
   if(puzzle)return {ok:true,puzzle:true};
   if(!op.startsWith("explore:"))return {ok:false,reason:"unimplemented"};
   return complete();
@@ -121,10 +124,12 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
   }
   if(!active)return {ok:false,reason:"no-interaction"};const f=layout.features[active.operation];
   if(!near(f)||(puzzle&&!puzzle.solved))return {ok:false,reason:"incomplete-physical-action"};
-  const result=bridge.recordWorld(active.sceneId,active.operation,{...active,verified:true,participants:puzzle?.participants,responses:puzzle?.response,pair:puzzle?.pair,waterSequence:puzzle?.type==="pairedWater"?puzzle.values:undefined});
+  const result=bridge.recordWorld(active.sceneId,active.operation,{...active,verified:true,participants:puzzle?.participants,responses:puzzle?.response,pair:puzzle?.pair,waterSequence:puzzle?.type==="pairedWater"?puzzle.values:undefined,flightProof:skyFlightProof(puzzle?.flight)});
   if(result.ok){active=null;puzzle=null;}return result;
  }
- function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(deferForestMelody&&puzzle.operation==="melody:forest")return {ok:true,pending:true,ceremony:true};return complete();}
+ function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(puzzle.type==="skyFlight"){steerSkyFlight(puzzle.flight,[.30,.50,.70][i]);return {ok:true,pending:true};}if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(deferForestMelody&&puzzle.operation==="melody:forest")return {ok:true,pending:true,ceremony:true};return complete();}
+ function flightSteer(y){return puzzle?.type==="skyFlight"&&live()&&steerSkyFlight(puzzle.flight,y);}
+ function flightTick(dt){if(puzzle?.type!=="skyFlight"||!live()||!tickSkyFlight(puzzle.flight,dt))return null;puzzle.solved=true;return complete();}
  function cargoPoints(){return [path[1],path[path.length-2]];}
  function startCargo(option){
   if(cargo||puzzle||!option||option.actor!==region)return {ok:false,reason:"cargo-busy"};
@@ -141,5 +146,5 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
  function rewardPoints(){return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}
- return {walk,tick,interact,operate,cancel,complete,traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
+ return {walk,tick,interact,operate,flightSteer,flightTick,cancel,complete,traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
 }
