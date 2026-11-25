@@ -22,7 +22,7 @@ jobs:
   preview:
     # Preview only; never deploy main or touch production APIs.
     if: github.ref == 'refs/heads/rpg/release-combined-next'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
