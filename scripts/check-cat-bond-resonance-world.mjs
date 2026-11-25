@@ -1,0 +1,55 @@
+import fs from "node:fs";
+const paths=["resonance/campaign.mjs","resonance/engine.mjs","resonance/slot-runtime.mjs","resonance/world-bridge.mjs","resonance/world-exploration.mjs","state.js"];
+const src=paths.map(p=>fs.readFileSync(new URL("../public/cat-bond/js/"+p,import.meta.url),"utf8"));
+console.log(JSON.stringify((function test(src){
+ const clean=s=>s.replace(/^import .*;$/gm,"").replace(/\bexport\s+/g,"");
+ const campaign=new Function(clean(src[0])+"\nreturn campaign")();
+ const makeEngine=new Function(clean(src[1])+"\nreturn makeEngine")();
+ const getSlotRuntime=new Function("campaign","makeEngine",clean(src[2])+"\nreturn getSlotRuntime")(campaign,makeEngine);
+ const createWorldBridge=new Function("campaign","getSlotRuntime",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime);
+ const {createExplorer,exchangeOptions,layouts}=new Function("campaign",clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign);
+ const storage=new Map(),ls={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},window={};
+ new Function("window","localStorage",src[5])(window,ls);
+ const State=window.State,assert=(x,m)=>{if(!x)throw Error(m)},ok=(r,m)=>assert(r?.ok,m+": "+r?.reason);
+ assert(State.startNewGame("slot1"),"slot1");let b=createWorldBridge(State),runtime=getSlotRuntime(State),notified=0;runtime.subscribe(()=>notified++);let physical=0,walking=0,deliveries=0,puzzles=0,localInvites=0,rewards=0,fixture=0;
+ function host(fn){const e=makeEngine(campaign,State.S.resonance),r=fn(e);ok(r,"host fixture");State.S.resonance=r.state;ok(State.save(),"fixture save");fixture++;}
+ function walk(x,p){let old=x.position;x.walk(...p);let ticks=0;while(x.moving&&ticks++<1000)x.tick(.05);assert(!x.moving&&x.near(p),"walk arrival "+p);walking+=ticks;return old;}
+ function solve(x){let p=x.puzzle;assert(p,"puzzle not mounted");const n=p.type;
+  if(["mirrors","water","stars","routing"].includes(n)){for(let i=0;i<3;i++){while(x.puzzle&&x.puzzle.values[i]!==p.goal[i])ok(x.operate(i),"dial");}}
+  else if(n==="heat"){while(x.puzzle&&x.puzzle.values[0]<p.goal[0])ok(x.operate(0),"heat");while(x.puzzle&&x.puzzle.values[1]>p.goal[1])ok(x.operate(1),"vent");}
+  else if(n==="flight"){for(const w of p.wind)ok(x.operate(1-w),"flight");}
+  else{ok(x.operate((p.goal[0]+1)%3),"wrong sequence");assert(x.puzzle&&x.puzzle.values.length===0,"wrong sequence advanced");for(const i of p.goal)ok(x.operate(i),"sequence");}
+  assert(!x.puzzle,"unsolved mechanism "+n);puzzles++;
+ }
+ function links(){for(const [a,z] of campaign.links){for(let i=0;i<4;i++){const region=[a,z,z,a][i];ok(b.enter(region),"travel exchange");let x=createExplorer(b,region),o=exchangeOptions(b,region,campaign.links).find(o=>o.a===a&&o.b===z);assert(o,"missing ordered exchange "+a+":"+z+":"+i);walk(x,x.cargoPoints()[o.from]);ok(x.startCargo(o),"pick cargo");assert(!x.deliverCargo().ok,"delivery without walking");x=createExplorer(b,region);assert(x.cargo?.stage===o.stage,"cargo not saved");walk(x,x.cargoPoints()[o.to]);ok(x.deliverCargo(),"deliver");assert(!x.cargo,"cargo not cleared");deliveries++;}}}
+ for(let scene=0;scene<34;scene++){
+  let v=b.view(),s=v.current;if(!s||s.id==="finale:B-01")break;
+  if(s.choices.length&&s.choiceTiming==="beforeAction")host(e=>e.choose(s.choices[0].id));
+  const ops=s.id==="harbor:H-04"?[...s.requires].reverse():s.requires;
+  if(s.id==="harbor:H-04"){
+   ok(b.enter("harbor"),"enter Harbor");
+   const x=createExplorer(b,"harbor");
+   walk(x,x.layout.features["puzzle:beam-mirrors"]);
+   assert(x.interact("puzzle:beam-mirrors").reason==="rescue-first","rescue choice must change the action order");
+  }
+  for(const op of ops){if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
+   ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
+   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}}
+   walk(x,p);const r=x.interact(op);ok(r,op);if(r.puzzle)solve(x);assert(!b.view().objective.includes(op),"unrecorded "+op);physical++;
+   if(physical===1){const p=x.rewardPoints()[0];walk(x,p.point);const cash=State.S.coins;ok(x.pickup(p.id),"cache reward");assert(State.S.coins>cash&&!x.pickup(p.id).ok,"duplicate reward");rewards++;}
+  }else host(e=>e.record(s.id,op));}
+  if(s.id==="starfall:F-04")links();
+  while(b.view().cursor<s.lines.length)host(e=>e.nextLine());
+  if(s.choices.length&&!b.view().choice)host(e=>e.choose(s.choices[0].id));
+  host(e=>e.finish());
+ }
+ assert(b.view().current.id==="finale:B-01","did not reach finale: "+b.view().current.id);
+ assert(b.view().ring&&b.view().melodies.length===6&&b.view().sanctuaries.length===6,"ring or sanctuaries incomplete");assert(deliveries===24&&localInvites===12,"wrong exchange/participation counts");
+ assert(!State.S.lastResonanceWorld,"parallel story state still created");
+ const old=State.S.resonance,oldW=JSON.stringify(b.world());const oldExplorer=createExplorer(b,b.world().location),oldToken=runtime.capture();
+ assert(State.startNewGame("slot2"),"slot2");assert(!oldExplorer.walk(.2,.2),"stale world explorer can move");assert(!runtime.nextLine(oldToken).ok,"stale scene lease accepted");assert(b.view().current.id==="prologue:P-01"&&!b.world().location,"slot2 leaked");
+ assert(State.startNewGame("slot3"),"slot3");assert(b.view().current.id==="prologue:P-01","slot3 leaked");
+ assert(State.loadSlot("slot1"),"restore slot1");assert(b.view().current.id==="finale:B-01"&&JSON.stringify(b.world())===oldW,"slot1 restore");
+ const before=JSON.stringify(State.S.resonanceExploration),failed=createWorldBridge({get S(){return State.S},save:()=>({ok:false,reason:"quota"})});assert(!failed.enter("harbor").ok&&JSON.stringify(State.S.resonanceExploration)===before,"failed save did not roll back");
+ assert(notified===physical+deliveries,"unexpected shared runtime notification count "+notified);return {physical,puzzles,walkingTicks:walking,deliveries,localInvites,rewards,fixtureTransitions:fixture,slots:3,sharedRuntimeNotifications:notified,canonicalFinale:b.view().current.id};
+})(src)));

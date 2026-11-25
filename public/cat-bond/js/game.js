@@ -127,6 +127,7 @@ class Game {
   }
 
   openWorldMap() {
+    window.SunlitGarden?.leave?.();
     // Clear messages from the garden encounter tutorial before navigating.
     // The global toast queue otherwise covers the exploration map and cats
     // for two seconds, despite the garden UI correctly being hidden.
@@ -152,6 +153,7 @@ class Game {
     document.getElementById('tabbar').classList.remove('hidden');
     document.getElementById('hud').classList.remove('hidden');
     this.yard?.refreshYardSwitch();
+    window.SunlitGarden?.enter?.();
   }
 
   rebuildYard() {
@@ -828,6 +830,7 @@ class Game {
       if(valid)window.UI?.confirmBuildingPlacement?.();
       return;
     }
+    if (window.SunlitGarden?.handleTap?.(x, y)) return;
     const hit = this.yard.handleTap(x, y);
     if (!hit) return;
     if (hit.type === 'building') {
@@ -964,6 +967,7 @@ class Game {
     }
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
+    window.SunlitGarden?.leave?.();
     this.scene = 'battle';
     if(this.yard?.placement){this.yard.cancelPlacement();window.UI?.updateBuildingPlacement?.();}
     window.MorrowwishMusic?.switchScene?.('battle');

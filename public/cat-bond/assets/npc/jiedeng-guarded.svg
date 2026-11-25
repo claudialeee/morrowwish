@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 820" role="img" aria-label="Jiedeng, lighthouse keeper of Misttide Harbor">
+<defs>
+ <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9aa2a0"/><stop offset=".45" stop-color="#626f70"/><stop offset="1" stop-color="#37484c"/></linearGradient>
+ <linearGradient id="coat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#77664e"/><stop offset=".5" stop-color="#3f4c4b"/><stop offset="1" stop-color="#202e32"/></linearGradient>
+ <linearGradient id="leather" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#bd9865"/><stop offset=".5" stop-color="#785b3f"/><stop offset="1" stop-color="#46372d"/></linearGradient>
+ <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7e1a1"/><stop offset=".5" stop-color="#bd8c4d"/><stop offset="1" stop-color="#63472c"/></linearGradient>
+ <linearGradient id="muzzle" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e9e5d8"/><stop offset="1" stop-color="#bfc2b7"/></linearGradient>
+ <filter id="shadow"><feGaussianBlur stdDeviation="13"/></filter>
+</defs>
+<ellipse cx="323" cy="782" rx="230" ry="28" fill="#172326" opacity=".2" filter="url(#shadow)"/>
+<!-- heavy keeper's coat -->
+<path d="M103 820 Q121 683 201 606 Q248 563 321 563 Q402 561 449 610 Q522 685 541 820Z" fill="url(#coat)" stroke="#b4a184" stroke-opacity=".42" stroke-width="5"/>
+<path d="M165 656 Q207 584 268 588 L299 820 H105 Q120 704 165 656Z" fill="#52605b"/>
+<path d="M470 656 Q427 584 370 588 L341 820 H546 Q527 704 470 656Z" fill="#2a3a3c"/>
+<!-- weathered shoulder mantle -->
+<path d="M139 652 Q165 574 244 568 L320 638 L397 568 Q482 580 502 654 L439 704 Q381 655 320 672 Q253 652 198 704Z" fill="#4a5a56" stroke="#b19a73" stroke-width="5"/>
+<path d="M161 640 L218 614 M476 640 L421 614" stroke="#d6c49b" stroke-opacity=".55" stroke-width="4"/>
+<!-- leather apron panel -->
+<path d="M245 627 Q319 650 396 627 L432 820 H208Z" fill="url(#leather)" stroke="#c1a77b" stroke-width="5"/>
+<path d="M266 658 L276 790 M374 658 L364 790" stroke="#ead3a3" stroke-opacity=".45" stroke-width="4" stroke-dasharray="7 8"/>
+<!-- scarf and keeper's key -->
+<path d="M256 512 Q318 546 382 510 L416 576 Q351 614 279 583Z" fill="#596d65" stroke="#c4c8ae" stroke-width="5"/>
+<path d="M372 552 Q426 560 461 612 L426 646 Q392 603 353 590Z" fill="#344d49" stroke="#9ea98f" stroke-width="4"/>
+<circle cx="319" cy="686" r="31" fill="url(#brass)" stroke="#59442e" stroke-width="5"/>
+<circle cx="319" cy="686" r="18" fill="#c8d1c0" stroke="#6f5638" stroke-width="3"/>
+<path d="M319 667 L319 705 M300 686 L338 686" stroke="#796044" stroke-width="4"/>
+<path d="M319 716 L319 751 Q319 765 335 765 Q350 765 350 748" fill="none" stroke="#c79b57" stroke-width="8" stroke-linecap="round"/>
+<path d="M350 748 L365 748 L365 760 L378 760" fill="none" stroke="#c79b57" stroke-width="7" stroke-linecap="round"/>
+<!-- neck -->
+<path d="M269 510 Q281 566 321 577 Q363 565 373 510Z" fill="url(#fur)"/>
+<!-- ears -->
+<path d="M164 304 L151 132 Q152 97 187 125 L265 214Z" fill="url(#fur)" stroke="#3e5154" stroke-width="8"/>
+<path d="M476 304 L489 132 Q488 97 453 125 L375 214Z" fill="url(#fur)" stroke="#3e5154" stroke-width="8"/>
+<path d="M171 180 L176 149 Q184 138 198 156 L235 216Z M469 180 L464 149 Q456 138 442 156 L405 216Z" fill="#a9827f" opacity=".7"/>
+<!-- mature broad face -->
+<path d="M154 269 Q179 191 251 180 Q319 149 391 180 Q463 193 486 270 Q499 359 454 430 Q408 502 321 516 Q235 504 187 431 Q141 360 154 269Z" fill="url(#fur)" stroke="#3e5154" stroke-width="8"/>
+<!-- thick cheek ruffs -->
+<path d="M162 363 Q132 382 147 433 Q170 416 185 416 Q171 453 204 461 Q207 430 225 420" fill="#798581" stroke="#43585a" stroke-width="5"/>
+<path d="M478 363 Q508 382 493 433 Q470 416 455 416 Q469 453 436 461 Q433 430 415 420" fill="#798581" stroke="#43585a" stroke-width="5"/>
+<!-- forehead silver streaks -->
+<path d="M267 199 Q284 237 302 256 M322 180 Q329 225 322 247 M377 199 Q357 238 340 256" fill="none" stroke="#c4c9bc" stroke-width="9" stroke-linecap="round"/>
+<!-- face mask -->
+<path d="M196 368 Q207 327 252 345 Q286 355 321 372 Q357 355 391 345 Q438 327 451 368 Q445 432 391 460 Q353 478 321 473 Q283 478 246 460 Q198 433 196 368Z" fill="url(#muzzle)"/>
+<path d="M236 333 Q270 316 306 337 Q270 352 236 333Z" fill="#f6f0df"/><path d="M359 337 Q397 316 430 333 Q397 352 359 337Z" fill="#f6f0df"/><ellipse cx="271" cy="337" rx="12" ry="13" fill="#a67b49"/><ellipse cx="396" cy="337" rx="12" ry="13" fill="#a67b49"/><ellipse cx="271" cy="337" rx="5" ry="11" fill="#1d2c2d"/><ellipse cx="396" cy="337" rx="5" ry="11" fill="#1d2c2d"/><path d="M220 312 Q268 292 310 317 M356 317 Q398 292 444 312" fill="none" stroke="#465257" stroke-width="14" stroke-linecap="round"/>
+<path d="M306 383 Q321 371 337 383 Q335 401 321 405 Q307 401 306 383Z" fill="#8d6a6b"/>
+<path d="M313 412 Q333 406 350 412" stroke="#77595a" stroke-width="5" fill="none" stroke-linecap="round"/>
+<path d="M321 410 Q307 426 292 425 M321 410 Q335 426 350 425" fill="none" stroke="#7a6260" stroke-width="4" stroke-linecap="round"/>
+<path d="M211 390 L143 376 M216 414 L142 417 M431 390 L499 376 M426 414 L500 417" fill="none" stroke="#f0eee1" stroke-opacity=".72" stroke-width="4" stroke-linecap="round"/>
+<!-- fur texture and old keeper details -->
+<g fill="none" stroke="#d8d8c9" stroke-opacity=".44" stroke-width="3" stroke-linecap="round"><path d="M199 282 l-13 24 M218 266 l-7 22 M421 266 l7 22 M440 282 l13 24 M182 390 l-16 13 M460 390 l16 13 M247 484 l-12 12 M393 484 l12 12"/></g>
+<path d="M190 742 Q213 726 235 741 M407 741 Q429 726 450 742" fill="none" stroke="#d2b67d" stroke-width="4"/>
+<circle cx="215" cy="760" r="8" fill="#d9bc7b"/><circle cx="425" cy="760" r="8" fill="#d9bc7b"/>
+</svg>

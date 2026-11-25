@@ -177,7 +177,7 @@ function saveChecksum(raw) {
   return (hash >>> 0).toString(16).padStart(8, '0');
 }
 function emptySaveBook() {
-  return { version: SAVE_BOOK_VERSION, updatedAt: 0, slots: {} };
+  return { version: SAVE_BOOK_VERSION, updatedAt: 0, slots: {}, deleted: {} };
 }
 function upgradeSaveBook(parsed) {
   if (!isSaveObject(parsed) || !isSaveObject(parsed.slots)) return emptySaveBook();
@@ -213,7 +213,7 @@ function readSlots() {
     const backup = localStorage.getItem(SAVE_BACKUP_KEY);
     if (backup) {
       const restored = upgradeSaveBook(JSON.parse(backup));
-      if (Object.keys(restored.slots).length) return restored;
+      if (Object.keys(restored.slots).length || Object.keys(restored.deleted || {}).length) return restored;
     }
   } catch (e) {}
   return emptySaveBook();
@@ -245,7 +245,8 @@ function writeSlots(book) {
   const next = {
     version: SAVE_BOOK_VERSION,
     updatedAt: Date.now(),
-    slots: isSaveObject(book?.slots) ? book.slots : {}
+    slots: isSaveObject(book?.slots) ? book.slots : {},
+    deleted: isSaveObject(book?.deleted) ? book.deleted : {}
   };
   const raw = JSON.stringify(next);
   try {
@@ -274,7 +275,7 @@ function writeSlots(book) {
   return { ok: true };
 }
 function migrateLegacySave(book = readSlots()) {
-  if (SAVE_SLOT_IDS.some(id => book.slots?.[id])) return book;
+  if (SAVE_SLOT_IDS.some(id => book.slots?.[id] || book.deleted?.[id])) return book;
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
@@ -316,6 +317,7 @@ function persistSlot(id, data, options = {}) {
   const revision = (Number(previous?.revision) || 0) + 1;
   try {
     book.slots[id] = makeSlotRecord(data, options.savedAt, revision);
+    if (book.deleted) delete book.deleted[id];
   } catch (error) {
     return { ok: false, reason: 'invalid_data', error: String(error?.message || error) };
   }
@@ -376,7 +378,15 @@ function registerSaveAdapter(key, adapter) {
 }
 function restoreSaveSystems(systems) {
   pendingSaveSystems = isSaveObject(systems) ? cloneSaveData(systems) : {};
-  for (const key of saveAdapters.keys()) restoreOneSaveAdapter(key);
+  for (const [key, adapter] of saveAdapters) {
+    // Never retain a previous slot's live adapter state when the next slot has no record.
+    if (Object.prototype.hasOwnProperty.call(pendingSaveSystems, key)) {
+      if (!restoreOneSaveAdapter(key)) throw new Error('Cannot restore save system: ' + key);
+    } else {
+      if (typeof adapter.reset !== 'function') throw new Error('Save system requires a reset handler: ' + key);
+      adapter.reset();
+    }
+  }
 }
 function buildSaveSnapshot() {
   const systems = cloneSaveData(pendingSaveSystems);
@@ -407,25 +417,44 @@ function load(slotId) {
   const book = migrateLegacySave();
   const inspected = inspectSlot(book, id);
   if (!inspected.readable) return false;
+  const previous = {state:S, systems:pendingSaveSystems, active:activeSlot(), suppressed:suppressSave, started:sessionStartedAt};
+  const previousAdapters = new Map();
   try {
+    for (const [key, adapter] of saveAdapters) {
+      const value = adapter.serialize();
+      if (value !== undefined) previousAdapters.set(key, cloneSaveData(value));
+    }
     const snapshot = inspected.data;
     const wrapped = snapshot?.snapshotVersion === 1 && isSaveObject(snapshot.state);
     S = normalizeLoadedState(wrapped ? snapshot.state : snapshot);
     restoreSaveSystems(wrapped ? snapshot.systems : {});
+    if (id !== previous.active && !setActiveSlot(id)) throw new Error('Cannot select save slot');
     if (!S.gameStarted) S.gameStarted = true;
     suppressSave = false;
     sessionStartedAt = Date.now();
-    if (id !== activeSlot() && !setActiveSlot(id)) return false;
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {}
     if (book.migrated) writeSlots(book);
     return true;
   } catch (e) {
+    S = previous.state; pendingSaveSystems = previous.systems;
+    suppressSave = previous.suppressed; sessionStartedAt = previous.started;
+    if (activeSlot() !== previous.active) setActiveSlot(previous.active);
+    for (const [key, value] of previousAdapters) {
+      try { saveAdapters.get(key)?.restore(cloneSaveData(value)); } catch (_) {}
+    }
     return false;
   }
 }
 function listSaveSlots() {
   const book = migrateLegacySave();
   const regionNames = {
+    garden: ['阳光花园', 'Sunlit Garden'],
+    harbor: ['霁潮港', 'Misttide Harbor'],
+    forest: ['眠根林', 'Rootsleep Forest'],
+    forge: ['赤炉环城', 'Emberforge City'],
+    sky: ['云脊群岛', 'Skyspine Isles'],
+    library: ['月镜书库', 'Moonmirror Library'],
+    starfall: ['星坠原', 'Starfall Expanse'],
     home: ['阳光花园', 'Sunlit Garden'],
     sakura: ['樱花林', 'Sakura Woods'],
     creek: ['溪谷', 'Creek Valley'],
@@ -437,13 +466,15 @@ function listSaveSlots() {
     const entry = inspected.entry;
     const snapshot = inspected.data;
     const data = snapshot?.snapshotVersion === 1 && isSaveObject(snapshot.state) ? snapshot.state : snapshot;
-    const story = data?.story || {};
-    const fragments = Array.isArray(story.fragments) ? story.fragments.length : 0;
-    const regionCount = Object.values(data?.worldmap?.regions || {}).filter(r => Number(r?.explored) > 0).length;
+    // Only the formal engine's slot-local snapshot supplies narrative metadata.
+    const story = data?.resonance || {};
+    const fragments = Array.isArray(story.melodies) ? story.melodies.length : 0;
+    const regionCount = Array.isArray(story.sanctuaries) ? story.sanctuaries.length : 0;
     // New narrative code may supply localized chapter metadata directly. Do
     // not label a legacy save with a chapter from the retired campaign.
-    const chapterNumber=Number(story.chapterNumber??story.currentChapter??story.chapter);
-    const explicitChapter=story.chapterTitle;
+    const chapterKey=typeof story.scene==='string'?story.scene.split(':')[0]:'';
+    const chapterNumber=['prologue','harbor','forest','forge','sky','library','starfall','finale'].indexOf(chapterKey);
+    const explicitChapter=chapterKey==='prologue'?{zh:'序章',en:'Prologue'}:chapterKey==='finale'?{zh:'终章',en:'Finale'}:null;
     const chapterLabelZh=typeof explicitChapter?.zh==='string'?explicitChapter.zh:
       Number.isInteger(chapterNumber)&&chapterNumber>0?'第 '+chapterNumber+' 章':
       data?.cats?.length?'冒险进行中':'尚未开始';
@@ -451,7 +482,8 @@ function listSaveSlots() {
       Number.isInteger(chapterNumber)&&chapterNumber>0?'Chapter '+chapterNumber:
       data?.cats?.length?'Adventure in progress':'Not started';
     const chapter=chapterLabelZh;
-    const regionId = data?.worldmap?.current || 'home';
+    const sceneRegion=['harbor','forest','forge','sky','library','starfall'].includes(chapterKey)?chapterKey:'garden';
+    const regionId = data?.resonance ? (data.resonanceExploration?.location || sceneRegion) : (data?.worldmap?.current || 'home');
     const region = typeof WorldMap !== 'undefined' ? WorldMap.REGIONS?.find(item => item.id === regionId) : null;
     const names = regionNames[regionId] || [region?.name || regionId, region?.sub || region?.nameEn || regionId];
     const playTimeMs = Math.max(0, Number(data?.playTimeMs) || 0);
@@ -477,6 +509,7 @@ function listSaveSlots() {
       regionLabelEn: names[1],
       playTimeMs,
       gameTimeLabel,
+      gameTimeLabelZh: hours ? hours+'小时 '+minutes+'分钟' : minutes+'分钟',
       storyProgress: fragments + '/6',
       active: id === activeSlot()
     };
@@ -489,6 +522,7 @@ function startNewGame(slotId, options = {}) {
   const previousState = S;
   const previousActive = activeSlot();
   const previousSystems = pendingSaveSystems;
+  const previousStarted = sessionStartedAt, previousSuppressed = suppressSave;
   const previousAdapterStates = {};
   try {
     for (const [key, adapter] of saveAdapters.entries()) {
@@ -501,15 +535,21 @@ function startNewGame(slotId, options = {}) {
   pendingSaveSystems = {};
   sessionStartedAt = Date.now();
   suppressSave = false;
-  if (!setActiveSlot(slotId)) { S = previousState; pendingSaveSystems = previousSystems; return false; }
-  for (const adapter of saveAdapters.values()) { try { adapter.reset?.(); } catch (e) {} }
   let result;
-  try { result = persistSlot(slotId, buildSaveSnapshot(), { allowOverwrite: true, savedAt: Date.now() }); }
+  try {
+    if (!setActiveSlot(slotId)) throw new Error('Cannot select save slot');
+    for (const [key,adapter] of saveAdapters) {
+      if (typeof adapter.reset !== 'function') throw new Error('Save system requires a reset handler: '+key);
+      adapter.reset();
+    }
+    result = persistSlot(slotId, buildSaveSnapshot(), { allowOverwrite: true, savedAt: Date.now() });
+  }
   catch (error) { result = { ok: false, reason: 'adapter_failed', error: String(error?.message || error) }; }
   if (!result.ok) {
     S = previousState;
     pendingSaveSystems = previousSystems;
-    setActiveSlot(previousActive);
+    sessionStartedAt=previousStarted; suppressSave=previousSuppressed;
+    if(activeSlot()!==previousActive)setActiveSlot(previousActive);
     for (const [key, value] of Object.entries(previousAdapterStates)) {
       try { saveAdapters.get(key)?.restore(cloneSaveData(value)); } catch (e) {}
     }
@@ -521,7 +561,6 @@ function loadSlot(slotId) {
   if (!SAVE_SLOT_IDS.includes(slotId)) return false;
   const book = migrateLegacySave();
   if (!inspectSlot(book, slotId).readable) return false;
-  if (!setActiveSlot(slotId)) return false;
   return load(slotId);
 }
 function saveToSlot(slotId, options = {}) {
@@ -535,7 +574,46 @@ function importSaveSlot(slotId, data, metadata = {}) {
   if (!SAVE_SLOT_IDS.includes(slotId) || !isSaveObject(data)) return { ok: false, reason: 'invalid_data' };
   return persistSlot(slotId, data, { allowOverwrite: true, savedAt: metadata.savedAt, overwriteConfirmed: true });
 }
-function replaceSaveSlots(entries, activeId) {
+function deletedSaveSlot(id) {
+  if (!SAVE_SLOT_IDS.includes(id)) return null;
+  const book = readSlots(), item = book.deleted?.[id];
+  return item && !book.slots[id] ? cloneSaveData(item) : null;
+}
+function deleteSaveSlot(id, options = {}) {
+  if (!SAVE_SLOT_IDS.includes(id)) return {ok:false, reason:'invalid_slot'};
+  if (!options.confirmed) return {ok:false, reason:'confirmation_required'};
+  if (S.gameStarted && id === activeSlot()) return {ok:false, reason:'active_slot'};
+  const book = migrateLegacySave();
+  if (!book.slots[id]) return {ok:false, reason:'empty_slot'};
+  delete book.slots[id];
+  book.deleted = {...book.deleted, [id]:{deletedAt:Date.now()}};
+  const result = writeSlots(book);
+  if (!result.ok) return result;
+  // Prevent a recovered backup from reviving the explicitly removed save.
+  try { localStorage.setItem(SAVE_BACKUP_KEY, JSON.stringify(book)); }
+  catch (_) { try { localStorage.removeItem(SAVE_BACKUP_KEY); } catch (_) {} }
+  return {ok:true, slotId:id};
+}
+function applyRemoteSaveSlot(id, entry, deletion = null) {
+  if (!SAVE_SLOT_IDS.includes(id)) return {ok:false,reason:'invalid_slot'};
+  if (!entry && (!deletion || !Number.isFinite(deletion.deletedAt) || deletion.deletedAt<=0)) return {ok:false,reason:'invalid_data'};
+  const book=migrateLegacySave();
+  book.deleted={...book.deleted};
+  if(entry){
+    if(!isSaveObject(entry.data))return {ok:false,reason:'invalid_data'};
+    try{book.slots[id]=makeSlotRecord(entry.data,entry.savedAt,(Number(book.slots[id]?.revision)||0)+1);}
+    catch(error){return {ok:false,reason:'invalid_data'};}
+    delete book.deleted[id];
+  }else{
+    delete book.slots[id];
+    book.deleted[id]={deletedAt:deletion.deletedAt};
+  }
+  const result=writeSlots(book);
+  if(!result.ok)return result;
+  if(!entry)try{localStorage.setItem(SAVE_BACKUP_KEY,JSON.stringify(book));}catch(_){try{localStorage.removeItem(SAVE_BACKUP_KEY);}catch(_){}}
+  return {ok:true,slotId:id,deleted:!entry};
+}
+function replaceSaveSlots(entries, activeId, deletedEntries = {}) {
   if (!isSaveObject(entries)) return { ok: false, reason: 'invalid_slots' };
   const slots = {};
   for (const id of SAVE_SLOT_IDS) {
@@ -546,12 +624,21 @@ function replaceSaveSlots(entries, activeId) {
     try { slots[id] = makeSlotRecord(data, value.savedAt || data.lastSeen, value.revision || 1); }
     catch (error) { return { ok: false, reason: 'invalid_data', slotId: id, error: String(error?.message || error) }; }
   }
-  const result = writeSlots({ version: SAVE_BOOK_VERSION, slots });
-  if (!result.ok) return result;
+  const deleted = {};
+  for (const id of SAVE_SLOT_IDS) {
+    if (!slots[id] && Number(deletedEntries[id]?.deletedAt)>0) deleted[id]={deletedAt:Number(deletedEntries[id].deletedAt)};
+  }
   const nextActive = SAVE_SLOT_IDS.includes(activeId) && slots[activeId]
     ? activeId
     : (SAVE_SLOT_IDS.find(id => slots[id]) || 'slot1');
-  if (!setActiveSlot(nextActive)) return { ok: false, reason: 'active_slot_unavailable' };
+  const previousActive=activeSlot();
+  // Select before changing the canonical book. If selecting fails, no slot is touched.
+  if (nextActive!==previousActive && !setActiveSlot(nextActive)) return {ok:false,reason:'active_slot_unavailable'};
+  const result = writeSlots({ version: SAVE_BOOK_VERSION, slots, deleted });
+  if (!result.ok) {
+    if(nextActive!==previousActive)setActiveSlot(previousActive);
+    return result;
+  }
   try {
     const snapshot = slots[nextActive]?.data;
     const mirror = snapshot?.snapshotVersion === 1 && isSaveObject(snapshot.state) ? snapshot.state : snapshot;
@@ -589,7 +676,10 @@ const SaveManager = Object.freeze({
   load: loadSlot,
   startNew: startNewGame,
   importSlot: importSaveSlot,
-  replaceSlots: replaceSaveSlots
+  replaceSlots: replaceSaveSlots,
+  applyRemoteSlot:applyRemoteSaveSlot,
+  deleteSlot: deleteSaveSlot,
+  getDeletedSlot: deletedSaveSlot
 });
 window.SaveManager = SaveManager;
 // Expedition health: casual battles always restore everyone to full HP.
@@ -721,7 +811,7 @@ window.State = {
   makeCat, addXp, xpToNext, catPower, bondTier, catName,
   save, load, hardReset, applyIdle, dailyAvailable, claimDaily,
   listSaveSlots, startNewGame, loadSlot, saveToSlot, setActiveSlot, activeSlot, SAVE_SLOT_IDS, SAVE_SLOTS_KEY, ACTIVE_SLOT_KEY,
-  getSaveSlot: SaveManager.getSlot, importSaveSlot, replaceSaveSlots, registerSaveAdapter,
+  getSaveSlot: SaveManager.getSlot, importSaveSlot, replaceSaveSlots, registerSaveAdapter, deleteSaveSlot, deletedSaveSlot, applyRemoteSaveSlot,
   difficulty, difficultyMult, setDifficulty, DIFFICULTY_MULTS,
   HEALTH_REGEN_MS, FISH_HEAL_FRACTION, catHpFraction, setBattleHealth,
   healAllCats, useMedkitForHealth, useMedkitForTeam,

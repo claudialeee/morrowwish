@@ -5,7 +5,7 @@ for (const file of [
   'public/elsewhere/app.js','public/telemetry.js','public/lang.js',
   'public/zh-site.js','public/zh-stories.js','public/zh-polish.js',
   'public/studio-insights/index.html','public/art/morrowwish-mark.svg','public/pawsibly-innocent/index.html','public/pawsibly-innocent/game.js','public/icons/pawsibly-innocent.svg',
-  'public/cat-bond/index.html','public/cat-bond/js/i18n.js','public/cat-bond/js/game.js','public/icons/cat-bond.svg','public/art/cat-bond-scene.svg',
+  'public/cat-bond/index.html','public/cat-bond/js/i18n.js','public/cat-bond/js/game.js','public/cat-bond/js/sunlit-garden.js','public/cat-bond/assets/sunlit-garden-cinematic.svg','public/cat-bond/assets/sunlit-garden-portrait.svg','scripts/sunlit-garden-visual-qa.mjs','.github/workflows/sunlit-garden-visual-qa.yml','public/icons/cat-bond.svg','public/art/cat-bond-scene.svg',
   'src/worker.js','src/analytics.js','cloudflare-pages/wrangler.jsonc'
 ]) if (!fs.existsSync(file)) throw new Error('Missing required file: '+file);
 
@@ -254,7 +254,7 @@ if(!unlockedPreview.includes('html.duo-embedded #skill-title{display:none!import
    !/duo-premium\.js\?v=[\w-]+/.test(unlockedPreview))
  throw Error('Unlocked duo modal must preserve the watercolor frame and all three unlocked tiers');
 const bondScriptSources=[...bondHTML.matchAll(/<script[^>]*src="([^"]+)"/g)].map(m=>m[1]);
-for(const asset of ['js/data.js','js/worldmap.js','js/battle.js','js/real-kittens.js','js/game.js','js/ui.js','js/i18n.js']){
+for(const asset of ['js/data.js','js/resonance/integration-entry.mjs','js/battle.js','js/real-kittens.js','js/game.js','js/ui.js','js/i18n.js']){
  if(!bondScriptSources.some(src=>src.startsWith(asset+'?v=')&&src.slice(asset.length+3).length>0))
   throw Error('Cat Bond game module must be cache-busted: '+asset);
 }
@@ -1179,7 +1179,7 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbWorld.includes('const s=this._renderedYardScale||1.2')||
     !cbWorld.includes('CatArt.drawCat(ctx, this.x+dx')||
     !cbWorld.includes('const rows=H<435||selection.length<=3?1:2')||
-    !cbWorld.includes("ctx.filter='saturate(1.5) contrast(1.14)'")||
+    !cbWorld.includes("ctx.filter='saturate(1.12) contrast(1.08)'")||
     !cbWorld.includes('this._renderedYardVisualScale=this._renderedYardScale*(growthForm?.scale||1)')||
     !/src="js\/world\.js\?v=[^"]+"/.test(yardIndex)||
     !/src="js\/game\.js\?v=[^"]+"/.test(yardIndex))
@@ -1396,3 +1396,56 @@ await import('./test-dashboard-sorting.mjs');
 
 // The Cat Bond RPG and encrypted cloud-save path are part of the production gate.
 await import('./check-cat-bond-story-cloud.mjs');
+
+
+// Sunlit Garden: source, artwork and cross-module ownership regression gate.
+const gardenCode=fs.readFileSync('public/cat-bond/js/sunlit-garden.js','utf8');
+const gardenProjects=fs.readFileSync('public/cat-bond/js/garden-projects.js','utf8');
+new Function(gardenProjects);
+const gardenArt=fs.readFileSync('public/cat-bond/assets/sunlit-garden-cinematic.svg','utf8');
+const gardenArtPortrait=fs.readFileSync('public/cat-bond/assets/sunlit-garden-portrait.svg','utf8');
+const gardenWorld=fs.readFileSync('public/cat-bond/js/world.js','utf8');
+const gardenGame=fs.readFileSync('public/cat-bond/js/game.js','utf8');
+const gardenHtml=fs.readFileSync('public/cat-bond/index.html','utf8');
+const gardenCss=fs.readFileSync('public/cat-bond/css/style.css','utf8');
+new Function(gardenCode);
+const gardenRegions=['harbor','forest','forge','sky','library','starfall'];
+const gardenCast=['muling','jiedeng','qilan','yahe','yuchuan','jinpo','xiaomao','lingyu','yuanfan','moye','baikan','xingya','lichuan'];
+if(!gardenArt.startsWith('<svg')||!gardenArt.includes('viewBox="0 0 1600 900"')||
+   !gardenArtPortrait.startsWith('<svg')||!gardenArtPortrait.includes('viewBox="0 0 900 1600"')||
+   /<text[\s>]/i.test(gardenArt+gardenArtPortrait)||/<foreignObject|<button|<input/i.test(gardenArt+gardenArtPortrait))
+ throw new Error('Sunlit Garden environment artwork must be a text-free scene plate, not a baked UI mockup');
+if(gardenRegions.some(id=>!gardenProjects.includes("['"+id+"'")||!fs.existsSync('public/cat-bond/assets/garden/projects/'+id+'.svg'))||
+   gardenCast.some(id=>!gardenCode.includes(id)))
+ throw new Error('Sunlit Garden must expose all six canonical restoration assets and home NPC anchors');
+if(!gardenProjects.includes('resonance?.sanctuaries')||!gardenProjects.includes('sunlitGarden.projects')||!gardenProjects.includes('State.addXp')||!gardenCode.includes('GardenProjects?.draw')||!gardenCode.includes('GardenProjects?.tap')||!gardenWorld.includes('GardenProjects?.update')||!gardenHtml.includes('js/garden-projects.js')||/State\.S\.resonance\s*=|\.resonance\.[a-zA-Z]+\s*=/.test(gardenProjects))throw new Error('Garden projects must use canonical read-only progression and real slot-local cat growth');
+if(!gardenCode.includes('window.State?.S')||!gardenCode.includes('resonance')||
+   !gardenCode.includes('registerNarrativeAdapter')||
+   !gardenCode.includes('drawHomeNpc')||!gardenCode.includes('interactHomeNpc')||
+   gardenCode.includes('localStorage')||gardenCode.includes('indexedDB')||
+   gardenCode.includes('State.S.story'))
+ throw new Error('Garden must read canonical per-slot state and delegate NPC art/dialogue without another save/story system');
+if(!gardenWorld.includes('assets/sunlit-garden-cinematic.svg')||
+   !gardenWorld.includes('assets/sunlit-garden-portrait.svg')||
+   !gardenWorld.includes('H > W * 1.12')||
+   !gardenWorld.includes('SunlitGarden?.draw?.(ctx,W,H,t)')||
+   !gardenGame.includes('SunlitGarden?.enter?.()')||
+   !gardenGame.includes('SunlitGarden?.leave?.()')||
+   !gardenGame.includes('SunlitGarden?.handleTap?.(x, y)')||
+   !gardenHtml.includes('js/sunlit-garden.js')||
+   !gardenCss.includes('.sg-hotspots')||
+   !gardenCss.includes('@media(max-width:700px)'))
+ throw new Error('Sunlit Garden artwork, lifecycle, interaction and responsive UI must be integrated into the live game source');
+console.log('Sunlit Garden: original environment source, six sanctuary accents, NPC adapter and game integration verified.');
+
+const gardenVisualTest=fs.readFileSync('scripts/sunlit-garden-visual-qa.mjs','utf8');
+const gardenVisualWorkflow=fs.readFileSync('.github/workflows/sunlit-garden-visual-qa.yml','utf8');
+new Function('return async function(){'+gardenVisualTest.replace(/^import .*;$/gm,'')+'}');
+if(!gardenVisualTest.includes("background:'portrait'")||
+   !gardenVisualTest.includes("background:'landscape'")||
+   !gardenVisualTest.includes("['cats','facilities','catdex','workshop','bond']")||
+   !gardenVisualWorkflow.includes('pull_request:')||
+   !gardenVisualWorkflow.includes('actions/upload-artifact@v4'))
+ throw new Error('Garden visual QA must cover desktop, both phone orientations, existing feature panels and screenshot artifacts');
+console.log('Sunlit Garden: Playwright visual QA covers desktop, portrait and landscape mobile with screenshots.');
+
