@@ -20,6 +20,21 @@ export function ruinsEncounterProfile(fighters,mode,difficulty){
  const hardcore=difficulty==="hardcore",duo=mode==="duo";
  return {level:Math.max(1,Math.round(average)+(hardcore?(duo?2:1):0)),escorts:field.length===2&&(hardcore||duo)?1:0};
 }
+// The player uses the shared ultimate meter, not the enemy-only ultMeter.
+// Earned promises provide a single recovery window when local support is used
+// in the casual postgame duo challenge; hardcore and ordinary captures retain
+// their existing enemy strength and do not receive the additional recovery.
+export function applyStarfallSupport(b,cats,difficulty){
+ b.gainUlt(15);
+ const r=b.postgameRuins;
+ if(difficulty!=="casual"||r?.mode!=="duo"||!r.promised||!b.duoUses||!b.duo)return;
+ const pair=new Set([b.duo.a.uid,b.duo.b.uid]);
+ for(const f of cats){
+  if(!f.alive||!pair.has(f.cat?.uid))continue;
+  b.healUnit(f,f.maxhp*.20);
+  f.shieldT=Math.max(f.shieldT||0,4);
+ }
+}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const tr=x=>window.MorrowwishI18n?.get?.()==="zh"?x[0]:x[1];
 const living=b=>b.team.filter(f=>f.alive);
@@ -158,7 +173,7 @@ function install(){
   else if(r.kit.kind==="mirror"){for(const e of b.liveEnemies())e.reflectT=0;}
   else if(r.kit.kind==="embers"){for(const f of cats){if(f.status)delete f.status.burn;}}
   else if(r.kit.kind==="gale"){const duration=r.skyMethod==="escort-flight"?1.8:.8,before=b.ult;for(const f of cats)f.inv=Math.max(f.inv||0,duration);if(r.skyMethod==="fast-courier")b.gainUlt(12);r.skySupportEffect={method:r.skyMethod,chargeBefore:before,chargeAfter:b.ult,protected:cats.length,duration};}
-  else if(r.kit.kind==="orbit"){for(const f of cats)f.ultMeter=Math.min(100,(f.ultMeter||0)+15);}
+  else if(r.kit.kind==="orbit"){applyStarfallSupport(b,cats,window.State.difficulty());}
   else{for(const f of cats)f.shieldT=Math.max(f.shieldT||0,2.5);}
   for(const f of cats)b.vfx.ring(f.x,f.y,{r0:16,vr:170,life:.55,color:r.kit.color,width:4});
   notice(b,"地区伙伴已解除本次危险。","Local allies have cleared this hazard.");paintHud(b);return true;
