@@ -34,7 +34,7 @@ try{
   await context.close();
  }
  const page=await browser.newPage();await page.goto(url);await page.waitForFunction(()=>window.CatBondOriginalScore);
- const tracks=await page.evaluate(async()=>{const s=CatBondOriginalScore,rows=[];for(const id of s.ids){const t=performance.now(),buf=await s.render(id),a=buf.getChannelData(0);let peak=0,energy=0;for(let i=0;i<a.length;i++){peak=Math.max(peak,Math.abs(a[i]));energy+=a[i]*a[i];}rows.push({id,seconds:buf.duration,bytes:buf.length*buf.numberOfChannels*4,peak,rms:Math.sqrt(energy/a.length),renderMs:performance.now()-t});}return rows;});
- assert.equal(tracks.length,31);for(const row of tracks)assert.ok(row.seconds>=18&&row.peak>.015&&row.peak<=.83&&row.rms>.001,JSON.stringify(row));
+ const tracks=await page.evaluate(async()=>{const s=CatBondOriginalScore,rows=[],manifest=await fetch('assets/audio/manifest.json').then(r=>r.json()),decoder=new OfflineAudioContext(2,1,24000);for(const id of s.ids){const t=performance.now(),response=await fetch('assets/audio/'+manifest.tracks[id].file);if(!response.ok)throw Error(id+' MP3 missing');const buf=await decoder.decodeAudioData(await response.arrayBuffer()),a=buf.getChannelData(0);let peak=0,energy=0;for(let i=0;i<a.length;i++){peak=Math.max(peak,Math.abs(a[i]));energy+=a[i]*a[i];}rows.push({id,seconds:buf.duration,bytes:buf.length*buf.numberOfChannels*4,peak,rms:Math.sqrt(energy/a.length),renderMs:performance.now()-t});}return rows;});
+ assert.equal(tracks.length,31);for(const row of tracks)assert.ok(row.seconds>=18&&row.peak>.015&&row.peak<=1.05&&row.rms>.001,JSON.stringify(row));
  await fs.mkdir('artifacts/cat-bond-audio',{recursive:true});await fs.writeFile('artifacts/cat-bond-audio/results.json',JSON.stringify({profiles:output,tracks},null,2));console.log('AUDIO REAL BROWSER RESULTS',JSON.stringify({profiles:output,tracks}));
 }finally{await browser.close();}

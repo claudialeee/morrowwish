@@ -3,6 +3,9 @@ on:
   pull_request:
     branches: [rpg/cat-bond-takeover]
     types: [opened, synchronize, reopened, ready_for_review]
+concurrency:
+  group: cat-bond-audio-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
@@ -22,6 +25,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq fluidsynth fluid-soundfont-gm ffmpeg
           node scripts/render-cat-bond-score.mjs
+          node scripts/check-cat-bond-audio-assets.mjs
           git add public/cat-bond/assets/audio/
           if ! git diff --cached --quiet; then
             git config user.name "github-actions[bot]"

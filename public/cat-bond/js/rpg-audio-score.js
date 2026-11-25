@@ -109,5 +109,11 @@ async function render(id){
  const norm=peak>.82?.82/peak:1;for(let c=0;c<2;c++){const data=out.getChannelData(c);for(let i=0;i<len;i++)data[i]*=norm;}
  return out;
 }
-window.CatBondOriginalScore=Object.freeze({regions:R,ids:Object.keys(P),arrange,render});
+function response(region){
+ const p=P[region];if(!p)return null;
+ const [bpm,k,m,motif]=p,phrase=motifs[motif],notes=[];let t=0;
+ for(const [d,len] of phrase){notes.push({m:degree(k,m,d),t:t*60/bpm,d:len*60/bpm});t+=len;}
+ return {notes,seconds:t*60/bpm};
+}
+window.CatBondOriginalScore=Object.freeze({regions:R,ids:Object.keys(P),arrange,render,response});
 })();

@@ -10,7 +10,7 @@ const key='cat-bond-rpg-audio-v1',clamp=n=>Math.max(0,Math.min(1,Number(n)||0));
 let prefs={enabled:true,music:.65,fx:.8};
 try{const old=JSON.parse(localStorage.getItem(key)||'null');if(old)prefs={enabled:old.enabled!==false,music:clamp(old.music),fx:clamp(old.fx)};else prefs.enabled=localStorage.getItem('morrowwish-music-enabled')!=='0';}catch{}
 function save(){try{localStorage.setItem(key,JSON.stringify(prefs));}catch{}}
-let ctx,bus,ambBus,active=null,pending=null,serial=0,desired='title',unlocked=false,hidden=document.hidden,paused=false,blocked=false,unavailable=false,duckUntil=0,amb=null,ambId='',ceremony=null,root=null,seen=new Set(),lastFx,ambientTick=0,cache=new Map(),started=false,renderQueue=Promise.resolve(),stopped=false;
+let ctx,bus,ambBus,active=null,pending=null,serial=0,desired='title',unlocked=false,hidden=document.hidden,paused=false,blocked=false,unavailable=false,duckUntil=0,amb=null,ambId='',ceremony=null,root=null,seen=new Set(),lastFx,ambientTick=0,cache=new Map(),started=false,renderQueue=Promise.resolve(),stopped=false,visualCeremony='',supportSeen=new Set(),supportRoot=null,voiceNodes=new Set(),lastErrorAt=0;
 const regions=score.regions;
 const now=()=>ctx?.currentTime||0;
 function ensure(){
@@ -21,7 +21,7 @@ function target(node,value,sec=.12){if(!node||!ctx)return;const t=now();node.gai
 function mix(){
  const cinematic=document.querySelector('.cbcp-root:not([hidden])'),talk=document.querySelector('.res-host.is-visible,.res-npc-dialogue');
  target(bus,prefs.enabled&&!hidden&&!paused?prefs.music*(now()<duckUntil?.28:cinematic?.65:talk?.48:.82):0);
- target(ambBus,!hidden&&!paused&&window.MorrowwishAudio?.isEnabled?.()!==false?prefs.fx*.18:0);
+ target(ambBus,!hidden&&!paused&&window.MorrowwishAudio?.isEnabled?.()!==false?prefs.fx*.32:0);
 }
 async function getBuffer(id){
  if(cache.has(id)){const v=cache.get(id);cache.delete(id);cache.set(id,v);return v;}
@@ -36,7 +36,7 @@ function select(id){
  desired=id;
  if(!ctx||!unlocked||!prefs.enabled||hidden||paused||stopped)return;
  if(active?.id===id&&!active.stopping){if(pending&&pending.id!==id){++serial;pending=null;}return;}
- if(pending?.id===id)return;
+ if(pending?.id===id||unavailable&&Date.now()-lastErrorAt<3000)return;
  const token=++serial;pending={id,token};
  getBuffer(id).then(buffer=>{
   if(token!==serial||desired!==id||!prefs.enabled||hidden||paused)return;
@@ -46,15 +46,25 @@ function select(id){
   source.onended=()=>{source.disconnect();gain.disconnect();if(active===next){active=null;if(ceremony?.id===id)ceremony=null;tick();}};
   source.start();dispose(old,.8);blocked=false;unavailable=false;
   if(ceremony?.id===id)ceremony.started=true;
- }).catch(()=>{if(token===serial){pending=null;unavailable=true;}});
+ }).catch(()=>{if(token===serial){pending=null;unavailable=true;lastErrorAt=Date.now();}});
 }
 function noise(region){
- const sr=ctx.sampleRate,len=Math.round(sr*5),b=ctx.createBuffer(1,len,sr),a=b.getChannelData(0);let x=0,y=0,seed=1997;
- const profile={garden:[.025,.10,2],harbor:[.025,.24,1],forest:[.08,.12,3],forge:[.045,.16,2],sky:[.022,.22,1],library:[.02,.055,1],starfall:[.016,.10,2]}[region];
- if(!profile)return null;const [speed,level,pulses]=profile;
- for(let i=0;i<len;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const n=seed/4294967296*2-1;x+=(n-x)*speed;y+=(x-y)*.12;const phase=i/len;const pulse=.60+.40*Math.sin(2*Math.PI*pulses*phase)**2;a[i]=(x*.6+y*.4)*level*pulse;}
- // Close the join, rather than allowing a discontinuous noise sample.
- for(let i=0;i<Math.min(600,len/2);i++){const q=i/600;a[i]*=q;a[len-1-i]*=q;}
+ const sr=ctx.sampleRate,len=Math.round(sr*12),b=ctx.createBuffer(2,len,sr),profile={
+  garden:{wind:.20,water:.24,leaves:.23,rumble:0},harbor:{wind:.18,water:.78,leaves:0,rumble:.09},forest:{wind:.14,water:.28,leaves:.64,rumble:0},
+  forge:{wind:.07,water:0,leaves:.14,rumble:.77},sky:{wind:.83,water:0,leaves:.02,rumble:.08},library:{wind:.045,water:0,leaves:.13,rumble:.02},starfall:{wind:.53,water:0,leaves:.18,rumble:.16}
+ }[region];if(!profile)return null;
+ for(let ch=0;ch<2;ch++){
+  let seed=1997+ch*321,x=0,y=0,z=0;const a=b.getChannelData(ch);
+  for(let i=0;i<len;i++){
+   const t=i/sr,p=i/len;seed=(Math.imul(seed,1664525)+1013904223)>>>0;const n=seed/4294967296*2-1;
+   x+=(n-x)*.014;y+=(n-y)*.11;z+=(n-z)*.003;
+   const swell=.32+.68*Math.pow(.5+.5*Math.sin(2*Math.PI*(p*3+ch*.07)),2),gust=.22+.78*Math.pow(.5+.5*Math.sin(2*Math.PI*(p*2+.17)),2);
+   const waves=(x*.9+(y-x)*.24)*swell,wind=(z*2.3+x*.3)*gust,leaf=(n-y)*(.12+.88*gust)*.11;
+   const machine=(z*.8+Math.sin(2*Math.PI*48*t)*.016+Math.sin(2*Math.PI*96*t)*.007)*(.55+.45*Math.sin(2*Math.PI*p*4)**2);
+   a[i]=profile.water*waves*.55+profile.wind*wind*.35+profile.leaves*leaf*.23+profile.rumble*machine*.55;
+  }
+  for(let i=0;i<Math.min(900,len/2);i++){const q=Math.sin(i/900*Math.PI/2);a[i]*=q;a[len-1-i]*=q;}
+ }
  return b;
 }
 function ambience(id){
@@ -63,11 +73,43 @@ function ambience(id){
  const b=noise(id);if(!b)return;
  const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=b;source.loop=true;gain.gain.value=0;source.connect(gain);gain.connect(ambBus);gain.gain.setTargetAtTime(1,now(),.18);source.onended=()=>{source.disconnect();gain.disconnect();};source.start();amb={source,gain};
 }
+function stopVoices(){for(const n of voiceNodes){try{n.stop();}catch{}}voiceNodes.clear();}
+function playResponse(region){
+ if(!ctx||!unlocked||hidden||paused||!prefs.enabled)return false;
+ const phrase=score.response(region);if(!phrase)return false;
+ const start=now()+.045;duckUntil=Math.max(duckUntil,start+phrase.seconds*.58);mix();
+ for(const note of phrase.notes){
+  const t=start+note.t*.58,d=Math.max(.09,note.d*.55),freq=440*2**((note.m-69)/12);
+  for(const [ratio,amp] of [[1,.055],[2.01,.020],[3.98,.009]]){
+   const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=freq*ratio;
+   g.gain.setValueAtTime(.00001,t);g.gain.linearRampToValueAtTime(amp,t+.012);g.gain.exponentialRampToValueAtTime(.00001,t+d+.20);
+   o.connect(g);g.connect(bus);voiceNodes.add(o);o.onended=()=>{voiceNodes.delete(o);o.disconnect();g.disconnect();};o.start(t);o.stop(t+d+.23);
+  }
+ }
+ return true;
+}
 function foley(id){
  if(!ctx||hidden||paused||window.MorrowwishAudio?.isEnabled?.()===false||prefs.fx===0)return;
- const t=now(),osc=ctx.createOscillator(),g=ctx.createGain(),p=ctx.createStereoPanner();
- const shapes={garden:[980,1450,.22],forest:[1370,1880,.25],harbor:[175,110,.43],forge:[260,115,.36],sky:[340,180,.55],library:[810,600,.46],starfall:[415,620,.65]};
- const s=shapes[id];if(!s)return;osc.type='sine';osc.frequency.setValueAtTime(s[0],t);osc.frequency.exponentialRampToValueAtTime(s[1],t+s[2]*.75);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.035,t+.04);g.gain.exponentialRampToValueAtTime(.0001,t+s[2]);p.pan.value=Math.sin(t)*.7;osc.connect(g);g.connect(p);p.connect(ambBus);osc.onended=()=>{osc.disconnect();g.disconnect();p.disconnect();};osc.start();osc.stop(t+s[2]+.03);
+ const t=now(),pan=Math.sin(t*.83)*.8;
+ const chirp=(at,from,to,d,amp,ratio=1)=>{
+  const o=ctx.createOscillator(),g=ctx.createGain(),p=ctx.createStereoPanner();o.type='sine';o.frequency.setValueAtTime(from*ratio,at);o.frequency.exponentialRampToValueAtTime(to*ratio,at+d*.75);g.gain.setValueAtTime(.0001,at);g.gain.linearRampToValueAtTime(amp,at+d*.18);g.gain.exponentialRampToValueAtTime(.0001,at+d);p.pan.value=pan;o.connect(g);g.connect(p);p.connect(ambBus);o.onended=()=>{o.disconnect();g.disconnect();p.disconnect();};o.start(at);o.stop(at+d+.02);
+ };
+ const texture=(at,d,center,q,amp)=>{
+  const len=Math.ceil(ctx.sampleRate*d),b=ctx.createBuffer(1,len,ctx.sampleRate),a=b.getChannelData(0);let seed=Math.floor(at*100000)+13;
+  for(let i=0;i<len;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const env=Math.sin(Math.PI*i/len)**2;a[i]=(seed/4294967296*2-1)*env;}
+  const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain(),p=ctx.createStereoPanner();s.buffer=b;f.type='bandpass';f.frequency.value=center;f.Q.value=q;g.gain.value=amp;p.pan.value=pan;s.connect(f);f.connect(g);g.connect(p);p.connect(ambBus);s.onended=()=>{s.disconnect();f.disconnect();g.disconnect();p.disconnect();};s.start(at);
+ };
+ if(id==='forest'||id==='garden'){
+  // Two soft bird calls with overtone and independently moving pitch.
+  for(let j=0;j<3;j++){const a=t+j*.19,f=(id==='forest'?1580:1190)+j*90;chirp(a,f,f*1.37,.13,.045);chirp(a,f*1.01,f*1.36,.11,.013,2);}
+  texture(t+.6,.7,1300,.8,.08);
+ }else if(id==='harbor'){
+  texture(t,1.6,420,.7,.16);chirp(t+.55,155,110,.7,.026);chirp(t+.55,155,110,.4,.009,2.1);
+ }else if(id==='forge'){
+  texture(t,.7,1900,1.3,.14);for(const r of [1,2.76,4.15])chirp(t+.35,220*r,210*r,.6/r,.038/r);
+ }else if(id==='sky'){texture(t,1.8,580,.65,.15);texture(t+.8,.9,1700,.7,.09);}
+ else if(id==='library'){texture(t,.46,2300,1.4,.075);for(const r of [1,2.02,3.9])chirp(t+.42,510*r,505*r,.8/r,.018/r);}
+ else if(id==='starfall'){texture(t,1.4,850,.75,.12);for(const r of [1,2.01,4.16])chirp(t+.5,310*r,310*r,1.1/r,.025/r);}
 }
 function read(){
  const game=window.__game,state=window.State?.S,story=state?.resonance,id=story?.scene||'',region=window.WorldMap?.mode==='region'?window.WorldMap.currentRegion:null;
@@ -96,14 +138,27 @@ function read(){
 }
 function tick(){
  const state=window.State?.S,melodies=state?.resonance?.melodies||[],scene=read();
- if(state!==root){root=state;seen=new Set(melodies);ceremony=null;}
- else for(const r of melodies)if(!seen.has(r)){seen.add(r);if(regions.includes(r)&&window.__CAT_BOND_STARTED__)ceremony={id:'song-'+r,root,started:false};}
- if(ceremony&&(ceremony.root!==root||window.__game?.scene==='battle'||!window.__CAT_BOND_STARTED__||!prefs.enabled))ceremony=null;
+ if(state!==root){root=state;seen=new Set(melodies);ceremony=null;visualCeremony='';supportRoot=null;stopVoices();}
+ const visual=document.querySelector('.rw-world:not([hidden])')?.dataset.ceremony||'';
+ if(visual!==visualCeremony){
+  visualCeremony=visual;
+  if(regions.includes(visual)&&!seen.has(visual)&&prefs.enabled)ceremony={id:'song-'+visual,root,region:visual,started:false,visual:true};
+  else if(!visual&&ceremony?.visual&&!melodies.includes(ceremony.region))ceremony=null;
+ }
+ for(const r of melodies)if(!seen.has(r)){seen.add(r);if(regions.includes(r)&&window.__CAT_BOND_STARTED__&&ceremony?.id!=='song-'+r)ceremony={id:'song-'+r,root,region:r,started:false};}
+ const finale=window.__game?.battle?.resonanceFinale;
+ if(finale?.id==='finale:B-03'){
+  const support=state?.resonance?.support||[];
+  if(supportRoot!==finale){supportRoot=finale;supportSeen=new Set(support);}
+  else for(const r of support)if(!supportSeen.has(r)){supportSeen.add(r);if(regions.includes(r))playResponse(r);}
+ }else{supportRoot=null;supportSeen.clear();}
+ if(ceremony&&(ceremony.root!==root||window.__game?.scene==='battle'||!window.__CAT_BOND_STARTED__||!prefs.enabled||!ceremony.visual&&scene.amb!==ceremony.region&&scene.id!=='atlas'))ceremony=null;
  const cinematic=document.querySelector('.cbcp-root:not([hidden])');
  const nextPause=cinematic?.dataset.paused==='true';
  if(nextPause!==paused){paused=nextPause;if(ctx&&unlocked){if(paused){++serial;pending=null;ctx.suspend().catch(()=>{});}else if(!hidden)ctx.resume().catch(()=>{});}}
  if(window.MorrowwishAudio?.setVolume&&lastFx!==prefs.fx){lastFx=prefs.fx;window.MorrowwishAudio.setVolume(prefs.fx);}
  desired=ceremony?.id||scene.id;
+ if(ctx&&unlocked&&!hidden&&!paused&&prefs.enabled){const region=scene.amb;if(regions.includes(region)&&!seen.has(region)&&!cache.has('song-'+region)&&!pending&&active?.id===desired)getBuffer('song-'+region).catch(()=>{});}
  if(!ctx||!unlocked)return;
  mix();if(!hidden&&!paused){select(desired);ambience(scene.amb);if(now()>ambientTick){ambientTick=now()+8+Math.sin(now())*3;foley(scene.amb);}}
 }
@@ -113,7 +168,7 @@ function start(){
  try{const p=ctx.resume();p.then(()=>{unlocked=ctx.state==='running';blocked=!unlocked;tick();}).catch(()=>{blocked=true;});}catch{blocked=true;}
  return true;
 }
-function setEnabled(on){prefs.enabled=!!on;save();if(!prefs.enabled){ceremony=null;clear();mix();}else{start();tick();}return prefs.enabled;}
+function setEnabled(on){prefs.enabled=!!on;save();if(!prefs.enabled){ceremony=null;stopVoices();clear();mix();}else{start();tick();}return prefs.enabled;}
 function setVolume(v){prefs.music=clamp(v);save();mix();return prefs.music;}
 function setEffectsVolume(v){prefs.fx=clamp(v);save();tick();return prefs.fx;}
 function sync(){tick();}
@@ -123,5 +178,5 @@ document.addEventListener('pointerdown',gesture,{capture:true,passive:true});doc
 document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',()=>{hidden=true;++serial;pending=null;ctx?.suspend().catch(()=>{});});window.addEventListener('pageshow',visibility);
 window.addEventListener('cat-bond-resonance-changed',tick);window.addEventListener('cat-bond-active-save-changed',()=>{root=null;ceremony=null;tick();});
 setInterval(tick,250);
-window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?(recordedIds.has(active.id)?'recorded-mp3:':'original-score:')+active.id:null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,audioState:ctx?.state||'not-created',cache:cache.size,pending:pending?.id||null,ambient:ambId})});
+window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;stopVoices();clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?(recordedIds.has(active.id)?'recorded-mp3:':'original-score:')+active.id:null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,audioState:ctx?.state||'not-created',cache:cache.size,pending:pending?.id||null,ambient:ambId,ceremony:ceremony?.region||null,regionalResponses:[...supportSeen],responseVoices:voiceNodes.size})});
 })();
