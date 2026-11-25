@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const HOME_ANCHORS = Object.freeze({
-    muling:{x:.66,y:.72,scale:1.08,radius:65},
+    muling:{x:.74,y:.66,scale:1.08,radius:65},
     jiedeng:{x:.15,y:.54,scale:.92,radius:46}, qilan:{x:.25,y:.59,scale:.86,radius:44},
     yahe:{x:.34,y:.56,scale:.90,radius:45}, yuchuan:{x:.42,y:.58,scale:.98,radius:48},
     jinpo:{x:.86,y:.50,scale:.98,radius:48}, xiaomao:{x:.91,y:.58,scale:.82,radius:42},

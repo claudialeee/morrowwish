@@ -141,9 +141,9 @@ BP.finish=function(win){
 function drawBackground(ctx,W,H,b){
   const img=art.background;
   if(img.complete&&img.naturalWidth){
-    window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#172532",bottom:"#574037"});
+    window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#eadce7",bottom:"#dcbfa9",portraitFocus:.5});
   }else{
-    const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#172532");g.addColorStop(.65,"#574037");g.addColorStop(1,"#1a222a");
+    const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#eadce7");g.addColorStop(.65,"#e7cbb5");g.addColorStop(1,"#dcbfa9");
     ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
   }
   const heat=b.forgeState?.heat||20,pulse=.5+.5*Math.sin(b.t*1.3);

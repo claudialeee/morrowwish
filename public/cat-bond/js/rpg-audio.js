@@ -68,7 +68,8 @@ function cue(kind,frequency=0){
   memory:[[1,.70,.055],[1.5,.58,.022],[2.01,.40,.009]],
   mechanism:[[1,.16,.045],[2.7,.12,.016],[4.1,.08,.007]],
   reward:[[1,.40,.045],[1.5,.52,.030],[2,.68,.020]],
-  error:[[1,.22,.035],[1.061,.20,.012]]
+  melody:[[1,.48,.075],[2.002,.26,.018],[3.01,.15,.006]],
+  error:[[1,.20,.027],[1.5,.15,.010]]
  },f=frequency>40?frequency:({sanctuary:392,bell:523.25,seal:196,impact:64,seasons:440,memory:330,mechanism:210,reward:523,error:146}[kind]||392),def=configs[kind];
  if(!def)return false;const cinematic=['sanctuary','seal','impact','seasons','memory','bell'].includes(kind);
  if(cinematic)cancelCinematicSounds();
@@ -76,8 +77,8 @@ function cue(kind,frequency=0){
  if(cinematic){duckUntil=Math.max(duckUntil,t+.85);mix();}
  return true;
 }
-function dispose(s,fade=.7){
- if(!s||s.stopping)return;s.stopping=true;const t=now();try{s.gain.gain.cancelScheduledValues(t);s.gain.gain.setTargetAtTime(.00001,t,fade/4);s.source.stop(t+fade);}catch{}
+function dispose(s,fade=.7,t=now()){
+ if(!s||s.stopping)return;s.stopping=true;try{s.gain.gain.cancelScheduledValues(t);s.gain.gain.setTargetAtTime(.00001,t,fade/4);s.source.stop(t+fade);}catch{}
 }
 function clear(){stopQuality();++serial;pending=null;for(const s of musicSources){try{s.source.stop(now()+.02);}catch{}}active=null;retiring=null;}
 function select(id){
@@ -88,11 +89,11 @@ function select(id){
  const token=++serial;pending={id,token};
  getBuffer(id).then(buffer=>{
   if(token!==serial||desired!==id||!prefs.enabled||hidden||paused)return;
-  pending=null;const old=active,source=ctx.createBufferSource(),gain=ctx.createGain(),t=now();
-  source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(1,t+.72);const filters=connectMusic(source,gain,id);
+  pending=null;const old=active,source=ctx.createBufferSource(),gain=ctx.createGain(),switchTime=now(),t=switchTime+(old?.source? .14 : 0);
+  source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(1,t+.25);const filters=connectMusic(source,gain,id);
   const next={id,source,gain,buffer,filters,started:t,stopping:false};active=next;
   musicSources.add(next);source.onended=()=>{musicSources.delete(next);if(retiring===next)retiring=null;source.disconnect();gain.disconnect();for(const filter of filters)filter.disconnect();if(active===next){active=null;if(ceremony?.id===id){if(ceremony.visual&&ceremony.root===root)performedVisual.add(ceremony.region);ceremony=null;}tick();}trimCache(desired);};
-  source.start();if(retiring&&retiring!==old){try{retiring.source.stop(now()+.025);}catch{}}retiring=old;dispose(old,.8);blocked=false;unavailable=false;
+  if(retiring&&retiring!==old){try{retiring.gain.gain.setValueAtTime(0,now());retiring.source.stop(now());}catch{}}retiring=old;dispose(old,.13,switchTime);source.start(t);blocked=false;unavailable=false;
   if(ceremony?.id===id)ceremony.started=true;
  }).catch(()=>{if(token===serial){pending=null;unavailable=true;lastErrorAt=Date.now();}});
 }

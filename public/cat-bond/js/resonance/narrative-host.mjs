@@ -132,7 +132,7 @@ const mulingExpressions={
 };
 
 function portrait(id,scene,cursor){
- if(id==="player"){const sp=window.State?.S?.cats?.[0]?.species;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;const key=JSON.stringify([window.State.S.cats[0].uid,sp,window.State.S.cats[0].appearance,window.State.S.cats[0].variant]);if(!playerPortraits.has(key)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp),window.State.S.cats[0]);playerPortraits.set(key,c.toDataURL("image/png"));}return playerPortraits.get(key)}
+ if(id==="player"){const selected=window.State?.S?.cats?.[0],sp=selected?.species;if((sp==="jinjc"||sp==="yunduo")&&!selected.appearance&&!selected.variant)return new URL("../player-portraits/"+sp+".webp",portraitRoot).href;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;const key=JSON.stringify([window.State.S.cats[0].uid,sp,window.State.S.cats[0].appearance,window.State.S.cats[0].variant]);if(!playerPortraits.has(key)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp),window.State.S.cats[0]);playerPortraits.set(key,c.toDataURL("image/png"));}return playerPortraits.get(key)}
  if(id==="muling"){const mood=mulingExpressions[scene]?.[cursor]??"warm";return new URL("../cinematics/characters/muling/traveler-"+mood+".webp",portraitRoot).href;}
  if(campaign.regions.includes(campaign.cast[id]?.region))return new URL(id+"-painted.webp",portraitRoot).href;
  return null;

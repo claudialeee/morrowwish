@@ -1,13 +1,13 @@
 import "./narrative-host.mjs";
-import "./npc-world.mjs";
+import "./npc-world.mjs?v=sunlit-muling";
 import "./ambient-play.mjs";
-import "./world-runtime.mjs";
-import "./title-entry.mjs";
-import "./garden-bell.mjs";
+import "./world-runtime.mjs?v=guided-puzzles";
+import "./title-entry.mjs?v=storybook-starters";
+import "./garden-bell.mjs?v=sunlit-bell";
 import "./chapter-cinematics.mjs";
-import "./forge-combat-runtime.mjs";
-import "./regional-combat.mjs";
-import "./finale-combat.mjs";
+import "./forge-combat-runtime.mjs?v=storybook-arenas";
+import "./regional-combat.mjs?v=storybook-arenas";
+import "./finale-combat.mjs?v=storybook-arenas";
 import "./resonance-book.mjs";
 
 window.__CAT_BOND_CANONICAL_RELEASE__ = true;

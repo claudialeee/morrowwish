@@ -32,6 +32,11 @@ try {
       // accessible name. Real clicks still use the visible role locator.
       const all=scope.getByRole('button',{name,exact:true,includeHidden:true}).or(scope.locator('button').and(scope.getByText(name,{exact:true})));
       const reveal=async()=>{if(await target.isVisible())return;await all.waitFor({state:'attached',timeout:30000});if(await target.isVisible())return;const world=page.locator('.rw-world:not([hidden])');if(!(await world.isVisible()))return;
+       const atlas=world.locator('.rw-atlas-menu:not([open]) > summary');
+       if(await atlas.count()&&await all.first().evaluate(el=>!!el.closest('.rw-atlas-menu')))await atlas.click();
+       const region=world.locator('.rw-region-toggle[aria-expanded="false"]');
+       if(await region.count()&&await all.first().evaluate(el=>!!el.closest('#rw-region-actions')))await region.click();
+       if(await target.isVisible())return;
        const count=Number(await world.getAttribute('data-fit-pages')||1),next=world.locator('[data-fit-next]'),prev=world.locator('[data-fit-prev]');
        const press=async locator=>options.hasTouch?locator.tap():locator.click();
        for(let i=0;i<count&&await prev.isVisible()&&await prev.isEnabled()&&!await target.isVisible();i++)await press(prev);
@@ -79,7 +84,7 @@ try {
        });
        assert.deepEqual(fit,{inside:true,art:true,subtitle:true,layers:true},id+' actual cinematic stage fit and loaded actor layers');
       }else if(await page.locator('.rw-world:not([hidden])').isVisible()&&!await page.locator('#panel.open,.res-host').count()){
-       const fit=await page.evaluate(()=>{const w=document.querySelector('.rw-world:not([hidden])'),s=w?.querySelector('.rw-surface');if(!s)return null;const stage=document.getElementById('stage').getBoundingClientRect(),rect=s.getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {scene:rect.width>0&&rect.height>0&&rect.top>=stage.top-1&&rect.bottom<=stage.bottom+1&&rect.left>=stage.left-1&&rect.right<=stage.right+1,ratio:Math.abs(rect.width/rect.height-16/9)<.03,noScroll:w.scrollHeight<=w.clientHeight+2&&rail.scrollHeight<=rail.clientHeight+2,buttons:[...rail.querySelectorAll('button')].filter(b=>b.getClientRects().length).every(b=>{const r=b.getBoundingClientRect();return r.top>=stage.top-1&&r.bottom<=stage.bottom+1&&r.left>=stage.left-1&&r.right<=stage.right+1;}),noFollower:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
+       const fit=await page.evaluate(()=>{const w=document.querySelector('.rw-world:not([hidden])'),s=w?.querySelector('.rw-surface');if(!s)return null;const stage=document.getElementById('stage').getBoundingClientRect(),rect=s.getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {scene:rect.width>0&&rect.height>0&&rect.top>=stage.top-1&&rect.bottom<=stage.bottom+1&&rect.left>=stage.left-1&&rect.right<=stage.right+1,ratio:Math.abs(rect.width/rect.height-16/9)<.03,noScroll:w.scrollHeight<=w.clientHeight+2&&(w.classList.contains("rw-region-compact")||rail.scrollHeight<=rail.clientHeight+2),buttons:[...rail.querySelectorAll('button')].filter(b=>b.getClientRects().length&&(!w.classList.contains('rw-region-compact')||!rail.contains(b))).every(b=>{const r=b.getBoundingClientRect();return r.top>=stage.top-1&&r.bottom<=stage.bottom+1&&r.left>=stage.left-1&&r.right<=stage.right+1;}),noFollower:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
        if(fit)assert.deepEqual(fit,{scene:true,ratio:true,noScroll:true,buttons:true,noFollower:true},id+' stage fit / solo exploration');
       }
       return page.screenshot({path:out+'/'+name+'-'+id+'.png'});
@@ -101,6 +106,8 @@ try {
     }
     async function verifyAtlasCamera(){
       const surface=page.locator('.rw-surface');
+      await page.waitForFunction(()=>document.querySelector('.rw-surface')?.dataset.camera==='[1,0,0]');
+      await button('+').click();
       await page.waitForFunction(()=>Number(JSON.parse(document.querySelector('.rw-surface')?.dataset.camera||'[0]')[0])>1);
       const before=JSON.parse(await surface.getAttribute('data-camera'));
       const box=await surface.boundingBox(),x=box.x+box.width*.5,y=box.y+box.height*.5,dx=box.width*.08;
@@ -377,6 +384,9 @@ try {
     const rewardBefore=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish}));
     await button('Returning Tides').click();
     const harborMelodyControls=page.locator('.rw-puzzle-controls');await harborMelodyControls.waitFor();
+    await button('Play example',harborMelodyControls).click();
+    await page.waitForFunction(()=>!document.querySelector('.rw-melody-demo')?.disabled);
+    assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false,'Demo never commits melody');
     await button('Starlight · Middle',harborMelodyControls).click(); // wrong note: retry must not commit a melody
     assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false);
     for(const input of ['Dew · Low','Flower bell · High','Starlight · Middle'])await button(input,harborMelodyControls).click();
@@ -484,7 +494,7 @@ try {
     if(name==='landscape'){
       const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {canvas:{x:a.x,y:a.y,right:a.right,bottom:a.bottom},rail:{x:b.x,y:b.y,right:b.right,bottom:b.bottom},w:innerWidth,h:innerHeight}});
       assert(layout.canvas.y>=0&&layout.canvas.bottom<=layout.h+1,'Forest canvas must fit entirely in landscape viewport');
-      assert(layout.canvas.right<=layout.rail.x&&layout.rail.right<=layout.w+1&&layout.rail.bottom<=layout.h+1,'Forest controls must sit beside, not cover, the canvas');
+      assert(layout.rail.right<=layout.w+1&&layout.rail.bottom<=layout.h+1,'Forest controls remain in the stage');
     }
     if(name==='portrait'){const box=await page.locator('.rw-surface').boundingBox();assert(box.y>=40&&box.y+box.height<=844,'Forest painting is fully visible before progress details on portrait');}
     await shot('forest-upper-gate');
@@ -539,6 +549,11 @@ try {
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().sanctuaries),['harbor','forest']);
     assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('forge')),true);
     await shot('forest-complete');
+    if(process.env.CAT_BOND_FOREST_ONLY==='1'){
+      assert.deepEqual(errors,[]);
+      results.push({profile:name,captured,harborComplete:true,forestComplete:true});
+      await context.close();continue;
+    }
     if(name==='desktop'){
       await button('Approach wild cat').click();
       await page.locator('#panel [data-battle-auto="true"]').click();

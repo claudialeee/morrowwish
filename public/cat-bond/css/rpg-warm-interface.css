@@ -45,3 +45,100 @@
 #stage .res-bell-label{background:#514431ee;color:#fff5dd;border:1px solid #bda16b}
 
 #stage #yard-actions .fab:hover,#stage #map-actions > #map-menu:hover,#stage .sg-hotspot:hover{background-color:#e5d1a7!important}
+
+#stage #panel .cat-starter-card .starter-portrait{
+ width:100%;max-width:180px;height:auto;aspect-ratio:1;object-fit:contain;
+ display:block;margin:0 auto 4px;pointer-events:none;
+}
+#stage #panel .cat-starter-card .dex-cell{min-width:0;background:#fffaf0}
+#stage #panel.open>.cat-capture-card{
+ box-sizing:border-box;max-height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;
+}
+#stage #panel .cat-capture-card #cr{
+ width:clamp(96px,22vh,180px)!important;height:auto!important;aspect-ratio:9/7;
+}
+#stage #panel .cat-story-starter-card .dex-grid{
+ grid-template-columns:repeat(2,minmax(0,1fr));max-width:440px;margin-inline:auto;
+}
+
+#stage .rw-world:not([hidden]){
+ color:#443746;background:linear-gradient(145deg,#fffcf3,#f3eaf1);
+}
+#stage .rw-world .rw-head{border-color:#d8cbbf}
+#stage .rw-world :is(.rw-brand small,.rw-brand strong,.rw-fit-summary,.rw-current strong,.rw-current small,.rw-metric b){color:#443746}
+#stage .rw-world :is(.rw-location,.rw-next,.rw-metric span,.rw-hint,.rw-harbor-status,.rw-region-status){
+ color:#605061;
+}
+#stage .rw-world :is(.rw-objective,.rw-notice,.rw-harbor-guide,.rw-current-actions span,.rw-cargo span){
+ background:#fff8ea!important;color:#443746!important;border-color:#d8c3a9!important;
+}
+#stage .rw-world .rw-button:not([data-note]){
+ background:#fbf2e4;color:#443746;border-color:#cbb8a0;box-shadow:none;
+}
+#stage .rw-world .rw-button:not([data-note]):enabled:hover{
+ background:#f0e1db;border-color:#a78692;
+}
+#stage .rw-world .rw-button:focus-visible,#stage .rw-atlas-menu summary:focus-visible{
+ outline:2px solid #785789;outline-offset:2px;
+}
+#stage .rw-world .rw-button[aria-current="location"]{
+ background:#eedded;border-color:#a786a0;
+}
+#stage .rw-world .rw-button:disabled{opacity:.58}
+
+#stage .cb-story-overlay.res-host{
+ background:linear-gradient(0deg,#4e394c78,transparent 76%);
+}
+#stage .res-host .res-body{
+ background:#fff9ed!important;color:#403342!important;
+ border-color:#d5baa7!important;box-shadow:0 10px 32px #533e4933;
+}
+#stage .res-host :is(.res-speaker,.res-line,.res-history){color:#4a354b}
+#stage .res-host :is(.res-controls,.res-choices)>button{
+ background:#f7eadb;color:#433345;border-color:#c8afaa;
+}
+#stage .res-host :is(.res-controls,.res-choices)>button:enabled:hover{
+ background:#eddfef;border-color:#a786a0;
+}
+#stage .res-host .res-portrait{filter:drop-shadow(0 5px 12px #48384755)}
+#stage .sg-prologue-guide{
+ background:#fff9edee!important;color:#493948!important;border-color:#cdb49d!important;
+}
+
+#stage #battle-ui .battle-tools{
+ background:#fff7ea;border-color:#d8c3b1;
+}
+#stage #battle-ui .battle-tools .tiny-btn{color:#4d3b51!important}
+#stage #battle-ui .battle-tools #btn-auto.is-auto{
+ background:#ebddeb!important;color:#533859!important;
+}
+#stage #battle-ui .cb-region-combat{
+ background:#fff8e9ed;color:#483747;border-color:#d4b8a4;
+}
+#stage #battle-ui .cb-region-combat button{
+ background:#efe0ed;color:#563b57;border-color:#bda4bb;
+}
+@media(max-width:520px){
+ #stage #battle-ui .battle-tools #battle-help-toggle{overflow:hidden}
+ #stage #battle-ui .battle-tools .battle-top-label{display:none!important}
+}
+
+#stage #panel.open:not(.rb-open)>.card,
+#stage #panel.rb-open .rb-navigation{
+ border-radius:12px;
+ border-color:#d4b8a4;
+}
+#stage #panel :is(.panel-back,.rb-home,.rb-close,.rb-action,.rb-craft-link).btn,
+#stage #panel .cat-highlight-card .btn.ghost{
+ background:#f7eadb;color:#483747;border-color:#cbb8a0;
+}
+#stage #panel .cat-highlight-card :is(h2,h3),#stage #panel.rb-open .rb-brand strong{
+ color:#493948;
+}
+#stage #panel .cat-highlight-card .dex-cell:not(.locked){
+ border-color:#d8c3b1;background:#fff8ed;color:#493948;
+}
+#stage #panel .cat-highlight-card .dex-cell:not(.locked):focus-visible{
+ outline:2px solid #785789;outline-offset:2px;
+}
+#stage .sg-prologue-guide :is(h2,h3,strong,p){color:#493948}

@@ -29,6 +29,7 @@ function pickWild(ids){const species=ids.map(id=>GameData.speciesById(id)).filte
 const regions=nodes.map(([id,x,y],i)=>({id,x,y,name:layouts[id].name[0],sub:layouts[id].name[1],speciesPool:pools[id],difficulty:i+1,theme:{region:id},unlock:i?{after:nodes[i-1][0]}:null}));
 function install(){
  let fitPage=0,fitKey="",fitNotice="",fitObserver=null,fitFrame=0;
+ let regionMenuOpen=false,atlasMenuOpen=false,waterHintPuzzle=null,waterHint=null;
  let demoPuzzle=null,demoActive=false,demoGeneration=0,demoShown=false,demoIndex=-1;
  const melodyShapes=["●","◆","✿"],melodyNames=[["露珠","Dew"],["星光","Starlight"],["花铃","Flower bell"]];
  const pitches={harbor:[261.63,329.63,392],forest:[392,523.25,659.25],forge:[261.63,329.63,392],sky:[392,523.25,659.25],library:[329.63,440,587.33],starfall:[329.63,493.88,659.25]};
@@ -50,14 +51,15 @@ function install(){
  function addWaterControls(row,p){
   row.classList.add("rw-quality-puzzle");const grid=E("div","rw-quality-cards");
   const next=p.values[0]<2?0:p.values[1]===0?1:2;
+  if(waterHintPuzzle!==p){waterHintPuzzle=p;waterHint=null;}
   const status=E("p","rw-quality-water-status","");status.setAttribute("role","status");
-  const hint=()=>tr("水压 ","Pressure ")+p.values[0]+"/2 · "+[tr("向右拨手轮两次","Turn the wheel twice"),tr("向上抬闸柄","Lift the gate"),tr("向右移开根团","Clear the roots")][next];status.textContent=hint();
+  const hint=()=>tr("水压 ","Pressure ")+p.values[0]+"/2 · "+[tr("向右拨手轮两次","Turn the wheel twice"),tr("向上抬闸柄","Lift the gate"),tr("向右移开根团","Clear the roots")][next];status.textContent=waterHint?tr(...waterHint):hint();
   const specs=[["valve-wheel","pressure-gauge",["调水压","Raise pressure"],"→"],["gate-handle","sluice-panel",["抬起闸门","Lift gate"],"↑"],["tangled-roots","water-release",["移开根团","Clear roots"],"→"]];
   specs.forEach(([part,back,label,arrow],i)=>{const done=i===0?p.values[0]===2:p.values[i]===1;const b=E("button","rw-button rw-quality-card");b.type="button";b.dataset.waterStep=String(i);b.dataset.current=String(i===next);b.disabled=done||!!ceremony;
    const visual=E("span","rw-quality-prop"),bg=E("img","rw-quality-back"),fg=E("img","rw-quality-front");for(const [img,id] of [[bg,back],[fg,part]]){img.src=new URL("../../assets/waterworks/"+id+".webp",import.meta.url).href;img.alt="";img.draggable=false;}visual.append(bg,fg,E("span","rw-quality-direction",done?"✓":arrow));if(i===0)fg.style.transform="rotate("+(p.values[0]*55)+"deg)";if(done&&i===1)fg.style.transform="translateY(-30%)";b.append(visual,E("span","",tr(...label)),E("small","",done?tr("完成","Done"):i===0?p.values[0]+"/2":arrow));
    let start=null;const owner=State.S,valid=()=>owner===State.S&&game.scene==="map"&&explorer?.puzzle===p&&b.isConnected&&!b.disabled;const reset=()=>{start=null;fg.style.translate="";};const commit=()=>{if(valid())operate(i);};b.addEventListener("pointerdown",e=>{if(!valid()||start||e.button!==0)return;start={id:e.pointerId,x:e.clientX,y:e.clientY};b.setPointerCapture?.(e.pointerId);e.preventDefault();});
    b.addEventListener("pointermove",e=>{if(start?.id!==e.pointerId)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;fg.style.translate=i===1?"0 "+Math.max(-45,Math.min(0,dy))+"px":Math.min(45,Math.max(0,dx))+"px 0";});
-   b.addEventListener("pointercancel",reset);b.addEventListener("lostpointercapture",reset);b.addEventListener("pointerup",e=>{if(start?.id!==e.pointerId)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;reset();e.preventDefault();if(Math.hypot(dx,dy)<10||(i===1?-dy>=24&&-dy>Math.abs(dx):dx>=24&&dx>Math.abs(dy)))commit();else status.textContent=tr("请沿箭头方向拖动","Drag in the arrow direction")+" "+arrow;});
+   b.addEventListener("pointercancel",()=>{reset();waterHint=["请沿箭头方向拖动 "+arrow,"Drag in the arrow direction "+arrow];status.textContent=tr(...waterHint);});b.addEventListener("lostpointercapture",reset);b.addEventListener("pointerup",e=>{if(start?.id!==e.pointerId)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;reset();e.preventDefault();if(Math.hypot(dx,dy)<10||(i===1?-dy>=24&&-dy>Math.abs(dx):dx>=24&&dx>Math.abs(dy)))commit();else{waterHint=["请沿箭头方向拖动 "+arrow,"Drag in the arrow direction "+arrow];status.textContent=tr(...waterHint);}});
    b.addEventListener("click",e=>{if(e.detail===0)commit();});grid.append(b);});
   row.append(status,grid);
  }
@@ -76,6 +78,7 @@ function install(){
   const style=getComputedStyle(host),available=host.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-head.offsetHeight-12;
   const limit=Math.max(104,Math.floor(wide?available:Math.min(available-100,available*.67)));
   host.style.setProperty("--rw-rail-limit",limit+"px");
+  if(mode==="map"||host.classList.contains("rw-region-compact")){host.dataset.fitPages="1";host.dataset.fitPage="0";return;}
   const pager=rail.querySelector(".rw-fit-pages"),items=[...rail.children].filter(el=>el!==pager);
   for(const el of items){el.removeAttribute("data-fit-hidden");for(const child of el.querySelectorAll("[data-fit-hidden]"))child.removeAttribute("data-fit-hidden");}
   pager.hidden=true;
@@ -129,8 +132,51 @@ function install(){
   const puzzle=items.find(el=>el.matches(".rw-puzzle-controls")),guide=items.find(el=>el.matches(".rw-harbor-guide"));
   if(puzzle&&guide){puzzle.prepend(guide);items.splice(items.indexOf(guide),1);}
   items.sort((a,b)=>priority(a)-priority(b));
-  const current=host.querySelector(".rw-current strong"),brand=head.querySelector(".rw-brand");
-  if(current&&brand){const summary=E("span","rw-fit-summary",current.textContent);summary.title=current.textContent;brand.append(summary);}
+  const currentHeading=host.querySelector(".rw-current strong"),brand=head.querySelector(".rw-brand");
+  if(currentHeading&&brand){const summary=E("span","rw-fit-summary",currentHeading.textContent);summary.title=currentHeading.textContent;brand.append(summary);}
+  if(mode==="map"){
+   const menu=E("details","rw-atlas-menu");
+   menu.open=atlasMenuOpen;
+   menu.append(E("summary","",tr("旅程与地区","Journey and regions")));
+   for(const item of items){
+    if(item.matches(".rw-controls,.rw-notice"))continue;
+    menu.append(item);
+   }
+   menu.addEventListener("toggle",()=>{if(menu.isConnected)atlasMenuOpen=menu.open;});
+   rail.append(menu);
+   host.append(rail);
+   fitRail();
+   return;
+  }
+  const compact=!puzzle&&!ceremony;
+  host.classList.toggle("rw-region-compact",compact);
+  if(compact){
+   const view=current().view();
+   const upcoming=view.current?.chapter;
+   const nextRegion=layouts[upcoming];
+   if(nextRegion&&upcoming!==current().world().location&&view.regions.includes(upcoming)){
+    const journey=B(tr("继续旅程 · ","Continue journey · ")+tr(...nextRegion.name),()=>enterRegion(upcoming));
+    journey.classList.add("rw-journey-action");
+    rail.append(journey);
+   }
+   const hint=host.querySelector(".rw-next");
+   if(hint&&brand){const summary=brand.querySelector(".rw-fit-summary");if(summary){summary.textContent=hint.textContent;summary.title=hint.textContent;}}
+   const toggle=B(tr("探索操作","Explore actions"),()=>{
+    regionMenuOpen=!regionMenuOpen;
+    rail.hidden=!regionMenuOpen;
+    toggle.setAttribute("aria-expanded",String(regionMenuOpen));
+    if(regionMenuOpen)fitRail();
+   });
+   toggle.classList.add("rw-region-toggle");
+   toggle.setAttribute("aria-controls","rw-region-actions");
+   toggle.setAttribute("aria-expanded",String(regionMenuOpen));
+   rail.id="rw-region-actions";
+   rail.hidden=!regionMenuOpen;
+   const camera=items.find(el=>el.matches(".rw-camera-controls"));
+   if(camera)items.splice(items.indexOf(camera),1);
+   if(message)items.splice(items.indexOf(message),1);
+   host.append(toggle);
+  }
   for(const el of items)rail.append(el);
   const pager=E("nav","rw-fit-pages"),prev=B(tr("上一组","Previous"),()=>prev.fitNavigate?.()),next=B(tr("下一组操作","More actions"),()=>next.fitNavigate?.()),counter=E("output","","");
   prev.dataset.fitPrev="";next.dataset.fitNext="";counter.setAttribute("aria-live","polite");
@@ -146,7 +192,7 @@ function install(){
  e.addEventListener("touchcancel",()=>{touch=null;},{passive:true});
  e.addEventListener("touchend",event=>{const start=touch;touch=null;if(!start||event.touches.length||e.disabled||!e.isConnected||owner!==State.S||game?.scene!=="map")return;const t=[...event.changedTouches].find(t=>t.identifier===start.id);if(!t||Math.hypot(t.clientX-start.x,t.clientY-start.y)>10||!e.contains(document.elementFromPoint(t.clientX,t.clientY)))return;event.preventDefault();lastTouch=performance.now();activate();},{passive:false});
  e.onclick=event=>{if(event?.detail!==0&&performance.now()-lastTouch<750)return;return activate();};return e};
- function current(){if(slot!==State.S){stopDemo();ceremony=null;slot=State.S;bridge=createWorldBridge(State);explorer=null;mode="map";pending=null;wild=null;wildRegion=null;spawnDelay=0;zoom=1.25;pan=[-.125,-.125];followCamera=true;notice="";selectedRoute=null;revision="";drag=null;dragged=false;pinch=0;pointers.clear();}return bridge;}
+ function current(){if(slot!==State.S){stopDemo();regionMenuOpen=false;atlasMenuOpen=false;waterHintPuzzle=null;waterHint=null;ceremony=null;slot=State.S;bridge=createWorldBridge(State);explorer=null;mode="map";pending=null;wild=null;wildRegion=null;spawnDelay=0;zoom=1.25;pan=[-.125,-.125];followCamera=true;notice="";selectedRoute=null;revision="";drag=null;dragged=false;pinch=0;pointers.clear();}return bridge;}
  const sync=()=>{let v=current().view();return v.current?.id+":"+v.cursor+":"+v.choice+":"+v.objective.join(",")+":"+JSON.stringify(v.links)+":"+JSON.stringify(v.postgame)+":"+JSON.stringify(State.S.resonance?.ambientDone||[])};
  function init(g){game=g;current();if(host)return;host=E("section","rw-world");image("forge");host.hidden=true;document.getElementById("stage").append(host);for(let ev of ["morrowwish-language-change","cat-bond-resonance-changed"])window.addEventListener(ev,()=>{if(game.scene==="map")render()});
   if(typeof window.ResizeObserver==="function"){fitObserver=new window.ResizeObserver(scheduleFit);fitObserver.observe(host.parentElement);}
@@ -157,8 +203,8 @@ function install(){
    current();host.replaceChildren();host.hidden=true;canvas=ctx=null;
    if(game.scene==="map")render();
   });}
- function enterMap(){current();stopDemo();ceremony=null;mode="map";explorer=null;pending=null;notice="";selectedRoute=null;zoom=1.25;centerCamera([.5,.5]);followCamera=false;render();return true;}
- function enterRegion(id){const b=current();stopDemo();ceremony=null;const r=b.enter(id);if(!r.ok){notice=tr("暂时无法前往","Cannot travel yet")+" · "+reason(r.reason);render();return false;}mode="region";explorer=createExplorer(b,id,{deferForestMelody:true,deferSkyMelody:true,deferForgeMelody:true,deferHarborMelody:true,deferLibraryMelody:true,deferStarfallMelody:true});pending=null;notice="";zoom=1.45;centerCamera(explorer.position);followCamera=true;if(wildRegion!==id){wildRegion=id;spawnDelay=0;wild=null;}if(!wild&&spawnDelay<=0)spawnWild(id);render();return true;}
+ function enterMap(){current();stopDemo();host?.classList.remove("rw-region-compact");atlasMenuOpen=false;regionMenuOpen=false;ceremony=null;mode="map";explorer=null;pending=null;notice="";selectedRoute=null;zoom=1;pan=[0,0];followCamera=false;render();return true;}
+ function enterRegion(id){const b=current();stopDemo();regionMenuOpen=false;waterHintPuzzle=null;waterHint=null;ceremony=null;const r=b.enter(id);if(!r.ok){notice=tr("暂时无法前往","Cannot travel yet")+" · "+reason(r.reason);render();return false;}mode="region";explorer=createExplorer(b,id,{deferForestMelody:true,deferSkyMelody:true,deferForgeMelody:true,deferHarborMelody:true,deferLibraryMelody:true,deferStarfallMelody:true});pending=null;notice="";zoom=1.45;centerCamera(explorer.position);followCamera=true;if(wildRegion!==id){wildRegion=id;spawnDelay=0;wild=null;}if(!wild&&spawnDelay<=0)spawnWild(id);render();return true;}
  function spawnWild(id){
   const p=explorer.layout.paths;
   // Harbor is the RPG's introductory hunting region. Before the first
@@ -186,8 +232,8 @@ function install(){
   img.src=new URL(id==="harbor-ceremony"?"../../assets/cinematics/prologue/harbor-at-twilight.webp":"../../assets/resonance-world-v2/"+(id==="harbor"?"harbor-mist":id)+".webp",import.meta.url).href;
   return img;
  }
- function render(){if(!host)return;if(!window.CatBondResonance?.view){host.replaceChildren(E("p","rw-notice",tr("正式剧情正在初始化","Initializing the canonical story")));host.hidden=game.scene!=="map";return;}const b=current(),v=b.view(),w=b.world();revision=sync();if(demoActive){demoGeneration++;demoActive=false;demoIndex=-1;window.MorrowwishMusic?.stopQuality?.();}host.replaceChildren();host.hidden=game.scene!=="map";if(ceremony)host.dataset.ceremony=ceremony.region;else delete host.dataset.ceremony;const forestRegion=mode==="region"&&w.location==="forest",forgeRegion=mode==="region"&&w.location==="forge",regionStep=mode+"/"+w.location+"/"+(v.current?.id||"")+"/"+(explorer?.puzzle?.operation||"explore");if(fitKey!==regionStep){fitKey=regionStep;fitPage=0;fitNotice="";}host.dataset.regionStep=regionStep;host.classList.toggle("rw-forest-region",forestRegion);host.classList.toggle("rw-forge-region",forgeRegion);host.classList.toggle("rw-library-region",mode==="region"&&w.location==="library");host.classList.toggle("rw-sky-region",mode==="region"&&w.location==="sky");
- const head=E("header","rw-head"),brand=E("div","rw-brand");brand.append(E("small","",tr("猫猫纽带","CAT BOND")),E("strong","",mode==="map"?tr("最后的回响","The Last Resonance"):tr(...layouts[w.location].name)));head.append(brand,B(tr("世界地图","World atlas"),enterMap,mode==="map"||!!ceremony),B(tr("阳光花园","Sunlit Garden"),exitToYard,!!ceremony));host.append(head);if(forestRegion){const credit=E("p","rw-hint rw-quality-credit");const link=E("a","","Enchanted Valley");link.href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093";link.target="_blank";link.rel="noopener noreferrer";const license=E("a","","CC BY 4.0");license.href="https://creativecommons.org/licenses/by/4.0/";license.target="_blank";license.rel="noopener noreferrer";credit.append(link,document.createTextNode(" by Kevin MacLeod (incompetech.com), "),license,document.createTextNode(", transcoded to Opus."));host.append(credit);}
+ function render(){if(!host)return;if(!window.CatBondResonance?.view){host.replaceChildren(E("p","rw-notice",tr("正式剧情正在初始化","Initializing the canonical story")));host.hidden=game.scene!=="map";return;}const b=current(),v=b.view(),w=b.world();revision=sync();if(demoActive){demoGeneration++;demoActive=false;demoIndex=-1;window.MorrowwishMusic?.stopQuality?.();}host.replaceChildren();host.hidden=game.scene!=="map";if(ceremony)host.dataset.ceremony=ceremony.region;else delete host.dataset.ceremony;const forestRegion=mode==="region"&&w.location==="forest",forgeRegion=mode==="region"&&w.location==="forge",regionStep=mode+"/"+w.location+"/"+(v.current?.id||"")+"/"+(explorer?.puzzle?.operation||"explore");if(fitKey!==regionStep){fitKey=regionStep;fitPage=0;fitNotice="";}host.dataset.regionStep=regionStep;host.classList.toggle("rw-atlas-mode",mode==="map");if(mode==="map")host.classList.remove("rw-region-compact");host.classList.toggle("rw-forest-region",forestRegion);host.classList.toggle("rw-forge-region",forgeRegion);host.classList.toggle("rw-library-region",mode==="region"&&w.location==="library");host.classList.toggle("rw-sky-region",mode==="region"&&w.location==="sky");
+ const head=E("header","rw-head"),brand=E("div","rw-brand");brand.append(E("small","",tr("猫猫纽带","CAT BOND")),E("strong","",mode==="map"?tr("最后的回响","The Last Resonance"):tr(...layouts[w.location].name)));head.append(brand);if(mode!=="map")head.append(B(tr("世界地图","World atlas"),enterMap,!!ceremony));head.append(B(tr("阳光花园","Sunlit Garden"),exitToYard,!!ceremony));host.append(head);if(forestRegion){const credit=E("p","rw-hint rw-quality-credit");const link=E("a","","Enchanted Valley");link.href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093";link.target="_blank";link.rel="noopener noreferrer";const license=E("a","","CC BY 4.0");license.href="https://creativecommons.org/licenses/by/4.0/";license.target="_blank";license.rel="noopener noreferrer";credit.append(link,document.createTextNode(" by Kevin MacLeod (incompetech.com), "),license,document.createTextNode(", transcoded to Opus."));host.append(credit);}
  if(mode==="map"){
   const nav=E("nav","rw-system-nav");
   const book=B(tr("星铃之书","Resonance Book"),()=>window.ResonanceBook?.open());book.classList.add("rb-world-entry");nav.append(book,B(tr("故事手册","Journal"),()=>{window.CatBondResonance?.showCurrent?.()}));
@@ -259,7 +305,7 @@ function install(){
  function key(e){if(explorer?.puzzle?.type==="skyFlight"&&["ArrowUp","ArrowDown"].includes(e.key)){e.preventDefault();explorer.flightSteer(explorer.puzzle.flight.target+(e.key==="ArrowUp"?-.13:.13));return;}if(cameraEnabled()&&(e.key==="+"||e.key==="="||e.key==="-")){e.preventDefault();scale(e.key==="-"?.83:1.2,.5,.5);return;}if(cameraEnabled()&&(mode==="map"||e.shiftKey)){const d={ArrowLeft:[.08,0],ArrowRight:[-.08,0],ArrowUp:[0,.08],ArrowDown:[0,-.08]}[e.key];if(d){e.preventDefault();followCamera=false;pan=[pan[0]+d[0],pan[1]+d[1]];contain();draw();}else if(e.key==="+"||e.key==="=")scale(1.2,.5,.5);else if(e.key==="-")scale(.83,.5,.5);}else if(explorer?.puzzle&&["1","2","3"].includes(e.key)){e.preventDefault();operate(Number(e.key)-1);}else if(explorer){const d={ArrowLeft:[-.05,0],ArrowRight:[.05,0],ArrowUp:[0,-.05],ArrowDown:[0,.05]}[e.key];if(d){e.preventDefault();pending=null;beginWalk();explorer.walk(explorer.position[0]+d[0],explorer.position[1]+d[1]);}}}
  function go(p,fn){if(explorer.near(p)){fn();return;}pending={p:[...p],fn};beginWalk();explorer.walk(...p);}
  function operate(i){if(ceremony||demoActive)return;const before=explorer.puzzle,p=before,op=explorer.active?.operation,owner=State.S;const correctNote=p?.goal?.[p.values.length]===i;
- if(p?.type==="pairedWater"){const [pressure,gate]=p.values;if(i===0&&pressure===2||i===1&&gate===1)return;if(i===1&&pressure!==2||i===2&&(pressure!==2||gate!==1)){const s=host.querySelector(".rw-quality-water-status");if(s)s.textContent=pressure!==2?tr("先把水压调到两格","First raise pressure to two"):tr("先抬起闸门","Lift the gate first");return;}}
+ if(p?.type==="pairedWater"){const [pressure,gate]=p.values;if(i===0&&pressure===2||i===1&&gate===1)return;if(i===1&&pressure!==2||i===2&&(pressure!==2||gate!==1)){const s=host.querySelector(".rw-quality-water-status");waterHint=pressure!==2?["先把水压调到两格","First raise pressure to two"]:["先抬起闸门","Lift the gate first"];if(s)s.textContent=tr(...waterHint);return;}waterHint=null;}
  const r=explorer.operate(i);if(before?.type==="skyFlight"&&r.pending){draw();return;}
  if(p?.type==="melody"&&r.ok){if(correctNote)melodyNote(p,i);else window.MorrowwishMusic?.cue?.("error");}
  if(p?.type==="pairedWater"&&r.ok&&!r.pending)window.MorrowwishMusic?.qualityCue?.("water-splash");
@@ -297,7 +343,7 @@ function install(){
  function visitScent(step){if(!explorer.near(step.point)){pending=null;explorer.walk(...step.point);return;}const r=explorer.traceScent(step.index);report(r,r.ok?step.clue:"");render();}
  function visitCache(cache){if(!cache)return;go(cache.point,()=>{report(explorer.pickup(cache.id),["发现信使补给","Courier cache discovered"]);render()});}
  function visitSurvey(s){go(s.from,()=>{report(explorer.startSurvey());render()});}
- function visitFeature(op,p){go(current().world().location==="sky"&&skyLaunch[op]||p,()=>{if(op.startsWith("battle:")){requestBattle(op,current().world().location);return;}const result=explorer.interact(op);report(result,result.ok&&!result.puzzle?starfallClues[op]||"":"");render()});}
+ function visitFeature(op,p){regionMenuOpen=false;go(current().world().location==="sky"&&skyLaunch[op]||p,()=>{if(op.startsWith("battle:")){requestBattle(op,current().world().location);return;}const result=explorer.interact(op);report(result,result.ok&&!result.puzzle?starfallClues[op]||"":"");render()});}
  function storyNpcs(){const region=current().world().location,gate=explorer.pairedGate(),locals=explorer.localNpcs().map((n,i)=>current().view().ending?n:region==="library"&&explorer.invited.includes(n.id)?{...n,point:i?[.86,.32]:[.93,.31]}:region==="forest"&&explorer.invited.includes(n.id)?{...n,point:i?[.88,.24]:[.83,.27]}:region==="forge"&&explorer.invited.includes(n.id)?{...n,point:i?[.84,.36]:[.74,.40]}:region==="sky"&&current().view().current?.id==="sky:S-05"&&explorer.invited.includes(n.id)?{...n,point:n.id==="yuanfan"?[.87,.32]:[.81,.36]}:gate?.ready&&n.id===gate.npc?{...n,point:gate.point}:n),residents=window.CatBondResonance?.residents?.(region)||[];const extra=residents.filter(n=>!locals.some(l=>l.id===n.id));return [...locals,...extra.map((n,i)=>({...n,point:n.id==="muling"?(region==="harbor"?[.34,.478]:region==="sky"?[.74,.36]:region==="starfall"?[.92,.30]:explorer.layout.paths.at(-2)):explorer.layout.paths[Math.max(1,Math.min(explorer.layout.paths.length-2,Math.round((i+1)*explorer.layout.paths.length/(extra.length+1))))]}))];}
  function npcPosition(n){const v=current().view(),reg=current().world().location,gate=explorer.pairedGate();if(ceremony||explorer.puzzle||v.ending||explorer.invited.includes(n.id)||gate?.npc===n.id||v.objective.includes("melody:"+reg)||v.objective.some(op=>op==="npc:"+n.id))return n.point;const seed=[...n.id].reduce((sum,c)=>sum+c.charCodeAt(0),0);const path=explorer.layout.paths;let nearest=path.reduce((best,p,i)=>distance(p,n.point)<distance(path[best],n.point)?i:best,0);const a=path[Math.max(0,nearest-1)],b=path[Math.min(path.length-1,nearest+1)],dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy)||1;const drift=Math.sin(frame/150+seed)*.027;return [Math.max(.04,Math.min(.96,n.point[0]+dx/length*drift)),Math.max(.08,Math.min(.94,n.point[1]+dy/length*drift))];}
  function visitNpc(npc){const region=current().world().location;go(npc.point,()=>{const v=current().view(),home=explorer.homeQuest(),actor=home?.actors.find(a=>a.id===npc.id&&!a.visited);if(home?.repaired&&actor){report(explorer.meetHomeResident(npc.id),actor.reply);render();return;}if(v.current?.choices?.length&&v.current.choiceTiming==="beforeAction"&&!v.choice&&v.current.choices.some(c=>c.npc===npc.id)){requestNpc(npc.id,region);return;}if(explorer.localNpcs().some(n=>n.id===npc.id)&&v.objective.includes("melody:"+region)&&!(["harbor","forest","forge","sky","library","starfall"].includes(region)&&v.objective.includes("repair:"+region))&&!explorer.invited.includes(npc.id)){report(explorer.inviteNpc(npc.id),[npc.name.zh+" · 已抵达合奏地点",npc.name.en+" · ready to join the melody"]);render();return;}requestNpc(npc.id,region);});}

@@ -38,7 +38,7 @@ export function echoBeaconOptions(p){
  const step=p.values.length,original=["✦","✧","●"],correct=p.goal[step],shift=step%3,signal=[...original.slice(shift),...original.slice(0,shift)];
  return {signal,options:[0,1,2].map(i=>i===correct?signal:i===(correct+1)%3?[...signal].reverse():[signal[0],signal[0],signal[2]])};
 }
-export function paintPuzzle(c,p,lang,cast,W=960,H=540){if(paintLibraryPuzzle(c,p,lang,W,H))return;const w=puzzleWords[p.type],l=lang==="zh"?0:1,X=n=>n*W,Y=n=>n*H,scale=W/960;const tx=(s,x,y,n=21,col=cream)=>label(c,s,X(x),Y(y),n*scale,col);c.save();c.fillStyle="#07131ddd";c.fillRect(0,0,W,H);rect(c,X(.11),Y(.11),X(.78),Y(.78),"#193143f8");rect(c,X(.12),Y(.13),X(.76),Y(.74),null,"#8d7958");tx(w[0][l],.5,.18,25);tx(w[1][l],.5,.25,15,"#cbdfdd");
+export function paintPuzzle(c,p,lang,cast,W=960,H=540){if(paintLibraryPuzzle(c,p,lang,W,H))return;const w=puzzleWords[p.type],l=lang==="zh"?0:1,X=n=>n*W,Y=n=>n*H,scale=W/960;const tx=(s,x,y,n=21,col=cream)=>label(c,s,X(x),Y(y),n*scale,col);c.save();c.fillStyle="#8d6b7333";c.fillRect(0,0,W,H);rect(c,X(.11),Y(.11),X(.78),Y(.78),"#554456ed");rect(c,X(.12),Y(.13),X(.76),Y(.74),null,"#8d7958");tx(w[0][l],.5,.18,25);tx(w[1][l],.5,.25,15,"#cbdfdd");
  const centers=[.3,.5,.7],r=43*scale,yy=Y(.53);
  if(p.type==="echo"){
   const step=p.values.length,{signal,options}=echoBeaconOptions(p);

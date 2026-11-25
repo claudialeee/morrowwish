@@ -2377,7 +2377,7 @@ const UI = {
       const sp = GameData.speciesById(cell.dataset.id);
       if (!cell.classList.contains('locked')) {
         const featured=State.S.cats.filter(c=>c.species===sp.id).sort((a,b)=>State.catPower(b)-State.catPower(a))[0];
-        CatArt.renderCatThumb(cell.querySelector('canvas'), sp,featured);
+        renderCollectiblePortrait(cell.querySelector('canvas'),sp,featured);
         cell.tabIndex=0;cell.setAttribute('role','button');
         cell.addEventListener('keydown',e=>{
           if(e.key==='Enter'||e.key===' '){e.preventDefault();cell.click();}
@@ -2429,7 +2429,7 @@ const UI = {
             :'评级挑战不会重复捕捉猫咪，也不会重复领取金币。'}</p>`);
         document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
         const featured=State.S.cats.filter(c=>c.species===sp.id).sort((a,b)=>State.catPower(b)-State.catPower(a))[0];
-        CatArt.renderCatThumb(document.getElementById('dx'),sp,featured);
+        renderCollectiblePortrait(document.getElementById('dx'),sp,featured);
         document.getElementById('dx-back').onclick=()=>this.openDex();
         const fight=document.getElementById('dx-rematch');
         if(fight&&canRematch)fight.onclick=()=>{
@@ -3311,8 +3311,10 @@ const UI = {
         ${!firstAdventure&&skillUnlock?'<button class="btn gold" id="cr-newskill">'+(english?'Try the new skill':'查看新技能')+'</button>':''}
         ${masteryReward&&!firstAdventure?'<button class="btn gold" id="cr-medal">'+(english?'View medal collection':'查看金爪徽章')+'</button>':''}
       </div>`);
-    document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
-    CatArt.renderCatThumb(document.getElementById('cr'),wildSp);
+    const captureCard=document.querySelector('#panel .card');
+    captureCard?.classList.add('cat-highlight-card','cat-capture-card');
+    if(captureCard)captureCard.scrollTop=0;
+    renderCollectiblePortrait(document.getElementById('cr'),wildSp);
     const dismiss=()=>{
       this.closeAll();
       if(this.game.scene==='yard')document.getElementById('yard-actions').classList.remove('hidden');
@@ -3525,6 +3527,37 @@ const UI = {
     });
   },
 };
+
+const collectiblePortraits=new Map();
+const portraitRequests=new WeakMap();
+function renderCollectiblePortrait(canvas,species,cat){
+  if(!canvas||!species)return;
+  const folders={jinjc:'starter-portraits',yunduo:'starter-portraits'};
+  const folder=folders[species.id];
+  const request={};
+  portraitRequests.set(canvas,request);
+  if(!folder){CatArt.renderCatThumb(canvas,species,cat);return;}
+  let image=collectiblePortraits.get(species.id);
+  if(!image){
+    image=new Image();
+    image.src='assets/'+folder+'/'+species.id+'.webp';
+    collectiblePortraits.set(species.id,image);
+  }
+  function paint(){
+    if(!canvas.isConnected||portraitRequests.get(canvas)!==request||!image.naturalWidth)return;
+    const ctx=canvas.getContext('2d');
+    if(!ctx)return;
+    const scale=Math.min(canvas.width/image.naturalWidth,canvas.height/image.naturalHeight)*.97;
+    const width=image.naturalWidth*scale,height=image.naturalHeight*scale;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(image,(canvas.width-width)/2,(canvas.height-height)/2,width,height);
+  }
+  if(image.complete&&image.naturalWidth)paint();
+  else{
+    CatArt.renderCatThumb(canvas,species,cat);
+    image.addEventListener('load',paint,{once:true});
+  }
+}
 
 function statLine(label, val) {
   const pct = Math.min(100, val * 3);

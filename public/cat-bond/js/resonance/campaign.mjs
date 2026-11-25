@@ -2284,8 +2284,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "我已经回来了，暮铃。",
-            "en": "I'm already home, Muling."
+            "zh": "我已经回来了。你还欠我一条小鱼干呢，记得吗？",
+            "en": "I'm already home. And you still owe me a dried fish, remember?"
           }
         },
         {
@@ -2298,8 +2298,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "那就让六地的伙伴证明给你看！",
-            "en": "Then let's show you what our friends in all six regions can do!"
+            "zh": "一起听吧。六个地方，各有各的调子，也能唱成一首歌。",
+            "en": "Listen with me. Six places, six different tunes. They can still make one song."
           }
         }
       ],
@@ -2343,15 +2343,15 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "那就让我用实际行动证明，我们有更好的办法！",
-            "en": "Then let me show you that we have a better way!"
+            "zh": "先帮我松开那几道锁。等铃声传出去，你就能听见他们了。",
+            "en": "Help me open those locks. Once the sound gets out, you’ll hear them."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "暮铃，这次我们用大家的回应找到新的办法。",
-            "en": "Muling, this time we'll find a new way through everyone's replies."
+            "zh": "听，第一声已经到了。剩下的几声，我们一起等。",
+            "en": "Listen. There’s the first reply. Let’s wait for the others together."
           }
         }
       ],
