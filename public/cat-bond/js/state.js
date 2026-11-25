@@ -376,7 +376,13 @@ function registerSaveAdapter(key, adapter) {
 }
 function restoreSaveSystems(systems) {
   pendingSaveSystems = isSaveObject(systems) ? cloneSaveData(systems) : {};
-  for (const key of saveAdapters.keys()) restoreOneSaveAdapter(key);
+  for (const [key, adapter] of saveAdapters) {
+    // Never retain a previous slot's live adapter state when the next slot has no record.
+    adapter.reset?.();
+    if (Object.prototype.hasOwnProperty.call(pendingSaveSystems, key) && !restoreOneSaveAdapter(key)) {
+      throw new Error('Cannot restore save system: ' + key);
+    }
+  }
 }
 function buildSaveSnapshot() {
   const systems = cloneSaveData(pendingSaveSystems);
@@ -407,25 +413,44 @@ function load(slotId) {
   const book = migrateLegacySave();
   const inspected = inspectSlot(book, id);
   if (!inspected.readable) return false;
+  const previous = {state:S, systems:pendingSaveSystems, active:activeSlot(), suppressed:suppressSave, started:sessionStartedAt};
+  const previousAdapters = new Map();
   try {
+    for (const [key, adapter] of saveAdapters) {
+      const value = adapter.serialize();
+      if (value !== undefined) previousAdapters.set(key, cloneSaveData(value));
+    }
     const snapshot = inspected.data;
     const wrapped = snapshot?.snapshotVersion === 1 && isSaveObject(snapshot.state);
     S = normalizeLoadedState(wrapped ? snapshot.state : snapshot);
     restoreSaveSystems(wrapped ? snapshot.systems : {});
+    if (id !== previous.active && !setActiveSlot(id)) throw new Error('Cannot select save slot');
     if (!S.gameStarted) S.gameStarted = true;
     suppressSave = false;
     sessionStartedAt = Date.now();
-    if (id !== activeSlot() && !setActiveSlot(id)) return false;
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {}
     if (book.migrated) writeSlots(book);
     return true;
   } catch (e) {
+    S = previous.state; pendingSaveSystems = previous.systems;
+    suppressSave = previous.suppressed; sessionStartedAt = previous.started;
+    if (activeSlot() !== previous.active) setActiveSlot(previous.active);
+    for (const [key, value] of previousAdapters) {
+      try { saveAdapters.get(key)?.restore(cloneSaveData(value)); } catch (_) {}
+    }
     return false;
   }
 }
 function listSaveSlots() {
   const book = migrateLegacySave();
   const regionNames = {
+    garden: ['阳光花园', 'Sunlit Garden'],
+    harbor: ['霁潮港', 'Misttide Harbor'],
+    forest: ['眠根森林', 'Rootsleep Forest'],
+    forge: ['赤炉环城', 'Emberforge City'],
+    sky: ['天脊群岛', 'Skyspine Isles'],
+    library: ['月镜藏书城', 'Moonmirror Library'],
+    starfall: ['坠星原野', 'Starfall Expanse'],
     home: ['阳光花园', 'Sunlit Garden'],
     sakura: ['樱花林', 'Sakura Woods'],
     creek: ['溪谷', 'Creek Valley'],
@@ -437,13 +462,15 @@ function listSaveSlots() {
     const entry = inspected.entry;
     const snapshot = inspected.data;
     const data = snapshot?.snapshotVersion === 1 && isSaveObject(snapshot.state) ? snapshot.state : snapshot;
-    const story = data?.story || {};
-    const fragments = Array.isArray(story.fragments) ? story.fragments.length : 0;
+    // Only the formal engine's slot-local snapshot supplies narrative metadata.
+    const story = data?.resonance || {};
+    const fragments = Array.isArray(story.melodies) ? story.melodies.length : 0;
     const regionCount = Object.values(data?.worldmap?.regions || {}).filter(r => Number(r?.explored) > 0).length;
     // New narrative code may supply localized chapter metadata directly. Do
     // not label a legacy save with a chapter from the retired campaign.
-    const chapterNumber=Number(story.chapterNumber??story.currentChapter??story.chapter);
-    const explicitChapter=story.chapterTitle;
+    const chapterKey=typeof story.scene==='string'?story.scene.split(':')[0]:'';
+    const chapterNumber=['prologue','harbor','forest','forge','sky','library','starfall','finale'].indexOf(chapterKey);
+    const explicitChapter=chapterKey==='prologue'?{zh:'序章',en:'Prologue'}:chapterKey==='finale'?{zh:'终章',en:'Finale'}:null;
     const chapterLabelZh=typeof explicitChapter?.zh==='string'?explicitChapter.zh:
       Number.isInteger(chapterNumber)&&chapterNumber>0?'第 '+chapterNumber+' 章':
       data?.cats?.length?'冒险进行中':'尚未开始';
@@ -521,7 +548,6 @@ function loadSlot(slotId) {
   if (!SAVE_SLOT_IDS.includes(slotId)) return false;
   const book = migrateLegacySave();
   if (!inspectSlot(book, slotId).readable) return false;
-  if (!setActiveSlot(slotId)) return false;
   return load(slotId);
 }
 function saveToSlot(slotId, options = {}) {
