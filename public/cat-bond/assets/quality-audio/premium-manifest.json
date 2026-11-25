@@ -1,0 +1,382 @@
+{
+  "schema": 1,
+  "review": "candidate-not-listening-approved",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "scenes": {
+    "title": "world-of-magic",
+    "opening": "within-our-nature",
+    "garden": "childhood",
+    "atlas": "the-climb",
+    "harbor": "castles-in-the-sky",
+    "forest": "enchanted-valley",
+    "forge": "katabasis-ii",
+    "sky": "discovery",
+    "library": "solace",
+    "starfall": "the-illusionist",
+    "betrayal": "the-illusionist",
+    "battle": "jade",
+    "boss-harbor": "hunted",
+    "boss-forest": "hunted",
+    "boss-forge": "hunted",
+    "boss-sky": "hunted",
+    "boss-library": "hunted",
+    "boss-starfall": "hunted",
+    "finale1": "hunted",
+    "finale2": "ascension",
+    "finale3": "where-stars-fall",
+    "muling": "the-long-way-home",
+    "ending": "the-long-way-home",
+    "identity": "reverie",
+    "postgarden": "the-restoration"
+  },
+  "tracks": {
+    "world-of-magic": {
+      "title": "World of Magic",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/world-of-magic/",
+      "scenes": [
+        "title"
+      ],
+      "notes": "Classic RPG orchestral opening; review the three sections for title-menu fit.",
+      "sourceSha256": "241f4438c15a3adea24304f2d5c04312a5f16848b8c3b8c70c050421830de5f8",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-world-of-magic.mp3",
+      "seconds": 95.007347,
+      "bytes": 2280847,
+      "sha256": "2d4e0648bd43e8e142f88fd1885f8dbc46d65866d6aa5025c4dae988a4411ed6",
+      "integratedLUFS": -19.29,
+      "truePeakDBTP": -3.48,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "within-our-nature": {
+      "title": "Within Our Nature",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/within-our-nature/",
+      "scenes": [
+        "opening"
+      ],
+      "notes": "Long-form emotional piano and strings; opening remains continuous.",
+      "sourceSha256": "38951d15d52ca55958384983db4226a9d36a33583f4eccabdc6c8ca02f32e028",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-within-our-nature.mp3",
+      "seconds": 396.956735,
+      "bytes": 9527632,
+      "sha256": "ddd629982acd764f325dbd642ce4d338c6699ad3ba3c0df7322eab1ffbdaf057",
+      "integratedLUFS": -19.49,
+      "truePeakDBTP": -2.25,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "childhood": {
+      "title": "Childhood",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/childhood/",
+      "scenes": [
+        "garden"
+      ],
+      "notes": "Gentle piano and strings, warm and intimate.",
+      "sourceSha256": "7bc1a9bf1d57d1eb96dcfd9ead5d31371d378fa6c238fe7f59700cd6e5936460",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-childhood.mp3",
+      "seconds": 134.765714,
+      "bytes": 3235048,
+      "sha256": "38bc84c4da246a020e8ecc008282b8e8e6f32257ae547081f50c75b8777fbd22",
+      "integratedLUFS": -19.26,
+      "truePeakDBTP": -4.34,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "the-climb": {
+      "title": "The Climb",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/the-climb/",
+      "scenes": [
+        "atlas"
+      ],
+      "notes": "Journey and discovery, slow orchestral rise.",
+      "sourceSha256": "791472ee1554311ca4191f1efc6b839b41fcb3139edc0ad0fd58292d95479343",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-the-climb.mp3",
+      "seconds": 344.764082,
+      "bytes": 8275009,
+      "sha256": "c61f3ca0cbcae51ef7d56b41ceb0e4f18efc331918696ea75aada6a3b302a344",
+      "integratedLUFS": -19.57,
+      "truePeakDBTP": -2.79,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "castles-in-the-sky": {
+      "title": "Castles in the Sky",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/castles-in-the-sky/",
+      "scenes": [
+        "harbor"
+      ],
+      "notes": "Soft piano and mallets, relaxed port-town atmosphere.",
+      "sourceSha256": "5a3e8e5cb7e848f399f6215c913727d4fa18ad5b25ca8e1a220f9abe6b367f68",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-castles-in-the-sky.mp3",
+      "seconds": 224.287347,
+      "bytes": 5383567,
+      "sha256": "3ba836d4065fe89b9a1204ba5a2dae790e9bb2fb02ffac3001b61b1ea3ae0f18",
+      "integratedLUFS": -19.26,
+      "truePeakDBTP": -5.88,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "enchanted-valley": {
+      "title": "Enchanted Valley",
+      "author": "Kevin MacLeod (incompetech.com)",
+      "license": "CC BY 4.0",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093",
+      "scenes": [
+        "forest"
+      ],
+      "notes": "Existing forest-only candidate. Preserve previously imported recording.",
+      "sourceSha256": "59287278392ea951d0526f6041036d3f75075cf1076eaadb72b7aeac27541235",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-enchanted-valley.mp3",
+      "seconds": 187.924898,
+      "bytes": 4510868,
+      "sha256": "8eb26c15a1f4baad144db2cd377d71cfade1725b55a6a71497f8f3ef35d970bf",
+      "integratedLUFS": -19.28,
+      "truePeakDBTP": -2.99,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "katabasis-ii": {
+      "title": "Katabasis II",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/katabasis-ii/",
+      "scenes": [
+        "forge"
+      ],
+      "notes": "Rhythmic strings and restrained optimism, not pounding machinery.",
+      "sourceSha256": "a98adeb1f2f4271a48a2bf734ec3e0df028a5e4c36f5f34787a6ec5be3607052",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-katabasis-ii.mp3",
+      "seconds": 408.685714,
+      "bytes": 9809128,
+      "sha256": "9c575b6de3896141a3d97d785cafc84e5d40ded6477587eb294782a8c55270e0",
+      "integratedLUFS": -19.27,
+      "truePeakDBTP": -2.28,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "discovery": {
+      "title": "Discovery",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/discovery/",
+      "scenes": [
+        "sky"
+      ],
+      "notes": "Expansive heroic flight and sweeping orchestration.",
+      "sourceSha256": "e4629422bd18a927950167dabfbe7c77c061595329da367f2407a8b4021fb832",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-discovery.mp3",
+      "seconds": 232.986122,
+      "bytes": 5592337,
+      "sha256": "a986ac7bbf99215c9e9b8b241c5d5ad4e353b13a211196e571fe08fc4d5bc469",
+      "integratedLUFS": -19.26,
+      "truePeakDBTP": -5.03,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "solace": {
+      "title": "Solace",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/solace/",
+      "scenes": [
+        "library"
+      ],
+      "notes": "Contemplative piano and glass marimba.",
+      "sourceSha256": "bb54696d9b49e60d8e9edc25d80c19a975d25b3c8d8ca32afe4d963372e1d1bf",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-solace.mp3",
+      "seconds": 354.037551,
+      "bytes": 8497572,
+      "sha256": "c4cd3ee536e7cb9f12b79d42bc99ad1833147628db80a1b0ad88cee60d09727b",
+      "integratedLUFS": -19.26,
+      "truePeakDBTP": -6.05,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "the-illusionist": {
+      "title": "The Illusionist",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/the-illusionist/",
+      "scenes": [
+        "starfall",
+        "betrayal"
+      ],
+      "notes": "Mysterious orchestra and choir; intentional thematic reprise.",
+      "sourceSha256": "79d77e41b56bf5e976eedc0f1176d04fd4ac454f0407c3c87c6d257f7b358cd8",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-the-illusionist.mp3",
+      "seconds": 212.715102,
+      "bytes": 5105833,
+      "sha256": "291a8ded2beed39ef18ae0acc10ffad9c5d1a446dff4f6b553b495bef381e88e",
+      "integratedLUFS": -19.23,
+      "truePeakDBTP": -3.73,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "jade": {
+      "title": "Jade",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/jade/",
+      "scenes": [
+        "battle"
+      ],
+      "notes": "Adventurous full orchestra; normal battle theme.",
+      "sourceSha256": "ecf646ea9eb6ef5060a5a5290ea44558765be721ed049044bb96b0c24254770f",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-jade.mp3",
+      "seconds": 124.656327,
+      "bytes": 2992422,
+      "sha256": "5ce83fe51b5a5cd1692c72a7be7ed67c2d362ae5d21ec4a21c584daee019db76",
+      "integratedLUFS": -19.26,
+      "truePeakDBTP": -5.99,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "hunted": {
+      "title": "Hunted",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/hunted/",
+      "scenes": [
+        "boss-harbor",
+        "boss-forest",
+        "boss-forge",
+        "boss-sky",
+        "boss-library",
+        "boss-starfall",
+        "finale1"
+      ],
+      "notes": "Action orchestra; common boss leitmotif, not six identical exploration tracks.",
+      "sourceSha256": "899d26ad271f80df82468f4ca35dd1ad11b48ff191fd288ed7dba2d8fe32db03",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-hunted.mp3",
+      "seconds": 104.594286,
+      "bytes": 2510933,
+      "sha256": "68bfcaac5929fa8bf04029a93d86a93d6e28d32ac9e8e5c9df56979edcba8db3",
+      "integratedLUFS": -19.26,
+      "truePeakDBTP": -6.69,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "ascension": {
+      "title": "Ascension",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/ascension/",
+      "scenes": [
+        "finale2"
+      ],
+      "notes": "Orchestral adversity and hope.",
+      "sourceSha256": "72cce153866fbb5b0c5d8ffb0be2ea73bf64190e2b70a50cbcc8c83b5a8e0dbf",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-ascension.mp3",
+      "seconds": 368.927347,
+      "bytes": 8854927,
+      "sha256": "4d5056a56d603868424b55bca892249861e4e296e2d1c38bccdc774abb9c8257",
+      "integratedLUFS": -19.26,
+      "truePeakDBTP": -5.91,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "where-stars-fall": {
+      "title": "Where Stars Fall",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/where-stars-fall/",
+      "scenes": [
+        "finale3"
+      ],
+      "notes": "Uplifting brass, strings and choir for final resolution.",
+      "sourceSha256": "2e7e0f7c1ba5c5dc144f972af6069ce7d4fc828e45bb7c4d7ec6b6abb8f16f49",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-where-stars-fall.mp3",
+      "seconds": 268.355918,
+      "bytes": 6441213,
+      "sha256": "9723783b685ce876bcce0877822b95dc4546ddb4a0d7a83c70c71595d6941392",
+      "integratedLUFS": -19.22,
+      "truePeakDBTP": -4.05,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "the-long-way-home": {
+      "title": "The Long Way Home",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/the-long-way-home/",
+      "scenes": [
+        "muling",
+        "ending"
+      ],
+      "notes": "Nostalgic piano, reunion motif.",
+      "sourceSha256": "ff17b42958379dced60facab369e5365a2d6786d651864b32d2d9d1837a6bbd2",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-the-long-way-home.mp3",
+      "seconds": 170.34449,
+      "bytes": 4088938,
+      "sha256": "4a5b2194cb4ef57c6de109bd61dfbf533f6a1318ba769b0cedaa2d444d40e50e",
+      "integratedLUFS": -19.27,
+      "truePeakDBTP": -5.91,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "reverie": {
+      "title": "Reverie",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/reverie/",
+      "scenes": [
+        "identity"
+      ],
+      "notes": "Dreamlike piano and strings.",
+      "sourceSha256": "ca1e7194d7d6f49127c77ff2f4011d07182525c826bb7ded3d3944e69ca678d2",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-reverie.mp3",
+      "seconds": 221.361633,
+      "bytes": 5313350,
+      "sha256": "d1c68ab1be55031ef19891aebf52a6c9d0b9fe6075858355ee9e2e9634b346ad",
+      "integratedLUFS": -19.27,
+      "truePeakDBTP": -5.89,
+      "channels": 2,
+      "sampleRate": 44100
+    },
+    "the-restoration": {
+      "title": "The Restoration",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/the-restoration/",
+      "scenes": [
+        "postgarden"
+      ],
+      "notes": "Quiet return home, after the adventure.",
+      "sourceSha256": "00d343a7ac4b94d41cd7dffdc38bbcf95ce2684047cb312c676e15a55a85a55e",
+      "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
+      "file": "premium-the-restoration.mp3",
+      "seconds": 185.338776,
+      "bytes": 4448801,
+      "sha256": "7ba9da321a42f37faa4eda58bc01735e1eb63d6d796cd493d027f0748d9964f2",
+      "integratedLUFS": -19.34,
+      "truePeakDBTP": -2.24,
+      "channels": 2,
+      "sampleRate": 44100
+    }
+  }
+}
