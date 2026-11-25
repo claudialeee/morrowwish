@@ -10,7 +10,8 @@
 #stage #intro::before{background:none!important;pointer-events:none!important}
 #stage #intro #intro-stars{opacity:0!important}
 #stage #intro .cb-title-landscape::before,#stage #intro .cb-title-landscape::after{
- content:"";position:absolute;display:block;pointer-events:none;background-repeat:no-repeat;background-size:contain;background-position:center bottom;
+ /* Reset legacy harbor crossfade geometry and opacity before laying out both cats. */
+ content:"";position:absolute;inset:auto;display:block;pointer-events:none;opacity:1!important;background-repeat:no-repeat!important;background-size:contain!important;background-position:center bottom;
  filter:drop-shadow(0 8px 5px #45562e35);bottom:8%;width:24%;height:58%;animation:none!important;
 }
 #stage #intro .cb-title-landscape::before{left:5%;background-image:url('../assets/npc/xingya-painted.webp')}
