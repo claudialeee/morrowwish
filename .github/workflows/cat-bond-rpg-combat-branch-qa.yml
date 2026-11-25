@@ -1,0 +1,49 @@
+name: Cat Bond RPG branch battle browser QA
+on:
+  push:
+    branches: ['rpg/combat-integration']
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/cat-bond-rpg-combat-browser.mjs'
+      - '.github/workflows/cat-bond-rpg-combat-branch-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-rpg-combat-branch
+  cancel-in-progress: true
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and focused rules
+        run: |
+          node --check public/cat-bond/js/resonance/forge-combat-runtime.mjs
+          node --check public/cat-bond/js/resonance/regional-combat.mjs
+          node --check public/cat-bond/js/resonance/finale-combat.mjs
+          node scripts/test-cat-bond-forge-combat.mjs
+          node scripts/test-cat-bond-resonance-combat.mjs
+      - name: Install browser
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Run actual branch browser QA
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-rpg-server.log 2>&1 &
+          sleep 2
+          node scripts/cat-bond-rpg-combat-browser.mjs
+      - name: Preserve browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-rpg-branch-browser-evidence
+          path: |
+            /tmp/cat-bond-rpg-*.png
+            /tmp/cat-bond-rpg-server.log
+          if-no-files-found: warn
+          retention-days: 5
