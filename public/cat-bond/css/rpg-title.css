@@ -1,5 +1,5 @@
 /* Cat Bond — The Last Resonance. Dedicated title and system UI.
-   Dedicated original Star Bell environment illustration for the new campaign. */
+   Existing full-resolution atlas and Misttide Harbor illustrations for the new campaign. */
 #stage #intro.cb-rpg-intro:not(.hide){
  position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;
  grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;
@@ -10,7 +10,7 @@
 #stage #intro.cb-rpg-intro.hide{display:none!important;visibility:hidden!important;pointer-events:none!important}
 #stage #intro .cb-title-landscape{position:absolute!important;inset:0!important;z-index:0!important;
  background:linear-gradient(270deg,rgba(10,25,34,.86),rgba(18,40,43,.48) 42%,rgba(17,32,36,.05) 72%,rgba(17,32,36,.02) 100%),
- linear-gradient(0deg,rgba(8,21,24,.68),transparent 40%),url('../assets/cinematics/prologue/star-bell.webp') 30% 50%/cover no-repeat;
+ linear-gradient(0deg,rgba(8,21,24,.68),transparent 40%),url('../assets/resonance-world-v2/atlas.webp') 30% 50%/cover no-repeat;
  animation:cb-title-drift 24s ease-in-out infinite alternate;pointer-events:none;transform-origin:30% 50%}
 @keyframes cb-title-drift{from{transform:scale(1.015)}to{transform:scale(1.055) translateX(-.5%)}}
 #stage #intro::before{background:linear-gradient(0deg,rgba(7,17,20,.45),transparent 45%)!important;z-index:1!important}
@@ -83,7 +83,7 @@ html body #stage #mw-game-settings,html body #stage #mw-fullscreen-toggle{displa
 #stage .cb-slot-manager-row strong,#stage .cb-slot-manager-row span,#stage .cb-slot-manager-row small{color:#eee1c9!important}
 @media(max-width:680px){
  #stage #intro.cb-rpg-intro:not(.hide){padding:48px 14px 18px!important}
- #stage #intro .cb-title-landscape{background-position:23% 42%;background-image:linear-gradient(0deg,rgba(10,25,34,.96),rgba(10,25,34,.72) 32%,rgba(10,25,34,.15) 64%,rgba(10,25,34,.08)),url('../assets/cinematics/prologue/star-bell.webp')}
+ #stage #intro .cb-title-landscape{background-position:50% 42%;background-image:linear-gradient(0deg,rgba(10,25,34,.96),rgba(10,25,34,.72) 32%,rgba(10,25,34,.15) 64%,rgba(10,25,34,.08)),url('../assets/resonance-world-v2/atlas.webp')}
  #stage #intro .cb-title-content{gap:18px;align-self:end;padding-bottom:clamp(22px,8vh,70px)!important}
  #stage #intro .game-logo{font-size:clamp(34px,10vw,54px)!important}
  #stage #intro .cb-intro-actions{gap:8px!important}
@@ -140,3 +140,10 @@ html body #stage #cb-header-actions #mw-game-settings .mw-settings-share{display
 #stage:has(#intro:not(.hide)) #cb-system-toggle,#stage:has(#battle-ui.on) #cb-system-toggle{right:calc(env(safe-area-inset-right,0px) + 124px)!important}
 #stage:has(#intro-slot-panel.is-open) #cb-system-toggle{visibility:hidden!important}
 @media(max-width:420px){#stage:has(#intro:not(.hide)) #cb-system-toggle,#stage:has(#battle-ui.on) #cb-system-toggle{right:calc(env(safe-area-inset-right,0px) + 112px)!important}}
+
+/* A second full-resolution painting gives the title an unhurried cinematic
+   change of perspective. No image is enlarged to pass an asset gate. */
+#stage #intro .cb-title-landscape::after{content:"";position:absolute;inset:0;background:linear-gradient(270deg,rgba(10,25,34,.88),rgba(18,40,43,.48) 42%,rgba(17,32,36,.05) 72%),linear-gradient(0deg,rgba(8,21,24,.68),transparent 40%),url('../assets/resonance-world-v2/harbor-mist.webp') 35% 50%/cover no-repeat;opacity:0;animation:cb-title-harbor 38s ease-in-out infinite}
+@keyframes cb-title-harbor{0%,32%,92%,100%{opacity:0}48%,76%{opacity:1}}
+@media(max-width:680px){#stage #intro .cb-title-landscape::after{background-image:linear-gradient(0deg,rgba(10,25,34,.96),rgba(10,25,34,.72) 32%,rgba(10,25,34,.15) 64%,rgba(10,25,34,.08)),url('../assets/resonance-world-v2/harbor-mist.webp');background-position:30% 50%}}
+@media(prefers-reduced-motion:reduce){#stage #intro .cb-title-landscape::after{animation:none;opacity:0}}

@@ -35,10 +35,14 @@ for(const profile of [
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&window.CatBondArtworkStatus?.breedsLoaded===true,{timeout:30000});
   const titleImage=await page.evaluate(async()=>{
    const background=getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundImage;
-   const image=new Image();image.src='assets/cinematics/prologue/star-bell.webp';await image.decode();
-   return {background,width:image.naturalWidth,height:image.naturalHeight};
+   const image=new Image();image.src='assets/resonance-world-v2/atlas.webp';await image.decode();
+   const harbor=new Image();harbor.src='assets/resonance-world-v2/harbor-mist.webp';await harbor.decode();
+   const alternate=getComputedStyle(document.querySelector('.cb-title-landscape'),'::after').backgroundImage;
+   return {background,width:image.naturalWidth,height:image.naturalHeight,alternate,harborWidth:harbor.naturalWidth,harborHeight:harbor.naturalHeight};
   });
-  assert.match(titleImage.background,/star-bell\.webp/);
+  assert.match(titleImage.background,/atlas\.webp/);
+  assert.match(titleImage.alternate,/harbor-mist\.webp/);
+  assert.ok(titleImage.harborWidth>=960&&titleImage.harborHeight>=540,'Alternate painted title background loads at usable resolution');
   assert.ok(titleImage.width>=960&&titleImage.height>=540,'Painted title background loads at usable resolution');
   const bounds=await page.evaluate(()=>{const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {stage:rect('#stage'),start:rect('#intro-start'),next:rect('#intro-continue')};});
   assert.ok(bounds.start.right<=bounds.next.left&&bounds.start.width>0&&bounds.next.width>0,'New and Continue remain side by side');
