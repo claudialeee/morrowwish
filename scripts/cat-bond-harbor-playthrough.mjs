@@ -67,6 +67,11 @@ try {
       await button(label).click();
       const controls = page.locator('.rw-puzzle-controls');
       await controls.waitFor();
+      if(name==='landscape'&&label==='Storm boat'){
+        const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {a:a.toJSON(),b:b.toJSON(),w:innerWidth,h:innerHeight}});
+        assert.ok(layout.a.top>=40&&layout.a.bottom<=layout.h+1,'Entire Harbor puzzle is visible above bottom edge');
+        assert.ok(layout.a.right<=layout.b.left&&layout.b.right<=layout.w+1&&layout.b.bottom<=layout.h+1,'Puzzle controls must occupy a separate landscape rail');
+      }
       if(['Storm boat','Lighthouse mirrors','Returning Tides','Tide cave logbook'].includes(label)){
         await shot('mechanism-'+label.toLowerCase().replaceAll(' ','-'));
       }
