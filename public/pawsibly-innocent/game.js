@@ -1109,13 +1109,15 @@ if(cgEmbed&&document.head){
   html.cg-play .board-layout{width:100%!important;height:100%!important;margin:0!important;display:block!important}
   html.cg-play #stage{box-sizing:border-box!important;width:100%!important;height:100dvh!important;max-width:none!important;max-height:none!important;aspect-ratio:auto!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;background:radial-gradient(ellipse at 50% 45%,#fff0e2,#e6d4e8)!important}
   html.cg-play #stage>.in-game-top{width:100%!important;max-width:990px!important;min-height:43px!important;padding:4px 9px!important;flex:0 0 auto!important}
-  html.cg-play #stage>.playfield{box-sizing:border-box!important;width:min(100%,calc((100dvh - 138px)*10/7))!important;height:auto!important;max-width:100%!important;max-height:calc(100dvh - 138px)!important;aspect-ratio:10/7!important;flex:0 1 auto!important;margin:0 auto!important}
+  html.cg-play #stage>.playfield{box-sizing:border-box!important;width:min(100%,calc((100dvh - 128px)*10/7))!important;height:auto!important;max-width:100%!important;max-height:calc(100dvh - 128px)!important;aspect-ratio:10/7!important;flex:0 1 auto!important;margin:0 auto!important}
   html.cg-play #stage>.playfield canvas{width:100%!important;height:100%!important;aspect-ratio:10/7!important}
   @media(max-width:850px){
    html.cg-play #bonusQuick .bonus-star,html.cg-play #bonusQuickProgress{display:none!important}
    html.cg-play #bonusQuick{padding:3px 6px!important;gap:0!important}
    html.cg-play #bonusQuickText{white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;max-height:none!important}
   }
+  html.cg-play .stealth-actionbar{padding:4px 9px!important;margin:0!important;min-height:0!important;gap:6px!important}
+  html.cg-play .stealth-actionbar .board-yarn{min-height:38px!important;padding:5px 9px!important}
   html.cg-play .game-menu{inset:0!important}
   html.cg-play .menu-shell{max-height:98%!important}
   @media(max-height:390px){
