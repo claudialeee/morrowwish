@@ -1283,6 +1283,7 @@ const UI = {
     const cards=stations.map(st=>{
       const cost=Raising.upgradeCost(st.id);
       const [name,usage]=descriptions[st.type]||[st.name,st.desc];
+      const skyBonus=st.skyCalibrated?(en?" · Skyspine wind calibration: +25% luck production":" · 云脊风向校准：好运产出 +25%"):"";
       const unit=st.res==='coins'?'🪙':this.resIcon(st.res);
       const wait=st.active&&st.stored<1&&st.ratePerHour>0
         ?(en?' · First unit in ~':' · 约')+Math.ceil(60/st.ratePerHour)+(en?' min':' 分钟得到首份资源'):'';
@@ -1290,7 +1291,7 @@ const UI = {
         <div class="st-ico">${st.icon}</div>
         <div class="st-main">
           <div class="st-name">${name} <span class="tiny">${this.levelText(st.level)}</span></div>
-          <p class="work-usage">${usage}</p>
+          <p class="work-usage">${usage}${skyBonus}</p>
           <div class="work-income">${en?'Production':'产出'}：<b>${Number(st.ratePerHour||0).toFixed(1)} ${unit}/${en?'hour':'小时'}</b></div>
           <div class="work-employee">${st.active
             ?(en?'Working cat: ':'上班猫咪：')+st.catName
@@ -2260,7 +2261,11 @@ const UI = {
       ?State.S.cats.find(cat=>cat.uid===story.recordedUid):null;
     const recordName=String(recordCat?State.catName(recordCat):(en?'The Bellkeeper':'守铃者'))
       .replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-    const storyRecord=story?.playerRecorded
+    const canonical=State.S.resonance;
+    const flightRecord=canonical?.evidence?.["sky:S-02"]?.includes("explore:flight-recorder")||canonical?.completed?.includes("sky:S-02");
+    const pendantRecord=canonical?.completed?.includes("sky:S-04");
+    const skyRecords=(flightRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Skyspine flight record":"云脊飞行记录"}</strong><small>${en?"Yuanfan cut the cargo line after Lingyu misread the wind, saving both couriers.":"翎羽误判风向后，远帆切断货索，救下两位信使。"}</small></span><b>${en?"Verified":"已核实"}</b></section>`:"")+(pendantRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Muling · familiar habit":"暮铃 · 熟悉的习惯"}</strong><small>${en?"When she is uneasy, she taps her old bell pendant twice.":"心神不宁时，她会轻敲旧铃坠两次。"}</small></span><b>${en?"Observed":"已观察"}</b></section>`:"");
+    const storyRecord=!canonical?.schema&&story?.playerRecorded
       ?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?'The Last Page':'最后一页'}</strong><small>${en?'The Bellkeeper: ':'守铃者：'}${recordName}</small></span><b>${en?'Complete':'已完成'}</b></section>`:'';
     this.panel(`<span class="card-close">×</span>
       <h2>图鉴 <span class="tiny">${owned}/${total}</span></h2>
@@ -2273,7 +2278,7 @@ const UI = {
         <small>${en?'Permanent rarity-weight boost':'当前永久稀有权重加成'}：+${Math.round(mastery.luckBonus*100)}%</small>
       </div>
       <div class="dex-grid">${cells}</div>
-      ${storyRecord}
+      ${storyRecord}${skyRecords}
       ${this.reactionCodexHtml(en)}`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.querySelectorAll('#panel .dex-cell').forEach(cell => {
