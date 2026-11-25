@@ -5,7 +5,7 @@ import {mountHomeConversation,skyChapterVisitors} from "./home-conversations.mjs
 const root=new URL("../../assets/npc/",import.meta.url);
 const load=name=>{const img=new Image();img.src=new URL(name,root).href;return img};
 const residentImages=new Map();
-const mulingGarden=load('../cinematics/characters/muling/traveler-neutral.webp');
+const mulingGarden=load('../cinematics/characters/muling/traveler-full.webp');
 function residentImage(id){
  if(!campaign.regions.includes(campaign.cast[id]?.region))return null;
  if(!residentImages.has(id))residentImages.set(id,load(id+"-painted.webp"));
