@@ -5,7 +5,7 @@ import {chromium} from 'playwright';
 const origin = 'http://127.0.0.1:8765';
 const out = 'artifacts/cat-bond-harbor';
 await fs.mkdir(out, {recursive:true});
-const browser = await chromium.launch({headless:true});
+const browser = await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const profiles = [
   {name:'desktop', viewport:{width:1440,height:960}, hasTouch:false},
   {name:'portrait', viewport:{width:390,height:844}, hasTouch:true},
@@ -14,7 +14,7 @@ const profiles = [
 
 const results = [];
 try {
-  for (const {name, ...options} of profiles) {
+  for (const {name, ...options} of profiles.filter(p=>!process.env.CAT_BOND_PROFILE||p.name===process.env.CAT_BOND_PROFILE)) {
     const context = await browser.newContext(options);
     const page = await context.newPage();
     const errors = [];
@@ -79,11 +79,41 @@ try {
       if(await dialogue.isVisible())await button('Close',dialogue).click();
       if(!choice)assert.equal(observed.length,{'forest:R-01':4,'forest:R-02':4,'forest:R-03':4,'forest:R-04':6}[id],id+' all canonical dialogue lines');
     }
+    async function readForgeDialogue(id,choice) {
+      const dialogue=page.locator('.res-host[data-scene="'+id+'"]');
+      await dialogue.waitFor();
+      const first=await page.evaluate(()=>CatBondResonance.view().cursor);
+      let observed=0;
+      for(;;){
+        const v=await page.evaluate(()=>CatBondResonance.view());
+        if(v.current?.id!==id)break;
+        if(!v.lineReady||v.cursor>=v.current.lines.length){
+          if(choice&&!v.choice){await button(choice,dialogue).click();choice=null;continue;}
+          break;
+        }
+        const line=v.current.lines[v.cursor];
+        await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
+        if(['jinpo','xiaomao','muling'].includes(line.speaker)){
+          const expected=line.speaker==='muling'?'/cinematics/characters/muling/traveler-neutral.webp':'/npc/'+line.speaker+'-painted.webp';
+          await page.waitForFunction(({actor,expected})=>{const d=document.querySelector('.res-host .res-dialogue'),img=d?.querySelector('.res-portrait');return d?.dataset.speaker===actor&&img?.complete&&img.naturalWidth>0&&img.currentSrc.endsWith(expected)},{actor:line.speaker,expected});
+        }
+        await dialogue.locator('[data-res-language]').click();
+        await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.zh);
+        if(!observed)await shot(id.replace(':','-')+'-'+first+'-zh');
+        await dialogue.locator('[data-res-language]').click();
+        await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
+        if(!observed)await shot(id.replace(':','-')+'-'+first+'-en');
+        observed++;
+        await button('Continue',dialogue).click();
+      }
+      assert(observed>0,id+' canonical dialogue actually read');
+      if(await dialogue.isVisible())await button('Close',dialogue).click();
+    }
     async function puzzle(label, inputs) {
       await button(label).click();
       const controls = page.locator('.rw-puzzle-controls');
       await controls.waitFor();
-      if(['Storm boat','Lighthouse mirrors','Returning Tides','Tide cave logbook'].includes(label)){
+      if(['Storm boat','Lighthouse mirrors','Returning Tides','Tide cave logbook','Safety blueprint','Furnace controls','Hearth sanctuary'].includes(label)){
         await shot('mechanism-'+label.toLowerCase().replaceAll(' ','-'));
       }
       for (const input of inputs) await button(input,controls).click();
@@ -394,46 +424,92 @@ try {
     await button('World atlas',page.locator('.rw-head')).click();
     await button('Emberforge City').click();
     await page.waitForFunction(()=>WorldMap.mode==='region'&&WorldMap.currentRegion==='forge');
-    await scene('forge:E-01');
-    await page.locator('.rw-current strong').filter({hasText:'The Silent Furnace'}).waitFor();
-    await page.evaluate(()=>MorrowwishI18n.set('zh'));
-    await page.locator('.rw-current strong').filter({hasText:'沉寂的熔炉'}).waitFor();
-    await page.evaluate(()=>MorrowwishI18n.set('en'));
-    await shot('forest-to-forge');
+    await page.waitForSelector('.rw-forge-region[data-art-ready="true"]');await page.locator('.rw-surface').evaluate(c=>Promise.allSettled(c.parentElement.getAnimations().map(a=>a.finished)));const forgeRect=await page.locator('.rw-surface').boundingBox();assert(forgeRect&&forgeRect.y>=0&&forgeRect.y+forgeRect.height<=options.viewport.height+1,'Forge painting fully visible');await shot('forge-silent');
+    await ship('forge','Cooling water and herbs');
     await button('Talk to Xiaomao').click();
-    await page.locator('.res-host[data-scene="forge:E-01"] .res-line').waitFor({state:'visible'});
-    await shot('forge-arrival-dialogue');
-    await readDialogue('forge:E-01');
+    await readForgeDialogue('forge:E-01');await scene('forge:E-02');
+    await button('Recover the frame · 1/3').click();
+    await button('Recover the old pipe · 2/3').waitFor();
+    await shot('forge-workshop-clue');
+    await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
     await scene('forge:E-02');
-
-    // Chapter III and IV normal-player continuation. No save injection or engine calls.
+    if(await button('Emberforge City').isVisible())await button('Emberforge City').click();
+    await tapLandmark(.35,.58);await button('Recover the relief valve · 3/3').waitFor();
+    await tapLandmark(.44,.50);await button('Safety blueprint').waitFor();
     await puzzle('Safety blueprint',['Frame','Pipes','Valve']);
     const forgeChoice=name==='portrait'?'Let Jinpo speak to the workers first':'Publish the accident record now';
-    await readDialogue('forge:E-02',forgeChoice);await scene('forge:E-03');
-    await button('Continue story').click();await readDialogue('forge:E-03');
+    await readForgeDialogue('forge:E-02',forgeChoice);await scene('forge:E-03');
+    await button('Continue story').click();await readForgeDialogue('forge:E-03');
     await puzzle('Furnace controls',['Heat','Heat','Heat','Heat','Vent','Vent','Vent']);
+    await page.waitForSelector('.rw-forge-region[data-art-ready="true"]');await shot('forge-test-ready');
     await button('Forge guardian').click();
+    if(name==='desktop'){
+      // A real, intentionally underprepared attempt: one cat, manual mode,
+      // no attacks or support. No game state, HP, clock or save writes.
+      await page.locator('#battle-team-details summary').click();
+      const selected=page.locator('#panel .map-squad-choice[aria-pressed="true"]');
+      while(await selected.count()>1)await selected.first().click();
+      await page.locator('#panel [data-battle-auto="false"]').click();
+      await page.locator('#bp-go').click();
+      await page.locator('#cb-forge-hud').waitFor();
+      const intro=page.locator('#battle-tutorial-skip');if(await intro.isVisible())await intro.click();
+      await page.waitForFunction(()=>__game.battle?.team.length===1&&!__game.battle.autoMode);
+      await page.waitForFunction(()=>__game.battle?.forgeState?.cast?.kind==='hammerfall');await shot('forge-hammer-warning');
+      await page.locator('#cb-forge-result').waitFor({timeout:200000});
+      assert.equal(await page.locator('#cb-forge-result h2').innerText(),'THE SQUAD NEEDS REST');
+      assert.equal(await page.evaluate(()=>CatBondResonance.view().objective.includes('battle:forge-guardian')),true);
+      await shot('forge-defeat');
+      await page.locator('[data-forge-retry]').click();
+      await page.locator('#bp-best-team').click();
+    }
     await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();
-    await page.locator('#cb-forge-hud').waitFor();
-    if(await page.locator('#battle-tutorial-skip').isVisible())await page.locator('#battle-tutorial-skip').click();
-    await page.locator('#btn-flee').click();await page.locator('#cb-forge-result').waitFor();
-    assert.equal(await page.locator('#cb-forge-result h2').innerText(),'WITHDRAWN');
-    await page.locator('[data-forge-retry]').click();await page.locator('#cb-forge-hud').waitFor();
-    if(!await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();
+    await page.locator('#battle-ui.on').waitFor();try{await page.locator('#cb-forge-hud').waitFor();}catch(e){await shot('forge-boss-entry-failed');console.error('Forge entry failed',await page.evaluate(()=>({scene:__game.scene,story:__game.battle?.storyEncounter,forge:!!__game.battle?.forgeState,errors:document.getElementById('toasts')?.textContent})));throw e;}
+    assert.equal(await page.evaluate(()=>__game.battle.forgeState.assist),name==='portrait'?'jinpo':'xiaomao');
+    const forgeTutorial=page.locator('#battle-tutorial-skip');if(await forgeTutorial.isVisible())await forgeTutorial.click();
+    await shot('forge-boss');
+    await page.locator('#btn-flee').click();
+    await page.locator('#cb-forge-result').waitFor();
+    assert.equal(await page.locator('#cb-forge-result h2').innerText(),'WITHDRAWN');await shot('forge-retreat');
+    await page.locator('[data-forge-retry]').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();await page.locator('#cb-forge-hud').waitFor();
+    if(await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();assert.equal(await page.evaluate(()=>__game.battle.autoMode),false);
+    await page.locator('[data-forge-support-button]').click();await page.waitForFunction(()=>__game.battle.forgeState.ventOpen>0&&__game.battle.forgeState.supportCharges===1);await shot('forge-boss-vent');
+    if(options.hasTouch){const cdp=await context.newCDPSession(page);const c=await page.locator('#scene').boundingBox();const x=c.x+c.width*.20,y=c.y+c.height*.65;await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+38,y}]});await page.waitForTimeout(300);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}else{await page.keyboard.down('d');await page.waitForTimeout(300);await page.keyboard.up('d');}
+    await page.locator('#btn-auto').click();
+    // Natural combat only: no HP, time, save or engine writes.
+    for(const phase of [1,2]){await page.waitForFunction(p=>__game.battle?.forgeState?.phase>=p,phase,{timeout:150000});await shot('forge-phase-'+(phase+1));}
     await page.locator('#cb-forge-result').waitFor({timeout:200000});
-    await shot('forge-natural-result');assert.equal(await page.locator('#cb-forge-result h2').innerText(),'FURNACE STABILIZED');
+    const outcome=await page.locator('#cb-forge-result h2').innerText();await shot('forge-result');
+    assert.equal(outcome,'FURNACE STABILIZED','Natural guardian battle must be won before Chapter III can pass');
     await page.locator('[data-forge-return]').click();await scene('forge:E-04');
-    if(await page.locator('.res-host[data-scene="forge:E-04"]').isVisible())await readDialogue('forge:E-04');
+    await readForgeDialogue('forge:E-04');
+    assert.equal(await page.evaluate(()=>CatBondResonance.view().lineReady),false,"Route dialogue waits for the melody");
     await puzzle('Hearth sanctuary',['Heat','Heat','Heat','Heat','Vent']);
     await button('Invite Jinpo').click();await button('Invite Jinpo').waitFor({state:'hidden'});
+    await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+    await scene('forge:E-04');if(await button('Emberforge City').isVisible())await button('Emberforge City').click();
+    assert.equal(await button('Invite Jinpo').count(),0,'Forge invitation persists');
     await button('Invite Xiaomao').click();await button('Invite Xiaomao').waitFor({state:'hidden'});
-    await puzzle('Song of Ember',['High','Middle','Low']);
-    if(await page.locator('.res-host[data-scene="forge:E-04"]').isVisible())await readDialogue('forge:E-04');
-    else if(await button('Continue story').isVisible()){await button('Continue story').click();await readDialogue('forge:E-04');}
-    await scene('sky:S-01');
-    await ship('forge','Cooling water and herbs');await ship('forge','Pumps and tools');await travel('Rootsleep Forest');await ship('forest','Pumps and tools');
+    await button('Song of Ember').click();const forgeMelody=page.locator('.rw-puzzle-controls');await forgeMelody.waitFor();
+    for(const note of ['High','Middle','Low'])await button(note,forgeMelody).click();
+    await page.waitForTimeout(1800);await shot('forge-ceremony');await page.waitForTimeout(1300);await shot('forge-routing-reveal');await forgeMelody.waitFor({state:'hidden'});
+    await readForgeDialogue('forge:E-04');
+    await scene('sky:S-01');await shot('forge-restored');
+    assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().melodies),['harbor','forest','forge']);
+    await ship('forge','Pumps and tools');await travel('Rootsleep Forest');await ship('forest','Pumps and tools');
+    assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().links['forest:forge']),['sendA','receiveB','sendB','receiveA']);
     await travel('Emberforge City');await ship('forge','Wind vanes and flight parts');
-    await travel('Skyspine Isles');await page.waitForFunction(()=>WorldMap.currentRegion==='sky');
+    await button('World atlas',page.locator('.rw-head')).click();
+    assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('sky')),true);
+    assert.equal(await button('Skyspine Isles').isEnabled(),true);
+    await button('Workshop',page.locator('.rw-system-nav')).click();
+    await page.locator('.workshop-row[data-id="st_forge"]').waitFor();
+    await page.locator('[data-act="forge-tools"]').click();
+    await page.getByText('Reinforced tools equipped · +25%',{exact:true}).waitFor();
+    assert.equal(await page.evaluate(()=>Raising.stationsView().find(s=>s.id==='st_forge')?.reinforced),true);
+    await shot('forge-workshop');await page.locator('#panel .panel-dismiss').click();
+    await button('Catdex',page.locator('.rw-system-nav')).click();await page.locator('#panel.open').waitFor();await shot('forge-catdex');await page.locator('#panel .panel-dismiss').click();
+    await button('Party',page.locator('.rw-system-nav')).click();await page.locator('#map-squad-best').click();await page.locator('#map-squad-save').click();await page.locator('#panel.open').waitFor({state:'hidden'});
+    await button('Skyspine Isles').click();await page.waitForFunction(()=>WorldMap.currentRegion==='sky');
     await page.locator('.rw-sky-region[data-art-ready="true"]').waitFor();await shot('sky-arrival');
     await ship('sky','Wind vanes and flight parts');
     async function skyDialogue(id,choice){
@@ -469,15 +545,19 @@ try {
       const move=async y=>{const q=p(y);if(send)await send.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[q]});else await page.mouse.move(q.x,q.y,{steps:5});};
       const end=async()=>{if(send)await send.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});else await page.mouse.up();};
       if(failFirst){await start(.5);await end();await page.waitForFunction(()=>Number(document.querySelector('[data-sky-flight-status]')?.dataset.attempts)>0,null,{timeout:20000});await shot('sky-flight-failed');}
-      await start(heights[0]);await shot('sky-flight-'+label.replaceAll(' ','-'));
-      for(let i=1;i<=3;i++){await page.waitForFunction(g=>Number(document.querySelector('[data-sky-flight-status]')?.dataset.gates)===g,i,{timeout:18000});await move(i===3?.5:heights[i]);}
-      await end();await status.waitFor({state:'hidden',timeout:20000});if(send)await send.detach();
+      const keys=!options.hasTouch&&label==='Flight recorder';
+      const preset=async y=>{await surface.focus();await page.keyboard.press(y<.4?'1':y>.6?'3':'2');};
+      if(keys)await preset(heights[0]);else await start(heights[0]);await shot('sky-flight-'+label.replaceAll(' ','-'));
+      for(let i=1;i<=3;i++){await page.waitForFunction(g=>Number(document.querySelector('[data-sky-flight-status]')?.dataset.gates)===g,i,{timeout:18000});if(keys)await preset(i===3?.5:heights[i]);else await move(i===3?.5:heights[i]);}
+      if(!keys)await end();await status.waitFor({state:'hidden',timeout:20000});if(send)await send.detach();
     }
     await button('Talk to Yuanfan').click();await skyDialogue('sky:S-01');await scene('sky:S-02');
     await skyFlight('Flight recorder',[.68,.29,.66],true);await skyDialogue('sky:S-02');await scene('sky:S-03');
     await button('Talk to Yuanfan').click();const skyChoice=name==='portrait'?'Train on a joint route first':'Let Yuanfan lead';
     await skyDialogue('sky:S-03',skyChoice);
+    assert.equal(await page.evaluate(()=>CatBondResonance.view().choice),name==='portrait'?'train':'lead');
     await skyFlight('Joint gliding platform',[.29,.72,.31]);await scene('sky:S-04');
+    assert(await page.evaluate(method=>CatBondResonance.view().support.find(x=>x.region==='sky')?.methods?.includes(method),name==='portrait'?'escort-flight':'fast-courier'));
     await button('Talk to Muling').click();await skyDialogue('sky:S-04');await scene('sky:S-05');
     await skyFlight('Windwing sanctuary',[.67,.30,.64]);
     await button('Invite Lingyu').click();await button('Invite Lingyu').waitFor({state:'hidden'});
@@ -506,8 +586,8 @@ try {
     await shot('sky-battle-manual');await page.locator('#btn-auto').click();
     await page.waitForFunction(()=>__game.scene==='map',null,{timeout:200000});await page.locator('#cr-ok,#battle-recovery-ok').waitFor();await shot('sky-natural-battle-result');const skyWon=await page.locator('#cr-ok').isVisible();assert.equal(await page.evaluate(()=>State.S.catchCount),catchBefore+(skyWon?1:0));if(!skyWon)await page.getByText('Squad defeated in the gale',{exact:true}).waitFor();await page.locator('#cr-ok,#battle-recovery-ok').click();
     await button('World atlas',page.locator('.rw-head')).click();assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('library')),true);assert.equal(await button('Moonmirror Library').isDisabled(),true);
-    await button('Catdex',page.locator('.rw-system-nav')).click();await page.getByText('Skyspine flight record',{exact:true}).waitFor();await shot('sky-catdex');await page.locator('#panel .card-close').click();
-    await button('Workshop',page.locator('.rw-system-nav')).click();await page.getByText(/Skyspine wind calibration/).waitFor();await shot('sky-workshop');await page.locator('#panel .card-close').click();
+    await button('Catdex',page.locator('.rw-system-nav')).click();await page.getByText('Skyspine flight record',{exact:true}).waitFor();await shot('sky-catdex');await page.locator('#panel .panel-dismiss').click();
+    await button('Workshop',page.locator('.rw-system-nav')).click();await page.getByText(/Skyspine wind calibration/).waitFor();await shot('sky-workshop');await page.locator('#panel .panel-dismiss').click();
     await page.evaluate(()=>MorrowwishI18n.set('zh'));await page.getByText(/第四章已完成 · 月镜书库已解锁/).waitFor();await shot('sky-release-zh');await page.evaluate(()=>MorrowwishI18n.set('en'));
     await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='sky')?.unlocked));await shot('sky-garden');
     await page.locator('#fab-map').click();await button('Rootsleep Forest').click();
@@ -527,7 +607,7 @@ try {
     });
     assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest','forge','sky'],slot:'slot1'});
     assert.deepEqual(errors,[]);
-    results.push({profile:name, captured, ...state, forestComplete:true,forgeEntered:true,skyComplete:true});
+    results.push({profile:name, captured, ...state, forestComplete:true,forgeComplete:true,skyComplete:true});
     await context.close();
   }
 } finally {

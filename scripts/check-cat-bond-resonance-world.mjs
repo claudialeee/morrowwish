@@ -44,7 +44,7 @@ console.log(JSON.stringify((function test(src){
   }
   for(const op of ops){if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
-   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(["forest","sky"].includes(s.chapter)){const restored=createExplorer(b,s.chapter);assert(restored.invited.length===2&&x.localNpcs().every(n=>restored.invited.includes(n.id)),s.chapter+" invitations must survive reload");}}
+   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(["forest","forge","sky"].includes(s.chapter)){const restored=createExplorer(b,s.chapter);assert(restored.invited.length===2&&x.localNpcs().every(n=>restored.invited.includes(n.id)),s.chapter+" invitations must survive reload");}}
    if(op==="explore:tide-logbook"){
     walk(x,p);assert(x.interact(op).reason==="incomplete-tide-trail","cannot bypass tide trail");
     let trail=x;
@@ -52,6 +52,10 @@ console.log(JSON.stringify((function test(src){
      const step=trail.tideStep();assert(step?.index===i,"ordered tide waypoint");assert(!trail.traceTide((i+1)%2).ok,"out-of-order tide mark");walk(trail,step.point);ok(trail.traceTide(i),"inspect tide mark");trail=createExplorer(b,s.chapter);
     }
     assert(!trail.tideStep(),"completed tide trail must not reopen");walk(trail,p);ok(trail.interact(op),"recover logbook");solve(trail);
+   }else if(op==="puzzle:safety-blueprint"){
+    walk(x,p);assert(x.interact(op).reason==="incomplete-forge-parts","cannot bypass old workshop");let trail=x;
+    for(let i=0;i<3;i++){const step=trail.forgeStep();assert(step?.index===i,"ordered workshop clue");assert(!trail.collectForgePart((i+1)%3).ok,"cannot skip clue");walk(trail,step.point);ok(trail.collectForgePart(i),"recover part");trail=createExplorer(b,"forge");}
+    assert(!trail.forgeStep(),"workshop parts persist");walk(trail,p);ok(trail.interact(op),"reassemble blueprint");solve(trail);
    }else if(op==="explore:scent-trail"){
     assert(!x.traceScent(2).ok,"cannot skip to medicine");
     let trail=x;

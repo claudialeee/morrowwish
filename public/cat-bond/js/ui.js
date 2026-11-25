@@ -1269,7 +1269,7 @@ const UI = {
     this.game?.completeFirstAdventureStep?.('workshop');
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const stations=Raising.stationsView().filter(st=>st.res)
-      .sort((a,b)=>['sun','fishing','yarn','watch'].indexOf(a.type)-['sun','fishing','yarn','watch'].indexOf(b.type));
+      .sort((a,b)=>['sun','fishing','yarn','watch','forge'].indexOf(a.type)-['sun','fishing','yarn','watch','forge'].indexOf(b.type));
     const sun=stations.find(st=>st.type==='sun');
     const rate=Number(sun?.ratePerHour||0);
     const pending=stations.reduce((n,st)=>n+st.stored,0);
@@ -1278,6 +1278,7 @@ const UI = {
       sun:[en?'Earn coins':'晒太阳赚金币',en?'Spend coins on feeding, buildings and upgrades':'金币用于喂猫、建造、升级工坊'],
       fishing:[en?'Catch fish':'钓小鱼',en?'Fish feed cats, train levels and buy rare-cat lures':'小鱼用于喂猫、练级、买稀有诱饵'],
       yarn:[en?'Earn coins':'织物赚金币',en?'More coins for upgrades and stat training':'金币用于升级与属性特训'],
+      forge:[en?'Emberforge smithy':'赤炉锻造台',en?'Forge tools using Xiaomao’s safe design. Reinforced tools increase this station’s production by 25%.':'依照小铆的新安全设计锻造工具。强化工具提升此工位产出 25%。'],
       watch:[en?'Collect luck':'瞭望好运',en?'Boost the next rare-cat sighting':'好运用于提高下一次野猫的稀有机会'],
     };
     const cards=stations.map(st=>{
@@ -1298,9 +1299,11 @@ const UI = {
             :(en?'No cat assigned — Assign one to start':'还没派猫上岗，点击「派猫」才会开始赚钱')}
             ${wait}</div>
           <div class="st-bar"><span style="width:${Math.round(st.pct*100)}%"></span></div>
+          ${st.type==="forge"?`<div class="work-usage">${st.reinforced?(en?"Reinforced tools equipped · +25%":"已装备强化工具 · +25%"):(en?"Recipe: reinforced tools · 45 coins + 2 fish":"配方：强化工具 · 45 金币 + 2 小鱼干")}</div>`:""}
           <div class="work-pending">${en?'Uncollected':'待收取'}：<b>${st.stored} ${unit}</b> / ${st.cap}</div>
         </div>
         <div class="st-btns">
+          ${st.type==="forge"&&!st.reinforced?`<button class="btn gold tiny-btn" data-act="forge-tools" ${State.S.coins<45||State.S.fish<2?"disabled":""}>${en?"Craft tools":"锻造工具"}</button>`:""}
           <button class="btn gold tiny-btn" data-act="collect" data-id="${st.id}" ${st.stored<1?'disabled':''}>${en?'Collect':'收取'}</button>
           <button class="btn ghost tiny-btn" data-act="assign" data-id="${st.id}">${en?'Assign':'派猫'}</button>
           <button class="btn ghost tiny-btn" data-act="upgrade" data-id="${st.id}">${en?'Upgrade':'升级'}<small>${cost.coins}🪙</small></button>
@@ -1350,6 +1353,7 @@ const UI = {
   workshopAct(act,id){
     const R=window.Raising;if(!R)return;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
+    if(act==='forge-tools'){const result=R.forgeTools();this.game.toast(result.ok?(en?'Reinforced tools crafted':'强化工具已锻造'):(en?'Crafting failed; check your materials':'锻造失败，请检查材料'));this.game.refreshHUD();this.openWorkshop();return;}
     if(act==='collect'||act==='collect-all'){
       const got=act==='collect-all'?R.collectAll():R.collect(id);
       const total=act==='collect-all'?Object.values(got).reduce((n,v)=>n+v,0):(got?.amount||0);
@@ -2723,7 +2727,7 @@ const UI = {
         this.battleTeamSummary(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en))+'</span></summary>'+
       '<p class="sub">'+(en?'2 cats start; up to 3 reserves. Tap cats to change the team or reorder below.':'2 只首发，最多 3 只替补。点击猫咪更换队伍，也可调整顺序。')+'</p>'+
       this.squadPickerMarkup(selected)+'</details>';
-    const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
+    const label=opts.storyTitle?(opts.storyTitle[en?1:0]):opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
     const encounterLvl=wildSp.encounterLevel||
       window.Battle?.CaptureBattle?.previewWildLevel?.(
@@ -2731,7 +2735,7 @@ const UI = {
     this.panel(`<span class="card-close">×</span>
       <h2>${label}</h2>
       <p class="sub" style="font-weight:750;color:#765e85">
-        ${en?'Wild cat':'野生猫咪'} · Lv.${encounterLvl} ·
+        ${opts.storyTitle?(en?'Story encounter':'剧情战斗'):(en?'Wild cat':'野生猫咪')} · Lv.${encounterLvl} ·
         <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>
       </p>
       ${this.matchupWarning(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en)}
@@ -2821,6 +2825,7 @@ const UI = {
       State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true,
         skillsIntroSeen:true,teamUids:[...selected]};
       State.save();this.closeAll();
+      if(typeof opts.onStart==='function'){opts.onStart(fighters.length?fighters:team);return;}
       if(opts.mastery){this.game.startMasteryChallenge(wildSp,true,fighters);return;}
       if(opts.origin==='map'){
         this.game._returnScene='map';this.game._battleTheme=opts.theme||null;
