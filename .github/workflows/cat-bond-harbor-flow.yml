@@ -15,7 +15,7 @@ permissions:
 jobs:
   harbor:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,6 +25,8 @@ jobs:
       - run: npm ci
       - run: npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
+      - name: Cat Bond canonical world regression (independent of studio dashboard)
+        run: node scripts/check-cat-bond-resonance-world.mjs
       - name: Play from a new slot on desktop and mobile
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/harbor-server.log 2>&1 &

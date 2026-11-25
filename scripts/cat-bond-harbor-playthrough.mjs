@@ -204,8 +204,49 @@ try {
       legacy:!!State.S.lastResonanceWorld
     }));
     assert.deepEqual(state,{sanctuaries:['harbor'],melodies:['harbor'],choice:calibrate?'calibrate':'rescue',slot:'slot1',mulingMap:true,legacy:false});
+    // Continue the SAME normal-flow save through Rootsleep Forest, without injecting narrative evidence.
+    await page.locator('.rw-world:not([hidden]) .rw-surface').waitFor();
+    await button('Rootsleep Forest').click();
+    await button('Talk to Yahe').click();
+    await readDialogue('forest:R-01');
+    await scene('forest:R-02');
+    await button('Talk to Yahe').click();
+    await readDialogue('forest:R-02','Prioritize the gardens');
+    await button('Scent on damp moss · 1/3').waitFor();
+    await tapLandmark(.31,.58);
+    await button('Herbs on the canopy path · 2/3').waitFor();
+    await shot('forest-trail-first');
+    await page.evaluate(()=>MorrowwishI18n.set('zh'));
+    await button('林间药草痕迹 · 2/3').waitFor();
+    await page.getByText('湿苔上留下了药箱经过的痕迹。沿上方林道继续追踪。',{exact:true}).waitFor();
+    await page.evaluate(()=>MorrowwishI18n.set('en'));
+    await page.reload();
+    await page.locator('#intro-continue').click();
+    await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+    await scene('forest:R-02');
+    await button('Herbs on the canopy path · 2/3').waitFor();
+    await tapLandmark(.39,.40);
+    await button('Medicine at the root channel · 3/3').waitFor();
+    await tapLandmark(.69,.53);
+    await readDialogue('forest:R-02');
+    await scene('forest:R-03');
+    await puzzle('Paired water gates',['Upstream','Branch','Roots']);
+    await readDialogue('forest:R-03');
+    await scene('forest:R-04');
+    await puzzle('Ancient-root sanctuary',['Upstream','Branch','Roots']);
+    await button('Invite Yahe').click();
+    await button('Invite Yahe').waitFor({state:'hidden'});
+    await button('Invite Yuchuan').click();
+    await button('Invite Yuchuan').waitFor({state:'hidden'});
+    await puzzle('Living Roots',['Middle','Low','High']);
+    await readDialogue('forest:R-04');
+    await scene('forge:E-01');
+    assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().melodies),['harbor','forest']);
+    assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().sanctuaries),['harbor','forest']);
+    assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('forge')),true);
+    await shot('forest-complete');
     assert.deepEqual(errors,[]);
-    results.push({profile:name, captured, ...state});
+    results.push({profile:name, captured, ...state, forestComplete:true});
     await context.close();
   }
 } finally {
