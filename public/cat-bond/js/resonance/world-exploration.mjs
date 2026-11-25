@@ -57,13 +57,13 @@ export function movePuzzle(p,i){
  if(p.type.startsWith("library"))return advanceLibrary(p,i);
  if(["mirrors","stars","water","routing"].includes(p.type)){p.values[i]=(p.values[i]+1)%p.mod;}
  else if(p.type==="pairedWater"){
-  if(i===0){p.values[0]=(p.values[0]+1)%4;p.values[2]=0;if(p.values[0]!==2)p.values[1]=0;}
-  else if(i===1){if(p.values[0]===2){p.values[1]=1-p.values[1];p.values[2]=0;}else p.mistakes++;}
+  if(i===0){p.values[0]=Math.min(2,p.values[0]+1);}
+  else if(i===1){if(p.values[0]===2)p.values[1]=1;else p.mistakes++;}
   else if(p.values[0]===2&&p.values[1]===1)p.values[2]=1;else p.mistakes++;
  }
  else if(p.type==="echo"){if(i===p.goal[p.values.length])p.values.push(i);else{p.values=[];p.mistakes++;}}
  else if(["blueprint","memory","rescue","melody","tide","scent"].includes(p.type)){
-  if(i===p.goal[p.values.length])p.values.push(i);else if(p.type==="rescue"&&p.assist==="qilan"&&!p.assisted){p.assisted=true;p.assistedAt=p.values.length;}else{p.values=[];p.response=[];p.mistakes++;}
+  if(i===p.goal[p.values.length])p.values.push(i);else if(p.type==="rescue"&&p.assist==="qilan"&&!p.assisted){p.assisted=true;p.assistedAt=p.values.length;}else{if(p.type!=="melody"){p.values=[];p.response=[];}p.mistakes++;}
   if(p.type==="melody")p.response=p.values.map((n,j)=>({actor:p.participants?.[j%2],reply:(n+1)%3}));
  }
  else if(p.type==="heat"){if(i===0){p.values[0]+=5;p.values[1]+=5;}else if(i===1)p.values[1]-=5;else{p.values[0]=Math.max(0,p.values[0]-5);p.values[1]=Math.max(0,p.values[1]-10);}if(p.values[0]>70||p.values[1]>45||p.values[1]<0){p.values=[...p.initial];p.mistakes++;}}
