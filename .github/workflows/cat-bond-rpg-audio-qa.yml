@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 concurrency:
   group: cat-bond-audio-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 permissions:
   contents: write
 jobs:
@@ -28,13 +28,41 @@ jobs:
             node scripts/render-cat-bond-score.mjs
             node scripts/check-cat-bond-audio-assets.mjs
           fi
-          git add public/cat-bond/assets/audio/
-          if ! git diff --cached --quiet; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Preserve the generated assets even if another developer updates the branch.
+          mkdir -p "$RUNNER_TEMP/cat-bond-generated"
+          cp -a public/cat-bond/assets/audio/. "$RUNNER_TEMP/cat-bond-generated/"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-rendered-audio
+          path: public/cat-bond/assets/audio/
+          retention-days: 7
+      - name: Publish verified recordings without overwriting concurrent development
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          expected=$(node -p "require('./public/cat-bond/assets/audio/manifest.json').scoreSha256")
+          for attempt in 1 2 3 4; do
+            git fetch --depth=1 origin refs/heads/rpg/release-audio
+            git reset --hard FETCH_HEAD
+            actual=$(sha256sum public/cat-bond/js/rpg-audio-score.js | cut -d' ' -f1)
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::Score changed during render; this recording set remains available as an artifact, not published against an incompatible score."
+              exit 1
+            fi
+            mkdir -p public/cat-bond/assets/audio/
+            cp -a "$RUNNER_TEMP/cat-bond-generated/." public/cat-bond/assets/audio/
+            node scripts/check-cat-bond-audio-assets.mjs
+            git add public/cat-bond/assets/audio/
+            if git diff --cached --quiet; then
+              echo "Verified recordings already present in branch."
+              exit 0
+            fi
             git commit -m "Render original Cat Bond orchestral recordings and license"
-            git push origin HEAD:refs/heads/rpg/release-audio
-          fi
+            if git push origin HEAD:refs/heads/rpg/release-audio; then exit 0; fi
+            sleep 3
+          done
+          echo "::error::Concurrent branch updates prevented all four safe push attempts. The recording artifact is retained."
+          exit 1
       - run: npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
       - name: Audio real browser acceptance
