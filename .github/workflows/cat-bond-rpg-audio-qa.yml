@@ -1,0 +1,44 @@
+name: Cat Bond original audio browser QA (no deployment)
+on:
+  pull_request:
+    branches: [rpg/cat-bond-takeover]
+    types: [opened, synchronize, reopened, ready_for_review]
+concurrency:
+  group: cat-bond-audio-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  audio:
+    if: github.head_ref == 'rpg/release-audio' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify committed original recordings and lifecycle
+        run: |
+          node scripts/check-cat-bond-audio-assets.mjs
+          node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Audio real browser acceptance
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/audio-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          node scripts/cat-bond-rpg-audio-browser.mjs
+          CAT_BOND_AUDIO_ACCEPTANCE=1 node scripts/cat-bond-harbor-playthrough.mjs
+          node scripts/cat-bond-audio-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cat-bond-audio-evidence
+          path: |
+            artifacts/cat-bond-audio/
+            artifacts/cat-bond-harbor/results.json
+          if-no-files-found: warn
+          retention-days: 7

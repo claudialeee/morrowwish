@@ -313,7 +313,10 @@
     }
 
     playEffect(effect,frame){
-      // Existing game sound controls remain authoritative. No background music.
+      // All cinematic cues share the RPG audio director and sound-volume controls.
+      const director=window.MorrowwishMusic;
+      const cue=({sanctuary:'sanctuary',impact:'impact',blackout:'impact',seal:'seal',seasons:'seasons',memory:'memory'})[effect];
+      if(cue&&director?.cue){director.cue(cue,frame.note);return;}
       const audio=window.MorrowwishAudio;
       if(effect==='sanctuary')audio?.note?.(frame.note,.7,.13);
       if(effect==='impact'||effect==='blackout')audio?.note?.(196,.7,.16);
@@ -456,6 +459,7 @@
       if(this.fxRAF)cancelAnimationFrame(this.fxRAF);this.fxRAF=0;
       this.nodes.stack.getAnimations?.({subtree:true}).forEach(a=>a.pause());
       this.audio?.pause();
+      window.MorrowwishMusic?.cancelCinematicSounds?.();
       this.updateControls();
       this.options.onCheckpoint?.(this.snapshot());
       return this.snapshot();
@@ -520,11 +524,11 @@
     }
 
     playSfx(sfx) {
-      if (!sfx?.src || typeof Audio === 'undefined') return;
+      if (!sfx?.src || typeof Audio === 'undefined' || window.MorrowwishAudio?.isEnabled?.()===false) return;
       try {
         this.audio?.pause();
         this.audio = new Audio(sfx.src);
-        this.audio.volume = clamp(sfx.volume ?? 0.6, 0, 1);
+        this.audio.volume = clamp((sfx.volume ?? 0.6)*(window.MorrowwishMusic?.status?.().effectsVolume??1), 0, 1);
         const result = this.audio.play();
         result?.catch?.(() => {});
       } catch (_) { /* Audio is optional; visual playback must continue. */ }
@@ -558,6 +562,7 @@
       this.frameElapsedMs = 0;
       this.root.hidden = true;
       this.audio?.pause();
+      window.MorrowwishMusic?.cancelCinematicSounds?.();
       return this;
     }
 

@@ -334,13 +334,22 @@ function installCatBondSystemMenu(){
   const active=sel=>native(sel)?.getAttribute('aria-pressed')==='true';
   const rows=[
     ['language',t('语言','Language'),t('中文','English')],
-    ['effects',t('音效','Sound effects'),active('.mw-settings-sfx')?t('开启','On'):t('关闭','Off')],
+    ['music',t('音乐','Music'),window.MorrowwishMusic?.status?.().enabled?t('开启','On'):t('关闭','Off')],
+    ['effects',t('音效','Sound effects'),(window.MorrowwishAudio?.isEnabled?.()??active('.mw-settings-sfx'))?t('开启','On'):t('关闭','Off')],
     ...(native('#mw-fullscreen-toggle')?[['fullscreen',t('全屏','Fullscreen'),active('#mw-fullscreen-toggle')?t('退出','Exit'):t('进入','Enter')]]:[]),
     ['share',t('分享游戏','Share game'),''],
     ['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),''],
     ...(!title?[['title',t('返回标题画面','Return to title'),'']]:[])
   ];
   menu.innerHTML='<div class="cb-system-card"><header><h2>'+t('系统菜单','System menu')+'</h2><button type="button" data-system="close" aria-label="'+t('关闭','Close')+'">×</button></header><div class="cb-system-rows">'+rows.map(([id,label,value])=>'<button type="button" data-system="'+id+'"><span>'+label+'</span><small>'+value+'</small></button>').join('')+'</div></div>';
+  const sound=window.MorrowwishMusic?.status?.();
+  if(sound){
+   const levels=document.createElement('div');levels.style.cssText='display:grid;gap:6px;padding:8px 12px';
+   for(const [name,value,fn] of [[t('音乐音量','Music volume'),sound.volume,'setVolume'],[t('音效音量','Effects volume'),sound.effectsVolume,'setEffectsVolume']]){
+    const label=document.createElement('label'),slider=document.createElement('input');label.textContent=name;label.style.cssText='display:flex;align-items:center;gap:8px;justify-content:space-between';slider.type='range';slider.min='0';slider.max='100';slider.value=String(Math.round(value*100));slider.setAttribute('aria-label',name);slider.dataset.audioVolume=fn==='setVolume'?'music':'effects';slider.style.cssText='width:min(45%,130px);min-width:72px;accent-color:#dfc391';const valueText=document.createElement('output');valueText.textContent=slider.value+'%';valueText.style.cssText='min-width:36px;text-align:right;font-size:12px;color:#dfc391';slider.oninput=()=>{window.MorrowwishMusic[fn](Number(slider.value)/100);valueText.textContent=slider.value+'%';};label.append(slider,valueText);levels.append(label);
+   }
+   menu.querySelector('.cb-system-rows').append(levels);
+  }
   menu.querySelectorAll('[data-system]').forEach(btn=>btn.onclick=()=>{
    const id=btn.dataset.system,selectors={language:'.mw-settings-language',effects:'.mw-settings-sfx',music:'.mw-settings-music',fullscreen:'#mw-fullscreen-toggle',share:'.mw-settings-share'};
    if(id==='close'){close();toggle.focus();return;}
@@ -352,6 +361,8 @@ function installCatBondSystemMenu(){
     State.hardReset();location.reload();return;
    }
    if(id==='language'&&!native(selectors.language)){window.MorrowwishI18n?.set?.(zh()?'en':'zh');render();return;}
+   if(id==='music'&&window.MorrowwishMusic){window.MorrowwishMusic.toggle();render();return;}
+   if(id==='effects'&&window.MorrowwishAudio){window.MorrowwishAudio.toggle();render();return;}
    native(selectors[id])?.click();
    if(id==='share')close();else setTimeout(render,120);
   });
