@@ -11,7 +11,7 @@ assert.doesNotThrow(()=>new vm.Script(inlineScript,{filename:'studio-insights/in
 
 // The homepage is a single KPI above the table, never a fake eighth game.
 // The selected-period hub count must not be replaced by the all-site total.
-const statsPrefix=inlineScript.slice(inlineScript.indexOf('function render(j)'),inlineScript.indexOf('const displayOrder='));
+const statsPrefix=inlineScript.slice(inlineScript.indexOf('function render(j)'),inlineScript.indexOf('const visibleGames='));
 const pvCardIndex=statsPrefix.indexOf('metricCard(t("statPv")');
 const homeCardIndex=statsPrefix.indexOf('metricCard(t("statHome")');
 assert.ok(statsPrefix.startsWith('function render(j)')&&pvCardIndex>=0&&homeCardIndex>pvCardIndex,
@@ -21,7 +21,7 @@ for(const locale of ['zh','en']){
  const homeLabel=locale==='zh'?'网站首页浏览量':'Homepage views';
  const pvLabel=locale==='zh'?'全站页面浏览量':'All pageviews';
  const env={lastData:null,$:id=>(nodes[id]??={innerHTML:''}),
-  t:key=>key==='statHome'?homeLabel:key==='statPv'?pvLabel:key,format:n=>String(n),
+  t:key=>key==='statHome'?homeLabel:key==='statPv'?pvLabel:key,format:n=>String(n),pct:(a,b)=>b?Math.round(a/b*1000)/10:0,
   metricCard:(name,value,note)=>'<div data-name="'+name+'">'+value+'</div>'};
  vm.runInNewContext(statsPrefix+"}\nrender({rollup:{pageviews:123,gameStarts:8,retries:2},byGame:[{game:'hub',pageviews:37},{game:'cat-bond',ends:3}]});",env);
  const html=nodes.stats.innerHTML;
