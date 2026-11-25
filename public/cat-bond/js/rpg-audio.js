@@ -172,7 +172,7 @@ function tick(){
   lastNarrativeRevision=rev;lastCompleted=completed;lastSanctuaries=sanctuaries;lastEvidence=evidence;
  }
  const game=window.__game,battle=game?.scene==='battle'?game.battle:null;
- if(battle!==lastBattle){if(battle)cue('impact');lastBattle=battle;}
+ if(battle!==lastBattle){stopVoices();if(battle)cue('impact');lastBattle=battle;}
  if(lastSceneKey!==scene.id){if(lastSceneKey)cancelCinematicSounds();lastSceneKey=scene.id;}
  const visual=document.querySelector('.rw-world:not([hidden])')?.dataset.ceremony||'';
  if(visual!==visualCeremony){
@@ -181,12 +181,12 @@ function tick(){
   else if(!visual&&ceremony?.visual&&!melodies.includes(ceremony.region))ceremony=null;
  }
  for(const r of melodies)if(!seen.has(r)){seen.add(r);if(regions.includes(r)&&window.__CAT_BOND_STARTED__&&ceremony?.id!=='song-'+r)ceremony={id:'song-'+r,root,region:r,started:false};}
- const finale=window.__game?.battle?.resonanceFinale;
+ const finale=battle?.resonanceFinale;
  if(finale?.id==='finale:B-03'){
   const support=state?.resonance?.support||[];
   if(supportRoot!==finale){supportRoot=finale;supportSeen=new Set(support);}
   else for(const r of support)if(!supportSeen.has(r)){supportSeen.add(r);if(regions.includes(r))playResponse(r);}
- }else{supportRoot=null;supportSeen.clear();}
+ }else{if(supportRoot)stopVoices();supportRoot=null;supportSeen.clear();}
  if(ceremony&&(ceremony.root!==root||window.__game?.scene==='battle'||!window.__CAT_BOND_STARTED__||!prefs.enabled||!ceremony.visual&&scene.amb!==ceremony.region&&scene.id!=='atlas'))ceremony=null;
  const cinematic=document.querySelector('.cbcp-root:not([hidden])');
  const nextPause=cinematic?.dataset.paused==='true';
@@ -213,5 +213,5 @@ document.addEventListener('pointerdown',gesture,{capture:true,passive:true});doc
 document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',()=>{hidden=true;++serial;pending=null;ctx?.suspend().catch(()=>{});});window.addEventListener('pageshow',visibility);
 window.addEventListener('cat-bond-resonance-changed',tick);window.addEventListener('cat-bond-active-save-changed',()=>{clear();root=null;ceremony=null;tick();});
 setInterval(tick,250);
-window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;stopVoices();clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,cue,cancelCinematicSounds,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?(recordedIds.has(active.id)?'recorded-mp3:':'original-score:')+active.id:null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,audioState:ctx?.state||'not-created',cache:cache.size,activeMusicSources:musicSources.size,pending:pending?.id||null,ambient:ambId,ceremony:ceremony?.region||null,regionalResponses:[...supportSeen],responseVoices:voiceNodes.size})});
+window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;stopVoices();clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,cue,cancelCinematicSounds,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?(recordedIds.has(active.id)?'recorded-mp3:':'original-score:')+active.id:null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,duration:active?.buffer?.duration||0,audioState:ctx?.state||'not-created',cache:cache.size,activeMusicSources:musicSources.size,pending:pending?.id||null,ambient:ambId,ceremony:ceremony?.region||null,regionalResponses:[...supportSeen],responseVoices:voiceNodes.size})});
 })();
