@@ -1,0 +1,33 @@
+name: D1 indexed read-only traffic check
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/d1-readonly-traffic-check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify raw Cat Bond visits without scanning unrelated events
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          const url='https://api.cloudflare.com/client/v4/accounts/ad5c7e2459db758ac4a41973f4f6028b/d1/database/fbd62f69-1811-4538-a17f-ecc5be8ad7cc/query';
+          const sql="SELECT COUNT(*) AS rawVisits, SUM(CASE WHEN ts>=? THEN 1 ELSE 0 END) AS sinceNov22, SUM(CASE WHEN ts>=? AND ts<=? THEN 1 ELSE 0 END) AS atPriorAudit FROM events WHERE category='arcade' AND game='cat-bond' AND kind='visit'";
+          const params=[Date.parse('2026-11-22T08:00:00Z'),Date.parse('2026-11-22T08:00:00Z'),Date.parse('2026-11-24T04:29:22.462Z')];
+          async function query(sql){
+            const r=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+process.env.TOKEN,'Content-Type':'application/json'},body:JSON.stringify({sql,params}),signal:AbortSignal.timeout(20000)});
+            const j=await r.json();assert.ok(r.ok&&j.success&&j.result[0].success!==false,JSON.stringify(j.errors));
+            return j.result[0];
+          }
+          const plan=await query('EXPLAIN QUERY PLAN '+sql);
+          console.log(JSON.stringify(plan.results));
+          assert.ok(plan.results.some(x=>x.detail.includes('idx_events_catbond_visits_day')),'Expected targeted index');
+          const result=await query(sql);
+          console.log('RAW_VISIT_AUDIT '+JSON.stringify({results:result.results,rows_read:result.meta?.rows_read,rows_written:result.meta?.rows_written,priorAudit:81}));
+          NODE
