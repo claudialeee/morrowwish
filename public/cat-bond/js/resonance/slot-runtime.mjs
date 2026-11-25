@@ -55,8 +55,9 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(!s||s.id!==sceneId||!actor||npcId==="player")return fail("npc-unavailable");
   const expectedRegion=s.chapter==="prologue"||s.chapter==="epilogue"?"garden":s.chapter;
   if(region!==expectedRegion||actor.region!==region&&npcId!=="muling")return fail("wrong-region");
+  if(npcId==="muling"&&s.id==="library:M-05"&&v.cursor>=s.lines.length&&v.choice)return fail("companion-unavailable");
   if(npcId==="muling"&&actor.region!==region&&!["companion","identity-revealed","betrayal-revealed"].includes(v.muling)&&!["starfall:F-03","starfall:F-04","starfall:F-05"].includes(s.id))return fail("companion-unavailable");
-  const requiredActor={"harbor:H-01":"qilan","harbor:H-02":"jiedeng","epilogue:E-02":"muling"}[s.id];
+  const requiredActor={"harbor:H-01":"qilan","harbor:H-02":"jiedeng","library:M-03":"muling","epilogue:E-02":"muling"}[s.id];
   if(requiredActor&&v.objective.some(o=>o.startsWith("npc:"))&&npcId!==requiredActor)return fail("wrong-npc");
   if(s.lines.length&&!s.lines.some(l=>l.speaker===npcId)&&!s.choices.some(c=>c.npc===npcId))return fail("wrong-npc");
   const location=State.S.resonanceExploration?.location;if(campaign.regions.includes(region)&&location&&location!==region)return fail("wrong-map-location");
@@ -100,7 +101,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
  function postgame({id,operation,verified,token}={},physical){if(verified!==true||!token)return fail("postgame-unverified");return transaction(e=>e.postgame(id,operation),{token,physical})}
  function npcProfile(id){const actor=campaign.cast[id];if(!actor||id==="player")return null;const v=view();return {id,name:clone(actor.name),region:actor.region,trust:v.trust[id],returned:v.returned.includes(id),phase:id==="muling"?v.muling:null,availableAmbient:read().ambientAvailable(actor.region).filter(a=>a.npc===id)}}
  function residents(region){const v=view();if(region==="garden"){const ids=[...v.returned];if(["epilogue:E-02","epilogue:E-03"].includes(v.current?.id))ids.push(...Object.values(campaign.cast).filter(n=>campaign.regions.includes(n.region)).map(n=>n.id));if(["companion","accountability-pending","accountable","reconciled"].includes(v.muling)||["prologue:P-04","prologue:P-05"].includes(v.current?.id))ids.unshift("muling");return [...new Set(ids)].map(npcProfile).filter(Boolean)}
-  if(!v.regions.includes(region))return [];const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(v.current?.chapter===region&&["sky:S-04","library:M-03","library:M-05","starfall:F-03","starfall:F-04","starfall:F-05"].includes(v.current?.id))ids.push("muling");return ids.map(id=>({...npcProfile(id),scripted:id==="muling"}));}
+  if(!v.regions.includes(region))return [];const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(v.current?.chapter===region&&["sky:S-04","library:M-03","library:M-05","starfall:F-03","starfall:F-04","starfall:F-05"].includes(v.current?.id)&&!(v.current.id==="library:M-05"&&v.cursor>=v.current.lines.length&&v.choice))ids.push("muling");return ids.map(id=>({...npcProfile(id),scripted:id==="muling"}));}
  const follows=()=>view().muling==="companion"||view().muling==="identity-revealed";
  return Object.freeze({capture,isCurrentAction:check,completeNPCScene,commitFinaleVictory,subscribe,exchange,initialize:()=>State.S.resonance?{ok:true,state:clone(State.S.resonance)}:transaction(e=>({ok:true,state:e.snapshot()})),npcProfile,residents,follows,view,snapshot:()=>read().snapshot(),choose:(id,token)=>transaction(e=>e.choose(id),{token}),nextLine:token=>transaction(e=>e.nextLine(),{token}),finish:token=>transaction(e=>e.finish(),{token}),recordNPC,evidence,ambient,support,postgame,ambientAvailable:region=>read().ambientAvailable(region),supportProfile:region=>read().supportProfile(region)});
 }

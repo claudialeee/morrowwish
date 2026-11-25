@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary,catdexRecord} from "../public/cat-bond/js/resonance/library-mechanisms.mjs";
 const paths=["resonance/campaign.mjs","resonance/engine.mjs","resonance/slot-runtime.mjs","resonance/world-bridge.mjs","resonance/world-exploration.mjs","state.js"];
 const src=paths.map(p=>fs.readFileSync(new URL("../public/cat-bond/js/"+p,import.meta.url),"utf8"));
 console.log(JSON.stringify((function test(src){
@@ -6,8 +7,8 @@ console.log(JSON.stringify((function test(src){
  const campaign=new Function(clean(src[0])+"\nreturn campaign")();
  const makeEngine=new Function(clean(src[1])+"\nreturn makeEngine")();
  const getSlotRuntime=new Function("campaign","makeEngine",clean(src[2])+"\nreturn getSlotRuntime")(campaign,makeEngine);
- const createWorldBridge=new Function("campaign","getSlotRuntime",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime);
- const {createExplorer,exchangeOptions,layouts}=new Function("campaign",clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign);
+ const createWorldBridge=new Function("campaign","getSlotRuntime","libraryPoints","libraryInvitations","libraryBlocked","libraryPuzzle","catdexRecord",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime,libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord);
+ const {createExplorer,exchangeOptions,layouts}=new Function("campaign","libraryPoints","libraryInvitations","libraryBlocked","libraryPuzzle","advanceLibrary",clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign,libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary);
  const storage=new Map(),ls={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},window={};
  new Function("window","localStorage",src[5])(window,ls);
  const State=window.State,assert=(x,m)=>{if(!x)throw Error(m)},ok=(r,m)=>assert(r?.ok,m+": "+r?.reason);
@@ -16,7 +17,7 @@ console.log(JSON.stringify((function test(src){
  function walk(x,p){let old=x.position;x.walk(...p);let ticks=0;while(x.moving&&ticks++<1000)x.tick(.05);assert(!x.moving&&x.near(p),"walk arrival "+p);walking+=ticks;return old;}
  function solve(x){let p=x.puzzle;assert(p,"puzzle not mounted");const n=p.type;
   if(n==="pairedWater"){ok(x.operate(1),"lower cannot open without pressure");assert(x.puzzle.values[1]===0,"premature lower opening");ok(x.operate(0),"raise");ok(x.operate(0),"stable");ok(x.operate(1),"open lower");ok(x.operate(0),"overpressure");assert(x.puzzle.values[1]===0,"overpressure closes lower");ok(x.operate(0),"reset pressure");ok(x.operate(0),"raise");ok(x.operate(0),"stable");ok(x.operate(1),"open lower");ok(x.operate(2),"joint clearance");}
-  else if(["mirrors","water","stars","routing"].includes(n)){for(let i=0;i<3;i++){while(x.puzzle&&x.puzzle.values[i]!==p.goal[i])ok(x.operate(i),"dial");}}
+  else if(["mirrors","water","stars","routing","libraryMirrors"].includes(n)){for(let i=0;i<3;i++){while(x.puzzle&&x.puzzle.values[i]!==p.goal[i])ok(x.operate(i),"dial");}}
   else if(n==="heat"){while(x.puzzle&&x.puzzle.values[0]<p.goal[0])ok(x.operate(0),"heat");while(x.puzzle&&x.puzzle.values[1]>p.goal[1])ok(x.operate(1),"vent");}
   else if(n==="flight"){for(const w of p.wind)ok(x.operate(1-w),"flight");}
   else{ok(x.operate((p.goal[0]+1)%3),"wrong sequence");assert(x.puzzle&&x.puzzle.values.length===0,"wrong sequence advanced");for(const i of p.goal)ok(x.operate(i),"sequence");}
@@ -26,6 +27,7 @@ console.log(JSON.stringify((function test(src){
  for(let scene=0;scene<34;scene++){
   let v=b.view(),s=v.current;if(!s||s.id==="finale:B-01")break;
   if(s.choices.length&&s.choiceTiming==="beforeAction")host(e=>e.choose(s.choices[0].id));
+  if(s.id==="library:M-02"){State.S.cats.push({uid:"library-fixture",species:"nainai",personality:"gentle",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});State.S.dex.nainai=1;ok(b.enter("library"),"enter library");const x=createExplorer(b,"library");walk(x,x.layout.features["puzzle:mirror-records"]);assert(x.interact("puzzle:mirror-records").reason==="library-previous-station","must solve mirror gallery first");}
   const ops=s.id==="harbor:H-04"?[...s.requires].reverse():s.requires;
   if(s.id==="harbor:H-04"){
    ok(b.enter("harbor"),"enter Harbor");
@@ -33,9 +35,9 @@ console.log(JSON.stringify((function test(src){
    walk(x,x.layout.features["puzzle:beam-mirrors"]);
    assert(x.interact("puzzle:beam-mirrors").reason==="rescue-first","rescue choice must change the action order");
   }
-  for(const op of ops){if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
+  for(const op of ops){if(s.id==="library:M-05"&&op==="repair:library"){ok(b.enter("library"),"enter library for route choice");const early=createExplorer(b,"library");walk(early,early.layout.features[op]);assert(early.interact(op).reason==="library-previous-station","repair must wait until the two routes dialogue and archive choice");while(b.view().cursor<s.lines.length)host(e=>e.nextLine());assert(early.interact(op).reason==="library-previous-station","reading dialogue alone must not unlock repair");host(e=>e.choose(s.choices[0].id));}if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
-   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(s.chapter==="forest"){const restored=createExplorer(b,"forest");assert(restored.invited.length===2&&restored.invited.includes("yahe")&&restored.invited.includes("yuchuan"),"forest invitations must survive reload");}}
+   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(s.chapter==="library"){const restored=createExplorer(b,"library");assert(restored.invited.length===2,"library invitations persist");}if(s.chapter==="forest"){const restored=createExplorer(b,"forest");assert(restored.invited.length===2&&restored.invited.includes("yahe")&&restored.invited.includes("yuchuan"),"forest invitations must survive reload");}}
    if(op==="explore:tide-logbook"){
     walk(x,p);assert(x.interact(op).reason==="incomplete-tide-trail","cannot bypass tide trail");
     let trail=x;

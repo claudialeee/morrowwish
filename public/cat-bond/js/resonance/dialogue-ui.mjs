@@ -1,6 +1,6 @@
 // Host-mounted dialogue controller; no save store and no fallback artwork.
 // The host must resolve approved art, own scene transitions, and call render after gameplay.
-export function mountDialogue({root,engine,campaign,language,resolvePortrait,onPersist,onClose,onAwaitAction,onLanguage}) {
+export function mountDialogue({root,engine,campaign,language,resolvePortrait,onPersist,onClose,onAwaitAction,onLanguage,onRender}) {
  if(!root||typeof resolvePortrait!=="function"||typeof onPersist!=="function")throw Error("Dialogue host adapter incomplete");
  const el=(tag,cls)=>{const e=document.createElement(tag);if(cls)e.className=cls;return e};
  const panel=el("section","res-dialogue"),art=el("img","res-portrait"),body=el("div","res-body"),name=el("h2","res-speaker"),line=el("p","res-line"),choices=el("div","res-choices"),tools=el("div","res-controls"),history=el("div","res-history");
@@ -33,6 +33,7 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  buttons.next.disabled=!l||!!choiceVisible;buttons.skip.disabled=!l||!!choiceVisible;buttons.auto.disabled=!l||!!choiceVisible;buttons.history.setAttribute("aria-pressed",String(showHistory));
  for(const h of sessionHistory){const p=el("p");p.textContent=(h.narration?s.title[k]:displayName(h.speaker,s,k))+" · "+h.text[k];history.append(p)}
  if(automatic&&l&&!choiceVisible)timer=setTimeout(next,Math.max(850,Math.min(5500,(800+l.text[k].length*48)/speed)));
+ onRender?.(v,k);
  if(!l&&!choiceVisible)onAwaitAction?.({reason:"gameplay-or-scene-transition",scene:s.id,objective:v.objective});
  }
  function keyboard(ev){if(disposed||panel.hidden||ev.target?.closest?.("button,select,input,textarea"))return;if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();next()}else if(ev.key==="Escape"){ev.preventDefault();dispose();onClose?.()}}
