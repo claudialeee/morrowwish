@@ -9,7 +9,7 @@ let active=null;
 async function play(sceneId){
  const game=window.__game, slot=window.State.S, runtime=getSlotRuntime(window.State);
  const view=runtime.view();
- if(active||game.scene!=="map"||view.current?.id!==sceneId||!view.objective.some(op=>op.startsWith("cinematic:")))return false;
+ if(active||game.scene!=="map"||view.current?.id!==sceneId||!view.objective.length||!view.objective.every(op=>op.startsWith("cinematic:")))return false;
  const token=runtime.capture(), controller={dispose:null};
  const current=()=>active===controller&&window.State.S===slot&&runtime.isCurrentAction(token);
  active=controller;

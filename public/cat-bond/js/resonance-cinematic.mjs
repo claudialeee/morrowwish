@@ -10,7 +10,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   const canonical=campaign.scenes.find(x=>x.id===scene.id);
   if(!canonical||JSON.stringify(canonical)!==JSON.stringify(scene))return bad('noncanonical-scene');
   if(scene.choices.length&&scene.choiceTiming==='beforeAction'&&!view.choice)return bad('choice-pending');
-  if(!scene.requires.some(op=>op.startsWith('cinematic:')) && view.objective.length)return bad('gameplay-pending');
+  if(view.objective.some(op=>!op.startsWith('cinematic:')))return bad('gameplay-pending');
   if(scene.lines.length&&!view.lineReady&&view.cursor<scene.lines.length)return bad('dialogue-awaits-gameplay');
   const approved=manifest?.approvedShots?.[scene.id];
   const release=openingRelease&&!approved&&/^prologue:P-0[123]$/.test(scene.id)&&manifest?.prologueReleaseShots?.[scene.id];
@@ -26,7 +26,8 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
       :useStaging
       ?asset?.status==='candidate'&&asset.stagingAllowed===true&&asset.runtimeAllowed===false
       :asset?.status==='approved'&&asset.runtimeAllowed===true&&asset.visualReview?.evidence&&asset.visualReview.result==='PASS';
-    if(!allowed||asset.sceneKey!==scene.id||!raster.test(asset.path))return bad('unapproved-shot');
+    const recalled=useStaging&&scene.id==='starfall:F-02'&&['opening-star-bell','opening-keepers-choice','opening-broken-bell-tongue'].includes(asset?.id)&&/^prologue:P-0[12]$/.test(asset.sceneKey);
+    if(!allowed||(!recalled&&asset.sceneKey!==scene.id)||!raster.test(asset.path))return bad('unapproved-shot');
     if(unique.has(asset.path))return bad('repeated-shot-art');unique.add(asset.path);
     if(!isBilingual(shot.alt)||!Number.isFinite(shot.durationMs)||shot.durationMs<1200||shot.durationMs>20000||!Array.isArray(shot.lines))return bad('invalid-shot');
     const base={id:scene.id+'-shot-'+i,image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,focus:shot.focus,transitionMs:shot.transitionMs||520,effect:shot.effect};

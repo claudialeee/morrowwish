@@ -1974,8 +1974,12 @@ export const campaign = {
       "previous": "starfall:F-01",
       "lines": [],
       "requires": [
+        "explore:crater-fragment",
+        "puzzle:echo-navigation",
         "puzzle:star-map",
-        "explore:catastrophe-record"
+        "explore:ruin-fragment",
+        "explore:catastrophe-record",
+        "cinematic:starfall-memory"
       ],
       "choices": [],
       "lineGate": [],

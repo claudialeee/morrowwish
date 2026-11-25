@@ -1,6 +1,7 @@
 // Chat 3 physical-world adapter. Chat 4 owns the sole narrative mutation path.
 import {campaign} from "./campaign.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
+import {layouts,puzzleSpecs} from "./world-exploration.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
 const scentTrail=Object.freeze([
@@ -127,6 +128,12 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
     if(!validPair(State.S,pair)||!atForest(w,[.69,.53]))return fail("upper-gate-required");
     if(proof.pair?.upper!==pair.upper||proof.pair?.lower!==pair.lower||proof.waterSequence?.join(",")!=="2,1,1")return fail("paired-flow-incomplete");
    }
+  if(sceneId==="starfall:F-02"){
+   const point=layouts.starfall.features[op],pos=w.positions.starfall;
+   if(v.objective[0]!==op||!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("starfall-record-order");
+   const spec=puzzleSpecs[op];if(spec&&proof.starfallSequence?.join(",")!==spec.goal.join(","))return fail("starfall-record-order");
+  }
+  if(op==="melody:starfall"&&!["xingya","lichuan"].every(id=>w.interactions["starfall:F-04:invite:"+id]))return fail("local-response-required");
   if(op==="melody:harbor"&&!["qilan","jiedeng"].every(id=>w.interactions["harbor:H-05:invite:"+id]))return fail("local-response-required");
   if(op==="melody:forest"&&!["yahe","yuchuan"].every(id=>w.interactions["forest:R-04:invite:"+id]))return fail("local-response-required");
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
@@ -138,12 +145,15 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  function inviteHarbor(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={qilan:[.16,.60],jiedeng:[.195,.50]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="harbor"||v.current?.id!=="harbor:H-05"||!v.objective.includes("melody:harbor")||!token||!api.isCurrentAction(token)||!tideNear(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["harbor:H-05:invite:"+id]:true}}));}
  function forestInvited(){const v=view(),w=world();return v.current?.id==="forest:R-04"||v.completed.includes("forest:R-04")?["yahe","yuchuan"].filter(id=>w.interactions["forest:R-04:invite:"+id]):[];}
  function inviteForest(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={yahe:[.30,.43],yuchuan:[.64,.53]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="forest"||v.current?.id!=="forest:R-04"||v.objective.includes("repair:forest")||!v.objective.includes("melody:forest")||!token||!api.isCurrentAction(token)||!atForest(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["forest:R-04:invite:"+id]:true}}));}
+ function starfallInvited(){const v=view(),w=world();return v.current?.id==="starfall:F-04"?["xingya","lichuan"].filter(id=>w.interactions["starfall:F-04:invite:"+id]):[];}
+ function inviteStarfall(id,point,token){const v=view(),w=world(),api=resolveNarrative(),expected=layouts.starfall.castPoints[id],p=w.positions.starfall;if(!expected||!p||w.location!=="starfall"||v.current?.id!=="starfall:F-04"||v.objective.includes("repair:starfall")||!v.objective.includes("melody:starfall")||!token||!api.isCurrentAction(token)||Math.hypot(p.x-expected[0],p.y-expected[1])>=.072)return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["starfall:F-04:invite:"+id]:true}}));}
  function cargoSpec(a,b){const l=campaign.links.find(([x,y])=>x===a&&y===b);if(!l)return null;const v=view(),i=(v.links[a+":"+b]||[]).length,actor=[a,b,b,a][i];if(i>=4||!v.regions.includes(a)||!v.regions.includes(b))return null;const end=a==="starfall"?"starfall:F-02":campaign.scenes.filter(s=>s.chapter===a).at(-1)?.id;if(!v.completed.includes(end))return null;return {a,b,stage:stages[i],actor,action:l[i<2?2:3],from:i%2===0?0:1,to:i%2===0?1:0};}
- function pickupCargo(option){const w=world(),s=option&&cargoSpec(option.a,option.b);if(w.cargo)return fail("cargo-busy");if(!s||w.location!==s.actor||!["a","b","stage","actor","action","from","to"].every(k=>option[k]===s[k]))return fail("invalid-cargo");return physical(x=>({...x,cargo:s}));}
+ function pickupCargo(option){const w=world(),s=option&&cargoSpec(option.a,option.b);if(w.cargo)return fail("cargo-busy");const path=s&&layouts[s.actor]?.paths,p=s&&w.positions[s.actor],point=path?.[s.from===0?1:path.length-2];if(!point||!p||Math.hypot(p.x-point[0],p.y-point[1])>=.072)return fail("walk-to-cargo");if(!s||w.location!==s.actor||!["a","b","stage","actor","action","from","to"].every(k=>option[k]===s[k]))return fail("invalid-cargo");return physical(x=>({...x,cargo:s}));}
  function exchange(a,b,proof){const api=resolveNarrative(),s=cargoSpec(a,b),w=world();if(!s||!w.cargo||w.location!==s.actor||proof?.region!==s.actor||proof.stage!==s.stage||proof.action!==s.action||proof.verified!==true||!["a","b","stage","actor","action","from","to"].every(k=>w.cargo[k]===s[k]))return fail("exchange-evidence-missing");
+  const path=layouts[s.actor].paths,point=path[s.to===0?1:path.length-2],p=w.positions[s.actor];if(!p||Math.hypot(p.x-point[0],p.y-point[1])>=.072)return fail("walk-to-recipient");
   if(typeof api?.exchange!=="function"||!proof.token)return fail("canonical-exchange-unavailable");
   const reward={coins:10,fish:1},r=api.exchange({a,b,stage:s.stage,actor:s.actor,action:s.action,verified:true,token:proof.token},patch(x=>({...x,cargo:null}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function pickupReward(region,id){const w=world();if(w.location!==region||!/^cache-[12]$/.test(id)||w.pickups[region+":"+id])return fail("already-collected");return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
- return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,forestInvited,inviteForest,tideStep,traceTide,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
+ return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,forestInvited,inviteForest,starfallInvited,inviteStarfall,tideStep,traceTide,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
 }
