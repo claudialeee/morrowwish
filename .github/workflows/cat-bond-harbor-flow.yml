@@ -14,11 +14,12 @@ on:
 permissions:
   contents: read
 
-# Finish active full-campaign runs to preserve failure evidence while fixes are queued.
-# Other PRs keep the usual newest-run-only behavior.
+# Completed failure logs are preserved in the PR. Cancel superseded commits
+# so the exact latest source gets the full three-profile matrix immediately.
+# Never cancel other profiles within the active matrix (fail-fast remains false).
 concurrency:
   group: cat-bond-harbor-acceptance-${{ github.event.pull_request.number }}
-  cancel-in-progress: ${{ github.head_ref != 'rpg/release-combined-next' }}
+  cancel-in-progress: true
 
 jobs:
   harbor:
