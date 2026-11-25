@@ -335,7 +335,7 @@ function installCatBondSystemMenu(){
   const rows=[
     ['language',t('语言','Language'),t('中文','English')],
     ['music',t('音乐','Music'),window.MorrowwishMusic?.status?.().enabled?t('开启','On'):t('关闭','Off')],
-    ['effects',t('音效','Sound effects'),active('.mw-settings-sfx')?t('开启','On'):t('关闭','Off')],
+    ['effects',t('音效','Sound effects'),(window.MorrowwishAudio?.isEnabled?.()??active('.mw-settings-sfx'))?t('开启','On'):t('关闭','Off')],
     ...(native('#mw-fullscreen-toggle')?[['fullscreen',t('全屏','Fullscreen'),active('#mw-fullscreen-toggle')?t('退出','Exit'):t('进入','Enter')]]:[]),
     ['share',t('分享游戏','Share game'),''],
     ['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),''],
@@ -362,6 +362,7 @@ function installCatBondSystemMenu(){
    }
    if(id==='language'&&!native(selectors.language)){window.MorrowwishI18n?.set?.(zh()?'en':'zh');render();return;}
    if(id==='music'&&window.MorrowwishMusic){window.MorrowwishMusic.toggle();render();return;}
+   if(id==='effects'&&window.MorrowwishAudio){window.MorrowwishAudio.toggle();render();return;}
    native(selectors[id])?.click();
    if(id==='share')close();else setTimeout(render,120);
   });

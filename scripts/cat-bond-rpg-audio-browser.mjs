@@ -11,12 +11,11 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(url+'?lang=en');
   await page.waitForFunction(()=>window.MorrowwishMusic&&window.CatBondOriginalScore&&window.__CAT_BOND_READY__);
-  await page.locator('#intro-start').click();
+  await page.locator('#cb-system-toggle').click();
   const waitTrack=id=>page.waitForFunction(id=>{const s=MorrowwishMusic.status();return s.track===id&&s.playing&&s.currentTime>.05},id,{timeout:90000});
   await waitTrack('title');
   const title=await page.evaluate(()=>MorrowwishMusic.status());
-  // Exercise the same visible controls players use, including independent mute.
-  await page.locator('#cb-system-toggle').click();
+  // Exercise the visible title menu before opening the save picker (which hides the menu).
   const menu=page.locator('#cb-system-menu');
   await menu.locator('[data-audio-volume="music"]').fill('37');
   await menu.locator('[data-audio-volume="effects"]').fill('42');
@@ -31,6 +30,7 @@ try{
   await waitTrack('title');
   await menu.locator('[data-system="close"]').click();
   assert.equal(title.source,'recorded-mp3:title','must use actual compressed original recording');
+  await page.locator('#intro-start').click();
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
   await page.waitForFunction(()=>document.querySelector('.cbcp-root:not([hidden])')?.dataset.ready==='true');
   await waitTrack('opening');

@@ -310,6 +310,13 @@ try {
     await button('Sunlit Garden',page.locator('.rw-head')).click();
     await page.waitForFunction(() => window.__game.scene === 'yard');
     await shot('garden-return');
+    if(process.env.CAT_BOND_AUDIO_ACCEPTANCE==='1'){
+      const control=page.locator('#mw-game-settings .mw-settings-sfx');await control.click();
+      const system=page.locator('#cb-system-menu');await system.waitFor({state:'visible'});
+      await system.locator('[data-audio-volume="music"]').fill('46');
+      await page.waitForFunction(()=>MorrowwishMusic.status().volume===.46);
+      await system.locator('[data-system="close"]').click();
+    }
 
     await page.reload();
     await page.locator('#intro-continue').click();
