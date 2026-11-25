@@ -627,7 +627,7 @@ try {
         if(!line||!await dlg.isVisible())break;
         await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.en);
         if(id!=='library:M-01'){
-          const painting=dlg.locator('.library-reveal-painting.is-current');await painting.waitFor();await painting.evaluate(img=>img.decode());
+          await dlg.locator('.library-reveal-stage[data-ready="true"]').waitFor();const painting=dlg.locator('.library-reveal-painting.is-current');await painting.waitFor();await painting.evaluate(img=>img.decode());
           if([0,4,9,14].includes(seen))await shot(id.replace(':','-')+'-shot-'+seen);
         }
         await dlg.locator('[data-res-language]').click();
@@ -674,7 +674,7 @@ try {
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().links['sky:library']),['sendA','receiveB','sendB','receiveA']);
     await travel('Moonmirror Library');await ship('library','Star chart and coordinates');await button('World atlas',page.locator('.rw-head')).click();
     await button('Catdex',page.locator('.rw-system-nav')).click();await page.getByText('Moonmirror archive',{exact:true}).waitFor();await shot('library-catdex-complete');await page.locator('#panel .card-close').click();
-    await page.getByText(/Chapter V complete · Starfall unlocked/).waitFor();await shot('library-unlock');
+    await page.getByText(/Chapter V complete · Starfall unlocked/).waitFor();await shot('library-unlock');await button('Starfall Expanse').click();await page.waitForFunction(()=>WorldMap.currentRegion==='starfall'&&CatBondResonance.view().current?.id==='starfall:F-01');await ship('starfall','Star chart and coordinates');await shot('library-to-starfall');
     assert.deepEqual(errors,[]);results.push({profile:name,captured,...state,forestComplete:true,forgeComplete:true,skyComplete:true,libraryComplete:true});await context.close();
   }
 } finally {
