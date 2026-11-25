@@ -113,6 +113,14 @@ class CatEntity {
     if (this.pettedGlow > 0) this.pettedGlow -= dt;
     if (this.groomT > 0) this.groomT -= dt;
     if (this.pounceT > 0) this.pounceT -= dt;
+    // The facility controls the pose until the actual play session ends.
+    // Elevated perches must not be clamped back to the walking ground.
+    if(this._playBuildT>0&&this._buildUse){
+      this.x=this._buildUse.x;this.y=this._buildUse.y;
+      this.walkVX=this.walkVY=this.vx=this.vy=0;
+      this.motion=0;
+      return;
+    }
     this.timer -= dt;
     if (this.timer <= 0) this.pickBehavior();
 
@@ -574,7 +582,7 @@ class YardScene {
       this._gardenState=State.S;
       this.placement=null;this.hide=null;this.golden=null;
       this.lootBubbles=[];this.petParticles=[];this.floatTexts=[];
-      this._newBuildToVisit=null;this._buildScan=2;this._lootScan=0;
+      this._newBuildToVisit=null;this._duoFacility=null;this._buildScan=2;this._lootScan=0;
       window.UI?.updateBuildingPlacement?.();
     }
     projectGardenBuildings(State.S.yardBuildings,W,H);
@@ -715,7 +723,7 @@ class YardScene {
     if(duo.length===2){
       const a=this.entities.find(e=>e.cat.uid===duo[0].uid);
       const b=this.entities.find(e=>e.cat.uid===duo[1].uid);
-      if(a&&b){
+      if(a&&b&&!a._buildTarget&&!b._buildTarget&&!(a._playBuildT>0)&&!(b._playBuildT>0)){
         const sulky=CatRelations.mood(duo[0],duo[1])==='sulky';
         const dist=Math.hypot(a.x-b.x,a.y-b.y);
         if(this.game.t>(this._nextDuoEmote||0)){
@@ -1029,8 +1037,8 @@ class YardScene {
   }
   // Invite an actual visible kitten to a specific facility immediately.
   inviteCatToBuilding(b){
-    if(!(State.S.yardBuildings||[]).includes(b)||!this.entities?.length)return false;
-    const available=this.entities.filter(e=>!(e._playBuildT>0));
+    if(this._duoFacility||!(State.S.yardBuildings||[]).includes(b)||!this.entities?.length)return false;
+    const available=this.entities.filter(e=>!(e._playBuildT>0)&&!e._buildTarget);
     if(!available.length)return false;
     const nearest=available.sort((a,c)=>
       Math.hypot(a.x-b.x,a.y-b.y)-Math.hypot(c.x-b.x,c.y-b.y))[0];
@@ -1038,6 +1046,54 @@ class YardScene {
     nearest.setPose('walk',1.4);
     nearest.emote('🐾',1.6);
     return true;
+  }
+  // Invite the chosen battle duo to take turns at a real facility.
+  // No new relationship database or story flag: the existing pair state
+  // records the benefit only after both physical visits complete.
+  inviteDuoToBuilding(b){
+    if(this._duoFacility||!(State.S.yardBuildings||[]).includes(b))return false;
+    const pair=window.CatRelations?.chosen?.()||[];
+    if(pair.length!==2||pair.some(c=>window.Raising?.isBusy?.(c.uid)))return false;
+    if(CatRelations.mood(pair[0],pair[1])==='sulky')return false;
+    // Keep both actual selected cats visible even when the roster's current
+    // page shows another breed or a stronger duplicate.
+    for(const cat of pair){
+      if(this.entities.some(e=>e.cat.uid===cat.uid))continue;
+      const e=new CatEntity(cat,this.game.W,this.game.H);
+      e.x=Math.max(56,Math.min(this.game.W-56,b.x+52));
+      e.y=Math.max(Math.min(this.game.H*.54,this.game.H-88),Math.min(this.game.H-72,b.y+20));
+      this.entities.push(e);
+    }
+    const actors=pair.map(c=>this.entities.find(e=>e.cat.uid===c.uid));
+    if(actors.some(e=>!e))return false;
+    for(const e of actors){
+      e._buildTarget=null;e._playBuildT=0;e._playBuildDef=null;e._playBuilding=null;e._buildUse=null;
+    }
+    this._duoFacility={building:b,ids:pair.map(c=>c.uid),index:0,arrived:false};
+    actors[0]._buildTarget=b;actors[0].setPose('walk',1.4);
+    return true;
+  }
+  updateDuoFacility(){
+    const a=this._duoFacility;if(!a)return;
+    const b=a.building,actor=this.entities.find(e=>e.cat.uid===a.ids[a.index]);
+    if(!(State.S.yardBuildings||[]).includes(b)||!actor){this._duoFacility=null;return}
+    if(actor._playBuilding===b&&actor._playBuildT>0)a.arrived=true;
+    if(!a.arrived){
+      if(actor._buildTarget!==b)this._duoFacility=null;
+      return;
+    }
+    if(actor._playBuildT>0)return;
+    if(a.index===0){
+      const second=this.entities.find(e=>e.cat.uid===a.ids[1]);
+      if(!second){this._duoFacility=null;return}
+      a.index=1;a.arrived=false;second._buildTarget=b;second.setPose('walk',1.4);
+      return;
+    }
+    this._duoFacility=null;
+    // A normal facility visit has already awarded the standard pair benefit
+    // via rewardBuildingVisit. Save both completed activity poses' joy too.
+    State.save();this.game.refreshHUD?.();
+    this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'双猫完成了共同活动！':'Your duo finished playing together!');
   }
   // ---- resident cats visit their play-structures and PLAY ----
   // Cheap, subtle pathing: on a slow timer, send one idle cat toward a nearby
@@ -1057,6 +1113,8 @@ class YardScene {
         if (e._playBuildT <= 0) { e._playBuildDef = null; e._buildUse = null; e._playBuilding = null; }
       }
     }
+    this.updateDuoFacility();
+    if(this._duoFacility)return; // no unrelated cat may interrupt a duo visit
     this._buildScan = (this._buildScan == null ? 2 : this._buildScan) - dt;
     if (this._buildScan > 0) return;
     this._buildScan = 4 + Math.random() * 4;   // next look ~4-8s; don't thrash pathing
@@ -1099,13 +1157,22 @@ class YardScene {
     // using it (inside the cave, on the hammock sling, up on the cat-tree perch, rolling
     // in the catnip bed), instead of everyone standing at a generic (x, y+16) offset.
     const spot = this.buildingUseSpot(b, def);
-    const dx = spot.x - e.x, dy = spot.y - e.y, dist = Math.hypot(dx, dy);
-    if (dist > 18) {
-      e.pose = 'walk'; e.timer = 1;
-      e.vx = (dx / dist) * 34; e.vy = (dy / dist) * 20;
+    // Walk to an accessible point at the foot of the structure, then
+    // mount the perch/hammock. Walking directly to an elevated bed could
+    // never complete because the cat's normal motion clamps it to grass.
+    const groundTop=Math.min(this.game.H*.54,this.game.H-88);
+    const groundBottom=Math.max(groundTop+20,this.game.H-72);
+    const margin=Math.min(56,this.game.W*.22);
+    const approachX=Math.max(margin,Math.min(this.game.W-margin,b.x));
+    const approachY=Math.max(groundTop,Math.min(groundBottom,b.y));
+    const dx=approachX-e.x,dy=approachY-e.y,dist=Math.hypot(dx,dy);
+    if (dist > 12) {
+      e.pose='walk';e.timer=1;
+      const speed=Math.max(70,Math.min(145,this.game.W*.12));
+      e.vx=dx/dist*speed;e.vy=dy/dist*speed;
     } else {
       // arrived: actually USE the structure
-      e.vx = e.vy = 0; e.x = spot.x; e.y = spot.y;
+      e.vx=e.vy=e.walkVX=e.walkVY=0;e.x=spot.x;e.y=spot.y;
       e.setPose(spot.pose, 3.0 + Math.random() * 1.2);
       e.emote(def ? def.emote : '🐾', 2.2);
       e.cat.joy = Math.min(100,e.cat.joy+
@@ -1286,6 +1353,7 @@ class YardScene {
     const def = BUILDINGS_BY_ID[b.type];
     const refund=def?Math.floor((def.cost+(b.upgradeSpend||0)*.5)/2):0;
     builds.splice(index, 1);
+    if(this._duoFacility?.building===b)this._duoFacility=null;
     for (const e of this.entities) {
       if(e._buildTarget===b)e._buildTarget=null;
       if(e._playBuilding===b){e._playBuilding=null;e._playBuildT=0;}

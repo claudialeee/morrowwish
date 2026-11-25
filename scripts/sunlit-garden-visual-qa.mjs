@@ -140,6 +140,22 @@ try{
   assert.equal(restored.u,saved.u);assert.equal(restored.v,saved.v);
   assert.ok(restored.x>=30&&restored.x<=restored.w-30&&restored.y>=0&&restored.y<restored.h,'saved facility remains on-screen at phone size');
   await page.screenshot({path:out+'/facility-restored-phone.png'});
+  // The actual selected cats must walk to the facility and finish two visits.
+  // Seed their pairing, not the completion or relationship reward.
+  await page.evaluate(()=>{
+    const [a,b]=State.S.cats;CatRelations.choose(a,b);
+    const facility=State.S.yardBuildings[0];
+    facility.lastBondAt=0;facility.lastVisitorAt=0;facility.lastVisitorUid=null;
+  });
+  const trustBefore=await page.evaluate(()=>CatRelations.pair(...CatRelations.chosen()).value);
+  await page.locator('.sg-hotspot-facilities').click();
+  await page.locator('[data-duo-visit="0"]').click();
+  await page.waitForFunction(()=>__game.yard._duoFacility?.arrived===true,null,{timeout:30000});
+  await page.screenshot({path:out+'/duo-first-visit.png'});
+  await page.waitForFunction(()=>__game.yard._duoFacility?.index===1&&__game.yard._duoFacility?.arrived===true,null,{timeout:30000});
+  await page.screenshot({path:out+'/duo-second-visit.png'});
+  await page.waitForFunction(()=>!__game.yard._duoFacility,null,{timeout:15000});
+  assert.ok(await page.evaluate(()=>CatRelations.pair(...CatRelations.chosen()).value)>trustBefore,'two real visits grow the existing chosen duo trust');
   await page.evaluate(()=>{const old=State.activeSlot(),other=State.SAVE_SLOT_IDS.find(id=>id!==old);if(!State.startNewGame(other,{overwriteConfirmed:true}))throw Error('second slot failed')});
   await page.waitForFunction(()=>__game.yard._gardenState===State.S);
   assert.equal(await page.evaluate(()=>State.S.yardBuildings.length),0,'new slot must not inherit buildings');
