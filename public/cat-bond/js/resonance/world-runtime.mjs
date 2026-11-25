@@ -19,6 +19,7 @@ const pools={
 };
 const ruinsPoint=[.23,.78];
 const duoMemories={harbor:"creek",forest:"sakura",forge:"volcano",starfall:"ruins"};
+ function regSkyLaunch(op,region){return region==="sky"?skyLaunch[op]:null;}
 const cargoNames={"beacon-supply-vessel":["灯塔引航物资","Beacon-guided supplies"],"herbs-waterway-map":["药材与水路图","Herbs and waterway map"],"cooling-plans-herbs":["冷却水与药材","Cooling water and herbs"],"pumps-tools":["水泵与工具","Pumps and tools"],"wind-vanes-flight-parts":["风向仪与飞行部件","Wind vanes and flight parts"],"wind-data-airship-route":["风况与飞艇航路","Wind data and airship route"],"courier-route":["信使航线","Courier route"],"archived-flight-maps":["旧航图与档案","Archived flight maps"],"star-chart-coordinates":["星图及坐标","Star chart and coordinates"],"astronomical-observations":["天文观测记录","Astronomical observations"],"navigation-bell-compass":["导航铃与星罗盘","Navigation bell and star compass"],"beacon-response":["港口航行回报","Harbor navigation response"]};
 const cargoName=id=>cargoNames[id]?tr(...cargoNames[id]):id;
 const skyRelease=v=>v.completed.includes("library:M-05")&&v.current?.id==="starfall:F-01";
