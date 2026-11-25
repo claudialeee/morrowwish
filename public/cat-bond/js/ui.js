@@ -228,6 +228,12 @@ const UI = {
     window.arcadeMetric?.('bond_yard_placement_preview',{type});
     return true;
   },
+  startBuildingRelocation(index){
+    if(!this.game?.yard?.beginRelocation(index)){this.game.toast(this.isEnglish()?'Wait until the facility is free.':'请等猫咪使用完该设施。');return false;}
+    this.closeAll();this.game._yardPlacementTouchId=null;
+    document.getElementById('yard-placement-dock').hidden=false;
+    document.body.classList.add('cb-placing-building');this.updateBuildingPlacement();return true;
+  },
   updateBuildingPlacement(){
     const p=this.game?.yard?.placement;
     const status=document.getElementById('yard-placement-status');
@@ -241,6 +247,7 @@ const UI = {
     const name=en?(World.BUILDING_PRODUCTION?.[p.type]?.nameEn||def?.name||'Structure'):(def?.name||'设施');
     const compact=window.matchMedia?.('(max-width:700px), (pointer:coarse)')?.matches;
     // One tap/click builds immediately; a touch drag can adjust until release.
+    if(p.relocating){status.textContent=name+(en?' · Choose a new location':' · 选择新位置')+(p.valid?(en?' · Ready':' · 可移动'):(en?' · Blocked':' · 有遮挡'));document.getElementById('yard-placement-cancel').textContent=en?'Cancel':'取消';return;}
     status.textContent=compact
       ?(name+(en?' · Tap to build / drag to move':' · 轻触即建造／拖动选位置')+
         (p.valid?(en?' · ✓ Free spot':' · ✓ 可建造'):(en?' · × Blocked':' · × 有遮挡')))
@@ -259,7 +266,7 @@ const UI = {
     }
     this.updateBuildingPlacement();
     this.game.refreshHUD();
-    this.game.toast(en?'Placed '+name+' · watch your cats play!':'已建造 '+name+' · 看猫猫过来玩！');
+    this.game.toast(p.relocating?(en?'Facility relocated':'设施已移动'):(en?'Placed '+name+' · watch your cats play!':'已建造 '+name+' · 看猫猫过来玩！'));
     window.MorrowwishAudio?.effect?.('discover');
     return true;
   },
@@ -1475,6 +1482,7 @@ const UI = {
           <button class="btn ghost tiny-btn" data-duo-visit="${i}" ${(window.CatRelations?.chosen?.()||[]).length===2?'':'disabled'}>${en?'Invite duo':'邀请双猫'}</button>
           <button class="btn gold tiny-btn" data-upgrade="${i}"
             ${next===null||coins<next?'disabled':''}>${next===null?(en?'Max Lv.':'已满级'):(en?'Upgrade':'升级')+' '+next+'🪙'}</button>
+          <button class="btn ghost tiny-btn" data-relocate="${i}">${en?'Move':'移动'}</button>
           <button class="btn ghost tiny-btn" data-remove="${i}">${en?'Remove':'拆除'}</button>
         </div>
       </div>`;
@@ -1531,6 +1539,7 @@ const UI = {
         (en?'Not enough coins / max level':'金币不足或已满级'));
       this.openBuild();
     });
+    host.querySelectorAll('[data-relocate]').forEach(btn=>btn.onclick=()=>this.startBuildingRelocation(Number(btn.dataset.relocate)));
     host.querySelectorAll('[data-remove]').forEach(btn => btn.onclick = () => {
       const refund = this.game.yard.removeStructure(+btn.dataset.remove);
       this.game.refreshHUD();
@@ -2355,7 +2364,8 @@ const UI = {
       <p class="tiny center" style="margin-top:10px">奖励随连签天数增长</p>`);
     const btn = document.getElementById('claim');
     if (btn && avail) btn.onclick = () => {
-      const { reward, streak } = State.claimDaily();
+      const { ok, reward, streak } = State.claimDaily();
+      if(!ok){this.openDaily();return;}
       State.save(); this.game.refreshHUD();
       const msg = `+${reward.coins}🪙 +${reward.fish}🐠小鱼`;
       this.game.toast(`签到成功！${msg}`);

@@ -1254,16 +1254,22 @@ class YardScene {
   }
   // Physical placement: charge only on mouse click or touch release at
   // the exact canvas coordinate. Bounds and overlap are cross-device.
-  buildingSpotValid(x,y) {
+  buildingSpotValid(x,y,ignore=null) {
     const {W,H}=this.game;
     // Five structures must fit even in a short phone yard, below the fence.
       const top=Math.min(H*.50,H-96),bottom=Math.max(top+20,H-56);
     const side=Math.min(56,Math.max(30,W*.10));
     if(!Number.isFinite(x)||!Number.isFinite(y)||
         x<side||x>W-side||y<top||y>bottom)return false;
-    if((State.S.yardBuildings||[]).some(b=>Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<57))return false;
+    if((State.S.yardBuildings||[]).some(b=>b!==ignore&&Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<57))return false;
     if(this.bushes.some(b=>Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<32))return false;
     return true;
+  }
+  beginRelocation(index){
+    const b=State.S.yardBuildings?.[index];
+    if(this.game.scene!=='yard'||!b||this.placement||this._duoFacility?.building===b||this.entities.some(e=>e._playBuilding===b||e._buildTarget===b))return false;
+    this.placement={type:b.type,x:b.x,y:b.y,valid:false,relocating:b,owner:State.S};
+    this.movePlacement(b.x,b.y);return true;
   }
   beginPlacement(type){
     const def=BUILDINGS_BY_ID[type];
@@ -1282,13 +1288,24 @@ class YardScene {
     // to the grass boundary made a tap above it silently jump elsewhere.
     this.placement.x=Math.max(0,Math.min(W,x));
     this.placement.y=Math.max(0,Math.min(H,y));
-    this.placement.valid=this.buildingSpotValid(this.placement.x,this.placement.y);
+    this.placement.valid=this.buildingSpotValid(this.placement.x,this.placement.y,this.placement.relocating);
     return this.placement.valid;
   }
   cancelPlacement(){this.placement=null;}
   confirmPlacement(){
     const p=this.placement;
     if(!p||!p.valid)return false;
+    if(p.relocating){
+      const b=p.relocating;
+      if(p.owner!==State.S||this.game.scene!=='yard'||!State.S.yardBuildings.includes(b)||
+        !this.buildingSpotValid(p.x,p.y,b)||this._duoFacility?.building===b||this.entities.some(e=>e._playBuilding===b||e._buildTarget===b))return false;
+      const old={...b};b.x=p.x;b.y=p.y;
+      delete b.gardenU;delete b.gardenV;
+      projectGardenBuildings([b],this.game.W,this.game.H);
+      let saved=false;try{saved=State.save()?.ok===true}catch{}
+      if(!saved){for(const k of Object.keys(b))delete b[k];Object.assign(b,old);return false;}
+      this.placement=null;return true;
+    }
     const success=this.buildStructure(p.type,{x:p.x,y:p.y});
     if(success)this.placement=null;
     return success;
@@ -1316,7 +1333,7 @@ class YardScene {
     ctx.beginPath();ctx.roundRect(p.x-40,p.y-106,80,24,10);ctx.fill();ctx.stroke();
     ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#365943';
     const en=window.MorrowwishI18n?.get?.()!=='zh';
-    ctx.fillText(p.valid?(en?'✓ Tap to build':'✓ 点击建造'):(en?'× Blocked':'× 有遮挡'),p.x,p.y-94);
+    ctx.fillText(p.valid?(p.relocating?(en?'✓ Move here':'✓ 移到这里'):(en?'✓ Tap to build':'✓ 点击建造')):(en?'× Blocked':'× 有遮挡'),p.x,p.y-94);
     ctx.restore();
   }
   buildStructure(type,spot=null){

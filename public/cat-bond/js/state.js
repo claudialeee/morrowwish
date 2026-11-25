@@ -774,6 +774,7 @@ function dailyAvailable() {
   return now.toDateString() !== last.toDateString();
 }
 function claimDaily() {
+  if(!dailyAvailable())return {ok:false,reward:{coins:0,fish:0},streak:S.streak};
   const prev = S.lastDaily || 0;
   const oneDay = 864e5;
   const gapDays = Math.floor((Date.now() - prev) / oneDay);
@@ -786,7 +787,7 @@ function claimDaily() {
     fish: (2 + Math.floor(S.streak / 2)) + (S.streak % 7 === 0 ? 5 : (S.streak % 3 === 0 ? 1 : 0)),
   };
   S.coins += reward.coins; S.fish += reward.fish;
-  return { reward, streak: S.streak };
+  return { ok:true, reward, streak: S.streak };
 }
 
 // Difficulty affects ordinary player skills, incoming enemy damage and HP.

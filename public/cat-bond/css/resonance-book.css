@@ -58,3 +58,7 @@
 @media(prefers-reduced-motion:reduce){#stage #panel.rb-open>.card.rb-card{animation:none}}
 
 .rb-reset{display:block;margin:24px 0 0;padding:8px 12px;min-height:44px;background:#fffaf0;color:#725341;border:1px solid #b99b79;border-radius:6px}
+
+#stage.rb-canonical.cb-sunlit-garden #yard-actions{display:flex;gap:6px}
+#stage.rb-canonical.cb-sunlit-garden #yard-actions .fab{flex-shrink:0}
+@media(max-height:500px) and (orientation:landscape){.rb-navigation{position:static}.rb-tabs{overflow-x:auto}.rb-tab{min-height:40px}}

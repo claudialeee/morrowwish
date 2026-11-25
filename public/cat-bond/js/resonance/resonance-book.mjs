@@ -23,7 +23,7 @@ function blocked(){const g=game();return !g||!["map","yard"].includes(g.scene)||
  !!stage()?.querySelector(".res-host,.cbcp-root:not([hidden]),.rw-world:not([hidden])[data-ceremony],#intro:not(.hide)")||
  panel()?.dataset.mandatory==="true"||!!document.querySelector(".cb-slot-manager");}
 function alive(){return !!active&&active.owner===state()&&active.scene===game()?.scene&&!blocked()}
-function sound(){window.MorrowwishAudio?.effect?.("click")}
+function sound(open){window.MorrowwishAudio?.effect?.("page");window.MorrowwishMusic?.duckFor?.(open?650:300);window.dispatchEvent(new CustomEvent("cat-bond-resonance-book-changed",{detail:{open,scene:game()?.scene}}))}
 function button(label,fn,cls="rb-action"){const b=node("button",cls,label);b.type="button";b.onclick=()=>{if(alive()&&b.isConnected)fn()};return b}
 function clear(){active=null;panel()?.classList.remove("rb-open");const root=panel()?.querySelector(".rb-navigation");root?.remove();oldFocus=null}
 function dismiss(){if(!active)return;window.UI.closeAll()}
@@ -85,7 +85,7 @@ function select(id,focusCraft=false){
 }
 function open(id="cats"){
  if(!installed||blocked()||!state()?.cats?.length||panel()?.classList.contains("open"))return false;
- oldFocus=document.activeElement;active={owner:state(),scene:game().scene,tab:id};sound();
+ oldFocus=document.activeElement;active={owner:state(),scene:game().scene,tab:id};sound(true);
  if(!select(id)||!panel()?.classList.contains("open")){clear();return false}
  panel().querySelector(".rb-close")?.focus({preventScroll:true});return true
 }
@@ -95,16 +95,17 @@ function install(){
  stage()?.classList.add("rb-canonical");
  const ui=window.UI,originalPanel=ui.panel,originalClose=ui.closeAll;
  ui.panel=function(...args){const result=originalPanel.apply(this,args);if(active){if(alive())attach();else clear()}return result};
- ui.closeAll=function(...args){const focus=oldFocus,was=!!active;clear();const result=originalClose.apply(this,args);if(was){sound();if(focus?.isConnected)focus.focus({preventScroll:true})}return result};
+ ui.closeAll=function(...args){const focus=oldFocus,was=!!active;clear();const result=originalClose.apply(this,args);if(was){sound(false);if(focus?.isConnected)focus.focus({preventScroll:true})}return result};
  // Only the legacy expedition menu is redirected; all actual cat actions remain native.
  const oldExplore=ui.openExploreMenu;
  ui.openExploreMenu=function(...args){if(active)return select("cats");if(stage()?.classList.contains("rb-canonical"))return open();return oldExplore.apply(this,args)};
+ document.getElementById("map-menu")?.addEventListener("click",e=>{if(!window.CatBondSystemMenu)return;e.stopImmediatePropagation();window.CatBondSystemMenu.open()},true);
  window.addEventListener("cat-bond-active-save-changed",()=>{if(active){ui.closeAll();panel()?.replaceChildren()}});
- window.addEventListener("morrowwish-language-change",()=>{if(!alive())return;if(active.tab==="bag")inventory();else if(active.tab==="records")records();else attach();});
+ window.addEventListener("morrowwish-language-change",()=>{if(!alive())return;if(active.tab==="bag"&&panel()?.querySelector(".rb-content"))inventory();else if(active.tab==="records")records();else attach();});
  window.addEventListener("cat-bond-resonance-changed",()=>{if(active&&!alive())ui.closeAll()});
  const guard=new MutationObserver(()=>{if(active&&!alive())ui.closeAll()});
  guard.observe(stage(),{childList:true,subtree:false,attributes:true,attributeFilter:["class"]});
- document.addEventListener("keydown",e=>{if(e.key==="Escape"&&alive()&&document.getElementById("cb-system-menu")?.hidden!==false){e.preventDefault();e.stopImmediatePropagation();dismiss()}},true);
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&alive()&&!document.getElementById("cb-duo-viewer")&&document.getElementById("cb-system-menu")?.hidden!==false){e.preventDefault();e.stopImmediatePropagation();dismiss()}},true);
 }
 window.ResonanceBook=Object.freeze({open,isOpen:()=>alive(),close:dismiss,canOpen:()=>installed&&!blocked()});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",install,{once:true});else install();
