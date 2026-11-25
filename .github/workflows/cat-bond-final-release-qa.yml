@@ -7,8 +7,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: cat-bond-full-${{ github.event.pull_request.head.sha }}
-  cancel-in-progress: false
+  group: cat-bond-full-${{ github.event.label.name == 'cat-bond-full-qa' && github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.head_ref == 'rpg/release-combined-next' && github.event.label.name == 'cat-bond-full-qa' }}
 jobs:
   release-request:
     if: github.head_ref == 'rpg/release-combined-next' && github.event.label.name == 'cat-bond-full-qa' && github.event.pull_request.head.repo.full_name == github.repository
