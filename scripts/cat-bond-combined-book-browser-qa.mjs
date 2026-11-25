@@ -108,6 +108,8 @@ for(const profile of [
   if(await page.locator('#claim').isEnabled())await page.locator('#claim').click();
   assert.equal(await page.locator('#claim').isEnabled(),false,'Daily reward cannot be collected twice');
   await page.locator('.rb-close').click();
+  const gardenFit=await page.evaluate(()=>{const g=__game,f=World.gardenArtworkRect(g.W,g.H),within=o=>o.x>=f.x&&o.x<=f.x+f.width&&o.y>=f.y&&o.y<=f.y+f.height;return {bushes:g.yard.bushes.every(within),cats:g.yard.entities.every(within),ratio:f.width/f.height};});
+  assert.ok(gardenFit.bushes&&gardenFit.cats,'All interactive scenery belongs to the contained original painting: '+JSON.stringify(gardenFit));
   await screenshot('garden-book-dock');
   for(const [label,tab] of [['Party','party'],['Catdex','dex']]){
    await page.locator('.sg-prologue-guide').getByRole('button',{name:'Explore '+label,exact:true}).click();

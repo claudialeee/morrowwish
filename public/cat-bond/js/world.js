@@ -15,33 +15,33 @@ YARD_BG_PORTRAIT.onload = () => { YARD_BG_PORTRAIT_READY = true; };
 window.CatBondSceneFit=(()=>{
  const cache=new WeakMap();
  function rect(iw,ih,w,h){const s=Math.min(w/iw,h/ih),dw=iw*s,dh=ih*s;return {x:(w-dw)/2,y:(h-dh)/2,width:dw,height:dh,scale:s};}
- function paint(ctx,img,w,h,fit,top,bottom,filter){
+ function paint(ctx,img,w,h,fit,top,bottom,edgeFilter,edgeOpacity){
   const fill=ctx.createLinearGradient(0,0,0,h);fill.addColorStop(0,top);fill.addColorStop(1,bottom);ctx.fillStyle=fill;ctx.fillRect(0,0,w,h);
   // A soft ambient extension fills only the letterbox area. The entire
   // original image stays sharp in its contained rectangle.
   if(fit.x>2||fit.y>2){
    const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height,s=Math.max(w/iw,h/ih),dw=iw*s,dh=ih*s;
-   ctx.save();ctx.globalAlpha=.75;ctx.filter="blur(18px) saturate(.75) brightness(.65)";ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);ctx.restore();
+   ctx.save();ctx.globalAlpha=edgeOpacity;ctx.filter=edgeFilter;ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);ctx.restore();
   }
   // Keep the primary artwork out of the CSS-pixel cache: render it directly
   // at the backing-store DPR, preserving the full-resolution painting.
  }
- function draw(ctx,img,w,h,{top="#142536",bottom="#243b43",filter="none"}={}){
+ function draw(ctx,img,w,h,{top="#142536",bottom="#243b43",filter="none",edgeFilter="blur(18px) saturate(.75) brightness(.65)",edgeOpacity=.75}={}){
   const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;if(!iw||!ih||!w||!h)return null;
   const fit=rect(iw,ih,w,h),pw=Math.max(1,Math.round(w)),ph=Math.max(1,Math.round(h));
-  const key=pw+"x"+ph+"/"+top+"/"+bottom+"/"+filter;
+  const key=pw+"x"+ph+"/"+top+"/"+bottom+"/"+filter+"/"+edgeFilter+"/"+edgeOpacity;
   let entry=cache.get(img);
   if(!entry||entry.key!==key){
    const plate=document.createElement("canvas");plate.width=pw;plate.height=ph;const pc=plate.getContext("2d");
-   if(pc){pc.scale(pw/w,ph/h);paint(pc,img,w,h,fit,top,bottom,filter);entry={key,plate};cache.set(img,entry);}
+   if(pc){pc.scale(pw/w,ph/h);paint(pc,img,w,h,fit,top,bottom,edgeFilter,edgeOpacity);entry={key,plate};cache.set(img,entry);}
   }
-  ctx.save();if(entry?.key===key)ctx.drawImage(entry.plate,0,0,w,h);else paint(ctx,img,w,h,fit,top,bottom,filter);
+  ctx.save();if(entry?.key===key)ctx.drawImage(entry.plate,0,0,w,h);else paint(ctx,img,w,h,fit,top,bottom,edgeFilter,edgeOpacity);
   ctx.filter=filter;ctx.drawImage(img,fit.x,fit.y,fit.width,fit.height);ctx.restore();return fit;
  }
  return Object.freeze({rect,draw});
 })();
 function drawGardenArtwork(ctx,img,w,h){
- return window.CatBondSceneFit.draw(ctx,img,w,h,{top:"#b8c6a4",bottom:"#718f4e",filter:"saturate(1.12) contrast(1.08)"});
+ return window.CatBondSceneFit.draw(ctx,img,w,h,{top:"#d3c6a4",bottom:"#9b9d6b",edgeFilter:"blur(22px) saturate(.85) brightness(.9)",edgeOpacity:.86});
 }
 
 // Original environment prop sprites, shared by placed facilities and placement preview.
@@ -59,15 +59,33 @@ function drawGardenProp(ctx,id,x,y,depth){
 }
 // Persist plot-relative coordinates, not device pixels. x/y are the current
 // canvas projection retained for existing collision, movement and rendering.
+// Every interactive ground coordinate belongs to the actual contained painting.
+function gardenArtworkRect(W,H){
+ const portrait=H>W*1.12,img=portrait?YARD_BG_PORTRAIT:YARD_BG;
+ const iw=img.naturalWidth|| (portrait?900:1600),ih=img.naturalHeight||(portrait?1600:900);
+ return window.CatBondSceneFit.rect(iw,ih,Math.max(1,W),Math.max(1,H));
+}
+function gardenGround(W,H){
+ const f=gardenArtworkRect(W,H),margin=Math.min(56,f.width*.22);
+ const top=f.y+Math.min(f.height*.54,Math.max(0,f.height-88)),bottom=f.y+Math.max(top-f.y+20,f.height-72);
+ return {left:f.x+margin,right:f.x+f.width-margin,top,bottom:Math.min(f.y+f.height,bottom)};
+}
 function gardenPlot(W,H){
-  const left=Math.min(56,Math.max(30,W*.10));
-  const top=Math.min(H*.50,H-96);
-  return {left,top,width:Math.max(1,W-2*left),height:Math.max(1,Math.max(top+20,H-56)-top)};
+ const f=gardenArtworkRect(W,H),margin=Math.min(56,Math.max(Math.min(30,f.width*.18),f.width*.10)),top=f.y+Math.min(f.height*.50,Math.max(0,f.height-96)),bottom=f.y+Math.max(top-f.y+20,f.height-56);
+ return {left:f.x+margin,top,width:Math.max(1,f.width-2*margin),height:Math.max(1,Math.min(f.y+f.height,bottom)-top)};
+}
+function legacyGardenPlot(W,H){
+ const left=Math.min(56,Math.max(30,W*.10)),top=Math.min(H*.50,H-96);
+ return {left,top,width:Math.max(1,W-2*left),height:Math.max(1,Math.max(top+20,H-56)-top)};
+}
+function gardenBushBounds(W,H){
+ const f=gardenArtworkRect(W,H),margin=Math.min(70,f.width*.20),top=f.y+Math.min(f.height*.58,Math.max(0,f.height-90));
+ return {left:f.x+margin,right:f.x+f.width-margin,top,bottom:Math.min(f.y+f.height,Math.max(top+10,f.y+f.height-Math.max(126,f.height*.16)))};
 }
 const clampPlot=n=>Math.max(0,Math.min(1,n));
-function projectGardenBuildings(builds,W,H,sourceW=W,sourceH=H){
+function projectGardenBuildings(builds,W,H,sourceW=W,sourceH=H,legacy=false){
   if(!(W>0&&H>0))return;
-  const from=gardenPlot(sourceW,sourceH),to=gardenPlot(W,H);
+  const from=(legacy?legacyGardenPlot:gardenPlot)(sourceW,sourceH),to=gardenPlot(W,H);
   for(const b of builds||[]){
     if(!b||typeof b!=='object')continue;
     if(!Number.isFinite(b.gardenU))b.gardenU=clampPlot((Number.isFinite(b.x)?b.x-from.left:from.width/2)/from.width);
@@ -79,10 +97,9 @@ function projectGardenBuildings(builds,W,H,sourceW=W,sourceH=H){
 class CatEntity {
   constructor(cat, W, H) {
     this.cat = cat;                 // reference to state cat instance
-    this.x = 80 + Math.random() * (W - 160);
-    // spawn in the painted meadow (below the horizon), not floating in the sky
-    const top=Math.min(H*.56,H-88),bottom=Math.max(top+10,H-72);
-    this.y = top + Math.random() * (bottom-top);
+    const ground=gardenGround(W,H);
+    this.x=ground.left+Math.random()*(ground.right-ground.left);
+    this.y=ground.top+Math.random()*(ground.bottom-ground.top);
     this.W = W; this.H = H;
     this.face = Math.random() < 0.5 ? -1 : 1;
     this.pose = 'idle';
@@ -193,8 +210,7 @@ class CatEntity {
     this.x += this.walkVX*step;
     this.y += this.walkVY*step;
 
-    const leftBound=Math.min(56,this.W*.22),rightBound=this.W-leftBound;
-    const groundTop=Math.min(this.H*.54,this.H-88),groundBottom=Math.max(groundTop+20,this.H-72);
+    const {left:leftBound,right:rightBound,top:groundTop,bottom:groundBottom}=gardenGround(this.W,this.H);
     if(this.x<leftBound){this.x=leftBound;this.vx=Math.abs(this.vx);this.walkVX=Math.max(0,this.walkVX);}
     if(this.x>rightBound){this.x=rightBound;this.vx=-Math.abs(this.vx);this.walkVX=Math.min(0,this.walkVX);}
     if(this.y<groundTop){this.y=groundTop;this.vy=Math.abs(this.vy);this.walkVY=Math.max(0,this.walkVY);}
@@ -542,11 +558,10 @@ class YardScene {
     // Reserve space for the bottom navigation and the whole 58px tap target.
     // At tall iframe sizes the former H-74 bound could hide the first encounter
     // behind the tabbar and make it impossible to click.
-    const bushTop = Math.min(H*.58,H-90);
-    const bushBot = Math.max(bushTop+10,H-Math.max(126,H*.16));
+    const bounds=gardenBushBounds(W,H),bushTop=bounds.top,bushBot=bounds.bottom;
     for (let i = 0; i < spots; i++) {
       this.bushes.push({
-        x: 70 + (W - 140) * (i / (spots - 1)) + (Math.random() * 40 - 20),
+        x: Math.max(bounds.left,Math.min(bounds.right,bounds.left+(bounds.right-bounds.left)*(i/(spots-1))+(Math.random()*24-12))),
         y: bushTop + Math.random() * (bushBot - bushTop),
         r: 24 + Math.random() * 10,
       });
@@ -580,25 +595,21 @@ class YardScene {
   onResize(oldW,oldH,W,H){
     const fx=W/Math.max(1,oldW),fy=H/Math.max(1,oldH);
     const move=(items)=>{for(const v of items||[]){v.x*=fx;v.y*=fy;}};
-    move(this.bushes);move(this.butterflies);move(this.clouds);
+    const oldArt=gardenArtworkRect(oldW,oldH),newArt=gardenArtworkRect(W,H);
+    const remap=v=>{v.x=newArt.x+clampPlot((v.x-oldArt.x)/oldArt.width)*newArt.width;v.y=newArt.y+clampPlot((v.y-oldArt.y)/oldArt.height)*newArt.height;};
+    for(const b of this.bushes)remap(b);
+    move(this.butterflies);move(this.clouds);
     move(this.flowers);move(this.petals);move(this.fireflies);
     move(this.lootBubbles);move(this.petParticles);move(this.floatTexts);
-    projectGardenBuildings(gardenObjects(),W,H,oldW,oldH);
+    projectGardenBuildings(gardenObjects(),W,H,oldW,oldH,true);
     if(this.placement){
       this.placement.x*=fx;this.placement.y*=fy;
       this.movePlacement(this.placement.x,this.placement.y);
     }
     if(this.golden){this.golden.x*=fx;this.golden.y*=fy;}
-    for(const e of this.entities){
-      e.W=W;e.H=H;e.x=Math.min(W-40,Math.max(40,e.x*fx));
-      const top=Math.min(H*.54,H-88),bottom=Math.max(top+20,H-72);
-      e.y=Math.max(top,Math.min(bottom,e.y*fy));
-    }
-    for(const b of this.bushes){
-      const top=Math.min(H*.58,H-90);
-      const bottom=Math.max(top+10,H-Math.max(126,H*.16));
-      b.y=Math.max(top,Math.min(bottom,b.y));
-    }
+    const ground=gardenGround(W,H),bushBounds=gardenBushBounds(W,H);
+    for(const e of this.entities){remap(e);e.W=W;e.H=H;e.x=Math.max(ground.left,Math.min(ground.right,e.x));e.y=Math.max(ground.top,Math.min(ground.bottom,e.y));}
+    for(const b of this.bushes){b.x=Math.max(bushBounds.left,Math.min(bushBounds.right,b.x));b.y=Math.max(bushBounds.top,Math.min(bushBounds.bottom,b.y));}
     // Portrait/landscape rotation changes how many cats fit in the yard.
     this.rebuild();
   }
@@ -617,7 +628,7 @@ class YardScene {
       this._newBuildToVisit=null;this._duoFacility=null;this._buildScan=2;this._lootScan=0;
       window.UI?.updateBuildingPlacement?.();
     }
-    projectGardenBuildings(gardenObjects(),W,H);
+    projectGardenBuildings(gardenObjects(),W,H,W,H,true);
     if(!this.bushes||this.bushes.length===0)this.buildScenery();
     const roster=State.S.cats||[];
     const representatives=new Map();
@@ -803,7 +814,13 @@ class YardScene {
     // --- hand-painted watercolor backdrop (sky/hills/lake/meadow/tree baked in) ---
     const portraitGarden = H > W * 1.12 && YARD_BG_PORTRAIT_READY;
     const stage = document.getElementById('stage');
-    if (stage) stage.dataset.sunlitGardenBackground = portraitGarden ? 'portrait' : 'landscape';
+    if(stage){
+     stage.dataset.sunlitGardenBackground=portraitGarden?'portrait':'landscape';
+     const f=gardenArtworkRect(W,H),portrait=H>W*1.12,key=[f.x,f.y,f.width,f.height,W,H].join('/');
+     if(this._artLayout!==key){this._artLayout=key;const px=x=>((f.x+f.width*x)/W*100)+'%',py=y=>((f.y+f.height*y)/H*100)+'%';
+      stage.style.setProperty('--sg-facility-x',px(portrait?.25:.29));stage.style.setProperty('--sg-facility-y',py(portrait?.32:.34));
+      stage.style.setProperty('--sg-bell-x',px(portrait?.50:.20));stage.style.setProperty('--sg-bell-y',py(portrait?.23:.22));}
+    }
     if (portraitGarden) {
       drawGardenArtwork(ctx, YARD_BG_PORTRAIT, W, H);
     } else if (YARD_BG_READY) {
@@ -1254,11 +1271,11 @@ class YardScene {
   // away from existing buildings/bushes). Returns {x,y} in current canvas space.
   freeBuildingSpot() {
     const { W, H } = this.game;
-    const top = Math.min(H*.50,H-96), bot = Math.max(top+20,H-56);
+    const plot=gardenPlot(W,H),top=plot.top,bot=top+plot.height;
     const builds = gardenObjects();
     let best = null, bestGap = -1;
     for (let i = 0; i < 24; i++) {
-      const x = 70 + Math.random() * Math.max(1, W - 140);
+      const x=plot.left+Math.random()*plot.width;
       const y = top + Math.random() * (bot - top);
       let gap = Infinity;
       for (const o of builds) gap = Math.min(gap, Math.hypot(o.x - x, o.y - y));
@@ -1271,10 +1288,9 @@ class YardScene {
     // Exhaustively inspect a bounded grid before declaring the yard full.
     // The same buildingSpotValid predicate protects player-placed structures.
     if(best && this.buildingSpotValid(best.x,best.y))return best;
-    const side=Math.min(56,Math.max(30,W*.10));
     let legal=null,legalGap=-1;
     for(let y=top;y<=bot+0.01;y+=8){
-      for(let x=side;x<=W-side+0.01;x+=8){
+      for(let x=plot.left;x<=plot.left+plot.width+0.01;x+=8){
         if(!this.buildingSpotValid(x,y))continue;
         let gap=Infinity;
         for(const o of builds)gap=Math.min(gap,Math.hypot(o.x-x,(o.y-y)*1.6));
@@ -1289,10 +1305,8 @@ class YardScene {
   buildingSpotValid(x,y,ignore=null) {
     const {W,H}=this.game;
     // Five structures must fit even in a short phone yard, below the fence.
-      const top=Math.min(H*.50,H-96),bottom=Math.max(top+20,H-56);
-    const side=Math.min(56,Math.max(30,W*.10));
-    if(!Number.isFinite(x)||!Number.isFinite(y)||
-        x<side||x>W-side||y<top||y>bottom)return false;
+    const plot=gardenPlot(W,H);
+    if(!Number.isFinite(x)||!Number.isFinite(y)||x<plot.left||x>plot.left+plot.width||y<plot.top||y>plot.top+plot.height)return false;
     if(gardenObjects().some(b=>b!==ignore&&Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<57))return false;
     if(this.bushes.some(b=>Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<32))return false;
     if(window.SunlitGarden?.placementBlocked?.(x,y))return false;
@@ -1316,8 +1330,6 @@ class YardScene {
   movePlacement(x,y){
     if(!this.placement)return false;
     const {W,H}=this.game;
-    // Five structures must fit even in a short phone yard, below the fence.
-      const top=Math.min(H*.50,H-96),bottom=Math.max(top+20,H-56);
     // Follow the actual finger/cursor, even when the spot is invalid. Clamping
     // to the grass boundary made a tap above it silently jump elsewhere.
     this.placement.x=Math.max(0,Math.min(W,x));
@@ -1509,4 +1521,4 @@ class YardScene {
   }
 }
 
-window.World = { YardScene, CatEntity, BUILDINGS, DECORATIONS, gardenDecorations, BUILDINGS_BY_ID, BUILDING_PRODUCTION, buildingLevel, upgradeCost, drawGardenProp };
+window.World = { YardScene, CatEntity, gardenArtworkRect, gardenPlot, gardenGround, BUILDINGS, DECORATIONS, gardenDecorations, BUILDINGS_BY_ID, BUILDING_PRODUCTION, buildingLevel, upgradeCost, drawGardenProp };

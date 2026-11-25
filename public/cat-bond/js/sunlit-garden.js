@@ -140,7 +140,8 @@
     if(!Array.isArray(npcs))return;hitState=state();
     for(const npc of npcs){
       const a=HOME_ANCHORS[npc?.id];if(!a||!npc?.id)continue;
-      const x=width*a.x,y=height*a.y;
+      const f=window.World?.gardenArtworkRect?.(width,height)||{x:0,y:0,width,height};
+      const x=f.x+f.width*a.x,y=f.y+f.height*a.y;
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
       try{const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale:a.scale,time});
         if(visible===false)continue;

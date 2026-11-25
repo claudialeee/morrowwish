@@ -37,3 +37,9 @@
 #stage #hud .hud-pill,#stage .hud-pill{background:linear-gradient(155deg,#fff5db,#e4cfaa)!important;border-color:#a98a53!important;color:#493e2b!important;box-shadow:0 2px 7px #35271533!important;text-shadow:none!important}
 #stage .hud-pill{border:1px solid #a98a53!important;border-radius:8px!important}
 #stage .sg-build-toggle,#stage .sg-build-button,#stage .sg-build-actions button{background:#f3e5c6!important;color:#493e2b!important;border-color:#a98a53!important}
+
+#stage .sg-hotspot{background:linear-gradient(155deg,#fff5db,#d9c398)!important;color:#493e2b!important;border-color:#a98a53!important;text-shadow:none!important;box-shadow:0 2px 8px #35271540!important}
+#stage .sg-hotspot-label{color:#493e2b!important}
+#stage .sg-hotspot-facilities{left:var(--sg-facility-x,29%)!important;top:var(--sg-facility-y,34%)!important}
+#stage .res-garden-bell{left:var(--sg-bell-x,20%)!important;top:var(--sg-bell-y,22%)!important}
+#stage .res-bell-label{background:#514431ee;color:#fff5dd;border:1px solid #bda16b}

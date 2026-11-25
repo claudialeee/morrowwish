@@ -18,7 +18,7 @@ const regions=score.regions;
 function musicMix(id){
  const dramatic=id==='betrayal'||id==='finale1'||id==='finale2'||id.startsWith('boss-');
  const ceremony=id.startsWith('song-');
- return {low:dramatic?-2:ceremony?-3:-6,high:dramatic?1:2.8,rate:ceremony?1:dramatic?1.025:id==='title'||id==='opening'||id==='library'?1.09:1.045};
+ return {low:dramatic?-2:ceremony?-2.5:-3.5,high:dramatic?1:1.8,rate:1};
 }
 function connectMusic(source,gain,id){
  const profile=musicMix(id);if(source.playbackRate)source.playbackRate.value=profile.rate;
