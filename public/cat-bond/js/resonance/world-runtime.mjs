@@ -30,7 +30,7 @@ function install(){
   if(!host||host.hidden||!host.isConnected)return;
   const rail=host.querySelector(".rw-fit-rail"),head=host.querySelector(".rw-head");
   if(!rail||!head)return;
-  const wide=host.clientWidth>=660&&host.clientWidth>host.clientHeight*1.18;
+  const wide=host.clientWidth>=500&&host.clientWidth>host.clientHeight*1.18;
   host.classList.toggle("rw-fit-wide",wide);
   host.classList.toggle("rw-atlas-wide",wide&&mode==="map");
   host.classList.toggle("rw-forest-landscape",wide&&mode==="region");

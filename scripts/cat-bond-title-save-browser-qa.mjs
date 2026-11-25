@@ -11,6 +11,7 @@ for(const profile of [
  {name:'desktop',width:1280,height:800,mobile:false},
  {name:'phone-narrow',width:320,height:568,mobile:true},
  {name:'phone-portrait',width:390,height:844,mobile:true},
+ {name:'phone-landscape-narrow',width:568,height:320,mobile:true},
  {name:'phone-landscape',width:844,height:390,mobile:true}
 ]){
  const context=await browser.newContext({viewport:{width:profile.width,height:profile.height},isMobile:profile.mobile,hasTouch:profile.mobile});

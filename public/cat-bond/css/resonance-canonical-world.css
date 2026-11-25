@@ -183,3 +183,9 @@
 #stage .rw-fit-rail .rw-puzzle-controls>.rw-harbor-guide{grid-column:1/-1}
 #stage .rw-fit-summary{color:#e6c99b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:500 10px/1.2 system-ui,sans-serif;max-width:100%}
 #stage .rw-fit-rail .rw-world-actions,#stage .rw-fit-rail .rw-regions{grid-template-columns:repeat(auto-fit,minmax(min(82px,100%),1fr))}
+
+/* 568×320 and similar short landscape frames need a side rail too. */
+@media(max-width:660px) and (orientation:landscape){
+ #stage .rw-world.rw-fit-wide:not([hidden]){grid-template-columns:minmax(0,1fr) minmax(240px,46%)}
+ #stage .rw-fit-rail .rw-world-actions,#stage .rw-fit-rail .rw-regions{grid-template-columns:repeat(auto-fit,minmax(min(76px,100%),1fr))}
+}

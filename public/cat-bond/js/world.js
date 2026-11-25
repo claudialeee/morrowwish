@@ -23,7 +23,8 @@ window.CatBondSceneFit=(()=>{
    const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height,s=Math.max(w/iw,h/ih),dw=iw*s,dh=ih*s;
    ctx.save();ctx.globalAlpha=.75;ctx.filter="blur(18px) saturate(.75) brightness(.65)";ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);ctx.restore();
   }
-  ctx.filter=filter;ctx.drawImage(img,fit.x,fit.y,fit.width,fit.height);ctx.filter="none";
+  // Keep the primary artwork out of the CSS-pixel cache: render it directly
+  // at the backing-store DPR, preserving the full-resolution painting.
  }
  function draw(ctx,img,w,h,{top="#142536",bottom="#243b43",filter="none"}={}){
   const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;if(!iw||!ih||!w||!h)return null;
@@ -34,7 +35,8 @@ window.CatBondSceneFit=(()=>{
    const plate=document.createElement("canvas");plate.width=pw;plate.height=ph;const pc=plate.getContext("2d");
    if(pc){pc.scale(pw/w,ph/h);paint(pc,img,w,h,fit,top,bottom,filter);entry={key,plate};cache.set(img,entry);}
   }
-  ctx.save();if(entry?.key===key)ctx.drawImage(entry.plate,0,0,w,h);else paint(ctx,img,w,h,fit,top,bottom,filter);ctx.restore();return fit;
+  ctx.save();if(entry?.key===key)ctx.drawImage(entry.plate,0,0,w,h);else paint(ctx,img,w,h,fit,top,bottom,filter);
+  ctx.filter=filter;ctx.drawImage(img,fit.x,fit.y,fit.width,fit.height);ctx.restore();return fit;
  }
  return Object.freeze({rect,draw});
 })();
