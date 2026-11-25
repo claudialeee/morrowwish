@@ -39,6 +39,15 @@ async function play(sceneId){
    staging:window.__CAT_BOND_INTEGRATION_ART__===true,
    getSlotKey:()=>window.State.S,
    language,
+   decorateScene:scene=>{
+    if(scene.id!=="finale:B-04")return;
+    const cat=slot.cats?.[0],species=window.GameData?.speciesById?.(cat?.species);
+    if(!species||!window.CatArt?.renderCatThumb)return;
+    const canvas=document.createElement("canvas");canvas.width=400;canvas.height=460;
+    window.CatArt.renderCatThumb(canvas,species);
+    const playerArt=canvas.toDataURL("image/png");
+    for(const frame of scene.frames)if(frame.id.includes("-line-"))frame.layers=[...(frame.layers||[]),{image:playerArt,kind:"actor",x:22,y:73,width:20,travel:2}];
+   },
    onLanguageChange:next=>window.MorrowwishI18n?.set?.(next),
    onError:error,
    onResolved:()=>{

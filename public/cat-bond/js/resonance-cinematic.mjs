@@ -57,6 +57,35 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
     if(!Array.isArray(montage)||montage.length!==ids.length||montage.some((s,i)=>s.id!==ids[i]||s.image!=='assets/resonance-world-v2/'+ids[i]+'.webp'||!isBilingual(s.title)||!Number.isFinite(s.note)||s.durationMs!==1800))return bad('invalid-opening-region-montage');
     frames.unshift(...montage.map(s=>({id:'prologue:P-01-region-'+s.id,image:s.image,alt:s.title,kicker:s.title,durationMs:s.durationMs,transitionMs:420,camera:{from:{x:0,y:0,scale:1.03},to:{x:0,y:0,scale:1.09}},effect:'sanctuary',note:s.note})));
   }
+  // Six concrete exchanges use the existing painted regions and their actual residents.
+  // The approved/staging asset gate above remains unchanged.
+  if(scene.id==='epilogue:E-01'){
+    const regions=['harbor','forest','forge','sky','library','starfall'];
+    const journeys=[
+      ['港口船只抵达眠根林','Harbor ships reach Rootsleep Forest'],
+      ['眠根林送出药草与木材','Rootsleep sends herbs and timber to Emberforge'],
+      ['赤炉环城检修空中航路的器材','Emberforge prepares equipment for the air routes'],
+      ['云脊群岛的信使抵达月镜书库','Skyspine couriers reach Moonmirror Library'],
+      ['月镜书库与星坠原共享历史档案','Moonmirror shares its records with Starfall'],
+      ['星坠原的导航信号指引港口船只','Starfall restores the navigation signal to Harbor']
+    ];
+    const original=frames.slice();frames.length=0;
+    for(const [i,region] of regions.entries()){
+      const names=Object.entries(campaign.cast).filter(([,a])=>a.region===region);
+      const shot=i===0?original[0]:i===3?original[1]:null;
+      const [zh,en]=journeys[i];
+      frames.push({...shot,id:'epilogue:E-01-exchange-'+region,image:shot?.image||'assets/resonance-world-v2/'+region+'.webp',
+       alt:{zh,en},durationMs:5400,transitionMs:680,kicker:{zh,en},
+       camera:{from:{x:i%2?1:-1,y:0,scale:1.025},to:{x:i%2?-2:2,y:0,scale:1.075}},
+       layers:names.map(([id],j)=>({image:'assets/npc/'+id+'-painted.webp',kind:'actor',x:j===0?23:76,y:80,width:22,travel:j===0?4:-4})),
+       effect:'sanctuary',note:[261.63,293.66,329.63,392,440,523.25][i]});
+    }
+  }
+  if(scene.id==='finale:B-04'){
+    frames.unshift({id:'finale:B-04-memory-bell',image:'assets/cinematics/prologue/star-bell.webp',
+      alt:{zh:'记忆回到守铃者身边',en:'The Bellkeeper’s memories return'},durationMs:3400,transitionMs:800,
+      camera:{from:{x:0,y:0,scale:1.03},to:{x:0,y:0,scale:1.09}},effect:'sanctuary',note:392});
+  }
   return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.id==='prologue:P-02'?{zh:'抉择',en:'The Choice'}:scene.title,chapter:{zh:'猫猫纽带',en:'Cat Bond'},mode:'auto',allowSkip:true,frames}};
 }
 
@@ -69,7 +98,7 @@ export async function decodeCinematicImages(scene){
   }
 }
 
-export function mountResonanceCinematics({root,rendererFactory,engine,campaign,manifest,getSlotKey,onPersist,onResolved,onError,language,onLanguageChange,staging=false,openingRelease=false,onCheckpoint,preload=decodeCinematicImages}){
+export function mountResonanceCinematics({root,rendererFactory,engine,campaign,manifest,getSlotKey,onPersist,onResolved,onError,language,onLanguageChange,staging=false,openingRelease=false,onCheckpoint,decorateScene,preload=decodeCinematicImages}){
   if(!root||typeof rendererFactory!=='function'||!engine?.view||!engine?.snapshot||typeof getSlotKey!=='function'||(typeof engine.evidence!=='function'&&typeof onPersist!=='function'))throw Error('Missing canonical host dependencies');
   let active=null,sequence=0,disposed=false;
   const valid=run=>!disposed&&active===run&&getSlotKey()===run.slot&&engine.view().current?.id===run.id&&engine.snapshot().revision===run.revision;
@@ -105,7 +134,7 @@ export function mountResonanceCinematics({root,rendererFactory,engine,campaign,m
     const run={id:view.current.id,slot:getSlotKey(),revision:engine.snapshot().revision,sequence:id};
     if(resume&&(resume.slot!==run.slot||resume.revision!==run.revision||resume.snapshot?.sceneId!==run.id))return report('stale-cinematic-snapshot');
     active=run;
-    try{await preload(result.scene)}catch(e){if(!valid(run))return bad('stale-slot-or-scene');active=null;return report('cinematic-image-load-failed')}
+    try{decorateScene?.(result.scene);await preload(result.scene)}catch(e){if(!valid(run))return bad('stale-slot-or-scene');active=null;return report('cinematic-image-load-failed')}
     if(sequence!==id||!valid(run)){if(active===run)active=null;return bad('stale-slot-or-scene')}
     try{
       let checkpoint=resume?.snapshot;
