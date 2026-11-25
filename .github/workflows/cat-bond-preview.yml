@@ -1,0 +1,145 @@
+name: Cat Bond isolated Cloudflare Pages preview
+on:
+  push:
+    branches: [cat-bond-preview]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: cat-bond-isolated-preview
+  cancel-in-progress: true
+jobs:
+  preview:
+    if: github.ref == 'refs/heads/cat-bond-preview'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Select the exact tested combined development commit (never merge other branches)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          git fetch origin rpg/release-combined-next
+          SHA=$(git rev-parse FETCH_HEAD)
+          echo "PREVIEW_SOURCE_SHA=$SHA" >> "$GITHUB_ENV"
+          git checkout --detach "$SHA"
+          # All independent gates must have completed successfully on this
+          # exact development head. No old green runs or synthetic save state.
+          node --input-type=module <<'NODE'
+          const required=[
+            'Cat Bond Misttide Harbor playthrough',
+            'Cat Bond original audio browser QA (no deployment)',
+            'Cat Bond visual polish — before and after',
+            'Resonance Book browser acceptance (no deployment)',
+            'Cat Bond combined controls and replay (no deploy)',
+            'Cat Bond release prologue — browser acceptance',
+            'Cat Bond fast combat regression',
+            'Cat Bond brighter orchestral recording — development branch only'
+          ];
+          const {execFileSync}=await import('node:child_process');
+          const sha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+          const runs=JSON.parse(execFileSync('gh',['api','repos/'+process.env.GITHUB_REPOSITORY+'/actions/runs?head_sha='+sha+'&event=pull_request&per_page=100'],{encoding:'utf8'})).workflow_runs;
+          for(const name of required){
+            const run=runs.filter(r=>r.name===name&&r.head_sha===sha).sort((a,b)=>b.run_number-a.run_number)[0];
+            if(!run||run.status!=='completed'||run.conclusion!=='success')throw Error('Exact-head gate not passed: '+name+' '+(run?.conclusion||run?.status||'missing'));
+            console.log(name+' PASS '+run.id);
+            if(name==='Cat Bond Misttide Harbor playthrough'){
+              const jobs=JSON.parse(execFileSync('gh',['api','repos/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+run.id+'/jobs?per_page=100'],{encoding:'utf8'})).jobs;
+              for(const profile of ['desktop','portrait','landscape'])if(!jobs.some(j=>j.name==='harbor ('+profile+')'&&j.conclusion==='success'))throw Error('Missing successful full-campaign browser profile: '+profile);
+            }
+          }
+          NODE
+          printf '%s %s\n' 'rpg/release-combined-next' "$SHA" > /tmp/cat-bond-preview-sources.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Build isolated Cat Bond preview (no production Worker or D1)
+        run: |
+          set -eu
+          mkdir -p /tmp/cat-bond-preview/site
+          cp -a public/cat-bond /tmp/cat-bond-preview/site/
+          for dir in audio art icons; do cp -a "public/$dir" /tmp/cat-bond-preview/site/; done
+          find public -maxdepth 1 -type f \( -name '*.js' -o -name '*.css' \) -exec cp {} /tmp/cat-bond-preview/site/ \;
+          if [ ! -f /tmp/cat-bond-preview/site/audio/cat-happy-clappy.ogg ]; then
+            bash scripts/fetch-cat-music.sh
+            cp -a public/audio/. /tmp/cat-bond-preview/site/audio/
+          fi
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const root='/tmp/cat-bond-preview/site';
+          const file=root+'/cat-bond/index.html';
+          let html=fs.readFileSync(file,'utf8');
+          html=html.replace(/<script[^>]+src=["'][^"']*telemetry\.js[^"']*["'][^>]*><\/script>/gi,'');
+          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_COLLECTOR="/api/preview-disabled";window.arcadeMetric=()=>{};</script></head>');
+          const sha=process.env.PREVIEW_SOURCE_SHA;
+          html=html.replace(/<body([^>]*)>/i,'<body$1><aside role="note" style="position:fixed;z-index:2147483647;bottom:3px;left:3px;pointer-events:none;background:#202332e8;color:white;font:10px system-ui;padding:3px 6px;border-radius:4px">PREVIEW 试玩 · '+sha.slice(0,10)+' · 完整剧情 / Full campaign · Local saves only</aside>');
+          fs.writeFileSync(file,html);
+          fs.writeFileSync(root+'/index.html','<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="0;url=/cat-bond/"></head><body><a href="/cat-bond/">Cat Bond RPG Preview</a></body></html>');
+          fs.writeFileSync(root+'/robots.txt','User-agent: *\nDisallow: /\n');
+          fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\'; form-action \'self\'\n');
+          fs.writeFileSync(root+'/telemetry.js','window.arcadeMetric=()=>{};');
+          fs.writeFileSync(root+'/_worker.js','export default {fetch(request,env){const u=new URL(request.url);if(u.pathname.startsWith("/api/")||u.pathname==="/api")return Response.json({error:"Preview: production APIs disabled; use local saves."},{status:403});return env.ASSETS.fetch(request)}};');
+          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,scope:'Prologue through finale and postgame',storage:'local-only',productionApis:false,sources:fs.readFileSync('/tmp/cat-bond-preview-sources.txt','utf8').trim().split('\n')}));
+          NODE
+      - name: Publish only preview branch
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
+        run: |
+          set -eu
+          test -n "$CLOUDFLARE_API_TOKEN"
+          WRANGLER="$PWD/node_modules/.bin/wrangler"
+          cd /tmp/cat-bond-preview
+          "$WRANGLER" pages deploy site --project-name morrowwish --branch cat-bond-preview --commit-hash "$PREVIEW_SOURCE_SHA"
+      - name: Verify stable preview alias and API isolation
+        run: |
+          set -eu
+          URL=https://cat-bond-preview.morrowwish.pages.dev
+          for attempt in $(seq 1 15); do
+            if curl -fsS "$URL/preview-version.json?sha=$PREVIEW_SOURCE_SHA" | grep -Fq "$PREVIEW_SOURCE_SHA"; then break; fi
+            sleep 4
+          done
+          curl -fsS "$URL/preview-version.json?sha=$PREVIEW_SOURCE_SHA" | grep -F "$PREVIEW_SOURCE_SHA"
+          curl -fsS "$URL/cat-bond/" | grep -F 'PREVIEW 试玩'
+          for endpoint in session cat-bond-cloud-save; do
+            test "$(curl -sS -o /dev/null -w '%{http_code}' "$URL/api/$endpoint")" = 403
+          done
+      - name: Open deployed game in real Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          node --input-type=module <<'NODE'
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          try {
+            const page=await browser.newPage({viewport:{width:1280,height:800}});
+            const external=[];
+            page.on('request',r=>{if(/morrowwish\.pages\.dev|morrowwish\.vercel\.app/.test(r.url())&&!r.url().startsWith('https://cat-bond-preview.morrowwish.pages.dev/'))external.push(r.url())});
+            const response=await page.goto('https://cat-bond-preview.morrowwish.pages.dev/cat-bond/',{waitUntil:'domcontentloaded'});
+            if(!response?.ok())throw Error('Preview not reachable');
+            await page.locator('#intro-continue').waitFor({state:'visible',timeout:30000});
+            await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook);
+            await page.screenshot({path:'preview-title.png'});
+            await page.waitForFunction(()=>window.CatBondChapterCinematics?.developmentReady(),null,{timeout:30000});
+            const meta=await page.request.get('https://cat-bond-preview.morrowwish.pages.dev/preview-version.json');
+            const version=await meta.json();
+            if(version.sha!==process.env.PREVIEW_SOURCE_SHA||version.productionApis!==false)throw Error('Incorrect deployed source or API isolation');
+            await page.locator('#intro-start').click();
+            await page.screenshot({path:'preview-slots.png'});
+            if(external.length)throw Error('Production requests: '+external.join(', '));
+            console.log('LIVE PREVIEW TITLE VERIFIED: '+page.url());
+          }finally{await browser.close()}
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: preview-title
+          path: preview-*.png
+          if-no-files-found: ignore
+          retention-days: 3
