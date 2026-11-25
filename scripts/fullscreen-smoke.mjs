@@ -23,14 +23,18 @@ async function check(game,width,mobile){
       else await page.locator('[data-random-world]').first().click();
       await page.waitForFunction(()=>!document.getElementById('play-view')?.classList.contains('hidden'));
     }
-    const button=page.locator(mini?'#mw-mini-fullscreen':'#mw-fullscreen-toggle');
+    const isRpg=game==='cat-bond';
+    const press=async el=>mobile?el.tap():el.click();
+    const reveal=async()=>{if(isRpg)await press(page.locator('#cb-system-toggle'));};
+    await reveal();
+    const button=page.locator(isRpg?'[data-system="fullscreen"]':mini?'#mw-mini-fullscreen':'#mw-fullscreen-toggle');
     await button.waitFor({state:'visible',timeout:15000});
     const surface=page.locator(mini?(game==='pocket-aquarium'?'.mw-mini-aquarium-frame':'.mw-mini-arcade-frame'):'.mw-immersive-target');
     assert.equal(await surface.count(),1,game+' must identify one actual play area');
     const hit=await button.boundingBox();
     assert.ok(hit&&hit.width>=(game==='pawsibly-innocent'?42:60)&&hit.height>=40,'Fullscreen button is not finger-friendly');
     if(mobile)await surface.evaluate(e=>Object.defineProperty(e,'requestFullscreen',{value:undefined,configurable:true}));
-    if(mobile)await button.tap();else await button.click();
+    await press(button);
     await page.waitForFunction(()=>document.documentElement.classList.contains('mw-fs-active')||document.documentElement.classList.contains('mw-mini-fullscreen-on'));
     const opened=await page.evaluate((mini)=>{
       const play=document.querySelector(mini?'.mw-mini-arcade-frame,.mw-mini-aquarium-frame':'.mw-immersive-target'),r=play.getBoundingClientRect();
@@ -71,9 +75,9 @@ async function check(game,width,mobile){
         assert.ok(await page.locator('#play-view').isVisible(),'Story choices must remain playable');
       }
     }
-    if(mobile)await button.tap();else await button.click();
+    await reveal();await press(button);
     await page.waitForFunction(()=>!document.documentElement.classList.contains('mw-fs-active')&&!document.documentElement.classList.contains('mw-mini-fullscreen-on'));
-    assert.equal(await button.getAttribute('aria-pressed'),'false','Exit must restore windowed play');
+    assert.equal(await (isRpg?page.locator('#mw-fullscreen-toggle'):button).getAttribute('aria-pressed'),'false','Exit must restore windowed play');
     if(errors.length)throw Error('Uncaught errors: '+errors.join('; '));
     console.log('GAME SURFACE FULLSCREEN PASS',game,width,JSON.stringify(opened));
   } finally { await ctx.close(); }

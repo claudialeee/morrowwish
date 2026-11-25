@@ -171,3 +171,7 @@ html body #stage:has(#battle-ui.on) #cb-system-toggle{right:calc(env(safe-area-i
 #stage .cb-system-rows button{min-height:44px;white-space:normal;overflow-wrap:anywhere;padding:6px 8px;font-size:13px;touch-action:manipulation}
 @media(max-width:360px){#stage .cb-system-card{padding:8px}#stage .cb-system-rows button{font-size:12px}}
 @media(max-height:420px){#stage .cb-system-card{padding:8px}#stage .cb-system-card h2{font-size:17px}#stage .cb-system-rows button{min-height:36px;font-size:12px}#stage .cb-system-card header{margin-bottom:4px}}
+
+html[data-mw-fullscreen-game="cat-bond"] body #stage #cb-header-actions > :is(#mw-game-settings,#mw-fullscreen-toggle,#guide-help,#battle-skill-info-toggle),
+html[data-mw-fullscreen-game="cat-bond"] body #stage:has(#battle-ui.on) #cb-header-actions #battle-skill-info-toggle,
+html body #stage #guide-help{display:none!important}
