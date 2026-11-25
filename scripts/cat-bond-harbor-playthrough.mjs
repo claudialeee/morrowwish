@@ -296,7 +296,11 @@ try {
     assert.equal(await page.evaluate(() => window.__game.battle.regionalCombat?.region),'harbor');
     const tutorial = page.locator('#battle-tutorial-skip');
     if (await tutorial.isVisible()) await tutorial.click();
-    await page.waitForFunction(() => window.__game.scene === 'map', null, {timeout:75000});
+    // The engine's natural wild-battle cap is 85 simulation seconds, not 75 wall seconds.
+    // Exercise the manual tutorial, then switch using the genuine combat UI and allow the full cap.
+    if(!await page.evaluate(()=>window.__game.battle.autoMode))await page.locator('#btn-auto').click();
+    try{await page.waitForFunction(()=>window.__game.scene==='map',null,{timeout:200000});}
+    catch(error){await shot('harbor-battle-timeout');console.error('Harbor combat remained active',await page.evaluate(()=>{const b=__game.battle;return {t:b?.t,done:b?.done,auto:b?.autoMode,help:__game.battleHelpOpen,tutorial:!!__game.battleTutorial,cycle:b?.regionalCombat?.cycle,team:b?.team?.map(c=>({hp:c.hp,alive:c.alive})),enemies:b?.enemies?.map(c=>({hp:c.hp,alive:c.alive}))}}));throw error;}
     assert.equal(await page.evaluate(() => WorldMap.currentRegion),'harbor');
     const resultClose=page.locator('#cr-ok,#battle-recovery-ok');
     await resultClose.waitFor();
