@@ -22,6 +22,7 @@ try {
     await page.route('**/*', route => route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
     await page.goto(origin+'/cat-bond/?lang=en');
     await page.waitForFunction(() => window.WorldMap === window.CatBondCanonicalWorld && window.CatBondResonance && window.__game);
+    assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),false,'Production entry must not enable unreviewed staging art');
     const button = (name, scope = page) => scope.getByRole('button',{name,exact:true});
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
     const shot = id => page.screenshot({path:out+'/'+name+'-'+id+'.png'});
