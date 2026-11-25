@@ -274,6 +274,16 @@
     return {image:canvas,sx:0,sy:0,sw:canvas.width,sh:canvas.height};
   }
   const fallbackDraw=drawing.drawCat;
+  // Soft contact shadows have a dense center and transparent perimeter,
+  // preserving the actual painted sprite and its grounded position.
+  function contactShadow(ctx,x,y,rx,ry,opacity){
+    ctx.save();ctx.translate(x,y);ctx.scale(Math.max(.1,rx),Math.max(.1,ry));
+    const g=ctx.createRadialGradient(0,0,0,0,0,1);
+    g.addColorStop(0,'rgba(35,38,32,'+opacity+')');
+    g.addColorStop(.55,'rgba(35,38,32,'+(opacity*.55)+')');
+    g.addColorStop(1,'rgba(35,38,32,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
   function paintJiafei(ctx,x,y,o){
     if(!jiafeiLoaded)return false;
     const growth=o.growth||null,s=(o.scale||1)*(growth?.scale||1);
@@ -289,8 +299,7 @@
       grad.addColorStop(1,growth.aura+'00');
       ctx.fillStyle=grad;ctx.beginPath();ctx.arc(0,0,56,0,Math.PI*2);ctx.fill();
     }
-    ctx.fillStyle='rgba(73,63,51,.15)';
-    ctx.beginPath();ctx.ellipse(0,32,31,5,0,0,Math.PI*2);ctx.fill();
+    contactShadow(ctx,0,32,31,5,.24);
     // Feet stay planted at y≈+33 as in the 32 watercolor breeds.
     ctx.translate(0,-bob);
     if(pose==='sleep'||pose==='loaf'){ctx.translate(0,7);ctx.scale(1,.82);}
@@ -300,7 +309,9 @@
     // not the WebP canvas's empty pixels. Uniform scaling preserves the wide
     // cheeks, short paws, planted baseline and all gameplay hitboxes.
     const visualScale=.86;
-    const artW=92*visualScale,artH=105*visualScale;
+    const nativeW=jiafeiSprite.naturalWidth,nativeH=jiafeiSprite.naturalHeight;
+    const fit=Math.min(92*visualScale/nativeW,105*visualScale/nativeH);
+    const artW=nativeW*fit,artH=nativeH*fit;
     ctx.drawImage(jiafeiSprite,-artW/2,36-artH,artW,artH);
     if(growth?.gem){ctx.font='12px system-ui';ctx.fillStyle=growth.gemColor||'#e8bb68';ctx.fillText('✦',20,-47);}
     ctx.restore();
@@ -354,8 +365,7 @@
       ctx.fillStyle=aura;ctx.beginPath();ctx.ellipse(0,0,55,45,0,0,Math.PI*2);ctx.fill();
     }
     // Shadow stays on the ground even while the kitten is hopping.
-    ctx.fillStyle='rgba(73,63,51,.12)';
-    ctx.beginPath();ctx.ellipse(0,33,27-hop*.2,4.3-hop*.13,0,0,Math.PI*2);ctx.fill();
+    contactShadow(ctx,0,33,27-hop*.2,4.3-hop*.13,.22);
     ctx.translate(footfall*movement*.95,-bob);
     ctx.translate(0,33);
     ctx.rotate(sway);

@@ -76,9 +76,9 @@
 #stage #panel .card {
   --panel-solid:var(--cbv-paper-light);--text:var(--cbv-paper-ink);
   --muted:var(--cbv-muted);--radius:var(--cbv-card-radius);
-  background:var(--cbv-paper-light);
+  background:var(--cbv-paper-light)!important;
   color:var(--cbv-paper-ink);
-  border:1px solid var(--cbv-line);
+  border:1px solid var(--cbv-line)!important;
   border-radius:var(--cbv-card-radius);
   box-shadow:0 16px 42px #10252955;
   scrollbar-color:#9f9275 #eee5d4;
@@ -179,4 +179,66 @@
 }
 @media (prefers-reduced-motion:reduce) {
  #stage :is(.rw-button,.res-host button,.cb-system-rows button,.cb-slot-manager-actions button,#panel .btn,#panel .cb-grow-action) {transition:none;}
+}
+
+/* Override the surviving legacy pastel declarations only where they have
+   !important; do not override the book owner's mobile layout geometry. */
+#stage #panel .cat-hub-tabs {
+  background:#eee5d3!important;border:1px solid #c4b69a!important;
+  border-radius:var(--cbv-radius)!important;
+}
+#stage #panel .cat-hub-tabs button[aria-selected="true"] {
+  background:#d6e2d5!important;border-color:#688879!important;color:#304540!important;
+}
+#stage #panel .card :is(.card-close,.panel-dismiss) {
+  background:#f3e9d4!important;color:#40574f!important;border:1px solid #b6a88a!important;
+  border-radius:var(--cbv-radius)!important;box-shadow:0 2px 6px #243b4326!important;
+}
+#stage #panel .card :is(.btn.gold,.btn.primary)::after {content:none;}
+#stage #yard-placement-dock {
+  background:#f4ead6ed!important;border:1px solid var(--cbv-line)!important;
+  color:#304540!important;border-radius:var(--cbv-card-radius)!important;
+}
+#stage.cb-sunlit-garden #yard-actions .fab,#stage.cb-sunlit-garden .sg-hotspot {
+  background:#243b43e8;color:var(--cbv-night-text);
+  border:1px solid var(--cbv-night-line);border-radius:var(--cbv-radius);
+  box-shadow:0 3px 10px #101e243b;
+}
+#stage #cb-header-actions > button,#stage #cb-system-toggle {
+  border-radius:var(--cbv-radius)!important;
+}
+#stage #battle-ui .team-slot:not(.fainted) {
+  border-color:#b6a88a;background:#f4ead6e8;border-radius:var(--cbv-radius);
+}
+#stage #panel .dex-cell:not(.locked) {
+  border-color:#b6a88a;background:#f4ead6;border-radius:var(--cbv-radius);
+}
+#stage #panel .dex-cell canvas {object-fit:contain;image-rendering:auto;}
+
+/* Star Bell Book PR #107 loads its scoped CSS dynamically. Match its
+   actual selectors, preserving the 9-tab layout, modal sizes and state. */
+#stage #panel.rb-open>.card.rb-card {background:var(--cbv-paper-light)!important;}
+#stage #panel.rb-open .rb-navigation {background:var(--cbv-ink);}
+#stage #panel.rb-open .rb-brand strong {font-family:var(--cbv-serif);}
+#stage #panel.rb-open :is(.rb-action,.rb-craft-link,.rb-home,.rb-close) {
+  background:var(--cbv-night);color:var(--cbv-night-text);
+  border-color:var(--cbv-night-line);border-radius:var(--cbv-radius);
+}
+#stage #panel.rb-open .rb-tab[aria-current="page"] {
+  color:#fff4d5;border-bottom-color:var(--cbv-brass-light);
+  background:#ffffff13;
+}
+#stage #panel.rb-open :is(.rb-stat,.rb-recipe,.rb-recovery-cat,.rb-dex-archive) {
+  background:var(--cbv-paper);border-color:var(--cbv-line);
+}
+#stage #panel.rb-open :is(.rb-tab,.rb-action,.rb-home,.rb-close,.rb-craft-link):not(:disabled):active,
+#stage.cb-sunlit-garden #yard-actions .fab:not(:disabled):active {
+  box-shadow:inset 0 2px 5px #17253266;
+}
+#stage #panel.rb-open :is(.rb-action,.rb-craft-link):disabled {opacity:.55;cursor:not-allowed;}
+@media (hover:hover) {
+ #stage #panel.rb-open :is(.rb-action,.rb-craft-link,.rb-home,.rb-close):not(:disabled):hover,
+ #stage.cb-sunlit-garden #yard-actions .fab:not(:disabled):hover {
+   background:var(--cbv-night-hover);border-color:var(--cbv-brass-light);
+ }
 }

@@ -23,7 +23,7 @@ p{line-height:1.6}a{color:#836290;text-decoration:none;font-weight:700}
 <h1 id="adult-gallery-title">猫咪 · 水彩原画与旧存档阶段</h1><p>成长变身已停用。旧存档中的成年和觉醒阶段暂时使用同一幅原版水彩猫原画；独立高阶原画尚未制作。</p>
 <p class="meta"><span id="load-status">正在加载水彩猫原画…</span> · <span id="gallery-count">0</span> 种品种</p><div id="breed-grid" class="grid"></div></main>
 <script src="js/catart.js?v=36"></script><script src="js/cute-cats.js?v=1-storybook"></script>
-<script src="js/real-kittens.js?v=jiafei-approved-art-calibrated-20261122-v2"></script>
+<script src="js/real-kittens.js?v=watercolor-contact-shadow-20261124"></script>
 <script src="js/data.js?v=32-cat-breeds-20261122"></script>
 <script src="js/growth.js?v=legacy-form-visual-neutral-20261124"></script>
 <script src="js/adult-art.js?v=legacy-form-visual-neutral-20261124-v2"></script>
@@ -43,9 +43,9 @@ p{line-height:1.6}a{color:#836290;text-decoration:none;font-weight:700}
    wrap.className='breed-card';
    wrap.innerHTML=`<header><small>${String(i+1).padStart(2,'0')} / ${ids.length}</small><h2></h2><code></code></header>
      <div class="stages">
-      <div><canvas width="110" height="126" aria-label="kitten"></canvas><span>${en?'Kitten':'幼猫'}</span></div>
-      <div><canvas width="110" height="126" aria-label="adult"></canvas><span>${en?'Legacy adult (same art)':'旧成年（同原画）'}</span></div>
-      <div><canvas width="110" height="126" aria-label="awakened"></canvas><span>${en?'Legacy awakened (same art)':'旧觉醒（同原画）'}</span></div>
+      <div><canvas width="110" height="126" data-thumb-w="110" data-thumb-h="126" aria-label="kitten"></canvas><span>${en?'Kitten':'幼猫'}</span></div>
+      <div><canvas width="110" height="126" data-thumb-w="110" data-thumb-h="126" aria-label="adult"></canvas><span>${en?'Legacy adult (same art)':'旧成年（同原画）'}</span></div>
+      <div><canvas width="110" height="126" data-thumb-w="110" data-thumb-h="126" aria-label="awakened"></canvas><span>${en?'Legacy awakened (same art)':'旧觉醒（同原画）'}</span></div>
      </div>`;
    wrap.querySelector('h2').textContent=label;
    wrap.querySelector('code').textContent=id;
