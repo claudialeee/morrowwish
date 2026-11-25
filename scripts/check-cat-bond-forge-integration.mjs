@@ -23,5 +23,5 @@ assert.doesNotMatch(runtime,/localStorage|sessionStorage|catbond_save_v1|S\.stor
 assert.match(battle,/if\(this\.storyEncounter && window\.CatBondForgeCombat\?\.drawBackground\)/);
 assert.match(battle,/e\.visualKind==='forge-guardian'/);
 assert.match(battle,/p\.kind==='forge-slag'/);
-assert.match(rules,/supportNpcs: Object\.freeze\(\[\"jinpo\",\"xiaomao\"\]\)/);
+assert.match(rules,/supportNpcs:\s*Object\.freeze\(\["jinpo",\s*"xiaomao"\]\)/);
 console.log("FORGE VERTICAL SLICE STATIC INTEGRATION PASS");
