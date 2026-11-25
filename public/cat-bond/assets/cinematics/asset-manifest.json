@@ -750,8 +750,8 @@
       {
         "assetId": "opening-keepers-choice",
         "alt": {
-          "zh": "守铃者走向应急锚室",
-          "en": "The Bellkeeper reaches for the emergency anchor"
+          "zh": "陌生的猫走向应急锚室",
+          "en": "An unknown cat approaches the emergency anchor"
         },
         "durationMs": 4000,
         "transitionMs": 900,
@@ -782,8 +782,8 @@
       {
         "assetId": "opening-broken-bell-tongue",
         "alt": {
-          "zh": "碎裂的铃舌与守铃者的爪",
-          "en": "The broken bell tongue beside the Bellkeeper’s paw"
+          "zh": "碎裂的铃舌与伸出的猫爪",
+          "en": "A paw reaches toward the broken bell tongue"
         },
         "durationMs": 4000,
         "transitionMs": 900,
@@ -874,5 +874,67 @@
       "opening-waiting-at-workbench",
       "opening-garden-at-dawn"
     ]
-  }
+  },
+  "openingRegionMontage": [
+    {
+      "id": "harbor",
+      "image": "assets/resonance-world-v2/harbor.webp",
+      "title": {
+        "zh": "霁潮港",
+        "en": "Misttide Harbor"
+      },
+      "durationMs": 1800,
+      "note": 261.63
+    },
+    {
+      "id": "forest",
+      "image": "assets/resonance-world-v2/forest.webp",
+      "title": {
+        "zh": "眠根林",
+        "en": "Rootsleep Forest"
+      },
+      "durationMs": 1800,
+      "note": 329.63
+    },
+    {
+      "id": "forge",
+      "image": "assets/resonance-world-v2/forge.webp",
+      "title": {
+        "zh": "赤炉环城",
+        "en": "Emberforge City"
+      },
+      "durationMs": 1800,
+      "note": 392
+    },
+    {
+      "id": "sky",
+      "image": "assets/resonance-world-v2/sky.webp",
+      "title": {
+        "zh": "云脊群岛",
+        "en": "Skyspine Isles"
+      },
+      "durationMs": 1800,
+      "note": 523.25
+    },
+    {
+      "id": "library",
+      "image": "assets/resonance-world-v2/library.webp",
+      "title": {
+        "zh": "月镜书库",
+        "en": "Moonmirror Library"
+      },
+      "durationMs": 1800,
+      "note": 587.33
+    },
+    {
+      "id": "starfall",
+      "image": "assets/resonance-world-v2/starfall.webp",
+      "title": {
+        "zh": "星坠原",
+        "en": "Starfall Expanse"
+      },
+      "durationMs": 1800,
+      "note": 659.25
+    }
+  ]
 }

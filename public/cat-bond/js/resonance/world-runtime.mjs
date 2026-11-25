@@ -26,12 +26,14 @@ function pickWild(ids){const species=ids.map(id=>GameData.speciesById(id)).filte
 const regions=nodes.map(([id,x,y],i)=>({id,x,y,name:layouts[id].name[0],sub:layouts[id].name[1],speciesPool:pools[id],difficulty:i+1,theme:{region:id},unlock:i?{after:nodes[i-1][0]}:null}));
 function install(){
  const forestLandscape=window.matchMedia("(max-height: 500px) and (orientation: landscape)");
+ const atlasWide=window.matchMedia("(orientation: landscape) and (min-width: 720px)");
  let game,bridge,explorer,host,canvas,ctx,slot,mode="map",revision="",frame=0,encounter,exit,notice="",pending=null,wild=null,wildRegion=null,spawnDelay=0,zoom=1,pan=[0,0],drag=null,pointers=new Map(),pinch=0,dragged=false,selectedRoute=null,art={},ceremony=null;
  const E=(tag,cl,t)=>{const e=document.createElement(tag);if(cl)e.className=cl;if(t!==undefined)e.textContent=t;return e},B=(t,fn,disabled=false)=>{const e=E("button","rw-button",t);e.type="button";e.disabled=disabled;const owner=State.S;e.onclick=()=>{if(owner===State.S&&e.isConnected&&game?.scene==="map")return fn()};return e};
  function current(){if(slot!==State.S){ceremony=null;slot=State.S;bridge=createWorldBridge(State);explorer=null;mode="map";pending=null;wild=null;wildRegion=null;spawnDelay=0;zoom=1;pan=[0,0];notice="";selectedRoute=null;revision="";drag=null;dragged=false;pinch=0;pointers.clear();}return bridge;}
  const sync=()=>{let v=current().view();return v.current?.id+":"+v.cursor+":"+v.choice+":"+v.objective.join(",")+":"+JSON.stringify(v.links)+":"+JSON.stringify(v.postgame)};
  function init(g){game=g;current();if(host)return;host=E("section","rw-world");host.hidden=true;document.getElementById("stage").append(host);for(let ev of ["morrowwish-language-change","cat-bond-resonance-changed"])window.addEventListener(ev,()=>{if(game.scene==="map")render()});
   forestLandscape.addEventListener("change",()=>{if(game?.scene==="map")render();});
+  atlasWide.addEventListener("change",()=>{if(game?.scene==="map"&&mode==="map")render();});
   window.addEventListener("cat-bond-active-save-changed",()=>{
    current();host.replaceChildren();host.hidden=true;canvas=ctx=null;
    if(game.scene==="map")render();
@@ -59,7 +61,7 @@ function install(){
   img.src=new URL("../../assets/resonance-world-v2/"+(id==="harbor"?"harbor-mist":id)+".webp",import.meta.url).href;
   return img;
  }
- function render(){if(!host)return;if(!window.CatBondResonance?.view){host.replaceChildren(E("p","rw-notice",tr("正式剧情正在初始化","Initializing the canonical story")));host.hidden=game.scene!=="map";return;}const b=current(),v=b.view(),w=b.world();revision=sync();host.replaceChildren();host.hidden=game.scene!=="map";const forestRegion=mode==="region"&&w.location==="forest",sideLayout=forestRegion&&forestLandscape.matches;host.classList.toggle("rw-forest-landscape",sideLayout);host.classList.toggle("rw-forest-region",forestRegion);
+ function render(){if(!host)return;if(!window.CatBondResonance?.view){host.replaceChildren(E("p","rw-notice",tr("正式剧情正在初始化","Initializing the canonical story")));host.hidden=game.scene!=="map";return;}const b=current(),v=b.view(),w=b.world();revision=sync();host.replaceChildren();host.hidden=game.scene!=="map";const forestRegion=mode==="region"&&w.location==="forest",sideLayout=forestRegion&&forestLandscape.matches,forestStep=forestRegion?(v.current?.id||"")+"/"+(explorer?.puzzle?.operation||"explore"):"",resetForestScroll=forestRegion&&host.dataset.forestStep!==forestStep;host.dataset.forestStep=forestStep;host.classList.toggle("rw-forest-landscape",sideLayout);const atlasLayout=mode==="map"&&atlasWide.matches;host.classList.toggle("rw-atlas-wide",atlasLayout);host.classList.toggle("rw-forest-region",forestRegion);
  const head=E("header","rw-head"),brand=E("div","rw-brand");brand.append(E("small","",tr("猫猫纽带","CAT BOND")),E("strong","",mode==="map"?tr("最后的回响","The Last Resonance"):tr(...layouts[w.location].name)));head.append(brand,B(tr("世界地图","World atlas"),enterMap,mode==="map"),B(tr("阳光花园","Sunlit Garden"),exitToYard));host.append(head);
  if(mode==="map"){
   const nav=E("nav","rw-system-nav");
@@ -95,7 +97,9 @@ function install(){
   if(v.objective.some(op=>op.startsWith("cinematic:")))actions.append(B(tr("观看剧情","Watch the story scene"),()=>go(explorer.layout.paths.at(-1),()=>window.CatBondChapterCinematics.play(v.current.id))));
  }
  for(const memory of availableMemories(w.location))actions.append(B(memory.name,()=>visitDuoMemory(memory)));
- if(wild?.species)actions.append(B(tr("接近野猫","Approach wild cat"),()=>visitWild(w.location)));if(actions.children.length)host.append(actions);const opts=exchangeOptions(b,w.location,campaign.links);if(opts.length||explorer.cargo){const c=E("div","rw-cargo");c.append(E("strong","",tr("邻地物资交流","Neighbor exchange")));for(const o of explorer.cargo?[explorer.cargo]:opts){const carrying=!!explorer.cargo;c.append(B((carrying?tr("交付 ","Deliver "):tr("领取 ","Collect "))+cargoName(o.action),()=>visitCargo(o,carrying)));}host.append(c);}}}if(sideLayout){const rail=E("aside","rw-forest-rail");rail.setAttribute("aria-label",tr("森林任务与操作","Forest objectives and controls"));const items=[...host.children].filter(n=>n!==head&&n!==shell);for(const el of items)rail.append(el);const pc=rail.querySelector(".rw-puzzle-controls");if(pc)rail.prepend(pc);host.append(rail);}draw();}
+ if(wild?.species)actions.append(B(tr("接近野猫","Approach wild cat"),()=>visitWild(w.location)));if(actions.children.length)host.append(actions);const opts=exchangeOptions(b,w.location,campaign.links);if(opts.length||explorer.cargo){const c=E("div","rw-cargo");c.append(E("strong","",tr("邻地物资交流","Neighbor exchange")));for(const o of explorer.cargo?[explorer.cargo]:opts){const carrying=!!explorer.cargo;c.append(B((carrying?tr("交付 ","Deliver "):tr("领取 ","Collect "))+cargoName(o.action),()=>visitCargo(o,carrying)));}host.append(c);}}}if(sideLayout){const rail=E("aside","rw-forest-rail");rail.setAttribute("aria-label",tr("森林任务与操作","Forest objectives and controls"));const items=[...host.children].filter(n=>n!==head&&n!==shell);for(const el of items)rail.append(el);const pc=rail.querySelector(".rw-puzzle-controls");if(pc)rail.prepend(pc);host.append(rail);}
+ if(atlasLayout){const rail=E("aside","rw-atlas-rail");rail.setAttribute("aria-label",tr("世界地图任务与地区","World map objectives and regions"));const items=[...host.children].filter(n=>n!==head&&n!==shell);for(const el of items)rail.append(el);host.append(rail);}
+ if(resetForestScroll)host.scrollTop=0;draw();}
  function point(e){const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height];}
  function contain(){pan=pan.map(n=>Math.max(1-zoom,Math.min(0,n)));}
  function scale(f,x,y){const a=[(x-pan[0])/zoom,(y-pan[1])/zoom];zoom=Math.max(1,Math.min(3.5,zoom*f));pan=[x-a[0]*zoom,y-a[1]*zoom];contain();draw();}

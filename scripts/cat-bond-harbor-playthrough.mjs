@@ -22,6 +22,7 @@ try {
     await page.route('**/*', route => route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
     await page.goto(origin+'/cat-bond/?lang=en');
     await page.waitForFunction(() => window.WorldMap === window.CatBondCanonicalWorld && window.CatBondResonance && window.__game);
+    assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),false,'Production entry must not enable unreviewed staging art');
     const button = (name, scope = page) => scope.getByRole('button',{name,exact:true});
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
     const shot = id => page.screenshot({path:out+'/'+name+'-'+id+'.png'});
@@ -59,7 +60,11 @@ try {
         await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
         if(['yahe','yuchuan','muling'].includes(line.speaker)){
           const portrait=dialogue.locator('.res-portrait');
-          await portrait.waitFor({state:'visible'});await portrait.evaluate(img=>img.decode());
+          await portrait.waitFor({state:'visible'});
+          const expected=line.speaker==='muling'?'/cinematics/characters/muling/traveler-neutral.webp':'/npc/'+line.speaker+'-painted.webp';
+          try{await page.waitForFunction(({actor,expected})=>{const d=document.querySelector('.res-host .res-dialogue'),img=d?.querySelector('.res-portrait');return d?.dataset.speaker===actor&&img?.complete&&img.naturalWidth>0&&img.currentSrc.endsWith(expected)}, {actor:line.speaker,expected}, {timeout:12000});await portrait.evaluate(img=>img.decode());}
+          catch(e){await shot(id.replace(':','-')+'-portrait-failure-'+line.speaker);console.error('Actual dialogue portrait failed',await portrait.evaluate(img=>({src:img.src,current:img.currentSrc,complete:img.complete,width:img.naturalWidth})));throw e;}
+          if(line.speaker==='muling'&&id==='forest:R-04'&&!observed.includes('muling'))await shot('forest-muling-portrait');
         }
         await dialogue.locator('[data-res-language]').click();
         assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),'zh');
