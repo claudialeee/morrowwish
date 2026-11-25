@@ -59,6 +59,25 @@ try{
    assert.ok(await page.evaluate(()=>CatBondResonance.view().objective.includes("explore:tide-logbook")));
    assert.equal(await page.evaluate(()=>!!State.S.npcStories?.harborKeeper),false);
    assert.equal(await page.evaluate(()=>CatBondResonance.view().lineReady),false);
+   // Exercise the real ambient board through pointer input after entering the actual yard.
+   // NPC dispatch is a fixture because the canonical map/garden branches are not yet merged.
+   await page.evaluate(()=>{WorldMap.exitToYard();CatBondResonanceNPC.talk("muling","garden")});
+   const board=page.locator(".res-ambient-board");
+   await board.waitFor({state:"visible",timeout:5000});
+   await page.waitForFunction(()=>getComputedStyle(document.querySelector(".res-ambient")).opacity==="1");
+   await page.screenshot({path:dir+"/"+p.name+"-tea.png"});
+   async function drag(from,to,vertical=0){
+    const a=await from.boundingBox(),b=to?await to.boundingBox():null;assert.ok(a&&(!to||b));
+    const sx=a.x+a.width/2,sy=a.y+a.height/2,tx=b?b.x+b.width/2:sx,ty=b?b.y+b.height/2:sy+vertical;
+    if(p.mobile){const cdp=await ctx.newCDPSession(page);await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[{x:sx,y:sy}]});for(let i=1;i<=8;i++)await cdp.send("Input.dispatchTouchEvent",{type:"touchMove",touchPoints:[{x:sx+(tx-sx)*i/8,y:sy+(ty-sy)*i/8}]});await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});await cdp.detach();}
+    else{await page.mouse.move(sx,sy);await page.mouse.down();await page.mouse.move(tx,ty,{steps:12});await page.mouse.up();}
+   }
+   const piece=id=>board.locator('[data-piece="'+id+'"]');
+   await drag(piece("leaves"),piece("pot"));await drag(piece("kettle"),piece("pot"));await drag(piece("pot"),piece("cup"));
+   await page.locator(".res-ambient-result").waitFor({state:"visible",timeout:5000});
+   assert.ok(await page.evaluate(()=>CatBondResonance.snapshot().ambientDone.includes("muling:tea")));
+   await page.screenshot({path:dir+"/"+p.name+"-tea-complete.png"});
+   await page.locator(".res-ambient-result button").click();
    // Resume same slot from the actual title flow. The canonical choice must survive.
    await page.reload({waitUntil:"domcontentloaded"});
    await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
@@ -66,6 +85,16 @@ try{
    await page.locator('#intro-slot-list [data-slot="slot1"]').click();
    await page.waitForFunction(()=>window.__CAT_BOND_STARTED__&&CatBondResonance.view().current?.id==="harbor:H-03");
    assert.equal(await page.evaluate(id=>CatBondResonance.view().trust[id],p.npc),2);
+   assert.ok(await page.evaluate(()=>CatBondResonance.snapshot().ambientDone.includes("muling:tea")),"Tea completion must survive reload");
+   // Separate canonical prologue fixture validates the physical bell, without
+   // claiming that missing approved cinematics have been played.
+   await page.evaluate(async()=>{const {campaign}=await import("/cat-bond/js/resonance/campaign.mjs"),{makeEngine}=await import("/cat-bond/js/resonance/engine.mjs");const e=makeEngine(campaign);for(const s of campaign.scenes){if(s.id==="prologue:P-04")break;for(const op of s.requires)e.record(s.id,op);for(const l of s.lines)e.nextLine();e.finish()}State.S.resonance=e.snapshot();State.save();WorldMap.exitToYard()});
+   const bell=page.locator(".res-garden-bell");await bell.waitFor({state:"visible",timeout:7000});
+   await page.screenshot({path:dir+"/"+p.name+"-garden-bell.png"});
+   await drag(bell,null,65);
+   await page.waitForFunction(()=>CatBondResonance.view().current?.id==="prologue:P-04"&&!CatBondResonance.view().objective.includes("explore:garden-bell"));
+   assert.ok(await page.locator(".res-host .res-dialogue").isVisible());
+   await page.screenshot({path:dir+"/"+p.name+"-awakening.png"});
    assert.deepEqual(errors,[],"Browser JS errors");
    console.log(p.name+": normal boot, seeded story, bilingual dialogue, portrait loaded, choice, trust, quest gate and reload PASS");
   }catch(e){console.error("Browser diagnostics",p.name,errors,await page.evaluate(()=>({scene:window.__game?.scene,cats:window.State?.S?.cats?.length,legacy:!!window.CatBondStory,current:window.CatBondResonance?.view()?.current?.id,body:document.body.innerText.slice(0,400)})).catch(()=>null));await page.screenshot({path:dir+"/"+p.name+"-failure.png"}).catch(()=>{});throw e}

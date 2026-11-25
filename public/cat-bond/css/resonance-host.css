@@ -12,3 +12,5 @@
 .res-host .res-dialogue[data-error] .res-body{border-color:#e38f80}
 @media(max-width:700px){.res-host{padding:8px}.res-host .res-dialogue{display:flex;flex-direction:column;align-items:stretch;gap:5px}.res-host .res-portrait{height:clamp(100px,27vh,230px);width:auto;align-self:center}.res-host .res-controls{gap:5px}.res-host button,.res-host select{padding:7px 9px;font-size:11px}.res-host .res-line{font-size:15px}}
 @media(max-height:480px) and (orientation:landscape){.res-host .res-dialogue{display:grid;grid-template-columns:22% minmax(0,1fr)}.res-host .res-portrait{height:auto;max-height:42vh}.res-host .res-body{padding:10px}.res-host .res-line{min-height:2em;font-size:14px}}
+
+.res-host [hidden]{display:none!important}.res-host .res-choices:not(:empty)~.res-controls{margin-top:6px}.res-host .res-body:has(.res-choices:not(:empty)) .res-line{min-height:0;font-size:13px;color:#c3cdc7;margin-bottom:10px}
