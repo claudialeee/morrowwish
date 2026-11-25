@@ -12,3 +12,10 @@
 .rw-world[data-region="harbor"]{top:48px;padding-top:14px;scroll-padding-top:8px}
 .rw-world[data-region="harbor"] .rw-shell{animation:none}
 @media(max-height:500px) and (orientation:landscape){.rw-world[data-region="harbor"]{top:44px;padding-top:6px}.rw-world[data-region="harbor"] .rw-head{gap:6px;margin-bottom:7px;padding-bottom:6px}.rw-world[data-region="harbor"] .rw-objective{margin-bottom:6px}}
+
+.rw-system-nav{display:flex;gap:6px;flex-wrap:wrap;max-width:1180px;margin:0 auto 12px}
+.rw-system-nav .rw-button{flex:1;min-height:38px;background:#203746;border-color:#657e80;border-radius:4px}
+.rw-region-status{display:block;font-size:10px;font-weight:500;margin-top:4px;color:#d2c6a6}
+.rw-regions [aria-current=location]{border:2px solid #a6d7c6}
+.rw-location{font-size:11px;color:#c2d5d2}
+@media(max-width:700px){.rw-system-nav{gap:4px}.rw-system-nav .rw-button{font-size:11px;min-height:34px;padding:5px 7px}}
