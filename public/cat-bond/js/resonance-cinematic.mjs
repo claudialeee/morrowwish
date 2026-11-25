@@ -26,7 +26,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
       :useStaging
       ?asset?.status==='candidate'&&asset.stagingAllowed===true&&asset.runtimeAllowed===false
       :asset?.status==='approved'&&asset.runtimeAllowed===true&&asset.visualReview?.evidence&&asset.visualReview.result==='PASS';
-    const recalled=useStaging&&scene.id==='starfall:F-02'&&['opening-star-bell','opening-keepers-choice','opening-broken-bell-tongue'].includes(asset?.id)&&/^prologue:P-0[12]$/.test(asset.sceneKey);
+    const recalled=(useStaging||!!approved)&&scene.id==='starfall:F-02'&&['opening-star-bell','opening-keepers-choice','opening-broken-bell-tongue'].includes(asset?.id)&&/^prologue:P-0[12]$/.test(asset.sceneKey);
     if(!allowed||(!recalled&&asset.sceneKey!==scene.id)||!raster.test(asset.path))return bad('unapproved-shot');
     if(unique.has(asset.path))return bad('repeated-shot-art');unique.add(asset.path);
     if(!isBilingual(shot.alt)||!Number.isFinite(shot.durationMs)||shot.durationMs<1200||shot.durationMs>20000||!Array.isArray(shot.lines))return bad('invalid-shot');
@@ -61,6 +61,14 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.id==='prologue:P-02'?{zh:'抉择',en:'The Choice'}:scene.title,chapter:{zh:'猫猫纽带',en:'Cat Bond'},mode:'auto',allowSkip:true,frames}};
 }
 
+// Pure permission check: no save, story mutation, staging or URL override.
+export function starfallReleaseReady(campaign,manifest){
+ return ["starfall:F-02","starfall:F-05"].every(id=>{
+  const current=campaign.scenes.find(s=>s.id===id);
+  if(!current||!manifest?.approvedShots?.[id])return false;
+  return buildCanonicalScene({campaign,manifest,view:{current,choice:null,objective:current.requires.filter(o=>o.startsWith("cinematic:")),cursor:0,lineReady:true},staging:false}).ok;
+ });
+}
 export async function decodeCinematicImages(scene){
   const urls=[...new Set(scene.frames.flatMap(f=>[f.image,...(f.layers||[]).map(l=>l.image)]))];
   // Sequential bounded decoding prevents a chapter from allocating all image memory at once.
@@ -89,7 +97,7 @@ export function mountResonanceCinematics({root,rendererFactory,engine,campaign,m
         persist(engine.nextLine());
       }
       for(const op of current.requires.filter(x=>x.startsWith('cinematic:'))){
-        if(engine.view().objective.includes(op))persist(transactional?engine.evidence({sceneId:run.id,operation:op,region:current.chapter,verified:true}):engine.record(run.id,op));
+        if(engine.view().objective.includes(op))persist(transactional?engine.evidence({sceneId:run.id,operation:op,region:current.chapter,verified:true,token:run.token}):engine.record(run.id,op));
       }
       // Host owns finish() and all non-cinematic event transitions.
       onResolved?.({sceneId:run.id,skipped,slot:run.slot,remaining:engine.view().objective});
@@ -103,7 +111,7 @@ export function mountResonanceCinematics({root,rendererFactory,engine,campaign,m
     const id=++sequence;renderer.stop();active=null;
     const view=engine.view(),result=buildCanonicalScene({view,campaign,manifest,staging,openingRelease});
     if(!result.ok)return report(result.reason);
-    const run={id:view.current.id,slot:getSlotKey(),revision:engine.snapshot().revision,sequence:id};
+    const run={id:view.current.id,slot:getSlotKey(),revision:engine.snapshot().revision,sequence:id,token:engine.capture?.()};
     if(resume&&(resume.slot!==run.slot||resume.revision!==run.revision||resume.snapshot?.sceneId!==run.id))return report('stale-cinematic-snapshot');
     active=run;
     try{await preload(result.scene)}catch(e){if(!valid(run))return bad('stale-slot-or-scene');active=null;return report('cinematic-image-load-failed')}

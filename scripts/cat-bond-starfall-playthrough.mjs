@@ -72,6 +72,8 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  await talk("Muling","library:M-05","Release all records now");
  await puzzle("Moonmirror sanctuary",["Calendar","Testimony","Record"]);await invite("Moye");await invite("Baikan");
  await puzzle("Reflections",["High","Low","Middle"]);await scene("starfall:F-01");
+ // Independent approval is a real release gate, never overridden by QA.
+ if(!await page.evaluate(()=>CatBondChapterCinematics.starfallReleaseReady())){await shot("starfall-art-approval-blocked");throw Error("Starfall formal runtime art approval missing for F-02 or F-05; no staging override permitted");}
  // F-01: both resident interactions, not a generic completion.
  await travel("Starfall Expanse");await shot("starfall-arrival");
  await button("Talk to Xingya").click();await objective("npc:central-dispute");

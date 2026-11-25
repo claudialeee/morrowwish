@@ -1,10 +1,12 @@
 import {campaign} from "./campaign.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
-import {mountResonanceCinematics} from "../resonance-cinematic.mjs";
+import {mountResonanceCinematics,starfallReleaseReady} from "../resonance-cinematic.mjs";
 
 const language=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const manifestURL=new URL("../../assets/cinematics/asset-manifest.json",import.meta.url);
-let active=null;
+let active=null,releaseManifest=null;
+async function refreshReleaseManifest(){try{const response=await fetch(manifestURL);if(response.ok){releaseManifest=await response.json();window.dispatchEvent(new Event("cat-bond-resonance-changed"));}}catch{/* Invalid manifest remains locked. */}}
+refreshReleaseManifest();
 
 async function play(sceneId){
  const game=window.__game, slot=window.State.S, runtime=getSlotRuntime(window.State);
@@ -37,7 +39,7 @@ async function play(sceneId){
   player=mountResonanceCinematics({
    root, engine:runtime, campaign, manifest,
    rendererFactory:window.CatBondCinematicPresentation.create,
-   staging:window.__CAT_BOND_INTEGRATION_ART__===true,
+   staging:false,
    getSlotKey:()=>window.State.S,
    language,
    onLanguageChange:next=>window.MorrowwishI18n?.set?.(next),
@@ -57,6 +59,6 @@ async function play(sceneId){
   return false;
  }
 }
-window.CatBondChapterCinematics=Object.freeze({play});
+window.CatBondChapterCinematics=Object.freeze({play,starfallReleaseReady:()=>starfallReleaseReady(campaign,releaseManifest)});
 window.addEventListener("pagehide",()=>active?.dispose());
 window.addEventListener("cat-bond-active-save-changed",()=>active?.dispose());

@@ -26,7 +26,7 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  const harborContext=s.id==="harbor:H-03"&&!v.objective.includes("explore:tide-logbook")?["救援日志：当年岬灯关掉灯塔，救援船失去方向，但船员全部幸存。","Rescue log: Jiedeng extinguished the beacon. The rescue vessel lost its bearing, but its crew survived."]:s.id==="harbor:H-05"&&!v.objective.includes("melody:harbor")?["归潮调 · 港口居民忆起同伴与旧航路，补给船即将驶向眠根林。","Returning Tides · The harbor remembers its companions and old routes. A supply vessel will sail toward Rootsleep Forest."]:null;
  if(harborContext){context.hidden=false;context.textContent=harborContext[k==="zh"?0:1];}context.classList.toggle("res-harbor-context",!!harborContext);panel.dataset.speaker=l?.speaker||"";
  if(s.id==="starfall:F-03"){
-  const recalled=v.cursor>=8&&v.cursor<=10&&window.__CAT_BOND_INTEGRATION_ART__===true,cut=recalled?"waiting":"ruin";
+  const recalled=false,cut="ruin"; // Unapproved flashback art is never selected by a test flag.
   if(lastCut!==cut){lastCut=cut;const file=recalled?"../../assets/cinematics/prologue/waiting-at-workbench.webp":"../../assets/resonance-world-v2/starfall.webp";root.style.backgroundImage="linear-gradient(0deg,rgba(8,13,30,.70),rgba(8,13,30,.22)),url("+new URL(file,import.meta.url).href+")";root.style.backgroundPosition="center";root.style.backgroundSize="cover";if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches)panel.animate?.([{opacity:.35,transform:"translateY(5px)"},{opacity:1,transform:"translateY(0)"}],{duration:420,easing:"ease-out"});}
   if(v.cursor===8||v.cursor===14){context.hidden=false;context.textContent=v.cursor===8?(k==="zh"?"旧铃坠在她的爪间停住。":"The old pendant falls still between her paws."):(k==="zh"?"暮铃避开你的目光。":"Muling looks away.");}
  }

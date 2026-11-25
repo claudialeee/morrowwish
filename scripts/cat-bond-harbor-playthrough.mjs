@@ -22,9 +22,9 @@ try {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/*', route => route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
-    await page.goto(origin+'/cat-bond/?lang=en'+(starfallQA?'&chapterQA=starfall':''));
+    await page.goto(origin+'/cat-bond/?lang=en');
     await page.waitForFunction(() => window.WorldMap === window.CatBondCanonicalWorld && window.CatBondResonance && window.__game);
-    assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),starfallQA,'Only opt-in loopback QA may enable staging art');
+    assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),false,'Every acceptance run uses the normal released art policy');
     const button = (name, scope = page) => scope.getByRole('button',{name,exact:true});
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
     const shot = id => page.screenshot({path:out+'/'+name+'-'+id+'.png'});
