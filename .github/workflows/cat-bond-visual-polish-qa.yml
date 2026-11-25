@@ -15,7 +15,7 @@ jobs:
   compare:
     if: github.head_ref == 'rpg/release-visual-polish'
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,6 +44,12 @@ jobs:
               sleep 1
             done
             VISUAL_OUT="artifacts/cat-bond-visual/$label" node scripts/cat-bond-visual-compare.mjs || result=1
+            if [ "$label" = after ]; then
+              node scripts/cat-bond-21x3-visual-qa.mjs || result=1
+              node scripts/cat-bond-adult-smoke.mjs || result=1
+              mkdir -p artifacts/cat-bond-visual/after/legacy-cats
+              cp /tmp/cat-bond-adult-*.png artifacts/cat-bond-visual/after/legacy-cats/ 2>/dev/null || true
+            fi
             kill "$server" 2>/dev/null || true
             wait "$server" 2>/dev/null || true
             trap - EXIT
@@ -53,6 +59,8 @@ jobs:
         if: always()
         with:
           name: cat-bond-visual-before-after
-          path: artifacts/cat-bond-visual/
+          path: |
+            artifacts/cat-bond-visual/
+            artifacts/cat-bond-21x3/
           if-no-files-found: error
           retention-days: 5

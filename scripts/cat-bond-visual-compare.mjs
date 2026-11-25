@@ -36,11 +36,11 @@ try{
      const card=document.querySelector('#panel.open:not([data-mandatory="true"]):not(.rb-open)>.card');
      const atlas=document.querySelector('.rw-world:not([hidden])');
      const panel=card&&atlas&&innerHeight<=530&&innerWidth>innerHeight?card.getBoundingClientRect():null;
-     return {invalidTabs,invalidActions,panelHeight:panel?.height??null};
+     return {invalidTabs,invalidActions,panelHeight:panel?.height??null,scrolling:!!panel&&card.scrollHeight>card.clientHeight+2};
     });
     assert.deepEqual(result.invalidTabs,[],'Garden controls must not inherit legacy rainbow gradients');
     assert.deepEqual(result.invalidActions,[],'Primary action must not inherit the legacy pink/lilac gradient');
-    if(result.panelHeight!==null)assert.ok(result.panelHeight>=180,'Landscape optional card needs a usable scroll viewport');
+    if(result.scrolling)assert.ok(result.panelHeight>=180,'Landscape optional card needs a usable scroll viewport');
    };
    const closePanel=async()=>{await page.locator('#panel>.panel-dismiss').click();await page.locator('#panel.open').waitFor({state:'hidden'});};
    page.on('pageerror',e=>errors.push(e.message));
@@ -80,6 +80,31 @@ try{
      }
      await closePanel();
     }
+    // The same normally created save can meet a wild cat in the first
+    // available region. Do not seed an encounter, stats, or story evidence.
+    const surface=page.locator('.rw-surface');await surface.scrollIntoViewIfNeeded();
+    const mapRect=await surface.boundingBox();
+    const mapX=mapRect.x+mapRect.width*.5,mapY=mapRect.y+mapRect.height*.18;
+    if(options.hasTouch)await page.touchscreen.tap(mapX,mapY);
+    else await page.mouse.click(mapX,mapY);
+    await scene('harbor:H-01');
+    await page.locator('.rw-world[data-region="harbor"] .rw-surface').waitFor();
+    await shot('harbor-exploration');
+    await button('Approach wild cat','接近野猫').click();
+    await page.locator('#bp-go').waitFor({state:'visible',timeout:20000});
+    await shot('battle-preparation');
+    await page.locator('#bp-go').click();
+    await page.locator('#battle-ui.on').waitFor();
+    await page.waitForFunction(()=>window.__game?.battle?.regionalCombat?.region==='harbor');
+    const skip=page.locator('#battle-tutorial-skip');
+    if(await skip.isVisible())await skip.click();
+    await page.locator('#battle-help').waitFor({state:'hidden'});
+    await shot('battle-live');
+    await page.waitForFunction(()=>window.__game?.scene==='map',null,{timeout:75000});
+    const result=page.locator('#cr-ok,#battle-recovery-ok');
+    await result.waitFor({state:'visible'});
+    await checkTheme();await shot('battle-result');
+    await result.click();
     assert.deepEqual(errors,[]);rows.push({name,lang,shots,ok:true});
    }catch(error){
     await shot('failure').catch(()=>{});rows.push({name,lang,shots,ok:false,error:String(error),pageErrors:errors});
