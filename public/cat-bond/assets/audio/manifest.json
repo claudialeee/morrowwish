@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "author": "Morrow Wish original score",
+  "instrumentBank": "FluidR3 GM — Frank Wen (MIT)",
+  "bankLicense": "FLUIDR3-LICENSE.txt",
+  "scoreSha256": "6dc5d8573ab5f361eaa10c82cad918d914e9006563ff5129c99596ddfffad4b9",
+  "format": "mp3",
+  "tracks": {
+    "title": {
+      "file": "title.mp3",
+      "seconds": 56.470588235294116,
+      "bytes": 678392,
+      "sha256": "e3445a24156be0855bfe5c18f0f582b06dcda26efbee90f68adfc2672d1e7314"
+    },
+    "opening": {
+      "file": "opening.mp3",
+      "seconds": 101.05263157894737,
+      "bytes": 1213485,
+      "sha256": "40d70f06b135037e0256787f7c70d5d84cc4224e230a6a9ac0aed746a5868172"
+    },
+    "garden": {
+      "file": "garden.mp3",
+      "seconds": 54.857142857142854,
+      "bytes": 658957,
+      "sha256": "8aa8c4b84eb37dafeca356b008c8b7fc978c2ac31b10ff4df00a249bbd2991ed"
+    },
+    "atlas": {
+      "file": "atlas.mp3",
+      "seconds": 44.651162790697676,
+      "bytes": 536704,
+      "sha256": "8fe7982098a6ef4e30d55425b8ea51114b8f3e621a53816f3c9c2419997edebe"
+    },
+    "harbor": {
+      "file": "harbor.mp3",
+      "seconds": 53.333333333333336,
+      "bytes": 640776,
+      "sha256": "88874fc8a1dc1e45bfbe9e8bde1134f27d3034ecb66a76e23a3274c6664b246b"
+    },
+    "forest": {
+      "file": "forest.mp3",
+      "seconds": 49.23076923076923,
+      "bytes": 591561,
+      "sha256": "c4ecb9bbe72a2c3985bb129d17c71fdeb4cb6690d93e205ded328dec1af3559b"
+    },
+    "forge": {
+      "file": "forge.mp3",
+      "seconds": 40,
+      "bytes": 480907,
+      "sha256": "dd52d5eef5df4e733bb0e50feb40a5fe098296521f597adf4eabe76ef672b9c1"
+    },
+    "sky": {
+      "file": "sky.mp3",
+      "seconds": 41.73913043478261,
+      "bytes": 501596,
+      "sha256": "0741cf1cf127db1bc07172d2c04662da30712a3fd4b178e45b255a2cf381ae42"
+    },
+    "library": {
+      "file": "library.mp3",
+      "seconds": 61.935483870967744,
+      "bytes": 743907,
+      "sha256": "39032ae1f2fd5a6c8b873ab5ec2fd7f5a1818b7c2baf7a05281d18ac081640c2"
+    },
+    "starfall": {
+      "file": "starfall.mp3",
+      "seconds": 60,
+      "bytes": 720711,
+      "sha256": "7ac1f313d40199a7d21f69c3d20371a3c31fe6672ef522ff33900032846863a1"
+    },
+    "battle": {
+      "file": "battle.mp3",
+      "seconds": 33.68421052631579,
+      "bytes": 405047,
+      "sha256": "fa3e3d87a6f808c47aa3f489379d7d2a68f2ace53059f4632d09f86f5c29cdac"
+    },
+    "muling": {
+      "file": "muling.mp3",
+      "seconds": 66.20689655172414,
+      "bytes": 795316,
+      "sha256": "a87806ea7a9b4e2fadb147d96a56f63f151c34d0fc8dbc686d5344dd5852588e"
+    },
+    "identity": {
+      "file": "identity.mp3",
+      "seconds": 58.18181818181818,
+      "bytes": 699081,
+      "sha256": "25d27dae81d5e82dddd108748dbc7edd5167be11bab71b04a38c657e04160812"
+    },
+    "betrayal": {
+      "file": "betrayal.mp3",
+      "seconds": 60,
+      "bytes": 720711,
+      "sha256": "8d806a419b3fbb2f96d9a78587f89ddfbcd85b57a46b6cac817fcdb11696d521"
+    },
+    "finale1": {
+      "file": "finale1.mp3",
+      "seconds": 33.10344827586207,
+      "bytes": 398151,
+      "sha256": "545b36d9fefd72c045a7e67472e8a643572d1c343501a54f576190a98b513d5f"
+    },
+    "finale2": {
+      "file": "finale2.mp3",
+      "seconds": 42.1978021978022,
+      "bytes": 507238,
+      "sha256": "e3227f7fa79a6cea8778b5380936dbf368ce4cce2ff6d57afe79c434ce18f560"
+    },
+    "finale3": {
+      "file": "finale3.mp3",
+      "seconds": 71.11111111111111,
+      "bytes": 854249,
+      "sha256": "2025b6081c6ae69aaaec811f334ae459a455e5c0554987937c5c22cf8dac3747"
+    },
+    "ending": {
+      "file": "ending.mp3",
+      "seconds": 105.20547945205479,
+      "bytes": 1263326,
+      "sha256": "fc55a4923cce2f02b22d9ba0d532033966135883cbcc0713ac6e142461f894ac"
+    },
+    "postgarden": {
+      "file": "postgarden.mp3",
+      "seconds": 48,
+      "bytes": 576828,
+      "sha256": "f5e42615abc94ea94c01dac165d8f79466acbf0d337f5ffcbe86633d3286da78"
+    },
+    "boss-harbor": {
+      "file": "boss-harbor.mp3",
+      "seconds": 36.92307692307692,
+      "bytes": 443917,
+      "sha256": "1312de6355f67762e2fa88b975ef17d64887a8bdab2f3bbb2f785424d51159ea"
+    },
+    "song-harbor": {
+      "file": "song-harbor.mp3",
+      "seconds": 26.666666666666668,
+      "bytes": 320724,
+      "sha256": "a57c09e09164956119bdb682f4d455dc6b503c7c8dd73f523bb7efe4aa5e4211"
+    },
+    "boss-forest": {
+      "file": "boss-forest.mp3",
+      "seconds": 34.90909090909091,
+      "bytes": 419780,
+      "sha256": "8decc2e460e229d678b970468e0223e4d722e24d500a0abbe20a559765d397fd"
+    },
+    "song-forest": {
+      "file": "song-forest.mp3",
+      "seconds": 24.615384615384617,
+      "bytes": 296273,
+      "sha256": "5289f10c85cb80f5a2def9ac10192a1645405a5ddddc5563fd1830793a79f385"
+    },
+    "boss-forge": {
+      "file": "boss-forge.mp3",
+      "seconds": 30,
+      "bytes": 360848,
+      "sha256": "6e67959ef207d472acc507bd7825ff6cfc153fcb2e5191ebdb9d327acbf9d392"
+    },
+    "song-forge": {
+      "file": "song-forge.mp3",
+      "seconds": 20,
+      "bytes": 240789,
+      "sha256": "f33ec0eb86c552e4e571148967fc420e1d696285534d5237aaa2900435580f24"
+    },
+    "boss-sky": {
+      "file": "boss-sky.mp3",
+      "seconds": 30.967741935483872,
+      "bytes": 372446,
+      "sha256": "58ce9c77fc8b4899d24fde3a7ff74de0ab632b2daf244300e73bf9e6d3274c94"
+    },
+    "song-sky": {
+      "file": "song-sky.mp3",
+      "seconds": 20.869565217391305,
+      "bytes": 251134,
+      "sha256": "dd31762cc35bbe990eda2888fcaa51e980e588478a868621713bf28ac24e0290"
+    },
+    "boss-library": {
+      "file": "boss-library.mp3",
+      "seconds": 40.851063829787236,
+      "bytes": 490938,
+      "sha256": "999ed7b7649a630a804b2df7309fd918dc39cb7bef6356537ef6c9810cfd8dd7"
+    },
+    "song-library": {
+      "file": "song-library.mp3",
+      "seconds": 30.967741935483872,
+      "bytes": 372446,
+      "sha256": "1778cf499bef75fdcd933e1736e38d5b49353c091b81d71d7a1b47ced5a58db3"
+    },
+    "boss-starfall": {
+      "file": "boss-starfall.mp3",
+      "seconds": 40,
+      "bytes": 480907,
+      "sha256": "a32a11925f213b8a536d713e215a2dcdf309fd34dd4efde71832aaee919e9824"
+    },
+    "song-starfall": {
+      "file": "song-starfall.mp3",
+      "seconds": 30,
+      "bytes": 360848,
+      "sha256": "e514ec72b2791bd4a1a67648f52454ef2ee5799ff084ecbf8c050476cc0a646e"
+    }
+  }
+}

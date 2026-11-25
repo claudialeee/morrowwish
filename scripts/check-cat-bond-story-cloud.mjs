@@ -39,7 +39,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['css/style.css?v=prologue-release-20261124','js/main.js?v=menu-touch-v2-20261124','js/ui.js?v=single-menu-20261124','css/rpg-title.css?v=single-menu-20261124','js/state.js?v=release-title-20261124','js/story-cloud.js?v=release-title-20261124','id="intro-start"','id="intro-continue"','js/game.js?v=stage-fit-v4-20261124','js/resonance/integration-entry.mjs?v=stage-fit-v5-20261124','css/resonance-canonical-world.css?v=stage-fit-v4-20261124','js/battle.js?v=harbor-novice-20261124']],
+ ['entry points and cache versions',index,['css/style.css?v=prologue-release-20261124','js/main.js?v=combined-audio-20261124','js/ui.js?v=single-menu-20261124','css/rpg-title.css?v=single-menu-20261124','js/state.js?v=release-title-20261124','js/story-cloud.js?v=release-title-20261124','id="intro-start"','id="intro-continue"','js/game.js?v=stage-fit-v4-20261124','js/resonance/integration-entry.mjs?v=combined-audio-20261124','css/resonance-canonical-world.css?v=stage-fit-v4-20261124','js/battle.js?v=harbor-novice-20261124']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){

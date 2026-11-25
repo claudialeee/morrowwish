@@ -38,7 +38,14 @@ try {
       return target;
     };
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
+    const audioEvidence=[];
+    const expectedAudio={garden:'garden',atlas:'atlas',harbor:'harbor','harbor-ceremony':'song-harbor','garden-return':'garden','forest-living-roots-ceremony':'song-forest','forest-to-forge':'forge','forge-ceremony':'song-forge'};
     const shot = async id => {
+      const expected=expectedAudio[id]||(id.startsWith('battle-attempt-')?'battle':null);
+      if(process.env.CAT_BOND_AUDIO_ACCEPTANCE==='1'&&expected){
+        await page.waitForFunction(track=>{const s=window.MorrowwishMusic?.status?.();return s?.track===track&&s.playing&&s.source==='recorded-mp3:'+track&&s.activeMusicSources<=2;},expected,{timeout:15000});
+        const audio=await page.evaluate(()=>MorrowwishMusic.status());assert.equal(audio.audioState,'running');audioEvidence.push({checkpoint:id,...audio});
+      }
       if(await page.locator('.rw-world:not([hidden])').isVisible()&&!await page.locator('#panel.open,.res-host').count()){
        const fit=await page.evaluate(()=>{const w=document.querySelector('.rw-world:not([hidden])'),s=w?.querySelector('.rw-surface');if(!s)return null;const stage=document.getElementById('stage').getBoundingClientRect(),rect=s.getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {scene:rect.width>0&&rect.height>0&&rect.top>=stage.top-1&&rect.bottom<=stage.bottom+1&&rect.left>=stage.left-1&&rect.right<=stage.right+1,ratio:Math.abs(rect.width/rect.height-16/9)<.03,noScroll:w.scrollHeight<=w.clientHeight+2&&rail.scrollHeight<=rail.clientHeight+2,buttons:[...rail.querySelectorAll('button')].filter(b=>b.getClientRects().length).every(b=>{const r=b.getBoundingClientRect();return r.top>=stage.top-1&&r.bottom<=stage.bottom+1&&r.left>=stage.left-1&&r.right<=stage.right+1;}),noFollower:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
        if(fit)assert.deepEqual(fit,{scene:true,ratio:true,noScroll:true,buttons:true,noFollower:true},id+' stage fit / solo exploration');
@@ -356,6 +363,13 @@ try {
     await button('Sunlit Garden',page.locator('.rw-head')).click();
     await page.waitForFunction(() => window.__game.scene === 'yard');
     await shot('garden-return');
+    if(process.env.CAT_BOND_AUDIO_ACCEPTANCE==='1'){
+      await page.locator('#map-menu').click();await page.locator('[data-cb-story-action="system"]').click();
+      const system=page.locator('#cb-system-menu');await system.waitFor({state:'visible'});
+      await system.locator('[data-audio-volume="music"]').fill('46');
+      await page.waitForFunction(()=>MorrowwishMusic.status().volume===.46);
+      await system.locator('[data-system="close"]').click();await page.locator('#panel.open > .panel-dismiss').click();
+    }
 
     await page.reload();
     await page.locator('#intro-continue').click();
@@ -653,7 +667,7 @@ try {
     });
     assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest','forge'],slot:'slot1'});
     assert.deepEqual(errors,[]);
-    results.push({profile:name, captured, ...state, forestComplete:true,forgeComplete:true,forgeDuoOriginalArt:true});
+    results.push({profile:name, captured, ...state, forestComplete:true,forgeComplete:true,forgeDuoOriginalArt:true,audio:audioEvidence});
     await context.close();
   }
 } finally {
