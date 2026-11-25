@@ -78,6 +78,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   const kind=operation.split(":")[0];
   if(kind==="npc"||!["cinematic","explore","travel","puzzle","rescue","repair","melody","battle","mechanism"].includes(kind))return fail("invalid-source");
   if(s.chapter==="starfall"){const w=State.S.resonanceExploration;if(!token||w?.location!=="starfall")return fail("starfall-action-required");if(kind==="cinematic"){const p=w.positions?.starfall;if(!p||Math.hypot(p.x-.92,p.y-.30)>=.072)return fail("walk-to-central-ruins");}else if(["explore","puzzle","repair","melody"].includes(kind)&&typeof physical!=="function")return fail("starfall-world-evidence-required");}
+  if(s.chapter==="finale"&&(!token||region!=="starfall"||State.S.resonanceExploration?.location!=="starfall"))return fail("finale-action-required");
   if(kind==="battle"&&outcome!=="win")return fail("battle-not-won");
   if(kind==="battle"&&!token)return fail("action-token-required");
   if(campaign.regions.includes(s.chapter)&&region!==s.chapter)return fail("wrong-region");
@@ -86,9 +87,9 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   return op(sceneId,operation,{token,physical});
  }
  function ambient({id,operation,region,verified,token}={}){if(verified!==true||!read().ambientAvailable(region).some(a=>a.id===id&&a.operation===operation))return fail("invalid-ambient-evidence");return transaction(e=>e.ambient(id,operation),{token})}
- function commitFinaleVictory({sceneId,operation,participants,verified,outcome,token}={}){
-  if(!token||!check(token)||verified!==true||outcome!=="win"||sceneId!=="finale:B-03"||operation!=="battle:central-echo")return fail("invalid-finale-victory");
-  if(!Array.isArray(participants)||participants.some(x=>!x)||participants.length!==campaign.regions.length||new Set(participants.map(x=>x?.region)).size!==participants.length)return fail("incomplete-finale-support");
+ function commitFinaleVictory({sceneId,operation,region,participants,verified,outcome,token}={}){
+  if(!token||!check(token)||verified!==true||outcome!=="win"||sceneId!=="finale:B-03"||operation!=="battle:central-echo"||region!=="starfall"||State.S.resonanceExploration?.location!=="starfall")return fail("invalid-finale-victory");
+  if(!Array.isArray(participants)||participants.some(x=>!x)||participants.length!==campaign.regions.length||new Set(participants.map(x=>x?.region)).size!==participants.length||participants.some(({region,action})=>!campaign.regions.includes(region)||campaign.support[campaign.regions.indexOf(region)]!==action))return fail("incomplete-finale-support");
   return transaction(engine=>{
    const saved=engine.snapshot();
    for(const {region,action} of participants){

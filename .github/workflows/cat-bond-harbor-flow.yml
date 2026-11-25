@@ -40,7 +40,13 @@ jobs:
       - run: npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
       - name: Cat Bond canonical world regression (independent of studio dashboard)
-        run: node scripts/check-cat-bond-resonance-world.mjs
+        run: |
+          node scripts/check-cat-bond-resonance-world.mjs
+          node scripts/test-cat-bond-resonance.mjs
+          node scripts/test-cat-bond-resonance-slot.mjs
+          node scripts/test-cat-bond-resonance-combat.mjs
+          node scripts/test-cat-bond-forge-combat.mjs
+          node scripts/test-cat-bond-resonance-ambient.mjs
       - name: Play from a new slot on desktop and mobile (combined branch through finale)
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/harbor-server.log 2>&1 &
