@@ -380,9 +380,11 @@ function restoreSaveSystems(systems) {
   pendingSaveSystems = isSaveObject(systems) ? cloneSaveData(systems) : {};
   for (const [key, adapter] of saveAdapters) {
     // Never retain a previous slot's live adapter state when the next slot has no record.
-    adapter.reset?.();
-    if (Object.prototype.hasOwnProperty.call(pendingSaveSystems, key) && !restoreOneSaveAdapter(key)) {
-      throw new Error('Cannot restore save system: ' + key);
+    if (Object.prototype.hasOwnProperty.call(pendingSaveSystems, key)) {
+      if (!restoreOneSaveAdapter(key)) throw new Error('Cannot restore save system: ' + key);
+    } else {
+      if (typeof adapter.reset !== 'function') throw new Error('Save system requires a reset handler: ' + key);
+      adapter.reset();
     }
   }
 }
@@ -518,6 +520,7 @@ function startNewGame(slotId, options = {}) {
   const previousState = S;
   const previousActive = activeSlot();
   const previousSystems = pendingSaveSystems;
+  const previousStarted = sessionStartedAt, previousSuppressed = suppressSave;
   const previousAdapterStates = {};
   try {
     for (const [key, adapter] of saveAdapters.entries()) {
@@ -530,15 +533,21 @@ function startNewGame(slotId, options = {}) {
   pendingSaveSystems = {};
   sessionStartedAt = Date.now();
   suppressSave = false;
-  if (!setActiveSlot(slotId)) { S = previousState; pendingSaveSystems = previousSystems; return false; }
-  for (const adapter of saveAdapters.values()) { try { adapter.reset?.(); } catch (e) {} }
   let result;
-  try { result = persistSlot(slotId, buildSaveSnapshot(), { allowOverwrite: true, savedAt: Date.now() }); }
+  try {
+    if (!setActiveSlot(slotId)) throw new Error('Cannot select save slot');
+    for (const [key,adapter] of saveAdapters) {
+      if (typeof adapter.reset !== 'function') throw new Error('Save system requires a reset handler: '+key);
+      adapter.reset();
+    }
+    result = persistSlot(slotId, buildSaveSnapshot(), { allowOverwrite: true, savedAt: Date.now() });
+  }
   catch (error) { result = { ok: false, reason: 'adapter_failed', error: String(error?.message || error) }; }
   if (!result.ok) {
     S = previousState;
     pendingSaveSystems = previousSystems;
-    setActiveSlot(previousActive);
+    sessionStartedAt=previousStarted; suppressSave=previousSuppressed;
+    if(activeSlot()!==previousActive)setActiveSlot(previousActive);
     for (const [key, value] of Object.entries(previousAdapterStates)) {
       try { saveAdapters.get(key)?.restore(cloneSaveData(value)); } catch (e) {}
     }
