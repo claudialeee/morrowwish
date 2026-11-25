@@ -67,6 +67,7 @@ function mount(){
  }
  function updateLaunch(){const w=t();launch.querySelector("small").textContent=lang()==="zh"?"剧情":"Story";launch.title=w.title;launch.setAttribute("aria-label",w.title)}
  function updateTracker(){const p=getState(),w=t();tracker.hidden=!p?.quest;if(p?.quest)tracker.textContent=(lang()==="zh"?"任务 · ":"QUEST · ")+w.questTitle+" · 0/1"}
+ function bindSaveLoad(){const state=window.State;if(!state||state.__cbHarborLoadHooks)return;state.__cbHarborLoadHooks=true;for(const method of ["load","loadSlot","startNewGame","hardReset"]){const original=state[method];if(typeof original!=="function")continue;const wrapped=function(...args){const result=original.apply(this,args);window.dispatchEvent(new Event("cb-harbor-state-loaded"));return result};wrapped.__cbHarborHooked=true;state[method]=wrapped;}window.addEventListener("cb-harbor-state-loaded",updateTracker)}
  function render(){
   updateLaunch();
   if(!active)return;
@@ -135,7 +136,7 @@ function mount(){
  overlay.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();close();}else if(e.key==="Enter"&&getState()?.stage!=="choice"&&getState()?.stage!=="quest"){e.preventDefault();advance();}});
  window.addEventListener("morrowwish-language-change",()=>{updateLaunch();render()});
  launch.addEventListener("click",open);tracker.addEventListener("click",open);
- updateTracker();render();
+ bindSaveLoad();updateTracker();render();
  window.CatBondHarborSample={open,close,state:()=>copy(getState()),supportPreference};
 }
 if(document.readyState==="complete")mount();else document.addEventListener("DOMContentLoaded",mount,{once:true});
