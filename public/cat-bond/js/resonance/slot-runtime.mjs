@@ -1,5 +1,6 @@
 import {campaign} from "./campaign.mjs";
 import {makeEngine} from "./engine.mjs";
+import {layouts} from "./world-exploration.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason});
 const runtimes=new WeakMap();
@@ -98,7 +99,16 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   },{token});
  }
  function support({region,action,verified,token}={}){if(verified!==true)return fail("support-unverified");if(!token)return fail("action-token-required");return transaction(e=>e.supportAction(region,action),{token})}
- function exchange({a,b,stage,actor,action,verified,token}={},physical){if(verified!==true||!token)return fail("exchange-unverified");const w=State.S.resonanceExploration;if(w?.location!==actor)return fail("wrong-map-location");const cargo=w.cargo;if(typeof physical!=="function"||!cargo||!["a","b","stage","actor","action"].every(k=>cargo[k]===({a,b,stage,actor,action})[k]))return fail("exchange-evidence-missing");return transaction(e=>e.exchange({a,b,stage,actor,action}),{token,physical})}
+ function exchange({a,b,stage,actor,action,verified,token}={},physical){if(verified!==true||!token)return fail("exchange-unverified");const w=State.S.resonanceExploration;if(w?.location!==actor)return fail("wrong-map-location");const cargo=w.cargo;if(typeof physical!=="function"||!cargo||!["a","b","stage","actor","action"].every(k=>cargo[k]===({a,b,stage,actor,action})[k]))return fail("exchange-evidence-missing");const path=layouts[actor]?.paths,index=["sendA","receiveB","sendB","receiveA"].indexOf(stage),to=index%2===0?1:0,point=path?.[to===0?1:path.length-2],pos=w.positions?.[actor];
+  if(index<0||cargo.from!==1-to||cargo.to!==to||!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("walk-to-recipient");
+  // A reciprocal step and its exact one-time reward must commit together.
+  const guarded=prior=>{
+   const next=physical(clone(prior)),expected={...prior.resonanceExploration,cargo:null};
+   if(!next||JSON.stringify(next.resonanceExploration)!==JSON.stringify(expected)||next.coins!==(prior.coins||0)+10||next.fish!==(prior.fish||0)+1)throw Error("Invalid reciprocal delivery patch");
+   return next;
+  };
+  return transaction(e=>e.exchange({a,b,stage,actor,action}),{token,physical:guarded})
+ }
  function postgame({id,operation,verified,token}={},physical){if(verified!==true||!token)return fail("postgame-unverified");return transaction(e=>e.postgame(id,operation),{token,physical})}
  function npcProfile(id){const actor=campaign.cast[id];if(!actor||id==="player")return null;const v=view();return {id,name:clone(actor.name),region:actor.region,trust:v.trust[id],returned:v.returned.includes(id),phase:id==="muling"?v.muling:null,availableAmbient:read().ambientAvailable(actor.region).filter(a=>a.npc===id)}}
  function residents(region){const v=view();if(region==="garden"){const ids=[...v.returned];if(["epilogue:E-02","epilogue:E-03"].includes(v.current?.id))ids.push(...Object.values(campaign.cast).filter(n=>campaign.regions.includes(n.region)).map(n=>n.id));if(["companion","accountability-pending","accountable","reconciled"].includes(v.muling)||["prologue:P-04","prologue:P-05"].includes(v.current?.id))ids.unshift("muling");return [...new Set(ids)].map(npcProfile).filter(Boolean)}
