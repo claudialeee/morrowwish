@@ -1,6 +1,6 @@
 // Chat 3 physical-world adapter. Chat 4 owns the sole narrative mutation path.
 import {campaign} from "./campaign.mjs";
-import {validSkyFlightProof} from "./sky-flight.mjs";
+import {validSkyFlightProof,skyLaunch,skyLanding} from "./sky-flight.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
@@ -121,7 +121,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(v.current?.id!==sceneId||w.location!==region||!campaign.regions.includes(region)||!v.objective.includes(op)||proof?.sceneId!==sceneId||proof.operation!==op||proof.region!==region||proof.verified!==true)return fail("invalid-world-evidence");
   if(!/^(explore|puzzle|rescue|repair|melody):/.test(op))return fail("owned-by-other-module");
   if(w.interactions[sceneId+":"+op])return fail("already-completed");
-  if(region==="sky"&&["explore:flight-recorder","puzzle:joint-flight","repair:sky"].includes(op)&&!validSkyFlightProof(op,v.choice??null,proof.flightProof))return fail("incomplete-flight");
+  if(region==="sky"&&skyLaunch[op]){const p=w.positions.sky,q=skyLaunch[op];if(!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072||!validSkyFlightProof(op,v.choice??null,proof.flightProof))return fail("incomplete-flight");}
   if(op==="explore:tide-logbook"&&(!tideTrail.every((_,i)=>w.interactions[tideKey(i)])||!tideNear(w,[.87,.748])))return fail("incomplete-tide-trail");
   if(op==="explore:scent-trail"&&(!scentTrail.slice(0,-1).every((_,i)=>w.interactions[scentKey(i)])||!scentAt(w,scentTrail.length-1)))return fail("incomplete-scent-trail");
   if(op==="puzzle:paired-water-gates"){
@@ -134,7 +134,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
-  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,interactions:{...x.interactions,[sceneId+":"+op]:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
+  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function harborInvited(){const v=view(),w=world();return v.current?.id==="harbor:H-05"?["qilan","jiedeng"].filter(id=>w.interactions["harbor:H-05:invite:"+id]):[];}
  function inviteHarbor(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={qilan:[.16,.60],jiedeng:[.195,.50]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="harbor"||v.current?.id!=="harbor:H-05"||!v.objective.includes("melody:harbor")||!token||!api.isCurrentAction(token)||!tideNear(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["harbor:H-05:invite:"+id]:true}}));}

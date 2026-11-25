@@ -1,5 +1,5 @@
 import { campaign } from "./campaign.mjs";
-import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof} from "./sky-flight.mjs";
+import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding} from "./sky-flight.mjs";
 // Actual walkable region mechanics. Story progression is never stored here.
 export const layouts={
  harbor:{
@@ -91,7 +91,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
  function near(p){return live()&&!dest&&distance(pos,p)<.072;}
  function interact(op){
   if(op==="explore:scent-trail"){const step=bridge.scentStep();return step?traceScent(step.index):{ok:false,reason:"walk-to-scent"};}
-  const v=bridge.view(),f=layout.features[op];if(!f||v.current?.chapter!==region||!v.objective.includes(op)||!near(f))return {ok:false,reason:"walk-to-objective"};
+  const v=bridge.view(),f=layout.features[op];if(!f||v.current?.chapter!==region||!v.objective.includes(op)||!near(region==="sky"&&skyLaunch[op]||f))return {ok:false,reason:"walk-to-objective"};
   if(op==="explore:tide-logbook"&&bridge.tideStep())return {ok:false,reason:"incomplete-tide-trail"};
   if(op==="puzzle:paired-water-gates"&&!bridge.pairedGate()?.ready)return {ok:false,reason:"upper-gate-required"};
   if(op.startsWith("battle:"))return {ok:false,reason:"battle-host-required"};
@@ -123,9 +123,9 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
    const r=bridge.finishHomeRepair(region,active.token);if(r.ok){active=null;puzzle=null;}return r;
   }
   if(!active)return {ok:false,reason:"no-interaction"};const f=layout.features[active.operation];
-  if(!near(f)||(puzzle&&!puzzle.solved))return {ok:false,reason:"incomplete-physical-action"};
+  if(!near(region==="sky"&&skyLaunch[active.operation]||f)||(puzzle&&!puzzle.solved))return {ok:false,reason:"incomplete-physical-action"};
   const result=bridge.recordWorld(active.sceneId,active.operation,{...active,verified:true,participants:puzzle?.participants,responses:puzzle?.response,pair:puzzle?.pair,waterSequence:puzzle?.type==="pairedWater"?puzzle.values:undefined,flightProof:skyFlightProof(puzzle?.flight)});
-  if(result.ok){active=null;puzzle=null;}return result;
+  if(result.ok){if(puzzle?.type==="skyFlight"&&skyLanding[active.operation])pos=[...skyLanding[active.operation]];active=null;puzzle=null;}return result;
  }
  function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(puzzle.type==="skyFlight"){steerSkyFlight(puzzle.flight,[.30,.50,.70][i]);return {ok:true,pending:true};}if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(deferForestMelody&&puzzle.operation==="melody:forest")return {ok:true,pending:true,ceremony:true};return complete();}
  function flightSteer(y){return puzzle?.type==="skyFlight"&&live()&&steerSkyFlight(puzzle.flight,y);}
