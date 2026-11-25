@@ -824,6 +824,11 @@ async function fetchCloud(token,slotId){
 function validSavePayload(value){
  return !!value&&typeof value==='object'&&!Array.isArray(value);
 }
+function validSlotPayload(value){
+ if(!validSavePayload(value))return false;
+ const core=value.snapshotVersion===1?value.state:value;
+ return validSavePayload(core)&&Array.isArray(core.cats)&&(!value.systems||validSavePayload(value.systems));
+}
 let restoringCloud=false;
 async function restoreWithToken(token){
  if(restoringCloud)throw Error(t('正在读取云存档，请稍候。','A cloud restore is already running.'));
@@ -853,7 +858,7 @@ async function restoreCloudBook(token){
    deleted[id]={deletedAt:parsed.deletedAt};found=true;continue;
   }
   const data=parsed.version===3&&parsed.slotId===id?parsed.data:(Array.isArray(parsed.cats)?parsed:null);
-  if(!validSavePayload(data))throw Error(t('存档位 '+id+' 的云端数据无效。','Cloud data for '+id+' is invalid.'));
+  if(!validSlotPayload(data))throw Error(t('存档位 '+id+' 的云端数据无效。','Cloud data for '+id+' is invalid.'));
   entries[id]={data,savedAt:Number(parsed.savedAt||remote.updatedAt)||Date.now(),revision:1};
   found=true;
  }
@@ -866,7 +871,7 @@ async function restoreCloudBook(token){
     for(const id of SAVE_SLOT_IDS){
      if(remoteBySlot[id]?.exists)continue;
      const data=parsed.slots[id]?.data;
-     if(validSavePayload(data)){entries[id]={data,savedAt:parsed.slots[id]?.savedAt||data.lastSeen||legacy.updatedAt,revision:1};found=true;legacyMigrated=true;}
+     if(validSlotPayload(data)){entries[id]={data,savedAt:parsed.slots[id]?.savedAt||data.lastSeen||legacy.updatedAt,revision:1};found=true;legacyMigrated=true;}
     }
    }else if(!remoteBySlot.slot1?.exists&&validSavePayload(parsed)&&Array.isArray(parsed.cats)){
     entries.slot1={data:parsed,savedAt:parsed.lastSeen||legacy.updatedAt,revision:1};found=true;legacyMigrated=true;
@@ -908,7 +913,7 @@ async function syncOneSlot(token,id,force){
  const slot=State.getSaveSlot(id);
  const deletion=slot?null:State.deletedSaveSlot(id);
  if(!slot&&!deletion)return {slotId:id,empty:true};
- if(slot&&(slot.corrupt||!validSavePayload(slot.data)))return {slotId:id,error:'Local save is damaged'};
+ if(slot&&(slot.corrupt||!validSlotPayload(slot.data)))return {slotId:id,error:'Local save is damaged'};
  let expected=Number(localStorage.getItem(cloudRevisionKey(id))||0);
  if(force){
   const latest=await fetchCloud(token,id);
@@ -1023,7 +1028,7 @@ function openSlotManager(){
    const chapter=slot.corrupt?t('存档数据损坏','Damaged save'):slot.exists?(isZh()?slot.chapterLabelZh:slot.chapterLabelEn):t('空存档位','Empty slot');
    const region=isZh()?slot.regionLabelZh:slot.regionLabelEn;
    const details=slot.exists&&!slot.corrupt
-    ?region+' · '+t('游戏时间 ','Played ')+slot.gameTimeLabel+' · '+slot.cats+t(' 只猫',' cats')
+    ?region+' · '+t('游戏时间 ','Played ')+(isZh()?slot.gameTimeLabelZh:slot.gameTimeLabel)+' · '+slot.cats+t(' 只猫',' cats')
     :slot.corrupt?t('无法读取此存档','This save cannot be read'):t('尚未开始冒险','No adventure started');
    const saved=slot.exists&&!slot.corrupt?(t('最后保存：','Last saved: ')+date):'';
    return '<article class="cb-slot-manager-row '+(slot.corrupt?'damaged-save':'')+'"><div><strong>'+
