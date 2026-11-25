@@ -1,4 +1,4 @@
-// Chromium QA: every collectible cat must retain original illustrated proportions as it grows.
+// Chromium QA: retired growth must preserve the original illustration without simulated transformations.
 // Regression guard for the skinny synthetic SVG adults shown in Moonshadow Ruins.
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
@@ -57,7 +57,8 @@ try {
         matureArtIsSeparateImage:CatBondAdultArt.matureArtIsSeparateImage,
         adultUnique:new Set(thumbs.map(v=>v[1].toDataURL())).size,
         allVisible:thumbs.every(v=>v.length===3)&&bounds.every(row=>row.every(c=>c.visible>100)),
-        changed:thumbs.every(v=>v[0].toDataURL()!==v[1].toDataURL()),
+        sameArt:thumbs.every(v=>v[0].toDataURL()===v[1].toDataURL()&&v[0].toDataURL()===v[2].toDataURL()),
+        neutralStages:[1,2].every(stage=>{const v=Growth.visual({stage,awaken:'agi'});return v.scale===1&&!v.aura&&!v.sparkle&&!v.gem;}),
         maxAspectChange};
     });
     assert.equal(check.breeds,expectedBreeds);
@@ -70,8 +71,9 @@ try {
       'adult cannot replace painted cat with a narrow SVG model');
     assert.equal(check.adultUnique,expectedBreeds,'all collectible breeds must retain unique coats');
     assert.ok(check.allVisible,'no blank illustration at any growth stage');
-    assert.ok(check.changed,'growth must be visible');
-    assert.ok(check.maxAspectChange<1.35,
+    assert.equal(check.sameArt,true,'legacy stages must use identical art, not fabricated growth');
+    assert.equal(check.neutralStages,true,'legacy stage visuals must not enlarge or decorate cats');
+    assert.ok(check.maxAspectChange<1.001,
       'grown cat changed aspect ratio beyond original watercolor proportions: '+check.maxAspectChange);
     assert.deepEqual(errors,[]);
     await page.screenshot({path:'/tmp/cat-bond-adult-'+p.name+'.png',fullPage:true});

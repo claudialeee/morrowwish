@@ -4,7 +4,7 @@ import {campaign} from "./campaign.mjs";
 import {mountHomeConversation} from "./home-conversations.mjs";
 const root=new URL("../../assets/npc/",import.meta.url);
 const load=name=>{const img=new Image();img.src=new URL(name,root).href;return img};
-const frames=[load("muling-follow-sprite.svg"),load("muling-follow-step-a.svg"),load("muling-follow-step-b.svg")];
+// The approved Muling painting is shared with the garden and dialogue.
 const residentImages=new Map();
 const mulingGarden=load('../cinematics/characters/muling/traveler-neutral.webp');
 function residentImage(id){
@@ -21,9 +21,18 @@ function drawResident(ctx,id,{x,y,scale=1,time=0}){
  return true;
 }
 function drawMuling(ctx,{x,y,scale=1,time=0,moving=false,face=1}){
- const img=frames[moving?1+Math.floor(time*5)%2:0];if(!img?.complete||!img.naturalWidth)return false;
- const w=56*scale,h=94*scale;
- ctx.save();ctx.translate(x,y);if(face<0)ctx.scale(-1,1);ctx.drawImage(img,-w/2,-h,w,h);ctx.restore();return true;
+ const img=mulingGarden;if(!img?.complete||!img.naturalWidth)return false;
+ const fit=Math.min(76*scale/img.naturalWidth,94*scale/img.naturalHeight);
+ const w=img.naturalWidth*fit,h=img.naturalHeight*fit;
+ // Same painted face, pendant, coat and costume as the dialogue. Retain
+ // the established follower position and hit area, not a new NPC state.
+ const bob=moving?Math.abs(Math.sin(time*5))*.9*scale:0;
+ ctx.save();ctx.translate(x,y);
+ const shadow=ctx.createRadialGradient(0,-1,0,0,-1,Math.max(1,w*.46));
+ shadow.addColorStop(0,"#20272b44");shadow.addColorStop(1,"#20272b00");
+ ctx.save();ctx.scale(1,.22);ctx.fillStyle=shadow;ctx.fillRect(-w/2,-w/2,w,w);ctx.restore();
+ if(face<0)ctx.scale(-1,1);
+ ctx.drawImage(img,-w/2,-h-bob,w,h);ctx.restore();return true;
 }
 function install(){
  const api=window.CatBondResonance;if(!api)return;

@@ -165,7 +165,8 @@ function drawEnemy(ctx,e,b){
   if(img.complete&&img.naturalWidth){
     const bob=Math.sin(b.t*4.2)*2.2,tilt=e.telegraph>0?-.025*Math.sin(b.t*30):.012*Math.sin(b.t*2.4);
     ctx.save();ctx.translate(e.x,e.y-size*.43+bob);ctx.rotate(tilt);
-    ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();
+    const fit=Math.min(size/img.naturalWidth,size/img.naturalHeight),dw=img.naturalWidth*fit,dh=img.naturalHeight*fit;
+    ctx.drawImage(img,-dw/2,size/2-dh,dw,dh);ctx.restore();
   }else{
     const draw=window.CatMotion?.draw||window.CatArt?.drawCat;
     draw?.(ctx,e.x,e.y,{species:e.sp,scale:b.catScale("enemy"),face:e.face,t:e.t,pose:e.pose,mood:"alert"});

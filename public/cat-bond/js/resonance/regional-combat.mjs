@@ -33,23 +33,54 @@ export function inPattern(p,f){
 }
 
 // Original regional scene and manifestation artwork. Render at native canvas scale; no CSS image substitute.
-const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
+// Use the approved painted harbor environment rather than the grid-like
+// legacy SVG visible in the baseline battle screenshot. Keep the existing
+// dedicated SVG available if the painting cannot decode. The environment
+// is an interim visual source, not a newly commissioned combat illustration.
+const artFiles={harbor:["../resonance-world-v2/harbor.webp","tide-shell.svg","harbor-arena.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
+const arenaLight={
+ harbor:["24,48,57",.12,.26],forest:["15,43,29",.14,.30],
+ forge:["45,29,25",.07,.19],sky:["28,53,72",.09,.20],
+ library:["23,32,57",.10,.24],starfall:["26,28,54",.10,.24]
+};
 const art={};
-function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
+function loadArt(){for(const [id,[background,enemy,fallback]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
- pair.background.src=new URL("../../assets/combat/"+background,import.meta.url).href;pair.enemy.src=new URL("../../assets/combat/"+enemy,import.meta.url).href;art[id]=pair;
+ pair.background.src=new URL("../../assets/combat/"+background,import.meta.url).href;pair.enemy.src=new URL("../../assets/combat/"+enemy,import.meta.url).href;
+ if(fallback){pair.fallback=new Image();pair.fallback.decoding="async";pair.fallback.src=new URL("../../assets/combat/"+fallback,import.meta.url).href;}
+ art[id]=pair;
 }}
 function drawScene(ctx,W,H,region){
- const img=art[region]?.background;if(!img?.complete||!img.naturalWidth)return false;
+ const pair=art[region],ready=image=>image?.complete&&image.naturalWidth>0;
+ const img=ready(pair?.background)?pair.background:pair?.fallback;
+ if(!ready(img))return false;
  const scale=Math.max(W/img.naturalWidth,H/img.naturalHeight),dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
+ ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
  ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
- if(region==="forest"){ctx.save();const light=ctx.createLinearGradient(0,H*.18,0,H);light.addColorStop(0,"rgba(15,43,29,.04)");light.addColorStop(.55,"rgba(15,43,29,.18)");light.addColorStop(1,"rgba(12,34,27,.4)");ctx.fillStyle=light;ctx.fillRect(0,0,W,H);ctx.restore();}
+ // Restrained, region-specific tonal separation behind the real characters
+ // and attack warnings. Never replace a decoded painting with a solid fill.
+ const [tone,mid,edge]=arenaLight[region]||arenaLight.harbor;
+ const light=ctx.createLinearGradient(0,0,0,H);
+ light.addColorStop(0,"rgba("+tone+",.02)");light.addColorStop(.55,"rgba("+tone+","+mid+")");light.addColorStop(1,"rgba("+tone+","+edge+")");
+ ctx.fillStyle=light;ctx.fillRect(0,0,W,H);
+ const frame=ctx.createRadialGradient(W*.5,H*.48,Math.min(W,H)*.24,W*.5,H*.48,Math.hypot(W,H)*.55);
+ frame.addColorStop(0,"rgba("+tone+",0)");frame.addColorStop(1,"rgba("+tone+",.17)");
+ ctx.fillStyle=frame;ctx.fillRect(0,0,W,H);ctx.restore();
  return true;
 }
 function drawManifestation(ctx,e,b){
  const img=art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
  const size=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62)),bob=Math.sin(b.t*3+e.i)*2;
- ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();return true;
+ // Fit the authored creature within the existing visual box without stretching.
+ const fit=Math.min(size/img.naturalWidth,size/img.naturalHeight),dw=img.naturalWidth*fit,dh=img.naturalHeight*fit;
+ // Ground the unchanged silhouette at its visual foot anchor, not a
+ // glow ring. The shadow stays planted during idle motion.
+ ctx.save();ctx.translate(e.x,e.y+size*.06);ctx.scale(Math.max(1,dw*.34),Math.max(1,size*.055));
+ const contact=ctx.createRadialGradient(0,0,0,0,0,1);
+ contact.addColorStop(0,"rgba(13,23,25,.46)");contact.addColorStop(.55,"rgba(13,23,25,.24)");contact.addColorStop(1,"rgba(13,23,25,0)");
+ ctx.fillStyle=contact;ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();ctx.restore();
+ ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);
+ ctx.drawImage(img,-dw/2,size/2-dh,dw,dh);ctx.restore();return true;
 }
 
 // Position the mechanic HUD below the actual battle topbar on every viewport.

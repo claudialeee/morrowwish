@@ -50,5 +50,21 @@ try{
   assert.ok(Math.abs(l.artAspect-16/9)<.00001,v.name);assert.equal(l.actorFallback,false);assert.ok(l.art.width<=v.width+1&&l.art.height<=v.height+1);
   layouts.push({name:v.name,art:l.art,aspect:l.artAspect});await page.setViewportSize({width:v.width,height:v.height});await page.screenshot({path:dir+'/'+v.name+'.png',fullPage:true});
  }
+ // Inspect live-compositing output on transparent canvases rather than
+ // the intentionally opaque gallery background. Real combat uses this path.
+ const alphaAudit=await page.evaluate(()=>{
+  const p=window.CatBondPremiumCinematics,rows=[];
+  for(const [width,height] of [[1280,720],[390,844],[844,390]])for(const tier of [1,2,3]){
+   const cv=document.createElement('canvas');cv.width=width;cv.height=height;
+   const c=cv.getContext('2d',{willReadFrequently:true});
+   p.draw(c,width,height,{elements:'fire+light',max:2.75,t:2.75*.52,tier,hideCaptions:true});
+   const corner=c.getImageData(0,0,1,1).data[3],middle=c.getImageData(Math.floor(width/2),Math.floor(height/2),1,1).data[3];
+   rows.push({width,height,tier,corner,middle,layout:p.lastLayout});
+  }
+  return rows;
+ });
+ assert.ok(alphaAudit.every(row=>row.corner<128&&row.middle>180),'Live artwork must retain a translucent perimeter and readable center at all tiers and device shapes');
+ assert.ok(alphaAudit.every(row=>row.layout.effectTier===row.tier&&row.layout.actorLayerCount===0&&row.layout.paintingDrawCount===1),'Live three-tier compositing must draw exactly one original painting');
+ fs.writeFileSync(dir+'/live-alpha-audit.json',JSON.stringify(alphaAudit,null,2));
  assert.deepEqual(errors,[]);console.log('CAT BOND ORIGINAL ART QA PASS '+JSON.stringify({frames:audit.count,unique:audit.unique,layouts}));
 }finally{await browser.close();}
