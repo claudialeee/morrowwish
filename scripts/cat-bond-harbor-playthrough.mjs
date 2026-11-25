@@ -88,11 +88,32 @@ try {
     async function tapLandmark(x,y) {
       assert.deepEqual(errors,[],'No runtime errors before interacting with the world map');
       const surface = page.locator('.rw-surface');
+      // Landmarks are authored in world coordinates; the new camera can zoom
+      // and pan. Read the painted transform rather than mutating the game.
       await surface.scrollIntoViewIfNeeded();
-      const rect = await surface.boundingBox();
-      const point = {x:rect.x + rect.width*x,y:rect.y + rect.height*y};
+      await page.waitForFunction(()=>!!document.querySelector('.rw-surface')?.dataset.camera);
+      const project=()=>surface.evaluate((el,{x,y})=>{const [z,px,py]=JSON.parse(el.dataset.camera),r=el.getBoundingClientRect(),u=x*z+px,v=y*z+py;return {x:r.left+r.width*u,y:r.top+r.height*v,visible:u>=.015&&u<=.985&&v>=.015&&v<=.985};},{x,y});
+      let point=await project();
+      if(!point.visible){await button('Overview').click();await page.waitForFunction(()=>document.querySelector('.rw-surface')?.dataset.camera==='[1,0,0]');point=await project();}
+      assert.ok(point.visible,'Landmark must be visible before pointer input');
       if (options.hasTouch) await page.touchscreen.tap(point.x,point.y);
       else await page.mouse.click(point.x,point.y);
+    }
+    async function verifyAtlasCamera(){
+      const surface=page.locator('.rw-surface');
+      await page.waitForFunction(()=>Number(JSON.parse(document.querySelector('.rw-surface')?.dataset.camera||'[0]')[0])>1);
+      const before=JSON.parse(await surface.getAttribute('data-camera'));
+      const box=await surface.boundingBox(),x=box.x+box.width*.5,y=box.y+box.height*.5,dx=box.width*.08;
+      if(options.hasTouch){const cdp=await context.newCDPSession(page);try{await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+dx,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}finally{await cdp.detach();}}
+      else{await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+dx,y,{steps:5});await page.mouse.up();}
+      const after=JSON.parse(await surface.getAttribute('data-camera'));
+      assert.ok(after[1]>before[1]+.025,'Real pointer drag pans atlas');
+      assert.equal(await page.evaluate(()=>WorldMap.mode),'map','Dragging is not a landmark tap');
+      await button('Overview').click();
+      await page.waitForFunction(()=>document.querySelector('.rw-surface')?.dataset.camera==='[1,0,0]');
+      await button('+').click();
+      await page.waitForFunction(()=>JSON.parse(document.querySelector('.rw-surface')?.dataset.camera||'[0]')[0]>1);
+      await shot('atlas-camera-zoom');
     }
     async function readDialogue(id,choice) {
       const dialogue = page.locator('.res-host[data-scene="'+id+'"]');
@@ -258,6 +279,7 @@ try {
     await readDialogue('prologue:P-05');
     await button('World map',page.locator('.sg-prologue-guide')).click();
     await shot('atlas');
+    await verifyAtlasCamera();
     await tapLandmark(.5,.18);
     await scene('harbor:H-01');
     await page.locator('.rw-shell').evaluate(shell=>Promise.allSettled(shell.getAnimations().map(animation=>animation.finished)));
