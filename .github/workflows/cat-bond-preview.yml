@@ -48,38 +48,38 @@ jobs:
           test "$(git rev-parse "$TESTED_MERGE^2")" = "$SOURCE_SHA"
           test "$(git rev-parse "$TESTED_MERGE^{tree}")" = "$(git rev-parse "$SOURCE_SHA^{tree}")"
           gh api --method GET "repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$SOURCE_SHA" -f event=pull_request -F per_page=100 > /tmp/cat-bond-acceptance.json
+          export SOURCE_SHA
           python3 - <<'PY'
           import json
           runs = json.load(open('/tmp/cat-bond-acceptance.json'))['workflow_runs']
-          required = [
-              'Cat Bond Misttide Harbor playthrough',
-              'Cat Bond original audio browser QA (no deployment)',
-              'Cat Bond visual polish — before and after',
-              'Cat Bond brighter orchestral recording — development branch only',
-              'Cat Bond fast combat regression',
-              'Cat Bond combined controls and replay (no deploy)',
-              'Cat Bond release prologue — browser acceptance',
-              'Resonance Book browser acceptance (no deployment)',
-          ]
-          for name in required:
-              matches = [r for r in runs if r['name'] == name and r['head_branch'] == 'rpg/release-combined-next']
-              assert matches, f'Missing required acceptance: {name}'
-              run = max(matches, key=lambda r: (r['run_number'], r.get('run_attempt', 1)))
-              assert run['status'] == 'completed' and run['conclusion'] == 'success', f'Not accepted: {name} ({run["id"]}, {run["status"]}, {run["conclusion"]})'
-              print(name, run['id'], 'PASS')
-              if name == required[0]:
-                  open('/tmp/cat-bond-full-campaign-run','w').write(str(run['id']))
+          matches = [r for r in runs if r['name'] == 'Cat Bond final release acceptance' and r['head_branch'] == 'rpg/release-combined-next' and r.get('display_title') == 'Full release QA ' + __import__('os').environ.get('SOURCE_SHA', '')]
+          assert matches, 'No explicitly requested full acceptance for exact source'
+          run = max(matches, key=lambda r: (r['run_number'], r.get('run_attempt', 1)))
+          assert run['status'] == 'completed' and run['conclusion'] == 'success', f'Full acceptance not passed: {run["id"]}'
+          open('/tmp/cat-bond-full-campaign-run','w').write(str(run['id']))
+          print('Full release acceptance PASS', run['id'])
           PY
           FULL_RUN=$(cat /tmp/cat-bond-full-campaign-run)
-          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$FULL_RUN/jobs?filter=latest&per_page=100" > /tmp/cat-bond-campaign-jobs.json
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/actions/runs/$FULL_RUN/jobs?filter=latest&per_page=100" > /tmp/cat-bond-campaign-jobs.json
           python3 - <<'PY'
           import json
-          jobs = json.load(open('/tmp/cat-bond-campaign-jobs.json'))['jobs']
+          jobs = [j for page in json.load(open('/tmp/cat-bond-campaign-jobs.json')) for j in page['jobs']]
+          def require(name, step=None):
+              job = next((j for j in jobs if j['name'] == name), None)
+              assert job and job['conclusion'] == 'success', f'Missing or unsuccessful real job: {name}'
+              if step:
+                  assert any(s['name'] == step and s['conclusion'] == 'success' for s in job['steps']), f'Required step did not execute: {name} / {step}'
+          require('release-request', 'Verify exact immutable release candidate')
           for profile in ('desktop', 'portrait', 'landscape'):
-              job = next(j for j in jobs if j['name'] == f'harbor ({profile})')
-              assert job['conclusion'] == 'success', f'Campaign {profile} did not pass'
-              step = next(s for s in job['steps'] if s['name'] == 'Play from a new slot on desktop and mobile (combined branch through finale)')
-              assert step['conclusion'] == 'success', f'Campaign {profile} not actually executed'
+              require(f'campaign / harbor ({profile})', 'Play from a new slot on desktop and mobile (combined branch through finale)')
+              for language in ('en', 'zh'):
+                  require(f'prologue / prologue ({language}, {profile})', 'Actual game in all three device orientations')
+          require('score / render', 'Check score edition')
+          require('controls / controls')
+          require('book / book-browser', 'Normal start, garden, book and save slots')
+          require('audio / audio', 'Audio real browser acceptance')
+          require('visual / compare', 'Capture real baseline and candidate gameplay UI')
+          require('core / core', 'Full headless game logic regression')
           PY
           git checkout --detach "$SOURCE_SHA"
           echo "SOURCE_SHA=$SOURCE_SHA" >> "$GITHUB_ENV"
