@@ -105,6 +105,7 @@ BP.updateEnemyAI=function(dt,e,me){
   e.fireCd=99999;e.specialMeter=-10000;
   const events=tickForgeState(state,dt,e.hp/e.maxhp,target);
   processEvents(b,e,events);
+  if(state.cast&&e.forgeCast)e.forgeCast.remaining=state.cast.remaining;
   tickHazards(b,e,dt);
   e.forgeVentOpen=state.ventOpen>0;
   e.forgeHeat=state.heat;
@@ -192,6 +193,8 @@ function drawBossEffects(ctx,b){
     if(!ready){ctx.globalAlpha=.85;ctx.strokeStyle="#fff0cf";ctx.lineWidth=3;ctx.beginPath();ctx.arc(h.x,h.y,h.r*.72,-Math.PI/2,-Math.PI/2+Math.PI*2*(1-h.delay/(h.kind==="steam"?.82:.56)));ctx.stroke();}
     ctx.globalAlpha=fade;
   }
+  const state=b.forgeState;
+  if(state&&state.heat>=65&&state.ventOpen<=0){ctx.globalAlpha=.38;ctx.strokeStyle="#e78c55";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(e.x,e.y,57,24,0,0,Math.PI*2);ctx.stroke();}
   const c=e.forgeCast;
   if(c){
     const k=Math.max(0,Math.min(1,1-c.remaining/(c.phase===2?.88:c.phase===1?1.02:1.18)));
@@ -275,14 +278,16 @@ function finishEncounter(game,b){
   try{b.commitAiProfile?.(win);}catch(_){}
   const recovery={mode:window.State?.difficulty?.()||"casual",fromMap:returnToMap,team:[]};
   const seen=new Set();
-  for(const f of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){
-    if(!f?.cat||f._reinforcement||seen.has(f.cat.uid))continue;seen.add(f.cat.uid);
-    const before=f.alive?Math.max(.15,Math.min(1,f.hp/f.maxhp)):.15;
-    const after=returnToMap&&recovery.mode==="hardcore"?window.State.setBattleHealth(f.cat,before):1;
-    if(after===1){delete f.cat._hpFrac;delete f.cat._hpAt;}
-    recovery.team.push({name:window.State.catName(f.cat),before:Math.round(before*100),after:Math.round(after*100)});
-  }
-  if(recovery.mode==="casual")window.State.healAllCats?.();
+  try{
+    for(const f of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){
+      if(!f?.cat||f._reinforcement||seen.has(f.cat.uid))continue;seen.add(f.cat.uid);
+      const before=f.alive?Math.max(.15,Math.min(1,f.hp/f.maxhp)):.15;
+      const after=returnToMap&&recovery.mode==="hardcore"?window.State.setBattleHealth(f.cat,before):1;
+      if(after===1){delete f.cat._hpFrac;delete f.cat._hpAt;}
+      recovery.team.push({name:window.State.catName(f.cat),before:Math.round(before*100),after:Math.round(after*100)});
+    }
+    if(recovery.mode==="casual")window.State.healAllCats?.();
+  }catch(error){console.error("[Forge] battle recovery failed",error);}
   game._battleRecovery=recovery;
   document.getElementById("battle-ui")?.classList.remove("on");
   const duo=document.getElementById("duo-burst");if(duo)duo.hidden=true;
