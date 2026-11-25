@@ -180,7 +180,7 @@ class CaptureBattle {
     // opening-grace + masher-guard nets are gated !autoMode, so a losing auto player gets
     // NOTHING). When a casual auto player has lost ≥2 in a row, let those same nets fire at
     // ~60% strength so repeated auto losses ease too. 0 for manual / hardcore / winning auto.
-    this._autoAssist = (this.autoMode && this.difficultyMode !== 'hardcore'
+    this._autoAssist = (!!window.State?.S?.battlePrefs?.autoBattle && this.difficultyMode !== 'hardcore'
       && ((this.aiP.lossStreak || 0) >= 2)) ? 0.6 : 0;
     this._obs = { dodgeSignSum: 0, dodgeN: 0, rangeSum: 0, rangeN: 0, rangeT: 0, threats: 0, dodgedThreats: 0, fires: 0, frames: 0, dmgTaken: 0 };
     // stompStreak (flawless-win count) tightens the knobs: snappier windups, less

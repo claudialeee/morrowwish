@@ -10,6 +10,16 @@ export const REGION_KITS=Object.freeze({
  library:{name:["月镜书库","Moonmirror Library"],enemy:["镜影反击","Mirror counter"],npcs:["moye","baikan"],element:"dark",color:"#b6a7dd",kind:"mirror",period:7.2,support:["辨认真迹","Reveal the original"]},
  starfall:{name:["星坠原","Starfall Expanse"],enemy:["星轨围猎","Orbital hunt"],npcs:["xingya","lichuan"],element:"light",color:"#e6c68b",kind:"orbit",period:7.0,support:["校准星图","Align the star chart"]}
 });
+// Match the actual two-cat field, not the full roster including reserves.
+// The casual legendary challenge is a single full-strength SSR; the promised
+// duo challenge adds an escort. Hardcore retains a level advantage and escort.
+export function ruinsEncounterProfile(fighters,mode,difficulty){
+ const field=fighters.slice(0,2);
+ if(!field.length)return null;
+ const average=field.reduce((n,c)=>n+(Number(c.level)||1),0)/field.length;
+ const hardcore=difficulty==="hardcore",duo=mode==="duo";
+ return {level:Math.max(1,Math.round(average)+(hardcore?(duo?2:1):0)),escorts:field.length===2&&(hardcore||duo)?1:0};
+}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const tr=x=>window.MorrowwishI18n?.get?.()==="zh"?x[0]:x[1];
 const living=b=>b.team.filter(f=>f.alive);
@@ -111,12 +121,11 @@ function install(){
    if(root!==window.State.S||!ruinsAvailable(game)||!fighters.length)return;
    const token=host.captureAction();
    game._returnScene="map";game._battleTheme={region:"starfall",sky1:"#16273b",sky2:"#596985",ground:"#393f55",ground2:"#1d2436",accent:"#d8c397"};
-   const encounterLevel=Math.max(1,Math.round(fighters.reduce((n,c)=>n+(Number(c.level)||1),0)/fighters.length)+(duoMode?2:1));
-   const lead={...wild,encounterLevel};
-   // Keep the SSR lead and a real opposing pack, but do not outnumber a newly graduated two-cat party with three full-health enemies. Larger parties still face all three.
-   const escortCount=Math.min(companions.length,Math.max(0,fighters.length-1));
-   game.startBattle(fighters,lead,{pack:[lead,...companions.slice(0,escortCount)]});
-   if(game.battle){const b=game.battle,p=b.duo;const promised=!!(p&&window.CatRelations?.memoryList?.(p.a,p.b)?.includes("sakura"));b.postgameRuins={root,token,mode,promised,attemptId:globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`};if(b.regionalCombat)b.regionalCombat.next=2.6;if(duoMode&&promised){b.duoCharge=100;notice(b,"已完成的双猫约定让合击准备就绪。","Your earned Duo Promise readies a real Duo cast.");}if(duoMode&&!promised)notice(b,"本次未携带已完成约定的双猫；仍可捕捉，不能获得约定奖励。","No promised duo in this party; capture remains available, but the promise bonus is locked.");}
+   const profile=ruinsEncounterProfile(fighters,mode,window.State.difficulty());
+   if(!profile)return;
+   const lead={...wild,encounterLevel:profile.level};
+   game.startBattle(fighters,lead,{pack:[lead,...companions.slice(0,profile.escorts)]});
+   if(game.battle){const b=game.battle,p=b.duo;const promised=!!(p&&window.CatRelations?.memoryList?.(p.a,p.b)?.includes("sakura"));b.postgameRuins={root,token,mode,promised,attemptId:globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`};if(b.regionalCombat)b.regionalCombat.next=2.6;if(promised&&(duoMode||window.State.difficulty()!=="hardcore")){b.duoCharge=100;notice(b,"已完成的双猫约定让合击准备就绪。","Your earned Duo Promise readies a real Duo cast.");}if(duoMode&&!promised)notice(b,"本次未携带已完成约定的双猫；仍可捕捉，不能获得约定奖励。","No promised duo in this party; capture remains available, but the promise bonus is locked.");}
   }});
   return true;
  }

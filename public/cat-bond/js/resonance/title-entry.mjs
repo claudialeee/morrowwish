@@ -6,7 +6,7 @@ const cinematics=new Set(['prologue:P-01','prologue:P-02','prologue:P-03']);
 export function classifyPrologue(view){
  const id=view?.current?.id;
  if(cinematics.has(id))return 'cinematic';
- if(id==='prologue:P-04')return 'garden';
+ if(view?.ending||id==='epilogue:E-02'||id==='epilogue:E-03'||id==='prologue:P-04')return 'garden';
  if(id==='prologue:P-05')return 'departure';
  return 'world';
 }
@@ -124,4 +124,4 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   return {ok:false,reason:error.message||'canonical-opening-failed'};
  }
 }
-window.CatBondTitlePrologue=Object.freeze({start:startCanonicalOpening,available:()=>!!(window.__CAT_BOND_CANONICAL_RELEASE__||window.CatBondResonance||window.CatBondCanonicalWorld),dispose:()=>active?.dispose()});
+if(typeof window!=='undefined')window.CatBondTitlePrologue=Object.freeze({start:startCanonicalOpening,available:()=>!!(window.__CAT_BOND_CANONICAL_RELEASE__||window.CatBondResonance||window.CatBondCanonicalWorld),dispose:()=>active?.dispose()});

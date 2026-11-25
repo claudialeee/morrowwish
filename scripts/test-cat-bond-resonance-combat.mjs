@@ -63,3 +63,17 @@ for(const personality of personalities){
  assert.equal(identifyEcho(habit,null),false);
 }
 console.log("Individual Catdex rhythm and measured-mismatch regression passed");
+
+import {ruinsEncounterProfile} from "../public/cat-bond/js/resonance/regional-combat.mjs";
+import {classifyPrologue} from "../public/cat-bond/js/resonance/title-entry.mjs";
+const field=[{level:8},{level:10},{level:99},{level:99},{level:99}];
+assert.deepEqual(ruinsEncounterProfile(field,"legendary","casual"),{level:9,escorts:0});
+assert.deepEqual(ruinsEncounterProfile(field,"duo","casual"),{level:9,escorts:1});
+assert.deepEqual(ruinsEncounterProfile(field,"legendary","hardcore"),{level:10,escorts:1});
+assert.deepEqual(ruinsEncounterProfile(field,"duo","hardcore"),{level:11,escorts:1});
+assert.deepEqual(ruinsEncounterProfile([{level:1}],"duo","hardcore"),{level:3,escorts:0});
+assert.equal(ruinsEncounterProfile([],"legendary","casual"),null);
+assert.equal(classifyPrologue({ending:true,current:null}),"garden");
+for(const id of ["epilogue:E-02","epilogue:E-03"])assert.equal(classifyPrologue({current:{id}}),"garden");
+assert.equal(classifyPrologue({current:{id:"starfall:F-04"}}),"world");
+console.log("Ruins active-field balance and completed-slot garden handoff PASS");
