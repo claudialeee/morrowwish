@@ -28,19 +28,24 @@ for(const profile of [
   await page.locator('#cb-system-toggle').click();
   await page.locator('[data-system="slots"]').click();
   await checkVisible('.cb-slot-manager');
+  await checkVisible('.cb-slot-manager [data-slot-sync]');
  };
  try{
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&window.CatBondArtworkStatus?.breedsLoaded===true,{timeout:30000});
   const titleImage=await page.evaluate(async()=>{
    const background=getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundImage;
-   const image=new Image();image.src='assets/title/star-bell-dawn.svg';await image.decode();
+   const image=new Image();image.src='assets/cinematics/prologue/star-bell.webp';await image.decode();
    return {background,width:image.naturalWidth,height:image.naturalHeight};
   });
-  assert.match(titleImage.background,/star-bell-dawn\.svg/);
-  assert.deepEqual([titleImage.width,titleImage.height],[2400,1350]);
+  assert.match(titleImage.background,/star-bell\.webp/);
+  assert.ok(titleImage.width>=960&&titleImage.height>=540,'Painted title background loads at usable resolution');
+  const bounds=await page.evaluate(()=>{const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {stage:rect('#stage'),start:rect('#intro-start'),next:rect('#intro-continue')};});
+  assert.ok(bounds.start.right<=bounds.next.left&&bounds.start.width>0&&bounds.next.width>0,'New and Continue remain side by side');
+  for(const b of [bounds.start,bounds.next])assert.ok(b.left>=bounds.stage.left-1&&b.right<=bounds.stage.right+1&&b.top>=bounds.stage.top-1&&b.bottom<=bounds.stage.bottom+1,'Title actions stay in stage');
   await screenshot('title-zh');
   await page.locator('#cb-system-toggle').click();
+  assert.equal(await page.locator('[data-system="cloud"]').count(),0);
   await page.locator('[data-system="language"]').click();
   await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='en');
   await page.locator('[data-system="close"]').click();
@@ -61,10 +66,15 @@ for(const profile of [
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
   await checkVisible('#panel.open .dex-cell');
   await page.locator('#panel.open .dex-cell').first().click();
-  await checkVisible('.cb-story-overlay.is-visible');
-  // This is a save-flow test only; skipping the deprecated intro is not
-  // cinematic acceptance. The formal prologue must be tested separately.
-  await page.locator('.cb-story-skip').click();
+  for(const n of [1,2,3]){
+   await page.waitForFunction(n=>CatBondResonance.view().current?.id==='prologue:P-0'+n&&document.querySelector('.cbcp-art')?.naturalWidth>0&&document.querySelector('.cbcp-skip')&&!document.querySelector('.cbcp-skip').disabled,n);
+   await page.locator('.cbcp-skip').click();
+  }
+  const bell=page.locator('.res-garden-bell');await bell.waitFor();
+  const rect=await bell.boundingBox();const x=Math.floor(rect.x+rect.width/2),y=Math.floor(rect.y+rect.height/3);
+  if(profile.mobile){const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+62}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}
+  else{await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y+62,{steps:8});await page.mouse.up();}
+  for(const id of ['prologue:P-04','prologue:P-05']){const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();const skip=dlg.getByRole('button',{name:'Skip dialogue',exact:true});if(await skip.isVisible()&&await skip.isEnabled())await skip.click();const close=dlg.getByRole('button',{name:'Close',exact:true});if(await close.isVisible())await close.click();}
   await waitMap();
   const first=await page.evaluate(()=>window.State.getSaveSlot('slot1').data.state.cats[0].uid);
   assert.ok(first);
