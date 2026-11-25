@@ -1,0 +1,48 @@
+name: Cat Bond Last Resonance — module and art QA
+on:
+  push:
+    branches: [feat/cat-bond-last-resonance-world]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/check-cat-bond-resonance-ui.mjs'
+      - 'scripts/cat-bond-resonance-browser-qa.mjs'
+      - '.github/workflows/cat-bond-resonance-module-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-resonance-module-qa
+  cancel-in-progress: false
+jobs:
+  progression-and-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install project dependencies
+        run: npm ci
+      - name: Run six-chapter UI event regression
+        run: node scripts/check-cat-bond-resonance-ui.mjs
+      - name: Install Chromium Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Start local game server
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/catbond-resonance-http.log 2>&1 &
+          sleep 2
+          curl -fsS 'http://127.0.0.1:8765/cat-bond/?resonance-dev=1' > /dev/null
+      - name: Render original atlas, six regions and NPC dialogue on desktop and mobile
+        run: node scripts/cat-bond-resonance-browser-qa.mjs
+      - name: Upload screenshots for independent visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-resonance-module-visual-qa
+          path: artifacts/cat-bond-resonance/
+          if-no-files-found: warn
+          retention-days: 14
