@@ -94,6 +94,14 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  if(!await page.evaluate(()=>CatBondChapterCinematics.starfallReleaseReady())){await shot("starfall-art-approval-blocked");throw Error("Starfall formal runtime art approval missing for F-02 or F-05; no staging override permitted");}
  // F-01: both resident interactions, not a generic completion.
  await travel("Starfall Expanse");await shot("starfall-arrival");
+ async function checkStarfallLayout(ledger=false){
+  const layout=await page.evaluate(()=>{const surface=document.querySelector(".rw-surface"),rail=document.querySelector(".rw-forest-rail"),ledger=document.querySelector(".rw-starfall-ledger"),r=surface.getBoundingClientRect();return {canvas:r.toJSON(),rail:rail?.getBoundingClientRect().toJSON(),ledger:ledger?.getBoundingClientRect().toJSON(),width:innerWidth,height:innerHeight,canvasVisible:r.top>=40&&r.bottom<=innerHeight+1,overflow:document.querySelector(".rw-world").scrollWidth>document.querySelector(".rw-world").clientWidth+1};});
+  assert.ok(!layout.overflow,"Starfall must not horizontally overflow");
+  if(profile==="portrait"||profile==="landscape")assert.ok(layout.canvasVisible,"Entire Starfall painting must be visible before the ledger");
+  if(profile==="landscape")assert.ok(layout.rail&&layout.rail.left>=layout.canvas.right-1&&layout.rail.right<=layout.width+1,"Short landscape must keep the controls beside the painting");
+  if(ledger&&profile==="portrait")assert.ok(layout.ledger&&layout.ledger.top>=layout.canvas.bottom,"Portrait ledger must follow the painting");
+ }
+ await checkStarfallLayout();
  const trustBefore=(await get()).trust;await button("Talk to Xingya").click();await objective("npc:central-dispute");assert.equal((await get()).trust.xingya,trustBefore.xingya+1);
  assert.ok((await get()).objective.includes("npc:central-dispute-lichuan"));
  await button("Talk to Lichuan").click();await objective("npc:central-dispute-lichuan");assert.equal((await get()).trust.lichuan,trustBefore.lichuan+1);const disputeLines=await observe("starfall:F-01");
@@ -118,7 +126,7 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  await invite("Lichuan");const beforeMelody=(await get()).trust;await button("Beyond Stars").click();const melody=page.locator(".rw-puzzle-controls");await melody.waitFor();for(const n of ["Low","Middle","High"])await button(n,melody).click();await page.waitForTimeout(1000);await shot("starfall-beyond-stars-ceremony");await melody.waitFor({state:"hidden"});const afterMelody=(await get()).trust;assert.equal(afterMelody.xingya,beforeMelody.xingya+1);assert.equal(afterMelody.lichuan,beforeMelody.lichuan+1);
  assert.equal((await get()).ring,false,"Sixth melody cannot replace incomplete cargo");
  assert.equal((await get()).lineReady,false);
- await shot("starfall-missing-exchanges");
+ await page.locator(".rw-world").evaluate(el=>{el.scrollTop=0;});await checkStarfallLayout(true);await shot("starfall-missing-exchanges");
  const routes=[
   ["harbor","forest","Beacon-guided supplies","Herbs and waterway map"],
   ["forest","forge","Cooling water and herbs","Pumps and tools"],

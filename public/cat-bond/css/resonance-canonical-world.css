@@ -100,3 +100,31 @@
 .rw-starfall-puzzle-status{grid-column:1/-1;flex-basis:100%;text-align:center;}
 .rw-echo-symbols{display:block;letter-spacing:.16em;margin-top:3px;font-size:15px;color:#dcd3fb;}
 @media(max-width:600px){.rw-starfall-ledger{grid-template-columns:minmax(0,1fr)}.rw-starfall-route-head{font-size:12px}.rw-starfall-steps span{font-size:11px}}
+
+/* Keep the real Starfall painting and mechanism controls visible even when the
+   24-step ledger is expanded. The ledger is below local actions on portrait,
+   and occupies a separate scrollable rail on short landscape viewports. */
+@media (max-width:700px) and (orientation:portrait){
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange):not([hidden]){display:flex;flex-direction:column;gap:7px;padding:60px 9px 30px;overflow:auto;scroll-padding-top:6px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>*{flex:0 0 auto;width:100%;max-width:none;margin:0;box-sizing:border-box}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-head{order:0;padding-bottom:7px;gap:5px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-shell{order:1;animation:none}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-puzzle-controls{order:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-objective{order:3;padding:8px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-notice{order:4}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-hint{order:5}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-current-actions{order:6}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-world-actions{order:7;justify-content:flex-start}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-cargo:not(.rw-starfall-ledger){order:8}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-starfall-ledger{order:9;grid-template-columns:minmax(0,1fr)}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-button{min-height:44px;overflow-wrap:anywhere}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-metric{padding:2px 4px}
+}
+@media (max-height:500px) and (orientation:landscape){
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange).rw-forest-landscape{background:radial-gradient(ellipse at 22% 0,#303957,#1b2a40 55%,#121e30)}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-starfall-ledger{grid-template-columns:minmax(0,1fr);gap:6px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-forest-rail{scroll-padding-block:6px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-starfall-route{padding:6px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-starfall-route-head{font-size:11px}
+}
