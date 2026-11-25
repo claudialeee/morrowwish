@@ -3,9 +3,18 @@ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const routes={
  "explore:flight-recorder":[.68,.29,.66],
  "puzzle:joint-flight":[.29,.72,.31],
- "repair:sky":[.67,.30,.64]
+ "repair:sky":[.67,.30,.64],
+ "survey:outbound":[.72,.27,.67],
+ "survey:return":[.28,.73,.29]
 };
 export const skyPartsReady=v=>!!v.links?.["forge:sky"]?.includes("receiveB");
+// A separate painted island is reachable by flight only, never by the main walking path.
+export const skySurveyPath=[[.27,.235],[.30,.22],[.34,.218],[.39,.20]];
+export const skySurveyCache=skySurveyPath.at(-1);
+export const skySurvey={
+ "survey:outbound":{from:[.67,.50],to:skySurveyPath[0],name:["飞往远风岛","Fly to Farwind Isle"]},
+ "survey:return":{from:skySurveyPath[0],to:[.67,.50],name:["返回信使码头","Return to Courier Dock"]}
+};
 export const skyLaunch={ "explore:flight-recorder":[.18,.55],"puzzle:joint-flight":[.41,.51],"repair:sky":[.67,.50] };
 export const skyLanding={ "explore:flight-recorder":[.41,.51],"puzzle:joint-flight":[.58,.55],"repair:sky":[.89,.24] };
 export function newSkyFlight(operation,choice){
@@ -83,17 +92,17 @@ function drawGlider(ctx,img,x,y,W,H,tilt){
 // Draw on top of the approved environment painting. No replacement scenery or generic cat art.
 export function paintSkyFlight(ctx,f,img,W,H,lang,drawCat,drawNpc){
  const zh=lang==="zh",t=(a,b)=>zh?a:b;
- const x=.12+f.x*.76,y=f.y;
+ const reverse=f.operation==="survey:return",track=n=>reverse?.88-n*.76:.12+n*.76,x=track(f.x),y=f.y;
  ctx.save();
- ctx.drawImage(img,-f.x*W*.08,-H*.03,W*1.08,H*1.06);cloudLayers(ctx,img,f.elapsed,W,H);
+ ctx.drawImage(img,-(reverse?1-f.x:f.x)*W*.08,-H*.03,W*1.08,H*1.06);cloudLayers(ctx,img,f.elapsed,W,H);
  const veil=ctx.createLinearGradient(0,0,0,H);veil.addColorStop(0,"#102a44b8");veil.addColorStop(.28,"#183d6320");veil.addColorStop(.72,"#183d6320");veil.addColorStop(1,"#102a44d9");ctx.fillStyle=veil;ctx.fillRect(0,0,W,H);
  const wind=skyWind(f);
  for(let i=0;i<22;i++){const px=((i*.173+f.elapsed*.11)%1)*W,py=(.12+(i*.239)% .76)*H;ctx.strokeStyle=i%3===0?"#e6f7f86b":"#e6f7f82b";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px,py);ctx.quadraticCurveTo(px+22,py+wind*100,px+58,py+wind*180);ctx.stroke();}
  // Three distinct air corridors; the rest of each cross-section is a hazardous gust.
- for(let i=0;i<3;i++){const gx=(.12+gateX[i]*.76)*W,gy=f.route[i]*H,r=(f.training?.19:.14)*H+Math.min(f.attempts,3)*.02*H;
+ for(let i=0;i<3;i++){const gx=track(gateX[i])*W,gy=f.route[i]*H,r=(f.training?.19:.14)*H+Math.min(f.attempts,3)*.02*H;
  ctx.fillStyle=i<f.gate?"#71cfc328":"#da956e28";ctx.fillRect(gx-11,H*.10,22,Math.max(0,gy-r-H*.10));ctx.fillRect(gx-11,gy+r,22,Math.max(0,H*.90-gy-r));
  ctx.strokeStyle=i<f.gate?"#8cebd3":"#ffe4ad";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(gx,gy,19,r,0,0,Math.PI*2);ctx.stroke();}
- ctx.strokeStyle="#bff5e1";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(W*.88,H*.5,25,H*.13,0,0,Math.PI*2);ctx.stroke();
+ ctx.strokeStyle="#bff5e1";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(W*track(1),H*.5,25,H*.13,0,0,Math.PI*2);ctx.stroke();
  const g=ctx.createRadialGradient(x*W,y*H,2,x*W,y*H,65);g.addColorStop(0,"#d1f4e75c");g.addColorStop(1,"#d1f4e700");ctx.fillStyle=g;ctx.fillRect(x*W-65,y*H-65,130,130);
  if(f.operation==="puzzle:joint-flight"){const lead=f.choice==="lead";drawGlider(ctx,img,x+.045,y-.035,W,H,f.velocity);drawNpc(lead?"yuanfan":"lingyu",x+.045,y-.035,.64);drawGlider(ctx,img,x-.055,y+.07,W,H,f.velocity);drawNpc(lead?"lingyu":"yuanfan",x-.055,y+.07,.61);}
  drawGlider(ctx,img,x,y,W,H,f.velocity);drawCat(x,y);cloudLayers(ctx,img,f.elapsed,W,H,true);

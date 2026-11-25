@@ -1,6 +1,6 @@
 // Chat 3 physical-world adapter. Chat 4 owns the sole narrative mutation path.
 import {campaign} from "./campaign.mjs";
-import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady} from "./sky-flight.mjs";
+import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyCache} from "./sky-flight.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
@@ -149,6 +149,8 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(typeof api?.exchange!=="function"||!proof.token)return fail("canonical-exchange-unavailable");
   const reward={coins:10,fish:1},r=api.exchange({a,b,stage:s.stage,actor:s.actor,action:s.action,verified:true,token:proof.token},patch(x=>({...x,cargo:null}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
- function pickupReward(region,id){const w=world();if(w.location!==region||!/^cache-[12]$/.test(id)||w.pickups[region+":"+id])return fail("already-collected");return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
- return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,forestInvited,inviteForest,skyInvited,inviteSky,tideStep,traceTide,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
+ function surveyStatus(){const v=view(),w=world();if(w.location!=="sky"||!v.completed.includes("sky:S-05"))return null;const remote=!!w.interactions["sky:survey-island"],operation=remote?"survey:return":"survey:outbound";return {remote,operation,...clone(skySurvey[operation]),cache:!w.pickups["sky:survey-cache"]};}
+ function finishSurvey(operation,proof,token){const s=surveyStatus(),w=world(),p=w.positions.sky,api=resolveNarrative();if(!s||s.operation!==operation||!token||!api.isCurrentAction(token)||!p||Math.hypot(p.x-s.from[0],p.y-s.from[1])>=.072||!validSkyFlightProof(operation,null,proof)||!s.remote&&w.cargo?.actor==="sky")return fail("incomplete-flight");return physical(x=>({...x,positions:{...x.positions,sky:{x:s.to[0],y:s.to[1]}},interactions:{...x.interactions,["sky:survey-island"]:!s.remote}}));}
+ function pickupReward(region,id){const w=world();if(region==="sky"&&id==="survey-cache"){const s=surveyStatus(),p=w.positions.sky;if(!s?.remote||!s.cache||!p||Math.hypot(p.x-skySurveyCache[0],p.y-skySurveyCache[1])>=.072)return fail("walk-to-cache");return physical(x=>({...x,pickups:{...x.pickups,"sky:survey-cache":true}}),{coins:45,fish:4});}if(w.location!==region||!/^cache-[12]$/.test(id)||w.pickups[region+":"+id])return fail("already-collected");return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
+ return Object.freeze({view,world,enter,position,recordWorld,surveyStatus,finishSurvey,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,forestInvited,inviteForest,skyInvited,inviteSky,tideStep,traceTide,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
 }

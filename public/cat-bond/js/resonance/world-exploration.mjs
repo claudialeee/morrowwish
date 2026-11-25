@@ -1,5 +1,5 @@
 import { campaign } from "./campaign.mjs";
-import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady} from "./sky-flight.mjs";
+import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache} from "./sky-flight.mjs";
 // Actual walkable region mechanics. Story progression is never stored here.
 export const layouts={
  harbor:{
@@ -74,7 +74,7 @@ export function exchangeOptions(bridge,region,links){
 }
 export function createExplorer(bridge,region,{deferForestMelody=false,deferSkyMelody=false}={}){
  const layout=layouts[region];if(!layout)throw Error("Unknown region");
- const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],path=layout.paths;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set(region==="harbor"?bridge.harborInvited():region==="forest"?bridge.forestInvited():region==="sky"?bridge.skyInvited():[]);
+ const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],mainPath=layout.paths;let path=region==="sky"&&bridge.surveyStatus()?.remote?skySurveyPath:mainPath;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set(region==="harbor"?bridge.harborInvited():region==="forest"?bridge.forestInvited():region==="sky"?bridge.skyInvited():[]);
  pos=closest(path,pos).p;
  function walk(x,y){
   if(!Number.isFinite(x)||!Number.isFinite(y)||puzzle||!live())return false;
@@ -86,7 +86,10 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferSkyMe
   while(dest&&remaining>0){const d=distance(pos,dest);if(d<=remaining){pos=[...dest];remaining-=d;dest=travel.shift()||null;if(!dest){const r=bridge.position(region,...pos);error=r.ok?"":r.reason;}}else{pos=[pos[0]+(dest[0]-pos[0])*remaining/d,pos[1]+(dest[1]-pos[1])*remaining/d];remaining=0;}}
  }
  function near(p){return live()&&!dest&&distance(pos,p)<.072;}
+ function survey(){return region==="sky"?bridge.surveyStatus():null;}
+ function startSurvey(){const s=survey();if(!s||puzzle||!near(s.from))return {ok:false,reason:"walk-to-survey"};if(!s.remote&&cargo)return {ok:false,reason:"cargo-busy"};active={survey:s.operation,token:bridge.capture()};puzzle=createPuzzle(s.operation);return {ok:true,puzzle:true};}
  function interact(op){
+  if(survey()?.remote)return {ok:false,reason:"return-from-survey"};
   if(op==="explore:scent-trail"){const step=bridge.scentStep();return step?traceScent(step.index):{ok:false,reason:"walk-to-scent"};}
   const v=bridge.view(),f=layout.features[op];if(!f||v.current?.chapter!==region||!v.objective.includes(op)||!near(region==="sky"&&skyLaunch[op]||f))return {ok:false,reason:"walk-to-objective"};
   if(op==="explore:tide-logbook"&&bridge.tideStep())return {ok:false,reason:"incomplete-tide-trail"};
@@ -116,6 +119,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferSkyMe
   return bridge.meetHomeResident(region,id,n.point,bridge.capture());
  }
  function complete(){
+  if(active?.survey){const s=survey();if(s?.operation!==active.survey||!near(s.from)||!puzzle?.solved)return {ok:false,reason:"incomplete-flight"};const result=bridge.finishSurvey(s.operation,skyFlightProof(puzzle.flight),active.token);if(result.ok){path=s.remote?mainPath:skySurveyPath;pos=[...s.to];active=null;puzzle=null;}return result;}
   if(active?.homeRepair){
    const q=bridge.homeQuest(region);if(!q||!near(q.point)||!puzzle?.solved)return {ok:false,reason:"incomplete-physical-action"};
    const r=bridge.finishHomeRepair(region,active.token);if(r.ok){active=null;puzzle=null;}return r;
@@ -128,21 +132,21 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferSkyMe
  function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(puzzle.type==="skyFlight"){steerSkyFlight(puzzle.flight,[.30,.50,.70][i]);return {ok:true,pending:true};}if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(deferForestMelody&&puzzle.operation==="melody:forest"||deferSkyMelody&&puzzle.operation==="melody:sky")return {ok:true,pending:true,ceremony:true};return complete();}
  function flightSteer(y){return puzzle?.type==="skyFlight"&&live()&&steerSkyFlight(puzzle.flight,y);}
  function flightTick(dt){if(puzzle?.type!=="skyFlight"||!live()||!tickSkyFlight(puzzle.flight,dt))return null;puzzle.solved=true;return complete();}
- function cargoPoints(){return [path[1],path[path.length-2]];}
+ function cargoPoints(){return [mainPath[1],mainPath[mainPath.length-2]];}
  function startCargo(option){
-  if(cargo||puzzle||!option||option.actor!==region)return {ok:false,reason:"cargo-busy"};
+  if(survey()?.remote||cargo||puzzle||!option||option.actor!==region)return {ok:false,reason:"cargo-busy"};
   const pts=cargoPoints();if(!near(pts[option.from]))return {ok:false,reason:"walk-to-cargo"};
   const result=bridge.pickupCargo(option);if(result.ok)cargo={...option,pickedUp:true};return result;
  }
  function deliverCargo(){
-  if(!cargo||!near(cargoPoints()[cargo.to]))return {ok:false,reason:"walk-to-recipient"};
+  if(survey()?.remote||!cargo||!near(cargoPoints()[cargo.to]))return {ok:false,reason:"walk-to-recipient"};
   const result=bridge.exchange(cargo.a,cargo.b,{region,stage:cargo.stage,action:cargo.action,verified:true,token:bridge.capture()});
   if(result.ok)cargo=null;return result;
  }
  function localNpcs(){const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];return Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({...n,point:layout.castPoints?.[n.id]||(i===0?lerp(path[1],path[2],.44):lerp(path[3],path[4],.46))}));}
  function inviteNpc(id){const n=localNpcs().find(n=>n.id===id),v=bridge.view();if(!n||!near(n.point)||!v.objective.includes("melody:"+region))return {ok:false,reason:"npc-not-available"};if(["harbor","forest","sky"].includes(region)){const result=region==="harbor"?bridge.inviteHarbor(id,n.point,bridge.capture()):region==="forest"?bridge.inviteForest(id,n.point,bridge.capture()):bridge.inviteSky(id,n.point,bridge.capture());if(!result.ok)return result;}invited.add(id);return {ok:true};}
- function rewardPoints(){return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
+ function rewardPoints(){if(survey()?.remote)return [{id:"survey-cache",point:[...skySurveyCache]}];return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}
- return {walk,tick,interact,operate,flightSteer,flightTick,cancel,complete,traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
+ return {walk,tick,interact,operate,flightSteer,flightTick,survey,startSurvey,cancel,complete,traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
 }
