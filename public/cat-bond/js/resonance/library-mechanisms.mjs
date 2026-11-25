@@ -18,7 +18,8 @@ export function catdexRecord(root){
  if(!cat)return null;
  const habits={clever:[1.08,"机敏","Clever"],mischievous:[1.16,"淘气","Mischievous"],glutton:[1.24,"贪吃","Food-loving"],diligent:[1.32,"勤勉","Diligent"],gentle:[1.40,"温柔","Gentle"],shy:[1.48,"害羞","Shy"],lazy:[1.56,"慵懒","Lazy"]};
  const h=habits[cat.personality?.id||cat.personality]||[1.28,"好奇","Curious"];
- return {uid:cat.uid,species:cat.species,name:cat.nickname||cat.name||cat.species,habit:h[0],trait:h.slice(1),correct:(Math.round(h[0]*100)+String(cat.species).length)%3};
+ const wins=Math.max(0,Math.floor(cat.battlesWon||0)),habit=Number((h[0]+(wins%5)*.04).toFixed(2));
+ return {uid:cat.uid,species:cat.species,name:cat.nickname||cat.name||cat.species,habit,trait:h.slice(1),wins,correct:(Math.round(habit*100)+String(cat.species).length)%3};
 }
 export function libraryPuzzle(op,record){
  const types={"explore:sealed-archive":"librarySeal","puzzle:library-reflections":"libraryMirrors","puzzle:mirror-records":"libraryMural","puzzle:library-echo":"libraryEcho","explore:routing-record":"libraryLedger","repair:library":"libraryRestore"};
@@ -37,7 +38,7 @@ const words={
  librarySeal:[["档案封存原因","Why the archive was sealed"],["先审阅公开历史，再核对仍在世的当事猫，最后查看封存说明。","Review the public history, identify living subjects, then read why their records were sealed."],[["公开历史","Public history"],["封存说明","Seal notice"],["在世当事猫","Living subjects"]]],
  libraryMirrors:[["镜光回廊","Reflection gallery"],["旋转三面镜子，使光从左侧月窗折向隐藏的门。","Rotate the three mirrors to carry moonlight into the hidden doorway."],[["西镜","West mirror"],["中镜","Middle mirror"],["东镜","East mirror"]]],
  libraryMural:[["封存壁画","The sealed mural"],["按历史先后接合碎片：坠星、断裂的铃舌、应急锚室。","Reassemble the fragments in historical order: fallen star, broken tongue, emergency anchor."],[["断裂的铃舌","Broken tongue"],["应急锚室","Emergency anchor"],["坠落的星","Fallen star"]]],
- libraryEcho:[["识别复制记忆","Recognize the copied memory"],["打开 Catdex 核验个体记录；选择习惯间隔一致的真实回响。","Compare the individual Catdex record with the echo intervals; select the matching memory."],[["回响甲","Echo A"],["回响乙","Echo B"],["回响丙","Echo C"]]],
+ libraryEcho:[["识别复制记忆","Recognize the copied memory"],["核对猫咪性格与实战次数编码的回响，选出一致的记忆。","Match the echo encoded from your cat’s personality and recorded battle wins."],[["回响甲","Echo A"],["回响乙","Echo B"],["回响丙","Echo C"]]],
  libraryLedger:[["复原隐藏路由","Restore the hidden routing ledger"],["按修改记录的时间顺序核对：原始路径、封印松动、圣所转向中央。","Verify in chronological order: original routes, loosened seal, inward sanctuary routing."],[["封印松动","Seal loosened"],["转向中央","Inward routing"],["原始路径","Original routes"]]],
  libraryRestore:[["圣所 · 邻地回应","Sanctuary · Neighboring replies"],["先对准月窗，再接通邻地镜桥，最后让两地共同回应。","Align the moon window, reconnect the neighboring mirror bridge, then let both regions answer."],[["邻地镜桥","Neighbor bridge"],["月窗","Moon window"],["相互回应","Reciprocal reply"]]]
 };
@@ -56,21 +57,22 @@ export function paintLibraryPuzzle(c,p,lang,W,H){
  t(w[0][l],.5,.15,27,"#f0dba9");t(w[1][l],.5,.23,16);
  const xs=[.3,.5,.7],Yc=Y(.53);
  if(p.type==="libraryMirrors"){
-  // The etched target angles correspond to three distinct optical junctions.
-  c.lineCap="round";c.lineWidth=3*s;c.strokeStyle="#658da6";c.beginPath();c.moveTo(X(.17),Yc);xs.forEach(x=>c.lineTo(X(x),Yc));c.lineTo(X(.83),Yc);c.stroke();
-  xs.forEach((x,i)=>{const cx=X(x),a=p.values[i]*Math.PI/2-Math.PI/2,g=p.goal[i]*Math.PI/2-Math.PI/2,R=43*s,ok=p.values[i]===p.goal[i];
-   c.beginPath();c.arc(cx,Yc,R,0,Math.PI*2);c.fillStyle="#304e6b";c.fill();c.strokeStyle=ok?"#b5f3e5":"#b6a3cf";c.stroke();c.lineWidth=4*s;
-   c.beginPath();c.moveTo(cx+Math.cos(g)*R*.76,Yc+Math.sin(g)*R*.76);c.lineTo(cx+Math.cos(g)*R,Yc+Math.sin(g)*R);c.strokeStyle="#f5dca5";c.stroke();
-   c.beginPath();c.moveTo(cx,Yc);c.lineTo(cx+Math.cos(a)*R*.8,Yc+Math.sin(a)*R*.8);c.strokeStyle=ok?"#a8efe0":"#d4b8ed";c.stroke();
-   t(w[2][i][l],x,.68,16);if(ok)t(l?"Aligned":"已校准",x,.36,14,"#a8efe0");
-  });
+  // Optical ray is actually reflected at each junction; wrong orientation sends it away from the next mirror.
+  const pts=[[.15,.53],[.3,.53],[.5,.43],[.7,.53],[.85,.53]].map(([x,y])=>[X(x),Y(y)]);
+  const angle=(a,b)=>Math.atan2(b[1]-a[1],b[0]-a[0]);
+  const mirrorAngles=p.goal.map((g,i)=>(angle(pts[i],pts[i+1])+angle(pts[i+1],pts[i+2]))/2+(p.values[i]-g)*Math.PI/4);
+  c.lineCap="round";c.lineWidth=2*s;c.strokeStyle="#658da680";c.setLineDash([4*s,7*s]);c.beginPath();pts.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();c.setLineDash([]);
+  const beam=[pts[0],pts[1]];for(let i=0;i<3;i++){const at=pts[i+1],a=2*mirrorAngles[i]-angle(pts[i],at);if(p.values[i]===p.goal[i])beam.push(pts[i+2]);else{beam.push([at[0]+Math.cos(a)*W*.145,at[1]+Math.sin(a)*W*.145]);break;}}
+  c.save();c.shadowBlur=16*s;c.shadowColor="#c7fff0";c.strokeStyle="#c7fff0";c.lineWidth=4*s;c.beginPath();beam.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();c.restore();
+  t(l?"Moon window":"月窗",.15,.42,13);t(l?"Hidden door":"隐藏门",.85,.42,13);
+  xs.forEach((x,i)=>{const [cx,cy]=pts[i+1],a=mirrorAngles[i],R=36*s,ok=p.values[i]===p.goal[i];c.save();c.translate(cx,cy);c.rotate(a);c.fillStyle="#9ec4d8";c.strokeStyle="#ead4a8";c.lineWidth=2*s;c.beginPath();c.roundRect(-R,-5*s,R*2,10*s,4*s);c.fill();c.stroke();c.restore();t(w[2][i][l],x,.68,16);if(ok)t(l?"Aligned":"已校准",x,.35,13,"#a8efe0");});
  }else{
   const paths=p.type==="librarySeal"?["resonance-world-v2/atlas.webp","resonance-world-v2/library.webp","resonance-world-v2/harbor.webp"]:p.type==="libraryMural"?["cinematics/prologue/broken-bell-tongue.webp","cinematics/prologue/keepers-choice.webp","cinematics/prologue/star-bell.webp"]:p.type==="libraryLedger"?["cinematics/prologue/broken-bell-tongue.webp","cinematics/prologue/star-bell.webp","resonance-world-v2/atlas.webp"]:["resonance-world-v2/library.webp","resonance-world-v2/sky.webp","resonance-world-v2/starfall.webp"];
   xs.forEach((x,i)=>{frame(x-.084,.40,.168,.22);
    if(p.type==="libraryEcho"){const h=echoInterval(p,i);c.strokeStyle="#b7cce4";c.lineWidth=2*s;c.beginPath();c.moveTo(X(x-.065),Y(.52));c.lineTo(X(x-.035),Y(.52));c.lineTo(X(x-.035),Y(.45));c.lineTo(X(x-.035),Y(.52));const end=x-.035+h*.063;c.lineTo(X(end),Y(.52));c.lineTo(X(end),Y(.45));c.lineTo(X(end),Y(.52));c.lineTo(X(x+.065),Y(.52));c.stroke();t(h.toFixed(2)+"s",x,.58,16);
    }else cover(c,image(paths[i]),X(x-.079),Y(.409),X(.158),Y(.202));t(w[2][i][l],x,.68,15);
   });
-  if(p.type==="libraryEcho"){const rec=p.record;t(rec?(l?"Catdex · "+rec.name+" · "+rec.trait[l]+" · verified interval ":"Catdex · "+rec.name+" · "+rec.trait[l]+" · 已记录间隔 ")+rec.habit.toFixed(2)+"s":(l?"No collected Catdex record":"缺少已收集猫咪的 Catdex 记录"),.5,.32,17,"#b5f3e5");}
+  if(p.type==="libraryEcho"){const rec=p.record;t(rec?(l?"Catdex · "+rec.name+" · "+rec.trait[l]+" · "+rec.wins+" wins · echo ":"Catdex · "+rec.name+" · "+rec.trait[l]+" · "+rec.wins+" 次胜利 · 回响 ")+rec.habit.toFixed(2)+"s":(l?"No collected Catdex record":"缺少已收集猫咪的 Catdex 记录"),.5,.32,17,"#b5f3e5");}
   else if(p.type==="librarySeal"){const notes=[["公开记录：旧灾难与星铃封印","Public record: catastrophe and the Star Bell seal"],["个人档案包含仍在世的猫咪身份","Personal files identify cats still living"],["封存保护当事猫，但不能抹去历史","Sealing protects subjects, but must not erase history"]];t(notes[Math.min(p.values.length,2)][l],.5,.32,16,"#b5f3e5");}else t((l?"Reconstructed ":"已复原 ")+p.values.length+" / "+p.goal.length,.5,.32,16,"#b5f3e5");
  }
  t(p.mistakes?(l?"Incorrect reflection · try again":"倒影不符 · 可以重试"):(l?"Compare the evidence before selecting":"观察证据后再选择"),.5,.80,16,p.mistakes?"#f1b6a6":"#c5d7eb");c.restore();return true;

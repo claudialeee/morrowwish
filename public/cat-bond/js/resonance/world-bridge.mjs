@@ -134,7 +134,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
    if(!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("walk-to-objective");
    const record=catdexRecord(State.S),p=libraryPuzzle(op,record);
    if(p&&(!proof.libraryValues||proof.libraryValues.join(",")!==p.goal.join(",")))return fail("library-record-unverified");
-   if(op==="puzzle:library-echo"&&(!record||proof.libraryRecord?.uid!==record.uid||proof.libraryRecord?.habit!==record.habit))return fail("library-catdex-required");
+   if(op==="puzzle:library-echo"&&(!record||proof.libraryRecord?.uid!==record.uid||proof.libraryRecord?.habit!==record.habit||proof.libraryRecord?.wins!==record.wins))return fail("library-catdex-required");
    if(op==="melody:library"&&(!["moye","baikan"].every(id=>w.interactions["library:M-05:invite:"+id])||v.objective.includes("repair:library")))return fail("local-response-required");
   }
   if(op==="melody:harbor"&&!["qilan","jiedeng"].every(id=>w.interactions["harbor:H-05:invite:"+id]))return fail("local-response-required");
@@ -142,7 +142,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
-  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,interactions:{...x.interactions,[sceneId+":"+op]:op==="puzzle:library-echo"?{uid:proof.libraryRecord.uid,species:proof.libraryRecord.species,habit:proof.libraryRecord.habit}:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
+  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,interactions:{...x.interactions,[sceneId+":"+op]:op==="puzzle:library-echo"?{uid:proof.libraryRecord.uid,species:proof.libraryRecord.species,habit:proof.libraryRecord.habit,wins:proof.libraryRecord.wins}:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function harborInvited(){const v=view(),w=world();return v.current?.id==="harbor:H-05"?["qilan","jiedeng"].filter(id=>w.interactions["harbor:H-05:invite:"+id]):[];}
  function inviteHarbor(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={qilan:[.16,.60],jiedeng:[.195,.50]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="harbor"||v.current?.id!=="harbor:H-05"||!v.objective.includes("melody:harbor")||!token||!api.isCurrentAction(token)||!tideNear(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["harbor:H-05:invite:"+id]:true}}));}

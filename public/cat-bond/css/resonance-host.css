@@ -62,3 +62,14 @@
 @media(max-width:700px){.library-reveal-cast{inset:9% 2% 40%;gap:2%}.library-reveal-actor{width:48%;height:85%}.res-host.res-library-reveal .res-dialogue{max-height:64%;gap:0}.library-reveal-caption{font-size:13px;top:3%;width:94%}}
 @media(max-height:480px) and (orientation:landscape){.library-reveal-cast{inset:4% 10% 18%}.res-host.res-library-reveal .res-dialogue{max-height:61%}.res-host.res-library-reveal .res-body{padding:8px}.res-host.res-library-reveal .res-line{font-size:13px;margin-bottom:5px}.res-host.res-library-reveal button{min-height:34px}.library-reveal-caption{top:2%;font-size:13px}}
 @media(prefers-reduced-motion:reduce){.library-reveal-painting,.library-reveal-actor,.library-reveal-cast{animation:none!important;transition:none!important}}
+
+/* Chapter V close-up staging: distinct memory light and separated blocking after confession. */
+.res-host.res-library-reveal .library-reveal-stage[hidden]{display:none}
+.library-reveal-stage[data-mode="anchor"] .library-reveal-painting{filter:saturate(.8) sepia(.24)}
+.library-reveal-stage[data-mode="anchor"] .library-reveal-shade{background:radial-gradient(ellipse at 50% 27%,#ffeac12b,transparent 56%),linear-gradient(0deg,#101a2dfb,transparent 68%)}
+.library-reveal-stage[data-mode="fracture"] .library-reveal-cast{justify-content:space-between;inset-inline:3%}
+.library-reveal-stage[data-mode="fracture"] .library-reveal-actor:not(.speaking){filter:brightness(.66) saturate(.7)}
+.library-reveal-stage[data-mode="fracture"] .library-reveal-shade{background:linear-gradient(90deg,#17203155,transparent 42%,#0d152d77),linear-gradient(0deg,#11192dfb,transparent 65%)}
+.library-reveal-stage[data-mode="departure"] .library-reveal-actor{transform-origin:50% 100%;animation:library-departure-actor 5s ease-in-out both}
+@keyframes library-departure-actor{0%{transform:translateX(0) scale(1);opacity:1}100%{transform:translateX(15%) scale(.78);opacity:.55}}
+@media(prefers-reduced-motion:reduce){.library-reveal-stage[data-mode="departure"] .library-reveal-actor{animation:none}}
