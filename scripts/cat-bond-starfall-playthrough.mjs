@@ -176,7 +176,13 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  const complete=await get();assert.ok(["F-01","F-02","F-03","F-04","F-05"].every(id=>complete.completed.includes("starfall:"+id)));
  // Reload the exact player slot and enter the real phase-one setup (no battle result injection).
  await page.reload();await page.locator("#intro-continue").click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
- await scene("finale:B-01");if(await button("Starfall Expanse").isVisible())await button("Starfall Expanse").click();
+ await scene("finale:B-01");await page.waitForFunction(()=>__game.scene==="map"&&window.WorldMap?.mode);
+ // Continue may restore the atlas rather than the region. On landscape
+ // the destination button can be on another rail page, so visibility is
+ // not a valid way to decide whether travel is required.
+ if(await page.evaluate(()=>WorldMap.mode)==="map")await button("Starfall Expanse").click();
+ else if(await page.evaluate(()=>WorldMap.currentRegion)!=="starfall")await travel("Starfall Expanse");
+ await page.waitForFunction(()=>WorldMap.mode==="region"&&WorldMap.currentRegion==="starfall");
  if(!continueFinale){await button("Approach the Star Bell").click();await page.locator("#bp-go").waitFor();await shot("finale-battle-setup");}
  return {profile,disputeLines,confrontationLines,deliveries:24,melodies:6,sanctuaries:6,restoredSlot:true,finaleEntry:true,normalPlayerFlow:true,formalArtApproved};
 }
