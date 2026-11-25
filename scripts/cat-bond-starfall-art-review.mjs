@@ -32,6 +32,7 @@ try{
     await page.waitForFunction(t=>document.querySelector(".cbcp-subtitle").textContent===t,frame.subtitle[lang].text);
     const layout=await page.evaluate(()=>{const img=document.querySelector(".cbcp-art:last-of-type"),sub=document.querySelector(".cbcp-subtitle-wrap"),r=sub.getBoundingClientRect();return {decoded:!!img?.complete&&img.naturalWidth>0,subtitleFits:r.left>=-1&&r.top>=-1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,overflow:sub.scrollWidth>sub.clientWidth+1}});
     assert.ok(layout.decoded&&layout.subtitleFits&&!layout.overflow,JSON.stringify({name,id:frame.id,lang,layout}));
+    if(name==="portrait"){const crop=await page.evaluate(()=>{const image=document.querySelector(".cbcp-art:last-of-type"),stage=document.querySelector(".cbcp-stage"),r=image.getBoundingClientRect(),s=stage.getBoundingClientRect();return {fit:getComputedStyle(image).objectFit,coverage:r.height/s.height}});assert.ok(crop.fit==="cover"&&crop.coverage>=.95,JSON.stringify({frame:frame.id,crop}));}
     await page.screenshot({path:out+"/"+name+"-"+frame.id.replaceAll(":","-")+"-"+lang+".png"});
     result.push({profile:name,scene:scene.id,frame:frame.id,lang,...layout});
    }

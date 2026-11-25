@@ -79,7 +79,23 @@
  .cbcp-footer{padding:5px 9px}
  .cbcp-tool,.cbcp-action{min-height:44px;padding:7px 10px}
 }
+/* Starfall only: mobile direction uses a full-height focal crop, not a tiny
+   landscape strip surrounded by a blurred background. The original paintings
+   remain intact, and desktop/landscape composition is unchanged. */
+@media(orientation:portrait) and (max-width:680px){
+ .cbcp-root[data-frame-id^="starfall:"] .cbcp-art-stack{inset:0 0 0;overflow:hidden}
+ .cbcp-root[data-frame-id^="starfall:"] .cbcp-art{object-fit:cover;background:transparent}
+ .cbcp-root[data-frame-id^="starfall:"] .cbcp-subtitle-wrap{bottom:max(16px,env(safe-area-inset-bottom));width:calc(100% - 32px);padding:14px 8px;background:linear-gradient(90deg,transparent,rgba(7,14,24,.84) 10%,rgba(7,14,24,.84) 90%,transparent)}
+ .cbcp-root[data-frame-id^="starfall:F-02-shot-0"] .cbcp-art,.cbcp-root[data-frame-id="starfall:F-02-0"] .cbcp-art{object-position:25% center!important;animation:cbcp-starfall-sweep 5.5s ease-in-out both}
+ .cbcp-root[data-frame-id^="starfall:F-02-shot-1"] .cbcp-art,.cbcp-root[data-frame-id="starfall:F-02-1"] .cbcp-art{object-position:63% center!important}
+ .cbcp-root[data-frame-id^="starfall:F-02-shot-2"] .cbcp-art,.cbcp-root[data-frame-id="starfall:F-02-2"] .cbcp-art{object-position:58% center!important}
+ .cbcp-root[data-frame-id^="starfall:F-05-shot-0"] .cbcp-art,.cbcp-root[data-frame-id^="starfall:F-05-0-"] .cbcp-art{object-position:50% center!important}
+ .cbcp-root[data-frame-id^="starfall:F-05-shot-1"] .cbcp-art,.cbcp-root[data-frame-id^="starfall:F-05-1-"] .cbcp-art{object-position:63% center!important}
+ .cbcp-root[data-paused="true"] .cbcp-art{animation-play-state:paused!important}
+ @keyframes cbcp-starfall-sweep{from{object-position:12% center}to{object-position:82% center}}
+}
 @media(prefers-reduced-motion:reduce){
+ .cbcp-root[data-frame-id^="starfall:"] .cbcp-art{animation:none!important}
  .cbcp-art,.cbcp-layer{transition:none!important;will-change:auto}
  .cbcp-crossfade{animation:none!important}
 }
