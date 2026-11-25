@@ -269,6 +269,8 @@ function install(){
   const f=b.resonanceFinale;if(!f||b.done||b.captureSeq||b.duoCinematic||b.ultCinematic||b.game.battleHelpOpen||b.coachHoldsEnemies?.())return;
   if(f.root!==window.State.S||!host()?.isCurrentAction?.(f.token)||host()?.view()?.current?.id!==f.id){b.finish(false);return;}
   const d=clamp(dt*(b.tempoScale??.64),0,.06);f.elapsed+=d;
+  // Count only active simulation time; do not trap a player in a stalled encounter.
+  if(f.elapsed>145){b._timeCapLoss=true;f.timedOut=true;b.finish(false);return;}
   if(f.id==="finale:B-02"){
    if(f.lastAuto!==b.autoMode||f.lastLock!==b._lockIdx){f.lastAuto=b.autoMode;f.lastLock=b._lockIdx;paint(b);}
    const beat=f.elapsed%2.8,prev=(f.elapsed-d)%2.8;
@@ -385,6 +387,19 @@ function install(){
   if(f.cast){if(f.cast.style==="chain"){ctx.save();ctx.strokeStyle="#eac19a";ctx.lineWidth=8;ctx.globalAlpha=.35;ctx.setLineDash([10,7]);ctx.beginPath();ctx.moveTo(f.cast.fromX,f.cast.fromY);ctx.lineTo(f.cast.x,f.cast.y);ctx.stroke();ctx.restore();}ctx.strokeStyle="#eac19a";ctx.fillStyle="rgba(218,132,100,.17)";ctx.beginPath();ctx.arc(f.cast.x,f.cast.y,56,0,Math.PI*2);ctx.fill();ctx.stroke();}
   ctx.restore();
  };
+ function resultPanel(game,b,f,committed,won){
+  document.getElementById("cb-finale-result")?.remove();
+  const owner=f.root,token=f.token;
+  const box=document.createElement("section");box.id="cb-finale-result";box.className="cb-finale-result";box.setAttribute("role","dialog");box.setAttribute("aria-modal","true");
+  const card=document.createElement("div"),title=document.createElement("h2"),detail=document.createElement("p"),reward=document.createElement("p"),actions=document.createElement("div"),back=document.createElement("button"),retry=document.createElement("button");
+  back.type=retry.type="button";back.dataset.finaleReturn="";retry.dataset.finaleRetry="";actions.append(back,retry);card.append(title,detail,reward,actions);box.append(card);
+  const retreat=!won&&b._voluntaryFlee&&!f.failedProtection&&!f.timedOut;
+  function render(){title.textContent=committed?tr("回响已稳定","Resonance restored"):won?tr("未能保存","Save not completed"):retreat?tr("安全撤退","Safe withdrawal"):tr("挑战失败","Challenge defeated");detail.textContent=committed?tr("本阶段已经保存，可以继续剧情。","This phase is saved. Continue the story."):won?tr("未保存剧情或奖励，可重新挑战。","Story and rewards were not saved. Retry the encounter."):f.timedOut?tr("战斗超过时限。调整队伍后重试。","The encounter timed out. Adjust your team and retry."):f.failedProtection?tr("地区伙伴未能坚持。优先守护受到攻击的共鸣节点。","Regional allies could not hold. Protect the threatened resonance nodes first."):tr("队伍已返回星坠原。可休整或再次挑战。","Your party has returned to Starfall. Recover or try again.");reward.hidden=!(committed&&f.id==="finale:B-03");reward.textContent=tr("+180 金币 · +8 小鱼干","+180 coins · +8 fish");back.textContent=committed?tr("继续故事","Continue story"):tr("返回星坠原","Return to Starfall");retry.textContent=tr("再次挑战","Retry encounter");retry.hidden=committed;box.setAttribute("aria-label",title.textContent);}
+  function close(){box.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",close);}
+  back.onclick=()=>{close();if(owner!==window.State.S)return;window.WorldMap?.resumeRegion?.(false);if(committed)host()?.showCurrent?.();};
+  retry.onclick=()=>{close();if(owner!==window.State.S||!host()?.isCurrentAction(token))return;window.WorldMap?.resumeRegion?.(false);prep(game,f.id);};
+  window.addEventListener("morrowwish-language-change",render);window.addEventListener("cat-bond-active-save-changed",close);document.getElementById("stage")?.append(box);render();back.focus();
+ }
  const end=GP.endBattle;
  GP.endBattle=function(){
   const b=this.battle,f=b?.resonanceFinale;if(!f)return end.call(this);
@@ -403,7 +418,7 @@ function install(){
   const duo=document.getElementById("duo-burst");if(duo)duo.hidden=true;
   this.battle=null;this._returnScene=null;this.scene="map";document.body.classList.add("cb-exploring");this.setBattleHelpVisible?.(false);this.refreshHUD?.();window.WorldMap?.resumeRegion?.(false);
   this.toast(committed?{zh:"本阶段目标已达成。",en:"The objective is complete."}:win?{zh:"剧情保存失败，请重新挑战。",en:"Story save failed. Retry the encounter."}:b._voluntaryFlee&&!f.failedProtection?{zh:"队伍撤离，休整后再挑战。",en:"Withdrawn. Rest and retry the encounter."}:{zh:"挑战失败。恢复队伍后重试。",en:"Defeated. Recover your team and try again."});
-  if(committed)active.showCurrent?.();
+  if(same&&valid)resultPanel(this,b,f,committed,win);
  };
  window.addEventListener("cat-bond-resonance-battle-request",e=>{const d=e.detail;if(d?.region==="starfall"&&PHASES[d.sceneId]===d.operation)prep(window.__game,d.sceneId);});
  window.addEventListener("resize",()=>requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-finale-hud"))));

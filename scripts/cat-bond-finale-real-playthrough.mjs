@@ -26,7 +26,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
   await puzzle(label,inputs);for(const npc of people)await invite(npc);await puzzle(melody,notes);await check('melody:'+region);
  }
  async function beginBattle(label,auto=true){await button(label).click();await page.locator('#panel [data-battle-auto="'+auto+'"]').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();const tutorial=page.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();}
- async function finishBattle(timeout=240000){await page.waitForFunction(()=>__game.scene!=='battle',null,{timeout});}
+ async function finishBattle(timeout=300000){await page.waitForFunction(()=>__game.scene!=='battle',null,{timeout});const result=page.locator('#cb-finale-result');if(await result.isVisible()){await shot('finale-result-'+Date.now());await result.locator('[data-finale-return]').click();}}
  async function forgeFight(){
   await beginBattle('Forge guardian');await shot('forge-real-guardian');
   for(let n=0;n<180;n++){if(await page.locator('#cb-forge-result').isVisible())break;const support=page.locator('[data-forge-support-button]');if(await support.isVisible()&&await support.isEnabled())await support.click();await page.waitForTimeout(850);}
@@ -63,7 +63,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  await dialogue('library:M-05');await scene('starfall:F-01');await log('chapter-5-clear');
  await travel('Starfall Expanse');await talk('starfall:F-01','Xingya');await scene('starfall:F-02');
  await puzzle('Star chart',['Outer ring','Outer ring','Outer ring','Middle ring','Inner ring','Inner ring']);await button('Catastrophe record').click();await check('explore:catastrophe-record');
- await talk('starfall:F-03','Muling');await scene('starfall:F-04');await talk('starfall:F-04','Xingya','Let Xingya coordinate repairs');
+ await talk('starfall:F-03','Muling');await scene('starfall:F-04');await scene('starfall:F-04');await button('Invite Xingya').or(button('Talk to Xingya')).click();await dialogue('starfall:F-04','Let Xingya coordinate repairs');
  await puzzle('Distributed observatory',['West','Relay','East']);
  await restore('Starfall sanctuary',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan'],'Beyond Stars',['Low','Middle','High'],'starfall');
  const regions={harbor:'Misttide Harbor',forest:'Rootsleep Forest',forge:'Emberforge City',sky:'Skyspine Isles',library:'Moonmirror Library',starfall:'Starfall Expanse'};
