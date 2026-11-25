@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 820" role="img" aria-label="Qilan, young navigator of Misttide Harbor">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 820" role="img" aria-label="Qilan, worried expression">
 <defs>
  <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dbe4e7"/><stop offset=".48" stop-color="#879ba9"/><stop offset="1" stop-color="#526a7b"/></linearGradient>
  <linearGradient id="muzzle" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fffdf5"/><stop offset="1" stop-color="#d9d9d1"/></linearGradient>
@@ -51,9 +51,9 @@
 <path d="M239 208 Q252 197 267 207 M374 208 Q387 197 402 207" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="5" stroke-linecap="round"/>
 <!-- face mask and muzzle -->
 <path d="M195 366 Q206 323 253 343 Q286 354 320 370 Q356 351 391 342 Q440 325 451 369 Q446 430 392 458 Q353 477 321 472 Q283 479 246 458 Q198 432 195 366Z" fill="url(#muzzle)" opacity=".98"/>
-<path d="M235 337 Q270 316 306 340 Q270 360 235 337Z" fill="#fffdf6"/><path d="M360 340 Q397 316 431 337 Q397 360 360 340Z" fill="#fffdf6"/><ellipse cx="273" cy="339" rx="12" ry="17" fill="#4caaa8"/><ellipse cx="395" cy="339" rx="12" ry="17" fill="#4caaa8"/><ellipse cx="273" cy="339" rx="6" ry="13" fill="#182b37"/><ellipse cx="395" cy="339" rx="6" ry="13" fill="#182b37"/><path d="M229 310 L307 326 M360 326 L437 310" stroke="#526b7a" stroke-width="11" stroke-linecap="round"/>
+<path d="M235 329 Q270 286 306 329 Q270 375 235 329Z" fill="#fffdf6"/><path d="M360 329 Q397 286 431 329 Q397 375 360 329Z" fill="#fffdf6"/><ellipse cx="273" cy="331" rx="13" ry="23" fill="#4caaa8"/><ellipse cx="395" cy="331" rx="13" ry="23" fill="#4caaa8"/><ellipse cx="273" cy="331" rx="6" ry="17" fill="#182b37"/><ellipse cx="395" cy="331" rx="6" ry="17" fill="#182b37"/><circle cx="268" cy="321" r="5" fill="#fff"/><circle cx="390" cy="321" r="5" fill="#fff"/><path d="M230 300 Q270 286 307 309 M359 309 Q397 286 435 300" fill="none" stroke="#526b7a" stroke-width="9" stroke-linecap="round"/>
 <path d="M305 383 Q321 371 338 383 Q335 402 321 405 Q307 402 305 383Z" fill="#ad777d" stroke="#815a60" stroke-width="3"/>
-<path d="M313 410 Q333 399 351 410" fill="none" stroke="#8f5c61" stroke-width="5" stroke-linecap="round"/>
+<path d="M315 414 Q333 397 351 414" fill="none" stroke="#9b6468" stroke-width="5" stroke-linecap="round"/>
 <path d="M320 410 Q309 425 293 425 M321 410 Q334 425 350 425" fill="none" stroke="#8c6265" stroke-width="4" stroke-linecap="round"/>
 <path d="M211 388 L145 373 M216 411 L143 415 M431 388 L497 373 M426 411 L499 415" fill="none" stroke="#f9f7eb" stroke-opacity=".8" stroke-width="4" stroke-linecap="round"/>
 <!-- brow fur and whisker dots -->
