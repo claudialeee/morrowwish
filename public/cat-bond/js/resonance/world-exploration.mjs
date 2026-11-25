@@ -61,7 +61,7 @@ export function movePuzzle(p,i){
   if(i===p.goal[p.values.length])p.values.push(i);else if(p.type==="rescue"&&p.assist==="qilan"&&!p.assisted){p.assisted=true;p.assistedAt=p.values.length;}else{p.values=[];p.response=[];p.mistakes++;}
   if(p.type==="melody")p.response=p.values.map((n,j)=>({actor:p.participants?.[j%2],reply:(n+1)%3}));
  }
- else if(p.type==="heat"){if(i===0){p.values[0]+=5;p.values[1]+=5;}else if(i===1)p.values[1]-=5;else p.values=[...p.initial];if(p.values[0]>70||p.values[1]>45||p.values[1]<0){p.values=[...p.initial];p.mistakes++;}}
+ else if(p.type==="heat"){if(i===0){p.values[0]+=5;p.values[1]+=5;}else if(i===1)p.values[1]-=5;else{p.values[0]=Math.max(0,p.values[0]-5);p.values[1]=Math.max(0,p.values[1]-10);}if(p.values[0]>70||p.values[1]>45||p.values[1]<0){p.values=[...p.initial];p.mistakes++;}}
  else if(p.type==="flight"){const wind=p.wind[p.values[0]];p.values[1]+=wind+(i-1);p.values[0]++;if(Math.abs(p.values[1])>1||(p.values[0]===3&&p.values[1]!==0)){p.values=[...p.initial];p.mistakes++;}}
  else return false;
  p.solved=p.values.length===p.goal.length&&p.values.every((n,j)=>n===p.goal[j]);return p.solved;

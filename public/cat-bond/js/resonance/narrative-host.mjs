@@ -42,6 +42,7 @@ function install(){
    if(scheduledRoot!==State.S)return;
    if(slot&&slot!==State.S){close();return}
    const v=runtime.view();if(!v.current)return;
+   if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.current.lines[v.cursor]?.afterOperations?.length&&!v.lineReady){close();return;}
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.cursor===v.current.lines.length){
     if(v.current.id==="epilogue:E-02"&&v.objective.includes("npc:public-accountability")){const r=runtime.completeNPCScene({sceneId:v.current.id,operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:runtime.capture()});if(!r.ok)return;scheduleFinish();return}
     if(v.current.id==="epilogue:E-03"&&v.objective.includes("npc:second-garden-key")){showKey(runtime.capture());return}

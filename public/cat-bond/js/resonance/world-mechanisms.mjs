@@ -24,7 +24,7 @@ export const puzzleWords={
  water:[["调节双猫水闸","Balance the water gates"],["让水纹与目标刻印一致。","Match the flow to the target markings."],[["上游","Upstream"],["支流","Branch"],["根系","Roots"]]],
  routing:[["分散星铃路由","Distribute resonance"],["接通三条独立支路。","Connect the three independent channels."],[["西路","West"],["中继","Relay"],["东路","East"]]],
  stars:[["校准观星仪","Align the observatory"],["转动星环，让指针与观测刻痕重合。","Rotate the rings to match the observation marks."],[["外环","Outer ring"],["中环","Middle ring"],["内环","Inner ring"]]],
- heat:[["稳定炉温与压力","Stabilize heat and pressure"],["加热同时增加压力；泄压保留温度。","Heating raises pressure; venting preserves heat."],[["加热","Heat"],["泄压","Vent"],["重置","Reset"]]],
+ heat:[["稳定炉温与压力","Stabilize heat and pressure"],["加热升温升压；泄压不降温；冷却同时降低温度和压力。","Heat raises both readings; vent holds heat; coolant lowers both."],[["加热","Heat"],["泄压","Vent"],["冷却","Cool"]]],
  flight:[["穿过三道风标","Fly through three markers"],["抵消气流，最后回到中央高度。","Compensate for wind and finish at central altitude."],[["下沉","Descend"],["保持","Hold"],["上升","Climb"]]],
  blueprint:[["重组安全图纸","Rebuild the blueprint"],["先装承重结构，再接冷却回路，最后安装独立泄压装置。","Start with the load-bearing structure, connect the cooling loop, then fit the independent relief valve."],[["管路","Pipes"],["阀门","Valve"],["炉架","Frame"]]],
  memory:[["还原镜中档案","Restore the mirror record"],["按照档案刻印顺序复原。","Restore the sequence on the archive seal."],[["记录","Record"],["证词","Testimony"],["星历","Calendar"]]],

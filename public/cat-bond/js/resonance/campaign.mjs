@@ -1237,6 +1237,7 @@ export const campaign = {
 {"speaker":"xiaomao","text":{"zh":"我们一起把承火调送回炉心。这次每一份记录都会留下。","en":"Let's carry the Song of Ember back to the furnace together. This time, every record stays."}}, 
         {
           "speaker": "player",
+          "afterOperations": ["repair:forge","melody:forge"],
           "text": {
             "zh": "既然另一条存在，为什么不用？",
             "en": "If the other path exists, why not use it?"

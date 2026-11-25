@@ -19,7 +19,7 @@ export function makeEngine(data,initial){
   if(s.completed.includes("finale:B-03")&&s.support.length!==6)throw Error("Invalid support");
  }
  function choose(id){const c=current().choices.find(x=>x.id===id);if(ended()||!c||s.choices[s.scene]||(current().choiceTiming==="afterDialogue"&&s.cursor!==current().lines.length))return fail("choice-unavailable");s.choices[s.scene]=id;s.trust[c.npc]+=c.method==="anger"?-2:c.method==="distance"?-1:2;return commit()}
- function lineReady(){const x=current();return (!x.choices.length||x.choiceTiming!=="beforeAction"||!!s.choices[x.id])&&x.lineGate.every(op=>s.evidence[x.id]?.includes(op))&&(x.id!=="starfall:F-04"||ring())&&(x.id!=="finale:B-03"||s.support.length===6)}
+ function lineReady(){const x=current();return (!x.choices.length||x.choiceTiming!=="beforeAction"||!!s.choices[x.id])&&x.lineGate.every(op=>s.evidence[x.id]?.includes(op))&&(x.lines[s.cursor]?.afterOperations||[]).every(op=>s.evidence[x.id]?.includes(op))&&(x.id!=="starfall:F-04"||ring())&&(x.id!=="finale:B-03"||s.support.length===6)}
  function nextLine(){if(ended()||s.cursor>=current().lines.length)return fail("dialogue-ended");if(!lineReady())return fail("dialogue-awaits-action");s.cursor++;return commit()}
  // Trusted game adapters only: never expose this operation to a generic completion button.
  function record(sceneId,operation){if(ended()||sceneId!==s.scene||!current().requires.includes(operation))return fail("unexpected-operation");if(current().choices.length&&current().choiceTiming==="beforeAction"&&!s.choices[s.scene])return fail("choice-pending");const e=s.evidence[s.scene]||[];

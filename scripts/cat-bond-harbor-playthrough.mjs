@@ -414,7 +414,8 @@ try {
     const outcome=await page.locator('#cb-forge-result h2').innerText();await shot('forge-result');
     assert.equal(outcome,'FURNACE STABILIZED','Natural guardian battle must be won before Chapter III can pass');
     await page.locator('[data-forge-return]').click();await scene('forge:E-04');
-    if(await page.locator('.res-host[data-scene="forge:E-04"]').isVisible())await readDialogue('forge:E-04');
+    await readDialogue('forge:E-04');
+    assert.equal(await page.evaluate(()=>CatBondResonance.view().lineReady),false,"Route dialogue waits for the melody");
     await puzzle('Hearth sanctuary',['Heat','Heat','Heat','Heat','Vent']);
     await button('Invite Jinpo').click();await button('Invite Jinpo').waitFor({state:'hidden'});
     await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
@@ -424,7 +425,7 @@ try {
     await button('Song of Ember').click();const forgeMelody=page.locator('.rw-puzzle-controls');await forgeMelody.waitFor();
     for(const note of ['High','Middle','Low'])await button(note,forgeMelody).click();
     await page.waitForTimeout(1800);await shot('forge-ceremony');await forgeMelody.waitFor({state:'hidden'});
-    if(await page.locator('.res-host[data-scene="forge:E-04"]').isVisible())await readDialogue('forge:E-04');
+    await readDialogue('forge:E-04');
     await scene('sky:S-01');await shot('forge-restored');
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().melodies),['harbor','forest','forge']);
     await ship('forge','Pumps and tools');await travel('Rootsleep Forest');await ship('forest','Pumps and tools');

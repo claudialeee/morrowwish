@@ -106,6 +106,7 @@ BP.updateEnemyAI=function(dt,e,me){
   e.fireCd=99999;e.specialMeter=-10000;
   const events=tickForgeState(state,dt,e.hp/e.maxhp,target);
   processEvents(b,e,events);
+  if(b.autoMode&&state.supportCharges>0&&state.ventOpen<=0&&(state.heat>=65||state.pressure>=75)&&!b.coachHoldsEnemies?.())b.forgeUseSupport?.();
   if(state.cast&&e.forgeCast)e.forgeCast.remaining=state.cast.remaining;
   tickHazards(b,e,dt);
   e.forgeVentOpen=state.ventOpen>0;
