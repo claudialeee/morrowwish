@@ -4589,7 +4589,7 @@ class CaptureBattle {
     // win when the whole pack is down; "captureReady" when any enemy is low
     const live = this.liveEnemies();
     const wasReady = this.captureReady;
-    this.captureReady = live.some(e => e.hp / e.maxhp < 0.28);
+    this.captureReady = !this.storyEncounter&&!this.resonanceFinale&&live.some(e => e.hp / e.maxhp < 0.28);
     // Finisher beat: the first frame a wild cat drops into capture range, punch a
     // brief slowmo + flash + banner so the "收服它！" moment actually lands (it used
     // to be a silent toast). Fires once per ready-transition, not every frame.
@@ -6055,7 +6055,7 @@ class CaptureBattle {
 
   // themed battle backdrop; recolors per world-map region (this.theme)
   drawArenaBackground(ctx, W, H) {
-    if(this.storyEncounter && window.CatBondForgeCombat?.drawBackground){window.CatBondForgeCombat.drawBackground(ctx,W,H,this);return;}
+    if(this.forgeState && window.CatBondForgeCombat?.drawBackground){window.CatBondForgeCombat.drawBackground(ctx,W,H,this);return;}
     if(window.CatBondScenery && CatBondScenery.drawBattle(ctx,W,H,this.t,this.theme))return;
     const t = this.t, horizon = H * 0.34;
     const th = this.theme || {};

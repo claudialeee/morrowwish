@@ -60,7 +60,7 @@ function positionObjectiveHud(panel){
 
 function install(){
  const BP=window.Battle?.CaptureBattle?.prototype,GP=window.Game?.prototype;
- if(!BP||!GP)return;
+ if(!BP||!GP||window.CatBondRegionalArt)return;
  loadArt();window.CatBondRegionalArt=Object.freeze({drawScene,drawManifestation});
  const bg=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){if(this.regionalCombat&&drawScene(ctx,W,H,this.regionalCombat.region))return;return bg.call(this,ctx,W,H);};

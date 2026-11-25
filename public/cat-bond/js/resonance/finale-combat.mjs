@@ -39,7 +39,7 @@ function install(){
  const sceneTitle={"finale:B-01":["逆响守铃者","The Reverse Bellkeeper"],"finale:B-02":["空白回响","The Hollow Echo"],"finale:B-03":["六音归环","Six Notes Return"]};
  function available(game,id){
   const h=host(),v=h?.view?.(),root=window.State.S;
-  return game?.scene==="map"&&!game.battle&&v?.current?.id===id&&v.ring===true&&v.objective.includes(PHASES[id])&&v.melodies?.length===6&&root.resonanceExploration?.location==="starfall";
+  return typeof h?.captureAction==="function"&&typeof h?.isCurrentAction==="function"&&game?.scene==="map"&&!game.battle&&v?.current?.id===id&&v.ring===true&&v.objective.includes(PHASES[id])&&v.melodies?.length===6&&root.resonanceExploration?.location==="starfall";
  }
  function prep(game,id){
   if(!available(game,id))return false;
@@ -56,8 +56,8 @@ function install(){
    const pack=id==="finale:B-01"?[base,...Array(6).fill(base)]:id==="finale:B-02"?[catSp[0],catSp[0],catSp[1]||catSp[0],catSp[1]||catSp[0]]:[base];
    game.startBattle(fighters,base,{storyEncounter:"finale",pack});
    const b=game.battle;if(!b)return;
-   const f={id,root,revision:host().snapshot().revision,nodes:nodePositions(b.W,b.H,b.topMargin,b.bottomMargin),elapsed:0,cast:null,cooldown:2.8,cycle:0,confirmed:new Set(),done:false};
-   b.resonanceFinale=f;b.captureReady=false;
+   const f={id,root,token:host().captureAction(),revision:host().snapshot().revision,nodes:nodePositions(b.W,b.H,b.topMargin,b.bottomMargin),elapsed:0,cast:null,cooldown:2.8,cycle:0,confirmed:new Set(),done:false};
+   b.resonanceFinale=f;b.storyEncounter=true;b.captureReady=false;
    b.enemies.forEach((e,i)=>{
      e.isBoss=true;e.rotation=[];e.ultSkill=null;e.specialMeter=-10000;e.fireCd=99999;e.reflectT=0;e.wardCd=99999;
      e.maxhp=Math.max(55,Math.round(alive(b).reduce((n,x)=>n+x.maxhp,0)*(id==="finale:B-01"?(i===0?1:.20):id==="finale:B-02"?.32:1.6)));e.hp=e.maxhp;
@@ -157,7 +157,7 @@ function install(){
  }
  function tick(b,dt){
   const f=b.resonanceFinale;if(!f||b.done||b.captureSeq||b.duoCinematic||b.ultCinematic||b.game.battleHelpOpen||b.coachHoldsEnemies?.())return;
-  if(f.root!==window.State.S||host()?.view()?.current?.id!==f.id){b.finish(false);return;}
+  if(f.root!==window.State.S||!host()?.isCurrentAction?.(f.token)||host()?.view()?.current?.id!==f.id){b.finish(false);return;}
   const d=clamp(dt*(b.tempoScale??.64),0,.06);f.elapsed+=d;
   if(f.id==="finale:B-02"){
    const beat=f.elapsed%2.8,prev=(f.elapsed-d)%2.8;
@@ -182,13 +182,13 @@ function install(){
   if(b.autoMode&&me?.alive&&!b.duoRun&&!me.dashT&&!me.rootT){const dx=next.x-me.x,dy=next.y-me.y,l=Math.hypot(dx,dy);if(l>18){const step=Math.min(l,105*d);me.x+=dx/l*step;me.y+=dy/l*step;}}
   const support=host().supportProfile?.(next.region),trust=Object.values(support?.trust||{}).reduce((a,c)=>a+c,0),methods=support?.methods||[];
   const bonded=b.duo&&b.duoUses>0&&alive(b).filter(x=>[b.duo.a.uid,b.duo.b.uid].includes(x.cat.uid)).length===2;
-  const need=Math.max(1.8,4.0-Math.min(1.0,Math.max(0,trust)*.12)-(methods.length?.4:0)-(bonded?.6:0));
+  const memories=b.duo&&window.CatRelations?.memoryList?.(b.duo.a,b.duo.b)||[];const pledge=memories.length>0&&bonded;
+  const need=Math.max(1.8,4.0-Math.min(1.0,Math.max(0,trust)*.12)-(methods.length?.4:0)-(bonded?.6:0)-(pledge?.35:0));
   const near=alive(b).some(x=>distance(x,next)<=56);
   next.progress=holdProgress(next.progress,d,near,false,need);next.required=need;
   if(next.progress>=need){
-   const result=host().support({region:next.region,action:next.action,verified:true});
-   if(result?.ok){next.done=true;f.revision=host().snapshot().revision;b.vfx.ring(next.x,next.y,{r0:15,vr:240,life:.8,color:next.color,width:5});notice(b,"地区旋律已归位。","A regional melody has returned.");paint(b);}
-   else next.progress=Math.max(0,need-.5);
+   // Stage the verified physical action in this fight; a retreat cannot grant narrative evidence.
+   next.done=true;b.vfx.ring(next.x,next.y,{r0:15,vr:240,life:.8,color:next.color,width:5});notice(b,"地区旋律已归位。","A regional melody has returned.");paint(b);
   }
  }
  const update=BP.update;
@@ -202,6 +202,8 @@ function install(){
  };
  const captureTick=BP.tickCaptureSeq;
  BP.tickCaptureSeq=function(dt){if(!this.resonanceFinale)return captureTick.call(this,dt);if(this.captureSeq){this.captureSeq.t=Math.max(0,this.captureSeq.t-dt);if(this.captureSeq.t===0){this.captureSeq=null;this.finish(true);}}};
+ const background=BP.drawArenaBackground;
+ BP.drawArenaBackground=function(ctx,W,H){if(this.resonanceFinale&&window.CatBondRegionalArt?.drawScene(ctx,W,H,"starfall"))return;return background.call(this,ctx,W,H);};
  const draw=BP.draw;
  BP.draw=function(ctx){
   const f=this.resonanceFinale;if(!f)return draw.call(this,ctx);
@@ -221,7 +223,11 @@ function install(){
   const b=this.battle,f=b?.resonanceFinale;if(!f)return end.call(this);
   const win=b.result==="win"&&f.done,root=f.root,same=root===window.State.S,active=host(),valid=same&&active?.view()?.current?.id===f.id;
   let committed=false;
-  if(win&&valid){const r=active.recordEvidence({sceneId:f.id,operation:PHASES[f.id],region:"finale",verified:true,outcome:"win"});committed=!!r?.ok;}
+  if(win&&valid&&active.isCurrentAction(f.token)){
+   let supportOK=true;
+   if(f.id==="finale:B-03")for(const n of f.nodes){if(active.snapshot().support.includes(n.region))continue;const r=active.support({region:n.region,action:n.action,verified:true,token:f.token});if(!r?.ok){supportOK=false;break;}}
+   if(supportOK){const r=active.recordEvidence({sceneId:f.id,operation:PHASES[f.id],region:"starfall",verified:true,outcome:"win",token:f.token});committed=!!r?.ok;}
+  }
   if(same&&window.State.difficulty()==="casual")window.State.healAllCats?.();
   document.getElementById("cb-finale-hud")?.remove();document.getElementById("battle-ui")?.classList.remove("on");
   const duo=document.getElementById("duo-burst");if(duo)duo.hidden=true;
@@ -229,19 +235,9 @@ function install(){
   this.toast(committed?{zh:"本阶段目标已达成。",en:"The objective is complete."}:win?{zh:"剧情保存失败，请重新挑战。",en:"Story save failed. Retry the encounter."}:{zh:"队伍撤离，休整后再挑战。",en:"Withdrawn. Rest and retry the encounter."});
   if(committed)active.showCurrent?.();
  };
- function refreshEntry(){
-  const game=window.__game,v=host()?.view?.(),id=v?.current?.id;
-  let button=document.getElementById("cb-finale-entry");
-  if(!game||!PHASES[id]||!available(game,id)){button?.remove();return;}
-  if(!button){button=document.createElement("button");button.id="cb-finale-entry";button.type="button";button.className="cb-finale-entry";document.getElementById("stage")?.append(button);}
-  button.textContent=tr("挑战："+sceneTitle[id][0],"Challenge: "+sceneTitle[id][1]);button.onclick=()=>prep(game,id);
- }
- window.addEventListener("cat-bond-resonance-battle-request",e=>{const d=e.detail;if(d&&PHASES[d.sceneId]===d.operation)prep(window.__game,d.sceneId);});
- window.addEventListener("cat-bond-resonance-changed",refreshEntry);
+ window.addEventListener("cat-bond-resonance-battle-request",e=>{const d=e.detail;if(d?.region==="starfall"&&PHASES[d.sceneId]===d.operation)prep(window.__game,d.sceneId);});
  window.addEventListener("resize",()=>requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-finale-hud"))));
- window.addEventListener("morrowwish-language-change",()=>{refreshEntry();const b=window.__game?.battle;if(b?.resonanceFinale)paint(b);});
- const originalUpdate=GP.update;
- GP.update=function(dt){const r=originalUpdate.call(this,dt);if(this.scene!=="battle"&&(this.t-(this._finaleEntryLast??-99)>.5)){this._finaleEntryLast=this.t;refreshEntry();}return r;};
+ window.addEventListener("morrowwish-language-change",()=>{const b=window.__game?.battle;if(b?.resonanceFinale){paint(b);requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-finale-hud")));}});
  window.CatBondFinaleCombat=Object.freeze({prepare:prep,available});
 }
 if(typeof window!=="undefined")install();

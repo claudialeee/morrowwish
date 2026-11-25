@@ -96,7 +96,7 @@ function tickHazards(b,e,dt){
 }
 const originalAI=BP.updateEnemyAI;
 BP.updateEnemyAI=function(dt,e,me){
-  if(!this.storyEncounter||e.visualKind!=="forge-guardian")return originalAI.call(this,dt,e,me);
+  if(!this.forgeState||e.visualKind!=="forge-guardian")return originalAI.call(this,dt,e,me);
   const b=this,state=this.forgeState,target=aliveTarget(this,e);
   if(!state||!target)return;
   // Reuse the mature arena movement, dodge and ward planner; disable its generic attacks.
@@ -113,26 +113,26 @@ BP.updateEnemyAI=function(dt,e,me){
 };
 const originalHurt=BP.hurtEnemy;
 BP.hurtEnemy=function(e,dmg,...args){
-  if(this.storyEncounter&&e?.visualKind==="forge-guardian")dmg*=forgeDamageScale(this.forgeState);
+  if(this.forgeState&&e?.visualKind==="forge-guardian")dmg*=forgeDamageScale(this.forgeState);
   return originalHurt.call(this,e,dmg,...args);
 };
 const originalStartCapture=BP.startCaptureSeq;
 BP.startCaptureSeq=function(){
-  if(!this.storyEncounter)return originalStartCapture.call(this);
+  if(!this.forgeState)return originalStartCapture.call(this);
   const e=this.enemies.find(x=>x.visualKind==="forge-guardian");
   this.captureSeq={t:1.35,max:1.35,x:e?.x||this.W/2,y:e?.y||this.H/2,sp:null,cat:e};
   this.forgeVictorySequence=true;
 };
 const originalTickCapture=BP.tickCaptureSeq;
 BP.tickCaptureSeq=function(dt){
-  if(!this.storyEncounter)return originalTickCapture.call(this,dt);
+  if(!this.forgeState)return originalTickCapture.call(this,dt);
   if(!this.captureSeq)return;
   this.captureSeq.t=Math.max(0,this.captureSeq.t-dt);
   if(this.captureSeq.t===0){this.captureSeq=null;window.MorrowwishAudio?.effect?.("combat_win");this.finish(true);}
 };
 const originalFinish=BP.finish;
 BP.finish=function(win){
-  if(this.storyEncounter)this.forgeOutcome=win?"win":(this.forgeRetreat?"retreat":"defeat");
+  if(this.forgeState)this.forgeOutcome=win?"win":(this.forgeRetreat?"retreat":"defeat");
   return originalFinish.call(this,win);
 };
 function drawBackground(ctx,W,H,b){
@@ -241,7 +241,7 @@ function mountHud(game,b){
   panel.querySelector("[data-forge-jinpo]").src=art.jinpo.src;
   panel.querySelector("[data-forge-xiaomao]").src=art.xiaomao.src;
   panel.querySelector("[data-forge-support-button]").addEventListener("click",()=>{
-    if(game.battle?.storyEncounter)game.battle.forgeUseSupport?.();
+    if(game.battle?.forgeState)game.battle.forgeUseSupport?.();
   });
   host.append(panel);renderHud(game,b);requestAnimationFrame(()=>positionObjectiveHud(panel));
 }
@@ -284,7 +284,7 @@ function showResult(game,b,outcome,returnToMap){
   const back=overlay.querySelector("[data-forge-return]"),retry=overlay.querySelector("[data-forge-retry]");
   back.textContent=en?"Return to the world":"返回世界";back.dataset.forgeZh="返回世界";back.dataset.forgeEn="Return to the world";
   retry.textContent=en?"Retry encounter":"再次挑战";retry.dataset.forgeZh="再次挑战";retry.dataset.forgeEn="Retry encounter";retry.hidden=win&&!!b.forgeRewardGranted;
-  back.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();if(b.forgeContext?.returnToWorld){b.forgeContext.returnToWorld({outcome,committed:!!b.forgeRewardGranted});}else if(returnToMap){game.scene="map";window.WorldMap?.resumeRegion?.(false);}else{game.scene="yard";game.showYardChrome?.();}});
+  back.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();if(b.forgeContext?.returnToWorld){b.forgeContext.returnToWorld({outcome,committed:!!b.forgeRewardGranted});if(b.forgeRewardGranted)window.CatBondResonance?.showCurrent?.();}else if(returnToMap){game.scene="map";window.WorldMap?.resumeRegion?.(false);}else{game.scene="yard";game.showYardChrome?.();}});
   retry.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();try{window.CatBondForgeCombat.launch(game,b.forgeContext);}catch(error){toast(game,"无法重试：存档或剧情已变化。","Retry unavailable: save or story has changed.");console.error(error);}});
   document.getElementById("stage")?.append(overlay);game._forgeResultOpen=true;
 }
@@ -296,18 +296,18 @@ function currentForgeContext(game,options){
     return {preview:true,slot,returnToWorld:null};
   }
   const engine=window.CatBondResonance;
-  if(!engine||typeof engine.view!=="function"||typeof engine.snapshot!=="function"||typeof engine.recordEvidence!=="function")throw Error("Chat 4 active narrative host required");
+  if(!engine||typeof engine.view!=="function"||typeof engine.snapshot!=="function"||typeof engine.recordEvidence!=="function"||typeof engine.captureAction!=="function"||typeof engine.isCurrentAction!=="function")throw Error("Chat 4 active narrative host required");
   if(options?.engine&&options.engine!==engine)throw Error("Noncanonical narrative host");
   if(options.slot&&options.slot!==slot)throw Error("Stale save slot");
   const snapshot=engine.snapshot(),view=engine.view();
   if(JSON.stringify(snapshot)!==JSON.stringify(slot.resonance))throw Error("Narrative engine does not match active slot");
   if(game.scene!=="map"||slot.resonanceExploration?.location!=="forge"||view.current?.id!==FORGE_ENCOUNTER.id||!view.objective?.includes(FORGE_ENCOUNTER.operation)||view.objective.includes("puzzle:heat-pressure"))throw Error("Forge battle unavailable: reach the forge and complete the heat-pressure puzzle first");
-  return {preview:false,slot,engine,revision:snapshot.revision,returnToWorld:typeof options.returnToWorld==="function"?options.returnToWorld:null};
+  return {preview:false,slot,engine,token:engine.captureAction(),revision:snapshot.revision,returnToWorld:typeof options.returnToWorld==="function"?options.returnToWorld:null};
 }
 function finishEncounter(game,b){
   if(b.forgeFinished)return;b.forgeFinished=true;
   const outcome=b.forgeOutcome||"defeat",win=outcome==="win",returnToMap=game._returnScene==="map",ctx=b.forgeContext;
-  const slot=window.State.S,valid=ctx?.slot===slot&&!ctx.preview;
+  const slot=window.State.S,valid=ctx?.slot===slot&&!ctx.preview&&ctx.engine===window.CatBondResonance&&ctx.engine.isCurrentAction(ctx.token);
   b.forgeRewardGranted=false;
   if(valid){
     const clone=x=>JSON.parse(JSON.stringify(x));
@@ -329,7 +329,7 @@ function finishEncounter(game,b){
         const cats=[...(b.team||[]),...(b._benchFighters?.values?.()||[])].filter(f=>f?.cat&&!f._reinforcement).map(f=>f.cat);
         for(const cat of new Map(cats.map(c=>[c.uid,c])).values()){window.State.addXp?.(cat,42);cat.battlesWon=(cat.battlesWon||0)+1;}
         // Chat 4 owns the only story transaction. Staged rewards are included in its single Save Manager write.
-        const result=ctx.engine.recordEvidence({sceneId:FORGE_ENCOUNTER.id,operation:FORGE_ENCOUNTER.operation,region:"forge",verified:true,outcome:"win"});
+        const result=ctx.engine.recordEvidence({sceneId:FORGE_ENCOUNTER.id,operation:FORGE_ENCOUNTER.operation,region:"forge",verified:true,outcome:"win",token:ctx.token});
         if(!result?.ok)throw Error(result?.reason||"Story save rejected");
         b.forgeRewardGranted=true;
       }else{const result=window.State.save();if(!result?.ok)throw Error(result?.reason||"Recovery save rejected");}
@@ -346,7 +346,7 @@ function finishEncounter(game,b){
 }
 const originalEnd=GP.endBattle;
 GP.endBattle=function(){
-  const b=this.battle;if(!b?.storyEncounter)return originalEnd.call(this);
+  const b=this.battle;if(!b?.forgeState)return originalEnd.call(this);
   return finishEncounter(this,b);
 };
 const originalStart=GP.startBattle;
@@ -379,14 +379,14 @@ GP.startBattle=function(team,wildSpecies,opts={}){
   mountHud(this,b);this.updateBattleUI?.();return result;
 };
 const originalBattleUI=GP.updateBattleUI;
-GP.updateBattleUI=function(){const result=originalBattleUI.call(this);if(this.battle?.storyEncounter)renderHud(this,this.battle);return result;};
+GP.updateBattleUI=function(){const result=originalBattleUI.call(this);if(this.battle?.forgeState)renderHud(this,this.battle);return result;};
 const originalGameUpdate=GP.update;
 GP.update=function(dt){if(this._forgeResultOpen){return;}return originalGameUpdate.call(this,dt);};
 const originalArena=BP.drawArenaBackground;
-BP.drawArenaBackground=function(ctx,W,H){if(this.storyEncounter)return drawBackground(ctx,W,H,this);return originalArena.call(this,ctx,W,H);};
+BP.drawArenaBackground=function(ctx,W,H){if(this.forgeState)return drawBackground(ctx,W,H,this);return originalArena.call(this,ctx,W,H);};
 const originalDraw=BP.draw;
 BP.draw=function(ctx){
-  if(!this.storyEncounter)return originalDraw.call(this,ctx);
+  if(!this.forgeState)return originalDraw.call(this,ctx);
   const seq=this.captureSeq;this.captureSeq=null;
   try{originalDraw.call(this,ctx);}finally{this.captureSeq=seq;}
   drawBossEffects(ctx,this);
@@ -419,10 +419,10 @@ window.CatBondForgeCombat={
 GP.startResonanceBattle=function(operation,context){if(operation!==FORGE_ENCOUNTER.operation)return false;return window.CatBondForgeCombat.prepare(this);};
 window.addEventListener("cat-bond-resonance-battle-request",event=>{const d=event.detail,game=window.__game;if(!game||d?.sceneId!==FORGE_ENCOUNTER.id||d.operation!==FORGE_ENCOUNTER.operation||d.region!=="forge")return;if(!window.CatBondForgeCombat.prepare(game))toast(game,"请先完成熔炉机关。","Complete the furnace mechanism first.");});
 const flee=document.getElementById("btn-flee");
-flee?.addEventListener("click",()=>{if(window.__game?.battle?.storyEncounter)window.__game.battle.forgeRetreat=true;},true);
+flee?.addEventListener("click",()=>{if(window.__game?.battle?.forgeState)window.__game.battle.forgeRetreat=true;},true);
 window.addEventListener("resize",()=>requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-forge-hud"))));
 window.addEventListener("morrowwish-language-change",()=>{
-  const game=window.__game;if(game?.battle?.storyEncounter){renderHud(game,game.battle);requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-forge-hud")));}
+  const game=window.__game;if(game?.battle?.forgeState){renderHud(game,game.battle);requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-forge-hud")));}
   const en=window.MorrowwishI18n?.get?.()!=="zh";
   document.querySelectorAll("#cb-forge-result [data-forge-zh][data-forge-en]").forEach(node=>{node.textContent=en?node.dataset.forgeEn:node.dataset.forgeZh;});
 });
