@@ -39,7 +39,15 @@ function install(){
  function exitToYard(){host.hidden=true;pending=null;exit?.();}
  function reason(k){const m={"region-locked":["尚未开放","Region locked"],"rescue-first":["先救援遇险小船","Rescue the boat first"],"beacon-first":["先校准灯塔","Align the lighthouse first"],"departure-dialogue-pending":["先与暮铃交谈","Speak with Muling before departing"],"invite-local-cats":["先邀请两位当地居民","Invite both local residents"],"choice-pending":["请先作出剧情选择","Make the story choice first"],"save-failed":["存档失败，请重试","Save failed; retry"],"not_started":["请先开始或读取存档","Start or load a save"],"local-crisis-unresolved":["先完成当地危机","Resolve the local crisis first"],"cargo-busy":["先交付当前物资","Deliver the current cargo first"],"canonical-exchange-unavailable":["正式交流接口暂不可用","Canonical exchange unavailable"],"canonical-host-unavailable":["正式剧情接口暂不可用","Canonical story unavailable"],"walk-to-objective":["请先抵达地点","Walk to the location"]};return m[k]?tr(...m[k]):String(k||tr("操作失败","Action failed"));}
  function report(r,t=""){if(!r?.ok){notice=reason(r?.reason);return false;}notice=t;if(r.reward){game.refreshHUD?.();notice+=(notice?" · ":"")+"+"+r.reward.coins+" "+tr("金币","coins")+" · +"+r.reward.fish+" "+tr("小鱼干","fish");}return true;}
- function image(id){if(art[id])return art[id];const img=new Image();art[id]=img;img.onload=()=>{if(canvas)draw()};img.onerror=()=>{notice=tr("场景原画加载失败","Environment artwork failed to load");};img.src=new URL("../../assets/resonance-world-v2/"+id+(["harbor","atlas","forest"].includes(id)?".webp":".svg"),import.meta.url).href;return img;}
+ function image(id){
+  if(art[id])return art[id];
+   const img=new Image();
+  art[id]=img;
+  img.onload=()=>{if(canvas)draw();};
+  img.onerror=()=>{notice=tr("场景原画加载失败","Environment artwork failed to load");};
+  img.src=new URL("../../assets/resonance-world-v2/"+(id==="harbor"?"harbor-mist":id)+".webp",import.meta.url).href;
+  return img;
+ }
  function render(){if(!host)return;if(!window.CatBondResonance?.view){host.replaceChildren(E("p","rw-notice",tr("正式剧情正在初始化","Initializing the canonical story")));host.hidden=game.scene!=="map";return;}const b=current(),v=b.view(),w=b.world();revision=sync();host.replaceChildren();host.hidden=game.scene!=="map";
  const head=E("header","rw-head"),brand=E("div","rw-brand");brand.append(E("small","",tr("猫猫纽带","CAT BOND")),E("strong","",mode==="map"?tr("最后的回响","The Last Resonance"):tr(...layouts[w.location].name)));head.append(brand,B(tr("世界地图","World atlas"),enterMap,mode==="map"),B(tr("阳光花园","Sunlit Garden"),exitToYard));host.append(head);
  const objective=E("section","rw-objective"),q=E("div","rw-current");q.append(E("small","",tr("当前主线","CURRENT STORY")),E("strong","",v.current?.title?.[lang()]||tr("新的旅程","A new journey")));
@@ -102,7 +110,12 @@ function install(){
  const memory=availableMemories(reg).find(m=>hit(m.point));if(memory){visitDuoMemory(memory);return;}
  const npc=storyNpcs().find(n=>hit(n.point));if(npc){visitNpc(npc);return;}
  const cache=explorer.rewardPoints().find(p=>!b.world().pickups[reg+":"+p.id]&&hit(p.point));if(cache){go(cache.point,()=>{report(explorer.pickup(cache.id),tr("发现宝藏","Treasure found"));render()});return;}
- if(wild&&hit(wild.point)){visitWild(reg);return;}pending=null;explorer.walk(x,y);}
+ if(wild&&hit(wild.point)){visitWild(reg);return;}
+ if(window.CatBondResonanceNPC?.interactFollower?.({
+  x:x*W,y:y*H,playerX:explorer.position[0]*W,playerY:explorer.position[1]*H,region:reg
+ })){pending=null;if(explorer.moving)explorer.walk(...explorer.position);return;}
+ pending=null;explorer.walk(x,y);
+ }
  function text(s,x,y,n=18,col="#f6e6c7"){ctx.font="600 "+n+"px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle=col;ctx.fillText(s,x*W,y*H);}
  function mark(x,y,k,t,col="#e9ca8e"){const X=x*W,Y=y*H;ctx.save();ctx.beginPath();ctx.arc(X,Y,16,0,Math.PI*2);ctx.fillStyle="#142b3cdd";ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();symbol(ctx,k,X,Y,.66,col);ctx.font="600 15px system-ui";let w=Math.min(180,ctx.measureText(t).width+14);ctx.beginPath();ctx.roundRect(X-w/2,Y+19,w,23,5);ctx.fillStyle="#102334e8";ctx.fill();ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff0d3";ctx.fillText(t,X,Y+30,w-6);ctx.restore();}
  function cat(sp,p,walk=false,s=.8){const fn=window.CatMotion?.draw||window.CatArt?.drawCat;if(fn&&sp)try{fn(ctx,p[0]*W,p[1]*H,{species:sp,scale:s,t:frame/60,face:1,pose:walk?"walk":"idle"})}catch(e){console.warn("World cat art unavailable",e.message)}}

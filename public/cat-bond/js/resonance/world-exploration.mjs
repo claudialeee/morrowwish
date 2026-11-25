@@ -3,23 +3,23 @@ import { campaign } from "./campaign.mjs";
 export const layouts={
  harbor:{
   name:["霁潮港","Misttide Harbor"],
-  paths:[[.17,.9],[.13,.71],[.26,.59],[.26,.45],[.20,.38],[.14,.30],[.125,.2],
-   [.14,.30],[.20,.38],[.26,.45],[.37,.55],[.50,.47],[.66,.45],[.76,.45],[.82,.49],
-   [.75,.61],[.75,.73],[.85,.78],[.91,.71]],
-  castPoints:{jiedeng:[.14,.30],qilan:[.26,.59]},
+  paths:[[.19,.89],[.12,.80],[.115,.70],[.16,.60],[.235,.56],[.195,.50],[.153,.44],[.124,.374],[.131,.341],
+   [.124,.374],[.153,.44],[.195,.50],[.235,.56],[.34,.478],[.50,.467],[.66,.46],[.82,.45],[.912,.475],
+   [.887,.538],[.837,.61],[.80,.682],[.802,.742],[.87,.748]],
+  castPoints:{jiedeng:[.195,.50],qilan:[.16,.60]},
   features:{
-   "explore:tide-logbook":[.91,.71,"潮洞日志","Tide cave logbook"],
-   "puzzle:beam-mirrors":[.14,.30,"灯塔反射镜","Lighthouse mirrors"],
-   "rescue:storm-boat":[.17,.9,"遇险小船","Storm boat"],
-   "repair:harbor":[.125,.2,"灯塔圣所","Lighthouse sanctuary"],
-   "melody:harbor":[.125,.2,"归潮调","Returning Tides"]
+   "explore:tide-logbook":[.87,.748,"潮洞日志","Tide cave logbook"],
+   "puzzle:beam-mirrors":[.153,.44,"灯塔反射镜","Lighthouse mirrors"],
+   "rescue:storm-boat":[.19,.89,"遇险小船","Storm boat"],
+   "repair:harbor":[.131,.341,"灯塔圣所","Lighthouse sanctuary"],
+   "melody:harbor":[.131,.341,"归潮调","Returning Tides"]
   }
  },
  forest:{name:["眠根林","Rootsleep Forest"],paths:[[.1,.86],[.29,.73],[.29,.4],[.53,.36],[.75,.61],[.88,.23]],features:{"explore:scent-trail":[.29,.4,"气味踪迹","Scent trail"],"puzzle:paired-water-gates":[.75,.61,"双猫水闸","Paired water gates"],"repair:forest":[.88,.23,"古根圣所","Ancient-root sanctuary"],"melody:forest":[.88,.23,"相枝调","Living Roots"]}},
- forge:{name:["赤炉环城","Emberforge City"],paths:[[.1,.86],[.35,.76],[.35,.47],[.65,.47],[.65,.23],[.88,.23]],features:{"puzzle:safety-blueprint":[.35,.47,"安全图纸","Safety blueprint"],"puzzle:heat-pressure":[.65,.47,"炉心控制台","Furnace controls"],"repair:forge":[.88,.23,"炉心圣所","Hearth sanctuary"],"melody:forge":[.88,.23,"承火调","Song of Ember"],"battle:forge-guardian":[.65,.23,"守炉者","Forge guardian"]}},
- sky:{name:["云脊群岛","Skyspine Isles"],paths:[[.1,.86],[.23,.66],[.47,.66],[.59,.42],[.78,.42],[.88,.19]],features:{"explore:flight-recorder":[.47,.66,"飞行记录仪","Flight recorder"],"puzzle:joint-flight":[.59,.42,"双猫滑翔台","Joint gliding platform"],"repair:sky":[.88,.19,"风翼圣所","Windwing sanctuary"],"melody:sky":[.88,.19,"逐风调","Open Sky"]}},
- library:{name:["月镜书库","Moonmirror Library"],paths:[[.1,.86],[.22,.68],[.48,.68],[.48,.42],[.76,.42],[.88,.2]],features:{"puzzle:mirror-records":[.48,.68,"镜面档案","Mirror records"],"explore:routing-record":[.76,.42,"路由记录","Routing record"],"repair:library":[.88,.2,"月镜圣所","Moonmirror sanctuary"],"melody:library":[.88,.2,"照影调","Reflections"]}},
- starfall:{name:["星坠原","Starfall Expanse"],paths:[[.1,.86],[.31,.72],[.41,.46],[.66,.59],[.77,.35],[.88,.2]],features:{"puzzle:star-map":[.41,.46,"星图仪","Star chart"],"explore:catastrophe-record":[.31,.72,"灾变记录","Catastrophe record"],"puzzle:distributed-routing":[.77,.35,"分布式观星仪","Distributed observatory"],"repair:starfall":[.88,.2,"星原圣所","Starfall sanctuary"],"melody:starfall":[.88,.2,"续星调","Beyond Stars"]}}
+ forge:{name:["赤炉环城","Emberforge City"],paths:[[.1,.86],[.35,.76],[.35,.50],[.63,.50],[.74,.40],[.88,.30]],features:{"puzzle:safety-blueprint":[.35,.50,"安全图纸","Safety blueprint"],"puzzle:heat-pressure":[.63,.50,"炉心控制台","Furnace controls"],"repair:forge":[.88,.30,"炉心圣所","Hearth sanctuary"],"melody:forge":[.88,.30,"承火调","Song of Ember"],"battle:forge-guardian":[.74,.40,"守炉者","Forge guardian"]}},
+ sky:{name:["云脊群岛","Skyspine Isles"],paths:[[.10,.80],[.10,.70],[.16,.61],[.18,.55],[.41,.51],[.58,.55],[.67,.50],[.72,.43],[.74,.36],[.84,.30],[.89,.24]],features:{"explore:flight-recorder":[.41,.51,"飞行记录仪","Flight recorder"],"puzzle:joint-flight":[.58,.55,"双猫滑翔台","Joint gliding platform"],"repair:sky":[.89,.24,"风翼圣所","Windwing sanctuary"],"melody:sky":[.89,.24,"逐风调","Open Sky"]}},
+ library:{name:["月镜书库","Moonmirror Library"],paths:[[.10,.83],[.17,.73],[.22,.60],[.46,.58],[.50,.42],[.76,.40],[.82,.36],[.89,.29]],features:{"puzzle:mirror-records":[.46,.58,"镜面档案","Mirror records"],"explore:routing-record":[.76,.40,"路由记录","Routing record"],"repair:library":[.89,.29,"月镜圣所","Moonmirror sanctuary"],"melody:library":[.89,.29,"照影调","Reflections"]}},
+ starfall:{name:["星坠原","Starfall Expanse"],paths:[[.10,.90],[.23,.78],[.34,.68],[.41,.58],[.42,.52],[.51,.58],[.68,.55],[.78,.48],[.78,.40],[.84,.33],[.92,.30]],features:{"puzzle:star-map":[.42,.52,"星图仪","Star chart"],"explore:catastrophe-record":[.34,.68,"灾变记录","Catastrophe record"],"puzzle:distributed-routing":[.84,.33,"分布式观星仪","Distributed observatory"],"repair:starfall":[.92,.30,"星原圣所","Starfall sanctuary"],"melody:starfall":[.92,.30,"续星调","Beyond Stars"]}}
 };
 export const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const segment=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy)));return {p:[a[0]+t*dx,a[1]+t*dy],t};};

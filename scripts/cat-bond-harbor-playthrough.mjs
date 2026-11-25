@@ -26,6 +26,14 @@ try {
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
     const shot = id => page.screenshot({path:out+'/'+name+'-'+id+'.png'});
     const checkObjective = operation => page.waitForFunction(op => CatBondResonance.view().objective.includes(op),operation);
+    async function tapLandmark(x,y) {
+      const surface = page.locator('.rw-surface');
+      await surface.scrollIntoViewIfNeeded();
+      const rect = await surface.boundingBox();
+      const point = {x:rect.x + rect.width*x,y:rect.y + rect.height*y};
+      if (options.hasTouch) await page.touchscreen.tap(point.x,point.y);
+      else await page.mouse.click(point.x,point.y);
+    }
     async function readDialogue(id,choice) {
       const dialogue = page.locator('.res-host[data-scene="'+id+'"]');
       await dialogue.waitFor();
@@ -61,13 +69,19 @@ try {
         return image?.naturalWidth > 0 && skip && !skip.disabled;
       });
       if (id === 'prologue:P-01') {
+        await page.locator('.cbcp-art').first().evaluate(image=>image.decode());
+        await page.waitForTimeout(600);
         await shot('opening');
         await page.locator('.cbcp-language').click();
         assert.equal(await page.evaluate(() => MorrowwishI18n.get()),'zh');
         await page.locator('.cbcp-language').click();
         assert.equal(await page.evaluate(() => MorrowwishI18n.get()),'en');
       }
-      await page.locator('.cbcp-skip').click();
+      if (id === 'prologue:P-01' && name === 'desktop') {
+        await scene('prologue:P-02');
+      } else {
+        await page.locator('.cbcp-skip').click();
+      }
     }
 
     await scene('prologue:P-04');
@@ -91,12 +105,43 @@ try {
     await scene('prologue:P-05');
     await readDialogue('prologue:P-05');
     await shot('atlas');
-    await page.locator('.rw-regions [data-region="harbor"]').click();
+    await tapLandmark(.5,.18);
     await scene('harbor:H-01');
+    await page.locator('.rw-shell').evaluate(shell=>Promise.allSettled(shell.getAnimations().map(animation=>animation.finished)));
     await shot('harbor');
     await button('Talk to Qilan').click();
     await readDialogue('harbor:H-01');
     await scene('harbor:H-02');
+    const mapActivity = page.getByRole('heading',{name:'Check the harbor route with Muling'});
+    await tapLandmark(.102,.569);
+    await mapActivity.waitFor();
+    await button('Close',page.locator('.res-ambient-route')).click();
+    await mapActivity.waitFor({state:'hidden'});
+    await tapLandmark(.102,.569);
+    await mapActivity.waitFor();
+    const mapBoard = page.locator('.res-ambient-map');
+    async function dragMarker(target) {
+      const marker = await mapBoard.locator('[data-piece="marker"]').boundingBox();
+      const destination = await mapBoard.locator('[data-piece="'+target+'"]').boundingBox();
+      const from = {x:marker.x+marker.width/2,y:marker.y+marker.height/2};
+      const to = {x:destination.x+destination.width/2,y:destination.y+destination.height/2};
+      if (options.hasTouch) {
+        const cdp = await context.newCDPSession(page);
+        await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[from]});
+        await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[to]});
+        await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+        await cdp.detach();
+      } else {
+        await page.mouse.move(from.x,from.y);
+        await page.mouse.down();
+        await page.mouse.move(to.x,to.y,{steps:8});
+        await page.mouse.up();
+      }
+    }
+    await shot('muling-map');
+    await dragMarker('lighthouse');
+    await dragMarker('pier');
+    await button('Return to exploration').click();
     await button('Talk to Jiedeng').click();
     await page.locator('.res-host[data-scene="harbor:H-02"]').waitFor();
     await shot('dialogue');
@@ -105,8 +150,8 @@ try {
     await puzzle('Tide cave logbook',['Ebb mark','Dry steps','Logbook chest']);
     await readDialogue('harbor:H-03');
     await scene('harbor:H-04');
-    await button('Talk to '+(name==='portrait'?'Jiedeng':'Qilan')).click();
     const calibrate=name==='portrait';
+    await tapLandmark(...(calibrate?[.195,.50]:[.16,.60]));
     await readDialogue('harbor:H-04',calibrate?'Calibrate the lighthouse first':'Prioritize rescue');
     const rescue=() => puzzle('Storm boat',['Secure','Signal','Guide']);
     const mirrors=() => puzzle('Lighthouse mirrors',['Left mirror','Left mirror','Center mirror','Center mirror','Right mirror']);
@@ -150,9 +195,10 @@ try {
       melodies:CatBondResonance.view().melodies,
       choice:State.S.resonance.choices['harbor:H-04'],
       slot:State.activeSlot(),
+      mulingMap:State.S.resonance.ambientDone.includes('muling:map'),
       legacy:!!State.S.lastResonanceWorld
     }));
-    assert.deepEqual(state,{sanctuaries:['harbor'],melodies:['harbor'],choice:calibrate?'calibrate':'rescue',slot:'slot1',legacy:false});
+    assert.deepEqual(state,{sanctuaries:['harbor'],melodies:['harbor'],choice:calibrate?'calibrate':'rescue',slot:'slot1',mulingMap:true,legacy:false});
     assert.deepEqual(errors,[]);
     results.push({profile:name, captured, ...state});
     await context.close();
