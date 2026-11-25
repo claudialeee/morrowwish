@@ -70,7 +70,7 @@ function processEvents(b,e,events){
     }else if(event.type==="pressure-burst"){
       for(let i=0;i<3;i++){
         const a=i*Math.PI*2/3;
-        impact(b,e,e.x+Math.cos(a)*118,e.y+Math.sin(a)*76,94,e.dmg*.9,"pressure",.56,.5);
+        impact(b,e,e.x+Math.cos(a)*118,e.y+Math.sin(a)*76,94,e.dmg*.9,"pressure",.56,.88);
       }
       toast(b.game,"炉压爆发！远离守卫周围。","Pressure burst! Get away from the guardian.");
       window.MorrowwishAudio?.effect?.("combat_hurt");
