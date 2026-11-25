@@ -109,6 +109,52 @@ for(const profile of [
   assert.equal(await page.locator('#claim').isEnabled(),false,'Daily reward cannot be collected twice');
   await page.locator('.rb-close').click();
   await screenshot('garden-book-dock');
+  // A normal new save has earned its own coins through production and Daily.
+  // No injected resources, buildings, story progress or simulated clicks.
+  let relocated=null;
+  if(profile.name==='desktop'){
+   const facilities=page.locator('[data-garden-action="facilities"]');
+   const openFacilities=async()=>{await facilities.click();await checkVisible('#panel.open [data-build="scratcher"]')};
+   const chooseSpot=async moving=>{
+    const spot=await page.evaluate(moving=>{
+     const g=window.__game,cv=document.querySelector('#scene'),r=cv.getBoundingClientRect(),old=State.S.yardBuildings[0];
+     for(let y=g.H*.58;y<=g.H-65;y+=12)for(let x=65;x<=g.W-65;x+=14){
+      if(moving&&Math.hypot(old.x-x,old.y-y)<85)continue;
+      if(!g.yard.buildingSpotValid(x,y,moving?old:null))continue;
+      const px=r.x+x*r.width/g.W,py=r.y+y*r.height/g.H;
+      if(document.elementFromPoint(px,py)===cv)return {x:px,y:py};
+     }return null;
+    },moving);
+    assert.ok(spot,'A legal, unobstructed garden location must exist');
+    await page.mouse.click(spot.x,spot.y);
+    await page.waitForFunction(()=>!window.__game.yard.placement);
+   };
+   await openFacilities();
+   const beforeBuild=await page.evaluate(()=>({coins:State.S.coins,count:State.S.yardBuildings.length}));
+   assert.ok(await page.locator('[data-build="scratcher"]').isEnabled(),'Earned coins cover the original scratcher cost');
+   await page.locator('[data-build="scratcher"]').click();
+   await chooseSpot(false);
+   const built=await page.evaluate(()=>({coins:State.S.coins,count:State.S.yardBuildings.length,facility:{...State.S.yardBuildings[0]},cost:World.BUILDINGS_BY_ID.scratcher.cost}));
+   assert.equal(built.count,beforeBuild.count+1);
+   assert.equal(built.coins,beforeBuild.coins-built.cost);
+   await page.waitForFunction(()=>{const b=State.S.yardBuildings[0];return __game.yard.entities.some(e=>e._playBuilding===b&&e._playBuildT>0)},null,{timeout:30000});
+   await screenshot('garden-facility-play');
+   await openFacilities();
+   for(let attempt=0;attempt<3;attempt++){
+    await page.waitForFunction(()=>{const y=__game.yard,b=State.S.yardBuildings[0];return !y._duoFacility&&!y.entities.some(e=>e._playBuilding===b||e._buildTarget===b)},null,{timeout:30000});
+    await page.locator('[data-relocate="0"]').click();
+    if(await page.locator('#yard-placement-dock').isVisible())break;
+   }
+   await checkVisible('#yard-placement-dock');
+   const beforeMove=await page.evaluate(()=>({coins:State.S.coins,facility:{...State.S.yardBuildings[0]}}));
+   await chooseSpot(true);
+   const afterMove=await page.evaluate(()=>({coins:State.S.coins,facility:{...State.S.yardBuildings[0]}}));
+   assert.equal(afterMove.coins,beforeMove.coins,'Relocating a facility costs nothing');
+   for(const key of ['type','level','lastRewardAt','lastVisitorUid','lastBondAt','upgradeSpend'])assert.equal(afterMove.facility[key],beforeMove.facility[key],key+' survives relocation');
+   assert.ok(Math.hypot(afterMove.facility.x-beforeMove.facility.x,afterMove.facility.y-beforeMove.facility.y)>70,'Real canvas move changes location');
+   relocated={u:afterMove.facility.gardenU,v:afterMove.facility.gardenV,level:afterMove.facility.level};
+   await screenshot('garden-facility-relocated');
+  }
   await page.locator('.sg-prologue-guide').getByRole('button',{name:'Talk to Muling'}).click();
   const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');await awakening.getByRole('button',{name:'Skip dialogue',exact:true}).click();
   const bell=page.locator('.res-garden-bell');await bell.waitFor();
@@ -189,6 +235,7 @@ for(const profile of [
   await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true&&window.State.activeSlot()==='slot2',{timeout:30000});
   await waitMap();
   assert.equal(await page.evaluate(()=>window.State.S.cats[0].uid),first);
+  if(relocated)assert.deepEqual(await page.evaluate(()=>{const b=State.S.yardBuildings[0];return {u:b.gardenU,v:b.gardenV,level:b.level}}),relocated,'Actual save/load preserves relocated facility coordinates and level');
   // A real title-menu navigation, not a special test entry.
   await page.locator('#map-menu').click();
   await page.locator('[data-system="title"]').click();
