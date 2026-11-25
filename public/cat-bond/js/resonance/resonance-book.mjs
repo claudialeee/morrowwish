@@ -33,7 +33,7 @@ function dismiss(){if(!active)return;window.UI.closeAll()}
 function attach(){
  if(!alive())return;
  const p=panel(),card=p?.querySelector(":scope > .card");if(!card||!p.classList.contains("open"))return;
- p.classList.add("rb-open");card.classList.add("rb-card");lockWorld();
+ p.classList.add("rb-open");card.classList.add("rb-card");card.dataset.bookCategory=active.tab;lockWorld();
  const previous=card.querySelector(":scope > .rb-navigation");previous?.remove();card.querySelector(":scope > .rb-craft-link")?.remove();
  const n=node("section","rb-navigation");n.setAttribute("translate","no");
  const mast=node("header","rb-masthead");

@@ -205,6 +205,7 @@ for(const profile of [
   const book=page.locator('.rw-system-nav .rb-world-entry');
   await book.click();await checkVisible('#panel.rb-open.open');
   assert.equal(await page.locator('.rw-world').evaluate(el=>el.inert),true,'Book blocks underlying keyboard and pointer exploration');
+  if(profile.width<=360)assert.equal(await page.locator('.rb-tabs').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),3,'Compact category labels receive full word width');
   for(const tab of ['dex','party','cats','workshop','duo','bag','shop','daily','records']){
    await page.locator('[data-book-tab="'+tab+'"]').click();
    await checkVisible('#panel.rb-open.open');

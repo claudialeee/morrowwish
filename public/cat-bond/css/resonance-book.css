@@ -139,3 +139,18 @@ html.cb-cg #stage.rb-canonical.cb-sunlit-garden #cg-yard-dock #sg-book-entry{
 .sg-decor-card button{min-height:42px}
 .sg-decor-actions{display:flex;gap:8px}
 .sg-decor-actions button{flex:1}
+
+/* Actual 320px screenshot revealed broken English category labels. */
+@media(max-width:360px){
+ .rb-tabs{grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+ .rb-tab{min-height:32px;font-size:11px;overflow-wrap:normal;word-break:normal;white-space:normal;padding:4px 3px}
+ .rb-brand strong{font-size:20px}
+ .rb-brand small{letter-spacing:.05em}
+}
+@media(min-width:701px) and (min-height:501px){
+ #stage #panel.rb-open>.card[data-book-category="cats"] .dex-grid{grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:16px}
+ #stage #panel.rb-open>.card[data-book-category="cats"] .dex-grid .breed-group{min-height:212px;padding:12px 8px}
+ #stage #panel.rb-open>.card[data-book-category="cats"] .dex-grid .breed-group canvas{width:148px!important;height:144px!important}
+}
+#stage .sg-prologue-guide>div{display:flex;flex-wrap:wrap;gap:6px}
+#stage .sg-prologue-guide>div button{white-space:normal;min-height:34px}

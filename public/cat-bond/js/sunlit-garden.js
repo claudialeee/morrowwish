@@ -143,7 +143,7 @@
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
       try{const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale:a.scale,time});
         if(visible===false)continue;
-        lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*a.scale:y,radius:Math.max(24,a.radius*Math.min(1,width/1000))});}
+        lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*a.scale:y,groundY:y,radius:Math.max(24,a.radius*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }
   }
@@ -163,12 +163,17 @@
     }
     return !!window.GardenProjects?.tap?.(x,y);
   }
+  function placementBlocked(x,y){
+    if(!active||game?.scene!=='yard'||visitedState!==state())return false;
+    if(window.GardenProjects?.placementBlocked?.(x,y))return true;
+    return hitState===state()&&lastNpcHits.some(n=>Math.hypot(n.x-x,(n.groundY-y)*1.6)<Math.max(26,n.radius*.65));
+  }
   function getProgress(){
     const p=canonicalProgress();
     return{chapter:p.chapter,completedScenes:p.completed.length,restoredSanctuaries:p.sanctuaries.slice(),
       returnedNpcIds:p.returned.slice(),postgameEvents:p.postgame.slice(),ending:p.ending};
   }
-  const api={init,enter,leave,draw,handleTap,getProgress,noteBookVisit,registerNarrativeAdapter,homeAnchors:HOME_ANCHORS};
+  const api={init,enter,leave,draw,handleTap,getProgress,noteBookVisit,placementBlocked,registerNarrativeAdapter,homeAnchors:HOME_ANCHORS};
   window.SunlitGarden=api;
   window.addEventListener('DOMContentLoaded',()=>init(window.__game),{once:true});
 })();

@@ -1274,6 +1274,7 @@ class YardScene {
         x<side||x>W-side||y<top||y>bottom)return false;
     if(gardenObjects().some(b=>b!==ignore&&Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<57))return false;
     if(this.bushes.some(b=>Math.hypot((b.x-x)*1.0,(b.y-y)*1.6)<32))return false;
+    if(window.SunlitGarden?.placementBlocked?.(x,y))return false;
     return true;
   }
   beginRelocation(index,decorative=false){
