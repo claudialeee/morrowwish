@@ -196,7 +196,7 @@ function drawBossEffects(ctx,b){
     ctx.globalAlpha=fade;
   }
   const state=b.forgeState;
-  if(state&&state.heat>=65&&state.ventOpen<=0){ctx.globalAlpha=.38;ctx.strokeStyle="#e78c55";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(e.x,e.y,57,24,0,0,Math.PI*2);ctx.stroke();}
+  if(state&&(state.heat>=65||state.pressure>=75)&&state.ventOpen<=0){ctx.globalAlpha=.38;ctx.strokeStyle="#e78c55";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(e.x,e.y,57,24,0,0,Math.PI*2);ctx.stroke();}
   const c=e.forgeCast;
   if(c){
     const k=Math.max(0,Math.min(1,1-c.remaining/(c.phase===2 ? 0.88 : c.phase===1 ? 1.02 : 1.18)));
@@ -253,7 +253,7 @@ function renderHud(game,b){
   const set=(sel,value)=>{const n=p.querySelector(sel);if(n&&n.textContent!==value)n.textContent=value;};
   set("[data-forge-title]",en?"EMBERFORGE · E-03":"赤炉环城 · E-03");
   const enemyLabel=document.getElementById("wild-name");if(enemyLabel)enemyLabel.textContent=en?"EMBERFORGE · FURNACE GUARDIAN":"赤炉环城 · 熔炉机械守卫";
-  set("[data-forge-phase]",en?["HEAT TEST","OVERDRIVE","CRITICAL"][s.phase]:"热压测试 · "+(s.phase+1)+"/3");
+  set("[data-forge-phase]",en?["I · HEAT TEST","II · OVERDRIVE","III · CRITICAL"][s.phase]:["一 · 热压测试","二 · 超载","三 · 临界"][s.phase]);
   set("[data-forge-objective]",en?"Vent the core, then strike while exposed.":"先泄压，再攻击暴露的炉心。");
   set("[data-forge-heat-label]",en?"CORE HEAT":"炉心温度");
   set("[data-forge-heat-value]",Math.round(s.heat)+"%");
@@ -262,8 +262,8 @@ function renderHud(game,b){
   const open=s.ventOpen>0,button=p.querySelector("[data-forge-support-button]");
   if(button){button.disabled=s.supportCharges<=0||open;button.textContent=open?(en?"CORE EXPOSED":"炉心暴露中"):en?("VENT · "+s.supportCharges):("协力泄压 · "+s.supportCharges);}
   set("[data-forge-support-title]",en?"Jinpo & Xiaomao":"烬婆与小铆");
-  set("[data-forge-support-note]",s.assist==="xiaomao"?(en?"Xiaomao · extra pressure relief":"小铆 · 额外泄压"):(en?"Jinpo · extra cooling":"烬婆 · 额外冷却"));
-  const objective=p.querySelector("[data-forge-objective]");if(objective)objective.textContent=en?"Protect the test rig. Vent before striking the core.":"保护试验炉，先泄压再攻击炉心。";
+  p.dataset.assist=s.assist;p.dataset.exposed=String(open);p.dataset.pressureAlert=String(s.pressure>=75&&!open);set("[data-forge-support-note]",s.assist==="xiaomao"?(en?"Xiaomao · extra pressure relief":"小铆 · 额外泄压"):(en?"Jinpo · extra cooling":"烬婆 · 额外冷却"));
+  const objective=p.querySelector("[data-forge-objective]");if(objective)objective.textContent=open?(en?"Core exposed · "+Math.ceil(s.ventOpen)+"s — strike now!":"炉心暴露 · "+Math.ceil(s.ventOpen)+"秒，立即攻击！"):s.cast?(en?({hammerfall:"Hammerfall · dodge the marked impact", "slag-fan":"Slag fan · move sideways", "steam-vents":"Steam vents · escape the marked zones"}[s.cast.kind]):({hammerfall:"重锤锁定 · 躲开标记区域", "slag-fan":"熔渣扇击 · 横向闪避", "steam-vents":"蒸汽喷口 · 远离标记区域"}[s.cast.kind])):(en?"Protect the test rig. Vent before striking the core.":"保护试验炉，先泄压再攻击炉心。");
 }
 function removeHud(){document.getElementById("cb-forge-hud")?.remove();}
 function showResult(game,b,outcome,returnToMap){

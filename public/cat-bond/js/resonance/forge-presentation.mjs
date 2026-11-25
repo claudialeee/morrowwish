@@ -20,7 +20,7 @@ export function paintForgeEnvironment(ctx,v,frame,forced=null){
 }
 export function paintForgeCeremony(ctx,img,t,l,actor){
  const u=Math.min(1,t/3),z=1+.27*u*u*(3-2*u);ctx.save();ctx.translate(-W*.67*(z-1),-H*.32*(z-1));ctx.scale(z,z);ctx.drawImage(img,0,0,W,H);paintForgeEnvironment(ctx,{melodies:[],sanctuaries:[],current:{id:"forge:E-03"}},t*60,t>1.2);
- actor("jinpo",[.54,.48]);actor("xiaomao",[.64,.48]);actor("muling",[.70,.51]);
+ actor("jinpo",[.54,.48]);actor("xiaomao",[.64,.48]);
  const x=.59*W,y=.27*H;for(let i=0;i<3;i++){const a=Math.max(0,t-.5-i*.6)%2;ctx.strokeStyle="rgba(255,218,151,"+Math.max(0,.65-a*.3)+")";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y,18+a*75,8+a*29,0,0,Math.PI*2);ctx.stroke();}
  ctx.restore();if(t>2.8){ctx.save();ctx.globalAlpha=Math.min(1,(t-2.8)*2.4);forgeRouteDiagram(ctx,l);ctx.restore();}const shade=ctx.createLinearGradient(0,H*.70,0,H);shade.addColorStop(0,"rgba(17,21,28,0)");shade.addColorStop(1,"rgba(17,21,28,.88)");ctx.fillStyle=shade;ctx.fillRect(0,H*.70,W,H*.30);ctx.textAlign="center";ctx.fillStyle="#ffe4b0";ctx.font="600 30px Georgia,serif";ctx.fillText(local(l,"承火调","The Song of Ember"),W/2,H*.86);ctx.font="500 16px system-ui";ctx.fillText(local(l,"中央熔炉重新点燃 · 城市开始回应","The central furnace reignites · The city answers"),W/2,H*.93);
 }
