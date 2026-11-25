@@ -44,7 +44,7 @@ console.log(JSON.stringify((function test(src){
    walk(x,x.layout.features["puzzle:beam-mirrors"]);
    assert(x.interact("puzzle:beam-mirrors").reason==="rescue-first","rescue choice must change the action order");
   }
-  for(const op of ops){if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
+  for(const op of ops){if(s.id==="library:M-05"&&op==="repair:library"){ok(b.enter("library"),"enter library for route choice");const early=createExplorer(b,"library");walk(early,early.layout.features[op]);assert(early.interact(op).reason==="library-previous-station","repair must wait until the two routes dialogue and archive choice");while(b.view().cursor<s.lines.length)host(e=>e.nextLine());assert(early.interact(op).reason==="library-previous-station","reading dialogue alone must not unlock repair");host(e=>e.choose(s.choices[0].id));}if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
    if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(s.chapter==="library"){const restored=createExplorer(b,"library");assert(restored.invited.length===2,"library invitations persist");}if(["forest","sky"].includes(s.chapter)){const restored=createExplorer(b,s.chapter);assert(restored.invited.length===2&&x.localNpcs().every(n=>restored.invited.includes(n.id)),s.chapter+" invitations must survive reload");}}
    if(op==="explore:tide-logbook"){

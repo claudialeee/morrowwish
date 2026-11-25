@@ -641,7 +641,7 @@ try {
         seen++;await button('Continue',dlg).click();
       }
       assert.equal(seen,{'library:M-01':4,'library:M-03':15,'library:M-04':8,'library:M-05':8}[id]);
-      if(choice){await button(choice,dlg).click();if(id==="library:M-05"){await dlg.locator('.library-reveal-stage[data-mode="departure"][data-ready="true"]').waitFor();await page.waitForTimeout(850);await shot("library-departure");await dlg.waitFor({state:"hidden"});}else await shot(id.replace(':','-')+'-choice');}
+      if(choice){if(id==="library:M-05"){await button("Close",dlg).click();await dlg.waitFor({state:"hidden"});assert.equal(await button("Moonmirror sanctuary").count(),0,"Sanctuary repair is gated before the archive choice");await button("Continue story").click();await dlg.waitFor();await button(choice,dlg).waitFor();await shot("library-choice-resumed");}await button(choice,dlg).click();if(id==="library:M-05"){await dlg.locator('.library-reveal-stage[data-mode="departure"][data-ready="true"]').waitFor();await page.waitForTimeout(850);await shot("library-departure");await dlg.waitFor({state:"hidden"});}else await shot(id.replace(':','-')+'-choice');}
       if(await dlg.isVisible()&&await button('Close',dlg).isVisible())await button('Close',dlg).click();
     }
     await button('Talk to Moye').click();await archiveDialogue('library:M-01');
