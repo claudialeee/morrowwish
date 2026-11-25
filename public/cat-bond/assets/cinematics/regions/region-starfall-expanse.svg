@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1350" viewBox="0 0 1600 900" role="img" aria-labelledby="t d"><title id="t">Starfall Expanse — 星坠原</title><desc id="d">Original cinematic fantasy environment key art for Cat Bond: The Last Resonance.</desc><defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#101b33"/><stop offset=".68" stop-color="#3b4667"/><stop offset="1" stop-color="#202a43"/></linearGradient>
+<linearGradient id="brass" x2="1" y2="1"><stop stop-color="#6c4c34"/><stop offset=".3" stop-color="#e2c18a"/><stop offset=".7" stop-color="#a97948"/><stop offset="1" stop-color="#5c402d"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#fff0c7" stop-opacity=".75"/><stop offset=".35" stop-color="#e9c58c" stop-opacity=".23"/><stop offset="1" stop-color="#e9c58c" stop-opacity="0"/></radialGradient>
+<pattern id="grain" width="36" height="36" patternUnits="userSpaceOnUse"><circle cx="5" cy="8" r="1" fill="#fff" opacity=".12"/><circle cx="24" cy="21" r=".8" fill="#0b1821" opacity=".14"/><path d="M8 30l8-2M28 5l4 1" stroke="#fff" stroke-opacity=".07"/></pattern>
+</defs><rect width="1600" height="900" fill="url(#sky)"/><circle cx="800" cy="160" r="470" fill="url(#glow)"/>
+<path d="242e4d" fill="#4b526f" opacity=".58"/><path d="4b526f" fill="##3b4667" opacity=".74"/>
+<g><path d="M0 520L170 400 330 470 500 335 680 430 840 295 1020 415 1200 320 1380 450 1600 340V700H0Z" fill="#262f4d"/>
+<ellipse cx="820" cy="670" rx="590" ry="225" fill="#171f36" stroke="#6d6277" stroke-width="18"/><ellipse cx="820" cy="670" rx="420" ry="150" fill="#333a56" stroke="#a18a77" stroke-width="8"/>
+<path d="M520 670Q610 540 820 520Q1030 540 1120 670Q1020 780 820 800Q620 780 520 670Z" fill="#5b586e"/>
+<path d="M680 610L760 390 880 390 960 610Z" fill="#5c627d"/><path d="M730 400L820 300 910 400Z" fill="#b49a79"/>
+<path d="M770 610V450Q820 390 870 450V610Z" fill="#17243a"/><path d="M798 610V468Q820 440 842 468V610Z" fill="#e4c78e"/>
+<circle cx="820" cy="510" r="155" fill="url(#glow)" opacity=".38"/>
+<path d="M820 310L850 180 890 120 920 185 870 310Z" fill="#d7d0c1" opacity=".55"/>
+<g fill="#e9d8ae"><circle cx="230" cy="180" r="3"/><circle cx="420" cy="240" r="4"/><circle cx="1300" cy="170" r="3"/><circle cx="1440" cy="280" r="4"/><circle cx="1080" cy="120" r="3"/></g>
+<path d="M0 780Q230 700 440 760T800 770T1200 740T1600 770V900H0Z" fill="#1a233b"/><g fill="none" stroke-linecap="round"><path d="M0 900Q220 820 430 870T850 860T1260 870T1600 850" stroke="#a18d86" stroke-width="30"/><path d="M90 820L180 780 260 825M1340 830L1430 780 1520 830" stroke="#d0b17c" stroke-opacity=".5" stroke-width="7"/></g>
+<path d="M0 770Q300 720 550 770T1050 760T1600 770V900H0Z" fill="##202a43" opacity=".56"/>
+<rect width="1600" height="900" fill="url(#grain)" opacity=".8"/><rect x="2" y="2" width="1596" height="896" fill="none" stroke="#ead8b8" stroke-opacity=".14" stroke-width="3"/></svg>
