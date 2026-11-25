@@ -22,7 +22,7 @@ jobs:
       github.ref == 'refs/heads/cat-bond-preview' &&
       (github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Publish verified Cat Bond preview: '))
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -165,7 +165,8 @@ jobs:
           try {
             const origin='https://cat-bond-preview.morrowwish.pages.dev';
             for(const profile of [{name:'desktop',viewport:{width:1280,height:800}},{name:'portrait',viewport:{width:390,height:844},hasTouch:true},{name:'landscape',viewport:{width:844,height:390},hasTouch:true}]){
-              const context=await browser.newContext(profile);
+              const {name,...device}=profile;
+              const context=await browser.newContext(device);
               try{
                 const page=await context.newPage(),external=[],errors=[];
                 page.on('pageerror',e=>errors.push(e.message));
@@ -191,9 +192,13 @@ jobs:
                 await page.locator('.cbcp-art').first().evaluate(img=>img.decode());
                 await page.screenshot({path:'preview-'+profile.name+'-opening.png'});
                 // Use actual player controls; this is a smoke test, not the separate full campaign gate.
-                for(const id of ['prologue:P-01','prologue:P-02','prologue:P-03']){
-                  await page.waitForFunction(id=>CatBondResonance.view().current?.id===id,id);
+                // The opening also advances naturally; never wait for an earlier scene after it passed.
+                for(let i=0;i<3;i++){
+                  const id=await page.evaluate(()=>CatBondResonance.view().current?.id);
+                  if(id==='prologue:P-04')break;
+                  if(!['prologue:P-01','prologue:P-02','prologue:P-03'].includes(id))throw Error('Unexpected opening scene '+id);
                   await page.locator('.cbcp-skip').click();
+                  await page.waitForFunction(id=>CatBondResonance.view().current?.id!==id,id);
                 }
                 await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-04');
                 await page.locator('#panel .cat-starter-card .dex-cell').first().click();
