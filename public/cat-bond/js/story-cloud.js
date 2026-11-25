@@ -472,7 +472,7 @@ function openJournal(){
   '<p class="cb-journal-status">'+(s.completed?t('结局已解锁：星铃再次响起。','Ending unlocked: the Star Bell rings again.'):allSix(s)?t('所有记忆已集齐。回到月影遗迹，完成最后的对决。','All memories are found. Return to Moonshadow Ruins for the final confrontation.'):t('继续探索地图，寻找每片土地留下的记忆。','Keep exploring the map to uncover each land’s memory.'))+'</p>'+
   '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-journal-action="continue">'+(allSix(s)&&!s.bossDefeated?t('前往最终对决','Go to final confrontation'):t('继续探索','Continue exploring'))+'</button>'+
   (s.completed?'<button class="cb-cloud-secondary" data-journal-action="ending">'+t('重看结局动画','Replay ending')+'</button>':'')+
-  '<button class="cb-cloud-secondary" data-journal-action="cloud">'+t('云存档','Cloud save')+'</button></div></section>';
+  '</div></section>';
  document.body.append(overlay);
  const close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
  const rerender=()=>{close();openJournal();};
@@ -487,7 +487,6 @@ function openJournal(){
    else openWorldMapForBoss();
   }else openWorldMapForBoss();
  };
- overlay.querySelector('[data-journal-action="cloud"]')?.addEventListener('click',()=>{close();openCloudPanel();});
  overlay.querySelector('[data-journal-action="ending"]')?.addEventListener('click',()=>{close();playEnding(true);});
 }
 function openWorldMapForBoss(){
@@ -1060,12 +1059,15 @@ function openSlotManager(){
   '<p class="cb-cloud-eyebrow">'+t('存档','Save Archive')+'</p><h2>'+t('三个冒险存档位','Three adventure slots')+'</h2>'+
   '<p class="cb-cloud-lead">'+t('保存会把当前进度复制到所选存档位；读取会重新载入该存档。每个存档互相独立。','Save copies the current progress into the selected slot. Load restarts from that slot. Each save remains independent.')+'</p>'+
   '<div class="cb-slot-manager-list"></div><div class="cb-cloud-status" id="cb-slot-status" role="status"></div>'+
+  '<button type="button" class="cb-slot-sync" data-slot-sync></button>'+
   '<p class="cb-cloud-footnote">'+t('自动保存只更新当前正在游玩的存档位。','Autosave updates only the currently active slot.')+'</p></section>';
  (document.fullscreenElement||document.getElementById('stage')||document.body).append(overlay);
  const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
  overlay.querySelector('.cb-cloud-close').onclick=close;
  overlay.querySelector('[data-modal-language]')?.addEventListener('click',()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh'));
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+ const syncButton=overlay.querySelector('[data-slot-sync]');
+ syncButton.onclick=()=>{close();openCloudPanelImpl();};
  const list=overlay.querySelector('.cb-slot-manager-list');
  const status=overlay.querySelector('#cb-slot-status');
  const say=message=>{if(status)status.textContent=message;};
@@ -1106,7 +1108,7 @@ function openSlotManager(){
    if(!result.ok){say(t('未删除存档。请返回标题画面后重试。','Save not deleted. Return to the title and retry.'));return;}
    render();
    const remote=await queueSync(id,true);
-   say(remote?.ok?t('已删除并同步到云端。','Deleted and synced to cloud.'):remote?.disabled?t('已删除本机存档。','Local save deleted.'):t('本机已删除，云端尚未确认。请在云存档中重试同步。','Local save deleted; cloud deletion is not confirmed. Retry from Cloud saves.'));
+   say(remote?.ok?t('已删除并同步到云端。','Deleted and synced to cloud.'):remote?.disabled?t('已删除本机存档。','Local save deleted.'):t('本机已删除，云端尚未确认。请在存档管理的跨设备同步中重试。','Local save deleted; cloud deletion is not confirmed. Retry from Sync & restore.'));
   });
   list.querySelectorAll('[data-load]').forEach(btn=>btn.onclick=()=>{
    const id=btn.dataset.load;
@@ -1122,6 +1124,7 @@ function openSlotManager(){
   const localeButton=overlay.querySelector('[data-modal-language]');if(localeButton){localeButton.textContent=t('English','中文');localeButton.setAttribute('aria-label',t('切换到英文','Switch to Chinese'));}
   overlay.querySelector('.cb-cloud-eyebrow').textContent=t('存档','Save Archive');
   overlay.querySelector('h2').textContent=t('三个冒险存档位','Three adventure slots');
+  syncButton.textContent=t('跨设备同步与恢复','Sync & restore across devices');
   overlay.querySelector('.cb-cloud-lead').textContent=t('选择存档读取；游戏中可保存当前进度。删除需要确认。','Choose a save to load; while playing you can save current progress. Deletion requires confirmation.');
   overlay.querySelector('.cb-cloud-footnote').textContent=t('自动保存只更新当前正在游玩的存档位。','Autosave updates only the currently active slot.');
   render();
