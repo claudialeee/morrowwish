@@ -62,6 +62,7 @@ try{
     });
     assert.equal(layout.background,profile.background,profile.name+' must select the matching original environment painting');
     assert.equal(layout.hotspots.length,5,profile.name+' must expose five contextual home locations');
+    assert.equal(await page.locator('.sg-hotspot-icon svg').count(),5,'all five contextual controls have original icons');
     assert.equal(layout.allInside,true,profile.name+' hotspots must remain inside the stage: '+JSON.stringify(layout.hotspots));
     assert.equal(layout.allVisible,true,profile.name+' hotspots must be visible');
     assert.equal(layout.gardenActive,true,profile.name+' garden state class must be active');
@@ -183,6 +184,7 @@ try{
   for(const other of await page.evaluate(slot=>State.SAVE_SLOT_IDS.filter(id=>id!==slot),saved.slot)){
     await page.evaluate(id=>{if(!State.startNewGame(id,{overwriteConfirmed:true}))throw Error('new slot failed')},other);
     await page.evaluate(()=>window.__oldGardenButton?.click());
+    assert.equal(await page.evaluate(()=>!!document.querySelector('#panel.open #sg-project-panel')),false,'stale garden panel must not reopen in new slot');
     await page.waitForFunction(()=>__game.yard._gardenState===State.S);
     assert.equal(await page.evaluate(()=>State.S.yardBuildings.length),0,'new slot must not inherit buildings');
     assert.equal(await page.evaluate(()=>Object.keys(State.S.sunlitGarden?.projects||{}).length),0,'new slot must not inherit garden restoration');

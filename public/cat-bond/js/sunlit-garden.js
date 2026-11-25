@@ -10,6 +10,14 @@
     moye:{x:.53,y:.46,scale:.98,radius:46}, baikan:{x:.59,y:.55,scale:.82,radius:42},
     xingya:{x:.47,y:.67,scale:.90,radius:45}, lichuan:{x:.37,y:.70,scale:.92,radius:46}
   });
+  // Original, consistent line icons. They are UI symbols, not scene art.
+  const ICONS=Object.freeze({
+    cats:'<path d="M5 11 4 4l5 3a10 10 0 0 1 6 0l5-3-1 7c2 7-3 10-7 10s-9-3-7-10Z"/><path d="M8 13h.1m7.9 0h.1M10 16l2 1 2-1m-8-1-4-1m16 1 4-1"/>',
+    facilities:'<path d="m3 11 9-8 9 8M6 10v10h12V10M10 20v-6h4v6"/><path d="M2 21h20"/>',
+    catdex:'<path d="M12 6C8 3 5 4 3 5v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-2-1-5-2-9 1Zm0 0v14M6 9h3m-3 3h3m6-3h3m-3 3h3"/>',
+    workshop:'<path d="m4 19 9-9m-4-4 3-3 5 5-3 3M5 4l3 3-1 3-3 1-2-2m12 6 5 5 2-2-5-5"/><path d="m3 18 3 3"/>',
+    bond:'<path d="M12 9c-2-4-8-4-9 1s5 9 9 4l4-5c2-3 6-2 6 2s-5 6-8 2"/><path d="m8 4 1 2m6-2-1 2"/>'
+  });
   const HOTSPOTS = [
     {id:'cats',icon:'🐾',zh:'猫咪',en:'Cats',left:'12%',top:'57%',action:()=>window.UI?.openCatHub?.('solo')},
     {id:'facilities',icon:'⌂',zh:'家园设施',en:'Facilities',left:'29%',top:'34%',action:()=>window.UI?.openBuild?.()},
@@ -35,7 +43,7 @@
     for(const item of HOTSPOTS){
       const b=root.querySelector('[data-garden-action="'+item.id+'"]');if(!b)continue;
       const label=en?item.en:item.zh;
-      b.querySelector('.sg-hotspot-icon').textContent=item.icon;
+      b.querySelector('.sg-hotspot-icon').innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[item.id]+'</svg>';
       b.querySelector('.sg-hotspot-label').textContent=label;
       b.title=label;b.setAttribute('aria-label',label);
     }
@@ -78,7 +86,7 @@
     if(root)root.inert=false;
     root?.classList.add('is-active');document.getElementById('stage')?.classList.add('cb-sunlit-garden');renderLabels();
   }
-  function leave(){window.GardenProjects?.cancel?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;}
+  function leave(){window.GardenProjects?.resetSlot?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;}
   function registerNarrativeAdapter(adapter){
     if(!adapter||typeof adapter.getHomeNpcs!=='function'||typeof adapter.drawHomeNpc!=='function'||
        typeof adapter.interactHomeNpc!=='function')return false;
