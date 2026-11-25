@@ -1,4 +1,4 @@
-// BRIGHT_ORCHESTRATION_V2 — lyrical woodwinds, luminous harp and lighter chamber strings.
+// BRIGHT_ORCHESTRATION_V3 — playful, hopeful fantasy adventure; lighter rhythmic chamber ensemble.
 /* Cat Bond: The Last Resonance — original score, written for Morrow Wish.
    No samples, game OSTs, or third-party musical works are used. */
 (()=>{
@@ -6,19 +6,19 @@
 const R=['harbor','forest','forge','sky','library','starfall'];
 // Phrases are scale degrees and beats, not a fixed repeated arpeggio.
 const motifs={
- star:[[0,1.5],[2,.5],[4,1],[3,1],[1,1],[2,1.5],[0,1.5]],
- harbor:[[4,1],[5,.5],[4,.5],[2,1],[1,1],[0,1.5],[2,.5],[1,1],[0,1]],
- forest:[[0,.5],[2,.5],[4,1.5],[6,.5],[5,1],[3,1],[4,1],[2,1],[0,1]],
- forge:[[0,1],[0,.5],[4,.5],[3,1],[2,1],[5,1.5],[4,.5],[2,1],[0,1]],
- sky:[[2,.5],[4,.5],[7,1.5],[6,.5],[4,1],[5,1],[3,.5],[2,.5],[1,1],[2,1]],
- library:[[0,1.5],[3,.5],[2,1],[6,1],[5,1.5],[2,.5],[1,1],[0,1]],
- starfall:[[0,2],[4,1],[2,1],[6,1.5],[5,.5],[3,1],[0,1]]
+ star:[[0,.5],[2,.5],[4,1],[7,1],[6,.5],[5,.5],[4,1],[2,.5],[1,.5],[0,2]],
+ harbor:[102,62,'major','harbor','flute','harp','piano',[0,3,0,4,0,3,1,4]],
+ forest:[104,67,'major','forest','flute','harp','piano',[0,3,0,4,0,2,3,4]],
+ forge:[108,62,'major','forge','horn','strings','piano',[0,0,3,4,0,3,1,4]],
+ sky:[106,65,'major','sky','flute','strings','harp',[0,3,0,4,0,2,3,4]],
+ library:[96,67,'major','library','piano','harp','bell',[0,3,0,4,0,3,1,4]],
+ starfall:[100,62,'major','starfall','flute','strings','harp',[0,3,0,4,0,2,3,4]]
 };
 const P={
- title:[84,62,'major','star','piano','strings','harp',[0,4,5,3,0,2,1,4]],
- opening:[88,62,'major','star','flute','strings','harp',[0,4,5,3,0,2,1,4]],
- garden:[86,64,'major','star','piano','strings','harp',[0,4,5,3,1,4,0,4]],
- atlas:[86,62,'major','star','flute','strings','harp',[0,5,3,4,0,2,3,4]],
+ title:[104,65,'major','star','flute','strings','harp',[0,3,0,4,0,3,1,4]],
+ opening:[102,65,'major','star','flute','strings','harp',[0,3,0,4,0,2,3,4]],
+ garden:[108,67,'major','star','piano','harp','flute',[0,3,0,4,0,3,1,4]],
+ atlas:[106,62,'major','star','flute','strings','harp',[0,3,0,4,0,2,3,4]],
  harbor:[84,62,'major','harbor','flute','strings','harp',[0,3,6,4,0,5,3,4]],
  forest:[88,67,'major','forest','harp','strings','flute',[0,2,3,4,0,6,3,4]],
  forge:[102,62,'dorian','forge','piano','strings','harp',[0,0,5,6,0,3,1,4]],
@@ -26,16 +26,16 @@ const P={
  library:[80,67,'major','library','piano','strings','bell',[0,2,5,4,0,6,1,4]],
  starfall:[78,62,'dorian','starfall','flute','strings','bell',[0,3,5,6,0,2,3,4]],
  battle:[114,62,'minor','star','strings','horn','drum',[0,5,6,4,0,3,5,4]],
- muling:[74,64,'dorian','star','piano','strings','harp',[0,5,3,6,0,1,5,4]],
- identity:[78,62,'major','star','bell','strings','piano',[0,5,2,4,0,3,6,4]],
+ muling:[94,64,'major','star','flute','harp','piano',[0,3,0,4,0,2,3,4]],
+ identity:[92,62,'major','star','bell','harp','piano',[0,3,0,4,0,3,1,4]],
  betrayal:[72,64,'minor','star','strings','piano','bell',[0,1,5,4,0,6,1,4]],
  finale1:[116,62,'minor','star','horn','strings','drum',[0,5,3,4,0,6,1,4]],
  finale2:[91,61,'minor','library','bell','strings','drum',[0,1,5,6,0,2,1,4]],
  finale3:[108,62,'major','star','horn','strings','harp',[0,5,3,4,0,2,3,4]],
- ending:[84,64,'major','star','piano','strings','flute',[0,5,3,4,2,3,1,4]],
- postgarden:[88,64,'major','star','harp','strings','flute',[0,4,5,3,1,4,0,4]]
+ ending:[100,65,'major','star','flute','strings','harp',[0,3,0,4,0,3,1,4]],
+ postgarden:[110,67,'major','star','piano','harp','flute',[0,3,0,4,0,3,1,4]]
 };
-for(const r of R){const [b,k,m,mot,lead,pad,acc,ch]=P[r];P['boss-'+r]=[Math.min(132,b+32),k,'minor',mot,'horn','strings','drum',ch];P['song-'+r]=[b,k,m,mot,lead,pad,acc,ch];}
+for(const r of R){const [b,k,m,mot,lead,pad,acc,ch]=P[r];P['boss-'+r]=[Math.min(132,b+32),k,'minor',mot,'horn','strings','drum',ch];P['song-'+r]=[Math.min(b,102),k,m,mot,lead,pad,acc,ch];}
 const scales={major:[0,2,4,5,7,9,11],minor:[0,2,3,5,7,8,10],dorian:[0,2,3,5,7,9,10]};
 const degree=(k,m,d)=>k+12*Math.floor(d/7)+scales[m][((d%7)+7)%7];
 const instruments={
@@ -54,10 +54,10 @@ function arrange(id){
  const add=(t,d,m,i,v,pan=0)=>{if(t>=0&&t<bars*4&&d>0)notes.push({t,d:Math.min(d,bars*4-t),m,i,v,pan});};
  for(let bar=0;bar<bars;bar++){
   const t=bar*4,c=chords[bar%chords.length],part=Math.floor(bar/4),root=degree(key-(battle?24:12),mode,c);
-  add(t,battle?3.7:2.6,root,pad,battle?.60:.38,-.22);add(t+2,battle?1.8:1.4,root+12,pad,.24,.18);
-  for(let j=0;j<3;j++)add(t+.04*j,3.6,degree(key-(battle?12:0),mode,c+2*j),pad,.28+part*.018,(j-1)*.34);
-  const arp=[0,2,4,7,4,2,5,4],rhythm=battle?8:6;
-  for(let j=0;j<rhythm;j++){const dt=j*4/rhythm;add(t+dt,Math.min(.8,4/rhythm),degree(key-(battle?12:0),mode,c+arp[(j+bar)%arp.length]),acc==='drum'?'piano':acc,.32+(j%3===0?.15:0),j%2?.39:-.39);}
+  add(t,battle?3.7:.65,root,battle?pad:'harp',battle?.60:.52,-.22);add(t+2,battle?1.8:.58,root+12,battle?pad:'harp',battle?.24:.43,.18);
+  for(let j=0;j<3;j++){const pitch=degree(key-(battle?12:0),mode,c+2*j);if(battle||id==='betrayal'){add(t+.04*j,3.6,pitch,pad,.28+part*.018,(j-1)*.34);}else{add(t+.5+j*.025,.52,pitch,pad,.23,(j-1)*.34);add(t+2.5+j*.025,.58,pitch,pad,.20,(j-1)*.34);}}
+  const arp=[0,2,4,7,4,2,5,4],rhythm=battle?8:4;
+  for(let j=0;j<rhythm;j++){const dt=battle?j*.5:[.25,1.5,2.25,3.5][j];add(t+dt,battle?.48:.38,degree(key-(battle?12:0),mode,c+arp[(j+bar)%arp.length]),acc==='drum'?'piano':acc,.28+(j%3===0?.12:0),j%2?.39:-.39);}
   if(battle){for(const beat of [0,1.5,2.5])add(t+beat,.28,beat===0?36:43,'drum',beat===0?.95:.48,-.1);}
   if(bar%2===0){
    const selected=climax?(bar<4||bar>=28?'star':R[Math.floor(bar/4)-1]):motif;
@@ -66,7 +66,7 @@ function arrange(id){
     const [d,len]=phrase[j],variation=(bar%8===6&&j>=phrase.length-3)?-1:0;
     const pitch=degree(key,mode,d+variation+(part%3===2&&j===0?7:0));
     add(at,len*.93,pitch,lead,.81+(j%3===0?.15:0),-.12);
-    if(part>0&&j%2===0)add(at+.06,len*.81,degree(key,mode,d-2),pad,.30,.35);
+    if(part>0&&j%3===0)add(at+.06,len*(battle?.81:.44),degree(key,mode,d-2),pad,battle?.30:.19,.35);
     if(climax&&part>=3)add(at+.04,len*.85,pitch+12,'bell',.28,.40);
     if((id==='finale3'||id==='ending')&&part>=5&&j%2===0){const returnNote=motifs.star[j%motifs.star.length][0];add(at+.12,len*.8,degree(key,mode,returnNote-7),'flute',.34,-.37);}
     at+=len;
