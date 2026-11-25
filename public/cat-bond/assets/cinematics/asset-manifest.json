@@ -8,7 +8,7 @@
     "docs/cat-bond-rpg/03-DEVELOPER-HANDOFF.md"
   ],
   "status": "branch-only; not integrated into production",
-  "reviewStatus": "FAIL: all geometric vector studies quarantined; no approved production shots",
+  "reviewStatus": "14 rejected geometry assets quarantined; 1 original raster character portrait awaiting independent review",
   "assets": [
     {
       "id": "region-misttide-harbor",
@@ -177,6 +177,21 @@
       "status": "rejected",
       "runtimeAllowed": false,
       "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset."
+    },
+    {
+      "id": "muling-traveler-neutral",
+      "kind": "character-portrait",
+      "characterId": "muling",
+      "phase": "companion",
+      "expression": "neutral",
+      "path": "assets/cinematics/characters/muling/traveler-neutral.webp",
+      "format": "webp",
+      "canvas": "960x887",
+      "bytes": 193086,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "source": "original generated portrait; alpha WebP",
+      "reviewReason": "Individual portrait produced; independent visual QA and normal-game integration pending."
     }
   ],
   "sceneKeys": [
