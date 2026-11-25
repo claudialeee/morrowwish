@@ -158,8 +158,8 @@ class VFX {
   // is VISUAL reach and is capped below the melee hit geometry. Same primitive
   // serves enemy swipes; heavy player strikes get a longer, weighted follow-through.
   slash(x, y, aim, color, radius, arc, options = {}) {
-    const reach = Math.max(24, Math.min(64, Number(radius) || 52));
-    const life = options.heavy ? 0.255 : 0.205;
+    const reach = Math.max(24, Math.min(112, Number(radius) || 52));
+    const life = options.heavy ? 0.34 : 0.26;
     this.fx.push({ type: 'slash', x, y, aim, color: color || '#f8ddbe',
       radius: reach, arc: Math.max(.35, Math.min(.95, Number(arc) || .7)),
       heavy: !!options.heavy, life, max: life });
@@ -269,8 +269,8 @@ class VFX {
         ctx.translate(e.x, e.y); ctx.rotate(e.aim);
         const pos = (t, row) => ({
           x: R * (.20 + .75 * t),
-          y: R * (.20 - .48 * t * bend) + (row - 1) * R * .137 +
-            Math.sin(t * Math.PI) * R * .047
+          y: R * (.47 - .94 * t * bend) + (row - 1) * R * .155 +
+            Math.sin(t * Math.PI) * R * .23
         });
         // Each brush is a filled ribbon tapered at both ends. Three passes
         // give a restrained ink edge, element pigment and warm thin highlight.
@@ -296,9 +296,9 @@ class VFX {
         };
         for (let row = 0; row < 3; row++) {
           const weight = (e.heavy ? 1.24 : 1) * (row === 1 ? 1.08 : .86);
-          ribbon(row, 4.5 * weight, '#44354b', .38);
-          ribbon(row, 3.35 * weight, e.color, .94);
-          ribbon(row, 1.05 * weight, '#fff6df', .93);
+          ribbon(row, 11.5 * weight, '#44354b', .30);
+          ribbon(row, 8.5 * weight, e.color, .94);
+          ribbon(row, 3.7 * weight, '#fff6df', .98);
         }
         // One short glint follows the leading claw (no detached glitter cloud).
         if (lead > .2 && lead < .98) {
