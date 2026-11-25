@@ -17,7 +17,7 @@ for(const profile of [
  const context=await browser.newContext({viewport:{width:profile.width,height:profile.height},isMobile:profile.mobile,hasTouch:profile.mobile});
  const page=await context.newPage(),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
- page.on('dialog',dialog=>dialog.accept());
+ page.on('dialog',dialog=>{errors.push('Unexpected native browser dialog: '+dialog.message());void dialog.dismiss()});
  const screenshot=name=>page.screenshot({path:output+'/'+profile.name+'-'+name+'.png',animations:'disabled'});
  const checkVisible=async selector=>{await page.locator(selector).first().waitFor({state:'visible',timeout:15000});};
  const waitMap=()=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:15000});
@@ -287,6 +287,9 @@ for(const profile of [
   assert.equal(await page.evaluate(()=>State.S.sunlitGarden?.bookGuide?.length||0),0,'Fresh slot does not inherit onboarding');
   await page.reload();await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__);
   await page.locator('#intro-continue').click();
+  await page.locator('[data-title-delete="slot1"]').click();
+  await page.locator('.cb-confirm-dialog [data-confirm-cancel]').click();
+  assert.ok(await page.evaluate(()=>State.getSaveSlot('slot1')),'Cancel must retain the original save');
   await page.locator('[data-title-delete="slot1"]').click();
   await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.State.getSaveSlot('slot1')===null);

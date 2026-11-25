@@ -31,3 +31,9 @@
 #stage .cb-slot-manager-actions button{background:#fff7e5!important;color:#493e2b!important;border-color:#bda16b!important}
 #stage .cb-slot-manager-actions button[data-remove-save]{background:#f2dfd0!important;color:#783f2d!important}
 #stage .cb-system-rows input[type=range]{accent-color:#77633c!important}
+
+/* Override the more-specific original header rules as well as fullscreen and portal reparenting. */
+#stage #map-actions > #map-menu,html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #map-menu,html.cb-cg #stage #cg-top-tools #map-menu,
+#stage #hud .hud-pill,#stage .hud-pill{background:linear-gradient(155deg,#fff5db,#e4cfaa)!important;border-color:#a98a53!important;color:#493e2b!important;box-shadow:0 2px 7px #35271533!important;text-shadow:none!important}
+#stage .hud-pill{border:1px solid #a98a53!important;border-radius:8px!important}
+#stage .sg-build-toggle,#stage .sg-build-button,#stage .sg-build-actions button{background:#f3e5c6!important;color:#493e2b!important;border-color:#a98a53!important}

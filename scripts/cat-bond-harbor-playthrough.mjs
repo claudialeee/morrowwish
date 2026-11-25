@@ -34,7 +34,8 @@ try {
        for(let i=0;i<count&&await prev.isVisible()&&await prev.isEnabled()&&!await target.isVisible();i++)await press(prev);
        for(let i=0;i<count&&await next.isVisible()&&await next.isEnabled()&&!await target.isVisible();i++)await press(next);
       };
-      const click=target.click.bind(target),wait=target.waitFor.bind(target);
+      const click=target.click.bind(target),wait=target.waitFor.bind(target),enabled=target.isEnabled.bind(target);
+      target.isEnabled=async opts=>{await reveal();return enabled(opts)};
       target.click=async opts=>{await reveal();return click(opts)};
       target.waitFor=async opts=>{if(opts?.state==='hidden'&&/^(Invite |Deliver )/.test(name))return all.waitFor({...opts,state:'detached'});if(!opts||!['hidden','detached'].includes(opts.state))await reveal();return wait(opts)};
       if(/^(Invite |Returning Tides)/.test(name))target.count=()=>all.count();
@@ -52,7 +53,12 @@ try {
         await page.waitForFunction(track=>{const s=window.MorrowwishMusic?.status?.();return s?.track===track&&s.playing&&s.source==='recorded-mp3:'+track&&s.activeMusicSources<=2;},expected,{timeout:15000});
         const audio=await page.evaluate(()=>MorrowwishMusic.status());assert.equal(audio.audioState,'running');audioEvidence.push({checkpoint:id,...audio});
       }
-      if(await page.locator('.rw-world:not([hidden])').isVisible()&&!await page.locator('#panel.open,.res-host').count()){
+      const cinematic=page.locator('.cbcp-root:not([hidden])');
+      if(await cinematic.isVisible()){
+       await cinematic.locator('.cbcp-art').last().evaluate(img=>img.decode());
+       const fit=await cinematic.evaluate(el=>{const r=el.getBoundingClientRect(),stage=document.getElementById('stage').getBoundingClientRect(),art=el.querySelector('.cbcp-art-stack'),sub=el.querySelector('.cbcp-subtitle-wrap'),image=el.querySelector('.cbcp-art:last-child');return {inside:r.left>=stage.left-1&&r.top>=stage.top-1&&r.right<=stage.right+1&&r.bottom<=stage.bottom+1,art:!!image?.naturalWidth&&art.clientWidth>0&&art.clientHeight>0,subtitle:sub.hidden||sub.getBoundingClientRect().bottom<=r.bottom+1};});
+       assert.deepEqual(fit,{inside:true,art:true,subtitle:true},id+' actual cinematic stage fit');
+      }else if(await page.locator('.rw-world:not([hidden])').isVisible()&&!await page.locator('#panel.open,.res-host').count()){
        const fit=await page.evaluate(()=>{const w=document.querySelector('.rw-world:not([hidden])'),s=w?.querySelector('.rw-surface');if(!s)return null;const stage=document.getElementById('stage').getBoundingClientRect(),rect=s.getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {scene:rect.width>0&&rect.height>0&&rect.top>=stage.top-1&&rect.bottom<=stage.bottom+1&&rect.left>=stage.left-1&&rect.right<=stage.right+1,ratio:Math.abs(rect.width/rect.height-16/9)<.03,noScroll:w.scrollHeight<=w.clientHeight+2&&rail.scrollHeight<=rail.clientHeight+2,buttons:[...rail.querySelectorAll('button')].filter(b=>b.getClientRects().length).every(b=>{const r=b.getBoundingClientRect();return r.top>=stage.top-1&&r.bottom<=stage.bottom+1&&r.left>=stage.left-1&&r.right<=stage.right+1;}),noFollower:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
        if(fit)assert.deepEqual(fit,{scene:true,ratio:true,noScroll:true,buttons:true,noFollower:true},id+' stage fit / solo exploration');
       }

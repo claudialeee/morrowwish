@@ -1,0 +1,56 @@
+name: Cat Bond brighter orchestral recording — development branch only
+on:
+  pull_request:
+    branches: [rpg/cat-bond-takeover]
+    paths:
+      - 'scripts/reorchestrate-cat-bond-score.mjs'
+      - '.github/workflows/cat-bond-bright-score-render.yml'
+permissions:
+  contents: write
+concurrency:
+  group: cat-bond-bright-score-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+jobs:
+  render:
+    if: github.head_ref == 'rpg/release-combined-next' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check score edition
+        id: edition
+        run: |
+          if grep -q BRIGHT_ORCHESTRATION_V2 public/cat-bond/js/rpg-audio-score.js; then
+            echo "render=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "render=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Render actual replacement recordings with the licensed existing soundbank
+        if: steps.edition.outputs.render == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq fluidsynth fluid-soundfont-gm ffmpeg
+          node scripts/reorchestrate-cat-bond-score.mjs
+          node scripts/render-cat-bond-score.mjs
+          node scripts/check-cat-bond-audio-assets.mjs
+          node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
+      - name: Atomically integrate verified recordings into the development branch
+        if: steps.edition.outputs.render == 'true'
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          branch=refs/heads/rpg/release-combined-next
+          current=$(git ls-remote origin "$branch" | cut -f1)
+          test "$current" = "$EXPECTED"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/cat-bond/js/rpg-audio-score.js public/cat-bond/assets/audio/
+          git diff --cached --quiet && exit 0
+          git commit -m "Record brighter original Cat Bond orchestration with FluidR3"
+          git push origin HEAD:"$branch"

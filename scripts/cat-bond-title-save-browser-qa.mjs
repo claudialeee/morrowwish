@@ -21,7 +21,7 @@ for(const profile of [
  const page=await context.newPage(),errors=[];
  await page.addInitScript(()=>{window.__titleQaTouchTrace=[];for(const type of ['touchstart','touchend','touchcancel','pointerdown','pointerup','pointercancel','click'])document.addEventListener(type,event=>{const el=event.target;const button=el?.closest?.('button,.dex-cell');const list=window.__titleQaTouchTrace;list.push({type,target:button?.textContent?.trim().slice(0,70)||el?.id||el?.tagName,pointer:event.pointerType||null,canceled:event.defaultPrevented});if(list.length>32)list.shift();},true);});
  page.on('pageerror',error=>errors.push(error.message));
- page.on('dialog',dialog=>dialog.accept());
+ page.on('dialog',dialog=>{errors.push('Unexpected native browser dialog: '+dialog.message());void dialog.dismiss()});
  const screenshot=name=>page.screenshot({path:output+'/'+profile.name+'-'+name+'.png',animations:'disabled'});
  const checkVisible=async selector=>{await page.locator(selector).first().waitFor({state:'visible',timeout:15000});};
  const waitMap=()=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:15000});
@@ -175,6 +175,9 @@ for(const profile of [
   assert.equal(await page.evaluate(()=>State.S.cats.length),0);
   await page.reload();await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__);
   await page.locator('#intro-continue').click();
+  await page.locator('[data-title-delete="slot1"]').click();
+  await page.locator('.cb-confirm-dialog [data-confirm-cancel]').click();
+  assert.ok(await page.evaluate(()=>State.getSaveSlot('slot1')),'Cancel must retain the original save');
   await page.locator('[data-title-delete="slot1"]').click();
   await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.State.getSaveSlot('slot1')===null);
