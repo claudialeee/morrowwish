@@ -38,7 +38,8 @@ function install(){
   keyExchange=mountKeyExchange({root,language:lang,portrait:portrait("muling","epilogue:E-03",3),isCurrent:()=>runtime.isCurrentAction(action),commit:()=>runtime.completeNPCScene({sceneId:"epilogue:E-03",operation:"npc:second-garden-key",npcId:"muling",region:"garden",verified:true,token:action}),onComplete:()=>{close();scheduleFinish()},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value)});
  }
  function scheduleFinish(){
-  if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;
+  if(scheduled)return;scheduled=true;const scheduledRoot=State.S;queueMicrotask(()=>{scheduled=false;
+   if(scheduledRoot!==State.S)return;
    if(slot&&slot!==State.S){close();return}
    const v=runtime.view();if(!v.current)return;
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.cursor===v.current.lines.length){
@@ -58,6 +59,7 @@ function install(){
   const d=event.detail||{};if(window.CatBondResonanceNPC){if(!window.CatBondResonanceNPC.talk(d.npcId,d.region,d.sceneId))window.__game?.toast?.({zh:"暂时没有新的话题。",en:"Nothing new to discuss yet."});return}const r=runtime.recordNPC(d);if(r.ok)show();
  });
  window.addEventListener("cat-bond-resonance-changed",refresh);
+ window.addEventListener("cat-bond-active-save-changed",close);
  // Detect external world/battle commits and slot replacements without a second progression store.
  let observedRoot=State.S,observedRevision=State.S.resonance?.revision??-1,observedView=runtime.view();
  setInterval(()=>{const revision=State.S.resonance?.revision??-1;if(observedRoot!==State.S||observedRevision!==revision){const sameSlot=observedRoot===State.S,old=observedView;observedRoot=State.S;observedRevision=revision;observedView=runtime.view();refresh();

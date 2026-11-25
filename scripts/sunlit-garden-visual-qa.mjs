@@ -191,8 +191,13 @@ try{
   // Retain an old-slot restoration control and invoke it after switching slots.
   await page.evaluate(()=>{GardenProjects.open('harbor');window.__oldGardenButton=document.querySelector('#sg-project-panel button:last-child')});
   for(const other of await page.evaluate(slot=>State.SAVE_SLOT_IDS.filter(id=>id!==slot),saved.slot)){
-    await page.evaluate(id=>{if(!State.startNewGame(id,{overwriteConfirmed:true}))throw Error('new slot failed')},other);
-    await page.evaluate(()=>window.__oldGardenButton?.click());
+    const stillOpen=await page.evaluate(id=>{
+      if(!State.startNewGame(id,{overwriteConfirmed:true}))throw Error('new slot failed');
+      // No animation frame or timer may be required to dispose of stale UI.
+      window.__oldGardenButton?.click();
+      return !!document.querySelector('#panel.open #sg-project-panel');
+    },other);
+    assert.equal(stillOpen,false,'old garden UI must be disposed synchronously on successful new-slot commit');
     assert.equal(await page.evaluate(()=>!!document.querySelector('#panel.open #sg-project-panel')),false,'stale garden panel must not reopen in new slot');
     await page.waitForFunction(()=>__game.yard._gardenState===State.S);
     assert.equal(await page.evaluate(()=>State.S.yardBuildings.length),0,'new slot must not inherit buildings');
@@ -201,7 +206,12 @@ try{
   await page.waitForFunction(()=>__game.yard._gardenState===State.S);
   assert.equal(await page.evaluate(()=>State.S.yardBuildings.length),0,'new slot must not inherit buildings');
   assert.equal(await page.evaluate(()=>__game.yard.entities.length),0,'new slot must not retain previous resident cats');
-  await page.evaluate(slot=>{if(!State.loadSlot(slot))throw Error('reload failed')},saved.slot);
+  const staleOnLoad=await page.evaluate(slot=>{
+    GardenProjects.open();const old=document.querySelector('#sg-project-panel button');
+    if(!State.loadSlot(slot))throw Error('reload failed');
+    old?.click();return !!document.querySelector('#panel.open #sg-project-panel');
+  },saved.slot);
+  assert.equal(staleOnLoad,false,'loading another slot synchronously closes old garden UI');
   await page.waitForFunction(()=>__game.yard._gardenState===State.S);
   assert.equal(await page.evaluate(()=>State.S.yardBuildings[0].level),2,'original slot preserves upgrade');
   assert.equal(await page.evaluate(()=>State.S.sunlitGarden.projects.harbor.visits),1,'original slot preserves actual tending growth');

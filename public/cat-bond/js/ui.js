@@ -9,6 +9,7 @@ const UI = {
 
   init(game) {
     this.game = game;
+    window.addEventListener('cat-bond-active-save-changed',()=>this.resetForActiveSave());
     document.getElementById('guide-help')?.addEventListener('click',()=>this.game?.replayFirstAdventureTour?.());
     // tab bar
     document.querySelectorAll('.tab').forEach(btn => {
@@ -1239,7 +1240,21 @@ const UI = {
     p.querySelector('.panel-dismiss').onclick = e => {e.stopPropagation();this.closeAll();};
     p.onclick = e => { if (e.target === p) this.closeAll(); };
   },
-  closeAll() {
+  resetForActiveSave(){
+    // No yard entry/healing or save writes during the save manager's commit notification.
+    this.closeAll({refreshYard:false});
+    const panel=document.getElementById('panel');
+    panel?.replaceChildren();
+    this._duoPicked=[];
+    this._duoChangeOpen=false;
+    this._breedSel=[];
+    this._catGrowMore=null;
+    this._localeLiveTeamSelection=null;
+    this._localePanelRerenderTeam=null;
+    this._localePanelRerenderAuto=null;
+    this._gbIdx=0;
+  },
+  closeAll({refreshYard=true}={}) {
     this._localePanelRoute=null;
     this.resetNavigation();
     this._teaseFromCatDetail=false;
@@ -1251,13 +1266,12 @@ const UI = {
     document.getElementById('map-menu')?.setAttribute('aria-expanded','false');
     // Dismissing any optional overlay must never leave the yard action strip
     // hidden after a previous encounter or canceled pre-battle choice.
-    if(this.game?.scene==='yard'&&!this.game.battle)this.game.showYardChrome();
+    if(refreshYard&&this.game?.scene==='yard'&&!this.game.battle)this.game.showYardChrome();
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'yard'));
     // A pending disagreement must reappear in the yard after *any* panel is
     // dismissed. Previously refreshing while the panel was open set
     // yard-duo-status.hidden=true and never restored it after closing.
-    this.game?.refreshYardSurprise?.();
-    this.game?.refreshFirstQuest?.();
+    if(refreshYard){this.game?.refreshYardSurprise?.();this.game?.refreshFirstQuest?.();}
   },
 
   // ---------- roster ----------
