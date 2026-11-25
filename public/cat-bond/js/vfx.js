@@ -162,7 +162,7 @@ class VFX {
     const life = options.heavy ? 0.34 : 0.26;
     this.fx.push({ type: 'slash', x, y, aim, color: color || '#f8ddbe',
       radius: reach, arc: Math.max(.35, Math.min(.95, Number(arc) || .7)),
-      heavy: !!options.heavy, life, max: life });
+      heavy: !!options.heavy, element: options.element || null, life, max: life });
   }
 
   update(dt) {
@@ -294,11 +294,47 @@ class VFX {
           for (let j = lower.length - 1; j >= 0; j--) ctx.lineTo(lower[j][0], lower[j][1]);
           ctx.closePath(); ctx.fill();
         };
-        for (let row = 0; row < 3; row++) {
-          const weight = (e.heavy ? 1.24 : 1) * (row === 1 ? 1.08 : .86);
-          ribbon(row, 11.5 * weight, '#44354b', .30);
-          ribbon(row, 8.5 * weight, e.color, .94);
-          ribbon(row, 3.7 * weight, '#fff6df', .98);
+        // V5 material grammar. The same hit arc stays authoritative, but each
+        // element has different blade weights, silhouettes and secondary texture.
+        const el=e.element;
+        const profiles={
+          fire:{rows:[0,1,2],weights:[.86,1.32,.90],ink:'#7b3028',core:'#fff2b5'},
+          water:{rows:[0,1,2],weights:[.72,1.04,.72],ink:'#2a688b',core:'#e9fbff'},
+          grass:{rows:[0,1,2],weights:[1.06,.78,.98],ink:'#385c3d',core:'#e5f3ac'},
+          elec:{rows:[0,1,2],weights:[.42,.52,.45],ink:'#49458c',core:'#fff6b5'},
+          dark:{rows:[0,1,2],weights:[.61,1.12,.65],ink:'#38243d',core:'#f8dbff'},
+          light:{rows:[0,1,2],weights:[.57,.89,.57],ink:'#91764c',core:'#ffffed'}
+        };
+        const profile=profiles[el]||{rows:[0,1,2],weights:[.86,1.08,.86],ink:'#44354b',core:'#fff6df'};
+        for(const row of profile.rows){
+          const weight=(e.heavy?1.24:1)*profile.weights[row];
+          ribbon(row,11.5*weight,profile.ink,.42);
+          ribbon(row,8.5*weight,e.color,.94);
+          ribbon(row,3.7*weight,profile.core,.98);
+        }
+        // Directional material details ride the already emitted brush, not
+        // the target: no fake contact, no second attack or gameplay mutation.
+        if(el&&lead>tail+.07){
+          const span=lead-tail;
+          for(let j=0;j<5;j++){
+            const t=tail+span*(j+.65)/5.5,q=pos(t,j%3),sign=j%2?1:-1;
+            ctx.globalAlpha=visibility*.85;
+            ctx.fillStyle=profile.core;ctx.strokeStyle=profile.core;
+            ctx.lineWidth=1.6;ctx.lineCap='round';ctx.beginPath();
+            if(el==='fire'){
+              ctx.moveTo(q.x-7,q.y+2);ctx.quadraticCurveTo(q.x-14,q.y+sign*9,q.x+3,q.y-5);ctx.quadraticCurveTo(q.x-1,q.y+4,q.x-7,q.y+2);ctx.fill();
+            }else if(el==='water'){
+              ctx.moveTo(q.x,q.y-6);ctx.lineTo(q.x+4,q.y-1);ctx.lineTo(q.x,q.y+5);ctx.lineTo(q.x-3,q.y);ctx.closePath();ctx.fill();
+            }else if(el==='grass'){
+              ctx.ellipse(q.x-4,q.y+sign*5,6,2.5,sign*.6,0,Math.PI*2);ctx.fill();
+            }else if(el==='elec'){
+              ctx.moveTo(q.x-9,q.y+sign*5);ctx.lineTo(q.x-2,q.y-sign*5);ctx.lineTo(q.x+2,q.y+sign*2);ctx.lineTo(q.x+10,q.y-sign*3);ctx.stroke();
+            }else if(el==='dark'){
+              ctx.moveTo(q.x-9,q.y+sign*6);ctx.quadraticCurveTo(q.x-3,q.y+sign*2,q.x+9,q.y-sign*4);ctx.stroke();
+            }else if(el==='light'){
+              ctx.moveTo(q.x-5,q.y);ctx.lineTo(q.x+5,q.y);ctx.moveTo(q.x,q.y-4);ctx.lineTo(q.x,q.y+4);ctx.stroke();
+            }
+          }
         }
         // One short glint follows the leading claw (no detached glitter cloud).
         if (lead > .2 && lead < .98) {
