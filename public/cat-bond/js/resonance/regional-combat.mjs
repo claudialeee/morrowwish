@@ -111,10 +111,12 @@ function install(){
    if(root!==window.State.S||!ruinsAvailable(game)||!fighters.length)return;
    const token=host.captureAction();
    game._returnScene="map";game._battleTheme={region:"starfall",sky1:"#16273b",sky2:"#596985",ground:"#393f55",ground2:"#1d2436",accent:"#d8c397"};
-   const encounterLevel=Math.max(1,Math.round(fighters.reduce((n,c)=>n+(Number(c.level)||1),0)/fighters.length)+(duoMode?3:2));
+   const encounterLevel=Math.max(1,Math.round(fighters.reduce((n,c)=>n+(Number(c.level)||1),0)/fighters.length)+(duoMode?2:1));
    const lead={...wild,encounterLevel};
-   game.startBattle(fighters,lead,{pack:[lead,...companions]});
-   if(game.battle){const b=game.battle,p=b.duo;const promised=!!(p&&window.CatRelations?.memoryList?.(p.a,p.b)?.includes("sakura"));b.postgameRuins={root,token,mode,promised,attemptId:globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`};if(b.regionalCombat)b.regionalCombat.next=2.6;if(duoMode&&!promised)notice(b,"本次未携带已完成约定的双猫；仍可捕捉，不能获得约定奖励。","No promised duo in this party; capture remains available, but the promise bonus is locked.");}
+   // Keep the SSR lead and a real opposing pack, but do not outnumber a newly graduated two-cat party with three full-health enemies. Larger parties still face all three.
+   const escortCount=Math.min(companions.length,Math.max(0,fighters.length-1));
+   game.startBattle(fighters,lead,{pack:[lead,...companions.slice(0,escortCount)]});
+   if(game.battle){const b=game.battle,p=b.duo;const promised=!!(p&&window.CatRelations?.memoryList?.(p.a,p.b)?.includes("sakura"));b.postgameRuins={root,token,mode,promised,attemptId:globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`};if(b.regionalCombat)b.regionalCombat.next=2.6;if(duoMode&&promised){b.duoCharge=100;notice(b,"已完成的双猫约定让合击准备就绪。","Your earned Duo Promise readies a real Duo cast.");}if(duoMode&&!promised)notice(b,"本次未携带已完成约定的双猫；仍可捕捉，不能获得约定奖励。","No promised duo in this party; capture remains available, but the promise bonus is locked.");}
   }});
   return true;
  }
@@ -292,8 +294,14 @@ function install(){
   }
   if(b?.regionalCombat)document.getElementById("cb-region-combat")?.remove();
   const result=end.call(this);
-  if(committed?.ok)this.toast({zh:"星铃废墟挑战完成，探索奖励已保存。",en:"Star Bell Ruins cleared; exploration rewards saved."});
-  else if(committed&&!committed.ok)this.toast({zh:"挑战记录未保存，可以再次挑战。",en:"Challenge record was not saved. You can retry."});
+  if(ruins&&ruins.root===window.State.S){
+   const outcome=b.result==="win"?(committed?.ok?"saved":"save-failed"):"defeat";
+   const card=document.querySelector("#panel.open .card");
+   if(card){const p=document.createElement("p");p.dataset.ruinsResult=outcome;p.dataset.ruinsDuo=String(ruins.mode==="duo"&&ruins.promised&&b.duoUses>0);p.setAttribute("role","status");p.className="sub";p.textContent=outcome==="saved"?tr(["星铃废墟挑战完成，探索奖励已保存。","Star Bell Ruins cleared; exploration rewards saved."]):outcome==="save-failed"?tr(["捕捉胜利，但探索奖励未保存。请再次挑战。","Capture won, but the exploration reward was not saved. Retry the challenge."]):tr(["挑战未获胜，队伍与任务进度已保留。","Challenge not won. Your party and quest progress are preserved."]);card.prepend(p);}
+   if(outcome==="save-failed")console.error("Ruins victory transaction rejected",committed?.reason||"stale or missing action",ruins.attemptId);
+   if(committed?.ok)this.toast({zh:"星铃废墟挑战完成，探索奖励已保存。",en:"Star Bell Ruins cleared; exploration rewards saved."});
+   else if(outcome==="save-failed")this.toast({zh:"挑战记录未保存，可以再次挑战。",en:"Challenge record was not saved. You can retry."});
+  }
   return result;
  };
  window.addEventListener("resize",()=>requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-region-combat"))));

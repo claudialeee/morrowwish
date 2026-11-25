@@ -199,3 +199,6 @@
  #stage .rw-world:not(.rw-fit-wide)>.rw-head .rw-brand strong{font-size:17px;line-height:1.15;overflow-wrap:normal;word-break:normal}
  #stage .rw-world:not(.rw-fit-wide)>.rw-head>.rw-button{width:100%;max-width:none;min-width:0;min-height:36px;font-size:11px;padding:4px;white-space:normal;overflow-wrap:normal}
 }
+
+/* Flight controls must remain on the initial operational page, including postgame letters. */
+#stage .rw-fit-rail .rw-active-flight>.rw-sky-flight-status{grid-column:1/-1;margin:0;font-size:11px;line-height:1.25;color:inherit}

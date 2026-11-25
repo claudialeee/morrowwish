@@ -184,8 +184,41 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  ['library',['Moon window','Neighbor bridge','Reciprocal reply'],['Moye','Baikan']],
  ['starfall',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan']]];
  for(const [region,inputs,npcs] of repairs){await gotoRegion(region);if(region==='sky'&&skyFlight)await skyFlight('Muling’s letter · Repair the sanctuary',[.67,.30,.64]);else await puzzle('Muling’s letter · Repair the sanctuary',inputs);for(const n of npcs){const control=button('Invite to garden: '+n);await control.click();await control.waitFor({state:'hidden'});}await page.waitForFunction(r=>CatBondResonance.view().postgame.includes('postgame:reunion-'+r),region);await shot('postgame-'+region);}
- await gotoRegion('starfall');await beginBattle('Star Bell Ruins · Legendary challenge');await shot('postgame-ruins');await finishBattle();await page.locator('#cr-ok,#battle-recovery-ok').click();assert.equal((await view()).postgame.length,13);
- await beginBattle('Star Bell Ruins · Duo Promise challenge');await shot('postgame-duo-ruins');await finishBattle();await page.locator('#cr-ok,#battle-recovery-ok').click();assert.ok((await view()).ruins.duoClears>=1,'Earn a real Duo Promise ruins victory');
+ await gotoRegion('starfall');
+ async function ruinsVictory(label,duoMode){
+  for(let attempt=1;attempt<=3;attempt++){
+   const prior=(await view()).ruins;
+   await beginBattle(label,!duoMode);await shot((duoMode?'postgame-duo-ruins':'postgame-ruins')+'-'+attempt);
+   assert.ok(await page.evaluate(()=>!!__game.battle?.postgameRuins),'Real ruins encounter must be attached to battle');
+   if(duoMode){
+    await page.waitForFunction(()=>{const b=__game.battle,el=document.getElementById('duo-burst');return b?.postgameRuins?.promised&&el&&!el.hidden&&!el.disabled;},null,{timeout:45000});
+    await page.locator('#duo-burst').click();
+    await page.waitForFunction(()=>__game.battle?.duoUses>0,null,{timeout:15000});
+    await page.locator('#btn-auto').click();
+   }
+   const deadline=Date.now()+300000;
+   while(await page.locator('#battle-ui.on').isVisible()){
+    if(Date.now()>deadline)throw Error('Ruins battle timeout '+label);
+    const support=page.locator('#cb-region-combat button');
+    if(await support.isVisible()&&await support.isEnabled())await support.click();
+    await page.waitForTimeout(600);
+   }
+   await finishBattle();const outcome=page.locator('[data-ruins-result]');await outcome.waitFor();
+   const result=await outcome.getAttribute('data-ruins-result');await shot('ruins-result-'+(duoMode?'duo':'legendary')+'-'+attempt);
+   console.log(name,'RUINS RESULT',label,attempt,result,JSON.stringify((await view()).ruins));
+   assert.notEqual(result,'save-failed','Real victory must persist its ruins reward');
+   if(result==='saved'){
+    await page.locator('#cr-ok').waitFor();assert.equal((await view()).ruins.clears,prior.clears+1);
+    if(duoMode){assert.equal(await outcome.getAttribute('data-ruins-duo'),'true');assert.equal((await view()).ruins.duoClears,prior.duoClears+1);}
+    await page.locator('#cr-ok').click();return;
+   }
+   assert.equal(result,'defeat');assert.deepEqual((await view()).ruins,prior,'Defeat grants no ruins progress');
+   await page.locator('#battle-recovery-ok').click();
+  }
+  throw Error('No real victory after three player retries: '+label);
+ }
+ await ruinsVictory('Star Bell Ruins · Legendary challenge',false);assert.equal((await view()).postgame.length,13);
+ await ruinsVictory('Star Bell Ruins · Duo Promise challenge',true);assert.ok((await view()).ruins.duoClears>=1,'Earn a real Duo Promise ruins victory');
  const saved=await page.evaluate(()=>({returned:CatBondResonance.view().returned.length,cats:State.S.cats.map(c=>c.uid),coins:State.S.coins,postgame:CatBondResonance.view().postgame,ruins:CatBondResonance.view().ruins.clears}));assert.equal(saved.returned,12);
  await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');await shot('postgame-garden');
  await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await page.waitForFunction(()=>CatBondResonance.view().ending);
