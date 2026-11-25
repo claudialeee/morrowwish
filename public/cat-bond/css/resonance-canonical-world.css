@@ -130,3 +130,21 @@
  .rw-world[data-region="harbor"].rw-forest-landscape .rw-head{margin:0;padding-bottom:6px}
  .rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-guide,.rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-status{margin:5px 0;font-size:11px}
 }
+
+/* Moonmirror: keep the painted exploration surface and active controls visible. */
+@media(max-width:700px) and (orientation:portrait){
+ .rw-world.rw-library-region:not([hidden]){display:flex;flex-direction:column;gap:7px;padding:60px 9px 36px;overflow:auto;background:radial-gradient(ellipse at 25% 0,#3b4361,#252f48 57%,#172334)}
+ .rw-library-region>*{flex:0 0 auto;width:100%;max-width:none;box-sizing:border-box;margin:0}
+ .rw-library-region>.rw-head{order:0;padding-bottom:7px;gap:5px}
+ .rw-library-region>.rw-shell{order:1;animation:none}
+ .rw-library-region>.rw-puzzle-controls{order:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .rw-library-region>.rw-puzzle-controls>.rw-hint,.rw-library-region>.rw-puzzle-controls>.rw-button:last-child{grid-column:1/-1}
+ .rw-library-region>.rw-objective{order:3;padding:8px;gap:5px}
+ .rw-library-region>.rw-notice{order:4}.rw-library-region>.rw-hint{order:5}.rw-library-region>.rw-current-actions{order:6}.rw-library-region>.rw-world-actions{order:7}.rw-library-region>.rw-cargo{order:8}
+ .rw-library-region .rw-button{min-height:44px;white-space:normal;overflow-wrap:anywhere}
+}
+@media(max-height:500px) and (orientation:landscape){
+ .rw-world.rw-library-region.rw-forest-landscape{background:radial-gradient(ellipse at 24% 8%,#3d4568,#252f48 52%,#172334)}
+ .rw-library-region .rw-puzzle-controls>.rw-hint,.rw-library-region .rw-puzzle-controls>.rw-button:last-child{grid-column:1/-1}
+ .rw-library-region .rw-button{white-space:normal;overflow-wrap:anywhere}
+}
