@@ -2595,15 +2595,15 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "我把第二把钥匙带来了。还有些修复工作要做。",
-            "en": "I've brought the second key. There are still some repairs to finish."
+            "zh": "那把花园钥匙，我也能有一份吗？",
+            "en": "Could I have a key to the garden too?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那就一件一件来，大家都能参与。",
-            "en": "We'll take them one at a time, and everyone can join in."
+            "zh": "当然！这里也有你的一席之地。",
+            "en": "Of course! There's a place for you here too."
           }
         },
         {
