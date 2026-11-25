@@ -20,9 +20,9 @@ function install(){
   follower.x+=(tx-follower.x)*.14;follower.y+=(ty-follower.y)*.14;
   return drawMuling(ctx,{x:follower.x,y:follower.y,scale,time,moving:walking,face});
  }
- function talk(id,region){
-  const v=api.view();if(!v.current)return false;
-  const r=api.recordNPC({sceneId:v.current.id,npcId:id,region});
+ function talk(id,region,requestedScene){
+  const v=api.view();if(requestedScene&&requestedScene!==v.current?.id)return false;
+  const r=v.current?api.recordNPC({sceneId:v.current.id,npcId:id,region}):{ok:false};
   if(r.ok){api.showCurrent();return true}
   const p=api.npcProfile(id);
   if(p)window.dispatchEvent(new CustomEvent("cat-bond-resonance-npc-profile",{detail:{...p,ambient:api.ambientAvailable(region).filter(a=>a.npc===id)}}));
