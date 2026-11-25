@@ -1,0 +1,878 @@
+{
+  "schemaVersion": 2,
+  "project": "Cat Bond — The Last Resonance",
+  "branch": "rpg/cinematic-integration-v2",
+  "sourceCanon": [
+    "docs/cat-bond-rpg/01-NARRATIVE-BIBLE.md",
+    "docs/cat-bond-rpg/02-MAIN-STORY-SCRIPT.md",
+    "docs/cat-bond-rpg/03-DEVELOPER-HANDOFF.md"
+  ],
+  "status": "integration-review-only; no production release",
+  "reviewStatus": "Painted opening and closing sequences are staged for independent review. Production approval remains pending.",
+  "assets": [
+    {
+      "id": "region-misttide-harbor",
+      "kind": "environment-key-art",
+      "path": "assets/cinematics/regions/region-misttide-harbor.svg",
+      "label": "Misttide Harbor / 霁潮港",
+      "sourceSceneId": null,
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "region-rootsleep-forest",
+      "kind": "environment-key-art",
+      "path": "assets/cinematics/regions/region-rootsleep-forest.svg",
+      "label": "Rootsleep Forest / 眠根林",
+      "sourceSceneId": null,
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "region-emberforge-city",
+      "kind": "environment-key-art",
+      "path": "assets/cinematics/regions/region-emberforge-city.svg",
+      "label": "Emberforge City / 赤炉环城",
+      "sourceSceneId": null,
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "region-skyspine-isles",
+      "kind": "environment-key-art",
+      "path": "assets/cinematics/regions/region-skyspine-isles.svg",
+      "label": "Skyspine Isles / 云脊群岛",
+      "sourceSceneId": null,
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "region-moonmirror-library",
+      "kind": "environment-key-art",
+      "path": "assets/cinematics/regions/region-moonmirror-library.svg",
+      "label": "Moonmirror Library / 月镜书库",
+      "sourceSceneId": null,
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "region-starfall-expanse",
+      "kind": "environment-key-art",
+      "path": "assets/cinematics/regions/region-starfall-expanse.svg",
+      "label": "Starfall Expanse / 星坠原",
+      "sourceSceneId": null,
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "p01-six-sanctuaries",
+      "kind": "cinematic-key-art",
+      "path": "assets/cinematics/prologue/p01-six-sanctuaries.svg",
+      "sceneKey": "prologue:P-01",
+      "sourceSceneId": "P-01",
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "p02-first-bellkeepers-choice",
+      "kind": "cinematic-key-art",
+      "path": "assets/cinematics/prologue/p02-first-bellkeepers-choice.svg",
+      "sceneKey": "prologue:P-02",
+      "sourceSceneId": "P-02",
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "p03-years-of-waiting",
+      "kind": "cinematic-key-art",
+      "path": "assets/cinematics/prologue/p03-years-of-waiting.svg",
+      "sceneKey": "prologue:P-03",
+      "sourceSceneId": "P-03",
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "p04-awakening",
+      "kind": "cinematic-key-art",
+      "path": "assets/cinematics/prologue/p04-awakening.svg",
+      "sceneKey": "prologue:P-04",
+      "sourceSceneId": "P-04",
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "p05-the-journey",
+      "kind": "cinematic-key-art",
+      "path": "assets/cinematics/prologue/p05-the-journey.svg",
+      "sceneKey": "prologue:P-05",
+      "sourceSceneId": "P-05",
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "b03-six-notes-return",
+      "kind": "cinematic-key-art",
+      "path": "assets/cinematics/finale/b03-six-notes-return.svg",
+      "sceneKey": "finale:B-03",
+      "sourceSceneId": "B-03",
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "e01-six-regions-answer",
+      "kind": "cinematic-key-art",
+      "path": "assets/cinematics/epilogue/e01-six-regions-answer.svg",
+      "sceneKey": "epilogue:E-01",
+      "sourceSceneId": "E-01",
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "e03-sunlit-garden",
+      "kind": "cinematic-key-art",
+      "path": "assets/cinematics/epilogue/e03-sunlit-garden.svg",
+      "sceneKey": "epilogue:E-03",
+      "sourceSceneId": "E-03",
+      "format": "svg",
+      "canvas": "2400x1350",
+      "status": "rejected",
+      "runtimeAllowed": false,
+      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
+      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
+    },
+    {
+      "id": "muling-traveler-neutral",
+      "kind": "character-portrait",
+      "characterId": "muling",
+      "phase": "companion",
+      "expression": "neutral",
+      "path": "assets/cinematics/characters/muling/traveler-neutral.webp",
+      "format": "webp",
+      "canvas": "960x887",
+      "bytes": 193086,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "source": "original generated portrait; alpha WebP",
+      "reviewReason": "Individual portrait produced; independent visual QA and normal-game integration pending."
+    },
+    {
+      "id": "opening-star-bell",
+      "kind": "cinematic-key-art",
+      "sceneKey": "prologue:P-01",
+      "path": "assets/cinematics/prologue/star-bell.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "opening-harbor-at-twilight",
+      "kind": "cinematic-key-art",
+      "sceneKey": "prologue:P-01",
+      "path": "assets/cinematics/prologue/harbor-at-twilight.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "opening-keepers-choice",
+      "kind": "cinematic-key-art",
+      "sceneKey": "prologue:P-02",
+      "path": "assets/cinematics/prologue/keepers-choice.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "opening-broken-bell-tongue",
+      "kind": "cinematic-key-art",
+      "sceneKey": "prologue:P-02",
+      "path": "assets/cinematics/prologue/broken-bell-tongue.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "opening-waiting-at-workbench",
+      "kind": "cinematic-key-art",
+      "sceneKey": "prologue:P-03",
+      "path": "assets/cinematics/prologue/waiting-at-workbench.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "opening-garden-at-dawn",
+      "kind": "cinematic-key-art",
+      "sceneKey": "prologue:P-03",
+      "path": "assets/cinematics/prologue/garden-at-dawn.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-inward-call",
+      "kind": "cinematic-key-art",
+      "sceneKey": "starfall:F-05",
+      "path": "assets/cinematics/closing/inward-call.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-pendant-signal",
+      "kind": "cinematic-key-art",
+      "sceneKey": "starfall:F-05",
+      "path": "assets/cinematics/closing/pendant-signal.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-final-note",
+      "kind": "cinematic-key-art",
+      "sceneKey": "finale:B-04",
+      "path": "assets/cinematics/closing/final-note.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-memories-return",
+      "kind": "cinematic-key-art",
+      "sceneKey": "finale:B-04",
+      "path": "assets/cinematics/closing/memories-return.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-harbor-forest-delivery",
+      "kind": "cinematic-key-art",
+      "sceneKey": "epilogue:E-01",
+      "path": "assets/cinematics/closing/harbor-forest-delivery.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-couriers-at-library",
+      "kind": "cinematic-key-art",
+      "sceneKey": "epilogue:E-01",
+      "path": "assets/cinematics/closing/couriers-at-library.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    }
+  ],
+  "sceneKeys": [
+    "prologue:P-01",
+    "prologue:P-02",
+    "prologue:P-03",
+    "prologue:P-04",
+    "prologue:P-05",
+    "finale:B-03",
+    "epilogue:E-01",
+    "epilogue:E-03"
+  ],
+  "characters": [
+    "岬灯",
+    "栖蓝",
+    "芽禾",
+    "榆川",
+    "烬婆",
+    "小铆",
+    "翎羽",
+    "远帆",
+    "墨页",
+    "白栞",
+    "星芽",
+    "砾川"
+  ],
+  "preservation": [
+    "Existing 63 duo-bond original frames are not modified.",
+    "Existing CatArt species/breed assets are not modified.",
+    "Legacy five-region painted-regions.js is not relabeled as the six-region canon set."
+  ],
+  "rejectedAssets": [
+    {
+      "id": "player-keeper-visual-kit",
+      "reason": "Rejected: primitive geometric placeholder, not production character art."
+    },
+    {
+      "id": "muling-turnaround",
+      "reason": "Rejected: primitive geometric placeholder, no acceptable character modeling or material detail."
+    },
+    {
+      "id": "regional-npc-roster",
+      "reason": "Rejected: generic low-detail vector cats, insufficient individual identity."
+    }
+  ],
+  "approvedShots": {},
+  "canonicalSceneIdFormat": "chapter:sourceSceneId",
+  "storyAuthority": "Chat 4 engine and campaign; no independent cinematic narrative state.",
+  "stagingShots": {
+    "prologue:P-01": [
+      {
+        "assetId": "opening-star-bell",
+        "alt": {
+          "zh": "星铃与六座圣所",
+          "en": "The Star Bell above the six sanctuaries"
+        },
+        "durationMs": 4000,
+        "transitionMs": 720,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": []
+      },
+      {
+        "assetId": "opening-harbor-at-twilight",
+        "alt": {
+          "zh": "暮色中的港口听见星铃",
+          "en": "The harbor hears the Star Bell at twilight"
+        },
+        "durationMs": 4000,
+        "transitionMs": 720,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": []
+      }
+    ],
+    "prologue:P-02": [
+      {
+        "assetId": "opening-keepers-choice",
+        "alt": {
+          "zh": "守铃者走向应急锚室",
+          "en": "The Bellkeeper reaches for the emergency anchor"
+        },
+        "durationMs": 4000,
+        "transitionMs": 720,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      {
+        "assetId": "opening-broken-bell-tongue",
+        "alt": {
+          "zh": "碎裂的铃舌与守铃者的爪",
+          "en": "The broken bell tongue beside the Bellkeeper’s paw"
+        },
+        "durationMs": 4000,
+        "transitionMs": 720,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      }
+    ],
+    "prologue:P-03": [
+      {
+        "assetId": "opening-waiting-at-workbench",
+        "alt": {
+          "zh": "暮铃在雨夜修铃",
+          "en": "Muling repairs a bell on a rainy night"
+        },
+        "durationMs": 4000,
+        "transitionMs": 720,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": []
+      },
+      {
+        "assetId": "opening-garden-at-dawn",
+        "alt": {
+          "zh": "暮铃在晨光中把旧铃留在花园",
+          "en": "Muling leaves the old bell in Sunlit Garden at dawn"
+        },
+        "durationMs": 4000,
+        "transitionMs": 720,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": []
+      }
+    ],
+    "starfall:F-05": [
+      {
+        "assetId": "closing-inward-call",
+        "alt": {
+          "zh": "六道向内汇聚的光路",
+          "en": "Six inward channels converge"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.1
+          }
+        },
+        "lines": [
+          0,
+          1
+        ]
+      },
+      {
+        "assetId": "closing-pendant-signal",
+        "alt": {
+          "zh": "暮铃触发星铃的暗路",
+          "en": "Muling activates the inward channel"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.1
+          }
+        },
+        "lines": [
+          2,
+          3
+        ]
+      }
+    ],
+    "finale:B-04": [
+      {
+        "assetId": "closing-final-note",
+        "alt": {
+          "zh": "六地相答，锚室开启",
+          "en": "The ring answers and the anchor opens"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.1
+          }
+        },
+        "lines": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "assetId": "closing-memories-return",
+        "alt": {
+          "zh": "守铃者与暮铃重逢",
+          "en": "The Bellkeeper and Muling reunite"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.1
+          }
+        },
+        "lines": [
+          3,
+          4,
+          5
+        ]
+      }
+    ],
+    "epilogue:E-01": [
+      {
+        "assetId": "closing-harbor-forest-delivery",
+        "alt": {
+          "zh": "航船驶向林地",
+          "en": "Harbor ships reach Rootsleep Forest"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.1
+          }
+        },
+        "lines": []
+      },
+      {
+        "assetId": "closing-couriers-at-library",
+        "alt": {
+          "zh": "飞艇抵达月镜书库",
+          "en": "Sky couriers reach Moonmirror Library"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.1
+          }
+        },
+        "lines": []
+      }
+    ]
+  },
+  "prologueReleaseShots": {
+    "prologue:P-01": [
+      {
+        "assetId": "opening-star-bell",
+        "alt": {
+          "zh": "星铃与六座圣所",
+          "en": "The Star Bell above the six sanctuaries"
+        },
+        "durationMs": 8500,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [],
+        "effect": "impact",
+        "focus": "50% 50%"
+      },
+      {
+        "assetId": "opening-harbor-at-twilight",
+        "alt": {
+          "zh": "暮色中的港口听见星铃",
+          "en": "The harbor hears the Star Bell at twilight"
+        },
+        "durationMs": 6500,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [],
+        "effect": "blackout",
+        "focus": "50% 50%"
+      }
+    ],
+    "prologue:P-02": [
+      {
+        "assetId": "opening-keepers-choice",
+        "alt": {
+          "zh": "守铃者走向应急锚室",
+          "en": "The Bellkeeper reaches for the emergency anchor"
+        },
+        "durationMs": 4000,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "effect": "storm",
+        "focus": "50% 50%"
+      },
+      {
+        "assetId": "opening-broken-bell-tongue",
+        "alt": {
+          "zh": "碎裂的铃舌与守铃者的爪",
+          "en": "The broken bell tongue beside the Bellkeeper’s paw"
+        },
+        "durationMs": 4000,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "effect": "seal",
+        "focus": "68% 52%"
+      }
+    ],
+    "prologue:P-03": [
+      {
+        "assetId": "opening-waiting-at-workbench",
+        "alt": {
+          "zh": "暮铃在雨夜修铃",
+          "en": "Muling repairs a bell on a rainy night"
+        },
+        "durationMs": 6500,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [],
+        "effect": "rain",
+        "focus": "50% 50%"
+      },
+      {
+        "assetId": "opening-garden-at-dawn",
+        "alt": {
+          "zh": "暮铃在晨光中把旧铃留在花园",
+          "en": "Muling leaves the old bell in Sunlit Garden at dawn"
+        },
+        "durationMs": 7000,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [],
+        "effect": "seasons",
+        "focus": "50% 50%"
+      }
+    ]
+  },
+  "prologueReleaseAuthorization": {
+    "scope": "Six existing opening raster paintings only, explicitly requested for reuse in the release-prologue task; no independent runtime visual review claimed.",
+    "assets": [
+      "opening-star-bell",
+      "opening-harbor-at-twilight",
+      "opening-keepers-choice",
+      "opening-broken-bell-tongue",
+      "opening-waiting-at-workbench",
+      "opening-garden-at-dawn"
+    ]
+  }
+}

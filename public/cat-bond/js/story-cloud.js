@@ -9,7 +9,6 @@ const CLOUD_KEY='catbond_cloud_key_v1';
 const REV_KEY='catbond_cloud_revision_v1';
 const SYNC_KEY='catbond_cloud_synced_at_v1';
 const CLOUD_PAUSE_KEY='catbond_cloud_paused_v1';
-const CODE_PREFIX='CB1.';
 const REGIONS=['home','sakura','creek','volcano','ruins'];
 const SAVE_SLOT_IDS=['slot1','slot2','slot3'];
 const REGION_PAGES={
@@ -176,6 +175,7 @@ function writeLocal(data){
 function state(){return window.State?.S||null;}
 function save(){try{window.State?.save?.();}catch(error){console.warn('Cat Bond story save failed',error);}}
 function storyState(){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__)return null;
  const S=state();if(!S)return null;
  if(!S.story||typeof S.story!=='object')S.story={};
  const story=S.story;
@@ -383,6 +383,7 @@ function persistIntroSeen(){
  save();
 }
 function startPrologue(done){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__)return window.CatBondTitlePrologue?.start?.(window.__game,{onWorld:done});
  showSequence('prologue',PROLOGUE,()=>{
   persistIntroSeen();done?.();
  },{canSkip:true});
@@ -428,6 +429,7 @@ function onRegionDiscovery(regionId,reward){
  }else updateTracker();
 }
 function updateTracker(){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__){document.getElementById('cb-story-tracker')?.classList.remove('is-visible');return;}
  const host=document.getElementById('cb-story-tracker');
  const game=window.__game;
  if(!host||!game||!window.__CAT_BOND_STARTED__)return;
@@ -451,6 +453,7 @@ function updateTracker(){
  host.querySelector('.cb-story-tracker-title').textContent=s.completed?t('最后一页 · 已完成','The Last Page · Complete'):t('主线 · 最后一页','MAIN STORY · THE LAST PAGE');
 }
 function openJournal(){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__)return window.CatBondResonance?.showCurrent?.();
  const s=storyState();if(!s)return;
  const pages=[...REGIONS.map(id=>REGION_PAGES[id]),LAST_PAGE];
  const fragments=pages.map((p,i)=>{
@@ -460,7 +463,7 @@ function openJournal(){
    esc(found?t(p.chapter,p.chapterEn):t('探索对应区域，寻找记忆回声','Explore its region to find the memory echo'))+'</small></span></li>';
  }).join('');
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-journal-overlay';
- overlay.innerHTML='<section class="cb-cloud-card cb-journal-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
+ overlay.innerHTML='<section class="cb-cloud-card cb-journal-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><button class="cb-picker-language" data-modal-language type="button"></button>'+
   '<p class="cb-cloud-eyebrow">CAT BOND · THE LAST PAGE</p><h2>'+t('故事手册','Story Journal')+'</h2>'+
   '<p class="cb-cloud-lead">'+t('六段记忆，五片土地。你正在找回谁的故事？','Six memories. Five lands. Whose story are you restoring?')+'</p>'+
   '<div class="cb-journal-meter"><strong>'+s.fragments.length+'/6</strong><span>'+t('已找回的记忆','Memories recovered')+'</span></div>'+
@@ -468,12 +471,13 @@ function openJournal(){
   '<p class="cb-journal-status">'+(s.completed?t('结局已解锁：星铃再次响起。','Ending unlocked: the Star Bell rings again.'):allSix(s)?t('所有记忆已集齐。回到月影遗迹，完成最后的对决。','All memories are found. Return to Moonshadow Ruins for the final confrontation.'):t('继续探索地图，寻找每片土地留下的记忆。','Keep exploring the map to uncover each land’s memory.'))+'</p>'+
   '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-journal-action="continue">'+(allSix(s)&&!s.bossDefeated?t('前往最终对决','Go to final confrontation'):t('继续探索','Continue exploring'))+'</button>'+
   (s.completed?'<button class="cb-cloud-secondary" data-journal-action="ending">'+t('重看结局动画','Replay ending')+'</button>':'')+
-  '<button class="cb-cloud-secondary" data-journal-action="cloud">'+t('云存档','Cloud save')+'</button></div></section>';
+  '</div></section>';
  document.body.append(overlay);
  const close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
  const rerender=()=>{close();openJournal();};
  window.addEventListener('morrowwish-language-change',rerender);
  overlay.querySelector('.cb-cloud-close').onclick=close;
+ overlay.querySelector('[data-modal-language]')?.addEventListener('click',()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh'));
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  overlay.querySelector('[data-journal-action="continue"]').onclick=()=>{
   close();
@@ -482,7 +486,6 @@ function openJournal(){
    else openWorldMapForBoss();
   }else openWorldMapForBoss();
  };
- overlay.querySelector('[data-journal-action="cloud"]')?.addEventListener('click',()=>{close();openCloudPanel();});
  overlay.querySelector('[data-journal-action="ending"]')?.addEventListener('click',()=>{close();playEnding(true);});
 }
 function openWorldMapForBoss(){
@@ -520,7 +523,7 @@ function showMulingQuestions(done){
  ];
  let step=0,selected=null;
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog cb-muling-questions';
- overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><p class="cb-cloud-eyebrow">THE LAST PAGE · THREE QUESTIONS</p><h2></h2><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><button class="cb-picker-language" data-modal-language type="button"></button><p class="cb-cloud-eyebrow">THE LAST PAGE · THREE QUESTIONS</p><h2></h2><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
  document.body.append(overlay);
  const close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
  const rerender=()=>render();window.addEventListener('morrowwish-language-change',rerender);
@@ -675,99 +678,6 @@ function createTracker(){
  el.innerHTML='<span class="cb-story-tracker-top"><strong class="cb-story-tracker-title"></strong><b class="cb-story-tracker-count"></b></span><span class="cb-story-tracker-next"></span>';
  el.addEventListener('click',openJournal);stage.append(el);
 }
-function renderCloudPanel(){
- document.querySelector('.cb-cloud-overlay')?.remove();
- const overlay=document.createElement('div');overlay.className='cb-cloud-overlay';
- overlay.innerHTML='<section class="cb-cloud-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
-  '<p class="cb-cloud-eyebrow">CAT BOND · SAVE & LOAD</p><h2>'+t('云存档','Cloud save')+'</h2>'+
-  '<p class="cb-cloud-lead">'+t('三个存档位分别加密、分别同步。云端不可用时，本机存档仍可正常使用。','Each save slot is encrypted and synced independently. Local saves remain available when cloud sync is offline.')+'</p>'+
-  '<div class="cb-cloud-body"></div></section>';
- (document.fullscreenElement||document.getElementById('stage')||document.body).append(overlay);
- const body=overlay.querySelector('.cb-cloud-body');
- const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
- overlay.querySelector('.cb-cloud-close').onclick=close;
- overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
- function render(status='',conflict=false){
-  const token=localStorage.getItem(CLOUD_KEY)||'';
-  const importCode='<label class="cb-cloud-import-label">'+t('在另一台设备上？输入恢复码','Using another device? Enter your recovery code')+'</label>'+
-   '<div class="cb-cloud-import"><input type="text" data-recovery-code autocomplete="off" spellcheck="false" placeholder="CB1.…">'+
-   '<button type="button" data-cloud="connect">'+t('连接并读取','Connect & load')+'</button></div>';
-  if(token){
-   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status" role="status">'+esc(status||t('云存档已启用。','Cloud save is enabled.'))+'</div>'+
-    '<label class="cb-cloud-label">'+t('恢复码（请妥善保管）','Recovery code — keep it safe')+'</label>'+
-    '<div class="cb-cloud-code-row"><code>'+esc(CODE_PREFIX+token)+'</code><button type="button" data-copy-code>'+t('复制','Copy')+'</button></div>'+
-    '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-cloud="sync">'+t('同步全部存档','Sync all slots')+'</button>'+
-    '<button class="cb-cloud-secondary" data-cloud="restore">'+t('读取云端存档','Load cloud slots')+'</button>'+
-    (conflict?'<button class="cb-cloud-secondary" data-cloud="overwrite">'+t('用本机覆盖云端','Overwrite cloud with this device')+'</button>':'')+'</div>'+
-    importCode+
-    '<p class="cb-cloud-footnote">'+t('每个存档位有独立云端版本号。发生冲突时，必须明确选择读取云端或用本机覆盖。','Each slot has its own cloud revision. On conflict, explicitly choose whether to load cloud data or overwrite it with this device.')+'</p>';
-  }else{
-   body.innerHTML='<div class="cb-cloud-status" id="cb-cloud-status" role="status">'+esc(status||t('尚未建立云端存档。','No cloud save has been created yet.'))+'</div>'+
-    '<button class="cb-cloud-primary cb-cloud-enable" data-cloud="enable">'+t('启用云存档','Enable cloud save')+'</button>'+
-    importCode+
-    '<p class="cb-cloud-footnote">'+t('启用后会生成一组恢复码。恢复码是云存档的访问凭据，请妥善保管。','Enabling cloud save creates a recovery code. It is the credential for your cloud saves; keep it safe.')+'</p>';
-  }
-  body.querySelectorAll('[data-cloud]').forEach(button=>button.onclick=()=>cloudAction(button.dataset.cloud));
-  body.querySelector('[data-copy-code]')?.addEventListener('click',async()=>{
-   try{await copyText(CODE_PREFIX+token);render(t('恢复码已复制。请将它保存在安全的位置。','Recovery code copied. Store it somewhere safe.'),conflict);}
-   catch(error){render(t('复制失败，请手动复制恢复码。','Copy failed. Please copy the recovery code manually.'),conflict);}
-  });
- }
- async function cloudAction(action){
-  const status=body.querySelector('#cb-cloud-status');
-  const say=msg=>{if(status)status.textContent=msg;};
-  try{
-   if(action==='enable'){
-    const token=makeToken();localStorage.setItem(CLOUD_KEY,token);
-    for(const id of SAVE_SLOT_IDS)localStorage.setItem(cloudRevisionKey(id),'0');
-    const result=await syncNow(false);
-    render(result.ok?t('云存档已启用，所有已有存档已同步。','Cloud save enabled; all existing slots were synced.')
-      :result.empty?t('云存档已启用。开始冒险后会自动同步。','Cloud save enabled. New progress will sync automatically.')
-      :t('云存档已启用，但同步未完成。请检查网络后重试。','Cloud save is enabled, but sync did not finish. Check your connection and retry.'),!!result.conflict);
-    return;
-   }
-   if(action==='connect'){
-    const input=body.querySelector('[data-recovery-code]');
-    const token=parseCode(input?.value);
-    if(!token)throw Error(t('恢复码格式不正确。','The recovery code format is invalid.'));
-    const hasLocal=State.listSaveSlots().some(slot=>slot.exists);
-    if(hasLocal&&!confirm(t('读取云端存档会替换本机的三个存档位。继续吗？','Loading cloud saves will replace all three local slots. Continue?')))return;
-    say(t('正在连接并读取三个存档位…','Connecting and loading all three slots…'));
-    await restoreWithToken(token);return;
-   }
-   const token=localStorage.getItem(CLOUD_KEY);if(!token)throw Error('Cloud save is not enabled');
-   if(action==='sync'){
-    say(t('正在分别同步三个存档位…','Syncing the three slots independently…'));
-    const result=await syncNow(false);
-    render(result.ok?t('同步成功。','All available slots synced successfully.')
-      :result.conflict?t('部分存档存在云端冲突。请选择读取云端，或明确覆盖云端。','Some slots have cloud conflicts. Choose Load cloud or explicitly overwrite cloud.')
-      :result.empty?t('当前还没有可同步的游戏进度。','There is no game progress to sync yet.')
-      :t('同步失败，请检查网络后重试。','Sync failed. Check your connection and retry.'),!!result.conflict);
-    return;
-   }
-   if(action==='overwrite'){
-    if(!confirm(t('将使用本机三个存档位的内容覆盖云端对应存档。确定继续吗？','This will overwrite each matching cloud slot with this device’s save. Continue?')))return;
-    say(t('正在以本机版本覆盖云端…','Overwriting cloud slots with this device…'));
-    const result=await syncNow(true);
-    render(result.ok?t('云端存档已更新。','Cloud slots updated successfully.')
-      :t('覆盖未完成，请检查网络或稍后重试。','Overwrite did not finish. Check your connection and retry.'),!!result.conflict);
-    return;
-   }
-   if(action==='restore'){
-    const hasLocal=State.listSaveSlots().some(slot=>slot.exists);
-    if(hasLocal&&!confirm(t('读取云端存档会替换本机的三个存档位。继续吗？','Loading cloud saves will replace all three local slots. Continue?')))return;
-    say(t('正在读取云端存档…','Loading cloud slots…'));
-    await restoreWithToken(token);return;
-   }
-  }catch(error){
-   render(error?.message==='Cloud save not found'?t('云端暂时没有可读取的存档。','No cloud saves were found.')
-    :t('操作失败：','Action failed: ')+(error?.message||''),false);
-  }
- }
- const updateLocale=()=>render();
- window.addEventListener('morrowwish-language-change',updateLocale);
- render();
-}
 function makeToken(){
  const bytes=crypto.getRandomValues(new Uint8Array(32));
  return toB64url(bytes);
@@ -781,11 +691,7 @@ function fromB64url(value){
  const binary=atob(s+'='.repeat((4-s.length%4)%4));
  return Uint8Array.from(binary,c=>c.charCodeAt(0));
 }
-function parseCode(value){
- const text=String(value||'').trim().replace(/\s+/g,'');
- const token=text.startsWith(CODE_PREFIX)?text.slice(CODE_PREFIX.length):text;
- return /^[A-Za-z0-9_-]{43}$/.test(token)?token:null;
-}
+
 async function cryptoKey(token){
  return crypto.subtle.importKey('raw',fromB64url(token),{name:'AES-GCM'},false,['encrypt','decrypt']);
 }
@@ -812,9 +718,58 @@ async function fetchCloud(token,slotId){
 function validSavePayload(value){
  return !!value&&typeof value==='object'&&!Array.isArray(value);
 }
+function validSlotPayload(value){
+ if(!validSavePayload(value))return false;
+ const core=value.snapshotVersion===1?value.state:value;
+ return validSavePayload(core)&&Array.isArray(core.cats)&&(!value.systems||validSavePayload(value.systems));
+}
+let restoringCloud=false;
 async function restoreWithToken(token){
+ if(restoringCloud)throw Error(t('正在读取云存档，请稍候。','A cloud restore is already running.'));
+ restoringCloud=true;
+ clearTimeout(syncTimer);
+ try{
+  if(syncPromise)await syncPromise;
+  return await restoreCloudBook(token);
+ }finally{
+  restoringCloud=false;
+  if(pendingSyncSlots.size)queueSync([...pendingSyncSlots]);
+ }
+}
+async function restoreOneWithToken(token,id){
+ if(restoringCloud)throw Error(t('正在读取云存档，请稍候。','A cloud restore is already running.'));
+ if(!SAVE_SLOT_IDS.includes(id))throw Error('Invalid save slot');
+ restoringCloud=true;clearTimeout(syncTimer);
+ try{
+  if(syncPromise)await syncPromise;
+  const remote=await fetchCloud(token,id);
+  if(!remote.exists)throw Error('Cloud save not found');
+  const parsed=JSON.parse(await decrypt(remote,token));
+  if(parsed?.version!==3||parsed.slotId!==id)throw Error('Cloud slot mismatch');
+  const deletion=parsed.deleted===true?{deletedAt:parsed.deletedAt}:null;
+  if(!deletion&&!validSlotPayload(parsed.data))throw Error('Invalid cloud save');
+  const result=State.applyRemoteSaveSlot(id,deletion?null:{data:parsed.data,savedAt:parsed.savedAt||remote.updatedAt},deletion);
+  if(!result?.ok)throw Error(t('本机存档未替换。','Local slot was not replaced.'));
+  pendingSyncSlots.delete(id);
+  const reload=!!window.__CAT_BOND_STARTED__&&State.activeSlot()===id;
+  if(reload)State.hardReset();
+  localStorage.setItem(cloudRevisionKey(id),String(remote.revision||0));
+  localStorage.setItem(cloudSyncTimeKey(id),String(remote.updatedAt||Date.now()));
+  if(reload){
+   if(deletion)sessionStorage.removeItem('catbond_resume_slot_v1');
+   else sessionStorage.setItem('catbond_resume_slot_v1',id);
+   location.reload();
+  }
+  return result;
+ }finally{
+  restoringCloud=false;
+  if(pendingSyncSlots.size)queueSync([...pendingSyncSlots]);
+ }
+}
+async function restoreCloudBook(token){
  const remoteBySlot={};
  const entries={};
+ const deleted={};
  let found=false;
  for(const id of SAVE_SLOT_IDS){
   const remote=await fetchCloud(token,id);
@@ -822,32 +777,38 @@ async function restoreWithToken(token){
   if(!remote.exists)continue;
   const parsed=JSON.parse(await decrypt(remote,token));
   if(!validSavePayload(parsed))throw Error(t('云存档内容无效，未覆盖本机存档。','Cloud save is invalid; local progress was not changed.'));
+  if(parsed.version===3&&parsed.slotId===id&&parsed.deleted===true){
+   if(!Number.isFinite(parsed.deletedAt)||parsed.deletedAt<=0)throw Error('Invalid deletion record');
+   deleted[id]={deletedAt:parsed.deletedAt};found=true;continue;
+  }
   const data=parsed.version===3&&parsed.slotId===id?parsed.data:(Array.isArray(parsed.cats)?parsed:null);
-  if(!validSavePayload(data))throw Error(t('存档位 '+id+' 的云端数据无效。','Cloud data for '+id+' is invalid.'));
+  if(!validSlotPayload(data))throw Error(t('存档位 '+id+' 的云端数据无效。','Cloud data for '+id+' is invalid.'));
   entries[id]={data,savedAt:Number(parsed.savedAt||remote.updatedAt)||Date.now(),revision:1};
   found=true;
  }
  let legacyMigrated=false;
- if(!SAVE_SLOT_IDS.every(id=>entries[id])){
+ if(!SAVE_SLOT_IDS.every(id=>remoteBySlot[id]?.exists)){
   const legacy=await fetchCloud(token);
   if(legacy.exists){
    const parsed=JSON.parse(await decrypt(legacy,token));
    if(parsed?.version===2&&validSavePayload(parsed.slots)){
     for(const id of SAVE_SLOT_IDS){
-     if(entries[id])continue;
+     if(remoteBySlot[id]?.exists)continue;
      const data=parsed.slots[id]?.data;
-     if(validSavePayload(data)){entries[id]={data,savedAt:parsed.slots[id]?.savedAt||data.lastSeen||legacy.updatedAt,revision:1};found=true;}
+     if(validSlotPayload(data)){entries[id]={data,savedAt:parsed.slots[id]?.savedAt||data.lastSeen||legacy.updatedAt,revision:1};found=true;legacyMigrated=true;}
     }
-   }else if(!entries.slot1&&validSavePayload(parsed)&&Array.isArray(parsed.cats)){
-    entries.slot1={data:parsed,savedAt:parsed.lastSeen||legacy.updatedAt,revision:1};found=true;
+   }else if(!remoteBySlot.slot1?.exists&&validSavePayload(parsed)&&Array.isArray(parsed.cats)){
+    entries.slot1={data:parsed,savedAt:parsed.lastSeen||legacy.updatedAt,revision:1};found=true;legacyMigrated=true;
    }
-   legacyMigrated=found;
   }
  }
  if(!found)throw Error('Cloud save not found');
  const preferred=State.activeSlot();
- const imported=State.replaceSaveSlots(entries,entries[preferred]?preferred:(SAVE_SLOT_IDS.find(id=>entries[id])||'slot1'));
+ const imported=State.replaceSaveSlots(entries,entries[preferred]?preferred:(SAVE_SLOT_IDS.find(id=>entries[id])||'slot1'),deleted);
  if(!imported?.ok)throw Error(t('本机存档空间不足，云端数据未能完整写入。','Local storage could not commit the cloud saves; no partial restore was accepted.'));
+ // Stop old-runtime autosaves immediately after replacement, before any await.
+ State.hardReset();
+ pendingSyncSlots.clear();
  for(const id of SAVE_SLOT_IDS){
   const revision=remoteBySlot[id]?.revision||0;
   localStorage.setItem(cloudRevisionKey(id),String(revision));
@@ -855,12 +816,15 @@ async function restoreWithToken(token){
  }
  localStorage.setItem(CLOUD_KEY,token);
  localStorage.removeItem(CLOUD_PAUSE_KEY);
- try{sessionStorage.setItem('catbond_resume_slot_v1',imported.activeSlot);}catch(e){}
+ try{
+  if(imported.count>0)sessionStorage.setItem('catbond_resume_slot_v1',imported.activeSlot);
+  else sessionStorage.removeItem('catbond_resume_slot_v1');
+ }catch(e){}
  if(legacyMigrated){
-  const migration=await syncNow(false);
-  if(!migration.ok)console.warn('Legacy cloud save was restored locally; per-slot cloud migration will retry on the next save.');
+  restoringCloud=false;
+  const migration=await syncNow(false,Object.keys(entries));
+  if(!migration.ok)console.warn('Legacy cloud save was restored locally; per-slot cloud migration can be retried manually.');
  }
- State.hardReset();
  location.reload();
 }
 let syncTimer=null,syncPromise=null,lastStatus='';
@@ -871,14 +835,15 @@ function setSyncStatus(status){
 }
 async function syncOneSlot(token,id,force){
  const slot=State.getSaveSlot(id);
- if(!slot)return {slotId:id,empty:true};
- if(slot.corrupt||!validSavePayload(slot.data))return {slotId:id,error:'Local save is damaged'};
+ const deletion=slot?null:State.deletedSaveSlot(id);
+ if(!slot&&!deletion)return {slotId:id,empty:true};
+ if(slot&&(slot.corrupt||!validSlotPayload(slot.data)))return {slotId:id,error:'Local save is damaged'};
  let expected=Number(localStorage.getItem(cloudRevisionKey(id))||0);
  if(force){
   const latest=await fetchCloud(token,id);
   expected=Number(latest.revision)||0;
  }
- const payload=JSON.stringify({version:3,slotId:id,savedAt:slot.savedAt,data:slot.data});
+ const payload=JSON.stringify(deletion?{version:3,slotId:id,deleted:true,deletedAt:deletion.deletedAt}:{version:3,slotId:id,savedAt:slot.savedAt,data:slot.data});
  const encrypted=await encrypt(payload,token);
  const response=await fetch('/api/cat-bond-cloud-save',{
   method:'PUT',headers:{'content-type':'application/json',Authorization:'Bearer '+token},
@@ -892,6 +857,7 @@ async function syncOneSlot(token,id,force){
  return {slotId:id,ok:true,revision:data.revision,updatedAt:data.updatedAt};
 }
 async function syncNow(force=false,slotIds=null){
+ if(restoringCloud)return {ok:false,restoring:true};
  const token=localStorage.getItem(CLOUD_KEY);
  if(!token)return {ok:false,disabled:true};
  const requested=slotIds?(Array.isArray(slotIds)?slotIds:[slotIds]):SAVE_SLOT_IDS.slice();
@@ -925,9 +891,9 @@ async function syncNow(force=false,slotIds=null){
   return {ok:false,error};
  }).finally(()=>{
   syncPromise=null;
-  if(pendingSyncSlots.size){
+  if(pendingSyncSlots.size&&!restoringCloud){
    const next=[...pendingSyncSlots];pendingSyncSlots.clear();
-   syncNow(false,next);
+   queueSync(next);
   }
  });
  return syncPromise;
@@ -937,9 +903,12 @@ function queueSync(slotId=State.activeSlot(),immediate=false){
  if(!localStorage.getItem(CLOUD_KEY))return Promise.resolve({ok:false,disabled:true});
  const ids=Array.isArray(slotId)?slotId.filter(id=>SAVE_SLOT_IDS.includes(id)):(SAVE_SLOT_IDS.includes(slotId)?[slotId]:[]);
  if(!ids.length)return Promise.resolve({ok:false,empty:true});
+ if(restoringCloud)return Promise.resolve({ok:false,restoring:true});
  if(immediate){
   ids.forEach(id=>pendingSyncSlots.delete(id));
   clearTimeout(syncTimer);
+  const queued=[...pendingSyncSlots];
+  if(queued.length)queueSync(queued);
   return syncNow(false,ids);
  }
  ids.forEach(id=>pendingSyncSlots.add(id));
@@ -964,62 +933,74 @@ async function copyText(value){
 function openSlotManager(){
  document.querySelector('.cb-slot-manager')?.remove();
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-slot-manager';
- overlay.innerHTML='<section class="cb-cloud-card cb-slot-manager-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
+ overlay.innerHTML='<section class="cb-cloud-card cb-slot-manager-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><button class="cb-picker-language" data-modal-language type="button"></button>'+
   '<p class="cb-cloud-eyebrow">'+t('存档','Save Archive')+'</p><h2>'+t('三个冒险存档位','Three adventure slots')+'</h2>'+
   '<p class="cb-cloud-lead">'+t('保存会把当前进度复制到所选存档位；读取会重新载入该存档。每个存档互相独立。','Save copies the current progress into the selected slot. Load restarts from that slot. Each save remains independent.')+'</p>'+
   '<div class="cb-slot-manager-list"></div><div class="cb-cloud-status" id="cb-slot-status" role="status"></div>'+
-  '<p class="cb-cloud-footnote">'+t('自动保存只更新当前正在游玩的存档位。','Autosave updates only the currently active slot.')+'</p></section>';
+  '<p class="cb-cloud-footnote">'+t('游戏会自动保存当前存档。','The game automatically saves your active slot.')+'</p></section>';
  (document.fullscreenElement||document.getElementById('stage')||document.body).append(overlay);
- const close=()=>overlay.remove();
+ const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
  overlay.querySelector('.cb-cloud-close').onclick=close;
+ overlay.querySelector('[data-modal-language]')?.addEventListener('click',()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh'));
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  const list=overlay.querySelector('.cb-slot-manager-list');
  const status=overlay.querySelector('#cb-slot-status');
  const say=message=>{if(status)status.textContent=message;};
  function render(){
-  const current=window.State.activeSlot();
+  const current=window.State.activeSlot(),playing=!!window.__CAT_BOND_STARTED__;
   list.innerHTML=window.State.listSaveSlots().map(slot=>{
    const date=slot.lastSavedAt?new Date(slot.lastSavedAt).toLocaleString(isZh()?'zh-CN':'en-US'):'';
    const chapter=slot.corrupt?t('存档数据损坏','Damaged save'):slot.exists?(isZh()?slot.chapterLabelZh:slot.chapterLabelEn):t('空存档位','Empty slot');
    const region=isZh()?slot.regionLabelZh:slot.regionLabelEn;
    const details=slot.exists&&!slot.corrupt
-    ?region+' · '+t('游戏时间 ','Played ')+slot.gameTimeLabel+' · '+slot.cats+t(' 只猫',' cats')
+    ?region+' · '+t('游戏时间 ','Played ')+(isZh()?slot.gameTimeLabelZh:slot.gameTimeLabel)+' · '+slot.cats+t(' 只猫',' cats')
     :slot.corrupt?t('无法读取此存档','This save cannot be read'):t('尚未开始冒险','No adventure started');
    const saved=slot.exists&&!slot.corrupt?(t('最后保存：','Last saved: ')+date):'';
    return '<article class="cb-slot-manager-row '+(slot.corrupt?'damaged-save':'')+'"><div><strong>'+
     t('存档位 ','Slot ')+slot.number+(slot.id===current?' · '+t('当前','Active'):'')+'</strong><span>'+esc(chapter)+'</span>'+
     '<small>'+esc(details)+'</small><small>'+esc(saved)+'</small></div><div class="cb-slot-manager-actions">'+
-    '<button type="button" data-save="'+slot.id+'">'+t('保存游戏','Save Game')+'</button>'+
-    '<button type="button" data-load="'+slot.id+'" '+(slot.readable?'':'disabled')+'>'+t('读取游戏','Load Game')+'</button></div></article>';
+    (playing?'<button type="button" data-save="'+slot.id+'">'+t('保存游戏','Save Game')+'</button>':'')+
+    '<button type="button" data-load="'+slot.id+'" '+(slot.readable?'':'disabled')+'>'+t('读取游戏','Load Game')+'</button>'+
+    (slot.exists&&(!playing||slot.id!==current)?'<button type="button" data-remove-save="'+slot.id+'">'+t('删除此存档','Delete this save')+'</button>':'')+'</div></article>';
   }).join('');
   list.querySelectorAll('[data-save]').forEach(btn=>btn.onclick=async()=>{
    const id=btn.dataset.save,slot=window.State.listSaveSlots().find(x=>x.id===id);
    if(slot?.exists&&!confirm(t('覆盖存档位 ','Overwrite Save Slot ')+slot.number+t('？其他两个存档不会改变。','? The other two slots will remain unchanged.')))return;
    const result=window.State.saveToSlot(id,{overwriteConfirmed:!!slot?.exists});
    if(!result?.ok){say(t('本机存档写入失败，请检查浏览器存储空间。','Local save failed. Check available browser storage and retry.'));return;}
-   const cloudResult=await window.CatBondCloudSave?.queue?.(id,true);
-   const localMessage=t('已保存到存档位 ','Saved locally to Slot ')+slot.number+'。';
-   say(cloudResult?.ok?localMessage+t(' 云端也已同步。',' Cloud sync completed.'):
-    cloudResult?.conflict?localMessage+t(' 云端版本冲突，尚未覆盖云端。',' Cloud conflict detected; remote data was not overwritten.'):
-    cloudResult?.disabled?localMessage+t(' 云存档尚未启用。',' Cloud save is not enabled.'):
-    localMessage+t(' 云端暂未同步，本机存档安全保留。',' Cloud sync is pending or unavailable; the local save is safe.'));
+   say(t('已保存到存档位 ','Saved to Slot ')+slot.number);
    render();
+   void queueSync(id,true).catch(()=>{});
+  });
+  list.querySelectorAll('[data-remove-save]').forEach(btn=>btn.onclick=async()=>{
+   const id=btn.dataset.removeSave,slot=State.listSaveSlots().find(x=>x.id===id);
+   if(!slot?.exists||!confirm(t('永久删除存档位 ','Delete save slot ')+slot.number+t('？其他存档不受影响。','? Other slots are unaffected.')))return;
+   const result=State.deleteSaveSlot(id,{confirmed:true});
+   if(!result.ok){say(t('未删除存档。请返回标题画面后重试。','Save not deleted. Return to the title and retry.'));return;}
+   render();
+   say(t('存档已删除。','Save deleted.'));
+   void queueSync(id,true).catch(()=>{});
   });
   list.querySelectorAll('[data-load]').forEach(btn=>btn.onclick=()=>{
    const id=btn.dataset.load;
    if(!confirm(t('读取存档位 ','Load Save Slot ')+window.State.listSaveSlots().find(x=>x.id===id)?.number+t(' 并重新载入游戏？当前进度会先自动保存到原存档位。',' and restart the game? Current progress will first be saved to its active slot.')))return;
-   if(id!==current){const saved=window.State.save();if(!saved?.ok){say(t('当前进度保存失败，未切换存档。','Could not save the current progress; the active slot was not changed.'));return;}}
+   if(playing&&id!==current){const saved=window.State.save();if(!saved?.ok){say(t('当前进度保存失败，未切换存档。','Could not save the current progress; the active slot was not changed.'));return;}}
    try{sessionStorage.setItem('catbond_resume_slot_v1',id);}
    catch(error){say(t('无法启动读档，请重试。','Could not prepare the load operation. Please retry.'));return;}
    State.hardReset();location.reload();
   });
  }
- render();
-}
-function openCloudPanel(){openCloudPanelImpl();}
-function openCloudPanelImpl(){
- if(!window.crypto?.subtle){alert(t('当前浏览器不支持加密云存档。','This browser does not support encrypted cloud saves.'));return;}
- renderCloudPanel();
+ const updateLocale=()=>{
+  overlay.querySelector('.cb-cloud-close').setAttribute('aria-label',t('关闭','Close'));
+  const localeButton=overlay.querySelector('[data-modal-language]');if(localeButton){localeButton.textContent=t('English','中文');localeButton.setAttribute('aria-label',t('切换到英文','Switch to Chinese'));}
+  overlay.querySelector('.cb-cloud-eyebrow').textContent=t('存档','Save Archive');
+  overlay.querySelector('h2').textContent=t('三个冒险存档位','Three adventure slots');
+  overlay.querySelector('.cb-cloud-lead').textContent=t('选择存档读取，或保存当前进度。','Choose a save to load, or save your current progress.');
+  overlay.querySelector('.cb-cloud-footnote').textContent=t('游戏会自动保存当前存档。','The game automatically saves your active slot.');
+  render();
+ };
+ window.addEventListener('morrowwish-language-change',updateLocale);
+ updateLocale();
 }
 // Keep the two Last Page actions attached to the existing expedition menu.
 // The main UI rebuilds this panel on a language change; sync after that rebuild
@@ -1071,7 +1052,7 @@ if(window.State?.save&&!window.State.save.__cbCloudWrapped){
  wrapped.__cbCloudWrapped=true;window.State.save=wrapped;
 }
 function installIntro(){
-  // Cloud management is intentionally available only from the in-game menu.
+  // Local three-slot saves are the only player-facing save interface.
   // The title screen keeps its two primary adventure actions uncluttered.
   const stage=document.getElementById('stage');
   if(stage&&!document.getElementById('cb-story-tracker')){
@@ -1162,6 +1143,7 @@ const NPC_CHOICES={
    {id:'echo',flag:'echo_can_matter',bond:1,label:'回声仍然重要，但不能代替活着的人。',labelEn:'An echo matters, but it cannot replace someone living.',reply:'星簿合上星盘：“那么我们必须让它听见区别。”',replyEn:'Star Scribe closes the astrolabe. “Then we must make Muling hear the difference.”'}]}
 };
 function npcRoot(){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__)return null;
  const s=state();if(!s)return null;
  if(!s.npcStory||typeof s.npcStory!=='object')s.npcStory={talked:{},choices:{},relationships:{},revealed:{},memoryReady:{},visited:{},responses:{},flags:{},completed:0};
  const root=s.npcStory;
@@ -1232,12 +1214,13 @@ function npcTalk(id){
    :(en?'Duchuan’s testimony survived. The Bell can no longer hide behind an incomplete account.':'渡川的证词被保住了。星铃再也不能躲在不完整的记录后面。'));
  }
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog';
- overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A CONVERSATION THAT CHANGES':'一次会改变旅程的对话')+'</p><div class="cb-npc-dialog-head"><canvas width="120" height="120"></canvas><div><h2></h2><small></small><span></span></div></div><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><button class="cb-picker-language" data-modal-language type="button"></button><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A CONVERSATION THAT CHANGES':'一次会改变旅程的对话')+'</p><div class="cb-npc-dialog-head"><canvas width="120" height="120"></canvas><div><h2></h2><small></small><span></span></div></div><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
  document.body.append(overlay);
  const card=overlay.querySelector('.cb-npc-dialog-card'),close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
  const rerender=()=>{close();npcTalk(id);};
  window.addEventListener('morrowwish-language-change',rerender);
- overlay.querySelector('.cb-cloud-close').onclick=close;overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+ overlay.querySelector('.cb-cloud-close').onclick=close;
+ overlay.querySelector('[data-modal-language]')?.addEventListener('click',()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh'));overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  card.querySelector('h2').textContent=en?npc.en:npc.name;
  card.querySelector('small').textContent=en?npc.roleEn:npc.role;
  card.querySelector('span').textContent=stage==='intro'?(en?'FIRST MEETING':'初次相遇'):stage==='reveal'?(en?'A MEMORY SURFACED':'记忆回响'):stage==='epilogue'?(en?'AFTER THE ENDING':'结局之后'):(en?'ON THE ROAD':'旅途中的对话');
@@ -1283,6 +1266,7 @@ function npcFound(region,reward){
  }
 }
 function npcDraw(ctx,npc,time){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__)return;
  const sp=window.GameData?.speciesById?.(npc.species);if(!sp)return;
  const root=npcRoot()||{choices:{},revealed:{}};
  const bob=Math.sin(time*1.8+npc.x)*2;
@@ -1300,12 +1284,12 @@ function npcDraw(ctx,npc,time){
  ctx.restore();
 }
 window.CatBondNPC={
- forRegion:id=>NPC_CAST.filter(n=>n.region===id),
+ forRegion:id=>window.__CAT_BOND_CANONICAL_ACTIVE__?[]:NPC_CAST.filter(n=>n.region===id),
  talk:npcTalk,draw:npcDraw,onRegionEntered:npcEntered,onDiscovery:npcFound
 };
 window.CatBondStory={
  startPrologue,onRegionEntered,onRegionDiscovery,openJournal,showBossReveal,showBossRetry,onBossPhase,
  onBossVictory,playEnding,updateTracker
 };
-window.CatBondCloudSave={openPanel:openCloudPanelImpl,openSlots:openSlotManager,queue:queueSync,syncNow};
+window.CatBondCloudSave={openSlots:openSlotManager,queue:queueSync,syncNow};
 })();

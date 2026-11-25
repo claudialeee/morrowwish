@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta name="cat-bond-campaign" content="last-resonance">
   <meta name="catbond-original-art-21x3-release" content="63-painted-poses-v3-20261122">
   <link rel="preload" as="image" href="assets/duo-storyboard-21x3-v3.webp?v=approved-duo-original-20261122">
   <meta charset="UTF-8" />
@@ -24,8 +25,15 @@
   <meta property="og:image" content="https://morrowwish.vercel.app/social/share-20261120/cat-bond.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:image" content="https://morrowwish.vercel.app/social/share-20261120/cat-bond.png">
   <link rel="icon" type="image/svg+xml" href="/icons/cat-bond.svg" />
   <script src="js/platform.js?v=portal-no-outbound-20261124-v4"></script>
-  <link rel="stylesheet" href="css/style.css?v=save-manager-intro-overflow-20261124-v6" />
-  <link rel="stylesheet" href="css/rpg-title.css?v=resonance-title-1" />
+  <link rel="stylesheet" href="css/style.css?v=prologue-release-20261124" />
+  <link rel="stylesheet" href="css/rpg-title.css?v=prologue-release-20261124" />
+  <link rel="stylesheet" href="css/resonance-host.css">
+  <link rel="stylesheet" href="css/resonance-ambient.css">
+  <link rel="stylesheet" href="css/resonance-canonical-world.css">
+  <link rel="stylesheet" href="css/forge-combat.css">
+  <link rel="stylesheet" href="css/regional-combat.css">
+  <link rel="stylesheet" href="css/finale-combat.css">
+  <link rel="stylesheet" href="css/resonance-garden-bell.css">
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -190,6 +198,7 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
         <section id="intro-slot-panel" class="cb-save-picker" aria-hidden="true">
           <div class="cb-save-picker-card">
             <button id="intro-slot-close" type="button" class="cb-save-picker-close" aria-label="Close">×</button>
+            <button type="button" class="cb-picker-language" data-slot-language aria-label="Language">English</button>
             <p class="cb-save-picker-kicker">存档</p>
             <h2 id="intro-slot-heading">选择存档</h2>
             <p class="cb-save-picker-desc"></p>
@@ -215,13 +224,12 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
   <script src="js/skills.js?v=starter-evo-role-align-20261124-v4"></script>
   <script src="js/growth.js?v=growth-feature-retired-20261122"></script>
   <script src="js/adult-art.js?v=compact-grown-proportions-20261122"></script>
-  <script src="js/state.js?v=atomic-save-book-20261124-v5"></script>
-  <script src="js/cat-relationships.js?v=two-currency-duomem-20261122"></script>
+  <script src="js/state.js?v=prologue-release-20261124"></script>
+  <script src="js/cat-relationships.js?v=resonance-integration-2"></script>
   <script src="js/raising.js?v=two-currency-20261122"></script>
   <script src="js/painted-regions.js?v=last-page-landmarks-20261123-v1"></script>
   <script src="js/scenery.js?v=five-distinct-worlds-20261120"></script>
-  <script src="js/world.js?v=combat-overhaul-20261123-v1"></script>
-  <script src="js/worldmap.js?v=interactive-overworld-all-33-reachable-20261124-v6"></script>
+  <script src="js/world.js?v=prologue-release-20261124"></script>
   <script src="js/duo-portraits.js?v=32-breeds-21-poses-3-tiers-20261122"></script>
   <script src="js/duo-artwork.js?v=32-breeds-pastel-20261122"></script>
   <script src="js/duo-signatures.js?v=duo-pastel-20261121"></script>
@@ -232,15 +240,19 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
   <script src="js/duo-hero.js?v=original-63-only-20261123-v1"></script>
   <script src="js/ult-vfx.js?v=shadow-thunder-contrast-20261122"></script>
   <script src="js/skill-fx.js?v=scald-s2-coord-20261123-v1"></script>
-  <script src="js/battle.js?v=meteor-lock-on-target-20261124-v13"></script>
+  <script src="js/battle.js?v=prologue-release-20261124"></script>
   <script src="js/duo-bond.js?v=original-63-paintings-live-20261122-r1"></script>
-  <script src="js/ui.js?v=voltlight-pearl-20261124-v8"></script>
-  <script src="js/game.js?v=overworld-first-20261124-v2"></script>
-  <script src="js/main.js?v=resonance-title-20261124-v2"></script>
+  <script src="js/ui.js?v=prologue-release-20261124"></script>
+  <script src="js/game.js?v=prologue-release-20261124"></script>
+  <script src="js/garden-projects.js?v=1"></script>
+  <script src="js/sunlit-garden.js?v=sunlit-garden-module-v4"></script>
+  <script src="js/cinematic-presentation.js?v=prologue-release-20261124"></script>
+  <script src="js/main.js?v=prologue-release-20261124"></script>
   <script src="js/gold-coins.js?v=gold-i18n-coordination-20261123-v2"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
-  <script src="js/i18n.js?v=safe-reset-voltlight-sysmenu-20261124-v6"></script>
-  <script src="js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v7"></script>
+  <script src="js/i18n.js?v=prologue-release-20261124"></script>
+  <script src="js/story-cloud.js?v=prologue-release-20261124"></script>
+  <script type="module" src="js/resonance/integration-entry.mjs?v=prologue-release-20261124"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
   <script src="/telemetry.js?v=bond-funnel-v11-20261122" defer></script>
 <script src="/game-fullscreen.js?v=skills-in-controls-20261122-v1" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script><!-- Last Page RPG production release trigger 2026-11-23; Cloudflare Pages release verification 2026-11-24. -->

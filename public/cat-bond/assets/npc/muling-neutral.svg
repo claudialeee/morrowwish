@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 820" role="img" aria-label="Muling, traveling researcher">
+<defs>
+ <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f1eee7"/><stop offset=".42" stop-color="#aeb5b7"/><stop offset="1" stop-color="#67737c"/></linearGradient>
+ <linearGradient id="cloak" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4e4d79"/><stop offset=".5" stop-color="#292d50"/><stop offset="1" stop-color="#151d34"/></linearGradient>
+ <linearGradient id="indigo" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#77749b"/><stop offset=".5" stop-color="#414568"/><stop offset="1" stop-color="#242b4a"/></linearGradient>
+ <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0ba"/><stop offset=".45" stop-color="#c18c48"/><stop offset="1" stop-color="#694629"/></linearGradient>
+ <linearGradient id="muzzle" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fffaf0"/><stop offset="1" stop-color="#d4d2cc"/></linearGradient>
+ <filter id="shadow"><feGaussianBlur stdDeviation="14"/></filter>
+</defs>
+<ellipse cx="320" cy="784" rx="230" ry="25" fill="#10192b" opacity=".2" filter="url(#shadow)"/>
+<!-- layered travel mantle -->
+<path d="M103 820 Q121 675 203 605 Q252 564 320 562 Q393 561 449 608 Q524 681 540 820Z" fill="url(#cloak)" stroke="#8f91a9" stroke-opacity=".5" stroke-width="5"/>
+<path d="M174 632 Q225 576 273 586 L312 820 H115 Q128 702 174 632Z" fill="#454b70"/>
+<path d="M466 632 Q416 576 368 586 L328 820 H526 Q512 702 466 632Z" fill="#202a48"/>
+<path d="M219 622 Q260 579 320 591 Q382 580 420 622 L393 820 H247Z" fill="url(#indigo)" stroke="#a8a1bd" stroke-width="4"/>
+<!-- embroidered constellations on cloak -->
+<g fill="none" stroke="#d9c69c" stroke-opacity=".65" stroke-width="3"><path d="M258 704 L282 677 L303 699 L327 670 L350 694 L376 672"/><path d="M269 748 L290 727 L313 748 L338 724 L364 744"/><path d="M283 786 L304 766 L324 781 L345 763"/></g>
+<g fill="#e5d6b2"><circle cx="258" cy="704" r="4"/><circle cx="282" cy="677" r="4"/><circle cx="303" cy="699" r="4"/><circle cx="327" cy="670" r="4"/><circle cx="350" cy="694" r="4"/><circle cx="376" cy="672" r="4"/></g>
+<!-- fur collar and scarf -->
+<path d="M219 596 Q258 559 320 574 Q381 559 420 596 L390 643 Q353 624 320 635 Q283 625 250 644Z" fill="#c3c7c4" stroke="#78838a" stroke-width="5"/>
+<path d="M253 535 Q315 563 384 531 L414 592 Q347 626 277 592Z" fill="#363b62" stroke="#c5b6d0" stroke-width="5"/>
+<path d="M370 568 Q427 572 468 636 L431 664 Q398 615 353 602Z" fill="#4b4d79" stroke="#c5b6d0" stroke-width="4"/>
+<!-- bell pendant, two old repairs visible -->
+<path d="M319 601 L319 645" stroke="#c79d5b" stroke-width="5"/>
+<path d="M293 654 Q319 631 346 654 L341 690 Q320 709 299 690Z" fill="url(#brass)" stroke="#5e432d" stroke-width="5"/>
+<path d="M303 662 Q319 651 336 662 L333 684 Q319 694 306 684Z" fill="#d7b06a" stroke="#8b633b" stroke-width="3"/>
+<path d="M320 690 L320 701" stroke="#61472e" stroke-width="5" stroke-linecap="round"/>
+<path d="M308 670 L330 680 M330 670 L308 680" stroke="#fff0c4" stroke-width="2.5" opacity=".75"/>
+<!-- broken-bell satchel -->
+<path d="M414 672 Q470 651 497 689 L488 790 Q445 811 409 777Z" fill="#715b57" stroke="#c5a67b" stroke-width="5"/>
+<path d="M427 704 Q454 682 477 707 L468 756 Q446 768 425 750Z" fill="#d2c3a8" stroke="#5d4b43" stroke-width="4"/>
+<path d="M439 724 Q451 712 462 725 L459 741 L447 748Z" fill="url(#brass)"/>
+<path d="M431 758 Q453 767 475 754" fill="none" stroke="#c5a67b" stroke-width="4"/>
+<!-- long neck -->
+<path d="M269 511 Q282 570 320 580 Q361 570 373 511Z" fill="url(#fur)"/>
+<!-- ears -->
+<path d="M159 300 L143 120 Q144 82 185 116 L265 211Z" fill="url(#fur)" stroke="#66727c" stroke-width="8"/>
+<path d="M481 300 L497 120 Q496 82 455 116 L375 211Z" fill="url(#fur)" stroke="#66727c" stroke-width="8"/>
+<path d="M168 173 L170 133 Q179 117 196 145 L235 211Z M472 173 L470 133 Q461 117 444 145 L405 211Z" fill="#c78f99" opacity=".7"/>
+<!-- longhair crown and side locks -->
+<path d="M151 271 Q173 174 256 168 Q318 134 389 170 Q469 187 491 278 Q503 365 457 445 Q424 499 382 520 L367 463 Q419 431 427 372 Q433 292 382 247 Q326 205 263 247 Q205 283 211 370 Q217 428 272 464 L255 519 Q199 496 172 433 Q135 360 151 271Z" fill="url(#fur)" stroke="#66727c" stroke-width="8"/>
+<path d="M176 355 Q128 380 147 455 Q165 432 184 438 Q169 480 207 493 Q210 453 235 431 M465 355 Q512 380 493 455 Q475 432 456 438 Q471 480 433 493 Q430 453 405 431" fill="#b2b9bb" stroke="#71808a" stroke-width="5"/>
+<!-- face -->
+<path d="M182 274 Q214 208 274 203 Q323 181 371 204 Q432 218 457 279 Q472 354 438 420 Q400 489 320 500 Q241 490 201 420 Q168 356 182 274Z" fill="url(#fur)" stroke="#6a7780" stroke-width="7"/>
+<path d="M209 360 Q219 322 260 338 Q292 352 320 369 Q349 352 382 338 Q423 322 432 360 Q429 424 382 452 Q349 471 320 466 Q287 471 256 452 Q210 423 209 360Z" fill="url(#muzzle)"/>
+<!-- soft silver forehead strands -->
+<path d="M256 211 Q280 247 296 258 M320 190 Q325 232 320 252 M385 211 Q358 245 345 258" fill="none" stroke="#fffdf4" stroke-opacity=".78" stroke-width="9" stroke-linecap="round"/>
+<path d="M236 335 Q270 307 306 335 Q270 359 236 335Z M359 335 Q397 307 430 335 Q397 359 359 335Z" fill="#fffaf0"/><ellipse cx="271" cy="334" rx="12" ry="17" fill="#c58a42"/><ellipse cx="396" cy="334" rx="12" ry="17" fill="#c58a42"/><ellipse cx="271" cy="334" rx="5" ry="12" fill="#27303b"/><ellipse cx="396" cy="334" rx="5" ry="12" fill="#27303b"/><circle cx="267" cy="327" r="4" fill="#fff"/><circle cx="392" cy="327" r="4" fill="#fff"/><path d="M226 308 Q270 292 307 311 M359 311 Q397 292 440 308" fill="none" stroke="#69727a" stroke-width="9" stroke-linecap="round"/>
+<path d="M306 383 Q321 372 337 383 Q334 401 321 405 Q307 401 306 383Z" fill="#9c6e73" stroke="#77545a" stroke-width="3"/>
+<path d="M312 411 Q333 418 351 411" fill="none" stroke="#91666b" stroke-width="5" stroke-linecap="round"/>
+<path d="M320 410 Q307 424 292 423 M321 410 Q335 424 350 423" fill="none" stroke="#86656a" stroke-width="4" stroke-linecap="round"/>
+<path d="M220 389 L152 373 M221 414 L149 416 M420 389 L488 373 M419 414 L491 416" stroke="#f9f6eb" stroke-opacity=".75" stroke-width="4" fill="none" stroke-linecap="round"/>
+<g fill="#73808a"><circle cx="285" cy="405" r="3"/><circle cx="297" cy="414" r="3"/><circle cx="356" cy="414" r="3"/><circle cx="368" cy="405" r="3"/></g>
+<!-- fine fur lines -->
+<g fill="none" stroke="#f8f6ed" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"><path d="M194 284 l-13 25 M214 270 l-8 22 M426 270 l8 22 M446 284 l13 25 M188 399 l-17 13 M452 399 l17 13 M236 470 l-12 15 M404 470 l12 15"/></g>
+</svg>
