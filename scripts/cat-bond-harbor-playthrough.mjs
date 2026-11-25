@@ -289,9 +289,24 @@ try {
     assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('forge')),true);
     await shot('forest-complete');
     if(name==='desktop'){
-      await button('Approach wild cat').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();
-      assert.equal(await page.evaluate(()=>window.__game.battle.regionalCombat?.kit.kind),'roots');await shot('forest-battle');
-      await page.waitForFunction(()=>window.__game.scene==='map',null,{timeout:75000});
+      await button('Approach wild cat').click();
+      await page.locator('#panel [data-battle-auto="true"]').click();
+      await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();
+      assert.equal(await page.evaluate(()=>window.__game.battle.regionalCombat?.kit.kind),'roots');
+      assert.equal(await page.evaluate(()=>window.__game.battle.autoMode),true);
+      await shot('forest-battle');
+      // Real in-battle controls; keep the original engine's natural victory/loss cap.
+      await page.locator('#btn-auto').click();
+      assert.equal(await page.evaluate(()=>window.__game.battle.autoMode),false);
+      const tutorial=page.locator('#battle-tutorial-skip');
+      if(await tutorial.isVisible())await tutorial.click();
+      await page.keyboard.down('d');await page.waitForTimeout(350);await page.keyboard.up('d');
+      await shot('forest-battle-manual');
+      await page.locator('#btn-auto').click();
+      assert.equal(await page.evaluate(()=>window.__game.battle.autoMode),true);
+      // 85 simulation seconds at normal time scaling may be well over 75 wall seconds.
+      try{await page.waitForFunction(()=>window.__game.scene==='map',null,{timeout:200000});}
+      catch(error){await shot('forest-battle-timeout');console.error('Forest combat remained active',await page.evaluate(()=>{const b=__game.battle;return {t:b?.t,done:b?.done,auto:b?.autoMode,help:__game.battleHelpOpen,tutorial:!!__game.battleTutorial,cycle:b?.regionalCombat?.cycle,team:b?.team?.map(c=>({hp:c.hp,alive:c.alive})),enemies:b?.enemies?.map(c=>({hp:c.hp,alive:c.alive}))}}));throw error;}
       await page.locator('#cr-ok,#battle-recovery-ok').click();
     }
     async function ship(region, cargo){

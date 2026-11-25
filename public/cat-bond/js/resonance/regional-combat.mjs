@@ -33,7 +33,7 @@ export function inPattern(p,f){
 }
 
 // Original regional scene and manifestation artwork. Render at native canvas scale; no CSS image substitute.
-const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["forest-arena.svg","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
+const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
 const art={};
 function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
@@ -42,7 +42,9 @@ function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)
 function drawScene(ctx,W,H,region){
  const img=art[region]?.background;if(!img?.complete||!img.naturalWidth)return false;
  const scale=Math.max(W/img.naturalWidth,H/img.naturalHeight),dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
- ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);return true;
+ ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
+ if(region==="forest"){ctx.save();const light=ctx.createLinearGradient(0,H*.18,0,H);light.addColorStop(0,"rgba(15,43,29,.04)");light.addColorStop(.55,"rgba(15,43,29,.18)");light.addColorStop(1,"rgba(12,34,27,.4)");ctx.fillStyle=light;ctx.fillRect(0,0,W,H);ctx.restore();}
+ return true;
 }
 function drawManifestation(ctx,e,b){
  const img=art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;

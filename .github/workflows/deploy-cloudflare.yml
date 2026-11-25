@@ -281,7 +281,7 @@ jobs:
           echo "Cloudflare Cat Bond LIVE verified against $GITHUB_SHA, including exact story, map, boss, UI, locale, CSS and garden artwork bytes."
           # Compare actual Harbor implementation bytes, not merely the shared entrypoint.
           if [ -f public/cat-bond/js/resonance/harbor-presentation.mjs ]; then
-            for asset in js/resonance/harbor-presentation.mjs js/resonance/world-runtime.mjs js/resonance/world-bridge.mjs js/resonance/world-exploration.mjs js/resonance/world-mechanisms.mjs js/resonance/campaign.mjs js/resonance/dialogue-ui.mjs css/resonance-canonical-world.css css/resonance-host.css; do
+            for asset in js/resonance/harbor-presentation.mjs js/resonance/world-runtime.mjs js/resonance/world-bridge.mjs js/resonance/world-exploration.mjs js/resonance/world-mechanisms.mjs js/resonance/campaign.mjs js/resonance/regional-combat.mjs js/resonance/dialogue-ui.mjs css/resonance-canonical-world.css css/resonance-host.css; do
               curl -fsSL --max-time 20 -o /tmp/harbor-live-asset "https://morrowwish.pages.dev/cat-bond/$asset?verify=$GITHUB_SHA"
               cmp -s "public/cat-bond/$asset" /tmp/harbor-live-asset || { echo "::error::Stale Harbor asset $asset"; exit 1; }
             done
