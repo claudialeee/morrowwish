@@ -39,10 +39,9 @@ export async function continueSavedAdventure(page,{slot='slot1',scene='map'}={})
 }
 
 export async function finishCanonicalOpening(page,{onStage=async()=>{}}={}){
- for(const id of ['prologue:P-01','prologue:P-02','prologue:P-03']){
-  await page.waitForFunction(id=>window.CatBondResonance?.view()?.current?.id===id&&document.querySelector('.cbcp-art')?.naturalWidth>0,id);
-  const skip=page.locator('.cbcp-skip');await skip.waitFor();await onStage('prologue '+id);await skip.click();
- }
+ await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-01'&&document.querySelector('.cbcp-art')?.naturalWidth>0);
+ const skip=page.locator('.cbcp-skip');await skip.waitFor();await onStage('prologue P-01');await skip.click();
+ await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-04');
  await page.locator('#panel.open .cat-starter-card .dex-cell').first().waitFor();
  await onStage('starter');await page.locator('#panel.open .cat-starter-card .dex-cell').first().click();
  const guide=page.locator('.sg-prologue-guide');

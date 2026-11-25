@@ -213,7 +213,7 @@
       const scene = typeof sceneId === 'object' ? sceneId : this.scenes.get(sceneId);
       if (!scene) throw new Error(`Unknown cinematic scene: ${sceneId}`);
       validateScene(scene);
-      this.stop();
+      this.stop({preserveFrame:!!scene.openingFlow});
       this.scene = scene;
       this.frameIndex = clamp(options.frameIndex, 0, scene.frames.length - 1);
       this.frameElapsedMs = Math.max(0, Number(options.elapsedMs) || 0);
@@ -464,7 +464,7 @@
         this.renderFrame();
       } else {
         const completed = this.scene;
-        this.stop();
+        this.stop({preserveFrame:!!completed.openingFlow&&!completed.openingFinal});
         this.options.onComplete?.({ sceneId: completed.id, sourceSceneId: completed.sourceSceneId || null });
       }
     }
@@ -568,7 +568,8 @@
       return true;
     }
 
-    stop() {
+    stop({preserveFrame=false}={}) {
+      preserveFrame=preserveFrame&&!this.root.hidden&&!!this.nodes.stack.querySelector('.cbcp-art');
       this.clearTimer();
       this.scene = null;
       this.renderToken++;
@@ -577,11 +578,11 @@
       if(this.fxRAF)cancelAnimationFrame(this.fxRAF);this.fxRAF=0;
       const fx=this.root.querySelector('.cbcp-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);
       this.frameReady = false;this.root.dataset.ready='false';delete this.root.dataset.frameId;
-      this.nodes.stack.replaceChildren();
-      this.nodes.stage.style.removeProperty('--cbcp-backplate');
+      if(!preserveFrame){this.nodes.stack.replaceChildren();this.nodes.stage.style.removeProperty('--cbcp-backplate');}
       this.paused = false;
       this.frameElapsedMs = 0;
-      this.root.hidden = true;
+      this.root.hidden = !preserveFrame;
+      if(preserveFrame){this.nodes.continue.disabled=true;this.nodes.skip.disabled=true;this.nodes.pause.disabled=true;}
       this.audio?.pause();
       window.MorrowwishMusic?.cancelCinematicSounds?.();
       return this;

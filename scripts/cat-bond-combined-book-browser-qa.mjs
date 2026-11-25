@@ -71,17 +71,18 @@ for(const profile of [
   assert.match(await page.locator('#intro-slot-heading').innerText(),/Choose a slot/);
   await screenshot('three-slots-en');
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-  for(const n of [1,2,3]){
-   await page.waitForFunction(n=>CatBondResonance.view().current?.id==='prologue:P-0'+n&&document.querySelector('.cbcp-art')?.naturalWidth>0&&document.querySelector('.cbcp-skip')&&!document.querySelector('.cbcp-skip').disabled,n);
-   await page.locator('.cbcp-skip').click();
-  }
+  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-01'&&document.querySelector('.cbcp-art')?.naturalWidth>0&&!document.querySelector('.cbcp-skip')?.disabled);
+  await page.locator('.cbcp-skip').click();
+  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-04');
   await checkVisible('#panel.open .dex-cell');await page.locator('#panel.open .dex-cell').first().click();
   assert.equal(await page.locator('#tabbar').isVisible(),false,'Legacy management tabs are replaced by Book');
   assert.equal(await page.locator('#fab-build').isVisible(),false,'Building belongs to garden facilities');
   const dock=await page.evaluate(()=>[...document.querySelectorAll('#yard-actions button')].filter(b=>b.getClientRects().length&&getComputedStyle(b).display!=='none').map(b=>{const q=b.getBoundingClientRect();return {id:b.id,left:q.left,right:q.right,top:q.top,bottom:q.bottom,hit:b.contains(document.elementFromPoint(q.x+q.width/2,q.y+q.height/2))}}));
-  assert.equal(dock.length,5,'Only the five real garden actions are visible');
-  assert.ok(dock.every(q=>q.left>=-1&&q.right<=profile.width+1&&q.top>=0&&q.bottom<=profile.height+1&&q.hit),'Garden actions are visible, in bounds and clickable: '+JSON.stringify(dock));
-  await page.locator('#sg-book-entry').click();
+  assert.equal(dock.length,0,'All garden dock actions are consolidated');
+  await page.locator('#map-menu').click();
+  const systemMenu=page.locator('#cb-system-menu');
+  for(const id of ['yard-map','yard-book','yard-build','yard-seek','yard-play','yard-feed'])assert.ok(await systemMenu.locator('[data-system="'+id+'"]').isVisible(),'Missing garden menu entry '+id);
+  await systemMenu.locator('[data-system="yard-book"]').click();
   await checkVisible('#panel.rb-open.open');
   await page.locator('[data-book-tab="workshop"]').click();
   const quick=page.locator('#work-quick-start');

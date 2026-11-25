@@ -89,7 +89,9 @@ function select(id){
  const token=++serial;pending={id,token};
  getBuffer(id).then(buffer=>{
   if(token!==serial||desired!==id||!prefs.enabled||hidden||paused)return;
-  pending=null;const old=active,source=ctx.createBufferSource(),gain=ctx.createGain(),switchTime=now(),t=switchTime+(old?.source? .14 : 0);
+  pending=null;const old=active;
+  if(old&&!old.stopping&&old.buffer===buffer&&qualityMusicIds.has(old.id)&&qualityMusicIds.has(id)){old.id=id;blocked=false;unavailable=false;trimCache(id);return;}
+  const source=ctx.createBufferSource(),gain=ctx.createGain(),switchTime=now(),t=switchTime+(old?.source? .14 : 0);
   source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(1,t+.25);const filters=connectMusic(source,gain,id);
   const next={id,source,gain,buffer,filters,started:t,stopping:false};active=next;
   musicSources.add(next);source.onended=()=>{musicSources.delete(next);if(retiring===next)retiring=null;source.disconnect();gain.disconnect();for(const filter of filters)filter.disconnect();if(active===next){active=null;if(ceremony?.id===id){if(ceremony.visual&&ceremony.root===root)performedVisual.add(ceremony.region);ceremony=null;}tick();}trimCache(desired);};

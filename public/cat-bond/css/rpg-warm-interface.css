@@ -204,3 +204,20 @@ html.cb-cg #stage.cb-sunlit-garden #cg-yard-dock>#yard-actions,
 #stage #cb-canonical-opening .cbcp-progress{visibility:hidden}
 #stage #cb-canonical-opening .cbcp-heading .cbcp-kicker{display:none}
 
+
+/* Match the fullscreen return control and HUD with the parchment palette. */
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-yard-return,
+html.cb-cg #stage #cb-yard-return,#stage #cb-header #cb-yard-return{
+ background:#f5e8cb!important;color:#493e2b!important;border:1px solid #aa8c59!important;
+ border-radius:9px!important;box-shadow:0 2px 5px #503c241c!important;text-shadow:none!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #hud .hud-pill,
+#stage #hud .hud-pill{background:#f5e8cb!important;color:#493e2b!important;border-color:#aa8c59!important}
+#stage .rw-world.rw-atlas-mode>.rw-shell::before{
+ content:"";position:absolute;inset:-12px;background:url("../assets/resonance-world-v2/atlas.webp") center/cover;
+ filter:blur(18px) saturate(.72);opacity:.5;pointer-events:none;
+}
+#stage .rw-world.rw-atlas-mode>.rw-shell .rw-surface{position:relative;z-index:1}
+@media(min-width:701px) and (min-height:501px){
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-yard-return{min-height:44px!important;font:650 13px/1.25 system-ui!important}
+}

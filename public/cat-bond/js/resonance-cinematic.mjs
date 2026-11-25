@@ -140,7 +140,7 @@ export function mountResonanceCinematics({root,rendererFactory,engine,campaign,m
   if(typeof window!=='undefined')window.addEventListener('morrowwish-language-change',syncLanguage);
   async function playCurrent(resume=null,{skip=false}={}){
     if(disposed)return bad('disposed');
-    const id=++sequence;renderer.stop();active=null;
+    const id=++sequence;renderer.stop({preserveFrame:openingRelease&&!skip});active=null;
     const view=engine.view(),result=buildCanonicalScene({view,campaign,manifest,staging,openingRelease});
     if(!result.ok)return report(result.reason);
     const run={id:view.current.id,slot:getSlotKey(),revision:engine.snapshot().revision,sequence:id,token:engine.capture?.()};

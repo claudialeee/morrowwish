@@ -61,9 +61,10 @@ for(const profile of [
    await page.waitForFunction(()=>document.querySelector('.cbcp-root')?.dataset.frameId==='prologue:P-01-shot-0');await page.waitForTimeout(6200);await screenshot('impact');
   }
   else await page.locator('.cbcp-skip').click();
-  await waitScene('prologue:P-02');await ready();
-  await screenshot('sacrifice');
   if(full){
+   await waitScene('prologue:P-02');await ready();
+   await screenshot('sacrifice');
+   assert.equal(await page.locator('.cbcp-title').textContent(),tr('最后的回响','The Last Resonance'));
    const seen=new Set();
    while(await page.evaluate(()=>CatBondResonance.view().current?.id)==='prologue:P-02'){
     const sub=await page.locator('.cbcp-subtitle').textContent().catch(()=>null);
@@ -72,11 +73,12 @@ for(const profile of [
     await page.waitForTimeout(180);
    }
    assert.deepEqual([...seen],exactLines('prologue:P-02'),'All canonical sacrifice subtitles observed in order');
-  }else await page.locator('.cbcp-skip').click();
-  await waitScene('prologue:P-03');await ready();
-  await screenshot('waiting');
-  if(!full)await page.locator('.cbcp-skip').click();
+   await waitScene('prologue:P-03');await ready();
+   await screenshot('waiting');
+   assert.equal(await page.locator('.cbcp-title').textContent(),tr('最后的回响','The Last Resonance'));
+  }
   await waitScene('prologue:P-04');
+  assert.deepEqual(await page.evaluate(()=>State.S.resonance.completed.slice(0,3)),['prologue:P-01','prologue:P-02','prologue:P-03'],'One skip completes the verified opening checkpoints');
   await page.locator('#panel.open .cat-starter-card .dex-cell').first().click();
   assert.equal(await page.evaluate(()=>State.S.cats.length),1);
   await guide.getByRole('button',{name:tr('与暮铃交谈','Talk to Muling'),exact:true}).click();
