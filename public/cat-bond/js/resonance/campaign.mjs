@@ -1092,6 +1092,8 @@ export const campaign = {
       },
       "previous": "forest:R-04",
       "lines": [
+{"speaker":"jinpo","text":{"zh":"先把旧炉的安全系统修好。没有经过验证的设计，不能接进主炉。","en":"Restore the old safety system first. An untested design cannot be connected to the main furnace."}},
+{"speaker":"xiaomao","text":{"zh":"旧阀门在高温时会卡住。我做了独立的泄压旁路，至少先看看图纸。","en":"The old valve jams at high temperatures. I made an independent relief bypass. At least look at the blueprint."}}, 
         {
           "speaker": "xiaomao",
           "text": {
@@ -1137,6 +1139,7 @@ export const campaign = {
       },
       "previous": "forge:E-01",
       "lines": [
+{"speaker":"jinpo","text":{"zh":"那年为了赶节庆，我缩短了安全测试。管路破裂，两位工人受了伤。","en":"I shortened the safety test to meet the festival deadline. A pipe ruptured and two workers were injured."}}, 
         {
           "speaker": "xiaomao",
           "text": {
@@ -1191,7 +1194,7 @@ export const campaign = {
       "id": "forge:E-03",
       "chapter": "forge",
       "title": {
-        "zh": "熔炉测试",
+        "zh": "熔炉试验",
         "en": "The Furnace Test"
       },
       "previous": "forge:E-02",
@@ -1223,11 +1226,13 @@ export const campaign = {
       "id": "forge:E-04",
       "chapter": "forge",
       "title": {
-        "zh": "第三段旋律",
+        "zh": "第三首旋律",
         "en": "The Third Melody"
       },
       "previous": "forge:E-03",
       "lines": [
+{"speaker":"jinpo","text":{"zh":"当年缩短测试的是我。我向两位受伤的工人和全城道歉。新安全设计由小铆负责，所有测试记录都公开。","en":"I cut the test short. I apologize to the injured workers and the city. Xiaomao will lead the new safety design, and all test records will be public."}},
+{"speaker":"xiaomao","text":{"zh":"我们一起把承火调送回炉心。这次每一份记录都会留下。","en":"Let's carry the Song of Ember back to the furnace together. This time, every record stays."}}, 
         {
           "speaker": "player",
           "text": {

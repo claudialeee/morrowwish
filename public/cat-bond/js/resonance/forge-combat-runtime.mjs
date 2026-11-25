@@ -235,7 +235,7 @@ function mountHud(game,b){
   panel.innerHTML='<div class="cb-forge-title"><span data-forge-title></span><span data-forge-phase></span></div>'+
     '<div class="cb-forge-objective" data-forge-objective></div>'+
     '<div class="cb-forge-heat"><span data-forge-heat-label></span><div><i data-forge-heat></i></div><b data-forge-heat-value></b></div>'+
-    '<div class="cb-forge-support"><img alt="" data-forge-jinpo><img alt="" data-forge-xiaomao>'+
+    '<div class="cb-forge-heat"><span data-forge-pressure-label></span><div><i data-forge-pressure></i></div><b data-forge-pressure-value></b></div><div class="cb-forge-support"><img alt="" data-forge-jinpo><img alt="" data-forge-xiaomao>'+
     '<div><strong data-forge-support-title></strong><small data-forge-support-note></small></div>'+
     '<button type="button" data-forge-support-button></button></div>';
   panel.querySelector("[data-forge-jinpo]").src=new URL("../npc/jinpo-painted.webp",baseUrl).href;
@@ -253,13 +253,14 @@ function renderHud(game,b){
   const enemyLabel=document.getElementById("wild-name");if(enemyLabel)enemyLabel.textContent=en?"EMBERFORGE · FURNACE GUARDIAN":"赤炉环城 · 熔炉机械守卫";
   set("[data-forge-phase]",en?["HEAT TEST","OVERDRIVE","CRITICAL"][s.phase]:"热压测试 · "+(s.phase+1)+"/3");
   set("[data-forge-objective]",en?"Vent the core, then strike while exposed.":"先泄压，再攻击暴露的炉心。");
-  set("[data-forge-heat-label]",en?"FURNACE PRESSURE":"炉内压力");
+  set("[data-forge-heat-label]",en?"CORE HEAT":"炉心温度");
   set("[data-forge-heat-value]",Math.round(s.heat)+"%");
   const bar=p.querySelector("[data-forge-heat]");if(bar)bar.style.width=s.heat+"%";
+  set("[data-forge-pressure-label]",en?"PRESSURE":"炉内压力");set("[data-forge-pressure-value]",Math.round(s.pressure)+"%");const pressure=p.querySelector("[data-forge-pressure]");if(pressure)pressure.style.width=s.pressure+"%";
   const open=s.ventOpen>0,button=p.querySelector("[data-forge-support-button]");
   if(button){button.disabled=s.supportCharges<=0||open;button.textContent=open?(en?"CORE EXPOSED":"炉心暴露中"):en?("VENT · "+s.supportCharges):("协力泄压 · "+s.supportCharges);}
   set("[data-forge-support-title]",en?"Jinpo & Xiaomao":"烬婆与小铆");
-  set("[data-forge-support-note]",en?("Safety bypass · "+s.supportCharges):("安全旁路 · "+s.supportCharges));
+  set("[data-forge-support-note]",s.assist==="xiaomao"?(en?"Xiaomao · extra pressure relief":"小铆 · 额外泄压"):(en?"Jinpo · extra cooling":"烬婆 · 额外冷却"));
   const objective=p.querySelector("[data-forge-objective]");if(objective)objective.textContent=en?"Protect the test rig. Vent before striking the core.":"保护试验炉，先泄压再攻击炉心。";
 }
 function removeHud(){document.getElementById("cb-forge-hud")?.remove();}
@@ -356,7 +357,7 @@ GP.startBattle=function(team,wildSpecies,opts={}){
   const result=originalStart.call(this,team,wildSpecies,opts);
   if(!this.battle)throw Error("Forge battle was not created");
   const b=this.battle,enemy=b.enemies?.[0];if(!enemy)throw new Error("Forge guardian failed to spawn");
-  b.storyEncounter=true;b.storyEncounterId=FORGE_ENCOUNTER.id;b.forgeState=createForgeState();b.forgeContext=context;
+  b.storyEncounter=true;b.storyEncounterId=FORGE_ENCOUNTER.id;b.forgeState=createForgeState();b.forgeContext=context;b.forgeState.assist=context.engine?.supportProfile?.("forge")?.methods?.includes("worker-transparency")?"xiaomao":"jinpo";
   b._forgeReturnScene=this._returnScene||"yard";b._forgeTeam=(team||[]).slice();
   b._analyticsRegion="forge";b.captureReady=false;
   const teamHp=(b.team||[]).reduce((n,f)=>n+(f.maxhp||0),0);
@@ -368,6 +369,7 @@ GP.startBattle=function(team,wildSpecies,opts={}){
   enemy.rotation=[];enemy.ultSkill=null;enemy.specialMeter=-10000;enemy.fireCd=99999;
   b.wild=wildSpecies;b.forgeUseSupport=()=>{
     const result=useForgeSupport(b.forgeState);if(!result.ok){toast(this,"支援尚不可用。","Support is not ready.");return false;}
+    if(b.forgeState.assist==="xiaomao"){b.forgeState.pressure=Math.max(0,b.forgeState.pressure-15);}else{b.forgeState.heat=Math.max(0,b.forgeState.heat-15);}
     enemy.forgeCast=null;enemy.telegraph=0;enemy.staggerT=Math.max(enemy.staggerT||0,1.15);
     b.vfx?.ring?.(enemy.x,enemy.y,{r0:35,vr:480,life:.72,color:"#ffe0a3",width:8});
     b.vfx?.burst?.(enemy.x,enemy.y,{count:18,color:"#ffc17b",speed:190,life:.48,r:3});

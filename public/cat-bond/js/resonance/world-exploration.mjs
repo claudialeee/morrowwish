@@ -16,7 +16,7 @@ export const layouts={
   }
  },
  forest:{name:["眠根林","Rootsleep Forest"],paths:[[.095,.90],[.20,.84],[.31,.73],[.35,.64],[.31,.58],[.265,.53],[.25,.49],[.30,.43],[.27,.35],[.29,.31],[.36,.31],[.42,.28],[.44,.36],[.39,.40],[.53,.40],[.56,.47],[.64,.53],[.69,.53],[.77,.44],[.83,.37],[.81,.32],[.83,.27],[.88,.24],[.89,.20]],castPoints:{yahe:[.30,.43],yuchuan:[.64,.53]},features:{"explore:scent-trail":[.69,.53,"气味踪迹","Scent trail"],"puzzle:paired-water-gates":[.69,.53,"双猫水闸","Paired water gates"],"repair:forest":[.89,.20,"古根圣所","Ancient-root sanctuary"],"melody:forest":[.89,.20,"相枝调","Living Roots"]}},
- forge:{name:["赤炉环城","Emberforge City"],castPoints:{xiaomao:[.53,.50]},paths:[[.1,.86],[.35,.76],[.35,.50],[.63,.50],[.74,.40],[.88,.30]],features:{"puzzle:safety-blueprint":[.35,.50,"安全图纸","Safety blueprint"],"puzzle:heat-pressure":[.63,.50,"炉心控制台","Furnace controls"],"repair:forge":[.88,.30,"炉心圣所","Hearth sanctuary"],"melody:forge":[.88,.30,"承火调","Song of Ember"],"battle:forge-guardian":[.74,.40,"守炉者","Forge guardian"]}},
+ forge:{name:["赤炉环城","Emberforge City"],castPoints:{jinpo:[.35,.65],xiaomao:[.53,.50]},paths:[[.1,.86],[.35,.76],[.35,.50],[.63,.50],[.74,.40],[.88,.30]],features:{"puzzle:safety-blueprint":[.35,.50,"安全图纸","Safety blueprint"],"puzzle:heat-pressure":[.63,.50,"炉心控制台","Furnace controls"],"repair:forge":[.88,.30,"炉心圣所","Hearth sanctuary"],"melody:forge":[.88,.30,"承火调","Song of Ember"],"battle:forge-guardian":[.74,.40,"守炉者","Forge guardian"]}},
  sky:{name:["云脊群岛","Skyspine Isles"],paths:[[.10,.80],[.10,.70],[.16,.61],[.18,.55],[.41,.51],[.58,.55],[.67,.50],[.72,.43],[.74,.36],[.84,.30],[.89,.24]],features:{"explore:flight-recorder":[.41,.51,"飞行记录仪","Flight recorder"],"puzzle:joint-flight":[.58,.55,"双猫滑翔台","Joint gliding platform"],"repair:sky":[.89,.24,"风翼圣所","Windwing sanctuary"],"melody:sky":[.89,.24,"逐风调","Open Sky"]}},
  library:{name:["月镜书库","Moonmirror Library"],paths:[[.10,.83],[.17,.73],[.22,.60],[.46,.58],[.50,.42],[.76,.40],[.82,.36],[.89,.29]],features:{"puzzle:mirror-records":[.46,.58,"镜面档案","Mirror records"],"explore:routing-record":[.76,.40,"路由记录","Routing record"],"repair:library":[.89,.29,"月镜圣所","Moonmirror sanctuary"],"melody:library":[.89,.29,"照影调","Reflections"]}},
  starfall:{name:["星坠原","Starfall Expanse"],paths:[[.10,.90],[.23,.78],[.34,.68],[.41,.58],[.42,.52],[.51,.58],[.68,.55],[.78,.48],[.78,.40],[.84,.33],[.92,.30]],features:{"puzzle:star-map":[.42,.52,"星图仪","Star chart"],"explore:catastrophe-record":[.34,.68,"灾变记录","Catastrophe record"],"puzzle:distributed-routing":[.84,.33,"分布式观星仪","Distributed observatory"],"repair:starfall":[.92,.30,"星原圣所","Starfall sanctuary"],"melody:starfall":[.92,.30,"续星调","Beyond Stars"]}}
@@ -73,9 +73,9 @@ export function exchangeOptions(bridge,region,links){
   const spec=bridge.cargoSpec(a,b);return spec&&actor===region?[spec]:[];
  });
 }
-export function createExplorer(bridge,region,{deferForestMelody=false}={}){
+export function createExplorer(bridge,region,{deferForestMelody=false,deferForgeMelody=false}={}){
  const layout=layouts[region];if(!layout)throw Error("Unknown region");
- const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],path=layout.paths;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set(region==="harbor"?bridge.harborInvited():[]);
+ const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],path=layout.paths;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set(region==="harbor"?bridge.harborInvited():region==="forge"?bridge.forgeInvited():[]);
  pos=closest(path,pos).p;
  function walk(x,y){
   if(!Number.isFinite(x)||!Number.isFinite(y)||puzzle||!live())return false;
@@ -90,6 +90,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
  function interact(op){
   if(op==="explore:scent-trail"){const step=bridge.scentStep();return step?traceScent(step.index):{ok:false,reason:"walk-to-scent"};}
   const v=bridge.view(),f=layout.features[op];if(!f||v.current?.chapter!==region||!v.objective.includes(op)||!near(f))return {ok:false,reason:"walk-to-objective"};
+  if(op==="puzzle:safety-blueprint"&&bridge.forgeStep())return {ok:false,reason:"incomplete-forge-parts"};
   if(op==="explore:tide-logbook"&&bridge.tideStep())return {ok:false,reason:"incomplete-tide-trail"};
   if(op==="puzzle:paired-water-gates"&&!bridge.pairedGate()?.ready)return {ok:false,reason:"upper-gate-required"};
   if(op.startsWith("battle:"))return {ok:false,reason:"battle-host-required"};
@@ -124,7 +125,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
   const result=bridge.recordWorld(active.sceneId,active.operation,{...active,verified:true,participants:puzzle?.participants,responses:puzzle?.response,pair:puzzle?.pair,waterSequence:puzzle?.type==="pairedWater"?puzzle.values:undefined});
   if(result.ok){active=null;puzzle=null;}return result;
  }
- function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(deferForestMelody&&puzzle.operation==="melody:forest")return {ok:true,pending:true,ceremony:true};return complete();}
+ function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if((deferForestMelody&&puzzle.operation==="melody:forest")||(deferForgeMelody&&puzzle.operation==="melody:forge"))return {ok:true,pending:true,ceremony:true};return complete();}
  function cargoPoints(){return [path[1],path[path.length-2]];}
  function startCargo(option){
   if(cargo||puzzle||!option||option.actor!==region)return {ok:false,reason:"cargo-busy"};
@@ -137,9 +138,9 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
   if(result.ok)cargo=null;return result;
  }
  function localNpcs(){const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];return Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({...n,point:layout.castPoints?.[n.id]||(i===0?lerp(path[1],path[2],.44):lerp(path[3],path[4],.46))}));}
- function inviteNpc(id){const n=localNpcs().find(n=>n.id===id),v=bridge.view();if(!n||!near(n.point)||!v.objective.includes("melody:"+region))return {ok:false,reason:"npc-not-available"};if(region==="harbor"){const result=bridge.inviteHarbor(id,n.point,bridge.capture());if(!result.ok)return result;}invited.add(id);return {ok:true};}
+ function inviteNpc(id){const n=localNpcs().find(n=>n.id===id),v=bridge.view();if(!n||!near(n.point)||!v.objective.includes("melody:"+region))return {ok:false,reason:"npc-not-available"};if(region==="harbor"){const result=bridge.inviteHarbor(id,n.point,bridge.capture());if(!result.ok)return result;}if(region==="forge"){const result=bridge.inviteForge(id,n.point,bridge.capture());if(!result.ok)return result;}invited.add(id);return {ok:true};}
  function rewardPoints(){return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}
- return {walk,tick,interact,operate,cancel,complete,traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
+ return {walk,tick,interact,operate,cancel,complete,forgeStep:()=>bridge.forgeStep(),collectForgePart:index=>{const step=bridge.forgeStep();if(!step||step.index!==index||!near(step.point)||puzzle)return {ok:false,reason:"walk-to-objective"};return bridge.collectForgePart(index,bridge.capture());},traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
 }
