@@ -229,7 +229,7 @@
     { id: 'emberClaw',  name: '炽爪',     element: 'fire',  kind: 'melee',      power: 1.3, cd: 2.2, ultCost: 0,  tags: ['burn'],          appliesTag: 'burn',  vfx: 'muzzle',    desc: '燃烧的猫爪撕击，附加灼烧。' },
     { id: 'fireballMeow', name: '咳毛球', element: 'fire',  kind: 'projectile', power: 1.35, cd: 3.0, ultCost: 0, windup: 0.4, castSlow: 0.6, precise: true, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '猫咪蓄力咳出滚烫毛球（短暂前摇）——正中威力暴涨并持续灼烧，擦边只是烫一下；施放后短暂迟缓。' },
     { id: 'puffHiss',   name: '弓背炸毛', element: 'fire',  kind: 'buff',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['buff','threat'], appliesTag: null, vfx: 'ring',      desc: '弓背炸毛虚张声势：自身伤害提升，并把靠得太近的敌人吓退一步。' },
-    { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 2.7, damageChannel: 1.35, reach: 156, width: 22, sweep: .72, sweepPasses: 3, power: 1.4, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。', unlock: { level: 6, element: 'fire' } },
+    { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 2.7, damageChannel: 1.35, reach: 360, width: 22, sweep: .72, sweepPasses: 3, power: 1.4, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。', unlock: { level: 6, element: 'fire' } },
     { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
     // ---- 水 / 冰 water ----
     // All Water cats (including 蓝莓) receive an actual water-typed ice claw,
@@ -252,7 +252,7 @@
     // meteor for big area damage + leaves a burning field (burn tag). High power (1.6 → ranged-strong =
     // a dps nuke), long windup so it's a readable, interruptible commit like vineMire. Same aoe/field
     // delivery path (lobAoe reads sk.field → spawnField), cd floored higher for the payoff.
-    { id: 'meteor',     name: '陨石术',   element: 'fire',  kind: 'aoe', power: 1.6, cd: 7.0, ultCost: 0, windup: 1.5, castSlow: 0.9, field: { element: 'fire', tag: 'burn', life: 5 }, tags: ['burn','field'], appliesTag: 'burn', vfx: 'shockwave', desc: '长时间吟唱后召唤一颗燃烧陨石砸向目标：巨额范围爆发伤害，并在落点留下灼烧火场；吟唱期间可被打断。' },
+    { id: 'meteor',     name: '陨石术',   element: 'fire',  kind: 'aoe', power: 1.6, cd: 7.0, ultCost: 0, windup: 1.5, castSlow: 0.9, field: { element: 'fire', tag: 'burn', life: 5 }, tags: ['burn','field'], appliesTag: 'burn', vfx: 'shockwave', desc: '长时间吟唱后召唤多颗燃烧陨石砸向目标：巨额范围爆发伤害，并在落点留下灼烧火场；吟唱期间可被打断。' },
     // LIGHT field mirror (owner: light had NO regular aoe-blind — only ult moonlitHalo/moonfang). A long
     // -channel aoe that leaves a dazzling light zone: enemies inside are continually BLINDED (miss/stray
     // their shots). Symmetric to 潮汐池 soak / 藤蔓沼泽 bind / 陨石 burn — same aoe+windup+field delivery;
