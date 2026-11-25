@@ -35,19 +35,12 @@ for(const profile of [
  try{
   await page.goto(origin+'/cat-bond/?lang=zh'+(profile.portal?'&utm_source=crazygames&utm_medium=portal':''),{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&window.CatBondArtworkStatus?.breedsLoaded===true,{timeout:30000});
-  const titleImage=await page.evaluate(async()=>{
-   const background=getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundImage;
-   const image=new Image();image.src='assets/resonance-world-v2/atlas.webp';await image.decode();
-   const harbor=new Image();harbor.src='assets/resonance-world-v2/harbor-mist.webp';await harbor.decode();
-   const alternate=getComputedStyle(document.querySelector('.cb-title-landscape'),'::after').backgroundImage;
-   return {background,width:image.naturalWidth,height:image.naturalHeight,alternate,harborWidth:harbor.naturalWidth,harborHeight:harbor.naturalHeight,repeat:getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundRepeat,size:getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundSize,alternateRepeat:getComputedStyle(document.querySelector('.cb-title-landscape'),'::after').backgroundRepeat};
-  });
-  assert.match(titleImage.background,/atlas\.webp/);
-  assert.match(titleImage.alternate,/harbor-mist\.webp/);
-  assert.ok(titleImage.repeat.split(',').every(v=>v.trim()==='no-repeat')&&titleImage.alternateRepeat.split(',').every(v=>v.trim()==='no-repeat'),'Title artwork never tiles');
-  assert.ok(titleImage.size.split(',').every(v=>v.trim()==='cover'),'Title artwork fills each viewport');
-  assert.ok(titleImage.harborWidth>=960&&titleImage.harborHeight>=540,'Alternate painted title background loads at usable resolution');
-  assert.ok(titleImage.width>=960&&titleImage.height>=540,'Painted title background loads at usable resolution');
+  const titleImage=await page.locator('.cb-title-landscape').evaluate(async el=>{const style=getComputedStyle(el),match=style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/);if(!match)throw Error('No title painting');const image=new Image();image.src=match[1];await image.decode();return {url:image.src,width:image.naturalWidth,height:image.naturalHeight,repeat:style.backgroundRepeat,size:style.backgroundSize,visible:el.getBoundingClientRect().height>0&&style.visibility==='visible'&&Number(style.opacity)>0,alternate:getComputedStyle(el,'::after').content};});
+  assert.match(titleImage.url,/title-bell-sanctuary\.webp$/);
+  assert.ok(titleImage.width>=1600&&titleImage.height>=900&&titleImage.visible,'New painted title loads at usable resolution');
+  assert.equal(titleImage.repeat,'no-repeat');
+  assert.equal(titleImage.size,profile.width/profile.height<=.8?'auto 65%':'cover');
+  assert.equal(titleImage.alternate,'none','No legacy crossfade over new title');
   const bounds=await page.evaluate(()=>{const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {stage:rect('#stage'),start:rect('#intro-start'),next:rect('#intro-continue')};});
   assert.ok(bounds.start.right<=bounds.next.left&&bounds.start.width>0&&bounds.next.width>0,'New and Continue remain side by side');
   for(const b of [bounds.start,bounds.next])assert.ok(b.left>=bounds.stage.left-1&&b.right<=bounds.stage.right+1&&b.top>=bounds.stage.top-1&&b.bottom<=bounds.stage.bottom+1,'Title actions stay in stage');
@@ -205,7 +198,8 @@ for(const profile of [
   if(profile.width>profile.height){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
   assert.equal(await page.locator('.rw-system-nav button').count(),2,'Atlas exposes only Book and Journal');
   const book=page.locator('.rw-system-nav .rb-world-entry');
-  await book.click();await checkVisible('#panel.rb-open.open');
+  const revealBook=async()=>{const menu=page.locator('.rw-atlas-menu:not([open]) > summary');if(await menu.count())await menu.click();await book.click();};
+  await revealBook();await checkVisible('#panel.rb-open.open');
   assert.equal(await page.locator('.rw-world').evaluate(el=>el.inert),true,'Book blocks underlying keyboard and pointer exploration');
   if(profile.width<=360)assert.equal(await page.locator('.rb-tabs').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),3,'Compact category labels receive full word width');
   for(const tab of ['dex','party','cats','workshop','duo','bag','shop','daily','records']){
@@ -225,7 +219,7 @@ for(const profile of [
   await page.locator('[data-book-tab="party"]').click();
   await page.locator('#map-squad-best').click();await page.locator('#map-squad-save').click();
   assert.ok(await page.evaluate(()=>State.S.battlePrefs.teamUids.includes(State.S.cats[0].uid)));
-  await book.click();
+  await revealBook();
   await page.locator('[data-book-tab="bag"]').click();
   await page.locator('#map-menu').click();
   await page.locator('[data-system="language"]').click();
@@ -249,6 +243,7 @@ for(const profile of [
   await page.locator('#panel.open').waitFor({state:'hidden'});
   assert.equal(await page.evaluate(()=>window.__game.scene),'map');
   assert.equal(await page.locator('.rw-world').evaluate(el=>el.inert),false,'Closing Book restores real atlas input');
+  const openedAtlas=page.locator('.rw-atlas-menu[open] > summary');if(await openedAtlas.count())await openedAtlas.click();
   await screenshot('world-atlas');
   // Physical departure from the merged canonical opening.
   const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);
