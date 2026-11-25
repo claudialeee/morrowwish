@@ -4,7 +4,11 @@ import vm from 'node:vm';
 const src=fs.readFileSync(new URL('../public/cat-bond/js/world.js',import.meta.url),'utf8');
 const fresh=()=>({coins:100,yardBuildings:[],sunlitGarden:{schema:1},resonance:{completed:[]}});
 const State={S:fresh(),save:()=>({ok:true})};
-class Image{constructor(){this.complete=true;this.naturalWidth=160;this.naturalHeight=200}}
+class Image{
+ constructor(){this.complete=true;this.naturalWidth=160;this.naturalHeight=200}
+ set src(value){this._src=value;if(value.includes('sunlit-garden-landscape')){this.naturalWidth=1600;this.naturalHeight=900;}else if(value.includes('sunlit-garden-portrait')){this.naturalWidth=900;this.naturalHeight=1600;}}
+ get src(){return this._src;}
+}
 const window={};vm.runInNewContext(src,{State,Image,window,console});
 const W=window.World,yard=Object.assign(Object.create(W.YardScene.prototype),{game:{W:800,H:600,scene:'yard'},entities:[],bushes:[]});
 assert.ok(yard.beginPlacement('garden-lantern'));assert.ok(yard.movePlacement(180,350));assert.ok(yard.confirmPlacement());
