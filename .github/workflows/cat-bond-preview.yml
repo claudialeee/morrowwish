@@ -115,7 +115,8 @@ jobs:
                   if(url.startsWith(origin+'/')||/^(data:|blob:)/.test(url))return route.continue();
                   external.push(url);return route.abort();
                 });
-                const response=await page.goto(origin+'/cat-bond/?lang=en',{waitUntil:'domcontentloaded'});
+                const query=process.env.CAT_BOND_SMOKE_STAGE==='local'?'?lang=en&rpgDev=1':'?lang=en';
+                const response=await page.goto(origin+'/cat-bond/'+query,{waitUntil:'domcontentloaded'});
                 if(!response?.ok())throw Error('Preview not reachable');
                 await page.locator('#intro-continue').waitFor({state:'visible',timeout:30000});
                 await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook&&window.CatBondChapterCinematics);
@@ -151,7 +152,10 @@ jobs:
                 await page.screenshot({path:'preview-'+prefix+'-reloaded.png'});
                 if(external.length||errors.length)throw Error('Unexpected external requests / page errors: '+JSON.stringify({external,errors}));
                 console.log('PREVIEW NEW SLOT AND RELOAD VERIFIED: '+prefix+' '+page.url());
-              }finally{await context.close()}
+              }catch(error){
+              console.error('Smoke failed in '+prefix, error);
+              throw error;
+            }finally{await context.close()}
             }));
           }finally{await browser.close()}
           NODE
