@@ -32,7 +32,16 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
     if(unique.has(asset.path))return bad('repeated-shot-art');unique.add(asset.path);
     if(!isBilingual(shot.alt)||!Number.isFinite(shot.durationMs)||shot.durationMs<1200||shot.durationMs>20000||!Array.isArray(shot.lines))return bad('invalid-shot');
     const base={id:scene.id+'-shot-'+i,image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,focus:shot.focus,transitionMs:shot.transitionMs||520,effect:shot.effect};
-    if(!shot.lines.length){const caption=recalled&&isBilingual(shot.caption)?{zh:{speaker:'',text:shot.caption.zh},en:{speaker:'',text:shot.caption.en}}:undefined;frames.push({...base,subtitle:caption,shotDurationMs:base.durationMs,shotOffsetMs:0});}
+    if(!shot.lines.length){
+      const openingCaptions={
+        'opening-star-bell':{zh:'六座圣所曾用各自的歌互相回应，中央星铃为它们合拍。直到一颗陨星击碎了星铃。',en:'Six sanctuaries once answered each other in song, guided by the Star Bell. Then a fallen star shattered it.'},
+        'opening-harbor-at-twilight':{zh:'失去回应的铃声开始模仿、覆盖真实记忆。猫咪逐渐忘记自己的家和伙伴。',en:'The unanswered ringing began to copy and overwrite memories. Cats started forgetting their homes and friends.'},
+        'opening-waiting-at-workbench':{zh:'那场灾难暂时平息。一只小猫把旧铃修了又修，守着一个归来的约定。',en:'The disaster subsided. One cat kept repairing an old bell, holding on to a promise of return.'},
+        'opening-garden-at-dawn':{zh:'许多年后，阳光花园里终于传来了一声熟悉的铃响。新的旅程就此开始。',en:'Years later, a familiar bell finally rang in Sunlit Garden. A new adventure was about to begin.'}
+      };
+      const copy=recalled&&isBilingual(shot.caption)?shot.caption:scene.chapter==='prologue'?openingCaptions[asset.id]:null;
+      const caption=isBilingual(copy)?{zh:{speaker:'',text:copy.zh},en:{speaker:'',text:copy.en}}:undefined;
+      frames.push({...base,subtitle:caption,shotDurationMs:base.durationMs,shotOffsetMs:0});}
     const duration=index=>Math.max(2600,Math.min(11000,1100+scene.lines[index].text.en.length*70));
     const total=shot.lines.reduce((sum,index)=>sum+(scene.lines[index]?duration(index):0),0)+(shot.effect==='seal'?4200:0);
     let offset=0;
