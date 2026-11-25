@@ -5,7 +5,7 @@ import {chromium} from 'playwright';
 const origin = 'http://127.0.0.1:8765';
 const out = 'artifacts/cat-bond-harbor';
 await fs.mkdir(out, {recursive:true});
-const browser = await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
+const browser = await chromium.launch({headless:true});
 const profiles = [
   {name:'desktop', viewport:{width:1440,height:960}, hasTouch:false},
   {name:'portrait', viewport:{width:390,height:844}, hasTouch:true},
@@ -14,12 +14,12 @@ const profiles = [
 
 const results = [];
 try {
-  for (const {name, ...options} of profiles.filter(p=>!process.env.CAT_BOND_PROFILE||p.name===process.env.CAT_BOND_PROFILE)) {
+  for (const {name, ...options} of profiles) {
     const context = await browser.newContext(options);
     const page = await context.newPage();
     const errors = [];
-    page.on('pageerror', error => errors.push(error.message));
-    await page.route('**/*', route => route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
+    page.on('pageerror', error => {errors.push(error.message);console.error('Actual browser page error',error.stack||error.message);});
+    await page.route('**/*', route => /^(data:|blob:)/.test(route.request().url())||route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
     await page.goto(origin+'/cat-bond/?lang=en');
     await page.waitForFunction(() => window.WorldMap === window.CatBondCanonicalWorld && window.CatBondResonance && window.__game);
     assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),false,'Production entry must not enable unreviewed staging art');
@@ -28,6 +28,7 @@ try {
     const shot = id => page.screenshot({path:out+'/'+name+'-'+id+'.png'});
     const checkObjective = operation => page.waitForFunction(op => CatBondResonance.view().objective.includes(op),operation);
     async function tapLandmark(x,y) {
+      assert.deepEqual(errors,[],'No runtime errors before interacting with the world map');
       const surface = page.locator('.rw-surface');
       await surface.scrollIntoViewIfNeeded();
       const rect = await surface.boundingBox();
@@ -39,10 +40,33 @@ try {
       const dialogue = page.locator('.res-host[data-scene="'+id+'"]');
       await dialogue.waitFor();
       const advance = button('Skip dialogue',dialogue);
-      if (await advance.isVisible() && await advance.isEnabled()) await advance.click();
+      async function advanceLines(){
+        if(!id.startsWith('harbor:')){if(await advance.isVisible()&&await advance.isEnabled())await advance.click();return;}
+        const next=button('Continue',dialogue);let count=0;
+        while(await next.isVisible()&&await next.isEnabled()){
+          assert.ok(++count<30,'Dialogue must progress without looping: '+id);
+          const line=dialogue.locator('.res-line'),english=await line.innerText();assert.ok(english.trim()&&!/[\u3400-\u9fff]/.test(english),'English dialogue is localized');
+          const expected=await page.evaluate(sceneId=>{const v=CatBondResonance.view();return v.current?.id===sceneId&&v.lineReady?v.current.lines[v.cursor]:null},id);
+          assert.ok(expected,id+' must have a canonical dialogue line');
+          assert.equal(english,expected.text.en);
+          const portrait=dialogue.locator('.res-portrait');
+          if(['qilan','jiedeng','muling'].includes(expected.speaker)){
+            await portrait.waitFor({state:'visible'});
+            await page.waitForFunction(()=>{const p=document.querySelector('.res-host .res-portrait');return p&&!p.hidden&&p.complete&&p.naturalWidth>0});
+            assert.ok((await portrait.getAttribute('src'))?.endsWith('.webp'),'Authored portrait must be loaded');
+          }
+          if(name==='portrait'){
+            await dialogue.locator('[data-res-language]').click();await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,expected.text.zh);
+            if(count===1)await shot(id.replace(':','-')+'-zh');
+            await dialogue.locator('[data-res-language]').click();assert.equal(await line.innerText(),english,'Language switch preserves exact dialogue cursor');
+          }
+          await next.click();
+        }
+      }
+      await advanceLines();
       if (choice) {
         await button(choice,dialogue).click();
-        if (await advance.isVisible() && await advance.isEnabled()) await advance.click();
+        await advanceLines();
       }
       if (await dialogue.isVisible()) {
         const close = button('Close',dialogue);
@@ -113,7 +137,12 @@ try {
       await button(label).click();
       const controls = page.locator('.rw-puzzle-controls');
       await controls.waitFor();
-      if(['Storm boat','Lighthouse mirrors','Returning Tides','Tide cave logbook','Safety blueprint','Furnace controls','Hearth sanctuary'].includes(label)){
+      if(name==='landscape'&&label==='Storm boat'){
+        const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {a:a.toJSON(),b:b.toJSON(),w:innerWidth,h:innerHeight}});
+        assert.ok(layout.a.top>=40&&layout.a.bottom<=layout.h+1,'Entire Harbor puzzle is visible above bottom edge');
+        assert.ok(layout.a.right<=layout.b.left&&layout.b.right<=layout.w+1&&layout.b.bottom<=layout.h+1,'Puzzle controls must occupy a separate landscape rail');
+      }
+      if(['Storm boat','Lighthouse mirrors','Returning Tides','Tide cave logbook'].includes(label)){
         await shot('mechanism-'+label.toLowerCase().replaceAll(' ','-'));
       }
       for (const input of inputs) await button(input,controls).click();
@@ -220,6 +249,7 @@ try {
     const comfort=name!=='portrait';
     await readDialogue('harbor:H-02',comfort?'Comfort Qilan first':'Ask Jiedeng about the old storm');
     await scene('harbor:H-03');
+    assert.ok(await page.evaluate(method=>CatBondResonance.view().support.find(x=>x.region==='harbor')?.methods.includes(method),comfort?'navigator-trust':'keeper-trust'),'H-02 choice grants distinct persistent resident support');
     await button('Inspect the ebb marks · 1/2').waitFor();
     await tapLandmark(.82,.45);
     await button('Find the dry steps · 2/2').waitFor();
@@ -234,9 +264,15 @@ try {
     await readDialogue('harbor:H-04',calibrate?'Calibrate the lighthouse first':'Prioritize rescue');
     const rescue=() => puzzle('Storm boat',calibrate?['Secure','Signal','Guide','Guide','Signal']:['Secure','Secure','Signal','Guide','Guide','Signal']);
     const mirrors=() => puzzle('Lighthouse mirrors',['Left mirror','Left mirror','Center mirror','Center mirror','Right mirror']);
+    assert.equal(await page.evaluate(()=>CatBondResonance.view().choice),calibrate?'calibrate':'rescue');
+    await button(calibrate?'Storm boat':'Lighthouse mirrors').click();
+    await page.getByText(calibrate?'Align the lighthouse first':'Rescue the boat first',{exact:true}).waitFor();
+    assert.equal(await page.locator('.rw-puzzle-controls').count(),0,'Wrong H-04 order must not open the puzzle');
     if (calibrate) {await mirrors();await rescue();} else {await rescue();await mirrors();}
     await scene('harbor:H-05');
     await checkObjective('repair:harbor');
+    assert.equal(await button('Returning Tides').count(),0,'Melody cannot precede sanctuary repair');
+    assert.equal(await button('Invite Qilan').count(),0,'Invitation cannot precede sanctuary repair');
     await puzzle('Lighthouse sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror']);
     await button('Invite Qilan').click();
     await button('Invite Qilan').waitFor({state:'hidden'});
@@ -251,7 +287,17 @@ try {
     }
     await button('Invite Jiedeng').click();
     await button('Invite Jiedeng').waitFor({state:'hidden'});
-    await puzzle('Returning Tides',['Low','High','Middle']);
+    const rewardBefore=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish}));
+    await button('Returning Tides').click();
+    const harborMelodyControls=page.locator('.rw-puzzle-controls');await harborMelodyControls.waitFor();
+    await button('Middle',harborMelodyControls).click(); // wrong note: retry must not commit a melody
+    assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false);
+    for(const input of ['Low','High','Middle'])await button(input,harborMelodyControls).click();
+    await page.locator('.rw-world[data-ceremony="harbor"]').waitFor();
+    await page.locator('.rw-surface').scrollIntoViewIfNeeded();await page.waitForTimeout(750);await shot('harbor-ceremony');
+    await page.waitForTimeout(650);await shot('harbor-ceremony-late');
+    await harborMelodyControls.waitFor({state:'hidden'});
+    assert.deepEqual(await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish})),{coins:rewardBefore.coins+35,fish:rewardBefore.fish+3},'Returning Tides grants its one-time canonical reward');
     await readDialogue('harbor:H-05');
     await scene('forest:R-01');
     await page.locator('.rw-shell').scrollIntoViewIfNeeded();

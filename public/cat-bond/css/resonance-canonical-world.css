@@ -122,3 +122,11 @@
  .rw-sky-landscape .rw-controls .rw-button,.rw-sky-landscape .rw-cargo .rw-button{min-height:38px;font-size:11px;padding:5px 6px}
  .rw-sky-landscape .rw-notice,.rw-sky-landscape .rw-hint,.rw-sky-landscape .rw-next,.rw-sky-landscape .rw-sky-flight-status{font-size:11px;line-height:1.35;margin:5px 0}
 }
+
+/* Harbor landscape keeps the entire painting and mechanism on screen; only the separate quest rail scrolls. */
+@media(max-height:500px) and (orientation:landscape){
+ .rw-world[data-region="harbor"].rw-forest-landscape{top:44px;padding:6px 10px 10px;background:radial-gradient(ellipse at 24% 8%,#324f62,#192f43 52%,#0d1d2f)}
+ .rw-world[data-region="harbor"].rw-forest-landscape .rw-shell{max-width:min(100%,calc((100dvh - 108px)*16/9))}
+ .rw-world[data-region="harbor"].rw-forest-landscape .rw-head{margin:0;padding-bottom:6px}
+ .rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-guide,.rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-status{margin:5px 0;font-size:11px}
+}
