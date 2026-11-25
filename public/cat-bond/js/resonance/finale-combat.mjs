@@ -190,7 +190,7 @@ function install(){
   clue.setAttribute("aria-expanded",String(f.clueOpen));
   const focus=el.querySelector("[data-finale-focus]");
   focus.hidden=!second||!f.clueOpen||b.autoMode;
-  if(!focus.hidden){const candidates=b.liveEnemies().filter(e=>e.echoObserved&&e.finaleActor==="echo");const signature=candidates.map(e=>e.i).join(",");if(focus.dataset.signature!==signature){focus.dataset.signature=signature;focus.replaceChildren();for(const e of candidates){const button=document.createElement("button");button.type="button";button.dataset.echo=String(e.i);button.onclick=()=>{if(b.done||!e.alive||e.echoGap===null)return;b._lockIdx=e.i;if(identifyEcho(e.echoHabit,e.echoGap)){const verified=verifyEchoRecord(b,e);notice(b,verified?"识别正确！共鸣蓄力增加。":"节拍异常，攻击错误回响。",verified?"Correct identification! Resonance gained.":"Mismatched rhythm. Strike the false reply.");b.vfx.ring(e.x,e.y,{r0:16,vr:150,life:.55,color:"#9edcd2",width:4});}else wrongReply(b,e);paint(b)};focus.append(button);}}for(const button of focus.children){const i=Number(button.dataset.echo),group=Math.floor(i/2);button.textContent=tr(["上","中","下"][group]+(i%2?"右":"左"),["Top","Mid","Bottom"][group]+(i%2?" R":" L"));button.setAttribute("aria-pressed",String(b._lockIdx===i));}}
+  if(!focus.hidden){const candidates=b.liveEnemies().filter(e=>e.echoObserved&&e.finaleActor==="echo");const signature=candidates.map(e=>e.i).join(",");if(focus.dataset.signature!==signature){focus.dataset.signature=signature;focus.replaceChildren();for(const e of candidates){const button=document.createElement("button");button.type="button";button.dataset.echo=String(e.i);button.onclick=()=>{if(b.done||!e.alive||e.echoGap===null)return;b._lockIdx=e.i;if(identifyEcho(e.echoHabit,e.echoGap)){const verified=verifyEchoRecord(b,e);notice(b,verified?"识别正确！共鸣蓄力增加。":"发现不一致的节拍，试着击破这道回响！",verified?"Correct identification! Resonance gained.":"A mismatched rhythm! Try breaking this echo.");b.vfx.ring(e.x,e.y,{r0:16,vr:150,life:.55,color:"#9edcd2",width:4});}else wrongReply(b,e);paint(b)};focus.append(button);}}for(const button of focus.children){const i=Number(button.dataset.echo),group=Math.floor(i/2);button.textContent=tr(["上","中","下"][group]+(i%2?"右":"左"),["Top","Mid","Bottom"][group]+(i%2?" R":" L"));button.setAttribute("aria-pressed",String(b._lockIdx===i));}}
   const record=el.querySelector("[data-finale-record]");
   record.hidden=!second||!f.clueOpen;
   if(!record.hidden){
@@ -228,7 +228,7 @@ function install(){
   ai.call(this,dt,e,me);
   e.fireCd=99999;
  };
- function wrongReply(b,e){const f=b.resonanceFinale;if(!f||f.elapsed<f.wrongUntil)return;f.wrongUntil=f.elapsed+2.5;f.wrongCount++;const me=b.me();if(me?.alive){const angle=Math.atan2(me.y-e.y,me.x-e.x);b.spawnProj(e.x,e.y,angle,215,Math.max(8,me.maxhp*.15),"wild","#f2afbc",8,"ball",{element:"dark",isBasic:true});}notice(b,"错误回应！回响反击，重新观察节拍。","Wrong reply! The echo retaliates. Observe its rhythm again.");b.vfx.ring(e.x,e.y,{r0:18,vr:160,life:.55,color:"#f2afbc",width:4});}
+ function wrongReply(b,e){const f=b.resonanceFinale;if(!f||f.elapsed<f.wrongUntil)return;f.wrongUntil=f.elapsed+2.5;f.wrongCount++;const me=b.me();if(me?.alive){const angle=Math.atan2(me.y-e.y,me.x-e.x);b.spawnProj(e.x,e.y,angle,215,Math.max(8,me.maxhp*.15),"wild","#f2afbc",8,"ball",{element:"dark",isBasic:true});}notice(b,"这次节拍没对上！避开回响，再听一次。","Not quite! Dodge the echo and listen to its rhythm again.");b.vfx.ring(e.x,e.y,{r0:18,vr:160,life:.55,color:"#f2afbc",width:4});}
  const hurt=BP.hurtEnemy;
  BP.hurtEnemy=function(e,dmg,...args){
   const f=this.resonanceFinale;if(!f)return hurt.call(this,e,dmg,...args);
@@ -248,8 +248,8 @@ function install(){
   if(e.finaleActor==="gate"&&!e.alive){
     const n=f.nodes[e.gateIndex];n.done=true;n.integrity=Math.max(1,n.integrity);
     const broken=f.nodes.filter(n=>n.done).length;
-    if(broken===2)notice(this,"暮铃：这次看着我！","Muling: Look at me this time!");
-    if(broken===4)notice(this,"守铃者：我一直在看你。也看见了你做过的事。","Bellkeeper: I’ve been looking at you all along. I’ve also seen what you’ve done.");
+    if(broken===2)notice(this,"暮铃：共鸣锁正在松动，星铃还需要稳定！","Muling: The resonance locks are loosening. We still need to stabilize the bell!");
+    if(broken===4)notice(this,"守铃者：最后一道锁打开了！让我们听听六地的回应！","Bellkeeper: The last lock is open! Let's listen to the six regions!");
     if(f.cast?.node===e.gateIndex)f.cast=null;
     this.vfx.ring(n.x,n.y,{r0:18,vr:200,life:.55,color:n.color,width:5});paint(this);
     if(f.nodes.every(n=>n.done)){const muling=this.enemies.find(x=>x.finaleActor==="muling");muling.alive=false;muling.hp=0;}
@@ -446,7 +446,7 @@ function install(){
   const card=document.createElement("div"),title=document.createElement("h2"),detail=document.createElement("p"),reward=document.createElement("p"),actions=document.createElement("div"),back=document.createElement("button"),retry=document.createElement("button");
   back.type=retry.type="button";back.dataset.finaleReturn="";retry.dataset.finaleRetry="";actions.append(back,retry);card.append(title,detail,reward,actions);box.append(card);
   const retreat=!won&&b._voluntaryFlee&&!f.failedProtection&&!f.timedOut;
-  function render(){title.textContent=committed?tr("回响已稳定","Resonance restored"):won?tr("未能保存","Save not completed"):retreat?tr("安全撤退","Safe withdrawal"):tr("挑战失败","Challenge defeated");detail.textContent=committed?tr("本阶段已经保存，可以继续剧情。","This phase is saved. Continue the story."):won?tr("未保存剧情或奖励，可重新挑战。","Story and rewards were not saved. Retry the encounter."):f.timedOut?tr("战斗超过时限。调整队伍后重试。","The encounter timed out. Adjust your team and retry."):f.failedProtection?tr("地区伙伴未能坚持。优先守护受到攻击的共鸣节点。","Regional allies could not hold. Protect the threatened resonance nodes first."):tr("队伍已返回星坠原。可休整或再次挑战。","Your party has returned to Starfall. Recover or try again.");reward.hidden=!(committed&&f.id==="finale:B-03");reward.textContent=tr("+180 金币 · +8 小鱼干","+180 coins · +8 fish");back.textContent=committed?tr("继续故事","Continue story"):tr("返回星坠原","Return to Starfall");retry.textContent=tr("再次挑战","Retry encounter");retry.hidden=committed;box.setAttribute("aria-label",title.textContent);}
+  function render(){title.textContent=committed?tr("回响已稳定","Resonance restored"):won?tr("未能保存","Save not completed"):retreat?tr("安全撤退","Safe withdrawal"):tr("再试一次吧","Let's try again");detail.textContent=committed?tr("本阶段已经保存，可以继续剧情。","This phase is saved. Continue the story."):won?tr("未保存剧情或奖励，可重新挑战。","Story and rewards were not saved. Retry the encounter."):f.timedOut?tr("战斗超过时限。调整队伍后重试。","The encounter timed out. Adjust your team and retry."):f.failedProtection?tr("地区伙伴未能坚持。优先守护受到攻击的共鸣节点。","Regional allies could not hold. Protect the threatened resonance nodes first."):tr("队伍已返回星坠原。可休整或再次挑战。","Your party has returned to Starfall. Recover or try again.");reward.hidden=!(committed&&f.id==="finale:B-03");reward.textContent=tr("+180 金币 · +8 小鱼干","+180 coins · +8 fish");back.textContent=committed?tr("继续故事","Continue story"):tr("返回星坠原","Return to Starfall");retry.textContent=tr("再次挑战","Retry encounter");retry.hidden=committed;box.setAttribute("aria-label",title.textContent);}
   function close(){box.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",close);}
   back.onclick=()=>{close();if(owner!==window.State.S)return;window.WorldMap?.resumeRegion?.(false);if(committed)host()?.showCurrent?.();};
   retry.onclick=()=>{close();if(owner!==window.State.S||!host()?.isCurrentAction(token))return;window.WorldMap?.resumeRegion?.(false);prep(game,f.id);};
@@ -469,7 +469,7 @@ function install(){
   document.getElementById("cb-finale-hud")?.remove();document.getElementById("battle-ui")?.classList.remove("on");
   const duo=document.getElementById("duo-burst");if(duo)duo.hidden=true;
   this.battle=null;this._returnScene=null;this.scene="map";document.body.classList.add("cb-exploring");this.setBattleHelpVisible?.(false);this.refreshHUD?.();window.WorldMap?.resumeRegion?.(false);
-  this.toast(committed?{zh:"本阶段目标已达成。",en:"The objective is complete."}:win?{zh:"剧情保存失败，请重新挑战。",en:"Story save failed. Retry the encounter."}:b._voluntaryFlee&&!f.failedProtection?{zh:"队伍撤离，休整后再挑战。",en:"Withdrawn. Rest and retry the encounter."}:{zh:"挑战失败。恢复队伍后重试。",en:"Defeated. Recover your team and try again."});
+  this.toast(committed?{zh:"本阶段目标已达成。",en:"The objective is complete."}:win?{zh:"剧情保存失败，请重新挑战。",en:"Story save failed. Retry the encounter."}:b._voluntaryFlee&&!f.failedProtection?{zh:"队伍撤离，休整后再挑战。",en:"Withdrawn. Rest and retry the encounter."}:{zh:"先休整一下，准备好再来挑战！",en:"Rest up, then give it another try!"});
   if(same&&valid)resultPanel(this,b,f,committed,win);
  };
  window.addEventListener("cat-bond-resonance-battle-request",e=>{const d=e.detail;if(d?.region==="starfall"&&PHASES[d.sceneId]===d.operation)prep(window.__game,d.sceneId);});
