@@ -2,7 +2,7 @@ name: Cat Bond Chat 2 — title/save QA (no deploy)
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    branches: [main]
+    branches: [rpg/integration]
 permissions:
   contents: read
 concurrency:

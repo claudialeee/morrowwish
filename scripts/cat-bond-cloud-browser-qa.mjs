@@ -35,9 +35,9 @@ async function cloud(page){
  await page.locator('[data-system="cloud"]').click();
  await page.locator('.cb-cloud-overlay').waitFor({state:'visible'});
 }
-const status=page=>page.locator('#cb-cloud-status');
+const status=page=>page.locator('.cb-cloud-overlay:visible [role="status"]');
 async function waitText(page,pattern){
- await page.waitForFunction(regex=>new RegExp(regex,'i').test(document.getElementById('cb-cloud-status')?.textContent||''),pattern,{timeout:20000});
+ await page.waitForFunction(regex=>new RegExp(regex,'i').test(document.querySelector('.cb-cloud-overlay #cb-slot-status, .cb-cloud-overlay #cb-cloud-status')?.textContent||''),pattern,{timeout:20000});
 }
 const readSlots=page=>page.evaluate(()=>window.State.SAVE_SLOT_IDS.map(id=>{
  const slot=window.State.getSaveSlot(id);return slot?.data?.state?.cats?.map(c=>c.uid)||null;
@@ -78,7 +78,7 @@ try{
  assert.deepEqual(await readSlots(b),[null,null,null]);
  await cloud(b);
  await b.locator('[data-recovery-code]').fill(recovery);
- await b.locator('[data-cloud="connect"]').click();
+ await Promise.all([b.waitForNavigation({waitUntil:'domcontentloaded',timeout:30000}),b.locator('[data-cloud="connect"]').click()]);
  await ready(b);
  await b.waitForFunction(()=>window.State.getSaveSlot('slot3')!==null);
  assert.deepEqual(await readSlots(b),originals);
