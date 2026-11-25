@@ -22,8 +22,9 @@ const ACTIONS=["lighthouse-signal","paired-root-channel","sound-gate-repair","ae
 const COLORS=["#7ccedc","#a8cc86","#ed9967","#c6e1f0","#cab1e3","#f1d39c"];
 const clamp=(n,a,b)=>Math.min(Math.max(n,a),b);
 export function nodePositions(W,H,top,bottom){
- const h=Math.max(1,H-top-bottom),r=Math.min(W*.30,h*.34);
- return REGIONS.map((region,i)=>({region,action:ACTIONS[i],x:W*.5+Math.cos(i*Math.PI/3-Math.PI/2)*r,y:top+h*.5+Math.sin(i*Math.PI/3-Math.PI/2)*r,color:COLORS[i],integrity:100,progress:0,done:false}));
+ const h=Math.max(1,H-top-bottom),ry=Math.min(h*.34,210),rx=Math.min(W*.30,Math.max(ry,Math.min(230,W*.28)));
+ // Elliptical ring preserves the playable vertical band without collapsing six allies into one cluster on short screens.
+ return REGIONS.map((region,i)=>({region,action:ACTIONS[i],x:W*.5+Math.cos(i*Math.PI/3-Math.PI/2)*rx,y:top+h*.5+Math.sin(i*Math.PI/3-Math.PI/2)*ry,color:COLORS[i],integrity:100,progress:0,done:false}));
 }
 // The existing individual cat personality supplies its characteristic bell response.
 export function echoHabit(cat){
@@ -275,6 +276,8 @@ function install(){
  const command=BP.commandedTarget;
  BP.commandedTarget=function(x,y){
   if(!this.resonanceFinale||!this.autoMode)return command.call(this,x,y);
+  const f=this.resonanceFinale;
+  if(f.id==='finale:B-01'&&f.cast?.node>=0){const threatened=this.liveEnemies().find(e=>e.gateIndex===f.cast.node&&eligibleTarget(this,e));if(threatened)return threatened;}
   const current=command.call(this,x,y);
   if(eligibleTarget(this,current))return current;
   if(this.commandTarget)this.commandTarget=null;
@@ -499,7 +502,24 @@ function install(){
   }
   return false;
  }
- function guardSteering(b,fighter){const f=b.resonanceFinale;if(!f||!b.autoMode||fighter!==b.me()||f.id!=="finale:B-03")return null;const n=f.nodes.find(n=>!n.done);if(!n)return null;const dx=n.x-fighter.x,dy=n.y-fighter.y,d=Math.hypot(dx,dy);if(d<=16){fighter._svx=0;fighter._svy=0;return {x:0,y:0};}return {x:dx/d,y:dy/d};}
+ function guardSteering(b,fighter){
+  const f=b.resonanceFinale;if(!f||!b.autoMode||!fighter.alive)return null;
+  const n=f.id==="finale:B-01"&&f.cast?.node>=0?f.nodes[f.cast.node]:f.id==="finale:B-03"?f.nodes.find(n=>!n.done):null;
+  if(!n||n.done)return null;
+  // Assign one actual living fighter to defend the node, leaving the others free to attack.
+  // Keep that assignment stable while the node remains active, and reassign on knockout/root.
+  const capable=alive(b).filter(cat=>!cat._reinforcement);
+  const ready=capable.filter(cat=>!(cat.rootT>0)&&!(cat._beamRoot>0)&&!(cat._castRoot>0));
+  const pool=ready.length?ready:capable;
+  const key=f.id+":"+n.region+(f.id==="finale:B-01"?":"+f.cycle:"");
+  if(f.guardKey!==key||!pool.some(cat=>cat.cat.uid===f.guardUid)){
+   f.guardKey=key;f.guardUid=pool.slice().sort((a,c)=>distance(a,n)-distance(c,n))[0]?.cat.uid;
+  }
+  if(fighter.cat.uid!==f.guardUid)return null;
+  const dx=n.x-fighter.x,dy=n.y-fighter.y,d=Math.hypot(dx,dy);
+  if(d<=16){fighter._svx=0;fighter._svy=0;return {x:0,y:0};}
+  return {x:dx/d,y:dy/d};
+ }
  window.CatBondFinaleCombat=Object.freeze({prepare:prep,available,drawEnemy,guardSteering});
 }
 if(typeof window!=="undefined")install();
