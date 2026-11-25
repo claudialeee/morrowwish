@@ -19,6 +19,7 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/test-cat-bond-book-recipes.mjs
+      - run: node scripts/test-cat-bond-garden-decorations.mjs
       - run: npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
       - name: Normal start, garden, book and save slots

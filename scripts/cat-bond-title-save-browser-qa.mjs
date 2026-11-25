@@ -109,26 +109,57 @@ for(const profile of [
   assert.equal(await page.locator('#claim').isEnabled(),false,'Daily reward cannot be collected twice');
   await page.locator('.rb-close').click();
   await screenshot('garden-book-dock');
+  for(const [label,tab] of [['Party','party'],['Catdex','dex']]){
+   await page.locator('.sg-prologue-guide').getByRole('button',{name:'Explore '+label,exact:true}).click();
+   assert.equal(await page.locator('[data-book-tab][aria-current="page"]').getAttribute('data-book-tab'),tab);
+   await page.locator('.rb-close').click();
+  }
+  assert.deepEqual((await page.evaluate(()=>State.S.sunlitGarden.bookGuide)).sort(),['cats','dex','party','workshop']);
+  await screenshot('garden-guide-complete');
   // A normal new save has earned its own coins through production and Daily.
   // No injected resources, buildings, story progress or simulated clicks.
-  let relocated=null;
+  let relocated=null,relocatedDecor=null;
+  const facilities=page.locator('[data-garden-action="facilities"]');
+  const openFacilities=async()=>{await facilities.click();await checkVisible('#panel.open [data-build="scratcher"]')};
+  const chooseSpot=async moving=>{
+   const spot=await page.evaluate(moving=>{
+    const g=window.__game,cv=document.querySelector('#scene'),r=cv.getBoundingClientRect(),old=g.yard.placement?.relocating;
+    for(let y=Math.min(g.H*.50,g.H-96)+8;y<=g.H-58;y+=10)for(let x=45;x<=g.W-45;x+=12){
+     if(moving&&(!old||Math.hypot(old.x-x,old.y-y)<70))continue;
+     if(!g.yard.buildingSpotValid(x,y,moving?old:null))continue;
+     const px=r.x+x*r.width/g.W,py=r.y+y*r.height/g.H;
+     if(document.elementFromPoint(px,py)===cv)return {x:px,y:py};
+    }return null;
+   },moving);
+   assert.ok(spot,'A legal, unobstructed garden location must exist');
+   if(profile.mobile)await page.touchscreen.tap(spot.x,spot.y);else await page.mouse.click(spot.x,spot.y);
+   await page.waitForFunction(()=>!window.__game.yard.placement);
+  };
+  await openFacilities();await page.locator('[data-garden-decor]').click();
+  for(const id of ['moonflower-planter','garden-lantern']){
+   const btn=page.locator('[data-build="'+id+'"]');assert.ok(await btn.isEnabled(),'Normal earned resources pay for decoration');
+   const art=btn.locator('..').locator('img');await art.waitFor();
+   await art.evaluate(im=>im.decode());assert.ok(await art.evaluate(im=>im.naturalWidth===160&&im.naturalHeight===200));
+   const before=await page.evaluate(()=>({coins:State.S.coins,buildings:State.S.yardBuildings.length,progress:State.S.resonance.completed.slice(),count:World.gardenDecorations().length}));
+   await btn.click();await chooseSpot(false);
+   const actual=await page.evaluate(id=>({coins:State.S.coins,buildings:State.S.yardBuildings.length,progress:State.S.resonance.completed.slice(),count:World.gardenDecorations().length,type:World.gardenDecorations().at(-1).type,cost:World.BUILDINGS_BY_ID[id].cost}),id);
+   assert.equal(actual.coins,before.coins-actual.cost);assert.equal(actual.count,before.count+1);assert.equal(actual.type,id);assert.equal(actual.buildings,before.buildings);assert.deepEqual(actual.progress,before.progress);
+   await screenshot('garden-decor-'+id);
+   await openFacilities();await page.locator('[data-garden-decor]').click();
+  }
+  await screenshot('garden-decor-catalogue');
+  const oldDecor=await page.evaluate(()=>({coins:State.S.coins,...World.gardenDecorations()[0]}));
+  await page.locator('[data-decor-move="0"]').click();await chooseSpot(true);
+  const newDecor=await page.evaluate(()=>({coins:State.S.coins,...World.gardenDecorations()[0]}));
+  assert.equal(newDecor.coins,oldDecor.coins);assert.equal(newDecor.type,oldDecor.type);assert.ok(Math.hypot(newDecor.x-oldDecor.x,newDecor.y-oldDecor.y)>60);
+  await openFacilities();await page.locator('[data-garden-decor]').click();
+  const beforeRemove=await page.evaluate(()=>State.S.coins);
+  await page.locator('[data-decor-remove="1"]').click();
+  assert.equal(await page.evaluate(()=>State.S.coins),beforeRemove+9);assert.equal(await page.evaluate(()=>World.gardenDecorations().length),1);
+  relocatedDecor={type:newDecor.type,u:newDecor.gardenU,v:newDecor.gardenV};
+  await page.locator('#panel.open > .panel-dismiss').click();
+  await screenshot('garden-decor-arranged');
   if(profile.name==='desktop'){
-   const facilities=page.locator('[data-garden-action="facilities"]');
-   const openFacilities=async()=>{await facilities.click();await checkVisible('#panel.open [data-build="scratcher"]')};
-   const chooseSpot=async moving=>{
-    const spot=await page.evaluate(moving=>{
-     const g=window.__game,cv=document.querySelector('#scene'),r=cv.getBoundingClientRect(),old=State.S.yardBuildings[0];
-     for(let y=g.H*.58;y<=g.H-65;y+=12)for(let x=65;x<=g.W-65;x+=14){
-      if(moving&&Math.hypot(old.x-x,old.y-y)<85)continue;
-      if(!g.yard.buildingSpotValid(x,y,moving?old:null))continue;
-      const px=r.x+x*r.width/g.W,py=r.y+y*r.height/g.H;
-      if(document.elementFromPoint(px,py)===cv)return {x:px,y:py};
-     }return null;
-    },moving);
-    assert.ok(spot,'A legal, unobstructed garden location must exist');
-    await page.mouse.click(spot.x,spot.y);
-    await page.waitForFunction(()=>!window.__game.yard.placement);
-   };
    await openFacilities();
    const beforeBuild=await page.evaluate(()=>({coins:State.S.coins,count:State.S.yardBuildings.length}));
    assert.ok(await page.locator('[data-build="scratcher"]').isEnabled(),'Earned coins cover the original scratcher cost');
@@ -236,6 +267,8 @@ for(const profile of [
   await waitMap();
   assert.equal(await page.evaluate(()=>window.State.S.cats[0].uid),first);
   if(relocated)assert.deepEqual(await page.evaluate(()=>{const b=State.S.yardBuildings[0];return {u:b.gardenU,v:b.gardenV,level:b.level}}),relocated,'Actual save/load preserves relocated facility coordinates and level');
+  assert.deepEqual(await page.evaluate(()=>{const d=World.gardenDecorations()[0];return {type:d.type,u:d.gardenU,v:d.gardenV}}),relocatedDecor,'Real slot copy/load preserves garden decoration');
+  assert.deepEqual((await page.evaluate(()=>State.S.sunlitGarden.bookGuide)).sort(),['cats','dex','party','workshop']);
   // A real title-menu navigation, not a special test entry.
   await page.locator('#map-menu').click();
   await page.locator('[data-system="title"]').click();
@@ -247,6 +280,8 @@ for(const profile of [
   await checkVisible('#cb-canonical-opening');
   assert.equal(await page.evaluate(()=>State.activeSlot()),'slot3');
   assert.equal(await page.evaluate(()=>State.S.cats.length),0);
+  assert.equal(await page.evaluate(()=>World.gardenDecorations().length),0,'Fresh slot does not inherit decorations');
+  assert.equal(await page.evaluate(()=>State.S.sunlitGarden?.bookGuide?.length||0),0,'Fresh slot does not inherit onboarding');
   await page.reload();await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__);
   await page.locator('#intro-continue').click();
   await page.locator('[data-title-delete="slot1"]').click();

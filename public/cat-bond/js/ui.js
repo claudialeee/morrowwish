@@ -1473,6 +1473,8 @@ const UI = {
   // Spend coins to place cat trees / scratchers / caves etc. Resident cats walk
   // over and play with them, lifting their mood. Reuses the panel() + st-row UI.
   openBuild() {
+    if(this.game?.scene!=='yard')return;
+    const owner=State.S;
     const B = window.World?.BUILDINGS || [];
     const en = window.MorrowwishI18n?.get?.() !== 'zh';
     const placed = State.S.yardBuildings || [];
@@ -1533,7 +1535,7 @@ const UI = {
       <p class="sub">${en?'Choose a facility, then tap a free spot in your yard to place it. Cats physically walk over, play and earn resources.'
         :'先选设施，再点击草坪直接建造；手机可拖动调整位置。猫咪会走过去玩，产出资源和默契奖励。'}</p>
       <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
-      <button class="btn ghost" data-garden-projects type="button">${en?'Garden restoration':'花园复兴'}</button>
+      <div class="btn-row"><button class="btn ghost" data-garden-projects type="button">${en?'Garden restoration':'花园复兴'}</button><button class="btn ghost" data-garden-decor type="button">${en?'Decorations':'装饰布置'}</button></div>
       <div class="st-list">${cards}</div>
       ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}
       <section class="sg-decor-section" aria-label="${en?'Garden decoration':'家园装饰'}"><h3>${en?'Decorations':'装饰布置'}</h3><p class="sub">${en?'Make this garden your own. Decorations do not produce resources or affect story progress.':'自由布置属于你的花园。装饰不产出资源，也不改变剧情进度。'}</p><div class="sg-decor-grid">${decorCards}</div>${decorRows?'<h3>'+(en?'Placed decorations':'已布置装饰')+'</h3><div class="sg-decor-grid">'+decorRows+'</div>':''}</section>`);
@@ -1552,12 +1554,15 @@ const UI = {
       cx.fillStyle='#a9cda8';cx.beginPath();cx.ellipse(w*.50,h*.94,w*.47,h*.17,0,0,Math.PI*2);cx.fill();
       if(!World.drawGardenProp?.(cx,def.id,w*.5,h*.89,1.15))def.draw(cx,w*.5,h*.89,1.15,1.3);
     });
-    host.querySelector('[data-garden-projects]')?.addEventListener('click',()=>window.GardenProjects?.open?.());
+    host.querySelector('[data-garden-projects]')?.addEventListener('click',e=>{if(State.S===owner&&e.currentTarget.isConnected)window.GardenProjects?.open?.()});
+    host.querySelector('[data-garden-decor]')?.addEventListener('click',()=>host.querySelector('.sg-decor-section')?.scrollIntoView({block:'start'}));
     host.querySelectorAll('[data-build]').forEach(btn => btn.onclick = () => {
+      if(State.S!==owner||!btn.isConnected)return;
       const def = window.World?.BUILDINGS_BY_ID?.[btn.dataset.build];
       this.startBuildingPlacement(btn.dataset.build);
     });
     host.querySelectorAll('[data-visit]').forEach(btn => btn.onclick = () => {
+      if(State.S!==owner||!btn.isConnected)return;
       const b=State.S.yardBuildings?.[Number(btn.dataset.visit)];
       if(!b)return;
       const ok=this.game.yard.inviteCatToBuilding(b);
@@ -1566,6 +1571,7 @@ const UI = {
       else this.game.toast(en?'Look! A kitten is coming to play':'看！有猫咪跑来玩啦！');
     });
     host.querySelectorAll('[data-duo-visit]').forEach(btn=>btn.onclick=()=>{
+      if(State.S!==owner||!btn.isConnected)return;
       const b=State.S.yardBuildings?.[Number(btn.dataset.duoVisit)];
       if(!b)return;
       const ok=this.game.yard.inviteDuoToBuilding(b);
@@ -1574,17 +1580,18 @@ const UI = {
         (en?'Choose a duo that is not working or sulking.':'请选择未工作、未闹别扭的双猫。'));
     });
     host.querySelectorAll('[data-upgrade]').forEach(btn => btn.onclick = () => {
+      if(State.S!==owner||!btn.isConnected)return;
       const result=this.game.yard.upgradeStructure(+btn.dataset.upgrade);
       this.game.refreshHUD();
       this.game.toast(result.ok?(en?'Facility upgraded to Lv.':'设施升级到 Lv.')+result.level:
         (en?'Not enough coins / max level':'金币不足或已满级'));
       this.openBuild();
     });
-    host.querySelectorAll('[data-relocate]').forEach(btn=>btn.onclick=()=>this.startBuildingRelocation(Number(btn.dataset.relocate)));
-    const owner=State.S;
+    host.querySelectorAll('[data-relocate]').forEach(btn=>btn.onclick=()=>{if(State.S===owner&&btn.isConnected)this.startBuildingRelocation(Number(btn.dataset.relocate))});
     host.querySelectorAll('[data-decor-move]').forEach(btn=>btn.onclick=()=>{if(btn.isConnected&&State.S===owner)this.startBuildingRelocation(Number(btn.dataset.decorMove),true)});
     host.querySelectorAll('[data-decor-remove]').forEach(btn=>btn.onclick=()=>{if(!btn.isConnected||State.S!==owner)return;const r=this.game.yard.removeDecoration(Number(btn.dataset.decorRemove));this.game.refreshHUD();this.game.toast(r.ok?(en?'Removed · +':'已移除 · +')+r.refund+(en?' coins':' 金币'):(en?'Could not save removal.':'未能保存移除操作。'));this.openBuild()});
     host.querySelectorAll('[data-remove]').forEach(btn => btn.onclick = () => {
+      if(State.S!==owner||!btn.isConnected)return;
       const refund = this.game.yard.removeStructure(+btn.dataset.remove);
       this.game.refreshHUD();
       this.game.toast((en ? '♻️ Removed · +' : '♻️ 已拆除 · 返还 ') + refund + ' 🪙');
