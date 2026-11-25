@@ -6,9 +6,9 @@ console.log(JSON.stringify((function test(src){
  const campaign=new Function(clean(src[0])+"\nreturn campaign")();
  const makeEngine=new Function(clean(src[1])+"\nreturn makeEngine")();
  const getSlotRuntime=new Function("campaign","makeEngine",clean(src[2])+"\nreturn getSlotRuntime")(campaign,makeEngine);
- const flight=new Function(clean(src[6])+"\nreturn {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady}")();
+ const flight=new Function(clean(src[6])+"\nreturn {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache}")();
  const {skyLaunch,skyLanding}=flight;
- const createWorldBridge=new Function("campaign","getSlotRuntime","validSkyFlightProof","skyLaunch","skyLanding","skyPartsReady",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime,flight.validSkyFlightProof,skyLaunch,skyLanding,flight.skyPartsReady);
+ const createWorldBridge=new Function("campaign","getSlotRuntime","validSkyFlightProof","skyLaunch","skyLanding","skyPartsReady","skySurvey","skySurveyCache",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime,flight.validSkyFlightProof,skyLaunch,skyLanding,flight.skyPartsReady,flight.skySurvey,flight.skySurveyCache);
  const {createExplorer,exchangeOptions,layouts}=new Function("campaign",...Object.keys(flight),clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign,...Object.values(flight));
  const storage=new Map(),ls={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},window={};
  new Function("window","localStorage",src[5])(window,ls);
@@ -70,6 +70,14 @@ console.log(JSON.stringify((function test(src){
   while(b.view().cursor<s.lines.length)host(e=>e.nextLine());
   if(s.choices.length&&!b.view().choice)host(e=>e.choose(s.choices[0].id));
   host(e=>e.finish());
+  if(s.id==="sky:S-05"){
+   ok(b.enter("sky"),"return to sky");let x=createExplorer(b,"sky"),survey=x.survey();assert(survey&&!survey.remote,"survey unlocked");assert(!x.startSurvey().ok,"must reach takeoff");assert(!b.pickupReward("sky","survey-cache").ok,"cache cannot be claimed from main island");
+   walk(x,survey.from);assert(!b.finishSurvey(survey.operation,null,b.capture()).ok,"cannot skip flight");const story=JSON.stringify(State.S.resonance);ok(x.startSurvey(),"takeoff");solve(x);assert(x.survey().remote&&x.near(survey.to),"actual island landing");
+   assert(State.loadSlot("slot1"),"reload on island");x=createExplorer(b,"sky");assert(x.survey().remote&&x.near(survey.to),"remote landing persists");assert(!x.pickup("survey-cache").ok,"cache requires exploring path");const cache=x.rewardPoints()[0];walk(x,cache.point);const coins=State.S.coins,fish=State.S.fish;ok(x.pickup(cache.id),"collect hidden cache");assert(State.S.coins===coins+45&&State.S.fish===fish+4&&!x.pickup(cache.id).ok,"one-time reward");
+   assert(State.loadSlot("slot1"),"reload after cache");x=createExplorer(b,"sky");assert(!x.survey().cache,"cache stays collected");let back=x.survey();walk(x,back.from);ok(x.startSurvey(),"return takeoff");solve(x);assert(!x.survey().remote&&x.near(back.to),"return to dock");assert(JSON.stringify(State.S.resonance)===story,"optional flight must not mutate story");
+   // Repeat the optional flight to confirm it remains available without duplicating treasure.
+   walk(x,x.survey().from);ok(x.startSurvey(),"repeat takeoff");solve(x);assert(x.survey().remote&&!x.survey().cache,"repeat island without duplicate cache");walk(x,x.survey().from);ok(x.startSurvey(),"repeat return");solve(x);assert(!x.survey().remote,"repeat return");
+  }
  }
  assert(b.view().current.id==="finale:B-01","did not reach finale: "+b.view().current.id);
  assert(b.view().ring&&b.view().melodies.length===6&&b.view().sanctuaries.length===6,"ring or sanctuaries incomplete");assert(deliveries===24&&localInvites===12,"wrong exchange/participation counts");
