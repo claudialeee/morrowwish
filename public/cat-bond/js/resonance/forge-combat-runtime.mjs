@@ -380,7 +380,7 @@ GP.startBattle=function(team,wildSpecies,opts={}){
   };
   const label=document.getElementById("wild-name");
   if(label)label.textContent=tr("赤炉环城 · 熔炉机械守卫","EMBERFORGE · FURNACE GUARDIAN");
-  mountHud(this,b);this.updateBattleUI?.();return result;
+  mountHud(this,b);this.updateBattleUI?.();if(this.battleHelpOpen)this.renderBattleHelp?.();return result;
 };
 const originalBattleUI=GP.updateBattleUI;
 GP.updateBattleUI=function(){const result=originalBattleUI.call(this);if(this.battle?.forgeState)renderHud(this,this.battle);return result;};

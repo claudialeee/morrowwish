@@ -1332,7 +1332,8 @@ class Game {
       const title=document.getElementById('battle-help-title');
       if(title)title.textContent=en?'Your first battle · '+(step+1)+'/'+stages.length
         :'第一次战斗 · '+(step+1)+'/'+stages.length;
-      const [heading,desc,phone,computer]=stages[step];
+      let [heading,desc,phone,computer]=stages[step];
+      if(this.battle?.forgeState&&step===0){heading=en?'Furnace guardian · protect the team':'熔炉守卫 · 保护队伍';desc=en?'This is a story boss, not a cat to capture. Watch core heat and pressure; use Jinpo and Xiaomao’s vent support to expose the core for six seconds. Dodge the marked attacks in all three phases.':'这是剧情守卫战，不是猫咪捕捉战。观察炉心温度和压力，使用烬婆与小铆的泄压支援使炉心暴露六秒，躲避三个阶段的攻击预警。';}
       const deviceInfo=phone?'<div class="battle-device-guide">'+
         '<div class="battle-device-item '+(this.isTouch?'preferred':'')+'"><strong>'+(en?'Phone / touch':'手机 / 触屏')+'</strong><p>'+phone+'</p></div>'+
         '<div class="battle-device-item '+(!this.isTouch?'preferred':'')+'"><strong>'+(en?'Computer / keyboard':'电脑 / 键鼠')+'</strong><p>'+computer+'</p></div></div>':'';
@@ -1376,6 +1377,7 @@ class Game {
         <p><strong>攻击：</strong>按住鼠标左键或 J；Q / E 放技能；空格键闪避。</p>
         <p><strong>必杀：</strong>R；1 / 2 / 3 换猫；P 切换自动战斗。</p></section>
         <p class="battle-help-note">查看说明时战斗会暂停。自动模式会代替你移动、攻击和闪避。</p>`;
+    if(this.battle?.forgeState)host.insertAdjacentHTML('afterbegin',en?'<section class="battle-help-section preferred"><b>Furnace guardian</b><p>Heat and pressure build independently. Vent support opens the core for six seconds; dodge hammerfall, slag and steam markers. Defeat or retreat allows another attempt.</p></section>':'<section class="battle-help-section preferred"><b>熔炉守卫</b><p>温度与压力分别累积。协力泄压可让炉心暴露六秒；躲开重锤、熔渣及蒸汽预警。失败或撤退后可以再次挑战。</p></section>');
     // Keep the equipped-skill reference inside the existing paused Controls
     // help. No detached button or skill panel should cover active gameplay.
     if(this.battle){

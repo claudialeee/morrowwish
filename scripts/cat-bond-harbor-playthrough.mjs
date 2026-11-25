@@ -472,6 +472,14 @@ try {
     assert.equal(await page.locator('#cb-forge-result h2').innerText(),'WITHDRAWN');await shot('forge-retreat');
     await page.locator('[data-forge-retry]').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();await page.locator('#cb-forge-hud').waitFor();
     if(await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();assert.equal(await page.evaluate(()=>__game.battle.autoMode),false);
+    // Switching from automatic to manual can open the first manual lesson.
+    // Dismiss through its real UI, never by clearing the coach or changing saves.
+    if(await page.locator('#battle-help').isVisible()){
+      const skip=page.locator('#battle-tutorial-skip');
+      if(await skip.isVisible()){await shot('forge-manual-tutorial');await skip.click();}
+      else await page.locator('#battle-help-start').click();
+    }
+    await page.locator('#battle-help').waitFor({state:'hidden'});
     await page.locator('[data-forge-support-button]').click();await page.waitForFunction(()=>__game.battle.forgeState.ventOpen>0&&__game.battle.forgeState.supportCharges===1);await shot('forge-boss-vent');
     if(options.hasTouch){const cdp=await context.newCDPSession(page);const c=await page.locator('#scene').boundingBox();const x=c.x+c.width*.20,y=c.y+c.height*.65;await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+38,y}]});await page.waitForTimeout(300);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}else{await page.keyboard.down('d');await page.waitForTimeout(300);await page.keyboard.up('d');}
     await page.locator('#btn-auto').click();
@@ -507,8 +515,9 @@ try {
     await page.getByText('Reinforced tools equipped · +25%',{exact:true}).waitFor();
     assert.equal(await page.evaluate(()=>Raising.stationsView().find(s=>s.id==='st_forge')?.reinforced),true);
     await shot('forge-workshop');await page.locator('#panel .panel-dismiss').click();
-    await button('Catdex',page.locator('.rw-system-nav')).click();await page.locator('#panel.open').waitFor();await shot('forge-catdex');await page.locator('#panel .panel-dismiss').click();
+    await button('Catdex',page.locator('.rw-system-nav')).click();await page.locator('#panel.open').waitFor();const record=page.locator('[data-dex-record="forge"]');await record.scrollIntoViewIfNeeded();await record.getByText('Furnace Guardian',{exact:true}).waitFor();await record.locator('img').evaluate(img=>img.decode());await shot('forge-catdex');await page.locator('#panel .panel-dismiss').click();
     await button('Party',page.locator('.rw-system-nav')).click();await page.locator('#map-squad-best').click();await page.locator('#map-squad-save').click();await page.locator('#panel.open').waitFor({state:'hidden'});
+    await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='forge')?.unlocked));await shot('forge-garden-restoration');await page.locator('#fab-map').click();
     await button('Skyspine Isles').click();await page.waitForFunction(()=>WorldMap.currentRegion==='sky');
     await page.locator('.rw-sky-region[data-art-ready="true"]').waitFor();await shot('sky-arrival');
     await ship('sky','Wind vanes and flight parts');
