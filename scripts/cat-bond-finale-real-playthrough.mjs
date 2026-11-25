@@ -26,7 +26,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
   await puzzle(label,inputs);for(const npc of people)await invite(npc);await puzzle(melody,notes);await check('melody:'+region);
  }
  async function beginBattle(label,auto=true){await button(label).click();await page.locator('#panel [data-battle-auto="'+auto+'"]').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();const tutorial=page.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();}
- async function finishBattle(timeout=300000){await page.waitForFunction(()=>__game.scene!=='battle',null,{timeout});const result=page.locator('#cb-finale-result');if(await result.isVisible()){await shot('finale-result-'+Date.now());await result.locator('[data-finale-return]').click();}}
+ async function finishBattle(timeout=300000){await page.waitForFunction(()=>__game.scene!=='battle',null,{timeout});const result=page.locator('#cb-finale-result');let outcome=null;if(await result.isVisible()){outcome=await result.locator('h2').innerText();await shot('finale-result-'+Date.now());await result.locator('[data-finale-return]').click();}return outcome;}
  async function forgeFight(){
   await beginBattle('Forge guardian');await shot('forge-real-guardian');
   for(let n=0;n<180;n++){if(await page.locator('#cb-forge-result').isVisible())break;const support=page.locator('[data-forge-support-button]');if(await support.isVisible()&&await support.isEnabled())await support.click();await page.waitForTimeout(850);}
@@ -89,7 +89,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  }
  const openingShots=startAtFinale?null:await cinematic('starfall:F-05');await scene('finale:B-01');
  const before=await page.evaluate(()=>JSON.stringify(State.S.resonance));await beginBattle('Approach the Star Bell');
- await shot('B-01-retreat');assert.equal(await page.locator('[data-finale-regions] meter').count(),6);await page.locator('#btn-flee').click();await finishBattle();
+ await shot('B-01-retreat');assert.equal(await page.locator('[data-finale-regions] meter').count(),6);await page.locator('#btn-flee').click();assert.equal(await finishBattle(),'Safe withdrawal','Actual retreat result');
  assert.equal(await page.evaluate(()=>JSON.stringify(State.S.resonance)),before,'Retreat must not award any story progress');
  await beginBattle('Approach the Star Bell');await shot('B-01-inward-locks');await finishBattle();await check('battle:inward-gates');await dialogue('finale:B-01');await scene('finale:B-02');
  await beginBattle('Approach the Star Bell',false);
@@ -101,17 +101,26 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  await page.waitForFunction(()=>__game.battle?.resonanceFinale?.wrongCount>0);await shot('B-02-wrong-reply');
  await page.locator('[data-finale-focus] [data-echo="'+targets.falseReply+'"]').click();
  await page.waitForFunction(i=>__game.battle.enemies.find(e=>e.i===i)?.dexVerified,targets.falseReply);await shot('B-02-verified-reply');
+ // Identify the other measured false replies using the actual manual Catdex
+ // buttons before attacking. An automatic win can finish before a charged
+ // skill gets used, so specifically exercise the player's manual Duo control.
+ const remaining=await page.evaluate(()=>__game.battle.enemies.filter(e=>e.alive&&!e.dexVerified&&Number.isFinite(e.echoGap)&&Math.abs(e.echoGap-e.echoHabit)>.2).map(e=>e.i));
+ for(const i of remaining){await page.locator('[data-finale-focus] [data-echo="'+i+'"]').click();await page.waitForFunction(i=>__game.battle.enemies.find(e=>e.i===i)?.dexVerified,i);}
+ const duo=page.locator('#duo-burst');await duo.waitFor();
+ await page.waitForFunction(()=>{const b=__game.battle,el=document.getElementById('duo-burst');return b?.resonanceFinale?.id==='finale:B-02'&&el&&!el.hidden&&!el.disabled;},null,{timeout:45000});
+ await duo.click();
+ await page.waitForFunction(()=>__game.battle?.duoUses>0&&__game.battle?.resonanceFinale?.echoQuietUntil>0,null,{timeout:15000});
+ const usedDuo=true,usedPromise=true;await shot('B-02-duo');
  await page.locator('#btn-auto').click();
- let usedDuo=false,usedPromise=false;
- for(let i=0;i<220;i++){const state=await page.evaluate(()=>{const b=__game.battle;return b?.resonanceFinale?.id==='finale:B-02'?{uses:b.duoUses,quiet:b.resonanceFinale.echoQuietUntil}:null;});if(!state)break;if(state.uses>0&&!usedDuo){usedDuo=true;await shot('B-02-duo');}if(state.quiet>0)usedPromise=true;await page.waitForTimeout(450);}
  await finishBattle();await check('battle:identify-echo');assert.ok(usedDuo&&usedPromise,'Actual duo cast and promise interruption in B-02');
  await dialogue('finale:B-02');await scene('finale:B-03');
  await beginBattle('Approach the Star Bell',false);await shot('B-03-unprotected');
  // Ordinary retreat/defeat input only: no battle.finish(), HP or position writes.
  let naturalDefeat=false;const deadline=Date.now()+90000;
- while(Date.now()<deadline){const a=await page.evaluate(()=>{const b=__game.battle;return b?{f:b.resonanceFinale?.failedProtection,allDown:b.team.every(x=>!x.alive)}:null});if(!a){naturalDefeat=true;break;}if(a.f||a.allDown){naturalDefeat=true;break;}await page.waitForTimeout(500);}
- if(await page.locator('#battle-ui.on').isVisible()&&!naturalDefeat)await page.locator('#btn-flee').click();
- await finishBattle();
+ while(Date.now()<deadline){const a=await page.evaluate(()=>{const b=__game.battle;return b?{f:b.resonanceFinale?.failedProtection,allDown:b.team.every(x=>!x.alive)}:null});if(!a||a.f||a.allDown)break;await page.waitForTimeout(500);}
+ if(await page.locator('#battle-ui.on').isVisible()&&Date.now()>=deadline)await page.locator('#btn-flee').click();
+ naturalDefeat=(await finishBattle())==='Challenge defeated';
+ assert.ok(naturalDefeat,'B-03 must show an actual defeat, not a withdrawal or missing battle');
  assert.ok((await view()).objective.includes('battle:central-echo'),'Uncompleted support cannot commit victory');
  const rewardBefore=await page.evaluate(()=>State.S.coins);await beginBattle('Approach the Star Bell');await shot('B-03-ring');assert.equal(await page.locator('[data-finale-regions] meter').count(),6);
  const supported=new Set();for(let i=0;i<360;i++){const a=await page.evaluate(()=>__game.battle?.resonanceFinale?.nodes?.filter(n=>n.done).map(n=>n.region)||null);if(!a)break;for(const x of a)if(!supported.has(x)){supported.add(x);await shot('B-03-support-'+x);}await page.waitForTimeout(400);}
