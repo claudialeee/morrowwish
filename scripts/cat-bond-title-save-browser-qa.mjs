@@ -14,6 +14,9 @@ for(const profile of [
  {name:'phone-landscape',width:844,height:390,mobile:true}
 ]){
  const context=await browser.newContext({viewport:{width:profile.width,height:profile.height},isMobile:profile.mobile,hasTouch:profile.mobile});
+ // When verifying a public deployment, fetch the actual public assets but
+ // keep acceptance traffic out of the owner's real player analytics.
+ if(new URL(origin).protocol==='https:')await context.route('**/api/session*',route=>route.fulfill({status:204,body:''}));
  const page=await context.newPage(),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
  page.on('dialog',dialog=>dialog.accept());
