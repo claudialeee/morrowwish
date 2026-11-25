@@ -460,7 +460,7 @@ function openJournal(){
    esc(found?t(p.chapter,p.chapterEn):t('探索对应区域，寻找记忆回声','Explore its region to find the memory echo'))+'</small></span></li>';
  }).join('');
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-journal-overlay';
- overlay.innerHTML='<section class="cb-cloud-card cb-journal-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
+ overlay.innerHTML='<section class="cb-cloud-card cb-journal-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><button class="cb-picker-language" data-modal-language type="button"></button>'+
   '<p class="cb-cloud-eyebrow">CAT BOND · THE LAST PAGE</p><h2>'+t('故事手册','Story Journal')+'</h2>'+
   '<p class="cb-cloud-lead">'+t('六段记忆，五片土地。你正在找回谁的故事？','Six memories. Five lands. Whose story are you restoring?')+'</p>'+
   '<div class="cb-journal-meter"><strong>'+s.fragments.length+'/6</strong><span>'+t('已找回的记忆','Memories recovered')+'</span></div>'+
@@ -474,6 +474,7 @@ function openJournal(){
  const rerender=()=>{close();openJournal();};
  window.addEventListener('morrowwish-language-change',rerender);
  overlay.querySelector('.cb-cloud-close').onclick=close;
+ overlay.querySelector('[data-modal-language]')?.addEventListener('click',()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh'));
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  overlay.querySelector('[data-journal-action="continue"]').onclick=()=>{
   close();
@@ -520,7 +521,7 @@ function showMulingQuestions(done){
  ];
  let step=0,selected=null;
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog cb-muling-questions';
- overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><p class="cb-cloud-eyebrow">THE LAST PAGE · THREE QUESTIONS</p><h2></h2><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><button class="cb-picker-language" data-modal-language type="button"></button><p class="cb-cloud-eyebrow">THE LAST PAGE · THREE QUESTIONS</p><h2></h2><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
  document.body.append(overlay);
  const close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
  const rerender=()=>render();window.addEventListener('morrowwish-language-change',rerender);
@@ -678,7 +679,7 @@ function createTracker(){
 function renderCloudPanel(){
  document.querySelector('.cb-cloud-overlay')?.remove();
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay';
- overlay.innerHTML='<section class="cb-cloud-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
+ overlay.innerHTML='<section class="cb-cloud-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><button class="cb-picker-language" data-modal-language type="button"></button>'+
   '<p class="cb-cloud-eyebrow">CAT BOND · SAVE & LOAD</p><h2>'+t('云存档','Cloud save')+'</h2>'+
   '<p class="cb-cloud-lead">'+t('三个存档位分别加密、分别同步。云端不可用时，本机存档仍可正常使用。','Each save slot is encrypted and synced independently. Local saves remain available when cloud sync is offline.')+'</p>'+
   '<div class="cb-cloud-body"></div></section>';
@@ -687,12 +688,14 @@ function renderCloudPanel(){
  let busy=false, lastMessage='', lastConflict=false;
  const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
  overlay.querySelector('.cb-cloud-close').onclick=close;
+ overlay.querySelector('[data-modal-language]')?.addEventListener('click',()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh'));
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  function render(status='',conflict=false){
   lastMessage=status;lastConflict=conflict;
   const enteredCode=body.querySelector('[data-recovery-code]')?.value||'';
   const token=localStorage.getItem(CLOUD_KEY)||'';
   overlay.querySelector('.cb-cloud-close').setAttribute('aria-label',t('关闭','Close'));
+  const localeButton=overlay.querySelector('[data-modal-language]');if(localeButton){localeButton.textContent=t('English','中文');localeButton.setAttribute('aria-label',t('切换到英文','Switch to Chinese'));}
   overlay.querySelector('.cb-cloud-card h2').textContent=t('云存档','Cloud save');
   overlay.querySelector('.cb-cloud-lead').textContent=t('三个存档位分别加密、分别同步。云端不可用时，本机存档仍可正常使用。','Each save slot is encrypted and synced independently. Local saves remain available when cloud sync is offline.');
   const importCode='<label class="cb-cloud-import-label">'+t('在另一台设备上？输入恢复码','Using another device? Enter your recovery code')+'</label>'+
@@ -1009,7 +1012,7 @@ async function copyText(value){
 function openSlotManager(){
  document.querySelector('.cb-slot-manager')?.remove();
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-slot-manager';
- overlay.innerHTML='<section class="cb-cloud-card cb-slot-manager-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
+ overlay.innerHTML='<section class="cb-cloud-card cb-slot-manager-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><button class="cb-picker-language" data-modal-language type="button"></button>'+
   '<p class="cb-cloud-eyebrow">'+t('存档','Save Archive')+'</p><h2>'+t('三个冒险存档位','Three adventure slots')+'</h2>'+
   '<p class="cb-cloud-lead">'+t('保存会把当前进度复制到所选存档位；读取会重新载入该存档。每个存档互相独立。','Save copies the current progress into the selected slot. Load restarts from that slot. Each save remains independent.')+'</p>'+
   '<div class="cb-slot-manager-list"></div><div class="cb-cloud-status" id="cb-slot-status" role="status"></div>'+
@@ -1017,6 +1020,7 @@ function openSlotManager(){
  (document.fullscreenElement||document.getElementById('stage')||document.body).append(overlay);
  const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
  overlay.querySelector('.cb-cloud-close').onclick=close;
+ overlay.querySelector('[data-modal-language]')?.addEventListener('click',()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh'));
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  const list=overlay.querySelector('.cb-slot-manager-list');
  const status=overlay.querySelector('#cb-slot-status');
@@ -1071,6 +1075,7 @@ function openSlotManager(){
  }
  const updateLocale=()=>{
   overlay.querySelector('.cb-cloud-close').setAttribute('aria-label',t('关闭','Close'));
+  const localeButton=overlay.querySelector('[data-modal-language]');if(localeButton){localeButton.textContent=t('English','中文');localeButton.setAttribute('aria-label',t('切换到英文','Switch to Chinese'));}
   overlay.querySelector('.cb-cloud-eyebrow').textContent=t('存档','Save Archive');
   overlay.querySelector('h2').textContent=t('三个冒险存档位','Three adventure slots');
   overlay.querySelector('.cb-cloud-lead').textContent=t('选择存档读取；游戏中可保存当前进度。删除需要确认。','Choose a save to load; while playing you can save current progress. Deletion requires confirmation.');
@@ -1296,12 +1301,13 @@ function npcTalk(id){
    :(en?'Duchuan’s testimony survived. The Bell can no longer hide behind an incomplete account.':'渡川的证词被保住了。星铃再也不能躲在不完整的记录后面。'));
  }
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-npc-dialog';
- overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A CONVERSATION THAT CHANGES':'一次会改变旅程的对话')+'</p><div class="cb-npc-dialog-head"><canvas width="120" height="120"></canvas><div><h2></h2><small></small><span></span></div></div><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
+ overlay.innerHTML='<section class="cb-cloud-card cb-npc-dialog-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><button class="cb-picker-language" data-modal-language type="button"></button><p class="cb-cloud-eyebrow">CAT BOND · '+(en?'A CONVERSATION THAT CHANGES':'一次会改变旅程的对话')+'</p><div class="cb-npc-dialog-head"><canvas width="120" height="120"></canvas><div><h2></h2><small></small><span></span></div></div><p class="cb-npc-dialog-line"></p><div class="cb-cloud-actions"></div></section>';
  document.body.append(overlay);
  const card=overlay.querySelector('.cb-npc-dialog-card'),close=()=>{window.removeEventListener('morrowwish-language-change',rerender);overlay.remove();};
  const rerender=()=>{close();npcTalk(id);};
  window.addEventListener('morrowwish-language-change',rerender);
- overlay.querySelector('.cb-cloud-close').onclick=close;overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
+ overlay.querySelector('.cb-cloud-close').onclick=close;
+ overlay.querySelector('[data-modal-language]')?.addEventListener('click',()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh'));overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  card.querySelector('h2').textContent=en?npc.en:npc.name;
  card.querySelector('small').textContent=en?npc.roleEn:npc.role;
  card.querySelector('span').textContent=stage==='intro'?(en?'FIRST MEETING':'初次相遇'):stage==='reveal'?(en?'A MEMORY SURFACED':'记忆回响'):stage==='epilogue'?(en?'AFTER THE ENDING':'结局之后'):(en?'ON THE ROAD':'旅途中的对话');
