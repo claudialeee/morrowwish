@@ -1,0 +1,75 @@
+/* Sunlit title — actual campaign paintings and character art, not a dark atlas overlay. */
+#stage #intro.cb-rpg-intro:not(.hide){
+ background:#d8e7b7!important;color:#344b37!important;
+ padding:52px clamp(12px,3vw,40px) 18px!important;
+}
+#stage #intro .cb-title-landscape{
+ background:url('../assets/garden/sunlit-garden-landscape.webp') center center/cover no-repeat!important;
+ filter:none!important;animation:none!important;transform:none!important;
+}
+#stage #intro::before{background:none!important;pointer-events:none!important}
+#stage #intro #intro-stars{opacity:0!important}
+#stage #intro .cb-title-landscape::before,#stage #intro .cb-title-landscape::after{
+ content:"";position:absolute;display:block;pointer-events:none;background-repeat:no-repeat;background-size:contain;background-position:center bottom;
+ filter:drop-shadow(0 8px 5px #45562e35);bottom:8%;width:24%;height:58%;animation:none!important;
+}
+#stage #intro .cb-title-landscape::before{left:5%;background-image:url('../assets/npc/xingya-painted.webp')}
+#stage #intro .cb-title-landscape::after{left:24%;bottom:7%;height:49%;background-image:url('../assets/npc/yahe-painted.webp')}
+#stage #intro .cb-title-content{
+ transform:none!important;justify-self:end!important;align-self:center!important;width:min(48%,550px)!important;
+ margin:0 1.5% 0 0!important;gap:clamp(12px,2.4vh,24px)!important;
+ padding:clamp(16px,3vw,36px)!important;border-radius:clamp(16px,2vw,26px);
+ background:linear-gradient(155deg,#fffdf1f5,#fff6dded)!important;
+ border:1px solid #fff9e9;box-shadow:0 12px 35px #53603930,inset 0 0 0 3px #e8d4a780;
+}
+#stage #intro .cb-intro-brand{color:#78613a!important;letter-spacing:.3em!important}
+#stage #intro .cb-intro-titleblock{gap:8px!important}
+#stage #intro .cb-intro-titleblock::before{background:linear-gradient(90deg,transparent,#ae8847,transparent)!important}
+#stage #intro .game-logo{
+ color:#334f37!important;text-shadow:0 2px 0 #fffaf0!important;font-size:clamp(36px,5.5vw,76px)!important;
+}
+#stage #intro .cb-intro-eyebrow{color:#795c2d!important;text-shadow:none!important;letter-spacing:.12em!important}
+#stage #intro .cb-intro-tagline{color:#43553b!important;max-width:30em!important;line-height:1.45!important}
+#stage #intro .cb-intro-actions{gap:10px!important}
+#stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue){
+ min-height:50px!important;border-radius:10px!important;box-shadow:0 3px 8px #5c663026!important;
+}
+#stage #intro .cb-intro-actions button#intro-start{
+ background:linear-gradient(180deg,#e7c779,#d9ab55)!important;color:#35402a!important;border-color:#a7803b!important;
+}
+#stage #intro .cb-intro-actions button#intro-continue{
+ background:#fffdf4!important;color:#3d5638!important;border-color:#8ca176!important;
+}
+#stage #intro .cb-intro-actions button:focus-visible{outline:3px solid #526c3e!important;outline-offset:3px!important}
+#stage #intro #intro-slot-panel{background:#52634260!important;backdrop-filter:blur(4px)}
+@media (max-aspect-ratio:4/5){
+ #stage #intro.cb-rpg-intro:not(.hide){padding:48px 12px 12px!important}
+ #stage #intro .cb-title-landscape{background-image:url('../assets/garden/sunlit-garden-portrait.webp')!important;background-position:center center!important}
+ #stage #intro .cb-title-landscape::before{left:13%;bottom:45%;width:39%;height:35%}
+ #stage #intro .cb-title-landscape::after{left:48%;bottom:44%;width:36%;height:30%}
+ #stage #intro .cb-title-content{justify-self:center!important;align-self:end!important;width:min(100%,420px)!important;margin:0 0 3% 0!important;padding:18px 14px!important;gap:12px!important}
+ #stage #intro .game-logo{font-size:clamp(34px,9vw,53px)!important}
+ #stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue){min-height:48px!important}
+}
+@media (min-aspect-ratio:4/5) and (max-width:680px){
+ #stage #intro .cb-title-content{width:min(58%,420px)!important;padding:12px!important;gap:9px!important;margin:0!important}
+ #stage #intro .game-logo{font-size:clamp(27px,5.8vw,44px)!important}
+ #stage #intro .cb-title-landscape::before{left:0%;width:24%;height:57%}
+ #stage #intro .cb-title-landscape::after{left:19%;width:22%;height:48%}
+}
+@media (max-height:450px) and (min-aspect-ratio:4/5){
+ #stage #intro.cb-rpg-intro:not(.hide){padding:44px 12px 10px!important}
+ #stage #intro .cb-title-content{padding:9px 14px!important;gap:5px!important}
+ #stage #intro .cb-intro-titleblock{gap:3px!important}
+ #stage #intro .game-logo{font-size:clamp(26px,8vh,43px)!important}
+ #stage #intro .cb-intro-eyebrow{font-size:13px!important}
+ #stage #intro .cb-intro-brand{font-size:10px!important}
+ #stage #intro .cb-intro-actions{margin-top:2px!important}
+ #stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue){min-height:44px!important;padding:6px!important}
+}
+@media (max-aspect-ratio:4/5) and (max-height:620px){
+ #stage #intro .cb-title-content{margin:0!important;padding:10px 12px!important;gap:7px!important}
+ #stage #intro .cb-title-landscape::before,#stage #intro .cb-title-landscape::after{bottom:45%;height:30%}
+ #stage #intro .cb-intro-titleblock{gap:4px!important}
+ #stage #intro .cb-intro-tagline{font-size:12px!important}
+}

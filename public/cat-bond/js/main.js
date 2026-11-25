@@ -182,7 +182,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if(start)start.textContent=en?'New Adventure':'开始新的冒险';
     if(next)next.textContent=en?'Continue Story':'继续故事';
     const tagline=document.querySelector('.cb-intro-tagline');
-    if(tagline)tagline.textContent=en?'When the world forgets, bonds will guide you home.':'当世界忘记彼此，羁绊仍能引你归来。';
+    if(tagline)tagline.textContent=en?'Discover a world of wonders with your feline friends.':'与猫咪伙伴一起，去发现世界的奇迹。';
     const kicker=document.querySelector('.cb-save-picker-kicker');
     if(kicker)kicker.textContent=en?'Save Archive':'存档';
     document.getElementById('intro-slot-close')?.setAttribute('aria-label',en?'Close':'关闭');
