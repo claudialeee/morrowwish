@@ -3,7 +3,7 @@
 <style>body{margin:20px auto;max-width:900px;padding:0 14px;background:#182423;color:#eaf1e6;font:15px system-ui}canvas{width:100%;height:auto;background:#33483e;border:1px solid #697c67;border-radius:8px}button,select{font:inherit;color:inherit;background:#34483f;border:1px solid #657c69;border-radius:5px;padding:9px;margin:4px}p{color:#b4c3b3}label{display:inline-block}input{width:40%}</style></head>
 <body><h2>Cat Bond · V5 实际渲染器预览</h2><p>直接加载本分支的 skills.js 与 skill-fx.js，使用合成的战斗坐标及时间轴，不运行战斗、角色动画或伤害判定。未实现的 V5 技能不会伪装成已实现。</p><h3 id="name"></h3><canvas id="stage" width="800" height="420"></canvas>
 <div><label>技能 <select id="skill"></select></label><label>速度 <select id="speed"><option value="1">1×</option><option value=".5">0.5×</option><option value=".25">0.25×</option></select></label><button id="toggle">暂停</button><button id="restart">重播</button><input id="seek" type="range" min="0" max="3" step=".01" value="0"></div><p id="mode"></p>
-<script src="js/skills.js"></script><script src="js/skill-fx.js"></script><script>
+<script src="js/skills.js"></script><script src="js/skill-fx.js"></script><script src="js/vfx.js"></script><script>
 (()=>{'use strict';const F=window.CatBondSkillFX,S=window.Skills;
 const list=S.SKILLS.filter(x=>!x.ultCost&&!x.legacy&&F.has(x.id));
 const select=document.getElementById('skill'),name=document.getElementById('name'),mode=document.getElementById('mode'),seek=document.getElementById('seek'),speed=document.getElementById('speed'),toggle=document.getElementById('toggle');
@@ -13,6 +13,7 @@ function dummy(x,y,fill){ctx.fillStyle='#1c2924';ctx.beginPath();ctx.ellipse(x,y
 function render(){const sk=S.skillById(select.value);if(!sk)return;name.textContent=sk.name+' / '+sk.id;ctx.clearRect(0,0,800,420);ctx.fillStyle='#36493e';ctx.fillRect(0,0,800,420);ctx.strokeStyle='#405548';ctx.lineWidth=1;for(let x=0;x<800;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,420);ctx.stroke()}for(let y=0;y<420;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(800,y);ctx.stroke()}
 dummy(A.x,A.y,'#dfb480');dummy(B.x,B.y,'#a2abc1');let info='技能签名：施法与命中局部特效；不包含完整游戏动作。';
 const cast=age<.51,impact=age>=1.45&&age<1.85;
+if(sk.kind==='melee'&&age>=.40&&age<.73){const v=new window.VFX();v.slash(A.x,A.y,0,S.ELEMENTS?.[sk.element]?.color||'#e5dfbd',sk.heavy?104:81,.74,{element:sk.element,heavy:!!sk.heavy});v.update(age-.40);v.draw(ctx);info='实际六系近战笔触渲染器。目标距离仅为演示，不表示命中判定。';}
 if(cast)F.draw(ctx,{kind:'signatureCast',skillId:sk.id,x:A.x,y:A.y,angle:0,life:.51-age,max:.51,seed:0},age);
 if(['flameSweep','waterJet','thunderStream'].includes(sk.id)&&age>=.4&&age<2.4){const t=age-.4,ang=sk.id==='flameSweep'?Math.sin(t*7)*.28:0,ox=A.x+20,oy=A.y,reach=sk.reach||300;F.drawCombatBeam(ctx,{sk,_ox:ox,_oy:oy,t:2-t,max:2,width:sk.width||26},age,ox+Math.cos(ang)*reach,oy+Math.sin(ang)*reach);info='实际持续光束渲染器：使用演示时间及方向。'}
 else if(['fireballMeow','lightningOrb','hex'].includes(sk.id)&&age>=.4&&age<1.45){const kind=sk.id==='fireballMeow'?'fireball':sk.id;F.drawIdentityProjectile(ctx,{kind,x:A.x+20+(B.x-A.x-20)*(age-.4)/1.05,y:A.y,r:sk.id==='lightningOrb'?13:15,ang:0},age);info='实际投射物渲染器：演示轨迹，非游戏飞行速度。'}
