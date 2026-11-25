@@ -77,14 +77,21 @@ try{
     }]}
    }
   };
-  let requestedSummaryUrl='';
+  let requestedSummaryUrl='',requestedStoryUrl='';
   await page.route('**/api/summary*',route=>{
    requestedSummaryUrl=route.request().url();
-   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(summary)});
+   const params=new URL(requestedSummaryUrl).searchParams;
+   const selected=params.has('startDate');
+   const result=selected?{...summary,rollup:{...summary.rollup,pageviews:7},byGame:[{
+    game:'tiny-town',pageviews:7,retries:0,visitFunnel:{pageviews:7,startedViews:3,finishedViews:1}
+   }],range:{start:params.get('startDate'),end:params.get('endDate'),timeZone:'America/Los_Angeles'}}:summary;
+   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(result)});
   });
-  await page.route('**/api/elsewhere-summary*',route=>route.fulfill({
-   status:200,contentType:'application/json',body:JSON.stringify({summary:{}})
-  }));
+  await page.route('**/api/elsewhere-summary*',route=>{
+   requestedStoryUrl=route.request().url();
+   const p=new URL(requestedStoryUrl).searchParams;
+   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({summary:{},range:{start:p.get('startDate'),end:p.get('endDate'),timeZone:'America/Los_Angeles'}})});
+  });
   try{
    await page.goto('http://127.0.0.1:8765/studio-insights/?lang='+language,{
     waitUntil:'domcontentloaded',timeout:15000
@@ -194,6 +201,35 @@ try{
     assert.ok(!cells.slice(5).some(cell=>cell.includes('75%')),
       'Legacy data cannot be fabricated into an empty V2 cohort');
    }
+   await page.locator('#date-preset').selectOption('custom');
+   assert.equal(await page.locator('#custom-dates').isVisible(),true);
+   await page.locator('#date-start').fill('2026-11-22');
+   await page.locator('#date-end').fill('2026-11-23');
+   await page.locator('#apply-date').click();
+   await page.waitForFunction(()=>document.querySelector('#applied-range').textContent.includes('2026-11-23')&&!document.querySelector('#apply-date').disabled);
+   const selectedParams=new URL(requestedSummaryUrl).searchParams;
+   assert.equal(selectedParams.get('startDate'),'2026-11-22');
+   assert.equal(selectedParams.get('endDate'),'2026-11-23');
+   assert.equal(new URL(requestedStoryUrl).searchParams.get('startDate'),'2026-11-22');
+   assert.equal(new URL(requestedStoryUrl).searchParams.get('endDate'),'2026-11-23');
+   const filteredValues=await page.locator('#stats .stat .big').allTextContents();
+   assert.equal(filteredValues[0],'7');
+   assert.equal(filteredValues[1],'','Missing homepage observations stay blank');
+   assert.equal(filteredValues[2],'3');
+   assert.equal(filteredValues[3],'1');
+   assert.deepEqual(filteredValues.slice(9),['42.9%','33.3%','14.3%']);
+   const selectedTown=page.locator('#games tr').filter({has:page.locator('a[href="/tiny-town/"]')});
+   assert.equal((await selectedTown.locator('td').allTextContents())[1],'7');
+   const beforeInvalid=requestedSummaryUrl;
+   await page.locator('#date-start').fill('2026-11-23');
+   await page.locator('#date-end').fill('2026-11-22');
+   await page.locator('#apply-date').click();
+   assert.equal(requestedSummaryUrl,beforeInvalid,'Inverted range must never query the API');
+   await page.locator('#date-preset').selectOption('all');
+   await page.locator('#apply-date').click();
+   await page.waitForFunction(()=>!document.querySelector('#apply-date').disabled&&document.querySelector('#stats .stat .big').textContent!=='7');
+   assert.equal(new URL(requestedSummaryUrl).searchParams.has('startDate'),false);
+   assert.equal((await page.locator('#stats .stat .big').allTextContents())[0],String(sitewidePageviews));
    assert.deepEqual(exceptions,[],'Page errors after rendering and interaction');
   }finally{
    await context.close();

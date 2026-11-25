@@ -36,7 +36,7 @@ if(!socialRouter.includes('if(p.startsWith("/go/"))')||
    !dashboard.includes("siteNum(z,'pageviews')"))
  throw Error('Tracking links and homepage/game attribution data must be preserved');
 if(!dashboard.includes('const homePageviews=games.find(x=>x.game==="hub")?.pageviews;')||
-   !dashboard.includes('metricCard(t("statHome"),homeKnown?format(homePageviews):"",t("statHomeNote"))')||
+   !dashboard.includes('metricCard(t("statHome"),homeKnown?count(homePageviews):"",t("statHomeNote"))')||
    dashboard.includes("const displayOrder=['hub'")||dashboard.includes('if(x.game==="hub")return'))
  throw Error('Homepage overview must appear as one top-level pageview metric, not a game-table row');
 
@@ -99,11 +99,15 @@ if(!analyticsSource.includes('2026-11-22T08:00:00.000Z')||
    !analyticsSource.includes('timeZone:"America/Los_Angeles"')||
    !analyticsSource.includes('ts>=?')||
    !dashboard.includes('const REPORT_FROM="2026-11-22T08:00:00.000Z"')||
+   !dashboard.includes('id="date-preset"')||
+   !dashboard.includes('id="date-start"')||
+   !dashboard.includes('id="date-end"')||
+   !analyticsSource.includes('function selectRange(x,range)')||
    dashboard.includes('id="days"')||
    dashboard.includes('periodSince:')||
    dashboard.includes('统计起点：11/22 00:00')||
    dashboard.includes('Since Nov 22, 2026, 12:00 AM PT'))
- throw new Error('Dashboard must keep the fixed Pacific-time data window without showing its start date');
+ throw new Error('Dashboard must preserve the fixed Pacific baseline and provide validated date range controls');
 if(!miniUpgrade.includes('event("run_start"') ||
    !miniUpgrade.includes('event("run_end",{duration:seconds')) throw Error('Mini-game run events must reach the unified tracker');
 if(!dashboard.includes('id="game-details"')||!dashboard.includes('id="focus-grid"')||
@@ -113,8 +117,8 @@ if(!dashboard.includes('id="game-details"')||!dashboard.includes('id="focus-grid
    dashboard.includes('data-i18n="channelState"')||
    !dashboard.includes('const nativeNum=(n,id,published)=>')||
    !dashboard.includes('n==null')||
-   !dashboard.includes('hasData?format(r.pageviews):""')||
-   !dashboard.includes('game!=="hub"'))
+   !dashboard.includes('hasData?count(r.pageviews):""')||
+   !dashboard.includes('displayOrder.includes(g.game)'))
  throw Error('Dashboard must show meaningful results and leave missing data blank');
 // Primary dashboard must preserve visit-to-start and start-to-finish context
 // and not show unsupported portals as native social-view channels.

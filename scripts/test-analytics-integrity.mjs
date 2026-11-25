@@ -243,6 +243,39 @@ assert.deepEqual((await headlineResponse.json()).rollup.headlineMetrics,{
  uniqueBrowsers:2,untrackedBrowserVisits:1,avgSessionSeconds:30,measuredSessionCount:2,
  shareClicks:0,d1Eligible:2,d1Returned:1
 },'Headline metrics use stable anonymous visitors and distinct measured sessions');
+// A UTC Nov 23 event at 16:30 Pacific still belongs to Nov 22.
+seed('boundary','2026-11-23','boundary-view');
+rows.at(-1).ts=Date.parse('2026-11-23T00:30:00.000Z');
+const rangeEnv={...env,DB:{prepare:DB.prepare.bind(DB)},ANALYTICS_CACHE_MS:'120000'};
+const rangeRequest=(start,end,route='summary')=>new Request('https://morrowwish.pages.dev/api/'+route+
+ '?from=2026-11-22T08%3A00%3A00.000Z&startDate='+start+'&endDate='+end,
+ {headers:{'x-analytics-key':env.ARCADE_ANALYTICS_KEY}});
+const firstRange=await api(rangeRequest('2026-11-22','2026-11-22'),rangeEnv);
+assert.equal(firstRange.status,200);
+const firstDay=await firstRange.json(),rangeReads=reportReads;
+assert.deepEqual(firstDay.range,{start:'2026-11-22',end:'2026-11-22',timeZone:'America/Los_Angeles'});
+assert.equal(firstDay.days,1);
+assert.equal(firstDay.rollup.pageviews,4,'Pacific range includes late UTC boundary visit');
+assert.equal(firstDay.rollup.headlineMetrics.d1Eligible,0,'Single day cannot include a full next day');
+const secondDay=await (await api(rangeRequest('2026-11-23','2026-11-23'),rangeEnv)).json();
+assert.equal(secondDay.rollup.pageviews,1,'Do not count Nov 22 Pacific visits in Nov 23');
+assert.equal(secondDay.updated,firstDay.updated,'Date changes preserve snapshot timestamp');
+const twoDays=await (await api(rangeRequest('2026-11-22','2026-11-23'),rangeEnv)).json();
+assert.equal(twoDays.rollup.pageviews,5);
+assert.equal(twoDays.rollup.headlineMetrics.d1Eligible,3);
+assert.equal(twoDays.rollup.headlineMetrics.d1Returned,1,'Completed historic end day is eligible');
+assert.equal(reportReads,rangeReads,'Switching dates reuses existing D1 snapshot');
+for(const [start,end] of [['2026-11-23','2026-11-22'],['2026-11-21','2026-11-22'],['2026-02-30','2026-11-22'],['2026-11-22','2099-01-01']]){
+ assert.equal((await api(rangeRequest(start,end),rangeEnv)).status,400,'Invalid range must be rejected');
+}
+assert.equal(reportReads,rangeReads,'Invalid ranges never read D1');
+for(const [day,run] of [['2026-11-22','story-a'],['2026-11-23','story-b']]){
+ seed(run,day,run,'event',{edition:'life-v5',scenes:5,event:'world_open',world:'amalfi'});
+ Object.assign(rows.at(-1),{category:'elsewhere',game:'elsewhere',run_id:run,event_name:'world_open'});
+}
+const storyRange=await (await api(rangeRequest('2026-11-22','2026-11-22','elsewhere-summary'),rangeEnv)).json();
+assert.equal(storyRange.summary.runs,1,'Elsewhere uses the exact same selected range');
+assert.deepEqual(storyRange.range,firstDay.range);
 rows.splice(0,rows.length);
 const missingResponse=await api(cachedReq(),env);
 assert.deepEqual((await missingResponse.json()).rollup.headlineMetrics,{
