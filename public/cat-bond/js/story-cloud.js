@@ -245,14 +245,30 @@ function drawBackdrop(canvas,region){
  ctx.quadraticCurveTo(0,r*.48,-r*.4,r*.31);ctx.closePath();ctx.stroke();
  ctx.beginPath();ctx.arc(0,r*.4,r*.08,0,Math.PI*2);ctx.stroke();ctx.restore();
 }
+const legacyMulingPortraits=new Map();
 function renderPortraits(root){
  const S=state(),cat=S?.cats?.find(c=>c.uid===S.battlePrefs?.teamUids?.[0])||S?.cats?.[0];
  const player=root.querySelector('[data-cb-player-portrait]');
  if(player&&cat&&window.CatArt?.renderCatThumb)
   window.CatArt.renderCatThumb(player,window.GameData?.speciesById?.(cat.species),cat);
  const muling=root.querySelector('[data-cb-muling-portrait]');
- const sp=bossSpecies();
- if(muling&&sp&&window.CatArt?.renderCatThumb)window.CatArt.renderCatThumb(muling,sp);
+ if(muling){
+  const mood=root.dataset.kind==='reveal'?'worried':'warm';
+  const src='/cat-bond/assets/cinematics/characters/muling/traveler-'+mood+'.webp';
+  const paint=image=>{
+   if(!muling.isConnected||muling.dataset.portraitSrc!==src||!image.naturalWidth)return;
+   const ctx=muling.getContext('2d');if(!ctx)return;
+   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,muling.width,muling.height);
+   const fit=Math.min(muling.width/image.naturalWidth,muling.height/image.naturalHeight)*.96;
+   const w=image.naturalWidth*fit,h=image.naturalHeight*fit;
+   ctx.drawImage(image,(muling.width-w)/2,(muling.height-h)/2,w,h);
+  };
+  muling.dataset.portraitSrc=src;
+  let image=legacyMulingPortraits.get(src);
+  if(!image){image=new Image();legacyMulingPortraits.set(src,image);image.src=src;}
+  if(image.complete&&image.naturalWidth)paint(image);
+  else image.addEventListener('load',()=>paint(image),{once:true});
+ }
 }
 function renderStoryActors(root,page,kind,index,time=performance.now()/1000){
  const left=root.querySelector('[data-cb-scene-player]'),right=root.querySelector('[data-cb-scene-companion]');
