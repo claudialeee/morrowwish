@@ -33,12 +33,16 @@ export const puzzleWords={
  melody:[["圣所的第一音","The sanctuary's First Note"],["已邀约的当地居民将回应每个音符。","Invited residents answer each note."],[["低音","Low"],["中音","Middle"],["高音","High"]]]
 };
 export function puzzleHit(x,y){if(y<.40||y>.72)return -1;return [.3,.5,.7].findIndex(cx=>Math.abs(x-cx)<.095)}
+export function echoBeaconOptions(p){
+ const step=p.values.length,original=["✦","✧","●"],correct=p.goal[step],shift=step%3,signal=[...original.slice(shift),...original.slice(0,shift)];
+ return {signal,options:[0,1,2].map(i=>i===correct?signal:i===(correct+1)%3?[...signal].reverse():[signal[0],signal[0],signal[2]])};
+}
 export function paintPuzzle(c,p,lang,cast,W=960,H=540){const w=puzzleWords[p.type],l=lang==="zh"?0:1,X=n=>n*W,Y=n=>n*H,scale=W/960;const tx=(s,x,y,n=21,col=cream)=>label(c,s,X(x),Y(y),n*scale,col);c.save();c.fillStyle="#07131ddd";c.fillRect(0,0,W,H);rect(c,X(.11),Y(.11),X(.78),Y(.78),"#193143f8");rect(c,X(.12),Y(.13),X(.76),Y(.74),null,"#8d7958");tx(w[0][l],.5,.18,25);tx(w[1][l],.5,.25,15,"#cbdfdd");
  const centers=[.3,.5,.7],r=43*scale,yy=Y(.53);
  if(p.type==="echo"){
-  const step=p.values.length,original=["✦","✧","●"],correct=p.goal[step],shift=step%3,signal=[...original.slice(shift),...original.slice(0,shift)];
+  const step=p.values.length,{signal,options}=echoBeaconOptions(p);
   tx((l?"Reference: ":"原始星序：")+signal.join("  "),.5,.34,23,aqua);
-  centers.forEach((x,i)=>{const seq=i===correct?signal:i===(correct+1)%3?[...signal].reverse():[signal[0],signal[0],signal[2]];disc(c,X(x),yy,r+8*scale,"#273b59","#b7a4d7");tx(seq.join(" "),x,.53,17);tx(w[2][i][l],x,.68,15);});
+  centers.forEach((x,i)=>{const seq=options[i];disc(c,X(x),yy,r+8*scale,"#273b59","#b7a4d7");tx(seq.join(" "),x,.53,17);tx(w[2][i][l],x,.68,15);});
   tx((l?"Confirmed signals ":"已核实信标 ")+step+"/3",.5,.76,16,aqua);
  }else if(p.type==="pairedWater"){
   const [pressure,lower]=p.values,ready=pressure===2,lit=[ready,!!lower,ready&&!!lower],pts=[[.30,.43],[.50,.50],[.70,.59]];for(let i=0;i<2;i++){const a=pts[i],b=pts[i+1];line(c,[[X(a[0]),Y(a[1])],[X(b[0]),Y(b[1])]],lit[i]?"#84ddd0":"#405766",12*scale);if(lit[i]){const t=(Date.now()/900)%1;disc(c,X(a[0]+(b[0]-a[0])*t),Y(a[1]+(b[1]-a[1])*t),4*scale,aqua,null);}}pts.forEach(([x,y],i)=>{disc(c,X(x),Y(y),29*scale,lit[i]?"#286e69":"#304959",lit[i]?aqua:gold);symbol(c,"gate",X(x),Y(y),.9*scale,lit[i]?aqua:gold);tx(w[2][i][l],x,.70,15);});tx((l?"Pressure ":"水压 ")+pressure+" / 3",.30,.55,17,ready?aqua:pressure===3?"#efab78":gold);tx(lower?(l?"OPEN":"已开启"):(l?"CLOSED":"已关闭"),.50,.60,14,lower?aqua:gold);tx(pressure===3?(l?"Overpressure — lower gate closed":"水压过高 · 地下闸门关闭"):!ready?(l?"Adjust the upper valve":"请调节上层水压"):!lower?(l?"Pressure stable · open the lower gate":"水压稳定 · 打开地下水闸"):(l?"Both channels open · clear the roots":"双路稳定 · 共同疏通根脉"),.5,.79,16,aqua);

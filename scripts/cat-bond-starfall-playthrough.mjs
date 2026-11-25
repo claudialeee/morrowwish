@@ -83,7 +83,7 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  assert.equal(await button("Observatory · Complete record").count(),0);
  await button("Crater · Impact fragment").click();await objective("explore:crater-fragment");
  await button("Hollow Echo illusions").click();const controls=page.locator(".rw-puzzle-controls");await controls.waitFor();await shot("starfall-echo-puzzle");
- await button("Left beacon",controls).click();assert.ok((await get()).objective.includes("puzzle:echo-navigation"));
+ await button("Left beacon",controls).click();assert.ok((await get()).objective.includes("puzzle:echo-navigation"));await page.getByText("Recalibrating after an illusion",{exact:false}).waitFor();
  for(const name of ["Middle beacon","Right beacon","Left beacon"])await button(name,controls).click();
  await objective("puzzle:echo-navigation");
  await puzzle("Star chart",["Outer ring","Outer ring","Outer ring","Middle ring","Inner ring","Inner ring"]);
