@@ -25,7 +25,17 @@ try {
     assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),false,'Production entry must not enable unreviewed staging art');
     const button = (name, scope = page) => scope.getByRole('button',{name,exact:true});
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
-    const shot = id => page.screenshot({path:out+'/'+name+'-'+id+'.png'});
+    const audioEvidence=[];
+    const expectedAudio={garden:'garden',atlas:'atlas',harbor:'harbor','harbor-ceremony':'song-harbor',battle:'battle','garden-return':'garden','forest-living-roots-ceremony':'song-forest','forest-to-forge':'forge'};
+    const shot = async id => {
+      if(process.env.CAT_BOND_AUDIO_ACCEPTANCE==='1'&&expectedAudio[id]){
+        await page.waitForFunction(track=>{const s=window.MorrowwishMusic?.status?.();return s?.track===track&&s.playing&&s.source==='recorded-mp3:'+track&&s.activeMusicSources<=2;},expectedAudio[id],{timeout:15000});
+        const audio=await page.evaluate(()=>MorrowwishMusic.status());
+        assert.equal(audio.audioState,'running');
+        audioEvidence.push({checkpoint:id,...audio});
+      }
+      return page.screenshot({path:out+'/'+name+'-'+id+'.png'});
+    };
     const checkObjective = operation => page.waitForFunction(op => CatBondResonance.view().objective.includes(op),operation);
     async function tapLandmark(x,y) {
       assert.deepEqual(errors,[],'No runtime errors before interacting with the world map');
@@ -467,7 +477,7 @@ try {
     });
     assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest'],slot:'slot1'});
     assert.deepEqual(errors,[]);
-    results.push({profile:name, captured, ...state, forestComplete:true,forgeEntered:true});
+    results.push({profile:name, captured, ...state, forestComplete:true,forgeEntered:true,audio:audioEvidence});
     await context.close();
   }
 } finally {

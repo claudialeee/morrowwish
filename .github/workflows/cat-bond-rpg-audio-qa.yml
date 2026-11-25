@@ -12,7 +12,7 @@ jobs:
   audio:
     if: github.head_ref == 'rpg/release-audio' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,10 +44,14 @@ jobs:
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           node scripts/cat-bond-rpg-audio-browser.mjs
+          CAT_BOND_AUDIO_ACCEPTANCE=1 node scripts/cat-bond-harbor-playthrough.mjs
+          node scripts/cat-bond-audio-smoke.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: cat-bond-audio-evidence
-          path: artifacts/cat-bond-audio/
+          path: |
+            artifacts/cat-bond-audio/
+            artifacts/cat-bond-harbor/results.json
           if-no-files-found: warn
           retention-days: 7
