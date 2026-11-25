@@ -857,6 +857,8 @@ async function syncOneSlot(token,id,force){
  return {slotId:id,ok:true,revision:data.revision,updatedAt:data.updatedAt};
 }
 async function syncNow(force=false,slotIds=null){
+ // Canonical release is local-only, even when a retired recovery key survives.
+ if(document.querySelector('meta[name="cat-bond-campaign"][content="last-resonance"]'))return {ok:false,disabled:true};
  if(restoringCloud)return {ok:false,restoring:true};
  const token=localStorage.getItem(CLOUD_KEY);
  if(!token)return {ok:false,disabled:true};
@@ -900,6 +902,7 @@ async function syncNow(force=false,slotIds=null){
 }
 const CLOUD_AUTOSYNC_INTERVAL_MS=60000;
 function queueSync(slotId=State.activeSlot(),immediate=false){
+ if(document.querySelector('meta[name="cat-bond-campaign"][content="last-resonance"]'))return Promise.resolve({ok:false,disabled:true});
  if(!localStorage.getItem(CLOUD_KEY))return Promise.resolve({ok:false,disabled:true});
  const ids=Array.isArray(slotId)?slotId.filter(id=>SAVE_SLOT_IDS.includes(id)):(SAVE_SLOT_IDS.includes(slotId)?[slotId]:[]);
  if(!ids.length)return Promise.resolve({ok:false,empty:true});
@@ -953,7 +956,7 @@ function openSlotManager(){
    const chapter=slot.corrupt?t('存档数据损坏','Damaged save'):slot.exists?(isZh()?slot.chapterLabelZh:slot.chapterLabelEn):t('空存档位','Empty slot');
    const region=isZh()?slot.regionLabelZh:slot.regionLabelEn;
    const details=slot.exists&&!slot.corrupt
-    ?region+' · '+t('游戏时间 ','Played ')+(isZh()?slot.gameTimeLabelZh:slot.gameTimeLabel)+' · '+slot.cats+t(' 只猫',' cats')
+    ?region+' · '+t('游戏时间 ','Played ')+(isZh()?slot.gameTimeLabelZh:slot.gameTimeLabel)+' · '+slot.regionCount+'/6 '+t('圣所','sanctuaries')+' · '+slot.cats+t(' 只猫',' cats')
     :slot.corrupt?t('无法读取此存档','This save cannot be read'):t('尚未开始冒险','No adventure started');
    const saved=slot.exists&&!slot.corrupt?(t('最后保存：','Last saved: ')+date):'';
    return '<article class="cb-slot-manager-row '+(slot.corrupt?'damaged-save':'')+'"><div><strong>'+
@@ -984,7 +987,7 @@ function openSlotManager(){
   list.querySelectorAll('[data-load]').forEach(btn=>btn.onclick=()=>{
    const id=btn.dataset.load;
    if(!confirm(t('读取存档位 ','Load Save Slot ')+window.State.listSaveSlots().find(x=>x.id===id)?.number+t(' 并重新载入游戏？当前进度会先自动保存到原存档位。',' and restart the game? Current progress will first be saved to its active slot.')))return;
-   if(playing&&id!==current){const saved=window.State.save();if(!saved?.ok){say(t('当前进度保存失败，未切换存档。','Could not save the current progress; the active slot was not changed.'));return;}}
+   if(playing){const saved=window.State.save();if(!saved?.ok){say(t('当前进度保存失败，未切换存档。','Could not save the current progress; the active slot was not changed.'));return;}}
    try{sessionStorage.setItem('catbond_resume_slot_v1',id);}
    catch(error){say(t('无法启动读档，请重试。','Could not prepare the load operation. Please retry.'));return;}
    State.hardReset();location.reload();
