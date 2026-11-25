@@ -43,7 +43,7 @@ function install(){
  function showKey(action){
   if(keyExchange||!root||!runtime.isCurrentAction(action))return;
   dialogue?.dispose();dialogue=null;
-  keyExchange=mountKeyExchange({root,language:lang,portrait:portrait("muling","epilogue:E-03",3),isCurrent:()=>runtime.isCurrentAction(action),commit:()=>runtime.completeNPCScene({sceneId:"epilogue:E-03",operation:"npc:second-garden-key",npcId:"muling",region:"garden",verified:true,token:action}),onComplete:()=>{close();scheduleFinish()},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value)});
+  keyExchange=mountKeyExchange({root,language:lang,portrait:portrait("muling","epilogue:E-03",3),isCurrent:()=>window.__game?.scene==="yard"&&runtime.isCurrentAction(action),commit:()=>window.__game?.scene!=="yard"?{ok:false,reason:"wrong-location"}:runtime.completeNPCScene({sceneId:"epilogue:E-03",operation:"npc:second-garden-key",npcId:"muling",region:"garden",verified:true,token:action}),onComplete:()=>{close();scheduleFinish()},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value)});
  }
  function showEndingTitle(){
   const ending=document.createElement("section");ending.className="cb-story-overlay is-visible res-ending-title";
@@ -65,6 +65,7 @@ function install(){
    if(scheduledRoot!==State.S)return;
    if(slot&&slot!==State.S){close();return}
    const v=runtime.view();if(!v.current)return;
+   if(["epilogue:E-02","epilogue:E-03"].includes(v.current.id)&&window.__game?.scene!=="yard"){if(root)close();return;}
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.cursor===v.current.lines.length){
     if(v.current.id==="epilogue:E-02"&&v.objective.includes("npc:public-accountability")){const r=runtime.completeNPCScene({sceneId:v.current.id,operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:runtime.capture()});if(!r.ok)return;scheduleFinish();return}
     if(v.current.id==="epilogue:E-03"&&v.objective.includes("npc:second-garden-key")){showKey(runtime.capture());return}
