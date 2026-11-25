@@ -1,7 +1,7 @@
 import "./narrative-host.mjs";
 import "./npc-world.mjs?v=sunlit-muling";
 import "./ambient-play.mjs";
-import "./world-runtime.mjs?v=storybook-ui";
+import "./world-runtime.mjs?v=guided-puzzles";
 import "./title-entry.mjs?v=storybook-starters";
 import "./garden-bell.mjs?v=sunlit-bell";
 import "./chapter-cinematics.mjs";

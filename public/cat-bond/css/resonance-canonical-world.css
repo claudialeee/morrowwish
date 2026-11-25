@@ -308,3 +308,9 @@
  #stage .rw-region-compact>.rw-camera-controls .rw-button{padding-inline:6px;font-size:10px}
  #stage .rw-region-compact>.rw-region-toggle{padding-inline:7px;font-size:10px}
 }
+
+#stage .rw-melody-controls [data-guide]{
+ outline:3px solid #795685;outline-offset:-4px;
+ box-shadow:0 0 0 2px #fff0bb;
+}
+#stage .rw-melody-controls [data-demo]:disabled{opacity:1}

@@ -33,7 +33,7 @@ const melodyPitches={
 };
 function playMelodyNote(puzzle,index){
  const pitch=melodyPitches[puzzle.operation.split(":")[1]]?.[index];
- if(pitch)window.MorrowwishAudio?.note?.(pitch,.36,.16);
+ if(pitch)if(!window.MorrowwishMusic?.cue?.("melody",pitch))window.MorrowwishAudio?.note?.(pitch,.36,.16);
 }
 
 const waterworksControls=[[.265,.39],[.50,.48],[.75,.56]];
@@ -132,6 +132,14 @@ function install(){
   const compact=!puzzle&&!ceremony;
   host.classList.toggle("rw-region-compact",compact);
   if(compact){
+   const view=current().view();
+   const upcoming=view.current?.chapter;
+   const nextRegion=layouts[upcoming];
+   if(nextRegion&&upcoming!==current().world().location&&view.regions.includes(upcoming)){
+    const journey=B(tr("继续旅程 · ","Continue journey · ")+tr(...nextRegion.name),()=>enterRegion(upcoming));
+    journey.classList.add("rw-journey-action");
+    rail.append(journey);
+   }
    const hint=host.querySelector(".rw-next");
    if(hint&&brand){const summary=brand.querySelector(".rw-fit-summary");if(summary){summary.textContent=hint.textContent;summary.title=hint.textContent;}}
    const toggle=B(tr("探索操作","Explore actions"),()=>{
@@ -296,7 +304,9 @@ function install(){
   row.classList.add("rw-melody-controls");
   const phrase=E("div","rw-melody-phrase");
   phrase.setAttribute("role","status");
-  const prompt=puzzle.values.length?tr("跟奏进度","Your echo"):puzzle.mistakes?tr("再试一次，或重播示范","Try again or replay the example"):tr("听一遍，再按亮起的顺序跟奏","Watch and listen, then echo the pattern");
+  const guided=puzzle.mistakes>=2;
+  const nextNote=puzzle.goal[puzzle.values.length];
+  const prompt=guided?tr("跟着亮起的铃，继续这段旋律","Follow the highlighted bell to continue"):puzzle.values.length?tr("跟奏进度","Your echo"):puzzle.mistakes?tr("开头走音了，试着重播示范","The phrase slipped. Replay the example and try again."):tr("先试听，再按亮起的顺序跟奏","Play the example, then echo the pattern");
   phrase.append(E("span","",prompt));
   const notes=puzzle.goal.map((_,index)=>{
    const marker=E("span","rw-melody-step",index<puzzle.values.length?"✓":String(index+1));
@@ -307,11 +317,13 @@ function install(){
   const keys=labels.map((label,index)=>{
    const key=B(tr(...label),()=>operate(index),!!ceremony);
    key.dataset.note=String(index);
+   if(guided&&index===nextNote)key.dataset.guide="";
    return key;
   });
   const demo=B(tr("播放示范","Play example"),()=>{
    const owner=State.S;
    demo.disabled=true;
+   for(const key of keys)key.disabled=true;
    const currentDemo=()=>row.isConnected&&owner===State.S&&game.scene==="map"&&explorer?.puzzle?.operation===puzzle.operation;
    puzzle.goal.forEach((index,step)=>{
     setTimeout(()=>{
@@ -329,7 +341,7 @@ function install(){
      delete notes[step].dataset.demo;
      if(!currentDemo())return;
      melodyDemoNote=-1;
-     if(step===puzzle.goal.length-1)demo.disabled=false;
+     if(step===puzzle.goal.length-1){demo.disabled=false;for(const key of keys)key.disabled=false;}
     },step*550+480);
    });
   },!!ceremony);
@@ -338,13 +350,21 @@ function install(){
   keypad.append(...keys,demo);
   row.append(phrase,keypad);
  }
- function operate(i){if(ceremony)return;const before=explorer.puzzle,p=before,op=explorer.active?.operation,owner=State.S;const correctNote=p?.goal?.[p.values.length]===i;const r=explorer.operate(i);if(before?.type==="skyFlight"&&r.pending){draw();return;}if(p?.type==="melody"&&r.ok){
-  playMelodyNote(p,i);
+ function operate(i){if(ceremony||host.querySelector(".rw-melody-demo:disabled"))return;const before=explorer.puzzle,p=before,op=explorer.active?.operation,owner=State.S;const correctNote=p?.goal?.[p.values.length]===i;const r=explorer.operate(i);if(before?.type==="skyFlight"&&r.pending){draw();return;}if(p?.type==="melody"&&r.ok){
+  if(correctNote)playMelodyNote(p,i);
+  else window.MorrowwishMusic?.cue?.("error");
   if(op==="melody:harbor"&&correctNote){
    const reply=melodyPitches.harbor[(i+1)%3]*2;
    setTimeout(()=>{if(owner===State.S&&game?.scene==="map")window.MorrowwishAudio?.note?.(reply)},160);
   }
- }if(r.ceremony){ceremony={owner:State.S,explorer,region:before.operation.split(":")[1],elapsed:0,notes:0};if(ceremony.region==="harbor")image("harbor-ceremony");render();return;}const result=op==="explore:tide-logbook"?["找到救援日志","Rescue log recovered"]:op==="rescue:storm-boat"?["救援船已安全入港","Rescue boat safely in harbor"]:op==="melody:harbor"?["归潮调 · 灯塔圣所已回应","Returning Tides · The sanctuary answers"]:["机关已完成","Mechanism restored"];report(r,r.ok&&!r.pending?result:"");render();}
+ }if(r.ceremony){ceremony={owner:State.S,explorer,region:before.operation.split(":")[1],elapsed:0,notes:0};if(ceremony.region==="harbor")image("harbor-ceremony");render();return;}const result=op==="explore:tide-logbook"?["找到救援日志","Rescue log recovered"]:op==="rescue:storm-boat"?["救援船已安全入港","Rescue boat safely in harbor"]:op==="melody:harbor"?["归潮调 · 灯塔圣所已回应","Returning Tides · The sanctuary answers"]:["机关已完成","Mechanism restored"];if(r.ok&&r.pending&&p?.type!=="melody"&&explorer.puzzle?.mistakes>p?.mistakes){
+  window.MorrowwishMusic?.cue?.("error");
+  report(r,["这一步还没接上。看一下机关提示，再试一次。","That step didn’t connect. Check the mechanism’s clues and try again."]);
+ }else{
+  if(r.ok&&!r.pending)window.MorrowwishMusic?.cue?.("reward");
+  report(r,r.ok&&!r.pending?result:"");
+ }
+ render();}
  function requestNpc(npcId,region){const sceneId=current().view().current?.id;if(sceneId)window.dispatchEvent(new CustomEvent("cat-bond-resonance-npc-request",{detail:{sceneId,npcId,region}}));}
  function requestBattle(op,region){const v=current().view();if(!v.current||!v.objective.includes(op))return;if(v.current.chapter==="finale"&&(!explorer||!explorer.near(layouts.starfall.paths.at(-1))))return;window.dispatchEvent(new CustomEvent("cat-bond-resonance-battle-request",{detail:{sceneId:v.current.id,operation:op,region}}));}
  function availableMemories(region){
@@ -430,7 +450,7 @@ function install(){
    const x=.3+i*.2,y=.52;
    ctx.fillStyle=tones[i];
    ctx.strokeStyle=melodyDemoNote===i?"#f8ab37":"#ad9476";
-   ctx.lineWidth=melodyDemoNote===i?5:2;
+   ctx.lineWidth=melodyDemoNote===i||(puzzle.mistakes>=2&&puzzle.goal[puzzle.values.length]===i)?5:2;
    ctx.beginPath();
    ctx.roundRect(x*W-57,y*H-38,114,76,14);
    ctx.fill();
