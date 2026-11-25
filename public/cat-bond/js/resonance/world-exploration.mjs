@@ -84,6 +84,7 @@ export function createExplorer(bridge,region){
  function interact(op){
   if(op==="explore:scent-trail"){const step=bridge.scentStep();return step?traceScent(step.index):{ok:false,reason:"walk-to-scent"};}
   const v=bridge.view(),f=layout.features[op];if(!f||v.current?.chapter!==region||!v.objective.includes(op)||!near(f))return {ok:false,reason:"walk-to-objective"};
+  if(op==="explore:tide-logbook"&&bridge.tideStep())return {ok:false,reason:"incomplete-tide-trail"};
   if(op==="puzzle:paired-water-gates"&&!bridge.pairedGate()?.ready)return {ok:false,reason:"upper-gate-required"};
   if(op.startsWith("battle:"))return {ok:false,reason:"battle-host-required"};
   if(v.current.id==="harbor:H-04"){
@@ -97,6 +98,7 @@ export function createExplorer(bridge,region){
   return complete();
  }
  function holdUpperGate(){const gate=bridge.pairedGate();if(!gate||!near(gate.point))return {ok:false,reason:"walk-to-upper-gate"};return bridge.holdUpperGate(bridge.capture());}
+ function traceTide(index){const step=bridge.tideStep();if(!step||step.index!==index||!near(step.point)||puzzle)return {ok:false,reason:"walk-to-tide"};return bridge.traceTide(index,bridge.capture());}
  function traceScent(index){const step=bridge.scentStep();if(!step||step.index!==index||!near(step.point))return {ok:false,reason:"walk-to-scent"};return bridge.traceScent(index,bridge.capture());}
  function startHomeRepair(){
   const q=bridge.homeQuest(region);if(!q||q.repaired||!near(q.point)||puzzle)return {ok:false,reason:"postgame-repair-unavailable"};
@@ -133,5 +135,5 @@ export function createExplorer(bridge,region){
  function rewardPoints(){return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}
- return {walk,tick,interact,operate,cancel,complete,traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
+ return {walk,tick,interact,operate,cancel,complete,traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
 }

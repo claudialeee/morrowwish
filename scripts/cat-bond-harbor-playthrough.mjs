@@ -152,6 +152,12 @@ try {
     await shot('dialogue');
     await readDialogue('harbor:H-02','Comfort Qilan first');
     await scene('harbor:H-03');
+    await button('Inspect the ebb marks · 1/2').waitFor();
+    await tapLandmark(.82,.45);
+    await button('Find the dry steps · 2/2').waitFor();
+    await shot('harbor-ebb-marks');
+    await tapLandmark(.80,.682);
+    await button('Tide cave logbook').waitFor();
     await puzzle('Tide cave logbook',['Ebb mark','Dry steps','Logbook chest']);
     await readDialogue('harbor:H-03');
     await scene('harbor:H-04');
