@@ -6,7 +6,7 @@ const assetRoot=new URL('../assets/audio/',document.currentScript.src);
 let manifestTask=null;const recordedIds=new Set();
  const qualityRoot=new URL('../assets/quality-audio/',document.currentScript.src);
  const forestOriginal=/(?:^|[?&])forestAudio=original(?:&|$)/.test(window.location?.search||'');
- const cozyIds=new Set(['title','garden','atlas','harbor','forest','postgarden']);const qualityMusicIds=new Set();let sharedCozy=null;const qualityBuffers=new Map(),qualityNodes=new Set();
+ const premiumIds=new Map();let premiumManifestTask=null;const qualityBuffers=new Map(),qualityNodes=new Set();
  const qualityNames=['bell-g4','bell-c5','bell-e5','water-splash'];
  async function decodeQuality(id){const response=await fetch(new URL(id+'.ogg',qualityRoot));if(!response.ok)throw Error('Quality audio HTTP '+response.status);const bytes=await response.arrayBuffer(),O=window.OfflineAudioContext||window.webkitOfflineAudioContext;return new O(2,1,24000).decodeAudioData(bytes);}
  function preloadQuality(){for(const id of qualityNames)if(!qualityBuffers.has(id)){qualityBuffers.set(id,null);decodeQuality(id).then(b=>qualityBuffers.set(id,b)).catch(()=>qualityBuffers.delete(id));}}
@@ -20,7 +20,24 @@ let manifestTask=null;const recordedIds=new Set();
 // Preserve loop duration while removing the small discontinuity at the decoded MP3 join.
 function smoothLoop(buffer){const edge=Math.min(Math.round(buffer.sampleRate*.008),Math.floor(buffer.length/4));if(edge<2)return;for(let c=0;c<buffer.numberOfChannels;c++){const a=buffer.getChannelData(c),last=a.length-1,middle=(a[0]+a[last])*.5;const firstDelta=middle-a[0];for(let i=0;i<edge;i++){const weight=.5+.5*Math.cos(Math.PI*i/(edge-1));a[i]+=firstDelta*weight;}const delta=middle-a[last];for(let i=0;i<edge;i++){const weight=.5+.5*Math.cos(Math.PI*i/(edge-1));a[last-i]+=delta*weight;}}}
 function assetManifest(){return manifestTask??=(fetch(new URL('manifest.json',assetRoot),{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null));}
-async function loadRecorded(id){if(cozyIds.has(id)&&!(id==='forest'&&forestOriginal)){try{if(!sharedCozy)sharedCozy=decodeQuality('enchanted-valley').then(b=>{smoothLoop(b);return b;}).catch(e=>{sharedCozy=null;throw e;});const b=await sharedCozy;qualityMusicIds.add(id);recordedIds.add(id);return b;}catch{qualityMusicIds.delete(id);}}const manifest=await assetManifest(),entry=manifest?.tracks?.[id];if(!entry)return null;try{const response=await fetch(new URL(entry.file,assetRoot));if(!response.ok)throw Error('Audio HTTP '+response.status);const bytes=await response.arrayBuffer();const O=window.OfflineAudioContext||window.webkitOfflineAudioContext;const decoder=new O(2,1,24000);const decoded=await decoder.decodeAudioData(bytes);const samples=Math.min(decoded.length,Math.round(entry.seconds*decoded.sampleRate));const trim=decoder.createBuffer(decoded.numberOfChannels,samples,decoded.sampleRate);for(let c=0;c<decoded.numberOfChannels;c++)trim.copyToChannel(decoded.getChannelData(c).subarray(0,samples),c);if(!id.startsWith('song-'))smoothLoop(trim);recordedIds.add(id);return trim;}catch{return null;}}
+function premiumManifest(){return premiumManifestTask??=fetch(new URL('premium-manifest.json',qualityRoot),{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null);}
+async function loadPremium(id){
+ if(id.startsWith('song-')||(id==='forest'&&forestOriginal))return null;
+ const m=await premiumManifest(),name=m?.schema===1&&m?.scenes?.[id],e=name&&m?.tracks?.[name];
+ if(!e||!/^premium-[a-z0-9-]+\.mp3$/.test(e.file)||e.seconds<40||e.seconds>480)return null;
+ try{const r=await fetch(new URL(e.file,qualityRoot));if(!r.ok)throw Error('missing premium track');
+ const O=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+ // Preserve stereo; bound mobile decode footprint. Original mix is encoded at 44.1 kHz.
+ const mobile=window.matchMedia?.('(pointer:coarse)')?.matches,rate=mobile?32000:44100;
+ const b=await new O(2,1,rate).decodeAudioData(await r.arrayBuffer());
+ if(b.duration<40||Math.abs(b.duration-e.seconds)>1)throw Error('premium duration mismatch');
+ smoothLoop(b);premiumIds.set(id,name);recordedIds.add(id);return b;
+ }catch{premiumIds.delete(id);return null;}
+}
+async function loadRecorded(id){const premium=await loadPremium(id);if(premium)return premium;
+ if(id==='forest'&&!forestOriginal){try{const b=await decodeQuality('enchanted-valley');smoothLoop(b);recordedIds.add(id);return b;}catch{}}
+ const manifest=await assetManifest(),entry=manifest?.tracks?.[id];if(!entry)return null;try{const response=await fetch(new URL(entry.file,assetRoot));if(!response.ok)throw Error('Audio HTTP '+response.status);const bytes=await response.arrayBuffer();const O=window.OfflineAudioContext||window.webkitOfflineAudioContext;const decoder=new O(2,1,24000);const decoded=await decoder.decodeAudioData(bytes);const samples=Math.min(decoded.length,Math.round(entry.seconds*decoded.sampleRate));const trim=decoder.createBuffer(decoded.numberOfChannels,samples,decoded.sampleRate);for(let c=0;c<decoded.numberOfChannels;c++)trim.copyToChannel(decoded.getChannelData(c).subarray(0,samples),c);if(!id.startsWith('song-'))smoothLoop(trim);recordedIds.add(id);return trim;}catch{return null;}}
+
 const key='cat-bond-rpg-audio-v1',clamp=n=>Math.max(0,Math.min(1,Number(n)||0));
 let prefs={enabled:true,music:.65,fx:.8};
 try{const old=JSON.parse(localStorage.getItem(key)||'null');if(old)prefs={enabled:old.enabled!==false,music:typeof old.music==='number'?clamp(old.music):.65,fx:typeof old.fx==='number'?clamp(old.fx):.8};else prefs.enabled=localStorage.getItem('morrowwish-music-enabled')!=='0';}catch{}
@@ -34,7 +51,7 @@ function musicMix(id){
  return {low:dramatic?-2:ceremony?-2.5:-3.5,high:dramatic?1:1.8,rate:1};
 }
 function connectMusic(source,gain,id){
- const profile=musicMix(id);if(source.playbackRate)source.playbackRate.value=profile.rate;
+ const profile=premiumIds.has(id)?{low:0,high:0,rate:1}:musicMix(id);if(source.playbackRate)source.playbackRate.value=profile.rate;
  if(typeof ctx.createBiquadFilter!=='function'){source.connect(gain);gain.connect(bus);return [];}
  const bass=ctx.createBiquadFilter(),air=ctx.createBiquadFilter();bass.type='lowshelf';bass.frequency.value=210;bass.gain.value=profile.low;air.type='highshelf';air.frequency.value=1900;air.gain.value=profile.high;
  source.connect(bass);bass.connect(air);air.connect(gain);gain.connect(bus);return [bass,air];
@@ -55,7 +72,7 @@ async function getBuffer(id){
  const task=renderQueue.then(async()=>{if(id!==desired&&pending?.id!==id&&id!=='song-'+read().amb)throw Error('Superseded audio request');return await loadRecorded(id)||await score.render(id);});renderQueue=task.catch(()=>{});cache.set(id,task);
  try{const b=await task;cacheBytes.set(id,b.length*b.numberOfChannels*4);trimCache(id);return b;}catch(e){cache.delete(id);cacheBytes.delete(id);throw e;}
 }
-function trimCache(keep){let bytes=[...cacheBytes.values()].reduce((n,b)=>n+b,0);for(const id of cache.keys()){if(cache.size<=3&&bytes<=24*1024*1024)break;if(id===keep||id===active?.id||id===retiring?.id||id===pending?.id||!cacheBytes.has(id))continue;bytes-=cacheBytes.get(id);cacheBytes.delete(id);cache.delete(id);}}
+function trimCache(keep){let bytes=[...cacheBytes.values()].reduce((n,b)=>n+b,0);for(const id of cache.keys()){if(cache.size<=2&&bytes<=48*1024*1024)break;if(id===keep||id===active?.id||id===retiring?.id||id===pending?.id||!cacheBytes.has(id))continue;bytes-=cacheBytes.get(id);cacheBytes.delete(id);cache.delete(id);}}
 function cancelCinematicSounds(){for(const n of cinematicVoiceNodes){try{n.stop();}catch{}}cinematicVoiceNodes.clear();}
 function cue(kind,frequency=0){
  if(!ctx||!unlocked||hidden||paused||window.MorrowwishAudio?.isEnabled?.()===false||!prefs.fx)return false;
@@ -90,12 +107,11 @@ function select(id){
  getBuffer(id).then(buffer=>{
   if(token!==serial||desired!==id||!prefs.enabled||hidden||paused)return;
   pending=null;const old=active;
-  if(old&&!old.stopping&&old.buffer===buffer&&qualityMusicIds.has(old.id)&&qualityMusicIds.has(id)){old.id=id;blocked=false;unavailable=false;trimCache(id);return;}
-  const source=ctx.createBufferSource(),gain=ctx.createGain(),switchTime=now(),t=switchTime+(old?.source? .14 : 0);
-  source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(1,t+.25);const filters=connectMusic(source,gain,id);
+  const source=ctx.createBufferSource(),gain=ctx.createGain(),switchTime=now(),t=switchTime;
+  source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(1,t+.65);const filters=connectMusic(source,gain,id);
   const next={id,source,gain,buffer,filters,started:t,stopping:false};active=next;
   musicSources.add(next);source.onended=()=>{musicSources.delete(next);if(retiring===next)retiring=null;source.disconnect();gain.disconnect();for(const filter of filters)filter.disconnect();if(active===next){active=null;if(ceremony?.id===id){if(ceremony.visual&&ceremony.root===root)performedVisual.add(ceremony.region);ceremony=null;}tick();}trimCache(desired);};
-  if(retiring&&retiring!==old){try{retiring.gain.gain.setValueAtTime(0,now());retiring.source.stop(now());}catch{}}retiring=old;dispose(old,.13,switchTime);source.start(t);blocked=false;unavailable=false;
+  if(retiring&&retiring!==old){try{retiring.gain.gain.setValueAtTime(0,now());retiring.source.stop(now());}catch{}}retiring=old;dispose(old,.65,switchTime);source.start(t);blocked=false;unavailable=false;
   if(ceremony?.id===id)ceremony.started=true;
  }).catch(()=>{if(token===serial){pending=null;unavailable=true;lastErrorAt=Date.now();}});
 }
@@ -244,5 +260,5 @@ document.addEventListener('pointerdown',gesture,{capture:true,passive:true});doc
 document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',()=>{hidden=true;stopQuality();++serial;pending=null;ctx?.suspend().catch(()=>{});});window.addEventListener('pageshow',visibility);
 window.addEventListener('cat-bond-resonance-changed',tick);window.addEventListener('cat-bond-active-save-changed',()=>{clear();root=null;ceremony=null;tick();});
 setInterval(tick,250);
-window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;stopVoices();clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,cue,qualityCue,stopQuality,skipCeremony,cancelCinematicSounds,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?(qualityMusicIds.has(active.id)?'quality-ogg:enchanted-valley':(recordedIds.has(active.id)?'recorded-mp3:':'original-score:')+active.id):null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,duration:active?.buffer?.duration||0,audioState:ctx?.state||'not-created',cache:cache.size,decodedCacheBytes:[...cacheBytes.values()].reduce((n,b)=>n+b,0),activeMusicSources:musicSources.size,pending:pending?.id||null,ambient:ambId,ceremony:ceremony?.region||null,regionalResponses:[...supportSeen],responseVoices:voiceNodes.size,qualitySamplesReady:qualityNames.filter(id=>!!qualityBuffers.get(id)).length,qualityVoices:qualityNodes.size})});
+window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;stopVoices();clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,cue,qualityCue,stopQuality,skipCeremony,cancelCinematicSounds,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?(premiumIds.has(active.id)?'premium-mp3:'+premiumIds.get(active.id):(recordedIds.has(active.id)?'recorded-mp3:':'original-score:')+active.id):null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,duration:active?.buffer?.duration||0,audioState:ctx?.state||'not-created',cache:cache.size,decodedCacheBytes:[...cacheBytes.values()].reduce((n,b)=>n+b,0),activeMusicSources:musicSources.size,pending:pending?.id||null,ambient:ambId,ceremony:ceremony?.region||null,regionalResponses:[...supportSeen],responseVoices:voiceNodes.size,qualitySamplesReady:qualityNames.filter(id=>!!qualityBuffers.get(id)).length,qualityVoices:qualityNodes.size})});
 })();

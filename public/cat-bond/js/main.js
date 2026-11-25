@@ -362,6 +362,7 @@ function installCatBondSystemMenu(){
    const credit=document.createElement('p');credit.className='cb-music-credit';
    credit.append(document.createTextNode('Music: Enchanted Valley — Kevin MacLeod (incompetech.com), '));
    const license=document.createElement('a');license.href='https://creativecommons.org/licenses/by/4.0/';license.target='_blank';license.rel='noopener noreferrer';license.textContent='CC BY 4.0';credit.append(license,document.createTextNode(' · Opus transcode'));
+   const soundtrack=document.createElement('a');soundtrack.href='assets/quality-audio/music-credits.html';soundtrack.target='_blank';soundtrack.rel='noopener noreferrer';soundtrack.textContent=t('全部音乐候选试听与署名','Soundtrack auditions & credits');credit.append(document.createElement('br'),soundtrack);
    menu.querySelector('.cb-system-rows').append(credit);
   }
   menu.querySelectorAll('[data-system]').forEach(btn=>bindMenuPress(btn,async()=>{

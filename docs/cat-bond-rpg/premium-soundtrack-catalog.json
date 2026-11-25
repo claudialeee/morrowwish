@@ -1,0 +1,229 @@
+{
+  "schema": 1,
+  "review": "candidate-not-listening-approved",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "scenes": {
+    "title": "world-of-magic",
+    "opening": "within-our-nature",
+    "garden": "childhood",
+    "atlas": "the-climb",
+    "harbor": "castles-in-the-sky",
+    "forest": "enchanted-valley",
+    "forge": "katabasis-ii",
+    "sky": "discovery",
+    "library": "solace",
+    "starfall": "the-illusionist",
+    "betrayal": "the-illusionist",
+    "battle": "jade",
+    "boss-harbor": "hunted",
+    "boss-forest": "hunted",
+    "boss-forge": "hunted",
+    "boss-sky": "hunted",
+    "boss-library": "hunted",
+    "boss-starfall": "hunted",
+    "finale1": "hunted",
+    "finale2": "ascension",
+    "finale3": "where-stars-fall",
+    "muling": "the-long-way-home",
+    "ending": "the-long-way-home",
+    "identity": "reverie",
+    "postgarden": "the-restoration"
+  },
+  "tracks": {
+    "world-of-magic": {
+      "title": "World of Magic",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/world-of-magic/",
+      "download": "https://www.scottbuckley.com.au/wp-content/audio/sb_worldofmagic.mp3",
+      "scenes": [
+        "title"
+      ],
+      "notes": "Classic RPG orchestral opening; review the three sections for title-menu fit."
+    },
+    "within-our-nature": {
+      "title": "Within Our Nature",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/within-our-nature/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2023/05/WithinOurNature.mp3",
+      "scenes": [
+        "opening"
+      ],
+      "notes": "Long-form emotional piano and strings; opening remains continuous."
+    },
+    "childhood": {
+      "title": "Childhood",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/childhood/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2019/01/sb_childhood.mp3",
+      "scenes": [
+        "garden"
+      ],
+      "notes": "Gentle piano and strings, warm and intimate."
+    },
+    "the-climb": {
+      "title": "The Climb",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/the-climb/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2021/02/sb_theclimb.mp3",
+      "scenes": [
+        "atlas"
+      ],
+      "notes": "Journey and discovery, slow orchestral rise."
+    },
+    "castles-in-the-sky": {
+      "title": "Castles in the Sky",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/castles-in-the-sky/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2021/11/sb_castlesinthesky.mp3",
+      "scenes": [
+        "harbor"
+      ],
+      "notes": "Soft piano and mallets, relaxed port-town atmosphere."
+    },
+    "enchanted-valley": {
+      "title": "Enchanted Valley",
+      "author": "Kevin MacLeod (incompetech.com)",
+      "license": "CC BY 4.0",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093",
+      "local": "enchanted-valley.ogg",
+      "scenes": [
+        "forest"
+      ],
+      "notes": "Existing forest-only candidate. Preserve previously imported recording."
+    },
+    "katabasis-ii": {
+      "title": "Katabasis II",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/katabasis-ii/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2026/09/Katabasis_II.mp3",
+      "scenes": [
+        "forge"
+      ],
+      "notes": "Rhythmic strings and restrained optimism, not pounding machinery."
+    },
+    "discovery": {
+      "title": "Discovery",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/discovery/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/01/sb_discovery.mp3",
+      "scenes": [
+        "sky"
+      ],
+      "notes": "Expansive heroic flight and sweeping orchestration."
+    },
+    "solace": {
+      "title": "Solace",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/solace/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/05/sb_solace.mp3",
+      "scenes": [
+        "library"
+      ],
+      "notes": "Contemplative piano and glass marimba."
+    },
+    "the-illusionist": {
+      "title": "The Illusionist",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/the-illusionist/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2019/07/sb_theillusionist.mp3",
+      "scenes": [
+        "starfall",
+        "betrayal"
+      ],
+      "notes": "Mysterious orchestra and choir; intentional thematic reprise."
+    },
+    "jade": {
+      "title": "Jade",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/jade/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2014/07/sb_jade.mp3",
+      "scenes": [
+        "battle"
+      ],
+      "notes": "Adventurous full orchestra; normal battle theme."
+    },
+    "hunted": {
+      "title": "Hunted",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/hunted/",
+      "download": "https://www.scottbuckley.com.au/wp-content/audio/sb_hunted.mp3",
+      "scenes": [
+        "boss-harbor",
+        "boss-forest",
+        "boss-forge",
+        "boss-sky",
+        "boss-library",
+        "boss-starfall",
+        "finale1"
+      ],
+      "notes": "Action orchestra; common boss leitmotif, not six identical exploration tracks."
+    },
+    "ascension": {
+      "title": "Ascension",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/ascension/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2019/02/sb_ascension.mp3",
+      "scenes": [
+        "finale2"
+      ],
+      "notes": "Orchestral adversity and hope."
+    },
+    "where-stars-fall": {
+      "title": "Where Stars Fall",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/where-stars-fall/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2021/02/sb_wherestarsfall.mp3",
+      "scenes": [
+        "finale3"
+      ],
+      "notes": "Uplifting brass, strings and choir for final resolution."
+    },
+    "the-long-way-home": {
+      "title": "The Long Way Home",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/the-long-way-home/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2021/05/sb_thelongwayhome.mp3",
+      "scenes": [
+        "muling",
+        "ending"
+      ],
+      "notes": "Nostalgic piano, reunion motif."
+    },
+    "reverie": {
+      "title": "Reverie",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/reverie/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/03/sb_reverie.mp3",
+      "scenes": [
+        "identity"
+      ],
+      "notes": "Dreamlike piano and strings."
+    },
+    "the-restoration": {
+      "title": "The Restoration",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/the-restoration/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2019/07/sb_monomyth_12_therestoration.mp3",
+      "scenes": [
+        "postgarden"
+      ],
+      "notes": "Quiet return home, after the adventure."
+    }
+  }
+}
