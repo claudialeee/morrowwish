@@ -9,7 +9,7 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  // The same line can re-render on a narrative revision or language toggle.
  // Do not cancel an in-flight portrait decode by assigning its unchanged URL.
  function setPortrait(url){if(!url){art.hidden=true;if(art.hasAttribute("src"))art.removeAttribute("src");return;}if(art.getAttribute("src")!==url)art.setAttribute("src",url);art.hidden=false;}
- const buttons={};let timer=0,automatic=false,showHistory=false,disposed=false,lastScene=null,sessionHistory=[],speed=1;
+ const buttons={};let timer=0,automatic=false,showHistory=false,disposed=false,lastScene=null,sessionHistory=[],speed=1,lastCut=null;
  const words={zh:{next:"继续",auto:"自动",stop:"停止自动",skip:"跳过对白",history:"对白记录",close:"关闭",wait:"继续探索以推进剧情",speed:"播放速度",scene:"剧情对话"},en:{next:"Continue",auto:"Auto",stop:"Stop auto",skip:"Skip dialogue",history:"History",close:"Close",wait:"Continue exploring to advance the story",speed:"Playback speed",scene:"Story dialogue"}};
  const lang=()=>language()==="zh"?"zh":"en";
  const displayName=(id,s,k)=>id==='player'&&campaign.scenes.findIndex(x=>x.id===s.id)<campaign.scenes.findIndex(x=>x.id==='library:M-03')?(k==='zh'?'你':'You'):campaign.cast[id].name[k];
@@ -25,6 +25,12 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  context.hidden=!(s.id==='prologue:P-05'&&v.cursor===0);context.textContent=context.hidden?'':(k==='zh'?'暮铃告诉你，六地的猫正在失去记忆。她邀请你一起恢复圣所。':'Muling explains that cats across the six regions are losing their memories. She asks you to help restore the sanctuaries.');
  const harborContext=s.id==="harbor:H-03"&&!v.objective.includes("explore:tide-logbook")?["救援日志：当年岬灯关掉灯塔，救援船失去方向，但船员全部幸存。","Rescue log: Jiedeng extinguished the beacon. The rescue vessel lost its bearing, but its crew survived."]:s.id==="harbor:H-05"&&!v.objective.includes("melody:harbor")?["归潮调 · 港口居民忆起同伴与旧航路，补给船即将驶向眠根林。","Returning Tides · The harbor remembers its companions and old routes. A supply vessel will sail toward Rootsleep Forest."]:null;
  if(harborContext){context.hidden=false;context.textContent=harborContext[k==="zh"?0:1];}context.classList.toggle("res-harbor-context",!!harborContext);panel.dataset.speaker=l?.speaker||"";
+ if(s.id==="starfall:F-03"){
+  const recalled=v.cursor>=8&&v.cursor<=10&&window.__CAT_BOND_INTEGRATION_ART__===true,cut=recalled?"waiting":"ruin";
+  if(lastCut!==cut){lastCut=cut;const file=recalled?"../../assets/cinematics/prologue/waiting-at-workbench.webp":"../../assets/resonance-world-v2/starfall.webp";root.style.backgroundImage="linear-gradient(0deg,rgba(8,13,30,.70),rgba(8,13,30,.22)),url("+new URL(file,import.meta.url).href+")";root.style.backgroundPosition="center";root.style.backgroundSize="cover";if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches)panel.animate?.([{opacity:.35,transform:"translateY(5px)"},{opacity:1,transform:"translateY(0)"}],{duration:420,easing:"ease-out"});}
+  if(v.cursor===8||v.cursor===14){context.hidden=false;context.textContent=v.cursor===8?(k==="zh"?"旧铃坠在她的爪间停住。":"The old pendant falls still between her paws."):(k==="zh"?"暮铃避开你的目光。":"Muling looks away.");}
+ }
+ if(s.id==="starfall:F-04"&&v.ring&&v.lineReady){context.hidden=false;context.textContent=k==="zh"?"星芽：各地保留自己的决定权，我来协调。砾川：通往霁潮港的航路已经重新开放。":"Xingya: Each region keeps its own decisions. I will coordinate. Lichuan: The route to Misttide Harbor is open again.";}
  const choiceVisible=!v.choice&&s.choices.length&&(s.choiceTiming==="beforeAction"||v.cursor===s.lines.length);
  if(choiceVisible)for(const c of s.choices){const b=el("button");b.type="button";b.textContent=c.label[k];b.addEventListener("click",()=>{if(persist(engine.choose(c.id)))render()});choices.append(b)}
  if(l){const actor=campaign.cast[l.speaker],url=l.narration?null:resolvePortrait(l.speaker,s.id,v.cursor);if(!url){panel.hidden=false;setPortrait(null);name.textContent=l.narration?s.title[k]:displayName(l.speaker,s,k);line.textContent=l.text[k];if(l.narration)delete panel.dataset.missingPortrait;else panel.dataset.missingPortrait=l.speaker}else{panel.hidden=false;setPortrait(url);delete panel.dataset.missingPortrait;name.textContent=displayName(l.speaker,s,k);line.textContent=l.text[k]}}

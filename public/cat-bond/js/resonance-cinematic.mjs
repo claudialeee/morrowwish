@@ -31,7 +31,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
     if(unique.has(asset.path))return bad('repeated-shot-art');unique.add(asset.path);
     if(!isBilingual(shot.alt)||!Number.isFinite(shot.durationMs)||shot.durationMs<1200||shot.durationMs>20000||!Array.isArray(shot.lines))return bad('invalid-shot');
     const base={id:scene.id+'-shot-'+i,image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,focus:shot.focus,transitionMs:shot.transitionMs||520,effect:shot.effect};
-    if(!shot.lines.length)frames.push({...base,shotDurationMs:base.durationMs,shotOffsetMs:0});
+    if(!shot.lines.length){const caption=recalled&&isBilingual(shot.caption)?{zh:{speaker:'',text:shot.caption.zh},en:{speaker:'',text:shot.caption.en}}:undefined;frames.push({...base,subtitle:caption,shotDurationMs:base.durationMs,shotOffsetMs:0});}
     const duration=index=>Math.max(2600,Math.min(11000,1100+scene.lines[index].text.en.length*70));
     const total=shot.lines.reduce((sum,index)=>sum+(scene.lines[index]?duration(index):0),0)+(shot.effect==='seal'?4200:0);
     let offset=0;

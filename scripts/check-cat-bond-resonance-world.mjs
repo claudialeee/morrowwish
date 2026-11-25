@@ -6,8 +6,8 @@ console.log(JSON.stringify((function test(src){
  const campaign=new Function(clean(src[0])+"\nreturn campaign")();
  const makeEngine=new Function(clean(src[1])+"\nreturn makeEngine")();
  const getSlotRuntime=new Function("campaign","makeEngine",clean(src[2])+"\nreturn getSlotRuntime")(campaign,makeEngine);
- const createWorldBridge=new Function("campaign","getSlotRuntime",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime);
- const {createExplorer,exchangeOptions,layouts}=new Function("campaign",clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign);
+ const {createExplorer,exchangeOptions,layouts,puzzleSpecs}=new Function("campaign",clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts,puzzleSpecs}")(campaign);
+ const createWorldBridge=new Function("campaign","getSlotRuntime","layouts","puzzleSpecs",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime,layouts,puzzleSpecs);
  const storage=new Map(),ls={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},window={};
  new Function("window","localStorage",src[5])(window,ls);
  const State=window.State,assert=(x,m)=>{if(!x)throw Error(m)},ok=(r,m)=>assert(r?.ok,m+": "+r?.reason);

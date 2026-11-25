@@ -1958,10 +1958,11 @@ export const campaign = {
         }
       ],
       "requires": [
-        "npc:central-dispute"
+        "npc:central-dispute",
+        "npc:central-dispute-lichuan"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": ["npc:central-dispute","npc:central-dispute-lichuan"],
       "choiceTiming": "afterDialogue"
     },
     {
