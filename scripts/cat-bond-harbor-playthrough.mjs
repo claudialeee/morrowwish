@@ -714,8 +714,8 @@ try {
       const convo=page.locator('.res-home-conversation');await convo.waitFor();
       assert.equal(await convo.locator('.res-speaker').innerText(),id==='lingyu'?'Lingyu':'Yuanfan');
       const line=await convo.locator('.res-line').innerText();
-      if(id==='lingyu'&&name==='portrait')assert(line.includes('training together'));
-      if(id==='yuanfan'&&name!=='portrait')assert(line.includes('take the lead')||line.includes('lead'));
+      if(id==='lingyu'&&name==='portrait')assert.equal(line,'During our training he told me when he needed help. Now I ask before lending a paw.');
+      if(id==='yuanfan'&&name!=='portrait')assert.equal(line,'Thank you for letting me lead. I delivered today\'s letters myself. My sister is waiting at the dock.');
       await button('中文',convo).click();await convo.getByRole('button',{name:'关闭',exact:true}).waitFor();await shot('sky-home-'+id+'-zh');
       await convo.getByRole('button',{name:'English',exact:true}).click();await button('Close',convo).click();
     }
