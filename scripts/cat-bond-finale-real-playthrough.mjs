@@ -95,6 +95,28 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  // promise in the same save before attempting its finale-only effect.
  if(startAtFinale){await gotoRegion('starfall');await ensureDuo('Starfall Expanse');}
  assert.ok(await page.evaluate(()=>{const p=CatRelations.chosen();return p.length===2&&CatRelations.memoryList(...p).includes('sakura');}),'Earned forest promise before finale');
+ // Earlier chapters may have saved the strongest roster rather than the
+ // pledged pair. Put the two actual cats on the field through the Book's
+ // normal roster controls; never edit the save or the combat team directly.
+ const pairIds=await page.evaluate(()=>CatRelations.chosen().map(c=>c.uid));
+ const teamIds=await page.evaluate(()=>UI.getPreferredBattleTeam().map(c=>c.uid));
+ if(!pairIds.every(uid=>teamIds.slice(0,2).includes(uid))){
+  await button('Resonance Book',page.locator('.rw-head')).click();
+  await page.locator('[data-book-tab="party"]').click();
+  const roster=teamIds.slice();
+  for(const [position,uid] of pairIds.entries()){
+   if(!roster.includes(uid)){
+    await page.locator('.map-squad-choice[data-uid="'+uid+'"]').click();
+    if(roster.length>=5)roster[roster.length-1]=uid;else roster.push(uid);
+   }
+   for(let i=roster.indexOf(uid);i>position;i--){
+    await page.locator('#panel [data-order-index="'+i+'"][data-order-shift="-1"]').click();
+    [roster[i-1],roster[i]]=[roster[i],roster[i-1]];
+   }
+  }
+  await page.locator('#map-squad-save').click();await page.locator('#panel.open').waitFor({state:'hidden'});
+ }
+ assert.ok(await page.evaluate(()=>{const p=CatRelations.chosen();return p.every(c=>UI.getPreferredBattleTeam().slice(0,2).some(t=>t.uid===c.uid));}),'Both pledged cats must be on the actual starting team');
  const before=await page.evaluate(()=>JSON.stringify(State.S.resonance));await beginBattle('Approach the Star Bell');
  await shot('B-01-retreat');assert.equal(await page.locator('[data-finale-regions] meter').count(),6);await page.locator('#btn-flee').click();assert.equal(await finishBattle(),'Safe withdrawal','Actual retreat result');
  assert.equal(await page.evaluate(()=>JSON.stringify(State.S.resonance)),before,'Retreat must not award any story progress');
