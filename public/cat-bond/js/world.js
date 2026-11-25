@@ -1048,6 +1048,8 @@ class YardScene {
     for(const e of actors){
       e._buildTarget=null;e._playBuildT=0;e._playBuildDef=null;e._playBuilding=null;e._buildUse=null;
     }
+    // Reserve this facility for the chosen pair; a queued third cat must not steal the visit.
+    for(const e of this.entities)if(!actors.includes(e)&&e._buildTarget===b)e._buildTarget=null;
     this._duoFacility={building:b,ids:pair.map(c=>c.uid),index:0,arrived:false};
     actors[0]._buildTarget=b;actors[0].setPose('walk',1.4);
     return true;
@@ -1069,9 +1071,17 @@ class YardScene {
       return;
     }
     this._duoFacility=null;
-    // A normal facility visit has already awarded the standard pair benefit
-    // via rewardBuildingVisit. Save both completed activity poses' joy too.
-    State.save();this.game.refreshHUD?.();
+    // Only reward the exact two actors after both actual activity timers finish.
+    // Passive visitors cannot consume the facility's bond cooldown mid-session.
+    const pair=a.ids.map(id=>State.S.cats.find(c=>c.uid===id)),now=Date.now();
+    let bond=null,oldValue,oldBondAt;
+    if(pair.every(Boolean)&&window.CatRelations&&now-(b.lastBondAt||0)>75000){
+      bond=CatRelations.pair(...pair);oldValue=bond.value;oldBondAt=b.lastBondAt;
+      CatRelations.grow(...pair,buildingLevel(b)>=3?2:1);b.lastBondAt=now;
+    }
+    const saved=State.save();
+    if(saved?.ok===false&&bond){bond.value=oldValue;b.lastBondAt=oldBondAt;}
+    this.game.refreshHUD?.();
     this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'双猫完成了共同活动！':'Your duo finished playing together!');
   }
   // ---- resident cats visit their play-structures and PLAY ----
@@ -1173,7 +1183,7 @@ class YardScene {
     if(!up)return;
     const level=buildingLevel(b);
     const lastUid=b.lastVisitorUid;
-    if(lastUid&&lastUid!==cat.uid&&now-(b.lastVisitorAt||0)<90000&&
+    if(this._duoFacility?.building!==b&&lastUid&&lastUid!==cat.uid&&now-(b.lastVisitorAt||0)<90000&&
        now-(b.lastBondAt||0)>75000){
       const prev=State.S.cats.find(c=>c.uid===lastUid);
       if(prev&&window.CatRelations){
