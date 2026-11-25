@@ -37,7 +37,7 @@ export function tickForgeState(state,dt,hpFraction,target){
     if(state.attackCooldown===0){
       const sets=[["hammerfall","slag-fan"],["slag-fan","hammerfall","steam-vents"],["steam-vents","hammerfall","slag-fan"]];
       const list=sets[state.phase],kind=list[state.attackIndex++%list.length];
-      const cast={kind,phase:state.phase,remaining:state.phase===2?.88:state.phase===1?1.02:1.18,
+      const cast={kind,phase:state.phase,remaining:state.phase===2 ? 0.88 : state.phase===1 ? 1.02 : 1.18,
         target:target&&Number.isFinite(target.x)&&Number.isFinite(target.y)?{x:target.x,y:target.y}:null};
       state.cast=cast;
       events.push({type:"windup",cast:clone(cast)});
@@ -60,7 +60,7 @@ export function useForgeSupport(state){
 export function forgeDamageScale(state){
   if(!state||state.version!==1)return 1;
   if(state.ventOpen>0)return 1.18;
-  return state.heat>=65?.36:.72;
+  return state.heat>=65 ? 0.36 : 0.72;
 }
 export function validateForgeState(state){
   if(!state||state.version!==1||!Number.isFinite(state.heat)||state.heat<0||state.heat>100||
