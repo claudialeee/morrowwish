@@ -37,6 +37,9 @@ try {
       if(/^(Invite |Returning Tides)/.test(name))target.count=()=>all.count();
       return target;
     };
+    // A persistent status may live on another actual control page. Verify
+    // it is reachable by tapping the game's pager, not by changing DOM state.
+    const revealText=async text=>{const message=page.getByText(text,{exact:true});await message.waitFor({state:'attached'});if(await message.isVisible())return;const world=page.locator('.rw-world:not([hidden])'),prev=world.locator('[data-fit-prev]'),next=world.locator('[data-fit-next]');const press=el=>options.hasTouch?el.tap():el.click();const count=Number(await world.getAttribute('data-fit-pages')||1);for(let i=0;i<count&&!await message.isVisible()&&await prev.isVisible()&&await prev.isEnabled();i++)await press(prev);for(let i=0;i<count&&!await message.isVisible()&&await next.isVisible()&&await next.isEnabled();i++)await press(next);await message.waitFor();};
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
     const audioEvidence=[];
     const expectedAudio={garden:'garden',atlas:'atlas',harbor:'harbor','harbor-ceremony':'song-harbor','garden-return':'garden','forest-living-roots-ceremony':'song-forest','forest-to-forge':'forge','forge-ceremony':'song-forge'};
@@ -331,7 +334,7 @@ try {
     await shot('harbor-restored');
     assert.equal(await page.evaluate(()=>State.S.resonance.choices['harbor:H-02']),comfort?'comfort':'ask');
     await page.evaluate(()=>MorrowwishI18n.set('zh'));
-    await page.getByText('灯塔 · 已复明',{exact:true}).waitFor();
+    await revealText('灯塔 · 已复明');
     await page.evaluate(()=>MorrowwishI18n.set('en'));
 
     // A lost optional encounter cannot prove a Duo exists. Use normal retry
