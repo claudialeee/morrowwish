@@ -2244,7 +2244,7 @@ const UI = {
     }).join('');
     const total = GameData.SPECIES.length;
     const owned = GameData.SPECIES.filter(s => State.S.dex[s.id]).length;
-    const story=State.S.story;
+    const story=window.CAT_BOND_NARRATIVE_CANON==='The Last Resonance'?null:State.S.story;
     const recordCat=story?.playerRecorded
       ?State.S.cats.find(cat=>cat.uid===story.recordedUid):null;
     const recordName=String(recordCat?State.catName(recordCat):(en?'The Bellkeeper':'守铃者'))

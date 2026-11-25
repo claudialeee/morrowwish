@@ -44,7 +44,7 @@ function install(){
  }
  function open(profile,event){
   if(overlay||!ambientGames[event.id]||!api.ambientAvailable(event.region).some(a=>a.id===event.id))return false;
-  slot=window.State.S;session=createAmbientGame(event.id);actor={...profile,event};overlay=el("section","cb-story-overlay res-ambient");overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");overlay.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();close()}});
+  slot=window.State.S;session=createAmbientGame(event.id);actor={...profile,event};overlay=el("section","cb-story-overlay is-visible res-ambient");overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");overlay.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();close()}});
   stage.append(overlay);render();return true;
  }
  window.addEventListener("cat-bond-resonance-npc-profile",e=>{const p=e.detail;if(p?.id!=="muling")return;const a=p.ambient?.find(a=>ambientGames[a.id]);if(a)open(p,a)});

@@ -1,4 +1,4 @@
-.res-host{position:absolute;inset:0;z-index:94;display:flex;align-items:flex-end;justify-content:center;padding:clamp(8px,2vw,28px);background:linear-gradient(0deg,#101e2af0,#101e2a18 76%);box-sizing:border-box;overflow:auto}
+.cb-story-overlay.res-host{opacity:1;backdrop-filter:none;position:absolute;inset:0;z-index:94;display:flex;align-items:flex-end;justify-content:center;padding:clamp(8px,2vw,28px);background:linear-gradient(0deg,#101e2af0,#101e2a18 76%);box-sizing:border-box;overflow:auto}
 .res-host .res-dialogue{width:min(960px,100%);max-height:100%;display:grid;grid-template-columns:minmax(0,26%) minmax(0,1fr);align-items:end;gap:14px;overflow:auto;outline:none}
 .res-host .res-portrait{display:block;width:100%;max-height:50vh;object-fit:contain;object-position:bottom;filter:drop-shadow(0 10px 20px #08131c88)}
 .res-host .res-portrait[hidden]{display:none}.res-host .res-dialogue:has(.res-portrait[hidden]){grid-template-columns:1fr}

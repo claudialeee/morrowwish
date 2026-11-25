@@ -23,6 +23,13 @@ jobs:
           node-version: '22'
           cache: npm
       - run: node scripts/test-cat-bond-resonance.mjs && node scripts/test-cat-bond-resonance-slot.mjs && node scripts/test-cat-bond-resonance-ambient.mjs
+      - name: Export exact game source for local visual regression
+        run: tar -czf /tmp/cat-bond-qa-source.tgz public/cat-bond public/*.js public/*.css public/icons/cat-bond.svg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-qa-source
+          path: /tmp/cat-bond-qa-source.tgz
+          retention-days: 1
       - run: npm ci && npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
       - name: Start actual game on local HTTP

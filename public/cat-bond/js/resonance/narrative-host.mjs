@@ -5,7 +5,9 @@ const lang=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const portraitRoot=new URL("../../assets/npc/",import.meta.url);
 // Existing branch-only draft art: not approved final art. Other actors remain unillustrated until assets are ready.
 const faces={jiedeng:["guarded","worried","firm","soft"],qilan:["curious","annoyed","determined","warm"],muling:["neutral","dry","nervous","warm"]};
+const playerPortraits=new Map();
 function portrait(id,scene,cursor){
+ if(id==="player"){const sp=window.State?.S?.cats?.[0]?.species;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;if(!playerPortraits.has(sp)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp));playerPortraits.set(sp,c.toDataURL("image/png"));}return playerPortraits.get(sp)}
  const list=faces[id];if(!list)return null;
  const face=scene==="harbor:H-02"?(id==="jiedeng"?["guarded","worried","guarded","worried","soft"]:["curious","annoyed","determined","determined","warm"])[cursor]:list[cursor%list.length];
  return new URL(id+"-"+(face||list[0])+".svg",portraitRoot).href;
@@ -22,7 +24,7 @@ function install(){
   if(!v.current||game?.scene==="battle")return false;
   if(dialogue&&slot===State.S&&openedScene===v.current.id){dialogue.render();return true}
   close();slot=State.S;openedScene=v.current.id;
-  root=document.createElement("div");root.className="cb-story-overlay res-host";root.dataset.scene=openedScene;stage.append(root);
+  root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";root.dataset.scene=openedScene;stage.append(root);
   dialogue=mountDialogue({root,engine:runtime,campaign,language:lang,resolvePortrait:portrait,onPersist:()=>{},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value),onAwaitAction:()=>{scheduleFinish()}});
   return true;
  }

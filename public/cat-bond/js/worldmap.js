@@ -759,10 +759,11 @@
 
     // Story target is highlighted directly on the atlas. The region relics,
     // not a separate list, are the landmarks that advance the campaign.
-    var story=window.State?.S?.story||{},fragments=Array.isArray(story.fragments)?story.fragments:[];
+    var canonicalNarrative=window.CAT_BOND_NARRATIVE_CANON==='The Last Resonance';
+    var story=canonicalNarrative?{}:window.State?.S?.story||{},fragments=Array.isArray(story.fragments)?story.fragments:[];
     var memoryIds={home:'home-bell',sakura:'sakura-promise',creek:'creek-name',volcano:'volcano-seal',ruins:'ruins-reverse'};
     var nextStoryRegion=REGIONS.find(item=>!fragments.includes(memoryIds[item.id]));
-    var storyTarget=nextStoryRegion?nextStoryRegion.id:'ruins';
+    var storyTarget=canonicalNarrative?null:nextStoryRegion?nextStoryRegion.id:'ruins';
     var zh=window.MorrowwishI18n?.get?.()==='zh';
     var portraitAtlas=W<650&&H>W*1.15;
     var compactAtlas=W<650&&!portraitAtlas;
@@ -895,6 +896,9 @@
       ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
       ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
     }
+    // Canonical-mode collection fallback must never advertise the obsolete story.
+    // Chat 3 owns the real six-region atlas; this legacy geometry is not that atlas.
+    if(canonicalNarrative)return;
     // Story-first atlas: chapter, six recovered memories and a concrete next objective.
     var chapterNamesZh=['序章 · 倒着响的铃','第一章 · 空白页','第二章 · 旧约','第三章 · 失去的名字','第四章 · 最后的守铃者','第五章 · 逆响','终章 · 最后一页'];
     var chapterNamesEn=['PROLOGUE · A BELL IN REVERSE','CHAPTER I · THE BLANK PAGE','CHAPTER II · THE OLD PROMISE','CHAPTER III · THE LOST NAME','CHAPTER IV · THE LAST BELLKEEPER','CHAPTER V · THE REVERSED BELL','FINAL CHAPTER · THE LAST PAGE'];

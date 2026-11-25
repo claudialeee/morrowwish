@@ -39,6 +39,7 @@ try{
    });
    const panel=page.locator(".res-host .res-dialogue");
    await panel.waitFor({state:"visible",timeout:10000});
+   await page.waitForFunction(()=>{const root=document.querySelector(".res-host"),line=root?.querySelector(".res-line");if(!root||!line||getComputedStyle(root).opacity!=="1")return false;const b=line.getBoundingClientRect();return !!root.contains(document.elementFromPoint(b.left+b.width/2,b.top+b.height/2))},null,{timeout:5000});
    await page.waitForFunction(()=>document.querySelector(".res-host .res-portrait")?.naturalWidth>100);
    const line=page.locator(".res-host .res-line");
    assert.match(await line.textContent(),p.lang==="zh"?/灯亮了/:/If the light comes on/);
@@ -47,10 +48,11 @@ try{
    await panel.getByRole("button",{name:p.lang==="zh"?"中文":"EN",exact:true}).click();
    const fits=await panel.evaluate(el=>{const b=el.getBoundingClientRect();return b.left>=-1&&b.top>=-1&&b.right<=innerWidth+1&&b.bottom<=innerHeight+1});
    assert.ok(fits,"Dialogue overflows viewport "+p.name);
-   await page.screenshot({path:dir+"/"+p.name+"-dialogue.png"});
+   const dialoguePixels=await page.screenshot({path:dir+"/"+p.name+"-dialogue.png"});
    for(let i=0;i<5;i++)await panel.getByRole("button",{name:p.lang==="zh"?"继续":"Continue",exact:true}).click();
    assert.equal(await page.locator(".res-host .res-choices button").count(),2);
-   await page.screenshot({path:dir+"/"+p.name+"-choice.png"});
+   const choicePixels=await page.screenshot({path:dir+"/"+p.name+"-choice.png"});
+   assert.ok(!dialoguePixels.equals(choicePixels),"Dialogue and choice screenshots must visibly differ");
    await page.getByRole("button",{name:p.choice,exact:true}).click();
    await page.waitForFunction(()=>CatBondResonance.view().current?.id==="harbor:H-03");
    assert.equal(await page.evaluate(id=>CatBondResonance.view().trust[id],p.npc),2);
