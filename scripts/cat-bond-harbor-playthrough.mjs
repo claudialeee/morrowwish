@@ -257,6 +257,12 @@ try {
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().sanctuaries),['harbor','forest']);
     assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('forge')),true);
     await shot('forest-complete');
+    if(name==='desktop'){
+      await button('Approach wild cat').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();
+      assert.equal(await page.evaluate(()=>window.__game.battle.regionalCombat?.kit.kind),'roots');await shot('forest-battle');
+      await page.waitForFunction(()=>window.__game.scene==='map',null,{timeout:75000});
+      await page.locator('#cr-ok,#battle-recovery-ok').click();
+    }
     async function ship(region, cargo){
       await button('Collect '+cargo).click();
       await button('Deliver '+cargo).click();
@@ -267,19 +273,24 @@ try {
     await travel('Rootsleep Forest');await ship('forest','Beacon-guided supplies');
     await ship('forest','Herbs and waterway map');
     await travel('Misttide Harbor');await ship('harbor','Herbs and waterway map');
-    await travel('Rootsleep Forest');await ship('forest','Cooling plans and herbs');
+    await travel('Rootsleep Forest');await ship('forest','Cooling water and herbs');
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().links['harbor:forest']),['sendA','receiveB','sendB','receiveA']);
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().links['forest:forge']),['sendA']);
     await shot('forest-exchange');
     await button('Sunlit Garden',page.locator('.rw-head')).click();
     await page.waitForFunction(()=>window.__game.scene==='yard');
     assert(await page.evaluate(()=>CatBondResonance.ambientAvailable('garden').some(a=>a.id==='muling:cooking')));
+    assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='forest')?.unlocked));
     await shot('forest-home');await page.locator('#fab-map').click();
     await button('Rootsleep Forest').click();
     await button('World atlas',page.locator('.rw-head')).click();
     await button('Emberforge City').click();
     assert.equal(await page.evaluate(()=>WorldMap.mode),'map');
     await page.getByText('Chapter II complete. The route to Emberforge is unlocked; the story continues in a future update. Your save is preserved.',{exact:true}).waitFor();
+    await page.evaluate(()=>MorrowwishI18n.set('zh'));
+    await page.getByText('第二章已完成。赤炉环城航线已解锁，故事将在后续更新中继续。存档已保留。',{exact:true}).waitFor();
+    assert.equal(await page.getByText('Chapter II complete. The route to Emberforge is unlocked; the story continues in a future update. Your save is preserved.',{exact:true}).count(),0);
+    await page.evaluate(()=>MorrowwishI18n.set('en'));
     await button('Rootsleep Forest').click();
     // Save isolation: detached controls and the old region must not survive a slot switch,
     // even if a queued callback is invoked synchronously before the next animation frame.
