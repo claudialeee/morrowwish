@@ -1,3 +1,4 @@
+// BRIGHT_ORCHESTRATION_V2 — lyrical woodwinds, luminous harp and lighter chamber strings.
 /* Cat Bond: The Last Resonance — original score, written for Morrow Wish.
    No samples, game OSTs, or third-party musical works are used. */
 (()=>{
@@ -14,25 +15,25 @@ const motifs={
  starfall:[[0,2],[4,1],[2,1],[6,1.5],[5,.5],[3,1],[0,1]]
 };
 const P={
- title:[68,62,'minor','star','piano','strings','bell',[0,5,2,6,0,3,5,4]],
- opening:[76,62,'minor','star','horn','strings','bell',[0,5,3,6,0,1,5,4]],
- garden:[70,60,'major','star','piano','harp','flute',[0,4,5,3,1,4,0,4]],
+ title:[84,62,'major','star','piano','strings','harp',[0,4,5,3,0,2,1,4]],
+ opening:[88,62,'major','star','flute','strings','harp',[0,4,5,3,0,2,1,4]],
+ garden:[86,64,'major','star','piano','strings','harp',[0,4,5,3,1,4,0,4]],
  atlas:[86,62,'major','star','flute','strings','harp',[0,5,3,4,0,2,3,4]],
- harbor:[72,62,'dorian','harbor','flute','strings','harp',[0,3,6,4,0,5,3,4]],
- forest:[78,64,'dorian','forest','harp','strings','flute',[0,2,3,4,0,6,3,4]],
- forge:[96,57,'minor','forge','horn','strings','piano',[0,0,5,6,0,3,1,4]],
+ harbor:[84,62,'major','harbor','flute','strings','harp',[0,3,6,4,0,5,3,4]],
+ forest:[88,67,'major','forest','harp','strings','flute',[0,2,3,4,0,6,3,4]],
+ forge:[102,62,'dorian','forge','piano','strings','harp',[0,0,5,6,0,3,1,4]],
  sky:[92,65,'major','sky','flute','strings','harp',[0,3,5,4,2,3,1,4]],
- library:[62,60,'minor','library','piano','strings','bell',[0,2,5,4,0,6,1,4]],
- starfall:[64,59,'dorian','starfall','horn','strings','bell',[0,3,5,6,0,2,3,4]],
+ library:[80,67,'major','library','piano','strings','bell',[0,2,5,4,0,6,1,4]],
+ starfall:[78,62,'dorian','starfall','flute','strings','bell',[0,3,5,6,0,2,3,4]],
  battle:[114,62,'minor','star','strings','horn','drum',[0,5,6,4,0,3,5,4]],
- muling:[58,62,'minor','star','piano','strings','bell',[0,5,3,6,0,1,5,4]],
- identity:[66,62,'dorian','star','bell','strings','piano',[0,5,2,4,0,3,6,4]],
- betrayal:[64,61,'minor','star','strings','piano','bell',[0,1,5,4,0,6,1,4]],
+ muling:[74,64,'dorian','star','piano','strings','harp',[0,5,3,6,0,1,5,4]],
+ identity:[78,62,'major','star','bell','strings','piano',[0,5,2,4,0,3,6,4]],
+ betrayal:[72,64,'minor','star','strings','piano','bell',[0,1,5,4,0,6,1,4]],
  finale1:[116,62,'minor','star','horn','strings','drum',[0,5,3,4,0,6,1,4]],
  finale2:[91,61,'minor','library','bell','strings','drum',[0,1,5,6,0,2,1,4]],
  finale3:[108,62,'major','star','horn','strings','harp',[0,5,3,4,0,2,3,4]],
- ending:[73,62,'major','star','piano','strings','flute',[0,5,3,4,2,3,1,4]],
- postgarden:[80,60,'major','star','harp','strings','flute',[0,4,5,3,1,4,0,4]]
+ ending:[84,64,'major','star','piano','strings','flute',[0,5,3,4,2,3,1,4]],
+ postgarden:[88,64,'major','star','harp','strings','flute',[0,4,5,3,1,4,0,4]]
 };
 for(const r of R){const [b,k,m,mot,lead,pad,acc,ch]=P[r];P['boss-'+r]=[Math.min(132,b+32),k,'minor',mot,'horn','strings','drum',ch];P['song-'+r]=[b,k,m,mot,lead,pad,acc,ch];}
 const scales={major:[0,2,4,5,7,9,11],minor:[0,2,3,5,7,8,10],dorian:[0,2,3,5,7,9,10]};
@@ -52,11 +53,11 @@ function arrange(id){
  const bars=song?8:climax?32:16,notes=[];
  const add=(t,d,m,i,v,pan=0)=>{if(t>=0&&t<bars*4&&d>0)notes.push({t,d:Math.min(d,bars*4-t),m,i,v,pan});};
  for(let bar=0;bar<bars;bar++){
-  const t=bar*4,c=chords[bar%chords.length],part=Math.floor(bar/4),root=degree(key-24,mode,c);
-  add(t,3.7,root,pad,.68,-.22);add(t+2,1.8,root+12,pad,.28,.18);
-  for(let j=0;j<3;j++)add(t+.04*j,3.6,degree(key-12,mode,c+2*j),pad,.40+part*.025,(j-1)*.34);
+  const t=bar*4,c=chords[bar%chords.length],part=Math.floor(bar/4),root=degree(key-(battle?24:12),mode,c);
+  add(t,battle?3.7:2.6,root,pad,battle?.60:.38,-.22);add(t+2,battle?1.8:1.4,root+12,pad,.24,.18);
+  for(let j=0;j<3;j++)add(t+.04*j,3.6,degree(key-(battle?12:0),mode,c+2*j),pad,.28+part*.018,(j-1)*.34);
   const arp=[0,2,4,7,4,2,5,4],rhythm=battle?8:6;
-  for(let j=0;j<rhythm;j++){const dt=j*4/rhythm;add(t+dt,Math.min(.8,4/rhythm),degree(key-12,mode,c+arp[(j+bar)%arp.length]),acc==='drum'?'piano':acc,.32+(j%3===0?.15:0),j%2?.39:-.39);}
+  for(let j=0;j<rhythm;j++){const dt=j*4/rhythm;add(t+dt,Math.min(.8,4/rhythm),degree(key-(battle?12:0),mode,c+arp[(j+bar)%arp.length]),acc==='drum'?'piano':acc,.32+(j%3===0?.15:0),j%2?.39:-.39);}
   if(battle){for(const beat of [0,1.5,2.5])add(t+beat,.28,beat===0?36:43,'drum',beat===0?.95:.48,-.1);}
   if(bar%2===0){
    const selected=climax?(bar<4||bar>=28?'star':R[Math.floor(bar/4)-1]):motif;
