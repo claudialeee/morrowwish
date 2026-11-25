@@ -516,8 +516,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "当然！两只猫总比一只猫多两只爪。",
-            "en": "Of course! Two cats have twice as many paws."
+            "zh": "当然！两只猫一起走，连迷路都能变成探险。",
+            "en": "Of course! With two cats, even getting lost can become an adventure."
           }
         },
         {
@@ -1849,8 +1849,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "是。现在我知道，想念一个朋友也不能替大家做决定。",
-            "en": "Yes. I know now that missing a friend doesn't justify making choices for everyone."
+            "zh": "是。我太想让你回来了，却没有考虑周全。",
+            "en": "Yes. I wanted you back so much that I didn't think it through."
           }
         }
       ],
@@ -1952,8 +1952,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "好，我会认真听你们的想法。",
-            "en": "All right. I'll listen carefully to your ideas."
+            "zh": "我愿意听听，但在验证之前，我还不能放弃中央方案。",
+            "en": "I'll hear you out, but I can't abandon the central plan before we've verified another way."
           }
         }
       ],
@@ -2291,15 +2291,15 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "我还不知道该怎么放下旧方案。",
-            "en": "I'm not sure how to let go of my old plan yet."
+            "zh": "中央星铃已经启动了。在确定新路线可靠之前，我不能停下它。",
+            "en": "The Central Star Bell has started. I can't stop it until I know the new route is reliable."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那就一起试试新的办法。",
-            "en": "Then let's try a new way together."
+            "zh": "那就让六地的伙伴证明给你看！",
+            "en": "Then let's show you what our friends in all six regions can do!"
           }
         }
       ],
@@ -2322,8 +2322,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "守铃者，中央星铃已经启动了！",
-            "en": "Bellkeeper, the Central Star Bell has started!"
+            "zh": "中央星铃已经启动。我必须先稳住它！",
+            "en": "The Central Star Bell has started. I have to keep it stable!"
           }
         },
         {
@@ -2336,15 +2336,15 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "先让星铃稳定下来！准备好了吗？",
-            "en": "Let's stabilize the bell first! Are you ready?"
+            "zh": "我还不能解除共鸣锁，先让我完成这一步。",
+            "en": "I can't release the resonance locks yet. Let me finish this step."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "准备好了！我们会打开共鸣锁。",
-            "en": "Ready! We'll open the resonance locks."
+            "zh": "那就让我用实际行动证明，我们有更好的办法！",
+            "en": "Then let me show you that we have a better way!"
           }
         },
         {
