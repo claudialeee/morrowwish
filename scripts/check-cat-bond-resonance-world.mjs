@@ -1,13 +1,15 @@
 import fs from "node:fs";
-const paths=["resonance/campaign.mjs","resonance/engine.mjs","resonance/slot-runtime.mjs","resonance/world-bridge.mjs","resonance/world-exploration.mjs","state.js"];
+const paths=["resonance/campaign.mjs","resonance/engine.mjs","resonance/slot-runtime.mjs","resonance/world-bridge.mjs","resonance/world-exploration.mjs","state.js","resonance/sky-flight.mjs"];
 const src=paths.map(p=>fs.readFileSync(new URL("../public/cat-bond/js/"+p,import.meta.url),"utf8"));
 console.log(JSON.stringify((function test(src){
  const clean=s=>s.replace(/^import .*;$/gm,"").replace(/\bexport\s+/g,"");
  const campaign=new Function(clean(src[0])+"\nreturn campaign")();
  const makeEngine=new Function(clean(src[1])+"\nreturn makeEngine")();
  const getSlotRuntime=new Function("campaign","makeEngine",clean(src[2])+"\nreturn getSlotRuntime")(campaign,makeEngine);
- const createWorldBridge=new Function("campaign","getSlotRuntime",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime);
- const {createExplorer,exchangeOptions,layouts}=new Function("campaign",clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign);
+ const flight=new Function(clean(src[6])+"\nreturn {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,validSkyFlightProof,skyLaunch,skyLanding}")();
+ const {skyLaunch,skyLanding}=flight;
+ const createWorldBridge=new Function("campaign","getSlotRuntime","validSkyFlightProof","skyLaunch","skyLanding",clean(src[3])+"\nreturn createWorldBridge")(campaign,getSlotRuntime,flight.validSkyFlightProof,skyLaunch,skyLanding);
+ const {createExplorer,exchangeOptions,layouts}=new Function("campaign",...Object.keys(flight),clean(src[4])+"\nreturn {createExplorer,exchangeOptions,layouts}")(campaign,...Object.values(flight));
  const storage=new Map(),ls={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},window={};
  new Function("window","localStorage",src[5])(window,ls);
  const State=window.State,assert=(x,m)=>{if(!x)throw Error(m)},ok=(r,m)=>assert(r?.ok,m+": "+r?.reason);
@@ -18,7 +20,12 @@ console.log(JSON.stringify((function test(src){
   if(n==="pairedWater"){ok(x.operate(1),"lower cannot open without pressure");assert(x.puzzle.values[1]===0,"premature lower opening");ok(x.operate(0),"raise");ok(x.operate(0),"stable");ok(x.operate(1),"open lower");ok(x.operate(0),"overpressure");assert(x.puzzle.values[1]===0,"overpressure closes lower");ok(x.operate(0),"reset pressure");ok(x.operate(0),"raise");ok(x.operate(0),"stable");ok(x.operate(1),"open lower");ok(x.operate(2),"joint clearance");}
   else if(["mirrors","water","stars","routing"].includes(n)){for(let i=0;i<3;i++){while(x.puzzle&&x.puzzle.values[i]!==p.goal[i])ok(x.operate(i),"dial");}}
   else if(n==="heat"){while(x.puzzle&&x.puzzle.values[0]<p.goal[0])ok(x.operate(0),"heat");while(x.puzzle&&x.puzzle.values[1]>p.goal[1])ok(x.operate(1),"vent");}
-  else if(n==="flight"){for(const w of p.wind)ok(x.operate(1-w),"flight");}
+  else if(n==="skyFlight"){
+   for(let i=0;i<100;i++)x.flightTick(.05);assert(x.puzzle.flight.x===0,"idle flight must not advance");
+   ok(x.operate(1),"launch");for(let i=0;i<400&&x.puzzle?.flight.started;i++)x.flightTick(.05);assert(x.puzzle?.flight.attempts>0,"no steering must fail");
+   let result;for(let i=0;i<400&&x.puzzle;i++){const f=x.puzzle.flight,t=f.x<.24?f.route[0]:f.x<.49?f.route[1]:f.x<.74?f.route[2]:.5;if(!f.started||f.target!==t)assert(x.flightSteer(t),"steer");const r=x.flightTick(.05);if(r){ok(r,"flight landing");result=r;}}
+   assert(result?.ok,"flight not completed");
+  }
   else{ok(x.operate((p.goal[0]+1)%3),"wrong sequence");assert(x.puzzle&&x.puzzle.values.length===0,"wrong sequence advanced");for(const i of p.goal)ok(x.operate(i),"sequence");}
   assert(!x.puzzle,"unsolved mechanism "+n);puzzles++;
  }
@@ -35,7 +42,7 @@ console.log(JSON.stringify((function test(src){
   }
   for(const op of ops){if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
-   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(s.chapter==="forest"){const restored=createExplorer(b,"forest");assert(restored.invited.length===2&&restored.invited.includes("yahe")&&restored.invited.includes("yuchuan"),"forest invitations must survive reload");}}
+   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(["forest","sky"].includes(s.chapter)){const restored=createExplorer(b,s.chapter);assert(restored.invited.length===2&&x.localNpcs().every(n=>restored.invited.includes(n.id)),s.chapter+" invitations must survive reload");}}
    if(op==="explore:tide-logbook"){
     walk(x,p);assert(x.interact(op).reason==="incomplete-tide-trail","cannot bypass tide trail");
     let trail=x;
@@ -53,7 +60,7 @@ console.log(JSON.stringify((function test(src){
     State.S.cats.push({uid:"forest-fixture",species:"nainai",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});const gate=x.pairedGate();assert(gate&&!gate.ready,"upper gate available");walk(x,gate.point);ok(x.holdUpperGate(),"hold upper gate");
     assert(!x.holdUpperGate().ok,"duplicate upper gate action");const restored=createExplorer(b,s.chapter);assert(restored.pairedGate().ready,"paired gate persists");
     walk(restored,p);ok(restored.interact(op),"lower gate");assert(restored.puzzle.pair.upper==="forest-fixture"&&restored.puzzle.pair.lower==="muling","two separate actors");assert(!b.recordWorld(s.id,op,{sceneId:s.id,operation:op,region:s.chapter,verified:true,token:b.capture()}).ok,"cannot bypass paired flow");solve(restored);State.S.cats=State.S.cats.filter(c=>c.uid!=="forest-fixture");
-   }else{walk(x,p);const r=x.interact(op);ok(r,op);if(r.puzzle)solve(x);}
+   }else{walk(x,skyLaunch[op]||p);if(skyLaunch[op]){assert(!b.recordWorld(s.id,op,{sceneId:s.id,operation:op,region:s.chapter,verified:true,token:b.capture()}).ok,"cannot bypass flight");}const r=x.interact(op);ok(r,op);if(r.puzzle)solve(x);if(skyLanding[op]){assert(x.near(skyLanding[op]),"flight must land at actual destination");assert(createExplorer(b,s.chapter).near(skyLanding[op]),"landing must persist");}}
    assert(!b.view().objective.includes(op),"unrecorded "+op);physical++;
    if(physical===1){const p=x.rewardPoints()[0];walk(x,p.point);const cash=State.S.coins;ok(x.pickup(p.id),"cache reward");assert(State.S.coins>cash&&!x.pickup(p.id).ok,"duplicate reward");rewards++;}
   }else host(e=>e.record(s.id,op));}
