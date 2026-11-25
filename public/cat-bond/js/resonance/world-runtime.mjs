@@ -139,7 +139,7 @@ function install(){
    menu.open=atlasMenuOpen;
    menu.append(E("summary","",tr("旅程与地区","Journey and regions")));
    for(const item of items){
-    if(item.matches(".rw-controls,.rw-notice"))continue;
+    if(item.matches(".rw-notice"))continue;
     menu.append(item);
    }
    menu.addEventListener("toggle",()=>{if(menu.isConnected)atlasMenuOpen=menu.open;});
@@ -173,8 +173,8 @@ function install(){
    rail.id="rw-region-actions";
    rail.hidden=!regionMenuOpen;
    const camera=items.find(el=>el.matches(".rw-camera-controls"));
-   if(camera)items.splice(items.indexOf(camera),1);
-   if(message)items.splice(items.indexOf(message),1);
+   if(camera)camera.classList.add("rw-menu-camera");
+   if(message){items.splice(items.indexOf(message),1);message.classList.add("rw-floating-notice");}
    host.append(toggle);
   }
   for(const el of items)rail.append(el);
@@ -233,7 +233,7 @@ function install(){
   return img;
  }
  function render(){if(!host)return;if(!window.CatBondResonance?.view){host.replaceChildren(E("p","rw-notice",tr("正式剧情正在初始化","Initializing the canonical story")));host.hidden=game.scene!=="map";return;}const b=current(),v=b.view(),w=b.world();revision=sync();if(explorer?.puzzle?.type!=="melody"&&demoPuzzle!==null)stopDemo();if(explorer?.puzzle?.type!=="pairedWater"){waterHintPuzzle=null;waterHint=null;}if(demoActive){demoGeneration++;demoActive=false;demoIndex=-1;window.MorrowwishMusic?.stopQuality?.();}host.replaceChildren();host.hidden=game.scene!=="map";if(ceremony)host.dataset.ceremony=ceremony.region;else delete host.dataset.ceremony;const forestRegion=mode==="region"&&w.location==="forest",forgeRegion=mode==="region"&&w.location==="forge",regionStep=mode+"/"+w.location+"/"+(v.current?.id||"")+"/"+(explorer?.puzzle?.operation||"explore");if(fitKey!==regionStep){fitKey=regionStep;fitPage=0;fitNotice="";}host.dataset.regionStep=regionStep;host.classList.toggle("rw-atlas-mode",mode==="map");if(mode==="map")host.classList.remove("rw-region-compact");host.classList.toggle("rw-forest-region",forestRegion);host.classList.toggle("rw-forge-region",forgeRegion);host.classList.toggle("rw-library-region",mode==="region"&&w.location==="library");host.classList.toggle("rw-sky-region",mode==="region"&&w.location==="sky");
- const head=E("header","rw-head"),brand=E("div","rw-brand");brand.append(E("small","",tr("猫猫纽带","CAT BOND")),E("strong","",mode==="map"?tr("最后的回响","The Last Resonance"):tr(...layouts[w.location].name)));head.append(brand);if(mode!=="map")head.append(B(tr("世界地图","World atlas"),enterMap,!!ceremony));head.append(B(tr("阳光花园","Sunlit Garden"),exitToYard,!!ceremony));host.append(head);if(forestRegion){const credit=E("p","rw-hint rw-quality-credit");const link=E("a","","Enchanted Valley");link.href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093";link.target="_blank";link.rel="noopener noreferrer";const license=E("a","","CC BY 4.0");license.href="https://creativecommons.org/licenses/by/4.0/";license.target="_blank";license.rel="noopener noreferrer";credit.append(link,document.createTextNode(" by Kevin MacLeod (incompetech.com), "),license,document.createTextNode(", transcoded to Opus."));host.append(credit);}
+ const head=E("header","rw-head"),brand=E("div","rw-brand");brand.append(E("small","",tr("猫猫纽带","CAT BOND")),E("strong","",mode==="map"?tr("最后的回响","The Last Resonance"):tr(...layouts[w.location].name)));head.append(brand);if(mode!=="map"){const back=B(tr("世界地图","World atlas"),enterMap,!!ceremony);back.dataset.worldNav="atlas";head.append(back);}const home=B(tr("阳光花园","Sunlit Garden"),exitToYard,!!ceremony);home.dataset.worldNav="garden";head.append(home);host.append(head);if(forestRegion){const credit=E("p","rw-hint rw-quality-credit");const link=E("a","","Enchanted Valley");link.href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093";link.target="_blank";link.rel="noopener noreferrer";const license=E("a","","CC BY 4.0");license.href="https://creativecommons.org/licenses/by/4.0/";license.target="_blank";license.rel="noopener noreferrer";credit.append(link,document.createTextNode(" by Kevin MacLeod (incompetech.com), "),license,document.createTextNode(", transcoded to Opus."));host.append(credit);}
  if(mode==="map"){
   const nav=E("nav","rw-system-nav");
   const book=B(tr("星铃之书","Resonance Book"),()=>window.ResonanceBook?.open());book.classList.add("rb-world-entry");nav.append(book,B(tr("故事手册","Journal"),()=>{window.CatBondResonance?.showCurrent?.()}));
@@ -292,11 +292,11 @@ function install(){
  draw();}
  function point(e){const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height];}
  function cameraEnabled(){return mode==="map"||!!explorer&&!explorer.puzzle&&!ceremony;}
- function contain(){const shell=canvas?.parentElement,r=canvas?.getBoundingClientRect(),s=shell?.getBoundingClientRect();const inset=r&&s&&zoom>1?[(Math.max(0,r.width-s.width)/r.width)/2,(Math.max(0,r.height-s.height)/r.height)/2]:[0,0];pan=pan.map((n,i)=>Math.max(1-zoom-inset[i],Math.min(inset[i],n)));}
+ function contain(){const shell=canvas?.parentElement,r=canvas?.getBoundingClientRect(),s=shell?.getBoundingClientRect();const inset=r&&s?[(Math.max(0,r.width-s.width)/r.width)/2,(Math.max(0,r.height-s.height)/r.height)/2]:[0,0];pan=pan.map((n,i)=>Math.max(1-zoom-inset[i],Math.min(inset[i],n)));}
  function centerCamera(p){pan=[.5-p[0]*zoom,.5-p[1]*zoom];contain();}
  function overviewCamera(){followCamera=false;zoom=1;pan=[0,0];draw();}
  function cameraPoint(p){return cameraEnabled()?[(p[0]-pan[0])/zoom,(p[1]-pan[1])/zoom]:p;}
- function followPlayer(){if(pointers.size||!followCamera||!cameraEnabled()||mode!=="region"||zoom<=1)return;const p=explorer.position,goal=p.map(n=>Math.max(1-zoom,Math.min(0,.5-n*zoom)));pan=pan.map((n,i)=>n+(goal[i]-n)*.15);}
+ function followPlayer(){if(pointers.size||!followCamera||!cameraEnabled()||mode!=="region")return;const p=explorer.position,goal=p.map(n=>.5-n*zoom);pan=pan.map((n,i)=>n+(goal[i]-n)*.15);contain();}
  function beginWalk(){followCamera=true;}
  function scale(f,x,y){if(!cameraEnabled())return;followCamera=false;const a=[(x-pan[0])/zoom,(y-pan[1])/zoom];zoom=Math.max(1,Math.min(3.5,zoom*f));pan=[x-a[0]*zoom,y-a[1]*zoom];contain();draw();}
  function down(e){let p=point(e);if(explorer?.puzzle?.type==="skyFlight"){canvas.focus();canvas.setPointerCapture?.(e.pointerId);pointers.set(e.pointerId,p);explorer.flightSteer(p[1]);e.preventDefault();return;}pointers.set(e.pointerId,p);canvas.setPointerCapture?.(e.pointerId);if(cameraEnabled())canvas.style.cursor="grabbing";if(pointers.size===1){drag=p;dragged=false;}if(pointers.size===2){const a=[...pointers.values()];pinch=distance(a[0],a[1]);dragged=true;}e.preventDefault();}

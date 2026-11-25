@@ -37,11 +37,11 @@ function attach(){
  const previous=card.querySelector(":scope > .rb-navigation");previous?.remove();card.querySelector(":scope > .rb-craft-link")?.remove();
  const n=node("section","rb-navigation");n.setAttribute("translate","no");
  const mast=node("header","rb-masthead");
- const book=node("div","rb-brand");book.append(node("small","",tr("旅人的共鸣记录","THE TRAVELER'S COMPANION")),node("strong","",tr("星铃之书","Resonance Book")));
+ const book=node("div","rb-brand");book.append(node("small","",tr("旅人的共鸣记录","THE TRAVELER'S COMPANION")),node("strong","",tr("星月之书","Resonance Book")));
  const home=button(tr("返回花园","Sunlit Garden"),()=>{dismiss();if(game()?.scene==="map")window.WorldMap?.exitToYard?.()},"rb-home");
  home.hidden=game()?.scene==="yard";
- const close=button(tr("关闭","Close"),dismiss,"rb-close");close.setAttribute("aria-label",tr("关闭星铃之书","Close Resonance Book"));
- mast.append(book,home,close);n.append(mast);
+ const close=button(tr("关闭","Close"),dismiss,"rb-close");close.setAttribute("aria-label",tr("关闭星月之书","Close Resonance Book"));
+ mast.append(book,home,close);n.append(mast);const wallet=node("div","rb-wallet");wallet.append(stat(tr("金币","Coins"),Math.max(0,Number(state().coins)||0)),stat(tr("小鱼干","Fish"),Math.max(0,Number(state().fish)||0)));n.append(wallet);
  const nav=node("nav","rb-tabs");nav.setAttribute("aria-label",tr("养成分类","Companion categories"));
  for(const [id,zh,en] of tabs){const b=button(tr(zh,en),()=>select(id),"rb-tab");b.dataset.bookTab=id;b.setAttribute("aria-current",active.tab===id?"page":"false");nav.append(b)}
  n.append(nav);card.prepend(n);

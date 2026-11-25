@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const HOME_ANCHORS = Object.freeze({
-    muling:{x:.74,y:.66,scale:1.08,radius:65},
+    muling:{x:.60,y:.70,scale:1.30,radius:72},
     jiedeng:{x:.15,y:.54,scale:.92,radius:46}, qilan:{x:.25,y:.59,scale:.86,radius:44},
     yahe:{x:.34,y:.56,scale:.90,radius:45}, yuchuan:{x:.42,y:.58,scale:.98,radius:48},
     jinpo:{x:.86,y:.50,scale:.98,radius:48}, xiaomao:{x:.91,y:.58,scale:.82,radius:42},
@@ -128,12 +128,13 @@
        typeof adapter.interactHomeNpc!=='function')return false;
     narrativeAdapter=adapter;lastNpcHits=[];hitState=null;return true;
   }
-  function draw(ctx,width,height,time){
+  function draw(ctx,width,height,time,{projects=true,residents=true}={}){
     if(!active||game?.scene!=='yard')return;
     if(visitedState!==state())enter();
     root?.classList.toggle('is-placing',!!game.yard?.placement);refreshGuide();
     if(root)root.inert=!!game.yard?.placement;
-    window.GardenProjects?.draw?.(ctx,width,height,time);
+    if(projects)window.GardenProjects?.draw?.(ctx,width,height,time);
+    if(!residents)return;
     if(!narrativeAdapter&&window.CatBondResonanceNPC?.gardenAdapter)registerNarrativeAdapter(window.CatBondResonanceNPC.gardenAdapter);
     lastNpcHits=[];hitState=null;if(!narrativeAdapter)return;
     let npcs;try{npcs=narrativeAdapter.getHomeNpcs()||[]}catch(error){console.warn('Garden NPC availability failed',error);return}
@@ -141,10 +142,11 @@
     for(const npc of npcs){
       const a=HOME_ANCHORS[npc?.id];if(!a||!npc?.id)continue;
       const f=window.World?.gardenArtworkRect?.(width,height)||{x:0,y:0,width,height};
-      const x=f.x+f.width*a.x,y=f.y+f.height*a.y;
+      const x=Math.max(42,Math.min(width-42,f.x+f.width*a.x)),y=Math.max(90,Math.min(height-28,f.y+f.height*a.y));
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
-      try{const scale=a.scale*.60;const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale,time});
+      try{const scale=a.scale*(npc.id==='muling'?.95:.68)*Math.max(.72,Math.min(1.1,height/460));const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale,time});
         if(visible===false)continue;
+        if(npc.id==='muling'){ctx.save();ctx.font='600 12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';const label=window.MorrowwishI18n?.get?.()==='zh'?'暮铃':'Muling';const w=ctx.measureText(label).width+16;ctx.fillStyle='#fff2d9e8';ctx.beginPath();ctx.roundRect(x-w/2,y+5,w,21,10);ctx.fill();ctx.fillStyle='#594431';ctx.fillText(label,x,y+15.5);ctx.restore();}
         lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*scale:y-30*scale,groundY:y,radius:Math.max(24,a.radius*.75*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }

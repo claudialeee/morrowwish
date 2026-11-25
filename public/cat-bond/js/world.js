@@ -14,7 +14,7 @@ YARD_BG_PORTRAIT.onload = () => { YARD_BG_PORTRAIT_READY = true; };
 // Extend the stage with a subdued color field, never stretch the authored image.
 window.CatBondSceneFit=(()=>{
  const cache=new WeakMap();
- function rect(iw,ih,w,h){const s=Math.min(w/iw,h/ih),dw=iw*s,dh=ih*s;return {x:(w-dw)/2,y:(h-dh)/2,width:dw,height:dh,scale:s};}
+ function rect(iw,ih,w,h){const s=Math.max(w/iw,h/ih),dw=iw*s,dh=ih*s;return {x:(w-dw)/2,y:(h-dh)/2,width:dw,height:dh,scale:s};}
  function paint(ctx,img,w,h,fit,top,bottom,edgeFilter,edgeOpacity){
   const fill=ctx.createLinearGradient(0,0,0,h);fill.addColorStop(0,top);fill.addColorStop(1,bottom);ctx.fillStyle=fill;ctx.fillRect(0,0,w,h);
   // A soft ambient extension fills only the letterbox area. The entire
@@ -33,15 +33,7 @@ window.CatBondSceneFit=(()=>{
    ctx.drawImage(img,cropX,0,cropWidth,ih,0,0,w,h);
    return {x:0,y:0,width:w,height:h,scale:h/ih};
   }
-  const fit=rect(iw,ih,w,h),pw=Math.max(1,Math.round(w)),ph=Math.max(1,Math.round(h));
-  const key=pw+"x"+ph+"/"+top+"/"+bottom+"/"+filter+"/"+edgeFilter+"/"+edgeOpacity;
-  let entry=cache.get(img);
-  if(!entry||entry.key!==key){
-   const plate=document.createElement("canvas");plate.width=pw;plate.height=ph;const pc=plate.getContext("2d");
-   if(pc){pc.scale(pw/w,ph/h);paint(pc,img,w,h,fit,top,bottom,edgeFilter,edgeOpacity);entry={key,plate};cache.set(img,entry);}
-  }
-  ctx.save();if(entry?.key===key)ctx.drawImage(entry.plate,0,0,w,h);else paint(ctx,img,w,h,fit,top,bottom,edgeFilter,edgeOpacity);
-  ctx.filter=filter;ctx.drawImage(img,fit.x,fit.y,fit.width,fit.height);ctx.restore();return fit;
+  const fit=rect(iw,ih,w,h);ctx.save();ctx.filter=filter;ctx.drawImage(img,fit.x,fit.y,fit.width,fit.height);ctx.restore();return fit;
  }
  return Object.freeze({rect,draw});
 })();
@@ -67,12 +59,7 @@ function drawGardenProp(ctx,id,x,y,depth){
 // Persist plot-relative coordinates, not device pixels. x/y are the current
 // canvas projection retained for existing collision, movement and rendering.
 // Every interactive ground coordinate belongs to the actual contained painting.
-function gardenArtFit(iw,ih,w,h){
- // Modest vertical crop on ordinary landscape displays only; preserve full
- // painting for narrow, portrait and ultrawide layouts.
- if(w/h>=iw/ih&&w/h<=2.15&&w>=h){const scale=w/iw,dw=iw*scale,dh=ih*scale;return {x:0,y:(h-dh)/2,width:dw,height:dh,scale,cover:true};}
- return window.CatBondSceneFit.rect(iw,ih,w,h);
-}
+function gardenArtFit(iw,ih,w,h){return {...window.CatBondSceneFit.rect(iw,ih,w,h),cover:true};}
 function gardenArtworkRect(W,H){
  const portrait=H>W*1.12,img=portrait?YARD_BG_PORTRAIT:YARD_BG;
  const iw=img.naturalWidth|| (portrait?900:1600),ih=img.naturalHeight||(portrait?1600:900);
@@ -850,7 +837,7 @@ class YardScene {
 
     // Illustrated edge flowerbeds, light pools and meadow details.
     if(window.CatBondScenery)CatBondScenery.accentYard(ctx,W,H,t);
-    window.SunlitGarden?.draw?.(ctx,W,H,t);
+    window.SunlitGarden?.draw?.(ctx,W,H,t,{residents:false});
 
     // --- drifting clouds (gentle parallax over the painted sky) ---
     for (const c of this.clouds) {
@@ -906,6 +893,7 @@ class YardScene {
       else if (d.kind === 'hide') this.drawHide(ctx, d.ref);
     }
 
+    window.SunlitGarden?.draw?.(ctx,W,H,t,{projects:false});
     // Preview is drawn on the actual yard canvas, not as a separate menu image.
     if(this.placement)this.drawPlacement(ctx);
     // --- idle loot bubbles (tap to collect; the AFK payoff on the main screen) ---

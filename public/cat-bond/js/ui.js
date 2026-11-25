@@ -3268,7 +3268,7 @@ const UI = {
       <canvas id="cr" width="180" height="140" style="display:block;margin:8px auto"></canvas>
       <p class="center"><b class="rarity-${wildSp.rarity}">${name}</b> ${reunion
         ?(english?'made your bond stronger':'让你们的纽带更深了')
-        :(english?'joined your yard':'已加入庭院')}</p>
+        :(english?'added to your Resonance Book':'已收录至星月之书')}</p>
       ${reunion?'<p class="center reunion-reward">'
         +(english?'💞 This breed already has 2 resident cats. Strongest cat: +8 affection, +45 XP, plus 2 fish.'
           :'💞 同品种已有两只：最强的猫获得 +8 好感、+45 经验及 2 小鱼，不再增加重复个体。')
@@ -3306,7 +3306,7 @@ const UI = {
           ?(english?(exploring?'Explore with your duo':'Try your duo · Find another cat')
             :(exploring?'双猫搭档继续探索':'双猫出战 · 再找一只伙伴'))
           :(english?(exploring?'Keep exploring':'Find another wild cat'):(exploring?'继续探索':'再找一只野猫'))}</button>
-        <button class="btn ghost" id="cr-journey">${firstAdventure?(english?'Explore other activities':'探索其他玩法'):(english?'Explore · Bond · Workshop':'探索 · 养成 · 工坊')}</button>
+        <button class="btn ghost" id="cr-journey">${english?'Open Resonance Book':'打开星月之书'}</button>
         <button class="btn" id="cr-ok">${english?(exploring?'Back to map':'Back to yard'):(exploring?'返回地图':'回庭院')}</button>
         ${!firstAdventure&&skillUnlock?'<button class="btn gold" id="cr-newskill">'+(english?'Try the new skill':'查看新技能')+'</button>':''}
         ${masteryReward&&!firstAdventure?'<button class="btn gold" id="cr-medal">'+(english?'View medal collection':'查看金爪徽章')+'</button>':''}
@@ -3321,7 +3321,7 @@ const UI = {
       this.game.refreshCollectionGoal();
     };
     document.getElementById('cr-ok').onclick=dismiss;
-    document.getElementById('cr-journey').onclick=()=>this.openJourney();
+    document.getElementById('cr-journey').onclick=()=>{dismiss();if(!window.ResonanceBook?.open?.('cats'))this.openJourney();};
     if(document.getElementById('cr-duo'))document.getElementById('cr-duo').onclick=()=>this.openBondPanel();
     const newSkillBtn=document.getElementById('cr-newskill');
     if(newSkillBtn&&skillUnlock)newSkillBtn.onclick=()=>this.openSkillEditor(skillUnlock.cat);
