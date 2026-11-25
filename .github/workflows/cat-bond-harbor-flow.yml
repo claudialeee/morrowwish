@@ -6,6 +6,8 @@ on:
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-harbor-playthrough.mjs'
+      - 'scripts/cat-bond-starfall-playthrough.mjs'
+      - 'scripts/cat-bond-finale-real-playthrough.mjs'
       - 'scripts/cat-bond-local-cloud-server.mjs'
       - '.github/workflows/cat-bond-harbor-flow.yml'
 
@@ -20,13 +22,14 @@ concurrency:
 jobs:
   harbor:
     runs-on: ubuntu-24.04
-    timeout-minutes: 18
+    timeout-minutes: 55
     strategy:
       fail-fast: false
       matrix:
         profile: [desktop, portrait, landscape]
     env:
       CAT_BOND_PROFILE: ${{ matrix.profile }}
+      CAT_BOND_FULL_CAMPAIGN: ${{ github.head_ref == 'rpg/release-combined-next' && '1' || '0' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -38,7 +41,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Cat Bond canonical world regression (independent of studio dashboard)
         run: node scripts/check-cat-bond-resonance-world.mjs
-      - name: Play from a new slot on desktop and mobile
+      - name: Play from a new slot on desktop and mobile (combined branch through finale)
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/harbor-server.log 2>&1 &
           server=$!

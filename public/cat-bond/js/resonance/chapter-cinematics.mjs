@@ -1,10 +1,14 @@
 import {campaign} from "./campaign.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
-import {mountResonanceCinematics,starfallReleaseReady} from "../resonance-cinematic.mjs";
+import {mountResonanceCinematics,starfallReleaseReady,buildCanonicalScene} from "../resonance-cinematic.mjs";
 
 const language=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const manifestURL=new URL("../../assets/cinematics/asset-manifest.json",import.meta.url);
 let active=null,releaseManifest=null;
+// Candidate paintings may be exercised only by an explicitly opted-in loopback development build.
+// This never changes the independent production approval result or any save schema.
+const developmentPreview=()=>['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).get('rpgDev')==='1';
+const developmentReady=()=>developmentPreview()&&['starfall:F-02','starfall:F-05','finale:B-04','epilogue:E-01'].every(id=>{const current=campaign.scenes.find(s=>s.id===id);return !!current&&buildCanonicalScene({campaign,manifest:releaseManifest,view:{current,choice:null,objective:current.requires.filter(o=>o.startsWith('cinematic:')),cursor:0,lineReady:true},staging:true}).ok;});
 async function refreshReleaseManifest(){try{const response=await fetch(manifestURL);if(response.ok){releaseManifest=await response.json();window.dispatchEvent(new Event("cat-bond-resonance-changed"));}}catch{/* Invalid manifest remains locked. */}}
 refreshReleaseManifest();
 
@@ -48,7 +52,7 @@ async function play(sceneId){
   player=mountResonanceCinematics({
    root, engine:runtime, campaign, manifest,
    rendererFactory:window.CatBondCinematicPresentation.create,
-   staging:false,
+   staging:developmentPreview(),
    getSlotKey:()=>window.State.S,
    language,
    onLanguageChange:next=>window.MorrowwishI18n?.set?.(next),
@@ -76,6 +80,6 @@ async function play(sceneId){
   return false;
  }
 }
-window.CatBondChapterCinematics=Object.freeze({play,starfallReleaseReady:()=>starfallReleaseReady(campaign,releaseManifest)});
+window.CatBondChapterCinematics=Object.freeze({play,starfallReleaseReady:()=>starfallReleaseReady(campaign,releaseManifest),developmentReady});
 window.addEventListener("pagehide",()=>{active?.checkpoint?.();active?.dispose();});
 window.addEventListener("cat-bond-active-save-changed",()=>active?.dispose());

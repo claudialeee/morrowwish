@@ -3,7 +3,7 @@
 // Read-only snapshots assert outcomes. Candidate cinematics are enabled ONLY in
 // this isolated browser, and must not count as production art approval.
 import assert from 'node:assert/strict';
-export async function continueToFinale({page,context,options,name,button,scene,shot,puzzle,travel,ship}){
+export async function continueToFinale({page,context,options,name,button,scene,shot,puzzle,travel,ship,startAtFinale=false}){
  const view=()=>page.evaluate(()=>CatBondResonance.view());
  const check=(op)=>page.waitForFunction(op=>!CatBondResonance.view().objective.includes(op),op);
  const log=async(id)=>{console.log(name,'NORMAL PLAYER',id,JSON.stringify(await page.evaluate(()=>({scene:CatBondResonance.view().current?.id,links:CatBondResonance.view().links,melodies:CatBondResonance.view().melodies.length,ending:CatBondResonance.view().ending}))));await shot(id.replaceAll(':','-'));};
@@ -43,6 +43,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
   assert.ok(await page.evaluate(()=>{const p=CatRelations.chosen();return p.length===2&&CatRelations.memoryList(...p).includes('sakura')&&CatRelations.pair(...p).value>=20;}),'Actual forest duo promise');
   await travel('Emberforge City');
  }
+ if(!startAtFinale){
  await ensureDuo();
  await puzzle('Safety blueprint',['Frame','Pipes','Valve']);await dialogue('forge:E-02','Publish the accident record now');
  await scene('forge:E-03');await puzzle('Furnace controls',['Heat','Heat','Heat','Heat','Vent','Vent','Vent']);await dialogue('forge:E-03');await forgeFight();
@@ -72,10 +73,9 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  for(const [a,b,forward,back] of routes){const key=a+':'+b;let v=await view();for(let i=v.links[key].length;i<4;i++){const actor=[a,b,b,a][i];await gotoRegion(actor);await ship(actor,i<2?forward:back);await page.waitForFunction(({key,i})=>CatBondResonance.view().links[key].length===i+1,{key,i});}}
  await gotoRegion('starfall');await dialogue('starfall:F-04');await scene('starfall:F-05');
  assert.ok((await view()).ring);assert.equal((await view()).melodies.length,6);await log('chapter-6-real-ring');
- // The production release gate is still off. This local preview flag grants
- // permission to PLAY candidate paintings, not story/quest completion.
- assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),false);
- await page.evaluate(()=>{window.__CAT_BOND_INTEGRATION_ART__=true;});
+ }
+ // Staging assets are allowed only in the explicit loopback development session.
+ await page.waitForFunction(()=>CatBondChapterCinematics.starfallReleaseReady()||CatBondChapterCinematics.developmentReady(),null,{timeout:15000});
  async function cinematic(id){
   await scene(id);await button('Watch the story scene').click();await page.locator('.cbcp-art').first().waitFor();
   let previous='',frames=0;const until=Date.now()+180000;
@@ -87,7 +87,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
   }
   assert.ok(frames>=2,id+' must render more than one shot');return frames;
  }
- const openingShots=await cinematic('starfall:F-05');await scene('finale:B-01');
+ const openingShots=startAtFinale?null:await cinematic('starfall:F-05');await scene('finale:B-01');
  const before=await page.evaluate(()=>JSON.stringify(State.S.resonance));await beginBattle('Approach the Star Bell');
  await shot('B-01-retreat');assert.equal(await page.locator('[data-finale-regions] meter').count(),6);await page.locator('#btn-flee').click();await finishBattle();
  assert.equal(await page.evaluate(()=>JSON.stringify(State.S.resonance)),before,'Retreat must not award any story progress');
