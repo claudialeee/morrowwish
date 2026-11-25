@@ -20,6 +20,7 @@
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
     '守铃者': 'The Bellkeeper',
+    '系统菜单': 'System menu',
     '主线目标': 'MAIN QUEST',
     '☁️ 云存档': '☁️ Cloud save',
     '云存档': 'Cloud save',
@@ -149,7 +150,6 @@
     '🐾 出战猫咪': '🐾 Battle cats',
     '选择出战猫咪': 'Choose battle cats',
     '☰ 菜单': '☰ Menu',
-    '系统菜单': 'System Menu',
     '打开探险管理菜单': 'Open expedition menu',
     '猫猫正在过来使用设施！': 'A cat is on its way to play!',
     '猫猫正在忙，稍后再试': 'Your cat is busy. Try again later.',
