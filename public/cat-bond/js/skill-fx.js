@@ -284,7 +284,7 @@ function drawMeleeContact(ctx,v,spec){
    const pts=Array.from({length:7},(_,i)=>{const a=i*TAU/7,rr=r*(.79+.23*hash(seed+i));return [Math.cos(a)*rr,Math.sin(a)*rr]});
    poly(c,pts,'#422d35');
    for(let i=0;i<7;i++)poly(c,[pts[i],pts[(i+1)%7],[-r*.13,-r*.20]],['#a36a45','#734539','#51353c','#48323b','#85553d','#c17c4c','#a36a45'][i]);
-   stroke(c,'#ff983d',Math.max(1,r*.11),.95);path(c,[pts[1],[-r*.13,-r*.2],pts[4]]);path(c,[[-r*.13,-r*.2],pts[6]]);
+   stroke(c,'#ff983d',Math.max(1,r*.11),Math.min(1,c.globalAlpha*.95));path(c,[pts[1],[-r*.13,-r*.2],pts[4]]);path(c,[[-r*.13,-r*.2],pts[6]]);
    c.restore();
  }
  function meteorPoints(b){
@@ -295,13 +295,13 @@ function drawMeleeContact(ctx,v,spec){
    const b=p.burst;if(b?.skill?.id!=='meteor')return false;
    // The existing lob remains the authoritative damage clock. All rocks
    // converge on its landing beat; smaller arrivals are decorative only.
-   const remaining=Math.max(0,Math.min(p.life,Math.max(0,(Math.hypot(p.x-b.tx,p.y-b.ty)-16)/(p.spd||300))));
+   const remaining=Math.max(0,p.life);
    c.save();
    for(const [i,m] of meteorPoints(b).entries()){
      const q=clip((remaining-m.lag)/(.62+i*.035));
      c.globalAlpha=.20+.28*(1-q);c.fillStyle='#2e2024';c.beginPath();c.ellipse(m.x,m.y,m.r*(1.2+q),m.r*.46,0,0,TAU);c.fill();
      if(remaining>m.lag+.62+i*.035)continue;
-     if(q<=0&&i>0){flare(c,m.x,m.y,m.r*1.6,'#ff9d42',.42);continue;}
+     if(q<=0&&i>0){const pop=clip(1-(m.lag-remaining)/.15);flare(c,m.x,m.y,m.r*1.6,'#ff9d42',.42*pop);continue;}
      const x=m.x-q*116,y=m.y-q*190,r=m.r*(.85+.15*(1-q));
      c.globalAlpha=.92;
      const dx=-.52,dy=-.85,tail=50+r*2.4;
