@@ -58,9 +58,26 @@ try {
       }
       const cinematic=page.locator('.cbcp-root:not([hidden])');
       if(await cinematic.isVisible()){
-       await cinematic.locator('.cbcp-art').last().evaluate(img=>img.decode());
-       const fit=await cinematic.evaluate(el=>{const r=el.getBoundingClientRect(),stage=document.getElementById('stage').getBoundingClientRect(),art=el.querySelector('.cbcp-art-stack'),sub=el.querySelector('.cbcp-subtitle-wrap'),image=el.querySelector('.cbcp-art:last-child');return {inside:r.left>=stage.left-1&&r.top>=stage.top-1&&r.right<=stage.right+1&&r.bottom<=stage.bottom+1,art:!!image?.naturalWidth&&art.clientWidth>0&&art.clientHeight>0,subtitle:sub.hidden||sub.getBoundingClientRect().bottom<=r.bottom+1};});
-       assert.deepEqual(fit,{inside:true,art:true,subtitle:true},id+' actual cinematic stage fit');
+       // Layered epilogue frames append NPC images after the background. The
+       // last child is therefore not necessarily a background image. Require
+       // the latest background, every current actor layer, and actual painted
+       // geometry; a missing or unrenderable asset still fails acceptance.
+       await page.waitForFunction(()=>{
+        const root=document.querySelector('.cbcp-root:not([hidden])');
+        if(!root||root.dataset.ready!=='true')return false;
+        const stack=root.querySelector('.cbcp-art-stack'),image=[...stack.querySelectorAll('.cbcp-art')].at(-1);
+        if(!image?.complete||!image.naturalWidth||Number(getComputedStyle(image).opacity)<.95)return false;
+        const layers=[...stack.children].slice([...stack.children].indexOf(image)+1).filter(n=>n.classList.contains('cbcp-layer'));
+        return layers.every(n=>n.complete&&n.naturalWidth>0);
+       },null,{timeout:10000});
+       const fit=await cinematic.evaluate(el=>{
+        const r=el.getBoundingClientRect(),stage=document.getElementById('stage').getBoundingClientRect(),art=el.querySelector('.cbcp-art-stack'),sub=el.querySelector('.cbcp-subtitle-wrap'),image=[...art.querySelectorAll('.cbcp-art')].at(-1);
+        const layers=[...art.children].slice([...art.children].indexOf(image)+1).filter(n=>n.classList.contains('cbcp-layer'));
+        const bounds=art.getBoundingClientRect(),visible=n=>{const b=n.getBoundingClientRect(),style=getComputedStyle(n);return n.complete&&n.naturalWidth>0&&b.width>0&&b.height>0&&style.visibility!=='hidden'&&Number(style.opacity)>0&&b.right>bounds.left&&b.left<bounds.right&&b.bottom>bounds.top&&b.top<bounds.bottom;};
+        const layeredExchange=el.dataset.frameId?.startsWith('epilogue:E-01-exchange-');
+        return {inside:r.left>=stage.left-1&&r.top>=stage.top-1&&r.right<=stage.right+1&&r.bottom<=stage.bottom+1,art:!!image&&visible(image)&&art.clientWidth>0&&art.clientHeight>0,subtitle:sub.hidden||sub.getBoundingClientRect().bottom<=r.bottom+1,layers:(!layeredExchange||layers.length===2)&&layers.every(visible)};
+       });
+       assert.deepEqual(fit,{inside:true,art:true,subtitle:true,layers:true},id+' actual cinematic stage fit and loaded actor layers');
       }else if(await page.locator('.rw-world:not([hidden])').isVisible()&&!await page.locator('#panel.open,.res-host').count()){
        const fit=await page.evaluate(()=>{const w=document.querySelector('.rw-world:not([hidden])'),s=w?.querySelector('.rw-surface');if(!s)return null;const stage=document.getElementById('stage').getBoundingClientRect(),rect=s.getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {scene:rect.width>0&&rect.height>0&&rect.top>=stage.top-1&&rect.bottom<=stage.bottom+1&&rect.left>=stage.left-1&&rect.right<=stage.right+1,ratio:Math.abs(rect.width/rect.height-16/9)<.03,noScroll:w.scrollHeight<=w.clientHeight+2&&rail.scrollHeight<=rail.clientHeight+2,buttons:[...rail.querySelectorAll('button')].filter(b=>b.getClientRects().length).every(b=>{const r=b.getBoundingClientRect();return r.top>=stage.top-1&&r.bottom<=stage.bottom+1&&r.left>=stage.left-1&&r.right<=stage.right+1;}),noFollower:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
        if(fit)assert.deepEqual(fit,{scene:true,ratio:true,noScroll:true,buttons:true,noFollower:true},id+' stage fit / solo exploration');
