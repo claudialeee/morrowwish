@@ -1400,6 +1400,8 @@ await import('./check-cat-bond-story-cloud.mjs');
 
 // Sunlit Garden: source, artwork and cross-module ownership regression gate.
 const gardenCode=fs.readFileSync('public/cat-bond/js/sunlit-garden.js','utf8');
+const gardenProjects=fs.readFileSync('public/cat-bond/js/garden-projects.js','utf8');
+new Function(gardenProjects);
 const gardenArt=fs.readFileSync('public/cat-bond/assets/sunlit-garden-cinematic.svg','utf8');
 const gardenArtPortrait=fs.readFileSync('public/cat-bond/assets/sunlit-garden-portrait.svg','utf8');
 const gardenWorld=fs.readFileSync('public/cat-bond/js/world.js','utf8');
@@ -1413,9 +1415,10 @@ if(!gardenArt.startsWith('<svg')||!gardenArt.includes('viewBox="0 0 1600 900"')|
    !gardenArtPortrait.startsWith('<svg')||!gardenArtPortrait.includes('viewBox="0 0 900 1600"')||
    /<text[\s>]/i.test(gardenArt+gardenArtPortrait)||/<foreignObject|<button|<input/i.test(gardenArt+gardenArtPortrait))
  throw new Error('Sunlit Garden environment artwork must be a text-free scene plate, not a baked UI mockup');
-if(gardenRegions.some(id=>!gardenCode.includes("id:'"+id+"'"))||
+if(gardenRegions.some(id=>!gardenProjects.includes("['"+id+"'")||!fs.existsSync('public/cat-bond/assets/garden/projects/'+id+'.svg'))||
    gardenCast.some(id=>!gardenCode.includes(id)))
- throw new Error('Sunlit Garden must expose all six canonical sanctuary accents and home NPC anchors');
+ throw new Error('Sunlit Garden must expose all six canonical restoration assets and home NPC anchors');
+if(!gardenProjects.includes('resonance?.sanctuaries')||!gardenProjects.includes('sunlitGarden.projects')||!gardenProjects.includes('State.addXp')||!gardenCode.includes('GardenProjects?.draw')||!gardenCode.includes('GardenProjects?.tap')||!gardenWorld.includes('GardenProjects?.update')||!gardenHtml.includes('js/garden-projects.js')||/State\.S\.resonance\s*=|\.resonance\.[a-zA-Z]+\s*=/.test(gardenProjects))throw new Error('Garden projects must use canonical read-only progression and real slot-local cat growth');
 if(!gardenCode.includes('window.State?.S')||!gardenCode.includes('resonance')||
    !gardenCode.includes('registerNarrativeAdapter')||
    !gardenCode.includes('drawHomeNpc')||!gardenCode.includes('interactHomeNpc')||
