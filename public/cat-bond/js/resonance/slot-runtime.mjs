@@ -57,7 +57,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(region!==expectedRegion||actor.region!==region&&npcId!=="muling")return fail("wrong-region");
   if(npcId==="muling"&&s.id==="library:M-05"&&v.cursor>=s.lines.length&&v.choice)return fail("companion-unavailable");
   if(npcId==="muling"&&actor.region!==region&&!["companion","identity-revealed","betrayal-revealed"].includes(v.muling)&&!["starfall:F-03","starfall:F-04","starfall:F-05"].includes(s.id))return fail("companion-unavailable");
-  const requiredActor={"harbor:H-01":"qilan","harbor:H-02":"jiedeng","library:M-03":"muling","epilogue:E-02":"muling"}[s.id];
+  const requiredActor={"harbor:H-01":"qilan","harbor:H-02":"jiedeng","sky:S-04":"muling","library:M-03":"muling","epilogue:E-02":"muling"}[s.id];
   if(requiredActor&&v.objective.some(o=>o.startsWith("npc:"))&&npcId!==requiredActor)return fail("wrong-npc");
   if(s.lines.length&&!s.lines.some(l=>l.speaker===npcId)&&!s.choices.some(c=>c.npc===npcId))return fail("wrong-npc");
   const location=State.S.resonanceExploration?.location;if(campaign.regions.includes(region)&&location&&location!==region)return fail("wrong-map-location");

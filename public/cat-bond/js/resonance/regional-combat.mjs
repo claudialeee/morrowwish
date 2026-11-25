@@ -34,7 +34,7 @@ export function inPattern(p,f){
 }
 
 // Original regional scene and manifestation artwork. Render at native canvas scale; no CSS image substitute.
-const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["sky-arena.svg","gale-wing.svg"],library:["../resonance-world-v2/library.webp","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
+const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["../resonance-world-v2/sky.webp","gale-wing.svg"],library:["../resonance-world-v2/library.webp","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
 const art={};
 function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
@@ -95,7 +95,7 @@ function install(){
  const bg=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){if(this.regionalCombat&&drawScene(ctx,W,H,this.regionalCombat.region))return;return bg.call(this,ctx,W,H);};
  function notice(b,zh,en){b.game.toast({zh,en});}
- const labels={surge:["潮浪来袭，避开横向水带！","Tidal surge: leave the horizontal lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["熔渣即将落下！","Molten fragments are about to fall!"],gale:["风切线即将贯穿战场！","Gale shear is about to cross the arena!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨正在轮转，避开落点！","Orbital markers are rotating. Keep clear!"]};
+ const labels={surge:["潮浪来袭，避开横向水带！","Tidal surge: leave the horizontal lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["熔渣即将落下！","Molten fragments are about to fall!"],gale:["风切线即将贯穿战场，注意侧风推移！","Gale shear incoming. Counter the crosswind drift!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨正在轮转，避开落点！","Orbital markers are rotating. Keep clear!"]};
  function mount(game,b){
   document.getElementById("cb-region-combat")?.remove();
   const host=document.getElementById("battle-ui");if(!host)return;
@@ -109,7 +109,7 @@ function install(){
   const r=b.regionalCombat,kit=r.kit,button=panel.querySelector("button");
   panel.querySelector("span").textContent=b.libraryEncounter?tr(["守档幻象 · 躲开成对镜影","Archive echo · evade paired reflections"]):tr(kit.name)+" · "+tr(kit.enemy);
   button.hidden=!r.supportAvailable;button.disabled=r.supportUsed||!r.cast;
-  button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?tr(["Catdex · 核验回响","Catdex · verify echo"]):tr(kit.support);
+  button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?tr(["Catdex · 核验回响","Catdex · verify echo"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Yuanfan · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Lingyu · Escort flight"]):tr(kit.support);
  }
  function useSupport(b){
   const r=b.regionalCombat;if(!r||!r.supportAvailable||r.supportUsed||!r.cast||b.done)return false;
@@ -119,7 +119,7 @@ function install(){
   if(r.kit.kind==="roots")for(const f of cats){f.rootT=0;f.rooted=false;if(f.status)delete f.status.bind;}
   else if(r.kit.kind==="mirror"){for(const e of b.liveEnemies())e.reflectT=0;}
   else if(r.kit.kind==="embers"){for(const f of cats){if(f.status)delete f.status.burn;}}
-  else if(r.kit.kind==="gale"){for(const f of cats)f.inv=Math.max(f.inv||0,.8);}
+  else if(r.kit.kind==="gale"){for(const f of cats){f.inv=Math.max(f.inv||0,r.skyMethod==="escort-flight"?1.8:.8);if(r.skyMethod==="fast-courier")f.ultMeter=Math.min(100,(f.ultMeter||0)+12);}}
   else if(r.kit.kind==="orbit"){for(const f of cats)f.ultMeter=Math.min(100,(f.ultMeter||0)+15);}
   else{for(const f of cats)f.shieldT=Math.max(f.shieldT||0,2.5);}
   for(const f of cats)b.vfx.ring(f.x,f.y,{r0:16,vr:170,life:.55,color:r.kit.color,width:4});
@@ -142,6 +142,7 @@ function install(){
   const r=b.regionalCombat;if(!r||b.done||b.captureSeq||b.coachHoldsEnemies?.()||b.game.battleHelpOpen||b.duoRun||b.duoCinematic||b.ultCinematic)return;
   if(!living(b).length||!b.liveEnemies().length)return;
   if(r.cast){
+    if(r.kit.kind==="gale"){const direction=r.cycle%2?1:-1;for(const f of living(b)){if((f.inv||0)>0)continue;f.x=clamp(f.x+direction*22*Math.min(.05,dt),32,b.W-32);}}
     r.cast.remaining-=dt;
     if(r.cast.remaining<=0){resolve(b,r,r.cast);r.cast=null;r.next=r.kit.period;paintHud(b);}
     return;
@@ -179,7 +180,8 @@ function install(){
   if(normal&&this.battle){
    const snapshot=window.State.S.resonance;
    const supportAvailable=canonical&&Array.isArray(snapshot?.sanctuaries)&&snapshot.sanctuaries.includes(region);
-   this.battle.regionalCombat={region,kit,next:3.7,cast:null,cycle:0,supportAvailable,supportUsed:false};
+   const skyMethods=region==="sky"?window.CatBondResonance?.view?.()?.support?.find(x=>x.region==="sky")?.methods||[]:[];const skyMethod=skyMethods.includes("fast-courier")?"fast-courier":skyMethods.includes("escort-flight")?"escort-flight":null;
+   this.battle.regionalCombat={region,kit,next:3.7,cast:null,cycle:0,supportAvailable,supportUsed:false,skyMethod};
    if(manifestation&&this.battle.enemies[1]){
     const e=this.battle.enemies[1];e.regionalEnemy=region;e.combatName=kit.enemy;e.element=kit.element;e.role=kit.kind==="gale"?"ambusher":kit.kind==="mirror"?"sharpshooter":"skirmisher";
     e.maxhp=Math.max(45,Math.round(e.maxhp*.48));e.hp=e.maxhp;e.poiseMax=Math.round(e.maxhp*.55);e.poise=e.poiseMax;e.regionalCd=2.6;e.regionalCycle=0;e.rotation=[];e.ultSkill=null;
