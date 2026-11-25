@@ -90,7 +90,7 @@ function install(){
  function makeFitRail(head,shell){
   const rail=E("aside","rw-fit-rail "+(mode==="map"?"rw-atlas-rail":"rw-forest-rail"));
   rail.setAttribute("aria-label",tr("剧情与探索操作","Story and exploration controls"));
-  const priority=el=>el.matches(".rw-puzzle-controls")?-3:el.matches(".rw-notice")?-2:el.matches(".rw-forge-release")?-1:el.matches(".rw-puzzle-controls,.rw-world-actions,.rw-system-nav")?0:el.matches(".rw-objective")?1:el.matches(".rw-regions,.rw-cargo")?2:el.matches(".rw-controls")?3:4;
+  const priority=el=>el.matches(".rw-puzzle-controls")?-3:el.matches(".rw-notice")?-2:el.matches(".rw-forge-release")?-1:el.matches(".rw-starfall-summary")&&host.dataset.region==="starfall"&&!explorer?.puzzle?-0.5:el.matches(".rw-puzzle-controls,.rw-world-actions,.rw-system-nav")?0:el.matches(".rw-objective")?1:el.matches(".rw-regions,.rw-cargo")?2:el.matches(".rw-controls")?3:4;
   const items=[...host.children].filter(n=>n!==head&&n!==shell);
   const message=items.find(n=>n.matches(".rw-notice"));const messageText=message?.textContent||"";
   if(messageText!==fitNotice){fitNotice=messageText;if(messageText){fitPage=0;message.setAttribute("role","status");message.setAttribute("aria-live","polite");}}
@@ -192,7 +192,7 @@ function install(){
    }ledger.append(item);
   }
   if(w.cargo&&w.cargo.actor!==w.location)ledger.append(B(tr("返回未交付物资所在地","Return to undelivered cargo"),()=>enterRegion(w.cargo.actor),!!explorer?.puzzle));
-  if(v.ring&&w.location!=="starfall")ledger.append(B(tr("返回星坠原","Return to Starfall"),()=>enterRegion("starfall"),!!explorer?.puzzle));for(const child of [...ledger.children]){const group=E("section","rw-starfall-ledger");group.append(child);host.append(group);}
+  if(v.ring&&w.location!=="starfall")ledger.append(B(tr("返回星坠原","Return to Starfall"),()=>enterRegion("starfall"),!!explorer?.puzzle));const overview=E("section","rw-starfall-ledger rw-starfall-summary");overview.append(ledger.firstElementChild,ledger.firstElementChild);host.append(overview);for(const child of [...ledger.children]){const group=E("section","rw-starfall-ledger");group.append(child);host.append(group);}
  }
  const shell=E("div","rw-shell");canvas=E("canvas","rw-surface");canvas.width=W;canvas.height=H;canvas.tabIndex=0;canvas.style.cursor=cameraEnabled()?"grab":"default";canvas.setAttribute("aria-label",tr("可操作的世界探索场景","Interactive world exploration"));ctx=canvas.getContext("2d");shell.append(canvas);host.append(shell);
  if(mode==="region"&&w.location==="harbor"){host.dataset.region="harbor";const p=explorer?.puzzle;if(p){host.dataset.harborPuzzle="true";host.append(E("p","rw-harbor-guide",ceremony?tr("聆听港口居民的回应……","Listen to the harbor residents answer…"):harborPuzzleHint(p,lang())));}else{delete host.dataset.harborPuzzle;const status=E("div","rw-harbor-status");status.append(E("span","",v.melodies.includes("harbor")?tr("灯塔 · 已复明","Beacon · Restored"):v.current?.id==="harbor:H-04"?tr("风暴 · 救援中","Storm · Rescue underway"):tr("海雾 · 航路关闭","Sea fog · Route closed")));if(v.melodies.includes("harbor"))status.append(E("span","",tr("归潮调 · 眠根林航线 · 潮汐泉已解锁","Returning Tides · Rootsleep route · Tidewater Fountain unlocked")));host.append(status);}}else{if(mode==="region")host.dataset.region=w.location;else delete host.dataset.region;delete host.dataset.harborPuzzle;}pointers.clear();drag=null;dragged=false;
