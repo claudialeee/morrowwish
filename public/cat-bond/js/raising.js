@@ -95,6 +95,7 @@ const STATION_TYPES = {
   yarn:    { name: '毛线坊',   icon: '🧶', res: 'coins', base: 60,  cap: 180, desc: '编织小物售卖，攒金币升级站点。' },
   sun:     { name: '晒太阳位', icon: '☀️', res: 'coins', base: 90,  cap: 270, desc: '持续赚金币：派猫上岗后约每分钟赚 1 枚，离线也继续生产；回工坊点收取到账。' },
   watch:   { name: '瞭望台',   icon: '🔭', res: 'luck',  base: 0.5, cap: 5,   desc: '瞭望远方，积攒好运（提升野猫稀有度）。' },
+  forge:   { name: '赤炉锻造台', icon: '⚒', res: 'coins', base: 75, cap: 225, desc: '使用赤炉环城的新安全设计锻造工具。' },
   nursery: { name: '暖窝',     icon: '🥚', res: null,    base: 0,   cap: 0,   desc: '把两只猫放进暖窝，孵化小猫。' },
 };
 
@@ -188,6 +189,7 @@ function init() {
   if (!State.S.raising) State.S.raising = defaultRaising();
   const r = State.S.raising;
   if (!r.stations) r.stations = defaultStations();
+  if(State.S.resonance?.completed?.includes("forge:E-04")&&!r.stations.some(st=>st.id==="st_forge"))r.stations.push({id:"st_forge",type:"forge",level:1,stored:0,assignedUid:null,reinforced:false});
   if (!r.pity) r.pity = { count: 0 };
   if (!r.butterfly) r.butterfly = { active: false, spawnAt: 0 };
   // Legacy raising.yarn is migrated into coins in State.load(); never resurrect it here.
@@ -238,6 +240,8 @@ function stationCap(st) {
   return Math.round(t.cap * (1 + 0.5 * (st.level - 1)));
 }
 
+// Wind readings recovered on Farwind Isle calibrate the existing lookout; no new currency or station.
+function skyLookoutCalibrated(){const s=State.S;return !!(s.resonance?.completed?.includes("sky:S-05")&&s.resonanceExploration?.pickups?.["sky:survey-cache"]);}
 // per-HOUR production for a station (0 if no worker or non-producing type).
 function stationRate(st) {
   const t = STATION_TYPES[st.type];
@@ -250,7 +254,7 @@ function stationRate(st) {
   mult *= 1 + bondLevel(cat) * 0.04;                               // gift-bond buff
   const tr = TRAITS[cat.trait];
   if (tr && tr.res && tr.res[t.res]) mult *= tr.res[t.res];
-  return t.base * Math.pow(1.15, st.level - 1) * mult;
+  return t.base * Math.pow(1.15, st.level - 1) * mult * (st.type==="forge"&&st.reinforced?1.25:1) * (st.type==="watch"&&skyLookoutCalibrated()?1.25:1);
 }
 
 function isBusy(uid) {
@@ -335,6 +339,9 @@ function upgrade(stationId) {
   return { ok: true, level: st.level };
 }
 
+function forgeTools(){
+  init();const root=State.S,st=stationById("st_forge");if(!root.resonance?.completed?.includes("forge:E-04")||!st)return {ok:false,reason:"locked"};if(st.reinforced)return {ok:false,reason:"already-crafted"};if(root.coins<45||root.fish<2)return {ok:false,reason:"materials"};const coins=root.coins,fish=root.fish;root.coins-=45;root.fish-=2;st.reinforced=true;let result;try{result=State.save();}catch{}if(!result?.ok){root.coins=coins;root.fish=fish;st.reinforced=false;return {ok:false,reason:"save"};}return {ok:true};
+}
 function stationsView() {
   init();
   return (raising().stations || []).map(st => {
@@ -348,7 +355,7 @@ function stationsView() {
       ratePerHour: Math.round(stationRate(st) * 10) / 10,
       catName: cat ? speciesName(cat) : null, active: !!cat,
       assignedUid: st.assignedUid || null,
-      desc: t.desc,
+      desc: t.desc, reinforced:!!st.reinforced, skyCalibrated:st.type==="watch"&&skyLookoutCalibrated(),
     };
   });
 }
@@ -683,7 +690,7 @@ window.Raising = {
   init, tick, applyOffline,
   // stations
   STATION_TYPES, stationsView, assignCat, unassignCat, collect, collectAll,
-  upgrade, upgradeCost, stationRate, isBusy,
+  upgrade, upgradeCost, stationRate, isBusy, forgeTools,
   // cats: personality / trait / shiny / bond
   PERSONALITIES, TRAITS, rollPersonality, rollTrait, ensureCatFields,
   decorateNewCat, giftCat, bondLevel, catBadges,
