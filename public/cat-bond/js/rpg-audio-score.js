@@ -7,24 +7,24 @@ const R=['harbor','forest','forge','sky','library','starfall'];
 // Phrases are scale degrees and beats, not a fixed repeated arpeggio.
 const motifs={
  star:[[0,.5],[2,.5],[4,1],[7,1],[6,.5],[5,.5],[4,1],[2,.5],[1,.5],[0,2]],
- harbor:[102,62,'major','harbor','flute','harp','piano',[0,3,0,4,0,3,1,4]],
- forest:[104,67,'major','forest','flute','harp','piano',[0,3,0,4,0,2,3,4]],
- forge:[108,62,'major','forge','horn','strings','piano',[0,0,3,4,0,3,1,4]],
- sky:[106,65,'major','sky','flute','strings','harp',[0,3,0,4,0,2,3,4]],
- library:[96,67,'major','library','piano','harp','bell',[0,3,0,4,0,3,1,4]],
- starfall:[100,62,'major','starfall','flute','strings','harp',[0,3,0,4,0,2,3,4]]
+ harbor:[[4,.5],[5,.5],[7,1],[5,.5],[4,.5],[2,1],[4,.5],[2,.5],[1,1],[0,2]],
+ forest:[[0,.5],[2,.5],[4,.5],[5,.5],[7,1],[6,.5],[4,.5],[5,1],[3,.5],[2,.5],[0,2]],
+ forge:[[0,.5],[0,.5],[4,1],[2,.5],[4,.5],[5,1],[7,1],[5,.5],[4,.5],[2,1],[0,1]],
+ sky:[[2,.5],[4,.5],[7,1],[9,1],[8,.5],[7,.5],[5,1],[4,.5],[2,.5],[4,2]],
+ library:[[0,1],[2,.5],[4,.5],[5,1],[7,1],[6,.5],[4,.5],[2,1],[1,.5],[0,1.5]],
+ starfall:[[0,1],[4,1],[7,1],[9,.5],[7,.5],[5,1],[4,.5],[2,.5],[0,2]]
 };
 const P={
  title:[104,65,'major','star','flute','strings','harp',[0,3,0,4,0,3,1,4]],
  opening:[102,65,'major','star','flute','strings','harp',[0,3,0,4,0,2,3,4]],
  garden:[108,67,'major','star','piano','harp','flute',[0,3,0,4,0,3,1,4]],
  atlas:[106,62,'major','star','flute','strings','harp',[0,3,0,4,0,2,3,4]],
- harbor:[84,62,'major','harbor','flute','strings','harp',[0,3,6,4,0,5,3,4]],
- forest:[88,67,'major','forest','harp','strings','flute',[0,2,3,4,0,6,3,4]],
- forge:[102,62,'dorian','forge','piano','strings','harp',[0,0,5,6,0,3,1,4]],
- sky:[92,65,'major','sky','flute','strings','harp',[0,3,5,4,2,3,1,4]],
- library:[80,67,'major','library','piano','strings','bell',[0,2,5,4,0,6,1,4]],
- starfall:[78,62,'dorian','starfall','flute','strings','bell',[0,3,5,6,0,2,3,4]],
+ harbor:[102,62,'major','harbor','flute','harp','piano',[0,3,0,4,0,3,1,4]],
+ forest:[104,67,'major','forest','flute','harp','piano',[0,3,0,4,0,2,3,4]],
+ forge:[108,62,'major','forge','horn','strings','piano',[0,0,3,4,0,3,1,4]],
+ sky:[106,65,'major','sky','flute','strings','harp',[0,3,0,4,0,2,3,4]],
+ library:[96,67,'major','library','piano','harp','bell',[0,3,0,4,0,3,1,4]],
+ starfall:[100,62,'major','starfall','flute','strings','harp',[0,3,0,4,0,2,3,4]],
  battle:[114,62,'minor','star','strings','horn','drum',[0,5,6,4,0,3,5,4]],
  muling:[94,64,'major','star','flute','harp','piano',[0,3,0,4,0,2,3,4]],
  identity:[92,62,'major','star','bell','harp','piano',[0,3,0,4,0,3,1,4]],
