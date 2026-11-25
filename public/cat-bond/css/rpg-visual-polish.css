@@ -242,3 +242,56 @@
    background:var(--cbv-night-hover);border-color:var(--cbv-brass-light);
  }
 }
+
+/* Functional controls use restrained engraved icons. Dynamic elemental skill
+   glyphs remain intact; no icon replaces a translated control label. */
+#stage #battle-ui #mv-lock .mv-icon,
+#stage #battle-ui #mv-dodge .mv-icon,
+#stage #duo-burst .duo-burst-emblem {
+  display:inline-grid;place-items:center;position:relative;color:inherit;
+  font-size:0!important;line-height:1;min-width:20px;min-height:20px;
+}
+#stage #battle-ui #mv-lock .mv-icon::before,
+#stage #battle-ui #mv-dodge .mv-icon::before,
+#stage #duo-burst .duo-burst-emblem::before {
+  content:"";display:block;width:20px;height:20px;background:currentColor;
+  mask:var(--cbv-icon) center/contain no-repeat;
+  -webkit-mask:var(--cbv-icon) center/contain no-repeat;
+}
+#stage #battle-ui #mv-lock .mv-icon {--cbv-icon:url("../assets/ui/lock.svg");}
+#stage #battle-ui #mv-dodge .mv-icon {--cbv-icon:url("../assets/ui/dodge.svg");}
+#stage #duo-burst .duo-burst-emblem {--cbv-icon:url("../assets/ui/duo.svg");}
+#stage #panel>.panel-dismiss,#stage #panel .card .card-close {
+  background:#f3e9d4!important;color:#40574f!important;
+  border:1px solid #b6a88a!important;border-radius:var(--cbv-radius)!important;
+  box-shadow:0 2px 6px #243b4326!important;
+}
+#stage #panel>.panel-dismiss {font-size:0!important;}
+#stage #panel>.panel-dismiss::before {
+  content:"";display:block;width:18px;height:18px;margin:auto;background:currentColor;
+  mask:url("../assets/ui/close.svg") center/contain no-repeat;
+  -webkit-mask:url("../assets/ui/close.svg") center/contain no-repeat;
+}
+#stage #panel>.panel-dismiss:focus-visible,#stage #panel .card .card-close:focus-visible,
+#stage #intro .cb-save-slot-actions button:focus-visible,#stage #cb-system-toggle:focus-visible,
+#stage #yard-actions .fab:focus-visible,#stage .sg-hotspot:focus-visible {
+  outline:2px solid var(--cbv-brass-light);outline-offset:2px;
+}
+#stage #intro .cb-intro-actions button:not(:disabled):active,
+#stage #intro .cb-save-slot-actions button:not(:disabled):active,
+#stage #panel>.panel-dismiss:active,#stage #cb-system-toggle:active {
+  box-shadow:inset 0 2px 5px #17253266!important;
+}
+#stage #intro .cb-intro-actions button:disabled {
+  opacity:.55!important;cursor:not-allowed;
+}
+#stage #panel .cat-hub-tabs button:focus-visible {outline:2px solid #947648;outline-offset:2px;}
+#stage #panel .cat-hub-tabs button:not(:disabled):active {box-shadow:inset 0 2px 5px #17253240;}
+#stage #panel .card .panel-back {position:relative;}
+@media (hover:hover) {
+ #stage #panel>.panel-dismiss:hover,#stage #panel .card .card-close:hover {background:#e3d4b7!important;}
+ #stage #intro .cb-save-slot-actions button:not(:disabled):hover {filter:brightness(1.08);}
+}
+@media (prefers-reduced-motion:reduce) {
+ #stage #intro .cb-title-landscape,#stage #intro .cb-title-landscape::after {animation:none!important;}
+}

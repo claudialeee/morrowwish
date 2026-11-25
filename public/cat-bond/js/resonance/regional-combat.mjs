@@ -49,7 +49,10 @@ function drawScene(ctx,W,H,region){
 function drawManifestation(ctx,e,b){
  const img=art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
  const size=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62)),bob=Math.sin(b.t*3+e.i)*2;
- ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();return true;
+ // Fit the authored creature within the existing visual box without stretching.
+ const fit=Math.min(size/img.naturalWidth,size/img.naturalHeight),dw=img.naturalWidth*fit,dh=img.naturalHeight*fit;
+ ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);
+ ctx.drawImage(img,-dw/2,size/2-dh,dw,dh);ctx.restore();return true;
 }
 
 // Position the mechanic HUD below the actual battle topbar on every viewport.
