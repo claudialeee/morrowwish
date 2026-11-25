@@ -12,7 +12,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
   for(let i=0;i<30;i++){
    const v=await view();if(v.current?.id!==id)return;
    const canChoose=!v.choice&&v.current.choices.length&&(v.current.choiceTiming==='beforeAction'||v.cursor===v.current.lines.length);
-   if(!canChoose&&(!v.lineReady||v.cursor>=v.current.lines.length)){if(await panel.isVisible()&&!await panel.locator('.res-key-panel').isVisible()){const close=button('Close',panel);if(await close.isVisible())await close.click();}return;}
+   if(!canChoose&&(!v.lineReady||v.cursor>=v.current.lines.length)){if(id==='epilogue:E-03'){await page.locator('.res-key-piece').waitFor();return;}if(await panel.isVisible()&&!await panel.locator('.res-key-panel').isVisible()){const close=button('Close',panel);if(await close.isVisible())await close.click();}return;}
    if(!await panel.isVisible()){if(await button('Journal').isVisible())await button('Journal').click();else await button('Talk to Muling',page.locator('.sg-prologue-guide')).click();await panel.waitFor();}
    if(canChoose){await button(choice||v.current.choices[0].label.en,panel).click();continue;}
    await panel.locator('.res-line').filter({hasText:v.current.lines[v.cursor].text.en}).waitFor();
@@ -114,7 +114,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  assert.ok((await view()).objective.includes('battle:central-echo'),'Uncompleted support cannot commit victory');
  const rewardBefore=await page.evaluate(()=>State.S.coins);await beginBattle('Approach the Star Bell');await shot('B-03-ring');
  const supported=new Set();for(let i=0;i<360;i++){const a=await page.evaluate(()=>__game.battle?.resonanceFinale?.nodes?.filter(n=>n.done).map(n=>n.region)||null);if(!a)break;for(const x of a)if(!supported.has(x)){supported.add(x);await shot('B-03-support-'+x);}await page.waitForTimeout(400);}
- await finishBattle();await check('battle:central-echo');assert.equal((await view()).completed.includes('finale:B-03'),false);assert.equal((await view()).support.length,6);assert.equal(await page.evaluate(()=>State.S.coins),rewardBefore+180);await dialogue('finale:B-03');
+ await finishBattle();await check('battle:central-echo');assert.equal((await view()).completed.includes('finale:B-03'),false);assert.equal((await page.evaluate(()=>CatBondResonance.snapshot().support)).length,6);assert.equal(await page.evaluate(()=>State.S.coins),rewardBefore+180);await dialogue('finale:B-03');
  await button('Help Muling release the last lock').click();const latch=button('Hold the bell chain');await latch.waitFor();await latch.focus();await page.keyboard.down('Space');await page.waitForTimeout(1700);await page.keyboard.up('Space');
  const endingShots=await cinematic('finale:B-04'),epilogueShots=await cinematic('epilogue:E-01');
  await page.waitForFunction(()=>__game.scene==='yard');await scene('epilogue:E-02');
@@ -134,10 +134,12 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  ['starfall',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan']]];
  for(const [region,inputs,npcs] of repairs){await gotoRegion(region);await puzzle('Muling’s letter · Repair the sanctuary',inputs);for(const n of npcs){const control=button('Invite to garden: '+n);await control.click();await control.waitFor({state:'hidden'});}await page.waitForFunction(r=>CatBondResonance.view().postgame.includes('postgame:reunion-'+r),region);await shot('postgame-'+region);}
  await gotoRegion('starfall');await beginBattle('Star Bell Ruins · Legendary challenge');await shot('postgame-ruins');await finishBattle();await page.locator('#cr-ok,#battle-recovery-ok').click();assert.equal((await view()).postgame.length,13);
+ await beginBattle('Star Bell Ruins · Duo Promise challenge');await shot('postgame-duo-ruins');await finishBattle();await page.locator('#cr-ok,#battle-recovery-ok').click();assert.ok((await view()).ruins.duoClears>=1,'Earn a real Duo Promise ruins victory');
  const saved=await page.evaluate(()=>({returned:CatBondResonance.view().returned.length,cats:State.S.cats.map(c=>c.uid),coins:State.S.coins,postgame:CatBondResonance.view().postgame,ruins:CatBondResonance.view().ruins.clears}));assert.equal(saved.returned,12);
  await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');await shot('postgame-garden');
  await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await page.waitForFunction(()=>CatBondResonance.view().ending);
  assert.deepEqual(await page.evaluate(()=>({returned:CatBondResonance.view().returned.length,cats:State.S.cats.map(c=>c.uid),coins:State.S.coins,postgame:CatBondResonance.view().postgame,ruins:CatBondResonance.view().ruins.clears})),saved);await shot('postgame-reloaded');
+ await button('Garden Restoration',page.locator('.sg-prologue-guide')).click();await page.locator('[data-garden-project="starfall"]').click();const restoreMemorial=page.locator('[data-restore-project="starfall"]');if(await restoreMemorial.count())await restoreMemorial.click();await page.locator('[data-tend-project="starfall"]').waitFor();const oldVisits=await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='starfall').visits);await page.locator('[data-tend-project="starfall"]').click();await page.waitForFunction(v=>GardenProjects.progress().find(p=>p.id==='starfall').visits>v,oldVisits,{timeout:60000});await shot('postgame-real-garden-care');
  assert.ok(naturalDefeat,'Actual defeat remains unverified if player had to withdraw');
  return {normalFullPlaythrough:true,stagingCinematics:true,naturalDefeat,usedDuo,usedPromise,openingShots,endingShots,epilogueShots,postgame:saved.postgame.length,returned:saved.returned};
 }
