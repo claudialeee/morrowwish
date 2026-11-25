@@ -41,6 +41,17 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
   await page.waitForFunction(()=>MorrowwishI18n.get()==="zh");
   await shot(id.replace(":","-")+"-cinematic-zh");
   await page.locator(".res-chapter-cinematic .cbcp-language").click();
+  if(id==="starfall:F-02"){
+   const root=page.locator(".res-chapter-cinematic");
+   const frame=await root.getAttribute("data-frame-id");
+   await root.getByRole("button",{name:"Pause",exact:true}).click();
+   await page.reload();await page.locator("#intro-continue").click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+   await scene(id);if(await button("Starfall Expanse").isVisible())await button("Starfall Expanse").click();
+   await button(label).click();await root.waitFor();
+   await page.waitForFunction(frame=>{const el=document.querySelector(".res-chapter-cinematic");return el?.dataset.ready==="true"&&el.dataset.paused==="true"&&el.dataset.frameId===frame;},frame);
+   await shot("starfall-memory-resume");
+   await root.getByRole("button",{name:"Resume",exact:true}).click();
+  }
   await scene(next);
  };
  // Complete remaining earlier chapters from the actual normal-flow save.
