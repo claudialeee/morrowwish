@@ -133,7 +133,16 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
    if(v.objective[0]!==op||!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("starfall-record-order");
    const spec=puzzleSpecs[op];if(spec&&proof.starfallSequence?.join(",")!==spec.goal.join(","))return fail("starfall-record-order");
   }
-  if(op==="melody:starfall"&&!["xingya","lichuan"].every(id=>w.interactions["starfall:F-04:invite:"+id]))return fail("local-response-required");
+  if(sceneId==="starfall:F-04"){
+   const point=layouts.starfall.features[op],pos=w.positions.starfall;
+   if(v.objective[0]!==op||!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("starfall-routing-order");
+   const goal=puzzleSpecs[op]?.goal||(op==="melody:starfall"?[0,1,2]:null);
+   if(!goal||proof.starfallSequence?.join(",")!==goal.join(","))return fail("starfall-routing-order");
+   if(op==="melody:starfall"){
+    const ids=["xingya","lichuan"],p=proof.participants;
+    if(!ids.every(id=>w.interactions["starfall:F-04:invite:"+id])||!Array.isArray(p)||p.length!==2||new Set(p).size!==2||!ids.every(id=>p.includes(id))||proof.responses?.length!==3||!proof.responses.every((n,i)=>n.actor===p[i%2]&&n.reply===(goal[i]+1)%3))return fail("local-response-required");
+   }
+  }
   if(op==="melody:harbor"&&!["qilan","jiedeng"].every(id=>w.interactions["harbor:H-05:invite:"+id]))return fail("local-response-required");
   if(op==="melody:forest"&&!["yahe","yuchuan"].every(id=>w.interactions["forest:R-04:invite:"+id]))return fail("local-response-required");
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
@@ -154,6 +163,6 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(typeof api?.exchange!=="function"||!proof.token)return fail("canonical-exchange-unavailable");
   const reward={coins:10,fish:1},r=api.exchange({a,b,stage:s.stage,actor:s.actor,action:s.action,verified:true,token:proof.token},patch(x=>({...x,cargo:null}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
- function pickupReward(region,id){const w=world();if(w.location!==region||w.pickups[region+":"+id])return fail("already-collected");const secret=region==="starfall"&&id==="starfall-hidden-record";if(secret){const p=w.positions.starfall;if(!view().completed.includes("starfall:F-02")||!p||Math.hypot(p.x-.41,p.y-.58)>=.072)return fail("walk-to-cache");}else if(!/^cache-[12]$/.test(id))return fail("invalid-cache");return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),secret?{coins:30,fish:2}:id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
+ function pickupReward(region,id){const w=world();if(w.location!==region||w.pickups[region+":"+id])return fail("already-collected");const secret=region==="starfall"&&id==="starfall-hidden-record";if(secret){const p=w.positions.starfall;if(!view().completed.includes("starfall:F-02")||!p||Math.hypot(p.x-.41,p.y-.58)>=.072)return fail("walk-to-cache");}else {if(!/^cache-[12]$/.test(id))return fail("invalid-cache");const path=layouts[region]?.paths,p=w.positions[region],pair=id==="cache-1"?path?.slice(0,2):path?.slice(-3,-1);if(!p||!pair||pair.length!==2||Math.hypot(p.x-(pair[0][0]+pair[1][0])/2,p.y-(pair[0][1]+pair[1][1])/2)>=.072)return fail("walk-to-cache");}return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),secret?{coins:30,fish:2}:id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
  return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,forestInvited,inviteForest,starfallInvited,inviteStarfall,tideStep,traceTide,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
 }

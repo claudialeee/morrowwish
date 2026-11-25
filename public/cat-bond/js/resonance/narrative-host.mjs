@@ -58,7 +58,7 @@ function install(){
  // The physical map interaction already validates movement and proximity. No generic story button can grant NPC evidence.
  window.addEventListener("cat-bond-resonance-npc-request",event=>{
   if(window.__game?.scene==="battle")return;
-  const d=event.detail||{};if(window.CatBondResonanceNPC){if(!window.CatBondResonanceNPC.talk(d.npcId,d.region,d.sceneId))window.__game?.toast?.({zh:"暂时没有新的话题。",en:"Nothing new to discuss yet."});return}const r=runtime.recordNPC(d);if(r.ok)show();
+  const d=event.detail||{};if(window.CatBondResonanceNPC){if(!window.CatBondResonanceNPC.talk(d.npcId,d.region,d.sceneId))window.__game?.toast?.({zh:"暂时没有新的话题。",en:"Nothing new to discuss yet."});return}const r=runtime.recordNPC({...d,token:runtime.capture()});if(r.ok)show();
  });
  window.addEventListener("cat-bond-resonance-changed",refresh);
  window.addEventListener("cat-bond-active-save-changed",close);

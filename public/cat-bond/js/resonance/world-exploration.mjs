@@ -95,7 +95,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
   const v=bridge.view(),f=layout.features[op];if(!f||v.current?.chapter!==region||!v.objective.includes(op)||!near(f))return {ok:false,reason:"walk-to-objective"};
   if(op==="explore:tide-logbook"&&bridge.tideStep())return {ok:false,reason:"incomplete-tide-trail"};
   if(op==="puzzle:paired-water-gates"&&!bridge.pairedGate()?.ready)return {ok:false,reason:"upper-gate-required"};
-  if(v.current.id==="starfall:F-02"&&op!==v.objective[0])return {ok:false,reason:"starfall-record-order"};
+  if(["starfall:F-02","starfall:F-04"].includes(v.current.id)&&op!==v.objective[0])return {ok:false,reason:v.current.id==="starfall:F-02"?"starfall-record-order":"starfall-routing-order"};
   if(op.startsWith("battle:"))return {ok:false,reason:"battle-host-required"};
   if(v.current.id==="harbor:H-04"){
    const first=v.choice==="rescue"?"rescue:storm-boat":"puzzle:beam-mirrors";
