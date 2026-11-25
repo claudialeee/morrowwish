@@ -382,3 +382,6 @@ html[data-mw-settings-game="cat-bond"] #stage #cb-header-actions > button:focus-
 @media(prefers-reduced-motion:reduce){
  #stage #tabbar .tab,#stage #yard-actions .fab {transition:none!important;}
 }
+
+/* Keep the sole RPG menu and fixed scene-fit contract authoritative. */
+html[data-mw-settings-game="cat-bond"] #stage #mw-game-settings,html[data-mw-settings-game="cat-bond"] #stage #mw-fullscreen-toggle,#stage #guide-help,#stage #battle-skill-info-toggle{display:none!important}

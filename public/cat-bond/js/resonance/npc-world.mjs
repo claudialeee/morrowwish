@@ -12,7 +12,7 @@ function residentImage(id){
  return residentImages.get(id);
 }
 function drawResident(ctx,id,{x,y,scale=1,time=0}){
- if(id==='muling'){if(!mulingGarden.complete||!mulingGarden.naturalWidth)return false;const h=132*scale,w=h*mulingGarden.naturalWidth/mulingGarden.naturalHeight;ctx.save();ctx.shadowColor='rgba(24,27,39,.25)';ctx.shadowBlur=9;ctx.drawImage(mulingGarden,x-w/2,y-h,w,h);ctx.restore();return true;}
+ if(id==='muling'){if(!mulingGarden.complete||!mulingGarden.naturalWidth)return false;const fit=Math.min(100*scale/mulingGarden.naturalWidth,132*scale/mulingGarden.naturalHeight),w=mulingGarden.naturalWidth*fit,h=mulingGarden.naturalHeight*fit;ctx.save();ctx.translate(x,y);ctx.save();ctx.scale(1,.22);const shadow=ctx.createRadialGradient(0,0,0,0,0,Math.max(1,w*.46));shadow.addColorStop(0,"#20272b44");shadow.addColorStop(1,"#20272b00");ctx.fillStyle=shadow;ctx.fillRect(-w/2,-w/2,w,w);ctx.restore();ctx.drawImage(mulingGarden,-w/2,-h,w,h);ctx.restore();return true;}
  const image=residentImage(id);
  if(!image?.complete||!image.naturalWidth)return false;
  const height=84*scale,width=height*image.naturalWidth/image.naturalHeight;
