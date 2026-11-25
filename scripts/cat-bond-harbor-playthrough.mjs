@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {chromium} from 'playwright';
+import {continueToFinale} from './cat-bond-finale-real-playthrough.mjs';
+const full=process.env.CAT_BOND_FULL_PLAYTHROUGH==='1';
 
 const origin = 'http://127.0.0.1:8765';
-const out = 'artifacts/cat-bond-harbor';
+const out = full?'artifacts/cat-bond-finale':'artifacts/cat-bond-harbor';
 await fs.mkdir(out, {recursive:true});
 const browser = await chromium.launch({headless:true});
 const profiles = [
@@ -14,9 +16,10 @@ const profiles = [
 
 const results = [];
 try {
-  for (const {name, ...options} of profiles) {
+  for (const {name, ...options} of profiles.filter(p=>!process.env.CAT_BOND_PROFILE||p.name===process.env.CAT_BOND_PROFILE)) {
     const context = await browser.newContext(options);
     const page = await context.newPage();
+    if(full)page.setDefaultTimeout(90000);
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/*', route => route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
@@ -405,6 +408,7 @@ try {
     await shot('forge-arrival-dialogue');
     await readDialogue('forge:E-01');
     await scene('forge:E-02');
+    if(full){try{const finale=await continueToFinale({page,context,options,name,button,scene,shot,puzzle,travel,ship});assert.deepEqual(errors,[]);results.push({profile:name,captured,...state,...finale});}catch(error){await shot('FAILED-full-playthrough');console.error('Actual normal-playthrough stopped:',await page.evaluate(()=>({scene:CatBondResonance.view().current?.id,objective:CatBondResonance.view().objective,location:WorldMap.currentRegion,screen:__game.scene,battle:__game.battle?.resonanceFinale?.id})));throw error;}await context.close();continue;}
     await travel('Rootsleep Forest');
     // Save isolation: detached controls and the old region must not survive a slot switch,
     // even if a queued callback is invoked synchronously before the next animation frame.
