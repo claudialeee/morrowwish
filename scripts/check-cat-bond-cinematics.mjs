@@ -6,7 +6,7 @@ const manifest=JSON.parse(fs.readFileSync(new URL('../public/cat-bond/assets/cin
 assert.equal(manifest.schemaVersion,2);
 for(const a of manifest.assets){
  if(a.runtimeAllowed){assert.equal(a.status,'approved');assert.ok(a.visualReview?.evidence);assert.equal(a.visualReview.result,'PASS');assert.match(a.path,/\.(webp|png|avif|jpe?g)$/);assert.ok(fs.existsSync(path.join('public/cat-bond',a.path)));}
- else assert.equal(a.status,'rejected');
+ else {assert.ok(['rejected','candidate'].includes(a.status));if(a.status==='candidate'){assert.match(a.path,/\.(webp|png|avif|jpe?g)$/);assert.ok(fs.existsSync(path.join('public/cat-bond',a.path)));}}
 }
 const scene={id:'prologue:P-02',title:{zh:'选择',en:'Choice'},choices:[],lines:[{speaker:'muling',text:{zh:'还有办法。',en:'There is another way.'}}],requires:['cinematic:sacrifice','explore:never-grant']};
 const campaign={canon:'The Last Resonance',cast:{muling:{name:{zh:'暮铃',en:'Muling'}}},scenes:[scene]};

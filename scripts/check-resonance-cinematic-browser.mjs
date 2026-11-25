@@ -11,6 +11,12 @@ try {
   try {
    await page.goto('http://127.0.0.1:8765/cat-bond/cinematic-preview.html');
    await page.locator('#status').filter({hasText:'拒绝播放'}).waitFor();
+   const portrait=page.locator('#portrait');
+   await portrait.waitFor({state:'visible'});
+   const portraitInfo=await portrait.evaluate(img=>{const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);const px=ctx.getImageData(0,0,c.width,c.height).data;let transparent=0,opaque=0;for(let i=3;i<px.length;i+=4){if(px[i]===0)transparent++;else if(px[i]===255)opaque++;}const r=img.getBoundingClientRect();return {width:img.naturalWidth,height:img.naturalHeight,transparent,opaque,inside:r.left>=0&&r.right<=innerWidth+1}});
+   assert.equal(portraitInfo.width,960);assert.equal(portraitInfo.height,887);assert.ok(portraitInfo.transparent>1000&&portraitInfo.opaque>1000&&portraitInfo.inside);
+   await portrait.screenshot({path:'artifacts/resonance-cinematic-component/'+profile.name+'-MULING-ORIGINAL.png'});
+   await page.locator('#portrait-review').evaluate(e=>e.hidden=true);
    // Test fixtures are browser-generated PNG swatches, not art, never written to the asset manifest.
    const result=await page.evaluate(async()=>{
     const root=document.querySelector('#preview'),events=[];

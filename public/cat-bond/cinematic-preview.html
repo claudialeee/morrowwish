@@ -2,11 +2,12 @@
 <html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Cat Bond · Cinematic QA</title><style>
 html,body{margin:0;min-height:100%;background:#101d28;color:#f2e8d5;font-family:system-ui}main{max-width:900px;margin:auto;padding:1rem}p{line-height:1.6}code{overflow-wrap:anywhere}
-</style><main><h1>Cat Bond · 电影化演出验收</h1><p id="status" role="status">正在检查正式素材…</p><div id="preview" style="height:70svh" hidden></div></main>
+</style><main><h1>Cat Bond · 电影化演出验收</h1><p id="status" role="status">正在检查正式素材…</p><section id="portrait-review" hidden><h2>暮铃 · 旅行者立绘 / Muling · Traveler</h2><img id="portrait" alt="暮铃的原创烟银长毛猫立绘" style="display:block;max-width:100%;width:min(450px,85vw);height:auto;margin:auto;object-fit:contain;background:radial-gradient(ellipse at center,#516275,#182b3b 80%);border-radius:12px"><p>独立原画审查，未标记为正式验收通过。</p></section><div id="preview" style="height:70svh" hidden></div></main>
 <script src="js/cinematic-presentation.js"></script>
 <script type="module">
 import {buildCanonicalScene} from './js/resonance-cinematic.mjs';
 const manifest=await fetch('./assets/cinematics/asset-manifest.json').then(r=>r.json());
+const portrait=manifest.assets.find(x=>x.id==='muling-traveler-neutral');if(portrait){const el=document.querySelector('#portrait');el.src=portrait.path;await el.decode();document.querySelector('#portrait-review').hidden=false;}
 const count=manifest.assets.filter(x=>x.runtimeAllowed===true&&x.status==='approved').length;
 document.querySelector('#status').textContent=count===0?'正式素材尚未通过验收。本页拒绝播放被否定的草图，不会写入剧情状态。':'已验收素材 '+count+' 件；正式剧情由游戏存档内的 Chat 4 引擎提供，本页不修改剧情。';
 </script></html>
