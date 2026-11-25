@@ -34,3 +34,10 @@ html body #stage #cb-header #cb-yard-return{display:none!important}
 #stage .rb-wallet{display:flex;justify-content:flex-end;gap:8px;padding:5px 12px;background:#f5e8cd;border-bottom:1px solid #d3bd8e}
 #stage .rb-wallet .rb-stat{display:flex;align-items:center;gap:8px;margin:0!important;padding:4px 10px!important;border:0!important;background:transparent!important;color:#493e2b!important}
 @media(max-width:680px) and (orientation:portrait){#stage .rw-world>.rw-head{left:8px!important;top:8px!important;right:82px!important}#stage .rw-world .rw-brand{max-width:calc(100vw - 110px)}#stage .rw-world>.rw-fit-rail{right:8px!important;width:calc(100% - 16px)!important}#stage .rw-world .rw-fit-rail:has(.rw-puzzle-controls){max-height:48%!important}#stage #panel .cat-capture-card .btn-row{grid-template-columns:1fr!important}}
+
+/* Actual stage bounds, not just the art inside a framed desktop stage. */
+html body #game-root #stage{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important}
+#stage #intro .cb-title-landscape{background-size:cover!important;background-position:center!important}
+#stage .rw-world .rw-fit-rail:not(:has(.rw-puzzle-controls)){scrollbar-width:thin}
+#stage .rw-world .rw-fit-rail:has(.rw-puzzle-controls){scrollbar-width:thin}
+#stage .rw-world .rw-brand{pointer-events:none}

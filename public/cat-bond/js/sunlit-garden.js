@@ -43,7 +43,7 @@
       b.querySelector('.sg-hotspot-label').textContent=label;
       b.title=label;b.setAttribute('aria-label',label);
     }
-    const book=document.getElementById('sg-book-entry');if(book){book.textContent=en?'Resonance Book':'星铃之书';book.title=book.textContent;book.setAttribute('aria-label',book.textContent);}
+    const book=document.getElementById('sg-book-entry');if(book){book.textContent=en?'Resonance Book':'星月之书';book.title=book.textContent;book.setAttribute('aria-label',book.textContent);}
     const map=document.getElementById('fab-map');
     if(map){map.title=en?'Return to the world map':'返回世界地图';map.setAttribute('aria-label',map.title);
       const small=map.querySelector('small');if(small)small.textContent=en?'World':'地图';}
@@ -70,7 +70,7 @@
     guide.replaceChildren();
     const title=document.createElement('strong');
     title.textContent=ending?(en?'The world answers again':'六地再次回应'):epilogue?(scene==='epilogue:E-02'?(en?'A promise to repair':'承担责任'):(en?'The second garden key':'第二把花园钥匙')):departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
-    const hint=document.createElement('span');hint.textContent=ending?(en?'After the adventure · '+v.postgame.length+'/13 tasks · '+v.returned.length+'/12 visitors':'冒险之后 · '+v.postgame.length+'/13 项任务 · '+v.returned.length+'/12 位来访伙伴'):epilogue?(en?'Speak with Muling and finish the story in Sunlit Garden.':'与暮铃交谈，在阳光花园完成故事。'):departure?(en?'Prepare your companions before heading to Misttide Harbor.':'整理伙伴，准备前往霁潮港。'):talk?(en?'Open Resonance Book to explore your cats, party, workshop and Catdex, then speak to Muling.':'可打开星铃之书查看猫咪、队伍、工坊和 Catdex，再与暮铃交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
+    const hint=document.createElement('span');hint.textContent=ending?(en?'After the adventure · '+v.postgame.length+'/13 tasks · '+v.returned.length+'/12 visitors':'冒险之后 · '+v.postgame.length+'/13 项任务 · '+v.returned.length+'/12 位来访伙伴'):epilogue?(en?'Speak with Muling and finish the story in Sunlit Garden.':'与暮铃交谈，在阳光花园完成故事。'):departure?(en?'Prepare your companions before heading to Misttide Harbor.':'整理伙伴，准备前往霁潮港。'):talk?(en?'Open Resonance Book to explore your cats, party, workshop and Catdex, then speak to Muling.':'可打开星月之书查看猫咪、队伍、工坊和 Catdex，再与暮铃交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
     guide.append(title,hint);
     const row=document.createElement('div');guide.append(row);
     const add=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};row.append(b)};

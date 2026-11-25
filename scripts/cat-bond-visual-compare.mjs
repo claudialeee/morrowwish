@@ -118,12 +118,12 @@ try{
     await scene('prologue:P-05');await dialogue('prologue:P-05');
     await button('World map','前往世界地图',page.locator('.sg-prologue-guide')).click();await page.locator('.rw-surface').waitFor();await shot('atlas');
     const nav=page.locator('.rw-system-nav');
-    const book=nav.getByRole('button',{name:tr('Resonance Book','星铃之书'),exact:true,includeHidden:true});
+    const book=nav.getByRole('button',{name:tr('Resonance Book','星月之书'),exact:true,includeHidden:true});
     const reveal=async target=>{
       if(await target.isVisible())return;
       const world=page.locator('.rw-world:not([hidden])'),prev=world.locator('[data-fit-prev]'),next=world.locator('[data-fit-next]');
-      const atlas=world.locator('.rw-atlas-menu:not([open]) > summary');if(await atlas.count()&&await target.evaluate(el=>!!el.closest('.rw-atlas-menu')))await atlas.click();
-      const drawer=world.locator('.rw-region-toggle[aria-expanded="false"]');if(await drawer.count()&&await target.evaluate(el=>!!el.closest('#rw-region-actions')))await drawer.click();
+      const atlas=world.locator('.rw-atlas-menu:not([open]) > summary');if(await atlas.count()&&await target.evaluate(el=>!!el.closest('.rw-atlas-menu'))){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
+      const drawer=world.locator('.rw-region-toggle[aria-expanded="false"]');if(await drawer.count()&&await target.evaluate(el=>!!el.closest('#rw-region-actions'))){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
       const count=Number(await world.getAttribute('data-fit-pages')||1);
       for(let i=0;i<count&&!await target.isVisible()&&await prev.isVisible()&&await prev.isEnabled();i++)await prev.click();
       for(let i=0;i<count&&!await target.isVisible()&&await next.isVisible()&&await next.isEnabled();i++)await next.click();
@@ -131,7 +131,7 @@ try{
     };
     for(const [en,zh,id,tab] of [['Catdex','猫咪图鉴','catdex','dex'],['Party','出战队伍','party','party'],['Raise cats','猫咪养成','cultivation','cats'],['Workshop','工坊','workshop','workshop']]){
      if(await book.count()){
-      await reveal(book);await book.click();await page.locator('[data-book-tab="'+tab+'"]').click();
+      await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-book"]').click();await page.locator('[data-book-tab="'+tab+'"]').click();
       await page.locator('#panel.open.rb-open>.card').waitFor();await checkTheme();await shot(id);
       if(id==='cultivation'){await page.locator('[data-book-tab="duo"]').click();await shot('duo-bond');}
       await page.locator('#panel .rb-close').click();await page.locator('#panel.open').waitFor({state:'hidden'});

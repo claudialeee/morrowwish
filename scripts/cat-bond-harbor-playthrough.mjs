@@ -33,9 +33,9 @@ try {
       const all=scope.getByRole('button',{name,exact:true,includeHidden:true}).or(scope.locator('button').and(scope.getByText(name,{exact:true})));
       const reveal=async()=>{if(await target.isVisible())return;await all.waitFor({state:'attached',timeout:30000});if(await target.isVisible())return;const world=page.locator('.rw-world:not([hidden])');if(!(await world.isVisible()))return;
        const atlas=world.locator('.rw-atlas-menu:not([open]) > summary');
-       if(await atlas.count()&&await all.first().evaluate(el=>!!el.closest('.rw-atlas-menu')))await atlas.click();
+       if(await atlas.count()&&await all.first().evaluate(el=>!!el.closest('.rw-atlas-menu'))){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
        const region=world.locator('.rw-region-toggle[aria-expanded="false"]');
-       if(await region.count()&&await all.first().evaluate(el=>!!el.closest('#rw-region-actions')))await region.click();
+       if(await region.count()&&await all.first().evaluate(el=>!!el.closest('#rw-region-actions'))){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
        if(await target.isVisible())return;
        const count=Number(await world.getAttribute('data-fit-pages')||1),next=world.locator('[data-fit-next]'),prev=world.locator('[data-fit-prev]');
        const press=async locator=>options.hasTouch?locator.tap():locator.click();
@@ -44,14 +44,14 @@ try {
       };
       const click=target.click.bind(target),wait=target.waitFor.bind(target),enabled=target.isEnabled.bind(target);
       target.isEnabled=async opts=>{await reveal();return enabled(opts)};
-      target.click=async opts=>{if(scope===page&&['+','−','Overview','Follow cat'].includes(name)){await page.locator('#map-menu').click();const label={'+':'Zoom in','−':'Zoom out','Overview':'Overview','Follow cat':'Follow cat'}[name];return page.locator('#cb-system-menu').getByRole('button',{name:label,exact:true}).click(opts);}await reveal();return click(opts)};
+      target.click=async opts=>{if(['World atlas','Sunlit Garden'].includes(name)&&await all.first().evaluate(el=>!!el.dataset.worldNav).catch(()=>false)){await page.locator('#map-menu').click();return page.locator('#cb-system-menu [data-system="'+(name==='World atlas'?'world-atlas':'world-garden')+'"]').click(opts);}if(scope===page&&['+','−','Overview','Follow cat'].includes(name)){await page.locator('#map-menu').click();const label={'+':'Zoom in','−':'Zoom out','Overview':'Overview','Follow cat':'Follow cat'}[name];return page.locator('#cb-system-menu').getByRole('button',{name:label,exact:true}).click(opts);}await reveal();return click(opts)};
       target.waitFor=async opts=>{if(opts?.state==='hidden'&&/^(Invite |Deliver )/.test(name))return all.waitFor({...opts,state:'detached'});if(!opts||!['hidden','detached'].includes(opts.state))await reveal();return wait(opts)};
       if(/^(Invite |Returning Tides)/.test(name))target.count=()=>all.count();
       return target;
     };
     // A persistent status may live on another actual control page. Verify
     // it is reachable by tapping the game's pager, not by changing DOM state.
-    const revealText=async text=>{const message=page.getByText(text,{exact:true});await message.waitFor({state:'attached'});if(await message.isVisible())return;const world=page.locator('.rw-world:not([hidden])'),prev=world.locator('[data-fit-prev]'),next=world.locator('[data-fit-next]');const atlas=world.locator('.rw-atlas-menu:not([open]) > summary');if(await atlas.count()&&await message.evaluate(el=>!!el.closest('.rw-atlas-menu')))await atlas.click();const region=world.locator('.rw-region-toggle[aria-expanded="false"]');if(await region.count()&&await message.evaluate(el=>!!el.closest('#rw-region-actions')))await region.click();const press=el=>options.hasTouch?el.tap():el.click();const count=Number(await world.getAttribute('data-fit-pages')||1);for(let i=0;i<count&&!await message.isVisible()&&await prev.isVisible()&&await prev.isEnabled();i++)await press(prev);for(let i=0;i<count&&!await message.isVisible()&&await next.isVisible()&&await next.isEnabled();i++)await press(next);await message.waitFor();};
+    const revealText=async text=>{const message=page.getByText(text,{exact:true});await message.waitFor({state:'attached'});if(await message.isVisible())return;const world=page.locator('.rw-world:not([hidden])'),prev=world.locator('[data-fit-prev]'),next=world.locator('[data-fit-next]');const atlas=world.locator('.rw-atlas-menu:not([open]) > summary');if(await atlas.count()&&await message.evaluate(el=>!!el.closest('.rw-atlas-menu'))){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};const region=world.locator('.rw-region-toggle[aria-expanded="false"]');if(await region.count()&&await message.evaluate(el=>!!el.closest('#rw-region-actions'))){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};const press=el=>options.hasTouch?el.tap():el.click();const count=Number(await world.getAttribute('data-fit-pages')||1);for(let i=0;i<count&&!await message.isVisible()&&await prev.isVisible()&&await prev.isEnabled();i++)await press(prev);for(let i=0;i<count&&!await message.isVisible()&&await next.isVisible()&&await next.isEnabled();i++)await press(next);await message.waitFor();};
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
     const audioEvidence=[];
     const expectedAudio={garden:'garden',atlas:'atlas',harbor:'harbor','harbor-ceremony':'song-harbor','garden-return':'garden','forest-paired-puzzle':'forest','forest-living-roots-ceremony':'song-forest','forest-to-forge':'forge','forge-ceremony':'song-forge'};
@@ -84,7 +84,7 @@ try {
        });
        assert.deepEqual(fit,{inside:true,art:true,subtitle:true,layers:true},id+' actual cinematic stage fit and loaded actor layers');
       }else if(await page.locator('.rw-world:not([hidden])').isVisible()&&!await page.locator('#panel.open,.res-host').count()){
-       const fit=await page.evaluate(()=>{const w=document.querySelector('.rw-world:not([hidden])'),s=w?.querySelector('.rw-surface');if(!s)return null;const stage=document.getElementById('stage').getBoundingClientRect(),rect=s.getBoundingClientRect(),shell=s.parentElement.getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {scene:rect.width>0&&rect.height>0&&shell.top>=stage.top-1&&shell.bottom<=stage.bottom+1&&shell.left>=stage.left-1&&shell.right<=stage.right+1,ratio:Math.abs(rect.width/rect.height-16/9)<.03,noScroll:w.scrollHeight<=w.clientHeight+2&&(w.classList.contains("rw-region-compact")||rail.scrollHeight<=rail.clientHeight+2),buttons:[...rail.querySelectorAll('button')].filter(b=>b.getClientRects().length&&(!w.classList.contains('rw-region-compact')||!rail.contains(b))).every(b=>{const r=b.getBoundingClientRect();return r.top>=stage.top-1&&r.bottom<=stage.bottom+1&&r.left>=stage.left-1&&r.right<=stage.right+1;}),noFollower:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
+       const fit=await page.evaluate(()=>{const w=document.querySelector('.rw-world:not([hidden])'),s=w?.querySelector('.rw-surface');if(!s)return null;const stage=document.getElementById('stage').getBoundingClientRect(),rect=s.getBoundingClientRect(),shell=s.parentElement.getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {scene:rect.width>0&&rect.height>0&&shell.top>=stage.top-1&&shell.bottom<=stage.bottom+1&&shell.left>=stage.left-1&&shell.right<=stage.right+1,ratio:Math.abs(rect.width/rect.height-16/9)<.03,noScroll:w.scrollHeight<=w.clientHeight+2,buttons:[...rail.querySelectorAll('button')].filter(b=>b.getClientRects().length&&b.getBoundingClientRect().top<rail.getBoundingClientRect().bottom&&b.getBoundingClientRect().bottom>rail.getBoundingClientRect().top&&(!w.classList.contains('rw-region-compact')||!rail.contains(b))).every(b=>{const r=b.getBoundingClientRect();return r.top>=stage.top-1&&r.bottom<=stage.bottom+1&&r.left>=stage.left-1&&r.right<=stage.right+1;}),noFollower:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
        if(fit)assert.deepEqual(fit,{scene:true,ratio:true,noScroll:true,buttons:true,noFollower:true},id+' stage fit / solo exploration');
       }
       return page.screenshot({path:out+'/'+name+'-'+id+'.png'});
@@ -100,6 +100,8 @@ try {
       const project=()=>surface.evaluate((el,{x,y})=>{const [z,px,py]=JSON.parse(el.dataset.camera),r=el.getBoundingClientRect(),u=x*z+px,v=y*z+py;const shell=el.parentElement.getBoundingClientRect(),sx=r.left+r.width*u,sy=r.top+r.height*v;return {x:sx,y:sy,visible:u>=.015&&u<=.985&&v>=.015&&v<=.985&&sx>=shell.left+4&&sx<=shell.right-4&&sy>=shell.top+4&&sy<=shell.bottom-4};},{x,y});
       let point=await project();
       if(!point.visible){await button('Overview').click();await page.waitForFunction(()=>document.querySelector('.rw-surface')?.dataset.camera==='[1,0,0]');point=await project();}
+// Cover-cropped painting is a real camera viewport. Pan the authored landmark into view using actual input.
+for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface.locator('..').boundingBox(),cx=shell.x+shell.width/2,cy=shell.y+shell.height/2,dx=Math.max(-shell.width*.32,Math.min(shell.width*.32,cx-point.x)),dy=Math.max(-shell.height*.32,Math.min(shell.height*.32,cy-point.y));if(options.hasTouch){const cdp=await context.newCDPSession(page);try{await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:cx,y:cy}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:cx+dx,y:cy+dy}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}finally{await cdp.detach();}}else{await page.mouse.move(cx,cy);await page.mouse.down();await page.mouse.move(cx+dx,cy+dy,{steps:5});await page.mouse.up();}point=await project();}
       assert.ok(point.visible,'Landmark must be visible before pointer input');
       if (options.hasTouch) await page.touchscreen.tap(point.x,point.y);
       else await page.mouse.click(point.x,point.y);
@@ -232,8 +234,8 @@ try {
       await controls.waitFor();
       if(name==='landscape'&&label==='Storm boat'){
         const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {a:a.toJSON(),b:b.toJSON(),w:innerWidth,h:innerHeight}});
-        assert.ok(layout.a.top>=40&&layout.a.bottom<=layout.h+1,'Entire Harbor puzzle is visible above bottom edge');
-        assert.ok(layout.a.right<=layout.b.left&&layout.b.right<=layout.w+1&&layout.b.bottom<=layout.h+1,'Puzzle controls must occupy a separate landscape rail');
+        assert.ok(layout.a.top<=0&&layout.a.bottom>=layout.h-1,'Harbor painting covers the landscape viewport');
+        assert.ok(layout.b.left>=0&&layout.b.top>=0&&layout.b.right<=layout.w+1&&layout.b.bottom<=layout.h+1,'Puzzle control overlay stays within the viewport');
       }
       if(['Storm boat','Lighthouse mirrors','Returning Tides','Tide cave logbook','Safety blueprint','Furnace controls','Hearth sanctuary'].includes(label)){
         await shot('mechanism-'+label.toLowerCase().replaceAll(' ','-'));

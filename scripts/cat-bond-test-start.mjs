@@ -53,10 +53,10 @@ export async function finishCanonicalOpening(page,{onStage=async()=>{}}={}){
  const journey=page.locator('.res-host[data-scene="prologue:P-05"]');
  await journey.getByRole('button',{name:/^(Skip dialogue|跳过对白)$/}).click();
  await guide.getByRole('button',{name:/^(World map|前往世界地图)$/}).click();
- const atlasMenu=page.locator('.rw-atlas-menu:not([open]) > summary');if(await atlasMenu.count())await atlasMenu.click();
+ const atlasMenu=page.locator('.rw-atlas-menu:not([open]) > summary');if(await atlasMenu.count()){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();}
  await page.locator('.rw-regions [data-region="harbor"]').click();
  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='harbor:H-01');
- await page.locator('.rw-head').getByRole('button',{name:/^(World atlas|世界地图)$/}).click();
+ await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-atlas"]').click();
  await page.waitForFunction(()=>window.__game?.scene==='map'&&WorldMap.mode==='map');
  await onStage('world map');
 }

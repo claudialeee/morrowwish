@@ -194,14 +194,14 @@ for(const profile of [
   assert.equal(await page.locator('.rw-regions [data-region]').count(),6);
   assert.equal(await page.locator('.rw-region-status').count(),6);
   const questSummary=page.locator('.rw-atlas-menu > summary');
-  if(!(await page.locator('.rw-atlas-menu').evaluate(el=>el.open)))await questSummary.click();
+  if(!(await page.locator('.rw-atlas-menu').evaluate(el=>el.open))){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();}
   await checkVisible('.rw-current');
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
   const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
-  if(profile.width>profile.height){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
+  assert.ok(mapBounds.map.left<=mapBounds.view.left+1&&mapBounds.map.right>=mapBounds.view.right-1&&mapBounds.map.top<=mapBounds.view.top+1&&mapBounds.map.bottom>=mapBounds.view.bottom-1,'Atlas artwork covers the entire viewport without bars');
   assert.equal(await page.locator('.rw-system-nav button').count(),2,'Atlas exposes only Book and Journal');
   const book=page.locator('.rw-system-nav .rb-world-entry');
-  const revealBook=async()=>{const menu=page.locator('.rw-atlas-menu:not([open]) > summary');if(await menu.count())await menu.click();await book.click();};
+  const revealBook=async()=>{await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-book"]').click();await page.locator('.rb-wallet').waitFor();assert.equal(await page.locator('#hud').isVisible(),false,'Wallet only appears in the companion book');};
   await revealBook();await checkVisible('#panel.rb-open.open');
   assert.equal(await page.locator('.rw-world').evaluate(el=>el.inert),true,'Book blocks underlying keyboard and pointer exploration');
   if(profile.width<=360)assert.equal(await page.locator('.rb-tabs').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),3,'Compact category labels receive full word width');
@@ -228,7 +228,7 @@ for(const profile of [
   await page.locator('[data-system="language"]').click();
   await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='zh');
   await page.locator('[data-system="close"]').click();
-  assert.match(await page.locator('.rb-brand strong').innerText(),/星铃之书/);
+  assert.match(await page.locator('.rb-brand strong').innerText(),/星月之书/);
   await screenshot('book-zh');
   await page.locator('#map-menu').click();
   await page.locator('[data-system="language"]').click();
