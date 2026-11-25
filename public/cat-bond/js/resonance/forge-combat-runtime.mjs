@@ -26,7 +26,8 @@ function impact(b,e,x,y,r,damage,kind="impact",delay=.38,life=.62){
 function releaseAttack(b,e,cast){
   const target=cast.target||aliveTarget(b,e)||{x:e.x,y:e.y};
   if(cast.kind==="hammerfall"){
-    impact(b,e,target.x,target.y,104,e.dmg*1.48,"hammer",.42,.58);
+    impact(b,e,target.x,target.y,104,e.dmg*1.48,"hammer",.42,.78);
+    if(cast.phase===2){for(const offset of [-124,124])impact(b,e,Math.max(70,Math.min(b.W-70,target.x+offset)),target.y,72,e.dmg*.85,"hammer",1.05,1.42);}
     window.MorrowwishAudio?.effect?.("combat_hurt");
     return;
   }
@@ -109,7 +110,7 @@ BP.updateEnemyAI=function(dt,e,me){
   tickHazards(b,e,dt);
   e.forgeVentOpen=state.ventOpen>0;
   e.forgeHeat=state.heat;
-  e.forgeShielded=state.heat>=65&&!e.forgeVentOpen;
+  e.forgeShielded=(state.heat>=65||state.pressure>=75)&&!e.forgeVentOpen;
 };
 const originalHurt=BP.hurtEnemy;
 BP.hurtEnemy=function(e,dmg,...args){
@@ -208,7 +209,7 @@ function drawBossEffects(ctx,b){
       ctx.fillStyle="rgba(227,123,67,.16)";ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.arc(e.x,e.y,reach,a-.55,a+.55);ctx.closePath();ctx.fill();
       ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.x+Math.cos(a-.55)*reach,e.y+Math.sin(a-.55)*reach);ctx.moveTo(e.x,e.y);ctx.lineTo(e.x+Math.cos(a+.55)*reach,e.y+Math.sin(a+.55)*reach);ctx.stroke();
     }else{
-      for(let i=-1;i<=1;i++){const x=(c.target?.x??e.x)+i*128,y=(c.target?.y??e.y)+(i%2?62:-62);ctx.beginPath();ctx.ellipse(x,y,68*(.65+.35*k),30*(.65+.35*k),0,0,Math.PI*2);ctx.stroke();}
+      for(let i=-1;i<=1;i++){const x=Math.max(70,Math.min(b.W-70,(c.target?.x??e.x)+i*128)),y=Math.max(b.topMargin+35,Math.min(b.H-b.bottomMargin-35,(c.target?.y??e.y)+(i%2?62:-62)));ctx.beginPath();ctx.ellipse(x,y,68*(.65+.35*k),30*(.65+.35*k),0,0,Math.PI*2);ctx.stroke();}
     }
   }
   if(b.forgeVictorySequence){
@@ -362,8 +363,8 @@ GP.startBattle=function(team,wildSpecies,opts={}){
   b._analyticsRegion="forge";b.captureReady=false;
   const teamHp=(b.team||[]).reduce((n,f)=>n+(f.maxhp||0),0);
   enemy.sp=wildSpecies;enemy.visualKind="forge-guardian";enemy.isBoss=true;enemy.element="fire";
-  enemy.role="elite";enemy.r=30;enemy.combatName=["熔炉守卫","Furnace guardian"];enemy.speed=65;enemy.dmg=Math.max(17,enemy.dmg*1.38);
-  enemy.maxhp=Math.max(1080,Math.round(teamHp*2.65));enemy.hp=enemy.maxhp;
+  enemy.role="elite";enemy.r=30;enemy.combatName=["熔炉守卫","Furnace guardian"];enemy.speed=65;enemy.dmg=Math.max(13,enemy.dmg*(b.team.length===1?1.12:1.30));
+  enemy.maxhp=Math.max(420,Math.round(teamHp*2.15));enemy.hp=enemy.maxhp;
   enemy.poiseMax=Math.round(enemy.maxhp*.72);enemy.poise=enemy.poiseMax;
   enemy.forgeState=b.forgeState;enemy.forgeHazards=[];enemy.forgeCast=null;
   enemy.rotation=[];enemy.ultSkill=null;enemy.specialMeter=-10000;enemy.fireCd=99999;

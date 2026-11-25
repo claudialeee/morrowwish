@@ -64,7 +64,7 @@ export function forgeDamageScale(state){
   return (state.heat>=65||state.pressure>=75) ? 0.36 : 0.72;
 }
 export function validateForgeState(state){
-  if(!state||state.version!==1||!Number.isFinite(state.heat)||state.heat<0||state.heat>100||
+  if(!state||state.version!==1||!Number.isFinite(state.heat)||state.heat<0||state.heat>100||!Number.isFinite(state.pressure)||state.pressure<0||state.pressure>100||
     ![0,1,2].includes(state.phase)||!Number.isInteger(state.supportCharges)||state.supportCharges<0||
     state.supportCharges>2||!Number.isFinite(state.ventOpen)||state.ventOpen<0||
     !Number.isFinite(state.attackCooldown)||state.attackCooldown<0)throw new Error("Invalid forge state");

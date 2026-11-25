@@ -52,7 +52,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  }
  function enter(region){
   const story=view();
-  if(["sky","library","starfall"].includes(region)||!story.regions.includes(region))return fail("region-locked");
+  if(!story.regions.includes(region))return fail("region-locked");
   const departure=region==="harbor"&&story.current?.id==="prologue:P-05"&&story.objective.includes("travel:harbor");
   if(!departure)return physical(w=>({...w,location:region}));
   if(story.cursor<story.current.lines.length)return fail("departure-dialogue-pending");
@@ -64,7 +64,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  function patch(change,reward){return prior=>{const w=prior.resonanceExploration||{};return {resonanceExploration:change(clone(w)),coins:(prior.coins||0)+(reward.coins||0),fish:(prior.fish||0)+(reward.fish||0)};};}
  function forgeStep(){const v=view(),w=world();if(v.current?.id!=="forge:E-02"||w.location!=="forge"||!v.objective.includes("puzzle:safety-blueprint"))return null;const index=forgeParts.findIndex((_,i)=>!w.interactions[forgeKey(i)]);return index<0?null:{...clone(forgeParts[index]),index,total:forgeParts.length};}
  function collectForgePart(index,token){const step=forgeStep(),w=world(),api=resolveNarrative();if(!step||step.index!==index||!token||!api.isCurrentAction(token)||!forgeNear(w,step.point))return fail("walk-to-objective");return physical(x=>({...x,interactions:{...x.interactions,[forgeKey(index)]:true}}));}
- function forgeInvited(){const v=view(),w=world();return v.current?.id==="forge:E-04"?["jinpo","xiaomao"].filter(id=>w.interactions["forge:E-04:invite:"+id]):[];}
+ function forgeInvited(){const v=view(),w=world();return (v.current?.id==="forge:E-04"||v.completed.includes("forge:E-04"))?["jinpo","xiaomao"].filter(id=>w.interactions["forge:E-04:invite:"+id]):[];}
  function inviteForge(id,point,token){const api=resolveNarrative(),v=view(),w=world(),p={jinpo:[.35,.65],xiaomao:[.53,.50]}[id];if(!p||point[0]!==p[0]||point[1]!==p[1]||w.location!=="forge"||v.current?.id!=="forge:E-04"||!v.objective.includes("melody:forge")||!token||!api.isCurrentAction(token)||!forgeNear(w,p))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["forge:E-04:invite:"+id]:true}}));}
  function tideStep(){
   const v=view(),w=world();
@@ -136,6 +136,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
    }
   if(op==="puzzle:safety-blueprint"&&(!forgeParts.every((_,i)=>w.interactions[forgeKey(i)])||!forgeNear(w,[.35,.50])))return fail("incomplete-forge-parts");
   if(op==="melody:forge"&&(!["jinpo","xiaomao"].every(id=>w.interactions["forge:E-04:invite:"+id])||!forgeNear(w,[.88,.30])))return fail("local-response-required");
+  if(op==="melody:forest"&&!["yahe","yuchuan"].every(id=>w.interactions["forest:R-04:invite:"+id]))return fail("local-response-required");
   if(op==="melody:harbor"&&!["qilan","jiedeng"].every(id=>w.interactions["harbor:H-05:invite:"+id]))return fail("local-response-required");
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
@@ -144,6 +145,8 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  }
  function harborInvited(){const v=view(),w=world();return v.current?.id==="harbor:H-05"?["qilan","jiedeng"].filter(id=>w.interactions["harbor:H-05:invite:"+id]):[];}
  function inviteHarbor(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={qilan:[.16,.60],jiedeng:[.195,.50]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="harbor"||v.current?.id!=="harbor:H-05"||!v.objective.includes("melody:harbor")||!token||!api.isCurrentAction(token)||!tideNear(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["harbor:H-05:invite:"+id]:true}}));}
+ function forestInvited(){const v=view(),w=world();return v.current?.id==="forest:R-04"||v.completed.includes("forest:R-04")?["yahe","yuchuan"].filter(id=>w.interactions["forest:R-04:invite:"+id]):[];}
+ function inviteForest(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={yahe:[.30,.43],yuchuan:[.64,.53]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="forest"||v.current?.id!=="forest:R-04"||v.objective.includes("repair:forest")||!v.objective.includes("melody:forest")||!token||!api.isCurrentAction(token)||!atForest(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["forest:R-04:invite:"+id]:true}}));}
  function cargoSpec(a,b){const l=campaign.links.find(([x,y])=>x===a&&y===b);if(!l)return null;const v=view(),i=(v.links[a+":"+b]||[]).length,actor=[a,b,b,a][i];if(i>=4||!v.regions.includes(a)||!v.regions.includes(b))return null;const end=a==="starfall"?"starfall:F-02":campaign.scenes.filter(s=>s.chapter===a).at(-1)?.id;if(!v.completed.includes(end))return null;return {a,b,stage:stages[i],actor,action:l[i<2?2:3],from:i%2===0?0:1,to:i%2===0?1:0};}
  function pickupCargo(option){const w=world(),s=option&&cargoSpec(option.a,option.b);if(w.cargo)return fail("cargo-busy");if(!s||w.location!==s.actor||!["a","b","stage","actor","action","from","to"].every(k=>option[k]===s[k]))return fail("invalid-cargo");return physical(x=>({...x,cargo:s}));}
  function exchange(a,b,proof){const api=resolveNarrative(),s=cargoSpec(a,b),w=world();if(!s||!w.cargo||w.location!==s.actor||proof?.region!==s.actor||proof.stage!==s.stage||proof.action!==s.action||proof.verified!==true||!["a","b","stage","actor","action","from","to"].every(k=>w.cargo[k]===s[k]))return fail("exchange-evidence-missing");
@@ -151,5 +154,5 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   const reward={coins:10,fish:1},r=api.exchange({a,b,stage:s.stage,actor:s.actor,action:s.action,verified:true,token:proof.token},patch(x=>({...x,cargo:null}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function pickupReward(region,id){const w=world();if(w.location!==region||!/^cache-[12]$/.test(id)||w.pickups[region+":"+id])return fail("already-collected");return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
- return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,forgeStep,collectForgePart,forgeInvited,inviteForge,tideStep,traceTide,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
+ return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,forestInvited,inviteForest,forgeStep,collectForgePart,forgeInvited,inviteForge,tideStep,traceTide,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
 }

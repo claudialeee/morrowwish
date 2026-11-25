@@ -48,6 +48,32 @@ try {
         if (await close.isVisible()) await close.click();
       }
     }
+    async function readForestDialogue(id,choice) {
+      const dialogue=page.locator('.res-host[data-scene="'+id+'"]');
+      await dialogue.waitFor();
+      if(choice){await button(choice,dialogue).click();}
+      const observed=[];
+      while(await dialogue.isVisible()){
+        const line=await page.evaluate(expected=>{const v=CatBondResonance.view();return v.current?.id===expected&&v.lineReady?v.current.lines[v.cursor]:null},id);
+        if(!line)break;
+        await dialogue.locator('.res-line').getByText(line.text.en,{exact:true}).waitFor();
+        if(['yahe','yuchuan','muling'].includes(line.speaker)){
+          const portrait=dialogue.locator('.res-portrait');
+          await portrait.waitFor({state:'visible'});await portrait.evaluate(img=>img.decode());
+        }
+        await dialogue.locator('[data-res-language]').click();
+        assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),'zh');
+        await dialogue.locator('.res-line').getByText(line.text.zh,{exact:true}).waitFor();
+        if(!observed.length)await shot(id.replace(':','-')+'-zh-dialogue');
+        await dialogue.locator('[data-res-language]').click();
+        assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),'en');
+        await dialogue.locator('.res-line').getByText(line.text.en,{exact:true}).waitFor();
+        observed.push(line.speaker);
+        await button('Continue',dialogue).click();
+      }
+      if(await dialogue.isVisible())await button('Close',dialogue).click();
+      if(!choice)assert.equal(observed.length,{'forest:R-01':4,'forest:R-02':4,'forest:R-03':4,'forest:R-04':6}[id],id+' all canonical dialogue lines');
+    }
     async function puzzle(label, inputs) {
       await button(label).click();
       const controls = page.locator('.rw-puzzle-controls');
@@ -237,10 +263,10 @@ try {
     await page.locator('.rw-world:not([hidden]) .rw-surface').waitFor();
     await button('Rootsleep Forest').click();
     await button('Talk to Yahe').click();
-    await readDialogue('forest:R-01');
+    await readForestDialogue('forest:R-01');
     await scene('forest:R-02');
     await button('Talk to Yahe').click();
-    await readDialogue('forest:R-02','Prioritize the gardens');
+    await readForestDialogue('forest:R-02','Prioritize the gardens');
     await button('Scent on damp moss · 1/3').waitFor();
     await tapLandmark(.31,.58);
     await button('Scent on damp moss · 1/3').click();
@@ -260,7 +286,7 @@ try {
     await button('Medicine at the root channel · 3/3').waitFor();
     await tapLandmark(.69,.53);
     await button('Medicine at the root channel · 3/3').click();
-    await readDialogue('forest:R-02');
+    await readForestDialogue('forest:R-02');
     await scene('forest:R-03');
     await button('Open the upper gate with Yahe').click();
     await button('Paired water gates').waitFor();
@@ -274,15 +300,23 @@ try {
     const pairedControls=page.locator('.rw-puzzle-controls');await pairedControls.waitFor();await shot('forest-paired-puzzle');
     for(const input of ['Open lower channel','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
     await shot('forest-paired-flow');await button('Clear together',pairedControls).click();await pairedControls.waitFor({state:'hidden'});
-    await readDialogue('forest:R-03');
+    await readForestDialogue('forest:R-03');
     await scene('forest:R-04');
     await puzzle('Ancient-root sanctuary',['Upstream','Branch','Roots']);
     await button('Invite Yahe').click();
     await button('Invite Yahe').waitFor({state:'hidden'});
+    // Reload through the real title and continue menu, not through save mutation.
+    await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+    await scene('forest:R-04');await button('Invite Yuchuan').waitFor();
+    assert.equal(await button('Invite Yahe').count(),0,'Forest invitation survives reload');
     await button('Invite Yuchuan').click();
     await button('Invite Yuchuan').waitFor({state:'hidden'});
-    await puzzle('Living Roots',['Middle','Low','High']);
-    await readDialogue('forest:R-04');
+    await button('Living Roots').click();const melodyControls=page.locator('.rw-puzzle-controls');await melodyControls.waitFor();
+    for(const note of ['Middle','Low','High'])await button(note,melodyControls).click();
+    await page.waitForFunction(()=>document.querySelector('.rw-puzzle-controls button')?.disabled===true);
+    await page.waitForTimeout(950);await shot('forest-living-roots-ceremony');
+    await melodyControls.waitFor({state:'hidden'});
+    await readForestDialogue('forest:R-04');
     await scene('forge:E-01');
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().melodies),['harbor','forest']);
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().sanctuaries),['harbor','forest']);
@@ -333,11 +367,61 @@ try {
     await button('Rootsleep Forest').click();
     await button('World atlas',page.locator('.rw-head')).click();
     await button('Emberforge City').click();
-    assert.equal(await page.evaluate(()=>WorldMap.mode),'map');
-    await page.getByText('Chapter II complete. The route to Emberforge is unlocked; the story continues in a future update. Your save is preserved.',{exact:true}).waitFor();
+    await page.waitForFunction(()=>WorldMap.mode==='region'&&WorldMap.currentRegion==='forge');
+    await shot('forge-silent');
+    await ship('forge','Cooling water and herbs');
+    await button('Talk to Xiaomao').click();
+    await readDialogue('forge:E-01');await scene('forge:E-02');
+    await button('Recover the frame · 1/3').click();
+    await button('Recover the old pipe · 2/3').waitFor();
+    await shot('forge-workshop-clue');
+    await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+    await scene('forge:E-02');
+    if(await button('Emberforge City').isVisible())await button('Emberforge City').click();
+    await button('Recover the old pipe · 2/3').click();
+    await button('Recover the relief valve · 3/3').click();
+    await puzzle('Safety blueprint',['Frame','Pipes','Valve']);
+    const forgeChoice=name==='portrait'?'Let Jinpo speak to the workers first':'Publish the accident record now';
+    await readDialogue('forge:E-02',forgeChoice);await scene('forge:E-03');
+    await button('Continue story').click();await readDialogue('forge:E-03');
+    await puzzle('Furnace controls',['Heat','Heat','Heat','Heat','Vent','Vent','Vent']);
+    await shot('forge-test-ready');
+    await button('Forge guardian').click();
+    await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();
+    await page.locator('#battle-ui.on').waitFor();await page.locator('#cb-forge-hud').waitFor();
+    assert.equal(await page.evaluate(()=>__game.battle.forgeState.assist),name==='portrait'?'jinpo':'xiaomao');
+    const forgeTutorial=page.locator('#battle-tutorial-skip');if(await forgeTutorial.isVisible())await forgeTutorial.click();
+    await shot('forge-boss');
+    await page.locator('#btn-auto').click();assert.equal(await page.evaluate(()=>__game.battle.autoMode),false);
+    await page.locator('[data-forge-support-button]').click();await shot('forge-boss-vent');
+    await page.locator('#btn-auto').click();
+    // Natural combat only: no HP, time, save or engine writes.
+    await page.locator('#cb-forge-result').waitFor({timeout:200000});
+    const outcome=await page.locator('#cb-forge-result h2').innerText();await shot('forge-result');
+    assert.equal(outcome,'FURNACE STABILIZED','Natural guardian battle must be won before Chapter III can pass');
+    await page.locator('[data-forge-return]').click();await scene('forge:E-04');
+    if(await page.locator('.res-host[data-scene="forge:E-04"]').isVisible())await readDialogue('forge:E-04');
+    await puzzle('Hearth sanctuary',['Heat','Heat','Heat','Heat','Vent']);
+    await button('Invite Jinpo').click();await button('Invite Jinpo').waitFor({state:'hidden'});
+    await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+    await scene('forge:E-04');if(await button('Emberforge City').isVisible())await button('Emberforge City').click();
+    assert.equal(await button('Invite Jinpo').count(),0,'Forge invitation persists');
+    await button('Invite Xiaomao').click();await button('Invite Xiaomao').waitFor({state:'hidden'});
+    await button('Song of Ember').click();const forgeMelody=page.locator('.rw-puzzle-controls');await forgeMelody.waitFor();
+    for(const note of ['High','Middle','Low'])await button(note,forgeMelody).click();
+    await page.waitForTimeout(1800);await shot('forge-ceremony');await forgeMelody.waitFor({state:'hidden'});
+    if(await page.locator('.res-host[data-scene="forge:E-04"]').isVisible())await readDialogue('forge:E-04');
+    await scene('sky:S-01');await shot('forge-restored');
+    assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().melodies),['harbor','forest','forge']);
+    await ship('forge','Pumps and tools');await travel('Rootsleep Forest');await ship('forest','Pumps and tools');
+    assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().links['forest:forge']),['sendA','receiveB','sendB','receiveA']);
+    await travel('Emberforge City');await ship('forge','Wind vanes and flight parts');
+    await button('World atlas',page.locator('.rw-head')).click();
+    assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('sky')),true);
+    assert.equal(await button('Skyspine Isles').isDisabled(),true);
+    await page.getByText('Chapter III complete. Skyspine Isles is unlocked for a future update. Keep exploring the three regions, trading cargo and tending your garden.',{exact:true}).waitFor();
     await page.evaluate(()=>MorrowwishI18n.set('zh'));
-    await page.getByText('第二章已完成。赤炉环城航线已解锁，故事将在后续更新中继续。存档已保留。',{exact:true}).waitFor();
-    assert.equal(await page.getByText('Chapter II complete. The route to Emberforge is unlocked; the story continues in a future update. Your save is preserved.',{exact:true}).count(),0);
+    await page.getByText('第三章已完成。云脊群岛航线已解锁，故事将在后续更新中继续。你仍可探索三地、交流物资与经营花园。',{exact:true}).waitFor();
     await page.evaluate(()=>MorrowwishI18n.set('en'));
     await button('Rootsleep Forest').click();
     // Save isolation: detached controls and the old region must not survive a slot switch,
@@ -353,9 +437,9 @@ try {
       if(!State.loadSlot('slot1'))throw Error('Restore original slot failed');
       return {newSlot,melodies:State.S.resonance.melodies,slot:State.activeSlot()};
     });
-    assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest'],slot:'slot1'});
+    assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest','forge'],slot:'slot1'});
     assert.deepEqual(errors,[]);
-    results.push({profile:name, captured, ...state, forestComplete:true});
+    results.push({profile:name, captured, ...state, forestComplete:true,forgeComplete:true});
     await context.close();
   }
 } finally {
