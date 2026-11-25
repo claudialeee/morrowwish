@@ -24,6 +24,22 @@ jobs:
       CAT_BOND_PROFILE: ${{ matrix.profile }}
     steps:
       - uses: actions/checkout@v4
+      # Only the isolated Chapter IV candidate needs an offline copy. This is
+      # public game source and art, not a deployment, credentials, or save data.
+      - name: Bundle exact checkout for independent browser acceptance
+        if: matrix.profile == 'desktop' && github.head_ref == 'rpg/release-sky'
+        run: |
+          git rev-parse HEAD > /tmp/cat-bond-checkout.txt
+          tar -czf /tmp/cat-bond-local-acceptance.tar.gz public/cat-bond public/*.js public/*.css public/index.html public/icons public/art scripts/cat-bond-local-cloud-server.mjs scripts/cat-bond-harbor-playthrough.mjs scripts/check-cat-bond-resonance-world.mjs src/cat-bond-cloud-save.js
+      - uses: actions/upload-artifact@v4
+        if: matrix.profile == 'desktop' && github.head_ref == 'rpg/release-sky'
+        with:
+          name: sky-local-acceptance-checkout
+          path: |
+            /tmp/cat-bond-checkout.txt
+            /tmp/cat-bond-local-acceptance.tar.gz
+          retention-days: 1
+          compression-level: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'

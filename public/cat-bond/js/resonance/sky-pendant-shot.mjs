@@ -55,7 +55,7 @@ export function mountSkyPendantShot(panel,url){
    ctx.save();ctx.translate(bellX-size*.88-(1-approach)*W*.35,bellY-size*.39+motion);
    ctx.rotate(-.09+approach*.055);
    ctx.globalAlpha=Math.min(1,approach*2.4);
-   ctx.drawImage(hand,0,0,size,size*hand.height/hand.width);ctx.restore();
+   ctx.drawImage(hand,0,0,size,size*hand.height/hand.width);ctx.restore();canvas.dataset.repairAction=repair&&approach>.7?"adjusting":tapping&&approach>.4?"tapping":"moving";
   }
   if(repair&&progress>.65&&progress<1.6&&!reduce()){
    const px=(sw*.467-sx)*W/cropW,py=(sh*.714-sy)*H/cropH;
@@ -73,8 +73,8 @@ export function mountSkyPendantShot(panel,url){
  }
  function update(next,language){
   const active=[0,1,3,5,11].includes(next);canvas.setAttribute("aria-label",language==="zh"?"暮铃旧铃坠特写":"Close-up of Muling’s old bell pendant");
-  if(!active){canvas.hidden=true;cursor=next;cancelAnimationFrame(raf);raf=0;return;}
-  if(cursor!==next){cursor=next;start=performance.now();tapAt=0;tapDirection=0;}
+  if(!active){canvas.hidden=true;delete canvas.dataset.repairAction;cursor=next;cancelAnimationFrame(raf);raf=0;return;}
+  if(cursor!==next){delete canvas.dataset.repairAction;cursor=next;start=performance.now();tapAt=0;tapDirection=0;}
   canvas.hidden=!art.naturalWidth;if(!canvas.hidden&&!raf)raf=requestAnimationFrame(draw);
  }
  art.onload=()=>{if([0,1,3,5,11].includes(cursor)){canvas.hidden=false;if(!raf)raf=requestAnimationFrame(draw);}};

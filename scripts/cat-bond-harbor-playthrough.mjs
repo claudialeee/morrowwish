@@ -530,6 +530,9 @@ try {
         if(!line||!await dlg.isVisible())break;
         await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.en);
         if(['lingyu','yuanfan','muling'].includes(line.speaker))await dlg.locator('.res-portrait').evaluate(img=>img.decode());
+        if(id==='sky:S-04'&&seen===0){
+          await dlg.locator('.res-sky-pendant-shot[data-ready="true"][data-repair-action="adjusting"]').waitFor();await shot('sky-pendant-repair');
+        }
         if(id==='sky:S-04'&&seen===11){
           await dlg.locator('.res-sky-pendant-shot[data-ready="true"]').waitFor();
           await dlg.locator('[data-sky-taps="1"]').waitFor();await shot('sky-pendant-tap-one');
@@ -576,7 +579,7 @@ try {
     await button('Invite Yuanfan').click();await button('Invite Yuanfan').waitFor({state:'hidden'});
     await button('Open Sky').click();const skyMelody=page.locator('.rw-puzzle-controls');await skyMelody.waitFor();
     for(const note of ['Middle','High','Low'])await button(note,skyMelody).click();
-    await page.waitForTimeout(850);await shot('sky-open-sky-ceremony');await skyMelody.waitFor({state:'hidden'});
+    await page.waitForTimeout(850);await shot('sky-open-sky-ceremony');await page.waitForTimeout(1050);await shot('sky-air-route-reopening');await skyMelody.waitFor({state:'hidden'});
     await scene('library:M-01');assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().melodies),['harbor','forest','forge','sky']);await shot('sky-restored');
     await ship('sky','Wind data and airship route');await travel('Emberforge City');await ship('forge','Wind data and airship route');
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().links['forge:sky']),['sendA','receiveB','sendB','receiveA']);
