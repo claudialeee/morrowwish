@@ -235,7 +235,36 @@ function mainStats(x){
     starts:itchGames.reduce((n,z)=>n+z.starts,0),games:itchGames};
   const total=score(rows.filter(r=>r.game!=="hub"));
   const all=score(rows);
-  return {days:x.days,from:x.from,updated:new Date().toISOString(),lastEventAt:rows.length&&rows.some(z=>Number(z.ts)>0)?new Date(Math.max(...rows.map(z=>Number(z.ts)||0))).toISOString():null,partial:x.partial,records:rows.length,itch,rollup:{...all,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,homeFunnel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
+  // Reuse the loaded snapshot. A missing browser ID is not a new browser.
+  // D1 is the next Pacific calendar day after first observed visit within this
+  // report window; exclude cohorts whose next day has not finished.
+  const browserDays=new Map(),dayIndexes=new Map(dates.map((day,i)=>[day,i]));
+  for(const v of visits){
+    if(!v.visitor)continue;
+    const day=localDay(Number(v.ts)||Date.parse(v.day+"T00:00:00Z"));
+    const index=dayIndexes.get(day);
+    if(index==null)continue;
+    if(!browserDays.has(v.visitor))browserDays.set(v.visitor,new Set());
+    browserDays.get(v.visitor).add(index);
+  }
+  let d1Eligible=0,d1Returned=0;
+  for(const daysOf of browserDays.values()){
+    const first=Math.min(...daysOf);
+    if(first+1>=dates.length-1)continue;
+    d1Eligible++;
+    if(daysOf.has(first+1))d1Returned++;
+  }
+  const measuredSessions=sessions.filter(v=>v.view_id&&v.data.seconds!=null&&Number.isFinite(Number(v.data.seconds))&&Number(v.data.seconds)>=0);
+  const measuredSessionCount=uniq(measuredSessions.map(v=>v.view_id));
+  const headlineMetrics={
+    uniqueBrowsers:browserDays.size||null,
+    untrackedBrowserVisits:visits.filter(v=>!v.visitor).length,
+    avgSessionSeconds:measuredSessionCount?Math.round(sum(measuredSessions,"seconds")/measuredSessionCount):null,
+    measuredSessionCount,
+    shareClicks:sessions.some(v=>v.data.shares!=null&&Number.isFinite(Number(v.data.shares))&&Number(v.data.shares)>=0)?all.shares:null,
+    d1Eligible,d1Returned
+  };
+  return {days:x.days,from:x.from,updated:new Date().toISOString(),lastEventAt:rows.length&&rows.some(z=>Number(z.ts)>0)?new Date(Math.max(...rows.map(z=>Number(z.ts)||0))).toISOString():null,partial:x.partial,records:rows.length,itch,rollup:{...all,headlineMetrics,gameStarts:total.starts,gameAvgSeconds:total.avgSeconds,completions:total.completion,unknownPastVisits:0},byGame,byDay,byChannel,homeFunnel,sources:breakdown("source"),referrers:breakdown("referrer"),devices:breakdown("_device"),countries:breakdown("_country"),sites:breakdown("site")};
 }
 function elsewhereStats(x){
  // Track only the current eight-world dream-life edition, keeping older story editions separate.
