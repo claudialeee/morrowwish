@@ -1,28 +1,34 @@
 {
   "candidates": [
     {
-      "id": "aggro-bruiser-hug",
-      "label": "Aggressive bruiser: hug the inner edge, close hard",
-      "rationale": "Targets the HIGH-ENGAGE / LOWER-DURABILITY niche (e>=2) the archive lacks — both current elites sit at engage 0-1. Trades standoff safety for a tight hug band so a frontliner maximizes output + positioning (the two heavily-rewarded judge terms), accepting more incoming. Pure fn of f.hp/maxhp + cd readiness.",
-      "bandBody": "const hp=f.hp/(f.maxhp||1); const ready=((f.cd&&f.cd.q)||0)<=0||((f.cd&&f.cd.e)||0)<=0; const base=ready?46:72; const min=Math.max(30,base-10); const max=min+ (hp<0.4?60:40); return {min,max,rush:min,role:'bruiser',hp};"
+      "id": "glass-cannon-anchor",
+      "label": "Glass-cannon anchor (flat 20-46 assassin) — the proven high-engage operating point",
+      "rationale": "Re-seed the historically strongest band (true-glass-cannon 20-46 topped 0.68 in an earlier run) as this cycle's score anchor and to try to retake the 1,3,3 cell from baseline. ~20px is the confirmed sweet spot (tighter 16-38 scored lower).",
+      "bandBody": "(f)=>{const hp=f.hp/(f.maxhp||1); return{min:20,max:46,rush:20,role:'assassin',hp};}"
     },
     {
-      "id": "mid-tempo-pulse",
-      "label": "Mid-tempo pulse: commit on CD, drift out between",
-      "rationale": "Targets the MID-TEMPO niche (t=1-2) — both elites are high-tempo (0.76-0.84). Hit-and-run: a tight band when a skill is ready (commit), a wider standoff while recharging (drift), producing a slower pulsing cadence rather than constant pressure. Output comes in bursts, safety recovered between.",
-      "bandBody": "const hp=f.hp/(f.maxhp||1); const q=((f.cd&&f.cd.q)||0), e=((f.cd&&f.cd.e)||0); const ready=q<=0||e<=0; const min=ready?44:150; const max=ready?96:230; return {min,max,rush:ready?min:160,role:ready?'bruiser':'ranged',hp};"
+      "id": "ready-hitrun-tight",
+      "label": "Ready-aware hit-run: hug 30-60 when Q up, pull to 60-100 on CD, retreat <45% HP",
+      "rationale": "Island mutation of the long-running ready-aware-hitrun elite (branches on cooldown state, which a flat sweep can't). Commit tight on a ready skill, pull to mid while recharging, disengage below 45% HP — balances output + survival, the two heaviest judge terms.",
+      "bandBody": "(f)=>{const hp=f.hp/(f.maxhp||1); if(hp<0.45)return{min:96,max:150,rush:120,role:'ranged',hp}; if(((f.cd&&f.cd.q)||0)<=0)return{min:30,max:60,rush:30,role:'bruiser',hp}; return{min:60,max:100,rush:60,role:'bruiser',hp};}"
     },
     {
-      "id": "desperate-dive",
-      "label": "Desperation dive: the lower the HP, the harder it commits",
-      "rationale": "Targets the LOW-DURABILITY niche (d=0-1) — both elites are near-full-HP survivors (0.97-0.98). Inverts the usual HP-gated retreat: a hurt cat dives INWARD to end the fight fast (speed+output rewarded) instead of kiting, a MOBA 'all-in when behind' policy. Recombines baseline's healthy band with an inverted hurt branch.",
-      "bandBody": "const hp=f.hp/(f.maxhp||1); if(hp<0.35){const min=32,max=78;return {min,max,rush:min,role:'assassin',hp};} const min=Math.round(60+hp*40); const max=min+70; return {min,max,rush:min,role:'bruiser',hp};"
+      "id": "allin-when-hurt-v2",
+      "label": "All-in-when-hurt: kite 100-160 healthy, DIVE 18-44 below 45% HP",
+      "rationale": "Targets the empty lower-durability bins (every elite is dur bin3). Inverts retreat-on-low-HP: cautious kite at full, then a desperate point-blank all-in when hurt to end the fight before dying — should end fights at a visibly lower hpFracLeft, shifting the durability descriptor down a bin.",
+      "bandBody": "(f)=>{const hp=f.hp/(f.maxhp||1); if(hp<0.45)return{min:18,max:44,rush:18,role:'assassin',hp}; return{min:100,max:160,rush:130,role:'ranged',hp};}"
     },
     {
-      "id": "elite-mutation-tighter",
-      "label": "Mutation of stand-at-max elite: pull the standoff 25% inward",
-      "rationale": "Island-evolution mutation of the current #2 elite (stand-at-max-range 0.75): keeps its ranged-standoff shape but pulls min/max ~25% inward so it still kites but actually contributes output + stays in positioning range — testing whether a less-passive version of the runner-up beats baseline while landing in a nearby-but-distinct engage cell.",
-      "bandBody": "const hp=f.hp/(f.maxhp||1); const min=150, max=235; return {min,max,rush:170,role:'ranged',hp};"
+      "id": "pulse-brawler",
+      "label": "Pulse brawler: dash to 28-56 on either skill ready, settle 64-104 between",
+      "rationale": "A pulsing mid-engage cadence distinct from the flat always-hug winner: point-blank when Q OR E is up (burst), settle to a bruiser mid-band while recharging. Aims for a different tempo descriptor (burstier) to probe an adjacent cell.",
+      "bandBody": "(f)=>{const hp=f.hp/(f.maxhp||1); const ready=((f.cd&&f.cd.q)||0)<=0||((f.cd&&f.cd.e)||0)<=0; if(ready)return{min:28,max:56,rush:28,role:'bruiser',hp}; return{min:64,max:104,rush:72,role:'bruiser',hp};}"
+    },
+    {
+      "id": "steady-midline",
+      "label": "Steady mid-line fighter: flat 56-96, never flee, constant pressure",
+      "rationale": "A disciplined constant mid-band (56-96) that neither hugs nor kites and never retreats — steady engagement + steady tempo, a middle descriptor between the 0.68 hugger and the 0.55 far sniper. Simple, non-passive, should score respectably and may claim a mid engage/tempo cell.",
+      "bandBody": "(f)=>{const hp=f.hp/(f.maxhp||1); return{min:56,max:96,rush:60,role:'bruiser',hp};}"
     }
   ]
 }

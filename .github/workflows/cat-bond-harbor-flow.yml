@@ -2,7 +2,7 @@ name: Cat Bond Misttide Harbor playthrough
 
 on:
   pull_request:
-    branches: [rpg/integration, rpg/cat-bond-takeover]
+    branches: [main, rpg/integration, rpg/cat-bond-takeover]
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-harbor-playthrough.mjs'

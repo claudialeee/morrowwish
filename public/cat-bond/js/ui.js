@@ -9,7 +9,6 @@ const UI = {
 
   init(game) {
     this.game = game;
-    window.addEventListener('cat-bond-active-save-changed',()=>this.resetForActiveSave());
     document.getElementById('guide-help')?.addEventListener('click',()=>this.game?.replayFirstAdventureTour?.());
     // tab bar
     document.querySelectorAll('.tab').forEach(btn => {
@@ -1240,21 +1239,7 @@ const UI = {
     p.querySelector('.panel-dismiss').onclick = e => {e.stopPropagation();this.closeAll();};
     p.onclick = e => { if (e.target === p) this.closeAll(); };
   },
-  resetForActiveSave(){
-    // No yard entry/healing or save writes during the save manager's commit notification.
-    this.closeAll({refreshYard:false});
-    const panel=document.getElementById('panel');
-    panel?.replaceChildren();
-    this._duoPicked=[];
-    this._duoChangeOpen=false;
-    this._breedSel=[];
-    this._catGrowMore=null;
-    this._localeLiveTeamSelection=null;
-    this._localePanelRerenderTeam=null;
-    this._localePanelRerenderAuto=null;
-    this._gbIdx=0;
-  },
-  closeAll({refreshYard=true}={}) {
+  closeAll() {
     this._localePanelRoute=null;
     this.resetNavigation();
     this._teaseFromCatDetail=false;
@@ -1266,12 +1251,13 @@ const UI = {
     document.getElementById('map-menu')?.setAttribute('aria-expanded','false');
     // Dismissing any optional overlay must never leave the yard action strip
     // hidden after a previous encounter or canceled pre-battle choice.
-    if(refreshYard&&this.game?.scene==='yard'&&!this.game.battle)this.game.showYardChrome();
+    if(this.game?.scene==='yard'&&!this.game.battle)this.game.showYardChrome();
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'yard'));
     // A pending disagreement must reappear in the yard after *any* panel is
     // dismissed. Previously refreshing while the panel was open set
     // yard-duo-status.hidden=true and never restored it after closing.
-    if(refreshYard){this.game?.refreshYardSurprise?.();this.game?.refreshFirstQuest?.();}
+    this.game?.refreshYardSurprise?.();
+    this.game?.refreshFirstQuest?.();
   },
 
   // ---------- roster ----------
@@ -1486,7 +1472,6 @@ const UI = {
           · ${en?'Two cats playing builds trust':'两猫轮流玩会提升默契'}</p></div>
         <div class="st-btns">
           <button class="btn ghost tiny-btn" data-visit="${i}">${en?'Let cats play':'叫猫来玩'}</button>
-          <button class="btn ghost tiny-btn" data-duo-visit="${i}" ${(window.CatRelations?.chosen?.()||[]).length===2?'':'disabled'}>${en?'Invite duo':'邀请双猫'}</button>
           <button class="btn gold tiny-btn" data-upgrade="${i}"
             ${next===null||coins<next?'disabled':''}>${next===null?(en?'Max Lv.':'已满级'):(en?'Upgrade':'升级')+' '+next+'🪙'}</button>
           <button class="btn ghost tiny-btn" data-remove="${i}">${en?'Remove':'拆除'}</button>
@@ -1500,7 +1485,6 @@ const UI = {
       <p class="sub">${en?'Choose a facility, then tap a free spot in your yard to place it. Cats physically walk over, play and earn resources.'
         :'先选设施，再点击草坪直接建造；手机可拖动调整位置。猫咪会走过去玩，产出资源和默契奖励。'}</p>
       <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
-      <button class="btn ghost" data-garden-projects type="button">${en?'Garden restoration':'花园复兴'}</button>
       <div class="st-list">${cards}</div>
       ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}`);
     const host = document.getElementById('panel');
@@ -1515,9 +1499,8 @@ const UI = {
       sky.addColorStop(0,'#f8f5e6');sky.addColorStop(.60,'#e7f2e1');sky.addColorStop(1,'#c9e0bf');
       cx.fillStyle=sky;cx.fillRect(0,0,w,h);
       cx.fillStyle='#a9cda8';cx.beginPath();cx.ellipse(w*.50,h*.94,w*.47,h*.17,0,0,Math.PI*2);cx.fill();
-      if(!World.drawGardenProp?.(cx,def.id,w*.5,h*.89,1.15))def.draw(cx,w*.5,h*.89,1.15,1.3);
+      def.draw(cx,w*.5,h*.89,1.15,1.3);
     });
-    host.querySelector('[data-garden-projects]')?.addEventListener('click',()=>window.GardenProjects?.open?.());
     host.querySelectorAll('[data-build]').forEach(btn => btn.onclick = () => {
       const def = window.World?.BUILDINGS_BY_ID?.[btn.dataset.build];
       this.startBuildingPlacement(btn.dataset.build);
@@ -1529,14 +1512,6 @@ const UI = {
       this.closeAll();
       if(!ok)this.game.toast(en?'Catch a cat first!':'先收集猫咪，它才会过来玩！');
       else this.game.toast(en?'Look! A kitten is coming to play':'看！有猫咪跑来玩啦！');
-    });
-    host.querySelectorAll('[data-duo-visit]').forEach(btn=>btn.onclick=()=>{
-      const b=State.S.yardBuildings?.[Number(btn.dataset.duoVisit)];
-      if(!b)return;
-      const ok=this.game.yard.inviteDuoToBuilding(b);
-      this.closeAll();
-      this.game.toast(ok?(en?'Your chosen duo is on its way.':'选中的双猫正在过来！'):
-        (en?'Choose a duo that is not working or sulking.':'请选择未工作、未闹别扭的双猫。'));
     });
     host.querySelectorAll('[data-upgrade]').forEach(btn => btn.onclick = () => {
       const result=this.game.yard.upgradeStructure(+btn.dataset.upgrade);
@@ -2388,7 +2363,9 @@ const UI = {
       fish:{icon:'🐠',zh:'小鱼',en:'Fish',coins:60,fish:0,fishGain:1},
       'stone:夜影石':{icon:'🌑',zh:'夜影石',en:'Shadow Stone',coins:0,fish:3,stone:'夜影石'},
       'stone:月华露':{icon:'🌙',zh:'月华露',en:'Moon Dew',coins:0,fish:4,stone:'月华露'},
-      'stone:赤焰晶':{icon:'🔥',zh:'赤焰晶',en:'Flame Crystal',coins:0,fish:4,stone:'赤焰晶'}
+      'stone:赤焰晶':{icon:'🔥',zh:'赤焰晶',en:'Flame Crystal',coins:0,fish:4,stone:'赤焰晶'},
+      'stone:翠藤芽':{icon:'🌿',zh:'翠藤芽',en:'Jade Sprout',coins:0,fish:4,stone:'翠藤芽'},
+      'stone:流光珠':{icon:'⚡',zh:'流光珠',en:'Voltlight Pearl',coins:0,fish:4,stone:'流光珠'}
     };
     return items[what]||null;
   },
@@ -2404,7 +2381,7 @@ const UI = {
       [1,10,50].includes(this._shopQuantity)?this._shopQuantity:1;
     const qtyButton=(n,txt)=>'<button type="button" class="btn '+(n===quantity?'gold':'ghost')+
       '" data-shop-qty="'+n+'" aria-pressed="'+String(n===quantity)+'">'+txt+'</button>';
-    const shopKeys=['medkit','treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶'];
+    const shopKeys=['medkit','treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶','stone:翠藤芽','stone:流光珠'];
     const rows=shopKeys.map(key=>{
       const item=this.shopItem(key),max=this.shopMaxAffordable(key);
       const count=quantity==='max'?max:quantity;
@@ -2730,7 +2707,7 @@ const UI = {
         this.battleTeamSummary(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en))+'</span></summary>'+
       '<p class="sub">'+(en?'2 cats start; up to 3 reserves. Tap cats to change the team or reorder below.':'2 只首发，最多 3 只替补。点击猫咪更换队伍，也可调整顺序。')+'</p>'+
       this.squadPickerMarkup(selected)+'</details>';
-    const label=opts.storyTitle?this.battlePrepEsc(opts.storyTitle[en?1:0]):opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
+    const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
     const encounterLvl=wildSp.encounterLevel||
       window.Battle?.CaptureBattle?.previewWildLevel?.(
@@ -2738,7 +2715,7 @@ const UI = {
     this.panel(`<span class="card-close">×</span>
       <h2>${label}</h2>
       <p class="sub" style="font-weight:750;color:#765e85">
-        ${opts.storyTitle?(en?'Opponent':'对手'):(en?'Wild cat':'野生猫咪')} · Lv.${encounterLvl} ·
+        ${en?'Wild cat':'野生猫咪'} · Lv.${encounterLvl} ·
         <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>
       </p>
       ${this.matchupWarning(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en)}
@@ -2825,12 +2802,9 @@ const UI = {
     };
     document.getElementById('bp-go').onclick=()=>{
       const fighters=selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean);
-      const previous=State.S.battlePrefs;
-      State.S.battlePrefs={...previous,autoBattle:auto,modeChosen:true,
+      State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true,
         skillsIntroSeen:true,teamUids:[...selected]};
-      if(!State.save()?.ok){State.S.battlePrefs=previous;this.game.toast({zh:'存档失败，请重试。',en:'Save failed. Try again.'});return;}
-      this.closeAll();
-      if(opts.onStart){opts.onStart(fighters.length?fighters:team);return;}
+      State.save();this.closeAll();
       if(opts.mastery){this.game.startMasteryChallenge(wildSp,true,fighters);return;}
       if(opts.origin==='map'){
         this.game._returnScene='map';this.game._battleTheme=opts.theme||null;

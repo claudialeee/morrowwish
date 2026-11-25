@@ -93,6 +93,21 @@ class CaptureBattle {
         this.enemyDmgMult    = bend(this.enemyDmgMult,    diff.gapScale) * diff.enemyDmg;
         this.enemyHpScaleGap = bend(this.enemyHpScaleGap, diff.gapScale) * diff.enemyHp;
         this.difficultyMode  = (window.State && State.difficulty) ? State.difficulty() : 'casual';
+        // MERCY BAND (downward mirror of stompStreak): after N consecutive defeats, bend
+        // this fight toward the player so a stuck beginner isn't walled 8× in a row. CASUAL
+        // ONLY — hardcore stays static. Enemy mults are floored so it can never trivialize,
+        // and the first win zeroes lossStreak (commitAiProfile), so it can't compound. Both
+        // the RSI judge and the playtest crons converged on this missing downward valve.
+        if (this.difficultyMode !== 'hardcore') {
+          // this.aiP isn't built until later in the ctor; read the persisted streak directly.
+          const lossStreak = (window.State && State.S && State.S.aiProfile && State.S.aiProfile.lossStreak) | 0;
+          const m = clamp(lossStreak / 3, 0, 1);
+          if (m > 0) {
+            this.playerDmgMult   *= (1 + 0.15 * m);
+            this.enemyDmgMult     = Math.max(0.45, this.enemyDmgMult * (1 - 0.30 * m));
+            this.enemyHpScaleGap  = Math.max(0.50, this.enemyHpScaleGap * (1 - 0.20 * m));
+          }
+        }
         if(this.starterRegion){
           // In the starter map, the player's FIRST TWO cats should be able to
           // beat one ordinary wild cat without perfect skill timing. The player-damage
@@ -161,6 +176,12 @@ class CaptureBattle {
     // --- adaptive AI: read the learned player profile, derive this battle's knobs ---
     this.aiP = this.normalizeAiProfile(window.State && State.S && State.S.aiProfile);
     this._aiConf = clamp(this.aiP.battles / 8, 0, 1);       // ramps in over ~8 fights
+    // AUTO-ASSIST (playtest P0: pure-auto is accidentally the HARDEST config — the manual
+    // opening-grace + masher-guard nets are gated !autoMode, so a losing auto player gets
+    // NOTHING). When a casual auto player has lost ≥2 in a row, let those same nets fire at
+    // ~60% strength so repeated auto losses ease too. 0 for manual / hardcore / winning auto.
+    this._autoAssist = (this.autoMode && this.difficultyMode !== 'hardcore'
+      && ((this.aiP.lossStreak || 0) >= 2)) ? 0.6 : 0;
     this._obs = { dodgeSignSum: 0, dodgeN: 0, rangeSum: 0, rangeN: 0, rangeT: 0, threats: 0, dodgedThreats: 0, fires: 0, frames: 0, dmgTaken: 0 };
     // stompStreak (flawless-win count) tightens the knobs: snappier windups, less
     // aim slop, fuller lead — so a player who keeps stomping faces a sharper foe.
@@ -667,7 +688,12 @@ class CaptureBattle {
     const rarityBonus=Math.min(1.5,this.rarIdx*.65);
     const noise=((this.rng?this.rng():Math.random())-.5)*1.2;
     const lvl=Math.round(avg+progress+rarityBonus+noise);
-    return Math.max(minLv,Math.min(cap,lvl));
+    // Per-species minimum encounter level. A few legendary catches are gated to
+    // feel like a genuine late-game find rather than a trivial early roll — e.g.
+    // wild 蓝莓 (water SSR) is always Lv12+ even in the mid-tier creek. Applied as
+    // a floor so it wins over the regional cap (owner: 野生蓝莓固定在12级以上).
+    const speciesMin=CaptureBattle.SPECIES_MIN_LEVEL[this.wild?.id||this.wildId]||0;
+    return Math.max(minLv,speciesMin,Math.min(cap,lvl));
   }
 
   // Build a wild pack of 1~3 enemies. Lead = the encountered species; rarer
@@ -757,7 +783,7 @@ class CaptureBattle {
       // doesn't start with an instant skill dump. Fixes "敌人全程只发 projectile，没用我们的技能".
       rotation: (this.__lastKit && this.__lastKit.rotation) || [],
       skillCd: [0, 0],
-      rotReady: 1.2 + this.rng() * 1.1,    // quiet opener (1.2–2.3s) before the first real skill cast
+      rotReady: 0.6 + this.rng() * 0.7,    // short opener (0.6–1.3s): first real skill lands ~1s, not ~8-10s (playtest P0: fights end before any beat fired). Non-zero so the pack still can't alpha-strike at frame 0.
       // CHARGED ULT (SR+ only): a signature ult the enemy charges over the fight and fires ONCE,
       // telegraphed + interruptible, at reduced power. Mirrors the player's ult meter so the
       // enemy's biggest move is an EARNED, readable event — not a free per-cast nuke (the old bug).
@@ -2285,13 +2311,14 @@ class CaptureBattle {
 
   // ---- adaptive AI profile (tiny online statistics, all clamped) ----
   normalizeAiProfile(p) {
-    const d = { v: 1, battles: 0, dodgeDir: 0, favRange: 0.5, evasive: 0.4, aggression: 0.5, elemLead: {}, skill: 0.5, adapt: true, stompStreak: 0 };
+    const d = { v: 1, battles: 0, dodgeDir: 0, favRange: 0.5, evasive: 0.4, aggression: 0.5, elemLead: {}, skill: 0.5, adapt: true, stompStreak: 0, lossStreak: 0 };
     p = Object.assign({}, d, p || {});
     p.elemLead = Object.assign({}, p.elemLead);
     p.dodgeDir = clamp(p.dodgeDir, -1, 1); p.favRange = clamp(p.favRange, 0, 1);
     p.evasive = clamp(p.evasive, 0.05, 0.95); p.aggression = clamp(p.aggression, 0, 1);
     p.skill = clamp(p.skill, 0, 1); p.battles = clamp(p.battles | 0, 0, 9999);
     p.stompStreak = clamp(p.stompStreak | 0, 0, 5);    // consecutive flawless wins → tougher enemies
+    p.lossStreak = clamp(p.lossStreak | 0, 0, 3);      // consecutive defeats → gentler enemies (casual mercy band)
     return p;
   }
   // Fold this battle's observations into the persisted EMAs. Called at battle end.
@@ -2313,6 +2340,13 @@ class CaptureBattle {
     // the old backwards contract that made enemies EASIER against them.
     if (won && (o.dmgTaken || 0) <= 0) p.stompStreak = clamp((p.stompStreak | 0) + 1, 0, 5);
     else p.stompStreak = 0;
+    // Mercy band (mirror of stompStreak): consecutive DEFEATS bend next fight toward
+    // the player. A win zeroes it; a real loss (team wipe / timeout, NOT a voluntary
+    // flee) steps it up, double-weighted for a fast loss (<10s) that reads as a wall.
+    // Applied casual-only in the constructor. (RSI + playtest both converged on this:
+    // difficulty only ratcheted UP — this is the missing downward valve.)
+    if (won) p.lossStreak = 0;
+    else if (!this._voluntaryFlee) p.lossStreak = clamp((p.lossStreak | 0) + (this.t < 10 ? 2 : 1), 0, 3);
     State.S.aiProfile = p;
   }
 
@@ -2546,6 +2580,33 @@ class CaptureBattle {
       const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);   // mobile/AI/ally: target
       if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
     }
+    // METEOR (陨石术): a sky-drop that HOMES onto the enemy, not a free-aimed lob — the flaming
+    // rock FALLS diagonally from above and lands on the target cat (owner: 斜斜地从上面掉下来砸中).
+    const sky = sk && (sk.id === 'meteor' || (sk.field && sk.element === 'fire' && sk.kind === 'aoe'));
+    if (sky) {
+      // Lock the landing point onto the locked/nearest enemy regardless of cursor. The meteor
+      // must hit a cat; aiming it at the empty cursor (which rests by the top UI) made it land
+      // "全在右上角" and never connect. Fall back to the free-aimed point only if no enemy exists.
+      const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);
+      if (tgt) { tx = tgt.x; ty = tgt.y; }
+      // DIAGONAL sky-fall: originate high up and to one roomier side of the landing point so the
+      // rock streaks in at ~35-60° instead of dropping straight down.
+      const dropX = 300, dropY = 440;                              // diagonal offset of the spawn point
+      const side = (tx > this.W * 0.5) ? -1 : 1;                   // come in from the roomier side
+      const sx = clamp(tx - side * dropX, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
+      const sy = Math.max(this.topMargin - 60, ty - dropY);
+      const ang = Math.atan2(ty - sy, tx - sx), dist = Math.hypot(tx - sx, ty - sy);
+      const speed = 640;                                           // fast incoming
+      const p = this.spawnProj(sx, sy, ang, speed, dmg, 'me', col, 15, 'meteor', sk, dist / speed + 0.02);
+      // Home the burst onto the target: if it's still alive on impact, re-read its live position
+      // so a moving cat still gets hit; otherwise detonate at the telegraphed ground point.
+      p.burst = { r: R, dmg, skill: sk, col, tx, ty, homeTo: tgt || null };
+      p._meteor = true;                                            // heavy fiery comet trail (added in update loop)
+      // landing telegraph: a shrinking reticle on the ground where the rock will hit
+      this.vfx.ring(tx, ty, { r0: R, vr: -R * 1.4, life: dist / speed + 0.02, color: col, width: 3 });
+      this.vfx.text(tx, ty - 8, window.MorrowwishI18n?.get?.()!=='zh' ? 'METEOR!' : '陨石来袭!', col, 13);
+      return;
+    }
     const ang = Math.atan2(ty - f.y, tx - f.x), dist = Math.hypot(tx - f.x, ty - f.y);
     const speed = 300;                              // deliberately slow → readable/dodgeable
     this.spawnProj(f.x, f.y, ang, speed, dmg, 'me', col, 9, 'orb', sk, dist / speed + 0.02);
@@ -2557,6 +2618,9 @@ class CaptureBattle {
   burstAt(p) {
     const b = p.burst; if (!b) return;
     const side = p.owner === 'wild' ? 'wild' : 'me';
+    // Homing lob (meteor): if its target is still alive, detonate on the cat's LIVE position so a
+    // moving enemy is still struck squarely rather than at the stale telegraph point.
+    if (b.homeTo && b.homeTo.alive && (b.homeTo.hp > 0)) { b.tx = b.homeTo.x; b.ty = b.homeTo.y; }
     this.vfx.shockwave(b.tx, b.ty, b.col);
     this.vfx.ring(b.tx, b.ty, { r0: 12, vr: b.r * 6, life: 0.4, color: b.col, width: 7 });
     this.vfx.burst(b.tx, b.ty, { count: this.game.isTouch ? 12 : 22, color: b.col, speed: 240, life: 0.5, r: 4 });
@@ -2661,15 +2725,24 @@ class CaptureBattle {
   // staggers everyone caught under it. A committed, readable mid-range gap-closer:
   // the arc telegraphs where it lands, so it rewards good spacing, not spam.
   leapSlam(f, aim, sk, dmg, col) {
+    const AIR = 0.44;                 // hang time; the target drifts during this window
     let tx, ty;
     if (f === this.me() && !this.game.isTouch) { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
-    else { const t = this.lockedEnemy() || this.nearestEnemy(f.x, f.y); if (t) { tx = t.x; ty = t.y; } else { tx = f.x + Math.cos(aim) * 190; ty = f.y + Math.sin(aim) * 190; } }
+    else {
+      const t = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);
+      if (t) {
+        // LEAD the target: aim at where it will be after the airtime, not where it
+        // stands now, so a moving enemy doesn't slip out from under the slam
+        // (owner: leap 老打不中). Falls back to current pos when velocity is unknown.
+        tx = t.x + (t._vx || 0) * AIR; ty = t.y + (t._vy || 0) * AIR;
+      } else { tx = f.x + Math.cos(aim) * 190; ty = f.y + Math.sin(aim) * 190; }
+    }
     // cap leap range so it stays a reach, not a teleport — but long enough to reach a ranged
     // kiter's ~200px standoff (泰山压顶 is a committed mid-range gap-closer, not a short hop).
     const d = Math.hypot(tx - f.x, ty - f.y), max = 215;
     if (d > max) { const a = Math.atan2(ty - f.y, tx - f.x); tx = f.x + Math.cos(a) * max; ty = f.y + Math.sin(a) * max; }
-    f._leapT = 0.44; f._leapMax = 0.44; f._leapFrom = { x: f.x, y: f.y }; f._leapTo = { x: tx, y: ty };
-    f._leapSkill = sk; f._leapDmg = dmg; f._leapCol = col; f.inv = 0.46; f._leapR = 54;
+    f._leapT = AIR; f._leapMax = AIR; f._leapFrom = { x: f.x, y: f.y }; f._leapTo = { x: tx, y: ty };
+    f._leapSkill = sk; f._leapDmg = dmg; f._leapCol = col; f.inv = 0.46; f._leapR = 68;
     this.vfx.ring(tx, ty, { r0: f._leapR, vr: -120, life: 0.44, color: col, width: 3 });   // shrinking target reticle
     window.MorrowwishAudio?.effect?.('charge');
   }
@@ -2759,7 +2832,11 @@ class CaptureBattle {
     this.vfx.burst(tx, ty, { count: this.game.isTouch ? 10 : 16, color: col, speed: 230, life: 0.42, r: 4, grav: 260 });
     this.shakeT = Math.max(this.shakeT, 0.2); this.hitstop = Math.max(this.hitstop, 0.05);
     for (const e of this.liveEnemies()) {
-      if (Math.hypot(e.x - tx, e.y - ty) > R) continue;
+      // Forgive the leap's airtime: an enemy that drifted during the ~0.44s hang
+      // is still caught if the shockwave touches its body (R + its radius), so a
+      // committed 泰山压顶/居高临下 lands on a moving target instead of whiffing
+      // on the spot it left (owner: leap 老打不中).
+      if (Math.hypot(e.x - tx, e.y - ty) > R + (e.r || 18)) continue;
       const result=this.resolveHit(e, 'me', f._leapSkill || { element: f.element }, f._leapDmg, e.x, e.y);
       // Only 泰山压顶 has the dedicated stagger trait. Other leap skills
       // apply armor break through resolveHit and cannot skip the poise rules.
@@ -4393,7 +4470,19 @@ class CaptureBattle {
     // zero-output turtle gets no free progress (no hits → no benefit). A real kiter who IS fighting
     // finally closes in time; a fight you truly can't win ends as the wild cat fleeing (neutral),
     // not a silent clock-loss. (Optional future: ramp enemy fire-rate here too — deferred, unreviewed.)
-    this._closing = this.coach ? 0 : clamp((this.t - 45) / 25, 0, 1);
+    // PROGRESS-GATED closing (owner + playtest P0): the old ramp was pure wall-clock
+    // (0 until 45s), but tempoScale 0.64 ends real fights in 5–18s, so the telegraph /
+    // special / 收网 / finisher arc NEVER fired in the fights people actually play. Drive
+    // _closing off the MAX of the time ramp and how-dead-the-pack-is, so a fast burst down
+    // still trips the closing beats on the way to the kill. hitProgress needs the player to
+    // be LANDING hits (sum enemy HP removed), so a zero-output turtle still earns nothing.
+    {
+      const packMax = this.enemies.reduce((n,e)=>n+(e.maxhp||0),0);
+      const packHp  = this.enemies.reduce((n,e)=>n+Math.max(0,e.hp||0),0);
+      const hitProgress = packMax>0 ? clamp(1-packHp/packMax,0,1) : 0;   // 0 → full pack, 1 → dead
+      const timeRamp = clamp((this.t - 45) / 25, 0, 1);                  // legacy slow-fight resolver
+      this._closing = this.coach ? 0 : Math.max(timeRamp, hitProgress);
+    }
     // MASH-STALL teach + resolve: if the player keeps throwing ONLY basics while an
     // enemy sits pinned near the un-skilled mash floor (~<20% HP, not staggered), the
     // fight can't end from basics alone. Detect it, pulse a "use a skill" teach beat,
@@ -4505,6 +4594,9 @@ class CaptureBattle {
         const maxPts = 9;
         if (p._hist.length > maxPts * 2) p._hist.splice(0, p._hist.length - maxPts * 2);
       }
+      // METEOR: a falling-rock skill still gets a heavy fiery comet trail each frame
+      // even though it's a burst projectile (which otherwise skips the ribbon above).
+      if (p._meteor) { this.vfx.trail(p.x, p.y, p.color, 13); this.vfx.trail(p.x, p.y, '#ffdb84', 7); }
       // A lobbed AOE flies OVER enemies to its landing point, then bursts (it does
       // not collide on contact). Show its target ring; detonate on arrival/expiry.
       if (p.burst) {
@@ -4890,7 +4982,7 @@ class CaptureBattle {
       // Refill to 100 over ~(specialCd + 5)s — the +5 makes the FIRST special land mid-fight (~8–10s
       // from a −headstart) instead of the old 3s cooldown, while later recharges still pace at roughly
       // specialCd once the meter's rolling. Aggro/pressure nudge it faster so a heated fight escalates.
-      const fillSecs = Math.max(2.4, (e.specialCd || 3.2)) + 5;
+      const fillSecs = Math.max(2.4, (e.specialCd || 3.2)) + 2;   // +2 (was +5): first special lands ~4-6s not ~8-10s, so a ~10s fight still sees one (playtest P0). hurtEnemy's proportional charge covers the very fast kills.
       const rate = 100 / fillSecs;
       e.specialMeter = Math.min(100, (e.specialMeter || 0) + dt * rate * (1 + (e.aggro || 0) * 0.4));
     }
@@ -5007,7 +5099,17 @@ class CaptureBattle {
       // Manual play is harder than letting the AI dodge for you, so give a human
       // pilot ~25% more breathing room between enemy shots (auto mode stays brisk).
       // Within-fight pressure tapers that ease away and speeds fire as a stomp drags.
-      const manualEase = (this.autoMode ? 1 : 1.12) - (this._pressure || 0) * 0.3;
+      let manualEase = (this.autoMode ? 1 : 1.12) - (this._pressure || 0) * 0.3;
+      // OPENING GRACE (owner: 手动更宽容; playtest P0 — manual players get deleted in the
+      // first few seconds before they orient). CASUAL + MANUAL only: slow enemy fire a lot
+      // for the first ~4s of the fight, decaying to the steady ease, so a human always gets
+      // a reaction window from frame 1. Auto mode + hardcore are untouched.
+      // Full grace for manual casual; reduced (60%) grace for a losing auto player (_autoAssist).
+      const graceScale = (!this.autoMode && this.difficultyMode !== 'hardcore') ? 1 : this._autoAssist;
+      if (graceScale > 0) {
+        const grace = Math.max(0, 1 - this.t / 4);        // 1 at t=0 → 0 by 4s
+        manualEase *= 1 + 0.55 * grace * graceScale;      // up to ~+55% (manual) / ~+33% (losing auto)
+      }
       e.fireCd = Math.max(0.38, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase;   // +floor; 感电降攻速
       // Lead at the ACTUAL projectile speed so the intercept solution matches flight.
       const shotSpeed = 200 + e.rIdx * 34;
@@ -5405,13 +5507,13 @@ class CaptureBattle {
       e._effLabelAt = this.t;
       this.vfx.text(e.x, e.y - 64, effLabel, elem >= 1.5 ? '#ff9f6b' : '#9aa8ba', 14);
     }
-    // BASIC-ATTACK TENSION: the basic poke rewards SKILL SETUP. It applies no tags
-    // itself, but roars on a target already afflicted (+45% per active status tag)
-    // and lands softer on an un-marked target — so Q/E priming carries the fight.
+    // BASIC-ATTACK bonus: the basic poke still REWARDS skill setup (+10% per active
+    // status tag, capped +30%) so Q/E priming remains worth it — but it no longer
+    // PENALIZES an un-marked target (owner: 把 *0.7 去掉). A pure-basic player now does
+    // full damage; priming is upside, not a tax that silently halved the masher.
     if (skill.isBasic) {
       const nTags = e.tags.filter(t => t !== 'rust' && e.status[t] > 0).length;
       if (nTags > 0) dmg *= 1 + Math.min(0.30, 0.10 * nTags);
-      else dmg *= 0.7;
     }
     // apply status tag(s) with their TTL → real ongoing effects (see tickStatus)
     if (skill.appliesTag) {
@@ -5629,6 +5731,15 @@ class CaptureBattle {
     // an allied AI cat can accidentally end the only guided encounter.
     const lessonPending=this.coach&&this.coach.steps[this.coach.i]?.key!=='finish';
     e.hp = Math.max(lessonPending?1:0, e.hp - scaled);
+    // PROGRESS-GATED SPECIAL (playtest P0): charge the enemy's must-dodge special in
+    // proportion to the HP just removed, so a cat being burst down in ~5s still telegraphs
+    // and fires its one forcing-function beat ON THE WAY to death instead of never (the old
+    // fill was pure wall-clock and never reached <18s fights). ~55 meter per full-HP burst;
+    // direct hits only, not DoT/coach, and never past the 100 cap. Still gated by the normal
+    // telegraph/cast pipeline downstream, so it can't instant-dump at point-blank.
+    if (!isDot && !this.coach && !fromDuo && e.hp > 0 && e.maxhp) {
+      e.specialMeter = Math.min(100, (e.specialMeter || 0) + (scaled / e.maxhp) * 55);
+    }
     // CAST-INTERRUPT accumulator: damage dealt while an enemy is winding up a heavy
     // counts toward cancelling it (checked in the AI telegraph tick).
     if (e.castInterruptible && e.telegraph > 0) e.castDmgTaken = (e.castDmgTaken || 0) + scaled;
@@ -5708,6 +5819,33 @@ class CaptureBattle {
     if (!f.alive) return;
     // LEVEL GAP: a higher-level wild pack hits genuinely harder (see constructor).
     if (this.enemyLevelMult && this.enemyLevelMult !== 1) dmg *= this.enemyLevelMult;
+    // INTRA-FIGHT TEMPO ENVELOPE (playtest P0: enemy damage was a flat battle-start constant with
+    // NO time term — a wild hit 100% lethality at second 1 = second 7, so fights were a step wall
+    // with no opening→escalation arc and every manual persona died the identical deterministic 428).
+    // Casual only: ramp enemy output 0.55→1.0 over the first ~6s so the opening is a forgiving
+    // feeling-out phase that visibly escalates into full threat. Hardcore stays flat (1.0).
+    if (this.difficultyMode !== 'hardcore') dmg *= 0.55 + 0.45 * Math.max(0, Math.min(1, this.t / 6));
+    // MASHER GUARD (owner: 手动更宽容; playtest P0 — the human-piloted active cat is the ONLY
+    // unit with no passive evasion: autoDodgeChance protects benched allies + auto-mode but is
+    // withheld from me(), so manual+no-dodge is strictly the hardest config). Give the MANUALLY
+    // piloted active cat a passive incoming-damage softener that RAMPS the longer it goes without
+    // a skill/dodge and leans harder below 30% HP, then DECAYS to nothing the instant the player
+    // engages (casts within ~1s) — so it nets a drowning masher without dulling an active pilot.
+    // Casual + manual only; auto-mode and hardcore are untouched.
+    // Manual active cat always qualifies; a losing auto player gets it at 60% (_autoAssist).
+    const guardScale = (f === this.me() && !this.coach && this.difficultyMode !== 'hardcore')
+      ? (!this.autoMode ? 1 : this._autoAssist) : 0;
+    if (guardScale > 0) {
+      // HP STATE is the primary peril signal (playtest P0: a facetanking masher gets bursted
+      // from full HP → the old idle-dominated guard gave most of its value when he was SAFE and
+      // little when he was dying). lowHp now drives the floor (ramps hard below 40% HP); a small
+      // idle term still rewards non-engagement, and it all decays the instant he casts/dodges.
+      const sinceSkill = this.t - (this._lastSkillT || -99);
+      const idle = Math.max(0, Math.min(1, (sinceSkill - 1) / 3));                 // 0 within 1s of a skill → 1 by 4s
+      const lowHp = f.maxhp ? Math.max(0, Math.min(1, (0.40 - f.hp / f.maxhp) / 0.40)) : 0; // 0 above 40% HP → 1 at 0%
+      const guard = Math.min(0.45, lowHp * 0.38 + idle * 0.12) * guardScale;       // cap 45% (manual); ×0.6 for losing auto
+      if (guard > 0 && (f.inv || 0) <= 0) dmg *= (1 - guard);                      // not while already in dodge i-frames
+    }
     // First-fight coach: a beginner can take hits to learn, but never dies during
     // the tutorial — damage is gentled and HP floored so the first fight is safe.
     if (this.coach) dmg *= 0.35;
@@ -6050,6 +6188,10 @@ class CaptureBattle {
   }
   finish(win) {
     this.done = true; this.result = win ? 'win' : 'flee'; this.shakeT = 0.5;
+    // A loss is a true DEFEAT (counts toward the mercy band) only on a team wipe or
+    // the time-cap stalemate. If a cat is still standing and the clock didn't run out,
+    // the player tapped 撤退 — a voluntary retreat that must NOT pity-ramp next fight.
+    if (!win) this._voluntaryFlee = !this._timeCapLoss && this.team.some(f => f.alive);
     if (this._debug) this._dbgDump();
   }
 
@@ -6281,6 +6423,30 @@ class CaptureBattle {
           ctx.beginPath();ctx.moveTo(Math.cos(a)*p.r*.67,Math.sin(a)*p.r*.67);
           ctx.lineTo(Math.cos(a+.35)*(p.r+6),Math.sin(a+.35)*(p.r+6));ctx.stroke();
         }
+      }else if(p.kind==='meteor'){
+        // 陨石: a dark rocky core wrapped in a streaking flame tail, oriented along flight.
+        ctx.rotate(p.ang);
+        const fl=Math.sin(this.t*30);
+        // flame tail trailing BEHIND the rock (negative x = backward along travel)
+        ctx.fillStyle='#ff8a3c';ctx.beginPath();ctx.moveTo(10,0);
+        ctx.quadraticCurveTo(-18,-12-fl*3,-46,-4+fl*2);
+        ctx.quadraticCurveTo(-20,0,-46,6-fl*2);
+        ctx.quadraticCurveTo(-18,12+fl*3,10,0);ctx.fill();
+        ctx.fillStyle='#ffd27a';ctx.beginPath();ctx.moveTo(8,0);
+        ctx.quadraticCurveTo(-12,-6,-32,-2+fl);
+        ctx.quadraticCurveTo(-14,0,-32,4-fl);
+        ctx.quadraticCurveTo(-12,6,8,0);ctx.fill();
+        // rocky core: a jagged dark polygon with a hot rim
+        ctx.rotate(this.t*4);
+        const R=p.r||15, pts=7;
+        ctx.beginPath();
+        for(let i=0;i<pts;i++){const a=i/pts*Math.PI*2;const rr=R*(i%2?0.72:1);ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}
+        ctx.closePath();
+        ctx.fillStyle='#3a2318';ctx.fill();
+        ctx.lineWidth=2.5;ctx.strokeStyle='#ff7a33';ctx.stroke();
+        // molten cracks
+        ctx.strokeStyle='#ffb867';ctx.lineWidth=1.3;
+        ctx.beginPath();ctx.moveTo(-R*.4,-R*.3);ctx.lineTo(R*.2,R*.1);ctx.lineTo(-R*.1,R*.5);ctx.stroke();
       }else if(p.kind==='fireball'){
         ctx.rotate(p.ang);
         const flicker=Math.sin(this.t*26)*3;
@@ -7087,9 +7253,12 @@ function star(ctx, cx, cy, R, r, n) {
 }
 
 // Compute one preview level at spawn and keep it on that encounter.
+// Per-species minimum wild encounter level. Floors chosen so a legendary catch
+// reads as a real late-game find; wins over the regional cap in computeWildLevel.
+CaptureBattle.SPECIES_MIN_LEVEL={ lanbao:12 };
 CaptureBattle.previewWildLevel=function(species,region,team){
   const rIdx=['N','R','SR','SSR'].indexOf(species?.rarity);
-  const fields={rarIdx:Math.max(0,rIdx),encounterRegion:region||'yard'};
+  const fields={rarIdx:Math.max(0,rIdx),encounterRegion:region||'yard',wildId:species?.id};
   const candidates=Array.isArray(team)&&team.length?team:
     (window.State?.S?.cats||[]).slice(0,5);
   return CaptureBattle.prototype.computeWildLevel.call(fields,candidates);

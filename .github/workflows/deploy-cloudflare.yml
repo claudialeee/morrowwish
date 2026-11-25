@@ -147,9 +147,35 @@ jobs:
           node scripts/cat-bond-interaction-language-qa.mjs
           # Actual mouse/touch on ten official CrazyGames viewport sizes.
           node scripts/cat-bond-crazygames-real-input.mjs
-          node scripts/cat-bond-rpg-cinematic-smoke.mjs
+          if grep -q 'name="cat-bond-campaign" content="last-resonance"' public/cat-bond/index.html; then
+            node scripts/cat-bond-release-prologue-qa.mjs
+          else
+            node scripts/cat-bond-rpg-cinematic-smoke.mjs
+          fi
           # Actual end-user DOM, not only the aggregator or source-string tests.
           node scripts/test-dashboard-history-browser.mjs
+      - name: Verify canonical Harbor progression on three screen sizes
+        run: |
+          if [ -f public/cat-bond/js/resonance/harbor-presentation.mjs ]; then
+            node scripts/check-cat-bond-resonance-world.mjs
+            # Static server from the earlier browser step is sufficient for the local-save playthrough.
+            if ! curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null; then
+              node scripts/cat-bond-local-cloud-server.mjs >/tmp/harbor-server.log 2>&1 &
+              for attempt in {1..30}; do
+                if curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null; then break; fi
+                sleep 1
+              done
+            fi
+            node scripts/cat-bond-harbor-playthrough.mjs
+          fi
+      - name: Save Harbor browser acceptance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-production-harbor
+          path: artifacts/cat-bond-harbor/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Save CrazyGames yard menu layout screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -207,7 +233,13 @@ jobs:
           expected_story=$(grep -oE 'js/story-cloud.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
           expected_game=$(grep -oE 'js/game.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
           expected_battle=$(grep -oE 'js/battle.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
-          expected_worldmap=$(grep -oE 'js/worldmap.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+          if grep -q 'name="cat-bond-campaign" content="last-resonance"' public/cat-bond/index.html; then
+            expected_worldmap=$(grep -oE 'js/resonance/integration-entry.mjs[?]v=[^"]+' public/cat-bond/index.html | head -1)
+            worldmap_source=public/cat-bond/js/resonance/integration-entry.mjs
+          else
+            expected_worldmap=$(grep -oE 'js/worldmap.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
+            worldmap_source=public/cat-bond/js/worldmap.js
+          fi
           expected_painted=$(grep -oE 'js/painted-regions.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
           expected_ui=$(grep -oE 'js/ui.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
           expected_i18n=$(grep -oE 'js/i18n.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
@@ -237,7 +269,7 @@ jobs:
               && cmp -s public/cat-bond/js/story-cloud.js /tmp/catbond-live-story.js \
               && cmp -s public/cat-bond/js/game.js /tmp/catbond-live-game.js \
               && cmp -s public/cat-bond/js/battle.js /tmp/catbond-live-battle.js \
-              && cmp -s public/cat-bond/js/worldmap.js /tmp/catbond-live-worldmap.js \
+              && cmp -s "$worldmap_source" /tmp/catbond-live-worldmap.js \
               && cmp -s public/cat-bond/js/painted-regions.js /tmp/catbond-live-painted.js \
               && cmp -s public/cat-bond/js/ui.js /tmp/catbond-live-ui.js \
               && cmp -s public/cat-bond/js/i18n.js /tmp/catbond-live-i18n.js; then
@@ -247,6 +279,14 @@ jobs:
           done
           test "$latest" = 1 || { echo "::error::Cloudflare Cat Bond HTML/JS/CSS still stale after deployment"; exit 1; }
           echo "Cloudflare Cat Bond LIVE verified against $GITHUB_SHA, including exact story, map, boss, UI, locale, CSS and garden artwork bytes."
+          # Compare actual Harbor implementation bytes, not merely the shared entrypoint.
+          if [ -f public/cat-bond/js/resonance/harbor-presentation.mjs ]; then
+            for asset in js/resonance/harbor-presentation.mjs js/resonance/world-runtime.mjs js/resonance/world-bridge.mjs js/resonance/world-exploration.mjs js/resonance/world-mechanisms.mjs js/resonance/campaign.mjs js/resonance/dialogue-ui.mjs css/resonance-canonical-world.css css/resonance-host.css; do
+              curl -fsSL --max-time 20 -o /tmp/harbor-live-asset "https://morrowwish.pages.dev/cat-bond/$asset?verify=$GITHUB_SHA"
+              cmp -s "public/cat-bond/$asset" /tmp/harbor-live-asset || { echo "::error::Stale Harbor asset $asset"; exit 1; }
+            done
+            echo "Harbor production source verified against $GITHUB_SHA"
+          fi
           # Exercise the deployed D1-backed cloud-save endpoint without creating a save row.
           unauth_code=$(curl -sSL --max-time 15 -o /tmp/catbond-cloud-unauth.json -w '%{http_code}' "https://morrowwish.pages.dev/api/cat-bond-cloud-save?verify=$GITHUB_SHA")
           test "$unauth_code" = 401 || { echo "::error::Cloud-save API unauthenticated GET returned $unauth_code; expected 401"; exit 1; }
@@ -449,7 +489,7 @@ jobs:
               if curl -fsSL --max-time 15 -o /tmp/mw-studio-live.html "$origin/studio-insights/?verify=$GITHUB_SHA&attempt=$attempt" \
                  && grep -Fq "const fallbackIds=['youtube','tiktok','instagram','bluesky','itch'];" /tmp/mw-studio-live.html \
                && grep -Fq "platforms.sort((a,b)=>(a.id==='itch')-(b.id==='itch')" /tmp/mw-studio-live.html \
-                 && grep -Fq 'id="archived-first-round-game-rows"' /tmp/mw-studio-live.html \
+                 && grep -Fq 'id="archived-first-round-posts"' /tmp/mw-studio-live.html \
                  && grep -Fq "renderVideoMatrix(archivedPosts,'capturedAt')" /tmp/mw-studio-live.html \
                  && ! grep -Eq 'id="future-channels"|id="future-channel-list"|channelFuture:|Poki:|GamePix:|GameDistribution:' /tmp/mw-studio-live.html \
                  && ! grep -Fq 'instagram-historical' /tmp/mw-studio-live.html; then

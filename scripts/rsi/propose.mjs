@@ -54,7 +54,7 @@ const CAT = {
   build: 'fighter', stats: { pow: 90, agi: 80, vit: 130, cha: 60 },
   loadout: { q: { kind: 'melee', power: 1.4, cd: 1.1 }, e: { kind: 'projectile', power: 1.1, cd: 1.0 } },
 };
-const EVAL_OPTS = { seeds: [7, 42, 101], frames: 1800, scenarios: ['solo-pinned', 'solo-live', 'multi'] };
+const EVAL_OPTS = { seeds: [7, 42, 101], frames: 1800, scenarios: ['solo-pinned', 'solo-live', 'multi', 'solo-rusher'] };
 
 // ============================================================================================
 // CANDIDATE (PROPOSAL) SCHEMA — the clean contract an LLM proposer (or a human) emits. Every

@@ -39,7 +39,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['css/style.css?v=resonance-integration-1','js/main.js?v=release-title-20261124','js/state.js?v=release-title-20261124','js/story-cloud.js?v=release-title-20261124','id="intro-start"','id="intro-continue"','js/game.js?v=resonance-integration-1','js/resonance/integration-entry.mjs?v=canonical-1','js/battle.js?v=resonance-integration-1']],
+ ['entry points and cache versions',index,['css/style.css?v=prologue-release-20261124','js/main.js?v=release-title-20261124','js/state.js?v=release-title-20261124','js/story-cloud.js?v=release-title-20261124','id="intro-start"','id="intro-continue"','js/game.js?v=prologue-release-20261124','js/resonance/integration-entry.mjs?v=forest-release-20261124','js/battle.js?v=prologue-release-20261124']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){

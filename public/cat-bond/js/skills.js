@@ -450,16 +450,16 @@
   // Status-tag metadata so battle.js can tick them uniformly.
   // dps = fraction of target maxhp per second (0 for crowd-control tags).
   const TAG_INFO = {
-    burn:  { name: '灼烧', ttl: 4.0, dps: 0.03, color: '#ff7a3c' },
+    burn:  { name: '灼烧', ttl: 4.0, dps: 0.015, color: '#ff7a3c' },  // ALL DoTs trimmed (owner), burn kept HIGHEST: 1.5%/s. maxhp-scaled + refreshes on every fire hit, so it was a permanent defense-ignoring drain; fire's identity stays burn+reactions, not raw DoT.
     soak:  { name: '淋湿', ttl: 5.0, dps: 0,    color: '#4aa8ff' },
-    shock: { name: '感电', ttl: 3.0, dps: 0.02, color: '#ffd23c' },
+    shock: { name: '感电', ttl: 3.0, dps: 0.009, color: '#ffd23c' },  // 0.9%/s (was 2%) — lowest DoT; elec's bite is reactions/CC, not the tick.
     oil:   { name: '浸油', ttl: 6.0, dps: 0,    color: '#8a6bff' },
     // Tiered CC (see battle.js tickStatus): chill = hard freeze (no move/attack),
     // dizzy = full stun (shortest — it's the strongest), bind = root only (can still
     // attack, so it can run a little longer). Durations trimmed — CC felt too long.
     chill: { name: '冰冻', ttl: 2.2, dps: 0,    color: '#9ec8ff' },
     dizzy: { name: '眩晕', ttl: 1.4, dps: 0,    color: '#c9b6ff' },
-    bleed: { name: '流血', ttl: 4.5, dps: 0.025,color: '#ff6b6b' },
+    bleed: { name: '流血', ttl: 4.5, dps: 0.012,color: '#ff6b6b' },  // 1.2%/s (was 2.5%) — second-highest DoT, under burn.
     blind: { name: '失明', ttl: 2.6, dps: 0,    color: '#ffe9a8' },
     bind:  { name: '束缚', ttl: 3.0, dps: 0,    color: '#6fcf5f' },
     // --- advanced debuffs ---
@@ -861,8 +861,9 @@
       // Do not show another build's exclusive equipment in the trainer.
       if(s.unlock?.build&&(cat.buildType||buildTypeForBreed(cat))!==s.unlock.build)
         continue;
-      // Do not list skills the cat's ROLE×CATEGORY identity can never learn (e.g. an assassin
-      // such as 焰焰 can never wield a beam like 横扫喷焰). Otherwise they'd fall into "locked"
+      // Do not list skills the cat's ROLE×CATEGORY identity can never learn (e.g. a tank
+      // or assassin can never wield a strong beam like 横扫喷焰; dps/control/support can).
+      // Otherwise they'd fall into "locked"
       // while their ONLY visible unlock line (Lv.6 ✓) reads as satisfied — a contradictory
       // "condition met but still locked" entry. The real blocker (role) isn't a level/pay gate,
       // so hiding it mirrors the build-exclusive skip above. Switching build re-reveals it.
@@ -1164,9 +1165,22 @@
     // 圆宝加菲=tank, 幽幽紫雾=dps, 夜夜孟买=control, 绅绅燕尾服=fighter — to break up the all-assassin
     // dark element and give each element a varied role spread. (蓝莓/豆豆/杏仁 reach their new roles
     // via base-stat tweaks in data.js, so they are NOT listed here.)
-    const BREED_ROLES={tangyuan:'tank',qisi:'fighter',senlin:'fighter',jiafei:'tank',
+    const BREED_ROLES={qisi:'fighter',senlin:'tank',jiafei:'tank',
       youling:'dps',mengmai:'control',lixiao:'fighter',meidu:'control',
-      sanhua:'fighter'};   // v2: light needs ONE frontline (support×5/control×1/dps×1 had zero); 三花 7/7/7/9 balanced → bruiser
+      sanhua:'fighter',jinwu:'dps',abi:'fighter',
+      // STARTER roles aligned to their evolution target's family so a player's learned
+      // playstyle survives the evolve (owner: 初始猫和最后的 role 尽量接近):
+      tangyuan:'dps',     // 🔥 汤圆 -> 焰焰(dps): was tank; now same role
+      doudou:'fighter',   // 🌿 豆豆 -> 松松(tank): frontline family, was assassin
+      xiaohui:'fighter',  // 💧 小雾 -> 蓝莓(fighter): same role, was dps
+      // One SSR per element — roles per owner spec:
+      lanbao:'fighter',   // 💧 water SSR = 斗士
+      wumao:'dps',        // ⚡ elec SSR = 输出核心 (fixes 雷系输出不足)
+      nuowei:'dps',       // 🌿 grass SR = 枫枫 输出
+      fanmao:'dps',       // 💧 water SR = 奶糖
+      yuelian:'control'}; // ☀️ light SSR = 月月 控制/辅助 (not raw dps)
+      // 松松(SSR grass)=坦克; 星星(SSR dark)=assassin & 月月(SSR light)=dps resolve via stats.
+      // v2: light needs ONE frontline (support×5/control×1/dps×1 had zero); 三花 7/7/7/9 balanced → bruiser
     if(BREED_ROLES[cat.species])return BREED_ROLES[cat.species];
     // rank the four stats; primary = biggest, secondary = next (ties: pow>agi>vit>cha)
     const order=['pow','agi','vit','cha'];
@@ -1435,12 +1449,18 @@
   // ==========================================================================
   // {evolvesTo, req:{level?,bond?,item?}}. Pure data; integrator swaps species.
   const EVOLUTION = {
-    tangyuan: { evolvesTo: 'senlin',  req: { level: 16, bond: 40 } },               // 橘猫 -> 缅因巨猫
-    doudou:   { evolvesTo: 'youling', req: { level: 18, bond: 50, item: '夜影石' } },// 狸花 -> 幽灵
-    lanbao:   { evolvesTo: 'yuelian', req: { level: 22, bond: 80, item: '月华露' } },// 蓝猫 -> 月莲
-    xianluo:  { evolvesTo: 'jinwu',   req: { level: 24, bond: 80, item: '赤焰晶' } },// 暹罗 -> 金乌
-    xiaohui:  { evolvesTo: 'dundun',  req: { level: 10, bond: 20 } },               // 小灰 -> 墩墩
-    yunduo:   { evolvesTo: 'yuelian', req: { level: 20, bond: 70 } },               // 云朵 -> 月莲
+    // The three STARTERS (fire/grass/water) each evolve into their element's
+    // strongest SSR — a long-horizon payoff so a common starter can become a
+    // legend. Dark & light SSR (星星/月月) are caught in the Moonshadow Ruins,
+    // not evolved, so every element reaches its legend a different way.
+    tangyuan: { evolvesTo: 'jinwu',   req: { level: 16, bond: 80, item: '赤焰晶' } },// 🔥 橘猫 -> 焰焰 (火系最强SSR)
+    doudou:   { evolvesTo: 'senlin',  req: { level: 16, bond: 80, item: '翠藤芽' } },// 🌿 狸花 -> 松松 (草系最强SSR)
+    xiaohui:  { evolvesTo: 'lanbao',  req: { level: 16, bond: 80, item: '月华露' } },// 💧 小雾 -> 蓝莓 (水系最强SSR)
+    // Other collectible evolution chains — kept element-consistent AND role-adjacent:
+    xianluo:  { evolvesTo: 'wumao',   req: { level: 16, bond: 80, item: '流光珠' } },// ⚡ 暹罗(elec dps) -> 桃桃(elec SSR dps): same element + same role (was elec->fire 焰焰, mismatched)
+    yunduo:   { evolvesTo: 'yuelian', req: { level: 16, bond: 70 } },               // ☀️ 云朵(light support) -> 月月(light control): same element, adjacent utility role
+    // NOTE: 蓝莓->月月 removed — 蓝莓 is already the water SSR (a starter's evo target),
+    // and water-fighter -> light-control was both element- and role-mismatched.
   };
   function evolutionOf(speciesId) { return EVOLUTION[speciesId] || null; }
   // canEvolve(cat) -> bool (item requirement reported but NOT auto-consumed here;

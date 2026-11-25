@@ -230,6 +230,7 @@
     '召唤队友': 'Summon partner',
     '脉冲伤害 · ': 'Pulse damage · ',
     '回复领域': 'Healing zone',
+    '陨石来袭!': 'Meteor incoming!',
     '埋伏!': 'Ambush!',
     '必杀冷却中：': 'Ultimate cooling down: ',
     '换猫还需 ': 'Next cat swap in ',
@@ -1004,6 +1005,8 @@
     '🌑 夜影石 ×1 — 3🐠': '🌑 Nightshade Stone ×1 — 3🐠',
     '🌙 月华露 ×1 — 4🐠': '🌙 Moondew ×1 — 4🐠',
     '🔥 赤焰晶 ×1 — 4🐠': '🔥 Crimson Flame Crystal ×1 — 4🐠',
+    '🌿 翠藤芽 ×1 — 4🐠': '🌿 Jade Sprout ×1 — 4🐠',
+    '⚡ 流光珠 ×1 — 4🐠': '⚡ Voltlight Pearl ×1 — 4🐠',
     '小鱼也可每日签到获得': 'Fish can also be earned from daily check-in',
     '+5 小鱼': '+5 fish',
     '+15 小鱼': '+15 fish',
@@ -1015,6 +1018,8 @@
     '夜影石': 'Nightshade Stone',
     '月华露': 'Moondew',
     '赤焰晶': 'Crimson Flame Crystal',
+    '翠藤芽': 'Jade Sprout',
+    '流光珠': 'Voltlight Pearl',
 
     // ---- feed / tease ----
     '🪙 给所有猫猫加餐': '🪙 Feed all cats a snack',

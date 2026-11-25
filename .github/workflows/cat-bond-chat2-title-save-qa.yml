@@ -2,7 +2,7 @@ name: Cat Bond Chat 2 — title/save QA (no deploy)
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    branches: [rpg/integration, rpg/cat-bond-takeover]
+    branches: [rpg/integration, rpg/cat-bond-takeover, main]
 permissions:
   contents: read
 concurrency:
@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   source-and-build:
-    if: github.head_ref == 'rpg/title-save-integration-v2' || github.head_ref == 'rpg/cat-bond-takeover' || github.head_ref == 'rpg/release-title'
+    if: github.head_ref == 'rpg/title-save-integration-v2' || github.head_ref == 'rpg/cat-bond-takeover' || startsWith(github.head_ref, 'rpg/release-title')
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -27,7 +27,7 @@ jobs:
       - run: npm run build:pages
         if: always()
   real-browser-title-save:
-    if: github.head_ref == 'rpg/title-save-integration-v2' || github.head_ref == 'rpg/cat-bond-takeover' || github.head_ref == 'rpg/release-title'
+    if: github.head_ref == 'rpg/title-save-integration-v2' || github.head_ref == 'rpg/cat-bond-takeover' || startsWith(github.head_ref, 'rpg/release-title')
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:

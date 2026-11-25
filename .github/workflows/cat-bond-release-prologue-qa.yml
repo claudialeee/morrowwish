@@ -1,7 +1,7 @@
 name: Cat Bond release prologue — browser acceptance
 on:
   pull_request:
-    branches: [rpg/cat-bond-takeover]
+    branches: [rpg/cat-bond-takeover, main]
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-release-prologue-qa.mjs'
@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   prologue:
-    if: startsWith(github.head_ref, 'rpg/release-prologue')
+    if: startsWith(github.head_ref, 'rpg/release-prologue') || github.head_ref == 'rpg/cat-bond-takeover'
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
