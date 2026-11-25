@@ -28,7 +28,7 @@ const stages=["sendA","receiveB","sendB","receiveA"];
 export const puzzleSpecs={
  "explore:tide-logbook":{type:"tide",initial:[],goal:[2,0,1]},
  "puzzle:beam-mirrors":{type:"mirrors",initial:[0,1,0],goal:[2,3,1],mod:4},
- "puzzle:paired-water-gates":{type:"water",initial:[0,0,0],goal:[1,1,1],mod:2},
+ "puzzle:paired-water-gates":{type:"pairedWater",initial:[],goal:[0,1,2]},
  "puzzle:safety-blueprint":{type:"blueprint",initial:[],goal:[2,0,1]},
  "puzzle:heat-pressure":{type:"heat",initial:[35,20],goal:[55,25]},
  "puzzle:joint-flight":{type:"flight",initial:[0,0],goal:[3,0],wind:[1,-1,1]},
@@ -51,6 +51,7 @@ export function createPuzzle(op){
 export function movePuzzle(p,i){
  if(!p||p.solved||!Number.isInteger(i)||i<0||i>2)return false;
  if(["mirrors","stars","water","routing"].includes(p.type)){p.values[i]=(p.values[i]+1)%p.mod;}
+ else if(p.type==="pairedWater"){if(i===p.goal[p.values.length])p.values.push(i);else{p.values=[];p.mistakes++;}}
  else if(["blueprint","memory","rescue","melody","tide","scent"].includes(p.type)){
   if(i===p.goal[p.values.length])p.values.push(i);else{p.values=[];p.response=[];p.mistakes++;}
   if(p.type==="melody")p.response=p.values.map((n,j)=>({actor:p.participants?.[j%2],reply:(n+1)%3}));
@@ -92,7 +93,7 @@ export function createExplorer(bridge,region){
    if(op!==first&&v.objective.includes(first))return {ok:false,reason:v.choice==="rescue"?"rescue-first":"beacon-first"};
   }
   if(op.startsWith("melody:")&&!localNpcs().every(n=>invited.has(n.id)))return {ok:false,reason:"invite-local-cats"};
-  active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};puzzle=createPuzzle(op);if(puzzle?.type==="melody")puzzle.participants=[...invited];
+  active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};puzzle=createPuzzle(op);if(puzzle?.type==="pairedWater")puzzle.pair=bridge.pairedGate().pair;if(puzzle?.type==="melody")puzzle.participants=[...invited];
   if(puzzle)return {ok:true,puzzle:true};
   if(!op.startsWith("explore:"))return {ok:false,reason:"unimplemented"};
   return complete();
@@ -115,7 +116,7 @@ export function createExplorer(bridge,region){
   }
   if(!active)return {ok:false,reason:"no-interaction"};const f=layout.features[active.operation];
   if(!near(f)||(puzzle&&!puzzle.solved))return {ok:false,reason:"incomplete-physical-action"};
-  const result=bridge.recordWorld(active.sceneId,active.operation,{...active,verified:true,participants:puzzle?.participants,responses:puzzle?.response});
+  const result=bridge.recordWorld(active.sceneId,active.operation,{...active,verified:true,participants:puzzle?.participants,responses:puzzle?.response,pair:puzzle?.pair,waterSequence:puzzle?.type==="pairedWater"?puzzle.values:undefined});
   if(result.ok){active=null;puzzle=null;}return result;
  }
  function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();return movePuzzle(puzzle,i)?complete():{ok:true,pending:true};}

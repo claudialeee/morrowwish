@@ -6,7 +6,7 @@ const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","recei
 const scentTrail=Object.freeze([
  {point:[.31,.58],name:["湿苔上的气味","Scent on damp moss"],clue:["湿苔上留下了药箱经过的痕迹。沿上方林道继续追踪。","The medicine crate passed through the damp moss. Follow the upper path."]},
  {point:[.39,.40],name:["林间药草痕迹","Herbs on the canopy path"],clue:["药草散落在通往根系水道的路上。","Loose herbs lead toward the root channel."]},
- {point:[.69,.53],name:["根系药材藏处","Medicine at the root channel"],clue:["药材被送去治疗地下根系。","The missing medicine was diverted to treat the underground roots."]}
+ {point:[.69,.53],name:["根系药材藏处","Medicine at the root channel"],clue:["药材被送去治疗地下根系。旁边的秘密水路一直通向芽禾的药草园。","The medicine was diverted to treat the underground roots. A hidden channel also leads directly to Yahe’s herb gardens."]}
 ]);
 const tideTrail=[
  {point:[.82,.45],name:["查看退潮刻痕","Inspect the ebb marks"],clue:["退潮刻痕指向码头尽头。沿东岸石径寻找露出的台阶。","The ebb marks point toward the end of the pier. Follow the eastern stone path to the exposed steps."]},
@@ -16,8 +16,14 @@ const tideKey=i=>"harbor:H-03:tide:"+i;
 const tideNear=(w,p)=>{const q=w.positions.harbor;return !!q&&Math.hypot(q.x-p[0],q.y-p[1])<.072;};
 const scentKey=i=>"forest:R-02:scent:"+i;
 const scentAt=(w,i)=>{const p=w.positions.forest,q=scentTrail[i]?.point;return !!p&&!!q&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
-const upperGate={point:[.53,.40],npc:"yahe",name:["与芽禾撑开上层水闸","Open the upper gate with Yahe"],clue:["芽禾会守住上层水闸。沿根桥前往榆川处，接通地下水道。","Yahe will hold the upper gate. Cross the root bridge to Yuchuan and reconnect the lower channel."]};
+const upperGate={point:[.53,.40],npc:"yahe",name:["与芽禾撑开上层水闸","Open the upper gate with Yahe"],clue:["第一只猫留在上层控制水压；带另一只猫沿根桥前往地下水闸。","The first cat stays to regulate pressure. Lead the other cat across the root bridge to the lower gate."]};
 const pairedKey="forest:R-03:upper-gate";
+ function forestPair(root){
+  const cats=root.cats||[],selected=(root.duoRelations?.active||[]).map(id=>cats.find(c=>c.uid===id)).filter(Boolean);
+  const team=[...selected,...cats].filter((c,i,a)=>a.findIndex(x=>x.uid===c.uid)===i);
+  return team.length?{upper:team[0].uid,lower:team[1]?.uid||"muling"}:null;
+ }
+ const validPair=(root,p)=>!!p&&typeof p==="object"&&p.upper!==p.lower&&root.cats?.some(c=>c.uid===p.upper)&&(p.lower==="muling"||root.cats?.some(c=>c.uid===p.lower));
 const atForest=(w,q)=>{const p=w.positions.forest;return !!p&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
 // Muling's six letters are optional post-ending scenes. They do not reopen the seal or reverse the ending.
 const homeLetters={
@@ -81,12 +87,12 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  function pairedGate(){
   const v=view(),w=world();
   if(w.location!=="forest"||v.current?.id!=="forest:R-03"||!v.objective.includes("puzzle:paired-water-gates"))return null;
-  return {...clone(upperGate),ready:!!w.interactions[pairedKey]};
+  const pair=w.interactions[pairedKey],ready=validPair(State.S,pair);return {...clone(upperGate),ready,pair:ready?clone(pair):forestPair(State.S)};
  }
  function holdUpperGate(token){
   const gate=pairedGate(),api=resolveNarrative();
   if(!gate||gate.ready||!token||!api.isCurrentAction(token)||!atForest(world(),gate.point))return fail("walk-to-upper-gate");
-  return physical(w=>({...w,interactions:{...w.interactions,[pairedKey]:true}}));
+  if(!gate.pair)return fail("two-cat-required");return physical(w=>({...w,interactions:{...w.interactions,[pairedKey]:gate.pair}}));
  }
  function homeQuest(region){
   const v=view(),w=world(),spec=homeLetters[region];
@@ -116,7 +122,11 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(w.interactions[sceneId+":"+op])return fail("already-completed");
   if(op==="explore:tide-logbook"&&(!tideTrail.every((_,i)=>w.interactions[tideKey(i)])||!tideNear(w,[.87,.748])))return fail("incomplete-tide-trail");
   if(op==="explore:scent-trail"&&(!scentTrail.slice(0,-1).every((_,i)=>w.interactions[scentKey(i)])||!scentAt(w,scentTrail.length-1)))return fail("incomplete-scent-trail");
-  if(op==="puzzle:paired-water-gates"&&(!w.interactions[pairedKey]||!atForest(w,[.69,.53])))return fail("upper-gate-required");
+  if(op==="puzzle:paired-water-gates"){
+    const pair=w.interactions[pairedKey];
+    if(!validPair(State.S,pair)||!atForest(w,[.69,.53]))return fail("upper-gate-required");
+    if(proof.pair?.upper!==pair.upper||proof.pair?.lower!==pair.lower||proof.waterSequence?.join(",")!=="0,1,2")return fail("paired-flow-incomplete");
+   }
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");

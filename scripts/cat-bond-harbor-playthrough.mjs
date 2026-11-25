@@ -220,6 +220,7 @@ try {
     await readDialogue('forest:R-02','Prioritize the gardens');
     await button('Scent on damp moss · 1/3').waitFor();
     await tapLandmark(.31,.58);
+    await button('Scent on damp moss · 1/3').click();
     await button('Herbs on the canopy path · 2/3').waitFor();
     await shot('forest-trail-first');
     await page.evaluate(()=>MorrowwishI18n.set('zh'));
@@ -232,14 +233,16 @@ try {
     await scene('forest:R-02');
     await button('Herbs on the canopy path · 2/3').waitFor();
     await tapLandmark(.39,.40);
+    await button('Herbs on the canopy path · 2/3').click();
     await button('Medicine at the root channel · 3/3').waitFor();
     await tapLandmark(.69,.53);
+    await button('Medicine at the root channel · 3/3').click();
     await readDialogue('forest:R-02');
     await scene('forest:R-03');
     await button('Open the upper gate with Yahe').click();
     await button('Paired water gates').waitFor();
     await shot('forest-upper-gate');
-    await puzzle('Paired water gates',['Upstream','Branch','Roots']);
+    await puzzle('Paired water gates',['Open lower channel','Steady upper pressure','Open lower channel','Clear together']);
     await readDialogue('forest:R-03');
     await scene('forest:R-04');
     await puzzle('Ancient-root sanctuary',['Upstream','Branch','Roots']);
@@ -254,6 +257,11 @@ try {
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().sanctuaries),['harbor','forest']);
     assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('forge')),true);
     await shot('forest-complete');
+    await button('World atlas',page.locator('.rw-head')).click();
+    await button('Emberforge City').click();
+    assert.equal(await page.evaluate(()=>WorldMap.mode),'map');
+    await page.getByText('Chapter II complete. The route to Emberforge is unlocked; the story continues in a future update. Your save is preserved.',{exact:true}).waitFor();
+    await button('Rootsleep Forest').click();
     // Save isolation: detached controls and the old region must not survive a slot switch,
     // even if a queued callback is invoked synchronously before the next animation frame.
     await button('World atlas',page.locator('.rw-head')).click();
