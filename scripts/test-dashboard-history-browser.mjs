@@ -55,7 +55,7 @@ try{
   const hub={game:'hub',pageviews:homepagePageviews,retries:0};
   const summary={
    updated:'2026-11-23T23:56:00.000Z',from:'2026-11-22T08:00:00.000Z',days:2,records:50,
-   rollup:{pageviews:sitewidePageviews,starts:148,ends:110,retries:22},
+   rollup:{pageviews:sitewidePageviews,starts:148,ends:110,retries:22,headlineMetrics:mixed?{uniqueBrowsers:43,avgSessionSeconds:92,shareClicks:0,d1Eligible:10,d1Returned:3}:{uniqueBrowsers:null,avgSessionSeconds:null,shareClicks:null,d1Eligible:0,d1Returned:0}},
    byGame:[row,...otherGames,hub],byDay:[],byChannel:[],homeFunnel:{},socialPulse:{
     platforms:[{id:'youtube',published:7,views:null},{id:'instagram',published:7,views:null},
       {id:'tiktok',published:7,views:null},{id:'bluesky',published:7,views:null},{id:'itch',published:7,views:null}],
@@ -102,6 +102,16 @@ try{
      'Sitewide pageviews must include homepage and all seven games');
    assert.equal(statValues[1],String(homepagePageviews),
      'Homepage pageviews must be displayed separately');
+   assert.equal(statLabels.length,12,'All twelve headline metrics must render');
+   assert.deepEqual(statLabels.slice(5),language==='zh'?
+    ['独立浏览器','平均会话时长','首访次日回访率','分享点击','访问开玩率','开玩结算率','访问结算率']:
+    ['Unique browsers','Avg. session length','Day-1 return rate','Share clicks','Visit-to-play rate','Play-to-finish rate','Visit-to-finish rate']);
+   assert.deepEqual(statValues.slice(5,9),mixed?['43',language==='zh'?'92 秒':'92 sec','30%','0']:['','','',''],
+    'Missing observations remain blank; true observed zero is displayed');
+   const denominator=auditedPV+28+19+16+11;
+   const pct=(a,b)=>String(Math.round(a/b*1000)/10)+'%';
+   assert.deepEqual(statValues.slice(9),[pct(29,denominator),pct(17,29),pct(17,denominator)],
+    'Rates must use summed numerators and denominators of tracked games, not raw starts, homepage or untracked pages');
    const archive=page.locator('#archived-first-round');
    assert.equal(await archive.isVisible(),true,'Deleted first-round archive disclosure must remain visible');
    assert.equal(await archive.evaluate(el=>el.open),false,'Deleted history must be collapsed on initial load');
