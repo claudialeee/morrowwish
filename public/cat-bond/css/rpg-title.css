@@ -150,3 +150,11 @@ html body #stage #cb-header-actions #mw-game-settings .mw-settings-share{display
 
 /* Every layer must remain full-bleed when the portrait gradient replaces the desktop layers. */
 #stage #intro .cb-title-landscape,#stage #intro .cb-title-landscape::after{background-size:cover!important;background-repeat:no-repeat!important}
+
+/* Embedded portal uses the compact menu, and the host owns fullscreen. Keep
+   the normal website's language/audio/fullscreen rail unchanged. */
+html.cb-cg body #stage #cg-top-tools #cb-header-actions #mw-game-settings,
+html.cb-cg body #stage #cb-header-actions #mw-game-settings,
+html.cb-cg body #stage #mw-fullscreen-toggle{display:none!important}
+html.cb-cg #stage:has(#intro:not(.hide)) #cb-system-toggle,
+html.cb-cg #stage:has(#battle-ui.on) #cb-system-toggle{right:calc(env(safe-area-inset-right,0px) + 10px)!important}

@@ -123,20 +123,14 @@ try{
   }
   // The play interaction is visible and can be immediately requested by tapping
   // the placed structure; it is not simply a passive income number in a menu.
-  const plays=await page.evaluate(()=>{
-   const g=window.__game,b=State.S.yardBuildings[0];
-   const invited=g.yard.inviteCatToBuilding(b);
-   if(!invited)return {invited:false};
-   const cat=g.yard.entities.find(e=>e._buildTarget===b);
-   if(!cat)return {invited:false};
-   cat.x=b.x-8;cat.y=b.y+14;
-   g.yard.stepBuildTarget(cat,.033);
-   g.yard.update(.033);
-   return {invited,playing:g.yard.entities.some(e=>e._playBuilding===b&&e._playBuildT>0),
-     joy:cat.cat.joy,bubble:cat.bubble};
-  });
-  assert.equal(plays.invited,true,'cats must come to the selected structure');
-  assert.equal(plays.playing,true,'cat animation must enter a genuine play state');
+  // Real invitation and continuous walking to the accessible facility approach.
+  await page.evaluate(()=>UI.openBuild());
+  await page.locator('[data-visit="0"]').click();
+  await page.waitForFunction(()=>{
+    const g=window.__game,b=State.S.yardBuildings[0];
+    return g.yard.entities.some(e=>e._playBuilding===b&&e._playBuildT>0);
+  },null,{timeout:20000});
+  assert.equal(await page.evaluate(()=>{const b=State.S.yardBuildings[0];return __game.yard.entities.some(e=>e._playBuilding===b&&e._playBuildT>0)}),true,'cat animation must enter a genuine play state');
   await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-yard-placement.png'});
   await page.evaluate(()=>UI.openBuild());
   const visit=page.locator('[data-visit="0"]');
