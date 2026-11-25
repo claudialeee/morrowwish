@@ -12,7 +12,7 @@ const key='cat-bond-rpg-audio-v1',clamp=n=>Math.max(0,Math.min(1,Number(n)||0));
 let prefs={enabled:true,music:.65,fx:.8};
 try{const old=JSON.parse(localStorage.getItem(key)||'null');if(old)prefs={enabled:old.enabled!==false,music:typeof old.music==='number'?clamp(old.music):.65,fx:typeof old.fx==='number'?clamp(old.fx):.8};else prefs.enabled=localStorage.getItem('morrowwish-music-enabled')!=='0';}catch{}
 function save(){try{localStorage.setItem(key,JSON.stringify(prefs));}catch{}}
-let ctx,bus,ambBus,active=null,pending=null,serial=0,desired='title',unlocked=false,hidden=document.hidden,paused=false,blocked=false,unavailable=false,duckUntil=0,amb=null,ambId='',ceremony=null,root=null,seen=new Set(),lastFx,ambientTick=0,cache=new Map(),started=false,renderQueue=Promise.resolve(),stopped=false,visualCeremony='',supportSeen=new Set(),supportRoot=null,voiceNodes=new Set(),lastErrorAt=0,cinematicVoiceNodes=new Set(),lastSceneKey='',lastNarrativeRevision=-1,lastCompleted=0,lastSanctuaries=new Set(),lastEvidence=new Set(),lastBattle=null,retiring=null,musicSources=new Set(),foleyNodes=new Set();
+let ctx,bus,ambBus,active=null,pending=null,serial=0,desired='title',unlocked=false,hidden=document.hidden,paused=false,blocked=false,unavailable=false,duckUntil=0,amb=null,ambId='',ceremony=null,root=null,seen=new Set(),lastFx,ambientTick=0,cache=new Map(),started=false,renderQueue=Promise.resolve(),stopped=false,visualCeremony='',supportSeen=new Set(),supportRoot=null,voiceNodes=new Set(),lastErrorAt=0,cinematicVoiceNodes=new Set(),lastSceneKey='',lastNarrativeRevision=-1,lastCompleted=0,lastSanctuaries=new Set(),lastEvidence=new Set(),lastBattle=null,retiring=null,musicSources=new Set(),foleyNodes=new Set(),performedVisual=new Set(),cacheBytes=new Map();
 const regions=score.regions;
 const now=()=>ctx?.currentTime||0;
 function ensure(){
@@ -27,9 +27,10 @@ function mix(){
 }
 async function getBuffer(id){
  if(cache.has(id)){const v=cache.get(id);cache.delete(id);cache.set(id,v);return v;}
- const task=renderQueue.then(async()=>await loadRecorded(id)||await score.render(id));renderQueue=task.catch(()=>{});cache.set(id,task);
- try{const b=await task;while(cache.size>3){const first=cache.keys().next().value;if(first===id)break;cache.delete(first);}return b;}catch(e){cache.delete(id);throw e;}
+ const task=renderQueue.then(async()=>{if(id!==desired&&pending?.id!==id&&id!=='song-'+read().amb)throw Error('Superseded audio request');return await loadRecorded(id)||await score.render(id);});renderQueue=task.catch(()=>{});cache.set(id,task);
+ try{const b=await task;cacheBytes.set(id,b.length*b.numberOfChannels*4);trimCache(id);return b;}catch(e){cache.delete(id);cacheBytes.delete(id);throw e;}
 }
+function trimCache(keep){let bytes=[...cacheBytes.values()].reduce((n,b)=>n+b,0);for(const id of cache.keys()){if(cache.size<=3&&bytes<=24*1024*1024)break;if(id===keep||id===active?.id||id===retiring?.id||id===pending?.id||!cacheBytes.has(id))continue;bytes-=cacheBytes.get(id);cacheBytes.delete(id);cache.delete(id);}}
 function cancelCinematicSounds(){for(const n of cinematicVoiceNodes){try{n.stop();}catch{}}cinematicVoiceNodes.clear();}
 function cue(kind,frequency=0){
  if(!ctx||!unlocked||hidden||paused||window.MorrowwishAudio?.isEnabled?.()===false||!prefs.fx)return false;
@@ -65,7 +66,7 @@ function select(id){
   pending=null;const old=active,source=ctx.createBufferSource(),gain=ctx.createGain(),t=now();
   source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(1,t+.72);source.connect(gain);gain.connect(bus);
   const next={id,source,gain,buffer,started:t,stopping:false};active=next;
-  musicSources.add(next);source.onended=()=>{musicSources.delete(next);if(retiring===next)retiring=null;source.disconnect();gain.disconnect();if(active===next){active=null;if(ceremony?.id===id)ceremony=null;tick();}};
+  musicSources.add(next);source.onended=()=>{musicSources.delete(next);if(retiring===next)retiring=null;source.disconnect();gain.disconnect();if(active===next){active=null;if(ceremony?.id===id){if(ceremony.visual&&ceremony.root===root)performedVisual.add(ceremony.region);ceremony=null;}tick();}trimCache(desired);};
   source.start();if(retiring&&retiring!==old){try{retiring.source.stop(now()+.025);}catch{}}retiring=old;dispose(old,.8);blocked=false;unavailable=false;
   if(ceremony?.id===id)ceremony.started=true;
  }).catch(()=>{if(token===serial){pending=null;unavailable=true;lastErrorAt=Date.now();}});
@@ -160,7 +161,7 @@ function read(){
 }
 function tick(){
  const state=window.State?.S,melodies=state?.resonance?.melodies||[],scene=read();
- if(state!==root){if(root)clear();root=state;seen=new Set(melodies);ceremony=null;visualCeremony='';supportRoot=null;stopVoices();cancelCinematicSounds();lastNarrativeRevision=-1;lastCompleted=0;lastSanctuaries=new Set();lastEvidence=new Set();lastBattle=null;}
+ if(state!==root){if(root)clear();root=state;seen=new Set(melodies);ceremony=null;visualCeremony='';performedVisual.clear();supportRoot=null;stopVoices();cancelCinematicSounds();lastNarrativeRevision=-1;lastCompleted=0;lastSanctuaries=new Set();lastEvidence=new Set();lastBattle=null;}
  const narrative=state?.resonance,rev=narrative?.revision??-1;
  if(rev!==lastNarrativeRevision){
   const sanctuaries=new Set(narrative?.sanctuaries||[]),completed=narrative?.completed?.length||0,evidence=new Set(Object.entries(narrative?.evidence||{}).flatMap(([id,ops])=>(Array.isArray(ops)?ops:[]).map(op=>id+'|'+op)));
@@ -177,10 +178,10 @@ function tick(){
  const visual=document.querySelector('.rw-world:not([hidden])')?.dataset.ceremony||'';
  if(visual!==visualCeremony){
   visualCeremony=visual;
-  if(regions.includes(visual)&&!seen.has(visual)&&prefs.enabled)ceremony={id:'song-'+visual,root,region:visual,started:false,visual:true};
+  if(regions.includes(visual)&&!seen.has(visual)&&prefs.enabled){performedVisual.delete(visual);ceremony={id:'song-'+visual,root,region:visual,started:false,visual:true};}
   else if(!visual&&ceremony?.visual&&!melodies.includes(ceremony.region))ceremony=null;
  }
- for(const r of melodies)if(!seen.has(r)){seen.add(r);if(regions.includes(r)&&window.__CAT_BOND_STARTED__&&ceremony?.id!=='song-'+r)ceremony={id:'song-'+r,root,region:r,started:false};}
+ for(const r of melodies)if(!seen.has(r)){seen.add(r);if(regions.includes(r)&&window.__CAT_BOND_STARTED__&&ceremony?.id!=='song-'+r&&!performedVisual.has(r)&&prefs.enabled&&prefs.music>0)ceremony={id:'song-'+r,root,region:r,started:false};performedVisual.delete(r);}
  const finale=battle?.resonanceFinale;
  if(finale?.id==='finale:B-03'){
   const support=state?.resonance?.support||[];
@@ -195,7 +196,7 @@ function tick(){
  desired=ceremony?.id||scene.id;
  if(ctx&&unlocked&&!hidden&&!paused&&!stopped&&prefs.enabled){const region=scene.amb;if(regions.includes(region)&&!seen.has(region)&&!cache.has('song-'+region)&&!pending&&active?.id===desired)getBuffer('song-'+region).catch(()=>{});}
  if(!ctx||!unlocked)return;
- mix();if(!hidden&&!paused){select(desired);ambience(scene.amb);if(now()>ambientTick){ambientTick=now()+8+Math.sin(now())*3;foley(scene.amb);}}
+ mix();if(!hidden&&!paused){trimCache(desired);select(desired);ambience(scene.amb);if(now()>ambientTick){ambientTick=now()+8+Math.sin(now())*3;foley(scene.amb);}}
 }
 function start(){
  if(!ensure())return false;
@@ -213,5 +214,5 @@ document.addEventListener('pointerdown',gesture,{capture:true,passive:true});doc
 document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',()=>{hidden=true;++serial;pending=null;ctx?.suspend().catch(()=>{});});window.addEventListener('pageshow',visibility);
 window.addEventListener('cat-bond-resonance-changed',tick);window.addEventListener('cat-bond-active-save-changed',()=>{clear();root=null;ceremony=null;tick();});
 setInterval(tick,250);
-window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;stopVoices();clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,cue,cancelCinematicSounds,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?(recordedIds.has(active.id)?'recorded-mp3:':'original-score:')+active.id:null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,duration:active?.buffer?.duration||0,audioState:ctx?.state||'not-created',cache:cache.size,activeMusicSources:musicSources.size,pending:pending?.id||null,ambient:ambId,ceremony:ceremony?.region||null,regionalResponses:[...supportSeen],responseVoices:voiceNodes.size})});
+window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;stopVoices();clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,cue,cancelCinematicSounds,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?(recordedIds.has(active.id)?'recorded-mp3:':'original-score:')+active.id:null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,duration:active?.buffer?.duration||0,audioState:ctx?.state||'not-created',cache:cache.size,decodedCacheBytes:[...cacheBytes.values()].reduce((n,b)=>n+b,0),activeMusicSources:musicSources.size,pending:pending?.id||null,ambient:ambId,ceremony:ceremony?.region||null,regionalResponses:[...supportSeen],responseVoices:voiceNodes.size})});
 })();
