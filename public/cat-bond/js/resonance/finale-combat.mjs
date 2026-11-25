@@ -71,14 +71,14 @@ function install(){
    const pack=id==="finale:B-01"?[base,...Array(6).fill(base)]:id==="finale:B-02"?[catSp[0],catSp[0],catSp[1]||catSp[0],catSp[1]||catSp[0]]:[base];
    game.startBattle(fighters,base,{storyEncounter:"finale",pack});
    const b=game.battle;if(!b)return;
-   const f={id,root,token:host().captureAction(),revision:host().snapshot().revision,nodes:nodePositions(b.W,b.H,b.topMargin,b.bottomMargin),elapsed:0,cast:null,cooldown:2.8,cycle:0,confirmed:new Set(),done:false};
+   const f={id,root,token:host().captureAction(),revision:host().snapshot().revision,nodes:nodePositions(b.W,b.H,b.topMargin,b.bottomMargin),elapsed:0,cast:null,cooldown:2.8,cycle:0,confirmed:new Set(),done:false,clueOpen:false,lastDuoUse:0,echoQuietUntil:0};
    b.resonanceFinale=f;b.storyEncounter=true;b.captureReady=false;
    b.enemies.forEach((e,i)=>{
      e.isBoss=true;e.rotation=[];e.ultSkill=null;e.specialMeter=-10000;e.fireCd=99999;e.reflectT=0;e.wardCd=99999;
      e.maxhp=Math.max(55,Math.round(alive(b).reduce((n,x)=>n+x.maxhp,0)*(id==="finale:B-01"?(i===0?1:.20):id==="finale:B-02"?.32:1.6)));e.hp=e.maxhp;
      e.poiseMax=e.maxhp;e.poise=e.poiseMax;
      if(id==="finale:B-01"){e.finaleActor=i===0?"muling":"gate";e.gateIndex=i-1;e.combatName=i===0?["暮铃","Muling"]:["逆响锁","Inward lock"];}
-     else if(id==="finale:B-02"){e.finaleActor="echo";e.echoGroup=Math.floor(i/2);e.impostor=(i%2)===((f.revision+e.echoGroup)%2);e.echoObserved=0;}
+     else if(id==="finale:B-02"){e.finaleActor="echo";e.echoGroup=Math.floor(i/2);e.impostor=(i%2)===((f.revision+e.echoGroup)%2);e.echoObserved=0;e.echoFirstBeat=null;e.echoGap=null;}
      else{e.finaleActor="central";e.combatName=["空白回响","Hollow Echo"];}
    });
    if(id==="finale:B-03"){const done=host().snapshot().support||[];for(const n of f.nodes)n.done=done.includes(n.region);}
@@ -88,12 +88,10 @@ function install(){
  function mount(b){
   document.getElementById("cb-finale-hud")?.remove();
   const el=document.createElement("section");el.id="cb-finale-hud";el.className="cb-finale-hud";
-  el.innerHTML='<strong data-finale-title></strong><p data-finale-objective></p><div data-finale-count></div><button type="button" data-finale-clue></button>';
+  el.innerHTML='<strong data-finale-title></strong><p data-finale-objective></p><div data-finale-count></div><button type="button" data-finale-clue aria-expanded="false"></button><p data-finale-record hidden></p>';
   el.querySelector("button").onclick=()=>{
    const f=b.resonanceFinale;if(!f||f.id!=="finale:B-02")return;
-   const cats=alive(b).map(x=>x.cat);const recorded=cats.some(c=>(window.State.S.dex?.[c.species]||0)>0);
-   if(recorded){f.clueRead=true;notice(b,"图鉴记录：真实回应有两次完整节拍，回响的第二次敲击过早。","Catdex observation: a true reply has two complete beats; an echo cuts the second one short.");}
-   else notice(b,"观察两次回应的间隔。","Watch the spacing between the two replies.");
+   f.clueOpen=!f.clueOpen;
    paint(b);
   };
   document.getElementById("battle-ui")?.append(el);requestAnimationFrame(()=>positionObjectiveHud(el));
@@ -109,7 +107,24 @@ function install(){
   const reply=next?tr(...REPLY_OBJECTIVES[next.region]):tr("六段旋律已归位，攻击中央回响。","All six melodies have returned. Strike the central echo.");
   set("[data-finale-objective]",first?tr("打断六个逆响锁。挡住袭向地区伙伴的铃声。","Break all six inward locks. Intercept bell pulses aimed at the regional allies."):second?tr("观察回应节拍；攻击第二次敲击过早的回响。","Observe the reply rhythm. Strike the echo whose second beat is too early."):reply);
   set("[data-finale-count]",first?f.nodes.filter(n=>n.done).length+"/6":second?f.confirmed.size+"/2":f.nodes.filter(n=>n.done).length+"/6");
-  const clue=el.querySelector("button");clue.hidden=!second;clue.textContent=tr("查看 Catdex 记录","Check Catdex record");
+  const clue=el.querySelector("button");
+  clue.hidden=!second;
+  clue.textContent=f.clueOpen?tr("收起 Catdex","Close Catdex"):tr("查看 Catdex 记录","Check Catdex record");
+  clue.setAttribute("aria-expanded",String(f.clueOpen));
+  const record=el.querySelector("[data-finale-record]");
+  record.hidden=!second||!f.clueOpen;
+  if(!record.hidden){
+   const groups=[0,1].filter(group=>!f.confirmed.has(group));
+   const entries=groups.map(group=>{
+    const echoes=b.enemies.filter(e=>e.echoGroup===group);
+    const sp=echoes[0]?.sp;
+    const area=group===0?tr("左侧","Left pair"):tr("右侧","Right pair");
+    if(!sp||!(window.State.S.dex?.[sp.id]>0))return area+" · "+tr("Catdex 暂无记录","No Catdex record");
+    const intervals=echoes.map(e=>e.echoGap===null?"…":e.echoGap.toFixed(1));
+    return area+" · "+window.GameData.speciesName(sp)+" · "+intervals.join(" / ")+" "+tr("秒","s");
+   });
+   record.textContent=[tr("真身相隔 1.3 秒。每组从左到右。","Genuine gap: 1.3 s. Read each pair left to right."),...entries].join(" · ");
+  }
  }
  function points(b){
   const f=b.resonanceFinale,old=f.nodes;
@@ -123,7 +138,8 @@ function install(){
   if(e.finaleActor==="gate"){const n=f.nodes[e.gateIndex];e.x=n.x;e.y=n.y;e.vx=e.vy=0;e.pose="idle";return;}
   if(e.finaleActor==="echo"){
    const left=e.echoGroup===0?.29:.71,area=this.H-this.topMargin-this.bottomMargin;
-   e.x=this.W*(left+(e.i%2===0?-.10:.10));e.y=this.topMargin+area*(.31+(e.echoGroup%2)*.34);e.vx=e.vy=0;e.pose="idle";
+   const offset=Math.max(.10,Math.min(.15,60/this.W));
+   e.x=this.W*(left+(e.i%2===0?-offset:offset));e.y=this.topMargin+area*(.31+(e.echoGroup%2)*.34);e.vx=e.vy=0;e.pose="idle";
    return;
   }
   e.rotation=[];e.ultSkill=null;e.specialMeter=-10000;e.fireCd=99999;e.wardCd=99999;
@@ -180,15 +196,46 @@ function install(){
   const d=clamp(dt*(b.tempoScale??.64),0,.06);f.elapsed+=d;
   if(f.id==="finale:B-02"){
    const beat=f.elapsed%2.8,prev=(f.elapsed-d)%2.8;
-   for(const e of b.liveEnemies()){
-    if(beat<prev)e.echoObserved++;
-    const pulses=rhythm(f.id,e.impostor);
-    for(const at of pulses)if(prev<at&&beat>=at){
-     b.vfx.ring(e.x,e.y,{r0:10,vr:150,life:.50,color:"#d7c7a8",width:3});
-     if(e.impostor&&at===pulses[1]){const me=b.me();if(me){const angle=Math.atan2(me.y-e.y,me.x-e.x);b.spawnProj(e.x,e.y,angle,185,e.dmg*.62,"wild","#ccbbeb",7,"ball",{element:e.element,isBasic:true});}}
+   const learning=f.clueOpen;
+   const duoTriggered=b.duoUses>f.lastDuoUse;
+   if(duoTriggered){
+    f.lastDuoUse=b.duoUses;
+    const pair=b.duo;
+    if(pair&&alive(b).filter(x=>[pair.a.uid,pair.b.uid].includes(x.cat.uid)).length===2){
+     for(const e of b.liveEnemies().filter(e=>e.impostor)){
+      e.echoObserved=1;
+      b.vfx.ring(e.x,e.y,{r0:16,vr:170,life:.65,color:"#f4db96",width:5});
+     }
+     if(window.CatRelations?.memoryList?.(pair.a,pair.b)?.includes("sakura")){
+      f.echoQuietUntil=f.elapsed+2.8;
+      notice(b,"双猫约定 · 打断下一次回声。","Duo Promise · The next copied reply is interrupted.");
+     }
     }
-    if(b.duoUses>0&&e.impostor)e.echoObserved=Math.max(1,e.echoObserved);
    }
+   let newClue=false;
+   for(const e of b.liveEnemies()){
+    const [firstBeat,secondBeat]=rhythm(f.id,e.impostor);
+    if(prev<firstBeat&&beat>=firstBeat){
+     e.echoFirstBeat=firstBeat;
+     b.vfx.ring(e.x,e.y,{r0:10,vr:150,life:.50,color:"#d7c7a8",width:3});
+    }
+    if(prev<secondBeat&&beat>=secondBeat){
+     b.vfx.ring(e.x,e.y,{r0:10,vr:150,life:.50,color:"#d7c7a8",width:3});
+     if(e.echoFirstBeat!==null){
+      newClue||=e.echoGap===null;
+      e.echoGap=secondBeat-e.echoFirstBeat;
+      e.echoObserved=1;
+     }
+     if(e.impostor&&f.elapsed>=f.echoQuietUntil){
+      const me=b.me();
+      if(me){
+       const angle=Math.atan2(me.y-e.y,me.x-e.x);
+       b.spawnProj(e.x,e.y,angle,185,e.dmg*.62,"wild","#ccbbeb",7,"ball",{element:e.element,isBasic:true});
+      }
+     }
+    }
+   }
+   if(learning&&newClue)paint(b);
    return;
   }
   if(f.cast){f.cast.remaining-=d;if(f.cast.remaining<=0){const c=f.cast;f.cast=null;releasePulse(b,f,c);f.cooldown=3.1;}}
