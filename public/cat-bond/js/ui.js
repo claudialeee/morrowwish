@@ -2260,6 +2260,8 @@ const UI = {
     const total = GameData.SPECIES.length;
     const owned = GameData.SPECIES.filter(s => State.S.dex[s.id]).length;
     const canon=State.S.resonance,verified=canon?.evidence?.["library:M-02"]?.includes("puzzle:library-echo"),identity=canon?.completed?.includes("library:M-03"),betrayal=canon?.completed?.includes("library:M-04");
+    const memory=window.WorldMap?.libraryMemory?.();
+    const memoryCard=memory?`<section class="cb-dex-story-record" data-library-catdex-memory="${memory.habit.toFixed(2)}"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Individual memory record":"个体记忆记录"}</strong><small>${String(GameData.speciesName(GameData.speciesById(memory.species))||memory.species).replace(/[^\p{L}\p{N}\s-]/gu,"")} · ${memory.trait[en?1:0]} · ${memory.wins} ${en?"wins":"次胜利"} · ${memory.habit.toFixed(2)}s</small></span></section>`:"";
     const archiveProof=State.S.resonanceExploration?.interactions?.["library:M-02:puzzle:library-echo"];
     const libraryRecord=verified||identity||betrayal?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Moonmirror archive":"月镜档案"}</strong><small>${verified?(en?"Original memory verified":"真实记忆已核实")+(archiveProof?.species?` · ${String(GameData.speciesName(GameData.speciesById(archiveProof.species))||archiveProof.species).replace(/[^\p{L}\p{N}\s-]/gu,'')} · ${archiveProof.wins||0} ${en?"wins":"次胜利"}`:""):""}${identity?(en?" · You are the first Bellkeeper":" · 你是第一任守铃者"):""}${betrayal?(en?" · Inward routing recorded":" · 中央路由篡改已记录"):""}</small></span><b>${en?"Verified":"已核实"}</b></section>`:"";
     const story=State.S.story;
@@ -2287,7 +2289,7 @@ const UI = {
       </div>
       <div class="dex-grid">${cells}</div>
       ${forgeRecord}
-      ${libraryRecord}
+      ${memoryCard}${libraryRecord}
       ${storyRecord}${skyRecords}
       ${this.reactionCodexHtml(en)}`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');

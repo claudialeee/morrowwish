@@ -638,7 +638,7 @@ try {
         seen++;await button('Continue',dlg).click();
       }
       assert.equal(seen,{'library:M-01':4,'library:M-03':15,'library:M-04':8,'library:M-05':8}[id]);
-      if(choice){await button(choice,dlg).click();await shot(id.replace(':','-')+'-choice');}
+      if(choice){await button(choice,dlg).click();if(id==="library:M-05"){await dlg.locator('.library-reveal-stage[data-mode="departure"][data-ready="true"]').waitFor();await page.waitForTimeout(850);await shot("library-departure");await dlg.waitFor({state:"hidden"});}else await shot(id.replace(':','-')+'-choice');}
       if(await dlg.isVisible()&&await button('Close',dlg).isVisible())await button('Close',dlg).click();
     }
     await button('Talk to Moye').click();await archiveDialogue('library:M-01');
@@ -646,7 +646,7 @@ try {
     await puzzle('Ground floor · Reflection gallery',['West mirror','Middle mirror','Middle mirror','Middle mirror','East mirror','East mirror']);
     await puzzle('Upper floor · Sealed mural',['Fallen star','Broken tongue','Emergency anchor']);
     await button('Hidden room · Verify memories').click();const echoControls=page.locator('.rw-puzzle-controls');await echoControls.waitFor();
-    await button('Inspect Catdex',echoControls).click();await page.locator('#panel.open').waitFor();await shot('library-catdex-inspection');await page.locator('#panel .card-close').click();
+    await button('Inspect Catdex',echoControls).click();await page.locator('#panel.open').waitFor();const memoryCard=page.locator('[data-library-catdex-memory]');await memoryCard.scrollIntoViewIfNeeded();assert.match(await memoryCard.innerText(),/\d+\.\d{2}s/);await shot('library-catdex-inspection');await page.locator('#panel .card-close').click();
     const clue=await echoControls.locator('[data-library-memory]').textContent();const interval=clue.match(/(\d+\.\d{2})s/)?.[1];assert(interval,'Displayed memory interval');
     const echoes=echoControls.getByRole('button',{name:/^Echo [ABC] · /});const labels=await echoes.allTextContents();assert.equal(labels.length,3);
     const correct=labels.find(t=>t.endsWith(interval+'s'));assert(correct);await button(labels.find(t=>t!==correct),echoControls).click();await echoControls.waitFor();await shot('library-incorrect-memory');await button(correct,echoControls).click();await echoControls.waitFor({state:'hidden'});

@@ -1590,7 +1590,7 @@ export const campaign = {
         "explore:sealed-archive"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": ["npc:archive-dispute"],
       "choiceTiming": "afterDialogue"
     },
     {
@@ -1731,7 +1731,7 @@ export const campaign = {
         "npc:identity-confrontation"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": ["npc:identity-confrontation"],
       "choiceTiming": "afterDialogue"
     },
     {
@@ -1928,7 +1928,7 @@ export const campaign = {
           "method": "verified-records"
         }
       ],
-      "lineGate": [],
+      "lineGate": ["npc:two-routes"],
       "choiceTiming": "afterDialogue"
     },
     {

@@ -26,7 +26,7 @@ function install(){
   close();slot=State.S;openedScene=v.current.id;
   root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";root.dataset.scene=openedScene;stage.append(root);
   const action=runtime.capture();
-  if(isLibraryReveal(openedScene))libraryReveal=mountLibraryReveal(root,portrait);
+  if(isLibraryReveal(openedScene))libraryReveal=mountLibraryReveal(root,portrait,scheduleFinish);
   if(v.current.id==="epilogue:E-03"&&v.cursor===v.current.lines.length&&v.objective.includes("npc:second-garden-key")){showKey(action);return true}
   // Bind each overlay to the slot and scene it opened in. Even a click in the
   // interval before the slot-change listener runs cannot write to another slot.
@@ -48,6 +48,7 @@ function install(){
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.cursor===v.current.lines.length){
     if(v.current.id==="epilogue:E-02"&&v.objective.includes("npc:public-accountability")){const r=runtime.completeNPCScene({sceneId:v.current.id,operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:runtime.capture()});if(!r.ok)return;scheduleFinish();return}
     if(v.current.id==="epilogue:E-03"&&v.objective.includes("npc:second-garden-key")){showKey(runtime.capture());return}
+    if(libraryReveal?.departurePending(v))return;
     if(v.objective.length&&(!v.current.choices.length||v.choice)){close();return;}
    }
    if(v.cursor===v.current.lines.length&&!v.objective.length&&(!v.current.choices.length||v.choice)){

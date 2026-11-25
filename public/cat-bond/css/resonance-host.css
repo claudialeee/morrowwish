@@ -107,3 +107,5 @@
 .library-reveal-stage[data-mode="departure"] .library-reveal-actor{transform-origin:50% 100%;animation:library-departure-actor 5s ease-in-out both}
 @keyframes library-departure-actor{0%{transform:translateX(0) scale(1);opacity:1}100%{transform:translateX(15%) scale(.78);opacity:.55}}
 @media(prefers-reduced-motion:reduce){.library-reveal-stage[data-mode="departure"] .library-reveal-actor{animation:none}}
+
+.library-reveal-stage[data-mode="departure"] .library-reveal-actor{animation-duration:3s}
