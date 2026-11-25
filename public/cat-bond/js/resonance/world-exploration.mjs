@@ -97,6 +97,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
    const first=v.choice==="rescue"?"rescue:storm-boat":"puzzle:beam-mirrors";
    if(op!==first&&v.objective.includes(first))return {ok:false,reason:v.choice==="rescue"?"rescue-first":"beacon-first"};
   }
+  if(op==="melody:harbor"&&v.objective.includes("repair:harbor"))return {ok:false,reason:"harbor-repair-first"};
   if(op.startsWith("melody:")&&!localNpcs().every(n=>invited.has(n.id)))return {ok:false,reason:"invite-local-cats"};
   active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};puzzle=createPuzzle(op);if(region==="harbor")harborAssist(puzzle,v);if(puzzle?.type==="pairedWater")puzzle.pair=bridge.pairedGate().pair;if(puzzle?.type==="melody")puzzle.participants=[...invited];
   if(puzzle)return {ok:true,puzzle:true};

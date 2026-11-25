@@ -219,6 +219,7 @@ try {
     const comfort=name!=='portrait';
     await readDialogue('harbor:H-02',comfort?'Comfort Qilan first':'Ask Jiedeng about the old storm');
     await scene('harbor:H-03');
+    assert.ok(await page.evaluate(method=>CatBondResonance.view().support.find(x=>x.region==='harbor')?.methods.includes(method),comfort?'navigator-trust':'keeper-trust'),'H-02 choice grants distinct persistent resident support');
     await button('Inspect the ebb marks · 1/2').waitFor();
     await tapLandmark(.82,.45);
     await button('Find the dry steps · 2/2').waitFor();
@@ -234,9 +235,14 @@ try {
     const rescue=() => puzzle('Storm boat',calibrate?['Secure','Signal','Guide','Guide','Signal']:['Secure','Secure','Signal','Guide','Guide','Signal']);
     const mirrors=() => puzzle('Lighthouse mirrors',['Left mirror','Left mirror','Center mirror','Center mirror','Right mirror']);
     assert.equal(await page.evaluate(()=>CatBondResonance.view().choice),calibrate?'calibrate':'rescue');
+    await button(calibrate?'Storm boat':'Lighthouse mirrors').click();
+    await page.getByText(calibrate?'Align the lighthouse first':'Rescue the boat first',{exact:true}).waitFor();
+    assert.equal(await page.locator('.rw-puzzle-controls').count(),0,'Wrong H-04 order must not open the puzzle');
     if (calibrate) {await mirrors();await rescue();} else {await rescue();await mirrors();}
     await scene('harbor:H-05');
     await checkObjective('repair:harbor');
+    assert.equal(await button('Returning Tides').count(),0,'Melody cannot precede sanctuary repair');
+    assert.equal(await button('Invite Qilan').count(),0,'Invitation cannot precede sanctuary repair');
     await puzzle('Lighthouse sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror']);
     await button('Invite Qilan').click();
     await button('Invite Qilan').waitFor({state:'hidden'});
