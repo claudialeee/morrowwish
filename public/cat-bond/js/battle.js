@@ -5921,6 +5921,7 @@ class CaptureBattle {
     // projectiles with glow
     for (const p of this.projectiles) {
       if(window.CatBondSkillFX?.drawMeteorFlight(ctx,p,this.t))continue;
+      if(window.CatBondSkillFX?.drawIdentityProjectile(ctx,p,this.t))continue;
       // ADDITIVE TAPERED RIBBON trail from the position history (bright/wide head →
       // transparent tail), drawn under the body. Round caps hide the segment seams.
       const h = p._hist;
