@@ -31,7 +31,6 @@ function install(){
    game?.toast?.({zh:"回到阳光花园，与暮铃交谈。",en:"Return to Sunlit Garden and speak with Muling."});return false;
   }
   if(v.current.chapter==="starfall"&&(window.WorldMap?.currentRegion!=="starfall"||window.WorldMap?.mode!=="region")){game?.toast?.({zh:"请前往星坠原继续剧情。",en:"Travel to Starfall to continue the story."});return false;}
-  if(["starfall:F-02","starfall:F-05"].includes(v.current.id)&&v.objective.some(op=>op.startsWith("cinematic:"))){game?.toast?.({zh:"请在星坠原完成调查并前往中央遗迹观看演出。",en:"Complete the investigation in Starfall and approach the central ruins for the cinematic."});return false;}
   if(slot===State.S&&openedScene===v.current.id&&(dialogue||keyExchange)){(dialogue||keyExchange).render();return true}
   close();slot=State.S;openedScene=v.current.id;
   root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";root.dataset.scene=openedScene;stage.append(root);
@@ -58,7 +57,7 @@ function install(){
   const card=document.createElement("div");Object.assign(card.style,{position:"relative",textAlign:"center",padding:"24px",color:"#fff5dc",textShadow:"0 3px 20px #142239",background:"linear-gradient(90deg,transparent,#152237aa,transparent)",maxWidth:"95%"});
   const title=document.createElement("h2");title.textContent="THE BELL RINGS AGAIN";title.style.font="700 clamp(24px,5vw,54px) Georgia,serif";title.style.letterSpacing=".10em";
   const sub=document.createElement("p"),button=document.createElement("button");button.type="button";card.append(title,sub,button);ending.append(art,card);stage.append(ending);
-  function render(){sub.textContent=lang()==="zh"?"星铃再次响起":"The world answers again";button.textContent=lang()==="zh"?"回到阳光花园":"Return to Sunlit Garden";}
+  function render(){title.textContent=lang()==="zh"?"星铃再次响起":"THE BELL RINGS AGAIN";sub.textContent=lang()==="zh"?"世界再次回应":"The world answers again";button.textContent=lang()==="zh"?"回到阳光花园":"Return to Sunlit Garden";}
   function dismiss(){ending.remove();window.removeEventListener("cat-bond-active-save-changed",dismiss);window.removeEventListener("morrowwish-language-change",render);}
   button.onclick=dismiss;window.addEventListener("cat-bond-active-save-changed",dismiss);window.addEventListener("morrowwish-language-change",render);render();button.focus();
   if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){art.animate([{transform:"scale(1)"},{transform:"scale(1)"}],{duration:6500,fill:"forwards"});card.animate([{opacity:0,transform:"translateY(12px)"},{opacity:1,transform:"translateY(0)"}],{duration:1100,fill:"forwards"});}

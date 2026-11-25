@@ -11,9 +11,9 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
   // The Journal exists on the atlas only. In-region dialogue either opens
   // automatically after a transaction or is resumed via the visible story control.
   const resume=page.locator('[data-story-resume="'+id+'"]');
-  await overlay.or(resume).first().waitFor({state:"visible"});
+  await overlay.or(resume).first().waitFor({state:"attached"});
   if(!await overlay.isVisible()){
-   try{await resume.click({timeout:5000});}catch(error){if(!await overlay.isVisible())throw error;}
+   try{await button("Continue story").click({timeout:5000});}catch(error){if(!await overlay.isVisible())throw error;}
   }
   await overlay.waitFor({state:"visible"});
   await readDialogue(id,choice);

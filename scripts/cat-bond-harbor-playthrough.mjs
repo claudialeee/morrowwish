@@ -791,7 +791,7 @@ try {
     assert.equal(await button('Starfall Expanse').isEnabled(),true);await shot('library-unlock');await button('Starfall Expanse').click();await page.waitForFunction(()=>WorldMap.currentRegion==='starfall'&&CatBondResonance.view().current?.id==='starfall:F-01');await ship('starfall','Star chart and coordinates');await shot('library-to-starfall');
 
     const starfall=await playStarfallFromForge({page,button,scene,shot,puzzle,readDialogue,travel,ship,profile:name,startAtStarfall:true,continueFinale:true});
-    const finale=await continueToFinale({page,context,options,name,button,scene,shot,puzzle,travel,ship,startAtFinale:true});
+    const finale=await continueToFinale({page,context,options,name,button,scene,shot,puzzle,travel,ship,skyFlight,startAtFinale:true});
     assert.deepEqual(errors,[]);results.push({profile:name,captured,forestComplete:true,forgeComplete:true,skyComplete:true,libraryComplete:true,starfall,finale});await context.close();continue;
     }
     await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='forge')?.unlocked));await shot('forge-garden-restoration');await page.locator('#fab-map').click();await button('Rootsleep Forest').click();

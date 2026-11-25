@@ -3,7 +3,7 @@
 // Read-only snapshots assert outcomes. Candidate cinematics are enabled ONLY in
 // this isolated browser, and must not count as production art approval.
 import assert from 'node:assert/strict';
-export async function continueToFinale({page,context,options,name,button,scene,shot,puzzle,travel,ship,startAtFinale=false}){
+export async function continueToFinale({page,context,options,name,button,scene,shot,puzzle,travel,ship,skyFlight,startAtFinale=false}){
  const view=()=>page.evaluate(()=>CatBondResonance.view());
  const check=(op)=>page.waitForFunction(op=>!CatBondResonance.view().objective.includes(op),op);
  const log=async(id)=>{console.log(name,'NORMAL PLAYER',id,JSON.stringify(await page.evaluate(()=>({scene:CatBondResonance.view().current?.id,links:CatBondResonance.view().links,melodies:CatBondResonance.view().melodies.length,ending:CatBondResonance.view().ending}))));await shot(id.replaceAll(':','-'));};
@@ -43,6 +43,8 @@ export async function continueToFinale({page,context,options,name,button,scene,s
   assert.ok(await page.evaluate(()=>{const p=CatRelations.chosen();return p.length===2&&CatRelations.memoryList(...p).includes('sakura')&&CatRelations.pair(...p).value>=20;}),'Actual forest duo promise');
   await travel('Emberforge City');
  }
+ const regions={harbor:'Misttide Harbor',forest:'Rootsleep Forest',forge:'Emberforge City',sky:'Skyspine Isles',library:'Moonmirror Library',starfall:'Starfall Expanse'};
+ async function gotoRegion(region){if(await page.evaluate(()=>WorldMap.mode==='region'&&WorldMap.currentRegion)===region)return;if(await page.evaluate(()=>WorldMap.mode==='map'))await button(regions[region]).click();else await travel(regions[region]);await page.waitForFunction(r=>WorldMap.currentRegion===r&&WorldMap.mode==='region',region);}
  if(!startAtFinale){
  await ensureDuo();
  await puzzle('Safety blueprint',['Frame','Pipes','Valve']);await dialogue('forge:E-02','Publish the accident record now');
@@ -67,9 +69,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  await talk('starfall:F-03','Muling');await scene('starfall:F-04');await scene('starfall:F-04');await button('Invite Xingya').or(button('Talk to Xingya')).click();await dialogue('starfall:F-04','Let Xingya coordinate repairs');
  await puzzle('Distributed observatory',['West','Relay','East']);
  await restore('Starfall sanctuary',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan'],'Beyond Stars',['Low','Middle','High'],'starfall');
- const regions={harbor:'Misttide Harbor',forest:'Rootsleep Forest',forge:'Emberforge City',sky:'Skyspine Isles',library:'Moonmirror Library',starfall:'Starfall Expanse'};
  const routes=[['harbor','forest','Beacon-guided supplies','Herbs and waterway map'],['forest','forge','Cooling water and herbs','Pumps and tools'],['forge','sky','Wind vanes and flight parts','Wind data and airship route'],['sky','library','Courier route','Archived flight maps'],['library','starfall','Star chart and coordinates','Astronomical observations'],['starfall','harbor','Navigation bell and star compass','Harbor navigation response']];
- async function gotoRegion(region){if(await page.evaluate(()=>WorldMap.mode==='region'&&WorldMap.currentRegion)===region)return;if(await page.evaluate(()=>WorldMap.mode==='map'))await button(regions[region]).click();else await travel(regions[region]);await page.waitForFunction(r=>WorldMap.currentRegion===r&&WorldMap.mode==='region',region);}
  for(const [a,b,forward,back] of routes){const key=a+':'+b;let v=await view();for(let i=v.links[key].length;i<4;i++){const actor=[a,b,b,a][i];await gotoRegion(actor);await ship(actor,i<2?forward:back);await page.waitForFunction(({key,i})=>CatBondResonance.view().links[key].length===i+1,{key,i});}}
  await gotoRegion('starfall');await dialogue('starfall:F-04');await scene('starfall:F-05');
  assert.ok((await view()).ring);assert.equal((await view()).melodies.length,6);await log('chapter-6-real-ring');
@@ -131,9 +131,9 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  ['forest',['Upstream','Branch','Roots'],['Yahe','Yuchuan']],
  ['forge',['Heat','Heat','Heat','Heat','Vent'],['Jinpo','Xiaomao']],
  ['sky',['Climb','Descend','Climb'],['Lingyu','Yuanfan']],
- ['library',['Calendar','Testimony','Record'],['Moye','Baikan']],
+ ['library',['Moon window','Neighbor bridge','Reciprocal reply'],['Moye','Baikan']],
  ['starfall',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan']]];
- for(const [region,inputs,npcs] of repairs){await gotoRegion(region);await puzzle('Muling’s letter · Repair the sanctuary',inputs);for(const n of npcs){const control=button('Invite to garden: '+n);await control.click();await control.waitFor({state:'hidden'});}await page.waitForFunction(r=>CatBondResonance.view().postgame.includes('postgame:reunion-'+r),region);await shot('postgame-'+region);}
+ for(const [region,inputs,npcs] of repairs){await gotoRegion(region);if(region==='sky'&&skyFlight)await skyFlight('Muling’s letter · Repair the sanctuary',[.67,.30,.64]);else await puzzle('Muling’s letter · Repair the sanctuary',inputs);for(const n of npcs){const control=button('Invite to garden: '+n);await control.click();await control.waitFor({state:'hidden'});}await page.waitForFunction(r=>CatBondResonance.view().postgame.includes('postgame:reunion-'+r),region);await shot('postgame-'+region);}
  await gotoRegion('starfall');await beginBattle('Star Bell Ruins · Legendary challenge');await shot('postgame-ruins');await finishBattle();await page.locator('#cr-ok,#battle-recovery-ok').click();assert.equal((await view()).postgame.length,13);
  await beginBattle('Star Bell Ruins · Duo Promise challenge');await shot('postgame-duo-ruins');await finishBattle();await page.locator('#cr-ok,#battle-recovery-ok').click();assert.ok((await view()).ruins.duoClears>=1,'Earn a real Duo Promise ruins victory');
  const saved=await page.evaluate(()=>({returned:CatBondResonance.view().returned.length,cats:State.S.cats.map(c=>c.uid),coins:State.S.coins,postgame:CatBondResonance.view().postgame,ruins:CatBondResonance.view().ruins.clears}));assert.equal(saved.returned,12);
