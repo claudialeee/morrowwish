@@ -51,7 +51,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const slotList=document.getElementById('intro-slot-list');
   const slotHeading=document.getElementById('intro-slot-heading');
   let slotMode='continue';
-  const closeSlots=()=>{slotPanel?.classList.remove('is-open');slotPanel?.setAttribute('aria-hidden','true');};
+  const closeSlots=()=>{slotPanel?.classList.remove('is-open');slotPanel?.setAttribute('aria-hidden','true');document.getElementById(slotMode==='new'?'intro-start':'intro-continue')?.focus();};
   const escapeText=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const openSlots=mode=>{
     slotMode=mode;
@@ -93,6 +93,8 @@ window.addEventListener('DOMContentLoaded', () => {
         '<div class="cb-save-slot-actions"><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button></div></article>';
     }).join('');
     slotPanel.classList.add('is-open');slotPanel.setAttribute('aria-hidden','false');
+    const language=slotPanel.querySelector('[data-slot-language]');
+    if(language){language.textContent=en?'中文':'English';language.setAttribute('aria-label',en?'Switch to Chinese':'切换到英文');}
     slotList.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',()=>{
       const id=button.dataset.slot;
       if(slotMode==='new'){
@@ -170,6 +172,13 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('intro-start')?.addEventListener('click',()=>openSlots('new'));
   document.getElementById('intro-continue')?.addEventListener('click',()=>openSlots('continue'));
   document.getElementById('intro-slot-close')?.addEventListener('click',closeSlots);
+  slotPanel?.querySelector('[data-slot-language]')?.addEventListener('click',()=>{
+    const i18n=window.MorrowwishI18n;
+    i18n?.set?.(i18n.get?.()==='zh'?'en':'zh');
+  });
+  window.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&slotPanel?.classList.contains('is-open')){event.preventDefault();closeSlots();}
+  });
   // In-game Load Game returns to the selected slot after a clean page restart.
   const resumeKey='catbond_resume_slot_v1';
   let resumeSlot=null;
@@ -304,7 +313,6 @@ function installCatBondSystemMenu(){
   const rows=[
     ['language',t('语言','Language'),t('中文','English')],
     ['effects',t('音效','Sound effects'),active('.mw-settings-sfx')?t('开启','On'):t('关闭','Off')],
-    ['music',t('音乐','Music'),active('.mw-settings-music')?t('开启','On'):t('关闭','Off')],
     ...(native('#mw-fullscreen-toggle')?[['fullscreen',t('全屏','Fullscreen'),active('#mw-fullscreen-toggle')?t('退出','Exit'):t('进入','Enter')]]:[]),
     ['share',t('分享游戏','Share game'),''],
     ['cloud',t('云存档','Cloud saves'),''],
