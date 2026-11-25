@@ -5,7 +5,7 @@ const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
 const scentTrail=Object.freeze([
  {point:[.31,.58],name:["湿苔上的气味","Scent on damp moss"],clue:["湿苔上留下了药箱经过的痕迹。沿上方林道继续追踪。","The medicine crate passed through the damp moss. Follow the upper path."]},
- {point:[.39,.40],name:["林间药草痕迹","Herbs on the canopy path"],clue:["药草散落在通往根系水道的路上。","Loose herbs lead toward the root channel."]},
+ {point:[.42,.28],name:["林间药草痕迹","Herbs on the canopy path"],clue:["药草散落在通往根系水道的路上。","Loose herbs lead toward the root channel."]},
  {point:[.69,.53],name:["根系药材藏处","Medicine at the root channel"],clue:["药材被送去治疗地下根系。旁边的秘密水路一直通向芽禾的药草园。","The medicine was diverted to treat the underground roots. A hidden channel also leads directly to Yahe’s herb gardens."]}
 ]);
 const tideTrail=[
@@ -125,7 +125,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(op==="puzzle:paired-water-gates"){
     const pair=w.interactions[pairedKey];
     if(!validPair(State.S,pair)||!atForest(w,[.69,.53]))return fail("upper-gate-required");
-    if(proof.pair?.upper!==pair.upper||proof.pair?.lower!==pair.lower||proof.waterSequence?.join(",")!=="0,1,2")return fail("paired-flow-incomplete");
+    if(proof.pair?.upper!==pair.upper||proof.pair?.lower!==pair.lower||proof.waterSequence?.join(",")!=="2,1,1")return fail("paired-flow-incomplete");
    }
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};

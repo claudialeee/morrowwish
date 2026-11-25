@@ -1020,7 +1020,7 @@ export const campaign = {
         "puzzle:paired-water-gates"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": ["puzzle:paired-water-gates"],
       "choiceTiming": "afterDialogue"
     },
     {
@@ -1080,7 +1080,7 @@ export const campaign = {
         "melody:forest"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": ["repair:forest","melody:forest"],
       "choiceTiming": "afterDialogue"
     },
     {

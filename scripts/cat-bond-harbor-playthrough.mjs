@@ -232,7 +232,7 @@ try {
     await page.locator('#intro-slot-list [data-slot="slot1"]').click();
     await scene('forest:R-02');
     await button('Herbs on the canopy path · 2/3').waitFor();
-    await tapLandmark(.39,.40);
+    await tapLandmark(.42,.28);
     await button('Herbs on the canopy path · 2/3').click();
     await button('Medicine at the root channel · 3/3').waitFor();
     await tapLandmark(.69,.53);
@@ -242,7 +242,7 @@ try {
     await button('Open the upper gate with Yahe').click();
     await button('Paired water gates').waitFor();
     await shot('forest-upper-gate');
-    await puzzle('Paired water gates',['Open lower channel','Steady upper pressure','Open lower channel','Clear together']);
+    await puzzle('Paired water gates',['Open lower channel','Steady upper pressure','Steady upper pressure','Open lower channel','Clear together']);
     await readDialogue('forest:R-03');
     await scene('forest:R-04');
     await puzzle('Ancient-root sanctuary',['Upstream','Branch','Roots']);
@@ -257,6 +257,25 @@ try {
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().sanctuaries),['harbor','forest']);
     assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('forge')),true);
     await shot('forest-complete');
+    async function ship(region, cargo){
+      await button('Collect '+cargo).click();
+      await button('Deliver '+cargo).click();
+      await button('Deliver '+cargo).waitFor({state:'hidden'});
+    }
+    async function travel(name){await button('World atlas',page.locator('.rw-head')).click();await button(name).click();}
+    await travel('Misttide Harbor');await ship('harbor','Beacon-guided supplies');
+    await travel('Rootsleep Forest');await ship('forest','Beacon-guided supplies');
+    await ship('forest','Herbs and waterway map');
+    await travel('Misttide Harbor');await ship('harbor','Herbs and waterway map');
+    await travel('Rootsleep Forest');await ship('forest','Cooling plans and herbs');
+    assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().links['harbor:forest']),['sendA','receiveB','sendB','receiveA']);
+    assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().links['forest:forge']),['sendA']);
+    await shot('forest-exchange');
+    await button('Sunlit Garden',page.locator('.rw-head')).click();
+    await page.waitForFunction(()=>window.__game.scene==='yard');
+    assert(await page.evaluate(()=>CatBondResonance.ambientAvailable('garden').some(a=>a.id==='muling:cooking')));
+    await shot('forest-home');await page.locator('#fab-map').click();
+    await button('Rootsleep Forest').click();
     await button('World atlas',page.locator('.rw-head')).click();
     await button('Emberforge City').click();
     assert.equal(await page.evaluate(()=>WorldMap.mode),'map');
