@@ -508,6 +508,9 @@ try {
       await page.locator('[data-forge-retry]').click();
       await page.locator('#bp-best-team').click();
     }
+    // The strongest lineup is not necessarily the bonded pair; choose the
+    // explicit player-facing duo lineup control before the regional encounter.
+    await page.locator('#bp-chosen-duo').click();
     await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();
     await page.locator('#battle-ui.on').waitFor();try{await page.locator('#cb-forge-hud').waitFor();}catch(e){await shot('forge-boss-entry-failed');console.error('Forge entry failed',await page.evaluate(()=>({scene:__game.scene,story:__game.battle?.storyEncounter,forge:!!__game.battle?.forgeState,errors:document.getElementById('toasts')?.textContent})));throw e;}
     assert.equal(await page.evaluate(()=>__game.battle.forgeState.assist),name==='portrait'?'jinpo':'xiaomao');
@@ -526,7 +529,7 @@ try {
     await page.locator('#btn-flee').click();
     await page.locator('#cb-forge-result').waitFor();
     assert.equal(await page.locator('#cb-forge-result h2').innerText(),'WITHDRAWN');await shot('forge-retreat');
-    await page.locator('[data-forge-retry]').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();await page.locator('#cb-forge-hud').waitFor();
+    await page.locator('[data-forge-retry]').click();await page.locator('#bp-chosen-duo').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();await page.locator('#cb-forge-hud').waitFor();
     if(await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();assert.equal(await page.evaluate(()=>__game.battle.autoMode),false);
     // Switching from automatic to manual can open the first manual lesson.
     // Dismiss through its real UI, never by clearing the coach or changing saves.

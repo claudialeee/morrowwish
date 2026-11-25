@@ -442,7 +442,7 @@ const UI = {
     // One chip per breed — the strongest — plus any already-selected cat (so a benched same-breed pick
     // stays visible/deselectable). Power-sorted first so "strongest" + display order are consistent.
     const cats=this.strongestPerSpecies(
-      [...(State.S.cats||[])].sort((a,b)=>State.catPower(b)-State.catPower(a)), selected);
+      [...(State.S.cats||[])].sort((a,b)=>State.catPower(b)-State.catPower(a)), [...selected,...(window.CatRelations?.chosen?.()||[]).map(c=>c.uid)]);
     return this.squadOrderMarkup()
       +'<p class="map-squad-count" role="status">'+(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只')+'</p>'
       +'<div class="map-squad-roster" role="group" aria-label="'+(en?'Choose up to five cats':'选择最多五只猫咪')+'">'
@@ -2739,7 +2739,8 @@ const UI = {
       ${this.matchupWarning(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en)}
       <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
       ${squadMarkup}
-      <div class="prebattle-quick-select"><button id="bp-best-team" type="button" class="btn ghost">${en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button></div>
+      <div class="prebattle-quick-select"><button id="bp-best-team" type="button" class="btn ghost">${en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button>
+      ${(window.CatRelations?.chosen?.()||[]).length===2?`<button id="bp-chosen-duo" type="button" class="btn ghost">${en?'Field chosen duo':'双猫搭档首发'}</button>`:''}</div>
       ${this.battlePrepSkillCard(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en)}
       <fieldset class="capture-mode-picker">
         <legend>${en?'Control mode':'战斗方式'}</legend>
@@ -2780,6 +2781,16 @@ const UI = {
     this.refreshBattlePrepSkills(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en);
     document.getElementById('bp-best-team').onclick=()=>{
       selected.splice(0,selected.length,...this.getStrongestBattleTeam().map(cat=>cat.uid));
+      this.bindSquadPicker(selected);
+    };
+    const duoPick=document.getElementById('bp-chosen-duo');
+    if(duoPick)duoPick.onclick=()=>{
+      const pair=(window.CatRelations?.chosen?.()||[]).map(c=>c.uid);
+      if(pair.length!==2)return;
+      const eligible=new Set((State.S.cats||[]).map(c=>c.uid));
+      if(!pair.every(id=>eligible.has(id)))return;
+      const next=[...new Set([...pair,...selected,...this.getStrongestBattleTeam().map(c=>c.uid)])].filter(id=>eligible.has(id)).slice(0,5);
+      selected.splice(0,selected.length,...next);
       this.bindSquadPicker(selected);
     };
     const options=[...document.querySelectorAll('#panel .capture-mode-option[data-battle-auto]')];
