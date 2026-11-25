@@ -156,7 +156,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){window.CatBondStory.startPrologue(()=>{State.save();game.openWorldMap();maybeLaunchForgePreview();});}else {game.openWorldMap();maybeLaunchForgePreview();}
       const has=o=>o&&Object.values(o).some(v=>v>0);
       const worthShowing=report&&report.minutes>=1&&(has(report.produced)||has(report.gains)||(report.visitors&&report.visitors.length));
-      if(worthShowing)setTimeout(()=>UI.openWelcomeBack(report),400);
+      if(worthShowing&&!forgePreviewRequested)setTimeout(()=>UI.openWelcomeBack(report),400);
     }
   };
   const renderIntroLocale=()=>{
