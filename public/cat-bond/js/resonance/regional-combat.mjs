@@ -33,7 +33,7 @@ export function inPattern(p,f){
 }
 
 // Original regional scene and manifestation artwork. Render at native canvas scale; no CSS image substitute.
-const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
+const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["../resonance-world-v2/sky.webp","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
 const art={};
 function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
@@ -93,12 +93,12 @@ function install(){
  const bg=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){if(this.regionalCombat&&drawScene(ctx,W,H,this.regionalCombat.region))return;return bg.call(this,ctx,W,H);};
  function notice(b,zh,en){b.game.toast({zh,en});}
- const labels={surge:["潮浪来袭，避开横向水带！","Tidal surge: leave the horizontal lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["熔渣即将落下！","Molten fragments are about to fall!"],gale:["风切线即将贯穿战场！","Gale shear is about to cross the arena!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨正在轮转，避开落点！","Orbital markers are rotating. Keep clear!"]};
+ const labels={surge:["潮浪来袭，避开横向水带！","Tidal surge: leave the horizontal lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["熔渣即将落下！","Molten fragments are about to fall!"],gale:["风切线即将贯穿战场，注意侧风推移！","Gale shear incoming. Counter the crosswind drift!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨正在轮转，避开落点！","Orbital markers are rotating. Keep clear!"]};
  function mount(game,b){
   document.getElementById("cb-region-combat")?.remove();
   const host=document.getElementById("battle-ui");if(!host)return;
-  const panel=document.createElement("div");panel.id="cb-region-combat";panel.className="cb-region-combat";
-  const label=document.createElement("span"),button=document.createElement("button");button.type="button";
+  const panel=document.createElement("div");panel.id="cb-region-combat";panel.className="cb-region-combat";panel.dataset.region=b.regionalCombat.region;
+  const label=document.createElement("span"),button=document.createElement("button");button.type="button";button.setAttribute("data-region-support","");
   panel.append(label,button);button.addEventListener("click",()=>useSupport(b));
   host.append(panel);paintHud(b);requestAnimationFrame(()=>positionObjectiveHud(panel));
  }
@@ -107,20 +107,33 @@ function install(){
   const r=b.regionalCombat,kit=r.kit,button=panel.querySelector("button");
   panel.querySelector("span").textContent=tr(kit.name)+" · "+tr(kit.enemy);
   button.hidden=!r.supportAvailable;button.disabled=r.supportUsed||!r.cast;
-  button.textContent=r.supportUsed?tr(["已支援","Support used"]):tr(kit.support);
+  button.textContent=r.supportUsed?tr(["已支援","Support used"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Yuanfan · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Lingyu · Escort flight"]):tr(kit.support);
+  if(r.region==="sky"){button.title=r.skyMethod==="fast-courier"?tr(["解除风切并为必杀槽充能 12 点","Cancel gale shear and charge the ultimate meter by 12"]):tr(["解除风切并为队伍提供短暂无敌","Cancel gale shear and briefly protect the squad"]);panel.dataset.supportPhase=r.supportUsed?"used":r.cast?"ready":"waiting";}
  }
  function useSupport(b){
-  const r=b.regionalCombat;if(!r||!r.supportAvailable||r.supportUsed||!r.cast||b.done)return false;
+  const r=b.regionalCombat;if(!r||!r.supportAvailable||r.supportUsed||!r.cast||b.done||(r.region==="sky"&&duoArtActive(b)))return false;
   r.supportUsed=true;r.cast=null;r.next=Math.max(r.next,4);
   const cats=living(b);
   if(r.kit.kind==="roots")for(const f of cats){f.rootT=0;f.rooted=false;if(f.status)delete f.status.bind;}
   else if(r.kit.kind==="mirror"){for(const e of b.liveEnemies())e.reflectT=0;}
   else if(r.kit.kind==="embers"){for(const f of cats){if(f.status)delete f.status.burn;}}
-  else if(r.kit.kind==="gale"){for(const f of cats)f.inv=Math.max(f.inv||0,.8);}
+  else if(r.kit.kind==="gale"){
+   const duration=r.skyMethod==="escort-flight"?1.8:.8;
+   const before=b.ult;
+   for(const f of cats)f.inv=Math.max(f.inv||0,duration);
+   // Friendly cats share the battle's actual ultimate gauge. ultMeter is an enemy-only field.
+   if(r.skyMethod==="fast-courier")b.gainUlt(12);
+   r.skySupportEffect={method:r.skyMethod,chargeBefore:before,chargeAfter:b.ult,protected:cats.length,duration};
+  }
   else if(r.kit.kind==="orbit"){for(const f of cats)f.ultMeter=Math.min(100,(f.ultMeter||0)+15);}
   else{for(const f of cats)f.shieldT=Math.max(f.shieldT||0,2.5);}
   for(const f of cats)b.vfx.ring(f.x,f.y,{r0:16,vr:170,life:.55,color:r.kit.color,width:4});
-  notice(b,"地区伙伴已解除本次危险。","Local allies have cleared this hazard.");paintHud(b);return true;
+  if(r.kit.kind==="gale"&&r.skyMethod==="fast-courier"){
+   const gain=r.skySupportEffect.chargeAfter-r.skySupportEffect.chargeBefore;
+   notice(b,"远帆引航 · 风切解除 · 必杀充能 +"+Math.round(gain),"Yuanfan guidance · Gale cleared · Ultimate +"+Math.round(gain));
+  }else if(r.kit.kind==="gale"&&r.skyMethod==="escort-flight")notice(b,"翎羽护航 · 风切解除 · 全队短暂无敌","Lingyu escort · Gale cleared · Squad briefly protected");
+  else notice(b,"地区伙伴已解除本次危险。","Local allies have cleared this hazard.");
+  paintHud(b);return true;
  }
  function resolve(b,r,cast){
   for(const f of living(b)){
@@ -139,6 +152,7 @@ function install(){
   const r=b.regionalCombat;if(!r||b.done||b.captureSeq||b.coachHoldsEnemies?.()||b.game.battleHelpOpen||b.duoRun||b.duoCinematic||b.ultCinematic)return;
   if(!living(b).length||!b.liveEnemies().length)return;
   if(r.cast){
+    if(r.kit.kind==="gale"){const direction=r.cycle%2?1:-1;for(const f of living(b)){if((f.inv||0)>0)continue;f.x=clamp(f.x+direction*22*Math.min(.05,dt),32,b.W-32);}}
     r.cast.remaining-=dt;
     if(r.cast.remaining<=0){resolve(b,r,r.cast);r.cast=null;r.next=r.kit.period;paintHud(b);}
     return;
@@ -176,7 +190,8 @@ function install(){
   if(normal&&this.battle){
    const snapshot=window.State.S.resonance;
    const supportAvailable=canonical&&Array.isArray(snapshot?.sanctuaries)&&snapshot.sanctuaries.includes(region);
-   this.battle.regionalCombat={region,kit,next:3.7,cast:null,cycle:0,supportAvailable,supportUsed:false};
+   const skyMethods=region==="sky"?window.CatBondResonance?.view?.()?.support?.find(x=>x.region==="sky")?.methods||[]:[];const skyMethod=skyMethods.includes("fast-courier")?"fast-courier":skyMethods.includes("escort-flight")?"escort-flight":null;
+   this.battle.regionalCombat={region,kit,next:3.7,cast:null,cycle:0,supportAvailable,supportUsed:false,skyMethod};
    if(manifestation&&this.battle.enemies[1]){
     const e=this.battle.enemies[1];e.regionalEnemy=region;e.combatName=kit.enemy;e.element=kit.element;e.role=kit.kind==="gale"?"ambusher":kit.kind==="mirror"?"sharpshooter":"skirmisher";
     e.maxhp=Math.max(45,Math.round(e.maxhp*.48));e.hp=e.maxhp;e.poiseMax=Math.round(e.maxhp*.55);e.poise=e.poiseMax;e.regionalCd=2.6;e.regionalCycle=0;e.rotation=[];e.ultSkill=null;
@@ -213,8 +228,21 @@ function install(){
   }
   this.vfx.ring(e.x,e.y,{r0:10,vr:160,life:.45,color:r.kit.color,width:3});
  };
+ // The approved Duo storyboard owns the canvas until its deferred impact.
+ // Sky hazards are paused by tick() during a cinematic; keep the corresponding
+ // warning lines and support controls out of the artwork as well.
+ const duoArtActive=b=>!!(b.duoCinematic?.t>0&&b.duoCinematic.max-b.duoCinematic.t<b.duoCinematic.strikeAt);
  const drawBattle=BP.draw;
- BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat)draw(this,ctx);return result;};
+ BP.draw=function(ctx){
+  const result=drawBattle.call(this,ctx),r=this.regionalCombat;
+  if(!r)return result;
+  if(r.region==="sky"){
+   const active=duoArtActive(this),panel=document.getElementById("cb-region-combat");
+   if(panel&&panel.dataset.duoArt!==String(active))panel.dataset.duoArt=String(active);
+   if(active)return result;
+  }
+  draw(this,ctx);return result;
+ };
  const end=GP.endBattle;
  GP.endBattle=function(){
   const b=this.battle,ruins=b?.postgameRuins,host=window.CatBondResonance;

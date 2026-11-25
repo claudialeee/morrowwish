@@ -131,6 +131,10 @@
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
       try{const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale:a.scale,time});
         if(visible===false)continue;
+        if(npc.visiting&&["lingyu","yuanfan"].includes(npc.id)){
+          const lang=window.MorrowwishI18n?.get?.()==="zh"?"zh":"en",label=npc.name?.[lang];
+          if(label){ctx.save();ctx.font="600 12px system-ui";ctx.textAlign="center";ctx.textBaseline="middle";const tw=ctx.measureText(label).width+14,ly=y+13;ctx.fillStyle="#24414ded";ctx.beginPath();ctx.roundRect(x-tw/2,ly,tw,20,8);ctx.fill();ctx.fillStyle="#f8e9c7";ctx.fillText(label,x,ly+10);ctx.restore();}
+        }
         lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*a.scale:y,radius:Math.max(24,a.radius*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }
