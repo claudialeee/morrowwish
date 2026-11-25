@@ -27,7 +27,7 @@ function errorPanel(game,reason,retry){
  function render(){
   heading.textContent=t('序章暂无法播放','The opening is unavailable');
   copy.textContent=t('正式演出资源未通过检查，剧情进度没有被跳过。你可以重试或返回标题画面。','Required canonical cinematic assets did not pass validation. No story progress has been skipped. Retry or return to the title.');
-  again.textContent=t('重试','Retry');back.textContent=t('返回标题','Return to title');locale.textContent=t('English','中文');
+  again.textContent=t('重试','Retry');back.textContent=t('返回标题','Return to title');locale.textContent=t('English','中文');locale.setAttribute('aria-label',t('切换到英文','Switch to Chinese'));
  }
  const clean=()=>{window.removeEventListener('morrowwish-language-change',render);box.remove()};
  again.onclick=()=>{clean();retry();};

@@ -156,6 +156,7 @@ try{
           while(walker.nextNode()){
             const n=walker.currentNode;
             const str=(n.nodeValue||'').trim();
+            if(str==='中文'&&n.parentElement.matches('button[data-slot-language],button[data-res-language],button[data-opening-language],button.cbcp-language'))continue;
             if(str&&han.test(str)&&visible(n.parentElement)){
               const target=n.parentElement.closest('button,section,article,.card')||n.parentElement;
               leaks.push({kind:'text',text:str.slice(0,135),
