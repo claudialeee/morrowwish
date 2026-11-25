@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const HOME_ANCHORS = Object.freeze({
-    muling:{x:.78,y:.70,scale:1.08,radius:58},
+    muling:{x:.66,y:.72,scale:1.08,radius:65},
     jiedeng:{x:.15,y:.54,scale:.92,radius:46}, qilan:{x:.25,y:.59,scale:.86,radius:44},
     yahe:{x:.34,y:.56,scale:.90,radius:45}, yuchuan:{x:.42,y:.58,scale:.98,radius:48},
     jinpo:{x:.86,y:.50,scale:.98,radius:48}, xiaomao:{x:.91,y:.58,scale:.82,radius:42},
@@ -109,7 +109,7 @@
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
       try{const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale:a.scale,time});
         if(visible===false)continue;
-        lastNpcHits.push({id:npc.id,x,y,radius:Math.max(24,a.radius*Math.min(1,width/1000))});}
+        lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*a.scale:y,radius:Math.max(24,a.radius*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }
   }
