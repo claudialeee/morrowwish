@@ -248,6 +248,20 @@ try {
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().sanctuaries),['harbor','forest']);
     assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('forge')),true);
     await shot('forest-complete');
+    // Save isolation: detached controls and the old region must not survive a slot switch,
+    // even if a queued callback is invoked synchronously before the next animation frame.
+    await button('World atlas',page.locator('.rw-head')).click();
+    const slotIsolation=await page.evaluate(()=>{
+      const stale=document.querySelector('.rw-regions [data-region="forge"]');
+      const original=State.S;
+      if(!stale||stale.disabled)throw Error('Expected unlocked forge');
+      if(!State.startNewGame('slot2',{overwriteConfirmed:true}))throw Error('Create isolated slot failed');
+      stale.click();
+      const newSlot={different:State.S!==original,mode:WorldMap.mode,location:WorldMap.currentRegion,forge:WorldMap.isUnlocked('forge'),oldDetached:!stale.isConnected,puzzle:!!document.querySelector('.rw-puzzle-controls')};
+      if(!State.loadSlot('slot1'))throw Error('Restore original slot failed');
+      return {newSlot,melodies:State.S.resonance.melodies,slot:State.activeSlot()};
+    });
+    assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest'],slot:'slot1'});
     assert.deepEqual(errors,[]);
     results.push({profile:name, captured, ...state, forestComplete:true});
     await context.close();
