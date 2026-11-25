@@ -25,7 +25,11 @@ function install(){
   if(dialogue&&slot===State.S&&openedScene===v.current.id){dialogue.render();return true}
   close();slot=State.S;openedScene=v.current.id;
   root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";root.dataset.scene=openedScene;stage.append(root);
-  dialogue=mountDialogue({root,engine:runtime,campaign,language:lang,resolvePortrait:portrait,onPersist:()=>{},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value),onAwaitAction:()=>{scheduleFinish()}});
+  const action=runtime.capture();
+  // Bind each overlay to the slot and scene it opened in. Even a click in the
+  // interval before the slot-change listener runs cannot write to another slot.
+  const boundEngine={view:()=>runtime.isCurrentAction(action)?runtime.view():{current:null},choose:id=>runtime.choose(id,action),nextLine:()=>runtime.nextLine(action)};
+  dialogue=mountDialogue({root,engine:boundEngine,campaign,language:lang,resolvePortrait:portrait,onPersist:()=>{},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value),onAwaitAction:()=>{scheduleFinish()}});
   return true;
  }
  function scheduleFinish(){
@@ -56,6 +60,6 @@ function install(){
  window.addEventListener("cat-bond-resonance-support-result",event=>{runtime.support(event.detail)});
  window.addEventListener("cat-bond-resonance-postgame-result",event=>{runtime.postgame(event.detail)});
  // Map and cinematic hosts can present the current scene without granting evidence.
- window.CatBondResonance=Object.freeze({captureAction:runtime.capture,exchange:runtime.exchange,initialize:runtime.initialize,npcProfile:runtime.npcProfile,residents:runtime.residents,isMulingFollowing:runtime.follows,view:runtime.view,snapshot:runtime.snapshot,showCurrent:show,close,recordEvidence:runtime.evidence,recordNPC:runtime.recordNPC,ambient:runtime.ambient,support:runtime.support,postgame:runtime.postgame,supportProfile:runtime.supportProfile,ambientAvailable:runtime.ambientAvailable});
+ window.CatBondResonance=Object.freeze({captureAction:runtime.capture,isCurrentAction:runtime.isCurrentAction,exchange:runtime.exchange,initialize:runtime.initialize,npcProfile:runtime.npcProfile,residents:runtime.residents,isMulingFollowing:runtime.follows,view:runtime.view,snapshot:runtime.snapshot,showCurrent:show,close,recordEvidence:runtime.evidence,recordNPC:runtime.recordNPC,ambient:runtime.ambient,support:runtime.support,postgame:runtime.postgame,supportProfile:runtime.supportProfile,ambientAvailable:runtime.ambientAvailable});
 }
 if(document.readyState==="complete")install();else document.addEventListener("DOMContentLoaded",install,{once:true});

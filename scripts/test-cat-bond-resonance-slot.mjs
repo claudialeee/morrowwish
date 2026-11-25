@@ -53,3 +53,10 @@ assert.equal(shared.evidence(proof,physical).ok,false);assert.equal(active.coins
 for(let i=0;i<shared.view().current.lines.length;i++)assert.ok(shared.nextLine(token).ok);
 assert.ok(shared.finish(token).ok);assert.equal(shared.nextLine(token).reason,"stale-action");
 console.log("Shared slot transaction: stale slot/scene rejected, atomic physical state/reward rollback, duplicate rejection and notification verified");
+
+// A dialogue callback captured on one slot cannot mutate a second slot at the same scene.
+const a={resonance:fixture("harbor:H-02")},z={resonance:fixture("harbor:H-02")};active=a;const overlay=shared.capture();active=z;assert.equal(shared.isCurrentAction(overlay),false);assert.equal(shared.nextLine(overlay).reason,"stale-action");assert.equal(z.resonance.cursor,0);
+// The departed Muling is an explicit scripted participant at the central ruin,
+// not a permanently present companion or a generic garden NPC.
+active={resonance:fixture("starfall:F-03"),resonanceExploration:{location:"starfall"}};assert.equal(shared.follows(),false);assert.ok(shared.residents("starfall").some(n=>n.id==="muling"&&n.scripted));assert.ok(!shared.residents("garden").some(n=>n.id==="muling"));assert.ok(shared.recordNPC({sceneId:"starfall:F-03",npcId:"muling",region:"starfall",token:shared.capture()}).ok);
+console.log("Dialogue token isolation and scripted Muling appearance verified");

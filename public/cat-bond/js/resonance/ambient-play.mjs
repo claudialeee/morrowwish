@@ -4,9 +4,9 @@ const locale=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const t=(zh,en)=>locale()==="zh"?zh:en;
 function install(){
  const stage=document.getElementById("stage"),api=window.CatBondResonance;if(!stage||!api)return;
- let overlay=null,session=null,actor=null,slot=null,game=null,drag=null,persisted=false;
+ let overlay=null,session=null,actor=null,slot=null,token=null,game=null,drag=null,persisted=false;
  const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n};
- function close(){overlay?.remove();overlay=null;session=null;actor=null;slot=null;game=null;drag=null;persisted=false}
+ function close(){overlay?.remove();overlay=null;session=null;actor=null;slot=null;token=null;game=null;drag=null;persisted=false}
  function render(){
   if(!overlay||!session)return;
   const data=session.game,step=data.steps[session.stage()];overlay.replaceChildren();
@@ -38,17 +38,17 @@ function install(){
   overlay.append(footer);
  }
  function finish(){
-  if(!session?.done()||slot!==window.State.S){close();return}
-  const event=actor.event,result=api.ambient({id:event.id,operation:event.operation,region:event.region,verified:true});
+  if(!session?.done()||slot!==window.State.S||!api.isCurrentAction(token)){close();return}
+  const event=actor.event,result=api.ambient({id:event.id,operation:event.operation,region:event.region,verified:true,token});
   if(result.ok){persisted=true;render()}else render();
  }
  function open(profile,event){
   if(overlay||!ambientGames[event.id]||!api.ambientAvailable(event.region).some(a=>a.id===event.id))return false;
-  slot=window.State.S;session=createAmbientGame(event.id);actor={...profile,event};overlay=el("section","cb-story-overlay is-visible res-ambient");overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");overlay.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();close()}});
+  slot=window.State.S;token=api.captureAction();session=createAmbientGame(event.id);actor={...profile,event};overlay=el("section","cb-story-overlay is-visible res-ambient");overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");overlay.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();close()}});
   stage.append(overlay);render();return true;
  }
  window.addEventListener("cat-bond-resonance-npc-profile",e=>{const p=e.detail;if(p?.id!=="muling")return;const a=p.ambient?.find(a=>ambientGames[a.id]);if(a)open(p,a)});
  window.addEventListener("morrowwish-language-change",()=>{if(overlay&&!drag)render()});
- window.addEventListener("cat-bond-resonance-changed",()=>{if(overlay&&slot!==window.State.S)close()});
+ window.addEventListener("cat-bond-resonance-changed",()=>{if(overlay&&(slot!==window.State.S||!api.isCurrentAction(token)))close()});
 }
 if(document.readyState==="complete")install();else document.addEventListener("DOMContentLoaded",install,{once:true});
