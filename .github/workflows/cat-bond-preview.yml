@@ -3,57 +3,95 @@ on:
   push:
     branches: [cat-bond-preview]
   workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact fully accepted combined-branch commit (40 hex characters)
+        required: true
+        type: string
 permissions:
   contents: read
   actions: read
+  pull-requests: read
 concurrency:
   group: cat-bond-isolated-preview
   cancel-in-progress: true
 jobs:
   preview:
-    if: github.ref == 'refs/heads/cat-bond-preview'
+    # Preparing this workflow must never publish. Only an explicit release invocation can.
+    if: >-
+      github.ref == 'refs/heads/cat-bond-preview' &&
+      (github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, 'Publish verified Cat Bond preview: '))
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Select the exact tested combined development commit (never merge other branches)
+      - name: Require the exact fully accepted combined source
         env:
           GH_TOKEN: ${{ github.token }}
+          DISPATCH_SHA: ${{ inputs.source_sha }}
+          PUSH_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          set -eu
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            SOURCE_SHA="$DISPATCH_SHA"
+          else
+            SOURCE_SHA="${PUSH_MESSAGE#Publish verified Cat Bond preview: }"
+            SOURCE_SHA="${SOURCE_SHA%%$'\n'*}"
+          fi
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           git fetch origin rpg/release-combined-next
-          SHA=$(git rev-parse FETCH_HEAD)
-          echo "PREVIEW_SOURCE_SHA=$SHA" >> "$GITHUB_ENV"
-          git checkout --detach "$SHA"
-          # All independent gates must have completed successfully on this
-          # exact development head. No old green runs or synthetic save state.
-          node --input-type=module <<'NODE'
-          const required=[
-            'Cat Bond Misttide Harbor playthrough',
-            'Cat Bond original audio browser QA (no deployment)',
-            'Cat Bond visual polish — before and after',
-            'Resonance Book browser acceptance (no deployment)',
-            'Cat Bond combined controls and replay (no deploy)',
-            'Cat Bond release prologue — browser acceptance',
-            'Cat Bond fast combat regression',
-            'Cat Bond brighter orchestral recording — development branch only'
-          ];
-          const {execFileSync}=await import('node:child_process');
-          const sha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
-          const runs=JSON.parse(execFileSync('gh',['api','repos/'+process.env.GITHUB_REPOSITORY+'/actions/runs?head_sha='+sha+'&event=pull_request&per_page=100'],{encoding:'utf8'})).workflow_runs;
-          for(const name of required){
-            const run=runs.filter(r=>r.name===name&&r.head_sha===sha).sort((a,b)=>b.run_number-a.run_number)[0];
-            if(!run||run.status!=='completed'||run.conclusion!=='success')throw Error('Exact-head gate not passed: '+name+' '+(run?.conclusion||run?.status||'missing'));
-            console.log(name+' PASS '+run.id);
-            if(name==='Cat Bond Misttide Harbor playthrough'){
-              const jobs=JSON.parse(execFileSync('gh',['api','repos/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+run.id+'/jobs?per_page=100'],{encoding:'utf8'})).jobs;
-              for(const profile of ['desktop','portrait','landscape'])if(!jobs.some(j=>j.name==='harbor ('+profile+')'&&j.conclusion==='success'))throw Error('Missing successful full-campaign browser profile: '+profile);
-            }
-          }
-          NODE
-          printf '%s %s\n' 'rpg/release-combined-next' "$SHA" > /tmp/cat-bond-preview-sources.txt
+          test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_SHA"
+          git fetch origin refs/pull/109/merge
+          TESTED_MERGE="$(git rev-parse FETCH_HEAD)"
+          test "$(git rev-parse "$TESTED_MERGE^2")" = "$SOURCE_SHA"
+          test "$(git rev-parse "$TESTED_MERGE^{tree}")" = "$(git rev-parse "$SOURCE_SHA^{tree}")"
+          gh api --method GET "repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$SOURCE_SHA" -f event=pull_request -F per_page=100 > /tmp/cat-bond-acceptance.json
+          export SOURCE_SHA
+          python3 - <<'PY'
+          import json
+          runs = json.load(open('/tmp/cat-bond-acceptance.json'))['workflow_runs']
+          matches = [r for r in runs if r['name'] == 'Cat Bond final release acceptance' and r['head_branch'] == 'rpg/release-combined-next' and r.get('display_title') == 'Full release QA ' + __import__('os').environ.get('SOURCE_SHA', '')]
+          assert matches, 'No explicitly requested full acceptance for exact source'
+          run = max(matches, key=lambda r: (r['run_number'], r.get('run_attempt', 1)))
+          assert run['status'] == 'completed' and run['conclusion'] == 'success', f'Full acceptance not passed: {run["id"]}'
+          open('/tmp/cat-bond-full-campaign-run','w').write(str(run['id']))
+          print('Full release acceptance PASS', run['id'])
+          PY
+          FULL_RUN=$(cat /tmp/cat-bond-full-campaign-run)
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/actions/runs/$FULL_RUN/jobs?filter=latest&per_page=100" > /tmp/cat-bond-campaign-jobs.json
+          python3 - <<'PY'
+          import json
+          jobs = [j for page in json.load(open('/tmp/cat-bond-campaign-jobs.json')) for j in page['jobs']]
+          def require(name, step=None):
+              job = next((j for j in jobs if j['name'] == name), None)
+              assert job and job['conclusion'] == 'success', f'Missing or unsuccessful real job: {name}'
+              if step:
+                  assert any(s['name'] == step and s['conclusion'] == 'success' for s in job['steps']), f'Required step did not execute: {name} / {step}'
+          require('release-request', 'Verify exact immutable release candidate')
+          for profile in ('desktop', 'portrait', 'landscape'):
+              require(f'campaign / harbor ({profile})', 'Play from a new slot on desktop and mobile (combined branch through finale)')
+              for language in ('en', 'zh'):
+                  require(f'prologue / prologue ({language}, {profile})', 'Actual game in all three device orientations')
+          require('score', 'Check score edition')
+          require('controls / controls')
+          require('book / book-browser', 'Normal start, garden, book and save slots')
+          require('audio / audio', 'Audio real browser acceptance')
+          require('visual / compare', 'Capture real baseline and candidate gameplay UI')
+          require('core / core', 'Full headless game logic regression')
+          PY
+          git checkout --detach "$SOURCE_SHA"
+          echo "SOURCE_SHA=$SOURCE_SHA" >> "$GITHUB_ENV"
+          echo "TESTED_MERGE=$TESTED_MERGE" >> "$GITHUB_ENV"
+          printf '%s %s\n' rpg/release-combined-next "$SOURCE_SHA" > /tmp/cat-bond-preview-sources.txt
+          test -s public/cat-bond/js/rpg-audio.js
+          test -s public/cat-bond/js/resonance/resonance-book.mjs
+          test -s public/cat-bond/css/rpg-visual-polish.css
+          grep -Fq 'rpg-audio.js' public/cat-bond/index.html
+          grep -Fq 'resonance-book.mjs' public/cat-bond/js/resonance/integration-entry.mjs
+          grep -Fq 'rpg-visual-polish.css' public/cat-bond/index.html
+          node --check public/cat-bond/js/main.js
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -66,10 +104,8 @@ jobs:
           cp -a public/cat-bond /tmp/cat-bond-preview/site/
           for dir in audio art icons; do cp -a "public/$dir" /tmp/cat-bond-preview/site/; done
           find public -maxdepth 1 -type f \( -name '*.js' -o -name '*.css' \) -exec cp {} /tmp/cat-bond-preview/site/ \;
-          if [ ! -f /tmp/cat-bond-preview/site/audio/cat-happy-clappy.ogg ]; then
-            bash scripts/fetch-cat-music.sh
-            cp -a public/audio/. /tmp/cat-bond-preview/site/audio/
-          fi
+          # RPG uses its own committed recordings. No mutable production audio imports.
+          test -d /tmp/cat-bond-preview/site/cat-bond/assets/audio
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const root='/tmp/cat-bond-preview/site';
@@ -77,15 +113,15 @@ jobs:
           let html=fs.readFileSync(file,'utf8');
           html=html.replace(/<script[^>]+src=["'][^"']*telemetry\.js[^"']*["'][^>]*><\/script>/gi,'');
           html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_COLLECTOR="/api/preview-disabled";window.arcadeMetric=()=>{};</script></head>');
-          const sha=process.env.PREVIEW_SOURCE_SHA;
-          html=html.replace(/<body([^>]*)>/i,'<body$1><aside role="note" style="position:fixed;z-index:2147483647;bottom:3px;left:3px;pointer-events:none;background:#202332e8;color:white;font:10px system-ui;padding:3px 6px;border-radius:4px">PREVIEW 试玩 · '+sha.slice(0,10)+' · 完整剧情 / Full campaign · Local saves only</aside>');
+          const sha=process.env.SOURCE_SHA;
+          html=html.replace(/<body([^>]*)>/i,'<body$1><aside role="note" style="position:fixed;z-index:2147483647;bottom:3px;left:3px;pointer-events:none;background:#202332e8;color:white;font:10px system-ui;padding:3px 6px;border-radius:4px">PREVIEW 试玩 · '+sha.slice(0,10)+' · 序章–终章 / Prologue–Finale · Local saves only</aside>');
           fs.writeFileSync(file,html);
           fs.writeFileSync(root+'/index.html','<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="0;url=/cat-bond/"></head><body><a href="/cat-bond/">Cat Bond RPG Preview</a></body></html>');
           fs.writeFileSync(root+'/robots.txt','User-agent: *\nDisallow: /\n');
           fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\'; form-action \'self\'\n');
           fs.writeFileSync(root+'/telemetry.js','window.arcadeMetric=()=>{};');
           fs.writeFileSync(root+'/_worker.js','export default {fetch(request,env){const u=new URL(request.url);if(u.pathname.startsWith("/api/")||u.pathname==="/api")return Response.json({error:"Preview: production APIs disabled; use local saves."},{status:403});return env.ASSETS.fetch(request)}};');
-          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,scope:'Prologue through finale and postgame',storage:'local-only',productionApis:false,sources:fs.readFileSync('/tmp/cat-bond-preview-sources.txt','utf8').trim().split('\n')}));
+          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,testedMerge:process.env.TESTED_MERGE,scope:'Prologue through Finale',storage:'local-only',productionApis:false,sources:fs.readFileSync('/tmp/cat-bond-preview-sources.txt','utf8').trim().split('\n')}));
           NODE
       - name: Publish only preview branch
         env:
@@ -96,16 +132,25 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN"
           WRANGLER="$PWD/node_modules/.bin/wrangler"
           cd /tmp/cat-bond-preview
-          "$WRANGLER" pages deploy site --project-name morrowwish --branch cat-bond-preview --commit-hash "$PREVIEW_SOURCE_SHA"
+          "$WRANGLER" pages deploy site --project-name morrowwish --branch cat-bond-preview --commit-hash "$SOURCE_SHA"
       - name: Verify stable preview alias and API isolation
         run: |
           set -eu
           URL=https://cat-bond-preview.morrowwish.pages.dev
           for attempt in $(seq 1 15); do
-            if curl -fsS "$URL/preview-version.json?sha=$PREVIEW_SOURCE_SHA" | grep -Fq "$PREVIEW_SOURCE_SHA"; then break; fi
+            if curl -fsS "$URL/preview-version.json?sha=$SOURCE_SHA" | grep -Fq "$SOURCE_SHA"; then break; fi
             sleep 4
           done
-          curl -fsS "$URL/preview-version.json?sha=$PREVIEW_SOURCE_SHA" | grep -F "$PREVIEW_SOURCE_SHA"
+          curl -fsS "$URL/preview-version.json?sha=$SOURCE_SHA" > /tmp/live-preview-version.json
+          python3 - <<'PY'
+          import json, os
+          version = json.load(open('/tmp/live-preview-version.json'))
+          assert version['sha'] == os.environ['SOURCE_SHA']
+          assert version['testedMerge'] == os.environ['TESTED_MERGE']
+          assert version['scope'] == 'Prologue through Finale'
+          assert version['storage'] == 'local-only' and version['productionApis'] is False
+          print(version)
+          PY
           curl -fsS "$URL/cat-bond/" | grep -F 'PREVIEW 试玩'
           for endpoint in session cat-bond-cloud-save; do
             test "$(curl -sS -o /dev/null -w '%{http_code}' "$URL/api/$endpoint")" = 403
@@ -118,22 +163,56 @@ jobs:
           import {chromium} from 'playwright';
           const browser=await chromium.launch({headless:true});
           try {
-            const page=await browser.newPage({viewport:{width:1280,height:800}});
-            const external=[];
-            page.on('request',r=>{if(/morrowwish\.pages\.dev|morrowwish\.vercel\.app/.test(r.url())&&!r.url().startsWith('https://cat-bond-preview.morrowwish.pages.dev/'))external.push(r.url())});
-            const response=await page.goto('https://cat-bond-preview.morrowwish.pages.dev/cat-bond/',{waitUntil:'domcontentloaded'});
-            if(!response?.ok())throw Error('Preview not reachable');
-            await page.locator('#intro-continue').waitFor({state:'visible',timeout:30000});
-            await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook);
-            await page.screenshot({path:'preview-title.png'});
-            await page.waitForFunction(()=>window.CatBondChapterCinematics?.developmentReady(),null,{timeout:30000});
-            const meta=await page.request.get('https://cat-bond-preview.morrowwish.pages.dev/preview-version.json');
-            const version=await meta.json();
-            if(version.sha!==process.env.PREVIEW_SOURCE_SHA||version.productionApis!==false)throw Error('Incorrect deployed source or API isolation');
-            await page.locator('#intro-start').click();
-            await page.screenshot({path:'preview-slots.png'});
-            if(external.length)throw Error('Production requests: '+external.join(', '));
-            console.log('LIVE PREVIEW TITLE VERIFIED: '+page.url());
+            const origin='https://cat-bond-preview.morrowwish.pages.dev';
+            for(const profile of [{name:'desktop',viewport:{width:1280,height:800}},{name:'portrait',viewport:{width:390,height:844},hasTouch:true},{name:'landscape',viewport:{width:844,height:390},hasTouch:true}]){
+              const {name,...device}=profile;
+              const context=await browser.newContext(device);
+              try{
+                const page=await context.newPage(),external=[],errors=[];
+                page.on('pageerror',e=>errors.push(e.message));
+                await page.route('**/*',route=>{
+                  const url=route.request().url();
+                  if(url.startsWith(origin+'/')||/^(data:|blob:)/.test(url))return route.continue();
+                  external.push(url);return route.abort();
+                });
+                const response=await page.goto(origin+'/cat-bond/?lang=en',{waitUntil:'domcontentloaded'});
+                if(!response?.ok())throw Error('Preview not reachable');
+                await page.locator('#intro-continue').waitFor({state:'visible',timeout:30000});
+                await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook&&window.CatBondChapterCinematics);
+                await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady()||CatBondChapterCinematics.starfallReleaseReady());
+                if(!await page.evaluate(()=>window.ARCADE_COLLECTOR==='/api/preview-disabled'&&window.__CAT_BOND_INTEGRATION_ART__===false))throw Error('Preview isolation / art approval marker mismatch');
+                await page.screenshot({path:'preview-'+profile.name+'-title.png'});
+                await page.locator('#intro-start').click();
+                await page.locator('#intro-slot-list [data-slot="slot1"]').waitFor();
+                if(await page.locator('#intro-slot-list [data-slot]').count()!==3)throw Error('Three save slots required');
+                await page.screenshot({path:'preview-'+profile.name+'-slots.png'});
+                await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+                await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-01');
+                await page.waitForFunction(()=>document.querySelector('.cbcp-art')?.naturalWidth>0&&!document.querySelector('.cbcp-skip')?.disabled);
+                await page.locator('.cbcp-art').first().evaluate(img=>img.decode());
+                await page.screenshot({path:'preview-'+profile.name+'-opening.png'});
+                // Use actual player controls; this is a smoke test, not the separate full campaign gate.
+                // The opening also advances naturally; never wait for an earlier scene after it passed.
+                for(let i=0;i<3;i++){
+                  const id=await page.evaluate(()=>CatBondResonance.view().current?.id);
+                  if(id==='prologue:P-04')break;
+                  if(!['prologue:P-01','prologue:P-02','prologue:P-03'].includes(id))throw Error('Unexpected opening scene '+id);
+                  await page.locator('.cbcp-skip').click();
+                  await page.waitForFunction(id=>CatBondResonance.view().current?.id!==id,id);
+                }
+                await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-04');
+                await page.locator('#panel .cat-starter-card .dex-cell').first().click();
+                await page.waitForFunction(()=>State.S.cats.length===1&&State.listSaveSlots().find(s=>s.id==='slot1')?.exists);
+                const uid=await page.evaluate(()=>State.S.cats[0].uid);
+                await page.reload();
+                await page.locator('#intro-continue').click();
+                await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+                await page.waitForFunction(uid=>State.S.cats.length===1&&State.S.cats[0].uid===uid&&CatBondResonance.view().current?.id==='prologue:P-04',uid);
+                await page.screenshot({path:'preview-'+profile.name+'-reloaded.png'});
+                if(external.length||errors.length)throw Error('Unexpected external requests / page errors: '+JSON.stringify({external,errors}));
+                console.log('LIVE PREVIEW NEW SLOT AND RELOAD VERIFIED: '+profile.name+' '+page.url());
+              }finally{await context.close()}
+            }
           }finally{await browser.close()}
           NODE
       - uses: actions/upload-artifact@v4

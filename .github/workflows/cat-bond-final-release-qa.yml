@@ -31,10 +31,19 @@ jobs:
       combined: true
   score:
     needs: release-request
-    uses: ./.github/workflows/cat-bond-bright-score-render.yml
-    with:
-      combined: true
-      verify_only: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check score edition
+        run: |
+          node scripts/check-cat-bond-audio-assets.mjs
+          test -s public/cat-bond/assets/daylight-grade-v1.json
+          node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
   controls:
     needs: release-request
     uses: ./.github/workflows/cat-bond-combined-controls.yml
