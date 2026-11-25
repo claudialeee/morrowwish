@@ -37,3 +37,15 @@
 @keyframes harbor-keeper{50%{transform:translateY(-1px)}}
 @media(max-width:700px){.res-host[data-scene="harbor:H-05"]::before{background-position:62% center}.res-host[data-scene^="harbor:"] .res-harbor-context{margin-bottom:6px}}
 @media(prefers-reduced-motion:reduce){.res-host[data-scene^="harbor:"]::before,.res-host[data-scene^="harbor:"] .res-portrait{animation:none!important}}
+
+/* Skyspine: painted location, restrained close-up and two bell beats. No new generic character art. */
+.res-host[data-scene="sky:S-04"]{isolation:isolate;background:#1c3447}
+.res-host[data-scene="sky:S-04"]::before{content:"";position:absolute;inset:0;z-index:-2;background:url("../assets/resonance-world-v2/sky.webp") 72% 50%/cover no-repeat;filter:brightness(.74) saturate(.77);animation:sky-pendant-camera 12s ease-out both;pointer-events:none}
+.res-host[data-scene="sky:S-04"]::after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 30% 34%,#ffe9b52b,transparent 53%),linear-gradient(0deg,#0b1b2bec,transparent 70%);pointer-events:none}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-speaker="muling"] .res-portrait{max-height:63vh;transition:filter .25s ease,transform .25s ease;transform-origin:center bottom}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-sky-tap] .res-portrait{filter:drop-shadow(0 0 11px #ffe6af9a);transform:translateY(-2px)}
+.res-host[data-scene="sky:S-04"] .res-body{background:linear-gradient(130deg,#172e43f5,#1b2b3ae8);border-color:#d0c0a1}
+@keyframes sky-pendant-camera{from{transform:scale(1.01)}to{transform:scale(1.10)}}
+@media(max-width:700px){.res-host[data-scene="sky:S-04"] .res-dialogue[data-speaker="muling"] .res-portrait{height:clamp(110px,32vh,270px);max-height:34vh}}
+@media(max-height:480px) and (orientation:landscape){.res-host[data-scene="sky:S-04"] .res-dialogue[data-speaker="muling"] .res-portrait{height:auto;max-height:48vh}}
+@media(prefers-reduced-motion:reduce){.res-host[data-scene="sky:S-04"]::before{animation:none}.res-host[data-scene="sky:S-04"] .res-portrait{transition:none}}

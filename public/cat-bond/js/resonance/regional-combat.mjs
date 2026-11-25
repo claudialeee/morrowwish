@@ -33,7 +33,7 @@ export function inPattern(p,f){
 }
 
 // Original regional scene and manifestation artwork. Render at native canvas scale; no CSS image substitute.
-const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
+const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["../resonance-world-v2/sky.webp","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
 const art={};
 function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
@@ -93,7 +93,7 @@ function install(){
  const bg=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){if(this.regionalCombat&&drawScene(ctx,W,H,this.regionalCombat.region))return;return bg.call(this,ctx,W,H);};
  function notice(b,zh,en){b.game.toast({zh,en});}
- const labels={surge:["潮浪来袭，避开横向水带！","Tidal surge: leave the horizontal lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["熔渣即将落下！","Molten fragments are about to fall!"],gale:["风切线即将贯穿战场！","Gale shear is about to cross the arena!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨正在轮转，避开落点！","Orbital markers are rotating. Keep clear!"]};
+ const labels={surge:["潮浪来袭，避开横向水带！","Tidal surge: leave the horizontal lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["熔渣即将落下！","Molten fragments are about to fall!"],gale:["风切线即将贯穿战场，注意侧风推移！","Gale shear incoming. Counter the crosswind drift!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨正在轮转，避开落点！","Orbital markers are rotating. Keep clear!"]};
  function mount(game,b){
   document.getElementById("cb-region-combat")?.remove();
   const host=document.getElementById("battle-ui");if(!host)return;
@@ -139,6 +139,7 @@ function install(){
   const r=b.regionalCombat;if(!r||b.done||b.captureSeq||b.coachHoldsEnemies?.()||b.game.battleHelpOpen||b.duoRun||b.duoCinematic||b.ultCinematic)return;
   if(!living(b).length||!b.liveEnemies().length)return;
   if(r.cast){
+    if(r.kit.kind==="gale"){const direction=r.cycle%2?1:-1;for(const f of living(b)){if((f.inv||0)>0)continue;f.x=clamp(f.x+direction*22*Math.min(.05,dt),32,b.W-32);}}
     r.cast.remaining-=dt;
     if(r.cast.remaining<=0){resolve(b,r,r.cast);r.cast=null;r.next=r.kit.period;paintHud(b);}
     return;
