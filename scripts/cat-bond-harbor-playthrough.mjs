@@ -152,19 +152,26 @@ try {
         if (await close.isVisible()) await close.click();
       }
     }
+    // Independent expected expressions for the authored forest and forge dialogue.
+    // Do not accept arbitrary portraits: verify exact speaker, mood, and decoded image.
+    function expectedRegionalPortrait(actor,scene,cursor){
+      if(actor!=='muling')return '/npc/'+actor+'-painted.webp';
+      const moods={'forest:R-04':{1:'warm',3:'neutral',5:'determined'},'forge:E-01':{3:'warm',5:'dry'},'forge:E-04':{3:'neutral',5:'neutral',7:'determined'}};
+      return '/cinematics/characters/muling/traveler-'+(moods[scene]?.[cursor]??'warm')+'.webp';
+    }
     async function readForestDialogue(id,choice) {
       const dialogue=page.locator('.res-host[data-scene="'+id+'"]');
       await dialogue.waitFor();
       if(choice){await button(choice,dialogue).click();}
       const observed=[];
       while(await dialogue.isVisible()){
-        const line=await page.evaluate(expected=>{const v=CatBondResonance.view();return v.current?.id===expected&&v.lineReady?v.current.lines[v.cursor]:null},id);
+        const line=await page.evaluate(expected=>{const v=CatBondResonance.view();return v.current?.id===expected&&v.lineReady?{...v.current.lines[v.cursor],cursor:v.cursor}:null},id);
         if(!line)break;
         await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
         if(['yahe','yuchuan','muling'].includes(line.speaker)){
           const portrait=dialogue.locator('.res-portrait');
           await portrait.waitFor({state:'visible'});
-          const expected=line.speaker==='muling'?'/cinematics/characters/muling/traveler-neutral.webp':'/npc/'+line.speaker+'-painted.webp';
+          const expected=expectedRegionalPortrait(line.speaker,id,line.cursor);
           try{await page.waitForFunction(({actor,expected})=>{const d=document.querySelector('.res-host .res-dialogue'),img=d?.querySelector('.res-portrait');return d?.dataset.speaker===actor&&img?.complete&&img.naturalWidth>0&&img.currentSrc.endsWith(expected)}, {actor:line.speaker,expected}, {timeout:12000});await portrait.evaluate(img=>img.decode());}
           catch(e){await shot(id.replace(':','-')+'-portrait-failure-'+line.speaker);console.error('Actual dialogue portrait failed',await portrait.evaluate(img=>({src:img.src,current:img.currentSrc,complete:img.complete,width:img.naturalWidth})));throw e;}
           if(line.speaker==='muling'&&id==='forest:R-04'&&!observed.includes('muling'))await shot('forest-muling-portrait');
@@ -197,7 +204,7 @@ try {
         const line=v.current.lines[v.cursor];
         await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
         if(['jinpo','xiaomao','muling'].includes(line.speaker)){
-          const expected=line.speaker==='muling'?'/cinematics/characters/muling/traveler-neutral.webp':'/npc/'+line.speaker+'-painted.webp';
+          const expected=expectedRegionalPortrait(line.speaker,id,v.cursor);
           await page.waitForFunction(({actor,expected})=>{const d=document.querySelector('.res-host .res-dialogue'),img=d?.querySelector('.res-portrait');return d?.dataset.speaker===actor&&img?.complete&&img.naturalWidth>0&&img.currentSrc.endsWith(expected)},{actor:line.speaker,expected});
         }
         await dialogue.locator('[data-res-language]').click();
