@@ -79,6 +79,18 @@
  .rw-atlas-wide .rw-hint,.rw-atlas-wide .rw-next{font-size:11px}
 }
 
+/* Narrow atlas controls remain reachable with a finger, independently of the painting. */
+.rw-system-nav .rw-button{touch-action:manipulation;min-width:0;overflow-wrap:anywhere}
+@media(max-width:700px) and (orientation:portrait){
+ .rw-world:not([data-region]):not(.rw-forest-region) .rw-system-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .rw-world:not([data-region]):not(.rw-forest-region) .rw-system-nav .rw-button{min-height:44px;padding:5px 4px;font-size:11px}
+ .rw-world:not([data-region]):not(.rw-forest-region) .rw-head .rw-button{min-height:40px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ .rw-atlas-wide .rw-system-nav .rw-button{min-height:44px}
+ .rw-atlas-wide .rw-atlas-rail{scroll-padding-block:8px}
+}
+
 /* Harbor landscape keeps the entire painting and mechanism on screen; only the separate quest rail scrolls. */
 @media(max-height:500px) and (orientation:landscape){
  .rw-world[data-region="harbor"].rw-forest-landscape{top:44px;padding:6px 10px 10px;background:radial-gradient(ellipse at 24% 8%,#324f62,#192f43 52%,#0d1d2f)}
