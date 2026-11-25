@@ -202,3 +202,79 @@
 
 /* Flight controls must remain on the initial operational page, including postgame letters. */
 #stage .rw-fit-rail .rw-active-flight>.rw-sky-flight-status{grid-column:1/-1;margin:0;font-size:11px;line-height:1.25;color:inherit}
+
+/* The atlas painting is the primary surface. Travel and story controls can
+   be reopened without moving or resetting the camera. */
+#stage .rw-world.rw-atlas-mode:not([hidden]){
+ display:grid;grid-template-columns:minmax(0,1fr) auto;
+ grid-template-rows:auto minmax(0,1fr) auto;align-items:center;
+ gap:8px;padding-inline:clamp(8px,2vw,24px);
+ background:linear-gradient(150deg,#fffcf3,#f3eaf1);color:#3d3345;
+}
+#stage .rw-atlas-mode>.rw-head{
+ grid-area:1/1/2/-1;display:flex;margin:0;max-width:none;
+ border-color:#ded0bf;justify-content:space-between;
+}
+#stage .rw-atlas-mode :is(.rw-brand small,.rw-brand strong,.rw-fit-summary){color:#3d3345}
+#stage .rw-world.rw-atlas-mode>.rw-shell{
+ grid-area:2/1/3/-1;place-self:center;width:100%;max-width:none;
+ margin:0;border:0;box-shadow:none;
+}
+#stage .rw-atlas-mode>.rw-controls{
+ grid-area:3/2;display:flex;gap:4px;margin:0 12px 0 0;
+}
+#stage .rw-atlas-mode>.rw-controls .rw-button,
+#stage .rw-atlas-mode>.rw-head .rw-button,
+#stage .rw-atlas-menu summary{
+ color:#3d3345;background:#fff9e9;border:1px solid #cbb8a0;border-radius:8px;
+ min-height:40px;box-sizing:border-box;padding:8px 10px;
+}
+#stage .rw-atlas-mode>.rw-notice{
+ grid-area:2/1/3/-1;align-self:end;z-index:1;margin:8px;
+}
+#stage .rw-world.rw-atlas-mode>.rw-atlas-rail{
+ position:relative;grid-area:3/1;width:max-content;height:auto;
+ overflow:visible;align-self:end;padding:0;z-index:2;
+}
+#stage .rw-atlas-menu{
+ position:absolute;bottom:0;left:0;width:max-content;max-width:min(330px,calc(100vw - 34px));
+ color:#3d3345;background:#fff9e9;border-radius:9px;
+}
+#stage .rw-atlas-menu:not([open]){position:static}
+#stage .rw-atlas-menu:not([open])>:not(summary){display:none!important}
+#stage .rw-atlas-menu[open]{
+ display:flex;flex-direction:column;width:min(330px,calc(100vw - 34px));
+ max-height:min(var(--rw-rail-limit,320px),65dvh);overflow:auto;
+ border:1px solid #cbb8a0;box-shadow:0 6px 22px #263a3140;
+}
+#stage .rw-atlas-menu summary{display:list-item;flex:none;cursor:pointer;font-weight:700;position:sticky;top:0;z-index:1}
+#stage .rw-atlas-menu>section,#stage .rw-atlas-menu>nav,#stage .rw-atlas-menu>div,#stage .rw-atlas-menu>p{margin:4px 8px}
+#stage .rw-atlas-menu .rw-hint{color:#3d3345}
+@media(max-height:500px) and (orientation:landscape){
+ #stage .rw-atlas-mode>.rw-controls .rw-button,#stage .rw-atlas-menu summary{min-height:36px;padding:6px 8px}
+}
+
+#stage .rw-fit-rail .rw-melody-controls{grid-template-columns:repeat(3,minmax(0,1fr))}
+#stage .rw-melody-phrase{
+ grid-column:1/-1;display:flex;align-items:center;gap:5px;
+ color:#294839;background:#fff9e9;border-radius:8px;padding:6px;font-size:11px;
+}
+#stage .rw-melody-phrase>span:first-child{flex:1}
+#stage .rw-melody-step{
+ display:grid;place-items:center;width:20px;height:20px;
+ border-radius:50%;background:#eee4f0;font-weight:700;
+}
+#stage .rw-melody-controls .rw-button[data-note="0"]{background:#e1eed6;color:#244631}
+#stage .rw-melody-controls .rw-button[data-note="1"]{background:#f6e5ad;color:#493d20}
+#stage .rw-melody-controls .rw-button[data-note="2"]{background:#e9def2;color:#492e59}
+#stage .rw-melody-controls [data-demo]{
+ outline:3px solid #f4a93b;outline-offset:-3px;
+}
+#stage .rw-melody-step[data-played]{background:#675377;color:white}
+#stage .rw-melody-keypad{
+ grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;
+}
+#stage .rw-melody-demo{grid-column:1/-1}
+#stage .rw-melody-controls .rw-melody-step[data-demo-note="0"]:not([data-played]){background:#e1eed6;color:#244631}
+#stage .rw-melody-controls .rw-melody-step[data-demo-note="1"]:not([data-played]){background:#f6e5ad;color:#493d20}
+#stage .rw-melody-controls .rw-melody-step[data-demo-note="2"]:not([data-played]){background:#e9def2;color:#492e59}

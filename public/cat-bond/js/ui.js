@@ -2377,7 +2377,7 @@ const UI = {
       const sp = GameData.speciesById(cell.dataset.id);
       if (!cell.classList.contains('locked')) {
         const featured=State.S.cats.filter(c=>c.species===sp.id).sort((a,b)=>State.catPower(b)-State.catPower(a))[0];
-        CatArt.renderCatThumb(cell.querySelector('canvas'), sp,featured);
+        renderCollectiblePortrait(cell.querySelector('canvas'),sp,featured);
         cell.tabIndex=0;cell.setAttribute('role','button');
         cell.addEventListener('keydown',e=>{
           if(e.key==='Enter'||e.key===' '){e.preventDefault();cell.click();}
@@ -2429,7 +2429,7 @@ const UI = {
             :'评级挑战不会重复捕捉猫咪，也不会重复领取金币。'}</p>`);
         document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
         const featured=State.S.cats.filter(c=>c.species===sp.id).sort((a,b)=>State.catPower(b)-State.catPower(a))[0];
-        CatArt.renderCatThumb(document.getElementById('dx'),sp,featured);
+        renderCollectiblePortrait(document.getElementById('dx'),sp,featured);
         document.getElementById('dx-back').onclick=()=>this.openDex();
         const fight=document.getElementById('dx-rematch');
         if(fight&&canRematch)fight.onclick=()=>{
@@ -3311,8 +3311,10 @@ const UI = {
         ${!firstAdventure&&skillUnlock?'<button class="btn gold" id="cr-newskill">'+(english?'Try the new skill':'查看新技能')+'</button>':''}
         ${masteryReward&&!firstAdventure?'<button class="btn gold" id="cr-medal">'+(english?'View medal collection':'查看金爪徽章')+'</button>':''}
       </div>`);
-    document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
-    CatArt.renderCatThumb(document.getElementById('cr'),wildSp);
+    const captureCard=document.querySelector('#panel .card');
+    captureCard?.classList.add('cat-highlight-card','cat-capture-card');
+    if(captureCard)captureCard.scrollTop=0;
+    renderCollectiblePortrait(document.getElementById('cr'),wildSp);
     const dismiss=()=>{
       this.closeAll();
       if(this.game.scene==='yard')document.getElementById('yard-actions').classList.remove('hidden');
@@ -3488,32 +3490,74 @@ const UI = {
   },
 
   // ---------- starter picker (first run) ----------
-  openStarter(onPick) {
-    const options = GameData.SPECIES.filter(s => s.rarity === 'N').slice(0, 3);
-    const english=window.MorrowwishI18n?.get?.()!=='zh';
-    const chips = options.map(sp => `<button type="button" class="dex-cell" data-id="${sp.id}" aria-label="选择 ${GameData.speciesName(sp)}">
-      <canvas width="90" height="76"></canvas>
-      <div class="tiny starter-element">${this.game.elemIcon(Skills.elementOf(sp.id))} ${english
-        ?({fire:'Fire',grass:'Nature',water:'Water'}[Skills.elementOf(sp.id)]||'Element')
-        :({fire:'火系',grass:'草系',water:'水系'}[Skills.elementOf(sp.id)]||'元素')}</div>
-      <div class="name">${GameData.speciesName(sp)}</div>
-      <div class="rarity rarity-N">普通</div>
-      <div class="tiny">${sp.desc}</div>
-    </button>`).join('');
+  openStarter(onPick,{storyOpening=false}={}) {
+    const storyBreeds={
+      jinjc:['英短金渐层','Golden Shaded British Shorthair'],
+      yunduo:['布偶猫','Ragdoll'],
+    };
+    const options=storyOpening
+      ?Object.keys(storyBreeds).map(id=>GameData.speciesById(id))
+      :GameData.SPECIES.filter(sp=>sp.rarity==='N').slice(0,3);
+    const english=window.MorrowwishI18n?.get?.()!=='zh',locale=english?1:0;
+    const elements={fire:['火系','Fire'],grass:['草系','Nature'],water:['水系','Water'],light:['光系','Light']};
+    const chips=options.map(sp=>{
+      const element=Skills.elementOf(sp.id);
+      const breed=storyOpening?storyBreeds[sp.id][locale]:'';
+      const portrait=storyOpening
+        ?`<img class="starter-portrait" src="assets/starter-portraits/${sp.id}.webp" alt="" width="180" height="180">`
+        :'<canvas width="90" height="76"></canvas>';
+      return `<button type="button" class="dex-cell" data-id="${sp.id}" aria-label="${breed||GameData.speciesName(sp)}">
+        ${portrait}
+        <div class="tiny starter-element">${this.game.elemIcon(element)} ${elements[element]?.[locale]||''}</div>
+        <div class="name">${GameData.speciesName(sp)}</div>
+        ${storyOpening?`<div class="tiny">${breed}</div>`:`<div class="rarity rarity-N">普通</div><div class="tiny">${sp.desc}</div>`}
+      </button>`;
+    }).join('');
     const p = document.getElementById('panel');
-    p.innerHTML = `<div class="card cat-highlight-card cat-starter-card"><h2 class="center">选择你的第一只猫猫</h2>
+    p.innerHTML = `<div class="card cat-highlight-card cat-starter-card${storyOpening?' cat-story-starter-card':''}"><h2 class="center">选择你的第一只猫猫</h2>
       <p class="sub center">每只猫有自己的元素技能。收服第一位伙伴后，还会觉醒新招式！</p>
       <div class="dex-grid">${chips}</div></div>`;
     p.dataset.mandatory = 'true';
     p.classList.add('open');
     p.onclick = null;
     p.querySelectorAll('.dex-cell').forEach(cell => {
-      const sp = GameData.speciesById(cell.dataset.id);
-      CatArt.renderCatThumb(cell.querySelector('canvas'), sp);
-      cell.onclick = () => { this.closeAll(); onPick(sp.id); };
+      const canvas=cell.querySelector('canvas');
+      if(canvas)CatArt.renderCatThumb(canvas,GameData.speciesById(cell.dataset.id));
+      cell.onclick = () => { this.closeAll(); onPick(cell.dataset.id); };
     });
   },
 };
+
+const collectiblePortraits=new Map();
+const portraitRequests=new WeakMap();
+function renderCollectiblePortrait(canvas,species,cat){
+  if(!canvas||!species)return;
+  const folders={jinjc:'starter-portraits',yunduo:'starter-portraits'};
+  const folder=folders[species.id];
+  const request={};
+  portraitRequests.set(canvas,request);
+  if(!folder){CatArt.renderCatThumb(canvas,species,cat);return;}
+  let image=collectiblePortraits.get(species.id);
+  if(!image){
+    image=new Image();
+    image.src='assets/'+folder+'/'+species.id+'.webp';
+    collectiblePortraits.set(species.id,image);
+  }
+  function paint(){
+    if(!canvas.isConnected||portraitRequests.get(canvas)!==request||!image.naturalWidth)return;
+    const ctx=canvas.getContext('2d');
+    if(!ctx)return;
+    const scale=Math.min(canvas.width/image.naturalWidth,canvas.height/image.naturalHeight)*.97;
+    const width=image.naturalWidth*scale,height=image.naturalHeight*scale;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(image,(canvas.width-width)/2,(canvas.height-height)/2,width,height);
+  }
+  if(image.complete&&image.naturalWidth)paint();
+  else{
+    CatArt.renderCatThumb(canvas,species,cat);
+    image.addEventListener('load',paint,{once:true});
+  }
+}
 
 function statLine(label, val) {
   const pct = Math.min(100, val * 3);

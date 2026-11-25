@@ -5,14 +5,14 @@ import {mountHomeConversation,skyChapterVisitors} from "./home-conversations.mjs
 const root=new URL("../../assets/npc/",import.meta.url);
 const load=name=>{const img=new Image();img.src=new URL(name,root).href;return img};
 const residentImages=new Map();
-const mulingGarden=load('../cinematics/characters/muling/traveler-full.webp');
+const mulingGarden=load('../cinematics/characters/muling/traveler-garden-sunlit.webp');
 function residentImage(id){
  if(!campaign.regions.includes(campaign.cast[id]?.region))return null;
  if(!residentImages.has(id))residentImages.set(id,load(id+"-painted.webp"));
  return residentImages.get(id);
 }
 function drawResident(ctx,id,{x,y,scale=1,time=0}){
- if(id==='muling'){if(!mulingGarden.complete||!mulingGarden.naturalWidth)return false;const fit=Math.min(100*scale/mulingGarden.naturalWidth,132*scale/mulingGarden.naturalHeight),w=mulingGarden.naturalWidth*fit,h=mulingGarden.naturalHeight*fit;ctx.save();ctx.translate(x,y);ctx.save();ctx.scale(1,.22);const shadow=ctx.createRadialGradient(0,0,0,0,0,Math.max(1,w*.46));shadow.addColorStop(0,"#20272b44");shadow.addColorStop(1,"#20272b00");ctx.fillStyle=shadow;ctx.fillRect(-w/2,-w/2,w,w);ctx.restore();ctx.drawImage(mulingGarden,-w/2,-h,w,h);ctx.restore();return true;}
+ if(id==='muling'){if(!mulingGarden.complete||!mulingGarden.naturalWidth)return false;const fit=Math.min(118*scale/mulingGarden.naturalWidth,108*scale/mulingGarden.naturalHeight),w=mulingGarden.naturalWidth*fit,h=mulingGarden.naturalHeight*fit;ctx.save();ctx.translate(x,y);ctx.save();ctx.scale(1,.22);const shadow=ctx.createRadialGradient(0,0,0,0,0,Math.max(1,w*.46));shadow.addColorStop(0,"#20272b44");shadow.addColorStop(1,"#20272b00");ctx.fillStyle=shadow;ctx.fillRect(-w/2,-w/2,w,w);ctx.restore();ctx.drawImage(mulingGarden,-w/2,-h,w,h);ctx.restore();return true;}
  const image=residentImage(id);
  if(!image?.complete||!image.naturalWidth)return false;
  const height=84*scale,width=height*image.naturalWidth/image.naturalHeight;

@@ -1287,8 +1287,9 @@ class Game {
     if(basic&&this.isTouch)basic.textContent=english?'Tap':'点按';
     const helpBtn=document.getElementById('battle-help-toggle');
     if(helpBtn){
-      const label=english?'? Controls':'? 操作';
-      if(helpBtn.textContent!==label)helpBtn.textContent=label;
+      const caption=helpBtn.querySelector('.battle-top-label');
+      const label=english?' Controls':' 操作';
+      if(caption&&caption.textContent!==label)caption.textContent=label;
       helpBtn.setAttribute('aria-label',english?'Show battle controls':'查看手动战斗操作说明');
     }
     this.syncTouchBattleUI();

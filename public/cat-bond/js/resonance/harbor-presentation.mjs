@@ -111,8 +111,8 @@ function sequence(c,p,l,t,cast){
 export function paintHarborPuzzle(c,p,lang,cast,frame){
  if(!["tide","mirrors","rescue","melody"].includes(p.type))return false;
  const l=lang==="zh"?0:1,t=reduced()?0:frame/60,words=puzzleWords[p.type];
- c.save();c.fillStyle="rgba(8,23,35,.67)";c.fillRect(0,0,960,540);
- box(c,118,63,724,414,"rgba(17,42,55,.92)","#bfa575");
+ c.save();c.fillStyle="rgba(94,65,68,.12)";c.fillRect(0,0,960,540);
+ box(c,118,63,724,414,"rgba(73,61,70,.88)","#d0b9a1");
  text(c,words[0][l],480,98,26,cream);text(c,harborPuzzleHint(p,lang),480,119,15,teal,"center",675);
  if(p.type==="mirrors")mirrors(c,p,l);else if(p.type==="rescue")rescue(c,p,l,t);else sequence(c,p,l,t,cast);
  if(p.type==="rescue")text(c,(l?"Rescue stage ":"救援阶段 ")+(p.values.length+1)+"/"+p.goal.length,480,398,17,teal);

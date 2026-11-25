@@ -59,17 +59,16 @@ export function inPattern(p,f){
  return Math.hypot(f.x-p.x1-k*dx,f.y-p.y1-k*dy)<=p.w/2;
 }
 
-// Original regional scene and manifestation artwork. Render at native canvas scale; no CSS image substitute.
-// Use the approved painted harbor environment rather than the grid-like
-// legacy SVG visible in the baseline battle screenshot. Keep the existing
-// dedicated SVG available if the painting cannot decode. The environment
-// is an interim visual source, not a newly commissioned combat illustration.
-const artFiles={harbor:["../resonance-world-v2/harbor.webp","tide-shell.svg","harbor-arena.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["../resonance-world-v2/sky.webp","gale-wing.svg","sky-arena.svg"],library:["../resonance-world-v2/library.webp","mirror-sentinel.svg","library-arena.svg"],starfall:["../resonance-world-v2/starfall.webp","orbit-sentinel.svg","starfall-arena.svg"]};
-const arenaLight={
- harbor:["24,48,57",.12,.26],forest:["15,43,29",.14,.30],
- forge:["45,29,25",.07,.19],sky:["28,53,72",.09,.20],
- library:["23,32,57",.10,.24],starfall:["26,28,54",.10,.24]
+// In each region the arena leaves room for the cats, paths and attack indicators.
+const artFiles={
+ harbor:["harbor-arena.webp","tide-shell.svg","harbor-arena.svg"],
+ forest:["forest-arena.webp","rootbound.svg","forest-arena.svg"],
+ forge:["emberforge-painted.webp","forge-guardian-painted.webp"],
+ sky:["sky-arena.webp","gale-wing.svg","sky-arena.svg"],
+ library:["library-arena.webp","mirror-sentinel.svg","library-arena.svg"],
+ starfall:["starfall-arena.webp","orbit-sentinel.svg","starfall-arena.svg"],
 };
+const portraitFocalPoints={harbor:.78,forest:.20,forge:.50,sky:.68,library:.50,starfall:.65};
 const art={};
 function loadArt(){for(const [id,[background,enemy,fallback]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
@@ -82,16 +81,8 @@ function drawScene(ctx,W,H,region){
  const img=ready(pair?.background)?pair.background:pair?.fallback;
  if(!ready(img))return false;
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
- window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#263c45",bottom:"#354a40"});
- // Restrained, region-specific tonal separation behind the real characters
- // and attack warnings. Never replace a decoded painting with a solid fill.
- const [tone,mid,edge]=arenaLight[region]||arenaLight.harbor;
- const light=ctx.createLinearGradient(0,0,0,H);
- light.addColorStop(0,"rgba("+tone+",.02)");light.addColorStop(.55,"rgba("+tone+","+mid+")");light.addColorStop(1,"rgba("+tone+","+edge+")");
- ctx.fillStyle=light;ctx.fillRect(0,0,W,H);
- const frame=ctx.createRadialGradient(W*.5,H*.48,Math.min(W,H)*.24,W*.5,H*.48,Math.hypot(W,H)*.55);
- frame.addColorStop(0,"rgba("+tone+",0)");frame.addColorStop(1,"rgba("+tone+",.17)");
- ctx.fillStyle=frame;ctx.fillRect(0,0,W,H);ctx.restore();
+ window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#e7dceb",bottom:"#d9c0aa",portraitFocus:portraitFocalPoints[region]??.5});
+ ctx.restore();
  return true;
 }
 function drawManifestation(ctx,e,b){

@@ -51,10 +51,10 @@ const ready=i=>i?.complete&&i.naturalWidth;
 function cover(c,i,x,y,w,h){if(!ready(i))return;let k=Math.max(w/i.naturalWidth,h/i.naturalHeight),dw=i.naturalWidth*k,dh=i.naturalHeight*k;c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.drawImage(i,x+(w-dw)/2,y+(h-dh)/2,dw,dh);c.restore()}
 export function paintLibraryPuzzle(c,p,lang,W,H){
  const w=libraryWords(p);if(!w)return false;const l=lang==="zh"?0:1,s=W/960,X=n=>n*W,Y=n=>n*H;
- const t=(str,x,y,size=20,col="#eee7d5")=>{c.font="600 "+size*s+"px system-ui,sans-serif";c.fillStyle=col;c.textAlign="center";c.textBaseline="middle";c.fillText(str,X(x),Y(y),W*.88)};
- const frame=(x,y,width,height)=>{c.beginPath();c.roundRect(X(x),Y(y),X(width),Y(height),12*s);c.fillStyle="#121f36c9";c.fill();c.strokeStyle="#b6a3cf";c.lineWidth=1.5*s;c.stroke()};
- c.save();cover(c,image("resonance-world-v2/library.webp"),0,0,W,H);c.fillStyle="#081322d9";c.fillRect(0,0,W,H);frame(.08,.08,.84,.83);
- t(w[0][l],.5,.15,27,"#f0dba9");t(w[1][l],.5,.23,16);
+ const t=(str,x,y,size=20,col="#4d3b52")=>{c.font="600 "+size*s+"px system-ui,sans-serif";c.fillStyle=col;c.textAlign="center";c.textBaseline="middle";c.fillText(str,X(x),Y(y),W*.88)};
+ const frame=(x,y,width,height)=>{c.beginPath();c.roundRect(X(x),Y(y),X(width),Y(height),12*s);c.fillStyle="#fff5e9ee";c.fill();c.strokeStyle="#b6a3cf";c.lineWidth=1.5*s;c.stroke()};
+ c.save();cover(c,image("resonance-world-v2/library.webp"),0,0,W,H);c.fillStyle="#99759033";c.fillRect(0,0,W,H);frame(.08,.08,.84,.83);
+ t(w[0][l],.5,.15,27,"#543b55");t(w[1][l],.5,.23,16);
  const xs=[.3,.5,.7],Yc=Y(.53);
  if(p.type==="libraryMirrors"){
   // Optical ray is actually reflected at each junction; wrong orientation sends it away from the next mirror.
@@ -65,17 +65,17 @@ export function paintLibraryPuzzle(c,p,lang,W,H){
   const beam=[pts[0],pts[1]];for(let i=0;i<3;i++){const at=pts[i+1],a=2*mirrorAngles[i]-angle(pts[i],at);if(p.values[i]===p.goal[i])beam.push(pts[i+2]);else{beam.push([at[0]+Math.cos(a)*W*.145,at[1]+Math.sin(a)*W*.145]);break;}}
   c.save();c.shadowBlur=16*s;c.shadowColor="#c7fff0";c.strokeStyle="#c7fff0";c.lineWidth=4*s;c.beginPath();beam.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke();c.restore();
   t(l?"Moon window":"月窗",.15,.42,13);t(l?"Hidden door":"隐藏门",.85,.42,13);
-  xs.forEach((x,i)=>{const [cx,cy]=pts[i+1],a=mirrorAngles[i],R=36*s,ok=p.values[i]===p.goal[i];c.save();c.translate(cx,cy);c.rotate(a);c.fillStyle="#9ec4d8";c.strokeStyle="#ead4a8";c.lineWidth=2*s;c.beginPath();c.roundRect(-R,-5*s,R*2,10*s,4*s);c.fill();c.stroke();c.restore();t(w[2][i][l],x,.68,16);if(ok)t(l?"Aligned":"已校准",x,.35,13,"#a8efe0");});
+  xs.forEach((x,i)=>{const [cx,cy]=pts[i+1],a=mirrorAngles[i],R=36*s,ok=p.values[i]===p.goal[i];c.save();c.translate(cx,cy);c.rotate(a);c.fillStyle="#9ec4d8";c.strokeStyle="#ead4a8";c.lineWidth=2*s;c.beginPath();c.roundRect(-R,-5*s,R*2,10*s,4*s);c.fill();c.stroke();c.restore();t(w[2][i][l],x,.68,16);if(ok)t(l?"Aligned":"已校准",x,.35,13,"#356b68");});
  }else{
   const paths=p.type==="librarySeal"?["resonance-world-v2/atlas.webp","resonance-world-v2/library.webp","resonance-world-v2/harbor.webp"]:p.type==="libraryMural"?["cinematics/prologue/broken-bell-tongue.webp","cinematics/prologue/keepers-choice.webp","cinematics/prologue/star-bell.webp"]:p.type==="libraryLedger"?["cinematics/prologue/broken-bell-tongue.webp","cinematics/prologue/star-bell.webp","resonance-world-v2/atlas.webp"]:["resonance-world-v2/library.webp","resonance-world-v2/sky.webp","resonance-world-v2/starfall.webp"];
   xs.forEach((x,i)=>{frame(x-.084,.40,.168,.22);
    if(p.type==="libraryEcho"){const h=echoInterval(p,i);c.strokeStyle="#b7cce4";c.lineWidth=2*s;c.beginPath();c.moveTo(X(x-.065),Y(.52));c.lineTo(X(x-.035),Y(.52));c.lineTo(X(x-.035),Y(.45));c.lineTo(X(x-.035),Y(.52));const end=x-.035+h*.045;c.lineTo(X(end),Y(.52));c.lineTo(X(end),Y(.45));c.lineTo(X(end),Y(.52));c.lineTo(X(x+.065),Y(.52));c.stroke();t(h.toFixed(2)+"s",x,.58,16);
    }else cover(c,image(paths[i]),X(x-.079),Y(.409),X(.158),Y(.202));t(w[2][i][l],x,.68,15);
   });
-  if(p.type==="libraryEcho"){const rec=p.record;const name=rec&&(typeof window!=="undefined"?(window.State?.S?.cats?.find(c=>c.uid===rec.uid)?window.State.catName(window.State.S.cats.find(c=>c.uid===rec.uid)):window.GameData?.speciesName?.(rec.species)||rec.name):rec.name);t(rec?(l?"Catdex · "+name+" · "+rec.trait[l]+" · "+rec.wins+" wins":"Catdex · "+name+" · "+rec.trait[l]+" · "+rec.wins+" 次胜利"):(l?"No collected Catdex record":"缺少已收集猫咪的 Catdex 记录"),.5,.32,17,"#b5f3e5");}
-  else if(p.type==="librarySeal"){const notes=[["公开记录：旧灾难与星铃封印","Public record: catastrophe and the Star Bell seal"],["个人档案包含仍在世的猫咪身份","Personal files identify cats still living"],["封存保护当事猫，但不能抹去历史","Sealing protects subjects, but must not erase history"]];t(notes[Math.min(p.values.length,2)][l],.5,.32,16,"#b5f3e5");}else t((l?"Reconstructed ":"已复原 ")+p.values.length+" / "+p.goal.length,.5,.32,16,"#b5f3e5");
+  if(p.type==="libraryEcho"){const rec=p.record;const name=rec&&(typeof window!=="undefined"?(window.State?.S?.cats?.find(c=>c.uid===rec.uid)?window.State.catName(window.State.S.cats.find(c=>c.uid===rec.uid)):window.GameData?.speciesName?.(rec.species)||rec.name):rec.name);t(rec?(l?"Catdex · "+name+" · "+rec.trait[l]+" · "+rec.wins+" wins":"Catdex · "+name+" · "+rec.trait[l]+" · "+rec.wins+" 次胜利"):(l?"No collected Catdex record":"缺少已收集猫咪的 Catdex 记录"),.5,.32,17,"#356b68");}
+  else if(p.type==="librarySeal"){const notes=[["公开记录：旧灾难与星铃封印","Public record: catastrophe and the Star Bell seal"],["个人档案包含仍在世的猫咪身份","Personal files identify cats still living"],["封存保护当事猫，但不能抹去历史","Sealing protects subjects, but must not erase history"]];t(notes[Math.min(p.values.length,2)][l],.5,.32,16,"#356b68");}else t((l?"Reconstructed ":"已复原 ")+p.values.length+" / "+p.goal.length,.5,.32,16,"#356b68");
  }
- t(p.mistakes?(l?"Incorrect reflection · try again":"倒影不符 · 可以重试"):(l?"Compare the evidence before selecting":"观察证据后再选择"),.5,.80,16,p.mistakes?"#f1b6a6":"#c5d7eb");c.restore();return true;
+ t(p.mistakes?(l?"Incorrect reflection · try again":"倒影不符 · 可以重试"):(l?"Compare the evidence before selecting":"观察证据后再选择"),.5,.80,16,p.mistakes?"#8f4639":"#564968");c.restore();return true;
 }
 export function paintLibraryEnvironment(c,v,frame,W=960,H=540,pos=[.1,.83]){
  const t=frame/60;c.save();const g=c.createRadialGradient(W*.63,H*.12,0,W*.63,H*.12,W*.55);g.addColorStop(0,"#b0b9ff22");g.addColorStop(1,"#25325100");c.fillStyle=g;c.fillRect(0,0,W,H);

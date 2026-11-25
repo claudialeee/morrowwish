@@ -32,6 +32,9 @@ try {
       // accessible name. Real clicks still use the visible role locator.
       const all=scope.getByRole('button',{name,exact:true,includeHidden:true}).or(scope.locator('button').and(scope.getByText(name,{exact:true})));
       const reveal=async()=>{if(await target.isVisible())return;await all.waitFor({state:'attached',timeout:30000});if(await target.isVisible())return;const world=page.locator('.rw-world:not([hidden])');if(!(await world.isVisible()))return;
+       const atlas=world.locator('.rw-atlas-menu:not([open]) > summary');
+       if(await atlas.count()&&await all.first().evaluate(el=>!!el.closest('.rw-atlas-menu')))await atlas.click();
+       if(await target.isVisible())return;
        const count=Number(await world.getAttribute('data-fit-pages')||1),next=world.locator('[data-fit-next]'),prev=world.locator('[data-fit-prev]');
        const press=async locator=>options.hasTouch?locator.tap():locator.click();
        for(let i=0;i<count&&await prev.isVisible()&&await prev.isEnabled()&&!await target.isVisible();i++)await press(prev);
@@ -101,6 +104,8 @@ try {
     }
     async function verifyAtlasCamera(){
       const surface=page.locator('.rw-surface');
+      await page.waitForFunction(()=>document.querySelector('.rw-surface')?.dataset.camera==='[1,0,0]');
+      await button('+').click();
       await page.waitForFunction(()=>Number(JSON.parse(document.querySelector('.rw-surface')?.dataset.camera||'[0]')[0])>1);
       const before=JSON.parse(await surface.getAttribute('data-camera'));
       const box=await surface.boundingBox(),x=box.x+box.width*.5,y=box.y+box.height*.5,dx=box.width*.08;
@@ -377,6 +382,10 @@ try {
     const rewardBefore=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish}));
     await button('Returning Tides').click();
     const harborMelodyControls=page.locator('.rw-puzzle-controls');await harborMelodyControls.waitFor();
+    await button('Play example',harborMelodyControls).click();
+    await harborMelodyControls.locator('[data-demo-note="1"]').waitFor();
+    assert.deepEqual(await harborMelodyControls.locator('[data-demo-note]').evaluateAll(steps=>steps.map(el=>el.dataset.demoNote)),['0','2','1']);
+    assert.equal(await harborMelodyControls.locator('[data-played]').count(),0,'Demo never submits notes');
     await button('Middle',harborMelodyControls).click(); // wrong note: retry must not commit a melody
     assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false);
     for(const input of ['Low','High','Middle'])await button(input,harborMelodyControls).click();
@@ -496,7 +505,27 @@ try {
     await button('Clear together',pairedControls).click();
     await verifyPressure('Pressure 0/3');
     await checkObjective('puzzle:paired-water-gates');
-    for(const input of ['Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
+    const canvas=await page.locator('.rw-surface').boundingBox();
+    const from={x:canvas.x+canvas.width*.265,y:canvas.y+canvas.height*.39};
+    const dragValve=async (dx,dy)=>{
+      const end={x:from.x+canvas.width*dx,y:from.y+canvas.height*dy};
+      if(options.hasTouch){
+        const cdp=await context.newCDPSession(page);
+        try{
+          await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[from]});
+          await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[end]});
+          await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+        }finally{await cdp.detach();}
+      }else{
+        await page.mouse.move(from.x,from.y);await page.mouse.down();
+        await page.mouse.move(end.x,end.y,{steps:5});await page.mouse.up();
+      }
+    };
+    await dragValve(-.07,0);
+    await verifyPressure('Pressure 0/3');
+    await dragValve(.07,.08);
+    await verifyPressure('Pressure 1/3');
+    for(const input of ['Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
     await verifyPressure('Both channels open');
     await button('Steady upper pressure',pairedControls).click();
     await verifyPressure('Overpressure — lower gate closed');
@@ -535,6 +564,11 @@ try {
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().sanctuaries),['harbor','forest']);
     assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('forge')),true);
     await shot('forest-complete');
+    if(process.env.CAT_BOND_FOREST_ONLY==='1'){
+      assert.deepEqual(errors,[]);
+      results.push({profile:name,captured,harborComplete:true,forestComplete:true});
+      await context.close();continue;
+    }
     if(name==='desktop'){
       await button('Approach wild cat').click();
       await page.locator('#panel [data-battle-auto="true"]').click();

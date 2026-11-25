@@ -39,28 +39,17 @@ for(const profile of [
  try{
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&window.CatBondArtworkStatus?.breedsLoaded===true,{timeout:30000});
-  const titleImage=await page.evaluate(async()=>{
-   const element=document.querySelector('.cb-title-landscape');
-   const layers=await Promise.all([null,'::before','::after'].map(async pseudo=>{
-    const style=getComputedStyle(element,pseudo);
-    const match=style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/);
-    if(!match)throw Error('Missing painted title layer '+pseudo+': '+style.backgroundImage);
-    const image=new Image();image.src=match[1];await image.decode();
-    return {url:image.src,width:image.naturalWidth,height:image.naturalHeight,repeat:style.backgroundRepeat,size:style.backgroundSize,display:style.display,opacity:Number(style.opacity)};
-   }));
-   return layers;
+  const painting=await page.locator('.cb-title-landscape').evaluate(async element=>{
+   const style=getComputedStyle(element);
+   const match=style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/);
+   if(!match)throw Error('Missing opening painting: '+style.backgroundImage);
+   const image=new Image();image.src=match[1];await image.decode();
+   return {url:image.src,width:image.naturalWidth,height:image.naturalHeight,repeat:style.backgroundRepeat,size:style.backgroundSize,visible:element.getBoundingClientRect().height>0&&style.visibility==='visible'&&Number(style.opacity)>0};
   });
-  const [painting,xingya,yahe]=titleImage;
-  const orientation=profile.width/profile.height<=.8?'portrait':'landscape';
-  assert.ok(painting.url.endsWith('/assets/garden/sunlit-garden-'+orientation+'.webp'),'Correct garden painting for '+profile.name);
-  assert.ok(painting.width>=540&&painting.height>=540&&(orientation==='portrait'?painting.height>painting.width:painting.width>painting.height),'Painted title background has usable resolution and orientation');
-  assert.ok(xingya.url.endsWith('/assets/npc/xingya-painted.webp')&&yahe.url.endsWith('/assets/npc/yahe-painted.webp'),'Both painted title companions are present');
-  for(const layer of titleImage){
-   assert.ok(layer.width>=128&&layer.height>=128&&layer.display!=='none'&&layer.opacity>0,'Actual title artwork is decoded and visible: '+layer.url);
-   assert.ok(layer.repeat.split(',').every(v=>v.trim()==='no-repeat'),'Title artwork never tiles');
-  }
-  assert.equal(painting.size,'cover','Garden painting fills viewport');
-  for(const layer of [xingya,yahe])assert.equal(layer.size,'contain','Companion painting preserves proportions');
+  assert.ok(painting.url.endsWith('/assets/garden/title-bell-sanctuary.webp'),'New opening painting for '+profile.name);
+  assert.ok(painting.width>=1600&&painting.height>=900&&painting.visible,'Opening painting decodes at usable resolution');
+  assert.equal(painting.repeat,'no-repeat','Opening painting never tiles');
+  assert.equal(painting.size,profile.width/profile.height<=.8?'auto 65%':'cover','Opening painting uses responsive framing');
   const bounds=await page.evaluate(()=>{const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {stage:rect('#stage'),start:rect('#intro-start'),next:rect('#intro-continue')};});
   assert.ok(bounds.start.right<=bounds.next.left&&bounds.start.width>0&&bounds.next.width>0,'New and Continue remain side by side');
   for(const b of [bounds.start,bounds.next])assert.ok(b.left>=bounds.stage.left-1&&b.right<=bounds.stage.right+1&&b.top>=bounds.stage.top-1&&b.bottom<=bounds.stage.bottom+1,'Title actions stay in stage');
@@ -96,7 +85,16 @@ for(const profile of [
    await page.waitForFunction(n=>CatBondResonance.view().current?.id==='prologue:P-0'+n&&document.querySelector('.cbcp-art')?.naturalWidth>0&&document.querySelector('.cbcp-skip')&&!document.querySelector('.cbcp-skip').disabled,n);
    await page.locator('.cbcp-skip').click();
   }
-  await checkVisible('#panel.open .dex-cell');await page.locator('#panel.open .dex-cell').first().click();
+  await checkVisible('#panel.open .dex-cell');
+  const starters=page.locator('.cat-story-starter-card .dex-cell');
+  assert.deepEqual(await starters.evaluateAll(cells=>cells.map(cell=>cell.dataset.id)),['jinjc','yunduo']);
+  for(const image of await starters.locator('img').all()){
+   assert.ok(await image.evaluate(async el=>{await el.decode();return el.naturalWidth>300&&el.getBoundingClientRect().height>0;}));
+  }
+  await screenshot('starter-breeds');
+  const selectedBreed=profile.mobile?'yunduo':'jinjc';
+  await starters.and(page.locator('[data-id="'+selectedBreed+'"]')).click();
+  assert.equal(await page.evaluate(()=>State.S.cats[0].species),selectedBreed);
   await page.locator('.sg-prologue-guide').getByRole('button',{name:'Talk to Muling'}).click();
   const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');await awakening.getByRole('button',{name:'Skip dialogue',exact:true}).click();
   const bell=page.locator('.res-garden-bell');await bell.waitFor();
@@ -106,13 +104,18 @@ for(const profile of [
   for(const id of ['prologue:P-05']){const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();const skip=dlg.getByRole('button',{name:'Skip dialogue',exact:true});if(await skip.isVisible()&&await skip.isEnabled())await skip.click();const close=dlg.getByRole('button',{name:'Close',exact:true});if(await close.isVisible())await close.click();}
   await page.locator('.sg-prologue-guide').getByRole('button',{name:'World map'}).click();
   await waitMap();
-  await page.locator('.rw-system-nav').waitFor({state:'attached'});
+  const atlasMenu=page.locator('.rw-atlas-menu > summary');
+  assert.equal(await page.locator('.rw-system-nav').isVisible(),false,'Atlas controls start collapsed');
+  await atlasMenu.click();
+  await page.locator('.rw-system-nav').waitFor({state:'visible'});
   assert.equal(await page.locator('.rw-regions [data-region]').count(),6);
   assert.equal(await page.locator('.rw-region-status').count(),6);
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
+  await atlasMenu.click();
   const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
-  if(profile.width>profile.height){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
+  if(profile.width>profile.height){assert.ok(mapBounds.wide,'Wide atlas uses the responsive canvas layout');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
   const realPress=async locator=>{
+   if(!await locator.isVisible()&&await locator.evaluate(el=>!!el.closest('.rw-atlas-menu:not([open])')))await atlasMenu.click();
    if(!await locator.isVisible()){
     const world=page.locator(".rw-world:not([hidden])"),count=Number(await world.getAttribute("data-fit-pages")||1),next=world.locator("[data-fit-next]"),prev=world.locator("[data-fit-prev]");
     const press=async el=>profile.mobile?el.tap():el.click();
@@ -149,6 +152,7 @@ for(const profile of [
    await realPress(page.locator('.rb-close'));
    await page.locator('#panel.open').waitFor({state:'hidden',timeout:5000});
   }
+  if(await page.locator('.rw-atlas-menu[open]').count())await atlasMenu.click();
   await screenshot('world-atlas');
   // Physical departure from the merged canonical opening.
   const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);
@@ -170,6 +174,7 @@ for(const profile of [
   await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true&&window.State.activeSlot()==='slot2',{timeout:30000});
   await waitMap();
   assert.equal(await page.evaluate(()=>window.State.S.cats[0].uid),first);
+  assert.equal(await page.evaluate(()=>window.State.S.cats[0].species),selectedBreed);
   // A real title-menu navigation, not a special test entry.
   await page.locator('#map-menu').click();
   await page.locator('[data-system="title"]').click();

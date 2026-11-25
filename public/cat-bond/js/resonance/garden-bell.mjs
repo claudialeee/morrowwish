@@ -1,6 +1,6 @@
 // The garden bell is physical evidence for the canonical Awakening scene.
 const tr=(zh,en)=>window.MorrowwishI18n?.get?.()==="zh"?zh:en;
-const asset=new URL("../../assets/npc/props/bell-shell.svg",import.meta.url).href;
+const asset=new URL("../../assets/npc/props/bell-sunlit.webp",import.meta.url).href;
 function install(){
  const api=window.CatBondResonance,stage=document.getElementById("stage");if(!api||!stage)return;
  let bell=null,drag=null;
