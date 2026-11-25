@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   source-and-build:
-    if: github.head_ref == 'rpg/title-save-integration-v2'
+    if: github.head_ref == 'rpg/title-save-integration-v2' || github.head_ref == 'rpg/cat-bond-takeover'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -27,7 +27,7 @@ jobs:
       - run: npm run build:pages
         if: always()
   real-browser-title-save:
-    if: github.head_ref == 'rpg/title-save-integration-v2'
+    if: github.head_ref == 'rpg/title-save-integration-v2' || github.head_ref == 'rpg/cat-bond-takeover'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
@@ -36,7 +36,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm ci
-      - run: npm install --no-save --no-package-lock playwright
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
       - name: Local-only game server and browser test
         run: |
