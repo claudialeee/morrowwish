@@ -21,6 +21,9 @@ async function scan(page,slug,lang,phase){
   while(walker.nextNode()){
    const n=walker.currentNode,s=(n.nodeValue||'').trim();
    if(!s||!visible(n.parentElement))continue;
+   // The explicit target-language switch is deliberately labeled in that language.
+   // Only these controls may display the exact language name, not other Han text.
+   if(s==='中文'&&n.parentElement.matches('button[data-slot-language],button[data-res-language],button[data-opening-language]'))continue;
    if(han.test(s)){hanCount++;issues.push('text '+n.parentElement.tagName+': '+s.slice(0,100));}
   }
   for(const el of document.querySelectorAll('[aria-label],[title],[placeholder]')){

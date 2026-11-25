@@ -32,6 +32,7 @@ function errorPanel(game,reason,retry){
  const clean=()=>{window.removeEventListener('morrowwish-language-change',render);box.remove()};
  again.onclick=()=>{clean();retry();};
  back.onclick=()=>{clean();window.State.hardReset();location.reload()};
+ locale.setAttribute('data-opening-language','');
  locale.onclick=()=>window.MorrowwishI18n?.set?.(lang()==='zh'?'en':'zh');
  buttons.append(again,back,locale);box.append(heading,copy,buttons);stage.append(box);
  box.dataset.reason=reason;render();window.addEventListener('morrowwish-language-change',render);again.focus();
