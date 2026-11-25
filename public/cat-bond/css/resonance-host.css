@@ -109,3 +109,10 @@
 @media(prefers-reduced-motion:reduce){.library-reveal-stage[data-mode="departure"] .library-reveal-actor{animation:none}}
 
 .library-reveal-stage[data-mode="departure"] .library-reveal-actor{animation-duration:3s}
+
+/* The anchor cutaway is the right-hand painted chamber detail, not the fixed-breed keeper. */
+.library-anchor-detail{position:absolute;right:5%;top:13%;width:clamp(88px,17%,220px);aspect-ratio:1;z-index:2;background-size:450% auto;background-position:right top;background-repeat:no-repeat;border:1px solid #e5ca90;border-radius:8px;box-shadow:0 7px 25px #0b122a99;animation:library-cast-enter .65s ease-out both}
+.library-anchor-detail[hidden]{display:none}.library-reveal-stage[data-mode="anchor"] .library-reveal-cast{inset-inline:4% 24%}.library-reveal-stage[data-mode="anchor"] .library-reveal-painting{object-position:22% 46%}
+@media(max-width:700px){.library-anchor-detail{right:4%;top:9%;width:22%;min-width:0}.library-reveal-stage[data-mode="anchor"] .library-reveal-cast{inset-inline:2% 23%}}
+@media(max-height:480px) and (orientation:landscape){.library-anchor-detail{top:8%;width:12%;min-width:0}}
+@media(prefers-reduced-motion:reduce){.library-anchor-detail{animation:none}}

@@ -177,7 +177,8 @@ try {
     }
 
     await scene('prologue:P-04');
-    await page.locator('#panel .cat-starter-card .dex-cell').first().click();
+    const starters=page.locator('#panel .cat-starter-card .dex-cell');await starters.first().waitFor();const starterCount=await starters.count();await starters.nth(name==='portrait'&&starterCount>1?1:name==='landscape'&&starterCount>2?2:0).click();
+    const protagonist=await page.evaluate(()=>({uid:String(State.S.cats[0].uid),species:State.S.cats[0].species}));
     await button('Talk to Muling',page.locator('.sg-prologue-guide')).click();
     await readDialogue('prologue:P-04');
     const bell = page.locator('.res-garden-bell');
@@ -627,8 +628,10 @@ try {
         if(!line||!await dlg.isVisible())break;
         await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.en);
         if(id!=='library:M-01'){
-          await dlg.locator('.library-reveal-stage[data-ready="true"]').waitFor();const painting=dlg.locator('.library-reveal-painting.is-current');await painting.waitFor();await painting.evaluate(img=>img.decode());
-          if([0,4,9,14].includes(seen))await shot(id.replace(':','-')+'-shot-'+seen);
+          const stage=dlg.locator('.library-reveal-stage[data-ready="true"]');await stage.waitFor();const painting=dlg.locator('.library-reveal-painting.is-current');await painting.waitFor();await painting.evaluate(img=>img.decode());
+          const actor=stage.locator('[data-actor="player"]');if(await actor.count()){await actor.evaluate(img=>img.decode());assert.equal(await actor.getAttribute('data-species'),protagonist.species);assert.equal(await actor.getAttribute('data-cat-uid'),protagonist.uid);const matches=await actor.evaluate(img=>{const c=document.createElement('canvas');c.width=400;c.height=460;CatArt.renderCatThumb(c,GameData.speciesById(State.S.cats[0].species),State.S.cats[0]);return img.src===c.toDataURL('image/png')});assert(matches,'Actual painted protagonist must match the saved starter');}
+          if(id==='library:M-03'&&seen===9){assert.equal(await stage.getAttribute('data-mode'),'anchor');assert.match(await painting.getAttribute('src'),/star-bell\.webp$/);await stage.locator('.library-anchor-detail').waitFor();}
+          if([0,4,7,9,14].includes(seen))await shot(id.replace(':','-')+'-shot-'+seen);
         }
         await dlg.locator('[data-res-language]').click();
         await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.zh);
