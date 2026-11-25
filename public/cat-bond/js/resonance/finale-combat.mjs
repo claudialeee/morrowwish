@@ -47,6 +47,17 @@ function install(){
  const GP=window.Game?.prototype,BP=window.Battle?.CaptureBattle?.prototype;
  if(!GP||!BP||window.CatBondFinaleCombat)return;
  const tr=(zh,en)=>window.MorrowwishI18n?.get?.()==="zh"?zh:en;
+ const arenaArt=new Map();
+ function arenaPainting(W,H){
+  const frame=H>W?"portrait":"wide";
+  if(!arenaArt.has(frame)){
+   const image=new Image();
+   image.decoding="async";
+   image.src=new URL("../../assets/combat/star-bell-arena-"+frame+".webp",import.meta.url).href;
+   arenaArt.set(frame,image);
+  }
+  return arenaArt.get(frame);
+ }
  const host=()=>window.CatBondResonance;
  const alive=b=>b.team.filter(f=>f.alive);
  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -61,6 +72,7 @@ function install(){
   const team=window.UI.getPreferredBattleTeam();if(!team.length)return false;
   const root=window.State.S,base=window.GameData.speciesById(team[0].species);
   if(!base)return false;
+  arenaPainting(game.W,game.H);
   host().close?.();
   window.UI.openBattleModePrompt(team,base,{origin:"map",storyTitle:sceneTitle[id],onStart:fighters=>{
    if(root!==window.State.S||!available(game,id))return;
@@ -269,7 +281,19 @@ function install(){
  const captureTick=BP.tickCaptureSeq;
  BP.tickCaptureSeq=function(dt){if(!this.resonanceFinale)return captureTick.call(this,dt);if(this.captureSeq){this.captureSeq.t=Math.max(0,this.captureSeq.t-dt);if(this.captureSeq.t===0){this.captureSeq=null;this.finish(true);}}};
  const background=BP.drawArenaBackground;
- BP.drawArenaBackground=function(ctx,W,H){if(this.resonanceFinale&&window.CatBondRegionalArt?.drawScene(ctx,W,H,"starfall"))return;return background.call(this,ctx,W,H);};
+ BP.drawArenaBackground=function(ctx,W,H){
+  if(this.resonanceFinale){
+   const painting=arenaPainting(W,H);
+   if(painting.complete&&painting.naturalWidth){
+    const scale=Math.max(W/painting.naturalWidth,H/painting.naturalHeight);
+    const width=painting.naturalWidth*scale,height=painting.naturalHeight*scale;
+    ctx.drawImage(painting,(W-width)/2,(H-height)*.24,width,height);
+    return;
+   }
+   if(window.CatBondRegionalArt?.drawScene(ctx,W,H,"starfall"))return;
+  }
+  return background.call(this,ctx,W,H);
+ };
  const draw=BP.draw;
  BP.draw=function(ctx){
   const f=this.resonanceFinale;if(!f)return draw.call(this,ctx);
