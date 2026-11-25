@@ -449,7 +449,7 @@ jobs:
               if curl -fsSL --max-time 15 -o /tmp/mw-studio-live.html "$origin/studio-insights/?verify=$GITHUB_SHA&attempt=$attempt" \
                  && grep -Fq "const fallbackIds=['youtube','tiktok','instagram','bluesky','itch'];" /tmp/mw-studio-live.html \
                && grep -Fq "platforms.sort((a,b)=>(a.id==='itch')-(b.id==='itch')" /tmp/mw-studio-live.html \
-                 && grep -Fq 'id="archived-first-round-game-rows"' /tmp/mw-studio-live.html \
+                 && grep -Fq 'id="archived-first-round-posts"' /tmp/mw-studio-live.html \
                  && grep -Fq "renderVideoMatrix(archivedPosts,'capturedAt')" /tmp/mw-studio-live.html \
                  && ! grep -Eq 'id="future-channels"|id="future-channel-list"|channelFuture:|Poki:|GamePix:|GameDistribution:' /tmp/mw-studio-live.html \
                  && ! grep -Fq 'instagram-historical' /tmp/mw-studio-live.html; then
