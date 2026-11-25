@@ -5,7 +5,7 @@ const out="artifacts/cat-bond-resonance";fs.mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({headless:true});
 const cases=[
  {region:"harbor",scene:"harbor:H-04",op:"puzzle:beam-mirrors",map:[.5,.18],target:[.14,.30],steps:[0,0,1,1,2]},
- {region:"forest",scene:"forest:R-03",op:"puzzle:paired-water-gates",map:[.79,.33],target:[.75,.61],steps:[0,1,2]},
+ {region:"forest",scene:"forest:R-03",op:"puzzle:paired-water-gates",map:[.79,.33],target:[.75,.61],steps:[0,0,1,2]},
  {region:"forge",scene:"forge:E-03",op:"puzzle:heat-pressure",map:[.79,.68],target:[.65,.47],steps:[0,0,0,0,1,1,1]},
  {region:"sky",scene:"sky:S-03",op:"puzzle:joint-flight",map:[.5,.85],target:[.59,.42],steps:[0,2,0]},
  {region:"library",scene:"library:M-02",op:"puzzle:mirror-records",map:[.21,.68],target:[.48,.68],steps:[1,2,0]},
@@ -73,7 +73,7 @@ try{
    await page.waitForFunction(l=>window.MorrowwishI18n?.get?.()===l,alternate);
    await page.waitForSelector(".rw-puzzle-controls");
    await page.evaluate(l=>window.MorrowwishI18n?.set?.(l),profile.lang);
-   for(const i of tc.steps){await tap([.3+i*.2,.53]);}
+   for(const i of tc.steps){if(tc.region==="forest"){const c=page.locator('[data-water-step="'+i+'"]');if(profile.id==="desktop-en")await c.click();else await c.tap();}else await tap([.3+i*.2,.53]);}
    await page.waitForFunction(({scene,op})=>State.S.resonance.evidence[scene]?.includes(op),tc);
    assert.equal(await page.locator(".rw-puzzle-controls").count(),0,"puzzle closes on real completion");
    assert.equal(await page.evaluate(()=>!!State.S.lastResonanceWorld),false,"parallel plot model absent");

@@ -377,9 +377,9 @@ try {
     const rewardBefore=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish}));
     await button('Returning Tides').click();
     const harborMelodyControls=page.locator('.rw-puzzle-controls');await harborMelodyControls.waitFor();
-    await button('Middle',harborMelodyControls).click(); // wrong note: retry must not commit a melody
+    await button('Starlight · Middle',harborMelodyControls).click(); // wrong note: retry must not commit a melody
     assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false);
-    for(const input of ['Low','High','Middle'])await button(input,harborMelodyControls).click();
+    for(const input of ['Dew · Low','Flower bell · High','Starlight · Middle'])await button(input,harborMelodyControls).click();
     await page.locator('.rw-world[data-ceremony="harbor"]').waitFor();
     await page.locator('.rw-surface').scrollIntoViewIfNeeded();await page.waitForTimeout(750);await shot('harbor-ceremony');
     await page.waitForTimeout(650);await shot('harbor-ceremony-late');
@@ -490,29 +490,28 @@ try {
     await shot('forest-upper-gate');
     await button('Paired water gates').click();
     const pairedControls=page.locator('.rw-puzzle-controls');await pairedControls.waitFor();await shot('forest-paired-puzzle');
-    const pressureStatus=pairedControls.locator('.rw-paired-status');
+    const pressureStatus=pairedControls.locator('.rw-quality-water-status');
     const verifyPressure=async text=>{await pressureStatus.filter({hasText:text}).waitFor();};
-    await button('Open lower channel',pairedControls).click();
-    await button('Clear together',pairedControls).click();
-    await verifyPressure('Pressure 0/3');
+    const card=i=>pairedControls.locator('[data-water-step="'+i+'"]');
+    const press=async i=>{if(options.hasTouch)await card(i).tap();else await card(i).click();};
+    const drag=async(i,dx,dy)=>{const rect=await card(i).boundingBox();assert.ok(rect,'waterworks card visible');await page.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2);await page.mouse.down();await page.mouse.move(rect.x+rect.width/2+dx,rect.y+rect.height/2+dy,{steps:5});await page.mouse.up();};
+    await press(1);await verifyPressure('First raise pressure to two');
+    await press(2);await verifyPressure('First raise pressure to two');
     await checkObjective('puzzle:paired-water-gates');
-    for(const input of ['Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
-    await verifyPressure('Both channels open');
-    await button('Steady upper pressure',pairedControls).click();
-    await verifyPressure('Overpressure — lower gate closed');
-    await button('Clear together',pairedControls).click();
-    await checkObjective('puzzle:paired-water-gates');
-    await shot('forest-overpressure-recovery');
+    await drag(0,-32,0);await verifyPressure('Drag in the arrow direction');
+    await press(0);await verifyPressure('Pressure 1/2');
+    await drag(0,32,0);await verifyPressure('Pressure 2/2');
+    assert.equal(await card(0).isDisabled(),true);
+    await drag(1,0,-32);await verifyPressure('Clear the roots');
+    assert.equal(await card(1).isDisabled(),true);
+    await shot('forest-overpressure-recovery'); // historical artifact label; now verifies pressure lock
     if(name==='portrait'){
       const changeLocale=async()=>{await page.locator('#map-menu').click();await page.locator('[data-system="language"]').click();await page.locator('[data-system="close"]').click();};
       await changeLocale();await page.waitForFunction(()=>MorrowwishI18n.get()==='zh');
-      await verifyPressure('水压过高 · 地下闸门关闭');
-      for(const input of ['稳住上层','稳住上层','稳住上层','打开地下'])await button(input,pairedControls).click();
-      await verifyPressure('双路稳定 · 共同疏通根脉');
-      await shot('forest-paired-flow-zh');await changeLocale();await page.waitForFunction(()=>MorrowwishI18n.get()==='en');
-    }else for(const input of ['Steady upper pressure','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
-    await verifyPressure('Both channels open');
-    await shot('forest-paired-flow');await button('Clear together',pairedControls).click();await pairedControls.waitFor({state:'hidden'});
+      await verifyPressure('水压 2/2');await shot('forest-paired-flow-zh');await changeLocale();await page.waitForFunction(()=>MorrowwishI18n.get()==='en');
+    }
+    await verifyPressure('Pressure 2/2');
+    await shot('forest-paired-flow');await press(2);await pairedControls.waitFor({state:'hidden'});
     await readForestDialogue('forest:R-03');
     await scene('forest:R-04');
     await puzzle('Ancient-root sanctuary',['Upstream','Branch','Roots']);
@@ -525,7 +524,7 @@ try {
     await button('Invite Yuchuan').click();
     await button('Invite Yuchuan').waitFor({state:'hidden'});
     await button('Living Roots').click();const melodyControls=page.locator('.rw-puzzle-controls');await melodyControls.waitFor();
-    for(const note of ['Middle','Low','High'])await button(note,melodyControls).click();
+    for(const note of ['Starlight · Middle','Dew · Low','Flower bell · High'])await button(note,melodyControls).click();
     await page.waitForFunction(()=>document.querySelector('.rw-puzzle-controls button')?.disabled===true);
     await page.waitForTimeout(950);await shot('forest-living-roots-ceremony');
     await melodyControls.waitFor({state:'hidden'});
@@ -693,7 +692,7 @@ try {
     assert.equal(await button('Invite Jinpo').count(),0,'Forge invitation persists');
     await button('Invite Xiaomao').click();await button('Invite Xiaomao').waitFor({state:'hidden'});
     await button('Song of Ember').click();const forgeMelody=page.locator('.rw-puzzle-controls');await forgeMelody.waitFor();
-    for(const note of ['High','Middle','Low'])await button(note,forgeMelody).click();
+    for(const note of ['Flower bell · High','Starlight · Middle','Dew · Low'])await button(note,forgeMelody).click();
     await page.waitForTimeout(1800);await shot('forge-ceremony');await page.waitForTimeout(1300);await shot('forge-routing-reveal');await forgeMelody.waitFor({state:'hidden'});
     await readForgeDialogue('forge:E-04');
     await scene('sky:S-01');await shot('forge-restored');
@@ -767,7 +766,7 @@ try {
     assert.equal(await button('Invite Lingyu').count(),0);
     await button('Invite Yuanfan').click();await button('Invite Yuanfan').waitFor({state:'hidden'});
     await button('Open Sky').click();const skyMelody=page.locator('.rw-puzzle-controls');await skyMelody.waitFor();
-    for(const note of ['Middle','High','Low'])await button(note,skyMelody).click();
+    for(const note of ['Starlight · Middle','Flower bell · High','Dew · Low'])await button(note,skyMelody).click();
     await page.waitForTimeout(850);await shot('sky-open-sky-ceremony');await skyMelody.waitFor({state:'hidden'});
     await scene('library:M-01');assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().melodies),['harbor','forest','forge','sky']);await shot('sky-restored');
     await ship('sky','Wind data and airship route');await travel('Emberforge City');await ship('forge','Wind data and airship route');
@@ -839,7 +838,7 @@ try {
     if(await button('Moonmirror Library').isVisible())await button('Moonmirror Library').click();
     assert.equal(await button('Invite Moye').count(),0);await button('Invite Baikan').click();await button('Invite Baikan').waitFor({state:'hidden'});
     await button('Reflections').click();const libraryMelody=page.locator('.rw-puzzle-controls');await libraryMelody.waitFor();
-    for(const note of ['High','Low','Middle'])await button(note,libraryMelody).click();
+    for(const note of ['Flower bell · High','Dew · Low','Starlight · Middle'])await button(note,libraryMelody).click();
     await page.waitForTimeout(950);await shot('library-reflections-ceremony');await libraryMelody.waitFor({state:'hidden'});
     await page.waitForFunction(()=>CatBondResonance.view().completed.includes('library:M-05'));
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().melodies),['harbor','forest','forge','sky','library']);

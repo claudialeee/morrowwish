@@ -5,7 +5,7 @@ const score=window.CatBondOriginalScore;
 const assetRoot=new URL('../assets/audio/',document.currentScript.src);
 let manifestTask=null;const recordedIds=new Set();
  const qualityRoot=new URL('../assets/quality-audio/',document.currentScript.src);
- const forestOriginal=new URLSearchParams(location.search).get('forestAudio')==='original';
+ const forestOriginal=/(?:^|[?&])forestAudio=original(?:&|$)/.test(window.location?.search||'');
  let forestCandidate=false;const qualityBuffers=new Map(),qualityNodes=new Set();
  const qualityNames=['bell-g4','bell-c5','bell-e5','water-splash'];
  async function decodeQuality(id){const response=await fetch(new URL(id+'.ogg',qualityRoot));if(!response.ok)throw Error('Quality audio HTTP '+response.status);const bytes=await response.arrayBuffer(),O=window.OfflineAudioContext||window.webkitOfflineAudioContext;return new O(2,1,24000).decodeAudioData(bytes);}
