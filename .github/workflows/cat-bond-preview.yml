@@ -7,7 +7,7 @@ permissions:
   contents: read
 concurrency:
   group: cat-bond-isolated-preview
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   preview:
     if: github.ref == 'refs/heads/cat-bond-preview'
@@ -15,6 +15,40 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Combine latest development, original score, Book and visual polish for preview only
+        run: |
+          set -eu
+          git config user.name 'Cat Bond Preview'
+          git config user.email 'preview@users.noreply.github.com'
+          for ref in rpg/cat-bond-takeover rpg/release-combined-next rpg/release-resonance-book rpg/release-visual-polish; do
+            git fetch origin "$ref"
+            echo "$ref $(git rev-parse FETCH_HEAD)" >> /tmp/cat-bond-preview-sources.txt
+            git merge --no-edit -X ours FETCH_HEAD
+          done
+          cat /tmp/cat-bond-preview-sources.txt
+          test -s public/cat-bond/js/rpg-audio.js
+          test -s public/cat-bond/js/resonance/resonance-book.mjs
+          test -s public/cat-bond/css/rpg-visual-polish.css
+          # Do not lift the verified Chapter III cap before the later chapters are integrated.
+          grep -Fq 'forge:E-04' public/cat-bond/js/resonance/world-runtime.mjs
+          grep -Fq 'rpg-audio.js' public/cat-bond/index.html || exit 1
+          grep -Fq 'resonance-book.mjs' public/cat-bond/js/resonance/integration-entry.mjs || printf '\nimport "./resonance-book.mjs";\n' >> public/cat-bond/js/resonance/integration-entry.mjs
+          if ! grep -Fq 'rpg-visual-polish.css' public/cat-bond/index.html; then sed -i 's|</head>|<link rel="stylesheet" href="css/rpg-visual-polish.css"></head>|' public/cat-bond/index.html; fi
+          # Keep the Book reachable even if the shared menu was changed in parallel.
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const path='public/cat-bond/js/main.js';
+          let js=fs.readFileSync(path,'utf8');
+          if(!js.includes('ResonanceBook?.open')) {
+            const needle="menu.querySelectorAll('[data-system]').forEach";
+            if(!js.includes(needle))throw Error('System menu changed; Book entry requires review');
+            js=js.replace(needle, 'const bookEntry=document.createElement("button");bookEntry.type="button";bookEntry.textContent=t("星铃之书","Resonance Book");menu.querySelector(".cb-system-rows").append(bookEntry);bindMenuPress(bookEntry,()=>{close();window.ResonanceBook?.open?.()});\n  '+needle);
+            fs.writeFileSync(path,js);
+          }
+          NODE
+          node --check public/cat-bond/js/main.js
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -46,7 +80,7 @@ jobs:
           fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\'; form-action \'self\'\n');
           fs.writeFileSync(root+'/telemetry.js','window.arcadeMetric=()=>{};');
           fs.writeFileSync(root+'/_worker.js','export default {fetch(request,env){const u=new URL(request.url);if(u.pathname.startsWith("/api/")||u.pathname==="/api")return Response.json({error:"Preview: production APIs disabled; use local saves."},{status:403});return env.ASSETS.fetch(request)}};');
-          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,scope:'Prologue through Chapter III',storage:'local-only',productionApis:false}));
+          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,scope:'Prologue through Chapter III',storage:'local-only',productionApis:false,sources:fs.readFileSync('/tmp/cat-bond-preview-sources.txt','utf8').trim().split('\n')}));
           NODE
       - name: Publish only preview branch
         env:
@@ -85,7 +119,7 @@ jobs:
             const response=await page.goto('https://cat-bond-preview.morrowwish.pages.dev/cat-bond/',{waitUntil:'domcontentloaded'});
             if(!response?.ok())throw Error('Preview not reachable');
             await page.locator('#intro-continue').waitFor({state:'visible',timeout:30000});
-            await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue);
+            await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook);\n            await page.locator('#intro-start').click();\n            await page.screenshot({path:'preview-slots.png'});
             if(external.length)throw Error('Production requests: '+external.join(', '));
             await page.screenshot({path:'preview-title.png'});
             console.log('LIVE PREVIEW TITLE VERIFIED: '+page.url());
@@ -95,6 +129,6 @@ jobs:
         if: always()
         with:
           name: preview-title
-          path: preview-title.png
+          path: preview-*.png
           if-no-files-found: ignore
           retention-days: 3
