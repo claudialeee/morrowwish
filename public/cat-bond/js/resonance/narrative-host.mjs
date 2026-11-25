@@ -14,7 +14,7 @@ function install(){
  const stage=document.getElementById("stage"),State=window.State;
  if(!stage||!State||window.CatBondResonance)return;
  let dialogue=null,root=null,slot=null,openedScene=null,scheduled=false;
- const announce=detail=>window.dispatchEvent(new CustomEvent("cat-bond-resonance-changed",{detail}));
+ const announce=detail=>{const savedSlot=State.S;queueMicrotask(()=>{if(savedSlot!==State.S)return;window.dispatchEvent(new CustomEvent("cat-bond-resonance-changed",{detail}));if(detail.trustChanges?.length){const names=detail.trustChanges.map(c=>({zh:campaign.cast[c.id].name.zh+" "+(c.delta>0?"+":"")+c.delta,en:campaign.cast[c.id].name.en+" "+(c.delta>0?"+":"")+c.delta}));window.__game?.toast?.({zh:"信任变化 · "+names.map(n=>n.zh).join(" / "),en:"Trust changed · "+names.map(n=>n.en).join(" / ")});}})};
  const runtime=createSlotRuntime(State,{notify:announce});
  function close(){dialogue?.dispose();dialogue=null;root?.remove();root=null;openedScene=null;slot=null;}
  function show(){
@@ -43,6 +43,8 @@ function install(){
   if(r.ok)show();
  });
  window.addEventListener("cat-bond-resonance-changed",refresh);
+ // Detect external world/battle commits and slot replacements without a second progression store.
+ let observedRoot=State.S,observedRevision=State.S.resonance?.revision??-1;setInterval(()=>{const revision=State.S.resonance?.revision??-1;if(observedRoot!==State.S||observedRevision!==revision){observedRoot=State.S;observedRevision=revision;refresh()}},200);
  window.addEventListener("cat-bond-resonance-evidence",event=>{
   const r=runtime.evidence(event.detail);if(r.ok){const v=runtime.view();if(v.current?.lines.length&&v.lineReady)show();scheduleFinish()}
  });
@@ -50,6 +52,6 @@ function install(){
  window.addEventListener("cat-bond-resonance-support-result",event=>{runtime.support(event.detail)});
  window.addEventListener("cat-bond-resonance-postgame-result",event=>{runtime.postgame(event.detail)});
  // Map and cinematic hosts can present the current scene without granting evidence.
- window.CatBondResonance=Object.freeze({view:runtime.view,snapshot:runtime.snapshot,showCurrent:show,close,recordEvidence:runtime.evidence,recordNPC:runtime.recordNPC,ambient:runtime.ambient,support:runtime.support,postgame:runtime.postgame,supportProfile:runtime.supportProfile,ambientAvailable:runtime.ambientAvailable});
+ window.CatBondResonance=Object.freeze({npcProfile:runtime.npcProfile,residents:runtime.residents,isMulingFollowing:runtime.follows,view:runtime.view,snapshot:runtime.snapshot,showCurrent:show,close,recordEvidence:runtime.evidence,recordNPC:runtime.recordNPC,ambient:runtime.ambient,support:runtime.support,postgame:runtime.postgame,supportProfile:runtime.supportProfile,ambientAvailable:runtime.ambientAvailable});
 }
 if(document.readyState==="complete")install();else document.addEventListener("DOMContentLoaded",install,{once:true});
