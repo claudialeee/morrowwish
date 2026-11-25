@@ -1,0 +1,46 @@
+name: Cat Bond Harbor NPC playable sample QA
+on:
+  push:
+    branches: [rpg/narrative-engine]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/cat-bond-harbor-npc-smoke.mjs'
+      - 'scripts/test-cat-bond-harbor-sample.mjs'
+      - '.github/workflows/cat-bond-harbor-npc-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-harbor-npc-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  actual-game-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Test NPC story state transitions
+        run: node scripts/test-cat-bond-harbor-sample.mjs
+      - name: Serve the actual Cat Bond game
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/catbond-harbor-server.log 2>&1 &
+          sleep 2
+          curl -fsS 'http://127.0.0.1:8765/cat-bond/?autodev=1' > /dev/null
+      - name: Run real desktop and mobile browser interaction
+        run: node scripts/cat-bond-harbor-npc-smoke.mjs
+      - name: Upload actual browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-harbor-npc-desktop-mobile-qa
+          path: artifacts/cat-bond-harbor-npc/
+          if-no-files-found: warn
+          retention-days: 14
