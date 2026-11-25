@@ -35,10 +35,16 @@ for(const profile of [
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&window.CatBondArtworkStatus?.breedsLoaded===true,{timeout:30000});
   const titleImage=await page.evaluate(async()=>{
    const background=getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundImage;
-   const image=new Image();image.src='assets/cinematics/prologue/star-bell.webp';await image.decode();
-   return {background,width:image.naturalWidth,height:image.naturalHeight};
+   const image=new Image();image.src='assets/resonance-world-v2/atlas.webp';await image.decode();
+   const harbor=new Image();harbor.src='assets/resonance-world-v2/harbor-mist.webp';await harbor.decode();
+   const alternate=getComputedStyle(document.querySelector('.cb-title-landscape'),'::after').backgroundImage;
+   return {background,width:image.naturalWidth,height:image.naturalHeight,alternate,harborWidth:harbor.naturalWidth,harborHeight:harbor.naturalHeight,repeat:getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundRepeat,size:getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundSize,alternateRepeat:getComputedStyle(document.querySelector('.cb-title-landscape'),'::after').backgroundRepeat};
   });
-  assert.match(titleImage.background,/star-bell\.webp/);
+  assert.match(titleImage.background,/atlas\.webp/);
+  assert.match(titleImage.alternate,/harbor-mist\.webp/);
+  assert.ok(titleImage.repeat.split(',').every(v=>v.trim()==='no-repeat')&&titleImage.alternateRepeat.split(',').every(v=>v.trim()==='no-repeat'),'Title artwork never tiles');
+  assert.ok(titleImage.size.split(',').every(v=>v.trim()==='cover'),'Title artwork fills each viewport');
+  assert.ok(titleImage.harborWidth>=960&&titleImage.harborHeight>=540,'Alternate painted title background loads at usable resolution');
   assert.ok(titleImage.width>=960&&titleImage.height>=540,'Painted title background loads at usable resolution');
   const bounds=await page.evaluate(()=>{const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {stage:rect('#stage'),start:rect('#intro-start'),next:rect('#intro-continue')};});
   assert.ok(bounds.start.right<=bounds.next.left&&bounds.start.width>0&&bounds.next.width>0,'New and Continue remain side by side');
@@ -51,6 +57,11 @@ for(const profile of [
   await page.locator('[data-system="close"]').click();
   assert.match(await page.locator('#intro-start').innerText(),/New Adventure/);
   await screenshot('title-en');
+  await page.locator('#mw-fullscreen-toggle').click();
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
+  await screenshot('fullscreen-title');
+  await page.locator('#mw-fullscreen-toggle').click();
+  await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));
   await page.locator('#intro-start').click();
   await checkVisible('#intro-slot-panel.is-open');
   await checkVisible('#intro-slot-list [data-slot]');
@@ -78,7 +89,12 @@ for(const profile of [
   for(const id of ['prologue:P-05']){const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();const skip=dlg.getByRole('button',{name:'Skip dialogue',exact:true});if(await skip.isVisible()&&await skip.isEnabled())await skip.click();const close=dlg.getByRole('button',{name:'Close',exact:true});if(await close.isVisible())await close.click();}
   await page.locator('.sg-prologue-guide').getByRole('button',{name:'World map'}).click();
   await waitMap();
-  // Complete physical departure so copied slots resume the atlas rather than the garden.
+  await page.locator('.rw-system-nav').waitFor();
+  assert.equal(await page.locator('.rw-regions [data-region]').count(),6);
+  assert.equal(await page.locator('.rw-region-status').count(),6);
+  assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
+  await screenshot('world-atlas');
+  // Physical departure from the merged canonical opening.
   const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);
   await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01');
   const first=await page.evaluate(()=>window.State.getSaveSlot('slot1').data.state.cats[0].uid);
@@ -102,11 +118,20 @@ for(const profile of [
   await page.locator('[data-cb-story-action="system"]').click();
   await page.locator('[data-system="title"]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__,{timeout:30000});
-  await openTitleSlots();
-  await page.locator('[data-remove-save="slot1"]').click();
+  // Start the third slot through the actual title picker, preserving the two earlier adventures.
+  await page.locator('#intro-start').click();
+  await page.locator('#intro-slot-list [data-slot="slot3"]').click();
+  await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true&&window.State.activeSlot()==='slot3');
+  await checkVisible('#cb-canonical-opening');
+  assert.equal(await page.evaluate(()=>State.activeSlot()),'slot3');
+  assert.equal(await page.evaluate(()=>State.S.cats.length),0);
+  await page.reload();await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__);
+  await page.locator('#intro-continue').click();
+  await page.locator('[data-title-delete="slot1"]').click();
   await page.waitForFunction(()=>window.State.getSaveSlot('slot1')===null);
   assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot2').data.state.cats[0].uid),first);
-  assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot3')),null);
+  assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot3').data.state.cats.length),0);
+  assert.equal(await page.locator('[data-title-delete="slot1"]').count(),0);
   await screenshot('title-after-delete');
   assert.deepEqual(errors,[],'no page runtime exceptions');
   console.log('PASS title/save normal flow '+profile.name);

@@ -291,7 +291,9 @@ try {
     await page.waitForFunction(()=>window.__game.scene==='yard');
     assert(await page.evaluate(()=>CatBondResonance.ambientAvailable('garden').some(a=>a.id==='muling:cooking')));
     assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='forest')?.unlocked));
-    await shot('forest-home');await page.locator('#fab-map').click();
+    await shot('forest-home');
+    const mapHit=await page.locator('#fab-map').evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));});
+    assert(mapHit,'Garden map button must not be obscured by the cat roster');await page.locator('#fab-map').click();
     await button('Rootsleep Forest').click();
     await button('World atlas',page.locator('.rw-head')).click();
     await button('Emberforge City').click();
