@@ -24,6 +24,17 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - name: Package isolated offline browser fixture
+        if: github.head_ref == 'rpg/release-forge'
+        run: |
+          mkdir -p /tmp/cat-bond-offline
+          tar -czf /tmp/cat-bond-offline/site.tgz public/cat-bond public/*.js public/*.css public/audio public/icons src/cat-bond-cloud-save.js scripts/cat-bond-local-cloud-server.mjs scripts/cat-bond-harbor-playthrough.mjs node_modules/playwright node_modules/playwright-core
+      - uses: actions/upload-artifact@v4
+        if: github.head_ref == 'rpg/release-forge'
+        with:
+          name: cat-bond-offline-browser-fixture
+          path: /tmp/cat-bond-offline/site.tgz
+          retention-days: 1
       - run: npx playwright install --with-deps chromium
       - name: Cat Bond canonical world regression (independent of studio dashboard)
         run: node scripts/check-cat-bond-resonance-world.mjs
