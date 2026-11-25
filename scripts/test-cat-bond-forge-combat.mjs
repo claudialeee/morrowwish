@@ -14,7 +14,7 @@ p.cast=null;p.attackCooldown=0;p.attackIndex=1;ev=tickForgeState(p,.01,.54,{x:4,
 p.cast=null;p.attackCooldown=0;p.attackIndex=2;ev=tickForgeState(p,.01,.54,{x:4,y:5});ok(ev.some(x=>x.type==="windup"&&x.cast.kind==="steam-vents"));
 p.cast=null;ev=tickForgeState(p,.01,.21,{x:1,y:2});ok(p.phase===2);ok(ev.some(x=>x.type==="phase"&&x.phase===2));
 p.cast=null;p.attackCooldown=0;p.attackIndex=0;ev=tickForgeState(p,.01,.21,{x:1,y:2});ok(ev.some(x=>x.type==="windup"&&x.cast.kind==="steam-vents"));
-const hot=createForgeState();hot.heat=99;ev=tickForgeState(hot,.08,1,{x:0,y:0});ok(ev.some(x=>x.type==="pressure-burst"));ok(hot.pressureBursts===1);ok(hot.heat<40);
+const hot=createForgeState();hot.heat=99.9;ev=tickForgeState(hot,.08,1,{x:0,y:0});ok(ev.some(x=>x.type==="pressure-burst"));ok(hot.pressureBursts===1);ok(hot.heat<40);
 const vent=createForgeState();vent.cast={kind:"hammerfall",remaining:.8,target:{x:1,y:2}};vent.attackCooldown=0;ok(useForgeSupport(vent).ok);ok(vent.cast===null);
 const noTarget=createForgeState();noTarget.attackCooldown=0;ev=tickForgeState(noTarget,.01,1,null);ok(ev.some(x=>x.type==="windup"&&x.cast.target===null));
 let threw=false;try{validateForgeState({...s,phase:9});}catch{threw=true;}ok(threw);
