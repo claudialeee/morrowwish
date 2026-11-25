@@ -38,7 +38,9 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
       if(!Number.isInteger(index)||!scene.lines[index])return bad('invalid-canon-line-index');
       covered.push(index);
       const ms=duration(index),start=offset;offset+=ms;
-      if(index<view.cursor)continue;
+      // Chapter cinematics can be retried after a partial save of dialogue.
+      // Replay the authored presentation; resolve() persists only missing lines.
+      if(scene.chapter==="prologue"&&index<view.cursor)continue;
       const line=scene.lines[index],actor=campaign.cast[line.speaker];
       if(!isBilingual(line.text)||!isBilingual(actor?.name))return bad('missing-canon-localization');
       const speaker=scene.id==='prologue:P-02'&&line.speaker==='player'?{zh:'陌生的猫',en:'Unknown cat'}:actor.name;

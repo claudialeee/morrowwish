@@ -65,7 +65,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   return op(sceneId,pending,{token});
  }
  function completeNPCScene({sceneId,operation,region,npcId,verified,token}={}){
-  const v=view();if(!token||!check(token)||verified!==true||region!=="garden"||npcId!=="muling"||sceneId!==v.current?.id||!v.objective.includes(operation)||v.cursor!==v.current.lines.length||!["npc:public-accountability","npc:second-garden-key"].includes(operation))return fail("npc-scene-incomplete");
+  const v=view();if(!token||!check(token)||verified!==true||window.__game?.scene!=="yard"||region!=="garden"||npcId!=="muling"||sceneId!==v.current?.id||!v.objective.includes(operation)||v.cursor!==v.current.lines.length||!["npc:public-accountability","npc:second-garden-key"].includes(operation))return fail("npc-scene-incomplete");
   return op(sceneId,operation,{token});
  }
  function evidence({sceneId,operation,region,verified,outcome,token}={},physical){

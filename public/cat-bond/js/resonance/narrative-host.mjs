@@ -21,6 +21,14 @@ function install(){
  function show(){
   const v=runtime.view(),game=window.__game;
   if(!v.current||game?.scene==="battle"||document.getElementById("cb-finale-result"))return false;
+  // Cinematic-only scenes have a physical entrance and an approved shot sequence.
+  // Reading their dialogue in the journal must never consume the cinematic cursor.
+  if(v.current.chapter!=="prologue"&&v.current.requires.some(op=>op.startsWith("cinematic:"))){
+   game?.toast?.({zh:"前往星坠原中央星铃，选择观看剧情。",en:"Visit the central Star Bell in Starfall and choose Watch the story scene."});return false;
+  }
+  if(v.current.chapter==="epilogue"&&game?.scene!=="yard"){
+   game?.toast?.({zh:"回到阳光花园，与暮铃交谈。",en:"Return to Sunlit Garden and speak with Muling."});return false;
+  }
   if(slot===State.S&&openedScene===v.current.id&&(dialogue||keyExchange)){(dialogue||keyExchange).render();return true}
   close();slot=State.S;openedScene=v.current.id;
   root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";root.dataset.scene=openedScene;stage.append(root);

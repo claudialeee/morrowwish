@@ -9,7 +9,7 @@ let active=null;
 async function play(sceneId){
  const game=window.__game, slot=window.State.S, runtime=getSlotRuntime(window.State);
  const view=runtime.view();
- if(active||game.scene!=="map"||view.current?.id!==sceneId||!view.objective.some(op=>op.startsWith("cinematic:")))return false;
+ if(active||game.scene!=="map"||window.WorldMap?.currentRegion!=="starfall"||view.current?.id!==sceneId||!view.objective.some(op=>op.startsWith("cinematic:")))return false;
  const token=runtime.capture(), controller={dispose:null};
  const current=()=>active===controller&&window.State.S===slot&&runtime.isCurrentAction(token);
  active=controller;
@@ -21,8 +21,9 @@ async function play(sceneId){
  };
  controller.dispose=close;
  const error=()=>{
-  if(!current())return;
+  const wasCurrent=current();
   close();
+  if(!wasCurrent)return;
   game.toast({zh:"演出暂未就绪，请重试。",en:"The cinematic could not play. Try again."});
  };
  try{
@@ -55,7 +56,7 @@ async function play(sceneId){
    onLanguageChange:next=>window.MorrowwishI18n?.set?.(next),
    onError:error,
    onResolved:()=>{
-    if(!current())return;
+    if(!current()){close();return;}
     const result=runtime.finish(token);
     if(!result.ok){error();return;}
     close();
@@ -63,6 +64,7 @@ async function play(sceneId){
    }
   });
   const result=await player.playCurrent();
+  if(!result.ok)close();
   return result.ok;
  }catch{
   error();
@@ -71,3 +73,4 @@ async function play(sceneId){
 }
 window.CatBondChapterCinematics=Object.freeze({play});
 window.addEventListener("pagehide",()=>active?.dispose());
+window.addEventListener("cat-bond-active-save-changed",()=>active?.dispose());
