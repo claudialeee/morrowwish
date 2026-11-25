@@ -447,28 +447,42 @@ function drawElectricStream(c,b,time,ex,ey){
    const angle=Math.atan2(ey-y,ex-x),age=b.max-b.t,alpha=Math.min(1,age/.09,b.t/.12);
    const w=(b.width||26)*(fire?.72:.43);
    c.save();c.translate(x,y);c.rotate(angle);c.lineCap='round';c.lineJoin='round';
-   // The core is continuous; only the exterior turbulent layers undulate.
-   for(const [i,mul,col,a] of (fire?[[0,1.45,'#ac382a',.40],[1,1,'#ff692c',.88],[2,.68,'#ffb748',.96],[3,.32,'#fff4b3',1]]:[[0,1.6,'#67d9f4',.20],[1,1,'#2bbbd9',.70],[2,.67,'#92effb',.94],[3,.25,'#efffff',1]])){
-     c.globalAlpha=alpha*a;c.beginPath();
-     for(const side of [-1,1])for(let j=0;j<=24;j++){
-       const u=(side===-1?j:24-j)/24,edge=(.40+.60*Math.min(1,u*7))*(1-.18*u);
-       const wob=1+(i===3?.06:.19)*Math.sin(time*(fire?31:22)-u*23+side+i);
-       const yy=side*w*mul*edge*wob;
+   // Separate physical materials: turbulent combustion vs dense moving liquid.
+   // The hit box is untouched. Core width stays inside the real damage corridor.
+   const A=clip(alpha),N=36;
+   for(const [layer,mul,colors,opacity] of (fire?
+     [[0,1.55,['#7c2c26','#d34923','#7d2e20'],.45],[1,1.03,['#ff9d30','#f56923','#fca23c'],.95],[2,.63,['#fff2a4','#ffcf4d','#fff0ae'],1],[3,.25,['#ffffeb','#fff4b8','#ffffe2'],1]]:
+     [[0,1.63,['#1a658c','#48a5ce','#247bac'],.35],[1,1.12,['#1f8bb8','#41c4e7','#227ca4'],.95],[2,.70,['#a8f3ff','#68daf3','#c4f8ff'],.95],[3,.25,['#efffff','#ddfcff','#fff'],.97]])){
+     c.globalAlpha=A*opacity;
+     const grad=c.createLinearGradient(0,-w*mul,0,w*mul);
+     grad.addColorStop(0,colors[0]);grad.addColorStop(.48,colors[1]);grad.addColorStop(1,colors[2]);c.fillStyle=grad;c.beginPath();
+     for(const side of [-1,1])for(let j=0;j<=N;j++){
+       const u=(side===-1?j:N-j)/N,edge=(.35+.65*Math.min(1,u*9))*(1-(fire?.18:.04)*u);
+       const phase=u*(fire?31:22)-time*(fire?28:34);
+       const turbulence=fire?Math.sin(phase+side+layer)*.19+Math.sin(phase*2.31-layer*1.7)*.09:Math.sin(phase+layer)*.12+Math.cos(phase*1.6+side)*.065;
+       const yy=side*w*mul*edge*(1+turbulence*(layer===3?.24:1));
        if(side===-1&&j===0)c.moveTo(u*L,yy);else c.lineTo(u*L,yy);
-     }c.closePath();c.fillStyle=col;c.fill();
+     }c.closePath();c.fill();
    }
-   for(let j=0;j<(fire?24:18);j++){
-     const u=((j/24+time*(fire?1.2:1.7))%1+1)%1,side=hash(j+3)>.5?1:-1;
-     const yy=side*w*(.18+.75*hash(j+20)),xx=u*L;
-     stroke(c,fire?(j%3?'#ffbf62':'#fff2b1'):'#d7fbff',1+hash(j)*2,alpha*.70);
-     path(c,[[xx,yy],[Math.min(L,xx+10+hash(j+6)*18),yy*.7]]);
+   for(let j=0;j<(fire?32:26);j++){
+     const u=((j/32+time*(fire?1.25:1.9))%1+1)%1,side=hash(j+3)>.5?1:-1;
+     const yy=side*w*(.15+.76*hash(j+20)),xx=u*L,span=Math.min(L-xx,12+hash(j+6)*33);
+     stroke(c,fire?(j%3?'#ffce66':'#fff5d2'):(j%3?'#d5fcff':'#227eae'),1+hash(j)*2,A*(.35+hash(j+7)*.45));
+     c.beginPath();c.moveTo(xx,yy);c.quadraticCurveTo(xx+span*.48,yy+Math.sin(time*20+j)*w*.25,xx+span,yy*.76);c.stroke();
+     if(fire&&j%3===0){
+       c.globalAlpha=A*.78;point(c,xx,yy*1.35,1.2+hash(j)*1.5,'#ffd18b');
+     }
    }
-   flare(c,0,0,w*.85,fire?'#ffca65':'#b9f5ff',alpha*.8);
-   // End splash only at real first-contact endpoint or for a visible beam tip.
+   flare(c,0,0,w*1.08,fire?'#ffc758':'#b9f5ff',A*.70);
    if(water){
-     flare(c,L,0,w*1.9,'#91edff',alpha*.64);
-     for(let j=0;j<9;j++){const u=(time*3+j/9)%1,th=j*2.399;
-       c.globalAlpha=alpha*(1-u);point(c,L+Math.cos(th)*u*w*2.8,Math.sin(th)*u*w*2.3,1.2+hash(j)*2,'#d7faff');}
+     // Pressurized white foam, directional spray; do not create a second damage area.
+     flare(c,L,0,w*1.85,'#91edff',A*.64);
+     for(let j=0;j<19;j++){
+       const u=(time*3+j/19)%1,th=(hash(j+18)-.5)*PI*1.8;
+       const xx=L+Math.cos(th)*u*w*2.5,yy=Math.sin(th)*u*w*3.3;
+       stroke(c,j%3?'#d7faff':'#55c9ed',1.5+hash(j)*2,A*(1-u)*.82);
+       path(c,[[xx,yy],[xx-Math.cos(th)*w*.48,yy-Math.sin(th)*w*.5]]);
+     }
    }
    c.restore();return true;
  }
@@ -482,11 +496,41 @@ function drawElectricStream(c,b,time,ex,ey){
    c.restore();
  }
 
+
+// Support effects use separate material silhouettes rather than generic rings.
+function drawIdentitySupport(c,v,time=0){
+ const id=v.skillId,shield=id==='bubbleVeil'||id==='guardStance',heal=id==='grooming'||id==='dawnHeal'||id==='tenderPaw',plant=id==='photosynth',aura=id==='blessFur',counter=id==='puffHiss';
+ if(!(shield||heal||plant||aura||counter)||v.kind!=='signatureCast')return false;
+ const k=clip(v.life/Math.max(.001,v.max)),p=1-k;
+ c.save();c.translate(v.x,v.y);
+ if(shield){
+   const r=27+6*ease(p),g=c.createRadialGradient(-r*.25,-r*.32,0,0,0,r);
+   g.addColorStop(0,'rgba(220,252,255,.02)');g.addColorStop(.72,'rgba(98,199,230,.12)');g.addColorStop(1,'rgba(209,251,255,.65)');
+   c.globalAlpha=k;point(c,0,0,r,g);
+   for(let j=0;j<3;j++){stroke(c,j===0?'#f4ffff':'#6ebad9',j===0?2.7:1.6,k*.95);c.beginPath();c.arc(0,0,r-j*2,-2.7+j*.35,.08+j*.45);c.stroke();}
+   if(id==='guardStance'){stroke(c,'#f5d28d',3,k);path(c,[[-17,6],[0,-19],[17,6],[0,23],[-17,6]]);}
+ }else if(plant){
+   for(let j=0;j<6;j++){
+     const a=j*TAU/6,x=Math.cos(a)*29,y=Math.sin(a)*13,stem=18*ease(p);
+     stroke(c,'#649e4a',2.4,k);c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x-5,y-stem*.5,x,y-stem);c.stroke();
+     c.globalAlpha=k*.9;poly(c,[[x,y-stem],[x-12,y-stem-5],[x-7,y-stem+5]],'#a9d875');poly(c,[[x,y-stem],[x+12,y-stem-5],[x+7,y-stem+5]],'#e1eca2');
+   }
+ }else if(counter){
+   for(let j=0;j<12;j++){const a=j*TAU/12,r=23+4*ease(p),x=Math.cos(a)*r,y=Math.sin(a)*r*.75; c.globalAlpha=k*.8;poly(c,[[x-3,y+3],[x+Math.cos(a)*15,y+Math.sin(a)*12],[x+5,y+1]],j%2?'#ffe0a7':'#bd5b32');}
+ }else{
+   const color=aura?'#f9cf7c':id==='grooming'?'#aee8db':'#ffd6d5';
+   for(let j=0;j<(aura?8:6);j++){const a=j*TAU/8+time*.9,phase=(p+j/8)%1,x=Math.cos(a)*(aura?40:24),y=15+Math.sin(a)*8-phase*36;
+     c.globalAlpha=k*Math.sin(PI*phase);if(aura){poly(c,[[x-3,y],[x,y-8],[x+3,y],[x,y+8]],color);}else{stroke(c,color,2.8,k*Math.sin(PI*phase));path(c,[[x-4,y],[x+4,y]]);path(c,[[x,y-4],[x,y+4]]);}}
+ }
+ c.restore();return true;
+}
+
 function draw(ctx,v,time=0){
  if(v?.meteorGround)return drawMeteorGround(ctx,v);
  const spec=REG[v?.skillId];if(!spec||!ctx)return false;
  if(isMeleeId(v.skillId))return drawMeleeContact(ctx,v,spec);
  if(drawIdentityMotion(ctx,v,time))return true;
+ if(drawIdentitySupport(ctx,v,time))return true;
  const p=1-clip(v.life/Math.max(.001,v.max)),k=clip(v.life/v.max),r=spec.r;
  const cast=v.kind==='signatureCast',angle=v.angle||0;
  ctx.save();ctx.translate(v.x,v.y);ctx.rotate(angle);
