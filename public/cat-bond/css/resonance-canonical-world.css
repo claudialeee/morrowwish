@@ -33,3 +33,23 @@
 
 /* Keep the multi-cat roster above the garden action dock on portrait phones. */
 @media(orientation:portrait) and (max-width:700px){#stage.cb-sunlit-garden #yard-cat-switch{left:8px;bottom:calc(124px + env(safe-area-inset-bottom,0px));max-width:min(54%,220px)}}
+
+/* Forest portrait exploration: the painting and active controls take priority over
+   the long progress card. All elements remain in the real world DOM and scroll normally. */
+@media(max-width:700px) and (orientation:portrait){
+ .rw-world.rw-forest-region:not([hidden]){display:flex;flex-direction:column;gap:7px;padding:60px 9px 36px;overflow:auto;background:radial-gradient(ellipse at 20% 0,#2c5145,#19353a 57%,#112731)}
+ .rw-forest-region>.rw-head,.rw-forest-region>.rw-shell,.rw-forest-region>.rw-objective,.rw-forest-region>.rw-notice,.rw-forest-region>.rw-hint,.rw-forest-region>.rw-controls,.rw-forest-region>.rw-current-actions,.rw-forest-region>.rw-cargo{flex:0 0 auto;width:100%;max-width:none;margin:0;box-sizing:border-box}
+ .rw-forest-region>.rw-head{order:0;padding-bottom:7px;gap:5px}
+ .rw-forest-region>.rw-shell{order:1;animation:none}
+ .rw-forest-region>.rw-puzzle-controls{order:2;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+ .rw-forest-region>.rw-objective{order:3;padding:8px;gap:5px;background:linear-gradient(125deg,#2c4d45,#1b363a);border-color:#8fa48b}
+ .rw-forest-region .rw-metrics{gap:3px;grid-template-columns:repeat(3,minmax(0,1fr))}
+ .rw-forest-region .rw-metric{padding:0 5px}.rw-forest-region .rw-metric b{font-size:16px}
+ .rw-forest-region>.rw-notice{order:4;padding:5px 7px;font-size:12px;line-height:1.45}
+ .rw-forest-region>.rw-hint{order:5;line-height:1.4}
+ .rw-forest-region>.rw-current-actions{order:6}.rw-forest-region>.rw-world-actions{order:7;justify-content:flex-start}
+ .rw-forest-region>.rw-cargo{order:8}.rw-forest-region .rw-button{min-height:44px}
+}
+
+/* Emberforge mobile: prioritize the painted scene and mechanism over metrics. */
+@media(max-width:700px) and (orientation:portrait){.rw-world.rw-forge-region:not([hidden]){display:flex;flex-direction:column;gap:7px;padding:60px 9px 36px;overflow:auto;background:radial-gradient(ellipse at 30% 0,#554135,#27343b 57%,#14232c)}.rw-forge-region>*{flex:0 0 auto;width:100%;max-width:none;box-sizing:border-box}.rw-forge-region>.rw-head{order:0}.rw-forge-region>.rw-shell{order:1;animation:none}.rw-forge-region>.rw-puzzle-controls{order:2;display:grid;grid-template-columns:1fr 1fr;gap:6px}.rw-forge-region>.rw-objective{order:3;padding:8px}.rw-forge-region>.rw-notice{order:4}.rw-forge-region>.rw-hint{order:5}.rw-forge-region>.rw-current-actions{order:6}.rw-forge-region>.rw-world-actions{order:7}.rw-forge-region>.rw-cargo{order:8}.rw-forge-region .rw-button{min-height:44px}}

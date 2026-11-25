@@ -56,18 +56,18 @@ try {
       while(await dialogue.isVisible()){
         const line=await page.evaluate(expected=>{const v=CatBondResonance.view();return v.current?.id===expected&&v.lineReady?v.current.lines[v.cursor]:null},id);
         if(!line)break;
-        await dialogue.locator('.res-line').getByText(line.text.en,{exact:true}).waitFor();
+        await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
         if(['yahe','yuchuan','muling'].includes(line.speaker)){
           const portrait=dialogue.locator('.res-portrait');
           await portrait.waitFor({state:'visible'});await portrait.evaluate(img=>img.decode());
         }
         await dialogue.locator('[data-res-language]').click();
         assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),'zh');
-        await dialogue.locator('.res-line').getByText(line.text.zh,{exact:true}).waitFor();
+        await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.zh);
         if(!observed.length)await shot(id.replace(':','-')+'-zh-dialogue');
         await dialogue.locator('[data-res-language]').click();
         assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),'en');
-        await dialogue.locator('.res-line').getByText(line.text.en,{exact:true}).waitFor();
+        await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
         observed.push(line.speaker);
         await button('Continue',dialogue).click();
       }
@@ -295,10 +295,15 @@ try {
       assert(layout.canvas.y>=0&&layout.canvas.bottom<=layout.h+1,'Forest canvas must fit entirely in landscape viewport');
       assert(layout.canvas.right<=layout.rail.x&&layout.rail.right<=layout.w+1&&layout.rail.bottom<=layout.h+1,'Forest controls must sit beside, not cover, the canvas');
     }
+    if(name==='portrait'){const box=await page.locator('.rw-surface').boundingBox();assert(box.y>=40&&box.y+box.height<=844,'Forest painting is fully visible before progress details on portrait');}
     await shot('forest-upper-gate');
     await button('Paired water gates').click();
     const pairedControls=page.locator('.rw-puzzle-controls');await pairedControls.waitFor();await shot('forest-paired-puzzle');
-    for(const input of ['Open lower channel','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
+    if(name==='portrait'){
+      const locale=page.locator('#mw-game-settings .mw-settings-language');await locale.click();await page.waitForFunction(()=>MorrowwishI18n.get()==='zh');
+      for(const input of ['打开地下','稳住上层','稳住上层','打开地下'])await button(input,pairedControls).click();
+      await shot('forest-paired-flow-zh');await locale.click();await page.waitForFunction(()=>MorrowwishI18n.get()==='en');
+    }else for(const input of ['Open lower channel','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
     await shot('forest-paired-flow');await button('Clear together',pairedControls).click();await pairedControls.waitFor({state:'hidden'});
     await readForestDialogue('forest:R-03');
     await scene('forest:R-04');
@@ -392,7 +397,11 @@ try {
     assert.equal(await page.evaluate(()=>__game.battle.forgeState.assist),name==='portrait'?'jinpo':'xiaomao');
     const forgeTutorial=page.locator('#battle-tutorial-skip');if(await forgeTutorial.isVisible())await forgeTutorial.click();
     await shot('forge-boss');
-    await page.locator('#btn-auto').click();assert.equal(await page.evaluate(()=>__game.battle.autoMode),false);
+    await page.locator('#btn-flee').click();
+    await page.locator('#cb-forge-result').waitFor();
+    assert.equal(await page.locator('#cb-forge-result h2').innerText(),'WITHDRAWN');await shot('forge-retreat');
+    await page.locator('[data-forge-retry]').click();await page.locator('#battle-ui.on').waitFor();await page.locator('#cb-forge-hud').waitFor();
+    if(await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();assert.equal(await page.evaluate(()=>__game.battle.autoMode),false);
     await page.locator('[data-forge-support-button]').click();await shot('forge-boss-vent');
     await page.locator('#btn-auto').click();
     // Natural combat only: no HP, time, save or engine writes.
