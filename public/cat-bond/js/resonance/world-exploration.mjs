@@ -75,7 +75,7 @@ export function exchangeOptions(bridge,region,links){
   const spec=bridge.cargoSpec(a,b);return spec&&actor===region?[spec]:[];
  });
 }
-export function createExplorer(bridge,region,{deferForestMelody=false,deferSkyMelody=false,deferForgeMelody=false}={}){
+export function createExplorer(bridge,region,{deferForestMelody=false,deferSkyMelody=false,deferForgeMelody=false,deferLibraryMelody=false}={}){
  const layout=layouts[region];if(!layout)throw Error("Unknown region");
  const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],mainPath=layout.paths;let path=region==="sky"&&bridge.surveyStatus()?.remote?skySurveyPath:mainPath;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set(region==="harbor"?bridge.harborInvited():region==="forest"?bridge.forestInvited():region==="sky"?bridge.skyInvited():region==="forge"?bridge.forgeInvited():region==="library"?bridge.libraryInvited():[]);
  pos=closest(path,pos).p;
@@ -136,7 +136,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferSkyMe
   const result=bridge.recordWorld(active.sceneId,active.operation,{...active,verified:true,participants:puzzle?.participants,responses:puzzle?.response,pair:puzzle?.pair,waterSequence:puzzle?.type==="pairedWater"?puzzle.values:undefined,flightProof:skyFlightProof(puzzle?.flight),libraryValues:puzzle?.type.startsWith("library")?puzzle.values:undefined,libraryRecord:puzzle?.record});
   if(result.ok){if(puzzle?.type==="skyFlight"&&skyLanding[active.operation])pos=[...skyLanding[active.operation]];active=null;puzzle=null;}return result;
  }
- function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(puzzle.type==="skyFlight"){steerSkyFlight(puzzle.flight,[.30,.50,.70][i]);return {ok:true,pending:true};}if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(deferForestMelody&&puzzle.operation==="melody:forest"||deferSkyMelody&&puzzle.operation==="melody:sky"||deferForgeMelody&&puzzle.operation==="melody:forge")return {ok:true,pending:true,ceremony:true};return complete();}
+ function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(puzzle.type==="skyFlight"){steerSkyFlight(puzzle.flight,[.30,.50,.70][i]);return {ok:true,pending:true};}if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(deferForestMelody&&puzzle.operation==="melody:forest"||deferSkyMelody&&puzzle.operation==="melody:sky"||deferForgeMelody&&puzzle.operation==="melody:forge"||deferLibraryMelody&&puzzle.operation==="melody:library")return {ok:true,pending:true,ceremony:true};return complete();}
  function flightSteer(y){return puzzle?.type==="skyFlight"&&live()&&steerSkyFlight(puzzle.flight,y);}
  function flightTick(dt){if(puzzle?.type!=="skyFlight"||!live()||!tickSkyFlight(puzzle.flight,dt))return null;puzzle.solved=true;return complete();}
  function cargoPoints(){return region==="forge"?[[.35,.76],[.79,.364]]:[mainPath[1],mainPath[mainPath.length-2]];}
