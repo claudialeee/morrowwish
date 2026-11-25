@@ -39,7 +39,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
   assert.ok(await page.evaluate(()=>State.S.cats.length>=2),'Obtain two cats through normal capture');
   await travel('Rootsleep Forest');
   const memory=button('Promise Under Petals');await memory.waitFor();await memory.click();await page.locator('#panel.open').waitFor();
-  await shot('earned-duo-promise');await page.locator('#panel .card-close').click();
+  await shot('earned-duo-promise');await button('Explore more',page.locator('#panel')).click();await page.locator('#panel.open').waitFor({state:'hidden'});
   assert.ok(await page.evaluate(()=>{const p=CatRelations.chosen();return p.length===2&&CatRelations.memoryList(...p).includes('sakura')&&CatRelations.pair(...p).value>=20;}),'Actual forest duo promise');
   await travel('Emberforge City');
  }
@@ -110,7 +110,8 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  // Ordinary retreat/defeat input only: no battle.finish(), HP or position writes.
  let naturalDefeat=false;const deadline=Date.now()+90000;
  while(Date.now()<deadline){const a=await page.evaluate(()=>{const b=__game.battle;return b?{f:b.resonanceFinale?.failedProtection,allDown:b.team.every(x=>!x.alive)}:null});if(!a){naturalDefeat=true;break;}if(a.f||a.allDown){naturalDefeat=true;break;}await page.waitForTimeout(500);}
- if(await page.locator('#battle-ui.on').isVisible()){if(naturalDefeat)await finishBattle();else{await page.locator('#btn-flee').click();await finishBattle();}}
+ if(await page.locator('#battle-ui.on').isVisible()&&!naturalDefeat)await page.locator('#btn-flee').click();
+ await finishBattle();
  assert.ok((await view()).objective.includes('battle:central-echo'),'Uncompleted support cannot commit victory');
  const rewardBefore=await page.evaluate(()=>State.S.coins);await beginBattle('Approach the Star Bell');await shot('B-03-ring');
  const supported=new Set();for(let i=0;i<360;i++){const a=await page.evaluate(()=>__game.battle?.resonanceFinale?.nodes?.filter(n=>n.done).map(n=>n.region)||null);if(!a)break;for(const x of a)if(!supported.has(x)){supported.add(x);await shot('B-03-support-'+x);}await page.waitForTimeout(400);}

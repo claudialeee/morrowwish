@@ -193,7 +193,8 @@ function install(){
  }
  function points(b){
   const f=b.resonanceFinale,old=f.nodes;
-  f.nodes=nodePositions(b.W,b.H,b.topMargin,b.bottomMargin).map((n,i)=>({...n,integrity:old[i].integrity,progress:old[i].progress,done:old[i].done}));
+  f.nodes=nodePositions(b.W,b.H,b.topMargin,b.bottomMargin).map((n,i)=>({...n,integrity:old[i].integrity,progress:old[i].progress,required:old[i].required,done:old[i].done}));
+  if(f.cast){const n=f.nodes[f.cast.node];if(n){f.cast.x=n.x;f.cast.y=n.y;}else{const me=b.me();if(me){f.cast.x=me.x;f.cast.y=me.y;}}const actor=b.liveEnemies().find(e=>e.finaleActor==="muling"||e.finaleActor==="central");if(actor){f.cast.fromX=actor.x;f.cast.fromY=actor.y;}}
  }
  const resize=BP.onResize;
  BP.onResize=function(...args){const r=resize.call(this,...args);if(this.resonanceFinale)points(this);return r;};
@@ -239,14 +240,39 @@ function install(){
   }
   return r;
  };
+ // All automatic targeting paths share the same phase-specific eligibility.
+ function eligibleTarget(b,e){
+  if(!e?.alive)return false;
+  const f=b.resonanceFinale;if(!f)return true;
+  if(f.id==="finale:B-01")return e.finaleActor==="gate";
+  if(f.id==="finale:B-02")return e.finaleActor==="echo"&&e.echoObserved>=1&&identifyEcho(e.echoHabit,e.echoGap);
+  return e.finaleActor==="central";
+ }
+ const command=BP.commandedTarget;
+ BP.commandedTarget=function(x,y){
+  if(!this.resonanceFinale||!this.autoMode)return command.call(this,x,y);
+  const current=command.call(this,x,y);
+  if(eligibleTarget(this,current))return current;
+  if(this.commandTarget)this.commandTarget=null;
+  return this.nearestEnemy(x,y);
+ };
+ const exception=BP.focusException;
+ BP.focusException=function(fighter,focus){
+  const target=exception.call(this,fighter,focus);
+  return this.resonanceFinale&&this.autoMode&&!eligibleTarget(this,target)?null:target;
+ };
+ const unwarded=BP.unwardedTarget;
+ BP.unwardedTarget=function(fighter,target){
+  const chosen=unwarded.call(this,fighter,target);
+  return this.resonanceFinale&&this.autoMode&&!eligibleTarget(this,chosen)?target:chosen;
+ };
  const locked=BP.lockedEnemy;
- BP.lockedEnemy=function(){const e=locked.call(this),f=this.resonanceFinale;if(!this.autoMode||!f||!e)return e;if((f.id==="finale:B-01"&&e.finaleActor!=="gate")||(f.id==="finale:B-02"&&(!e.impostor||!e.echoObserved))){this._lockIdx=null;return null;}return e;};
+ BP.lockedEnemy=function(){const e=locked.call(this),f=this.resonanceFinale;if(!this.autoMode||!f||!e)return e;if(!eligibleTarget(this,e)){this._lockIdx=null;return null;}return e;};
  const nearest=BP.nearestEnemy;
  BP.nearestEnemy=function(x,y){
   const f=this.resonanceFinale;if(!f||!this.autoMode)return nearest.call(this,x,y);
-  let list=this.liveEnemies();
-  if(f.id==="finale:B-01")list=list.filter(e=>e.finaleActor==="gate");
-  if(f.id==="finale:B-02")list=list.filter(e=>e.impostor&&e.echoObserved>=1);
+  let list=this.liveEnemies().filter(e=>eligibleTarget(this,e));
+  if(f.id==="finale:B-01"&&f.cast?.node>=0){const threatened=list.find(e=>e.gateIndex===f.cast.node);if(threatened)return threatened;}
   return list.sort((a,c)=>Math.hypot(x-a.x,y-a.y)-Math.hypot(x-c.x,y-c.y))[0]||null;
  };
  function castPulse(b,f){

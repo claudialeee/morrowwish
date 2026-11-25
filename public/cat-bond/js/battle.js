@@ -1779,7 +1779,7 @@ class CaptureBattle {
     // code moved by the RAW (unnormalized) mx/my — magnitude varied wildly frame to
     // frame; smoothSteer normalizes to a unit heading, so speed is now steady too.
     const assignment=this.resonanceFinale&&window.CatBondFinaleCombat?.guardSteering?.(this,f);
-    if(assignment){mx=assignment.x;my=assignment.y;evasive=false;}
+    if(assignment){mx=assignment.x;my=assignment.y;evasive=false;if(!mx&&!my){f._svx=0;f._svy=0;}}
     const dir = this.smoothSteer(f, mx, my, evasive ? 22 : 8);
     if (dir) { f._moveFacing = Math.atan2(dir.y,dir.x); if(f.reflectT>0)f._wallDesiredAngle=Math.atan2(tgt.y-f.y,tgt.x-f.x); }
     // Freeze a cat's REAL position while it's performing the duo-combo run: its SPRITE is drawn along a
