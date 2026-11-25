@@ -320,7 +320,7 @@ const displayOrder=['cat-bond','pawsibly-innocent','tiny-town','elsewhere','flip
 const hm=r.headlineMetrics||{};
 const valid=n=>n!=null&&Number.isFinite(Number(n))&&Number(n)>=0;
 const count=n=>valid(n)?format(n):"";
-const rate=(a,b)=>valid(a)&&valid(b)&&Number(b)>0&&Number(a)<=Number(b)?format(pct(a,b))+"%":"";
+const headlineRate=(a,b)=>valid(a)&&valid(b)&&Number(b)>0&&Number(a)<=Number(b)?format(pct(a,b))+"%":"";
 const tracked=games.filter(g=>displayOrder.includes(g.game)&&Number(g.pageviews)>0&&
  g.visitFunnel&&["pageviews","startedViews","finishedViews"].every(k=>valid(g.visitFunnel[k]))&&
  Number(g.visitFunnel.pageviews)>0&&Number(g.visitFunnel.finishedViews)<=Number(g.visitFunnel.startedViews)&&
@@ -335,11 +335,11 @@ $("stats").innerHTML=[
  metricCard(t("statRetries"),hasData?count(r.retries):"",t("statRetriesNote")),
  metricCard(t("statVisitors"),count(hm.uniqueBrowsers),t("statVisitorsNote")),
  metricCard(t("statSession"),valid(hm.avgSessionSeconds)?t("seconds",{n:format(hm.avgSessionSeconds)}):"",t("statSessionNote")),
- metricCard(t("statD1"),rate(hm.d1Returned,hm.d1Eligible),t("statD1Note",{n:valid(hm.d1Eligible)?format(hm.d1Eligible):"—"})),
+ metricCard(t("statD1"),headlineRate(hm.d1Returned,hm.d1Eligible),t("statD1Note",{n:valid(hm.d1Eligible)?format(hm.d1Eligible):"—"})),
  metricCard(t("statShares"),count(hm.shareClicks),t("statSharesNote")),
- metricCard(t("colVisitStart"),rate(sums.startedViews,sums.pageviews),funnelNote),
- metricCard(t("colStartFinish"),rate(sums.finishedViews,sums.startedViews),funnelNote),
- metricCard(t("colVisitFinish"),rate(sums.finishedViews,sums.pageviews),funnelNote)
+ metricCard(t("colVisitStart"),headlineRate(sums.startedViews,sums.pageviews),funnelNote),
+ metricCard(t("colStartFinish"),headlineRate(sums.finishedViews,sums.startedViews),funnelNote),
+ metricCard(t("colVisitFinish"),headlineRate(sums.finishedViews,sums.pageviews),funnelNote)
  ].join("");
 const visibleGames=new Map(games.filter(x=>displayOrder.includes(x.game)).map(x=>[x.game,x]));
 $("games").innerHTML=displayOrder.map(gameId=>{
