@@ -39,11 +39,11 @@ try{
   const page=await context.newPage();
   const exceptions=[];
   page.on('pageerror',error=>exceptions.push(error.message));
-  const row=sample(mixed);
+  const row={...sample(mixed),headlineMetrics:mixed?{uniqueBrowsers:43,avgSessionSeconds:92,shareClicks:0,d1Eligible:10,d1Returned:3}:null};
   const auditedPV=mixed?121:26;
   const otherGames=[
    {game:'pawsibly-innocent',pageviews:28,retries:14,visitFunnel:{pageviews:28,startedViews:9,finishedViews:6}},
-   {game:'tiny-town',pageviews:19,retries:6,visitFunnel:{pageviews:19,startedViews:7,finishedViews:2}},
+   {game:'tiny-town',pageviews:19,retries:6,headlineMetrics:{uniqueBrowsers:11,avgSessionSeconds:35,shareClicks:2,d1Eligible:5,d1Returned:1},visitFunnel:{pageviews:19,startedViews:7,finishedViews:2}},
    {game:'elsewhere',pageviews:16,retries:0,visitFunnel:{pageviews:16,startedViews:1,finishedViews:1}},
    {game:'flip-dash',pageviews:5,retries:0},
    {game:'parcel-panic',pageviews:11,retries:1,visitFunnel:{pageviews:11,startedViews:4,finishedViews:1}},
@@ -59,7 +59,7 @@ try{
    byGame:[row,...otherGames,hub],byDay:[],byChannel:[],homeFunnel:{},socialPulse:{
     platforms:[{id:'youtube',published:7,views:null},{id:'instagram',published:7,views:null},
       {id:'tiktok',published:7,views:null},{id:'bluesky',published:7,views:null},{id:'itch',published:7,views:null}],
-    metricScope:{verifiedPosts:[],activeApprovedPosts:28},
+    metricScope:{verifiedPosts:[{platform:'youtube',game:'cat-bond',url:'https://example.com/current',publicVerified:true,approved:true,checkedAt:'2026-11-24T18:00:00Z',views:31}],activeApprovedPosts:1},
     publicationRounds:{rounds:[{
      id:'morning-first',status:'deleted',deletedWindow:'2026-11-22',
      platforms:{
@@ -83,7 +83,7 @@ try{
    const params=new URL(requestedSummaryUrl).searchParams;
    const selected=params.has('startDate');
    const result=selected?{...summary,rollup:{...summary.rollup,pageviews:7},byGame:[{
-    game:'tiny-town',pageviews:7,retries:0,visitFunnel:{pageviews:7,startedViews:3,finishedViews:1}
+    game:'tiny-town',pageviews:7,retries:0,headlineMetrics:{uniqueBrowsers:5,avgSessionSeconds:18,shareClicks:0,d1Eligible:2,d1Returned:0},visitFunnel:{pageviews:7,startedViews:3,finishedViews:1}
    }],range:{start:params.get('startDate'),end:params.get('endDate'),timeZone:'America/Los_Angeles'}}:summary;
    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(result)});
   });
@@ -109,16 +109,7 @@ try{
      'Sitewide pageviews must include homepage and all seven games');
    assert.equal(statValues[1],String(homepagePageviews),
      'Homepage pageviews must be displayed separately');
-   assert.equal(statLabels.length,12,'All twelve headline metrics must render');
-   assert.deepEqual(statLabels.slice(5),language==='zh'?
-    ['独立浏览器','平均会话时长','首访次日回访率','分享点击','访问开玩率','开玩结算率','访问结算率']:
-    ['Unique browsers','Avg. session length','Day-1 return rate','Share clicks','Visit-to-play rate','Play-to-finish rate','Visit-to-finish rate']);
-   assert.deepEqual(statValues.slice(5,9),mixed?['43',language==='zh'?'92 秒':'92 sec','30%','0']:['','','',''],
-    'Missing observations remain blank; true observed zero is displayed');
-   const denominator=auditedPV+28+19+16+11;
-   const pct=(a,b)=>String(Math.round(a/b*1000)/10)+'%';
-   assert.deepEqual(statValues.slice(9),[pct(29,denominator),pct(17,29),pct(17,denominator)],
-    'Rates must use summed numerators and denominators of tracked games, not raw starts, homepage or untracked pages');
+   assert.equal(statLabels.length,2,'Only website traffic KPIs are allowed above per-game metrics');
    const archive=page.locator('#archived-first-round');
    assert.equal(await archive.isVisible(),true,'Deleted first-round archive disclosure must remain visible');
    assert.equal(await archive.evaluate(el=>el.open),false,'Deleted history must be collapsed on initial load');
@@ -168,6 +159,9 @@ try{
    assert.deepEqual(cells.slice(5,8),[mixed?'8 / 121 · 6.6%':'8 / 26 · 30.8%',
     '7 / 8 · 87.5%',mixed?'7 / 121 · 5.8%':'7 / 26 · 26.9%'],
     'Visit conversion must be deduplicated, not raw battle totals');
+   assert.deepEqual(cells.slice(8),mixed?['43',language==='zh'?'92 秒':'92 sec','30%','0']:['','','',''],'Cat Bond metrics are independent and preserve observed zero');
+   const townRow=page.locator('#games tr').filter({has:page.locator('a[href="/tiny-town/"]')});
+   assert.deepEqual((await townRow.locator('td').allTextContents()).slice(8),['11',language==='zh'?'35 秒':'35 sec','20%','2'],'Tiny Town has its own metrics, not Cat Bond or website totals');
    const gameTableWrap=page.locator('#games').locator('xpath=ancestor::div[contains(@class,"table-wrap")]').first();
    assert.equal(await gameTableWrap.evaluate(el=>getComputedStyle(el).borderTopWidth),'0px',
      'Current game table must not have an outer frame');
@@ -215,16 +209,24 @@ try{
    const filteredValues=await page.locator('#stats .stat .big').allTextContents();
    assert.equal(filteredValues[0],'7');
    assert.equal(filteredValues[1],'','Missing homepage observations stay blank');
-   assert.equal(filteredValues[2],'3');
-   assert.equal(filteredValues[3],'1');
-   assert.deepEqual(filteredValues.slice(9),['42.9%','33.3%','14.3%']);
+   assert.equal(filteredValues.length,2);
    const selectedTown=page.locator('#games tr').filter({has:page.locator('a[href="/tiny-town/"]')});
-   assert.equal((await selectedTown.locator('td').allTextContents())[1],'7');
+   assert.deepEqual((await selectedTown.locator('td').allTextContents()).slice(1),['7','3','1','0','3 / 7 · 42.9%','1 / 3 · 33.3%','1 / 7 · 14.3%','5',language==='zh'?'18 秒':'18 sec','0%','0']);
+   assert.ok((await gameRow.locator('td').allTextContents()).slice(1).every(v=>v===''),'Other game must not borrow selected game metrics');
+   assert.equal(await page.locator('#video-metrics-detail').isVisible(),false,'Native snapshot captured outside selected dates is excluded');
+   assert.equal(await page.locator('#archived-first-round').isVisible(),true,'Archive snapshot inside selected dates is retained');
    const beforeInvalid=requestedSummaryUrl;
    await page.locator('#date-start').fill('2026-11-23');
    await page.locator('#date-end').fill('2026-11-22');
    await page.locator('#apply-date').click();
    assert.equal(requestedSummaryUrl,beforeInvalid,'Inverted range must never query the API');
+   await page.locator('#date-start').fill('2026-11-24');
+   await page.locator('#date-end').fill('2026-11-24');
+   await page.locator('#apply-date').click();
+   await page.waitForFunction(()=>document.querySelector('#applied-range').textContent.includes('2026-11-24')&&!document.querySelector('#apply-date').disabled);
+   assert.equal(await page.locator('#archived-first-round').isVisible(),false,'Out-of-range archive is excluded');
+   assert.equal(await page.locator('#video-metrics-detail').isVisible(),true,'In-range native snapshot is shown');
+   assert.ok((await page.locator('#video-detail-rows').innerText()).includes('31'));
    await page.locator('#date-preset').selectOption('all');
    await page.locator('#apply-date').click();
    await page.waitForFunction(()=>!document.querySelector('#apply-date').disabled&&document.querySelector('#stats .stat .big').textContent!=='7');
