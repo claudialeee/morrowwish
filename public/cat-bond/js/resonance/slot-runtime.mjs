@@ -56,7 +56,8 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   const expectedRegion=s.chapter==="prologue"||s.chapter==="epilogue"?"garden":s.chapter;
   if(region!==expectedRegion||actor.region!==region&&npcId!=="muling")return fail("wrong-region");
   if(npcId==="muling"&&actor.region!==region&&!["companion","identity-revealed","betrayal-revealed"].includes(v.muling)&&!["starfall:F-03","starfall:F-04","starfall:F-05"].includes(s.id))return fail("companion-unavailable");
-  const requiredActor={"harbor:H-01":"qilan","harbor:H-02":"jiedeng","sky:S-04":"muling","epilogue:E-02":"muling"}[s.id];
+  if(npcId==="muling"&&s.id==="library:M-05"&&v.cursor>=s.lines.length&&v.choice)return fail("companion-unavailable");
+  const requiredActor={"harbor:H-01":"qilan","harbor:H-02":"jiedeng","sky:S-04":"muling","library:M-03":"muling","epilogue:E-02":"muling"}[s.id];
   if(requiredActor&&v.objective.some(o=>o.startsWith("npc:"))&&npcId!==requiredActor)return fail("wrong-npc");
   if(s.lines.length&&!s.lines.some(l=>l.speaker===npcId)&&!s.choices.some(c=>c.npc===npcId))return fail("wrong-npc");
   const location=State.S.resonanceExploration?.location;if(campaign.regions.includes(region)&&location&&location!==region)return fail("wrong-map-location");
@@ -103,7 +104,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(!v.regions.includes(region))return [];const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);const scene=v.current,scripted=["sky:S-04","library:M-03","library:M-05","starfall:F-03","starfall:F-04","starfall:F-05"].includes(scene?.id);
   const hasDialogue=(scene?.lines||[]).some(l=>l.speaker==="muling")||(scene?.choices||[]).some(c=>c.npc==="muling");
   const availableAmbient=read().ambientAvailable(region).some(a=>a.npc==="muling");
-  if((scene?.chapter===region&&scripted)||((availableAmbient||scene?.chapter===region&&hasDialogue)&&["companion","identity-revealed"].includes(v.muling)))ids.push("muling");return ids.map(id=>({...npcProfile(id),scripted:id==="muling"}));}
+  if(!(scene?.id==="library:M-05"&&v.cursor>=scene.lines.length&&v.choice)&&((scene?.chapter===region&&scripted)||((availableAmbient||scene?.chapter===region&&hasDialogue)&&["companion","identity-revealed"].includes(v.muling))))ids.push("muling");return ids.map(id=>({...npcProfile(id),scripted:id==="muling"}));}
  // Compatibility query: ordinary world exploration never mounts a companion.
  // Joint flight and paired-water tasks render their participants in their own mechanism.
  const follows=()=>false;
