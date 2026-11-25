@@ -63,6 +63,7 @@ function install(){
  });
  window.addEventListener("cat-bond-resonance-changed",refresh);
  window.addEventListener("cat-bond-active-save-changed",close);
+ window.addEventListener("cat-bond-illustrations-ready",()=>{if(dialogue&&slot===State.S)dialogue.render()});
  // Detect external world/battle commits and slot replacements without a second progression store.
  let observedRoot=State.S,observedRevision=State.S.resonance?.revision??-1,observedView=runtime.view();
  setInterval(()=>{const revision=State.S.resonance?.revision??-1;if(observedRoot!==State.S||observedRevision!==revision){const sameSlot=observedRoot===State.S,old=observedView;observedRoot=State.S;observedRevision=revision;observedView=runtime.view();refresh();
