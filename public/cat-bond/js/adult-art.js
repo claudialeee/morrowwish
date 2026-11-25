@@ -5,10 +5,9 @@
  * and broke the look in the Moonshadow Ruins. Never replace a painted breed
  * with a new vector cat just because its stage changes.
  *
- * Maturity is expressed through the conservative uniform Growth.visual scale
- * (adult 1.06x, awakened 1.10x), paw-grounding, gem and awakening aura.
- * Every mature cat retains EXACTLY the same original watercolor breed source,
- * colors, expression and natural body proportions as its kitten form.
+ * Independent mature and awakened paintings are not present. Legacy stages
+ * retain the original watercolor breed, scale, coat and expression until
+ * individually approved art exists. This is not a new growth form.
  */
 (function installWatercolorGrowthForms(){
   'use strict';
@@ -20,40 +19,18 @@
 
   // Keep the canonical original-watercolor renderer in charge of world,
   // exploration, yard, battle, celebration and all other cat appearances.
-  // It already applies a UNIFORM Growth.visual scale and draws awakening art.
+  // Retired stage visuals are deliberately neutral (see Growth.visual).
   function drawAdult(ctx,x,y,opts={}){
     return originalDraw(ctx,x,y,opts);
   }
 
   function drawThumb(canvas,species,cat){
     if(!canvas||!species)return;
-    if(!cat||(Number(cat.stage)||0)<1){
-      activeThumbs.delete(canvas);
-      return originalThumb(canvas,species);
-    }
-    activeThumbs.set(canvas,[species,cat]);
-    const ctx=canvas.getContext('2d');
-    if(!ctx)return;
-    const rect=canvas.getBoundingClientRect?.();
-    const w=Number(canvas.dataset?.thumbW)||(rect?.width>8?rect.width:canvas.width);
-    const h=Number(canvas.dataset?.thumbH)||(rect?.height>8?rect.height:canvas.height);
-    const ratio=Math.max(1,Math.min(3,window.devicePixelRatio||1));
-    const pw=Math.max(1,Math.round(w*ratio)),ph=Math.max(1,Math.round(h*ratio));
-    if(canvas.width!==pw)canvas.width=pw;
-    if(canvas.height!==ph)canvas.height=ph;
-    if(canvas.dataset){
-      canvas.dataset.thumbW=String(w);
-      canvas.dataset.thumbH=String(h);
-    }
-    ctx.setTransform?.(ratio,0,0,ratio,0,0);
-    ctx.clearRect(0,0,w,h);
-    // The same base anchor/scale as the kitten thumbnail; age scale is
-    // applied by the original renderer exactly once. Feet remain planted.
-    const scale=Math.min(w/72,h/104)*.86;
-    const growth=window.Growth?.visual(cat)||null;
-    originalDraw(ctx,w/2,h*.60,{
-      species,scale,face:1,t:.6,pose:'sit',mood:'happy',motion:0,growth
-    });
+    if(cat&&(Number(cat.stage)||0)>=1)activeThumbs.set(canvas,[species,cat]);
+    else activeThumbs.delete(canvas);
+    // Every legacy stage uses the exact same canonical thumb renderer, pose,
+    // facial expression, aspect, logical dimensions and decoder repaint path.
+    return originalThumb(canvas,species);
   }
 
   // AVIF/WebP atlas decoding can complete after portraits were first drawn.
