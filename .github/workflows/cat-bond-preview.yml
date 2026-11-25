@@ -67,6 +67,19 @@ jobs:
               run = max(matches, key=lambda r: (r['run_number'], r.get('run_attempt', 1)))
               assert run['status'] == 'completed' and run['conclusion'] == 'success', f'Not accepted: {name} ({run["id"]}, {run["status"]}, {run["conclusion"]})'
               print(name, run['id'], 'PASS')
+              if name == required[0]:
+                  open('/tmp/cat-bond-full-campaign-run','w').write(str(run['id']))
+          PY
+          FULL_RUN=$(cat /tmp/cat-bond-full-campaign-run)
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$FULL_RUN/jobs?filter=latest&per_page=100" > /tmp/cat-bond-campaign-jobs.json
+          python3 - <<'PY'
+          import json
+          jobs = json.load(open('/tmp/cat-bond-campaign-jobs.json'))['jobs']
+          for profile in ('desktop', 'portrait', 'landscape'):
+              job = next(j for j in jobs if j['name'] == f'harbor ({profile})')
+              assert job['conclusion'] == 'success', f'Campaign {profile} did not pass'
+              step = next(s for s in job['steps'] if s['name'] == 'Play from a new slot on desktop and mobile (combined branch through finale)')
+              assert step['conclusion'] == 'success', f'Campaign {profile} not actually executed'
           PY
           git checkout --detach "$SOURCE_SHA"
           echo "SOURCE_SHA=$SOURCE_SHA" >> "$GITHUB_ENV"
@@ -91,10 +104,8 @@ jobs:
           cp -a public/cat-bond /tmp/cat-bond-preview/site/
           for dir in audio art icons; do cp -a "public/$dir" /tmp/cat-bond-preview/site/; done
           find public -maxdepth 1 -type f \( -name '*.js' -o -name '*.css' \) -exec cp {} /tmp/cat-bond-preview/site/ \;
-          if [ ! -f /tmp/cat-bond-preview/site/audio/cat-happy-clappy.ogg ]; then
-            bash scripts/fetch-cat-music.sh
-            cp -a public/audio/. /tmp/cat-bond-preview/site/audio/
-          fi
+          # RPG uses its own committed recordings. No mutable production audio imports.
+          test -d /tmp/cat-bond-preview/site/cat-bond/assets/audio
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const root='/tmp/cat-bond-preview/site';
@@ -130,7 +141,16 @@ jobs:
             if curl -fsS "$URL/preview-version.json?sha=$SOURCE_SHA" | grep -Fq "$SOURCE_SHA"; then break; fi
             sleep 4
           done
-          curl -fsS "$URL/preview-version.json?sha=$SOURCE_SHA" | grep -F "$SOURCE_SHA"
+          curl -fsS "$URL/preview-version.json?sha=$SOURCE_SHA" > /tmp/live-preview-version.json
+          python3 - <<'PY'
+          import json, os
+          version = json.load(open('/tmp/live-preview-version.json'))
+          assert version['sha'] == os.environ['SOURCE_SHA']
+          assert version['testedMerge'] == os.environ['TESTED_MERGE']
+          assert version['scope'] == 'Prologue through Finale'
+          assert version['storage'] == 'local-only' and version['productionApis'] is False
+          print(version)
+          PY
           curl -fsS "$URL/cat-bond/" | grep -F 'PREVIEW 试玩'
           for endpoint in session cat-bond-cloud-save; do
             test "$(curl -sS -o /dev/null -w '%{http_code}' "$URL/api/$endpoint")" = 403
