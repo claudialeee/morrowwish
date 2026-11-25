@@ -46,3 +46,13 @@
  #battle-ui .cb-forge-support strong{font-size:9px;line-height:1.2}
  #battle-ui .cb-forge-support button{min-height:44px;padding:5px 6px;max-width:96px}
 }
+
+#battle-ui .cb-forge-hud[data-duo-art="true"]{visibility:hidden;pointer-events:none}
+
+/* Keep the native enemy/mode header clear on narrow screens. The regional
+   mechanic rail already explains the attacks and pressure; manual coaching
+   remains available, but is positioned below the team/charge cards. */
+@media(max-width:600px) and (orientation:portrait){
+ #battle-ui:has(.cb-forge-hud) .battle-hint:not(.coach-hint){display:none!important}
+ #battle-ui:has(.cb-forge-hud) .battle-hint.coach-hint{top:calc(env(safe-area-inset-top,0px) + 200px)!important;max-width:90%!important}
+}

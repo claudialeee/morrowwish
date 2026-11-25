@@ -21,3 +21,7 @@
  #battle-ui .cb-region-combat[data-region="sky"]{top:auto;bottom:12px;left:50%;right:auto;transform:translateX(-50%);max-width:calc(100% - 360px);font-size:10px}
  #battle-ui .cb-region-combat[data-region="sky"] button{white-space:normal;min-height:44px}
 }
+
+/* Original authored Duo frames must remain unobscured. */
+#battle-ui .cb-region-combat[data-region="sky"][data-duo-art="true"]{visibility:hidden;pointer-events:none}
+#battle-ui .cb-region-combat[data-region="sky"][data-duo-art="true"] button{visibility:hidden;pointer-events:none}

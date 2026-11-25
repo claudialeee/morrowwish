@@ -111,7 +111,7 @@ function install(){
   if(r.region==="sky"){button.title=r.skyMethod==="fast-courier"?tr(["解除风切并为必杀槽充能 12 点","Cancel gale shear and charge the ultimate meter by 12"]):tr(["解除风切并为队伍提供短暂无敌","Cancel gale shear and briefly protect the squad"]);panel.dataset.supportPhase=r.supportUsed?"used":r.cast?"ready":"waiting";}
  }
  function useSupport(b){
-  const r=b.regionalCombat;if(!r||!r.supportAvailable||r.supportUsed||!r.cast||b.done)return false;
+  const r=b.regionalCombat;if(!r||!r.supportAvailable||r.supportUsed||!r.cast||b.done||(r.region==="sky"&&duoArtActive(b)))return false;
   r.supportUsed=true;r.cast=null;r.next=Math.max(r.next,4);
   const cats=living(b);
   if(r.kit.kind==="roots")for(const f of cats){f.rootT=0;f.rooted=false;if(f.status)delete f.status.bind;}
@@ -228,8 +228,21 @@ function install(){
   }
   this.vfx.ring(e.x,e.y,{r0:10,vr:160,life:.45,color:r.kit.color,width:3});
  };
+ // The approved Duo storyboard owns the canvas until its deferred impact.
+ // Sky hazards are paused by tick() during a cinematic; keep the corresponding
+ // warning lines and support controls out of the artwork as well.
+ const duoArtActive=b=>!!(b.duoCinematic?.t>0&&b.duoCinematic.max-b.duoCinematic.t<b.duoCinematic.strikeAt);
  const drawBattle=BP.draw;
- BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat)draw(this,ctx);return result;};
+ BP.draw=function(ctx){
+  const result=drawBattle.call(this,ctx),r=this.regionalCombat;
+  if(!r)return result;
+  if(r.region==="sky"){
+   const active=duoArtActive(this),panel=document.getElementById("cb-region-combat");
+   if(panel&&panel.dataset.duoArt!==String(active))panel.dataset.duoArt=String(active);
+   if(active)return result;
+  }
+  draw(this,ctx);return result;
+ };
  const end=GP.endBattle;
  GP.endBattle=function(){
   const b=this.battle,ruins=b?.postgameRuins,host=window.CatBondResonance;
