@@ -40,18 +40,27 @@ for(const profile of [
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&window.CatBondArtworkStatus?.breedsLoaded===true,{timeout:30000});
   const titleImage=await page.evaluate(async()=>{
-   const background=getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundImage;
-   const image=new Image();image.src='assets/resonance-world-v2/atlas.webp';await image.decode();
-   const harbor=new Image();harbor.src='assets/resonance-world-v2/harbor-mist.webp';await harbor.decode();
-   const alternate=getComputedStyle(document.querySelector('.cb-title-landscape'),'::after').backgroundImage;
-   return {background,width:image.naturalWidth,height:image.naturalHeight,alternate,harborWidth:harbor.naturalWidth,harborHeight:harbor.naturalHeight,repeat:getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundRepeat,size:getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundSize,alternateRepeat:getComputedStyle(document.querySelector('.cb-title-landscape'),'::after').backgroundRepeat};
+   const element=document.querySelector('.cb-title-landscape');
+   const layers=await Promise.all([null,'::before','::after'].map(async pseudo=>{
+    const style=getComputedStyle(element,pseudo);
+    const match=style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/);
+    if(!match)throw Error('Missing painted title layer '+pseudo+': '+style.backgroundImage);
+    const image=new Image();image.src=match[1];await image.decode();
+    return {url:image.src,width:image.naturalWidth,height:image.naturalHeight,repeat:style.backgroundRepeat,size:style.backgroundSize,display:style.display,opacity:Number(style.opacity)};
+   }));
+   return layers;
   });
-  assert.match(titleImage.background,/atlas\.webp/);
-  assert.match(titleImage.alternate,/harbor-mist\.webp/);
-  assert.ok(titleImage.repeat.split(',').every(v=>v.trim()==='no-repeat')&&titleImage.alternateRepeat.split(',').every(v=>v.trim()==='no-repeat'),'Title artwork never tiles');
-  assert.ok(titleImage.size.split(',').every(v=>v.trim()==='cover'),'Title artwork fills each viewport');
-  assert.ok(titleImage.harborWidth>=960&&titleImage.harborHeight>=540,'Alternate painted title background loads at usable resolution');
-  assert.ok(titleImage.width>=960&&titleImage.height>=540,'Painted title background loads at usable resolution');
+  const [painting,xingya,yahe]=titleImage;
+  const orientation=profile.width/profile.height<=.8?'portrait':'landscape';
+  assert.ok(painting.url.endsWith('/assets/garden/sunlit-garden-'+orientation+'.webp'),'Correct garden painting for '+profile.name);
+  assert.ok(painting.width>=540&&painting.height>=540&&(orientation==='portrait'?painting.height>painting.width:painting.width>painting.height),'Painted title background has usable resolution and orientation');
+  assert.ok(xingya.url.endsWith('/assets/npc/xingya-painted.webp')&&yahe.url.endsWith('/assets/npc/yahe-painted.webp'),'Both painted title companions are present');
+  for(const layer of titleImage){
+   assert.ok(layer.width>=128&&layer.height>=128&&layer.display!=='none'&&layer.opacity>0,'Actual title artwork is decoded and visible: '+layer.url);
+   assert.ok(layer.repeat.split(',').every(v=>v.trim()==='no-repeat'),'Title artwork never tiles');
+  }
+  assert.equal(painting.size,'cover','Garden painting fills viewport');
+  for(const layer of [xingya,yahe])assert.equal(layer.size,'contain','Companion painting preserves proportions');
   const bounds=await page.evaluate(()=>{const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {stage:rect('#stage'),start:rect('#intro-start'),next:rect('#intro-continue')};});
   assert.ok(bounds.start.right<=bounds.next.left&&bounds.start.width>0&&bounds.next.width>0,'New and Continue remain side by side');
   for(const b of [bounds.start,bounds.next])assert.ok(b.left>=bounds.stage.left-1&&b.right<=bounds.stage.right+1&&b.top>=bounds.stage.top-1&&b.bottom<=bounds.stage.bottom+1,'Title actions stay in stage');
