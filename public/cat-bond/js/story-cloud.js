@@ -684,11 +684,17 @@ function renderCloudPanel(){
   '<div class="cb-cloud-body"></div></section>';
  (document.fullscreenElement||document.getElementById('stage')||document.body).append(overlay);
  const body=overlay.querySelector('.cb-cloud-body');
+ let busy=false, lastMessage='', lastConflict=false;
  const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
  overlay.querySelector('.cb-cloud-close').onclick=close;
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  function render(status='',conflict=false){
+  lastMessage=status;lastConflict=conflict;
+  const enteredCode=body.querySelector('[data-recovery-code]')?.value||'';
   const token=localStorage.getItem(CLOUD_KEY)||'';
+  overlay.querySelector('.cb-cloud-close').setAttribute('aria-label',t('关闭','Close'));
+  overlay.querySelector('.cb-cloud-card h2').textContent=t('云存档','Cloud save');
+  overlay.querySelector('.cb-cloud-lead').textContent=t('三个存档位分别加密、分别同步。云端不可用时，本机存档仍可正常使用。','Each save slot is encrypted and synced independently. Local saves remain available when cloud sync is offline.');
   const importCode='<label class="cb-cloud-import-label">'+t('在另一台设备上？输入恢复码','Using another device? Enter your recovery code')+'</label>'+
    '<div class="cb-cloud-import"><input type="text" data-recovery-code autocomplete="off" spellcheck="false" placeholder="CB1.…">'+
    '<button type="button" data-cloud="connect">'+t('连接并读取','Connect & load')+'</button></div>';
@@ -707,15 +713,18 @@ function renderCloudPanel(){
     importCode+
     '<p class="cb-cloud-footnote">'+t('启用后会生成一组恢复码。恢复码是云存档的访问凭据，请妥善保管。','Enabling cloud save creates a recovery code. It is the credential for your cloud saves; keep it safe.')+'</p>';
   }
-  body.querySelectorAll('[data-cloud]').forEach(button=>button.onclick=()=>cloudAction(button.dataset.cloud));
+  const input=body.querySelector('[data-recovery-code]');if(input)input.value=enteredCode;
+  body.querySelectorAll('[data-cloud]').forEach(button=>{button.disabled=busy;button.onclick=()=>cloudAction(button.dataset.cloud);});
   body.querySelector('[data-copy-code]')?.addEventListener('click',async()=>{
    try{await copyText(CODE_PREFIX+token);render(t('恢复码已复制。请将它保存在安全的位置。','Recovery code copied. Store it somewhere safe.'),conflict);}
    catch(error){render(t('复制失败，请手动复制恢复码。','Copy failed. Please copy the recovery code manually.'),conflict);}
   });
  }
  async function cloudAction(action){
-  const status=body.querySelector('#cb-cloud-status');
-  const say=msg=>{if(status)status.textContent=msg;};
+  if(busy)return;
+  busy=true;
+  body.querySelectorAll('[data-cloud]').forEach(button=>button.disabled=true);
+  const say=msg=>{lastMessage=msg;const status=body.querySelector('#cb-cloud-status');if(status)status.textContent=msg;};
   try{
    if(action==='enable'){
     const token=makeToken();localStorage.setItem(CLOUD_KEY,token);
@@ -762,9 +771,12 @@ function renderCloudPanel(){
   }catch(error){
    render(error?.message==='Cloud save not found'?t('云端暂时没有可读取的存档。','No cloud saves were found.')
     :t('操作失败：','Action failed: ')+(error?.message||''),false);
+  }finally{
+   busy=false;
+   body.querySelectorAll('[data-cloud]').forEach(button=>button.disabled=false);
   }
  }
- const updateLocale=()=>render();
+ const updateLocale=()=>render(busy?t('正在处理，请稍候…','Working…'):'',lastConflict);
  window.addEventListener('morrowwish-language-change',updateLocale);
  render();
 }
