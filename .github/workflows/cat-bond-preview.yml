@@ -74,7 +74,7 @@ jobs:
               require(f'campaign / harbor ({profile})', 'Play from a new slot on desktop and mobile (combined branch through finale)')
               for language in ('en', 'zh'):
                   require(f'prologue / prologue ({language}, {profile})', 'Actual game in all three device orientations')
-          require('score / render', 'Check score edition')
+          require('score', 'Check score edition')
           require('controls / controls')
           require('book / book-browser', 'Normal start, garden, book and save slots')
           require('audio / audio', 'Audio real browser acceptance')
