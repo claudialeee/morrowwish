@@ -36,7 +36,7 @@ for(const viewport of [{name:'desktop',width:1440,height:1000},{name:'mobile',wi
  await page.waitForTimeout(500);
  const afterRegionClick=await page.evaluate(()=>({mode:window.WorldMap?.mode,currentRegion:window.WorldMap?.currentRegion,unlocked:window.WorldMap?.REGIONS?.filter(r=>window.WorldMap.isUnlocked(r.id)).map(r=>r.id),hero:!!document.querySelector(".lr-region-hero"),state:window.State?.S?.lastResonanceWorld?.scene}));
  console.log(viewport.name+" region click "+JSON.stringify(afterRegionClick));
- if(!afterRegionClick.hero){const first=window.WorldMap?.REGIONS?.find(r=>window.WorldMap.isUnlocked(r.id));if(first)await page.evaluate(id=>window.WorldMap.enterRegion(id),first.id);}
+ if(!afterRegionClick.hero){const firstId=await page.evaluate(()=>window.WorldMap?.REGIONS?.find(r=>window.WorldMap.isUnlocked(r.id))?.id);if(firstId)await page.evaluate(id=>window.WorldMap.enterRegion(id),firstId);}
  await page.waitForSelector('.lr-region-hero');
  await page.waitForSelector('.lr-npc-card');
  const npcPortrait=await page.locator('.lr-npc-card .lr-portrait').first().evaluate(el=>getComputedStyle(el).backgroundImage);
