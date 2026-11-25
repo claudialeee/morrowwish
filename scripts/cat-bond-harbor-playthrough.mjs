@@ -466,6 +466,16 @@ try {
     await page.locator('#battle-ui.on').waitFor();try{await page.locator('#cb-forge-hud').waitFor();}catch(e){await shot('forge-boss-entry-failed');console.error('Forge entry failed',await page.evaluate(()=>({scene:__game.scene,story:__game.battle?.storyEncounter,forge:!!__game.battle?.forgeState,errors:document.getElementById('toasts')?.textContent})));throw e;}
     assert.equal(await page.evaluate(()=>__game.battle.forgeState.assist),name==='portrait'?'jinpo':'xiaomao');
     const forgeTutorial=page.locator('#battle-tutorial-skip');if(await forgeTutorial.isVisible())await forgeTutorial.click();
+    await page.locator('#cb-forge-hud img').evaluateAll(imgs=>Promise.all(imgs.map(img=>img.decode())));
+    if(name==='portrait'){
+      const clearance=await page.evaluate(()=>{
+        const hud=document.getElementById('cb-forge-hud').getBoundingClientRect();
+        const controls=[...document.querySelectorAll('#team-slots .team-slot,#duo-burst,#ult-wrap,.move-bar .move')].filter(el=>!el.hidden&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');
+        const overlap=controls.filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&Math.min(hud.right,r.right)-Math.max(hud.left,r.left)>1&&Math.min(hud.bottom,r.bottom)-Math.max(hud.top,r.top)>1}).map(el=>el.id||el.className);
+        return {overlap,inside:hud.left>=0&&hud.right<=innerWidth+1&&hud.top>=0&&hud.bottom<=innerHeight+1};
+      });
+      assert.deepEqual(clearance,{overlap:[],inside:true},'Portrait furnace HUD must not cover battle controls');
+    }
     await shot('forge-boss');
     await page.locator('#btn-flee').click();
     await page.locator('#cb-forge-result').waitFor();
