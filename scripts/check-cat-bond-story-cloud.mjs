@@ -39,7 +39,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['css/style.css?v=resonance-integration-1','js/main.js?v=resonance-integration-2','js/state.js?v=atomic-save-book-20261124-v8','js/story-cloud.js?v=resonance-integration-1','id="intro-start"','id="intro-continue"','js/game.js?v=resonance-integration-1','js/resonance/integration-entry.mjs?v=canonical-1','js/battle.js?v=resonance-integration-1']],
+ ['entry points and cache versions',index,['css/style.css?v=resonance-integration-1','js/main.js?v=unified-title-20261124','js/state.js?v=atomic-save-book-20261124-v8','js/story-cloud.js?v=simple-three-slot-20261124','id="intro-start"','id="intro-continue"','js/game.js?v=resonance-integration-1','js/resonance/integration-entry.mjs?v=canonical-1','js/battle.js?v=resonance-integration-1']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
@@ -314,7 +314,8 @@ assert.ok(story.includes("const cloudRevisionKey=id=>'catbond_cloud_revision_v2_
 assert.ok(story.includes('State.replaceSaveSlots(entries'),'cloud restore must atomically replace the local save book');
 assert.ok(story.includes('deleted:true,deletedAt:deletion.deletedAt'),'cloud deletion must use an encrypted per-slot tombstone');
 assert.ok(story.includes('slotId:id,expectedRevision:expected'),'cloud uploads must target one explicit slot');
-assert.ok(story.includes('data-cloud="overwrite:')&&story.includes('syncNow(true,[id])')&&story.includes('restoreOneWithToken(token,id)'),'cloud conflicts must resolve per slot without overwriting others');
+assert.ok(story.includes('expectedRevision:expected')&&story.includes('restoreOneWithToken(token,id)'),'existing cloud data remains protected by per-slot revisions');
+assert.ok(!/data-recovery-code|data-slot-sync|openCloudPanel/.test(story)&&!main.includes("['cloud',t("),'no recovery codes or manual cloud actions in player UI');
 assert.ok(story.includes('CLOUD_AUTOSYNC_INTERVAL_MS=60000'),'background cloud autosync must be throttled to protect the D1 quota');
 assert.ok(story.includes('data-remove-save=')&&story.includes('State.deleteSaveSlot(id,{confirmed:true})'),'save manager must offer confirmed deletion while protecting the active slot');
 assert.ok(!main.includes('data-delete-slot'),'title save picker must not expose slot deletion');

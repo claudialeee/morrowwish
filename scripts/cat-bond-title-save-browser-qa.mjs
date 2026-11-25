@@ -28,7 +28,7 @@ for(const profile of [
   await page.locator('#cb-system-toggle').click();
   await page.locator('[data-system="slots"]').click();
   await checkVisible('.cb-slot-manager');
-  await checkVisible('.cb-slot-manager [data-slot-sync]');
+  assert.equal(await page.locator('.cb-slot-manager [data-slot-sync], [data-recovery-code], .cb-cloud-code-row').count(),0,'No manual cloud or recovery-code controls');
  };
  try{
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});

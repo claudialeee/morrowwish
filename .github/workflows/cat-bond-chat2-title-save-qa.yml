@@ -11,7 +11,7 @@ concurrency:
 jobs:
   source-and-build:
     if: github.head_ref == 'rpg/title-save-integration-v2' || github.head_ref == 'rpg/cat-bond-takeover'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
         if: always()
   real-browser-title-save:
     if: github.head_ref == 'rpg/title-save-integration-v2' || github.head_ref == 'rpg/cat-bond-takeover'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4

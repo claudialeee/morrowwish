@@ -120,7 +120,4 @@ html body #stage #mw-game-settings,html body #stage #mw-fullscreen-toggle{displa
 
 #stage #cb-canonical-opening{position:absolute;inset:0;z-index:2300;isolation:isolate}
 
-/* Unified save management; cross-device recovery is secondary to the three slots. */
-#stage .cb-slot-sync{display:block;width:100%;min-height:40px;margin-top:14px;padding:8px 12px;border:1px solid #887c62;border-radius:5px;background:#203a40;color:#ead9b9;font:600 13px/1.4 system-ui;cursor:pointer;text-align:center}
-#stage .cb-slot-sync:focus-visible{outline:2px solid #e4c69a;outline-offset:2px}
 @media (max-height:450px) and (min-width:681px){#stage #intro.cb-rpg-intro:not(.hide){padding:42px 18px 12px!important}#stage #intro .cb-title-content{gap:8px}#stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue){min-height:44px!important}}
