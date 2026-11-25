@@ -694,5 +694,185 @@
         "lines": []
       }
     ]
+  },
+  "prologueReleaseShots": {
+    "prologue:P-01": [
+      {
+        "assetId": "opening-star-bell",
+        "alt": {
+          "zh": "星铃与六座圣所",
+          "en": "The Star Bell above the six sanctuaries"
+        },
+        "durationMs": 8500,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [],
+        "effect": "impact",
+        "focus": "50% 50%"
+      },
+      {
+        "assetId": "opening-harbor-at-twilight",
+        "alt": {
+          "zh": "暮色中的港口听见星铃",
+          "en": "The harbor hears the Star Bell at twilight"
+        },
+        "durationMs": 6500,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [],
+        "effect": "blackout",
+        "focus": "50% 50%"
+      }
+    ],
+    "prologue:P-02": [
+      {
+        "assetId": "opening-keepers-choice",
+        "alt": {
+          "zh": "守铃者走向应急锚室",
+          "en": "The Bellkeeper reaches for the emergency anchor"
+        },
+        "durationMs": 4000,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "effect": "storm",
+        "focus": "50% 50%"
+      },
+      {
+        "assetId": "opening-broken-bell-tongue",
+        "alt": {
+          "zh": "碎裂的铃舌与守铃者的爪",
+          "en": "The broken bell tongue beside the Bellkeeper’s paw"
+        },
+        "durationMs": 4000,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "effect": "seal",
+        "focus": "68% 52%"
+      }
+    ],
+    "prologue:P-03": [
+      {
+        "assetId": "opening-waiting-at-workbench",
+        "alt": {
+          "zh": "暮铃在雨夜修铃",
+          "en": "Muling repairs a bell on a rainy night"
+        },
+        "durationMs": 6500,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [],
+        "effect": "rain",
+        "focus": "50% 50%"
+      },
+      {
+        "assetId": "opening-garden-at-dawn",
+        "alt": {
+          "zh": "暮铃在晨光中把旧铃留在花园",
+          "en": "Muling leaves the old bell in Sunlit Garden at dawn"
+        },
+        "durationMs": 7000,
+        "transitionMs": 900,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.13
+          }
+        },
+        "lines": [],
+        "effect": "seasons",
+        "focus": "50% 50%"
+      }
+    ]
+  },
+  "prologueReleaseAuthorization": {
+    "scope": "Six existing opening raster paintings only, explicitly requested for reuse in the release-prologue task; no independent runtime visual review claimed.",
+    "assets": [
+      "opening-star-bell",
+      "opening-harbor-at-twilight",
+      "opening-keepers-choice",
+      "opening-broken-bell-tongue",
+      "opening-waiting-at-workbench",
+      "opening-garden-at-dawn"
+    ]
   }
 }
