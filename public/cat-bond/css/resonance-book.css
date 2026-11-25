@@ -62,3 +62,13 @@
 #stage.rb-canonical.cb-sunlit-garden #yard-actions{display:flex;gap:6px}
 #stage.rb-canonical.cb-sunlit-garden #yard-actions .fab{flex-shrink:0}
 @media(max-height:500px) and (orientation:landscape){.rb-navigation{position:static}.rb-tabs{overflow-x:auto}.rb-tab{min-height:40px}}
+
+/* The Book replaces exploration management, not the independent system menu.
+   Keep save/load reachable in the atlas, in a region, and inside cultivation. */
+html:not(.cb-cg) #stage.rb-canonical:has(#intro.hide) #cb-system-toggle{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ right:calc(env(safe-area-inset-right,0px) + 124px)!important;
+}
+@media(max-width:420px){html:not(.cb-cg) #stage.rb-canonical:has(#intro.hide) #cb-system-toggle{right:calc(env(safe-area-inset-right,0px) + 112px)!important}}
+#stage.rb-canonical:has(.res-host,.cbcp-root:not([hidden]),.rw-world[data-ceremony]:not([hidden])) #cb-system-toggle{visibility:hidden!important;pointer-events:none!important}
+#stage.rb-canonical.cb-sunlit-garden:has(#intro.hide) .scene-title{visibility:hidden}
