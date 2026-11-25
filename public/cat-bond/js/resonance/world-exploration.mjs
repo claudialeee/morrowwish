@@ -76,7 +76,7 @@ export function exchangeOptions(bridge,region,links){
   const spec=bridge.cargoSpec(a,b);return spec&&actor===region?[spec]:[];
  });
 }
-export function createExplorer(bridge,region,{deferForestMelody=false}={}){
+export function createExplorer(bridge,region,{deferForestMelody=false,deferHarborMelody=false,deferLibraryMelody=false}={}){
  const layout=layouts[region];if(!layout)throw Error("Unknown region");
  const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],path=layout.paths;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set(region==="harbor"?bridge.harborInvited():region==="forest"?bridge.forestInvited():region==="library"?bridge.libraryInvited():[]);
  pos=closest(path,pos).p;
@@ -103,6 +103,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
    const first=v.choice==="rescue"?"rescue:storm-boat":"puzzle:beam-mirrors";
    if(op!==first&&v.objective.includes(first))return {ok:false,reason:v.choice==="rescue"?"rescue-first":"beacon-first"};
   }
+  if(op==="melody:harbor"&&v.objective.includes("repair:harbor"))return {ok:false,reason:"harbor-repair-first"};
   if(op.startsWith("melody:")&&!localNpcs().every(n=>invited.has(n.id)))return {ok:false,reason:"invite-local-cats"};
   active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};puzzle=createPuzzle(op,region==="library"?bridge.libraryRecord():null);if(region==="harbor")harborAssist(puzzle,v);if(puzzle?.type==="pairedWater")puzzle.pair=bridge.pairedGate().pair;if(puzzle?.type==="melody")puzzle.participants=[...invited];
   if(puzzle)return {ok:true,puzzle:true};
@@ -130,7 +131,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false}={}){
   const result=bridge.recordWorld(active.sceneId,active.operation,{...active,verified:true,participants:puzzle?.participants,responses:puzzle?.response,pair:puzzle?.pair,waterSequence:puzzle?.type==="pairedWater"?puzzle.values:undefined,libraryValues:puzzle?.type.startsWith("library")?puzzle.values:undefined,libraryRecord:puzzle?.record});
   if(result.ok){active=null;puzzle=null;}return result;
  }
- function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(deferForestMelody&&puzzle.operation==="melody:forest")return {ok:true,pending:true,ceremony:true};return complete();}
+ function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(deferForestMelody&&puzzle.operation==="melody:forest"||deferHarborMelody&&puzzle.operation==="melody:harbor"||deferLibraryMelody&&puzzle.operation==="melody:library")return {ok:true,pending:true,ceremony:true};return complete();}
  function cargoPoints(){return [path[1],path[path.length-2]];}
  function startCargo(option){
   if(cargo||puzzle||!option||option.actor!==region)return {ok:false,reason:"cargo-busy"};
