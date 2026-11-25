@@ -250,6 +250,7 @@ function mountHud(game,b){
 function renderHud(game,b){
   const p=document.getElementById("cb-forge-hud");if(!p||!b?.forgeState)return;
   const s=b.forgeState,en=window.MorrowwishI18n?.get?.()!=="zh",e=b.enemies?.find(x=>x.visualKind==="forge-guardian");
+  p.dataset.duoArt=String(!!(b.duoCinematic?.t>0&&b.duoCinematic.max-b.duoCinematic.t<b.duoCinematic.strikeAt));
   const set=(sel,value)=>{const n=p.querySelector(sel);if(n&&n.textContent!==value)n.textContent=value;};
   set("[data-forge-title]",en?"EMBERFORGE · E-03":"赤炉环城 · E-03");
   const enemyLabel=document.getElementById("wild-name");if(enemyLabel)enemyLabel.textContent=en?"EMBERFORGE · FURNACE GUARDIAN":"赤炉环城 · 熔炉机械守卫";
@@ -393,7 +394,10 @@ BP.draw=function(ctx){
   if(!this.forgeState)return originalDraw.call(this,ctx);
   const seq=this.captureSeq;this.captureSeq=null;
   try{originalDraw.call(this,ctx);}finally{this.captureSeq=seq;}
-  drawBossEffects(ctx,this);
+  // The original duo storyboard owns the canvas until its deferred impact.
+  // Furnace hazard rings must never be painted over the authored artwork.
+  const duo=this.duoCinematic;
+  if(!(duo?.t>0&&duo.max-duo.t<duo.strikeAt))drawBossEffects(ctx,this);
 };
 window.CatBondForgeCombat={
   rules:{createForgeState,tickForgeState,useForgeSupport,forgeDamageScale},

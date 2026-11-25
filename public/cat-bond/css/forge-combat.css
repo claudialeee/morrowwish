@@ -46,3 +46,5 @@
  #battle-ui .cb-forge-support strong{font-size:9px;line-height:1.2}
  #battle-ui .cb-forge-support button{min-height:44px;padding:5px 6px;max-width:96px}
 }
+
+#battle-ui .cb-forge-hud[data-duo-art="true"]{visibility:hidden;pointer-events:none}

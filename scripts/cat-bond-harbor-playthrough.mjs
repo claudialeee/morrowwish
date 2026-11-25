@@ -538,7 +538,19 @@ try {
     await page.locator('#battle-help').waitFor({state:'hidden'});
     await page.locator('[data-forge-support-button]').click();await page.waitForFunction(()=>__game.battle.forgeState.ventOpen>0&&__game.battle.forgeState.supportCharges===1);await shot('forge-boss-vent');
     if(options.hasTouch){const cdp=await context.newCDPSession(page);const c=await page.locator('#scene').boundingBox();const x=c.x+c.width*.20,y=c.y+c.height*.65;await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+38,y}]});await page.waitForTimeout(300);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}else{await page.keyboard.down('d');await page.waitForTimeout(300);await page.keyboard.up('d');}
-    await page.locator('#btn-auto').click();
+    // Real duo linkage: use the player's manual button when charged; otherwise let
+    // natural auto-combat charge and cast. Do not write charge, HP, timers or saves.
+    const duoButton=page.locator('#duo-burst');
+    const duoBefore=await page.evaluate(()=>__game.battle.duoUses);
+    assert(await page.evaluate(()=>!!__game.battle.duo),'The chosen pair must enter the regional encounter');
+    if(await duoButton.isVisible()&&await duoButton.isEnabled())await duoButton.click();
+    else await page.locator('#btn-auto').click();
+    await page.waitForFunction(n=>{const b=__game.battle;return b?.duoUses>n&&b.duoCinematic?.t>1&&b.duoCinematic.originalArt&&CatBondDuoHero.assetReady},duoBefore,{timeout:120000});
+    await page.waitForFunction(()=>document.querySelector('#cb-forge-hud')?.dataset.duoArt==='true');
+    await shot('forge-duo-original-art');
+    await page.waitForFunction(()=>{const b=__game.battle;return b&&!b.duoCinematic&&b.duoUses>0&&document.querySelector('#cb-forge-hud')?.dataset.duoArt==='false'});
+    assert.equal(await page.evaluate(()=>CatBondDuoHero.assetSource),'63-original-painted-storyboards');
+    if(!await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();
     // Natural combat only: no HP, time, save or engine writes.
     for(const phase of [1,2]){await page.waitForFunction(p=>__game.battle?.forgeState?.phase>=p,phase,{timeout:150000});await shot('forge-phase-'+(phase+1));}
     await page.locator('#cb-forge-result').waitFor({timeout:200000});
@@ -593,7 +605,7 @@ try {
     });
     assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest','forge'],slot:'slot1'});
     assert.deepEqual(errors,[]);
-    results.push({profile:name, captured, ...state, forestComplete:true,forgeComplete:true});
+    results.push({profile:name, captured, ...state, forestComplete:true,forgeComplete:true,forgeDuoOriginalArt:true});
     await context.close();
   }
 } finally {
