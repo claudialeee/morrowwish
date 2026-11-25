@@ -1981,10 +1981,11 @@ export const campaign = {
         }
       ],
       "requires": [
-        "npc:central-dispute"
+        "npc:central-dispute",
+        "npc:central-dispute-lichuan"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": ["npc:central-dispute","npc:central-dispute-lichuan"],
       "choiceTiming": "afterDialogue"
     },
     {
@@ -1997,8 +1998,12 @@ export const campaign = {
       "previous": "starfall:F-01",
       "lines": [],
       "requires": [
+        "explore:crater-fragment",
+        "puzzle:echo-navigation",
         "puzzle:star-map",
-        "explore:catastrophe-record"
+        "explore:ruin-fragment",
+        "explore:catastrophe-record",
+        "cinematic:starfall-memory"
       ],
       "choices": [],
       "lineGate": [],
@@ -2130,7 +2135,7 @@ export const campaign = {
         "npc:central-ruin"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": ["npc:central-ruin"],
       "choiceTiming": "afterDialogue"
     },
     {
@@ -2478,6 +2483,9 @@ export const campaign = {
             "en": "Some cats are angry. Others are willing to work beside Muling, but are not ready to forgive her."
           }
         },
+        {"speaker":"jiedeng","text":{"zh":"那道被你改动的灯路让船只险些失去方向。我要先看到它被修好，才谈得上信任。","en":"The route you changed nearly left ships without guidance. I need to see it repaired before we speak of trust."}},
+        {"speaker":"yahe","text":{"zh":"我愿意和你一起修复水道。但我不能替受到伤害的猫原谅你。","en":"I'll repair the waterways with you. But I cannot forgive you on behalf of the cats who were hurt."}},
+        {"speaker":"moye","text":{"zh":"我们会保留完整的记录。你做的修复也会记下来，但不会抹去从前的事。","en":"We will keep the complete record. Your repairs will be recorded too, without erasing what came before."}},
         {
           "speaker": "muling",
           "text": {

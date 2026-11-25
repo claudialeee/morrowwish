@@ -23,6 +23,7 @@ export const puzzleWords={
  mirrors:[["转动反射镜","Align the mirrors"],["让光路与镜架刻痕重合。","Align the light rays with the etched marks."],[["左镜","Left mirror"],["中镜","Center mirror"],["右镜","Right mirror"]]],
  pairedWater:[["双猫共控水路","Two-cat water control"],["将上层水压调到 2，再打开地下水道；两路稳定后共同疏通。","Set upper pressure to 2, open the lower channel, then clear the roots together."],[["稳住上层","Steady upper pressure"],["打开地下","Open lower channel"],["共同疏通","Clear together"]]],
  water:[["调节双猫水闸","Balance the water gates"],["让水纹与目标刻印一致。","Match the flow to the target markings."],[["上游","Upstream"],["支流","Branch"],["根系","Roots"]]],
+ echo:[["识破空响幻象","See through the Hollow Echo"],["真正的信标保持原有星序；幻象会倒转或重复。","Real beacons preserve the star order; echoes reverse or repeat it."],[["左侧信标","Left beacon"],["中央信标","Middle beacon"],["右侧信标","Right beacon"]]],
  routing:[["分散星铃路由","Distribute resonance"],["接通三条独立支路。","Connect the three independent channels."],[["西路","West"],["中继","Relay"],["东路","East"]]],
  stars:[["校准观星仪","Align the observatory"],["转动星环，让指针与观测刻痕重合。","Rotate the rings to match the observation marks."],[["外环","Outer ring"],["中环","Middle ring"],["内环","Inner ring"]]],
  heat:[["稳定炉温与压力","Stabilize heat and pressure"],["加热升温升压；泄压不降温；冷却同时降低温度和压力。","Heat raises both readings; vent holds heat; coolant lowers both."],[["加热","Heat"],["泄压","Vent"],["冷却","Cool"]]],
@@ -33,9 +34,18 @@ export const puzzleWords={
  melody:[["圣所的第一音","The sanctuary's First Note"],["已邀约的当地居民将回应每个音符。","Invited residents answer each note."],[["低音","Low"],["中音","Middle"],["高音","High"]]]
 };
 export function puzzleHit(x,y){if(y<.40||y>.72)return -1;return [.3,.5,.7].findIndex(cx=>Math.abs(x-cx)<.095)}
+export function echoBeaconOptions(p){
+ const step=p.values.length,original=["✦","✧","●"],correct=p.goal[step],shift=step%3,signal=[...original.slice(shift),...original.slice(0,shift)];
+ return {signal,options:[0,1,2].map(i=>i===correct?signal:i===(correct+1)%3?[...signal].reverse():[signal[0],signal[0],signal[2]])};
+}
 export function paintPuzzle(c,p,lang,cast,W=960,H=540){if(paintLibraryPuzzle(c,p,lang,W,H))return;const w=puzzleWords[p.type],l=lang==="zh"?0:1,X=n=>n*W,Y=n=>n*H,scale=W/960;const tx=(s,x,y,n=21,col=cream)=>label(c,s,X(x),Y(y),n*scale,col);c.save();c.fillStyle="#07131ddd";c.fillRect(0,0,W,H);rect(c,X(.11),Y(.11),X(.78),Y(.78),"#193143f8");rect(c,X(.12),Y(.13),X(.76),Y(.74),null,"#8d7958");tx(w[0][l],.5,.18,25);tx(w[1][l],.5,.25,15,"#cbdfdd");
  const centers=[.3,.5,.7],r=43*scale,yy=Y(.53);
- if(p.type==="pairedWater"){
+ if(p.type==="echo"){
+  const step=p.values.length,{signal,options}=echoBeaconOptions(p);
+  tx((l?"Reference: ":"原始星序：")+signal.join("  "),.5,.34,23,aqua);
+  centers.forEach((x,i)=>{const seq=options[i];disc(c,X(x),yy,r+8*scale,"#273b59","#b7a4d7");tx(seq.join(" "),x,.53,17);tx(w[2][i][l],x,.68,15);});
+  tx((l?"Confirmed signals ":"已核实信标 ")+step+"/3",.5,.76,16,aqua);
+ }else if(p.type==="pairedWater"){
   const [pressure,lower]=p.values,ready=pressure===2,lit=[ready,!!lower,ready&&!!lower],pts=[[.30,.43],[.50,.50],[.70,.59]];for(let i=0;i<2;i++){const a=pts[i],b=pts[i+1];line(c,[[X(a[0]),Y(a[1])],[X(b[0]),Y(b[1])]],lit[i]?"#84ddd0":"#405766",12*scale);if(lit[i]){const t=(Date.now()/900)%1;disc(c,X(a[0]+(b[0]-a[0])*t),Y(a[1]+(b[1]-a[1])*t),4*scale,aqua,null);}}pts.forEach(([x,y],i)=>{disc(c,X(x),Y(y),29*scale,lit[i]?"#286e69":"#304959",lit[i]?aqua:gold);symbol(c,"gate",X(x),Y(y),.9*scale,lit[i]?aqua:gold);tx(w[2][i][l],x,.70,15);});tx((l?"Pressure ":"水压 ")+pressure+" / 3",.30,.55,17,ready?aqua:pressure===3?"#efab78":gold);tx(lower?(l?"OPEN":"已开启"):(l?"CLOSED":"已关闭"),.50,.60,14,lower?aqua:gold);tx(pressure===3?(l?"Overpressure — lower gate closed":"水压过高 · 地下闸门关闭"):!ready?(l?"Adjust the upper valve":"请调节上层水压"):!lower?(l?"Pressure stable · open the lower gate":"水压稳定 · 打开地下水闸"):(l?"Both channels open · clear the roots":"双路稳定 · 共同疏通根脉"),.5,.79,16,aqua);
  }else if(["mirrors","stars","water","routing"].includes(p.type)){centers.forEach((xx,i)=>{const x=X(xx);disc(c,x,yy,r+6*scale,"#2a475a","#79999f");if(p.type==="mirrors"||p.type==="stars"){disc(c,x,yy,r*.76,p.type==="mirrors"?"#426e7d":"#394861",gold);for(let j=0;j<8;j++){let t=j*Math.PI/4;line(c,[[x+Math.cos(t)*r*.8,yy+Math.sin(t)*r*.8],[x+Math.cos(t)*r*.99,yy+Math.sin(t)*r*.99]],"#a7c2c5",1.5*scale);}const a=-Math.PI/2+p.values[i]*Math.PI/2,g=-Math.PI/2+p.goal[i]*Math.PI/2;line(c,[[x+Math.cos(g)*r*.46,yy+Math.sin(g)*r*.46],[x+Math.cos(g)*r,yy+Math.sin(g)*r]],cream,4*scale);line(c,[[x,yy],[x+Math.cos(a)*r*.77,yy+Math.sin(a)*r*.77]],p.values[i]===p.goal[i]?aqua:gold,4*scale);disc(c,x,yy,4*scale,gold,null);}else{line(c,[[x-r*1.4,yy],[x+r*1.4,yy]],p.values[i]?"#80cbc8":"#52697c",9*scale);symbol(c,"gate",x,yy,1.3*scale,p.values[i]===p.goal[i]?aqua:gold);disc(c,x,yy-r-9*scale,6*scale,p.goal[i]?aqua:"#65798b",gold);}tx(w[2][i][l],xx,.68,15);});}
  else if(p.type==="heat"){for(let i=0;i<2;i++){let x=X(i?.63:.37),y=Y(.39),max=i?45:70,R=34*scale;disc(c,x,y,R,"#304b5b",gold);for(let j=0;j<=8;j++){let a=Math.PI*.8+j/8*Math.PI*1.4;line(c,[[x+Math.cos(a)*R*.84,y+Math.sin(a)*R*.84],[x+Math.cos(a)*R,y+Math.sin(a)*R]],"#c0d1ca",1.5);}const a=Math.PI*.8+p.values[i]/max*Math.PI*1.4,g=Math.PI*.8+p.goal[i]/max*Math.PI*1.4;line(c,[[x+Math.cos(g)*R*.8,y+Math.sin(g)*R*.8],[x+Math.cos(g)*R,y+Math.sin(g)*R]],aqua,4);line(c,[[x,y],[x+Math.cos(a)*R*.78,y+Math.sin(a)*R*.78]],"#efab78",3);tx(String(p.values[i]),i?.63:.37,.435,14);}centers.forEach((x,i)=>{rect(c,X(x)-r,Y(.52),r*2,Y(.15),"#385365");symbol(c,"gear",X(x),Y(.57),.8*scale);tx(w[2][i][l],x,.64,16);});}

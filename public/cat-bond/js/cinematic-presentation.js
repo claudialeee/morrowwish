@@ -289,7 +289,19 @@
           node.style.opacity = String(clamp(layer.opacity ?? 1,0,1));
           node.style.mixBlendMode = layer.blend || 'normal';
           node.src = layer.image;
-          this.applyCamera(node,frame.camera,Number(layer.depth)||0,frame.durationMs,frame.transitionMs);
+          if(layer.kind==='actor'){
+            const x=clamp(Number(layer.x)||50,12,88),y=clamp(Number(layer.y)||80,45,91);
+            node.style.inset='auto';node.style.left=x+'%';node.style.top=y+'%';node.style.background='transparent';
+            node.style.width=clamp(Number(layer.width)||22,12,30)+'%';
+            node.style.height='auto';node.style.maxHeight='46%';node.style.objectFit='contain';
+            node.style.transform='translate(-50%,-100%)';
+            node.style.filter='drop-shadow(0 9px 12px rgba(10,15,24,.38))';
+            if(!prefersReducedMotion()&&node.animate){
+              const dx=clamp(Number(layer.travel)||0,-8,8);
+              const a=node.animate([{transform:'translate(-50%,-100%) translateX('+(-dx)+'vw)',opacity:0},{transform:'translate(-50%,-100%) translateX(0)',opacity:1},{transform:'translate(-50%,-100%) translateX('+dx+'vw)',opacity:1}],{duration:Math.max(1200,frame.durationMs),fill:'both',easing:'ease-in-out'});
+              a.currentTime=frame.shotOffsetMs||0;if(this.paused)a.pause();
+            }
+          }else this.applyCamera(node,frame.camera,Number(layer.depth)||0,frame.durationMs,frame.transitionMs);
           this.nodes.stack.appendChild(node);
         }
         ready();
