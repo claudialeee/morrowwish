@@ -230,6 +230,9 @@ try {
     await tapLandmark(.69,.53);
     await readDialogue('forest:R-02');
     await scene('forest:R-03');
+    await button('Open the upper gate with Yahe').click();
+    await button('Paired water gates').waitFor();
+    await shot('forest-upper-gate');
     await puzzle('Paired water gates',['Upstream','Branch','Roots']);
     await readDialogue('forest:R-03');
     await scene('forest:R-04');

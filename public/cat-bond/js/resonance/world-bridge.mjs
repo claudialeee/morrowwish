@@ -10,6 +10,9 @@ const scentTrail=Object.freeze([
 ]);
 const scentKey=i=>"forest:R-02:scent:"+i;
 const scentAt=(w,i)=>{const p=w.positions.forest,q=scentTrail[i]?.point;return !!p&&!!q&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
+const upperGate={point:[.53,.40],npc:"yahe",name:["与芽禾撑开上层水闸","Open the upper gate with Yahe"],clue:["芽禾会守住上层水闸。沿根桥前往榆川处，接通地下水道。","Yahe will hold the upper gate. Cross the root bridge to Yuchuan and reconnect the lower channel."]};
+const pairedKey="forest:R-03:upper-gate";
+const atForest=(w,q)=>{const p=w.positions.forest;return !!p&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
 export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(State)}={}){
  let cachedRoot,cachedStory,cachedApi,cachedView;
  function view(){const api=resolveNarrative();if(!api?.view)throw Error("Canonical narrative host not mounted");const root=State.S;if(cachedRoot===root&&cachedStory===root.resonance&&cachedApi===api&&cachedView)return cachedView;cachedRoot=root;cachedStory=root.resonance;cachedApi=api;return cachedView=api.view();}
@@ -48,12 +51,23 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   const r=physical(x=>({...x,interactions:{...x.interactions,[scentKey(index)]:true}}));
   return r.ok?{...r,pending:true}:r;
  }
+ function pairedGate(){
+  const v=view(),w=world();
+  if(w.location!=="forest"||v.current?.id!=="forest:R-03"||!v.objective.includes("puzzle:paired-water-gates"))return null;
+  return {...clone(upperGate),ready:!!w.interactions[pairedKey]};
+ }
+ function holdUpperGate(token){
+  const gate=pairedGate(),api=resolveNarrative();
+  if(!gate||gate.ready||!token||!api.isCurrentAction(token)||!atForest(world(),gate.point))return fail("walk-to-upper-gate");
+  return physical(w=>({...w,interactions:{...w.interactions,[pairedKey]:true}}));
+ }
  function recordWorld(sceneId,op,proof){
   const api=resolveNarrative(),v=view(),region=v.current?.chapter,w=world();
   if(v.current?.id!==sceneId||w.location!==region||!campaign.regions.includes(region)||!v.objective.includes(op)||proof?.sceneId!==sceneId||proof.operation!==op||proof.region!==region||proof.verified!==true)return fail("invalid-world-evidence");
   if(!/^(explore|puzzle|rescue|repair|melody):/.test(op))return fail("owned-by-other-module");
   if(w.interactions[sceneId+":"+op])return fail("already-completed");
   if(op==="explore:scent-trail"&&(!scentTrail.slice(0,-1).every((_,i)=>w.interactions[scentKey(i)])||!scentAt(w,scentTrail.length-1)))return fail("incomplete-scent-trail");
+  if(op==="puzzle:paired-water-gates"&&(!w.interactions[pairedKey]||!atForest(w,[.69,.53])))return fail("upper-gate-required");
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
@@ -66,5 +80,5 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   const reward={coins:10,fish:1},r=api.exchange({a,b,stage:s.stage,actor:s.actor,action:s.action,verified:true,token:proof.token},patch(x=>({...x,cargo:null}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function pickupReward(region,id){const w=world();if(w.location!==region||!/^cache-[12]$/.test(id)||w.pickups[region+":"+id])return fail("already-collected");return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
- return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,scentStep,traceScent,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
+ return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,scentStep,traceScent,pairedGate,holdUpperGate,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
 }

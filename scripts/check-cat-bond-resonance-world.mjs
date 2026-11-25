@@ -40,6 +40,11 @@ console.log(JSON.stringify((function test(src){
     let trail=x;
     for(let i=0;i<3;i++){const step=trail.scentStep();assert(step?.index===i,"ordered scent waypoint");assert(!trail.traceScent((i+1)%3).ok,"out-of-order scent");walk(trail,step.point);ok(trail.traceScent(i),"trace scent");trail=createExplorer(b,s.chapter);}
     assert(!trail.scentStep(),"completed trail must not reopen");
+   }else if(op==="puzzle:paired-water-gates"){
+    walk(x,p);assert(x.interact(op).reason==="upper-gate-required","cannot bypass upper gate");
+    const gate=x.pairedGate();assert(gate&&!gate.ready,"upper gate available");walk(x,gate.point);ok(x.holdUpperGate(),"hold upper gate");
+    assert(!x.holdUpperGate().ok,"duplicate upper gate action");const restored=createExplorer(b,s.chapter);assert(restored.pairedGate().ready,"paired gate persists");
+    walk(restored,p);ok(restored.interact(op),"lower gate");solve(restored);
    }else{walk(x,p);const r=x.interact(op);ok(r,op);if(r.puzzle)solve(x);}
    assert(!b.view().objective.includes(op),"unrecorded "+op);physical++;
    if(physical===1){const p=x.rewardPoints()[0];walk(x,p.point);const cash=State.S.coins;ok(x.pickup(p.id),"cache reward");assert(State.S.coins>cash&&!x.pickup(p.id).ok,"duplicate reward");rewards++;}
