@@ -50,10 +50,7 @@ export function exchangeOptions(bridge,region,links){
  const v=bridge.view();
  return links.flatMap(([a,b,forward,back])=>{
   const sequence=v.links[a+":"+b]||[],i=sequence.length,actor=[a,b,b,a][i];
-  const chapterEnd=a==="starfall"?"starfall:F-02":campaign.scenes.filter(s=>s.chapter===a).at(-1)?.id;
-  // Engine checks exact chapter gates; also exclude links before the source's melody.
-  if(i>=4||actor!==region||!v.regions.includes(a)||!v.regions.includes(b)||!v.completed.includes(chapterEnd))return [];
-  return [{a,b,stage:stages[i],action:i<2?forward:back,actor,from:i%2===0?0:1,to:i%2===0?1:0}];
+  const spec=bridge.cargoSpec(a,b);return spec&&actor===region?[spec]:[];
  });
 }
 export function createExplorer(bridge,region){
@@ -61,7 +58,7 @@ export function createExplorer(bridge,region){
  const saved=bridge.world().positions[region],path=layout.paths;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set();
  pos=closest(path,pos).p;
  function walk(x,y){
-  if(!Number.isFinite(x)||!Number.isFinite(y)||puzzle)return false;
+  if(!Number.isFinite(x)||!Number.isFinite(y)||puzzle||bridge.world().location!==region)return false;
   const target=closest(path,[x,y]),start=closest(path,pos);
   travel=[];if(target.i>start.i){for(let i=start.i+1;i<=target.i;i++)travel.push(path[i]);}else if(target.i<start.i){for(let i=start.i;i>target.i;i--)travel.push(path[i]);}travel.push(target.p);dest=travel.shift();return true;
  }
@@ -97,7 +94,7 @@ export function createExplorer(bridge,region){
   const result=bridge.exchange(cargo.a,cargo.b,{region,stage:cargo.stage,action:cargo.action,verified:true});
   if(result.ok)cargo=null;return result;
  }
- function localNpcs(){return Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({...n,point:path[Math.min(i+1,path.length-2)]}));}
+ function localNpcs(){const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];return Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({...n,point:i===0?lerp(path[1],path[2],.44):lerp(path[3],path[4],.46)}));}
  function inviteNpc(id){const n=localNpcs().find(n=>n.id===id),v=bridge.view();if(!n||!near(n.point)||!v.objective.includes("melody:"+region))return {ok:false,reason:"npc-not-available"};invited.add(id);return {ok:true};}
  function rewardPoints(){return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
