@@ -5,7 +5,7 @@ export const isLibraryReveal=id=>["library:M-03","library:M-04","library:M-05"].
 export function revealShot(id,c){
  const shot=(path,mode,actors,zh,en)=>({path,mode,actors,caption:[zh,en]});
  if(id==="library:M-03"){
-  if(c<4)return shot(bell,"mural",["player","muling"],"已核实壁画 · 第一任守铃者与暮铃","Verified mural · The first Bellkeeper and Muling");
+  if(c<4)return shot(bell,"mural",["player","muling"],"已核实壁画 · 星铃旁的两只猫","Verified mural · Two cats beside the Star Bell");
   if(c<8)return shot(library,"present",["player","muling"],"月镜书库 · 现实","Moonmirror Library · Present");
   if(c<10)return shot(bell,"memory",["player","muling"],"历史重现","Recovered memory");
   if(c<12)return shot(bell,"memory",["player","muling"],"你自愿献出姓名和记忆，留在星铃应急锚室","You willingly gave your name and memories and remained in the Star Bell's emergency anchor");
@@ -18,7 +18,7 @@ export function revealShot(id,c){
   return shot(waiting,"memory",[],"等待的岁月 · 不是免责的理由","The years of waiting · Not an excuse");
  }
  if(c<4)return shot(atlas,"routes",["moye","baikan"],"两条路径 · 中央汇集与邻地共鸣","Two routes · Inward convergence and neighboring resonance");
- if(c<7)return shot(library,"present",["player","muling"],"不能替别人作出选择","No one can choose for everyone");
+ if(c<8)return shot(library,"present",["player","muling"],"不能替别人作出选择","No one can choose for everyone");
  return shot(starfall,"departure",["muling"],"暮铃离开书库，前往星坠原","Muling leaves the library for Starfall Expanse");
 }
 export function mountLibraryReveal(root,portrait){

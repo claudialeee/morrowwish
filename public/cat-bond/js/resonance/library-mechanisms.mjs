@@ -17,8 +17,8 @@ export function catdexRecord(root){
  const cat=(root?.cats||[]).find(c=>root.dex?.[c.species]>0);
  if(!cat)return null;
  const habits={clever:[1.08,"机敏","Clever"],mischievous:[1.16,"淘气","Mischievous"],glutton:[1.24,"贪吃","Food-loving"],diligent:[1.32,"勤勉","Diligent"],gentle:[1.40,"温柔","Gentle"],shy:[1.48,"害羞","Shy"],lazy:[1.56,"慵懒","Lazy"]};
- const h=habits[cat.personality]||[1.28,"好奇","Curious"];
- return {uid:cat.uid,species:cat.species,name:cat.name||cat.species,habit:h[0],trait:h.slice(1),correct:(Math.round(h[0]*100)+String(cat.species).length)%3};
+ const h=habits[cat.personality?.id||cat.personality]||[1.28,"好奇","Curious"];
+ return {uid:cat.uid,species:cat.species,name:cat.nickname||cat.name||cat.species,habit:h[0],trait:h.slice(1),correct:(Math.round(h[0]*100)+String(cat.species).length)%3};
 }
 export function libraryPuzzle(op,record){
  const types={"explore:sealed-archive":"librarySeal","puzzle:library-reflections":"libraryMirrors","puzzle:mirror-records":"libraryMural","puzzle:library-echo":"libraryEcho","explore:routing-record":"libraryLedger","repair:library":"libraryRestore"};
