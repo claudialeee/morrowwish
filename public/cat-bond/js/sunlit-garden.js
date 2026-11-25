@@ -19,11 +19,8 @@
     bond:'<path d="M12 9c-2-4-8-4-9 1s5 9 9 4l4-5c2-3 6-2 6 2s-5 6-8 2"/><path d="m8 4 1 2m6-2-1 2"/>'
   });
   const HOTSPOTS = [
-    {id:'cats',icon:'🐾',zh:'猫咪',en:'Cats',left:'12%',top:'57%',action:()=>window.UI?.openCatHub?.('solo')},
-    {id:'facilities',icon:'⌂',zh:'家园设施',en:'Facilities',left:'29%',top:'34%',action:()=>window.UI?.openBuild?.()},
-    {id:'catdex',icon:'▤',zh:'Catdex',en:'Catdex',left:'55%',top:'36%',action:()=>window.UI?.openDex?.()},
-    {id:'workshop',icon:'⚒',zh:'工坊',en:'Workshop',left:'81%',top:'43%',action:()=>window.UI?.openWorkshop?.()},
-    {id:'bond',icon:'∞',zh:'双猫羁绊',en:'Duo Bond',left:'77%',top:'71%',action:()=>window.UI?.openBondPanel?.()}
+    {id:'book',zh:'星铃之书',en:'Resonance Book',action:()=>window.ResonanceBook?.open()},
+    {id:'facilities',zh:'家园设施',en:'Facilities',action:()=>window.UI?.openBuild?.()}
   ];
   let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null,hitState=null,guide=null,guideKey='';
   const isEnglish=()=>window.MorrowwishI18n?.get?.()!=='zh';
@@ -43,7 +40,7 @@
     for(const item of HOTSPOTS){
       const b=root.querySelector('[data-garden-action="'+item.id+'"]');if(!b)continue;
       const label=en?item.en:item.zh;
-      b.querySelector('.sg-hotspot-icon').innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[item.id]+'</svg>';
+      b.querySelector('.sg-hotspot-icon').innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[item.id==='book'?'catdex':item.id]+'</svg>';
       b.querySelector('.sg-hotspot-label').textContent=label;
       b.title=label;b.setAttribute('aria-label',label);
     }
@@ -68,8 +65,7 @@
     const add=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};row.append(b)};
     if(talk)add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));
     if(departure){
-      add('猫咪队伍','Companions',()=>window.UI?.openCatHub?.('solo'));
-      add('工坊','Workshop',()=>window.UI?.openWorkshop?.());
+      hint.textContent=en?'Open Resonance Book to prepare your companions, then head to Misttide Harbor.':'打开星铃之书整理伙伴，再前往霁潮港。';
       add('前往世界地图','World map',()=>game.openWorldMap());
     }
   }
