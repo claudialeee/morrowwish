@@ -47,3 +47,9 @@ For each listed species: retain markings, eye color, muzzle, ears, tail and fur 
 Six region WebP environment files, 12 NPC painted WebPs and the 63-frame Duo sheet exist. Current regional combat mapping mixes WebP and SVG arenas; only Emberforge has a separately named painted battle arena and painted boss WebP. Harbor, Skyspine, Moonmirror and Starfall regional arena references are SVG; Rootsleep uses the exploration WebP. Their rendered quality and replacement needs require actual screenshot review. No unreviewed arena or NPC asset is deleted or substituted.
 
 This inventory establishes file/runtime facts, not a visual approval of any asset.
+
+## Actual battle art review (baseline a80833c)
+
+The archived Harbor/Forest browser playthrough screenshots show a flat tiled harbor arena and a highly detailed forest WebP with relatively low actor/background separation. The live harbor renderer now prefers the existing painted harbor environment, with the older dedicated SVG retained as decode fallback; this is not a new battle-specific illustration. Existing forest and forge painting references are preserved. Other regional arena SVGs remain referenced pending actual normal-play visual review. All six regional backdrops receive restrained region-specific tonal separation; manifestation sprites receive a grounded soft contact shadow without changing movement or hit areas.
+
+Independent battle-specific painterly masters still needed for Misttide Harbor and Rootsleep Forest; the Skyspine, Moonmirror and Starfall dedicated SVG arena quality requires rendered review before approval or replacement. Preserve the existing authored Forge and final Star Bell WebP arenas. Do not count interim reused environment art as newly drawn arena art.
