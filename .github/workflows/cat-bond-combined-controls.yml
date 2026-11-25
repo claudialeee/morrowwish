@@ -1,5 +1,10 @@
 name: Cat Bond combined controls and replay (no deploy)
 on:
+  workflow_call:
+    inputs:
+      combined:
+        type: boolean
+        default: false
   pull_request:
     branches: [rpg/cat-bond-takeover]
     paths:
@@ -11,7 +16,7 @@ permissions:
   contents: read
 jobs:
   controls:
-    if: github.head_ref == 'rpg/release-combined-next'
+    if: inputs.combined && github.head_ref == 'rpg/release-combined-next'
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:

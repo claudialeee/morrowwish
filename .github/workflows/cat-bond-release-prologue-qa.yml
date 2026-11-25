@@ -1,5 +1,10 @@
 name: Cat Bond release prologue — browser acceptance
 on:
+  workflow_call:
+    inputs:
+      combined:
+        type: boolean
+        default: false
   pull_request:
     branches: [rpg/cat-bond-takeover, main]
     paths:
@@ -9,11 +14,11 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: cat-bond-release-prologue-${{ github.event.pull_request.number }}
+  group: cat-bond-release-prologue-${{ github.event.pull_request.number }}-${{ inputs.combined && github.run_id || 'legacy' }}
   cancel-in-progress: true
 jobs:
   prologue:
-    if: startsWith(github.head_ref, 'rpg/release-prologue') || github.head_ref == 'rpg/cat-bond-takeover' || github.head_ref == 'rpg/release-combined-next'
+    if: inputs.combined || (github.head_ref != 'rpg/release-combined-next' && (startsWith(github.head_ref, 'rpg/release-prologue') || github.head_ref == 'rpg/cat-bond-takeover' || github.head_ref == 'rpg/release-combined-next'))
     strategy:
       fail-fast: false
       matrix:

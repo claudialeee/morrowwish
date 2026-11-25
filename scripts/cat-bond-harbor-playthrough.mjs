@@ -451,6 +451,11 @@ try {
     await button('Scent on damp moss · 1/3').click();
     await button('Herbs on the canopy path · 2/3').waitFor();
     await shot('forest-trail-first');
+    if(process.env.CAT_BOND_MAP_ONLY==='1'){
+      assert.deepEqual(errors,[]);
+      results.push({profile:name,mapSmoke:true,captured,harborComplete:true,forestEntered:true});
+      await context.close();continue;
+    }
     await page.evaluate(()=>MorrowwishI18n.set('zh'));
     await button('林间药草痕迹 · 2/3').waitFor();
     await page.getByText('湿苔上留下了药箱经过的痕迹。沿上方林道继续追踪。',{exact:true}).waitFor();

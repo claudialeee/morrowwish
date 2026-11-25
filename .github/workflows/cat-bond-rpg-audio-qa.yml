@@ -1,16 +1,21 @@
 name: Cat Bond original audio browser QA (no deployment)
 on:
+  workflow_call:
+    inputs:
+      combined:
+        type: boolean
+        default: false
   pull_request:
     branches: [rpg/cat-bond-takeover]
     types: [opened, synchronize, reopened, ready_for_review]
 concurrency:
-  group: cat-bond-audio-${{ github.event.pull_request.number }}
+  group: cat-bond-audio-${{ github.event.pull_request.number }}-${{ inputs.combined && github.run_id || 'legacy' }}
   cancel-in-progress: true
 permissions:
   contents: read
 jobs:
   audio:
-    if: (github.head_ref == 'rpg/release-audio' || github.head_ref == 'rpg/release-combined-next') && github.event.pull_request.head.repo.full_name == github.repository
+    if: inputs.combined || (github.head_ref != 'rpg/release-combined-next' && ((github.head_ref == 'rpg/release-audio' || github.head_ref == 'rpg/release-combined-next') && github.event.pull_request.head.repo.full_name == github.repository))
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:

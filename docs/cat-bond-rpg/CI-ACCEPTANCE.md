@@ -1,0 +1,5 @@
+# Cat Bond CI: incremental development and exact release acceptance
+
+Daily PR #109 synchronizations compare only the previous and new head, then invoke affected suites. Map-only edits run the three-device map smoke, including real atlas gestures, landmarks, Harbor mechanics, capture, reload and Forest entry, plus world logic. They do not run the entire campaign. Unknown shared game changes conservatively select all daily suites; audio rendering is restricted to score changes or unknown diff range. Daily tests never authorize deployment.
+
+To explicitly validate a release candidate, add the `cat-bond-full-qa` label to PR #109 (remove and re-add if already present). The labeled event pins that head and runs the previous eight release suites, including all three complete campaign devices, without cancellation by daily edits. The score verification is read-only. The preview gate requires the exact full release workflow and actual successful jobs, not daily or skipped checks. A later source commit requires a new explicit release acceptance. Never merge main or deploy production from these workflows.

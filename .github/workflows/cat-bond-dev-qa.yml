@@ -1,0 +1,129 @@
+name: Cat Bond incremental development QA
+on:
+  pull_request:
+    branches: [rpg/cat-bond-takeover]
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-dev-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+jobs:
+  changes:
+    if: github.head_ref == 'rpg/release-combined-next' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    outputs:
+      map: ${{ steps.scope.outputs.map }}
+      core: ${{ steps.scope.outputs.core }}
+      controls: ${{ steps.scope.outputs.controls }}
+      prologue: ${{ steps.scope.outputs.prologue }}
+      book: ${{ steps.scope.outputs.book }}
+      audio: ${{ steps.scope.outputs.audio }}
+      score: ${{ steps.scope.outputs.score }}
+      visual: ${{ steps.scope.outputs.visual }}
+      story: ${{ steps.scope.outputs.story }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - id: scope
+        run: node scripts/cat-bond-ci-scope.mjs
+  map:
+    needs: changes
+    if: needs.changes.outputs.map == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 16
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [desktop, portrait, landscape]
+    env:
+      CAT_BOND_PROFILE: ${{ matrix.profile }}
+      CAT_BOND_MAP_ONLY: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/check-cat-bond-resonance-world.mjs
+      - run: npm ci && npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Real map, landmark, puzzle, battle and region transition smoke
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/map-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          node scripts/cat-bond-harbor-playthrough.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: daily-map-${{ matrix.profile }}
+          path: artifacts/cat-bond-harbor/
+          if-no-files-found: warn
+          retention-days: 3
+  story:
+    needs: changes
+    if: needs.changes.outputs.story == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node scripts/test-cat-bond-resonance.mjs
+          node scripts/test-cat-bond-resonance-slot.mjs
+          node scripts/test-cat-bond-resonance-combat.mjs
+          node scripts/test-cat-bond-forge-combat.mjs
+          node scripts/test-cat-bond-resonance-ambient.mjs
+  core:
+    needs: changes
+    if: needs.changes.outputs.core == 'true'
+    uses: ./.github/workflows/cat-bond-core-regression.yml
+    with:
+      combined: true
+  controls:
+    needs: changes
+    if: needs.changes.outputs.controls == 'true'
+    uses: ./.github/workflows/cat-bond-combined-controls.yml
+    with:
+      combined: true
+  prologue:
+    needs: changes
+    if: needs.changes.outputs.prologue == 'true'
+    uses: ./.github/workflows/cat-bond-release-prologue-qa.yml
+    with:
+      combined: true
+  book:
+    needs: changes
+    if: needs.changes.outputs.book == 'true'
+    uses: ./.github/workflows/cat-bond-resonance-book-qa.yml
+    with:
+      combined: true
+  audio:
+    needs: changes
+    if: needs.changes.outputs.audio == 'true' && needs.changes.outputs.score != 'true'
+    uses: ./.github/workflows/cat-bond-rpg-audio-qa.yml
+    with:
+      combined: true
+  score:
+    needs: changes
+    if: needs.changes.outputs.score == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/cat-bond-bright-score-render.yml
+    with:
+      combined: true
+  visual:
+    needs: changes
+    if: needs.changes.outputs.visual == 'true'
+    uses: ./.github/workflows/cat-bond-visual-polish-qa.yml
+    with:
+      combined: true

@@ -1,6 +1,11 @@
 name: Cat Bond Misttide Harbor playthrough
 
 on:
+  workflow_call:
+    inputs:
+      combined:
+        type: boolean
+        default: false
   pull_request:
     branches: [main, rpg/integration, rpg/cat-bond-takeover]
     paths:
@@ -15,15 +20,15 @@ on:
 permissions:
   contents: read
 
-# Completed failure logs are preserved in the PR. Cancel superseded commits
-# so the exact latest source gets the full three-profile matrix immediately.
-# Never cancel other profiles within the active matrix (fail-fast remains false).
+# Combined release calls are isolated by caller run ID; ordinary PR pushes cannot cancel them.
+# Other branches retain their legacy acceptance behavior.
 concurrency:
-  group: cat-bond-harbor-acceptance-${{ github.event.pull_request.number }}
+  group: cat-bond-harbor-acceptance-${{ github.event.pull_request.number }}-${{ inputs.combined && github.run_id || 'legacy' }}
   cancel-in-progress: true
 
 jobs:
   harbor:
+    if: inputs.combined || github.head_ref != 'rpg/release-combined-next'
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     strategy:
