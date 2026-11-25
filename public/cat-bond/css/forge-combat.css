@@ -56,3 +56,17 @@
  #battle-ui:has(.cb-forge-hud) .battle-hint:not(.coach-hint){display:none!important}
  #battle-ui:has(.cb-forge-hud) .battle-hint.coach-hint{top:calc(env(safe-area-inset-top,0px) + 200px)!important;max-width:90%!important}
 }
+
+/* The real portrait screenshot exposed an additional header squeeze: hidden
+   debug buttons inherited display:inline-flex, consuming room for real controls.
+   Keep those buttons hidden and constrain the poise caption to its own column. */
+#battle-ui:has(#cb-forge-hud) .battle-tools #btn-debug[hidden]{display:none!important}
+#battle-ui:has(#cb-forge-hud) .battle-enemy-summary{min-width:0;overflow:hidden}
+#battle-ui:has(#cb-forge-hud) .battle-poise-label{flex:0 1 auto;min-width:0;max-width:calc(100% - 26px);overflow:hidden;text-overflow:ellipsis}
+@media(max-width:600px) and (orientation:portrait){
+ #battle-ui:has(#cb-forge-hud) .battle-topbar{grid-template-columns:minmax(0,1fr) max-content!important;gap:5px!important}
+ #battle-ui:has(#cb-forge-hud) .battle-tools #battle-help-toggle,
+ #battle-ui:has(#cb-forge-hud) .battle-tools #btn-flee{min-width:32px!important;width:32px!important;overflow:hidden}
+ #battle-ui:has(#cb-forge-hud) .battle-tools #btn-auto{min-width:65px!important;max-width:76px!important;padding:2px 3px!important;overflow:hidden}
+ #battle-ui.touch-manual .cb-forge-hud{bottom:max(150px,23vh)}
+}

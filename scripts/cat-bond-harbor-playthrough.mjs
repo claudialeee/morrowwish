@@ -516,6 +516,11 @@ try {
     assert.equal(await page.evaluate(()=>__game.battle.forgeState.assist),name==='portrait'?'jinpo':'xiaomao');
     const forgeTutorial=page.locator('#battle-tutorial-skip');if(await forgeTutorial.isVisible())await forgeTutorial.click();
     await page.locator('#cb-forge-hud img').evaluateAll(imgs=>Promise.all(imgs.map(img=>img.decode())));
+    assert.equal(await page.locator('#btn-debug').isVisible(),false,'Hidden developer control must not consume the battle header');
+    const headerClearance=await page.evaluate(()=>{
+      const a=document.querySelector('.battle-enemy-summary').getBoundingClientRect(),b=document.querySelector('.battle-tools').getBoundingClientRect();
+      return a.right<=b.left+1;
+    });assert(headerClearance,'Enemy information and battle controls have independent header columns');
     if(name==='portrait'){
       const clearance=await page.evaluate(()=>{
         const hud=document.getElementById('cb-forge-hud').getBoundingClientRect();
