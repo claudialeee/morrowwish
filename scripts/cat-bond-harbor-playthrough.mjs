@@ -377,13 +377,121 @@ try {
     await button('Rootsleep Forest').click();
     await button('World atlas',page.locator('.rw-head')).click();
     await button('Emberforge City').click();
-    assert.equal(await page.evaluate(()=>WorldMap.mode),'map');
-    await page.getByText('Chapter II complete. The route to Emberforge is unlocked; the story continues in a future update. Your save is preserved.',{exact:true}).waitFor();
+    await page.waitForFunction(()=>WorldMap.mode==='region'&&WorldMap.currentRegion==='forge');
+    await scene('forge:E-01');
+    await page.locator('.rw-current strong').filter({hasText:'The Silent Furnace'}).waitFor();
     await page.evaluate(()=>MorrowwishI18n.set('zh'));
-    await page.getByText('第二章已完成。赤炉环城航线已解锁，故事将在后续更新中继续。存档已保留。',{exact:true}).waitFor();
-    assert.equal(await page.getByText('Chapter II complete. The route to Emberforge is unlocked; the story continues in a future update. Your save is preserved.',{exact:true}).count(),0);
+    await page.locator('.rw-current strong').filter({hasText:'沉寂的熔炉'}).waitFor();
     await page.evaluate(()=>MorrowwishI18n.set('en'));
-    await button('Rootsleep Forest').click();
+    await shot('forest-to-forge');
+    await button('Talk to Xiaomao').click();
+    await page.locator('.res-host[data-scene="forge:E-01"] .res-line').waitFor({state:'visible'});
+    await shot('forge-arrival-dialogue');
+    await readDialogue('forge:E-01');
+    await scene('forge:E-02');
+
+    // Chapter III and IV normal-player continuation. No save injection or engine calls.
+    await puzzle('Safety blueprint',['Frame','Pipes','Valve']);
+    const forgeChoice=name==='portrait'?'Let Jinpo speak to the workers first':'Publish the accident record now';
+    await readDialogue('forge:E-02',forgeChoice);await scene('forge:E-03');
+    await button('Continue story').click();await readDialogue('forge:E-03');
+    await puzzle('Furnace controls',['Heat','Heat','Heat','Heat','Vent','Vent','Vent']);
+    await button('Forge guardian').click();
+    await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();
+    await page.locator('#cb-forge-hud').waitFor();
+    if(await page.locator('#battle-tutorial-skip').isVisible())await page.locator('#battle-tutorial-skip').click();
+    await page.locator('#btn-flee').click();await page.locator('#cb-forge-result').waitFor();
+    assert.equal(await page.locator('#cb-forge-result h2').innerText(),'WITHDRAWN');
+    await page.locator('[data-forge-retry]').click();await page.locator('#cb-forge-hud').waitFor();
+    if(!await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();
+    await page.locator('#cb-forge-result').waitFor({timeout:200000});
+    await shot('forge-natural-result');assert.equal(await page.locator('#cb-forge-result h2').innerText(),'FURNACE STABILIZED');
+    await page.locator('[data-forge-return]').click();await scene('forge:E-04');
+    if(await page.locator('.res-host[data-scene="forge:E-04"]').isVisible())await readDialogue('forge:E-04');
+    await puzzle('Hearth sanctuary',['Heat','Heat','Heat','Heat','Vent']);
+    await button('Invite Jinpo').click();await button('Invite Jinpo').waitFor({state:'hidden'});
+    await button('Invite Xiaomao').click();await button('Invite Xiaomao').waitFor({state:'hidden'});
+    await puzzle('Song of Ember',['High','Middle','Low']);
+    if(await page.locator('.res-host[data-scene="forge:E-04"]').isVisible())await readDialogue('forge:E-04');
+    else if(await button('Continue story').isVisible()){await button('Continue story').click();await readDialogue('forge:E-04');}
+    await scene('sky:S-01');
+    await ship('forge','Cooling water and herbs');await ship('forge','Pumps and tools');await travel('Rootsleep Forest');await ship('forest','Pumps and tools');
+    await travel('Emberforge City');await ship('forge','Wind vanes and flight parts');
+    await travel('Skyspine Isles');await page.waitForFunction(()=>WorldMap.currentRegion==='sky');
+    await page.locator('.rw-sky-region[data-art-ready="true"]').waitFor();await shot('sky-arrival');
+    await ship('sky','Wind vanes and flight parts');
+    async function skyDialogue(id,choice){
+      const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();
+      if(choice)await button(choice,dlg).click();
+      let seen=0;
+      for(;;){
+        const line=await page.evaluate(expected=>{const v=CatBondResonance.view();return v.current?.id===expected&&v.lineReady?v.current.lines[v.cursor]:null},id);
+        if(!line||!await dlg.isVisible())break;
+        await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.en);
+        if(['lingyu','yuanfan','muling'].includes(line.speaker))await dlg.locator('.res-portrait').evaluate(img=>img.decode());
+        await dlg.locator('[data-res-language]').click();
+        await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.zh);
+        if(!seen)await shot(id.replace(':','-')+'-zh');
+        await dlg.locator('[data-res-language]').click();
+        await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.en);
+        if(id==='sky:S-04'&&seen===11){
+          await dlg.locator('[data-sky-taps="1"]').waitFor();await shot('sky-pendant-tap-one');
+          await dlg.locator('[data-sky-taps="2"]').waitFor();await shot('sky-pendant-tap-two');
+        }
+        seen++;await button('Continue',dlg).click();
+      }
+      assert.equal(seen,{'sky:S-01':4,'sky:S-02':3,'sky:S-03':3,'sky:S-04':12}[id],id+' all real dialogue lines');
+      if(await dlg.isVisible())await button('Close',dlg).click();
+    }
+    async function skyFlight(label,heights,failFirst=false){
+      await button(label).click();const status=page.locator('[data-sky-flight-status]');await status.waitFor();
+      const surface=page.locator('.rw-surface');await surface.scrollIntoViewIfNeeded();const box=await surface.boundingBox();
+      const send=options.hasTouch?await context.newCDPSession(page):null;
+      const p=y=>({x:Math.round(box.x+box.width*.30),y:Math.round(box.y+box.height*y)});
+      const start=async y=>{const q=p(y);if(send)await send.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[q]});else{await page.mouse.move(q.x,q.y);await page.mouse.down();}};
+      const move=async y=>{const q=p(y);if(send)await send.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[q]});else await page.mouse.move(q.x,q.y,{steps:5});};
+      const end=async()=>{if(send)await send.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});else await page.mouse.up();};
+      if(failFirst){await start(.5);await end();await page.waitForFunction(()=>Number(document.querySelector('[data-sky-flight-status]')?.dataset.attempts)>0,null,{timeout:20000});await shot('sky-flight-failed');}
+      await start(heights[0]);await shot('sky-flight-'+label.replaceAll(' ','-'));
+      for(let i=1;i<=3;i++){await page.waitForFunction(g=>Number(document.querySelector('[data-sky-flight-status]')?.dataset.gates)===g,i,{timeout:18000});await move(i===3?.5:heights[i]);}
+      await end();await status.waitFor({state:'hidden',timeout:20000});if(send)await send.detach();
+    }
+    await button('Talk to Yuanfan').click();await skyDialogue('sky:S-01');await scene('sky:S-02');
+    await skyFlight('Flight recorder',[.68,.29,.66],true);await skyDialogue('sky:S-02');await scene('sky:S-03');
+    await button('Talk to Yuanfan').click();const skyChoice=name==='portrait'?'Train on a joint route first':'Let Yuanfan lead';
+    await skyDialogue('sky:S-03',skyChoice);
+    await skyFlight('Joint gliding platform',[.29,.72,.31]);await scene('sky:S-04');
+    await button('Talk to Muling').click();await skyDialogue('sky:S-04');await scene('sky:S-05');
+    await skyFlight('Windwing sanctuary',[.67,.30,.64]);
+    await button('Invite Lingyu').click();await button('Invite Lingyu').waitFor({state:'hidden'});
+    await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene('sky:S-05');
+    if(await button('Skyspine Isles').isVisible())await button('Skyspine Isles').click();
+    assert.equal(await button('Invite Lingyu').count(),0);
+    await button('Invite Yuanfan').click();await button('Invite Yuanfan').waitFor({state:'hidden'});
+    await button('Open Sky').click();const skyMelody=page.locator('.rw-puzzle-controls');await skyMelody.waitFor();
+    for(const note of ['Middle','High','Low'])await button(note,skyMelody).click();
+    await page.waitForTimeout(850);await shot('sky-open-sky-ceremony');await skyMelody.waitFor({state:'hidden'});
+    await scene('library:M-01');assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().melodies),['harbor','forest','forge','sky']);await shot('sky-restored');
+    await ship('sky','Wind data and airship route');await travel('Emberforge City');await ship('forge','Wind data and airship route');
+    assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().links['forge:sky']),['sendA','receiveB','sendB','receiveA']);
+    await travel('Skyspine Isles');
+    await skyFlight('Fly to Farwind Isle',[.72,.27,.67]);await tapLandmark(.39,.20);await button('Inspect courier cache').click();
+    await page.waitForFunction(()=>!!State.S.resonanceExploration.pickups['sky:survey-cache']);await shot('sky-hidden-cache');
+    await skyFlight('Return to Courier Dock',[.28,.73,.29]);
+    // Real optional regional battle; preserve natural battle outcome.
+    await button('Approach wild cat').click();await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();
+    await page.locator('#battle-ui.on').waitFor();assert.equal(await page.evaluate(()=>__game.battle.regionalCombat?.kit.kind),'gale');
+    await page.locator('#btn-auto').click();if(await page.locator('#battle-tutorial-skip').isVisible())await page.locator('#battle-tutorial-skip').click();
+    if(options.hasTouch){const battle=page.locator('#battle-ui');const rect=await battle.boundingBox();await page.touchscreen.tap(rect.x+rect.width*.6,rect.y+rect.height*.5);}else{await page.keyboard.down('d');await page.waitForTimeout(350);await page.keyboard.up('d');}
+    await shot('sky-battle-manual');await page.locator('#btn-auto').click();
+    await page.waitForFunction(()=>__game.scene==='map',null,{timeout:200000});await page.locator('#cr-ok,#battle-recovery-ok').waitFor();await shot('sky-natural-battle-result');await page.locator('#cr-ok,#battle-recovery-ok').click();
+    await button('World atlas',page.locator('.rw-head')).click();assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('library')),true);assert.equal(await button('Moonmirror Library').isDisabled(),true);
+    await button('Catdex',page.locator('.rw-system-nav')).click();await page.getByText('Skyspine flight record',{exact:true}).waitFor();await shot('sky-catdex');await page.locator('#panel .card-close').click();
+    await button('Workshop',page.locator('.rw-system-nav')).click();await page.getByText(/Skyspine wind calibration/).waitFor();await shot('sky-workshop');await page.locator('#panel .card-close').click();
+    await page.evaluate(()=>MorrowwishI18n.set('zh'));await page.getByText(/第四章已完成 · 月镜书库已解锁/).waitFor();await shot('sky-release-zh');await page.evaluate(()=>MorrowwishI18n.set('en'));
+    await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='sky')?.unlocked));await shot('sky-garden');
+    await page.locator('#fab-map').click();await button('Rootsleep Forest').click();
+
     // Save isolation: detached controls and the old region must not survive a slot switch,
     // even if a queued callback is invoked synchronously before the next animation frame.
     await button('World atlas',page.locator('.rw-head')).click();
@@ -397,9 +505,9 @@ try {
       if(!State.loadSlot('slot1'))throw Error('Restore original slot failed');
       return {newSlot,melodies:State.S.resonance.melodies,slot:State.activeSlot()};
     });
-    assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest'],slot:'slot1'});
+    assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest','forge','sky'],slot:'slot1'});
     assert.deepEqual(errors,[]);
-    results.push({profile:name, captured, ...state, forestComplete:true});
+    results.push({profile:name, captured, ...state, forestComplete:true,forgeEntered:true,skyComplete:true});
     await context.close();
   }
 } finally {

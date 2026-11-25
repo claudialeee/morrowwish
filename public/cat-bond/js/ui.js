@@ -2265,7 +2265,7 @@ const UI = {
     const flightRecord=canonical?.evidence?.["sky:S-02"]?.includes("explore:flight-recorder")||canonical?.completed?.includes("sky:S-02");
     const pendantRecord=canonical?.completed?.includes("sky:S-04");
     const skyRecords=(flightRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Skyspine flight record":"云脊飞行记录"}</strong><small>${en?"Yuanfan cut the cargo line after Lingyu misread the wind, saving both couriers.":"翎羽误判风向后，远帆切断货索，救下两位信使。"}</small></span><b>${en?"Verified":"已核实"}</b></section>`:"")+(pendantRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Muling · familiar habit":"暮铃 · 熟悉的习惯"}</strong><small>${en?"When she is uneasy, she taps her old bell pendant twice.":"心神不宁时，她会轻敲旧铃坠两次。"}</small></span><b>${en?"Observed":"已观察"}</b></section>`:"");
-    const storyRecord=!canonical?.schema&&story?.playerRecorded
+    const storyRecord=story?.playerRecorded
       ?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?'The Last Page':'最后一页'}</strong><small>${en?'The Bellkeeper: ':'守铃者：'}${recordName}</small></span><b>${en?'Complete':'已完成'}</b></section>`:'';
     this.panel(`<span class="card-close">×</span>
       <h2>图鉴 <span class="tiny">${owned}/${total}</span></h2>
