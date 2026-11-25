@@ -2283,9 +2283,10 @@ const UI = {
           :'每获得 3 枚徽章，永久增加稀有猫的遭遇机会。'}</span>
         <small>${en?'Permanent rarity-weight boost':'当前永久稀有权重加成'}：+${Math.round(mastery.luckBonus*100)}%</small>
       </div>
+      ${skyRecords?`<details class="cb-dex-sky-records"><summary>${en?'Skyspine journey records':'云脊旅途见闻'} <span>${Number(!!flightRecord)+Number(!!pendantRecord)}/2</span></summary>${skyRecords}</details>`:''}
       <div class="dex-grid">${cells}</div>
       ${forgeRecord}
-      ${storyRecord}${skyRecords}
+      ${storyRecord}
       ${this.reactionCodexHtml(en)}`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.querySelectorAll('#panel .dex-cell').forEach(cell => {

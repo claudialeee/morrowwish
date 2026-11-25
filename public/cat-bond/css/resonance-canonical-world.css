@@ -141,3 +141,10 @@
  .rw-sky-region .rw-controls,.rw-sky-region .rw-world-actions,.rw-sky-region .rw-cargo{justify-content:flex-start;margin:8px 0;gap:6px}
  .rw-sky-region .rw-puzzle-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:0}.rw-sky-region .rw-sky-flight-status,.rw-sky-region .rw-puzzle-controls>.rw-button:last-child{grid-column:1/-1}.rw-sky-region .rw-puzzle-controls .rw-button{min-width:0;padding:7px 5px}
 }
+
+/* Keep canonical Skyspine evidence easy to find without expanding the breed grid. */
+#panel .cb-dex-sky-records{border:1px solid #c3b895;border-radius:11px;margin:10px 0 14px;padding:0 10px;background:linear-gradient(130deg,#f4efe2,#ece6d9);color:#514a3b}
+#panel .cb-dex-sky-records summary{min-height:44px;line-height:1.4;padding:11px 2px;box-sizing:border-box;cursor:pointer;font-weight:750;font-size:13px}
+#panel .cb-dex-sky-records summary span{float:right;color:#7d806a;font-variant-numeric:tabular-nums;font-size:12px}
+#panel .cb-dex-sky-records summary:focus-visible{outline:2px solid #9a8056;outline-offset:3px;border-radius:4px}
+#panel .cb-dex-sky-records .cb-dex-story-record{margin:4px 0 9px}

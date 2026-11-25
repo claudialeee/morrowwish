@@ -698,8 +698,11 @@ try {
       await shot('sky-natural-victory-after-defeat');await page.locator('#cr-ok').click();
     }
     await button('World atlas',page.locator('.rw-head')).click();assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('library')),true);assert.equal(await button('Moonmirror Library').isDisabled(),true);
-    await button('Catdex',page.locator('.rw-system-nav')).click();await page.getByText('Skyspine flight record',{exact:true}).waitFor();await shot('sky-catdex');await page.locator('#panel .panel-dismiss').click();
-    await button('Workshop',page.locator('.rw-system-nav')).click();await page.getByText(/Skyspine wind calibration/).waitFor();await shot('sky-workshop');await page.locator('#panel .panel-dismiss').click();
+    const stablePanel=async()=>{await page.locator('#panel.open > .card').waitFor();await page.locator('#panel.open').evaluate(el=>Promise.allSettled(el.getAnimations({subtree:true}).filter(a=>a.effect?.getTiming().iterations!==Infinity).map(a=>a.finished)));};
+    await button('Catdex',page.locator('.rw-system-nav')).click();await stablePanel();
+    const skyRecords=page.locator('.cb-dex-sky-records');await skyRecords.locator('summary').click();
+    await skyRecords.getByText('Skyspine flight record',{exact:true}).waitFor();await skyRecords.getByText('Muling · familiar habit',{exact:true}).waitFor();await skyRecords.scrollIntoViewIfNeeded();await shot('sky-catdex');await page.locator('#panel .panel-dismiss').click();
+    await button('Workshop',page.locator('.rw-system-nav')).click();await stablePanel();const calibrated=page.getByText(/Skyspine wind calibration/);await calibrated.waitFor();await calibrated.scrollIntoViewIfNeeded();assert(await page.evaluate(()=>Raising.stationsView().find(s=>s.id==='st_watch')?.skyCalibrated));await shot('sky-workshop');await page.locator('#panel .panel-dismiss').click();
     await page.evaluate(()=>MorrowwishI18n.set('zh'));await page.getByText(/第四章已完成 · 月镜书库已解锁/).waitFor();await shot('sky-release-zh');await page.evaluate(()=>MorrowwishI18n.set('en'));
     await button('Sunlit Garden',page.locator('.rw-head')).click();await page.waitForFunction(()=>__game.scene==='yard');assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='sky')?.unlocked));const guide=page.getByRole('button',{name:/Skip/}).filter({visible:true});if(await guide.count()===1)await guide.click();
     await shot('sky-garden');
@@ -733,7 +736,13 @@ try {
     });
     assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest','forge','sky'],slot:'slot1'});
     assert.deepEqual(errors,[]);
-    results.push({profile:name, captured, ...state, forestComplete:true,forgeComplete:true,skyComplete:true});
+    const finalState=await page.evaluate(()=>{const v=CatBondResonance.view(),snapshot=CatBondResonance.snapshot();return {slot:State.activeSlot(),current:v.current?.id,completed:v.completed,sanctuaries:v.sanctuaries,melodies:v.melodies,links:v.links,skyChoice:snapshot.choices['sky:S-03'],skySupport:v.support.find(x=>x.region==='sky'),hiddenCache:!!State.S.resonanceExploration.pickups['sky:survey-cache'],lookout:!!Raising.stationsView().find(s=>s.id==='st_watch')?.skyCalibrated,catchCount:State.S.catchCount};});
+    assert.deepEqual(finalState.melodies,['harbor','forest','forge','sky']);
+    assert.deepEqual(finalState.sanctuaries,['harbor','forest','forge','sky']);
+    assert.deepEqual(finalState.links['forge:sky'],['sendA','receiveB','sendB','receiveA']);
+    assert(finalState.hiddenCache&&finalState.lookout&&finalState.slot==='slot1'&&finalState.current==='library:M-01');
+    assert.deepEqual(finalState.completed.filter(id=>id.startsWith('sky:')),['sky:S-01','sky:S-02','sky:S-03','sky:S-04','sky:S-05']);
+    results.push({profile:name,captured,...finalState,forestComplete:finalState.completed.includes('forest:R-04'),forgeComplete:finalState.completed.includes('forge:E-04'),skyComplete:finalState.completed.includes('sky:S-05'),battle:{retreat:true,choiceSupport:effect,firstNaturalOutcome:skyWon?'win':'defeat',additionalNaturalDefeat:name==='desktop',additionalNaturalVictory:name==='desktop'}});
     await context.close();
   }
 } finally {
