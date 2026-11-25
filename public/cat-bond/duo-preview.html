@@ -149,7 +149,7 @@ html.duo-embedded #locked{margin:6px 0 0}
   grass:'#8ccb9f',light:'#fff1bc',water:'#9cd7f7'};
  const first=Skills.elementOf(catA.species),second=Skills.elementOf(catB.species);
  let start=performance.now(),paused=false,held=0,sequenceMode=true;
- let selectedTier=1,currentTier=1;
+ let selectedTier=1,currentTier=1,artClockStarted=false;
  const pauseButton=document.getElementById('pause');
  function setActiveTier(t){
   currentTier=t;
@@ -193,7 +193,13 @@ html.duo-embedded #locked{margin:6px 0 0}
    first:colors[first],second:colors[second]
   },lookup);
  }
- function frame(now){if(embedded&&(owner.S!==root||owner.activeSlot()!==slot)){document.getElementById('unlocked').hidden=true;document.getElementById('locked').hidden=false;return;}render(paused?held:now-start);requestAnimationFrame(frame);}
+ function frame(now){
+  if(embedded&&(owner.S!==root||owner.activeSlot()!==slot)){document.getElementById('unlocked').hidden=true;document.getElementById('locked').hidden=false;return;}
+  // Do not skip unlocked tiers while original paintings decode.
+  if(!CatBondDuoHero.assetReady){start=now;held=0;artClockStarted=false;render(0);}
+  else{if(!artClockStarted){start=now;held=0;artClockStarted=true;}render(paused?held:now-start);}
+  requestAnimationFrame(frame);
+ }
  replayButton.onclick=replayAll;
  pauseButton.onclick=()=>{
   paused=!paused;

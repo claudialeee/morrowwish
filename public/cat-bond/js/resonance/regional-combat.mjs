@@ -1,3 +1,4 @@
+import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud} from "./battle-hud.mjs";
 // Regional combat extensions: attach to actual CaptureBattle instances, never to campaign state.
 // Wild cats remain collectible; scripted Forge/Finale encounters use separate adapters.
 import {libraryBlocked,libraryPoints,catdexRecord} from "./library-mechanisms.mjs";
@@ -84,13 +85,6 @@ function drawManifestation(ctx,e,b){
  ctx.drawImage(img,-dw/2,size/2-dh,dw,dh);ctx.restore();return true;
 }
 
-// Position the mechanic HUD below the actual battle topbar on every viewport.
-function positionObjectiveHud(panel){
- if(!panel)return;const host=document.getElementById("battle-ui"),top=host?.querySelector(".battle-topbar");
- if(!host||!top)return;
- const hr=host.getBoundingClientRect(),tr=top.getBoundingClientRect();
- if(hr.height&&tr.height)panel.style.setProperty("--cb-rpg-hud-top",Math.round(tr.bottom-hr.top+7)+"px");
-}
 
 function install(){
  const BP=window.Battle?.CaptureBattle?.prototype,GP=window.Game?.prototype;
@@ -135,7 +129,7 @@ function install(){
   const panel=document.createElement("div");panel.id="cb-region-combat";panel.className="cb-region-combat";panel.dataset.region=b.regionalCombat.region;
   const label=document.createElement("span"),button=document.createElement("button");button.type="button";
   panel.append(label,button);button.addEventListener("click",()=>useSupport(b));
-  host.append(panel);paintHud(b);requestAnimationFrame(()=>positionObjectiveHud(panel));
+  host.append(panel);paintHud(b);watchObjectiveHud(panel);
  }
  function paintHud(b){
   const panel=document.getElementById("cb-region-combat");if(!panel||!b.regionalCombat)return;
@@ -252,9 +246,8 @@ function install(){
   }
   this.vfx.ring(e.x,e.y,{r0:10,vr:160,life:.45,color:r.kit.color,width:3});
  };
- const cinematicActive=b=>!!(b.duoCinematic||b.ultCinematic);
  const drawBattle=BP.draw;
- BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat){const active=cinematicActive(this),panel=document.getElementById("cb-region-combat");if(panel&&panel.dataset.cinematic!==String(active))panel.dataset.cinematic=String(active);if(active)return result;draw(this,ctx);}if(this.libraryEncounter&&!this.duoCinematic&&!this.ultCinematic){ctx.save();for(const e of this.liveEnemies()){ctx.strokeStyle="#c5b9ff";ctx.globalAlpha=.45+.2*Math.sin(this.t*4);ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(e.x,e.y,Math.max(24,(e.r||24)*1.3),11,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}return result;};
+ BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat){const active=cinematicActive(this),panel=document.getElementById("cb-region-combat");syncCinematicHud(panel,this);if(active)return result;draw(this,ctx);}if(this.libraryEncounter&&!this.duoCinematic&&!this.ultCinematic){ctx.save();for(const e of this.liveEnemies()){ctx.strokeStyle="#c5b9ff";ctx.globalAlpha=.45+.2*Math.sin(this.t*4);ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(e.x,e.y,Math.max(24,(e.r||24)*1.3),11,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}return result;};
  const libraryOp="battle:library-echo",libraryScene="library:M-02";
  function libraryAvailable(game){const v=window.CatBondResonance?.view(),root=window.State.S,p=root.resonanceExploration?.positions?.library,q=libraryPoints[libraryOp];return game?.scene==="map"&&!game.battle&&root.resonanceExploration?.location==="library"&&v?.current?.id===libraryScene&&v.objective.includes(libraryOp)&&!libraryBlocked(libraryOp,v.objective)&&p&&Math.hypot(p.x-q[0],p.y-q[1])<.072;}
  function prepareLibrary(game){

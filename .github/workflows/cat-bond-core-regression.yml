@@ -8,6 +8,12 @@ on:
       - 'scripts/check-cat-bond-ai.mjs'
       - 'scripts/check-cat-bond-invariants.mjs'
       - '.github/workflows/cat-bond-core-regression.yml'
+  pull_request:
+    branches: [rpg/cat-bond-takeover]
+    paths:
+      - 'public/cat-bond/js/**'
+      - 'scripts/check-cat-bond*.mjs'
+      - '.github/workflows/cat-bond-core-regression.yml'
   workflow_dispatch:
 permissions:
   contents: read

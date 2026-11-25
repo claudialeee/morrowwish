@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   prologue:
-    if: startsWith(github.head_ref, 'rpg/release-prologue') || github.head_ref == 'rpg/cat-bond-takeover'
+    if: startsWith(github.head_ref, 'rpg/release-prologue') || github.head_ref == 'rpg/cat-bond-takeover' || github.head_ref == 'rpg/release-combined-next'
     strategy:
       fail-fast: false
       matrix:

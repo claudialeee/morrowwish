@@ -1,3 +1,4 @@
+import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud} from "./battle-hud.mjs";
 import {createForgeState,tickForgeState,useForgeSupport,forgeDamageScale,FORGE_ENCOUNTER} from "./forge-combat-rules.mjs";
 (() => {
 "use strict";
@@ -221,13 +222,6 @@ function drawBossEffects(ctx,b){
   }
   ctx.restore();
 }
-// Position the mechanic HUD below the actual battle topbar on every viewport.
-function positionObjectiveHud(panel){
- if(!panel)return;const host=document.getElementById("battle-ui"),top=host?.querySelector(".battle-topbar");
- if(!host||!top)return;
- const hr=host.getBoundingClientRect(),tr=top.getBoundingClientRect();
- if(hr.height&&tr.height)panel.style.setProperty("--cb-rpg-hud-top",Math.round(tr.bottom-hr.top+7)+"px");
-}
 
 function mountHud(game,b){
   document.getElementById("cb-forge-hud")?.remove();
@@ -244,12 +238,12 @@ function mountHud(game,b){
   panel.querySelector("[data-forge-support-button]").addEventListener("click",()=>{
     if(game.battle?.forgeState)game.battle.forgeUseSupport?.();
   });
-  host.append(panel);renderHud(game,b);requestAnimationFrame(()=>positionObjectiveHud(panel));
+  host.append(panel);renderHud(game,b);watchObjectiveHud(panel);
 }
 function renderHud(game,b){
   const p=document.getElementById("cb-forge-hud");if(!p||!b?.forgeState)return;
   const s=b.forgeState,en=window.MorrowwishI18n?.get?.()!=="zh",e=b.enemies?.find(x=>x.visualKind==="forge-guardian");
-  p.dataset.duoArt=String(!!(b.duoCinematic?.t>0&&b.duoCinematic.max-b.duoCinematic.t<b.duoCinematic.strikeAt));
+  syncCinematicHud(p,b);
   const set=(sel,value)=>{const n=p.querySelector(sel);if(n&&n.textContent!==value)n.textContent=value;};
   set("[data-forge-title]",en?"EMBERFORGE · E-03":"赤炉环城 · E-03");
   const enemyLabel=document.getElementById("wild-name");if(enemyLabel)enemyLabel.textContent=en?"FURNACE GUARDIAN":"熔炉机械守卫";
@@ -395,8 +389,8 @@ BP.draw=function(ctx){
   try{originalDraw.call(this,ctx);}finally{this.captureSeq=seq;}
   // The original duo storyboard owns the canvas until its deferred impact.
   // Furnace hazard rings must never be painted over the authored artwork.
-  const duo=this.duoCinematic;
-  if(!(duo?.t>0&&duo.max-duo.t<duo.strikeAt))drawBossEffects(ctx,this);
+  syncCinematicHud(document.getElementById("cb-forge-hud"),this);
+  if(!cinematicActive(this))drawBossEffects(ctx,this);
 };
 window.CatBondForgeCombat={
   rules:{createForgeState,tickForgeState,useForgeSupport,forgeDamageScale},

@@ -1,3 +1,4 @@
+import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud} from "./battle-hud.mjs";
 // Real-time finale adapter for the existing CaptureBattle; narrative state remains in the active slot.
 import {campaign} from "./campaign.mjs";
 import {REGION_KITS} from "./regional-combat.mjs";
@@ -64,16 +65,6 @@ export function supportEffects(profile,project,{bonded=false,pledge=false}={}){
 }
 export function holdProgress(progress,dt,near,interrupted,required){
  return clamp(progress+(near&&!interrupted?dt:-dt*.5),0,required);
-}
-// Position the mechanic HUD below the actual battle topbar on every viewport.
-function positionObjectiveHud(panel){
- if(!panel)return;const host=document.getElementById("battle-ui"),top=host?.querySelector(".battle-topbar");
- if(!host||!top)return;
- const frame=host.getBoundingClientRect(),topbar=top.getBoundingClientRect();
- const narrow=window.matchMedia("(max-width:600px)").matches;
- const rail=host.querySelector(narrow?"#battle-squad-rail":"#ult-wrap")?.getBoundingClientRect();
- const bottom=Math.max(topbar.bottom,rail?.height?rail.bottom:0);
- if(frame.height&&topbar.height)panel.style.setProperty("--cb-rpg-hud-top",Math.round(bottom-frame.top+7)+"px");
 }
 
 function install(){
@@ -145,7 +136,7 @@ function install(){
    f.clueOpen=!f.clueOpen;
    paint(b);
   };
-  document.getElementById("battle-ui")?.append(el);requestAnimationFrame(()=>positionObjectiveHud(el));
+  document.getElementById("battle-ui")?.append(el);watchObjectiveHud(el);
  }
  // A measured mismatch gives one resonance gain per distinct reply group.
  // Both manual and auto identification use this path. Repeated taps, opening
@@ -423,7 +414,8 @@ function install(){
  BP.draw=function(ctx){
   const f=this.resonanceFinale;if(!f)return draw.call(this,ctx);
   const seq=this.captureSeq;this.captureSeq=null;try{draw.call(this,ctx);}finally{this.captureSeq=seq;}
-  if(this.duoCinematic||this.ultCinematic)return;
+  syncCinematicHud(document.getElementById("cb-finale-hud"),this);
+  if(cinematicActive(this))return;
   ctx.save();ctx.lineWidth=2;
   if(f.id==="finale:B-03"){for(let i=0;i<f.nodes.length;i++){const n=f.nodes[i],next=f.nodes[(i+1)%f.nodes.length];if(!n.done)continue;ctx.save();ctx.strokeStyle=n.color;ctx.shadowColor=n.color;ctx.shadowBlur=10;ctx.globalAlpha=.7+.2*Math.sin(f.elapsed*3+i);ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(next.x,next.y);ctx.stroke();ctx.restore();}}
   if(f.id!=="finale:B-02")for(const n of f.nodes){

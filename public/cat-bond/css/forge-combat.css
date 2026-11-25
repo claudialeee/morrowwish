@@ -47,7 +47,7 @@
  #battle-ui .cb-forge-support button{min-height:44px;padding:5px 6px;max-width:96px}
 }
 
-#battle-ui .cb-forge-hud[data-duo-art="true"]{visibility:hidden;pointer-events:none}
+
 
 /* Keep the native enemy/mode header clear on narrow screens. The regional
    mechanic rail already explains the attacks and pressure; manual coaching
@@ -70,3 +70,5 @@
  #battle-ui:has(#cb-forge-hud) .battle-tools #btn-auto{min-width:65px!important;max-width:76px!important;padding:2px 3px!important;overflow:hidden}
  #battle-ui.touch-manual .cb-forge-hud{bottom:max(150px,23vh)}
 }
+
+#battle-ui .cb-forge-hud[data-cinematic="true"],#battle-ui .cb-forge-hud[data-cinematic="true"] *{visibility:hidden!important;pointer-events:none!important}

@@ -1,0 +1,37 @@
+name: Cat Bond combined controls and replay (no deploy)
+on:
+  pull_request:
+    branches: [rpg/cat-bond-takeover]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/cat-bond-duo-modal-smoke.mjs'
+      - 'scripts/test-cat-bond-battle-hud.mjs'
+      - '.github/workflows/cat-bond-combined-controls.yml'
+permissions:
+  contents: read
+jobs:
+  controls:
+    if: github.head_ref == 'rpg/release-combined-next'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test-cat-bond-battle-hud.mjs
+      - run: npm ci && npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cat-bond-controls.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          node scripts/cat-bond-duo-modal-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: combined-controls-replay
+          path: artifacts/cat-bond-duo-modal/
+          if-no-files-found: warn
+          retention-days: 3
