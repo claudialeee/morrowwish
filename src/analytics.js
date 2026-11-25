@@ -79,9 +79,28 @@ async function read(req,env,category){
   if(seenSequence.has(id))return false;
   seenSequence.add(id);return true;
  });
- const value={days:dates.length,dates,from:new Date(fromTs).toISOString(),rows,partial:false};
+ const value={days:dates.length,dates,from:new Date(fromTs).toISOString(),rows,partial:false,snapshotAt:Date.now()};
  if(cacheKey)z.snapshots.set(cacheKey,{at:Date.now(),value});
  return value;
+}
+// Date controls select the already cached full report in Pacific calendar
+// days. Changing the filter never starts a second D1 scan within the cache TTL.
+function requestedRange(req){
+ const params=new URL(req.url).searchParams,first=localDay(REPORT_FROM_MS),today=localDay(Date.now());
+ const start=params.get("startDate"),end=params.get("endDate");
+ if(start===null&&end===null)return null;
+ const valid=d=>typeof d==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&
+  Number.isFinite(Date.parse(d+"T12:00:00Z"))&&new Date(d+"T12:00:00Z").toISOString().slice(0,10)===d;
+ if(!valid(start)||!valid(end)||start<first||end>today||start>end)return false;
+ return {start,end};
+}
+function selectRange(x,range){
+ const dates=range?x.dates.filter(d=>d>=range.start&&d<=range.end):x.dates;
+ const rows=range?x.rows.filter(r=>{
+  const d=localDay(Number(r.ts)||Date.parse(r.day+"T00:00:00Z"));
+  return d>=range.start&&d<=range.end;
+ }):x.rows;
+ return {...x,rows,dates,days:dates.length,range:{start:dates[0]??null,end:dates.at(-1)??null,timeZone:"America/Los_Angeles"}};
 }
 function visitors(rows){return uniq(rows.map(r=>r.visitor||r.view_id));}
 function mainStats(x){
@@ -250,7 +269,7 @@ function mainStats(x){
   let d1Eligible=0,d1Returned=0;
   for(const daysOf of browserDays.values()){
     const first=Math.min(...daysOf);
-    if(first+1>=dates.length-1)continue;
+    if(first+1>=dates.length||dates[first+1]>=localDay(x.snapshotAt||Date.now()))continue;
     d1Eligible++;
     if(daysOf.has(first+1))d1Returned++;
   }
@@ -446,10 +465,16 @@ if(p==="/api/summary"||p==="/api/elsewhere-summary"){
   if(Date.now()<state.until)return analyticsUnavailable(state);
   try{
     const category=p==="/api/summary"?"arcade":"elsewhere";
-    const x=await read(req,env,category);
+    const range=requestedRange(req);
+    if(range===false)return json({error:"Invalid Pacific date range"},400);
+    // A date filter always reads the same baseline snapshot as the default view.
+    // Preserve legacy from= callers when no date filter was requested.
+    const snapshotReq=range?new Request(new URL(p+"?from="+encodeURIComponent(REPORT_FROM),req.url),req):req;
+    const snapshot=await read(snapshotReq,env,category),x=selectRange(snapshot,range);
     const result=category==="arcade"?mainStats(x):elsewhereStats(x);
+    result.range=x.range;
     const saved=state.snapshots.get(category);
-    if(saved?.value.rows===x.rows)result.updated=new Date(saved.at).toISOString();
+    if(saved?.value.rows===snapshot.rows)result.updated=new Date(saved.at).toISOString();
     if(category==="arcade")result.socialPulse=await socialPulseFor(env,typeof SOCIAL_CAMPAIGN==="undefined"?null:SOCIAL_CAMPAIGN);
     return json(result);
   }catch(error){return analyticsFailure(error,state);}
