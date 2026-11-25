@@ -7,7 +7,7 @@ const lang=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const portraitRoot=new URL("../../assets/npc/",import.meta.url);
 const playerPortraits=new Map();
 function portrait(id,scene,cursor){
- if(id==="player"){const sp=window.State?.S?.cats?.[0]?.species;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;if(!playerPortraits.has(sp)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp),window.State.S.cats[0]);playerPortraits.set(sp,c.toDataURL("image/png"));}return playerPortraits.get(sp)}
+ if(id==="player"){const sp=window.State?.S?.cats?.[0]?.species;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;const key=JSON.stringify([window.State.S.cats[0].uid,sp,window.State.S.cats[0].appearance,window.State.S.cats[0].variant]);if(!playerPortraits.has(key)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp),window.State.S.cats[0]);playerPortraits.set(key,c.toDataURL("image/png"));}return playerPortraits.get(key)}
  if(id==="muling")return new URL("../cinematics/characters/muling/traveler-neutral.webp",portraitRoot).href;
  if(campaign.regions.includes(campaign.cast[id]?.region))return new URL(id+"-painted.webp",portraitRoot).href;
  return null;

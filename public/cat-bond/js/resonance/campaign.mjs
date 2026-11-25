@@ -1578,7 +1578,8 @@ export const campaign = {
         }
       ],
       "requires": [
-        "npc:archive-dispute"
+        "npc:archive-dispute",
+        "explore:sealed-archive"
       ],
       "choices": [],
       "lineGate": [],
