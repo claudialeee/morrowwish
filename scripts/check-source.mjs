@@ -36,7 +36,7 @@ if(!socialRouter.includes('if(p.startsWith("/go/"))')||
    !dashboard.includes("siteNum(z,'pageviews')"))
  throw Error('Tracking links and homepage/game attribution data must be preserved');
 if(!dashboard.includes('const homePageviews=games.find(x=>x.game==="hub")?.pageviews;')||
-   !dashboard.includes('metricCard(t("statHome"),homeKnown?format(homePageviews):"",t("statHomeNote"))')||
+   !dashboard.includes('metricCard(t("statHome"),homeKnown?count(homePageviews):"",t("statHomeNote"))')||
    dashboard.includes("const displayOrder=['hub'")||dashboard.includes('if(x.game==="hub")return'))
  throw Error('Homepage overview must appear as one top-level pageview metric, not a game-table row');
 
