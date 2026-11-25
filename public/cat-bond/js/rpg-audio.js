@@ -64,8 +64,8 @@ function cue(kind,frequency=0){
  if(cinematic){duckUntil=Math.max(duckUntil,t+.85);mix();}
  return true;
 }
-function dispose(s,fade=.7){
- if(!s||s.stopping)return;s.stopping=true;const t=now();try{s.gain.gain.cancelScheduledValues(t);s.gain.gain.setTargetAtTime(.00001,t,fade/4);s.source.stop(t+fade);}catch{}
+function dispose(s,fade=.7,t=now()){
+ if(!s||s.stopping)return;s.stopping=true;try{s.gain.gain.cancelScheduledValues(t);s.gain.gain.setTargetAtTime(.00001,t,fade/4);s.source.stop(t+fade);}catch{}
 }
 function clear(){++serial;pending=null;for(const s of musicSources){try{s.source.stop(now()+.02);}catch{}}active=null;retiring=null;}
 function select(id){
@@ -76,11 +76,11 @@ function select(id){
  const token=++serial;pending={id,token};
  getBuffer(id).then(buffer=>{
   if(token!==serial||desired!==id||!prefs.enabled||hidden||paused)return;
-  pending=null;const old=active,source=ctx.createBufferSource(),gain=ctx.createGain(),t=now()+(old?.source? .14 : 0);
+  pending=null;const old=active,source=ctx.createBufferSource(),gain=ctx.createGain(),switchTime=now(),t=switchTime+(old?.source? .14 : 0);
   source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(1,t+.25);const filters=connectMusic(source,gain,id);
   const next={id,source,gain,buffer,filters,started:t,stopping:false};active=next;
   musicSources.add(next);source.onended=()=>{musicSources.delete(next);if(retiring===next)retiring=null;source.disconnect();gain.disconnect();for(const filter of filters)filter.disconnect();if(active===next){active=null;if(ceremony?.id===id){if(ceremony.visual&&ceremony.root===root)performedVisual.add(ceremony.region);ceremony=null;}tick();}trimCache(desired);};
-  if(retiring&&retiring!==old){try{retiring.gain.gain.setValueAtTime(0,now());retiring.source.stop(now());}catch{}}retiring=old;dispose(old,.13);source.start(t);blocked=false;unavailable=false;
+  if(retiring&&retiring!==old){try{retiring.gain.gain.setValueAtTime(0,now());retiring.source.stop(now());}catch{}}retiring=old;dispose(old,.13,switchTime);source.start(t);blocked=false;unavailable=false;
   if(ceremony?.id===id)ceremony.started=true;
  }).catch(()=>{if(token===serial){pending=null;unavailable=true;lastErrorAt=Date.now();}});
 }

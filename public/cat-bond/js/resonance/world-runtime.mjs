@@ -42,7 +42,7 @@ function waterworksHit([x,y]){
 }
 
 function install(){
- let regionMenuOpen=false,atlasMenuOpen=false,waterDrag=null,melodyDemoNote=-1,melodyDemoSequence=[];
+ let regionMenuOpen=false,atlasMenuOpen=false,waterDrag=null,melodyDemoNote=-1,melodyDemoSequence=[],melodyDemoOperation=null;
  let fitPage=0,fitKey="",fitNotice="",fitObserver=null,fitFrame=0;
  function scheduleFit(){if(fitFrame)return;fitFrame=requestAnimationFrame(()=>{fitFrame=0;fitRail();});}
  function fitRail(){
@@ -173,7 +173,7 @@ function install(){
  e.addEventListener("touchcancel",()=>{touch=null;},{passive:true});
  e.addEventListener("touchend",event=>{const start=touch;touch=null;if(!start||event.touches.length||e.disabled||!e.isConnected||owner!==State.S||game?.scene!=="map")return;const t=[...event.changedTouches].find(t=>t.identifier===start.id);if(!t||Math.hypot(t.clientX-start.x,t.clientY-start.y)>10||!e.contains(document.elementFromPoint(t.clientX,t.clientY)))return;event.preventDefault();lastTouch=performance.now();activate();},{passive:false});
  e.onclick=event=>{if(event?.detail!==0&&performance.now()-lastTouch<750)return;return activate();};return e};
- function current(){if(slot!==State.S){regionMenuOpen=false;ceremony=null;slot=State.S;bridge=createWorldBridge(State);explorer=null;mode="map";pending=null;wild=null;wildRegion=null;spawnDelay=0;zoom=1.25;pan=[-.125,-.125];followCamera=true;notice="";selectedRoute=null;revision="";drag=null;dragged=false;pinch=0;pointers.clear();}return bridge;}
+ function current(){if(slot!==State.S){melodyDemoOperation=null;regionMenuOpen=false;ceremony=null;slot=State.S;bridge=createWorldBridge(State);explorer=null;mode="map";pending=null;wild=null;wildRegion=null;spawnDelay=0;zoom=1.25;pan=[-.125,-.125];followCamera=true;notice="";selectedRoute=null;revision="";drag=null;dragged=false;pinch=0;pointers.clear();}return bridge;}
  const sync=()=>{let v=current().view();return v.current?.id+":"+v.cursor+":"+v.choice+":"+v.objective.join(",")+":"+JSON.stringify(v.links)+":"+JSON.stringify(v.postgame)+":"+JSON.stringify(State.S.resonance?.ambientDone||[])};
  function init(g){game=g;current();if(host)return;host=E("section","rw-world");image("forge");host.hidden=true;document.getElementById("stage").append(host);for(let ev of ["morrowwish-language-change","cat-bond-resonance-changed"])window.addEventListener(ev,()=>{if(game.scene==="map")render()});
   if(typeof window.ResizeObserver==="function"){fitObserver=new window.ResizeObserver(scheduleFit);fitObserver.observe(host.parentElement);}
@@ -185,7 +185,7 @@ function install(){
    if(game.scene==="map")render();
   });}
  function enterMap(){current();host?.classList.remove("rw-region-compact");ceremony=null;mode="map";explorer=null;pending=null;notice="";selectedRoute=null;atlasMenuOpen=false;zoom=1;pan=[0,0];followCamera=false;render();return true;}
- function enterRegion(id){regionMenuOpen=false;const b=current();ceremony=null;const r=b.enter(id);if(!r.ok){notice=tr("暂时无法前往","Cannot travel yet")+" · "+reason(r.reason);render();return false;}mode="region";explorer=createExplorer(b,id,{deferForestMelody:true,deferSkyMelody:true,deferForgeMelody:true,deferHarborMelody:true,deferLibraryMelody:true,deferStarfallMelody:true});pending=null;notice="";zoom=1.45;centerCamera(explorer.position);followCamera=true;if(wildRegion!==id){wildRegion=id;spawnDelay=0;wild=null;}if(!wild&&spawnDelay<=0)spawnWild(id);render();return true;}
+ function enterRegion(id){melodyDemoOperation=null;regionMenuOpen=false;const b=current();ceremony=null;const r=b.enter(id);if(!r.ok){notice=tr("暂时无法前往","Cannot travel yet")+" · "+reason(r.reason);render();return false;}mode="region";explorer=createExplorer(b,id,{deferForestMelody:true,deferSkyMelody:true,deferForgeMelody:true,deferHarborMelody:true,deferLibraryMelody:true,deferStarfallMelody:true});pending=null;notice="";zoom=1.45;centerCamera(explorer.position);followCamera=true;if(wildRegion!==id){wildRegion=id;spawnDelay=0;wild=null;}if(!wild&&spawnDelay<=0)spawnWild(id);render();return true;}
  function spawnWild(id){
   const p=explorer.layout.paths;
   // Harbor is the RPG's introductory hunting region. Before the first
@@ -302,6 +302,11 @@ function install(){
  function go(p,fn){if(explorer.near(p)){fn();return;}pending={p:[...p],fn};beginWalk();explorer.walk(...p);}
  function addMelodyControls(row,puzzle,labels){
   row.classList.add("rw-melody-controls");
+  melodyDemoNote=-1;
+  if(melodyDemoOperation!==puzzle.operation){
+   melodyDemoOperation=puzzle.operation;
+   melodyDemoSequence=[];
+  }
   const phrase=E("div","rw-melody-phrase");
   phrase.setAttribute("role","status");
   const guided=puzzle.mistakes>=2;
@@ -311,6 +316,7 @@ function install(){
   const notes=puzzle.goal.map((_,index)=>{
    const marker=E("span","rw-melody-step",index<puzzle.values.length?"✓":String(index+1));
    if(index<puzzle.values.length)marker.dataset.played="";
+   if(melodyDemoSequence[index]!==undefined)marker.dataset.demoNote=String(melodyDemoSequence[index]);
    phrase.append(marker);
    return marker;
   });
@@ -398,7 +404,7 @@ function install(){
  function visitScent(step){if(!explorer.near(step.point)){pending=null;explorer.walk(...step.point);return;}const r=explorer.traceScent(step.index);report(r,r.ok?step.clue:"");render();}
  function visitCache(cache){if(!cache)return;go(cache.point,()=>{report(explorer.pickup(cache.id),["发现信使补给","Courier cache discovered"]);render()});}
  function visitSurvey(s){go(s.from,()=>{report(explorer.startSurvey());render()});}
- function visitFeature(op,p){go(current().world().location==="sky"&&skyLaunch[op]||p,()=>{if(op.startsWith("battle:")){requestBattle(op,current().world().location);return;}const result=explorer.interact(op);report(result,result.ok&&!result.puzzle?starfallClues[op]||"":"");render()});}
+ function visitFeature(op,p){go(current().world().location==="sky"&&skyLaunch[op]||p,()=>{if(op.startsWith("battle:")){requestBattle(op,current().world().location);return;}melodyDemoOperation=null;const result=explorer.interact(op);report(result,result.ok&&!result.puzzle?starfallClues[op]||"":"");render()});}
  function storyNpcs(){const region=current().world().location,gate=explorer.pairedGate(),locals=explorer.localNpcs().map((n,i)=>current().view().ending?n:region==="library"&&explorer.invited.includes(n.id)?{...n,point:i?[.86,.32]:[.93,.31]}:region==="forest"&&explorer.invited.includes(n.id)?{...n,point:i?[.88,.24]:[.83,.27]}:region==="forge"&&explorer.invited.includes(n.id)?{...n,point:i?[.84,.36]:[.74,.40]}:region==="sky"&&current().view().current?.id==="sky:S-05"&&explorer.invited.includes(n.id)?{...n,point:n.id==="yuanfan"?[.87,.32]:[.81,.36]}:gate?.ready&&n.id===gate.npc?{...n,point:gate.point}:n),residents=window.CatBondResonance?.residents?.(region)||[];const extra=residents.filter(n=>!locals.some(l=>l.id===n.id));return [...locals,...extra.map((n,i)=>({...n,point:n.id==="muling"?(region==="harbor"?[.34,.478]:region==="sky"?[.74,.36]:region==="starfall"?[.92,.30]:explorer.layout.paths.at(-2)):explorer.layout.paths[Math.max(1,Math.min(explorer.layout.paths.length-2,Math.round((i+1)*explorer.layout.paths.length/(extra.length+1))))]}))];}
  function npcPosition(n){const v=current().view(),reg=current().world().location,gate=explorer.pairedGate();if(ceremony||explorer.puzzle||v.ending||explorer.invited.includes(n.id)||gate?.npc===n.id||v.objective.includes("melody:"+reg)||v.objective.some(op=>op==="npc:"+n.id))return n.point;const seed=[...n.id].reduce((sum,c)=>sum+c.charCodeAt(0),0);const path=explorer.layout.paths;let nearest=path.reduce((best,p,i)=>distance(p,n.point)<distance(path[best],n.point)?i:best,0);const a=path[Math.max(0,nearest-1)],b=path[Math.min(path.length-1,nearest+1)],dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy)||1;const drift=Math.sin(frame/150+seed)*.027;return [Math.max(.04,Math.min(.96,n.point[0]+dx/length*drift)),Math.max(.08,Math.min(.94,n.point[1]+dy/length*drift))];}
  function visitNpc(npc){const region=current().world().location;go(npc.point,()=>{const v=current().view(),home=explorer.homeQuest(),actor=home?.actors.find(a=>a.id===npc.id&&!a.visited);if(home?.repaired&&actor){report(explorer.meetHomeResident(npc.id),actor.reply);render();return;}if(v.current?.choices?.length&&v.current.choiceTiming==="beforeAction"&&!v.choice&&v.current.choices.some(c=>c.npc===npc.id)){requestNpc(npc.id,region);return;}if(explorer.localNpcs().some(n=>n.id===npc.id)&&v.objective.includes("melody:"+region)&&!(["harbor","forest","forge","sky","library","starfall"].includes(region)&&v.objective.includes("repair:"+region))&&!explorer.invited.includes(npc.id)){report(explorer.inviteNpc(npc.id),[npc.name.zh+" · 已抵达合奏地点",npc.name.en+" · ready to join the melody"]);render();return;}requestNpc(npc.id,region);});}
