@@ -15,6 +15,21 @@ try{
   const waitTrack=id=>page.waitForFunction(id=>{const s=MorrowwishMusic.status();return s.track===id&&s.playing&&s.currentTime>.05},id,{timeout:90000});
   await waitTrack('title');
   const title=await page.evaluate(()=>MorrowwishMusic.status());
+  // Exercise the same visible controls players use, including independent mute.
+  await page.locator('#cb-system-toggle').click();
+  const menu=page.locator('#cb-system-menu');
+  await menu.locator('[data-audio-volume="music"]').fill('37');
+  await menu.locator('[data-audio-volume="effects"]').fill('42');
+  await page.waitForFunction(()=>MorrowwishMusic.status().volume===.37&&MorrowwishMusic.status().effectsVolume===.42&&MorrowwishAudio.status().volume===.42);
+  await menu.locator('[data-system="effects"]').click();
+  await page.waitForFunction(()=>MorrowwishAudio.status().enabled===false&&MorrowwishMusic.status().playing===true);
+  await menu.locator('[data-system="effects"]').click();
+  await page.waitForFunction(()=>MorrowwishAudio.status().enabled===true);
+  await menu.locator('[data-system="music"]').click();
+  await page.waitForFunction(()=>!MorrowwishMusic.status().playing&&MorrowwishAudio.status().enabled);
+  await menu.locator('[data-system="music"]').click();
+  await waitTrack('title');
+  await menu.locator('[data-system="close"]').click();
   assert.equal(title.source,'recorded-mp3:title','must use actual compressed original recording');
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
   await page.waitForFunction(()=>document.querySelector('.cbcp-root:not([hidden])')?.dataset.ready==='true');
@@ -27,13 +42,17 @@ try{
   await page.locator('.cbcp-skip').click();
   await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-02');
   await page.waitForFunction(()=>document.querySelector('.cbcp-root:not([hidden])')?.dataset.ready==='true');
-  await page.evaluate(()=>{MorrowwishMusic.setVolume(.37);MorrowwishMusic.setEffectsVolume(.42);MorrowwishMusic.setEnabled(false);});
+  await page.evaluate(()=>MorrowwishMusic.setEnabled(false));
   await page.waitForFunction(()=>!MorrowwishMusic.status().playing);
   await page.reload();
   await page.waitForFunction(()=>window.MorrowwishMusic&&window.__CAT_BOND_READY__);
   const settings=await page.evaluate(()=>MorrowwishMusic.status());
   assert.equal(settings.enabled,false);assert.equal(settings.volume,.37);assert.equal(settings.effectsVolume,.42);
-  assert.deepEqual(errors,[]);output.push({profile:name,title,settings,opening:true,pauseResume:true,errors});
+  await page.locator('#cb-system-toggle').click();
+  assert.equal(await page.locator('[data-audio-volume="music"]').inputValue(),'37');
+  assert.equal(await page.locator('[data-audio-volume="effects"]').inputValue(),'42');
+  await page.locator('#cb-system-menu [data-system="close"]').click();
+  assert.deepEqual(errors,[]);output.push({profile:name,title,settings,opening:true,pauseResume:true,actualMenuControls:true,errors});
   await context.close();
  }
  const page=await browser.newPage();await page.goto(url);await page.waitForFunction(()=>window.CatBondOriginalScore);

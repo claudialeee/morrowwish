@@ -346,7 +346,7 @@ function installCatBondSystemMenu(){
   if(sound){
    const levels=document.createElement('div');levels.style.cssText='display:grid;gap:6px;padding:8px 12px';
    for(const [name,value,fn] of [[t('音乐音量','Music volume'),sound.volume,'setVolume'],[t('音效音量','Effects volume'),sound.effectsVolume,'setEffectsVolume']]){
-    const label=document.createElement('label'),slider=document.createElement('input');label.textContent=name;label.style.cssText='display:flex;align-items:center;gap:8px;justify-content:space-between';slider.type='range';slider.min='0';slider.max='100';slider.value=String(Math.round(value*100));slider.setAttribute('aria-label',name);slider.oninput=()=>window.MorrowwishMusic[fn](Number(slider.value)/100);label.append(slider);levels.append(label);
+    const label=document.createElement('label'),slider=document.createElement('input');label.textContent=name;label.style.cssText='display:flex;align-items:center;gap:8px;justify-content:space-between';slider.type='range';slider.min='0';slider.max='100';slider.value=String(Math.round(value*100));slider.setAttribute('aria-label',name);slider.dataset.audioVolume=fn==='setVolume'?'music':'effects';slider.style.cssText='width:min(45%,130px);min-width:72px;accent-color:#dfc391';const valueText=document.createElement('output');valueText.textContent=slider.value+'%';valueText.style.cssText='min-width:36px;text-align:right;font-size:12px;color:#dfc391';slider.oninput=()=>{window.MorrowwishMusic[fn](Number(slider.value)/100);valueText.textContent=slider.value+'%';};label.append(slider,valueText);levels.append(label);
    }
    menu.querySelector('.cb-system-rows').append(levels);
   }

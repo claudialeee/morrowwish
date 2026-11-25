@@ -10,7 +10,7 @@ function assetManifest(){return manifestTask??=(fetch(new URL('manifest.json',as
 async function loadRecorded(id){const manifest=await assetManifest(),entry=manifest?.tracks?.[id];if(!entry)return null;try{const response=await fetch(new URL(entry.file,assetRoot));if(!response.ok)throw Error('Audio HTTP '+response.status);const bytes=await response.arrayBuffer();const O=window.OfflineAudioContext||window.webkitOfflineAudioContext;const decoder=new O(2,1,24000);const decoded=await decoder.decodeAudioData(bytes);const samples=Math.min(decoded.length,Math.round(entry.seconds*decoded.sampleRate));const trim=decoder.createBuffer(decoded.numberOfChannels,samples,decoded.sampleRate);for(let c=0;c<decoded.numberOfChannels;c++)trim.copyToChannel(decoded.getChannelData(c).subarray(0,samples),c);if(!id.startsWith('song-'))smoothLoop(trim);recordedIds.add(id);return trim;}catch{return null;}}
 const key='cat-bond-rpg-audio-v1',clamp=n=>Math.max(0,Math.min(1,Number(n)||0));
 let prefs={enabled:true,music:.65,fx:.8};
-try{const old=JSON.parse(localStorage.getItem(key)||'null');if(old)prefs={enabled:old.enabled!==false,music:clamp(old.music),fx:clamp(old.fx)};else prefs.enabled=localStorage.getItem('morrowwish-music-enabled')!=='0';}catch{}
+try{const old=JSON.parse(localStorage.getItem(key)||'null');if(old)prefs={enabled:old.enabled!==false,music:typeof old.music==='number'?clamp(old.music):.65,fx:typeof old.fx==='number'?clamp(old.fx):.8};else prefs.enabled=localStorage.getItem('morrowwish-music-enabled')!=='0';}catch{}
 function save(){try{localStorage.setItem(key,JSON.stringify(prefs));}catch{}}
 let ctx,bus,ambBus,active=null,pending=null,serial=0,desired='title',unlocked=false,hidden=document.hidden,paused=false,blocked=false,unavailable=false,duckUntil=0,amb=null,ambId='',ceremony=null,root=null,seen=new Set(),lastFx,ambientTick=0,cache=new Map(),started=false,renderQueue=Promise.resolve(),stopped=false,visualCeremony='',supportSeen=new Set(),supportRoot=null,voiceNodes=new Set(),lastErrorAt=0,cinematicVoiceNodes=new Set(),lastSceneKey='',lastNarrativeRevision=-1,lastCompleted=0,lastSanctuaries=new Set(),lastEvidence=new Set(),lastBattle=null,retiring=null,musicSources=new Set(),foleyNodes=new Set();
 const regions=score.regions;
@@ -173,7 +173,7 @@ function tick(){
  }
  const game=window.__game,battle=game?.scene==='battle'?game.battle:null;
  if(battle!==lastBattle){stopVoices();if(battle)cue('impact');lastBattle=battle;}
- if(lastSceneKey!==scene.id){if(lastSceneKey)cancelCinematicSounds();lastSceneKey=scene.id;}
+ if(lastSceneKey!==scene.id){if(lastSceneKey&&lastSceneKey!=='title'&&scene.id!=='opening')cancelCinematicSounds();lastSceneKey=scene.id;}
  const visual=document.querySelector('.rw-world:not([hidden])')?.dataset.ceremony||'';
  if(visual!==visualCeremony){
   visualCeremony=visual;
@@ -193,7 +193,7 @@ function tick(){
  if(nextPause!==paused){paused=nextPause;if(paused)cancelCinematicSounds();if(ctx&&unlocked){if(paused){++serial;pending=null;ctx.suspend().catch(()=>{});}else if(!hidden)ctx.resume().catch(()=>{});}}
  if(window.MorrowwishAudio?.setVolume&&lastFx!==prefs.fx){lastFx=prefs.fx;window.MorrowwishAudio.setVolume(prefs.fx);}
  desired=ceremony?.id||scene.id;
- if(ctx&&unlocked&&!hidden&&!paused&&prefs.enabled){const region=scene.amb;if(regions.includes(region)&&!seen.has(region)&&!cache.has('song-'+region)&&!pending&&active?.id===desired)getBuffer('song-'+region).catch(()=>{});}
+ if(ctx&&unlocked&&!hidden&&!paused&&!stopped&&prefs.enabled){const region=scene.amb;if(regions.includes(region)&&!seen.has(region)&&!cache.has('song-'+region)&&!pending&&active?.id===desired)getBuffer('song-'+region).catch(()=>{});}
  if(!ctx||!unlocked)return;
  mix();if(!hidden&&!paused){select(desired);ambience(scene.amb);if(now()>ambientTick){ambientTick=now()+8+Math.sin(now())*3;foley(scene.amb);}}
 }
