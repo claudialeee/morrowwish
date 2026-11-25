@@ -304,11 +304,27 @@ try {
     await shot('forest-upper-gate');
     await button('Paired water gates').click();
     const pairedControls=page.locator('.rw-puzzle-controls');await pairedControls.waitFor();await shot('forest-paired-puzzle');
+    const pressureStatus=pairedControls.locator('.rw-paired-status');
+    const verifyPressure=async text=>{await pressureStatus.filter({hasText:text}).waitFor();};
+    await button('Open lower channel',pairedControls).click();
+    await button('Clear together',pairedControls).click();
+    await verifyPressure('Pressure 0/3');
+    await checkObjective('puzzle:paired-water-gates');
+    for(const input of ['Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
+    await verifyPressure('Both channels open');
+    await button('Steady upper pressure',pairedControls).click();
+    await verifyPressure('Overpressure — lower gate closed');
+    await button('Clear together',pairedControls).click();
+    await checkObjective('puzzle:paired-water-gates');
+    await shot('forest-overpressure-recovery');
     if(name==='portrait'){
       const locale=page.locator('#mw-game-settings .mw-settings-language');await locale.click();await page.waitForFunction(()=>MorrowwishI18n.get()==='zh');
-      for(const input of ['打开地下','稳住上层','稳住上层','打开地下'])await button(input,pairedControls).click();
+      await verifyPressure('水压过高 · 地下闸门关闭');
+      for(const input of ['稳住上层','稳住上层','稳住上层','打开地下'])await button(input,pairedControls).click();
+      await verifyPressure('双路稳定 · 共同疏通根脉');
       await shot('forest-paired-flow-zh');await locale.click();await page.waitForFunction(()=>MorrowwishI18n.get()==='en');
-    }else for(const input of ['Open lower channel','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
+    }else for(const input of ['Steady upper pressure','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
+    await verifyPressure('Both channels open');
     await shot('forest-paired-flow');await button('Clear together',pairedControls).click();await pairedControls.waitFor({state:'hidden'});
     await readForestDialogue('forest:R-03');
     await scene('forest:R-04');
@@ -429,15 +445,15 @@ try {
         if(!line||!await dlg.isVisible())break;
         await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.en);
         if(['lingyu','yuanfan','muling'].includes(line.speaker))await dlg.locator('.res-portrait').evaluate(img=>img.decode());
+        if(id==='sky:S-04'&&seen===11){
+          await dlg.locator('[data-sky-taps="1"]').waitFor();await shot('sky-pendant-tap-one');
+          await dlg.locator('[data-sky-taps="2"]').waitFor();await shot('sky-pendant-tap-two');
+        }
         await dlg.locator('[data-res-language]').click();
         await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.zh);
         if(!seen)await shot(id.replace(':','-')+'-zh');
         await dlg.locator('[data-res-language]').click();
         await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.en);
-        if(id==='sky:S-04'&&seen===11){
-          await dlg.locator('[data-sky-taps="1"]').waitFor();await shot('sky-pendant-tap-one');
-          await dlg.locator('[data-sky-taps="2"]').waitFor();await shot('sky-pendant-tap-two');
-        }
         seen++;await button('Continue',dlg).click();
       }
       assert.equal(seen,{'sky:S-01':4,'sky:S-02':3,'sky:S-03':3,'sky:S-04':12}[id],id+' all real dialogue lines');
