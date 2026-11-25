@@ -281,11 +281,18 @@ jobs:
           echo "Cloudflare Cat Bond LIVE verified against $GITHUB_SHA, including exact story, map, boss, UI, locale, CSS and garden artwork bytes."
           # Compare actual Harbor implementation bytes, not merely the shared entrypoint.
           if [ -f public/cat-bond/js/resonance/harbor-presentation.mjs ]; then
-            for asset in js/resonance/harbor-presentation.mjs js/resonance/world-runtime.mjs js/resonance/world-bridge.mjs js/resonance/world-exploration.mjs js/resonance/dialogue-ui.mjs css/resonance-canonical-world.css css/resonance-host.css; do
+            for asset in js/resonance/harbor-presentation.mjs js/resonance/world-runtime.mjs js/resonance/world-bridge.mjs js/resonance/world-exploration.mjs js/resonance/world-mechanisms.mjs js/resonance/campaign.mjs js/resonance/regional-combat.mjs js/resonance/dialogue-ui.mjs css/resonance-canonical-world.css css/resonance-host.css; do
               curl -fsSL --max-time 20 -o /tmp/harbor-live-asset "https://morrowwish.pages.dev/cat-bond/$asset?verify=$GITHUB_SHA"
               cmp -s "public/cat-bond/$asset" /tmp/harbor-live-asset || { echo "::error::Stale Harbor asset $asset"; exit 1; }
             done
-            echo "Harbor production source verified against $GITHUB_SHA"
+            # The release includes the exact title and Forge implementation too.
+            for asset in css/rpg-title.css js/state.js assets/resonance-world-v2/atlas.webp assets/resonance-world-v2/harbor-mist.webp js/resonance/forge-combat-rules.mjs js/resonance/forge-combat-runtime.mjs js/resonance/forge-presentation.mjs css/forge-combat.css; do
+              if [ -f "public/cat-bond/$asset" ]; then
+                curl -fsSL --max-time 30 -o /tmp/catbond-live-extra "https://morrowwish.pages.dev/cat-bond/$asset?verify=$GITHUB_SHA"
+                cmp -s "public/cat-bond/$asset" /tmp/catbond-live-extra || { echo "::error::Stale Cat Bond release asset $asset"; exit 1; }
+              fi
+            done
+            echo "Harbor, title and available Forge production source verified against $GITHUB_SHA"
           fi
           # Exercise the deployed D1-backed cloud-save endpoint without creating a save row.
           unauth_code=$(curl -sSL --max-time 15 -o /tmp/catbond-cloud-unauth.json -w '%{http_code}' "https://morrowwish.pages.dev/api/cat-bond-cloud-save?verify=$GITHUB_SHA")
@@ -363,6 +370,22 @@ jobs:
             test "$ready" = 1 || { echo "::error::Mystery art $asset not live after retries (HTTP $code)"; exit 1; }
           done
           echo 'Morrow Wish Cloudflare Pages and protected Analytics API verified; Vercel was not deployed.'
+      - name: Verify public Cat Bond with real player input (no analytics pollution)
+        if: github.event_name != 'workflow_run'
+        run: |
+          set -eu
+          # Test the actual CDN site with fresh, isolated browser storage.
+          # The acceptance script intercepts only the session telemetry endpoint.
+          CAT_BOND_QA_ORIGIN=https://morrowwish.pages.dev CAT_BOND_QA_OUTPUT=artifacts/cat-bond-live-title node scripts/cat-bond-title-save-browser-qa.mjs
+          echo "Live title, prologue, atlas and save interaction verified for $GITHUB_SHA"
+      - name: Save public title and mobile acceptance screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-live-title-screenshots
+          path: artifacts/cat-bond-live-title/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Verify seven real-gameplay promotion assets are live (not HTML fallbacks)
         if: github.event_name == 'workflow_dispatch' && inputs.generate_promos == true # Only when explicitly requested
         run: |

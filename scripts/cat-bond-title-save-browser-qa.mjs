@@ -9,11 +9,17 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disab
 let failed=false;
 for(const profile of [
  {name:'desktop',width:1280,height:800,mobile:false},
+ {name:'phone-narrow',width:320,height:568,mobile:true},
  {name:'phone-portrait',width:390,height:844,mobile:true},
+ {name:'phone-landscape-narrow',width:568,height:320,mobile:true},
  {name:'phone-landscape',width:844,height:390,mobile:true}
 ]){
  const context=await browser.newContext({viewport:{width:profile.width,height:profile.height},isMobile:profile.mobile,hasTouch:profile.mobile});
+ // When verifying a public deployment, fetch the actual public assets but
+ // keep acceptance traffic out of the owner's real player analytics.
+ if(new URL(origin).protocol==='https:')await context.route('**/api/session*',route=>route.fulfill({status:204,body:''}));
  const page=await context.newPage(),errors=[];
+ await page.addInitScript(()=>{window.__titleQaTouchTrace=[];for(const type of ['touchstart','touchend','touchcancel','pointerdown','pointerup','pointercancel','click'])document.addEventListener(type,event=>{const el=event.target;const button=el?.closest?.('button,.dex-cell');const list=window.__titleQaTouchTrace;list.push({type,target:button?.textContent?.trim().slice(0,70)||el?.id||el?.tagName,pointer:event.pointerType||null,canceled:event.defaultPrevented});if(list.length>32)list.shift();},true);});
  page.on('pageerror',error=>errors.push(error.message));
  page.on('dialog',dialog=>dialog.accept());
  const screenshot=name=>page.screenshot({path:output+'/'+profile.name+'-'+name+'.png',animations:'disabled'});
@@ -57,10 +63,12 @@ for(const profile of [
   await page.locator('[data-system="close"]').click();
   assert.match(await page.locator('#intro-start').innerText(),/New Adventure/);
   await screenshot('title-en');
-  await page.locator('#mw-fullscreen-toggle').click();
+  await page.locator('#cb-system-toggle').click();
+  await page.locator('[data-system="fullscreen"]').click();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
   await screenshot('fullscreen-title');
-  await page.locator('#mw-fullscreen-toggle').click();
+  await page.locator('#cb-system-toggle').click();
+  await page.locator('[data-system="fullscreen"]').click();
   await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));
   await page.locator('#intro-start').click();
   await checkVisible('#intro-slot-panel.is-open');
@@ -89,10 +97,48 @@ for(const profile of [
   for(const id of ['prologue:P-05']){const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();const skip=dlg.getByRole('button',{name:'Skip dialogue',exact:true});if(await skip.isVisible()&&await skip.isEnabled())await skip.click();const close=dlg.getByRole('button',{name:'Close',exact:true});if(await close.isVisible())await close.click();}
   await page.locator('.sg-prologue-guide').getByRole('button',{name:'World map'}).click();
   await waitMap();
-  await page.locator('.rw-system-nav').waitFor();
+  await page.locator('.rw-system-nav').waitFor({state:'attached'});
   assert.equal(await page.locator('.rw-regions [data-region]').count(),6);
   assert.equal(await page.locator('.rw-region-status').count(),6);
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
+  const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
+  if(profile.width>profile.height){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
+  const realPress=async locator=>{
+   if(!await locator.isVisible()){
+    const world=page.locator(".rw-world:not([hidden])"),count=Number(await world.getAttribute("data-fit-pages")||1),next=world.locator("[data-fit-next]"),prev=world.locator("[data-fit-prev]");
+    const press=async el=>profile.mobile?el.tap():el.click();
+    for(let i=0;i<count&&await prev.isVisible()&&await prev.isEnabled()&&!await locator.isVisible();i++)await press(prev);
+    for(let i=0;i<count&&await next.isVisible()&&await next.isEnabled()&&!await locator.isVisible();i++)await press(next);
+   }
+   await locator.scrollIntoViewIfNeeded();const hit=await locator.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));});
+   assert.ok(hit,'Actual touch target must not be covered: '+await locator.innerText());if(profile.mobile)await locator.tap();else await locator.click();
+  };
+  const checkStageFit=async()=>{
+   const fit=await page.evaluate(()=>{const stage=document.getElementById('stage').getBoundingClientRect(),w=document.querySelector('.rw-world:not([hidden])'),canvas=w.querySelector('.rw-surface').getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {inside:canvas.width>0&&canvas.height>0&&canvas.top>=stage.top-1&&canvas.bottom<=stage.bottom+1&&canvas.left>=stage.left-1&&canvas.right<=stage.right+1,aspect:Math.abs(canvas.width/canvas.height-16/9)<.03,scroll:w.scrollHeight<=w.clientHeight+2&&rail.scrollHeight<=rail.clientHeight+2,solo:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
+   assert.deepEqual(fit,{inside:true,aspect:true,scroll:true,solo:true},'Actual world frame fits after resize/fullscreen');
+  };
+  await checkStageFit();
+  const system=async()=>{await realPress(page.locator('#map-menu'));await realPress(page.locator('[data-cb-story-action="system"]'));};
+  const toggleWorldFullscreen=async()=>{await system();await realPress(page.locator('[data-system="fullscreen"]'));await realPress(page.locator('#panel.open > .panel-dismiss'));};
+  for(const sel of ['#mw-fullscreen-toggle','#mw-game-settings','#guide-help'])assert.equal(await page.locator(sel).isVisible(),false,sel+' must be inside the RPG menu');
+  await toggleWorldFullscreen();
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
+  await page.waitForTimeout(100);await checkStageFit();await screenshot('fullscreen-world-atlas');
+  await toggleWorldFullscreen();
+  await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));
+  await page.waitForTimeout(100);await checkStageFit();
+  for(const name of ['Catdex','Party','Raise cats','Workshop']){
+   await realPress(page.locator('.rw-system-nav').getByRole('button',{name,exact:true}));
+   await checkVisible('#panel.open');
+   await screenshot('atlas-'+name.toLowerCase().replaceAll(' ','-'));
+   if(name==='Catdex'){
+    const owned=page.locator('#panel .dex-cell:not(.locked)').first();await realPress(owned);
+    await checkVisible('#panel #dx');await screenshot('atlas-catdex-detail');
+    await realPress(page.locator('#dx-back'));await checkVisible('#panel .dex-grid');
+   }
+   await realPress(page.locator('#panel.open > .panel-dismiss'));
+   await page.locator('#panel.open').waitFor({state:'hidden',timeout:5000});
+  }
   await screenshot('world-atlas');
   // Physical departure from the merged canonical opening.
   const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);
@@ -136,7 +182,7 @@ for(const profile of [
   assert.deepEqual(errors,[],'no page runtime exceptions');
   console.log('PASS title/save normal flow '+profile.name);
  }catch(error){
-  failed=true;console.error('FAIL '+profile.name,error);
+  failed=true;console.error('FAIL '+profile.name,error);console.error('Recent actual input',await page.evaluate(()=>window.__titleQaTouchTrace).catch(()=>[]));
   await screenshot('failure').catch(()=>{});
  }finally{await context.close();}
 }

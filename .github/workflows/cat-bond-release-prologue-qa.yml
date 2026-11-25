@@ -13,9 +13,17 @@ concurrency:
   cancel-in-progress: true
 jobs:
   prologue:
-    if: startsWith(github.head_ref, 'rpg/release-prologue')
+    if: startsWith(github.head_ref, 'rpg/release-prologue') || github.head_ref == 'rpg/cat-bond-takeover'
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [en, zh]
+        profile: [desktop, portrait, landscape]
     runs-on: ubuntu-24.04
     timeout-minutes: 12
+    env:
+      PROLOGUE_LANG: ${{ matrix.language }}
+      PROLOGUE_PROFILE: ${{ matrix.profile }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,7 +43,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cat-bond-release-prologue-screenshots
+          name: cat-bond-release-prologue-${{ matrix.language }}-${{ matrix.profile }}-screenshots
           path: artifacts/cat-bond-release-prologue/
           if-no-files-found: warn
           retention-days: 3

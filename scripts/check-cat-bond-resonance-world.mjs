@@ -15,7 +15,8 @@ console.log(JSON.stringify((function test(src){
  function host(fn){const e=makeEngine(campaign,State.S.resonance),r=fn(e);ok(r,"host fixture");State.S.resonance=r.state;ok(State.save(),"fixture save");fixture++;}
  function walk(x,p){let old=x.position;x.walk(...p);let ticks=0;while(x.moving&&ticks++<1000)x.tick(.05);assert(!x.moving&&x.near(p),"walk arrival "+p);walking+=ticks;return old;}
  function solve(x){let p=x.puzzle;assert(p,"puzzle not mounted");const n=p.type;
-  if(["mirrors","water","stars","routing"].includes(n)){for(let i=0;i<3;i++){while(x.puzzle&&x.puzzle.values[i]!==p.goal[i])ok(x.operate(i),"dial");}}
+  if(n==="pairedWater"){ok(x.operate(1),"lower cannot open without pressure");assert(x.puzzle.values[1]===0,"premature lower opening");ok(x.operate(0),"raise");ok(x.operate(0),"stable");ok(x.operate(1),"open lower");ok(x.operate(0),"overpressure");assert(x.puzzle.values[1]===0,"overpressure closes lower");ok(x.operate(0),"reset pressure");ok(x.operate(0),"raise");ok(x.operate(0),"stable");ok(x.operate(1),"open lower");ok(x.operate(2),"joint clearance");}
+  else if(["mirrors","water","stars","routing"].includes(n)){for(let i=0;i<3;i++){while(x.puzzle&&x.puzzle.values[i]!==p.goal[i])ok(x.operate(i),"dial");}}
   else if(n==="heat"){while(x.puzzle&&x.puzzle.values[0]<p.goal[0])ok(x.operate(0),"heat");while(x.puzzle&&x.puzzle.values[1]>p.goal[1])ok(x.operate(1),"vent");}
   else if(n==="flight"){for(const w of p.wind)ok(x.operate(1-w),"flight");}
   else{ok(x.operate((p.goal[0]+1)%3),"wrong sequence");assert(x.puzzle&&x.puzzle.values.length===0,"wrong sequence advanced");for(const i of p.goal)ok(x.operate(i),"sequence");}
@@ -34,7 +35,7 @@ console.log(JSON.stringify((function test(src){
   }
   for(const op of ops){if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
-   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}}
+   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(s.chapter==="forge"){const restored=createExplorer(b,"forge");assert(restored.invited.includes("jinpo")&&restored.invited.includes("xiaomao"),"forge invitations persist");}if(s.chapter==="forest"){const restored=createExplorer(b,"forest");assert(restored.invited.length===2&&restored.invited.includes("yahe")&&restored.invited.includes("yuchuan"),"forest invitations must survive reload");}}
    if(op==="explore:tide-logbook"){
     walk(x,p);assert(x.interact(op).reason==="incomplete-tide-trail","cannot bypass tide trail");
     let trail=x;
@@ -42,6 +43,10 @@ console.log(JSON.stringify((function test(src){
      const step=trail.tideStep();assert(step?.index===i,"ordered tide waypoint");assert(!trail.traceTide((i+1)%2).ok,"out-of-order tide mark");walk(trail,step.point);ok(trail.traceTide(i),"inspect tide mark");trail=createExplorer(b,s.chapter);
     }
     assert(!trail.tideStep(),"completed tide trail must not reopen");walk(trail,p);ok(trail.interact(op),"recover logbook");solve(trail);
+   }else if(op==="puzzle:safety-blueprint"){
+    walk(x,p);assert(x.interact(op).reason==="incomplete-forge-parts","cannot bypass old workshop");let trail=x;
+    for(let i=0;i<3;i++){const step=trail.forgeStep();assert(step?.index===i,"ordered workshop clue");assert(!trail.collectForgePart((i+1)%3).ok,"cannot skip clue");walk(trail,step.point);ok(trail.collectForgePart(i),"recover part");trail=createExplorer(b,"forge");}
+    assert(!trail.forgeStep(),"workshop parts persist");walk(trail,p);ok(trail.interact(op),"reassemble blueprint");solve(trail);
    }else if(op==="explore:scent-trail"){
     assert(!x.traceScent(2).ok,"cannot skip to medicine");
     let trail=x;
@@ -49,9 +54,9 @@ console.log(JSON.stringify((function test(src){
     assert(!trail.scentStep(),"completed trail must not reopen");
    }else if(op==="puzzle:paired-water-gates"){
     walk(x,p);assert(x.interact(op).reason==="upper-gate-required","cannot bypass upper gate");
-    const gate=x.pairedGate();assert(gate&&!gate.ready,"upper gate available");walk(x,gate.point);ok(x.holdUpperGate(),"hold upper gate");
+    State.S.cats.push({uid:"forest-fixture",species:"nainai",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});const gate=x.pairedGate();assert(gate&&!gate.ready,"upper gate available");walk(x,gate.point);ok(x.holdUpperGate(),"hold upper gate");
     assert(!x.holdUpperGate().ok,"duplicate upper gate action");const restored=createExplorer(b,s.chapter);assert(restored.pairedGate().ready,"paired gate persists");
-    walk(restored,p);ok(restored.interact(op),"lower gate");solve(restored);
+    walk(restored,p);ok(restored.interact(op),"lower gate");assert(restored.puzzle.pair.upper==="forest-fixture"&&restored.puzzle.pair.lower==="muling","two separate actors");assert(!b.recordWorld(s.id,op,{sceneId:s.id,operation:op,region:s.chapter,verified:true,token:b.capture()}).ok,"cannot bypass paired flow");solve(restored);State.S.cats=State.S.cats.filter(c=>c.uid!=="forest-fixture");
    }else{walk(x,p);const r=x.interact(op);ok(r,op);if(r.puzzle)solve(x);}
    assert(!b.view().objective.includes(op),"unrecorded "+op);physical++;
    if(physical===1){const p=x.rewardPoints()[0];walk(x,p.point);const cash=State.S.coins;ok(x.pickup(p.id),"cache reward");assert(State.S.coins>cash&&!x.pickup(p.id).ok,"duplicate reward");rewards++;}

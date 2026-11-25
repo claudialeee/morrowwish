@@ -40,32 +40,13 @@ try {
     assert.equal(yard.back.visible,false,'Back to yard must be invisible while already in yard');
     assert.equal(yard.menu.visible,true,'Yard menu stays visible on every viewport');
     assert.equal(yard.hud.visible,true,'Currency remains visible in the Yard');
-    assert.equal(yard.guide.parent,'cb-header-actions','Gameplay guide is mounted in the right toolbar');
-    assert.equal(yard.guide.immediatelyBeforeMenu,true,'Gameplay guide sits immediately left of Menu');
-    // The tutorial button retains its real click handler after moving into the header.
-    const guideClick=await page.evaluate(()=>{
-      const original=window.__game.replayFirstAdventureTour;
-      let called=0;
-      window.__game.replayFirstAdventureTour=()=>{called++};
-      const el=document.getElementById('guide-help');
-      el.hidden=false;el.click();
-      const visible=getComputedStyle(el).display!=='none';
-      const bb=elem=>elem.getBoundingClientRect();
-      const hud=bb(document.getElementById('hud')),help=bb(el),
-        menu=bb(document.getElementById('map-menu')),
-        stage=bb(document.getElementById('stage')),
-        bar=bb(document.getElementById('cb-header-actions'));
-      const noOverlap=hud.right<=help.left+3&&help.right<=menu.left+3;
-      const fits=bar.left>=stage.left-2&&bar.right<=stage.right+2;
-      window.__game.replayFirstAdventureTour=original;el.hidden=true;
-      return {called,visible,noOverlap,fits,
-        positions:{hudRight:hud.right,helpLeft:help.left,helpRight:help.right,menuLeft:menu.left,
-          toolbarLeft:bar.left,stageLeft:stage.left}};
-    });
-    assert.equal(guideClick.called,1,'Guide retains its original click handler');
-    assert.equal(guideClick.visible,true,'Guide is visible as a real top-right button');
-    assert.ok(guideClick.noOverlap&&guideClick.fits,
-      'When Guide is shown, it must not overlap currency or Menu '+JSON.stringify(guideClick));
+    assert.equal(yard.guide.visible,false,'Gameplay guide belongs inside the RPG menu');
+    await page.locator('#map-menu').click();
+    const help=page.locator('[data-explore-action="guide"]');
+    await help.waitFor({state:'visible'});
+    await help.click();
+    await page.locator('#panel.open').waitFor({state:'hidden'});
+    assert.equal(await page.locator('#guide-help').isVisible(),false,'No detached guide after actual menu use');
     assert.ok(yard.actions.left>=yard.stage.left-1&&yard.actions.right<=yard.stage.right+2,
       'right-hand toolbar must stay inside stage '+JSON.stringify(yard));
     assert.ok(yard.actions.right>=yard.stage.right-22,'yard header must align RIGHT '+JSON.stringify(yard));

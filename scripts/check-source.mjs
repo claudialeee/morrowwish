@@ -1179,7 +1179,8 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
     !cbWorld.includes('const s=this._renderedYardScale||1.2')||
     !cbWorld.includes('CatArt.drawCat(ctx, this.x+dx')||
     !cbWorld.includes('const rows=H<435||selection.length<=3?1:2')||
-    !cbWorld.includes("ctx.filter='saturate(1.12) contrast(1.08)'")||
+    !cbWorld.includes('filter:"saturate(1.12) contrast(1.08)"')||
+    !cbWorld.includes('ctx.filter=filter;ctx.drawImage(img,fit.x,fit.y,fit.width,fit.height);ctx.restore()')||
     !cbWorld.includes('this._renderedYardVisualScale=this._renderedYardScale*(growthForm?.scale||1)')||
     !/src="js\/world\.js\?v=[^"]+"/.test(yardIndex)||
     !/src="js\/game\.js\?v=[^"]+"/.test(yardIndex))
@@ -1191,6 +1192,12 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  const YardForTest=new Function('window','Image','document','State',
    cbWorld+';return window.World.YardScene;')(
    fakeWindow,FakeImage,{getElementById:()=>null},fakeState);
+ // Verify the actual shared fit implementation on extreme landscape and portrait.
+ for(const [iw,ih,w,h] of [[1920,1080,390,844],[1080,1920,1280,720],[1920,1080,568,320]]){
+   const fit=fakeWindow.CatBondSceneFit.rect(iw,ih,w,h);
+   if(fit.x<-.01||fit.y<-.01||fit.width>w+.01||fit.height>h+.01||Math.abs(fit.width/fit.height-iw/ih)>.00001||Math.abs(fit.x*2+fit.width-w)>.01||Math.abs(fit.y*2+fit.height-h)>.01)
+     throw Error('Original scene artwork must remain fully visible and undistorted');
+ }
  const yardForTest=new YardForTest({W:1600,H:820,scene:'yard'});
  if(yardForTest.entities.length!==2||
     Math.abs(yardForTest.entities[0].x-yardForTest.entities[1].x)<320||

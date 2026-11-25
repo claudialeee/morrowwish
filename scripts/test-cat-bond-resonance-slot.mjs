@@ -20,7 +20,7 @@ const State={get S(){return active},save(){return {ok:!failSave,reason:failSave?
 const runtime=createSlotRuntime(State,{notify:n=>notices.push(n)});
 assert.equal(runtime.view().current.id,"harbor:H-02");
 assert.equal(runtime.npcProfile("qilan").trust,0);
-assert.equal(runtime.follows(),true);
+assert.equal(runtime.follows(),false,"A narrative companion must not be a permanent exploration follower");
 assert.equal(runtime.recordNPC({sceneId:"harbor:H-02",npcId:"yahe",region:"harbor"}).ok,false);
 assert.equal(runtime.recordNPC({sceneId:"harbor:H-02",npcId:"jiedeng",region:"garden"}).ok,false);
 assert.equal(runtime.evidence({sceneId:"harbor:H-02",operation:"npc:keeper-talk",region:"harbor",verified:true}).ok,false);

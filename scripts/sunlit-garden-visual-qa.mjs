@@ -157,7 +157,8 @@ try{
   await page.waitForFunction(()=>__game.yard._duoFacility?.index===1&&__game.yard._duoFacility?.arrived===true,null,{timeout:30000});
   await page.screenshot({path:out+'/duo-second-visit.png'});
   await page.waitForFunction(()=>!__game.yard._duoFacility,null,{timeout:15000});
-  assert.ok(await page.evaluate(()=>CatRelations.pair(...CatRelations.chosen()).value)>trustBefore,'two real visits grow the existing chosen duo trust');
+  assert.equal(await page.evaluate(()=>CatRelations.pair(...CatRelations.chosen()).value),Math.min(100,trustBefore+1),'two completed real visits reward exactly the chosen duo once');
+  assert.ok(await page.evaluate(()=>State.S.yardBuildings[0].lastBondAt>0),'completed duo visit records the facility bond cooldown');
   // Story progression fixture only: the garden must READ it and never
   // write to it. The normal construction/tending UI performs actual actions.
   await seedGardenStory(page,'forest:R-01',['harbor']);

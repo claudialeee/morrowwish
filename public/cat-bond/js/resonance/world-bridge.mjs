@@ -5,19 +5,28 @@ const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
 const scentTrail=Object.freeze([
  {point:[.31,.58],name:["湿苔上的气味","Scent on damp moss"],clue:["湿苔上留下了药箱经过的痕迹。沿上方林道继续追踪。","The medicine crate passed through the damp moss. Follow the upper path."]},
- {point:[.39,.40],name:["林间药草痕迹","Herbs on the canopy path"],clue:["药草散落在通往根系水道的路上。","Loose herbs lead toward the root channel."]},
- {point:[.69,.53],name:["根系药材藏处","Medicine at the root channel"],clue:["药材被送去治疗地下根系。","The missing medicine was diverted to treat the underground roots."]}
+ {point:[.42,.28],name:["林间药草痕迹","Herbs on the canopy path"],clue:["药草散落在通往根系水道的路上。","Loose herbs lead toward the root channel."]},
+ {point:[.69,.53],name:["根系药材藏处","Medicine at the root channel"],clue:["药材被送去治疗地下根系。旁边的秘密水路一直通向芽禾的药草园。","The medicine was diverted to treat the underground roots. A hidden channel also leads directly to Yahe’s herb gardens."]}
 ]);
 const tideTrail=[
  {point:[.82,.45],name:["查看退潮刻痕","Inspect the ebb marks"],clue:["退潮刻痕指向码头尽头。沿东岸石径寻找露出的台阶。","The ebb marks point toward the end of the pier. Follow the eastern stone path to the exposed steps."]},
  {point:[.80,.682],name:["寻找干燥石阶","Find the dry steps"],clue:["潮水退去，旧日志匣的入口就在前方。","The water has receded. The entrance to the old logbook chest is just ahead."]}
 ];
+const forgeParts=[{point:[.30,.78],name:["拾取炉架","Recover the frame"],clue:["炉架上刻着节庆日期，安全测试被提前结束。","The festival date is etched on the frame. The safety test was cut short."]},{point:[.35,.58],name:["寻找旧管路","Recover the old pipe"],clue:["破裂的冷却管旁记着两名受伤工人。","The fractured cooling pipe records two injured workers."]},{point:[.44,.50],name:["取回泄压阀","Recover the relief valve"],clue:["小铆的新阀门能让压力在高温下独立释放。","Xiaomao’s new valve lets pressure escape independently of heat."]}];
+const forgeKey=i=>"forge:E-02:part:"+i;
+const forgeNear=(w,p)=>{const q=w.positions.forge;return !!q&&Math.hypot(q.x-p[0],q.y-p[1])<.072;};
 const tideKey=i=>"harbor:H-03:tide:"+i;
 const tideNear=(w,p)=>{const q=w.positions.harbor;return !!q&&Math.hypot(q.x-p[0],q.y-p[1])<.072;};
 const scentKey=i=>"forest:R-02:scent:"+i;
 const scentAt=(w,i)=>{const p=w.positions.forest,q=scentTrail[i]?.point;return !!p&&!!q&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
-const upperGate={point:[.53,.40],npc:"yahe",name:["与芽禾撑开上层水闸","Open the upper gate with Yahe"],clue:["芽禾会守住上层水闸。沿根桥前往榆川处，接通地下水道。","Yahe will hold the upper gate. Cross the root bridge to Yuchuan and reconnect the lower channel."]};
+const upperGate={point:[.53,.40],npc:"yahe",name:["与芽禾撑开上层水闸","Open the upper gate with Yahe"],clue:["第一只猫留在上层控制水压；带另一只猫沿根桥前往地下水闸。","The first cat stays to regulate pressure. Lead the other cat across the root bridge to the lower gate."]};
 const pairedKey="forest:R-03:upper-gate";
+ function forestPair(root){
+  const cats=root.cats||[],selected=(root.duoRelations?.active||[]).map(id=>cats.find(c=>c.uid===id)).filter(Boolean);
+  const team=[...selected,...cats].filter((c,i,a)=>a.findIndex(x=>x.uid===c.uid)===i);
+  return team.length?{upper:team[0].uid,lower:team[1]?.uid||"muling"}:null;
+ }
+ const validPair=(root,p)=>!!p&&typeof p==="object"&&p.upper!==p.lower&&root.cats?.some(c=>c.uid===p.upper)&&(p.lower==="muling"||root.cats?.some(c=>c.uid===p.lower));
 const atForest=(w,q)=>{const p=w.positions.forest;return !!p&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
 // Muling's six letters are optional post-ending scenes. They do not reopen the seal or reverse the ending.
 const homeLetters={
@@ -53,6 +62,10 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  }
  function position(region,x,y){if(world().location!==region||!campaign.regions.includes(region)||!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>1||y<0||y>1)return fail("invalid-position");return physical(w=>({...w,positions:{...w.positions,[region]:{x,y}}}));}
  function patch(change,reward){return prior=>{const w=prior.resonanceExploration||{};return {resonanceExploration:change(clone(w)),coins:(prior.coins||0)+(reward.coins||0),fish:(prior.fish||0)+(reward.fish||0)};};}
+ function forgeStep(){const v=view(),w=world();if(v.current?.id!=="forge:E-02"||w.location!=="forge"||!v.objective.includes("puzzle:safety-blueprint"))return null;const index=forgeParts.findIndex((_,i)=>!w.interactions[forgeKey(i)]);return index<0?null:{...clone(forgeParts[index]),index,total:forgeParts.length};}
+ function collectForgePart(index,token){const step=forgeStep(),w=world(),api=resolveNarrative();if(!step||step.index!==index||!token||!api.isCurrentAction(token)||!forgeNear(w,step.point))return fail("walk-to-objective");return physical(x=>({...x,interactions:{...x.interactions,[forgeKey(index)]:true}}));}
+ function forgeInvited(){const v=view(),w=world();return (v.current?.id==="forge:E-04"||v.completed.includes("forge:E-04"))?["jinpo","xiaomao"].filter(id=>w.interactions["forge:E-04:invite:"+id]):[];}
+ function inviteForge(id,point,token){const api=resolveNarrative(),v=view(),w=world(),p={jinpo:[.35,.65],xiaomao:[.53,.50]}[id];if(!p||point[0]!==p[0]||point[1]!==p[1]||w.location!=="forge"||v.current?.id!=="forge:E-04"||!v.objective.includes("melody:forge")||!token||!api.isCurrentAction(token)||!forgeNear(w,p))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["forge:E-04:invite:"+id]:true}}));}
  function tideStep(){
   const v=view(),w=world();
   if(v.current?.id!=="harbor:H-03"||w.location!=="harbor"||!v.objective.includes("explore:tide-logbook"))return null;
@@ -81,12 +94,12 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  function pairedGate(){
   const v=view(),w=world();
   if(w.location!=="forest"||v.current?.id!=="forest:R-03"||!v.objective.includes("puzzle:paired-water-gates"))return null;
-  return {...clone(upperGate),ready:!!w.interactions[pairedKey]};
+  const pair=w.interactions[pairedKey],ready=validPair(State.S,pair);return {...clone(upperGate),ready,pair:ready?clone(pair):forestPair(State.S)};
  }
  function holdUpperGate(token){
   const gate=pairedGate(),api=resolveNarrative();
   if(!gate||gate.ready||!token||!api.isCurrentAction(token)||!atForest(world(),gate.point))return fail("walk-to-upper-gate");
-  return physical(w=>({...w,interactions:{...w.interactions,[pairedKey]:true}}));
+  if(!gate.pair)return fail("two-cat-required");return physical(w=>({...w,interactions:{...w.interactions,[pairedKey]:gate.pair}}));
  }
  function homeQuest(region){
   const v=view(),w=world(),spec=homeLetters[region];
@@ -109,8 +122,6 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(q.actors.some(a=>a.id!==id&&!a.visited))return physical(change);
   const r=api.postgame({...q.reunion,verified:true,token},patch(change,{coins:0,fish:0}));cachedRoot=null;return r;
  }
- function harborInvited(){const v=view(),w=world();return v.current?.id==="harbor:H-05"?["qilan","jiedeng"].filter(id=>w.interactions["harbor:H-05:invite:"+id]):[];}
- function inviteHarbor(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={qilan:[.16,.60],jiedeng:[.195,.50]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="harbor"||v.current?.id!=="harbor:H-05"||!v.objective.includes("melody:harbor")||!token||!api.isCurrentAction(token)||!tideNear(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["harbor:H-05:invite:"+id]:true}}));}
  function recordWorld(sceneId,op,proof){
   const api=resolveNarrative(),v=view(),region=v.current?.chapter,w=world();
   if(v.current?.id!==sceneId||w.location!==region||!campaign.regions.includes(region)||!v.objective.includes(op)||proof?.sceneId!==sceneId||proof.operation!==op||proof.region!==region||proof.verified!==true)return fail("invalid-world-evidence");
@@ -118,13 +129,25 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(w.interactions[sceneId+":"+op])return fail("already-completed");
   if(op==="explore:tide-logbook"&&(!tideTrail.every((_,i)=>w.interactions[tideKey(i)])||!tideNear(w,[.87,.748])))return fail("incomplete-tide-trail");
   if(op==="explore:scent-trail"&&(!scentTrail.slice(0,-1).every((_,i)=>w.interactions[scentKey(i)])||!scentAt(w,scentTrail.length-1)))return fail("incomplete-scent-trail");
-  if(op==="puzzle:paired-water-gates"&&(!w.interactions[pairedKey]||!atForest(w,[.69,.53])))return fail("upper-gate-required");
+  if(op==="puzzle:paired-water-gates"){
+    const pair=w.interactions[pairedKey];
+    if(!validPair(State.S,pair)||!atForest(w,[.69,.53]))return fail("upper-gate-required");
+    if(proof.pair?.upper!==pair.upper||proof.pair?.lower!==pair.lower||proof.waterSequence?.join(",")!=="2,1,1")return fail("paired-flow-incomplete");
+   }
+  if(op==="puzzle:safety-blueprint"&&(!forgeParts.every((_,i)=>w.interactions[forgeKey(i)])||!forgeNear(w,[.35,.50])))return fail("incomplete-forge-parts");
+  if(op==="melody:forge"&&(!["jinpo","xiaomao"].every(id=>w.interactions["forge:E-04:invite:"+id])||!forgeNear(w,[.88,.30])))return fail("local-response-required");
+  if(op==="melody:forest"&&!["yahe","yuchuan"].every(id=>w.interactions["forest:R-04:invite:"+id]))return fail("local-response-required");
+  if(op==="melody:harbor"&&v.objective.includes("repair:harbor"))return fail("harbor-repair-first");
   if(op==="melody:harbor"&&!["qilan","jiedeng"].every(id=>w.interactions["harbor:H-05:invite:"+id]))return fail("local-response-required");
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
   const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,interactions:{...x.interactions,[sceneId+":"+op]:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
+ function harborInvited(){const v=view(),w=world();return v.current?.id==="harbor:H-05"?["qilan","jiedeng"].filter(id=>w.interactions["harbor:H-05:invite:"+id]):[];}
+ function inviteHarbor(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={qilan:[.16,.60],jiedeng:[.195,.50]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="harbor"||v.current?.id!=="harbor:H-05"||v.objective.includes("repair:harbor")||!v.objective.includes("melody:harbor")||!token||!api.isCurrentAction(token)||!tideNear(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["harbor:H-05:invite:"+id]:true}}));}
+ function forestInvited(){const v=view(),w=world();return v.current?.id==="forest:R-04"||v.completed.includes("forest:R-04")?["yahe","yuchuan"].filter(id=>w.interactions["forest:R-04:invite:"+id]):[];}
+ function inviteForest(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={yahe:[.30,.43],yuchuan:[.64,.53]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="forest"||v.current?.id!=="forest:R-04"||v.objective.includes("repair:forest")||!v.objective.includes("melody:forest")||!token||!api.isCurrentAction(token)||!atForest(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["forest:R-04:invite:"+id]:true}}));}
  function cargoSpec(a,b){const l=campaign.links.find(([x,y])=>x===a&&y===b);if(!l)return null;const v=view(),i=(v.links[a+":"+b]||[]).length,actor=[a,b,b,a][i];if(i>=4||!v.regions.includes(a)||!v.regions.includes(b))return null;const end=a==="starfall"?"starfall:F-02":campaign.scenes.filter(s=>s.chapter===a).at(-1)?.id;if(!v.completed.includes(end))return null;return {a,b,stage:stages[i],actor,action:l[i<2?2:3],from:i%2===0?0:1,to:i%2===0?1:0};}
  function pickupCargo(option){const w=world(),s=option&&cargoSpec(option.a,option.b);if(w.cargo)return fail("cargo-busy");if(!s||w.location!==s.actor||!["a","b","stage","actor","action","from","to"].every(k=>option[k]===s[k]))return fail("invalid-cargo");return physical(x=>({...x,cargo:s}));}
  function exchange(a,b,proof){const api=resolveNarrative(),s=cargoSpec(a,b),w=world();if(!s||!w.cargo||w.location!==s.actor||proof?.region!==s.actor||proof.stage!==s.stage||proof.action!==s.action||proof.verified!==true||!["a","b","stage","actor","action","from","to"].every(k=>w.cargo[k]===s[k]))return fail("exchange-evidence-missing");
@@ -132,5 +155,5 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   const reward={coins:10,fish:1},r=api.exchange({a,b,stage:s.stage,actor:s.actor,action:s.action,verified:true,token:proof.token},patch(x=>({...x,cargo:null}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function pickupReward(region,id){const w=world();if(w.location!==region||!/^cache-[12]$/.test(id)||w.pickups[region+":"+id])return fail("already-collected");return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
- return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,tideStep,traceTide,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
+ return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,forestInvited,inviteForest,forgeStep,collectForgePart,forgeInvited,inviteForge,tideStep,traceTide,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
 }

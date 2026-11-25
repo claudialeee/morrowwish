@@ -23,13 +23,15 @@
 .cbcp-root[hidden]{display:none!important}
 .cbcp-shell{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto;width:100%;height:100%;min-height:260px;overflow:hidden;background:#101d28}
 .cbcp-stage{position:relative;isolation:isolate;overflow:hidden;min-height:0;background:radial-gradient(ellipse at 50% 42%,#52616a 0%,#263744 54%,#101d28 100%)}
-.cbcp-art,.cbcp-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;will-change:transform,opacity;transform-origin:center;transition:transform 5600ms cubic-bezier(.2,.55,.24,1),opacity 520ms ease}
-.cbcp-layer{pointer-events:none}
+.cbcp-art,.cbcp-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;will-change:transform,opacity;transform-origin:center;transition:transform 5600ms cubic-bezier(.2,.55,.24,1),opacity 520ms ease}
+.cbcp-art-stack{position:absolute;inset:0;overflow:hidden}.cbcp-layer{pointer-events:none}
+.cbcp-stage::before{content:'';position:absolute;inset:-15px;background:var(--cbcp-backplate,none) center/cover no-repeat;filter:blur(14px) brightness(.52);opacity:.85;pointer-events:none}
 .cbcp-fx{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
 .cbcp-subtitle-wrap{padding:12px 18px;background:linear-gradient(90deg,transparent,rgba(7,14,24,.78) 16%,rgba(7,14,24,.78) 84%,transparent)}
 @media(orientation:portrait) and (max-width:680px){
- .cbcp-stage .cbcp-art-stack{position:absolute;inset:17% 0 22%;overflow:hidden}
- .cbcp-stage .cbcp-art{object-fit:contain}
+  .cbcp-stage::before{content:'';position:absolute;inset:-15px;background:var(--cbcp-backplate,none) center/cover no-repeat;filter:blur(14px) brightness(.52);opacity:.85;pointer-events:none}
+ .cbcp-stage .cbcp-art-stack{position:absolute;inset:12% 0 19%;overflow:hidden}
+ .cbcp-stage .cbcp-art{object-fit:contain;background:transparent}
  .cbcp-stage .cbcp-subtitle-wrap{bottom:3%;padding:9px 6px}
 }
 @media(prefers-reduced-motion:reduce){.cbcp-fx{display:none}}
@@ -166,6 +168,7 @@
           </div>
         </div>`;
       this.nodes = {
+        stage:this.root.querySelector('.cbcp-stage'),
         stack: this.root.querySelector('.cbcp-art-stack'),
         kicker: this.root.querySelector('.cbcp-kicker'),
         title: this.root.querySelector('.cbcp-title'),
@@ -212,6 +215,8 @@
       this.frameElapsedMs = Math.max(0, Number(options.elapsedMs) || 0);
       this.paused = !!options.paused;
       this.root.hidden = false;
+      // Controls must reflect restored pause state before asynchronous image decoding.
+      this.updateControls();
       this.renderFrame();
       return this;
     }
@@ -222,6 +227,8 @@
       const lang = this.currentLanguage();
       const token = ++this.renderToken;
       this.frameReady = false;
+      this.root.dataset.ready='false';
+      this.updateControls();
       this.nodes.continue.disabled = true;
       const fail = () => {
         if (token !== this.renderToken || !this.scene) return;
@@ -232,14 +239,15 @@
       const ready = () => {
         if (token !== this.renderToken || !this.scene) return;
         this.frameReady = true;
-        this.nodes.kicker.textContent = localized(this.scene.kicker, lang) || localized(this.scene.chapter, lang);
+        this.root.dataset.ready='true';this.root.dataset.frameId=frame.id||'';
+        this.nodes.kicker.textContent = localized(frame.kicker||this.scene.kicker, this.currentLanguage()) || localized(this.scene.chapter, this.currentLanguage());
         this.nodes.title.textContent = localized(this.scene.title, this.currentLanguage());
         this.renderSubtitle();
         this.renderProgress();
         this.updateControls();
         this.nodes.continue.disabled = false;
-        if(this.activeEffect!==frame.effect||this.activeEffectImage!==frame.image){this.activeEffect=frame.effect;this.activeEffectImage=frame.image;if(!this.paused)this.playEffect(frame.effect);}
-        this.playSfx(frame.sfx);
+        if(this.activeEffect!==frame.effect||this.activeEffectImage!==frame.image){this.activeEffect=frame.effect;this.activeEffectImage=frame.image;if(!this.paused)this.playEffect(frame.effect,frame);}
+        if(!this.paused)this.playSfx(frame.sfx);
         this.startAtmosphere();
         this.options.onFrameChange?.({sceneId:this.scene.id,frameIndex:this.frameIndex,frameId:frame.id||null});
         if (!this.paused) this.startTimer();
@@ -260,9 +268,12 @@
         try { await image.decode?.(); } catch (_) { fail(); return; }
         if (token !== this.renderToken || !this.scene) { image.remove(); return; }
         this.activeImage = frame.image;
+        this.nodes.stage.style.setProperty('--cbcp-backplate',`url("${frame.image}")`);
         this.applyCamera(image, frame.camera, 1, frame.shotDurationMs||frame.durationMs, frame.transitionMs, (frame.shotOffsetMs||0)+this.frameElapsedMs);
         requestAnimationFrame(() => {
           if (token !== this.renderToken) return;
+          // Never spend the first painted shot (or a restored paused shot) behind a blank fade.
+          if(!previous.length||this.paused)image.style.transitionDuration='0ms';
           image.style.opacity = '1';
           for (const node of previous) {
             node.style.opacity = '0';
@@ -293,7 +304,7 @@
       const to = camera?.to || { x: 0, y: 0, scale: 1.06 };
       const factor = reduced ? 0 : clamp(depth, 0, 1.5);
       node.style.transition = `opacity ${clamp(transitionMs ?? 520, 320, 1000)}ms ease`;
-      const transform=p=>`translate3d(${Number(p.x||0)*factor}%,${Number(p.y||0)*factor}%,0) scale(${reduced?1:Number(p.scale||1)})`;
+      const transform=p=>{const scale=reduced?1:Math.max(.94,Math.min(1,Number(p.scale||1)));const bound=(1-scale)*50,clamp=v=>Math.max(-bound,Math.min(bound,v));return `translate3d(${clamp(Number(p.x||0)*factor)}%,${clamp(Number(p.y||0)*factor)}%,0) scale(${scale})`;};
       node.style.transform=transform(to);
       if(!reduced&&node.animate){
         const animation=node.animate([{transform:transform(from)},{transform:transform(to)}],{duration:Math.max(1200,durationMs||5600),fill:'both',easing:'cubic-bezier(.2,.55,.24,1)'});
@@ -302,9 +313,11 @@
       }
     }
 
-    playEffect(effect){
+    playEffect(effect,frame){
       // Existing game sound controls remain authoritative. No background music.
       const audio=window.MorrowwishAudio;
+      if(effect==='sanctuary')audio?.note?.(frame.note,.7,.13);
+      if(effect==='impact'||effect==='blackout')audio?.note?.(196,.7,.16);
       if(effect==='impact')audio?.effect?.('discover');
       if(effect==='seal')audio?.note?.(196,.35,.15);
       if(effect==='seasons')audio?.note?.(440,.65,.15);
@@ -333,7 +346,8 @@
             ctx.globalAlpha=.18+.55*seed(i+55);ctx.beginPath();ctx.ellipse(x,y,1+2*seed(i+21),down?3:1+2*seed(i+22),0,0,Math.PI*2);ctx.fill();}
           ctx.globalAlpha=1;
         };
-        if(frame.effect==='impact'){
+        if(frame.effect==='sanctuary'){glow(w*.5,h*.46,w*.42,'rgba(247,211,139,'+(.05+.08*Math.sin(p*Math.PI))+')');particles(15,'#fce3a2',12);}
+        else if(frame.effect==='impact'){
           // Six sanctuary glows answer in order; then the falling star strikes the bell.
           const sites=[[.53,.30],[.61,.24],[.70,.28],[.81,.38],[.90,.31],[.96,.43]];
           sites.forEach(([x,y],i)=>{const strength=Math.max(0,1-Math.abs(p*9-i)*.85);glow(x*w,y*h,w*.045,'rgba(255,205,113,'+strength*.8+')')});
@@ -390,6 +404,9 @@
       this.nodes.language.setAttribute('aria-label', lang === 'zh' ? '切换到英文' : 'Switch to Chinese');
       this.nodes.pause.textContent = this.paused ? (lang === 'zh' ? '继续播放' : 'Resume') : (lang === 'zh' ? '暂停' : 'Pause');
       this.nodes.skip.textContent = lang === 'zh' ? '跳过' : 'Skip';
+      this.root.dataset.paused=String(this.paused);
+      this.nodes.pause.disabled=!this.frameReady;
+      this.nodes.skip.disabled=!this.frameReady;
       this.nodes.skip.hidden = !this.scene?.allowSkip;
       const manual = this.scene?.mode === 'manual' || !(Number(this.scene?.frames?.[this.frameIndex]?.durationMs) > 0);
       this.nodes.continue.textContent = this.frameIndex < (this.scene?.frames?.length || 1) - 1
@@ -462,6 +479,7 @@
       return {
         sceneId: this.scene.id,
         frameIndex: this.frameIndex,
+        frameId: this.scene.frames[this.frameIndex]?.id||null,
         elapsedMs: Math.round(this.frameElapsedMs + (!this.paused && this.frameStartedAt ? performance.now() - this.frameStartedAt : 0)),
         paused: this.paused
       };
@@ -493,7 +511,9 @@
       this.forcedLanguage = this.language;
       if (this.scene) {
         this.nodes.title.textContent = localized(this.scene.title, this.currentLanguage());
-        this.nodes.kicker.textContent = localized(this.scene.kicker, this.currentLanguage()) || localized(this.scene.chapter, this.currentLanguage());
+        const frame=this.scene.frames[this.frameIndex];
+        this.nodes.kicker.textContent = localized(frame?.kicker||this.scene.kicker, this.currentLanguage()) || localized(this.scene.chapter, this.currentLanguage());
+        for(const image of this.nodes.stack.querySelectorAll('.cbcp-art'))if(image.getAttribute('src')===frame?.image)image.alt=localized(frame.alt,this.currentLanguage());
         this.renderSubtitle();
       }
       this.updateControls();
@@ -532,8 +552,9 @@
       this.activeEffect=null;this.activeEffectImage=null;
       if(this.fxRAF)cancelAnimationFrame(this.fxRAF);this.fxRAF=0;
       const fx=this.root.querySelector('.cbcp-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);
-      this.frameReady = false;
+      this.frameReady = false;this.root.dataset.ready='false';delete this.root.dataset.frameId;
       this.nodes.stack.replaceChildren();
+      this.nodes.stage.style.removeProperty('--cbcp-backplate');
       this.paused = false;
       this.frameElapsedMs = 0;
       this.root.hidden = true;

@@ -27,9 +27,9 @@ body [data-mw-music],body [data-mw-audio],body .lab-mute,body #music,body #sound
 html[data-mw-settings-game="elsewhere"] .top-right .language-switch{display:none!important}
 html[data-mw-settings-game="pocket-aquarium"] header .languages{display:none!important}
 @media(max-width:700px){
-html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .in-game-head-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:'room tools' 'status status'!important;gap:3px!important;align-items:center!important}
+html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .in-game-head-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:'room status' 'tools tools'!important;gap:3px!important;align-items:center!important}
 html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .sticker{grid-area:room!important;max-width:100%!important;min-width:0!important}
-html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .heist-status{grid-area:status!important;justify-self:start!important;margin:0!important}
+html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game .heist-status{grid-area:status!important;justify-self:end!important;margin:0!important}
 html[data-mw-settings-game="pawsibly-innocent"] .single-screen-game #stageControls{grid-area:tools!important;justify-self:end!important}
 html[data-mw-settings-game="pawsibly-innocent"] #menuButtonLabel{display:none!important}
 html[data-mw-settings-game="pawsibly-innocent"] #stageControls #menuButton{font-size:21px!important}
@@ -93,6 +93,9 @@ html[data-mw-settings-game="pawsibly-innocent"] .in-game-controls .hud-icon,html
  #stageControls #mw-game-settings{margin-left:1px!important}
  html[data-mw-settings-game="pawsibly-innocent"] .in-game-controls{gap:2px!important}
  html[data-mw-settings-game="pawsibly-innocent"] #stageControls #menuButton{min-width:30px!important;width:30px!important;padding:0!important}
+}
+@media(max-width:700px){
+ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-game-settings :is(.mw-settings-music,.mw-settings-sfx){width:40px!important;min-width:40px!important;height:42px!important;min-height:42px!important}
 }
 `;
 let dock,btnLang,btnMusic,btnSfx,btnShare;

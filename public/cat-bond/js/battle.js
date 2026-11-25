@@ -43,7 +43,7 @@ class CaptureBattle {
     // not an endlessly scaling arena as the player's collection grows.
     this.encounterRegion=game._battleTheme?.region||
       (game.scene==='yard'?'yard':window.WorldMap?.currentRegion||null);
-    this.starterRegion=['sakura','yard'].includes(this.encounterRegion);
+    this.starterRegion=['sakura','yard'].includes(this.encounterRegion)||(this.encounterRegion==='harbor'&&(State.S.catchCount||0)===0);
     // enemy level scales with the player's progress: average team level +
     // how far they've come (catchCount), nudged by rarity. So early wilds are
     // Lv.1-3 and late-game packs scale to match a strong roster.

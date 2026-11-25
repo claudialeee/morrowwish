@@ -26,7 +26,8 @@ function impact(b,e,x,y,r,damage,kind="impact",delay=.38,life=.62){
 function releaseAttack(b,e,cast){
   const target=cast.target||aliveTarget(b,e)||{x:e.x,y:e.y};
   if(cast.kind==="hammerfall"){
-    impact(b,e,target.x,target.y,104,e.dmg*1.48,"hammer",.42,.58);
+    impact(b,e,target.x,target.y,104,e.dmg*1.48,"hammer",.42,.78);
+    if(cast.phase===2){for(const offset of [-124,124])impact(b,e,Math.max(70,Math.min(b.W-70,target.x+offset)),target.y,72,e.dmg*.85,"hammer",1.05,1.42);}
     window.MorrowwishAudio?.effect?.("combat_hurt");
     return;
   }
@@ -105,11 +106,12 @@ BP.updateEnemyAI=function(dt,e,me){
   e.fireCd=99999;e.specialMeter=-10000;
   const events=tickForgeState(state,dt,e.hp/e.maxhp,target);
   processEvents(b,e,events);
+  if(b.autoMode&&state.supportCharges>0&&state.ventOpen<=0&&(state.heat>=65||state.pressure>=75)&&!b.coachHoldsEnemies?.())b.forgeUseSupport?.();
   if(state.cast&&e.forgeCast)e.forgeCast.remaining=state.cast.remaining;
   tickHazards(b,e,dt);
   e.forgeVentOpen=state.ventOpen>0;
   e.forgeHeat=state.heat;
-  e.forgeShielded=state.heat>=65&&!e.forgeVentOpen;
+  e.forgeShielded=(state.heat>=65||state.pressure>=75)&&!e.forgeVentOpen;
 };
 const originalHurt=BP.hurtEnemy;
 BP.hurtEnemy=function(e,dmg,...args){
@@ -138,8 +140,7 @@ BP.finish=function(win){
 function drawBackground(ctx,W,H,b){
   const img=art.background;
   if(img.complete&&img.naturalWidth){
-    const iw=art.background.naturalWidth,ih=art.background.naturalHeight,scale=Math.max(W/iw,H/ih),dw=iw*scale,dh=ih*scale;
-    ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
+    window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#172532",bottom:"#574037"});
   }else{
     const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#172532");g.addColorStop(.65,"#574037");g.addColorStop(1,"#1a222a");
     ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
@@ -165,7 +166,7 @@ function drawEnemy(ctx,e,b){
   if(img.complete&&img.naturalWidth){
     const bob=Math.sin(b.t*4.2)*2.2,tilt=e.telegraph>0?-.025*Math.sin(b.t*30):.012*Math.sin(b.t*2.4);
     ctx.save();ctx.translate(e.x,e.y-size*.43+bob);ctx.rotate(tilt);
-    ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();
+    const s=Math.min(size/img.naturalWidth,size/img.naturalHeight),dw=img.naturalWidth*s,dh=img.naturalHeight*s;ctx.drawImage(img,-dw/2,size/2-dh,dw,dh);ctx.restore();
   }else{
     const draw=window.CatMotion?.draw||window.CatArt?.drawCat;
     draw?.(ctx,e.x,e.y,{species:e.sp,scale:b.catScale("enemy"),face:e.face,t:e.t,pose:e.pose,mood:"alert"});
@@ -194,7 +195,7 @@ function drawBossEffects(ctx,b){
     ctx.globalAlpha=fade;
   }
   const state=b.forgeState;
-  if(state&&state.heat>=65&&state.ventOpen<=0){ctx.globalAlpha=.38;ctx.strokeStyle="#e78c55";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(e.x,e.y,57,24,0,0,Math.PI*2);ctx.stroke();}
+  if(state&&(state.heat>=65||state.pressure>=75)&&state.ventOpen<=0){ctx.globalAlpha=.38;ctx.strokeStyle="#e78c55";ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(e.x,e.y,57,24,0,0,Math.PI*2);ctx.stroke();}
   const c=e.forgeCast;
   if(c){
     const k=Math.max(0,Math.min(1,1-c.remaining/(c.phase===2 ? 0.88 : c.phase===1 ? 1.02 : 1.18)));
@@ -208,7 +209,7 @@ function drawBossEffects(ctx,b){
       ctx.fillStyle="rgba(227,123,67,.16)";ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.arc(e.x,e.y,reach,a-.55,a+.55);ctx.closePath();ctx.fill();
       ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(e.x+Math.cos(a-.55)*reach,e.y+Math.sin(a-.55)*reach);ctx.moveTo(e.x,e.y);ctx.lineTo(e.x+Math.cos(a+.55)*reach,e.y+Math.sin(a+.55)*reach);ctx.stroke();
     }else{
-      for(let i=-1;i<=1;i++){const x=(c.target?.x??e.x)+i*128,y=(c.target?.y??e.y)+(i%2?62:-62);ctx.beginPath();ctx.ellipse(x,y,68*(.65+.35*k),30*(.65+.35*k),0,0,Math.PI*2);ctx.stroke();}
+      for(let i=-1;i<=1;i++){const x=Math.max(70,Math.min(b.W-70,(c.target?.x??e.x)+i*128)),y=Math.max(b.topMargin+35,Math.min(b.H-b.bottomMargin-35,(c.target?.y??e.y)+(i%2?62:-62)));ctx.beginPath();ctx.ellipse(x,y,68*(.65+.35*k),30*(.65+.35*k),0,0,Math.PI*2);ctx.stroke();}
     }
   }
   if(b.forgeVictorySequence){
@@ -235,7 +236,7 @@ function mountHud(game,b){
   panel.innerHTML='<div class="cb-forge-title"><span data-forge-title></span><span data-forge-phase></span></div>'+
     '<div class="cb-forge-objective" data-forge-objective></div>'+
     '<div class="cb-forge-heat"><span data-forge-heat-label></span><div><i data-forge-heat></i></div><b data-forge-heat-value></b></div>'+
-    '<div class="cb-forge-support"><img alt="" data-forge-jinpo><img alt="" data-forge-xiaomao>'+
+    '<div class="cb-forge-heat"><span data-forge-pressure-label></span><div><i data-forge-pressure></i></div><b data-forge-pressure-value></b></div><div class="cb-forge-support"><img alt="" data-forge-jinpo><img alt="" data-forge-xiaomao>'+
     '<div><strong data-forge-support-title></strong><small data-forge-support-note></small></div>'+
     '<button type="button" data-forge-support-button></button></div>';
   panel.querySelector("[data-forge-jinpo]").src=new URL("../npc/jinpo-painted.webp",baseUrl).href;
@@ -248,19 +249,21 @@ function mountHud(game,b){
 function renderHud(game,b){
   const p=document.getElementById("cb-forge-hud");if(!p||!b?.forgeState)return;
   const s=b.forgeState,en=window.MorrowwishI18n?.get?.()!=="zh",e=b.enemies?.find(x=>x.visualKind==="forge-guardian");
+  p.dataset.duoArt=String(!!(b.duoCinematic?.t>0&&b.duoCinematic.max-b.duoCinematic.t<b.duoCinematic.strikeAt));
   const set=(sel,value)=>{const n=p.querySelector(sel);if(n&&n.textContent!==value)n.textContent=value;};
   set("[data-forge-title]",en?"EMBERFORGE · E-03":"赤炉环城 · E-03");
-  const enemyLabel=document.getElementById("wild-name");if(enemyLabel)enemyLabel.textContent=en?"EMBERFORGE · FURNACE GUARDIAN":"赤炉环城 · 熔炉机械守卫";
-  set("[data-forge-phase]",en?["HEAT TEST","OVERDRIVE","CRITICAL"][s.phase]:"热压测试 · "+(s.phase+1)+"/3");
+  const enemyLabel=document.getElementById("wild-name");if(enemyLabel)enemyLabel.textContent=en?"FURNACE GUARDIAN":"熔炉机械守卫";
+  set("[data-forge-phase]",en?["I · HEAT TEST","II · OVERDRIVE","III · CRITICAL"][s.phase]:["一 · 热压测试","二 · 超载","三 · 临界"][s.phase]);
   set("[data-forge-objective]",en?"Vent the core, then strike while exposed.":"先泄压，再攻击暴露的炉心。");
-  set("[data-forge-heat-label]",en?"FURNACE PRESSURE":"炉内压力");
+  set("[data-forge-heat-label]",en?"CORE HEAT":"炉心温度");
   set("[data-forge-heat-value]",Math.round(s.heat)+"%");
   const bar=p.querySelector("[data-forge-heat]");if(bar)bar.style.width=s.heat+"%";
+  set("[data-forge-pressure-label]",en?"PRESSURE":"炉内压力");set("[data-forge-pressure-value]",Math.round(s.pressure)+"%");const pressure=p.querySelector("[data-forge-pressure]");if(pressure)pressure.style.width=s.pressure+"%";
   const open=s.ventOpen>0,button=p.querySelector("[data-forge-support-button]");
   if(button){button.disabled=s.supportCharges<=0||open;button.textContent=open?(en?"CORE EXPOSED":"炉心暴露中"):en?("VENT · "+s.supportCharges):("协力泄压 · "+s.supportCharges);}
   set("[data-forge-support-title]",en?"Jinpo & Xiaomao":"烬婆与小铆");
-  set("[data-forge-support-note]",en?("Safety bypass · "+s.supportCharges):("安全旁路 · "+s.supportCharges));
-  const objective=p.querySelector("[data-forge-objective]");if(objective)objective.textContent=en?"Protect the test rig. Vent before striking the core.":"保护试验炉，先泄压再攻击炉心。";
+  p.dataset.assist=s.assist;p.dataset.exposed=String(open);p.dataset.pressureAlert=String(s.pressure>=75&&!open);set("[data-forge-support-note]",s.assist==="xiaomao"?(en?"Xiaomao · extra pressure relief":"小铆 · 额外泄压"):(en?"Jinpo · extra cooling":"烬婆 · 额外冷却"));
+  const objective=p.querySelector("[data-forge-objective]");if(objective)objective.textContent=open?(en?"Core exposed · "+Math.ceil(s.ventOpen)+"s — strike now!":"炉心暴露 · "+Math.ceil(s.ventOpen)+"秒，立即攻击！"):s.cast?(en?({hammerfall:"Hammerfall · dodge the marked impact", "slag-fan":"Slag fan · move sideways", "steam-vents":"Steam vents · escape the marked zones"}[s.cast.kind]):({hammerfall:"重锤锁定 · 躲开标记区域", "slag-fan":"熔渣扇击 · 横向闪避", "steam-vents":"蒸汽喷口 · 远离标记区域"}[s.cast.kind])):(en?"Protect the test rig. Vent before striking the core.":"保护试验炉，先泄压再攻击炉心。");
 }
 function removeHud(){document.getElementById("cb-forge-hud")?.remove();}
 function showResult(game,b,outcome,returnToMap){
@@ -285,7 +288,7 @@ function showResult(game,b,outcome,returnToMap){
   back.textContent=en?"Return to the world":"返回世界";back.dataset.forgeZh="返回世界";back.dataset.forgeEn="Return to the world";
   retry.textContent=en?"Retry encounter":"再次挑战";retry.dataset.forgeZh="再次挑战";retry.dataset.forgeEn="Retry encounter";retry.hidden=win&&!!b.forgeRewardGranted;
   back.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();if(b.forgeContext?.returnToWorld){b.forgeContext.returnToWorld({outcome,committed:!!b.forgeRewardGranted});if(b.forgeRewardGranted)window.CatBondResonance?.showCurrent?.();}else if(returnToMap){game.scene="map";window.WorldMap?.resumeRegion?.(false);}else{game.scene="yard";game.showYardChrome?.();}});
-  retry.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();try{window.CatBondForgeCombat.launch(game,b.forgeContext);}catch(error){toast(game,"无法重试：存档或剧情已变化。","Retry unavailable: save or story has changed.");console.error(error);}});
+  retry.addEventListener("click",()=>{game._forgeResultOpen=false;overlay.remove();try{if(!window.CatBondForgeCombat.prepare(game))throw Error("Encounter no longer available");}catch(error){toast(game,"无法重试：存档或剧情已变化。","Retry unavailable: save or story has changed.");console.error(error);}});
   document.getElementById("stage")?.append(overlay);game._forgeResultOpen=true;
 }
 function currentForgeContext(game,options){
@@ -298,11 +301,11 @@ function currentForgeContext(game,options){
   const engine=window.CatBondResonance;
   if(!engine||typeof engine.view!=="function"||typeof engine.snapshot!=="function"||typeof engine.recordEvidence!=="function"||typeof engine.captureAction!=="function"||typeof engine.isCurrentAction!=="function")throw Error("Chat 4 active narrative host required");
   if(options?.engine&&options.engine!==engine)throw Error("Noncanonical narrative host");
-  if(options.slot&&options.slot!==slot)throw Error("Stale save slot");
+  if(options?.slot&&options.slot!==slot)throw Error("Stale save slot");
   const snapshot=engine.snapshot(),view=engine.view();
   if(JSON.stringify(snapshot)!==JSON.stringify(slot.resonance))throw Error("Narrative engine does not match active slot");
   if(game.scene!=="map"||slot.resonanceExploration?.location!=="forge"||view.current?.id!==FORGE_ENCOUNTER.id||!view.objective?.includes(FORGE_ENCOUNTER.operation)||view.objective.includes("puzzle:heat-pressure"))throw Error("Forge battle unavailable: reach the forge and complete the heat-pressure puzzle first");
-  return {preview:false,slot,engine,token:engine.captureAction(),revision:snapshot.revision,returnToWorld:typeof options.returnToWorld==="function"?options.returnToWorld:null};
+  return {preview:false,slot,engine,token:engine.captureAction(),revision:snapshot.revision,returnToWorld:typeof options?.returnToWorld==="function"?options.returnToWorld:null};
 }
 function finishEncounter(game,b){
   if(b.forgeFinished)return;b.forgeFinished=true;
@@ -356,18 +359,19 @@ GP.startBattle=function(team,wildSpecies,opts={}){
   const result=originalStart.call(this,team,wildSpecies,opts);
   if(!this.battle)throw Error("Forge battle was not created");
   const b=this.battle,enemy=b.enemies?.[0];if(!enemy)throw new Error("Forge guardian failed to spawn");
-  b.storyEncounter=true;b.storyEncounterId=FORGE_ENCOUNTER.id;b.forgeState=createForgeState();b.forgeContext=context;
+  b.storyEncounter=true;b.storyEncounterId=FORGE_ENCOUNTER.id;b.forgeState=createForgeState();b.forgeContext=context;b.forgeState.assist=context.engine?.supportProfile?.("forge")?.methods?.includes("worker-transparency")?"xiaomao":"jinpo";
   b._forgeReturnScene=this._returnScene||"yard";b._forgeTeam=(team||[]).slice();
   b._analyticsRegion="forge";b.captureReady=false;
   const teamHp=(b.team||[]).reduce((n,f)=>n+(f.maxhp||0),0);
   enemy.sp=wildSpecies;enemy.visualKind="forge-guardian";enemy.isBoss=true;enemy.element="fire";
-  enemy.role="elite";enemy.r=30;enemy.combatName=["熔炉守卫","Furnace guardian"];enemy.speed=65;enemy.dmg=Math.max(17,enemy.dmg*1.38);
-  enemy.maxhp=Math.max(1080,Math.round(teamHp*2.65));enemy.hp=enemy.maxhp;
+  enemy.role="elite";enemy.r=30;enemy.combatName=["熔炉守卫","Furnace guardian"];enemy.speed=65;enemy.dmg=Math.max(13,enemy.dmg*(b.team.length===1?1.12:1.30));
+  enemy.maxhp=Math.max(420,Math.round(teamHp*2.15));enemy.hp=enemy.maxhp;
   enemy.poiseMax=Math.round(enemy.maxhp*.72);enemy.poise=enemy.poiseMax;
   enemy.forgeState=b.forgeState;enemy.forgeHazards=[];enemy.forgeCast=null;
   enemy.rotation=[];enemy.ultSkill=null;enemy.specialMeter=-10000;enemy.fireCd=99999;
   b.wild=wildSpecies;b.forgeUseSupport=()=>{
     const result=useForgeSupport(b.forgeState);if(!result.ok){toast(this,"支援尚不可用。","Support is not ready.");return false;}
+    if(b.forgeState.assist==="xiaomao"){b.forgeState.pressure=Math.max(0,b.forgeState.pressure-15);}else{b.forgeState.heat=Math.max(0,b.forgeState.heat-15);}
     enemy.forgeCast=null;enemy.telegraph=0;enemy.staggerT=Math.max(enemy.staggerT||0,1.15);
     b.vfx?.ring?.(enemy.x,enemy.y,{r0:35,vr:480,life:.72,color:"#ffe0a3",width:8});
     b.vfx?.burst?.(enemy.x,enemy.y,{count:18,color:"#ffc17b",speed:190,life:.48,r:3});
@@ -376,7 +380,7 @@ GP.startBattle=function(team,wildSpecies,opts={}){
   };
   const label=document.getElementById("wild-name");
   if(label)label.textContent=tr("赤炉环城 · 熔炉机械守卫","EMBERFORGE · FURNACE GUARDIAN");
-  mountHud(this,b);this.updateBattleUI?.();return result;
+  mountHud(this,b);this.updateBattleUI?.();if(this.battleHelpOpen)this.renderBattleHelp?.();return result;
 };
 const originalBattleUI=GP.updateBattleUI;
 GP.updateBattleUI=function(){const result=originalBattleUI.call(this);if(this.battle?.forgeState)renderHud(this,this.battle);return result;};
@@ -389,7 +393,10 @@ BP.draw=function(ctx){
   if(!this.forgeState)return originalDraw.call(this,ctx);
   const seq=this.captureSeq;this.captureSeq=null;
   try{originalDraw.call(this,ctx);}finally{this.captureSeq=seq;}
-  drawBossEffects(ctx,this);
+  // The original duo storyboard owns the canvas until its deferred impact.
+  // Furnace hazard rings must never be painted over the authored artwork.
+  const duo=this.duoCinematic;
+  if(!(duo?.t>0&&duo.max-duo.t<duo.strikeAt))drawBossEffects(ctx,this);
 };
 window.CatBondForgeCombat={
   rules:{createForgeState,tickForgeState,useForgeSupport,forgeDamageScale},

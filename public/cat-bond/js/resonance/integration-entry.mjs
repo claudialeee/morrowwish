@@ -10,6 +10,7 @@ import "./regional-combat.mjs";
 import "./finale-combat.mjs";
 
 window.__CAT_BOND_CANONICAL_RELEASE__ = true;
-// Integration-only branch. Candidate shots never qualify through the release manifest.
-window.__CAT_BOND_INTEGRATION_ART__ = true;
+// Production entry may use approved shots or the explicitly authorized opening
+// release list, never the integration-only candidate art bypass.
+window.__CAT_BOND_INTEGRATION_ART__ = false;
 window.WorldMap = window.CatBondCanonicalWorld;
