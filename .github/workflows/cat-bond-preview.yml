@@ -119,9 +119,11 @@ jobs:
             const response=await page.goto('https://cat-bond-preview.morrowwish.pages.dev/cat-bond/',{waitUntil:'domcontentloaded'});
             if(!response?.ok())throw Error('Preview not reachable');
             await page.locator('#intro-continue').waitFor({state:'visible',timeout:30000});
-            await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook);\n            await page.locator('#intro-start').click();\n            await page.screenshot({path:'preview-slots.png'});
-            if(external.length)throw Error('Production requests: '+external.join(', '));
+            await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook);
             await page.screenshot({path:'preview-title.png'});
+            await page.locator('#intro-start').click();
+            await page.screenshot({path:'preview-slots.png'});
+            if(external.length)throw Error('Production requests: '+external.join(', '));
             console.log('LIVE PREVIEW TITLE VERIFIED: '+page.url());
           }finally{await browser.close()}
           NODE
