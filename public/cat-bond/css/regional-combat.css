@@ -6,3 +6,25 @@
 
 #battle-ui .cb-region-combat{top:var(--cb-rpg-hud-top,110px);pointer-events:none}.cb-region-combat button{pointer-events:auto}
 @media(max-width:600px){#battle-ui .cb-region-combat{left:auto;right:10px;transform:none;max-width:calc(100% - 92px)}}
+
+/* Skyspine support must never sit on top of the shared squad / Duo gauges.
+   Keep a dedicated compact bottom-left control on narrow portrait screens. */
+#battle-ui .cb-region-combat[data-region="sky"]{box-sizing:border-box;pointer-events:none}
+#battle-ui .cb-region-combat[data-region="sky"] button{pointer-events:auto;touch-action:manipulation}
+#battle-ui .cb-region-combat[data-region="sky"] button[hidden]{display:none}
+@media(max-width:600px) and (orientation:portrait){
+ #battle-ui .cb-region-combat[data-region="sky"]{top:auto;left:max(8px,env(safe-area-inset-left,0px));right:auto;bottom:max(12px,calc(env(safe-area-inset-bottom,0px) + 8px));transform:none;width:min(194px,calc(100% - 190px));max-width:none;display:flex;flex-direction:column;align-items:stretch;padding:6px 8px;gap:5px;line-height:1.35}
+ #battle-ui .cb-region-combat[data-region="sky"] span{font-size:11px;overflow-wrap:anywhere}
+ #battle-ui .cb-region-combat[data-region="sky"] button{min-height:44px;white-space:normal;line-height:1.25;padding:6px 5px;font-size:11px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ #battle-ui .cb-region-combat[data-region="sky"]{top:auto;bottom:12px;left:50%;right:auto;transform:translateX(-50%);max-width:calc(100% - 360px);font-size:10px}
+ #battle-ui .cb-region-combat[data-region="sky"] button{white-space:normal;min-height:44px}
+}
+
+/* Original authored Duo frames must remain unobscured. */
+#battle-ui .cb-region-combat[data-region="sky"][data-duo-art="true"]{visibility:hidden;pointer-events:none}
+#battle-ui .cb-region-combat[data-region="sky"][data-duo-art="true"] button{visibility:hidden;pointer-events:none}
+
+/* Authored Duo and ultimate artwork must not be obscured by regional attack controls. */
+#battle-ui .cb-region-combat[data-cinematic="true"],#battle-ui .cb-region-combat[data-cinematic="true"] button{visibility:hidden;pointer-events:none}

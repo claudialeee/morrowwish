@@ -99,7 +99,7 @@ function install(){
  function mount(game,b){
   document.getElementById("cb-region-combat")?.remove();
   const host=document.getElementById("battle-ui");if(!host)return;
-  const panel=document.createElement("div");panel.id="cb-region-combat";panel.className="cb-region-combat";
+  const panel=document.createElement("div");panel.id="cb-region-combat";panel.className="cb-region-combat";panel.dataset.region=b.regionalCombat.region;
   const label=document.createElement("span"),button=document.createElement("button");button.type="button";
   panel.append(label,button);button.addEventListener("click",()=>useSupport(b));
   host.append(panel);paintHud(b);requestAnimationFrame(()=>positionObjectiveHud(panel));
@@ -112,14 +112,14 @@ function install(){
   button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?tr(["Catdex · 核验回响","Catdex · verify echo"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Yuanfan · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Lingyu · Escort flight"]):tr(kit.support);
  }
  function useSupport(b){
-  const r=b.regionalCombat;if(!r||!r.supportAvailable||r.supportUsed||!r.cast||b.done)return false;
+  const r=b.regionalCombat;if(!r||!r.supportAvailable||r.supportUsed||!r.cast||b.done||cinematicActive(b))return false;
   if(b.libraryEncounter&&(!catdexRecord(window.State.S)||!window.State.S.resonanceExploration?.interactions?.["library:M-02:puzzle:library-echo"]))return false;
   r.supportUsed=true;r.cast=null;r.next=Math.max(r.next,4);
   const cats=living(b);
   if(r.kit.kind==="roots")for(const f of cats){f.rootT=0;f.rooted=false;if(f.status)delete f.status.bind;}
   else if(r.kit.kind==="mirror"){for(const e of b.liveEnemies())e.reflectT=0;}
   else if(r.kit.kind==="embers"){for(const f of cats){if(f.status)delete f.status.burn;}}
-  else if(r.kit.kind==="gale"){for(const f of cats){f.inv=Math.max(f.inv||0,r.skyMethod==="escort-flight"?1.8:.8);if(r.skyMethod==="fast-courier")f.ultMeter=Math.min(100,(f.ultMeter||0)+12);}}
+  else if(r.kit.kind==="gale"){const duration=r.skyMethod==="escort-flight"?1.8:.8,before=b.ult;for(const f of cats)f.inv=Math.max(f.inv||0,duration);if(r.skyMethod==="fast-courier")b.gainUlt(12);r.skySupportEffect={method:r.skyMethod,chargeBefore:before,chargeAfter:b.ult,protected:cats.length,duration};}
   else if(r.kit.kind==="orbit"){for(const f of cats)f.ultMeter=Math.min(100,(f.ultMeter||0)+15);}
   else{for(const f of cats)f.shieldT=Math.max(f.shieldT||0,2.5);}
   for(const f of cats)b.vfx.ring(f.x,f.y,{r0:16,vr:170,life:.55,color:r.kit.color,width:4});
@@ -218,8 +218,9 @@ function install(){
   }
   this.vfx.ring(e.x,e.y,{r0:10,vr:160,life:.45,color:r.kit.color,width:3});
  };
+ const cinematicActive=b=>!!(b.duoCinematic||b.ultCinematic);
  const drawBattle=BP.draw;
- BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat)draw(this,ctx);if(this.libraryEncounter&&!this.duoCinematic&&!this.ultCinematic){ctx.save();for(const e of this.liveEnemies()){ctx.strokeStyle="#c5b9ff";ctx.globalAlpha=.45+.2*Math.sin(this.t*4);ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(e.x,e.y,Math.max(24,(e.r||24)*1.3),11,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}return result;};
+ BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat){const active=cinematicActive(this),panel=document.getElementById("cb-region-combat");if(panel&&panel.dataset.cinematic!==String(active))panel.dataset.cinematic=String(active);if(active)return result;draw(this,ctx);}if(this.libraryEncounter&&!this.duoCinematic&&!this.ultCinematic){ctx.save();for(const e of this.liveEnemies()){ctx.strokeStyle="#c5b9ff";ctx.globalAlpha=.45+.2*Math.sin(this.t*4);ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(e.x,e.y,Math.max(24,(e.r||24)*1.3),11,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}return result;};
  const libraryOp="battle:library-echo",libraryScene="library:M-02";
  function libraryAvailable(game){const v=window.CatBondResonance?.view(),root=window.State.S,p=root.resonanceExploration?.positions?.library,q=libraryPoints[libraryOp];return game?.scene==="map"&&!game.battle&&root.resonanceExploration?.location==="library"&&v?.current?.id===libraryScene&&v.objective.includes(libraryOp)&&!libraryBlocked(libraryOp,v.objective)&&p&&Math.hypot(p.x-q[0],p.y-q[1])<.072;}
  function prepareLibrary(game){
