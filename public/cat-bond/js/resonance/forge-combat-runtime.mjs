@@ -5,7 +5,7 @@ if(!window.Battle?.CaptureBattle||!window.Game)return;
 const BP=window.Battle.CaptureBattle.prototype,GP=window.Game.prototype;
 const baseUrl=new URL("../../assets/combat/",import.meta.url);
 const art={background:new Image(),guardian:new Image(),jinpo:new Image(),xiaomao:new Image()};
-for(const [key,file] of Object.entries({background:"emberforge-painted.webp",guardian:"forge-guardian.svg",jinpo:"jinpo-portrait.svg",xiaomao:"xiaomao-portrait.svg"})){
+for(const [key,file] of Object.entries({background:"emberforge-painted.webp",guardian:"forge-guardian-painted.webp",jinpo:"jinpo-portrait.svg",xiaomao:"xiaomao-portrait.svg"})){
   art[key].decoding="async";art[key].src=new URL(file,baseUrl).href;
 }
 const tr=(zh,en)=>window.MorrowwishI18n?.get?.()==="zh"?zh:en;
