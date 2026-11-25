@@ -364,11 +364,11 @@ try {
     await page.waitForFunction(() => window.__game.scene === 'yard');
     await shot('garden-return');
     if(process.env.CAT_BOND_AUDIO_ACCEPTANCE==='1'){
-      await page.locator('#map-menu').click();await page.locator('[data-cb-story-action="system"]').click();
+      await page.locator('#map-menu').click();
       const system=page.locator('#cb-system-menu');await system.waitFor({state:'visible'});
       await system.locator('[data-audio-volume="music"]').fill('46');
       await page.waitForFunction(()=>MorrowwishMusic.status().volume===.46);
-      await system.locator('[data-system="close"]').click();await page.locator('#panel.open > .panel-dismiss').click();
+      await system.locator('[data-system="close"]').click();
     }
 
     await page.reload();
@@ -438,7 +438,7 @@ try {
     await checkObjective('puzzle:paired-water-gates');
     await shot('forest-overpressure-recovery');
     if(name==='portrait'){
-      const changeLocale=async()=>{await page.locator('#map-menu').click();await page.locator('[data-cb-story-action="system"]').click();await page.locator('[data-system="language"]').click();await page.locator('[data-system="close"]').click();await page.locator('#panel.open > .panel-dismiss').click();};
+      const changeLocale=async()=>{await page.locator('#map-menu').click();await page.locator('[data-system="language"]').click();await page.locator('[data-system="close"]').click();};
       await changeLocale();await page.waitForFunction(()=>MorrowwishI18n.get()==='zh');
       await verifyPressure('水压过高 · 地下闸门关闭');
       for(const input of ['稳住上层','稳住上层','稳住上层','打开地下'])await button(input,pairedControls).click();
@@ -638,14 +638,14 @@ try {
     await button('World atlas',page.locator('.rw-head')).click();
     assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('sky')),true);
     assert.equal(await button('Skyspine Isles').isDisabled(),true);
-    await button('Workshop',page.locator('.rw-system-nav')).click();
+    await button('Resonance Book',page.locator('.rw-system-nav')).click();await page.locator('[data-book-tab="workshop"]').click();
     await page.locator('.workshop-row[data-id="st_forge"]').waitFor();
     await page.locator('[data-act="forge-tools"]').click();
     await page.getByText('Reinforced tools equipped · +25%',{exact:true}).waitFor();
     assert.equal(await page.evaluate(()=>Raising.stationsView().find(s=>s.id==='st_forge')?.reinforced),true);
-    await shot('forge-workshop');await page.locator('#panel .panel-dismiss').click();
-    await button('Catdex',page.locator('.rw-system-nav')).click();await page.locator('#panel.open').waitFor();const record=page.locator('[data-dex-record="forge"]');await record.scrollIntoViewIfNeeded();await record.getByText('Furnace Guardian',{exact:true}).waitFor();await record.locator('img').evaluate(img=>img.decode());await shot('forge-catdex');await page.locator('#panel .panel-dismiss').click();
-    await button('Party',page.locator('.rw-system-nav')).click();await page.locator('#map-squad-best').click();await page.locator('#map-squad-save').click();await page.locator('#panel.open').waitFor({state:'hidden'});
+    await shot('forge-workshop');await page.locator('#panel .panel-dismiss:visible,.rb-close:visible').first().click();
+    await button('Resonance Book',page.locator('.rw-system-nav')).click();await page.locator('[data-book-tab="dex"]').click();await page.locator('#panel.open').waitFor();const record=page.locator('[data-dex-record="forge"]');await record.scrollIntoViewIfNeeded();await record.getByText('Furnace Guardian',{exact:true}).waitFor();await record.locator('img').evaluate(img=>img.decode());await shot('forge-catdex');await page.locator('#panel .panel-dismiss:visible,.rb-close:visible').first().click();
+    await button('Resonance Book',page.locator('.rw-system-nav')).click();await page.locator('[data-book-tab="party"]').click();await page.locator('#map-squad-best').click();await page.locator('#map-squad-save').click();await page.locator('#panel.open').waitFor({state:'hidden'});
     const revealRelease=async text=>{const message=page.getByText(text,{exact:true});await message.waitFor({state:'attached'});const world=page.locator('.rw-world:not([hidden])'),prev=world.locator('[data-fit-prev]'),next=world.locator('[data-fit-next]');const press=el=>options.hasTouch?el.tap():el.click();const count=Number(await world.getAttribute('data-fit-pages')||1);for(let i=0;i<count&&!await message.isVisible()&&await prev.isVisible()&&await prev.isEnabled();i++)await press(prev);for(let i=0;i<count&&!await message.isVisible()&&await next.isVisible()&&await next.isEnabled();i++)await press(next);await message.waitFor();};
     await revealRelease('Chapter III complete. Skyspine Isles is unlocked for a future update. Keep exploring the three regions, trading cargo and tending your garden.');
     await page.evaluate(()=>MorrowwishI18n.set('zh'));

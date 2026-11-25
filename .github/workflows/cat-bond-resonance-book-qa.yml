@@ -1,0 +1,39 @@
+name: Resonance Book browser acceptance (no deployment)
+on:
+  pull_request:
+    branches: [rpg/cat-bond-takeover]
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+concurrency:
+  group: resonance-book-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  book-browser:
+    if: (github.head_ref == 'rpg/release-resonance-book' || github.head_ref == 'rpg/release-combined-next')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test-cat-bond-book-recipes.mjs
+      - run: node scripts/test-cat-bond-garden-decorations.mjs
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Normal start, garden, book and save slots
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/resonance-book-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          node scripts/cat-bond-title-save-browser-qa.mjs
+          node scripts/cat-bond-combined-book-browser-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resonance-book-browser-evidence
+          path: cat-bond-title-save-qa/
+          if-no-files-found: warn
+          retention-days: 1

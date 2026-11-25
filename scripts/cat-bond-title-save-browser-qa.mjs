@@ -27,7 +27,7 @@ for(const profile of [
  const waitMap=()=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:15000});
  const openInGameSlots=async()=>{
   await page.locator('#map-menu').click();
-  await page.locator('[data-cb-story-action="slots"]').click();
+  await page.locator('[data-system="slots"]').click();
   await checkVisible('.cb-slot-manager');
  };
  const openTitleSlots=async()=>{
@@ -118,8 +118,8 @@ for(const profile of [
    assert.deepEqual(fit,{inside:true,aspect:true,scroll:true,solo:true},'Actual world frame fits after resize/fullscreen');
   };
   await checkStageFit();
-  const system=async()=>{await realPress(page.locator('#map-menu'));await realPress(page.locator('[data-cb-story-action="system"]'));};
-  const toggleWorldFullscreen=async()=>{await system();await realPress(page.locator('[data-system="fullscreen"]'));await realPress(page.locator('#panel.open > .panel-dismiss'));};
+  const system=async()=>{await realPress(page.locator('#map-menu'));};
+  const toggleWorldFullscreen=async()=>{await system();await realPress(page.locator('[data-system="fullscreen"]'));};
   for(const sel of ['#mw-fullscreen-toggle','#mw-game-settings','#guide-help'])assert.equal(await page.locator(sel).isVisible(),false,sel+' must be inside the RPG menu');
   await toggleWorldFullscreen();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
@@ -128,7 +128,8 @@ for(const profile of [
   await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));
   await page.waitForTimeout(100);await checkStageFit();
   for(const name of ['Catdex','Party','Raise cats','Workshop']){
-   await realPress(page.locator('.rw-system-nav').getByRole('button',{name,exact:true}));
+   await realPress(page.locator('.rw-system-nav .rb-world-entry'));
+   const tabs={Catdex:'dex',Party:'party','Raise cats':'cats',Workshop:'workshop'};await realPress(page.locator('[data-book-tab="'+tabs[name]+'"]'));
    await checkVisible('#panel.open');
    await screenshot('atlas-'+name.toLowerCase().replaceAll(' ','-'));
    if(name==='Catdex'){
@@ -136,7 +137,7 @@ for(const profile of [
     await checkVisible('#panel #dx');await screenshot('atlas-catdex-detail');
     await realPress(page.locator('#dx-back'));await checkVisible('#panel .dex-grid');
    }
-   await realPress(page.locator('#panel.open > .panel-dismiss'));
+   await realPress(page.locator('.rb-close'));
    await page.locator('#panel.open').waitFor({state:'hidden',timeout:5000});
   }
   await screenshot('world-atlas');
@@ -161,7 +162,6 @@ for(const profile of [
   assert.equal(await page.evaluate(()=>window.State.S.cats[0].uid),first);
   // A real title-menu navigation, not a special test entry.
   await page.locator('#map-menu').click();
-  await page.locator('[data-cb-story-action="system"]').click();
   await page.locator('[data-system="title"]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__,{timeout:30000});
   // Start the third slot through the actual title picker, preserving the two earlier adventures.
