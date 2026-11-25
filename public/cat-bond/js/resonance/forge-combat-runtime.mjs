@@ -4,8 +4,8 @@ import {createForgeState,tickForgeState,useForgeSupport,forgeDamageScale,FORGE_E
 if(!window.Battle?.CaptureBattle||!window.Game)return;
 const BP=window.Battle.CaptureBattle.prototype,GP=window.Game.prototype;
 const baseUrl=new URL("../../assets/combat/",import.meta.url);
-const art={background:new Image(),guardian:new Image(),jinpo:new Image(),xiaomao:new Image()};
-for(const [key,file] of Object.entries({background:"emberforge-painted.webp",guardian:"forge-guardian-painted.webp",jinpo:"jinpo-portrait.svg",xiaomao:"xiaomao-portrait.svg"})){
+const art={background:new Image(),guardian:new Image()};
+for(const [key,file] of Object.entries({background:"emberforge-painted.webp",guardian:"forge-guardian-painted.webp"})){
   art[key].decoding="async";art[key].src=new URL(file,baseUrl).href;
 }
 const tr=(zh,en)=>window.MorrowwishI18n?.get?.()==="zh"?zh:en;
@@ -238,8 +238,8 @@ function mountHud(game,b){
     '<div class="cb-forge-support"><img alt="" data-forge-jinpo><img alt="" data-forge-xiaomao>'+
     '<div><strong data-forge-support-title></strong><small data-forge-support-note></small></div>'+
     '<button type="button" data-forge-support-button></button></div>';
-  panel.querySelector("[data-forge-jinpo]").src=art.jinpo.src;
-  panel.querySelector("[data-forge-xiaomao]").src=art.xiaomao.src;
+  panel.querySelector("[data-forge-jinpo]").src=new URL("../npc/jinpo-painted.webp",baseUrl).href;
+  panel.querySelector("[data-forge-xiaomao]").src=new URL("../npc/xiaomao-painted.webp",baseUrl).href;
   panel.querySelector("[data-forge-support-button]").addEventListener("click",()=>{
     if(game.battle?.forgeState)game.battle.forgeUseSupport?.();
   });

@@ -7,7 +7,7 @@
 .cb-forge-heat i{display:block;width:24%;height:100%;background:linear-gradient(90deg,#b56d48,#f5bd76,#ff7446);box-shadow:0 0 9px #e88b4c;transition:width .18s linear}
 .cb-forge-heat b{text-align:right;color:#ffd9a6;font-variant-numeric:tabular-nums}
 .cb-forge-support{display:grid;grid-template-columns:34px 34px 1fr auto;align-items:center;gap:6px;margin-top:8px}
-.cb-forge-support img{width:32px;height:32px;object-fit:cover;border-radius:9px;border:1px solid #b98a60;background:#28333b}
+.cb-forge-support img{width:32px;height:32px;object-fit:cover;object-position:top;border-radius:9px;border:1px solid #b98a60;background:#28333b}
 .cb-forge-support strong{display:block;font-size:10px;color:#f2d5aa}
 .cb-forge-support small{display:block;font-size:9px;color:#b7ad9e}
 .cb-forge-support button{border:1px solid #d2a16f;border-radius:8px;background:linear-gradient(180deg,#8d5b3f,#53392f);color:#fff0d4;font-weight:850;font-size:10px;padding:7px 9px;min-height:32px}

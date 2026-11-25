@@ -8,7 +8,7 @@ const playerPortraits=new Map();
 function portrait(id,scene,cursor){
  if(id==="player"){const sp=window.State?.S?.cats?.[0]?.species;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;if(!playerPortraits.has(sp)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp));playerPortraits.set(sp,c.toDataURL("image/png"));}return playerPortraits.get(sp)}
  if(id==="muling")return new URL("../cinematics/characters/muling/traveler-neutral.webp",portraitRoot).href;
- if(["jiedeng","qilan","yahe","yuchuan"].includes(id))return new URL(id+"-painted.webp",portraitRoot).href;
+ if(campaign.regions.includes(campaign.cast[id]?.region))return new URL(id+"-painted.webp",portraitRoot).href;
  return null;
 }
 function install(){
