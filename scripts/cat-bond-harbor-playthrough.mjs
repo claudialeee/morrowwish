@@ -428,6 +428,12 @@ try {
     await button('World atlas',page.locator('.rw-head')).click();
     assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('sky')),true);
     assert.equal(await button('Skyspine Isles').isDisabled(),true);
+    await button('Workshop',page.locator('.rw-system-nav')).click();
+    await page.locator('.workshop-row[data-id="st_forge"]').waitFor();
+    await page.locator('[data-act="forge-tools"]').click();
+    await page.getByText('Reinforced tools equipped · +25%',{exact:true}).waitFor();
+    assert.equal(await page.evaluate(()=>Raising.stationsView().find(s=>s.id==='st_forge')?.reinforced),true);
+    await shot('forge-workshop');await page.locator('#panel .card-close').click();
     await page.getByText('Chapter III complete. Skyspine Isles is unlocked for a future update. Keep exploring the three regions, trading cargo and tending your garden.',{exact:true}).waitFor();
     await page.evaluate(()=>MorrowwishI18n.set('zh'));
     await page.getByText('第三章已完成。云脊群岛航线已解锁，故事将在后续更新中继续。你仍可探索三地、交流物资与经营花园。',{exact:true}).waitFor();
