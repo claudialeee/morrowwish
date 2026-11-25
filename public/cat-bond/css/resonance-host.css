@@ -38,6 +38,40 @@
 @media(max-width:700px){.res-host[data-scene="harbor:H-05"]::before{background-position:62% center}.res-host[data-scene^="harbor:"] .res-harbor-context{margin-bottom:6px}}
 @media(prefers-reduced-motion:reduce){.res-host[data-scene^="harbor:"]::before,.res-host[data-scene^="harbor:"] .res-portrait{animation:none!important}}
 
+/* Skyspine: painted location, restrained close-up and two bell beats. No new generic character art. */
+.res-host[data-scene="sky:S-04"]{isolation:isolate;background:#1c3447}
+.res-host[data-scene="sky:S-04"]::before{content:"";position:absolute;inset:0;z-index:-2;background:url("../assets/resonance-world-v2/sky.webp") 72% 50%/cover no-repeat;filter:brightness(.74) saturate(.77);animation:sky-pendant-camera 12s ease-out both;pointer-events:none}
+.res-host[data-scene="sky:S-04"]::after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 30% 34%,#ffe9b52b,transparent 53%),linear-gradient(0deg,#0b1b2bec,transparent 70%);pointer-events:none}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-speaker="muling"] .res-portrait{max-height:63vh;transition:filter .25s ease,transform .25s ease;transform-origin:center bottom}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-sky-tap] .res-portrait{filter:drop-shadow(0 0 11px #ffe6af9a);transform:translateY(-2px)}
+.res-host[data-scene="sky:S-04"] .res-body{background:linear-gradient(130deg,#172e43f5,#1b2b3ae8);border-color:#d0c0a1}
+@keyframes sky-pendant-camera{from{transform:scale(1.01)}to{transform:scale(1.10)}}
+@media(max-width:700px){.res-host[data-scene="sky:S-04"] .res-dialogue[data-speaker="muling"] .res-portrait{height:clamp(110px,32vh,270px);max-height:34vh}}
+@media(max-height:480px) and (orientation:landscape){.res-host[data-scene="sky:S-04"] .res-dialogue[data-speaker="muling"] .res-portrait{height:auto;max-height:48vh}}
+@media(prefers-reduced-motion:reduce){.res-host[data-scene="sky:S-04"]::before{animation:none}.res-host[data-scene="sky:S-04"] .res-portrait{transition:none}}
+
+/* The original pendant is visible in the same approved portrait: crop a short detail shot, not a substitute prop. */
+.res-host[data-scene="sky:S-04"] .res-dialogue{position:relative}
+.res-host[data-scene="sky:S-04"][data-sky-moment="11"] .res-dialogue::before{content:"";position:absolute;pointer-events:none;z-index:3;left:2%;bottom:8%;width:21%;aspect-ratio:1.25;background:radial-gradient(ellipse at center,transparent 38%,#142638d9 100%),url("../assets/cinematics/characters/muling/traveler-neutral.webp") 46% 82%/365% auto no-repeat;border:1px solid #e8d4a0a6;border-radius:12px;box-shadow:0 6px 25px #0c172b88}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-sky-tap="1"]::before{animation:sky-bell-beat-one .28s ease-out both}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-sky-tap="2"]::before{animation:sky-bell-beat-two .28s ease-out both}
+@keyframes sky-bell-beat-one{0%,100%{transform:rotate(0)}35%{transform:rotate(-1.5deg);filter:brightness(1.16)}}
+@keyframes sky-bell-beat-two{0%,100%{transform:rotate(0)}35%{transform:rotate(1.5deg);filter:brightness(1.16)}}
+@media(max-width:700px){.res-host[data-scene="sky:S-04"][data-sky-moment="11"] .res-dialogue::before{left:3%;top:6%;bottom:auto;width:22%;max-width:105px}}
+@media(prefers-reduced-motion:reduce){.res-host[data-scene="sky:S-04"] .res-dialogue::before{animation:none!important}}
+
+/* Separate acting beats while retaining the approved traveler painting. */
+.res-host[data-scene="sky:S-04"][data-sky-moment="1"] .res-portrait,.res-host[data-scene="sky:S-04"][data-sky-moment="3"] .res-portrait{transform:translateY(2px) rotate(-.35deg);filter:brightness(.92)}
+.res-host[data-scene="sky:S-04"][data-sky-moment="7"] .res-portrait,.res-host[data-scene="sky:S-04"][data-sky-moment="9"] .res-portrait{filter:brightness(.84) saturate(.78);transform:translateY(1px)}
+.res-host[data-scene="sky:S-04"][data-sky-moment="11"] .res-dialogue::before{background-position:center,46% 82%;box-shadow:0 8px 26px #091523a8,inset 0 0 18px #12253b80;animation:sky-pendant-focus .4s ease-out both}
+@keyframes sky-pendant-focus{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+
+/* Real detail shot derived from the existing painted pendant; independent local motion. */
+.res-host[data-scene="sky:S-04"] .res-dialogue:has(.res-sky-pendant-shot:not([hidden]))::before{content:none!important}
+.res-sky-pendant-shot{position:absolute;left:0;bottom:2%;z-index:4;width:26%;height:auto;aspect-ratio:8/5;border:1px solid #d3bd91;border-radius:8px;box-shadow:0 8px 25px #091523a8;pointer-events:none}
+@media(max-width:700px) and (orientation:portrait){.res-sky-pendant-shot{left:2%;top:5%;bottom:auto;width:31%;max-width:144px}}
+@media(max-height:480px) and (orientation:landscape){.res-sky-pendant-shot{left:0;bottom:2%;width:22%}}
+
 /* Chapter V painted cinematic camera, cast blocking and memory/present staging. */
 .res-host.res-library-reveal{isolation:isolate;background:#141d32;overflow:hidden}
 .library-reveal-stage{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-2;background:#172237}
