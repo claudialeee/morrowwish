@@ -32,16 +32,18 @@ export async function continueToFinale({page,context,options,name,button,scene,s
   for(let n=0;n<180;n++){if(await page.locator('#cb-forge-result').isVisible())break;const support=page.locator('[data-forge-support-button]');if(await support.isVisible()&&await support.isEnabled())await support.click();await page.waitForTimeout(850);}
   await page.locator('#cb-forge-result').waitFor({timeout:180000});await shot('forge-real-result');await page.locator('[data-forge-return]').click();await check('battle:forge-guardian');
  }
- async function ensureDuo(){
+ async function ensureDuo(returnRegion='Emberforge City'){
   for(let attempt=0;attempt<3&&(await page.evaluate(()=>State.S.cats.length))<2;attempt++){
    await beginBattle('Approach wild cat');await finishBattle();const close=page.locator('#cr-ok,#battle-recovery-ok');await close.waitFor();await close.click();
   }
   assert.ok(await page.evaluate(()=>State.S.cats.length>=2),'Obtain two cats through normal capture');
+  const earned=await page.evaluate(()=>{const p=CatRelations.chosen();return p.length===2&&CatRelations.memoryList(...p).includes('sakura')&&CatRelations.pair(...p).value>=20;});
+  if(earned)return;
   await travel('Rootsleep Forest');
   const memory=button('Promise Under Petals');await memory.waitFor();await memory.click();await page.locator('#panel.open').waitFor();
   await shot('earned-duo-promise');await button('Explore more',page.locator('#panel')).click();await page.locator('#panel.open').waitFor({state:'hidden'});
   assert.ok(await page.evaluate(()=>{const p=CatRelations.chosen();return p.length===2&&CatRelations.memoryList(...p).includes('sakura')&&CatRelations.pair(...p).value>=20;}),'Actual forest duo promise');
-  await travel('Emberforge City');
+  await travel(returnRegion);
  }
  const regions={harbor:'Misttide Harbor',forest:'Rootsleep Forest',forge:'Emberforge City',sky:'Skyspine Isles',library:'Moonmirror Library',starfall:'Starfall Expanse'};
  async function gotoRegion(region){if(await page.evaluate(()=>WorldMap.mode==='region'&&WorldMap.currentRegion)===region)return;if(await page.evaluate(()=>WorldMap.mode==='map'))await button(regions[region]).click();else await travel(regions[region]);await page.waitForFunction(r=>WorldMap.currentRegion===r&&WorldMap.mode==='region',region);}
@@ -88,6 +90,11 @@ export async function continueToFinale({page,context,options,name,button,scene,s
   assert.ok(frames>=2,id+' must render more than one shot');return frames;
  }
  const openingShots=startAtFinale?null:await cinematic('starfall:F-05');await scene('finale:B-01');
+ // The combined normal-player route has its own Chapter III–VI driver.
+ // It does not call ensureDuo() above. Earn the actual optional forest
+ // promise in the same save before attempting its finale-only effect.
+ if(startAtFinale){await gotoRegion('starfall');await ensureDuo('Starfall Expanse');}
+ assert.ok(await page.evaluate(()=>{const p=CatRelations.chosen();return p.length===2&&CatRelations.memoryList(...p).includes('sakura');}),'Earned forest promise before finale');
  const before=await page.evaluate(()=>JSON.stringify(State.S.resonance));await beginBattle('Approach the Star Bell');
  await shot('B-01-retreat');assert.equal(await page.locator('[data-finale-regions] meter').count(),6);await page.locator('#btn-flee').click();assert.equal(await finishBattle(),'Safe withdrawal','Actual retreat result');
  assert.equal(await page.evaluate(()=>JSON.stringify(State.S.resonance)),before,'Retreat must not award any story progress');
