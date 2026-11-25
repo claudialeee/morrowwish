@@ -8,7 +8,7 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  const invite=async name=>{await button("Invite "+name).click();await button("Invite "+name).waitFor({state:"hidden"})};
  const chapterDialog=async(id,choice)=>{
   const overlay=page.locator('.res-host[data-scene="'+id+'"]');
-  if(!await overlay.isVisible()){const next=button("Continue story");if(await next.isVisible())await next.click();}
+  if(!await overlay.isVisible()){await button("Journal").click();await overlay.waitFor();}
   await readDialogue(id,choice);
  };
  const observe=async(id)=>{
@@ -76,9 +76,9 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  if(!await page.evaluate(()=>CatBondChapterCinematics.starfallReleaseReady())){await shot("starfall-art-approval-blocked");throw Error("Starfall formal runtime art approval missing for F-02 or F-05; no staging override permitted");}
  // F-01: both resident interactions, not a generic completion.
  await travel("Starfall Expanse");await shot("starfall-arrival");
- await button("Talk to Xingya").click();await objective("npc:central-dispute");
+ const trustBefore=(await get()).trust;await button("Talk to Xingya").click();await objective("npc:central-dispute");assert.equal((await get()).trust.xingya,trustBefore.xingya+1);
  assert.ok((await get()).objective.includes("npc:central-dispute-lichuan"));
- await button("Talk to Lichuan").click();const disputeLines=await observe("starfall:F-01");
+ await button("Talk to Lichuan").click();await objective("npc:central-dispute-lichuan");assert.equal((await get()).trust.lichuan,trustBefore.lichuan+1);const disputeLines=await observe("starfall:F-01");
  await scene("starfall:F-02");
  assert.equal(await button("Observatory · Complete record").count(),0);
  await button("Crater · Impact fragment").click();await objective("explore:crater-fragment");
@@ -91,13 +91,13 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  await button("Observatory · Complete record").click();await objective("explore:catastrophe-record");
  await movie("Remember the choice","starfall:F-02","starfall:F-03");
  await button("Talk to Muling").click();const confrontationLines=await observe("starfall:F-03");await scene("starfall:F-04");
- await talk("Xingya","starfall:F-04","Let Xingya coordinate repairs");
+ const choice=profile==="portrait"?"Share decisions among settlements":"Let Xingya coordinate repairs";await talk(profile==="portrait"?"Lichuan":"Xingya","starfall:F-04",choice);
  await puzzle("Distributed observatory",["West","Relay","East"]);
  await puzzle("Starfall sanctuary",["Outer ring","Middle ring","Middle ring","Middle ring","Inner ring"]);
  await invite("Xingya");await page.reload();await page.locator("#intro-continue").click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
  await scene("starfall:F-04");if(await button("Starfall Expanse").isVisible())await button("Starfall Expanse").click();
  await button("Invite Lichuan").waitFor();assert.equal(await button("Invite Xingya").isVisible(),false);
- await invite("Lichuan");await puzzle("Beyond Stars",["Low","Middle","High"]);
+ await invite("Lichuan");const beforeMelody=(await get()).trust;await puzzle("Beyond Stars",["Low","Middle","High"]);const afterMelody=(await get()).trust;assert.equal(afterMelody.xingya,beforeMelody.xingya+1);assert.equal(afterMelody.lichuan,beforeMelody.lichuan+1);
  assert.equal((await get()).ring,false,"Sixth melody cannot replace incomplete cargo");
  assert.equal((await get()).lineReady,false);
  await shot("starfall-missing-exchanges");
@@ -124,7 +124,7 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  const ready=await get();assert.equal(ready.ring,true);assert.equal(ready.melodies.length,6);assert.equal(ready.sanctuaries.length,6);
  assert.equal(Object.values(ready.links).reduce((n,s)=>n+s.length,0),24);
  assert.ok(ready.support.every(s=>s.ready&&s.received.length===2));
- if(await page.evaluate(()=>WorldMap.currentRegion)!=="starfall")await travel("Starfall Expanse");
+ if(await page.evaluate(()=>WorldMap.currentRegion)!=="starfall")await button("Return to Starfall").click();
  await chapterDialog("starfall:F-04");await scene("starfall:F-05");
  await movie("Watch the story scene","starfall:F-05","finale:B-01");
  await shot("starfall-finale-entry");

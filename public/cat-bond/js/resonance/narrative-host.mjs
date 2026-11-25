@@ -65,7 +65,7 @@ function install(){
  // Detect external world/battle commits and slot replacements without a second progression store.
  let observedRoot=State.S,observedRevision=State.S.resonance?.revision??-1,observedView=runtime.view();
  setInterval(()=>{const revision=State.S.resonance?.revision??-1;if(observedRoot!==State.S||observedRevision!==revision){const sameSlot=observedRoot===State.S,old=observedView;observedRoot=State.S;observedRevision=revision;observedView=runtime.view();refresh();
-  if(sameSlot&&!dialogue&&window.__game?.scene!=="battle"&&old.current?.id===observedView.current?.id&&old.objective.length>observedView.objective.length&&(!old.lineReady||observedView.objective.length===0)&&observedView.lineReady&&observedView.cursor<observedView.current.lines.length)show();
+  if(sameSlot&&!dialogue&&window.__game?.scene!=="battle"&&old.current?.id===observedView.current?.id&&(old.objective.length>observedView.objective.length||(!old.lineReady&&observedView.lineReady))&&(!old.lineReady||observedView.objective.length===0)&&observedView.lineReady&&observedView.cursor<observedView.current.lines.length)show();
  }},200);
  window.addEventListener("cat-bond-resonance-evidence",event=>{
   const r=runtime.evidence(event.detail);if(r.ok){const v=runtime.view();if(v.current?.lines.length&&v.lineReady)show();scheduleFinish()}
