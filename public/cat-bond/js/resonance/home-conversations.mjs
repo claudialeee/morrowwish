@@ -21,8 +21,13 @@ const muling={
  understand:["谢谢你愿意听我解释。那没有抹去我做过的事。我还会继续把答应的维修做完。","Thank you for hearing me out. It didn't erase what I did. I'll keep finishing the repairs I promised."]
 };
 
+export function skyChapterVisitors(view){return view&&!view.ending&&view.completed?.includes("sky:S-05")?["lingyu","yuanfan"]:[];}
+ const skyVisit={
+  lingyu:{normal:["今天我让远帆独自送信，我留在码头等他回来。观风台的数据可以帮花园的猫咪。","Today Yuanfan delivers letters on his own. I wait at the dock for his return. The lookout data can help the garden cats."],alternate:["一起训练时，他告诉我什么时候需要帮助。现在我学会了先问，再伸手。","During our training he told me when he needed help. Now I ask before lending a paw."]},
+  yuanfan:{normal:["我把新航路的图带来啦！下次我们去远风岛看看，那边还藏着信使的补给。","I brought our new route chart! Let's visit Farwind Isle sometime. The old couriers left supplies there."],alternate:["谢谢你让我领飞。今天的信，我是自己送过来的。姐姐在码头等我。","Thank you for letting me lead. I delivered today's letters myself. My sister is waiting at the dock."]}
+ };
 export function homeConversation(id,view,profile,snapshot){
- const q=lines[id];if(!q||!view?.ending||(id!=="muling"&&!view.returned?.includes(id)))return null;
+ const q=lines[id];if(skyChapterVisitors(view).includes(id)){const visit=skyVisit[id];return profile?.methods?.includes(q.method)?visit.alternate:visit.normal;}if(!q||!view?.ending||(id!=="muling"&&!view.returned?.includes(id)))return null;
  if(id==="muling")return muling[snapshot?.choices?.["library:M-04"]]||q.normal;
  return q.alternate&&profile?.methods?.includes(q.method)?q.alternate:q.normal;
 }

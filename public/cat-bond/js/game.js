@@ -1489,7 +1489,7 @@ class Game {
       const current=Math.max(0,Math.min(maximum,enemy?.poise||0));
       const percentage=maximum?Math.max(0,Math.min(100,current/maximum*100)):0;
       const en=window.MorrowwishI18n?.get?.()!=='zh';
-      const enemyName=enemy?(window.CatBondI18n?.translate?.(enemy.sp?.name)||
+      const enemyName=enemy?(enemy.combatName?.[en?1:0]||window.CatBondI18n?.translate?.(enemy.sp?.name)||
         enemy.sp?.name|| (en?'Enemy':'野猫')):'';
       const status=enemy?.staggerT>0
         ?(en?'Staggered':'虚弱')+' '+enemy.staggerT.toFixed(1)+'s'
@@ -1629,6 +1629,7 @@ class Game {
     // Casual: full heal. Hardcore field encounters: remaining HP carries on,
     // and State.catHpFraction replenishes it continuously over five minutes.
     const recovery={mode:State.difficulty(),fromMap,team:[]};
+    if(!win&&fromMap&&b.regionalCombat?.region==="sky")recovery.sky={outcome:b._voluntaryFlee?"retreat":"defeat",species:b.wild.id,owner:State.S};
     try {
       const seen=new Set();
       for(const f of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){

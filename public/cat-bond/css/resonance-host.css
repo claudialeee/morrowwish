@@ -37,3 +37,82 @@
 @keyframes harbor-keeper{50%{transform:translateY(-1px)}}
 @media(max-width:700px){.res-host[data-scene="harbor:H-05"]::before{background-position:62% center}.res-host[data-scene^="harbor:"] .res-harbor-context{margin-bottom:6px}}
 @media(prefers-reduced-motion:reduce){.res-host[data-scene^="harbor:"]::before,.res-host[data-scene^="harbor:"] .res-portrait{animation:none!important}}
+
+/* Skyspine: painted location, restrained close-up and two bell beats. No new generic character art. */
+.res-host[data-scene="sky:S-04"]{isolation:isolate;background:#1c3447}
+.res-host[data-scene="sky:S-04"]::before{content:"";position:absolute;inset:0;z-index:-2;background:url("../assets/resonance-world-v2/sky.webp") 72% 50%/cover no-repeat;filter:brightness(.74) saturate(.77);animation:sky-pendant-camera 12s ease-out both;pointer-events:none}
+.res-host[data-scene="sky:S-04"]::after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 30% 34%,#ffe9b52b,transparent 53%),linear-gradient(0deg,#0b1b2bec,transparent 70%);pointer-events:none}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-speaker="muling"] .res-portrait{max-height:63vh;transition:filter .25s ease,transform .25s ease;transform-origin:center bottom}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-sky-tap] .res-portrait{filter:drop-shadow(0 0 11px #ffe6af9a);transform:translateY(-2px)}
+.res-host[data-scene="sky:S-04"] .res-body{background:linear-gradient(130deg,#172e43f5,#1b2b3ae8);border-color:#d0c0a1}
+@keyframes sky-pendant-camera{from{transform:scale(1.01)}to{transform:scale(1.10)}}
+@media(max-width:700px){.res-host[data-scene="sky:S-04"] .res-dialogue[data-speaker="muling"] .res-portrait{height:clamp(110px,32vh,270px);max-height:34vh}}
+@media(max-height:480px) and (orientation:landscape){.res-host[data-scene="sky:S-04"] .res-dialogue[data-speaker="muling"] .res-portrait{height:auto;max-height:48vh}}
+@media(prefers-reduced-motion:reduce){.res-host[data-scene="sky:S-04"]::before{animation:none}.res-host[data-scene="sky:S-04"] .res-portrait{transition:none}}
+
+/* The original pendant is visible in the same approved portrait: crop a short detail shot, not a substitute prop. */
+.res-host[data-scene="sky:S-04"] .res-dialogue{position:relative}
+.res-host[data-scene="sky:S-04"][data-sky-moment="11"] .res-dialogue::before{content:"";position:absolute;pointer-events:none;z-index:3;left:2%;bottom:8%;width:21%;aspect-ratio:1.25;background:radial-gradient(ellipse at center,transparent 38%,#142638d9 100%),url("../assets/cinematics/characters/muling/traveler-neutral.webp") 46% 82%/365% auto no-repeat;border:1px solid #e8d4a0a6;border-radius:12px;box-shadow:0 6px 25px #0c172b88}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-sky-tap="1"]::before{animation:sky-bell-beat-one .28s ease-out both}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-sky-tap="2"]::before{animation:sky-bell-beat-two .28s ease-out both}
+@keyframes sky-bell-beat-one{0%,100%{transform:rotate(0)}35%{transform:rotate(-1.5deg);filter:brightness(1.16)}}
+@keyframes sky-bell-beat-two{0%,100%{transform:rotate(0)}35%{transform:rotate(1.5deg);filter:brightness(1.16)}}
+@media(max-width:700px){.res-host[data-scene="sky:S-04"][data-sky-moment="11"] .res-dialogue::before{left:3%;top:6%;bottom:auto;width:22%;max-width:105px}}
+@media(prefers-reduced-motion:reduce){.res-host[data-scene="sky:S-04"] .res-dialogue::before{animation:none!important}}
+
+/* Separate acting beats while retaining the approved traveler painting. */
+.res-host[data-scene="sky:S-04"][data-sky-moment="1"] .res-portrait,.res-host[data-scene="sky:S-04"][data-sky-moment="3"] .res-portrait{transform:translateY(2px) rotate(-.35deg);filter:brightness(.92)}
+.res-host[data-scene="sky:S-04"][data-sky-moment="7"] .res-portrait,.res-host[data-scene="sky:S-04"][data-sky-moment="9"] .res-portrait{filter:brightness(.84) saturate(.78);transform:translateY(1px)}
+.res-host[data-scene="sky:S-04"][data-sky-moment="11"] .res-dialogue::before{background-position:center,46% 82%;box-shadow:0 8px 26px #091523a8,inset 0 0 18px #12253b80;animation:sky-pendant-focus .4s ease-out both}
+@keyframes sky-pendant-focus{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+
+/* Real detail shot derived from the existing painted pendant; independent local motion. */
+.res-host[data-scene="sky:S-04"] .res-dialogue:has(.res-sky-pendant-shot:not([hidden]))::before{content:none!important}
+.res-sky-pendant-shot{position:absolute;left:0;bottom:2%;z-index:4;width:26%;height:auto;aspect-ratio:8/5;border:1px solid #d3bd91;border-radius:8px;box-shadow:0 8px 25px #091523a8;pointer-events:none}
+@media(max-width:700px) and (orientation:portrait){.res-sky-pendant-shot{left:2%;top:5%;bottom:auto;width:31%;max-width:144px}}
+@media(max-height:480px) and (orientation:landscape){.res-sky-pendant-shot{left:0;bottom:2%;width:22%}}
+
+/* Chapter V painted cinematic camera, cast blocking and memory/present staging. */
+.res-host.res-library-reveal{isolation:isolate;background:#141d32;overflow:hidden}
+.library-reveal-stage{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-2;background:#172237}
+.library-reveal-back,.library-reveal-painting,.library-reveal-shade{position:absolute;inset:0;width:100%;height:100%}
+.library-reveal-painting{object-fit:cover;opacity:0;transform:scale(1.055);transition:opacity .65s ease;object-position:50% 46%}
+.library-reveal-painting.is-current{opacity:1;animation:library-reveal-camera 13s ease-out both}
+.library-reveal-stage[data-mode="mural"] .library-reveal-painting,.library-reveal-stage[data-mode="memory"] .library-reveal-painting{filter:saturate(.69) sepia(.16)}
+.library-reveal-shade{z-index:2;background:linear-gradient(0deg,#101a2dfb 0%,#101a2d85 26%,transparent 65%,#121c324d 100%)}
+.library-reveal-cast{position:absolute;inset:5% 10% 17%;z-index:1;display:flex;align-items:flex-end;justify-content:space-around;gap:12%}
+.library-reveal-actor{width:min(42%,430px);height:90%;min-width:0;object-fit:contain;object-position:bottom;filter:drop-shadow(0 12px 18px #07102088) brightness(.79);transform:translateY(4px);transition:filter .3s,transform .3s;animation:library-cast-enter .6s ease-out both}
+.library-reveal-actor.speaking{filter:drop-shadow(0 12px 18px #07102088) brightness(1.04);transform:translateY(0)}
+.library-reveal-stage[data-mode="mural"] .library-reveal-actor,.library-reveal-stage[data-mode="memory"] .library-reveal-actor{filter:sepia(.25) saturate(.7) drop-shadow(0 0 18px #dbca8d55)}
+.library-reveal-stage[data-mode="departure"] .library-reveal-cast{justify-content:flex-end;animation:library-departure 7s ease-in-out both}
+.library-reveal-caption{position:absolute;z-index:3;top:4%;left:50%;transform:translateX(-50%);margin:0;width:min(85%,780px);text-align:center;font:600 clamp(13px,1.8vw,21px)/1.45 system-ui;color:#f4e6c1;text-shadow:0 2px 6px #11192a,0 0 12px #11192a}
+.res-host.res-library-reveal .res-dialogue{position:relative;z-index:1;grid-template-columns:1fr;width:min(930px,100%);max-height:55%;overflow:auto}
+.res-host.res-library-reveal .res-portrait{display:none}
+.res-host.res-library-reveal .res-body{background:linear-gradient(145deg,#1c2845f5,#15213cf5);border-color:#ad9ac5;box-shadow:0 10px 28px #090e2460}
+.res-host.res-library-reveal .res-speaker{color:#dfccf3}.res-host.res-library-reveal .res-line{min-height:1.8em}
+@keyframes library-reveal-camera{from{transform:scale(1.055) translateX(-.5%)}to{transform:scale(1.13) translateX(.6%)}}
+@keyframes library-cast-enter{from{opacity:0}to{opacity:1}}
+@keyframes library-departure{from{transform:translateX(0);opacity:1}to{transform:translateX(12%);opacity:.48}}
+@media(max-width:700px){.library-reveal-cast{inset:9% 2% 40%;gap:2%}.library-reveal-actor{width:48%;height:85%}.res-host.res-library-reveal .res-dialogue{max-height:64%;gap:0}.library-reveal-caption{font-size:13px;top:3%;width:94%}}
+@media(max-height:480px) and (orientation:landscape){.library-reveal-cast{inset:4% 10% 18%}.res-host.res-library-reveal .res-dialogue{max-height:61%}.res-host.res-library-reveal .res-body{padding:8px}.res-host.res-library-reveal .res-line{font-size:13px;margin-bottom:5px}.res-host.res-library-reveal button{min-height:34px}.library-reveal-caption{top:2%;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.library-reveal-painting,.library-reveal-actor,.library-reveal-cast{animation:none!important;transition:none!important}}
+
+/* Chapter V close-up staging: distinct memory light and separated blocking after confession. */
+.res-host.res-library-reveal .library-reveal-stage[hidden]{display:none}
+.library-reveal-stage[data-mode="anchor"] .library-reveal-painting{filter:saturate(.8) sepia(.24)}
+.library-reveal-stage[data-mode="anchor"] .library-reveal-shade{background:radial-gradient(ellipse at 50% 27%,#ffeac12b,transparent 56%),linear-gradient(0deg,#101a2dfb,transparent 68%)}
+.library-reveal-stage[data-mode="fracture"] .library-reveal-cast{justify-content:space-between;inset-inline:3%}
+.library-reveal-stage[data-mode="fracture"] .library-reveal-actor:not(.speaking){filter:brightness(.66) saturate(.7)}
+.library-reveal-stage[data-mode="fracture"] .library-reveal-shade{background:linear-gradient(90deg,#17203155,transparent 42%,#0d152d77),linear-gradient(0deg,#11192dfb,transparent 65%)}
+.library-reveal-stage[data-mode="departure"] .library-reveal-actor{transform-origin:50% 100%;animation:library-departure-actor 5s ease-in-out both}
+@keyframes library-departure-actor{0%{transform:translateX(0) scale(1);opacity:1}100%{transform:translateX(15%) scale(.78);opacity:.55}}
+@media(prefers-reduced-motion:reduce){.library-reveal-stage[data-mode="departure"] .library-reveal-actor{animation:none}}
+
+.library-reveal-stage[data-mode="departure"] .library-reveal-actor{animation-duration:3s}
+
+/* The anchor cutaway is the right-hand painted chamber detail, not the fixed-breed keeper. */
+.library-anchor-detail{position:absolute;right:5%;top:13%;width:clamp(88px,17%,220px);aspect-ratio:1;z-index:2;background-size:450% auto;background-position:right top;background-repeat:no-repeat;border:1px solid #e5ca90;border-radius:8px;box-shadow:0 7px 25px #0b122a99;animation:library-cast-enter .65s ease-out both}
+.library-anchor-detail[hidden]{display:none}.library-reveal-stage[data-mode="anchor"] .library-reveal-cast{inset-inline:4% 24%}.library-reveal-stage[data-mode="anchor"] .library-reveal-painting{object-position:22% 46%}
+@media(max-width:700px){.library-anchor-detail{right:4%;top:9%;width:22%;min-width:0}.library-reveal-stage[data-mode="anchor"] .library-reveal-cast{inset-inline:2% 23%}}
+@media(max-height:480px) and (orientation:landscape){.library-anchor-detail{top:8%;width:12%;min-width:0}}
+@media(prefers-reduced-motion:reduce){.library-anchor-detail{animation:none}}
