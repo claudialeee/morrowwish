@@ -24,6 +24,9 @@ try{
   await page.waitForFunction(()=>MorrowwishMusic.status().audioState==='suspended');
   await page.locator('.cbcp-pause').click();
   await waitTrack('opening');
+  await page.locator('.cbcp-skip').click();
+  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-02');
+  await page.waitForFunction(()=>document.querySelector('.cbcp-root:not([hidden])')?.dataset.ready==='true');
   await page.evaluate(()=>{MorrowwishMusic.setVolume(.37);MorrowwishMusic.setEffectsVolume(.42);MorrowwishMusic.setEnabled(false);});
   await page.waitForFunction(()=>!MorrowwishMusic.status().playing);
   await page.reload();

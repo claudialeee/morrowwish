@@ -24,8 +24,10 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq fluidsynth fluid-soundfont-gm ffmpeg
-          node scripts/render-cat-bond-score.mjs
-          node scripts/check-cat-bond-audio-assets.mjs
+          if ! node scripts/check-cat-bond-audio-assets.mjs; then
+            node scripts/render-cat-bond-score.mjs
+            node scripts/check-cat-bond-audio-assets.mjs
+          fi
           git add public/cat-bond/assets/audio/
           if ! git diff --cached --quiet; then
             git config user.name "github-actions[bot]"

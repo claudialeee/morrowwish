@@ -10,7 +10,7 @@ const key='cat-bond-rpg-audio-v1',clamp=n=>Math.max(0,Math.min(1,Number(n)||0));
 let prefs={enabled:true,music:.65,fx:.8};
 try{const old=JSON.parse(localStorage.getItem(key)||'null');if(old)prefs={enabled:old.enabled!==false,music:clamp(old.music),fx:clamp(old.fx)};else prefs.enabled=localStorage.getItem('morrowwish-music-enabled')!=='0';}catch{}
 function save(){try{localStorage.setItem(key,JSON.stringify(prefs));}catch{}}
-let ctx,bus,ambBus,active=null,pending=null,serial=0,desired='title',unlocked=false,hidden=document.hidden,paused=false,blocked=false,unavailable=false,duckUntil=0,amb=null,ambId='',ceremony=null,root=null,seen=new Set(),lastFx,ambientTick=0,cache=new Map(),started=false,renderQueue=Promise.resolve(),stopped=false,visualCeremony='',supportSeen=new Set(),supportRoot=null,voiceNodes=new Set(),lastErrorAt=0;
+let ctx,bus,ambBus,active=null,pending=null,serial=0,desired='title',unlocked=false,hidden=document.hidden,paused=false,blocked=false,unavailable=false,duckUntil=0,amb=null,ambId='',ceremony=null,root=null,seen=new Set(),lastFx,ambientTick=0,cache=new Map(),started=false,renderQueue=Promise.resolve(),stopped=false,visualCeremony='',supportSeen=new Set(),supportRoot=null,voiceNodes=new Set(),lastErrorAt=0,cinematicVoiceNodes=new Set(),lastSceneKey='',lastNarrativeRevision=-1,lastCompleted=0,lastSanctuaries=new Set(),lastEvidence=new Set(),lastBattle=null;
 const regions=score.regions;
 const now=()=>ctx?.currentTime||0;
 function ensure(){
@@ -27,6 +27,26 @@ async function getBuffer(id){
  if(cache.has(id)){const v=cache.get(id);cache.delete(id);cache.set(id,v);return v;}
  const task=renderQueue.then(async()=>await loadRecorded(id)||await score.render(id));renderQueue=task.catch(()=>{});cache.set(id,task);
  try{const b=await task;while(cache.size>3){const first=cache.keys().next().value;if(first===id)break;cache.delete(first);}return b;}catch(e){cache.delete(id);throw e;}
+}
+function cancelCinematicSounds(){for(const n of cinematicVoiceNodes){try{n.stop();}catch{}}cinematicVoiceNodes.clear();}
+function cue(kind,frequency=0){
+ if(!ctx||!unlocked||hidden||paused||window.MorrowwishAudio?.isEnabled?.()===false||!prefs.fx)return false;
+ const t=now()+.015, configs={
+  sanctuary:[[1, .90,.055],[2.01,.60,.020],[3.9,.38,.008]],
+  bell:[[1,1.10,.08],[2.007,.65,.030],[4.11,.32,.011]],
+  seal:[[1,.88,.07],[1.5,.73,.033],[2.01,.55,.018]],
+  impact:[[1,.55,.11],[1.49,.33,.042],[2.06,.21,.026]],
+  seasons:[[1,.72,.04],[1.5,.55,.023],[2.01,.36,.011]],
+  memory:[[1,.70,.055],[1.5,.58,.022],[2.01,.40,.009]],
+  mechanism:[[1,.16,.045],[2.7,.12,.016],[4.1,.08,.007]],
+  reward:[[1,.40,.045],[1.5,.52,.030],[2,.68,.020]],
+  error:[[1,.22,.035],[1.061,.20,.012]]
+ },f=frequency>40?frequency:({sanctuary:392,bell:523.25,seal:196,impact:64,seasons:440,memory:330,mechanism:210,reward:523,error:146}[kind]||392),def=configs[kind];
+ if(!def)return false;const cinematic=['sanctuary','seal','impact','seasons','memory','bell'].includes(kind);
+ if(cinematic)cancelCinematicSounds();
+ for(const [ratio,d,amp] of def){const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(f*ratio,t);if(kind==='impact')o.frequency.exponentialRampToValueAtTime(f*ratio*.45,t+d*.8);g.gain.setValueAtTime(.00001,t);g.gain.linearRampToValueAtTime(amp,t+.012);g.gain.exponentialRampToValueAtTime(.00001,t+d);o.connect(g);g.connect(ambBus);if(cinematic)cinematicVoiceNodes.add(o);o.onended=()=>{cinematicVoiceNodes.delete(o);o.disconnect();g.disconnect();};o.start(t);o.stop(t+d+.02);}
+ if(cinematic){duckUntil=Math.max(duckUntil,t+.85);mix();}
+ return true;
 }
 function dispose(s,fade=.7){
  if(!s||s.stopping)return;s.stopping=true;const t=now();try{s.gain.gain.cancelScheduledValues(t);s.gain.gain.setTargetAtTime(.00001,t,fade/4);s.source.stop(t+fade);}catch{}
@@ -138,7 +158,20 @@ function read(){
 }
 function tick(){
  const state=window.State?.S,melodies=state?.resonance?.melodies||[],scene=read();
- if(state!==root){root=state;seen=new Set(melodies);ceremony=null;visualCeremony='';supportRoot=null;stopVoices();}
+ if(state!==root){root=state;seen=new Set(melodies);ceremony=null;visualCeremony='';supportRoot=null;stopVoices();cancelCinematicSounds();lastNarrativeRevision=-1;lastCompleted=0;lastSanctuaries=new Set();lastEvidence=new Set();lastBattle=null;}
+ const narrative=state?.resonance,rev=narrative?.revision??-1;
+ if(rev!==lastNarrativeRevision){
+  const sanctuaries=new Set(narrative?.sanctuaries||[]),completed=narrative?.completed?.length||0,evidence=new Set(Object.entries(narrative?.evidence||{}).flatMap(([id,ops])=>(Array.isArray(ops)?ops:[]).map(op=>id+'|'+op)));
+  if(lastNarrativeRevision>=0){
+   if([...sanctuaries].some(x=>!lastSanctuaries.has(x)))cue('bell');
+   else if([...evidence].some(x=>!lastEvidence.has(x)&&/\|(?:puzzle|mechanism|repair|explore):/.test(x)))cue('mechanism');
+   else if(completed>lastCompleted)cue('reward');
+  }
+  lastNarrativeRevision=rev;lastCompleted=completed;lastSanctuaries=sanctuaries;lastEvidence=evidence;
+ }
+ const game=window.__game,battle=game?.scene==='battle'?game.battle:null;
+ if(battle!==lastBattle){if(battle)cue('impact');lastBattle=battle;}
+ if(lastSceneKey!==scene.id){if(lastSceneKey)cancelCinematicSounds();lastSceneKey=scene.id;}
  const visual=document.querySelector('.rw-world:not([hidden])')?.dataset.ceremony||'';
  if(visual!==visualCeremony){
   visualCeremony=visual;
@@ -155,7 +188,7 @@ function tick(){
  if(ceremony&&(ceremony.root!==root||window.__game?.scene==='battle'||!window.__CAT_BOND_STARTED__||!prefs.enabled||!ceremony.visual&&scene.amb!==ceremony.region&&scene.id!=='atlas'))ceremony=null;
  const cinematic=document.querySelector('.cbcp-root:not([hidden])');
  const nextPause=cinematic?.dataset.paused==='true';
- if(nextPause!==paused){paused=nextPause;if(ctx&&unlocked){if(paused){++serial;pending=null;ctx.suspend().catch(()=>{});}else if(!hidden)ctx.resume().catch(()=>{});}}
+ if(nextPause!==paused){paused=nextPause;if(paused)cancelCinematicSounds();if(ctx&&unlocked){if(paused){++serial;pending=null;ctx.suspend().catch(()=>{});}else if(!hidden)ctx.resume().catch(()=>{});}}
  if(window.MorrowwishAudio?.setVolume&&lastFx!==prefs.fx){lastFx=prefs.fx;window.MorrowwishAudio.setVolume(prefs.fx);}
  desired=ceremony?.id||scene.id;
  if(ctx&&unlocked&&!hidden&&!paused&&prefs.enabled){const region=scene.amb;if(regions.includes(region)&&!seen.has(region)&&!cache.has('song-'+region)&&!pending&&active?.id===desired)getBuffer('song-'+region).catch(()=>{});}
@@ -178,5 +211,5 @@ document.addEventListener('pointerdown',gesture,{capture:true,passive:true});doc
 document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',()=>{hidden=true;++serial;pending=null;ctx?.suspend().catch(()=>{});});window.addEventListener('pageshow',visibility);
 window.addEventListener('cat-bond-resonance-changed',tick);window.addEventListener('cat-bond-active-save-changed',()=>{root=null;ceremony=null;tick();});
 setInterval(tick,250);
-window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;stopVoices();clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?(recordedIds.has(active.id)?'recorded-mp3:':'original-score:')+active.id:null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,audioState:ctx?.state||'not-created',cache:cache.size,pending:pending?.id||null,ambient:ambId,ceremony:ceremony?.region||null,regionalResponses:[...supportSeen],responseVoices:voiceNodes.size})});
+window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;stopVoices();clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,cue,cancelCinematicSounds,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?(recordedIds.has(active.id)?'recorded-mp3:':'original-score:')+active.id:null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,audioState:ctx?.state||'not-created',cache:cache.size,pending:pending?.id||null,ambient:ambId,ceremony:ceremony?.region||null,regionalResponses:[...supportSeen],responseVoices:voiceNodes.size})});
 })();
