@@ -156,6 +156,12 @@ try{
   await page.locator('.sg-hotspot-facilities').click();
   await page.locator('[data-garden-projects]').click();
   await page.locator('[data-garden-project="harbor"]').click();
+  // Inject an isolated local-persistence failure; the actual purchase must roll back.
+  const beforeRestore=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish,garden:JSON.stringify(State.S.sunlitGarden)}));
+  await page.evaluate(()=>{window.__gardenRealSave=State.save;State.save=()=>({ok:false,reason:'test-local-failure'})});
+  await page.locator('[data-restore-project="harbor"]').click();
+  assert.deepEqual(await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish,garden:JSON.stringify(State.S.sunlitGarden)})),beforeRestore,'failed save rolls back garden purchase exactly');
+  await page.evaluate(()=>{State.save=window.__gardenRealSave;delete window.__gardenRealSave});
   await page.locator('[data-restore-project="harbor"]').click();
   await page.waitForFunction(()=>State.S.sunlitGarden.projects.harbor?.level===1);
   await page.evaluate(()=>MorrowwishI18n.set('zh'));
@@ -172,8 +178,11 @@ try{
   const xpAfter=await page.evaluate(uid=>{const c=State.S.cats.find(x=>x.uid===uid);return [c.level,c.xp]},chosen);
   assert.ok(xpAfter[0]>xpBefore[0]||xpAfter[1]>xpBefore[1],'physical tending grants real XP');
   assert.equal(await page.evaluate(()=>JSON.stringify(State.S.resonance)),canon,'home projects never change canonical story state');
+  // Retain an old-slot restoration control and invoke it after switching slots.
+  await page.evaluate(()=>{GardenProjects.open('harbor');window.__oldGardenButton=document.querySelector('#sg-project-panel button:last-child')});
   for(const other of await page.evaluate(slot=>State.SAVE_SLOT_IDS.filter(id=>id!==slot),saved.slot)){
     await page.evaluate(id=>{if(!State.startNewGame(id,{overwriteConfirmed:true}))throw Error('new slot failed')},other);
+    await page.evaluate(()=>window.__oldGardenButton?.click());
     await page.waitForFunction(()=>__game.yard._gardenState===State.S);
     assert.equal(await page.evaluate(()=>State.S.yardBuildings.length),0,'new slot must not inherit buildings');
     assert.equal(await page.evaluate(()=>Object.keys(State.S.sunlitGarden?.projects||{}).length),0,'new slot must not inherit garden restoration');

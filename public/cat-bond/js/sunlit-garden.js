@@ -17,7 +17,7 @@
     {id:'workshop',icon:'⚒',zh:'工坊',en:'Workshop',left:'81%',top:'43%',action:()=>window.UI?.openWorkshop?.()},
     {id:'bond',icon:'∞',zh:'双猫羁绊',en:'Duo Bond',left:'77%',top:'71%',action:()=>window.UI?.openBondPanel?.()}
   ];
-  let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null;
+  let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null,hitState=null;
   const isEnglish=()=>window.MorrowwishI18n?.get?.()!=='zh';
   const state=()=>window.State?.S||null;
   function canonicalProgress(){
@@ -66,21 +66,23 @@
     ensureRoot();
     const slotState=state();
     if(!active||visitedState!==slotState){
+      lastNpcHits=[];hitState=null;if(visitedState!==slotState)window.GardenProjects?.resetSlot?.();
       active=true;visitedState=slotState;const s=slotState;
       if(s){
-        if(!s.sunlitGarden||typeof s.sunlitGarden!=='object')s.sunlitGarden={schema:1,visits:0,lastVisitedAt:0};
-        s.sunlitGarden.visits=Math.max(0,Number(s.sunlitGarden.visits)||0)+1;
-        s.sunlitGarden.lastVisitedAt=Date.now();window.State?.save?.();
+        const previous=s.sunlitGarden;
+        s.sunlitGarden={...(previous&&typeof previous==='object'&&!Array.isArray(previous)?previous:{}),schema:1,visits:Math.max(0,Number(previous?.visits)||0)+1,lastVisitedAt:Date.now()};
+        let saved=false;try{saved=window.State?.save?.()?.ok===true}catch(error){console.warn('Garden visit save failed',error)}
+        if(!saved){if(previous===undefined)delete s.sunlitGarden;else s.sunlitGarden=previous;}
       }
     }
     if(root)root.inert=false;
     root?.classList.add('is-active');document.getElementById('stage')?.classList.add('cb-sunlit-garden');renderLabels();
   }
-  function leave(){window.GardenProjects?.cancel?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];}
+  function leave(){window.GardenProjects?.cancel?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;}
   function registerNarrativeAdapter(adapter){
     if(!adapter||typeof adapter.getHomeNpcs!=='function'||typeof adapter.drawHomeNpc!=='function'||
        typeof adapter.interactHomeNpc!=='function')return false;
-    narrativeAdapter=adapter;return true;
+    narrativeAdapter=adapter;lastNpcHits=[];hitState=null;return true;
   }
   function draw(ctx,width,height,time){
     if(!active||game?.scene!=='yard')return;
@@ -89,8 +91,9 @@
     if(root)root.inert=!!game.yard?.placement;
     window.GardenProjects?.draw?.(ctx,width,height,time);
     if(!narrativeAdapter&&window.CatBondResonanceNPC?.gardenAdapter)registerNarrativeAdapter(window.CatBondResonanceNPC.gardenAdapter);
-    lastNpcHits=[];if(!narrativeAdapter)return;
-    const npcs=narrativeAdapter.getHomeNpcs()||[];
+    lastNpcHits=[];hitState=null;if(!narrativeAdapter)return;
+    let npcs;try{npcs=narrativeAdapter.getHomeNpcs()||[]}catch(error){console.warn('Garden NPC availability failed',error);return}
+    if(!Array.isArray(npcs))return;hitState=state();
     for(const npc of npcs){
       const a=HOME_ANCHORS[npc?.id];if(!a||!npc?.id)continue;
       const x=width*a.x,y=height*a.y;
@@ -103,10 +106,18 @@
   }
   function handleTap(x,y){
     if(!active||game?.scene!=='yard')return false;
+    if(visitedState!==state()){enter();return false;}
+    if(game.yard?.placement)return false;
     const hidden=game.yard?.hide;
     if(hidden&&!hidden.found&&Math.hypot(x-hidden.spot.x,y-hidden.spot.y)<58)return false;
-    for(let i=lastNpcHits.length-1;i>=0;i--){const h=lastNpcHits[i];
-      if(Math.hypot(x-h.x,y-h.y)<=h.radius){narrativeAdapter.interactHomeNpc(h.id);return true;}}
+    if(hitState===state()&&narrativeAdapter){
+      for(let i=lastNpcHits.length-1;i>=0;i--){const h=lastNpcHits[i];
+        if(Math.hypot(x-h.x,y-h.y)>h.radius)continue;
+        try{const current=narrativeAdapter.getHomeNpcs();if(!Array.isArray(current)||!current.some(n=>n?.id===h.id))continue;
+          const result=narrativeAdapter.interactHomeNpc(h.id);return result!==false&&result?.ok!==false;
+        }catch(error){console.warn('Garden NPC interaction failed',error);return false;}
+      }
+    }
     return !!window.GardenProjects?.tap?.(x,y);
   }
   function getProgress(){

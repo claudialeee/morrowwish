@@ -2,7 +2,7 @@ name: Sunlit Garden responsive visual QA
 
 on:
   pull_request:
-    branches: [main]
+    branches: [rpg/integration]
     paths:
       - 'public/cat-bond/**'
       - 'scripts/sunlit-garden-visual-qa.mjs'
