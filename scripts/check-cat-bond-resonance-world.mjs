@@ -99,14 +99,16 @@ console.log(JSON.stringify((function test(){
   if(scene.choices.length&&!b.view().choice)host(e=>e.choose(scene.choices[0].id));
   for(const op of b.view().objective)host(e=>e.record(scene.id,op));host(e=>e.finish());
  }
+ assert(runtime.residents("garden").map(n=>n.id).join(",")==="muling","only Muling before postgame resident visits");
+ assert(!runtime.postgame({id:"postgame:ruins",operation:"postgame:ruins-victory",region:"starfall",verified:true,token:runtime.capture()}).ok,"generic postgame event cannot award a ruins victory");
  let letters=0,reunions=0;
  for(const region of campaign.regions){
   ok(b.enter(region),"postgame travel");let x=createExplorer(b,region),q=x.homeQuest();
   assert(q&&!q.repaired,"letter available");assert(!x.meetHomeResident(x.localNpcs()[0].id).ok,"no reunion before repair");
-  walk(x,q.point);ok(x.startHomeRepair(),"repair after ending");solve(x);letters++;
+  walk(x,q.point);const beforeRepair=JSON.stringify(State.S);assert(!b.finishHomeRepair(region,runtime.capture()).ok,"repair without solved mechanism");assert(JSON.stringify(State.S)===beforeRepair,"invalid repair changed save");ok(x.startHomeRepair(),"repair after ending");solve(x);letters++;
   x=createExplorer(b,region);assert(x.homeQuest()?.repaired,"letter saved");
-  for(const n of x.localNpcs()){walk(x,n.point);ok(x.meetHomeResident(n.id),"invite resident");x=createExplorer(b,region);}
-  assert(!x.homeQuest(),"reunion completed");reunions++;
+  for(const n of x.localNpcs()){walk(x,n.point);assert(!b.meetHomeResident(n.id,[0,0],runtime.capture()).ok,"forged NPC location rejected");ok(x.meetHomeResident(n.id),"invite resident");x=createExplorer(b,region);}
+  assert(!x.homeQuest(),"reunion completed");reunions++;assert(runtime.residents("garden").length===1+reunions*2,"only actual reunited residents appear in garden");
  }
  assert(b.view().returned.length===12&&b.view().postgame.length===12,"all six regional reunions persisted");
  return {physical,puzzles,walkingTicks:walking,deliveries,localInvites,rewards,fixtureTransitions:fixture,slots:3,sharedRuntimeNotifications:notified,letters,reunions,canonicalEnding:b.view().ending};

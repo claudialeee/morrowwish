@@ -134,7 +134,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   if(active?.survey){const s=survey();if(s?.operation!==active.survey||!near(s.from)||!puzzle?.solved)return {ok:false,reason:"incomplete-flight"};const result=bridge.finishSurvey(s.operation,skyFlightProof(puzzle.flight),active.token);if(result.ok){path=s.remote?mainPath:skySurveyPath;pos=[...s.to];active=null;puzzle=null;}return result;}
   if(active?.homeRepair){
    const q=bridge.homeQuest(region);if(!q||!near(q.point)||!puzzle?.solved)return {ok:false,reason:"incomplete-physical-action"};
-   const r=bridge.finishHomeRepair(region,active.token);if(r.ok){active=null;puzzle=null;}return r;
+   const r=bridge.finishHomeRepair(region,active.token,{values:puzzle.values,flightProof:skyFlightProof(puzzle.flight)});if(r.ok){active=null;puzzle=null;}return r;
   }
   if(!active)return {ok:false,reason:"no-interaction"};const f=layout.features[active.operation];
   if(!near(region==="sky"&&skyLaunch[active.operation]||f)||(puzzle&&!puzzle.solved))return {ok:false,reason:"incomplete-physical-action"};

@@ -111,7 +111,26 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   };
   return transaction(e=>e.exchange({a,b,stage,actor,action}),{token,physical:guarded})
  }
- function postgame({id,operation,verified,token}={},physical){if(verified!==true||!token)return fail("postgame-unverified");return transaction(e=>e.postgame(id,operation),{token,physical})}
+ function postgame({id,operation,region,verified,token}={},physical){
+  const q=campaign.side.find(q=>q.id===id&&q.operation===operation&&q.region===region),letter=id?.startsWith("postgame:letter-"),reunion=id?.startsWith("postgame:reunion-");
+  if(verified!==true||!token||!check(token)||!q||(!letter&&!reunion)||!campaign.regions.includes(region)||State.S.resonanceExploration?.location!==region||typeof physical!=="function")return fail("postgame-unverified");
+  const guarded=prior=>{
+   const next=physical(clone(prior)),w=prior.resonanceExploration;
+   const coins=letter?25:40,fish=letter?2:3;
+   if(!next||next.coins!==(prior.coins||0)+coins||next.fish!==(prior.fish||0)+fish)throw Error("Invalid postgame reward");
+   let expected=w;
+   if(letter){const p=layouts[region].features["repair:"+region],pos=w.positions?.[region];if(!p||!pos||Math.hypot(pos.x-p[0],pos.y-p[1])>=.072)throw Error("Walk to the sanctuary");}
+   else{
+    const actors=Object.values(campaign.cast).filter(n=>n.region===region),key=n=>"postgame:visit:"+region+":"+n.id;
+    const missing=actors.filter(n=>!w.interactions?.[key(n)]),pos=w.positions?.[region],point=layouts[region].castPoints[missing[0]?.id];
+    if(missing.length!==1||!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)throw Error("Complete both resident visits");
+    expected={...w,interactions:{...w.interactions,[key(missing[0])]:true}};
+   }
+   if(JSON.stringify(next.resonanceExploration)!==JSON.stringify(expected))throw Error("Invalid postgame world patch");
+   return next;
+  };
+  return transaction(e=>e.postgame(id,operation),{token,physical:guarded});
+ }
  function commitRuinsVictory({attemptId,duoPromise,verified,outcome,token}={}){if(verified!==true||outcome!=="win"||!token||!check(token)||State.S.resonanceExploration?.location!=="starfall")return fail("ruins-unverified");const first=!view().postgame.includes("postgame:ruins");const coins=(first?100:30)+(duoPromise===true?15:0),fish=(first?5:2)+(duoPromise===true?1:0);return transaction(e=>e.ruinsClear(attemptId,duoPromise),{token,physical:p=>({coins:(p.coins||0)+coins,fish:(p.fish||0)+fish})})}
  function npcProfile(id){const actor=campaign.cast[id];if(!actor||id==="player")return null;const v=view();return {id,name:clone(actor.name),region:actor.region,trust:v.trust[id],returned:v.returned.includes(id),phase:id==="muling"?v.muling:null,availableAmbient:read().ambientAvailable(actor.region).filter(a=>a.npc===id)}}
  function residents(region){const v=view();if(region==="garden"){const ids=[...v.returned];if(["epilogue:E-02","epilogue:E-03"].includes(v.current?.id))ids.push(...Object.values(campaign.cast).filter(n=>campaign.regions.includes(n.region)).map(n=>n.id));if(["companion","accountability-pending","accountable","reconciled"].includes(v.muling)||["prologue:P-04","prologue:P-05"].includes(v.current?.id))ids.unshift("muling");return [...new Set(ids)].map(npcProfile).filter(Boolean)}

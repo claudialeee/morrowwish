@@ -108,15 +108,18 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   const actors=Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({id:n.id,reply:spec.reply[i],visited:!!w.interactions[homeVisitKey(region,n.id)]}));
   return {...clone(spec),letterText:clone(spec.letter),region,letter,reunion,actors,repaired:v.postgame.includes(letter.id)};
  }
- function finishHomeRepair(region,token){
+ function finishHomeRepair(region,token,proof){
   const q=homeQuest(region),w=world(),pos=w.positions[region],api=resolveNarrative();
   if(!q||q.repaired||!token||!api.isCurrentAction(token)||!pos||Math.hypot(pos.x-q.point[0],pos.y-q.point[1])>=.072)return fail("postgame-repair-unavailable");
+  const operation="repair:"+region,goal=libraryPuzzle(operation,null)?.goal||puzzleSpecs[operation]?.goal;
+  if(region==="sky"?!validSkyFlightProof(operation,null,proof?.flightProof):!goal||!Array.isArray(proof?.values)||proof.values.length!==goal.length||!goal.every((n,i)=>proof.values[i]===n))return fail("postgame-mechanism-incomplete");
   const reward={coins:25,fish:2},r=api.postgame({...q.letter,verified:true,token},patch(x=>x,reward));cachedRoot=null;
   return r.ok?{...r,reward}:r;
  }
  function meetHomeResident(region,id,point,token){
   const q=homeQuest(region),w=world(),pos=w.positions[region],api=resolveNarrative();
-  if(!q?.repaired||!q.actors.some(a=>a.id===id&&!a.visited)||!token||!api.isCurrentAction(token)||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("postgame-visit-unavailable");
+  const canonicalPoint=layouts[region]?.castPoints[id];
+  if(!q?.repaired||!q.actors.some(a=>a.id===id&&!a.visited)||!token||!api.isCurrentAction(token)||!pos||!canonicalPoint||!Array.isArray(point)||point[0]!==canonicalPoint[0]||point[1]!==canonicalPoint[1]||Math.hypot(pos.x-canonicalPoint[0],pos.y-canonicalPoint[1])>=.072)return fail("postgame-visit-unavailable");
   const change=x=>({...x,interactions:{...x.interactions,[homeVisitKey(region,id)]:true}});
   if(q.actors.some(a=>a.id!==id&&!a.visited))return physical(change);
   const reward={coins:40,fish:3},r=api.postgame({...q.reunion,verified:true,token},patch(change,reward));cachedRoot=null;return r.ok?{...r,reward}:r;

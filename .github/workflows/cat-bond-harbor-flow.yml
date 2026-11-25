@@ -14,10 +14,11 @@ on:
 permissions:
   contents: read
 
-# Only the newest acceptance run for a given PR is useful; never cancel another PR.
+# Finish active full-campaign runs to preserve failure evidence while fixes are queued.
+# Other PRs keep the usual newest-run-only behavior.
 concurrency:
   group: cat-bond-harbor-acceptance-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.head_ref != 'rpg/release-combined-next' }}
 
 jobs:
   harbor:
