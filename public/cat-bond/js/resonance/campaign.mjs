@@ -862,7 +862,9 @@ export const campaign = {
         "melody:harbor"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": [
+        "melody:harbor"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {

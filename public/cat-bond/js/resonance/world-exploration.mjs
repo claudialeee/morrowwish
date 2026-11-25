@@ -26,6 +26,7 @@ const segment=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,
 const closest=(path,p)=>path.slice(1).map((b,i)=>({i,...segment(p,path[i],b)})).sort((a,b)=>distance(a.p,p)-distance(b.p,p))[0];
 const stages=["sendA","receiveB","sendB","receiveA"];
 export const puzzleSpecs={
+ "explore:scent-trail":{type:"scent",initial:[],goal:[1,0,2]},
  "explore:tide-logbook":{type:"tide",initial:[],goal:[2,0,1]},
  "puzzle:beam-mirrors":{type:"mirrors",initial:[0,1,0],goal:[2,3,1],mod:4},
  "puzzle:paired-water-gates":{type:"water",initial:[0,0,0],goal:[1,1,1],mod:2},
@@ -51,7 +52,7 @@ export function createPuzzle(op){
 export function movePuzzle(p,i){
  if(!p||p.solved||!Number.isInteger(i)||i<0||i>2)return false;
  if(["mirrors","stars","water","routing"].includes(p.type)){p.values[i]=(p.values[i]+1)%p.mod;}
- else if(["blueprint","memory","rescue","melody","tide"].includes(p.type)){
+ else if(["blueprint","memory","rescue","melody","tide","scent"].includes(p.type)){
   if(i===p.goal[p.values.length])p.values.push(i);else{p.values=[];p.response=[];p.mistakes++;}
   if(p.type==="melody")p.response=p.values.map((n,j)=>({actor:p.participants?.[j%2],reply:(n+1)%3}));
  }

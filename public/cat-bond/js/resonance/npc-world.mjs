@@ -6,7 +6,9 @@ const load=name=>{const img=new Image();img.src=new URL(name,root).href;return i
 const frames=[load("muling-follow-sprite.svg"),load("muling-follow-step-a.svg"),load("muling-follow-step-b.svg")];
 const residents={
  jiedeng:load("jiedeng-painted.webp"),
- qilan:load("qilan-painted.webp")
+ qilan:load("qilan-painted.webp"),
+ yahe:load("yahe-painted.webp"),
+ yuchuan:load("yuchuan-painted.webp")
 };
 function drawResident(ctx,id,{x,y,scale=1,time=0}){
  if(id==="muling")return drawMuling(ctx,{x,y,scale,time});

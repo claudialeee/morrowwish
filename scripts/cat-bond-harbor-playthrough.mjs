@@ -26,14 +26,14 @@ try {
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
     const shot = id => page.screenshot({path:out+'/'+name+'-'+id+'.png'});
     const checkObjective = operation => page.waitForFunction(op => CatBondResonance.view().objective.includes(op),operation);
-    const dialogue = page.locator('.res-host');
-    async function readDialogue(choice) {
+    async function readDialogue(id,choice) {
+      const dialogue = page.locator('.res-host[data-scene="'+id+'"]');
       await dialogue.waitFor();
       const advance = button('Skip dialogue',dialogue);
-      if (await advance.isEnabled() && await advance.isVisible()) await advance.click();
+      if (await advance.isVisible() && await advance.isEnabled()) await advance.click();
       if (choice) {
         await button(choice,dialogue).click();
-        if (await advance.isEnabled() && await advance.isVisible()) await advance.click();
+        if (await advance.isVisible() && await advance.isEnabled()) await advance.click();
       }
       if (await dialogue.isVisible()) {
         const close = button('Close',dialogue);
@@ -87,40 +87,39 @@ try {
       await page.mouse.move(x,y+62,{steps:8});
       await page.mouse.up();
     }
-    await readDialogue();
+    await readDialogue('prologue:P-04');
     await scene('prologue:P-05');
-    await readDialogue();
+    await readDialogue('prologue:P-05');
     await shot('atlas');
     await page.locator('.rw-regions [data-region="harbor"]').click();
     await scene('harbor:H-01');
     await shot('harbor');
     await button('Talk to Qilan').click();
-    await readDialogue();
+    await readDialogue('harbor:H-01');
     await scene('harbor:H-02');
     await button('Talk to Jiedeng').click();
-    await dialogue.waitFor();
+    await page.locator('.res-host[data-scene="harbor:H-02"]').waitFor();
     await shot('dialogue');
-    await readDialogue('Comfort Qilan first');
+    await readDialogue('harbor:H-02','Comfort Qilan first');
     await scene('harbor:H-03');
     await puzzle('Tide cave logbook',['Ebb mark','Dry steps','Logbook chest']);
-    await readDialogue();
+    await readDialogue('harbor:H-03');
     await scene('harbor:H-04');
     await button('Talk to '+(name==='portrait'?'Jiedeng':'Qilan')).click();
     const calibrate=name==='portrait';
-    await readDialogue(calibrate?'Calibrate the lighthouse first':'Prioritize rescue');
+    await readDialogue('harbor:H-04',calibrate?'Calibrate the lighthouse first':'Prioritize rescue');
     const rescue=() => puzzle('Storm boat',['Secure','Signal','Guide']);
     const mirrors=() => puzzle('Lighthouse mirrors',['Left mirror','Left mirror','Center mirror','Center mirror','Right mirror']);
     if (calibrate) {await mirrors();await rescue();} else {await rescue();await mirrors();}
     await scene('harbor:H-05');
     await checkObjective('repair:harbor');
-    await button('Continue story',page.locator('.rw-world-actions')).click();
-    await readDialogue();
     await puzzle('Lighthouse sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror']);
     await button('Invite Qilan').click();
     await button('Invite Qilan').waitFor({state:'hidden'});
     await button('Invite Jiedeng').click();
     await button('Invite Jiedeng').waitFor({state:'hidden'});
     await puzzle('Returning Tides',['Low','High','Middle']);
+    await readDialogue('harbor:H-05');
     await scene('forest:R-01');
 
     // Follow a normal encounter through the actual battle setup and tutorial.
@@ -129,10 +128,15 @@ try {
     await page.locator('#battle-ui.on').waitFor();
     await shot('battle');
     assert.equal(await page.evaluate(() => window.__game.battle.regionalCombat?.region),'harbor');
-    const start = page.locator('#battle-help-start');
-    if (await start.isVisible()) await start.click();
+    const tutorial = page.locator('#battle-tutorial-skip');
+    if (await tutorial.isVisible()) await tutorial.click();
     await page.waitForFunction(() => window.__game.scene === 'map', null, {timeout:75000});
     assert.equal(await page.evaluate(() => WorldMap.currentRegion),'harbor');
+    const resultClose=page.locator('#cr-ok,#battle-recovery-ok');
+    await resultClose.waitFor();
+    const captured=await resultClose.getAttribute('id')==='cr-ok';
+    assert.equal(await page.evaluate(() => State.S.catchCount || 0),captured?1:0);
+    await resultClose.click();
     await button('Sunlit Garden',page.locator('.rw-head')).click();
     await page.waitForFunction(() => window.__game.scene === 'yard');
     await shot('garden-return');
@@ -150,7 +154,7 @@ try {
     }));
     assert.deepEqual(state,{sanctuaries:['harbor'],melodies:['harbor'],choice:calibrate?'calibrate':'rescue',slot:'slot1',legacy:false});
     assert.deepEqual(errors,[]);
-    results.push({profile:name, ...state});
+    results.push({profile:name, captured, ...state});
     await context.close();
   }
 } finally {

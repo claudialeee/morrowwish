@@ -10,6 +10,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if(introBreedCount && Number.isInteger(totalBreeds) && totalBreeds>0){
     introBreedCount.textContent=`🐾 收集 ${totalBreeds} 种猫`;
   }
+  const canonicalBuild=document.querySelector('meta[name="cat-bond-campaign"][content="last-resonance"]')!==null;
+  if(canonicalBuild)window.__CAT_BOND_CANONICAL_ACTIVE__=true;
   const game = new Game();
   window.__game = game;
   UI.init(game);
@@ -120,6 +122,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if(starting)return;
     starting=true;
     try{
+      if(canonicalBuild&&(!window.CatBondTitlePrologue?.available?.()||!window.CatBondResonance||!window.CatBondCanonicalWorld))throw Error(window.MorrowwishI18n?.get?.()==='zh'?'正式剧情模块未加载，请刷新重试。':'The story modules did not load. Refresh and try again.');
       if(mode==='new'){
         if(!State.startNewGame(slotId,{overwriteConfirmed}))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'无法创建存档，请检查存储空间或覆盖确认。':'Could not create the save. Check storage space or overwrite confirmation.');
       }else if(!State.loadSlot(slotId))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'存档为空或已损坏，无法读取。':'The selected save is empty or damaged');

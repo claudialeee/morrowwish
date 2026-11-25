@@ -14,7 +14,7 @@ for(const page of [a,b]){
  page.on('dialog',d=>d.accept());
 }
 const ready=page=>page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&window.CatBondArtworkStatus?.breedsLoaded===true,{timeout:30000});
-const waitMap=page=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:20000});
+const waitYard=page=>page.locator('.res-garden-bell').waitFor({state:'visible',timeout:20000});
 async function title(page){
  if(await page.locator('#intro').isVisible())return;
  await page.locator('#map-menu').click();
@@ -27,8 +27,11 @@ async function start(page,id,starter){
  await page.locator('#intro-start').click();
  await page.locator('#intro-slot-list [data-slot="'+id+'"]').click();
  await page.locator('#panel.open .dex-cell').nth(starter).click();
- await page.locator('.cb-story-overlay.is-visible .cb-story-skip').click();
- await waitMap(page);
+ for(const sequence of [1,2,3]){
+  await page.waitForFunction(n=>CatBondResonance.view().current?.id==='prologue:P-0'+n&&document.querySelector('.cbcp-art')?.naturalWidth>0,sequence);
+  await page.locator('.cbcp-skip').click();
+ }
+ await waitYard(page);
 }
 async function cloud(page){
  await page.locator('#cb-system-toggle').click();
@@ -50,12 +53,8 @@ try{
  await a.goto(origin+'/cat-bond/?lang=en');await ready(a);
  await start(a,'slot1',0);await title(a);
  await start(a,'slot2',1);
- await a.locator('#map-menu').click();
- await a.locator('[data-cb-story-action="slots"]').click();
- await a.locator('[data-save="slot3"]').click();
- await a.waitForFunction(()=>!!window.State.getSaveSlot('slot3'));
- await a.locator('.cb-slot-manager .cb-cloud-close').click();
- await a.locator('#panel .card-close').click().catch(()=>{});
+ await title(a);
+ await start(a,'slot3',2);
  await title(a);
  const originals=await readSlots(a);
  assert.ok(originals.every(s=>s?.length));
@@ -82,7 +81,11 @@ try{
  await ready(b);
  await b.waitForFunction(()=>window.State.getSaveSlot('slot3')!==null);
  assert.deepEqual(await readSlots(b),originals);
- await waitMap(b);
+ if(await b.locator('#intro').isVisible()){
+  await b.locator('#intro-continue').click();
+  await b.locator('#intro-slot-list [data-slot="slot3"]').click();
+ }
+ await waitYard(b);
  await title(b);
  await shot(b,'second-device-restored');
  // Delete slot1 on A, then prove B's stale copy cannot silently restore it.

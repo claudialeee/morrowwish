@@ -4,6 +4,7 @@ import "./ambient-play.mjs";
 import "./world-runtime.mjs";
 import "./title-entry.mjs";
 import "./garden-bell.mjs";
+import "./chapter-cinematics.mjs";
 import "./forge-combat-runtime.mjs";
 import "./regional-combat.mjs";
 import "./finale-combat.mjs";

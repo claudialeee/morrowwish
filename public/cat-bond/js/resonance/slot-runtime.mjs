@@ -82,6 +82,19 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   return op(sceneId,operation,{token,physical});
  }
  function ambient({id,operation,region,verified,token}={}){if(verified!==true||!read().ambientAvailable(region).some(a=>a.id===id&&a.operation===operation))return fail("invalid-ambient-evidence");return transaction(e=>e.ambient(id,operation),{token})}
+ function commitFinaleVictory({sceneId,operation,participants,verified,outcome,token}={}){
+  if(!token||!check(token)||verified!==true||outcome!=="win"||sceneId!=="finale:B-03"||operation!=="battle:central-echo")return fail("invalid-finale-victory");
+  if(!Array.isArray(participants)||participants.some(x=>!x)||participants.length!==campaign.regions.length||new Set(participants.map(x=>x?.region)).size!==participants.length)return fail("incomplete-finale-support");
+  return transaction(engine=>{
+   const saved=engine.snapshot();
+   for(const {region,action} of participants){
+    if(saved.support.includes(region))continue;
+    const result=engine.supportAction(region,action);
+    if(!result.ok)return result;
+   }
+   return engine.record(sceneId,operation);
+  },{token});
+ }
  function support({region,action,verified,token}={}){if(verified!==true)return fail("support-unverified");if(!token)return fail("action-token-required");return transaction(e=>e.supportAction(region,action),{token})}
  function exchange({a,b,stage,actor,action,verified,token}={},physical){if(verified!==true||!token)return fail("exchange-unverified");if(State.S.resonanceExploration?.location!==actor)return fail("wrong-map-location");return transaction(e=>e.exchange({a,b,stage,actor,action}),{token,physical})}
  function postgame({id,operation,verified,token}={}){if(verified!==true||!token)return fail("postgame-unverified");return transaction(e=>e.postgame(id,operation),{token})}
@@ -89,5 +102,5 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
  function residents(region){const v=view();if(region==="garden"){const ids=[...v.returned];if(["epilogue:E-02","epilogue:E-03"].includes(v.current?.id))ids.push(...Object.values(campaign.cast).filter(n=>campaign.regions.includes(n.region)).map(n=>n.id));if(["companion","accountability-pending","accountable","reconciled"].includes(v.muling)||["prologue:P-04","prologue:P-05"].includes(v.current?.id))ids.unshift("muling");return [...new Set(ids)].map(npcProfile).filter(Boolean)}
   if(!v.regions.includes(region))return [];const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(v.current?.chapter===region&&["sky:S-04","library:M-03","library:M-05","starfall:F-03","starfall:F-04","starfall:F-05"].includes(v.current?.id))ids.push("muling");return ids.map(id=>({...npcProfile(id),scripted:id==="muling"}));}
  const follows=()=>view().muling==="companion"||view().muling==="identity-revealed";
- return Object.freeze({capture,isCurrentAction:check,completeNPCScene,subscribe,exchange,initialize:()=>State.S.resonance?{ok:true,state:clone(State.S.resonance)}:transaction(e=>({ok:true,state:e.snapshot()})),npcProfile,residents,follows,view,snapshot:()=>read().snapshot(),choose:(id,token)=>transaction(e=>e.choose(id),{token}),nextLine:token=>transaction(e=>e.nextLine(),{token}),finish:token=>transaction(e=>e.finish(),{token}),recordNPC,evidence,ambient,support,postgame,ambientAvailable:region=>read().ambientAvailable(region),supportProfile:region=>read().supportProfile(region)});
+ return Object.freeze({capture,isCurrentAction:check,completeNPCScene,commitFinaleVictory,subscribe,exchange,initialize:()=>State.S.resonance?{ok:true,state:clone(State.S.resonance)}:transaction(e=>({ok:true,state:e.snapshot()})),npcProfile,residents,follows,view,snapshot:()=>read().snapshot(),choose:(id,token)=>transaction(e=>e.choose(id),{token}),nextLine:token=>transaction(e=>e.nextLine(),{token}),finish:token=>transaction(e=>e.finish(),{token}),recordNPC,evidence,ambient,support,postgame,ambientAvailable:region=>read().ambientAvailable(region),supportProfile:region=>read().supportProfile(region)});
 }

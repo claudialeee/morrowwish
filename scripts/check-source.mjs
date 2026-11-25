@@ -1402,8 +1402,8 @@ await import('./check-cat-bond-story-cloud.mjs');
 const gardenCode=fs.readFileSync('public/cat-bond/js/sunlit-garden.js','utf8');
 const gardenProjects=fs.readFileSync('public/cat-bond/js/garden-projects.js','utf8');
 new Function(gardenProjects);
-const gardenArt=fs.readFileSync('public/cat-bond/assets/sunlit-garden-cinematic.svg','utf8');
-const gardenArtPortrait=fs.readFileSync('public/cat-bond/assets/sunlit-garden-portrait.svg','utf8');
+const gardenArt=fs.readFileSync('public/cat-bond/assets/garden/sunlit-garden-landscape.webp');
+const gardenArtPortrait=fs.readFileSync('public/cat-bond/assets/garden/sunlit-garden-portrait.webp');
 const gardenWorld=fs.readFileSync('public/cat-bond/js/world.js','utf8');
 const gardenGame=fs.readFileSync('public/cat-bond/js/game.js','utf8');
 const gardenHtml=fs.readFileSync('public/cat-bond/index.html','utf8');
@@ -1411,10 +1411,8 @@ const gardenCss=fs.readFileSync('public/cat-bond/css/style.css','utf8');
 new Function(gardenCode);
 const gardenRegions=['harbor','forest','forge','sky','library','starfall'];
 const gardenCast=['muling','jiedeng','qilan','yahe','yuchuan','jinpo','xiaomao','lingyu','yuanfan','moye','baikan','xingya','lichuan'];
-if(!gardenArt.startsWith('<svg')||!gardenArt.includes('viewBox="0 0 1600 900"')||
-   !gardenArtPortrait.startsWith('<svg')||!gardenArtPortrait.includes('viewBox="0 0 900 1600"')||
-   /<text[\s>]/i.test(gardenArt+gardenArtPortrait)||/<foreignObject|<button|<input/i.test(gardenArt+gardenArtPortrait))
- throw new Error('Sunlit Garden environment artwork must be a text-free scene plate, not a baked UI mockup');
+if([gardenArt,gardenArtPortrait].some(art=>art.toString('ascii',0,4)!=='RIFF'||art.toString('ascii',8,12)!=='WEBP'))
+ throw new Error('Sunlit Garden must have desktop and portrait painted WebP environment plates');
 if(gardenRegions.some(id=>!gardenProjects.includes("['"+id+"'")||!fs.existsSync('public/cat-bond/assets/garden/projects/'+id+'.svg'))||
    gardenCast.some(id=>!gardenCode.includes(id)))
  throw new Error('Sunlit Garden must expose all six canonical restoration assets and home NPC anchors');
@@ -1425,8 +1423,8 @@ if(!gardenCode.includes('window.State?.S')||!gardenCode.includes('resonance')||
    gardenCode.includes('localStorage')||gardenCode.includes('indexedDB')||
    gardenCode.includes('State.S.story'))
  throw new Error('Garden must read canonical per-slot state and delegate NPC art/dialogue without another save/story system');
-if(!gardenWorld.includes('assets/sunlit-garden-cinematic.svg')||
-   !gardenWorld.includes('assets/sunlit-garden-portrait.svg')||
+if(!gardenWorld.includes('assets/garden/sunlit-garden-landscape.webp')||
+   !gardenWorld.includes('assets/garden/sunlit-garden-portrait.webp')||
    !gardenWorld.includes('H > W * 1.12')||
    !gardenWorld.includes('SunlitGarden?.draw?.(ctx,W,H,t)')||
    !gardenGame.includes('SunlitGarden?.enter?.()')||

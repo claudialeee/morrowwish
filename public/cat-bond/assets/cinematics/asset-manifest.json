@@ -8,7 +8,7 @@
     "docs/cat-bond-rpg/03-DEVELOPER-HANDOFF.md"
   ],
   "status": "integration-review-only; no production release",
-  "reviewStatus": "Original painted prologue sequences available for staging visual review; production approval pending.",
+  "reviewStatus": "Painted opening and closing sequences are staged for independent review. Production approval remains pending.",
   "assets": [
     {
       "id": "region-misttide-harbor",
@@ -272,6 +272,72 @@
       "stagingAllowed": true,
       "format": "webp",
       "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-inward-call",
+      "kind": "cinematic-key-art",
+      "sceneKey": "starfall:F-05",
+      "path": "assets/cinematics/closing/inward-call.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-pendant-signal",
+      "kind": "cinematic-key-art",
+      "sceneKey": "starfall:F-05",
+      "path": "assets/cinematics/closing/pendant-signal.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-final-note",
+      "kind": "cinematic-key-art",
+      "sceneKey": "finale:B-04",
+      "path": "assets/cinematics/closing/final-note.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-memories-return",
+      "kind": "cinematic-key-art",
+      "sceneKey": "finale:B-04",
+      "path": "assets/cinematics/closing/memories-return.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-harbor-forest-delivery",
+      "kind": "cinematic-key-art",
+      "sceneKey": "epilogue:E-01",
+      "path": "assets/cinematics/closing/harbor-forest-delivery.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
+    },
+    {
+      "id": "closing-couriers-at-library",
+      "kind": "cinematic-key-art",
+      "sceneKey": "epilogue:E-01",
+      "path": "assets/cinematics/closing/couriers-at-library.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "original raster painting produced for this integration"
     }
   ],
   "sceneKeys": [
@@ -471,6 +537,158 @@
             "x": -2,
             "y": 0,
             "scale": 1.13
+          }
+        },
+        "lines": []
+      }
+    ],
+    "starfall:F-05": [
+      {
+        "assetId": "closing-inward-call",
+        "alt": {
+          "zh": "六道向内汇聚的光路",
+          "en": "Six inward channels converge"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.1
+          }
+        },
+        "lines": [
+          0,
+          1
+        ]
+      },
+      {
+        "assetId": "closing-pendant-signal",
+        "alt": {
+          "zh": "暮铃触发星铃的暗路",
+          "en": "Muling activates the inward channel"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.1
+          }
+        },
+        "lines": [
+          2,
+          3
+        ]
+      }
+    ],
+    "finale:B-04": [
+      {
+        "assetId": "closing-final-note",
+        "alt": {
+          "zh": "六地相答，锚室开启",
+          "en": "The ring answers and the anchor opens"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.1
+          }
+        },
+        "lines": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "assetId": "closing-memories-return",
+        "alt": {
+          "zh": "守铃者与暮铃重逢",
+          "en": "The Bellkeeper and Muling reunite"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.1
+          }
+        },
+        "lines": [
+          3,
+          4,
+          5
+        ]
+      }
+    ],
+    "epilogue:E-01": [
+      {
+        "assetId": "closing-harbor-forest-delivery",
+        "alt": {
+          "zh": "航船驶向林地",
+          "en": "Harbor ships reach Rootsleep Forest"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.1
+          }
+        },
+        "lines": []
+      },
+      {
+        "assetId": "closing-couriers-at-library",
+        "alt": {
+          "zh": "飞艇抵达月镜书库",
+          "en": "Sky couriers reach Moonmirror Library"
+        },
+        "durationMs": 5200,
+        "transitionMs": 680,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.025
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.1
           }
         },
         "lines": []

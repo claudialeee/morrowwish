@@ -224,9 +224,11 @@ function install(){
   const win=b.result==="win"&&f.done,root=f.root,same=root===window.State.S,active=host(),valid=same&&active?.view()?.current?.id===f.id;
   let committed=false;
   if(win&&valid&&active.isCurrentAction(f.token)){
-   let supportOK=true;
-   if(f.id==="finale:B-03")for(const n of f.nodes){if(active.snapshot().support.includes(n.region))continue;const r=active.support({region:n.region,action:n.action,verified:true,token:f.token});if(!r?.ok){supportOK=false;break;}}
-   if(supportOK){const r=active.recordEvidence({sceneId:f.id,operation:PHASES[f.id],region:"starfall",verified:true,outcome:"win",token:f.token});committed=!!r?.ok;}
+   const proof={sceneId:f.id,operation:PHASES[f.id],region:"starfall",verified:true,outcome:"win",token:f.token};
+   const r=f.id==="finale:B-03"
+    ?active.commitFinaleVictory({...proof,participants:f.nodes.map(({region,action})=>({region,action}))})
+    :active.recordEvidence(proof);
+   committed=!!r?.ok;
   }
   if(same&&window.State.difficulty()==="casual")window.State.healAllCats?.();
   document.getElementById("cb-finale-hud")?.remove();document.getElementById("battle-ui")?.classList.remove("on");
