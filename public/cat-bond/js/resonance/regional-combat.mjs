@@ -31,9 +31,31 @@ export function inPattern(p,f){
  const dx=p.x2-p.x1,dy=p.y2-p.y1,k=clamp(((f.x-p.x1)*dx+(f.y-p.y1)*dy)/(dx*dx+dy*dy||1),0,1);
  return Math.hypot(f.x-p.x1-k*dx,f.y-p.y1-k*dy)<=p.w/2;
 }
+
+// Original regional scene and manifestation artwork. Render at native canvas scale; no CSS image substitute.
+const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["forest-arena.svg","rootbound.svg"],forge:["emberforge-arena.svg","forge-guardian.svg"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
+const art={};
+function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
+ const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
+ pair.background.src=new URL("../../assets/combat/"+background,import.meta.url).href;pair.enemy.src=new URL("../../assets/combat/"+enemy,import.meta.url).href;art[id]=pair;
+}}
+function drawScene(ctx,W,H,region){
+ const img=art[region]?.background;if(!img?.complete||!img.naturalWidth)return false;
+ const scale=Math.max(W/img.naturalWidth,H/img.naturalHeight),dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
+ ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);return true;
+}
+function drawManifestation(ctx,e,b){
+ const img=art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
+ const size=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62)),bob=Math.sin(b.t*3+e.i)*2;
+ ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();return true;
+}
+
 function install(){
  const BP=window.Battle?.CaptureBattle?.prototype,GP=window.Game?.prototype;
  if(!BP||!GP)return;
+ loadArt();window.CatBondRegionalArt=Object.freeze({drawScene,drawManifestation});
+ const bg=BP.drawArenaBackground;
+ BP.drawArenaBackground=function(ctx,W,H){if(this.regionalCombat&&drawScene(ctx,W,H,this.regionalCombat.region))return;return bg.call(this,ctx,W,H);};
  function notice(b,zh,en){b.game.toast({zh,en});}
  const labels={surge:["潮浪来袭，避开横向水带！","Tidal surge: leave the horizontal lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["熔渣即将落下！","Molten fragments are about to fall!"],gale:["风切线即将贯穿战场！","Gale shear is about to cross the arena!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨正在轮转，避开落点！","Orbital markers are rotating. Keep clear!"]};
  function mount(game,b){
@@ -108,32 +130,52 @@ function install(){
  }
  const start=GP.startBattle;
  GP.startBattle=function(team,wild,opts={}){
-  const region=this._battleTheme?.region,kit=REGION_KITS[region],result=start.call(this,team,wild,opts);
-  if(kit&&!opts.storyEncounter&&!opts.storyBoss&&!opts.masteryChallenge&&this.battle){
+  const region=this._battleTheme?.region,kit=REGION_KITS[region];
+  const canonical=window.State.S.resonance?.schema===1&&window.State.S.resonanceExploration?.location===region;
+  const normal=kit&&!opts.storyEncounter&&!opts.storyBoss&&!opts.masteryChallenge;
+  // Only later optional regional hunts receive a distinct non-collectible manifestation.
+  // The lead wild cat remains the sole capture/reward target. First capture and tutorial stay unchanged.
+  const manifestation=normal&&canonical&&(window.State.S.catchCount||0)>=2&&!opts.pack;
+  const result=start.call(this,team,wild,manifestation?{...opts,pack:[wild,wild]}:opts);
+  if(normal&&this.battle){
    const snapshot=window.State.S.resonance;
-   const supportAvailable=Array.isArray(snapshot?.sanctuaries)&&snapshot.sanctuaries.includes(region);
+   const supportAvailable=canonical&&Array.isArray(snapshot?.sanctuaries)&&snapshot.sanctuaries.includes(region);
    this.battle.regionalCombat={region,kit,next:3.7,cast:null,cycle:0,supportAvailable,supportUsed:false};
+   if(manifestation&&this.battle.enemies[1]){
+    const e=this.battle.enemies[1];e.regionalEnemy=region;e.element=kit.element;e.role=kit.kind==="gale"?"ambusher":kit.kind==="mirror"?"sharpshooter":"skirmisher";
+    e.maxhp=Math.max(45,Math.round(e.maxhp*.48));e.hp=e.maxhp;e.poiseMax=Math.round(e.maxhp*.55);e.poise=e.poiseMax;e.regionalCd=2.6;e.regionalCycle=0;e.rotation=[];e.ultSkill=null;
+   }
    mount(this,this.battle);
   }
   return result;
  };
+ const capture=BP.startCaptureSeq;
+ BP.startCaptureSeq=function(){if(this.regionalCombat&&this.enemies.some(e=>e.regionalEnemy))this._lastDropped=this.enemies[0];return capture.call(this);};
  const update=BP.update;
  BP.update=function(dt){const result=update.call(this,dt);if(this.regionalCombat)tick(this,Math.min(.06,Math.max(0,dt)));return result;};
  const enemyAI=BP.updateEnemyAI;
  BP.updateEnemyAI=function(dt,e,me){
   const r=this.regionalCombat;
-  if(!r)return enemyAI.call(this,dt,e,me);
-  // Preserve native skills and combat physics, specialize engagement per region.
-  const baseSpeed=e.speed,baseRate=e.fireRate,baseRole=e.role;
+  if(!r||!e.regionalEnemy)return enemyAI.call(this,dt,e,me);
+  const baseSpeed=e.speed,baseRole=e.role;
+  if(r.kit.kind==="gale")e.speed*=1.28;
+  if(r.kit.kind==="roots")e.speed*=.84;
+  if(r.kit.kind==="orbit")e.role=e.regionalCycle%2?"sharpshooter":"ambusher";
+  e.rotation=[];e.ultSkill=null;e.specialMeter=-10000;e.fireCd=99999;e.wardCd=99999;
+  try{enemyAI.call(this,dt,e,me);}finally{e.speed=baseSpeed;e.role=baseRole;}
+  e.fireCd=99999;
+  if(!me?.alive)return;e.regionalCd-=dt;if(e.regionalCd>0)return;
+  e.regionalCycle++;e.regionalCd=r.kit.kind==="gale"?2.7:3.5;
+  const a=Math.atan2(me.y-e.y,me.x-e.x),skill={element:r.kit.element,isBasic:true},fire=(angle,speed,mult,kind="ball")=>this.spawnProj(e.x,e.y,angle,speed,e.dmg*mult,"wild",r.kit.color,7,kind,skill);
   switch(r.kit.kind){
-   case "surge":e.role="ambusher";e.speed*=1.13;break;
-   case "roots":e.role="skirmisher";e.speed*=.88;break;
-   case "embers":e.role="elite";e.fireRate*=.9;break;
-   case "gale":e.role="ambusher";e.speed*=1.28;break;
-   case "mirror":e.role="sharpshooter";e.fireRate*=1.14;break;
-   case "orbit":e.role=r.cycle%2?"sharpshooter":"ambusher";break;
+   case "surge":for(let i=-2;i<=2;i++)fire(a+i*.20,168,.47);break;
+   case "roots":for(let i=-1;i<=1;i++)this.spawnProj(e.x,e.y,a+i*.22,138,e.dmg*.55,"wild",r.kit.color,8,"leaf",{element:"grass",isBasic:false,appliesTag:"bind"});break;
+   case "embers":for(let i=-1;i<=1;i++)fire(a+i*.28,220,.62,"forge-slag");break;
+   case "gale":fire(a-.11,325,.66);fire(a+.11,325,.66);break;
+   case "mirror":fire(a,200,.78);e.reflectT=Math.max(e.reflectT||0,.65);break;
+   case "orbit":for(let i=0;i<7;i++)fire(a+i*Math.PI*2/7,165,.42);break;
   }
-  try{return enemyAI.call(this,dt,e,me);}finally{e.speed=baseSpeed;e.fireRate=baseRate;e.role=baseRole;}
+  this.vfx.ring(e.x,e.y,{r0:10,vr:160,life:.45,color:r.kit.color,width:3});
  };
  const drawBattle=BP.draw;
  BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat)draw(this,ctx);return result;};
