@@ -143,9 +143,9 @@
       const f=window.World?.gardenArtworkRect?.(width,height)||{x:0,y:0,width,height};
       const x=f.x+f.width*a.x,y=f.y+f.height*a.y;
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
-      try{const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale:a.scale,time});
+      try{const scale=a.scale*.60;const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale,time});
         if(visible===false)continue;
-        lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*a.scale:y,groundY:y,radius:Math.max(24,a.radius*Math.min(1,width/1000))});}
+        lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*scale:y-30*scale,groundY:y,radius:Math.max(24,a.radius*.75*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }
   }

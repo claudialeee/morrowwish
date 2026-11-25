@@ -331,7 +331,17 @@ function installCatBondSystemMenu(){
   if(menu.hidden)return;
   const title=!window.__CAT_BOND_STARTED__,battle=window.__game?.scene==='battle';
   const active=sel=>native(sel)?.getAttribute('aria-pressed')==='true';
+  const yard=!title&&window.__game?.scene==='yard',world=!title&&window.__game?.scene==='map';
+  const camera=[...document.querySelectorAll('.rw-world:not([hidden]) > .rw-controls button')];
+  const cameraLabels=camera.length===4?[[t('缩小地图','Zoom out')],[t('放大地图','Zoom in')],[t('跟随猫咪','Follow cat')],[t('显示全图','Overview')]]:[[t('缩小地图','Zoom out')],[t('放大地图','Zoom in')],[t('显示全图','Overview')]];
+  const yardActions=yard?[
+    ['yard-map',t('世界地图','World map'),''],['yard-book',t('星铃之书','Resonance Book'),''],
+    ['yard-build',t('家园布置','Garden design'),''],['yard-seek',t('寻找野猫','Find wild cats'),''],
+    ['yard-play',t('逗猫','Play with cats'),''],['yard-feed',t('喂食','Feed cats'),'']
+  ].filter(([id])=>native({'yard-map':'#fab-map','yard-book':'#sg-book-entry','yard-build':'#fab-build','yard-seek':'#fab-seek','yard-play':'#fab-play','yard-feed':'#fab-feed'}[id])):[];
   const rows=[
+    ...yardActions,
+    ...(world?camera.map((button,i)=>['camera-'+i,cameraLabels[i]?.[0]||button.textContent,'']):[]),
     ['language',t('语言','Language'),t('中文','English')],
     ['music',t('背景音乐','Background music'),(window.MorrowwishMusic?.status?.().enabled??active('.mw-settings-music'))?t('开启','On'):t('关闭','Off')],
     ['effects',t('音效','Sound effects'),(window.MorrowwishAudio?.isEnabled?.()??active('.mw-settings-sfx'))?t('开启','On'):t('关闭','Off')],
@@ -349,10 +359,16 @@ function installCatBondSystemMenu(){
     const label=document.createElement('label'),slider=document.createElement('input');label.textContent=name;label.style.cssText='display:flex;align-items:center;gap:8px;justify-content:space-between';slider.type='range';slider.min='0';slider.max='100';slider.value=String(Math.round(value*100));slider.setAttribute('aria-label',name);slider.dataset.audioVolume=fn==='setVolume'?'music':'effects';slider.style.cssText='width:min(45%,130px);min-width:72px;accent-color:#dfc391';const valueText=document.createElement('output');valueText.textContent=slider.value+'%';valueText.style.cssText='min-width:36px;text-align:right;font-size:12px;color:#dfc391';slider.oninput=()=>{window.MorrowwishMusic[fn](Number(slider.value)/100);valueText.textContent=slider.value+'%';};label.append(slider,valueText);levels.append(label);
    }
    menu.querySelector('.cb-system-rows').append(levels);
+   const credit=document.createElement('p');credit.className='cb-music-credit';
+   credit.append(document.createTextNode('Music: Enchanted Valley — Kevin MacLeod (incompetech.com), '));
+   const license=document.createElement('a');license.href='https://creativecommons.org/licenses/by/4.0/';license.target='_blank';license.rel='noopener noreferrer';license.textContent='CC BY 4.0';credit.append(license,document.createTextNode(' · Opus transcode'));
+   menu.querySelector('.cb-system-rows').append(credit);
   }
   menu.querySelectorAll('[data-system]').forEach(btn=>bindMenuPress(btn,async()=>{
    const id=btn.dataset.system,selectors={language:'.mw-settings-language',effects:'.mw-settings-sfx',music:'.mw-settings-music',fullscreen:'#mw-fullscreen-toggle',share:'.mw-settings-share'};
    if(id==='close'){close();toggle.focus();return;}
+   if(id.startsWith('yard-')){const target=native({'yard-map':'#fab-map','yard-book':'#sg-book-entry','yard-build':'#fab-build','yard-seek':'#fab-seek','yard-play':'#fab-play','yard-feed':'#fab-feed'}[id]);close();if(window.__game?.scene==='yard'&&!target?.disabled)target?.click();return;}
+   if(id.startsWith('camera-')){const target=document.querySelectorAll('.rw-world:not([hidden]) > .rw-controls button')[Number(id.slice(7))];close();if(window.__game?.scene==='map'&&!target?.disabled)target?.click();return;}
    if(id==='slots'){close();window.CatBondCloudSave?.openSlots?.();return;}
    if(id==='skills'){close();window.__game?.toggleBattleSkillGuide?.(true);return;}
    if(id==='title'){

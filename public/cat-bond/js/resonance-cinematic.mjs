@@ -138,7 +138,7 @@ export function mountResonanceCinematics({root,rendererFactory,engine,campaign,m
   const renderer=rendererFactory(root,{language,onLanguageChange,onCheckpoint:snapshot=>{const run=active;if(run&&valid(run))onCheckpoint?.({slot:run.slot,revision:run.revision,snapshot});},onComplete:e=>resolve(e,false),onSkip:e=>resolve(e,true),onError:e=>{active=null;onError?.(e)}});
   const syncLanguage=()=>renderer.setLanguage?.(typeof language==='function'?language():language||'zh');
   if(typeof window!=='undefined')window.addEventListener('morrowwish-language-change',syncLanguage);
-  async function playCurrent(resume=null){
+  async function playCurrent(resume=null,{skip=false}={}){
     if(disposed)return bad('disposed');
     const id=++sequence;renderer.stop();active=null;
     const view=engine.view(),result=buildCanonicalScene({view,campaign,manifest,staging,openingRelease});
@@ -159,6 +159,7 @@ export function mountResonanceCinematics({root,rendererFactory,engine,campaign,m
         if(!Number.isInteger(index)||index<0||index>=result.scene.frames.length||!Number.isFinite(checkpoint.elapsedMs)||checkpoint.elapsedMs<0){active=null;return report('invalid-cinematic-checkpoint');}
         checkpoint={...checkpoint,frameIndex:index,elapsedMs:Math.min(checkpoint.elapsedMs,Math.max(0,result.scene.frames[index].durationMs-1))};
       }
+      if(skip&&openingRelease&&/^prologue:P-0[123]$/.test(run.id)){resolve({sceneId:run.id},true);return {ok:true,sceneId:run.id};}
       renderer.register(result.scene);
       const started=checkpoint?renderer.restore(checkpoint):renderer.play(run.id);
       if(started===false){active=null;return report('cinematic-start-failed');}

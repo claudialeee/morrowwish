@@ -430,7 +430,7 @@
       this.nodes.pause.disabled=!this.frameReady;
       this.nodes.skip.disabled=!this.frameReady;
       this.nodes.skip.hidden = !this.scene?.allowSkip;
-      this.nodes.continue.textContent = this.frameIndex < (this.scene?.frames?.length || 1) - 1
+      this.nodes.continue.textContent = (this.scene?.openingFlow&&!this.scene.openingFinal)||this.frameIndex < (this.scene?.frames?.length || 1) - 1
         ? (lang === 'zh' ? '继续' : 'Continue')
         : (lang === 'zh' ? '完成' : 'Finish');
       this.nodes.continue.hidden = !this.scene;

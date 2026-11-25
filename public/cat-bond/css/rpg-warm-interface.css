@@ -142,3 +142,65 @@
  outline:2px solid #785789;outline-offset:2px;
 }
 #stage .sg-prologue-guide :is(h2,h3,strong,p){color:#493948}
+
+/* Immersive exploration chrome: one menu, one control system. Legacy buttons
+   remain in the DOM because their existing handlers enforce gameplay rules. */
+#stage.cb-sunlit-garden #yard-actions,
+html.cb-cg #stage.cb-sunlit-garden #cg-yard-dock>#yard-actions,
+#stage.cb-sunlit-garden .sg-hotspot-facilities{display:none!important}
+#stage .rw-world:not([hidden])>.rw-controls:not(.rw-puzzle-controls){display:none!important}
+#stage .cb-system-card{overflow:auto!important;overscroll-behavior:contain;max-height:100%}
+#stage .cb-music-credit{grid-column:1/-1;font:11px/1.4 system-ui;color:#675638;margin:4px 0}
+#stage .cb-music-credit a{color:inherit;text-decoration:underline}
+#stage :is(.rw-world,.sg-prologue-guide,.cb-system-card) button:not([data-note]),
+#stage #map-menu:not([hidden]),#stage #cb-system-toggle,
+#stage .rw-atlas-menu summary{
+ box-sizing:border-box;min-height:44px!important;padding:8px 14px!important;
+ border:1px solid #aa8c59!important;border-radius:9px!important;
+ background:#f5e8cb!important;color:#493e2b!important;
+ font:650 13px/1.25 system-ui,sans-serif!important;text-shadow:none!important;box-shadow:0 2px 5px #503c241c!important;
+}
+#stage :is(.rw-world,.sg-prologue-guide,.cb-system-card) button:not([data-note]):enabled:hover,
+#stage #map-menu:not([hidden]):hover,#stage #cb-system-toggle:hover,
+#stage .rw-atlas-menu summary:hover{background:#e9d7b0!important}
+#stage :is(.rw-world,.sg-prologue-guide,.cb-system-card) button:disabled{opacity:.48!important}
+#stage .cb-system-card header button{min-width:44px}
+#stage .rw-world .rw-fit-rail button{min-height:44px!important}
+#stage .rw-world:is(.rw-region-compact,.rw-atlas-mode):not([hidden]){
+ grid-template-rows:auto minmax(0,1fr)!important;gap:4px!important;
+ padding:4px 6px max(6px,env(safe-area-inset-bottom,0px))!important;
+ background:#f7efdf!important;
+}
+#stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-shell{
+ grid-area:2/1/3/-1!important;position:relative;min-height:0;max-width:none!important;
+ border:0!important;border-radius:9px;overflow:hidden;
+ background:#e7dac3;
+}
+#stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-head{
+ padding:0 0 3px!important;gap:6px;margin:0!important;
+}
+#stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-head .rw-brand small{display:none}
+#stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-region-toggle{
+ position:absolute;left:14px;bottom:14px;z-index:3;
+}
+#stage .rw-world.rw-atlas-mode>.rw-atlas-rail{
+ position:absolute;left:14px;bottom:14px;z-index:3;width:auto!important;
+}
+#stage .rw-region-compact>.rw-fit-rail{bottom:66px!important;z-index:4}
+#stage .rw-world.rw-region-compact>.rw-shell .rw-surface{
+ max-width:none!important;max-height:none!important;
+ width:min(100cqw,calc(100cqh * 1.77777778))!important;height:auto!important;
+ outline:0!important;border-radius:0!important;
+}
+@media (orientation:landscape) {
+ #stage .rw-world.rw-region-compact>.rw-shell .rw-surface:not([data-camera="[1,0,0]"]){
+  width:max(100cqw,calc(100cqh * 1.77777778))!important;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+ }
+}
+@media (orientation:portrait) {
+ #stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-shell{place-items:start center}
+ #stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-shell .rw-surface{width:100%!important;max-height:100%!important}
+}
+#stage #cb-canonical-opening .cbcp-progress{visibility:hidden}
+#stage #cb-canonical-opening .cbcp-heading .cbcp-kicker{display:none}
+
