@@ -1,8 +1,11 @@
 // Canonical NPC presence and companion presentation adapter.
 // Does not duplicate quest, trust, region progression, or the Muling arc.
 import {campaign} from "./campaign.mjs";
+import {homeConversation} from "./home-conversations.mjs";
+import {mountDialogue} from "./dialogue-ui.mjs";
 import {mountHomeConversation} from "./home-conversations.mjs";
 const root=new URL("../../assets/npc/",import.meta.url);
+const npcArtRoot=root;
 const load=name=>{const img=new Image();img.src=new URL(name,root).href;return img};
 const frames=[load("muling-follow-sprite.svg"),load("muling-follow-step-a.svg"),load("muling-follow-step-b.svg")];
 const residentImages=new Map();
@@ -26,7 +29,30 @@ function drawMuling(ctx,{x,y,scale=1,time=0,moving=false,face=1}){
 }
 function install(){
  const api=window.CatBondResonance;if(!api)return;
- let follower=null,lastSlot=null,followerDrawn=false;
+ let follower=null,lastSlot=null,followerDrawn=false,home=null;
+ function closeHome(){
+  if(!home)return;
+  const active=home;home=null;active.dialogue?.dispose();active.root.remove();
+ }
+ function showHome(id){
+  if(window.__game?.scene!=="yard"||!api.view().ending)return false;
+  const owner=window.State.S,scene=homeConversation(api.snapshot(),id);
+  if(!scene)return false;
+  closeHome();api.close();
+  const root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";
+  root.dataset.homeConversation=id;
+  document.getElementById("stage").append(root);
+  const session={root,dialogue:null};home=session;let cursor=0;
+  const valid=()=>home===session&&owner===window.State.S&&window.__game?.scene==="yard";
+  const view=()=>({current:valid()?scene:null,lineReady:true,cursor,choice:null,objective:[]});
+  const finish=()=>queueMicrotask(()=>{if(home===session&&cursor>=scene.lines.length)closeHome()});
+  session.dialogue=mountDialogue({root,campaign,engine:{view,nextLine:()=>valid()&&cursor<scene.lines.length?(cursor++,{ok:true}):{ok:false,reason:"stale-home-conversation"},choose:()=>({ok:false})},
+   language:()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en",resolvePortrait:id=>id==="muling"?new URL("../cinematics/characters/muling/traveler-neutral.webp",npcArtRoot).href:new URL(id+"-painted.webp",npcArtRoot).href,
+   onPersist:()=>{},onClose:closeHome,onAwaitAction:finish,onLanguage:value=>window.MorrowwishI18n?.set?.(value)});
+  return true;
+ }
+ window.addEventListener("cat-bond-active-save-changed",closeHome);
+ window.addEventListener("cat-bond-resonance-changed",()=>{if(home&&window.__game?.scene!=="yard")closeHome()});
  function drawFollower(ctx,{x,y,time,moving=false,face=1,scale=1}){
   if(!api.isMulingFollowing()){follower=null;followerDrawn=false;return false}
   const slot=window.State.S;if(slot!==lastSlot){lastSlot=slot;follower=null}
@@ -38,6 +64,7 @@ function install(){
  function interactFollower({x,y,playerX,playerY,region,radius=36,reach=120}){if(!followerHit(x,y,radius)||Math.hypot(playerX-follower.x,playerY-follower.y)>reach)return false;return talk("muling",region)}
  function talk(id,region,requestedScene){
   const v=api.view();if(requestedScene&&requestedScene!==v.current?.id)return false;
+  if(region==="garden"&&v.ending)return showHome(id);
   if(region==="garden"&&v.ending)return mountHomeConversation(id,api);
   const r=v.current?api.recordNPC({sceneId:v.current.id,npcId:id,region}):{ok:false};
   if(r.ok){api.showCurrent();return true}

@@ -49,6 +49,7 @@ function install(){
  }
  window.addEventListener("cat-bond-resonance-npc-profile",e=>{const p=e.detail;if(p?.id!=="muling")return;const a=p.ambient?.find(a=>ambientGames[a.id]);if(a)open(p,a)});
  window.addEventListener("morrowwish-language-change",()=>{if(overlay&&!drag)render()});
+ window.addEventListener("cat-bond-active-save-changed",close);
  window.addEventListener("cat-bond-resonance-changed",()=>{if(overlay&&(slot!==window.State.S||!api.isCurrentAction(token)))close()});
 }
 if(document.readyState==="complete")install();else document.addEventListener("DOMContentLoaded",install,{once:true});
