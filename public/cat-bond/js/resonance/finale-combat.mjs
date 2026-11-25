@@ -50,6 +50,10 @@ export function supportEffects(profile,project,{bonded=false,pledge=false}={}){
  };
  let speed=0,shield=0;
  for(const method of new Set(methods)){const t=tactics[method];if(t){speed+=t[0];shield+=t[1];}}
+ // Actual ordered cargo receipts supplied by the Starfall adapter.
+ const cargoTactics={"beacon-supply-vessel":[.12,3],"herbs-waterway-map":[0,4],"cooling-plans-herbs":[0,5],"pumps-tools":[.24,0],"wind-vanes-flight-parts":[.24,0],"wind-data-airship-route":[.18,1],"courier-route":[.28,0],"archived-flight-maps":[.16,2],"star-chart-coordinates":[.26,0],"astronomical-observations":[.16,2],"navigation-bell-compass":[.24,1],"beacon-response":[0,4]};
+ for(const id of new Set(Array.isArray(profile?.received)?profile.received:[])){const effect=cargoTactics[id];if(effect){speed+=effect[0];shield+=effect[1];}}
+
  const trust=Object.values(profile?.trust||{}).reduce((n,v)=>n+(Number.isFinite(v)?v:0),0);
  const level=Number.isInteger(project?.level)?Math.max(0,Math.min(3,project.level)):0;
  const visits=level&&Number.isInteger(project?.visits)?Math.max(0,Math.min(4,project.visits)):0;
@@ -98,7 +102,7 @@ function install(){
  const sceneTitle={"finale:B-01":["逆响守铃者","The Reverse Bellkeeper"],"finale:B-02":["空白回响","The Hollow Echo"],"finale:B-03":["六音归环","Six Notes Return"]};
  function available(game,id){
   const h=host(),v=h?.view?.(),root=window.State.S;
-  return typeof h?.captureAction==="function"&&typeof h?.isCurrentAction==="function"&&game?.scene==="map"&&!game.battle&&v?.current?.id===id&&v.ring===true&&v.objective.includes(PHASES[id])&&v.melodies?.length===6&&root.resonanceExploration?.location==="starfall";
+  return typeof h?.captureAction==="function"&&typeof h?.isCurrentAction==="function"&&game?.scene==="map"&&!game.battle&&v?.current?.id===id&&v.ring===true&&v.objective.includes(PHASES[id])&&v.melodies?.length===6&&v.support?.length===6&&v.support.every(profile=>profile.ready===true)&&root.resonanceExploration?.location==="starfall";
  }
  function prep(game,id){
   if(!available(game,id))return false;
