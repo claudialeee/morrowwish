@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';import fs from 'node:fs';import crypto f
 const path='public/cat-bond/assets/quality-audio/';
 const m=JSON.parse(fs.readFileSync(path+'premium-manifest.json'));
 const c=JSON.parse(fs.readFileSync('docs/cat-bond-rpg/premium-soundtrack-catalog.json'));
-assert.deepEqual(m.scenes,c.scenes);assert.equal(Object.keys(m.tracks).length,17);
+assert.deepEqual(m.scenes,c.scenes);assert.deepEqual(Object.keys(m.tracks).sort(),Object.keys(c.tracks).sort());assert.equal(Object.keys(m.scenes).length,25);assert.equal(m.scenes.title,'tomorrow');assert.equal(m.scenes.battle,'jubilee');assert.equal(m.scenes.starfall,'golden-hour');
 assert.equal(new Set(['harbor','forest','forge','sky','library','starfall'].map(x=>m.scenes[x])).size,6);
 for(const [id,e] of Object.entries(m.tracks)){
  assert.equal(e.title,c.tracks[id].title);assert.equal(e.license,'CC BY 4.0');assert.equal(e.source,c.tracks[id].source);

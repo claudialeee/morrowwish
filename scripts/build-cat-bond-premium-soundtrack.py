@@ -59,6 +59,6 @@ with tempfile.TemporaryDirectory() as tmp:
         print(key,results[key]["seconds"],results[key]["integratedLUFS"],results[key]["truePeakDBTP"],flush=True)
 assert set(results)==set(CAT["tracks"])
 assert sum(x["bytes"] for x in results.values())<=100*1024*1024,"Candidate music package exceeds 100 MiB"
-manifest={"schema":1,"review":"candidate-not-listening-approved","licenseUrl":CAT["licenseUrl"],"scenes":CAT["scenes"],"tracks":results}
+manifest={"schema":1,"review":CAT["review"],"licenseUrl":CAT["licenseUrl"],"scenes":CAT["scenes"],"tracks":results}
 (OUT/"premium-manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
 print("All assets decoded and measured; subjective listening is still required.")
