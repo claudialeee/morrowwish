@@ -47,3 +47,14 @@ jobs:
             /tmp/cat-bond-rpg-server.log
           if-no-files-found: warn
           retention-days: 5
+      - name: Preserve reproducible local game snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-rpg-source-snapshot
+          path: |
+            public/cat-bond/**
+            public/*.js
+            public/*.css
+            public/icons/**
+          retention-days: 3

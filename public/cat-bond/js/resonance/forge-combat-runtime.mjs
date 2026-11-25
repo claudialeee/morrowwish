@@ -5,7 +5,7 @@ if(!window.Battle?.CaptureBattle||!window.Game)return;
 const BP=window.Battle.CaptureBattle.prototype,GP=window.Game.prototype;
 const baseUrl=new URL("../../assets/combat/",import.meta.url);
 const art={background:new Image(),guardian:new Image(),jinpo:new Image(),xiaomao:new Image()};
-for(const [key,file] of Object.entries({background:"emberforge-arena.svg",guardian:"forge-guardian.svg",jinpo:"jinpo-portrait.svg",xiaomao:"xiaomao-portrait.svg"})){
+for(const [key,file] of Object.entries({background:"emberforge-painted.webp",guardian:"forge-guardian.svg",jinpo:"jinpo-portrait.svg",xiaomao:"xiaomao-portrait.svg"})){
   art[key].decoding="async";art[key].src=new URL(file,baseUrl).href;
 }
 const tr=(zh,en)=>window.MorrowwishI18n?.get?.()==="zh"?zh:en;
@@ -138,7 +138,7 @@ BP.finish=function(win){
 function drawBackground(ctx,W,H,b){
   const img=art.background;
   if(img.complete&&img.naturalWidth){
-    const scale=Math.max(W/1920,H/1080),dw=1920*scale,dh=1080*scale;
+    const iw=art.background.naturalWidth,ih=art.background.naturalHeight,scale=Math.max(W/iw,H/ih),dw=iw*scale,dh=ih*scale;
     ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
   }else{
     const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#172532");g.addColorStop(.65,"#574037");g.addColorStop(1,"#1a222a");

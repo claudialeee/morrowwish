@@ -33,7 +33,7 @@ export function inPattern(p,f){
 }
 
 // Original regional scene and manifestation artwork. Render at native canvas scale; no CSS image substitute.
-const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["forest-arena.svg","rootbound.svg"],forge:["emberforge-arena.svg","forge-guardian.svg"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
+const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["forest-arena.svg","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian.svg"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
 const art={};
 function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
