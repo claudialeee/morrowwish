@@ -689,12 +689,13 @@ function renderCloudPanel(){
   '<div class="cb-cloud-body"></div></section>';
  (document.fullscreenElement||document.getElementById('stage')||document.body).append(overlay);
  const body=overlay.querySelector('.cb-cloud-body');
- let busy=false, lastMessage='', lastConflict=false;
+ let busy=false, lastMessage='', lastConflict=[];
  const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
  overlay.querySelector('.cb-cloud-close').onclick=close;
  overlay.querySelector('[data-modal-language]')?.addEventListener('click',()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh'));
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
- function render(status='',conflict=false){
+ function render(status='',conflict=[]){
+  conflict=Array.isArray(conflict)?conflict.filter(id=>SAVE_SLOT_IDS.includes(id)):[];
   lastMessage=status;lastConflict=conflict;
   const enteredCode=body.querySelector('[data-recovery-code]')?.value||'';
   const token=localStorage.getItem(CLOUD_KEY)||'';
@@ -710,8 +711,10 @@ function renderCloudPanel(){
     '<label class="cb-cloud-label">'+t('恢复码（请妥善保管）','Recovery code — keep it safe')+'</label>'+
     '<div class="cb-cloud-code-row"><code>'+esc(CODE_PREFIX+token)+'</code><button type="button" data-copy-code>'+t('复制','Copy')+'</button></div>'+
     '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-cloud="sync">'+t('同步全部存档','Sync all slots')+'</button>'+
-    '<button class="cb-cloud-secondary" data-cloud="restore">'+t('读取云端存档','Load cloud slots')+'</button>'+
-    (conflict?'<button class="cb-cloud-secondary" data-cloud="overwrite">'+t('用本机覆盖云端','Overwrite cloud with this device')+'</button>':'')+'</div>'+
+    '<button class="cb-cloud-secondary" data-cloud="restore">'+t('读取全部云端存档','Load all cloud slots')+'</button></div>'+
+    conflict.map(id=>'<div class="cb-cloud-conflict-row"><strong>'+t('存档位 ','Slot ')+id.slice(-1)+' · '+t('版本冲突','Version conflict')+'</strong>'+
+     '<button type="button" data-cloud="restore:'+id+'">'+t('读取此云存档','Load this cloud slot')+'</button>'+
+     '<button type="button" data-cloud="overwrite:'+id+'">'+t('仅覆盖此云存档','Overwrite this cloud slot')+'</button></div>').join('')+
     importCode+
     '<p class="cb-cloud-footnote">'+t('每个存档位有独立云端版本号。发生冲突时，必须明确选择读取云端或用本机覆盖。','Each slot has its own cloud revision. On conflict, explicitly choose whether to load cloud data or overwrite it with this device.')+'</p>';
   }else{
@@ -739,7 +742,7 @@ function renderCloudPanel(){
     const result=await syncNow(false);
     render(result.ok?t('云存档已启用，所有已有存档已同步。','Cloud save enabled; all existing slots were synced.')
       :result.empty?t('云存档已启用。开始冒险后会自动同步。','Cloud save enabled. New progress will sync automatically.')
-      :t('云存档已启用，但同步未完成。请检查网络后重试。','Cloud save is enabled, but sync did not finish. Check your connection and retry.'),!!result.conflict);
+      :t('云存档已启用，但同步未完成。请检查网络后重试。','Cloud save is enabled, but sync did not finish. Check your connection and retry.'),result.slots||[]);
     return;
    }
    if(action==='connect'){
@@ -758,15 +761,22 @@ function renderCloudPanel(){
     render(result.ok?t('同步成功。','All available slots synced successfully.')
       :result.conflict?t('部分存档存在云端冲突。请选择读取云端，或明确覆盖云端。','Some slots have cloud conflicts. Choose Load cloud or explicitly overwrite cloud.')
       :result.empty?t('当前还没有可同步的游戏进度。','There is no game progress to sync yet.')
-      :t('同步失败，请检查网络后重试。','Sync failed. Check your connection and retry.'),!!result.conflict);
+      :t('同步失败，请检查网络后重试。','Sync failed. Check your connection and retry.'),result.slots||[]);
     return;
    }
-   if(action==='overwrite'){
-    if(!confirm(t('将使用本机三个存档位的内容覆盖云端对应存档。确定继续吗？','This will overwrite each matching cloud slot with this device’s save. Continue?')))return;
-    say(t('正在以本机版本覆盖云端…','Overwriting cloud slots with this device…'));
-    const result=await syncNow(true);
-    render(result.ok?t('云端存档已更新。','Cloud slots updated successfully.')
-      :t('覆盖未完成，请检查网络或稍后重试。','Overwrite did not finish. Check your connection and retry.'),!!result.conflict);
+   if(action.startsWith('overwrite:')||action.startsWith('restore:')){
+    const [mode,id]=action.split(':');
+    if(!SAVE_SLOT_IDS.includes(id))return;
+    if(!confirm(mode==='overwrite'?t('确认仅用本机版本覆盖云端存档位 ','Overwrite only cloud slot ')+id.slice(-1)+'?':
+      t('确认仅用云端版本替换本机存档位 ','Replace only local slot ')+id.slice(-1)+'?'))return;
+    if(mode==='overwrite'){
+      const result=await syncNow(true,[id]);
+      const remaining=result.ok?lastConflict.filter(x=>x!==id):[...new Set([...lastConflict,id])];
+      render(result.ok?t('指定云存档已更新。','Selected cloud slot updated.'):t('覆盖未完成，请重试。','Overwrite did not finish. Retry.'),remaining);
+    }else{
+      await restoreOneWithToken(token,id);
+      render(t('指定云存档已读取。','Selected cloud slot restored.'),lastConflict.filter(x=>x!==id));
+    }
     return;
    }
    if(action==='restore'){
@@ -844,6 +854,36 @@ async function restoreWithToken(token){
  try{
   if(syncPromise)await syncPromise;
   return await restoreCloudBook(token);
+ }finally{
+  restoringCloud=false;
+  if(pendingSyncSlots.size)queueSync([...pendingSyncSlots]);
+ }
+}
+async function restoreOneWithToken(token,id){
+ if(restoringCloud)throw Error(t('正在读取云存档，请稍候。','A cloud restore is already running.'));
+ if(!SAVE_SLOT_IDS.includes(id))throw Error('Invalid save slot');
+ restoringCloud=true;clearTimeout(syncTimer);
+ try{
+  if(syncPromise)await syncPromise;
+  const remote=await fetchCloud(token,id);
+  if(!remote.exists)throw Error('Cloud save not found');
+  const parsed=JSON.parse(await decrypt(remote,token));
+  if(parsed?.version!==3||parsed.slotId!==id)throw Error('Cloud slot mismatch');
+  const deletion=parsed.deleted===true?{deletedAt:parsed.deletedAt}:null;
+  if(!deletion&&!validSlotPayload(parsed.data))throw Error('Invalid cloud save');
+  const result=State.applyRemoteSaveSlot(id,deletion?null:{data:parsed.data,savedAt:parsed.savedAt||remote.updatedAt},deletion);
+  if(!result?.ok)throw Error(t('本机存档未替换。','Local slot was not replaced.'));
+  pendingSyncSlots.delete(id);
+  const reload=!!window.__CAT_BOND_STARTED__&&State.activeSlot()===id;
+  if(reload)State.hardReset();
+  localStorage.setItem(cloudRevisionKey(id),String(remote.revision||0));
+  localStorage.setItem(cloudSyncTimeKey(id),String(remote.updatedAt||Date.now()));
+  if(reload){
+   if(deletion)sessionStorage.removeItem('catbond_resume_slot_v1');
+   else sessionStorage.setItem('catbond_resume_slot_v1',id);
+   location.reload();
+  }
+  return result;
  }finally{
   restoringCloud=false;
   if(pendingSyncSlots.size)queueSync([...pendingSyncSlots]);

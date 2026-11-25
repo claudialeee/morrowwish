@@ -594,6 +594,25 @@ function deleteSaveSlot(id, options = {}) {
   catch (_) { try { localStorage.removeItem(SAVE_BACKUP_KEY); } catch (_) {} }
   return {ok:true, slotId:id};
 }
+function applyRemoteSaveSlot(id, entry, deletion = null) {
+  if (!SAVE_SLOT_IDS.includes(id)) return {ok:false,reason:'invalid_slot'};
+  if (!entry && (!deletion || !Number.isFinite(deletion.deletedAt) || deletion.deletedAt<=0)) return {ok:false,reason:'invalid_data'};
+  const book=migrateLegacySave();
+  book.deleted={...book.deleted};
+  if(entry){
+    if(!isSaveObject(entry.data))return {ok:false,reason:'invalid_data'};
+    try{book.slots[id]=makeSlotRecord(entry.data,entry.savedAt,(Number(book.slots[id]?.revision)||0)+1);}
+    catch(error){return {ok:false,reason:'invalid_data'};}
+    delete book.deleted[id];
+  }else{
+    delete book.slots[id];
+    book.deleted[id]={deletedAt:deletion.deletedAt};
+  }
+  const result=writeSlots(book);
+  if(!result.ok)return result;
+  if(!entry)try{localStorage.setItem(SAVE_BACKUP_KEY,JSON.stringify(book));}catch(_){try{localStorage.removeItem(SAVE_BACKUP_KEY);}catch(_){}}
+  return {ok:true,slotId:id,deleted:!entry};
+}
 function replaceSaveSlots(entries, activeId, deletedEntries = {}) {
   if (!isSaveObject(entries)) return { ok: false, reason: 'invalid_slots' };
   const slots = {};
@@ -658,6 +677,7 @@ const SaveManager = Object.freeze({
   startNew: startNewGame,
   importSlot: importSaveSlot,
   replaceSlots: replaceSaveSlots,
+  applyRemoteSlot:applyRemoteSaveSlot,
   deleteSlot: deleteSaveSlot,
   getDeletedSlot: deletedSaveSlot
 });
@@ -791,7 +811,7 @@ window.State = {
   makeCat, addXp, xpToNext, catPower, bondTier, catName,
   save, load, hardReset, applyIdle, dailyAvailable, claimDaily,
   listSaveSlots, startNewGame, loadSlot, saveToSlot, setActiveSlot, activeSlot, SAVE_SLOT_IDS, SAVE_SLOTS_KEY, ACTIVE_SLOT_KEY,
-  getSaveSlot: SaveManager.getSlot, importSaveSlot, replaceSaveSlots, registerSaveAdapter, deleteSaveSlot, deletedSaveSlot,
+  getSaveSlot: SaveManager.getSlot, importSaveSlot, replaceSaveSlots, registerSaveAdapter, deleteSaveSlot, deletedSaveSlot, applyRemoteSaveSlot,
   difficulty, difficultyMult, setDifficulty, DIFFICULTY_MULTS,
   HEALTH_REGEN_MS, FISH_HEAL_FRACTION, catHpFraction, setBattleHealth,
   healAllCats, useMedkitForHealth, useMedkitForTeam,

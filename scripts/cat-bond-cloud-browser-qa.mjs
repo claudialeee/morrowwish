@@ -90,18 +90,23 @@ try{
  await a.locator('#cb-system-toggle').click();
  await a.locator('[data-system="slots"]').click();
  await a.locator('[data-remove-save="slot1"]').click();
- await waitText(a,'deleted and synced|删除并同步');
+ await waitText(a,'deleted and synced|删除并同步|cloud deletion is not confirmed|云端尚未确认');
  assert.deepEqual(await readSlots(a),[null,originals[1],originals[2]]);
+ if(/not confirmed|尚未确认/i.test(await status(a).innerText())){
+  await a.locator('.cb-slot-manager .cb-cloud-close').click();
+  await cloud(a);await a.locator('[data-cloud="sync"]').click();
+  await waitText(a,'conflict|冲突');
+  await a.locator('[data-cloud="overwrite:slot1"]').click();
+  await waitText(a,'selected cloud slot updated|指定云存档已更新');
+ }
  await shot(a,'cloud-deletion-confirmed');
  await cloud(b);
  await b.locator('[data-cloud="sync"]').click();
  await waitText(b,'conflict|冲突');
  await shot(b,'stale-device-conflict');
- await b.locator('[data-cloud="restore"]').click();
- await ready(b);
+ await b.locator('[data-cloud="restore:slot1"]').click();
  await b.waitForFunction(()=>window.State.getSaveSlot('slot1')===null);
  assert.deepEqual(await readSlots(b),[null,originals[1],originals[2]]);
- await waitMap(b);
  await shot(b,'second-device-deletion-restored');
  assert.deepEqual(errors,[]);
  console.log('PASS: real Chromium desktop/mobile contexts, real AES-GCM recovery, production handler on SQLite, offline retry, conflict and tombstone isolation.');

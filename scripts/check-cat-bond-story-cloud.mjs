@@ -39,7 +39,7 @@ for(const [name,source,needles] of [
  ['cloud save worker helper',serverSource,['const cloudJson=','byteLength=new TextEncoder().encode(raw).byteLength','cat_bond_cloud_saves']],
  ['production live verification',deploySource,['expected_story=','expected_battle=','/api/cat-bond-cloud-save','morrowwish.vercel.app/api/cat-bond-cloud-save']],
  ['Catdex story record',ui,['cb-dex-story-record','story.recordedUid','The Last Page']],
- ['entry points and cache versions',index,['css/style.css?v=three-slot-save-manager-20261124-v1','js/main.js?v=resonance-title-20261124-v5','js/state.js?v=atomic-save-book-20261124-v7','js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v10','id="intro-start"','id="intro-continue"','js/game.js?v=overworld-first-20261124-v2','js/worldmap.js?v=last-page-interactive-overworld-20261124-v5','js/battle.js?v=']],
+ ['entry points and cache versions',index,['css/style.css?v=three-slot-save-manager-20261124-v1','js/main.js?v=resonance-title-20261124-v5','js/state.js?v=atomic-save-book-20261124-v8','js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v11','id="intro-start"','id="intro-continue"','js/game.js?v=overworld-first-20261124-v2','js/worldmap.js?v=last-page-interactive-overworld-20261124-v5','js/battle.js?v=']],
  ['cloud route',worker,['catBondCloudSave(request,env)','/api/cat-bond-cloud-save']],
  ['local save compatibility',state,['catbond_save_v1']]
 ]){
@@ -233,6 +233,12 @@ assert.equal(restoredCloudBook.S.coins,303,'cloud restore must restore the chose
  assert.equal(c.State.getSaveSlot('slot3').data.state.coins,333);
  assert.equal(a.State.startNewGame('slot1'),true,'a deleted slot can be reused');
  assert.equal(a.State.deletedSaveSlot('slot1'),null);
+ assert.equal(a.State.applyRemoteSaveSlot('slot2',{data:{cats:[],coins:777},savedAt:Date.now()}).ok,true);
+ assert.equal(a.State.getSaveSlot('slot2').data.coins,777);
+ assert.equal(a.State.getSaveSlot('slot3').data.state.coins,333);
+ assert.equal(a.State.applyRemoteSaveSlot('slot2',null,{deletedAt:Date.now()}).ok,true);
+ assert.equal(a.State.getSaveSlot('slot2'),null);
+ assert.equal(a.State.getSaveSlot('slot3').data.state.coins,333);
  }
 
 // D1 stores three independent encrypted rows, with independent compare-and-swap revisions.
@@ -308,7 +314,7 @@ assert.ok(story.includes("const cloudRevisionKey=id=>'catbond_cloud_revision_v2_
 assert.ok(story.includes('State.replaceSaveSlots(entries'),'cloud restore must atomically replace the local save book');
 assert.ok(story.includes('deleted:true,deletedAt:deletion.deletedAt'),'cloud deletion must use an encrypted per-slot tombstone');
 assert.ok(story.includes('slotId:id,expectedRevision:expected'),'cloud uploads must target one explicit slot');
-assert.ok(story.includes('data-cloud="overwrite"'),'cloud conflict resolution must offer an explicit local overwrite action');
+assert.ok(story.includes('data-cloud="overwrite:')&&story.includes('syncNow(true,[id])')&&story.includes('restoreOneWithToken(token,id)'),'cloud conflicts must resolve per slot without overwriting others');
 assert.ok(story.includes('CLOUD_AUTOSYNC_INTERVAL_MS=60000'),'background cloud autosync must be throttled to protect the D1 quota');
 assert.ok(story.includes('data-remove-save=')&&story.includes('State.deleteSaveSlot(id,{confirmed:true})'),'save manager must offer confirmed deletion while protecting the active slot');
 assert.ok(!main.includes('data-delete-slot'),'title save picker must not expose slot deletion');
