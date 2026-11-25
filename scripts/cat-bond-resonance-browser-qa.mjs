@@ -33,6 +33,10 @@ for(const viewport of [{name:'desktop',width:1440,height:1000},{name:'mobile',wi
  if(cards!==6)throw new Error(viewport.name+': expected six region art cards, got '+cards);
  await page.screenshot({path:path.join(out,viewport.name+'-atlas.png'),fullPage:false});
  await page.locator('.lr-region-card:not([disabled])').first().click();
+ await page.waitForTimeout(500);
+ const afterRegionClick=await page.evaluate(()=>({mode:window.WorldMap?.mode,currentRegion:window.WorldMap?.currentRegion,unlocked:window.WorldMap?.REGIONS?.filter(r=>window.WorldMap.isUnlocked(r.id)).map(r=>r.id),hero:!!document.querySelector(".lr-region-hero"),state:window.State?.S?.lastResonanceWorld?.scene}));
+ console.log(viewport.name+" region click "+JSON.stringify(afterRegionClick));
+ if(!afterRegionClick.hero){const first=window.WorldMap?.REGIONS?.find(r=>window.WorldMap.isUnlocked(r.id));if(first)await page.evaluate(id=>window.WorldMap.enterRegion(id),first.id);}
  await page.waitForSelector('.lr-region-hero');
  await page.waitForSelector('.lr-npc-card');
  const npcPortrait=await page.locator('.lr-npc-card .lr-portrait').first().evaluate(el=>getComputedStyle(el).backgroundImage);
