@@ -38,10 +38,12 @@ for(const profile of [
    const image=new Image();image.src='assets/resonance-world-v2/atlas.webp';await image.decode();
    const harbor=new Image();harbor.src='assets/resonance-world-v2/harbor-mist.webp';await harbor.decode();
    const alternate=getComputedStyle(document.querySelector('.cb-title-landscape'),'::after').backgroundImage;
-   return {background,width:image.naturalWidth,height:image.naturalHeight,alternate,harborWidth:harbor.naturalWidth,harborHeight:harbor.naturalHeight};
+   return {background,width:image.naturalWidth,height:image.naturalHeight,alternate,harborWidth:harbor.naturalWidth,harborHeight:harbor.naturalHeight,repeat:getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundRepeat,size:getComputedStyle(document.querySelector('.cb-title-landscape')).backgroundSize,alternateRepeat:getComputedStyle(document.querySelector('.cb-title-landscape'),'::after').backgroundRepeat};
   });
   assert.match(titleImage.background,/atlas\.webp/);
   assert.match(titleImage.alternate,/harbor-mist\.webp/);
+  assert.ok(titleImage.repeat.split(',').every(v=>v.trim()==='no-repeat')&&titleImage.alternateRepeat.split(',').every(v=>v.trim()==='no-repeat'),'Title artwork never tiles');
+  assert.ok(titleImage.size.split(',').every(v=>v.trim()==='cover'),'Title artwork fills each viewport');
   assert.ok(titleImage.harborWidth>=960&&titleImage.harborHeight>=540,'Alternate painted title background loads at usable resolution');
   assert.ok(titleImage.width>=960&&titleImage.height>=540,'Painted title background loads at usable resolution');
   const bounds=await page.evaluate(()=>{const rect=s=>document.querySelector(s).getBoundingClientRect().toJSON();return {stage:rect('#stage'),start:rect('#intro-start'),next:rect('#intro-continue')};});

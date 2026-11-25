@@ -147,3 +147,6 @@ html body #stage #cb-header-actions #mw-game-settings .mw-settings-share{display
 @keyframes cb-title-harbor{0%,32%,92%,100%{opacity:0}48%,76%{opacity:1}}
 @media(max-width:680px){#stage #intro .cb-title-landscape::after{background-image:linear-gradient(0deg,rgba(10,25,34,.96),rgba(10,25,34,.72) 32%,rgba(10,25,34,.15) 64%,rgba(10,25,34,.08)),url('../assets/resonance-world-v2/harbor-mist.webp');background-position:30% 50%}}
 @media(prefers-reduced-motion:reduce){#stage #intro .cb-title-landscape::after{animation:none;opacity:0}}
+
+/* Every layer must remain full-bleed when the portrait gradient replaces the desktop layers. */
+#stage #intro .cb-title-landscape,#stage #intro .cb-title-landscape::after{background-size:cover!important;background-repeat:no-repeat!important}
