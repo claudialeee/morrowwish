@@ -2405,6 +2405,11 @@ class CaptureBattle {
     this.spawnProj(f.x, f.y, ang, speed, dmg, 'me', col, 9, 'orb', sk, dist / speed + 0.02);
     const p = this.projectiles[this.projectiles.length - 1];
     p.burst = { r: R, dmg, skill: sk, col, tx, ty };  // consumed by burstAt() on expiry
+    // Meteor's visual descent must remain readable even when cast point-blank.
+    // Keep one damage event at the original target/radius; use at least .72s of flight.
+    if(sk?.id==='meteor'){
+      p.life=p.maxLife=Math.max(.72,p.life);p.x=tx;p.y=ty;p.vx=0;p.vy=0;
+    }
     this.vfx.muzzle(f.x, f.y, ang, col);
   }
   // Detonate a lobbed AOE at its landing point: everyone inside R takes the hit.
@@ -4300,7 +4305,7 @@ class CaptureBattle {
       // not collide on contact). Show its target ring; detonate on arrival/expiry.
       if (p.burst) {
         this.vfx.ring(p.burst.tx, p.burst.ty, { r0: p.burst.r, vr: 0, life: 0.08, color: p.burst.col, width: 2 });
-        if (p.life <= 0 || Math.hypot(p.x - p.burst.tx, p.y - p.burst.ty) < 16) { this.burstAt(p); p.life = 0; }
+        if (p.life <= 0 || (p.burst.skill?.id!=='meteor' && Math.hypot(p.x - p.burst.tx, p.y - p.burst.ty) < 16)) { this.burstAt(p); p.life = 0; }
         continue;
       }
       // Intercept at the physical wall plane BEFORE the projectile reaches a
