@@ -120,7 +120,7 @@ function install(){
    const pack=id==="finale:B-01"?[base,...Array(6).fill(base)]:id==="finale:B-02"?[catSp[0],catSp[0],catSp[1]||catSp[0],catSp[1]||catSp[0],base,base]:[base];
    game.startBattle(fighters,base,{storyEncounter:"finale",pack});
    const b=game.battle;if(!b)return;
-   const f={id,root,token:host().captureAction(),revision:host().snapshot().revision,nodes:nodePositions(b.W,b.H,b.topMargin,b.bottomMargin),elapsed:0,cast:null,cooldown:2.8,cycle:0,confirmed:new Set(),done:false,clueOpen:false,lastDuoUse:0,echoQuietUntil:0,wrongUntil:0,wrongCount:0,echoGroups:3};
+   const f={id,root,token:host().captureAction(),revision:host().snapshot().revision,nodes:nodePositions(b.W,b.H,b.topMargin,b.bottomMargin),elapsed:0,cast:null,cooldown:2.8,cycle:0,confirmed:new Set(),verifiedGroups:new Set(),done:false,clueOpen:false,lastDuoUse:0,echoQuietUntil:0,wrongUntil:0,wrongCount:0,echoGroups:3};
    b.resonanceFinale=f;b.storyEncounter=true;b.captureReady=false;
    b.enemies.forEach((e,i)=>{
      e.isBoss=true;e.rotation=[];e.ultSkill=null;e.specialMeter=-10000;e.fireCd=99999;e.reflectT=0;e.wardCd=99999;
@@ -146,13 +146,29 @@ function install(){
   };
   document.getElementById("battle-ui")?.append(el);requestAnimationFrame(()=>positionObjectiveHud(el));
  }
- function verifyCatdex(b){
-  const f=b.resonanceFinale;if(!f?.clueOpen||f.id!=="finale:B-02"||!b.autoMode)return;
-  for(const e of b.liveEnemies()){
-   if(e.finaleActor!=="echo"||e.dexVerified||!e.echoCat||!(window.State.S.dex?.[e.echoCat.species]>0)||!identifyEcho(e.echoHabit,e.echoGap))continue;
-   e.dexVerified=true;
+ // A measured mismatch gives one resonance gain per distinct reply group.
+ // Both manual and auto identification use this path. Repeated taps, opening
+ // the record again and toggling battle mode cannot farm charge.
+ function verifyEchoRecord(b,e){
+  const f=b.resonanceFinale;
+  if(f?.id!=="finale:B-02"||!f.clueOpen||!e.alive||e.finaleActor!=="echo"||e.echoObserved<1||!identifyEcho(e.echoHabit,e.echoGap))return false;
+  const hasRecord=e.echoGroup===2||!!(e.echoCat&&window.State.S.dex?.[e.echoCat.species]>0);
+  if(!hasRecord)return false;
+  e.dexVerified=true;
+  if(!f.verifiedGroups.has(e.echoGroup)){
+   f.verifiedGroups.add(e.echoGroup);
+   const pair=b.duo,partners=pair&&[pair.a.uid,pair.b.uid].every(uid=>b.team.some(x=>x.alive&&x.cat.uid===uid));
+   if(partners){
+    const pledge=window.CatRelations?.memoryList?.(pair.a,pair.b)?.includes("sakura");
+    b.duoCharge=Math.min(100,b.duoCharge+(pledge?30:20));
+   }
    b.vfx.ring(e.x,e.y,{r0:16,vr:150,life:.55,color:"#9edcd2",width:4});
   }
+  return true;
+ }
+ function verifyCatdex(b){
+  const f=b.resonanceFinale;if(!f?.clueOpen||f.id!=="finale:B-02"||!b.autoMode)return;
+  for(const e of b.liveEnemies())if(!e.dexVerified)verifyEchoRecord(b,e);
  }
  function paint(b){
   const f=b.resonanceFinale,el=document.getElementById("cb-finale-hud");if(!el||!f)return;
@@ -182,7 +198,7 @@ function install(){
   clue.setAttribute("aria-expanded",String(f.clueOpen));
   const focus=el.querySelector("[data-finale-focus]");
   focus.hidden=!second||!f.clueOpen||b.autoMode;
-  if(!focus.hidden){const candidates=b.liveEnemies().filter(e=>e.echoObserved&&e.finaleActor==="echo");const signature=candidates.map(e=>e.i).join(",");if(focus.dataset.signature!==signature){focus.dataset.signature=signature;focus.replaceChildren();for(const e of candidates){const button=document.createElement("button");button.type="button";button.dataset.echo=String(e.i);button.onclick=()=>{if(b.done||!e.alive||e.echoGap===null)return;b._lockIdx=e.i;if(identifyEcho(e.echoHabit,e.echoGap)){if(e.echoCat&&window.State.S.dex?.[e.echoCat.species]>0)e.dexVerified=true;notice(b,"识别正确！攻击错误回响。","Correct identification! Strike the false reply.");b.vfx.ring(e.x,e.y,{r0:16,vr:150,life:.55,color:"#9edcd2",width:4});}else wrongReply(b,e);paint(b)};focus.append(button);}}for(const button of focus.children){const i=Number(button.dataset.echo),group=Math.floor(i/2);button.textContent=tr(["上","中","下"][group]+(i%2?"右":"左"),["Top","Mid","Bottom"][group]+(i%2?" R":" L"));button.setAttribute("aria-pressed",String(b._lockIdx===i));}}
+  if(!focus.hidden){const candidates=b.liveEnemies().filter(e=>e.echoObserved&&e.finaleActor==="echo");const signature=candidates.map(e=>e.i).join(",");if(focus.dataset.signature!==signature){focus.dataset.signature=signature;focus.replaceChildren();for(const e of candidates){const button=document.createElement("button");button.type="button";button.dataset.echo=String(e.i);button.onclick=()=>{if(b.done||!e.alive||e.echoGap===null)return;b._lockIdx=e.i;if(identifyEcho(e.echoHabit,e.echoGap)){const verified=verifyEchoRecord(b,e);notice(b,verified?"识别正确！共鸣蓄力增加。":"节拍异常，攻击错误回响。",verified?"Correct identification! Resonance gained.":"Mismatched rhythm. Strike the false reply.");b.vfx.ring(e.x,e.y,{r0:16,vr:150,life:.55,color:"#9edcd2",width:4});}else wrongReply(b,e);paint(b)};focus.append(button);}}for(const button of focus.children){const i=Number(button.dataset.echo),group=Math.floor(i/2);button.textContent=tr(["上","中","下"][group]+(i%2?"右":"左"),["Top","Mid","Bottom"][group]+(i%2?" R":" L"));button.setAttribute("aria-pressed",String(b._lockIdx===i));}}
   const record=el.querySelector("[data-finale-record]");
   record.hidden=!second||!f.clueOpen;
   if(!record.hidden){
@@ -191,12 +207,12 @@ function install(){
     const echoes=b.enemies.filter(e=>e.echoGroup===group);
     const cat=echoes[0]?.echoCat;
     const area=group===0?tr("上方","Upper pair"):group===1?tr("中间","Middle pair"):tr("下方","Lower pair");
-    if(group===2){const beats=echoes.map(e=>e.echoGap===null?"…":e.echoGap.toFixed(2));return area+" · "+tr("暮铃：第二次铃坠轻响应间隔 1.40 秒","Muling: the second pendant tap follows after 1.40s")+" · "+beats.join(" / ")+"s";}
+    if(group===2){const beats=echoes.map(e=>e.echoGap===null?"…":e.echoGap.toFixed(2)+(e.dexVerified?" ×":""));return area+" · "+tr("暮铃：第二次铃坠轻响应间隔 1.40 秒","Muling: the second pendant tap follows after 1.40s")+" · "+beats.join(" / ")+"s";}
     if(!cat||!(window.State.S.dex?.[cat.species]>0))return area+" · "+tr("Catdex 暂无记录","No Catdex record");
     const intervals=echoes.map(e=>e.echoGap===null?"…":e.echoGap.toFixed(2)+(e.dexVerified?" ×":""));
     return area+" · "+window.State.catName(cat)+" · "+tr("习惯 ","Habit ")+echoHabit(cat).toFixed(2)+"s · "+intervals.join(" / ")+"s";
    });
-   record.textContent=[tr("按从左到右比较实测节拍；验证异常后，对该回响伤害 +25%。","Compare measured beats left to right. Verified mismatch: +25% damage to that echo."),...entries].join(" · ");
+   record.textContent=[tr("按从左到右比较实测节拍；每组首次验证获得合击蓄力，对错误回响伤害 +25%。","Compare beats left to right. Each newly verified group charges the duo and adds 25% damage against its false reply."),...entries].join(" · ");
   }
  }
  function points(b){
@@ -302,15 +318,9 @@ function install(){
   b.vfx.ring(c.x,c.y,{r0:12,vr:220,life:.55,color:"#ddc095",width:6});
  }
  function tick(b,dt){
-  const f=b.resonanceFinale;if(!f||b.done||b.captureSeq||b.duoCinematic||b.ultCinematic||b.game.battleHelpOpen||b.coachHoldsEnemies?.())return;
+  const f=b.resonanceFinale;if(!f||b.done)return;
   if(f.root!==window.State.S||!host()?.isCurrentAction?.(f.token)||host()?.view()?.current?.id!==f.id){b.finish(false);return;}
-  const d=clamp(dt*(b.tempoScale??.64),0,.06);f.elapsed+=d;
-  // Count only active simulation time; do not trap a player in a stalled encounter.
-  if(f.elapsed>145){b._timeCapLoss=true;f.timedOut=true;b.finish(false);return;}
   if(f.id==="finale:B-02"){
-   if(f.lastAuto!==b.autoMode||f.lastLock!==b._lockIdx){f.lastAuto=b.autoMode;f.lastLock=b._lockIdx;paint(b);}
-   const beat=f.elapsed%2.8,prev=(f.elapsed-d)%2.8;
-   const learning=f.clueOpen;
    const duoTriggered=b.duoUses>f.lastDuoUse;
    if(duoTriggered){
     f.lastDuoUse=b.duoUses;
@@ -326,6 +336,15 @@ function install(){
      }
     }
    }
+  }
+  if(b.captureSeq||b.duoCinematic||b.ultCinematic||b.game.battleHelpOpen||b.coachHoldsEnemies?.())return;
+  const d=clamp(dt*(b.tempoScale??.64),0,.06);f.elapsed+=d;
+  // Count only active simulation time; do not trap a player in a stalled encounter.
+  if(f.elapsed>145){b._timeCapLoss=true;f.timedOut=true;b.finish(false);return;}
+  if(f.id==="finale:B-02"){
+   if(f.lastAuto!==b.autoMode||f.lastLock!==b._lockIdx){f.lastAuto=b.autoMode;f.lastLock=b._lockIdx;paint(b);}
+   const beat=f.elapsed%2.8,prev=(f.elapsed-d)%2.8;
+   const learning=f.clueOpen;
    let newClue=false;
    for(const e of b.liveEnemies()){
     const [firstBeat,secondBeat]=rhythm(f.id,e.impostor,e.echoHabit);
@@ -480,7 +499,7 @@ function install(){
   }
   return false;
  }
- function guardSteering(b,fighter){const f=b.resonanceFinale;if(!f||!b.autoMode||fighter!==b.me()||f.id!=="finale:B-03")return null;const n=f.nodes.find(n=>!n.done);if(!n)return null;const dx=n.x-fighter.x,dy=n.y-fighter.y,d=Math.hypot(dx,dy);return d>16?{x:dx/d,y:dy/d}:{x:0,y:0};}
+ function guardSteering(b,fighter){const f=b.resonanceFinale;if(!f||!b.autoMode||fighter!==b.me()||f.id!=="finale:B-03")return null;const n=f.nodes.find(n=>!n.done);if(!n)return null;const dx=n.x-fighter.x,dy=n.y-fighter.y,d=Math.hypot(dx,dy);if(d<=16){fighter._svx=0;fighter._svy=0;return {x:0,y:0};}return {x:dx/d,y:dy/d};}
  window.CatBondFinaleCombat=Object.freeze({prepare:prep,available,drawEnemy,guardSteering});
 }
 if(typeof window!=="undefined")install();
