@@ -14,7 +14,15 @@ try{
    const tr=(en,zh)=>lang==='en'?en:zh;
    const button=(en,zh,scope=page)=>scope.getByRole('button',{name:tr(en,zh),exact:true});
    const scene=id=>page.waitForFunction(v=>window.CatBondResonance?.view()?.current?.id===v,id,{timeout:20000});
-   const shot=async id=>{await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:out+'/'+name+'-'+lang+'-'+id+'.png',animations:'disabled'});shots.push(id)};
+   const shot=async id=>{await page.evaluate(()=>document.fonts.ready);
+    if(name==='portrait'&&['atlas','harbor-exploration'].includes(id)&&await page.locator('link[href*="rpg-warm-interface.css"]').count()){
+     const header=await page.locator('.rw-world:not([hidden])>.rw-head').evaluate(el=>{
+      const title=el.querySelector('.rw-brand strong'),brand=el.querySelector('.rw-brand'),r=el.getBoundingClientRect(),b=brand.getBoundingClientRect(),t=title.getBoundingClientRect();
+      const line=parseFloat(getComputedStyle(title).lineHeight);
+      return {wide:b.width>=r.width*.9,readable:t.height<=line*2+1,buttons:[...el.querySelectorAll(':scope>.rw-button')].every(btn=>{const p=btn.getBoundingClientRect();return p.width>=70&&p.left>=r.left-1&&p.right<=r.right+1&&p.top>=b.bottom-1;})};
+     });assert.deepEqual(header,{wide:true,readable:true,buttons:true},'Portrait region title must use the full header, not wrap one letter at a time');
+    }
+    await page.screenshot({path:out+'/'+name+'-'+lang+'-'+id+'.png',animations:'disabled'});shots.push(id)};
    const dialogue=async id=>{
     const box=page.locator('.res-host[data-scene="'+id+'"]');await box.waitFor();
     let steps=0;

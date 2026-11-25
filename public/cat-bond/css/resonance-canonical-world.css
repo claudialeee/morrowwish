@@ -189,3 +189,13 @@
  #stage .rw-world.rw-fit-wide:not([hidden]){grid-template-columns:minmax(0,1fr) minmax(240px,46%)}
  #stage .rw-fit-rail .rw-world-actions,#stage .rw-fit-rail .rw-regions{grid-template-columns:repeat(auto-fit,minmax(min(76px,100%),1fr))}
 }
+
+/* Actual portrait screenshot: the three regional navigation buttons squeezed
+   Misttide Harbor into a one-character column. Reserve a full title row. */
+@media(max-width:700px) and (orientation:portrait){
+ #stage .rw-world:not(.rw-fit-wide)>.rw-head{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;align-items:center}
+ #stage .rw-world:not(.rw-fit-wide)>.rw-head:has(>.rw-button:nth-child(4)){grid-template-columns:repeat(3,minmax(0,1fr))}
+ #stage .rw-world:not(.rw-fit-wide)>.rw-head>.rw-brand{grid-column:1/-1;min-width:0;gap:1px}
+ #stage .rw-world:not(.rw-fit-wide)>.rw-head .rw-brand strong{font-size:17px;line-height:1.15;overflow-wrap:normal;word-break:normal}
+ #stage .rw-world:not(.rw-fit-wide)>.rw-head>.rw-button{width:100%;max-width:none;min-width:0;min-height:36px;font-size:11px;padding:4px;white-space:normal;overflow-wrap:normal}
+}
