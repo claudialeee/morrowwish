@@ -228,8 +228,8 @@ const UI = {
     window.arcadeMetric?.('bond_yard_placement_preview',{type});
     return true;
   },
-  startBuildingRelocation(index){
-    if(!this.game?.yard?.beginRelocation(index)){this.game.toast(this.isEnglish()?'Wait until the facility is free.':'请等猫咪使用完该设施。');return false;}
+  startBuildingRelocation(index,decorative=false){
+    if(!this.game?.yard?.beginRelocation(index,decorative)){this.game.toast(this.isEnglish()?'Wait until the facility is free.':'请等猫咪使用完该设施。');return false;}
     this.closeAll();this.game._yardPlacementTouchId=null;
     document.getElementById('yard-placement-dock').hidden=false;
     document.body.classList.add('cb-placing-building');this.updateBuildingPlacement();return true;
@@ -244,7 +244,7 @@ const UI = {
       return;
     }
     const en=this.isEnglish(),def=World.BUILDINGS_BY_ID[p.type];
-    const name=en?(World.BUILDING_PRODUCTION?.[p.type]?.nameEn||def?.name||'Structure'):(def?.name||'设施');
+    const name=en?(World.BUILDING_PRODUCTION?.[p.type]?.nameEn||def?.nameEn||def?.name||'Structure'):(def?.name||'设施');
     const compact=window.matchMedia?.('(max-width:700px), (pointer:coarse)')?.matches;
     // One tap/click builds immediately; a touch drag can adjust until release.
     if(p.relocating){status.textContent=name+(en?' · Choose a new location':' · 选择新位置')+(p.valid?(en?' · Ready':' · 可移动'):(en?' · Blocked':' · 有遮挡'));document.getElementById('yard-placement-cancel').textContent=en?'Cancel':'取消';return;}
@@ -258,7 +258,7 @@ const UI = {
   confirmBuildingPlacement(){
     const en=this.isEnglish(),p=this.game?.yard?.placement;
     if(!p||!p.valid)return false;
-    const name=World.BUILDINGS_BY_ID[p.type]?.name||p.type;
+    const def=World.BUILDINGS_BY_ID[p.type],name=(en?(World.BUILDING_PRODUCTION?.[p.type]?.nameEn||def?.nameEn):def?.name)||p.type;
     if(!this.game.yard.confirmPlacement()){
       this.updateBuildingPlacement();
       this.game.toast(en?'Cannot build here':'此处无法建造');
@@ -266,7 +266,7 @@ const UI = {
     }
     this.updateBuildingPlacement();
     this.game.refreshHUD();
-    this.game.toast(p.relocating?(en?'Facility relocated':'设施已移动'):(en?'Placed '+name+' · watch your cats play!':'已建造 '+name+' · 看猫猫过来玩！'));
+    this.game.toast(p.relocating?(en?'Moved '+name:'已移动 '+name):(def?.decorative?(en?'Placed '+name:'已布置 '+name):(en?'Placed '+name+' · watch your cats play!':'已建造 '+name+' · 看猫猫过来玩！')));
     window.MorrowwishAudio?.effect?.('discover');
     return true;
   },
@@ -1477,6 +1477,9 @@ const UI = {
     const en = window.MorrowwishI18n?.get?.() !== 'zh';
     const placed = State.S.yardBuildings || [];
     const coins = State.S.coins || 0;
+    const decor=World.gardenDecorations(),definitions=World.DECORATIONS;
+    const decorCards=definitions.map(def=>`<article class="sg-decor-card"><img src="assets/garden/${def.id}.svg" alt=""><div><strong>${en?def.nameEn:def.name}</strong><p>${en?def.descEn:def.desc}</p><small>${def.cost} ${en?'coins':'金币'}</small></div><button type="button" class="btn gold tiny-btn" data-build="${def.id}" ${coins>=def.cost?'':'disabled'}>${en?'Choose spot':'选位置布置'}</button></article>`).join('');
+    const decorRows=decor.map((d,i)=>{const def=World.BUILDINGS_BY_ID[d.type];if(!def?.decorative)return '';return `<article class="sg-decor-card"><img src="assets/garden/${def.id}.svg" alt=""><strong>${en?def.nameEn:def.name}</strong><div class="sg-decor-actions"><button class="btn ghost tiny-btn" data-decor-move="${i}">${en?'Move':'移动'}</button><button class="btn ghost tiny-btn" data-decor-remove="${i}">${en?'Remove':'移除'}</button></div></article>`}).join('');
     const counts = {};
     for (const p of placed) counts[p.type] = (counts[p.type] || 0) + 1;
     const cards = B.map(def => {
@@ -1532,7 +1535,9 @@ const UI = {
       <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
       <button class="btn ghost" data-garden-projects type="button">${en?'Garden restoration':'花园复兴'}</button>
       <div class="st-list">${cards}</div>
-      ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}`);
+      ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}
+      <section class="sg-decor-section" aria-label="${en?'Garden decoration':'家园装饰'}"><h3>${en?'Decorations':'装饰布置'}</h3><p class="sub">${en?'Make this garden your own. Decorations do not produce resources or affect story progress.':'自由布置属于你的花园。装饰不产出资源，也不改变剧情进度。'}</p><div class="sg-decor-grid">${decorCards}</div>${decorRows?'<h3>'+(en?'Placed decorations':'已布置装饰')+'</h3><div class="sg-decor-grid">'+decorRows+'</div>':''}</section>`);
+
     const host = document.getElementById('panel');
     // Render REAL facility artwork into a scene-style blueprint preview. It
     // matches what players will place in the yard instead of a misleading
@@ -1576,6 +1581,9 @@ const UI = {
       this.openBuild();
     });
     host.querySelectorAll('[data-relocate]').forEach(btn=>btn.onclick=()=>this.startBuildingRelocation(Number(btn.dataset.relocate)));
+    const owner=State.S;
+    host.querySelectorAll('[data-decor-move]').forEach(btn=>btn.onclick=()=>{if(btn.isConnected&&State.S===owner)this.startBuildingRelocation(Number(btn.dataset.decorMove),true)});
+    host.querySelectorAll('[data-decor-remove]').forEach(btn=>btn.onclick=()=>{if(!btn.isConnected||State.S!==owner)return;const r=this.game.yard.removeDecoration(Number(btn.dataset.decorRemove));this.game.refreshHUD();this.game.toast(r.ok?(en?'Removed · +':'已移除 · +')+r.refund+(en?' coins':' 金币'):(en?'Could not save removal.':'未能保存移除操作。'));this.openBuild()});
     host.querySelectorAll('[data-remove]').forEach(btn => btn.onclick = () => {
       const refund = this.game.yard.removeStructure(+btn.dataset.remove);
       this.game.refreshHUD();

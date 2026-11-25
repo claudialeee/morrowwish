@@ -126,3 +126,16 @@ html.cb-cg #stage.rb-canonical.cb-sunlit-garden #cg-yard-dock #sg-book-entry{
  html.cb-cg #stage.rb-canonical.cb-sunlit-garden #cg-yard-dock #yard-actions .fab:not(#sg-book-entry){width:42px!important;height:44px!important}
 }
 #stage #panel.rb-open .rb-reset.cb-reset-armed{background:#ffe9e3;color:#862e2e;border-color:#b85d56}
+
+/* Real placeable garden art, separate from the portable Book. */
+.sg-decor-section{margin:20px 0 8px;padding-top:14px;border-top:1px solid #cbb68c}
+.sg-decor-section h3{color:#304b48;font-family:Georgia,serif}
+.sg-decor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:9px}
+.sg-decor-card{display:grid;grid-template-columns:68px minmax(0,1fr);align-items:center;gap:8px;padding:9px;border:1px solid #ccba96;border-radius:9px;background:#fff8e9;color:#304842}
+.sg-decor-card img{width:68px;height:85px;object-fit:contain;background:radial-gradient(ellipse,#dfe6cb80,transparent 72%)}
+.sg-decor-card p{margin:4px 0;font-size:12px;line-height:1.4;color:#635847}
+.sg-decor-card small{color:#896735}
+.sg-decor-card>button,.sg-decor-actions{grid-column:1/-1}
+.sg-decor-card button{min-height:42px}
+.sg-decor-actions{display:flex;gap:8px}
+.sg-decor-actions button{flex:1}

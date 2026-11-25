@@ -124,7 +124,7 @@ function select(id,focusCraft=false){
  if(!alive())return false;const tab=tabs.find(t=>t[0]===id);if(!tab)return false;
  active.tab=id;window.UI.resetNavigation();
  const run=()=>{if(!alive())return false;if(id==="bag")inventory(focusCraft);else if(id==="records")records();else window.UI[tab[3]](...tab[4]);return true};
- window.UI._navCurrent=run;run();attach();return true
+ window.UI._navCurrent=run;run();attach();if(alive()&&panel()?.classList.contains('open'))window.SunlitGarden?.noteBookVisit?.(id);return true
 }
 function open(id="cats"){
  if(!installed||blocked()||!state()?.cats?.length||panel()?.classList.contains("open"))return false;

@@ -19,7 +19,7 @@
     bond:'<path d="M12 9c-2-4-8-4-9 1s5 9 9 4l4-5c2-3 6-2 6 2s-5 6-8 2"/><path d="m8 4 1 2m6-2-1 2"/>'
   });
   const HOTSPOTS = [
-    {id:'facilities',zh:'家园设施',en:'Facilities',action:()=>window.UI?.openBuild?.()}
+    {id:'facilities',zh:'家园布置',en:'Garden design',action:()=>window.UI?.openBuild?.()}
   ];
   let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null,hitState=null,guide=null,guideKey='';
   const isEnglish=()=>window.MorrowwishI18n?.get?.()!=='zh';
@@ -48,6 +48,16 @@
     if(map){map.title=en?'Return to the world map':'返回世界地图';map.setAttribute('aria-label',map.title);
       const small=map.querySelector('small');if(small)small.textContent=en?'World':'地图';}
   }
+  const guideTabs=[['cats','猫咪','Cats'],['party','队伍','Party'],['workshop','工坊','Workshop'],['dex','Catdex','Catdex']];
+  function noteBookVisit(tab){
+    const s=state(),scene=window.CatBondResonance?.view?.()?.current?.id;
+    if(!active||game?.scene!=='yard'||s!==visitedState||!['prologue:P-04','prologue:P-05'].includes(scene)||!guideTabs.some(t=>t[0]===tab))return;
+    const previous=s.sunlitGarden,seen=Array.isArray(previous?.bookGuide)?previous.bookGuide:[];
+    if(seen.includes(tab))return;
+    s.sunlitGarden={...(previous||{schema:1}),bookGuide:[...seen,tab]};
+    let saved=false;try{saved=window.State.save()?.ok===true}catch{}
+    if(!saved){if(previous===undefined)delete s.sunlitGarden;else s.sunlitGarden=previous;}
+  }
   function refreshGuide(){
     if(!guide)return;
     const v=window.CatBondResonance?.view?.(),scene=v?.current?.id;
@@ -55,7 +65,8 @@
     const show=active&&game?.scene==='yard'&&state()?.cats?.length>0&&!covered&&(scene==='prologue:P-04'||scene==='prologue:P-05');
     guide.hidden=!show;if(!show){guideKey='';return}
     const en=isEnglish(),talk=v.cursor<v.current.lines.length,departure=scene==='prologue:P-05'&&!talk;
-    const key=scene+'|'+talk+'|'+en;if(key===guideKey)return;guideKey=key;
+    const seen=state()?.sunlitGarden?.bookGuide||[],next=guideTabs.find(t=>!seen.includes(t[0]));
+    const key=scene+'|'+talk+'|'+en+'|'+seen.join(',');if(key===guideKey)return;guideKey=key;
     guide.replaceChildren();
     const title=document.createElement('strong');
     title.textContent=departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
@@ -63,9 +74,13 @@
     guide.append(title,hint);
     const row=document.createElement('div');guide.append(row);
     const add=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};row.append(b)};
+    if(next&&(talk||departure)){
+      hint.textContent=en?'Optional companion guide · '+seen.length+'/4. Next: '+next[2]+'. You may continue the story at any time.':'可选养成引导 · '+seen.length+'/4。下一步：'+next[1]+'。随时可以继续剧情。';
+      add('查看'+next[1],'Explore '+next[2],()=>window.ResonanceBook?.open(next[0]));
+    }
     if(talk)add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));
     if(departure){
-      hint.textContent=en?'Open Resonance Book to prepare your companions, then head to Misttide Harbor.':'打开星铃之书整理伙伴，再前往霁潮港。';
+      if(!next)hint.textContent=en?'Your companion guide is complete. Head to Misttide Harbor whenever you are ready.':'养成引导已完成，准备好后可前往霁潮港。';
       add('前往世界地图','World map',()=>game.openWorldMap());
     }
   }
@@ -153,7 +168,7 @@
     return{chapter:p.chapter,completedScenes:p.completed.length,restoredSanctuaries:p.sanctuaries.slice(),
       returnedNpcIds:p.returned.slice(),postgameEvents:p.postgame.slice(),ending:p.ending};
   }
-  const api={init,enter,leave,draw,handleTap,getProgress,registerNarrativeAdapter,homeAnchors:HOME_ANCHORS};
+  const api={init,enter,leave,draw,handleTap,getProgress,noteBookVisit,registerNarrativeAdapter,homeAnchors:HOME_ANCHORS};
   window.SunlitGarden=api;
   window.addEventListener('DOMContentLoaded',()=>init(window.__game),{once:true});
 })();
