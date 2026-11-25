@@ -95,10 +95,10 @@ function hit(b,target,sk,dealt,continuous=false){
   b._sigHitAt.set(key,b.t);
  }
  const g=REG[sk.id],big=(sk.heavy||['melee','dash','leap','pounce'].includes(sk.kind));
- const dur=sk.kind==='melee'?(sk.heavy?.26:.22):(big?.36:.25);
+ const dur=sk.kind==='melee'?(sk.heavy?.37:.30):(big?.40:.25);
  push(b,{kind:'signatureHit',skillId:sk.id,x:target.x,y:target.y,
   angle:Math.atan2(target.y-b.me().y,target.x-b.me().x),
-  life:dur,max:dur,seed:g.seed,heavy:!!big});
+  life:dur,max:dur,seed:g.seed,heavy:!!sk.heavy||['dash','leap','pounce'].includes(sk.kind)});
  return true;
 }
 // Certain move families share a grammar (claw, dash, heal, pounce), but an
@@ -183,7 +183,8 @@ function isMeleeId(id){
 }
 function drawMeleeContact(ctx,v,spec){
  if(v.kind==='signatureCast')return true; // the moving claw brush owns this phase
- const k=clip(v.life/v.max),p=1-k,R=Math.min(32,spec.r*.54);
+ const k=clip(v.life/v.max),p=1-k,R=Math.min(v.heavy?64:49,spec.r*.95+12);
+ drawHeavyImpact(ctx,v,spec);
  const sk=window.Skills?.skillById?.(v.skillId);
  const el=sk?.element||(/^gen_([^_]+)_melee$/.exec(v.skillId)||[])[1]||'fire';
  const heavy=!!v.heavy,spin=(v.seed||0)*.71;
@@ -193,7 +194,7 @@ function drawMeleeContact(ctx,v,spec){
  // Three tiny directional contact splinters, not a second full claw sweep.
  for(let j=-1;j<=1;j++){
   const y=j*R*.29,reach=R*(.40+.08*(j+1))*(1+.18*p);
-  stroke(ctx,j===0?'#fff8ea':spec.color,heavy?2.6:1.7,strength*(j===0?.9:.62));
+  stroke(ctx,j===0?'#fff8ea':spec.color,heavy?5.2:3.6,strength*(j===0?.9:.62));
   ctx.beginPath();ctx.moveTo(-reach*.36,y+R*.13);
   ctx.quadraticCurveTo(reach*.16,y-R*.13,reach,y-R*.21);
   ctx.stroke();
@@ -269,7 +270,114 @@ function drawMeleeContact(ctx,v,spec){
  }
  ctx.restore();return true;
 }
+
+ // Production combat visual pass: deterministic geometry, visual-only debris.
+ const hash=n=>{const q=Math.sin(n*127.1+311.7)*43758.5453;return q-Math.floor(q)};
+ function poly(c,pts,col){c.fillStyle=col;c.beginPath();pts.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fill();}
+ function flare(c,x,y,r,col,alpha=1){
+   if(r<=0)return;const g=c.createRadialGradient(x,y,0,x,y,r);
+   g.addColorStop(0,'#fffdf4');g.addColorStop(.19,col);g.addColorStop(1,'rgba(0,0,0,0)');
+   c.globalAlpha=alpha;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();
+ }
+ function rock(c,x,y,r,seed,turn){
+   c.save();c.translate(x,y);c.rotate(turn);
+   const pts=Array.from({length:7},(_,i)=>{const a=i*TAU/7,rr=r*(.79+.23*hash(seed+i));return [Math.cos(a)*rr,Math.sin(a)*rr]});
+   poly(c,pts,'#422d35');
+   for(let i=0;i<7;i++)poly(c,[pts[i],pts[(i+1)%7],[-r*.13,-r*.20]],['#a36a45','#734539','#51353c','#48323b','#85553d','#c17c4c','#a36a45'][i]);
+   stroke(c,'#ff983d',Math.max(1,r*.11),.95);path(c,[pts[1],[-r*.13,-r*.2],pts[4]]);path(c,[[-r*.13,-r*.2],pts[6]]);
+   c.restore();
+ }
+ function meteorPoints(b){
+   return Array.from({length:6},(_,i)=>{const a=i*2.399,rr=i?b.r*(.32+.28*hash(i+8)):0;
+     return {x:b.tx+Math.cos(a)*rr,y:b.ty+Math.sin(a)*rr,r:i?8+hash(i+31)*7:20,lag:i?(.035+i*.055):0};});
+ }
+ function drawMeteorFlight(c,p,time=0){
+   const b=p.burst;if(b?.skill?.id!=='meteor')return false;
+   // The existing lob remains the authoritative damage clock. All rocks
+   // converge on its landing beat; smaller arrivals are decorative only.
+   const remaining=Math.max(0,Math.min(p.life,Math.max(0,(Math.hypot(p.x-b.tx,p.y-b.ty)-16)/(p.spd||300))));
+   c.save();
+   for(const [i,m] of meteorPoints(b).entries()){
+     const q=clip((remaining-m.lag)/(.62+i*.035));
+     c.globalAlpha=.20+.28*(1-q);c.fillStyle='#2e2024';c.beginPath();c.ellipse(m.x,m.y,m.r*(1.2+q),m.r*.46,0,0,TAU);c.fill();
+     if(remaining>m.lag+.62+i*.035)continue;
+     if(q<=0&&i>0){flare(c,m.x,m.y,m.r*1.6,'#ff9d42',.42);continue;}
+     const x=m.x-q*116,y=m.y-q*190,r=m.r*(.85+.15*(1-q));
+     c.globalAlpha=.92;
+     const dx=-.52,dy=-.85,tail=50+r*2.4;
+     const g=c.createLinearGradient(x,y,x+dx*tail,y+dy*tail);
+     g.addColorStop(0,'#fff1a4');g.addColorStop(.27,'#ff922e');g.addColorStop(.68,'rgba(224,68,24,.65)');g.addColorStop(1,'rgba(112,43,35,0)');
+     c.fillStyle=g;c.beginPath();c.moveTo(x- r*.85,y+r*.35);
+     c.quadraticCurveTo(x+dx*tail*.52-r,y+dy*tail*.52,x+dx*tail,y+dy*tail);
+     c.quadraticCurveTo(x+dx*tail*.6+r,y+dy*tail*.6,x+r*.85,y-r*.35);c.closePath();c.fill();
+     for(let j=0;j<5;j++){const u=hash(i*17+j+Math.floor(time*14))*.85;point(c,x+dx*tail*u+(hash(j+i)-.5)*r,y+dy*tail*u,1.4+hash(j+9)*2,'#ffb34e');}
+     rock(c,x,y,r,i*11,time*(1+i*.12));
+   }
+   c.restore();return true;
+ }
+ function meteorImpact(b,burst){
+   push(b,{kind:'signatureHit',skillId:'meteor',x:burst.tx,y:burst.ty,r:burst.r,life:1.1,max:1.1,seed:44,meteorGround:true});
+ }
+ function drawMeteorGround(c,v){
+   const age=v.max-v.life,R=v.r||86;
+   c.save();c.translate(v.x,v.y);
+   for(const [i,m] of meteorPoints({tx:0,ty:0,r:R}).entries()){
+     const a=age-(i?i*.035:0);if(a<0)continue;
+     const p=clip(a/.65),fade=clip(v.life/.45),r=m.r;
+     c.globalAlpha=.60*fade;c.fillStyle='#493431';c.beginPath();c.ellipse(m.x,m.y,r*1.65,r*.75,0,0,TAU);c.fill();
+     for(let j=0;j<5;j++){const th=j*TAU/5+hash(i*13+j);const len=r*(1.4+hash(j+7));
+       stroke(c,'#332725',2,fade*.8);path(c,[[m.x,m.y],[m.x+Math.cos(th)*len*.55,m.y+Math.sin(th)*len*.35],[m.x+Math.cos(th+.3)*len,m.y+Math.sin(th+.3)*len*.64]]);}
+     if(a<.34){flare(c,m.x,m.y,r*(1.3+3*p),'#ff9836',clip(1-a/.34)*.9);
+       stroke(c,'#ffd18c',3,clip(1-a/.34));c.beginPath();c.ellipse(m.x,m.y,r*(1+3*p),r*(.4+1.4*p),0,0,TAU);c.stroke();}
+     for(let j=0;j<6;j++){const th=j*TAU/6+hash(i+j),d=r*(.5+p*2.8),x=m.x+Math.cos(th)*d,y=m.y+Math.sin(th)*d*.6-Math.sin(p*PI)*r*1.4;
+       c.globalAlpha=fade*(1-p*.35);rock(c,x,y,2+hash(i*7+j)*3,i*7+j,p*5);}
+     c.globalAlpha=.16*fade;point(c,m.x-7*p,m.y-r*.9-p*15,r*(.7+p),'#b7a29a');
+   }c.restore();return true;
+ }
+ function drawCombatBeam(c,b,time,ex,ey){
+   const fire=b.sk?.id==='flameSweep',water=b.sk?.id==='waterJet';
+   if(!fire&&!water)return false;
+   const x=b._ox,y=b._oy,L=Math.hypot(ex-x,ey-y);if(L<1)return true;
+   const angle=Math.atan2(ey-y,ex-x),age=b.max-b.t,alpha=Math.min(1,age/.09,b.t/.12);
+   const w=(b.width||26)*(fire?.72:.43);
+   c.save();c.translate(x,y);c.rotate(angle);c.lineCap='round';c.lineJoin='round';
+   // The core is continuous; only the exterior turbulent layers undulate.
+   for(const [i,mul,col,a] of (fire?[[0,1.45,'#ac382a',.40],[1,1,'#ff692c',.88],[2,.68,'#ffb748',.96],[3,.32,'#fff4b3',1]]:[[0,1.6,'#67d9f4',.20],[1,1,'#2bbbd9',.70],[2,.67,'#92effb',.94],[3,.25,'#efffff',1]])){
+     c.globalAlpha=alpha*a;c.beginPath();
+     for(const side of [-1,1])for(let j=0;j<=24;j++){
+       const u=(side===-1?j:24-j)/24,edge=(.40+.60*Math.min(1,u*7))*(1-.18*u);
+       const wob=1+(i===3?.06:.19)*Math.sin(time*(fire?31:22)-u*23+side+i);
+       const yy=side*w*mul*edge*wob;
+       if(side===-1&&j===0)c.moveTo(u*L,yy);else c.lineTo(u*L,yy);
+     }c.closePath();c.fillStyle=col;c.fill();
+   }
+   for(let j=0;j<(fire?24:18);j++){
+     const u=((j/24+time*(fire?1.2:1.7))%1+1)%1,side=hash(j+3)>.5?1:-1;
+     const yy=side*w*(.18+.75*hash(j+20)),xx=u*L;
+     stroke(c,fire?(j%3?'#ffbf62':'#fff2b1'):'#d7fbff',1+hash(j)*2,alpha*.70);
+     path(c,[[xx,yy],[Math.min(L,xx+10+hash(j+6)*18),yy*.7]]);
+   }
+   flare(c,0,0,w*.85,fire?'#ffca65':'#b9f5ff',alpha*.8);
+   // End splash only at real first-contact endpoint or for a visible beam tip.
+   if(water){
+     flare(c,L,0,w*1.9,'#91edff',alpha*.64);
+     for(let j=0;j<9;j++){const u=(time*3+j/9)%1,th=j*2.399;
+       c.globalAlpha=alpha*(1-u);point(c,L+Math.cos(th)*u*w*2.8,Math.sin(th)*u*w*2.3,1.2+hash(j)*2,'#d7faff');}
+   }
+   c.restore();return true;
+ }
+ function drawHeavyImpact(c,v,spec){
+   const p=1-clip(v.life/v.max),a=clip(v.life/.24),r=36+(v.heavy?14:0);
+   c.save();c.translate(v.x,v.y);c.rotate(v.angle||0);
+   if(p<.5)flare(c,0,0,r*.9,spec.color,a*(1-p*2)*.8);
+   for(let i=0;i<9;i++){const th=i*2.399,dist=r*(.18+p*.98),x=Math.cos(th)*dist,y=Math.sin(th)*dist*.72;
+     stroke(c,i%3===0?'#fff9e7':spec.color,2.5*(1-p)+.6,a*.85);
+     path(c,[[x,y],[x+Math.cos(th)*r*.26,y+Math.sin(th)*r*.22]]);}
+   c.restore();
+ }
+
 function draw(ctx,v,time=0){
+ if(v?.meteorGround)return drawMeteorGround(ctx,v);
  const spec=REG[v?.skillId];if(!spec||!ctx)return false;
  if(isMeleeId(v.skillId))return drawMeleeContact(ctx,v,spec);
  const p=1-clip(v.life/Math.max(.001,v.max)),k=clip(v.life/v.max),r=spec.r;
@@ -535,5 +643,5 @@ window.CatBondSkillFX={
  // access, so it reflects the full roster however the modules were load-ordered.
  get ids(){ syncGenerics(); return LIST.map(row=>row[0]); },
  has:id=>{ if(!REG[id])syncGenerics(); return !!REG[id]; },
- cast,support,hit,draw,drawStatus,drawDizzyStars};
+ cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawCombatBeam};
 })();
