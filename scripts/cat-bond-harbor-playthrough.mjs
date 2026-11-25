@@ -243,6 +243,7 @@ try {
     await readDialogue('forest:R-02','Prioritize the gardens');
     await button('Scent on damp moss · 1/3').waitFor();
     await tapLandmark(.31,.58);
+    await button('Scent on damp moss · 1/3').click();
     await button('Herbs on the canopy path · 2/3').waitFor();
     await shot('forest-trail-first');
     await page.evaluate(()=>MorrowwishI18n.set('zh'));
@@ -254,15 +255,25 @@ try {
     await page.locator('#intro-slot-list [data-slot="slot1"]').click();
     await scene('forest:R-02');
     await button('Herbs on the canopy path · 2/3').waitFor();
-    await tapLandmark(.39,.40);
+    await tapLandmark(.42,.28);
+    await button('Herbs on the canopy path · 2/3').click();
     await button('Medicine at the root channel · 3/3').waitFor();
     await tapLandmark(.69,.53);
+    await button('Medicine at the root channel · 3/3').click();
     await readDialogue('forest:R-02');
     await scene('forest:R-03');
     await button('Open the upper gate with Yahe').click();
     await button('Paired water gates').waitFor();
+    if(name==='landscape'){
+      const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {canvas:{x:a.x,y:a.y,right:a.right,bottom:a.bottom},rail:{x:b.x,y:b.y,right:b.right,bottom:b.bottom},w:innerWidth,h:innerHeight}});
+      assert(layout.canvas.y>=0&&layout.canvas.bottom<=layout.h+1,'Forest canvas must fit entirely in landscape viewport');
+      assert(layout.canvas.right<=layout.rail.x&&layout.rail.right<=layout.w+1&&layout.rail.bottom<=layout.h+1,'Forest controls must sit beside, not cover, the canvas');
+    }
     await shot('forest-upper-gate');
-    await puzzle('Paired water gates',['Upstream','Branch','Roots']);
+    await button('Paired water gates').click();
+    const pairedControls=page.locator('.rw-puzzle-controls');await pairedControls.waitFor();await shot('forest-paired-puzzle');
+    for(const input of ['Open lower channel','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
+    await shot('forest-paired-flow');await button('Clear together',pairedControls).click();await pairedControls.waitFor({state:'hidden'});
     await readDialogue('forest:R-03');
     await scene('forest:R-04');
     await puzzle('Ancient-root sanctuary',['Upstream','Branch','Roots']);
@@ -277,6 +288,43 @@ try {
     assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().sanctuaries),['harbor','forest']);
     assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('forge')),true);
     await shot('forest-complete');
+    if(name==='desktop'){
+      await button('Approach wild cat').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();
+      assert.equal(await page.evaluate(()=>window.__game.battle.regionalCombat?.kit.kind),'roots');await shot('forest-battle');
+      await page.waitForFunction(()=>window.__game.scene==='map',null,{timeout:75000});
+      await page.locator('#cr-ok,#battle-recovery-ok').click();
+    }
+    async function ship(region, cargo){
+      await button('Collect '+cargo).click();
+      await button('Deliver '+cargo).click();
+      await button('Deliver '+cargo).waitFor({state:'hidden'});
+    }
+    async function travel(name){await button('World atlas',page.locator('.rw-head')).click();await button(name).click();}
+    await travel('Misttide Harbor');await ship('harbor','Beacon-guided supplies');
+    await travel('Rootsleep Forest');await ship('forest','Beacon-guided supplies');
+    await ship('forest','Herbs and waterway map');
+    await travel('Misttide Harbor');await ship('harbor','Herbs and waterway map');
+    await travel('Rootsleep Forest');await ship('forest','Cooling water and herbs');
+    assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().links['harbor:forest']),['sendA','receiveB','sendB','receiveA']);
+    assert.deepEqual(await page.evaluate(()=>CatBondResonance.view().links['forest:forge']),['sendA']);
+    await shot('forest-exchange');
+    await button('Sunlit Garden',page.locator('.rw-head')).click();
+    await page.waitForFunction(()=>window.__game.scene==='yard');
+    assert(await page.evaluate(()=>CatBondResonance.ambientAvailable('garden').some(a=>a.id==='muling:cooking')));
+    assert(await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='forest')?.unlocked));
+    await shot('forest-home');
+    const mapHit=await page.locator('#fab-map').evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));});
+    assert(mapHit,'Garden map button must not be obscured by the cat roster');await page.locator('#fab-map').click();
+    await button('Rootsleep Forest').click();
+    await button('World atlas',page.locator('.rw-head')).click();
+    await button('Emberforge City').click();
+    assert.equal(await page.evaluate(()=>WorldMap.mode),'map');
+    await page.getByText('Chapter II complete. The route to Emberforge is unlocked; the story continues in a future update. Your save is preserved.',{exact:true}).waitFor();
+    await page.evaluate(()=>MorrowwishI18n.set('zh'));
+    await page.getByText('第二章已完成。赤炉环城航线已解锁，故事将在后续更新中继续。存档已保留。',{exact:true}).waitFor();
+    assert.equal(await page.getByText('Chapter II complete. The route to Emberforge is unlocked; the story continues in a future update. Your save is preserved.',{exact:true}).count(),0);
+    await page.evaluate(()=>MorrowwishI18n.set('en'));
+    await button('Rootsleep Forest').click();
     // Save isolation: detached controls and the old region must not survive a slot switch,
     // even if a queued callback is invoked synchronously before the next animation frame.
     await button('World atlas',page.locator('.rw-head')).click();
