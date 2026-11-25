@@ -95,7 +95,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   const v=bridge.view(),f=layout.features[op];if(!f||v.current?.chapter!==region||!v.objective.includes(op)||!near(f))return {ok:false,reason:"walk-to-objective"};
   if(op==="explore:tide-logbook"&&bridge.tideStep())return {ok:false,reason:"incomplete-tide-trail"};
   if(op==="puzzle:paired-water-gates"&&!bridge.pairedGate()?.ready)return {ok:false,reason:"upper-gate-required"};
-  if(region==="library"&&libraryBlocked(op,v.objective))return {ok:false,reason:"library-previous-station"};
+  if(region==="library"&&libraryBlocked(op,v.objective,v))return {ok:false,reason:"library-previous-station"};
   if(op==="puzzle:library-echo"&&!bridge.libraryRecord())return {ok:false,reason:"library-catdex-required"};
   if(region==="library"&&op==="melody:library"&&v.objective.includes("repair:library"))return {ok:false,reason:"library-repair-first"};
   if(op.startsWith("battle:"))return {ok:false,reason:"battle-host-required"};
