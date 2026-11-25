@@ -23,6 +23,7 @@ try{
    if(await close.isVisible())await close.click();
    await p.waitForFunction(()=>!window.__game.battleHelpOpen,{timeout:12000});
    assert.equal(await p.locator("#cb-forge-hud").count(),1);
+   const overlap=await p.evaluate(()=>{const a=document.querySelector(".battle-topbar").getBoundingClientRect(),b=document.querySelector("#cb-forge-hud").getBoundingClientRect();return b.top<a.bottom&&b.bottom>a.top&&b.left<a.right&&b.right>a.left;});assert.equal(overlap,false,"Mechanic HUD must not overlap battle controls");
    const before=await p.evaluate(()=>({heat:__game.battle.forgeState.heat,charges:__game.battle.forgeState.supportCharges,coins:State.S.coins}));
    await p.locator("[data-forge-support-button]").click();
    await p.waitForFunction(()=>__game.battle.forgeState.supportCharges===1&&__game.battle.forgeState.ventOpen>0);

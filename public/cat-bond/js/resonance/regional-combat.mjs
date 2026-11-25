@@ -50,6 +50,14 @@ function drawManifestation(ctx,e,b){
  ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();return true;
 }
 
+// Position the mechanic HUD below the actual battle topbar on every viewport.
+function positionObjectiveHud(panel){
+ if(!panel)return;const host=document.getElementById("battle-ui"),top=host?.querySelector(".battle-topbar");
+ if(!host||!top)return;
+ const hr=host.getBoundingClientRect(),tr=top.getBoundingClientRect();
+ if(hr.height&&tr.height)panel.style.setProperty("--cb-rpg-hud-top",Math.round(tr.bottom-hr.top+7)+"px");
+}
+
 function install(){
  const BP=window.Battle?.CaptureBattle?.prototype,GP=window.Game?.prototype;
  if(!BP||!GP)return;
@@ -64,7 +72,7 @@ function install(){
   const panel=document.createElement("div");panel.id="cb-region-combat";panel.className="cb-region-combat";
   const label=document.createElement("span"),button=document.createElement("button");button.type="button";
   panel.append(label,button);button.addEventListener("click",()=>useSupport(b));
-  host.append(panel);paintHud(b);
+  host.append(panel);paintHud(b);requestAnimationFrame(()=>positionObjectiveHud(panel));
  }
  function paintHud(b){
   const panel=document.getElementById("cb-region-combat");if(!panel||!b.regionalCombat)return;
@@ -100,7 +108,7 @@ function install(){
   for(const p of cast.patterns)if(p.shape==="circle")b.vfx.ring(p.x,p.y,{r0:p.r*.3,vr:160,life:.45,color:r.kit.color,width:5});
  }
  function tick(b,dt){
-  const r=b.regionalCombat;if(!r||b.done||b.captureSeq||b.coachHoldsEnemies?.()||b.game.battleHelpOpen||b.duoRun)return;
+  const r=b.regionalCombat;if(!r||b.done||b.captureSeq||b.coachHoldsEnemies?.()||b.game.battleHelpOpen||b.duoRun||b.duoCinematic||b.ultCinematic)return;
   if(!living(b).length||!b.liveEnemies().length)return;
   if(r.cast){
     r.cast.remaining-=dt;
@@ -142,7 +150,7 @@ function install(){
    const supportAvailable=canonical&&Array.isArray(snapshot?.sanctuaries)&&snapshot.sanctuaries.includes(region);
    this.battle.regionalCombat={region,kit,next:3.7,cast:null,cycle:0,supportAvailable,supportUsed:false};
    if(manifestation&&this.battle.enemies[1]){
-    const e=this.battle.enemies[1];e.regionalEnemy=region;e.element=kit.element;e.role=kit.kind==="gale"?"ambusher":kit.kind==="mirror"?"sharpshooter":"skirmisher";
+    const e=this.battle.enemies[1];e.regionalEnemy=region;e.combatName=kit.enemy;e.element=kit.element;e.role=kit.kind==="gale"?"ambusher":kit.kind==="mirror"?"sharpshooter":"skirmisher";
     e.maxhp=Math.max(45,Math.round(e.maxhp*.48));e.hp=e.maxhp;e.poiseMax=Math.round(e.maxhp*.55);e.poise=e.poiseMax;e.regionalCd=2.6;e.regionalCycle=0;e.rotation=[];e.ultSkill=null;
    }
    mount(this,this.battle);
@@ -152,7 +160,7 @@ function install(){
  const capture=BP.startCaptureSeq;
  BP.startCaptureSeq=function(){if(this.regionalCombat&&this.enemies.some(e=>e.regionalEnemy))this._lastDropped=this.enemies[0];return capture.call(this);};
  const update=BP.update;
- BP.update=function(dt){const result=update.call(this,dt);if(this.regionalCombat)tick(this,Math.min(.06,Math.max(0,dt)));return result;};
+ BP.update=function(dt){const result=update.call(this,dt);if(this.regionalCombat)tick(this,Math.min(.06,Math.max(0,dt*(this.tempoScale??.64))));return result;};
  const enemyAI=BP.updateEnemyAI;
  BP.updateEnemyAI=function(dt,e,me){
   const r=this.regionalCombat;
@@ -181,6 +189,7 @@ function install(){
  BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat)draw(this,ctx);return result;};
  const end=GP.endBattle;
  GP.endBattle=function(){if(this.battle?.regionalCombat)document.getElementById("cb-region-combat")?.remove();return end.call(this);};
- window.addEventListener("morrowwish-language-change",()=>{const b=window.__game?.battle;if(b?.regionalCombat)paintHud(b);});
+ window.addEventListener("resize",()=>requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-region-combat"))));
+ window.addEventListener("morrowwish-language-change",()=>{const b=window.__game?.battle;if(b?.regionalCombat){paintHud(b);requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-region-combat")));}});
 }
 if(typeof window!=="undefined")install();

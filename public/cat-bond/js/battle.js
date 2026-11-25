@@ -6515,8 +6515,11 @@ class CaptureBattle {
         ctx.restore();
       }
       const elemSym = this.elemSymbol(e.element);
-      this.hpTag(ctx, e.x, e.y - 78, e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color,
-        `${elemSym} ${e.sp.name} Lv.${e.level}`, {current:e.poise,max:e.poiseMax,stagger:e.staggerT,recovering:e.poiseRecovering});
+      const isZh=window.MorrowwishI18n?.get?.()==="zh";
+      const combatLabel=e.combatName?e.combatName[isZh?0:1]:(GameData.speciesName?.(e.sp)||e.sp.name);
+      const tagOffset=e.visualKind==="forge-guardian"?Math.min(105,Math.max(78,this.H*.23)):78;
+      this.hpTag(ctx, e.x, Math.max(26,e.y-tagOffset), e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color,
+        `${elemSym} ${combatLabel} Lv.${e.level}`, {current:e.poise,max:e.poiseMax,stagger:e.staggerT,recovering:e.poiseRecovering});
       // Compact status grid BELOW the HP + poise card. Lift the card to reserve
       // two rows between its bottom edge and the cat's head.
       if (e.status) {

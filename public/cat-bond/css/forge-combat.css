@@ -23,3 +23,9 @@
 .cb-forge-result-actions button[data-forge-retry]{background:transparent;color:#e9c9a0}
 @media(max-width:600px){.cb-forge-hud{top:68px;width:min(286px,calc(100% - 26px));padding:7px 9px}.cb-forge-support{grid-template-columns:28px 28px 1fr auto;gap:4px}.cb-forge-support img{width:27px;height:27px}.cb-forge-support strong{font-size:9px}.cb-forge-support small{font-size:8px}.cb-forge-support button{font-size:9px;padding:6px 7px;min-height:29px}.cb-forge-objective{font-size:10px}.cb-forge-result-card{padding:22px 17px}}
 @media(orientation:landscape) and (max-height:500px){.cb-forge-hud{top:54px;left:auto;right:10px;transform:none;width:270px}.cb-forge-result{padding:10px}}
+
+/* QA 45521112407: the mechanic panel must never intercept native mode/retreat controls. */
+#battle-ui .cb-forge-hud{top:var(--cb-rpg-hud-top,110px);pointer-events:none;z-index:7}
+#battle-ui .cb-forge-support button{pointer-events:auto;min-height:34px}
+@media(max-width:600px){#battle-ui .cb-forge-hud{left:auto;right:10px;transform:none;width:min(278px,calc(100% - 92px));padding:6px 8px}.cb-forge-support{grid-template-columns:1fr auto}.cb-forge-support img{display:none}.cb-forge-support small{display:none}.cb-forge-objective{margin:2px 0 4px}.cb-forge-support{margin-top:5px}}
+@media(orientation:landscape) and (max-height:500px){#battle-ui .cb-forge-hud{left:50%;right:auto;transform:translateX(-50%);width:min(320px,calc(100% - 120px));padding:5px 9px}.cb-forge-support{grid-template-columns:1fr auto;margin-top:3px}.cb-forge-support img,.cb-forge-support small{display:none}.cb-forge-support button{min-height:30px}.cb-forge-objective{font-size:9px;margin:2px 0}}

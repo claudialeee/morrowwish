@@ -20,6 +20,14 @@ export function rhythm(phase,impostor){
 export function holdProgress(progress,dt,near,interrupted,required){
  return clamp(progress+(near&&!interrupted?dt:-dt*.5),0,required);
 }
+// Position the mechanic HUD below the actual battle topbar on every viewport.
+function positionObjectiveHud(panel){
+ if(!panel)return;const host=document.getElementById("battle-ui"),top=host?.querySelector(".battle-topbar");
+ if(!host||!top)return;
+ const hr=host.getBoundingClientRect(),tr=top.getBoundingClientRect();
+ if(hr.height&&tr.height)panel.style.setProperty("--cb-rpg-hud-top",Math.round(tr.bottom-hr.top+7)+"px");
+}
+
 function install(){
  const GP=window.Game?.prototype,BP=window.Battle?.CaptureBattle?.prototype;
  if(!GP||!BP||window.CatBondFinaleCombat)return;
@@ -54,9 +62,9 @@ function install(){
      e.isBoss=true;e.rotation=[];e.ultSkill=null;e.specialMeter=-10000;e.fireCd=99999;e.reflectT=0;e.wardCd=99999;
      e.maxhp=Math.max(55,Math.round(alive(b).reduce((n,x)=>n+x.maxhp,0)*(id==="finale:B-01"?(i===0?1:.20):id==="finale:B-02"?.32:1.6)));e.hp=e.maxhp;
      e.poiseMax=e.maxhp;e.poise=e.poiseMax;
-     if(id==="finale:B-01"){e.finaleActor=i===0?"muling":"gate";e.gateIndex=i-1;}
+     if(id==="finale:B-01"){e.finaleActor=i===0?"muling":"gate";e.gateIndex=i-1;e.combatName=i===0?["暮铃","Muling"]:["逆响锁","Inward lock"];}
      else if(id==="finale:B-02"){e.finaleActor="echo";e.echoGroup=Math.floor(i/2);e.impostor=(i%2)===((f.revision+e.echoGroup)%2);e.echoObserved=0;}
-     else e.finaleActor="central";
+     else{e.finaleActor="central";e.combatName=["空白回响","Hollow Echo"];}
    });
    if(id==="finale:B-03"){const done=host().snapshot().support||[];for(const n of f.nodes)n.done=done.includes(n.region);}
    mount(b);paint(b);
@@ -73,7 +81,7 @@ function install(){
    else notice(b,"观察两次回应的间隔。","Watch the spacing between the two replies.");
    paint(b);
   };
-  document.getElementById("battle-ui")?.append(el);
+  document.getElementById("battle-ui")?.append(el);requestAnimationFrame(()=>positionObjectiveHud(el));
  }
  function paint(b){
   const f=b.resonanceFinale,el=document.getElementById("cb-finale-hud");if(!el||!f)return;
@@ -230,6 +238,7 @@ function install(){
  }
  window.addEventListener("cat-bond-resonance-battle-request",e=>{const d=e.detail;if(d&&PHASES[d.sceneId]===d.operation)prep(window.__game,d.sceneId);});
  window.addEventListener("cat-bond-resonance-changed",refreshEntry);
+ window.addEventListener("resize",()=>requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-finale-hud"))));
  window.addEventListener("morrowwish-language-change",()=>{refreshEntry();const b=window.__game?.battle;if(b?.resonanceFinale)paint(b);});
  const originalUpdate=GP.update;
  GP.update=function(dt){const r=originalUpdate.call(this,dt);if(this.scene!=="battle"&&(this.t-(this._finaleEntryLast??-99)>.5)){this._finaleEntryLast=this.t;refreshEntry();}return r;};

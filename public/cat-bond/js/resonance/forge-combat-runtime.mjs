@@ -159,12 +159,12 @@ function drawBackground(ctx,W,H,b){
   ctx.restore();
 }
 function drawEnemy(ctx,e,b){
-  const img=art.guardian,scale=(b.catScale?.("enemy")||.62)/.62,size=Math.max(118,Math.min(250,192*scale));
+  const img=art.guardian,scale=(b.catScale?.("enemy")||.62)/.62,size=Math.max(84,Math.min(152,Math.max(96,b.W*.23),b.H*.36,140*scale));
   ctx.save();
   ctx.fillStyle="rgba(5,10,14,.42)";ctx.beginPath();ctx.ellipse(e.x,e.y+5,size*.43,size*.105,0,0,Math.PI*2);ctx.fill();
   if(img.complete&&img.naturalWidth){
     const bob=Math.sin(b.t*4.2)*2.2,tilt=e.telegraph>0?-.025*Math.sin(b.t*30):.012*Math.sin(b.t*2.4);
-    ctx.save();ctx.translate(e.x,e.y-size*.52+bob);ctx.rotate(tilt);
+    ctx.save();ctx.translate(e.x,e.y-size*.43+bob);ctx.rotate(tilt);
     ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();
   }else{
     const draw=window.CatMotion?.draw||window.CatArt?.drawCat;
@@ -220,6 +220,14 @@ function drawBossEffects(ctx,b){
   }
   ctx.restore();
 }
+// Position the mechanic HUD below the actual battle topbar on every viewport.
+function positionObjectiveHud(panel){
+ if(!panel)return;const host=document.getElementById("battle-ui"),top=host?.querySelector(".battle-topbar");
+ if(!host||!top)return;
+ const hr=host.getBoundingClientRect(),tr=top.getBoundingClientRect();
+ if(hr.height&&tr.height)panel.style.setProperty("--cb-rpg-hud-top",Math.round(tr.bottom-hr.top+7)+"px");
+}
+
 function mountHud(game,b){
   document.getElementById("cb-forge-hud")?.remove();
   const host=document.getElementById("battle-ui");if(!host)return;
@@ -235,7 +243,7 @@ function mountHud(game,b){
   panel.querySelector("[data-forge-support-button]").addEventListener("click",()=>{
     if(game.battle?.storyEncounter)game.battle.forgeUseSupport?.();
   });
-  host.append(panel);renderHud(game,b);
+  host.append(panel);renderHud(game,b);requestAnimationFrame(()=>positionObjectiveHud(panel));
 }
 function renderHud(game,b){
   const p=document.getElementById("cb-forge-hud");if(!p||!b?.forgeState)return;
@@ -251,7 +259,7 @@ function renderHud(game,b){
   const open=s.ventOpen>0,button=p.querySelector("[data-forge-support-button]");
   if(button){button.disabled=s.supportCharges<=0||open;button.textContent=open?(en?"CORE EXPOSED":"炉心暴露中"):en?("VENT · "+s.supportCharges):("协力泄压 · "+s.supportCharges);}
   set("[data-forge-support-title]",en?"Jinpo & Xiaomao":"烬婆与小铆");
-  set("[data-forge-support-note]",en?"Safety bypass · 2 charges":"安全旁路 · 两次机会");
+  set("[data-forge-support-note]",en?("Safety bypass · "+s.supportCharges):("安全旁路 · "+s.supportCharges));
   const objective=p.querySelector("[data-forge-objective]");if(objective)objective.textContent=en?"Protect the test rig. Vent before striking the core.":"保护试验炉，先泄压再攻击炉心。";
 }
 function removeHud(){document.getElementById("cb-forge-hud")?.remove();}
@@ -353,7 +361,7 @@ GP.startBattle=function(team,wildSpecies,opts={}){
   b._analyticsRegion="forge";b.captureReady=false;
   const teamHp=(b.team||[]).reduce((n,f)=>n+(f.maxhp||0),0);
   enemy.sp=wildSpecies;enemy.visualKind="forge-guardian";enemy.isBoss=true;enemy.element="fire";
-  enemy.role="elite";enemy.r=39;enemy.speed=65;enemy.dmg=Math.max(17,enemy.dmg*1.38);
+  enemy.role="elite";enemy.r=30;enemy.combatName=["熔炉守卫","Furnace guardian"];enemy.speed=65;enemy.dmg=Math.max(17,enemy.dmg*1.38);
   enemy.maxhp=Math.max(1080,Math.round(teamHp*2.65));enemy.hp=enemy.maxhp;
   enemy.poiseMax=Math.round(enemy.maxhp*.72);enemy.poise=enemy.poiseMax;
   enemy.forgeState=b.forgeState;enemy.forgeHazards=[];enemy.forgeCast=null;
@@ -412,8 +420,9 @@ GP.startResonanceBattle=function(operation,context){if(operation!==FORGE_ENCOUNT
 window.addEventListener("cat-bond-resonance-battle-request",event=>{const d=event.detail,game=window.__game;if(!game||d?.sceneId!==FORGE_ENCOUNTER.id||d.operation!==FORGE_ENCOUNTER.operation||d.region!=="forge")return;if(!window.CatBondForgeCombat.prepare(game))toast(game,"请先完成熔炉机关。","Complete the furnace mechanism first.");});
 const flee=document.getElementById("btn-flee");
 flee?.addEventListener("click",()=>{if(window.__game?.battle?.storyEncounter)window.__game.battle.forgeRetreat=true;},true);
+window.addEventListener("resize",()=>requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-forge-hud"))));
 window.addEventListener("morrowwish-language-change",()=>{
-  const game=window.__game;if(game?.battle?.storyEncounter)renderHud(game,game.battle);
+  const game=window.__game;if(game?.battle?.storyEncounter){renderHud(game,game.battle);requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-forge-hud")));}
   const en=window.MorrowwishI18n?.get?.()!=="zh";
   document.querySelectorAll("#cb-forge-result [data-forge-zh][data-forge-en]").forEach(node=>{node.textContent=en?node.dataset.forgeEn:node.dataset.forgeZh;});
 });

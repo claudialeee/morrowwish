@@ -3,3 +3,6 @@
 .cb-region-combat button{min-height:34px;white-space:nowrap;border:1px solid #b58c55;background:#354957;color:#f1e4ca;border-radius:6px;padding:4px 8px;font:700 11px system-ui}
 .cb-region-combat button:disabled{opacity:.5}
 @media(max-width:600px){.cb-region-combat{top:60px;max-width:calc(100% - 20px);font-size:10px}.cb-region-combat button{font-size:10px;min-height:30px}}
+
+#battle-ui .cb-region-combat{top:var(--cb-rpg-hud-top,110px);pointer-events:none}.cb-region-combat button{pointer-events:auto}
+@media(max-width:600px){#battle-ui .cb-region-combat{left:auto;right:10px;transform:none;max-width:calc(100% - 92px)}}
