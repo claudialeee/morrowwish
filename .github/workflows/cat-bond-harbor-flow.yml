@@ -6,11 +6,17 @@ on:
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-harbor-playthrough.mjs'
+      - 'scripts/cat-bond-starfall-playthrough.mjs'
+      - 'scripts/cat-bond-starfall-art-review.mjs'
       - 'scripts/cat-bond-local-cloud-server.mjs'
       - '.github/workflows/cat-bond-harbor-flow.yml'
 
 permissions:
   contents: read
+
+concurrency:
+  group: cat-bond-harbor-flow-${{ github.event.pull_request.number }}
+  cancel-in-progress: ${{ github.head_ref == 'rpg/release-starfall' }}
 
 jobs:
   harbor:
@@ -37,6 +43,7 @@ jobs:
             sleep 1
           done
           if [ "${{ github.head_ref }}" = "rpg/release-starfall" ]; then
+            node scripts/cat-bond-starfall-art-review.mjs
             CAT_BOND_CHAPTER_QA=starfall node scripts/cat-bond-harbor-playthrough.mjs
           else
             node scripts/cat-bond-harbor-playthrough.mjs

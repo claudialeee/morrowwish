@@ -50,7 +50,7 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  await shot("forge-guardian");
  const result=page.locator("#cb-forge-result");const support=page.locator("[data-forge-support-button]");
  for(let i=0;i<100&&!await result.isVisible();i++){if(await support.isVisible()&&await support.isEnabled())await support.click();await page.waitForTimeout(2000);}
- await result.waitFor({timeout:60000});
+ try{await result.waitFor({timeout:60000});}catch(error){await shot("forge-battle-timeout");console.error("Forge normal-flow battle blocked",await page.evaluate(()=>{const b=__game.battle;return {scene:__game.scene,t:b?.t,done:b?.done,auto:b?.autoMode,help:__game.battleHelpOpen,tutorial:!!__game.battleTutorial,state:b?.forgeState,team:b?.team?.map(c=>({hp:c.hp,alive:c.alive})),enemies:b?.enemies?.map(c=>({hp:c.hp,alive:c.alive}))}}));throw error;}
  assert.ok((await get()).completed.includes("forge:E-03")||!(await get()).objective.includes("battle:forge-guardian"),"Forge guardian must actually be won");
  await result.locator("[data-forge-return]").click();
  await scene("forge:E-04");
@@ -97,7 +97,7 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  await invite("Xingya");await page.reload();await page.locator("#intro-continue").click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
  await scene("starfall:F-04");if(await button("Starfall Expanse").isVisible())await button("Starfall Expanse").click();
  await button("Invite Lichuan").waitFor();assert.equal(await button("Invite Xingya").isVisible(),false);
- await invite("Lichuan");const beforeMelody=(await get()).trust;await puzzle("Beyond Stars",["Low","Middle","High"]);const afterMelody=(await get()).trust;assert.equal(afterMelody.xingya,beforeMelody.xingya+1);assert.equal(afterMelody.lichuan,beforeMelody.lichuan+1);
+ await invite("Lichuan");const beforeMelody=(await get()).trust;await button("Beyond Stars").click();const melody=page.locator(".rw-puzzle-controls");await melody.waitFor();for(const n of ["Low","Middle","High"])await button(n,melody).click();await page.waitForTimeout(1000);await shot("starfall-beyond-stars-ceremony");await melody.waitFor({state:"hidden"});const afterMelody=(await get()).trust;assert.equal(afterMelody.xingya,beforeMelody.xingya+1);assert.equal(afterMelody.lichuan,beforeMelody.lichuan+1);
  assert.equal((await get()).ring,false,"Sixth melody cannot replace incomplete cargo");
  assert.equal((await get()).lineReady,false);
  await shot("starfall-missing-exchanges");
