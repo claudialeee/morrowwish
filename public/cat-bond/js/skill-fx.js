@@ -66,6 +66,7 @@ function push(b,v){
  b.skillStrokes.push(v);
 }
 function cast(b,f,sk,aim){
+ if(sk?.id&&!REG[sk.id])syncGenerics();
  if(!b||!f||!REG[sk?.id]||sk?.ultCost||sk?.isBasic)return false;
  // Melee casts already have a physical three-claw VFX in battle.js.
  // A second circular skill glyph used to bury both the paws and the target.
@@ -87,6 +88,7 @@ function support(b,recipient,sk){
  return true;
 }
 function hit(b,target,sk,dealt,continuous=false){
+ if(sk?.id&&!REG[sk.id])syncGenerics();
  if(!b||!target||!REG[sk?.id]||!(dealt>0)||sk?.ultCost)return false;
  if(continuous){
   const key=sk.id+':'+(target.i??target.cat?.uid??'target');
@@ -334,7 +336,111 @@ function drawMeleeContact(ctx,v,spec){
      c.globalAlpha=.16*fade;point(c,m.x-7*p,m.y-r*.9-p*15,r*(.7+p),'#b7a29a');
    }c.restore();return true;
  }
+ 
+// V5: authored geometry for actual projectiles; positions/radii remain battle-owned.
+// No independent hit or damage event is created by these renderers.
+function drawIdentityProjectile(c,p,time=0){
+ const kind=p.kind;
+ if(!['fireball','lightningOrb','hex'].includes(kind))return false;
+ const r=Math.max(2,p.r||12),angle=Number.isFinite(p.ang)?p.ang:0;
+ c.save();c.translate(p.x,p.y);c.rotate(angle);c.globalAlpha=1;
+ if(kind==='fireball'){
+   // Compressed plasma, NOT a rocky meteor. Long narrow wake; incandescent core.
+   const tail=r*4.8,g=c.createLinearGradient(-tail,0,r,0);
+   g.addColorStop(0,'rgba(140,34,20,0)');g.addColorStop(.36,'rgba(221,61,23,.72)');
+   g.addColorStop(.78,'#ff8b36');g.addColorStop(1,'#ffdc76');
+   c.fillStyle=g;c.beginPath();c.moveTo(r*.66,0);
+   c.bezierCurveTo(r*.8,-r*.92,-r*.55,-r*.97,-tail,-r*.07);
+   c.bezierCurveTo(-r*1.35,r*.30,-r*.37,r*1.01,r*.66,0);c.fill();
+   for(let i=0;i<5;i++){
+     const a=time*15+i*TAU/5,yy=Math.sin(a)*r*.65;
+     stroke(c,i%2?'#ffe6a0':'#ff9c42',r*(i%2?.12:.22),.88);
+     c.beginPath();c.moveTo(-r*2.9,yy*.35);c.bezierCurveTo(-r*1.35,yy,-r*.15,-yy,r*.58,yy*.3);c.stroke();
+   }
+   const core=c.createRadialGradient(r*.22,-r*.17,0,0,0,r);
+   core.addColorStop(0,'#ffffe9');core.addColorStop(.34,'#fff0a2');
+   core.addColorStop(.66,'#ffad39');core.addColorStop(1,'#df4a1c');
+   c.globalAlpha=1;point(c,0,0,r*.85,core);
+   for(let j=0;j<9;j++){
+     const u=(time*4+j/9)%1,yy=(hash(j+5)-.5)*r*(1+u);
+     c.globalAlpha=(1-u)*.84;point(c,-r*(1+u*3.8),yy,1+hash(j)*1.7,'#ffd078');
+   }
+ }else if(kind==='lightningOrb'){
+   // Slow spherical electrical volume, with rotating internal arcs and surface forks.
+   flare(c,0,0,r*2.35,'#8da4ff',.28);
+   const g=c.createRadialGradient(-r*.22,-r*.28,0,0,0,r);
+   g.addColorStop(0,'#ffffeb');g.addColorStop(.36,'#f7db88');g.addColorStop(.73,'#a49de8');g.addColorStop(1,'#394283');
+   c.globalAlpha=.96;point(c,0,0,r,g);
+   for(let j=0;j<6;j++){
+     const a=time*5+j*TAU/6,pts=[];
+     for(let i=0;i<=8;i++){const t=i/8,rr=r*(.46+.75*t),th=a+Math.sin(i*2.4+j+time*21)*.24;pts.push([Math.cos(th)*rr,Math.sin(th)*rr]);}
+     stroke(c,'#5767cf',4.5,.60);path(c,pts);stroke(c,'#fff5c7',1.65,.95);path(c,pts);
+   }
+   for(let j=0;j<3;j++){stroke(c,'#d8e2ff',1.2,.85);c.beginPath();c.ellipse(0,0,r*.96,r*.36,time*4+j*PI/3,0,TAU);c.stroke();}
+ }else{
+   // Curse is a readable hollow sigil, not another damage orb.
+   c.rotate(time*2.4);for(let j=0;j<3;j++){stroke(c,j===0?'#492961':'#d9a9f8',j===0?5:1.8,.86);
+   c.beginPath();for(let i=0;i<=6;i++){let a=i*TAU/6+j*.36,rr=r*(1-j*.21);i?c.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):c.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}c.stroke();}
+   flare(c,0,0,r*.75,'#a167d1',.38);
+ }
+ c.restore();return true;
+}
+function drawIdentityMotion(c,v,time=0){
+ const id=v.skillId,water=id==='gen_water_dash'||id==='knockOff',
+ dark=id==='gen_dark_dash'||id==='shadeLeap'||id==='apexPounce',
+ elec=id==='staticPounce'||id==='voltRush',grass=id==='quakeStomp',
+ light=id==='highGround',fire=id==='gen_fire_dash';
+ if(!(water||dark||elec||grass||light||fire))return false;
+ const k=clip(v.life/Math.max(.001,v.max)),p=1-k,cast=v.kind==='signatureCast';
+ const col=water?'#75dff9':dark?'#c39df1':elec?'#f5dd79':grass?'#b8c18b':light?'#fff0bb':'#ff9750';
+ c.save();c.translate(v.x,v.y);c.rotate(v.angle||0);
+ if(cast){
+   // Local movement accent: never fake a distant hit or second actor.
+   if(elec){
+     for(let i=-2;i<=2;i++){const y=i*9;stroke(c,i%2?'#a9b7ff':'#fff5b5',i===0?3.4:1.8,k*.88);
+       path(c,[[-48,y],[-29,y-7],[-19,y+3],[-5,y-4],[14,y]]);}
+   }else if(water){
+     for(let j=0;j<4;j++){stroke(c,j%2?'#d8faff':'#369abf',4-j*.5,k*.85);
+       c.beginPath();c.moveTo(-48,j*9-14);c.bezierCurveTo(-32,-27+j*9,-13,12+j*6,19,j*5-8);c.stroke();}
+   }else if(dark){
+     for(let j=0;j<4;j++){c.globalAlpha=k*(.19+j*.1);c.fillStyle=j%2?'#634182':'#30243e';c.beginPath();c.moveTo(12,0);c.quadraticCurveTo(-8,-24+j*6,-61+j*7,-15+j*10);c.quadraticCurveTo(-23,28-j*4,12,0);c.fill();}
+   }else if(grass||light){
+     for(let j=0;j<5;j++){const x=-28+j*13;stroke(c,col,2.2,k*.85);path(c,[[x,18],[x+Math.sin(j)*6,-12-j%2*7]]);}
+   }else{
+     for(let j=0;j<5;j++){stroke(c,j%2?'#fff1b7':col,4,k*.8);path(c,[[-48,j*8-20],[-18,j*5-12],[10,j*4-8]]);}
+   }
+ }else if(grass){
+   c.globalAlpha=k*.65;c.fillStyle='#4d4539';c.beginPath();c.ellipse(0,0,30+18*p,12+9*p,0,0,TAU);c.fill();
+   for(let j=0;j<8;j++){const a=j*TAU/8,rr=12+36*p;stroke(c,'#49372d',2,k);path(c,[[0,0],[Math.cos(a)*rr*.6,Math.sin(a)*rr*.35],[Math.cos(a+.17)*rr,Math.sin(a+.17)*rr*.63]]);c.globalAlpha=k;rock(c,Math.cos(a)*rr,Math.sin(a)*rr*.65-10*Math.sin(p*PI),3+hash(j)*3,j,p*5);}
+ }else if(water){
+   for(let j=0;j<11;j++){const a=j*TAU/11,rr=(12+28*p);stroke(c,j%2?'#e6fcff':'#65c9ec',2.5,k);path(c,[[Math.cos(a)*rr*.42,Math.sin(a)*rr*.42],[Math.cos(a)*rr,Math.sin(a)*rr]]);}
+ }else if(dark){
+   for(let j=0;j<3;j++){stroke(c,j===1?'#f6dcff':'#71469c',j===1?2.8:5,k*.9);c.beginPath();c.moveTo(-24,-16+j*9);c.quadraticCurveTo(15,-25+j*10,31,5+j*7);c.stroke();}
+ }else{
+   flare(c,0,0,22+11*p,col,k*.6);
+   for(let j=0;j<7;j++){const a=j*TAU/7,rr=12+28*p;stroke(c,j%2?col:'#fff9db',2,k);path(c,[[Math.cos(a)*rr*.5,Math.sin(a)*rr*.5],[Math.cos(a)*rr,Math.sin(a)*rr]]);}
+ }
+ c.restore();return true;
+}
+function drawElectricStream(c,b,time,ex,ey){
+ const x=b._ox,y=b._oy,L=Math.hypot(ex-x,ey-y);if(L<1)return true;
+ const w=Math.max(5,(b.width||26)*.46),alpha=clip(Math.min((b.max-b.t)/.07,b.t/.12));
+ c.save();c.translate(x,y);c.rotate(Math.atan2(ey-y,ex-x));
+ // One continuously connected trunk with several independent, narrower branches.
+ for(let strand=0;strand<4;strand++){
+   const pts=[[0,0]],step=Math.floor(time*24);
+   for(let j=1;j<=24;j++){let u=j/24,edge=Math.sin(PI*u),off=(hash(step*61+j*19+strand*181)-.5)*w*(strand?2.4:1.35)*edge;pts.push([u*L,off]);}
+   stroke(c,'#5446a5',strand===0?w*1.65:5,alpha*.28);path(c,pts);
+   stroke(c,strand===0?'#d1ceff':'#9d9bff',strand===0?6:2.5,alpha*.85);path(c,pts);
+   stroke(c,'#fff8d2',strand===0?2.7:1.2,alpha);path(c,pts);
+   if(strand===0)for(let j=4;j<23;j+=4){const [xx,yy]=pts[j],side=j%3===0?1:-1;stroke(c,'#c8c0ff',1.5,alpha*.72);path(c,[[xx,yy],[xx+L*.026,yy+side*w*.85],[xx+L*.055,yy+side*w*.55],[Math.min(L,xx+L*.075),yy+side*w*1.3]]);}
+ }
+ flare(c,0,0,w*1.15,'#bcb4ff',alpha*.64);flare(c,L,0,w*1.05,'#fff1b0',alpha*.52);
+ c.restore();return true;
+}
+
  function drawCombatBeam(c,b,time,ex,ey){
+   if(b.sk?.id==='thunderStream')return drawElectricStream(c,b,time,ex,ey);
    const fire=b.sk?.id==='flameSweep',water=b.sk?.id==='waterJet';
    if(!fire&&!water)return false;
    const x=b._ox,y=b._oy,L=Math.hypot(ex-x,ey-y);if(L<1)return true;
@@ -380,6 +486,7 @@ function draw(ctx,v,time=0){
  if(v?.meteorGround)return drawMeteorGround(ctx,v);
  const spec=REG[v?.skillId];if(!spec||!ctx)return false;
  if(isMeleeId(v.skillId))return drawMeleeContact(ctx,v,spec);
+ if(drawIdentityMotion(ctx,v,time))return true;
  const p=1-clip(v.life/Math.max(.001,v.max)),k=clip(v.life/v.max),r=spec.r;
  const cast=v.kind==='signatureCast',angle=v.angle||0;
  ctx.save();ctx.translate(v.x,v.y);ctx.rotate(angle);
@@ -643,5 +750,5 @@ window.CatBondSkillFX={
  // access, so it reflects the full roster however the modules were load-ordered.
  get ids(){ syncGenerics(); return LIST.map(row=>row[0]); },
  has:id=>{ if(!REG[id])syncGenerics(); return !!REG[id]; },
- cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawCombatBeam};
+ cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawCombatBeam,drawIdentityProjectile};
 })();
