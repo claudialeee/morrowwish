@@ -63,10 +63,12 @@ for(const profile of [
   await page.locator('[data-system="close"]').click();
   assert.match(await page.locator('#intro-start').innerText(),/New Adventure/);
   await screenshot('title-en');
-  await page.locator('#mw-fullscreen-toggle').click();
+  await page.locator('#cb-system-toggle').click();
+  await page.locator('[data-system="fullscreen"]').click();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
   await screenshot('fullscreen-title');
-  await page.locator('#mw-fullscreen-toggle').click();
+  await page.locator('#cb-system-toggle').click();
+  await page.locator('[data-system="fullscreen"]').click();
   await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));
   await page.locator('#intro-start').click();
   await checkVisible('#intro-slot-panel.is-open');
@@ -116,10 +118,13 @@ for(const profile of [
    assert.deepEqual(fit,{inside:true,aspect:true,scroll:true,solo:true},'Actual world frame fits after resize/fullscreen');
   };
   await checkStageFit();
-  await realPress(page.locator('#mw-fullscreen-toggle'));
+  const system=async()=>{await realPress(page.locator('#map-menu'));await realPress(page.locator('[data-cb-story-action="system"]'));};
+  const toggleWorldFullscreen=async()=>{await system();await realPress(page.locator('[data-system="fullscreen"]'));await realPress(page.locator('#panel.open > .panel-dismiss'));};
+  for(const sel of ['#mw-fullscreen-toggle','#mw-game-settings','#guide-help'])assert.equal(await page.locator(sel).isVisible(),false,sel+' must be inside the RPG menu');
+  await toggleWorldFullscreen();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
   await page.waitForTimeout(100);await checkStageFit();await screenshot('fullscreen-world-atlas');
-  await realPress(page.locator('#mw-fullscreen-toggle'));
+  await toggleWorldFullscreen();
   await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));
   await page.waitForTimeout(100);await checkStageFit();
   for(const name of ['Catdex','Party','Raise cats','Workshop']){

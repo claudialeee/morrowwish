@@ -541,6 +541,7 @@ const UI = {
       action('healteam','🧰','急救包补血 +35% · 需要 '+woundedCount+' 个','First-aid kits +35% · '+woundedCount+' needed')+
       action('feed','🍖','喂食全员','Feed all')+
       action('regions','🗺️','世界目录','World directory')+
+      (isYard?action('guide','?','玩法指引','Gameplay guide'):'')+
       '</div><p class="explore-menu-tip">'+(en
         ?'Close × to resume exploring exactly where you left off.'
         :'点击 × 就能回到刚才的位置，继续探索。')+'</p>'+
@@ -581,7 +582,8 @@ const UI = {
         if(r.ok){this.openExploreMenu();this.game.refreshHUD();}
         this.game.toast(msg);
       },
-      regions:()=>this.game.scene==='yard'?this.game.openWorldMap():this.openMapChooser()
+      regions:()=>this.game.scene==='yard'?this.game.openWorldMap():this.openMapChooser(),
+      guide:()=>{this.closeAll();this.game.replayFirstAdventureTour?.();}
     };
     host?.querySelectorAll('[data-explore-action]').forEach(button=>{
       button.onclick=()=>{const open=actions[button.dataset.exploreAction];if(open)this.navigateTo(open);};

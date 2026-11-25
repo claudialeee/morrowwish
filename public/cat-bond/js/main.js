@@ -330,21 +330,24 @@ function installCatBondSystemMenu(){
   toggle.setAttribute('aria-label',t('打开系统菜单','Open system menu'));
   menu.setAttribute('aria-label',t('系统菜单','System menu'));
   if(menu.hidden)return;
-  const title=!window.__CAT_BOND_STARTED__;
+  const title=!window.__CAT_BOND_STARTED__,battle=window.__game?.scene==='battle';
   const active=sel=>native(sel)?.getAttribute('aria-pressed')==='true';
   const rows=[
     ['language',t('语言','Language'),t('中文','English')],
+    ...(native('.mw-settings-music')?[['music',t('背景音乐','Background music'),active('.mw-settings-music')?t('开启','On'):t('关闭','Off')]]:[]),
     ['effects',t('音效','Sound effects'),active('.mw-settings-sfx')?t('开启','On'):t('关闭','Off')],
+    ...(battle?[['skills',t('技能说明','Skill guide'),'']]:[]),
     ...(native('#mw-fullscreen-toggle')?[['fullscreen',t('全屏','Fullscreen'),active('#mw-fullscreen-toggle')?t('退出','Exit'):t('进入','Enter')]]:[]),
     ['share',t('分享游戏','Share game'),''],
-    ['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),''],
-    ...(!title?[['title',t('返回标题画面','Return to title'),'']]:[])
+    ...(!battle?[['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),'']]:[]),
+    ...(!title&&!battle?[['title',t('返回标题画面','Return to title'),'']]:[])
   ];
   menu.innerHTML='<div class="cb-system-card"><header><h2>'+t('系统菜单','System menu')+'</h2><button type="button" data-system="close" aria-label="'+t('关闭','Close')+'">×</button></header><div class="cb-system-rows">'+rows.map(([id,label,value])=>'<button type="button" data-system="'+id+'"><span>'+label+'</span><small>'+value+'</small></button>').join('')+'</div></div>';
-  menu.querySelectorAll('[data-system]').forEach(btn=>btn.onclick=()=>{
+  menu.querySelectorAll('[data-system]').forEach(btn=>bindMenuPress(btn,()=>{
    const id=btn.dataset.system,selectors={language:'.mw-settings-language',effects:'.mw-settings-sfx',music:'.mw-settings-music',fullscreen:'#mw-fullscreen-toggle',share:'.mw-settings-share'};
    if(id==='close'){close();toggle.focus();return;}
    if(id==='slots'){close();window.CatBondCloudSave?.openSlots?.();return;}
+   if(id==='skills'){close();window.__game?.toggleBattleSkillGuide?.(true);return;}
    if(id==='title'){
     if(!confirm(t('保存当前进度并返回标题画面？','Save current progress and return to title?')))return;
     const result=State.save();
@@ -353,10 +356,18 @@ function installCatBondSystemMenu(){
    }
    if(id==='language'&&!native(selectors.language)){window.MorrowwishI18n?.set?.(zh()?'en':'zh');render();return;}
    native(selectors[id])?.click();
-   if(id==='share')close();else setTimeout(render,120);
-  });
+   if(id==='share')close();else if(id==='fullscreen'){close();}else setTimeout(render,120);
+  }));
  }
- toggle.onclick=()=>menu.hidden?open():close();
+ // Explicit single-finger activation works even when the game canvas suppresses synthetic clicks.
+ function bindMenuPress(btn,activate){let start=null,last=-Infinity;
+  btn.addEventListener('touchstart',e=>{const p=e.changedTouches[0];start=e.touches.length===1&&p?{id:p.identifier,x:p.clientX,y:p.clientY}:null;},{passive:true});
+  btn.addEventListener('touchmove',e=>{const p=[...e.changedTouches].find(p=>p.identifier===start?.id);if(!p||e.touches.length!==1||Math.hypot(p.clientX-start.x,p.clientY-start.y)>10)start=null;},{passive:true});
+  btn.addEventListener('touchcancel',()=>{start=null;},{passive:true});
+  btn.addEventListener('touchend',e=>{const a=start;start=null;const p=[...e.changedTouches].find(p=>p.identifier===a?.id);if(!a||!p||e.touches.length||Math.hypot(p.clientX-a.x,p.clientY-a.y)>10||!btn.contains(document.elementFromPoint(p.clientX,p.clientY)))return;e.preventDefault();last=performance.now();activate();},{passive:false});
+  btn.onclick=e=>{if(e.detail!==0&&performance.now()-last<750)return;activate();};
+ }
+ bindMenuPress(toggle,()=>menu.hidden?open():close());
  menu.onclick=e=>{if(e.target===menu)close();};
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){e.preventDefault();close();}});
  window.addEventListener('morrowwish-language-change',render);

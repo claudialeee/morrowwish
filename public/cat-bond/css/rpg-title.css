@@ -155,3 +155,19 @@ html body #stage #cb-header-actions #mw-game-settings .mw-settings-share{display
 html.cb-cg body #stage #cb-header-actions #mw-game-settings,
 html.cb-cg body #stage #cb-header-actions #mw-fullscreen-toggle{display:none!important}
 html.cb-cg #stage:has(#intro:not(.hide)) #cb-system-toggle,html.cb-cg #stage:has(#battle-ui.on) #cb-system-toggle{right:calc(env(safe-area-inset-right,0px) + 10px)!important}
+
+/* One RPG menu per scene. The actual shared controls stay mounted for their
+   APIs; they never compete with the world or battle UI as independent buttons. */
+html body #stage #cb-header-actions > #mw-game-settings,
+html body #stage #cb-header-actions > #mw-fullscreen-toggle,
+html body #stage #cb-header-actions > #guide-help,
+html body #stage #cb-header-actions > #battle-skill-info-toggle,
+html body #stage:has(#battle-ui.on) #cb-header-actions #battle-skill-info-toggle{display:none!important}
+html body #stage:has(#intro:not(.hide)) #cb-system-toggle,
+html body #stage:has(#battle-ui.on) #cb-system-toggle{right:calc(env(safe-area-inset-right,0px) + 10px)!important;min-height:40px!important;min-width:72px!important}
+#stage .cb-system-card{width:min(100%,620px);padding:12px;overflow:hidden}
+#stage .cb-system-card header{margin-bottom:8px}
+#stage .cb-system-rows{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#stage .cb-system-rows button{min-height:44px;white-space:normal;overflow-wrap:anywhere;padding:6px 8px;font-size:13px;touch-action:manipulation}
+@media(max-width:360px){#stage .cb-system-card{padding:8px}#stage .cb-system-rows button{font-size:12px}}
+@media(max-height:420px){#stage .cb-system-card{padding:8px}#stage .cb-system-card h2{font-size:17px}#stage .cb-system-rows button{min-height:36px;font-size:12px}#stage .cb-system-card header{margin-bottom:4px}}

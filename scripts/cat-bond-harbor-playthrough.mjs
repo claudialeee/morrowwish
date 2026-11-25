@@ -424,11 +424,12 @@ try {
     await checkObjective('puzzle:paired-water-gates');
     await shot('forest-overpressure-recovery');
     if(name==='portrait'){
-      const locale=page.locator('#mw-game-settings .mw-settings-language');await locale.click();await page.waitForFunction(()=>MorrowwishI18n.get()==='zh');
+      const changeLocale=async()=>{await page.locator('#map-menu').click();await page.locator('[data-cb-story-action="system"]').click();await page.locator('[data-system="language"]').click();await page.locator('[data-system="close"]').click();await page.locator('#panel.open > .panel-dismiss').click();};
+      await changeLocale();await page.waitForFunction(()=>MorrowwishI18n.get()==='zh');
       await verifyPressure('水压过高 · 地下闸门关闭');
       for(const input of ['稳住上层','稳住上层','稳住上层','打开地下'])await button(input,pairedControls).click();
       await verifyPressure('双路稳定 · 共同疏通根脉');
-      await shot('forest-paired-flow-zh');await locale.click();await page.waitForFunction(()=>MorrowwishI18n.get()==='en');
+      await shot('forest-paired-flow-zh');await changeLocale();await page.waitForFunction(()=>MorrowwishI18n.get()==='en');
     }else for(const input of ['Steady upper pressure','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
     await verifyPressure('Both channels open');
     await shot('forest-paired-flow');await button('Clear together',pairedControls).click();await pairedControls.waitFor({state:'hidden'});
