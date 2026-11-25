@@ -32,6 +32,7 @@ async function checkEnglish(page,phase,width){
   const walk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   while(walk.nextNode()){
    const n=walk.currentNode,t=(n.nodeValue||'').trim();
+   if(t==='中文'&&n.parentElement.matches('button[data-slot-language],button[data-res-language],button[data-opening-language],button.cbcp-language'))continue;
    if(t&&han.test(t)&&vis(n.parentElement))out.push('DOM '+t.slice(0,120));
   }
   for(const el of root.querySelectorAll('[title],[aria-label]')){

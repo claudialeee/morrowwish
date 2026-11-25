@@ -387,7 +387,7 @@
       const lang = this.currentLanguage();
       if (!this.nodes) return;
       this.nodes.language.textContent = lang === 'zh' ? 'EN' : '中文';
-      this.nodes.language.setAttribute('aria-label', lang === 'zh' ? 'Switch to English' : '切换到中文');
+      this.nodes.language.setAttribute('aria-label', lang === 'zh' ? '切换到英文' : 'Switch to Chinese');
       this.nodes.pause.textContent = this.paused ? (lang === 'zh' ? '继续播放' : 'Resume') : (lang === 'zh' ? '暂停' : 'Pause');
       this.nodes.skip.textContent = lang === 'zh' ? '跳过' : 'Skip';
       this.nodes.skip.hidden = !this.scene?.allowSkip;
