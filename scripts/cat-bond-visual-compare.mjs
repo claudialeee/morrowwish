@@ -12,7 +12,7 @@ try{
   for(const lang of ['en','zh']){
    const {name,...options}=profile,ctx=await browser.newContext(options),page=await ctx.newPage(),errors=[],shots=[];
    const tr=(en,zh)=>lang==='en'?en:zh;
-   const button=(en,zh,scope=page)=>scope.getByRole('button',{name:tr(en,zh),exact:true});
+   const button=(en,zh,scope=page)=>scope.getByRole('button',{name:tr(en,zh),exact:true,includeHidden:true});
    const scene=id=>page.waitForFunction(v=>window.CatBondResonance?.view()?.current?.id===v,id,{timeout:20000});
    const shot=async id=>{await page.evaluate(()=>document.fonts.ready);
     if(name==='portrait'&&['atlas','harbor-exploration'].includes(id)&&await page.locator('link[href*="rpg-warm-interface.css"]').count()){
@@ -121,6 +121,8 @@ try{
     const reveal=async target=>{
       if(await target.isVisible())return;
       const world=page.locator('.rw-world:not([hidden])'),prev=world.locator('[data-fit-prev]'),next=world.locator('[data-fit-next]');
+      const atlas=world.locator('.rw-atlas-menu:not([open]) > summary');if(await atlas.count()&&await target.evaluate(el=>!!el.closest('.rw-atlas-menu')))await atlas.click();
+      const drawer=world.locator('.rw-region-toggle[aria-expanded="false"]');if(await drawer.count()&&await target.evaluate(el=>!!el.closest('#rw-region-actions')))await drawer.click();
       const count=Number(await world.getAttribute('data-fit-pages')||1);
       for(let i=0;i<count&&!await target.isVisible()&&await prev.isVisible()&&await prev.isEnabled();i++)await prev.click();
       for(let i=0;i<count&&!await target.isVisible()&&await next.isVisible()&&await next.isEnabled();i++)await next.click();
@@ -140,6 +142,7 @@ try{
     }
     // The same normally created save can meet a wild cat in the first
     // available region. Do not seed an encounter, stats, or story evidence.
+    const opened=page.locator('.rw-atlas-menu[open] > summary');if(await opened.count())await opened.click();
     const surface=page.locator('.rw-surface');await surface.scrollIntoViewIfNeeded();
     const mapRect=await surface.boundingBox();
     const mapX=mapRect.x+mapRect.width*.5,mapY=mapRect.y+mapRect.height*.18;
