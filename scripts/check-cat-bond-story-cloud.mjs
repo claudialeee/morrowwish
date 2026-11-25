@@ -138,6 +138,93 @@ assert.equal(restoredCloudBook.activeSlot(),'slot2');
 assert.equal(restoredCloudBook.loadSlot('slot2'),true);
 assert.equal(restoredCloudBook.S.coins,303,'cloud restore must restore the chosen slot snapshot');
 
+
+ // Round-trip through the real slot manager and client functions, with isolated
+ // device storage and a simulated HTTP server (no production D1 or secrets).
+ {
+ const ids=['slot1','slot2','slot3'];
+ const memory=()=>{
+  const m=new Map();
+  return {getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k)};
+ };
+ const device=()=>{
+  const local=memory(),session=memory(),window={};
+  new Function('window','localStorage','GameData','WorldMap',state)(window,local,{},{REGIONS:[]});
+  return {local,session,window,State:window.State};
+ };
+ const a=device(),b=device();
+ assert.equal(a.State.startNewGame('slot1'),true);
+ a.State.S.resonance={scene:'harbor:H-01',melodies:['harbor']};
+ a.State.S.coins=111;a.State.save();
+ assert.equal(a.State.startNewGame('slot2'),true);
+ a.State.S.resonance={scene:'forest:R-01',melodies:['harbor','forest']};
+ a.State.S.coins=222;a.State.save();
+ assert.equal(a.State.startNewGame('slot3'),true);
+ a.State.S.coins=333;a.State.save();
+ assert.equal(a.State.listSaveSlots()[1].storyProgress,'2/6');
+ let live={owner:'slot3'};
+ a.window.SaveManager.registerAdapter('isolation',{serialize:()=>live,restore:x=>{live=x},reset:()=>{live={owner:'fresh'}}});
+ a.State.save();
+ assert.equal(a.State.loadSlot('slot1'),true);
+ assert.equal(live.owner,'fresh','unrecorded adapter must not leak across slots');
+ assert.equal(a.State.S.resonance.scene,'harbor:H-01');
+ assert.equal(a.State.loadSlot('slot3'),true);
+ assert.equal(live.owner,'slot3');
+ assert.equal(a.State.deleteSaveSlot('slot3',{confirmed:true}).reason,'active_slot');
+ assert.equal(a.State.deleteSaveSlot('slot1').reason,'confirmation_required');
+
+ const rows=new Map();let offline=false;
+ const fetch=async(url,opts)=>{
+  if(offline)throw Error('offline');
+  const id=opts.method==='PUT'?JSON.parse(opts.body).slotId:url.split('?slot=')[1]||'legacy';
+  const old=rows.get(id);
+  const response=(status,data)=>({status,ok:status<400,json:async()=>data});
+  if(opts.method==='GET')return response(200,old?{exists:true,...old}:{exists:false});
+  const req=JSON.parse(opts.body);
+  if(req.expectedRevision!==(old?.revision||0))return response(409,{revision:old?.revision||0});
+  const next={iv:req.iv,ciphertext:req.ciphertext,revision:(old?.revision||0)+1,updatedAt:Date.now()};
+  rows.set(id,next);return response(200,next);
+ };
+ const client=d=>{
+  const pre=story.slice(story.indexOf('const cloudRevisionKey='),story.indexOf('let restoringCloud='));
+  const restore=story.slice(story.indexOf('async function restoreCloudBook('),story.indexOf('let syncTimer='));
+  const sync=story.slice(story.indexOf('async function syncOneSlot('),story.indexOf('async function syncNow('));
+  // Crypto is a transparent test double; real AES-GCM and D1 are not
+  // represented as tested by this HTTP/slot isolation check.
+  const run=new Function('State','localStorage','sessionStorage','fetch','location','encrypt','decrypt',
+   'SAVE_SLOT_IDS','CLOUD_KEY','CLOUD_PAUSE_KEY','t',
+   'let restoringCloud=false;const pendingSyncSlots=new Set();const syncNow=async()=>({ok:true});'+pre+restore+sync+
+   ';return {syncOneSlot,restoreCloudBook};');
+  return run(d.State,d.local,d.session,fetch,{reload:()=>{}},async raw=>({iv:'test',ciphertext:raw}),
+   async remote=>remote.ciphertext,ids,'cloudkey','pause',(zh,en)=>en);
+ };
+ const ca=client(a),cb=client(b),key='fake-test-token';
+ offline=true;
+ await assert.rejects(()=>ca.syncOneSlot(key,'slot1',false),/offline/);
+ assert.equal(a.State.getSaveSlot('slot1').data.state.coins,111);
+ offline=false;
+ for(const id of ids)assert.equal((await ca.syncOneSlot(key,id,false)).ok,true);
+ await cb.restoreCloudBook(key);
+ assert.deepEqual(b.State.listSaveSlots().map(s=>s.coins),[111,222,333]);
+ assert.equal(b.State.loadSlot('slot2'),true);
+ assert.equal(b.State.S.resonance.scene,'forest:R-01');
+ assert.equal(a.State.deleteSaveSlot('slot1',{confirmed:true}).ok,true);
+ assert.equal((await ca.syncOneSlot(key,'slot1',false)).ok,true);
+ // A stale client cannot overwrite the tombstone using its old revision.
+ assert.equal((await cb.syncOneSlot(key,'slot1',false)).conflict,true);
+ rows.set('legacy',{ciphertext:JSON.stringify({version:2,slots:{slot1:{data:{cats:[],coins:999}}}}),revision:1,updatedAt:1});
+ await cb.restoreCloudBook(key);
+ assert.equal(b.State.getSaveSlot('slot1'),null,'legacy data must not resurrect a deleted slot');
+ assert.ok(b.State.deletedSaveSlot('slot1'));
+ assert.equal(b.State.getSaveSlot('slot2').data.state.coins,222);
+ assert.equal(b.State.getSaveSlot('slot3').data.state.coins,333);
+ const c=device();await client(c).restoreCloudBook(key);
+ assert.equal(c.State.getSaveSlot('slot1'),null);
+ assert.equal(c.State.getSaveSlot('slot3').data.state.coins,333);
+ assert.equal(a.State.startNewGame('slot1'),true,'a deleted slot can be reused');
+ assert.equal(a.State.deletedSaveSlot('slot1'),null);
+ }
+
 // D1 stores three independent encrypted rows, with independent compare-and-swap revisions.
 class FakeStatement{
  constructor(db,sql){this.db=db;this.sql=sql;this.args=[];}
