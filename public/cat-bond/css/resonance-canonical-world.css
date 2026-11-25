@@ -121,3 +121,11 @@
  .rw-forge-region .rw-objective{display:grid;grid-template-columns:1fr;gap:8px;margin:0 0 10px}.rw-forge-region .rw-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.rw-forge-region .rw-metric{padding:3px}.rw-forge-region .rw-world-actions,.rw-forge-region .rw-cargo{justify-content:flex-start}.rw-forge-region .rw-puzzle-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 }
 @media(max-height:500px) and (orientation:landscape){.rw-world.rw-forge-region.rw-forest-landscape{background:radial-gradient(ellipse at 20% 20%,#4c3b31,#26343b 60%,#12232d)}}
+
+/* Harbor landscape keeps the entire painting and mechanism on screen; only the separate quest rail scrolls. */
+@media(max-height:500px) and (orientation:landscape){
+ .rw-world[data-region="harbor"].rw-forest-landscape{top:44px;padding:6px 10px 10px;background:radial-gradient(ellipse at 24% 8%,#324f62,#192f43 52%,#0d1d2f)}
+ .rw-world[data-region="harbor"].rw-forest-landscape .rw-shell{max-width:min(100%,calc((100dvh - 108px)*16/9))}
+ .rw-world[data-region="harbor"].rw-forest-landscape .rw-head{margin:0;padding-bottom:6px}
+ .rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-guide,.rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-status{margin:5px 0;font-size:11px}
+}
