@@ -98,7 +98,19 @@ export function createExplorer(bridge,region){
  }
  function holdUpperGate(){const gate=bridge.pairedGate();if(!gate||!near(gate.point))return {ok:false,reason:"walk-to-upper-gate"};return bridge.holdUpperGate(bridge.capture());}
  function traceScent(index){const step=bridge.scentStep();if(!step||step.index!==index||!near(step.point))return {ok:false,reason:"walk-to-scent"};return bridge.traceScent(index,bridge.capture());}
+ function startHomeRepair(){
+  const q=bridge.homeQuest(region);if(!q||q.repaired||!near(q.point)||puzzle)return {ok:false,reason:"postgame-repair-unavailable"};
+  active={homeRepair:true,token:bridge.capture()};puzzle=createPuzzle("repair:"+region);return puzzle?{ok:true,puzzle:true}:{ok:false,reason:"unimplemented"};
+ }
+ function meetHomeResident(id){
+  const q=bridge.homeQuest(region),n=localNpcs().find(n=>n.id===id);if(!q?.repaired||!n||!near(n.point))return {ok:false,reason:"postgame-visit-unavailable"};
+  return bridge.meetHomeResident(region,id,n.point,bridge.capture());
+ }
  function complete(){
+  if(active?.homeRepair){
+   const q=bridge.homeQuest(region);if(!q||!near(q.point)||!puzzle?.solved)return {ok:false,reason:"incomplete-physical-action"};
+   const r=bridge.finishHomeRepair(region,active.token);if(r.ok){active=null;puzzle=null;}return r;
+  }
   if(!active)return {ok:false,reason:"no-interaction"};const f=layout.features[active.operation];
   if(!near(f)||(puzzle&&!puzzle.solved))return {ok:false,reason:"incomplete-physical-action"};
   const result=bridge.recordWorld(active.sceneId,active.operation,{...active,verified:true,participants:puzzle?.participants,responses:puzzle?.response});
@@ -121,5 +133,5 @@ export function createExplorer(bridge,region){
  function rewardPoints(){return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}
- return {walk,tick,interact,operate,cancel,complete,traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
+ return {walk,tick,interact,operate,cancel,complete,traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
 }

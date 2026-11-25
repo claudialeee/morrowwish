@@ -13,6 +13,16 @@ const scentAt=(w,i)=>{const p=w.positions.forest,q=scentTrail[i]?.point;return !
 const upperGate={point:[.53,.40],npc:"yahe",name:["与芽禾撑开上层水闸","Open the upper gate with Yahe"],clue:["芽禾会守住上层水闸。沿根桥前往榆川处，接通地下水道。","Yahe will hold the upper gate. Cross the root bridge to Yuchuan and reconnect the lower channel."]};
 const pairedKey="forest:R-03:upper-gate";
 const atForest=(w,q)=>{const p=w.positions.forest;return !!p&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
+// Muling's six letters are optional post-ending scenes. They do not reopen the seal or reverse the ending.
+const homeLetters={
+ harbor:{point:[.131,.341],letter:["岬灯、栖蓝：我曾把回家的愿望放在你们的安全之前。我会重新检查灯塔的回声路径，这次由你们决定何时开灯。","Jiedeng, Qilan: I once put my wish to return home before your safety. I will check the lighthouse's echo paths again. This time, you decide when to light it."],reply:[["岬灯：先把备用灯路接好吧。信任不能靠一盏灯恢复。","Jiedeng: Let's reconnect the spare light first. Trust isn't restored by a single lamp."],["栖蓝：新航线已经试过了。下次我带大家去花园。","Qilan: I've tested the new route. Next time I'll bring everyone to the garden."]]},
+ forest:{point:[.89,.20],letter:["芽禾、榆川：我以为我能替大家承担后果。现在我愿意一起记录水量，让两边都能决定水往哪里流。","Yahe, Yuchuan: I thought I could carry the consequences for everyone. Now I'll help record the water flow, so both communities can decide where it goes."],reply:[["芽禾：下次来花园，我带些药草。别再一个人做决定。","Yahe: I'll bring herbs to the garden next time. No more deciding alone."],["榆川：水路已经恢复，我会带上每月的水量记录。","Yuchuan: The channel is working. I'll bring the monthly flow records."]]},
+ forge:{point:[.88,.30],letter:["烬婆、小铆：我隐瞒了自己动过的机关。我愿意把每个改动写进维修记录，请你们亲自核对。","Jinpo, Xiaomao: I concealed the mechanisms I altered. I'll record every change and let you check the work yourselves."],reply:[["烬婆：先按新的安全流程验收。我们都得对自己的决定负责。","Jinpo: We'll inspect it under the new safety rules. We all answer for our decisions."],["小铆：我给花园做了一套新工具。等我测试完就带过去。","Xiaomao: I made new tools for the garden. I'll bring them when testing is done."]]},
+ sky:{point:[.89,.24],letter:["翎羽、远帆：我曾擅自决定别人该走的路。这次我只修复航标，飞向哪里，由你们选择。","Lingyu, Yuanfan: I used to decide which paths others should take. This time I'll repair the markers; where you fly is your choice."],reply:[["翎羽：我会陪着他，但不会再替他选路线。","Lingyu: I'll fly beside him, but I won't choose his route."],["远帆：花园会是我下一次独立送信的目的地。","Yuanfan: The garden will be my next solo delivery."]]},
+ library:{point:[.89,.29],letter:["墨页、白栞：请把我改变星铃路由的记录保存下来。我不会要求你们删掉它。","Moye, Baikan: Please preserve the record of how I altered the Star Bell's routes. I won't ask you to erase it."],reply:[["墨页：记录会保存。我们也会保护当事人的私人记忆。","Moye: The record stays. We'll also protect the private memories of those affected."],["白栞：我会把核对后的档案副本带到花园。","Baikan: I'll bring verified copies of the archive to the garden."]]},
+ starfall:{point:[.92,.30],letter:["星芽、砾川：我曾只相信中央星铃。现在我愿意帮助校准六地的航路，让每个地方都能发出自己的回应。","Xingya, Lichuan: I once trusted only the Star Bell. Now I'll help align the six routes so every region can send its own reply."],reply:[["星芽：每一处的校准记录都要公开给邻地。","Xingya: Every calibration record must be shared with the neighboring regions."],["砾川：我会带商队经过花园。到时见。","Lichuan: I'll bring the caravan through the garden. See you there."]]}
+};
+const homeVisitKey=(region,id)=>"postgame:visit:"+region+":"+id;
 export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(State)}={}){
  let cachedRoot,cachedStory,cachedApi,cachedView;
  function view(){const api=resolveNarrative();if(!api?.view)throw Error("Canonical narrative host not mounted");const root=State.S;if(cachedRoot===root&&cachedStory===root.resonance&&cachedApi===api&&cachedView)return cachedView;cachedRoot=root;cachedStory=root.resonance;cachedApi=api;return cachedView=api.view();}
@@ -61,6 +71,27 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(!gate||gate.ready||!token||!api.isCurrentAction(token)||!atForest(world(),gate.point))return fail("walk-to-upper-gate");
   return physical(w=>({...w,interactions:{...w.interactions,[pairedKey]:true}}));
  }
+ function homeQuest(region){
+  const v=view(),w=world(),spec=homeLetters[region];
+  if(!v.ending||w.location!==region||!spec)return null;
+  const letter=campaign.side.find(q=>q.id==="postgame:letter-"+region),reunion=campaign.side.find(q=>q.id==="postgame:reunion-"+region);
+  if(v.postgame.includes(reunion.id))return null;
+  const actors=Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({id:n.id,reply:spec.reply[i],visited:!!w.interactions[homeVisitKey(region,n.id)]}));
+  return {...clone(spec),letterText:clone(spec.letter),region,letter,reunion,actors,repaired:v.postgame.includes(letter.id)};
+ }
+ function finishHomeRepair(region,token){
+  const q=homeQuest(region),w=world(),pos=w.positions[region],api=resolveNarrative();
+  if(!q||q.repaired||!token||!api.isCurrentAction(token)||!pos||Math.hypot(pos.x-q.point[0],pos.y-q.point[1])>=.072)return fail("postgame-repair-unavailable");
+  const reward={coins:25,fish:2},r=api.postgame({...q.letter,verified:true,token},patch(x=>x,reward));cachedRoot=null;
+  return r.ok?{...r,reward}:r;
+ }
+ function meetHomeResident(region,id,point,token){
+  const q=homeQuest(region),w=world(),pos=w.positions[region],api=resolveNarrative();
+  if(!q?.repaired||!q.actors.some(a=>a.id===id&&!a.visited)||!token||!api.isCurrentAction(token)||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("postgame-visit-unavailable");
+  const change=x=>({...x,interactions:{...x.interactions,[homeVisitKey(region,id)]:true}});
+  if(q.actors.some(a=>a.id!==id&&!a.visited))return physical(change);
+  const r=api.postgame({...q.reunion,verified:true,token},patch(change,{coins:0,fish:0}));cachedRoot=null;return r;
+ }
  function recordWorld(sceneId,op,proof){
   const api=resolveNarrative(),v=view(),region=v.current?.chapter,w=world();
   if(v.current?.id!==sceneId||w.location!==region||!campaign.regions.includes(region)||!v.objective.includes(op)||proof?.sceneId!==sceneId||proof.operation!==op||proof.region!==region||proof.verified!==true)return fail("invalid-world-evidence");
@@ -80,5 +111,5 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   const reward={coins:10,fish:1},r=api.exchange({a,b,stage:s.stage,actor:s.actor,action:s.action,verified:true,token:proof.token},patch(x=>({...x,cargo:null}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function pickupReward(region,id){const w=world();if(w.location!==region||!/^cache-[12]$/.test(id)||w.pickups[region+":"+id])return fail("already-collected");return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
- return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,scentStep,traceScent,pairedGate,holdUpperGate,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
+ return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
 }

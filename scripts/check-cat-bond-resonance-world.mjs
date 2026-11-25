@@ -62,5 +62,25 @@ console.log(JSON.stringify((function test(src){
  assert(State.startNewGame("slot3"),"slot3");assert(b.view().current.id==="prologue:P-01","slot3 leaked");
  assert(State.loadSlot("slot1"),"restore slot1");assert(b.view().current.id==="finale:B-01"&&JSON.stringify(b.world())===oldW,"slot1 restore");
  const before=JSON.stringify(State.S.resonanceExploration),failed=createWorldBridge({get S(){return State.S},save:()=>({ok:false,reason:"quota"})});assert(!failed.enter("harbor").ok&&JSON.stringify(State.S.resonanceExploration)===before,"failed save did not roll back");
- assert(notified===physical+deliveries,"unexpected shared runtime notification count "+notified);return {physical,puzzles,walkingTicks:walking,deliveries,localInvites,rewards,fixtureTransitions:fixture,slots:3,sharedRuntimeNotifications:notified,canonicalFinale:b.view().current.id};
+ assert(notified===physical+deliveries,"unexpected shared runtime notification count "+notified);
+ // Finish upstream-owned finale/epilogue with fixtures ONLY to exercise the actual postgame world host.
+ while(!b.view().ending){const v=b.view(),scene=v.current;
+  if(scene.id==="finale:B-03")for(const [i,region] of campaign.regions.entries())host(e=>e.supportAction(region,campaign.support[i]));
+  if(scene.choices.length&&scene.choiceTiming==="beforeAction")host(e=>e.choose(scene.choices[0].id));
+  for(const op of scene.requires.filter(op=>!["mechanism:muling-unlock","npc:public-accountability","npc:second-garden-key"].includes(op)))host(e=>e.record(scene.id,op));
+  while(b.view().cursor<scene.lines.length)host(e=>e.nextLine());
+  if(scene.choices.length&&!b.view().choice)host(e=>e.choose(scene.choices[0].id));
+  for(const op of b.view().objective)host(e=>e.record(scene.id,op));host(e=>e.finish());
+ }
+ let letters=0,reunions=0;
+ for(const region of campaign.regions){
+  ok(b.enter(region),"postgame travel");let x=createExplorer(b,region),q=x.homeQuest();
+  assert(q&&!q.repaired,"letter available");assert(!x.meetHomeResident(x.localNpcs()[0].id).ok,"no reunion before repair");
+  walk(x,q.point);ok(x.startHomeRepair(),"repair after ending");solve(x);letters++;
+  x=createExplorer(b,region);assert(x.homeQuest()?.repaired,"letter saved");
+  for(const n of x.localNpcs()){walk(x,n.point);ok(x.meetHomeResident(n.id),"invite resident");x=createExplorer(b,region);}
+  assert(!x.homeQuest(),"reunion completed");reunions++;
+ }
+ assert(b.view().returned.length===12&&b.view().postgame.length===12,"all six regional reunions persisted");
+ return {physical,puzzles,walkingTicks:walking,deliveries,localInvites,rewards,fixtureTransitions:fixture,slots:3,sharedRuntimeNotifications:notified,letters,reunions,canonicalEnding:b.view().ending};
 })(src)));
