@@ -1,0 +1,14 @@
+.res-host{position:absolute;inset:0;z-index:94;display:flex;align-items:flex-end;justify-content:center;padding:clamp(8px,2vw,28px);background:linear-gradient(0deg,#101e2af0,#101e2a18 76%);box-sizing:border-box;overflow:auto}
+.res-host .res-dialogue{width:min(960px,100%);max-height:100%;display:grid;grid-template-columns:minmax(0,26%) minmax(0,1fr);align-items:end;gap:14px;overflow:auto;outline:none}
+.res-host .res-portrait{display:block;width:100%;max-height:50vh;object-fit:contain;object-position:bottom;filter:drop-shadow(0 10px 20px #08131c88)}
+.res-host .res-portrait[hidden]{display:none}.res-host .res-dialogue:has(.res-portrait[hidden]){grid-template-columns:1fr}
+.res-host .res-body{min-width:0;padding:clamp(12px,2.4vw,26px);background:#172b39f5;color:#f6ebd7;border:1px solid #bc9f6f;border-radius:12px;box-shadow:0 14px 45px #08131c80}
+.res-host .res-speaker{font:700 15px system-ui;color:#edcf98;margin:0 0 9px}
+.res-host .res-line{font:500 clamp(15px,1.5vw,20px)/1.6 system-ui;min-height:2.8em;overflow-wrap:anywhere;margin:0 0 12px}
+.res-host .res-controls,.res-host .res-choices{display:flex;flex-wrap:wrap;gap:7px}
+.res-host button,.res-host select{border:1px solid #b69e79;background:#2a4352;color:#f6ebd7;border-radius:7px;min-height:44px;padding:8px 12px;font:650 12px system-ui;cursor:pointer}
+.res-host button:disabled{opacity:.42;cursor:default}.res-host .res-choices{margin-bottom:10px}.res-host .res-choices button{flex:1 1 180px;text-align:left;background:#3b4c50}
+.res-host .res-history{max-height:20vh;overflow:auto;color:#d8d7c8;font:13px/1.5 system-ui;margin-top:10px}
+.res-host .res-dialogue[data-error] .res-body{border-color:#e38f80}
+@media(max-width:700px){.res-host{padding:8px}.res-host .res-dialogue{display:flex;flex-direction:column;align-items:stretch;gap:5px}.res-host .res-portrait{height:clamp(100px,27vh,230px);width:auto;align-self:center}.res-host .res-controls{gap:5px}.res-host button,.res-host select{padding:7px 9px;font-size:11px}.res-host .res-line{font-size:15px}}
+@media(max-height:480px) and (orientation:landscape){.res-host .res-dialogue{display:grid;grid-template-columns:22% minmax(0,1fr)}.res-host .res-portrait{height:auto;max-height:42vh}.res-host .res-body{padding:10px}.res-host .res-line{min-height:2em;font-size:14px}}

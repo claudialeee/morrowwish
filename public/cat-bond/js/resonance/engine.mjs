@@ -8,7 +8,7 @@ export function makeEngine(data,initial){
  const ring=()=>data.links.every(([a,b])=>s.links[a+":"+b].length===4);
  const ended=()=>s.completed.length===data.scenes.length;
  const current=()=>byId[s.scene];
- const regionOpen=r=>data.regions.includes(r)&&index[s.scene]>=index[data.scenes.find(x=>x.chapter===r).id];
+ const regionOpen=r=>data.regions.includes(r)&&(r==="harbor"&&s.scene==="prologue:P-05"||index[s.scene]>=index[data.scenes.find(x=>x.chapter===r).id]);
  const stages=["sendA","receiveB","sendB","receiveA"];
  function validate(){
   if(s.schema!==1||!current()||!Array.isArray(s.completed)||s.completed.some((id,i)=>data.scenes[i]?.id!==id)||s.scene!==data.scenes[Math.min(s.completed.length,data.scenes.length-1)].id||!Number.isInteger(s.cursor)||s.cursor<0||s.cursor>current().lines.length)throw Error("Invalid campaign sequence");

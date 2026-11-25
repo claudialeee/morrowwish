@@ -26,8 +26,6 @@
   <script src="js/platform.js?v=portal-no-outbound-20261124-v4"></script>
   <link rel="stylesheet" href="css/style.css?v=three-slot-save-manager-20261124-v1" />
   <link rel="stylesheet" href="css/rpg-title.css?v=resonance-title-1" />
-  <link rel="stylesheet" href="css/npc-story-sample.css?v=harbor-h02-playable-20261124-v1" />
-  <link rel="stylesheet" href="css/muling-companion.css?v=muling-companion-20261124-v1" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -44,7 +42,7 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
 #battle-help .battle-help-skill-row:first-of-type{margin-top:9px}
 #battle-help .battle-help-skill-row strong{display:block;font-size:12px;line-height:1.4}
 #battle-help .battle-help-skill-row p{margin:3px 0 0!important;font-size:11.5px;line-height:1.45}
-</style></head>
+</style><link rel="stylesheet" href="css/resonance-host.css?v=slot-authority-1"></head>
 <body>
   <a class="cb-home" href="/" id="cb-home" aria-label="返回 Morrow Wish">← Morrow Wish 首页</a>
   <div id="game-root">
@@ -243,10 +241,9 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
   <script src="js/i18n.js?v=safe-reset-i18n-20261124-v2"></script>
   <script src="js/story-cloud.js?v=per-slot-encrypted-cloud-20261124-v6"></script>
-  <script type="module" src="js/resonance/npc-sample.mjs?v=harbor-h02-playable-20261124-v1"></script>
-  <script type="module" src="js/resonance/muling-companion.mjs?v=muling-companion-20261124-v1"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
   <script src="/telemetry.js?v=bond-funnel-v11-20261122" defer></script>
 <script src="/game-fullscreen.js?v=skills-in-controls-20261122-v1" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script><!-- Last Page RPG production release trigger 2026-11-23; Cloudflare Pages release verification 2026-11-24. -->
+<script type="module" src="js/resonance/narrative-host.mjs?v=slot-authority-1"></script>
 </body>
 </html>
