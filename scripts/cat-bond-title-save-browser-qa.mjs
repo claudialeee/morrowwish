@@ -18,6 +18,7 @@ for(const profile of [
  // keep acceptance traffic out of the owner's real player analytics.
  if(new URL(origin).protocol==='https:')await context.route('**/api/session*',route=>route.fulfill({status:204,body:''}));
  const page=await context.newPage(),errors=[];
+ await page.addInitScript(()=>{window.__titleQaTouchTrace=[];for(const type of ['touchstart','touchend','touchcancel','pointerdown','pointerup','pointercancel','click'])document.addEventListener(type,event=>{const el=event.target;const button=el?.closest?.('button,.dex-cell');const list=window.__titleQaTouchTrace;list.push({type,target:button?.textContent?.trim().slice(0,70)||el?.id||el?.tagName,pointer:event.pointerType||null,canceled:event.defaultPrevented});if(list.length>32)list.shift();},true);});
  page.on('pageerror',error=>errors.push(error.message));
  page.on('dialog',dialog=>dialog.accept());
  const screenshot=name=>page.screenshot({path:output+'/'+profile.name+'-'+name+'.png',animations:'disabled'});
@@ -155,7 +156,7 @@ for(const profile of [
   assert.deepEqual(errors,[],'no page runtime exceptions');
   console.log('PASS title/save normal flow '+profile.name);
  }catch(error){
-  failed=true;console.error('FAIL '+profile.name,error);
+  failed=true;console.error('FAIL '+profile.name,error);console.error('Recent actual input',await page.evaluate(()=>window.__titleQaTouchTrace).catch(()=>[]));
   await screenshot('failure').catch(()=>{});
  }finally{await context.close();}
 }
