@@ -32,7 +32,6 @@ export const puzzleSpecs={
  "puzzle:paired-water-gates":{type:"pairedWater",initial:[0,0,0],goal:[2,1,1]},
  "puzzle:safety-blueprint":{type:"blueprint",initial:[],goal:[2,0,1]},
  "puzzle:heat-pressure":{type:"heat",initial:[35,20],goal:[55,25]},
- "puzzle:joint-flight":{type:"flight",initial:[0,0],goal:[3,0],wind:[1,-1,1]},
  "puzzle:mirror-records":{type:"memory",initial:[],goal:[1,2,0]},
  "puzzle:star-map":{type:"stars",initial:[0,0,0],goal:[3,1,2],mod:4},
  "puzzle:distributed-routing":{type:"routing",initial:[0,0,0],goal:[1,1,1],mod:2},
@@ -40,7 +39,6 @@ export const puzzleSpecs={
  "repair:harbor":{type:"mirrors",initial:[0,0,2],goal:[1,2,3],mod:4},
  "repair:forest":{type:"water",initial:[0,1,0],goal:[1,0,1],mod:2},
  "repair:forge":{type:"heat",initial:[40,15],goal:[60,30]},
- "repair:sky":{type:"flight",initial:[0,0],goal:[3,0],wind:[-1,1,-1]},
  "repair:library":{type:"memory",initial:[],goal:[2,1,0]},
  "repair:starfall":{type:"stars",initial:[1,0,0],goal:[2,3,1],mod:4},
 };
@@ -64,7 +62,6 @@ export function movePuzzle(p,i){
   if(p.type==="melody")p.response=p.values.map((n,j)=>({actor:p.participants?.[j%2],reply:(n+1)%3}));
  }
  else if(p.type==="heat"){if(i===0){p.values[0]+=5;p.values[1]+=5;}else if(i===1)p.values[1]-=5;else p.values=[...p.initial];if(p.values[0]>70||p.values[1]>45||p.values[1]<0){p.values=[...p.initial];p.mistakes++;}}
- else if(p.type==="flight"){const wind=p.wind[p.values[0]];p.values[1]+=wind+(i-1);p.values[0]++;if(Math.abs(p.values[1])>1||(p.values[0]===3&&p.values[1]!==0)){p.values=[...p.initial];p.mistakes++;}}
  else return false;
  p.solved=p.values.length===p.goal.length&&p.values.every((n,j)=>n===p.goal[j]);return p.solved;
 }

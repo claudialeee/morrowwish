@@ -49,3 +49,13 @@
 @media(max-width:700px){.res-host[data-scene="sky:S-04"] .res-dialogue[data-speaker="muling"] .res-portrait{height:clamp(110px,32vh,270px);max-height:34vh}}
 @media(max-height:480px) and (orientation:landscape){.res-host[data-scene="sky:S-04"] .res-dialogue[data-speaker="muling"] .res-portrait{height:auto;max-height:48vh}}
 @media(prefers-reduced-motion:reduce){.res-host[data-scene="sky:S-04"]::before{animation:none}.res-host[data-scene="sky:S-04"] .res-portrait{transition:none}}
+
+/* The original pendant is visible in the same approved portrait: crop a short detail shot, not a substitute prop. */
+.res-host[data-scene="sky:S-04"] .res-dialogue{position:relative}
+.res-host[data-scene="sky:S-04"][data-sky-moment="11"] .res-dialogue::before{content:"";position:absolute;pointer-events:none;z-index:3;left:2%;bottom:8%;width:21%;aspect-ratio:1.25;background:radial-gradient(ellipse at center,transparent 38%,#142638d9 100%),url("../assets/cinematics/characters/muling/traveler-neutral.webp") 46% 82%/365% auto no-repeat;border:1px solid #e8d4a0a6;border-radius:12px;box-shadow:0 6px 25px #0c172b88}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-sky-tap="1"]::before{animation:sky-bell-beat-one .28s ease-out both}
+.res-host[data-scene="sky:S-04"] .res-dialogue[data-sky-tap="2"]::before{animation:sky-bell-beat-two .28s ease-out both}
+@keyframes sky-bell-beat-one{0%,100%{transform:rotate(0)}35%{transform:rotate(-1.5deg);filter:brightness(1.16)}}
+@keyframes sky-bell-beat-two{0%,100%{transform:rotate(0)}35%{transform:rotate(1.5deg);filter:brightness(1.16)}}
+@media(max-width:700px){.res-host[data-scene="sky:S-04"][data-sky-moment="11"] .res-dialogue::before{left:3%;top:6%;bottom:auto;width:22%;max-width:105px}}
+@media(prefers-reduced-motion:reduce){.res-host[data-scene="sky:S-04"] .res-dialogue::before{animation:none!important}}
