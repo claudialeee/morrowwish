@@ -154,6 +154,28 @@ jobs:
           fi
           # Actual end-user DOM, not only the aggregator or source-string tests.
           node scripts/test-dashboard-history-browser.mjs
+      - name: Verify canonical Harbor progression on three screen sizes
+        run: |
+          if [ -f public/cat-bond/js/resonance/harbor-presentation.mjs ]; then
+            node scripts/check-cat-bond-resonance-world.mjs
+            # Static server from the earlier browser step is sufficient for the local-save playthrough.
+            if ! curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null; then
+              node scripts/cat-bond-local-cloud-server.mjs >/tmp/harbor-server.log 2>&1 &
+              for attempt in {1..30}; do
+                if curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null; then break; fi
+                sleep 1
+              done
+            fi
+            node scripts/cat-bond-harbor-playthrough.mjs
+          fi
+      - name: Save Harbor browser acceptance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cat-bond-production-harbor
+          path: artifacts/cat-bond-harbor/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Save CrazyGames yard menu layout screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -257,6 +279,14 @@ jobs:
           done
           test "$latest" = 1 || { echo "::error::Cloudflare Cat Bond HTML/JS/CSS still stale after deployment"; exit 1; }
           echo "Cloudflare Cat Bond LIVE verified against $GITHUB_SHA, including exact story, map, boss, UI, locale, CSS and garden artwork bytes."
+          # Compare actual Harbor implementation bytes, not merely the shared entrypoint.
+          if [ -f public/cat-bond/js/resonance/harbor-presentation.mjs ]; then
+            for asset in js/resonance/harbor-presentation.mjs js/resonance/world-runtime.mjs js/resonance/world-bridge.mjs js/resonance/world-exploration.mjs js/resonance/dialogue-ui.mjs css/resonance-canonical-world.css css/resonance-host.css; do
+              curl -fsSL --max-time 20 -o /tmp/harbor-live-asset "https://morrowwish.pages.dev/cat-bond/$asset?verify=$GITHUB_SHA"
+              cmp -s "public/cat-bond/$asset" /tmp/harbor-live-asset || { echo "::error::Stale Harbor asset $asset"; exit 1; }
+            done
+            echo "Harbor production source verified against $GITHUB_SHA"
+          fi
           # Exercise the deployed D1-backed cloud-save endpoint without creating a save row.
           unauth_code=$(curl -sSL --max-time 15 -o /tmp/catbond-cloud-unauth.json -w '%{http_code}' "https://morrowwish.pages.dev/api/cat-bond-cloud-save?verify=$GITHUB_SHA")
           test "$unauth_code" = 401 || { echo "::error::Cloud-save API unauthenticated GET returned $unauth_code; expected 401"; exit 1; }
