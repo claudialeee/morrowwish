@@ -35,7 +35,9 @@ async function start(page,id,starter){
 }
 async function cloud(page){
  await page.locator('#cb-system-toggle').click();
- await page.locator('[data-system="cloud"]').click();
+ assert.equal(await page.locator('[data-system="cloud"]').count(),0,'No separate cloud menu');
+ await page.locator('[data-system="slots"]').click();
+ await page.locator('.cb-slot-manager [data-slot-sync]').click();
  await page.locator('.cb-cloud-overlay').waitFor({state:'visible'});
 }
 const status=page=>page.locator('.cb-cloud-overlay:visible [role="status"]');
