@@ -9,15 +9,16 @@
 }
 #stage #intro.cb-rpg-intro.hide{display:none!important;visibility:hidden!important;pointer-events:none!important}
 #stage #intro .cb-title-landscape{position:absolute!important;inset:0!important;z-index:0!important;
- background:linear-gradient(90deg,rgba(10,25,34,.82),rgba(18,40,43,.24) 47%,rgba(17,32,36,.02) 100%),
- linear-gradient(0deg,rgba(8,21,24,.68),transparent 40%),url('../assets/cinematics/prologue/star-bell.webp') 62% 50%/cover no-repeat;
- animation:cb-title-drift 24s ease-in-out infinite alternate;pointer-events:none;transform-origin:70% 50%}
+ background:linear-gradient(270deg,rgba(10,25,34,.86),rgba(18,40,43,.48) 42%,rgba(17,32,36,.05) 72%,rgba(17,32,36,.02) 100%),
+ linear-gradient(0deg,rgba(8,21,24,.68),transparent 40%),url('../assets/cinematics/prologue/star-bell.webp') 30% 50%/cover no-repeat;
+ animation:cb-title-drift 24s ease-in-out infinite alternate;pointer-events:none;transform-origin:30% 50%}
 @keyframes cb-title-drift{from{transform:scale(1.015)}to{transform:scale(1.055) translateX(-.5%)}}
 #stage #intro::before{background:linear-gradient(0deg,rgba(7,17,20,.45),transparent 45%)!important;z-index:1!important}
 #stage #intro #intro-stars{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:1!important;opacity:.42!important;pointer-events:none}
 #stage #intro .cb-title-content{position:relative!important;z-index:2!important;display:flex!important;flex-direction:column!important;
  align-items:center!important;justify-content:center!important;gap:clamp(16px,3vh,29px);width:min(100%,650px);margin:0 auto!important;padding:0!important;box-sizing:border-box;text-align:center}
-@media(min-width:1000px){#stage #intro .cb-title-content{transform:translateX(-18%);width:min(58%,650px)}}
+/* Keep the bell in the left half of the original painting unobstructed. */
+@media(min-width:681px) and (min-aspect-ratio:4/3){#stage #intro .cb-title-content{transform:translateX(24%);width:min(54%,620px)}}
 #stage #intro .cb-intro-brand{font:600 11px/1.5 Georgia,serif!important;color:#dfd4bc!important;letter-spacing:.42em!important;margin:0!important}
 #stage #intro .cb-intro-titleblock{margin:0!important;width:100%;display:flex;flex-direction:column;align-items:center;gap:12px}
 #stage #intro .game-logo{font:600 clamp(42px,6.4vw,88px)/1.08 Georgia,'Songti SC','Noto Serif SC',serif!important;
@@ -82,7 +83,7 @@ html body #stage #mw-game-settings,html body #stage #mw-fullscreen-toggle{displa
 #stage .cb-slot-manager-row strong,#stage .cb-slot-manager-row span,#stage .cb-slot-manager-row small{color:#eee1c9!important}
 @media(max-width:680px){
  #stage #intro.cb-rpg-intro:not(.hide){padding:48px 14px 18px!important}
- #stage #intro .cb-title-landscape{background-position:86% 42%;background-image:linear-gradient(0deg,rgba(10,25,34,.96),rgba(10,25,34,.72) 32%,rgba(10,25,34,.15) 64%,rgba(10,25,34,.08)),url('../assets/cinematics/prologue/star-bell.webp')}
+ #stage #intro .cb-title-landscape{background-position:23% 42%;background-image:linear-gradient(0deg,rgba(10,25,34,.96),rgba(10,25,34,.72) 32%,rgba(10,25,34,.15) 64%,rgba(10,25,34,.08)),url('../assets/cinematics/prologue/star-bell.webp')}
  #stage #intro .cb-title-content{gap:18px;align-self:end;padding-bottom:clamp(22px,8vh,70px)!important}
  #stage #intro .game-logo{font-size:clamp(34px,10vw,54px)!important}
  #stage #intro .cb-intro-actions{gap:8px!important}
@@ -118,3 +119,8 @@ html body #stage #mw-game-settings,html body #stage #mw-fullscreen-toggle{displa
 #stage .cb-cloud-conflict-row button{min-height:44px;padding:8px 10px;color:#f3e6cb;background:#344c51;border:1px solid #a98f64;border-radius:5px;cursor:pointer;font:600 13px/1.3 system-ui}
 
 #stage #cb-canonical-opening{position:absolute;inset:0;z-index:2300;isolation:isolate}
+
+/* Unified save management; cross-device recovery is secondary to the three slots. */
+#stage .cb-slot-sync{display:block;width:100%;min-height:40px;margin-top:14px;padding:8px 12px;border:1px solid #887c62;border-radius:5px;background:#203a40;color:#ead9b9;font:600 13px/1.4 system-ui;cursor:pointer;text-align:center}
+#stage .cb-slot-sync:focus-visible{outline:2px solid #e4c69a;outline-offset:2px}
+@media (max-height:450px) and (min-width:681px){#stage #intro.cb-rpg-intro:not(.hide){padding:42px 18px 12px!important}#stage #intro .cb-title-content{gap:8px}#stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue){min-height:44px!important}}
