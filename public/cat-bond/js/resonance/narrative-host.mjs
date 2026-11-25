@@ -24,7 +24,7 @@ function install(){
   if(!v.current||game?.scene==="battle"||document.getElementById("cb-finale-result"))return false;
   // Cinematic-only scenes have a physical entrance and an approved shot sequence.
   // Reading their dialogue in the journal must never consume the cinematic cursor.
-  if(v.current.chapter!=="prologue"&&v.current.requires.some(op=>op.startsWith("cinematic:"))){
+  if(v.current.chapter!=="prologue"&&v.current.requires.some(op=>op.startsWith("cinematic:"))&&v.objective.some(op=>op.startsWith("cinematic:"))){
    game?.toast?.({zh:"前往星坠原中央星铃，选择观看剧情。",en:"Visit the central Star Bell in Starfall and choose Watch the story scene."});return false;
   }
   if(v.current.chapter==="epilogue"&&game?.scene!=="yard"){
@@ -54,14 +54,14 @@ function install(){
   ending.setAttribute("role","dialog");ending.setAttribute("aria-modal","true");
   Object.assign(ending.style,{position:"absolute",inset:"0",zIndex:"40",display:"grid",placeItems:"center",overflow:"hidden",background:"#152237"});
   const art=document.createElement("img");art.src=new URL("../../assets/cinematics/prologue/garden-at-dawn.webp",import.meta.url).href;
-  art.alt="";Object.assign(art.style,{position:"absolute",inset:"0",width:"100%",height:"100%",objectFit:"cover",opacity:".80"});
+  art.alt="";Object.assign(art.style,{position:"absolute",inset:"0",width:"100%",height:"100%",objectFit:"contain",opacity:".80"});
   const card=document.createElement("div");Object.assign(card.style,{position:"relative",textAlign:"center",padding:"24px",color:"#fff5dc",textShadow:"0 3px 20px #142239",background:"linear-gradient(90deg,transparent,#152237aa,transparent)",maxWidth:"95%"});
   const title=document.createElement("h2");title.textContent="THE BELL RINGS AGAIN";title.style.font="700 clamp(24px,5vw,54px) Georgia,serif";title.style.letterSpacing=".10em";
   const sub=document.createElement("p"),button=document.createElement("button");button.type="button";card.append(title,sub,button);ending.append(art,card);stage.append(ending);
   function render(){sub.textContent=lang()==="zh"?"星铃再次响起":"The world answers again";button.textContent=lang()==="zh"?"回到阳光花园":"Return to Sunlit Garden";}
   function dismiss(){ending.remove();window.removeEventListener("cat-bond-active-save-changed",dismiss);window.removeEventListener("morrowwish-language-change",render);}
   button.onclick=dismiss;window.addEventListener("cat-bond-active-save-changed",dismiss);window.addEventListener("morrowwish-language-change",render);render();button.focus();
-  if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){art.animate([{transform:"scale(1.035)"},{transform:"scale(1.085)"}],{duration:6500,fill:"forwards"});card.animate([{opacity:0,transform:"translateY(12px)"},{opacity:1,transform:"translateY(0)"}],{duration:1100,fill:"forwards"});}
+  if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){art.animate([{transform:"scale(1)"},{transform:"scale(1)"}],{duration:6500,fill:"forwards"});card.animate([{opacity:0,transform:"translateY(12px)"},{opacity:1,transform:"translateY(0)"}],{duration:1100,fill:"forwards"});}
   window.MorrowwishAudio?.note?.(523.25,.8,.15);
  }
  function scheduleFinish(){
