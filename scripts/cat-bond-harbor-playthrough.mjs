@@ -31,7 +31,7 @@ try {
       // A paged-out button can have no computed accessible name until its
       // ancestor is shown. Locate its exact DOM label for attachment only;
       // all actual clicks still require the visible accessible control.
-      const all=scope.getByRole('button',{name,exact:true,includeHidden:true}).or(scope.locator('button').filter({hasText:new RegExp('^'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\const target=scope.getByRole('button',{name,exact:true}),all=scope.getByRole('button',{name,exact:true,includeHidden:true});')+'
+      const all=scope.getByRole('button',{name,exact:true,includeHidden:true}).or(scope.locator('button').filter({has:page.getByText(name,{exact:true})})).or(scope.locator('button').and(scope.getByText(name,{exact:true})));
       const reveal=async()=>{if(await target.isVisible())return;await all.waitFor({state:'attached',timeout:30000});if(await target.isVisible())return;const world=page.locator('.rw-world:not([hidden])');if(!(await world.isVisible()))return;
        const count=Number(await world.getAttribute('data-fit-pages')||1),next=world.locator('[data-fit-next]'),prev=world.locator('[data-fit-prev]');
        const press=async locator=>options.hasTouch?locator.tap():locator.click();
