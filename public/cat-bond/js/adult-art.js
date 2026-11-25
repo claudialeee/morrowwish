@@ -5,10 +5,9 @@
  * and broke the look in the Moonshadow Ruins. Never replace a painted breed
  * with a new vector cat just because its stage changes.
  *
- * Maturity is expressed through the conservative uniform Growth.visual scale
- * (adult 1.06x, awakened 1.10x), paw-grounding, gem and awakening aura.
- * Every mature cat retains EXACTLY the same original watercolor breed source,
- * colors, expression and natural body proportions as its kitten form.
+ * Independent mature and awakened paintings are not present. Legacy stages
+ * retain the original watercolor breed, scale, coat and expression until
+ * individually approved art exists. This is not a new growth form.
  */
 (function installWatercolorGrowthForms(){
   'use strict';
@@ -20,7 +19,7 @@
 
   // Keep the canonical original-watercolor renderer in charge of world,
   // exploration, yard, battle, celebration and all other cat appearances.
-  // It already applies a UNIFORM Growth.visual scale and draws awakening art.
+  // Retired stage visuals are deliberately neutral (see Growth.visual).
   function drawAdult(ctx,x,y,opts={}){
     return originalDraw(ctx,x,y,opts);
   }
@@ -47,8 +46,7 @@
     }
     ctx.setTransform?.(ratio,0,0,ratio,0,0);
     ctx.clearRect(0,0,w,h);
-    // The same base anchor/scale as the kitten thumbnail; age scale is
-    // applied by the original renderer exactly once. Feet remain planted.
+    // The same base anchor/scale as the kitten thumbnail. Feet remain planted.
     const scale=Math.min(w/72,h/104)*.86;
     const growth=window.Growth?.visual(cat)||null;
     originalDraw(ctx,w/2,h*.60,{

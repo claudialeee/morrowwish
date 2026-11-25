@@ -1,0 +1,182 @@
+/* The Last Resonance — shared presentation tokens.
+   Scoped to Cat Bond; existing interaction geometry, hit targets, z-index,
+   modal visibility, skill cooldowns and per-region paintings stay authoritative. */
+#stage {
+  --cbv-ink: #172532;
+  --cbv-slate: #405967;
+  --cbv-brass: #b58c55;
+  --cbv-brass-light: #e6c99b;
+  --cbv-paper: #f4ead6;
+  --cbv-paper-light: #fbf6e9;
+  --cbv-paper-ink: #304540;
+  --cbv-muted: #60716a;
+  --cbv-line: #b6a88a;
+  --cbv-night: #243b43;
+  --cbv-night-hover: #36535a;
+  --cbv-night-text: #f6ead4;
+  --cbv-night-line: #9d8868;
+  --cbv-accent: #6f9c9a;
+  --cbv-danger: #a45243;
+  --cbv-radius: 8px;
+  --cbv-card-radius: 12px;
+  --cbv-shadow: 0 12px 34px #0c22243b;
+  --cbv-serif: Georgia, "Songti SC", "Noto Serif SC", serif;
+  --cbv-sans: system-ui, "PingFang SC", "Noto Sans SC", sans-serif;
+}
+#stage .rw-world[data-region="harbor"] { --cbv-accent:#8bb9b5; }
+#stage .rw-world[data-region="forest"] { --cbv-accent:#9bb591; }
+#stage .rw-world[data-region="forge"] { --cbv-accent:#d19b73; }
+#stage .rw-world[data-region="sky"] { --cbv-accent:#b3c8d7; }
+#stage .rw-world[data-region="library"] { --cbv-accent:#c3bedb; }
+#stage .rw-world[data-region="starfall"] { --cbv-accent:#c2aed5; }
+
+/* Dark leather/brass navigation, choices and system menus. Keep the
+   navigation sizing and existing region state indicators intact. */
+#stage :is(.rw-button,.res-host button,.res-host select,.cb-system-rows button,.cb-slot-manager-actions button) {
+  background:var(--cbv-night);
+  border:1px solid var(--cbv-night-line);
+  border-radius:var(--cbv-radius);
+  color:var(--cbv-night-text);
+  box-shadow:0 2px 5px #101e2426;
+  font-family:var(--cbv-sans);
+  transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+#stage .rw-system-nav .rw-button { background:var(--cbv-night);border-radius:var(--cbv-radius); }
+#stage :is(.rw-button,.res-host button,.cb-system-rows button,.cb-slot-manager-actions button):not(:disabled):is([aria-pressed="true"],[aria-selected="true"],[aria-current="location"]) {
+  color:#fff4dc;background:#385553;border-color:var(--cbv-accent);
+  box-shadow:inset 0 0 0 1px var(--cbv-accent);
+}
+#stage .rw-regions [aria-current="location"] {border:1px solid var(--cbv-accent);}
+#stage :is(.rw-shell,.rw-objective,.res-host .res-body,.res-key-panel,.cb-system-card,.sg-prologue-guide) {
+  border:1px solid var(--cbv-night-line);
+  border-radius:var(--cbv-card-radius);
+  box-shadow:var(--cbv-shadow);
+}
+#stage .rw-objective,#stage .res-host .res-body,#stage .cb-system-card {
+  background:#1c333deF;
+}
+#stage .rw-head {border-color:#b58c5570;}
+#stage :is(.rw-brand strong,.rw-current strong,.res-speaker,.cb-system-card h2) {
+  font-family:var(--cbv-serif); color:var(--cbv-night-text);
+}
+#stage .rw-brand small,#stage .rw-current small {color:var(--cbv-brass-light);}
+#stage .rw-metric {border-color:#b58c554f;}
+#stage .rw-notice {border-left-color:var(--cbv-accent);}
+#stage .res-host .res-portrait {
+  object-fit:contain;object-position:center bottom;
+  filter:drop-shadow(0 8px 12px #0b192b66);
+}
+#stage .res-host .res-line {font-family:var(--cbv-sans);line-height:1.6;}
+#stage .res-host .res-choices button {background:#31494b;}
+#stage .res-host .res-dialogue[data-error] .res-body {border-color:#e38f80;}
+
+/* Warm book pages for cultivation, Catdex, team, work, inventory,
+   Duo and result cards. Preserve semantic rarity/element colors. */
+#stage #panel.panel {background:#14282e85;backdrop-filter:blur(3px);}
+#stage #panel .card {
+  --panel-solid:var(--cbv-paper-light);--text:var(--cbv-paper-ink);
+  --muted:var(--cbv-muted);--radius:var(--cbv-card-radius);
+  background:var(--cbv-paper-light);
+  color:var(--cbv-paper-ink);
+  border:1px solid var(--cbv-line);
+  border-radius:var(--cbv-card-radius);
+  box-shadow:0 16px 42px #10252955;
+  scrollbar-color:#9f9275 #eee5d4;
+}
+#stage #panel .card :is(h2,h3) {font-family:var(--cbv-serif);color:var(--cbv-paper-ink);}
+#stage #panel .card .sub {color:var(--cbv-muted);}
+#stage #panel :is(.duo-unlocked-card,.duo-relation,.duo-secret-story,.cb-grow-section,.cb-build-blueprint-card,.map-squad-choice,.explore-cat,.cat-detail-metric,.st-row,.battle-order-item,.cb-dex-story-record) {
+  background:var(--cbv-paper);
+  border-color:#b6a88a9c;border-radius:var(--cbv-radius);
+  box-shadow:none;
+}
+#stage #panel .card :is(.btn,.panel-back,.duo-card-watch,.cb-grow-action,.cb-grow-interact,.cb-grow-more) {
+  background:#e8dfcb;color:#304540;border:1px solid #a89b7d;
+  border-radius:var(--cbv-radius);box-shadow:0 1px 3px #243b4319;
+  font-family:var(--cbv-sans);
+  transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+#stage #panel .card :is(.btn.gold,.btn.primary,.duo-chooser-confirm) {
+  background:#d9bd88;color:#263b35;border-color:#a58a5e;
+}
+#stage #panel .card .btn.ghost {background:#f7f0df;color:#40574f;border-color:#b9ad92;}
+#stage #panel .card .btn.primary::after {content:none;}
+#stage #panel .card :is(.card-close,.panel-dismiss) {color:#40574f;border-radius:var(--cbv-radius);}
+#stage #panel .card :is(.btn,.panel-back,.cb-grow-action,.cb-grow-interact):is([aria-pressed="true"],[aria-selected="true"]):not(:disabled) {
+  background:#d7e4d7;border-color:#688879;box-shadow:inset 0 0 0 1px #688879;
+}
+#stage #panel :is(.duo-gallery-thumb,.cb-build-thumb,.breed-member canvas,.map-squad-choice canvas,.squad-cat-info canvas,.explore-cat canvas) {
+  object-fit:contain;object-position:center;
+  image-rendering:auto;
+}
+/* Title and slot selectors keep the approved title art and slot geometry. */
+#stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue) {
+  border-radius:var(--cbv-radius)!important;
+  box-shadow:0 4px 14px #071b2055!important;
+}
+#stage #intro .cb-intro-actions button#intro-start {
+  background:#dcc18d!important;color:#172d35!important;border-color:#e6c99b!important;
+}
+#stage #intro .cb-intro-actions button#intro-continue {
+  background:var(--cbv-night)!important;color:var(--cbv-night-text)!important;border-color:var(--cbv-night-line)!important;
+}
+#stage #intro .cb-save-slot,#stage .cb-slot-manager-row {
+  border-radius:var(--cbv-radius)!important;
+}
+#stage #intro .cb-save-slot-actions button {border-radius:var(--cbv-radius)!important;}
+#stage .cb-slot-manager-card {border-radius:var(--cbv-card-radius)!important;}
+#stage #cb-system-toggle {border-radius:var(--cbv-radius)!important;}
+
+/* Battle: compact parchment HUD belongs to the same book system. Keep
+   all positional rules, role colors, cooldown masks and status layers. */
+#stage #battle-ui .battle-topbar {
+  background:#f4ead6eb;border:1px solid #a79b7b;
+  border-radius:var(--cbv-radius);box-shadow:0 3px 11px #162a3340;
+  color:#304540;
+}
+#stage #battle-ui :is(.battle-tools .btn,.move-bar .move,#duo-burst) {
+  background:#f4ead6ed;border:1px solid #b6a88a;
+  border-radius:var(--cbv-radius);color:#304540;
+  box-shadow:0 2px 9px #162a3333;
+}
+#stage #battle-ui .move-bar .move.ult {background:#e7d1a5;border-color:#b38d54;}
+#stage #battle-ui .move-bar .move.ult.ready {background:#f1cf86;border-color:#a7783c;}
+#stage #battle-ui :is(.battle-tools .btn,.move-bar .move):is([aria-pressed="true"],[aria-selected="true"]) {
+  background:#d3e1d4;border-color:#688879;box-shadow:inset 0 0 0 1px #688879;
+}
+#stage #battle-ui :is(.battle-enemy-track,.battle-poise-track,.ult-track,.slot-hp) {
+  background:#c9c5b4;border-radius:4px;
+}
+#stage #battle-ui #battle-enemy-hp-fill {background:#a45243;}
+#stage #battle-ui #battle-enemy-poise-fill {background:#8e7957;}
+#stage #battle-ui .battle-poise-track.is-staggered #battle-enemy-poise-fill {background:#d3a65c;}
+#stage #battle-ui #ult-bar {background:#b58c55;}
+#stage #battle-ui .battle-help-content {
+  background:var(--cbv-paper-light);color:var(--cbv-paper-ink);
+  border-color:var(--cbv-line);border-radius:var(--cbv-card-radius);
+}
+#stage #battle-help .battle-help-skills {background:var(--cbv-paper);border-color:var(--cbv-line);color:var(--cbv-paper-ink);}
+#stage #battle-ui .battle-hint {text-shadow:0 1px 3px #14282e;}
+#stage #battle-ui .team-slot canvas,#stage #battle-ui #bench-slots canvas {object-fit:contain;image-rendering:auto;}
+
+/* Common input feedback: no transforms or dimension changes on press. */
+#stage :is(.rw-button,.res-host button,.cb-system-rows button,.cb-slot-manager-actions button,#panel .btn,#panel .panel-back,#panel .cb-grow-action,#panel .cb-grow-interact,#battle-ui .move,#battle-ui .battle-tools .btn,#duo-burst):focus-visible {
+  outline:2px solid #b58c55;outline-offset:2px;
+}
+@media (hover:hover) {
+ #stage :is(.rw-button,.res-host button,.cb-system-rows button,.cb-slot-manager-actions button):not(:disabled):not([aria-disabled="true"]):hover {background:var(--cbv-night-hover);border-color:var(--cbv-brass-light);}
+ #stage :is(#panel .btn,#panel .panel-back,#panel .cb-grow-action,#panel .cb-grow-interact,#battle-ui .move,#battle-ui .battle-tools .btn):not(:disabled):not([aria-disabled="true"]):hover {border-color:#8d7550;box-shadow:inset 0 0 0 1px #b58c55;}
+}
+#stage :is(.rw-button,.res-host button,.cb-system-rows button,.cb-slot-manager-actions button,#panel .btn,#panel .panel-back,#panel .cb-grow-action,#panel .cb-grow-interact,#battle-ui .move,#battle-ui .battle-tools .btn):not(:disabled):not([aria-disabled="true"]):active {
+  box-shadow:inset 0 2px 5px #17253240;
+}
+#stage :is(.rw-button,.res-host button,.cb-system-rows button,.cb-slot-manager-actions button,#panel .btn,#panel .panel-back,#panel .cb-grow-action,#panel .cb-grow-interact,#battle-ui .battle-tools .btn):is(:disabled,[aria-disabled="true"]) {
+  opacity:.55;cursor:not-allowed;box-shadow:none;
+}
+@media (max-width:700px) {
+ #stage #panel .card :is(.btn,.panel-back,.cb-grow-action,.cb-grow-interact) {white-space:normal;overflow-wrap:anywhere;}
+ #stage .rw-button,#stage .res-host button {overflow-wrap:anywhere;}
+}
+@media (prefers-reduced-motion:reduce) {
+ #stage :is(.rw-button,.res-host button,.cb-system-rows button,.cb-slot-manager-actions button,#panel .btn,#panel .cb-grow-action) {transition:none;}
+}
