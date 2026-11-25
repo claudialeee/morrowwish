@@ -60,8 +60,12 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(s.lines.length&&!s.lines.some(l=>l.speaker===npcId)&&!s.choices.some(c=>c.npc===npcId))return fail("wrong-npc");
   const location=State.S.resonanceExploration?.location;if(campaign.regions.includes(region)&&location&&location!==region)return fail("wrong-map-location");
   const pending=v.objective.find(x=>x.startsWith("npc:"));
-  if(!pending)return {ok:true,dialogueOnly:true};
+  if(!pending||["npc:public-accountability","npc:second-garden-key"].includes(pending))return {ok:true,dialogueOnly:true};
   return op(sceneId,pending,{token});
+ }
+ function completeNPCScene({sceneId,operation,region,npcId,verified,token}={}){
+  const v=view();if(!token||!check(token)||verified!==true||region!=="garden"||npcId!=="muling"||sceneId!==v.current?.id||!v.objective.includes(operation)||v.cursor!==v.current.lines.length||!["npc:public-accountability","npc:second-garden-key"].includes(operation))return fail("npc-scene-incomplete");
+  return op(sceneId,operation,{token});
  }
  function evidence({sceneId,operation,region,verified,outcome,token}={},physical){
   if(!check(token))return fail("stale-action");
@@ -81,8 +85,8 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
  function exchange({a,b,stage,actor,action,verified,token}={},physical){if(verified!==true||!token)return fail("exchange-unverified");if(State.S.resonanceExploration?.location!==actor)return fail("wrong-map-location");return transaction(e=>e.exchange({a,b,stage,actor,action}),{token,physical})}
  function postgame({id,operation,verified,token}={}){if(verified!==true||!token)return fail("postgame-unverified");return transaction(e=>e.postgame(id,operation),{token})}
  function npcProfile(id){const actor=campaign.cast[id];if(!actor||id==="player")return null;const v=view();return {id,name:clone(actor.name),region:actor.region,trust:v.trust[id],returned:v.returned.includes(id),phase:id==="muling"?v.muling:null,availableAmbient:read().ambientAvailable(actor.region).filter(a=>a.npc===id)}}
- function residents(region){const v=view();if(region==="garden"){const ids=[...v.returned];if(["companion","accountability-pending","accountable","reconciled"].includes(v.muling)||["prologue:P-04","prologue:P-05"].includes(v.current?.id))ids.unshift("muling");return [...new Set(ids)].map(npcProfile).filter(Boolean)}
+ function residents(region){const v=view();if(region==="garden"){const ids=[...v.returned];if(["epilogue:E-02","epilogue:E-03"].includes(v.current?.id))ids.push(...Object.values(campaign.cast).filter(n=>campaign.regions.includes(n.region)).map(n=>n.id));if(["companion","accountability-pending","accountable","reconciled"].includes(v.muling)||["prologue:P-04","prologue:P-05"].includes(v.current?.id))ids.unshift("muling");return [...new Set(ids)].map(npcProfile).filter(Boolean)}
   if(!v.regions.includes(region))return [];const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(v.current?.chapter===region&&["sky:S-04","library:M-03","library:M-05","starfall:F-03","starfall:F-04","starfall:F-05"].includes(v.current?.id))ids.push("muling");return ids.map(id=>({...npcProfile(id),scripted:id==="muling"}));}
  const follows=()=>view().muling==="companion"||view().muling==="identity-revealed";
- return Object.freeze({capture,isCurrentAction:check,subscribe,exchange,initialize:()=>State.S.resonance?{ok:true,state:clone(State.S.resonance)}:transaction(e=>({ok:true,state:e.snapshot()})),npcProfile,residents,follows,view,snapshot:()=>read().snapshot(),choose:(id,token)=>transaction(e=>e.choose(id),{token}),nextLine:token=>transaction(e=>e.nextLine(),{token}),finish:token=>transaction(e=>e.finish(),{token}),recordNPC,evidence,ambient,support,postgame,ambientAvailable:region=>read().ambientAvailable(region),supportProfile:region=>read().supportProfile(region)});
+ return Object.freeze({capture,isCurrentAction:check,completeNPCScene,subscribe,exchange,initialize:()=>State.S.resonance?{ok:true,state:clone(State.S.resonance)}:transaction(e=>({ok:true,state:e.snapshot()})),npcProfile,residents,follows,view,snapshot:()=>read().snapshot(),choose:(id,token)=>transaction(e=>e.choose(id),{token}),nextLine:token=>transaction(e=>e.nextLine(),{token}),finish:token=>transaction(e=>e.finish(),{token}),recordNPC,evidence,ambient,support,postgame,ambientAvailable:region=>read().ambientAvailable(region),supportProfile:region=>read().supportProfile(region)});
 }

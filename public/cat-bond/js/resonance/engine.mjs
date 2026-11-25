@@ -24,6 +24,7 @@ export function makeEngine(data,initial){
  // Trusted game adapters only: never expose this operation to a generic completion button.
  function record(sceneId,operation){if(ended()||sceneId!==s.scene||!current().requires.includes(operation))return fail("unexpected-operation");if(current().choices.length&&current().choiceTiming==="beforeAction"&&!s.choices[s.scene])return fail("choice-pending");const e=s.evidence[s.scene]||[];
   if(e.includes(operation))return fail("duplicate-operation");
+  if(["npc:public-accountability","npc:second-garden-key"].includes(operation)&&s.cursor!==current().lines.length)return fail("dialogue-pending");
   if(operation.startsWith("melody:")&&!s.sanctuaries.includes(operation.split(":")[1]))return fail("sanctuary-not-repaired");
   if(operation==="mechanism:muling-unlock"&&(!ring()||s.support.length!==6||!e.includes("battle:central-echo")||s.cursor!==current().lines.length))return fail("support-incomplete");
   s.evidence[s.scene]=e;add(e,operation);if(operation.startsWith("repair:"))add(s.sanctuaries,operation.split(":")[1]);if(operation.startsWith("melody:"))add(s.melodies,operation.split(":")[1]);return commit()}

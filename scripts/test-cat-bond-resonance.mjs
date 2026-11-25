@@ -9,10 +9,12 @@ function verify(data,makeEngine){
   if(scene.choices.length&&scene.choiceTiming==="beforeAction"){assert(!e.record(scene.id,scene.requires[0]).ok,"missing advance choice");pass(e.choose(scene.choices[variant].id),"advance choice")}
   if(scene.lineGate.length&&scene.lines.length)assert(!e.nextLine().ok,"premature critical dialogue "+scene.id);
   if(scene.id==="finale:B-03"){assert(!e.record(scene.id,"mechanism:muling-unlock").ok,"early unlock");for(let i=0;i<6;i++)pass(e.supportAction(data.regions[i],data.support[i]),"support")}
-  for(const op of scene.requires.filter(op=>op!=="mechanism:muling-unlock")){pass(e.record(scene.id,op),op);assert(!e.record(scene.id,op).ok,"duplicate")}
+  const deferred=scene.requires.filter(op=>["npc:public-accountability","npc:second-garden-key"].includes(op));for(const op of deferred)assert(!e.record(scene.id,op).ok,"premature epilogue action");
+  for(const op of scene.requires.filter(op=>op!=="mechanism:muling-unlock"&&!deferred.includes(op))){pass(e.record(scene.id,op),op);assert(!e.record(scene.id,op).ok,"duplicate")}
   if(scene.id==="starfall:F-04"){assert(!e.finish().ok,"early finish");links(e);assert(e.view().ring,"ring");}
   for(const l of scene.lines){assert(l.text.zh&&l.text.en,"bilingual");pass(e.nextLine(),"line "+scene.id)}
   if(scene.choices.length&&scene.choiceTiming==="afterDialogue")pass(e.choose(scene.choices[variant].id),"after choice");
+  for(const op of deferred)pass(e.record(scene.id,op),"completed epilogue action");
   if(scene.requires.includes("mechanism:muling-unlock"))pass(e.record(scene.id,"mechanism:muling-unlock"),"unlock");
   const snap=e.snapshot();e=makeEngine(data,JSON.parse(JSON.stringify(snap)));assert(e.snapshot().cursor===snap.cursor,"restore");pass(e.finish(),scene.id);links(e);return e}
  assert(!e.finish().ok,"click-only");assert(!e.record("library:M-03","npc:identity-confrontation").ok,"early reveal");assert(!e.ambient("muling:tea","ambient:brew-bitter-tea").ok,"early ambient");

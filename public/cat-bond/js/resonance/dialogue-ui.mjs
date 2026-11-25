@@ -19,11 +19,11 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  if(!s){dispose();onClose?.();return}if(lastScene!==s.id){lastScene=s.id;sessionHistory=[]}const l=v.lineReady?s.lines[v.cursor]:null;
  const choiceVisible=!v.choice&&s.choices.length&&(s.choiceTiming==="beforeAction"||v.cursor===s.lines.length);
  if(choiceVisible)for(const c of s.choices){const b=el("button");b.type="button";b.textContent=c.label[k];b.addEventListener("click",()=>{if(persist(engine.choose(c.id)))render()});choices.append(b)}
- if(l){const actor=campaign.cast[l.speaker],url=resolvePortrait(l.speaker,s.id,v.cursor);if(!url){panel.hidden=false;art.hidden=true;art.removeAttribute("src");name.textContent=actor.name[k];line.textContent=l.text[k];panel.dataset.missingPortrait=l.speaker}else{panel.hidden=false;art.src=url;art.hidden=false;delete panel.dataset.missingPortrait;name.textContent=actor.name[k];line.textContent=l.text[k]}}
+ if(l){const actor=campaign.cast[l.speaker],url=l.narration?null:resolvePortrait(l.speaker,s.id,v.cursor);if(!url){panel.hidden=false;art.hidden=true;art.removeAttribute("src");name.textContent=l.narration?s.title[k]:actor.name[k];line.textContent=l.text[k];if(l.narration)delete panel.dataset.missingPortrait;else panel.dataset.missingPortrait=l.speaker}else{panel.hidden=false;art.src=url;art.hidden=false;delete panel.dataset.missingPortrait;name.textContent=actor.name[k];line.textContent=l.text[k]}}
  else{panel.hidden=false;const last=choiceVisible?s.lines[Math.max(0,v.cursor-1)]:null,url=last?resolvePortrait(last.speaker,s.id,Math.max(0,v.cursor-1)):null;art.hidden=!url;if(url)art.src=url;else art.removeAttribute("src");delete panel.dataset.missingPortrait;name.textContent=choiceVisible?(k==="zh"?"你的选择":"Your choice"):s.title[k];line.textContent=choiceVisible?s.title[k]:w.wait}
  for(const id of ["next","skip","auto"])buttons[id].hidden=!!choiceVisible;speedSelect.hidden=!!choiceVisible;
  buttons.next.disabled=!l||!!choiceVisible;buttons.skip.disabled=!l||!!choiceVisible;buttons.auto.disabled=!l||!!choiceVisible;buttons.history.setAttribute("aria-pressed",String(showHistory));
- for(const h of sessionHistory){const p=el("p");p.textContent=campaign.cast[h.speaker].name[k]+" · "+h.text[k];history.append(p)}
+ for(const h of sessionHistory){const p=el("p");p.textContent=(h.narration?s.title[k]:campaign.cast[h.speaker].name[k])+" · "+h.text[k];history.append(p)}
  if(automatic&&l&&!choiceVisible)timer=setTimeout(next,Math.max(850,Math.min(5500,(800+l.text[k].length*48)/speed)));
  if(!l&&!choiceVisible)onAwaitAction?.({reason:"gameplay-or-scene-transition",scene:s.id,objective:v.objective});
  }

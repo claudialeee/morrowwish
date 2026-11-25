@@ -2437,7 +2437,30 @@ export const campaign = {
         "en": "Muling Takes Responsibility"
       },
       "previous": "epilogue:E-01",
-      "lines": [],
+      "lines": [
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "是我削弱了封印。我原本打算将每只猫的记忆汇入中央星铃。",
+            "en": "I weakened the seal. I intended to merge every cat's memories into the Star Bell."
+          }
+        },
+        {
+          "speaker": "muling",
+          "narration": true,
+          "text": {
+            "zh": "有些猫很愤怒。另一些愿意和暮铃继续合作，却还没有准备好原谅她。",
+            "en": "Some cats are angry. Others are willing to work beside Muling, but are not ready to forgive her."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "我接受你们的决定。我不会要求你们原谅我，也不会要求任何回报。",
+            "en": "I accept your decisions. I will not ask you to forgive me, or ask for anything in return."
+          }
+        }
+      ],
       "requires": [
         "npc:public-accountability"
       ],
