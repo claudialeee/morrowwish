@@ -134,7 +134,7 @@ function install(){
  function mount(b){
   document.getElementById("cb-finale-hud")?.remove();
   const el=document.createElement("section");el.id="cb-finale-hud";el.className="cb-finale-hud";
-  el.innerHTML='<strong data-finale-title></strong><p data-finale-objective></p><div data-finale-count></div><button type="button" data-finale-clue aria-expanded="false"></button><p data-finale-record hidden></p>';
+  el.innerHTML='<strong data-finale-title></strong><p data-finale-objective></p><div data-finale-count></div><button type="button" data-finale-clue aria-expanded="false"></button><p data-finale-record hidden></p><div data-finale-focus hidden></div>';
   el.querySelector("button").onclick=()=>{
    const f=b.resonanceFinale;if(!f||f.id!=="finale:B-02")return;
    f.clueOpen=!f.clueOpen;
@@ -163,11 +163,14 @@ function install(){
   const bonus=effect?" · "+tr("协作 "+effect.required.toFixed(1)+"秒 / 失守伤害 "+effect.pulseDamage,"Hold "+effect.required.toFixed(1)+"s / unguarded damage "+effect.pulseDamage)+(effect.gardenLevel?tr(" · 家园 Lv."," · Garden Lv.")+effect.gardenLevel:""):"";
   const reply=next?tr(...REPLY_OBJECTIVES[next.region])+bonus:tr("六段旋律已归位，攻击中央回响。","All six melodies have returned. Strike the central echo.");
   set("[data-finale-objective]",first?tr("打断六个逆响锁。挡住袭向地区伙伴的铃声。","Break all six inward locks. Intercept bell pulses aimed at the regional allies."):second?tr("观察回应节拍；攻击第二次敲击过早的回响。","Observe the reply rhythm. Strike the echo whose second beat is too early."):reply);
-  set("[data-finale-count]",first?f.nodes.filter(n=>n.done).length+"/6":second?f.confirmed.size+"/"+f.echoGroups:f.nodes.filter(n=>n.done).length+"/6");
+  set("[data-finale-count]",first?f.nodes.filter(n=>n.done).length+"/6":second?f.confirmed.size+"/"+f.echoGroups:f.nodes.filter(n=>n.done).length+"/6"+(next?" · "+Math.floor(100*next.progress/(next.required||4))+"%":""));
   const clue=el.querySelector("button");
   clue.hidden=!second;
   clue.textContent=f.clueOpen?tr("收起 Catdex","Close Catdex"):tr("查看 Catdex 记录","Check Catdex record");
   clue.setAttribute("aria-expanded",String(f.clueOpen));
+  const focus=el.querySelector("[data-finale-focus]");
+  focus.hidden=!second||!f.clueOpen||b.autoMode;
+  if(!focus.hidden){const candidates=b.liveEnemies().filter(e=>e.echoObserved&&e.finaleActor==="echo");const signature=candidates.map(e=>e.i).join(",");if(focus.dataset.signature!==signature){focus.dataset.signature=signature;focus.replaceChildren();for(const e of candidates){const button=document.createElement("button");button.type="button";button.dataset.echo=String(e.i);button.onclick=()=>{if(b.done||!e.alive)return;b._lockIdx=e.i;notice(b,"已锁定回应","Reply targeted");paint(b)};focus.append(button);}}for(const button of focus.children){const i=Number(button.dataset.echo),group=Math.floor(i/2);button.textContent=tr(["上","中","下"][group]+(i%2?"右":"左"),["Top","Mid","Bottom"][group]+(i%2?" R":" L"));button.setAttribute("aria-pressed",String(b._lockIdx===i));}}
   const record=el.querySelector("[data-finale-record]");
   record.hidden=!second||!f.clueOpen;
   if(!record.hidden){
@@ -245,7 +248,7 @@ function install(){
   return list.sort((a,c)=>Math.hypot(x-a.x,y-a.y)-Math.hypot(x-c.x,y-c.y))[0]||null;
  };
  function castPulse(b,f){
-  const n=f.nodes.find((n,i)=>i>=f.cycle%6&&!n.done)||f.nodes.find(n=>!n.done);
+  const n=f.id==="finale:B-03"?f.nodes.find(n=>!n.done):f.nodes.find((n,i)=>i>=f.cycle%6&&!n.done)||f.nodes.find(n=>!n.done);
   const actor=b.liveEnemies().find(e=>e.finaleActor==="muling"||e.finaleActor==="central");
   if(!actor)return;
   if(n){const broken=f.nodes.filter(n=>n.done).length;f.cast={node:f.nodes.indexOf(n),remaining:Math.max(.85,1.4-broken*.06),x:n.x,y:n.y,fromX:actor.x,fromY:actor.y,style:f.id==="finale:B-01"&&f.cycle%2===1?"chain":"pulse"};f.cycle++;}
@@ -265,6 +268,7 @@ function install(){
   if(f.root!==window.State.S||!host()?.isCurrentAction?.(f.token)||host()?.view()?.current?.id!==f.id){b.finish(false);return;}
   const d=clamp(dt*(b.tempoScale??.64),0,.06);f.elapsed+=d;
   if(f.id==="finale:B-02"){
+   if(f.lastAuto!==b.autoMode||f.lastLock!==b._lockIdx){f.lastAuto=b.autoMode;f.lastLock=b._lockIdx;paint(b);}
    const beat=f.elapsed%2.8,prev=(f.elapsed-d)%2.8;
    const learning=f.clueOpen;
    const duoTriggered=b.duoUses>f.lastDuoUse;
@@ -313,13 +317,12 @@ function install(){
   if(f.id!=="finale:B-03"||b.done)return;
   const next=f.nodes.find(n=>!n.done);
   if(!next)return;
-  const me=b.me();
-  // Auto mode performs the same physical movement and protection requirement, not a free progress flag.
-  if(b.autoMode&&me?.alive&&!b.duoRun&&!me.dashT&&!me.rootT){const dx=next.x-me.x,dy=next.y-me.y,l=Math.hypot(dx,dy);if(l>18){const step=Math.min(l,105*d);me.x+=dx/l*step;me.y+=dy/l*step;}}
+  // The existing AI movement loop owns steering to the active node; no second position writer.
   const need=regionalEffects(b,next.region).required;
   if(next.required!==need){next.required=need;paint(b);}
   const near=alive(b).some(x=>distance(x,next)<=56);
   next.progress=holdProgress(next.progress,d,near,false,need);next.required=need;
+  const progressBucket=Math.floor(next.progress/need*20);if(f.progressBucket!==progressBucket){f.progressBucket=progressBucket;paint(b);}
   if(next.progress>=need){
    // Stage the verified physical action in this fight; a retreat cannot grant narrative evidence.
    next.done=true;b.vfx.ring(next.x,next.y,{r0:15,vr:240,life:.8,color:next.color,width:5});
@@ -392,11 +395,11 @@ function install(){
     :active.recordEvidence(proof);
    committed=!!r?.ok;
   }
-  if(same&&window.State.difficulty()==="casual")window.State.healAllCats?.();
+  if(same){const State=window.State;const seen=new Set();for(const fighter of [...b.team,...(b._benchFighters?.values?.()||[])]){const cat=fighter.cat;if(!cat||fighter._reinforcement||seen.has(cat.uid))continue;seen.add(cat.uid);if(State.difficulty()==="hardcore")State.setBattleHealth(cat,fighter.alive?clamp(fighter.hp/fighter.maxhp,.15,1):.15);else {delete cat._hpFrac;delete cat._hpAt;}}if(State.difficulty()==="casual")State.healAllCats?.();State.save();}
   document.getElementById("cb-finale-hud")?.remove();document.getElementById("battle-ui")?.classList.remove("on");
   const duo=document.getElementById("duo-burst");if(duo)duo.hidden=true;
   this.battle=null;this._returnScene=null;this.scene="map";document.body.classList.add("cb-exploring");this.setBattleHelpVisible?.(false);this.refreshHUD?.();window.WorldMap?.resumeRegion?.(false);
-  this.toast(committed?{zh:"本阶段目标已达成。",en:"The objective is complete."}:win?{zh:"剧情保存失败，请重新挑战。",en:"Story save failed. Retry the encounter."}:{zh:"队伍撤离，休整后再挑战。",en:"Withdrawn. Rest and retry the encounter."});
+  this.toast(committed?{zh:"本阶段目标已达成。",en:"The objective is complete."}:win?{zh:"剧情保存失败，请重新挑战。",en:"Story save failed. Retry the encounter."}:b._voluntaryFlee?{zh:"队伍撤离，休整后再挑战。",en:"Withdrawn. Rest and retry the encounter."}:{zh:"挑战失败。恢复队伍后重试。",en:"Defeated. Recover your team and try again."});
   if(committed)active.showCurrent?.();
  };
  window.addEventListener("cat-bond-resonance-battle-request",e=>{const d=e.detail;if(d?.region==="starfall"&&PHASES[d.sceneId]===d.operation)prep(window.__game,d.sceneId);});
@@ -423,6 +426,7 @@ function install(){
   }
   return false;
  }
- window.CatBondFinaleCombat=Object.freeze({prepare:prep,available,drawEnemy});
+ function guardSteering(b,fighter){const f=b.resonanceFinale;if(!f||!b.autoMode||fighter!==b.me()||f.id!=="finale:B-03")return null;const n=f.nodes.find(n=>!n.done);if(!n)return null;const dx=n.x-fighter.x,dy=n.y-fighter.y,d=Math.hypot(dx,dy);return d>16?{x:dx/d,y:dy/d}:{x:0,y:0};}
+ window.CatBondFinaleCombat=Object.freeze({prepare:prep,available,drawEnemy,guardSteering});
 }
 if(typeof window!=="undefined")install();

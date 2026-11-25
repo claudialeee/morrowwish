@@ -46,7 +46,9 @@ async function play(sceneId){
     const canvas=document.createElement("canvas");canvas.width=400;canvas.height=460;
     window.CatArt.renderCatThumb(canvas,species);
     const playerArt=canvas.toDataURL("image/png");
-    for(const frame of scene.frames)if(frame.id.includes("-line-"))frame.layers=[...(frame.layers||[]),{image:playerArt,kind:"actor",x:22,y:73,width:20,travel:2}];
+    // Separate saved-protagonist memory shot, rather than overlaying two protagonists.
+    const frame={id:"finale:B-04-current-keeper",image:"assets/cinematics/prologue/garden-at-dawn.webp",alt:{zh:"属于守铃者自己的记忆",en:"The Bellkeeper’s own memories"},durationMs:3800,transitionMs:700,effect:"sanctuary",note:392,layers:[{image:playerArt,kind:"actor",x:48,y:82,width:34,travel:0}]};
+    scene.frames.splice(1,0,frame);
    },
    onLanguageChange:next=>window.MorrowwishI18n?.set?.(next),
    onError:error,

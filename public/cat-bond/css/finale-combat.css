@@ -16,3 +16,6 @@
 @media(max-width:600px) and (orientation:portrait){
   #battle-ui .cb-finale-hud{top:auto;bottom:calc(83px + env(safe-area-inset-bottom,0px))}
 }
+
+.cb-finale-hud [data-finale-focus]:not([hidden]){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;margin-top:4px}.cb-finale-hud [data-finale-focus] button{padding:3px;min-height:32px;font-size:10px}.cb-finale-hud [data-finale-focus] button[aria-pressed="true"]{border-color:#f2d38d;background:#70583d}.cb-finale-hud [data-finale-record]{max-height:85px;overflow:auto;pointer-events:auto;overscroll-behavior:contain}.cb-finale-hud [data-finale-record][hidden],.cb-finale-hud [data-finale-focus][hidden]{display:none}
+@media(max-height:500px) and (orientation:landscape){.cb-finale-hud [data-finale-record]{max-height:48px}.cb-finale-hud [data-finale-focus] button{min-height:27px}}

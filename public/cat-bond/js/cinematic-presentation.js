@@ -290,7 +290,7 @@
           node.src = layer.image;
           if(layer.kind==='actor'){
             const x=clamp(Number(layer.x)||50,12,88),y=clamp(Number(layer.y)||80,45,91);
-            node.style.inset='auto';node.style.left=x+'%';node.style.top=y+'%';
+            node.style.inset='auto';node.style.left=x+'%';node.style.top=y+'%';node.style.background='transparent';
             node.style.width=clamp(Number(layer.width)||22,12,30)+'%';
             node.style.height='auto';node.style.maxHeight='46%';node.style.objectFit='contain';
             node.style.transform='translate(-50%,-100%)';
