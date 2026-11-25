@@ -19,6 +19,7 @@
   // ZH -> EN. Longest keys are applied first at runtime so compound phrases win
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
+    '先完成与暮铃的交谈和花园调查。': 'Talk to Muling and investigate the garden before leaving.',
     '花园复兴': 'Garden restoration',
     '选中的双猫正在过来！': 'Your chosen duo is on its way.',
     '请选择未工作、未闹别扭的双猫。': 'Choose a duo that is not working or sulking.',

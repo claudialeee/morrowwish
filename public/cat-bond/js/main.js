@@ -250,7 +250,7 @@ function startIntroStars() {
     cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   };
   resize(); window.addEventListener('resize', resize);
-  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)return;
   const stars = Array.from({ length: 70 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.6 + 0.4, ph: Math.random() * 6, sp: 0.2 + Math.random() * 0.5 }));
   const motes = Array.from({ length: 9 }, () => ({ x: Math.random(), y: Math.random(), r: 2 + Math.random() * 3, vy: 0.00008 + Math.random() * 0.00012, vx: (Math.random() - 0.5) * 0.00008, c: ['#f3d9a3', '#e9d6b4', '#adc8cb', '#c9e1dc'][Math.floor(Math.random() * 4)], ph: Math.random() * 6 }));
   let t = 0;
