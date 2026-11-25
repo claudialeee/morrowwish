@@ -98,3 +98,10 @@ html body #stage #mw-game-settings,html body #stage #mw-fullscreen-toggle{displa
 
 #stage .cb-slot-manager-actions [data-remove-save]{color:#f6d8c2!important;background:#493c3e!important;border:1px solid #ad8073!important}
 #stage .cb-slot-manager-actions [data-remove-save]:focus-visible{outline:2px solid #e4c69a;outline-offset:2px}
+
+#stage #intro .cb-save-picker-card,#stage .cb-cloud-card{position:relative!important}
+#stage .cb-picker-language{position:absolute!important;top:15px!important;right:56px!important;min-width:65px!important;min-height:38px!important;padding:6px 10px!important;font:600 12px/1.3 system-ui!important;color:#f2dfbc!important;background:#263e46!important;border:1px solid #a98f64!important;border-radius:5px!important;cursor:pointer!important;z-index:2}
+#stage .cb-picker-language:focus-visible{outline:2px solid #f2d8a8;outline-offset:2px}
+#stage #intro .cb-save-picker-card h2{margin-right:105px!important}
+#stage .cb-cloud-card h2{padding-right:108px!important}
+@media(max-width:680px){#stage .cb-picker-language{top:10px!important;right:44px!important;min-height:36px!important}}
