@@ -1,0 +1,41 @@
+name: Cat Bond release prologue — browser acceptance
+on:
+  pull_request:
+    branches: [rpg/cat-bond-takeover]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/cat-bond-release-prologue-qa.mjs'
+      - '.github/workflows/cat-bond-release-prologue-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-release-prologue-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  prologue:
+    if: github.head_ref == 'rpg/release-prologue'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: node scripts/check-cat-bond-cinematics.mjs && node scripts/test-cat-bond-resonance.mjs && node scripts/test-cat-bond-resonance-slot.mjs
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Actual game in all three device orientations
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/prologue-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          node scripts/cat-bond-release-prologue-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cat-bond-release-prologue-screenshots
+          path: artifacts/cat-bond-release-prologue/
+          if-no-files-found: warn
+          retention-days: 3
