@@ -58,7 +58,7 @@ try {
     const shot = async id => {
       const expected=expectedAudio[id]||(id.startsWith('battle-attempt-')?'battle':null);
       if(process.env.CAT_BOND_AUDIO_ACCEPTANCE==='1'&&expected){
-        await page.waitForFunction(track=>{const s=window.MorrowwishMusic?.status?.();return s?.track===track&&s.playing&&s.source===(['title','garden','atlas','harbor','forest','postgarden'].includes(track)?'quality-ogg:enchanted-valley':'recorded-mp3:'+track)&&s.activeMusicSources<=2;},expected,{timeout:15000});
+        await page.waitForFunction(track=>{const s=window.MorrowwishMusic?.status?.();return s?.track===track&&s.playing&&(track.startsWith('song-')?s.source==='recorded-mp3:'+track:s.source?.startsWith('premium-mp3:'))&&s.activeMusicSources<=2;},expected,{timeout:15000});
         const audio=await page.evaluate(()=>MorrowwishMusic.status());assert.equal(audio.audioState,'running');audioEvidence.push({checkpoint:id,...audio});
       }
       const cinematic=page.locator('.cbcp-root:not([hidden])');

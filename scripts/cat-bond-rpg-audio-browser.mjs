@@ -29,12 +29,12 @@ try{
   await menu.locator('[data-system="music"]').click();
   await waitTrack('title');
   await menu.locator('[data-system="close"]').click();
-  assert.equal(title.source,'quality-ogg:enchanted-valley','must use the new licensed recording');
+  assert.equal(title.source,'premium-mp3:tomorrow','must use licensed candidate title recording');
   await page.locator('#intro-start').click();
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
   await page.waitForFunction(()=>document.querySelector('.cbcp-root:not([hidden])')?.dataset.ready==='true');
   await waitTrack('opening');
-  assert.equal(await page.evaluate(()=>MorrowwishMusic.status().source),'recorded-mp3:opening');
+  assert.equal(await page.evaluate(()=>MorrowwishMusic.status().source),'premium-mp3:childhood');
   await page.locator('.cbcp-pause').click();
   await page.waitForFunction(()=>MorrowwishMusic.status().audioState==='suspended');
   await page.locator('.cbcp-pause').click();
