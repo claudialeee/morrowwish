@@ -243,8 +243,16 @@ try {
     await scene('forest:R-03');
     await button('Open the upper gate with Yahe').click();
     await button('Paired water gates').waitFor();
+    if(name==='landscape'){
+      const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {canvas:{x:a.x,y:a.y,right:a.right,bottom:a.bottom},rail:{x:b.x,y:b.y,right:b.right,bottom:b.bottom},w:innerWidth,h:innerHeight}});
+      assert(layout.canvas.y>=0&&layout.canvas.bottom<=layout.h+1,'Forest canvas must fit entirely in landscape viewport');
+      assert(layout.canvas.right<=layout.rail.x&&layout.rail.right<=layout.w+1&&layout.rail.bottom<=layout.h+1,'Forest controls must sit beside, not cover, the canvas');
+    }
     await shot('forest-upper-gate');
-    await puzzle('Paired water gates',['Open lower channel','Steady upper pressure','Steady upper pressure','Open lower channel','Clear together']);
+    await button('Paired water gates').click();
+    const pairedControls=page.locator('.rw-puzzle-controls');await pairedControls.waitFor();await shot('forest-paired-puzzle');
+    for(const input of ['Open lower channel','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
+    await shot('forest-paired-flow');await button('Clear together',pairedControls).click();await pairedControls.waitFor({state:'hidden'});
     await readDialogue('forest:R-03');
     await scene('forest:R-04');
     await puzzle('Ancient-root sanctuary',['Upstream','Branch','Roots']);
