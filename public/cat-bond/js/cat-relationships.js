@@ -4,7 +4,14 @@ function db(){if(!State.S.duoRelations)State.S.duoRelations={pairs:{},active:[]}
 function pair(a,b){if(!a||!b||a.uid===b.uid)return null;const d=db(),k=[a.uid,b.uid].sort().join(':');return d.pairs[k]||(d.pairs[k]={value:0,lastPlay:0});}
 function grow(a,b,n){const p=pair(a,b);if(!p)return null;const old=p.value;p.value=Math.min(100,old+Math.max(0,n));if(!db().active.length)db().active=[a.uid,b.uid];return {value:p.value,levelUp:(old<20&&p.value>=20)||(old<60&&p.value>=60)||(old<90&&p.value>=90)};}
 function chosen(){const c=State.S.cats,u=db().active;return u.map(id=>c.find(x=>x.uid===id)).filter(Boolean);}
-function choose(a,b){if(!pair(a,b))return false;db().active=[a.uid,b.uid];State.save();return true;}
+function choose(a,b){
+ if(!a||!b||a.uid===b.uid||!State.S.cats.includes(a)||!State.S.cats.includes(b))return false;
+ const root=State.S,d=db(),key=[a.uid,b.uid].sort().join(':'),previous=d.pairs[key],active=d.active.slice();
+ pair(a,b);d.active=[a.uid,b.uid];
+ let saved=false;try{saved=State.S===root&&State.save()?.ok===true}catch{}
+ if(!saved){d.active=active;if(!previous)delete d.pairs[key];return false;}
+ return true;
+}
 // Every duo owns its own eight-moment journal. The five existing map
 // memories retain their stable IDs so every previous save remains intact.
 // Three new memories are earned through DIFFERENT real activities.

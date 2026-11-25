@@ -1038,7 +1038,7 @@ const UI = {
         ${showPairChooser?'':('<button class="btn gold" id="duo-choose" '+(!ok?'disabled':'')+'>'+(selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档'))+'</button>')}
         <button class="btn" id="duo-play" ${!ok||sec>0||(State.S.fish||0)<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
         ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
-      <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
+      <p class="tiny" id="duo-play-status" role="status">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`,preserveScroll);
     this.catHubTabs('duo');
     document.querySelectorAll('#panel [data-duo-index]').forEach(btn=>btn.onclick=()=>{
@@ -1076,7 +1076,8 @@ const UI = {
     });
     document.getElementById('duo-choose').onclick=()=>{
       if(!ok)return;
-      CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];
+      if(!CatRelations.choose(a,b)){this.game.toast(en?'Could not save this duo. Please retry.':'未能保存双猫搭档，请重试。');return;}
+      this._duoPicked=[a.uid,b.uid];
       this.game.yard?.entities?.filter(e=>[a.uid,b.uid].includes(e.cat.uid))
         .forEach(e=>{e.emote('💞',3);e.pettedGlow=1.5;});
       this.game.refreshHUD();
@@ -1111,7 +1112,23 @@ const UI = {
     // The duo page is reachable directly from the adventure guide without a
     // navigation-stack entry. Its visible “Back to adventure” control must
     // return to that guide, not silently jump to the unrelated solo cat hub.
-    document.getElementById('duo-return').onclick=()=>this._navStack.length?this.navigateBack():this.openJourney();
+    document.getElementById('duo-return').onclick=()=>{
+      if(window.ResonanceBook?.isOpen?.()){this.closeAll();return;}
+      return this._navStack.length?this.navigateBack():this.openJourney();
+    };
+    // Cooldown expires on the real open panel without forcing players to
+    // close and reopen it. Old callbacks cannot affect another pair or save.
+    const playControl=document.getElementById('duo-play'),playStatus=document.getElementById('duo-play-status'),owner=State.S;
+    const updatePlay=()=>{
+      if(!playControl?.isConnected||State.S!==owner||!document.getElementById('panel')?.classList.contains('open'))return;
+      const live=owner.duoRelations?.pairs?.[[a.uid,b.uid].sort().join(':')];
+      const remain=Math.max(0,Math.ceil((60000-(Date.now()-(live?.lastPlay||0)))/1000));
+      const english=window.MorrowwishI18n?.get?.()!=='zh';
+      playControl.disabled=!owner.cats.includes(a)||!owner.cats.includes(b)||remain>0||owner.fish<1;
+      playStatus.textContent=remain?(english?'Play again in '+remain+'s':'下次一起玩需 '+remain+' 秒'):(english?'Petting also builds friendship.':'在庭院撸猫也能提升默契。');
+      if(remain>0)setTimeout(updatePlay,Math.min(1000,Math.max(100,remain*1000)));
+    };
+    if(sec>0)updatePlay();
   },
 
   // ---- 欢迎回来 (offline raising report) ----
