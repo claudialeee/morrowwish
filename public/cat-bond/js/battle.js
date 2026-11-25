@@ -4413,7 +4413,7 @@ class CaptureBattle {
       // the wild cat FLEEING (neutral "got away", not a scored defeat) — result='flee' already
       // renders that screen. An over-levelled fight the player genuinely can't win still ends
       // here, honestly, as the prey escaping rather than a silent clock-loss at full HP.
-      if (this.t > 85 && !this.done) { this._timeCapLoss = true; this.finish(false); }
+      if (this.t > 85 && !this.done && !this.storyEncounter && !this.resonanceFinale) { this._timeCapLoss = true; this.finish(false); }
     }
     // First-fight coach: while teaching move/attack/skill, enemies stand down so a
     // brand-new player can learn the controls without taking damage.

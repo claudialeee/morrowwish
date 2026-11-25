@@ -128,7 +128,7 @@ BP.tickCaptureSeq=function(dt){
   if(!this.storyEncounter)return originalTickCapture.call(this,dt);
   if(!this.captureSeq)return;
   this.captureSeq.t=Math.max(0,this.captureSeq.t-dt);
-  if(this.captureSeq.t===0){this.captureSeq=null;this.finish(true);}
+  if(this.captureSeq.t===0){this.captureSeq=null;window.MorrowwishAudio?.effect?.("combat_win");this.finish(true);}
 };
 const originalFinish=BP.finish;
 BP.finish=function(win){
@@ -287,12 +287,13 @@ function currentForgeContext(game,options){
     if(new URLSearchParams(location.search).get("combat")!=="forge")throw Error("Debug preview is not enabled");
     return {preview:true,slot,returnToWorld:null};
   }
-  const engine=options?.engine;
-  if(!engine||typeof engine.view!=="function"||typeof engine.snapshot!=="function"||typeof engine.record!=="function")throw Error("Chat 4 active narrative engine required");
+  const engine=window.CatBondResonance;
+  if(!engine||typeof engine.view!=="function"||typeof engine.snapshot!=="function"||typeof engine.recordEvidence!=="function")throw Error("Chat 4 active narrative host required");
+  if(options?.engine&&options.engine!==engine)throw Error("Noncanonical narrative host");
   if(options.slot&&options.slot!==slot)throw Error("Stale save slot");
   const snapshot=engine.snapshot(),view=engine.view();
   if(JSON.stringify(snapshot)!==JSON.stringify(slot.resonance))throw Error("Narrative engine does not match active slot");
-  if(view.current?.id!==FORGE_ENCOUNTER.id||!view.objective?.includes(FORGE_ENCOUNTER.operation)||view.objective.includes("puzzle:heat-pressure"))throw Error("Forge battle unavailable: complete heat-pressure puzzle first");
+  if(game.scene!=="map"||slot.resonanceExploration?.location!=="forge"||view.current?.id!==FORGE_ENCOUNTER.id||!view.objective?.includes(FORGE_ENCOUNTER.operation)||view.objective.includes("puzzle:heat-pressure"))throw Error("Forge battle unavailable: reach the forge and complete the heat-pressure puzzle first");
   return {preview:false,slot,engine,revision:snapshot.revision,returnToWorld:typeof options.returnToWorld==="function"?options.returnToWorld:null};
 }
 function finishEncounter(game,b){
@@ -301,19 +302,9 @@ function finishEncounter(game,b){
   const slot=window.State.S,valid=ctx?.slot===slot&&!ctx.preview;
   b.forgeRewardGranted=false;
   if(valid){
-    if(win){
-      try{
-        const before=ctx.engine.snapshot();
-        if(before.revision!==ctx.revision||JSON.stringify(before)!==JSON.stringify(slot.resonance))throw Error("Stale narrative revision");
-        const result=ctx.engine.record(FORGE_ENCOUNTER.id,FORGE_ENCOUNTER.operation);
-        if(!result.ok)throw Error(result.reason);
-        slot.resonance=result.state;
-        slot.coins=(slot.coins||0)+80;slot.fish=(slot.fish||0)+2;
-        const cats=[...(b.team||[]),...(b._benchFighters?.values?.()||[])].filter(f=>f?.cat&&!f._reinforcement).map(f=>f.cat);
-        for(const cat of new Map(cats.map(c=>[c.uid,c])).values()){window.State.addXp?.(cat,42);cat.battlesWon=(cat.battlesWon||0)+1;window.Skills?.autoLearn?.(cat);}
-        b.forgeRewardGranted=true;
-      }catch(error){console.error("[Forge] narrative victory rejected",error);}
-    }
+    const clone=x=>JSON.parse(JSON.stringify(x));
+    const oldCoins=slot.coins,oldFish=slot.fish,oldCats=(slot.cats||[]).map(cat=>[cat,clone(cat)]),oldShowcase=slot.firstDuoShowcasePending;
+    const restore=()=>{slot.coins=oldCoins;slot.fish=oldFish;slot.firstDuoShowcasePending=oldShowcase;for(const [cat,previous] of oldCats){for(const key of Object.keys(cat))if(!(key in previous))delete cat[key];Object.assign(cat,previous);}};
     try{
       const seen=new Set(),hardcore=window.State.difficulty()==="hardcore";
       for(const f of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){
@@ -323,8 +314,18 @@ function finishEncounter(game,b){
       }
       if(!hardcore)window.State.healAllCats?.();
       if(b._firstDuoShowcase&&b.duoUses>0)slot.firstDuoShowcasePending=false;
-      window.State.save();
-    }catch(error){console.error("[Forge] recovery/save failed",error);b.forgeRewardGranted=false;}
+      if(win){
+        const before=ctx.engine.snapshot();
+        if(before.revision!==ctx.revision||JSON.stringify(before)!==JSON.stringify(slot.resonance))throw Error("Stale narrative revision");
+        slot.coins=(slot.coins||0)+80;slot.fish=(slot.fish||0)+2;
+        const cats=[...(b.team||[]),...(b._benchFighters?.values?.()||[])].filter(f=>f?.cat&&!f._reinforcement).map(f=>f.cat);
+        for(const cat of new Map(cats.map(c=>[c.uid,c])).values()){window.State.addXp?.(cat,42);cat.battlesWon=(cat.battlesWon||0)+1;}
+        // Chat 4 owns the only story transaction. Staged rewards are included in its single Save Manager write.
+        const result=ctx.engine.recordEvidence({sceneId:FORGE_ENCOUNTER.id,operation:FORGE_ENCOUNTER.operation,region:"forge",verified:true,outcome:"win"});
+        if(!result?.ok)throw Error(result?.reason||"Story save rejected");
+        b.forgeRewardGranted=true;
+      }else{const result=window.State.save();if(!result?.ok)throw Error(result?.reason||"Recovery save rejected");}
+    }catch(error){restore();b.forgeRewardGranted=false;console.error("[Forge] outcome transaction rejected",error);}
     window.arcadeMetric?.(win?"game_complete":"game_over",{region:"forge",storyEncounter:FORGE_ENCOUNTER.operation,outcome});
   }
   document.getElementById("battle-ui")?.classList.remove("on");
@@ -388,7 +389,7 @@ window.CatBondForgeCombat={
     if(!game||!window.State?.S)throw new Error("Start or load a save slot before launching the Forge encounter.");
     const context=currentForgeContext(game,options);
     if(game.battle)throw new Error("A battle is already active.");
-    const preferred=window.UI?.getPreferredBattleTeam?.()||[];
+    const preferred=options.team||window.UI?.getPreferredBattleTeam?.()||[];
     const team=preferred.length?preferred:(window.State.S.cats||[]).slice(0,5);
     if(!team.length)throw new Error("Choose at least one cat before launching the encounter.");
     if(game.scene!=="map")game.openWorldMap?.();
@@ -399,9 +400,16 @@ window.CatBondForgeCombat={
     return game.battle;
   },
   canLaunch(game,options){try{currentForgeContext(game,options);return !game.battle;}catch{return false;}},
+  prepare(game){
+    if(!this.canLaunch(game,{}))return false;
+    const team=window.UI.getPreferredBattleTeam();if(!team.length)return false;
+    const root=window.State.S;window.CatBondResonance.close?.();
+    window.UI.openBattleModePrompt(team,bossSpecies(),{origin:"map",storyTitle:["熔炉机械守卫","Furnace guardian"],onStart:fighters=>{if(root!==window.State.S)return;try{this.launch(game,{team:fighters,slot:root,returnToWorld:()=>window.WorldMap?.resumeRegion?.(false)});}catch(error){toast(game,"战斗入口已失效。","Encounter is no longer available.");console.error(error);}}});return true;
+  },
   drawBackground,drawEnemy,drawBossEffects
 };
-GP.startResonanceBattle=function(operation,context){if(operation!==FORGE_ENCOUNTER.operation)return false;return window.CatBondForgeCombat.launch(this,context);};
+GP.startResonanceBattle=function(operation,context){if(operation!==FORGE_ENCOUNTER.operation)return false;return window.CatBondForgeCombat.prepare(this);};
+window.addEventListener("cat-bond-resonance-battle-request",event=>{const d=event.detail,game=window.__game;if(!game||d?.sceneId!==FORGE_ENCOUNTER.id||d.operation!==FORGE_ENCOUNTER.operation||d.region!=="forge")return;if(!window.CatBondForgeCombat.prepare(game))toast(game,"请先完成熔炉机关。","Complete the furnace mechanism first.");});
 const flee=document.getElementById("btn-flee");
 flee?.addEventListener("click",()=>{if(window.__game?.battle?.storyEncounter)window.__game.battle.forgeRetreat=true;},true);
 window.addEventListener("morrowwish-language-change",()=>{
