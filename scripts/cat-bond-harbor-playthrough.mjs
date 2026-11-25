@@ -245,13 +245,13 @@ try {
     await button('Invite Jiedeng').click();
     await button('Invite Jiedeng').waitFor({state:'hidden'});
     await button('Returning Tides').click();
-    const melodyControls=page.locator('.rw-puzzle-controls');await melodyControls.waitFor();
-    await button('Middle',melodyControls).click(); // wrong note: retry must not commit a melody
+    const harborMelodyControls=page.locator('.rw-puzzle-controls');await harborMelodyControls.waitFor();
+    await button('Middle',harborMelodyControls).click(); // wrong note: retry must not commit a melody
     assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false);
-    for(const input of ['Low','High','Middle'])await button(input,melodyControls).click();
+    for(const input of ['Low','High','Middle'])await button(input,harborMelodyControls).click();
     await page.locator('.rw-world[data-ceremony="harbor"]').waitFor();
     await page.locator('.rw-surface').scrollIntoViewIfNeeded();await shot('harbor-ceremony');
-    await melodyControls.waitFor({state:'hidden'});
+    await harborMelodyControls.waitFor({state:'hidden'});
     await readDialogue('harbor:H-05');
     await scene('forest:R-01');
     await page.locator('.rw-shell').scrollIntoViewIfNeeded();
