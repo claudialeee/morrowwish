@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import {createForgeState,tickForgeState,useForgeSupport,forgeDamageScale,validateForgeState,FORGE_ENCOUNTER} from "../public/cat-bond/js/resonance/forge-combat-rules.mjs";
 let checks=0;const ok=(v)=>{assert.ok(v);checks++;};
+const advance=(state,seconds,hp,target)=>{const events=[];let remaining=seconds;while(remaining>0){const dt=Math.min(.08,remaining);events.push(...tickForgeState(state,dt,hp,target));remaining-=dt;}return events;};
 const s=createForgeState();ok(validateForgeState(s));ok(s.phase===0);ok(s.heat===24);ok(s.supportCharges===2);
-let ev=tickForgeState(s,2.6,1,{x:20,y:30});ok(ev.some(x=>x.type==="windup"));ok(s.cast.kind==="hammerfall"||s.cast.kind==="slag-fan");ok(s.cast.target.x===20);
-ev=tickForgeState(s,2,1,{x:20,y:30});ok(ev.some(x=>x.type==="release"));ok(!s.cast);
+let ev=advance(s,2.6,1,{x:20,y:30});ok(ev.some(x=>x.type==="windup"));ok(s.cast.kind==="hammerfall"||s.cast.kind==="slag-fan");ok(s.cast.target.x===20);
+ev=advance(s,1.3,1,{x:20,y:30});ok(ev.some(x=>x.type==="release"));ok(!s.cast);
 const before=s.heat;const support=useForgeSupport(s);ok(support.ok);ok(support.charges===1);ok(s.heat===Math.max(0,before-46));ok(s.ventOpen===6);ok(forgeDamageScale(s)===1.18);
 ok(!useForgeSupport(s).ok);s.ventOpen=0;s.heat=70;ok(forgeDamageScale(s)===.36);
 s.heat=30;ok(forgeDamageScale(s)===.72);
