@@ -649,10 +649,53 @@ try {
     const catchBefore=await page.evaluate(()=>State.S.catchCount);if(await page.locator('#battle-tutorial-skip').isVisible())await page.locator('#battle-tutorial-skip').click();
     await page.locator('#btn-flee').click();await page.getByText('Retreated from the gale',{exact:true}).waitFor();await shot('sky-retreat');assert.equal(await page.evaluate(()=>State.S.catchCount),catchBefore);
     await page.locator('#sky-retry-encounter').click();await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();
-    await page.locator('#btn-auto').click();if(await page.locator('#battle-tutorial-skip').isVisible())await page.locator('#battle-tutorial-skip').click();
-    if(options.hasTouch){const battle=page.locator('#battle-ui');const rect=await battle.boundingBox();await page.touchscreen.tap(rect.x+rect.width*.6,rect.y+rect.height*.5);}else{await page.keyboard.down('d');await page.waitForTimeout(350);await page.keyboard.up('d');}
+    await page.locator('#btn-auto').click();
+    if(await page.locator('#battle-help').isVisible()){const skip=page.locator('#battle-tutorial-skip');if(await skip.isVisible())await skip.click();else await page.locator('#battle-help-start').click();}
+    await page.locator('#battle-help').waitFor({state:'hidden'});
+    const supportPanel=page.locator('#cb-region-combat[data-region="sky"]'),supportButton=supportPanel.locator('[data-region-support]');
+    await supportPanel.waitFor();
+    assert.equal(await page.evaluate(()=>__game.battle.regionalCombat.skyMethod),name==='portrait'?'escort-flight':'fast-courier');
+    const supportClearance=await supportPanel.evaluate(panel=>{
+      const hud=panel.getBoundingClientRect();
+      const controls=[...document.querySelectorAll('#team-slots .team-slot,#duo-burst,#ult-wrap,.move-bar .move')].filter(el=>!el.hidden&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');
+      return {overlap:controls.filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&Math.min(hud.right,r.right)-Math.max(hud.left,r.left)>1&&Math.min(hud.bottom,r.bottom)-Math.max(hud.top,r.top)>1}).map(el=>el.id||el.className),inside:hud.left>=0&&hud.right<=innerWidth+1&&hud.top>=0&&hud.bottom<=innerHeight+1};
+    });
+    assert.deepEqual(supportClearance,{overlap:[],inside:true},'Gale support panel must leave native battle controls unobscured');
+    await page.waitForFunction(()=>__game.battle?.regionalCombat?.cast,{},{timeout:20000});
+    await shot('sky-gale-warning');
+    await supportButton.click();
+    await page.waitForFunction(()=>!!__game.battle?.regionalCombat?.skySupportEffect);
+    const effect=await page.evaluate(()=>__game.battle.regionalCombat.skySupportEffect);
+    assert.equal(effect.method,name==='portrait'?'escort-flight':'fast-courier');
+    assert.equal(effect.duration,name==='portrait'?1.8:.8);
+    assert.equal(effect.chargeAfter,name==='portrait'?effect.chargeBefore:Math.min(100,effect.chargeBefore+12));
+    assert(effect.protected>0);
+    await shot('sky-choice-support-used');
+    if(options.hasTouch){const cdp=await context.newCDPSession(page);const rect=await page.locator('#scene').boundingBox();const x=rect.x+rect.width*.4,y=rect.y+rect.height*.5;await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+32,y}]});await page.waitForTimeout(280);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}else{await page.keyboard.down('d');await page.waitForTimeout(350);await page.keyboard.up('d');}
     await shot('sky-battle-manual');await page.locator('#btn-auto').click();
     await page.waitForFunction(()=>__game.scene==='map',null,{timeout:200000});await page.locator('#cr-ok,#battle-recovery-ok').waitFor();await shot('sky-natural-battle-result');const skyWon=await page.locator('#cr-ok').isVisible();assert.equal(await page.evaluate(()=>State.S.catchCount),catchBefore+(skyWon?1:0));if(!skyWon)await page.getByText('Squad defeated in the gale',{exact:true}).waitFor();await page.locator('#cr-ok,#battle-recovery-ok').click();
+    // A distinct normal-player loss and win must both be demonstrated on desktop.
+    // Deliberately enter with only one cat, in manual mode, without attacking.
+    if(name==='desktop'){
+      await button('Approach wild cat').click();
+      await page.locator('#battle-team-details summary').click();
+      const selected=page.locator('#panel .map-squad-choice[aria-pressed="true"]');
+      while(await selected.count()>1)await selected.first().click();
+      await page.locator('#panel [data-battle-auto="false"]').click();await page.locator('#bp-go').click();
+      await page.locator('#battle-ui.on').waitFor();
+      if(await page.locator('#battle-help').isVisible()){const skip=page.locator('#battle-tutorial-skip');if(await skip.isVisible())await skip.click();else await page.locator('#battle-help-start').click();}
+      await page.waitForFunction(()=>__game.battle?.team.length===1&&!__game.battle.autoMode);
+      await page.waitForFunction(()=>__game.scene==='map',null,{timeout:200000});
+      await page.getByText('Squad defeated in the gale',{exact:true}).waitFor();await shot('sky-natural-defeat');
+      assert.equal(await page.evaluate(()=>State.S.catchCount),catchBefore+(skyWon?1:0));
+      await page.locator('#sky-retry-encounter').click();await page.locator('#bp-best-team').click();
+      await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();
+      await page.locator('#battle-ui.on').waitFor();
+      if(await page.locator('#battle-tutorial-skip').isVisible())await page.locator('#battle-tutorial-skip').click();
+      await page.waitForFunction(()=>__game.scene==='map',null,{timeout:200000});await page.locator('#cr-ok').waitFor();
+      assert.equal(await page.evaluate(()=>State.S.catchCount),catchBefore+(skyWon?2:1));
+      await shot('sky-natural-victory-after-defeat');await page.locator('#cr-ok').click();
+    }
     await button('World atlas',page.locator('.rw-head')).click();assert.equal(await page.evaluate(()=>WorldMap.isUnlocked('library')),true);assert.equal(await button('Moonmirror Library').isDisabled(),true);
     await button('Catdex',page.locator('.rw-system-nav')).click();await page.getByText('Skyspine flight record',{exact:true}).waitFor();await shot('sky-catdex');await page.locator('#panel .panel-dismiss').click();
     await button('Workshop',page.locator('.rw-system-nav')).click();await page.getByText(/Skyspine wind calibration/).waitFor();await shot('sky-workshop');await page.locator('#panel .panel-dismiss').click();

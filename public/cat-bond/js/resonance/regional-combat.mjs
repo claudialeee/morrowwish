@@ -97,8 +97,8 @@ function install(){
  function mount(game,b){
   document.getElementById("cb-region-combat")?.remove();
   const host=document.getElementById("battle-ui");if(!host)return;
-  const panel=document.createElement("div");panel.id="cb-region-combat";panel.className="cb-region-combat";
-  const label=document.createElement("span"),button=document.createElement("button");button.type="button";
+  const panel=document.createElement("div");panel.id="cb-region-combat";panel.className="cb-region-combat";panel.dataset.region=b.regionalCombat.region;
+  const label=document.createElement("span"),button=document.createElement("button");button.type="button";button.setAttribute("data-region-support","");
   panel.append(label,button);button.addEventListener("click",()=>useSupport(b));
   host.append(panel);paintHud(b);requestAnimationFrame(()=>positionObjectiveHud(panel));
  }
@@ -108,6 +108,7 @@ function install(){
   panel.querySelector("span").textContent=tr(kit.name)+" · "+tr(kit.enemy);
   button.hidden=!r.supportAvailable;button.disabled=r.supportUsed||!r.cast;
   button.textContent=r.supportUsed?tr(["已支援","Support used"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Yuanfan · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Lingyu · Escort flight"]):tr(kit.support);
+  if(r.region==="sky"){button.title=r.skyMethod==="fast-courier"?tr(["解除风切并为必杀槽充能 12 点","Cancel gale shear and charge the ultimate meter by 12"]):tr(["解除风切并为队伍提供短暂无敌","Cancel gale shear and briefly protect the squad"]);panel.dataset.supportPhase=r.supportUsed?"used":r.cast?"ready":"waiting";}
  }
  function useSupport(b){
   const r=b.regionalCombat;if(!r||!r.supportAvailable||r.supportUsed||!r.cast||b.done)return false;
@@ -116,11 +117,23 @@ function install(){
   if(r.kit.kind==="roots")for(const f of cats){f.rootT=0;f.rooted=false;if(f.status)delete f.status.bind;}
   else if(r.kit.kind==="mirror"){for(const e of b.liveEnemies())e.reflectT=0;}
   else if(r.kit.kind==="embers"){for(const f of cats){if(f.status)delete f.status.burn;}}
-  else if(r.kit.kind==="gale"){for(const f of cats){f.inv=Math.max(f.inv||0,r.skyMethod==="escort-flight"?1.8:.8);if(r.skyMethod==="fast-courier")f.ultMeter=Math.min(100,(f.ultMeter||0)+12);}}
+  else if(r.kit.kind==="gale"){
+   const duration=r.skyMethod==="escort-flight"?1.8:.8;
+   const before=b.ult;
+   for(const f of cats)f.inv=Math.max(f.inv||0,duration);
+   // Friendly cats share the battle's actual ultimate gauge. ultMeter is an enemy-only field.
+   if(r.skyMethod==="fast-courier")b.gainUlt(12);
+   r.skySupportEffect={method:r.skyMethod,chargeBefore:before,chargeAfter:b.ult,protected:cats.length,duration};
+  }
   else if(r.kit.kind==="orbit"){for(const f of cats)f.ultMeter=Math.min(100,(f.ultMeter||0)+15);}
   else{for(const f of cats)f.shieldT=Math.max(f.shieldT||0,2.5);}
   for(const f of cats)b.vfx.ring(f.x,f.y,{r0:16,vr:170,life:.55,color:r.kit.color,width:4});
-  notice(b,"地区伙伴已解除本次危险。","Local allies have cleared this hazard.");paintHud(b);return true;
+  if(r.kit.kind==="gale"&&r.skyMethod==="fast-courier"){
+   const gain=r.skySupportEffect.chargeAfter-r.skySupportEffect.chargeBefore;
+   notice(b,"远帆引航 · 风切解除 · 必杀充能 +"+Math.round(gain),"Yuanfan guidance · Gale cleared · Ultimate +"+Math.round(gain));
+  }else if(r.kit.kind==="gale"&&r.skyMethod==="escort-flight")notice(b,"翎羽护航 · 风切解除 · 全队短暂无敌","Lingyu escort · Gale cleared · Squad briefly protected");
+  else notice(b,"地区伙伴已解除本次危险。","Local allies have cleared this hazard.");
+  paintHud(b);return true;
  }
  function resolve(b,r,cast){
   for(const f of living(b)){
