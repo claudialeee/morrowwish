@@ -70,9 +70,10 @@ a{color:#a56a83}a:hover{color:#684f7f}
 .archive-first-round[open]>summary{margin-bottom:12px}
 .archive-first-round-posts{border:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
 .archive-first-round-posts>summary{cursor:pointer;color:#91818c;font-size:12px;font-weight:800;padding:8px 0}
+.period{justify-content:flex-end}.date-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex-basis:100%;justify-content:flex-end}.date-filter>label,.custom-dates label,.range-readout{font-size:12px;color:#876f7e}.custom-dates{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.custom-dates[hidden]{display:none}.custom-dates label{display:flex;align-items:center;gap:5px}.custom-dates input{font:inherit;background:#fffdf9;border:1px solid #ead8d7;color:#5f5065;padding:9px;border-radius:10px;max-width:100%}.range-readout{flex-basis:100%;text-align:right}.date-filter button:disabled,.date-filter select:disabled{opacity:.55;cursor:wait}@media(max-width:800px){.period,.date-filter{justify-content:flex-start;width:100%}.range-readout{text-align:left}.custom-dates{flex-basis:100%}.custom-dates label{flex:1 1 135px}.custom-dates input{min-width:0;flex:1}}
 </style></head><body><main class="wrap">
 <div class="nav"><a href="/" class="logo"><em>▣</em>MORROW WISH</a><div class="nav-right"><div class="lang-switch" role="group" aria-label="Language / 语言"><button type="button" data-lang="zh" aria-pressed="true">中文</button><button type="button" data-lang="en" aria-pressed="false">English</button></div><a class="back" href="/" data-i18n="back">返回游戏首页 ↗</a></div></div>
-<div class="hero"><div><span class="tag" data-i18n="tag">私人工作室 · 统一看板</span><h1 data-i18n="title">统一数据中心</h1><p data-i18n="intro"></p></div><div class="period" id="period" hidden><button id="reload" type="button" data-i18n="refresh"></button><button id="reset-metrics" class="reset-metrics" type="button" data-i18n="resetMetrics"></button></div></div>
+<div class="hero"><div><span class="tag" data-i18n="tag">私人工作室 · 统一看板</span><h1 data-i18n="title">统一数据中心</h1><p data-i18n="intro"></p></div><div class="period" id="period" hidden><div class="date-filter"><label for="date-preset" data-i18n="dateRange"></label><select id="date-preset"><option value="all" data-i18n="dateAll"></option><option value="today" data-i18n="today"></option><option value="yesterday" data-i18n="dateYesterday"></option><option value="7" data-i18n="day7"></option><option value="30" data-i18n="date30"></option><option value="custom" data-i18n="dateCustom"></option></select><div id="custom-dates" class="custom-dates" hidden><label><span data-i18n="dateStart"></span><input id="date-start" type="date" min="2026-11-22" required></label><label><span data-i18n="dateEnd"></span><input id="date-end" type="date" min="2026-11-22" required></label></div><button id="apply-date" type="button" data-i18n="dateApply"></button><span id="applied-range" class="range-readout" aria-live="polite"></span></div><button id="reload" type="button" data-i18n="refresh"></button><button id="reset-metrics" class="reset-metrics" type="button" data-i18n="resetMetrics"></button></div></div>
 <section class="auth" id="login"><h2 data-i18n="accessTitle"></h2><p data-i18n="accessHint"></p><form id="loginForm"><input id="secret" type="password" autocomplete="off" data-i18n-placeholder="passwordPlaceholder" aria-label="Analytics access code" required><button type="submit" data-i18n="accessButton"></button></form></section><div class="status" id="status" role="status"></div>
 <div id="report" hidden><div class="stats" id="stats"></div>
 
@@ -124,12 +125,12 @@ zh:{
 blueskyNativeTitle:"Bluesky · 真实互动",blueskyLikes:"点赞",blueskyReposts:"转发",blueskyReplies:"回复",blueskyQuotes:"引用",
 pageTitle:"Morrow Wish · 统一数据中心",back:"返回游戏首页 ↗",tag:"私人工作室 · 统一看板",title:"统一数据中心",
 intro:"只看真实访问、开局、结算，以及哪个渠道带来玩家。",
-today:"今天 · UTC",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 天",refresh:"刷新数据",resetMetrics:"重置统计",resetConfirm:"确定永久清除所有历史看板统计吗？包括访问、开局、结算及推广归因。游戏存档与推广配置不会删除。",resetting:"正在清除历史统计……",resetDone:"历史统计已清除，已开始重新记录。",resetFailed:"重置失败，请刷新看板后重试。",
+today:"今天",dateRange:"统计日期 · PT",dateAll:"全部时间",dateYesterday:"昨天",date30:"最近 30 天",dateCustom:"自定义",dateStart:"开始",dateEnd:"结束",dateApply:"应用",dateApplied:"当前统计：{start} 至 {end} · PT",dateInvalid:"请选择有效的开始和结束日期。",dateBlocked:"暂时无法读取新日期范围，当前仍显示上次成功的数据。",day3:"最近 3 天",day7:"最近 7 天",day14:"最近 14 天",refresh:"刷新数据",resetMetrics:"重置统计",resetConfirm:"确定永久清除所有历史看板统计吗？包括访问、开局、结算及推广归因。游戏存档与推广配置不会删除。",resetting:"正在清除历史统计……",resetDone:"历史统计已清除，已开始重新记录。",resetFailed:"重置失败，请刷新看板后重试。",
 accessTitle:"工作室专用看板",accessHint:"输入数据看板访问码。访问码仅保存在当前浏览器标签页。",passwordPlaceholder:"数据看板访问码",accessButton:"查看数据",
 ready:"准备就绪。",loading:"正在合并网站流量和游戏事件……",loaded:"已更新 {date} · 所有游戏数据已合并",error:"读取失败：{error}",invalidPassword:"访问码不正确。请重新输入。",
 trend:"每日流量趋势",pvLabel:"页面浏览量",uniqueLabel:"独立浏览器",gamesTitle:"各游戏表现",gamesDesc:"开玩、结算按单次游戏页访问去重：开玩＝该次访问进入游戏，结算＝该次访问至少出现一次正常结算画面，胜负都算；同次访问多局只计一次。猫猫纽带的开玩以玩家点击开始、进入游戏世界为准，不按战斗次数计算。没有对应埋点时留空。游戏页每次真实加载计一次浏览，重复打开和刷新均计入；首页浏览量单独列出。点击表头可排序。",playtestGuide:"“完成”＝游戏出现正常结算画面，胜负都算。括号中的百分比为当前所选日期的转化参考值，不代表独立玩家。",gameMore:"各游戏 · 玩法明细",focusDesc:"七款游戏各保留三项核心玩法指标；转化率见上方总表，没有记录的指标保持空白。",trendMore:"查看流量趋势",
 colGame:"游戏",colPv:"游戏页浏览量",colVisitStart:"访问开玩率",colStartFinish:"开玩结算率",colVisitFinish:"访问结算率",colVisitors:"访客",colStarts:"开玩",colRetries:"重玩",colTime:"平均会话",colEnds:"结算",colDone:"获胜/通关",notAvailable:"",colShares:"分享",colConversion:"开玩率",signalTitle:"玩法观察",signalDesc:"七款游戏各保留三项核心指标；有玩家投票后，再显示简短体验反馈。新埋点不补录历史数据。",feelPrefix:"玩家感受",feelFun:"好玩",feelConfusing:"没看懂",feelNotFun:"不好玩",catSignal:"猫猫绝对无辜！",townSignal:"小镇物语",fishSignal:"口袋水族箱",catRoom1:"第一关通过",catRoom8:"第八关通过",catCaught:"被发现",townWin:"成功建镇",townLose:"建镇失败",townConfusing:"反馈：看不懂",fishGood:"S / A 评级",fishFed:"成功投喂",fishFinished:"完整结束 60 秒",signalWait:"",
-homeFunnelLabel:"主页游戏点击：{clickers}/{visits} 次访问点击了游戏 · {rate}",homeFunnelYouTube:"YouTube 引流：{clickers}/{visits} 次访问点击了游戏 · {rate}",homeFunnelGames:"封面点击：捣蛋猫 {paws} · 自由小镇 {town} · 猫猫纽带 {bond} · 平行人生 {elsewhere}",homeFunnelNew:"仅统计本次更新后的新访问，不补录旧数据。",homeFunnelEmpty:"",channelTitle:"推广渠道 · 真实效果",channelDesc:"平台原生数据按游戏合并展示；Bluesky 显示点赞、转发、回复和引用，不把互动数冒充播放量。网站访问和游戏事件来自本站真实埋点。",videoDetailTitle:"各游戏短视频 · 原生指标",videoDetailNote:"晚间重发视频的原生指标；首发数据另存于下方。Bluesky 仅显示互动数。",
+homeFunnelLabel:"主页游戏点击：{clickers}/{visits} 次访问点击了游戏 · {rate}",homeFunnelYouTube:"YouTube 引流：{clickers}/{visits} 次访问点击了游戏 · {rate}",homeFunnelGames:"封面点击：捣蛋猫 {paws} · 自由小镇 {town} · 猫猫纽带 {bond} · 平行人生 {elsewhere}",homeFunnelNew:"仅统计本次更新后的新访问，不补录旧数据。",homeFunnelEmpty:"",channelTitle:"推广渠道 · 真实效果",channelDesc:"平台原生数据按游戏合并展示；Bluesky 显示点赞、转发、回复和引用，不把互动数冒充播放量。网站访问和游戏事件按所选日期统计；平台原生数据仍是最近一次累计快照。",videoDetailTitle:"各游戏短视频 · 原生指标",videoDetailNote:"晚间重发视频的原生指标；首发数据另存于下方。Bluesky 仅显示互动数。",
 
 
 
@@ -145,12 +146,12 @@ en:{
 blueskyNativeTitle:"Bluesky · verified engagement",blueskyLikes:"Likes",blueskyReposts:"Reposts",blueskyReplies:"Replies",blueskyQuotes:"Quotes",
 pageTitle:"Morrow Wish · Studio Analytics",back:"Back to games ↗",tag:"PRIVATE STUDIO · ONE DASHBOARD",title:"Studio Analytics",
 intro:"Track real visits, starts, finishes and which channels bring players.",
-today:"Today · UTC",day3:"Last 3 days",day7:"Last 7 days",day14:"Last 14 days",refresh:"Refresh",resetMetrics:"Reset metrics",resetConfirm:"Permanently delete all historic dashboard metrics (visits, game starts, finishes and campaign attribution)? Player saves and promotion settings will remain.",resetting:"Clearing historic metrics…",resetDone:"Historic metrics cleared. Tracking has restarted.",resetFailed:"Reset failed. Refresh the dashboard and try again.",
+today:"Today",dateRange:"Date range · PT",dateAll:"All time",dateYesterday:"Yesterday",date30:"Last 30 days",dateCustom:"Custom",dateStart:"Start",dateEnd:"End",dateApply:"Apply",dateApplied:"Showing {start} to {end} · PT",dateInvalid:"Choose a valid start and end date.",dateBlocked:"New range temporarily unavailable; showing the last successful data.",day3:"Last 3 days",day7:"Last 7 days",day14:"Last 14 days",refresh:"Refresh",resetMetrics:"Reset metrics",resetConfirm:"Permanently delete all historic dashboard metrics (visits, game starts, finishes and campaign attribution)? Player saves and promotion settings will remain.",resetting:"Clearing historic metrics…",resetDone:"Historic metrics cleared. Tracking has restarted.",resetFailed:"Reset failed. Refresh the dashboard and try again.",
 accessTitle:"Private studio dashboard",accessHint:"Enter your Analytics access code. It is saved only in this browser tab.",passwordPlaceholder:"Analytics access code",accessButton:"View analytics",
 ready:"Ready.",loading:"Combining website traffic and gameplay events…",loaded:"Updated {date} · All game data in one dashboard",error:"Could not load: {error}",invalidPassword:"Incorrect access code. Please try again.",
 trend:"Daily traffic trends",pvLabel:"Pageviews",uniqueLabel:"Unique browsers",gamesTitle:"Game performance",gamesDesc:"Play and Finish count each game-page visit once: Play means the player entered gameplay during that visit; Finish means the visit reached at least one normal results screen, win or loss. Multiple rounds in one visit count once. For Cat Bond, Play means pressing Start to enter the game world—not starting a battle. Missing tracking stays blank. Every real game-page load counts as one pageview, including refreshes and repeat opens; homepage views are shown separately.",playtestGuide:"Finished means a normal results screen, win or lose. Percentages are approximate conversions for the selected date range, not unique-player measures.",gameMore:"All games · gameplay details",focusDesc:"Three core gameplay metrics per game; conversion rates remain in the table above. Missing records stay blank.",trendMore:"Traffic trends",
 colGame:"Game",colPv:"Game pageviews",colVisitStart:"Visit-to-play rate",colStartFinish:"Play-to-finish rate",colVisitFinish:"Visit-to-finish rate",colVisitors:"Visitors",colStarts:"Played",colRetries:"Replays",colTime:"Avg. session",colEnds:"Finished",colDone:"Wins / clears",notAvailable:"",colShares:"Shares",colConversion:"Start rate",signalTitle:"Gameplay signals",signalDesc:"Three useful signals per game, plus a compact player-vote summary when available. New tracking does not backfill past play.",feelPrefix:"Player votes",feelFun:"Fun",feelConfusing:"Confusing",feelNotFun:"Not fun",catSignal:"Pawsibly Innocent!",townSignal:"Tiny Town",fishSignal:"Pocket Aquarium",catRoom1:"Room 1 cleared",catRoom8:"Room 8 cleared",catCaught:"Times caught",townWin:"Successful towns",townLose:"Failed towns",townConfusing:"Confusing feedback",fishGood:"S / A grades",fishFed:"Successful feeds",fishFinished:"Completed 60s",signalWait:"",
-homeFunnelLabel:"Homepage game clicks: {clickers}/{visits} visits chose a game · {rate}",homeFunnelYouTube:"YouTube traffic: {clickers}/{visits} visits chose a game · {rate}",homeFunnelGames:"Cover clicks: Pawsibly {paws} · Tiny Town {town} · Cat Bond {bond} · Elsewhere {elsewhere}",homeFunnelNew:"Only new visits since this release; no historical backfill.",homeFunnelEmpty:"",channelTitle:"Promotion · actual results",channelDesc:"Native platform metrics are combined by game. Bluesky shows likes, reposts, replies and quotes, never a fabricated view count. Site visits and gameplay events use first-party tracking.",videoDetailTitle:"Native short-video metrics by game",videoDetailNote:"Native metrics for the evening reposts. First-release metrics are archived below. Bluesky shows interactions only.",
+homeFunnelLabel:"Homepage game clicks: {clickers}/{visits} visits chose a game · {rate}",homeFunnelYouTube:"YouTube traffic: {clickers}/{visits} visits chose a game · {rate}",homeFunnelGames:"Cover clicks: Pawsibly {paws} · Tiny Town {town} · Cat Bond {bond} · Elsewhere {elsewhere}",homeFunnelNew:"Only new visits since this release; no historical backfill.",homeFunnelEmpty:"",channelTitle:"Promotion · actual results",channelDesc:"Native platform metrics are combined by game. Bluesky shows likes, reposts, replies and quotes, never a fabricated view count. Site visits and gameplay events follow the selected dates; native platform metrics remain the latest cumulative snapshots.",videoDetailTitle:"Native short-video metrics by game",videoDetailNote:"Native metrics for the evening reposts. First-release metrics are archived below. Bluesky shows interactions only.",
 
 
 
@@ -165,7 +166,31 @@ direct:"Direct",internal:"Internal navigation",external:"External website",mobil
 const gameNames={hub:{zh:"网站首页",en:"Homepage"},"tiny-town":{zh:"小镇物语",en:"No More Mondays: Tiny Town"},elsewhere:{zh:"平行人生",en:"Elsewhere"},"flip-dash":{zh:"翻转冲刺",en:"Flip Dash"},"parcel-panic":{zh:"包裹分拣",en:"Parcel Panic"},"pocket-aquarium":{zh:"口袋水族箱",en:"Pocket Aquarium"},"pawsibly-innocent":{zh:"猫猫绝对无辜！",en:"Pawsibly Innocent!"},"cat-bond":{zh:"猫猫纽带",en:"Cat Bond"}};
 const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const REPORT_FROM="2026-11-22T08:00:00.000Z";
-const reportQuery="from="+encodeURIComponent(REPORT_FROM);
+const BASE_QUERY="from="+encodeURIComponent(REPORT_FROM);
+let reportQuery=BASE_QUERY;
+const MIN_DAY="2026-11-22";
+const pacificToday=()=>{const parts=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).map(p=>[p.type,p.value]));return parts.year+"-"+parts.month+"-"+parts.day;};
+const shiftDay=(day,offset)=>{const d=new Date(day+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+offset);return d.toISOString().slice(0,10);};
+function syncDateControls(){
+ const today=pacificToday(),custom=$("date-preset").value==="custom";
+ $("custom-dates").hidden=!custom;
+ for(const id of ["date-start","date-end"]){$(id).max=today;if(!$(id).value)$(id).value=id==="date-start"?MIN_DAY:today;}
+}
+function selectedQuery(){
+ const mode=$("date-preset").value,today=pacificToday();
+ if(mode==="all")return BASE_QUERY;
+ let start=mode==="today"?today:mode==="yesterday"?shiftDay(today,-1):mode==="custom"?$("date-start").value:shiftDay(today,1-Number(mode));
+ let end=mode==="yesterday"?start:mode==="custom"?$("date-end").value:today;
+ if(mode!=="custom"){start=start<MIN_DAY?MIN_DAY:start;end=end<MIN_DAY?MIN_DAY:end;}
+ if(!start||!end||start<MIN_DAY||end>today||start>end)return null;
+ return BASE_QUERY+"&startDate="+encodeURIComponent(start)+"&endDate="+encodeURIComponent(end);
+}
+function renderRange(){
+ const range=lastData?.range;
+ $("applied-range").textContent=reportQuery===BASE_QUERY?t("dateAll"):range?.start&&range?.end?t("dateApplied",{start:range.start,end:range.end}):"";
+}
+function setDateBusy(busy){for(const id of ["date-preset","date-start","date-end","apply-date"])$(id).disabled=busy;}
+
 const pct=(a,b)=>Number(b)>0?Math.round(Number(a||0)/Number(b)*1000)/10:0;
 let lang="zh",key="",lastData=null,statusKind="ready",lastError="";
 try{const requested=new URLSearchParams(location.search).get('lang');const saved=localStorage.getItem('morrowwish-dashboard-language');lang=requested==='en'||requested==='zh'?requested:(saved==='en'||saved==='zh'?saved:'zh');}catch{}
@@ -449,10 +474,10 @@ const chunks=[t("coverageDays",{records:format(j.records)}),
 if(j.partial)chunks.push(t("coveragePartial"));if(r.unknownPastVisits)chunks.push(t("coverageOld",{n:format(r.unknownPastVisits)}));chunks.push(t("coverageDetails"));$("coverage").textContent=hasData?chunks.filter(Boolean).join(" "):"";$("report").hidden=false;enhanceSortableTables();}
 
 let elsewhereData=null;
-let dashboardNextRead=0,dashboardLoading=false;
-async function loadElsewhere(){
+let dashboardNextRead=0,dashboardLoading=false,dashboardBlockedUntil=0;
+async function loadElsewhere(query){
  try{
-  const res=await fetch('/api/elsewhere-summary?'+reportQuery,{headers:key?{'x-analytics-key':key}:{},cache:'no-store'});
+  const res=await fetch('/api/elsewhere-summary?'+query,{headers:key?{'x-analytics-key':key}:{},cache:'no-store'});
   if(!res.ok)throw Error('Story API unavailable');
   elsewhereData=await res.json();
  }catch{/* Keep the last successful story snapshot. */}
@@ -464,21 +489,24 @@ try{localStorage.setItem("morrowwish-dashboard-language",lang);const uri=new URL
 for(const node of document.querySelectorAll("[data-i18n]"))node.textContent=t(node.dataset.i18n);
 for(const node of document.querySelectorAll("[data-i18n-placeholder]"))node.placeholder=t(node.dataset.i18nPlaceholder);
 for(const node of document.querySelectorAll("[data-lang]"))node.setAttribute("aria-pressed",String(node.dataset.lang===lang));
-if(lastData)render(lastData);enhanceSortableTables();setStatus(statusKind,lastError);
+if(lastData)render(lastData);renderRange();enhanceSortableTables();setStatus(statusKind,lastError);
 }
-async function load(force=false){
+async function load(force=false,query=reportQuery){
 if(dashboardLoading||(!force&&Date.now()<dashboardNextRead))return;
-dashboardLoading=true;setStatus("loading");$("reload").disabled=true;
-try{const response=await fetch("/api/summary?"+reportQuery,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});const j=await response.json();if(response.status===401){key="";$("secret").value="";$("login").hidden=false;$("report").hidden=true;$("period").hidden=true;setStatus("denied");return;}if(!response.ok){
+if(Date.now()<dashboardBlockedUntil){setStatus("dateBlocked");return;}
+dashboardLoading=true;setStatus("loading");$("reload").disabled=true;setDateBusy(true);
+try{const response=await fetch("/api/summary?"+query,{headers:key?{"x-analytics-key":key}:{},cache:"no-store"});const j=await response.json();if(response.status===401){key="";$("secret").value="";$("login").hidden=false;$("report").hidden=true;$("period").hidden=true;setStatus("denied");return;}if(!response.ok){
  const retry=Number(response.headers?.get("Retry-After"));
- dashboardNextRead=Date.now()+Math.max(60000,Number.isFinite(retry)?retry*1000:0);
+ dashboardBlockedUntil=dashboardNextRead=Date.now()+Math.max(60000,Number.isFinite(retry)?retry*1000:0);
  throw Error(j.error||"HTTP "+response.status);
  }
-render(j);await loadElsewhere();dashboardNextRead=Date.now()+120000;$("login").hidden=true;$("period").hidden=false;setStatus("loaded");
- }catch(e){dashboardNextRead=Math.max(dashboardNextRead,Date.now()+60000);$("report").hidden=!lastData;setStatus(lastData?"stale":"error",e.message||t("failGeneric"));}
- finally{dashboardLoading=false;$("reload").disabled=false;}}
+if(query!==reportQuery)elsewhereData=null;reportQuery=query;render(j);renderRange();await loadElsewhere(query);dashboardBlockedUntil=0;dashboardNextRead=Date.now()+120000;$("login").hidden=true;$("period").hidden=false;setStatus("loaded");
+ }catch(e){dashboardBlockedUntil=dashboardNextRead=Math.max(dashboardNextRead,Date.now()+60000);$("report").hidden=!lastData;setStatus(lastData?"stale":"error",e.message||t("failGeneric"));}
+ finally{dashboardLoading=false;$("reload").disabled=false;setDateBusy(false);}}
 document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>applyLanguage(b.dataset.lang)));
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();key=$("secret").value.trim();if(!key)return;try{const r=await fetch("/api/auth",{method:"POST",headers:{"x-analytics-key":key},credentials:"same-origin",cache:"no-store"});if(!r.ok){setStatus("denied");return;}key="";$("secret").value="";await load(true);}catch(err){setStatus("error",err.message||t("failGeneric"));}});
+$("date-preset").addEventListener("change",syncDateControls);
+$("apply-date").addEventListener("click",()=>{const query=selectedQuery();if(query===null){setStatus("dateInvalid");return;}load(true,query);});
 $("reload").addEventListener("click",()=>{if(Date.now()<dashboardNextRead){if(lastData)setStatus("stale");return;}load();});
 $("reset-metrics").addEventListener("click",async()=>{
  if(!window.confirm(t("resetConfirm")))return;
@@ -490,13 +518,13 @@ $("reset-metrics").addEventListener("click",async()=>{
    body:JSON.stringify({confirm:"RESET_METRICS"})
   });
   if(!response.ok)throw Error("HTTP "+response.status);
-  lastData=null;elsewhereData=null;dashboardNextRead=0;
+  lastData=null;elsewhereData=null;dashboardBlockedUntil=dashboardNextRead=0;
   await load(true);
   if(statusKind==="loaded")setStatus("resetDone");
  }catch(e){setStatus("resetFailed");}
  finally{button.disabled=false;$("reload").disabled=false;}
 });
-applyLanguage(lang);load();
+syncDateControls();applyLanguage(lang);load();
 // Manual refresh only: idle dashboards do not consume D1 reads.
 })();
 </script></body></html>
