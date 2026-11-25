@@ -546,7 +546,15 @@ try {
     if(await duoButton.isVisible()&&await duoButton.isEnabled())await duoButton.click();
     else await page.locator('#btn-auto').click();
     await page.waitForFunction(n=>{const b=__game.battle;return b?.duoUses>n&&b.duoCinematic?.t>1&&b.duoCinematic.originalArt&&CatBondDuoHero.assetReady},duoBefore,{timeout:120000});
-    await page.waitForFunction(()=>document.querySelector('#cb-forge-hud')?.dataset.duoArt==='true');
+    // Wait for the real renderer's fully visible painting, not the initial
+    // transparent fade-in. Verify the actual canvas draw metadata as well.
+    await page.waitForFunction(()=>{
+      const b=__game.battle,l=CatBondPremiumCinematics.lastLayout;
+      const p=b?.duoCinematic?(b.duoCinematic.max-b.duoCinematic.t)/b.duoCinematic.max:0;
+      return p>=.33&&p<=.65&&l?.effectPhase>=.30&&l.effectPhase<=.67&&
+        l.originalArt&&l.paintingDrawCount===1&&l.actorLayerCount===0&&
+        document.querySelector('#cb-forge-hud')?.dataset.duoArt==='true';
+    });
     await shot('forge-duo-original-art');
     await page.waitForFunction(()=>{const b=__game.battle;return b&&!b.duoCinematic&&b.duoUses>0&&document.querySelector('#cb-forge-hud')?.dataset.duoArt==='false'});
     assert.equal(await page.evaluate(()=>CatBondDuoHero.assetSource),'63-original-painted-storyboards');

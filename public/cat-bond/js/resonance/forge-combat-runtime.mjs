@@ -253,7 +253,7 @@ function renderHud(game,b){
   p.dataset.duoArt=String(!!(b.duoCinematic?.t>0&&b.duoCinematic.max-b.duoCinematic.t<b.duoCinematic.strikeAt));
   const set=(sel,value)=>{const n=p.querySelector(sel);if(n&&n.textContent!==value)n.textContent=value;};
   set("[data-forge-title]",en?"EMBERFORGE · E-03":"赤炉环城 · E-03");
-  const enemyLabel=document.getElementById("wild-name");if(enemyLabel)enemyLabel.textContent=en?"EMBERFORGE · FURNACE GUARDIAN":"赤炉环城 · 熔炉机械守卫";
+  const enemyLabel=document.getElementById("wild-name");if(enemyLabel)enemyLabel.textContent=en?"FURNACE GUARDIAN":"熔炉机械守卫";
   set("[data-forge-phase]",en?["I · HEAT TEST","II · OVERDRIVE","III · CRITICAL"][s.phase]:["一 · 热压测试","二 · 超载","三 · 临界"][s.phase]);
   set("[data-forge-objective]",en?"Vent the core, then strike while exposed.":"先泄压，再攻击暴露的炉心。");
   set("[data-forge-heat-label]",en?"CORE HEAT":"炉心温度");
