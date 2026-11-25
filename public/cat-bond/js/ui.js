@@ -3060,14 +3060,20 @@ const UI = {
       '<p>'+detail+'</p>'+(rows?'<div class="battle-recovery-team">'+rows+'</div>':'')+'</section>';
   },
   openBattleRecoveryResult(recovery){
-    const en=this.isEnglish(),exploring=this.game?.scene==='map';
-    this.panel('<span class="card-close">×</span><h2 class="center">'+
-      (en?'The wild cat got away':'野生猫猫跑掉了')+'</h2>'+
+    const en=this.isEnglish(),exploring=this.game?.scene==='map',sky=recovery.sky;
+    const title=sky?(sky.outcome==='retreat'?(en?'Retreated from the gale':'已从风切战斗撤退'):(en?'Squad defeated in the gale':'队伍在风切战斗中落败')):(en?'The wild cat got away':'野生猫猫跑掉了');
+    const canRetry=!!sky&&exploring&&sky.owner===State.S&&window.WorldMap?.currentRegion==='sky';
+    this.panel('<span class="card-close">×</span><h2 class="center">'+title+'</h2>'+
+      (sky?'<p class="sub">'+(en?'Your cats and story progress are safe. Change your party or retry when ready.':'猫咪及剧情进度已保留。可以调整队伍，再次迎战。')+'</p>':'')+
       this.battleRecoveryMarkup(recovery)+
-      '<div class="btn-row" style="justify-content:center"><button type="button" class="btn gold" id="battle-recovery-ok">'+
+      '<div class="btn-row" style="justify-content:center">'+
+      (canRetry?'<button type="button" class="btn gold" id="sky-retry-encounter">'+(en?'Retry encounter':'再次挑战')+'</button>':'')+
+      '<button type="button" class="btn '+(canRetry?'ghost':'gold')+'" id="battle-recovery-ok">'+
       (en?(exploring?'Continue exploring':'Back to yard'):(exploring?'继续探索':'回庭院'))+
       '</button></div>');
     document.getElementById('battle-recovery-ok').onclick=()=>this.closeAll();
+    const retry=document.getElementById('sky-retry-encounter');
+    if(retry)retry.onclick=()=>{this.closeAll();if(!window.WorldMap?.retrySkyEncounter?.(sky.species,sky.owner))this.game?.toast({zh:'请在云脊群岛重新接近野猫。',en:'Approach the wild cat again in Skyspine.'});};
   },
 
   // Repeatable *skill* challenge, deliberately separate from capturing cats.

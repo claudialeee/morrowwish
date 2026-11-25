@@ -1629,6 +1629,7 @@ class Game {
     // Casual: full heal. Hardcore field encounters: remaining HP carries on,
     // and State.catHpFraction replenishes it continuously over five minutes.
     const recovery={mode:State.difficulty(),fromMap,team:[]};
+    if(!win&&fromMap&&b.regionalCombat?.region==="sky")recovery.sky={outcome:b._voluntaryFlee?"retreat":"defeat",species:b.wild.id,owner:State.S};
     try {
       const seen=new Set();
       for(const f of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){
