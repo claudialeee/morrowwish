@@ -2821,6 +2821,23 @@ body.cb-exploring #yard-placement-dock{display:none!important}
  font:900 28px/1 system-ui,sans-serif;
  opacity:.95;margin-left:1px;
 }
+/* The three-slot gateway (.cb-intro-actions) lays the primary button out as a
+   38px-icon + text grid; the legacy single-button "›" ::after chevron has no cell
+   there and overflows the label, clipping "New Adventure". Drop it for that layout. */
+#intro .cb-intro-actions #intro-start::after{content:none;display:none}
+/* The legacy single-button intro styled #intro-start directly with !important
+   (bg/border/radius/shadow + an ::after chevron). The three-slot gateway reuses
+   that same id inside .cb-intro-actions as a grid card, so those stale rules bled
+   through and broke the new layout (clipped label, wrong pink fill, stacked text).
+   Re-assert the gateway look at higher specificity so the grid rows (strong over
+   small) and the purple primary fill win. */
+#intro .cb-intro-actions #intro-start{
+ display:grid!important;grid-template-columns:38px minmax(0,1fr)!important;grid-template-rows:auto auto!important;
+ color:#f7eadb!important;border:1px solid #f2ddc588!important;border-radius:15px!important;
+ background:linear-gradient(145deg,#8a5fb0,#5a3f86 78%)!important;
+ box-shadow:0 10px 26px #090b1c66,inset 0 1px 0 #fff5!important;
+}
+#intro .cb-intro-actions #intro-start>span{grid-row:1/3}
 #intro #intro-start:hover{
  filter:brightness(1.09)!important;
  transform:translateY(-2px)!important;
@@ -5214,12 +5231,12 @@ body.cb-exploring #stage #yard-actions{
 .cb-intro-cat-silhouette{position:relative;font-size:clamp(72px,11vh,112px);filter:drop-shadow(0 14px 22px #090b1b99);animation:cbCatFloat 4.8s ease-in-out infinite}
 .cb-intro-orbit{position:absolute;inset:0;display:grid;place-items:center;color:#f0d7a9aa;font-size:18px;letter-spacing:2em;animation:cbRingTurn 34s linear infinite}
 .cb-intro-actions{position:relative;z-index:3;display:grid;grid-template-columns:repeat(2,minmax(210px,280px));gap:16px;width:min(100%,580px);margin:0 auto 12px}
-.cb-intro-actions button{position:relative;display:grid;grid-template-columns:38px 1fr;grid-template-rows:auto auto;align-items:center;text-align:left;gap:2px 10px;min-height:72px;padding:13px 18px;border-radius:15px;border:1px solid #f2ddc588;color:#f7eadb;background:linear-gradient(145deg,#78617d,#4d496b 75%);box-shadow:0 10px 26px #090b1c66,inset 0 1px 0 #fff5;cursor:pointer;transition:transform .18s,border-color .18s,filter .18s}
+.cb-intro-actions button{position:relative;display:grid;grid-template-columns:38px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;text-align:left;gap:2px 10px;min-width:0;max-width:100%;box-sizing:border-box;min-height:72px;padding:13px 18px;border-radius:15px;border:1px solid #f2ddc588;color:#f7eadb;background:linear-gradient(145deg,#78617d,#4d496b 75%);box-shadow:0 10px 26px #090b1c66,inset 0 1px 0 #fff5;cursor:pointer;transition:transform .18s,border-color .18s,filter .18s}
 .cb-intro-actions button:hover{transform:translateY(-3px);border-color:#f7dfbb;filter:brightness(1.12)}
 .cb-intro-actions button:active{transform:translateY(0)}
 .cb-intro-actions button>span{grid-row:1/3;display:grid;place-items:center;font-size:25px;color:#f3d8a8}
-.cb-intro-actions button strong{font-size:17px;letter-spacing:.06em}
-.cb-intro-actions button small{font-size:9px;letter-spacing:.22em;color:#e1c9bd}
+.cb-intro-actions button strong{font-size:16px;letter-spacing:.04em;min-width:0;white-space:nowrap}
+.cb-intro-actions button small{font-size:9px;letter-spacing:.2em;color:#e1c9bd;min-width:0;white-space:nowrap}
 .cb-intro-actions #intro-continue{background:linear-gradient(145deg,#555b73,#343d59 78%)}
 .cb-intro-footer{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:20px;color:#c3b5c6;font-size:10px;letter-spacing:.08em}
 .cb-intro-footer button{border:0;background:none;color:#e1cbb8;font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
@@ -5522,3 +5539,23 @@ body.cb-exploring #stage #yard-actions{
 .sg-project-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
 .sg-project-grid button{min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;white-space:normal;font-size:12px;padding:6px}.sg-project-grid img{width:100%;height:80px;object-fit:contain}.sg-project-grid small{font-size:10px}.sg-project-art{height:110px;width:100px;object-fit:contain;float:right;margin:0 0 6px 8px}#sg-project-panel select{max-width:100%;margin:8px;padding:6px;border-radius:8px}
 #sg-project-panel .btn{margin:4px}@media(max-width:420px){.sg-project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sg-project-grid img{height:68px}}
+
+/* Canonical opening guide; only visible in the physical garden, never a story overlay. */
+.sg-prologue-guide{position:absolute;left:12px;bottom:clamp(62px,12%,110px);width:min(340px,calc(100% - 24px));box-sizing:border-box;display:grid;gap:6px;padding:12px 15px;background:linear-gradient(125deg,rgba(18,36,43,.94),rgba(40,60,58,.91));border:1px solid #b9a271;border-radius:7px;color:#f9efd8;box-shadow:0 5px 18px #132b3244;pointer-events:auto;z-index:2;font:500 12px/1.4 system-ui,sans-serif}.sg-prologue-guide[hidden]{display:none!important}.sg-prologue-guide strong{font:600 17px/1.2 Georgia,'Songti SC',serif;color:#ffedc8}.sg-prologue-guide>div{display:flex;gap:6px;flex-wrap:wrap}.sg-prologue-guide button{min-height:36px;padding:6px 10px;border:1px solid #cbb181;border-radius:4px;background:#3b5655;color:#fff0d2;font:600 12px system-ui;cursor:pointer}.sg-prologue-guide button:focus-visible{outline:2px solid #fff0ce;outline-offset:2px}@media(max-height:460px) and (orientation:landscape){.sg-prologue-guide{bottom:calc(100px + env(safe-area-inset-bottom,0px));left:12px;width:min(330px,48%);padding:8px 10px;gap:4px}.sg-prologue-guide strong{font-size:14px}.sg-prologue-guide button{min-height:40px;font-size:11px}}@media(max-width:520px) and (orientation:portrait){.sg-prologue-guide{bottom:15%;left:8px;width:calc(100% - 16px);padding:10px}.sg-prologue-guide button{min-height:42px}}
+
+/* Optional panels over the canonical map occupy the available play area, not
+   the garden's reserved bottom dock. Keep the actual dismiss control clear
+   of the utility rail and the Catdex list independently scrollable. */
+#stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"]){
+ bottom:max(8px,env(safe-area-inset-bottom,0px))!important;z-index:60;overscroll-behavior:contain;
+}
+#stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"])>.card{min-width:0;max-width:100%;box-sizing:border-box;overscroll-behavior:contain;scroll-padding:8px}
+#stage:has(.rw-world:not([hidden])) #panel .dex-cell:not(.locked){touch-action:manipulation;min-height:90px}
+@media(max-width:360px){
+ #stage:has(.rw-world:not([hidden])) #panel .cat-highlight-card{padding:12px}
+ #stage:has(.rw-world:not([hidden])) #panel .cat-highlight-card .dex-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ #stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"]){padding-top:48px!important}
+ #stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"])>.panel-dismiss{width:44px;height:44px;min-width:44px;min-height:44px}
+}

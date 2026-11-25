@@ -1,3 +1,4 @@
+import {finishCanonicalOpening} from './cat-bond-test-start.mjs';
 // Cat Bond transactional bilingual QA. Previous "open panel" audit missed
 // dynamically-generated toasts, labels and state transitions after clicking.
 import assert from 'node:assert/strict';
@@ -29,6 +30,7 @@ async function visibleLeaks(page){
   const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
   while(walker.nextNode()){
    const n=walker.currentNode,txt=(n.nodeValue||'').trim();
+   if(txt==='中文'&&n.parentElement.matches('button[data-slot-language],button[data-res-language],button[data-opening-language],button.cbcp-language'))continue;
    if(txt&&han.test(txt)&&visible(n.parentElement))out.push(txt.slice(0,135));
   }
   for(const el of document.querySelectorAll('[title],[aria-label],[placeholder]')){
@@ -70,6 +72,8 @@ try{
    await page.locator('#intro-start').click();
    await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
    await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+   await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true);
+   if(await page.evaluate(()=>!!window.__CAT_BOND_CANONICAL_ACTIVE__))await finishCanonicalOpening(page);else{
    // The first-run cinematic prologue now precedes the starter picker.
    const prologue=page.locator('.cb-story-overlay');
    if(await prologue.count()){
@@ -87,7 +91,7 @@ try{
     window.UI.openCatHub('solo');
    });
    await page.waitForFunction(()=>document.querySelector('#panel')?.classList.contains('open'));
-   await page.locator('#panel.open .dex-cell').first().click();
+   await page.locator('#panel.open .dex-cell').first().click();}
    await page.evaluate(()=>{
     const b=State.makeCat(State.S.cats[0].species);
     State.S.cats.push(b);

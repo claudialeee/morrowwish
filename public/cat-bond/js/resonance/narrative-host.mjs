@@ -8,7 +8,7 @@ const playerPortraits=new Map();
 function portrait(id,scene,cursor){
  if(id==="player"){const sp=window.State?.S?.cats?.[0]?.species;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;if(!playerPortraits.has(sp)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp));playerPortraits.set(sp,c.toDataURL("image/png"));}return playerPortraits.get(sp)}
  if(id==="muling")return new URL("../cinematics/characters/muling/traveler-neutral.webp",portraitRoot).href;
- if(["jiedeng","qilan","yahe","yuchuan"].includes(id))return new URL(id+"-painted.webp",portraitRoot).href;
+ if(campaign.regions.includes(campaign.cast[id]?.region))return new URL(id+"-painted.webp",portraitRoot).href;
  return null;
 }
 function install(){
@@ -20,7 +20,7 @@ function install(){
  function close(){keyExchange?.dispose();keyExchange=null;dialogue?.dispose();dialogue=null;root?.remove();root=null;openedScene=null;slot=null;}
  function show(){
   const v=runtime.view(),game=window.__game;
-  if(!v.current||game?.scene==="battle")return false;
+  if(!v.current||game?.scene==="battle"||v.completed.includes("forge:E-04"))return false;
   if(slot===State.S&&openedScene===v.current.id&&(dialogue||keyExchange)){(dialogue||keyExchange).render();return true}
   close();slot=State.S;openedScene=v.current.id;
   root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";root.dataset.scene=openedScene;stage.append(root);
@@ -38,9 +38,11 @@ function install(){
   keyExchange=mountKeyExchange({root,language:lang,portrait:portrait("muling","epilogue:E-03",3),isCurrent:()=>runtime.isCurrentAction(action),commit:()=>runtime.completeNPCScene({sceneId:"epilogue:E-03",operation:"npc:second-garden-key",npcId:"muling",region:"garden",verified:true,token:action}),onComplete:()=>{close();scheduleFinish()},onClose:close,onLanguage:value=>window.MorrowwishI18n?.set?.(value)});
  }
  function scheduleFinish(){
-  if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;
+  if(scheduled)return;scheduled=true;const scheduledRoot=State.S;queueMicrotask(()=>{scheduled=false;
+   if(scheduledRoot!==State.S)return;
    if(slot&&slot!==State.S){close();return}
    const v=runtime.view();if(!v.current)return;
+   if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.current.lines[v.cursor]?.afterOperations?.length&&!v.lineReady){close();return;}
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.cursor===v.current.lines.length){
     if(v.current.id==="epilogue:E-02"&&v.objective.includes("npc:public-accountability")){const r=runtime.completeNPCScene({sceneId:v.current.id,operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:runtime.capture()});if(!r.ok)return;scheduleFinish();return}
     if(v.current.id==="epilogue:E-03"&&v.objective.includes("npc:second-garden-key")){showKey(runtime.capture());return}
@@ -58,6 +60,7 @@ function install(){
   const d=event.detail||{};if(window.CatBondResonanceNPC){if(!window.CatBondResonanceNPC.talk(d.npcId,d.region,d.sceneId))window.__game?.toast?.({zh:"暂时没有新的话题。",en:"Nothing new to discuss yet."});return}const r=runtime.recordNPC(d);if(r.ok)show();
  });
  window.addEventListener("cat-bond-resonance-changed",refresh);
+ window.addEventListener("cat-bond-active-save-changed",close);
  // Detect external world/battle commits and slot replacements without a second progression store.
  let observedRoot=State.S,observedRevision=State.S.resonance?.revision??-1,observedView=runtime.view();
  setInterval(()=>{const revision=State.S.resonance?.revision??-1;if(observedRoot!==State.S||observedRevision!==revision){const sameSlot=observedRoot===State.S,old=observedView;observedRoot=State.S;observedRevision=revision;observedView=runtime.view();refresh();

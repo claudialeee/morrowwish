@@ -10,17 +10,38 @@ const YARD_BG_PORTRAIT = new Image();
 YARD_BG_PORTRAIT.src = 'assets/garden/sunlit-garden-portrait.webp?v=resonance-1';
 let YARD_BG_PORTRAIT_READY = false;
 YARD_BG_PORTRAIT.onload = () => { YARD_BG_PORTRAIT_READY = true; };
-// draw an image to fully cover (w,h), centered, preserving aspect ratio
-function drawCover(ctx, img, w, h) {
-  const ir = img.width / img.height, cr = w / h;
-  let dw, dh;
-  if (cr > ir) { dw = w; dh = w / ir; } else { dh = h; dw = h * ir; }
-  // The original storybook was almost white after being scaled up to a large
-  // desktop canvas. Increase art contrast only, never kittens or UI.
-  ctx.save();
-  ctx.filter='saturate(1.12) contrast(1.08)';
-  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
-  ctx.restore();
+// One aspect-preserving artwork transform for garden, exploration and arenas.
+// Extend the stage with a subdued color field, never stretch the authored image.
+window.CatBondSceneFit=(()=>{
+ const cache=new WeakMap();
+ function rect(iw,ih,w,h){const s=Math.min(w/iw,h/ih),dw=iw*s,dh=ih*s;return {x:(w-dw)/2,y:(h-dh)/2,width:dw,height:dh,scale:s};}
+ function paint(ctx,img,w,h,fit,top,bottom,filter){
+  const fill=ctx.createLinearGradient(0,0,0,h);fill.addColorStop(0,top);fill.addColorStop(1,bottom);ctx.fillStyle=fill;ctx.fillRect(0,0,w,h);
+  // A soft ambient extension fills only the letterbox area. The entire
+  // original image stays sharp in its contained rectangle.
+  if(fit.x>2||fit.y>2){
+   const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height,s=Math.max(w/iw,h/ih),dw=iw*s,dh=ih*s;
+   ctx.save();ctx.globalAlpha=.75;ctx.filter="blur(18px) saturate(.75) brightness(.65)";ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);ctx.restore();
+  }
+  // Keep the primary artwork out of the CSS-pixel cache: render it directly
+  // at the backing-store DPR, preserving the full-resolution painting.
+ }
+ function draw(ctx,img,w,h,{top="#142536",bottom="#243b43",filter="none"}={}){
+  const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;if(!iw||!ih||!w||!h)return null;
+  const fit=rect(iw,ih,w,h),pw=Math.max(1,Math.round(w)),ph=Math.max(1,Math.round(h));
+  const key=pw+"x"+ph+"/"+top+"/"+bottom+"/"+filter;
+  let entry=cache.get(img);
+  if(!entry||entry.key!==key){
+   const plate=document.createElement("canvas");plate.width=pw;plate.height=ph;const pc=plate.getContext("2d");
+   if(pc){pc.scale(pw/w,ph/h);paint(pc,img,w,h,fit,top,bottom,filter);entry={key,plate};cache.set(img,entry);}
+  }
+  ctx.save();if(entry?.key===key)ctx.drawImage(entry.plate,0,0,w,h);else paint(ctx,img,w,h,fit,top,bottom,filter);
+  ctx.filter=filter;ctx.drawImage(img,fit.x,fit.y,fit.width,fit.height);ctx.restore();return fit;
+ }
+ return Object.freeze({rect,draw});
+})();
+function drawGardenArtwork(ctx,img,w,h){
+ return window.CatBondSceneFit.draw(ctx,img,w,h,{top:"#b8c6a4",bottom:"#718f4e",filter:"saturate(1.12) contrast(1.08)"});
 }
 
 // Original environment prop sprites, shared by placed facilities and placement preview.
@@ -775,9 +796,9 @@ class YardScene {
     const stage = document.getElementById('stage');
     if (stage) stage.dataset.sunlitGardenBackground = portraitGarden ? 'portrait' : 'landscape';
     if (portraitGarden) {
-      drawCover(ctx, YARD_BG_PORTRAIT, W, H);
+      drawGardenArtwork(ctx, YARD_BG_PORTRAIT, W, H);
     } else if (YARD_BG_READY) {
-      drawCover(ctx, YARD_BG, W, H);
+      drawGardenArtwork(ctx, YARD_BG, W, H);
     } else {
       // fallback: procedural soft dawn until the painting loads
       const sky = ctx.createLinearGradient(0, 0, 0, horizon);
@@ -1048,6 +1069,8 @@ class YardScene {
     for(const e of actors){
       e._buildTarget=null;e._playBuildT=0;e._playBuildDef=null;e._playBuilding=null;e._buildUse=null;
     }
+    // Reserve this facility for the chosen pair; a queued third cat must not steal the visit.
+    for(const e of this.entities)if(!actors.includes(e)&&e._buildTarget===b)e._buildTarget=null;
     this._duoFacility={building:b,ids:pair.map(c=>c.uid),index:0,arrived:false};
     actors[0]._buildTarget=b;actors[0].setPose('walk',1.4);
     return true;
@@ -1069,9 +1092,17 @@ class YardScene {
       return;
     }
     this._duoFacility=null;
-    // A normal facility visit has already awarded the standard pair benefit
-    // via rewardBuildingVisit. Save both completed activity poses' joy too.
-    State.save();this.game.refreshHUD?.();
+    // Only reward the exact two actors after both actual activity timers finish.
+    // Passive visitors cannot consume the facility's bond cooldown mid-session.
+    const pair=a.ids.map(id=>State.S.cats.find(c=>c.uid===id)),now=Date.now();
+    let bond=null,oldValue,oldBondAt;
+    if(pair.every(Boolean)&&window.CatRelations&&now-(b.lastBondAt||0)>75000){
+      bond=CatRelations.pair(...pair);oldValue=bond.value;oldBondAt=b.lastBondAt;
+      CatRelations.grow(...pair,buildingLevel(b)>=3?2:1);b.lastBondAt=now;
+    }
+    const saved=State.save();
+    if(saved?.ok===false&&bond){bond.value=oldValue;b.lastBondAt=oldBondAt;}
+    this.game.refreshHUD?.();
     this.game.toast(window.MorrowwishI18n?.get?.()==='zh'?'双猫完成了共同活动！':'Your duo finished playing together!');
   }
   // ---- resident cats visit their play-structures and PLAY ----
@@ -1173,7 +1204,7 @@ class YardScene {
     if(!up)return;
     const level=buildingLevel(b);
     const lastUid=b.lastVisitorUid;
-    if(lastUid&&lastUid!==cat.uid&&now-(b.lastVisitorAt||0)<90000&&
+    if(this._duoFacility?.building!==b&&lastUid&&lastUid!==cat.uid&&now-(b.lastVisitorAt||0)<90000&&
        now-(b.lastBondAt||0)>75000){
       const prev=State.S.cats.find(c=>c.uid===lastUid);
       if(prev&&window.CatRelations){

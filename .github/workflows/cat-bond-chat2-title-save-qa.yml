@@ -2,16 +2,16 @@ name: Cat Bond Chat 2 — title/save QA (no deploy)
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    branches: [rpg/integration]
+    branches: [rpg/integration, rpg/cat-bond-takeover, main]
 permissions:
   contents: read
 concurrency:
-  group: cat-bond-chat2-title-save-qa
+  group: cat-bond-chat2-title-save-qa-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 jobs:
   source-and-build:
-    if: github.head_ref == 'rpg/title-save-integration-v2'
-    runs-on: ubuntu-latest
+    if: github.head_ref == 'rpg/title-save-integration-v2' || github.head_ref == 'rpg/cat-bond-takeover' || startsWith(github.head_ref, 'rpg/release-title')
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -27,8 +27,8 @@ jobs:
       - run: npm run build:pages
         if: always()
   real-browser-title-save:
-    if: github.head_ref == 'rpg/title-save-integration-v2'
-    runs-on: ubuntu-latest
+    if: github.head_ref == 'rpg/title-save-integration-v2' || github.head_ref == 'rpg/cat-bond-takeover' || startsWith(github.head_ref, 'rpg/release-title')
+    runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm ci
-      - run: npm install --no-save --no-package-lock playwright
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
       - name: Local-only game server and browser test
         run: |

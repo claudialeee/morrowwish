@@ -283,7 +283,10 @@ for(const kind of Object.keys(KINDS)) for(const build of BUILDS){
 // an undefined _leapT does NOT block it (the exact failure mode).
 {
   const b = newBattle('tangyuan','senlin',{lvl:8});
-  b.coach=null; b.autoMode=true;
+  // Manual dodge-roll travel test: keep autoMode OFF so the ally-AI repositioning
+  // (which now moves a dps-role 汤圆 and would set mx/my, suppressing the pure-dodge
+  // glide) doesn't compete with the manual dodge path being asserted here.
+  b.coach=null; b.autoMode=false;
   const f = b.me();
   assert.equal(f._leapT, undefined, 'precondition: a fresh cat has undefined _leapT (the dead-code trigger)');
   // force a clean dodge state and a known flee heading, then run the travel for a few frames

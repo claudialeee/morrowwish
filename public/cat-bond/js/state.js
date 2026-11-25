@@ -411,6 +411,12 @@ function save() {
   try { return persistSlot(activeSlot(), buildSaveSnapshot(), { allowOverwrite: true, savedAt: S.lastSeen }); }
   catch (error) { return { ok: false, reason: 'adapter_failed', error: String(error?.message || error) }; }
 }
+// Transient overlays must be invalidated synchronously, but only after a successful slot transition.
+function notifyActiveSaveChanged() {
+  if (typeof window.dispatchEvent === 'function' && typeof window.Event === 'function') {
+    window.dispatchEvent(new window.Event('cat-bond-active-save-changed'));
+  }
+}
 function load(slotId) {
   const id = slotId || activeSlot();
   if (!SAVE_SLOT_IDS.includes(id)) return false;
@@ -434,6 +440,7 @@ function load(slotId) {
     sessionStartedAt = Date.now();
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {}
     if (book.migrated) writeSlots(book);
+    notifyActiveSaveChanged();
     return true;
   } catch (e) {
     S = previous.state; pendingSaveSystems = previous.systems;
@@ -474,7 +481,7 @@ function listSaveSlots() {
     // not label a legacy save with a chapter from the retired campaign.
     const chapterKey=typeof story.scene==='string'?story.scene.split(':')[0]:'';
     const chapterNumber=['prologue','harbor','forest','forge','sky','library','starfall','finale'].indexOf(chapterKey);
-    const explicitChapter=chapterKey==='prologue'?{zh:'序章',en:'Prologue'}:chapterKey==='finale'?{zh:'终章',en:'Finale'}:null;
+    const explicitChapter=chapterKey==='prologue'?{zh:'序章',en:'Prologue'}:chapterKey==='finale'?{zh:'终章',en:'Finale'}:chapterKey==='epilogue'?{zh:'尾声',en:'Epilogue'}:null;
     const chapterLabelZh=typeof explicitChapter?.zh==='string'?explicitChapter.zh:
       Number.isInteger(chapterNumber)&&chapterNumber>0?'第 '+chapterNumber+' 章':
       data?.cats?.length?'冒险进行中':'尚未开始';
@@ -555,6 +562,7 @@ function startNewGame(slotId, options = {}) {
     }
     return false;
   }
+  notifyActiveSaveChanged();
   return true;
 }
 function loadSlot(slotId) {

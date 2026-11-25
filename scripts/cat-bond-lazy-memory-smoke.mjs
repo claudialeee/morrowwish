@@ -28,8 +28,9 @@ try{
     State.save();UI._shopQuantity=1;
     UI.openShop();
   });
-  assert.equal(await page.locator('#panel [data-buy]').count(),8,
-    'Shop exposes eight real supplies, including the new recovery kit');
+  assert.deepEqual(await page.locator('#panel [data-buy]').evaluateAll(nodes=>nodes.map(n=>n.dataset.buy).sort()),
+    ['medkit','treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶','stone:翠藤芽','stone:流光珠'].sort(),
+    'Shop exposes all ten authored supplies, including recovery kit and five elemental stones');
   assert.equal(await page.locator('#panel [data-buy="medkit"]').count(),1,
     'The first-aid kit must be buyable for post-combat recovery');
   assert.equal(await page.evaluate(()=>UI.shopItem('medkit')?.medkitsGain),1,

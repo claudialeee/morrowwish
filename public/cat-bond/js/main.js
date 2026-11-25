@@ -73,7 +73,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const region=en?slot.regionLabelEn:slot.regionLabelZh;
       const mins=Math.floor((slot.playTimeMs||0)/60000);
       const played=en?'Played '+Math.floor(mins/60)+'h '+(mins%60)+'m':'游戏时间 '+Math.floor(mins/60)+'小时 '+(mins%60)+'分钟';
-      const progress=en?slot.cats+' cats':slot.cats+' 只猫';
+      const progress=en?slot.regionCount+'/6 sanctuaries · '+slot.cats+' cats':slot.regionCount+'/6 圣所 · '+slot.cats+' 只猫';
       const detail=slot.corrupt
         ?(en?'This save cannot be read. Start a new adventure here to replace it.':'无法读取此存档。可以在二次确认后重新开始并覆盖。')
         :slot.exists
@@ -92,11 +92,19 @@ window.addEventListener('DOMContentLoaded', () => {
         '<strong class="cb-save-slot-chapter">'+escapeText(chapter)+'</strong>'+
         '<small class="cb-save-slot-meta">'+escapeText(detail)+'</small>'+
         '<small class="cb-save-slot-saved-at">'+escapeText(saved)+'</small>'+
-        '<div class="cb-save-slot-actions"><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button></div></article>';
+        '<div class="cb-save-slot-actions"><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button>'+(slot.exists?'<button class="cb-title-delete" type="button" data-title-delete="'+slot.id+'">'+(en?'Delete':'删除')+'</button>':'')+'</div></article>';
     }).join('');
     slotPanel.classList.add('is-open');slotPanel.setAttribute('aria-hidden','false');
     const language=slotPanel.querySelector('[data-slot-language]');
     if(language){language.textContent=en?'中文':'English';language.setAttribute('aria-label',en?'Switch to Chinese':'切换到英文');}
+    slotList.querySelectorAll('[data-title-delete]').forEach(button=>button.onclick=()=>{
+      const id=button.dataset.titleDelete;
+      const selected=State.listSaveSlots().find(s=>s.id===id);
+      if(!selected?.exists||!confirm(en?'Permanently delete Slot '+selected.number+'?':'永久删除存档位 '+selected.number+'？'))return;
+      const result=State.deleteSaveSlot(id,{confirmed:true});
+      if(!result.ok){alert(en?'Could not delete this save.':'无法删除此存档。');return;}
+      openSlots(slotMode);
+    });
     slotList.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',()=>{
       const id=button.dataset.slot;
       if(slotMode==='new'){
@@ -140,7 +148,9 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if(window.Raising)Raising.init();
-    if(mode==='new'||State.S.cats.length===0){
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(mode==='new'||State.S.cats.length===0)){
+      enterAdventure(()=>{State.save();game.openWorldMap();});
+    }else if(mode==='new'||State.S.cats.length===0){
       UI.openStarter(id=>{
         const starter=State.makeCat(id,{affinity:20});
         if(window.Raising)Raising.decorateNewCat(starter);
@@ -240,8 +250,9 @@ function startIntroStars() {
     cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   };
   resize(); window.addEventListener('resize', resize);
+  if(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)return;
   const stars = Array.from({ length: 70 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.6 + 0.4, ph: Math.random() * 6, sp: 0.2 + Math.random() * 0.5 }));
-  const motes = Array.from({ length: 14 }, () => ({ x: Math.random(), y: Math.random(), r: 2 + Math.random() * 3, vy: 0.00008 + Math.random() * 0.00012, vx: (Math.random() - 0.5) * 0.00008, c: ['#ffd36b', '#ff9db0', '#9d7bff', '#9be7c4'][Math.floor(Math.random() * 4)], ph: Math.random() * 6 }));
+  const motes = Array.from({ length: 9 }, () => ({ x: Math.random(), y: Math.random(), r: 2 + Math.random() * 3, vy: 0.00008 + Math.random() * 0.00012, vx: (Math.random() - 0.5) * 0.00008, c: ['#f3d9a3', '#e9d6b4', '#adc8cb', '#c9e1dc'][Math.floor(Math.random() * 4)], ph: Math.random() * 6 }));
   let t = 0;
   const frame = () => {
     const intro = document.getElementById('intro');
@@ -319,22 +330,24 @@ function installCatBondSystemMenu(){
   toggle.setAttribute('aria-label',t('打开系统菜单','Open system menu'));
   menu.setAttribute('aria-label',t('系统菜单','System menu'));
   if(menu.hidden)return;
-  const title=!window.__CAT_BOND_STARTED__;
+  const title=!window.__CAT_BOND_STARTED__,battle=window.__game?.scene==='battle';
   const active=sel=>native(sel)?.getAttribute('aria-pressed')==='true';
   const rows=[
     ['language',t('语言','Language'),t('中文','English')],
+    ...(native('.mw-settings-music')?[['music',t('背景音乐','Background music'),active('.mw-settings-music')?t('开启','On'):t('关闭','Off')]]:[]),
     ['effects',t('音效','Sound effects'),active('.mw-settings-sfx')?t('开启','On'):t('关闭','Off')],
+    ...(battle?[['skills',t('技能说明','Skill guide'),'']]:[]),
     ...(native('#mw-fullscreen-toggle')?[['fullscreen',t('全屏','Fullscreen'),active('#mw-fullscreen-toggle')?t('退出','Exit'):t('进入','Enter')]]:[]),
     ['share',t('分享游戏','Share game'),''],
-    ['cloud',t('云存档','Cloud saves'),''],
-    ['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),''],
-    ...(!title?[['title',t('返回标题画面','Return to title'),'']]:[])
+    ...(!battle?[['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),'']]:[]),
+    ...(!title&&!battle?[['title',t('返回标题画面','Return to title'),'']]:[])
   ];
   menu.innerHTML='<div class="cb-system-card"><header><h2>'+t('系统菜单','System menu')+'</h2><button type="button" data-system="close" aria-label="'+t('关闭','Close')+'">×</button></header><div class="cb-system-rows">'+rows.map(([id,label,value])=>'<button type="button" data-system="'+id+'"><span>'+label+'</span><small>'+value+'</small></button>').join('')+'</div></div>';
-  menu.querySelectorAll('[data-system]').forEach(btn=>btn.onclick=()=>{
+  menu.querySelectorAll('[data-system]').forEach(btn=>bindMenuPress(btn,()=>{
    const id=btn.dataset.system,selectors={language:'.mw-settings-language',effects:'.mw-settings-sfx',music:'.mw-settings-music',fullscreen:'#mw-fullscreen-toggle',share:'.mw-settings-share'};
    if(id==='close'){close();toggle.focus();return;}
-   if(id==='cloud'||id==='slots'){close();window.CatBondCloudSave?.[id==='cloud'?'openPanel':'openSlots']?.();return;}
+   if(id==='slots'){close();window.CatBondCloudSave?.openSlots?.();return;}
+   if(id==='skills'){close();window.__game?.toggleBattleSkillGuide?.(true);return;}
    if(id==='title'){
     if(!confirm(t('保存当前进度并返回标题画面？','Save current progress and return to title?')))return;
     const result=State.save();
@@ -343,10 +356,29 @@ function installCatBondSystemMenu(){
    }
    if(id==='language'&&!native(selectors.language)){window.MorrowwishI18n?.set?.(zh()?'en':'zh');render();return;}
    native(selectors[id])?.click();
-   if(id==='share')close();else setTimeout(render,120);
-  });
+   if(id==='share')close();else if(id==='fullscreen'){close();}else setTimeout(render,120);
+  }));
  }
- toggle.onclick=()=>menu.hidden?open():close();
+ // Explicit single-finger activation works even when the game canvas suppresses synthetic clicks.
+ function bindMenuPress(btn,activate){let start=null,last=-Infinity;
+  btn.addEventListener('touchstart',e=>{const p=e.changedTouches[0];start=e.touches.length===1&&p?{id:p.identifier,x:p.clientX,y:p.clientY}:null;},{passive:true});
+  btn.addEventListener('touchmove',e=>{const p=[...e.changedTouches].find(p=>p.identifier===start?.id);if(!p||e.touches.length!==1||Math.hypot(p.clientX-start.x,p.clientY-start.y)>10)start=null;},{passive:true});
+  btn.addEventListener('touchcancel',()=>{start=null;},{passive:true});
+  btn.addEventListener('touchend',e=>{const a=start;start=null;const p=[...e.changedTouches].find(p=>p.identifier===a?.id);if(!a||!p||e.touches.length||Math.hypot(p.clientX-a.x,p.clientY-a.y)>10||!btn.contains(document.elementFromPoint(p.clientX,p.clientY)))return;e.preventDefault();last=performance.now();activate();},{passive:false});
+  btn.onclick=e=>{if(e.detail!==0&&performance.now()-last<750)return;activate();};
+ }
+ bindMenuPress(toggle,()=>menu.hidden?open():close());
+ // Native clicks on the legacy expedition panel are suppressed on some touch
+ // browsers after interacting with the world canvas. Delegate only its actual
+ // controls, preserving scroll gestures and mouse/keyboard accessibility.
+ const stage=document.getElementById('stage');
+ const selector='#map-menu,#panel.open .explore-menu button,#panel.open .panel-dismiss';
+ let tap=null,lastTap=null;
+ stage?.addEventListener('touchstart',e=>{const b=e.target.closest?.(selector),p=e.changedTouches[0];tap=b&&e.touches.length===1&&p?{b,id:p.identifier,x:p.clientX,y:p.clientY}:null;},{capture:true,passive:true});
+ stage?.addEventListener('touchmove',e=>{if(!tap)return;const p=[...e.changedTouches].find(p=>p.identifier===tap.id);if(!p||e.touches.length!==1||Math.hypot(p.clientX-tap.x,p.clientY-tap.y)>10)tap=null;},{capture:true,passive:true});
+ stage?.addEventListener('touchcancel',()=>{tap=null;},{capture:true,passive:true});
+ stage?.addEventListener('touchend',e=>{const a=tap;tap=null;if(!a||!a.b.isConnected||a.b.disabled||e.touches.length)return;const p=[...e.changedTouches].find(p=>p.identifier===a.id);if(!p||Math.hypot(p.clientX-a.x,p.clientY-a.y)>10||!a.b.contains(document.elementFromPoint(p.clientX,p.clientY)))return;e.preventDefault();lastTap={b:a.b,t:performance.now()};a.b.click();},{capture:true,passive:false});
+ stage?.addEventListener('click',e=>{if(e.detail!==0&&lastTap&&performance.now()-lastTap.t<750&&lastTap.b.contains(e.target)){e.preventDefault();e.stopImmediatePropagation();}},{capture:true});
  menu.onclick=e=>{if(e.target===menu)close();};
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){e.preventDefault();close();}});
  window.addEventListener('morrowwish-language-change',render);

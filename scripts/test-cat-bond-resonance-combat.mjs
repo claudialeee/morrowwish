@@ -24,3 +24,42 @@ const testRules = function testRules(build){
  return n;
 };
 console.log('Isolated combat rules assertions:',testRules(buildCombatRules));
+
+import assert from "node:assert/strict";
+import {campaign} from "../public/cat-bond/js/resonance/campaign.mjs";
+import {supportEffects,echoHabit,rhythm,identifyEcho} from "../public/cat-bond/js/resonance/finale-combat.mjs";
+
+// Exercise the helper called by the actual phase-three battle loop and pulse handler.
+const baseline=supportEffects({},null);
+assert.equal(baseline.required,4);
+assert.equal(baseline.pulseDamage,32);
+for(const region of campaign.regions){
+ const scenes=campaign.scenes.filter(s=>s.chapter===region&&s.choices.length===2);
+ assert.ok(scenes.length,"Missing canonical regional choice: "+region);
+ for(const scene of scenes){
+  const results=scene.choices.map(c=>supportEffects({methods:[c.method],trust:{}},null));
+  assert.notDeepEqual(results[0],results[1],scene.id+" choices must change actual battle assistance");
+  for(const result of results)assert.ok(result.required<4||result.pulseDamage<32,scene.id+" must grant a real effect");
+ }
+}
+const profile={methods:["precise-beacon"],trust:{qilan:2,jiedeng:2}};
+const before=supportEffects(profile,null);
+const built=supportEffects(profile,{level:1,visits:0});
+const tended=supportEffects(profile,{level:3,visits:4});
+assert.ok(tended.required<built.required&&built.required<before.required);
+assert.ok(tended.pulseDamage<built.pulseDamage&&built.pulseDamage<before.pulseDamage);
+assert.ok(supportEffects(profile,null,{bonded:true,pledge:true}).required<before.required);
+assert.deepEqual(supportEffects({methods:["precise-beacon","precise-beacon"],trust:profile.trust},null),before);
+assert.deepEqual(supportEffects({methods:["anger"],trust:{}},null),baseline);
+console.log("Live finale support calculation: canonical alternatives, garden care, duo promises and duplicate-method guard passed");
+
+const personalities=["clever","mischievous","glutton","diligent","gentle","shy","lazy"];
+assert.equal(new Set(personalities.map(personality=>echoHabit({personality}))).size,personalities.length);
+for(const personality of personalities){
+ const habit=echoHabit({personality});
+ const normal=rhythm("finale:B-02",false,habit),copied=rhythm("finale:B-02",true,habit);
+ assert.equal(identifyEcho(habit,normal[1]-normal[0]),false);
+ assert.equal(identifyEcho(habit,copied[1]-copied[0]),true);
+ assert.equal(identifyEcho(habit,null),false);
+}
+console.log("Individual Catdex rhythm and measured-mismatch regression passed");

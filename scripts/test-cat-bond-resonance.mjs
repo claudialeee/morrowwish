@@ -1,5 +1,6 @@
 import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
 import {makeEngine} from '../public/cat-bond/js/resonance/engine.mjs';
+import {homeConversation} from '../public/cat-bond/js/resonance/home-conversations.mjs';
 function verify(data,makeEngine){
  const assert=(b,m)=>{if(!b)throw Error(m)},ok=(r,m)=>{assert(r.ok,m+":"+r.reason);return r};
  let e=makeEngine(data),alt=makeEngine(data),third=makeEngine(data),count=0;
@@ -19,8 +20,14 @@ function verify(data,makeEngine){
   const snap=e.snapshot();e=makeEngine(data,JSON.parse(JSON.stringify(snap)));assert(e.snapshot().cursor===snap.cursor,"restore");pass(e.finish(),scene.id);links(e);return e}
  assert(!e.finish().ok,"click-only");assert(!e.record("library:M-03","npc:identity-confrontation").ok,"early reveal");assert(!e.ambient("muling:tea","ambient:brew-bitter-tea").ok,"early ambient");
  for(const scene of data.scenes){e=play(e,scene);if(scene.id==="prologue:P-05"){assert(e.ambientAvailable("garden").some(a=>a.id==="muling:tea"),"tea available");pass(e.ambient("muling:tea","ambient:brew-bitter-tea"),"tea");assert(!e.ambient("muling:tea","ambient:brew-bitter-tea").ok,"repeat ambient")}}
- assert(e.view().ending,"ending");for(const q of data.side){pass(e.postgame(q.id,q.operation),"postgame");assert(!e.postgame(q.id,q.operation).ok,"repeat postgame")}
+ assert(e.view().ending,"ending");assert(!e.postgame("postgame:reunion-harbor","postgame:meet-harbor").ok,"reunion requires prior repair");assert(!homeConversation("jiedeng",{...e.view(),returned:e.snapshot().returned},e.supportProfile("harbor"),e.snapshot()),"no home dialogue before return");for(const q of data.side){pass(e.postgame(q.id,q.operation),"postgame");assert(!e.postgame(q.id,q.operation).ok,"repeat postgame")}
  assert(e.snapshot().returned.length===12,"returns");
+ const finished=e.snapshot();for(const id of [...finished.returned,"muling"]){const conv=homeConversation(id,{...e.view(),returned:finished.returned},e.supportProfile(data.cast[id].region),finished);assert(conv?.[0]&&conv[1],"bilingual home dialogue "+id);}
+ for(const scene of data.scenes.filter(s=>s.choices.length&&s.id!=="harbor:H-02")){const id=scene.choices[0].npc,region=data.cast[id].region;
+  const variants=scene.choices.map(choice=>{const state=JSON.parse(JSON.stringify(finished));state.choices[scene.id]=choice.id;const runtime=makeEngine(data,state);return JSON.stringify(homeConversation(id,{...runtime.view(),returned:state.returned},runtime.supportProfile(region),runtime.snapshot()));});
+  assert(new Set(variants).size===variants.length,"choice changes home dialogue "+scene.id);
+ }
+ assert(!homeConversation("muling",third.view(),third.supportProfile("garden"),third.snapshot()),"new slot has no postgame conversation");
  for(const scene of data.scenes.slice(0,7))alt=play(alt,scene,1);
  assert(alt.snapshot().trust.jiedeng===2&&e.snapshot().choices["harbor:H-02"]==="comfort"&&third.snapshot().trust.jiedeng===0&&third.snapshot().completed.length===0,"three slots");
  assert(alt.supportProfile("harbor").methods.includes("keeper-trust"),"choice affects support");

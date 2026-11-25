@@ -8,6 +8,21 @@ const out='artifacts/sunlit-garden-visual-qa';
 fs.mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 const pageErrors=[];
+async function seedGardenStory(page,scene,melodies=[]){
+  await page.evaluate(async ({scene,melodies})=>{
+    const [{campaign},{makeEngine}]=await Promise.all([
+      import('/cat-bond/js/resonance/campaign.mjs'),
+      import('/cat-bond/js/resonance/engine.mjs')
+    ]);
+    const index=campaign.scenes.findIndex(entry=>entry.id===scene);
+    State.S.resonance={
+      ...makeEngine(campaign).snapshot(),
+      scene,completed:campaign.scenes.slice(0,index).map(entry=>entry.id),
+      sanctuaries:[...melodies],melodies
+    };
+    window.dispatchEvent(new CustomEvent('cat-bond-resonance-changed'));
+  },{scene,melodies});
+}
 try{
   for(const profile of [
     {name:'desktop',width:1440,height:900,mobile:false,touch:false,background:'landscape'},
@@ -25,21 +40,14 @@ try{
       {timeout:30000});
     await page.waitForFunction(()=>window.__game?.yard&&window.State?.S?.cats?.length>=3,
       {timeout:30000});
-    await page.waitForFunction(()=>performance.getEntriesByType('resource').some(x=>x.name.includes('sunlit-garden-cinematic.svg'))&&
-      performance.getEntriesByType('resource').some(x=>x.name.includes('sunlit-garden-portrait.svg')),
+    await page.waitForFunction(()=>performance.getEntriesByType('resource').some(x=>x.name.includes('sunlit-garden-landscape.webp'))&&
+      performance.getEntriesByType('resource').some(x=>x.name.includes('sunlit-garden-portrait.webp')),
       {timeout:20000});
+    await seedGardenStory(page,'harbor:H-01');
+    // Each profile owns an independent temporary browser context.
     await page.evaluate(()=>{
-      // All fixture data is isolated to this temporary browser context; disable
-      // local persistence so QA cannot modify a real player slot or cloud save.
-      window.State.save=()=>{};
-      window.State.S.resonance={
-        schema:1,scene:'harbor:H-01',completed:[],evidence:{},choices:{},trust:{},links:{},
-        sanctuaries:['harbor','forest','forge','sky','library','starfall'],
-        melodies:[],support:[],returned:[],postgame:[],ambientDone:[],cursor:0,revision:0
-      };
       window.__game.scene='yard';
       window.__game.showYardChrome();
-      window.SunlitGarden.enter();
     });
     await page.waitForFunction(()=>document.getElementById('sunlit-garden-hotspots')?.classList.contains('is-active')&&
       document.getElementById('stage')?.dataset.sunlitGardenBackground);
@@ -149,10 +157,12 @@ try{
   await page.waitForFunction(()=>__game.yard._duoFacility?.index===1&&__game.yard._duoFacility?.arrived===true,null,{timeout:30000});
   await page.screenshot({path:out+'/duo-second-visit.png'});
   await page.waitForFunction(()=>!__game.yard._duoFacility,null,{timeout:15000});
-  assert.ok(await page.evaluate(()=>CatRelations.pair(...CatRelations.chosen()).value)>trustBefore,'two real visits grow the existing chosen duo trust');
+  assert.equal(await page.evaluate(()=>CatRelations.pair(...CatRelations.chosen()).value),Math.min(100,trustBefore+1),'two completed real visits reward exactly the chosen duo once');
+  assert.ok(await page.evaluate(()=>State.S.yardBuildings[0].lastBondAt>0),'completed duo visit records the facility bond cooldown');
   // Story progression fixture only: the garden must READ it and never
   // write to it. The normal construction/tending UI performs actual actions.
-  await page.evaluate(()=>{State.S.resonance={schema:1,scene:'harbor:H-05',completed:[],evidence:{},choices:{},trust:{},links:{},sanctuaries:['harbor'],melodies:['harbor'],support:[],returned:[],postgame:[],ambientDone:[],cursor:0,revision:0};State.save()});
+  await seedGardenStory(page,'forest:R-01',['harbor']);
+  await page.evaluate(()=>State.save());
   const canon=await page.evaluate(()=>JSON.stringify(State.S.resonance));
   await page.locator('.sg-hotspot-facilities').click();
   await page.locator('[data-garden-projects]').click();
@@ -182,8 +192,13 @@ try{
   // Retain an old-slot restoration control and invoke it after switching slots.
   await page.evaluate(()=>{GardenProjects.open('harbor');window.__oldGardenButton=document.querySelector('#sg-project-panel button:last-child')});
   for(const other of await page.evaluate(slot=>State.SAVE_SLOT_IDS.filter(id=>id!==slot),saved.slot)){
-    await page.evaluate(id=>{if(!State.startNewGame(id,{overwriteConfirmed:true}))throw Error('new slot failed')},other);
-    await page.evaluate(()=>window.__oldGardenButton?.click());
+    const stillOpen=await page.evaluate(id=>{
+      if(!State.startNewGame(id,{overwriteConfirmed:true}))throw Error('new slot failed');
+      // No animation frame or timer may be required to dispose of stale UI.
+      window.__oldGardenButton?.click();
+      return !!document.querySelector('#panel.open #sg-project-panel');
+    },other);
+    assert.equal(stillOpen,false,'old garden UI must be disposed synchronously on successful new-slot commit');
     assert.equal(await page.evaluate(()=>!!document.querySelector('#panel.open #sg-project-panel')),false,'stale garden panel must not reopen in new slot');
     await page.waitForFunction(()=>__game.yard._gardenState===State.S);
     assert.equal(await page.evaluate(()=>State.S.yardBuildings.length),0,'new slot must not inherit buildings');
@@ -192,7 +207,12 @@ try{
   await page.waitForFunction(()=>__game.yard._gardenState===State.S);
   assert.equal(await page.evaluate(()=>State.S.yardBuildings.length),0,'new slot must not inherit buildings');
   assert.equal(await page.evaluate(()=>__game.yard.entities.length),0,'new slot must not retain previous resident cats');
-  await page.evaluate(slot=>{if(!State.loadSlot(slot))throw Error('reload failed')},saved.slot);
+  const staleOnLoad=await page.evaluate(slot=>{
+    GardenProjects.open();const old=document.querySelector('#sg-project-panel button');
+    if(!State.loadSlot(slot))throw Error('reload failed');
+    old?.click();return !!document.querySelector('#panel.open #sg-project-panel');
+  },saved.slot);
+  assert.equal(staleOnLoad,false,'loading another slot synchronously closes old garden UI');
   await page.waitForFunction(()=>__game.yard._gardenState===State.S);
   assert.equal(await page.evaluate(()=>State.S.yardBuildings[0].level),2,'original slot preserves upgrade');
   assert.equal(await page.evaluate(()=>State.S.sunlitGarden.projects.harbor.visits),1,'original slot preserves actual tending growth');

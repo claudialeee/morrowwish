@@ -21,4 +21,5 @@ const noTarget=createForgeState();noTarget.attackCooldown=0;ev=tickForgeState(no
 let threw=false;try{validateForgeState({...s,phase:9});}catch{threw=true;}ok(threw);
 threw=false;try{tickForgeState(null,1,1,null);}catch{threw=true;}ok(threw);
 ok(FORGE_ENCOUNTER.operation==="battle:forge-guardian");ok(FORGE_ENCOUNTER.supportNpcs.join(",")==="jinpo,xiaomao");
+const press=createForgeState();press.pressure=99.9;ev=tickForgeState(press,.08,1,null);ok(ev.some(x=>x.type==="pressure-burst"));ok(press.pressure<40);press.pressure=80;press.heat=30;ok(forgeDamageScale(press)===.36);ok(useForgeSupport(press).ok);ok(press.pressure===25);ok(forgeDamageScale(press)===1.18);
 console.log("FORGE COMBAT RULES PASS",checks);

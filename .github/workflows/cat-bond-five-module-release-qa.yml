@@ -1,0 +1,80 @@
+name: Cat Bond five-module release preflight (no deployment)
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-five-module-release-preflight-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  production-equivalent-browser:
+    if: github.head_ref == 'rpg/cat-bond-takeover' && !github.event.pull_request.draft
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: All production source and data gates
+        run: |
+          npm run check
+          node scripts/test-analytics-integrity.mjs
+          node scripts/test-game-entry-attribution.mjs
+          node scripts/test-dashboard-sorting.mjs
+          node scripts/test-youtube-native.mjs
+          node scripts/test-instagram-native.mjs
+          node scripts/test-social-refresh.mjs
+          node scripts/test-tiktok-native.mjs
+          node scripts/test-bluesky-native.mjs
+          node scripts/test-promo-music.mjs
+          node scripts/test-attribution-links.mjs
+          npm run build:pages
+      - run: npm install --no-save --no-package-lock playwright@1.57.0 sharp@0.34.5
+      - run: npx playwright install --with-deps chromium
+      - name: Real browser acceptance without production traffic or deployment
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cat-bond-release-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/language-browser-smoke.mjs
+          node scripts/cat-bond-language-audit.mjs
+          node scripts/cat-bond-interaction-language-qa.mjs
+          node scripts/cat-bond-crazygames-real-input.mjs
+          node scripts/test-dashboard-history-browser.mjs
+          node scripts/cat-bond-title-save-browser-qa.mjs
+          node scripts/cat-bond-cloud-browser-qa.mjs
+          node scripts/cat-bond-release-prologue-qa.mjs
+          node scripts/check-cat-bond-resonance-world.mjs
+          node scripts/test-cat-bond-forge-combat.mjs
+          node scripts/cat-bond-harbor-playthrough.mjs
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const rows=JSON.parse(fs.readFileSync('artifacts/cat-bond-harbor/results.json','utf8'));
+          assert.deepEqual(rows.map(r=>r.profile).sort(),['desktop','landscape','portrait']);
+          for(const r of rows){
+            assert.equal(r.forestComplete,true,r.profile+' Chapter II not completed');
+            assert.equal(r.forgeComplete,true,r.profile+' Chapter III not completed');
+          }
+          console.log('PASS all five release modules on all three device profiles');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: five-module-release-browser-evidence
+          path: |
+            artifacts/cat-bond-harbor/
+            artifacts/cat-bond-release-prologue/
+            cat-bond-title-save-qa/
+            .check/cat-bond-language-audit/
+            .check/cat-bond-interaction-language/
+            .check/crazygames-yard-dock/
+          if-no-files-found: warn
+          retention-days: 7

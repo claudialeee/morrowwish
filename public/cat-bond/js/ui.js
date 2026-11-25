@@ -442,7 +442,7 @@ const UI = {
     // One chip per breed — the strongest — plus any already-selected cat (so a benched same-breed pick
     // stays visible/deselectable). Power-sorted first so "strongest" + display order are consistent.
     const cats=this.strongestPerSpecies(
-      [...(State.S.cats||[])].sort((a,b)=>State.catPower(b)-State.catPower(a)), selected);
+      [...(State.S.cats||[])].sort((a,b)=>State.catPower(b)-State.catPower(a)), [...selected,...(window.CatRelations?.chosen?.()||[]).map(c=>c.uid)]);
     return this.squadOrderMarkup()
       +'<p class="map-squad-count" role="status">'+(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只')+'</p>'
       +'<div class="map-squad-roster" role="group" aria-label="'+(en?'Choose up to five cats':'选择最多五只猫咪')+'">'
@@ -541,6 +541,7 @@ const UI = {
       action('healteam','🧰','急救包补血 +35% · 需要 '+woundedCount+' 个','First-aid kits +35% · '+woundedCount+' needed')+
       action('feed','🍖','喂食全员','Feed all')+
       action('regions','🗺️','世界目录','World directory')+
+      (isYard?action('guide','?','玩法指引','Gameplay guide'):'')+
       '</div><p class="explore-menu-tip">'+(en
         ?'Close × to resume exploring exactly where you left off.'
         :'点击 × 就能回到刚才的位置，继续探索。')+'</p>'+
@@ -581,7 +582,8 @@ const UI = {
         if(r.ok){this.openExploreMenu();this.game.refreshHUD();}
         this.game.toast(msg);
       },
-      regions:()=>this.game.scene==='yard'?this.game.openWorldMap():this.openMapChooser()
+      regions:()=>this.game.scene==='yard'?this.game.openWorldMap():this.openMapChooser(),
+      guide:()=>{this.closeAll();this.game.replayFirstAdventureTour?.();}
     };
     host?.querySelectorAll('[data-explore-action]').forEach(button=>{
       button.onclick=()=>{const open=actions[button.dataset.exploreAction];if(open)this.navigateTo(open);};
@@ -1022,7 +1024,7 @@ const UI = {
         </section></div>
       <div class="btn-row">
         ${showPairChooser?'':('<button class="btn gold" id="duo-choose" '+(!ok?'disabled':'')+'>'+(selected?(en?'✓ Current duo':'✓ 当前搭档'):(en?'Form my battle duo':'组成出战搭档'))+'</button>')}
-        <button class="btn" id="duo-play" ${!ok||sec>0||(State.S.medkits||0)<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
+        <button class="btn" id="duo-play" ${!ok||sec>0||(State.S.fish||0)<1?'disabled':''}>${en?'Play (1 fish)':'一起玩（1小鱼）'}</button>
         ${unlocked?'<button class="btn ghost" id="duo-preview">'+(en?'Watch unlocked animation':'观看已解锁合体技')+'</button>':''}</div>
       <p class="tiny">${sec?(en?'Play again in '+sec+'s':'下次一起玩需 '+sec+' 秒'):(en?'Petting also builds friendship.':'在庭院撸猫也能提升默契。')}</p>
       <button class="btn ghost" id="duo-return">${en?'Back':'返回冒险'}</button></div>`,preserveScroll);
@@ -1062,7 +1064,15 @@ const UI = {
     });
     document.getElementById('duo-choose').onclick=()=>{
       if(!ok)return;
-      CatRelations.choose(a,b);this._duoPicked=[a.uid,b.uid];
+      // Explicitly forming a battle duo also assigns both starting positions.
+      // Retain the player's other eligible team members as reserves.
+      if(!CatRelations.choose(a,b))return;
+      const eligible=new Set((State.S.cats||[]).map(c=>c.uid));
+      const prior=this.getPreferredBattleTeam().map(c=>c.uid);
+      const teamUids=[...new Set([a.uid,b.uid,...prior])].filter(uid=>eligible.has(uid)).slice(0,5);
+      State.S.battlePrefs={...(State.S.battlePrefs||{}),teamUids};
+      State.save();
+      this._duoPicked=[a.uid,b.uid];
       this.game.yard?.entities?.filter(e=>[a.uid,b.uid].includes(e.cat.uid))
         .forEach(e=>{e.emote('💞',3);e.pettedGlow=1.5;});
       this.game.refreshHUD();
@@ -1269,7 +1279,7 @@ const UI = {
     this.game?.completeFirstAdventureStep?.('workshop');
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const stations=Raising.stationsView().filter(st=>st.res)
-      .sort((a,b)=>['sun','fishing','yarn','watch'].indexOf(a.type)-['sun','fishing','yarn','watch'].indexOf(b.type));
+      .sort((a,b)=>['sun','fishing','yarn','watch','forge'].indexOf(a.type)-['sun','fishing','yarn','watch','forge'].indexOf(b.type));
     const sun=stations.find(st=>st.type==='sun');
     const rate=Number(sun?.ratePerHour||0);
     const pending=stations.reduce((n,st)=>n+st.stored,0);
@@ -1278,6 +1288,7 @@ const UI = {
       sun:[en?'Earn coins':'晒太阳赚金币',en?'Spend coins on feeding, buildings and upgrades':'金币用于喂猫、建造、升级工坊'],
       fishing:[en?'Catch fish':'钓小鱼',en?'Fish feed cats, train levels and buy rare-cat lures':'小鱼用于喂猫、练级、买稀有诱饵'],
       yarn:[en?'Earn coins':'织物赚金币',en?'More coins for upgrades and stat training':'金币用于升级与属性特训'],
+      forge:[en?'Emberforge smithy':'赤炉锻造台',en?'Forge tools using Xiaomao’s safe design. Reinforced tools increase this station’s production by 25%.':'依照小铆的新安全设计锻造工具。强化工具提升此工位产出 25%。'],
       watch:[en?'Collect luck':'瞭望好运',en?'Boost the next rare-cat sighting':'好运用于提高下一次野猫的稀有机会'],
     };
     const cards=stations.map(st=>{
@@ -1297,9 +1308,11 @@ const UI = {
             :(en?'No cat assigned — Assign one to start':'还没派猫上岗，点击「派猫」才会开始赚钱')}
             ${wait}</div>
           <div class="st-bar"><span style="width:${Math.round(st.pct*100)}%"></span></div>
+          ${st.type==="forge"?`<div class="work-usage">${st.reinforced?(en?"Reinforced tools equipped · +25%":"已装备强化工具 · +25%"):(en?"Recipe: reinforced tools · 45 coins + 2 fish":"配方：强化工具 · 45 金币 + 2 小鱼干")}</div>`:""}
           <div class="work-pending">${en?'Uncollected':'待收取'}：<b>${st.stored} ${unit}</b> / ${st.cap}</div>
         </div>
         <div class="st-btns">
+          ${st.type==="forge"&&!st.reinforced?`<button class="btn gold tiny-btn" data-act="forge-tools" ${State.S.coins<45||State.S.fish<2?"disabled":""}>${en?"Craft tools":"锻造工具"}</button>`:""}
           <button class="btn gold tiny-btn" data-act="collect" data-id="${st.id}" ${st.stored<1?'disabled':''}>${en?'Collect':'收取'}</button>
           <button class="btn ghost tiny-btn" data-act="assign" data-id="${st.id}">${en?'Assign':'派猫'}</button>
           <button class="btn ghost tiny-btn" data-act="upgrade" data-id="${st.id}">${en?'Upgrade':'升级'}<small>${cost.coins}🪙</small></button>
@@ -1349,6 +1362,7 @@ const UI = {
   workshopAct(act,id){
     const R=window.Raising;if(!R)return;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
+    if(act==='forge-tools'){const result=R.forgeTools();this.game.toast(result.ok?(en?'Reinforced tools crafted':'强化工具已锻造'):(en?'Crafting failed; check your materials':'锻造失败，请检查材料'));this.game.refreshHUD();this.openWorkshop();return;}
     if(act==='collect'||act==='collect-all'){
       const got=act==='collect-all'?R.collectAll():R.collect(id);
       const total=act==='collect-all'?Object.values(got).reduce((n,v)=>n+v,0):(got?.amount||0);
@@ -2260,6 +2274,8 @@ const UI = {
       ?State.S.cats.find(cat=>cat.uid===story.recordedUid):null;
     const recordName=String(recordCat?State.catName(recordCat):(en?'The Bellkeeper':'守铃者'))
       .replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    const forgeRecord=State.S.resonance?.completed?.includes("forge:E-03")
+      ?`<section class="cb-dex-forge-record" data-dex-record="forge"><img src="assets/combat/forge-guardian-painted.webp" alt=""><div><small>${en?'REGIONAL FIELD RECORD':'地区见闻'}</small><strong>${en?'Furnace Guardian':'熔炉机械守卫'}</strong><p>${en?'The safety mechanism has been stabilized. Its three heat and pressure stages are recorded here; it is a machine, not a collectible breed.':'安全机关已稳定，三阶段炉温与压力记录已收录。机械守卫不是可收集猫咪品种。'}</p><span>${en?'Encounter complete · Emberforge City':'挑战完成 · 赤炉环城'}</span></div></section>`:'';
     const storyRecord=story?.playerRecorded
       ?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?'The Last Page':'最后一页'}</strong><small>${en?'The Bellkeeper: ':'守铃者：'}${recordName}</small></span><b>${en?'Complete':'已完成'}</b></section>`:'';
     this.panel(`<span class="card-close">×</span>
@@ -2273,6 +2289,7 @@ const UI = {
         <small>${en?'Permanent rarity-weight boost':'当前永久稀有权重加成'}：+${Math.round(mastery.luckBonus*100)}%</small>
       </div>
       <div class="dex-grid">${cells}</div>
+      ${forgeRecord}
       ${storyRecord}
       ${this.reactionCodexHtml(en)}`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
@@ -2374,7 +2391,9 @@ const UI = {
       fish:{icon:'🐠',zh:'小鱼',en:'Fish',coins:60,fish:0,fishGain:1},
       'stone:夜影石':{icon:'🌑',zh:'夜影石',en:'Shadow Stone',coins:0,fish:3,stone:'夜影石'},
       'stone:月华露':{icon:'🌙',zh:'月华露',en:'Moon Dew',coins:0,fish:4,stone:'月华露'},
-      'stone:赤焰晶':{icon:'🔥',zh:'赤焰晶',en:'Flame Crystal',coins:0,fish:4,stone:'赤焰晶'}
+      'stone:赤焰晶':{icon:'🔥',zh:'赤焰晶',en:'Flame Crystal',coins:0,fish:4,stone:'赤焰晶'},
+      'stone:翠藤芽':{icon:'🌿',zh:'翠藤芽',en:'Jade Sprout',coins:0,fish:4,stone:'翠藤芽'},
+      'stone:流光珠':{icon:'⚡',zh:'流光珠',en:'Voltlight Pearl',coins:0,fish:4,stone:'流光珠'}
     };
     return items[what]||null;
   },
@@ -2390,7 +2409,7 @@ const UI = {
       [1,10,50].includes(this._shopQuantity)?this._shopQuantity:1;
     const qtyButton=(n,txt)=>'<button type="button" class="btn '+(n===quantity?'gold':'ghost')+
       '" data-shop-qty="'+n+'" aria-pressed="'+String(n===quantity)+'">'+txt+'</button>';
-    const shopKeys=['medkit','treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶'];
+    const shopKeys=['medkit','treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶','stone:翠藤芽','stone:流光珠'];
     const rows=shopKeys.map(key=>{
       const item=this.shopItem(key),max=this.shopMaxAffordable(key);
       const count=quantity==='max'?max:quantity;
@@ -2709,6 +2728,13 @@ const UI = {
     if(this._localePanelRerendering&&this._localePanelRerenderAuto!==null)
       auto=!!this._localePanelRerenderAuto;
     const selected=this.getPreferredBattleTeam().map(c=>c.uid);
+    const chosenDuo=window.CatRelations?.chosen?.()||[];
+    const duoHint=chosenDuo.length===2
+      ? ((window.CatRelations?.pair?.(...chosenDuo)?.value||0)<20
+        ? (en?'Your chosen duo needs 20 trust to unlock its special move.':'搭档默契达到20才能解锁合击。'):'')
+      : ((State.S.cats||[]).length<2
+        ? (en?'Befriend another wild cat to unlock your first duo. Solo battles are still available.':'收服第二只猫即可解锁首个搭档，仍可单猫出战。')
+        : (en?'Choose a duo in Cat Duos under Raise cats before using a duo move.':'请在猫咪养成的双猫页面选择搭档，再使用合击。'));
     const squadMarkup=
       '<details class="prep-advanced prep-team-details" id="battle-team-details">'+
       '<summary><strong>'+(en?'Battle team · edit':'出战队伍 · 点击调整')+'</strong>'+
@@ -2716,7 +2742,7 @@ const UI = {
         this.battleTeamSummary(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en))+'</span></summary>'+
       '<p class="sub">'+(en?'2 cats start; up to 3 reserves. Tap cats to change the team or reorder below.':'2 只首发，最多 3 只替补。点击猫咪更换队伍，也可调整顺序。')+'</p>'+
       this.squadPickerMarkup(selected)+'</details>';
-    const label=opts.storyTitle?this.battlePrepEsc(opts.storyTitle[en?1:0]):opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
+    const label=opts.storyTitle?(opts.storyTitle[en?1:0]):opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
     const encounterLvl=wildSp.encounterLevel||
       window.Battle?.CaptureBattle?.previewWildLevel?.(
@@ -2724,13 +2750,15 @@ const UI = {
     this.panel(`<span class="card-close">×</span>
       <h2>${label}</h2>
       <p class="sub" style="font-weight:750;color:#765e85">
-        ${opts.storyTitle?(en?'Opponent':'对手'):(en?'Wild cat':'野生猫咪')} · Lv.${encounterLvl} ·
+        ${opts.storyTitle?(en?'Story encounter':'剧情战斗'):(en?'Wild cat':'野生猫咪')} · Lv.${encounterLvl} ·
         <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>
       </p>
       ${this.matchupWarning(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en)}
       <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
       ${squadMarkup}
-      <div class="prebattle-quick-select"><button id="bp-best-team" type="button" class="btn ghost">${en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button></div>
+      <div class="prebattle-quick-select"><button id="bp-best-team" type="button" class="btn ghost">${en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button>
+      ${chosenDuo.length===2?`<button id="bp-chosen-duo" type="button" class="btn ghost">${en?'Field chosen duo':'双猫搭档首发'}</button>`:''}</div>
+      ${duoHint?`<p class="sub" id="bp-duo-hint">${duoHint}</p>`:''}
       ${this.battlePrepSkillCard(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en)}
       <fieldset class="capture-mode-picker">
         <legend>${en?'Control mode':'战斗方式'}</legend>
@@ -2773,6 +2801,16 @@ const UI = {
       selected.splice(0,selected.length,...this.getStrongestBattleTeam().map(cat=>cat.uid));
       this.bindSquadPicker(selected);
     };
+    const duoPick=document.getElementById('bp-chosen-duo');
+    if(duoPick)duoPick.onclick=()=>{
+      const pair=(window.CatRelations?.chosen?.()||[]).map(c=>c.uid);
+      if(pair.length!==2)return;
+      const eligible=new Set((State.S.cats||[]).map(c=>c.uid));
+      if(!pair.every(id=>eligible.has(id)))return;
+      const next=[...new Set([...pair,...selected,...this.getStrongestBattleTeam().map(c=>c.uid)])].filter(id=>eligible.has(id)).slice(0,5);
+      selected.splice(0,selected.length,...next);
+      this.bindSquadPicker(selected);
+    };
     const options=[...document.querySelectorAll('#panel .capture-mode-option[data-battle-auto]')];
     for(const button of options){
       button.onclick=()=>{
@@ -2811,12 +2849,10 @@ const UI = {
     };
     document.getElementById('bp-go').onclick=()=>{
       const fighters=selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean);
-      const previous=State.S.battlePrefs;
-      State.S.battlePrefs={...previous,autoBattle:auto,modeChosen:true,
+      State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true,
         skillsIntroSeen:true,teamUids:[...selected]};
-      if(!State.save()?.ok){State.S.battlePrefs=previous;this.game.toast({zh:'存档失败，请重试。',en:'Save failed. Try again.'});return;}
-      this.closeAll();
-      if(opts.onStart){opts.onStart(fighters.length?fighters:team);return;}
+      State.save();this.closeAll();
+      if(typeof opts.onStart==='function'){opts.onStart(fighters.length?fighters:team);return;}
       if(opts.mastery){this.game.startMasteryChallenge(wildSp,true,fighters);return;}
       if(opts.origin==='map'){
         this.game._returnScene='map';this.game._battleTheme=opts.theme||null;

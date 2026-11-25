@@ -33,7 +33,7 @@ export function inPattern(p,f){
 }
 
 // Original regional scene and manifestation artwork. Render at native canvas scale; no CSS image substitute.
-const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["forest-arena.svg","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
+const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
 const art={};
 function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
@@ -41,13 +41,14 @@ function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)
 }}
 function drawScene(ctx,W,H,region){
  const img=art[region]?.background;if(!img?.complete||!img.naturalWidth)return false;
- const scale=Math.max(W/img.naturalWidth,H/img.naturalHeight),dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
- ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);return true;
+ window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#263c45",bottom:"#354a40"});
+ if(region==="forest"){ctx.save();const light=ctx.createLinearGradient(0,H*.18,0,H);light.addColorStop(0,"rgba(15,43,29,.04)");light.addColorStop(.55,"rgba(15,43,29,.18)");light.addColorStop(1,"rgba(12,34,27,.4)");ctx.fillStyle=light;ctx.fillRect(0,0,W,H);ctx.restore();}
+ return true;
 }
 function drawManifestation(ctx,e,b){
  const img=art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
  const size=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62)),bob=Math.sin(b.t*3+e.i)*2;
- ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();return true;
+ ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);const scale=Math.min(size/img.naturalWidth,size/img.naturalHeight),dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;ctx.drawImage(img,-dw/2,size/2-dh,dw,dh);ctx.restore();return true;
 }
 
 // Position the mechanic HUD below the actual battle topbar on every viewport.
@@ -61,7 +62,33 @@ function positionObjectiveHud(panel){
 function install(){
  const BP=window.Battle?.CaptureBattle?.prototype,GP=window.Game?.prototype;
  if(!BP||!GP||window.CatBondRegionalArt)return;
- loadArt();window.CatBondRegionalArt=Object.freeze({drawScene,drawManifestation});
+ loadArt();
+ const ruinsTask={id:"postgame:ruins",operation:"postgame:ruins-victory"};
+ function ruinsAvailable(game){
+  const v=window.CatBondResonance?.view(),pos=window.State.S.resonanceExploration?.positions?.starfall;
+  return v?.ending&&game?.scene==="map"&&!game.battle&&window.WorldMap.currentRegion==="starfall"&&pos&&Math.hypot(pos.x-.23,pos.y-.78)<.072;
+ }
+ function prepareRuins(game){
+  if(!ruinsAvailable(game))return false;
+  const root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam();
+  if(!team.length)return false;
+  // A real optional capture challenge, not another manifestation of the defeated Hollow Echo.
+  // Select a legendary breed that is least represented in the player's collection.
+  const owned=id=>root.cats.filter(cat=>cat.species===id).length;
+  const legends=window.GameData.SPECIES.filter(sp=>sp.rarity==="SSR").sort((a,b)=>owned(a.id)-owned(b.id)||a.id.localeCompare(b.id));
+  const wild=legends[0];if(!wild)return false;
+  const companions=["wumao","bosi"].map(id=>window.GameData.speciesById(id)).filter(Boolean);
+  const title={zh:"星铃废墟 · 传说挑战",en:"Star Bell Ruins · Legendary challenge"};
+  window.UI.openBattleModePrompt(team,wild,{origin:"map",storyTitle:[title.zh,title.en],onStart:fighters=>{
+   if(root!==window.State.S||!ruinsAvailable(game)||!fighters.length)return;
+   const token=host.captureAction();
+   game._returnScene="map";game._battleTheme={region:"starfall",sky1:"#16273b",sky2:"#596985",ground:"#393f55",ground2:"#1d2436",accent:"#d8c397"};
+   game.startBattle(fighters,wild,{pack:[wild,...companions]});
+   if(game.battle)game.battle.postgameRuins={root,token};
+  }});
+  return true;
+ }
+ window.CatBondRegionalArt=Object.freeze({drawScene,drawManifestation,prepareRuins});
  const bg=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){if(this.regionalCombat&&drawScene(ctx,W,H,this.regionalCombat.region))return;return bg.call(this,ctx,W,H);};
  function notice(b,zh,en){b.game.toast({zh,en});}
@@ -188,7 +215,18 @@ function install(){
  const drawBattle=BP.draw;
  BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat)draw(this,ctx);return result;};
  const end=GP.endBattle;
- GP.endBattle=function(){if(this.battle?.regionalCombat)document.getElementById("cb-region-combat")?.remove();return end.call(this);};
+ GP.endBattle=function(){
+  const b=this.battle,ruins=b?.postgameRuins,host=window.CatBondResonance;
+  let committed=null;
+  if(ruins&&b.done&&b.result==="win"&&ruins.root===window.State.S&&host?.isCurrentAction?.(ruins.token)&&!host.view().postgame.includes(ruinsTask.id)){
+   committed=host.postgame({...ruinsTask,verified:true,token:ruins.token});
+  }
+  if(b?.regionalCombat)document.getElementById("cb-region-combat")?.remove();
+  const result=end.call(this);
+  if(committed?.ok)this.toast({zh:"星铃废墟挑战完成。",en:"Star Bell Ruins challenge complete."});
+  else if(committed&&!committed.ok)this.toast({zh:"挑战记录未保存，可以再次挑战。",en:"Challenge record was not saved. You can retry."});
+  return result;
+ };
  window.addEventListener("resize",()=>requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-region-combat"))));
  window.addEventListener("morrowwish-language-change",()=>{const b=window.__game?.battle;if(b?.regionalCombat){paintHud(b);requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-region-combat")));}});
 }

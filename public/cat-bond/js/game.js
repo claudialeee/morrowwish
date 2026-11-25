@@ -28,8 +28,17 @@ class Game {
     this.touchAutoFire=false; // manual phone players can focus on moving and skill timing
     this._worldTouch = null; // map: tap to walk / drag to pan
     this.resize();
-    window.addEventListener('resize', () => this.resize());
-    window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 100));
+    this._resizeFrame=0;
+    const scheduleResize=()=>{if(this._resizeFrame)return;this._resizeFrame=requestAnimationFrame(()=>{this._resizeFrame=0;this.resize();});};
+    if(typeof window.ResizeObserver==='function'){
+      this._sceneResizeObserver=new window.ResizeObserver(scheduleResize);
+      this._sceneResizeObserver.observe(this.canvas);
+    }
+    window.visualViewport?.addEventListener('resize',scheduleResize);
+    window.addEventListener('resize',scheduleResize);
+    window.addEventListener('orientationchange',scheduleResize);
+    window.addEventListener('morrowwish-fullscreen-change',scheduleResize);
+    document.addEventListener('fullscreenchange',scheduleResize);
     window.addEventListener('morrowwish-language-change',()=>{
       if(this.scene==='battle'){
         this.syncBattleControlHelp();this.syncBattleModeUI();
@@ -43,6 +52,7 @@ class Game {
   resize() {
     const oldW=this.W,oldH=this.H;
     const rect = this.canvas.getBoundingClientRect();
+    if(rect.width<1||rect.height<1)return;
     // Retina phones need three physical pixels per CSS pixel to show
     // the 220×330 kitten illustrations sharply. Cap total canvas pixels
     // to avoid stuttering on older devices and large desktop windows.
@@ -127,6 +137,8 @@ class Game {
   }
 
   openWorldMap() {
+    const story=window.CatBondResonance?.view?.(),id=story?.current?.id;
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(id==='prologue:P-04'||(id==='prologue:P-05'&&story.cursor<story.current.lines.length))){this.toast({zh:'先完成与暮铃的交谈和花园调查。',en:'Talk to Muling and investigate the garden before leaving.'});return false;}
     window.SunlitGarden?.leave?.();
     // Clear messages from the garden encounter tutorial before navigating.
     // The global toast queue otherwise covers the exploration map and cats
@@ -435,6 +447,7 @@ class Game {
     this.refreshYardSurprise();
     const hint=document.getElementById('first-quest');
     if(!hint)return;
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&window.CatBondResonance?.view?.().current?.chapter==='prologue'){hint.hidden=true;const help=document.getElementById('guide-help');if(help)help.hidden=true;this._tourTarget?.classList.remove('cb-guide-target');this._tourTarget=null;return;}
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const count=State.S.catchCount||0;
     const firstCapture=(State.S.cats?.length||0)>0&&count===0;
@@ -1329,7 +1342,8 @@ class Game {
       const title=document.getElementById('battle-help-title');
       if(title)title.textContent=en?'Your first battle · '+(step+1)+'/'+stages.length
         :'第一次战斗 · '+(step+1)+'/'+stages.length;
-      const [heading,desc,phone,computer]=stages[step];
+      let [heading,desc,phone,computer]=stages[step];
+      if(this.battle?.forgeState&&step===0){heading=en?'Furnace guardian · protect the team':'熔炉守卫 · 保护队伍';desc=en?'This is a story boss, not a cat to capture. Watch core heat and pressure; use Jinpo and Xiaomao’s vent support to expose the core for six seconds. Dodge the marked attacks in all three phases.':'这是剧情守卫战，不是猫咪捕捉战。观察炉心温度和压力，使用烬婆与小铆的泄压支援使炉心暴露六秒，躲避三个阶段的攻击预警。';}
       const deviceInfo=phone?'<div class="battle-device-guide">'+
         '<div class="battle-device-item '+(this.isTouch?'preferred':'')+'"><strong>'+(en?'Phone / touch':'手机 / 触屏')+'</strong><p>'+phone+'</p></div>'+
         '<div class="battle-device-item '+(!this.isTouch?'preferred':'')+'"><strong>'+(en?'Computer / keyboard':'电脑 / 键鼠')+'</strong><p>'+computer+'</p></div></div>':'';
@@ -1373,6 +1387,7 @@ class Game {
         <p><strong>攻击：</strong>按住鼠标左键或 J；Q / E 放技能；空格键闪避。</p>
         <p><strong>必杀：</strong>R；1 / 2 / 3 换猫；P 切换自动战斗。</p></section>
         <p class="battle-help-note">查看说明时战斗会暂停。自动模式会代替你移动、攻击和闪避。</p>`;
+    if(this.battle?.forgeState)host.insertAdjacentHTML('afterbegin',en?'<section class="battle-help-section preferred"><b>Furnace guardian</b><p>Heat and pressure build independently. Vent support opens the core for six seconds; dodge hammerfall, slag and steam markers. Defeat or retreat allows another attempt.</p></section>':'<section class="battle-help-section preferred"><b>熔炉守卫</b><p>温度与压力分别累积。协力泄压可让炉心暴露六秒；躲开重锤、熔渣及蒸汽预警。失败或撤退后可以再次挑战。</p></section>');
     // Keep the equipped-skill reference inside the existing paused Controls
     // help. No detached button or skill panel should cover active gameplay.
     if(this.battle){
@@ -1486,7 +1501,7 @@ class Game {
       const current=Math.max(0,Math.min(maximum,enemy?.poise||0));
       const percentage=maximum?Math.max(0,Math.min(100,current/maximum*100)):0;
       const en=window.MorrowwishI18n?.get?.()!=='zh';
-      const enemyName=enemy?(window.CatBondI18n?.translate?.(enemy.sp?.name)||
+      const enemyName=enemy?(enemy.combatName?.[en?1:0]||window.CatBondI18n?.translate?.(enemy.sp?.name)||
         enemy.sp?.name|| (en?'Enemy':'野猫')):'';
       const status=enemy?.staggerT>0
         ?(en?'Staggered':'虚弱')+' '+enemy.staggerT.toFixed(1)+'s'

@@ -1,3 +1,4 @@
+import {finishCanonicalOpening} from './cat-bond-test-start.mjs';
 // Full Cat Bond bilingual regression: real DOM, real coin-icon transforms,
 // website + CrazyGames portal, desktop + touch/mobile, 19 key player surfaces.
 // Report *all* leaks rather than stopping at the first mislabeled button.
@@ -47,6 +48,8 @@ try{
       await page.locator('#intro-start').click({timeout:10000});
       await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
       await page.locator('#intro-slot-list [data-slot="slot1"]').click({timeout:10000});
+      await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true);
+      if(await page.evaluate(()=>!!window.__CAT_BOND_CANONICAL_ACTIVE__))await finishCanonicalOpening(page);else{
       // Choose the actual starter first; the prologue then stages that cat in
       // the opening scene before the player enters the overworld.
       await page.locator('#panel.open .dex-cell').first().click({timeout:10000});
@@ -54,7 +57,7 @@ try{
       const prologue=page.locator('.cb-story-overlay');
       await prologue.waitFor({state:'visible',timeout:10000});
       await prologue.locator('.cb-story-skip').click({timeout:5000});
-      await prologue.waitFor({state:'detached',timeout:5000});
+      await prologue.waitFor({state:'detached',timeout:5000});}
       await page.evaluate(()=>{
         State.S.coins=2500;
         State.S.fish=500;
@@ -153,6 +156,7 @@ try{
           while(walker.nextNode()){
             const n=walker.currentNode;
             const str=(n.nodeValue||'').trim();
+            if(str==='中文'&&n.parentElement.matches('button[data-slot-language],button[data-res-language],button[data-opening-language],button.cbcp-language'))continue;
             if(str&&han.test(str)&&visible(n.parentElement)){
               const target=n.parentElement.closest('button,section,article,.card')||n.parentElement;
               leaks.push({kind:'text',text:str.slice(0,135),

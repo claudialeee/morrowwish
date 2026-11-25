@@ -7,7 +7,7 @@
 .cb-forge-heat i{display:block;width:24%;height:100%;background:linear-gradient(90deg,#b56d48,#f5bd76,#ff7446);box-shadow:0 0 9px #e88b4c;transition:width .18s linear}
 .cb-forge-heat b{text-align:right;color:#ffd9a6;font-variant-numeric:tabular-nums}
 .cb-forge-support{display:grid;grid-template-columns:34px 34px 1fr auto;align-items:center;gap:6px;margin-top:8px}
-.cb-forge-support img{width:32px;height:32px;object-fit:cover;border-radius:9px;border:1px solid #b98a60;background:#28333b}
+.cb-forge-support img{width:32px;height:32px;object-fit:cover;object-position:top;border-radius:9px;border:1px solid #b98a60;background:#28333b}
 .cb-forge-support strong{display:block;font-size:10px;color:#f2d5aa}
 .cb-forge-support small{display:block;font-size:9px;color:#b7ad9e}
 .cb-forge-support button{border:1px solid #d2a16f;border-radius:8px;background:linear-gradient(180deg,#8d5b3f,#53392f);color:#fff0d4;font-weight:850;font-size:10px;padding:7px 9px;min-height:32px}
@@ -29,3 +29,44 @@
 #battle-ui .cb-forge-support button{pointer-events:auto;min-height:34px}
 @media(max-width:600px){#battle-ui .cb-forge-hud{left:auto;right:10px;transform:none;width:min(278px,calc(100% - 92px));padding:6px 8px}.cb-forge-support{grid-template-columns:1fr auto}.cb-forge-support img{display:none}.cb-forge-support small{display:none}.cb-forge-objective{margin:2px 0 4px}.cb-forge-support{margin-top:5px}}
 @media(orientation:landscape) and (max-height:500px){#battle-ui .cb-forge-hud{left:50%;right:auto;transform:translateX(-50%);width:min(320px,calc(100% - 120px));padding:5px 9px}.cb-forge-support{grid-template-columns:1fr auto;margin-top:3px}.cb-forge-support img,.cb-forge-support small{display:none}.cb-forge-support button{min-height:30px}.cb-forge-objective{font-size:9px;margin:2px 0}}
+
+.cb-forge-heat [data-forge-pressure]{background:linear-gradient(90deg,#418d90,#9bded4,#e79c65);box-shadow:0 0 8px #77bdb4}.cb-forge-hud[data-exposed="true"]{border-color:#9be6c8;box-shadow:0 0 16px #8ce4b638}.cb-forge-hud[data-pressure-alert="true"] [data-forge-pressure-value]{color:#ff956e}.cb-forge-hud[data-assist="jinpo"] [data-forge-jinpo],.cb-forge-hud[data-assist="xiaomao"] [data-forge-xiaomao]{border-color:#c4f0d7;box-shadow:0 0 6px #9ad6b877}.cb-forge-objective{min-height:1.35em}
+
+.cb-dex-forge-record{display:flex;align-items:center;gap:12px;border:1px solid #ba9965;border-radius:12px;padding:12px;margin:14px 0;background:linear-gradient(120deg,#f7ead6,#e9ddc9);color:#4a382a}.cb-dex-forge-record img{width:84px;height:84px;object-fit:contain;flex:none;background:radial-gradient(ellipse,#a17a4a55,transparent 70%)}.cb-dex-forge-record div{min-width:0}.cb-dex-forge-record small{font-size:10px;letter-spacing:.08em;color:#8b5a36}.cb-dex-forge-record strong{display:block;font:700 17px/1.25 Georgia,serif}.cb-dex-forge-record p{font-size:12px;line-height:1.5;margin:4px 0}.cb-dex-forge-record span{font-size:11px;color:#576b4c}
+
+/* Portrait: the original team and charge cards own the upper corners.
+   Give the furnace controls their own bottom-left rail, opposite the native
+   two-row attack grid. Never cover the duo or any of the skill controls. */
+@media (max-width:600px) and (orientation:portrait){
+ #battle-ui .cb-forge-hud{box-sizing:border-box;top:auto;left:max(8px,env(safe-area-inset-left,0px));right:auto;bottom:max(12px,calc(env(safe-area-inset-bottom,0px) + 8px));transform:none;width:min(204px,calc(100% - 190px));padding:7px 8px;border-radius:11px}
+ #battle-ui .cb-forge-title{font-size:9px;letter-spacing:.04em;gap:4px;flex-wrap:wrap}
+ #battle-ui .cb-forge-objective{font-size:10px;line-height:1.25;min-height:0}
+ #battle-ui .cb-forge-heat{grid-template-columns:49px minmax(0,1fr) 25px;gap:3px;font-size:8px;line-height:1.2}
+ #battle-ui .cb-forge-support{grid-template-columns:minmax(0,1fr) auto;gap:4px}
+ #battle-ui .cb-forge-support strong{font-size:9px;line-height:1.2}
+ #battle-ui .cb-forge-support button{min-height:44px;padding:5px 6px;max-width:96px}
+}
+
+#battle-ui .cb-forge-hud[data-duo-art="true"]{visibility:hidden;pointer-events:none}
+
+/* Keep the native enemy/mode header clear on narrow screens. The regional
+   mechanic rail already explains the attacks and pressure; manual coaching
+   remains available, but is positioned below the team/charge cards. */
+@media(max-width:600px) and (orientation:portrait){
+ #battle-ui:has(.cb-forge-hud) .battle-hint:not(.coach-hint){display:none!important}
+ #battle-ui:has(.cb-forge-hud) .battle-hint.coach-hint{top:calc(env(safe-area-inset-top,0px) + 200px)!important;max-width:90%!important}
+}
+
+/* The real portrait screenshot exposed an additional header squeeze: hidden
+   debug buttons inherited display:inline-flex, consuming room for real controls.
+   Keep those buttons hidden and constrain the poise caption to its own column. */
+#battle-ui:has(#cb-forge-hud) .battle-tools #btn-debug[hidden]{display:none!important}
+#battle-ui:has(#cb-forge-hud) .battle-enemy-summary{min-width:0;overflow:hidden}
+#battle-ui:has(#cb-forge-hud) .battle-poise-label{flex:0 1 auto;min-width:0;max-width:calc(100% - 26px);overflow:hidden;text-overflow:ellipsis}
+@media(max-width:600px) and (orientation:portrait){
+ #battle-ui:has(#cb-forge-hud) .battle-topbar{grid-template-columns:minmax(0,1fr) max-content!important;gap:5px!important}
+ #battle-ui:has(#cb-forge-hud) .battle-tools #battle-help-toggle,
+ #battle-ui:has(#cb-forge-hud) .battle-tools #btn-flee{min-width:32px!important;width:32px!important;overflow:hidden}
+ #battle-ui:has(#cb-forge-hud) .battle-tools #btn-auto{min-width:65px!important;max-width:76px!important;padding:2px 3px!important;overflow:hidden}
+ #battle-ui.touch-manual .cb-forge-hud{bottom:max(150px,23vh)}
+}

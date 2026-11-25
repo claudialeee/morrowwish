@@ -13,7 +13,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
  function capture(){const token=Object.freeze({});leases.set(token,{root:State.S,slot:State.activeSlot?.(),scene:read().view().current?.id??null});return token}
  function check(token){if(!token)return true;const lease=leases.get(token);return !!lease&&lease.root===State.S&&lease.slot===State.activeSlot?.()&&lease.scene===(read().view().current?.id??null)}
  function subscribe(fn){listeners.add(fn);return ()=>listeners.delete(fn)}
- function view(){const e=read(),v=e.view(),s=e.snapshot();return {...v,completed:s.completed,trust:s.trust,links:s.links,sanctuaries:s.sanctuaries,melodies:s.melodies,returned:s.returned,ambientDone:s.ambientDone,revision:s.revision}}
+ function view(){const e=read(),v=e.view(),s=e.snapshot();return {...v,completed:s.completed,trust:s.trust,links:s.links,sanctuaries:s.sanctuaries,melodies:s.melodies,returned:s.returned,postgame:s.postgame,ambientDone:s.ambientDone,revision:s.revision}}
  // The optional physical side effect is part of the same local save as story
  // evidence. World ownership remains with the caller; only these fields may
  // be patched here. A cloud backup error does not undo a successful local save.
@@ -97,10 +97,15 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
  }
  function support({region,action,verified,token}={}){if(verified!==true)return fail("support-unverified");if(!token)return fail("action-token-required");return transaction(e=>e.supportAction(region,action),{token})}
  function exchange({a,b,stage,actor,action,verified,token}={},physical){if(verified!==true||!token)return fail("exchange-unverified");if(State.S.resonanceExploration?.location!==actor)return fail("wrong-map-location");return transaction(e=>e.exchange({a,b,stage,actor,action}),{token,physical})}
- function postgame({id,operation,verified,token}={}){if(verified!==true||!token)return fail("postgame-unverified");return transaction(e=>e.postgame(id,operation),{token})}
+ function postgame({id,operation,verified,token}={},physical){if(verified!==true||!token)return fail("postgame-unverified");return transaction(e=>e.postgame(id,operation),{token,physical})}
  function npcProfile(id){const actor=campaign.cast[id];if(!actor||id==="player")return null;const v=view();return {id,name:clone(actor.name),region:actor.region,trust:v.trust[id],returned:v.returned.includes(id),phase:id==="muling"?v.muling:null,availableAmbient:read().ambientAvailable(actor.region).filter(a=>a.npc===id)}}
  function residents(region){const v=view();if(region==="garden"){const ids=[...v.returned];if(["epilogue:E-02","epilogue:E-03"].includes(v.current?.id))ids.push(...Object.values(campaign.cast).filter(n=>campaign.regions.includes(n.region)).map(n=>n.id));if(["companion","accountability-pending","accountable","reconciled"].includes(v.muling)||["prologue:P-04","prologue:P-05"].includes(v.current?.id))ids.unshift("muling");return [...new Set(ids)].map(npcProfile).filter(Boolean)}
-  if(!v.regions.includes(region))return [];const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(v.current?.chapter===region&&["sky:S-04","library:M-03","library:M-05","starfall:F-03","starfall:F-04","starfall:F-05"].includes(v.current?.id))ids.push("muling");return ids.map(id=>({...npcProfile(id),scripted:id==="muling"}));}
- const follows=()=>view().muling==="companion"||view().muling==="identity-revealed";
+  if(!v.regions.includes(region))return [];const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);const scene=v.current,scripted=["sky:S-04","library:M-03","library:M-05","starfall:F-03","starfall:F-04","starfall:F-05"].includes(scene?.id);
+  const hasDialogue=(scene?.lines||[]).some(l=>l.speaker==="muling")||(scene?.choices||[]).some(c=>c.npc==="muling");
+  const availableAmbient=read().ambientAvailable(region).some(a=>a.npc==="muling");
+  if((scene?.chapter===region&&scripted)||((availableAmbient||scene?.chapter===region&&hasDialogue)&&["companion","identity-revealed"].includes(v.muling)))ids.push("muling");return ids.map(id=>({...npcProfile(id),scripted:id==="muling"}));}
+ // Compatibility query: ordinary world exploration never mounts a companion.
+ // Joint flight and paired-water tasks render their participants in their own mechanism.
+ const follows=()=>false;
  return Object.freeze({capture,isCurrentAction:check,completeNPCScene,commitFinaleVictory,subscribe,exchange,initialize:()=>State.S.resonance?{ok:true,state:clone(State.S.resonance)}:transaction(e=>({ok:true,state:e.snapshot()})),npcProfile,residents,follows,view,snapshot:()=>read().snapshot(),choose:(id,token)=>transaction(e=>e.choose(id),{token}),nextLine:token=>transaction(e=>e.nextLine(),{token}),finish:token=>transaction(e=>e.finish(),{token}),recordNPC,evidence,ambient,support,postgame,ambientAvailable:region=>read().ambientAvailable(region),supportProfile:region=>read().supportProfile(region)});
 }
