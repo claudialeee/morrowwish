@@ -59,7 +59,7 @@ try {
         await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
         if(['yahe','yuchuan','muling'].includes(line.speaker)){
           const portrait=dialogue.locator('.res-portrait');
-          await portrait.waitFor({state:'visible'});await portrait.evaluate(img=>img.decode());
+          await portrait.waitFor({state:'visible'});await page.waitForFunction(()=>{const img=document.querySelector('.res-host .res-portrait');return img?.complete&&img.naturalWidth>0;});await portrait.evaluate(img=>img.decode());
         }
         await dialogue.locator('[data-res-language]').click();
         assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),'zh');
