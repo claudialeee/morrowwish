@@ -69,7 +69,7 @@ function install(){
   const v=window.CatBondResonance?.view(),pos=window.State.S.resonanceExploration?.positions?.starfall;
   return v?.ending&&game?.scene==="map"&&!game.battle&&window.WorldMap.currentRegion==="starfall"&&pos&&Math.hypot(pos.x-.23,pos.y-.78)<.072;
  }
- function prepareRuins(game){
+ function prepareRuins(game,mode="legendary"){
   if(!ruinsAvailable(game))return false;
   const root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam();
   if(!team.length)return false;
@@ -79,13 +79,16 @@ function install(){
   const legends=window.GameData.SPECIES.filter(sp=>sp.rarity==="SSR").sort((a,b)=>owned(a.id)-owned(b.id)||a.id.localeCompare(b.id));
   const wild=legends[0];if(!wild)return false;
   const companions=["wumao","bosi"].map(id=>window.GameData.speciesById(id)).filter(Boolean);
-  const title={zh:"星铃废墟 · 传说挑战",en:"Star Bell Ruins · Legendary challenge"};
+  const duoMode=mode==="duo";
+  const title=duoMode?{zh:"星铃废墟 · 双猫约定挑战",en:"Star Bell Ruins · Duo Promise challenge"}:{zh:"星铃废墟 · 传说挑战",en:"Star Bell Ruins · Legendary challenge"};
   window.UI.openBattleModePrompt(team,wild,{origin:"map",storyTitle:[title.zh,title.en],onStart:fighters=>{
    if(root!==window.State.S||!ruinsAvailable(game)||!fighters.length)return;
    const token=host.captureAction();
    game._returnScene="map";game._battleTheme={region:"starfall",sky1:"#16273b",sky2:"#596985",ground:"#393f55",ground2:"#1d2436",accent:"#d8c397"};
-   game.startBattle(fighters,wild,{pack:[wild,...companions]});
-   if(game.battle)game.battle.postgameRuins={root,token};
+   const encounterLevel=Math.max(1,Math.round(fighters.reduce((n,c)=>n+(Number(c.level)||1),0)/fighters.length)+(duoMode?3:2));
+   const lead={...wild,encounterLevel};
+   game.startBattle(fighters,lead,{pack:[lead,...companions]});
+   if(game.battle){const b=game.battle,p=b.duo;const promised=!!(p&&window.CatRelations?.memoryList?.(p.a,p.b)?.includes("sakura"));b.postgameRuins={root,token,mode,promised,attemptId:globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`};if(b.regionalCombat)b.regionalCombat.next=2.6;if(duoMode&&!promised)notice(b,"本次未携带已完成约定的双猫；仍可捕捉，不能获得约定奖励。","No promised duo in this party; capture remains available, but the promise bonus is locked.");}
   }});
   return true;
  }
@@ -219,12 +222,13 @@ function install(){
  GP.endBattle=function(){
   const b=this.battle,ruins=b?.postgameRuins,host=window.CatBondResonance;
   let committed=null;
-  if(ruins&&b.done&&b.result==="win"&&ruins.root===window.State.S&&host?.isCurrentAction?.(ruins.token)&&!host.view().postgame.includes(ruinsTask.id)){
-   committed=host.postgame({...ruinsTask,verified:true,token:ruins.token});
+  if(ruins&&b.done&&b.result==="win"&&ruins.root===window.State.S&&host?.isCurrentAction?.(ruins.token) ){
+   const duoPromise=ruins.mode==="duo"&&ruins.promised&&b.duoUses>0;
+   committed=host.commitRuinsVictory({attemptId:ruins.attemptId,duoPromise,verified:true,outcome:"win",token:ruins.token});
   }
   if(b?.regionalCombat)document.getElementById("cb-region-combat")?.remove();
   const result=end.call(this);
-  if(committed?.ok)this.toast({zh:"星铃废墟挑战完成。",en:"Star Bell Ruins challenge complete."});
+  if(committed?.ok)this.toast({zh:"星铃废墟挑战完成，探索奖励已保存。",en:"Star Bell Ruins cleared; exploration rewards saved."});
   else if(committed&&!committed.ok)this.toast({zh:"挑战记录未保存，可以再次挑战。",en:"Challenge record was not saved. You can retry."});
   return result;
  };

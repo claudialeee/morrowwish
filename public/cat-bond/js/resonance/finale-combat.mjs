@@ -323,8 +323,11 @@ function install(){
   if(next.progress>=need){
    // Stage the verified physical action in this fight; a retreat cannot grant narrative evidence.
    next.done=true;b.vfx.ring(next.x,next.y,{r0:15,vr:240,life:.8,color:next.color,width:5});
-   for(const cat of alive(b))cat.hp=Math.min(cat.maxhp,cat.hp+Math.ceil(cat.maxhp*.035));
-   const central=b.liveEnemies().find(e=>e.finaleActor==="central");if(central){central.dmg*=.94;}
+   for(const cat of alive(b))cat.hp=Math.min(cat.maxhp,cat.hp+Math.ceil(cat.maxhp*(next.region==="forest"?.09:.035)));
+   const central=b.liveEnemies().find(e=>e.finaleActor==="central");if(central){central.dmg*=next.region==="forge"?.86:.94;if(next.region==="starfall")central.hp=Math.max(1,central.hp-central.maxhp*.08);}
+   if(next.region==="harbor")for(const n of f.nodes)if(!n.done)n.integrity=Math.min(100,n.integrity+12);
+   if(next.region==="sky")f.cooldown=Math.max(f.cooldown,4.6);
+   if(next.region==="library")b.projectiles=b.projectiles.filter(p=>p.owner!=="wild");
    notice(b,REGION_KITS[next.region].name[0]+" · 旋律归位，队伍恢复。",REGION_KITS[next.region].name[1]+" · Melody restored; team steadied.");paint(b);
   }
  }
