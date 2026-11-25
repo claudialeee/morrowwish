@@ -22,3 +22,18 @@
 .res-finale-latch>div{width:min(32rem,100%);margin:auto;padding:1.3rem;background:#172d3c;color:#f5e3c3;border:1px solid #bc9460;border-radius:12px;text-align:center}
 .res-finale-latch progress{display:block;margin:1rem auto;width:88%;accent-color:#ecc687}
 .res-finale-latch button{margin:5px;padding:.7rem 1rem;color:#f5e3c3;background:#304954;border:1px solid #bc9460;border-radius:6px;min-height:44px;touch-action:none}
+
+/* Harbor chapter: the actual painted scene remains visible behind canonical dialogue. */
+.res-host[data-scene^="harbor:"] .res-harbor-context{margin:0 0 12px;color:#c5e1d9;font:500 clamp(11px,1.3vw,15px)/1.45 system-ui;max-width:65ch}
+.res-host[data-scene="harbor:H-04"],.res-host[data-scene="harbor:H-05"]{isolation:isolate;background:#132b38}
+.res-host[data-scene="harbor:H-04"]::before,.res-host[data-scene="harbor:H-05"]::before{content:"";position:absolute;inset:0;z-index:-2;background:center/cover no-repeat;pointer-events:none}
+.res-host[data-scene="harbor:H-04"]::before{background-image:url("../assets/resonance-world-v2/harbor.webp");filter:brightness(.68) saturate(.78)}
+.res-host[data-scene="harbor:H-05"]::before{background-image:url("../assets/cinematics/prologue/harbor-at-twilight.webp");animation:harbor-reveal 8s ease-out both}
+.res-host[data-scene="harbor:H-04"]::after,.res-host[data-scene="harbor:H-05"]::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#0c1c29e6 0%,#162e3850 48%,transparent 76%);pointer-events:none}
+.res-host[data-scene^="harbor:"] .res-dialogue[data-speaker="qilan"] .res-portrait{animation:harbor-navigator 3s ease-in-out infinite}
+.res-host[data-scene^="harbor:"] .res-dialogue[data-speaker="jiedeng"] .res-portrait{animation:harbor-keeper 5s ease-in-out infinite}
+@keyframes harbor-reveal{from{opacity:.38;transform:scale(1.035)}to{opacity:1;transform:scale(1)}}
+@keyframes harbor-navigator{50%{transform:translateY(-3px) rotate(-.35deg)}}
+@keyframes harbor-keeper{50%{transform:translateY(-1px)}}
+@media(max-width:700px){.res-host[data-scene="harbor:H-05"]::before{background-position:62% center}.res-host[data-scene^="harbor:"] .res-harbor-context{margin-bottom:6px}}
+@media(prefers-reduced-motion:reduce){.res-host[data-scene^="harbor:"]::before,.res-host[data-scene^="harbor:"] .res-portrait{animation:none!important}}

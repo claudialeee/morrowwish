@@ -52,6 +52,9 @@ try {
       await button(label).click();
       const controls = page.locator('.rw-puzzle-controls');
       await controls.waitFor();
+      if(['Storm boat','Lighthouse mirrors','Returning Tides','Tide cave logbook'].includes(label)){
+        await shot('mechanism-'+label.toLowerCase().replaceAll(' ','-'));
+      }
       for (const input of inputs) await button(input,controls).click();
       await controls.waitFor({state:'hidden'});
     }
@@ -111,6 +114,7 @@ try {
     await scene('harbor:H-01');
     await page.locator('.rw-shell').evaluate(shell=>Promise.allSettled(shell.getAnimations().map(animation=>animation.finished)));
     await shot('harbor');
+    assert.ok(await page.locator('.rw-world').evaluate(e=>e.getBoundingClientRect().top>=40),'Harbor scroll viewport stays below fixed game controls');
     await button('Talk to Qilan').click();
     await readDialogue('harbor:H-01');
     await scene('harbor:H-02');
@@ -152,7 +156,8 @@ try {
     await button('Talk to Jiedeng').click();
     await page.locator('.res-host[data-scene="harbor:H-02"]').waitFor();
     await shot('dialogue');
-    await readDialogue('harbor:H-02','Comfort Qilan first');
+    const comfort=name!=='portrait';
+    await readDialogue('harbor:H-02',comfort?'Comfort Qilan first':'Ask Jiedeng about the old storm');
     await scene('harbor:H-03');
     await button('Inspect the ebb marks · 1/2').waitFor();
     await tapLandmark(.82,.45);
@@ -166,7 +171,7 @@ try {
     const calibrate=name==='portrait';
     await tapLandmark(...(calibrate?[.195,.50]:[.16,.60]));
     await readDialogue('harbor:H-04',calibrate?'Calibrate the lighthouse first':'Prioritize rescue');
-    const rescue=() => puzzle('Storm boat',['Secure','Signal','Guide']);
+    const rescue=() => puzzle('Storm boat',calibrate?['Secure','Signal','Guide','Guide','Signal']:['Secure','Secure','Signal','Guide','Guide','Signal']);
     const mirrors=() => puzzle('Lighthouse mirrors',['Left mirror','Left mirror','Center mirror','Center mirror','Right mirror']);
     if (calibrate) {await mirrors();await rescue();} else {await rescue();await mirrors();}
     await scene('harbor:H-05');
@@ -174,11 +179,27 @@ try {
     await puzzle('Lighthouse sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror']);
     await button('Invite Qilan').click();
     await button('Invite Qilan').waitFor({state:'hidden'});
+    if(name==='desktop'){
+      await page.reload();
+      await page.locator('#intro-continue').click();
+      await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+      await scene('harbor:H-05');
+      if(await button('Misttide Harbor').isVisible())await button('Misttide Harbor').click();
+      await button('Invite Jiedeng').waitFor();
+      assert.equal(await button('Invite Qilan').isVisible(),false,'Invitation survives save reload');
+    }
     await button('Invite Jiedeng').click();
     await button('Invite Jiedeng').waitFor({state:'hidden'});
     await puzzle('Returning Tides',['Low','High','Middle']);
     await readDialogue('harbor:H-05');
     await scene('forest:R-01');
+    await page.locator('.rw-shell').scrollIntoViewIfNeeded();
+    assert.equal(await page.locator('.rw-shell').evaluate(e=>getComputedStyle(e).animationName),'none');
+    await shot('harbor-restored');
+    assert.equal(await page.evaluate(()=>State.S.resonance.choices['harbor:H-02']),comfort?'comfort':'ask');
+    await page.evaluate(()=>MorrowwishI18n.set('zh'));
+    await page.getByText('灯塔 · 已复明',{exact:true}).waitFor();
+    await page.evaluate(()=>MorrowwishI18n.set('en'));
 
     // Follow a normal encounter through the actual battle setup and tutorial.
     await button('Approach wild cat').click();
