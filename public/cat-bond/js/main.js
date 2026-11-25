@@ -107,6 +107,15 @@ window.addEventListener('DOMContentLoaded', () => {
       }else beginGame('continue',id);
     }));
   };
+  const enterAdventure=done=>{
+    if(window.CatBondTitlePrologue?.available?.()){
+      window.CatBondTitlePrologue.start(game,{onWorld:done});return;
+    }
+    // The isolated legacy build remains a test baseline only. When formal
+    // modules are present the canonical entry is exclusive, even on error.
+    if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue)window.CatBondStory.startPrologue(done);
+    else done();
+  };
   const beginGame=(mode,slotId,overwriteConfirmed=false)=>{
     if(starting)return;
     starting=true;
@@ -114,6 +123,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if(mode==='new'){
         if(!State.startNewGame(slotId,{overwriteConfirmed}))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'无法创建存档，请检查存储空间或覆盖确认。':'Could not create the save. Check storage space or overwrite confirmation.');
       }else if(!State.loadSlot(slotId))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'存档为空或已损坏，无法读取。':'The selected save is empty or damaged');
+      window.__CAT_BOND_CANONICAL_ACTIVE__=!!window.CatBondTitlePrologue?.available?.();
       game.start();
       closeSlots();
       document.getElementById('intro').classList.add('hide');
@@ -138,15 +148,13 @@ window.addEventListener('DOMContentLoaded', () => {
         };
         // Let the player choose their actual companion first; the cinematic
         // then stages that cat waking beneath the garden bench.
-        if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){
-          window.CatBondStory.startPrologue(enterWorld);
-        }else enterWorld();
+        enterAdventure(enterWorld);
         window.arcadeMetric?.('bond_starter_chosen',{starter:id});
       });
     }else{
       const report=window.Raising?Raising.applyOffline(Date.now()):State.applyIdle();
       game.rebuildYard();game.refreshHUD();
-      if(!State.S.story?.introSeen&&window.CatBondStory?.startPrologue){window.CatBondStory.startPrologue(()=>{State.save();game.openWorldMap();});}else game.openWorldMap();
+      enterAdventure(()=>{State.save();game.openWorldMap();});
       const has=o=>o&&Object.values(o).some(v=>v>0);
       const worthShowing=report&&report.minutes>=1&&(has(report.produced)||has(report.gains)||(report.visitors&&report.visitors.length));
       if(worthShowing)setTimeout(()=>UI.openWelcomeBack(report),400);

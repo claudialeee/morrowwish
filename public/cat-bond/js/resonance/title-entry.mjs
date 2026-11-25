@@ -47,7 +47,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
  const dispose=()=>{closed=true;controller?.dispose();root?.remove();removeError?.();};
  const live=()=>!closed&&same();
  active={dispose};
- const showError=reason=>{if(!live())return;controller?.cancel?.();removeError?.();removeError=errorPanel(game,reason,()=>{removeError=null;if(runtime)advance();else{dispose();startCanonicalOpening(game,{onWorld})}});};
+ const showError=reason=>{if(!live())return;controller?.cancel?.();removeError?.();removeError=errorPanel(game,reason,()=>{removeError=null;if(controller&&typeof advance==='function')advance();else{dispose();startCanonicalOpening(game,{onWorld})}});};
  const toGarden=()=>{
   game.scene='yard';game.battle=null;game.rebuildYard?.();game.showYardChrome?.();game.refreshHUD?.();
  };
@@ -97,11 +97,11 @@ export async function startCanonicalOpening(game,{onWorld}={}){
    const mode=classifyPrologue(runtime.view());
    if(mode!=='cinematic'){handoff(mode);return;}
    launching=true;
-   try{const result=await controller.playCurrent();if(!result.ok&&live())showError(result.reason);}
-   catch(e){showError(e.message||'cinematic-failed');}
+   try{const result=await controller.playCurrent();if(!result.ok&&live())showError(result.reason);return result;}
+   catch(e){const reason=e.message||'cinematic-failed';showError(reason);return {ok:false,reason};}
    finally{launching=false;}
   };
-  await advance();return {ok:true,mode:classifyPrologue(runtime.view())};
+  const result=await advance();return result?.ok===false?result:{ok:true,mode:classifyPrologue(runtime.view())};
  }catch(error){
   if(live())showError(error.message||'canonical-opening-failed');
   return {ok:false,reason:error.message||'canonical-opening-failed'};

@@ -176,6 +176,7 @@ function writeLocal(data){
 function state(){return window.State?.S||null;}
 function save(){try{window.State?.save?.();}catch(error){console.warn('Cat Bond story save failed',error);}}
 function storyState(){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__)return null;
  const S=state();if(!S)return null;
  if(!S.story||typeof S.story!=='object')S.story={};
  const story=S.story;
@@ -383,6 +384,7 @@ function persistIntroSeen(){
  save();
 }
 function startPrologue(done){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__)return window.CatBondTitlePrologue?.start?.(window.__game,{onWorld:done});
  showSequence('prologue',PROLOGUE,()=>{
   persistIntroSeen();done?.();
  },{canSkip:true});
@@ -428,6 +430,7 @@ function onRegionDiscovery(regionId,reward){
  }else updateTracker();
 }
 function updateTracker(){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__){document.getElementById('cb-story-tracker')?.classList.remove('is-visible');return;}
  const host=document.getElementById('cb-story-tracker');
  const game=window.__game;
  if(!host||!game||!window.__CAT_BOND_STARTED__)return;
@@ -451,6 +454,7 @@ function updateTracker(){
  host.querySelector('.cb-story-tracker-title').textContent=s.completed?t('最后一页 · 已完成','The Last Page · Complete'):t('主线 · 最后一页','MAIN STORY · THE LAST PAGE');
 }
 function openJournal(){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__)return window.CatBondResonance?.showCurrent?.();
  const s=storyState();if(!s)return;
  const pages=[...REGIONS.map(id=>REGION_PAGES[id]),LAST_PAGE];
  const fragments=pages.map((p,i)=>{
@@ -1231,6 +1235,7 @@ const NPC_CHOICES={
    {id:'echo',flag:'echo_can_matter',bond:1,label:'回声仍然重要，但不能代替活着的人。',labelEn:'An echo matters, but it cannot replace someone living.',reply:'星簿合上星盘：“那么我们必须让它听见区别。”',replyEn:'Star Scribe closes the astrolabe. “Then we must make Muling hear the difference.”'}]}
 };
 function npcRoot(){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__)return null;
  const s=state();if(!s)return null;
  if(!s.npcStory||typeof s.npcStory!=='object')s.npcStory={talked:{},choices:{},relationships:{},revealed:{},memoryReady:{},visited:{},responses:{},flags:{},completed:0};
  const root=s.npcStory;
@@ -1353,6 +1358,7 @@ function npcFound(region,reward){
  }
 }
 function npcDraw(ctx,npc,time){
+ if(window.__CAT_BOND_CANONICAL_ACTIVE__)return;
  const sp=window.GameData?.speciesById?.(npc.species);if(!sp)return;
  const root=npcRoot()||{choices:{},revealed:{}};
  const bob=Math.sin(time*1.8+npc.x)*2;
@@ -1370,7 +1376,7 @@ function npcDraw(ctx,npc,time){
  ctx.restore();
 }
 window.CatBondNPC={
- forRegion:id=>NPC_CAST.filter(n=>n.region===id),
+ forRegion:id=>window.__CAT_BOND_CANONICAL_ACTIVE__?[]:NPC_CAST.filter(n=>n.region===id),
  talk:npcTalk,draw:npcDraw,onRegionEntered:npcEntered,onDiscovery:npcFound
 };
 window.CatBondStory={
