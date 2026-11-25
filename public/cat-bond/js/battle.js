@@ -4413,7 +4413,7 @@ class CaptureBattle {
       // the wild cat FLEEING (neutral "got away", not a scored defeat) — result='flee' already
       // renders that screen. An over-levelled fight the player genuinely can't win still ends
       // here, honestly, as the prey escaping rather than a silent clock-loss at full HP.
-      if (this.t > 85 && !this.done) { this._timeCapLoss = true; this.finish(false); }
+      if (this.t > 85 && !this.done && !this.storyEncounter && !this.resonanceFinale) { this._timeCapLoss = true; this.finish(false); }
     }
     // First-fight coach: while teaching move/attack/skill, enemies stand down so a
     // brand-new player can learn the controls without taking damage.
@@ -4589,7 +4589,7 @@ class CaptureBattle {
     // win when the whole pack is down; "captureReady" when any enemy is low
     const live = this.liveEnemies();
     const wasReady = this.captureReady;
-    this.captureReady = live.some(e => e.hp / e.maxhp < 0.28);
+    this.captureReady = !this.storyEncounter&&!this.resonanceFinale&&live.some(e => e.hp / e.maxhp < 0.28);
     // Finisher beat: the first frame a wild cat drops into capture range, punch a
     // brief slowmo + flash + banner so the "收服它！" moment actually lands (it used
     // to be a silent toast). Fires once per ready-transition, not every frame.
@@ -6055,6 +6055,7 @@ class CaptureBattle {
 
   // themed battle backdrop; recolors per world-map region (this.theme)
   drawArenaBackground(ctx, W, H) {
+    if(this.forgeState && window.CatBondForgeCombat?.drawBackground){window.CatBondForgeCombat.drawBackground(ctx,W,H,this);return;}
     if(window.CatBondScenery && CatBondScenery.drawBattle(ctx,W,H,this.t,this.theme))return;
     const t = this.t, horizon = H * 0.34;
     const th = this.theme || {};
@@ -6294,6 +6295,13 @@ class CaptureBattle {
         ctx.quadraticCurveTo(1,8,18,0);ctx.fill();
         ctx.fillStyle='#fff0bf';ctx.beginPath();ctx.moveTo(14,0);
         ctx.quadraticCurveTo(-1,-3,-5,0);ctx.quadraticCurveTo(-1,4,14,0);ctx.fill();
+      }else if(p.kind==='forge-slag'){
+        ctx.rotate(p.ang+this.t*1.8);
+        ctx.fillStyle='#a9482e';ctx.strokeStyle='#ffd39a';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(p.r*1.8,0);ctx.lineTo(p.r*.25,-p.r*1.15);
+        ctx.lineTo(-p.r*1.4,-p.r*.65);ctx.lineTo(-p.r*.8,p.r*.7);
+        ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.fillStyle='rgba(255,236,190,.9)';ctx.beginPath();ctx.moveTo(p.r,0);ctx.lineTo(-p.r*.35,-p.r*.38);ctx.lineTo(-p.r*.55,p.r*.34);ctx.closePath();ctx.fill();
       }else if(p.kind==='fur'){
         // The basic yarn attack reads as a little thread bundle, not another light ball.
         ctx.rotate(this.t*7+p.ang);
@@ -6444,12 +6452,18 @@ class CaptureBattle {
         ctx.translate(-e.x, -(e.y + 33 * crouch));
       }
       window.CatBondWardArt?.draw(ctx,e,e.x,e.y,this.t,this.catScale('enemy'),'back');
-      (window.CatMotion?.draw||CatArt.drawCat)(ctx,e.x,e.y,{
-        species:e.sp,scale:this.catScale('enemy'),face:e.face,t:e.t,
-        stride:e.stride,motion:e.motion||0,
-        pose:e.frozen?'idle':e.pose,
-        mood:e.frozen?'sleepy':((e.hp/e.maxhp<.28)?'sleepy':'alert')
-      });
+      if(e.regionalEnemy && window.CatBondRegionalArt?.drawManifestation(ctx,e,this)){
+        // Authored non-collectible manifestation sprite.
+      }else if(e.visualKind==='forge-guardian' && window.CatBondForgeCombat?.drawEnemy){
+        window.CatBondForgeCombat.drawEnemy(ctx,e,this);
+      }else{
+        (window.CatMotion?.draw||CatArt.drawCat)(ctx,e.x,e.y,{
+          species:e.sp,scale:this.catScale('enemy'),face:e.face,t:e.t,
+          stride:e.stride,motion:e.motion||0,
+          pose:e.frozen?'idle':e.pose,
+          mood:e.frozen?'sleepy':((e.hp/e.maxhp<.28)?'sleepy':'alert')
+        });
+      }
       if (_pouncePrep) ctx.restore();
       // WHITE connect-flash: an additive white bloom over the body for 1-2 frames so a
       // landed hit POPS (replaces the old translucent fade that read as "vanish").
@@ -6501,8 +6515,11 @@ class CaptureBattle {
         ctx.restore();
       }
       const elemSym = this.elemSymbol(e.element);
-      this.hpTag(ctx, e.x, e.y - 78, e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color,
-        `${elemSym} ${e.sp.name} Lv.${e.level}`, {current:e.poise,max:e.poiseMax,stagger:e.staggerT,recovering:e.poiseRecovering});
+      const isZh=window.MorrowwishI18n?.get?.()==="zh";
+      const combatLabel=e.combatName?e.combatName[isZh?0:1]:(GameData.speciesName?.(e.sp)||e.sp.name);
+      const tagOffset=e.visualKind==="forge-guardian"?Math.min(105,Math.max(78,this.H*.23)):78;
+      this.hpTag(ctx, e.x, Math.max(26,e.y-tagOffset), e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color,
+        `${elemSym} ${combatLabel} Lv.${e.level}`, {current:e.poise,max:e.poiseMax,stagger:e.staggerT,recovering:e.poiseRecovering});
       // Compact status grid BELOW the HP + poise card. Lift the card to reserve
       // two rows between its bottom edge and the cat's head.
       if (e.status) {

@@ -19,13 +19,18 @@
   // ZH -> EN. Longest keys are applied first at runtime so compound phrases win
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
+    '花园复兴': 'Garden restoration',
+    '选中的双猫正在过来！': 'Your chosen duo is on its way.',
+    '请选择未工作、未闹别扭的双猫。': 'Choose a duo that is not working or sulking.',
+    '双猫完成了共同活动！': 'Your duo finished playing together!',
+    '邀请双猫': 'Invite duo',
     '守铃者': 'The Bellkeeper',
-    '系统菜单': 'System menu',
     '主线目标': 'MAIN QUEST',
     '☁️ 云存档': '☁️ Cloud save',
     '云存档': 'Cloud save',
     '最后一页': 'The Last Page',
     '已完成': 'Complete',
+    '系统菜单': 'System menu',
     // Newly surfaced first-capture conversion and progress CTAs. Keep both
     // locales explicit so the English portal never leaks Han characters.
     '战斗奖励与详情': 'Battle rewards & stats',
@@ -112,6 +117,8 @@
     '秒内 · ': ' seconds · ',
     ' 只替补': ' reserves',
     '野生猫咪': 'Wild cat',
+    '对手': 'Opponent',
+    '存档失败，请重试。': 'Save failed. Try again.',
     '拥有：': 'Owned: ',
     '探索队伍最多带 ${FIELD_CAP} 只：2 只首发、3 只替补。选好继续冒险的猫，其余回家（仍归你所有）。': 'Your exploration team can bring up to ${FIELD_CAP} cats: 2 starters and 3 reserves. Send the rest home; you still own them.',
     '全部送回家 · 返回地图': 'Send everyone home · Return to map',
