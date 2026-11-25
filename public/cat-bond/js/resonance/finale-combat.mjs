@@ -328,9 +328,7 @@ function install(){
   if(this.resonanceFinale){
    const painting=arenaPainting(W,H);
    if(painting.complete&&painting.naturalWidth){
-    const scale=Math.max(W/painting.naturalWidth,H/painting.naturalHeight);
-    const width=painting.naturalWidth*scale,height=painting.naturalHeight*scale;
-    ctx.drawImage(painting,(W-width)/2,(H-height)*.24,width,height);
+    window.CatBondSceneFit.draw(ctx,painting,W,H,{top:"#161d36",bottom:"#302943"});
     return;
    }
    if(window.CatBondRegionalArt?.drawScene(ctx,W,H,"starfall"))return;

@@ -124,8 +124,8 @@ export function paintHarborPuzzle(c,p,lang,cast,frame){
 export function paintHarborCeremony(c,img,elapsed,lang,drawResident){
  const t=reduced()?2.4:elapsed,u=Math.min(1,t/3),ease=u*u*(3-2*u),w=960,h=540,zh=lang==="zh";
  c.save();c.scale(c.canvas.width/w,c.canvas.height/h);
- const z=1+.07*ease,scale=Math.max(w/img.naturalWidth,h/img.naturalHeight)*z,dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
- c.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);
+ const z=.97+.03*ease;c.save();c.translate(w*(1-z)/2,h*(1-z)/2);c.scale(z,z);
+ window.CatBondSceneFit.draw(c,img,w,h,{top:"#142536",bottom:"#142c38"});c.restore();
  const night=c.createLinearGradient(0,h*.34,0,h);night.addColorStop(0,"rgba(10,24,36,0)");night.addColorStop(.65,"rgba(10,24,36,.4)");night.addColorStop(1,"rgba(8,19,30,.96)");c.fillStyle=night;c.fillRect(0,0,w,h);
  for(let i=0;i<4;i++){const q=(t*.36+i*.25)%1; c.beginPath();c.ellipse(480,290,28+q*150,9+q*46,0,0,TAU);c.strokeStyle="rgba(201,231,205,"+(.52*(1-q))+")";c.lineWidth=2.2;c.stroke();}
  glow(c,480,284,125,"rgba(255,219,157,.22)");

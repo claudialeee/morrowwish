@@ -24,24 +24,22 @@ try {
     await page.waitForFunction(() => window.WorldMap === window.CatBondCanonicalWorld && window.CatBondResonance && window.__game);
     assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),false,'Production entry must not enable unreviewed staging art');
     const button = (name, scope = page) => {
-      const target=scope.getByRole('button',{name,exact:true,includeHidden:true});
-      const reveal=async()=>{if(await target.isVisible())return;const world=page.locator('.rw-world:not([hidden])');if(!(await world.count()))return;
-       const count=Number(await world.getAttribute('data-fit-pages')||1);
-       for(let i=0;i<count&&!(await target.isVisible());i++){
-        const next=world.locator('[data-fit-next]'),prev=world.locator('[data-fit-prev]');
-        if(await next.isVisible()&&await next.isEnabled())await next.click();
-        else if(await prev.isVisible()&&await prev.isEnabled()){while(await prev.isEnabled())await prev.click();}
-        else break;
-       }
+      const target=scope.getByRole('button',{name,exact:true}),all=scope.getByRole('button',{name,exact:true,includeHidden:true});
+      const reveal=async()=>{if(await target.isVisible())return;const world=page.locator('.rw-world:not([hidden])');if(!(await world.isVisible()))return;
+       const count=Number(await world.getAttribute('data-fit-pages')||1),next=world.locator('[data-fit-next]'),prev=world.locator('[data-fit-prev]');
+       const press=async locator=>options.hasTouch?locator.tap():locator.click();
+       for(let i=0;i<count&&await prev.isVisible()&&await prev.isEnabled()&&!await target.isVisible();i++)await press(prev);
+       for(let i=0;i<count&&await next.isVisible()&&await next.isEnabled()&&!await target.isVisible();i++)await press(next);
       };
       const click=target.click.bind(target),wait=target.waitFor.bind(target);
-      target.click=async options=>{await reveal();return click(options)};
-      target.waitFor=async options=>{if(!options||!['hidden','detached'].includes(options.state))await reveal();return wait(options)};
+      target.click=async opts=>{await reveal();return click(opts)};
+      target.waitFor=async opts=>{if(opts?.state==='hidden'&&/^(Invite |Deliver )/.test(name))return all.waitFor({...opts,state:'detached'});if(!opts||!['hidden','detached'].includes(opts.state))await reveal();return wait(opts)};
+      if(/^(Invite |Returning Tides)/.test(name))target.count=()=>all.count();
       return target;
     };
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
     const shot = async id => {
-      if(await page.locator('.rw-world:not([hidden])').count()&&!await page.locator('#panel.open,.res-host').count()){
+      if(await page.locator('.rw-world:not([hidden])').isVisible()&&!await page.locator('#panel.open,.res-host').count()){
        const fit=await page.evaluate(()=>{const w=document.querySelector('.rw-world:not([hidden])'),s=w?.querySelector('.rw-surface');if(!s)return null;const stage=document.getElementById('stage').getBoundingClientRect(),rect=s.getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {scene:rect.width>0&&rect.height>0&&rect.top>=stage.top-1&&rect.bottom<=stage.bottom+1&&rect.left>=stage.left-1&&rect.right<=stage.right+1,ratio:Math.abs(rect.width/rect.height-16/9)<.03,noScroll:w.scrollHeight<=w.clientHeight+2&&rail.scrollHeight<=rail.clientHeight+2,buttons:[...rail.querySelectorAll('button')].filter(b=>b.getClientRects().length).every(b=>{const r=b.getBoundingClientRect();return r.top>=stage.top-1&&r.bottom<=stage.bottom+1&&r.left>=stage.left-1&&r.right<=stage.right+1;}),noFollower:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
        if(fit)assert.deepEqual(fit,{scene:true,ratio:true,noScroll:true,buttons:true,noFollower:true},id+' stage fit / solo exploration');
       }

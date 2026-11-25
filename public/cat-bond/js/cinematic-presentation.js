@@ -25,6 +25,7 @@
 .cbcp-stage{position:relative;isolation:isolate;overflow:hidden;min-height:0;background:radial-gradient(ellipse at 50% 42%,#52616a 0%,#263744 54%,#101d28 100%)}
 .cbcp-art,.cbcp-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;will-change:transform,opacity;transform-origin:center;transition:transform 5600ms cubic-bezier(.2,.55,.24,1),opacity 520ms ease}
 .cbcp-art-stack{position:absolute;inset:0;overflow:hidden}.cbcp-layer{pointer-events:none}
+.cbcp-stage::before{content:'';position:absolute;inset:-15px;background:var(--cbcp-backplate,none) center/cover no-repeat;filter:blur(14px) brightness(.52);opacity:.85;pointer-events:none}
 .cbcp-fx{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
 .cbcp-subtitle-wrap{padding:12px 18px;background:linear-gradient(90deg,transparent,rgba(7,14,24,.78) 16%,rgba(7,14,24,.78) 84%,transparent)}
 @media(orientation:portrait) and (max-width:680px){

@@ -12,15 +12,32 @@ let YARD_BG_PORTRAIT_READY = false;
 YARD_BG_PORTRAIT.onload = () => { YARD_BG_PORTRAIT_READY = true; };
 // One aspect-preserving artwork transform for garden, exploration and arenas.
 // Extend the stage with a subdued color field, never stretch the authored image.
-window.CatBondSceneFit=Object.freeze({
- rect(iw,ih,w,h){const s=Math.min(w/iw,h/ih),dw=iw*s,dh=ih*s;return {x:(w-dw)/2,y:(h-dh)/2,width:dw,height:dh,scale:s};},
- draw(ctx,img,w,h,{top="#142536",bottom="#243b43",filter="none"}={}){
-  const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;if(!iw||!ih||!w||!h)return null;
-  const rect=this.rect(iw,ih,w,h);ctx.save();
+window.CatBondSceneFit=(()=>{
+ const cache=new WeakMap();
+ function rect(iw,ih,w,h){const s=Math.min(w/iw,h/ih),dw=iw*s,dh=ih*s;return {x:(w-dw)/2,y:(h-dh)/2,width:dw,height:dh,scale:s};}
+ function paint(ctx,img,w,h,fit,top,bottom,filter){
   const fill=ctx.createLinearGradient(0,0,0,h);fill.addColorStop(0,top);fill.addColorStop(1,bottom);ctx.fillStyle=fill;ctx.fillRect(0,0,w,h);
-  ctx.filter=filter;ctx.drawImage(img,rect.x,rect.y,rect.width,rect.height);ctx.restore();return rect;
+  // A soft ambient extension fills only the letterbox area. The entire
+  // original image stays sharp in its contained rectangle.
+  if(fit.x>2||fit.y>2){
+   const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height,s=Math.max(w/iw,h/ih),dw=iw*s,dh=ih*s;
+   ctx.save();ctx.globalAlpha=.75;ctx.filter="blur(18px) saturate(.75) brightness(.65)";ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);ctx.restore();
+  }
+  ctx.filter=filter;ctx.drawImage(img,fit.x,fit.y,fit.width,fit.height);ctx.filter="none";
  }
-});
+ function draw(ctx,img,w,h,{top="#142536",bottom="#243b43",filter="none"}={}){
+  const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;if(!iw||!ih||!w||!h)return null;
+  const fit=rect(iw,ih,w,h),pw=Math.max(1,Math.round(w)),ph=Math.max(1,Math.round(h));
+  const key=pw+"x"+ph+"/"+top+"/"+bottom+"/"+filter;
+  let entry=cache.get(img);
+  if(!entry||entry.key!==key){
+   const plate=document.createElement("canvas");plate.width=pw;plate.height=ph;const pc=plate.getContext("2d");
+   if(pc){pc.scale(pw/w,ph/h);paint(pc,img,w,h,fit,top,bottom,filter);entry={key,plate};cache.set(img,entry);}
+  }
+  ctx.save();if(entry?.key===key)ctx.drawImage(entry.plate,0,0,w,h);else paint(ctx,img,w,h,fit,top,bottom,filter);ctx.restore();return fit;
+ }
+ return Object.freeze({rect,draw});
+})();
 function drawGardenArtwork(ctx,img,w,h){
  return window.CatBondSceneFit.draw(ctx,img,w,h,{top:"#b8c6a4",bottom:"#718f4e",filter:"saturate(1.12) contrast(1.08)"});
 }

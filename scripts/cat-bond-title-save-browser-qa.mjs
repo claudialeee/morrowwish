@@ -94,15 +94,35 @@ for(const profile of [
   for(const id of ['prologue:P-05']){const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();const skip=dlg.getByRole('button',{name:'Skip dialogue',exact:true});if(await skip.isVisible()&&await skip.isEnabled())await skip.click();const close=dlg.getByRole('button',{name:'Close',exact:true});if(await close.isVisible())await close.click();}
   await page.locator('.sg-prologue-guide').getByRole('button',{name:'World map'}).click();
   await waitMap();
-  await page.locator('.rw-system-nav').waitFor();
+  await page.locator('.rw-system-nav').waitFor({state:'attached'});
   assert.equal(await page.locator('.rw-regions [data-region]').count(),6);
   assert.equal(await page.locator('.rw-region-status').count(),6);
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
   const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
   if(profile.width>profile.height){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
-  const realPress=async locator=>{if(!await locator.isVisible()){const world=page.locator(".rw-world:not([hidden])"),count=Number(await world.getAttribute("data-fit-pages")||1);for(let i=0;i<count&&!await locator.isVisible();i++){const next=world.locator("[data-fit-next]"),prev=world.locator("[data-fit-prev]");if(await next.isVisible()&&await next.isEnabled())await next.tap();else if(await prev.isVisible()&&await prev.isEnabled()){while(await prev.isEnabled())await prev.tap();}else break;}}await locator.scrollIntoViewIfNeeded();const hit=await locator.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));});assert.ok(hit,'Actual touch target must not be covered: '+await locator.innerText());if(profile.mobile)await locator.tap();else await locator.click();};
+  const realPress=async locator=>{
+   if(!await locator.isVisible()){
+    const world=page.locator(".rw-world:not([hidden])"),count=Number(await world.getAttribute("data-fit-pages")||1),next=world.locator("[data-fit-next]"),prev=world.locator("[data-fit-prev]");
+    const press=async el=>profile.mobile?el.tap():el.click();
+    for(let i=0;i<count&&await prev.isVisible()&&await prev.isEnabled()&&!await locator.isVisible();i++)await press(prev);
+    for(let i=0;i<count&&await next.isVisible()&&await next.isEnabled()&&!await locator.isVisible();i++)await press(next);
+   }
+   await locator.scrollIntoViewIfNeeded();const hit=await locator.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));});
+   assert.ok(hit,'Actual touch target must not be covered: '+await locator.innerText());if(profile.mobile)await locator.tap();else await locator.click();
+  };
+  const checkStageFit=async()=>{
+   const fit=await page.evaluate(()=>{const stage=document.getElementById('stage').getBoundingClientRect(),w=document.querySelector('.rw-world:not([hidden])'),canvas=w.querySelector('.rw-surface').getBoundingClientRect(),rail=w.querySelector('.rw-fit-rail');return {inside:canvas.width>0&&canvas.height>0&&canvas.top>=stage.top-1&&canvas.bottom<=stage.bottom+1&&canvas.left>=stage.left-1&&canvas.right<=stage.right+1,aspect:Math.abs(canvas.width/canvas.height-16/9)<.03,scroll:w.scrollHeight<=w.clientHeight+2&&rail.scrollHeight<=rail.clientHeight+2,solo:!CatBondResonance.isMulingFollowing()&&!CatBondResonanceNPC.drawFollower};});
+   assert.deepEqual(fit,{inside:true,aspect:true,scroll:true,solo:true},'Actual world frame fits after resize/fullscreen');
+  };
+  await checkStageFit();
+  await realPress(page.locator('#mw-fullscreen-toggle'));
+  await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
+  await page.waitForTimeout(100);await checkStageFit();await screenshot('fullscreen-world-atlas');
+  await realPress(page.locator('#mw-fullscreen-toggle'));
+  await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));
+  await page.waitForTimeout(100);await checkStageFit();
   for(const name of ['Catdex','Party','Raise cats','Workshop']){
-   await realPress(page.locator('.rw-system-nav').getByRole('button',{name,exact:true,includeHidden:true}));
+   await realPress(page.locator('.rw-system-nav').getByRole('button',{name,exact:true}));
    await checkVisible('#panel.open');
    await screenshot('atlas-'+name.toLowerCase().replaceAll(' ','-'));
    if(name==='Catdex'){

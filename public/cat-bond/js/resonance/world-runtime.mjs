@@ -38,22 +38,38 @@ function install(){
   const limit=Math.max(104,Math.floor(wide?available:Math.min(available-100,available*.67)));
   host.style.setProperty("--rw-rail-limit",limit+"px");
   const pager=rail.querySelector(".rw-fit-pages"),items=[...rail.children].filter(el=>el!==pager);
-  for(const el of items)el.removeAttribute("data-fit-hidden");
+  for(const el of items){el.removeAttribute("data-fit-hidden");for(const child of el.querySelectorAll("[data-fit-hidden]"))child.removeAttribute("data-fit-hidden");}
   pager.hidden=true;
-  const gap=4,heights=items.map(el=>Math.ceil(el.getBoundingClientRect().height)+gap);
-  const total=heights.reduce((a,b)=>a+b,0),pages=[];
+  const gap=4,measure=el=>Math.ceil(el.getBoundingClientRect().height)+gap;
+  const heights=items.map(measure),total=heights.reduce((a,b)=>a+b,0),pages=[];
   if(total<=limit){fitPage=0;host.dataset.fitPages="1";host.dataset.fitPage="0";return;}
   const room=Math.max(64,limit-40);let group=[],height=0;
+  const flush=()=>{if(group.length)pages.push(group);group=[];height=0;};
   for(let i=0;i<items.length;i++){
-   if(group.length&&height+heights[i]>room){pages.push(group);group=[];height=0;}
-   group.push(items[i]);height+=heights[i];
+   const el=items[i],buttons=[...el.children].filter(c=>c.tagName==="BUTTON");
+   if(heights[i]>room&&buttons.length>1){
+    flush();
+    // Split an unusually long action grid by its real rendered rows. Keep
+    // its pressure/status/cargo instructions on every page, not offscreen.
+    const rows=[];
+    for(const btn of buttons){const b=btn.getBoundingClientRect();let row=rows.find(r=>Math.abs(r.top-b.top)<2);if(!row){row={top:b.top,height:0,buttons:[]};rows.push(row);}row.height=Math.max(row.height,b.height+gap);row.buttons.push(btn);}
+    const fixed=[...el.children].filter(c=>c.tagName!=="BUTTON").reduce((h,c)=>h+measure(c),gap);
+    let subset=[],used=fixed;
+    for(const row of rows){if(subset.length&&used+row.height>room){pages.push([{el,buttons:subset}]);subset=[];used=fixed;}subset.push(...row.buttons);used+=row.height;}
+    if(subset.length)pages.push([{el,buttons:subset}]);
+   }else{
+    if(group.length&&height+heights[i]>room)flush();
+    group.push({el,buttons:null});height+=heights[i];
+   }
   }
-  if(group.length)pages.push(group);
+  flush();
   fitPage=Math.min(fitPage,pages.length-1);
   function select(n){
    fitPage=Math.max(0,Math.min(n,pages.length-1));
-   const selected=new Set(pages[fitPage]);
-   for(const el of items)el.toggleAttribute("data-fit-hidden",!selected.has(el));
+   const selected=new Map(pages[fitPage].map(entry=>[entry.el,entry]));
+   for(const el of items){const entry=selected.get(el);el.toggleAttribute("data-fit-hidden",!entry);
+    for(const child of el.children)if(child.tagName==="BUTTON")child.toggleAttribute("data-fit-hidden",!!entry?.buttons&&!entry.buttons.includes(child));
+   }
    pager.querySelector("[data-fit-prev]").disabled=fitPage===0;
    pager.querySelector("[data-fit-next]").disabled=fitPage===pages.length-1;
    pager.querySelector("output").textContent=(fitPage+1)+" / "+pages.length;
@@ -67,8 +83,13 @@ function install(){
  function makeFitRail(head,shell){
   const rail=E("aside","rw-fit-rail "+(mode==="map"?"rw-atlas-rail":"rw-forest-rail"));
   rail.setAttribute("aria-label",tr("剧情与探索操作","Story and exploration controls"));
-  const priority=el=>el.matches(".rw-objective")?0:el.matches(".rw-puzzle-controls")?1:el.matches(".rw-system-nav,.rw-world-actions")?2:el.matches(".rw-regions,.rw-cargo")?3:el.matches(".rw-controls")?4:5;
-  const items=[...host.children].filter(n=>n!==head&&n!==shell).sort((a,b)=>priority(a)-priority(b));
+  const priority=el=>el.matches(".rw-puzzle-controls,.rw-world-actions,.rw-system-nav")?0:el.matches(".rw-objective")?1:el.matches(".rw-regions,.rw-cargo")?2:el.matches(".rw-controls")?3:4;
+  const items=[...host.children].filter(n=>n!==head&&n!==shell);
+  const puzzle=items.find(el=>el.matches(".rw-puzzle-controls")),guide=items.find(el=>el.matches(".rw-harbor-guide"));
+  if(puzzle&&guide){puzzle.prepend(guide);items.splice(items.indexOf(guide),1);}
+  items.sort((a,b)=>priority(a)-priority(b));
+  const current=host.querySelector(".rw-current strong"),brand=head.querySelector(".rw-brand");
+  if(current&&brand){const summary=E("span","rw-fit-summary",current.textContent);summary.title=current.textContent;brand.append(summary);}
   for(const el of items)rail.append(el);
   const pager=E("nav","rw-fit-pages"),prev=B(tr("上一组","Previous"),()=>{}),next=B(tr("下一组操作","More actions"),()=>{}),counter=E("output","","");
   prev.dataset.fitPrev="";next.dataset.fitNext="";counter.setAttribute("aria-live","polite");
