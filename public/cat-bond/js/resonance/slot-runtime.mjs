@@ -102,7 +102,8 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
  function residents(region){const v=view();if(region==="garden"){const ids=[...v.returned];if(["epilogue:E-02","epilogue:E-03"].includes(v.current?.id))ids.push(...Object.values(campaign.cast).filter(n=>campaign.regions.includes(n.region)).map(n=>n.id));if(["companion","accountability-pending","accountable","reconciled"].includes(v.muling)||["prologue:P-04","prologue:P-05"].includes(v.current?.id))ids.unshift("muling");return [...new Set(ids)].map(npcProfile).filter(Boolean)}
   if(!v.regions.includes(region))return [];const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);const scene=v.current,scripted=["sky:S-04","library:M-03","library:M-05","starfall:F-03","starfall:F-04","starfall:F-05"].includes(scene?.id);
   const hasDialogue=(scene?.lines||[]).some(l=>l.speaker==="muling")||(scene?.choices||[]).some(c=>c.npc==="muling");
-  if(scene?.chapter===region&&(scripted||hasDialogue&&["companion","identity-revealed"].includes(v.muling)))ids.push("muling");return ids.map(id=>({...npcProfile(id),scripted:id==="muling"}));}
+  const availableAmbient=read().ambientAvailable(region).some(a=>a.npc==="muling");
+  if((scene?.chapter===region&&scripted)||((availableAmbient||scene?.chapter===region&&hasDialogue)&&["companion","identity-revealed"].includes(v.muling)))ids.push("muling");return ids.map(id=>({...npcProfile(id),scripted:id==="muling"}));}
  // Compatibility query: ordinary world exploration never mounts a companion.
  // Joint flight and paired-water tasks render their participants in their own mechanism.
  const follows=()=>false;

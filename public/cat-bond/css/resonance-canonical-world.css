@@ -120,9 +120,9 @@
 /* Shared stage-fit layout. The frame and all operational controls use the actual
    game bounds, including embedded/fullscreen layouts. No scene or rail scroll. */
 #stage .rw-world:not([hidden]){
- position:absolute;inset:0;display:grid!important;grid-template-columns:minmax(0,1fr);
+ position:absolute;inset:var(--rw-header-clearance,48px) 0 0;display:grid!important;grid-template-columns:minmax(0,1fr);
  grid-template-rows:auto minmax(0,1fr) auto;gap:6px;
- padding:max(48px,calc(env(safe-area-inset-top,0px) + 44px)) 9px max(10px,env(safe-area-inset-bottom,0px));
+ padding:6px 9px max(10px,env(safe-area-inset-bottom,0px));
  overflow:hidden!important;overscroll-behavior:none;align-items:stretch;
 }
 #stage .rw-world.rw-fit-wide:not([hidden]){
@@ -178,7 +178,7 @@
 #stage .rw-fit-pages output{font-size:11px;white-space:nowrap;text-align:center}
 #stage .rw-fit-pages .rw-button{min-height:36px;padding:3px 5px}
 @media(max-width:370px){#stage .rw-fit-rail .rw-button{min-height:36px;font-size:10.5px;padding:4px}#stage .rw-world>.rw-head .rw-button{font-size:10px;max-width:92px}}
-@media(max-height:500px) and (orientation:landscape){#stage .rw-world:not([hidden]){padding-top:max(42px,env(safe-area-inset-top,0px));gap:4px 8px}#stage .rw-fit-rail .rw-button{min-height:36px}#stage .rw-world>.rw-head .rw-button{min-height:32px}}
+@media(max-height:500px) and (orientation:landscape){#stage .rw-world:not([hidden]){padding-top:4px;gap:4px 8px}#stage .rw-fit-rail .rw-button{min-height:36px}#stage .rw-world>.rw-head .rw-button{min-height:32px}}
 
 #stage .rw-fit-rail .rw-puzzle-controls>.rw-harbor-guide{grid-column:1/-1}
 #stage .rw-fit-summary{color:#e6c99b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:500 10px/1.2 system-ui,sans-serif;max-width:100%}

@@ -30,8 +30,11 @@ class Game {
     this.resize();
     this._resizeFrame=0;
     const scheduleResize=()=>{if(this._resizeFrame)return;this._resizeFrame=requestAnimationFrame(()=>{this._resizeFrame=0;this.resize();});};
-    this._sceneResizeObserver=new ResizeObserver(scheduleResize);
-    this._sceneResizeObserver.observe(this.canvas);
+    if(typeof window.ResizeObserver==='function'){
+      this._sceneResizeObserver=new window.ResizeObserver(scheduleResize);
+      this._sceneResizeObserver.observe(this.canvas);
+    }
+    window.visualViewport?.addEventListener('resize',scheduleResize);
     window.addEventListener('resize',scheduleResize);
     window.addEventListener('orientationchange',scheduleResize);
     window.addEventListener('morrowwish-fullscreen-change',scheduleResize);

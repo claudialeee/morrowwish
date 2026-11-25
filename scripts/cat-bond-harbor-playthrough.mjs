@@ -223,16 +223,16 @@ try {
     await scene('harbor:H-01');
     await page.locator('.rw-shell').evaluate(shell=>Promise.allSettled(shell.getAnimations().map(animation=>animation.finished)));
     await shot('harbor');
-    assert.ok(await page.locator('.rw-world').evaluate(e=>e.getBoundingClientRect().top>=40),'Harbor scroll viewport stays below fixed game controls');
+    assert.ok(await page.locator('.rw-world').evaluate(e=>{const stage=e.parentElement.getBoundingClientRect(),bar=e.parentElement.querySelector('#cb-header')?.getBoundingClientRect(),world=e.getBoundingClientRect();return world.top>=Math.max(stage.top+40,bar?.bottom||0)&&world.bottom<=stage.bottom+1&&e.scrollHeight<=e.clientHeight+2;}),'Harbor fixed viewport clears the actual game toolbar without scrolling');
     await button('Talk to Qilan').click();
     await readDialogue('harbor:H-01');
     await scene('harbor:H-02');
     const mapActivity = page.getByRole('heading',{name:'Check the harbor route with Muling'});
-    await tapLandmark(.102,.569);
+    await tapLandmark(.34,.478); // stationary Muling at the harbor route junction
     await mapActivity.waitFor();
     await button('Close',page.locator('.res-ambient-route')).click();
     await mapActivity.waitFor({state:'hidden'});
-    await tapLandmark(.102,.569);
+    await tapLandmark(.34,.478); // stationary Muling at the harbor route junction
     await mapActivity.waitFor();
     const mapBoard = page.locator('.res-ambient-map');
     async function dragMarker(target) {

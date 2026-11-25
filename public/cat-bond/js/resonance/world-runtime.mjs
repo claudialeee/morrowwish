@@ -25,11 +25,15 @@ const nextRelease=v=>v.completed.includes("forge:E-04");
 function pickWild(ids){const species=ids.map(id=>GameData.speciesById(id)).filter(Boolean),tiers=[...new Set(species.map(s=>s.rarity))];const weights=tiers.map(t=>GameData.RARITY[t]?.weight||0);let roll=Math.random()*weights.reduce((a,b)=>a+b,0),tier=tiers.at(-1);for(let i=0;i<tiers.length;i++){roll-=weights[i];if(roll<0){tier=tiers[i];break;}}const group=species.filter(s=>s.rarity===tier);return group[Math.floor(Math.random()*group.length)];}
 const regions=nodes.map(([id,x,y],i)=>({id,x,y,name:layouts[id].name[0],sub:layouts[id].name[1],speciesPool:pools[id],difficulty:i+1,theme:{region:id},unlock:i?{after:nodes[i-1][0]}:null}));
 function install(){
- let fitPage=0,fitKey="",fitObserver=null;
+ let fitPage=0,fitKey="",fitObserver=null,fitFrame=0;
+ function scheduleFit(){if(fitFrame)return;fitFrame=requestAnimationFrame(()=>{fitFrame=0;fitRail();});}
  function fitRail(){
   if(!host||host.hidden||!host.isConnected)return;
   const rail=host.querySelector(".rw-fit-rail"),head=host.querySelector(".rw-head");
   if(!rail||!head)return;
+  const stage=host.parentElement,bar=stage.querySelector("#cb-header"),frame=stage.getBoundingClientRect();
+  const top=Math.max(44,Math.ceil((bar?.getBoundingClientRect().bottom||frame.top+42)-frame.top+4));
+  host.style.setProperty("--rw-header-clearance",top+"px");
   const wide=host.clientWidth>=500&&host.clientWidth>host.clientHeight*1.18;
   host.classList.toggle("rw-fit-wide",wide);
   host.classList.toggle("rw-atlas-wide",wide&&mode==="map");
@@ -76,8 +80,8 @@ function install(){
    host.dataset.fitPages=String(pages.length);host.dataset.fitPage=String(fitPage);
   }
   pager.hidden=pages.length<2;
-  pager.querySelector("[data-fit-prev]").onclick=()=>select(fitPage-1);
-  pager.querySelector("[data-fit-next]").onclick=()=>select(fitPage+1);
+  pager.querySelector("[data-fit-prev]").fitNavigate=()=>select(fitPage-1);
+  pager.querySelector("[data-fit-next]").fitNavigate=()=>select(fitPage+1);
   select(fitPage);
  }
  function makeFitRail(head,shell){
@@ -91,7 +95,7 @@ function install(){
   const current=host.querySelector(".rw-current strong"),brand=head.querySelector(".rw-brand");
   if(current&&brand){const summary=E("span","rw-fit-summary",current.textContent);summary.title=current.textContent;brand.append(summary);}
   for(const el of items)rail.append(el);
-  const pager=E("nav","rw-fit-pages"),prev=B(tr("上一组","Previous"),()=>{}),next=B(tr("下一组操作","More actions"),()=>{}),counter=E("output","","");
+  const pager=E("nav","rw-fit-pages"),prev=B(tr("上一组","Previous"),()=>prev.fitNavigate?.()),next=B(tr("下一组操作","More actions"),()=>next.fitNavigate?.()),counter=E("output","","");
   prev.dataset.fitPrev="";next.dataset.fitNext="";counter.setAttribute("aria-live","polite");
   pager.append(prev,counter,next);pager.hidden=true;rail.append(pager);host.append(rail);
   fitRail();
@@ -106,12 +110,12 @@ function install(){
  e.addEventListener("touchend",event=>{const start=touch;touch=null;if(!start||event.touches.length||e.disabled||!e.isConnected||owner!==State.S||game?.scene!=="map")return;const t=[...event.changedTouches].find(t=>t.identifier===start.id);if(!t||Math.hypot(t.clientX-start.x,t.clientY-start.y)>10||!e.contains(document.elementFromPoint(t.clientX,t.clientY)))return;event.preventDefault();lastTouch=performance.now();activate();},{passive:false});
  e.onclick=event=>{if(event?.detail!==0&&performance.now()-lastTouch<750)return;return activate();};return e};
  function current(){if(slot!==State.S){ceremony=null;slot=State.S;bridge=createWorldBridge(State);explorer=null;mode="map";pending=null;wild=null;wildRegion=null;spawnDelay=0;zoom=1;pan=[0,0];notice="";selectedRoute=null;revision="";drag=null;dragged=false;pinch=0;pointers.clear();}return bridge;}
- const sync=()=>{let v=current().view();return v.current?.id+":"+v.cursor+":"+v.choice+":"+v.objective.join(",")+":"+JSON.stringify(v.links)+":"+JSON.stringify(v.postgame)};
+ const sync=()=>{let v=current().view();return v.current?.id+":"+v.cursor+":"+v.choice+":"+v.objective.join(",")+":"+JSON.stringify(v.links)+":"+JSON.stringify(v.postgame)+":"+JSON.stringify(State.S.resonance?.ambientDone||[])};
  function init(g){game=g;current();if(host)return;host=E("section","rw-world");image("forge");host.hidden=true;document.getElementById("stage").append(host);for(let ev of ["morrowwish-language-change","cat-bond-resonance-changed"])window.addEventListener(ev,()=>{if(game.scene==="map")render()});
-  fitObserver=new ResizeObserver(()=>fitRail());
-  fitObserver.observe(host);
-  window.addEventListener("morrowwish-fullscreen-change",()=>requestAnimationFrame(fitRail));
-  document.addEventListener("fullscreenchange",()=>requestAnimationFrame(fitRail));
+  if(typeof window.ResizeObserver==="function"){fitObserver=new window.ResizeObserver(scheduleFit);fitObserver.observe(host.parentElement);}
+  for(const event of ["resize","orientationchange","morrowwish-fullscreen-change"])window.addEventListener(event,scheduleFit);
+  window.visualViewport?.addEventListener("resize",scheduleFit);
+  document.addEventListener("fullscreenchange",scheduleFit);
   window.addEventListener("cat-bond-active-save-changed",()=>{
    current();host.replaceChildren();host.hidden=true;canvas=ctx=null;
    if(game.scene==="map")render();
@@ -218,7 +222,7 @@ function install(){
  function visitTide(step){go(step.point,()=>{const r=explorer.traceTide(step.index);report(r,r.ok?step.clue:"");render()});}
  function visitScent(step){if(!explorer.near(step.point)){pending=null;explorer.walk(...step.point);return;}const r=explorer.traceScent(step.index);report(r,r.ok?step.clue:"");render();}
  function visitFeature(op,p){go(p,()=>{if(op.startsWith("battle:")){requestBattle(op,current().world().location);return;}report(explorer.interact(op));render()});}
- function storyNpcs(){const region=current().world().location,gate=explorer.pairedGate(),locals=explorer.localNpcs().map((n,i)=>region==="forest"&&explorer.invited.includes(n.id)?{...n,point:i?[.88,.24]:[.83,.27]}:region==="forge"&&explorer.invited.includes(n.id)?{...n,point:i?[.84,.36]:[.74,.40]}:gate?.ready&&n.id===gate.npc?{...n,point:gate.point}:n),residents=window.CatBondResonance?.residents?.(region)||[];const extra=residents.filter(n=>!locals.some(l=>l.id===n.id));return [...locals,...extra.map(n=>({...n,point:explorer.layout.paths.at(-1)}))];}
+ function storyNpcs(){const region=current().world().location,gate=explorer.pairedGate(),locals=explorer.localNpcs().map((n,i)=>region==="forest"&&explorer.invited.includes(n.id)?{...n,point:i?[.88,.24]:[.83,.27]}:region==="forge"&&explorer.invited.includes(n.id)?{...n,point:i?[.84,.36]:[.74,.40]}:gate?.ready&&n.id===gate.npc?{...n,point:gate.point}:n),residents=window.CatBondResonance?.residents?.(region)||[];const extra=residents.filter(n=>!locals.some(l=>l.id===n.id));return [...locals,...extra.map(n=>({...n,point:n.id==="muling"?(region==="harbor"?[.34,.478]:explorer.layout.paths.at(-2)):explorer.layout.paths.at(-1)}))];}
  function visitNpc(npc){const region=current().world().location;go(npc.point,()=>{const v=current().view(),home=explorer.homeQuest(),actor=home?.actors.find(a=>a.id===npc.id&&!a.visited);if(home?.repaired&&actor){report(explorer.meetHomeResident(npc.id),actor.reply);render();return;}if(v.current?.choices?.length&&v.current.choiceTiming==="beforeAction"&&!v.choice&&v.current.choices.some(c=>c.npc===npc.id)){requestNpc(npc.id,region);return;}if(explorer.localNpcs().some(n=>n.id===npc.id)&&v.objective.includes("melody:"+region)&&!(["harbor","forest","forge"].includes(region)&&v.objective.includes("repair:"+region))&&!explorer.invited.includes(npc.id)){report(explorer.inviteNpc(npc.id),[npc.name.zh+" · 已抵达合奏地点",npc.name.en+" · ready to join the melody"]);render();return;}requestNpc(npc.id,region);});}
  function visitCargo(o,carrying){const p=explorer.cargoPoints()[carrying?o.to:o.from];go(p,()=>{report(carrying?explorer.deliverCargo():explorer.startCargo(o),carrying?tr("当地居民收到物资","Local recipient accepted delivery"):tr("已领取","Collected")+" · "+cargoName(o.action));render()});}
  function tap(x,y){if(mode==="map"){const p=[(x-pan[0])/zoom,(y-pan[1])/zoom],n=regions.find(n=>distance([n.x,n.y],p)<.105);if(n){enterRegion(n.id);return;}if(distance(p,[.5,.5])<.085){const v=current().view(),op=v.current?.chapter==="finale"&&v.objective.find(o=>o.startsWith("battle:"));if(op&&v.ring){if(current().world().location!=="starfall"){if(!enterRegion("starfall"))return;}requestBattle(op,"starfall");}else{notice=tr("星铃 · 完成六地区的相互回应后开启","Star Bell · Complete the reciprocal ring to unlock");render();}return;}const link=campaign.links.find(([a,z])=>{let u=regions.find(n=>n.id===a),v=regions.find(n=>n.id===z),dx=v.x-u.x,dy=v.y-u.y,t=Math.max(0,Math.min(1,((p[0]-u.x)*dx+(p[1]-u.y)*dy)/(dx*dx+dy*dy)));return distance(p,[u.x+t*dx,u.y+t*dy])<.027;});if(link){selectedRoute=link[0]+":"+link[1];render();}return;}
