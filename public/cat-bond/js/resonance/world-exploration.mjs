@@ -1,4 +1,5 @@
 import { campaign } from "./campaign.mjs";
+import {harborAssist} from "./harbor-presentation.mjs";
 // Actual walkable region mechanics. Story progression is never stored here.
 export const layouts={
  harbor:{
@@ -52,7 +53,7 @@ export function movePuzzle(p,i){
  if(!p||p.solved||!Number.isInteger(i)||i<0||i>2)return false;
  if(["mirrors","stars","water","routing"].includes(p.type)){p.values[i]=(p.values[i]+1)%p.mod;}
  else if(["blueprint","memory","rescue","melody","tide","scent"].includes(p.type)){
-  if(i===p.goal[p.values.length])p.values.push(i);else{p.values=[];p.response=[];p.mistakes++;}
+  if(i===p.goal[p.values.length])p.values.push(i);else if(p.type==="rescue"&&p.assist==="qilan"&&!p.assisted){p.assisted=true;}else{p.values=[];p.response=[];p.mistakes++;}
   if(p.type==="melody")p.response=p.values.map((n,j)=>({actor:p.participants?.[j%2],reply:(n+1)%3}));
  }
  else if(p.type==="heat"){if(i===0){p.values[0]+=5;p.values[1]+=5;}else if(i===1)p.values[1]-=5;else p.values=[...p.initial];if(p.values[0]>70||p.values[1]>45||p.values[1]<0){p.values=[...p.initial];p.mistakes++;}}
@@ -69,7 +70,7 @@ export function exchangeOptions(bridge,region,links){
 }
 export function createExplorer(bridge,region){
  const layout=layouts[region];if(!layout)throw Error("Unknown region");
- const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],path=layout.paths;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set();
+ const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],path=layout.paths;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set(region==="harbor"?bridge.harborInvited():[]);
  pos=closest(path,pos).p;
  function walk(x,y){
   if(!Number.isFinite(x)||!Number.isFinite(y)||puzzle||!live())return false;
@@ -92,7 +93,7 @@ export function createExplorer(bridge,region){
    if(op!==first&&v.objective.includes(first))return {ok:false,reason:v.choice==="rescue"?"rescue-first":"beacon-first"};
   }
   if(op.startsWith("melody:")&&!localNpcs().every(n=>invited.has(n.id)))return {ok:false,reason:"invite-local-cats"};
-  active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};puzzle=createPuzzle(op);if(puzzle?.type==="melody")puzzle.participants=[...invited];
+  active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};puzzle=createPuzzle(op);if(region==="harbor")harborAssist(puzzle,v);if(puzzle?.type==="melody")puzzle.participants=[...invited];
   if(puzzle)return {ok:true,puzzle:true};
   if(!op.startsWith("explore:"))return {ok:false,reason:"unimplemented"};
   return complete();
@@ -131,7 +132,7 @@ export function createExplorer(bridge,region){
   if(result.ok)cargo=null;return result;
  }
  function localNpcs(){const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];return Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({...n,point:layout.castPoints?.[n.id]||(i===0?lerp(path[1],path[2],.44):lerp(path[3],path[4],.46))}));}
- function inviteNpc(id){const n=localNpcs().find(n=>n.id===id),v=bridge.view();if(!n||!near(n.point)||!v.objective.includes("melody:"+region))return {ok:false,reason:"npc-not-available"};invited.add(id);return {ok:true};}
+ function inviteNpc(id){const n=localNpcs().find(n=>n.id===id),v=bridge.view();if(!n||!near(n.point)||!v.objective.includes("melody:"+region))return {ok:false,reason:"npc-not-available"};if(region==="harbor"){const result=bridge.inviteHarbor(id,n.point,bridge.capture());if(!result.ok)return result;}invited.add(id);return {ok:true};}
  function rewardPoints(){return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}
