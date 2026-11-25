@@ -8,7 +8,7 @@
     "docs/cat-bond-rpg/03-DEVELOPER-HANDOFF.md"
   ],
   "status": "branch-only; not integrated into production",
-  "reviewStatus": "source-created; actual browser visual QA pending",
+  "reviewStatus": "character sheets rejected; replacement painterly character assets pending",
   "assets": [
     {
       "id": "region-misttide-harbor",
@@ -69,36 +69,6 @@
       "format": "svg",
       "canvas": "2400x1350",
       "status": "original-vector-key-art"
-    },
-    {
-      "id": "player-keeper-visual-kit",
-      "kind": "character-design-sheet",
-      "path": "assets/cinematics/characters/player-keeper-visual-kit.svg",
-      "label": "Unnamed First Bellkeeper — player-preserving role kit",
-      "sourceSceneId": "P-02",
-      "format": "svg",
-      "canvas": "1800x1050",
-      "status": "concept-sheet; player coat remains selectable"
-    },
-    {
-      "id": "muling-turnaround",
-      "kind": "character-design-sheet",
-      "path": "assets/cinematics/characters/muling-turnaround.svg",
-      "label": "Muling — three-phase continuity sheet",
-      "sourceSceneId": "P-04; M-03; B-01",
-      "format": "svg",
-      "canvas": "2200x1250",
-      "status": "concept-sheet; same face and pendant across phases"
-    },
-    {
-      "id": "regional-npc-roster",
-      "kind": "npc-roster-sheet",
-      "path": "assets/cinematics/characters/regional-npc-roster.svg",
-      "label": "Twelve named regional NPCs",
-      "sourceSceneId": "H-01; R-01; E-01; S-01; M-01; F-01",
-      "format": "svg",
-      "canvas": "1600x1100",
-      "status": "first visual roster pass; not individual runtime portraits"
     },
     {
       "id": "p01-six-sanctuaries",
@@ -209,5 +179,19 @@
     "Existing 63 duo-bond original frames are not modified.",
     "Existing CatArt species/breed assets are not modified.",
     "Legacy five-region painted-regions.js is not relabeled as the six-region canon set."
+  ],
+  "rejectedAssets": [
+    {
+      "id": "player-keeper-visual-kit",
+      "reason": "Rejected: primitive geometric placeholder, not production character art."
+    },
+    {
+      "id": "muling-turnaround",
+      "reason": "Rejected: primitive geometric placeholder, no acceptable character modeling or material detail."
+    },
+    {
+      "id": "regional-npc-roster",
+      "reason": "Rejected: generic low-detail vector cats, insufficient individual identity."
+    }
   ]
 }
