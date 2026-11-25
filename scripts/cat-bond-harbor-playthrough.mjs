@@ -38,10 +38,25 @@ try {
       const dialogue = page.locator('.res-host[data-scene="'+id+'"]');
       await dialogue.waitFor();
       const advance = button('Skip dialogue',dialogue);
-      if (await advance.isVisible() && await advance.isEnabled()) await advance.click();
+      async function advanceLines(){
+        if(!id.startsWith('harbor:')){if(await advance.isVisible()&&await advance.isEnabled())await advance.click();return;}
+        const next=button('Continue',dialogue);let count=0;
+        while(await next.isVisible()&&await next.isEnabled()){
+          assert.ok(++count<30,'Dialogue must progress without looping: '+id);
+          const line=dialogue.locator('.res-line'),english=await line.innerText();assert.ok(english.trim()&&!/[\u3400-\u9fff]/.test(english),'English dialogue is localized');
+          const portrait=dialogue.locator('.res-portrait');if(await portrait.isVisible())await portrait.evaluate(img=>img.decode());
+          if(name==='portrait'){
+            await dialogue.locator('[data-res-language]').click();assert.match(await line.innerText(),/[\u3400-\u9fff]/,'Chinese dialogue is localized');
+            if(count===1)await shot(id.replace(':','-')+'-zh');
+            await dialogue.locator('[data-res-language]').click();assert.equal(await line.innerText(),english,'Language switch preserves exact dialogue cursor');
+          }
+          await next.click();
+        }
+      }
+      await advanceLines();
       if (choice) {
         await button(choice,dialogue).click();
-        if (await advance.isVisible() && await advance.isEnabled()) await advance.click();
+        await advanceLines();
       }
       if (await dialogue.isVisible()) {
         const close = button('Close',dialogue);
@@ -190,7 +205,14 @@ try {
     }
     await button('Invite Jiedeng').click();
     await button('Invite Jiedeng').waitFor({state:'hidden'});
-    await puzzle('Returning Tides',['Low','High','Middle']);
+    await button('Returning Tides').click();
+    const melodyControls=page.locator('.rw-puzzle-controls');await melodyControls.waitFor();
+    await button('Middle',melodyControls).click(); // wrong note: retry must not commit a melody
+    assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false);
+    for(const input of ['Low','High','Middle'])await button(input,melodyControls).click();
+    await page.locator('.rw-world[data-ceremony="harbor"]').waitFor();
+    await page.locator('.rw-surface').scrollIntoViewIfNeeded();await shot('harbor-ceremony');
+    await melodyControls.waitFor({state:'hidden'});
     await readDialogue('harbor:H-05');
     await scene('forest:R-01');
     await page.locator('.rw-shell').scrollIntoViewIfNeeded();
