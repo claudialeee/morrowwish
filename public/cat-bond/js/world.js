@@ -115,6 +115,7 @@ class CatEntity {
     if (this.pounceT > 0) this.pounceT -= dt;
     // The facility controls the pose until the actual play session ends.
     // Elevated perches must not be clamped back to the walking ground.
+    if(this._gardenRest){this.walkVX=this.walkVY=this.vx=this.vy=0;this.motion=0;return}
     if(this._playBuildT>0&&this._buildUse){
       this.x=this._buildUse.x;this.y=this._buildUse.y;
       this.walkVX=this.walkVY=this.vx=this.vy=0;
@@ -711,19 +712,20 @@ class YardScene {
   update(dt) {
     if(this._gardenState!==State.S)this.rebuild();
     const mouse = this.game.mouse;
+    window.GardenProjects?.update?.(dt);
     // A cat heading to a structure steers itself first, then runs normal motion.
     for(const e of this.entities){
       if(e._buildTarget)this.stepBuildTarget(e,dt);
       // Cursor-following must never steal a cat from the structure it is
       // walking toward or playing at. Regular petting still works normally.
-      e.update(dt,(e._buildTarget||e._playBuildT>0)?null:mouse);
+      e.update(dt,(e._gardenTask||e._buildTarget||e._playBuildT>0)?null:mouse);
     }
     this.updateBuildingPlay(dt);
     const duo=window.CatRelations?.chosen?.()||[];
     if(duo.length===2){
       const a=this.entities.find(e=>e.cat.uid===duo[0].uid);
       const b=this.entities.find(e=>e.cat.uid===duo[1].uid);
-      if(a&&b&&!a._buildTarget&&!b._buildTarget&&!(a._playBuildT>0)&&!(b._playBuildT>0)){
+      if(a&&b&&!a._gardenTask&&!b._gardenTask&&!a._buildTarget&&!b._buildTarget&&!(a._playBuildT>0)&&!(b._playBuildT>0)){
         const sulky=CatRelations.mood(duo[0],duo[1])==='sulky';
         const dist=Math.hypot(a.x-b.x,a.y-b.y);
         if(this.game.t>(this._nextDuoEmote||0)){
@@ -1038,7 +1040,7 @@ class YardScene {
   // Invite an actual visible kitten to a specific facility immediately.
   inviteCatToBuilding(b){
     if(this._duoFacility||!(State.S.yardBuildings||[]).includes(b)||!this.entities?.length)return false;
-    const available=this.entities.filter(e=>!(e._playBuildT>0)&&!e._buildTarget);
+    const available=this.entities.filter(e=>!e._gardenTask&&!(e._playBuildT>0)&&!e._buildTarget);
     if(!available.length)return false;
     const nearest=available.sort((a,c)=>
       Math.hypot(a.x-b.x,a.y-b.y)-Math.hypot(c.x-b.x,c.y-b.y))[0];
@@ -1051,7 +1053,7 @@ class YardScene {
   // No new relationship database or story flag: the existing pair state
   // records the benefit only after both physical visits complete.
   inviteDuoToBuilding(b){
-    if(this._duoFacility||!(State.S.yardBuildings||[]).includes(b))return false;
+    if(this._duoFacility||window.GardenProjects?.active?.()||!(State.S.yardBuildings||[]).includes(b))return false;
     const pair=window.CatRelations?.chosen?.()||[];
     if(pair.length!==2||pair.some(c=>window.Raising?.isBusy?.(c.uid)))return false;
     if(CatRelations.mood(pair[0],pair[1])==='sulky')return false;

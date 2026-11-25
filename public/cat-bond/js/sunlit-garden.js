@@ -10,11 +10,6 @@
     moye:{x:.53,y:.46,scale:.98,radius:46}, baikan:{x:.59,y:.55,scale:.82,radius:42},
     xingya:{x:.47,y:.67,scale:.90,radius:45}, lichuan:{x:.37,y:.70,scale:.92,radius:46}
   });
-  const SANCTUARIES = [
-    {id:'harbor',color:'#8ebdc2',x:.16},{id:'forest',color:'#9fb77a',x:.29},
-    {id:'forge',color:'#d69a62',x:.42},{id:'sky',color:'#9eb9d7',x:.55},
-    {id:'library',color:'#b9a1c8',x:.68},{id:'starfall',color:'#d8c18a',x:.81}
-  ];
   const HOTSPOTS = [
     {id:'cats',icon:'🐾',zh:'猫咪',en:'Cats',left:'12%',top:'57%',action:()=>window.UI?.openCatHub?.('solo')},
     {id:'facilities',icon:'⌂',zh:'家园设施',en:'Facilities',left:'29%',top:'34%',action:()=>window.UI?.openBuild?.()},
@@ -81,35 +76,19 @@
     if(root)root.inert=false;
     root?.classList.add('is-active');document.getElementById('stage')?.classList.add('cb-sunlit-garden');renderLabels();
   }
-  function leave(){active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];}
+  function leave(){window.GardenProjects?.cancel?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];}
   function registerNarrativeAdapter(adapter){
     if(!adapter||typeof adapter.getHomeNpcs!=='function'||typeof adapter.drawHomeNpc!=='function'||
        typeof adapter.interactHomeNpc!=='function')return false;
     narrativeAdapter=adapter;return true;
-  }
-  function drawRestoredBed(ctx,x,y,scale,color,t){
-    ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
-    ctx.fillStyle='rgba(23,42,34,.28)';ctx.beginPath();ctx.ellipse(0,4,29,9,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#8c8b70';ctx.beginPath();ctx.moveTo(-27,0);ctx.quadraticCurveTo(-18,-13,0,-11);
-    ctx.quadraticCurveTo(19,-14,28,0);ctx.quadraticCurveTo(12,10,-16,7);ctx.closePath();ctx.fill();
-    ctx.strokeStyle='#d1c3a0';ctx.lineWidth=2;ctx.stroke();
-    ctx.strokeStyle='#66825e';ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();
-    ctx.moveTo(0,-7);ctx.quadraticCurveTo(-3,-25,1,-34);ctx.stroke();
-    ctx.fillStyle=color;
-    for(let i=0;i<5;i++){const a=i*Math.PI*2/5+t*.08;ctx.beginPath();
-      ctx.ellipse(Math.cos(a)*7,-35+Math.sin(a)*7,4.2,8,a,0,Math.PI*2);ctx.fill();}
-    ctx.fillStyle='#f4d59a';ctx.beginPath();ctx.arc(0,-35,4,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=.28+.18*Math.sin(t*2);ctx.fillStyle=color;ctx.beginPath();ctx.arc(0,-35,16,0,Math.PI*2);ctx.fill();
-    ctx.restore();
   }
   function draw(ctx,width,height,time){
     if(!active||game?.scene!=='yard')return;
     if(visitedState!==state())enter();
     root?.classList.toggle('is-placing',!!game.yard?.placement);
     if(root)root.inert=!!game.yard?.placement;
-    const p=canonicalProgress();
-    SANCTUARIES.forEach((item,i)=>{if(p.sanctuaries.includes(item.id))
-      drawRestoredBed(ctx,width*item.x,height*(i%2===0?.88:.92),Math.max(.58,Math.min(1,width/1200)),item.color,time+i);});
+    window.GardenProjects?.draw?.(ctx,width,height,time);
+    if(!narrativeAdapter&&window.CatBondResonanceNPC?.gardenAdapter)registerNarrativeAdapter(window.CatBondResonanceNPC.gardenAdapter);
     lastNpcHits=[];if(!narrativeAdapter)return;
     const npcs=narrativeAdapter.getHomeNpcs()||[];
     for(const npc of npcs){
@@ -123,10 +102,12 @@
     }
   }
   function handleTap(x,y){
-    if(!active||!narrativeAdapter||game?.scene!=='yard')return false;
+    if(!active||game?.scene!=='yard')return false;
+    const hidden=game.yard?.hide;
+    if(hidden&&!hidden.found&&Math.hypot(x-hidden.spot.x,y-hidden.spot.y)<58)return false;
     for(let i=lastNpcHits.length-1;i>=0;i--){const h=lastNpcHits[i];
       if(Math.hypot(x-h.x,y-h.y)<=h.radius){narrativeAdapter.interactHomeNpc(h.id);return true;}}
-    return false;
+    return !!window.GardenProjects?.tap?.(x,y);
   }
   function getProgress(){
     const p=canonicalProgress();

@@ -5517,3 +5517,8 @@ body.cb-exploring #stage #yard-actions{
 /* Invisible and placement-mode garden controls must never steal canvas input. */
 .sg-hotspots:not(.is-active),.sg-hotspots.is-placing{visibility:hidden;pointer-events:none}
 .sg-hotspots:not(.is-active) .sg-hotspot,.sg-hotspots.is-placing .sg-hotspot{pointer-events:none}
+
+/* Garden restoration controls; physical scene assets are independent illustrations. */
+.sg-project-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.sg-project-grid button{min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;white-space:normal;font-size:12px;padding:6px}.sg-project-grid img{width:100%;height:80px;object-fit:contain}.sg-project-grid small{font-size:10px}.sg-project-art{height:110px;width:100px;object-fit:contain;float:right;margin:0 0 6px 8px}#sg-project-panel select{max-width:100%;margin:8px;padding:6px;border-radius:8px}
+#sg-project-panel .btn{margin:4px}@media(max-width:420px){.sg-project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sg-project-grid img{height:68px}}

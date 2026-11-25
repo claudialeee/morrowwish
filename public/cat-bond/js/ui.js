@@ -1486,6 +1486,7 @@ const UI = {
       <p class="sub">${en?'Choose a facility, then tap a free spot in your yard to place it. Cats physically walk over, play and earn resources.'
         :'先选设施，再点击草坪直接建造；手机可拖动调整位置。猫咪会走过去玩，产出资源和默契奖励。'}</p>
       <p class="work-income" style="margin:4px 0">${en ? 'Coins' : '金币'}：<b>${coins} 🪙</b></p>
+      <button class="btn ghost" data-garden-projects type="button">${en?'Garden restoration':'花园复兴'}</button>
       <div class="st-list">${cards}</div>
       ${placed.length ? '<h3 class="work-nursery-title">' + (en ? 'Placed structures' : '已建造') + '</h3>' + placedRows : ''}`);
     const host = document.getElementById('panel');
@@ -1502,6 +1503,7 @@ const UI = {
       cx.fillStyle='#a9cda8';cx.beginPath();cx.ellipse(w*.50,h*.94,w*.47,h*.17,0,0,Math.PI*2);cx.fill();
       if(!World.drawGardenProp?.(cx,def.id,w*.5,h*.89,1.15))def.draw(cx,w*.5,h*.89,1.15,1.3);
     });
+    host.querySelector('[data-garden-projects]')?.addEventListener('click',()=>window.GardenProjects?.open?.());
     host.querySelectorAll('[data-build]').forEach(btn => btn.onclick = () => {
       const def = window.World?.BUILDINGS_BY_ID?.[btn.dataset.build];
       this.startBuildingPlacement(btn.dataset.build);
