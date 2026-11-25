@@ -223,5 +223,31 @@ assert.ok(firstReads>0);
 const nextCached=await api(cachedReq(),env);assert.equal(nextCached.status,200);
 assert.equal(reportReads,firstReads,'repeat reads reuse the complete event snapshot');
 assert.equal((await nextCached.json()).updated,firstSnapshot.updated,'snapshot timestamp is not fabricated');
+// Isolated headline regression: stable visitors, measured time, real zero,
+ // complete next-day cohorts, and no synthetic browser for a legacy visit.
+env.ANALYTICS_CACHE_MS='0';
+rows.splice(0,rows.length);
+const seed=(visitor,day,view,kind='visit',data={})=>rows.push({
+ id:rows.length+1,category:'arcade',day,ts:Date.parse(day+'T18:00:00Z'),
+ game:'tiny-town',visitor,view_id:view,kind,payload:JSON.stringify(data)
+});
+seed('a','2026-11-22','a1');seed('a','2026-11-23','a2');
+seed('b','2026-11-22','b1');seed('b','2026-11-24','b2');
+seed('','2026-11-22','legacy');
+seed('a','2026-11-22','a1','session',{seconds:30,shares:0});
+seed('a','2026-11-22','a1','session',{seconds:20,shares:0});
+seed('b','2026-11-22','b1','session',{seconds:10,shares:0});
+const headlineResponse=await api(cachedReq(),env);
+assert.equal(headlineResponse.status,200);
+assert.deepEqual((await headlineResponse.json()).rollup.headlineMetrics,{
+ uniqueBrowsers:2,untrackedBrowserVisits:1,avgSessionSeconds:30,measuredSessionCount:2,
+ shareClicks:0,d1Eligible:2,d1Returned:1
+},'Headline metrics use stable anonymous visitors and distinct measured sessions');
+rows.splice(0,rows.length);
+const missingResponse=await api(cachedReq(),env);
+assert.deepEqual((await missingResponse.json()).rollup.headlineMetrics,{
+ uniqueBrowsers:null,untrackedBrowserVisits:0,avgSessionSeconds:null,measuredSessionCount:0,
+ shareClicks:null,d1Eligible:0,d1Returned:0
+},'No observations must not be misrepresented as zero');
 console.log('Seven-game D1 analytics contract: visit, start, end, referral, auth and diagnostic write/read/delete all passed.');
 await import('./test-cat-bond-analytics-funnel.mjs');
