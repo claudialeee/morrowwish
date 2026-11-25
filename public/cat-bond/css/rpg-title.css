@@ -9,7 +9,7 @@
 }
 #stage #intro.cb-rpg-intro.hide{display:none!important;visibility:hidden!important;pointer-events:none!important}
 #stage #intro .cb-title-landscape{position:absolute!important;inset:0!important;z-index:0!important;
- background:linear-gradient(90deg,rgba(10,25,34,.82),rgba(18,40,43,.34) 47%,rgba(17,32,36,.02) 100%),
+ background:linear-gradient(90deg,rgba(10,25,34,.82),rgba(18,40,43,.24) 47%,rgba(17,32,36,.02) 100%),
  linear-gradient(0deg,rgba(8,21,24,.68),transparent 40%),url('../assets/title/star-bell-dawn.svg') 62% 50%/cover no-repeat;
  animation:cb-title-drift 24s ease-in-out infinite alternate;pointer-events:none;transform-origin:70% 50%}
 @keyframes cb-title-drift{from{transform:scale(1.015)}to{transform:scale(1.055) translateX(-.5%)}}
@@ -82,7 +82,7 @@ html body #stage #mw-game-settings,html body #stage #mw-fullscreen-toggle{displa
 #stage .cb-slot-manager-row strong,#stage .cb-slot-manager-row span,#stage .cb-slot-manager-row small{color:#eee1c9!important}
 @media(max-width:680px){
  #stage #intro.cb-rpg-intro:not(.hide){padding:48px 14px 18px!important}
- #stage #intro .cb-title-landscape{background-position:76% 42%;background-image:linear-gradient(0deg,rgba(10,25,34,.96),rgba(10,25,34,.72) 32%,rgba(10,25,34,.15) 64%,rgba(10,25,34,.08)),url('../assets/title/star-bell-dawn.svg')}
+ #stage #intro .cb-title-landscape{background-position:86% 42%;background-image:linear-gradient(0deg,rgba(10,25,34,.96),rgba(10,25,34,.72) 32%,rgba(10,25,34,.15) 64%,rgba(10,25,34,.08)),url('../assets/title/star-bell-dawn.svg')}
  #stage #intro .cb-title-content{gap:18px;align-self:end;padding-bottom:clamp(22px,8vh,70px)!important}
  #stage #intro .game-logo{font-size:clamp(34px,10vw,54px)!important}
  #stage #intro .cb-intro-actions{gap:8px!important}
