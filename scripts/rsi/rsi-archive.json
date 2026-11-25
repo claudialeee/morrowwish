@@ -5,50 +5,50 @@
   "best": {
     "key": "1,3,3",
     "descriptor": {
-      "engage": 0.3524074074074074,
-      "tempo": 0.7982871703703724,
-      "durability": 0.8667102029453279
+      "engage": 0.27388888888888885,
+      "tempo": 0.8244005925925937,
+      "durability": 0.9592696783892923
     },
-    "score": 0.6682231542311008,
+    "score": 0.6769828222021138,
     "candidate": {
-      "id": "baseline",
-      "label": "Engine default kitRangeBand",
-      "kind": "baseline",
-      "rationale": "The shipping, hand-tuned positioning policy. The bar every structural proposal must clear."
+      "id": "agent:ready-hitrun-tight",
+      "label": "Ready-aware hit-run: hug 30-60 when Q up, pull to 60-100 on CD, retreat <45% HP",
+      "kind": "agent",
+      "rationale": "Island mutation of the long-running ready-aware-hitrun elite (branches on cooldown state, which a flat sweep can't). Commit tight on a ready skill, pull to mid while recharging, disengage below 45% HP — balances output + survival, the two heaviest judge terms."
     },
-    "label": "baseline"
+    "label": "agent:ready-hitrun-tight"
   },
   "elites": [
     {
       "cell": "1,3,3",
-      "score": 0.6682,
-      "label": "baseline",
+      "score": 0.677,
+      "label": "agent:ready-hitrun-tight",
       "descriptor": {
-        "engage": 0.35,
-        "tempo": 0.8,
-        "durability": 0.87
+        "engage": 0.27,
+        "tempo": 0.82,
+        "durability": 0.96
       },
       "candidate": {
-        "id": "baseline",
-        "label": "Engine default kitRangeBand",
-        "kind": "baseline",
-        "rationale": "The shipping, hand-tuned positioning policy. The bar every structural proposal must clear."
+        "id": "agent:ready-hitrun-tight",
+        "label": "Ready-aware hit-run: hug 30-60 when Q up, pull to 60-100 on CD, retreat <45% HP",
+        "kind": "agent",
+        "rationale": "Island mutation of the long-running ready-aware-hitrun elite (branches on cooldown state, which a flat sweep can't). Commit tight on a ready skill, pull to mid while recharging, disengage below 45% HP — balances output + survival, the two heaviest judge terms."
       }
     },
     {
       "cell": "2,2,3",
-      "score": 0.5542,
-      "label": "agent:sniper-noretreat",
+      "score": 0.5524,
+      "label": "stand-at-max-range",
       "descriptor": {
         "engage": 0.51,
-        "tempo": 0.68,
-        "durability": 0.92
+        "tempo": 0.67,
+        "durability": 0.95
       },
       "candidate": {
-        "id": "agent:sniper-noretreat",
-        "label": "Fixed sniper — flat 240-330, never close, never flee (farthest non-passive)",
-        "kind": "agent",
-        "rationale": "Pushes the engage axis to its LOW extreme: a disciplined 240-330 max-range poke that still commits output (ranged, not the do-nothing control). Aims to open an engage-bin-0 cell the archive lacks, distinct from the 2,2,3 patient-sniper by sitting even farther out."
+        "id": "stand-at-max-range",
+        "label": "CONTROL: always stand at max range (passive kiter)",
+        "kind": "control",
+        "rationale": "Deliberately-BAD structural proposal. Parks the cat at 300–340px and never closes — a melee fighter that refuses to fight. MUST rank LAST: it cannot clear the 3-pack and stalls output. Proves the harness punishes a plausible-looking-but-wrong rule, not just a crash."
       }
     }
   ]

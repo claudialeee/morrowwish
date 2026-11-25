@@ -959,3 +959,26 @@ Baseline won this run (judge 0.668); best agent was `allin-when-hurt` 0.641 (kit
 - ✅ P0-1 (blind instrument) → commit `1cd836ae` — `isMe=(actor==null)||...` counts manual Q/E/dodge. Verified: npm check + 4 combat scripts green.
 - ✅ P0-2 (intra-fight tempo envelope) → commit `b6ff2754` — casual enemy dmg ramps 0.55→1.0 over first ~6s, hardcore flat. Verified: npm check + 4 combat scripts green; envelope math confirmed (0.55@t0 → 1.0@t6).
 - 0 reverts. P1/P2 left findings-only per cron. Branch cat-bond-autofix-difficulty; NOT pushed.
+
+## Playtest cron 2026-11-24T21:05Z (6 personas × 8 battles; merged latest origin + ×0.7 removal + harness-fixed data)
+**Headline:** *"Combat is mechanically rich but every forgiveness and feedback system is scoped to the wrong player — the die-fast majority gets a deterministic instagib with no net and no lesson, the kiter has no win condition, and auto mode is accidentally the hardest config — so no persona clears 4/10."* 48 critiques, 61/65 agents (4 StructuredOutput fails).
+
+**Notable:** with the ×0.7 penalty removed + harness fixed, basic output is now confirmed FINE — "mash battle 1 is a pure-basic WIN (33s, ends 3% HP)." The remaining masher deaths are a **survivability-floor** problem (whole team deleted in 6-10s with zero defensive input), NOT a damage problem. The diagnosis sharpened from "mash can't win" → "mash wins slowly OR gets instagibbed on a bad spawn roll, with no mid-fight net."
+
+**P0s (auto-fix candidates):**
+- **P0-1 · within-fight survivability floor + fix inverted masher guard.** My masher guard is idleRamp-dominated (keys off time-since-skill); adversary wants it re-keyed to HP state (ramp as active cat drops <30% HP, not requiring idleness) so a facetanking masher being bursted actually gets the mitigation. Local numeric tweak to my own block → **AUTO-FIX**.
+- **P0-2 · losing-auto survivability floor.** autoMode is accidentally the HARDEST config (manual gets opening-grace + masher-guard; auto gets neither). Let those nets fire at ~60% strength when `autoMode && casual && lossStreak>=2`. Local gate tweak → **AUTO-FIX**.
+
+**P1s (findings-only):** first-fight coach must teach E/shield + ult + stop false 'learned' stamp; rate-aware danger trigger + distinct alarm + center DODGE prompt (4th cycle asking); kiter win condition (longer poke reach + passivity hunt + scored timeout); desktop basic aim-magnetism cone.
+
+**P2/P3 (findings-only):** captureReady → actionable finisher; per-encounter modifier seam so fight 1 ≠ fight 8; combo tier ladder with banked empowered hit.
+
+**AUTO-FIX OUTCOME (2026-11-24T21:05Z cycle):**
+- ✅ P0-1 (masher guard HP-driven) → commit 1745010d. lowHp now primary driver (ramps <40% HP, cap 45%); peril-time mitigation instead of idle-time. 4 combat scripts green.
+- ✅ P0-2 (losing-auto survivability floor) → commit (see git log). _autoAssist: opening-grace + masher-guard fire at 60% when casual auto && lossStreak>=2. 4 combat scripts green.
+- 0 reverts. P1/P2 findings-only. Branch cat-bond-autofix-difficulty; NOT pushed.
+- NOTE: npm run check has PRE-EXISTING origin reds (收集33种猫 breed-count + 系统菜单 untranslated — confirmed on clean origin/main, Kartepolo's title rework); the 4 combat scripts (the auto-fix gate) are the green signal relied on this cycle.
+
+## RSI cycle 2026-11-24T23:56:34Z: ✅ agent beat baseline (0.677 vs 0.638); archive 2/64
+**Winner:** `agent:ready-hitrun-tight` — judge **0.677** vs engine baseline 0.638, new top elite at cell `1,3,3`.
+**Winning bandBody:** `(f)=>{const hp=f.hp/(f.maxhp||1); if(hp<0.45)return{min:96,max:150,rush:120,role:'ranged',hp}; if(((f.cd&&f.cd.q)||0)<=0)return{min:30,max:60,rush:30,role:'bruiser',hp}; return{min:60,max:100,rush:60,role:'bruiser',hp};}` — cooldown-branching hit-run (hug on ready-Q, mid on CD, retreat <45% HP). **5 of 6 agent candidates beat baseline** (ready-hitrun-tight 0.677, steady-midline 0.649, glass-cannon-anchor 0.647, allin-when-hurt-v2 0.644, + pulse-brawler just under). Control `stand-at-max-range` ranked last (0.552) → control-CHECK PASS on held-out seeds [13,202,999]. Coverage held 2/64 (winners cluster in durability-bin3; the all-in/kite durability-down pushes didn't open a lower bin — descriptor grid stays coarse). Harness-only; no band applied to battle.js/skills.js; no commit; no push.

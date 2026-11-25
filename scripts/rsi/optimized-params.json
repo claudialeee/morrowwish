@@ -71,9 +71,9 @@
         }
       },
       "proposedParams": {
-        "min": 39,
-        "max": 205,
-        "dodge": 0.54
+        "min": 130,
+        "max": 180,
+        "dodge": 0.29
       },
       "defaultBand": {
         "min": 90,
@@ -82,20 +82,20 @@
       },
       "scores": {
         "engineNativeDefault": {
-          "train": 0.477958005950157,
-          "held": 0.49691482830049194
+          "train": 0.5040654232618684,
+          "held": 0.5120828772788601
         },
         "defaultBand": {
-          "train": 0.5096,
-          "held": 0.51445
+          "train": 0.50973,
+          "held": 0.51358
         },
         "optimizedBand": {
-          "train": 0.51611,
-          "held": 0.48979
+          "train": 0.51933,
+          "held": 0.51377
         }
       },
-      "trainGain": 0.00652,
-      "heldoutGain": -0.02466,
+      "trainGain": 0.0096,
+      "heldoutGain": 0.00019,
       "generalizes": false,
       "verdict": "OVERFIT (held-out gain ~0 or negative — NOT a real win)",
       "searchEvals": 19
@@ -130,9 +130,9 @@
         }
       },
       "proposedParams": {
-        "min": 71,
-        "max": 163,
-        "dodge": 1
+        "min": 20,
+        "max": 228,
+        "dodge": 0.58
       },
       "defaultBand": {
         "min": 90,
@@ -141,20 +141,20 @@
       },
       "scores": {
         "engineNativeDefault": {
-          "train": 0.4986867616790647,
-          "held": 0.4926166010746019
+          "train": 0.49953934813097184,
+          "held": 0.503949432736165
         },
         "defaultBand": {
-          "train": 0.45518,
-          "held": 0.45377
+          "train": 0.50751,
+          "held": 0.47913
         },
         "optimizedBand": {
-          "train": 0.51039,
-          "held": 0.50642
+          "train": 0.51233,
+          "held": 0.48291
         }
       },
-      "trainGain": 0.05522,
-      "heldoutGain": 0.05265,
+      "trainGain": 0.00482,
+      "heldoutGain": 0.00378,
       "generalizes": true,
       "verdict": "GENERALIZES",
       "searchEvals": 19
@@ -189,9 +189,9 @@
         }
       },
       "proposedParams": {
-        "min": 92,
-        "max": 107,
-        "dodge": 0.54
+        "min": 20,
+        "max": 310,
+        "dodge": 0
       },
       "defaultBand": {
         "min": 90,
@@ -200,20 +200,20 @@
       },
       "scores": {
         "engineNativeDefault": {
-          "train": 0.5109131330022562,
-          "held": 0.5101178901670945
+          "train": 0.5147037072306982,
+          "held": 0.5090934533467157
         },
         "defaultBand": {
-          "train": 0.50506,
-          "held": 0.53467
+          "train": 0.53813,
+          "held": 0.51255
         },
         "optimizedBand": {
-          "train": 0.53642,
-          "held": 0.50413
+          "train": 0.57433,
+          "held": 0.5034
         }
       },
-      "trainGain": 0.03137,
-      "heldoutGain": -0.03054,
+      "trainGain": 0.0362,
+      "heldoutGain": -0.00914,
       "generalizes": false,
       "verdict": "OVERFIT (held-out gain ~0 or negative — NOT a real win)",
       "searchEvals": 19
