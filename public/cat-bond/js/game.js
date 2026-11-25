@@ -28,8 +28,14 @@ class Game {
     this.touchAutoFire=false; // manual phone players can focus on moving and skill timing
     this._worldTouch = null; // map: tap to walk / drag to pan
     this.resize();
-    window.addEventListener('resize', () => this.resize());
-    window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 100));
+    this._resizeFrame=0;
+    const scheduleResize=()=>{if(this._resizeFrame)return;this._resizeFrame=requestAnimationFrame(()=>{this._resizeFrame=0;this.resize();});};
+    this._sceneResizeObserver=new ResizeObserver(scheduleResize);
+    this._sceneResizeObserver.observe(this.canvas);
+    window.addEventListener('resize',scheduleResize);
+    window.addEventListener('orientationchange',scheduleResize);
+    window.addEventListener('morrowwish-fullscreen-change',scheduleResize);
+    document.addEventListener('fullscreenchange',scheduleResize);
     window.addEventListener('morrowwish-language-change',()=>{
       if(this.scene==='battle'){
         this.syncBattleControlHelp();this.syncBattleModeUI();
@@ -43,6 +49,7 @@ class Game {
   resize() {
     const oldW=this.W,oldH=this.H;
     const rect = this.canvas.getBoundingClientRect();
+    if(rect.width<1||rect.height<1)return;
     // Retina phones need three physical pixels per CSS pixel to show
     // the 220×330 kitten illustrations sharply. Cap total canvas pixels
     // to avoid stuttering on older devices and large desktop windows.

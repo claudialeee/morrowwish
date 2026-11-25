@@ -41,15 +41,14 @@ function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)
 }}
 function drawScene(ctx,W,H,region){
  const img=art[region]?.background;if(!img?.complete||!img.naturalWidth)return false;
- const scale=Math.max(W/img.naturalWidth,H/img.naturalHeight),dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
- ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
+ window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#263c45",bottom:"#354a40"});
  if(region==="forest"){ctx.save();const light=ctx.createLinearGradient(0,H*.18,0,H);light.addColorStop(0,"rgba(15,43,29,.04)");light.addColorStop(.55,"rgba(15,43,29,.18)");light.addColorStop(1,"rgba(12,34,27,.4)");ctx.fillStyle=light;ctx.fillRect(0,0,W,H);ctx.restore();}
  return true;
 }
 function drawManifestation(ctx,e,b){
  const img=art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
  const size=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62)),bob=Math.sin(b.t*3+e.i)*2;
- ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();return true;
+ ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);const scale=Math.min(size/img.naturalWidth,size/img.naturalHeight),dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;ctx.drawImage(img,-dw/2,size/2-dh,dw,dh);ctx.restore();return true;
 }
 
 // Position the mechanic HUD below the actual battle topbar on every viewport.

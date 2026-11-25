@@ -140,8 +140,7 @@ BP.finish=function(win){
 function drawBackground(ctx,W,H,b){
   const img=art.background;
   if(img.complete&&img.naturalWidth){
-    const iw=art.background.naturalWidth,ih=art.background.naturalHeight,scale=Math.max(W/iw,H/ih),dw=iw*scale,dh=ih*scale;
-    ctx.drawImage(img,(W-dw)/2,(H-dh)/2,dw,dh);
+    window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#172532",bottom:"#574037"});
   }else{
     const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#172532");g.addColorStop(.65,"#574037");g.addColorStop(1,"#1a222a");
     ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
@@ -167,7 +166,7 @@ function drawEnemy(ctx,e,b){
   if(img.complete&&img.naturalWidth){
     const bob=Math.sin(b.t*4.2)*2.2,tilt=e.telegraph>0?-.025*Math.sin(b.t*30):.012*Math.sin(b.t*2.4);
     ctx.save();ctx.translate(e.x,e.y-size*.43+bob);ctx.rotate(tilt);
-    ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();
+    const s=Math.min(size/img.naturalWidth,size/img.naturalHeight),dw=img.naturalWidth*s,dh=img.naturalHeight*s;ctx.drawImage(img,-dw/2,size/2-dh,dw,dh);ctx.restore();
   }else{
     const draw=window.CatMotion?.draw||window.CatArt?.drawCat;
     draw?.(ctx,e.x,e.y,{species:e.sp,scale:b.catScale("enemy"),face:e.face,t:e.t,pose:e.pose,mood:"alert"});

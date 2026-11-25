@@ -100,9 +100,9 @@ for(const profile of [
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
   const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
   if(profile.width>profile.height){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
-  const realPress=async locator=>{await locator.scrollIntoViewIfNeeded();const hit=await locator.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));});assert.ok(hit,'Actual touch target must not be covered: '+await locator.innerText());if(profile.mobile)await locator.tap();else await locator.click();};
+  const realPress=async locator=>{if(!await locator.isVisible()){const world=page.locator(".rw-world:not([hidden])"),count=Number(await world.getAttribute("data-fit-pages")||1);for(let i=0;i<count&&!await locator.isVisible();i++){const next=world.locator("[data-fit-next]"),prev=world.locator("[data-fit-prev]");if(await next.isVisible()&&await next.isEnabled())await next.tap();else if(await prev.isVisible()&&await prev.isEnabled()){while(await prev.isEnabled())await prev.tap();}else break;}}await locator.scrollIntoViewIfNeeded();const hit=await locator.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));});assert.ok(hit,'Actual touch target must not be covered: '+await locator.innerText());if(profile.mobile)await locator.tap();else await locator.click();};
   for(const name of ['Catdex','Party','Raise cats','Workshop']){
-   await realPress(page.locator('.rw-system-nav').getByRole('button',{name,exact:true}));
+   await realPress(page.locator('.rw-system-nav').getByRole('button',{name,exact:true,includeHidden:true}));
    await checkVisible('#panel.open');
    await screenshot('atlas-'+name.toLowerCase().replaceAll(' ','-'));
    if(name==='Catdex'){

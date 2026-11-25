@@ -23,8 +23,8 @@
 .cbcp-root[hidden]{display:none!important}
 .cbcp-shell{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto;width:100%;height:100%;min-height:260px;overflow:hidden;background:#101d28}
 .cbcp-stage{position:relative;isolation:isolate;overflow:hidden;min-height:0;background:radial-gradient(ellipse at 50% 42%,#52616a 0%,#263744 54%,#101d28 100%)}
-.cbcp-art,.cbcp-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;will-change:transform,opacity;transform-origin:center;transition:transform 5600ms cubic-bezier(.2,.55,.24,1),opacity 520ms ease}
-.cbcp-layer{pointer-events:none}
+.cbcp-art,.cbcp-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;will-change:transform,opacity;transform-origin:center;transition:transform 5600ms cubic-bezier(.2,.55,.24,1),opacity 520ms ease}
+.cbcp-art-stack{position:absolute;inset:0;overflow:hidden}.cbcp-layer{pointer-events:none}
 .cbcp-fx{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
 .cbcp-subtitle-wrap{padding:12px 18px;background:linear-gradient(90deg,transparent,rgba(7,14,24,.78) 16%,rgba(7,14,24,.78) 84%,transparent)}
 @media(orientation:portrait) and (max-width:680px){
@@ -303,7 +303,7 @@
       const to = camera?.to || { x: 0, y: 0, scale: 1.06 };
       const factor = reduced ? 0 : clamp(depth, 0, 1.5);
       node.style.transition = `opacity ${clamp(transitionMs ?? 520, 320, 1000)}ms ease`;
-      const transform=p=>`translate3d(${Number(p.x||0)*factor}%,${Number(p.y||0)*factor}%,0) scale(${reduced?1:Number(p.scale||1)})`;
+      const transform=p=>{const scale=reduced?1:Math.max(.94,Math.min(1,Number(p.scale||1)));const bound=(1-scale)*50,clamp=v=>Math.max(-bound,Math.min(bound,v));return `translate3d(${clamp(Number(p.x||0)*factor)}%,${clamp(Number(p.y||0)*factor)}%,0) scale(${scale})`;};
       node.style.transform=transform(to);
       if(!reduced&&node.animate){
         const animation=node.animate([{transform:transform(from)},{transform:transform(to)}],{duration:Math.max(1200,durationMs||5600),fill:'both',easing:'cubic-bezier(.2,.55,.24,1)'});

@@ -10,17 +10,19 @@ const YARD_BG_PORTRAIT = new Image();
 YARD_BG_PORTRAIT.src = 'assets/garden/sunlit-garden-portrait.webp?v=resonance-1';
 let YARD_BG_PORTRAIT_READY = false;
 YARD_BG_PORTRAIT.onload = () => { YARD_BG_PORTRAIT_READY = true; };
-// draw an image to fully cover (w,h), centered, preserving aspect ratio
-function drawCover(ctx, img, w, h) {
-  const ir = img.width / img.height, cr = w / h;
-  let dw, dh;
-  if (cr > ir) { dw = w; dh = w / ir; } else { dh = h; dw = h * ir; }
-  // The original storybook was almost white after being scaled up to a large
-  // desktop canvas. Increase art contrast only, never kittens or UI.
-  ctx.save();
-  ctx.filter='saturate(1.12) contrast(1.08)';
-  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
-  ctx.restore();
+// One aspect-preserving artwork transform for garden, exploration and arenas.
+// Extend the stage with a subdued color field, never stretch the authored image.
+window.CatBondSceneFit=Object.freeze({
+ rect(iw,ih,w,h){const s=Math.min(w/iw,h/ih),dw=iw*s,dh=ih*s;return {x:(w-dw)/2,y:(h-dh)/2,width:dw,height:dh,scale:s};},
+ draw(ctx,img,w,h,{top="#142536",bottom="#243b43",filter="none"}={}){
+  const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;if(!iw||!ih||!w||!h)return null;
+  const rect=this.rect(iw,ih,w,h);ctx.save();
+  const fill=ctx.createLinearGradient(0,0,0,h);fill.addColorStop(0,top);fill.addColorStop(1,bottom);ctx.fillStyle=fill;ctx.fillRect(0,0,w,h);
+  ctx.filter=filter;ctx.drawImage(img,rect.x,rect.y,rect.width,rect.height);ctx.restore();return rect;
+ }
+});
+function drawGardenArtwork(ctx,img,w,h){
+ return window.CatBondSceneFit.draw(ctx,img,w,h,{top:"#b8c6a4",bottom:"#718f4e",filter:"saturate(1.12) contrast(1.08)"});
 }
 
 // Original environment prop sprites, shared by placed facilities and placement preview.
@@ -775,9 +777,9 @@ class YardScene {
     const stage = document.getElementById('stage');
     if (stage) stage.dataset.sunlitGardenBackground = portraitGarden ? 'portrait' : 'landscape';
     if (portraitGarden) {
-      drawCover(ctx, YARD_BG_PORTRAIT, W, H);
+      drawGardenArtwork(ctx, YARD_BG_PORTRAIT, W, H);
     } else if (YARD_BG_READY) {
-      drawCover(ctx, YARD_BG, W, H);
+      drawGardenArtwork(ctx, YARD_BG, W, H);
     } else {
       // fallback: procedural soft dawn until the painting loads
       const sky = ctx.createLinearGradient(0, 0, 0, horizon);
