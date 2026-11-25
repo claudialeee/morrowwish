@@ -19,7 +19,6 @@
     bond:'<path d="M12 9c-2-4-8-4-9 1s5 9 9 4l4-5c2-3 6-2 6 2s-5 6-8 2"/><path d="m8 4 1 2m6-2-1 2"/>'
   });
   const HOTSPOTS = [
-    {id:'book',zh:'星铃之书',en:'Resonance Book',action:()=>window.ResonanceBook?.open()},
     {id:'facilities',zh:'家园设施',en:'Facilities',action:()=>window.UI?.openBuild?.()}
   ];
   let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null,hitState=null,guide=null,guideKey='';
@@ -40,10 +39,11 @@
     for(const item of HOTSPOTS){
       const b=root.querySelector('[data-garden-action="'+item.id+'"]');if(!b)continue;
       const label=en?item.en:item.zh;
-      b.querySelector('.sg-hotspot-icon').innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[item.id==='book'?'catdex':item.id]+'</svg>';
+      b.querySelector('.sg-hotspot-icon').innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[item.id]+'</svg>';
       b.querySelector('.sg-hotspot-label').textContent=label;
       b.title=label;b.setAttribute('aria-label',label);
     }
+    const book=document.getElementById('sg-book-entry');if(book){book.textContent=en?'Resonance Book':'星铃之书';book.title=book.textContent;book.setAttribute('aria-label',book.textContent);}
     const map=document.getElementById('fab-map');
     if(map){map.title=en?'Return to the world map':'返回世界地图';map.setAttribute('aria-label',map.title);
       const small=map.querySelector('small');if(small)small.textContent=en?'World':'地图';}
@@ -59,7 +59,7 @@
     guide.replaceChildren();
     const title=document.createElement('strong');
     title.textContent=departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
-    const hint=document.createElement('span');hint.textContent=departure?(en?'Prepare your companions before heading to Misttide Harbor.':'整理伙伴，准备前往霁潮港。'):talk?(en?'Speak with the traveler by the garden path.':'与花园小径旁的旅人交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
+    const hint=document.createElement('span');hint.textContent=departure?(en?'Prepare your companions before heading to Misttide Harbor.':'整理伙伴，准备前往霁潮港。'):talk?(en?'Open Resonance Book to explore your cats, party, workshop and Catdex, then speak to Muling.':'可打开星铃之书查看猫咪、队伍、工坊和 Catdex，再与暮铃交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
     guide.append(title,hint);
     const row=document.createElement('div');guide.append(row);
     const add=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};row.append(b)};
@@ -80,6 +80,7 @@
       b.addEventListener('click',()=>{if(active&&game?.scene==='yard')item.action?.();});
       root.append(b);
     }
+    const actions=document.getElementById('yard-actions');if(actions&&!document.getElementById('sg-book-entry')){const book=document.createElement('button');book.id='sg-book-entry';book.type='button';book.className='fab sg-book-entry';book.onclick=()=>{if(active&&game?.scene==='yard')window.ResonanceBook?.open()};actions.prepend(book);}
     guide=document.createElement('section');guide.className='sg-prologue-guide';guide.hidden=true;root.append(guide);document.getElementById('stage').append(root);renderLabels();return root;
   }
   function init(controller){

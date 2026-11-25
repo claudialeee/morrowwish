@@ -20,8 +20,8 @@ for(const profile of [
  const checkVisible=async selector=>{await page.locator(selector).first().waitFor({state:'visible',timeout:15000});};
  const waitMap=()=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:15000});
  const openInGameSlots=async()=>{
-  await page.locator('#map-menu').click();
-  await page.locator('[data-cb-story-action="slots"]').click();
+  await page.locator('#cb-system-toggle').click();
+  await page.locator('[data-system="slots"]').click();
   await checkVisible('.cb-slot-manager');
  };
  const openTitleSlots=async()=>{
@@ -95,14 +95,37 @@ for(const profile of [
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
   const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
   if(profile.name!=='phone-portrait'){assert.ok(mapBounds.wide,'Wide atlas uses independent quest rail');assert.ok(mapBounds.map.bottom<=mapBounds.view.bottom+1&&mapBounds.map.top>=mapBounds.view.top-1,'Complete atlas painting is visible without scrolling');assert.ok(mapBounds.map.right<=mapBounds.view.right+1,'Atlas must not overflow horizontally');}
-  for(const name of ['Catdex','Party','Raise cats','Workshop']){
-   await page.locator('.rw-system-nav').getByRole('button',{name,exact:true}).click();
-   await checkVisible('#panel.open');
-   await screenshot('atlas-'+name.toLowerCase().replaceAll(' ','-'));
-   const close=page.locator('#panel .close-btn,#panel [data-close],#panel .panel-close,#panel-close').first();
-   if(await close.isVisible())await close.click();else await page.keyboard.press('Escape');
-   await page.locator('#panel.open').waitFor({state:'hidden',timeout:5000});
+  assert.equal(await page.locator('.rw-system-nav button').count(),2,'Atlas exposes only Book and Journal');
+  const book=page.locator('.rw-system-nav .rb-world-entry');
+  await book.click();await checkVisible('#panel.rb-open.open');
+  for(const tab of ['dex','party','cats','workshop','duo','bag','shop','daily','records']){
+   await page.locator('[data-book-tab="'+tab+'"]').click();
+   await checkVisible('#panel.rb-open.open');
+   assert.equal(await page.locator('[data-book-tab][aria-current="page"]').getAttribute('data-book-tab'),tab);
+   if(['dex','party','cats','workshop','bag'].includes(tab))await screenshot('book-'+tab);
   }
+  await page.locator('[data-book-tab="daily"]').click();
+  if(await page.locator('#claim').isEnabled())await page.locator('#claim').click();
+  await page.locator('[data-book-tab="cats"]').click();
+  const before=await page.evaluate(()=>({uid:State.S.cats[0].uid,level:State.S.cats[0].level,power:State.catPower(State.S.cats[0]),fish:State.S.fish}));
+  await page.locator('#panel [data-breed]').first().click();
+  await page.locator('#cd-trainnext').click();
+  const after=await page.evaluate(()=>({uid:State.S.cats[0].uid,level:State.S.cats[0].level,power:State.catPower(State.S.cats[0]),fish:State.S.fish}));
+  assert.equal(after.uid,before.uid);assert.equal(after.level,before.level+1);assert.ok(after.power>before.power&&after.fish<before.fish,'Real training updates native cat power');
+  await page.locator('[data-book-tab="party"]').click();
+  await page.locator('#map-squad-best').click();await page.locator('#map-squad-save').click();
+  assert.ok(await page.evaluate(()=>State.S.battlePrefs.teamUids.includes(State.S.cats[0].uid)));
+  await book.click();
+  await page.locator('[data-book-tab="bag"]').click();
+  const inv=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish,medkits:State.S.medkits}));
+  const field=page.locator('[data-book-recipe="field-kit"]');
+  assert.ok(await field.isEnabled(),'New save has material for a field kit after daily reward');
+  await field.click();
+  assert.deepEqual(await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish,medkits:State.S.medkits})),{coins:inv.coins-18,fish:inv.fish-1,medkits:inv.medkits+1});
+  assert.ok(await page.locator('[data-book-recipe="harbor-kit"]').isDisabled());
+  await page.locator('.rb-close').click();
+  await page.locator('#panel.open').waitFor({state:'hidden'});
+  assert.equal(await page.evaluate(()=>window.__game.scene),'map');
   await screenshot('world-atlas');
   // Physical departure from the merged canonical opening.
   const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);
@@ -124,8 +147,7 @@ for(const profile of [
   await waitMap();
   assert.equal(await page.evaluate(()=>window.State.S.cats[0].uid),first);
   // A real title-menu navigation, not a special test entry.
-  await page.locator('#map-menu').click();
-  await page.locator('[data-cb-story-action="system"]').click();
+  await page.locator('#cb-system-toggle').click();
   await page.locator('[data-system="title"]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__,{timeout:30000});
   // Start the third slot through the actual title picker, preserving the two earlier adventures.
