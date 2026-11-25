@@ -80,6 +80,22 @@ for(const profile of [
    await page.locator('.cbcp-skip').click();
   }
   await checkVisible('#panel.open .dex-cell');await page.locator('#panel.open .dex-cell').first().click();
+  await page.locator('#sg-book-entry').click();
+  await checkVisible('#panel.rb-open.open');
+  await page.locator('[data-book-tab="workshop"]').click();
+  const quick=page.locator('#work-quick-start');
+  if(await quick.isVisible())await quick.click();
+  const collect=page.locator('[data-act="collect"][data-id="st_sun"]').last();
+  if(await collect.isEnabled()){
+   const wallet=await page.evaluate(()=>State.S.coins);
+   await collect.click();
+   assert.ok(await page.evaluate(()=>State.S.coins)>wallet,'Actual workshop resource payout');
+  }
+  await page.locator('[data-book-tab="daily"]').click();
+  if(await page.locator('#claim').isEnabled())await page.locator('#claim').click();
+  assert.equal(await page.locator('#claim').isEnabled(),false,'Daily reward cannot be collected twice');
+  await page.locator('.rb-close').click();
+  await screenshot('garden-book-dock');
   await page.locator('.sg-prologue-guide').getByRole('button',{name:'Talk to Muling'}).click();
   const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');await awakening.getByRole('button',{name:'Skip dialogue',exact:true}).click();
   const bell=page.locator('.res-garden-bell');await bell.waitFor();
@@ -117,6 +133,17 @@ for(const profile of [
   assert.ok(await page.evaluate(()=>State.S.battlePrefs.teamUids.includes(State.S.cats[0].uid)));
   await book.click();
   await page.locator('[data-book-tab="bag"]').click();
+  await page.locator('#cb-system-toggle').click();
+  await page.locator('[data-system="language"]').click();
+  await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='zh');
+  await page.locator('[data-system="close"]').click();
+  assert.match(await page.locator('.rb-brand strong').innerText(),/星铃之书/);
+  await screenshot('book-zh');
+  await page.locator('#cb-system-toggle').click();
+  await page.locator('[data-system="language"]').click();
+  await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='en');
+  await page.locator('[data-system="close"]').click();
+  assert.match(await page.locator('.rb-brand strong').innerText(),/Resonance Book/);
   const inv=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish,medkits:State.S.medkits}));
   const field=page.locator('[data-book-recipe="field-kit"]');
   assert.ok(await field.isEnabled(),'New save has material for a field kit after daily reward');

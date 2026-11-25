@@ -776,6 +776,7 @@ function dailyAvailable() {
 function claimDaily() {
   if(!dailyAvailable())return {ok:false,reward:{coins:0,fish:0},streak:S.streak};
   const prev = S.lastDaily || 0;
+  const before={lastDaily:S.lastDaily,streak:S.streak,coins:S.coins,fish:S.fish};
   const oneDay = 864e5;
   const gapDays = Math.floor((Date.now() - prev) / oneDay);
   S.streak = (prev && gapDays <= 2) ? S.streak + 1 : 1;
@@ -787,6 +788,8 @@ function claimDaily() {
     fish: (2 + Math.floor(S.streak / 2)) + (S.streak % 7 === 0 ? 5 : (S.streak % 3 === 0 ? 1 : 0)),
   };
   S.coins += reward.coins; S.fish += reward.fish;
+  let saved=false;try{saved=save()?.ok===true}catch{}
+  if(!saved){Object.assign(S,before);return {ok:false,reward:{coins:0,fish:0},streak:S.streak};}
   return { ok:true, reward, streak: S.streak };
 }
 

@@ -2365,8 +2365,8 @@ const UI = {
     const btn = document.getElementById('claim');
     if (btn && avail) btn.onclick = () => {
       const { ok, reward, streak } = State.claimDaily();
-      if(!ok){this.openDaily();return;}
-      State.save(); this.game.refreshHUD();
+      if(!ok){this.game.toast(this.isEnglish()?'Reward not claimed. Please retry if available.':'奖励未领取，请在可领取时重试。');this.openDaily();return;}
+      this.game.refreshHUD();
       const msg = `+${reward.coins}🪙 +${reward.fish}🐠小鱼`;
       this.game.toast(`签到成功！${msg}`);
       this.openDaily();

@@ -1016,7 +1016,7 @@ class YardScene {
   }
   // Invite an actual visible kitten to a specific facility immediately.
   inviteCatToBuilding(b){
-    if(this._duoFacility||!(State.S.yardBuildings||[]).includes(b)||!this.entities?.length)return false;
+    if(this._duoFacility||this.placement?.relocating===b||!(State.S.yardBuildings||[]).includes(b)||!this.entities?.length)return false;
     const available=this.entities.filter(e=>!e._gardenTask&&!(e._playBuildT>0)&&!e._buildTarget);
     if(!available.length)return false;
     const nearest=available.sort((a,c)=>
@@ -1030,7 +1030,7 @@ class YardScene {
   // No new relationship database or story flag: the existing pair state
   // records the benefit only after both physical visits complete.
   inviteDuoToBuilding(b){
-    if(this._duoFacility||window.GardenProjects?.active?.()||!(State.S.yardBuildings||[]).includes(b))return false;
+    if(this._duoFacility||this.placement?.relocating===b||window.GardenProjects?.active?.()||!(State.S.yardBuildings||[]).includes(b))return false;
     const pair=window.CatRelations?.chosen?.()||[];
     if(pair.length!==2||pair.some(c=>window.Raising?.isBusy?.(c.uid)))return false;
     if(CatRelations.mood(pair[0],pair[1])==='sulky')return false;
@@ -1103,7 +1103,7 @@ class YardScene {
       }
     }
     this.updateDuoFacility();
-    if(this._duoFacility)return; // no unrelated cat may interrupt a duo visit
+    if(this._duoFacility||this.placement?.relocating)return; // no new visits while placing an existing facility
     this._buildScan = (this._buildScan == null ? 2 : this._buildScan) - dt;
     if (this._buildScan > 0) return;
     this._buildScan = 4 + Math.random() * 4;   // next look ~4-8s; don't thrash pathing
