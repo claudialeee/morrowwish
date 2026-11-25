@@ -2725,7 +2725,8 @@ const UI = {
         this.battleTeamSummary(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en))+'</span></summary>'+
       '<p class="sub">'+(en?'2 cats start; up to 3 reserves. Tap cats to change the team or reorder below.':'2 只首发，最多 3 只替补。点击猫咪更换队伍，也可调整顺序。')+'</p>'+
       this.squadPickerMarkup(selected)+'</details>';
-    const label=opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
+    const story=Array.isArray(opts.storyTitle)&&typeof opts.onStart==='function';
+    const label=story?this.battlePrepEsc(opts.storyTitle[en?1:0]):opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
     const encounterLvl=wildSp.encounterLevel||
       window.Battle?.CaptureBattle?.previewWildLevel?.(
@@ -2733,8 +2734,8 @@ const UI = {
     this.panel(`<span class="card-close">×</span>
       <h2>${label}</h2>
       <p class="sub" style="font-weight:750;color:#765e85">
-        ${en?'Wild cat':'野生猫咪'} · Lv.${encounterLvl} ·
-        <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>
+        ${story?(en?'Story encounter · not a collectible cat':'剧情挑战 · 非捕捉目标'):`${en?'Wild cat':'野生猫咪'} · Lv.${encounterLvl} ·
+        <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>`}
       </p>
       ${this.matchupWarning(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en)}
       <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
@@ -2823,6 +2824,8 @@ const UI = {
       State.S.battlePrefs={...State.S.battlePrefs,autoBattle:auto,modeChosen:true,
         skillsIntroSeen:true,teamUids:[...selected]};
       State.save();this.closeAll();
+      // Story encounters own their boss, outcome and canonical evidence. Never fall through to a wild capture.
+      if(typeof opts.onStart==='function'){opts.onStart(fighters.length?fighters:team);return;}
       if(opts.mastery){this.game.startMasteryChallenge(wildSp,true,fighters);return;}
       if(opts.origin==='map'){
         this.game._returnScene='map';this.game._battleTheme=opts.theme||null;
