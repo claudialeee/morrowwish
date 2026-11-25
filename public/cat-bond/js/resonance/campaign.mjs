@@ -1594,7 +1594,10 @@ export const campaign = {
       "previous": "library:M-01",
       "lines": [],
       "requires": [
-        "puzzle:mirror-records"
+        "puzzle:library-reflections",
+        "puzzle:mirror-records",
+        "puzzle:library-echo",
+        "battle:library-echo"
       ],
       "choices": [],
       "lineGate": [],
