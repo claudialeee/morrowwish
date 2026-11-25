@@ -87,7 +87,7 @@ function install(){
  function makeFitRail(head,shell){
   const rail=E("aside","rw-fit-rail "+(mode==="map"?"rw-atlas-rail":"rw-forest-rail"));
   rail.setAttribute("aria-label",tr("剧情与探索操作","Story and exploration controls"));
-  const priority=el=>el.matches(".rw-puzzle-controls,.rw-world-actions,.rw-system-nav")?0:el.matches(".rw-objective")?1:el.matches(".rw-regions,.rw-cargo")?2:el.matches(".rw-controls")?3:4;
+  const priority=el=>el.matches(".rw-forge-release")?-1:el.matches(".rw-puzzle-controls,.rw-world-actions,.rw-system-nav")?0:el.matches(".rw-objective")?1:el.matches(".rw-regions,.rw-cargo")?2:el.matches(".rw-controls")?3:4;
   const items=[...host.children].filter(n=>n!==head&&n!==shell);
   const puzzle=items.find(el=>el.matches(".rw-puzzle-controls")),guide=items.find(el=>el.matches(".rw-harbor-guide"));
   if(puzzle&&guide){puzzle.prepend(guide);items.splice(items.indexOf(guide),1);}
@@ -124,7 +124,13 @@ function install(){
  function enterRegion(id){const b=current();if(["sky","library","starfall"].includes(id)){notice=nextRelease(b.view())?releaseMessage():tr("该地区尚未开放","This region is not open yet");render();return false;}ceremony=null;const r=b.enter(id);if(!r.ok){notice=tr("暂时无法前往","Cannot travel yet")+" · "+reason(r.reason);render();return false;}mode="region";explorer=createExplorer(b,id,{deferForestMelody:true,deferForgeMelody:true,deferHarborMelody:true});pending=null;notice="";if(wildRegion!==id){wildRegion=id;spawnDelay=0;wild=null;}if(!wild&&spawnDelay<=0)spawnWild(id);render();return true;}
  function spawnWild(id){
   const p=explorer.layout.paths;
-  wild={species:pickWild(pools[id]),point:[(p[2][0]+p[3][0])/2,(p[2][1]+p[3][1])/2]};
+  // Harbor is the RPG's introductory hunting region. Before the first
+  // capture, offer an ordinary level-one kitten so the player can learn
+  // combat and unlock Duo without an unlucky rare-enemy progression wall.
+  const novice=id==="harbor"&&(State.S.catchCount||0)===0;
+  const candidates=novice?pools[id].filter(key=>GameData.speciesById(key)?.rarity==="N"):pools[id];
+  const species=pickWild(candidates);
+  wild={species:novice?{...species,encounterLevel:1}:species,point:[(p[2][0]+p[3][0])/2,(p[2][1]+p[3][1])/2]};
  }
  function resumeRegion(won){
   const id=current().world().location;

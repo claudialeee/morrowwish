@@ -368,6 +368,17 @@ function installCatBondSystemMenu(){
   btn.onclick=e=>{if(e.detail!==0&&performance.now()-last<750)return;activate();};
  }
  bindMenuPress(toggle,()=>menu.hidden?open():close());
+ // Native clicks on the legacy expedition panel are suppressed on some touch
+ // browsers after interacting with the world canvas. Delegate only its actual
+ // controls, preserving scroll gestures and mouse/keyboard accessibility.
+ const stage=document.getElementById('stage');
+ const selector='#map-menu,#panel.open .explore-menu button,#panel.open .panel-dismiss';
+ let tap=null,lastTap=null;
+ stage?.addEventListener('touchstart',e=>{const b=e.target.closest?.(selector),p=e.changedTouches[0];tap=b&&e.touches.length===1&&p?{b,id:p.identifier,x:p.clientX,y:p.clientY}:null;},{capture:true,passive:true});
+ stage?.addEventListener('touchmove',e=>{if(!tap)return;const p=[...e.changedTouches].find(p=>p.identifier===tap.id);if(!p||e.touches.length!==1||Math.hypot(p.clientX-tap.x,p.clientY-tap.y)>10)tap=null;},{capture:true,passive:true});
+ stage?.addEventListener('touchcancel',()=>{tap=null;},{capture:true,passive:true});
+ stage?.addEventListener('touchend',e=>{const a=tap;tap=null;if(!a||!a.b.isConnected||a.b.disabled||e.touches.length)return;const p=[...e.changedTouches].find(p=>p.identifier===a.id);if(!p||Math.hypot(p.clientX-a.x,p.clientY-a.y)>10||!a.b.contains(document.elementFromPoint(p.clientX,p.clientY)))return;e.preventDefault();lastTap={b:a.b,t:performance.now()};a.b.click();},{capture:true,passive:false});
+ stage?.addEventListener('click',e=>{if(e.detail!==0&&lastTap&&performance.now()-lastTap.t<750&&lastTap.b.contains(e.target)){e.preventDefault();e.stopImmediatePropagation();}},{capture:true});
  menu.onclick=e=>{if(e.target===menu)close();};
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){e.preventDefault();close();}});
  window.addEventListener('morrowwish-language-change',render);

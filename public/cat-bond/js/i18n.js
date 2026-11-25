@@ -131,6 +131,7 @@
     '✨ 猫咪小秘密 · 点击发现': '✨ Cat secret · Tap to discover',
     '? 玩法': '? Guide',
     '重新查看玩法引导': 'Review gameplay guide',
+    '玩法指引': 'Gameplay guide',
     '🌿 点击发光的草丛，遇见第一位新伙伴！': '🌿 Tap the glowing bush to meet your first new friend!',
     '🌿 点击右侧草丛按钮，寻找野猫！': '🌿 Tap the grass button on the right to find a wild cat!',
     // Portal-specific directions after CrazyGames moves both menu groups
