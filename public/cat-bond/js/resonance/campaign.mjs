@@ -1958,10 +1958,11 @@ export const campaign = {
         }
       ],
       "requires": [
-        "npc:central-dispute"
+        "npc:central-dispute",
+        "npc:central-dispute-lichuan"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": ["npc:central-dispute","npc:central-dispute-lichuan"],
       "choiceTiming": "afterDialogue"
     },
     {
@@ -1974,8 +1975,12 @@ export const campaign = {
       "previous": "starfall:F-01",
       "lines": [],
       "requires": [
+        "explore:crater-fragment",
+        "puzzle:echo-navigation",
         "puzzle:star-map",
-        "explore:catastrophe-record"
+        "explore:ruin-fragment",
+        "explore:catastrophe-record",
+        "cinematic:starfall-memory"
       ],
       "choices": [],
       "lineGate": [],
@@ -2107,7 +2112,7 @@ export const campaign = {
         "npc:central-ruin"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": ["npc:central-ruin"],
       "choiceTiming": "afterDialogue"
     },
     {

@@ -21,6 +21,8 @@ function install(){
  function show(){
   const v=runtime.view(),game=window.__game;
   if(!v.current||game?.scene==="battle")return false;
+  if(v.current.chapter==="starfall"&&(window.WorldMap?.currentRegion!=="starfall"||window.WorldMap?.mode!=="region")){game?.toast?.({zh:"请前往星坠原继续剧情。",en:"Travel to Starfall to continue the story."});return false;}
+  if(["starfall:F-02","starfall:F-05"].includes(v.current.id)&&v.objective.some(op=>op.startsWith("cinematic:"))){game?.toast?.({zh:"请在星坠原完成调查并前往中央遗迹观看演出。",en:"Complete the investigation in Starfall and approach the central ruins for the cinematic."});return false;}
   if(slot===State.S&&openedScene===v.current.id&&(dialogue||keyExchange)){(dialogue||keyExchange).render();return true}
   close();slot=State.S;openedScene=v.current.id;
   root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";root.dataset.scene=openedScene;stage.append(root);
@@ -56,14 +58,14 @@ function install(){
  // The physical map interaction already validates movement and proximity. No generic story button can grant NPC evidence.
  window.addEventListener("cat-bond-resonance-npc-request",event=>{
   if(window.__game?.scene==="battle")return;
-  const d=event.detail||{};if(window.CatBondResonanceNPC){if(!window.CatBondResonanceNPC.talk(d.npcId,d.region,d.sceneId))window.__game?.toast?.({zh:"暂时没有新的话题。",en:"Nothing new to discuss yet."});return}const r=runtime.recordNPC(d);if(r.ok)show();
+  const d=event.detail||{};if(window.CatBondResonanceNPC){if(!window.CatBondResonanceNPC.talk(d.npcId,d.region,d.sceneId))window.__game?.toast?.({zh:"暂时没有新的话题。",en:"Nothing new to discuss yet."});return}const r=runtime.recordNPC({...d,token:runtime.capture()});if(r.ok)show();
  });
  window.addEventListener("cat-bond-resonance-changed",refresh);
  window.addEventListener("cat-bond-active-save-changed",close);
  // Detect external world/battle commits and slot replacements without a second progression store.
  let observedRoot=State.S,observedRevision=State.S.resonance?.revision??-1,observedView=runtime.view();
  setInterval(()=>{const revision=State.S.resonance?.revision??-1;if(observedRoot!==State.S||observedRevision!==revision){const sameSlot=observedRoot===State.S,old=observedView;observedRoot=State.S;observedRevision=revision;observedView=runtime.view();refresh();
-  if(sameSlot&&!dialogue&&window.__game?.scene!=="battle"&&old.current?.id===observedView.current?.id&&old.objective.length>observedView.objective.length&&(!old.lineReady||observedView.objective.length===0)&&observedView.lineReady&&observedView.cursor<observedView.current.lines.length)show();
+  if(sameSlot&&!dialogue&&window.__game?.scene!=="battle"&&old.current?.id===observedView.current?.id&&(old.objective.length>observedView.objective.length||(!old.lineReady&&observedView.lineReady))&&(!old.lineReady||observedView.objective.length===0)&&observedView.lineReady&&observedView.cursor<observedView.current.lines.length)show();
  }},200);
  window.addEventListener("cat-bond-resonance-evidence",event=>{
   const r=runtime.evidence(event.detail);if(r.ok){const v=runtime.view();if(v.current?.lines.length&&v.lineReady)show();scheduleFinish()}

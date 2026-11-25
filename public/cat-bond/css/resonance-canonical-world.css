@@ -86,3 +86,45 @@
  .rw-world[data-region="harbor"].rw-forest-landscape .rw-head{margin:0;padding-bottom:6px}
  .rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-guide,.rw-world[data-region="harbor"].rw-forest-landscape .rw-harbor-status{margin:5px 0;font-size:11px}
 }
+
+/* Starfall reciprocal ledger: readable without covering the exploration surface. */
+.rw-starfall-ledger{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr));}
+.rw-starfall-ledger>strong,.rw-starfall-ledger>.rw-hint,.rw-starfall-ledger>button{grid-column:1/-1;}
+.rw-starfall-route{min-width:0;padding:9px;border:1px solid #8e98b24d;border-radius:9px;background:#18243980;display:grid;gap:7px;}
+.rw-starfall-route-head{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:12px;}
+.rw-starfall-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;}
+.rw-starfall-steps span{font-size:10px;text-align:center;line-height:1.4;border-bottom:2px solid #64718a;padding:3px 1px;color:#aab3c3;}
+.rw-starfall-steps .done{border-color:#a5d9bd;color:#c8f1d9;}
+.rw-starfall-steps .current{border-color:#e7c88d;color:#f3deae;}
+.rw-starfall-route button{width:100%;white-space:normal;line-height:1.4;}
+.rw-starfall-puzzle-status{grid-column:1/-1;flex-basis:100%;text-align:center;}
+.rw-echo-symbols{display:block;letter-spacing:.16em;margin-top:3px;font-size:15px;color:#dcd3fb;}
+@media(max-width:600px){.rw-starfall-ledger{grid-template-columns:minmax(0,1fr)}.rw-starfall-route-head{font-size:12px}.rw-starfall-steps span{font-size:11px}}
+
+/* Keep the real Starfall painting and mechanism controls visible even when the
+   24-step ledger is expanded. The ledger is below local actions on portrait,
+   and occupies a separate scrollable rail on short landscape viewports. */
+@media (max-width:700px) and (orientation:portrait){
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange):not([hidden]){display:flex;flex-direction:column;gap:7px;padding:60px 9px 30px;overflow:auto;scroll-padding-top:6px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>*{flex:0 0 auto;width:100%;max-width:none;margin:0;box-sizing:border-box}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-head{order:0;padding-bottom:7px;gap:5px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-shell{order:1;animation:none}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-puzzle-controls{order:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-objective{order:3;padding:8px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-notice{order:4}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-hint{order:5}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-current-actions{order:6}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-world-actions{order:7;justify-content:flex-start}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-cargo:not(.rw-starfall-ledger){order:8}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange)>.rw-starfall-ledger{order:9;grid-template-columns:minmax(0,1fr)}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-button{min-height:44px;overflow-wrap:anywhere}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-metric{padding:2px 4px}
+}
+@media (max-height:500px) and (orientation:landscape){
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange).rw-forest-landscape{background:radial-gradient(ellipse at 22% 0,#303957,#1b2a40 55%,#121e30)}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-starfall-ledger{grid-template-columns:minmax(0,1fr);gap:6px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-forest-rail{scroll-padding-block:6px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-starfall-route{padding:6px}
+ .rw-world:is(.rw-starfall-region,.rw-starfall-exchange) .rw-starfall-route-head{font-size:11px}
+}

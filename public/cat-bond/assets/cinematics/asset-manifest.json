@@ -693,6 +693,86 @@
         },
         "lines": []
       }
+    ],
+    "starfall:F-02": [
+      {
+        "assetId": "opening-star-bell",
+        "alt": {
+          "zh": "撞击前的星铃与六座圣所",
+          "en": "The Star Bell and six sanctuaries before the impact"
+        },
+        "durationMs": 5500,
+        "transitionMs": 760,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.12
+          }
+        },
+        "lines": [],
+        "caption": {
+          "zh": "陨星撞击中央星铃。六座圣所同时受损。",
+          "en": "A fallen star struck the Star Bell. All six sanctuaries were damaged."
+        }
+      },
+      {
+        "assetId": "opening-broken-bell-tongue",
+        "alt": {
+          "zh": "破碎铃舌留下的灾变记录",
+          "en": "The broken bell tongue and the catastrophe"
+        },
+        "durationMs": 5500,
+        "transitionMs": 760,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.12
+          }
+        },
+        "lines": [],
+        "caption": {
+          "zh": "铃舌碎裂，失去回应的回响开始积聚。",
+          "en": "The bell tongue shattered. Unanswered echoes began to gather."
+        }
+      },
+      {
+        "assetId": "opening-keepers-choice",
+        "alt": {
+          "zh": "守铃者主动走入应急锚室",
+          "en": "The Bellkeeper willingly enters the emergency anchor"
+        },
+        "durationMs": 5500,
+        "transitionMs": 760,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.12
+          }
+        },
+        "lines": [],
+        "caption": {
+          "zh": "我自愿走进应急锚室，以自己的记忆维持封印。那是我的选择。",
+          "en": "I willingly entered the emergency anchor to sustain the seal with my memories. It was my choice."
+        }
+      }
     ]
   },
   "prologueReleaseShots": {

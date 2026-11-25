@@ -58,7 +58,7 @@ console.log("Shared slot transaction: stale slot/scene rejected, atomic physical
 const a={resonance:fixture("harbor:H-02")},z={resonance:fixture("harbor:H-02")};active=a;const overlay=shared.capture();active=z;assert.equal(shared.isCurrentAction(overlay),false);assert.equal(shared.nextLine(overlay).reason,"stale-action");assert.equal(z.resonance.cursor,0);
 // The departed Muling is an explicit scripted participant at the central ruin,
 // not a permanently present companion or a generic garden NPC.
-active={resonance:fixture("starfall:F-03"),resonanceExploration:{location:"starfall"}};assert.equal(shared.follows(),false);assert.ok(shared.residents("starfall").some(n=>n.id==="muling"&&n.scripted));assert.ok(!shared.residents("garden").some(n=>n.id==="muling"));assert.ok(shared.recordNPC({sceneId:"starfall:F-03",npcId:"muling",region:"starfall",token:shared.capture()}).ok);
+active={resonance:fixture("starfall:F-03"),resonanceExploration:{location:"starfall",positions:{starfall:{x:.92,y:.30}}}};assert.equal(shared.follows(),false);assert.ok(shared.residents("starfall").some(n=>n.id==="muling"&&n.scripted));assert.ok(!shared.residents("garden").some(n=>n.id==="muling"));assert.ok(shared.recordNPC({sceneId:"starfall:F-03",npcId:"muling",region:"starfall",token:shared.capture()}).ok);
 console.log("Dialogue token isolation and scripted Muling appearance verified");
 
 // Endgame fixtures prove the deferred NPC operations cannot finish early.

@@ -33,7 +33,7 @@ export function inPattern(p,f){
 }
 
 // Original regional scene and manifestation artwork. Render at native canvas scale; no CSS image substitute.
-const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["starfall-arena.svg","orbit-sentinel.svg"]};
+const artFiles={harbor:["harbor-arena.svg","tide-shell.svg"],forest:["../resonance-world-v2/forest.webp","rootbound.svg"],forge:["emberforge-painted.webp","forge-guardian-painted.webp"],sky:["sky-arena.svg","gale-wing.svg"],library:["library-arena.svg","mirror-sentinel.svg"],starfall:["../resonance-world-v2/starfall.webp","orbit-sentinel.svg"]};
 const art={};
 function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
@@ -175,8 +175,9 @@ function install(){
   const result=start.call(this,team,wild,manifestation?{...opts,pack:[wild,wild]}:opts);
   if(normal&&this.battle){
    const snapshot=window.State.S.resonance;
-   const supportAvailable=canonical&&Array.isArray(snapshot?.sanctuaries)&&snapshot.sanctuaries.includes(region);
-   this.battle.regionalCombat={region,kit,next:3.7,cast:null,cycle:0,supportAvailable,supportUsed:false};
+   const received=canonical?window.CatBondResonance?.supportProfile?.(region)?.received||[]:[];
+   const supportAvailable=canonical&&(snapshot?.sanctuaries?.includes(region)||received.length>0);
+   this.battle.regionalCombat={region,kit,next:3.7+Math.min(2,received.length)*.6,cast:null,cycle:0,supportAvailable,supportUsed:false,received};
    if(manifestation&&this.battle.enemies[1]){
     const e=this.battle.enemies[1];e.regionalEnemy=region;e.combatName=kit.enemy;e.element=kit.element;e.role=kit.kind==="gale"?"ambusher":kit.kind==="mirror"?"sharpshooter":"skirmisher";
     e.maxhp=Math.max(45,Math.round(e.maxhp*.48));e.hp=e.maxhp;e.poiseMax=Math.round(e.maxhp*.55);e.poise=e.poiseMax;e.regionalCd=2.6;e.regionalCycle=0;e.rotation=[];e.ultSkill=null;

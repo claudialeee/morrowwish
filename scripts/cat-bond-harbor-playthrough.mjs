@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {chromium} from 'playwright';
+import {playStarfallFromForge} from './cat-bond-starfall-playthrough.mjs';
 
 const origin = 'http://127.0.0.1:8765';
-const out = 'artifacts/cat-bond-harbor';
+const starfallQA=process.env.CAT_BOND_CHAPTER_QA==='starfall';
+const out = starfallQA?'artifacts/cat-bond-starfall':'artifacts/cat-bond-harbor';
 await fs.mkdir(out, {recursive:true});
 const browser = await chromium.launch({headless:true});
 const profiles = [
@@ -455,6 +457,13 @@ try {
     await shot('forge-arrival-dialogue');
     await readDialogue('forge:E-01');
     await scene('forge:E-02');
+    if(starfallQA){
+      const chapter=await playStarfallFromForge({page,button,scene,shot,puzzle,readDialogue,travel,ship,profile:name});
+      assert.deepEqual(errors,[]);
+      results.push({profile:name,captured,...chapter});
+      await context.close();
+      continue;
+    }
     await travel('Rootsleep Forest');
     // Save isolation: detached controls and the old region must not survive a slot switch,
     // even if a queued callback is invoked synchronously before the next animation frame.
