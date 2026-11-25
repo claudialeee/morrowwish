@@ -1212,7 +1212,9 @@ export const campaign = {
             "zh": "不。设计是我们一起做的。责任也一起承担。",
             "en": "No. We designed it together. We share the responsibility."
           }
-        }
+        },
+{"speaker":"jinpo","text":{"zh":"小铆，泄压阀交给你。按你设计的步骤来。","en":"Xiaomao, the relief valve is yours. Follow the procedure you designed."}},
+{"speaker":"xiaomao","text":{"zh":"好。师傅，请帮我稳住冷却水路。","en":"All right. Master, please keep the coolant circuit steady."}}
       ],
       "requires": [
         "puzzle:heat-pressure",

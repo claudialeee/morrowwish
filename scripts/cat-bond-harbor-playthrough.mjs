@@ -378,7 +378,7 @@ try {
     await button('World atlas',page.locator('.rw-head')).click();
     await button('Emberforge City').click();
     await page.waitForFunction(()=>WorldMap.mode==='region'&&WorldMap.currentRegion==='forge');
-    await shot('forge-silent');
+    await page.waitForSelector('.rw-forge-region[data-art-ready="true"]');await page.locator('.rw-surface').evaluate(c=>Promise.allSettled(c.parentElement.getAnimations().map(a=>a.finished)));const forgeRect=await page.locator('.rw-surface').boundingBox();assert(forgeRect&&forgeRect.y>=0&&forgeRect.y+forgeRect.height<=options.viewport.height+1,'Forge painting fully visible');await shot('forge-silent');
     await ship('forge','Cooling water and herbs');
     await button('Talk to Xiaomao').click();
     await readDialogue('forge:E-01');await scene('forge:E-02');
@@ -395,7 +395,7 @@ try {
     await readDialogue('forge:E-02',forgeChoice);await scene('forge:E-03');
     await button('Continue story').click();await readDialogue('forge:E-03');
     await puzzle('Furnace controls',['Heat','Heat','Heat','Heat','Vent','Vent','Vent']);
-    await shot('forge-test-ready');
+    await page.waitForSelector('.rw-forge-region[data-art-ready="true"]');await shot('forge-test-ready');
     await button('Forge guardian').click();
     await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();
     await page.locator('#battle-ui.on').waitFor();try{await page.locator('#cb-forge-hud').waitFor();}catch(e){await shot('forge-boss-entry-failed');console.error('Forge entry failed',await page.evaluate(()=>({scene:__game.scene,story:__game.battle?.storyEncounter,forge:!!__game.battle?.forgeState,errors:document.getElementById('toasts')?.textContent})));throw e;}

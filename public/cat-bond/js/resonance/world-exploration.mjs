@@ -126,7 +126,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferForge
   if(result.ok){active=null;puzzle=null;}return result;
  }
  function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if((deferForestMelody&&puzzle.operation==="melody:forest")||(deferForgeMelody&&puzzle.operation==="melody:forge"))return {ok:true,pending:true,ceremony:true};return complete();}
- function cargoPoints(){return [path[1],path[path.length-2]];}
+ function cargoPoints(){return region==="forge"?[[.35,.76],[.79,.364]]:[path[1],path[path.length-2]];}
  function startCargo(option){
   if(cargo||puzzle||!option||option.actor!==region)return {ok:false,reason:"cargo-busy"};
   const pts=cargoPoints();if(!near(pts[option.from]))return {ok:false,reason:"walk-to-cargo"};
@@ -139,7 +139,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferForge
  }
  function localNpcs(){const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];return Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({...n,point:layout.castPoints?.[n.id]||(i===0?lerp(path[1],path[2],.44):lerp(path[3],path[4],.46))}));}
  function inviteNpc(id){const n=localNpcs().find(n=>n.id===id),v=bridge.view();if(!n||!near(n.point)||!v.objective.includes("melody:"+region))return {ok:false,reason:"npc-not-available"};if(region==="harbor"){const result=bridge.inviteHarbor(id,n.point,bridge.capture());if(!result.ok)return result;}if(region==="forest"){const result=bridge.inviteForest(id,n.point,bridge.capture());if(!result.ok)return result;}if(region==="forge"){const result=bridge.inviteForge(id,n.point,bridge.capture());if(!result.ok)return result;}invited.add(id);return {ok:true};}
- function rewardPoints(){return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
+ function rewardPoints(){if(region==="forge")return [{id:"cache-1",point:[.225,.81]},{id:"cache-2",point:[.35,.705]}];return [{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}
  return {walk,tick,interact,operate,cancel,complete,forgeStep:()=>bridge.forgeStep(),collectForgePart:index=>{const step=bridge.forgeStep();if(!step||step.index!==index||!near(step.point)||puzzle)return {ok:false,reason:"walk-to-objective"};return bridge.collectForgePart(index,bridge.capture());},traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};

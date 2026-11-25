@@ -24,3 +24,14 @@ export function paintForgeCeremony(ctx,img,t,l,actor){
  const x=.59*W,y=.27*H;for(let i=0;i<3;i++){const a=Math.max(0,t-.5-i*.6)%2;ctx.strokeStyle="rgba(255,218,151,"+Math.max(0,.65-a*.3)+")";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y,18+a*75,8+a*29,0,0,Math.PI*2);ctx.stroke();}
  ctx.restore();const shade=ctx.createLinearGradient(0,H*.70,0,H);shade.addColorStop(0,"rgba(17,21,28,0)");shade.addColorStop(1,"rgba(17,21,28,.88)");ctx.fillStyle=shade;ctx.fillRect(0,H*.70,W,H*.30);ctx.textAlign="center";ctx.fillStyle="#ffe4b0";ctx.font="600 30px Georgia,serif";ctx.fillText(local(l,"承火调","The Song of Ember"),W/2,H*.86);ctx.font="500 16px system-ui";ctx.fillText(local(l,"中央熔炉重新点燃 · 城市开始回应","The central furnace reignites · The city answers"),W/2,H*.93);
 }
+
+export function paintForgeMarkers(ctx,markers,symbol,width){
+ const small=width<650,r=small?15:12,fs=small?18:14,h=small?26:21;
+ const cells=markers.map(m=>({...m,X:m.x*W,Y:m.y*H}));
+ const boxes=cells.map(m=>[m.X-r-2,m.Y-r-2,2*r+4,2*r+4]);
+ const overlap=(a,b)=>Math.max(0,Math.min(a[0]+a[2],b[0]+b[2])-Math.max(a[0],b[0]))*Math.max(0,Math.min(a[1]+a[3],b[1]+b[3])-Math.max(a[1],b[1]));
+ ctx.save();ctx.font="600 "+fs+"px system-ui";
+ for(const m of cells){const {X,Y}=m;ctx.beginPath();ctx.arc(X,Y,r,0,Math.PI*2);ctx.fillStyle="#182a33e8";ctx.fill();ctx.strokeStyle=m.col;ctx.lineWidth=2;ctx.stroke();symbol(ctx,m.k,X,Y,small?.62:.54,m.col);}
+ for(const m of cells){const {X,Y}=m,tw=Math.min(small?190:165,ctx.measureText(m.t).width+12);const candidates=[[X-tw/2,Y+r+5],[X+r+7,Y-h/2],[X-tw-r-7,Y-h/2],[X-tw/2,Y-r-h-5],[X-tw/2,Y+r+h+9],[X-tw/2,Y-r-2*h-10]].map(([x,y])=>[Math.max(3,Math.min(W-tw-3,x)),Math.max(3,Math.min(H-h-3,y)),tw,h]);let best=candidates[0],score=Infinity;for(const [i,q] of candidates.entries()){const n=boxes.reduce((s,b)=>s+overlap(q,b),0)*10+i*5;if(n<score){best=q;score=n;}}const [x,y]=best;boxes.push(best);ctx.strokeStyle=m.col+"a0";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X,Y);ctx.lineTo(Math.max(x,Math.min(x+tw,X)),Math.max(y,Math.min(y+h,Y)));ctx.stroke();ctx.beginPath();ctx.roundRect(x,y,tw,h,5);ctx.fillStyle="#142630ed";ctx.fill();ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff0d3";ctx.fillText(m.t,x+tw/2,y+h/2,tw-5);}
+ ctx.restore();
+}
