@@ -18,7 +18,7 @@ try {
     const context = await browser.newContext(options);
     const page = await context.newPage();
     const errors = [];
-    page.on('pageerror', error => errors.push(error.message));
+    page.on('pageerror', error => {errors.push(error.message);console.error('Actual browser page error',error.stack||error.message);});
     await page.route('**/*', route => /^(data:|blob:)/.test(route.request().url())||route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
     await page.goto(origin+'/cat-bond/?lang=en');
     await page.waitForFunction(() => window.WorldMap === window.CatBondCanonicalWorld && window.CatBondResonance && window.__game);
@@ -28,6 +28,7 @@ try {
     const shot = id => page.screenshot({path:out+'/'+name+'-'+id+'.png'});
     const checkObjective = operation => page.waitForFunction(op => CatBondResonance.view().objective.includes(op),operation);
     async function tapLandmark(x,y) {
+      assert.deepEqual(errors,[],'No runtime errors before interacting with the world map');
       const surface = page.locator('.rw-surface');
       await surface.scrollIntoViewIfNeeded();
       const rect = await surface.boundingBox();
@@ -343,11 +344,27 @@ try {
     await shot('forest-upper-gate');
     await button('Paired water gates').click();
     const pairedControls=page.locator('.rw-puzzle-controls');await pairedControls.waitFor();await shot('forest-paired-puzzle');
+    const pressureStatus=pairedControls.locator('.rw-paired-status');
+    const verifyPressure=async text=>{await pressureStatus.filter({hasText:text}).waitFor();};
+    await button('Open lower channel',pairedControls).click();
+    await button('Clear together',pairedControls).click();
+    await verifyPressure('Pressure 0/3');
+    await checkObjective('puzzle:paired-water-gates');
+    for(const input of ['Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
+    await verifyPressure('Both channels open');
+    await button('Steady upper pressure',pairedControls).click();
+    await verifyPressure('Overpressure — lower gate closed');
+    await button('Clear together',pairedControls).click();
+    await checkObjective('puzzle:paired-water-gates');
+    await shot('forest-overpressure-recovery');
     if(name==='portrait'){
       const locale=page.locator('#mw-game-settings .mw-settings-language');await locale.click();await page.waitForFunction(()=>MorrowwishI18n.get()==='zh');
-      for(const input of ['打开地下','稳住上层','稳住上层','打开地下'])await button(input,pairedControls).click();
+      await verifyPressure('水压过高 · 地下闸门关闭');
+      for(const input of ['稳住上层','稳住上层','稳住上层','打开地下'])await button(input,pairedControls).click();
+      await verifyPressure('双路稳定 · 共同疏通根脉');
       await shot('forest-paired-flow-zh');await locale.click();await page.waitForFunction(()=>MorrowwishI18n.get()==='en');
-    }else for(const input of ['Open lower channel','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
+    }else for(const input of ['Steady upper pressure','Steady upper pressure','Steady upper pressure','Open lower channel'])await button(input,pairedControls).click();
+    await verifyPressure('Both channels open');
     await shot('forest-paired-flow');await button('Clear together',pairedControls).click();await pairedControls.waitFor({state:'hidden'});
     await readForestDialogue('forest:R-03');
     await scene('forest:R-04');
