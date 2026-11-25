@@ -1,7 +1,6 @@
 // Real browser QA: all 13 debuff silhouettes plus eight hit-feel classes and
 // live heal/barrier/cleanse. Captures the actual game canvas, not mock art.
 import assert from 'node:assert/strict';
-import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import {chromium} from 'playwright';
@@ -29,7 +28,8 @@ try{
    await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
    await page.waitForFunction(()=>window.__game&&window.CatBondSkillFX?.ids?.length>=40
      &&window.Skills?.TAG_INFO&&window.VFX);
-   await startNewAdventure(page);
+   await page.locator('#intro-start').click();
+   await page.locator('#panel.open .dex-cell').first().click();
    const hashes=[];
    for(const category of categories){
     const actual=await page.evaluate(({type,tag})=>{

@@ -54,7 +54,7 @@ const CAT = {
   build: 'fighter', stats: { pow: 90, agi: 80, vit: 130, cha: 60 },
   loadout: { q: { kind: 'melee', power: 1.4, cd: 1.1 }, e: { kind: 'projectile', power: 1.1, cd: 1.0 } },
 };
-const EVAL_OPTS = { seeds: [7, 42, 101], frames: 1800, scenarios: ['solo-pinned', 'solo-live', 'multi', 'solo-rusher'] };
+const EVAL_OPTS = { seeds: [7, 42, 101], frames: 1800, scenarios: ['solo-pinned', 'solo-live', 'multi'] };
 
 // ============================================================================================
 // CANDIDATE (PROPOSAL) SCHEMA — the clean contract an LLM proposer (or a human) emits. Every
@@ -154,38 +154,18 @@ function mobaGroundTruthJudge(result, ctx) {
   const live  = result.perScenario['solo-live']?.norm   || {};
   const multi = result.perScenario['multi']?.norm       || {};
   const pin   = result.perScenario['solo-pinned']?.norm || {};
-  const rush  = result.perScenario['solo-rusher']?.norm || {};   // aggressive-pursuer scenario (Option 2)
   const mean = (...xs) => { const v = xs.filter(x => Number.isFinite(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0; };
   const wmean = (a, wA, b, wB) => { let s = 0, w = 0; if (Number.isFinite(a)) { s += a * wA; w += wA; } if (Number.isFinite(b)) { s += b * wB; w += wB; } return w > 0 ? s / w : 0; };
-  // The rusher scenario feeds win/survival/output: a kiter that can't handle a pursuer loses HP + fails
-  // to kill there, so its survival/win/output in that column crater — the environment half of punishing
-  // passivity (complements the idle penalty below). Folded in at modest weight so it informs, not dominates.
   const rubric = {
-    win: mean(live.win, multi.win, rush.win),
-    survival: wmean(live.survival, 0.35, mean(multi.survival, rush.survival), 0.65),
-    output: Number.isFinite(pin.output) ? pin.output : mean(live.output, multi.output, rush.output),
+    win: mean(live.win, multi.win),
+    survival: wmean(live.survival, 0.4, multi.survival, 0.6),
+    output: Number.isFinite(pin.output) ? pin.output : mean(live.output, multi.output),
     efficiency: mean(live.efficiency, multi.efficiency),
-    positioning: mean(live.positioning, multi.positioning, rush.positioning),
-    speed: mean(live.speed, multi.speed, rush.speed),
+    positioning: mean(live.positioning, multi.positioning),
+    speed: mean(live.speed, multi.speed),
   };
   const WEIGHTS = { win: 0.30, survival: 0.26, output: 0.18, efficiency: 0.12, positioning: 0.08, speed: 0.06 };
-  let score = ctx.weightedSum(rubric, WEIGHTS);
-  // IDLE / PASSIVITY PENALTY (owner-approved RSI harness fix): the rubric rewarded SURVIVAL (0.26) far
-  // more than it punished non-engagement, so a do-nothing max-range kiter (the `stand-at-max-range`
-  // CONTROL) could survive untouched, farm a little chip output, and OUT-SCORE the tuned engine —
-  // repeatedly tripping the control-sanity assertion and keeping the MAP-Elites archive stuck at 2/64.
-  // Dock the score by how much the cat is SURVIVING beyond what its actual fight-PRESSURE justifies.
-  //   pressure = mean(live/multi output, win, speed)  — "did you push the fight?"
-  //   gap = max(0, survival - pressure)               — survived much more than you fought
-  //   penalty = IDLE_W * gap^1.5                       — superlinear so mild kiting is fine, a pure
-  //                                                      stall-at-range is hit hard. Bounded, legible.
-  // IDLE_W tuned so the passive control drops BELOW baseline (restoring the control order) without
-  // punishing a legitimately defensive ranged cat that still contributes output. One knob to revert.
-  const IDLE_W = 0.34;
-  const survival = Number.isFinite(rubric.survival) ? rubric.survival : 0;
-  const pressure = mean(rubric.output, rubric.win, rubric.speed);
-  const gap = Math.max(0, survival - pressure);
-  score -= IDLE_W * Math.pow(gap, 1.5);
+  const score = ctx.weightedSum(rubric, WEIGHTS);
   return Number.isFinite(score) ? score : 0;
 }
 

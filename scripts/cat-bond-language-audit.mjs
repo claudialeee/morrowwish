@@ -1,4 +1,3 @@
-import {finishCanonicalOpening} from './cat-bond-test-start.mjs';
 // Full Cat Bond bilingual regression: real DOM, real coin-icon transforms,
 // website + CrazyGames portal, desktop + touch/mobile, 19 key player surfaces.
 // Report *all* leaks rather than stopping at the first mislabeled button.
@@ -46,18 +45,8 @@ try{
       await page.waitForFunction(()=>window.UI&&window.State&&window.CatBondI18n,
         {timeout:15000});
       await page.locator('#intro-start').click({timeout:10000});
-      await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
-      await page.locator('#intro-slot-list [data-slot="slot1"]').click({timeout:10000});
-      await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true);
-      if(await page.evaluate(()=>!!window.__CAT_BOND_CANONICAL_ACTIVE__))await finishCanonicalOpening(page);else{
-      // Choose the actual starter first; the prologue then stages that cat in
-      // the opening scene before the player enters the overworld.
       await page.locator('#panel.open .dex-cell').first().click({timeout:10000});
       await page.waitForFunction(()=>State.S.cats.length>=1,{timeout:10000});
-      const prologue=page.locator('.cb-story-overlay');
-      await prologue.waitFor({state:'visible',timeout:10000});
-      await prologue.locator('.cb-story-skip').click({timeout:5000});
-      await prologue.waitFor({state:'detached',timeout:5000});}
       await page.evaluate(()=>{
         State.S.coins=2500;
         State.S.fish=500;
@@ -156,7 +145,6 @@ try{
           while(walker.nextNode()){
             const n=walker.currentNode;
             const str=(n.nodeValue||'').trim();
-            if(str==='中文'&&n.parentElement.matches('button[data-slot-language],button[data-res-language],button[data-opening-language],button.cbcp-language'))continue;
             if(str&&han.test(str)&&visible(n.parentElement)){
               const target=n.parentElement.closest('button,section,article,.card')||n.parentElement;
               leaks.push({kind:'text',text:str.slice(0,135),
@@ -334,17 +322,11 @@ try{
             await page.evaluate(()=>window.MorrowwishI18n.set('en'));
             await page.waitForTimeout(180);
             const backToEnglish=norm(await page.locator('#panel .card').innerText());
-            if(!liveForm&&beforeEnglish!==backToEnglish){
-              let firstDiff=0;
-              while(firstDiff<beforeEnglish.length&&firstDiff<backToEnglish.length&&
-                beforeEnglish[firstDiff]===backToEnglish[firstDiff])firstDiff++;
-              const start=Math.max(0,firstDiff-100);
+            if(!liveForm&&beforeEnglish!==backToEnglish)
               failures.push(profile.host+' '+profile.width+' '+key+
                 ' ZH→EN did not restore original text: '+
-                JSON.stringify({beforeLength:beforeEnglish.length,afterLength:backToEnglish.length,
-                  firstDiff,before:beforeEnglish.slice(start,firstDiff+180),
-                  after:backToEnglish.slice(start,firstDiff+180)}));
-            }
+                JSON.stringify({before:beforeEnglish.slice(0,350),
+                  after:backToEnglish.slice(0,350)}));
             reports.push({host:profile.host,locale:'en-zh-en',
               viewport:profile.width+'x'+profile.height,screen:key,
               ok:switchedZh===nativeZh&&(liveForm||beforeEnglish===backToEnglish),

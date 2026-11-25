@@ -90,7 +90,7 @@
       id: 'home', name: '阳光花园', sub: 'Sunlit Garden',
       node: { x: 0.16, y: 0.74 }, difficulty: 1,
       theme: { region:'home',sky1: '#241634', sky2: '#3a2d4e', ground: '#3a5a40', ground2: '#588157', accent: '#9be7c4' },
-      speciesPool: ['tangyuan', 'doudou', 'xiaohui', 'niuniu', 'nietu', 'qisi', 'meidu'],
+      speciesPool: ['tangyuan', 'doudou', 'xiaohui', 'niuniu', 'nietu'],
       unlock: null, // first explorable area, separate from the home yard scene
       desc: '从熟悉的庭院出发，在阳光和花径间寻找野猫与宝藏。',
     },
@@ -98,7 +98,7 @@
       id: 'sakura', name: '樱花林', sub: 'Sakura Woods',
       node: { x: 0.37, y: 0.52 }, difficulty: 2,
       theme: { region:'sakura',sky1: '#2e1a30', sky2: '#4a2a44', ground: '#7a4a66', ground2: '#b06a90', accent: PINK },
-      speciesPool: ['nainai', 'moqiu', 'sanhua', 'jiafei', 'yunduo', 'yinghua', 'jinjc', 'duanduan', 'bosi'],
+      speciesPool: ['nainai', 'moqiu', 'sanhua', 'jiafei', 'yunduo', 'yinghua'],
       unlock: { after: 'home', explore: 0.4 },
       desc: '粉樱纷飞的林间，稀有猫猫出没。',
     },
@@ -106,7 +106,7 @@
       id: 'creek', name: '溪谷', sub: 'Creek Valley',
       node: { x: 0.58, y: 0.68 }, difficulty: 3,
       theme: { region:'creek',sky1: '#122436', sky2: '#1e3c54', ground: '#2f5a6a', ground2: '#4d879a', accent: '#8fd3ff' },
-      speciesPool: ['lanbao', 'dundun', 'lixiao', 'zherdd', 'youling', 'xuewa', 'fanmao', 'nuowei'],
+      speciesPool: ['lanbao', 'dundun', 'lixiao', 'zherdd', 'youling'],
       unlock: { after: 'sakura', explore: 0.5 },
       desc: '清凉溪水穿谷而过，史诗猫猫在此栖息。',
     },
@@ -114,7 +114,7 @@
       id: 'volcano', name: '火山口', sub: 'Volcano',
       node: { x: 0.74, y: 0.36 }, difficulty: 4,
       theme: { region:'volcano',sky1: '#2a1410', sky2: '#4a1e14', ground: '#5a241a', ground2: '#9a3a1f', accent: '#ff6a1f' },
-      speciesPool: ['senlin', 'xianluo', 'jinwu', 'qisi', 'abi', 'duanduan', 'wumao'],
+      speciesPool: ['senlin', 'xianluo', 'jinwu'],
       unlock: { after: 'creek', explore: 0.6, own: 'youling' },
       desc: '灼热的火山口，传说之火焰猫金乌沉睡于此。',
     },
@@ -122,7 +122,7 @@
       id: 'ruins', name: '月影遗迹', sub: 'Moonshadow Ruins',
       node: { x: 0.9, y: 0.6 }, difficulty: 5,
       theme: { region:'ruins',sky1: '#17102e', sky2: '#2f2650', ground: '#3a2f66', ground2: '#5a4a9a', accent: PURPLE },
-      speciesPool: ['youling', 'yuelian', 'xingchen', 'mengmai', 'baomao'],
+      speciesPool: ['youling', 'yuelian', 'xingchen'],
       unlock: { after: 'volcano', explore: 0.7, own: 'jinwu' },
       desc: '月光笼罩的古老遗迹，最稀有的传说猫沉眠在星河之中。',
     },
@@ -155,7 +155,6 @@
   var world = null;                 // active region runtime (player/camera/entities)
   var t = 0;                        // local clock
   var mapNodes = [];                // cached {region, px, py, r} for hit-testing
-  var mapArtCache = Object.create(null); // authored painted-region thumbnails
   var toastCd = 0;
 
   // region world dimensions (bigger than screen → scrollable)
@@ -254,8 +253,6 @@
     window.State.save();
     buildRegion(id);
     mode = 'region';
-    window.CatBondStory?.onRegionEntered?.(id);
-    window.CatBondNPC?.onRegionEntered?.(id);
     return true;
   }
 
@@ -334,21 +331,6 @@
         pace:.5+Math.random()*.5,
       });
     }
-    // PROGRESSION-KEY FLOOR: a later region can gate behind `unlock.own: <speciesId>` (e.g. volcano
-    // needs 幽幽/youling, which lives ONLY here in creek at SR weight 7). With rarity-weighted rolls +
-    // ~8 spawns, that key cat can fail to appear across a FULL exploration → the map soft-locks and the
-    // player "一直找不到幽幽，无法推进地图" (owner). Guarantee it: if THIS region's pool contains a key
-    // species that a gated region requires AND the player doesn't own it yet, force one spawn to be it.
-    try {
-      const owned = new Set((window.State?.S?.cats || []).map(function (c) { return c.species; }));
-      const keys = REGIONS.map(function (rr) { return rr.unlock && rr.unlock.own; })
-        .filter(function (sp) { return sp && pool.indexOf(sp) >= 0 && !owned.has(sp); });
-      for (const keySp of keys) {
-        if (!spawns.some(function (s) { return s.sp === keySp; }) && spawns.length) {
-          spawns[Math.floor(Math.random() * spawns.length)].sp = keySp;   // re-skin one existing spawn
-        }
-      }
-    } catch (_) {}
     // Every visible roaming cat has an immutable encounter level, before
     // contact, regardless of changes to the team chooser afterward.
     const roster=window.State?.S?.cats||[];
@@ -475,7 +457,6 @@
       cam: { x: 0, y: 0 },
       target: null,
       spawns: spawns, nodes: nodes, decor: decor,
-      npcs: window.CatBondNPC?.forRegion?.(id)||[],
       grid: grid, visited: 0,
       portal: { x: WORLD_W * 0.08, y: WORLD_H * 0.5 },
       flash: 0,
@@ -667,8 +648,6 @@
     }
     window.State.save();
     if (cbCollect) cbCollect(reward);
-    window.CatBondStory?.onRegionDiscovery?.(world.region.id,reward);
-    window.CatBondNPC?.onDiscovery?.(world.region.id,reward);
   }
 
   // ================================================================
@@ -699,12 +678,6 @@
     // In a region, only the upper-left action returns to the courtyard.
     // Use the header exploration menu’s 世界目录 to change regions.
     if (world && inBackButton(x,y)) { if (cbExit) cbExit(); return true; }
-    if(world&&window.CatBondNPC){
-      const wx=x+world.cam.x,wy=y+world.cam.y;
-      for(const npc of (world.npcs||[])){
-        if(Math.hypot(wx-npc.x,wy-npc.y)<72){window.CatBondNPC.talk(npc.id);return true;}
-      }
-    }
     return false;
   }
 
@@ -757,130 +730,64 @@
     }
     ctx.globalAlpha = 1;
 
-    // Story target is highlighted directly on the atlas. The region relics,
-    // not a separate list, are the landmarks that advance the campaign.
-    var story=window.State?.S?.story||{},fragments=Array.isArray(story.fragments)?story.fragments:[];
-    var memoryIds={home:'home-bell',sakura:'sakura-promise',creek:'creek-name',volcano:'volcano-seal',ruins:'ruins-reverse'};
-    var nextStoryRegion=REGIONS.find(item=>!fragments.includes(memoryIds[item.id]));
-    var storyTarget=nextStoryRegion?nextStoryRegion.id:'ruins';
-    var zh=window.MorrowwishI18n?.get?.()==='zh';
-    var portraitAtlas=W<650&&H>W*1.15;
-    var compactAtlas=W<650&&!portraitAtlas;
-    var cardW=W<420?96:(W<650?116:148);
-    var cardH=W<420?66:(W<650?80:104);
-    mapNodes=[];
-    for(var r=0;r<REGIONS.length;r++){
-      var reg=REGIONS[r],px,py;
-      if(portraitAtlas){
-        var top=Math.max(176,H*.22),bottom=Math.min(H-128,H*.85),step=(bottom-top)/4;
-        cardH=Math.min(cardH,Math.max(42,step*.62));
-        px=W*(r%2===0?.28:.72);
-        py=bottom-r*step;
-      }else if(compactAtlas){
-        px=W*(.12+r*.19);
-        py=H*.51+(r%2===0?0:-8);
-      }else{
-        px=40+reg.node.x*(W-80);
-        py=70+reg.node.y*(H-150);
-      }
-      mapNodes.push({region:reg,px,py,r:Math.max(cardW,cardH)*.59,cardW,cardH});
+    // resolve node screen positions
+    mapNodes = [];
+    for (var r = 0; r < REGIONS.length; r++) {
+      var reg = REGIONS[r];
+      mapNodes.push({ region: reg, px: 40 + reg.node.x * (W - 80), py: 70 + reg.node.y * (H - 150), r: 30 });
     }
 
-    // A continuous route links the five painted lands. Its glow intensifies
-    // toward the next story destination and dims beyond locked chapters.
-    ctx.lineCap='round';
-    for(var p=0;p<mapNodes.length-1;p++){
-      var a=mapNodes[p],b=mapNodes[p+1],nextOpen=isUnlocked(b.region.id);
-      var routeActive=storyTarget===b.region.id||storyTarget===a.region.id;
-      ctx.save();
-      ctx.strokeStyle=nextOpen?(routeActive?'rgba(255,219,145,.82)':'rgba(255,211,107,.48)'):'rgba(157,123,255,.2)';
-      ctx.lineWidth=routeActive?5:3;
-      ctx.setLineDash(routeActive?[1,7]:[2,10]);
-      ctx.beginPath();
-      if(portraitAtlas||compactAtlas){
-        var bendX=(a.px+b.px)/2+(p%2===0?18:-18);
-        ctx.moveTo(a.px,a.py);ctx.bezierCurveTo(bendX,a.py,bendX,b.py,b.px,b.py);
-      }else{
-        ctx.moveTo(a.px,a.py);
-        ctx.bezierCurveTo(a.px+(b.px-a.px)*.34,a.py-34,b.px-(b.px-a.px)*.34,b.py+34,b.px,b.py);
-      }
-      ctx.stroke();ctx.setLineDash([]);
-      if(routeActive){
-        ctx.shadowColor='rgba(255,215,143,.7)';ctx.shadowBlur=12;
-        ctx.strokeStyle='rgba(255,240,205,.28)';ctx.lineWidth=1.5;ctx.stroke();
-      }
-      ctx.restore();
+    // connecting paths (dashed, glowing) between consecutive regions
+    ctx.lineWidth = 3; ctx.setLineDash([2, 10]); ctx.lineCap = 'round';
+    for (var p = 0; p < mapNodes.length - 1; p++) {
+      var a = mapNodes[p], b = mapNodes[p + 1];
+      var nextOpen = isUnlocked(b.region.id);
+      ctx.strokeStyle = nextOpen ? 'rgba(255,211,107,0.55)' : 'rgba(157,123,255,0.22)';
+      ctx.beginPath(); ctx.moveTo(a.px, a.py); ctx.lineTo(b.px, b.py); ctx.stroke();
     }
+    ctx.setLineDash([]);
 
-    // Each stop is a large crop of its own hand-authored exploration art,
-    // framed as a place on the world map rather than a generic glowing dot.
-    for(var n=0;n<mapNodes.length;n++){
-      var mn=mapNodes[n],reg2=mn.region,open=isUnlocked(reg2.id);
-      var th=reg2.theme,pulse=1+Math.sin(t*2+n)*.035;
-      var cw=mn.cardW,ch=mn.cardH,x=mn.px-cw/2,y=mn.py-ch/2;
-      var target=storyTarget===reg2.id&&open;
-      ctx.save();
-      ctx.shadowColor=target?'#ffd98f':(open?th.accent:'rgba(0,0,0,.5)');
-      ctx.shadowBlur=target?28*pulse:(open?18*pulse:7);
-      ctx.fillStyle='#171b2a';roundRect(ctx,x-4,y-4,cw+8,ch+8,15);ctx.fill();
-      ctx.shadowBlur=0;
-      ctx.save();roundRect(ctx,x,y,cw,ch,11);ctx.clip();
-      var art=mapArtCache[reg2.id];
-      if(!art&&window.CatBondPaintedRegions?.build){
-        art=window.CatBondPaintedRegions.build(reg2.id,720,500);
-        if(art)mapArtCache[reg2.id]=art;
-      }
-      if(art)ctx.drawImage(art,0,0,art.width,art.height,x,y,cw,ch);
-      else{ctx.fillStyle=th.ground;ctx.fillRect(x,y,cw,ch);}
-      var shade=ctx.createLinearGradient(0,y,0,y+ch);
-      shade.addColorStop(0,'rgba(8,12,22,.01)');
-      shade.addColorStop(.52,'rgba(8,12,22,.06)');
-      shade.addColorStop(1,'rgba(8,12,22,.82)');
-      ctx.fillStyle=shade;ctx.fillRect(x,y,cw,ch);
-      if(!open){ctx.fillStyle='rgba(9,12,22,.66)';ctx.fillRect(x,y,cw,ch);}
-      ctx.restore();
-      ctx.lineWidth=target?3.5:(cur===reg2.id?2.5:1.5);
-      ctx.strokeStyle=target?'#ffe3a7':(cur===reg2.id?GOLD:(open?'rgba(255,244,218,.82)':'rgba(255,255,255,.24)'));
-      roundRect(ctx,x,y,cw,ch,11);ctx.stroke();
-      ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.font=(W<420?'800 10px':'800 13px')+' system-ui,sans-serif';
-      ctx.fillStyle=open?'#fff9e9':'rgba(255,255,255,.66)';
-      ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=6;
-      ctx.fillText(zh?reg2.name:reg2.sub,mn.px,y+ch-14);
-      ctx.shadowBlur=0;
-      if(!open){
-        ctx.font=(W<420?'15px':'19px')+' serif';ctx.fillText('🔒',mn.px,y+ch*.36);
-      }else{
-        const prog=ensureSave().regions[reg2.id],frac=prog?prog.explored:0;
-        if(frac>0){
-          ctx.strokeStyle=th.accent;ctx.lineWidth=3;
-          ctx.beginPath();ctx.arc(x+cw-11,y+11,6,-Math.PI/2,-Math.PI/2+frac*Math.PI*2);ctx.stroke();
+    // region nodes
+    for (var n = 0; n < mapNodes.length; n++) {
+      var mn = mapNodes[n], reg2 = mn.region, open = isUnlocked(reg2.id);
+      var th = reg2.theme;
+      var pulse = 1 + Math.sin(t * 2 + n) * 0.06;
+      if (open) glowDot(ctx, mn.px, mn.py, mn.r * 2.1 * pulse, th.accent, 0.35);
+      // disc
+      var g = ctx.createRadialGradient(mn.px - 8, mn.py - 10, 4, mn.px, mn.py, mn.r);
+      if (open) { g.addColorStop(0, th.ground2); g.addColorStop(1, th.ground); }
+      else { g.addColorStop(0, '#3a3348'); g.addColorStop(1, '#262233'); }
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(mn.px, mn.py, mn.r, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = (cur === reg2.id) ? GOLD : (open ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.14)');
+      ctx.stroke();
+
+      if (!open) {
+        ctx.font = '20px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fillText('🔒', mn.px, mn.py);
+      } else {
+        // explored ring
+        var prog = ensureSave().regions[reg2.id];
+        var frac = prog ? prog.explored : 0;
+        if (frac > 0) {
+          ctx.lineWidth = 4; ctx.strokeStyle = th.accent;
+          ctx.beginPath(); ctx.arc(mn.px, mn.py, mn.r + 5, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); ctx.stroke();
         }
-        ctx.fillStyle='rgba(255,235,196,.98)';
-        ctx.font=W<420?'9px system-ui':'11px system-ui';
-        ctx.fillText('★'.repeat(Math.min(3,reg2.difficulty)),x+cw-17,y+12);
+        ctx.font = '18px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#fff';
+        ctx.fillText('★'.repeat(Math.min(3, reg2.difficulty)), mn.px, mn.py - 2);
       }
-      ctx.restore();
-      if(target){
-        ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.font=(W<420?'800 8px':'800 10px')+' system-ui,sans-serif';
-        ctx.fillStyle='#ffe2a4';ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=5;
-        ctx.fillText(zh?'✦ 主线目标':'✦ MAIN QUEST',mn.px,y-13);
-        ctx.restore();
-      }else if(!open){
-        ctx.font=W<420?'8px system-ui':'10px system-ui';
-        ctx.textAlign='center';ctx.textBaseline='top';
-        ctx.fillStyle='rgba(238,221,255,.78)';
-        var lockLabel=unlockHint(reg2);
-        if(lockLabel.length>(W<420?20:34))lockLabel=lockLabel.slice(0,W<420?19:33)+'…';
-        ctx.fillText(lockLabel,mn.px,y+ch+7);
-      }else{
-        var localNpc=window.CatBondNPC?.forRegion?.(reg2.id)?.[0];
-        if(localNpc){
-          ctx.font=W<420?'800 8px system-ui':'800 10px system-ui';
-          ctx.fillStyle='rgba(255,226,183,.92)';ctx.textAlign='center';ctx.textBaseline='top';
-          ctx.fillText('✦ '+(zh?localNpc.name:localNpc.en),mn.px,y+ch+7);
-        }
+
+      // label
+      ctx.font = '600 14px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillStyle = open ? '#fff' : 'rgba(255,255,255,0.45)';
+      ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?reg2.name:reg2.sub, mn.px, mn.py + mn.r + 6);
+      if (!open) {
+        ctx.font = '11px system-ui, sans-serif';
+        ctx.fillStyle = PURPLE;
+        ctx.fillText(unlockHint(reg2), mn.px, mn.py + mn.r + 24);
       }
     }
 
@@ -895,34 +802,12 @@
       ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
       ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
     }
-    // Story-first atlas: chapter, six recovered memories and a concrete next objective.
-    var chapterNamesZh=['序章 · 倒着响的铃','第一章 · 空白页','第二章 · 旧约','第三章 · 失去的名字','第四章 · 最后的守铃者','第五章 · 逆响','终章 · 最后一页'];
-    var chapterNamesEn=['PROLOGUE · A BELL IN REVERSE','CHAPTER I · THE BLANK PAGE','CHAPTER II · THE OLD PROMISE','CHAPTER III · THE LOST NAME','CHAPTER IV · THE LAST BELLKEEPER','CHAPTER V · THE REVERSED BELL','FINAL CHAPTER · THE LAST PAGE'];
-    var count=Math.min(6,fragments.length),chapter=zh?chapterNamesZh[count]:chapterNamesEn[count];
-    var objective=nextStoryRegion
-      ?(zh?({home:'前往阳光花园，找到纸鸢，追查那本没有名字的 Catdex。',sakura:'前往樱花林，找出被改写的旧约。',creek:'前往溪谷，弄清你为何主动交出自己的名字。',volcano:'前往火山口，找出烬禾隐瞒的灾变真相。',ruins:'前往月影遗迹，查明六段旋律真正的用途。'}[nextStoryRegion.id]):({home:'Find Kite in Sunlit Garden and ask why the Catdex kept a blank page.',sakura:'Uncover who rewrote the old promise in Sakura Woods.',creek:'Learn why you willingly gave your name to the river.',volcano:'Discover what Jinhe concealed about the Star Bell catastrophe.',ruins:'Find out what the six melodies are really meant to do.'}[nextStoryRegion.id]))
-      :(zh?(fragments.includes('last-page')?'返回月影遗迹，面对暮铃，阻止逆响仪式。':'在月影遗迹寻找隐藏的星光匣，揭开最后一页。'):(fragments.includes('last-page')?'Return to Moonshadow Ruins and stop Muling’s reversed-bell ritual.':'Find the hidden star box in Moonshadow Ruins and reveal the last page.'));
-    ctx.save();ctx.textAlign='center';ctx.textBaseline='top';
-    var headW=Math.min(W-28,W<650?460:620),headX=(W-headW)/2,headY=W<650?62:38;
-    ctx.fillStyle='rgba(13,13,29,.76)';roundRect(ctx,headX,headY,headW,62,14);ctx.fill();
-    ctx.strokeStyle='rgba(255,211,145,.38)';ctx.lineWidth=1;roundRect(ctx,headX,headY,headW,62,14);ctx.stroke();
-    ctx.font=(W<420?'800 11px':'800 14px')+' system-ui,sans-serif';ctx.fillStyle='#f8e5c9';
-    ctx.fillText(zh?'✦ 星铃之路 · 主线冒险':'✦ THE STAR BELL ATLAS · MAIN STORY',W/2,headY+8);
-    ctx.font=(W<420?'9px':'10px')+' system-ui,sans-serif';ctx.fillStyle='rgba(242,222,205,.78)';
-    ctx.fillText(chapter+'  ·  '+count+'/6 '+(zh?'段记忆':'MEMORIES'),W/2,headY+29);
-    var barW=Math.min(headW-44,360),barX=(W-barW)/2,barY=headY+48;
-    ctx.fillStyle='rgba(255,255,255,.16)';roundRect(ctx,barX,barY,barW,4,4);ctx.fill();
-    ctx.fillStyle='#e9c58e';roundRect(ctx,barX,barY,barW*count/6,4,4);ctx.fill();
-    var panelW=W-24,panelX=12,panelY=H-66;
-    ctx.fillStyle='rgba(14,16,31,.9)';roundRect(ctx,panelX,panelY,panelW,54,12);ctx.fill();
-    ctx.strokeStyle='rgba(233,197,142,.48)';ctx.lineWidth=1;roundRect(ctx,panelX,panelY,panelW,54,12);ctx.stroke();
-    ctx.textAlign='left';ctx.font=(W<420?'800 9px':'800 10px')+' system-ui,sans-serif';ctx.fillStyle='#e9c58e';
-    ctx.fillText(zh?'当前目标 · MAIN QUEST':'CURRENT OBJECTIVE · MAIN QUEST',panelX+12,panelY+8);
-    ctx.font=(W<420?'10px':'12px')+' system-ui,sans-serif';ctx.fillStyle='#fff5e8';
-    var maxChars=W<420?39:90,shortObjective=objective.length>maxChars?objective.slice(0,maxChars-1)+'…':objective;
-    ctx.fillText(shortObjective,panelX+12,panelY+27);
-    ctx.restore();
-    ctx.textAlign='left';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.font = '700 20px system-ui, sans-serif'; ctx.fillStyle = '#fff';
+    ctx.fillText('🗺️ 世界地图', W / 2, W<650?105:83);
+    ctx.font = '12px system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillText('点击已解锁区域进入探索', W / 2, W<650?158:105);
+    ctx.textAlign = 'left';
   }
 
   // Physical relics and signposts replace flat floating emoji markers.
@@ -1083,9 +968,6 @@
 
     // No duplicate back-to-map signpost in the scenery: the right-side
     // map directory is the single explicit region-switching control.
-
-    // Named residents inhabit each region as animated, full-body cats.
-    for(const npc of (w.npcs||[]))window.CatBondNPC?.draw?.(ctx,npc,w.t);
 
     // Small in-world chests, crystals and five unique secret relics.
     for(var j=0;j<w.nodes.length;j++){
@@ -1270,8 +1152,6 @@
     update: update,
     draw: draw,
     handleTap: handleTap,
-    // Read-only rendered positions for accessibility and native-input regression tests.
-    get atlasTargets(){return mode==='map'?mapNodes.map(n=>({id:n.region.id,x:n.px,y:n.py,width:n.cardW,height:n.cardH,unlocked:isUnlocked(n.region.id)})):[];},
     setDestination: setDestination,
     panBy: panBy,
     get view(){return world&&{camX:world.cam.x,camY:world.cam.y,px:world.px,py:world.py,panMode:!!world.panMode,target:!!world.target};},

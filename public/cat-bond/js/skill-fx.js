@@ -419,7 +419,7 @@ const ACTIVE={
  burn:'#f58e5d',soak:'#80d7f2',shock:'#f6d776',oil:'#b8a3d2',
  chill:'#b8e9fc',dizzy:'#c6a9f5',bleed:'#e78086',
  blind:'#ffe5ab',bind:'#82ca84',expose:'#ed9ed5',
- weaken:'#aea0c8',rust:'#d1a06e',rewind:'#b9a5fa',scald:'#ff9a52'
+ weaken:'#aea0c8',rust:'#d1a06e',rewind:'#b9a5fa'
 };
 // Persistent, 3-star orbit for a real DIZZY/hard-stunned cat, including allies.
 function drawDizzyStars(ctx,x,y,time=0,remaining=0){
@@ -514,15 +514,6 @@ function drawStatus(ctx,unit,time=0){
    ctx.lineTo(x-11,y+2);ctx.lineTo(x-3,y-2);ctx.stroke();
    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-6);
    ctx.moveTo(x,y);ctx.lineTo(x+5,y+2);ctx.stroke();
-  }else if(tag==='scald'){
-   // 烫伤: rising steam wisps off a scalded wound (anti-heal). Three wavy vapor trails.
-   ctx.lineWidth=2.2;
-   for(let j=-1;j<2;j++){
-    const bx=x+j*6;
-    ctx.beginPath();ctx.moveTo(bx,y+8);
-    ctx.quadraticCurveTo(bx-4,y+1,bx+2,y-5);
-    ctx.quadraticCurveTo(bx+6,y-11,bx-1,y-16);ctx.stroke();
-   }
   }
   ctx.restore();
  });

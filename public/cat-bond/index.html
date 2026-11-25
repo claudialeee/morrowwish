@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="cat-bond-campaign" content="last-resonance">
   <meta name="catbond-original-art-21x3-release" content="63-painted-poses-v3-20261122">
   <link rel="preload" as="image" href="assets/duo-storyboard-21x3-v3.webp?v=approved-duo-original-20261122">
   <meta charset="UTF-8" />
@@ -24,16 +23,8 @@
   <meta property="og:description" content="Collect 33 cute cat breeds, earn Golden Paw S-rank medals, and grow your own cozy cat family. Free browser adventure by Morrow Wish." />
   <meta property="og:image" content="https://morrowwish.vercel.app/social/share-20261120/cat-bond.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:image" content="https://morrowwish.vercel.app/social/share-20261120/cat-bond.png">
   <link rel="icon" type="image/svg+xml" href="/icons/cat-bond.svg" />
-  <script src="js/platform.js?v=portal-no-outbound-20261124-v4"></script>
-  <link rel="stylesheet" href="css/style.css?v=prologue-release-20261124" />
-  <link rel="stylesheet" href="css/rpg-title.css?v=release-title-20261124" />
-  <link rel="stylesheet" href="css/resonance-host.css">
-  <link rel="stylesheet" href="css/resonance-ambient.css">
-  <link rel="stylesheet" href="css/resonance-canonical-world.css?v=release-title-20261124">
-  <link rel="stylesheet" href="css/forge-combat.css">
-  <link rel="stylesheet" href="css/regional-combat.css">
-  <link rel="stylesheet" href="css/finale-combat.css">
-  <link rel="stylesheet" href="css/resonance-garden-bell.css">
+  <script src="js/platform.js?v=cg-battle-hud-top-tools-20261123-v3"></script>
+  <link rel="stylesheet" href="css/style.css?v=combat-overhaul-20261123-v1" />
   <script src="/lang.js" defer></script>
   <script src="/studio-audio.js?v=duo-release-foley-20261122" defer></script>
   <script src="/studio-music.js?v=catbond-battle-v2-20261121" defer></script>
@@ -111,8 +102,6 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
             <button class="btn ghost tiny-btn battle-help-trigger" id="battle-help-toggle" type="button" aria-label="查看手动战斗操作说明" aria-expanded="false" title="查看战斗操作说明">?<span class="battle-top-label"> 操作</span></button>
             <button class="btn ghost tiny-btn" id="btn-auto" type="button" aria-pressed="false" title="自动控制移动、攻击、技能及闪避">🤖 自动战斗：关</button>
             <button class="btn ghost tiny-btn" id="btn-flee" title="撤退">🏳️<span class="battle-top-label"> 撤退</span></button>
-            <!-- DEBUG 🐛 damage-log button: hidden unless ?debug=1 (revealed by game.js updateBattleUI). First tap records this fight's damage breakdown; a later tap copies the log. Never shown to normal players. -->
-            <button class="btn ghost tiny-btn" id="btn-debug" type="button" hidden aria-pressed="false" title="记录本场伤害明细（调试）">🐛<span class="battle-top-label"> 调试</span></button>
           </div>
         </div>
         <div class="battle-hint" id="battle-hint">WASD 移动 · 鼠标瞄准 · 左键攻击 · 空格键闪避</div>
@@ -178,36 +167,29 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
 
       <div class="studio-stamp">🌙 MORROW·WISH</div>
 
-      <!-- Title screen: independent from gameplay HUD and legacy single-button CSS. -->
-      <div id="intro" class="cb-rpg-intro">
-        <div class="cb-title-landscape" aria-hidden="true"></div>
-        <canvas id="intro-stars" aria-hidden="true"></canvas>
-        <div class="cb-title-content">
-          <div class="cb-intro-brand">MORROW WISH</div>
-          <div class="cb-intro-titleblock">
-            <h1 class="game-logo" id="cb-title-name">猫猫纽带</h1>
-            <p class="cb-intro-eyebrow" id="cb-title-subtitle">最后的回响</p>
-            <p class="cb-intro-tagline">当世界忘记彼此，羁绊仍能引你归来。</p>
-          </div>
-          <div class="cb-intro-actions">
-            <button class="cb-intro-primary" id="intro-start" type="button"><strong>开始新的冒险</strong></button>
-            <button class="cb-intro-secondary" id="intro-continue" type="button"><strong>继续故事</strong></button>
-          </div>
+      <!-- Intro -->
+      <div id="intro">
+        <canvas id="intro-stars"></canvas>
+        <div class="studio-badge">
+          <span class="studio-moon">🌙</span>
+          <span class="studio-text">MORROW·<span class="studio-wish">WISH</span></span>
+          <span class="studio-tag">STUDIO 工作室 呈现</span>
         </div>
+        <h1 class="game-logo">猫猫纽带<span class="logo-en">Cat Bond</span></h1>
+        <div class="intro-cat-gallery"><canvas id="intro-cats" width="720" height="172" role="img" aria-label="Four expressive cats from Cat Bond"></canvas><span class="intro-cat-glint" aria-hidden="true">✦</span></div>
+        <button class="btn gold" id="intro-start">开始冒险 🐱</button>
+        <div class="intro-gallery-caption">✿ 在庭院遇见命中注定的搭档 ✿</div>
+        <p>每只小猫都有自己的脾气。一起冒险、玩耍、变强，慢慢成为彼此最好的搭档。</p>
+        <div class="intro-features" aria-label="猫猫纽带的四种玩法">
+          <span id="intro-breed-count">🐾 收集 33 种猫</span>
+          <span>⚔️ 双猫合击 · 觉醒新技能</span>
+          <span>🧶 工坊赚金币 · 培养猫</span>
+          <span>🗺️ 解锁地图 · 发现秘密</span>
+        </div>
+        <div class="intro-guide"><strong>开局只要一步：选一只小猫，寻找第一位伙伴</strong></div>
         <p id="start-error" hidden role="alert"></p>
-        <section id="intro-slot-panel" class="cb-save-picker" aria-hidden="true">
-          <div class="cb-save-picker-card">
-            <button id="intro-slot-close" type="button" class="cb-save-picker-close" aria-label="Close">×</button>
-            <button type="button" class="cb-picker-language" data-slot-language aria-label="Language">English</button>
-            <p class="cb-save-picker-kicker">存档</p>
-            <h2 id="intro-slot-heading">选择存档</h2>
-            <p class="cb-save-picker-desc"></p>
-            <div id="intro-slot-list" class="cb-save-slot-list"></div>
-          </div>
-        </section>
+        <button class="btn ghost" id="intro-reset" style="margin-top:6px">🗑️ 重置存档（出问题点这里）</button>
       </div>
-      <button type="button" id="cb-system-toggle" aria-haspopup="dialog" aria-expanded="false">菜单</button>
-      <section id="cb-system-menu" role="dialog" aria-modal="true" aria-label="系统菜单" hidden></section>
     </div>
   </div>
 
@@ -219,17 +201,18 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
   <script src="js/cute-cats.js?v=1-storybook"></script>
 
   <script src="js/real-kittens.js?v=jiafei-approved-flatface-20261122-v4"></script>
-  <script src="js/data.js?v=starter-evo-role-align-20261124-v2"></script>
+  <script src="js/data.js?v=jiafei-sr-20261122-v2"></script>
   <script src="js/running-cats.js?v=seamless-illustrated-sprites-20261120"></script>
-  <script src="js/skills.js?v=starter-evo-role-align-20261124-v4"></script>
+  <script src="js/skills.js?v=staggered-unlocks-20261122-v2"></script>
   <script src="js/growth.js?v=growth-feature-retired-20261122"></script>
   <script src="js/adult-art.js?v=compact-grown-proportions-20261122"></script>
-  <script src="js/state.js?v=release-title-20261124"></script>
-  <script src="js/cat-relationships.js?v=resonance-integration-2"></script>
+  <script src="js/state.js?v=expedition-hp-recovery-20261122-1"></script>
+  <script src="js/cat-relationships.js?v=two-currency-duomem-20261122"></script>
   <script src="js/raising.js?v=two-currency-20261122"></script>
-  <script src="js/painted-regions.js?v=last-page-landmarks-20261123-v1"></script>
+  <script src="js/painted-regions.js?v=five-distinct-worlds-20261120"></script>
   <script src="js/scenery.js?v=five-distinct-worlds-20261120"></script>
-  <script src="js/world.js?v=prologue-release-20261124"></script>
+  <script src="js/world.js?v=combat-overhaul-20261123-v1"></script>
+  <script src="js/worldmap.js?v=toast-live-locale-20261123-v1"></script>
   <script src="js/duo-portraits.js?v=32-breeds-21-poses-3-tiers-20261122"></script>
   <script src="js/duo-artwork.js?v=32-breeds-pastel-20261122"></script>
   <script src="js/duo-signatures.js?v=duo-pastel-20261121"></script>
@@ -239,22 +222,16 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
 <script src="js/duo-premium.js?v=original-art-dynamic-effects-20261123-v3"></script>
   <script src="js/duo-hero.js?v=original-63-only-20261123-v1"></script>
   <script src="js/ult-vfx.js?v=shadow-thunder-contrast-20261122"></script>
-  <script src="js/skill-fx.js?v=scald-s2-coord-20261123-v1"></script>
-  <script src="js/battle.js?v=prologue-release-20261124"></script>
+  <script src="js/skill-fx.js?v=combat-overhaul-20261123-v1"></script>
+  <script src="js/battle.js?v=combat-overhaul-20261123-v1"></script>
   <script src="js/duo-bond.js?v=original-63-paintings-live-20261122-r1"></script>
-  <script src="js/ui.js?v=prologue-release-20261124"></script>
-  <script src="js/game.js?v=prologue-release-20261124"></script>
-  <script src="js/garden-projects.js?v=1"></script>
-  <script src="js/sunlit-garden.js?v=sunlit-garden-module-v4"></script>
-  <script src="js/cinematic-presentation.js?v=prologue-release-20261124"></script>
-  <script src="js/main.js?v=release-title-20261124"></script>
+  <script src="js/ui.js?v=live-modal-i18n-refresh-20261123-v8"></script>
+  <script src="js/game.js?v=toast-live-locale-20261123-v1"></script>
+  <script src="js/main.js?v=cg-intro-safe-reset-20261123-v9"></script>
   <script src="js/gold-coins.js?v=gold-i18n-coordination-20261123-v2"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
-  <script src="js/i18n.js?v=prologue-release-20261124"></script>
-  <script src="js/story-cloud.js?v=release-title-20261124"></script>
-  <script type="module" src="js/resonance/integration-entry.mjs?v=prologue-release-20261124"></script>
+  <script src="js/i18n.js?v=remove-ambiguous-single-char-20261123-v5"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
   <script src="/telemetry.js?v=bond-funnel-v11-20261122" defer></script>
-<script src="/game-fullscreen.js?v=skills-in-controls-20261122-v1" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script><!-- Last Page RPG production release trigger 2026-11-23; Cloudflare Pages release verification 2026-11-24. -->
-</body>
+<script src="/game-fullscreen.js?v=skills-in-controls-20261122-v1" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script></body>
 </html>

@@ -1,5 +1,4 @@
 import {api} from "./analytics.js";
-import {catBondCloudSave} from "./cat-bond-cloud-save.js";
 export default {async fetch(request,env,ctx){
   const p=new URL(request.url).pathname;
   // Stable, short, first-party links for social profiles and individual game posts.
@@ -24,7 +23,6 @@ export default {async fetch(request,env,ctx){
       "X-Robots-Tag":"noindex, nofollow"
     }});
   }
-  if(p==="/api/cat-bond-cloud-save")return catBondCloudSave(request,env);
   if(p.startsWith("/api/"))return api(request,env,ctx);
   if(p==="/_vercel/insights/script.js")return new Response("",{headers:{"content-type":"application/javascript"}});
   return env.ASSETS.fetch(request);

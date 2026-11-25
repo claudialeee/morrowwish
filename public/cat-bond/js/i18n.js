@@ -19,19 +19,6 @@
   // ZH -> EN. Longest keys are applied first at runtime so compound phrases win
   // over the shorter fragments they contain (e.g. 力量 before 力).
   var DICT = {
-    '先完成与暮铃的交谈和花园调查。': 'Talk to Muling and investigate the garden before leaving.',
-    '花园复兴': 'Garden restoration',
-    '选中的双猫正在过来！': 'Your chosen duo is on its way.',
-    '请选择未工作、未闹别扭的双猫。': 'Choose a duo that is not working or sulking.',
-    '双猫完成了共同活动！': 'Your duo finished playing together!',
-    '邀请双猫': 'Invite duo',
-    '守铃者': 'The Bellkeeper',
-    '主线目标': 'MAIN QUEST',
-    '☁️ 云存档': '☁️ Cloud save',
-    '云存档': 'Cloud save',
-    '最后一页': 'The Last Page',
-    '已完成': 'Complete',
-    '系统菜单': 'System menu',
     // Newly surfaced first-capture conversion and progress CTAs. Keep both
     // locales explicit so the English portal never leaks Han characters.
     '战斗奖励与详情': 'Battle rewards & stats',
@@ -64,7 +51,7 @@
     '第二招需 Lv.12 且好感达到 60': 'Second move at Lv.12 and bond 60',
     '☰ 庭院菜单': '☰ Yard menu',
     '重置游戏': 'Reset game',
-    '⚠ 再点一次：安全重启（保留三个存档）': '⚠ Click again: safe restart (keep all saves)',
+    '⚠ 确认清空猫猫存档？再点一次': '⚠ Erase Cat Bond progress? Click again',
     // Manual skill-tree progression and the compact phone duo form.
     '攻击技能逐级学会；高阶招式需到训练师处主动学习': 'Unlock attacks gradually; learn advanced moves deliberately with a trainer',
     '继续培养本系与副系技能，并到训练师处学习高阶招式': 'Develop native and secondary skills and visit the trainer for advanced moves',
@@ -118,8 +105,6 @@
     '秒内 · ': ' seconds · ',
     ' 只替补': ' reserves',
     '野生猫咪': 'Wild cat',
-    '对手': 'Opponent',
-    '存档失败，请重试。': 'Save failed. Try again.',
     '拥有：': 'Owned: ',
     '探索队伍最多带 ${FIELD_CAP} 只：2 只首发、3 只替补。选好继续冒险的猫，其余回家（仍归你所有）。': 'Your exploration team can bring up to ${FIELD_CAP} cats: 2 starters and 3 reserves. Send the rest home; you still own them.',
     '全部送回家 · 返回地图': 'Send everyone home · Return to map',
@@ -230,7 +215,6 @@
     '召唤队友': 'Summon partner',
     '脉冲伤害 · ': 'Pulse damage · ',
     '回复领域': 'Healing zone',
-    '陨石来袭!': 'Meteor incoming!',
     '埋伏!': 'Ambush!',
     '必杀冷却中：': 'Ultimate cooling down: ',
     '换猫还需 ': 'Next cat swap in ',
@@ -520,7 +504,6 @@
     '⚠️ 重击来袭 — 离开红圈！': '⚠️ Heavy attack incoming — leave the red circle!',
     '收服成功': 'Capture successful',
     '🏠 收服成功！': '🏠 Cat captured!',
-    '✦ 险胜！': '✦ CLUTCH!',
     '⚡ 必杀就绪 — 按 R 释放': '⚡ Ultimate ready — press R',
     '用技能 (Q/E) 破防才能收服！': 'Use skills (Q/E) to break its guard and capture it!',
 
@@ -745,7 +728,6 @@
     '闪避危险弹幕': 'Dodged incoming shot',
     '低血量换猫': 'Low HP: switched cat',
     '恢复斗志': 'Healed morale',
-    '治疗队友': 'Healed ally',
     '展开护盾': 'Shield up',
     '释放必杀技': 'Ultimate cast',
     '强化自身': 'Self buff',
@@ -756,7 +738,6 @@
     '🎮 手动': '🎮 Manual',
     '🏳️ 撤退': '🏳️ Retreat',
     '撤退': 'Retreat',
-    '调试': 'Debug', '记录本场伤害明细（调试）': 'Record this fight’s damage (debug)',
     ' 记录': ' Log',
     '记录本场战斗的伤害明细（仅调试）': 'Log this fight’s damage breakdown (debug only)',
     '🐛 开始记录本场伤害明细': '🐛 Recording this fight’s damage',
@@ -1005,8 +986,6 @@
     '🌑 夜影石 ×1 — 3🐠': '🌑 Nightshade Stone ×1 — 3🐠',
     '🌙 月华露 ×1 — 4🐠': '🌙 Moondew ×1 — 4🐠',
     '🔥 赤焰晶 ×1 — 4🐠': '🔥 Crimson Flame Crystal ×1 — 4🐠',
-    '🌿 翠藤芽 ×1 — 4🐠': '🌿 Jade Sprout ×1 — 4🐠',
-    '⚡ 流光珠 ×1 — 4🐠': '⚡ Voltlight Pearl ×1 — 4🐠',
     '小鱼也可每日签到获得': 'Fish can also be earned from daily check-in',
     '+5 小鱼': '+5 fish',
     '+15 小鱼': '+15 fish',
@@ -1018,8 +997,6 @@
     '夜影石': 'Nightshade Stone',
     '月华露': 'Moondew',
     '赤焰晶': 'Crimson Flame Crystal',
-    '翠藤芽': 'Jade Sprout',
-    '流光珠': 'Voltlight Pearl',
 
     // ---- feed / tease ----
     '🪙 给所有猫猫加餐': '🪙 Feed all cats a snack',
@@ -1209,7 +1186,6 @@
     // ---- status tags ----
     '灼烧': 'Burn', '淋湿': 'Soak', '感电': 'Shock', '浸油': 'Oil',
     '冰冻': 'Freeze', '眩晕': 'Dizzy', '流血': 'Bleed', '失明': 'Blind', '束缚': 'Bind',
-    '烫伤': 'Scald', '烫伤重创!': 'Scald — grievous!', '烫伤 治疗↓': 'Scald — healing cut', '治疗被烫伤削弱': 'healing cut by scald',
 
     // ---- bond tiers ----
     '灵魂纽带': 'Soul Bond',
@@ -1826,7 +1802,6 @@
     "缓慢浮游的电球转向敌人，命中放出感电火花。": "A drifting ball of lightning turns toward enemies and sparks on impact.",
     "雷流喷射": "Lightning Stream",
     "猫咪短暂站定，持续吐出可转向的折线雷电。": "The cat stands briefly and channels steerable zigzag lightning.",
-    "猫咪先蓄力聚电，再喷出一道粗壮的雷电光柱，持续锁定敌人，扫中持续感电。": "The cat charges up, then sprays a thick lightning column that locks onto the enemy, keeping it shocked.",
     "雷鸣啸": "Thunder Yowl",
     "戏弄爪": "Playful Swipe",
     "居高临下": "High Ground",
@@ -2141,25 +2116,6 @@
   // Consistent names for the new breed and legacy saved visits.
   Object.assign(DICT, {'圆宝':'Pudding', '加菲':'Pudding', '奶奶':'Snowball'});
   DICT["加菲猫（异国短毛猫），扁扁的脸颊、圆滚滚的肚子，最爱坐着守护伙伴。"] = "Pudding is a plush Exotic Shorthair with round cheeks and a chubby belly. This brave kitten loves protecting friends.";
-  Object.assign(DICT, {
-    "序章 · 倒着响的铃": "PROLOGUE · A BELL IN REVERSE",
-    "第一章 · 空白页": "CHAPTER I · THE BLANK PAGE",
-    "第二章 · 旧约": "CHAPTER II · THE OLD PROMISE",
-    "第三章 · 失去的名字": "CHAPTER III · THE LOST NAME",
-    "第四章 · 最后的守铃者": "CHAPTER IV · THE LAST BELLKEEPER",
-    "第五章 · 逆响": "CHAPTER V · THE REVERSED BELL",
-    "终章 · 最后一页": "FINAL CHAPTER · THE LAST PAGE",
-    "前往阳光花园，找到纸鸢，追查那本没有名字的 Catdex。": "Go to Sunlit Garden, find Kite, and investigate the nameless Catdex.",
-    "前往樱花林，找出被改写的旧约。": "Go to Sakura Woods and uncover who rewrote the old promise.",
-    "前往溪谷，弄清你为何主动交出自己的名字。": "Go to Creek Valley and learn why you willingly gave your name away.",
-    "前往火山口，找出烬禾隐瞒的灾变真相。": "Go to the Volcano and uncover the catastrophe Jinhe concealed.",
-    "前往月影遗迹，查明六段旋律真正的用途。": "Go to Moonshadow Ruins and discover what the six melodies are truly for.",
-    "返回月影遗迹，面对暮铃，阻止逆响仪式。": "Return to Moonshadow Ruins, face Muling, and stop the reversed-bell ritual.",
-    "在月影遗迹寻找隐藏的星光匣，揭开最后一页。": "Find the hidden star box in Moonshadow Ruins and reveal the last page.",
-    "✦ 星铃之路 · 主线冒险": "✦ THE STAR BELL ATLAS · MAIN STORY",
-    "当前目标 · MAIN QUEST": "CURRENT OBJECTIVE · MAIN QUEST",
-    "段记忆": "MEMORIES"
-  });
   DICT['地图'] = 'Map'; // Prevent a stray Chinese map label on the English home screen.
   var KEYS = Object.keys(DICT).sort(function (a, b) { return b.length - a.length; });
   // Han ideographs + CJK symbols/punctuation + fullwidth forms.

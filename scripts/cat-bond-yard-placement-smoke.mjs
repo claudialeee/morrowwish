@@ -1,7 +1,6 @@
 // REVIEW ONLY — Cat Bond garden architecture and on-screen cat play QA.
 // Does not write a production save, publish a game or alter balance.
 import assert from 'node:assert/strict';
-import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import {chromium} from 'playwright';
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
 const browser=await chromium.launch({headless:true});
@@ -18,10 +17,10 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>!!window.__game&&!!window.UI&&!!window.World);
-  await startNewAdventure(page,{scene:'yard'});
   const init=await page.evaluate(()=>{
-   // Test the real garden with two living cats and 500 coins, not a fake menu.
+   // Test the new path with two living cats and 500 coins, not a fake menu.
    const g=window.__game;
+   document.getElementById('intro-start').click();UI.closeAll();
    State.S.cats=[State.makeCat('tangyuan'),State.makeCat('xiaohui')];
    State.S.coins=500;
    State.S.yardBuildings=[];g.yard.rebuild();g.refreshYardSurprise();
@@ -123,13 +122,19 @@ try{
   }
   // The play interaction is visible and can be immediately requested by tapping
   // the placed structure; it is not simply a passive income number in a menu.
-  const invited=await page.evaluate(()=>{
+  const plays=await page.evaluate(()=>{
    const g=window.__game,b=State.S.yardBuildings[0];
-   return g.yard.entities.some(e=>e._buildTarget===b||e._playBuilding===b)||g.yard.inviteCatToBuilding(b);
+   const invited=g.yard.inviteCatToBuilding(b);
+   if(!invited)return {invited:false};
+   const cat=g.yard.entities.find(e=>e._buildTarget===b);
+   if(!cat)return {invited:false};
+   cat.x=b.x-8;cat.y=b.y+14;
+   g.yard.stepBuildTarget(cat,.033);
+   g.yard.update(.033);
+   return {invited,playing:g.yard.entities.some(e=>e._playBuilding===b&&e._playBuildT>0),
+     joy:cat.cat.joy,bubble:cat.bubble};
   });
-  assert.equal(invited,true,'cats must come to the selected structure');
-  await page.waitForFunction(()=>{const b=State.S.yardBuildings[0];return __game.yard.entities.some(e=>e._playBuilding===b&&e._playBuildT>0)},null,{timeout:30000});
-  const plays=await page.evaluate(()=>{const b=State.S.yardBuildings[0],cat=__game.yard.entities.find(e=>e._playBuilding===b&&e._playBuildT>0);return {invited:true,playing:!!cat,joy:cat?.cat.joy,bubble:cat?.bubble}});
+  assert.equal(plays.invited,true,'cats must come to the selected structure');
   assert.equal(plays.playing,true,'cat animation must enter a genuine play state');
   await page.screenshot({path:'/tmp/cat-bond-'+profile.name+'-yard-placement.png'});
   await page.evaluate(()=>UI.openBuild());

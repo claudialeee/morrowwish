@@ -1,7 +1,6 @@
 // Verify that every pre-battle choice (yard, map, pre-encounter) exposes
 // meaningful, accurate cat stats on phone and desktop before the fight starts.
 import assert from 'node:assert/strict';
-import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true});
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
@@ -19,8 +18,9 @@ try{
   page.on('pageerror',e=>errors.push(device.name+': '+e.message));
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>!!window.UI&&!!window.State&&!!window.__game);
-  await startNewAdventure(page);
+  await page.locator('#intro-start').click();
   await page.evaluate(()=>{
+   window.UI.closeAll();
    // This suite explicitly verifies an INJURED veteran. Casual now fully
    // heals between battles by design; only hardcore persists wounds.
    State.setDifficulty('hardcore');
@@ -163,7 +163,8 @@ try{
   await page.waitForFunction(()=>!!window.UI&&!!window.State&&!!window.__game);
   // A regular reload opens the title screen. The saved profile is loaded when
   // the player taps Start; checking DEFAULT_STATE before that is not gameplay.
-  await continueSavedAdventure(page);
+  await page.locator('#intro-start').click();
+  await page.waitForFunction(()=>window.__game?.scene==='yard');
   assert.deepEqual(await page.evaluate(()=>State.S.battlePrefs.teamUids),saved,
     'saved squad must survive a page reload');
   assert.deepEqual(await page.evaluate(()=>UI.getPreferredBattleTeam().map(c=>c.uid)),saved,

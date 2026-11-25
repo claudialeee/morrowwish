@@ -72,12 +72,10 @@ function remember(a,b,memoryId){
   const p=pair(a,b);
   if(!Array.isArray(p.memories))p.memories=[];
   if(p.memories.includes(memoryId))return {ok:false,reason:'already-found'};
-  const previousValue=p.value,previousActive=[...db().active];
   p.memories.push(memoryId);
   // Special moments are small bonuses; 5 original map memories keep +12.
   const grown=grow(a,b,MEMORY_CATALOG.find(m=>m.id===memoryId)?.kind==='moment'||memoryId.endsWith('-moment')?4:12);
-  const saved=State.save();
-  if(saved?.ok===false){p.memories.pop();p.value=previousValue;db().active=previousActive;return {ok:false,reason:saved.reason||'save-failed'};}
+  State.save();
   window.arcadeMetric?.('bond_duo_memory',{region:memoryId,trust:grown.value,total:p.memories.length});
   return {ok:true,id:memoryId,trust:grown.value,total:p.memories.length};
 }

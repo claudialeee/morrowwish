@@ -11,20 +11,17 @@ on:
       # Browser-only test edits must not trigger another production deploy.
       - 'scripts/build-pages.mjs'
       - 'scripts/check-source.mjs' # Fixing a release gate must retrigger deployment.
-      - 'scripts/check-cat-bond-story-cloud.mjs' # RPG progression, cloud-save API and worker bundling regression gate.
-      - 'scripts/test-attribution-links.mjs' # Worker import changes must rerun social redirect and cloud-save route tests.
+      - 'scripts/test-attribution-links.mjs' # Worker import changes must rerun social redirect tests.
       - 'scripts/check-cat-bond-premium-21x3.mjs' # Keep the complete duo-art release gate deployable.
       - 'scripts/test-analytics-integrity.mjs' # Analytics contract is a required pre-deploy gate.
       - 'scripts/check-language.mjs' # Locale regression is a production release gate.
       - 'scripts/cat-bond-language-audit.mjs' # 19 game screens across desktop, mobile, site, portal.
       - 'scripts/cat-bond-interaction-language-qa.mjs' # Reproduce real post-click toasts and transactions.
-      # RPG prologue setup is covered by the updated browser fixtures below.
       - 'scripts/check-hidden-story-language.mjs' # Hidden endings and secret event translations are release gates.
       - 'scripts/language-browser-smoke.mjs' # Rendered English/Chinese acceptance.
       - 'scripts/test-dashboard-history-browser.mjs' # Historical analytics DOM preservation is a release gate.
       - 'scripts/test-dashboard-sorting.mjs' # Dashboard regressions must retrigger release validation.
       - 'scripts/check-cat-bond.mjs' # Keep combat regression fixes deployable.
-      - 'scripts/cat-bond-rpg-cinematic-smoke.mjs'
       - 'scripts/cat-bond-crazygames-real-input.mjs' # Re-run visual/real-input portal checks when menu QA changes.
       - 'scripts/check-cat-bond-invariants.mjs' # Retest new skill/build invariants on release.
       - 'scripts/check-cat-bond-map-return.mjs' # Re-run release gate when map-return regression fixture changes.
@@ -147,35 +144,8 @@ jobs:
           node scripts/cat-bond-interaction-language-qa.mjs
           # Actual mouse/touch on ten official CrazyGames viewport sizes.
           node scripts/cat-bond-crazygames-real-input.mjs
-          if grep -q 'name="cat-bond-campaign" content="last-resonance"' public/cat-bond/index.html; then
-            node scripts/cat-bond-release-prologue-qa.mjs
-          else
-            node scripts/cat-bond-rpg-cinematic-smoke.mjs
-          fi
           # Actual end-user DOM, not only the aggregator or source-string tests.
           node scripts/test-dashboard-history-browser.mjs
-      - name: Verify canonical Harbor progression on three screen sizes
-        run: |
-          if [ -f public/cat-bond/js/resonance/harbor-presentation.mjs ]; then
-            node scripts/check-cat-bond-resonance-world.mjs
-            # Static server from the earlier browser step is sufficient for the local-save playthrough.
-            if ! curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null; then
-              node scripts/cat-bond-local-cloud-server.mjs >/tmp/harbor-server.log 2>&1 &
-              for attempt in {1..30}; do
-                if curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null; then break; fi
-                sleep 1
-              done
-            fi
-            node scripts/cat-bond-harbor-playthrough.mjs
-          fi
-      - name: Save Harbor browser acceptance
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cat-bond-production-harbor
-          path: artifacts/cat-bond-harbor/
-          if-no-files-found: ignore
-          retention-days: 7
       - name: Save CrazyGames yard menu layout screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -230,22 +200,7 @@ jobs:
           # updated. Check exact source-asset versions plus JS/CSS bytes.
           expected_css=$(grep -oE 'css/style.css[?]v=[^"]+' public/cat-bond/index.html | head -1)
           expected_js=$(grep -oE 'js/main.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
-          expected_story=$(grep -oE 'js/story-cloud.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
-          expected_game=$(grep -oE 'js/game.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
-          expected_battle=$(grep -oE 'js/battle.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
-          if grep -q 'name="cat-bond-campaign" content="last-resonance"' public/cat-bond/index.html; then
-            expected_worldmap=$(grep -oE 'js/resonance/integration-entry.mjs[?]v=[^"]+' public/cat-bond/index.html | head -1)
-            worldmap_source=public/cat-bond/js/resonance/integration-entry.mjs
-          else
-            expected_worldmap=$(grep -oE 'js/worldmap.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
-            worldmap_source=public/cat-bond/js/worldmap.js
-          fi
-          expected_painted=$(grep -oE 'js/painted-regions.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
-          expected_ui=$(grep -oE 'js/ui.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
-          expected_i18n=$(grep -oE 'js/i18n.js[?]v=[^"]+' public/cat-bond/index.html | head -1)
-          test -n "$expected_css" && test -n "$expected_js" && test -n "$expected_story" \
-            && test -n "$expected_game" && test -n "$expected_battle" && test -n "$expected_worldmap" \
-            && test -n "$expected_painted" && test -n "$expected_ui" && test -n "$expected_i18n"
+          test -n "$expected_css" && test -n "$expected_js"
           latest=0
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
             if curl -fsSL --max-time 20 -o /tmp/catbond-live.html "https://morrowwish.pages.dev/cat-bond/?verify=$GITHUB_SHA&attempt=$attempt" \
@@ -255,56 +210,16 @@ jobs:
               && curl -fsSL --max-time 20 -o /tmp/catbond-live-style.css "https://morrowwish.pages.dev/cat-bond/css/style.css?verify=$GITHUB_SHA&attempt=$attempt" \
               && curl -fsSL --max-time 20 -o /tmp/catbond-live-world.js "https://morrowwish.pages.dev/cat-bond/js/world.js?verify=$GITHUB_SHA&attempt=$attempt" \
               && curl -fsSL --max-time 20 -o /tmp/catbond-live-yard.svg "https://morrowwish.pages.dev/cat-bond/assets/yard-storybook.svg?verify=$GITHUB_SHA&attempt=$attempt" \
-              && curl -fsSL --max-time 20 -o /tmp/catbond-live-story.js "https://morrowwish.pages.dev/cat-bond/$expected_story&verify=$GITHUB_SHA&attempt=$attempt" \
-              && curl -fsSL --max-time 20 -o /tmp/catbond-live-game.js "https://morrowwish.pages.dev/cat-bond/$expected_game&verify=$GITHUB_SHA&attempt=$attempt" \
-              && curl -fsSL --max-time 20 -o /tmp/catbond-live-battle.js "https://morrowwish.pages.dev/cat-bond/$expected_battle&verify=$GITHUB_SHA&attempt=$attempt" \
-              && curl -fsSL --max-time 20 -o /tmp/catbond-live-worldmap.js "https://morrowwish.pages.dev/cat-bond/$expected_worldmap&verify=$GITHUB_SHA&attempt=$attempt" \
-              && curl -fsSL --max-time 20 -o /tmp/catbond-live-painted.js "https://morrowwish.pages.dev/cat-bond/$expected_painted&verify=$GITHUB_SHA&attempt=$attempt" \
-              && curl -fsSL --max-time 20 -o /tmp/catbond-live-ui.js "https://morrowwish.pages.dev/cat-bond/$expected_ui&verify=$GITHUB_SHA&attempt=$attempt" \
-              && curl -fsSL --max-time 20 -o /tmp/catbond-live-i18n.js "https://morrowwish.pages.dev/cat-bond/$expected_i18n&verify=$GITHUB_SHA&attempt=$attempt" \
               && cmp -s public/cat-bond/js/main.js /tmp/catbond-live-main.js \
               && cmp -s public/cat-bond/css/style.css /tmp/catbond-live-style.css \
               && cmp -s public/cat-bond/js/world.js /tmp/catbond-live-world.js \
-              && cmp -s public/cat-bond/assets/yard-storybook.svg /tmp/catbond-live-yard.svg \
-              && cmp -s public/cat-bond/js/story-cloud.js /tmp/catbond-live-story.js \
-              && cmp -s public/cat-bond/js/game.js /tmp/catbond-live-game.js \
-              && cmp -s public/cat-bond/js/battle.js /tmp/catbond-live-battle.js \
-              && cmp -s "$worldmap_source" /tmp/catbond-live-worldmap.js \
-              && cmp -s public/cat-bond/js/painted-regions.js /tmp/catbond-live-painted.js \
-              && cmp -s public/cat-bond/js/ui.js /tmp/catbond-live-ui.js \
-              && cmp -s public/cat-bond/js/i18n.js /tmp/catbond-live-i18n.js; then
+              && cmp -s public/cat-bond/assets/yard-storybook.svg /tmp/catbond-live-yard.svg; then
               latest=1; break
             fi
             sleep 4
           done
           test "$latest" = 1 || { echo "::error::Cloudflare Cat Bond HTML/JS/CSS still stale after deployment"; exit 1; }
-          echo "Cloudflare Cat Bond LIVE verified against $GITHUB_SHA, including exact story, map, boss, UI, locale, CSS and garden artwork bytes."
-          # Compare actual Harbor implementation bytes, not merely the shared entrypoint.
-          if [ -f public/cat-bond/js/resonance/harbor-presentation.mjs ]; then
-            for asset in js/resonance/harbor-presentation.mjs js/resonance/world-runtime.mjs js/resonance/world-bridge.mjs js/resonance/world-exploration.mjs js/resonance/dialogue-ui.mjs css/resonance-canonical-world.css css/resonance-host.css; do
-              curl -fsSL --max-time 20 -o /tmp/harbor-live-asset "https://morrowwish.pages.dev/cat-bond/$asset?verify=$GITHUB_SHA"
-              cmp -s "public/cat-bond/$asset" /tmp/harbor-live-asset || { echo "::error::Stale Harbor asset $asset"; exit 1; }
-            done
-            echo "Harbor production source verified against $GITHUB_SHA"
-          fi
-          # Exercise the deployed D1-backed cloud-save endpoint without creating a save row.
-          unauth_code=$(curl -sSL --max-time 15 -o /tmp/catbond-cloud-unauth.json -w '%{http_code}' "https://morrowwish.pages.dev/api/cat-bond-cloud-save?verify=$GITHUB_SHA")
-          test "$unauth_code" = 401 || { echo "::error::Cloud-save API unauthenticated GET returned $unauth_code; expected 401"; exit 1; }
-          test_token=$(printf '%s' "$GITHUB_SHA" | sha256sum | cut -c1-43)
-          code=$(curl -sSL --max-time 15 -H "Authorization: Bearer $test_token" -o /tmp/catbond-cloud-save.json -w '%{http_code}' "https://morrowwish.pages.dev/api/cat-bond-cloud-save?verify=$GITHUB_SHA")
-          test "$code" = 200 && grep -Fq '"exists":false' /tmp/catbond-cloud-save.json || { echo "::error::Cloud-save API/D1 check failed on Pages (HTTP $code)"; cat /tmp/catbond-cloud-save.json; exit 1; }
-          code=$(curl -sSL --max-time 15 -H "Authorization: Bearer $test_token" -o /tmp/catbond-cloud-save-proxy.json -w '%{http_code}' "https://morrowwish.vercel.app/api/cat-bond-cloud-save?verify=$GITHUB_SHA")
-          test "$code" = 200 && grep -Fq '"exists":false' /tmp/catbond-cloud-save-proxy.json || { echo "::error::Cloud-save API/D1 check failed through the public proxy (HTTP $code)"; cat /tmp/catbond-cloud-save-proxy.json; exit 1; }
-          echo 'Encrypted Cat Bond cloud-save API, D1 binding, and public Vercel proxy verified.'
-          for route in / /tiny-town/ /elsewhere/ /pocket-aquarium/ /pawsibly-innocent/ /pawsibly-innocent/game.js /pawsibly-innocent/cat-music.js /audio/cat-happy-clappy.ogg /icons/pawsibly-innocent.svg /studio-insights/; do
-            ready=0
-            for attempt in 1 2 3 4 5 6; do
-              code=$(curl -sSL --max-time 15 -o /dev/null -w '%{http_code}' "https://morrowwish.pages.dev$route?verify=$GITHUB_SHA&attempt=$attempt" || true)
-              if [ "$code" = 200 ]; then ready=1; break; fi
-              sleep 2
-            done
-            test "$ready" = 1 || { echo "::error::Page $route returned $code after retries"; exit 1; }
-          done
+          echo "Cloudflare Cat Bond LIVE verified against $GITHUB_SHA, including exact main/world JS, CSS, and garden SVG bytes."
           # Verify Tiny Town's exact production HTML references and asset bytes.
           # A 200 page response alone could still serve stale cached JavaScript/CSS.
           expected_town_js=$(grep -oE 'game-v4.js[?]v=[^"]+' public/tiny-town/index.html | head -1)

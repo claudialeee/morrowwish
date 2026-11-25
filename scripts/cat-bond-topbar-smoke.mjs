@@ -1,7 +1,6 @@
 // Real-browser release gate for the Cat Bond yard/map navigation and mobile top rail.
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
-import {startNewAdventure} from './cat-bond-test-start.mjs';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 try {
   for(const width of [320,390,1280]){
@@ -10,9 +9,8 @@ try {
     const page=await context.newPage();
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
-    await page.goto('http://127.0.0.1:8765/cat-bond/?lang=zh',{waitUntil:'domcontentloaded',timeout:30000});
-    await startNewAdventure(page,{scene:'yard'});
-    await page.waitForFunction(()=>window.__game?.scene==='yard'&&window.State?.S?.cats?.length>=1&&
+    await page.goto('http://127.0.0.1:8765/cat-bond/?autodev&lang=zh',{waitUntil:'domcontentloaded',timeout:30000});
+    await page.waitForFunction(()=>window.__game?.scene==='yard'&&window.State?.S?.cats?.length>=3&&
       !!document.querySelector('#cb-header-actions #hud')&&!!document.querySelector('#cb-header-actions #map-menu'),
       null,{timeout:25000});
     const measure=()=>page.evaluate(()=>{
@@ -33,7 +31,7 @@ try {
           visible:!document.getElementById('map-menu').hidden&&getComputedStyle(document.getElementById('map-menu')).display!=='none'},
         back:{left:back.left,right:back.right,visible:getComputedStyle(document.getElementById('cb-yard-return')).display!=='none'},
         tabs:[...document.querySelectorAll('#tabbar .tab')].map(x=>x.dataset.tab),
-        canonical:!!window.__CAT_BOND_CANONICAL_ACTIVE__,gardenActive:document.getElementById('stage').classList.contains('cb-sunlit-garden'),location:window.WorldMap?.REGIONS?.find(r=>r.id==='home')};
+        location:window.WorldMap?.REGIONS?.find(r=>r.id==='home')};
     });
     const yard=await measure();
     assert.deepEqual(yard.tabs,['cats','work','dex','daily','shop'],'remove the do-nothing Yard bottom tab');
@@ -71,14 +69,13 @@ try {
     assert.ok(yard.actions.right>=yard.stage.right-22,'yard header must align RIGHT '+JSON.stringify(yard));
     assert.ok(Math.abs(yard.hud.top-yard.menu.top)<8&&yard.hud.right<=yard.menu.left+2,
       'resources and menu must be in same row '+JSON.stringify(yard));
-    if(yard.canonical)assert.ok(yard.gardenActive,'canonical Sunlit Garden is an actual home scene, not an atlas region');
-    else{assert.equal(yard.location.name,'阳光花园');assert.equal(yard.location.sub,'Sunlit Garden');}
+    assert.equal(yard.location.name,'阳光花园');
+    assert.equal(yard.location.sub,'Sunlit Garden');
     await page.screenshot({path:'/tmp/cat-bond-toolbar-'+width+'-yard.png'});
     await page.evaluate(()=>window.__game.openWorldMap());
     await page.waitForFunction(()=>window.__game?.scene==='map'&&
       getComputedStyle(document.getElementById('cb-yard-return')).display!=='none');
     const map=await measure();
-    if(yard.canonical){const home=page.locator('.rw-head').getByRole('button',{name:'阳光花园',exact:true});await home.waitFor({state:'visible'});assert.equal(await home.isEnabled(),true,'canonical atlas has a real garden return');}
     assert.equal(map.back.visible,true,'Only exploration gets Back to Yard');
     assert.equal(map.hud.visible,false,'Map must NOT display duplicate coin/fish resource chips');
     assert.equal(map.guide.visible,false,'Detached guide never overlaps the left map return');

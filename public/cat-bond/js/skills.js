@@ -275,7 +275,7 @@
     { id: 'staticPounce', name: '疯跑冲刺', element: 'elec', kind: 'dash',      power: 1.4, cd: 4.0, ultCost: 0,  heavy: true, tags: ['shock','dash'],  appliesTag: 'shock', vfx: 'beam',  desc: '半夜疯跑般的带电冲刺，撞中麻痹目标。侧后方突袭更狠。' },
     { id: 'boltArc',    name: '电弧',     element: 'elec',  kind: 'chain',      power: 1.1, cd: 2.2, ultCost: 0,  tags: ['shock','ranged'],appliesTag: 'shock', vfx: 'beam',      desc: '跳跃的电弧，在敌群间连锁跳跃，附加感电。' },
     { id: 'lightningOrb',name: '球状闪电', element: 'elec', kind: 'projectile', power: 1.05, cd: 4.8, ultCost: 0, homing: 3.4, tags: ['shock','ranged'], appliesTag: 'shock', vfx: 'orb', desc: '缓慢浮游的电球转向敌人，命中放出感电火花。', unlock: { level: 5, element: 'elec' } },
-    { id: 'thunderStream',name: '雷流喷射', element: 'elec', kind: 'beam', channel: 1.7, damageChannel: 1.3, reach: 270, width: 34, power: 1.3, cd: 5.5, ultCost: 0, windup: .7, tags: ['shock','channel','ranged'], appliesTag: 'shock', vfx: 'lightning', desc: '猫咪先蓄力聚电，再喷出一道粗壮的雷电光柱，持续锁定敌人，扫中持续感电。', unlock: { level: 4, element: 'elec' } },
+    { id: 'thunderStream',name: '雷流喷射', element: 'elec', kind: 'beam', channel: 1.22, reach: 270, width: 13, power: 1.3, cd: 5.5, ultCost: 0, tags: ['shock','channel','ranged'], appliesTag: 'shock', vfx: 'lightning', desc: '猫咪短暂站定，持续吐出可转向的折线雷电。', unlock: { level: 4, element: 'elec' } },
     { id: 'thunderYowl',name: '雷鸣啸',   element: 'elec',  kind: 'aoe',        power: 2.3, cd: 0,   ultCost: 70, tags: ['shock','ult'],   appliesTag: 'shock', vfx: 'beam',      desc: '【必杀】一声炸雷贯穿全场。' },
     // ---- 暗 dark ----
     { id: 'shadowSwipe',name: '影袭',     element: 'dark',  kind: 'melee',      power: 1.35,cd: 2.4, ultCost: 0,  tags: ['bleed'],         appliesTag: 'bleed', vfx: 'muzzle',    desc: '自暗影中突袭，造成撕裂伤。' },
@@ -450,16 +450,16 @@
   // Status-tag metadata so battle.js can tick them uniformly.
   // dps = fraction of target maxhp per second (0 for crowd-control tags).
   const TAG_INFO = {
-    burn:  { name: '灼烧', ttl: 4.0, dps: 0.015, color: '#ff7a3c' },  // ALL DoTs trimmed (owner), burn kept HIGHEST: 1.5%/s. maxhp-scaled + refreshes on every fire hit, so it was a permanent defense-ignoring drain; fire's identity stays burn+reactions, not raw DoT.
+    burn:  { name: '灼烧', ttl: 4.0, dps: 0.03, color: '#ff7a3c' },
     soak:  { name: '淋湿', ttl: 5.0, dps: 0,    color: '#4aa8ff' },
-    shock: { name: '感电', ttl: 3.0, dps: 0.009, color: '#ffd23c' },  // 0.9%/s (was 2%) — lowest DoT; elec's bite is reactions/CC, not the tick.
+    shock: { name: '感电', ttl: 3.0, dps: 0.02, color: '#ffd23c' },
     oil:   { name: '浸油', ttl: 6.0, dps: 0,    color: '#8a6bff' },
     // Tiered CC (see battle.js tickStatus): chill = hard freeze (no move/attack),
     // dizzy = full stun (shortest — it's the strongest), bind = root only (can still
     // attack, so it can run a little longer). Durations trimmed — CC felt too long.
     chill: { name: '冰冻', ttl: 2.2, dps: 0,    color: '#9ec8ff' },
     dizzy: { name: '眩晕', ttl: 1.4, dps: 0,    color: '#c9b6ff' },
-    bleed: { name: '流血', ttl: 4.5, dps: 0.012,color: '#ff6b6b' },  // 1.2%/s (was 2.5%) — second-highest DoT, under burn.
+    bleed: { name: '流血', ttl: 4.5, dps: 0.025,color: '#ff6b6b' },
     blind: { name: '失明', ttl: 2.6, dps: 0,    color: '#ffe9a8' },
     bind:  { name: '束缚', ttl: 3.0, dps: 0,    color: '#6fcf5f' },
     // --- advanced debuffs ---
@@ -467,11 +467,6 @@
     weaken:{ name: '虚弱', ttl: 5.0, dps: 0,    color: '#b0a0c8', dmgDealt: 0.5 },   // 减攻: 自身伤害 ×0.5
     rust:  { name: '破甲', ttl: 10.0,dps: 0,    color: '#c98a4a', dmgTaken: 1.12 },  // 破甲: 10s +12% incoming damage, no passive HP drain
     rewind:{ name: '回溯', ttl: 0.1, dps: 0,    color: '#9d7bff', rewind: true },    // 时间倒流: 回退到数秒前的血量
-    // 烫伤 (grievous / anti-sustain): a soaked target hit by FIRE scalds — its wounds
-    // steam and won't close. healTaken<1 means ALL healing it receives is cut (−65%),
-    // the hard counter to sustain/regen enemies (SSR bosses that heal). Separate axis
-    // from DoT/CC/vulnerability — the only heal-reduction debuff in the game.
-    scald: { name: '烫伤', ttl: 5.0, dps: 0,    color: '#ff9a52', healTaken: 0.35 },
   };
 
   // ==========================================================================
@@ -484,9 +479,8 @@
     'soak|elec':   { name: '导电连锁!', bonusMult: 1.5, effect: 'chainAll', consumes: true },
     // oil(浸油) + 火 = 爆炸
     'oil|fire':    { name: '浸油爆燃!', bonusMult: 1.45, effect: 'explode',  consumes: true },
-    // soak(淋湿) + 火 = 烫伤: 水汽蒸腾灼烧伤口 → 目标受到的治疗-65%(反续航)。不再是伤害惩罚，
-    // 而是把水的「淋湿」转化成克制回血型敌人的核心手段。consumes 清除 soak 并挂 scald。
-    'soak|fire':   { name: '烫伤重创!', bonusMult: 1.0, effect: 'scald', applyTag: 'scald', consumes: true },
+    // soak(淋湿) + 火 = 蒸发(减伤, 清除淋湿)
+    'soak|fire':   { name: '蒸发…',     bonusMult: 0.6, effect: 'steam',    consumes: true },
     // chill(冰冻) + 扑击(dash) = 碎冰暴击
     'chill|@staticPounce': { name: '碎冰暴击!', bonusMult: 1.5, effect: 'shatter', consumes: true },
     'chill|@thornCoil':    { name: '碎冰缠绕!', bonusMult: 1.4,  effect: 'shatter', consumes: true },
@@ -555,37 +549,6 @@
       if (byEl && !elHit) elHit = Object.assign({ tag }, byEl);
     }
     return elHit;
-  }
-
-  // reactionCatalog() — the COMBO table pre-indexed in BOTH directions so the squad
-  // AI (battle.js) can ask "which setup tags does my element detonate?" (DETONATOR) and
-  // "if I apply tag X, who on my team can cash it in?" (SETTER) without hardcoding any
-  // element chemistry. Only BENEFICIAL, element-keyed reactions participate (bonusMult>1;
-  // skill-specific @id keys and the <1 counter-reactions like soak|fire steam are skipped —
-  // the AI must never set up a tag that only HELPS the enemy). Cached: the table is static.
-  //   { byDetonator: { elec:[{setupTag,bonusMult,effect,consumes}, …], … },   // element -> tags it pops
-  //     bySetupTag:  { soak:[{element,bonusMult,effect,consumes}, …], … } }    // tag -> elements that pop it
-  let _reactionCatalog = null;
-  function reactionCatalog() {
-    if (_reactionCatalog) return _reactionCatalog;
-    const byDetonator = {}, bySetupTag = {};
-    for (const key in COMBO) {
-      const bar = key.indexOf('|');
-      const setupTag = key.slice(0, bar);
-      const deton = key.slice(bar + 1);
-      if (deton[0] === '@') continue;                 // skill-specific key: not a general element reaction
-      const r = COMBO[key];
-      if (!r) continue;
-      // BENEFICIAL reactions only: a damage amp (bonusMult>1) OR a utility reaction that applies a
-      // debuff at no damage loss (applyTag with bonusMult>=1, e.g. soak|fire→scald anti-heal). The
-      // AI must never set up a <1 penalty reaction (old steam) that only helps the enemy.
-      const beneficial = r.bonusMult > 1 || (r.applyTag && (r.bonusMult || 1) >= 1);
-      if (!beneficial) continue;
-      const entry = { bonusMult: r.bonusMult, effect: r.effect, applyTag: r.applyTag || null, consumes: !!r.consumes };
-      (byDetonator[deton] = byDetonator[deton] || []).push(Object.assign({ setupTag }, entry));
-      (bySetupTag[setupTag] = bySetupTag[setupTag] || []).push(Object.assign({ element: deton }, entry));
-    }
-    return (_reactionCatalog = { byDetonator, bySetupTag });
   }
 
   // ==========================================================================
@@ -861,9 +824,8 @@
       // Do not show another build's exclusive equipment in the trainer.
       if(s.unlock?.build&&(cat.buildType||buildTypeForBreed(cat))!==s.unlock.build)
         continue;
-      // Do not list skills the cat's ROLE×CATEGORY identity can never learn (e.g. a tank
-      // or assassin can never wield a strong beam like 横扫喷焰; dps/control/support can).
-      // Otherwise they'd fall into "locked"
+      // Do not list skills the cat's ROLE×CATEGORY identity can never learn (e.g. an assassin
+      // such as 焰焰 can never wield a beam like 横扫喷焰). Otherwise they'd fall into "locked"
       // while their ONLY visible unlock line (Lv.6 ✓) reads as satisfied — a contradictory
       // "condition met but still locked" entry. The real blocker (role) isn't a level/pay gate,
       // so hiding it mirrors the build-exclusive skip above. Switching build re-reveals it.
@@ -912,13 +874,6 @@
       const elemOk=s.element===el||
         (s.element===splash&&!isUlt&&sideChoices.slice(0,sideLimit).includes(s.id));
       if(!elemOk)continue;
-      // ROLE × CATEGORY identity gate — the SAME rule trainerSkills + battle-time equip use. Without
-      // it a non-gated skill (no `unlock`, e.g. the aoe field skills 陨石术/潮汐池) slipped into the
-      // slot pool for any element-matching cat regardless of role, so a FIGHTER could equip 陨石术
-      // (ranged-strong aoe) the trainer would never teach (owner: "陨石术 斗士为什么能学"). Ults are
-      // exempt (roleAllowsSkill returns true for ultCost>0). Already-equipped IDs are grandfathered
-      // below (alreadyEquipped) so a legacy save isn't stripped mid-slot.
-      if(!alreadyEquipped && !roleAllowsSkill(cat.buildType||buildTypeForBreed(cat), s)) continue;
       const awakenedNative=cat.skillAwakened&&cat.awakenedSkill===s.id&&s.element===el;
       if(!isUlt&&!alreadyEquipped&&!awakenedNative){
         if(s.element===el){
@@ -927,14 +882,8 @@
           // mirrorWall defined before staticPounce; previously Lv.1 electric
           // cats were left with no native Q skill.
           const native=SKILLS.filter(k=>k.element===el&&!k.unlock&&!k.ultCost);
-          // Rank only the attacks this cat's ROLE can actually equip — otherwise a role-forbidden
-          // native (e.g. grass 藤蔓沼泽 aoe for an assassin) would occupy rank 0 and gate out the
-          // role-LEGAL first attack (leafDart), leaving a Lv1 starter with no usable attack. Role
-          // was just applied globally above; mirror it here so the milestone order matches it.
-          const role=cat.buildType||buildTypeForBreed(cat);
           const attacking=native.filter(k=>
-            ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k.kind)
-            && roleAllowsSkill(role,k));
+            ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k.kind));
           if(['heal','buff'].includes(s.kind)){
             if(lvl<3&&bond<30)continue;
           }else{
@@ -1165,22 +1114,9 @@
     // 圆宝加菲=tank, 幽幽紫雾=dps, 夜夜孟买=control, 绅绅燕尾服=fighter — to break up the all-assassin
     // dark element and give each element a varied role spread. (蓝莓/豆豆/杏仁 reach their new roles
     // via base-stat tweaks in data.js, so they are NOT listed here.)
-    const BREED_ROLES={qisi:'fighter',senlin:'tank',jiafei:'tank',
+    const BREED_ROLES={tangyuan:'tank',qisi:'fighter',senlin:'fighter',jiafei:'tank',
       youling:'dps',mengmai:'control',lixiao:'fighter',meidu:'control',
-      sanhua:'fighter',jinwu:'dps',abi:'fighter',
-      // STARTER roles aligned to their evolution target's family so a player's learned
-      // playstyle survives the evolve (owner: 初始猫和最后的 role 尽量接近):
-      tangyuan:'dps',     // 🔥 汤圆 -> 焰焰(dps): was tank; now same role
-      doudou:'fighter',   // 🌿 豆豆 -> 松松(tank): frontline family, was assassin
-      xiaohui:'fighter',  // 💧 小雾 -> 蓝莓(fighter): same role, was dps
-      // One SSR per element — roles per owner spec:
-      lanbao:'fighter',   // 💧 water SSR = 斗士
-      wumao:'dps',        // ⚡ elec SSR = 输出核心 (fixes 雷系输出不足)
-      nuowei:'dps',       // 🌿 grass SR = 枫枫 输出
-      fanmao:'dps',       // 💧 water SR = 奶糖
-      yuelian:'control'}; // ☀️ light SSR = 月月 控制/辅助 (not raw dps)
-      // 松松(SSR grass)=坦克; 星星(SSR dark)=assassin & 月月(SSR light)=dps resolve via stats.
-      // v2: light needs ONE frontline (support×5/control×1/dps×1 had zero); 三花 7/7/7/9 balanced → bruiser
+      sanhua:'fighter'};   // v2: light needs ONE frontline (support×5/control×1/dps×1 had zero); 三花 7/7/7/9 balanced → bruiser
     if(BREED_ROLES[cat.species])return BREED_ROLES[cat.species];
     // rank the four stats; primary = biggest, secondary = next (ties: pow>agi>vit>cha)
     const order=['pow','agi','vit','cha'];
@@ -1449,18 +1385,12 @@
   // ==========================================================================
   // {evolvesTo, req:{level?,bond?,item?}}. Pure data; integrator swaps species.
   const EVOLUTION = {
-    // The three STARTERS (fire/grass/water) each evolve into their element's
-    // strongest SSR — a long-horizon payoff so a common starter can become a
-    // legend. Dark & light SSR (星星/月月) are caught in the Moonshadow Ruins,
-    // not evolved, so every element reaches its legend a different way.
-    tangyuan: { evolvesTo: 'jinwu',   req: { level: 16, bond: 80, item: '赤焰晶' } },// 🔥 橘猫 -> 焰焰 (火系最强SSR)
-    doudou:   { evolvesTo: 'senlin',  req: { level: 16, bond: 80, item: '翠藤芽' } },// 🌿 狸花 -> 松松 (草系最强SSR)
-    xiaohui:  { evolvesTo: 'lanbao',  req: { level: 16, bond: 80, item: '月华露' } },// 💧 小雾 -> 蓝莓 (水系最强SSR)
-    // Other collectible evolution chains — kept element-consistent AND role-adjacent:
-    xianluo:  { evolvesTo: 'wumao',   req: { level: 16, bond: 80, item: '流光珠' } },// ⚡ 暹罗(elec dps) -> 桃桃(elec SSR dps): same element + same role (was elec->fire 焰焰, mismatched)
-    yunduo:   { evolvesTo: 'yuelian', req: { level: 16, bond: 70 } },               // ☀️ 云朵(light support) -> 月月(light control): same element, adjacent utility role
-    // NOTE: 蓝莓->月月 removed — 蓝莓 is already the water SSR (a starter's evo target),
-    // and water-fighter -> light-control was both element- and role-mismatched.
+    tangyuan: { evolvesTo: 'senlin',  req: { level: 16, bond: 40 } },               // 橘猫 -> 缅因巨猫
+    doudou:   { evolvesTo: 'youling', req: { level: 18, bond: 50, item: '夜影石' } },// 狸花 -> 幽灵
+    lanbao:   { evolvesTo: 'yuelian', req: { level: 22, bond: 80, item: '月华露' } },// 蓝猫 -> 月莲
+    xianluo:  { evolvesTo: 'jinwu',   req: { level: 24, bond: 80, item: '赤焰晶' } },// 暹罗 -> 金乌
+    xiaohui:  { evolvesTo: 'dundun',  req: { level: 10, bond: 20 } },               // 小灰 -> 墩墩
+    yunduo:   { evolvesTo: 'yuelian', req: { level: 20, bond: 70 } },               // 云朵 -> 月莲
   };
   function evolutionOf(speciesId) { return EVOLUTION[speciesId] || null; }
   // canEvolve(cat) -> bool (item requirement reported but NOT auto-consumed here;
@@ -1546,7 +1476,7 @@
     // --- upgrade chains (升级链) ---
     upgradeTargetOf, upgradeBaseOf, upgradeChainFor,
     // --- combos ---
-    COMBO, checkCombo, reactionCatalog,
+    COMBO, checkCombo,
     // --- risky combo-chain ---
     CHAIN, chainMultiplier, chainVulnerability, backfireDamage, chainState, advanceChain,
     // --- learning / loadouts ---

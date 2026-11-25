@@ -1,7 +1,6 @@
 // Cat Bond six-element real-browser VFX regression: screenshot the ACTUAL
 // battle renderer at an authored mid-impact frame on desktop and phone.
 import assert from 'node:assert/strict';
-import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import {chromium} from 'playwright';
@@ -27,7 +26,9 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__game&&window.State&&window.Battle?.CaptureBattle);
-  await startNewAdventure(page);
+  await page.locator('#intro-start').click();
+  // Complete the real starter picker so the intro/panel cannot cover the arena.
+  await page.locator('#panel.open .dex-cell').first().click();
   const hashes=[];
   for(const [element,breed,skillId] of pairs){
    const result=await page.evaluate(({element,breed,skillId})=>{

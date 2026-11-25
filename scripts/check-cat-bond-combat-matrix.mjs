@@ -283,10 +283,7 @@ for(const kind of Object.keys(KINDS)) for(const build of BUILDS){
 // an undefined _leapT does NOT block it (the exact failure mode).
 {
   const b = newBattle('tangyuan','senlin',{lvl:8});
-  // Manual dodge-roll travel test: keep autoMode OFF so the ally-AI repositioning
-  // (which now moves a dps-role 汤圆 and would set mx/my, suppressing the pure-dodge
-  // glide) doesn't compete with the manual dodge path being asserted here.
-  b.coach=null; b.autoMode=false;
+  b.coach=null; b.autoMode=true;
   const f = b.me();
   assert.equal(f._leapT, undefined, 'precondition: a fresh cat has undefined _leapT (the dead-code trigger)');
   // force a clean dodge state and a known flee heading, then run the travel for a few frames
@@ -377,116 +374,7 @@ for(const kind of Object.keys(KINDS)) for(const build of BUILDS){
     assert.ok(f.hp < hp0 - 0.01, 'ENEMY '+kind+' lunge CLOSES to contact and connects from its reach gate ('+reach.toFixed(0)+'px), animated not teleported (R1-A/F1); hp '+hp0.toFixed(0)+'→'+f.hp.toFixed(0));
   }
 }
-// ============================================================================
-// 烫伤 (scald) ANTI-SUSTAIN DEBUFF — soak|fire reaction cuts ALL healing a unit receives.
-// Repurposed from the old dead-weight "蒸发" (0.6× damage penalty that only helped the enemy).
-// DETERMINISTIC: heal a unit with/without scald through the single healUnit() chokepoint and
-// assert the scalded heal is reduced by exactly healTaken (0.35 → −65%). Also prove the soak|fire
-// combo APPLIES scald (consuming soak) rather than wasting the setup. Locks the owner's
-// "克制续航型敌人" ask: water sets up, fire detonates → the target can't heal back.
-{
-  const b = newBattle('lanbao','jinwu',{lvl:12});
-  const e = b.enemies[0];
-  const info = Skills.TAG_INFO.scald;
-  assert.ok(info && info.healTaken > 0 && info.healTaken < 1, 'scald must be a heal-reduction debuff (healTaken<1)');
-  // (a) healUnit respects scald multiplicatively
-  e.hp = 10; e.maxhp = 1000; e.status = {}; e.tags = [];
-  const clean = b.healUnit(e, 200, {float:false});
-  e.hp = 10; e.status = { scald: 4 }; e.tags = ['scald'];
-  const scalded = b.healUnit(e, 200, {float:false});
-  assert.ok(Math.abs(scalded - clean*info.healTaken) < 0.5,
-    'scald cuts healing by healTaken: clean='+clean.toFixed(0)+' scalded='+scalded.toFixed(0)+' (expect '+(clean*info.healTaken).toFixed(0)+')');
-  assert.ok(scalded < clean*0.5, 'a scalded unit heals for well under half the normal amount');
-  // (b) the soak|fire combo APPLIES scald + consumes soak (not the old damage penalty)
-  const r = Skills.checkCombo(['soak'], { element:'fire', id:'x' });
-  assert.ok(r && r.applyTag === 'scald' && (r.bonusMult||1) >= 1,
-    'soak|fire reaction applies scald at no damage loss (not the old 0.6× steam trap)');
-  // (c) the reaction catalog surfaces fire→scald so the squad AI can set it up
-  const cat = Skills.reactionCatalog();
-  assert.ok((cat.byDetonator.fire||[]).some(x => x.setupTag==='soak' && x.applyTag==='scald'),
-    'reactionCatalog exposes fire detonating soak into scald for SETTER/DETONATOR nudges');
-}
-// ============================================================================
-// S2 COORDINATION — reactionSlotPref prefers the Q/E slot that advances an element reaction on the
-// SHARED focus, table-driven off reactionCatalog(). Two behaviors, both SOFT (null when irrelevant):
-//   SETTER: a water cat with an ELEC ally on the field prefers the slot that SOAKS the focus (so the
-//           ally's elec follows up harder — the owner's exact reported-missing behavior, generalised).
-//   DETONATOR: a cat whose element pops a tag ALREADY on the focus prefers the slot that cashes it.
-//   SOLO GUARD: a 1-cat squad (no ally to set up for) returns null → zero behavior change.
-{
-  const b = newBattle('lanbao','jinwu',{lvl:12});          // lanbao = water
-  const water = b.me();
-  water.element = 'water';
-  water.qSkill = { id:'wq', name:'wq', element:'water', kind:'projectile', appliesTag:null };
-  water.eSkill = { id:'we', name:'we', element:'water', kind:'projectile', appliesTag:'soak' };  // the setter
-  const focus = b.enemies[0]; focus.tags = []; focus.status = {}; focus.alive = true;
-  // SOLO: no ally → no setter preference
-  b.team = [water];
-  assert.equal(b.reactionSlotPref(water, focus), null, 'solo squad: reactionSlotPref stays null (no regression)');
-  // SETTER: add an elec ally → prefer the soak slot (E)
-  const elec = { alive:true, element:'elec', x:0, y:0, qSkill:null, eSkill:null };
-  b.team = [water, elec];
-  assert.equal(b.reactionSlotPref(water, focus), 'e',
-    'water cat with an elec ally prefers the slot that SOAKS the focus (sets up conductive)');
-  // DETONATOR: an elec cat whose focus is ALREADY soaked prefers its elec slot to cash the chain
-  const elecCat = b.me();
-  elecCat.element = 'elec';
-  elecCat.qSkill = { id:'eq', name:'eq', element:'elec', kind:'projectile', appliesTag:null };
-  elecCat.eSkill = { id:'ee', name:'ee', element:'elec', kind:'projectile', appliesTag:null };
-  focus.tags = ['soak']; focus.status = { soak: 3 };
-  b.team = [elecCat, { alive:true, element:'water', x:0, y:0 }];
-  assert.ok(['q','e'].includes(b.reactionSlotPref(elecCat, focus)),
-    'elec cat detonates a pre-soaked focus (prefers an elec offensive slot to cash the reaction)');
-}
-
-// ============================================================================
-// S3 ROLE SYNERGY — the squad blackboard surfaces a threatenedAlly (worst ally <60% HP) + the diver
-// (nearest enemy to it), and three role behaviors read it: support heals the worst ally not just self,
-// a control cat peels CC onto the diver, a tank interposes between diver and ally. All SOFT + null on a
-// healthy/solo squad (regression guard). Deterministic: no rng, pure geometry + HP reads.
-{
-  const b = newBattle('tangyuan','doudou',{lvl:14});
-  const self = b.me();
-  // --- blackboard: a full-HP self + one badly-hurt ally + a nearby enemy → threatenedAlly + diver ---
-  const hurt = { alive:true, hp:20, maxhp:200, x:400, y:300, cat:{} };          // 10% HP ally
-  self.hp = self.maxhp; self.x = 150; self.y = 300;
-  const diver = b.enemies[0]; diver.alive = true; diver.x = 430; diver.y = 300; // right next to the hurt ally
-  for (let k=1;k<b.enemies.length;k++) b.enemies[k].alive=false;
-  b.team = [self, hurt];
-  b.commandTarget = null;
-  b._team = { focus:null, threatenedAlly:null, diver:null };
-  b.updateThreatenedAlly(b._team);
-  assert.equal(b._team.threatenedAlly, hurt, 'S3: worst ally (<60% HP) is flagged as threatenedAlly');
-  assert.equal(b._team.diver, diver, 'S3: the enemy nearest the threatened ally is flagged as the diver');
-  // SOLO / HEALTHY guard: a single full-HP cat → no threatened ally, no diver
-  b.team = [self]; b.updateThreatenedAlly(b._team);
-  assert.equal(b._team.threatenedAlly, null, 'S3 regression guard: solo healthy squad has no threatened ally');
-  assert.equal(b._team.diver, null, 'S3 regression guard: no diver without a threatened ally');
-  // --- CONTROL-ON-THREAT: a control cat prefers the diver over the shared focus ---
-  b.team = [self, hurt]; b.updateThreatenedAlly(b._team);
-  self.cat.buildType = 'control';
-  const focus = b.enemies.find(e=>e.alive && e!==diver) || diver;
-  // ensure a distinct focus exists so the override is observable
-  if (focus === diver) { diver.x = 430; }
-  const ex = b.focusException(self, focus===diver?diver:focus);
-  if (focus !== diver) assert.equal(ex, diver, 'S3 control: a control cat peels onto the diver, off the shared focus');
-  // hasControlSkill: a non-control cat carrying a CC skill also qualifies
-  self.cat.buildType = 'dps';
-  self.qSkill = { id:'cc', appliesTag:'bind' }; self.eSkill = null;
-  assert.equal(b.hasControlSkill(self), true, 'S3: a CC-tagged skill makes any cat control-capable');
-  self.qSkill = { id:'nocc', appliesTag:null };
-  assert.equal(b.hasControlSkill(self), false, 'S3: no CC skill → not control-capable');
-  // --- TANK PEEL: a tank gets an interpose vector toward the dive lane; non-tank / solo → null ---
-  self.cat.buildType = 'tank'; self.x = 150; self.y = 100;   // off the lane so an interpose move is needed
-  b.team = [self, hurt]; b.updateThreatenedAlly(b._team);
-  const peel = b.tankPeelVector(self);
-  assert.ok(peel && Math.abs(Math.hypot(peel.x,peel.y)-1) < 1e-6, 'S3 tank: peel returns a unit interpose vector');
-  self.cat.buildType = 'support';
-  assert.equal(b.tankPeelVector(self), null, 'S3 tank guard: a non-tank never peels');
-}
-
 if(process.env.DUMP_MATRIX)console.log(report.join('\n'));
 console.log('Cat Bond COMBAT MATRIX (deterministic, seeded): '+checked+' cells regression-locked (inEnv/acts/dmg vs FIXED envelope) + negative controls (frozen/runaway/backline-band/wideband) — all PASS.');
-console.log('  + 烫伤 scald anti-sustain (healUnit heal-cut, soak|fire→scald reaction), S2 reactionSlotPref (setter/detonator/solo-guard), and S3 role synergy (threatenedAlly/diver blackboard, control-on-threat peel, tank interpose) regression-locked.');
 console.log('  CERTIFIES: single-enemy engagement distance + offensive output + that an action is taken, vs a stationary target.');
 console.log('  Does NOT certify: survivability (pinned enemy barely attacks), target-switching, or multi-enemy behavior (future verifier extension).');

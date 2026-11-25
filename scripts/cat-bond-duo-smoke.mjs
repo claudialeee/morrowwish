@@ -1,7 +1,6 @@
 // Real browser regression for duo personalities, kinetic claw art and
 // four-step pre-battle manual controls on both phone and desktop.
 import assert from 'node:assert/strict';
-import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
 fs.mkdirSync('artifacts/cat-bond-21x3',{recursive:true});
@@ -23,8 +22,10 @@ try{
   await page.waitForFunction(()=>!!window.__game&&!!window.CatBondDuoHero&&!!window.CatRelations&&!!window.State);
   await page.waitForFunction(()=>window.CatBondDuoHero?.assetReady&&
     window.CatBondDuoHero?.assetCount===21,{timeout:18000});
-  await startNewAdventure(page);
   const entry=await page.evaluate(()=>{
+   // Start through the real button and dismiss its starter chooser.
+   document.getElementById('intro-start').click();
+   window.UI.closeAll();
    const g=window.__game,State=window.State;
    const a=State.makeCat('tangyuan',{affinity:90});
    const b=State.makeCat('xiaohui',{affinity:90});
@@ -40,10 +41,6 @@ try{
   assert.equal(entry.manual,true,'must enter manual battle');
   assert.equal(entry.paused,true,'manual tutorial must pause the arena before first input');
   assert.equal(entry.coach,true,'guided action practice must exist');
-  // The Last Page intro can appear over the manual tutorial on a fresh save.
-  // Dismiss it as a real player would before testing the battle coach.
-  const storySkip=page.locator('.cb-story-overlay.is-visible .cb-story-skip');
-  if(await storySkip.isVisible().catch(()=>false))await storySkip.click();
   for(let step=0;step<4;step++){
    const content=await page.locator('#battle-help-body').innerText();
    assert.match(content,/手机|触屏|Phone/,'tutorial must explain touch controls');
@@ -220,8 +217,7 @@ try{
   assert.equal(visual.soundCount,13,'combat sound categories must still load');
   // No one may browse unearned moves: only the current earned pair opens.
   await page.goto(origin+'/cat-bond/duo-preview.html?a='+
-    encodeURIComponent(visual.a)+'&b='+encodeURIComponent(visual.b)+
-    '&embedded=1&preview=original-three-tier-20261123-v4',
+    encodeURIComponent(visual.a)+'&b='+encodeURIComponent(visual.b),
     {waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>window.__duoPreviewReady&&window.CatBondDuoHero?.assetReady,
     {timeout:18000});
@@ -229,38 +225,6 @@ try{
   assert.equal(await page.locator('#signature-grid').count(),0,
     'no public 21-move overview, even after unlocking one move');
   assert.equal(await page.locator('#locked').isVisible(),false);
-  assert.equal(await page.locator('.tier-controls [data-tier]').count(),3,
-    'all three trust-tier animations must be selectable');
-  assert.equal(await page.locator('#tier-1').isDisabled(),false);
-  assert.equal(await page.locator('#tier-2').isDisabled(),false);
-  assert.equal(await page.locator('#tier-3').isDisabled(),false);
-  assert.ok((await page.locator('#trust-note').innerText()).includes('全部三档合击演出')||
-    (await page.locator('#trust-note').innerText()).includes('All three duo tiers unlocked'));
-  const initialTierState=await page.evaluate(()=>({
-    maxTier:window.__duoPreviewState.maxTier,mode:window.__duoPreviewState.mode,
-    activeTier:window.__duoPreviewState.activeTier
-  }));
-  assert.deepEqual(initialTierState,{maxTier:3,mode:'sequence',activeTier:1},
-    'a fully unlocked pair must begin the three-animation sequence');
-  await page.locator('#tier-2').click();
-  assert.equal(await page.evaluate(()=>window.__duoPreviewState.mode),'single');
-  assert.equal(await page.evaluate(()=>window.__duoPreviewState.activeTier),2,
-    'tier 2 button must play its own original painting');
-  await page.locator('#tier-3').click();
-  assert.equal(await page.evaluate(()=>window.__duoPreviewState.activeTier),3,
-    'tier 3 button must play its own original painting');
-  await page.locator('#replay').click();
-  assert.equal(await page.evaluate(()=>window.__duoPreviewState.mode),'sequence',
-    'Replay must run all three unlocked animations in order');
-  assert.equal(await page.evaluate(()=>window.__duoPreviewState.activeTier),1);
-  const previewFrame=await page.locator('#duo-canvas').evaluate(el=>{
-    const r=el.getBoundingClientRect();return {width:r.width,height:r.height,ratio:r.width/r.height};
-  });
-  assert.ok(Math.abs(previewFrame.ratio-16/9)<.02,
-    'original art must remain true 16:9 without stretched color side bands');
-  const viewerStyle=await page.locator('.viewer').evaluate(el=>getComputedStyle(el).backgroundImage);
-  assert.match(viewerStyle,/linear-gradient/,
-    'embedded painting must sit in the restored soft watercolor frame');
   await page.locator('.viewer').screenshot({path:'artifacts/cat-bond-21x3/'+profile.name+'-unlocked-duo-preview.png'});
   const stranger=await browser.newContext();
   const locked=await stranger.newPage();

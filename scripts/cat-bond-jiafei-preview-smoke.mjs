@@ -1,7 +1,6 @@
 // Browser-accurate art QA, only for the unapproved Jiafei watercolor candidate.
 // Exercise the production CatArt renderer and real battle canvas, not a mock screen.
 import assert from 'node:assert/strict';
-import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
 
@@ -86,7 +85,8 @@ try {
 
   // Walk through the actual start flow; then render Jiafei using the same
   // Battle draw path as players. The generated screenshot is not composited.
-  await startNewAdventure(page);
+  await page.locator('#intro-start').click();
+  await page.locator('#panel.open .dex-cell').first().click();
   const inBattle=await page.evaluate(()=>{
     const g=window.__game;
     const newCat=State.makeCat('jiafei',{affinity:80});

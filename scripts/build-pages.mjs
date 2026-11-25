@@ -90,16 +90,12 @@ const analytics = 'const SOCIAL_CAMPAIGN='+JSON.stringify(social)+';\n'
     .replace('import {nativeYouTubeSnapshot,nativeYouTubeRoute} from "./youtube-native.js";','')
     .replace('import {nativeInstagramSnapshot,nativeInstagramRoute} from "./instagram-native.js";','')
     .replace('export async function api', 'async function api');
-const cloudSave = fs.readFileSync(path.join(base, 'src', 'cat-bond-cloud-save.js'), 'utf8')
-  .replace('export async function catBondCloudSave', 'async function catBondCloudSave');
 const router = fs.readFileSync(path.join(base, 'src', 'worker.js'), 'utf8')
-  .replace('import {api} from "./analytics.js";', '')
-  .replace('import {catBondCloudSave} from "./cat-bond-cloud-save.js";', '');
-if (!analytics.includes('async function api') || !cloudSave.includes('async function catBondCloudSave') ||
-    !router.includes('ASSETS.fetch') || router.includes('import {catBondCloudSave}')) {
+  .replace('import {api} from "./analytics.js";', '');
+if (!analytics.includes('async function api') || !router.includes('ASSETS.fetch')) {
   throw new Error('Unexpected worker source: check the Pages build script before deploying.');
 }
-fs.writeFileSync(path.join(out, '_worker.js'), analytics + '\n' + cloudSave + '\n' + router);
+fs.writeFileSync(path.join(out, '_worker.js'), analytics + '\n' + router);
 console.log('Built Cloudflare Pages assets from canonical public/ and src/.');
 
 await generateSocialCards(out);

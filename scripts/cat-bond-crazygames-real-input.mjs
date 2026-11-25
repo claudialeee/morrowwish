@@ -1,4 +1,3 @@
-import {finishCanonicalOpening} from './cat-bond-test-start.mjs';
 // CrazyGames real-input preflight, on the same HTML5 game build as production.
 // Unlike state-machine smoke tests, this uses native mouse/touch to start
 // each real encounter. Test-position reads are observational only.
@@ -32,7 +31,6 @@ async function checkEnglish(page,phase,width){
   const walk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   while(walk.nextNode()){
    const n=walk.currentNode,t=(n.nodeValue||'').trim();
-   if(t==='中文'&&n.parentElement.matches('button[data-slot-language],button[data-res-language],button[data-opening-language],button.cbcp-language'))continue;
    if(t&&han.test(t)&&vis(n.parentElement))out.push('DOM '+t.slice(0,120));
   }
   for(const el of root.querySelectorAll('[title],[aria-label]')){
@@ -81,16 +79,6 @@ try{
       // The portal must show the same genuine Start Adventure screen as
       // the website, not silently place a first-time player in the yard.
       await page.locator('#intro-start').waitFor({state:'visible',timeout:20000});
-      const titleBounds=await page.evaluate(()=>{
-        const a=document.getElementById('intro-start').getBoundingClientRect(),b=document.getElementById('intro-continue').getBoundingClientRect();
-        return {a:a.toJSON(),b:b.toJSON(),hiddenSettings:getComputedStyle(document.getElementById('mw-game-settings')).display==='none'};
-      });
-      assert.ok(titleBounds.a.right+4<=titleBounds.b.left,'Title actions must be side by side without overlap');
-      assert.ok(Math.abs(titleBounds.a.width-titleBounds.b.width)<2,'Title actions must have equal width');
-      assert.equal(titleBounds.hiddenSettings,true,'Raw settings must not be on the title toolbar');
-      await page.locator('#cb-system-toggle').click();
-      await page.locator('#cb-system-menu [data-system="language"]').waitFor({state:'visible'});
-      await page.locator('#cb-system-menu [data-system="close"]').click();
       assert.equal(await page.locator('#intro').isVisible(),true,
         'CrazyGames must show Start Adventure on first load');
       assert.equal(await page.locator('#cg-yard-dock').isVisible(),false,
@@ -100,35 +88,12 @@ try{
         'Host must own fullscreen');
       if(touch)await page.locator('#intro-start').tap();
       else await page.locator('#intro-start').click();
-      await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
-      const firstSlot=page.locator('#intro-slot-list [data-slot="slot1"]');
-      if(touch)await firstSlot.tap();else await firstSlot.click();
-      await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true);
-      const canonical=await page.evaluate(()=>!!window.__CAT_BOND_CANONICAL_ACTIVE__);
-      if(canonical)await finishCanonicalOpening(page);else{
       await page.waitForSelector('#panel.open .dex-cell',{timeout:20000});
-      assert.equal(await page.locator('#intro').isVisible(),false,'Start must dismiss intro');
+      assert.equal(await page.locator('#intro').isVisible(),false,
+        'Start Adventure must dismiss intro after player interaction');
       const starter=page.locator('#panel.open .dex-cell').first();
       if(touch)await starter.tap();else await starter.click();
       await page.waitForFunction(()=>window.State?.S?.cats?.length===1);
-      const prologue=page.locator('.cb-story-overlay.is-visible');
-      await prologue.waitFor({state:'visible',timeout:15000});
-      const skip=prologue.locator('.cb-story-skip');
-      if(!(await skip.isVisible())){if(touch)await prologue.locator('.cb-story-next').tap();else await prologue.locator('.cb-story-next').click();}
-      if(touch)await skip.tap();else await skip.click();
-      await prologue.waitFor({state:'detached',timeout:10000});
-      await page.waitForFunction(()=>window.__game?.scene==='map'&&WorldMap.mode==='map'&&WorldMap.atlasTargets.length===5);}
-      assert.equal(await page.locator('#panel.open').count(),0,'Atlas is the primary RPG screen');
-      // Real canvas back affordance in the portal (the host owns fullscreen).
-      if(canonical)await page.locator('.rw-head').getByRole('button',{name:'Sunlit Garden'}).click();else{
-      const back=await page.evaluate(()=>{const r=document.getElementById('scene').getBoundingClientRect();return{x:r.left+28,y:r.top+24};});
-      if(touch)await page.touchscreen.tap(back.x,back.y);else await page.mouse.click(back.x,back.y);}
-      await page.waitForFunction(()=>window.__game?.scene==='yard',{timeout:10000});
-      // Scene state flips before the map panel's close transition and yard
-      // chrome have finished updating. Assert the actual rendered yard, not
-      // only the internal scene flag.
-      await page.locator('#panel.open').waitFor({state:'hidden',timeout:10000});
-      await page.locator('#cg-yard-dock').waitFor({state:'visible',timeout:10000});
       assert.equal(await page.locator('#toasts .toast').count(),0,
         'CrazyGames first quest should not have duplicate overlay toasts');
       // A real player must see one coherent, clickable dock in the CrazyGames
@@ -170,7 +135,7 @@ try{
       await checkEnglish(page,'yard',width);
       // The unified settings row must NEVER live inside a HUD hidden on the map
       // or during battle. This caught missing top-right controls in portal QA.
-      assert.equal(await page.locator('#cg-top-tools #mw-game-settings').isVisible(),false,'Settings must be inside the menu');
+      await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
       await page.locator('#cg-top-tools #map-menu').waitFor({state:'visible',timeout:10000});
       assert.equal(await page.locator('#cg-top-tools #mw-game-settings button').count(),4,
         'CrazyGames top-right language/music/sound/share controls must survive scene changes');
@@ -215,13 +180,6 @@ try{
           Math.abs(gardenButtons[i].rect.left-gardenButtons[0].rect.left)<3,
           'The five garden FABs must form a right-side vertical stack: '+JSON.stringify(gardenButtons));
       }
-      // Yard hide-and-seek is now an optional sanctuary activity, not an
-      // automatic first-run spawn. Start it through the real garden action.
-      if(!(await page.evaluate(()=>!!window.__game?.yard?.hide?.spot))){
-        const seek=page.locator('#fab-seek');
-        if(touch)await seek.tap();else await seek.click();
-      }
-      await page.waitForFunction(()=>!!window.__game?.yard?.hide?.spot,{timeout:10000});
       const target=await page.evaluate(()=>{
         const g=window.__game,cv=document.getElementById('scene'),r=cv.getBoundingClientRect();
         const spot=g?.yard?.hide?.spot;
@@ -264,7 +222,7 @@ try{
         'Garden tab buttons cannot appear during battle');
       assert.equal(await page.locator('#yard-actions').isVisible(),false,
         'Garden actions cannot appear during battle');
-      assert.equal(await page.locator('#cb-system-toggle').isVisible(),true,
+      assert.equal(await page.locator('#cg-top-tools #mw-game-settings').isVisible(),true,
         'Language/audio/share utility toolbar must stay visible in battle');
       await checkEnglish(page,'battle',width);
       // CrazyGames owns the embedding viewport. No floating skill reference
@@ -295,7 +253,7 @@ try{
           charges:rect('#cg-battle-hud #cg-battle-charges'),
           ultimate:rect('#cg-battle-hud #ult-wrap'),
           duo:rect('#cg-battle-hud #duo-burst'),
-          tools:rect('#cb-system-toggle'),
+          tools:rect('#cg-top-tools #mw-game-settings'),
           portalMenu:rect('#cg-top-tools #map-menu')
         };
       });
@@ -454,7 +412,7 @@ try{
         const mapPanel=page.locator('#panel.open');
         if(await mapPanel.isVisible())await page.locator('#panel.open .panel-dismiss').click();
         await page.locator('#cg-top-tools #map-menu').waitFor({state:'visible',timeout:10000});
-        assert.equal(await page.locator('#cg-top-tools #mw-game-settings').isVisible(),false,'Settings must be inside the menu');
+        await page.locator('#cg-top-tools #mw-game-settings').waitFor({state:'visible',timeout:10000});
         await checkEnglish(page,'world-map',width);
         const dir='.check/crazygames-yard-dock';
         fs.mkdirSync(dir,{recursive:true});
@@ -465,32 +423,21 @@ try{
         await reset.waitFor({state:'visible',timeout:10000});
         assert.match(await reset.textContent(),/Reset game/i,
           'Both portal and main website menus must expose a subtle reset action');
-        // First click only arms a safe restart; it must not erase game progress.
-        const saveProgress=()=>page.evaluate(()=>{
-          const book=JSON.parse(localStorage.getItem('catbond_save_slots_v1')||'{}');
-          const slots={};
-          for(const [id,record] of Object.entries(book.slots||{})){
-            const snapshot=record.data||{};
-            const state=JSON.parse(JSON.stringify(snapshot.state||snapshot));
-            delete state.lastSeen;delete state.playTimeMs;
-            slots[id]=state;
-          }
-          return slots;
-        });
-        const beforeReset=await saveProgress();
-        assert.ok(Object.keys(beforeReset).length>0,'At least one real save slot must exist before emergency reset');
+        // First click only arms a confirmation; do not erase by accident.
         await reset.click();
-        assert.match(await reset.textContent(),/safe restart|keep all saves/i);
+        assert.match(await reset.textContent(),/Erase Cat Bond progress/i);
         assert.equal(await page.evaluate(()=>State.S.cats.length),2,
-          'First reset click must not alter the current run');
-        // The second deliberate click reloads transient game state but preserves all save slots.
+          'First reset click must not delete owned cats');
+        // The second deliberate click wipes ONLY Cat Bond progress.
         await page.evaluate(()=>localStorage.setItem('unrelated_game_qa_key','keep'));
         await reset.click();
         await page.locator('#intro-start').waitFor({state:'visible',timeout:20000});
-        const afterReset=await saveProgress();
-        const unrelated=await page.evaluate(()=>localStorage.getItem('unrelated_game_qa_key'));
-        assert.deepEqual(afterReset,beforeReset,'Emergency reset must preserve all three save-slot progress snapshots');
-        assert.equal(unrelated,'keep','Reset must preserve unrelated games');
+        const wiped=await page.evaluate(()=>({
+          cats:JSON.parse(localStorage.getItem('catbond_save_v1')||'{}').cats?.length,
+          unrelated:localStorage.getItem('unrelated_game_qa_key')
+        }));
+        assert.equal(wiped.cats,0,'Confirmed in-menu reset must clear Cat Bond cats');
+        assert.equal(wiped.unrelated,'keep','Reset must preserve unrelated games');
         await page.evaluate(()=>localStorage.removeItem('unrelated_game_qa_key'));
       }
       assert.deepEqual(errors,[],'Uncaught runtime errors: '+errors.join(' | '));

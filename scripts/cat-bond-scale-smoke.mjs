@@ -1,7 +1,6 @@
 // Cat Bond scale and control-size regression. Real browser dimensions:
  // 390px phone, compact 844x390 touch landscape, and desktop.
 import assert from 'node:assert/strict';
-import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import {chromium} from 'playwright';
 
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
@@ -22,7 +21,8 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   try{
    await page.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
-   await startNewAdventure(page);
+   await page.locator('#intro-start').click();
+   await page.locator('#panel.open .dex-cell').first().click();
    await page.evaluate(()=>{
     const g=window.__game;
     g.keys={};

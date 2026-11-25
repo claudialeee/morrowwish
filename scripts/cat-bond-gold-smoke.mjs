@@ -1,6 +1,5 @@
 // Actual Chromium QA for gold currency HUD, workshop markup, and Canvas.
 import assert from 'node:assert/strict';
-import {startNewAdventure} from './cat-bond-test-start.mjs';
 import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true});
 try{
@@ -13,7 +12,8 @@ try{
   await page.waitForFunction(()=>window.CatBondGoldCoin?.ready===true,null,{timeout:15000});
   const src=await page.locator('#hud .cb-gold-coin').getAttribute('src');
   assert.ok(src?.includes('/assets/gold-coin.svg'), 'HUD uses gold asset, not platform gold emoji');
-  await startNewAdventure(page);
+  await page.locator('#intro-start').click();
+  await page.locator('#panel.open .dex-cell').first().click();
   await page.evaluate(()=>{
     UI.panel('<h2>金色钱币游戏内验收</h2><p>🪙100 · 🪙20 · 🐠3</p>');
     const probe=document.createElement('canvas');probe.width=44;probe.height=44;

@@ -127,9 +127,6 @@ class Game {
   }
 
   openWorldMap() {
-    const story=window.CatBondResonance?.view?.(),id=story?.current?.id;
-    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(id==='prologue:P-04'||(id==='prologue:P-05'&&story.cursor<story.current.lines.length))){this.toast({zh:'先完成与暮铃的交谈和花园调查。',en:'Talk to Muling and investigate the garden before leaving.'});return false;}
-    window.SunlitGarden?.leave?.();
     // Clear messages from the garden encounter tutorial before navigating.
     // The global toast queue otherwise covers the exploration map and cats
     // for two seconds, despite the garden UI correctly being hidden.
@@ -141,10 +138,8 @@ class Game {
     document.getElementById('hud').classList.add('hidden');
     document.getElementById('yard-actions').classList.add('hidden');
     this.yard?.refreshYardSwitch();
-    this.completeFirstAdventureStep?.('map');
     WorldMap.enterMap();
-    // The overworld atlas is the RPG home screen. Region directory remains
-    // available from Menu, but must never cover the map on first entry.
+    UI.openMapChooser();
   }
   showYardChrome() {
     if(this.scene!=='yard')return;
@@ -155,7 +150,6 @@ class Game {
     document.getElementById('tabbar').classList.remove('hidden');
     document.getElementById('hud').classList.remove('hidden');
     this.yard?.refreshYardSwitch();
-    window.SunlitGarden?.enter?.();
   }
 
   rebuildYard() {
@@ -437,7 +431,6 @@ class Game {
     this.refreshYardSurprise();
     const hint=document.getElementById('first-quest');
     if(!hint)return;
-    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&window.CatBondResonance?.view?.().current?.chapter==='prologue'){hint.hidden=true;const help=document.getElementById('guide-help');if(help)help.hidden=true;this._tourTarget?.classList.remove('cb-guide-target');this._tourTarget=null;return;}
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const count=State.S.catchCount||0;
     const firstCapture=(State.S.cats?.length||0)>0&&count===0;
@@ -598,22 +591,12 @@ class Game {
       // prompt that pops the instant you touch a wild cat): the scene is still 'map'
       // until the player taps Start, so without this the roamers keep wandering
       // behind the dialog. A full-screen lock on encounter is the intended feel.
-      const panelOpen = document.getElementById('panel')?.classList.contains('open') ||
-        !!document.querySelector('.cb-story-overlay,.cb-cloud-overlay');
+      const panelOpen = document.getElementById('panel')?.classList.contains('open');
       if (!panelOpen) WorldMap.update(dt);
     }
     else if (this.scene === 'battle' && this.battle) {
       if(this.battleHelpOpen)return; // Pause while the player reads controls.
-      if(this._storyBossPause){this.updateBattleUI();return;}
       this.battle.update(dt);
-      if(this.battle.storyBoss&&!this.battle.done){
-        const phase=(this.battle.enemies||[]).reduce((n,e)=>Math.max(n,e.phase||0),0);
-        if(phase>(this._storyBossPhaseSeen||0)){
-          this._storyBossPhaseSeen=phase;this._storyBossPause=true;
-          const resume=()=>{this._storyBossPause=false;};
-          if(window.CatBondStory?.onBossPhase)window.CatBondStory.onBossPhase(phase,resume);else resume();
-        }
-      }
       this.updateBattleUI();
       if (this.battle.done) this.endBattle();
     }
@@ -833,7 +816,6 @@ class Game {
       if(valid)window.UI?.confirmBuildingPlacement?.();
       return;
     }
-    if (window.SunlitGarden?.handleTap?.(x, y)) return;
     const hit = this.yard.handleTap(x, y);
     if (!hit) return;
     if (hit.type === 'building') {
@@ -953,9 +935,7 @@ class Game {
   startBattle(team, wildSpecies, opts={}) {
     this.keys = {}; this.mouse.down = false;
     this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;
-    this.battle = new Battle.CaptureBattle(this, team, wildSpecies, opts);
-    this.battle.storyBoss=!!opts.storyBoss;
-    this._storyBossPhaseSeen=0;this._storyBossPause=false;
+    this.battle = new Battle.CaptureBattle(this, team, wildSpecies);
     // Persist the region BEFORE the arena changes this.scene to 'battle'.
     this.battle._analyticsRegion=this._returnScene==='map'
       ?(window.WorldMap?.currentRegion||'unknown'):'yard';
@@ -970,7 +950,6 @@ class Game {
     }
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
-    window.SunlitGarden?.leave?.();
     this.scene = 'battle';
     if(this.yard?.placement){this.yard.cancelPlacement();window.UI?.updateBuildingPlacement?.();}
     window.MorrowwishMusic?.switchScene?.('battle');
@@ -1656,12 +1635,8 @@ class Game {
       // Resume the region at the exact spot the player left for the fight, instead
       // of rebuilding it and snapping back to the portal entry. Pass the outcome so
       // a captured (won) cat is removed from the map; a fled/lost one resumes roaming.
-      // The story boss is staged on top of the current region, not handed off
-      // from a roaming spawn. Do not remove that region's pending encounter.
-      if(!b.storyBoss){
-        if (WorldMap.resumeRegion) WorldMap.resumeRegion(win);
-        else WorldMap.enterRegion(WorldMap.currentRegion);
-      }
+      if (WorldMap.resumeRegion) WorldMap.resumeRegion(win);
+      else WorldMap.enterRegion(WorldMap.currentRegion);
     } else {
       this.scene = 'yard';
       // Reset transient battlefield paint state before the very next yard frame.
@@ -1694,24 +1669,6 @@ class Game {
       if(!backToMap)document.getElementById('yard-actions').classList.remove('hidden');
       this.battle=null;
       UI.openMasteryChallengeResult(b.wild,performance,reward,win);
-      return;
-    }
-    // The final story encounter uses the existing real-time battle engine, but
-    // defeating Muling is a story resolution, never a cat capture or dex entry.
-    if(b.storyBoss){
-      this.battle=null;
-      if(win){
-        if(!State.S.story||typeof State.S.story!=='object')State.S.story={version:1,fragments:[],visited:{}};
-        State.S.story.bossDefeated=true;
-        metric('game_complete',{level:(State.S.catchCount||0)+1,rarity:b.wild.rarity,region:'ruins'});
-        State.save();this.refreshHUD();
-        window.CatBondStory?.onBossVictory?.();
-      }else{
-        this._lastBattleLost=true;
-        metric('game_over',{level:(State.S.catchCount||0)+1,rarity:b.wild.rarity,region:'ruins'});
-        State.save();this.refreshHUD();
-        window.CatBondStory?.showBossRetry?.();
-      }
       return;
     }
     if (win) {

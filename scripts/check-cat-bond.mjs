@@ -568,11 +568,8 @@ assert.ok(Math.abs(poiseEnemy.poise/poiseEnemy.poiseMax-(1-.08-.096))<.00001,
 poiseEnemy.inv=0;poiseEnemy.flash=0;poiseBattle.t+=2;
 poiseBattle.resolveHit(poiseEnemy,'me',{element:'fire',isBasic:true},10,poiseEnemy.x,poiseEnemy.y);
 assert.equal(poiseEnemy.poiseComboHits,1,'idle resets per-enemy combo');
-// a SKILL hit drains poise (visible depletion) and applies the 10s armor-break mark.
-// Reset HP too: the earlier basic-poise probes now deal full (un-penalized) damage and
-// would otherwise have killed this low-HP fixture enemy before the skill hit lands.
+// a SKILL hit drains poise (visible depletion) and applies the 10s armor-break mark
 poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=poiseEnemy.poiseMax;poiseEnemy.staggerT=0;
-poiseEnemy.hp=poiseEnemy.maxhp;poiseEnemy.alive=true;
 poiseEnemy.poiseComboHits=0;poiseEnemy.poiseLastHitAt=-99;
 poiseBattle.resolveHit(poiseEnemy,'me',
   {id:'emberClaw',kind:'melee',element:'fire',power:1.3},10,
@@ -914,29 +911,23 @@ const tankRoster=GameData.SPECIES.filter(sp=>
   Skills.buildTypeForBreed({species:sp.id})==='tank').map(sp=>sp.id);
 const fighterRoster=GameData.SPECIES.filter(sp=>
   Skills.buildTypeForBreed({species:sp.id})==='fighter').map(sp=>sp.id);
-// Role spec 2026-11-24 (evolution-lineage alignment): starters share their evolution target's
-// role family, so 汤圆 is now a fire DPS (-> 焰焰 dps), NOT a tank. Tanks stay spread across
-// elements: Fire 圆宝, Water 团团, Grass 奶酥 + the SSR grass wall 松松 = four, not clustered in Fire.
-// 枫枫 is a grass dps, 蓝莓 is the SSR water fighter, dark is no longer all-assassin.
-assert.equal(tankRoster.length,4,'four tanks spread across elements (incl. SSR grass 松松); 汤圆 is now a fire dps, not a tank');
-for(const t of ['jiafei','dundun','nietu','senlin'])
+// Role rebalance 2026-11-22: 4 tanks spread across elements (Fire 汤圆/圆宝, Water 团团, Grass 奶酥),
+// not clustered; 蓝莓 is now a Water fighter, dark element is no longer all-assassin.
+assert.equal(tankRoster.length,4,'four tanks, one-ish per element (not clustered in Fire)');
+for(const t of ['tangyuan','jiafei','dundun','nietu'])
   assert.ok(tankRoster.includes(t),'tank roster includes '+t);
-assert.equal(Skills.buildTypeForBreed({species:'tangyuan'}),'dps',
-  'Starter 汤圆 is a fire dps aligned to its evolution 焰焰 (dps), not a tank');
-assert.ok(fighterRoster.includes('lixiao')&&fighterRoster.includes('abi'),
-  'fighters include a frontline spread (绅绅 dark, 杏仁 fire SR) — high-atk, not walls');
-assert.ok(Skills.buildTypeForBreed({species:'nuowei'})==='dps',
-  'Norwegian 枫枫 is a grass dps (output), not a wall');
+assert.ok(fighterRoster.includes('nuowei')&&fighterRoster.includes('senlin'),
+  'Norwegian and Maine Coon are fighters (high-atk frontline, not walls)');
 assert.equal(Skills.buildTypeForBreed({species:'meidu'}),'control',
   'American Shorthair 圈圈 is grass CONTROL (bind/束缚), giving grass its missing control role');
 assert.ok(fighterRoster.includes('lanbao'),'Blue英短 is now a bruiser fighter, not a passive tank');
-assert.ok(fighterRoster.includes('tangyuan')===false,'橘猫 汤圆 is a dps (evo->焰焰), not a fighter');
+assert.ok(fighterRoster.includes('tangyuan')===false,'橘猫 汤圆 is a tank, not a fighter');
 
 // ROLE × SKILL-CATEGORY identity gate (gateMet): each role may only learn fitting skill kinds.
 const gL=(species,id)=>Skills.gateMet({species,level:40,affinity:100},Skills.skillById(id));
 assert.ok(!gL('jiafei','waterLash'),'tank cannot learn a ranged skill (no backline guns)');
-assert.ok(gL('tangyuan','waterJet'),'dps CAN learn a strong ranged nuke');
-assert.ok(gL('tangyuan','frostLance'),'dps CAN learn a high-power ranged skill that incidentally chills (not control)');
+assert.ok(gL('xiaohui','waterJet'),'dps CAN learn a strong ranged nuke');
+assert.ok(gL('xiaohui','frostLance'),'dps CAN learn a high-power ranged skill that incidentally chills (not control)');
 assert.ok(gL('meidu','sporeBloom'),'control CAN learn a weak ranged bind poke');
 assert.ok(!gL('meidu','waterJet'),'control cannot learn a strong (power>=1.3) ranged nuke');
 assert.ok(!gL('moqiu','bubbleVeil'),'assassin cannot learn a shield (no safety tools)');
@@ -986,10 +977,10 @@ assert.ok(!taoKit.skills.some(s=>s.id==='thunderYowl'),'桃桃 kit never contain
 const luluKit=Skills.enemyKitFor('xianluo',9); // 露露 暹罗 elec SR, agi11/cha11 = dps
 assert.equal(luluKit.canReflect,false,'露露(暹罗 '+luluKit.role+') cannot open the tank-only 炸毛墙 reflect wall');
 assert.ok(!luluKit.skills.some(s=>s.id==='mirrorWall'),'露露 kit never contains the tank-only 炸毛墙');
-// exactly the four tanks may reflect (团团/圆宝/奶酥 + SSR grass 松松); 汤圆 is now a fire dps
+// exactly the four tanks may reflect
 const reflectors=GameData.SPECIES.filter(sp=>Skills.enemyKitFor(sp.id,10).canReflect).map(sp=>sp.id).sort().join(',');
-assert.equal(reflectors,['dundun','jiafei','nietu','senlin'].sort().join(','),
-  'only the four tank breeds (团团/圆宝/奶酥/松松) may cast the reflect wall as enemies');
+assert.equal(reflectors,['dundun','jiafei','nietu','tangyuan'].sort().join(','),
+  'only the four tank breeds (团团/圆宝/奶酥/汤圆) may cast the reflect wall as enemies');
 
 // ENEMY REAL-SKILL ROTATION (敌我同一套): a wild cat must cast its real equipped skills on cooldown,
 // not just basic pellets + the one special (owner: "敌人全程还是在发射 projectile，没有使用我们的技能").
@@ -1129,12 +1120,12 @@ assert.ok(dualDiscovery&&dualDiscovery.element==='light',
 assert.ok(Skills.learnableSkills(dualKitten)
   .filter(s=>s.element!=='fire').length<=1,
   'Early dual may have ONE secondary technique only');
-// Role spec 2026-11-24: 汤圆橘猫 = fire DPS (evo->焰焰 dps, starter role aligned), 芝士 = fighter;
-// 松松缅因 = SSR grass tank (the heavy grass wall); 圆宝加菲 = fire tank.
-assert.ok(Skills.buildTypeForBreed({species:'tangyuan'})==='dps'&&fighterRoster.includes('qisi'),
-  'Mochi橘猫 is a fire dps (aligned to 焰焰); Cheese is a bruiser fighter');
-assert.ok(tankRoster.includes('senlin')&&tankRoster.includes('jiafei'),
-  'Maine Coon 松松 is the SSR grass tank; Exotic Shorthair (加菲) is the fire tank');
+// Role rebalance 2026-11-22: 汤圆橘猫 = tank (fat orange wall), 芝士 = fighter (stocky bruiser橘);
+// 松松缅因 = fighter (pow13 high-attack frontline, no longer a passive wall); 圆宝加菲 = the heavy tank.
+assert.ok(tankRoster.includes('tangyuan')&&fighterRoster.includes('qisi'),
+  'Mochi橘猫 is a tank; Cheese is a bruiser fighter');
+assert.ok(fighterRoster.includes('senlin')&&tankRoster.includes('jiafei'),
+  'Maine Coon is a high-attack fighter; Exotic Shorthair (加菲) is the heavy tank');
 const exotic=GameData.speciesById('jiafei');
 assert.equal(exotic?.rarity,'SR','Jiafei should be collectible as SR, not R');
 const jiafeiSprite=fs.readFileSync(DIR+'assets/jiafei-watercolor-v2.webp');
@@ -1356,7 +1347,7 @@ assert.ok(skillPickerSource.includes('data-sk=') &&
     'A learned skill becomes equippable (appears in learnableSkills)');
 
   // Level-gated techniques become trainer choices, NOT automatic unlocks.
-  const climber=State.makeCat('fanmao',{affinity:10}); // water DPS (can learn the water ranged technique frostLance)
+  const climber=State.makeCat('xiaohui',{affinity:10}); // water cat
   assert.ok(!Skills.learnableSkills(climber).some(s=>s.id==='frostLance'),
     'A level-gated skill is hidden below its level');
   climber.level=10;

@@ -49,14 +49,8 @@ try{
       const start=page.locator('#intro-start');
       assert.ok(await start.isVisible(),'Start button must be visible on phone');
       await start.tap();
-      await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
-      await page.locator('#intro-slot-list [data-slot="slot1"]').tap({timeout:10000});
       await page.waitForFunction(()=>document.getElementById('intro').classList.contains('hide'),{timeout:10000});
       await page.locator('#panel.open .dex-cell').first().tap({timeout:10000});
-      await page.locator('.cb-story-overlay.is-visible .cb-story-skip').tap({timeout:10000});
-      await page.waitForFunction(()=>window.__game?.scene==='map',{timeout:10000});
-      await page.evaluate(()=>window.WorldMap.exitToYard());
-      await page.waitForFunction(()=>window.__game?.scene==='yard',{timeout:10000});
       assert.equal(await page.evaluate(()=>window.State.S.cats.length),1,'Selecting a starter must work with a finger');
       assert.equal(await page.locator('#panel.open').count(),0,'Starter picker must close after selecting a cat');
       if (width === 390) {
@@ -95,15 +89,7 @@ try{
       // Isolate navigation QA from randomly spawning wild cats that can
       // immediately open a separate prebattle dialog before the menu tap.
       await page.evaluate(()=>window.WorldMap.onEncounter(()=>{}));
-      await page.waitForFunction(()=>WorldMap.mode==='map'&&WorldMap.atlasTargets.some(n=>n.unlocked));
-      assert.equal(await page.locator('#panel.open').count(),0,'World atlas must not be covered by a region picker');
-      const destination=await page.evaluate(()=>{
-        const n=WorldMap.atlasTargets.find(n=>n.unlocked),r=document.getElementById('scene').getBoundingClientRect();
-        return {x:r.left+n.x,y:r.top+n.y,id:n.id,hit:document.elementFromPoint(r.left+n.x,r.top+n.y)?.id};
-      });
-      assert.equal(destination.hit,'scene','Atlas destination must be tappable');
-      await page.touchscreen.tap(destination.x,destination.y);
-      await page.waitForFunction(id=>WorldMap.mode==='region'&&WorldMap.currentRegion===id,destination.id);
+      await page.locator('#panel.open .map-destination.available').first().tap();
       await page.locator('#map-menu').waitFor({state:'visible'});
       const beforeMenu=await page.evaluate(()=>({scene:window.__game.scene,region:WorldMap.currentRegion}));
       assert.equal(beforeMenu.scene,'map','Opening a region must stay in exploration');
@@ -246,13 +232,7 @@ try{
     const errors=[];lp.on('pageerror',e=>errors.push(e.message));
     await lp.goto(origin+'/cat-bond/?lang=zh',{waitUntil:'domcontentloaded'});
     await lp.locator('#intro-start').tap();
-    await lp.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
-    await lp.locator('#intro-slot-list [data-slot="slot1"]').tap();
     await lp.locator('#panel.open .dex-cell').first().tap();
-    await lp.locator('.cb-story-overlay.is-visible .cb-story-skip').tap();
-    await lp.waitForFunction(()=>window.__game?.scene==='map',{timeout:10000});
-    await lp.evaluate(()=>window.WorldMap.exitToYard());
-    await lp.waitForFunction(()=>window.__game?.scene==='yard',{timeout:10000});
     await lp.locator('#fab-map').tap();
     // Freeze random encounters only in this camera regression: a roaming
     // wild cat otherwise intermittently switches the test into battle.

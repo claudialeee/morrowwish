@@ -1,4 +1,3 @@
-import {finishCanonicalOpening} from './cat-bond-test-start.mjs';
 // Browser language gate: all 15 games, two languages, phone + desktop.
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
@@ -21,9 +20,6 @@ async function scan(page,slug,lang,phase){
   while(walker.nextNode()){
    const n=walker.currentNode,s=(n.nodeValue||'').trim();
    if(!s||!visible(n.parentElement))continue;
-   // The explicit target-language switch is deliberately labeled in that language.
-   // Only these controls may display the exact language name, not other Han text.
-   if(s==='中文'&&n.parentElement.matches('button[data-slot-language],button[data-res-language],button[data-opening-language],button.cbcp-language'))continue;
    if(han.test(s)){hanCount++;issues.push('text '+n.parentElement.tagName+': '+s.slice(0,100));}
   }
   for(const el of document.querySelectorAll('[aria-label],[title],[placeholder]')){
@@ -69,21 +65,11 @@ try{
    await scan(page,slug,lang,'landing');
    if(slug==='cat-bond'&&await page.locator('#intro-start').isVisible()){
     await page.locator('#intro-start').click({timeout:7000});
-    await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
-    await scan(page,slug,lang,'save slots');
-    await page.locator('#intro-slot-list [data-slot="slot1"]').click({timeout:7000});
-    await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,{timeout:12000});
-    if(await page.evaluate(()=>!!window.__CAT_BOND_CANONICAL_ACTIVE__)){
-     await finishCanonicalOpening(page,{onStage:stage=>scan(page,slug,lang,stage)});
-    }else{
     await scan(page,slug,lang,'starter');
-    if(await page.locator('#panel.open .dex-cell').first().isVisible()){
-     await page.locator('#panel.open .dex-cell').first().click({timeout:7000});
-     await scan(page,slug,lang,'prologue');
-     await page.locator('.cb-story-overlay.is-visible .cb-story-skip').click({timeout:7000});
-     await page.waitForFunction(()=>window.__game?.scene==='map',{timeout:12000});
-     await scan(page,slug,lang,'world map');
-    }}
+    if(await page.locator('#panel .dex-cell').first().isVisible()){
+     await page.locator('#panel .dex-cell').first().click({timeout:7000});
+     await scan(page,slug,lang,'yard');
+    }
    }
    if(slug==='pocket-aquarium'&&await page.locator('#start').isVisible()){
     await page.locator('#start').click({timeout:7000});

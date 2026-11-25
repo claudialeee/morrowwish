@@ -538,7 +538,7 @@ const UI = {
       action('duo','💞','双猫纽带','Cat duos')+
       action('workshop','🧶','工坊收益','Workshop')+
       action('shop','🛒','小卖部','Shop')+
-      action('healteam','🧰','急救包补血 +35% · 需要 '+woundedCount+' 个','First-aid kits +35% · '+woundedCount+' needed')+
+      action('healteam','🧰','急救包补血 +35% · '+woundedCount+' 个','First-aid kit +35% · '+woundedCount+' needed')+
       action('feed','🍖','喂食全员','Feed all')+
       action('regions','🗺️','世界目录','World directory')+
       '</div><p class="explore-menu-tip">'+(en
@@ -804,7 +804,6 @@ const UI = {
     url.searchParams.set('b',b.uid);
     url.searchParams.set('lang',english?'en':'zh');
     url.searchParams.set('embedded','1');
-    url.searchParams.set('preview','original-three-tier-20261123-v4');
     document.getElementById('cb-duo-viewer')?.remove();
     const previousFocus=document.activeElement;
     const overlay=document.createElement('div');
@@ -2244,13 +2243,6 @@ const UI = {
     }).join('');
     const total = GameData.SPECIES.length;
     const owned = GameData.SPECIES.filter(s => State.S.dex[s.id]).length;
-    const story=State.S.story;
-    const recordCat=story?.playerRecorded
-      ?State.S.cats.find(cat=>cat.uid===story.recordedUid):null;
-    const recordName=String(recordCat?State.catName(recordCat):(en?'The Bellkeeper':'守铃者'))
-      .replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-    const storyRecord=story?.playerRecorded
-      ?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?'The Last Page':'最后一页'}</strong><small>${en?'The Bellkeeper: ':'守铃者：'}${recordName}</small></span><b>${en?'Complete':'已完成'}</b></section>`:'';
     this.panel(`<span class="card-close">×</span>
       <h2>图鉴 <span class="tiny">${owned}/${total}</span></h2>
       <p class="sub">${en?'Discover breeds and earn an S-rank Golden Paw for each one.'
@@ -2262,7 +2254,6 @@ const UI = {
         <small>${en?'Permanent rarity-weight boost':'当前永久稀有权重加成'}：+${Math.round(mastery.luckBonus*100)}%</small>
       </div>
       <div class="dex-grid">${cells}</div>
-      ${storyRecord}
       ${this.reactionCodexHtml(en)}`);
     document.querySelector('#panel .card')?.classList.add('cat-highlight-card');
     document.querySelectorAll('#panel .dex-cell').forEach(cell => {
@@ -2363,9 +2354,7 @@ const UI = {
       fish:{icon:'🐠',zh:'小鱼',en:'Fish',coins:60,fish:0,fishGain:1},
       'stone:夜影石':{icon:'🌑',zh:'夜影石',en:'Shadow Stone',coins:0,fish:3,stone:'夜影石'},
       'stone:月华露':{icon:'🌙',zh:'月华露',en:'Moon Dew',coins:0,fish:4,stone:'月华露'},
-      'stone:赤焰晶':{icon:'🔥',zh:'赤焰晶',en:'Flame Crystal',coins:0,fish:4,stone:'赤焰晶'},
-      'stone:翠藤芽':{icon:'🌿',zh:'翠藤芽',en:'Jade Sprout',coins:0,fish:4,stone:'翠藤芽'},
-      'stone:流光珠':{icon:'⚡',zh:'流光珠',en:'Voltlight Pearl',coins:0,fish:4,stone:'流光珠'}
+      'stone:赤焰晶':{icon:'🔥',zh:'赤焰晶',en:'Flame Crystal',coins:0,fish:4,stone:'赤焰晶'}
     };
     return items[what]||null;
   },
@@ -2381,7 +2370,7 @@ const UI = {
       [1,10,50].includes(this._shopQuantity)?this._shopQuantity:1;
     const qtyButton=(n,txt)=>'<button type="button" class="btn '+(n===quantity?'gold':'ghost')+
       '" data-shop-qty="'+n+'" aria-pressed="'+String(n===quantity)+'">'+txt+'</button>';
-    const shopKeys=['medkit','treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶','stone:翠藤芽','stone:流光珠'];
+    const shopKeys=['medkit','treat5','treat15','lure','fish','stone:夜影石','stone:月华露','stone:赤焰晶'];
     const rows=shopKeys.map(key=>{
       const item=this.shopItem(key),max=this.shopMaxAffordable(key);
       const count=quantity==='max'?max:quantity;

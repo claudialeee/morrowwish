@@ -3,46 +3,46 @@
   "grid": "4x4x4",
   "maxCells": 64,
   "best": {
-    "key": "1,3,3",
+    "key": "0,3,3",
     "descriptor": {
-      "engage": 0.27388888888888885,
-      "tempo": 0.8244005925925937,
-      "durability": 0.9592696783892923
+      "engage": 0.22185185185185186,
+      "tempo": 0.8397807407407405,
+      "durability": 0.9670479791336155
     },
-    "score": 0.6769828222021138,
+    "score": 0.7697715780535999,
     "candidate": {
-      "id": "agent:ready-hitrun-tight",
-      "label": "Ready-aware hit-run: hug 30-60 when Q up, pull to 60-100 on CD, retreat <45% HP",
-      "kind": "agent",
-      "rationale": "Island mutation of the long-running ready-aware-hitrun elite (branches on cooldown state, which a flat sweep can't). Commit tight on a ready skill, pull to mid while recharging, disengage below 45% HP — balances output + survival, the two heaviest judge terms."
+      "id": "baseline",
+      "label": "Engine default kitRangeBand",
+      "kind": "baseline",
+      "rationale": "The shipping, hand-tuned positioning policy. The bar every structural proposal must clear."
     },
-    "label": "agent:ready-hitrun-tight"
+    "label": "baseline"
   },
   "elites": [
     {
-      "cell": "1,3,3",
-      "score": 0.677,
-      "label": "agent:ready-hitrun-tight",
+      "cell": "0,3,3",
+      "score": 0.7698,
+      "label": "baseline",
       "descriptor": {
-        "engage": 0.27,
-        "tempo": 0.82,
-        "durability": 0.96
+        "engage": 0.22,
+        "tempo": 0.84,
+        "durability": 0.97
       },
       "candidate": {
-        "id": "agent:ready-hitrun-tight",
-        "label": "Ready-aware hit-run: hug 30-60 when Q up, pull to 60-100 on CD, retreat <45% HP",
-        "kind": "agent",
-        "rationale": "Island mutation of the long-running ready-aware-hitrun elite (branches on cooldown state, which a flat sweep can't). Commit tight on a ready skill, pull to mid while recharging, disengage below 45% HP — balances output + survival, the two heaviest judge terms."
+        "id": "baseline",
+        "label": "Engine default kitRangeBand",
+        "kind": "baseline",
+        "rationale": "The shipping, hand-tuned positioning policy. The bar every structural proposal must clear."
       }
     },
     {
-      "cell": "2,2,3",
-      "score": 0.5524,
+      "cell": "1,3,3",
+      "score": 0.7549,
       "label": "stand-at-max-range",
       "descriptor": {
-        "engage": 0.51,
-        "tempo": 0.67,
-        "durability": 0.95
+        "engage": 0.3,
+        "tempo": 0.76,
+        "durability": 0.98
       },
       "candidate": {
         "id": "stand-at-max-range",

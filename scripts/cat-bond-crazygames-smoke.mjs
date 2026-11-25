@@ -1,5 +1,4 @@
 import {chromium} from 'playwright';
-import {startNewAdventure,continueSavedAdventure} from './cat-bond-test-start.mjs';
 import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const origin=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
@@ -16,8 +15,6 @@ try{
       assert.equal(await page.locator('#cg-yard-dock').isVisible(),false,
         'The portal Start Adventure screen must not show yard-only buttons');
       await page.locator('#intro-start').click();
-      await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
-      await page.locator('#intro-slot-list [data-slot="slot1"]').click();
       await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,{timeout:12000});
       await page.waitForSelector('#panel.open .dex-cell',{timeout:12000});
       if(width===907){
@@ -64,8 +61,6 @@ try{
         'Starter selection overflows iframe: '+JSON.stringify(layout));
       await page.locator('#panel.open .dex-cell').first().click();
       await page.waitForFunction(()=>document.querySelector('#panel').classList.contains('open')===false);
-      await page.locator('.cb-story-overlay.is-visible .cb-story-skip').click();
-      await page.waitForFunction(()=>window.__game?.scene==='map');
       const state=await page.evaluate(()=>({
         cats:State.S.cats.length,hide:!!window.__game.yard.hide,
         tutorial:window.__game.yard.hide?.tutorial,
