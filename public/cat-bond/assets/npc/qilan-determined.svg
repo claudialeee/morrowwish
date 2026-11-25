@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 820" role="img" aria-label="Qilan, young navigator of Misttide Harbor">
+<defs>
+ <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dbe4e7"/><stop offset=".48" stop-color="#879ba9"/><stop offset="1" stop-color="#526a7b"/></linearGradient>
+ <linearGradient id="muzzle" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fffdf5"/><stop offset="1" stop-color="#d9d9d1"/></linearGradient>
+ <linearGradient id="coat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#29485b"/><stop offset=".55" stop-color="#172d40"/><stop offset="1" stop-color="#0d1e2b"/></linearGradient>
+ <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7bd4c5"/><stop offset=".5" stop-color="#268f8c"/><stop offset="1" stop-color="#155c67"/></linearGradient>
+ <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0b2"/><stop offset=".45" stop-color="#c28a3f"/><stop offset="1" stop-color="#6e4827"/></linearGradient>
+ <radialGradient id="lens"><stop stop-color="#d6fbf4" stop-opacity=".9"/><stop offset=".6" stop-color="#7db5bb" stop-opacity=".72"/><stop offset="1" stop-color="#274b5b"/></radialGradient>
+ <filter id="shadow" x="-30%" y="-20%" width="160%" height="160%"><feGaussianBlur stdDeviation="13"/></filter>
+ <filter id="soft"><feGaussianBlur stdDeviation="4"/></filter>
+</defs>
+<ellipse cx="326" cy="782" rx="226" ry="28" fill="#13232a" opacity=".18" filter="url(#shadow)"/>
+<!-- navigator's weatherproof coat -->
+<path d="M124 820 Q132 674 212 596 Q253 560 318 557 Q390 557 445 598 Q519 662 543 820Z" fill="url(#coat)" stroke="#9bb7b7" stroke-opacity=".32" stroke-width="5"/>
+<path d="M194 619 Q250 575 318 582 L281 820 H102 Q120 692 194 619Z" fill="#31546a" opacity=".78"/>
+<path d="M438 618 Q384 576 319 582 L363 820 H548 Q526 692 438 618Z" fill="#102536" opacity=".92"/>
+<path d="M224 625 L290 699 L258 820 H170 Q174 697 224 625Z" fill="#3b6276" stroke="#9ab6b9" stroke-opacity=".35" stroke-width="3"/>
+<path d="M411 625 L350 699 L381 820 H477 Q470 697 411 625Z" fill="#203e51" stroke="#9ab6b9" stroke-opacity=".25" stroke-width="3"/>
+<!-- shoulder mantle -->
+<path d="M155 659 Q173 576 252 565 Q282 600 315 623 Q350 594 383 565 Q474 583 494 664 L434 700 Q393 658 320 665 Q246 659 205 704Z" fill="#1a3549" stroke="#668998" stroke-width="5"/>
+<path d="M160 659 Q187 620 225 613 M477 659 Q449 620 414 613" fill="none" stroke="#a8c4bf" stroke-opacity=".6" stroke-width="4"/>
+<!-- neck scarf, flowing to the side -->
+<path d="M251 518 Q311 548 382 514 L420 577 Q357 628 280 589Z" fill="url(#teal)" stroke="#b5e1cf" stroke-width="5"/>
+<path d="M371 559 Q435 558 487 615 Q443 614 414 665 Q389 617 351 600Z" fill="#238d89" stroke="#b5e1cf" stroke-width="4"/>
+<path d="M275 555 Q318 576 371 556" fill="none" stroke="#d4f0dc" stroke-opacity=".65" stroke-width="5"/>
+<!-- rolled tide chart and paw -->
+<path d="M444 689 Q482 665 503 694 L496 785 Q465 801 441 774Z" fill="#eadfc4" stroke="#9a764b" stroke-width="5"/>
+<path d="M455 706 Q474 717 491 702 M454 733 Q474 744 490 730 M453 758 Q472 770 488 755" fill="none" stroke="#7d927e" stroke-width="4"/>
+<path d="M423 691 Q454 668 481 695 Q498 715 485 744 Q460 760 438 737Z" fill="url(#fur)" stroke="#536b7a" stroke-width="5"/>
+<path d="M443 705 Q459 692 473 708" fill="none" stroke="#f7f5e9" stroke-width="5" stroke-linecap="round"/>
+<!-- neck and head -->
+<path d="M273 505 Q281 558 321 568 Q365 559 374 505Z" fill="url(#fur)"/>
+<path d="M163 310 L147 142 Q149 104 186 132 L263 214Z" fill="url(#fur)" stroke="#526a7b" stroke-width="8"/>
+<path d="M477 310 L493 142 Q490 105 455 132 L378 214Z" fill="url(#fur)" stroke="#526a7b" stroke-width="8"/>
+<path d="M170 183 L177 151 Q183 139 197 155 L236 217Z" fill="#c58d91" opacity=".82"/>
+<path d="M470 183 L463 151 Q456 139 442 155 L403 217Z" fill="#c58d91" opacity=".82"/>
+<path d="M156 265 Q178 191 251 179 Q319 145 390 180 Q465 197 485 273 Q500 362 452 432 Q410 500 321 514 Q231 503 187 433 Q140 359 156 265Z" fill="url(#fur)" stroke="#536b7a" stroke-width="8"/>
+<!-- cheek fur tufts -->
+<path d="M164 370 Q130 392 150 427 Q169 410 184 414 Q170 445 198 457 Q205 425 221 420" fill="#a9bac0" stroke="#637b89" stroke-width="5"/>
+<path d="M479 370 Q513 392 493 427 Q474 410 459 414 Q473 445 445 457 Q438 425 422 420" fill="#a9bac0" stroke="#637b89" stroke-width="5"/>
+<!-- forehead markings -->
+<path d="M264 205 Q283 245 301 256 M322 184 Q329 227 322 248 M378 205 Q358 243 343 257" fill="none" stroke="#f2f2e8" stroke-opacity=".68" stroke-width="8" stroke-linecap="round"/>
+<!-- goggles strap and brass rims -->
+<path d="M176 236 Q317 191 464 236" fill="none" stroke="#243b48" stroke-width="24" stroke-linecap="round"/>
+<path d="M176 236 Q317 191 464 236" fill="none" stroke="url(#brass)" stroke-width="5" stroke-linecap="round"/>
+<circle cx="254" cy="225" r="43" fill="url(#brass)" stroke="#5c4027" stroke-width="6"/>
+<circle cx="254" cy="225" r="31" fill="url(#lens)" stroke="#e5c27c" stroke-width="4"/>
+<circle cx="389" cy="225" r="43" fill="url(#brass)" stroke="#5c4027" stroke-width="6"/>
+<circle cx="389" cy="225" r="31" fill="url(#lens)" stroke="#e5c27c" stroke-width="4"/>
+<path d="M239 208 Q252 197 267 207 M374 208 Q387 197 402 207" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="5" stroke-linecap="round"/>
+<!-- face mask and muzzle -->
+<path d="M195 366 Q206 323 253 343 Q286 354 320 370 Q356 351 391 342 Q440 325 451 369 Q446 430 392 458 Q353 477 321 472 Q283 479 246 458 Q198 432 195 366Z" fill="url(#muzzle)" opacity=".98"/>
+<path d="M235 340 Q270 311 306 337 Q270 356 235 340Z" fill="#fffdf6"/><path d="M360 337 Q397 311 431 340 Q397 356 360 337Z" fill="#fffdf6"/><ellipse cx="273" cy="339" rx="12" ry="18" fill="#4caaa8"/><ellipse cx="395" cy="339" rx="12" ry="18" fill="#4caaa8"/><ellipse cx="273" cy="339" rx="6" ry="14" fill="#182b37"/><ellipse cx="395" cy="339" rx="6" ry="14" fill="#182b37"/><path d="M230 319 Q271 296 307 321 M359 321 Q397 296 435 319" stroke="#526b7a" stroke-width="10" fill="none" stroke-linecap="round"/>
+<path d="M305 383 Q321 371 338 383 Q335 402 321 405 Q307 402 305 383Z" fill="#ad777d" stroke="#815a60" stroke-width="3"/>
+<path d="M315 406 Q333 413 350 406" fill="none" stroke="#8f5c61" stroke-width="5" stroke-linecap="round"/>
+<path d="M320 410 Q309 425 293 425 M321 410 Q334 425 350 425" fill="none" stroke="#8c6265" stroke-width="4" stroke-linecap="round"/>
+<path d="M211 388 L145 373 M216 411 L143 415 M431 388 L497 373 M426 411 L499 415" fill="none" stroke="#f9f7eb" stroke-opacity=".8" stroke-width="4" stroke-linecap="round"/>
+<!-- brow fur and whisker dots -->
+<path d="M213 350 Q227 337 238 348 M402 348 Q415 337 430 350" fill="none" stroke="#6f8793" stroke-width="5" stroke-linecap="round"/>
+<g fill="#788a90"><circle cx="284" cy="405" r="3"/><circle cx="296" cy="414" r="3"/><circle cx="358" cy="414" r="3"/><circle cx="370" cy="405" r="3"/></g>
+<!-- coat details and brass compass -->
+<path d="M317 628 L317 784 M331 628 L331 784" stroke="#b8a16c" stroke-width="4" opacity=".75"/>
+<circle cx="324" cy="695" r="23" fill="url(#brass)" stroke="#66472b" stroke-width="5"/>
+<circle cx="324" cy="695" r="15" fill="#dce7dc" stroke="#8c6b3d" stroke-width="3"/>
+<path d="M324 682 L329 695 L324 708 L319 695Z" fill="#377e83"/>
+<path d="M213 744 Q242 760 266 744 M383 744 Q410 760 433 744" fill="none" stroke="#7fa2a5" stroke-width="4"/>
+<path d="M191 785 L258 785 M387 785 L455 785" stroke="#d1b27b" stroke-width="3" stroke-dasharray="5 8"/>
+<!-- fur texture -->
+<g fill="none" stroke="#f4f4e9" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"><path d="M205 282 l-12 22 M218 270 l-7 20 M422 270 l7 20 M435 282 l12 22 M188 390 l-16 13 M455 390 l16 13 M245 485 l-12 12 M393 485 l12 12"/></g>
+</svg>
