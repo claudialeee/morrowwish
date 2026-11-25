@@ -19,9 +19,15 @@ concurrency:
   group: cat-bond-isolated-preview
   cancel-in-progress: true
 jobs:
+  release-hold:
+    # Owner requested temporary publication hold; same concurrency group supersedes active preview runs.
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo 'Preview publication paused by owner; no deployment performed.'
   preview:
     # Preview only; never deploy main or touch production APIs.
-    if: github.ref == 'refs/heads/rpg/release-combined-next'
+    # Temporary owner release hold; remove only after explicit release approval.
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
