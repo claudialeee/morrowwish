@@ -49,11 +49,11 @@ try {
     const revealText=async text=>{const message=page.getByText(text,{exact:true});await message.waitFor({state:'attached'});if(await message.isVisible())return;const world=page.locator('.rw-world:not([hidden])'),prev=world.locator('[data-fit-prev]'),next=world.locator('[data-fit-next]');const press=el=>options.hasTouch?el.tap():el.click();const count=Number(await world.getAttribute('data-fit-pages')||1);for(let i=0;i<count&&!await message.isVisible()&&await prev.isVisible()&&await prev.isEnabled();i++)await press(prev);for(let i=0;i<count&&!await message.isVisible()&&await next.isVisible()&&await next.isEnabled();i++)await press(next);await message.waitFor();};
     const scene = id => page.waitForFunction(expected => CatBondResonance.view().current?.id === expected, id);
     const audioEvidence=[];
-    const expectedAudio={garden:'garden',atlas:'atlas',harbor:'harbor','harbor-ceremony':'song-harbor','garden-return':'garden','forest-living-roots-ceremony':'song-forest','forest-to-forge':'forge','forge-ceremony':'song-forge'};
+    const expectedAudio={garden:'garden',atlas:'atlas',harbor:'harbor','harbor-ceremony':'song-harbor','garden-return':'garden','forest-paired-puzzle':'forest','forest-living-roots-ceremony':'song-forest','forest-to-forge':'forge','forge-ceremony':'song-forge'};
     const shot = async id => {
       const expected=expectedAudio[id]||(id.startsWith('battle-attempt-')?'battle':null);
       if(process.env.CAT_BOND_AUDIO_ACCEPTANCE==='1'&&expected){
-        await page.waitForFunction(track=>{const s=window.MorrowwishMusic?.status?.();return s?.track===track&&s.playing&&s.source==='recorded-mp3:'+track&&s.activeMusicSources<=2;},expected,{timeout:15000});
+        await page.waitForFunction(track=>{const s=window.MorrowwishMusic?.status?.();return s?.track===track&&s.playing&&s.source===(track==='forest'?'quality-ogg:enchanted-valley':'recorded-mp3:'+track)&&s.activeMusicSources<=2;},expected,{timeout:15000});
         const audio=await page.evaluate(()=>MorrowwishMusic.status());assert.equal(audio.audioState,'running');audioEvidence.push({checkpoint:id,...audio});
       }
       const cinematic=page.locator('.cbcp-root:not([hidden])');
@@ -494,11 +494,11 @@ try {
     const verifyPressure=async text=>{await pressureStatus.filter({hasText:text}).waitFor();};
     const card=i=>pairedControls.locator('[data-water-step="'+i+'"]');
     const press=async i=>{if(options.hasTouch)await card(i).tap();else await card(i).click();};
-    const drag=async(i,dx,dy)=>{const rect=await card(i).boundingBox();assert.ok(rect,'waterworks card visible');await page.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2);await page.mouse.down();await page.mouse.move(rect.x+rect.width/2+dx,rect.y+rect.height/2+dy,{steps:5});await page.mouse.up();};
+    const drag=async(i,dx,dy,cancel=false)=>{const rect=await card(i).boundingBox();assert.ok(rect,'waterworks card visible');const x=rect.x+rect.width/2,y=rect.y+rect.height/2;if(options.hasTouch){const cdp=await context.newCDPSession(page);try{const send=(type,touchPoints)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints});await send('touchStart',[{x,y,id:1}]);for(let j=1;j<=5;j++)await send('touchMove',[{x:x+dx*j/5,y:y+dy*j/5,id:1}]);await send(cancel?'touchCancel':'touchEnd',[]);}finally{await cdp.detach();}}else{await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+dx,y+dy,{steps:5});await page.mouse.up();}};
     await press(1);await verifyPressure('First raise pressure to two');
     await press(2);await verifyPressure('First raise pressure to two');
     await checkObjective('puzzle:paired-water-gates');
-    await drag(0,-32,0);await verifyPressure('Drag in the arrow direction');
+    await drag(0,-32,0);await verifyPressure('Drag in the arrow direction');if(options.hasTouch){await drag(0,32,0,true);await verifyPressure('Drag in the arrow direction');}
     await press(0);await verifyPressure('Pressure 1/2');
     await drag(0,32,0);await verifyPressure('Pressure 2/2');
     assert.equal(await card(0).isDisabled(),true);
@@ -524,7 +524,12 @@ try {
     await button('Invite Yuchuan').click();
     await button('Invite Yuchuan').waitFor({state:'hidden'});
     await button('Living Roots').click();const melodyControls=page.locator('.rw-puzzle-controls');await melodyControls.waitFor();
-    for(const note of ['Starlight · Middle','Dew · Low','Flower bell · High'])await button(note,melodyControls).click();
+    const playExample=melodyControls.locator('.rw-melody-demo');await playExample.click();await playExample.waitFor();await page.waitForFunction(()=>!document.querySelector('.rw-melody-demo')?.disabled);
+    assert.equal(await melodyControls.locator('.rw-quality-step').count(),3);
+    const key=i=>melodyControls.locator('[data-note="'+i+'"]');
+    await key(1).click();await key(2).click(); // wrong second note preserves first
+    assert.match(await melodyControls.locator('.rw-quality-step').first().textContent(),/✓/);
+    await key(0).click();await key(2).click();
     await page.waitForFunction(()=>document.querySelector('.rw-puzzle-controls button')?.disabled===true);
     await page.waitForTimeout(950);await shot('forest-living-roots-ceremony');
     await melodyControls.waitFor({state:'hidden'});

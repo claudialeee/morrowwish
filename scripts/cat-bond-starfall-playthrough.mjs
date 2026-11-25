@@ -90,7 +90,7 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  await scene("forge:E-04");
  await puzzle("Hearth sanctuary",["Heat","Heat","Heat","Heat","Vent"]);
  await invite("Jinpo");await invite("Xiaomao");
- await puzzle("Song of Ember",["High","Middle","Low"]);
+ await puzzle("Song of Ember",["Flower bell · High","Starlight · Middle","Dew · Low"]);
  await chapterDialog("forge:E-04");await scene("sky:S-01");
  await travel("Skyspine Isles");await talk("Yuanfan","sky:S-01");await scene("sky:S-02");
  await button("Flight recorder").click();await chapterDialog("sky:S-02");await scene("sky:S-03");
@@ -98,14 +98,14 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  await puzzle("Joint gliding platform",["Descend","Climb","Descend"]);await chapterDialog("sky:S-03");await scene("sky:S-04");
  await talk("Muling","sky:S-04");await scene("sky:S-05");
  await puzzle("Windwing sanctuary",["Climb","Descend","Climb"]);await invite("Lingyu");await invite("Yuanfan");
- await puzzle("Open Sky",["Middle","High","Low"]);await scene("library:M-01");
+ await puzzle("Open Sky",["Starlight · Middle","Flower bell · High","Dew · Low"]);await scene("library:M-01");
  await travel("Moonmirror Library");await talk("Moye","library:M-01");await scene("library:M-02");
  await puzzle("Mirror records",["Testimony","Calendar","Record"]);await scene("library:M-03");
  await talk("Muling","library:M-03");await scene("library:M-04");
  await button("Routing record").click();await chapterDialog("library:M-04","I need some distance");await scene("library:M-05");
  await talk("Muling","library:M-05","Release all records now");
  await puzzle("Moonmirror sanctuary",["Calendar","Testimony","Record"]);await invite("Moye");await invite("Baikan");
- await puzzle("Reflections",["High","Low","Middle"]);await scene("starfall:F-01");
+ await puzzle("Reflections",["Flower bell · High","Dew · Low","Starlight · Middle"]);await scene("starfall:F-01");
  }
  // The local developer preview can exercise existing candidate assets, not certify them for production.
  await page.waitForFunction(()=>CatBondChapterCinematics.starfallReleaseReady()||CatBondChapterCinematics.developmentReady(),null,{timeout:15000});
@@ -142,7 +142,7 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  await invite("Xingya");await page.reload();await page.locator("#intro-continue").click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
  await scene("starfall:F-04");if(await button("Starfall Expanse").isVisible())await button("Starfall Expanse").click();
  await button("Invite Lichuan").waitFor();assert.equal(await button("Invite Xingya").isVisible(),false);
- await invite("Lichuan");const beforeMelody=(await get()).trust;await button("Beyond Stars").click();const melody=page.locator(".rw-puzzle-controls");await melody.waitFor();for(const n of ["Low","Middle","High"])await button(n,melody).click();await page.waitForTimeout(1000);await shot("starfall-beyond-stars-ceremony");await melody.waitFor({state:"hidden"});const afterMelody=(await get()).trust;assert.equal(afterMelody.xingya,beforeMelody.xingya+1);assert.equal(afterMelody.lichuan,beforeMelody.lichuan+1);
+ await invite("Lichuan");const beforeMelody=(await get()).trust;await button("Beyond Stars").click();const melody=page.locator(".rw-puzzle-controls");await melody.waitFor();for(const n of ["Dew · Low","Starlight · Middle","Flower bell · High"])await button(n,melody).click();await page.waitForTimeout(1000);await shot("starfall-beyond-stars-ceremony");await melody.waitFor({state:"hidden"});const afterMelody=(await get()).trust;assert.equal(afterMelody.xingya,beforeMelody.xingya+1);assert.equal(afterMelody.lichuan,beforeMelody.lichuan+1);
  assert.equal((await get()).ring,false,"Sixth melody cannot replace incomplete cargo");
  assert.equal((await get()).lineReady,false);
  await page.locator(".rw-world").evaluate(el=>{el.scrollTop=0;});await checkStarfallLayout(true);await shot("starfall-missing-exchanges");
