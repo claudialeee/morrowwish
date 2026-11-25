@@ -134,7 +134,7 @@ export function mountResonanceCinematics({root,rendererFactory,engine,campaign,m
     const run={id:view.current.id,slot:getSlotKey(),revision:engine.snapshot().revision,sequence:id};
     if(resume&&(resume.slot!==run.slot||resume.revision!==run.revision||resume.snapshot?.sceneId!==run.id))return report('stale-cinematic-snapshot');
     active=run;
-    try{decorateScene?.(result.scene);await preload(result.scene)}catch(e){if(!valid(run))return bad('stale-slot-or-scene');active=null;return report('cinematic-image-load-failed')}
+    try{await decorateScene?.(result.scene);await preload(result.scene)}catch(e){if(!valid(run))return bad('stale-slot-or-scene');active=null;return report('cinematic-image-load-failed')}
     if(sequence!==id||!valid(run)){if(active===run)active=null;return bad('stale-slot-or-scene')}
     try{
       let checkpoint=resume?.snapshot;

@@ -39,7 +39,7 @@ async function play(sceneId){
    staging:window.__CAT_BOND_INTEGRATION_ART__===true,
    getSlotKey:()=>window.State.S,
    language,
-   decorateScene:scene=>{
+   decorateScene:async scene=>{
     if(scene.id!=="finale:B-04")return;
     const cat=slot.cats?.[0],species=window.GameData?.speciesById?.(cat?.species);
     if(!species||!window.CatArt?.renderCatThumb)return;
@@ -49,6 +49,8 @@ async function play(sceneId){
     // Separate saved-protagonist memory shot, rather than overlaying two protagonists.
     const frame={id:"finale:B-04-current-keeper",image:"assets/cinematics/prologue/garden-at-dawn.webp",alt:{zh:"属于守铃者自己的记忆",en:"The Bellkeeper’s own memories"},durationMs:3800,transitionMs:700,effect:"sanctuary",note:392,layers:[{image:playerArt,kind:"actor",x:48,y:82,width:34,travel:0}]};
     scene.frames.splice(1,0,frame);
+    const crops=new Map();
+    for(const shot of scene.frames){const source=shot.image;if(!source.endsWith("/final-note.webp")&&!source.endsWith("/memories-return.webp"))continue;if(!crops.has(source)){const art=new Image();art.src=source;await art.decode();const closeup=document.createElement("canvas");const ring=source.endsWith("/final-note.webp");const crop=ring?[.24,0,.76,.46]:[.56,0,.44,1];const [x,y,w,h]=crop;closeup.width=Math.round(art.naturalWidth*w);closeup.height=Math.round(art.naturalHeight*h);closeup.getContext("2d").drawImage(art,art.naturalWidth*x,art.naturalHeight*y,closeup.width,closeup.height,0,0,closeup.width,closeup.height);crops.set(source,closeup.toDataURL("image/webp",.94));}shot.image=crops.get(source);shot.focus="center";if(source.endsWith("/memories-return.webp"))shot.layers=[{image:playerArt,kind:"actor",x:24,y:84,width:32,travel:0}];}
    },
    onLanguageChange:next=>window.MorrowwishI18n?.set?.(next),
    onError:error,

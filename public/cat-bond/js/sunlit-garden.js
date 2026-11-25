@@ -55,18 +55,19 @@
     if(!guide)return;
     const v=window.CatBondResonance?.view?.(),scene=v?.current?.id;
     const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden])');
-    const show=active&&game?.scene==='yard'&&state()?.cats?.length>0&&!covered&&(scene==='prologue:P-04'||scene==='prologue:P-05');
+    const show=active&&game?.scene==='yard'&&state()?.cats?.length>0&&!covered&&(scene==='prologue:P-04'||scene==='prologue:P-05'||scene==='epilogue:E-02'||scene==='epilogue:E-03'||v?.ending);
     guide.hidden=!show;if(!show){guideKey='';return}
-    const en=isEnglish(),talk=v.cursor<v.current.lines.length,departure=scene==='prologue:P-05'&&!talk;
-    const key=scene+'|'+talk+'|'+en;if(key===guideKey)return;guideKey=key;
+    const en=isEnglish(),ending=!!v.ending,epilogue=scene==='epilogue:E-02'||scene==='epilogue:E-03',talk=!ending&&(epilogue||v.cursor<v.current.lines.length),departure=scene==='prologue:P-05'&&!talk;
+    const key=scene+'|'+talk+'|'+en+'|'+(ending?v.postgame.length+'|'+v.returned.length:'');if(key===guideKey)return;guideKey=key;
     guide.replaceChildren();
     const title=document.createElement('strong');
-    title.textContent=departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
-    const hint=document.createElement('span');hint.textContent=departure?(en?'Prepare your companions before heading to Misttide Harbor.':'整理伙伴，准备前往霁潮港。'):talk?(en?'Speak with the traveler by the garden path.':'与花园小径旁的旅人交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
+    title.textContent=ending?(en?'The world answers again':'六地再次回应'):epilogue?(scene==='epilogue:E-02'?(en?'A promise to repair':'承担责任'):(en?'The second garden key':'第二把花园钥匙')):departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
+    const hint=document.createElement('span');hint.textContent=ending?(en?'After the adventure · '+v.postgame.length+'/13 tasks · '+v.returned.length+'/12 visitors':'冒险之后 · '+v.postgame.length+'/13 项任务 · '+v.returned.length+'/12 位来访伙伴'):epilogue?(en?'Speak with Muling and finish the story in Sunlit Garden.':'与暮铃交谈，在阳光花园完成故事。'):departure?(en?'Prepare your companions before heading to Misttide Harbor.':'整理伙伴，准备前往霁潮港。'):talk?(en?'Speak with the traveler by the garden path.':'与花园小径旁的旅人交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
     guide.append(title,hint);
     const row=document.createElement('div');guide.append(row);
     const add=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};row.append(b)};
-    if(talk)add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));
+    if(talk||ending)add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));
+    if(ending){add('花园复兴','Garden Restoration',()=>window.GardenProjects?.open?.());add('继续探索','Continue exploring',()=>game.openWorldMap());}
     if(departure){
       add('猫咪队伍','Companions',()=>window.UI?.openCatHub?.('solo'));
       add('工坊','Workshop',()=>window.UI?.openWorkshop?.());
