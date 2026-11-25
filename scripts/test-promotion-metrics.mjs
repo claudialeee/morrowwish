@@ -122,10 +122,10 @@ assert.ok(dashboard.indexOf('metricCard(t("statPv")')<dashboard.indexOf('metricC
 const build=fs.readFileSync('scripts/build-pages.mjs','utf8');
 assert.ok(build.includes('publicationRounds: metricsSnapshot.publicationRounds'),
  'private dashboard Worker must receive the archived round history');
-assert.ok(dashboard.includes("post.checkedAt&&Number.isSafeInteger(post[key])"),'unknown views blank, not zero');
+assert.ok(dashboard.includes("post[timestampKey]&&Number.isSafeInteger(post[key])"),'unknown views blank, not zero');
 assert.ok(dashboard.includes('igNativePosts.length'), 'partial Instagram provider totals must show verified coverage');
 assert.ok(dashboard.includes("p.checkedAt&&"), 'partial Instagram totals must exclude missing native readings');
-assert.ok(dashboard.includes("verifiedVideos.find(p=>p.platform===platform&&p.game===id)"),'individual game/medium cells');
+assert.ok(dashboard.includes("posts.find(p=>p.platform===platform&&p.game===id)"),'individual game/medium cells');
 assert.ok(!dashboard.includes('id="native-account-overview"'),'old and duplicate promo overview hidden permanently');
 assert.ok(!dashboard.includes('instagram-historical')&&!dashboard.includes('Nov 20 old Reels'),'no historical promo presentation');
 assert.ok(!dashboard.includes('pulse.accountOverview'),'old promo metrics never read by dashboard');

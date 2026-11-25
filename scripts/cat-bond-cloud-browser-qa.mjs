@@ -20,11 +20,15 @@ try{
  assert.equal(await page.locator('[data-recovery-code],[data-slot-sync],.cb-cloud-code-row').count(),0);
  assert.equal(requests.length,0,'A new player must not consume cloud quota');
  const results=await page.evaluate(async()=>{
+   localStorage.setItem('catbond_cloud_key_v1','A'.repeat(43));
    const api=window.CatBondCloudSave;
+   const queued=await api.queue('slot1',true);
+   if(!queued.disabled)throw Error('Legacy cloud key activated synchronization');
    const disabled=await api.syncNow();
    return {disabled:disabled.disabled,manualPanel:typeof api.openPanel};
  });
  assert.equal(results.disabled,true);
+ assert.equal(requests.length,0,'Legacy key must not trigger cloud traffic');
  assert.equal(results.manualPanel,'undefined');
  await context.close();
  console.log('PASS local-first three-slot UI, no recovery code or new-player cloud traffic');

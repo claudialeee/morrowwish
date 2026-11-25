@@ -45,10 +45,11 @@ export async function startCanonicalOpening(game,{onWorld}={}){
  const same=()=>window.State.S===rootState&&window.State.activeSlot()===slot;
  let closed=false,controller=null,root=null,removeError=null,launching=false,runtime=null;
  const onSlotChange=()=>{if(!same())dispose();};
- const dispose=()=>{if(closed)return;closed=true;controller?.dispose();root?.remove();removeError?.();window.removeEventListener('cat-bond-resonance-changed',onSlotChange);window.removeEventListener('pagehide',dispose);};
+ const dispose=()=>{if(closed)return;closed=true;controller?.dispose();root?.remove();removeError?.();window.removeEventListener('cat-bond-resonance-changed',onSlotChange);window.removeEventListener('cat-bond-active-save-changed',onSlotChange);window.removeEventListener('pagehide',dispose);};
  const live=()=>{if(closed)return false;if(!same()){dispose();return false;}return true;};
  active={dispose};
  window.addEventListener('cat-bond-resonance-changed',onSlotChange);
+ window.addEventListener('cat-bond-active-save-changed',onSlotChange);
  window.addEventListener('pagehide',dispose,{once:true});
  const showError=reason=>{if(!live())return;controller?.cancel?.();removeError?.();removeError=errorPanel(game,reason,()=>{removeError=null;if(controller&&typeof advance==='function')advance();else{dispose();startCanonicalOpening(game,{onWorld})}});};
  const toGarden=()=>{
@@ -78,7 +79,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
    }
    try{
     onWorld?.();
-    if(initial.current?.chapter===rootState.resonanceExploration?.location)window.WorldMap?.resumeRegion?.();
+    // Continuing a completed opening lands on the atlas, not an old region overlay.
    }finally{dispose();}
   };
   if(initialMode!=='cinematic'){handoff(initialMode);return {ok:true,mode:initialMode};}

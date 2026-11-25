@@ -121,3 +121,12 @@ html body #stage #mw-game-settings,html body #stage #mw-fullscreen-toggle{displa
 #stage #cb-canonical-opening{position:absolute;inset:0;z-index:2300;isolation:isolate}
 
 @media (max-height:450px) and (min-width:681px){#stage #intro.cb-rpg-intro:not(.hide){padding:42px 18px 12px!important}#stage #intro .cb-title-content{gap:8px}#stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue){min-height:44px!important}}
+
+/* Release title: full-bleed painted environment, restrained brass typography. */
+#stage #intro .cb-title-landscape{animation-duration:38s!important;filter:saturate(.86)!important}
+#stage #intro .cb-intro-titleblock{position:relative}
+#stage #intro .cb-intro-titleblock::before{content:"";width:clamp(58px,12vw,128px);height:1px;background:linear-gradient(90deg,transparent,#e4c79b,transparent);display:block;margin:0 auto 4px}
+#stage #intro .cb-intro-eyebrow{letter-spacing:.22em!important;text-shadow:0 2px 10px #10212b}
+#stage #intro .cb-title-delete{background:transparent!important;color:#e4b5a6!important;border-color:#98786b!important;margin-top:5px!important}
+@media(max-height:450px){#stage #intro .cb-title-content{gap:7px!important;padding-bottom:0!important;align-self:center}#stage #intro .cb-intro-tagline{font-size:11px!important}}
+@media(prefers-reduced-motion:reduce){#stage #intro .cb-title-landscape{animation:none!important}}

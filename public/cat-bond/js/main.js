@@ -73,7 +73,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const region=en?slot.regionLabelEn:slot.regionLabelZh;
       const mins=Math.floor((slot.playTimeMs||0)/60000);
       const played=en?'Played '+Math.floor(mins/60)+'h '+(mins%60)+'m':'游戏时间 '+Math.floor(mins/60)+'小时 '+(mins%60)+'分钟';
-      const progress=en?slot.cats+' cats':slot.cats+' 只猫';
+      const progress=en?slot.regionCount+'/6 sanctuaries · '+slot.cats+' cats':slot.regionCount+'/6 圣所 · '+slot.cats+' 只猫';
       const detail=slot.corrupt
         ?(en?'This save cannot be read. Start a new adventure here to replace it.':'无法读取此存档。可以在二次确认后重新开始并覆盖。')
         :slot.exists
@@ -92,11 +92,19 @@ window.addEventListener('DOMContentLoaded', () => {
         '<strong class="cb-save-slot-chapter">'+escapeText(chapter)+'</strong>'+
         '<small class="cb-save-slot-meta">'+escapeText(detail)+'</small>'+
         '<small class="cb-save-slot-saved-at">'+escapeText(saved)+'</small>'+
-        '<div class="cb-save-slot-actions"><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button></div></article>';
+        '<div class="cb-save-slot-actions"><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button>'+(slot.exists?'<button class="cb-title-delete" type="button" data-title-delete="'+slot.id+'">'+(en?'Delete':'删除')+'</button>':'')+'</div></article>';
     }).join('');
     slotPanel.classList.add('is-open');slotPanel.setAttribute('aria-hidden','false');
     const language=slotPanel.querySelector('[data-slot-language]');
     if(language){language.textContent=en?'中文':'English';language.setAttribute('aria-label',en?'Switch to Chinese':'切换到英文');}
+    slotList.querySelectorAll('[data-title-delete]').forEach(button=>button.onclick=()=>{
+      const id=button.dataset.titleDelete;
+      const selected=State.listSaveSlots().find(s=>s.id===id);
+      if(!selected?.exists||!confirm(en?'Permanently delete Slot '+selected.number+'?':'永久删除存档位 '+selected.number+'？'))return;
+      const result=State.deleteSaveSlot(id,{confirmed:true});
+      if(!result.ok){alert(en?'Could not delete this save.':'无法删除此存档。');return;}
+      openSlots(slotMode);
+    });
     slotList.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',()=>{
       const id=button.dataset.slot;
       if(slotMode==='new'){
@@ -240,8 +248,9 @@ function startIntroStars() {
     cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   };
   resize(); window.addEventListener('resize', resize);
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const stars = Array.from({ length: 70 }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.6 + 0.4, ph: Math.random() * 6, sp: 0.2 + Math.random() * 0.5 }));
-  const motes = Array.from({ length: 14 }, () => ({ x: Math.random(), y: Math.random(), r: 2 + Math.random() * 3, vy: 0.00008 + Math.random() * 0.00012, vx: (Math.random() - 0.5) * 0.00008, c: ['#ffd36b', '#ff9db0', '#9d7bff', '#9be7c4'][Math.floor(Math.random() * 4)], ph: Math.random() * 6 }));
+  const motes = Array.from({ length: 9 }, () => ({ x: Math.random(), y: Math.random(), r: 2 + Math.random() * 3, vy: 0.00008 + Math.random() * 0.00012, vx: (Math.random() - 0.5) * 0.00008, c: ['#f3d9a3', '#e9d6b4', '#adc8cb', '#c9e1dc'][Math.floor(Math.random() * 4)], ph: Math.random() * 6 }));
   let t = 0;
   const frame = () => {
     const intro = document.getElementById('intro');
