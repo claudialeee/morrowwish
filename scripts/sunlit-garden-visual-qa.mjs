@@ -104,6 +104,51 @@ try{
     }));
     await context.close();
   }
+
+  // Real facility placement, upgrade and slot round-trip. Only seed funds;
+  // purchases, canvas taps, levels, saving and loading use the real game.
+  const context=await browser.newContext({viewport:{width:1440,height:900}});
+  const page=await context.newPage();page.on('pageerror',e=>pageErrors.push(e.message));
+  await page.goto(origin+'/cat-bond/?autodev=1&lang=en',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.__game?.yard&&window.State?.S?.cats?.length>=3);
+  await page.evaluate(()=>{
+    State.S.coins=10000;State.S.gameStarted=true;
+    __game.scene='yard';__game.showYardChrome();
+  });
+  await page.locator('.sg-hotspot-facilities').click();
+  await page.locator('[data-build="scratcher"]').click();
+  await page.waitForFunction(()=>__game.yard.placement?.valid);
+  const spot=await page.evaluate(()=>{const p=__game.yard.placement,r=__game.canvas.getBoundingClientRect();return {x:r.x+p.x,y:r.y+p.y}});
+  await page.mouse.click(spot.x,spot.y);
+  await page.waitForFunction(()=>State.S.yardBuildings.some(b=>b.type==='scratcher'));
+  await page.locator('.sg-hotspot-facilities').click();
+  await page.locator('[data-upgrade="0"]').click();
+  await page.waitForFunction(()=>State.S.yardBuildings[0].level===2);
+  await page.evaluate(()=>UI.closeAll());
+  const saved=await page.evaluate(()=>{
+    const b=State.S.yardBuildings[0];const slot=State.activeSlot();
+    const result=State.save();if(!result.ok)throw Error('save '+JSON.stringify(result));
+    return {slot,u:b.gardenU,v:b.gardenV,type:b.type,level:b.level};
+  });
+  assert.ok(Number.isFinite(saved.u)&&Number.isFinite(saved.v),'relative plot position saved');
+  await page.setViewportSize({width:390,height:844});
+  await page.waitForFunction(()=>__game.W<500);
+  await page.evaluate(slot=>{if(!State.loadSlot(slot))throw Error('load failed');},saved.slot);
+  await page.waitForFunction(()=>__game.yard._gardenState===State.S);
+  const restored=await page.evaluate(()=>{const b=State.S.yardBuildings[0];return {u:b.gardenU,v:b.gardenV,type:b.type,level:b.level,x:b.x,y:b.y,w:__game.W,h:__game.H}});
+  assert.equal(restored.type,saved.type);assert.equal(restored.level,saved.level);
+  assert.equal(restored.u,saved.u);assert.equal(restored.v,saved.v);
+  assert.ok(restored.x>=30&&restored.x<=restored.w-30&&restored.y>=0&&restored.y<restored.h,'saved facility remains on-screen at phone size');
+  await page.screenshot({path:out+'/facility-restored-phone.png'});
+  await page.evaluate(()=>{const old=State.activeSlot(),other=State.SAVE_SLOT_IDS.find(id=>id!==old);if(!State.startNewGame(other,{overwriteConfirmed:true}))throw Error('second slot failed')});
+  await page.waitForFunction(()=>__game.yard._gardenState===State.S);
+  assert.equal(await page.evaluate(()=>State.S.yardBuildings.length),0,'new slot must not inherit buildings');
+  assert.equal(await page.evaluate(()=>__game.yard.entities.length),0,'new slot must not retain previous resident cats');
+  await page.evaluate(slot=>{if(!State.loadSlot(slot))throw Error('reload failed')},saved.slot);
+  await page.waitForFunction(()=>__game.yard._gardenState===State.S);
+  assert.equal(await page.evaluate(()=>State.S.yardBuildings[0].level),2,'original slot preserves upgrade');
+  await context.close();
+  console.log('SUNLIT GARDEN FACILITY SAVE QA PASS');
   assert.deepEqual(pageErrors,[],'garden scene must not produce uncaught browser errors');
 }catch(error){
   console.error('SUNLIT GARDEN VISUAL QA FAIL',error);

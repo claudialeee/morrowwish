@@ -22,7 +22,7 @@
     {id:'workshop',icon:'⚒',zh:'工坊',en:'Workshop',left:'81%',top:'43%',action:()=>window.UI?.openWorkshop?.()},
     {id:'bond',icon:'∞',zh:'双猫羁绊',en:'Duo Bond',left:'77%',top:'71%',action:()=>window.UI?.openBondPanel?.()}
   ];
-  let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null;
+  let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null;
   const isEnglish=()=>window.MorrowwishI18n?.get?.()!=='zh';
   const state=()=>window.State?.S||null;
   function canonicalProgress(){
@@ -32,7 +32,7 @@
     return{chapter:String(s.scene||'prologue:P-01').split(':')[0]||'prologue',completed,
       sanctuaries:Array.isArray(s.sanctuaries)?s.sanctuaries:[],
       returned:Array.isArray(s.returned)?s.returned:[],postgame:Array.isArray(s.postgame)?s.postgame:[],
-      ending:completed.includes('finale:B-04')};
+      ending:completed.includes('epilogue:E-03')};
   }
   function renderLabels(){
     if(!root)return;
@@ -69,8 +69,9 @@
   function enter(){
     if(!game||game.scene!=='yard')return;
     ensureRoot();
-    if(!active){
-      active=true;const s=state();
+    const slotState=state();
+    if(!active||visitedState!==slotState){
+      active=true;visitedState=slotState;const s=slotState;
       if(s){
         if(!s.sunlitGarden||typeof s.sunlitGarden!=='object')s.sunlitGarden={schema:1,visits:0,lastVisitedAt:0};
         s.sunlitGarden.visits=Math.max(0,Number(s.sunlitGarden.visits)||0)+1;
@@ -103,6 +104,7 @@
   }
   function draw(ctx,width,height,time){
     if(!active||game?.scene!=='yard')return;
+    if(visitedState!==state())enter();
     root?.classList.toggle('is-placing',!!game.yard?.placement);
     if(root)root.inert=!!game.yard?.placement;
     const p=canonicalProgress();
@@ -114,8 +116,9 @@
       const a=HOME_ANCHORS[npc?.id];if(!a||!npc?.id)continue;
       const x=width*a.x,y=height*a.y;
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
-      try{narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale:a.scale,time});
-        lastNpcHits.push({id:npc.id,x,y,radius:a.radius*Math.min(1,width/1000)});}
+      try{const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale:a.scale,time});
+        if(visible===false)continue;
+        lastNpcHits.push({id:npc.id,x,y,radius:Math.max(24,a.radius*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }
   }

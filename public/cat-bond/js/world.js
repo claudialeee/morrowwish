@@ -35,6 +35,25 @@ function drawGardenProp(ctx,id,x,y,depth){
   ctx.drawImage(img,x-80*factor,y-183*factor,160*factor,200*factor);
   return true;
 }
+// Persist plot-relative coordinates, not device pixels. x/y are the current
+// canvas projection retained for existing collision, movement and rendering.
+function gardenPlot(W,H){
+  const left=Math.min(56,Math.max(30,W*.10));
+  const top=Math.min(H*.50,H-96);
+  return {left,top,width:Math.max(1,W-2*left),height:Math.max(1,Math.max(top+20,H-56)-top)};
+}
+const clampPlot=n=>Math.max(0,Math.min(1,n));
+function projectGardenBuildings(builds,W,H,sourceW=W,sourceH=H){
+  if(!(W>0&&H>0))return;
+  const from=gardenPlot(sourceW,sourceH),to=gardenPlot(W,H);
+  for(const b of builds||[]){
+    if(!b||typeof b!=='object')continue;
+    if(!Number.isFinite(b.gardenU))b.gardenU=clampPlot((Number.isFinite(b.x)?b.x-from.left:from.width/2)/from.width);
+    if(!Number.isFinite(b.gardenV))b.gardenV=clampPlot((Number.isFinite(b.y)?b.y-from.top:from.height/2)/from.height);
+    b.gardenU=clampPlot(b.gardenU);b.gardenV=clampPlot(b.gardenV);
+    b.x=to.left+b.gardenU*to.width;b.y=to.top+b.gardenV*to.height;
+  }
+}
 class CatEntity {
   constructor(cat, W, H) {
     this.cat = cat;                 // reference to state cat instance
@@ -524,7 +543,7 @@ class YardScene {
     move(this.bushes);move(this.butterflies);move(this.clouds);
     move(this.flowers);move(this.petals);move(this.fireflies);
     move(this.lootBubbles);move(this.petParticles);move(this.floatTexts);
-    move(State.S.yardBuildings);   // placed structures scale with the canvas like bushes
+    projectGardenBuildings(State.S.yardBuildings,W,H,oldW,oldH);
     if(this.placement){
       this.placement.x*=fx;this.placement.y*=fy;
       this.movePlacement(this.placement.x,this.placement.y);
@@ -540,12 +559,6 @@ class YardScene {
       const bottom=Math.max(top+10,H-Math.max(126,H*.16));
       b.y=Math.max(top,Math.min(bottom,b.y));
     }
-    for(const b of (State.S.yardBuildings||[])){
-      // Five structures must fit even in a short phone yard, below the fence.
-      const top=Math.min(H*.50,H-96),bottom=Math.max(top+20,H-56);
-      b.x=Math.min(W-40,Math.max(40,b.x));
-      b.y=Math.max(top,Math.min(bottom,b.y));
-    }
     // Portrait/landscape rotation changes how many cats fit in the yard.
     this.rebuild();
   }
@@ -557,6 +570,14 @@ class YardScene {
   }
   rebuild() {
     const {W,H}=this.game;
+    if(this._gardenState!==State.S){
+      this._gardenState=State.S;
+      this.placement=null;this.hide=null;this.golden=null;
+      this.lootBubbles=[];this.petParticles=[];this.floatTexts=[];
+      this._newBuildToVisit=null;this._buildScan=2;this._lootScan=0;
+      window.UI?.updateBuildingPlacement?.();
+    }
+    projectGardenBuildings(State.S.yardBuildings,W,H);
     if(!this.bushes||this.bushes.length===0)this.buildScenery();
     const roster=State.S.cats||[];
     const representatives=new Map();
@@ -680,6 +701,7 @@ class YardScene {
     this.startHideAndSeek(best);
   }
   update(dt) {
+    if(this._gardenState!==State.S)this.rebuild();
     const mouse = this.game.mouse;
     // A cat heading to a structure steers itself first, then runs normal motion.
     for(const e of this.entities){
@@ -1247,6 +1269,7 @@ class YardScene {
     if(!this.buildingSpotValid(chosen.x,chosen.y))return false;
     State.S.coins-=def.cost;
     const b={type,x:chosen.x,y:chosen.y,level:1,lastRewardAt:0};
+    projectGardenBuildings([b],this.game.W,this.game.H);
     (State.S.yardBuildings=State.S.yardBuildings||[]).push(b);
     this._newBuildToVisit=b;this._buildScan=.12;
     this.inviteCatToBuilding(b);
@@ -1363,4 +1386,4 @@ class YardScene {
   }
 }
 
-window.World = { YardScene, CatEntity, BUILDINGS, BUILDINGS_BY_ID, BUILDING_PRODUCTION, buildingLevel, upgradeCost };
+window.World = { YardScene, CatEntity, BUILDINGS, BUILDINGS_BY_ID, BUILDING_PRODUCTION, buildingLevel, upgradeCost, drawGardenProp };

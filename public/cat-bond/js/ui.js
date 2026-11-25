@@ -1499,7 +1499,7 @@ const UI = {
       sky.addColorStop(0,'#f8f5e6');sky.addColorStop(.60,'#e7f2e1');sky.addColorStop(1,'#c9e0bf');
       cx.fillStyle=sky;cx.fillRect(0,0,w,h);
       cx.fillStyle='#a9cda8';cx.beginPath();cx.ellipse(w*.50,h*.94,w*.47,h*.17,0,0,Math.PI*2);cx.fill();
-      def.draw(cx,w*.5,h*.89,1.15,1.3);
+      if(!World.drawGardenProp?.(cx,def.id,w*.5,h*.89,1.15))def.draw(cx,w*.5,h*.89,1.15,1.3);
     });
     host.querySelectorAll('[data-build]').forEach(btn => btn.onclick = () => {
       const def = window.World?.BUILDINGS_BY_ID?.[btn.dataset.build];
