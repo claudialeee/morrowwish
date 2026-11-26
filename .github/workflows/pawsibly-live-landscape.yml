@@ -1,0 +1,35 @@
+name: Pawsibly live landscape WebKit QA
+on:
+  push:
+    branches: [qa/pawsibly-live-landscape-20261126]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install WebKit
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps webkit
+      - name: Verify local source using WebKit first
+        env:
+          PAWSIBLY_ORIGINS: http://127.0.0.1:8765
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/pawsibly-webkit.log 2>&1 &
+          sleep 2
+          node scripts/pawsibly-live-landscape.mjs
+      - name: Verify actual deployed CSS and WebKit gameplay on both public domains
+        run: node scripts/pawsibly-live-landscape.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pawsibly-webkit-landscape
+          path: test-results/pawsibly-*.png
+          if-no-files-found: warn
