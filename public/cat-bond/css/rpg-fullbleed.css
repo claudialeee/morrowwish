@@ -178,3 +178,8 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 
 /* Compact landscape and narrow phone: keep meaningful labels and 44px+ touch regions. */
 @media(max-width:480px),(max-height:420px){#stage .sg-discovery{width:84px;height:70px;grid-template-rows:39px auto;gap:1px}#stage .sg-discovery::before{width:44px;height:44px}#stage .sg-discovery svg{width:38px;height:38px}#stage .sg-discovery-label{max-width:82px;font-size:11px;padding:2px 4px}#stage .sg-npc-talk-marker{font-size:12px;padding:5px 8px;min-width:64px}}
+
+/* Preserve both ends of puzzle art on narrow screens; input uses actual canvas bounds. */
+@media (max-aspect-ratio: 1/1){
+ #stage .rw-world.rw-interaction-fit:not([hidden])>.rw-shell .rw-surface{width:min(100cqw,calc(100cqh * 1.77777778))!important;height:auto!important;aspect-ratio:16/9!important;}
+}

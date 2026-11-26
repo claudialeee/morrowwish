@@ -139,10 +139,11 @@ jobs:
                 // All final artwork must decode from the exact deployed build, not the source checkout.
                 if(name==='desktop'){
                   const art=await page.evaluate(async()=>{
-                    const names='forest-fork forest-landing forest-root-bridge forest-moonleaf-control lantern-theater garden-lantern shadow-fish shadow-butterfly shadow-cat lantern-vault lantern-stone-crossing shadow-beast sky-cloudfall sky-safety-island sky-glider history-impact garden-moonleaf-touch garden-moonleaf garden-teacup garden-route-map'.split(' ');
-                    return Promise.all(names.map(async name=>{const im=new Image();im.src='assets/canon22-final-art/'+name+'.webp';await im.decode();if(!im.naturalWidth||!im.naturalHeight)throw Error('Empty art '+name);return {name,w:im.naturalWidth,h:im.naturalHeight};}));
+                    const names='forest-fork forest-landing forest-root-bridge forest-moonleaf-control lantern-theater garden-lantern shadow-fish shadow-butterfly shadow-cat lantern-vault lantern-stone-crossing shadow-beast sky-cloudfall sky-safety-island sky-glider history-impact garden-moonleaf-touch garden-moonleaf garden-teacup garden-route-map windchime-chase windchime-wisp'.split(' ');
+                    const paths=names.map(name=>'canon22-final-art/'+name+'.webp').concat(['resonance-world-v2/atlas.webp','resonance-world-v2/harbor.webp','resonance-world-v2/harbor-mist.webp','resonance-world-v2/forge.webp','combat/harbor-arena.webp','combat/tide-shell-watercolor.webp']);
+                    return Promise.all(paths.map(async name=>{const im=new Image();im.src='assets/'+name;await im.decode();if(!im.naturalWidth||!im.naturalHeight)throw Error('Empty art '+name);return {name,w:im.naturalWidth,h:im.naturalHeight};}));
                   });
-                  if(art.length!==20)throw Error('Missing final watercolor assets');
+                  if(art.length!==28)throw Error('Missing final watercolor assets');
                   console.log('FINAL WATERcolors DECODED',JSON.stringify(art));
                 }
                 if(!await page.evaluate(()=>window.ARCADE_COLLECTOR==='/api/preview-disabled'&&window.__CAT_BOND_INTEGRATION_ART__===false))throw Error('Preview isolation / art approval marker mismatch');

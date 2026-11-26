@@ -3,17 +3,17 @@ const raw={
   "harbor": {
     "after": "harbor:H-05",
     "souvenir": [
-      "潮纹贝壳",
-      "Tide shell"
+      "小铜风铃",
+      "Little brass chime"
     ],
     "returnSouvenir": [
-      "归港小旗",
-      "Homecoming pennant"
+      "集市小旗",
+      "Market pennant"
     ],
     "steps": [
       [
         "shell",
-        "shell",
+        "lantern",
         [
           0.115,
           0.7
@@ -23,13 +23,13 @@ const raw={
           -0.025
         ],
         [
-          "贝壳旁有一串小蟹脚印。",
-          "Tiny crab tracks lead away from the shell."
+          "旧风铃旁闪过一粒金色铃光。",
+          "A golden chime spark flickers beside the old bell."
         ]
       ],
       [
         "crab",
-        "crab",
+        "spark",
         [
           0.235,
           0.56
@@ -39,8 +39,8 @@ const raw={
           0.095
         ],
         [
-          "小螃蟹钻进石缝，留下另一枚漂亮的贝壳。",
-          "The crab scuttles into a crack, leaving a pretty shell."
+          "铃光钻进石缝，留下一枚小铜风铃。",
+          "The spark slips between the stones, leaving a little brass chime."
         ],
         [
           "shell"
@@ -58,8 +58,8 @@ const raw={
           -0.09
         ],
         [
-          "雾散了，潮池露出一面小旗。",
-          "With the fog gone, a little pennant appears in the tide pool."
+          "古铃恢复后，集市挂起了新的小旗。",
+          "With the old bell restored, a new pennant hangs in the market."
         ],
         [],
         "return"

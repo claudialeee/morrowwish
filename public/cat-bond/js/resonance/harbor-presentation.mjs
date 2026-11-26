@@ -10,30 +10,15 @@ function circle(c,x,y,r,color){c.beginPath();c.arc(x,y,r,0,TAU);c.fillStyle=colo
 function text(c,s,x,y,n=16,color=cream,align="center",max=undefined){c.font="600 "+n+"px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, sans-serif";c.fillStyle=color;c.textAlign=align;c.textBaseline="middle";max?c.fillText(s,x,y,max):c.fillText(s,x,y);}
 function box(c,x,y,w,h,fill,edge){c.beginPath();c.roundRect(x,y,w,h,9);c.fillStyle=fill;c.fill();if(edge){c.strokeStyle=edge;c.lineWidth=1.4;c.stroke();}}
 function glow(c,x,y,r,color){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,color);g.addColorStop(1,"transparent");circle(c,x,y,r,g);}
-const water=[[.365,.535],[.75,.49],[.79,.54],[.68,.69],[.51,.94],[.47,.98],[.38,.77],[.37,.68]];
-function waterShimmer(c,t,storm){
- c.save();path(c,water.map(([x,y])=>[x*960,y*540]));c.closePath();c.clip();
- for(let i=0;i<29;i++){const y=283+i*8,x=370+((i*83)%390)+Math.sin(t*(storm?1.6:.55)+i)*11;const w=12+(i*17)%43;
-  const g=c.createLinearGradient(x-w,y,x+w,y);g.addColorStop(0,"transparent");g.addColorStop(.5,storm?"rgba(196,226,233,.32)":"rgba(233,222,183,.24)");g.addColorStop(1,"transparent");stroke(c,[[x-w,y],[x+w,y]],g,1.1);}
- c.restore();
-}
-function fog(c,t,storm,restored){
- c.save();for(let i=0;i<4;i++){const x=280+i*190+Math.sin(t*.19+i)*60,y=138+i*22;
- c.save();c.translate(x,y);c.scale(1,.26);const f=c.createRadialGradient(0,0,0,0,0,155);f.addColorStop(0,"rgba(210,225,225,"+(restored ? .035 : storm ? .16 : .10)+")");f.addColorStop(1,"transparent");circle(c,0,0,155,f);c.restore();}
- c.restore();
-}
+// Local bell glow replaces retired water, rain and lighthouse effects.
 export function paintHarborEnvironment(c,view,frame){
- const t=reduced()?0:frame/60, storm=view.current?.id==="harbor:H-04", repaired=view.sanctuaries.includes("harbor"), sung=view.melodies.includes("harbor");
+ const t=reduced()?0:frame/60,challenge=view.current?.id==="harbor:H-04",repaired=view.sanctuaries.includes("harbor"),sung=view.melodies.includes("harbor");
  c.save();c.scale((Number(c.canvas.dataset?.logicalWidth)||c.canvas.width)/960,(Number(c.canvas.dataset?.logicalHeight)||c.canvas.height)/540);
- if(storm){c.fillStyle="rgba(20,37,57,.24)";c.fillRect(0,0,960,540);}
- waterShimmer(c,t,storm);fog(c,t,storm,sung);
- if(repaired||storm&&!view.objective.includes("puzzle:beam-mirrors")){
-  const a=.12+Math.sin(t*.38)*.075, x=137,y=47,dx=Math.cos(a)*730,dy=Math.sin(a)*730;
-  const beam=c.createLinearGradient(x,y,x+dx,y+dy);beam.addColorStop(0,"rgba(255,226,156,.40)");beam.addColorStop(.48,"rgba(255,229,172,.16)");beam.addColorStop(1,"transparent");
-  shape(c,[[x,y],[x+dx,y+dy-55],[x+dx,y+dy+55]],beam);glow(c,x,y,34,"rgba(255,221,148,.5)");
+ for(const [i,[x,y]] of [[126,184],[345,244],[575,260],[805,405]].entries()){
+  const pulse=.5+.5*Math.sin(t*2+i*1.8),alpha=(sung?.24:repaired?.17:challenge?.13:.075)*(.7+.3*pulse);
+  glow(c,x,y,sung?44:30,"rgba(255,212,122,"+alpha+")");
+  if(sung||challenge)circle(c,x+Math.sin(t+i)*6,y-8-pulse*8,2,"rgba(255,239,178,.72)");
  }
- if(storm&&!reduced()){c.save();c.strokeStyle="rgba(198,223,235,.28)";c.lineWidth=1;c.beginPath();for(let i=0;i<45;i++){const x=(i*137+t*135)%990,y=(i*83+t*280)%560;c.moveTo(x,y);c.lineTo(x-13,y+23);}c.stroke();c.restore();}
- if(sung){for(const [x,y] of [[137,47],[97,226],[372,213],[543,222],[822,210],[828,474]])glow(c,x,y,28,"rgba(255,211,128,.22)");}
  c.restore();
 }
 export function harborObjective(v,lang){

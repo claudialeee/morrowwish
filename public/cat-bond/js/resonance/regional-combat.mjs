@@ -4,7 +4,7 @@ import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud}
 // Wild cats remain collectible; scripted Forge/Finale encounters use separate adapters.
 import {libraryBlocked,libraryPoints,catdexRecord} from "./library-mechanisms.mjs";
 export const REGION_KITS=Object.freeze({
- harbor:{name:["风铃镇","Windchime Town"],enemy:["潮汐追猎","Tide pursuit"],npcs:["jiedeng","qilan"],element:"water",color:"#71c9d9",kind:"surge",period:6.2,support:["灯塔引航","Beacon guidance"]},
+ harbor:{name:["风铃镇","Windchime Town"],enemy:["铃光兽","Belllight beast"],npcs:["jiedeng","qilan"],element:"water",color:"#e7c775",kind:"surge",period:6.2,support:["真铃支援","True chime support"]},
  forest:{name:["眠根林","Rootsleep Forest"],enemy:["根须围猎","Root ambush"],npcs:["yahe","yuchuan"],element:"grass",color:"#97ba76",kind:"roots",period:6.8,support:["疏通根脉","Clear the roots"]},
  forge:{name:["千灯城","Lantern City"],enemy:["高温巡猎","Furnace hunt"],npcs:["jinpo","xiaomao"],element:"fire",color:"#e9a16b",kind:"embers",period:6.5,support:["冷却旁路","Coolant bypass"]},
  sky:{name:["云脊群岛","Skyspine Isles"],enemy:["风切追逐","Gale chase"],npcs:["lingyu","yuanfan"],element:"elec",color:"#c6dce9",kind:"gale",period:6.1,support:["稳定气流","Stabilize the wind"]},
@@ -69,7 +69,7 @@ const artFiles={
  library:["library-arena.webp","mirror-sentinel-watercolor.webp"],
  starfall:["starfall-arena.webp","orbit-sentinel-watercolor.webp"],
 };
-const portraitFocalPoints={harbor:.78,forest:.20,forge:.50,sky:.68,library:.50,starfall:.65};
+const portraitFocalPoints={harbor:.50,forest:.20,forge:.50,sky:.68,library:.50,starfall:.65};
 const art={};
 function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
@@ -92,7 +92,7 @@ function drawManifestation(ctx,e,b){
  const originalSize=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62));
  const size=e.regionalEnemy==="forge"?originalSize:Math.max(92,Math.min(138,118*(b.catScale?.("enemy")||.95)/.95)),bob=e.frozen?0:Math.sin(b.t*3+e.i)*1.5;
  // Fit the authored creature within the existing visual box without stretching.
- const src=painted?visibleBounds(img):[0,0,img.naturalWidth,img.naturalHeight];const fit=Math.min(size/src[2],size/src[3]),dw=src[2]*fit,dh=src[3]*fit;
+ const src=(painted||e.regionalEnemy==="harbor")?visibleBounds(img):[0,0,img.naturalWidth,img.naturalHeight];const fit=Math.min(size/src[2],size/src[3]),dw=src[2]*fit,dh=src[3]*fit;
  // Ground the unchanged silhouette at its visual foot anchor, not a
  // glow ring. The shadow stays planted during idle motion.
  ctx.save();ctx.translate(e.x,e.y+(e.regionalEnemy==="forge"?size*.06:23));ctx.scale(Math.max(1,dw*.34),Math.max(1,size*.055));
@@ -142,7 +142,7 @@ function install(){
  const bg=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){if(this.regionalCombat&&drawScene(ctx,W,H,this.regionalCombat.region))return;return bg.call(this,ctx,W,H);};
  function notice(b,zh,en){b.game.toast({zh,en});}
- const labels={surge:["潮浪来袭，避开横向水带！","Tidal surge: leave the horizontal lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["熔渣即将落下！","Molten fragments are about to fall!"],gale:["风切线即将贯穿战场，注意侧风推移！","Gale shear incoming. Counter the crosswind drift!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨正在轮转，避开落点！","Orbital markers are rotating. Keep clear!"]};
+ const labels={surge:["铃光横扫，避开预警光带！","Belllight sweep: leave the marked lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["熔渣即将落下！","Molten fragments are about to fall!"],gale:["风切线即将贯穿战场，注意侧风推移！","Gale shear incoming. Counter the crosswind drift!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨正在轮转，避开落点！","Orbital markers are rotating. Keep clear!"]};
  function mount(game,b){
   document.getElementById("cb-region-combat")?.remove();
   const host=document.getElementById("battle-ui");if(!host)return;

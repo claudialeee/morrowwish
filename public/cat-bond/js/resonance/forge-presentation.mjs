@@ -7,14 +7,14 @@ export function forgeObjective(v,explorer,l){
 }
 export function paintForgeEnvironment(ctx,v,frame,forced=null){
  const t=frame/60,restored=forced??v.melodies.includes("forge"),testing=!restored&&(v.current?.id==="forge:E-03"||v.sanctuaries.includes("forge"));
- const x=.59*W,y=.27*H;ctx.save();
- if(!restored&&!testing){ctx.fillStyle="rgba(14,27,39,.28)";ctx.fillRect(0,0,W,H);}if(!restored){const cold=ctx.createRadialGradient(x,y,18,x,y,165);cold.addColorStop(0,testing?"rgba(25,37,48,.28)":"rgba(25,37,48,.86)");cold.addColorStop(.56,testing?"rgba(25,37,48,.14)":"rgba(25,37,48,.65)");cold.addColorStop(1,"rgba(25,37,48,0)");ctx.fillStyle=cold;ctx.fillRect(x-165,y-165,330,330);}
- const glow=ctx.createRadialGradient(x,y,5,x,y,restored?320:155);
- glow.addColorStop(0,restored?"rgba(255,185,94,.55)":testing?"rgba(255,104,46,.28)":"rgba(156,167,180,.04)");
- glow.addColorStop(1,"rgba(255,140,50,0)");ctx.globalCompositeOperation="screen";ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
- if(restored||testing){for(let i=0;i<(restored?55:22);i++){const a=(i*.173+t*(.09+(i%4)*.013))%1,px=x+Math.sin(i*2.4+t*.31)*a*185,py=y+25-a*160;ctx.globalAlpha=(1-a)*(.4+.25*Math.sin(i+t));ctx.fillStyle=i%3?"#ffb15e":"#ffe4ab";ctx.beginPath();ctx.ellipse(px,py,1+i%3*.55,2+i%3,0,0,Math.PI*2);ctx.fill();}}
- ctx.globalCompositeOperation="source-over";ctx.globalAlpha=1;
- for(let i=0;i<9;i++){const a=(t*.16+i/9)%1,px=(.65+i%3*.065)*W+Math.sin(a*3+i)*24,py=.48*H-a*95;const g=ctx.createRadialGradient(px,py,1,px,py,16+a*28);g.addColorStop(0,"rgba(214,224,227,"+((1-a)*(testing?.18:restored?.09:.04))+")");g.addColorStop(1,"rgba(214,224,227,0)");ctx.fillStyle=g;ctx.fillRect(px-48,py-48,96,96);}
+ ctx.save();
+ // Discrete festival lanterns, not furnace plumes or steam.
+ for(const [i,[nx,ny]] of [[.88,.30],[.74,.40],[.63,.50],[.35,.50],[.35,.76],[.24,.80]].entries()){
+  const x=nx*W,y=ny*H,phase=.5+.5*Math.sin(t*2.1+i*1.7),radius=restored?49:testing?36:22;
+  const g=ctx.createRadialGradient(x,y,1,x,y,radius);
+  g.addColorStop(0,"rgba(255,202,113,"+((restored?.32:testing?.19:.10)*(.7+.3*phase))+")");g.addColorStop(1,"rgba(255,202,113,0)");
+  ctx.fillStyle=g;ctx.fillRect(x-radius,y-radius,radius*2,radius*2);
+ }
  ctx.restore();
 }
 export function paintForgeCeremony(ctx,img,t,l,actor){
