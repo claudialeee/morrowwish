@@ -327,7 +327,9 @@
     // Species-locked so only 月月 learns it; placed below the Lv8 roster so it reads as a mature
     // crescent arcana, not an early unlock. Slightly higher per-shot power than the generic swarm
     // (0.52 vs prism/boltSwarm 0.34) + 5 shots + homing + maxLife 2.6s = roughly single-skill DPS.
-    { id: 'crescentFan', name: '月华连弧', element: 'light', kind: 'projectile', power: 0.52, cd: 5.6, ultCost: 0, pulseCount: 5, pulseGap: 0.18, pulseHoming: 2.8, tags: ['ranged','blind','moon','pulse'], appliesTag: 'blind', vfx: 'fang', desc: '踏月之猫的招牌：一道道月牙能量波连发射出，各自追击最近目标。', unlock: { species: ['yuelian'], level: 10 } },
+    // Owner 2026-11-26: 月牙 moonblade MUST NOT home (直线挥出, 索隆月牙天冲式).
+    // pulseHoming removed; each wave flies straight along the caster's aim at release.
+    { id: 'crescentFan', name: '月华连弧', element: 'light', kind: 'projectile', power: 0.52, cd: 5.6, ultCost: 0, pulseCount: 5, pulseGap: 0.18, tags: ['ranged','blind','moon','pulse'], appliesTag: 'blind', vfx: 'fang', desc: '踏月之猫的招牌：一道道月牙能量波沿施放方向直线挥出。', unlock: { species: ['yuelian'], level: 10 } },
     // ---- 领悟条件 (quirky quests) ----
     { id: 'veteranStrike', name: '百战斩', element: 'dark', kind: 'melee',      power: 2.3, cd: 3.4, ultCost: 0, heavy: true, upgradeOf: 'shadowSwipe', tags: ['bleed','heavy'], appliesTag: 'bleed', vfx: 'muzzle', desc: '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。', unlock: { quest: 'battlesWon10' } },
     // 呼噜新星 purrNova removed per V4 (owner 2026-11-26): duplicated 金乌焱 sunflare (same fire

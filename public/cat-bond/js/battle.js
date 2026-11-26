@@ -2165,18 +2165,28 @@ class CaptureBattle {
         : sk.element==='water' ? 'orb' : sk.element==='dark' ? 'hex' : 'orb';
       const projR = sk.id==='crescentFan' ? 14 : sk.element==='dark' ? 12 : 11;
       const spd = f.projSpeed*0.86, life = 1.9;
-      // Wave 1 — immediate, uses the input aim.
-      this.spawnProj(ex,ey,aim,spd,baseDmg,'me',col,projR,projKind,
+      // POLYGON-SPAWN pulses (owner 2026-11-26): each wave exits from a vertex
+      // of a regular N-gon around the caster (radius ≈ 32), one per pulse,
+      // 72° apart for the 5-wave crescentFan. Non-homing pulses fly STRAIGHT
+      // along the cast aim (索隆月牙天冲). Homing pulses keep their arc. The
+      // vertex is a visual + spatial spawn point only — the flight direction
+      // is still `aim`, so all five waves parallel-fan outward.
+      const straight = !sk.pulseHoming;
+      const n = sk.pulseCount, polyR = 32;
+      const vertexAng = (idx) => aim + (idx - (n - 1) / 2) * (Math.PI * 2 / n);
+      const v0 = vertexAng(0);
+      const sx0 = f.x + Math.cos(v0) * polyR, sy0 = f.y + Math.sin(v0) * polyR;
+      this.spawnProj(sx0,sy0,aim,spd,baseDmg,'me',col,projR,projKind,
         { ...sk, homing: sk.pulseHoming, isDerived:true },life);
-      this.vfx.burst(ex,ey,{count:9,color:col,angle:aim,spread:.5,speed:150,life:.30,r:2.4});
-      // Waves 2..N — pushed to the queue with RELEASE time (later pulses pick their own
-      // aim at that moment). Owner tag f.i (team member index) is stable across frames.
+      this.vfx.burst(sx0,sy0,{count:9,color:col,angle:aim,spread:.5,speed:150,life:.30,r:2.4});
       for(let i=1;i<sk.pulseCount;i++){
         this._pulseQueue.push({
           casterIdx:this.team.indexOf(f),
           releaseAt:this.t + i*(sk.pulseGap||0.3),
           skillId:sk.id,element:sk.element,baseDmg,projKind,projR,
-          spd,life,homing:sk.pulseHoming,col});
+          spd,life,homing:sk.pulseHoming,col,
+          lockedAim: straight ? aim : null,
+          vertexAng: vertexAng(i), polyR});
       }
       return true;
     }
@@ -2193,10 +2203,27 @@ class CaptureBattle {
       if(this.t < p.releaseAt){keep.push(p);continue;}
       const caster=this.team[p.casterIdx];
       if(!caster||!caster.alive)continue;
-      const tgt=this.nearestEnemy(caster.x,caster.y);
-      if(!tgt)continue;
-      const ang=Math.atan2(tgt.y-caster.y,tgt.x-caster.x);
-      const ex=caster.x+Math.cos(ang)*23, ey=caster.y+Math.sin(ang)*23;
+      // Flight direction: locked at cast time for non-homing pulses (straight-line
+      // 月牙天冲); otherwise re-aim at nearest-enemy now.
+      let ang;
+      if(p.lockedAim != null){
+        ang = p.lockedAim;
+      }else{
+        const tgt=this.nearestEnemy(caster.x,caster.y);
+        if(!tgt)continue;
+        ang=Math.atan2(tgt.y-caster.y,tgt.x-caster.x);
+      }
+      // Spawn position: polygon vertex around the caster if vertexAng present,
+      // otherwise the old "ahead of caster" spawn.
+      let ex, ey;
+      if(p.vertexAng != null){
+        const r = p.polyR || 32;
+        ex = caster.x + Math.cos(p.vertexAng) * r;
+        ey = caster.y + Math.sin(p.vertexAng) * r;
+      }else{
+        ex = caster.x + Math.cos(ang) * 23;
+        ey = caster.y + Math.sin(ang) * 23;
+      }
       const fakeSk={id:p.skillId,element:p.element,homing:p.homing,isDerived:true,_traitCaster:caster,
         appliesTag:p.skillId==='tidalPulse'?'soak':'expose',power:1};
       this.spawnProj(ex,ey,ang,p.spd,p.baseDmg,'me',p.col,p.projR,p.projKind,fakeSk,p.life);
@@ -5270,14 +5297,16 @@ class CaptureBattle {
       // so a cautious kiter faced identical shot cadence after 60s of poke-and-retreat. Playtest P0 #1
       // (kiter persona, 8 neutral timeouts in a row — no escalation). Now: at full pressure the enemy
       // fires up to ~38% faster, so turtle play is actively punished instead of ignored. 1.0 at pressure=0.
-      // Owner 2026-11-26 "敌人攻击想不要钱一样": stacked pressure+closing boosts
-      // compressed fireCd past the 0.38s floor on long fights (3 shots/sec = a
-      // wall of fire). Halve both boosts + raise the fireCd floor 0.38→0.60s so
-      // even at max pressure+closing the enemy caps at ~0.6s/shot (≈1.6 shots/s).
+      // Owner 2026-11-26 "野生猫咪的普攻是不是没有cd": the 0.60s floor still
+      // read as "no cd" because suppress×0.6 could drop it to 0.36s. Raise floor
+      // to 0.95s AND apply the floor AFTER the suppress divisor so the floor is
+      // the real minimum, not a pre-boost value.
       const pressureBoost = 1 + 0.30 * (this._pressure || 0);
       const closingFireBoost = 1 + 0.25 * (this._closing || 0);
       e._lastAttackT=this.t;
-      e.fireCd = Math.max(0.60, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase / (pressureBoost * closingFireBoost)/(e.status?.suppress>0?.6:1);   // +floor; 感电降攻速
+      const rawCd = e.fireRate * (1 - e.aggro * 0.35) * (e.slowed ? 1.8 : 1) * manualEase
+        / (pressureBoost * closingFireBoost) / (e.status?.suppress>0?.6:1);
+      e.fireCd = Math.max(0.95, rawCd);   // HARD floor last; 感电降攻速
       // Lead at the ACTUAL projectile speed so the intercept solution matches flight.
       const shotSpeed = 200 + e.rIdx * 34;
       let lead = this.leadAngle(e, me, shotSpeed);
