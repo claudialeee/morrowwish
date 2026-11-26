@@ -343,6 +343,46 @@
         ?window.Battle.CaptureBattle.previewWildLevel(sp,id,preferred.length?preferred:roster.slice(0,5))
         :1;
     }
+    // FIRST-BATTLE COUNTER SEED (owner call 2026-11-25): a complete newcomer's very first wild
+    // encounter should feel like they're CRUSHING it — "效果拔群!" on the first swing, not the
+    // reverse. If catchCount === 0 and the player owns a starter, convert the spawn closest to
+    // the player's entry point into a species the starter DOES extra damage to (effectiveness > 1).
+    // Does NOTHING once catchCount > 0, in any non-home region, or if no counter is in the pool.
+    try {
+      var S1 = window.Skills, GD1 = window.GameData, St1 = window.State;
+      var caught = (St1 && St1.S && St1.S.catchCount) || 0;
+      var starter = (St1 && St1.S && St1.S.cats && St1.S.cats[0]) || null;
+      if (caught === 0 && starter && S1 && GD1 && spawns.length) {
+        var starterEl = S1.elementOf(starter.species);
+        // Find a pool species the starter's element is strong against.
+        var weakIds = pool.filter(function(sid){
+          var e = S1.elementOf(sid);
+          return S1.effectiveness(starterEl, e) > 1;
+        });
+        if (weakIds.length) {
+          // Pick the strongest matchup (2× before 1.5×), then lowest rarity so the fight
+          // stays an easy win.
+          var rarityOrd = {N:0, R:1, SR:2, SSR:3};
+          weakIds.sort(function(a,b){
+            var ea = S1.elementOf(a), eb = S1.elementOf(b);
+            var em = S1.effectiveness(starterEl, eb) - S1.effectiveness(starterEl, ea);
+            if (em !== 0) return em;
+            var ra = (GD1.speciesById(a)||{}).rarity || 'N';
+            var rb = (GD1.speciesById(b)||{}).rarity || 'N';
+            return (rarityOrd[ra]||0) - (rarityOrd[rb]||0);
+          });
+          // Overwrite the FIRST spawn (first one spawned → typically closest to entry).
+          spawns[0].sp = weakIds[0];
+          spawns[0]._firstBattleSeed = true;      // debug/telemetry; not gameplay
+          // Recompute its encounter level for the new species.
+          var seededSp = GD1.speciesById(weakIds[0]);
+          if (seededSp && window.Battle && window.Battle.CaptureBattle && window.Battle.CaptureBattle.previewWildLevel) {
+            spawns[0].level = window.Battle.CaptureBattle.previewWildLevel(
+              seededSp, id, preferred.length ? preferred : roster.slice(0,5));
+          }
+        }
+      }
+    } catch (_) { /* best-effort; never block world setup */ }
     // COUNTER-CAT FLOOR (owner: "玩家可能拿不到克制 SR/SSR 的猫"): if this region holds a gated SR/SSR
     // whose element the player CANNOT counter (owns no cat strong vs it), make sure a CAPTURABLE
     // counter roams here too — convert one ambient low-rarity spawn to a counter-element N/R from the

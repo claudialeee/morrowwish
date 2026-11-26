@@ -28,6 +28,14 @@ const UI = {
     document.getElementById('fab-feed').addEventListener('click', () => this.openFeed());
     document.getElementById('fab-play').addEventListener('click', () => this.openTease());
     document.getElementById('fab-build')?.addEventListener('click', () => { if (this.game.scene === 'yard') this.openBuild(); });
+    // DEBUG unlock-all (?debug=1 only): grants every species, max-level, all skills learned,
+    // full affinity + unlocked worldmap regions. For gauging high-level combat feel.
+    const fabDebug = document.getElementById('fab-debug-unlock');
+    try {
+      const debugOn = new URLSearchParams(location.search).get('debug') === '1';
+      if (fabDebug && debugOn) fabDebug.hidden = false;
+    } catch (_) {}
+    if (fabDebug) fabDebug.addEventListener('click', () => this.game.debugUnlockEverything?.());
     const fabMap = document.getElementById('fab-map');
     if (fabMap) fabMap.addEventListener('click', () => { if (this.game.scene === 'yard') this.game.openWorldMap(); });
     // battle buttons

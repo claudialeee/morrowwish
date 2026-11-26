@@ -618,9 +618,30 @@ class YardScene {
     const masteryLuck=this.game.masteryStatus?.().luckBonus||0;
     const luck=Math.min(0.9,(State.S.luckLure||0)*0.25+masteryLuck);
     const beginnerPool=GameData.SPECIES.filter(sp=>sp.rarity==='N' && sp.id!==State.S.cats[0]?.species);
-    let sp=first&&beginnerPool.length
-      ? beginnerPool[Math.floor(Math.random()*beginnerPool.length)]
-      : GameData.rollSpecies(luck);
+    // FIRST-BATTLE COUNTER SEED (owner call 2026-11-25): newcomer's VERY FIRST wild
+    // encounter in the yard (catchCount===0) must be element-WEAK to the starter —
+    // '效果拔群!' on the first swing, never a resisted matchup. e.g. water starter
+    // (lanbao) never gets a grass first wild (doudou) that resists it.
+    let sp;
+    if (first && beginnerPool.length && State.S.cats[0] && window.Skills) {
+      const starterEl = window.Skills.elementOf(State.S.cats[0].species);
+      const weakPool = beginnerPool.filter(s => window.Skills.effectiveness(starterEl, window.Skills.elementOf(s.id)) > 1);
+      if (weakPool.length) {
+        // Prefer the strongest matchup (2× ahead of 1.5×); random tiebreak within the top tier
+        const sortedWeak = weakPool.slice().sort((a, b) =>
+          window.Skills.effectiveness(starterEl, window.Skills.elementOf(b.id)) -
+          window.Skills.effectiveness(starterEl, window.Skills.elementOf(a.id)));
+        const topMult = window.Skills.effectiveness(starterEl, window.Skills.elementOf(sortedWeak[0].id));
+        const topTier = sortedWeak.filter(s => window.Skills.effectiveness(starterEl, window.Skills.elementOf(s.id)) === topMult);
+        sp = topTier[Math.floor(Math.random() * topTier.length)];
+      } else {
+        sp = beginnerPool[Math.floor(Math.random() * beginnerPool.length)];
+      }
+    } else {
+      sp = first && beginnerPool.length
+        ? beginnerPool[Math.floor(Math.random() * beginnerPool.length)]
+        : GameData.rollSpecies(luck);
+    }
     // Onboarding: the first three captures should introduce variety.
     // Late game: three repeated sightings unlock an unseen common clue.
     // Do NOT tamper with any R/SR/SSR roll; rarity odds remain unchanged.

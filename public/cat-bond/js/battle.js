@@ -14,11 +14,25 @@ const BATTLE_MARGIN = { side: 46 }; // vertical bounds follow the visible paved 
 const ULT_COOLDOWN_SECONDS = 18;
 // Global skill-cadence knob: >1 lengthens every Q/E cooldown so skills can't be
 // spammed back-to-back (they were firing a touch too fast). One place to tune.
-const SKILL_CD_MULT = 1.3;
+// Task #52 Phase A (2026-11-25): dropped 1.3 → 1.2 — Q cd eases from 5.85s to
+// 5.4s so a 30-45s fight gets roughly 6-9 Q casts (owner target: "Q 平均 4-6s 一次").
+// Not pushed all the way to 1.0 so Q/E don't spam back to a basic-adjacent cadence.
+const SKILL_CD_MULT = 1.2;
 // A skill equipped in the BASIC (left-click) slot deals this fraction of the power it
 // would as a Q/E skill — basics are short-cooldown + spammable, so the SAME skill must
 // hit for clearly less when used as a basic than when slotted as a real skill.
-const BASIC_SKILL_DMG_MULT = 0.5;
+// Owner 2026-11-26 '伤害太低，打起来有点慢': 0.5 → 0.55 (+10%) part of the global
+// damage bump; mirrored by raising BASIC_POWER_MULT 0.70→0.85 and removing the
+// global 0.9 player nerf below. Net effect per-slot Q/E +11%, basic +35%.
+const BASIC_SKILL_DMG_MULT = 0.55;
+// Task #52 Phase A (2026-11-25): basic attacks (both the default yarn/fish toss AND
+// the basic-slot skill path) hit for 70% of their nominal power. Multiple playtest
+// cycles reported basics as a self-sufficient win-con that drowned out Q/E (~200:1
+// basic:Q ratio). Scaling basics down makes Q/E the real DPS lever without changing
+// Q/E numbers directly. Applied in fireBasic().
+// Owner 2026-11-26 '伤害太低': 0.70 → 0.85 (+21%). Basic still nerfed relative
+// to Q/E per Task #52 Phase A, just less harshly.
+const BASIC_POWER_MULT = 0.85;
 
 class CaptureBattle {
   constructor(game, teamOrCat, wildSpecies, opts) {
@@ -93,6 +107,25 @@ class CaptureBattle {
         this.enemyDmgMult    = bend(this.enemyDmgMult,    diff.gapScale) * diff.enemyDmg;
         this.enemyHpScaleGap = bend(this.enemyHpScaleGap, diff.gapScale) * diff.enemyHp;
         this.difficultyMode  = (window.State && State.difficulty) ? State.difficulty() : 'casual';
+        // MERCY BAND (downward mirror of stompStreak): after N consecutive defeats, bend
+        // this fight toward the player so a stuck beginner isn't walled 8× in a row. CASUAL
+        // ONLY — hardcore stays static. Enemy mults are floored so it can never trivialize,
+        // and the first win zeroes lossStreak (commitAiProfile), so it can't compound. Both
+        // the RSI judge and the playtest crons converged on this missing downward valve.
+        if (this.difficultyMode !== 'hardcore') {
+          // this.aiP isn't built until later in the ctor; read the persisted streak directly.
+          // Mercy ramp scaled over 5 losses (was: capped at 3 with m=1 plateau — a stuck casual
+          // got identical help on loss 4..8). Deeper floors mean the 5th-6th try is near-winnable:
+          // enemy dmg can drop to 0.30, enemy HP to 0.35, player dmg can rise to +40%.
+          // Playtest P0 #3 (panicky persona, 0/8 with mercy still armed).
+          const lossStreak = (window.State && State.S && State.S.aiProfile && State.S.aiProfile.lossStreak) | 0;
+          const m = clamp(lossStreak / 5, 0, 1);
+          if (m > 0) {
+            this.playerDmgMult   *= (1 + 0.40 * m);
+            this.enemyDmgMult     = Math.max(0.30, this.enemyDmgMult * (1 - 0.45 * m));
+            this.enemyHpScaleGap  = Math.max(0.35, this.enemyHpScaleGap * (1 - 0.32 * m));
+          }
+        }
         if(this.starterRegion){
           // In the starter map, the player's FIRST TWO cats should be able to
           // beat one ordinary wild cat without perfect skill timing. The player-damage
@@ -137,6 +170,8 @@ class CaptureBattle {
     this.team.forEach((f,i)=>{const top=this.topMargin,bot=this.H-this.bottomMargin;
       f.x=this.W*(.18+(i%2)*.1);f.y=top+(bot-top)*(0.45+i*0.12);});
     const f = this.me();
+    // Trait system: clear any per-battle cross-cat state (no-op until P1/P2 PRs land).
+    window.CatTraits && window.CatTraits.reset && window.CatTraits.reset(this);
     this.aim = 0;                         // radians toward mouse
     this.ult = 0;                         // 0..100 ultimate meter
     this.ultCd = 0;                       // shared across fighter swaps
@@ -145,6 +180,12 @@ class CaptureBattle {
     // only — TTK/matchups/difficulty are unchanged (everything scales together). Tests read this to
     // convert sim-seconds→real-seconds so a tempo change never silently breaks a duration assertion.
     this.tempoScale = 0.64;               // owner: 0.8 still felt too fast → 0.64 (~36% below original)
+    // Playtest P0 #4 (lazy/spectator 15.79s avg — "连看戏都来不及"): auto-mode viewers
+    // can't perfect-dodge or ult-time, so the human-paced 0.64 clock amortizes the
+    // skill/duo/element spectacle budget poorly over short fights. Nudge sim-time ~12% slower
+    // in casual auto so a fight ends ~24-28s, giving duo casts + stagger beats room to read.
+    // Hardcore + manual untouched; stacks under the global 0.64 so manual stays untouched.
+    if (this.autoMode && this.difficultyMode !== 'hardcore') this.tempoScale *= 0.88;
     // --- COMBO system: hits chain a multiplier; drops after a gap (需要操作维持) ---
     this.combo = 0;                       // current chain count
     this.comboT = 0;                      // seconds until the chain drops
@@ -161,6 +202,22 @@ class CaptureBattle {
     // --- adaptive AI: read the learned player profile, derive this battle's knobs ---
     this.aiP = this.normalizeAiProfile(window.State && State.S && State.S.aiProfile);
     this._aiConf = clamp(this.aiP.battles / 8, 0, 1);       // ramps in over ~8 fights
+    // AUTO-ASSIST (playtest P0: pure-auto was accidentally the HARDEST config — the manual
+    // opening-grace + masher-guard nets are gated !autoMode, so a losing auto player got
+    // NOTHING). Current playtest P0 #3 (panicky, 0/8): the SAME gating excludes a losing
+    // MANUAL casual player who never thought to toggle auto. Fire the nets for BOTH modes
+    // in casual once lossStreak ≥ 2, and strengthen to ~0.8 at streak ≥ 4 so the 5th+ try
+    // is a near-guaranteed win. 0 for hardcore or non-losing casual.
+    // Playtest P0 #3 (lazy/auto-battler 1/8 — "手动的烘焙版本"): a casual AUTO player got ZERO
+    // mercy until lossStreak hit 2, so the "sit back and watch" fantasy never actually arrived
+    // for a brand-new auto user. Layer a casual-AUTO baseline floor of 0.4 on top of the manual
+    // ramp — auto always gets some of the nets from fight #1, and still ramps up on consecutive
+    // losses. Manual casual keeps its lossStreak-only ramp (it reached +40% playerDmg via the
+    // mercy band, so it has its own full-strength deepening path).
+    const streakAssist = (this.difficultyMode !== 'hardcore' && ((this.aiP.lossStreak || 0) >= 2))
+      ? ((this.aiP.lossStreak || 0) >= 4 ? 0.8 : 0.6) : 0;
+    const autoBaseline = (this.autoMode && this.difficultyMode !== 'hardcore') ? 0.4 : 0;
+    this._autoAssist = Math.max(streakAssist, autoBaseline);
     this._obs = { dodgeSignSum: 0, dodgeN: 0, rangeSum: 0, rangeN: 0, rangeT: 0, threats: 0, dodgedThreats: 0, fires: 0, frames: 0, dmgTaken: 0 };
     // stompStreak (flawless-win count) tightens the knobs: snappier windups, less
     // aim slop, fuller lead — so a player who keeps stomping faces a sharper foe.
@@ -202,6 +259,15 @@ class CaptureBattle {
     this._debug = false;              // live recording flag (button-toggled)
     this._dbgLog = [];                // always allocated so the recorder guard is simple; stays empty unless recording
     this.shakeT = 0; this.flash = 0;
+    // PLAYER-DANGER FEEDBACK (playtest P0): active-cat HP fraction (draw() paints a focal red
+    // vignette+pulse below CRIT_HP_FRAC), lowest team-HP dip this fight (→ 险胜/Clutch win beat),
+    // and a critical-entry latch so the heartbeat sting fires once per dip, not every frame.
+    // Playtest P0 #1 (masher 'don't know what hit me'): red vignette previously only painted below
+    // 25% HP, which on a 13s death gave the player ~2s of warning — too late to react. Raise the
+    // threshold to 45% so the heartbeat/vignette gives a 4-5s "you're actually dying" window.
+    // Downstream consumers (mash-stall teach L4629, severity math L6457, hysteresis L4586) all
+    // scale off this field so a single-knob bump stays coherent.
+    this.CRIT_HP_FRAC = 0.45; this._dangerFrac = 1; this._minTeamHpDip = 1; this._inCrit = false;
     // HIT-FEEL: trauma-based camera shake (Nijman). On a hit we add trauma (0..1);
     // the camera offset in draw() = maxShake * trauma² (squared falloff), decaying
     // ~1.8/s. shakeTrauma replaces the old shakeT-that-never-moved-the-camera.
@@ -217,7 +283,7 @@ class CaptureBattle {
 
     // move definitions (cooldowns live on the active fighter)
     this.moves = [
-      { key: 'basic', name: '猫爪', hot: '左键/J', cd: 0.6 },
+      { key: 'basic', name: '猫爪', hot: '左键/J', cd: 0.9 },
       { key: 'q',     name: '毛球散射', hot: 'Q', cd: 4.5 },
       { key: 'e',     name: '疾扑冲刺', hot: 'E', cd: 5.5 },
       { key: 'ult',   name: '喵之怒涛', hot: 'R', cd: 0, ult: true },
@@ -731,7 +797,11 @@ class CaptureBattle {
       specialMeter: -(i * 8) - this.rng() * 10,   // start at/below 0, staggered; must climb to 100
       specialCd:Math.max(2.4,5-rIdx*.6-challenge*.55),telegraph:0,telegraphKind:null,inv:0,
       flash: 0, aggro: 0, heading: Math.PI, bolt: 0,
-      dmg:(9+rIdx*3.2)*lvScale*(rIdx===3?1.10:rIdx===2?1.06:1)*
+      // Owner 2026-11-26 '敌我双方伤害都太低，打起来有点慢': base dmg 9→11 (+22%)
+      // and rarity slope 3.2→3.8 (+19% per tier). Mirrors the player-side global bump
+      // so relative difficulty is preserved. N:11.0 (was 9), R:14.8 (was 12.2),
+      // SR:18.6 (was 15.4), SSR:22.4 (was 18.6).
+      dmg:(11+rIdx*3.8)*lvScale*(rIdx===3?1.10:rIdx===2?1.06:1)*
         (1+challenge*.12)*(this.starterRegion?.70:1),
       speed:92+rIdx*22+challenge*14,
       fireRate:this.starterRegion?Math.max(.85,1.08-rIdx*.06):
@@ -1007,7 +1077,12 @@ class CaptureBattle {
   skillEngageReach(sk,basicRange){
     if(!sk)return 0;
     switch(sk.kind){
-      case 'melee':return this.meleeReach();   // claw contact (single source of truth)
+      // Owner 2026-11-26 bug: "近战猫不怎么用近战技能". meleeReach() returns ~50 (anchor
+      // preference) but meleeStrike actually CONNECTS out to 64 + r*0.65 ≈ 76. The fire gate
+      // was using the anchor, so a cat that got pushed to 55-70px from target was reported
+      // as "too far to swing" even though the swing would have landed. Match the real hit
+      // geometry (same +4 margin as basicAttackRange's melee branch at L1034).
+      case 'melee':return 72;   // claw CONTACT range, matches meleeStrike + basicAttackRange
       case 'dash':return 175;    // matches dashLunge _dashReach (closes a ranged kiter's standoff)
       case 'leap':return 215;    // matches leapSlam max
       case 'pounce':return 240;  // flyingPounce reaches 210; AI may commit from a touch farther
@@ -1390,7 +1465,19 @@ class CaptureBattle {
     // Auto-battle dodges like a competent human, NOT a frame-perfect robot: it only
     // reacts to ~55% of threats (less when it's cruising unhurt), so the player still
     // takes hits and the fight has stakes. (Playtest: auto evasion was too strong.)
-    if(threat && !(f.reflectT>0 && threat.p && this.reflectCovers(f,threat.p.x,threat.p.y)) &&
+    // FRONTLINER DODGE GATE (R1 2026-11-25, owner: "近战猫侧闪 projectile 还很远"):
+    // tank/fighter/assassin rushing a kiter MUST NOT burn their 1.2s evasion on a shot
+    // whose ETA is still >0.30s — that's half a second of free uptime for the kiter and
+    // throws away the chase the frontliner just paid chaseMul for. Only let frontliner
+    // dodge on IMMINENT danger (eta<0.30s) or a multi-pellet volley. Backliners keep the
+    // per-threat coin-flip. Healthy frontliner healthy → trust armor/shield; hurt →
+    // revert to normal dodge logic (it needs the i-frames to survive).
+    const fb=f.cat?.buildType||window.Skills?.buildTypeForBreed?.(f.cat);
+    const isFront=fb==='tank'||fb==='fighter'||fb==='assassin';
+    const healthyFront=isFront&&f.maxhp&&f.hp/f.maxhp>=0.45;
+    const threatImminent=threat&&(threat.eta<0.30||(threat.volley||1)>=2);
+    const canFrontDodge=!healthyFront||threatImminent;
+    if(threat && canFrontDodge && !(f.reflectT>0 && threat.p && this.reflectCovers(f,threat.p.x,threat.p.y)) &&
        f.dodgeCd<=0&&this.rng()<this.autoDodgeChance(f)){
       if(this.dodge(f)!==false){this.markAutoAction(f,'闪避危险弹幕');return;}
     }
@@ -1418,8 +1505,10 @@ class CaptureBattle {
       // HARD RULE: never fire a reflectable shot (projectile/beam) at a reflect wall —
       // it bounces straight back as self-damage. Melee/aoe/dash still allowed (not reflected).
       if(tgtReflect&&rangedKind(sk.kind))return false;
-      // Physical claw sweep — single source of truth so the band can't drift past it.
-      if(sk.kind==='melee')return dist<=this.meleeReach(tgt);
+      // Physical claw sweep. meleeStrike actually CONNECTS at ~76 (RANGE 64 + r*0.65), not the
+      // 50 anchor meleeReach() returns. Owner 2026-11-26: fire gate must match hit geometry so
+      // a melee cat auto-fires Q the moment it's in swing range, not after it crowds to anchor.
+      if(sk.kind==='melee')return dist<=64+((tgt&&tgt.r)||18)*0.65+4;
       if(sk.kind==='dash')return dist>55&&dist<185;         // fire while the 175px dash can still reach
       if(sk.kind==='leap')return dist>70&&dist<240;         // 泰山压顶 reach band
       if(sk.kind==='pounce')return dist>60&&dist<300;       // 飞扑 gap-closer band
@@ -1629,7 +1718,19 @@ class CaptureBattle {
       f.moving = true;
     } else if (f.dashT <= 0 && f.rootT <= 0) f.moving = false;
     if(near && !(f.reflectT>0 && this.reflectCovers(f,near.x,near.y)) &&
-       this.incomingThreat(f) && f.dodgeCd<=0 && this.rng()<this.autoDodgeChance(f)) this.dodge(f);
+       f.dodgeCd<=0 && this.rng()<this.autoDodgeChance(f)){
+      // Same frontliner gate as smartAutoAction: a healthy tank/fighter/assassin only
+      // burns evasion on imminent (eta<0.30s) or volley threats, otherwise they waste
+      // their dodge on far shots they could just eat with their HP pool.
+      const _t=this.incomingThreat(f);
+      if(_t){
+        const _fb=f.cat?.buildType||window.Skills?.buildTypeForBreed?.(f.cat);
+        const _isFront=_fb==='tank'||_fb==='fighter'||_fb==='assassin';
+        const _healthy=_isFront&&f.maxhp&&f.hp/f.maxhp>=0.45;
+        const _imminent=_t.eta<0.30||(_t.volley||1)>=2;
+        if(!_healthy||_imminent) this.dodge(f);
+      }
+    }
     // Shared decision loop for active and allied cats. Only the current active cat
     // owns the manual aim/UI; its autonomous movement/combat does not differ.
     if(f===this.me()) this.aim=f._aim=Math.atan2(tgt.y-f.y,tgt.x-f.x);
@@ -1784,12 +1885,15 @@ class CaptureBattle {
       // A skill fired from the BASIC slot hits for notably LESS than the same skill in a
       // Q/E slot: it's a short-cooldown, spammable left-click, so per-hit power is scaled
       // down (BASIC_SKILL_DMG_MULT). The identical skill in Q/E still pays full power.
-      const pow = (sk.power || 1) * BASIC_SKILL_DMG_MULT * this.outgoingBuffMult(f);
+      const pow = (sk.power || 1) * BASIC_SKILL_DMG_MULT * BASIC_POWER_MULT * this.outgoingBuffMult(f);
       this.castOffensiveSkill(f, aim, { ...sk, isBasic: true }, pow, col, true);   // _nowind: no wind-up on a basic
       if (f === this.me() && (this.t - (this._lastPawSfx || -3) > .45)) {
         window.MorrowwishAudio?.effect?.('combat_swing'); this._lastPawSfx = this.t;
       }
-      this.gainUlt(2);
+      // Task #52 Phase A: basic→ult trickle was +2; dropped to +1 so Q/E land the big
+      // ult chunks instead. Over a 15s fight that's ~17 ult from basic alone vs ~42
+      // from Q (+14 each × 3 casts) — ult becomes a Q/E payoff, not a basic byproduct.
+      this.gainUlt(1);
       return;
     }
     f.cd.basic = this.moves[0].cd * (f.bond.cdReduction || 1);
@@ -1801,19 +1905,24 @@ class CaptureBattle {
     // ones, pushing Q/E priming. (Playtest P1: basic was a self-sufficient win cond.)
     f._basicTick = (f._basicTick || 0) + 1;
     const toy = 'yarn';
-    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*this.outgoingBuffMult(f), 'me', col, 7, toy, { element: f.element, isBasic: true }, 0.5);
+    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*BASIC_POWER_MULT*this.outgoingBuffMult(f), 'me', col, 7, toy, { element: f.element, isBasic: true }, 0.5);
     this.vfx.muzzle(mx, my, aim, col);
     this.regularSkillAccent(f,f.element,aim,true);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
       window.MorrowwishAudio?.effect?.('combat_swing');this._lastPawSfx=this.t;
     }
-    this.gainUlt(2);
+    // Task #52 Phase A: see the matching comment in the basicSkill branch above.
+    this.gainUlt(1);
   }
   // Native skill semantics for heal/buff (formerly mis-cast as damage or dash).
   // Returns whether anything was actually used, for smart AI priorities.
   // Support skills can target a FRIEND, not just the caster. If the player is
   // aiming at an ally (or an ally needs it far more), the heal/buff lands on them.
   supportBeneficiary(f, sk, aim){
+    // SELF-only heals (坦克's 舔伤口) ALWAYS lock the caster — never auto-route to a worse-off
+    // ally. That's what distinguishes a tank's self-sustain from a support's team-patch
+    // (grooming area-heal). Owner call 2026-11-25.
+    if (sk && sk.kind === 'heal' && sk.healMode === 'self') return f;
     // explicit aim at an ally (manual intent) wins
     if (aim != null && f === this.me() && !this.game.isTouch) {
       const ax = f.x + Math.cos(aim), ay = f.y + Math.sin(aim);
@@ -1933,22 +2042,61 @@ class CaptureBattle {
     if(!sk)return false;
     const id=sk.id,ex=f.x+Math.cos(aim)*23,ey=f.y+Math.sin(aim)*23;
     const enemies=this.liveEnemies();
-    if(id==='waterLash'||id==='frostLance'||id==='prismBeam'){
-      const water=id==='waterLash',frost=id==='frostLance',range=water?430:frost?480:525,width=water?38:frost?19:21;
-      const endX=ex+Math.cos(aim)*range,endY=ey+Math.sin(aim)*range;
-      this.skillStrokes.push({kind:water?'water':frost?'ice':'prism',x:ex,y:ey,x2:endX,y2:endY,
-        color:col,life:.45,max:.45});
-      for(let i=0;i<(water?5:4);i++){
-        const r=60+i*(water?75:125);
-        this.vfx.ring(ex+Math.cos(aim)*r,ey+Math.sin(aim)*r,
-          {r0:4,vr:80,life:.26,color:frost?'#b8eaff':water?'#a5edfc':'#fefcbb',width:2});
+    if(id==='waterLash'){
+      // Owner 2026-11-26 '水鞭是不是太宽了？vfx也不好看'. Previously shared geometry with
+      // frostLance/prismBeam at width 38 (vs frost 19) — swept a sprawling 76px band,
+      // damaging anything roughly in a cone. Narrowed to 20 (single-target line) and
+      // given its own serpentine whip VFX with flick-burst endpoints and pillar hit.
+      const range=430, width=20;
+      const endX=ex+Math.cos(aim)*range, endY=ey+Math.sin(aim)*range;
+      // Serpentine body: 2 S-curves phase-offset so the line reads as a moving whip
+      // rather than a static line. Stored as a single skillStroke of a new kind the
+      // renderer uses; fallback-render in canvas below.
+      this.skillStrokes.push({kind:'water',x:ex,y:ey,x2:endX,y2:endY,
+        color:col,life:.42,max:.42});
+      // Tail flick: a spray-burst at the end of the whip to sell the crack.
+      this.vfx.burst(endX,endY,{count:14,color:'#bff2ff',angle:aim,spread:.9,speed:220,life:.38,r:2.6});
+      this.vfx.ring(endX,endY,{r0:6,vr:160,life:.3,color:'#9fe1fc',width:2.5});
+      // Three droplet puffs along the whip body to give the line water weight.
+      for(let i=0;i<3;i++){
+        const r=120+i*120;
+        this.vfx.burst(ex+Math.cos(aim)*r, ey+Math.sin(aim)*r,
+          {count:3,color:'#c8f0ff',speed:50,life:.32,r:2});
       }
       let hits=0;
       for(const e of enemies){
         const dx=e.x-ex,dy=e.y-ey,along=dx*Math.cos(aim)+dy*Math.sin(aim);
         const side=Math.abs(-dx*Math.sin(aim)+dy*Math.cos(aim));
         if(along<0||along>range||side>width+e.r*.5)continue;
-        const hit=this.resolveHit(e,'me',sk,baseDmg*(water?.9:frost?1.12:1.18),e.x,e.y);
+        const hit=this.resolveHit(e,'me',sk,baseDmg*.9,e.x,e.y);
+        if(hit.dealt>0){
+          // Water PILLAR on hit — a rising ring + vertical splash, distinct from
+          // the generic vfx.impact dart.
+          this.vfx.ring(e.x,e.y,{r0:10,vr:260,life:.38,color:'#8cdef7',width:4});
+          this.vfx.burst(e.x,e.y-8,{count:10,color:'#aeeaff',angle:-Math.PI/2,spread:.5,speed:170,life:.42,r:3});
+          this.vfx.burst(e.x,e.y,{count:6,color:'#5cb8d8',speed:90,life:.28,r:2});
+          hits++;
+        }
+      }
+      if(hits)this.shakeT=Math.max(this.shakeT,.14);
+      return true;
+    }
+    if(id==='frostLance'||id==='prismBeam'){
+      const frost=id==='frostLance',range=frost?480:525,width=frost?19:21;
+      const endX=ex+Math.cos(aim)*range,endY=ey+Math.sin(aim)*range;
+      this.skillStrokes.push({kind:frost?'ice':'prism',x:ex,y:ey,x2:endX,y2:endY,
+        color:col,life:.45,max:.45});
+      for(let i=0;i<4;i++){
+        const r=60+i*125;
+        this.vfx.ring(ex+Math.cos(aim)*r,ey+Math.sin(aim)*r,
+          {r0:4,vr:80,life:.26,color:frost?'#b8eaff':'#fefcbb',width:2});
+      }
+      let hits=0;
+      for(const e of enemies){
+        const dx=e.x-ex,dy=e.y-ey,along=dx*Math.cos(aim)+dy*Math.sin(aim);
+        const side=Math.abs(-dx*Math.sin(aim)+dy*Math.cos(aim));
+        if(along<0||along>range||side>width+e.r*.5)continue;
+        const hit=this.resolveHit(e,'me',sk,baseDmg*(frost?1.12:1.18),e.x,e.y);
         if(hit.dealt>0){this.vfx.impact(e.x,e.y,col);hits++;}
       }
       if(hits)this.shakeT=Math.max(this.shakeT,.13);
@@ -1983,9 +2131,14 @@ class CaptureBattle {
       return true;
     }
     if(id==='lightningOrb'){
-      // Slow, turning ball lightning — NOT instant chain lightning.
-      this.spawnProj(ex,ey,aim,108,baseDmg,'me','#ffe5a0',
-        13,'lightningOrb',sk,3.3);
+      // Ball lightning (owner spec 2026-11-25): drifts SLOW (108px/s), SWELLS from
+      // r=13 → r=20 over ~5s of flight, and if it hasn't hit anything after 1.0s /
+      // 180px it DISCHARGES into 3 smaller homing orblets (33% dmg each) — miss
+      // insurance, not an upgrade (3×.33 ≈ single hit so direct aim still wins).
+      const p=this.spawnProj(ex,ey,aim,108,baseDmg,'me','#ffe5a0',
+        13,'lightningOrb',sk,6.5);
+      if(p){p._lioBorn=this.t;p._lioR0=13;p._lioRMax=20;
+            p._lioStartX=ex;p._lioStartY=ey;p._lioSplit=false;}
       this.vfx.burst(ex,ey,{count:7,color:'#e1f3ff',
         speed:70,life:.25,r:2});
       return true;
@@ -1999,7 +2152,54 @@ class CaptureBattle {
       this.spawnProj(ex,ey,aim,f.projSpeed*.68,baseDmg*1.25,'me','#bca4ec',13,'hex',sk,1.85);
       this.vfx.orb(ex,ey,'#b397ec',7);return true;
     }
+    // SALVO / PULSE skills — a single cast schedules N independent projectiles spaced
+    // sk.pulseGap seconds apart. Each pulse re-aims at the nearest living enemy at
+    // RELEASE time, so the player watches wave 1 land and waves 2/3 can still retarget.
+    // First shot fires NOW (instant feedback); the rest are queued on this._pulseQueue
+    // for the update loop to release. Projectiles fly with light homing (sk.pulseHoming).
+    if(sk.pulseCount && sk.pulseCount > 1){
+      this._pulseQueue = this._pulseQueue || [];
+      const projKind = sk.element==='water' ? 'orb' : sk.element==='dark' ? 'hex' : 'orb';
+      const projR = sk.element==='dark' ? 12 : 11;
+      const spd = f.projSpeed*0.86, life = 1.9;
+      // Wave 1 — immediate, uses the input aim.
+      this.spawnProj(ex,ey,aim,spd,baseDmg,'me',col,projR,projKind,
+        { ...sk, homing: sk.pulseHoming, isDerived:true },life);
+      this.vfx.burst(ex,ey,{count:9,color:col,angle:aim,spread:.5,speed:150,life:.30,r:2.4});
+      // Waves 2..N — pushed to the queue with RELEASE time (later pulses pick their own
+      // aim at that moment). Owner tag f.i (team member index) is stable across frames.
+      for(let i=1;i<sk.pulseCount;i++){
+        this._pulseQueue.push({
+          casterIdx:this.team.indexOf(f),
+          releaseAt:this.t + i*(sk.pulseGap||0.3),
+          skillId:sk.id,element:sk.element,baseDmg,projKind,projR,
+          spd,life,homing:sk.pulseHoming,col});
+      }
+      return true;
+    }
     return false;
+  }
+  // Pulse scheduler: release any queued salvo projectiles whose releaseAt has come up.
+  // Each pulse re-reads the caster's current position and auto-aims at the NEAREST
+  // living enemy at release time (so waves 2/3 track if the original target died).
+  // Caster leaving the team (faint / swap) silently drops the remaining pulses.
+  updatePulseQueue(){
+    if(!this._pulseQueue||!this._pulseQueue.length)return;
+    const q=this._pulseQueue, keep=[];
+    for(const p of q){
+      if(this.t < p.releaseAt){keep.push(p);continue;}
+      const caster=this.team[p.casterIdx];
+      if(!caster||!caster.alive)continue;
+      const tgt=this.nearestEnemy(caster.x,caster.y);
+      if(!tgt)continue;
+      const ang=Math.atan2(tgt.y-caster.y,tgt.x-caster.x);
+      const ex=caster.x+Math.cos(ang)*23, ey=caster.y+Math.sin(ang)*23;
+      const fakeSk={id:p.skillId,element:p.element,homing:p.homing,isDerived:true,
+        appliesTag:p.skillId==='tidalPulse'?'soak':'expose',power:1};
+      this.spawnProj(ex,ey,ang,p.spd,p.baseDmg,'me',p.col,p.projR,p.projKind,fakeSk,p.life);
+      this.vfx.burst(ex,ey,{count:7,color:p.col,angle:ang,spread:.5,speed:130,life:.26,r:2.1});
+    }
+    this._pulseQueue=keep;
   }
   // ---- the three shield verbs (players AND enemies) ----
   // Each sets a short-lived field resolveHit() consults, with its own limit and
@@ -2146,6 +2346,7 @@ class CaptureBattle {
     p.evasive = clamp(p.evasive, 0.05, 0.95); p.aggression = clamp(p.aggression, 0, 1);
     p.skill = clamp(p.skill, 0, 1); p.battles = clamp(p.battles | 0, 0, 9999);
     p.stompStreak = clamp(p.stompStreak | 0, 0, 5);    // consecutive flawless wins → tougher enemies
+    p.lossStreak = clamp(p.lossStreak | 0, 0, 6);      // consecutive defeats → gentler enemies (casual mercy band; was 3, raised so loss 4..6 keep getting stronger help)
     return p;
   }
   // Fold this battle's observations into the persisted EMAs. Called at battle end.
@@ -2167,6 +2368,25 @@ class CaptureBattle {
     // the old backwards contract that made enemies EASIER against them.
     if (won && (o.dmgTaken || 0) <= 0) p.stompStreak = clamp((p.stompStreak | 0) + 1, 0, 5);
     else p.stompStreak = 0;
+    // Mercy band (mirror of stompStreak): consecutive DEFEATS bend next fight toward
+    // the player. A win zeroes it; a real loss (team wipe / timeout, NOT a voluntary
+    // flee) steps it up, double-weighted for a fast loss (<10s) that reads as a wall.
+    // Applied casual-only in the constructor. (RSI + playtest both converged on this:
+    // difficulty only ratcheted UP — this is the missing downward valve.)
+    // Playtest P0 #3: a 1-in-8 auto winrate oscillates between "mercy armed" and "mercy stripped"
+    // because the SINGLE lucky win hard-zeros lossStreak — the next fight resets to no help and
+    // the loop deflates. For auto casual, decrement by 1 on a win instead of hard-zeroing so the
+    // mercy band fades gracefully across repeated wins rather than snapping off. Manual keeps the
+    // hard reset (manual players earn wins; the snap-off lets a skilled player feel their skill).
+    const softAuto = won && this.autoMode && this.difficultyMode !== 'hardcore';
+    if (won) p.lossStreak = softAuto ? Math.max(0, (p.lossStreak | 0) - 1) : 0;
+    // Playtest P0 #4: a 15s auto wipe counted as +1 (same as a 60s wipe) because the double-step
+    // threshold was <10s — tuned for manual pace. Auto-mode fights end faster, so widen the
+    // "this reads as a wall" threshold to <20s for auto. Manual untouched.
+    else if (!this._voluntaryFlee) {
+      const fastLoss = this.t < (this.autoMode ? 20 : 10);
+      p.lossStreak = clamp((p.lossStreak | 0) + (fastLoss ? 2 : 1), 0, 6);
+    }
     State.S.aiProfile = p;
   }
 
@@ -2267,8 +2487,8 @@ class CaptureBattle {
     // 170px crescent + extra pre-hit particle fan. Only real contact gets
     // impact accents through resolveHit and per-skill signatures.
     const RANGE = 64, ARC = .74;
-    this.vfx.slash(f.x, f.y, aim, col, RANGE * .87, ARC * .92,
-      {heavy: !!skill?.heavy});
+    this.vfx.slash(f.x, f.y, aim, col, RANGE * (skill?.heavy ? 1.62 : 1.27), ARC * 1.02,
+      {heavy: !!skill?.heavy,element:skill?.element});
     let hit = false, dealtTotal = 0;
     for (const e of this.liveEnemies()) {
       const d = Math.hypot(e.x - f.x, e.y - f.y);
@@ -2323,7 +2543,14 @@ class CaptureBattle {
       ['beam','chain'].includes(kind)?'combat_beam':'combat_magic'
     );
     if (kind === 'melee') {
-      this.meleeStrike(f, aim, sk, f.dmg * pow * 1.4, col);
+      // Owner: 近战技能伤害有点低. Compared to its peers melee had the WORST tradeoff — same gap-close
+      // cost as dash/leap but weaker payoff (×1.4 vs dash ×1.5, leap ×1.7, pounce ×1.5), AND no
+      // built-in mobility/i-frame to earn the risk. Raise to ×1.6 so standing-still melee pays
+      // the same as a dash (which still gets its gap-close + iframe) but stays below leap/pounce
+      // which also pack range. Per-skill `power` already compensates heavy claws (veteranStrike
+      // 2.3, cometClaw 2.25) so this bumps standard claws (emberClaw 1.3, thornCoil 1.1,
+      // shadowSwipe 1.35) by a modest ~14% without trivializing anything.
+      this.meleeStrike(f, aim, sk, f.dmg * pow * 1.6, col);
     } else if (kind === 'aoe') {
       this.lobAoe(f, aim, sk, f.dmg * pow, col);
     } else if (kind === 'dash') {
@@ -2368,7 +2595,24 @@ class CaptureBattle {
     const spread = sk.spread || 0.24;
     const spd = (f.projSpeed || 300) * (sk.homing ? 0.5 : 0.92);
     const life = sk.maxProjLife || (sk.homing ? 2.4 : 1.1);
-    const kindSprite = sk.homing ? (sk.element==='elec'?'lightningOrb':'orb') : 'ball';
+    // PER-SKILL PROJECTILE SPRITE (owner 2026-11-26 — "敌人的攻击效果怎么还是箭头"):
+    // Pick the sprite kind from the skill's identity so each cat's volley reads as its
+    // authored move instead of a generic 'ball'. Player-side skills already use explicit
+    // spawnProj sprite kinds (fireball/hex/leaf/lightningOrb). This mirrors that for
+    // volley casts (used by both player barrages AND enemy castEnemySkill).
+    let kindSprite;
+    if (sk.homing) {
+      kindSprite = sk.element === 'elec' ? 'lightningOrb' : 'orb';
+    } else if (sk.id === 'fireballMeow' || sk.id === 'meteor') kindSprite = 'fireball';
+    else if (sk.id === 'hex' || sk.id === 'voidMaw') kindSprite = 'hex';
+    else if (sk.id === 'leafDart' || sk.id === 'homingSeed') kindSprite = 'leaf';
+    else if (sk.id === 'lightningOrb' || sk.id === 'boltArc' || sk.id === 'thunderYowl' ||
+             sk.id === 'thunderStream') kindSprite = 'lightningOrb';
+    else if (sk.element === 'fire') kindSprite = 'fireball';
+    else if (sk.element === 'elec') kindSprite = 'lightningOrb';
+    else if (sk.element === 'grass') kindSprite = 'leaf';
+    else if (sk.element === 'dark') kindSprite = 'hex';
+    else kindSprite = 'ball';
     // Single-target budget: a straight fan may land up to 2 pellets on one enemy (so against a lone
     // wild it isn't strictly worse than a plain bolt — the old 1-hit cap made 弹幕 a trap), while a
     // homing swarm lets EVERY pellet connect (its low per-pellet power is the balance lever, not a
@@ -2405,11 +2649,17 @@ class CaptureBattle {
     this.spawnProj(f.x, f.y, ang, speed, dmg, 'me', col, 9, 'orb', sk, dist / speed + 0.02);
     const p = this.projectiles[this.projectiles.length - 1];
     p.burst = { r: R, dmg, skill: sk, col, tx, ty };  // consumed by burstAt() on expiry
+    // Meteor's visual descent must remain readable even when cast point-blank.
+    // Keep one damage event at the original target/radius; use at least .72s of flight.
+    if(sk?.id==='meteor'){
+      p.life=p.maxLife=Math.max(.72,p.life);p.x=tx;p.y=ty;p.vx=0;p.vy=0;
+    }
     this.vfx.muzzle(f.x, f.y, ang, col);
   }
   // Detonate a lobbed AOE at its landing point: everyone inside R takes the hit.
   burstAt(p) {
     const b = p.burst; if (!b) return;
+    if(b.skill?.id==='meteor')window.CatBondSkillFX?.meteorImpact(this,b);
     const side = p.owner === 'wild' ? 'wild' : 'me';
     this.vfx.shockwave(b.tx, b.ty, b.col);
     this.vfx.ring(b.tx, b.ty, { r0: 12, vr: b.r * 6, life: 0.4, color: b.col, width: 7 });
@@ -2690,6 +2940,35 @@ class CaptureBattle {
       // growing charge ring at the caster
       const k = 1 - Math.max(0, c.t) / c.max;
       this.vfx.ring(f.x, f.y, { r0: 34 * (1 - k) + 6, vr: 0, life: 0.06, color: c.col, width: 3 });
+      // 陨石术 landing telegraph: during the 1.5s windup paint a RED target ring on the ground
+      // where the rock will drop, so both the player (and any enemy standing in it) can read the
+      // danger. Owner: "陨石施法时应该在预计的范围里先画个红圈". We re-pick the landing point every
+      // frame using the same locked/nearest-enemy rule as lobAoe, so a moving target is tracked.
+      if (c.sk && c.sk.id === 'meteor') {
+        let tx, ty;
+        if (f === this.me() && !this.game.isTouch) {
+          const m = this.game.mouse || {}; tx = m.x; ty = m.y;
+        } else {
+          const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);
+          if (tgt) { tx = tgt.x; ty = tgt.y; }
+          else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
+        }
+        const owner = f.owner === 'wild' ? 'wild' : 'me';
+        const tgt = owner === 'me' ? (this.lockedEnemy() || this.nearestEnemy(f.x, f.y)) : null;
+        if (owner === 'me' && tgt) { tx = tgt.x; ty = tgt.y; }
+        const R = 86;                                        // match the lobAoe burst radius
+        const pulse = 0.5 + 0.5 * Math.sin(this.t * 10);
+        // Pulsing red reticle that intensifies as impact approaches. Short-lived per frame so
+        // it tracks the moving target each tick instead of leaving a stale ring behind.
+        this.vfx.ring(tx, ty, { r0: R, vr: 0, life: 0.08, color: '#ff3a2c', width: 3 + 2 * pulse + 3 * k });
+        this.vfx.ring(tx, ty, { r0: R * (0.4 + 0.55 * k), vr: 0, life: 0.08, color: '#ffb46b', width: 2 });
+        // crosshair tick marks on the N/E/S/W of the ring for a 'targeting' feel
+        for (let a = 0; a < 4; a++) {
+          const ang2 = a * Math.PI / 2;
+          const x0 = tx + Math.cos(ang2) * R, y0 = ty + Math.sin(ang2) * R;
+          this.vfx.ring(x0, y0, { r0: 3, vr: 0, life: 0.08, color: '#ff6a3c', width: 2 });
+        }
+      }
       if (c.t <= 0) { f._castRoot = 0; this.castOffensiveSkill(f, aim, c.sk, c.pow, c.col, true); }
     }
     // Drop finished/aborted casts AND always clear the caster's root flag as they leave,
@@ -2765,28 +3044,39 @@ class CaptureBattle {
         b.tickAcc -= STEP;
         const hitDmg = b.dps * STEP;
         const list = b.owner === 'me' ? this.liveEnemies() : this.team.filter(t => t.alive);
-        for (const e of list) {
-          if (this.pointToSeg(e.x, e.y, ox, oy, ex, ey) <= b.width + (e.r || 18) * 0.5) {
-            // A sustained stream makes small damage ticks, not four huge
-            // hit-stops/shakes per second. Contact feedback remains localized.
-            const flame=b.sk?.id==='flameSweep',passes=Math.max(1,Math.round(b.sk?.sweepPasses||1));
-            const elapsed=Math.max(0,Math.min(b.max,b.max-b.t));
-            const pass=Math.min(passes-1,Math.floor(elapsed/b.max*passes));
-            if(flame){
-              b._flameHits??=new WeakMap();
-              if(b._flameHits.get(e)===pass)continue;
-            }
-            // Total three-pass power stays near the OLD fire channel budget.
-            // Other sustained beams retain their damage-over-time tick rate.
-            const damage=flame?b.dps*b.max/passes:hitDmg;
-            const contact=this.resolveHit(e,b.owner,
-              {...(b.sk||{element:b.element}),isChanneledTick:true,
-                _poiseSource:b,_poisePass:flame?pass:undefined},
-              damage,e.x,e.y);
-            if(contact?.dealt>0){
-              if(flame)b._flameHits.set(e,pass);
-              this.beamHitFeedback(b,e);
-            }
+        // STOP-AT-FIRST-TARGET (owner 2026-11-26): a non-sweep beam (waterJet,
+        // thunderStream, frostLance-beam, etc.) must damage only the FIRST target the
+        // centerline crosses — matching the visual truncation in beamVisualEnd(). Only
+        // flameSweep (with sweepPasses) is explicitly designed to penetrate the pack.
+        const flame = b.sk?.id === 'flameSweep';
+        let candidates = list.filter(e =>
+          this.pointToSeg(e.x, e.y, ox, oy, ex, ey) <= b.width + (e.r || 18) * 0.5);
+        if (!flame && candidates.length > 1) {
+          // Keep ONLY the first enemy along the beam axis (nearest projection to caster).
+          const vx = ex - ox, vy = ey - oy, L = Math.hypot(vx, vy) || 1;
+          const ux = vx / L, uy = vy / L;
+          candidates.sort((a, c) =>
+            ((a.x - ox) * ux + (a.y - oy) * uy) - ((c.x - ox) * ux + (c.y - oy) * uy));
+          candidates = [candidates[0]];
+        }
+        for (const e of candidates) {
+          // A sustained stream makes small damage ticks, not four huge
+          // hit-stops/shakes per second. Contact feedback remains localized.
+          const passes = Math.max(1, Math.round(b.sk?.sweepPasses || 1));
+          const elapsed = Math.max(0, Math.min(b.max, b.max - b.t));
+          const pass = Math.min(passes - 1, Math.floor(elapsed / b.max * passes));
+          if (flame) {
+            b._flameHits ??= new WeakMap();
+            if (b._flameHits.get(e) === pass) continue;
+          }
+          const damage = flame ? b.dps * b.max / passes : hitDmg;
+          const contact = this.resolveHit(e, b.owner,
+            { ...(b.sk || { element: b.element }), isChanneledTick: true,
+              _poiseSource: b, _poisePass: flame ? pass : undefined },
+            damage, e.x, e.y);
+          if (contact?.dealt > 0) {
+            if (flame) b._flameHits.set(e, pass);
+            this.beamHitFeedback(b, e);
           }
         }
         // sparks along the beam so it reads as a continuous stream
@@ -2921,17 +3211,28 @@ class CaptureBattle {
       }
     }
     // PERFECT DODGE: an enemy shot within ~40px when you dodge → big bullet-time reward
-    let perfect = false;
+    // GOOD DODGE: a shot within ~75px but outside the perfect ring → a smaller sustain reward
+    // (route skill-expression into HP, not just offense — playtest P0 #2 explorer persona).
+    let perfect = false, good = false, goodDist = 1e9;
     for (const p of this.projectiles) {
       if (p.owner !== 'wild') continue;
-      if (Math.hypot(p.x - f.x, p.y - f.y) < 40) { perfect = true; break; }
+      const d = Math.hypot(p.x - f.x, p.y - f.y);
+      if (d < 40) { perfect = true; break; }
+      if (d < 75 && d < goodDist) { goodDist = d; good = true; }
     }
-    if (f === this.me() && this._obs) { this._obs.threats++; if (perfect) this._obs.dodgedThreats++; }
+    if (f === this.me() && this._obs) { this._obs.threats++; if (perfect || good) this._obs.dodgedThreats++; }
     if (perfect && f === this.me()) {
       this.perfectDodges++;
       this.slowmo = 0.9; this.flash = 0.25; f.inv = 0.7;
-      this.gainUlt(18);
-      this.addCombo(3);                                  // reward precise timing with chain
+      // 谨慎型 P0: perfect-dodge still gives i-frames + bullet-time (it feels
+      // great regardless), but the +18 ult AND combo grant are now gated on
+      // "the player attacked in the last 3s" — a screensaver kiter who never
+      // attacks stops farming ult/combo for free. Visual payoff untouched.
+      const recentOffense = (this._lastOffenseT != null) && (this.t - this._lastOffenseT < 3);
+      if (recentOffense) {
+        this.gainUlt(18);
+        this.addCombo(3);                                // reward precise timing with chain
+      }
       this.vfx.ring(f.x, f.y, { r0: 8, vr: 520, life: 0.5, color: '#9d7bff', width: 6 });
       this.vfx.text(f.x, f.y - 46, '完美闪避!', '#9d7bff', 18);
       this.game.toast('✨ 完美闪避！子弹时间 + 充能');
@@ -2943,6 +3244,22 @@ class CaptureBattle {
       // dodge still gives i-frames + the roll travel to create space; it just doesn't warp time.
       this.vfx.ring(f.x, f.y, { r0: 6, vr: 300, life: 0.35, color: '#bfe9ff', width: 3 });
       this.vfx.burst(f.x, f.y, { count: 8, color: '#bfe9ff', speed: 170, life: 0.32, r: 2 });
+      // GOOD DODGE (75px): a smaller sustain reward — 4% maxhp heal + 6 ult + shortened next dodge
+      // CD. Lifts the 'near-miss but die at 0 HP' close losses that the explorer persona reports
+      // without flattening the 40px perfect-dodge payout (which still owns bullet-time/combo/+18 ult).
+      if (good && f === this.me()) {
+        // 谨慎型 P0: 4% heal + 6 ult gated on recent offense; dodgeCd shorten
+        // stays unconditional so timing still feels smooth. Screensaver kiter
+        // loses the sustain flywheel without losing responsiveness.
+        const recentOffense = (this._lastOffenseT != null) && (this.t - this._lastOffenseT < 3);
+        if (recentOffense) {
+          const heal = Math.round(f.maxhp * 0.04);
+          f.hp = Math.min(f.maxhp, f.hp + heal);
+          this.gainUlt(6);
+          this.vfx.text(f.x, f.y - 42, 'nice!', '#bfe9ff', 13);
+        }
+        f.dodgeCd = 0.7;                                  // next dodge sooner — learnable timing
+      }
     }
     return true;
   }
@@ -3481,6 +3798,12 @@ class CaptureBattle {
   gainUlt(n) {
     const before = this.ult;
     this.ult = Math.min(100, this.ult + n);
+    // Trait system: onResourceGained for 金豆 电力共享 (shares ult to lowest-ult ally).
+    // No-op until traits-p2 PR registers it. gainUlt is the ult meter chokepoint.
+    if (n > 0 && window.CatTraits) {
+      window.CatTraits.emit('onResourceGained',
+        { battle: this, cat: this.me(), amount: n, newTotal: this.ult });
+    }
     // Rising edge: the instant the meter first fills, announce it (banner + sting +
     // button pulse) so players actually press R. (Playtest P2: 0 ults fired in 8
     // battles because reaching 100 was silent.) Once per battle.
@@ -3623,6 +3946,60 @@ class CaptureBattle {
   drawFields(ctx){
     for(const fld of this.fields){
       const k=Math.max(0,fld.t/fld.max), pulse=0.5+0.5*Math.sin(this.t*4);
+      // FIRE fields (陨石灼烧 / etc.) get a proper burning-ground look: a dark scorch base,
+      // flickering ember halo, and rising additive embers — not the generic dashed ellipse.
+      // Non-fire fields keep the readable dashed ellipse so soak/bind/blind stay distinct.
+      if (fld.element === 'fire') {
+        ctx.save();
+        // 1) dark scorch base — a charred patch under the flame; fades with k but stays visible
+        ctx.globalAlpha = 0.42 * k;
+        ctx.fillStyle = '#2a140a';
+        ctx.beginPath(); ctx.ellipse(fld.x, fld.y+8, fld.r*0.98, fld.r*0.48, 0, 0, Math.PI*2); ctx.fill();
+        // 2) warm orange glow — additive so it pops against the scorch
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = (0.30 + 0.10*pulse) * k;
+        const g = ctx.createRadialGradient(fld.x, fld.y+6, fld.r*0.15, fld.x, fld.y+6, fld.r);
+        g.addColorStop(0, '#ffdc78');
+        g.addColorStop(0.45, '#ff7a2a');
+        g.addColorStop(1, 'rgba(120,32,10,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.ellipse(fld.x, fld.y+6, fld.r, fld.r*0.5, 0, 0, Math.PI*2); ctx.fill();
+        // 3) flickering tongues around the rim — short vertical flame slivers
+        const n = Math.max(10, Math.round(fld.r/9));
+        for (let i = 0; i < n; i++) {
+          const a = (i / n) * Math.PI * 2 + this.t * 0.4;
+          const rx = fld.x + Math.cos(a) * fld.r * (0.84 + 0.1*Math.sin(this.t*7 + i));
+          const ry = fld.y + 6 + Math.sin(a) * fld.r * 0.5 * (0.84 + 0.1*Math.cos(this.t*8 + i));
+          const flick = 6 + 10 * (0.5 + 0.5 * Math.sin(this.t*12 + i*1.7));
+          ctx.globalAlpha = (0.55 + 0.4*pulse) * k;
+          const g2 = ctx.createLinearGradient(rx, ry, rx, ry - flick);
+          g2.addColorStop(0, '#ff9a2a');
+          g2.addColorStop(0.5, '#ffd766');
+          g2.addColorStop(1, 'rgba(255,255,220,0)');
+          ctx.fillStyle = g2;
+          ctx.beginPath();
+          ctx.moveTo(rx - 2.4, ry);
+          ctx.quadraticCurveTo(rx, ry - flick*0.5, rx, ry - flick);
+          ctx.quadraticCurveTo(rx, ry - flick*0.5, rx + 2.4, ry);
+          ctx.closePath();
+          ctx.fill();
+        }
+        // 4) rising ember sparks — tiny bright dots drifting up (time-seeded, deterministic)
+        const m = Math.max(5, Math.round(fld.r/14));
+        for (let i = 0; i < m; i++) {
+          const seed = i * 1.31 + fld.x * 0.0017 + fld.y * 0.0023;
+          const life = ((this.t * 0.7 + seed) % 1);                      // 0..1 per ember
+          const ax = (Math.sin(seed * 13.7) + Math.cos(seed * 7.3)) * fld.r * 0.55;
+          const ex = fld.x + ax;
+          const ey = fld.y + 6 - life * 36;
+          const er = 1.2 + 1.4 * Math.abs(Math.sin(seed * 5.1));
+          ctx.globalAlpha = (1 - life) * 0.9 * k;
+          ctx.fillStyle = life < 0.45 ? '#ffd27a' : '#ff6a2a';
+          ctx.beginPath(); ctx.arc(ex, ey, er, 0, Math.PI*2); ctx.fill();
+        }
+        ctx.restore();
+        continue;
+      }
       ctx.save();
       ctx.globalAlpha=0.16*k+0.06*pulse*k;
       ctx.fillStyle=fld.col;
@@ -3657,6 +4034,9 @@ class CaptureBattle {
       if(b._ox==null)continue;
       // paint only up to the first enemy the stream hits (visual; damage uses b._ex/_ey)
       const _vend=this.beamVisualEnd(b), _ex0=b._ex, _ey0=b._ey;
+      // Sweeping fire penetrates; water uses first visible contact. No damage mutation.
+      if(window.CatBondSkillFX?.drawCombatBeam(ctx,b,this.t,
+        b.sk?.id==='flameSweep'?_ex0:_vend.ex,b.sk?.id==='flameSweep'?_ey0:_vend.ey))continue;
       b._ex=_vend.ex; b._ey=_vend.ey;
       const k=Math.max(0,b.t/b.max);
       if(b.sk?.id==='thunderStream'){
@@ -3989,7 +4369,19 @@ class CaptureBattle {
   update(dt) {
     if (this.done) return;
     const realDt = dt;                 // unscaled frame time for cinematic timers
+    // Trait system: per-frame poll for traits that need position/stillness/field
+    // checks. Each team cat gets its trait polled; trait effect/condition decides
+    // what it actually does with the tick. No-op until P1/P2 PRs register traits.
+    if (window.CatTraits) {
+      for (const f of this.team) {
+        if (!f || !f.alive) continue;
+        window.CatTraits.emit('onTick', { battle: this, cat: f, dt });
+      }
+    }
     if(this.coach)this.coachSeconds+=dt;
+    // Release queued salvo/pulse projectiles (arcanePulse / tidalPulse). Runs on real
+    // frame time (pre tempoScale) so its spacing matches the authored pulseGap seconds.
+    this.updatePulseQueue&&this.updatePulseQueue();
     this.ultCd=Math.max(0,this.ultCd-dt); // real frame time, before simulation slowdown
     // Global combat tempo (see this.tempoScale in the constructor — the single source of truth).
     dt *= (this.tempoScale != null ? this.tempoScale : 0.64);
@@ -4175,7 +4567,26 @@ class CaptureBattle {
     // fire, two can telegraph at once, less manual breathing room. Threat you feel
     // now, not a +10% statline next run. 0 → 1 as the stomp drags on.
     const teamHpFrac = this.team.reduce((n,f)=>n+Math.max(0,f.hp),0)/Math.max(1,this.team.reduce((n,f)=>n+f.maxhp,0));
-    this._pressure = (!this.coach && this.t > 5 && teamHpFrac > 0.88 && !this._stalled)
+    // PLAYER-DANGER FEEDBACK (playtest P0 — "fights are close but you never FEEL it"): track the
+    // ACTIVE cat's HP fraction so draw() can paint a focal red vignette + pulse, and remember the
+    // fight's lowest dip so the win screen can mark a 险胜/Clutch. All read-only off existing HP —
+    // zero balance effect. CRITICAL = below this threshold; one-shot heartbeat sting on first entry.
+    const meNow = this.me();
+    const meFrac = (meNow && meNow.alive && meNow.maxhp) ? meNow.hp / meNow.maxhp : 1;
+    this._dangerFrac = meFrac;                                     // consumed by draw()
+    this._minTeamHpDip = Math.min(this._minTeamHpDip == null ? 1 : this._minTeamHpDip, teamHpFrac);
+    if (!this.coach) {
+      if (meFrac <= this.CRIT_HP_FRAC && !this._inCrit) {
+        this._inCrit = true;                                      // entered critical: one heartbeat cue
+        if (meNow && meNow.alive) window.MorrowwishAudio?.effect?.('combat_hurt');
+      } else if (meFrac > this.CRIT_HP_FRAC + 0.06) {
+        this._inCrit = false;                                     // left critical (small hysteresis)
+      }
+    }
+    // Playtest P0 #1 (kiter 8/8 timeouts): _pressure's HP gate at 0.88 meant any chip pause-reset
+    // escalation, so a cautious kiter who takes small damage paused the valve forever. Loosen to
+    // 0.70 so sustained-chip kiting still accumulates pressure.
+    this._pressure = (!this.coach && this.t > 5 && teamHpFrac > 0.70 && !this._stalled)
       ? Math.min(1, (this._pressure || 0) + dt * 0.45) : Math.max(0, (this._pressure || 0) - dt * 0.5);
     // CLOSING / "收网" — a TIME-driven ramp (0 at 45s → 1 at 70s), independent of HP so it is
     // NOT the "player is cruising" rubber-band above. Its job: force a drawn-out fight to RESOLVE
@@ -4187,7 +4598,13 @@ class CaptureBattle {
     // zero-output turtle gets no free progress (no hits → no benefit). A real kiter who IS fighting
     // finally closes in time; a fight you truly can't win ends as the wild cat fleeing (neutral),
     // not a silent clock-loss. (Optional future: ramp enemy fire-rate here too — deferred, unreviewed.)
-    this._closing = this.coach ? 0 : clamp((this.t - 45) / 25, 0, 1);
+    // Playtest P0 (impatient persona bails at exactly 18s = ULT_COOLDOWN_SECONDS, with a
+    // 45-to-70s _closing ramp that never fires in fights they finish). Pull the ramp forward
+    // conservatively (25→45s, not the adversary's 15→35s suggestion which would hit 95% of
+    // fights): by ~25s a drawn-out fight starts getting the execute-bonus closing beats, so
+    // impatient players see momentum building before their patience cliff. Short clean fights
+    // (<25s) are unchanged; the 85s hard backstop + flee semantics stay intact.
+    this._closing = this.coach ? 0 : clamp((this.t - 25) / 20, 0, 1);
     // MASH-STALL teach + resolve: if the player keeps throwing ONLY basics while an
     // enemy sits pinned near the un-skilled mash floor (~<20% HP, not staggered), the
     // fight can't end from basics alone. Detect it, pulse a "use a skill" teach beat,
@@ -4196,10 +4613,24 @@ class CaptureBattle {
     if (!this.coach) {
       const pinned = this.liveEnemies().some(e => e.hp / e.maxhp < 0.2 && (e.staggerT || 0) <= 0);
       const onlyBasics = (this.t - (this._lastSkillT || -99)) > 3.5;   // no skill in a while
-      if (pinned && onlyBasics && !this.autoMode) {
+      // Playtest P0 #1 (masher persona, 0/8 team-wipes): the ORIGINAL mash-stall teach only
+      // fired when the player had already PINNED an enemy. A masher who dies at 30s never
+      // pins anything — so they never saw the "use a skill" hint in the one battle they
+      // most needed it. Add a DYING-MASHER trigger: player is in the HP-crit vignette, hasn't
+      // cast a skill in 2s, and the fight has been going long enough (>4s) that it's past the
+      // opening coach. Uses existing _dangerFrac/CRIT_HP_FRAC and the same banner.
+      // Playtest P0 #2 (same masher, 0/8 at 8.7s mean death): the prior t>15 gate meant the
+      // teach never reached deaths <15s. Loosened to t>4 (post-coach) + 2s no-skill window;
+      // also fire IMMEDIATE _stalled when _dangerFrac<CRIT so a dying masher sees the banner
+      // on the first frame of crit instead of waiting 5s of accumulated stall.
+      const dyingNoSkill = this._dangerFrac != null && this._dangerFrac < (this.CRIT_HP_FRAC || 0.25)
+        && (this.t - (this._lastSkillT || -99)) > 2 && this.t > 4;
+      if (((pinned && onlyBasics) || dyingNoSkill) && !this.autoMode) {
         this._stallT = (this._stallT || 0) + dt;
       } else { this._stallT = Math.max(0, (this._stallT || 0) - dt * 2); }
-      this._stalled = this._stallT > 5;
+      // Immediate stall when actively dying without casting — bypass the 5s accumulator so a
+      // short-death masher sees the pulsed skill-button banner by frame one of crit.
+      this._stalled = this._stallT > 5 || (dyingNoSkill && !this.autoMode);
       if (this._stalled) this._stallBanner = 1.2;         // drawn + pulses the skill buttons
       // Hard backstop: the CLOSING ramp (45→70s) escalates both sides so a winnable fight
       // resolves by combat first; this is only the catch for a true stalemate (can't kill it,
@@ -4283,6 +4714,33 @@ class CaptureBattle {
       p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
       // GROW: radius swells over flight for a widening hitbox / bigger area coverage.
       if (p.grow) { const age = 1 - Math.max(0, p.life) / (p.maxLife || 2.2); p.r = p.r0 * (1 + (p.grow - 1) * age); }
+      // BALL LIGHTNING grow + split-on-miss. Smooth interp r0 → rMax over 5s of
+      // flight. Only AFTER 600px travelled without a hit does it discharge into 3
+      // homing orblets each dealing 33% of parent dmg (so 3×.33 ≈ one direct hit —
+      // split is miss-insurance, not an upgrade). Parent's life is 6.5s so at
+      // 108px/s it can actually reach 600px before timing out (~5.6s).
+      if(p.kind==='lightningOrb'&&!p._lioSplit){
+        const age=this.t-(p._lioBorn||this.t);
+        p.r=(p._lioR0||13)+((p._lioRMax||20)-(p._lioR0||13))*Math.min(1,age/5);
+        const travelled=Math.hypot(p.x-(p._lioStartX||p.x),p.y-(p._lioStartY||p.y));
+        if(travelled>=600){
+          p._lioSplit=true;p.life=0;
+          const childDmg=p.dmg*0.33, ownerAng=p.ang||Math.atan2(p.vy,p.vx);
+          const childSk={...(p.skill||{element:'elec'}),homing:5.0,isDerived:true,
+            appliesTag:'shock',power:(p.skill?.power||1)*0.33};
+          for(let k=0;k<3;k++){
+            const off=(k-1)*0.55, ang=ownerAng+off;
+            const sx=p.x+Math.cos(ang)*6, sy=p.y+Math.sin(ang)*6;
+            const child=this.spawnProj(sx,sy,ang,130,childDmg,'me','#ffe5a0',
+              7,'lightningOrb',childSk,1.6);
+            if(child){child._lioBorn=this.t;child._lioR0=7;child._lioRMax=7;
+                     child._lioSplit=true;} // children don't re-split
+          }
+          this.vfx.ring(p.x,p.y,{r0:8,vr:140,life:.28,color:'#ffe5a0',width:3});
+          this.vfx.burst(p.x,p.y,{count:14,color:'#fff2b8',speed:180,life:.32,r:2.4});
+          continue;
+        }
+      }
       // RIBBON TRAIL: keep a short position history; drawProjectiles renders it as an
       // additive tapered streak (wide/bright head → transparent tail) instead of the
       // old fading-dot string. (VFX research: additive tapered ribbon.)
@@ -4296,7 +4754,7 @@ class CaptureBattle {
       // not collide on contact). Show its target ring; detonate on arrival/expiry.
       if (p.burst) {
         this.vfx.ring(p.burst.tx, p.burst.ty, { r0: p.burst.r, vr: 0, life: 0.08, color: p.burst.col, width: 2 });
-        if (p.life <= 0 || Math.hypot(p.x - p.burst.tx, p.y - p.burst.ty) < 16) { this.burstAt(p); p.life = 0; }
+        if (p.life <= 0 || (p.burst.skill?.id!=='meteor' && Math.hypot(p.x - p.burst.tx, p.y - p.burst.ty) < 16)) { this.burstAt(p); p.life = 0; }
         continue;
       }
       // Intercept at the physical wall plane BEFORE the projectile reaches a
@@ -4512,6 +4970,14 @@ class CaptureBattle {
     const pull = (e.aggro || 0) * 40; min = Math.max(32, min - pull); max = Math.max(min + 40, max - pull);
     // LEARNED: slide the band to attack the player's comfort zone (crowd a kiter / kite a brawler)
     if (this.aiP && this._aiConf) { const s = (0.5 - this.aiP.favRange) * 60 * this._aiConf; min = clamp(min + s, 32, 260); max = clamp(max + s, min + 40, 320); }
+    // Playtest P0 #1 (kiter 8/8 timeouts): under _closing (time+hit-progress ramp), collapse
+    // the standoff band inward so wild cats WALK INTO a mirror-kiter instead of mirror-kiting
+    // forever. At full closing (1.0), min shrinks ~30% and max ~40% → the gap force-closes.
+    const closingPull = this._closing || 0;
+    if (closingPull > 0) {
+      min = Math.max(32, min * (1 - 0.30 * closingPull));
+      max = Math.max(min + 40, max * (1 - 0.40 * closingPull));
+    }
     return { min, max };
   }
 
@@ -4765,8 +5231,33 @@ class CaptureBattle {
       // Manual play is harder than letting the AI dodge for you, so give a human
       // pilot ~25% more breathing room between enemy shots (auto mode stays brisk).
       // Within-fight pressure tapers that ease away and speeds fire as a stomp drags.
-      const manualEase = (this.autoMode ? 1 : 1.12) - (this._pressure || 0) * 0.3;
-      e.fireCd = Math.max(0.38, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase;   // +floor; 感电降攻速
+      let manualEase = (this.autoMode ? 1 : 1.12) - (this._pressure || 0) * 0.3;
+      // OPENING GRACE (owner: 手动更宽容; playtest P0 — manual players get deleted in the
+      // first few seconds before they orient). CASUAL + MANUAL only: slow enemy fire a lot
+      // for the first ~4s of the fight, decaying to the steady ease, so a human always gets
+      // a reaction window from frame 1. Auto mode + hardcore are untouched.
+      // Full grace for manual casual; reduced (60%) grace for a losing auto player (_autoAssist).
+      const graceScale = (!this.autoMode && this.difficultyMode !== 'hardcore') ? 1 : this._autoAssist;
+      if (graceScale > 0) {
+        // Playtest P0 #4: auto-mode fights ended ~15s — grace window of 4s was too short to
+        // see even one duo cast + skill rotation. Stretch window to 6s (decay t/4 → t/6) so
+        // enemy cadence stays ~35% slower through the first full beat. Manual still gets its
+        // full +55% opening punch; auto gets the longer-tail version of the same curve.
+        const grace = Math.max(0, 1 - this.t / 6);        // 1 at t=0 → 0 by 6s (was 4s)
+        manualEase *= 1 + 0.55 * grace * graceScale;      // up to ~+55% (manual) / ~+22% (auto baseline)
+      }
+      // _pressure (0..1) ramps when the player is turtling at high HP without engaging (ln 4461).
+      // Before: _pressure only tightened the aim-lock cap (ln 5007) and manualEase damper (ln 5102),
+      // so a cautious kiter faced identical shot cadence after 60s of poke-and-retreat. Playtest P0 #1
+      // (kiter persona, 8 neutral timeouts in a row — no escalation). Now: at full pressure the enemy
+      // fires up to ~38% faster, so turtle play is actively punished instead of ignored. 1.0 at pressure=0.
+      const pressureBoost = 1 + 0.6 * (this._pressure || 0);
+      // Playtest P0 #1 (kiter 8/8): apply the long-pending "ramp enemy fire-rate under _closing"
+      // TODO at L4613. _closing is the time+hit-progress ramp (0 at fight start, 1 at ~70s-wall
+      // or full pack HP drained) — multiplying fireCd downward here means a drawn-out fight ALSO
+      // escalates cadence, not only hit consequences. Stacks under pressureBoost.
+      const closingFireBoost = 1 + 0.5 * (this._closing || 0);
+      e.fireCd = Math.max(0.38, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase / (pressureBoost * closingFireBoost);   // +floor; 感电降攻速
       // Lead at the ACTUAL projectile speed so the intercept solution matches flight.
       const shotSpeed = 200 + e.rIdx * 34;
       let lead = this.leadAngle(e, me, shotSpeed);
@@ -4779,10 +5270,17 @@ class CaptureBattle {
       // the last enemy attack path that was hardcoded; now every enemy shot is element-tagged like
       // ours (owner: "敌人的常规攻击也用我们的常规攻击的 skill set"). isBasic marks it a light basic.
       const basicSk = { element: e.element, isBasic: true, appliesTag: (e.kit && e.kit.primary && e.kit.primary.appliesTag) || null };
-      this.spawnProj(e.x, e.y, lead, shotSpeed, dd, 'wild', wc, 7, 'ball', basicSk);
+      // Owner 2026-11-26: '普攻还是箭头'. Enemy basic was hard-coded to 'ball' sprite — an
+      // arrow-looking generic shape. Pick a cat-themed toy (yarn/fish) PER basic tick so the
+      // enemy's basic reads the same way the player's does. Element doesn't override the toy —
+      // it's a yarn/fish THEMED generic basic; real authored skills (fireballMeow/hex) still
+      // render as their authored sprites via castEnemySkill.
+      e._basicTick = (e._basicTick || 0) + 1;
+      const toy = e._basicTick % 2 === 0 ? 'fish' : 'yarn';
+      this.spawnProj(e.x, e.y, lead, shotSpeed, dd, 'wild', wc, 7, toy, basicSk);
       if (e.rIdx >= 2) {
-        this.spawnProj(e.x, e.y, lead + 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball', basicSk);
-        this.spawnProj(e.x, e.y, lead - 0.22, 192, dd * 0.8, 'wild', wc, 6, 'ball', basicSk);
+        this.spawnProj(e.x, e.y, lead + 0.22, 192, dd * 0.8, 'wild', wc, 6, toy, basicSk);
+        this.spawnProj(e.x, e.y, lead - 0.22, 192, dd * 0.8, 'wild', wc, 6, toy, basicSk);
       }
     }
   }
@@ -5019,11 +5517,41 @@ class CaptureBattle {
       e.inv = Math.max(e.inv || 0, 0.12);
       return;
     }
-    // beam → a tight 3-dart fast burst; projectile/chain/multi-shot → the shared budget-safe volley
-    const volleySk = (k === 'beam')
-      ? { ...sk, shots: 3, spread: 0.06, homing: false }
-      : (sk.shots > 1 ? sk : { ...sk, shots: 3, spread: 0.12 });
-    this.castVolley(e, aim, volleySk, dmg, col, 'wild');
+    // Owner 2026-11-26: '敌人还在 barrage'. The previous `{...sk, shots:3}` forced EVERY
+    // single-shot projectile (fireballMeow/hex/lightningOrb/等) into a 3-shot fan, which
+    // made every enemy look like a barrage no matter the authored kit. Only ACTUALLY
+    // multi-shot skills (sk.shots > 1) now go through castVolley; a single-shot projectile
+    // is fired as ONE authored projectile with its own sprite kind — matching how the
+    // player's castDistinctProjectile delivers the same skills.
+    if (k === 'beam') {
+      // Beam enemies still shoot a tight 3-dart fast burst (no beam-channel enemy behavior).
+      this.castVolley(e, aim, { ...sk, shots: 3, spread: 0.06, homing: false }, dmg, col, 'wild');
+      return;
+    }
+    if (sk.shots > 1) {
+      // Real authored multi-shot (barrage/volley 技能) — go volley.
+      this.castVolley(e, aim, sk, dmg, col, 'wild');
+      return;
+    }
+    // Single-shot projectile — pick the authored sprite kind by id/element so a fireballMeow
+    // looks like a fireball, hex looks like a sigil, etc. Same mapping as castVolley.
+    let kindSprite;
+    const sid = sk.id;
+    if (sid === 'fireballMeow' || sid === 'meteor') kindSprite = 'fireball';
+    else if (sid === 'hex' || sid === 'voidMaw') kindSprite = 'hex';
+    else if (sid === 'leafDart' || sid === 'homingSeed') kindSprite = 'leaf';
+    else if (sid === 'lightningOrb' || sid === 'boltArc' || sid === 'thunderYowl') kindSprite = 'lightningOrb';
+    else if (sk.element === 'fire') kindSprite = 'fireball';
+    else if (sk.element === 'elec') kindSprite = 'lightningOrb';
+    else if (sk.element === 'grass') kindSprite = 'leaf';
+    else if (sk.element === 'dark') kindSprite = 'hex';
+    else kindSprite = 'ball';
+    // Speed / radius / life tuned similar to player's castDistinctProjectile authored cases.
+    const spd = sid === 'fireballMeow' ? 225 : sid === 'hex' ? 204 : (e.projSpeed || 300) * 0.92;
+    const r = sid === 'fireballMeow' ? 15 : sid === 'hex' ? 13 : sid === 'lightningOrb' ? 13 : 9;
+    const life = sid === 'lightningOrb' ? 3.3 : sid === 'hex' ? 1.85 : sid === 'fireballMeow' ? 1.8 : 1.2;
+    this.spawnProj(e.x + Math.cos(aim) * 20, e.y + Math.sin(aim) * 20,
+      aim, spd, dmg, 'wild', col, r, kindSprite, sk, life);
   }
   // nearest alive team cat to an enemy (release-time retarget helper)
   nearestEnemyTeamCat(e) {
@@ -5291,7 +5819,12 @@ class CaptureBattle {
     return !hardStun;                                         // false → updateEnemyAI skipped (full lock)
   }
 
-  hurtEnemy(e, dmg, fx, fy, isDot, fromDuo = false, hitTier = null) {
+  hurtEnemy(e, dmg, fx, fy, isDot, fromDuo = false, hitTier = null, skill = null) {
+    // 谨慎型 P0: timestamp the most recent DIRECT offense so that the dodge-
+    // sustain economy (good-dodge heal + ult grant, perfect-dodge +18 ult) can
+    // gate on "player is actually pressuring" — screensaver kiters with zero
+    // offense stop farming free sustain. DoT and duo-wave don't count.
+    if (!isDot && !fromDuo) this._lastOffenseT = this.t;
     // Resonance gets a separate coefficient: standard attacks retain the
     // general difficulty curve, while duo is tuned for multi-wave fights.
     if (fromDuo) dmg *= this.duoDamageMult ?? 1;
@@ -5301,7 +5834,9 @@ class CaptureBattle {
     if (this.levelSuppression) dmg *= this.levelSuppression;   // logistic curve: <1 under-level, >1 over-level
     // Global player-only balance adjustment: applies once to basics, skills,
     // damage-over-time, ally attacks and duo hits. Enemy damage is untouched.
-    dmg *= 0.9;
+    // Owner 2026-11-26 '敌我双方伤害都太低': 0.9 → 1.0 (removed the global player
+    // nerf). Paired with enemy base dmg +22-28% so relative balance holds.
+    dmg *= 1.0;
     // Snapshot combo before increment so the hit that earns a chain level
     // only benefits subsequent hits. DoT never gains the direct-hit combo bonus.
     const comboBonus = isDot ? 0 : this.comboMult() - 1;
@@ -5357,17 +5892,25 @@ class CaptureBattle {
     if (!isDot) {
       const touch = !!this.game.isTouch;
       const frac = e.maxhp ? Math.min(1, scaled / e.maxhp) : 0.2;
+      // POWER-TIER VFX BONUS (R1 2026-11-25, owner: "酷炫 vfx 也要调"): a T2/T3 skill
+      // should LOOK as big as it hits even when the target's maxhp dampens frac. power
+      // ≥1.6 earns a +0.25 shake/flash kick; ≥2.0 earns +0.4 (ult reaches 2.2-2.5).
+      // Basic/T1 (power 1.0-1.35) and DoT are untouched.
+      const skPow=Math.max(0,(skill&&skill.power)||0);
+      const pwrBoost=skPow>=2.0?0.4:skPow>=1.6?0.25:0;
       // HIT-FEEL: true short hitstop (consumed as a hard freeze in update), strength-scaled.
       const strong=hitTier==='heavy'||hitTier==='crit'||hitTier==='stagger';
-      const stop=(touch?.035:.05)+frac*.07+(strong?.010:0);          // ~35ms mobile, 50-120ms desktop
+      const stop=(touch?.035:.05)+frac*.07+(strong?.010:0)+pwrBoost*.04;
       this.hitstop = Math.max(this.hitstop, stop);
       // CAMERA SHAKE scaled by HIT STRENGTH (not just combo heat), kicked along the blow.
       const heat = Math.min(1, this.combo / 20);
       const normal=this.hitNormal(e,fx,fy,'me');
-      this.addShake((touch ? 0.10 : 0.15) + 0.35 * frac + 0.06 * heat,
+      this.addShake((touch ? 0.10 : 0.15) + 0.35 * frac + 0.06 * heat + pwrBoost*.25,
         normal.angle);
       // WHITE connect-flash on the body silhouette (separate from the i-frame fade).
-      e.hitWhite = 0.09;
+      // Owner 2026-11-26: bumped from 0.09 to 0.18 — flash was ~6 frames @60fps, invisible
+      // to a mashing player whose eyes are on the cursor. Big skills flash longer.
+      e.hitWhite = Math.max(e.hitWhite || 0, 0.18 + pwrBoost*.14);
       // On-hit SQUASH: the struck cat compresses then springs back (draw-only).
       e.hitSquash = Math.min(.28,.12+.14*frac+(strong?.025:0));
       // KNOCKBACK (now VISIBLE): bigger base, softer rarity resist, slower decay so the
@@ -5386,6 +5929,18 @@ class CaptureBattle {
       this.vfx.impactType?.(e.x,e.y,tier,
         {color:tier==='crit'?'#fff4cf':tier==='heavy'?'#ffdf9d':'#fff2c0',
           angle:normal.angle});
+      // Big-tier EXTRA ring + sparks so T3 skills (meteor/flameSweep/etc, power≥2.0)
+      // read as haymakers — on top of impactType's baseline. Element color pulls from
+      // skill. Suppressed for continuous ticks (already filtered by !isDot).
+      if(pwrBoost>=.25){
+        const bigCol=this.elemColor(skill&&skill.element)||'#ffe8b5';
+        const extraVr=90+pwrBoost*120;
+        this.vfx.ring(e.x,e.y,{r0:7,vr:extraVr,life:.30,color:bigCol,width:3});
+        if(pwrBoost>=.4){
+          this.vfx.burst(e.x,e.y,{count:touch?6:12,color:bigCol,
+            speed:140,life:.28,r:3.1});
+        }
+      }
       // CONNECT TICK: a short, combo-pitched pop so every landed hit is audible
       // (previously only the swing had sound → players couldn't tell a hit landed).
       // Throttled ~70ms and pitch rises with the combo for a satisfying ladder.
@@ -5421,6 +5976,10 @@ class CaptureBattle {
       this.vfx.impactType?.(e.x,e.y,'kill',{color:'#ffeca9'});
       this.spawnBurst(e.x,e.y,'💫','#ffd36b',12);
       this.game.toast(e.sp.name+' 斗志耗尽！');
+      // Trait system: emit onTargetKilled for the killing cat (currently me()).
+      // No-op until traits-p2 PR registers 斑斑 狩猎本能. _isDerived suppresses echoes.
+      window.CatTraits && window.CatTraits.emit('onTargetKilled',
+        { battle: this, cat: this.me(), target: e, _isDerived: isDot });
     }
   }
   hurtMe(dmg, fx, fy, f) {
@@ -5444,7 +6003,8 @@ class CaptureBattle {
     // hitstop + strength-scaled camera shake, and knockback away from the blow.
     if (dmg > 0) {
       const frac = f.maxhp ? Math.min(1, dmg / f.maxhp) : 0.2;
-      f.hitWhite = 0.09;
+      // Owner 2026-11-26: bumped 0.09 → 0.18 so a panicky player SEES their cat flash.
+      f.hitWhite = Math.max(f.hitWhite || 0, 0.18);
       f.hitSquash = Math.min(0.28, 0.12 + 0.14 * frac);
       this.hitstop = Math.max(this.hitstop, (this.game.isTouch ? 0.03 : 0.04) + frac * 0.06);
       const normal=this.hitNormal(f,fx,fy,'wild');
@@ -5548,7 +6108,7 @@ class CaptureBattle {
       const continuous=!!skill?.isChanneledTick;
       const heavyMove=!!skill?.heavy||['melee','dash','pounce','leap'].includes(skill?.kind);
       const hitTier=continuous?null:alreadyStaggered?'crit':heavyMove?'heavy':'light';
-      this.hurtEnemy(target,dealt,x,y,continuous,false,hitTier);
+      this.hurtEnemy(target,dealt,x,y,continuous,false,hitTier,skill);
       if(dealt>0){
         this._lastPoiseHitEnemy=target.i;
         this._lastPoiseHitAt=this.t;
@@ -5581,14 +6141,31 @@ class CaptureBattle {
         this._lastRegularHitFx=this.t;
         this.regularSkillAccent({x,y},skill.element,0,!!skill.isBasic,true);
       }
+      // Trait system: onHitResolved for the attacker cat (caster = me()).
+      // Covers 芝士/露露/小雾/幽幽/月月/豆豆/夜夜 in P2. No-op until P1/P2 PRs land.
+      if (dealt > 0) {
+        window.CatTraits && window.CatTraits.emit('onHitResolved',
+          { battle: this, cat: this.me(), target, skill, dmg: dealt, _isDerived: !!(proj && proj._isDerived) });
+      }
       return { blocked: false, reflected: false, dealt };
     } else {
       // Enemy hit on a cat: type matchup matters defensively too, and an enemy
       // special can leave a DoT/soft-CC on the cat (mirror of applyHitEffects).
       const dealt = this.applyEnemyHitEffects(target, skill || { element: null }, dmg, x, y);
       if (this._debug) this._dbg('enemy→me', skill, dmg, dealt, target);
+      // Trait system: onBeforeDamage lets a trait preempt / redirect (圆宝 同甘共苦).
+      // Emit BEFORE hurtMe so the trait can mutate ctx.redirect or ctx.dmg.
+      if (dealt > 0 && window.CatTraits) {
+        window.CatTraits.emit('onBeforeDamage',
+          { battle: this, cat: target, dmg: dealt, skill });
+      }
       this.hurtMe(dealt, x, y, target);
       this.vfx.impactType?.(x,y,'light',{color:col});
+      // onDamageTaken fires AFTER dmg applied — for 汤圆 (store incoming → next heavy).
+      if (dealt > 0 && window.CatTraits) {
+        window.CatTraits.emit('onDamageTaken',
+          { battle: this, cat: target, dmg: dealt, skill });
+      }
       return { blocked: false, reflected: false, dealt };
     }
   }
@@ -5911,6 +6488,8 @@ class CaptureBattle {
 
     // projectiles with glow
     for (const p of this.projectiles) {
+      if(window.CatBondSkillFX?.drawMeteorFlight(ctx,p,this.t))continue;
+      if(window.CatBondSkillFX?.drawIdentityProjectile(ctx,p,this.t))continue;
       // ADDITIVE TAPERED RIBBON trail from the position history (bright/wide head →
       // transparent tail), drawn under the body. Round caps hide the segment seams.
       const h = p._hist;

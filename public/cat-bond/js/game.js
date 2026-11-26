@@ -1805,6 +1805,81 @@ class Game {
     this.refreshYardSurprise();
   }
 
+  // DEBUG (?debug=1 only) — one-click grant: all 33 species, max-level, all learned
+  // skills, full bond, max currencies, worldmap unlocked. For gauging high-level
+  // combat feel without a 30-minute progression grind. Idempotent: pressing twice
+  // doesn't duplicate existing cats; only adds missing species.
+  debugUnlockEverything() {
+    try {
+      const S = window.State, Sk = window.Skills, GD = window.GameData;
+      if (!S || !Sk || !GD) { this.toast('⚠️ DEBUG failed: state/skills/data not loaded'); return; }
+      if (!Array.isArray(S.S.cats)) S.S.cats = [];
+      const ownedSpecies = new Set(S.S.cats.map(c => c.species));
+      // All 33 species (whatever GD.SPECIES exposes).
+      const allSpecies = (GD.SPECIES || []).map(sp => sp.id);
+      let added = 0;
+      for (const sid of allSpecies) {
+        if (ownedSpecies.has(sid)) continue;
+        const nc = S.makeCat(sid, { affinity: 100 });
+        S.S.cats.push(nc);
+        added++;
+      }
+      // Max out EVERY cat on the roster (both brand-new and previously owned).
+      const allLearnable = (Sk.SKILLS || [])
+        .filter(sk => sk && (sk.ultCost || 0) === 0)  // non-ult skills; ults self-assign via SIGNATURE_SKILL
+        .map(sk => sk.id);
+      for (const c of S.S.cats) {
+        c.level = 50;
+        c.xp = 0;
+        c.affinity = 100;
+        c.hunger = 100;
+        c.joy = 100;
+        c.stage = 2;              // 灵 (awakened)
+        if (!c.awaken) c.awaken = 'pow';
+        c.battlesWon = Math.max(c.battlesWon || 0, 99);
+        // Stat jitter max via re-roll (cap)
+        const sp = GD.speciesById(c.species);
+        if (sp && sp.base) {
+          const rar = GD.RARITY[sp.rarity];
+          const jMul = 1.15;    // top of the 0.85..1.15 jitter band
+          c.stats = {
+            pow: Math.round(sp.base.pow * rar.statMul * jMul * 1.5),
+            agi: Math.round(sp.base.agi * rar.statMul * jMul * 1.5),
+            vit: Math.round(sp.base.vit * rar.statMul * jMul * 1.5),
+            cha: Math.round(sp.base.cha * rar.statMul * jMul * 1.5),
+          };
+        }
+        // Grant every non-ult skill as 'learned' (gates willbe re-checked by ensureLoadout).
+        c.learned = allLearnable.slice();
+        // Let Skills refresh the default loadout for the new stats/skills.
+        try { Sk.ensureLoadout?.(c); } catch (_) {}
+      }
+      // Currencies + progress flags
+      S.S.coins = Math.max(S.S.coins || 0, 99999);
+      S.S.fish = Math.max(S.S.fish || 0, 999);
+      S.S.catchCount = Math.max(S.S.catchCount || 0, allSpecies.length);
+      // Unlock all worldmap regions if the map state exists.
+      if (S.S.worldmap && S.S.worldmap.unlocked) {
+        for (const id of ['home', 'sakura', 'creek', 'volcano', 'ruins']) {
+          S.S.worldmap.unlocked[id] = true;
+        }
+      }
+      // Dex: mark everything as seen/captured
+      if (!S.S.dex) S.S.dex = {};
+      for (const sid of allSpecies) S.S.dex[sid] = true;
+      S.save?.();
+      this.refreshHUD();
+      const en = window.MorrowwishI18n?.get?.() !== 'zh';
+      this.toast(en
+        ? `🧪 DEBUG: +${added} cats, all ${S.S.cats.length} at Lv.50, all skills unlocked`
+        : `🧪 DEBUG: 新增 ${added} 只, 全部 ${S.S.cats.length} 只 Lv.50, 全技能解锁`);
+      window.arcadeMetric?.('bond_debug_unlock_all', { added, totalCats: S.S.cats.length });
+    } catch (e) {
+      console.error('[debugUnlockEverything] failed:', e);
+      this.toast('⚠️ DEBUG failed: ' + e.message);
+    }
+  }
+
   toast(msg) {
     const wrap = document.getElementById('toasts');if(!wrap)return;
     const localized=!!msg&&typeof msg==='object'&&('zh' in msg||'en' in msg);

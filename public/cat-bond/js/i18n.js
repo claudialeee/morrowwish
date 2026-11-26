@@ -1103,8 +1103,13 @@
     // ---- skill names ----
     // cat-instinct rework names (Spec A)
     '咳毛球': 'Hairball Hack', '弓背炸毛': 'Puff & Hiss', '拨下桌': 'Knock It Off',
-    '舔毛理顺': 'Grooming', '纸箱埋伏': 'Box Ambush', '疯跑冲刺': 'Zoomies',
+    '舔毛理顺': 'Grooming', '舔伤口': 'Lick Wound', '纸箱埋伏': 'Box Ambush', '疯跑冲刺': 'Zoomies',
     '炸毛墙': 'Startle Static', '戏弄爪': 'Bat-Around', '居高临下': 'High Ground',
+    '咒波三连': 'Hex Triwave', '潮波三叠': 'Tide Triwave',
+    '蓄一发按出三连暗波：每 0.35 秒一发自动追击当下最近的敌人，不必一次放完。':
+      'Hold one cast, release three dark waves — one every 0.35s auto-homes at the nearest enemy, so you don\'t burn it all at once.',
+    '一发激起三叠潮波：每 0.3 秒一发自动追击当下最近的敌人，持续淋湿。':
+      'A single cast ripples into three tidal waves — one every 0.3s auto-homes at the nearest enemy, soaking them.',
     '呼噜光环': 'Purr Aura', '慢眨眼': 'Slow-Blink',
     '炽爪': 'Ember Claw', '喵火球': 'Meow Fireball', '金乌焱': 'Suncrow Blaze',
     '水鞭': 'Water Lash', '泡泡幕': 'Bubble Veil', '潮汐掌': 'Tidal Paw',
@@ -1772,7 +1777,8 @@
     "左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。": "Sweep back and forth three times; each pass deals one moderate hit without repeat tick damage.",
     "金乌焱": "Solar Ember",
     "拨下桌": "Paw Swipe",
-    "舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅坦克 / 辅助能领悟。": "Soothe nearby allies with grooming and create a healing mist. Only tanks and supports can learn it.",
+    "舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅辅助能领悟。": "Soothe nearby allies with grooming and create a healing mist. Only supports can learn it.",
+    "坦克专属：蹲下舔舐伤口，回复 30% 生命——舔毛时移动变慢，但撑住队伍是坦克的职责。": "Tank only: Crouch down to lick your own wounds and recover 30% HP — your movement slows during the lick, but holding the line is the tank's job.",
     "持续喷射高压水柱，沿直线不断造成伤害；喷射时原地不动，收枪后短暂迟缓（后遗症）。": "Spray a high-pressure stream of water for repeated line damage. Remain still while firing and briefly slow afterward.",
     "泡泡幕": "Bubble Barrier",
     "展开泡泡护盾，减伤 45%，持续约 5 秒——前排的持续减伤罩。": "Raise a bubble shield that cuts damage by 45% for about 5 seconds — a frontliner's steady guard.",
@@ -1781,7 +1787,7 @@
     "藤蔓沼泽": "Vine Mire",
     "长时间吟唱后抛出一片缠绕藤蔓的沼泽：站在其中的敌人被持续束缚、难以移动；吟唱期间可被打断，是草系控制流的领域技。": "After a long channel, cast a vine-tangled mire. Enemies inside are continually Bound and struggle to move; the channel can be interrupted — a grass control-field skill.",
     "陨石术": "Meteor",
-    "长时间吟唱后召唤一颗燃烧陨石砸向目标：巨额范围爆发伤害，并在落点留下灼烧火场；吟唱期间可被打断。": "After a long channel, call down a burning meteor: massive area burst damage that leaves a scorching fire field at the impact — the channel can be interrupted.",
+    "长时间吟唱后召唤多颗燃烧陨石砸向目标：巨额范围爆发伤害，并在落点留下灼烧火场；吟唱期间可被打断。": "After a long channel, call down a volley of burning meteors: massive area burst damage that leaves a scorching fire field at the impact — the channel can be interrupted.",
     "炫目光域": "Glare Field",
     "长时间吟唱后在目标区域炸开刺目光幕：站在其中的敌人被持续致盲、攻击频频失准；吟唱期间可被打断，是光系的控制领域技。": "After a long channel, burst a dazzling light veil over the area: enemies inside are continually Blinded and keep missing; the channel can be interrupted — a light control-field skill.",
     "坦克专属：在身前架起长形镜面护墙，为身后队友阻挡或反弹远程弹体。持墙期间移速减半，转向缓慢。": "Tank-only: Raise a long mirrored wall to block or reflect projectiles and protect allies behind it. Movement is halved and turning is slow.",
@@ -2065,7 +2071,7 @@
   "恢复中": "Recovering",
   "野猫韧性": "Wild cat poise",
   "水枪": "Water Jet",
-  "极短时间完全格挡下一次攻击；结束后短暂易伤。": "Completely block the next hit for a moment, then briefly take extra damage.",
+  "坦克 / 格斗专属：极短时间完全格挡下一次攻击；结束后短暂易伤。": "Tank / Fighter only: Completely block the next hit for a moment, then briefly take extra damage.",
   "焰弹": "Flame Orb",
   "炽焰冲": "Flame Dash",
   "烈焰罩": "Blazing Guard",
