@@ -2074,6 +2074,8 @@
   "恢复中": "Recovering",
   "野猫韧性": "Wild cat poise",
   "水枪": "Water Lance",
+  "暗影触手": "Umbral Tendrils",
+  "持续喷出多条暗影触手，贯穿前方狭长区域，低伤害压制并短暂束缚敌人。暗系控制专属。": "Channel solid shadow tendrils through a narrow area, dealing light damage and briefly binding enemies. Dark Control only.",
   "雷极磁场": "Magnetic Polarity",
   "高压水凝成锋锐长枪，沿细直线贯穿多个敌人并持续造成伤害；施放时原地不动，收枪后短暂迟缓。": "A sharp lance of compressed water pierces enemies in a narrow line; channel in place, then recover briefly.",
   "在目标方向展开双雷核，持续4秒牵引并电击两极之间的敌人。": "Deploy two electric poles for four seconds, drawing in and shocking enemies between them.",
