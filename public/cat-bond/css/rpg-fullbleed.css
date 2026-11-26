@@ -175,3 +175,6 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .sg-discovery:hover::before,#stage .sg-discovery:focus-visible::before{border-color:#785020;box-shadow:0 0 0 3px #fff2be,0 2px 8px #5f3c2855}
 #stage .sg-discovery:disabled{opacity:.7}
 #stage .sg-npc-talk-marker{min-height:44px;min-width:72px;font-size:14px;padding:6px 12px}
+
+/* Compact landscape and narrow phone: keep meaningful labels and 44px+ touch regions. */
+@media(max-width:480px),(max-height:420px){#stage .sg-discovery{width:84px;height:70px;grid-template-rows:39px auto;gap:1px}#stage .sg-discovery::before{width:44px;height:44px}#stage .sg-discovery svg{width:38px;height:38px}#stage .sg-discovery-label{max-width:82px;font-size:11px;padding:2px 4px}#stage .sg-npc-talk-marker{font-size:12px;padding:5px 8px;min-width:64px}}

@@ -19,3 +19,7 @@ const journey=win.GardenExploration.journeyKeepsakes;assert.equal(journey({reson
 assert.equal(reduce(s,'moonleaf-touch'),null);apply('moonleaf-touch',true);assert.equal(reduce(s,'moonleaf-touch',true),null);assert.ok(read({sunlitGarden:{exploration:s}}).moonleafTouched);
 
 const pose=win.GardenExploration.moonleafPose,home={x:100,y:100},target={x:300,y:200};assert.equal(pose(0,0,home,target).x,100);assert.equal(pose(600,0,home,target).x,200);assert.equal(pose(1200,0,home,target).x,300);assert.equal(pose(1500,0,home,target,1200).touching,true);assert.equal(pose(2900,0,home,target,1200).x,100);assert.equal(pose(2900,0,home,target,1200).done,true);
+
+// Full DOM-sized touch rectangles remain inside the screen and avoid the
+// guide / previously placed badges on desktop and both mobile orientations.
+for(const [W,H,bw,bh] of [[1280,800,104,80],[390,844,84,70],[844,390,84,70]]){const avoid=[{left:W*.3,top:8,right:W*.7,bottom:76}];for(let i=0;i<7;i++){const m=win.GardenExploration.placeMarker(W*.5,H*.5,bw,bh,W,H,avoid);const b=m.box;assert.ok(b.left>=0&&b.top>=0&&b.right<=W&&b.bottom<=H);assert.ok(!avoid.some(a=>b.left<a.right&&b.right>a.left&&b.top<a.bottom&&b.bottom>a.top),'badge overlap '+W+'x'+H);avoid.push(b);}}

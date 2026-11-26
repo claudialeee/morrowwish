@@ -208,6 +208,13 @@ async function run(chapter){
    await page.locator('[data-next-scene="'+start+'"]:visible').click();
    await page.waitForFunction(()=>WorldMap.mode==='region');
   }
+  // Verify the actual canvas affordances rather than only the menu buttons.
+  if(await page.evaluate(()=>__game.scene==='map'&&WorldMap.mode==='region')){
+   await page.waitForFunction(()=>JSON.parse(document.querySelector('.rw-surface')?.dataset.affordances||'[]').length>0);
+   const markers=await page.locator('.rw-surface').evaluate(el=>JSON.parse(el.dataset.affordances||'[]'));
+   for(const m of markers){assert.ok(m.x>=0&&m.x<=960&&m.y>=0&&m.y<=540,'Marker inside world: '+m.t);if(m.rect)assert.ok(m.rect.x>=0&&m.rect.y>=0&&m.rect.x+m.rect.w<=960&&m.rect.y+m.rect.h<=540,'Label inside world: '+m.t);}
+   await shot('interaction-markers');
+  }
   if(chapter==='harbor'){
    await talk('Qilan');await dialogue('harbor:H-01');await scene('harbor:H-02');
    await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();await click('Run to corner 2',chase);await chase.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');

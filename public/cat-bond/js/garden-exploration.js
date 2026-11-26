@@ -83,7 +83,21 @@ if(k.moonleaf)place(.76,.70,()=>{if(finalArt(ctx,'garden-moonleaf',0,-23,80,94))
 if(k.lantern!==null)place(.60,.42,()=>{if(finalArt(ctx,'garden-lantern',0,0,72,82)){finalArt(ctx,['shadow-fish','shadow-butterfly','shadow-cat'][k.lantern]||'shadow-cat',0,0,22,20);return;}oval(0,0,17,20,'#f6bd74');oval(0,0,13,16,'#ffe1a0');ctx.fillStyle='#75553f';if(k.lantern===0){oval(0,0,7,4,'#75553f');ctx.beginPath();ctx.moveTo(-7,0);ctx.lineTo(-12,-5);ctx.lineTo(-12,5);ctx.fill();}else if(k.lantern===1){oval(-4,-2,4,6,'#75553f');oval(4,-2,4,6,'#75553f');}else{oval(0,2,7,6,'#75553f');ctx.beginPath();ctx.moveTo(-7,0);ctx.lineTo(-8,-9);ctx.lineTo(0,-4);ctx.lineTo(6,-10);ctx.lineTo(7,1);ctx.fill();}oval(12,-15,3,3,'#fff9cf');});
 place(.48,.67,()=>{oval(0,7,30,11,'#b5966e');for(let i=0;i<k.cups;i++){const x=(i-(k.cups-1)/2)*16;if(finalArt(ctx,'garden-teacup',x,0,27,26))continue;oval(x,0,6,5,'#f9eed9');oval(x,-3,5,2,'#b77b46');ctx.strokeStyle='#fff4df';ctx.beginPath();ctx.arc(x+6,0,3,-1,1);ctx.stroke();}});
 if(k.flight)place(.35,.70,()=>{ctx.fillStyle='#e8f2e7';ctx.fillRect(-13,-9,26,18);oval(0,1,8,3,'#c5dbe4');oval(6,-4,3,3,'#dcbf72');});ctx.restore();}
-function draw(parent,ctx,w,h){
+// Place full, real touch rectangles, not guessed icon centers. Use a
+// deterministic grid fallback for crowded phone/landscape layouts.
+function placeMarker(px,py,bw,bh,W,H,avoid=[]){
+ const clamp=(a,lo,hi)=>Math.max(lo,Math.min(Math.max(lo,hi),a)),hx=bw/2+3,hy=bh/2+3;
+ const bound=(x,y)=>[clamp(x,hx,W-hx),clamp(y,hy,H-hy)];
+ const rect=([x,y])=>({left:x-bw/2,top:y-bh/2,right:x+bw/2,bottom:y+bh/2});
+ const overlap=(a,b)=>Math.max(0,Math.min(a.right,b.right+4)-Math.max(a.left,b.left-4))*Math.max(0,Math.min(a.bottom,b.bottom+4)-Math.max(a.top,b.top-4));
+ const points=[bound(px,py)];
+ for(let n=1;n<=3;n++)for(const [dx,dy] of [[0,-1],[1,0],[-1,0],[0,1],[1,-1],[-1,-1],[1,1],[-1,1]])points.push(bound(px+dx*n*(bw+5),py+dy*n*(bh+5)));
+ for(let y=hy;y<=H-hy+.01;y+=bh+5)for(let x=hx;x<=W-hx+.01;x+=bw+5)points.push([x,y]);
+ let best=points[0],score=Infinity;
+ for(const p of points){const box=rect(p),cost=avoid.reduce((sum,b)=>sum+overlap(box,b),0)*1000+Math.hypot(p[0]-px,p[1]-py);if(cost<score){score=cost;best=p;}if(cost===0)break;}
+ return {x:best[0],y:best[1],box:rect(best)};
+}
+function draw(parent,ctx,w,h,npcRects=[]){
  init(parent);if(owner!==rootState()){cancelChase();owner=rootState();closePopup();}
  const valid=eligible()&&!covered(),s=read(owner),v=view();
  if(!valid){cancelChase();closePopup();layer.hidden=true;return;}layer.hidden=false;
@@ -92,17 +106,19 @@ function draw(parent,ctx,w,h){
  if(pending&&(projection?.w!==w||projection?.h!==h||!window.__game?.yard?.entities?.includes(pending.cat)))cancelChase();
  projection={rect,r,w,h};drawJourney(ctx,w,h,art,owner,v);
  const left=Math.max(0,art.x),right=Math.min(w,art.x+art.width),top=Math.max(0,art.y),bottom=Math.min(h,art.y+art.height);
- const guide=parent.querySelector('.sg-prologue-guide:not([hidden])')?.getBoundingClientRect(),marker=parent.querySelector('.sg-npc-talk-marker:not([hidden])')?.getBoundingClientRect();
- const placed=[];
- for(const [id,b] of buttons){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?!s.door:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):id==='moonleaf'?!!v?.ending&&!!journeyKeepsakes(owner,v)?.moonleaf&&!s.moonleafTouched:s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(Number(id.at(-1)));
+ const relative=b=>({left:b.left-r.left,top:b.top-r.top,right:b.right-r.left,bottom:b.bottom-r.top});
+ const placed=[...parent.querySelectorAll('.sg-prologue-guide:not([hidden]),.sg-npc-talk-marker:not([hidden])')].map(el=>relative(el.getBoundingClientRect())).concat(npcRects);
+ // Required chart pieces take precedence over optional discoveries.
+ const ordered=[...buttons].sort(([a],[b])=>Number(b.startsWith('chart-'))-Number(a.startsWith('chart-')));
+ for(const [id,b] of ordered){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?!s.door:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):id==='moonleaf'?!!v?.ending&&!!journeyKeepsakes(owner,v)?.moonleaf&&!s.moonleafTouched:s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(Number(id.at(-1)));
   b.hidden=!show;if(!show)continue;
   const p=def.points[id==='butterfly'?Math.min(2,s.butterfly):0];
   const preferredX=rect.left+(left+(right-left)*p[0])/w*rect.width-r.left,preferredY=rect.top+(top+(bottom-top)*p[1])/h*rect.height-r.top;
-  const clamp=(a,lo,hi)=>Math.max(lo,Math.min(Math.max(lo,hi),a));let x=clamp(preferredX,54,r.width-54),y=clamp(preferredY,60,r.height-48);
-  const hit=(box,a,b)=>box&&a+r.left+54>box.left&&a+r.left-54<box.right&&b+r.top+42>box.top&&b+r.top-42<box.bottom;
-  const blocked=(a,b)=>hit(guide,a,b)||hit(marker,a,b)||placed.some(([u,v])=>Math.abs(u-a)<108&&Math.abs(v-b)<84);
-  if(blocked(x,y)){const candidates=[[0,-86],[110,0],[-110,0],[0,-172],[0,86],[110,-86],[-110,-86],[110,86],[-110,86],[220,0],[-220,0]];for(const [dx,dy] of candidates){const a=clamp(x+dx,54,r.width-54),q=clamp(y+dy,60,r.height-48);if(!blocked(a,q)){x=a;y=q;break;}}}
-  placed.push([x,y]);b.style.left=x+'px';b.style.top=y+'px';
+  const bw=b.offsetWidth||84,bh=b.offsetHeight||70;
+  // A running butterfly/moonleaf action owns its target until it finishes.
+  const fixed=pending?.id===id&&Number.isFinite(parseFloat(b.style.left))&&Number.isFinite(parseFloat(b.style.top));
+  const p0=fixed?{x:parseFloat(b.style.left),y:parseFloat(b.style.top)}:placeMarker(preferredX,preferredY,bw,bh,r.width,r.height,placed);
+  const {x,y}=p0;placed.push(p0.box||{left:x-bw/2,top:y-bh/2,right:x+bw/2,bottom:y+bh/2});b.style.left=x+'px';b.style.top=y+'px';
   const label=tr(...def.labels);if(b.getAttribute('aria-label')!==label){b.setAttribute('aria-label',label);b.title=label;b.querySelector('.sg-discovery-label').textContent=label;}
  }
  if(pending){const now=performance.now(),arrived=Math.hypot(pending.cat.x-pending.x,pending.cat.y-pending.y)<12;
@@ -110,5 +126,5 @@ function draw(parent,ctx,w,h){
  else if(arrived)finishChase();else if(now-pending.started>10000){cancelChase();toast('蝴蝶停下来了，再试一次吧。','The butterfly is waiting. Try again.');}}
 }
 function reset(){cancelChase();projection=null;if(layer)layer.hidden=true;closePopup();}
-window.GardenExploration=Object.freeze({draw,reset,read,reduce,journeyKeepsakes,moonleafPose,companionPose,beginChart:()=>read(rootState()).chartStarted||commit('chart-start'),chartReady:()=>read(rootState()).parts.length===2});
+window.GardenExploration=Object.freeze({draw,reset,read,reduce,journeyKeepsakes,moonleafPose,companionPose,placeMarker,beginChart:()=>read(rootState()).chartStarted||commit('chart-start'),chartReady:()=>read(rootState()).parts.length===2});
 })();
