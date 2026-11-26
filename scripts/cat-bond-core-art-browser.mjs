@@ -43,23 +43,56 @@ try{
  // These isolated calculations are not player-input battle outcomes.
  const passiveChecks=await page.evaluate(()=>{
   const P=Battle.CaptureBattle.prototype,results=[];
-  const battle=Object.create(P);battle.t=0;
-  for(const sp of GameData.SPECIES){
-   const p=Skills.breedPassive(sp.id),f={cat:{species:sp.id},hp:100,maxhp:100,alive:true,moving:false,shieldT:0},target={hp:100,maxhp:100};
+  const roster=[...GameData.SPECIES,...Object.values(GameData.STORY_SPECIES)];
+  const fighter=id=>({cat:{species:id},hp:100,maxhp:100,alive:true,moving:false,shieldT:0,x:0,y:0,cd:{q:3,e:3}});
+  const makeBattle=()=>Object.assign(Object.create(P),{t:0,team:[],vfx:{text(){}},castWard(a,type,sk){a.shieldT=sk.wardDuration;a._wardReduction=sk.wardReduction;return true;}});
+  for(const sp of roster){
+   const p=Skills.breedPassive(sp.id),f=fighter(sp.id),target=fighter('biscuit'),battle=makeBattle();
+   if(!p){results.push({id:sp.id,pass:false,reason:'missing passive'});continue;}
+   if(p.event==='guard'){
+    target.hp=35;battle.team=[f,target];
+    const activated=battle.storyPassiveEvent(f,'guard'),duration=target.shieldT,reduction=target._wardReduction;
+    target.shieldT=0;const blocked=!battle.storyPassiveEvent(f,'guard');
+    battle.t=16;const reactivated=battle.storyPassiveEvent(f,'guard');
+    target.shieldT=0;target.x=191;battle.t=32;const outOfRange=!battle.storyPassiveEvent(f,'guard');
+    target.x=0;f.alive=false;const fainted=!battle.storyPassiveEvent(f,'guard');
+    results.push({id:sp.id,channel:p.channel,activated,duration,reduction,blocked,reactivated,outOfRange,fainted,pass:activated&&duration===3&&reduction===.35&&blocked&&reactivated&&outOfRange&&fainted});continue;
+   }
+   if(p.event==='alternate'){
+    const first=!battle.storyPassiveEvent(f,'alternate','q'),activated=battle.storyPassiveEvent(f,'alternate','e'),cd=f.cd.q;
+    const blocked=!battle.storyPassiveEvent(f,'alternate','q');
+    battle.t=5;const reactivated=battle.storyPassiveEvent(f,'alternate','e');
+    f.alive=false;battle.t=10;const fainted=!battle.storyPassiveEvent(f,'alternate','q');
+    results.push({id:sp.id,channel:p.channel,first,activated,cd,blocked,reactivated,fainted,pass:first&&activated&&cd===1.8&&blocked&&reactivated&&fainted});continue;
+   }
+   let eventOk=true;
+   if(p.event==='dodge'){
+    const initial=battle.passiveFactor(f,'damage');
+    const activated=battle.storyPassiveEvent(f,'dodge');
+    battle.t=1;const active=battle.passiveFactor(f,'damage');
+    battle.t=2.5;const expired=battle.passiveFactor(f,'damage')===1;
+    const blocked=!battle.storyPassiveEvent(f,'dodge');
+    battle.t=10;const reactivated=battle.storyPassiveEvent(f,'dodge');
+    eventOk=initial===1&&activated&&active===p.factor&&expired&&blocked&&reactivated;
+   }
    if(p.when==='low')f.hp=30;
    if(p.when==='moving')f.moving=true;
    if(p.when==='shield')f.shieldT=1;
    if(['targetLow','targetCritical'].includes(p.when))target.hp=20;
-   battle.t=p.when==='late'?9:p.when==='mid'?10:0;
-   const actual=battle.passiveFactor(f,p.channel,target);
-   const outgoing=battle.outgoingBuffMult(f);
-   results.push({id:sp.id,channel:p.channel,expected:p.factor,actual,outgoing,expectedOutgoing:p.channel==='damage'?p.factor:1});
+   if(p.when!=='afterDodge')battle.t=p.when==='late'?9:p.when==='mid'?10:0;
+   const actual=battle.passiveFactor(f,p.channel,target),outgoing=battle.outgoingBuffMult(f);
+   const expectedOutgoing=p.channel==='damage'&&!['targetLow','targetCritical'].includes(p.when)?p.factor:1;
+   const other=battle.passiveFactor(f,p.channel==='damage'?'incoming':'damage',target);
+   battle.t=p.when==='late'?0:30;f.hp=p.when==='healthy'?30:100;f.moving=false;f.shieldT=0;target.hp=100;
+   const inactive=battle.passiveFactor(f,p.channel,target);
+   f.alive=false;const fainted=battle.passiveFactor(f,p.channel,target);
+   results.push({id:sp.id,channel:p.channel,expected:p.factor,actual,outgoing,expectedOutgoing,other,inactive,fainted,eventOk,pass:actual===p.factor&&outgoing===expectedOutgoing&&other===1&&inactive===1&&fainted===1&&eventOk});
   }
   return results;
  });
- assert.equal(passiveChecks.length,16);
- for(const c of passiveChecks){assert.equal(c.actual,c.expected,c.id+' actual battle passive');assert.equal(c.outgoing,c.expectedOutgoing,c.id+' outgoing multiplier');}
  await fs.writeFile(out+'/battle-passive-hooks.json',JSON.stringify(passiveChecks,null,2));
- console.log('BROWSER PASSIVE HOOK PASS',passiveChecks.length,'actual battle prototype checks');
+ assert.equal(passiveChecks.length,29);
+ assert.deepEqual(passiveChecks.filter(c=>!c.pass),[],'All active roster passives must pass actual battle prototype assertions');
+ console.log('BROWSER PASSIVE HOOK PASS',passiveChecks.length,'actual battle prototype checks (not encounter outcomes)');
  assert.deepEqual(errors,[]);await page.screenshot({path:out+'/rendered-gallery.png'});await fs.writeFile(out+'/index.json',JSON.stringify({assets,roster},null,2));console.log('CORE ART BROWSER PASS',assets.length,'decoded images,',roster.length,'actual game-rendered cats');
 }finally{await browser.close();}
