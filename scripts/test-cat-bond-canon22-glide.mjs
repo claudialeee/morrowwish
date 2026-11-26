@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,validSkyFlightProof} from '../public/cat-bond/js/resonance/sky-flight.mjs';
+import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,validSkyFlightProof,canLandSkyFlight,landSkyFlight} from '../public/cat-bond/js/resonance/sky-flight.mjs';
 import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
 const op='puzzle:joint-flight';
 function fly(route,choice,dt=.02){
@@ -31,6 +31,12 @@ for(const operation of ['puzzle:sky-pouch','explore:flight-recorder']){
  for(let i=0;i<3000&&!f.solved&&!f.attempts;i++){if(f.x>.74&&f.target!==.5)steerSkyFlight(f,.5);tickSkyFlight(f,.02);}
  assert.ok(f.solved,JSON.stringify(f));assert.ok(validSkyFlightProof(operation,null,skyFlightProof(f)));
 }
+const resting=newSkyFlight(op,'lead');steerSkyFlight(resting,.72);
+for(let i=0;i<1500&&!canLandSkyFlight(resting);i++)tickSkyFlight(resting,.02);
+assert.equal(canLandSkyFlight(resting),1);assert.ok(landSkyFlight(resting));const checkpoint=resting.x;for(let i=0;i<100;i++)tickSkyFlight(resting,.02);assert.equal(resting.x,checkpoint);assert.equal(resting.paused,true);
+steerSkyFlight(resting,.30);for(let i=0;i<500&&!resting.attempts;i++)tickSkyFlight(resting,.02);assert.equal(resting.attempts,1);assert.equal(resting.x,checkpoint);assert.equal(resting.paused,true);
+steerSkyFlight(resting,.72);for(let i=0;i<1500&&!resting.solved;i++){if(resting.x>.74&&resting.target!==.5)steerSkyFlight(resting,.5);tickSkyFlight(resting,.02);}
+assert.ok(resting.solved);const rested=skyFlightProof(resting);assert.ok(validSkyFlightProof(op,'lead',rested));assert.equal(rested.stops.length,1);assert.equal(validSkyFlightProof(op,'lead',{...rested,stops:[{island:2,frame:rested.stops[0].frame}]}),false);
 const scene=campaign.scenes.find(s=>s.id==='sky:S-03');assert.deepEqual(scene.requires,[op]);
 assert.ok(scene.lines.every(l=>l.text.zh&&l.text.en));assert.ok(!scene.lines.some(l=>/mail|deliver|信袋|送信/i.test(l.text.en+' '+l.text.zh)));
 console.log('Canon 2.2: continuous glide, both routes, variable frame rates, retry, forged proof rejection and no delivery gate passed');

@@ -1,5 +1,5 @@
 // Skyspine flight simulation. Ephemeral controls; only canonical world evidence is saved.
-import {newGlide,steerGlide,tickGlide,glideProof,validGlideProof} from "./canon22-glide.mjs";
+import {newGlide,steerGlide,tickGlide,glideProof,validGlideProof,landableGlide,holdGlide} from "./canon22-glide.mjs";
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const routes={
  "puzzle:sky-pouch":[.65,.34,.64],
@@ -26,6 +26,8 @@ export function newSkyFlight(operation,choice){
  const training=operation==="puzzle:sky-pouch"||operation==="puzzle:joint-flight"&&choice==="train";
  return {operation,choice,training,route:[...route],x:0,y:.5,target:.5,velocity:0,gate:0,passed:[],elapsed:0,attempts:0,started:false,solved:false,notice:"ready",lastSteer:0,steerTravel:0};
 }
+export const canLandSkyFlight=landableGlide;
+export const landSkyFlight=holdGlide;
 export function steerSkyFlight(f,y){
  if(f?.openGlide)return steerGlide(f,y);
  if(!f||f.solved||!Number.isFinite(y))return false;
@@ -109,8 +111,8 @@ export function paintSkyFlight(ctx,f,img,W,H,lang,drawCat,drawNpc){
  // Three distinct air corridors; the rest of each cross-section is a hazardous gust.
  if(f.practice){const x=track(.13)*W,w=(track(.39)-track(.13))*W;ctx.fillStyle="#b9e6de66";ctx.fillRect(x,H*.15,w,H*.28);ctx.fillStyle="#fff2d1";ctx.font="600 16px sans-serif";ctx.textAlign="center";ctx.fillText(t("借上升气流","Catch the updraft"),x+w/2,H*.20);ctx.fillStyle="#e4d2a5";ctx.beginPath();ctx.ellipse(track(1)*W,H*.62,36,9,0,Math.PI*2);ctx.fill();}
  else if(f.openGlide){
- const start=track(.39)*W,end=track(.72)*W;ctx.fillStyle="#b8d6ef55";ctx.fillRect(start,H*.48,end-start,H*.07);ctx.strokeStyle="#e0f5df";ctx.lineWidth=3;ctx.setLineDash([9,8]);ctx.beginPath();ctx.moveTo(track(.12)*W,H*.36);ctx.lineTo(start,H*.30);ctx.lineTo(end,H*.30);ctx.stroke();ctx.beginPath();ctx.moveTo(track(.12)*W,H*.65);ctx.lineTo(start,H*.70);ctx.lineTo(end,H*.70);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#b9e6de66";ctx.fillRect(track(.13)*W,H*.15,(track(.39)-track(.13))*W,H*.28);ctx.fillStyle="#e4d2a5";ctx.beginPath();ctx.ellipse(track(.61)*W,H*.76,36,9,0,0,Math.PI*2);ctx.fill();
- ctx.fillStyle="#fff2d1";ctx.font="600 16px sans-serif";ctx.textAlign="center";ctx.fillText(t("上升气流 · 云瀑捷径","Updraft · Shortcut"),track(.32)*W,H*.20);ctx.fillText(t("外侧风路 · 安全岛","Outer route · Safe isle"),track(.57)*W,H*.83);if(f.platform){ctx.fillStyle="#e8ffdb";ctx.fillText(t("看见云海下的灯火！","Lanterns glow below the clouds!"),track(.61)*W,H*.88);}if(f.routeUsed==="upper"){ctx.fillStyle="#e8ffdb";ctx.fillText(t("月牙岩就在前面","Crescent rock ahead"),track(.58)*W,H*.25);}
+ const start=track(.39)*W,end=track(.72)*W;ctx.fillStyle="#b8d6ef55";ctx.fillRect(start,H*.48,end-start,H*.07);ctx.strokeStyle="#e0f5df";ctx.lineWidth=3;ctx.setLineDash([9,8]);ctx.beginPath();ctx.moveTo(track(.12)*W,H*.36);ctx.lineTo(start,H*.30);ctx.lineTo(end,H*.30);ctx.stroke();ctx.beginPath();ctx.moveTo(track(.12)*W,H*.65);ctx.lineTo(start,H*.70);ctx.lineTo(end,H*.70);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#b9e6de66";ctx.fillRect(track(.13)*W,H*.15,(track(.39)-track(.13))*W,H*.28);ctx.fillStyle="#e4d2a5";ctx.beginPath();ctx.ellipse(track(.61)*W,H*.76,36,9,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(track(.79)*W,H*.76,28,8,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle="#fff2d1";ctx.font="600 16px sans-serif";ctx.textAlign="center";ctx.fillText(t("上升气流 · 云瀑捷径","Updraft · Shortcut"),track(.32)*W,H*.20);ctx.fillText(t("外侧风路 · 安全岛","Outer route · Safe isle"),track(.57)*W,H*.83);if(f.paused){ctx.fillStyle="#fff2d1";ctx.fillText(t("安全岛 · 休息好了就继续起飞","Safe isle · Relaunch when ready"),W*.5,H*.92);}if(f.platform){ctx.fillStyle="#e8ffdb";ctx.fillText(t("看见云海下的灯火！","Lanterns glow below the clouds!"),track(.61)*W,H*.88);}if(f.routeUsed==="upper"){ctx.fillStyle="#e8ffdb";ctx.fillText(t("月牙岩就在前面","Crescent rock ahead"),track(.58)*W,H*.25);}
  }else for(let i=0;i<3;i++){const gx=track(gateX[i])*W,gy=f.route[i]*H,r=(f.training?.19:.14)*H+Math.min(f.attempts,3)*.02*H;
  ctx.fillStyle=i<f.gate?"#71cfc328":"#da956e28";ctx.fillRect(gx-11,H*.10,22,Math.max(0,gy-r-H*.10));ctx.fillRect(gx-11,gy+r,22,Math.max(0,H*.90-gy-r));
  ctx.strokeStyle=i<f.gate?"#8cebd3":"#ffe4ad";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(gx,gy,19,r,0,0,Math.PI*2);ctx.stroke();}

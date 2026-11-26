@@ -3,7 +3,7 @@ import {newNeighborTrial,advanceNeighborTrial,neighborTrialProof} from "./canon2
 import {mirrorProof} from "./canon22-mirror.mjs";
 import {newSpatial,spatialInput,spatialProof,tickSpatial,spatialKind} from "./canon22-spatial.mjs";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary} from "./library-mechanisms.mjs";
-import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache} from "./sky-flight.mjs";
+import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache,landSkyFlight} from "./sky-flight.mjs";
 // Actual walkable region mechanics. Story progression is never stored here.
 export const layouts={
  harbor:{
@@ -153,6 +153,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
  function advanceShortRing(dt){return active?.shortRing?advanceNeighborTrial(active.shortRing,dt):[];}
  function spatialAct(action){if(puzzle?.type!=="canonSpatial"||!live())return {ok:false,reason:"no-spatial-action"};if(!puzzle.solved)puzzle.solved=spatialInput(puzzle.spatial,action);return puzzle.solved?complete():{ok:true,pending:true};}
  function spatialTick(dt){if(puzzle?.type!=="canonSpatial"||!live()||!tickSpatial(puzzle.spatial,dt))return null;puzzle.solved=true;return complete();}
+ function flightLand(){return puzzle?.type==="skyFlight"&&live()&&landSkyFlight(puzzle.flight);}
  function flightSteer(y){return puzzle?.type==="skyFlight"&&live()&&steerSkyFlight(puzzle.flight,y);}
  function flightTick(dt){if(puzzle?.type!=="skyFlight"||!live()||!tickSkyFlight(puzzle.flight,dt))return null;puzzle.solved=true;return complete();}
  function cargoPoints(){return region==="forge"?[[.35,.76],[.79,.364]]:[mainPath[1],mainPath[mainPath.length-2]];}
@@ -171,5 +172,5 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
  function rewardPoints(){if(region==="forge")return [{id:"cache-1",point:[.225,.81]},{id:"cache-2",point:[.35,.705]}];if(survey()?.remote)return [{id:"survey-cache",point:[...skySurveyCache]}];return [...(region==="starfall"&&bridge.view().completed.includes("starfall:F-02")?[{id:"starfall-hidden-record",point:[.41,.58]}]:[]),{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}
- return {walk,tick,interact,operate,advanceShortRing,spatialAct,spatialTick,forgeStep:()=>bridge.forgeStep(),collectForgePart:index=>{const step=bridge.forgeStep();if(!step||step.index!==index||!near(step.point)||puzzle)return {ok:false,reason:"walk-to-objective"};return bridge.collectForgePart(index,bridge.capture());},flightSteer,flightTick,survey,startSurvey,cancel,complete,traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
+ return {walk,tick,interact,operate,advanceShortRing,spatialAct,spatialTick,forgeStep:()=>bridge.forgeStep(),collectForgePart:index=>{const step=bridge.forgeStep();if(!step||step.index!==index||!near(step.point)||puzzle)return {ok:false,reason:"walk-to-objective"};return bridge.collectForgePart(index,bridge.capture());},flightSteer,flightLand,flightTick,survey,startSurvey,cancel,complete,traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),pairedGate:()=>bridge.pairedGate(),holdUpperGate,homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return [...invited]},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
 }
