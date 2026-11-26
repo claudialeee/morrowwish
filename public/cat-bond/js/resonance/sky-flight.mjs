@@ -19,8 +19,8 @@ export const skySurvey={
  "survey:outbound":{from:[.67,.50],to:skySurveyPath[0],name:["飞往远风岛","Fly to Farwind Isle"]},
  "survey:return":{from:skySurveyPath[0],to:[.67,.50],name:["返回信使码头","Return to Courier Dock"]}
 };
-export const skyLaunch={ "puzzle:sky-pouch":[.10,.70],"explore:flight-recorder":[.18,.55],"puzzle:joint-flight":[.41,.51],"repair:sky":[.67,.50] };
-export const skyLanding={ "puzzle:sky-pouch":[.18,.55],"explore:flight-recorder":[.41,.51],"puzzle:joint-flight":[.58,.55],"repair:sky":[.89,.24] };
+export const skyLaunch={ "puzzle:sky-pouch":[.10,.70],"explore:flight-recorder":[.18,.55],"puzzle:joint-flight":[.41,.51] };
+export const skyLanding={ "puzzle:sky-pouch":[.18,.55],"explore:flight-recorder":[.41,.51],"puzzle:joint-flight":[.58,.55] };
 export function newSkyFlight(operation,choice){
  if(["puzzle:joint-flight","puzzle:sky-pouch","explore:flight-recorder"].includes(operation))return newGlide(operation,choice);
  const route=routes[operation];if(!route)return null;

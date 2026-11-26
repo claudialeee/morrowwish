@@ -1138,11 +1138,36 @@ export const campaign = {
           "text": {
             "zh": "看，月门就在前面。走哪条路都能飞到这里。",
             "en": "Look, the moon gate is just ahead. Either route leads here."
-          }
+          },
+          "afterOperations": [
+            "melody:sky"
+          ]
+        },
+        {
+          "speaker": "jinpo",
+          "text": {
+            "zh": "喂！云上那只小金猫，别把灯摔了！",
+            "en": "Hey, little golden cat up in the clouds! Don't drop that lantern!"
+          },
+          "afterOperations": [
+            "melody:sky"
+          ]
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "听见啦！下次给你带云朵看！",
+            "en": "I hear you! Next time I'll show you some clouds!"
+          },
+          "afterOperations": [
+            "melody:sky"
+          ]
         }
       ],
       "requires": [
-        "puzzle:joint-flight"
+        "puzzle:joint-flight",
+        "repair:sky",
+        "melody:sky"
       ],
       "choices": [],
       "lineGate": [
@@ -1294,20 +1319,6 @@ export const campaign = {
       "previous": "sky:S-04",
       "lines": [
         {
-          "speaker": "jinpo",
-          "text": {
-            "zh": "喂！云上那只小金猫，别把灯摔了！",
-            "en": "Hey, little golden cat up in the clouds! Don't drop that lantern!"
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "听见啦！下次给你带云朵看！",
-            "en": "I hear you! Next time I'll show you some clouds!"
-          }
-        },
-        {
           "speaker": "yuanfan",
           "text": {
             "zh": "月门就在前面！我想继续探路，你们愿意带上我吗？",
@@ -1336,15 +1347,9 @@ export const campaign = {
           }
         }
       ],
-      "requires": [
-        "repair:sky",
-        "melody:sky"
-      ],
+      "requires": [],
       "choices": [],
-      "lineGate": [
-        "repair:sky",
-        "melody:sky"
-      ],
+      "lineGate": [],
       "choiceTiming": "afterDialogue"
     },
     {
@@ -1386,32 +1391,11 @@ export const campaign = {
         }
       ],
       "requires": [
-        "npc:archive-dispute",
-        "explore:sealed-archive"
+        "npc:archive-dispute"
       ],
-      "choices": [
-        {
-          "id": "open",
-          "label": {
-            "zh": "公开已核实的公共历史（保护私人记忆）",
-            "en": "Publish verified public history (protect private memories)"
-          },
-          "npc": "baikan",
-          "method": "full-records"
-        },
-        {
-          "id": "review",
-          "label": {
-            "zh": "先请相关家庭审阅个人档案",
-            "en": "Let affected families review personal records first"
-          },
-          "npc": "moye",
-          "method": "verified-records"
-        }
-      ],
+      "choices": [],
       "lineGate": [
-        "npc:archive-dispute",
-        "explore:sealed-archive"
+        "npc:archive-dispute"
       ],
       "choiceTiming": "afterDialogue",
       "orderedRequires": true
@@ -1452,10 +1436,32 @@ export const campaign = {
             "zh": "走吧。那边的门是真的。",
             "en": "Come on. That door over there is real."
           }
+        },
+        {
+          "speaker": "lingyu",
+          "text": {
+            "zh": "书库那边听得见吗？云海这边一切平安！",
+            "en": "Moonmirror, can you hear us? All is well above the clouds!"
+          },
+          "afterOperations": [
+            "melody:library"
+          ]
+        },
+        {
+          "speaker": "moye",
+          "text": {
+            "zh": "听见了！你们的铃声传到这里来了。",
+            "en": "We hear you! Your bells reached the library."
+          },
+          "afterOperations": [
+            "melody:library"
+          ]
         }
       ],
       "requires": [
-        "puzzle:library-echo"
+        "puzzle:library-echo",
+        "repair:library",
+        "melody:library"
       ],
       "choices": [],
       "lineGate": [
@@ -1731,9 +1737,7 @@ export const campaign = {
       ],
       "requires": [
         "npc:two-routes",
-        "puzzle:two-route-model",
-        "repair:library",
-        "melody:library"
+        "puzzle:two-route-model"
       ],
       "choices": [],
       "lineGate": [
@@ -1841,18 +1845,15 @@ export const campaign = {
         }
       ],
       "requires": [
-        "puzzle:echo-navigation",
-        "puzzle:star-map",
         "explore:catastrophe-record",
         "cinematic:starfall-memory"
       ],
       "choices": [],
       "lineGate": [
-        "puzzle:echo-navigation",
-        "puzzle:star-map",
         "explore:catastrophe-record"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "starfall:F-03",
@@ -2615,5 +2616,6 @@ export const campaign = {
   "openingPresentationVersion": 2,
   "fullCampaignPresentationVersion": 2,
   "openingRevision": "canon-1.2-player-first-opening",
-  "runtimeRevision": "canon-2.2-finale-implementation"
+  "runtimeRevision": "canon-2.2-finale-implementation",
+  "eventTimingRevision": 1
 };

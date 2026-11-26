@@ -234,17 +234,17 @@ async function run(chapter){
   }else if(chapter==='sky'){
    await flyWaterfall('Catch the wind · Practice gliding');await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
    await flyWaterfall('Find the moon gate · Cloud route');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
-   await flyWaterfall('Joint gliding platform');await dialogue('sky:S-03');await scene('sky:S-04');
+   await flyWaterfall('Joint gliding platform');await dialogue('sky:S-03');await click('Windwing sanctuary');await op('repair:sky');await invite('Lingyu');await invite('Yuanfan');await puzzle('Open Sky',[mid,high,low]);await dialogue('sky:S-03');await scene('sky:S-04');assert.ok((await view()).melodies.includes('sky'),'Sky must answer before the tea scene');
    await talk('Muling');await dialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
-   await fly('Windwing sanctuary',[.67,.30,.64]);await invite('Lingyu');await invite('Yuanfan');await puzzle('Open Sky',[mid,high,low]);await dialogue('sky:S-05');
+   await dialogue('sky:S-05');
   }else if(chapter==='library'){
-   await talk('Baikan');await puzzle('Sealed archive · Review records',['Public history','Living subjects','Seal notice']);await dialogue('library:M-01','Let affected families review personal records first');await scene('library:M-02');
-   await libraryEcho();await dialogue('library:M-02');await scene('library:M-03');
+   await talk('Baikan');await dialogue('library:M-01');await scene('library:M-02');
+   await libraryEcho();await dialogue('library:M-02');await click('Moonmirror sanctuary');await op('repair:library');await invite('Moye');await invite('Baikan');await puzzle('Reflections',[high,low,mid]);await dialogue('library:M-02');await scene('library:M-03');assert.ok((await view()).melodies.includes('library'),'Library must answer before the identity reveal');
    await talk('Muling');await dialogue('library:M-03','I feel hurt');await scene('library:M-04');await puzzle('Public records · Investigation',['Ask about the borrowed map']);await dialogue('library:M-04','I need some distance');await scene('library:M-05');
-   await talk('Moye');await puzzle('Six-region model · Compare the two routes',['Converge inward','Connect neighbors','Receive distinct replies']);await dialogue('library:M-05');await restore('Moonmirror sanctuary',['Moon window','Neighbor bridge','Reciprocal reply'],['Moye','Baikan'],'Reflections',[high,low,mid]);await dialogue('library:M-05');
+   await talk('Moye');await puzzle('Six-region model · Compare the two routes',['Converge inward','Connect neighbors','Finish demonstration']);await dialogue('library:M-05');
   }else if(chapter==='starfall'){
    await talk('Lichuan');await talk('Xingya');await puzzle('Walk on starlight',['Jump to stone 2','Jump to stone 4','Jump to stone 6','Jump to stone 8']);await dialogue('starfall:F-01');await scene('starfall:F-02');
-   await puzzle('Hollow Echo illusions',['Middle beacon','Right beacon','Left beacon']);await puzzle('Star chart',['Outer ring','Outer ring','Outer ring','Middle ring','Inner ring','Inner ring']);await click('Observatory · Complete record');await op('explore:catastrophe-record');await cinema('starfall:F-02','Remember the choice');
+   assert.deepEqual((await view()).objective,['explore:catastrophe-record','cinematic:starfall-memory']);await click('Observatory · Complete record');await op('explore:catastrophe-record');await cinema('starfall:F-02','Remember the choice');
    await talk('Muling');await dialogue('starfall:F-03');await scene('starfall:F-04');
    await puzzle('Test the neighboring bells',['Ring the local bell']);await restore('Starfall sanctuary',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan'],'Beyond Stars',[low,mid,high]);await dialogue('starfall:F-04');await cinema('starfall:F-05','Watch the story scene');
   }else if(chapter==='finale'){

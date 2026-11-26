@@ -31,5 +31,5 @@ export function mountLibraryReveal(root,portrait,onSettled=()=>{}){
   for(const a of actors.children)a.classList.toggle("speaking",a.dataset.actor===s.lines[v.cursor]?.speaker);
  }
  function settleDeparture(){if(disposed||departureDone)return;departureDone=true;clearTimeout(departureTimer);onSettled();}
- return {render,departurePending(v){return v.current?.id==="library:M-05"&&v.cursor===v.current.lines.length&&!!v.choice&&!departureDone;},dispose(){disposed=true;clearTimeout(departureTimer);generation++;stage.remove();root.classList.remove("res-library-reveal")}};
+ return {render,departurePending(v){return v.current?.id==="library:M-05"&&v.cursor===v.current.lines.length&&v.objective.length===0&&!departureDone;},dispose(){disposed=true;clearTimeout(departureTimer);generation++;stage.remove();root.classList.remove("res-library-reveal")}};
 }

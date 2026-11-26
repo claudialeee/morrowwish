@@ -14,7 +14,7 @@ export const libraryPoints=Object.freeze({
 });
 export const libraryOrder=["puzzle:library-reflections","puzzle:mirror-records","puzzle:library-echo","battle:library-echo"];
 export const libraryInvitations={moye:[.22,.60],baikan:[.46,.58]};
-export function libraryBlocked(op,objective,view){if(op==="explore:sealed-archive"&&objective.includes("npc:archive-dispute"))return true;if(op==="puzzle:two-route-model"&&objective.includes("npc:two-routes"))return true;if(["repair:library","melody:library"].includes(op)&&(objective.includes("npc:two-routes")||objective.includes("puzzle:two-route-model")||(view?.current?.id==="library:M-05"&&view.cursor<view.current.lines.length)))return true;const i=libraryOrder.indexOf(op);return i>0&&libraryOrder.slice(0,i).some(k=>objective.includes(k))}
+export function libraryBlocked(op,objective,view){if(op==="explore:sealed-archive"&&objective.includes("npc:archive-dispute"))return true;if(op==="puzzle:two-route-model"&&objective.includes("npc:two-routes"))return true;if(["repair:library","melody:library"].includes(op)&&(objective.includes("puzzle:library-echo")||(op==="melody:library"&&objective.includes("repair:library"))))return true;const i=libraryOrder.indexOf(op);return i>0&&libraryOrder.slice(0,i).some(k=>objective.includes(k))}
 export function catdexRecord(root){
  const cat=(root?.cats||[]).find(c=>c.species==="jinjc")||(root?.cats||[]).find(c=>root.dex?.[c.species]>0)||(root?.cats||[])[0];
  if(!cat)return null;
