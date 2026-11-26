@@ -5528,11 +5528,21 @@ class CaptureBattle {
       // in their first couple fights are still spared. Lower _pressure trigger +
       // faster accrual mean a cruising player meets a "leave the circle" test early.
       const pastTutorial = (State.S.catchCount || 0) >= 2;
-      const dominating = (this._stomp || 0) >= 0.3 || (this._pressure || 0) >= 0.35;
+      // Owner 2026-11-26 + 5-cycle P1 consensus (wb4kwxa4y/w6hmojrj6/wrtiogrp8/woebtgclk/wmxn087xn):
+      // smash is the ONE forcing function that teaches shield+dodge+ult but it's gated on
+      // `dominating` (stomp≥0.3 OR pressure≥0.35) — cruising mashers never trigger it. Lower the
+      // gate so "healthy-but-not-stomping" ALSO qualifies, and add a floor rule: after 6s of
+      // combat with the active cat still ≥85% HP and zero dodges used, FORCE a smash scheduling.
+      const dominating = (this._stomp || 0) >= 0.15 || (this._pressure || 0) >= 0.20;
+      const _obs = this._obs || {};
+      const me = this.me?.();
+      const hpFloor = me && me.alive ? me.hp / Math.max(1, me.maxhp) >= 0.85 : false;
+      const noDodges = (_obs.dodges || 0) === 0;
+      const forcedFloor = pastTutorial && this.t > 6.0 && hpFloor && noDodges && (e.smashCd || 0) <= 0;
       // CHARGED ULT first: meter full → the enemy commits its signature ult (telegraphed +
       // interruptible, reduced power). Highest priority so a full meter always resolves.
       if (e.ultSkill && !e.ultFired && e.ultMeter >= 100 && dist < 360) kind = 'enemyUlt';
-      else if (pastTutorial && dominating && dist < 300 && (e.smashCd || 0) <= 0) kind = 'smash';
+      else if (pastTutorial && (dominating || forcedFloor) && dist < 300 && (e.smashCd || 0) <= 0) kind = 'smash';
       else if (dist < 150 && (me.rootT > 0 || me.frozen || e.aggro > 0.4)) kind = 'nova';     // close + punish window
       else if (dist < 220 && e.role === 'ambusher' && (e.challenge || 0) > 0) kind = 'pounce';  // ambusher leap
       // Big-AOE lob is now rarer (30%, SR+ only) and on its own cooldown so the
@@ -5542,7 +5552,9 @@ class CaptureBattle {
       if (kind) {
         if (kind === 'lob') e.lobCd = 7 + this.rng() * 3;                             // per-enemy AOE throttle
         if (kind === 'smash') {
-          e.smashCd = 9 + this.rng() * 3;                                             // per-enemy heavy throttle
+          // Owner 2026-11-26: tighten 9+rng*3 → 6+rng*2 so a second smash can appear
+          // the same fight if the first was ignored — dodging has to be a learned habit.
+          e.smashCd = 6 + this.rng() * 2;                                             // per-enemy heavy throttle
           // land the smash where the player IS NOW (predictive but generous) so there's
           // time to walk out of the telegraphed disc.
           e.smashTarget = { x: me.x, y: me.y };

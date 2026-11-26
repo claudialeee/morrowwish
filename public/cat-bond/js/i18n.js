@@ -1122,6 +1122,7 @@
     '踏月之猫的招牌：月月头顶凝结月弧蓄势2.5秒，而后每隔0.45秒逐一射出三道，锁敌之后由慢渐快，无视射程。':
       'Luna\'s signature — a moon arc coalesces above her for 2.5s (she holds still), then launches three in a row every 0.45s, re-locking the nearest foe and accelerating without range limit.',
     '向锁定地面连续抛射三颗暗星能量弹，落地小范围爆裂；落点固定，不追踪。暗系输出专属。': 'Lob three dark-star energy spheres at a fixed ground area. Each explodes on landing, with no homing. Dark DPS only.',
+    '向锁定地面连续抛射三颗暗星能量弹，落地小范围爆裂；落点固定，不追踪。暗系输出/控制共享。': 'Lob three dark-star energy spheres at a fixed ground area. Each explodes on landing, with no homing. Shared by Dark DPS + Control.',
     '蓄一发按出三连暗波：每 0.35 秒一发自动追击当下最近的敌人，不必一次放完。':
       'Hold one cast, release three dark waves — one every 0.35s auto-homes at the nearest enemy, so you don\'t burn it all at once.',
     '一发激起三叠潮波：每 0.3 秒一发自动追击当下最近的敌人，持续淋湿。':
