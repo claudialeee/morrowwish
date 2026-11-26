@@ -2566,7 +2566,7 @@ class CaptureBattle {
     const kind = sk ? sk.kind : 'projectile';
     // Close-range claws have a single painted brush: do not add a second
     // rotating circular elemental cast badge over the kitten's head.
-    if((sk?.ultCost||0)===0&&kind!=='melee'&&!['waterJet','magneticField'].includes(sk.id))
+    if((sk?.ultCost||0)===0&&kind!=='melee'&&!['waterJet','magneticField','shadowTendrils'].includes(sk.id))
       this.regularSkillAccent(f,sk?.element||f.element,aim,!!sk?.isBasic);
     // Skill IDs select 39 different local silhouettes; generic element accents
     // remain as a subtle baseline and projectile mechanics are untouched.
@@ -3128,7 +3128,7 @@ class CaptureBattle {
         const hitDmg = b.dps * STEP;
         const list = b.owner === 'me' ? this.liveEnemies() : this.team.filter(t => t.alive);
         // Water lance and sweeping fire penetrate; other beams stop at first contact.
-        const flame = b.sk?.id === 'flameSweep', pierce=b.sk?.id==='waterJet';
+        const flame = b.sk?.id === 'flameSweep', pierce=['waterJet','shadowTendrils'].includes(b.sk?.id);
         let candidates = list.filter(e =>
           this.pointToSeg(e.x, e.y, ox, oy, ex, ey) <= b.width + (e.r || 18) * 0.5);
         if(pierce){const ux=Math.cos(b.aim),uy=Math.sin(b.aim);candidates=candidates.filter(e=>{const p=(e.x-ox)*ux+(e.y-oy)*uy;return p>=0&&p<=b.len;});}
@@ -3187,7 +3187,9 @@ class CaptureBattle {
     // Draw-only micro recoil: the target never leaves the beam's collision area.
     target._recoilX=(target._recoilX||0)+Math.cos(b.aim)*(first?3:1.4);
     target._recoilY=(target._recoilY||0)+Math.sin(b.aim)*(first?3:1.4);
-    if(b.sk?.id==='waterJet'){
+    if(b.sk?.id==='shadowTendrils'){
+      this.skillStrokes.push({kind:'shadowBindHit',skillId:'shadowTendrils',x:target.x,y:target.y,radius:target.r||18,angle:b.aim,life:.30,max:.30});
+    }else if(b.sk?.id==='waterJet'){
       this.skillStrokes.push({kind:'waterPierce',skillId:'waterJet',x:target.x,y:target.y,radius:target.r||18,angle:b.aim,life:.23,max:.23});
     }else{
     this.vfx.impactType?.(target.x,target.y,'light',{color,angle:b.aim,skill:b.sk});
@@ -4126,7 +4128,7 @@ class CaptureBattle {
       const _vend=this.beamVisualEnd(b), _ex0=b._ex, _ey0=b._ey;
       // Water lance and sweeping fire use full reach; other beams stop at contact. No damage mutation.
       if(window.CatBondSkillFX?.drawCombatBeam(ctx,b,this.t,
-        ['flameSweep','waterJet'].includes(b.sk?.id)?_ex0:_vend.ex,['flameSweep','waterJet'].includes(b.sk?.id)?_ey0:_vend.ey))continue;
+        ['flameSweep','waterJet','shadowTendrils'].includes(b.sk?.id)?_ex0:_vend.ex,['flameSweep','waterJet','shadowTendrils'].includes(b.sk?.id)?_ey0:_vend.ey))continue;
       b._ex=_vend.ex; b._ey=_vend.ey;
       const k=Math.max(0,b.t/b.max);
       if(b.sk?.id==='thunderStream'){
@@ -5809,9 +5811,10 @@ class CaptureBattle {
         const fresh = !e.tags.includes(tg);
         if (fresh) e.tags.push(tg);
         const info = TAG[tg];
-        e.status[tg] = info ? info.ttl : 3;
+        const ttl=info?.ttl||3;
+        e.status[tg] = Math.max(e.status[tg]||0,Math.min(ttl,skill.statusDuration??ttl));
         const nm = info ? info.name : tg;
-        this.vfx.text(e.x + (Math.random() * 20 - 10), e.y - 30, nm, info ? info.color : '#fff', 12);
+        if(!skill.isChanneledTick||fresh)this.vfx.text(e.x + (Math.random() * 20 - 10), e.y - 30, nm, info ? info.color : '#fff', 12);
         if (fresh) this.controlFx(e, tg, info ? info.color : '#fff');   // distinct "it's controlled!" burst
       }
     }
@@ -6353,8 +6356,9 @@ class CaptureBattle {
         if (fresh) f.tags.push(tg);
         // cap pure crowd-control on a cat so it's a brief slow, not a long lockout
         const isCC = (info.dps || 0) === 0 && !info.dmgTaken && !info.dmgDealt;
-        f.status[tg] = isCC ? Math.min(info.ttl, 1.4) : info.ttl;
-        this.vfx.text(f.x + (Math.random() * 20 - 10), f.y - 30, info.name, info.color, 12);
+        const ttl=isCC?Math.min(info.ttl,1.4):info.ttl;
+        f.status[tg]=Math.max(f.status[tg]||0,Math.min(ttl,skill.statusDuration??ttl));
+        if(!skill.isChanneledTick||fresh)this.vfx.text(f.x + (Math.random() * 20 - 10), f.y - 30, info.name, info.color, 12);
         if (fresh) this.controlFx(f, tg, info.color);
       }
     }
@@ -7076,7 +7080,7 @@ class CaptureBattle {
       }
     }
 
-    for(const v of this.skillStrokes)if(v.kind==='waterPierce')window.CatBondSkillFX?.draw(ctx,v,this.t);
+    for(const v of this.skillStrokes)if(v.kind==='waterPierce'||v.kind==='shadowBindHit')window.CatBondSkillFX?.draw(ctx,v,this.t);
     window.CatBondTraitFX?.drawFront(ctx,this);
     this.vfx.draw(ctx,'contact');
     // Distinct ULT glints above combatants, below damage floaters and HUD.
