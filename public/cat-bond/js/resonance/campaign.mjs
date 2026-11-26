@@ -1,4 +1,4 @@
-// Canon 1.3 dialogue pass; gameplay migration and player acceptance tracked separately.
+// Canon 2.2 story data; legacy operation keys remain for runtime/save compatibility.
 export const campaign = {
   "canon": "The Last Resonance",
   "version": 1,
@@ -66,8 +66,8 @@ export const campaign = {
       },
       "region": "garden",
       "artDirection": {
-        "zh": "青年成年猫，柔和而坚毅；旅行斗篷、旧铃绳；保持玩家选定的猫咪外观",
-        "en": "Young adult; gentle determination; travel cloak and worn bell cord; preserve chosen player-cat appearance"
+        "zh": "金渐层青年猫，旅行斗篷、旧铃绳；固定主角外观",
+        "en": "Young golden-shaded cat with traveling cloak and worn bell cord; fixed protagonist appearance"
       },
       "expressionNotes": "谨慎观察、惊讶、坚定、温暖",
       "artStatus": "unproduced"
@@ -80,8 +80,8 @@ export const campaign = {
       },
       "region": "garden",
       "artDirection": {
-        "zh": "细长而优雅的成年母猫，烟银长毛与琥珀眼，靛青旅行披肩；旧铜铃坠始终一致；最终战使用独立环形铃器与仪式服，而非放大原角色",
-        "en": "Slender adult silver-smoke longhair, amber eyes, indigo travel mantle; consistent aged bronze bell pendant. Finale: distinct ritual attire and ring instrument, never an enlarged sprite."
+        "zh": "银渐层成年猫，旅行披肩；最终战沿用独立环形铃器",
+        "en": "Adult silver-shaded cat with traveling mantle; separate ring instrument for finale"
       },
       "expressionNotes": "温暖、俏皮、好奇、专注、坦诚、悔意、释然",
       "artStatus": "unproduced",
@@ -95,8 +95,8 @@ export const campaign = {
       },
       "region": "harbor",
       "artDirection": {
-        "zh": "老年宽肩深灰猫，厚毛、风雨磨损的海岸守灯衣，旧灯钥匙；站姿沉稳",
-        "en": "Older broad-shouldered slate cat, dense fur, weathered keeper coat and lighthouse key; grounded posture"
+        "zh": "老年宽肩深灰猫，修铃匠围裙与家铃工具；站姿沉稳",
+        "en": "Older broad-shouldered slate cat, bellmaker apron and house-chime tools"
       },
       "expressionNotes": "沉默、忧虑、坚决、释然",
       "artStatus": "unproduced",
@@ -110,8 +110,8 @@ export const campaign = {
       },
       "region": "harbor",
       "artDirection": {
-        "zh": "年轻修长蓝灰短毛猫，海青领航围巾、潮汐图；动作敏捷",
-        "en": "Young slender blue-gray shorthair, teal navigator scarf and tide chart; quick movement"
+        "zh": "年轻蓝灰短毛猫，青色围巾、街巷图；动作敏捷",
+        "en": "Young blue-gray shorthair, teal scarf and street map; quick movement"
       },
       "expressionNotes": "好奇、急躁、勇敢、喜悦",
       "artStatus": "unproduced",
@@ -140,8 +140,8 @@ export const campaign = {
       },
       "region": "forest",
       "artDirection": {
-        "zh": "成年厚实深棕猫，长眉、根系护具和测水刻尺，安静的姿态",
-        "en": "Sturdy dark-brown adult with long brows, root work gear and water gauge; quiet stance"
+        "zh": "成年厚实深棕猫，根桥养护工具；安静的姿态",
+        "en": "Sturdy dark-brown adult with root-bridge tools; quiet stance"
       },
       "expressionNotes": "克制、固执、专注、信任",
       "artStatus": "unproduced",
@@ -155,8 +155,8 @@ export const campaign = {
       },
       "region": "forge",
       "artDirection": {
-        "zh": "老年结实玳瑁猫，烧蚀皮革围裙、护目镜与锻锤；独特不对称轮廓",
-        "en": "Older muscular tortoiseshell, scorched leather apron, goggles and hammer; asymmetric silhouette"
+        "zh": "老年玳瑁猫，灯匠围裙、彩灯与工具；独特轮廓",
+        "en": "Older tortoiseshell, lantern-maker apron, colored lanterns and tools"
       },
       "expressionNotes": "严厉、羞愧、专注、骄傲",
       "artStatus": "unproduced",
@@ -170,8 +170,8 @@ export const campaign = {
       },
       "region": "forge",
       "artDirection": {
-        "zh": "年轻瘦小狸花猫，偏大的机械工具带、护腕、铆钉图纸；灵活的耳朵",
-        "en": "Lean young tabby, oversized tool belt, wrist guards and rivet drawings; expressive ears"
+        "zh": "年轻瘦小狸花猫，灯影道具与试飞工具；灵活的耳朵",
+        "en": "Lean young tabby with shadow-show props and glider tools; expressive ears"
       },
       "expressionNotes": "兴奋、不服、专注、成就感",
       "artStatus": "unproduced",
@@ -260,8 +260,8 @@ export const campaign = {
       },
       "region": "starfall",
       "artDirection": {
-        "zh": "成年沙色长毛猫，粗粝旅装、星罗盘、长围巾，宽厚稳定的剪影",
-        "en": "Adult sandy longhair, rugged caravan gear, star compass and long scarf; steady broad silhouette"
+        "zh": "成年沙色长毛猫，旅装、星罗盘、长围巾",
+        "en": "Adult sandy longhair, traveling clothes, star compass and long scarf"
       },
       "expressionNotes": "冷幽默、怀疑、沉着、宽慰",
       "artStatus": "unproduced",
@@ -301,8 +301,8 @@ export const campaign = {
       "id": "prologue:P-03",
       "chapter": "prologue",
       "title": {
-        "zh": "风中的航图",
-        "en": "A map on the wind"
+        "zh": "一张不肯落地的地图",
+        "en": "A map that won't land"
       },
       "previous": "prologue:P-02",
       "lines": [],
@@ -315,8 +315,8 @@ export const campaign = {
       "id": "prologue:P-04",
       "chapter": "prologue",
       "title": {
-        "zh": "去港口",
-        "en": "The road to the harbor"
+        "zh": "出去看看",
+        "en": "Let's see what's out there"
       },
       "previous": "prologue:P-03",
       "lines": [],
@@ -329,8 +329,8 @@ export const campaign = {
       "id": "prologue:P-05",
       "chapter": "prologue",
       "title": {
-        "zh": "前往霁潮港",
-        "en": "Travel to Misttide Harbor"
+        "zh": "第一站，风铃镇",
+        "en": "First stop, Windchime Town"
       },
       "previous": "prologue:P-04",
       "lines": [],
@@ -1288,8 +1288,8 @@ export const campaign = {
       "id": "sky:S-05",
       "chapter": "sky",
       "title": {
-        "zh": "风把信送到了",
-        "en": "The mail arrives"
+        "zh": "月门那边的访客",
+        "en": "The visitor through the moon gate"
       },
       "previous": "sky:S-04",
       "lines": [
@@ -1351,8 +1351,8 @@ export const campaign = {
       "id": "library:M-01",
       "chapter": "library",
       "title": {
-        "zh": "本该存在的一页",
-        "en": "A page that should exist"
+        "zh": "一面走得进去的镜子",
+        "en": "A mirror you can walk through"
       },
       "previous": "sky:S-05",
       "lines": [
@@ -2450,8 +2450,8 @@ export const campaign = {
       "before": "library:M-04",
       "operation": "ambient:repair-broken-bell",
       "text": {
-        "zh": "铃舌不见了。先把它放好吧，等找到合适的零件再说。",
-        "en": "The tongue is missing. Let's keep it safe until we find a part that fits."
+        "zh": "从这里还能看见千灯城的灯火。下次再来喝杯茶吧。",
+        "en": "You can still see Lantern City's lights from here. Let's have tea here again sometime."
       },
       "action": "repair-bell"
     },
@@ -2474,8 +2474,8 @@ export const campaign = {
       "after": "harbor:H-05",
       "operation": "ambient:maintain-lighthouse",
       "text": {
-        "zh": "门铃会一直响着。下一趟去哪里，由巡铃人自己决定。",
-        "en": "The door bells will keep ringing. The bellkeeper can choose where to go next."
+        "zh": "蓝绳铃修好啦。你听，每一家又有自己的声音了。",
+        "en": "The blue-ribbon chime is fixed. Hear that? Every home has its own sound again."
       },
       "action": "maintain-lighthouse"
     },
@@ -2486,8 +2486,8 @@ export const campaign = {
       "after": "harbor:H-05",
       "operation": "ambient:chart-harbor",
       "text": {
-        "zh": "这张巡铃图，下一趟出发时就能用上。",
-        "en": "This new bell route map will be ready for our next trip."
+        "zh": "我把鱼摊后的小巷也画上了。下次咱们抄近路！",
+        "en": "I've added the alley behind the fish stall. We'll take the shortcut next time!"
       },
       "action": "chart-harbor"
     },
@@ -2498,8 +2498,8 @@ export const campaign = {
       "after": "forest:R-04",
       "operation": "ambient:plant-herbs",
       "text": {
-        "zh": "我们一起看看水渠，再决定种什么。",
-        "en": "Let's check the channels together before we decide what to plant."
+        "zh": "月叶又长出一片！下次去树冠看看吧。",
+        "en": "The moonleaf has grown another leaf! Let's visit the canopy next time."
       },
       "action": "plant-herbs"
     },
@@ -2510,8 +2510,8 @@ export const campaign = {
       "after": "forest:R-04",
       "operation": "ambient:inspect-water",
       "text": {
-        "zh": "今天的水量已经记下来了。芽禾也看过。",
-        "en": "Today's water levels are recorded. Yahe has checked them too."
+        "zh": "根桥两头都扎稳了。芽禾也看过了。",
+        "en": "The root bridge is firm at both ends. Yahe checked it too."
       },
       "action": "inspect-water"
     },
@@ -2522,8 +2522,8 @@ export const campaign = {
       "after": "forge:E-04",
       "operation": "ambient:test-safety",
       "text": {
-        "zh": "图纸给小铆看过了。谁发现问题，谁就先说。",
-        "en": "Xiaomao has checked the diagram. Whoever sees a problem speaks first."
+        "zh": "小铆给小猫们留了最好的位置。今晚的影戏准热闹。",
+        "en": "Xiaomao saved the best spots for the kittens. Tonight's show should be lively."
       },
       "action": "test-safety"
     },
@@ -2534,8 +2534,8 @@ export const campaign = {
       "after": "forge:E-04",
       "operation": "ambient:assemble-part",
       "text": {
-        "zh": "师傅没抢走我的扳手。你看，新的阀门能用了！",
-        "en": "Master didn't take my wrench away. Look, the new valve works!"
+        "zh": "瞧！这只灯猫又多了一颗星。今晚让它跳给大家看！",
+        "en": "Look! Our lantern cat has another star. Let's make it dance for everyone tonight!"
       },
       "action": "assemble-part"
     },
@@ -2606,8 +2606,8 @@ export const campaign = {
       "after": "starfall:F-04",
       "operation": "ambient:guide-caravan",
       "text": {
-        "zh": "下一趟我不独自走。风铃镇那边有人等着回信。",
-        "en": "I won't travel alone next time. Someone in Windchime Town is waiting for an answer."
+        "zh": "下次沿着星石走，去风铃镇听听他们的家铃。",
+        "en": "Next time we'll follow the star stones to Windchime Town and hear the house chimes."
       },
       "action": "guide-caravan"
     }
