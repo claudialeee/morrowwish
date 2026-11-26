@@ -68,6 +68,8 @@ async function run(chapter){
   throw Error('Dialogue loop '+id);
  }
  async function puzzle(label,inputs){
+  const directHarbor={'Tide cave logbook':'explore:tide-logbook','Storm boat':'rescue:storm-boat','Lighthouse mirrors':'puzzle:beam-mirrors','Lighthouse sanctuary':'repair:harbor','Returning Tides':'melody:harbor'};
+  if(chapter==='harbor'&&directHarbor[label]){const operation=directHarbor[label];assert.ok((await view()).objective.includes(operation),'Expected required harbor action '+operation);await click(label);await op(operation);await shot(operation);return;}
   await click(label);const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();
   for(const input of inputs)await click(input,controls);
   await controls.waitFor({state:'hidden',timeout:35000});
