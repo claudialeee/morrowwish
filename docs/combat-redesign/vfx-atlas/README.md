@@ -32,3 +32,5 @@
 绘制入口：`public/cat-bond/js/vfx-atlas.js`，矢量记录器：`scripts/cat-bond-canvas-to-svg.mjs`。独立 HTML 内嵌正式渲染器快照，直接在浏览器原生 Canvas 上绘制。运行时与素材完整性仍需逐技能实机验证。
 
 暗星轰击（原咒波三连）展示固定落点、真实时序的抛物线能量弹及独立落地爆炸，阶段 A/B 为不同时间截面。
+
+月华连弧及月月被动使用新版银白纯能量月弧；SVG 无法完全模拟 Canvas additive 混合，原生 Canvas 以离线图册为准。
