@@ -1043,6 +1043,33 @@
       if(ctx._event==='onHitResolved'&&e&&(e.hp<before||species==='mengmai'))mark(ctx.cat,b,e);
     };
   }
+
+  // Echo scheduler: onTick must never consume the hit cooldown.
+  set('youling',{internalCooldown:0,triggerCondition:()=>true,effect(ctx){
+    const c=ctx.cat,b=ctx.battle;
+    if(ctx._event==='onHitResolved'){
+      if(!ctx.target?.alive||!['projectile','aoe','beam'].includes(ctx.skill?.kind)||b.t<(c._echoReadyAt||0))return;
+      c._echoReadyAt=b.t+2.5;c._echoQueue ||= [];
+      c._echoQueue.push({at:b.t+1.1,target:ctx.target,x:ctx.target.x,y:ctx.target.y,dmg:ctx.dmg*.4});
+      mark(c,b,ctx.target,'ready');return;
+    }
+    const keep=[];
+    for(const h of c._echoQueue||[]){
+      if(b.t<h.at){keep.push(h);continue;}
+      // A delayed attack lands at the original location, so moving away avoids it.
+      if(h.target.alive&&Math.hypot(h.target.x-h.x,h.target.y-h.y)<=48){b.hurtEnemy(h.target,h.dmg,h.x,h.y,true);mark(c,b,h.target);}
+    }
+    c._echoQueue=keep;
+  }});
+  // Avoid treating a frame-poll as an ICD-triggering combat event.
+  set('mengmai',{triggerCondition:ctx=>ctx.target?._lastAttackT!=null&&ctx.battle.t-ctx.target._lastAttackT<2});
+  // Tag burning burst from remaining DoT, not 2.2x arbitrary heavy-hit damage.
+  set('jinwu',{effect(ctx){
+    const e=ctx.target,c=ctx.cat,b=ctx.battle,ttl=Math.max(0,e.status?.burn||0);
+    if(!ttl)return;e.tags=(e.tags||[]).filter(t=>t!=='burn');delete e.status.burn;
+    // Provisional coefficient bounded by attack power; tune against runtime DoT rules.
+    bonus(ctx,Math.min(c.dmg*1.2,e.maxhp*.012*ttl));
+  }});
   window.CatTraits.mark=mark;
 
 })();
