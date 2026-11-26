@@ -187,8 +187,9 @@ class VFX {
     this.fx = this.fx.filter(e => e.life > 0);
   }
 
-  draw(ctx) {
+  draw(ctx,layer='all') {
     for (const e of this.fx) {
+      if(layer==='back'&&e.type==='contact'||layer==='contact'&&e.type!=='contact')continue;
       const k = Math.max(0, e.life / e.max);
       ctx.save();
       ctx.globalAlpha = k;
