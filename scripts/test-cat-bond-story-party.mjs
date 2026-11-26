@@ -12,3 +12,5 @@ finish("epilogue:E-03");assert.equal(root.cats.length,14);assert.equal(root.cats
 assert.equal(storyPartyPatch(root,{completed},{completed},factory),null);
 assert.equal(Object.values(recruitment).flat().length,13);
 console.log("Story party: recruit, first duo, 12 NPCs, departure, return, no duplicate passed");
+
+assert.equal(root.firstDuoShowcasePending,true);for(const a of root.cats)for(const b of root.cats)if(a.uid!==b.uid)assert.ok(root.duoRelations.pairs[[a.uid,b.uid].sort().join(":")]?.value>=20);console.log("All 91 protagonist/story pairs unlock duo, including after reunion");

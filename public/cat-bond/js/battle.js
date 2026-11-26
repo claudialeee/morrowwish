@@ -350,6 +350,11 @@ class CaptureBattle {
     return k === 'move' || k === 'attack' || k === 'skill';
   }
 
+  refreshFieldDuo(){
+    const next=window.CatRelations?.active(this.team.filter(f=>f.alive&&!f._reinforcement).map(f=>f.cat))||null;
+    const old=this.duo;if(next?.a?.uid!==old?.a?.uid||next?.b?.uid!==old?.b?.uid)this.duoCharge=0;
+    this.duo=next;
+  }
   duoReady(){
     return !!(this.duo&&this.duoCharge>=100&&this.duoCd<=0&&
       [this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)));
@@ -3677,6 +3682,7 @@ class CaptureBattle {
     incoming.x=out.x;incoming.y=out.y;incoming.moving=false;
     incoming.inv=Math.max(incoming.inv||0,0.8);
     this.team[this.active]=incoming;
+    this.refreshFieldDuo();
     this.reserveSwapReadyAt=Date.now()+6000;
     this.vfx.ring(incoming.x,incoming.y,{r0:9,vr:270,life:.38,color:'#b6e3bf',width:4});
     this.game.buildTeamSlots?.();
@@ -6101,6 +6107,7 @@ class CaptureBattle {
     sub.x = f.x; sub.y = f.y; sub.inv = 1.0;
     this.reserve = this.reserve.filter(c => c !== pick);
     if (idx >= 0) this.team[idx] = sub; else this.team.push(sub);
+    this.refreshFieldDuo();
     this.game.buildTeamSlots?.();
     if (wasActive || !this.me()?.alive) this.active = this.team.indexOf(sub);
     this.vfx.ring(sub.x, sub.y, { r0: 8, vr: 320, life: 0.5, color: '#9be7c4', width: 5 });
