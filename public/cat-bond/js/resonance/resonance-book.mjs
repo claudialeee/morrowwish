@@ -1,3 +1,4 @@
+import {earnedKeepsakes} from "./regional-discoveries.mjs";
 // One presentation layer over the existing UI, State, Raising and CatRelations.
 // No cloned cats, separate inventory, storage, or narrative progress.
 import {recipes,craftSupply} from "./book-recipes.mjs";
@@ -177,6 +178,11 @@ function records(){
  const rows=node("div","rb-inventory"),discovered=Object.values(s.dex||{}).filter(n=>n>0).length;
  for(const [zh,en,v] of [["发现品种","Breeds discovered",discovered+"/"+window.GameData.SPECIES.length],["金爪徽章","Golden Paw medals",Object.values(s.masteryBadges||{}).filter(Boolean).length],["捕捉次数","Captures",s.catchCount||0],["猫咪互动","Cat interactions",s.petCount||0],["恢复圣所","Restored sanctuaries",(s.resonance?.sanctuaries?.length||0)+"/6"],["旋律","Melodies",(s.resonance?.melodies?.length||0)+"/6"]])rows.append(stat(tr(zh,en),v));
  host.append(rows,node("p","",tr("品种与战斗评级奖励仍可在 Catdex 查看和领取。","Collection and battle-grade rewards remain available in Catdex.")),button(tr("查看 Catdex","Open Catdex"),()=>select("dex")));
+ const keeps=earnedKeepsakes(s.resonanceExploration?.interactions),gardenNames={"ear-flower":["耳尖的小花","Little flower"],"golden-seed":["浅金色种子","Golden seed"],"fish-cake":["鱼饼","Fish cake"],"old-garden-postcard":["旧花园明信片","Old garden postcard"]};
+ const garden=(s.sunlitGarden?.exploration?.keepsakes||[]).map(id=>gardenNames[id]).filter(Boolean);
+ const names=[...garden,...keeps.map(k=>k.name)];
+ host.append(node("h3","",tr("旅途纪念物","Travel keepsakes")));
+ if(names.length){const list=node("div","rb-inventory");for(const [zh,en] of names)list.append(stat(tr(zh,en),"✓"));host.append(list);}else host.append(node("p","",tr("散步时留意地图中的小惊喜。","Look for little surprises as you explore.")));
  const reset=node("button","rb-reset",tr("安全重启游戏","Safe restart"));reset.type="button";reset.id="cb-menu-reset";host.append(reset);window.CatBondBindResetButton?.(reset);
 }
 function select(id,focusCraft=false){

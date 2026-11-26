@@ -513,6 +513,22 @@ export function applyDiscovery(region,id,w,v){
  const before=progress(region,w.interactions),after=progress(region,next.interactions),d=discoveries[region];
  return {ok:true,next,message:s.message,souvenir:!before.complete&&after.complete?d.souvenir:!before.returned&&after.returned?d.returnSouvenir:null};
 }
+// Keep the props separated from interactive story anchors. Both the painter
+// and hit-testing consume the identical projected points.
+export function layoutDiscoveries(items,obstacles,W=960,H=540){
+ const occupied=obstacles.filter(p=>Array.isArray(p)&&p.length>=2).map(p=>[p[0]*W,p[1]*H]);
+ return items.map(s=>{
+  const x=s.point[0]*W,y=s.point[1]*H;
+  const gap=(a,b)=>occupied.length?Math.min(...occupied.map(p=>Math.hypot(a-p[0],b-p[1]))):Infinity;
+  const candidates=[[0,0],[-45,0],[45,0],[0,-45],[0,45],[-45,-45],[45,-45],[-45,45],[45,45],[-85,0],[85,0],[0,-85],[0,85],[-85,-45],[85,45],[-85,45],[85,-45]];
+  let best=null,bestGap=-1;
+  for(const [dx,dy] of candidates){const a=Math.max(28,Math.min(W-28,x+dx)),b=Math.max(28,Math.min(H-28,y+dy)),g=gap(a,b);if(g>bestGap){best=[a,b];bestGap=g;}if(g>=52){best=[a,b];break;}}
+  occupied.push(best);return {...s,point:[best[0]/W,best[1]/H]};
+ });
+}
+export function earnedKeepsakes(interactions={}){
+ return Object.entries(discoveries).flatMap(([region,d])=>{const p=progress(region,interactions);return [...(p.complete?[{region,name:d.souvenir}]:[]),...(p.returned?[{region,name:d.returnSouvenir}]:[])];});
+}
 export function paintDiscovery(ctx,s,W,H,t){
  const bob=["feather","crab"].includes(s.kind)?Math.sin(t*4)*2:Math.sin(t*2)*.6;
  ctx.save();ctx.translate(s.point[0]*W,s.point[1]*H+bob);ctx.lineJoin="round";ctx.lineCap="round";ctx.lineWidth=1.5;ctx.strokeStyle="#755d45";ctx.shadowColor="#302b2850";ctx.shadowBlur=3;
