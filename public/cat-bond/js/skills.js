@@ -312,7 +312,9 @@
     { id: 'tidalBite',  name: '潮汐咬',   element: 'water', kind: 'melee',      power: 1.5, cd: 2.8, ultCost: 0, tags: ['soak','heavy'],   appliesTag: 'soak',  vfx: 'impact',    desc: '用小鱼干向训练师换来的近身咬击，淋湿并重创。', unlock: { cost: { fish: 6 } } },
     { id: 'thornLash',  name: '荆棘鞭',   element: 'grass', kind: 'melee',      power: 1.5, cd: 3.0, ultCost: 0, upgradeOf: 'thornCoil', tags: ['bind','bleed'],   appliesTag: 'bleed', vfx: 'impact',    desc: '用金币换来的缠斗技，撕裂并束缚目标。', unlock: { cost: { coins: 120 } } },
     // ---- 等级 / 亲密 / 组合门槛 ----
-    { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 1.95,cd: 2.2, ultCost: 0, precise: true, upgradeOf: 'waterLash', tags: ['soak','ranged','precise','heavy'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标，冷却更短。达到等级方可领悟。', unlock: { level: 10 } },
+    // Owner 2026-11-26: 霜锥和水鞭不要做成上下级关系. Removed upgradeOf — 霜锥 is a
+    // standalone high-tier chill ranged (gated by Lv10 unlock), NOT a replacement for 水鞭.
+    { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 1.95,cd: 2.2, ultCost: 0, precise: true, tags: ['soak','ranged','precise','heavy'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标，冷却更短。达到等级方可领悟。', unlock: { level: 10 } },
     { id: 'voltRush',   name: '雷遁突袭', element: 'elec',  kind: 'dash',       power: 2.3, cd: 4.2, ultCost: 0, heavy: true, upgradeOf: 'staticPounce', tags: ['shock','dash','heavy'], appliesTag: 'shock', vfx: 'beam', desc: '高亲密才能驾驭的闪电冲刺，撞中强麻痹。', unlock: { affinity: 60 } },
     // ---- 多发追踪弹幕 (homing VOLLEY — the multi-shot cousin of 球状闪电/追踪草种) ----
     // Fires `shots` tracking projectiles in a spread; each turns toward the target (homing) and
@@ -979,23 +981,25 @@
   }
 
   // BASIC-ELIGIBLE: a skill the player may slot as their LEFT-CLICK basic attack.
-  // Owner 2026-11-26 "只能用最基础的近战/远程技能作为普攻 → 应该放宽": gated
-  // skills (unlock.level/element/species) and tier-2 upgrades ARE allowed as
-  // basic if their power is reasonable. Hard disallows: heavy (knockOff/pounce
-  // slams), windup (fireballMeow brings its own precise mini-game), channel
-  // (waterJet/flameSweep), ult-cost, pulse (multi-wave would spam frames),
-  // aoe/leap/beam (too splashy). Power cap raised 1.35→1.95 to admit frostLance
-  // 1.95 (precise-chill) and keep out the 2.0+ heavy strikes.
-  const BASIC_MAX_POWER = 1.95;
+  // Owner 2026-11-26 lock: basic = light + spammable tier-1 only.
+  // Rules:
+  //   - melee / projectile kind only (no dash/pounce/chain/leap/aoe/beam)
+  //   - power ≤ 1.35 (emberClaw 1.3, frostClaw 1.22, waterLash 1.2, leafDart 1.0)
+  //   - no sk.heavy field (knockOff slam)
+  //   - no sk.windup (fireballMeow precise-shot)
+  //   - no sk.channel / pulseCount (continuous / multi-wave)
+  //   - no ultCost
+  //   - no unlock requirement (purchased or Lv-gated advanced skills shouldn't basic-spam)
+  //   - no tag 'heavy' or 'precise' (frostLance is precise+heavy tagged, excluded)
+  const BASIC_MAX_POWER = 1.35;
   function basicEligible(sk){
     if(!sk)return false;
-    const atk=['melee','projectile','dash','pounce','chain'];
-    if(!atk.includes(sk.kind))return false;
+    if(sk.kind!=='melee'&&sk.kind!=='projectile')return false;
     if((sk.ultCost||0)>0)return false;
     if(!((sk.power||0)>0)||(sk.power||0)>BASIC_MAX_POWER)return false;
-    if(sk.heavy||sk.windup||sk.channel||sk.pulseCount)return false;
+    if(sk.heavy||sk.windup||sk.channel||sk.pulseCount||sk.unlock)return false;
     const tags=sk.tags||[];
-    if(tags.includes('pulse'))return false;    // tag 'heavy' is semantic only (e.g. frostLance precise-chill) — allowed; field sk.heavy=true (knockOff slam) remains blocked above
+    if(tags.includes('pulse')||tags.includes('heavy')||tags.includes('precise'))return false;
     return true;
   }
   // The pool of basic-eligible skills a given cat can actually equip (already-learned

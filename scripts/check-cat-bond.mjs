@@ -1201,8 +1201,9 @@ assert.ok(wallSpecialist.learned.includes('mirrorWall'),
 
 // Upgrade damage should overcome longer cooldowns; otherwise high-level
 // abilities are strictly worse in sustained play despite larger hit numbers.
+// Owner 2026-11-26: 霜锥和水鞭 no longer upgrade-chain related.
 for(const [oldId,newId] of [
- ['emberClaw','cometClaw'],['waterLash','frostLance'],
+ ['emberClaw','cometClaw'],
  ['staticPounce','voltRush'],['shadowSwipe','veteranStrike']
 ]){
  const old=Skills.skillById(oldId),high=Skills.skillById(newId);
@@ -1213,9 +1214,10 @@ assert.ok(Skills.skillById('tenderPaw').healPct>=.6,
  'healing upgrade must use a truly larger heal percentage');
 // Skill consolidation: all seven upgrade families remain resolvable, while a
 // learned tier-2 replaces tier-1 in equipped gear and new build recommendations.
+// Owner 2026-11-26: 霜锥和水鞭不再是上下级关系, so [waterLash, frostLance] removed.
 const upgradePairs=[
   ['emberClaw','cometClaw'],['thornCoil','thornLash'],
-  ['waterLash','frostLance'],['staticPounce','voltRush'],
+  ['staticPounce','voltRush'],
   ['shadeLeap','apexPounce'],['shadowSwipe','veteranStrike'],
   ['dawnHeal','tenderPaw']
 ];
