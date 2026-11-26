@@ -170,7 +170,7 @@ const PAINT={
    for(let j=0;j<level;j++){const th=j*TAU/level+t*2;bolt(c,x+Math.cos(th)*12,y+Math.sin(th)*9,x+Math.cos(th)*(20+28*p),y+Math.sin(th)*(16+20*p),t,j,'#c4b7ff',a*.65,1.6);}
  },
  youling(c,v,t,p,a){echoSilhouette(c,v.x-16,v.y-8,Math.atan2(v.y-v.oy,v.x-v.ox),'#a18acc',a,'youling',t);if(v.phase!=='ready'){for(let j=0;j<2;j++)sweep(c,v.x,v.y-8,j?-.65:.65,36+14*p,13,'#7956af',a);}},
- yuelian(c,v,t,p,a){sweep(c,v.x,v.y-8,-.95,39,16,'#c9e5ff',a);star(c,v.x+15,v.y-22,9,'#fff9dc',a);},
+ yuelian(c,v,t,p,a){if(window.CatBondMoonFX){window.CatBondMoonFX.drawPassive(c,v,t,p,a);return;}sweep(c,v.x,v.y-8,-.95,39,16,'#c9e5ff',a);},
  doudou(c,v,t,p,a){const th=Math.atan2(v.y-v.oy,v.x-v.ox);for(let j=0;j<3;j++)sweep(c,v.x,v.y-13+j*7,th-.6,25+8*p,6,'#a7d989',a);},
  baomao(c,v,t,p,a){for(let j=0;j<4;j++){const th=j*TAU/4+PI/4,r=19+10*(1-p);line(c,[[v.x+Math.cos(th)*r,v.y-12+Math.sin(th)*r],[v.x+Math.cos(th)*9,v.y-12+Math.sin(th)*9]],'#e6b4ed',3,a);}if(v.phase==='fire')sweep(c,v.x,v.y-7,-.35,39,11,'#b287d9',a);},
  xingchen(c,v,t,p,a){rift(c,v.x,v.y-8,t,a);for(let j=0;j<7;j++){const th=j*TAU/7;star(c,v.x+Math.cos(th)*p*34,v.y-8+Math.sin(th)*p*34,5,'#e5dcff',a);}},
