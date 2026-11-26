@@ -3274,7 +3274,7 @@ const UI = {
           :'💞 同品种已有两只：最强的猫获得 +8 好感、+45 经验及 2 小鱼，不再增加重复个体。')
         +'</p>':''}
       <p class="sub center">${totalText} · ${goalText}</p>
-      ${firstAdventure?'<details class="prep-advanced first-capture-rewards"><summary><strong>'+(english?'Battle rewards & stats':'战斗奖励与详情')+'</strong><span>'+(english?'Expand':'展开')+'</span></summary>':''}
+      ${firstAdventure?'<details class="prep-advanced first-capture-rewards"><summary><strong>'+(english?'Battle rewards & stats':'战斗奖励与详情')+'</strong><span class="capture-detail-hint" data-collapsed="'+(english?'Expand':'展开')+'" data-open="'+(english?'Collapse':'收起')+'"></span></summary>':''}
       ${performance?'<div class="battle-grade grade-'+grade+'"><b>'+grade+'</b><div><strong>'+gradeLabel+'</strong><small>'+battleResult+' · '+performance.combo+' '+(english?'best combo':'最高连击')+'</small>'
          +(performance.autoUsed?'<small class="grade-explain">'+(performance.autoExceptional
            ?(english?'Exceptional automatic performance!':'自动战斗发挥出色！')

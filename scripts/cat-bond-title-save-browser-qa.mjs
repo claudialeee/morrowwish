@@ -27,12 +27,12 @@ for(const profile of [
  const waitMap=()=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:15000});
  const openInGameSlots=async()=>{
   await page.locator('#map-menu').click();
-  await page.locator('[data-system="slots"]').click();
+  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="slots"]').click();
   await checkVisible('.cb-slot-manager');
  };
  const openTitleSlots=async()=>{
   await page.locator('#cb-system-toggle').click();
-  await page.locator('[data-system="slots"]').click();
+  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="slots"]').click();
   await checkVisible('.cb-slot-manager');
   assert.equal(await page.locator('.cb-slot-manager [data-slot-sync], [data-recovery-code], .cb-cloud-code-row').count(),0,'No manual cloud or recovery-code controls');
  };
@@ -56,17 +56,17 @@ for(const profile of [
   await screenshot('title-zh');
   await page.locator('#cb-system-toggle').click();
   assert.equal(await page.locator('[data-system="cloud"]').count(),0);
-  await page.locator('[data-system="language"]').click();
+  await page.locator('[data-system="page-settings"]').click();await page.locator('[data-system="language"]').click();
   await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='en');
   await page.locator('[data-system="close"]').click();
   assert.match(await page.locator('#intro-start').innerText(),/New Adventure/);
   await screenshot('title-en');
   await page.locator('#cb-system-toggle').click();
-  await page.locator('[data-system="fullscreen"]').click();
+  await page.locator('[data-system="page-settings"]').click();await page.locator('[data-system="fullscreen"]').click();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
   await screenshot('fullscreen-title');
   await page.locator('#cb-system-toggle').click();
-  await page.locator('[data-system="fullscreen"]').click();
+  await page.locator('[data-system="page-settings"]').click();await page.locator('[data-system="fullscreen"]').click();
   await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));
   await page.locator('#intro-start').click();
   await checkVisible('#intro-slot-panel.is-open');
@@ -130,7 +130,7 @@ for(const profile of [
   };
   await checkStageFit();
   const system=async()=>{await realPress(page.locator('#map-menu'));};
-  const toggleWorldFullscreen=async()=>{await system();await realPress(page.locator('[data-system="fullscreen"]'));};
+  const toggleWorldFullscreen=async()=>{await system();await realPress(page.locator('[data-system="page-settings"]'));await realPress(page.locator('[data-system="fullscreen"]'));};
   for(const sel of ['#mw-fullscreen-toggle','#mw-game-settings','#guide-help'])assert.equal(await page.locator(sel).isVisible(),false,sel+' must be inside the RPG menu');
   await toggleWorldFullscreen();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
@@ -169,14 +169,14 @@ for(const profile of [
   await page.waitForFunction(()=>!!window.State.getSaveSlot('slot2'));
   await screenshot('in-game-save-manager');
   await page.locator('[data-load="slot2"]').click();
-  await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
+  const confirmBox=await page.locator('.cb-confirm-dialog').boundingBox();assert.ok(confirmBox);const confirmViewport=await page.evaluate(()=>({width:innerWidth,height:innerHeight}));assert.ok(Math.abs(confirmBox.x+confirmBox.width/2-confirmViewport.width/2)<3&&Math.abs(confirmBox.y+confirmBox.height/2-confirmViewport.height/2)<3,'Save confirmation is centered in viewport');await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true&&window.State.activeSlot()==='slot2',{timeout:30000});
   await waitMap();
   assert.equal(await page.evaluate(()=>window.State.S.cats[0].uid),first);
   assert.equal(await page.evaluate(()=>window.State.S.cats[0].species),selectedBreed);
   // A real title-menu navigation, not a special test entry.
   await page.locator('#map-menu').click();
-  await page.locator('[data-system="title"]').click();
+  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="title"]').click();
   await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__,{timeout:30000});
   // Start the third slot through the actual title picker, preserving the two earlier adventures.

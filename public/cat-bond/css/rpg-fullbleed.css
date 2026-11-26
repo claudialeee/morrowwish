@@ -93,3 +93,17 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage #panel .cat-capture-card :is(.battle-grade,.battle-rating,.battle-reward-card,.battle-heal-summary,.battle-exp-card,.battle-level-card){font-size:clamp(12px,1.1vw,15px)!important;padding:8px 10px!important;margin:5px 0!important;background:#f7ecd6!important;color:#534431!important;border-color:#d5c09a!important;box-sizing:border-box!important;width:100%!important;max-width:none!important}
 #stage #panel .cat-capture-card details[open]>summary .capture-detail-hint{font-size:0}
 #stage #panel .cat-capture-card details[open]>summary .capture-detail-hint::after{content:'−';font-size:14px}
+
+#stage .res-ambient-simple{position:absolute;inset:0;display:grid;place-items:center;background:none!important;backdrop-filter:none!important}
+#stage .res-ambient-card,#stage .res-key-handover{width:min(440px,calc(100% - 24px));max-height:96%;overflow:auto;background:#fff8e9;color:#534431;padding:16px;border:1px solid #c5a774;border-radius:12px;box-sizing:border-box;text-align:center;box-shadow:0 6px 22px #513b2330}
+#stage .res-ambient-card h2,#stage .res-key-handover h2{font:600 20px Georgia,"Songti SC",serif;color:#59452f;margin:0 0 9px}
+#stage .res-ambient-card button,#stage .res-key-handover button{min-height:40px;padding:8px 16px;border:1px solid #b99b66;border-radius:8px;background:#e9d4ad;color:#493e2b;cursor:pointer}
+#stage .res-route-preview{position:relative;aspect-ratio:16/9;background:url("../assets/resonance-world-v2/harbor.webp") center/cover;border-radius:8px;margin:10px 0}
+#stage .res-route-west{position:absolute;top:22%;left:5%;font-size:12px;background:#fff2d7;color:#6c512d;padding:5px 7px;border-radius:6px;border:1px solid #c1a477}
+#stage .res-key-handover img{height:min(22vh,110px);object-fit:contain}
+#stage #cb-leisure{position:absolute;inset:0;display:flex;flex-direction:column;z-index:2147483000;background:#fff8e8}
+#stage #cb-leisure header{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;color:#57442d;min-height:44px}
+#stage #cb-leisure header button{min-height:36px;background:#eddab2;border:1px solid #bfa16a;border-radius:8px;color:#58442d;padding:5px 10px}
+#stage #cb-leisure iframe{width:100%;flex:1;min-height:0;border:0}
+#stage #panel .first-capture-rewards .capture-detail-hint::after{content:attr(data-collapsed);font-size:12px}
+#stage #panel .first-capture-rewards[open] .capture-detail-hint::after{content:attr(data-open);font-size:12px}

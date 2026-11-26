@@ -163,7 +163,7 @@ class Game {
     document.body.classList.remove('cb-exploring');
     document.getElementById('yard-actions').classList.remove('hidden');
     document.getElementById('tabbar').classList.remove('hidden');
-    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('hud').classList.add('hidden');
     this.yard?.refreshYardSwitch();
     window.SunlitGarden?.enter?.();
   }
@@ -1854,6 +1854,7 @@ class Game {
   refreshHUD() {
     // Only two currencies remain: 🪙 coins and 🐠 fish. The old 🐟 treats / 🧶 yarn
     // pills were removed from the HUD, so guard those lookups defensively.
+    const hud=document.getElementById('hud');if(hud){hud.hidden=true;hud.style.setProperty('display','none','important');}const yardReturn=document.getElementById('cb-yard-return');if(yardReturn){yardReturn.hidden=true;yardReturn.style.setProperty('display','none','important');}
     const coinsEl = document.getElementById('coins');
     if (coinsEl) coinsEl.textContent = State.S.coins;
     const fishEl = document.getElementById('fish');
