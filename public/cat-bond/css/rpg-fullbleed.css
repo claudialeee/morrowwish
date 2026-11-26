@@ -214,7 +214,7 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .rw-dedicated-rail .rw-puzzle-controls button{min-height:44px!important;white-space:normal!important;overflow-wrap:anywhere;font-size:clamp(12px,1.3vw,15px)!important;line-height:1.25;touch-action:manipulation}
 #stage .rw-dedicated-rail .rw-quality-cards .rw-quality-card{touch-action:none!important}
 #stage .rw-dedicated-rail .rw-puzzle-controls button[data-minigame-key]:not(:disabled):focus-visible{outline:3px solid #97652b;outline-offset:1px}
-@media (min-width:701px) and (min-height:501px){#stage .rw-dedicated-rail .rw-puzzle-controls button[data-minigame-key]::after{content:" [" attr(data-minigame-key) "]";font-size:10px;opacity:.75}}
+
 @media(max-height:500px) and (orientation:landscape){#stage .rw-world.rw-dedicated-puzzle:not([hidden]){--rw-game-top:48px;--rw-game-controls:40%;--rw-game-gap:6px}#stage .rw-world.rw-dedicated-puzzle>.rw-dedicated-rail{padding:6px!important;gap:4px}#stage .rw-minigame-hint,#stage .rw-minigame-progress{font-size:12px}#stage .rw-minigame-title{font-size:15px}}
 @media(orientation:portrait){
 #stage .rw-world.rw-dedicated-puzzle:not([hidden]){--rw-game-top:62px;--rw-game-controls:47%;--rw-game-gap:8px}
@@ -223,3 +223,6 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .rw-dedicated-rail .rw-puzzle-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 #stage .rw-minigame-goal{position:relative;padding-right:0}
 }
+
+#stage .rw-dedicated-rail button[data-path-available="true"]{border-color:#58846c!important;background:#e1edda!important;color:#2e523e!important}
+#stage .rw-dedicated-rail button[data-path-available="false"]{opacity:.58}
