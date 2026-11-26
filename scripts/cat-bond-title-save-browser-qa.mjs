@@ -7,13 +7,16 @@ const output=process.env.CAT_BOND_QA_OUTPUT||'cat-bond-title-save-qa';
 await fs.mkdir(output,{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 let failed=false;
-for(const profile of [
+const profiles=[
  {name:'desktop',width:1280,height:800,mobile:false},
  {name:'phone-narrow',width:320,height:568,mobile:true},
  {name:'phone-portrait',width:390,height:844,mobile:true},
  {name:'phone-landscape-narrow',width:568,height:320,mobile:true},
  {name:'phone-landscape',width:844,height:390,mobile:true}
-]){
+];
+const selected=profiles.filter(p=>!process.env.CAT_BOND_SAVE_PROFILE||p.name===process.env.CAT_BOND_SAVE_PROFILE);
+assert.ok(selected.length,'Unknown CAT_BOND_SAVE_PROFILE');
+await Promise.all(selected.map(async profile=>{
  const context=await browser.newContext({viewport:{width:profile.width,height:profile.height},isMobile:profile.mobile,hasTouch:profile.mobile});
  // When verifying a public deployment, fetch the actual public assets but
  // keep acceptance traffic out of the owner's real player analytics.
@@ -168,8 +171,11 @@ for(const profile of [
   }
   // Explore is now an idempotent open action; close via a real map pointer, below.
   await screenshot('world-atlas');
-  // Physical departure from the merged canonical opening.
-  const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);
+  // This suite verifies save lifecycle, not atlas hit-testing (covered by map lanes).
+  // Portrait canvases can be cropped by design; use the actual region control.
+  const harbor=page.locator('.rw-regions [data-region="harbor"]');
+  await realPress(harbor);
+  await page.waitForFunction(()=>WorldMap.currentRegion==='harbor');
   await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01');
   const first=await page.evaluate(()=>window.State.getSaveSlot('slot1').data.state.cats[0].uid);
   assert.ok(first);
@@ -220,6 +226,6 @@ for(const profile of [
   failed=true;console.error('FAIL '+profile.name,error);console.error('Recent actual input',await page.evaluate(()=>window.__titleQaTouchTrace).catch(()=>[]));
   await screenshot('failure').catch(()=>{});
  }finally{await context.close();}
-}
+}));
 await browser.close();
 if(failed)process.exitCode=1;

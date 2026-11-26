@@ -1,9 +1,10 @@
-name: Cat Bond experience playtest (isolated)
+name: Starbell RPG experience acceptance (isolated)
 on:
   push:
     branches: [review/cat-bond-playtest-harness]
     paths:
       - 'scripts/cat-bond-experience-*.mjs'
+      - 'scripts/cat-bond-starbell-save-direct-probe.mjs'
       - 'scripts/cat-bond-all-skills-visual-smoke.mjs'
       - 'scripts/cat-bond-combat-skills-visual-smoke.mjs'
       - 'scripts/cat-bond-starbell-progression-probe.mjs'
@@ -27,26 +28,26 @@ on:
   workflow_dispatch:
     inputs:
       scope:
-        description: 'opening, campaign, targets, audio, or one full chapter'
+        description: 'quick daily smoke, full final acceptance, or selected regression'
         type: choice
-        options: [opening, campaign, targets, audio, harbor, forest, forge, sky, library, starfall, finale, epilogue]
-        default: opening
+        options: [quick, full, opening, campaign, targets, audio, systems, harbor, forest, forge, sky, library, starfall, finale, epilogue]
+        default: quick
 permissions:
   contents: read
 concurrency:
-  # Supersede only obsolete automatic runs of this isolated workflow.
-  # Manual investigations are independently grouped by revision and scope.
+  # One automatic run per branch; explicitly requested full and scoped manual runs are independent.
+  # Push [starbell-full] for final fixed-revision acceptance; ordinary pushes use quick smoke.
   group: cat-bond-experience-${{ github.ref }}-${{ github.event_name == 'push' && 'push' || format('manual-{0}-{1}', github.sha, inputs.scope) }}
   cancel-in-progress: ${{ github.event_name == 'push' }}
 jobs:
   evidence:
-    if: github.event_name == 'push' || inputs.scope != 'audio'
+    if: ${{ (github.event_name == 'push' && contains(github.event.head_commit.message, '[starbell-full]')) || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') || (github.event_name == 'workflow_dispatch' && !contains(fromJSON('["quick","audio","systems"]'), inputs.scope)) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     strategy:
       fail-fast: false
       matrix:
-        scope: ${{ fromJSON(github.event_name == 'push' && '["opening","campaign","targets","harbor","forest","forge","sky","library","starfall","finale","epilogue"]' || format('["{0}"]', inputs.scope || 'opening')) }}
+        scope: ${{ fromJSON(((github.event_name == 'push' && contains(github.event.head_commit.message, '[starbell-full]')) || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full')) && '["opening","campaign","targets","harbor","forest","forge","sky","library","starfall","finale","epilogue"]' || format('["{0}"]', inputs.scope || 'opening')) }}
     env:
       CAT_BOND_EXPERIENCE: '1'
       PROLOGUE_LANG: zh
@@ -277,7 +278,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
   opening-ui:
-    if: github.event_name == 'push' || inputs.scope == 'opening'
+    if: ${{ (github.event_name == 'push' && contains(github.event.head_commit.message, '[starbell-full]')) || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'opening') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     strategy:
@@ -321,7 +322,7 @@ jobs:
           retention-days: 30
 
   audio-evidence:
-    if: github.event_name == 'push' || inputs.scope == 'audio'
+    if: ${{ (github.event_name == 'push' && contains(github.event.head_commit.message, '[starbell-full]')) || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'audio') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -353,7 +354,7 @@ jobs:
           retention-days: 30
 
   rpg-systems:
-    if: github.event_name == 'push'
+    if: ${{ (github.event_name == 'push' && contains(github.event.head_commit.message, '[starbell-full]')) || (github.event_name == 'workflow_dispatch' && inputs.scope == 'full') || (github.event_name == 'workflow_dispatch' && inputs.scope == 'systems') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     strategy:
@@ -396,3 +397,41 @@ jobs:
             /tmp/cat-bond-skill-*.png
             /tmp/cb-rpg-systems-server.log
           retention-days: 30
+
+  quick:
+    if: ${{ (github.event_name == 'push' && !contains(github.event.head_commit.message, '[starbell-full]')) || (github.event_name == 'workflow_dispatch' && inputs.scope == 'quick') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Fast RPG source gates
+        run: |
+          node scripts/test-cat-bond-player-first.mjs
+          node scripts/test-cat-bond-story-party.mjs
+          node scripts/test-cat-bond-canon12-campaign.mjs
+          node scripts/test-cat-bond-resonance-slot.mjs
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Real title, menu and save smoke (six profiles)
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-quick-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-starbell-save-direct-probe.mjs
+      - name: Record scope
+        run: echo 'Quick smoke only — not final campaign or release acceptance.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-quick-smoke
+          path: |
+            artifacts/starbell-save-direct
+            /tmp/cb-quick-server.log
+          retention-days: 7

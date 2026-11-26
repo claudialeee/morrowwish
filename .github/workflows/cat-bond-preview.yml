@@ -1,4 +1,4 @@
-name: Cat Bond isolated Cloudflare Pages preview
+name: Starbell RPG isolated Cloudflare Pages preview
 on:
   push:
     branches: [rpg/release-combined-next]
@@ -188,7 +188,7 @@ jobs:
                 await page.locator('#map-menu').click();
                 const menu=page.locator('#cb-system-menu');
                 await menu.waitFor({state:'visible'});
-                for(const id of ['yard-map','yard-book','page-garden','leisure','page-settings','page-saves']){
+                for(const id of ['yard-map','yard-book','page-garden','leisure','page-settings','slots','title']){
                   if(!await menu.locator('[data-system="'+id+'"]').isVisible())throw Error('Missing menu action '+id);
                 }
                 if(await page.locator('#hud').isVisible())throw Error('Wallet must not cover garden');
@@ -203,9 +203,15 @@ jobs:
                 for(const id of ['language','music','effects'])if(!await menu.locator('[data-system="'+id+'"]').isVisible())throw Error('Missing setting '+id);
                 await page.screenshot({path:'preview-'+prefix+'-settings.png'});
                 await menu.locator('[data-system="page-back"]').click();
-                await menu.locator('[data-system="page-saves"]').click();
-                if(!await menu.locator('[data-system="slots"]').isVisible())throw Error('Save management is not reachable');
-                await menu.locator('[data-system="page-back"]').click();
+                const saves=menu.locator('[data-system="slots"]');
+                if(await saves.locator('span').textContent()!=='Saves')throw Error('Incorrect save entry label');
+                await saves.click();
+                const manager=page.locator('.cb-slot-manager');
+                await manager.waitFor({state:'visible',timeout:12000});
+                if(await menu.isVisible()||await manager.locator('#cb-slot-status').isVisible())throw Error('Save manager must open directly without an empty status strip');
+                await page.screenshot({path:'preview-'+prefix+'-save-manager.png'});
+                await manager.locator('.cb-cloud-close').click();
+                await page.locator('#map-menu').click();
                 await menu.locator('[data-system="yard-book"]').click();
                 await page.locator('.rb-wallet').waitFor({state:'visible'});
                 await page.screenshot({path:'preview-'+prefix+'-book-wallet.png'});
