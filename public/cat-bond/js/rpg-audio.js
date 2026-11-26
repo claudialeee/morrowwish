@@ -180,6 +180,7 @@ function foley(id){
 }
 function read(){
  const game=window.__game,state=window.State?.S,story=state?.resonance,id=story?.scene||'',region=window.WorldMap?.mode==='region'?window.WorldMap.currentRegion:null;
+ const contextIntro=document.querySelector('#cb-player-first-intro');if(contextIntro)return{id:'opening',amb:''};
  const cinematic=document.querySelector('.cbcp-root:not([hidden]),#cb-opening-cover'),dialogue=document.querySelector('.res-host.is-visible,.res-npc-dialogue');
  const finale=game?.scene==='battle'?game.battle?.resonanceFinale?.id:null;
  if(finale)return {id:({'finale:B-01':'finale1','finale:B-02':'finale2','finale:B-03':'finale3'})[finale]||'battle',amb:''};

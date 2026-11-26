@@ -30,9 +30,11 @@ try{
   await menu.locator('[data-system="music"]').click();
   await waitTrack('title');
   await menu.locator('[data-system="close"]').click();
-  assert.equal(title.source,'premium-mp3:tomorrow','must use licensed candidate title recording');
+  const manifest=await page.evaluate(()=>fetch('assets/quality-audio/premium-manifest.json',{cache:'no-cache'}).then(r=>r.json()));
+  assert.equal(title.source,'premium-mp3:'+manifest.scenes.title,'must use the active licensed title recording');
   await page.locator('#intro-start').click();
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+  await page.locator('#cb-player-first-intro').waitFor({state:'visible'});await waitTrack('opening');assert.equal(await page.evaluate(()=>MorrowwishMusic.status().source),'premium-mp3:'+manifest.scenes.opening);
   await page.locator('#cb-player-first-intro').getByRole('button',{name:'Start exploring',exact:true}).click();
   await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-05'&&__game.scene==='yard');
   await waitTrack('garden');

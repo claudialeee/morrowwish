@@ -1,0 +1,212 @@
+{
+  "schema": 1,
+  "review": "jrpg-orchestral-candidate-not-listening-approved",
+  "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+  "scenes": {
+    "title": "first-flight",
+    "opening": "tale-peace",
+    "garden": "tranquil-spring",
+    "postgarden": "tranquil-spring",
+    "atlas": "world-door",
+    "harbor": "market-sea",
+    "forest": "morning-frost",
+    "forge": "spinning-tavern",
+    "sky": "wind-water",
+    "library": "thoughts",
+    "starfall": "cold-sanctuary",
+    "battle": "fields",
+    "boss-harbor": "out-of-time",
+    "boss-forest": "out-of-time",
+    "boss-forge": "slave-no-one",
+    "boss-sky": "slave-no-one",
+    "finale1": "slave-no-one",
+    "boss-library": "showdown",
+    "boss-starfall": "showdown",
+    "finale2": "showdown",
+    "muling": "lost-autumn",
+    "identity": "lost-autumn",
+    "betrayal": "visions",
+    "finale3": "wipe-tears",
+    "ending": "wipe-tears"
+  },
+  "tracks": {
+    "first-flight": {
+      "title": "A Dream of First Flight",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/a-dream-of-first-flight-rpg-orchestral-essentials-title-music",
+      "notes": "标题：明亮、可记忆的冒险主题；不要悬疑预告片。",
+      "scenes": [
+        "title"
+      ]
+    },
+    "tale-peace": {
+      "title": "A Tale of Peace",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/a-tale-of-peace-rpg-orchestral-essentials-peace-music",
+      "notes": "序章：温柔地交代失忆与世界背景，不先制造悲伤。",
+      "scenes": [
+        "opening"
+      ]
+    },
+    "tranquil-spring": {
+      "title": "In Tranquil Spring",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/in-tranquil-spring-rpg-orchestral-essentials",
+      "notes": "庭院：最耐听的日常循环，尾声回到这里形成首尾呼应。",
+      "scenes": [
+        "garden",
+        "postgarden"
+      ]
+    },
+    "world-door": {
+      "title": "The World At Your Door",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/the-world-at-your-door-rpg-orchestral-essentials-overworld-music",
+      "notes": "地图：明确出发与探索感。",
+      "scenes": [
+        "atlas"
+      ]
+    },
+    "market-sea": {
+      "title": "Market on the Sea",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/market-on-the-sea-rpg-orchestral-essentials-village-music",
+      "notes": "港口：有人生活的海边集市。",
+      "scenes": [
+        "harbor"
+      ]
+    },
+    "morning-frost": {
+      "title": "Morning Frost",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/morning-frost-rpg-orchestral-essentials-village-music",
+      "notes": "森林：清晨清新、低疲劳的探索。",
+      "scenes": [
+        "forest"
+      ]
+    },
+    "spinning-tavern": {
+      "title": "Spinning Tavern",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/spinning-tavern-rpg-orchestral-essentials-funny-music",
+      "notes": "工坊节日：轻快、有节奏；试听须拒绝滑稽感过强。",
+      "scenes": [
+        "forge"
+      ]
+    },
+    "wind-water": {
+      "title": "A Tale of Wind and Water",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/a-tale-of-wind-and-water-rpg-orchestral-essentials-peace-music",
+      "notes": "云岛：风感、开阔、从容的飞行。",
+      "scenes": [
+        "sky"
+      ]
+    },
+    "thoughts": {
+      "title": "Thoughts",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/thoughts-rpg-orchestral-essentials-dialog-music",
+      "notes": "书库：安静好奇，给阅读留出空间。",
+      "scenes": [
+        "library"
+      ]
+    },
+    "cold-sanctuary": {
+      "title": "Cold Sanctuary",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/cold-sanctuary-rpg-orchestral-essentials-dungeon-music",
+      "notes": "星原：神秘的古迹，不应变成恐怖氛围。",
+      "scenes": [
+        "starfall"
+      ]
+    },
+    "fields": {
+      "title": "A Fight in the Fields",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/a-fight-in-the-fields-rpg-orchestral-essentials-combat-music",
+      "notes": "普通战斗：明确的节拍和冒险动力。",
+      "scenes": [
+        "battle"
+      ]
+    },
+    "out-of-time": {
+      "title": "Out Of Time",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/out-of-time-rpg-orchestral-essentials-danger-music",
+      "notes": "早期危机/森林救援：短时紧迫，结束立即回探索。",
+      "scenes": [
+        "boss-harbor",
+        "boss-forest"
+      ]
+    },
+    "slave-no-one": {
+      "title": "A Slave To No One",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/a-slave-to-no-one-rpg-orchestral-essentials-boss-music",
+      "notes": "中段挑战与终战起势：比普通战斗更有冲突。",
+      "scenes": [
+        "boss-forge",
+        "boss-sky",
+        "finale1"
+      ]
+    },
+    "showdown": {
+      "title": "Showdown of Misdeeds",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/showdown-of-misdeeds-rpg-orchestral-essentials-boss-music",
+      "notes": "后段真相与守卫：高压但只在战斗中。",
+      "scenes": [
+        "boss-library",
+        "boss-starfall",
+        "finale2"
+      ]
+    },
+    "lost-autumn": {
+      "title": "Memories of a Lost Autumn",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/memories-of-a-lost-autumn-rpg-orchestral-essentials-conversation-music",
+      "notes": "暮铃与身份：亲密、怀念，非持续悲伤。",
+      "scenes": [
+        "muling",
+        "identity"
+      ]
+    },
+    "visions": {
+      "title": "Visions of Freedom",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/visions-of-freedom-rpg-orchestral-essentials-sad-music",
+      "notes": "反转：仅短暂用于情绪低点，离开对话恢复区域音乐。",
+      "scenes": [
+        "betrayal"
+      ]
+    },
+    "wipe-tears": {
+      "title": "Wipe Away Those Tears",
+      "author": "Jonathan Shaw (www.jshaw.co.uk)",
+      "license": "CC BY 3.0",
+      "source": "https://opengameart.org/content/wipe-away-those-tears-rpg-orchestral-essentials-sad-happy-music",
+      "notes": "最终高潮与和解：情绪释放、重新有希望。",
+      "scenes": [
+        "finale3",
+        "ending"
+      ]
+    }
+  }
+}
