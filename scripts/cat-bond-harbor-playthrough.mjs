@@ -293,17 +293,19 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     await readDialogue('harbor:H-02',comfort?'Comfort Qilan first':'Ask Jiedeng about the old storm');
     await scene('harbor:H-03');
     assert.ok(await page.evaluate(method=>CatBondResonance.view().support.find(x=>x.region==='harbor')?.methods.includes(method),comfort?'navigator-trust':'keeper-trust'),'H-02 choice grants distinct persistent resident support');
-    await button('Inspect the ebb marks · 1/2').waitFor();
-    await tapLandmark(.82,.45);
+    // Use the exposed actual quest action; it walks to the landmark and records the same evidence.
+    await button('Inspect the ebb marks · 1/2').click();
+    await page.waitForFunction(()=>!!State.S.resonanceExploration.interactions['harbor:H-03:tide:0']);
     await button('Find the dry steps · 2/2').waitFor();
     await shot('harbor-ebb-marks');
-    await tapLandmark(.80,.682);
+    await button('Find the dry steps · 2/2').click();
+    await page.waitForFunction(()=>!!State.S.resonanceExploration.interactions['harbor:H-03:tide:1']);
     await button('Tide cave logbook').waitFor();
     await puzzle('Tide cave logbook',['Ebb mark','Dry steps','Logbook chest']);
     await readDialogue('harbor:H-03');
     await scene('harbor:H-04');
     const calibrate=name==='portrait';
-    await tapLandmark(...(calibrate?[.195,.50]:[.16,.60]));
+    await button(calibrate?'Talk to Jiedeng':'Talk to Qilan').click();
     await readDialogue('harbor:H-04',calibrate?'Calibrate the lighthouse first':'Prioritize rescue');
     const rescue=() => puzzle('Storm boat',calibrate?['Secure','Signal','Guide','Guide','Signal']:['Secure','Secure','Signal','Guide','Guide','Signal']);
     const mirrors=() => puzzle('Lighthouse mirrors',['Left mirror','Left mirror','Center mirror','Center mirror','Right mirror']);
@@ -532,6 +534,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     await page.waitForFunction(()=>WorldMap.mode==='region'&&WorldMap.currentRegion==='forge');
     await page.waitForSelector('.rw-forge-region[data-art-ready="true"]');await page.locator('.rw-surface').evaluate(c=>Promise.allSettled(c.parentElement.getAnimations().map(a=>a.finished)));const forgeRect=await page.locator('.rw-shell').boundingBox();assert(forgeRect&&forgeRect.y>=0&&forgeRect.y+forgeRect.height<=options.viewport.height+1,'Forge painting fully visible');await shot('forge-silent');
     await ship('forge','Cooling water and herbs');
+    await puzzle('Workshop · Build a safe lantern',['Fit frame','Fit relief valve','Light safely']);
     await button('Talk to Xiaomao').click();
     await readForgeDialogue('forge:E-01');await scene('forge:E-02');
     await button('Recover the frame · 1/3').click();
@@ -540,10 +543,10 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
     await scene('forge:E-02');
     if(await button('Emberforge City').isVisible())await button('Emberforge City').click();
-    await tapLandmark(.35,.58);await button('Recover the relief valve · 3/3').waitFor();
-    await tapLandmark(.44,.50);await button('Safety blueprint').waitFor();
+    await button('Recover the old pipe · 2/3').click();await button('Recover the relief valve · 3/3').waitFor();
+    await button('Recover the relief valve · 3/3').click();await button('Safety blueprint').waitFor();
     await puzzle('Safety blueprint',['Frame','Pipes','Valve']);
-    const forgeChoice=name==='portrait'?'Let Jinpo speak to the workers first':'Publish the accident record now';
+    const forgeChoice=name==='portrait'?'Let Jinpo explain to the workers first':'Publish verified safety findings now';
     await readForgeDialogue('forge:E-02',forgeChoice);await scene('forge:E-03');
     await button('Continue story').click();await readForgeDialogue('forge:E-03');
     await puzzle('Furnace controls',['Heat','Heat','Heat','Heat','Vent','Vent','Vent']);
