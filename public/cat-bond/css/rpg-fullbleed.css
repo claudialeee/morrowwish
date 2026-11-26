@@ -107,3 +107,21 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage #cb-leisure iframe{width:100%;flex:1;min-height:0;border:0}
 #stage #panel .first-capture-rewards .capture-detail-hint::after{content:attr(data-collapsed);font-size:12px}
 #stage #panel .first-capture-rewards[open] .capture-detail-hint::after{content:attr(data-open);font-size:12px}
+
+/* Quest panel: current objective, main actions, then optional exploration. */
+#stage .rw-world .rw-fit-rail .rw-camera-controls[hidden]{display:none!important}
+#stage .rw-world .rw-fit-rail .rw-objective{display:grid!important;grid-template-columns:minmax(0,1fr);gap:8px;padding:12px!important}
+#stage .rw-world .rw-fit-rail .rw-current{gap:5px}
+#stage .rw-world .rw-fit-rail .rw-current strong{font-size:clamp(18px,2vw,23px)!important;line-height:1.25}
+#stage .rw-world .rw-fit-rail .rw-next-label{margin-top:6px;font-size:12px!important;font-weight:700;color:#806135!important;letter-spacing:0}
+#stage .rw-world .rw-fit-rail .rw-next{font-size:clamp(15px,1.6vw,18px)!important;line-height:1.5;color:#493e2b!important;white-space:normal}
+#stage .rw-world .rw-fit-rail .rw-quest-progress{border-top:1px solid #d6c3a3;padding-top:7px;color:#786249;font-size:12px}
+#stage .rw-world .rw-fit-rail .rw-quest-progress summary,#stage .rw-world .rw-fit-rail .rw-optional-actions summary{cursor:pointer;padding:5px 0;font-weight:700}
+#stage .rw-world .rw-fit-rail .rw-world-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+#stage .rw-world .rw-fit-rail .rw-action-heading,#stage .rw-world .rw-fit-rail .rw-optional-actions{grid-column:1/-1}
+#stage .rw-world .rw-fit-rail .rw-action-heading{font-size:14px;color:#72552f;padding:4px 2px}
+#stage .rw-world .rw-fit-rail .rw-world-actions [data-quest-primary]{background:#ead4a4!important;border-color:#b08a4d!important;font-weight:700}
+#stage .rw-world .rw-fit-rail .rw-optional-actions{border-top:1px solid #d6c3a3;color:#786249;padding:5px 0}
+#stage .rw-world .rw-fit-rail .rw-optional-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px}
+#stage .rw-world .rw-fit-rail .rw-optional-grid .rw-button{white-space:normal;min-width:0}
+#stage .res-ambient-dismiss{margin-inline-start:8px;background:transparent!important;color:#786249!important}
