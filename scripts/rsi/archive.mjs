@@ -8,12 +8,18 @@
 // spots. Zero extra simulation cost: descriptors are read from metrics evaluate() ALREADY emits.
 //
 // Behavior descriptors (each binned to a small grid from existing per-scenario `.raw`/`.norm`):
-//   • engage  — how close it fights      (posPct: higher = stays engaged/close)
-//   • tempo   — how fast it acts/kills   (actsPct or 1/timeToKill proxy)
-//   • durability — how much HP it keeps  (hpFracLeft)
+//   • engage     — how close it fights      (posPct: higher = stays engaged/close)
+//   • tempo      — how fast it acts/kills   (actsPct or 1/timeToKill proxy)
+//   • durability — how much HP it keeps     (hpFracLeft)
+//   • efficiency — how much it WHIFFS       (1 - negatedPct/100; low whiff = right side)
 // Elite per cell = highest judge score. Pure data; no deps; JSON-serializable.
+//
+// UPGRADE (owner: "都升级"): added 4th descriptor `efficiency` so niches separate
+// "high-output-but-whiffy" from "tight-and-clean" — prior 3D grid had 2/64 filled
+// for 15+ cycles because rules kept colliding in the same engage×tempo×durability
+// cell. 4D × 4 bins = 256 cells; more room for diverse elites.
 
-const BINS = 4;                                   // 4×4×4 = 64 cells — small, legible, enough spread
+const BINS = 4;                                   // 4⁴ = 256 cells — still legible, much more room
 const clamp01 = x => (x < 0 ? 0 : x > 1 ? 1 : x);
 const bin = x => Math.min(BINS - 1, Math.max(0, Math.floor(clamp01(x) * BINS)));
 
@@ -29,7 +35,9 @@ function descriptor(result) {
     : Number.isFinite(raw.timeToKill) ? clamp01(1 - raw.timeToKill / 20) : 0.5;
   const durability = Number.isFinite(norm.survival) ? norm.survival
     : Number.isFinite(raw.hpFracLeft) ? raw.hpFracLeft : 0.5;
-  return { engage, tempo, durability };
+  const efficiency = Number.isFinite(norm.efficiency) ? norm.efficiency
+    : Number.isFinite(raw.negatedPct) ? clamp01(1 - raw.negatedPct / 100) : 0.5;
+  return { engage, tempo, durability, efficiency };
 }
 
 export function makeArchive() {
@@ -39,7 +47,7 @@ export function makeArchive() {
     add(result, score, candidate, label) {
       if (!Number.isFinite(score)) return false;
       const d = descriptor(result);
-      const key = `${bin(d.engage)},${bin(d.tempo)},${bin(d.durability)}`;
+      const key = `${bin(d.engage)},${bin(d.tempo)},${bin(d.durability)},${bin(d.efficiency)}`;
       const cur = cells.get(key);
       if (!cur || score > cur.score) {
         cells.set(key, { key, descriptor: d, score, candidate, label: label || (candidate && candidate.id) || '?' });
@@ -51,10 +59,11 @@ export function makeArchive() {
     summary() {
       const elites = [...cells.values()].sort((a, b) => b.score - a.score);
       return {
-        coverage: cells.size, grid: `${BINS}x${BINS}x${BINS}`, maxCells: BINS ** 3,
+        coverage: cells.size, grid: `${BINS}x${BINS}x${BINS}x${BINS}`, maxCells: BINS ** 4,
         best: elites[0] || null,
         elites: elites.map(e => ({ cell: e.key, score: +e.score.toFixed(4), label: e.label, descriptor: {
           engage: +e.descriptor.engage.toFixed(2), tempo: +e.descriptor.tempo.toFixed(2), durability: +e.descriptor.durability.toFixed(2),
+          efficiency: +(e.descriptor.efficiency ?? 0).toFixed(2),
         }, candidate: e.candidate })),
       };
     },

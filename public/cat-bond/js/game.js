@@ -1829,7 +1829,12 @@ class Game {
         .filter(sk => sk && (sk.ultCost || 0) === 0)  // non-ult skills; ults self-assign via SIGNATURE_SKILL
         .map(sk => sk.id);
       for (const c of S.S.cats) {
-        c.level = 50;
+        // Reset to baseline, then simulate 49 level-ups via the real addXp growth
+        // formula so stats match a legit Lv50 run. Owner 2026-11-26 "我都是50级" —
+        // the previous flat stats=base×statMul×1.15×1.5 gave Lv1-shaped stats with
+        // a 50 label, which is why basic-raw dmg was ~15-35 while a real Lv50 wild
+        // cat hit for raw 94-120 (SR @ Lv50 base formula).
+        c.level = 1;
         c.xp = 0;
         c.affinity = 100;
         c.hunger = 100;
@@ -1837,17 +1842,19 @@ class Game {
         c.stage = 2;              // 灵 (awakened)
         if (!c.awaken) c.awaken = 'pow';
         c.battlesWon = Math.max(c.battlesWon || 0, 99);
-        // Stat jitter max via re-roll (cap)
+        // Reset to breed base-stats so addXp's statGrowth builds from the authored
+        // starting point rather than wherever the cat currently sits.
         const sp = GD.speciesById(c.species);
         if (sp && sp.base) {
-          const rar = GD.RARITY[sp.rarity];
-          const jMul = 1.15;    // top of the 0.85..1.15 jitter band
-          c.stats = {
-            pow: Math.round(sp.base.pow * rar.statMul * jMul * 1.5),
-            agi: Math.round(sp.base.agi * rar.statMul * jMul * 1.5),
-            vit: Math.round(sp.base.vit * rar.statMul * jMul * 1.5),
-            cha: Math.round(sp.base.cha * rar.statMul * jMul * 1.5),
-          };
+          c.stats = { pow: sp.base.pow, agi: sp.base.agi, vit: sp.base.vit, cha: sp.base.cha };
+          c._gacc = { pow:0, agi:0, vit:0, cha:0 };
+          // Grant exactly 49 level-ups through addXp so per-level growth accumulates
+          // with its rarity×breed profile (≈5.5 × statMul × identity share per level).
+          for (let i = 0; i < 49; i++) {
+            try { S.addXp(c, S.xpToNext(c.level)); } catch (_) { c.level = Math.min(50, c.level + 1); }
+          }
+        } else {
+          c.level = 50;
         }
         // Grant every non-ult skill as 'learned' (gates willbe re-checked by ensureLoadout).
         c.learned = allLearnable.slice();

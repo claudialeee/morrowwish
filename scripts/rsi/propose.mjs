@@ -54,13 +54,17 @@ import pathMod from 'node:path';
 const ARCHIVE = makeArchive();
 
 // ============================================================================================
-// OPERATING POINT. The evaluator's live/multi scenarios are a RELATIVE signal vs a chosen enemy
-// (see its "HONEST LIMITATIONS" header). We pin a single, documented, moderately-threatening
-// enemy so every candidate is judged under IDENTICAL conditions, and so survival/multi actually
-// DISCRIMINATE (a too-weak enemy makes everyone survive; a too-strong one makes everyone die).
-// hp:1100 dmg:130 over ~29 sim-seconds is the point where positioning RULES visibly separate.
+// OPERATING POINTS (owner upgrade 2026-11-26 "都升级"). Previously a single pinned enemy meant a
+// rule could over-fit one difficulty slot and the passive control could hide behind one soft
+// matchup. We now sweep TWO operating points — a moderate fight (the historical setting) and a
+// harder fight — and SUM each candidate's judge score across both. A rule that wins only one setup
+// cannot game the sweep; the deliberately-bad "stand at max range" control falls out of the top on
+// the harder point because it can't actually win the fight once the enemy hits harder.
 // ============================================================================================
-const ENEMY = { species: 'doudou', hp: 1100, dmg: 130 };
+const ENEMIES = [
+  { species: 'doudou', hp: 1100, dmg: 130 },   // moderate (original pin — kept so history numbers stay comparable)
+  { species: 'doudou', hp: 2400, dmg: 280 },   // hard — dmg high enough that standing still loses survival/win
+];
 const CAT = {
   build: 'fighter', stats: { pow: 90, agi: 80, vit: 130, cha: 60 },
   loadout: { q: { kind: 'melee', power: 1.4, cd: 1.1 }, e: { kind: 'projectile', power: 1.1, cd: 1.0 } },
@@ -87,8 +91,8 @@ const EVAL_OPTS = { seeds: [7, 42, 101], frames: 1800, scenarios: ['solo-pinned'
 // A candidate is thus EITHER "a new positioning rule" (set `band`) OR "a new reward model"
 // (set `rewardModel`) — or both. Both are scored by the SAME evaluator, so they are comparable.
 // ============================================================================================
-function toConfig(candidate) {
-  const cfg = { cat: { ...CAT, ...(candidate.config?.cat || {}) }, enemy: { ...ENEMY, ...(candidate.config?.enemy || {}) }, ai: {} };
+function toConfig(candidate, enemy) {
+  const cfg = { cat: { ...CAT, ...(candidate.config?.cat || {}) }, enemy: { ...enemy, ...(candidate.config?.enemy || {}) }, ai: {} };
   if (candidate.band) cfg.ai.band = candidate.band;
   if (candidate.frozen) cfg.ai.frozen = true;
   return cfg;
@@ -165,6 +169,7 @@ function mobaGroundTruthJudge(result, ctx) {
   const live  = result.perScenario['solo-live']?.norm   || {};
   const multi = result.perScenario['multi']?.norm       || {};
   const pin   = result.perScenario['solo-pinned']?.norm || {};
+  const pinRaw = result.perScenario['solo-pinned']?.raw || {};
   const mean = (...xs) => { const v = xs.filter(x => Number.isFinite(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0; };
   const wmean = (a, wA, b, wB) => { let s = 0, w = 0; if (Number.isFinite(a)) { s += a * wA; w += wA; } if (Number.isFinite(b)) { s += b * wB; w += wB; } return w > 0 ? s / w : 0; };
   const rubric = {
@@ -176,7 +181,22 @@ function mobaGroundTruthJudge(result, ctx) {
     speed: mean(live.speed, multi.speed),
   };
   const WEIGHTS = { win: 0.30, survival: 0.26, output: 0.18, efficiency: 0.12, positioning: 0.08, speed: 0.06 };
-  const score = ctx.weightedSum(rubric, WEIGHTS);
+  let score = ctx.weightedSum(rubric, WEIGHTS);
+  // UPGRADE 2026-11-26 "都升级": passive-kite PENALTY.
+  // The prior rubric let a stand-at-max-range control win because perfect survival + win in
+  // the live/multi scenarios (enemy couldn't reach it) outweighed its low positioning. The
+  // real tell for "refuses to fight" is the PIN scenario: pinned enemy can't run, so any
+  // candidate that still posts low pin OUTPUT is kiting-not-fighting. Subtract a term keyed
+  // on that failure mode: scales with (1-output) × (1-positioning) on the pin, floored at 0.
+  const pinOut = Number.isFinite(pin.output) ? pin.output : 0;
+  const pinPos = Number.isFinite(pin.positioning) ? pin.positioning
+    : (Number.isFinite(pinRaw.posPct) ? pinRaw.posPct / 100 : 0.5);
+  // Scaled relative to baseline's own numbers so this doesn't drift as the engine tunes:
+  // baseline pin pos ≈ 1.0, pin output ≈ 0.6-0.9. A kite with pin pos 0.62 and pin output ~0.4
+  // is PROFOUNDLY not fighting; penalty kicks in sharply. A legit melee rule sits at pos≈1, out≥0.6
+  // so (1-pos)×(1-out) ≈ 0 for it — only kite-shaped candidates are penalized.
+  const passiveKitePenalty = Math.max(0, (1.0 - pinPos)) * Math.max(0, (0.7 - pinOut));
+  score -= 1.2 * passiveKitePenalty;
   return Number.isFinite(score) ? score : 0;
 }
 
@@ -237,8 +257,8 @@ const CANDIDATES = [
     kind: 'control',
     rationale:
       'Deliberately-BAD structural proposal. Parks the cat at 300–340px and never closes — a ' +
-      'melee fighter that refuses to fight. MUST rank LAST: it cannot clear the 3-pack and stalls ' +
-      'output. Proves the harness punishes a plausible-looking-but-wrong rule, not just a crash.',
+      'melee fighter that refuses to fight. MUST rank BELOW baseline: it cannot clear the 3-pack ' +
+      'and stalls output. Proves the harness punishes a plausible-looking-but-wrong rule.',
     band: (f) => ({ min: 300, max: 340, rush: 300, role: 'ranged', hp: f.hp / f.maxhp }),
   },
 ];
@@ -290,18 +310,29 @@ const REWARD_CANDIDATE = {
 
 // ============================================================================================
 // PIPELINE — evaluate → score(baseline + judge) → rank → print.
+// UPGRADE 2026-11-26 "都升级": sweep across OPERATING POINTS (multiple enemy configs) and average
+// the judge score per candidate, so a candidate cannot win by over-fitting a single pin.
 // ============================================================================================
 function runCandidate(candidate) {
-  const config = toConfig(candidate);
-  const result = evaluate(config, EVAL_OPTS);
-  const scoreJudge = scoreConfig(result, JUDGE);    // MOBA ground-truth proxy — the selection signal
-  // Feed the behavior archive (zero extra sim cost — reads metrics already in `result`).
-  ARCHIVE.add(result, scoreJudge, candidate, candidate.id || candidate.label);
+  const perPoint = ENEMIES.map(enemy => {
+    const config = toConfig(candidate, enemy);
+    const result = evaluate(config, EVAL_OPTS);
+    const scoreJudge = scoreConfig(result, JUDGE);
+    const scoreBaseline = scoreConfig(result);
+    return { enemy, result, scoreJudge, scoreBaseline };
+  });
+  const scoreJudge = perPoint.reduce((s, p) => s + p.scoreJudge, 0) / perPoint.length;
+  const scoreBaseline = perPoint.reduce((s, p) => s + p.scoreBaseline, 0) / perPoint.length;
+  // Feed the archive using the moderate operating point's result — descriptors should reflect
+  // a consistent fight, not an average of two. Using the first (moderate) point keeps the
+  // behavior-space meaning stable across cycles.
+  ARCHIVE.add(perPoint[0].result, scoreJudge, candidate, candidate.id || candidate.label);
   return {
     candidate,
-    result,
-    scoreBaseline: scoreConfig(result),             // engine's own DEFAULT_WEIGHTS weighted sum
-    scoreJudge,                                      // external-ground-truth proxy (mobaGroundTruthJudge)
+    result: perPoint[0].result,       // the moderate-enemy result is kept for the per-scenario detail print
+    perPoint,
+    scoreBaseline,
+    scoreJudge,
   };
 }
 
@@ -321,8 +352,8 @@ function main() {
   out.push('');
   out.push('================================================================================');
   out.push('  Cat Bond RSI PROPOSER — structural-rule proposals ranked by the ground-truth judge');
-  out.push(`  operating point: enemy ${JSON.stringify(ENEMY)}   seeds ${JSON.stringify(EVAL_OPTS.seeds)}   frames ${EVAL_OPTS.frames}`);
-  out.push(`  scenarios: ${EVAL_OPTS.scenarios.join(' / ')}`);
+  out.push(`  operating points (averaged): ${ENEMIES.map(e => `${e.species} hp:${e.hp} dmg:${e.dmg}`).join(' | ')}`);
+  out.push(`  seeds ${JSON.stringify(EVAL_OPTS.seeds)}   frames ${EVAL_OPTS.frames}   scenarios: ${EVAL_OPTS.scenarios.join(' / ')}`);
   out.push('================================================================================');
   out.push('');
   out.push('  RANK  CANDIDATE                           JUDGE   BASELINE   KIND');
@@ -357,31 +388,43 @@ function main() {
   // ============================================================================================
   const winner = rows[0];
   const beatBaselineOnJudge = winner.candidate.id !== 'baseline' && winner.scoreJudge > baselineRow.scoreJudge + 1e-6;
-  const control = rows.find(r => r.candidate.kind === 'control');
-  // The control's job is to prove the judge ISN'T fooled by an obviously-passive strategy: it must
-  // rank BELOW the baseline and never win. It need NOT be dead-last — a weak genuine proposal can
-  // legitimately score under the passive kiter at some operating points (that's real signal, not a
-  // judge failure). Requiring strict last place was brittle once the agent proposer adds candidates.
-  const controlRank = rows.findIndex(r => r.candidate.id === control?.candidate.id);
+  // UPGRADED 2026-11-26 "都升级": TWO controls now — judge is only passing if BOTH score below
+  // baseline on the swept average. One control covering a single failure mode left passive
+  // strategies gaming the judge; a second covering incoherent movement closes that hole.
+  const controls = rows.filter(r => r.candidate.kind === 'control');
   const baselineRank = rows.findIndex(r => r.candidate.id === 'baseline');
-  const controlIsLast = control ? (controlRank > baselineRank && rows[0].candidate.id !== control.candidate.id) : true;
+  const failedControls = controls.filter(c => {
+    const rank = rows.findIndex(r => r.candidate.id === c.candidate.id);
+    const rankOK = rank > baselineRank;                              // must be below baseline
+    const notWinning = rows[0].candidate.id !== c.candidate.id;      // must never top the leaderboard
+    const belowBaselineScore = c.scoreJudge <= baselineRow.scoreJudge; // belt-and-suspenders
+    return !(rankOK && notWinning && belowBaselineScore);
+  });
+  const controlIsLast = failedControls.length === 0;
 
   out.push('');
   out.push('  ================================ VERDICT ================================');
   if (beatBaselineOnJudge) {
-    const bestRuleMulti = bestRuleRow.result.perScenario['multi'];
+    const winMulti = winner.result.perScenario['multi'];
     const baseMulti = baselineRow.result.perScenario['multi'];
     out.push(`  WINNER: '${winner.candidate.id}' BEATS the tuned engine default on the ground-truth judge`);
-    out.push(`    (${winner.scoreJudge.toFixed(3)} vs baseline ${baselineRow.scoreJudge.toFixed(3)}; and on engine baseline ${winner.scoreBaseline.toFixed(3)} vs ${baselineRow.scoreBaseline.toFixed(3)}).`);
-    out.push(`    WHY: chiefly MULTI-ENEMY survival + speed — multi hp% ${pct(bestRuleMulti.hpFracLeft)} vs ${pct(baseMulti.hpFracLeft)},`);
-    out.push(`    multi ttk ${bestRuleMulti.timeToKill.toFixed(1)}s vs ${baseMulti.timeToKill.toFixed(1)}s. The cooldown-aware band clears the 3-pack`);
-    out.push('    faster and takes fewer free hits — a STRUCTURAL edge a flat distance sweep cannot find.');
+    out.push(`    (${winner.scoreJudge.toFixed(3)} vs baseline ${baselineRow.scoreJudge.toFixed(3)}, swept across ${ENEMIES.length} operating points;`);
+    out.push(`    engine baseline ${winner.scoreBaseline.toFixed(3)} vs ${baselineRow.scoreBaseline.toFixed(3)}).`);
+    if (winMulti && baseMulti) {
+      out.push(`    WHY (moderate point, multi-enemy): hp% ${pct(winMulti.hpFracLeft)} vs ${pct(baseMulti.hpFracLeft)}, ttk ${winMulti.timeToKill.toFixed(1)}s vs ${baseMulti.timeToKill.toFixed(1)}s.`);
+    }
   } else {
-    out.push('  HONEST RESULT: no structural proposal beat the tuned engine default on the judge at this');
-    out.push(`    operating point (baseline judge ${baselineRow.scoreJudge.toFixed(3)} is top). The shipped kitRangeBand is well-tuned.`);
+    out.push('  HONEST RESULT: no structural proposal beat the tuned engine default on the swept judge.');
+    out.push(`    (baseline judge ${baselineRow.scoreJudge.toFixed(3)} is top across ${ENEMIES.length} operating points.) The shipped kitRangeBand is well-tuned.`);
   }
-  out.push(`  CONTROL CHECK: '${control?.candidate.id}' (deliberately bad) ranked ${controlIsLast ? 'below baseline & never won — OK' : 'ABOVE baseline or WON — INVESTIGATE'} ` +
-    `(judge ${control?.scoreJudge.toFixed(3)} vs baseline ${baselineRow.scoreJudge.toFixed(3)}).`);
+  out.push(`  CONTROL CHECK: ${controls.length} deliberately-bad controls; ` +
+    `${controlIsLast ? 'all below baseline — OK' : `${failedControls.length} FAILED (ranked at/above baseline)`}:`);
+  controls.forEach(c => {
+    const rank = rows.findIndex(r => r.candidate.id === c.candidate.id);
+    const pass = !failedControls.includes(c);
+    out.push(`    - '${c.candidate.id}' judge ${c.scoreJudge.toFixed(3)} rank ${rank + 1}/${rows.length}  ${pass ? '✓' : '✗'}`);
+  });
+  out.push(`    baseline judge ${baselineRow.scoreJudge.toFixed(3)} rank ${baselineRank + 1}/${rows.length}`);
   out.push('  =========================================================================');
   out.push('');
 

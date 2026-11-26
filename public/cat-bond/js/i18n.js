@@ -1106,10 +1106,21 @@
     '舔毛理顺': 'Grooming', '舔伤口': 'Lick Wound', '纸箱埋伏': 'Box Ambush', '疯跑冲刺': 'Zoomies',
     '炸毛墙': 'Startle Static', '戏弄爪': 'Bat-Around', '居高临下': 'High Ground',
     '咒波三连': 'Hex Triwave', '暗星轰击': 'Umbral Barrage', '潮波三叠': 'Tide Triwave', '月华连弧': 'Crescent Fan',
+    '月华·蓄势': 'Crescent · Charging',
     '踏月之猫的招牌：一次挥出五道追踪月牙能量波，各自咬向最近目标。':
       'Luna\'s signature — releases five crescent-moon waves at once, each homing onto the nearest target.',
     '踏月之猫的招牌：一道道月牙能量波沿施放方向直线挥出。':
       'Luna\'s signature — five crescent-moon waves release one at a time along the cast direction, flying straight.',
+    '踏月之猫的招牌：周身凝结五道月弧蓄势2.5秒，而后每隔1.5秒逐一射出，锁敌之后由慢渐快，无视射程。':
+      'Luna\'s signature — five moon arcs coalesce around her for 2.5s, then launch one every 1.5s, locking the nearest foe and accelerating without range limit.',
+    '踏月之猫的招牌：周身凝结五道月弧扇向目标蓄势2.5秒，而后每隔0.3秒逐一射出，锁敌之后由慢渐快，无视射程。':
+      'Luna\'s signature — five moon arcs fan toward the target over 2.5s (she holds still), then launch one every 0.3s, re-locking the nearest foe and accelerating without range limit.',
+    '踏月之猫的招牌：周身凝结五道月弧扇向目标蓄势2.5秒，而后每隔0.55秒逐一射出，锁敌之后由慢渐快，无视射程。':
+      'Luna\'s signature — five moon arcs fan toward the target over 2.5s (she holds still), then launch one every 0.55s, re-locking the nearest foe and accelerating without range limit.',
+    '踏月之猫的招牌：月月头顶凝结月弧蓄势2.5秒，而后每隔0.55秒逐一射出三道，锁敌之后由慢渐快，无视射程。':
+      'Luna\'s signature — a moon arc coalesces above her for 2.5s (she holds still), then launches three in a row every 0.55s, re-locking the nearest foe and accelerating without range limit.',
+    '踏月之猫的招牌：月月头顶凝结月弧蓄势2.5秒，而后每隔0.45秒逐一射出三道，锁敌之后由慢渐快，无视射程。':
+      'Luna\'s signature — a moon arc coalesces above her for 2.5s (she holds still), then launches three in a row every 0.45s, re-locking the nearest foe and accelerating without range limit.',
     '向锁定地面连续抛射三颗暗星能量弹，落地小范围爆裂；落点固定，不追踪。暗系输出专属。': 'Lob three dark-star energy spheres at a fixed ground area. Each explodes on landing, with no homing. Dark DPS only.',
     '蓄一发按出三连暗波：每 0.35 秒一发自动追击当下最近的敌人，不必一次放完。':
       'Hold one cast, release three dark waves — one every 0.35s auto-homes at the nearest enemy, so you don\'t burn it all at once.',

@@ -104,6 +104,10 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
             <button class="btn ghost tiny-btn battle-help-trigger" id="battle-help-toggle" type="button" aria-label="查看手动战斗操作说明" aria-expanded="false" title="查看战斗操作说明">?<span class="battle-top-label"> 操作</span></button>
             <button class="btn ghost tiny-btn" id="btn-auto" type="button" aria-pressed="false" title="自动控制移动、攻击、技能及闪避">🤖 自动战斗：关</button>
             <button class="btn ghost tiny-btn" id="btn-flee" title="撤退">🏳️<span class="battle-top-label"> 撤退</span></button>
+            <!-- DEBUG: battle damage-log recorder — only revealed when ?debug=1 (game.js
+                 reads battle._debugAvailable to toggle hidden). First click = start recording;
+                 second = copy to clipboard. Owner 2026-11-26: "记录战斗数据的按钮". -->
+            <button class="btn ghost tiny-btn" id="btn-debug" type="button" aria-pressed="false" title="DEBUG: record this fight's damage log (?debug=1 only)" hidden>🐛<span class="battle-top-label"> 记录</span></button>
           </div>
         </div>
         <div class="battle-hint" id="battle-hint">WASD 移动 · 鼠标瞄准 · 左键攻击 · 空格键闪避</div>
@@ -206,7 +210,7 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
   <script src="js/real-kittens.js?v=jiafei-approved-flatface-20261122-v4"></script>
   <script src="js/data.js?v=jiafei-sr-20261122-v2"></script>
   <script src="js/running-cats.js?v=seamless-illustrated-sprites-20261120"></script>
-  <script src="js/skills.js?v=umbral-barrage-20261126"></script>
+  <script src="js/skills.js?v=merge-crescent-umbral-20261126"></script>
   <script src="js/growth.js?v=growth-feature-retired-20261122"></script>
   <script src="js/adult-art.js?v=compact-grown-proportions-20261122"></script>
   <script src="js/state.js?v=expedition-hp-recovery-20261122-1"></script>
@@ -226,18 +230,18 @@ html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-ac
   <script src="js/duo-hero.js?v=original-63-only-20261123-v1"></script>
   <script src="js/ult-vfx.js?v=resolve-script-conflict-20261126"></script>
   <script src="js/magnetic-fx.js?v=resolve-script-conflict-20261126"></script>
-  <script src="js/skill-fx.js?v=umbral-barrage-20261126"></script>
+  <script src="js/skill-fx.js?v=merge-crescent-umbral-20261126"></script>
   <script src="js/traits.js?v=resolve-script-conflict-20261126"></script>
-  <script src="js/moon-fx.js?v=luminous-moon-20261126"></script>
+  <script src="js/moon-fx.js?v=merge-luminous-overhead-20261126"></script>
   <script src="js/trait-fx.js?v=resolve-script-conflict-20261126"></script>
-  <script src="js/battle.js?v=umbral-barrage-20261126"></script>
+  <script src="js/battle.js?v=debug-cast-attempt-20261126"></script>
   <script src="js/duo-bond.js?v=original-63-paintings-live-20261122-r1"></script>
-  <script src="js/ui.js?v=debug-unlock-20261126"></script>
-  <script src="js/game.js?v=debug-unlock-20261126"></script>
+  <script src="js/ui.js?v=debug-unlock-reveal-race-20261126"></script>
+  <script src="js/game.js?v=debug-unlock-real-lv50-stats-20261126"></script>
   <script src="js/main.js?v=cg-intro-safe-reset-20261123-v9"></script>
   <script src="js/gold-coins.js?v=gold-i18n-coordination-20261123-v2"></script>
   <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
-  <script src="js/i18n.js?v=umbral-barrage-20261126"></script>
+  <script src="js/i18n.js?v=merge-crescent-umbral-20261126"></script>
   <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
   <script src="/telemetry.js?v=bond-funnel-v11-20261122" defer></script>
 <script src="/game-fullscreen.js?v=skills-in-controls-20261122-v1" defer></script><script src="/game-settings.js?v=full-share-yarn-20261121-2" defer></script></body>

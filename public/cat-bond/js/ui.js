@@ -30,12 +30,28 @@ const UI = {
     document.getElementById('fab-build')?.addEventListener('click', () => { if (this.game.scene === 'yard') this.openBuild(); });
     // DEBUG unlock-all (?debug=1 only): grants every species, max-level, all skills learned,
     // full affinity + unlocked worldmap regions. For gauging high-level combat feel.
+    // Owner 2026-11-26 "我现在就在 debug=1 然后看不见" — the one-shot reveal lost to a race
+    // when the yard dock was swapped (cloud-save / fullscreen remount). Fix: compute debugOn
+    // once, bind a click handler, AND wire a reveal pass that re-runs whenever yard-actions
+    // gets re-rendered (MutationObserver + body-level selector).
+    let debugOn = false;
+    try { debugOn = new URLSearchParams(location.search).get('debug') === '1'; } catch (_) {}
+    const revealDebugFab = () => {
+      if (!debugOn) return;
+      // The FAB may have been re-created by a remount — query every pass.
+      const btn = document.getElementById('fab-debug-unlock');
+      if (btn && btn.hidden) { btn.hidden = false; btn.removeAttribute('hidden'); }
+    };
+    revealDebugFab();
     const fabDebug = document.getElementById('fab-debug-unlock');
-    try {
-      const debugOn = new URLSearchParams(location.search).get('debug') === '1';
-      if (fabDebug && debugOn) fabDebug.hidden = false;
-    } catch (_) {}
     if (fabDebug) fabDebug.addEventListener('click', () => this.game.debugUnlockEverything?.());
+    // Re-reveal on any DOM mutation under yard-actions (survives cloud-save + fullscreen remount).
+    if (debugOn && typeof MutationObserver === 'function') {
+      try {
+        const host = document.getElementById('yard-actions') || document.body;
+        new MutationObserver(revealDebugFab).observe(host, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
+      } catch (_) {}
+    }
     const fabMap = document.getElementById('fab-map');
     if (fabMap) fabMap.addEventListener('click', () => { if (this.game.scene === 'yard') this.game.openWorldMap(); });
     // battle buttons

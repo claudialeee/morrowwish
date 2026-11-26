@@ -15,6 +15,31 @@ const PERSONAS = (args && args.personas) || ['masher','cautious','explorer','pan
 const BATTLES = (args && args.battles) || 8;
 const ROUNDS = (args && args.rounds) || 1;
 
+// UPGRADE 2026-11-26 "都升级": fetch recent P0 titles from playtest-log.md so the adversary
+// stops re-proposing the same 5 structural ideas every cycle. The adversary prompt will tell
+// each critic what has already been seen and raised — forcing fresh observations or escalating
+// repeats into a different fix-shape. Also: seed each round from the current RSI_STAMP (or
+// wall-clock epoch minute) so different cron runs explore different battle dice — without
+// RSI_STAMP, identical cycle → identical sim → same findings forever.
+async function fetchRecentP0Titles() {
+  const result = await agent(
+    'Run EXACTLY this shell command and return ONLY the raw stdout lines (no commentary):\n\n'+
+    'grep -E "^- \\*\\*P0[- ][0-9]*[^*]*[\\*\\`]" /Users/jxianhua/morrowish/morrowwish/playtest-log.md | tail -10\n\n'+
+    'Return the matched lines verbatim as a single string.',
+    { label: 'fetch-recent-p0', phase: 'Simulate',
+      schema: { type: 'object', additionalProperties: false, properties: {
+        lines: { type: 'string', description: 'raw stdout from grep, newline-separated P0 title lines' }
+      }, required: ['lines'] } }
+  );
+  return (result && result.lines) || '';
+}
+const RECENT_P0_TITLES = await fetchRecentP0Titles();
+log(`Loaded recent-P0 echo-suppression context (${RECENT_P0_TITLES.split('\n').filter(Boolean).length} prior P0 titles)`);
+// Accept an optional seed salt from the cron caller — passing args.seed advances the variance,
+// so each cron run explores a different set of battle dice. Falls back to 0 (prior behavior) if
+// no seed arg is passed, preserving reproducibility when the caller wants it.
+const SEED_SALT = Number.isFinite(args && args.seed) ? ((args.seed | 0) & 0xffff) : 0;
+
 // A persona always reports what it felt AND at least one thing it wishes were
 // better — even a happy player has an opinion. painPoints may be empty, but
 // `wishes` must not be: we want proactive critique every run.
@@ -42,6 +67,14 @@ const VOICE_SCHEMA = {
 // The adversary is a DESIGN CRITIC, not a gate. For EVERY observation (pain or
 // wish) it must return a concrete, graded improvement — it may downgrade a weak
 // point to low priority, but it never discards: it always proposes something.
+//
+// UPGRADE 2026-11-26 "都升级": riskLevel is now a REQUIRED taxonomy so the cron
+// can promote not just `local-numeric` P0s but also `additive-feature-flag` P0s
+// (adding a new field + consumer gated behind a safe default) without touching
+// save format / art / i18n structure / architecture. The old workflow forced the
+// cron into a numeric-only auto-fix bucket, and recent cycles had P0s that were
+// clearly LOW-RISK additive (new VFX tier flag, new consumer field) but still
+// went findings-only because there was no riskLevel signal.
 const CRITIQUE_SCHEMA = {
   type:'object', additionalProperties:false,
   properties:{
@@ -49,8 +82,9 @@ const CRITIQUE_SCHEMA = {
     critique:{type:'string', description:'the adversarial take — what is actually weak or missing, stated bluntly'},
     suggestion:{type:'string', description:'a concrete change: name the file/knob (js/battle.js tempo/dodge/combo/ult, js/skills.js loadouts, enemy AI) and the direction'},
     priority:{type:'string', enum:['P0','P1','P2','P3']},
+    riskLevel:{type:'string', enum:['local-numeric','additive-flag','architectural'], description:'local-numeric = tweak a constant or inline multiplier in one function; additive-flag = add a new field+consumer gated by a safe default (no save format / art / i18n structure / architecture touched); architectural = touches save format OR cloud-save OR art assets OR i18n structure OR cross-system refactor'},
     risk:{type:'string', description:'what this could break or who it could hurt'},
-  }, required:['verdict','critique','suggestion','priority'],
+  }, required:['verdict','critique','suggestion','priority','riskLevel'],
 };
 
 const REVIEW_SCHEMA = {
@@ -75,7 +109,7 @@ let allVoices = [];
 
 for (let round = 1; round <= ROUNDS; round++) {
   phase('Simulate');
-  const seed = 10000 + round * 1000;
+  const seed = 10000 + round * 1000 + SEED_SALT;
   const sims = await parallel(PERSONAS.map(p => () =>
     agent(
       `Run EXACTLY this command from the repo root and return ONLY the JSON it prints (the final JSON object), nothing else:\n\n`+
@@ -114,8 +148,11 @@ for (let round = 1; round <= ROUNDS; round++) {
           `A playtester (persona "${voice.persona}", mood ${voice.mood}, fun ${voice.funRating}/10) raised this ${it.kind}:\n\n`+
           `"${it.issue}"  (basis: ${it.evidence}; area: ${it.area})\n\n`+
           `CONTEXT: a passive-trait system (12 P1 cats) is pending in the design branch — see docs/combat-redesign/BALANCE-BRIEF-passive-p1.md. The current game has NO passives yet. When critiquing, assume the P1 passives will soon land with the numbers in that brief; if your suggestion would collide with a P1 passive (汤圆 storage-strike / 团团 shield-break-freeze / 蓝莓 ice-stack / 松松 big form / 杏仁 move-charge / 桃桃 still-charge / 墨球 ambush / 奥利奥 dash-echo / 圈圈 pull-field / 跳跳 trail-shock / 云朵 heal-link / 绒绒 overheal-armor), SAY SO explicitly and route the suggestion into the passive system instead of a new global knob. `+
+          (RECENT_P0_TITLES ? `\n\nRECENT P0 FINDINGS LOG (do NOT re-propose anything already surfaced here; if the SAME root problem appears, either (a) say nothing is new and downgrade priority, or (b) propose a GENUINELY DIFFERENT fix angle — not the same suggestion in different words):\n${RECENT_P0_TITLES}\n` : '')+
           `Do NOT merely validate or dismiss it. Push it into something ACTIONABLE: state the blunt adversarial critique (what's genuinely weak, shallow, or missing — even if the metrics look fine, name the deeper design gap), then give ONE concrete suggestion naming a specific file/knob and direction. `+
-          `Classify: real-problem / opportunity / works-as-intended / polish, and assign a priority P0–P3. Every review MUST end in a concrete suggestion — there is always something to improve.`,
+          `Classify: real-problem / opportunity / works-as-intended / polish, and assign a priority P0–P3. `+
+          `ALSO REQUIRED — classify your suggestion's riskLevel: 'local-numeric' (one constant / inline multiplier in one function — safest to auto-apply), 'additive-flag' (adds a new field + a consumer gated by a safe default — still safe when scoped to cat-bond and leaving save format / cloud-save / art / i18n structure untouched), or 'architectural' (touches save format / cloud-save / art assets / i18n structure OR requires cross-system refactor). Be honest — mis-classifying architectural as local-numeric will break the game. `+
+          `Every review MUST end in a concrete suggestion — there is always something to improve.`,
           { label:`critic:${voice.persona}:${it.area}`, phase:'Adversary', schema: CRITIQUE_SCHEMA }
         ).then(c => ({ persona:voice.persona, mood:voice.mood, fun:voice.funRating, src:it, critique:c }))
       ));
@@ -152,6 +189,6 @@ return {
   battlesPerPersona: BATTLES,
   critiqueCount: allCritiques.length,
   headline: synth?.headline || '',
-  critiques: allCritiques.map(c => ({ persona:c.persona, verdict:c.critique.verdict, priority:c.critique.priority, critique:c.critique.critique, suggestion:c.critique.suggestion })),
+  critiques: allCritiques.map(c => ({ persona:c.persona, verdict:c.critique.verdict, priority:c.critique.priority, riskLevel:c.critique.riskLevel, critique:c.critique.critique, suggestion:c.critique.suggestion })),
   fixes: synth?.fixes || [],
 };

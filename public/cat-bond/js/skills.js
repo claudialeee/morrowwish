@@ -293,7 +293,7 @@
     // NEAREST enemy at its own release time, so the player can watch the first wave land and
     // the second/third can retarget mid-cast. pulseCount/pulseGap/pulseHoming define the pattern.
     { id:'arcanePulse', name:'暗星轰击', element:'dark', kind:'aoe', power:.78, cd:6.5, ultCost:0, reach:340, lobCount:3, lobGap:.42, lobFlight:.76, lobRadius:46, lobSpread:24, tags:['ranged','lob','salvo'], appliesTag:null, vfx:'umbralLob', allowRoles:['dps'], unlock:{level:5,element:'dark',role:['dps']}, desc:'向锁定地面连续抛射三颗暗星能量弹，落地小范围爆裂；落点固定，不追踪。暗系输出专属。' },
-    { id:'shadowTendrils', name:'暗影触手', element:'dark', kind:'beam', power:.65, cd:8, ultCost:0, channel:1.6, windup:.22, castSlow:.4, reach:240, width:30, statusDuration:.65, tags:['control','bind','channel','ranged'], appliesTag:'bind', vfx:'tendrils', allowRoles:['control'], unlock:{level:6,element:'dark',role:['control']}, desc:'持续喷出多条暗影触手，贯穿前方狭长区域，低伤害压制并短暂束缚敌人。暗系控制专属。' },
+    { id:'shadowTendrils', name:'暗影触手', element:'dark', kind:'beam', power:.65, cd:8, ultCost:0, channel:1.6, windup:.22, castSlow:.4, reach:240, width:30, statusDuration:.65, tags:['control','bind','channel','ranged'], appliesTag:'bind', vfx:'tendrils', allowRoles:['control'], autoLearn:true, unlock:{level:6,element:'dark',role:['control']}, desc:'持续喷出多条暗影触手，贯穿前方狭长区域，低伤害压制并短暂束缚敌人。暗系控制专属。' },
     { id: 'voidMaw',    name: '虚吞',     element: 'dark',  kind: 'aoe',        power: 2.5, cd: 0,   ultCost: 80, tags: ['curse','ult','rewind'],   appliesTag: ['dizzy','rewind'], vfx: 'shockwave', desc: '【必杀】深渊巨口吞噬，时间回溯——将目标斗志拉回数秒前！' },
     // ---- 光 light ----
     { id: 'prismBeam',  name: '棱光束',   element: 'light', kind: 'projectile', power: 1.2, cd: 2.6, ultCost: 0,  tags: ['ranged','blind'],appliesTag: 'blind', vfx: 'beam',      desc: '聚焦光束灼目，可致短暂失明。' },
@@ -328,12 +328,15 @@
     // ---- 品种专属 (breed-locked signature) ----
     { id: 'moonfang',   name: '月噬牙',   element: 'light', kind: 'aoe',        power: 2.6, cd: 0,   ultCost: 70, tags: ['light','ult','weaken'], appliesTag: ['blind','weaken'], vfx: 'ring', desc: '【必杀·品种专属】唯踏月血脉能领悟的月华獠牙，致盲并削弱。', unlock: { species: ['yuelian','xingchen','yinghua'] } },
     // YUELIAN (月月) signature skill — a wide fan of 5 crescent-moon energy waves, each auto-homing.
-    // Species-locked so only 月月 learns it; placed below the Lv8 roster so it reads as a mature
-    // crescent arcana, not an early unlock. Slightly higher per-shot power than the generic swarm
-    // (0.52 vs prism/boltSwarm 0.34) + 5 shots + homing + maxLife 2.6s = roughly single-skill DPS.
-    // Owner 2026-11-26: 月牙 moonblade MUST NOT home (直线挥出, 索隆月牙天冲式).
-    // pulseHoming removed; each wave flies straight along the caster's aim at release.
-    { id: 'crescentFan', name: '月华连弧', element: 'light', kind: 'projectile', power: 0.52, cd: 5.6, ultCost: 0, pulseCount: 5, pulseGap: 0.18, tags: ['ranged','blind','moon','pulse'], appliesTag: 'blind', vfx: 'fang', desc: '踏月之猫的招牌：一道道月牙能量波沿施放方向直线挥出。', unlock: { species: ['yuelian'], level: 10 } },
+    // Species-locked signature: 月月 only. Owner-driven redesign 2026-11-26:
+    //   • 2.5s CHARGE: 5 moon-arcs spawn in a FAN AIMED at the target (owner:
+    //     "方向应该指向目标位置 … 蓄力时就该看见朝向"). Caster CANNOT move while
+    //     charging (owner: "发动时猫不能动").
+    //   • Each fires 0.3s apart (owner: "发射间隔改成0.3s"), re-locks nearest enemy
+    //     at release, only fires if a live target exists (owner: "触手有时候在效果
+    //     范围外就发射了" — applied here as "require live enemy at release").
+    //   • Slow launch, continuously ACCELERATES — infinite range, authored moon-fx sprite.
+    { id: 'crescentFan', name: '月华连弧', element: 'light', kind: 'projectile', power: 0.6, cd: 6.5, ultCost: 0, pulseCount: 3, pulseGap: 0.45, chargeT: 2.5, chargeLock: true, tags: ['ranged','blind','moon','pulse','channel'], appliesTag: 'blind', vfx: 'crescent', desc: '踏月之猫的招牌：月月头顶凝结月弧蓄势2.5秒，而后每隔0.45秒逐一射出三道，锁敌之后由慢渐快，无视射程。', unlock: { species: ['yuelian'], level: 10 } },
     // ---- 领悟条件 (quirky quests) ----
     { id: 'veteranStrike', name: '百战斩', element: 'dark', kind: 'melee',      power: 2.3, cd: 3.4, ultCost: 0, heavy: true, upgradeOf: 'shadowSwipe', tags: ['bleed','heavy'], appliesTag: 'bleed', vfx: 'muzzle', desc: '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。', unlock: { quest: 'battlesWon10' } },
     // 呼噜新星 purrNova removed per V4 (owner 2026-11-26): duplicated 金乌焱 sunflare (same fire
@@ -818,7 +821,17 @@
   // Do not delete pre-existing learned skills from older save games.
   function isAutoLearn(skill) {
     const u = skill && skill.unlock;
-    return !!u && !u.cost && !!u.quest;
+    if (!u || u.cost) return false;
+    // Quest milestones are automatic.
+    if (u.quest) return true;
+    // Opt-in identity-gated auto-learn: a skill may declare `autoLearn:true` to
+    // auto-grant when its level×element×role gate is satisfied (no cost, no quest).
+    // Used for role-identity skills like 暗影触手 — if a cat meets Lv6 + dark +
+    // control, the skill should appear in their book without a trainer visit.
+    // Owner 2026-11-26: "为什么我没在夜夜身上看到" — 暗影触手 was unreachable because
+    // isAutoLearn only honored quest unlocks; identity-gated skills stayed trainer-only.
+    if (skill.autoLearn === true) return true;
+    return false;
   }
   // Auto-grant any pure-gate skills the cat now qualifies for. Returns the list of
   // skills freshly learned (so the UI can toast / metric them). ensureLoadout and

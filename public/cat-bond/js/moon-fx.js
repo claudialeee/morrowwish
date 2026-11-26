@@ -37,5 +37,42 @@ function drawImpact(c,v,t){const p=cl(1-v.life/Math.max(.001,v.max)),a=1-p,r=v.r
  for(let j=0;j<10;j++){const th=(j%2?1:-1)*(PI*.36+hash(j)*.9),d=r*(.12+.85*p)*(.55+hash(j+20)*.55),x=Math.cos(th)*d,y=Math.sin(th)*d;c.globalAlpha=a*.8;c.strokeStyle=j%2?'#c4dfff':'#fff6dc';c.lineWidth=1.5;c.beginPath();c.moveTo(x*.5,y*.5);c.lineTo(x,y);c.stroke();spark(c,x,y,2+hash(j+1)*1.8,a*.85)}c.restore();
 }
 function drawPassive(c,v,t,p,a){const ang=Math.atan2(v.y-v.oy,v.x-v.ox);drawImpact(c,{x:v.x,y:v.y-7,angle:ang,life:1-p,max:1,radius:43},t);}
-window.CatBondMoonFX={drawProjectile,drawImpact,drawPassive};
+// HOVER: a charging moon-arc that bobs at a position around the caster during the
+// 2.5s pre-release window. Uses the same authored blade() shape as the projectile +
+// impact so the three phases share visual identity. v: {caster,offAng,offRad,wobble,spawnT,color}
+function drawHover(c,v,t){
+  if(!v.caster||!v.caster.alive)return;
+  const age=t-(v.spawnT||t);
+  const bob=Math.sin(age*3.3+(v.wobble||0))*4;
+  // Owner 2026-11-26 "方向应该指向目标位置": if castAng was captured at spawn
+  // (crescentFan fan-at-target), orient the blade along it with a small sway so
+  // every hover-arc clearly reads as "aimed at the enemy". Fallback = free spin.
+  const sway=Math.sin(age*1.3+(v.wobble||0))*0.14;
+  const rot=(v.castAng!=null)?(v.castAng+sway):(age*0.8+Math.sin(age*1.7+(v.wobble||0))*0.35+(v.wobble||0));
+  // Owner 2026-11-26 final: hover arc sits directly above the caster
+  // (overheadOff = vertical offset, usually -48). Falls back to absX/absY
+  // (legacy scatter), then caster-relative polar.
+  let x, y;
+  if(v.overheadOff!=null){ x=v.caster.x; y=v.caster.y+v.overheadOff+bob; }
+  else if(v.absX!=null){ x=v.absX; y=v.absY+bob; }
+  else { x=v.caster.x+Math.cos(v.offAng)*v.offRad; y=v.caster.y+Math.sin(v.offAng)*v.offRad+bob; }
+  const r=12;
+  c.save();c.translate(x,y);c.rotate(rot);
+  // soft back halo (brightens as charge nears release)
+  const chargeK=cl(age/2.5);
+  const halo=c.createRadialGradient(0,0,0,0,0,r*2.4);
+  halo.addColorStop(0,'rgba(220,235,255,'+(.22+.25*chargeK).toFixed(2)+')');
+  halo.addColorStop(1,'rgba(130,148,232,0)');
+  c.globalAlpha=1;c.fillStyle=halo;c.beginPath();c.arc(0,0,r*2.4,0,TAU);c.fill();
+  blade(c,r*(0.85+0.25*chargeK),0.85);
+  // charging sparks swarm inward
+  for(let j=0;j<6;j++){
+    const u=((t*2.3+hash(j+3*(v.wobble||1)))%1);
+    const rad=r*(2.0-1.4*u);
+    const th=j*TAU/6+t*1.1;
+    spark(c,Math.cos(th)*rad,Math.sin(th)*rad*.5,1.0+hash(j)*1.4,(1-u)*0.75);
+  }
+  c.restore();
+}
+window.CatBondMoonFX={drawProjectile,drawImpact,drawPassive,drawHover};
 })();

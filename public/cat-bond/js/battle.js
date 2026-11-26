@@ -18,13 +18,12 @@ const ULT_COOLDOWN_SECONDS = 18;
 // 5.4s so a 30-45s fight gets roughly 6-9 Q casts (owner target: "Q 平均 4-6s 一次").
 // Not pushed all the way to 1.0 so Q/E don't spam back to a basic-adjacent cadence.
 const SKILL_CD_MULT = 1.2;
-// A skill equipped in the BASIC (left-click) slot deals this fraction of the power it
-// would as a Q/E skill — basics are short-cooldown + spammable, so the SAME skill must
-// hit for clearly less when used as a basic than when slotted as a real skill.
-// Owner 2026-11-26 '伤害太低，打起来有点慢': 0.5 → 0.55 (+10%) part of the global
-// damage bump; mirrored by raising BASIC_POWER_MULT 0.70→0.85 and removing the
-// global 0.9 player nerf below. Net effect per-slot Q/E +11%, basic +35%.
-const BASIC_SKILL_DMG_MULT = 0.55;
+// Owner 2026-11-26 '为啥寒冰爪的伤害和毛球一样… 0.55 去掉这个': the basic-slot
+// additional damage penalty is REMOVED. A skill equipped in the basic slot now pays
+// full power (times BASIC_POWER_MULT only), so slotting 寒冰爪 (power 1.22) as basic
+// genuinely out-DPSes the default toy-toss (f.dmg × 0.85) as it should.
+// Previously 0.55 compressed 寒冰爪 basic-slot output close to the toy-toss baseline.
+const BASIC_SKILL_DMG_MULT = 1.0;
 // Task #52 Phase A (2026-11-25): basic attacks (both the default yarn/fish toss AND
 // the basic-slot skill path) hit for 70% of their nominal power. Multiple playtest
 // cycles reported basics as a self-sufficient win-con that drowned out Q/E (~200:1
@@ -61,10 +60,14 @@ class CaptureBattle {
     // enemy level scales with the player's progress: average team level +
     // how far they've come (catchCount), nudged by rarity. So early wilds are
     // Lv.1-3 and late-game packs scale to match a strong roster.
-    // Encounter level is rolled when the wild cat appears, not after the
-    // player taps Start. The visible Lv. tag is exactly the battle's level.
-    this.wildLevel = Math.max(1,Math.round(wildSpecies.encounterLevel||
-      this.computeWildLevel(teamOrCat)));
+    // Owner 2026-11-26 "等级 match 怎么还没 fix / 我队伍都50级了": encounterLevel is
+    // pre-stamped at worldmap spawn time (sometimes HOURS before the fight starts),
+    // so a Lv50 team meeting a stale Lv12 encounter would stay Lv12 forever. Fix:
+    // ALWAYS recompute wildLevel at battle entry from the live team roster
+    // (computeWildLevel already matches team avg + hardcore +1..+3). The old
+    // encounterLevel short-circuit is deleted — region floor/cap inside
+    // computeWildLevel still enforces scripted tier walls.
+    this.wildLevel = Math.max(1, Math.round(this.computeWildLevel(teamOrCat)));
 
     // --- LEVEL GAP (bidirectional: suppression when over-leveled, threat when under) ---
     // The level difference between your squad and the wild pack must MATTER. Two
@@ -711,21 +714,32 @@ class CaptureBattle {
   computeWildLevel(teamOrCat) {
     const cats = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
     const avg = cats.length ? cats.reduce((s, c) => s + (c.level || 1), 0) / cats.length : 1;
-    const caught = (window.State && State.S.catchCount) || 0;
-    // Regional tiers, not a hidden '+1 level every 3 captures' treadmill.
-    // First map is ALWAYS Lv1-3, even after a player catches 15+ cats.
-    const caps={sakura:3,yard:3,home:5,creek:7,volcano:9,ruins:12};
-    const region=this.encounterRegion;
-    const cap=caps[region]??Math.max(3,Math.ceil(avg)+2);
-    // Advanced locations are intentionally tougher than the starter meadow,
-    // even if a player explores ahead with an under-leveled team.
-    const floors={sakura:1,yard:1,home:2,creek:3,volcano:4,ruins:5};
-    const minLv=floors[region]??1;
-    const progress=Math.min(1.5,caught*.12);
-    const rarityBonus=Math.min(1.5,this.rarIdx*.65);
-    const noise=((this.rng?this.rng():Math.random())-.5)*1.2;
-    const lvl=Math.round(avg+progress+rarityBonus+noise);
-    return Math.max(minLv,Math.min(cap,lvl));
+    // OWNER 2026-11-26 "敌人等级动态匹配到我们的等级" — enemy level now tracks the
+    // team's average level directly (no progress/rarity/noise drift). "硬核难度会
+    // +1到3级" — hardcore adds a random 1-3 on top. Regional floor/cap still
+    // apply so a brand-new save never sees Lv4 in 樱花/庭院 and so late maps keep
+    // their advertised tier wall.
+    // Owner 2026-11-26 "我队伍都50级了" — the old flat per-region cap (ruins:12)
+    // clipped late-game teams: a Lv50 team in 遗迹 saw Lv12 enemies. Caps now mean
+    // "intro gate" — enforced only until a team comfortably clears them (team avg
+    // reaches cap+3). Beyond that threshold, the cap no longer applies and enemy
+    // level scales with team avg so late-game zones stay meaningful.
+    const introCaps = { sakura:3, yard:3, home:5, creek:7, volcano:9, ruins:12 };
+    const floors = { sakura:1, yard:1, home:2, creek:3, volcano:4, ruins:5 };
+    const region = this.encounterRegion;
+    const introCap = introCaps[region] ?? Math.max(3, Math.ceil(avg) + 2);
+    // Once team avg clears the intro cap by ≥3, the cap lifts to track team avg.
+    const cap = (avg >= introCap + 3) ? Math.ceil(avg) + 2 : introCap;
+    const minLv = floors[region] ?? 1;
+    // Base = clamped team avg (round, NOT floor — a Lv1 team shouldn't face Lv0).
+    let lvl = Math.round(avg);
+    // Hardcore bump: rng in [0,1) → integer bonus in [1,3].
+    const diffName = (window.State && State.difficulty) ? State.difficulty() : 'casual';
+    if (diffName === 'hardcore') {
+      const r = (this.rng ? this.rng() : Math.random());
+      lvl += 1 + Math.floor(r * 3);              // +1, +2, or +3
+    }
+    return Math.max(minLv, Math.min(cap, lvl));
   }
 
   // Build a wild pack of 1~3 enemies. Lead = the encountered species; rarer
@@ -2162,17 +2176,87 @@ class CaptureBattle {
     // RELEASE time, so the player watches wave 1 land and waves 2/3 can still retarget.
     // First shot fires NOW (instant feedback); the rest are queued on this._pulseQueue
     // for the update loop to release. Projectiles fly with light homing (sk.pulseHoming).
+    // SPECIAL: crescentFan 月华连弧 — owner-driven redesign 2026-11-26:
+    //   • 2.5s CHARGE: five moon-arcs spawn in a FAN AIMED AT THE TARGET (not random
+    //     ring). Owner: "方向应该指向目标位置 … 蓄力时就该看见朝向".
+    //   • Caster CANNOT MOVE while charging. Owner: "发动时猫不能动".
+    //     Implemented via _moonChargeLock flag consumed by moveMul().
+    //   • RELEASE: 0.3s apart (owner: "发射间隔改成0.3s"). Each pulse re-locks the
+    //     NEAREST living enemy at its release and SKIPS if none exists (owner:
+    //     "触手有时候在效果范围外就发射了" → require a live target at release).
+    //   • FLIGHT: slow start, continuous accel, no speed cap, infinite range.
+    //   • VFX: authored moon-fx crescent sprite (p.kind='crescent').
+    if(sk.id === 'crescentFan'){
+      const n = sk.pulseCount || 5;
+      const chargeT = sk.chargeT || 2.5;
+      const gap = sk.pulseGap || 0.55;
+      // Owner 2026-11-26 feedback: previous (startSpd 0.35× + accel 820) made each
+      // blade crawl → pulses stacked on top of each other near the cat. Bump initial
+      // velocity and acceleration so each wave actually clears the caster before the
+      // next lands, AND still reads as "slow-start → fast rip" visually.
+      const startSpd = f.projSpeed * 1.0;
+      const projR = 22;   // owner 2026-11-26: "月弧的大小要再宽一点" (14 → 22, +57%)
+      this._pulseQueue = this._pulseQueue || [];
+      this.skillStrokes = this.skillStrokes || [];
+      // Target direction at cast time: snapshot now so the fan reads as "pointed at
+      // the enemy" throughout the charge. Falls back to the manual aim if no enemy.
+      const tgt0 = this.nearestEnemy(f.x, f.y);
+      const castAng = tgt0 ? Math.atan2(tgt0.y - f.y, tgt0.x - f.x) : aim;
+      // CHARGE-LOCK: moveMul reads this and returns 0 while active. Owner
+      // 2026-11-26: "发动时猫不能动" AND "月弧发射完前猫都能移动" — lock the caster
+      // for the FULL salvo window (charge + all pulse gaps + small tail), not
+      // just the charge. For n=3 shots at 0.45s gap + 2.5s charge, that's
+      // 2.5 + 2*0.45 + 0.15 = 3.55s total commitment.
+      if(sk.chargeLock){
+        f._moonChargeLock = true;
+        f._moonChargeLockUntil = this.t + chargeT + Math.max(0, n - 1) * gap + 0.15;
+      }
+      // Owner 2026-11-26 final: "就在猫咪的头顶生成算了 … 就生成一个 … 发射的起始
+      // 点也一样". One hover arc at a time, hovering just above 月月's head, and
+      // the pulse LAUNCH POINT is the same spot — spawns there, flies toward the
+      // target. Next wave (0.55s later) pops at the same overhead spot.
+      // overheadOff carries both the hover visual AND the pulse spawn position.
+      const overheadOff = -48;     // px above the caster
+      for(let i=0;i<n;i++){
+        const strokeId = (this._moonHoverUid = (this._moonHoverUid||0) + 1);
+        // Hover appears only during its own slot: from (releaseAt - preview) until release.
+        const releaseAt = this.t + chargeT + i * gap;
+        const preview = (i === 0) ? chargeT : gap;   // first wave previewed for full charge; next waves pop in 0.55s before release
+        const spawnT = releaseAt - preview;
+        this.skillStrokes.push({
+          kind: 'moonHover', strokeId,
+          caster: f,                        // follows caster — position computed from caster.x/y - 48 in draw
+          overheadOff,                       // vertical offset relative to caster each frame
+          castAng,                          // orient the blade along the firing direction
+          wobble: 0,
+          spawnT,
+          life: preview + 0.04, max: preview + 0.04,
+          color: col,
+        });
+        this._pulseQueue.push({
+          casterIdx: this.team.indexOf(f),
+          releaseAt,
+          skillId: sk.id, element: sk.element, baseDmg,
+          projKind: 'crescent', projR,
+          spd: startSpd, life: 30, homing: false, col,
+          lockedAim: null, relockOnRelease: true,
+          requireLiveTarget: true,
+          accelProfile: { startSpd, accel: 1600 },
+          // Launch position = overhead spot (same as hover).
+          overheadOff,
+          strokeId,
+        });
+      }
+      this.vfx.text?.(f.x, f.y - 34, '月华·蓄势', col, 14);
+      return true;
+    }
     if(sk.pulseCount && sk.pulseCount > 1){
       this._pulseQueue = this._pulseQueue || [];
       const projKind = sk.element==='water' ? 'orb' : sk.element==='dark' ? 'hex' : 'orb';
       const projR = sk.element==='dark' ? 12 : 11;
       const spd = f.projSpeed*0.86, life = 1.9;
-      // POLYGON-SPAWN pulses (owner 2026-11-26): each wave exits from a vertex
-      // of a regular N-gon around the caster (radius ≈ 32), one per pulse,
-      // 72° apart for the 5-wave crescentFan. Non-homing pulses fly STRAIGHT
-      // along the cast aim (索隆月牙天冲). Homing pulses keep their arc. The
-      // vertex is a visual + spatial spawn point only — the flight direction
-      // is still `aim`, so all five waves parallel-fan outward.
+      // POLYGON-SPAWN pulses: each wave exits from a vertex of a regular N-gon
+      // around the caster. Non-homing pulses fly STRAIGHT along the cast aim.
       const straight = !sk.pulseHoming;
       const n = sk.pulseCount, polyR = 32;
       const vertexAng = (idx) => aim + (idx - (n - 1) / 2) * (Math.PI * 2 / n);
@@ -2205,30 +2289,75 @@ class CaptureBattle {
       if(this.t < p.releaseAt){keep.push(p);continue;}
       const caster=this.team[p.casterIdx];
       if(!caster||!caster.alive)continue;
-      // Flight direction: locked at cast time for non-homing pulses (straight-line
-      // 月牙天冲); otherwise re-aim at nearest-enemy now.
-      let ang;
-      if(p.lockedAim != null){
-        ang = p.lockedAim;
-      }else{
-        const tgt=this.nearestEnemy(caster.x,caster.y);
-        if(!tgt)continue;
-        ang=Math.atan2(tgt.y-caster.y,tgt.x-caster.x);
-      }
-      // Spawn position: polygon vertex around the caster if vertexAng present,
-      // otherwise the old "ahead of caster" spawn.
+      // Spawn position FIRST — angle must be computed from the spawn point, not
+      // from the caster body center. Owner bug 2026-11-26 "月弧都偏高打不准":
+      // crescentFan spawns at head (caster.y - 48) but angle was from caster.y →
+      // every blade flew in a line parallel-shifted 48px up from the true sight
+      // line, so it consistently missed OVER the target. Fix: resolve ex/ey first,
+      // then atan2 from (ex, ey) to (tgt.x, tgt.y).
       let ex, ey;
-      if(p.vertexAng != null){
+      if(p.overheadOff != null){
+        ex = caster.x;
+        ey = caster.y + p.overheadOff;
+      }else if(p.offAng != null){
+        ex = caster.x + Math.cos(p.offAng) * (p.offRad || 48);
+        ey = caster.y + Math.sin(p.offAng) * (p.offRad || 48);
+      }else if(p.vertexAng != null){
         const r = p.polyR || 32;
         ex = caster.x + Math.cos(p.vertexAng) * r;
         ey = caster.y + Math.sin(p.vertexAng) * r;
       }else{
+        // default: 23px ahead of caster — compute AFTER we know ang below.
+        ex = null; ey = null;
+      }
+      // Flight direction: angle is computed from the SPAWN POINT (ex, ey) to the
+      // target, NOT from caster body. This is the fix for '月弧都偏高打不准' — when
+      // spawn is 48px above the caster but ang was from the caster y, the blade's
+      // flight line sat 48px above the sight line and missed over every target.
+      let ang;
+      const spawnX = (ex != null) ? ex : caster.x;
+      const spawnY = (ey != null) ? ey : caster.y;
+      if(p.relockOnRelease){
+        const tgt = this.nearestEnemy(spawnX, spawnY);
+        if(!tgt){
+          // Owner: for pulses that need a live target, DROP the pulse (and its
+          // paired hover-arc VFX) instead of stalling. Legacy non-crescent pulses
+          // keep stall-and-retry.
+          if(p.requireLiveTarget){
+            if(p.strokeId != null && this.skillStrokes){
+              for(const s of this.skillStrokes){ if(s.strokeId === p.strokeId){ s.life = 0; break; } }
+            }
+            continue;
+          }
+          keep.push(p); continue;
+        }
+        ang = Math.atan2(tgt.y - spawnY, tgt.x - spawnX);
+      }else if(p.lockedAim != null){
+        ang = p.lockedAim;
+      }else{
+        const tgt = this.nearestEnemy(spawnX, spawnY);
+        if(!tgt) continue;
+        ang = Math.atan2(tgt.y - spawnY, tgt.x - spawnX);
+      }
+      // Default-spawn (no overheadOff/offAng/vertexAng): 23px ahead along ang.
+      if(ex == null){
         ex = caster.x + Math.cos(ang) * 23;
         ey = caster.y + Math.sin(ang) * 23;
       }
       const fakeSk={id:p.skillId,element:p.element,homing:p.homing,isDerived:true,_traitCaster:caster,
         appliesTag:p.skillId==='tidalPulse'?'soak':'expose',power:1};
-      this.spawnProj(ex,ey,ang,p.spd,p.baseDmg,'me',p.col,p.projR,p.projKind,fakeSk,p.life);
+      const proj = this.spawnProj(ex,ey,ang,p.spd,p.baseDmg,'me',p.col,p.projR,p.projKind,fakeSk,p.life);
+      if(proj && p.accelProfile){
+        proj.spd = p.accelProfile.startSpd;
+        proj._accel = p.accelProfile.accel || 0;      // px/s^2 — continuous, no cap
+        proj._accelAng = ang;                         // lock flight direction
+      }
+      // Kill the paired hover-arc VFX at release.
+      if(p.strokeId != null && this.skillStrokes){
+        for(const s of this.skillStrokes){
+          if(s.strokeId === p.strokeId){ s.life = 0; break; }
+        }
+      }
       this.vfx.burst(ex,ey,{count:7,color:p.col,angle:ang,spread:.5,speed:130,life:.26,r:2.1});
     }
     this._pulseQueue=keep;
@@ -2548,6 +2677,23 @@ class CaptureBattle {
   castOffensiveSkill(f, aim, sk, pow, col, _nowind) {
     if (this._debug) this._dbgFiringCat = f;   // debug-log: who is actually firing this skill
     this._lastSkillT = this.t;                 // stall-detector: player engaged a skill
+    // Owner 2026-11-26 "为什么寒冰爪没打到" — log every ATTEMPT so you can tell cast-never-fired
+    // from cast-missed. Enemy also routes through castOffensive at times, so tag by firing side.
+    if (this._debug && this._dbgLog && sk) {
+      const nameOf = x => (x?.cat && window.State?.catName?.(x.cat)) || x?.sp?.name || x?.sp?.id || x?.cat?.species || '?';
+      const isAlly = this.team && this.team.includes(f);
+      const nearest = isAlly ? (this.liveEnemies?.()?.[0] || null) : (this.team?.find(c=>c.alive) || null);
+      const dist = nearest ? Math.hypot(nearest.x - f.x, nearest.y - f.y) : -1;
+      this._dbgLog.push({
+        t: +this.t.toFixed(2),
+        who: (isAlly?'ALLY:':'WILD:') + nameOf(f) + ' CAST ' + (sk.id || sk.name || '?'),
+        attacker: (isAlly?'ALLY:':'WILD:') + nameOf(f), target: '(attempt)',
+        skill: (sk.id || sk.name || '?') + '[attempt]',
+        kind: sk.kind || '-', element: sk.element || '-',
+        raw: '-', dealt: '-', elemMult: '-', lvlSuppress: '-',
+        tgtHp: nearest ? ('dist='+Math.round(dist)+' facing_aim='+aim.toFixed(2)) : 'no-target',
+      });
+    }
     // WIND-UP (前摇): heavy skills charge for sk.windup seconds before firing — a
     // brief commit that roots the caster and shows a growing charge ring, so big
     // moves have weight and can be read/punished (mirrors enemy telegraph).
@@ -3449,6 +3595,10 @@ class CaptureBattle {
     return 1;
   }
   moveMul(f){
+    // 月华连弧 CHARGE-LOCK (owner 2026-11-26: "发动时猫不能动"). Hard zero while
+    // crescentFan is still charging — caster commits visibly to the 2.5s wind-up.
+    if (f._moonChargeLock && (f._moonChargeLockUntil||0) > this.t) return 0;
+    if (f._moonChargeLock) { f._moonChargeLock = false; }
     let m = f.slowed ? 0.55 : 1;
     // 淋湿 (soak): water's signature debuff is a MILD slow (×0.8) — lighter than hard soft-CC
     // (chill/bind 0.55) since soak is applied broadly and also primes elemental reactions.
@@ -4369,6 +4519,8 @@ class CaptureBattle {
       ctx.lineCap='round';ctx.lineJoin='round';
       if(v.kind==='moonImpact'){
         window.CatBondMoonFX?.drawImpact(ctx,v,this.t);
+      }else if(v.kind==='moonHover'){
+        window.CatBondMoonFX?.drawHover?.(ctx,v,this.t);
       }else if(v.kind==='signatureCast'||v.kind==='signatureHit'){
         window.CatBondSkillFX?.draw(ctx,v,this.t);
       }else if(v.kind==='regularAccent'){
@@ -4766,7 +4918,28 @@ class CaptureBattle {
     // fights): by ~25s a drawn-out fight starts getting the execute-bonus closing beats, so
     // impatient players see momentum building before their patience cliff. Short clean fights
     // (<25s) are unchanged; the 85s hard backstop + flee semantics stay intact.
-    this._closing = this.coach ? 0 : clamp((this.t - 25) / 20, 0, 1);
+    // Playtest w77e6tuzq P0-1 没耐心型 auto-fix (unreviewed, not pushed): closing
+    // now ticks on EITHER time OR cumulative enemy-HP-dealt. Previously a pure
+    // 25→45s time ramp meant impatient players hit the 18s flee cliff before
+    // seeing any execute-bonus / poise-suppress feedback. Now chipping ~20% of
+    // enemy-pack HP lights the same ramp, so a player ACTUALLY FIGHTING sees
+    // momentum well before the clock. max(time, hp-dealt) keeps short clean
+    // fights unchanged + still gives patient kiter a late ramp.
+    const _enemies = this.liveEnemies ? this.liveEnemies() : [];
+    let _hpFrac = 1;
+    if (_enemies.length && _enemies[0]._packMaxHp) {
+      let alive = 0, init = 0;
+      for (const e of _enemies) { alive += Math.max(0, e.hp || 0); init += e._packMaxHp || e.maxhp || 1; }
+      if (init > 0) _hpFrac = alive / init;
+    } else if (_enemies.length) {
+      // first-frame stamp
+      for (const e of _enemies) e._packMaxHp = e.maxhp || 1;
+    }
+    const _hpDealt = Math.max(0, 1 - _hpFrac);
+    this._closing = this.coach ? 0 : Math.max(
+      clamp((this.t - 25) / 20, 0, 1),
+      clamp(_hpDealt / 0.20, 0, 1)
+    );
     // MASH-STALL teach + resolve: if the player keeps throwing ONLY basics while an
     // enemy sits pinned near the un-skilled mash floor (~<20% HP, not staggered), the
     // fight can't end from basics alone. Detect it, pulse a "use a skill" teach beat,
@@ -4872,6 +5045,15 @@ class CaptureBattle {
           const turn = Math.max(-p.homing * dt, Math.min(p.homing * dt, d));
           p.ang += turn; p.vx = Math.cos(p.ang) * p.spd; p.vy = Math.sin(p.ang) * p.spd;
         }
+      }
+      // CONTINUOUS ACCEL (crescentFan): speed ramps up every frame with distance/time
+      // travelled, no cap. Flight direction is locked at release (p._accelAng). Range
+      // is effectively unlimited — the projectile only expires via life timeout or
+      // off-screen cull further down.
+      if(p._accel && p._accelAng != null){
+        p.spd = (p.spd || 0) + p._accel * dt;
+        p.vx = Math.cos(p._accelAng) * p.spd;
+        p.vy = Math.sin(p._accelAng) * p.spd;
       }
       const previousX=p.x,previousY=p.y;
       p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;

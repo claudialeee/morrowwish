@@ -1720,3 +1720,294 @@ Impatient (×6):
 **1 of 2 P0 auto-fixed**: `eb20a36a` P0-1 enemy aggression ramp (green). P0-2 tempo ramp **reverted** on band-fitness NEG-CONTROL C1 failure; downgraded to findings-only for owner-review (needs frozen-control exclusion).
 
 **Branch state:** `main` 18 ahead of origin/main; NOT pushed.
+
+---
+
+## Playtest cron — 2026-11-26T03:30Z (w9bg40pg8, BACKFILLED 2026-11-26)
+
+**Headline (adversary synthesis)**: Diagnostically rich but experientially silent — engine measures mercy ramps / closing windows / dodge tiers / auto skill-casts and hides them all. Every persona feels they're fighting a flat HP bar. Fix requires one legibility pass across hidden systems + enemy-side aggression ramp + per-target enemyUlt cap.
+
+**Distribution**: 43 critiques → **3 P0**, 33 P1, 7 P2. (18 StructuredOutput retry-cap losses; 56/74 agents delivered.)
+
+### P0 outcomes
+
+- **P0-1 \`狂按型\` — enemyUlt one-shot (5/8 identical 428-dmg flees)**: adversary diagnosis — meter fills on wall-clock schedule under tempoScale 0.64 × auto 0.88, fires at ~same second of fight; masher has no counter-verb. Fix: tag each volley pellet with `_ultCastUid` + enforce per-target per-cast cumulative cap ≤35% maxhp in resolveHit. **Auto-fixed, commit `35b9adce`** (shipped later in merge `4074e452`). 4 gates + npm run check all green at commit time.
+- **P0-2 \`谨慎型\` — wild-enemy anti-kite verb missing**: proposed 4-knob bundle (enemy speed × _closing, lob/smash/proj cd × _closing, chaseMul force-engage, backstop retune). Multi-site AI architecture. **Findings-only.**
+- **P0-3 \`没耐心型\` — new `_struggling` signal + execute-gate rewire**: adds new global rubber-band signal. **Findings-only** (borderline; safer not to layer new rubber-band without owner review).
+
+### P1 themes (33 critiques)
+
+Masher (×7): mercy band silent; loss debrief tautological; combo rewards count not variety; basic/skill DPS gap narrow; 汤圆 storage-strike only verb but gated to one cat.
+Cautious kiter (×6): 99% idle equilibrium; perfect-dodge sustain gates on recent offense, kiter never qualifies.
+Explorer (×5): 290:1 basic-skill ratio red herring; phase system enemy-only; 88% win baseline encounter solved.
+Panicky (×5): discovery-failure dressed as pacing; current mash-stall can't find panicked player.
+Lazy (×4): post-battle feedback loop gap.
+Impatient (×6): tempoScale flat; 18s wall vs ult timing mismatch.
+
+### P2 themes (7)
+
+Global 怒气槽 / auto-poise collides with 汤圆/团团/绒绒 P1 passives — route into traits. Juice at x50/100 ask rejected as cosmetic over onboarding gap.
+
+### Auto-fix summary
+
+**1 of 3 P0 auto-fixed**: `35b9adce` P0-1 enemy-ult 35% cap. P0-2 kiter frustration-pounce + P0-3 struggling signal both findings-only (exceed cron low-risk bar — new AI subsystems / new global signal).
+
+**Branch state at cycle time:** local main N ahead; `35b9adce` later shipped to prod inside merge `4074e452`.
+
+---
+
+## Playtest cron — 2026-11-26T08:53Z  (wh4ibbx2j, post-defense-HP-bump)
+
+**Headline**: Combat numerically healthy but experientially one-dimensional — mashers flat damage ladder, kiters face enemies that never close, panicky can't land basic, auto-mode hides its payoffs. Fix is readability + enemy variety + input-earned feedback, not stat tuning.
+
+**Distribution**: 37 critiques → **2 P0 (both findings-only)**, 30 P1, 5 P2. (25 StructuredOutput retry-cap losses; 50/75 agents delivered.)
+
+### P0 outcomes (both findings-only — exceed cron low-risk bar)
+
+- **P0-1 `谨慎型` — kiter still faces no closing pressure after defense bump**: proposal requires 4-knob bundle (enemy speed × _closing, lob/smash/proj cd × _closing, chaseMul force-engage override, backstop retune). Multi-site AI architecture change. Logged for owner review.
+- **P0-2 `手忙脚乱型` — panicky can't land basic**: proposal is new aim-assist cone system (35° cone, 220u range, 0.35 lerp to nearest enemy within cone). New input-layer mechanic + mouse-aim intercept. Not a local tune. Logged for owner review.
+
+### P1 themes (30 critiques, findings-only)
+
+Masher (×6): smash binary teaches at 302-dmg price; ramp first-smash damage [0.14→0.26] by smashesSurvived counter. Dodge/shield autopiloted → no "PERFECT!" feedback loop → masher never learns defense. Combo is sqrt-capped +20% rhythm-less ladder.
+
+Kiter (×4): defense-HP bump helps survival but doesn't fix kiter idle equilibrium — fight still slides to 85s backstop as timeout-flee.
+
+Explorer (×5): adversary notes the defense formula is now visible; encounter still solved at baseline.
+
+Panicky (×5): basic misses rate too high; aim-assist cone proposed.
+
+Lazy (×4): post-battle debrief still tautological; _obs texture never surfaces.
+
+Impatient (×6): ult-timing vs 18s wall mismatch persists.
+
+### P2 themes (5)
+
+- Combo variety vs count (same as prior cycle).
+- Per-cat passive VFX not yet at UI edge.
+
+### Auto-fix outcome
+
+**0 of 2 P0 auto-fixed.** Both exceed cron low-risk bar (multi-site AI bundles / new input mechanic). P1/P2 findings-only per standing rule.
+
+**Branch state**: `main` 0 ahead of origin/main. Last push: `55672463` (defense+HP bump) at prior turn.
+
+## RSI
+
+RSI cycle 2026-11-26T08:55Z: 5 agent proposals (defense-era-bruiser-hug, level-aware-tempo, skill-ready-sprint, ranged-poke-stable, oscillate-in-out). **WINNER: agent:skill-ready-sprint 0.796 > baseline 0.755 — first agent to hold best elite.** Control check PASS (stand-at-max-range 0.728, last). Top-3 all agents: skill-ready-sprint (0.796), level-aware-tempo (0.788), ranged-poke-stable (0.781). Archive 2/64, both elites now agent-authored (1,3,3 skill-ready-sprint, 1,2,3 ranged-poke-stable). Winning bandBody: `(f)=>{const hp=f.hp/(f.maxhp||1);const q=((f.cd&&f.cd.q)||0),e=((f.cd&&f.cd.e)||0);if(q<=0&&e<=0)return{min:20,max:45,rush:22,role:'melee',hp};return{min:90,max:130,rush:100,role:'melee',hp';}` — point-blank 20-45 when BOTH q+e off CD (one-rotation burst window), fall back to 90-130 baseline band otherwise. Hypothesis validated: the new defense+HP bump (flat+pct + 110+vit*10) rewards the "burst in → eat chip" pattern that pre-bump would have punished. Owner review for whether to apply.
+
+---
+
+## Playtest cron — 2026-11-26T09:38Z  (w77e6tuzq, post-RSI-skill-ready-sprint)
+
+**Headline**: Rich engine tools (telegraphs, enemy ults, shields, passives on deck) but near-mute feedback layer — fix attribution, gate the auto-cast ult, give each persona a reason to press their dead half of the kit before shipping P1 traits on top.
+
+**Distribution**: 42 critiques → **1 P0**, 34 P1, 7 P2. (20 StructuredOutput retry-cap losses; 55/75 agents delivered.)
+
+### P0 outcomes
+
+- **P0-1 `没耐心型` — 18s flee cliff is a feedback-loop problem**: adversary — pure-time `_closing` (25-45s) means impatient players hit 18s flee BEFORE execute-bonus / poise-suppress feedback ever fires. Fix: `_closing = max(clamp((t-25)/20, 0, 1), clamp(hpDealt/0.20, 0, 1))` — chipping 20% enemy-pack HP lights ramp regardless of clock. **Auto-fixed, commit `517480e8`**. 4 combat gates + npm run check all green.
+
+### P1 themes (34 critiques, findings-only)
+
+Masher (×6): 2500 wasted clicks/fight (no held-key auto-fire; edge-press only); hurtMe hides attribution (level-gap sigmoid / dmgTakenMult / traitArmor silent); E-slot hardcoded defensive utility so masher's E dead; ult-meter starts 0, 9s idle failsafe never fires in short fights.
+Kiter (×5): action-gated closing (above P0) addresses the passive-kiter half; adversary notes 99% idle equilibrium still unreached.
+Explorer (×5): still "solved" baseline encounter; enemy phases not player-visible.
+Panicky (×5): aim-assist cone proposal (new input layer, findings-only).
+Lazy (×6): post-battle debrief tautological; `_obs` texture still buried.
+Impatient (×6): mostly addressed by P0 fix; ult-timing vs 18s wall still off.
+
+### P2 themes (7)
+
+- Loadout defaults need role-split (frontline keeps defensive E, backline/dps/control gets offensive E) — findings-only, touches defaultLoadout.
+- Basic → held-key auto-fire (ergonomics, not DPS) — findings-only, input-layer change.
+- Biggest-hits attribution floater — findings-only, UI addition.
+- P2 passive "every 5th basic +60%" for masher cat identity — findings-only.
+- Ult seed 15-20 on battle start — findings-only.
+- Enemy-HP bar `_closing`-rim VFX (momentum tell) — findings-only.
+- Coalesce floaters 0.2s window per (src,skill) — findings-only.
+
+### Auto-fix summary
+
+**1 of 1 P0 auto-fixed**: `517480e8` closing-ramp action gate. P1/P2 findings-only.
+
+**Branch state**: `main` 3 ahead of origin/main.
+
+---
+
+## Playtest cron — 2026-11-26T10:37Z  (w6hmojrj6, post-closing-action-gate)
+
+**Headline**: Combat has one verb (basic) and one enemy script (chase-and-swing) — the 12 pending P1 passives will land on a floor that doesn't ask players to shield/dodge/ult/read phases, so the fix is enemy-side rhythm + player-side heavy input + readable progress, NOT more passives or global dmg knobs.
+
+**Distribution**: 39 critiques → **0 P0**, 33 P1, 6 P2. (22 StructuredOutput retry-cap losses; 52/74 agents delivered.)
+
+### Auto-fix outcome
+
+**Combat reads healthy this cycle — zero P0 produced.** Prior P0 themes (defense formula, enemy-ult cap, closing action-gate) all shipped in previous commits. Adversary focus has shifted entirely to systemic P1 design: enemy AI phase shifts, heavy-input mode, defensive-verb forcing, boss committed-red attacks, ult attribution.
+
+### P1 themes (33, findings-only — require owner-level design calls)
+
+Masher (×6): still single-verb input; no attack says "must shield/dodge NOW"; proposal — enemy boss "committed red" heavy with 1.1-1.4s windup, 35-45% maxhp, shield/dodge/E as solve-set. Related: heavy-input tap-vs-hold on same key to feed P1 passives' "heavy" trigger flag.
+Cautious kiter (×5): enemy AI has no HP-threshold phase shift — 100% HP behavior = 15% HP behavior; proposal — makeEnemy phaseStage + HP-threshold tempo+aggression bumps.
+Explorer (×5): still "solved encounter" / adversary reaches for combat-depth asks (phase enemies, enrage, boss patterns).
+Panicky (×5): manual-mode input bandwidth gap.
+Lazy (×6): ult-meter 0 start + no attribution still surfacing.
+Impatient (×6): the `517480e8` closing-action-gate commit cut their flee rate but adversary still asks for ult-meter seed + enemy-HP-bar momentum rim.
+
+### P2 themes (6)
+
+- Role-split defaultLoadout (backline/dps gets offensive E instead of defensive shield).
+- Ult seed 15-20 on battle start.
+- Per-cat boss pattern authoring.
+- Attribution layer on hurtMe (biggest-hits debrief).
+- Enemy HP bar `_closing`-rim VFX.
+- Combo rhythm-gate (on-beat +2 vs off-beat +1).
+
+### Verdict
+
+Combat is **numerically healthy** this cycle (0 P0). Adversary now asking for **design-level architecture** (phase shifts, heavy input, committed boss attacks) — out of scope for low-risk cron auto-fix. All logged for owner review.
+
+**Branch state**: `main` 4 ahead of origin/main.
+
+---
+
+## RSI
+
+RSI cycle 2026-11-26T18:32:35Z — propose script reported FAILED (deliberately-bad control 'stand-at-max-range' 0.777 vs baseline 0.766 — judge being fooled by a passive strategy; gated candidate win-claim). 'agent:all-in-full-hp' scored 0.789 vs baseline 0.766 on the ground-truth judge but was gated by the control-check assertion. No new niche filled; archive coverage 2/64; best still agent:skill-ready-sprint 0.796. Findings-only, no code applied.
+
+---
+
+## Cycle wb4kwxa4y — 2026-11-26T18:34Z (POST-REBASE on origin/main 4f322084)
+
+**Workflow**: `wb4kwxa4y` — 6 personas × 8 battles × 1 round
+**Agents**: 70 spawned, 54 delivered, 16 StructuredOutput retry-cap losses
+**Distribution**: 41 critiques → **1 P0**, 35 P1, 5 P2
+**Headline**: "Combat has the verbs, pacing beats, and difficulty knobs it needs, but a single structural hole — enemies that never force a decision — is making every persona play the same one-button game; the fix is enemy-side legibility and rhythm, not more player-side tuning."
+
+### Auto-fix outcome
+
+**P0-1 没耐心型 (impatient) — lead/pack HP skew** → **REVERTED on failed gate**
+
+- **Finding**: 87.5% flee at exactly 18.0s (= `ULT_COOLDOWN_SECONDS`) because the first visible kill lands ~20s in; lead enemy HP = companion HP = no legible "first kill" beat before the ult-ready cliff.
+- **Proposed fix (Part A only, low-risk numeric)**: in `makeEnemy()` scale `i===0` lead by ×0.70 (SR/SSR ×0.85), companions ×1.10. Pack-HP total preserved.
+- **Applied**: battle.js:773-778.
+- **Gate failure**: `npm run check` → `check-cat-bond.mjs:583` "a Q/E skill hit chips the poise gauge" assertion fails. The test's `poiseEnemy = enemies[0]` is now the trimmed lead; `poiseMax = round(maxhp * 0.6)` scales down with maxhp, and the fixed-amount poise chip from a `power:1.3` skill saturates at the low poiseMax, causing early-stagger side-effects that violate subsequent assertions.
+- **Reverted**: `git checkout public/cat-bond/js/battle.js`. **Downgraded to findings-only** per cron rule. Owner-level fix: either (a) rebalance the poise chip formula to use fractional poise%, or (b) skew HP only on packs of size≥2 (no effect on solo-test enemy), or (c) implement Part B instead (per-enemy HP milestone VFX — exceeds low-risk scope).
+- Part B (milestone VFX in damage path: red ring + mini-shake on 75/50/25%) exceeds cron scope (rendering layer, not a numeric tune).
+
+### P1 themes (35, findings-only)
+
+- **Masher (×7)**: six verbs on screen, action vocabulary is ONE — no "committed red" telegraphed heavy forces shield/dodge/ult; BASIC_SKILL_DMG_MULT/BASIC_POWER_MULT nerfs miss the structural lever. Proposal: add 1.1-1.3s red-reticle windup heavies every ~10-12s (~45-55% maxhp on contact) — shield absorbs, dodge i-frames, ult cancels.
+- **Masher: engage-demand window**: track "player used only basics" counter in battle; at 6-8s force a telegraphed enemy heavy ≥25% maxhp.
+- **Masher: per-encounter mutator** — one HUD-labelled trait per fight (Thorns / Overshield / Charger / Pack-Lock) invalidates mashing in one specific way.
+- **Cautious kiter (×5)**: no HP-threshold phase shifts — 100% HP = 15% HP same behavior; proposal — `makeEnemy.phaseStage` + HP-threshold tempo+aggression bumps.
+- **Explorer (×5)**: "solved encounter" — adversary pushes combat depth (phase enemies, enrage, boss patterns).
+- **Panicky (×5)**: manual-mode input bandwidth gap.
+- **Lazy (×6)**: ult-meter 0 start + no attribution still surfacing.
+- **Impatient (×7)**: closing-action-gate `517480e8` cut flee rate, adversary still wants ult-meter seed + enemy-HP-bar momentum rim.
+
+### P2 themes (5)
+
+- Role-split defaultLoadout (backline/dps gets defensive E instead of offensive).
+- Ult seed 15-20 on battle start.
+- Attribution layer on hurtMe (biggest-hits debrief).
+- Enemy HP bar `_closing`-rim VFX.
+- Combo rhythm-gate (on-beat +2 vs off-beat +1).
+
+### Verdict
+
+**One P0 attempted, reverted on gate failure.** Underlying design signal (impatient flee coinciding with ult-ready cliff) is real but the proposed numeric fix was coupled to the poise test harness; needs a non-coupled tune. P1 themes continue to reflect structural asks (enemy phase shifts, encounter mutators, telegraphed decision-points) that exceed cron auto-fix scope.
+
+**Branch state**: `main` 5 ahead of origin/main (post-rebase: `358593e8 … b31d0878`), push-main-lock intact.
+
+---
+
+## Cycle wrtiogrp8 — 2026-11-26T19:xxZ (POST-REBASE on origin/main 9068b9be; AFTER crescent redesign `a7d867bf`)
+
+**Workflow**: `wrtiogrp8` — 6 personas × 8 battles × 1 round
+**Agents**: 70 spawned, 45 delivered, 25 StructuredOutput retry-cap losses (high cap exhaustion — critic-prompt verbose this cycle)
+**Distribution**: 32 critiques → **1 P0**, 25 P1, 6 P2
+**Headline**: "Combat is mechanically solid but feels like a flat progress bar — the first 18s have no authored beat, basics are unreadable, and every defensive/skill button is optional, so every persona except button-mashers bounces between fun 2-5/10."
+
+### Auto-fix outcome
+
+**P0-1 没耐心型 (impatient) — onboarding self-suppression + no skill-forcing combat state** → **FINDINGS-ONLY**
+
+- **Finding**: Two stacked failures:
+  (1) `ui.js:2695-2696` defaults `autoBattle=true` on the first catch; `battle.js:317` kills `initCoach()` in auto → Q/Dodge tutorial never renders for a modal new player. `manualTutorialSeen` is a one-shot flag with no re-entry condition.
+  (2) None of the 12 P1 passives create a reason to press E / Ult / Dodge — all passively trigger on basic + movement. "Route into passive system" escape is unavailable here.
+- **Proposed fix (3 knobs)**:
+  (a) Flip first-encounter autoBattle default manual→auto when any of `everUsedSkill/everUsedDodge/everUsedUlt` is false (ui.js:2695-2696).
+  (b) Replace `manualTutorialSeen` one-shot with a "depth refresher" that re-arms Q + Dodge steps when last 3 battles' `skillsUsed.e+ult + dodgeCount === 0` (battle.js:313-317).
+  (c) **New wild-AI mechanic**: mid-tier+ wild cats get a 1.2-1.8s **skill-break shield** phase — reduces basic to ~15%, takes full damage from Q/E/Ult.
+- **Why findings-only**: (a) is defensible single-knob tune BUT it collides with the autoBattle bootstrap path (coach gating is cross-system — tests likely coupled). (b) is a new counter+decision-tree in initCoach, not a numeric tune. (c) is a brand-new combat state across the wild AI dispatcher (telegraph phase + resolveHit dmg filter + new VFX cue) — classic architectural change. Owner review required for all 3.
+
+### P1 themes (25, findings-only)
+
+**Masher (×5)**: still the "1 verb for 25s" complaint — execute-threshold (sub-20% HP ×2.2 basic), engagement-demand window, attribution strip for big hits. All P1 by same argument as last cycle — these are additive-feature or structural, not local tune.
+**Cautious kiter (×3)**: 97.5% idle in auto mode — long-basic-range cat has no reason to close; _pressure+_closing already exist but don't bite at kiter equilibrium.
+**Explorer (×3)**: stomp ratchet ceiling; E has zero decision-cost; 278x basic:Q ratio — "cooldown-at-ceiling".
+**Panicky (×2)**: 6/8 timeouts in 30.5-36.5s band; existing juice (hitstop/shakeT/hitWhite) not surfaced to persona.
+**Lazy / auto (×4)**: `smartAutoAction` silently drops skill casts under threshold conditions; auto-dodge isn't surfaced in `skillsUsed.dodge`; auto fight pattern has become homogenous.
+**Impatient (×8)**: same "first 18s has no authored beat" root — multiple angles (HP bar momentum rim, Q-burst execute prompt, 8-10s cap on trash — the last would collide with P1 passive triggers).
+
+### P2 themes (6)
+
+- Enemy HP bar `_closing`-rim VFX surfacing
+- Role-split defaultLoadout (backline gets defensive E)
+- Ult meter seed at battle start (15-20)
+- Per-cat boss pattern authoring
+- Attribution layer on hurtMe (biggest-hits debrief)
+- Combo rhythm-gate (on-beat +2 vs off-beat +1)
+
+### Verdict
+
+**One P0 attempted → findings-only** (3-knob architectural: auto-battle gating + coach re-arm logic + new wild-AI skill-break shield). All 25 P1 are structural/additive-feature asks (execute threshold, engagement demand window, per-cat phase shifts, auto-dodge surfacing). **Combat remains numerically healthy this cycle; findings are design-level signal, not tuning.**
+
+**Branch state**: `main` 7 ahead of origin/main (crescent redesign `a7d867bf` shipped this session; this log entry adds +1). Push-main-lock intact.
+
+---
+
+## Cycle woebtgclk — 2026-11-26 (POST-MERGE origin/main `87c5ff9d`, after enemy-level live-match + cap-lift `3725eb52`)
+
+**Workflow**: `woebtgclk` — 6 personas × 8 battles × 1 round
+**Agents**: 74 spawned, 46 delivered, 28 StructuredOutput retry-cap losses
+**Distribution**: 32 critiques → **0 P0**, 20 P1, 12 P2
+**Headline**: "Combat is well-instrumented internally but visually mute and structurally flat — the engine knows pressure, closing, and spike magnitudes the player never sees, and the one compounding knob (combo) saturates in 5s then runs silent."
+
+### Auto-fix outcome
+
+**Combat reads healthy this cycle — zero P0 produced.** Prior P0 themes (enemyUlt cap, closing-ramp, basic-slot penalty, crescent redesign, enemy-level match) all shipped. All remaining findings are **additive-flag P1/P2** (design-level feedback-layer opportunities).
+
+### P1 themes (20, findings-only, all `riskLevel:additive-flag`)
+
+- **Masher**: threat-EMA edge-glow (continuous amber halo keyed on incoming dmg/s, independent of HP%) — fills the ~55% HP perception cliff between "fine" and red-vignette crit.
+- **Masher**: `comboMult()` fever-tier at every 50 hits (currently saturates +20% in ~5s, runs flat 2950 hits) — ×1.8 fever burst 0.8s per 50-combo milestone.
+- **Masher**: auto-shield rulebook entry at `selfHpBelow15AndShieldUnused` (shield has no panic trigger; teaches via visible VFX).
+- **Masher (×3)**: `_pressure` HP-gate `>0.70 && !_stalled` tuned for kiter; mashers eating 352 dmg/fight drop below 0.70 fast → pressure decays → fire-rate/aim-lock boosts never fire for them.
+- **Cautious (×3)**: closing-ramp still bias-free against 97.5%-idle equilibrium; no "closing shows as pressure" cue.
+- **Explorer (×3)**: stomp ratchet ceiling + E has zero decision-cost + 278x basic:Q ratio.
+- **Panicky (×2)**: timeout band 30.5-36.5s symptomatic of 36.2s probe-cap artifact; real cue is missing.
+- **Lazy (×4)**: `smartAutoAction` threshold dropping skill casts; auto-dodge invisible in `skillsUsed.dodge`.
+- **Impatient (×4)**: closing fired but "first 18s has no authored beat" still surfaces; design-layer not numeric.
+
+### P2 themes (12)
+
+- Enemy HP bar `_closing`-rim VFX surfacing
+- Role-split defaultLoadout (backline gets defensive E)
+- Ult meter seed 15-20 at battle start
+- Per-cat boss pattern authoring
+- Attribution layer on hurtMe (biggest-hits debrief)
+- Combo rhythm-gate (on-beat +2 vs off-beat +1)
+- Shield SFX / tutorial toast pairing
+- Range indicator on charge-up skills
+- Fever VFX chip on HUD
+- Ambient battle-start seed state hint
+- Flash-on-element-reaction tint ladder
+- Timeout verdict-absence telegraphed finisher
+
+### Verdict
+
+**Combat numerically healthy — 0 P0 this cycle.** All 20 P1 + 12 P2 are `additive-flag` under the new taxonomy (new fields + consumers, not architectural changes, but still exceed local-numeric cron auto-fix scope until owner lifts the gate). Logged for owner review.
+
+**Branch state**: `main` 21 ahead of origin/main (post-merge of QA promo + enemy-level-match + cap-lift + debug-FAB-race + record-button); push-main-lock intact.
