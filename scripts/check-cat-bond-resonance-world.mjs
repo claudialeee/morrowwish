@@ -31,7 +31,7 @@ console.log(JSON.stringify((function test(){
  for(let scene=0;scene<34;scene++){
   let v=b.view(),s=v.current;if(!s||s.id==="finale:B-01")break;
   if(s.choices.length&&s.choiceTiming==="beforeAction")host(e=>e.choose(s.choices[0].id));
-  if(s.id==="sky:S-01"){ok(b.enter("sky"),"enter before cargo");const x=createExplorer(b,"sky");walk(x,skyLaunch["puzzle:sky-pouch"]);assert(x.interact("puzzle:sky-pouch").reason==="sky-parts-required","flight requires forge parts");transfer("forge","sky",0);transfer("forge","sky",1);assert(!b.cargoSpec("forge","sky"),"cannot send flight data before route restoration");}
+  if(s.id==="sky:S-01"){ok(b.enter("sky"),"enter before cargo");const x=createExplorer(b,"sky");walk(x,skyLaunch["puzzle:sky-pouch"]);assert(x.interact("puzzle:sky-pouch").ok,"flight available without optional cargo");transfer("forge","sky",0);transfer("forge","sky",1);assert(!b.cargoSpec("forge","sky"),"cannot send flight data before route restoration");}
   if(s.id==="library:M-02"){State.S.cats.push({uid:"library-fixture",species:"nainai",personality:"gentle",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});State.S.dex.nainai=1;ok(b.enter("library"),"enter library");const x=createExplorer(b,"library");walk(x,x.layout.features["puzzle:mirror-records"]);assert(["library-previous-station","story-operation-order"].includes(x.interact("puzzle:mirror-records").reason),"must solve mirror gallery first");}
   const ops=s.id==="harbor:H-04"?[...s.requires].reverse():s.requires;
   if(s.id==="harbor:H-04"){
@@ -67,7 +67,7 @@ console.log(JSON.stringify((function test(){
    if(physical===1){const p=x.rewardPoints()[0];walk(x,p.point);const cash=State.S.coins;ok(x.pickup(p.id),"cache reward");assert(State.S.coins>cash&&!x.pickup(p.id).ok,"duplicate reward");rewards++;}
   }else if(op==="battle:root-echo"){ok(b.enter("forest"),"enter forest rescue battle");const x=createExplorer(b,"forest"),rescueProof={sceneId:s.id,operation:op,region:"forest",verified:true,token:b.capture(),outcome:"win"};walk(x,[.31,.58]);assert(!runtime.evidence(rescueProof).ok,"remote victory rejected");walk(x,layouts.forest.features[op]);assert(!runtime.evidence({...rescueProof,outcome:"defeat",token:b.capture()}).ok,"defeat does not finish rescue");ok(runtime.evidence({...rescueProof,token:b.capture()}),"root echo victory evidence fixture");rescueBattleCommits++;assert(b.view().objective[0]==="rescue:trapped-cats","free cats only after victory");}
   else host(e=>e.record(s.id,op));}
-  if(s.id==="starfall:F-04")links();
+  if(s.id==="starfall:F-04"){assert(b.view().ring,"all melodies unlock the story");assert(!b.view().cargoComplete,"optional deliveries remain incomplete");}
   while(b.view().cursor<s.lines.length)host(e=>e.nextLine());
   if(s.choices.length&&!b.view().choice)host(e=>e.choose(s.choices[0].id));
   host(e=>e.finish());
@@ -81,7 +81,7 @@ console.log(JSON.stringify((function test(){
   }
  }
  assert(b.view().current.id==="finale:B-01","did not reach finale: "+b.view().current.id);
- assert(b.view().ring&&b.view().melodies.length===6&&b.view().sanctuaries.length===6,"ring or sanctuaries incomplete");assert(deliveries===24&&localInvites===12,"wrong exchange/participation counts");
+ assert(b.view().ring&&b.view().melodies.length===6&&b.view().sanctuaries.length===6,"ring or sanctuaries incomplete");assert(deliveries===2&&localInvites===12,"wrong exchange/participation counts");links();assert(deliveries===24&&b.view().cargoComplete,"optional deliveries still available at finale");
  assert(!State.S.lastResonanceWorld,"parallel story state still created");
  const old=State.S.resonance,oldW=JSON.stringify(b.world());const oldExplorer=createExplorer(b,b.world().location),oldToken=runtime.capture();
  assert(State.startNewGame("slot2"),"slot2");assert(!oldExplorer.walk(.2,.2),"stale world explorer can move");assert(!runtime.nextLine(oldToken).ok,"stale scene lease accepted");assert(b.view().current.id==="prologue:P-01"&&!b.world().location,"slot2 leaked");

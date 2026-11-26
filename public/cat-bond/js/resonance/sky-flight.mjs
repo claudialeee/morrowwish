@@ -8,7 +8,8 @@ const routes={
  "survey:outbound":[.72,.27,.67],
  "survey:return":[.28,.73,.29]
 };
-export const skyPartsReady=v=>!!v.links?.["forge:sky"]?.includes("receiveB");
+// Xiaomao brings flight parts after the forge chapter; manual cargo is optional.
+export const skyPartsReady=v=>!!(v.completed?.includes("forge:E-04")||v.links?.["forge:sky"]?.includes("receiveB"));
 // A separate painted island is reachable by flight only, never by the main walking path.
 export const skySurveyPath=[[.27,.235],[.30,.22],[.34,.218],[.39,.20]];
 export const skySurveyCache=skySurveyPath.at(-1);

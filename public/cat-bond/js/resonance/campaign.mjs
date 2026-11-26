@@ -1111,8 +1111,8 @@ export const campaign = {
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "我的飞翼零件做好啦！我要亲眼看它飞起来。云脊见，师傅！",
-            "en": "My glider parts are ready! I want to see them fly. See you after Skyspine, Master!"
+            "zh": "我的飞翼零件做好啦！我带一套去云脊，剩下的交给师傅送到森林。云脊见！",
+            "en": "My glider parts are ready! I'll take a set to Skyspine, and Master can send the rest to the forest. See you there!"
           }
         },
         {
@@ -2027,22 +2027,22 @@ export const campaign = {
         {
           "speaker": "qilan",
           "text": {
-            "zh": "港口收到星原的导航铃！小铆的零件和远帆的信都派上用场了，回程船已经带着补给出发！",
-            "en": "Harbor received the navigation bell! Xiaomao's parts and Yuanfan's letters did the trick; the returning boat has set off with supplies!"
+            "zh": "港口听见星原的铃声了！岬灯说灯塔也在回应。大家都准备好了。",
+            "en": "Harbor heard Starfall's bell! Jiedeng says the lighthouse is answering too. Everyone is ready."
           }
         },
         {
           "speaker": "lichuan",
           "text": {
-            "zh": "回程船已经靠岸。最后一格也核实了，六条航线都有真实回信。",
-            "en": "The return ship has docked. The last box is verified; all six routes have real replies."
+            "zh": "商队安全回来了。我在路上听见了另外几座圣所的铃声——不是幻象。",
+            "en": "The caravan returned safely. On the way I heard the bells of the other sanctuaries—they weren't illusions."
           }
         },
         {
           "speaker": "xingya",
           "text": {
-            "zh": "各地读数不一样，却能互相校验。我的星图交给你们，我会继续守着观星仪。",
-            "en": "The readings differ, yet they verify one another. Take my star chart; I'll keep watch at the observatory."
+            "zh": "六座圣所都在回应！就像六只猫在合唱，每个声音不同，却能一起唱下去。",
+            "en": "All six sanctuaries are answering! Like six cats singing together, every voice is different, yet they can carry the song."
           }
         }
       ],
