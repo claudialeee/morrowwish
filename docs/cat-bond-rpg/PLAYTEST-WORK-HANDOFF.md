@@ -1,39 +1,10 @@
-# Echoes of the Starbell / 星铃回响 — Work handoff (draft)
+# Canon 2.2 unified development and acceptance — NOT READY FOR RELEASE
 
-**NOT_READY_FOR_WORK. Do not start Work from this draft.** This file records verified engineering evidence to avoid repeating completed investigation. The release candidate must pass independent Chat acceptance before the owner spends Work quota.
-
-## Revisions and evidence
-
-- Test branch: `review/cat-bond-playtest-harness`.
-- Executed game revision: `4aa924a1b2a0c15bd6c668824b5f46e31bbdd205`.
-- [Actual CI run 45880589786](https://github.com/claudialeee/morrowwish/actions/runs/45880589786).
-- Harbor H-04 pre-action choice softlock fixed in `d74768cfbf6215cf3b1d467637b8ddd29d518424` on isolated next-candidate branch; both choice routes passed engine/predicate regression. Browser verification of this fix is pending.
-- Core art source e73b0bcf; 24 assets integrated. No new art-branch commits as of preceding comparison. Production cinematic approvals and actual visual inspection are not certified by decode/render tests.
-
-| Lane | Observed result at 4aa924a1 | Evidence |
-|---|---|---|
-| Opening | Both real routes, 4/4 fresh checkpoint restores; six language/device profiles overall | [opening](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15147305888) |
-| Harbor | H-01–03 complete; H-04 blocked; 18/18 chapter-derived restores; H-05 missing | [harbor](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15146184267) |
-| Forest | All 4 scenes, 24/24 chapter-derived restores | [forest](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15147084002) |
-| Forge | All 4 scenes, 24/24 chapter-derived restores | [forge](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15147276371) |
-| Sky | All 5 scenes, 30/30 chapter-derived restores | [sky](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15147133761) |
-| Library | All 5 scenes, 30/30 chapter-derived restores | [job](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/job/140118620755) |
-| Starfall | All 5 scenes, 30/30 chapter-derived restores | [starfall](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15147148939) |
-| Finale | All 4 scenes, 24/24 chapter-derived restores | [job](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/job/140118620742) |
-| Epilogue | All 3 scenes, 18/18 chapter-derived restores, ending gate passed | [epilogue](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15147860234) |
-| Fresh continuous campaign | Blocked at Harbor H-04; not a full-game pass | [campaign](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15145494907) |
-| Targets | 36/36 synthetic restores, four real RPG combat wins; 16 pre-ending ambient cases failed on menu/hidden control navigation, post-ending accountability passed | [job](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/job/140118620790) |
-| Audio | Browser/audio asset/lifecycle lane passed | [audio](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15147336064) |
-| Art/combat renderer | 24 decoded assets, 30 rendered actors, 99/99 isolated duo frames spanning 21 element pairs/3 layouts; 29/29 battle prototype passive checks | opening artifact above |
-
-198/198 observed chapter-derived restore executions across Harbor and seven successful independent chapters. Prior full run finished 14/17 jobs successful; Harbor and campaign share H-04 softlock, targets failed on optional NPC UI entry. Next candidate fixes actual compact-menu navigation in ambient driver, pending real regression. Synthetic chapter starts do not prove continuous player progression. Engine audit: three 40-scene routes, 28 choice options, 17 ambient activities, 13 postgame quests, 24 cargo steps, 23 regional discovery steps, all 91 story bonds. Source audits do not replace browser interactions. See `coverage-inventory.json`, `discovery-model-checks.json`, knowledge/optional-coverage.json and the chapter evidence in the run artifacts.
-
-## Independent engineering gate (Chat, before Work)
-1. Fix remaining actual P0/P1 failures; verify latest RPG baseline and art source, preserving integrated work. Batch isolated changes into one candidate, never deploy or push main. Keep current run until remaining actionable logs are available; one automatic full suite per candidate.
-2. On a fixed SHA, check all CI lanes, real fresh continuous route through ending and postgame, actual chapter save coverage and replays, and no blockers. Inspect the coverage inventory item by item for actual evidence and explicit gaps; do not treat engine/model coverage as browser coverage.
-3. Verify real optional exploration, side paths, party join/depart/return, battle skills and outcomes, duo, capture, progression, garden, saves, navigation, tutorial, supported layouts/languages, audio, actual new art/cinematic references and visuals. Resolve engineering gaps; document bounded combinatorial strategy and risks. Candidate/staging cinematics must not be declared approved by automated load checks. Verify every applicable P0 art integration requirement against the same SHA.
-4. Record exact tested SHA, run/job/artifact links, test counts, remaining limitations and reviewed visual evidence. Only then change status to READY_FOR_WORK and freeze engineering changes. No automatic Work launch unless a supported tool actually exists.
-
-## Work execution prompt (prepared, NOT authorized to start yet)
-
-On the independently accepted fixed SHA specified above, act as player-first RPG designer, narrative critic and gameplay reviewer. Begin with a fresh, spoiler-free actual browser playthrough, reading every main story beat and using visible controls; capture first-player questions, desired goals, reactions and confusion before inspecting spoilers. Review the entire game, all 40 scenes from prologue to ending and postgame, all regions and authored optional branches, NPC relationships, recruitment and departure/return, exploration and puzzles, combat and reachable skills/passives/VFX/enemies/difficulties, duo and bonds, collection/growth/garden, saves/restart, menus/tutorial, audio/visual transitions, language and layouts. Reuse the existing automated coverage and evidence; do not repeat accepted ordinary engineering setup. Use bounded state-space testing for combinatorial cases; explicitly record what remains untested. Examine every chapter for hook, causality, world clarity, immediate player motivation, empathy, suspense payoff, agency, challenge, feedback, repetition and pacing; separately check overall narrative coherence and emotional payoff. Do not conflate CI success with fun. Compare honest shortest and exploratory routes. Identify evidence-based P0/P1/P2 issues, actually implement coherent high-value improvements in an isolated review branch, and retest affected plus adjacent/alternative paths with before/after evidence. Do not remove existing gameplay simply to avoid testing. Preserve approved assets and canon unless evidence justifies a targeted change. No main pushes or deployment. Maintain persistent issue/coverage matrix and checkpoint SHAs; avoid re-reading or re-testing already accepted work. Provide a consolidated final quality assessment, evidence, actual fixes and remaining tradeoffs, not suggestions alone. Follow EXPERIENCE-PLAYTEST.md for the full protocol. 
+Single development source: `review/starbell-canon13-player-experience`. Historical `review/starbell-canon22-playtest` is an isolated test snapshot only. Fast-forward it from development if needed; never maintain a second independently evolving game. Merge parents 616dcf434981ea06973435a137cd87b92c13aeb9 and 974b4ec1c52148b4b5c76e8779e2abc6e756abac. No main or deployment.
+- Design authority: 01-NARRATIVE-BIBLE.md, 02-MAIN-STORY-SCRIPT.md, 03-DEVELOPER-HANDOFF.md and ART-RESET-CANON2.md.
+- Checkpoint workflow includes current model and integration contracts plus migration audit, not gameplay acceptance.
+- Stable skill, combat, progression and save menu checks run independently for matching changes or manual dispatch.
+- Real-input chapters and chapter-derived reloads retained; fresh continuous campaign is explicit full manual scope, not ordinary push. Skipped does not mean passed.
+- Real new actions, both routes, recovery, saved evidence, six reciprocal replies and revised epilogue required. Synthetic starting snapshots must be labelled. Legacy task evidence cannot certify new play.
+- Previous integrated 974b4ec1c52148b4b5c76e8779e2abc6e756abac passed run 45895283724, for that SHA only. Verify merged SHA. No release or art approval until supported by actual evidence.
+- Reserve Work for high-value visual and interaction experience, not routine testing/merging.

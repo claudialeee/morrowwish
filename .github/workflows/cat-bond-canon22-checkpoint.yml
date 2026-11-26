@@ -5,6 +5,8 @@ on:
     paths:
       - 'public/cat-bond/**'
       - 'scripts/test-cat-bond-canon22-*.mjs'
+      - 'scripts/cat-bond-canon22-migration-audit.mjs'
+      - 'docs/cat-bond-rpg/02-MAIN-STORY-SCRIPT.md'
       - 'scripts/test-cat-bond-canon12-campaign.mjs'
       - 'scripts/test-cat-bond-resonance*.mjs'
       - 'scripts/test-cat-bond-garden-exploration.mjs'
@@ -25,6 +27,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Design-runtime migration report (not gameplay acceptance)
+        run: node scripts/cat-bond-canon22-migration-audit.mjs
       - name: Verify changed runtime syntax
         run: |
           node --check public/cat-bond/js/resonance/canon22-glide.mjs
@@ -65,3 +69,9 @@ jobs:
             if node "scripts/$test.mjs"; then echo "PASS $test"; else echo "::error::FAIL $test"; failures=$((failures+1)); fi
           done
           test "$failures" -eq 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canon22-migration-report
+          path: artifacts/canon22
+          retention-days: 30

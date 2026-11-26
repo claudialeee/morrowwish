@@ -7,13 +7,16 @@ const output=process.env.CAT_BOND_QA_OUTPUT||'cat-bond-title-save-qa';
 await fs.mkdir(output,{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 let failed=false;
-for(const profile of [
+const profiles=[
  {name:'desktop',width:1280,height:800,mobile:false},
  {name:'phone-narrow',width:320,height:568,mobile:true},
  {name:'phone-portrait',width:390,height:844,mobile:true},
  {name:'phone-landscape-narrow',width:568,height:320,mobile:true},
  {name:'phone-landscape',width:844,height:390,mobile:true}
-]){
+];
+const selected=profiles.filter(p=>!process.env.CAT_BOND_SAVE_PROFILE||p.name===process.env.CAT_BOND_SAVE_PROFILE);
+assert.ok(selected.length,'Unknown CAT_BOND_SAVE_PROFILE');
+await Promise.all(selected.map(async profile=>{
  const context=await browser.newContext({viewport:{width:profile.width,height:profile.height},isMobile:profile.mobile,hasTouch:profile.mobile});
  // When verifying a public deployment, fetch the actual public assets but
  // keep acceptance traffic out of the owner's real player analytics.
@@ -27,13 +30,25 @@ for(const profile of [
  const waitMap=()=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:15000});
  const openInGameSlots=async()=>{
   await page.locator('#map-menu').click();
-  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="slots"]').click();
+  const entry=page.locator('#cb-system-menu [data-system="slots"]');
+  assert.equal(await entry.locator('span').textContent(),await page.evaluate(()=>MorrowwishI18n.get()==='zh'?'存档':'Saves'));
+  assert.equal(await page.locator('#cb-system-menu [data-system="page-saves"]').count(),0);
+  await entry.click();
   await checkVisible('.cb-slot-manager');
+  assert.equal(await page.locator('#cb-system-menu').isVisible(),false,'One menu click opens the manager directly');
+  assert.equal(await page.locator('#cb-slot-status').isVisible(),false,'Empty status must not create a colored strip');
+  assert.equal(await page.locator('#cb-slot-status').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)');
  };
  const openTitleSlots=async()=>{
   await page.locator('#cb-system-toggle').click();
-  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="slots"]').click();
+  const entry=page.locator('#cb-system-menu [data-system="slots"]');
+  assert.equal(await entry.locator('span').textContent(),await page.evaluate(()=>MorrowwishI18n.get()==='zh'?'存档':'Saves'));
+  assert.equal(await page.locator('#cb-system-menu [data-system="page-saves"]').count(),0);
+  await entry.click();
   await checkVisible('.cb-slot-manager');
+  assert.equal(await page.locator('#cb-system-menu').isVisible(),false,'One menu click opens the manager directly');
+  assert.equal(await page.locator('#cb-slot-status').isVisible(),false,'Empty status must not create a colored strip');
+  assert.equal(await page.locator('#cb-slot-status').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)');
   assert.equal(await page.locator('.cb-slot-manager [data-slot-sync], [data-recovery-code], .cb-cloud-code-row').count(),0,'No manual cloud or recovery-code controls');
  };
  try{
@@ -41,10 +56,10 @@ for(const profile of [
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&window.CatBondArtworkStatus?.breedsLoaded===true,{timeout:30000});
   const painting=await page.locator('.cb-title-landscape').evaluate(async element=>{
    const style=getComputedStyle(element);
-   const match=style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/);
+   const match=style.backgroundImage.match(/url\(["']?([^"')]+)["']?\)/);
    if(!match)throw Error('Missing opening painting: '+style.backgroundImage);
    const image=new Image();image.src=match[1];await image.decode();
-   return {url:image.src,width:image.naturalWidth,height:image.naturalHeight,repeat:style.backgroundRepeat,size:style.backgroundSize,visible:element.getBoundingClientRect().height>0&&style.visibility==='visible'&&Number(style.opacity)>0};
+   return {url:image.src,width:image.naturalWidth,height:image.naturalHeight,repeat:style.backgroundRepeat.split(',').at(-1).trim(),size:style.backgroundSize.split(',').at(-1).trim(),visible:element.getBoundingClientRect().height>0&&style.visibility==='visible'&&Number(style.opacity)>0};
   });
   assert.ok(painting.url.endsWith('/assets/garden/title-bell-sanctuary.webp'),'New opening painting for '+profile.name);
   assert.ok(painting.width>=1600&&painting.height>=900&&painting.visible,'Opening painting decodes at usable resolution');
@@ -99,6 +114,7 @@ for(const profile of [
   assert.equal(await page.locator('.rw-region-status').count(),6);
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
   {await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
+  assert.equal(await page.locator('.rw-system-nav').isVisible(),true,'Explore opens idempotently');
   const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
   assert.ok(mapBounds.map.left<=mapBounds.view.left+1&&mapBounds.map.right>=mapBounds.view.right-1&&mapBounds.map.top<=mapBounds.view.top+1&&mapBounds.map.bottom>=mapBounds.view.bottom-1,'Atlas covers the stage without bars');
   const realPress=async locator=>{
@@ -135,17 +151,31 @@ for(const profile of [
    await checkVisible('#panel.open');
    await screenshot('atlas-'+name.toLowerCase().replaceAll(' ','-'));
    if(name==='Catdex'){
-    const owned=page.locator('#panel .dex-cell:not(.locked)').first();await realPress(owned);
-    await checkVisible('#panel #dx');await screenshot('atlas-catdex-detail');
-    await realPress(page.locator('#dx-back'));await checkVisible('#panel .dex-grid');
+    const dex=await page.evaluate(()=>({collectibles:GameData.SPECIES.length,owned:GameData.SPECIES.filter(sp=>State.S.dex[sp.id]>0).length}));
+    assert.equal(await page.locator('#panel .dex-cell').count(),dex.collectibles);
+    assert.equal(await page.locator('#panel .dex-cell:not(.locked)').count(),dex.owned);
+    // The RPG hero is not a wild collectible. A fresh adventure legitimately has
+    // zero unlocked Catdex entries; do not wait for a nonexistent owned card.
+    if(dex.owned){
+      const owned=page.locator('#panel .dex-cell:not(.locked)').first();await realPress(owned);
+      await checkVisible('#panel #dx');await screenshot('atlas-catdex-detail');
+      await realPress(page.locator('#dx-back'));await checkVisible('#panel .dex-grid');
+    }else{
+      await realPress(page.locator('#panel .dex-cell.locked').first());
+      assert.equal(await page.locator('#panel #dx').count(),0,'Undiscovered breed remains locked');
+      await screenshot('atlas-catdex-locked');
+    }
    }
    await realPress(page.locator('.rb-close'));
    await page.locator('#panel.open').waitFor({state:'hidden',timeout:5000});
   }
-  if(await page.locator('.rw-atlas-menu[open]').count()){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
+  // Explore is now an idempotent open action; close via a real map pointer, below.
   await screenshot('world-atlas');
-  // Physical departure from the merged canonical opening.
-  const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);
+  // This suite verifies save lifecycle, not atlas hit-testing (covered by map lanes).
+  // Portrait canvases can be cropped by design; use the actual region control.
+  const harbor=page.locator('.rw-regions [data-region="harbor"]');
+  await realPress(harbor);
+  await page.waitForFunction(()=>WorldMap.currentRegion==='harbor');
   await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01');
   const first=await page.evaluate(()=>window.State.getSaveSlot('slot1').data.state.cats[0].uid);
   assert.ok(first);
@@ -158,6 +188,7 @@ for(const profile of [
   await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='en');
   await page.locator('[data-save="slot2"]').click();
   await page.waitForFunction(()=>!!window.State.getSaveSlot('slot2'));
+  await page.getByText('Saved to Slot 2',{exact:true}).waitFor({state:'visible'});
   await screenshot('in-game-save-manager');
   await page.locator('[data-load="slot2"]').click();
   const confirmBox=await page.locator('.cb-confirm-dialog').boundingBox();assert.ok(confirmBox);const confirmViewport=await page.evaluate(()=>({width:innerWidth,height:innerHeight}));assert.ok(Math.abs(confirmBox.x+confirmBox.width/2-confirmViewport.width/2)<3&&Math.abs(confirmBox.y+confirmBox.height/2-confirmViewport.height/2)<3,'Save confirmation is centered in viewport');await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
@@ -167,7 +198,7 @@ for(const profile of [
   assert.equal(await page.evaluate(()=>window.State.S.cats[0].species),selectedBreed);
   // A real title-menu navigation, not a special test entry.
   await page.locator('#map-menu').click();
-  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="title"]').click();
+  await page.locator('#cb-system-menu [data-system="title"]').click();
   await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__,{timeout:30000});
   // Start the third slot through the actual title picker, preserving the two earlier adventures.
@@ -195,6 +226,6 @@ for(const profile of [
   failed=true;console.error('FAIL '+profile.name,error);console.error('Recent actual input',await page.evaluate(()=>window.__titleQaTouchTrace).catch(()=>[]));
   await screenshot('failure').catch(()=>{});
  }finally{await context.close();}
-}
+}));
 await browser.close();
 if(failed)process.exitCode=1;

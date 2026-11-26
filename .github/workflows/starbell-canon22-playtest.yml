@@ -1,0 +1,71 @@
+name: Starbell Canon 2.2 stable system regression
+on:
+  push:
+    branches: [review/starbell-canon13-player-experience]
+    paths:
+      - 'public/cat-bond/js/main.js'
+      - 'public/cat-bond/js/battle.js'
+      - 'public/cat-bond/js/game-data.js'
+      - 'public/cat-bond/js/skills.js'
+      - 'public/cat-bond/js/state.js'
+      - 'public/cat-bond/js/raising.js'
+      - 'public/cat-bond/js/cinematic-presentation.js'
+      - 'public/cat-bond/js/resonance/story-party.mjs'
+      - 'public/cat-bond/css/**'
+      - 'public/cat-bond/index.html'
+      - 'scripts/cat-bond-starbell-*.mjs'
+      - 'scripts/cat-bond-*skills-visual-smoke.mjs'
+      - 'scripts/cat-bond-title-save-browser-qa.mjs'
+      - '.github/workflows/starbell-canon22-playtest.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: canon22-stable-systems-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  stable-systems:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [skills, combat, progression, saves]
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      SCOPE: ${{ matrix.scope }}
+      CAT_BOND_QA_OUTPUT: artifacts/starbell-parallel/saves
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Stable non-narrative system regression (not revised chapter approval)
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-rpg-systems-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          case "$SCOPE" in
+            skills) node scripts/cat-bond-all-skills-visual-smoke.mjs ;;
+            combat) node scripts/cat-bond-combat-skills-visual-smoke.mjs ;;
+            progression) node scripts/cat-bond-starbell-progression-probe.mjs ;;
+            saves) node scripts/cat-bond-starbell-save-direct-probe.mjs ;;
+            *) exit 2 ;;
+          esac
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-rpg-systems-${{ matrix.scope }}
+          path: |
+            artifacts/starbell-parallel
+            artifacts/starbell-save-direct
+            /tmp/cat-bond-all-skills-*.png
+            /tmp/cat-bond-skill-*.png
+            /tmp/cb-rpg-systems-server.log
+          retention-days: 30
+

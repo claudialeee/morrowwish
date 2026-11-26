@@ -97,6 +97,11 @@
 .cbcp-stage::before{display:none!important}
 .cbcp-stage .cbcp-art-stack{inset:0!important}
 .cbcp-stage .cbcp-art{object-fit:cover!important;background:transparent!important}
+/* Preserve both actors on narrow phones; blurred backplate fills unused space. */
+@media (orientation:portrait) and (max-width:680px){
+ .cbcp-stage:has(.cbcp-art[data-keep-actors="true"])::before{display:block!important}
+ .cbcp-stage .cbcp-art[data-keep-actors="true"]{object-fit:contain!important;object-position:center!important;transform:none!important}
+}
 .cbcp-stage .cbcp-layer{background:transparent!important}
 .cbcp-vignette{background:linear-gradient(0deg,#392c2060,transparent 28%,transparent 82%,#392c2038)!important}
 .cbcp-footer{position:absolute!important;right:clamp(10px,2vw,24px);bottom:max(10px,env(safe-area-inset-bottom));background:transparent!important;border:0!important;padding:0!important;pointer-events:none}
@@ -298,6 +303,7 @@
       image.decoding = 'async';
       image.style.opacity = '0';
       image.style.objectPosition = frame.focus || 'center';
+      if(/\/(f02-history|b04-reunion)\.webp(?:[?#]|$)/.test(frame.image))image.dataset.keepActors='true';
       image.addEventListener('error', fail, {once:true});
       image.addEventListener('load', async () => {
         try { await image.decode?.(); } catch (_) { fail(); return; }

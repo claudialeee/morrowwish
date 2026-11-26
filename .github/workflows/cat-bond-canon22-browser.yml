@@ -7,10 +7,16 @@ on:
       - 'scripts/cat-bond-experience-*.mjs'
       - '.github/workflows/cat-bond-canon22-browser.yml'
   workflow_dispatch:
+    inputs:
+      scope:
+        description: 'chapters or full (fresh campaign + chapters)'
+        type: choice
+        options: [chapters, full]
+        default: chapters
 permissions:
   contents: read
 concurrency:
-  group: canon22-browser-${{ github.ref }}
+  group: canon22-browser-${{ github.ref }}-${{ github.event_name == 'push' && 'chapters' || inputs.scope }}
   cancel-in-progress: false
 jobs:
   chapter:
@@ -81,6 +87,7 @@ jobs:
           retention-days: 14
 
   fresh-campaign:
+    if: github.event_name == 'workflow_dispatch' && inputs.scope == 'full'
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     env:
