@@ -10,6 +10,8 @@ on:
       - 'public/*.js'
       - 'public/*.css'
       - 'package*.json'
+      - 'scripts/test-cat-bond-*.mjs'
+      - 'scripts/check-cat-bond-resonance-world.mjs'
       - '.github/workflows/cat-bond-preview.yml'
   workflow_dispatch:
 permissions:
