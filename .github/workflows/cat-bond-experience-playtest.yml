@@ -19,8 +19,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: cat-bond-experience-${{ github.ref }}
-  cancel-in-progress: true
+  group: cat-bond-experience-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 jobs:
   evidence:
     runs-on: ubuntu-24.04

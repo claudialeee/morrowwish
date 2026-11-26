@@ -172,7 +172,6 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     async function readForestDialogue(id,choice) {
       const dialogue=page.locator('.res-host[data-scene="'+id+'"]');
       await dialogue.waitFor();
-      if(choice){await button(choice,dialogue).click();}
       const observed=[];
       while(await dialogue.isVisible()){
         const line=await page.evaluate(expected=>{const v=CatBondResonance.view();return v.current?.id===expected&&v.lineReady&&v.current.lines[v.cursor]?{...v.current.lines[v.cursor],cursor:v.cursor}:null},id);
@@ -196,8 +195,9 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
         observed.push(line.speaker);
         await dialogue.locator('.res-line').click();
       }
+      if(choice)await button(choice,dialogue).click();
       if(await dialogue.isVisible())await dialogue.waitFor({state:'hidden'});
-      if(!choice)assert.equal(observed.length,{'forest:R-01':4,'forest:R-02':4,'forest:R-03':4,'forest:R-04':6}[id],id+' all canonical dialogue lines');
+      assert.equal(observed.length,{'forest:R-01':4,'forest:R-02':4,'forest:R-03':4,'forest:R-04':6}[id],id+' all canonical dialogue lines');
     }
     async function readForgeDialogue(id,choice) {
       const dialogue=page.locator('.res-host[data-scene="'+id+'"]');
@@ -334,6 +334,8 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     await page.getByText(calibrate?'Align the lighthouse first':'Rescue the boat first',{exact:true}).waitFor();
     assert.equal(await page.locator('.rw-puzzle-controls').count(),0,'Wrong H-04 order must not open the puzzle');
     if (calibrate) {await mirrors();await rescue();} else {await rescue();await mirrors();}
+    // Last two lines are gated by actual rescue and mirror completion.
+    if(await page.evaluate(()=>CatBondResonance.view().current?.id==='harbor:H-04'))await readDialogue('harbor:H-04');
     await scene('harbor:H-05');
     await checkObjective('repair:harbor');
     assert.equal(await button('Returning Tides').count(),0,'Melody cannot precede sanctuary repair');
@@ -433,67 +435,46 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     await button('Talk to Yahe').click();
     await readForestDialogue('forest:R-01');
     await scene('forest:R-02');
-    await button('Talk to Yahe').click();
-    await readForestDialogue('forest:R-02','Prioritize the gardens');
-    await button('Scent on damp moss · 1/3').waitFor();
-    await tapLandmark(.31,.58);
-    await button('Scent on damp moss · 1/3').click();
-    await button('Herbs on the canopy path · 2/3').waitFor();
+    // Canon 1.2: investigate before choosing; no paired-gate minigame.
+    await button('Forest floor · Scattered herbs · 1/3').click();
+    await button('Canopy · Moving roots · 2/3').waitFor();
     await shot('forest-trail-first');
     if(process.env.CAT_BOND_MAP_ONLY==='1'){
       assert.deepEqual(errors,[]);
       results.push({profile:name,mapSmoke:true,captured,harborComplete:true,forestEntered:true});
       await context.close();continue;
     }
-    await page.evaluate(()=>MorrowwishI18n.set('zh'));
-    await button('林间药草痕迹 · 2/3').waitFor();
-    await page.getByText('湿苔上留下了药箱经过的痕迹。沿上方林道继续追踪。',{exact:true}).waitFor();
-    await page.evaluate(()=>MorrowwishI18n.set('en'));
-    await page.reload();
-    await page.locator('#intro-continue').click();
-    await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+    await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
     await scene('forest:R-02');
-    await button('Herbs on the canopy path · 2/3').waitFor();
-    await tapLandmark(.42,.28);
-    await button('Herbs on the canopy path · 2/3').click();
-    await button('Medicine at the root channel · 3/3').waitFor();
-    // The actual trail action now walks the cat to the third scent before recording it.
-    await button('Medicine at the root channel · 3/3').click();
-    await readForestDialogue('forest:R-02');
+    await button('Canopy · Moving roots · 2/3').click();
+    await button('Root cavern · Medicine and sick roots · 3/3').click();
+    await readForestDialogue('forest:R-02','Prioritize the gardens');
     await scene('forest:R-03');
-    await button('Open the upper gate with Yahe').click();
-    await button('Paired water gates').waitFor();
-    if(name==='landscape'){
-      const layout=await page.evaluate(()=>{const a=document.querySelector('.rw-shell').getBoundingClientRect(),b=document.querySelector('.rw-forest-rail').getBoundingClientRect();return {canvas:{x:a.x,y:a.y,right:a.right,bottom:a.bottom},rail:{x:b.x,y:b.y,right:b.right,bottom:b.bottom},w:innerWidth,h:innerHeight}});
-      assert(layout.canvas.y>=0&&layout.canvas.bottom<=layout.h+1,'Forest canvas must fit entirely in landscape viewport');
-      assert(layout.rail.right<=layout.w+1&&layout.rail.bottom<=layout.h+1,'Forest controls remain in the stage');
-    }
-    if(name==='portrait'){const box=await page.locator('.rw-shell').boundingBox();assert(box.y>=40&&box.y+box.height<=844,'Forest painting is fully visible before progress details on portrait');}
-    await shot('forest-upper-gate');
-    await button('Paired water gates').click();
-    const pairedControls=page.locator('.rw-puzzle-controls');await pairedControls.waitFor();await shot('forest-paired-puzzle');
-    const pressureStatus=pairedControls.locator('.rw-quality-water-status');
-    const verifyPressure=async text=>{await pressureStatus.filter({hasText:text}).waitFor();};
-    const card=i=>pairedControls.locator('[data-water-step="'+i+'"]');
-    const press=async i=>{if(options.hasTouch)await card(i).tap();else await card(i).click();};
-    const drag=async(i,dx,dy,cancel=false)=>{const rect=await card(i).boundingBox();assert.ok(rect,'waterworks card visible');const x=rect.x+rect.width/2,y=rect.y+rect.height/2;if(options.hasTouch){const cdp=await context.newCDPSession(page);try{const send=(type,touchPoints)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints});await send('touchStart',[{x,y,id:1}]);for(let j=1;j<=5;j++)await send('touchMove',[{x:x+dx*j/5,y:y+dy*j/5,id:1}]);await send(cancel?'touchCancel':'touchEnd',[]);}finally{await cdp.detach();}}else{await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+dx,y+dy,{steps:5});await page.mouse.up();}};
-    await press(1);await verifyPressure('First raise pressure to two');
-    await press(2);await verifyPressure('First raise pressure to two');
-    await checkObjective('puzzle:paired-water-gates');
-    await drag(0,-32,0);await verifyPressure('Drag in the arrow direction');if(options.hasTouch){await drag(0,32,0,true);await verifyPressure('Drag in the arrow direction');}
-    await press(0);await verifyPressure('Pressure 1/2');
-    await drag(0,32,0);await verifyPressure('Pressure 2/2');
-    assert.equal(await card(0).isDisabled(),true);
-    await drag(1,0,-32);await verifyPressure('Clear the roots');
-    assert.equal(await card(1).isDisabled(),true);
-    await shot('forest-overpressure-recovery'); // historical artifact label; now verifies pressure lock
-    if(name==='portrait'){
-      const changeLocale=async()=>{await page.locator('#map-menu').click();await page.locator('[data-system="page-settings"]').click();await page.locator('[data-system="language"]').click();await page.locator('[data-system="close"]').click();};
-      await changeLocale();await page.waitForFunction(()=>MorrowwishI18n.get()==='zh');
-      await verifyPressure('水压 2/2');await shot('forest-paired-flow-zh');await changeLocale();await page.waitForFunction(()=>MorrowwishI18n.get()==='en');
-    }
-    await verifyPressure('Pressure 2/2');
-    await shot('forest-paired-flow');await press(2);await pairedControls.waitFor({state:'hidden'});
+    await checkObjective('rescue:steady-channel');
+    assert.equal(await page.evaluate(()=>CatBondResonance.view().objective.includes('puzzle:paired-water-gates')),false);
+    await button('Meet Yahe · Stabilize the channel').click();
+    await page.waitForFunction(()=>CatBondResonance.view().objective[0]==='explore:water-marks');
+    await shot('forest-channel-held');
+    await button('Investigate the call from dry roots').click();
+    await revealText('There are no water marks here, but the voice repeats. This is not where the cats are trapped.');
+    await checkObjective('explore:water-marks');
+    await shot('forest-false-echo');
+    await button('Inspect the wet water marks').click();
+    await page.waitForFunction(()=>CatBondResonance.view().objective[0]==='battle:root-echo');
+    await button('Dispel the mimicking echo').click();
+    await page.locator('#panel [data-battle-auto="true"]').click();
+    await page.locator('#bp-go').click();
+    await page.locator('#battle-ui.on').waitFor();
+    await page.waitForFunction(()=>__game.battle?.libraryEncounter?.region==='forest');
+    const forestTutorial=page.locator('#battle-tutorial-skip');
+    if(await forestTutorial.isVisible())await forestTutorial.click();
+    if(!await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();
+    await shot('forest-root-echo-battle');
+    await page.waitForFunction(()=>__game.scene==='map',null,{timeout:200000});
+    await page.getByText('Hollow echo dispelled',{exact:true}).waitFor();
+    await page.locator('#library-battle-ok').click();
+    await page.waitForFunction(()=>CatBondResonance.view().objective[0]==='rescue:trapped-cats');
+    await button('Free the roots · Rescue the cats').click();
     await readForestDialogue('forest:R-03');
     await scene('forest:R-04');
     await puzzle('Ancient-root sanctuary',['Upstream','Branch','Roots']);
@@ -709,7 +690,6 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     await ship('sky','Wind vanes and flight parts');
     async function skyDialogue(id,choice){
       const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();
-      if(choice)await button(choice,dlg).click();
       let seen=0;
       for(;;){
         const line=await page.evaluate(expected=>{const v=CatBondResonance.view();return v.current?.id===expected&&v.lineReady?v.current.lines[v.cursor]:null},id);
@@ -724,6 +704,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
         seen++;await dlg.locator('.res-line').click();
       }
       const expectedLines=await page.evaluate(id=>window.CatBondResonance.view().current?.id===id?window.CatBondResonance.view().current.lines.length:null,id);if(expectedLines!==null)assert.ok(seen<=expectedLines,id+' no extra dialogue lines');assert.ok(seen>0,id+' real dialogue observed');
+      if(choice)await button(choice,dlg).click();
       if(await dlg.isVisible())await dlg.waitFor({state:'hidden'});
     }
     async function skyFlight(label,heights,failFirst=false){
@@ -739,12 +720,13 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
       for(let i=1;i<=3;i++){await page.waitForFunction(g=>Number(document.querySelector('[data-sky-flight-status]')?.dataset.gates)===g,i,{timeout:18000});await move(i===3?.5:heights[i]);}
       await end();await status.waitFor({state:'hidden',timeout:20000});if(send)await send.detach();
     }
+    await skyFlight('Catch the mail pouch · Practice gliding',[.68,.29,.66],true);
     await button('Talk to Yuanfan').click();await skyDialogue('sky:S-01');await scene('sky:S-02');
-    await skyFlight('Flight recorder',[.68,.29,.66],true);await skyDialogue('sky:S-02');await scene('sky:S-03');
-    await button('Talk to Yuanfan').click();const skyChoice=name==='portrait'?'Train on a joint route first':'Let Yuanfan lead';
-    await skyDialogue('sky:S-03',skyChoice);
-    await skyFlight('Joint gliding platform',[.29,.72,.31]);await scene('sky:S-04');
-    await button('Talk to Muling').click();await skyDialogue('sky:S-04');await scene('sky:S-05');
+    const skyChoice=name==='portrait'?'Train on a joint route first':'Let Yuanfan lead';
+    await skyFlight('Flight recorder',[.68,.29,.66]);await skyDialogue('sky:S-02',skyChoice);await scene('sky:S-03');
+    await skyFlight('Joint gliding platform',[.29,.72,.31]);await skyDialogue('sky:S-03');
+    await button('Isolated mail station · Deliver the pouch').click();await scene('sky:S-04');
+    await button('Talk to Muling').click();await skyDialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
     await skyFlight('Windwing sanctuary',[.67,.30,.64]);
     await button('Invite Lingyu').click();await button('Invite Lingyu').waitFor({state:'hidden'});
     await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene('sky:S-05');
