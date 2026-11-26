@@ -38,6 +38,10 @@ export async function continueSavedAdventure(page,{slot='slot1',scene='map'}={})
 }
 
 export async function finishCanonicalOpening(page,{onStage=async()=>{}}={}){
+ await page.waitForFunction(()=>document.querySelector("#cb-player-first-intro")||document.querySelector(".cbcp-art")?.naturalWidth>0);
+ const playerFirst=await page.evaluate(()=>CatBondResonance.view().current?.id==="prologue:P-05");
+ if(playerFirst){const intro=page.locator("#cb-player-first-intro");await intro.waitFor({state:"visible"});await intro.getByRole("button",{name:/^(Start exploring|开始探索)$/}).click();await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==="jinjc"&&__game.scene==="yard");await onStage("fixed protagonist");await page.locator(".sg-prologue-guide").getByRole("button",{name:/Next scene.*Misttide Harbor|下一场景.*霁潮港/}).click();await page.waitForFunction(()=>CatBondResonance.view().current?.id==="harbor:H-01"&&__game.scene==="map");await page.locator("#map-menu").click();await page.locator("#cb-system-menu [data-system=\"world-atlas\"]").click();await page.waitForFunction(()=>WorldMap.mode==="map");await onStage("world map");return;}
+
  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-01'&&document.querySelector('.cbcp-art')?.naturalWidth>0);
  const skip=page.locator('.cbcp-skip');await skip.waitFor();await onStage('prologue P-01');await skip.click();
  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-04');

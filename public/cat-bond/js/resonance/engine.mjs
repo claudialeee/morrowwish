@@ -10,6 +10,8 @@ export function makeEngine(data,initial){
   if(!s.scene?.startsWith("prologue:")&&!s.scene?.startsWith("harbor:")&&!s.scene?.startsWith("forest:")&&s.completed?.length<data.scenes.length)s.cursor=0;
   if(s.completed?.length===data.scenes.length)s.cursor=byId[s.scene]?.lines.length??s.cursor;
   for(const [from,to] of [["sky:S-03","sky:S-02"],["library:M-05","library:M-01"],["starfall:F-04","starfall:F-01"]])if(s.choices?.[from]&&!s.choices[to])s.choices[to]=s.choices[from];
+  // Older saves may already have finished S-02 before the flight choice moved there.
+  if(s.completed?.includes("sky:S-02")&&!s.choices["sky:S-02"])s.choices["sky:S-02"]="train";
   s.fullCampaignPresentationVersion=2;
  }
  if(typeof s.openingMet!=="boolean")s.openingMet=false;if(!s.ambientDone)s.ambientDone=[];if(!s.ruins)s.ruins={clears:s.postgame.includes("postgame:ruins")?1:0,duoClears:0,attempts:[]};
