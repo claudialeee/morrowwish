@@ -1,0 +1,217 @@
+name: Verify already deployed Cat Bond preview (no redeploy)
+on:
+  push:
+    branches: [ops/verify-preview-69a13e8]
+    paths: ['.github/workflows/verify-preview-69a13e8.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      SOURCE_SHA: 69a13e8447a06cd96f8f2c96f0daf50e957440a6
+      CAT_BOND_SMOKE_STAGE: live
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 69a13e8447a06cd96f8f2c96f0daf50e957440a6
+      - name: Check version and actual HTML without republishing
+        run: |
+          set -euo pipefail
+          URL=https://cat-bond-preview.morrowwish.pages.dev
+          for i in {1..15}; do
+            if curl -fsS "$URL/preview-version.json?sha=$SOURCE_SHA&verify=$i" -o /tmp/version.json && jq -e --arg sha "$SOURCE_SHA" '.sha == $sha and .qaTier == "preview-smoke" and .fullReleaseAccepted == false and .scope == "Prologue through Finale" and .storage == "local-only" and .productionApis == false' /tmp/version.json; then break; fi
+            echo "Observed version:"; jq -c . /tmp/version.json || true; sleep 4
+          done
+          jq -e --arg sha "$SOURCE_SHA" '.sha == $sha and .storage == "local-only" and .productionApis == false' /tmp/version.json
+          for i in {1..15}; do
+            if curl -fsS "$URL/cat-bond/?previewSha=$SOURCE_SHA&verify=$i" -o /tmp/live.html && grep -Fq "data-source-sha=\"$SOURCE_SHA\"" /tmp/live.html; then break; fi
+            sleep 4
+          done
+          grep -Fq "data-source-sha=\"$SOURCE_SHA\"" /tmp/live.html
+          for endpoint in session cat-bond-cloud-save; do
+            test "$(curl -sS -o /dev/null -w '%{http_code}' "$URL/api/$endpoint")" = 403
+          done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Run same published preview browser checks
+        run: |
+          cat > .cat-bond-preview-smoke.mjs <<'NODE'
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          try {
+            const origin=process.env.CAT_BOND_SMOKE_ORIGIN || 'https://cat-bond-preview.morrowwish.pages.dev';
+            const results=await Promise.allSettled([{name:'desktop',viewport:{width:1280,height:800}},{name:'portrait',viewport:{width:390,height:844},hasTouch:true},{name:'landscape',viewport:{width:844,height:390},hasTouch:true}].map(async profile=>{
+              const {name,...device}=profile; if(device.hasTouch)device.isMobile=true;
+              const prefix=(process.env.CAT_BOND_SMOKE_STAGE || 'live')+'-'+name;
+              const context=await browser.newContext(device);
+              try{
+                const page=await context.newPage(),external=[],errors=[];
+                page.on('pageerror',e=>errors.push(e.message));
+                await page.route('**/*',route=>{
+                  const url=route.request().url();
+                  if(url.startsWith(origin+'/')||/^(data:|blob:)/.test(url))return route.continue();
+                  external.push(url);return route.abort();
+                });
+                const local=process.env.CAT_BOND_SMOKE_STAGE==='local';
+                const sourceSha=process.env.SOURCE_SHA;
+                if(!/^[0-9a-f]{40}$/.test(sourceSha||''))throw Error('Missing pinned source SHA');
+                const expectedMarker='data-source-sha="'+sourceSha+'"';
+                let loaded=false;
+                // Verify the HTML actually received by each browser, not just the separate version endpoint.
+                // A fresh deployment can briefly serve stale HTML from another edge/cache variant.
+                for(let attempt=0;attempt<(local?1:6);attempt++){
+                  const url=new URL('/cat-bond/',origin);
+                  url.searchParams.set('lang','en');
+                  if(local)url.searchParams.set('rpgDev','1');
+                  url.searchParams.set('previewSha',sourceSha);
+                  url.searchParams.set('qa',name+'-'+attempt);
+                  const response=await page.goto(url.href,{waitUntil:'domcontentloaded'});
+                  const html=response?.ok()?await response.text():'';
+                  if(html.includes(expectedMarker)){loaded=true;break;}
+                  console.warn('Preview HTML source mismatch',prefix,'attempt',attempt+1,'status',response?.status(),'cf-cache-status',response?.headers()['cf-cache-status'],'observed',html.match(/data-source-sha="([0-9a-f]{40})"/)?.[1]||'missing');
+                  if(!local&&attempt<5)await new Promise(resolve=>setTimeout(resolve,2500));
+                }
+                if(!loaded)throw Error('Preview HTML did not converge to pinned source '+sourceSha+' for '+prefix);
+                if(await page.locator('#cb-preview-note').getAttribute('data-source-sha')!==sourceSha)throw Error('Pinned preview note missing from DOM');
+                await page.locator('#intro-continue').waitFor({state:'visible',timeout:30000});
+                await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook&&window.CatBondChapterCinematics);
+                await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady()||CatBondChapterCinematics.starfallReleaseReady());
+                // All final artwork must decode from the exact deployed build, not the source checkout.
+                if(name==='desktop'){
+                  const art=await page.evaluate(async()=>{
+                    const names='forest-fork forest-landing forest-root-bridge forest-moonleaf-control lantern-theater garden-lantern shadow-fish shadow-butterfly shadow-cat lantern-vault lantern-stone-crossing shadow-beast sky-cloudfall sky-safety-island sky-glider history-impact garden-moonleaf-touch garden-moonleaf garden-teacup garden-route-map windchime-chase windchime-wisp'.split(' ');
+                    const paths=names.map(name=>'canon22-final-art/'+name+'.webp').concat(['resonance-world-v2/atlas.webp','resonance-world-v2/harbor.webp','resonance-world-v2/harbor-mist.webp','resonance-world-v2/forge.webp','combat/harbor-arena.webp','combat/tide-shell-watercolor.webp']);
+                    return Promise.all(paths.map(async name=>{const im=new Image();im.src='assets/'+name;await im.decode();if(!im.naturalWidth||!im.naturalHeight)throw Error('Empty art '+name);return {name,w:im.naturalWidth,h:im.naturalHeight};}));
+                  });
+                  if(art.length!==28)throw Error('Missing final watercolor assets');
+                  console.log('FINAL WATERcolors DECODED',JSON.stringify(art));
+                }
+                if(!await page.evaluate(()=>window.ARCADE_COLLECTOR==='/api/preview-disabled'&&window.__CAT_BOND_INTEGRATION_ART__===false))throw Error('Preview isolation / art approval marker mismatch');
+                // Exercise the real page and both translation observers, including round-trip switching.
+                for(const locale of ['en','zh','en']){
+                  await page.evaluate(locale=>window.MorrowwishI18n.set(locale),locale);
+                  await page.waitForFunction(locale=>document.documentElement.lang.startsWith(locale)&&document.getElementById('cb-title-name')?.textContent===(locale==='zh'?'星铃回响':'Echoes of the Starbell')&&document.title===(locale==='zh'?'星铃回响 | Morrow Wish':'Echoes of the Starbell | Morrow Wish'),locale);
+                  const title=await page.locator('.cb-intro-titleblock').innerText();
+                  const buttons=await page.locator('.cb-intro-actions').innerText();
+                  const previewNote=await page.locator('#cb-preview-note').innerText();
+                  if(locale==='en'&&/[\u4e00-\u9fff]/.test(title+buttons+previewNote))throw Error('Chinese leaked into English title or preview note');
+                  if(locale==='zh'&&(/[A-Za-z]/.test(title+buttons)||/Preview|Local saves|Prologue/.test(previewNote)))throw Error('English leaked into Chinese title or preview note');
+                  if(await page.locator('#cb-title-subtitle').count())throw Error('Duplicate language title');
+                  if(locale==='zh')await page.screenshot({path:'preview-'+prefix+'-title-zh.png'});
+                }
+                await page.screenshot({path:'preview-'+prefix+'-title.png'});
+                await page.locator('#intro-start').click();
+                await page.locator('#intro-slot-list [data-slot="slot1"]').waitFor();
+                if(await page.locator('#intro-slot-list [data-slot]').count()!==3)throw Error('Three save slots required');
+                await page.screenshot({path:'preview-'+prefix+'-slots.png'});
+                await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+                await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-05');
+                const intro=page.locator('#cb-player-first-intro');
+                await intro.waitFor({state:'visible'});
+                if(!/Star Bell.*memories/s.test(await intro.innerText()))throw Error('Missing spoiler-free world context');
+                if(await page.locator('.cbcp-root:not([hidden])').count())throw Error('Retired opening still playing');
+                await page.screenshot({path:'preview-'+prefix+'-opening.png'});
+                await intro.getByRole('button',{name:'Start exploring',exact:true}).click();
+                await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&window.__game?.scene==='yard'&&!document.querySelector('#panel.open .cat-starter-card'));
+                await page.waitForFunction(()=>State.S.cats.length===1&&State.listSaveSlots().find(s=>s.id==='slot1')?.exists);
+                const uid=await page.evaluate(()=>State.S.cats[0].uid);
+                const completed=await page.evaluate(()=>State.S.resonance.completed.slice(0,4).join(','));
+                if(completed!=='prologue:P-01,prologue:P-02,prologue:P-03,prologue:P-04')throw Error('Opening presentation checkpoints missing');
+                if(await page.evaluate(()=>CatBondResonance.view().muling!=='unmet'||Object.values(State.S.resonance.evidence).flat().some(op=>op.startsWith('cinematic:'))))throw Error('Opening grants unearned companion or old cinematic evidence');
+                // Actual encounter input on all three deployed profiles; no state mutation or forced click.
+                const guide=page.locator('.sg-prologue-guide');
+                await guide.waitFor({state:'visible'});
+                if(await guide.locator('button:visible').count()!==1)throw Error('Opening guide must expose only the primary navigation button');
+                const marker=page.locator('[data-npc-talk="muling"]');
+                if(await page.locator('.res-garden-bell').count())throw Error('Detached garden bell must be removed');
+                const discover=id=>page.locator('[data-garden-explore="'+id+'"]');
+                for(let i=0;i<3;i++){await discover('butterfly').click();await page.waitForFunction(n=>GardenExploration.read(State.S).butterfly===n,i+1);}
+                await discover('butterfly').waitFor({state:'hidden'});
+                await discover('seed').click();
+                await discover('snack').click();
+                await page.getByRole('button',{name:'Keep for later',exact:true}).click();
+                await discover('door').click();
+                await marker.waitFor({state:'visible'});await marker.click();
+                const encounter=page.locator('#cb-traveler-encounter');
+                if(await encounter.getByRole('button',{name:/^(English|中文|EN)$/}).count())throw Error('Language toggle must not appear in dialogue');
+                await encounter.getByRole('button',{name:'Leave for now',exact:true}).click();
+                await encounter.waitFor({state:'detached'});await marker.click();
+                await encounter.getByRole('button',{name:'Find the chart pieces',exact:true}).click();
+                await encounter.waitFor({state:'detached'});
+                await discover('chart-0').click();
+                if(await page.evaluate(()=>CatBondResonance.view().openingMet))throw Error('One piece cannot complete the encounter');
+                await discover('chart-1').click();
+                await marker.click();
+                await encounter.getByRole('button',{name:'Continue',exact:true}).click();
+                await encounter.getByRole('button',{name:'Say goodbye',exact:true}).click();
+                await encounter.waitFor({state:'detached'});
+                await page.waitForFunction(()=>CatBondResonance.view().openingMet===true);
+                await marker.waitFor({state:'hidden'});
+                if(await page.locator('#toasts .toast:visible').count()>1)throw Error('Exploration notices stack over cats and navigation');
+                await page.screenshot({path:'preview-'+prefix+'-garden-discovery.png'});
+                if(await guide.locator('button:visible').count()!==1)throw Error('Opening guide expanded after dialogue');
+                if(await page.locator('#yard-actions').isVisible())throw Error('Garden floating dock must be hidden');
+                await page.locator('#map-menu').click();
+                const menu=page.locator('#cb-system-menu');
+                await menu.waitFor({state:'visible'});
+                for(const id of ['yard-map','yard-book','page-garden','leisure','page-settings','slots']){
+                  if(!await menu.locator('[data-system="'+id+'"]').isVisible())throw Error('Missing menu action '+id);
+                }
+                if(await page.locator('#hud').isVisible())throw Error('Wallet must not cover garden');
+                if(await page.locator('#cb-yard-return').isVisible())throw Error('Duplicate yard return');
+                const scrim=await menu.evaluate(el=>getComputedStyle(el).backgroundColor);
+                if(scrim!=='rgba(0, 0, 0, 0)'&&scrim!=='transparent')throw Error('Menu must not dim the artwork: '+scrim);
+                await page.screenshot({path:'preview-'+prefix+'-garden-menu.png'});
+                await menu.locator('[data-system="page-garden"]').click();
+                for(const id of ['yard-build','yard-seek','yard-play','yard-feed'])if(!await menu.locator('[data-system="'+id+'"]').isVisible())throw Error('Missing garden action '+id);
+                await menu.locator('[data-system="page-back"]').click();
+                await menu.locator('[data-system="page-settings"]').click();
+                for(const id of ['language','music','effects'])if(!await menu.locator('[data-system="'+id+'"]').isVisible())throw Error('Missing setting '+id);
+                await page.screenshot({path:'preview-'+prefix+'-settings.png'});
+                await menu.locator('[data-system="page-back"]').click();
+                await menu.locator('[data-system="slots"]').click();
+                const saves=page.locator('.cb-slot-manager');
+                await saves.waitFor({state:'visible'});
+                if(await saves.locator('.cb-slot-manager-row').count()!==3||await menu.isVisible())throw Error('Direct save management must open three slots and dismiss the menu');
+                await saves.locator('.cb-cloud-close').click();
+                await saves.waitFor({state:'hidden'});
+                await page.locator('#map-menu').click();
+                await menu.waitFor({state:'visible'});
+                await menu.locator('[data-system="yard-book"]').click();
+                await page.locator('.rb-wallet').waitFor({state:'visible'});
+                await page.screenshot({path:'preview-'+prefix+'-book-wallet.png'});
+                if(await page.locator('#hud').isVisible())throw Error('Wallet must remain inside the book');
+                await page.screenshot({path:'preview-'+prefix+'-garden.png'});
+                await page.reload();
+                await page.locator('#intro-continue').click();
+                await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+                await page.waitForFunction(uid=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&State.S.cats[0].uid===uid&&CatBondResonance.view().current?.id==='prologue:P-05',uid);
+                if(!await page.evaluate(()=>CatBondResonance.view().openingMet))throw Error('Encounter completion lost on reload');
+                await page.screenshot({path:'preview-'+prefix+'-reloaded.png'});
+                await page.locator('.sg-prologue-guide').getByRole('button',{name:'Next scene · Windchime Town',exact:true}).click();
+                await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01'&&WorldMap.currentRegion==='harbor');
+                await page.screenshot({path:'preview-'+prefix+'-harbor.png'});
+                if(external.length||errors.length)throw Error('Unexpected external requests / page errors: '+JSON.stringify({external,errors}));
+                console.log('PREVIEW NEW SLOT AND RELOAD VERIFIED: '+prefix+' '+page.url());
+              }catch(error){
+              console.error('Smoke failed in '+prefix, error);
+              throw error;
+            }finally{await context.close()}
+            }));
+            const failures=results.filter(r=>r.status==='rejected');
+            if(failures.length)throw new AggregateError(failures.map(r=>r.reason),'Preview profile failures: '+failures.length);
+          }finally{await browser.close()}
+          NODE
+          node .cat-bond-preview-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: published-preview-69a13e8
+          path: preview-*.png
+          if-no-files-found: ignore
+          retention-days: 3
