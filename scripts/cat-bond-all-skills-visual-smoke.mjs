@@ -29,8 +29,8 @@ try{
      'Every real normal skill, including generated archetypes, must have an individual VFX ID');
    assert.ok(ids.includes('frostClaw'),
      'Approved Water Frost Claw must receive real per-skill battle VFX on both devices');
-   const blueberry=await page.evaluate(()=>{
-     const c=State.makeCat('lanbao',{affinity:95});
+   const waterCat=await page.evaluate(()=>{
+     const c=State.makeCat('ripplet',{affinity:95});
      c.level=18;c.skillAwakened=true;c.skillEdited=true;
      c.loadout=[null,'gen_elec_melee','boltArc','thunderYowl'];
      c.autoSkillLoadout=c.loadout.slice();c.learned=['mirrorWall'];
@@ -39,10 +39,10 @@ try{
        equipped:c.loadout.filter(Boolean).map(id=>Skills.skillById(id)?.element),
        native:Skills.learnableSkills(c).map(s=>s.element)};
    });
-   assert.equal(blueberry.primary,'water');
-   assert.equal(blueberry.secondary,null);
-   assert.ok([...blueberry.equipped,...blueberry.native].every(el=>el==='water'),
-     'Water/Ice Blueberry must NEVER equip old Electric saves or learn Electricity');
+   assert.equal(waterCat.primary,'water');
+   assert.equal(waterCat.secondary,null);
+   assert.ok([...waterCat.equipped,...waterCat.native].every(el=>el==='water'),
+     'Current water cat must NEVER equip old Electric saves or learn Electricity');
    const hashes=[];
    for(const id of ids){
     const record=await page.evaluate(id=>{
@@ -57,7 +57,7 @@ try{
       cat.level=15;State.S.cats=[cat];
       State.S.battlePrefs={...(State.S.battlePrefs||{}),
         manualTutorialSeen:true,tutorialSeen:true,autoBattle:false};
-      g.startBattle([cat],GameData.speciesById('doudou'));
+      g.startBattle([cat],GameData.SPECIES[0]);
       const b=g.battle,f=b.me(),target=b.enemies[0];
       b.coach=null;b.autoMode=false;b.t=2.1;
       if(!target||!f)throw Error('No real combatants '+id);
@@ -116,7 +116,7 @@ try{
       }else if(drawn<(support||melee?1:2)){
         throw Error('Signature not in actual battle '+id+': '+drawn);
       }
-      if(window.CatBondUltHero||b.ultHero)throw Error('full-screen art during normal skill');
+      if(b.ultHero||b.duoCinematic)throw Error('full-screen art during normal skill');
       return {id,skillName:sk.name,style:sk.kind,drawn,
         hasCast:b.skillStrokes.some(s=>s.kind==='signatureCast'),
         hasHit:b.skillStrokes.some(s=>s.kind==='signatureHit'),

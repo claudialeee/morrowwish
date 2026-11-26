@@ -1,0 +1,111 @@
+name: Starbell Canon 2.2 Playtest migration
+on:
+  push:
+    branches: [review/starbell-canon22-playtest]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/test-cat-bond-canon22-*.mjs'
+      - 'scripts/test-cat-bond-canon12-campaign.mjs'
+      - 'scripts/cat-bond-*.mjs'
+      - 'docs/cat-bond-rpg/**'
+      - '.github/workflows/starbell-canon22-playtest.yml'
+  workflow_dispatch:
+    inputs:
+      scope:
+        type: choice
+        options: [checkpoint, systems, release]
+        default: checkpoint
+permissions:
+  contents: read
+concurrency:
+  group: canon22-playtest-${{ github.ref }}-${{ github.event_name == 'push' && 'checkpoint' || inputs.scope }}
+  cancel-in-progress: true
+jobs:
+  regression:
+    if: github.event_name == 'push' || inputs.scope != 'systems'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Report design-runtime divergence (not new campaign approval)
+        run: node scripts/cat-bond-canon22-migration-audit.mjs
+      - name: Verify changed runtime syntax
+        run: |
+          node --check public/cat-bond/js/resonance/canon22-glide.mjs
+          node --check public/cat-bond/js/resonance/canon22-mirror.mjs
+          node --check public/cat-bond/js/resonance/library-mechanisms.mjs
+          node --check public/cat-bond/js/resonance/world-exploration.mjs
+          node --check public/cat-bond/js/resonance/world-bridge.mjs
+          node --check public/cat-bond/js/resonance/sky-flight.mjs
+          node --check public/cat-bond/js/resonance/world-runtime.mjs
+          node --check public/cat-bond/js/resonance/campaign.mjs
+          node --check public/cat-bond/js/resonance/engine.mjs
+          node --check public/cat-bond/js/resonance/narrative-host.mjs
+          node --check public/cat-bond/js/resonance/title-entry.mjs
+          node --check public/cat-bond/js/resonance/chapter-cinematics.mjs
+          node --check public/cat-bond/js/resonance/slot-runtime.mjs
+      - name: Verify implemented flight and scene contract
+        run: |
+          node scripts/test-cat-bond-canon22-glide.mjs
+          node scripts/test-cat-bond-canon22-mirror.mjs
+          node scripts/test-cat-bond-canon22-epilogue.mjs
+      - name: Run campaign integration regressions
+        run: node scripts/test-cat-bond-canon12-campaign.mjs
+      - name: Strict release guard
+        if: inputs.scope == 'release'
+        run: node scripts/cat-bond-canon22-migration-audit.mjs --release
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canon22-migration-report
+          path: artifacts/canon22
+          retention-days: 30
+  stable-systems:
+    if: github.event_name == 'push' || inputs.scope == 'systems'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [skills, combat, progression, saves]
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      SCOPE: ${{ matrix.scope }}
+      CAT_BOND_QA_OUTPUT: artifacts/starbell-parallel/saves
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Stable non-narrative system regression (not revised chapter approval)
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-rpg-systems-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          case "$SCOPE" in
+            skills) node scripts/cat-bond-all-skills-visual-smoke.mjs ;;
+            combat) node scripts/cat-bond-combat-skills-visual-smoke.mjs ;;
+            progression) node scripts/cat-bond-starbell-progression-probe.mjs ;;
+            saves) node scripts/cat-bond-starbell-save-direct-probe.mjs ;;
+            *) exit 2 ;;
+          esac
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-rpg-systems-${{ matrix.scope }}
+          path: |
+            artifacts/starbell-parallel
+            artifacts/starbell-save-direct
+            /tmp/cat-bond-all-skills-*.png
+            /tmp/cat-bond-skill-*.png
+            /tmp/cb-rpg-systems-server.log
+          retention-days: 30
+
