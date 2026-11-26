@@ -10,6 +10,9 @@ on:
       - 'scripts/test-cat-bond-companion-rarity.mjs'
       - 'scripts/test-cat-bond-core-art-roster.mjs'
       - 'scripts/cat-bond-core-art-browser.mjs'
+      - 'scripts/cat-bond-rpg-audio-browser.mjs'
+      - 'scripts/check-cat-bond-audio-assets.mjs'
+      - 'scripts/test-cat-bond-rpg-audio-lifecycle.mjs'
       - 'scripts/test-cat-bond-canon12-campaign.mjs'
       - 'public/cat-bond/**'
       - 'docs/cat-bond-rpg/EXPERIENCE-PRE-AUDIT.md'
@@ -17,9 +20,9 @@ on:
   workflow_dispatch:
     inputs:
       scope:
-        description: 'opening, campaign, targets, or one full chapter'
+        description: 'opening, campaign, targets, audio, or one full chapter'
         type: choice
-        options: [opening, campaign, targets, harbor, forest, forge, sky, library, starfall, finale, epilogue]
+        options: [opening, campaign, targets, audio, harbor, forest, forge, sky, library, starfall, finale, epilogue]
         default: opening
 permissions:
   contents: read
@@ -28,6 +31,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   evidence:
+    if: github.event_name == 'push' || inputs.scope != 'audio'
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     strategy:
@@ -282,4 +286,36 @@ jobs:
             artifacts/cat-bond-release-prologue/
             /tmp/cb-opening-ui-server.log
           if-no-files-found: error
+          retention-days: 30
+
+  audio-evidence:
+    if: github.event_name == 'push' || inputs.scope == 'audio'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: node scripts/check-cat-bond-audio-assets.mjs
+      - run: node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Browser audio controls and decode all soundtrack recordings
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-audio-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-rpg-audio-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cat-bond-audio-evidence
+          path: |
+            artifacts/cat-bond-audio/
+            /tmp/cb-audio-server.log
+          if-no-files-found: warn
           retention-days: 30
