@@ -100,8 +100,8 @@ jobs:
           const browser=await chromium.launch({headless:true});
           try {
             const origin=process.env.CAT_BOND_SMOKE_ORIGIN || 'https://cat-bond-preview.morrowwish.pages.dev';
-            await Promise.all([{name:'desktop',viewport:{width:1280,height:800}},{name:'portrait',viewport:{width:390,height:844},hasTouch:true},{name:'landscape',viewport:{width:844,height:390},hasTouch:true}].map(async profile=>{
-              const {name,...device}=profile;
+            const results=await Promise.allSettled([{name:'desktop',viewport:{width:1280,height:800}},{name:'portrait',viewport:{width:390,height:844},hasTouch:true},{name:'landscape',viewport:{width:844,height:390},hasTouch:true}].map(async profile=>{
+              const {name,...device}=profile; if(device.hasTouch)device.isMobile=true;
               const prefix=(process.env.CAT_BOND_SMOKE_STAGE || 'live')+'-'+name;
               const context=await browser.newContext(device);
               try{
@@ -136,6 +136,15 @@ jobs:
                 await page.locator('#intro-continue').waitFor({state:'visible',timeout:30000});
                 await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook&&window.CatBondChapterCinematics);
                 await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady()||CatBondChapterCinematics.starfallReleaseReady());
+                // All final artwork must decode from the exact deployed build, not the source checkout.
+                if(name==='desktop'){
+                  const art=await page.evaluate(async()=>{
+                    const names='forest-fork forest-landing forest-root-bridge forest-moonleaf-control lantern-theater garden-lantern shadow-fish shadow-butterfly shadow-cat lantern-vault lantern-stone-crossing shadow-beast sky-cloudfall sky-safety-island sky-glider history-impact garden-moonleaf-touch garden-moonleaf garden-teacup garden-route-map'.split(' ');
+                    return Promise.all(names.map(async name=>{const im=new Image();im.src='assets/canon22-final-art/'+name+'.webp';await im.decode();if(!im.naturalWidth||!im.naturalHeight)throw Error('Empty art '+name);return {name,w:im.naturalWidth,h:im.naturalHeight};}));
+                  });
+                  if(art.length!==20)throw Error('Missing final watercolor assets');
+                  console.log('FINAL WATERcolors DECODED',JSON.stringify(art));
+                }
                 if(!await page.evaluate(()=>window.ARCADE_COLLECTOR==='/api/preview-disabled'&&window.__CAT_BOND_INTEGRATION_ART__===false))throw Error('Preview isolation / art approval marker mismatch');
                 // Exercise the real page and both translation observers, including round-trip switching.
                 for(const locale of ['en','zh','en']){
@@ -203,7 +212,7 @@ jobs:
                 await page.locator('#map-menu').click();
                 const menu=page.locator('#cb-system-menu');
                 await menu.waitFor({state:'visible'});
-                for(const id of ['yard-map','yard-book','page-garden','leisure','page-settings','page-saves']){
+                for(const id of ['yard-map','yard-book','page-garden','leisure','page-settings','slots']){
                   if(!await menu.locator('[data-system="'+id+'"]').isVisible())throw Error('Missing menu action '+id);
                 }
                 if(await page.locator('#hud').isVisible())throw Error('Wallet must not cover garden');
@@ -218,9 +227,14 @@ jobs:
                 for(const id of ['language','music','effects'])if(!await menu.locator('[data-system="'+id+'"]').isVisible())throw Error('Missing setting '+id);
                 await page.screenshot({path:'preview-'+prefix+'-settings.png'});
                 await menu.locator('[data-system="page-back"]').click();
-                await menu.locator('[data-system="page-saves"]').click();
-                if(!await menu.locator('[data-system="slots"]').isVisible())throw Error('Save management is not reachable');
-                await menu.locator('[data-system="page-back"]').click();
+                await menu.locator('[data-system="slots"]').click();
+                const saves=page.locator('.cb-slot-manager');
+                await saves.waitFor({state:'visible'});
+                if(await saves.locator('.cb-slot-manager-row').count()!==3||await menu.isVisible())throw Error('Direct save management must open three slots and dismiss the menu');
+                await saves.locator('.cb-cloud-close').click();
+                await saves.waitFor({state:'hidden'});
+                await page.locator('#map-menu').click();
+                await menu.waitFor({state:'visible'});
                 await menu.locator('[data-system="yard-book"]').click();
                 await page.locator('.rb-wallet').waitFor({state:'visible'});
                 await page.screenshot({path:'preview-'+prefix+'-book-wallet.png'});
@@ -242,6 +256,8 @@ jobs:
               throw error;
             }finally{await context.close()}
             }));
+            const failures=results.filter(r=>r.status==='rejected');
+            if(failures.length)throw new AggregateError(failures.map(r=>r.reason),'Preview profile failures: '+failures.length);
           }finally{await browser.close()}
           NODE
       - name: Run isolated predeployment browser smoke
