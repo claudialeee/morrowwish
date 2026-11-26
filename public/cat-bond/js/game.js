@@ -1887,6 +1887,10 @@ class Game {
       if(!important&&now-(this._lastCombatNoticeAt||0)<950)return;
       this._lastCombatNoticeAt=now;
       wrap.replaceChildren(); // never stack battle text across the battlefield
+    } else if(window.__CAT_BOND_CANONICAL_ACTIVE__) {
+      // Exploration rewards persist in the save. Keep the newest acknowledgement
+      // visible without stacking transient text over the cat or navigation card.
+      wrap.replaceChildren();
     }
     const el=document.createElement('div');
     el.className=battle?'toast toast-battle':'toast';
