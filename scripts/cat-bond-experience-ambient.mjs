@@ -44,8 +44,11 @@ try{
     if(await target.isVisible())return;
     await all.waitFor({state:'attached',timeout:8000});
     if(await target.isVisible())return;
-    const collapsed=world.locator('.rw-region-toggle[aria-expanded="false"],.rw-atlas-menu:not([open]) > summary');
-    if(await collapsed.count()&&await all.evaluate(el=>!!el.closest('#rw-region-actions,.rw-atlas-menu')))await menu('world-explore');
+    const rail=world.locator('#rw-region-actions'),atlas=world.locator('.rw-atlas-menu:not([open]) > summary');
+    if(await all.evaluate(el=>!!el.closest('#rw-region-actions'))&&await rail.count()&&!await rail.isVisible()){
+     await menu('world-explore');
+     await rail.waitFor({state:'visible',timeout:5000});
+    }else if(await atlas.count()&&await all.evaluate(el=>!!el.closest('.rw-atlas-menu')))await menu('world-explore');
     const optional=world.locator('.rw-optional-actions:not([open]) > summary').first();
     if(!await target.isVisible()&&await optional.count()&&await all.evaluate(el=>!!el.closest('.rw-optional-actions'))){
      await scanFor(optional);await optional.click();
@@ -85,6 +88,7 @@ try{
    }
    let dialog=await open();await page.screenshot({path:out+'/'+slug+'-before.png'});
    await dialog.getByRole('button',{name:'Maybe later',exact:true}).click();await dialog.waitFor({state:'hidden'});assert.deepEqual(await read(),before);
+   if(event.region!=='garden')assert.equal(await world.locator('.rw-region-toggle').getAttribute('aria-expanded'),'false','NPC visit must close and synchronize exploration menu');
    dialog=await open();await dialog.getByRole('button',{name:activities[event.id].action[1],exact:true}).click();
    await dialog.getByRole('button',{name:'Return to exploration',exact:true}).waitFor();
    assert.ok((await dialog.innerText()).includes(event.text.en));await page.screenshot({path:out+'/'+slug+'-complete.png'});

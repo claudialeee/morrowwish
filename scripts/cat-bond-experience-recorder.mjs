@@ -58,6 +58,7 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
       fs.writeFileSync(path.join(checkpointDir,name),JSON.stringify(fixture,null,2));
       const relative='checkpoints/'+id+'/'+name;saved.set(key,relative);
       record({kind:'checkpoint_saved',scene,ending,milestone,cursor:fixture.cursor,region,provenance:fixture.provenance,fixture:relative});
+      if(id.startsWith('campaign-'))console.log('CAMPAIGN CHECKPOINT',JSON.stringify({scene,milestone,cursor:fixture.cursor,elapsedSeconds:Math.round((Date.now()-start)/1000),completed:state.resonance.completed?.length}));
       return {ok:true,fixture:relative};
     }catch(error){record({kind:'recorder_error',message:'checkpoint: '+String(error)});return {ok:false,reason:String(error)};}
   });
