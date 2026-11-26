@@ -2653,7 +2653,7 @@ class CaptureBattle {
     // 170px crescent + extra pre-hit particle fan. Only real contact gets
     // impact accents through resolveHit and per-skill signatures.
     const RANGE = 64, ARC = .74;
-    this.vfx.slash(f.x, f.y, aim, col, RANGE * (skill?.heavy ? 1.62 : 1.27), ARC * 1.02,
+    this.vfx.slash(f.x, f.y, aim, col, RANGE * (skill?.heavy ? 1 : .88), ARC,
       {heavy: !!skill?.heavy,element:skill?.element});
     let hit = false, dealtTotal = 0;
     for (const e of this.liveEnemies()) {
