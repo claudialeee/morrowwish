@@ -16,7 +16,9 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   const release=openingRelease&&!approved&&/^prologue:P-0[123]$/.test(scene.id)&&manifest?.prologueReleaseShots?.[scene.id];
   const useStaging=staging&&!approved&&!release;
   const shots=approved||release||(useStaging?manifest?.stagingShots?.[scene.id]:null);
-  if(!Array.isArray(shots)||shots.length<2)return bad('approved-shot-sequence-missing');
+  // Keep legacy opening checkpoint IDs with one authored shot each in P-02/P-03.
+  const minShots=release&&/^prologue:P-0[23]$/.test(scene.id)?1:2;
+  if(!Array.isArray(shots)||shots.length<minShots)return bad('approved-shot-sequence-missing');
   const assets=new Map((manifest.assets||[]).map(a=>[a.id,a]));
   const unique=new Set(),covered=[],frames=[];
   for(const [i,shot] of shots.entries()){
@@ -28,7 +30,8 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
       ?asset?.status==='candidate'&&asset.stagingAllowed===true&&asset.runtimeAllowed===false
       :independentlyApproved;
     const recalled=(useStaging||!!approved)&&scene.id==='starfall:F-02'&&['opening-star-bell','opening-keepers-choice','opening-broken-bell-tongue'].includes(asset?.id)&&/^prologue:P-0[12]$/.test(asset.sceneKey);
-    if(!allowed||(!recalled&&asset.sceneKey!==scene.id)||!raster.test(asset.path))return bad('unapproved-shot');
+    const gardenPlate=release&&scene.id==='prologue:P-03'&&asset?.id==='opening-empty-garden-plate'&&asset.path==='assets/garden/sunlit-garden-landscape.webp';
+    if(!allowed||(!recalled&&asset.sceneKey!==scene.id)||(!gardenPlate&&!raster.test(asset.path)))return bad('unapproved-shot');
     if(unique.has(asset.path))return bad('repeated-shot-art');unique.add(asset.path);
     if(!isBilingual(shot.alt)||!Number.isFinite(shot.durationMs)||shot.durationMs<1200||shot.durationMs>20000||!Array.isArray(shot.lines))return bad('invalid-shot');
     const base={id:scene.id+'-shot-'+i,image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,focus:shot.focus,transitionMs:shot.transitionMs||520,effect:shot.effect};
@@ -39,7 +42,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
         'opening-waiting-at-workbench':{zh:'那场灾难暂时平息。一只小猫把旧铃修了又修，守着一个归来的约定。',en:'The disaster subsided. One cat kept repairing an old bell, holding on to a promise of return.'},
         'opening-garden-at-dawn':{zh:'许多年后，阳光花园里终于传来了一声熟悉的铃响。新的旅程就此开始。',en:'Years later, a familiar bell finally rang in Sunlit Garden. A new adventure was about to begin.'}
       };
-      const copy=recalled&&isBilingual(shot.caption)?shot.caption:scene.chapter==='prologue'?openingCaptions[asset.id]:null;
+      const copy=(recalled||release)&&isBilingual(shot.caption)?shot.caption:scene.chapter==='prologue'?openingCaptions[asset.id]:null;
       const caption=isBilingual(copy)?{zh:{speaker:'',text:copy.zh},en:{speaker:'',text:copy.en}}:undefined;
       frames.push({...base,subtitle:caption,shotDurationMs:base.durationMs,shotOffsetMs:0});}
     const duration=index=>Math.max(2600,Math.min(11000,1100+scene.lines[index].text.en.length*70));
@@ -99,7 +102,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
       alt:{zh:'记忆回到守铃者身边',en:'The Bellkeeper’s memories return'},durationMs:3400,transitionMs:800,
       camera:{from:{x:0,y:0,scale:1.03},to:{x:0,y:0,scale:1.09}},effect:'sanctuary',note:392});
   }
-  return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.id==='prologue:P-02'?{zh:'抉择',en:'The Choice'}:scene.title,chapter:{zh:'猫猫纽带',en:'Cat Bond'},mode:'auto',allowSkip:true,frames}};
+  return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.title,chapter:{zh:'猫猫纽带',en:'Cat Bond'},mode:'auto',allowSkip:true,frames}};
 }
 
 // Pure permission check: no save, story mutation, staging or URL override.

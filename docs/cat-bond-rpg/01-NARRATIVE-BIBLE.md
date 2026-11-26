@@ -4,6 +4,8 @@
 **Status:** New canonical story foundation. Supersedes all previous Cat Bond RPG story bibles and plot drafts, including The Last Page.  
 **Working title:** The Last Resonance  
 **Ending:** Complete Happy Ending  
+**Mystery presentation revision (2026-11-25):** The facts below are author-only, not an opening narration. P-01/P-02/P-03 show environment, broken bell and an anonymous question; the protagonist wakes alone and meets Muling after the garden bell. H-05 adds an ambiguous witness; R-04 reports worsening elsewhere; E-04 adds fresh routing marks; S-04 offers a near-slip; M-03 reveals identity, M-04 culpability; F-03 makes the irreversible memory cost explicit. Preserve the two seal mechanisms, voluntary sacrifice, six-region mutual replies, and happy ending. Former opening paintings remain for late memory sequences. See the main story script's revised dialogue.
+
 **Primary theme:** A bond is not ownership. Loving someone does not give you the right to choose another person's life or sacrifice someone else's memories for them.
 
 ---

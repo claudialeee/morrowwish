@@ -655,6 +655,17 @@
       "dialogueRuntimeAllowed": true,
       "source": "Owner-selected cream silver shaded watercolor portrait",
       "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "opening-empty-garden-plate",
+      "kind": "cinematic-key-art",
+      "sceneKey": "prologue:P-03",
+      "path": "assets/garden/sunlit-garden-landscape.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Existing Sunlit Garden painted environment; pending visual review."
     }
   ],
   "sceneKeys": [
@@ -1097,11 +1108,11 @@
       {
         "assetId": "opening-star-bell",
         "alt": {
-          "zh": "星铃与六座圣所",
-          "en": "The Star Bell above the six sanctuaries"
+          "zh": "破碎前的星铃",
+          "en": "The Star Bell before the fracture"
         },
-        "durationMs": 8500,
-        "transitionMs": 900,
+        "durationMs": 4000,
+        "transitionMs": 650,
         "camera": {
           "from": {
             "x": 0,
@@ -1116,16 +1127,20 @@
         },
         "lines": [],
         "effect": "impact",
-        "focus": "50% 50%"
+        "focus": "50% 50%",
+        "caption": {
+          "zh": "那一夜，星铃的声音断了。",
+          "en": "That night, the Star Bell's song broke."
+        }
       },
       {
         "assetId": "opening-harbor-at-twilight",
         "alt": {
-          "zh": "暮色中的港口听见星铃",
-          "en": "The harbor hears the Star Bell at twilight"
+          "zh": "暮色港口",
+          "en": "Harbor at twilight"
         },
-        "durationMs": 6500,
-        "transitionMs": 900,
+        "durationMs": 4000,
+        "transitionMs": 650,
         "camera": {
           "from": {
             "x": 0,
@@ -1140,50 +1155,22 @@
         },
         "lines": [],
         "effect": "blackout",
-        "focus": "50% 50%"
+        "focus": "50% 50%",
+        "caption": {
+          "zh": "从那天起，有些猫忘记了回家的路。",
+          "en": "From that day, some cats forgot the way home."
+        }
       }
     ],
     "prologue:P-02": [
       {
-        "assetId": "opening-keepers-choice",
-        "alt": {
-          "zh": "陌生的猫走向应急锚室",
-          "en": "An unknown cat approaches the emergency anchor"
-        },
-        "durationMs": 4000,
-        "transitionMs": 900,
-        "camera": {
-          "from": {
-            "x": 0,
-            "y": 0,
-            "scale": 1.02
-          },
-          "to": {
-            "x": 2,
-            "y": 0,
-            "scale": 1.13
-          }
-        },
-        "lines": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6
-        ],
-        "effect": "storm",
-        "focus": "50% 50%"
-      },
-      {
         "assetId": "opening-broken-bell-tongue",
         "alt": {
-          "zh": "碎裂的铃舌与伸出的猫爪",
-          "en": "A paw reaches toward the broken bell tongue"
+          "zh": "断裂的旧铃舌",
+          "en": "A broken bell tongue"
         },
-        "durationMs": 4000,
-        "transitionMs": 900,
+        "durationMs": 4200,
+        "transitionMs": 650,
         "camera": {
           "from": {
             "x": 0,
@@ -1196,53 +1183,23 @@
             "scale": 1.13
           }
         },
-        "lines": [
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14
-        ],
-        "effect": "seal",
-        "focus": "68% 52%"
+        "lines": [],
+        "focus": "68% 52%",
+        "caption": {
+          "zh": "「如果有一天……你忘记了我呢？」",
+          "en": "“What if one day... you forget me?”"
+        }
       }
     ],
     "prologue:P-03": [
       {
-        "assetId": "opening-waiting-at-workbench",
+        "assetId": "opening-empty-garden-plate",
         "alt": {
-          "zh": "暮铃在雨夜修铃",
-          "en": "Muling repairs a bell on a rainy night"
+          "zh": "晨光中的阳光花园",
+          "en": "Sunlit Garden in the morning"
         },
-        "durationMs": 6500,
-        "transitionMs": 900,
-        "camera": {
-          "from": {
-            "x": 0,
-            "y": 0,
-            "scale": 1.02
-          },
-          "to": {
-            "x": 2,
-            "y": 0,
-            "scale": 1.13
-          }
-        },
-        "lines": [],
-        "effect": "rain",
-        "focus": "50% 50%"
-      },
-      {
-        "assetId": "opening-garden-at-dawn",
-        "alt": {
-          "zh": "暮铃在晨光中把旧铃留在花园",
-          "en": "Muling leaves the old bell in Sunlit Garden at dawn"
-        },
-        "durationMs": 7000,
-        "transitionMs": 900,
+        "durationMs": 5200,
+        "transitionMs": 650,
         "camera": {
           "from": {
             "x": 0,
@@ -1256,20 +1213,21 @@
           }
         },
         "lines": [],
-        "effect": "seasons",
-        "focus": "50% 50%"
+        "focus": "50% 50%",
+        "caption": {
+          "zh": "很久以后，花园里响起了一声铃。",
+          "en": "Long afterward, a bell rang in the garden."
+        }
       }
     ]
   },
   "prologueReleaseAuthorization": {
-    "scope": "Six existing opening raster paintings only, explicitly requested for reuse in the release-prologue task; no independent runtime visual review claimed.",
+    "scope": "Existing opening environment/prop paintings plus exact Sunlit Garden landscape plate for spoiler-free review. No independent production visual approval. Identity-revealing paintings reserved for later scenes.",
     "assets": [
       "opening-star-bell",
       "opening-harbor-at-twilight",
-      "opening-keepers-choice",
       "opening-broken-bell-tongue",
-      "opening-waiting-at-workbench",
-      "opening-garden-at-dawn"
+      "opening-empty-garden-plate"
     ]
   },
   "openingRegionMontage": [

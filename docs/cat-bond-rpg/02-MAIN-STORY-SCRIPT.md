@@ -5,72 +5,16 @@ This script follows the canonical rules in 01-NARRATIVE-BIBLE.md. It covers the 
 
 ## PROLOGUE — THE SILENT BELL
 
-### P-01 — Six Sanctuaries
-**Location:** Six-region montage, then the Central Star Bell.  
-**Purpose:** Establish the scale of the world and the catastrophe without an exposition lecture.  
-**Visual:** Six distinct sanctuaries answer one another in sequence. The camera follows each melody toward the central Star Bell. A falling star strikes the central bell; its tongue breaks. The central note repeats. The six sanctuaries fracture and go dark. Cats begin forgetting familiar faces and routes. The Hollow Echo appears as a distortion in reflections, not as a speaking villain.
-
-**Sound:** Six distinct musical motifs become one repeating, unresolved note.
-
-### P-02 — The First Bellkeeper's Choice
-**Location:** Central Star Bell, during the catastrophe.  
-**Purpose:** Establish that the player's sacrifice was voluntary and that Muling witnessed it.
-
-Muling: “一定还有办法，我们一起再想想。”  
-Player: “港口等不了太久了。”  
-Muling: “再给我们一点时间，好吗？”  
-Player: “记忆正在消失。我们得先让大家安全下来。”  
-Muling: “那让我来帮忙。”  
-Player: “这个办法需要我来完成。”  
-Muling: “我们说好要一起面对困难的。”  
-Player: “我一直记得。”  
-Muling: “那也答应我，别放弃回来的办法。”  
-Player: “我答应你。”  
-Muling: “我会在花园等你。”  
-Player: “谢谢你，暮铃。”  
-Muling: “我们还有好多地方没一起去呢。”  
-Player: “只要大家还能互相回应，就让他们唱出自己的声音。”  
-Muling: “好。等你回来，我们再一起听。”
-
-The player places a paw on the broken Star Bell. Their name and autobiographical memories enter the emergency anchor chamber. Muling reaches for the player, but the seal closes between them. She sees the sacrifice clearly.
-
-### P-03 — Years of Waiting
-**Location:** Sunlit Garden, years later.  
-**Purpose:** Show Muling's grief and independent work without explaining the full plan.  
-**Visual:** Seasons pass over the abandoned garden. Muling returns with maps, old records, tools, and broken bells. She studies the six sanctuaries and gradually loosens the emergency seal.
-
-No dialogue. The old bell gives one imperfect note.
-
+### P-01 — The Broken Song
+Single continuous opening, preserving three internal save checkpoints. Six brief region plates, then the Star Bell and harbor. No identifiable protagonists, no sacrifice explanation.
+### P-02 — A Broken Echo
+Broken bell close-up. Anonymous caption: “如果有一天……你忘记了我呢？” No character speaker.
+### P-03 — Morning Light
+Existing Sunlit Garden environment. A bell rings. No Muling or waiting montage. Target 28.2 seconds of authored shots.
 ### P-04 — Awakening
-**Location:** Sunlit Garden.  
-**Purpose:** Introduce the player and Muling's new identity as a traveler.
-
-Player: “这里是……好漂亮的花园！”  
-Muling: “欢迎来到阳光花园！”  
-Player: “我们见过吗？”  
-Muling: “我叫暮铃。你呢？”  
-Player: “奇怪，我想不起自己的名字了。”  
-Muling: “没关系，先晒晒太阳，名字可以慢慢找。”  
-Player: “这里发生过什么？”  
-Muling: “很久以前，一座星铃安静了下来。最近它又开始响了！”  
-Player: “哇，它是怎么做到的？”  
-Muling: “我也正想弄明白呢。一起去看看？”
-
-The old bell reacts to the player's presence.
-
+The protagonist wakes alone, notices two cups and an old key, then pulls the physical garden bell.
 ### P-05 — The Journey
-Muling explains that cats across six regions are losing memories. She asks the player to help restore the sanctuaries.
-
-Player: “这趟旅程需要搭档吗？”  
-Muling: “当然！两只猫一起走，连迷路都能变成探险。”  
-Player: “那我们一起去！”  
-Muling: “你的名字还没想起来呢，真的愿意出发？”  
-Player: “一路上也许就能找到答案，还能帮上大家！”  
-Muling, quietly: “好呀。出发吧，搭档！”
-
-**Player objective:** Leave Sunlit Garden and travel to Misttide Harbor.
-
----
+Muling appears as a traveling bell repairer with a misplaced wrench. She invites the protagonist to help the harbor and find their name.
 
 ## CHAPTER I — MISTTIDE HARBOR / 霁潮港
 ### The Song of Returning Tides · 归潮调
@@ -122,24 +66,34 @@ A storm arrives before the lighthouse is fully repaired. The player navigates ti
 岬灯: “好！我负责把你的路照亮。”
 
 ### H-05 — The First Melody
+**Mystery revision — runtime dialogue (ZH; EN in campaign.mjs).**
+
+无名守铃者: “归潮调响起时，我好像知道下一句该怎么唱。”
+
+岬灯: “等等……这段开头，我很久以前听过。那只猫叫什么来着？”
+
+无名守铃者: “您认识我吗？”
+
+岬灯: “记不清了。也可能是老耳朵听错了。”
+
+暮铃: “栖蓝说森林的药草船迟到了。我们去看看，顺便问问那里的猫。”
+
+无名守铃者: “好。等回来，我再来听您讲老港口的故事。”
+
+**Gameplay notes retained from original draft:**
 The harbor cats gather at the lighthouse. The player unconsciously sings the First Note. The locals complete 归潮调.
 
 The sanctuary wakes. Cats remember their companions and old routes. A supply vessel is sent toward Rootsleep Forest; the forest later answers with medicinal plants and a waterway map.
 
 Muling quietly joins the second phrase.
 
-Player: “刚才那段旋律真好听！是什么歌？”  
-Muling: “归潮调，一首很老的歌。”  
-Player: “你以前也唱过吗？”  
-Muling: “当然，熟得连尾巴都会跟着打拍子。”  
-Player: “那下次教我一起唱吧！”  
-Muling: “好呀，两只猫合唱才更热闹！”
 
 **Clue:** Muling knows the melody more intimately than an ordinary researcher should.
 
 **Chapter reward:** Harbor map route, lighthouse rescue support, first melody, new cats, first Catdex records.
 
 ---
+
 
 ## CHAPTER II — ROOTSLEEP FOREST / 眠根林
 ### The Song of Living Roots · 相枝调
@@ -175,16 +129,25 @@ A major root tunnel collapses. The player must operate a paired-cat mechanism: o
 榆川: “成交！”
 
 ### R-04 — The Second Melody
+**Mystery revision — runtime dialogue (ZH; EN in campaign.mjs).**
+
+无名守铃者: “第二首歌响了。可栖蓝送来的信说，赤炉环城又有猫忘了亲友。”
+
+暮铃: “可能是旧封印的裂缝变大了。这里的猫恢复记忆，说明修复有效。”
+
+无名守铃者: “这里有两条声路。刚才只有通向中央的那条亮了，为什么？”
+
+暮铃: “另一条没收到邻居的回应。先把歌找回来，别急着下结论。”
+
+无名守铃者: “那我们不能只修机器。赤炉环城需要药草，我们送过去。”
+
+暮铃: “好，我搬箱子，你拿地图。别把地图放进药锅里。”
+
+**Gameplay notes retained from original draft:**
 The two communities complete 相枝调 together. The forest sanctuary reopens.
 
 Muling repairs a hidden routing mechanism. The player notices two paths engraved in the stone.
 
-Player: “这里画着两条路！”  
-Muling: “好眼力！”  
-Player: “它们分别通往哪里？”  
-Muling: “这条把六座圣所的声音送往中央星铃，能帮我们确认它们恢复了没有。”  
-Player: “那另一条呢？”  
-Muling: “是条很久没用的旧路。说不定以后能修好它。”
 
 **Clue:** She has an answer ready before the player finishes asking.
 
@@ -193,6 +156,7 @@ The forest sends cooling water and medicinal herbs to Emberforge. Emberforge lat
 **Chapter reward:** Root tunnels, scent tracking, paired traversal, second melody, cross-region supply route.
 
 ---
+
 
 ## CHAPTER III — EMBERFORGE CITY / 赤炉环城
 ### The Song of Ember · 承火调
@@ -223,16 +187,29 @@ The player and 小铆 test the new design. A mechanical guardian activates and t
 小铆: “好！新设计是我们一起做的，测试也一起完成。”
 
 ### E-04 — The Third Melody
+**Mystery revision — runtime dialogue (ZH; EN in campaign.mjs).**
+
+烬婆: “当年的事故是我的责任。这回让小铆负责，所有检查都公开。”
+
+小铆: “承火调回来啦！不过这个古老的接头上居然有新划痕。”
+
+无名守铃者: “有人在我们到来之前改过装置？”
+
+暮铃: “有可能。也可能是维修留下的。把位置记下来，别碰它。”
+
+无名守铃者: “森林的装置上也有类似的痕迹。它们会不会有关？”
+
+小铆: “我抄一份图纸给你。群岛的老信使或许认识这种接头。”
+
+无名守铃者: “把飞翼零件也带上。我们不能让那里的猫再等了。”
+
+暮铃: “好。只是……你会不会晕飞翼？”
+
+**Gameplay notes retained from original draft:**
 烬婆 publicly admits the old accident and gives 小铆 authority to implement the safer design. The workers complete 承火调 as the furnace restarts.
 
 The sanctuary blueprint clearly shows inward and neighbor paths.
 
-Player: “那条旧路还在，为什么不用呢？”  
-Muling: “有几处断开了。”  
-Player: “我们能修好吗？”  
-Muling: “有可能。”  
-Player: “那就试试看呀！”  
-Muling: “好。不过修好路只是第一步，还得等另一头的伙伴回应。”
 
 This is true and becomes the central philosophical conflict.
 
@@ -241,6 +218,7 @@ Emberforge builds wind vanes and flight components for Skyspine Isles. The isles
 **Chapter reward:** Forging, temperature control, mechanical puzzles, third melody, improved equipment.
 
 ---
+
 
 ## CHAPTER IV — SKYSPINE ISLES / 云脊群岛
 ### The Song of the Open Sky · 逐风调
@@ -272,24 +250,40 @@ The player and siblings restore the route. 翎羽 flies beside 远帆 without di
 翎羽: “当然！我还想看看你的新飞行技巧呢。”
 
 ### S-04 — Muling's Unsent Answer
+**Mystery revision — runtime dialogue (ZH; EN in campaign.mjs).**
+
+无名守铃者: “刚才你把铃坠敲了两下。每次你紧张的时候都会这样。”
+
+暮铃: “被你发现啦。它原来有个小机关，现在只剩一半能动。”
+
+无名守铃者: “让我看看？这个缺口，好像和我记忆里的那只铃一模一样。”
+
+暮铃: “……先别碰那条细簧，容易弹走。帮我扶一下。”
+
+无名守铃者: “好。你修机器，我负责找掉在地上的零件。”
+
+暮铃: “说好了。以前有个朋友也这么说，结果每次都少一颗螺丝。”
+
+无名守铃者: “那位朋友是谁？你是不是一直在找他？”
+
+暮铃: “是啊。我们约好一起吃云朵蛋糕，可我等了很久。”
+
+无名守铃者: “等找到他，我们三个一起吃！我好像也记得这个约定……”
+
+暮铃: “守……咳，抱歉。风有点凉。”
+
+无名守铃者: “你刚才叫我什么？”
+
+暮铃: “到了月镜书库，我会告诉你我能告诉你的事。先让信使安全回家，好吗？”
+
+**Gameplay notes retained from original draft:**
 **Purpose:** Deepen Muling before the reveal.
 
 The player finds Muling repairing a broken bell pendant.
 
-Player: “你怎么收集了这么多小铃铛？”  
-Muling: “它们每个都有自己的故事。”  
-Player: “修好了会怎样？”  
-Muling: “就能继续唱歌啦。”  
-Player: “要是找不到零件呢？”  
-Muling: “就先给它们留个位置。”  
-Player: “这个铃铛也有故事吗？”  
-Muling: “是一位老朋友留下的，我一直盼着重逢。”  
-Player: “你们还没见面？”  
-Muling: “还没有。”  
-Player: “那我们一起找找线索吧。”  
-Muling: “谢谢你。有搭档真好。”
 
 Muling taps the pendant twice.
+
 
 ### S-05 — The Fourth Melody
 Couriers across the islands complete 逐风调. The sky sanctuary reopens.
@@ -338,30 +332,53 @@ Muling: “试过。”
 Muling: “但最后，那是你自己的选择。”
 
 ### M-04 — The Betrayal Reveal
+**Mystery revision — runtime dialogue (ZH; EN in campaign.mjs).**
+
+无名守铃者: “记录说六地圣所都被调向中央。是你做的？”
+
+暮铃: “是。我松开了封印，才让你醒来。回响也从裂缝里漏了出来。”
+
+无名守铃者: “你从什么时候开始瞒着我？”
+
+暮铃: “……从你醒来的那一天。”
+
+无名守铃者: “所以栖蓝的船、芽禾的药草，还有我们做的事，都只是为了修好你的星铃？”
+
+暮铃: “不是！他们是真的。我们的旅行也是真的。我只是需要六首歌。”
+
+无名守铃者: “可我们每修好一座圣所，中央就更接近启动。你究竟要它做什么？”
+
+暮铃: “……档案里还有一部分在星坠原。你有权看到它。”
+
+**Gameplay notes retained from original draft:**
 白栞 restores a routing record. It shows that each repaired sanctuary has been set toward the center.
 
-Player: “六地的记忆危机，和你有关吗？”  
-Muling: “是我逐渐松开了封印。”  
-Player: “你知道记忆会受到影响？”  
-Muling: “知道。我以为恢复圣所就能及时补救。”  
-Player: “这让大家遇到了危险。我们得认真解决。”  
-Muling: “是的。我会承担我做的事。”  
-Player: “你是想让我回来？”  
-Muling: “是。我太想让你回来了，却没有考虑周全。”
 
 Muling does not deny her actions or blame the player.
 
+
 ### M-05 — The Two Routes
+**Mystery revision — runtime dialogue (ZH; EN in campaign.mjs).**
+
+无名守铃者: “这条中央声路会把六地的记忆带向星铃。邻路原本是做什么的？”
+
+暮铃: “让圣所彼此回应，星铃只负责合拍。那时候不需要永久的记忆核心。”
+
+无名守铃者: “那为什么不用邻路？”
+
+暮铃: “我试了很多年。没有猫愿意回应隔壁的猫。机器会响，可回应不是真的。”
+
+无名守铃者: “可我们已经让四个地方重新互相帮助了。你看过那些船和信吗？”
+
+暮铃: “……我看过。可我不敢再赌一次。”
+
+无名守铃者: “我会核对档案，再去星坠原。暮铃，我需要一点时间。”
+
+暮铃: “好。我先去星坠原。那里还有最后一份记录。”
+
+**Gameplay notes retained from original draft:**
 墨页 and 白栞 reveal the two original sound paths and the emergency anchor.
 
-Player: “如果走中央路线，大家的记忆都会被送进去？”  
-Muling: “是的。”  
-Player: “连你的也一样？”  
-Muling: “我的也一样。”  
-Player: “我们能不能找一个让大家都保有记忆的办法？”  
-Muling: “我还没找到可靠的方案。”  
-Player: “那就让每个地方的伙伴一起参与。”  
-Muling: “我愿意听听，但在验证之前，我还不能放弃中央方案。”
 
 Muling leaves for Starfall Expanse.
 
@@ -370,6 +387,7 @@ The library sends the complete star chart and historic coordinates to Starfall.
 **Chapter reward:** Mirror navigation, record reconstruction, fifth melody, full identity reveal, full betrayal reveal.
 
 ---
+
 
 ## CHAPTER VI — STARFALL EXPANSE / 星坠原
 ### The Song Beyond Stars · 续星调
@@ -392,24 +410,44 @@ The complete record shows the fallen star, the broken bell tongue, the six damag
 The player remembers the choice.
 
 ### F-03 — Muling's Plan
+**Mystery revision — runtime dialogue (ZH; EN in campaign.mjs).**
+
+暮铃: “星图已经说明了我准备做什么。你还愿意听我解释吗？”
+
+无名守铃者: “六首歌一旦全响，你就能把每只猫的记忆送进星铃。换回我的。”
+
+暮铃: “是。哪怕我自己也忘记你，只要你能回来，我原本以为就值得。”
+
+无名守铃者: “但那样岬灯会忘记栖蓝，翎羽会忘记远帆。你救回了过去的我，却抹掉了现在的一切。”
+
+暮铃: “你知道每天回到花园，看见另一只空着的茶杯，是什么感觉吗？”
+
+无名守铃者: “我不知道。但我不想让所有的猫，都经历和你一样的事。”
+
+暮铃: “我找了那么多年……那扇门关上的声音，我一直忘不掉。”
+
+无名守铃者: “当年的牺牲是我自己的选择。今天也该由我们自己选择。”
+
+暮铃: “可如果其中一座圣所失去回应，封印还会崩掉。”
+
+无名守铃者: “所以我们要验证实际交流，不是单纯接一条线。船、药草、零件、信件、档案、导航，一个都不能少。”
+
+暮铃: “我曾经也试过。空荡荡的线路里，只有我的声音回来。”
+
+无名守铃者: “现在去听听栖蓝和芽禾吧。他们有自己的声音，也有想见的伙伴。”
+
+暮铃: “你真的觉得，我们来得及把六个地方连成一环？”
+
+无名守铃者: “我们先完成最后几次双向交流，让每座圣所收到邻居的真实回应。”
+
+暮铃: “……如果真能成功，我就没有理由再强迫任何人了。”
+
+无名守铃者: “那就来验证它。不是为了过去的我，而是为了我们一起认识的每一只猫。”
+
+**Gameplay notes retained from original draft:**
 Muling appears at the central ruin.
 
-Muling: “你看到星图上的计划了吧？”  
-Player: “你打算把大家的记忆集中到中央星铃。”  
-Muling: “是的，那是我准备的应急方案。”  
-Player: “可这样一来，大家就会失去自己的记忆。”  
-Muling: “我一直想让你平安回来，却没找到更好的办法。”  
-Player: “当年留下来，是我自己的选择。”  
-Muling: “我记得。”  
-Player: “这次也让大家自己选择，好吗？”  
-Muling: “我找了很多年，真的很怕再失败。”  
-Player: “但你不需要一个人承担所有事情。”  
-Muling: “我原本想把代价都算在自己身上。”  
-Player: “可每一份记忆都属于它的主人。”  
-Muling: “如果其他路线不够稳定，危机就会继续。”  
-Player: “那我们就用六地的实际回应来验证。”  
-Muling: “你真的相信他们能做到？”  
-Player: “相信！这一路我们已经一起解决了那么多难题。”
+
 
 ### F-04 — The Ring Becomes Possible
 The player presents the six regional exchanges. Each neighboring region has sent and received something meaningful. The six routes are no longer empty mechanisms.

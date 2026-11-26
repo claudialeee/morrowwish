@@ -60,12 +60,12 @@ for(const profile of [
   if(!full){const before=await page.locator('.cbcp-root').getAttribute('data-frame-id');await page.locator('.cbcp-stage').click({position:{x:25,y:120}});await page.waitForFunction(old=>document.querySelector('.cbcp-root')?.dataset.frameId&&document.querySelector('.cbcp-root').dataset.frameId!==old,before);}
   if(full){
    for(const region of campaign.regions){await page.waitForFunction(id=>document.querySelector('.cbcp-root')?.dataset.frameId==='prologue:P-01-region-'+id,region);await screenshot('sanctuary-'+region);}
-   await page.waitForFunction(()=>document.querySelector('.cbcp-root')?.dataset.frameId==='prologue:P-01-shot-0');await page.waitForTimeout(6200);await screenshot('impact');
+   await page.waitForFunction(()=>document.querySelector('.cbcp-root')?.dataset.frameId==='prologue:P-01-shot-0');await page.waitForTimeout(1500);await screenshot('impact');
   }
   else await page.locator('.cbcp-skip').click();
   if(full){
    await waitScene('prologue:P-02');await ready();
-   await screenshot('sacrifice');
+   await screenshot('broken-echo');
    assert.equal(await page.locator('.cbcp-title').textContent(),tr('最后的回响','The Last Resonance'));
    const seen=new Set();
    while(await page.evaluate(()=>CatBondResonance.view().current?.id)==='prologue:P-02'){
@@ -74,9 +74,9 @@ for(const profile of [
     if(['Bellkeeper','无名守铃者'].includes(await page.locator('.cbcp-speaker').textContent().catch(()=>null)))throw Error('Premature identity disclosure');
     await page.waitForTimeout(180);
    }
-   assert.deepEqual([...seen],exactLines('prologue:P-02'),'All canonical sacrifice subtitles observed in order');
+   assert.deepEqual([...seen],exactLines('prologue:P-02'),'No character dialogue in the mystery opening');
    await waitScene('prologue:P-03');await ready();
-   await screenshot('waiting');
+   await screenshot('morning-garden');
    assert.equal(await page.locator('.cbcp-title').textContent(),tr('最后的回响','The Last Resonance'));
   }
   await waitScene('prologue:P-04');
