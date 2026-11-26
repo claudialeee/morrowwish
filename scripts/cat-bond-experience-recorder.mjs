@@ -4,8 +4,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 
-export async function attachExperienceRecorder(context, page, {id, root = 'artifacts/cat-bond-experience', synthetic = false} = {}) {
+export async function attachExperienceRecorder(context, page, {id, root = 'artifacts/cat-bond-experience', synthetic = false, chapterEntry = null} = {}) {
   if (process.env.CAT_BOND_EXPERIENCE !== '1') return;
+  if (chapterEntry && (!synthetic || !/^[a-z]+:[A-Z]-\d{2}$/.test(chapterEntry))) throw Error('Invalid synthetic chapter entry');
   if (!/^[a-zA-Z0-9_-]+$/.test(id)) throw new Error('Invalid experience run id');
   fs.mkdirSync(root, {recursive:true});
   const file = path.join(root, id + '.jsonl');
@@ -37,7 +38,8 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
   page.on('response',res=>{if(res.status()>=400&&res.url().startsWith('http://127.0.0.1:8765/'))record({kind:'http_error',status:res.status(),url:res.url()});});
   await page.exposeBinding('__cbExperienceEmit',(_,event)=>{
     if(event.kind!=='checkpoint'){record(event);return;}
-    if(synthetic)return;
+    // Never treat a seeded entry as player-earned; retain later chapter saves separately.
+    if(synthetic&&(!chapterEntry||event.scene===chapterEntry))return;
     const {scene,slot,book,cursor,region}=event;
     if(!/^[a-z]+:[A-Z]-\d{2}$/.test(scene)||!/^slot[123]$/.test(slot)||typeof book!=='string'||book.length>2000000)return;
     if(!Number.isInteger(cursor)||cursor<0)return;
@@ -47,10 +49,10 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
     try{
       const entry=JSON.parse(book).slots?.[slot],state=entry?.data?.state||entry?.data;
       if(state?.resonance?.scene!==scene||!state.cats?.length)return;
-      const fixture={schema:1,revision,run:id,scene,cursor,region,slot,provenance:'real-input local browser save',storageState:{cookies:[],origins:[{origin:'http://127.0.0.1:8765',localStorage:[{name:'catbond_save_slots_v1',value:book},{name:'catbond_active_slot_v1',value:slot}]}]}};
-      const name=key.replace(':','-')+'.json';
+      const fixture={schema:1,revision,run:id,scene,cursor:state.resonance.cursor,region,slot,provenance:synthetic?'synthetic chapter entry + real-input browser save':'real-input local browser save',...(chapterEntry?{chapterEntry,limitations:['Prior chapter history is synthetic; not fresh-slot campaign evidence.']}:{ }),storageState:{cookies:[],origins:[{origin:'http://127.0.0.1:8765',localStorage:[{name:'catbond_save_slots_v1',value:book},{name:'catbond_active_slot_v1',value:slot}]}]}};
+      const name=(scene+'-'+fixture.cursor).replace(':','-')+'.json';
       fs.writeFileSync(path.join(checkpointDir,name),JSON.stringify(fixture,null,2));
-      saved.add(scene);record({kind:'checkpoint_saved',scene,cursor,region,fixture:'checkpoints/'+id+'/'+name});
+      saved.add(scene);record({kind:'checkpoint_saved',scene,cursor:fixture.cursor,region,provenance:fixture.provenance,fixture:'checkpoints/'+id+'/'+name});
     }catch(error){record({kind:'recorder_error',message:'checkpoint: '+String(error)});}
   });
   await page.addInitScript(()=>{
