@@ -2474,8 +2474,8 @@ export const campaign = {
       "after": "harbor:H-05",
       "operation": "ambient:maintain-lighthouse",
       "text": {
-        "zh": "灯会一直亮着。船要不要出海，由领航员自己决定。",
-        "en": "The light will stay on. Whether to sail is the navigator's choice."
+        "zh": "门铃会一直响着。下一趟去哪里，由巡铃人自己决定。",
+        "en": "The door bells will keep ringing. The bellkeeper can choose where to go next."
       },
       "action": "maintain-lighthouse"
     },
@@ -2486,8 +2486,8 @@ export const campaign = {
       "after": "harbor:H-05",
       "operation": "ambient:chart-harbor",
       "text": {
-        "zh": "这张新航图，下一趟出发时就能用上。",
-        "en": "This new chart will be ready for our next voyage."
+        "zh": "这张巡铃图，下一趟出发时就能用上。",
+        "en": "This new bell route map will be ready for our next trip."
       },
       "action": "chart-harbor"
     },
@@ -2606,8 +2606,8 @@ export const campaign = {
       "after": "starfall:F-04",
       "operation": "ambient:guide-caravan",
       "text": {
-        "zh": "下一趟我不独自走。港口那边有人等着回信。",
-        "en": "I won't travel alone next time. Someone at the harbor is waiting for an answer."
+        "zh": "下一趟我不独自走。风铃镇那边有人等着回信。",
+        "en": "I won't travel alone next time. Someone in Windchime Town is waiting for an answer."
       },
       "action": "guide-caravan"
     }

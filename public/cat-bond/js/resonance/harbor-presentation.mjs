@@ -23,7 +23,7 @@ export function paintHarborEnvironment(c,view,frame){
 }
 export function harborObjective(v,lang){
  const zh=lang==="zh",s=v.current?.id,has=x=>v.objective.includes(x);
- const line=s==="harbor:H-01"?["沿石径找到栖蓝。","Follow the stone path to Qilan."]:s==="harbor:H-02"?["穿过风铃巷，从两条路中选择一条追上铃光。","Catch the moving chime along either of the two paths."]:s==="harbor:H-03"?["去旧铃房找檐灯。","Find Yandeng at the old bell house."]:s==="harbor:H-04"?["与伙伴一起击退铃舌兽。","Defeat the bell-tongue beast with your companion."]:s==="harbor:H-05"?has("repair:harbor")?["修复古铃圣所。","Restore the town bell sanctuary."]:has("melody:harbor")?["邀请栖蓝和檐灯，让古铃各自回应。","Invite Qilan and Yandeng to ring the bells together."]:["看看旧巡铃图。","Look at the old bellkeepers' map."]:v.melodies.includes("harbor")?["古铃已恢复 · 可前往眠根林。","Town bell restored · Travel to Rootsleep Forest."]:null;
+ const line=s==="harbor:H-01"?["沿石径找到栖蓝。","Follow the stone path to Qilan."]:s==="harbor:H-02"?["穿过风铃巷，从两条路中选择一条追上铃光。","Catch the moving chime along either of the two paths."]:s==="harbor:H-03"?["去旧铃房找檐灯。","Find Yandeng at the old bell house."]:s==="harbor:H-04"?["与伙伴一起击退铃光兽。","Defeat the bell-tongue beast with your companion."]:s==="harbor:H-05"?has("repair:harbor")?["修复古铃圣所。","Restore the town bell sanctuary."]:has("melody:harbor")?["邀请栖蓝和檐灯，让古铃各自回应。","Invite Qilan and Yandeng to ring the bells together."]:["看看旧巡铃图。","Look at the old bellkeepers' map."]:v.melodies.includes("harbor")?["古铃已恢复 · 可前往眠根林。","Town bell restored · Travel to Rootsleep Forest."]:null;
  return line?.[zh?0:1]||"";
 }
 export function harborPuzzleHint(p,lang){

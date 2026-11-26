@@ -14,7 +14,7 @@ export const layouts={
   features:{
    "explore:tide-logbook":[.87,.748,"潮洞日志","Tide cave logbook"],
    "puzzle:chime-chase":[.16,.60,"穿过风铃巷","Chase the runaway chime"],
-   "battle:chime-beast":[.195,.50,"铃舌兽","Bell-tongue beast"],
+   "battle:chime-beast":[.195,.50,"铃光兽","Belllight beast"],
    "puzzle:beam-mirrors":[.153,.44,"灯塔反射镜","Lighthouse mirrors"],
    "rescue:storm-boat":[.19,.89,"遇险小船","Storm boat"],
    "repair:harbor":[.131,.341,"古铃圣所","Town bell sanctuary"],

@@ -219,7 +219,7 @@ async function run(chapter){
    await talk('Qilan');await dialogue('harbor:H-01');await scene('harbor:H-02');
    await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();await click('Run to corner 2',chase);await chase.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');
    await talk('Yandeng');await dialogue('harbor:H-03');await scene('harbor:H-04');
-   await battle('Bell-tongue beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
+   await battle('Belllight beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
    await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Returning Tides',[low,high,mid]);await dialogue('harbor:H-05');
   }else if(chapter==='forest'){
    await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');
