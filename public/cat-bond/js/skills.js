@@ -227,7 +227,7 @@
   const SKILLS = [
     // ---- 火 fire ----
     { id: 'emberClaw',  name: '炽爪',     element: 'fire',  kind: 'melee',      power: 1.3, cd: 2.2, ultCost: 0,  tags: ['burn'],          appliesTag: 'burn',  vfx: 'muzzle',    desc: '燃烧的猫爪撕击，附加灼烧。' },
-    { id: 'fireballMeow', name: '咳毛球', element: 'fire',  kind: 'projectile', power: 1.65, cd: 3.0, ultCost: 0, windup: 0.4, castSlow: 0.6, precise: true, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '猫咪蓄力咳出滚烫毛球（短暂前摇）——正中威力暴涨并持续灼烧，擦边只是烫一下；施放后短暂迟缓。' },
+    { id: 'fireballMeow', name: '火球术', element: 'fire',  kind: 'projectile', power: 1.65, cd: 2.5, ultCost: 0, windup: 0.18, precise: true, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '短暂蓄力后射出高速压缩火球，命中第一个敌人并施加灼烧，不产生范围伤害。' },
     { id: 'puffHiss',   name: '弓背炸毛', element: 'fire',  kind: 'buff',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['buff','threat'], appliesTag: null, vfx: 'ring',      desc: '弓背炸毛虚张声势：自身伤害提升，并把靠得太近的敌人吓退一步。' },
     { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 2.7, damageChannel: 1.35, reach: 360, width: 22, sweep: .72, sweepPasses: 3, power: 1.85, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。', unlock: { level: 6, element: 'fire' } },
     { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
@@ -276,7 +276,7 @@
     { id: 'quakeStomp', name: '泰山压顶', element: 'grass', kind: 'leap',       power: 1.9, cd: 5.0, ultCost: 0,  heavy: true, tags: ['melee','stagger'], appliesTag: null, vfx: 'impact', desc: '腾空跃起，泰山压顶般砸向目标点，落地小范围震荡并击虚周围敌人。' },
     { id: 'photosynth', name: '光合',     element: 'grass', kind: 'heal', healMode: 'cleanse', power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal','cleanse'], appliesTag: null, vfx: 'orb', desc: '吸收日光回复斗志，并洗去一种异常状态或挣脱束缚——草木的再生之力。' },
     { id: 'knead',      name: '踩奶',     element: 'grass', kind: 'buff',       power: 0,   cd: 2.4, ultCost: 0,  tags: ['buff','knead'],  appliesTag: null,    vfx: 'orb',       desc: '原地踩奶进入状态：每次叠一层（最多4层），层层提升伤害并回一点斗志；猫味十足的节奏型蓄能。' },
-    { id: 'sunbloom', name: '阳光烈焰', element: 'grass', kind: 'aoe', power: 2.2, cd: 0, ultCost: 70, tags: ['bind','ult'], appliesTag: 'bind', vfx: 'shockwave', desc: '【必杀】日光唤醒藤蔓花海，束缚敌人并留下持续生长的领域。' },
+    { id: 'sunbloom', name: '阳光烈焰', element: 'grass', kind: 'aoe', power: 2.2, cd: 0, ultCost: 70, tags: ['ult'], vfx: 'beam', desc: '【必杀】蓄力0.85秒后释放强力直线日光束，命中路径上的敌人。' },
     // ---- 电 elec ----
     { id: 'staticPounce', name: '疯跑冲刺', element: 'elec', kind: 'dash',      power: 1.85, cd: 4.0, ultCost: 0,  heavy: true, tags: ['shock','dash'],  appliesTag: 'shock', vfx: 'beam',  desc: '半夜疯跑般的带电冲刺，撞中麻痹目标。侧后方突袭更狠。' },
     { id: 'boltArc',    name: '电弧',     element: 'elec',  kind: 'chain',      power: 1.35, cd: 2.2, ultCost: 0,  tags: ['shock','ranged'],appliesTag: 'shock', vfx: 'beam',      desc: '跳跃的电弧，在敌群间连锁跳跃，附加感电。' },
