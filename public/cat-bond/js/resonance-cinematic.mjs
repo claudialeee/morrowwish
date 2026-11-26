@@ -7,6 +7,7 @@ const raster=/^assets\/cinematics\/[a-z0-9/_-]+\.(?:webp|png|avif|jpe?g)$/;
 export function buildCanonicalScene({view,campaign,manifest,staging=false,openingRelease=false}) {
   const scene=view?.current;
   if(!scene||campaign?.canon!=='The Last Resonance')return bad('no-canon-scene');
+  if(campaign.openingPresentationVersion===2&&/^prologue:P-0[1-5]$/.test(scene.id))return bad('opening-animation-retired');
   const canonical=campaign.scenes.find(x=>x.id===scene.id);
   if(!canonical||JSON.stringify(canonical)!==JSON.stringify(scene))return bad('noncanonical-scene');
   if(scene.choices.length&&scene.choiceTiming==='beforeAction'&&!view.choice)return bad('choice-pending');

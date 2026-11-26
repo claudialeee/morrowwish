@@ -36,10 +36,9 @@ assert.equal((await failed.playCurrent()).reason,'cinematic-image-load-failed');
 console.log('Cinematic source/adapter tests passed; NOT a visual acceptance result.');
 
 const {campaign:openingCampaign}=await import('../public/cat-bond/js/resonance/campaign.mjs');
-const first=openingCampaign.scenes.find(s=>s.id==='prologue:P-01');
-const opening=buildCanonicalScene({view:{current:first,cursor:0,lineReady:true,objective:first.requires},campaign:openingCampaign,manifest,openingRelease:true});
-assert.equal(opening.ok,true);assert.equal(opening.scene.frames.length,8);
-assert.deepEqual(opening.scene.frames.slice(0,6).map(f=>f.id.split('-').at(-1)),openingCampaign.regions);
-for(const frame of opening.scene.frames){const bytes=fs.readFileSync(path.join('public/cat-bond',frame.image));assert.equal(bytes.subarray(8,12).toString(),'WEBP');}
-assert.deepEqual(opening.scene.frames.slice(6).map(f=>f.image),['assets/cinematics/prologue/star-bell.webp','assets/cinematics/prologue/harbor-at-twilight.webp']);
-console.log('Opening preserves both original P-01 paintings and presents six authored regional WebP plates.');
+for(const scene of openingCampaign.scenes.filter(s=>s.chapter==='prologue')){
+ assert.ok(scene.requires.every(op=>!op.startsWith('cinematic:')));
+ const result=buildCanonicalScene({view:{current:scene,cursor:0,lineReady:true,objective:scene.requires},campaign:openingCampaign,manifest,openingRelease:true,staging:true});
+ assert.equal(result.reason,'opening-animation-retired');
+}
+console.log('Historical opening art cannot be played in the new opening, even with legacy release/staging flags.');

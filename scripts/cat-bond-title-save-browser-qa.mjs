@@ -81,20 +81,14 @@ for(const profile of [
   assert.match(await page.locator('#intro-slot-heading').innerText(),/Choose a slot/);
   await screenshot('three-slots-en');
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-01'&&document.querySelector('.cbcp-art')?.naturalWidth>0&&!document.querySelector('.cbcp-skip')?.disabled);
-  await page.locator('.cbcp-skip').click();
-  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-04');
+  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-05');
+  const intro=page.locator('#cb-player-first-intro');await intro.waitFor();
+  assert.equal(await page.locator('.cbcp-root:not([hidden])').count(),0);
+  await intro.getByRole('button',{name:'Skip introduction',exact:true}).click();
   assert.equal(await page.locator('#panel.open .cat-starter-card').count(),0,'No starter picker');
   const selectedBreed='jinjc';
-  await screenshot('fixed-goldie-garden');
   assert.equal(await page.evaluate(()=>State.S.cats[0].species),selectedBreed);
-  await page.locator('.sg-prologue-guide').getByRole('button',{name:'Talk to Muling'}).click();
-  const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');await awakening.getByRole('button',{name:'Skip dialogue',exact:true}).click();
-  const bell=page.locator('.res-garden-bell');await bell.waitFor();
-  const rect=await bell.boundingBox();const x=Math.floor(rect.x+rect.width/2),y=Math.floor(rect.y+rect.height/3);
-  if(profile.mobile){const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+62}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}
-  else{await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y+62,{steps:8});await page.mouse.up();}
-  for(const id of ['prologue:P-05']){const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();const skip=dlg.getByRole('button',{name:'Skip dialogue',exact:true});if(await skip.isVisible()&&await skip.isEnabled())await skip.click();const close=dlg.getByRole('button',{name:'Close',exact:true});if(await close.isVisible())await close.click();}
+  assert.equal(await page.evaluate(()=>CatBondResonance.view().muling),'unmet');
   await page.locator('.sg-prologue-guide').getByRole('button',{name:'World map'}).click();
   await waitMap();
   const atlasMenu=page.locator('.rw-atlas-menu > summary');
@@ -180,9 +174,9 @@ for(const profile of [
   await page.locator('#intro-start').click();
   await page.locator('#intro-slot-list [data-slot="slot3"]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true&&window.State.activeSlot()==='slot3');
-  await checkVisible('#cb-canonical-opening');
+  await checkVisible('#cb-player-first-intro');
   assert.equal(await page.evaluate(()=>State.activeSlot()),'slot3');
-  assert.equal(await page.evaluate(()=>State.S.cats.length),0);
+  assert.equal(await page.evaluate(()=>State.S.cats[0].species),'jinjc');assert.equal(await page.evaluate(()=>State.S.cats.length),1);
   await page.reload();await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__);
   await page.locator('#intro-continue').click();
   await page.locator('[data-title-delete="slot1"]').click();
@@ -192,7 +186,7 @@ for(const profile of [
   await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.State.getSaveSlot('slot1')===null);
   assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot2').data.state.cats[0].uid),first);
-  assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot3').data.state.cats.length),0);
+  assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot3').data.state.cats.length),1);
   assert.equal(await page.locator('[data-title-delete="slot1"]').count(),0);
   await screenshot('title-after-delete');
   assert.deepEqual(errors,[],'no page runtime exceptions');

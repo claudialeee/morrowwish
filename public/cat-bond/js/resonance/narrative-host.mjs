@@ -69,6 +69,9 @@ function install(){
    if(scheduledRoot!==State.S)return;
    if(slot&&slot!==State.S){close();return}
    const v=runtime.view();if(!v.current)return;
+   // Title handoff exclusively retires the four historical presentation checkpoints.
+   // Background slot-change notifications cannot consume them before the context overlay is shown.
+   if(/^prologue:P-0[1-4]$/.test(v.current.id)&&campaign.openingPresentationVersion===2)return;
    if(["epilogue:E-02","epilogue:E-03"].includes(v.current.id)&&window.__game?.scene!=="yard"){if(root)close();return;}
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&awaitingGameplay(v)){close();return;}
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.cursor===v.current.lines.length){
