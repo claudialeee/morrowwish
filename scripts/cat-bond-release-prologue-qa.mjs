@@ -1,3 +1,4 @@
+import {attachExperienceRecorder} from './cat-bond-experience-recorder.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {chromium} from 'playwright';
@@ -8,6 +9,7 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  const {name,...options}=profile;
  for(const meet of [true,false]){
  const context=await browser.newContext(options),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await attachExperienceRecorder(context,page,{id:'opening-'+locale+'-'+name+'-'+(meet?'meet':'skip')});
  const screenshot=id=>page.screenshot({path:output+'/'+name+'-'+(meet?'meet':'skip')+'-'+id+'.png'});
  const waitScene=id=>page.waitForFunction(id=>window.CatBondResonance?.view()?.current?.id===id,id,{timeout:45000});
  const press=async locator=>{await locator.waitFor({state:'visible'});if(options.hasTouch)await locator.tap();else await locator.click();};
@@ -36,7 +38,9 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  else assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),false);
  await screenshot('garden');await press(guide.getByRole('button',{name:tr('下一场景 · 霁潮港','Next scene · Misttide Harbor'),exact:true}));await waitScene('harbor:H-01');
  assert.equal(await page.evaluate(()=>WorldMap.currentRegion),'harbor');assert.equal(await page.evaluate(()=>WorldMap.mode),'region');
- const next=page.locator('[data-next-scene="harbor:H-01"]');await next.waitFor({state:'visible'});await screenshot('harbor');
+ const next=page.locator('[data-next-scene="harbor:H-01"]');await next.waitFor({state:'attached'});await screenshot('harbor');
+ // Main story affordance must be visible without menu navigation.
+ await next.waitFor({state:'visible'});
  assert.equal(await page.evaluate(()=>CatBondResonance.view().objective.includes('npc:harbor-arrival')),true,'navigation must not complete NPC proof by itself');
  await press(next);await page.waitForFunction(()=>!CatBondResonance.view().objective.includes('npc:harbor-arrival'));await page.locator('.res-host[data-scene="harbor:H-01"]').waitFor();assert.equal(await page.evaluate(()=>CatBondResonance.view().muling),'unmet');
  await screenshot('first-conversation');

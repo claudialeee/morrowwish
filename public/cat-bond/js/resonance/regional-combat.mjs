@@ -122,7 +122,7 @@ function install(){
   const owned=id=>root.cats.filter(cat=>cat.species===id).length;
   const legends=window.GameData.SPECIES.filter(sp=>sp.rarity==="SSR").sort((a,b)=>owned(a.id)-owned(b.id)||a.id.localeCompare(b.id));
   const wild=legends[0];if(!wild)return false;
-  const companions=["wumao","bosi"].map(id=>window.GameData.speciesById(id)).filter(Boolean);
+  const companions=["zest","sunlace"].map(id=>window.GameData.speciesById(id)).filter(Boolean);
   const duoMode=mode==="duo";
   const title=duoMode?{zh:"星铃废墟 · 双猫约定挑战",en:"Star Bell Ruins · Duo Promise challenge"}:{zh:"星铃废墟 · 传说挑战",en:"Star Bell Ruins · Legendary challenge"};
   window.UI.openBattleModePrompt(team,wild,{origin:"map",storyTitle:[title.zh,title.en],onStart:fighters=>{

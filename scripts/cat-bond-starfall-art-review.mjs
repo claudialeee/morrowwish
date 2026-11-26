@@ -4,17 +4,19 @@ import fs from "node:fs/promises";
 import assert from "node:assert/strict";
 import {chromium} from "playwright";
 import {campaign} from "../public/cat-bond/js/resonance/campaign.mjs";
+import {buildCanonicalScene} from "../public/cat-bond/js/resonance-cinematic.mjs";
 const manifest=JSON.parse(await fs.readFile(new URL("../public/cat-bond/assets/cinematics/asset-manifest.json",import.meta.url),"utf8"));
 const origin="http://127.0.0.1:8765",out="artifacts/cat-bond-starfall/visual-review";
 await fs.mkdir(out,{recursive:true});
-const shots=["starfall:F-02","starfall:F-05"].map(id=>{
- const current=campaign.scenes.find(s=>s.id===id),specs=manifest.stagingShots[id];
- return {id,title:current.title,chapter:{zh:"猫猫纽带 · 美术审查",en:"Cat Bond · Art review"},allowSkip:false,mode:"auto",
- frames:specs.flatMap((shot,i)=>{
-  const asset=manifest.assets.find(a=>a.id===shot.assetId);assert(asset&&asset.path.endsWith(".webp"));
-  const base={image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,transitionMs:shot.transitionMs};
-  return shot.lines.length?shot.lines.map(index=>{const line=current.lines[index],speaker=campaign.cast[line.speaker].name;return {...base,id:id+"-"+i+"-"+index,subtitle:{zh:{speaker:speaker.zh,text:line.text.zh},en:{speaker:speaker.en,text:line.text.en}}}}):[{...base,id:id+"-"+i,subtitle:{zh:{speaker:"",text:shot.caption.zh},en:{speaker:"",text:shot.caption.en}}}];
- })};
+// Use the actual canonical staging adapter, including region montage and actor layers.
+const ids=["starfall:F-02","starfall:F-05","finale:B-04","epilogue:E-01"];
+const shots=ids.map(id=>{
+ const current=campaign.scenes.find(s=>s.id===id);
+ const view={current,choice:null,objective:current.requires.filter(o=>o.startsWith("cinematic:")),cursor:0,lineReady:true};
+ const blocked=buildCanonicalScene({campaign,manifest,view,staging:false});
+ assert.equal(blocked.ok,false,id+" remains unapproved; this script must not authorize production");
+ const result=buildCanonicalScene({campaign,manifest,view,staging:true});
+ assert.ok(result.ok,id+": "+result.reason);return {...result.scene,allowSkip:false};
 });
 const browser=await chromium.launch({headless:true}),result=[];
 try{
@@ -29,9 +31,13 @@ try{
    await page.waitForFunction(id=>document.querySelector("#review").dataset.ready==="true"&&document.querySelector("#review").dataset.frameId===id,frame.id);
    for(const lang of ["en","zh"]){
     await page.evaluate(lang=>reviewPlayer.setLanguage(lang),lang);
-    await page.waitForFunction(t=>document.querySelector(".cbcp-subtitle").textContent===t,frame.subtitle[lang].text);
-    const layout=await page.evaluate(()=>{const img=document.querySelector(".cbcp-art:last-of-type"),sub=document.querySelector(".cbcp-subtitle-wrap"),r=sub.getBoundingClientRect();return {decoded:!!img?.complete&&img.naturalWidth>0,subtitleFits:r.left>=-1&&r.top>=-1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,overflow:sub.scrollWidth>sub.clientWidth+1}});
-    assert.ok(layout.decoded&&layout.subtitleFits&&!layout.overflow,JSON.stringify({name,id:frame.id,lang,layout}));
+    if(frame.subtitle)await page.waitForFunction(t=>document.querySelector(".cbcp-subtitle")?.textContent===t,frame.subtitle[lang].text);
+    const layout=await page.evaluate(()=>{
+     const stack=document.querySelector(".cbcp-art-stack"),img=[...stack.querySelectorAll(".cbcp-art")].at(-1),sub=document.querySelector(".cbcp-subtitle-wrap"),r=sub.getBoundingClientRect(),bounds=stack.getBoundingClientRect();
+     const layers=[...stack.children].slice([...stack.children].indexOf(img)+1).filter(el=>el.classList.contains("cbcp-layer"));
+     return {decoded:!!img?.complete&&img.naturalWidth>0,layers:layers.length,layerDecoded:layers.every(el=>el.complete&&el.naturalWidth>0),layerVisible:layers.every(el=>{const b=el.getBoundingClientRect();return b.width>0&&b.height>0&&b.right>bounds.left&&b.left<bounds.right&&b.bottom>bounds.top&&b.top<bounds.bottom}),subtitleFits:sub.hidden||r.left>=-1&&r.top>=-1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,overflow:!sub.hidden&&sub.scrollWidth>sub.clientWidth+1};
+    });
+    assert.ok(layout.decoded&&layout.layerDecoded&&layout.layerVisible&&layout.layers===(frame.layers||[]).length&&layout.subtitleFits&&!layout.overflow,JSON.stringify({name,id:frame.id,lang,layout}));
     await page.screenshot({path:out+"/"+name+"-"+frame.id.replaceAll(":","-")+"-"+lang+".png"});
     result.push({profile:name,scene:scene.id,frame:frame.id,lang,...layout});
    }
@@ -39,4 +45,4 @@ try{
   assert.deepEqual(errors,[]);assert.equal(await page.evaluate(()=>!!window.reviewError),false);
   await page.close();
  }
-}finally{await fs.writeFile(out+"/results.json",JSON.stringify({scope:"candidate-art-only, NOT gameplay acceptance or runtime approval",results:result},null,2));await browser.close();}
+}finally{await fs.writeFile(out+"/results.json",JSON.stringify({scope:"all four candidate cinematics, three viewports and both languages; NOT subjective visual approval or gameplay acceptance",results:result},null,2));await browser.close();}

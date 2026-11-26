@@ -1952,7 +1952,7 @@ class CaptureBattle {
     // so the finisher-on-marked / weaker-on-unmarked basic economy is preserved.
     if (f.basicSkill) {
       const sk = f.basicSkill;
-      f.cd.basic = Math.max(this.moves[0].cd, sk.cd * 0.6) * (f.bond.cdReduction || 1);
+      f.cd.basic = Math.max(this.moves[0].cd, sk.cd * 0.6) * (f.bond.cdReduction || 1) * this.passiveFactor(f,'basicCd');
       const col = this.elemColor(sk.element || f.element);
       // A skill fired from the BASIC slot hits for notably LESS than the same skill in a
       // Q/E slot: it's a short-cooldown, spammable left-click, so per-hit power is scaled
@@ -1965,7 +1965,7 @@ class CaptureBattle {
       this.gainUlt(2);
       return;
     }
-    f.cd.basic = this.moves[0].cd * (f.bond.cdReduction || 1);
+    f.cd.basic = this.moves[0].cd * (f.bond.cdReduction || 1) * this.passiveFactor(f,'basicCd');
     const col = this.elemColor(f.element);
     const mx = f.x + Math.cos(aim) * 22, my = f.y + Math.sin(aim) * 22;
     // CAT-THEMED BASIC: the猫 lobs its own stuff — 小鱼干 (dried fish) and 毛线团
@@ -2003,7 +2003,8 @@ class CaptureBattle {
     return f;
   }
   // Positive outgoing buffs share one additive bucket; weakness is a penalty.
-  outgoingBuffMult(f){ return (1 + (f.damageBoostT > 0 ? 0.25 : 0) + 0.12 * (f.kneadStacks || 0)) * (f.weakened ? 0.5 : 1); }
+  passiveFactor(f,channel,target=null){return window.Skills?.breedPassiveFactor?.(f,channel,this.t||0,target)??1;}
+  outgoingBuffMult(f){ return (1 + (f.damageBoostT > 0 ? 0.25 : 0) + 0.12 * (f.kneadStacks || 0)) * (f.weakened ? 0.5 : 1) * this.passiveFactor(f,'damage'); }
   kneadMult(f){ return 1 + 0.12 * (f && f.kneadStacks || 0); }
   castSupportSkill(f,sk,aim){
     if(!sk)return false;
@@ -2020,7 +2021,7 @@ class CaptureBattle {
         const R=160, hpBack=f.maxhp; let any=false;
         for(const tf of this.team){ if(!tf.alive)continue;
           if(Math.hypot(tf.x-f.x,tf.y-f.y)>R && tf!==f)continue;   // caster + nearby allies
-          tf.hotT=Math.max(tf.hotT||0,5.0); tf.hotRate=tf.maxhp*0.03;   // ~3%/s for 5s
+          tf.hotT=Math.max(tf.hotT||0,5.0); tf.hotRate=tf.maxhp*0.03*this.passiveFactor(f,'heal',tf);   // ~3%/s for 5s
           any=true;
         }
         this.vfx.ring(f.x,f.y,{r0:R*0.3,vr:R*2,life:.6,color:'#8fe0ff',width:5});
@@ -2036,8 +2037,8 @@ class CaptureBattle {
       const pct = sk.healPct ?? ((sk.healMode==='single'||sk.big) ? 0.46 : 0.34); // learned heal upgrade matters
       // Route the restore through the single chokepoint so 烫伤(scald) cuts it; healUnit draws
       // its own +N float, so suppress it here and use the returned ACTUAL amount for leech/line art.
-      const amount=this.healUnit(t,Math.max(14,t.maxhp*pct),{float:false});
-      if(hasHot){ t.hotT=Math.max(t.hotT||0,4.0); t.hotRate=t.maxhp*0.035; }   // ~3.5%/s for 4s (water)
+      const amount=this.healUnit(t,Math.max(14,t.maxhp*pct)*this.passiveFactor(f,'heal',t),{float:false});
+      if(hasHot){ t.hotT=Math.max(t.hotT||0,4.0); t.hotRate=t.maxhp*0.035*this.passiveFactor(f,'heal',t); }   // ~3.5%/s for 4s (water)
       if(sk.selfBuff){ f.damageBoostT=Math.max(f.damageBoostT||0,3.0); }       // fire self-heal also buffs
       if(sk.haste){ t.hasteT=Math.max(t.hasteT||0,4.0); }                      // elec heal → brief speed-up
       if(sk.leech){ this.healUnit(f,amount*0.5,{float:false}); }               // dark heal also siphons for the caster
@@ -2427,12 +2428,12 @@ class CaptureBattle {
     const sk = f.qSkill;
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
       if(!this.castSupportSkill(f,sk,aim))return false;
-      f.cd.q=sk.cd*(f.bond.cdReduction||1)*SKILL_CD_MULT;
+      f.cd.q=sk.cd*(f.bond.cdReduction||1)*SKILL_CD_MULT * this.passiveFactor(f,'skillCd');
       this.regularSkillAccent(f,sk.element||f.element,aim);
       this.markMoveSeen(f,sk);
       return true;
     }
-    f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
+    f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT * this.passiveFactor(f,'skillCd');
     const col = this.elemColor(sk ? sk.element : f.element);
     const pow = (sk ? sk.power : 0.8)*this.outgoingBuffMult(f);
     // The starter Q fan is an actual damaging skill even before a named Q unlock.
@@ -3077,12 +3078,12 @@ class CaptureBattle {
     const sk = f.eSkill;
     if(sk&&(sk.kind==='heal'||sk.kind==='buff')){
       if(!this.castSupportSkill(f,sk,aim))return false;
-      f.cd.e=sk.cd*(f.bond.cdReduction||1)*SKILL_CD_MULT;
+      f.cd.e=sk.cd*(f.bond.cdReduction||1)*SKILL_CD_MULT * this.passiveFactor(f,'skillCd');
       this.regularSkillAccent(f,sk.element||f.element,aim);
       this.markMoveSeen(f,sk);
       return true;
     }
-    f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
+    f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT * this.passiveFactor(f,'skillCd');
     const col = this.elemColor(sk ? sk.element : f.element);
     const pow = (sk ? sk.power : 1) * this.outgoingBuffMult(f);
     if (sk) {
@@ -3397,7 +3398,7 @@ class CaptureBattle {
       let healedAny=false;
       for(const t of this.team){
         if(!t.alive)continue;
-        const got=this.healUnit(t,t.maxhp*pct,{float:false});
+        const got=this.healUnit(t,t.maxhp*pct*this.passiveFactor(f,'heal',t),{float:false});
         if(got>0.01){ healedAny=true;
           this.vfx.ring(t.x,t.y,{r0:8,vr:260,life:.5,color,width:6});
           this.vfx.burst(t.x,t.y,{count:this.game.isTouch?8:14,color,speed:120,life:.5,r:3,grav:-40});
@@ -5861,6 +5862,7 @@ class CaptureBattle {
     if (this.coach) dmg *= 0.35;
     // Barrier (shieldT) reduction now lives in resolveHit, which every enemy hit
     // routes through. hurtMe lands the (already shield-adjusted) damage.
+    dmg *= this.passiveFactor(f,'incoming');
     f.hp = Math.max(this.coach ? 1 : 0, f.hp - dmg);
     if(dmg>0&&this.t-(this._lastHurtSfx??-5)>.24){
       window.MorrowwishAudio?.effect?.('combat_hurt');

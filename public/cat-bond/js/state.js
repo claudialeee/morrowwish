@@ -42,7 +42,7 @@ let S = DEFAULT_STATE();
 
 // --- cat instance factory ---
 let _uid = 1;
-const OWNED_STAT_VERSION = 1;
+const OWNED_STAT_VERSION = 2;
 const STAT_KEYS = ['pow','agi','vit','cha'];
 // Largest remainder: a defined integer budget, with no extra multiplier from
 // the breed's original base-stat sum. Keep every stat positive.

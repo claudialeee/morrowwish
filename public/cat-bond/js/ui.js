@@ -1467,7 +1467,7 @@ const UI = {
     });
   },
   openBreedPicker() {
-    const cats = State.S.cats.filter(c=>!c.storyActor); this._breedSel = [];
+    const cats = State.S.cats.filter(c=>GameData.SPECIES.some(sp=>sp.id===c.species)); this._breedSel = [];
     const render = () => {
       const chips = cats.map(c => { const sp = GameData.speciesById(c.species); const sel = this._breedSel.includes(c.uid); return `<div class="chip ${sel ? 'sel' : ''}" data-uid="${c.uid}"><canvas width="44" height="38"></canvas><div><div style="font-weight:700">${GameData.speciesName(sp)}</div><div class="tiny">${GameData.RARITY[sp.rarity].name}</div></div></div>`; }).join('');
       this.panel(`<span class="card-close">×</span><h2>🥚 选两只猫繁育</h2><p class="sub">已选 ${this._breedSel.length}/2</p><div class="roster">${chips}</div><div class="btn-row"><button class="btn gold" id="bp-go" ${this._breedSel.length === 2 ? '' : 'disabled'}>开始孵化</button></div>`);
@@ -1769,6 +1769,7 @@ const UI = {
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${facts.rarity}">◆${facts.rarityLabel}</span> ${sp.storyActor?'<span class="tiny">'+(en?'Story companion':'剧情伙伴')+'</span>':''} <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
+      ${window.Skills?.breedPassive?.(sp.id)?(()=>{const p=Skills.breedPassive(sp.id),k=window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";return `<p class="cat-skill-roadmap" data-breed-passive="${sp.id}"><strong>${k==="zh"?"专属被动":"Breed passive"} · ${p.name[k]}</strong> · ${p.desc[k]}</p>`;})():""}
       ${window.Skills?'<p class="cat-skill-roadmap">✨ '+Skills.progressionHint(cat)+'</p>':''}
       ${State.S.masteryBadges?.[sp.id]
         ?'<p class="mastery-detail">🏅 '+(window.MorrowwishI18n?.get?.()==='zh'
@@ -3495,7 +3496,7 @@ const UI = {
       yunduo:['布偶猫','Ragdoll'],
     };
     const options=storyOpening
-      ?Object.keys(storyBreeds).map(id=>GameData.speciesById(id))
+      ?[GameData.speciesById('jinjc')]
       :GameData.SPECIES.filter(sp=>sp.rarity==='N').slice(0,3);
     const english=window.MorrowwishI18n?.get?.()!=='zh',locale=english?1:0;
     const elements={fire:['火系','Fire'],grass:['草系','Nature'],water:['水系','Water'],light:['光系','Light']};
@@ -3503,7 +3504,7 @@ const UI = {
       const element=Skills.elementOf(sp.id);
       const breed=storyOpening?storyBreeds[sp.id][locale]:'';
       const portrait=storyOpening
-        ?`<img class="starter-portrait" src="assets/starter-portraits/${sp.id}.webp" alt="" width="180" height="180">`
+        ?`<img class="starter-portrait" src="${sp.id==='jinjc'?'assets/core-art-remaster/leads/player.webp':'assets/starter-portraits/'+sp.id+'.webp'}" alt="" width="180" height="180">`
         :'<canvas width="90" height="76"></canvas>';
       return `<button type="button" class="dex-cell" data-id="${sp.id}" aria-label="${breed||GameData.speciesName(sp)}">
         ${portrait}
@@ -3531,7 +3532,7 @@ const collectiblePortraits=new Map();
 const portraitRequests=new WeakMap();
 function renderCollectiblePortrait(canvas,species,cat){
   if(!canvas||!species)return;
-  const folders={jinjc:'starter-portraits',yunduo:'starter-portraits'};
+  const folders={yunduo:'starter-portraits'};
   const folder=folders[species.id];
   const request={};
   portraitRequests.set(canvas,request);

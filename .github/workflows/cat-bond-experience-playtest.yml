@@ -1,0 +1,175 @@
+name: Cat Bond experience playtest (isolated)
+on:
+  push:
+    branches: [review/cat-bond-playtest-harness]
+    paths:
+      - 'scripts/cat-bond-experience-*.mjs'
+      - 'scripts/cat-bond-release-prologue-qa.mjs'
+      - 'scripts/cat-bond-harbor-playthrough.mjs'
+      - 'scripts/cat-bond-starfall-art-review.mjs'
+      - 'public/cat-bond/**'
+      - 'docs/cat-bond-rpg/EXPERIENCE-PRE-AUDIT.md'
+      - '.github/workflows/cat-bond-experience-playtest.yml'
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'opening, campaign, targets, or one full chapter'
+        type: choice
+        options: [opening, campaign, targets, harbor, forest, forge, sky, library, starfall, finale, epilogue]
+        default: opening
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-experience-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: ${{ fromJSON(github.event_name == 'push' && '["opening","campaign","targets","harbor","forest","forge","sky","library","starfall","finale","epilogue"]' || format('["{0}"]', inputs.scope || 'opening')) }}
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      PROLOGUE_LANG: zh
+      PROLOGUE_PROFILE: desktop
+      CAT_BOND_PROFILE: desktop
+      CAT_BOND_FULL_CAMPAIGN: '1'
+      SCOPE: ${{ matrix.scope }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Core art roster contract
+        run: node scripts/test-cat-bond-core-art-roster.mjs
+      - name: Decode remaster and render actual game cats
+        if: matrix.scope == 'opening'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-core-art-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-core-art-browser.mjs
+      - name: Candidate cinematic frames in desktop and mobile
+        if: matrix.scope == 'opening'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-cinematic-review-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-starfall-art-review.mjs
+      - name: Offline narrative and gameplay structure
+        run: node scripts/cat-bond-experience-structure.mjs
+      - name: Engine-only knowledge paths and choice coverage
+        run: |
+          node scripts/cat-bond-experience-knowledge.mjs
+          node scripts/test-cat-bond-player-first.mjs
+          node scripts/test-cat-bond-canon12-campaign.mjs
+          node scripts/test-cat-bond-story-party.mjs
+        if: matrix.scope != 'campaign' && (matrix.scope == 'opening' || matrix.scope == 'targets')
+      - name: Real browser evidence on loopback only
+        if: always() && (matrix.scope == 'opening' || matrix.scope == 'campaign')
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-experience-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          if [ "$SCOPE" = campaign ]; then
+            node scripts/cat-bond-harbor-playthrough.mjs
+          else
+            CAT_BOND_FULL_CAMPAIGN=0 node scripts/cat-bond-release-prologue-qa.mjs
+          fi
+      - name: Verify real save checkpoint reload
+        if: always() && (matrix.scope == 'opening' || matrix.scope == 'campaign')
+        run: |
+          root=artifacts/cat-bond-experience/checkpoints
+          if [ ! -d "$root" ]; then echo 'No real checkpoints available'; exit 1; fi
+          mapfile -d '' fixtures < <(find "$root" -type f -name '*.json' -print0 | sort -z)
+          if [ "${#fixtures[@]}" -eq 0 ]; then echo 'No real checkpoints available'; exit 1; fi
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-replay-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          passed=0
+          failed=0
+          for fixture in "${fixtures[@]}"; do
+            if node scripts/cat-bond-experience-replay.mjs "$fixture"; then
+              passed=$((passed+1))
+            else
+              failed=$((failed+1))
+              echo "::error::Checkpoint replay failed: $fixture"
+            fi
+          done
+          echo "Real checkpoint replays: passed=$passed failed=$failed total=${#fixtures[@]}" | tee -a "$GITHUB_STEP_SUMMARY"
+          test "$failed" -eq 0
+      - name: Isolated synthetic chapter checkpoint restore
+        if: matrix.scope == 'targets'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-experience-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-targets.mjs
+          node scripts/cat-bond-experience-emotional.mjs
+      - name: Current RPG encounter measurement from isolated checkpoints
+        if: always() && matrix.scope == 'targets'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-rpg-combat-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-rpg-combat.mjs
+      - name: Complete one entire chapter using real inputs
+        if: contains(fromJSON('["harbor","forest","forge","sky","library","starfall","finale","epilogue"]'), matrix.scope)
+        run: |
+          case "$SCOPE" in
+            harbor) entry=harbor:H-01 ;;
+            forest) entry=forest:R-01 ;;
+            forge) entry=forge:E-01 ;;
+            sky) entry=sky:S-01 ;;
+            library) entry=library:M-01 ;;
+            starfall) entry=starfall:F-01 ;;
+            finale) entry=finale:B-01 ;;
+            epilogue) entry=epilogue:E-01 ;;
+            *) exit 2 ;;
+          esac
+          node scripts/cat-bond-experience-knowledge.mjs
+          node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-chapter-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          CAT_BOND_TARGET_SCENES="$entry" node scripts/cat-bond-experience-targets.mjs
+          CAT_BOND_CHAPTERS="$SCOPE" node scripts/cat-bond-experience-chapters.mjs
+      - name: Generate review packet even after failed playthrough
+        if: always() && (matrix.scope == 'opening' || matrix.scope == 'campaign')
+        run: node scripts/cat-bond-experience-report.mjs
+      - name: Seeded legacy battle policy baseline
+        if: always() && matrix.scope == 'opening'
+        run: node scripts/cat-bond-experience-combat.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cat-bond-experience-evidence-${{ matrix.scope }}
+          path: |
+            artifacts/cat-bond-experience/
+            artifacts/cat-bond-release-prologue/
+            artifacts/cat-bond-harbor/
+            artifacts/cat-bond-starfall/visual-review/
+            /tmp/cb-cinematic-review-server.log
+            /tmp/cb-experience-server.log
+            /tmp/cb-rpg-combat-server.log
+            /tmp/cb-chapter-server.log
+          if-no-files-found: warn
+          retention-days: 7

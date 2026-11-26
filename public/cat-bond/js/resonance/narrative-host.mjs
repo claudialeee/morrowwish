@@ -5,23 +5,24 @@ import {mountKeyExchange} from "./key-exchange.mjs";
 import {isLibraryReveal,mountLibraryReveal} from "./library-reveal.mjs";
 const lang=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const portraitRoot=new URL("../../assets/npc/",import.meta.url);
-const playerPortraits=new Map();
-function portrait(id){
- if(id==="player"){const selected=window.State?.S?.cats?.[0],sp=selected?.species;if((sp==="jinjc"||sp==="yunduo")&&!selected.appearance&&!selected.variant)return new URL("../player-portraits/"+sp+".webp",portraitRoot).href;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;const key=JSON.stringify([window.State.S.cats[0].uid,sp,window.State.S.cats[0].appearance,window.State.S.cats[0].variant]);if(!playerPortraits.has(key)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp),window.State.S.cats[0]);playerPortraits.set(key,c.toDataURL("image/png"));}return playerPortraits.get(key)}
- if(id==="muling")return new URL("../cinematics/characters/muling/traveler-silver-cream.webp",portraitRoot).href;
+function portrait(id,scene,cursor){
+ if(id==="player")return new URL("../core-art-remaster/leads/"+(scene==="library:M-03"&&cursor>=2?"player-reveal":"player")+".webp",portraitRoot).href;
+ if(id==="muling")return new URL("../core-art-remaster/leads/"+(["library:M-03","library:M-04"].includes(scene)?"muling-uneasy":"muling")+".webp",portraitRoot).href;
  if(campaign.regions.includes(campaign.cast[id]?.region))return new URL(id+"-painted.webp",portraitRoot).href;
  return null;
 }
 function install(){
  const stage=document.getElementById("stage"),State=window.State;
  if(!stage||!State||window.CatBondResonance)return;
- let dialogue=null,root=null,slot=null,openedScene=null,scheduled=false,keyExchange=null,libraryReveal=null;
+ let dialogue=null,root=null,slot=null,openedScene=null,scheduled=false,keyExchange=null,libraryReveal=null,deferredDialogue=null;
  const announce=detail=>{const savedSlot=State.S;queueMicrotask(()=>{if(savedSlot!==State.S)return;window.dispatchEvent(new CustomEvent("cat-bond-resonance-changed",{detail}));if(detail.joined?.length){const names=detail.joined.map(id=>{const n=campaign.cast[id].name;const tier=window.GameData?.STORY_SPECIES?.["story_"+id]?.rarity;return {zh:n.zh+(tier?" · "+tier:""),en:n.en+(tier?" · "+tier:"")};});window.__game?.toast?.({zh:names.map(n=>n.zh).join("、")+" 已加入战队 · 可在队伍中选择出战",en:names.map(n=>n.en).join(", ")+" joined the party · select them in Party"});if(window.__game?.scene==="yard")window.__game?.rebuildYard?.();}if(detail.left?.length){window.__game?.toast?.({zh:"暮铃暂时离开战队",en:"Muling has temporarily left the party"});}if(detail.trustChanges?.length){const names=detail.trustChanges.map(c=>({zh:campaign.cast[c.id].name.zh+" "+(c.delta>0?"+":"")+c.delta,en:campaign.cast[c.id].name.en+" "+(c.delta>0?"+":"")+c.delta}));window.__game?.toast?.({zh:"信任变化 · "+names.map(n=>n.zh).join(" / "),en:"Trust changed · "+names.map(n=>n.en).join(" / ")});}})};
  const runtime=getSlotRuntime(State);runtime.subscribe(announce);
  function close(){libraryReveal?.dispose();libraryReveal=null;keyExchange?.dispose();keyExchange=null;dialogue?.dispose();dialogue=null;root?.remove();root=null;openedScene=null;slot=null;}
  function show(){
   const v=runtime.view(),game=window.__game;
   if(!v.current||game?.scene==="battle"||document.getElementById("cb-finale-result"))return false;
+  // Regional battle rewards must be acknowledged before the next story overlay.
+  if(document.querySelector('#panel.open #library-battle-ok')){deferredDialogue={owner:State.S,id:v.current.id};return false;}
   // Cinematic-only scenes have a physical entrance and an approved shot sequence.
   // Reading their dialogue in the journal must never consume the cinematic cursor.
   if(v.current.chapter!=="prologue"&&v.current.requires.some(op=>op.startsWith("cinematic:"))&&v.objective.some(op=>op.startsWith("cinematic:"))){
@@ -53,7 +54,7 @@ function install(){
   const ending=document.createElement("section");ending.className="cb-story-overlay is-visible res-ending-title";
   ending.setAttribute("role","dialog");ending.setAttribute("aria-modal","true");
   Object.assign(ending.style,{position:"absolute",inset:"0",zIndex:"40",display:"grid",placeItems:"center",overflow:"hidden",background:"#152237"});
-  const art=document.createElement("img");art.src=new URL("../../assets/cinematics/prologue/garden-at-dawn.webp",import.meta.url).href;
+  const art=document.createElement("img");art.src=new URL("../../assets/core-art-remaster/story/e03-garden.webp",import.meta.url).href;
   art.alt="";Object.assign(art.style,{position:"absolute",inset:"0",width:"100%",height:"100%",objectFit:"contain",opacity:".80"});
   const card=document.createElement("div");Object.assign(card.style,{position:"relative",textAlign:"center",padding:"24px",color:"#fff5dc",textShadow:"0 3px 20px #142239",background:"linear-gradient(90deg,transparent,#152237aa,transparent)",maxWidth:"95%"});
   const title=document.createElement("h2");title.textContent="THE BELL RINGS AGAIN";title.style.font="700 clamp(24px,5vw,54px) Georgia,serif";title.style.letterSpacing=".10em";
@@ -96,7 +97,7 @@ function install(){
  window.addEventListener("cat-bond-illustrations-ready",()=>{if(dialogue&&slot===State.S)dialogue.render()});
  // Detect external world/battle commits and slot replacements without a second progression store.
  let observedRoot=State.S,observedRevision=State.S.resonance?.revision??-1,observedView=runtime.view();
- setInterval(()=>{const revision=State.S.resonance?.revision??-1;if(observedRoot!==State.S||observedRevision!==revision){const sameSlot=observedRoot===State.S,old=observedView;observedRoot=State.S;observedRevision=revision;observedView=runtime.view();refresh();
+ setInterval(()=>{if(deferredDialogue){const pending=deferredDialogue;if(pending.owner!==State.S||pending.id!==runtime.view().current?.id)deferredDialogue=null;else if(!document.querySelector('#panel.open #library-battle-ok')&&window.__game?.scene!=='battle'){deferredDialogue=null;show();}}const revision=State.S.resonance?.revision??-1;if(observedRoot!==State.S||observedRevision!==revision){const sameSlot=observedRoot===State.S,old=observedView;observedRoot=State.S;observedRevision=revision;observedView=runtime.view();refresh();
   if(sameSlot&&!dialogue&&window.__game?.scene!=="battle"&&old.current?.id===observedView.current?.id&&(old.objective.length>observedView.objective.length||(!old.lineReady&&observedView.lineReady))&&(!old.lineReady||observedView.objective.length===0)&&observedView.lineReady&&observedView.cursor<observedView.current.lines.length)show();
  }},200);
  window.addEventListener("cat-bond-resonance-evidence",event=>{

@@ -117,7 +117,7 @@ function backdrop(ctx,W,H,p,key){
 }
 function speciesOf(cat){
  const raw=typeof cat?.species==='string'?cat.species:cat?.species?.id||cat?.id;
- return atIndex[raw]!==undefined?raw:'tangyuan';
+ return window.GameData?.speciesById?.(raw)?raw:(atIndex[raw]!==undefined?raw:'tangyuan');
 }
 function drawKitten(ctx,x,y,ht,cat,flip,p,style,color,tier=1,label){
  const speciesId=speciesOf(cat),index=atIndex[speciesId],scale=clamp(ht,90,300);

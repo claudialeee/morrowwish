@@ -453,6 +453,94 @@
       "dialogueRuntimeAllowed": true,
       "source": "Owner-selected cream silver shaded watercolor portrait",
       "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "remaster-f02",
+      "kind": "cinematic-key-art",
+      "sceneKey": "starfall:F-02",
+      "path": "assets/core-art-remaster/story/f02-history.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Work remaster or existing region painting; review branch only"
+    },
+    {
+      "id": "remaster-f02-atlas",
+      "kind": "cinematic-key-art",
+      "sceneKey": "starfall:F-02",
+      "path": "assets/resonance-world-v2/atlas.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Work remaster or existing region painting; review branch only"
+    },
+    {
+      "id": "remaster-f05-starfall",
+      "kind": "cinematic-key-art",
+      "sceneKey": "starfall:F-05",
+      "path": "assets/resonance-world-v2/starfall.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Work remaster or existing region painting; review branch only"
+    },
+    {
+      "id": "remaster-f05-atlas",
+      "kind": "cinematic-key-art",
+      "sceneKey": "starfall:F-05",
+      "path": "assets/resonance-world-v2/atlas.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Work remaster or existing region painting; review branch only"
+    },
+    {
+      "id": "remaster-b04",
+      "kind": "cinematic-key-art",
+      "sceneKey": "finale:B-04",
+      "path": "assets/core-art-remaster/story/b04-reunion.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Work remaster or existing region painting; review branch only"
+    },
+    {
+      "id": "remaster-b04-starfall",
+      "kind": "cinematic-key-art",
+      "sceneKey": "finale:B-04",
+      "path": "assets/resonance-world-v2/starfall.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Work remaster or existing region painting; review branch only"
+    },
+    {
+      "id": "remaster-e01-harbor",
+      "kind": "cinematic-key-art",
+      "sceneKey": "epilogue:E-01",
+      "path": "assets/resonance-world-v2/harbor.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Work remaster or existing region painting; review branch only"
+    },
+    {
+      "id": "remaster-e01-sky",
+      "kind": "cinematic-key-art",
+      "sceneKey": "epilogue:E-01",
+      "path": "assets/resonance-world-v2/sky.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Work remaster or existing region painting; review branch only"
     }
   ],
   "sceneKeys": [
@@ -659,241 +747,208 @@
     ],
     "starfall:F-05": [
       {
-        "assetId": "closing-inward-call",
+        "assetId": "remaster-f05-starfall",
         "alt": {
-          "zh": "六道向内汇聚的光路",
-          "en": "Six inward channels converge"
+          "zh": "星坠原",
+          "en": "Starfall Expanse"
         },
-        "durationMs": 5200,
+        "durationMs": 4000,
         "transitionMs": 680,
-        "camera": {
-          "from": {
-            "x": 0,
-            "y": 0,
-            "scale": 1.025
-          },
-          "to": {
-            "x": 2,
-            "y": 0,
-            "scale": 1.1
-          }
-        },
         "lines": [
           0,
           1
-        ]
-      },
-      {
-        "assetId": "closing-pendant-signal",
-        "alt": {
-          "zh": "暮铃触发星铃的暗路",
-          "en": "Muling activates the inward channel"
-        },
-        "durationMs": 5200,
-        "transitionMs": 680,
+        ],
         "camera": {
           "from": {
             "x": 0,
             "y": 0,
-            "scale": 1.025
+            "scale": 1.02
           },
           "to": {
-            "x": -2,
+            "x": 0,
             "y": 0,
-            "scale": 1.1
+            "scale": 1.08
           }
+        }
+      },
+      {
+        "assetId": "remaster-f05-atlas",
+        "alt": {
+          "zh": "六地航路",
+          "en": "The six regions' routes"
         },
+        "durationMs": 4000,
+        "transitionMs": 680,
         "lines": [
           2
-        ]
+        ],
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.08
+          }
+        }
       }
     ],
     "finale:B-04": [
       {
-        "assetId": "closing-final-note",
+        "assetId": "remaster-b04-starfall",
         "alt": {
-          "zh": "六地相答，锚室开启",
-          "en": "The ring answers and the anchor opens"
+          "zh": "星铃重新响了",
+          "en": "The Star Bell rings again"
         },
-        "durationMs": 5200,
+        "durationMs": 4000,
         "transitionMs": 680,
-        "camera": {
-          "from": {
-            "x": 0,
-            "y": 0,
-            "scale": 1.025
-          },
-          "to": {
-            "x": 2,
-            "y": 0,
-            "scale": 1.1
-          }
-        },
         "lines": [
           0,
           1
-        ]
-      },
-      {
-        "assetId": "closing-memories-return",
-        "alt": {
-          "zh": "守铃者与暮铃重逢",
-          "en": "The Bellkeeper and Muling reunite"
-        },
-        "durationMs": 5200,
-        "transitionMs": 680,
+        ],
         "camera": {
           "from": {
             "x": 0,
             "y": 0,
-            "scale": 1.025
+            "scale": 1.02
           },
           "to": {
-            "x": -2,
+            "x": 0,
             "y": 0,
-            "scale": 1.1
+            "scale": 1.08
           }
+        }
+      },
+      {
+        "assetId": "remaster-b04",
+        "alt": {
+          "zh": "重逢",
+          "en": "Reunion"
         },
+        "durationMs": 4000,
+        "transitionMs": 680,
         "lines": [
           2,
           3
-        ]
+        ],
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.08
+          }
+        }
       }
     ],
     "epilogue:E-01": [
       {
-        "assetId": "closing-harbor-forest-delivery",
+        "assetId": "remaster-e01-harbor",
         "alt": {
-          "zh": "航船驶向林地",
-          "en": "Harbor ships reach Rootsleep Forest"
+          "zh": "港口伙伴",
+          "en": "Harbor companions"
         },
-        "durationMs": 5200,
+        "durationMs": 4000,
         "transitionMs": 680,
-        "camera": {
-          "from": {
-            "x": 0,
-            "y": 0,
-            "scale": 1.025
-          },
-          "to": {
-            "x": 2,
-            "y": 0,
-            "scale": 1.1
-          }
-        },
         "lines": [
           0
-        ]
-      },
-      {
-        "assetId": "closing-couriers-at-library",
-        "alt": {
-          "zh": "飞艇抵达月镜书库",
-          "en": "Sky couriers reach Moonmirror Library"
-        },
-        "durationMs": 5200,
-        "transitionMs": 680,
+        ],
         "camera": {
           "from": {
             "x": 0,
             "y": 0,
-            "scale": 1.025
+            "scale": 1.02
           },
           "to": {
-            "x": -2,
+            "x": 0,
             "y": 0,
-            "scale": 1.1
+            "scale": 1.08
           }
+        }
+      },
+      {
+        "assetId": "remaster-e01-sky",
+        "alt": {
+          "zh": "云脊信使",
+          "en": "Skyspine couriers"
         },
+        "durationMs": 4000,
+        "transitionMs": 680,
         "lines": [
           1
-        ]
+        ],
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.08
+          }
+        }
       }
     ],
     "starfall:F-02": [
       {
-        "assetId": "opening-star-bell",
+        "assetId": "remaster-f02-atlas",
         "alt": {
-          "zh": "撞击前的星铃与六座圣所",
-          "en": "The Star Bell and six sanctuaries before the impact"
+          "zh": "六地共鸣",
+          "en": "Six regions resonate"
         },
-        "durationMs": 5500,
-        "transitionMs": 760,
-        "camera": {
-          "from": {
-            "x": 0,
-            "y": 0,
-            "scale": 1.02
-          },
-          "to": {
-            "x": 2,
-            "y": 0,
-            "scale": 1.12
-          }
-        },
-        "lines": [],
-        "caption": {
-          "zh": "陨星撞击中央星铃。六座圣所同时受损。",
-          "en": "A fallen star struck the Star Bell. All six sanctuaries were damaged."
-        }
-      },
-      {
-        "assetId": "opening-broken-bell-tongue",
-        "alt": {
-          "zh": "破碎铃舌留下的灾变记录",
-          "en": "The broken bell tongue and the catastrophe"
-        },
-        "durationMs": 5500,
-        "transitionMs": 760,
-        "camera": {
-          "from": {
-            "x": 0,
-            "y": 0,
-            "scale": 1.02
-          },
-          "to": {
-            "x": -2,
-            "y": 0,
-            "scale": 1.12
-          }
-        },
-        "lines": [],
-        "caption": {
-          "zh": "铃舌碎裂，失去回应的回响开始积聚。",
-          "en": "The bell tongue shattered. Unanswered echoes began to gather."
-        }
-      },
-      {
-        "assetId": "opening-keepers-choice",
-        "alt": {
-          "zh": "守铃者主动走入应急锚室",
-          "en": "The Bellkeeper willingly enters the emergency anchor"
-        },
-        "durationMs": 5500,
-        "transitionMs": 760,
-        "camera": {
-          "from": {
-            "x": 0,
-            "y": 0,
-            "scale": 1.02
-          },
-          "to": {
-            "x": 2,
-            "y": 0,
-            "scale": 1.12
-          }
-        },
+        "durationMs": 4000,
+        "transitionMs": 680,
         "lines": [
           0,
-          1,
+          1
+        ],
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.08
+          }
+        }
+      },
+      {
+        "assetId": "remaster-f02",
+        "alt": {
+          "zh": "星铃破碎的那一天",
+          "en": "The day the Star Bell shattered"
+        },
+        "durationMs": 4000,
+        "transitionMs": 680,
+        "lines": [
           2,
           3,
           4,
           5
         ],
-        "caption": {
-          "zh": "我自愿走进应急锚室，以自己的记忆维持封印。那是我的选择。",
-          "en": "I willingly entered the emergency anchor to sustain the seal with my memories. It was my choice."
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.08
+          }
         }
       }
     ]

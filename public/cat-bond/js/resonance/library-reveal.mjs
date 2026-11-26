@@ -1,11 +1,11 @@
 // Canonical cursor-driven camera, using only existing painted production assets.
 const A=new URL("../../assets/",import.meta.url),art=p=>new URL(p,A).href;
-const anchorDetail="cinematics/prologue/keepers-choice.webp",library="resonance-world-v2/library.webp",bell="cinematics/prologue/star-bell.webp",broken="cinematics/prologue/broken-bell-tongue.webp",waiting="cinematics/prologue/waiting-at-workbench.webp",atlas="resonance-world-v2/atlas.webp",starfall="resonance-world-v2/starfall.webp";
+const anchorDetail="core-art-remaster/story/m03-reveal.webp",library="resonance-world-v2/library.webp",bell="core-art-remaster/story/m03-reveal.webp",atlas="resonance-world-v2/atlas.webp",starfall="resonance-world-v2/starfall.webp";
 export const isLibraryReveal=id=>["library:M-03","library:M-04","library:M-05"].includes(id);
 export function revealShot(id,c,choice=null){
  const shot=(path,mode,actors,zh,en)=>({path,mode,actors,caption:[zh,en]});
  if(id==="library:M-03"){
-  if(c<4)return shot(bell,"mural",["player","muling"],"已核实壁画 · 星铃旁的两只猫","Verified mural · Two cats beside the Star Bell");
+  if(c<4)return shot(bell,"mural",[],"已核实壁画 · 星铃旁的两只猫","Verified mural · Two cats beside the Star Bell");
   return shot(library,"present",["player","muling"],"月镜书库 · 现实","Moonmirror Library · Present");
  }
  if(id==="library:M-04"){

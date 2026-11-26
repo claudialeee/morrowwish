@@ -2073,8 +2073,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "六地都回应了。你看，这些不是试音，是他们真的在互相帮忙。",
-            "en": "All six answered. Look—these aren't test tones. They're actually helping one another."
+            "zh": "六地都回应了。这次不是中央替它们发声，是每个地方自己送来的回应。",
+            "en": "All six answered. This time the center isn't speaking for them. Each region sent its own reply."
           }
         },
         {
