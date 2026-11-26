@@ -166,3 +166,12 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 @keyframes sg-flutter{0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-4px) scaleX(.62)}}
 @keyframes sg-glint{0%,100%{opacity:.64}50%{opacity:1}}
 @media(prefers-reduced-motion:reduce){#stage .sg-discovery svg{animation:none!important}}
+
+/* Canon 2.2 opening: readable, tactile discoveries instead of tiny decorative props. */
+#stage .sg-discovery{width:104px;height:80px;padding:1px 2px;grid-template-rows:48px auto;gap:2px;align-content:center;justify-items:center;color:#593c25;isolation:isolate}
+#stage .sg-discovery::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:50%;background:#fff4d9ed;border:2px solid #ad7c3b;box-shadow:0 2px 8px #5f3c2855,0 0 12px #ffe5a6;z-index:-1;pointer-events:none}
+#stage .sg-discovery svg{width:46px;height:46px;filter:drop-shadow(0 1px 1px #68442666)}
+#stage .sg-discovery-label{max-width:102px;padding:3px 6px;border-radius:7px;background:#fff5e5f5;border:1px solid #b99460;color:#593c25;font:700 12px/1.15 var(--cb-font-body);text-align:center;box-shadow:0 2px 5px #57381b33;pointer-events:none;overflow-wrap:anywhere}
+#stage .sg-discovery:hover::before,#stage .sg-discovery:focus-visible::before{border-color:#785020;box-shadow:0 0 0 3px #fff2be,0 2px 8px #5f3c2855}
+#stage .sg-discovery:disabled{opacity:.7}
+#stage .sg-npc-talk-marker{min-height:44px;min-width:72px;font-size:14px;padding:6px 12px}
