@@ -2011,3 +2011,54 @@ RSI cycle 2026-11-26T18:32:35Z — propose script reported FAILED (deliberately-
 **Combat numerically healthy — 0 P0 this cycle.** All 20 P1 + 12 P2 are `additive-flag` under the new taxonomy (new fields + consumers, not architectural changes, but still exceed local-numeric cron auto-fix scope until owner lifts the gate). Logged for owner review.
 
 **Branch state**: `main` 21 ahead of origin/main (post-merge of QA promo + enemy-level-match + cap-lift + debug-FAB-race + record-button); push-main-lock intact.
+
+---
+
+## Cycle wmxn087xn — 2026-11-26 (POST-SQUASH-PUSH on origin/main `559d711b`)
+
+**Workflow**: `wmxn087xn` — 6 personas × 8 battles × 1 round
+**Agents**: 77 spawned, 50 delivered, 27 StructuredOutput retry-cap losses
+**Distribution**: 36 critiques → **0 P0**, 21 P1, 15 P2
+**Headline**: "Combat is numerically solid but feels OFF across every persona because the engine hides its own information — no verb for sustained input, no readout of why damage happened, and no ramp for stalemates — so fun sits 3–7/10 on top of balanced math."
+
+### Auto-fix outcome
+
+**Combat reads healthy this cycle — zero P0 produced.** Prior P0 themes (enemyUlt cap, closing-ramp, basic-slot penalty, crescent redesign, enemy-level match, debug tools) all shipped in `022d88d4` + predecessors. All 36 remaining findings are **feedback-layer / numeric** opportunities, not architectural.
+
+### P1 themes (21, findings-only — all `additive-flag` or `local-numeric`)
+
+Top new signal this cycle:
+- **Masher basic-chain multiplier**: track `_basicChainN`/`_basicChainLastT` on resolveHit, dmg ×(1 + min(0.25, 0.02×(N-1))) ramping to +24% cap over 12 taps on same target, reset on miss/switch/gap>0.55s. Fills the "flat damage regardless of input rate" deadzone.
+- **Masher cross-source incoming cap**: active-cat rolling 1.5s window clamps cumulative incoming raw dmg to 55% maxhp. Smooths the 15× variance from phase-aligned enemyUlt+smash+lob stacks that the per-caster cap doesn't catch.
+- **Masher gainUlt(0) from basics**: finish Task #52 Phase A — basics no longer trickle ult. Q/E hits already grant +14 each; this forces verb variety by withholding climax.
+- **Masher combo cap 0.20→0.35 + milestone every 8**: existing crescendo saturates in <0.5s at 100 taps/sec. Raise + widen spacing.
+- **Masher kill-finisher at ≥15 combo**: existing kill branch at 6344 fires identical impactType('kill') for 1-combo chip kill and 40-combo capstone. Gate bump hitstop/shake + element ring + '终结!/FINISH!' floater.
+- **Cautious (×3)**: engagement-demand still missing; closing works but has no visible "pressure building" cue.
+- **Explorer (×3)**: stomp ratchet ceiling; E has zero decision-cost; 278x basic:Q ratio.
+- **Panicky (×2)**: timeout band 30.5-36.5s; existing juice buried.
+- **Lazy (×4)**: `smartAutoAction` threshold dropping skill casts; auto-dodge invisible.
+- **Impatient (×4)**: "first 18s has no authored beat" — design-level.
+
+### P2 themes (15)
+
+- HP bar `_closing` rim VFX
+- Role-split defaultLoadout
+- Ult meter seed 15-20 at battle start
+- Per-cat boss pattern authoring
+- Attribution layer on hurtMe (biggest-hits debrief)
+- Combo rhythm-gate (on-beat +2 vs off-beat +1)
+- Shield SFX / tutorial toast pairing
+- Range indicator on charge-up
+- Fever VFX chip on HUD
+- Ambient battle-start seed state hint
+- Flash-on-element-reaction tint ladder
+- Timeout verdict-absence finisher
+- Threat-EMA edge glow (sub-45% HP cliff)
+- Auto-shield rulebook entry
+- Combo milestone spread
+
+### Verdict
+
+**Combat numerically healthy — 0 P0 this cycle.** All 21 P1 + 15 P2 are `local-numeric` or `additive-flag` under the taxonomy; feedback-layer and compounding-reward asks, not architectural. Logged for owner review.
+
+**Branch state**: `main` 0 ahead of origin/main (squash-pushed `022d88d4` this session); push-main-lock intact until next "push main".
