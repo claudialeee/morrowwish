@@ -229,7 +229,7 @@
     { id: 'emberClaw',  name: '炽爪',     element: 'fire',  kind: 'melee',      power: 1.3, cd: 2.2, ultCost: 0,  tags: ['burn'],          appliesTag: 'burn',  vfx: 'muzzle',    desc: '燃烧的猫爪撕击，附加灼烧。' },
     { id: 'fireballMeow', name: '火球术', element: 'fire',  kind: 'projectile', power: 1.65, cd: 2.5, ultCost: 0, windup: 0.18, precise: true, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '短暂蓄力后射出高速压缩火球，命中第一个敌人并施加灼烧，不产生范围伤害。' },
     { id: 'puffHiss',   name: '弓背炸毛', element: 'fire',  kind: 'buff',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['buff','threat'], appliesTag: null, vfx: 'ring',      desc: '弓背炸毛虚张声势：自身伤害提升，并把靠得太近的敌人吓退一步。' },
-    { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 2.7, damageChannel: 1.35, reach: 360, width: 22, sweep: .72, sweepPasses: 3, power: 1.85, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。', unlock: { level: 6, element: 'fire' } },
+    { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 2.7, damageChannel: 1.35, reach: 156, width: 22, sweep: .72, sweepPasses: 3, power: 1.85, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。', unlock: { level: 6, element: 'fire' } },
     { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
     // ---- 水 / 冰 water ----
     // All Water cats (including 蓝莓) receive an actual water-typed ice claw,
