@@ -2,6 +2,7 @@
 // story mutations, or synthetic player analytics. Only used by local browser tests.
 import fs from 'node:fs';
 import path from 'node:path';
+import {execFileSync} from 'node:child_process';
 
 export async function attachExperienceRecorder(context, page, {id, root = 'artifacts/cat-bond-experience'} = {}) {
   if (process.env.CAT_BOND_EXPERIENCE !== '1') return;
@@ -18,9 +19,13 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
     }
     fs.appendFileSync(file, JSON.stringify({seq:++seq, ms:Date.now()-start, ...event})+'\n');
   }
+  const revision=process.env.GITHUB_SHA||execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+  const checkpointDir=path.join(root,'checkpoints',id);
+  fs.mkdirSync(checkpointDir,{recursive:true});
+  const saved=new Set();
   record({kind:'run',id,profile:process.env.CAT_BOND_PROFILE||process.env.PROLOGUE_PROFILE||'unknown',
     language:id.startsWith('campaign-')?'en':process.env.PROLOGUE_LANG||'en',mode:id.startsWith('campaign-')?'authored campaign':id.startsWith('free-')?'free play':'opening',
-    revision:process.env.GITHUB_SHA||null});
+    revision});
   // Only local acceptance server can be contacted. It uses ephemeral SQLite.
   await context.route('**/*', route => {
     const url = new URL(route.request().url());
@@ -30,10 +35,26 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
   page.on('pageerror',error=>record({kind:'pageerror',message:error.message}));
   page.on('console',msg=>{if(msg.type()==='error'||msg.type()==='warning')record({kind:'console',level:msg.type(),message:msg.text().slice(0,1000)});});
   page.on('response',res=>{if(res.status()>=400&&res.url().startsWith('http://127.0.0.1:8765/'))record({kind:'http_error',status:res.status(),url:res.url()});});
-  await page.exposeBinding('__cbExperienceEmit',(_,event)=>record(event));
+  await page.exposeBinding('__cbExperienceEmit',(_,event)=>{
+    if(event.kind!=='checkpoint'){record(event);return;}
+    const {scene,slot,book,cursor,region}=event;
+    if(!/^[a-z]+:[A-Z]-\d{2}$/.test(scene)||!/^slot[123]$/.test(slot)||typeof book!=='string'||book.length>2000000)return;
+    if(!Number.isInteger(cursor)||cursor<0)return;
+    const key=scene+'-'+cursor;
+    // One early checkpoint per scene, rather than per frame or dialogue line.
+    if(saved.has(scene))return;
+    try{
+      const entry=JSON.parse(book).slots?.[slot],state=entry?.data?.state||entry?.data;
+      if(state?.resonance?.scene!==scene||!state.cats?.length)return;
+      const fixture={schema:1,revision,run:id,scene,cursor,region,slot,provenance:'real-input local browser save',storageState:{cookies:[],origins:[{origin:'http://127.0.0.1:8765',localStorage:[{name:'catbond_save_slots_v1',value:book},{name:'catbond_active_slot_v1',value:slot}]}]}};
+      const name=key.replace(':','-')+'.json';
+      fs.writeFileSync(path.join(checkpointDir,name),JSON.stringify(fixture,null,2));
+      saved.add(scene);record({kind:'checkpoint_saved',scene,cursor,region,fixture:'checkpoints/'+id+'/'+name});
+    }catch(error){record({kind:'recorder_error',message:'checkpoint: '+String(error)});}
+  });
   await page.addInitScript(()=>{
     if(location.origin!=='http://127.0.0.1:8765')return;
-    let previous='', scheduled=false;
+    let previous='', scheduled=false; const captured=new Set();
     const send=event=>{void window.__cbExperienceEmit(event).catch(()=>{});};
     const visible=e=>{if(!e||!e.getClientRects().length||e.closest('[hidden],[inert],[aria-hidden="true"]'))return false;
       const r=e.getBoundingClientRect(),style=getComputedStyle(e);
@@ -54,6 +75,15 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
       scheduled=false;
       try{const state=read(),key=JSON.stringify(state);
         if(key!==previous){previous=key;send({kind:'screen',...state});}
+        if(state.scene&&!captured.has(state.scene)&&['yard','map'].includes(state.area)&&!window.__game?.battle){
+          const slot=window.State?.activeSlot?.(),book=localStorage.getItem('catbond_save_slots_v1');
+          if(slot&&book){
+            const entry=JSON.parse(book).slots?.[slot],data=entry?.data?.state||entry?.data;
+            if(data?.resonance?.scene===state.scene&&data.cats?.length){
+              captured.add(state.scene);send({kind:'checkpoint',scene:state.scene,slot,book,cursor:state.cursor,region:state.region});
+            }
+          }
+        }
       }catch(error){send({kind:'recorder_error',message:String(error)});}
     }
     document.addEventListener('click',event=>{

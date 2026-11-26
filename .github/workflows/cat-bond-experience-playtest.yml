@@ -38,6 +38,8 @@ jobs:
       - run: npm ci
       - run: npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
+      - name: Offline narrative and gameplay structure
+        run: node scripts/cat-bond-experience-structure.mjs
       - name: Real browser evidence on loopback only
         run: |
           node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-experience-server.log 2>&1 &
@@ -50,6 +52,16 @@ jobs:
           else
             CAT_BOND_FULL_CAMPAIGN=0 node scripts/cat-bond-release-prologue-qa.mjs
           fi
+      - name: Verify real save checkpoint reload
+        if: always()
+        run: |
+          fixture=$(find artifacts/cat-bond-experience/checkpoints -name 'harbor-H-01-*.json' -print -quit 2>/dev/null || true)
+          if [ -z "$fixture" ]; then echo 'No Harbor checkpoint available'; exit 1; fi
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-replay-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          node scripts/cat-bond-experience-replay.mjs "$fixture"
       - name: Generate review packet even after failed playthrough
         if: always()
         run: node scripts/cat-bond-experience-report.mjs
