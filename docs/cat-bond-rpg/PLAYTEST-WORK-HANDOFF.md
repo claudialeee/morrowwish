@@ -19,14 +19,14 @@
 | Sky | All 5 scenes, 30/30 chapter-derived restores | [sky](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15147133761) |
 | Library | All 5 scenes, 30/30 chapter-derived restores | [job](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/job/140118620755) |
 | Starfall | All 5 scenes, 30/30 chapter-derived restores | [starfall](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15147148939) |
-| Finale | Pending at time of draft | [job](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/job/140118620742) |
+| Finale | All 4 scenes, 24/24 chapter-derived restores | [job](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/job/140118620742) |
 | Epilogue | All 3 scenes, 18/18 chapter-derived restores, ending gate passed | [epilogue](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15147860234) |
 | Fresh continuous campaign | Blocked at Harbor H-04; not a full-game pass | [campaign](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15145494907) |
-| Targets | Pending at time of draft | [job](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/job/140118620790) |
+| Targets | 36/36 synthetic restores, four real RPG combat wins; 16 pre-ending ambient cases failed on menu/hidden control navigation, post-ending accountability passed | [job](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/job/140118620790) |
 | Audio | Browser/audio asset/lifecycle lane passed | [audio](https://github.com/claudialeee/morrowwish/actions/runs/45880589786/artifacts/15147336064) |
 | Art/combat renderer | 24 decoded assets, 30 rendered actors, 99/99 isolated duo frames spanning 21 element pairs/3 layouts; 29/29 battle prototype passive checks | opening artifact above |
 
-174/174 observed chapter-derived restore executions across Harbor and six successful independent chapters. Synthetic chapter starts do not prove continuous player progression. Engine audit: three 40-scene routes, 28 choice options, 17 ambient activities, 13 postgame quests, 24 cargo steps, 23 regional discovery steps, all 91 story bonds. Source audits do not replace browser interactions. See `coverage-inventory.json`, `discovery-model-checks.json`, knowledge/optional-coverage.json and the chapter evidence in the run artifacts.
+198/198 observed chapter-derived restore executions across Harbor and seven successful independent chapters. Prior full run finished 14/17 jobs successful; Harbor and campaign share H-04 softlock, targets failed on optional NPC UI entry. Next candidate fixes actual compact-menu navigation in ambient driver, pending real regression. Synthetic chapter starts do not prove continuous player progression. Engine audit: three 40-scene routes, 28 choice options, 17 ambient activities, 13 postgame quests, 24 cargo steps, 23 regional discovery steps, all 91 story bonds. Source audits do not replace browser interactions. See `coverage-inventory.json`, `discovery-model-checks.json`, knowledge/optional-coverage.json and the chapter evidence in the run artifacts.
 
 ## Independent engineering gate (Chat, before Work)
 1. Fix remaining actual P0/P1 failures; verify latest RPG baseline and art source, preserving integrated work. Batch isolated changes into one candidate, never deploy or push main. Keep current run until remaining actionable logs are available; one automatic full suite per candidate.
