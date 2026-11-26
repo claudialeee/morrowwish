@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
+import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
 
 export async function attachExperienceRecorder(context, page, {id, root = 'artifacts/cat-bond-experience', synthetic = false, chapterEntry = null} = {}) {
   if (process.env.CAT_BOND_EXPERIENCE !== '1') return;
@@ -23,7 +24,7 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
   const revision=process.env.GITHUB_SHA||execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
   const checkpointDir=path.join(root,'checkpoints',id);
   fs.mkdirSync(checkpointDir,{recursive:true});
-  const saved=new Set();
+  const saved=new Map();
   record({kind:'run',id,profile:process.env.CAT_BOND_PROFILE||process.env.PROLOGUE_PROFILE||'unknown',
     language:id.startsWith('campaign-')?'en':process.env.PROLOGUE_LANG||'en',mode:id.startsWith('campaign-')?'authored campaign':id.startsWith('free-')?'free play':'opening',
     revision,provenance:synthetic?'synthetic checkpoint + real subsequent inputs':'fresh real-input browser route'});
@@ -39,22 +40,26 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
   await page.exposeBinding('__cbExperienceEmit',(_,event)=>{
     if(event.kind!=='checkpoint'){record(event);return;}
     // Never treat a seeded entry as player-earned; retain later chapter saves separately.
-    if(synthetic&&(!chapterEntry||event.scene===chapterEntry))return;
-    const {scene,slot,book,cursor,region,ending=false}=event;
+    if(synthetic&&(!chapterEntry||event.scene===chapterEntry))return {ok:false,reason:'seeded-entry'};
+    const {scene,slot,book,cursor,region,ending=false,milestone=ending?'ending':'scene'}=event;
+    if(!['scene','ending','postgame'].includes(milestone)||((milestone!=='scene')!==ending))return {ok:false,reason:'invalid-milestone'};
     if(!/^[a-z]+:[A-Z]-\d{2}$/.test(scene)||!/^slot[123]$/.test(slot)||typeof book!=='string'||book.length>2000000)return;
     if(!Number.isInteger(cursor)||cursor<0)return;
-    const key=scene+(ending?'--ending':'');
+    const key=scene+(milestone==='scene'?'':'--'+milestone);
     // One early checkpoint per scene, rather than per frame or dialogue line.
-    if(saved.has(key))return;
+    if(saved.has(key))return {ok:true,fixture:saved.get(key)};
     try{
       const entry=JSON.parse(book).slots?.[slot],state=entry?.data?.state||entry?.data;
       if(state?.resonance?.scene!==scene||!state.cats?.length)return;
-      if(ending&&!state.resonance.completed?.includes(scene))return;
-      const fixture={schema:1,revision,run:id,scene,ending,cursor:state.resonance.cursor,region,slot,provenance:synthetic?'synthetic chapter entry + real-input browser save':'real-input local browser save',...(chapterEntry?{chapterEntry,limitations:['Prior chapter history is synthetic; not fresh-slot campaign evidence.']}:{ }),storageState:{cookies:[],origins:[{origin:'http://127.0.0.1:8765',localStorage:[{name:'catbond_save_slots_v1',value:book},{name:'catbond_active_slot_v1',value:slot}]}]}};
+      if(ending&&(scene!==campaign.scenes.at(-1).id||state.resonance.completed?.length!==campaign.scenes.length))return {ok:false,reason:'incomplete-ending'};
+      if(milestone==='postgame'&&(!campaign.side.every(q=>state.resonance.postgame?.includes(q.id))||!(state.resonance.ruins?.duoClears>=1)))return {ok:false,reason:'incomplete-postgame'};
+      const fixture={schema:1,revision,run:id,scene,ending,milestone,cursor:state.resonance.cursor,region,slot,provenance:synthetic?'synthetic chapter entry + real-input browser save':'real-input local browser save',...(chapterEntry?{chapterEntry,limitations:['Prior chapter history is synthetic; not fresh-slot campaign evidence.']}:{ }),storageState:{cookies:[],origins:[{origin:'http://127.0.0.1:8765',localStorage:[{name:'catbond_save_slots_v1',value:book},{name:'catbond_active_slot_v1',value:slot}]}]}};
       const name=(key+'-'+fixture.cursor).replace(':','-')+'.json';
       fs.writeFileSync(path.join(checkpointDir,name),JSON.stringify(fixture,null,2));
-      saved.add(key);record({kind:'checkpoint_saved',scene,ending,cursor:fixture.cursor,region,provenance:fixture.provenance,fixture:'checkpoints/'+id+'/'+name});
-    }catch(error){record({kind:'recorder_error',message:'checkpoint: '+String(error)});}
+      const relative='checkpoints/'+id+'/'+name;saved.set(key,relative);
+      record({kind:'checkpoint_saved',scene,ending,milestone,cursor:fixture.cursor,region,provenance:fixture.provenance,fixture:relative});
+      return {ok:true,fixture:relative};
+    }catch(error){record({kind:'recorder_error',message:'checkpoint: '+String(error)});return {ok:false,reason:String(error)};}
   });
   await page.addInitScript(()=>{
     if(location.origin!=='http://127.0.0.1:8765')return;
@@ -118,4 +123,18 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
     },{once:true});
     window.addEventListener('pagehide',sample);
   });
+}
+
+// Capture only a save already written by normal gameplay; never invoke State.save().
+export async function captureExperienceMilestone(page,milestone){
+  if(process.env.CAT_BOND_EXPERIENCE!=='1')return;
+  if(!['ending','postgame'].includes(milestone))throw Error('Unknown checkpoint milestone');
+  const result=await page.evaluate(async milestone=>{
+    if(typeof window.__cbExperienceEmit!=='function')return {ok:false,reason:'recorder not attached'};
+    const v=window.CatBondResonance?.view(),state=window.CatBondResonance?.snapshot();
+    if(!v?.ending||!state||!['yard','map'].includes(window.__game?.scene)||window.__game?.battle)return {ok:false,reason:'not in safe completed game area'};
+    return await window.__cbExperienceEmit({kind:'checkpoint',scene:state.scene,ending:true,milestone,cursor:state.cursor,slot:window.State.activeSlot(),book:localStorage.getItem('catbond_save_slots_v1'),region:window.WorldMap?.currentRegion||null});
+  },milestone);
+  if(!result?.ok)throw Error('Missing durable '+milestone+' checkpoint: '+JSON.stringify(result));
+  return result.fixture;
 }
