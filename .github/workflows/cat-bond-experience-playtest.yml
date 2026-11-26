@@ -6,6 +6,9 @@ on:
       - 'scripts/cat-bond-experience-*.mjs'
       - 'scripts/cat-bond-release-prologue-qa.mjs'
       - 'scripts/cat-bond-harbor-playthrough.mjs'
+      - 'scripts/cat-bond-starfall-playthrough.mjs'
+      - 'scripts/cat-bond-finale-real-playthrough.mjs'
+      - 'public/game-settings.js'
       - 'scripts/cat-bond-starfall-art-review.mjs'
       - 'scripts/test-cat-bond-companion-rarity.mjs'
       - 'scripts/test-cat-bond-core-art-roster.mjs'
@@ -27,8 +30,10 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: cat-bond-experience-${{ github.ref }}-${{ github.sha }}
-  cancel-in-progress: false
+  # Supersede only obsolete automatic runs of this isolated workflow.
+  # Manual investigations are independently grouped by revision and scope.
+  group: cat-bond-experience-${{ github.ref }}-${{ github.event_name == 'push' && 'push' || format('manual-{0}-{1}', github.sha, inputs.scope) }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 jobs:
   evidence:
     if: github.event_name == 'push' || inputs.scope != 'audio'
@@ -140,6 +145,17 @@ jobs:
           const missing=expected.filter(ch=>!captured.has(ch));
           console.log('Fresh campaign coverage:',JSON.stringify({expected,captured:[...captured],missing}));
           assert.deepEqual(missing,[],'Fresh campaign must produce checkpoints in every story chapter');
+          for(const milestone of ['ending','postgame']){
+            const f=fixtures.find(x=>x.milestone===milestone&&x.ending===true);
+            assert.ok(f,'Missing actual '+milestone+' save');
+            const book=JSON.parse(f.storageState.origins[0].localStorage.find(x=>x.name==='catbond_save_slots_v1').value);
+            const story=book.slots[f.slot].data.state.resonance;
+            assert.equal(story.completed.length,campaign.scenes.length);
+            if(milestone==='postgame'){
+              assert.ok(campaign.side.every(q=>story.postgame.includes(q.id)),'All actual postgame quests must persist');
+              assert.ok(story.ruins.duoClears>=1,'Actual Duo Promise ruins victory must persist');
+            }
+          }
           JS
       - name: Isolated synthetic chapter checkpoint restore
         if: matrix.scope == 'targets'
@@ -217,7 +233,9 @@ jobs:
           const [chapter,root]=process.argv.slice(2);
           const expected=campaign.scenes.filter(s=>s.chapter===chapter).slice(1).map(s=>s.id);
           assert.ok(expected.length,'Chapter must have post-entry scenes');
-          const captured=new Set(fs.readdirSync(root).filter(f=>f.endsWith('.json')).map(f=>JSON.parse(fs.readFileSync(root+'/'+f,'utf8')).scene));
+          const fixtures=fs.readdirSync(root).filter(f=>f.endsWith('.json')).map(f=>JSON.parse(fs.readFileSync(root+'/'+f,'utf8')));
+          const captured=new Set(fixtures.map(f=>f.scene));
+          if(chapter==='epilogue')assert.ok(fixtures.some(f=>f.milestone==='ending'&&f.ending===true),'Epilogue must capture actual completed ending');
           const missing=expected.filter(id=>!captured.has(id));
           console.log('Chapter-derived coverage:',JSON.stringify({chapter,expected,captured:[...captured],missing}));
           assert.deepEqual(missing,[],'Missing post-entry scene saves');
