@@ -219,7 +219,7 @@ jobs:
           assert.deepEqual(missing,[],'Missing post-entry scene saves');
           JS
       - name: Generate review packet even after failed playthrough
-        if: always() && (matrix.scope == 'opening' || matrix.scope == 'campaign')
+        if: always()
         run: node scripts/cat-bond-experience-report.mjs
       - name: Seeded legacy battle policy baseline
         if: always() && matrix.scope == 'opening'
