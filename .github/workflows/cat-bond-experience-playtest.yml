@@ -14,7 +14,7 @@ on:
       scope:
         description: 'opening (fast) or campaign (deep authored route)'
         type: choice
-        options: [opening, campaign]
+        options: [opening, campaign, targets]
         default: opening
 permissions:
   contents: read
@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scope: ${{ fromJSON(github.event_name == 'push' && '["opening","campaign"]' || format('["{0}"]', inputs.scope || 'opening')) }}
+        scope: ${{ fromJSON(github.event_name == 'push' && '["opening","campaign","targets"]' || format('["{0}"]', inputs.scope || 'opening')) }}
     env:
       CAT_BOND_EXPERIENCE: '1'
       PROLOGUE_LANG: zh
@@ -52,9 +52,9 @@ jobs:
           node scripts/test-cat-bond-player-first.mjs
           node scripts/test-cat-bond-canon12-campaign.mjs
           node scripts/test-cat-bond-story-party.mjs
-        if: matrix.scope == 'opening'
+        if: matrix.scope != 'campaign'
       - name: Real browser evidence on loopback only
-        if: always()
+        if: always() && matrix.scope != 'targets'
         run: |
           node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-experience-server.log 2>&1 &
           server=$!
@@ -67,7 +67,7 @@ jobs:
             CAT_BOND_FULL_CAMPAIGN=0 node scripts/cat-bond-release-prologue-qa.mjs
           fi
       - name: Verify real save checkpoint reload
-        if: always()
+        if: always() && matrix.scope != 'targets'
         run: |
           fixture=$(find artifacts/cat-bond-experience/checkpoints -name 'harbor-H-01-*.json' -print -quit 2>/dev/null || true)
           if [ -z "$fixture" ]; then echo 'No Harbor checkpoint available'; exit 1; fi
@@ -76,8 +76,17 @@ jobs:
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           node scripts/cat-bond-experience-replay.mjs "$fixture"
+      - name: Isolated synthetic chapter checkpoint restore
+        if: matrix.scope == 'targets'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-experience-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-targets.mjs
       - name: Generate review packet even after failed playthrough
-        if: always()
+        if: always() && matrix.scope != 'targets'
         run: node scripts/cat-bond-experience-report.mjs
       - name: Seeded legacy battle policy baseline
         if: always() && matrix.scope == 'opening'

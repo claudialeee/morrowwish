@@ -269,7 +269,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     await scene('harbor:H-01');
     await page.locator('.rw-shell').evaluate(shell=>Promise.allSettled(shell.getAnimations().map(animation=>animation.finished)));
     await shot('harbor');
-    assert.ok(await page.locator('.rw-world').evaluate(e=>{const stage=e.parentElement.getBoundingClientRect(),bar=e.parentElement.querySelector('#cb-header')?.getBoundingClientRect(),world=e.getBoundingClientRect();return world.top>=Math.max(stage.top+40,bar?.bottom||0)&&world.bottom<=stage.bottom+1&&e.scrollHeight<=e.clientHeight+2;}),'Harbor fixed viewport clears the actual game toolbar without scrolling');
+    assert.ok(await page.locator('.rw-world').evaluate(e=>{const stage=e.parentElement.getBoundingClientRect(),bar=e.parentElement.querySelector('#cb-header')?.getBoundingClientRect(),world=e.getBoundingClientRect();return world.top>=stage.top-1&&world.bottom<=stage.bottom+1&&world.left>=stage.left-1&&world.right<=stage.right+1&&e.scrollHeight<=e.clientHeight+2;}),'Full-bleed Harbor remains inside stage without scrolling');
     await button('Talk to Qilan').click();
     await readDialogue('harbor:H-01');
     await scene('harbor:H-02');

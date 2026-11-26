@@ -5,6 +5,7 @@ import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
 import {makeEngine} from '../public/cat-bond/js/resonance/engine.mjs';
 const out=process.argv[2]||'artifacts/cat-bond-experience';
 await fs.mkdir(out+'/knowledge',{recursive:true});
+await fs.mkdir(out+'/model-scenes',{recursive:true});
 const ok=(r,label)=>assert.equal(r.ok,true,label+': '+r.reason);
 const routes=[];
 const late=new Set(['mechanism:muling-unlock','npc:public-accountability','npc:second-garden-key']);
@@ -19,6 +20,7 @@ for(let variant=0;variant<3;variant++){
  const emit=(s,event)=>{events.push({scene:s.id,...event});(chapters[s.chapter]??=[]).push({scene:s.id,...event});};
  for(const scene of campaign.scenes){
   assert.equal(e.view().current.id,scene.id);
+  if(variant===0&&!/^prologue:P-0[1-4]$/.test(scene.id))await fs.writeFile(out+'/model-scenes/'+scene.id.replace(':','-')+'.json',JSON.stringify({scene:scene.id,chapter:scene.chapter,route:id,provenance:'synthetic engine-model state, not player-earned',snapshot:e.snapshot()},null,2));
   if(scene.id==='prologue:P-05'&&variant!==1){ok(e.meetTraveler(),scene.id);emit(scene,{kind:'model-context',text:'Optional traveler encounter completed; browser presentation not captured here.'});}
   if(scene.id==='prologue:P-05'&&variant===1)emit(scene,{kind:'model-context',text:'Optional traveler encounter skipped.'});
   function choose(){
