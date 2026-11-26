@@ -350,7 +350,7 @@ function installCatBondSystemMenu(){
     ...(battle?[['skills',t('技能说明','Skill guide'),'']]:[]),
     ...(native('#mw-fullscreen-toggle')?[['fullscreen',t('全屏','Fullscreen'),active('#mw-fullscreen-toggle')?t('退出','Exit'):t('进入','Enter')]]:[]),
     ['share',t('分享游戏','Share game'),''],
-    ...(!battle?[['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),'']]:[]),
+    ...(!battle?[['slots',t('存档','Saves'),'']]:[]),
     ...(!title&&!battle?[['title',t('返回标题画面','Return to title'),'']]:[])
   ];
   const navigation=new Set(['yard-map','yard-book','world-book','world-atlas','world-garden','world-explore','skills']);
@@ -358,15 +358,14 @@ function installCatBondSystemMenu(){
   const gardenActions=rows.filter(([id])=>['yard-build','yard-seek','yard-play','yard-feed'].includes(id));
   const cameraActions=rows.filter(([id])=>id.startsWith('camera-'));
   const saveActions=rows.filter(([id])=>['slots','title'].includes(id));
-  const pages={home:t('菜单','Menu'),settings:t('设置','Settings'),garden:t('花园活动','Garden activities'),camera:t('地图视角','Map view'),saves:t('存档与返回','Save & exit'),credits:t('关于与音乐署名','About & credits')};
-  if(menuPage==='home'){rows=rows.filter(([id])=>navigation.has(id));if(gardenActions.length)rows.push(['page-garden',pages.garden,'›']);if(yard&&!dialogue&&!document.documentElement.classList.contains('cb-cg'))rows.push(['leisure',t('猫猫捣蛋 · 休闲小游戏','Pawsibly Innocent · optional game'),'›']);if(cameraActions.length)rows.push(['page-camera',pages.camera,'›']);rows.push(['page-settings',pages.settings,'›']);if(saveActions.length&&!dialogue)rows.push(['page-saves',pages.saves,'›']);}
+  const pages={home:t('菜单','Menu'),settings:t('设置','Settings'),garden:t('花园活动','Garden activities'),camera:t('地图视角','Map view'),credits:t('关于与音乐署名','About & credits')};
+  if(menuPage==='home'){rows=rows.filter(([id])=>navigation.has(id));if(gardenActions.length)rows.push(['page-garden',pages.garden,'›']);if(yard&&!dialogue&&!document.documentElement.classList.contains('cb-cg'))rows.push(['leisure',t('猫猫捣蛋 · 休闲小游戏','Pawsibly Innocent · optional game'),'›']);if(cameraActions.length)rows.push(['page-camera',pages.camera,'›']);rows.push(['page-settings',pages.settings,'›']);if(!dialogue)rows.push(...saveActions);}
   else if(menuPage==='settings'){rows=rows.filter(([id])=>settings.has(id));rows.push(['page-credits',pages.credits,'›']);}
   else if(menuPage==='garden')rows=gardenActions;
   else if(menuPage==='camera')rows=cameraActions;
-  else if(menuPage==='saves')rows=saveActions;
   else rows=[];
   const section=(label,list)=>list.length?'<section class="cb-menu-group">'+(label?'<h3>'+label+'</h3>':'')+list.map(([id,label,value])=>'<button type="button" data-system="'+id+'"><span>'+label+'</span>'+(value?'<small>'+value+'</small>':'<small aria-hidden="true">›</small>')+'</button>').join('')+'</section>':'';
-  const content=menuPage==='home'?section(t('冒险','Adventure'),rows.filter(([id])=>['yard-map','world-atlas','world-garden','world-explore','skills'].includes(id)))+section(t('伙伴与家园','Companions & home'),rows.filter(([id])=>['yard-book','world-book','page-garden','leisure'].includes(id)))+section(t('游戏','Game'),rows.filter(([id])=>['page-settings','page-saves','page-camera'].includes(id))):section('',rows);
+  const content=menuPage==='home'?section(t('冒险','Adventure'),rows.filter(([id])=>['yard-map','world-atlas','world-garden','world-explore','skills'].includes(id)))+section(t('伙伴与家园','Companions & home'),rows.filter(([id])=>['yard-book','world-book','page-garden','leisure'].includes(id)))+section(t('游戏','Game'),rows.filter(([id])=>['page-settings','slots','title','page-camera'].includes(id))):section('',rows);
   menu.innerHTML='<div class="cb-system-card" data-menu-page="'+menuPage+'"><header>'+(menuPage!=='home'?'<button type="button" data-system="page-back" aria-label="'+t('返回菜单','Back to menu')+'">‹</button>':'')+'<h2>'+pages[menuPage]+'</h2><button type="button" data-system="close" aria-label="'+t('关闭','Close')+'">×</button></header><div class="cb-system-rows">'+content+'</div></div>';
   const sound=window.MorrowwishMusic?.status?.();
   if(sound&&menuPage==='settings'){

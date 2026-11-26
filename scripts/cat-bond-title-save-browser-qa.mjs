@@ -27,13 +27,25 @@ for(const profile of [
  const waitMap=()=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:15000});
  const openInGameSlots=async()=>{
   await page.locator('#map-menu').click();
-  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="slots"]').click();
+  const entry=page.locator('#cb-system-menu [data-system="slots"]');
+  assert.equal(await entry.locator('span').textContent(),await page.evaluate(()=>MorrowwishI18n.get()==='zh'?'存档':'Saves'));
+  assert.equal(await page.locator('#cb-system-menu [data-system="page-saves"]').count(),0);
+  await entry.click();
   await checkVisible('.cb-slot-manager');
+  assert.equal(await page.locator('#cb-system-menu').isVisible(),false,'One menu click opens the manager directly');
+  assert.equal(await page.locator('#cb-slot-status').isVisible(),false,'Empty status must not create a colored strip');
+  assert.equal(await page.locator('#cb-slot-status').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)');
  };
  const openTitleSlots=async()=>{
   await page.locator('#cb-system-toggle').click();
-  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="slots"]').click();
+  const entry=page.locator('#cb-system-menu [data-system="slots"]');
+  assert.equal(await entry.locator('span').textContent(),await page.evaluate(()=>MorrowwishI18n.get()==='zh'?'存档':'Saves'));
+  assert.equal(await page.locator('#cb-system-menu [data-system="page-saves"]').count(),0);
+  await entry.click();
   await checkVisible('.cb-slot-manager');
+  assert.equal(await page.locator('#cb-system-menu').isVisible(),false,'One menu click opens the manager directly');
+  assert.equal(await page.locator('#cb-slot-status').isVisible(),false,'Empty status must not create a colored strip');
+  assert.equal(await page.locator('#cb-slot-status').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)');
   assert.equal(await page.locator('.cb-slot-manager [data-slot-sync], [data-recovery-code], .cb-cloud-code-row').count(),0,'No manual cloud or recovery-code controls');
  };
  try{
@@ -159,6 +171,7 @@ for(const profile of [
   await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='en');
   await page.locator('[data-save="slot2"]').click();
   await page.waitForFunction(()=>!!window.State.getSaveSlot('slot2'));
+  await page.getByText('Saved to Slot 2',{exact:true}).waitFor({state:'visible'});
   await screenshot('in-game-save-manager');
   await page.locator('[data-load="slot2"]').click();
   const confirmBox=await page.locator('.cb-confirm-dialog').boundingBox();assert.ok(confirmBox);const confirmViewport=await page.evaluate(()=>({width:innerWidth,height:innerHeight}));assert.ok(Math.abs(confirmBox.x+confirmBox.width/2-confirmViewport.width/2)<3&&Math.abs(confirmBox.y+confirmBox.height/2-confirmViewport.height/2)<3,'Save confirmation is centered in viewport');await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
@@ -168,7 +181,7 @@ for(const profile of [
   assert.equal(await page.evaluate(()=>window.State.S.cats[0].species),selectedBreed);
   // A real title-menu navigation, not a special test entry.
   await page.locator('#map-menu').click();
-  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="title"]').click();
+  await page.locator('#cb-system-menu [data-system="title"]').click();
   await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__,{timeout:30000});
   // Start the third slot through the actual title picker, preserving the two earlier adventures.

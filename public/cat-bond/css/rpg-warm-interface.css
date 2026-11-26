@@ -221,3 +221,7 @@ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #hud .hud-p
 @media(min-width:701px) and (min-height:501px){
  html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-yard-return{min-height:44px!important;font:650 13px/1.25 var(--cb-font-body)!important}
 }
+
+/* Starbell save management: no decorative strip below the slots. Only show real feedback. */
+#stage .cb-slot-manager #cb-slot-status:empty{display:none!important}
+#stage .cb-slot-manager #cb-slot-status{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0;padding:0;margin:8px 0;color:#493e2b!important}
