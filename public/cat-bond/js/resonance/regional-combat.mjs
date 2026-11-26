@@ -61,18 +61,18 @@ export function inPattern(p,f){
 
 // In each region the arena leaves room for the cats, paths and attack indicators.
 const artFiles={
- harbor:["harbor-arena.webp","tide-shell.svg","harbor-arena.svg"],
- forest:["forest-arena.webp","rootbound.svg","forest-arena.svg"],
+ harbor:["harbor-arena.webp",null,"harbor-arena.svg"],
+ forest:["forest-arena.webp",null,"forest-arena.svg"],
  forge:["emberforge-painted.webp","forge-guardian-painted.webp"],
- sky:["sky-arena.webp","gale-wing.svg","sky-arena.svg"],
- library:["library-arena.webp","mirror-sentinel.svg","library-arena.svg"],
- starfall:["starfall-arena.webp","orbit-sentinel.svg","starfall-arena.svg"],
+ sky:["sky-arena.webp",null,"sky-arena.svg"],
+ library:["library-arena.webp",null,"library-arena.svg"],
+ starfall:["starfall-arena.webp",null,"starfall-arena.svg"],
 };
 const portraitFocalPoints={harbor:.78,forest:.20,forge:.50,sky:.68,library:.50,starfall:.65};
 const art={};
 function loadArt(){for(const [id,[background,enemy,fallback]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
- pair.background.src=new URL("../../assets/combat/"+background,import.meta.url).href;pair.enemy.src=new URL("../../assets/combat/"+enemy,import.meta.url).href;
+ pair.background.src=new URL("../../assets/combat/"+background,import.meta.url).href;if(enemy)pair.enemy.src=new URL("../../assets/combat/"+enemy,import.meta.url).href;
  if(fallback){pair.fallback=new Image();pair.fallback.decoding="async";pair.fallback.src=new URL("../../assets/combat/"+fallback,import.meta.url).href;}
  art[id]=pair;
 }}
@@ -85,8 +85,18 @@ function drawScene(ctx,W,H,region){
  ctx.restore();
  return true;
 }
+// Use the same existing watercolor breed renderer as the player's cats
+// for former flat-SVG regional manifestations; no species/stat/capture mutation.
+const manifestationLooks={harbor:"lanbao",forest:"nuowei",sky:"yuelian",library:"youling",starfall:"xingchen"};
 function drawManifestation(ctx,e,b){
  if(b.libraryEncounter)return false;
+ const look=manifestationLooks[e.regionalEnemy];
+ if(look){
+  const species=window.GameData?.speciesById(look),draw=window.CatMotion?.draw||window.CatArt?.drawCat;
+  if(!species||!draw)return false;
+  draw(ctx,e.x,e.y,{species,scale:(b.catScale?.("enemy")||.95)*1.10,face:e.face,t:e.t||b.t,stride:e.stride,motion:e.motion||0,pose:e.frozen?"idle":e.pose||"idle",mood:"alert"});
+  return true;
+ }
  const img=art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
  const size=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62)),bob=Math.sin(b.t*3+e.i)*2;
  // Fit the authored creature within the existing visual box without stretching.

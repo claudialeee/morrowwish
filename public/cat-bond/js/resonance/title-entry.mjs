@@ -59,8 +59,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   game.scene='yard';game.battle=null;game.rebuildYard?.();game.showYardChrome?.();game.refreshHUD?.();
   const entered=()=>{game.rebuildYard?.();game.refreshHUD?.();window.dispatchEvent(new Event('cat-bond-garden-entered'));};
   if(rootState.cats.length){entered();return;}
-  const collect=()=>window.UI.openStarter(id=>{if(!same())return;const starter=window.State.makeCat(id,{affinity:20});window.Raising?.decorateNewCat?.(starter);const previous=rootState.dex[id];rootState.cats.push(starter);rootState.dex[id]=(previous||0)+1;if(!window.State.save()?.ok){rootState.cats.pop();if(previous===undefined)delete rootState.dex[id];else rootState.dex[id]=previous;game.toast({zh:'保存失败，请再试一次。',en:'Save failed. Please try again.'});queueMicrotask(collect);return;}window.arcadeMetric?.('bond_starter_chosen',{starter:id});entered();},{storyOpening:true});
-  collect();
+  // The golden-shaded protagonist was persisted before the cinematic. No picker.
  };
  let advance;
  try{
@@ -70,6 +69,15 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   const initialized=runtime.initialize();
   if(!initialized.ok)throw Error(initialized.reason||'narrative-slot-initialization-failed');
   if(!live())return {ok:false,reason:'slot-changed'};
+  // Fixed protagonist for new/empty saves. Never replace an existing roster.
+  if(!rootState.cats.length){
+   const id='jinjc',starter=window.State.makeCat(id,{affinity:20}),previous=rootState.dex[id];
+   window.Raising?.decorateNewCat?.(starter);
+   rootState.cats.push(starter);rootState.dex[id]=(previous||0)+1;
+   let saved=false;try{saved=window.State.save()?.ok===true;}catch{}
+   if(!saved){rootState.cats.pop();if(previous===undefined)delete rootState.dex[id];else rootState.dex[id]=previous;throw Error('fixed-protagonist-save-failed');}
+   window.arcadeMetric?.('bond_starter_chosen',{starter:id});
+  }
   const initial=runtime.view();
   const initialMode=classifyPrologue(initial);
   // A save that already left the cinematic part does not require downloading

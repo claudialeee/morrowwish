@@ -874,7 +874,9 @@ class YardScene {
     // draw bushes + placed buildings + cats, all y-sorted so cats can stand in
     // front of / behind their play-structures
     const drawables = [];
-    for (const b of this.bushes) drawables.push({ y: b.y, kind: 'bush', ref: b });
+    // The canonical painted courtyard is a clean stone terrace. Keep legacy
+    // search anchors and active encounter feedback without drawing weed sprites.
+    if(!window.__CAT_BOND_CANONICAL_ACTIVE__)for (const b of this.bushes) drawables.push({ y: b.y, kind: 'bush', ref: b });
     for (const b of gardenObjects()) drawables.push({ y: b.y, kind: 'building', ref: b });
     // While visibly using a structure, render the kitten in front of its object
     // (scratching/rolling/lounging) — EXCEPT a 'behind' use (tucked inside the cave),

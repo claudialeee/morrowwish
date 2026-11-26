@@ -886,8 +886,8 @@ class CaptureBattle {
     // CatMotion.draw applies a further 0.70 watercolor-art scale. Compare
     // the VISIBLE cat against the exploration lead (1.0 * .70), not against
     // the input number here: combat hero should be ~0.98 of map hero.
-    const readable=clamp(.93*ratio,.87,1.04);
-    if(role==='active')return Math.min(1.10,readable*1.12);
+    const readable=clamp(1.03*ratio,.96,1.16);
+    if(role==='active')return Math.min(1.23,readable*1.12);
     if(role==='enemy')return readable*.95;
     return readable;
   }
@@ -6689,7 +6689,7 @@ class CaptureBattle {
       const elemSym = this.elemSymbol(e.element);
       const isZh=window.MorrowwishI18n?.get?.()==="zh";
       const combatLabel=e.combatName?e.combatName[isZh?0:1]:(GameData.speciesName?.(e.sp)||e.sp.name);
-      const tagOffset=e.visualKind==="forge-guardian"?Math.min(105,Math.max(78,this.H*.23)):78;
+      const tagOffset=e.visualKind==="forge-guardian"?Math.min(118,Math.max(88,this.H*.23)):Math.max(94,Math.round(this.catScale('enemy')*99)+(e.regionalEnemy?10:0));
       this.hpTag(ctx, e.x, Math.max(26,e.y-tagOffset), e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color,
         `${elemSym} ${combatLabel} Lv.${e.level}`, {current:e.poise,max:e.poiseMax,stagger:e.staggerT,recovering:e.poiseRecovering});
       // Compact status grid BELOW the HP + poise card. Lift the card to reserve

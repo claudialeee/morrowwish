@@ -150,7 +150,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(mode==='new'||State.S.cats.length===0)){
       enterAdventure(()=>{State.save();game.openWorldMap();});
     }else if(mode==='new'||State.S.cats.length===0){
-      UI.openStarter(id=>{
+      {
+        const id='jinjc';
         const starter=State.makeCat(id,{affinity:20});
         if(window.Raising)Raising.decorateNewCat(starter);
         State.S.cats.push(starter);State.S.dex[id]=(State.S.dex[id]||0)+1;
@@ -158,11 +159,10 @@ window.addEventListener('DOMContentLoaded', () => {
         const enterWorld=()=>{
           State.save();game.rebuildYard();game.refreshHUD();game.openWorldMap();game.refreshFirstQuest?.();
         };
-        // Let the player choose their actual companion first; the cinematic
-        // then stages that cat waking beneath the garden bench.
+        // Stage the fixed golden-shaded protagonist waking beneath the garden bench.
         enterAdventure(enterWorld);
         window.arcadeMetric?.('bond_starter_chosen',{starter:id});
-      });
+      }
     }else{
       const report=window.Raising?Raising.applyOffline(Date.now()):State.applyIdle();
       game.rebuildYard();game.refreshHUD();
