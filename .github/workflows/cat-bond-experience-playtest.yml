@@ -35,9 +35,9 @@ on:
 permissions:
   contents: read
 concurrency:
-  # One automatic run per branch; explicitly requested full and scoped manual runs are independent.
+  # Independent quick/full concurrency lanes; an ordinary edit cannot cancel full acceptance.
   # Push [starbell-full] for final fixed-revision acceptance; ordinary pushes use quick smoke.
-  group: cat-bond-experience-${{ github.ref }}-${{ github.event_name == 'push' && 'push' || format('manual-{0}-{1}', github.sha, inputs.scope) }}
+  group: starbell-experience-${{ github.ref }}-${{ github.event_name == 'push' && (contains(github.event.head_commit.message, '[starbell-full]') && 'full' || 'quick') || format('manual-{0}-{1}', github.sha, inputs.scope) }}
   cancel-in-progress: ${{ github.event_name == 'push' }}
 jobs:
   evidence:
