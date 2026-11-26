@@ -247,7 +247,7 @@
 
 ### forge:E-04 · 把星星挂回夜空 / Hang the stars back up
 
-**实机事件与推进：** 当地猫唱承火调，灯火重新显出每家不同的影戏。旧灯匣内完整巡铃图带守铃人标记及月镜书库藏书章，并画一扇月形门在云脊群岛。烬婆恢复记忆后想起：落星之后的最后一次巡访，一只赶路的猫在普通旧灯匣里留下修铃图和一句归家嘱咐，说若有一天连回家的路都忘了，就让来找它的猫去书库。她只记得嘱咐，没看清来客的脸。匣中还画着两个邻铃各自的颜色与没有接完的旧路径；随即让玩家听见森林答铃，知道当年没完成的办法并非无用。可以猜是失忆前的自己、暮铃、另一只当年幸存的巡铃猫留下的，不提前给唯一答案。此处首次提出旧图是有人刻意留给将来的猫，而不是一串随机路标。森林芽禾回应千灯城小铆的报平安铃，两者各有声音；可见实际跨地回复。小铆将歪耳灯送主角并自愿同行去试飞，非强制送货。小铆在旁示范旋钮维修，暮铃协助调整向中央的路径；不增加另一次可疑停顿。
+**实机事件与推进：** 当地猫唱承火调，灯火重新显出每家不同的影戏。旧灯匣内保存完整地理巡铃图（灾后修复标注未完成），带守铃人标记及月镜书库藏书章，并画一扇月形门在云脊群岛。烬婆恢复记忆后想起：落星之后的最后一次巡访，一只赶路的猫在普通旧灯匣里留下修铃图和一句归家嘱咐，说若有一天连回家的路都忘了，就让来找它的猫去书库。她只记得嘱咐，没看清来客的脸。匣中还画着两个邻铃各自的颜色与没有接完的旧路径；随即让玩家听见森林答铃，知道当年没完成的办法并非无用。可以猜是失忆前的自己、暮铃、另一只当年幸存的巡铃猫留下的，不提前给唯一答案。此处首次提出旧图是有人刻意留给将来的猫，而不是一串随机路标。森林芽禾回应千灯城小铆的报平安铃，两者各有声音；可见实际跨地回复。小铆将歪耳灯送主角并自愿同行去试飞，非强制送货。小铆在旁示范旋钮维修，暮铃协助调整向中央的路径；不增加另一次可疑停顿。
 
 **关键对白（ZH / EN）：**
 
@@ -378,6 +378,8 @@
 - 暮铃：……是我。我松开了封印，才让你醒过来。那时我知道别的猫也可能开始忘事。 / …It was me. I loosened the seal so you'd wake up. I knew the other cats might start forgetting again.
 - 主角：风铃镇那只连家都找不到的猫……你那时候就知道为什么？ / That cat at Windchime Town who couldn't find home… you knew why, even then?
 - 暮铃：……知道。我一个人唱不响那些铃。只有你能唱出开头。我怕告诉你，你就不肯跟我走了。 / …I knew. I couldn't wake those bells alone. Only you knew their first notes. I was afraid you'd refuse to come with me if I told you.
+- 主角：那些铃也是你故意调过去的？ / And you turned those bells toward the center on purpose?
+- 暮铃：嗯。万一接不起来，我想留一个办法。 / Yes. I wanted another way if we couldn't reconnect them.
 - 主角：你明明可以告诉我，让我自己选。 / You could have told me and let me choose.
 - 暮铃：……对不起。那时候，我只想着怎么把你带回来。 / …I'm sorry. All I could think about was bringing you back.
 
@@ -388,9 +390,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 白栞：你看，六盏铃都往中间响，颜色就混成一团了。你的记忆能回来，可其他猫的过去就没了。 / Look. When all six bells ring into the center, their colors merge. You get your memories back, but every other cat loses their past.
-- 主角：那……不往中间送，让它们互相接着唱呢？ / Then… what if they sing to one another instead of into the center?
-- 暮铃：我把铃都修过。可我唱不响开头，也没能让大家接上。要是再失败，所有猫都会慢慢忘掉一切。 / I repaired the bells. But I couldn't sing the first notes or get everyone answering. If we fail again, every cat will slowly forget everything.
+- 白栞：看，阿婆认不出小猫了。这样能找回你的过去，可其他猫的记忆全没了。 / Look, Gran doesn't recognize the kitten. You'd get your past back this way, but every other cat would lose theirs.
+- 主角：像森林和风铃镇那样，让旁边的铃接着唱呢？ / What if the neighboring bells answer each other, like the forest and Windchime Town?
+- 暮铃：我把铃修过好多次，可没有你，它们唱不起来。要是再失败，大家还是会慢慢忘掉一切。 / I repaired those bells so many times, but without you they wouldn't sing. If we fail again, everyone will slowly forget everything.
 - 暮铃：我想，至少得有一只猫能把从前留下来…… / I thought at least one cat should get to keep the past…
 - 主角：我想知道以前的事，可我也不想忘了今天。咱们在灯火节玩得多开心啊。 / I want to know my past, but I don't want to forget today either. We had such a good time at the lantern festival.
 - 主角：不能拿他们的过去换我的。咱们去试另一种办法。 / We can't trade their past for mine. Let's try the other way.
