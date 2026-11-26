@@ -434,7 +434,7 @@ function install(){
         });
       }
     }
-    ctx.textAlign="center";ctx.font="700 10px system-ui";ctx.fillStyle="#f4e5c7";ctx.fillText(tr(...REGION_KITS[n.region].name),n.x,n.y-31);
+    ctx.textAlign="center";ctx.font="700 10px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, sans-serif";ctx.fillStyle="#f4e5c7";ctx.fillText(tr(...REGION_KITS[n.region].name),n.x,n.y-31);
   }
   if(f.cast){if(f.cast.style==="chain"){ctx.save();ctx.strokeStyle="#eac19a";ctx.lineWidth=8;ctx.globalAlpha=.35;ctx.setLineDash([10,7]);ctx.beginPath();ctx.moveTo(f.cast.fromX,f.cast.fromY);ctx.lineTo(f.cast.x,f.cast.y);ctx.stroke();ctx.restore();}ctx.strokeStyle="#eac19a";ctx.fillStyle="rgba(218,132,100,.17)";ctx.beginPath();ctx.arc(f.cast.x,f.cast.y,56,0,Math.PI*2);ctx.fill();ctx.stroke();}
   ctx.restore();
