@@ -334,7 +334,7 @@
             if(!prefersReducedMotion()&&node.animate){
               const dx=clamp(Number(layer.travel)||0,-8,8);
               const a=node.animate([{transform:'translate(-50%,-100%) translateX('+(-dx)+'vw)',opacity:0},{transform:'translate(-50%,-100%) translateX(0)',opacity:1},{transform:'translate(-50%,-100%) translateX('+dx+'vw)',opacity:1}],{duration:Math.max(1200,frame.durationMs),fill:'both',easing:'ease-in-out'});
-              a.currentTime=frame.shotOffsetMs||0;if(this.paused)a.pause();
+              a.currentTime=Math.min(Math.max(1200,frame.durationMs),(frame.shotOffsetMs||0)+this.frameElapsedMs);if(this.paused)a.pause();
             }
           }else this.applyCamera(node,frame.camera,Number(layer.depth)||0,frame.durationMs,frame.transitionMs);
           this.nodes.stack.appendChild(node);

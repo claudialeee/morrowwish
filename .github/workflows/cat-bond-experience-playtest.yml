@@ -7,6 +7,9 @@ on:
       - 'scripts/cat-bond-release-prologue-qa.mjs'
       - 'scripts/cat-bond-harbor-playthrough.mjs'
       - 'scripts/cat-bond-starfall-art-review.mjs'
+      - 'scripts/test-cat-bond-companion-rarity.mjs'
+      - 'scripts/test-cat-bond-core-art-roster.mjs'
+      - 'scripts/test-cat-bond-canon12-campaign.mjs'
       - 'public/cat-bond/**'
       - 'docs/cat-bond-rpg/EXPERIENCE-PRE-AUDIT.md'
       - '.github/workflows/cat-bond-experience-playtest.yml'
@@ -46,7 +49,9 @@ jobs:
       - run: npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
       - name: Core art roster contract
-        run: node scripts/test-cat-bond-core-art-roster.mjs
+        run: |
+          node scripts/test-cat-bond-core-art-roster.mjs
+          node scripts/test-cat-bond-companion-rarity.mjs
       - name: Decode remaster and render actual game cats
         if: matrix.scope == 'opening'
         run: |

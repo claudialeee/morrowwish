@@ -11,7 +11,7 @@ for(let variant=0;variant<2;variant++){
  for(const scene of campaign.scenes){
   assert.equal(e.view().current.id,scene.id);
   if(scene.id==="starfall:F-05"){
-   const v=e.view();assert.ok(v.ring&&v.melodies.length===6);
+   const v=e.view();assert.ok(v.ring&&e.snapshot().melodies.length===6);
    assert.equal(v.cargoComplete,variant===1);
    assert.deepEqual(v.current.lines[0].text,scene.lines[0].text);
    assert.deepEqual(makeEngine(campaign,e.snapshot()).view().current.lines[0].text,scene.lines[0].text);
