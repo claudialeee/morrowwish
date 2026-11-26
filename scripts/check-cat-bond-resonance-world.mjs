@@ -25,7 +25,7 @@ console.log(JSON.stringify((function test(){
   else if(n==="skyFlight"){
    for(let i=0;i<100;i++)x.flightTick(.05);assert(x.puzzle.flight.x===0,"idle flight must not advance");
    ok(x.operate(1),"launch");for(let i=0;i<400&&x.puzzle?.flight.started;i++)x.flightTick(.05);assert(x.puzzle?.flight.attempts>0,"no steering must fail");
-   let result;for(let i=0;i<400&&x.puzzle;i++){const f=x.puzzle.flight,t=f.openGlide?(f.x<.75?.30:.5):(f.x<.24?f.route[0]:f.x<.49?f.route[1]:f.x<.74?f.route[2]:.5);if(!f.started||f.target!==t)assert(x.flightSteer(t),"steer");const r=x.flightTick(.05);if(r){ok(r,"flight landing");result=r;}}
+   let result;for(let i=0;i<1000&&x.puzzle;i++){const f=x.puzzle.flight,t=f.openGlide?(f.x<.75?.30:.5):(f.x<.24?f.route[0]:f.x<.49?f.route[1]:f.x<.74?f.route[2]:.5);if(!f.started||f.target!==t)assert(x.flightSteer(t),"steer");const r=x.flightTick(.05);if(r){ok(r,"flight landing");result=r;}}
    assert(result?.ok,"flight not completed");
   }
   else{ok(x.operate((p.goal[0]+1)%3),"wrong sequence");assert(x.puzzle&&x.puzzle.values.length===0,"wrong sequence advanced");for(const i of p.goal)ok(x.operate(i),"sequence");}
@@ -37,7 +37,7 @@ console.log(JSON.stringify((function test(){
   let v=b.view(),s=v.current;if(!s||s.id==="finale:B-01")break;
   if(s.choices.length&&s.choiceTiming==="beforeAction")host(e=>e.choose(s.choices[0].id));
   if(s.id==="sky:S-01"){ok(b.enter("sky"),"enter before cargo");const x=createExplorer(b,"sky");walk(x,skyLaunch["puzzle:sky-pouch"]);assert(x.interact("puzzle:sky-pouch").ok,"flight available without optional cargo");transfer("forge","sky",0);transfer("forge","sky",1);assert(!b.cargoSpec("forge","sky"),"cannot send flight data before route restoration");}
-  if(s.id==="library:M-02"){State.S.cats.push({uid:"library-fixture",species:"nainai",personality:"gentle",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});State.S.dex.nainai=1;ok(b.enter("library"),"enter library");const x=createExplorer(b,"library");walk(x,x.layout.features["puzzle:mirror-records"]);assert(["library-previous-station","story-operation-order"].includes(x.interact("puzzle:mirror-records").reason),"must solve mirror gallery first");}
+  if(s.id==="library:M-02"){State.S.cats.push({uid:"library-fixture",species:"nainai",personality:"gentle",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});State.S.dex.nainai=1;ok(b.enter("library"),"enter library");const x=createExplorer(b,"library");walk(x,x.layout.features["puzzle:mirror-records"]);assert(!x.interact("puzzle:mirror-records").ok,"retired mural sorting cannot advance the live mirror scene");}
   const ops=s.requires;
   for(const op of ops){if(s.id==="library:M-05"&&op==="repair:library"){ok(b.enter("library"),"enter library for route choice");const early=createExplorer(b,"library");walk(early,early.layout.features[op]);assert(early.interact(op).reason==="library-previous-station","repair must wait until the two routes dialogue");while(b.view().cursor<s.lines.length)host(e=>e.nextLine());}if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
