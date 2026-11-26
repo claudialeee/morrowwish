@@ -917,7 +917,9 @@
       const alreadyEquipped=(Array.isArray(cat.loadout)&&cat.loadout.includes(s.id))||
         (Array.isArray(cat.autoSkillLoadout)&&cat.autoSkillLoadout.includes(s.id));
       const elemOk=s.element===el||
-        (s.element===splash&&!isUlt&&sideChoices.slice(0,sideLimit).includes(s.id));
+        (s.element===splash&&!isUlt&&
+         (sideChoices.slice(0,sideLimit).includes(s.id)||
+          (cat.skillAwakened&&cat.awakenedSkill===s.id)));
       if(!elemOk)continue;
       // ROLE × CATEGORY GATE (owner 2026-11-26 bug: fire tank 元宝 was learning
       // ranged/beam/aoe/volley). The gated-skill branch above already role-checks,
@@ -1418,7 +1420,7 @@
     const selected=candidates.find(sk=>SECONDARY_ATTACK_KINDS.has(sk.kind))
       ||candidates.find(sk=>sk.kind==='buff'||sk.kind==='heal')
       ||candidates[0]||null;
-    if(!secondary&&selected)cat.awakenedSkill=selected.id;
+    if(selected)cat.awakenedSkill=selected.id;
     if(!cat.skillEdited&&(previous[2]===prevDefault[2]||previous[2]==null)){
       cat.loadout=previous;
       if(selected)cat.loadout[2]=selected.id;
