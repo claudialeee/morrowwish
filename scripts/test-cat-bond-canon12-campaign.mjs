@@ -68,3 +68,23 @@ run("starfall:F-01","starfall","puzzle:caravan-route",null,o=>{recordNpc(o,"lich
 const star=setup("starfall:F-04","starfall");const proof={sceneId:"starfall:F-04",operation:"battle:observatory-echo",region:"starfall",verified:true,outcome:"win",token:star.rt.capture()};assert.equal(star.rt.evidence(proof).ok,false);walk(star.x,layouts.starfall.features["battle:observatory-echo"]);assert.equal(star.rt.evidence({...proof,outcome:"defeat",token:star.rt.capture()}).ok,false);ok(star.rt.evidence({...proof,token:star.rt.capture()}),"observatory victory evidence fixture");assert.equal(star.b.view().objective[0],"puzzle:distributed-routing");
 const legacy=fixture("library:M-03");delete legacy.fullCampaignPresentationVersion;legacy.cursor=99;legacy.choices["sky:S-03"]="train";delete legacy.choices["sky:S-02"];const migrated=makeEngine(campaign,legacy).snapshot();assert.equal(migrated.cursor,0);assert.equal(migrated.choices["sky:S-02"],"train");assert.deepEqual(migrated.completed,legacy.completed);
 console.log("Canon 1.2: two 40-scene state-machine routes, actual world puzzles, observatory evidence gate and cursor migration passed");
+
+// Optional companion visits must be physically reachable through the real resident adapter.
+for(const [id,visible,activity] of [
+ ["harbor:H-02",false,null],
+ ["harbor:H-05",true,"muling:tea"],
+ ["forge:E-01",true,"muling:cooking"],
+ ["library:M-05",false,null]
+]){
+ const root={resonance:fixture(id)};
+ const rt=getSlotRuntime({S:root,activeSlot:()=>"slot1",save:()=>({ok:true})});
+ assert.equal(rt.residents("garden").some(n=>n.id==="muling"),visible,id+" garden visit");
+ if(activity)assert.ok(rt.ambientAvailable("garden").some(a=>a.id===activity),activity);
+ if(id==="harbor:H-02")assert.ok(rt.residents("harbor").some(n=>n.id==="muling"),"Harbor map encounter actor");
+ if(id==="harbor:H-05"){
+  const a=rt.ambientAvailable("garden").find(a=>a.id===activity);
+  ok(rt.ambient({id:a.id,operation:a.operation,region:"garden",verified:true,token:rt.capture()}),"tea completion");
+  assert.ok(!rt.residents("garden").some(n=>n.id==="muling"),"No duplicate tea visit");
+ }
+}
+console.log("Garden and Harbor optional companion visit presence/window contracts passed");
