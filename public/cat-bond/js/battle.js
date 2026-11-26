@@ -2212,7 +2212,7 @@ class CaptureBattle {
     if (type === 'protect') {
       // Protect 守护: full block, tiny window, then a vulnerable 后遗症.
       f.protectT = 0.8; f._protectVuln = 1.2;        // after it drops → vulnerableT
-      this.vfx.ring(f.x,f.y,{r0:14,vr:120,life:.5,color:'#9be7c4',width:6});
+      this.vfx.impactType?.(f.x,f.y,'guard',{color:'#9be7c4'});
       this.vfx.text(f.x,f.y-34,'守护','#9be7c4',14);
     } else if (type === 'reflect') {
       // Reflect 反弹壁: bounces projectiles; caster is rooted/slowed while up.
@@ -2243,7 +2243,7 @@ class CaptureBattle {
       f._wardReduction=Math.max(0,Math.min(.8,sk?.wardReduction??.45));
       f._wardRegenPct=sk?.wardRegenPct||0;
       f._wardRetaliateBurn=!!sk?.wardRetaliateBurn;
-      this.vfx.ring(f.x,f.y,{r0:10,vr:190,life:.55,color:'#9dd8ff',width:4});
+      this.vfx.impactType?.(f.x,f.y,'barrier',{color:'#9dd8ff'});
       this.vfx.text(f.x,f.y-34,'护盾','#9dd8ff',14);
     }
     return true;
@@ -2270,7 +2270,7 @@ class CaptureBattle {
       p.x=hitX;p.y=hitY;
       if(wall.side==='me'&&wall.owner.cat?.species==='dundun'){
         wall.hp=(wall.hp??wall.owner.maxhp*.28)-Math.max(0,p.dmg);
-        if(wall.hp<=0){wall.hp=0;wall.remaining=0;wall.owner.reflectT=0;window.CatTraits?.emit('onShieldBreak',{battle:this,cat:wall.owner,reason:'enemyHit'});}
+        if(wall.hp<=0){wall.hp=0;wall.remaining=0;wall.owner.reflectT=0;this.vfx.impactType?.(hitX,hitY,'shieldBreak');window.CatTraits?.emit('onShieldBreak',{battle:this,cat:wall.owner,reason:'enemyHit'});}
       }
       this.vfx.ring(hitX,hitY,{r0:5,vr:100,life:.24,color:'#d6faff',width:3});
       this.vfx.burst(hitX,hitY,{count:this.game.isTouch?5:9,
@@ -2839,8 +2839,9 @@ class CaptureBattle {
       f.x = clamp(f.x + Math.cos(aim) * step, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
       f.y = clamp(f.y + Math.sin(aim) * step, this.topMargin, this.H - this.bottomMargin);
       f._dashTravel = (f._dashTravel || 0) + Math.hypot(f.x - x0, f.y - y0);
+      if(side==='me'&&Math.hypot(f.x-x0,f.y-y0)>.1){this._travelFX ||= [];const prev=this._travelFX.at(-1);if(prev&&prev.actor===f&&this.t-prev.start<.035&&Math.hypot(prev.x2-x0,prev.y2-y0)<2){prev.x2=f.x;prev.y2=f.y;prev.start=this.t;}else this._travelFX.push({actor:f,x:x0,y:y0,x2:f.x,y2:f.y,start:this.t,element:f._pounceSkill?.element||f.element,aim});if(this._travelFX.length>90)this._travelFX.shift();}
       if (f._dashReach != null && f._dashTravel >= f._dashReach - .01) f.dashT = 0;
-      if (f._pounceSkill?.element === 'elec') this.vfx.trail(f.x, f.y, '#ffe6a1', 3);
+      if (f._pounceSkill?.element === 'elec'&&!window.CatBondSkillFX?.drawTravel) this.vfx.trail(f.x, f.y, '#ffe6a1', 3);
     }
     // contact on the nearest foe (resolves ONCE, then ends the pounce)
     if (f.pounce) {
@@ -2857,7 +2858,7 @@ class CaptureBattle {
         this.resolveHit(tgt, side, contact || { element: f.element }, dmg, tgt.x, tgt.y);
         const steal = contact && (contact.lifesteal || contact.leech);
         if (steal && f.alive) f.hp = Math.min(f.maxhp, f.hp + dmg * steal);
-        if (contact?.element === 'elec') {
+        if (contact?.element === 'elec'&&!window.CatBondContactFX) {
           this.vfx.burst(tgt.x, tgt.y, { count: this.game.isTouch ? 9 : 15, color: '#ffe29a', speed: 150, life: .34, r: 3.2 });
           this.vfx.ring(tgt.x, tgt.y, { r0: 9, vr: 120, life: .25, color: '#8da8ef', width: 4 });
         }
@@ -2873,9 +2874,8 @@ class CaptureBattle {
     f.x = clamp(tx, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
     f.y = clamp(ty, this.topMargin, this.H - this.bottomMargin);
     f._hop = 0;
-    this.vfx.shockwave(tx, ty, col);
-    this.vfx.ring(tx, ty, { r0: 8, vr: R * 7, life: 0.34, color: col, width: 6 });
-    this.vfx.burst(tx, ty, { count: this.game.isTouch ? 10 : 16, color: col, speed: 230, life: 0.42, r: 4, grav: 260 });
+    if(window.CatBondContactFX)this.vfx.impactType(tx,ty,'heavy',{skill:f._leapSkill,scale:1.08});
+    else{this.vfx.shockwave(tx,ty,col);this.vfx.ring(tx,ty,{r0:8,vr:R*7,life:.34,color:col,width:6});}
     this.shakeT = Math.max(this.shakeT, 0.2); this.hitstop = Math.max(this.hitstop, 0.05);
     for (const e of this.liveEnemies()) {
       if (Math.hypot(e.x - tx, e.y - ty) > R) continue;
@@ -3121,10 +3121,10 @@ class CaptureBattle {
     // Draw-only micro recoil: the target never leaves the beam's collision area.
     target._recoilX=(target._recoilX||0)+Math.cos(b.aim)*(first?3:1.4);
     target._recoilY=(target._recoilY||0)+Math.sin(b.aim)*(first?3:1.4);
-    this.vfx.impactType?.(target.x,target.y,'light',{color,angle:b.aim});
-    this.vfx.ring(target.x,target.y,{r0:first?9:5,
+    this.vfx.impactType?.(target.x,target.y,'light',{color,angle:b.aim,skill:b.sk});
+    if(!window.CatBondContactFX)this.vfx.ring(target.x,target.y,{r0:first?9:5,
       vr:first?105:74,life:first?.26:.19,color,width:first?2.8:1.8});
-    if(first)this.vfx.burst(target.x,target.y,
+    if(first&&!window.CatBondContactFX)this.vfx.burst(target.x,target.y,
       {count:this.game?.isTouch?4:6,color:'#fff5dc',speed:80,life:.2,r:2});
     // Gate camera and sound across all simultaneous beam targets.
     if(elapsed-(b._lastPulseAt??-99)>.33){
@@ -3408,14 +3408,15 @@ class CaptureBattle {
   // and return {total,kos,hits} for the shared consequence/banner logic.
   ultArchetype(f, skill, color, dmg) {
     skill={...skill,_traitCaster:f};
+    this._ultCastTargets=[];
     let total = 0, kos = 0, hits = 0;
     const strike = (e, mult, px, py) => {
       if (!e.alive) return;
       const before = e.alive;
       const r = this.resolveHit(e, 'me', skill, dmg * (mult || 1), px != null ? px : e.x, py != null ? py : e.y);
-      if (r.dealt > 0) { hits++; total += r.dealt; }
+      if (r.dealt > 0) { hits++; total += r.dealt; this._ultCastTargets.push({x:e.x,y:e.y}); }
       if (before && !e.alive) kos++;
-      this.vfx.impact(e.x, e.y, color);
+      if(!window.CatBondContactFX&&r.dealt>0)this.vfx.impact(e.x,e.y,color);
     };
     const diag = Math.hypot(this.W, this.H);
     const el = skill.element;
@@ -3429,8 +3430,7 @@ class CaptureBattle {
       for(const e of this.liveEnemies().slice()){
         if(Math.hypot(e.x-px,e.y-py)<=R)strike(e,1.08);
       }
-      this.vfx.burst(px,py,{count:16,color:'#d0d9ff',speed:170,life:.4,r:3});
-      this.vfx.shockwave(px,py,'#f5e4d4');
+      if(!window.CatBondUltVFX?.has(skill.id)){this.vfx.burst(px,py,{count:16,color:'#d0d9ff',speed:170,life:.4,r:3});this.vfx.shockwave(px,py,'#f5e4d4');}
     }else if (el === 'fire') {
       // 烈焰喷涌: a forward blaze CONE — hits enemies in a wide arc ahead, big on-aim.
       const half = 0.6, reach = diag * 0.5;
@@ -3440,19 +3440,17 @@ class CaptureBattle {
         if (Math.abs(da) > half) continue;
         strike(e, 1.15);
       }
-      for (let i = 0; i < 26; i++) { const a = aim + (Math.random() - 0.5) * half * 2, r = 40 + Math.random() * reach; this.vfx.burst(f.x + Math.cos(a) * r, f.y + Math.sin(a) * r, { count: 2, color, speed: 120, life: 0.5, r: 4, grav: -40 }); }
-      this.vfx.shockwave(f.x, f.y, color);
+      if(!window.CatBondUltVFX?.has(skill.id))for (let i = 0; i < 26; i++) { const a = aim + (Math.random() - 0.5) * half * 2, r = 40 + Math.random() * reach; this.vfx.burst(f.x + Math.cos(a) * r, f.y + Math.sin(a) * r, { count: 2, color, speed: 120, life: 0.5, r: 4, grav: -40 }); }
+      if(!window.CatBondUltVFX?.has(skill.id))this.vfx.shockwave(f.x, f.y, color);
     } else if (el === 'water') {
       // 汹涌怒涛: a giant expanding tidal RING — everyone on the field is swept, soaked.
       const R = diag * 0.55;
       for (const e of this.liveEnemies().slice()) { if (Math.hypot(e.x - f.x, e.y - f.y) <= R) strike(e, 1.0); }
-      this.vfx.ring(f.x, f.y, { r0: 20, vr: R * 2.6, life: 0.7, color, width: 14 });
-      this.vfx.ring(f.x, f.y, { r0: 40, vr: R * 2.2, life: 0.6, color: '#fff', width: 4 });
-      this.vfx.burst(f.x, f.y, { count: 26, color, speed: 340, life: 0.6, r: 3 });
+      if(!window.CatBondUltVFX?.has(skill.id)){this.vfx.ring(f.x,f.y,{r0:20,vr:R*2.6,life:.7,color,width:14});this.vfx.ring(f.x,f.y,{r0:40,vr:R*2.2,life:.6,color:'#fff',width:4});}
     } else if (el === 'elec') {
       // 雷霆万钧: chain LIGHTNING that forks to every enemy on the field.
-      for (const e of this.liveEnemies().slice()) { this.vfx.beam(f.x, f.y, e.x, e.y, color); strike(e, 1.1); }
-      this.vfx.ring(f.x, f.y, { r0: 14, vr: diag * 1.4, life: 0.4, color, width: 6 });
+      for (const e of this.liveEnemies().slice()) { if(!window.CatBondUltVFX?.has(skill.id))this.vfx.beam(f.x,f.y,e.x,e.y,color);strike(e,1.1); }
+      if(!window.CatBondUltVFX?.has(skill.id))this.vfx.ring(f.x,f.y,{r0:14,vr:diag*1.4,life:.4,color,width:6});
       this.shakeT = Math.max(this.shakeT, 0.5);
     } else if (skill.id==='sunbloom') {
       const g=this.solarGeometry(f,skill._solarAim??aim);
@@ -3474,9 +3472,7 @@ class CaptureBattle {
         strike(e, 1.2);
       }
       // Keep implosion inside the local fight, never a screen-spanning arc.
-      this.vfx.ring(f.x, f.y, { r0: Math.min(170,R*.34), vr: -240,
-        life: .42, color: '#8a55bb', width: 4 });
-      this.vfx.burst(f.x, f.y, { count: 28, color, speed: 300, life: 0.55, r: 3 });
+      if(!window.CatBondUltVFX?.has(skill.id))this.vfx.ring(f.x,f.y,{r0:Math.min(170,R*.34),vr:-240,life:.42,color:'#8a55bb',width:4});
     } else {
       // light (and any fallback): 圣耀爆发: radiant NOVA around the caster.
       const R = diag * 0.42;
@@ -3967,6 +3963,7 @@ class CaptureBattle {
   // the player can see where a reaction can be set up and detonated.
   drawFields(ctx){
     for(const fld of this.fields){
+      if(window.CatBondSkillFX?.drawMaterialField(ctx,fld,this.t))continue;
       const k=Math.max(0,fld.t/fld.max), pulse=0.5+0.5*Math.sin(this.t*4);
       // FIRE fields (陨石灼烧 / etc.) get a proper burning-ground look: a dark scorch base,
       // flickering ember halo, and rising additive embers — not the generic dashed ellipse.
@@ -4058,7 +4055,7 @@ class CaptureBattle {
       const _vend=this.beamVisualEnd(b), _ex0=b._ex, _ey0=b._ey;
       // Sweeping fire penetrates; water uses first visible contact. No damage mutation.
       if(window.CatBondSkillFX?.drawCombatBeam(ctx,b,this.t,
-        b.sk?.id==='flameSweep'?_ex0:_vend.ex,b.sk?.id==='flameSweep'?_ey0:_vend.ey))continue;
+        _ex0,_ey0))continue;
       b._ex=_vend.ex; b._ey=_vend.ey;
       const k=Math.max(0,b.t/b.max);
       if(b.sk?.id==='thunderStream'){
@@ -4231,7 +4228,9 @@ class CaptureBattle {
       const k=Math.max(0,v.life/v.max),p=1-k;
       ctx.save();ctx.globalAlpha=Math.min(1,k*.95);
       ctx.lineCap='round';ctx.lineJoin='round';
-      if(v.kind==='signatureCast'||v.kind==='signatureHit'){
+      if(v.kind==='moonImpact'){
+        window.CatBondMoonFX?.drawImpact(ctx,v,this.t);
+      }else if(v.kind==='signatureCast'||v.kind==='signatureHit'){
         window.CatBondSkillFX?.draw(ctx,v,this.t);
       }else if(v.kind==='regularAccent'){
         this.drawRegularSkillAccent(ctx,v,k,p);
@@ -4456,6 +4455,7 @@ class CaptureBattle {
     }
     for(const v of this.skillStrokes)v.life-=dt;
     this.skillStrokes=this.skillStrokes.filter(v=>v.life>0);
+    if(this._travelFX)this._travelFX=this._travelFX.filter(v=>this.t-v.start<.32);
     if(this.duo){
       this.duoCd=Math.max(0,this.duoCd-dt);
       if([this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)))
@@ -4793,6 +4793,7 @@ class CaptureBattle {
             }
             const r = this.resolveHit(e, 'me', p.skill || { element: p.element }, p.dmg, p.x, p.y, p);
             if (r.reflected) break;            // bounced back — projectile lives, now enemy-owned
+            if(p.kind==='crescent'&&r.dealt>0)this.skillStrokes.push({kind:'moonImpact',x:e.x,y:e.y,angle:Math.atan2(p.vy,p.vx),radius:32,life:.38,max:.38});
             if(p.kind==='lightningOrb'&&r.dealt>0){
               this.vfx.impact(p.x,p.y,'#ffe1a1');
               this.vfx.burst(p.x,p.y,{count:15,color:'#b6d5ff',
@@ -5950,13 +5951,13 @@ class CaptureBattle {
       // DIRECTIONAL impact sparks: spray along the hit normal (away from the attacker),
       // scaled by hit strength — reads as force, not a symmetric puff.
       const tier=hitTier||(frac>=.17?'heavy':'light');
-      this.vfx.impactType?.(e.x,e.y,tier,
+      if(skill?.id!=='crescentFan'||!window.CatBondMoonFX||tier==='crit')this.vfx.impactType?.(e.x,e.y,tier,
         {color:tier==='crit'?'#fff4cf':tier==='heavy'?'#ffdf9d':'#fff2c0',
-          angle:normal.angle});
+          angle:normal.angle,skill});
       // Big-tier EXTRA ring + sparks so T3 skills (meteor/flameSweep/etc, power≥2.0)
       // read as haymakers — on top of impactType's baseline. Element color pulls from
       // skill. Suppressed for continuous ticks (already filtered by !isDot).
-      if(pwrBoost>=.25){
+      if(pwrBoost>=.25&&!window.CatBondContactFX){
         const bigCol=this.elemColor(skill&&skill.element)||'#ffe8b5';
         const extraVr=90+pwrBoost*120;
         this.vfx.ring(e.x,e.y,{r0:7,vr:extraVr,life:.30,color:bigCol,width:3});
@@ -6110,7 +6111,7 @@ class CaptureBattle {
       if(side==='wild'&&target.cat?.species==='dundun'){
         if(!(target._traitWardHP>0))target._traitWardHP=target.maxhp*.28;
         const absorbed=Math.min(raw-dmg,target._traitWardHP);dmg=raw-absorbed;target._traitWardHP-=absorbed;
-        if(target._traitWardHP<=1e-6){target._traitWardHP=0;target.shieldT=0;window.CatTraits?.emit('onShieldBreak',{battle:this,cat:target,reason:'enemyHit'});}
+        if(target._traitWardHP<=1e-6){target._traitWardHP=0;target.shieldT=0;this.vfx.impactType?.(target.x,target.y,'shieldBreak');window.CatTraits?.emit('onShieldBreak',{battle:this,cat:target,reason:'enemyHit'});}
       }
       // Fire barrier trades some prevention for a close-range burn counter.
       if(side==='wild'&&target._wardRetaliateBurn&&
@@ -6159,7 +6160,7 @@ class CaptureBattle {
       }
       // Additional authored contact mark is strictly local. Continuous beams
       // are throttled per skill/target to avoid particle and audio overload.
-      if(dealt>0)window.CatBondSkillFX?.hit(this,target,skill,dealt,continuous);
+      if(dealt>0&&hpBefore>target.hp&&!window.CatBondContactFX)window.CatBondSkillFX?.hit(this,target,skill,dealt,continuous);
       if(continuous){
         this.vfx.trail(x,y,col,2.5);
       }else{
@@ -6171,7 +6172,7 @@ class CaptureBattle {
         // A true melee hit already receives hitstop, one contact flash,
         // and its own skill-specific ink. Do not pile on another wide ring
         // or 9-particle burst; keep these accents on moving impact skills.
-        if(skill?.kind!=='melee'&&
+        if(!window.CatBondContactFX&&skill?.kind!=='melee'&&
           (skill?.heavy||['dash','pounce','leap'].includes(skill?.kind))){
           this.vfx.ring(x,y,{r0:5,vr:90,life:.26,color:col,width:3});
           this.vfx.burst(x,y,{count:this.game.isTouch?5:9,
@@ -6179,7 +6180,7 @@ class CaptureBattle {
         }
       }
       // One clean elemental impact mark per beat; suppress spam from beams.
-      if(dealt>0&&skill?.kind!=='melee'&&skill?.element&&(skill.ultCost||0)===0&&
+      if(!window.CatBondContactFX&&dealt>0&&skill?.kind!=='melee'&&skill?.element&&(skill.ultCost||0)===0&&
         this.t-(this._lastRegularHitFx??-99)>.12){
         this._lastRegularHitFx=this.t;
         this.regularSkillAccent({x,y},skill.element,0,!!skill.isBasic,true);
@@ -6196,7 +6197,7 @@ class CaptureBattle {
       const dealt = this.applyEnemyHitEffects(target, skill || { element: null }, dmg, x, y);
       if (this._debug) this._dbg('enemy→me', skill, dmg, dealt, target);
       this.hurtMe(dealt, x, y, target);
-      this.vfx.impactType?.(x,y,'light',{color:col});
+      if(dealt>0)this.vfx.impactType?.(target.x,target.y,skill?.heavy?'heavy':'light',{color:col,skill,angle:Math.atan2(target.y-y,target.x-x)});
       return { blocked: false, reflected: false, dealt };
     }
   }
@@ -6530,7 +6531,8 @@ class CaptureBattle {
     for(const wall of this.barrierWalls||[])
       window.CatBondWardArt?.drawFlatWall?.(ctx,wall,this.t);
     // vfx under-layer (trails, rings, muzzle)
-    this.vfx.draw(ctx);
+    this.vfx.draw(ctx,'back');
+    window.CatBondSkillFX?.drawTravel(ctx,this._travelFX||[],this.t);
     this.drawSkillStrokes(ctx);
     this.drawBeams(ctx);
     this.drawDeathRay(ctx);                        // 破坏死光 sweeping beam (additive + scorch)
@@ -6538,6 +6540,7 @@ class CaptureBattle {
     // projectiles with glow
     for (const p of this.projectiles) {
       if(window.CatBondSkillFX?.drawMeteorFlight(ctx,p,this.t))continue;
+      if(window.CatBondMoonFX?.drawProjectile(ctx,p,this.t))continue;
       if(window.CatBondSkillFX?.drawIdentityProjectile(ctx,p,this.t))continue;
       // ADDITIVE TAPERED RIBBON trail from the position history (bright/wide head →
       // transparent tail), drawn under the body. Round caps hide the segment seams.
@@ -6989,6 +6992,7 @@ class CaptureBattle {
     }
 
     window.CatBondTraitFX?.drawFront(ctx,this);
+    this.vfx.draw(ctx,'contact');
     // Distinct ULT glints above combatants, below damage floaters and HUD.
     for(const v of this.skillStrokes){
       if(v.kind==='ultimate')window.CatBondUltVFX?.draw(ctx,v,W,H,this.t,'front');
