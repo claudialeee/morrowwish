@@ -293,6 +293,7 @@
     // NEAREST enemy at its own release time, so the player can watch the first wave land and
     // the second/third can retarget mid-cast. pulseCount/pulseGap/pulseHoming define the pattern.
     { id: 'arcanePulse', name: '咒波三连', element: 'dark', kind: 'projectile', power: 1.1, cd: 5.5, ultCost: 0, pulseCount: 3, pulseGap: 0.35, pulseHoming: 1.6, tags: ['expose','ranged','pulse'], appliesTag: 'expose', vfx: 'orb', desc: '蓄一发按出三连暗波：每 0.35 秒一发自动追击当下最近的敌人，不必一次放完。', unlock: { level: 5 } },
+    { id:'shadowTendrils', name:'暗影触手', element:'dark', kind:'beam', power:.65, cd:8, ultCost:0, channel:1.6, windup:.22, castSlow:.4, reach:240, width:30, statusDuration:.65, tags:['control','bind','channel','ranged'], appliesTag:'bind', vfx:'tendrils', allowRoles:['control'], unlock:{level:6,element:'dark',role:['control']}, desc:'持续喷出多条暗影触手，贯穿前方狭长区域，低伤害压制并短暂束缚敌人。暗系控制专属。' },
     { id: 'voidMaw',    name: '虚吞',     element: 'dark',  kind: 'aoe',        power: 2.5, cd: 0,   ultCost: 80, tags: ['curse','ult','rewind'],   appliesTag: ['dizzy','rewind'], vfx: 'shockwave', desc: '【必杀】深渊巨口吞噬，时间回溯——将目标斗志拉回数秒前！' },
     // ---- 光 light ----
     { id: 'prismBeam',  name: '棱光束',   element: 'light', kind: 'projectile', power: 1.2, cd: 2.6, ultCost: 0,  tags: ['ranged','blind'],appliesTag: 'blind', vfx: 'beam',      desc: '聚焦光束灼目，可致短暂失明。' },
@@ -752,6 +753,9 @@
   // Returns false if this role may NOT learn this skill. Mirror of the audited DENY policy.
   function roleAllowsSkill(role, sk) {
     if (!sk || sk.ultCost > 0) return true;          // ults/signatures exempt
+    const u=sk.unlock;
+    if(u?.build&&u.build!==role)return false;
+    if(u?.role&&![].concat(u.role).includes(role))return false;
     // AUTHORED override: a skill may carry an explicit allow-list (e.g. 弹幕 barrage is a
     // suppression fan authored for dps+fighter) that wins over the category rules below — a
     // fighter's "no ranged" identity bends ONLY for the specific skills we opt in, nothing else.
@@ -875,6 +879,7 @@
         // suddenly equip it after a role swap (fighter cat with 'mirrorWall' in
         // learned must still be rejected).
         if (hasLearned(cat, s.id)&&gatedElementEligible(cat,s)&&
+            roleAllowsSkill(cat.buildType||buildTypeForBreed(cat),s)&&
             (!s.unlock?.build||
              (cat.buildType||buildTypeForBreed(cat))===s.unlock.build)&&
             (!s.unlock?.role||
@@ -901,7 +906,7 @@
       // slot any native-element ranged/aoe. Apply roleAllowsSkill here too so the
       // identity gate matches the one in gateMet(). Ults are exempt (signature/ult
       // always allowed) to preserve 金乌焱/潮汐掌/etc on their native tank species.
-      if(!isUlt&&!alreadyEquipped&&
+      if(!isUlt&&
          !roleAllowsSkill(cat.buildType||buildTypeForBreed(cat),s))continue;
       const awakenedNative=cat.skillAwakened&&cat.awakenedSkill===s.id&&s.element===el;
       if(!isUlt&&!alreadyEquipped&&!awakenedNative){
@@ -971,13 +976,8 @@
   // guarantee and player choice are preserved; the gate shapes what the game AUTO-picks.
   function roleFilterForAutoEquip(cat, pool) {
     const role = cat.buildType || buildTypeForBreed(cat);
-    const allowed = pool.filter(sk => roleAllowsSkill(role, sk));
-    // keep at least one attacking option so we never hand back an unusable (attack-less) set
-    const atk = k => ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k);
-    if (!allowed.some(sk => atk(sk.kind)) && pool.some(sk => atk(sk.kind))) {
-      return pool;   // role gate would remove the only attacks → fall back to the full pool
-    }
-    return allowed;
+    // The innate toy basic is always available. Never restore forbidden active skills.
+    return pool.filter(sk => roleAllowsSkill(role, sk));
   }
 
   // BASIC-ELIGIBLE: a skill the player may slot as their LEFT-CLICK basic attack.
@@ -1025,7 +1025,7 @@
       if(!upgrade.upgradeOf)continue;
       if(basicEligible(upgrade))continue;    // upgrade itself qualifies — no need to rescue the base
       const base=skillById(upgrade.upgradeOf);
-      if(!base||!basicEligible(base))continue;
+      if(!base||!basicEligible(base)||!roleAllowsSkill(cat.buildType||buildTypeForBreed(cat),base))continue;
       if(haveId.has(base.id))continue;
       if(base.element!==el&&base.element!==splash)continue;  // keep element discipline
       direct.push(base);
@@ -1059,7 +1059,8 @@
     const role=cat.buildType||buildTypeForBreed(cat);
     const backline=role==='dps'||role==='control'||role==='support';
     const rangedKind=sk=>['projectile','beam','chain','aoe'].includes(sk.kind);
-    const q=(backline?(own.find(rangedKind)||pool.find(rangedKind)):null)
+    const q=(role==='control'?own.find(sk=>sk.allowRoles?.length===1&&sk.allowRoles[0]==='control'):null)
+      ||(backline?(own.find(rangedKind)||pool.find(rangedKind)):null)
       ||own.find(sk=>attackKinds.includes(sk.kind))
       ||pool.find(sk=>attackKinds.includes(sk.kind))||null;
     // E is the DEFENSIVE / utility slot so the shield + heal verbs are actually
@@ -1287,7 +1288,8 @@
     // real moves (咳毛球/烈焰罩/彗星爪), not a generic barrage. Lead with an authored own-element
     // attack; add a second of a DIFFERENT kind (also authored-first) for variety.
     const authored = attacks.filter(sk => !sk.generic);
-    const rotLead = authored.find(sk => sk.element === own) || authored[0] || primary;
+    const rotLead = (role==='control'?authored.find(sk=>sk.element===own&&sk.allowRoles?.length===1&&sk.allowRoles[0]==='control'):null)
+      ||authored.find(sk => sk.element === own) || authored[0] || primary;
     const rotation = [];
     if (rotLead) rotation.push(rotLead);
     const second = authored.find(sk => sk.id !== (rotLead && rotLead.id) && sk.kind !== (rotLead && rotLead.kind))
@@ -1359,7 +1361,7 @@
         pick(sk=>melee(sk)&&sk.heavy)||pick(melee);
       e=pick(sk=>cc(sk)&&attack(sk),q)||pick(attack,q);
     }else if(role==='control'){
-      q=pick(cc)||pick(attack);
+      q=pick(sk=>sk.allowRoles?.length===1&&sk.allowRoles[0]==='control'&&attack(sk))||pick(cc)||pick(attack);
       e=pick(sk=>attack(sk)&&sk!==q,q)||pick(isShieldSkill,q);
     }else {
       q=pick(melee)||pick(attack);
@@ -1392,10 +1394,11 @@
     const known=new Set(learnableSkills(cat).map(sk=>sk.id));
     cat.skillAwakened=true;
     const secondary=secondaryOf(cat);
-    const candidates=secondary
+    const candidates=(secondary
       ?secondaryChoices(cat).filter(sk=>!known.has(sk.id))
       :SKILLS.filter(sk=>sk.element===elementOf(cat.species)&&
-         !sk.unlock&&!sk.ultCost&&!known.has(sk.id));
+         !sk.unlock&&!sk.ultCost&&!known.has(sk.id)))
+      .filter(sk=>roleAllowsSkill(cat.buildType||buildTypeForBreed(cat),sk));
     const selected=candidates.find(sk=>SECONDARY_ATTACK_KINDS.has(sk.kind))
       ||candidates.find(sk=>sk.kind==='buff'||sk.kind==='heal')
       ||candidates[0]||null;
