@@ -28,9 +28,9 @@ function verify(data,makeEngine){
   assert(new Set(variants).size===variants.length,"choice changes home dialogue "+scene.id);
  }
  assert(!homeConversation("muling",third.view(),third.supportProfile("garden"),third.snapshot()),"new slot has no postgame conversation");
- for(const scene of data.scenes.slice(0,7))alt=play(alt,scene,1);
- assert(alt.snapshot().trust.jiedeng===2&&e.snapshot().choices["harbor:H-02"]==="comfort"&&third.snapshot().trust.jiedeng===0&&third.snapshot().completed.length===0,"three slots");
- assert(alt.supportProfile("harbor").methods.includes("keeper-trust"),"choice affects support");
+ for(const scene of data.scenes.slice(0,data.scenes.findIndex(s=>s.id==="sky:S-03")))alt=play(alt,scene,1);
+ assert(alt.snapshot().choices["sky:S-02"]==="train"&&e.snapshot().choices["sky:S-02"]==="lead"&&third.snapshot().completed.length===0,"three slots");
+ assert(alt.supportProfile("sky").methods.includes("escort-flight"),"choice affects support");
  return {scenes:data.scenes.length,lines:data.scenes.reduce((a,s)=>a+s.lines.length,0),successfulTransitions:count,postgame:data.side.length,ambient:data.ambient.length};
 }
 console.log(verify(campaign,makeEngine));

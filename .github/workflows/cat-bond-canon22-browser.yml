@@ -11,7 +11,7 @@ permissions:
   contents: read
 concurrency:
   group: canon22-browser-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   chapter:
     runs-on: ubuntu-24.04
@@ -27,6 +27,7 @@ jobs:
           - {chapter: library, entry: 'library:M-01'}
           - {chapter: starfall, entry: 'starfall:F-01'}
           - {chapter: finale, entry: 'finale:B-01'}
+          - {chapter: epilogue, entry: 'epilogue:E-01'}
     env:
       CAT_BOND_EXPERIENCE: '1'
       CAT_BOND_TARGET_SCENES: ${{ matrix.entry }}
