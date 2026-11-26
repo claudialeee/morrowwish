@@ -1,0 +1,31 @@
+name: Cat Bond mystery revision — review only
+on:
+  push:
+    branches: ['review/cat-bond-narrative-mystery']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-mystery-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source:
+    if: github.ref == 'refs/heads/review/cat-bond-narrative-mystery'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node scripts/check-cat-bond-mystery-opening.mjs
+          node scripts/check-cat-bond-cinematics.mjs
+          node scripts/test-cat-bond-resonance.mjs
+          node scripts/test-cat-bond-resonance-slot.mjs
+  browser:
+    needs: source
+    if: github.ref == 'refs/heads/review/cat-bond-narrative-mystery'
+    uses: ./.github/workflows/cat-bond-release-prologue-qa.yml
+    with:
+      combined: true
