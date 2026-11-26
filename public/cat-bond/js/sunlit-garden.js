@@ -61,12 +61,12 @@
   function refreshGuide(){
     if(!guide)return;
     const v=window.CatBondResonance?.view?.(),scene=v?.current?.id;
-    const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden])');
+    const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden]),#cb-player-first-intro');
     const show=active&&game?.scene==='yard'&&state()?.cats?.length>0&&!covered&&(scene==='prologue:P-04'||scene==='prologue:P-05'||scene==='epilogue:E-02'||scene==='epilogue:E-03'||v?.ending);
     guide.hidden=!show;if(!show){guideKey='';return}
     const en=isEnglish(),ending=!!v.ending,epilogue=['epilogue:E-02','epilogue:E-03'].includes(scene),talk=!ending&&(epilogue||v.cursor<v.current.lines.length),departure=scene==='prologue:P-05'&&!talk;
     const seen=state()?.sunlitGarden?.bookGuide||[],next=guideTabs.find(t=>!seen.includes(t[0]));
-    const key=scene+'|'+talk+'|'+en+'|'+seen.join(',')+'|'+(ending?v.postgame.length+'|'+v.returned.length:'');if(key===guideKey)return;guideKey=key;
+    const key=scene+'|'+talk+'|'+en+'|'+v.openingMet+'|'+seen.join(',')+'|'+(ending?v.postgame.length+'|'+v.returned.length:'');if(key===guideKey)return;guideKey=key;
     guide.replaceChildren();
     const title=document.createElement('strong');
     title.textContent=ending?(en?'The world answers again':'六地再次回应'):epilogue?(scene==='epilogue:E-02'?(en?'A promise to repair':'承担责任'):(en?'The second garden key':'第二把花园钥匙')):departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
@@ -81,7 +81,10 @@
     if(talk||ending)add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));
     if(ending){add('花园复兴','Garden Restoration',()=>window.GardenProjects?.open?.());add('继续探索','Continue exploring',()=>game.openWorldMap());}
     if(departure){
-      if(!next)hint.textContent=en?'Your companion guide is complete. Head to Misttide Harbor whenever you are ready.':'养成引导已完成，准备好后可前往霁潮港。';
+      title.textContent=en?'Find your name':'寻找自己的名字';hint.textContent=en?'You woke up without memories. Explore the garden or head to Misttide Harbor for clues.':'你在花园醒来，却想不起自己的名字。可以自由探索，也可以去霁潮港寻找线索。';
+      if(!v.openingMet)add('看看陌生猫的航图（可选）','Help the stranger with her chart (optional)',()=>narrativeAdapter?.interactHomeNpc('muling'));
+      add('阅读旧铃木牌（可选）','Read the old bell plaque (optional)',()=>game.toast({zh:'多年前，一颗坠落的星辰击坏了星铃。许多猫咪因此忘记了家园和亲友。愿每一只迷路的猫，都能找到回家的路。',en:'Years ago a falling star damaged the Star Bell. Many cats forgot their homes and loved ones. May every lost cat find its way home.'}));
+      add('下一场景 · 霁潮港','Next scene · Misttide Harbor',()=>{game.openWorldMap();if(game.scene==='map')window.WorldMap?.enterRegion?.('harbor')});
       add('前往世界地图','World map',()=>game.openWorldMap());
     }
   }
@@ -146,7 +149,7 @@
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
       try{const scale=a.scale*(npc.id==='muling'?.95:.68)*Math.max(.72,Math.min(1.1,height/460));const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale,time});
         if(visible===false)continue;
-        if(npc.id==='muling'){ctx.save();ctx.font='600 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const label=window.MorrowwishI18n?.get?.()==='zh'?'暮铃':'Muling';const w=ctx.measureText(label).width+16;ctx.fillStyle='#fff2d9e8';ctx.beginPath();ctx.roundRect(x-w/2,y+5,w,21,10);ctx.fill();ctx.fillStyle='#594431';ctx.fillText(label,x,y+15.5);ctx.restore();}
+        if(npc.id==='muling'){ctx.save();ctx.font='600 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const stranger=window.CatBondResonance?.view?.().current?.id==='prologue:P-05';const label=window.MorrowwishI18n?.get?.()==='zh'?(stranger?'陌生猫':'暮铃'):(stranger?'Stranger':'Muling');const w=ctx.measureText(label).width+16;ctx.fillStyle='#fff2d9e8';ctx.beginPath();ctx.roundRect(x-w/2,y+5,w,21,10);ctx.fill();ctx.fillStyle='#594431';ctx.fillText(label,x,y+15.5);ctx.restore();}
         lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*scale:y-30*scale,groundY:y,radius:Math.max(24,a.radius*.75*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }

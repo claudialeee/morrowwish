@@ -1,8 +1,8 @@
 import "./narrative-host.mjs";
-import "./npc-world.mjs?v=muling-map-silver-20261125";
+import "./npc-world.mjs?v=player-first-opening-2";
 import "./ambient-play.mjs";
 import "./world-runtime.mjs?v=player-first-nav-1";
-import "./title-entry.mjs?v=fixed-goldie-polish-20261125";
+import "./title-entry.mjs?v=player-first-opening-2";
 import "./garden-bell.mjs?v=sunlit-bell";
 import "./chapter-cinematics.mjs";
 import "./forge-combat-runtime.mjs?v=storybook-arenas";

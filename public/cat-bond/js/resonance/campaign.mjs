@@ -1,4 +1,4 @@
-// Locked script dialogue + authored localization and optional ambient interactions.
+// Canon 1.2 staged runtime adaptation; later operations remain intact.
 export const campaign = {
   "canon": "The Last Resonance",
   "version": 1,
@@ -260,14 +260,12 @@ export const campaign = {
       "id": "prologue:P-01",
       "chapter": "prologue",
       "title": {
-        "zh": "六座圣所",
-        "en": "Six Sanctuaries"
+        "zh": "世界的背景",
+        "en": "The world in a few lines"
       },
       "previous": null,
       "lines": [],
-      "requires": [
-        "cinematic:prologue-montage"
-      ],
+      "requires": [],
       "choices": [],
       "lineGate": [],
       "choiceTiming": "afterDialogue"
@@ -276,120 +274,12 @@ export const campaign = {
       "id": "prologue:P-02",
       "chapter": "prologue",
       "title": {
-        "zh": "首任守铃者的选择",
-        "en": "The First Bellkeeper's Choice"
+        "zh": "独自醒来",
+        "en": "Awakening alone"
       },
       "previous": "prologue:P-01",
-      "lines": [
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "星铃坏了，可六座圣所还在！再给我一点时间，我能修好它。",
-            "en": "The Star Bell is broken, but the six sanctuaries still stand! Give me a little more time. I can fix it."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "港口的船已经认不出回家的灯了。再等下去，大家连彼此的名字都要忘了。",
-            "en": "Ships can no longer recognize the light that guides them home. Soon cats won't remember each other's names."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "那我去找其他守铃人！总不能只剩你一个办法。",
-            "en": "Then I'll find other keepers! You can't be our only answer."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "没有其他守铃人了。先用我的记忆稳住星铃，至少能让大家平安。",
-            "en": "There are no other keepers. My memories can hold the bell steady long enough to keep everyone safe."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "记忆？那你还会记得我吗？",
-            "en": "Your memories? Will you still remember me?"
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "我不知道。但你会记得我们一起走过的路。",
-            "en": "I don't know. But you'll remember the roads we traveled together."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "你答应过我，要去云上的岛吃一顿真正的云朵蛋糕。",
-            "en": "You promised we'd visit the islands in the clouds for a proper cloud cake."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "那就把这个约定替我留着。",
-            "en": "Keep that promise for me."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "好。可别想让我一个人吃完两份。",
-            "en": "All right. But don't expect me to eat both portions alone."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "成交。等星铃找到真正的回应，我就回来。",
-            "en": "Deal. When the Star Bell finds a real answer, I'll come home."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我会把花园打理好，给你留一把钥匙。",
-            "en": "I'll look after the garden and keep a key for you."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "还有我的铃坠。帮我保管，好吗？",
-            "en": "And my little bell. Will you keep it safe?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "当然。我保证一颗螺丝都不会丢。",
-            "en": "Of course. I won't lose a single screw."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "记住，六个地方要听见彼此，不是只听见星铃。",
-            "en": "Remember: the six places must hear each other, not just the Star Bell."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我记住了。下次见面，我们一起把歌唱完。",
-            "en": "I'll remember. Next time we meet, we'll finish the song together."
-          }
-        }
-      ],
-      "requires": [
-        "cinematic:sacrifice"
-      ],
+      "lines": [],
+      "requires": [],
       "choices": [],
       "lineGate": [],
       "choiceTiming": "afterDialogue"
@@ -398,14 +288,12 @@ export const campaign = {
       "id": "prologue:P-03",
       "chapter": "prologue",
       "title": {
-        "zh": "等待的岁月",
-        "en": "Years of Waiting"
+        "zh": "风中的航图",
+        "en": "A map on the wind"
       },
       "previous": "prologue:P-02",
       "lines": [],
-      "requires": [
-        "cinematic:waiting"
-      ],
+      "requires": [],
       "choices": [],
       "lineGate": [],
       "choiceTiming": "afterDialogue"
@@ -414,85 +302,12 @@ export const campaign = {
       "id": "prologue:P-04",
       "chapter": "prologue",
       "title": {
-        "zh": "苏醒",
-        "en": "Awakening"
+        "zh": "去港口",
+        "en": "The road to the harbor"
       },
       "previous": "prologue:P-03",
-      "lines": [
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "唔……这片花园真暖和。等等，我怎么会在这里？",
-            "en": "Mmm... what a warm little garden. Wait. How did I get here?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "早安！我叫暮铃。你睡了很久，饿不饿？",
-            "en": "Good morning! I'm Muling. You've been asleep a long time. Hungry?"
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "有点。可我连自己的名字都想不起来。",
-            "en": "A little. But I can't even remember my own name."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "先别急。这里有鱼干、阳光，还有一间随时欢迎你的房子。",
-            "en": "No hurry. There are fish treats, sunshine, and a home that will always welcome you."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "刚才我好像听见一声铃响，心里特别熟悉。",
-            "en": "I heard a bell just now. It felt strangely familiar."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "就是那只花园铃。很多年前，星铃坏了；最近各地的猫又开始忘记重要的事。",
-            "en": "That's the garden bell. Years ago the Star Bell broke. Now cats across the land are forgetting important things again."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "和我一样？也许修好它，我就能知道自己是谁。",
-            "en": "Like me? Maybe fixing it will help me find out who I am."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "六座圣所各有一首歌。如果它们重新响起，我们就有机会找到答案。",
-            "en": "Each of the six sanctuaries has a song. If they sing again, we may find the answer."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "我想试试。那只铃怎么敲？",
-            "en": "I'd like to try. How do I ring this bell?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "轻轻拉下铃绳。要是你能唤醒它，咱们的第一场冒险就开始啦！",
-            "en": "Gently pull its cord. If you can wake it up, our first adventure begins!"
-          }
-        }
-      ],
-      "requires": [
-        "explore:garden-bell"
-      ],
+      "lines": [],
+      "requires": [],
       "choices": [],
       "lineGate": [],
       "choiceTiming": "afterDialogue"
@@ -501,54 +316,11 @@ export const campaign = {
       "id": "prologue:P-05",
       "chapter": "prologue",
       "title": {
-        "zh": "旅程",
-        "en": "The Journey"
+        "zh": "前往霁潮港",
+        "en": "Travel to Misttide Harbor"
       },
       "previous": "prologue:P-04",
-      "lines": [
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "我明明没学过，怎么会知道那个音？",
-            "en": "I've never learned that note. How did I know it?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "连我修了这么多年铃，都没让它这样响过。看来你有一项了不起的本领。",
-            "en": "I've repaired bells for years and never heard it ring like that. You've got quite a gift."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "那先去哪里？我想知道其他猫忘记了什么。",
-            "en": "Where first? I'd like to know what the other cats have forgotten."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "霁潮港。灯塔不亮，船只回不了家。那里有第一座圣所，也是寻找你记忆的第一条线索。",
-            "en": "Misttide Harbor. Its lighthouse is dark and ships can't get home. The first sanctuary is there—and so is our first lead on your memories."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "修灯塔、找回忆、认识新朋友！听起来比躺在花园里数云有趣多了。",
-            "en": "Fix a lighthouse, find memories, meet new friends! Much better than counting clouds in the garden."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "带上鱼干！地图上的港口就是第一站。等回来，我给你泡茶——放心，不负责做饭。",
-            "en": "Pack some fish treats! The harbor is our first stop. I'll make tea when we get back. Don't worry, I won't cook."
-          }
-        }
-      ],
+      "lines": [],
       "requires": [
         "travel:harbor"
       ],
@@ -560,51 +332,51 @@ export const campaign = {
       "id": "harbor:H-01",
       "chapter": "harbor",
       "title": {
-        "zh": "雾中抵达",
-        "en": "Arrival in the Fog"
+        "zh": "找不到家的船",
+        "en": "A boat without a way home"
       },
       "previous": "prologue:P-05",
       "lines": [
         {
           "speaker": "qilan",
           "text": {
-            "zh": "嘿！外地来的猫！你们会修灯塔吗？我家的船还在雾里转圈呢！",
-            "en": "Hey, travelers! Can you fix a lighthouse? My family's boat is still going in circles in the fog!"
+            "zh": "刚送一位渔夫回家。他在那儿住了二十年，却突然找不到门。现在外面还有艘船在绕礁石！",
+            "en": "I just helped a fisher find the home he's lived in for twenty years. And now a boat is circling the reef!"
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "原来不只我记不起过去。",
+            "en": "So I'm not the only one who's forgotten."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我会修机器，这位搭档会唤醒圣所的铃。你是这里的领航员？",
-            "en": "I fix machines. My partner can wake sanctuary bells. Are you the navigator here?"
+            "zh": "你好，我叫暮铃，是来调查古铃的旅行者。多年前星铃坏了，猫咪们开始失去记忆。最近又出现了。",
+            "en": "Hello, I'm Muling. I'm a traveler investigating old bells. When the Star Bell broke, cats began losing memories. It's happening again."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "栖蓝，未来最棒的领航员！可岬灯爷爷连码头都不让我离开。",
-            "en": "Qilan, future champion navigator! But Keeper Jiedeng won't even let me leave the dock."
+            "zh": "我是栖蓝，领航员！可是灯塔没亮，船找不到安全的路。",
+            "en": "I'm Qilan, a navigator! The lighthouse is dark, and the boat can't find a safe route."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "我想知道自己为什么失忆。先帮那艘船吧。",
+            "en": "I want to know why I've forgotten my past. Let's help the boat first."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "那先问问他为什么不开灯。只要找回灯塔的光，就有机会唤醒归潮调。",
-            "en": "Let's ask why the lighthouse stays dark. Restoring its light may wake the Returning Tides song."
-          }
-        },
-        {
-          "speaker": "qilan",
-          "text": {
-            "zh": "好！等船回来，我请你们吃全港最香的烤鱼。前面就是他的灯塔。",
-            "en": "Great! When the boats return, I'll treat you to the harbor's best grilled fish. His lighthouse is just ahead."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "走吧。寻找记忆的第一站，顺便救几条鱼……哦，是几条船。",
-            "en": "Let's go. Our first memory lead—and a few fish to rescue... I mean boats."
+            "zh": "我有工具和绳子。你愿意搭把手的话，我在港口等你。",
+            "en": "I've got tools and rope. If you'd like to help, I'll be here at the harbor."
           }
         }
       ],
@@ -612,51 +384,53 @@ export const campaign = {
         "npc:harbor-arrival"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": [
+        "npc:harbor-arrival"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
       "id": "harbor:H-02",
       "chapter": "harbor",
       "title": {
-        "zh": "拒绝点灯的守灯人",
-        "en": "The Keeper Who Refuses"
+        "zh": "两盏灯",
+        "en": "Two lights"
       },
       "previous": "harbor:H-01",
       "lines": [
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "别碰灯塔！上次风暴我关错了灯，救援船差点回不来。那本航海日志也丢了。",
-            "en": "Don't touch that lighthouse! I shut the wrong light during the last storm. The rescue boat barely made it, and the logbook was lost."
+            "zh": "别点灯。光路没校准，亮错方向比没有灯更危险。",
+            "en": "Don't light it. Until the beam is aligned, a false light is worse than none."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "可今天还有船在外面！我练了整整一年，知道怎么读潮汐和信号。",
-            "en": "But boats are out there today! I've practiced all year. I can read the tides and signals."
+            "zh": "那就校准它！我读得懂潮汐表。",
+            "en": "Then let's align it! I can read the tide charts."
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "我知道你聪明，可我不想再失去一个伙伴。",
-            "en": "I know you're clever. I just can't bear to lose another friend."
+            "zh": "你留在岸上。上次我也以为来得及。",
+            "en": "Stay ashore. Last time I thought we had time, too."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "那让我们找回日志，用事实证明哪条航线安全，好吗？",
-            "en": "Let's recover the logbook and find out which route is safe, all right?"
+            "zh": "你不能每次都替我选。我们先找到旧航海日志吧。",
+            "en": "You can't choose for me every time. Let's find the old logbook first."
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "好吧。退潮后，旧日志可能露在潮滩上。找到它，我们再决定怎么救船。",
-            "en": "All right. The old log may be exposed at low tide. Find it, and we'll decide how to rescue the boats."
+            "zh": "退潮后它会露出来。看完日志，我们再决定怎么救船。",
+            "en": "It should emerge at low tide. Read it, then we'll decide how to rescue the boat."
           }
         }
       ],
@@ -690,51 +464,51 @@ export const campaign = {
       "id": "harbor:H-03",
       "chapter": "harbor",
       "title": {
-        "zh": "被淹没的航海日志",
-        "en": "The Flooded Logbook"
+        "zh": "盐渍航海日志",
+        "en": "Salt on the logbook"
       },
       "previous": "harbor:H-02",
       "lines": [
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "原来日志里标的是备用灯！那晚我关了主灯，却没告诉救援船备用信号。",
-            "en": "The log marks a backup light! I shut the main lamp that night without telling the rescue boat the backup signal."
+            "zh": "当年我关了主灯，想拦住出海的船。救援船却已经在海上了。",
+            "en": "I shut off the main light to keep boats ashore. The rescue boat had already left."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "所以不是大海夺走了方向，是我们没把消息传到船上。",
-            "en": "So the sea didn't steal their bearings. We failed to get the message to them."
+            "zh": "备用灯的消息没有送到船上，所以他们找不到方向？",
+            "en": "The backup signal never reached the boat, so they lost their bearings?"
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "是啊。我把自己的错误变成了一道锁，锁住了你出海的路。",
-            "en": "Yes. I turned my mistake into a lock and put it on your path to the sea."
+            "zh": "是。船员活了下来，可我从此不敢再把航线交给别人。",
+            "en": "Yes. The crew survived, but I haven't trusted anyone else with a route since."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "那今天打开它吧！我来领航，您来照灯，怎么样？",
-            "en": "Then let's unlock it today! I'll navigate and you handle the light. Deal?"
+            "zh": "那今天你看灯，我看海。我们谁也别替谁做决定。",
+            "en": "Then today you watch the light and I watch the sea. Neither of us decides for the other."
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "成交。风又起来了——我们得决定先救船，还是先校准反射镜。",
-            "en": "Deal. The wind's rising again. We must decide whether to rescue the boat or calibrate the mirrors first."
+            "zh": "……先把你的航图给我看看。",
+            "en": "…Let me see your chart first."
           }
         },
         {
-          "speaker": "qilan",
+          "speaker": "player",
           "text": {
-            "zh": "有两位新伙伴帮忙，咱们一定能让船安全回港！",
-            "en": "With two new friends helping, we can bring that boat safely home!"
+            "zh": "风起来了。先决定怎么把船带回安全水域。",
+            "en": "The wind's picking up. Let's decide how to bring the boat to safety."
           }
         }
       ],
@@ -751,31 +525,53 @@ export const campaign = {
       "id": "harbor:H-04",
       "chapter": "harbor",
       "title": {
-        "zh": "风暴救援",
-        "en": "Storm Rescue"
+        "zh": "雾里那声铃",
+        "en": "The bell in the fog"
       },
       "previous": "harbor:H-03",
       "lines": [
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "雾里的船在发求救信号！反射镜能照亮航线，救援船也得有人指挥。",
-            "en": "A boat is signaling for help! The mirrors can light the route, and the rescue boat needs a navigator."
+            "zh": "礁石在左边。光路给你了，航线你选！",
+            "en": "Reefs to port. The light is yours; choose your route!"
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "我会看住潮汐。你们决定先做哪件事，我随时出发！",
-            "en": "I'll watch the tides. Decide which job comes first and I'm ready!"
+            "zh": "看见了！我会跟着真正的灯走。",
+            "en": "I see it! I'll follow the real light."
           }
         },
         {
-          "speaker": "jiedeng",
+          "speaker": "muling",
           "text": {
-            "zh": "这一次，灯塔和领航员互相回应。一个都不能少。",
-            "en": "This time the lighthouse and navigator answer each other. We need both."
+            "zh": "我守住这边，你去另一边。准备好了就一起行动。",
+            "en": "I'll hold this side. Take the other. We'll act when you're ready."
           }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "你找过去，我查古铃。我们挺适合一起迷路的。先同行一段？",
+            "en": "You're looking for your past; I'm investigating old bells. We're rather good at getting lost together. Shall we travel together for a while?"
+          },
+          "afterOperations": [
+            "puzzle:beam-mirrors",
+            "rescue:storm-boat"
+          ]
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "好啊。下次把航图收好。",
+            "en": "Sure. Keep your map somewhere safe next time."
+          },
+          "afterOperations": [
+            "puzzle:beam-mirrors",
+            "rescue:storm-boat"
+          ]
         }
       ],
       "requires": [
@@ -809,51 +605,51 @@ export const campaign = {
       "id": "harbor:H-05",
       "chapter": "harbor",
       "title": {
-        "zh": "第一段旋律",
-        "en": "The First Melody"
+        "zh": "第一个音",
+        "en": "The first note"
       },
       "previous": "harbor:H-04",
       "lines": [
         {
           "speaker": "player",
           "text": {
-            "zh": "归潮调响起时，我脑海里闪过一条熟悉的海路……像是我曾经来过。",
-            "en": "When Returning Tides played, I saw a familiar sea route in my mind... as if I'd been here before."
+            "zh": "我从没学过这首歌，为什么知道怎么开头？",
+            "en": "I've never learned this song. Why did I know how to start it?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "这说明你的记忆可能和圣所的歌有关。第一条线索，找到了！",
-            "en": "Your memories may be tied to the sanctuary songs. That's our first real clue!"
+            "zh": "也许以前听过。剩下的得让这里的猫来唱。",
+            "en": "Maybe you've heard it before. The cats here have to sing the rest."
           }
         },
         {
-          "speaker": "player",
+          "speaker": "qilan",
           "text": {
-            "zh": "刚才你用铃坠拨了一下机器。是在调音吗？",
-            "en": "You turned something with your pendant just now. Were you tuning it?"
+            "zh": "归潮调！船回港的时候，我们就唱这个。",
+            "en": "Returning Tide! We sing it when boats come home."
+          }
+        },
+        {
+          "speaker": "qilan",
+          "text": {
+            "zh": "灯塔恢复了。至少现在，船能重新找到回家的路。",
+            "en": "The lighthouse is working. At least the boats can find their way home again."
+          }
+        },
+        {
+          "speaker": "qilan",
+          "text": {
+            "zh": "眠根林的药草船还没来。我们准备送补给过去，也问问那边有没有你的线索。",
+            "en": "The herb boat from Rootsleep hasn't arrived. We're sending supplies and can ask about your past."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "让声音顺利传出去。别担心，下一站的地图我也准备好了。",
-            "en": "Making sure the sound travels. Don't worry, I've got our next map ready."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "栖蓝说眠根林的药草船没来。我们去看看，还能找到第二首歌！",
-            "en": "Qilan says the herbal supply boat from Rootsleep hasn't arrived. Let's investigate and find our second song!"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "烤鱼打包，下一站眠根林！不过这次别把鱼干当地图压石了。",
-            "en": "Grilled fish packed. Rootsleep Forest, here we come! Just don't use the fish treats as map weights again."
+            "zh": "等你准备好，我们就去森林看看。也可以先回花园休息。",
+            "en": "When you're ready, we'll visit the forest. We can rest in the garden first, too."
           }
         }
       ],
@@ -2905,5 +2701,7 @@ export const campaign = {
       },
       "action": "guide-caravan"
     }
-  ]
+  ],
+  "openingPresentationVersion": 2,
+  "openingRevision": "canon-1.2-player-first-opening"
 };

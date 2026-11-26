@@ -138,7 +138,7 @@ class Game {
 
   openWorldMap() {
     const story=window.CatBondResonance?.view?.(),id=story?.current?.id;
-    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(id==='prologue:P-04'||(id==='prologue:P-05'&&story.cursor<story.current.lines.length))){this.toast({zh:'先完成与暮铃的交谈和花园调查。',en:'Talk to Muling and investigate the garden before leaving.'});return false;}
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&story?.current?.chapter==='prologue'&&id!=='prologue:P-05'){this.toast({zh:'请先进入花园。',en:'Enter the garden first.'});return false;}
     window.SunlitGarden?.leave?.();
     // Clear messages from the garden encounter tutorial before navigating.
     // The global toast queue otherwise covers the exploration map and cats

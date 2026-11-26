@@ -19,10 +19,24 @@ function drawResident(ctx,id,{x,y,scale=1,time=0}){
  ctx.drawImage(image,x-width/2,y-height,width,height);
  return true;
 }
+function openingEncounter(api){
+ const owner=window.State.S,token=api.captureAction(),stage=document.getElementById("stage");if(!stage||api.view().current?.id!=="prologue:P-05"||api.view().openingMet||window.__game?.scene!=="yard")return false;
+ if(document.getElementById("cb-traveler-encounter"))return true;
+ const root=document.createElement("div");root.id="cb-traveler-encounter";root.className="cb-story-overlay is-visible res-host res-home-conversation";
+ const panel=document.createElement("section");panel.className="res-dialogue";panel.setAttribute("role","dialog");panel.setAttribute("aria-modal","true");const art=document.createElement("img");art.className="res-portrait";art.alt="";art.src=mulingGarden.src;
+ const body=document.createElement("div"),name=document.createElement("h2"),copy=document.createElement("p"),controls=document.createElement("div"),next=document.createElement("button"),close=document.createElement("button"),locale=document.createElement("button");body.className="res-body";name.className="res-speaker";copy.className="res-line";controls.className="res-controls";
+ for(const b of [next,close,locale]){b.type="button";b.style.cssText="display:inline-block;padding:8px 12px;margin:4px";}
+ controls.append(next,close,locale);body.append(name,copy,controls);panel.append(art,body);root.append(panel);let step=0;
+ const lines=[["陌生猫","Stranger","等等！那张航图可不能拿去做鸟窝！","Wait! That chart is not nesting material!","捡起航图","Pick up the chart"],["陌生猫","Stranger","谢谢！你能递给我吗？","Thanks! Can you hand it to me?","归还航图","Return the chart"],["暮铃","Muling","叫我暮铃吧。我是个调查古铃的旅行者。霁潮港最近也有猫失忆，我正准备去看看。港口见——如果你也想去的话。","I'm Muling, a traveler investigating old bells. Cats in Misttide Harbor have been losing their memories too. See you at the harbor, if you're heading that way.","告别","Say goodbye"]];
+ function dispose(){root.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("pagehide",dispose);}
+ function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh",i=zh?0:1,l=lines[step];name.textContent=l[i];copy.textContent=l[2+i];next.textContent=l[4+i];close.textContent=zh?"暂时离开":"Leave for now";locale.textContent=zh?"English":"中文";}
+ next.onclick=()=>{if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}if(step<2){step++;render();return}const r=api.meetTraveler(token);if(r.ok)dispose();else copy.textContent=window.MorrowwishI18n?.get?.()==="zh"?"无法保存，请重试。":"Unable to save. Retry.";};close.onclick=dispose;locale.onclick=()=>window.MorrowwishI18n?.set?.(window.MorrowwishI18n.get()==="zh"?"en":"zh");root.onkeydown=e=>{if(e.key==="Escape")dispose()};stage.append(root);window.addEventListener("morrowwish-language-change",render);window.addEventListener("cat-bond-active-save-changed",dispose);window.addEventListener("pagehide",dispose,{once:true});render();next.focus();return true;
+}
 function install(){
  const api=window.CatBondResonance;if(!api)return;
  function talk(id,region,requestedScene){
   const v=api.view();if(requestedScene&&requestedScene!==v.current?.id)return false;
+  if(region==="garden"&&id==="muling"&&v.current?.id==="prologue:P-05"&&!v.openingMet)return openingEncounter(api);
   if(region==="garden"&&(v.ending||skyChapterVisitors(v).includes(id)))return mountHomeConversation(id,api);
   const r=v.current?api.recordNPC({sceneId:v.current.id,npcId:id,region,token:api.captureAction()}):{ok:false};
   if(r.ok){if(v.current.id==="starfall:F-01"&&!api.view().lineReady){window.__game?.toast?.({zh:"星芽：星图只该有一个中心。去问砾川，他为什么反对。",en:"Xingya: A star chart should have one center. Ask Lichuan why he disagrees."});return true;}api.showCurrent();return true}
