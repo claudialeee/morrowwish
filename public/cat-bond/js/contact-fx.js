@@ -28,6 +28,14 @@ function draw(c,e,t=0){
  const R=(e.tier==='kill'?36:critical?31:strong?26:18)*(e.scale||1),q=1-Math.pow(1-p,2.8),flash=Math.max(0,1-p*5),ang=e.angle||0;
  const P=PAL[kind==='vine'?'grass':kind==='slash'?(e.element||'light'):kind==='smash'?'neutral':kind==='shieldBreak'||kind==='barrier'||kind==='reflect'?'ice':kind==='heal'||kind==='cleanse'?'grass':kind]||PAL.neutral;
  c.save();c.translate(e.x,e.y-6);
+ // Single compact skill-id silhouette rather than stacking another generic elemental burst.
+ const authored=e.skillId&&window.CatBondSkillFX?.has(e.skillId)&&['light','heavy','crit'].includes(e.tier);
+ if(authored&&e.skillId!=='waterJet'&&e.skillId!=='crescentFan'){
+   const F=window.CatBondSkillFX,s=(strong?.54:.44)*(e.scale||1);
+   c.save();c.scale(s,s);F.draw(c,{kind:'signatureHit',skillId:e.skillId,x:0,y:0,angle:ang,life:e.life,max:e.max,heavy:strong},t);c.restore();
+   if(critical){edge(c,0,0,R*.75,3,ang+.48,'#fff7d6',a*.9);}
+   c.restore();return true;
+ }
  const hit=['light','heavy','smash','slash','kill','stagger'].includes(kind);
  if(!['heal','cleanse','guard','barrier','wardFade'].includes(kind))glow(c,0,0,R*.92,P[2],flash*.88);
  if(hit){const k=Math.max(0,1-p*3.8),rr=R*(.48+.6*q);for(let j=0;j<(strong?7:4);j++){const th=ang+j*T/(strong?7:4)+.3;spike(c,th,0,rr*(.8+.4*h(j)),2.2+1.4*k,P[1],k*.88);spike(c,th,0,rr*.70,1.5,P[2],k);}ellipse(c,0,0,3.2+4.3*k,3.2+4.3*k,P[2],k);}
