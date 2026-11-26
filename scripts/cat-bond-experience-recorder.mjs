@@ -19,7 +19,7 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
     fs.appendFileSync(file, JSON.stringify({seq:++seq, ms:Date.now()-start, ...event})+'\n');
   }
   record({kind:'run',id,profile:process.env.CAT_BOND_PROFILE||process.env.PROLOGUE_PROFILE||'unknown',
-    language:process.env.PROLOGUE_LANG||'en',mode:process.env.CAT_BOND_FULL_CAMPAIGN==='1'?'authored campaign':'opening',
+    language:id.startsWith('campaign-')?'en':process.env.PROLOGUE_LANG||'en',mode:id.startsWith('campaign-')?'authored campaign':id.startsWith('free-')?'free play':'opening',
     revision:process.env.GITHUB_SHA||null});
   // Only local acceptance server can be contacted. It uses ephemeral SQLite.
   await context.route('**/*', route => {
@@ -35,7 +35,9 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
     if(location.origin!=='http://127.0.0.1:8765')return;
     let previous='', scheduled=false;
     const send=event=>{void window.__cbExperienceEmit(event).catch(()=>{});};
-    const visible=e=>!!e&&e.getClientRects().length>0&&!e.closest('[hidden],[inert],[aria-hidden="true"]')&&getComputedStyle(e).visibility!=='hidden'&&getComputedStyle(e).display!=='none';
+    const visible=e=>{if(!e||!e.getClientRects().length||e.closest('[hidden],[inert],[aria-hidden="true"]'))return false;
+      const r=e.getBoundingClientRect(),style=getComputedStyle(e);
+      return r.width>0&&r.height>0&&r.right>0&&r.bottom>0&&r.left<innerWidth&&r.top<innerHeight&&style.visibility!=='hidden'&&style.display!=='none'&&Number(style.opacity)>0;};
     const clean=s=>(s||'').replace(/\s+/g,' ').trim().slice(0,1800);
     const selectors=['#cb-player-first-intro','#cb-traveler-encounter','.res-host','.cbcp-root','.sg-prologue-guide','.rw-current','.rw-next','.rw-hint','.rw-notice','.rw-puzzle-controls','.rw-world-actions','#panel.open','#battle-ui.on','#cb-system-menu:not([hidden])','#toasts','#start-error:not([hidden])'];
     function read(){
@@ -65,6 +67,13 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
         x:rect?.width?Number(((event.clientX-rect.left)/rect.width).toFixed(3)):null,
         y:rect?.height?Number(((event.clientY-rect.top)/rect.height).toFixed(3)):null,
         scene:window.CatBondResonance?.view?.()?.current?.id||null});}catch{}
+    },true);
+    let pointerStart=null;
+    document.addEventListener('pointerdown',event=>{if(event.isTrusted)pointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,at:performance.now()};},true);
+    document.addEventListener('pointerup',event=>{
+      if(!event.isTrusted||!pointerStart||pointerStart.id!==event.pointerId)return;
+      const p=pointerStart;pointerStart=null;
+      if(Math.hypot(event.clientX-p.x,event.clientY-p.y)>12)send({kind:'gesture',action:'drag',from:[p.x,p.y],to:[event.clientX,event.clientY],durationMs:Math.round(performance.now()-p.at),scene:window.CatBondResonance?.view?.()?.current?.id||null});
     },true);
     document.addEventListener('keydown',event=>{if(event.isTrusted&&['Enter',' ','Escape','w','a','s','d','q','e','r','j'].includes(event.key))send({kind:'key',key:event.key,scene:window.CatBondResonance?.view?.()?.current?.id||null});},true);
     document.addEventListener('DOMContentLoaded',()=>{
