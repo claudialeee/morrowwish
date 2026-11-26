@@ -53,6 +53,11 @@ jobs:
           node --check public/cat-bond/js/resonance/slot-runtime.mjs
       - name: Verify implemented flight and scene contract
         run: |
+          node scripts/test-cat-bond-canon22-final-art.mjs
+          node --check public/cat-bond/js/resonance/canon22-art.mjs
+          node --check public/cat-bond/js/resonance/dialogue-ui.mjs
+          node --check public/cat-bond/js/garden-exploration.js
+          node --check public/cat-bond/js/resonance-cinematic.mjs
           node scripts/test-cat-bond-canon22-glide.mjs
           node scripts/test-cat-bond-canon22-mirror.mjs
           node scripts/test-cat-bond-canon22-ledger.mjs

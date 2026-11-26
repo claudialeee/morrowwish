@@ -1,7 +1,7 @@
 name: Cat Bond isolated Cloudflare Pages preview
 on:
   push:
-    branches: [rpg/release-combined-next]
+    branches: [review/starbell-canon13-player-experience]
     paths:
       - 'public/cat-bond/**'
       - 'public/audio/**'
@@ -13,33 +13,33 @@ on:
       - 'scripts/test-cat-bond-*.mjs'
       - 'scripts/check-cat-bond-resonance-world.mjs'
       - '.github/workflows/cat-bond-preview.yml'
+      - 'scripts/cat-bond-test-start.mjs'
   workflow_dispatch:
 permissions:
   contents: read
-  actions: write
 concurrency:
   group: cat-bond-isolated-preview
   cancel-in-progress: true
 jobs:
   preview:
     # Preview only; never deploy main or touch production APIs.
-    if: github.ref == 'refs/heads/rpg/release-combined-next'
+    if: github.ref == 'refs/heads/review/starbell-canon13-player-experience'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Pin exact preview candidate (not formal release approval)
         run: |
           set -euo pipefail
           SOURCE_SHA="$GITHUB_SHA"
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          git fetch origin rpg/release-combined-next
+          git fetch --depth=1 origin review/starbell-canon13-player-experience
           test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_SHA"
           echo "SOURCE_SHA=$SOURCE_SHA" >> "$GITHUB_ENV"
-          printf '%s %s\n' rpg/release-combined-next "$SOURCE_SHA" > /tmp/cat-bond-preview-sources.txt
+          printf '%s %s\n' review/starbell-canon13-player-experience "$SOURCE_SHA" > /tmp/cat-bond-preview-sources.txt
           test -s public/cat-bond/js/rpg-audio.js
           test -s public/cat-bond/js/resonance/resonance-book.mjs
           test -s public/cat-bond/css/rpg-visual-polish.css
@@ -47,22 +47,6 @@ jobs:
           grep -Fq 'resonance-book.mjs' public/cat-bond/js/resonance/integration-entry.mjs
           grep -Fq 'rpg-visual-polish.css' public/cat-bond/index.html
           node --check public/cat-bond/js/main.js
-      - name: Cancel superseded Cat Bond QA runs (same branch only)
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          git fetch origin rpg/release-combined-next
-          test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_SHA"
-          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs?branch=rpg%2Frelease-combined-next&per_page=100" --jq '.workflow_runs[] | select(.status != "completed") | select(.event == "pull_request") | select(.name == "Cat Bond incremental development QA" or (.name | startswith("Full release QA "))) | [.id,.head_sha] | @tsv' > /tmp/obsolete-cat-bond-runs
-          while read -r id oldsha; do
-            [ "$oldsha" != "$SOURCE_SHA" ] || continue
-            git merge-base --is-ancestor "$oldsha" "$SOURCE_SHA" || continue
-            echo "Cancelling obsolete QA $id ($oldsha)"
-            if ! gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$id/cancel"; then
-              echo "::warning::Could not cancel obsolete run $id"
-            fi
-          done < /tmp/obsolete-cat-bond-runs
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -294,7 +278,7 @@ jobs:
         run: |
           set -eu
           test -n "$CLOUDFLARE_API_TOKEN"
-          git fetch origin rpg/release-combined-next
+          git fetch --depth=1 origin review/starbell-canon13-player-experience
           test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_SHA" # never publish a superseded commit
           WRANGLER="$PWD/node_modules/.bin/wrangler"
           cd /tmp/cat-bond-preview
