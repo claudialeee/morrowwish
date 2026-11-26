@@ -3052,9 +3052,10 @@ class CaptureBattle {
         // centerline crosses — matching the visual truncation in beamVisualEnd(). Only
         // flameSweep (with sweepPasses) is explicitly designed to penetrate the pack.
         const flame = b.sk?.id === 'flameSweep';
+        const pierce = b.sk?.id === 'waterJet';
         let candidates = list.filter(e =>
           this.pointToSeg(e.x, e.y, ox, oy, ex, ey) <= b.width + (e.r || 18) * 0.5);
-        if (!flame && candidates.length > 1) {
+        if (!flame && !pierce && candidates.length > 1) {
           // Keep ONLY the first enemy along the beam axis (nearest projection to caster).
           const vx = ex - ox, vy = ey - oy, L = Math.hypot(vx, vy) || 1;
           const ux = vx / L, uy = vy / L;
@@ -3075,7 +3076,7 @@ class CaptureBattle {
           const damage = flame ? b.dps * b.max / passes : hitDmg;
           const contact = this.resolveHit(e, b.owner,
             { ...(b.sk || { element: b.element }), isChanneledTick: true,
-              _poiseSource: b, _poisePass: flame ? pass : undefined },
+              _poiseSource: b, _poisePass: flame ? pass : undefined, _caster: f },
             damage, e.x, e.y);
           if (contact?.dealt > 0) {
             if (flame) b._flameHits.set(e, pass);
@@ -3109,11 +3110,15 @@ class CaptureBattle {
     // Draw-only micro recoil: the target never leaves the beam's collision area.
     target._recoilX=(target._recoilX||0)+Math.cos(b.aim)*(first?3:1.4);
     target._recoilY=(target._recoilY||0)+Math.sin(b.aim)*(first?3:1.4);
+    if(b.sk?.id==='waterJet'){
+      this.skillStrokes.push({kind:'waterPierce',skillId:'waterJet',x:target.x,y:target.y,radius:target.r||18,angle:b.aim,life:.23,max:.23});
+    }else{
     this.vfx.impactType?.(target.x,target.y,'light',{color,angle:b.aim});
     this.vfx.ring(target.x,target.y,{r0:first?9:5,
       vr:first?105:74,life:first?.26:.19,color,width:first?2.8:1.8});
     if(first)this.vfx.burst(target.x,target.y,
       {count:this.game?.isTouch?4:6,color:'#fff5dc',speed:80,life:.2,r:2});
+    }
     // Gate camera and sound across all simultaneous beam targets.
     if(elapsed-(b._lastPulseAt??-99)>.33){
       b._lastPulseAt=elapsed;
@@ -4031,7 +4036,7 @@ class CaptureBattle {
       const _vend=this.beamVisualEnd(b), _ex0=b._ex, _ey0=b._ey;
       // Sweeping fire penetrates; water uses first visible contact. No damage mutation.
       if(window.CatBondSkillFX?.drawCombatBeam(ctx,b,this.t,
-        b.sk?.id==='flameSweep'?_ex0:_vend.ex,b.sk?.id==='flameSweep'?_ey0:_vend.ey))continue;
+        ['flameSweep','waterJet'].includes(b.sk?.id)?_ex0:_vend.ex,['flameSweep','waterJet'].includes(b.sk?.id)?_ey0:_vend.ey))continue;
       b._ex=_vend.ex; b._ey=_vend.ey;
       const k=Math.max(0,b.t/b.max);
       if(b.sk?.id==='thunderStream'){
@@ -4204,7 +4209,9 @@ class CaptureBattle {
       const k=Math.max(0,v.life/v.max),p=1-k;
       ctx.save();ctx.globalAlpha=Math.min(1,k*.95);
       ctx.lineCap='round';ctx.lineJoin='round';
-      if(v.kind==='signatureCast'||v.kind==='signatureHit'){
+      if(v.kind==='waterPierce'){
+        // Directional marks are rendered above target sprites below.
+      }else if(v.kind==='signatureCast'||v.kind==='signatureHit'){
         window.CatBondSkillFX?.draw(ctx,v,this.t);
       }else if(v.kind==='regularAccent'){
         this.drawRegularSkillAccent(ctx,v,k,p);
@@ -6131,7 +6138,7 @@ class CaptureBattle {
         }
       }
       // One clean elemental impact mark per beat; suppress spam from beams.
-      if(dealt>0&&skill?.kind!=='melee'&&skill?.element&&(skill.ultCost||0)===0&&
+      if(dealt>0&&skill?.id!=='waterJet'&&skill?.kind!=='melee'&&skill?.element&&(skill.ultCost||0)===0&&
         this.t-(this._lastRegularHitFx??-99)>.12){
         this._lastRegularHitFx=this.t;
         this.regularSkillAccent({x,y},skill.element,0,!!skill.isBasic,true);
@@ -6140,7 +6147,7 @@ class CaptureBattle {
       // Covers 芝士/露露/小雾/幽幽/月月/豆豆/夜夜 in P2. No-op until P1/P2 PRs land.
       if (dealt > 0) {
         window.CatTraits && window.CatTraits.emit('onHitResolved',
-          { battle: this, cat: this.me(), target, skill, dmg: dealt, _isDerived: !!(proj && proj._isDerived) });
+          { battle: this, cat: skill?._caster || this.me(), target, skill, dmg: dealt, _isDerived: !!(proj && proj._isDerived) });
       }
       return { blocked: false, reflected: false, dealt };
     } else {
@@ -6774,6 +6781,7 @@ class CaptureBattle {
       }
       window.CatBondWardArt?.draw(ctx,e,e.x,e.y,this.t,this.catScale('enemy'),'front');
       this.drawControlOverlay(ctx, e);                     // persistent CC markers over the body
+      for(const v of this.skillStrokes)if(v.kind==='waterPierce'&&Math.hypot(v.x-e.x,v.y-e.y)<(e.r||18)*1.5)window.CatBondSkillFX?.draw(ctx,v,this.t);
       // 虚弱 stagger: a pulsing gold ring + dizzy mark so the open window reads clearly
       if (e.staggerT > 0) {
         ctx.save();
