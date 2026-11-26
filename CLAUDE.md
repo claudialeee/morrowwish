@@ -18,10 +18,6 @@ Follow all detailed instructions in `AGENTS.md`; report the commit, deployment r
 
 Organic discovery and release workflow: `scripts/discovery.mjs` generates search metadata, `sitemap.xml`, `feed.xml` and `games.json` from visible gameplay links during the Cloudflare build. GitHub Actions produces tracked channel promotion kits; truly new game slugs are detected via `scripts/detect-new-games.mjs`; optionally connected studio Bluesky can publish, but portal submissions still require their own approvals. Maintain proper game-specific descriptions and visual preview assets and verify real live links before marketing. Respect the unified Analytics dashboard's promotion channel attribution, existing deploy architecture and no-TinyFish rule.
 
-## Push lock on main (STANDING — owner mandate 2026-11-26)
-
-**NEVER push to origin/main unless the owner types "push main" verbatim in the same session.** `push`, `yes push`, `go push`, implicit greenlight — none of those unlock main. Branches other than main may be pushed with normal `push`/`yes` consent. If the owner reacts to an unauthorized main push with frustration, do NOT silently rebase past it; ask once for explicit force-push authorization and stop if denied.
-
 ## Supervisor loop (STANDING — owner mandate 2026-11-26)
 
 Every time you finish a piece of real work (edit + commit, or a visible deliverable), you MUST spawn a `supervisor` subagent before claiming done. The supervisor's job is to brutally verify:
