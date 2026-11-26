@@ -26,6 +26,11 @@ assert.equal(idle.solved,false);assert.equal(idle.attempts,1);assert.equal(skyFl
 steerSkyFlight(idle,.30);
 for(let i=0;i<1000&&!idle.solved;i++){if(idle.x>.74&&idle.target!==.5)steerSkyFlight(idle,.5);tickSkyFlight(idle,.02);}
 assert.ok(idle.solved);assert.ok(validSkyFlightProof(op,'lead',skyFlightProof(idle)));
+for(const operation of ['puzzle:sky-pouch','explore:flight-recorder']){
+ const f=newSkyFlight(operation,null);assert.equal(f.openGlide,true);steerSkyFlight(f,.30);
+ for(let i=0;i<3000&&!f.solved&&!f.attempts;i++){if(f.x>.74&&f.target!==.5)steerSkyFlight(f,.5);tickSkyFlight(f,.02);}
+ assert.ok(f.solved,JSON.stringify(f));assert.ok(validSkyFlightProof(operation,null,skyFlightProof(f)));
+}
 const scene=campaign.scenes.find(s=>s.id==='sky:S-03');assert.deepEqual(scene.requires,[op]);
 assert.ok(scene.lines.every(l=>l.text.zh&&l.text.en));assert.ok(!scene.lines.some(l=>/mail|deliver|信袋|送信/i.test(l.text.en+' '+l.text.zh)));
 console.log('Canon 2.2: continuous glide, both routes, variable frame rates, retry, forged proof rejection and no delivery gate passed');

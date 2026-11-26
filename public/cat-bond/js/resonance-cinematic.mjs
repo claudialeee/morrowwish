@@ -32,7 +32,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
     if(!allowed||(!recalled&&asset.sceneKey!==scene.id)||!raster.test(asset.path))return bad('unapproved-shot');
     if(unique.has(asset.path))return bad('repeated-shot-art');unique.add(asset.path);
     if(!isBilingual(shot.alt)||!Number.isFinite(shot.durationMs)||shot.durationMs<1200||shot.durationMs>20000||!Array.isArray(shot.lines))return bad('invalid-shot');
-    const base={id:scene.id+'-shot-'+i,image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,focus:shot.focus,transitionMs:shot.transitionMs||520,effect:shot.effect};
+    const base={id:scene.id+'-shot-'+i,image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,focus:shot.focus,transitionMs:shot.transitionMs||520,effect:scene.id==="starfall:F-05"&&asset.id==="remaster-f05-atlas"?"ring-slip":shot.effect};
     if(!shot.lines.length){
       const openingCaptions={
         'opening-star-bell':{zh:'六座圣所曾用各自的歌互相回应，中央星铃为它们合拍。直到一颗陨星击碎了星铃。',en:'Six sanctuaries once answered each other in song, guided by the Star Bell. Then a fallen star shattered it.'},
@@ -100,7 +100,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
       alt:{zh:'记忆回到守铃者身边',en:'The Bellkeeper’s memories return'},durationMs:3400,transitionMs:800,
       camera:{from:{x:0,y:0,scale:1.03},to:{x:0,y:0,scale:1.09}},effect:'sanctuary',note:392});
   }
-  return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.id==='prologue:P-02'?{zh:'抉择',en:'The Choice'}:scene.title,chapter:{zh:'猫猫纽带',en:'Cat Bond'},mode:'auto',allowSkip:true,frames}};
+  return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.id==='prologue:P-02'?{zh:'抉择',en:'The Choice'}:scene.title,chapter:{zh:'星铃回响',en:'Echoes of the Starbell'},mode:'auto',allowSkip:true,frames}};
 }
 
 // Pure permission check: no save, story mutation, staging or URL override.

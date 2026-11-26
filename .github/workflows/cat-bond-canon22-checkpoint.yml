@@ -6,6 +6,9 @@ on:
       - 'public/cat-bond/**'
       - 'scripts/test-cat-bond-canon22-*.mjs'
       - 'scripts/test-cat-bond-canon12-campaign.mjs'
+      - 'scripts/test-cat-bond-resonance*.mjs'
+      - 'scripts/test-cat-bond-garden-exploration.mjs'
+      - 'scripts/check-cat-bond-resonance-world.mjs'
       - '.github/workflows/cat-bond-canon22-checkpoint.yml'
   workflow_dispatch:
 permissions:
@@ -49,6 +52,7 @@ jobs:
           node scripts/test-cat-bond-canon22-glide.mjs
           node scripts/test-cat-bond-canon22-mirror.mjs
           node scripts/test-cat-bond-canon22-ledger.mjs
+          node scripts/test-cat-bond-canon22-route-model.mjs
           node scripts/test-cat-bond-canon22-epilogue.mjs
           node scripts/test-cat-bond-canon22-spatial.mjs
           node scripts/test-cat-bond-canon22-finale.mjs
@@ -56,9 +60,8 @@ jobs:
           node scripts/test-cat-bond-story-party.mjs
       - name: Run campaign integration regressions
         run: |
-          node scripts/test-cat-bond-canon12-campaign.mjs
-          node scripts/test-cat-bond-resonance.mjs
-          node scripts/test-cat-bond-resonance-slot.mjs
-          node scripts/check-cat-bond-resonance-world.mjs
-          node scripts/test-cat-bond-garden-exploration.mjs
-          node scripts/test-cat-bond-regional-discoveries.mjs
+          failures=0
+          for test in test-cat-bond-canon12-campaign test-cat-bond-resonance test-cat-bond-resonance-slot check-cat-bond-resonance-world test-cat-bond-garden-exploration test-cat-bond-regional-discoveries; do
+            if node "scripts/$test.mjs"; then echo "PASS $test"; else echo "::error::FAIL $test"; failures=$((failures+1)); fi
+          done
+          test "$failures" -eq 0

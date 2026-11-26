@@ -11,4 +11,5 @@ apply('snack-keep');assert.equal(reduce(s,'snack-eat'),null);
 assert.equal(reduce(s,'door'),null);apply('door',true);
 assert.deepEqual(read({sunlitGarden:{exploration:s}}),s);assert.equal(read({}).parts.length,0);
 assert.equal(new Set(s.keepsakes).size,4);
+apply('nameplate');assert.equal(reduce(s,'nameplate'),null);assert.equal(reduce(s,'nameplate-home'),null);apply('nameplate-home',true);assert.equal(reduce(s,'nameplate-home',true),null);assert.equal(read({}).nameplate,false);
 console.log('V3 optional discovery reducer: two distinct chart pieces, three butterfly hops, seed, fish cake, return mystery, slot separation passed');

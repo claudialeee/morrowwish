@@ -998,37 +998,37 @@ export const campaign = {
       "id": "sky:S-01",
       "chapter": "sky",
       "title": {
-        "zh": "接住风",
-        "en": "Catch the wind"
+        "zh": "第一次飞上云端",
+        "en": "First flight above the clouds"
       },
       "previous": "forge:E-04",
       "lines": [
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "接住那个包！里头是去书库的信——哇，你飞得比我第一次好多了！",
-            "en": "Catch that pouch! It's mail for the library—wow, you're better than I was on my first flight!"
+            "zh": "瞧那朵云，像不像条大鱼？走，咱们从鱼嘴里钻过去！",
+            "en": "See that cloud? Looks like a giant fish! Come on, let's fly through its mouth!"
           }
         },
         {
-          "speaker": "xiaomao",
+          "speaker": "muling",
           "text": {
-            "zh": "我的飞翼真的飞起来了！呃……降落好像还需要改进。",
-            "en": "My glider actually flies! Er... the landing might need work."
+            "zh": "谁怕高了？我就是看看……地还在不在。",
+            "en": "Scared of heights? Me? I'm just checking… the ground's still there."
           }
         },
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "外侧风道的风不对劲，远帆！记得看风旗。",
-            "en": "The wind is wrong in the outer channel, Yuanfan! Watch the flags."
+            "zh": "借风升高，再找块平坦的地方落脚。",
+            "en": "Catch the updraft, then find a safe place to land."
           }
         },
         {
-          "speaker": "yuanfan",
+          "speaker": "muling",
           "text": {
-            "zh": "没问题！我发现了一条穿过云洞的新路线。等会儿带你们试飞！",
-            "en": "Got it! I found a new route through the clouds. I'll take you flying in a minute!"
+            "zh": "我自己来。你们飞慢一点就好。",
+            "en": "I'll do it myself. Just don't fly too fast."
           }
         }
       ],
@@ -1048,30 +1048,30 @@ export const campaign = {
       "id": "sky:S-02",
       "chapter": "sky",
       "title": {
-        "zh": "风中的旧记录",
-        "en": "The wind recorder"
+        "zh": "地图上没有的岛",
+        "en": "The island not on the map"
       },
       "previous": "sky:S-01",
       "lines": [
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "原来那天的风旗是假的。我们差点被带进风暴里。",
-            "en": "So the wind flag was false that day. It nearly led us into the storm."
+            "zh": "图上这两座山我认得。月门就在中间，云把它挡住了。",
+            "en": "I recognize those two peaks. The moon gate lies between them, behind the clouds."
           }
         },
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "我割掉货绳才飞了回来。现在我知道要看真正的风，不看假旗。",
-            "en": "I cut the cargo rope to fly us home. Now I know to read the real wind, not the false flags."
+            "zh": "从高处绕一圈就能看见啦！跟我来！",
+            "en": "Circle above them and you'll see it! Follow me!"
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "我认得这种假信号！远帆，你挑路线，我来观察风旗。",
-            "en": "I recognize that kind of false signal! Yuanfan, pick a route; I'll watch the flags."
+            "zh": "我把找到的路画下来，下次就不会迷路了。",
+            "en": "I'll mark the route we found, so we won't get lost next time."
           }
         }
       ],

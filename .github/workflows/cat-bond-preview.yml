@@ -70,6 +70,7 @@ jobs:
       - run: npm ci
       - name: Verify player-first opening and named party logic
         run: |
+          for test in scripts/test-cat-bond-canon22-*.mjs; do node "$test"; done
           node scripts/test-cat-bond-player-first.mjs
           node scripts/test-cat-bond-story-party.mjs
           node scripts/test-cat-bond-garden-exploration.mjs
@@ -93,11 +94,11 @@ jobs:
           const file=root+'/cat-bond/index.html';
           let html=fs.readFileSync(file,'utf8');
           html=html.replace(/<script[^>]+src=["'][^"']*telemetry\.js[^"']*["'][^>]*><\/script>/gi,'');
-          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_COLLECTOR="/api/preview-disabled";window.arcadeMetric=()=>{};</script></head>');
+          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><style>html[lang^="zh"] #cb-preview-note [lang="en"],html:not([lang^="zh"]) #cb-preview-note [lang="zh"]{display:none!important}</style><script>window.ARCADE_COLLECTOR="/api/preview-disabled";window.arcadeMetric=()=>{};</script></head>');
           const sha=process.env.SOURCE_SHA;
-          html=html.replace(/<body([^>]*)>/i,'<body$1><aside role="note" style="position:fixed;z-index:2147483647;bottom:3px;left:3px;pointer-events:none;background:#202332e8;color:white;font:10px system-ui;padding:3px 6px;border-radius:4px">PREVIEW 试玩 (not release-approved) · '+sha.slice(0,10)+' · 序章–终章 / Prologue–Finale · Local saves only</aside>');
+          html=html.replace(/<body([^>]*)>/i,'<body$1><aside id="cb-preview-note" data-source-sha="'+sha+'" role="note" style="position:fixed;z-index:2147483647;bottom:3px;left:3px;pointer-events:none;background:#202332e8;color:white;font:10px system-ui;padding:3px 6px;border-radius:4px"><span lang="en">Preview (not release-approved) · '+sha.slice(0,10)+' · Prologue–Finale · Local saves only</span><span lang="zh">试玩版（非正式发行） · '+sha.slice(0,10)+' · 序章至终章 · 仅本地存档</span></aside>');
           fs.writeFileSync(file,html);
-          fs.writeFileSync(root+'/index.html','<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="0;url=/cat-bond/"></head><body><a href="/cat-bond/">Cat Bond RPG Preview</a></body></html>');
+          fs.writeFileSync(root+'/index.html','<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="0;url=/cat-bond/"></head><body><a href="/cat-bond/">Echoes of the Starbell Preview</a></body></html>');
           fs.writeFileSync(root+'/robots.txt','User-agent: *\nDisallow: /\n');
           fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\'; form-action \'self\'\n');
           fs.writeFileSync(root+'/telemetry.js','window.arcadeMetric=()=>{};');
@@ -127,13 +128,43 @@ jobs:
                   if(url.startsWith(origin+'/')||/^(data:|blob:)/.test(url))return route.continue();
                   external.push(url);return route.abort();
                 });
-                const query=process.env.CAT_BOND_SMOKE_STAGE==='local'?'?lang=en&rpgDev=1':'?lang=en';
-                const response=await page.goto(origin+'/cat-bond/'+query,{waitUntil:'domcontentloaded'});
-                if(!response?.ok())throw Error('Preview not reachable');
+                const local=process.env.CAT_BOND_SMOKE_STAGE==='local';
+                const sourceSha=process.env.SOURCE_SHA;
+                if(!/^[0-9a-f]{40}$/.test(sourceSha||''))throw Error('Missing pinned source SHA');
+                const expectedMarker='data-source-sha="'+sourceSha+'"';
+                let loaded=false;
+                // Verify the HTML actually received by each browser, not just the separate version endpoint.
+                // A fresh deployment can briefly serve stale HTML from another edge/cache variant.
+                for(let attempt=0;attempt<(local?1:6);attempt++){
+                  const url=new URL('/cat-bond/',origin);
+                  url.searchParams.set('lang','en');
+                  if(local)url.searchParams.set('rpgDev','1');
+                  url.searchParams.set('previewSha',sourceSha);
+                  url.searchParams.set('qa',name+'-'+attempt);
+                  const response=await page.goto(url.href,{waitUntil:'domcontentloaded'});
+                  const html=response?.ok()?await response.text():'';
+                  if(html.includes(expectedMarker)){loaded=true;break;}
+                  console.warn('Preview HTML source mismatch',prefix,'attempt',attempt+1,'status',response?.status(),'cf-cache-status',response?.headers()['cf-cache-status'],'observed',html.match(/data-source-sha="([0-9a-f]{40})"/)?.[1]||'missing');
+                  if(!local&&attempt<5)await new Promise(resolve=>setTimeout(resolve,2500));
+                }
+                if(!loaded)throw Error('Preview HTML did not converge to pinned source '+sourceSha+' for '+prefix);
+                if(await page.locator('#cb-preview-note').getAttribute('data-source-sha')!==sourceSha)throw Error('Pinned preview note missing from DOM');
                 await page.locator('#intro-continue').waitFor({state:'visible',timeout:30000});
                 await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook&&window.CatBondChapterCinematics);
                 await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady()||CatBondChapterCinematics.starfallReleaseReady());
                 if(!await page.evaluate(()=>window.ARCADE_COLLECTOR==='/api/preview-disabled'&&window.__CAT_BOND_INTEGRATION_ART__===false))throw Error('Preview isolation / art approval marker mismatch');
+                // Exercise the real page and both translation observers, including round-trip switching.
+                for(const locale of ['en','zh','en']){
+                  await page.evaluate(locale=>window.MorrowwishI18n.set(locale),locale);
+                  await page.waitForFunction(locale=>document.documentElement.lang.startsWith(locale)&&document.getElementById('cb-title-name')?.textContent===(locale==='zh'?'星铃回响':'Echoes of the Starbell')&&document.title===(locale==='zh'?'星铃回响 | Morrow Wish':'Echoes of the Starbell | Morrow Wish'),locale);
+                  const title=await page.locator('.cb-intro-titleblock').innerText();
+                  const buttons=await page.locator('.cb-intro-actions').innerText();
+                  const previewNote=await page.locator('#cb-preview-note').innerText();
+                  if(locale==='en'&&/[\u4e00-\u9fff]/.test(title+buttons+previewNote))throw Error('Chinese leaked into English title or preview note');
+                  if(locale==='zh'&&(/[A-Za-z]/.test(title+buttons)||/Preview|Local saves|Prologue/.test(previewNote)))throw Error('English leaked into Chinese title or preview note');
+                  if(await page.locator('#cb-title-subtitle').count())throw Error('Duplicate language title');
+                  if(locale==='zh')await page.screenshot({path:'preview-'+prefix+'-title-zh.png'});
+                }
                 await page.screenshot({path:'preview-'+prefix+'-title.png'});
                 await page.locator('#intro-start').click();
                 await page.locator('#intro-slot-list [data-slot="slot1"]').waitFor();
@@ -286,7 +317,12 @@ jobs:
           assert version['storage'] == 'local-only' and version['productionApis'] is False
           print(version)
           PY
-          curl -fsS "$URL/cat-bond/" | grep -F 'PREVIEW 试玩'
+          # The alias HTML and version JSON must identify the same exact source.
+          for attempt in $(seq 1 15); do
+            if curl -fsS "$URL/cat-bond/?previewSha=$SOURCE_SHA&qa=alias-$attempt" -o /tmp/live-preview.html && grep -Fq "data-source-sha=\"$SOURCE_SHA\"" /tmp/live-preview.html; then break; fi
+            sleep 4
+          done
+          grep -Fq "data-source-sha=\"$SOURCE_SHA\"" /tmp/live-preview.html
           for endpoint in session cat-bond-cloud-save; do
             test "$(curl -sS -o /dev/null -w '%{http_code}' "$URL/api/$endpoint")" = 403
           done

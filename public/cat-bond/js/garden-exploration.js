@@ -1,7 +1,7 @@
 // V3 opening discoveries: real map targets, optional, slot-local and independent of story proof.
 (function(){
 'use strict';
-const fresh=()=>({chartStarted:false,parts:[],butterfly:0,seed:false,snack:null,door:false, keepsakes:[]});
+const fresh=()=>({chartStarted:false,parts:[],butterfly:0,seed:false,snack:null,door:false,nameplate:false,nameplateHome:false, keepsakes:[]});
 function read(root){const saved=root?.sunlitGarden?.exploration||{};return {...fresh(),...saved,parts:[...new Set((saved.parts||[]).filter(i=>i===0||i===1))],keepsakes:[...new Set(saved.keepsakes||[])]};}
 function reduce(before,event,canOpenDoor=false){
  const next={...before,parts:[...before.parts],keepsakes:[...before.keepsakes]};
@@ -13,6 +13,8 @@ function reduce(before,event,canOpenDoor=false){
  case 'seed':if(next.seed)return null;next.seed=true;remember('golden-seed');break;
  case 'snack-keep':case 'snack-eat':if(next.snack)return null;next.snack=event.slice(6);if(next.snack==='keep')remember('fish-cake');break;
  case 'door':if(!canOpenDoor||next.door)return null;next.door=true;remember('old-garden-postcard');break;
+ case 'nameplate':if(next.nameplate)return null;next.nameplate=true;break;
+ case 'nameplate-home':if(!canOpenDoor||next.nameplateHome)return null;next.nameplateHome=true;break;
  default:return null;
  }return next;
 }
@@ -28,12 +30,14 @@ const shapes={
  seed:'<path d="M-5 9Q-15-1-2-7Q13-13 8 1Q4 8-5 9Z" fill="#c49b55" stroke="#8c724d"/><path d="M-5 9 4-4" stroke="#f5e2b1" stroke-width="1.4"/><path d="M-13-10v-8m-4 4h8M13 4v-8m-4 4h8" stroke="#ffe5a2" stroke-width="1.7" stroke-linecap="round"/>',
  snack:'<path d="M-19-2Q-8-15 5-6L17-13V10L5 4Q-8 15-19-2Z" fill="#d4a367" stroke="#9a7248" stroke-width="1.5"/><circle cx="-10" cy="-2" r="1.6" fill="#785c40"/><path d="M-2-6q5 4 0 8" fill="none" stroke="#f4cf91" stroke-width="2"/>',
  chart:'<path d="m-15-9 26-3 4 20-11-3-7 5-11-3z" fill="#f8e7bd" stroke="#b38d5a" stroke-width="1.2"/><path d="m-9-3 5 3 5-5 6 3m-14 8 8-3" fill="none" stroke="#83a2a2" stroke-width="1.4" stroke-linecap="round"/>',
+ nameplate:'<path d="M-19-12Q-21-15-17-15H17Q21-15 19-10L17 12Q17 15 12 15H-15Q-19 15-19 11Z" fill="#bf9767" stroke="#75533e" stroke-width="1.5"/><circle cx="-13" cy="-8" r="2" fill="#694e38"/><circle cx="13" cy="-8" r="2" fill="#694e38"/><path d="M-10 1l5 3m-3-6l5 3M3 7l5-3m-3 6l5-3" fill="none" stroke="#75533e" stroke-width="1.3" stroke-linecap="round"/>',
  door:'<path d="M0-13 4-4 13 0 4 4 0 13-4 4-13 0-4-4Z" fill="#f8d98f" stroke="#b59158" stroke-width="1"/><circle r="2.5" fill="#fff8d8"/>'
 };
 const targets={
  butterfly:{labels:['追蝴蝶','Chase butterfly'],type:'butterfly',points:[[.36,.46],[.79,.55],[.48,.68]]},
  seed:{labels:['花丛里的亮光','Glint among flowers'],type:'seed',points:[[.87,.70]]},
  snack:{labels:['鱼饼','Fish cake'],type:'snack',points:[[.15,.56]]},
+ nameplate:{labels:['翻看木名牌','Turn the wooden nameplate'],type:'nameplate',points:[[.25,.40]]},
  door:{labels:['旧屋的秘密','Old house mystery'],type:'door',points:[[.18,.37]]},
  'chart-0':{labels:['飞走的航图 · 1','Windblown chart · 1'],type:'chart',points:[[.75,.36]]},
  'chart-1':{labels:['飞走的航图 · 2','Windblown chart · 2'],type:'chart',points:[[.40,.59]]}
@@ -56,6 +60,7 @@ function interact(id){if(owner!==rootState()||!eligible()||covered())return fals
  const s=read(owner);
  if(id==='butterfly'){closePopup();return startChase();}cancelChase();
  if(id==='snack'){snackChoice();return true;}closePopup();
+ if(id==='nameplate'){const ended=!!view()?.ending,event=ended?'nameplate-home':'nameplate';if(!commit(event))return false;pulse(id);toast(ended?'旧名牌旁添上两道新的爪印。这里是我们的家。':'旧木牌背面只剩一笔磨掉的刻字，旁边有两道爪痕。',''+(ended?'Two new paw marks beside the old nameplate. This is our home.':'One worn stroke remains on the back of the wooden nameplate, beside two paw marks.'));return true;}
  if(id==='door'&&!view()?.completed?.includes('harbor:H-05')){toast('旧屋的门关着。门缝里似乎夹着一张褪色的画。也许旅行回来后再看看。','The old house is closed. A faded picture peeks through the door. Try again after your journey.');return true;}
  if(!commit(id))return false;pulse(id);
 
@@ -75,7 +80,7 @@ function draw(parent,ctx,w,h){
  const left=Math.max(0,art.x),right=Math.min(w,art.x+art.width),top=Math.max(0,art.y),bottom=Math.min(h,art.y+art.height);
  const guide=parent.querySelector('.sg-prologue-guide:not([hidden])')?.getBoundingClientRect(),marker=parent.querySelector('.sg-npc-talk-marker:not([hidden])')?.getBoundingClientRect();
  const placed=[];
- for(const [id,b] of buttons){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?!s.door:s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(Number(id.at(-1)));
+ for(const [id,b] of buttons){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?!s.door:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(Number(id.at(-1)));
   b.hidden=!show;if(!show)continue;
   const p=def.points[id==='butterfly'?Math.min(2,s.butterfly):0];
   const preferredX=rect.left+(left+(right-left)*p[0])/w*rect.width-r.left,preferredY=rect.top+(top+(bottom-top)*p[1])/h*rect.height-r.top;

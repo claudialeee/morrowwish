@@ -363,7 +363,7 @@
     playEffect(effect,frame){
       // All cinematic cues share the RPG audio director and sound-volume controls.
       const director=window.MorrowwishMusic;
-      const cue=({sanctuary:'sanctuary',impact:'impact',blackout:'impact',seal:'seal',seasons:'seasons',memory:'memory'})[effect];
+      const cue=({sanctuary:'sanctuary',impact:'impact',blackout:'impact',seal:'seal','ring-slip':'impact',seasons:'seasons',memory:'memory'})[effect];
       if(cue&&director?.cue){director.cue(cue,frame.note);return;}
       const audio=window.MorrowwishAudio;
       if(effect==='sanctuary')audio?.note?.(frame.note,.7,.13);
@@ -405,6 +405,8 @@
           if(p>.35&&p<.69){ctx.strokeStyle='rgba(255,220,165,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(w*(.93-.66*travel),h*(.02+.38*travel));ctx.lineTo(w*(1.04-.66*travel),h*(-.05+.38*travel));ctx.stroke()}
           if(p>.67){const k=(p-.67)/.33;glow(w*.28,h*.43,w*(.10+k*.75),'rgba(255,220,174,'+Math.max(0,.85-k)+')');ctx.strokeStyle='rgba(238,201,144,'+(1-k)*.65+')';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(w*.28,h*.43,w*(.03+k*.7),h*(.02+k*.38),0,0,Math.PI*2);ctx.stroke();}
           particles(36,'#ffdba4',20);
+        }else if(frame.effect==='ring-slip'){
+          const sites=Array.from({length:6},(_,i)=>[w*(.5+.24*Math.cos(i*Math.PI/3-Math.PI/2)),h*(.42+.20*Math.sin(i*Math.PI/3-Math.PI/2))]);const colors=['#ffd7a0','#b9eb9c','#ffc39d','#b8edff','#e2c6ff','#f7dc85'];ctx.save();ctx.lineCap='round';ctx.lineWidth=Math.max(2,w*.004);for(let i=0;i<6;i++){const a=sites[i],b=sites[(i+1)%6],interrupted=i===2&&p>.30&&p<.84;ctx.strokeStyle=interrupted?'#463a5080':colors[i];ctx.shadowColor=colors[i];ctx.shadowBlur=interrupted?0:12;ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();glow(...a,w*.035,interrupted?'#8d839622':colors[i]+'80');}ctx.restore();
         }else if(frame.effect==='blackout'){
           const g=ctx.createLinearGradient(0,0,w,0);g.addColorStop(0,'rgba(12,19,43,'+p*.74+')');g.addColorStop(1,'rgba(37,24,65,'+p*.4+')');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
           for(let i=0;i<4;i++){ctx.strokeStyle='rgba(150,165,228,'+.11*(1-p)+')';ctx.beginPath();for(let x=0;x<w;x+=8){const y=h*(.49+i*.085)+Math.sin(x*.025-t*3+i)*5; x===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}ctx.stroke()}

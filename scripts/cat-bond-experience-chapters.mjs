@@ -209,8 +209,8 @@ async function run(chapter){
    await battle('Shadow beast','battle:shadow-beast');await dialogue('forge:E-03');await scene('forge:E-04');
    await restore('Hearth sanctuary',['Heat','Heat','Heat','Heat','Vent'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');
   }else if(chapter==='sky'){
-   await fly('Catch the mail pouch · Practice gliding',[.65,.34,.64]);await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
-   await fly('Flight recorder',[.68,.29,.66]);await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
+   await flyWaterfall('Catch the wind · Practice gliding');await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
+   await flyWaterfall('Find the moon gate · Cloud route');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
    await flyWaterfall('Joint gliding platform');await dialogue('sky:S-03');await scene('sky:S-04');
    await talk('Muling');await dialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
    await fly('Windwing sanctuary',[.67,.30,.64]);await invite('Lingyu');await invite('Yuanfan');await puzzle('Open Sky',[mid,high,low]);await dialogue('sky:S-05');
