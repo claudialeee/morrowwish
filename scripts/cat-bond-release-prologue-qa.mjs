@@ -28,7 +28,7 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  for(const id of ['chart-0','chart-1'])await press(page.locator('[data-garden-explore="'+id+'"]'));
  await press(page.locator('[data-npc-talk="muling"]'));
  for(const label of [tr('继续','Continue'),tr('告别','Say goodbye')])await press(encounter.getByRole('button',{name:label,exact:true}));
- for(let i=0;i<3;i++)await press(page.locator('[data-garden-explore="butterfly"]'));
+ for(let i=0;i<3;i++){await press(page.locator('[data-garden-explore="butterfly"]'));await page.waitForFunction(n=>GardenExploration.read(State.S).butterfly===n,i+1);}
  await press(page.locator('[data-garden-explore="seed"]'));
  await press(page.locator('[data-garden-explore="snack"]'));await press(page.getByRole('button',{name:tr('带在身上','Keep for later'),exact:true}));
  assert.equal(await page.evaluate(()=>GardenExploration.read(State.S).butterfly),3);

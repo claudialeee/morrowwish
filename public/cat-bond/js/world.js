@@ -204,6 +204,14 @@ class CatEntity {
     // Damped velocity gives a real ease-in/ease-out and curved turns.
     // Clamp dt so background tabs do not make characters jump.
     const step = Math.min(dt,.05);
+    // A clicked butterfly guides only the golden protagonist along the ordinary
+    // yard movement path. No teleport, secondary control or combat proof.
+    if(this._gardenExploreTarget){
+      const target=this._gardenExploreTarget,dx=target.x-this.x,dy=target.y-this.y,dist=Math.hypot(dx,dy);
+      this.pose='walk';this.timer=Math.max(this.timer,.4);
+      const speed=Math.min(330,dist*5);
+      desiredVX=dist>2?dx/dist*speed:0;desiredVY=dist>2?dy/dist*speed:0;
+    }
     const follow = 1-Math.exp(-(this.pose === 'walk' ? 5.3 : 9)*step);
     this.walkVX += (desiredVX-this.walkVX)*follow;
     this.walkVY += (desiredVY-this.walkVY)*follow;

@@ -38,7 +38,7 @@ const targets={
  'chart-0':{labels:['飞走的航图 · 1','Windblown chart · 1'],type:'chart',points:[[.75,.36]]},
  'chart-1':{labels:['飞走的航图 · 2','Windblown chart · 2'],type:'chart',points:[[.40,.59]]}
 };
-let layer=null,buttons=new Map(),owner=null,popup=null;
+let layer=null,buttons=new Map(),owner=null,popup=null,pending=null,projection=null;
 function closePopup(){popup?.remove();popup=null;}
 function init(parent){if(layer)return;layer=document.createElement('div');layer.className='sg-exploration-layer';layer.setAttribute('aria-label','Garden discoveries');parent.append(layer);
  for(const [id,target] of Object.entries(targets)){const b=document.createElement('button');b.type='button';b.className='sg-discovery sg-discovery-'+target.type;b.dataset.gardenExplore=id;b.hidden=true;b.innerHTML='<svg viewBox="-24 -24 48 48" aria-hidden="true">'+shapes[target.type]+'</svg>';b.onclick=()=>interact(id);layer.append(b);buttons.set(id,b);}
@@ -48,23 +48,30 @@ function snackChoice(){if(popup)return;popup=document.createElement('section');p
  const p=document.createElement('p');p.textContent=tr('一小块香喷喷的鱼饼。','A delicious little fish cake.');popup.append(p);
  for(const [id,a,b] of [['snack-keep','带在身上','Keep for later'],['snack-eat','现在吃掉','Eat now'],['close','暂时不拿','Leave it']]){const button=document.createElement('button');button.type='button';button.textContent=tr(a,b);button.onclick=()=>{if(owner!==rootState()||!eligible()){closePopup();return}if(id==='close'){closePopup();return}if(commit(id)){closePopup();pulse('snack');toast(id==='snack-keep'?'把鱼饼放进小包，留给旅途。':'香香脆脆的，适合出门前吃。',id==='snack-keep'?'You tuck the fish cake away for the road.':'A crisp little breakfast.');}};popup.append(button);}layer.append(popup);
 }
+function cancelChase(){if(!pending)return;delete pending.cat._gardenExploreTarget;pending=null;const b=buttons.get('butterfly');if(b)b.disabled=false;}
+function startChase(){if(pending||!projection)return false;const cat=window.__game?.yard?.entities?.find(e=>e.cat.species==='jinjc'),b=buttons.get('butterfly');if(!cat||!b||cat._gardenRest||cat._playBuildT>0){toast('小猫正在忙，等一下再追蝴蝶。','Your cat is busy. Try the butterfly again in a moment.');return false;}
+ const {rect,r,w,h}=projection,ground=window.World?.gardenGround?.(w,h);if(!ground)return false;const bound=(n,a,b)=>Math.max(a,Math.min(b,n));const x=bound((r.left+parseFloat(b.style.left)-rect.left)/rect.width*w,ground.left,ground.right),y=bound((r.top+parseFloat(b.style.top)-rect.top)/rect.height*h+18,ground.top,ground.bottom);pending={cat,x,y,owner,started:performance.now()};cat._gardenExploreTarget={x,y};b.disabled=true;return true;}
+function finishChase(){if(!pending)return;const {cat}=pending,s=read(owner);cancelChase();if(!commit('butterfly'))return;cat.pounceT=.8;cat.setPose?.('play',.8);pulse('butterfly');toast(s.butterfly===2?'蝴蝶飞走了，一片小花落在耳尖。纪念：落在耳尖的花':'蝴蝶又飞到了另一处！ '+(s.butterfly+1)+'/3',s.butterfly===2?'The butterfly flies free. A flower lands on your ear. Keepsake: a little flower.':'The butterfly flutters away! '+(s.butterfly+1)+'/3');}
 function interact(id){if(owner!==rootState()||!eligible()||covered())return false;const b=buttons.get(id);if(!b||b.hidden)return false;
  const s=read(owner);
+ if(id==='butterfly'){closePopup();return startChase();}cancelChase();
  if(id==='snack'){snackChoice();return true;}closePopup();
  if(id==='door'&&!view()?.completed?.includes('harbor:H-05')){toast('旧屋的门关着。门缝里似乎夹着一张褪色的画。也许旅行回来后再看看。','The old house is closed. A faded picture peeks through the door. Try again after your journey.');return true;}
  if(!commit(id))return false;pulse(id);
- if(id==='butterfly'){toast(s.butterfly===2?'蝴蝶飞走了，一片小花落在耳尖。纪念：落在耳尖的花':'蝴蝶又飞到了另一处！ '+(s.butterfly+1)+'/3',s.butterfly===2?'The butterfly flies free. A flower lands on your ear. Keepsake: a little flower.':'The butterfly flutters away! '+(s.butterfly+1)+'/3');}
+
  if(id==='seed')toast('找到一粒浅金色种子，收进小包。','You found a little golden seed and tucked it away.');
  if(id==='door')toast('旧屋里藏着一张花园的旧明信片。把它带回家吧。','An old garden postcard was hidden inside. Take it home.');
  if(id.startsWith('chart-'))toast(s.parts.length===1?'两片航图都找到了！回去和陌生猫说话。':'找到了一片航图 · 1/2',s.parts.length===1?'Both chart pieces found! Return to the traveler.':'One chart piece found · 1/2');
  return true;
 }
 function draw(parent,ctx,w,h){
- init(parent);if(owner!==rootState()){owner=rootState();closePopup();}
+ init(parent);if(owner!==rootState()){cancelChase();owner=rootState();closePopup();}
  const valid=eligible()&&!covered(),s=read(owner),v=view();
- if(!valid){closePopup();layer.hidden=true;return;}layer.hidden=false;
+ if(!valid){cancelChase();closePopup();layer.hidden=true;return;}layer.hidden=false;
  const rect=ctx.canvas.getBoundingClientRect(),r=parent.getBoundingClientRect(),art=window.World?.gardenArtworkRect?.(w,h)||{x:0,y:0,width:w,height:h};
  if(!w||!h||!rect.width||!rect.height)return;
+ if(pending&&(projection?.w!==w||projection?.h!==h||!window.__game?.yard?.entities?.includes(pending.cat)))cancelChase();
+ projection={rect,r,w,h};
  const left=Math.max(0,art.x),right=Math.min(w,art.x+art.width),top=Math.max(0,art.y),bottom=Math.min(h,art.y+art.height);
  const guide=parent.querySelector('.sg-prologue-guide:not([hidden])')?.getBoundingClientRect(),marker=parent.querySelector('.sg-npc-talk-marker:not([hidden])')?.getBoundingClientRect();
  const placed=[];
@@ -79,7 +86,8 @@ function draw(parent,ctx,w,h){
   placed.push([x,y]);b.style.left=x+'px';b.style.top=y+'px';
   const label=tr(...def.labels);if(b.getAttribute('aria-label')!==label){b.setAttribute('aria-label',label);b.title=label;}
  }
+ if(pending){if(Math.hypot(pending.cat.x-pending.x,pending.cat.y-pending.y)<12)finishChase();else if(performance.now()-pending.started>10000){cancelChase();toast('蝴蝶停下来了，再试一次吧。','The butterfly is waiting. Try again.');}}
 }
-function reset(){if(layer)layer.hidden=true;closePopup();}
+function reset(){cancelChase();projection=null;if(layer)layer.hidden=true;closePopup();}
 window.GardenExploration=Object.freeze({draw,reset,read,reduce,beginChart:()=>read(rootState()).chartStarted||commit('chart-start'),chartReady:()=>read(rootState()).parts.length===2});
 })();

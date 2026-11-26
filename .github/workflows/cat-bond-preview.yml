@@ -157,7 +157,7 @@ jobs:
                 const marker=page.locator('[data-npc-talk="muling"]');
                 if(await page.locator('.res-garden-bell').count())throw Error('Detached garden bell must be removed');
                 const discover=id=>page.locator('[data-garden-explore="'+id+'"]');
-                for(let i=0;i<3;i++)await discover('butterfly').click();
+                for(let i=0;i<3;i++){await discover('butterfly').click();await page.waitForFunction(n=>GardenExploration.read(State.S).butterfly===n,i+1);}
                 await discover('butterfly').waitFor({state:'hidden'});
                 await discover('seed').click();
                 await discover('snack').click();
