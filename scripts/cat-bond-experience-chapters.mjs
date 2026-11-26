@@ -102,12 +102,17 @@ async function run(chapter){
    for(let i=0;i<240;i++){if(await page.locator('#cb-forge-result').isVisible())break;const support=page.locator('[data-forge-support-button]');if(await support.isVisible()&&await support.isEnabled())await support.click();await page.waitForTimeout(750);}
    await page.locator('#cb-forge-result').waitFor({timeout:180000});await shot(operation+'-result');assert.equal(await page.locator('#cb-forge-result h2').innerText(),'FURNACE STABILIZED');await page.locator('[data-forge-return]').click();
   }else if(type==='finale'){
+   if(operation==='battle:identify-echo'){
+    const clue=page.locator('[data-finale-clue]');await clue.waitFor();await clue.click();
+    await page.waitForFunction(()=>__game.battle?.resonanceFinale?.clueOpen===true);
+    await shot(operation+'-catdex');
+   }
    await page.locator('#cb-finale-result').waitFor({timeout:240000});await shot(operation+'-result');assert.equal(await page.locator('#cb-finale-result').getAttribute('data-finale-outcome'),'saved');await page.locator('[data-finale-return]').click();
   }else{
    await page.waitForFunction(()=>__game.scene==='map',null,{timeout:180000});
    await page.locator('#library-battle-ok').waitFor();await shot(operation+'-result');await page.locator('#library-battle-ok').click();
   }
-  await op(operation);steps.push({battle:operation,wallSeconds:(Date.now()-t)/1000,team:before,result:'verified win'});
+  await op(operation);if(operation==='battle:central-echo')assert.equal(await page.evaluate(()=>CatBondResonance.snapshot().support.length),6,'All six regions must have answered');steps.push({battle:operation,wallSeconds:(Date.now()-t)/1000,team:before,result:'verified win'});
  }
  async function cinema(id,label){
   await scene(id);await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady(),null,{timeout:15000});await click(label);
@@ -144,7 +149,7 @@ async function run(chapter){
    await talk('Qilan');await dialogue('harbor:H-01');await scene('harbor:H-02');
    await talk('Jiedeng');await dialogue('harbor:H-02','Comfort Qilan first');await scene('harbor:H-03');
    await click('Inspect the ebb marks · 1/2');await page.waitForFunction(()=>!!State.S.resonanceExploration.interactions['harbor:H-03:tide:0']);await click('Find the dry steps · 2/2');await page.waitForFunction(()=>!!State.S.resonanceExploration.interactions['harbor:H-03:tide:1']);await puzzle('Tide cave logbook',['Ebb mark','Dry steps','Logbook chest']);await dialogue('harbor:H-03');await scene('harbor:H-04');
-   await talk('Qilan');await dialogue('harbor:H-04','Prioritize rescue');await puzzle('Storm boat',['Secure','Secure','Signal','Guide','Guide','Signal']);await puzzle('Lighthouse mirrors',['Left mirror','Left mirror','Center mirror','Center mirror','Right mirror']);await dialogue('harbor:H-04');await scene('harbor:H-05');
+   await click('Talk to Qilan');await page.locator('.res-host[data-scene="harbor:H-04"]').waitFor();await dialogue('harbor:H-04','Prioritize rescue');await puzzle('Storm boat',['Secure','Secure','Signal','Guide','Guide','Signal']);await puzzle('Lighthouse mirrors',['Left mirror','Left mirror','Center mirror','Center mirror','Right mirror']);await dialogue('harbor:H-04');await scene('harbor:H-05');
    await restore('Lighthouse sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Jiedeng'],'Returning Tides',[low,high,mid]);await dialogue('harbor:H-05');
   }else if(chapter==='forest'){
    await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');
@@ -172,7 +177,7 @@ async function run(chapter){
    await talk('Moye');await puzzle('Six-region model · Compare the two routes',['Converge inward','Connect neighbors','Receive distinct replies']);await dialogue('library:M-05');await restore('Moonmirror sanctuary',['Moon window','Neighbor bridge','Reciprocal reply'],['Moye','Baikan'],'Reflections',[high,low,mid]);await dialogue('library:M-05');
   }else if(chapter==='starfall'){
    await talk('Lichuan');await talk('Xingya');await puzzle('Verify the stars · Guide the caravan',['Right beacon','Left beacon','Middle beacon']);await dialogue('starfall:F-01','Let Xingya coordinate repairs');await scene('starfall:F-02');
-   await click('Crater · Impact fragment');await puzzle('Hollow Echo illusions',['Middle beacon','Right beacon','Left beacon']);await puzzle('Star chart',['Outer ring','Outer ring','Outer ring','Middle ring','Inner ring','Inner ring']);await click('Ruins · Sanctuary record');await click('Observatory · Complete record');await cinema('starfall:F-02','Remember the choice');
+   await click('Crater · Impact fragment');await op('explore:crater-fragment');await puzzle('Hollow Echo illusions',['Middle beacon','Right beacon','Left beacon']);await puzzle('Star chart',['Outer ring','Outer ring','Outer ring','Middle ring','Inner ring','Inner ring']);await click('Ruins · Sanctuary record');await op('explore:ruin-fragment');await click('Observatory · Complete record');await op('explore:catastrophe-record');await cinema('starfall:F-02','Remember the choice');
    await talk('Muling');await dialogue('starfall:F-03');await scene('starfall:F-04');await battle('Observatory guardian · Echo orbit','battle:observatory-echo');
    await puzzle('Distributed observatory',['West','Relay','East']);await restore('Starfall sanctuary',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan'],'Beyond Stars',[low,mid,high]);await dialogue('starfall:F-04');await cinema('starfall:F-05','Watch the story scene');
   }else if(chapter==='finale'){
@@ -194,7 +199,7 @@ async function run(chapter){
   return {chapter,status:'passed',start,next,scenes:expected.map(s=>s.id),readLines,steps,stagingArt:chapter==='starfall'||chapter==='finale'||chapter==='epilogue'};
  }catch(e){
   await shot('FAIL').catch(()=>{});const observed=await view().catch(()=>null);
-  return {chapter,status:'failed',start,next,error:String(e).slice(0,2500),observedScene:observed?.current?.id,remaining:observed?.objective,completed:expected.filter(s=>observed?.completed.includes(s.id)).map(s=>s.id),readLines,steps,pageErrors:errors};
+  return {chapter,status:'failed',start,next,error:String(e).slice(0,2500),stack:String(e.stack||'').slice(0,3000),lastActions:steps.slice(-5),observedScene:observed?.current?.id,remaining:observed?.objective,completed:expected.filter(s=>observed?.completed.includes(s.id)).map(s=>s.id),readLines,steps,pageErrors:errors};
  }finally{await context.close();}
 }
 try{
@@ -203,7 +208,7 @@ try{
   let result;try{result=await run(chapter);}catch(e){result={chapter,status:'failed',error:String(e)};}
   results.push(result);
   await fs.writeFile(out+'/index.json',JSON.stringify({provenance:'synthetic chapter starts; real inputs throughout each chapter',results},null,2));
-  console.log('CHAPTER ACCEPTANCE',JSON.stringify({chapter,status:result.status,scene:result.observedScene,remaining:result.remaining,completed:result.scenes||result.completed,error:result.error}));
+  console.log('CHAPTER ACCEPTANCE',JSON.stringify({chapter,status:result.status,scene:result.observedScene,remaining:result.remaining,completed:result.scenes||result.completed,lastActions:result.lastActions,stack:result.stack?.split('\n').slice(-4).join('\n'),error:result.error}));
  }
 }finally{await browser.close();}
 if(results.some(r=>r.status!=='passed'))process.exitCode=1;

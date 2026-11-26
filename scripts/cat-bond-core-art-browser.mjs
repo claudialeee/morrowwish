@@ -39,5 +39,27 @@ try{
   return Array.from(stage.querySelectorAll('canvas')).map((c,i)=>({id:list[i].id,rendered:visible(c)}));
  });
  assert.equal(roster.length,18);assert.ok(roster.every(x=>x.rendered),'all cats must render via actual game renderer');
+ // Verify the actual combat prototype consumes the species-specific passive.
+ // These isolated calculations are not player-input battle outcomes.
+ const passiveChecks=await page.evaluate(()=>{
+  const P=Battle.CaptureBattle.prototype,results=[];
+  const battle=Object.create(P);battle.t=0;
+  for(const sp of GameData.SPECIES){
+   const p=Skills.breedPassive(sp.id),f={cat:{species:sp.id},hp:100,maxhp:100,alive:true,moving:false,shieldT:0},target={hp:100,maxhp:100};
+   if(p.when==='low')f.hp=30;
+   if(p.when==='moving')f.moving=true;
+   if(p.when==='shield')f.shieldT=1;
+   if(['targetLow','targetCritical'].includes(p.when))target.hp=20;
+   battle.t=p.when==='late'?9:p.when==='mid'?10:0;
+   const actual=battle.passiveFactor(f,p.channel,target);
+   const outgoing=battle.outgoingBuffMult(f);
+   results.push({id:sp.id,channel:p.channel,expected:p.factor,actual,outgoing,expectedOutgoing:p.channel==='damage'?p.factor:1});
+  }
+  return results;
+ });
+ assert.equal(passiveChecks.length,16);
+ for(const c of passiveChecks){assert.equal(c.actual,c.expected,c.id+' actual battle passive');assert.equal(c.outgoing,c.expectedOutgoing,c.id+' outgoing multiplier');}
+ await fs.writeFile(out+'/battle-passive-hooks.json',JSON.stringify(passiveChecks,null,2));
+ console.log('BROWSER PASSIVE HOOK PASS',passiveChecks.length,'actual battle prototype checks');
  assert.deepEqual(errors,[]);await page.screenshot({path:out+'/rendered-gallery.png'});await fs.writeFile(out+'/index.json',JSON.stringify({assets,roster},null,2));console.log('CORE ART BROWSER PASS',assets.length,'decoded images,',roster.length,'actual game-rendered cats');
 }finally{await browser.close();}
