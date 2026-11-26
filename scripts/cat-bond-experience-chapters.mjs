@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
-import {attachExperienceRecorder} from './cat-bond-experience-recorder.mjs';
+import {attachExperienceRecorder,captureExperienceMilestone} from './cat-bond-experience-recorder.mjs';
 const root=process.argv[2]||'artifacts/cat-bond-experience',out=root+'/chapter-acceptance',origin='http://127.0.0.1:8765';
 await fs.mkdir(out,{recursive:true});
 process.env.CAT_BOND_EXPERIENCE='1';
@@ -218,7 +218,7 @@ async function run(chapter){
    await scene('finale:B-04');await cinema('finale:B-04','Watch the story scene');
   }else if(chapter==='epilogue'){
    await talk('Qilan');await cinema('epilogue:E-01','Revisit the restored regions');await scene('epilogue:E-02');if(await page.evaluate(()=>__game.scene!=='yard'))await page.locator('[data-next-scene="epilogue:E-02"]:visible').click();await page.waitForFunction(()=>__game.scene==='yard');await talk('Muling');await dialogue('epilogue:E-02','Give everyone some time');await scene('epilogue:E-03');await talk('Muling');await dialogue('epilogue:E-03');
-   await click('Give Muling the key');await page.getByRole('heading',{name:'THE BELL RINGS AGAIN'}).waitFor();await shot('ending');assert.equal((await view()).ending,true);
+   await click('Give Muling the key');await page.getByRole('heading',{name:'THE BELL RINGS AGAIN'}).waitFor();await shot('ending');assert.equal((await view()).ending,true);await captureExperienceMilestone(page,'ending');
   }
   if(next)await scene(next);
   const final=await page.evaluate(()=>({view:CatBondResonance.view(),snapshot:CatBondResonance.snapshot()}));
