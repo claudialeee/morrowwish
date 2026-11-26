@@ -78,7 +78,7 @@ function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)
 }}
 function drawScene(ctx,W,H,region){
  const pair=art[region],ready=image=>image?.complete&&image.naturalWidth>0;
- const img=region==="forge"&&window.__game?.battle?.regionalCombat?.shadowLight?(canonArt("lantern-theater")||pair?.background):pair?.background;
+ const img=region==="forge"&&window.__game?.battle?.regionalCombat?.kit?.kind==="shadows"?(canonArt("lantern-theater")||pair?.background):pair?.background;
  if(!ready(img))return false;
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
  window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#e7dceb",bottom:"#d9c0aa",portraitFocus:portraitFocalPoints[region]??.5});
@@ -88,7 +88,7 @@ function drawScene(ctx,W,H,region){
 // Dedicated hand-painted regional creatures; combat and capture data are unchanged.
 function drawManifestation(ctx,e,b){
  if(b.libraryEncounter?.region==="library")return false;
- const shadow=e.regionalEnemy==="forge"&&b.regionalCombat?.shadowLight,painted=shadow&&canonArt("shadow-beast");const img=painted||art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
+ const shadow=e.regionalEnemy==="forge"&&b.regionalCombat?.kit?.kind==="shadows",painted=shadow&&canonArt("shadow-beast");const img=painted||art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
  const originalSize=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62));
  const size=e.regionalEnemy==="forge"?originalSize:Math.max(92,Math.min(138,118*(b.catScale?.("enemy")||.95)/.95)),bob=e.frozen?0:Math.sin(b.t*3+e.i)*1.5;
  // Fit the authored creature within the existing visual box without stretching.
@@ -101,7 +101,7 @@ function drawManifestation(ctx,e,b){
  ctx.fillStyle=contact;ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();ctx.restore();
  const foot=e.regionalEnemy==="forge"?size*.06:23;
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.translate(e.x,e.y+foot+bob);ctx.scale(e.face===-1?1:-1,1);
- if(painted){const x=b.W*.50,y=b.topMargin+(b.H-b.topMargin-b.bottomMargin)*.50,r=Math.min(118,b.W*.22,(b.H-b.topMargin-b.bottomMargin)*.28);if(Math.hypot(e.x-x,e.y-y)>r)ctx.filter="brightness(.55) saturate(.75)";}ctx.drawImage(img,...src,-dw/2,-dh,dw,dh);ctx.restore();return true;
+ if(painted&&b.regionalCombat?.shadowLight){const x=b.W*.50,y=b.topMargin+(b.H-b.topMargin-b.bottomMargin)*.50,r=Math.min(118,b.W*.22,(b.H-b.topMargin-b.bottomMargin)*.28);if(Math.hypot(e.x-x,e.y-y)>r)ctx.filter="brightness(.55) saturate(.75)";}ctx.drawImage(img,...src,-dw/2,-dh,dw,dh);ctx.restore();return true;
 }
 
 
@@ -294,8 +294,8 @@ function install(){
  window.addEventListener("cat-bond-resonance-battle-request",event=>{const x=event.detail,d=storyEcho[x?.region];if(d&&x.sceneId===d.scene&&x.operation===d.op&&!prepareLibrary(window.__game,x.region))window.__game?.toast?.({zh:"请前往守卫所在的位置。",en:"Approach the guardian first."});});
  function showLibraryResult(game,owner,recovery,outcome,region="library"){
   const ui=window.UI;if(!ui?.panel||window.State.S!==owner)return;
-  const win=outcome==="win",retry=!win,title=region==="forge"?(win?["剪影兽已消散","Shadow beast defeated"]:["灯影挑战未完成","Shadow challenge incomplete"]):region==="harbor"?(win?["铃光兽已消散","Belllight beast defeated"]:["铃房仍不安全","Bell house still unsafe"]):region==="forest"?(win?["空响已消散","Hollow echo dispelled"]:["救援尚未完成","Rescue incomplete"]):region==="starfall"?(win?["星轨守卫已消散","Orbital guardian defeated"]:["星轨挑战未完成","Orbital challenge incomplete"]):win?["守档幻象已消散","Archive echo defeated"]:outcome==="retreat"?["已从镜影战斗撤退","Retreated from the archive echo"]:outcome==="save-failed"?["战斗记录未保存","Battle result not saved"]:["队伍在镜影战斗中落败","Squad defeated by the archive echo"];
-  const detail=region==="forge"?(win?["影戏重新清晰了。去找烬婆。","The shadows are clear again. Find Jinpo."]:["将剪影兽引到灯光下，休整后再试。","Lure the beast into the light and try again."]):region==="harbor"?(win?["铃房安静下来了。去找暮铃。","The bell house is quiet. Find Muling."]:["休整后再试。","Rest and try again."]):region==="forest"?(win?["根须松动了。沿水道找到被困的猫咪。","The roots loosened. Follow the channel to the trapped cats."]:["芽禾仍稳住水道，已调查的水痕不会丢失。休整后再试。","Yahe is holding the channel; the trail remains verified. Rest and retry."]):region==="starfall"?(win?["观星台已安全。现在可以验证六地的分布式航线。","The observatory is safe. Verify the six regions’ distributed routes."]:["休整或更换队伍后再试。","Rest or change your team and try again."]):win?["真实记忆已核实。壁画中的身份线索可以继续调查。","The original memory is verified. Continue investigating the identity shown in the mural."]:["猫咪和档案进度已保留。休整或更换上阵猫咪后可以再次挑战。","Your cats and archive progress are preserved. Rest or change your team before trying again."];
+  const win=outcome==="win",retry=!win,title=region==="forge"?(win?["剪影兽已消散","Shadow beast defeated"]:["灯影挑战未完成","Shadow challenge incomplete"]):region==="harbor"?(win?["铃光兽已消散","Belllight beast defeated"]:["铃房仍不安全","Bell house still unsafe"]):region==="forest"?(win?["空响已消散","Hollow echo dispelled"]:["空响挑战未完成","Echo challenge incomplete"]):region==="starfall"?(win?["星轨守卫已消散","Orbital guardian defeated"]:["星轨挑战未完成","Orbital challenge incomplete"]):win?["守档幻象已消散","Archive echo defeated"]:outcome==="retreat"?["已从镜影战斗撤退","Retreated from the archive echo"]:outcome==="save-failed"?["战斗记录未保存","Battle result not saved"]:["队伍在镜影战斗中落败","Squad defeated by the archive echo"];
+  const detail=region==="forge"?(win?["影戏重新清晰了。去找烬婆。","The shadows are clear again. Find Jinpo."]:["将剪影兽引到灯光下，休整后再试。","Lure the beast into the light and try again."]):region==="harbor"?(win?["铃房安静下来了。去找暮铃。","The bell house is quiet. Find Muling."]:["休整后再试。","Rest and try again."]):region==="forest"?(win?["空响散开了，月叶桥又安静下来。","The echo fades, and the moonleaf bridge is peaceful again."]:["月叶桥上的探索进度已保留，休整后可以再来。","Your moonleaf bridge discoveries are safe. Rest and retry."]):region==="starfall"?(win?["星光重新亮了。去听听六地的铃声。","The stars shine again. Listen to the six lands answer."]:["休整或更换队伍后再试。","Rest or change your team and try again."]):win?["真实记忆已核实。壁画中的身份线索可以继续调查。","The original memory is verified. Continue investigating the identity shown in the mural."]:["猫咪和档案进度已保留。休整或更换上阵猫咪后可以再次挑战。","Your cats and archive progress are preserved. Rest or change your team before trying again."];
   ui.panel('<span class="card-close">×</span><h2 class="center">'+tr(title)+'</h2><p class="sub">'+tr(detail)+'</p>'+(win?'<p class="center">+38 '+tr(["金币","coins"])+' · +2 '+tr(["小鱼干","fish"])+' · 28 XP</p>':'')+(ui.battleRecoveryMarkup?.(recovery)||'')+'<div class="btn-row" style="justify-content:center">'+(retry?'<button type="button" class="btn gold" id="library-retry-encounter">'+tr(["再次挑战","Retry encounter"])+'</button>':'')+'<button type="button" class="btn '+(retry?'ghost':'gold')+'" id="library-battle-ok">'+tr(["继续探索","Continue exploring"])+'</button></div>');
   const ok=document.getElementById("library-battle-ok"),again=document.getElementById("library-retry-encounter");if(ok)ok.onclick=()=>ui.closeAll();if(again)again.onclick=()=>{ui.closeAll();if(owner!==window.State.S||!prepareLibrary(game,region))game.toast({zh:"请重新前往守档幻象所在的回廊。",en:"Return to the archive echo's gallery to retry."});};
  }
