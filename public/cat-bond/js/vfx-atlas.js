@@ -19,14 +19,18 @@ function render(c,item,phase=0,t=.25){
  stage(c);const melee=sk?.kind==='melee',close=melee?ex-52:x,ally=['heal','buff'].includes(sk?.kind)||['heal','cleanse','guard','barrier','wardFade','shieldBreak'].includes(item.id);
  if(item.kind==='skill'){
    const v={kind:phase?'signatureHit':'signatureCast',skillId:sk.id,x:phase?ex:close,y,angle:0,heavy:!!sk.heavy,life:1-t,max:1};
-   if(sk.id==='meteor'){if(phase){F.draw(c,{...v,meteorGround:true,r:86,life:1-t,max:1},time);}else F.drawMeteorFlight(c,{burst:{tx:ex,ty:ey,r:86,skill:sk},life:.42},time);}
+   if(sk.id==='arcanePulse'){
+     const offsets=[0,24,-24];
+     if(phase){for(let j=0;j<3;j++)F.draw(c,{...v,umbralGround:true,r:sk.lobRadius,index:j,x:ex-20*j,y:ey+offsets[j],life:Math.max(.04,.62-(.12+j*.09+t*.15)),max:.62},time);}
+     else for(let j=0;j<3;j++)F.drawUmbralLob(c,{sx:x+16,sy:y,tx:ex-20*j,ty:ey+offsets[j],r:sk.lobRadius,index:j,height:106,flight:.76,age:.76*(.79-j*.30)},time);
+   }else if(sk.id==='meteor'){if(phase){F.draw(c,{...v,meteorGround:true,r:86,life:1-t,max:1},time);}else F.drawMeteorFlight(c,{burst:{tx:ex,ty:ey,r:86,skill:sk},life:.42},time);}
    else if(sk.kind==='aoe'&&sk.field){if(phase)F.drawMaterialField(c,{element:sk.field.element||el,r:82,x:ex,y:ey,t:4},time);}
    if(sk.kind==='buff'&&sk.id==='mirrorWall')window.CatBondWardArt?.drawFlatWall(c,{x:ex,y:ey,angle:0,halfLength:110,age:.4,remaining:4,hitAge:phase?.18:0},time);
    if(sk.kind==='beam'){F.drawCombatBeam(c,{sk,_ox:['waterJet','shadowTendrils'].includes(sk.id)?x+22:x,_oy:y,width:sk.width||22,max:1.4,t:.7},time,['waterJet','shadowTendrils'].includes(sk.id)?x+22+sk.reach:ex,ey);}
    else if(['waterLash','frostLance','prismBeam'].includes(sk.id)){F.drawInstantLine(c,{kind:sk.id==='waterLash'?'water':sk.id==='frostLance'?'ice':'prism',x,y,x2:ex+65,y2:ey,life:.7,max:1},time);}
    else if(sk.kind==='chain'){F.drawInstantLine(c,{kind:'lightning',x,y,x2:ex,y2:ey,life:.82,max:1},time);F.drawInstantLine(c,{kind:'lightning',x:ex,y:ey,x2:ex+58,y2:ey-73,life:.73,max:1},time);}
    else if(sk.kind==='projectile'&&!phase){
-      const kind=sk.id==='crescentFan'?'crescent':sk.id==='fireballMeow'?'fireball':sk.id==='hex'||sk.id==='arcanePulse'?'hex':sk.id==='lightningOrb'||sk.id==='boltSwarm'?'lightningOrb':sk.id==='leafDart'||sk.id==='homingSeed'?'leaf':'orb';
+      const kind=sk.id==='crescentFan'?'crescent':sk.id==='fireballMeow'?'fireball':sk.id==='hex'?'hex':sk.id==='lightningOrb'||sk.id==='boltSwarm'?'lightningOrb':sk.id==='leafDart'||sk.id==='homingSeed'?'leaf':'orb';
       const n=sk.id==='crescentFan'?3:sk.pulseCount?2:sk.shots?Math.min(5,sk.shots):sk.id==='leafDart'?3:1;
       for(let j=0;j<n;j++){const p={kind,x:270-j*(sk.pulseCount?55:8),y:y+(j-(n-1)/2)*(sk.pulseCount?5:18),r:kind==='crescent'?14:kind==='fireball'?15:kind==='lightningOrb'?13:kind==='hex'?13:9,ang:0,vx:250,vy:0,skill:sk,owner:'me'};
         if(!M.drawProjectile(c,p,time))F.drawIdentityProjectile(c,p,time);}
@@ -42,7 +46,7 @@ function render(c,item,phase=0,t=.25){
    }else if(phase){if(sk.id==='crescentFan')M.drawImpact(c,{x:ex,y:ey,angle:0,radius:32,life:1-t,max:1},time);
      else if(sk.id==='waterJet'){for(const px of [ex,ex+92])F.draw(c,{kind:'waterPierce',x:px,y:ey,radius:18,angle:0,life:1-t,max:1},time);}
      else if(sk.id==='shadowTendrils'){for(const [px,py] of [[ex,ey],[ex+65,ey+18]])F.draw(c,{kind:'shadowBindHit',x:px,y:py,radius:18,angle:0,life:1-t,max:1},time);}
-     else contact(C.classify(sk.heavy||melee?'heavy':'light',sk),sk.heavy||melee?'heavy':'light');}
+     else if(sk.id!=='arcanePulse')contact(C.classify(sk.heavy||melee?'heavy':'light',sk),sk.heavy||melee?'heavy':'light');}
    else if(!['projectile','beam','chain','melee','dash','pounce','leap','aoe'].includes(sk.kind))F.draw(c,v,time);
  }else if(item.kind==='ult'){
    const v={kind:'ultimate',skillId:sk.id,x:185,y,angle:0,targets:[{x:ex,y:ey},{x:ex-72,y:ey-75},{x:ex-28,y:ey+64}],reach:350,width:36,life:phase?.43:.74,max:1};
