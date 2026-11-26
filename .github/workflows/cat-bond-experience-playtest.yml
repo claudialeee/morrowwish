@@ -167,6 +167,7 @@ jobs:
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
           node scripts/cat-bond-experience-targets.mjs
           node scripts/cat-bond-experience-emotional.mjs
+          node scripts/cat-bond-experience-ambient.mjs
       - name: Current RPG encounter measurement from isolated checkpoints
         if: always() && matrix.scope == 'targets'
         run: |
