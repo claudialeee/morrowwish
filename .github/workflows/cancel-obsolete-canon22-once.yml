@@ -1,0 +1,27 @@
+name: Cancel obsolete Canon 2.2 runs once
+on:
+  push:
+    branches: [ops/cancel-obsolete-canon22-45912556137]
+    paths: ['.github/workflows/cancel-obsolete-canon22-once.yml']
+permissions:
+  actions: write
+  contents: read
+jobs:
+  cancel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Cancel only the two superseded runs
+        run: |
+          set -euo pipefail
+          for id in 45912276028 45912556137; do
+            run=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id")
+            jq -e '.head_branch == "review/starbell-canon13-player-experience" and .name == "Canon 2.2 chapter browser acceptance"' <<< "$run" >/dev/null
+            if [[ $(jq -r .status <<< "$run") != completed ]]; then
+              gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$id/cancel" || {
+                [[ $(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id" --jq .status) == completed ]]
+              }
+            fi
+          done
