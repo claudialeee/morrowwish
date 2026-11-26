@@ -282,12 +282,14 @@ class CatEntity {
       mood: atPlay?(sleepy?'sleepy':'happy'):this.mood(),
       growth: growthForm,
     });
-    // name + level tag
+    // Keep the label above the tallest painted silhouette, including a hop.
+    // The old 44px anchor was calibrated for a squat legacy sprite and covered the face.
+    if(sp?.id==='jinjc'&&!window.CatBondArtworkStatus?.protagonistLoaded)return;
     ctx.save();
     ctx.font = 'bold 11px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    roundTag(ctx, this.x, this.y - 44 * this._renderedYardVisualScale, `${State.catName(this.cat)} Lv.${this.cat.level}`);
+    roundTag(ctx, this.x+dx, Math.max(11,this.y-bob-79*this._renderedYardVisualScale-8), `${State.catName(this.cat)} Lv.${this.cat.level}`);
     ctx.restore();
     // No detached emoji bubbles above moving kittens.
     // Mood is conveyed through ears, eyes, posture and tail, all attached to the cat.
