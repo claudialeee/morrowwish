@@ -148,9 +148,20 @@ for(const profile of [
    await checkVisible('#panel.open');
    await screenshot('atlas-'+name.toLowerCase().replaceAll(' ','-'));
    if(name==='Catdex'){
-    const owned=page.locator('#panel .dex-cell:not(.locked)').first();await realPress(owned);
-    await checkVisible('#panel #dx');await screenshot('atlas-catdex-detail');
-    await realPress(page.locator('#dx-back'));await checkVisible('#panel .dex-grid');
+    const dex=await page.evaluate(()=>({collectibles:GameData.SPECIES.length,owned:GameData.SPECIES.filter(sp=>State.S.dex[sp.id]>0).length}));
+    assert.equal(await page.locator('#panel .dex-cell').count(),dex.collectibles);
+    assert.equal(await page.locator('#panel .dex-cell:not(.locked)').count(),dex.owned);
+    // The RPG hero is not a wild collectible. A fresh adventure legitimately has
+    // zero unlocked Catdex entries; do not wait for a nonexistent owned card.
+    if(dex.owned){
+      const owned=page.locator('#panel .dex-cell:not(.locked)').first();await realPress(owned);
+      await checkVisible('#panel #dx');await screenshot('atlas-catdex-detail');
+      await realPress(page.locator('#dx-back'));await checkVisible('#panel .dex-grid');
+    }else{
+      await realPress(page.locator('#panel .dex-cell.locked').first());
+      assert.equal(await page.locator('#panel #dx').count(),0,'Undiscovered breed remains locked');
+      await screenshot('atlas-catdex-locked');
+    }
    }
    await realPress(page.locator('.rb-close'));
    await page.locator('#panel.open').waitFor({state:'hidden',timeout:5000});
