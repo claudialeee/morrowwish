@@ -8,11 +8,11 @@ import {newMirror,advanceMirror,mirrorProof,validMirrorProof} from '../public/ca
 for(const seed of ['a','b',undefined]){
  const m=newMirror(seed),correct=m.trueSide===0?0:2,wrong=correct===0?2:0;
  assert.equal(advanceMirror(m,correct),false,'guess must not solve');
- assert.equal(advanceMirror(m,1),false);assert.equal(m.faces[m.trueSide],1);assert.equal(m.faces[1-m.trueSide],0);
+ assert.equal(advanceMirror(m,1),false);assert.deepEqual(m.faces,[0,0],"moving alone must not trigger a reply");assert.equal(advanceMirror(m,3),false);assert.equal(m.faces[m.trueSide],1);assert.equal(m.faces[1-m.trueSide],0);
  assert.equal(advanceMirror(m,wrong),false);assert.equal(m.position,0);
- advanceMirror(m,1);advanceMirror(m,1);assert.equal(m.faces[m.trueSide],-1);assert.equal(m.faces[1-m.trueSide],0);
+ advanceMirror(m,1);advanceMirror(m,3);advanceMirror(m,4);assert.equal(m.faces[m.trueSide],1,"previous reply cannot follow a new move");advanceMirror(m,3);assert.equal(m.faces[m.trueSide],-1);assert.equal(m.faces[1-m.trueSide],0);
  assert.equal(advanceMirror(m,correct),true);const proof=mirrorProof(m);assert.ok(validMirrorProof(seed,proof));
- assert.equal(validMirrorProof(seed,{trace:[correct],choice:m.trueSide}),false);assert.equal(validMirrorProof(seed,{...proof,choice:1-m.trueSide}),false);
+ assert.equal(validMirrorProof(seed,{trace:[correct],choice:m.trueSide}),false);assert.equal(validMirrorProof(seed,{trace:[1,correct],choice:m.trueSide}),false);assert.equal(validMirrorProof(seed,{trace:[1,3,4,correct],choice:m.trueSide}),false);assert.equal(validMirrorProof(seed,{...proof,choice:1-m.trueSide}),false);
 }
 const scene=campaign.scenes.find(x=>x.id==='library:M-02');
 assert.deepEqual(scene.requires,['puzzle:library-echo']);
@@ -28,8 +28,8 @@ assert.ok(explorer.walk(...point));for(let i=0;i<1000&&explorer.moving;i++)explo
 assert.ok(explorer.near(point));assert.ok(explorer.interact(op).puzzle);
 assert.equal(explorer.puzzle.type,'libraryCompanion');assert.equal(explorer.operate(0).pending,true);
 assert.ok(bridge.view().objective.includes(op));assert.equal(bridge.recordWorld(scene.id,op,{sceneId:scene.id,operation:op,region:'library',verified:true,adventureAction:true,token:rt.capture()}).ok,false);
-assert.ok(explorer.operate(1).pending);const m=explorer.puzzle.mirror,correct=m.faces[0]===m.position?0:2;
+assert.ok(explorer.operate(1).pending);assert.deepEqual(explorer.puzzle.mirror.faces,[0,0]);assert.ok(explorer.operate(3).pending);const m=explorer.puzzle.mirror,correct=m.faces[0]===m.position?0:2;
 assert.ok(explorer.operate(correct).ok);assert.ok(!explorer.puzzle);assert.deepEqual(bridge.view().objective,[]);
-assert.ok(root.resonanceExploration.interactions[scene.id+':'+op].trace.length>=2);
+assert.ok(root.resonanceExploration.interactions[scene.id+':'+op].trace.length>=3);
 assert.deepEqual(getSlotRuntime(State).view().objective,[]);
 console.log('Canon 2.2: new-position recognition, wrong/early choice, no Catdex dependency, forged proof rejection, world bridge and reload passed');
