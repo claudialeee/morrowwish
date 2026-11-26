@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cat Bond · Character Art Gallery</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f3e9;color:#343e36;font:15px/1.55 system-ui,sans-serif}main{max-width:1440px;margin:auto;padding:30px clamp(16px,4vw,54px) 60px}header{border-bottom:1px solid #cfcbbd;padding:0 0 20px}h1{font-family:Georgia,serif;font-size:clamp(30px,5vw,48px);margin:6px 0 0;letter-spacing:-1px}h2{font-size:23px;margin:32px 0 4px}p{margin:6px 0 12px}small,.muted{color:#696f65;font-size:12px}a{color:#3f675b;overflow-wrap:anywhere}.eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#546b60}.toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;position:sticky;top:0;background:#f7f3e9f5;z-index:2;padding:12px 0;border-bottom:1px solid #d8d1c2}input,select,button{font:inherit;border:1px solid #bdbfb3;border-radius:7px;background:#fffdf8;color:inherit;padding:8px 11px}input{flex:1;min-width:180px}button{cursor:pointer}button:hover{border-color:#567363}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:13px}.card{min-width:0;border:1px solid #dcd6c9;border-radius:12px;overflow:hidden;background:#fffdf8}.stage{height:216px;display:grid;place-items:center;position:relative;overflow:hidden;background:var(--stage,#eae7db);cursor:zoom-in}.stage img,.stage canvas{max-width:100%;max-height:100%;object-fit:contain}.stage img{width:100%;height:100%;padding:8px}.stage canvas{width:180px;height:210px}.info{padding:12px}.info strong{display:block;font-size:16px}.info code{display:block;font-size:11px;overflow-wrap:anywhere;color:#64695f}.info p{font-size:12px;margin:6px 0}.tag{display:inline-block;font-size:11px;padding:2px 6px;background:#e9ece4;border-radius:4px;margin-bottom:6px}.failed{color:#9d3a2c}.source{font-size:12px;display:inline-block;margin-top:5px}body[data-bg="dark"]{--stage:#343d45}body[data-bg="white"]{--stage:#fff}body[data-bg="checker"] .stage,body[data-bg="checker"] #large{background:repeating-conic-gradient(#e1e1df 0% 25%,#fafaf8 0% 50%) 0 0/20px 20px}body[data-bg="dark"] #large{background:#343d45}dialog{border:1px solid #c6c8bc;border-radius:12px;padding:18px;width:min(720px,94vw);max-height:92vh;color:inherit;background:#fffdf8}dialog::backdrop{background:#18241dcc}#large{background:var(--stage,#eae7db);display:grid;place-items:center;min-height:180px;height:min(60vh,530px)}#large img{max-height:100%;max-width:100%;object-fit:contain}#large canvas{max-height:100%;max-width:100%;width:auto;height:auto}.dialog-top{display:flex;align-items:center;justify-content:space-between;gap:12px}#dialogPath{overflow-wrap:anywhere}.notice{padding:10px 0;color:#59685c}section[hidden],article[hidden]{display:none}@media(max-width:500px){main{padding-top:18px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.stage{height:165px}.stage canvas{width:150px;height:165px}.info{padding:8px}}
+</style>
+</head><body><main>
+<header><div class="eyebrow">Morrow Wish / Cat Bond / Art review</div><h1>角色原画总览</h1><p>Character Art Gallery · 游戏实际角色渲染、剧情原画与历史表情素材。点击任意图片放大。</p><small id="revision"></small></header>
+<div class="toolbar"><input id="search" type="search" placeholder="搜索中文名、英文名、ID、路径、表情…" aria-label="搜索角色"><select id="filter" aria-label="分类"><option value="all">全部分类</option><option value="lead">主角与暮铃</option><option value="collect">33 种可收集猫咪</option><option value="npc">12 只 NPC</option><option value="expressions">剧情表情及变体</option><option value="sources">基础素材</option></select><select id="background" aria-label="预览背景"><option value="paper">米色背景</option><option value="white">白色背景</option><option value="dark">深色背景</option><option value="checker">透明棋盘</option></select><button id="reset">重置筛选</button></div>
+<div id="status" class="notice" role="status" aria-live="polite">正在读取角色清单和资源…</div>
+<section data-section="lead"><h2>主角与暮铃</h2><p class="muted">金豆的战斗/地图素材与剧情胸像并排；暮铃新版现用形象单独展示。</p><div class="grid"></div></section>
+<section data-section="collect"><h2>可收集猫咪 <small id="breedCount"></small></h2><p class="muted">使用游戏自身 CatArt.renderCatThumb，不用替代画作。多数品种由三张基础水彩原画生成不同花纹与颜色，金豆、云朵和圆宝另有独立素材。</p><div class="grid"></div></section>
+<section data-section="npc"><h2>剧情 NPC <small id="npcCount"></small></h2><p class="muted">从 campaign.mjs 读取六地区角色；剧情对话与地图共用 painted.webp。</p><div class="grid"></div></section>
+<section data-section="expressions"><h2>剧情表情与历史变体</h2><p class="muted">收录现存暮铃 WebP 变体、旧 SVG 表情、岬灯与栖蓝表情及跟随动画。除已确认的引用外，不将历史候选标为现用；其他角色尚无独立表情文件的会明确标注。</p><div class="grid"></div></section>
+<section data-section="sources"><h2>基础原画与备用资源</h2><p class="muted">原始图集、加菲猫独立素材及历史首发云朵；非额外可收集角色。</p><div class="grid"></div></section>
+</main>
+<dialog id="viewer"><div class="dialog-top"><strong id="dialogTitle"></strong><button id="close" aria-label="关闭">关闭 ×</button></div><p id="dialogPath" class="muted"></p><div id="large"></div><p><a id="original" target="_blank" rel="noopener">查看原始文件</a> <a id="download" download="cat-portrait.png" hidden>保存预览 PNG</a></p></dialog>
+<script>
+(async()=>{
+'use strict';
+const $=id=>document.getElementById(id), branch='1074e370134b940c72882ecd1d21aeb3e6b7972a', remote=location.protocol==='file:', base=remote?'https://raw.githubusercontent.com/claudialeee/morrowwish/'+branch+'/public/cat-bond/':new URL('./',location.href).href;
+$('revision').textContent=remote?'本地文件预览 · 在线读取已固定的素材快照 '+branch.slice(0,7):'仓库内审核页面 · 与当前分支游戏共用素材';
+const asset=path=>base+'assets/'+path;
+const galleryImage=()=>{const i=new Image();if(remote)i.crossOrigin='anonymous';return i;};
+window.GalleryImage=galleryImage;
+const cards=[],canvases=[],problems=[],requests=[];
+function add(section,{name,en='',id='',path='',tag='',note='',species=null}){
+ const el=document.createElement('article');el.className='card';el.dataset.search=[name,en,id,path,tag,note].join(' ').toLowerCase();el.dataset.group=section;
+ const stage=document.createElement('div');stage.className='stage';const info=document.createElement('div');info.className='info';const title=document.createElement('strong');title.textContent=name+(en?' · '+en:'');const chip=document.createElement('span');chip.className='tag';chip.textContent=tag;const code=document.createElement('code');code.textContent=(id?id+' · ':'')+path;const desc=document.createElement('p');desc.textContent=note;info.append(chip,title,code,desc);
+ let visual,source;
+ const fail=msg=>{if(!el.dataset.failed){el.dataset.failed='true';problems.push(name+': '+msg)}stage.replaceChildren();const warn=document.createElement('span');warn.className='failed';warn.textContent=msg;stage.append(warn);stage.removeAttribute('tabindex');stage.removeAttribute('role');};
+ if(species){visual=document.createElement('canvas');visual.width=180;visual.height=210;visual.dataset.thumbW='180';visual.dataset.thumbH='210';visual.setAttribute('aria-label',name);canvases.push({visual,species,fail});source=asset(path);}
+ else if(path){visual=document.createElement('img');visual.alt=name;source=asset(path);const result=new Promise(resolve=>{visual.onload=()=>resolve(true);visual.onerror=()=>{fail('素材无法加载');resolve(false)};visual.src=source});requests.push(result);}
+ if(source){stage.append(visual);const link=document.createElement('a');link.className='source';link.href=source;link.target='_blank';link.rel='noopener';link.textContent='打开原素材';info.append(link);stage.tabIndex=0;stage.setAttribute('role','button');stage.setAttribute('aria-label','放大 '+name);const open=()=>{if(el.dataset.failed)return;$('dialogTitle').textContent=name+(en?' · '+en:'');$('dialogPath').textContent=path;$('large').replaceChildren();$('original').href=source;$('download').hidden=!species;if(species){const c=document.createElement('canvas');c.width=420;c.height=460;c.dataset.thumbW='420';c.dataset.thumbH='460';$('large').append(c);window.CatArt.renderCatThumb(c,species);$('download').href=c.toDataURL('image/png');$('download').download=id+'.png';}else{const i=document.createElement('img');i.src=source;i.alt=name;$('large').append(i)}$('viewer').showModal();};stage.addEventListener('click',open);stage.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}});}
+ else {const label=document.createElement('span');label.className='muted';label.textContent='无独立表情原画';stage.append(label);stage.style.cursor='default';}
+ el.append(stage,info);document.querySelector('section[data-section="'+section+'"] .grid').append(el);cards.push(el);
+}
+const addArt=(section,name,path,tag,note='',id='')=>add(section,{name,path,tag,note,id});
+const mul='cinematics/characters/muling/';
+addArt('lead','金豆 · 战斗 / 地图 / 庭院','starter-portraits/jinjc.webp','现用 · 原画','金渐层全身，渲染时缩放。','jinjc');
+addArt('lead','金豆 · 剧情对话','player-portraits/jinjc.webp','现用 · 胸像','剧情主角，与战斗素材对照。','player');
+addArt('lead','暮铃 · 银渐层',mul+'traveler-silver-cream.webp','现用 · 原画','地图、庭院及剧情对话共用。','muling');
+const mood={determined:'坚定',dry:'冷幽默',full:'旧全身', 'garden-sunlit':'庭院日光',nervous:'紧张',neutral:'中性',warm:'温暖',worried:'担忧'};
+for(const [k,v] of Object.entries(mood))addArt('expressions','暮铃 · '+v,mul+'traveler-'+k+'.webp',k==='nervous'?'仍有剧情特写引用':'旧版 / 备选 · 未核实全部引用','历史素材，不等于新版银渐层表情。','muling');
+for(const [id,name,states] of [['muling','暮铃',['dry','nervous','neutral','sheepish','warm','follow-sprite','follow-step-a','follow-step-b']],['jiedeng','岬灯',['firm','guarded','soft','worried']],['qilan','栖蓝',['annoyed','curious','determined','warm','worried']]])for(const state of states)addArt('expressions',name+' · '+state,'npc/'+id+'-'+state+'.svg','历史 SVG / 变体','是否仍被其他入口引用需按代码核查。',id);
+addArt('sources','三只基础水彩猫原画','watercolor-cats-v2.webp','现用 · 基础图集','330×130；3列×1行，不是32张独立原画。');
+addArt('sources','圆宝 · 加菲猫','jiafei-watercolor-v2.webp','现用 · 独立原画','160×180。','jiafei');
+addArt('sources','圆宝 · 旧版','jiafei-watercolor-v1.avif','历史素材','','jiafei');
+addArt('sources','云朵 · 全身','starter-portraits/yunduo.webp','可收集 / 旧首发','','yunduo');
+addArt('sources','云朵 · 剧情胸像','player-portraits/yunduo.webp','旧首发剧情素材','','yunduo');
+function refresh(){const q=$('search').value.trim().toLowerCase(),f=$('filter').value;let n=0;for(const card of cards){card.hidden=!(f==='all'||f===card.dataset.group)||!card.dataset.search.includes(q);if(!card.hidden)n++}for(const section of document.querySelectorAll('section'))section.hidden=!Array.from(section.querySelectorAll('article')).some(c=>!c.hidden);$('status').textContent='展示 '+n+' / '+cards.length+' 项 · '+(problems.length?problems.length+' 项素材/读取异常（见卡片或提示）':'无已检测异常')+(window.galleryReady?'':' · 加载中');}
+$('search').oninput=refresh;$('filter').onchange=refresh;$('background').onchange=()=>document.body.dataset.bg=$('background').value;$('reset').onclick=()=>{$('search').value='';$('filter').value='all';$('background').value='paper';document.body.dataset.bg='paper';refresh()};$('close').onclick=()=>$('viewer').close();
+async function script(path){if(!remote){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=base+path;s.onload=resolve;s.onerror=()=>reject(Error(path));document.head.append(s)});return;}const res=await fetch(base+path);if(!res.ok)throw Error(path+' HTTP '+res.status);let src=await res.text();if(path.endsWith('real-kittens.js'))src=src.replaceAll('/cat-bond/assets/',base+'assets/').replaceAll('new Image()','new GalleryImage()');const s=document.createElement('script');s.textContent=src;document.head.append(s);}
+async function renderBreeds(){try{
+ for(const path of ['js/catart.js','js/cute-cats.js','js/data.js','js/real-kittens.js'])await script(path);
+ const list=window.GameData.SPECIES;if(list.length!==33||new Set(list.map(x=>x.id)).size!==33)problems.push('可收集种类数不符：'+list.length);$('breedCount').textContent=list.length+' 种';
+ for(const sp of list)add('collect',{name:sp.name,en:sp.nameEn,id:sp.id,tag:sp.rarity+' · 游戏实际渲染',path:sp.id==='jiafei'?'jiafei-watercolor-v2.webp':['jinjc','yunduo'].includes(sp.id)?'starter-portraits/'+sp.id+'.webp':'watercolor-cats-v2.webp',note:sp.desc,species:sp});
+ const preload=async path=>{const i=galleryImage();i.src=asset(path);try{await i.decode();return true}catch{return false}};
+ const loaded=await Promise.all(['watercolor-cats-v2.webp','jiafei-watercolor-v2.webp','starter-portraits/jinjc.webp','starter-portraits/yunduo.webp'].map(preload));
+ for(let t=0;t<100&&!window.CatBondArtworkStatus?.breedsLoaded;t++)await new Promise(r=>setTimeout(r,50));
+ for(let t=0;t<40&&loaded[1]&&!window.CatBondArtworkStatus?.jiafeiLoaded;t++)await new Promise(r=>setTimeout(r,50));
+ await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+ for(const {visual,species,fail} of canvases){const id=species.id;if(!window.CatBondArtworkStatus?.breedsLoaded||!loaded[0]||(id==='jiafei'&&(!loaded[1]||!window.CatBondArtworkStatus?.jiafeiLoaded))||(id==='jinjc'&&!loaded[2])||(id==='yunduo'&&!loaded[3])){fail('原画未就绪，未展示替代图');continue}try{window.CatArt.renderCatThumb(visual,species)}catch(e){fail('渲染错误：'+e.message)}}
+ }catch(e){problems.push('猫咪渲染器：'+e.message);$('breedCount').textContent='加载失败';}}
+async function renderNPC(){try{
+ const r=await fetch(base+'js/resonance/campaign.mjs');if(!r.ok)throw Error('HTTP '+r.status);const raw=await r.text(),json=raw.slice(raw.indexOf('export const campaign =')+'export const campaign ='.length).trim().replace(/;\s*$/,'');const c=JSON.parse(json);
+ const regionNames={harbor:'霁潮港',forest:'眠根林',forge:'赤炉环城',sky:'云脊群岛',library:'月镜书库',starfall:'星坠原'};
+ const residents=Object.values(c.cast).filter(x=>c.regions.includes(x.region));if(residents.length!==12)problems.push('NPC 数量变化：'+residents.length);$('npcCount').textContent=residents.length+' 只';
+ for(const x of residents){add('npc',{name:x.name.zh,en:x.name.en,id:x.id,path:'npc/'+x.id+'-painted.webp',tag:regionNames[x.region]||x.region,note:'表情需求：'+(x.expressionNotes||'未登记')});if(!['jiedeng','qilan'].includes(x.id))add('expressions',{name:x.name.zh+' · 表情待补',id:x.id,tag:'缺少独立表情文件',note:'已登记需求：'+(x.expressionNotes||'未登记')});}
+ add('expressions',{name:'金豆 · 表情待补',id:'player',tag:'缺少独立表情文件',note:'已登记需求：'+(c.cast.player.expressionNotes||'未登记')});
+ }catch(e){problems.push('NPC 清单：'+e.message);$('npcCount').textContent='加载失败';}}
+await Promise.all([renderBreeds(),renderNPC()]);await Promise.all(requests);window.galleryReady=true;refresh();if(problems.length){const details=document.createElement('details'),sum=document.createElement('summary');sum.textContent='查看读取异常';details.append(sum);for(const p of problems){const line=document.createElement('p');line.className='failed';line.textContent=p;details.append(line)}$('status').after(details)}
+})();
+</script></body></html>
