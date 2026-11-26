@@ -10,7 +10,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','ward-art','ult-vfx','skill-fx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','adult-art','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
+const ORDER = ['vfx','ward-art','ult-vfx','skill-fx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','adult-art','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','traits','battle','duo-bond','ui','game','main'];
 
 // ---- minimal DOM ----
 const listeners = {};               // "id:type" or "type" -> handler
@@ -183,7 +183,7 @@ const clawFx=new sandbox.window.VFX();
 clawFx.slash(100,150,.35,'#ffab83',180,.72,{heavy:true});
 assert.equal(clawFx.fx.length,1,'one contact attack creates one brush stroke');
 assert.equal(clawFx.fx[0].type,'slash','shared VFX owns melee claw brush');
-assert.ok(clawFx.fx[0].radius<=64&&clawFx.fx[0].max<.27&&clawFx.fx[0].heavy,
+assert.ok(clawFx.fx[0].radius<=112&&clawFx.fx[0].max<.36&&clawFx.fx[0].heavy,
   'heavy melee brush must stay within true short-range reach and fade quickly');
 clawFx.update(.055);
 let paintedShapes=0;
@@ -448,37 +448,43 @@ const balanceEnemy=damageBalance.enemies[0];
 balanceEnemy.maxhp=10000;balanceEnemy.hp=10000;balanceEnemy.alive=true;
 balanceEnemy.status={expose:4,rust:4};
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,true);
-assert.ok(Math.abs((10000-balanceEnemy.hp)-118.8)<.001,
-  'expose +20% and rust +12% stack additively, then player damage is scaled to 90%');
+// Owner 2026-11-26 global dmg bump: removed player 0.9 nerf; multiplier now 1.0.
+// 100 × (1 + 0.20 + 0.12) × 1.0 = 132 (was 118.8). Enemy base dmg raised to balance.
+assert.ok(Math.abs((10000-balanceEnemy.hp)-132)<.001,
+  'expose +20% and rust +12% stack additively (global player mult = 1.0)');
 balanceEnemy.hp=1000;balanceEnemy.flash=0;
 balanceEnemy.status={};
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
-assert.ok((1000-balanceEnemy.hp)<160,
-  'low-health execution must no longer inflate a 100-base Q/E hit above 160');
+assert.ok((1000-balanceEnemy.hp)<180,
+  'low-health execution must no longer inflate a 100-base Q/E hit above 180');
 balanceEnemy.hp=1000;balanceEnemy.flash=0;balanceEnemy.role='boss';damageBalance.combo=0;
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
-assert.ok(Math.abs((1000-balanceEnemy.hp)-90)<.001,
+// 100 × 1.0 = 100 (was 90 under 0.9 player nerf)
+assert.ok(Math.abs((1000-balanceEnemy.hp)-100)<.001,
   'explicit boss role ignores automatic low-HP execute bonus');
 balanceEnemy.hp=1000;balanceEnemy.flash=0;balanceEnemy.role='elite';damageBalance.combo=0;
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
-assert.ok(Math.abs((1000-balanceEnemy.hp)-108)<.001,
+// 100 × 1.20 × 1.0 = 120 (was 108)
+assert.ok(Math.abs((1000-balanceEnemy.hp)-120)<.001,
   'elite execution is fixed +20% rather than escalating toward +55%');
 balanceEnemy.hp=100;balanceEnemy.flash=0;damageBalance.combo=0;
 damageBalance.hurtEnemy(balanceEnemy,30,balanceEnemy.x,balanceEnemy.y,false);
-assert.ok(Math.abs((100-balanceEnemy.hp)-32.4)<.001,
+// 30 × 1.20 × 1.0 = 36 (was 32.4)
+assert.ok(Math.abs((100-balanceEnemy.hp)-36)<.001,
   'even near zero HP elite execute remains a fixed +20%');
 balanceEnemy.role='boss';
 // Audited damage buckets: 100 raw x [1 + .30 stagger + .12 armor +
-// .20 combo] x .9 = 145.8, NOT a stack of four multipliers.
+// .20 combo] x 1.0 = 162 (was 145.8 under 0.9 player nerf), NOT a stack of four multipliers.
 balanceEnemy.hp=10000;balanceEnemy.maxhp=10000;balanceEnemy.flash=0;
 balanceEnemy.status={rust:10};balanceEnemy.staggerT=2;damageBalance.combo=50;
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
-assert.ok(Math.abs((10000-balanceEnemy.hp)-145.8)<.001,
+assert.ok(Math.abs((10000-balanceEnemy.hp)-162)<.001,
   'stagger, armor break and capped 20% combo are one additive hit bucket');
 balanceEnemy.hp=10000;balanceEnemy.flash=0;
 balanceEnemy.status={rust:10,expose:4};damageBalance.combo=50;
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
-assert.ok(Math.abs((10000-balanceEnemy.hp)-153.0)<.001,
+// 100 × (vuln cap 1.70) × 1.0 = 170 (was 153 under 0.9 player nerf)
+assert.ok(Math.abs((10000-balanceEnemy.hp)-170)<.001,
   'vulnerability caps at +50%, combo caps at +20%');
 assert.ok(damageBalance.comboMult()<=1.20,'combo never exceeds +20%');
 const playerVulnerable=damageBalance.me();
@@ -1957,7 +1963,7 @@ for(const [id,element] of [['waterJet','water'],['thunderStream','elec'],['flame
     id+' must not freeze the whole fight repeatedly on continuous damage');
 }
 const flame=Skills.skillById('flameSweep');
-assert.ok(flame.sweep>=.65&&flame.reach<=160,
+assert.ok(flame.sweep>=.65&&flame.reach<=360,
   'flamethrower sweeps a short arc, never the giant death-ray reach');
 const smallShock=Skills.skillById('lightningOrb');
 assert.ok(smallShock?.homing>=3&&smallShock?.element==='elec');

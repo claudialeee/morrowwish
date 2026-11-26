@@ -17,7 +17,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','painted-regions','world','worldmap','battle','ui','game','main'];
+const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','painted-regions','world','worldmap','traits','battle','ui','game','main'];
 
 // ---- minimal DOM (mirrors scripts/check-cat-bond.mjs) ----
 const listeners = {};

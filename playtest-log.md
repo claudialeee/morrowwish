@@ -982,3 +982,631 @@ Baseline won this run (judge 0.668); best agent was `allin-when-hurt` 0.641 (kit
 ## RSI cycle 2026-11-24T23:56:34Z: ✅ agent beat baseline (0.677 vs 0.638); archive 2/64
 **Winner:** `agent:ready-hitrun-tight` — judge **0.677** vs engine baseline 0.638, new top elite at cell `1,3,3`.
 **Winning bandBody:** `(f)=>{const hp=f.hp/(f.maxhp||1); if(hp<0.45)return{min:96,max:150,rush:120,role:'ranged',hp}; if(((f.cd&&f.cd.q)||0)<=0)return{min:30,max:60,rush:30,role:'bruiser',hp}; return{min:60,max:100,rush:60,role:'bruiser',hp};}` — cooldown-branching hit-run (hug on ready-Q, mid on CD, retreat <45% HP). **5 of 6 agent candidates beat baseline** (ready-hitrun-tight 0.677, steady-midline 0.649, glass-cannon-anchor 0.647, allin-when-hurt-v2 0.644, + pulse-brawler just under). Control `stand-at-max-range` ranked last (0.552) → control-CHECK PASS on held-out seeds [13,202,999]. Coverage held 2/64 (winners cluster in durability-bin3; the all-in/kite durability-down pushes didn't open a lower bin — descriptor grid stays coarse). Harness-only; no band applied to battle.js/skills.js; no commit; no push.
+
+## Playtest cron 2026-11-24 (6 personas × 8 battles; HEAD cc6508dd + 2 meteor commits)
+**Headline:** *"Cat Bond's combat is a well-built room where every verb exists but none of them land: every persona's problem reduces to the same structural absence of a felt mid-fight beat, an input→outcome signal that isn't offense-gated, and a loss loop that teaches instead of restarts."* 34 critiques (32 real, 2 opportunity), 47/70 agents (23 StructuredOutput failures — partial loss, not catastrophic). Per-persona counts: masher 5, kiter 4, explorer 8, panicky 7, lazy 3, impatient 7.
+
+**P0s (adversary-confirmed):**
+- **P0-1 · wire `_pressure` into enemy fire cadence.** Kiter persona 8 neutral timeouts. `_pressure` ramps when player turtles but never raised fire-rate (the code literally comments "deferred, unreviewed"). Local numeric: `fireCd /= (1 + 0.6*_pressure)`. **AUTO-FIX** (banner + relabel findings-only).
+- **P0-2 · good-dodge sustain tier.** Explorer persona 13% winrate / avgHpFracLeft 0.01. Skill-expression converts to offense only; dodges at 60-80px burn CD with zero feedback. Add 75px "good" tier: heal 4% maxhp + 6 ult + dodgeCd 0.7 (perfect 40px untouched). **AUTO-FIX**.
+- **P0-3 · deeper mercy ramp + ungate `_autoAssist` for manual.** Panicky 0/8, mercy plateaued at lossStreak=3 and the assist net was gated to autoMode only. Clamp 3→6, m scaled over 5 (deeper floors: enemyDmg 0.45→0.30, enemyHp 0.50→0.35, playerDmg +15%→+40%); `_autoAssist` fires for manual casual too at streak≥2, strengthens to 0.8 at ≥4. **AUTO-FIX** (modal offer new-UI → findings-only).
+- **P0-4 · HP-phase stagger at 66%/33% + 35% vulnerability window + 破甲 floater.** Impatient persona 18s-to-bail. **findings-only** (new mechanic across makeEnemy/hurtEnemy + VFX + i18n — not clearly low-risk).
+- **P0-5 · "test"/"test".** Invalid payload; skipped.
+
+**P1s (findings-only; 29 total — top synthesized fixes from the adversary's ranked list):**
+- Loss-screen cause-of-death autopsy ("野猫跑掉了" is still ambiguous across all 6 personas — 3rd straight cycle flagging).
+- Give basics an earned crescendo: raise combo cap past ×1.20, add basic-only finisher, lift basic poise coefficient on high streak.
+- Micro-telegraph every enemy basic shot + readable heavy-attack HUD channel.
+- Enemy archetype rotation (Bruiser / Reflector / Kiter / Summoner) replacing i%3 role stamp.
+- Clutch window + reactive-shield coach step (once-per-fight 绝境 + teach shield E).
+- Make skills commit-worthy: skill-only interrupts, visible OPENING window, starter-Q ergonomics.
+- KITE-STALL teach banner + relabeled "你观望太久" flee screen (paired with P0-1 wiring).
+- Universal parry/patienceProgress stream for safe-play personas.
+- Polish pass: milestone-paced basic juice, alternate yarn/fish, 3-pip auto-battle curriculum.
+
+**P2s (findings-only; 5):** diverse polish — none destabilizing.
+
+**AUTO-FIX OUTCOME (2026-11-24 cycle):**
+- ✅ P0-2 (good-dodge sustain) → commit `dba4dc5b`. 75px tier: +4% maxhp heal, +6 ult, dodgeCd 0.7. 4 combat scripts + `npm run check` green.
+- ✅ P0-3 (mercy ramp + manual assist ungate) → commit `8e6af2d0`. Clamp 3→6; m/5 with deeper floors; `_autoAssist` fires for manual casual too, 0.8 at streak≥4. 4 combat scripts + `npm run check` green.
+- ✅ P0-1 (`_pressure` → enemy fire cadence) → commit `159c61da`. `/= (1 + 0.6*_pressure)`. 4 combat scripts + `npm run check` green.
+- ❌ P0-4 downgraded to findings-only — HP-phase mechanic spans makeEnemy/hurtEnemy/VFX/i18n; not a local numeric tweak.
+- ❌ P0-5 invalid (test payload).
+- 0 reverts. P1/P2 findings-only. Branch `cat-bond-autofix-difficulty` (3 commits ahead of main); NOT pushed.
+
+## RSI cycle 2026-11-25T03:14:52Z: ✅ new champion — `agent:hitandrun-double-gate` 0.694 (prev 0.677)
+**Winner:** a stricter-gated mutation of last cycle's `ready-hitrun-tight`: dive to **26-54** **only when BOTH Q+E are off cooldown** (vs ready-hitrun-tight's Q-only OR-gate), sit mid at 70-110 between, retreat 120-170 under 35% HP. Rare, high-quality dives — both skills land per commit — paid off on the judge's efficiency + output terms more than the elite's "dive whenever Q is up" cadence. Took the **1,3,3** cell from the prior champion.
+
+**Winning bandBody:**
+```js
+(f)=>{const hp=f.hp/(f.maxhp||1);
+      if(hp<0.35)                        return{min:120,max:170,rush:140,role:'ranged',hp};
+      const bothReady=((f.cd&&f.cd.q)||0)<=0 && ((f.cd&&f.cd.e)||0)<=0;
+      if(bothReady)                      return{min:26,max:54, rush:26, role:'assassin',hp};
+      return{min:70,max:110,rush:80,role:'bruiser',hp};}
+```
+
+**Scoreboard this run:** winner 0.694, control `stand-at-max-range` 0.349 (control-CHECK PASS on held-out seeds [13,202,999] — passivity ranked last as required). The control dropped from 0.552 last cycle → 0.349 this cycle, so the moba-groundtruth judge is reading passive play more harshly post-sim-harness fix; absolute scores still don't compare across cycles (per-run reseed).
+
+**Archive coverage: 2/64** (unchanged — winner replaced prior elite in same cell 1,3,3; the probe for lower-durability bins via `death-dive-lowhp` + `patient-carry` + `either-ready-collapse` didn't dislodge any niche. All 5 proposed rules evaluated, 1 beat the baseline and the prior elite.)
+
+**Next cycle hypotheses:** tempo bin 1 (fastest clears) and durability bin 0-1 (ends-at-low-HP) still empty — try pure assassin bands with no retreat clause + aggressive HP-triggered all-ins that force sub-50% hpFracLeft wins. Harness-only; no band applied to battle.js/skills.js; no commit; no push.
+
+## Playtest cron 2026-11-25T03:38:23Z (6 personas × 8 battles; HEAD a4dd00c2 — 3 prior P0s + meteor polish + RSI log live)
+**Headline:** *"Combat shipped a rich verb kit on top of a fight loop that rewards mashing J, hides its own safety nets, and flattens every outcome into one soft texture — every persona scored 3-4/10 for the same structural reasons."* 40 critiques (36 real, 4 opportunity), 53/73 agents (20 StructuredOutput failures). Per-persona: masher 8, kiter 7, explorer 3, panicky 8, lazy 6, impatient 8.
+
+**P0s (4 total, all adversary-confirmed):**
+- **P0-1 · masher dies before pinning anything.** Original mash-stall teach only fired when enemy was pinned <20% HP, so a masher who dies at 30s never saw the "use a skill" banner. Add a DYING-MASHER trigger using existing _dangerFrac/_lastSkillT/_stallBanner state → **AUTO-FIX** (numeric portion only; force-auto handoff + T-hotkey part = findings-only).
+- **P0-2 · E slot is invisible by construction (panicky 0/8).** Two coupled changes: (a) remove skills.js `starterE` null-gate so fresh saves ship a shield in E; (b) add a 5th coach step for E with new i18n string + new _coachUsedShield flag. **findings-only** — loadout-gate removal touches starter-save shape and coach adds new architecture + i18n entries, not a local numeric tweak.
+- **P0-3 · auto-casual mercy is gated (lazy 1/8 oscillation).** _autoAssist was 0 until lossStreak>=2, and a single lucky win hard-zeroed the streak → mercy oscillated off mid-run. Baseline floor 0.4 + soft win decrement for auto → **AUTO-FIX**. (Auto-only perks — auto-ult/auto-swap — stay findings-only.)
+- **P0-4 · auto-mode runs on a human-paced clock (lazy 15.79s avg).** Grace window gated !autoMode AND only 4s long. Three numeric knobs for casual auto: tempoScale ×0.88, grace window t/4 → t/6, fast-loss threshold <10s → <20s → **AUTO-FIX**.
+
+**P1s (findings-only; 35 total — top synthesized fixes from adversary rank list):**
+1. Basics out-DPS skills (BASIC_SKILL_DMG_MULT=0.5 reads as finisher only on status-marked) — invert the combo contract.
+2. Combo cap too low (×1.20) — promote existing chain into a short "berserk" state at threshold.
+3. Ult is a scalar metronome — add overcharge + combo scaling + kill the auto-fire failsafe.
+4. Kiter _pressure gate still has inversion edge cases — timeouts should count more as losses.
+5. Dodge default direction betrays escape intent when no input — route no-input dodges radially away.
+6. Final-blow has no authored frame — split "enemy died" branch so the last hit punches.
+7. Casual mode ult arrives after fight ends — bootstrap climax beat for the first 5 battles.
+8. Diagnose-the-loss on defeat banner — stop shipping one voice line for 7 flees (5th straight cycle).
+9. Fake phase at 50% HP — convert into a real verb change (HP-stagger again; 2nd straight P1).
+10. Shield auto-cast's supportSlot tag check is broken — fix before shipping any preset.
+11. Incoming hits have no weight language — mirror hurtEnemy's tier ladder in hurtMe.
+12. Low-HP vignette is ambient dread — convert to actionable rescue signal.
+13. Flee has no second economy — convert retreat into a bounded sendaway expedition.
+
+**P2 (findings-only; 1):** combat loop texture polish.
+
+**AUTO-FIX OUTCOME (2026-11-25T03:38:23Z cycle):**
+- ✅ P0-1 (dying-masher teach trigger) → commit `83215c3f`. _stallBanner fires when _dangerFrac<CRIT && no skill 3.5s && t>15. 4 combat scripts + `npm run check` green.
+- ❌ P0-2 downgraded to findings-only — removes starterE null-gate AND adds new coach step + new i18n key + new _coachUsedShield flag; touches starter save shape + tutorial architecture.
+- ✅ P0-3 (casual-auto baseline + soft win decrement) → commit `0c07dd85`. autoBaseline=0.4 floor; soft -1 decrement on auto win. Combat + full check green. Auto-ult/auto-swap perks stay findings-only.
+- ✅ P0-4 (auto grace window + auto tempo + auto fast-loss step) → commit `e0a78915`. tempoScale×0.88; grace t/4→t/6; auto fast-loss <20s. Combat + full check green. Stacks cleanly with P0-3.
+- 0 reverts. P1/P2 findings-only. Branch `cat-bond-autofix-difficulty` (9 commits ahead of origin/main — includes meteor polish + prior cycle's 3 P0s + RSI log + this cycle's 3 P0s); NOT pushed.
+
+## Playtest cron 2026-11-25T04:57:21Z (6 personas × 8 battles; HEAD 11a88eb9 + 10 local balance commits)
+**Headline:** *"Cat Bond's combat is a legibility crisis dressed as a difficulty curve — the engine already measures everything a player needs to learn, and the UI/tutorial consistently throws it away, so every persona scores 3-5/10 for the same underlying reason: the game refuses to tell them what happened."* 50 critiques (42 real, 8 opportunity), 63/79 agents (16 StructuredOutput failures). Per-persona: masher 8, kiter 8, explorer 8, panicky 10, lazy 7, impatient 9.
+
+**P0s (4 total, all adversary-confirmed):**
+- **P0-1 · 'don't know what hit me' — red vignette paints too late.** CRIT_HP_FRAC=0.25 gave a ~2s warning on 13s deaths. **AUTO-FIX** single-knob raise to 0.45 → 4-5s warning window. (Yellow pre-crit band + damage-source floater + enemy muzzle wind-up parts stay findings-only; enemy basics already have muzzle flash + regularSkillAccent at L5278-5279 — adversary misread that path.)
+- **P0-2 · mash-stall teach never reaches 8s deaths.** Dying-masher trigger was gated t>15 AND _stallT>5; masher died at 8.7s mean, never saw the pulse. **AUTO-FIX** gates relaxed: t>4 (past coach), 3.5s→2s no-skill window, _stalled flips IMMEDIATE when dying-no-skill (bypass 5s accumulator). ('弹开/Blocked' low-damage floater stays findings-only — new i18n + new vfx path.)
+- **P0-3 · catchCount===0 rookie profile (RNG reseed + dmg cap + telegraphed-only kit).** **findings-only** — RNG reseed affects save-replay determinism, forced-kit touches skill-selection architecture, not a local numeric.
+- **P0-4 · defensive-first mercy (second-wind revive + auto-dodge at CRIT + persistent 弱化 debuff).** **findings-only** — new mechanic on top of mercy system; debuff persistence touches save format.
+
+**P1s (findings-only; 42 total — top synthesized themes):**
+1. Ship a real Defeat Report with attribution + retry button (5th+ cycle flagging the loss screen).
+2. Teach E/shield in first-fight coach — stop shipping an invisible slot (recurring 3+ cycles).
+3. Enemy roles earn real stat deltas (dasher/poker/juggernaut) + guaranteed pack diversity.
+4. Visible 'Pursuit / 收网' meter; split the 85s stalemate on _pressure.
+5. Casual tempo rebalance tempoScale 0.64→~0.80; kill the auto *0.88 double-tax.
+6. Honest basic economy: make skill-priming visible, pay ult meter via skill casts.
+7. Mid-fight 'Surge' beat at t≈8s + enemy phase-shift at HP<55% (3rd cycle — this is the HP-stagger recurring P0 from prior rounds).
+8. Three legible dodge states + whiff penalty so panic-rolling isn't optimal.
+9. Auto-mode: count flees for mercy, sharpen reaction under _autoAssist, smarter ult gate.
+10. Tiered combo milestones gated on player-acts (not every %10).
+11. Per-run skill mods (RUN_MODS) so Q/E/basic feel different fight to fight.
+12. Peripheral danger-edge vignette off enemy telegraphs + projectile vectors.
+
+**P2 (findings-only; 4):** polish layer — alt yarn/fish skin, 3-pip auto-battle curriculum, etc.
+
+**AUTO-FIX OUTCOME (2026-11-25T04:57:21Z cycle):**
+- ✅ P0-1 (CRIT_HP_FRAC 0.25→0.45) → commit `1339cacd`. Single-knob bump; downstream consumers all scale off this field. 4 combat scripts + `npm run check` green.
+- ✅ P0-2 (dying-masher stall gate relaxation) → commit `98afb9d3`. t>15→t>4, 3.5s→2s, _stalled flips immediate on dying-no-skill. 4 combat scripts + `npm run check` green.
+- ❌ P0-3 downgraded to findings-only — RNG reseed affects determinism, kit forcing touches architecture.
+- ❌ P0-4 downgraded to findings-only — defensive floor is a new mechanic; 弱化 persistence touches save format.
+- 0 reverts. P1/P2 findings-only. Branch `main` (12 commits ahead of origin/main); NOT pushed.
+
+## RSI cycle 2026-11-25T05:50:49Z: ✅ new champion — `agent:sniper-safe-180` 0.695 (prev 0.694)
+**Winner:** a flat 180-260 sniper band with NO HP branch and NO cooldown branch — the simplest proposal I've shipped — narrowly dethroned the double-gated hit-and-run by 0.001. Reclaimed cell 1,3,3.
+
+**Winning bandBody:**
+```js
+(f)=>{const hp=f.hp/(f.maxhp||1);
+      return{min:180,max:260,rush:200,role:'ranged',hp};}
+```
+
+**Interpretation:** the judge is survival-weighted more than output; a far-range cat (180-260) takes less damage than a 70-110 bruiser in exchange for slightly lower DPS, and the net wins. This reproduces at engage 0.39 / tempo 0.75 / dur 0.99 — same high-durability cell as every other elite.
+
+**Archive coverage: 2/64 (unchanged).** The three candidates aimed at empty niches (no-retreat-hug, mid-flat-steadfast, e-only-burst) didn't open new cells:
+- `no-retreat-hug` 18-36 — probably mapped into bin 3 anyway or didn't beat the control. Low-dur cells still empty.
+- `mid-flat-steadfast` 70-110 — no new niche; too similar to existing elite neighborhood.
+- `e-only-burst` — cooldown-axis mutation didn't produce a distinct descriptor.
+
+**Standing hypothesis (3rd straight cycle):** the descriptor grid (engage × tempo × durability, 4×4×4) is too coarse to distinguish these variants OR the judge's survival/win weights penalize anything that ends fights below ~90% HP enough to prevent low-dur cells from ever being reachable. Worth investigating whether the durability descriptor is a bad discriminator (if 90-100% HP endings are the only winnable outcomes, bin 3 is a monopoly). Harness-only; no code applied.
+
+**Balance probe (first live run alongside the main loop):** water=0.39 worst, dark=0.50 best, cv=0.100, gap=0.108. Baseline for future-cycle drift comparison.
+
+## Playtest cron 2026-11-25T06:38:01Z (6 personas × 8 battles; HEAD 17de38ab + this cycle)
+**Headline:** *"Cat Bond's combat substrate is rich but the feedback contract is broken on both ends — defeats are silent, skills are decoration, and the most-engaged persona is the first to notice there's nothing to grip."* 44 critiques (36 real, 8 opportunity), 57/78 agents (21 StructuredOutput fails). Per-persona: masher 7, kiter 9, explorer 7, panicky 6, lazy 7, impatient 8.
+
+**P0s (5 total):**
+- **P0-1 · kiter dead zone (3 numeric knobs).** _pressure HP-gate 0.88→0.70; _closing now drives fireCd (1 + 0.5×closing); enemyRangeBand collapses min/max under closing. → **AUTO-FIX**. Flee-reframe suggestion (new UI/i18n) stays findings-only.
+- **P0-2 · enemy committed-telegraph cadence (demand-side).** Every 6-8s force a windup for 40-60% maxhp strike survivable only by dodge/shield. **findings-only** — new enemy ability + skill wiring + progression gate; cross-file architecture.
+- **P0-3 · effort-weighted mercy + between-fight heal.** struggleScore EMA from dodge rate / threats, between-fight heal at <50% HP. **findings-only** — new persisted save field; touches aiProfile/save shape.
+- **P0-4 · panicky Patience Mode + post-flee recap panel + reactive coach.** Opt-in modal, per-projectile red ring, recap screen. **findings-only** — new UI modal + new i18n + new VFX layer per shot.
+- **P0-5 · impatient ult pre-charge (ult=60 at battle start, casual).** **AUTO-FIX attempted → REVERTED.** Combat-matrix test (melee/tank must deal >= 2000 over 12s) regressed to 1957; band-fitness also failed. The pre-charged ult consumed early-battle input during the matrix test window. Downgraded to findings-only — needs a more surgical approach (pre-charge only on fight #1 of a session, or scale the matrix test tolerance separately).
+
+**P1s (findings-only; 37 total — top synthesized themes):**
+1. Death postmortem card: surface what killed you (recurring 6th+ cycle — the loss-screen honesty ask).
+2. Fix the kiter's structural dead zone — partially addressed by P0-1; banner/flee-reframe still pending.
+3. Context-aware ult economy: pre-charge opener + scale drama to stakes + charge on being hit.
+4. Promote role to real enemy archetypes with mechanical teeth (recurring).
+5. Primer → spender combo economy with visible rage tiers (recurring).
+6. Re-teach dodge/shield at the failure moment, not just in the one-shot opener (recurring).
+7. Honest effort-weighted mercy, between-fight heal in casual, visible loss diagnosis.
+8. First-fight scaffold for cold players; manual-casual grace & mash-feedback hooks.
+9. Zen ramp: reward not-getting-hit without a new bar.
+10. Threat-coupled coach pulses and tiered basic-attack crit cadence.
+11. Diegetic persistence of defeat: 决心/Resolve cosmetic stack + rematch button.
+
+**P2 (findings-only; 2):** polish layer.
+
+**AUTO-FIX OUTCOME (2026-11-25T06:38:01Z cycle):**
+- ✅ P0-1 (kiter closing — _pressure gate 0.70 + fireCd closingBoost + range collapse) → commit `b16a8b29`. 4 combat scripts + `npm run check` all green.
+- ❌ P0-2 downgraded to findings-only — new enemy ability + progression gate architecture.
+- ❌ P0-3 downgraded to findings-only — struggleScore persistence touches save format.
+- ❌ P0-4 downgraded to findings-only — new modal + new per-shot VFX + new i18n strings.
+- ❌ P0-5 (ult pre-charge 60) → **REVERTED on failed verify.** check-cat-bond-combat-matrix regressed (melee/tank 2000→1957) + band-fitness failed. Pre-charged ult perturbs the matrix test window.
+- 1 revert. P1/P2 findings-only. Branch `main` (19 commits ahead of origin/main); NOT pushed.
+
+## Playtest cron 2026-11-25T07:41:16Z (6 personas × 8 battles; post-rollback merge 7375996e + all my balance stack)
+**Headline:** *"Cat Bond's combat systems are richer than the UI admits — losses don't teach, wins don't attribute, and every persona except 探索型 is bouncing off invisible rubberbands; the fix is legibility and feedback-edge events, not more mechanics."* 35 critiques (26 real, 9 opportunity), 48/70 agents (22 StructuredOutput fails). Per-persona: masher 5, kiter 6, explorer 8, panicky 4, lazy 5, impatient 7.
+
+**P0s (2 total, both findings-only):**
+- **P0-1 · visible escape-meter win condition (kiter).** Replace the silent 85s flee backstop + hidden _closing/_pressure chain with an on-screen "即将逃走" bar under the enemy nameplate: enemy accumulates escape% while out of a damage window, retreats visibly at 100%. Gives the cautious kiter a race to watch and a visible stake. **findings-only** — new on-screen UI bar + new enemy state field (escapeT) + new i18n string + new flee-animation path. Not a local numeric.
+- **P0-2 · panicky DDA (timeout-count lifeline).** On consecutive timeouts, scale enemy maxhp 0.72 at 3+, widen basic auto-aim ±22° cone, raise BASIC_SKILL_DMG_MULT 0.5→0.65 under the same gate. **findings-only** — core knob (timeout count) is a new persisted save field; the existing lossStreak tracks wipes+timeouts together but the suggestion specifically wants *timeout-only* for panicky vs kiter distinction. Raising BASIC_SKILL_DMG_MULT globally last cycle broke combat-matrix (P0 #5 ult precharge revert).
+
+**P1s (findings-only; 27 total — top themes):**
+1. Post-flee postmortem card: biggest-source skill + coaching line + repeat-offender telegraph widen (recurring 7+ cycles — the loss-honesty ask).
+2. Q/E setup→detonator pair with a 'primed basic' window.
+3. Diegetic ult-ready beat (world-state, not HUD footnote).
+4. Visible auto-AI casts + preset plans (balanced/burst/survive).
+5. HP-triggered _closing + visible execute phase.
+6. Cooldown-denial feedback + first-cast signature moment.
+7. Tier-aware combo milestones with chain release into skills.
+8. Pre-fight pack archetype banner (named identity, not more telegraphs).
+9. Attributed win recap (MVP sentence, not stats panel).
+10. Negative-feedback & range reticle for whiff legibility.
+11. Clutch-window 'last stand' + anti-stomp DDA.
+
+**P2 (findings-only; 6):** blitz tier ladder, per-breed PB ghost, visual polish.
+
+**AUTO-FIX OUTCOME (2026-11-25T07:41:16Z cycle):**
+- ❌ P0-1 (kiter escape meter) → findings-only — requires new UI bar + new enemy state + i18n.
+- ❌ P0-2 (panicky DDA) → findings-only — requires new persisted timeout-count save field. Adjacent attempt (BASIC_SKILL_DMG_MULT raise) would regress combat-matrix as the P0 #5 ult precharge revert from last cycle showed.
+- 0 commits, 0 reverts. Combat reads **healthy for auto-fix scope** this cycle — both adversary-confirmed P0s are feedback/UI-shape problems the cron rule correctly keeps out of my hands.
+- Branch `main` (22 commits ahead of origin/main — including merge of origin's rollback); NOT pushed.
+
+## Playtest cron 2026-11-25T08:37:22Z (6 personas × 8 battles; HEAD dec054cc + occam audit tools)
+**Headline:** *"Combat feels input-good but legibility-starved: inputs land cleanly, but invisible RNG, silent escalation, cosmetic roles, and a dead-zone between tutorial-end and ult-ready quietly hide half the game's depth from every persona."* 32 critiques (29 real, 3 opportunity), 45/72 agents (27 StructuredOutput fails — higher than usual, 2-StructuredOutput-stability cycle to watch).
+
+**P0 (1 total):**
+- **P0-1 · impatient 18s tempo-contract leak.** ULT_COOLDOWN=18s + _closing-starts-at-45s = a 45s dead zone where impatient players (all 8 flees at ~18s) never see momentum. Three suggestions: (a) first-ult CD cut 18→10s, (b) _closing ramp pulled forward, (c) damage-dealt ult-CD shaving. Shipped (b) only — conservative compromise `(t-45)/25 → (t-25)/20` (ramp now 25→45s, not adversary's aggressive 15→35s which would hit 95% of fights). **AUTO-FIX**. (a)+(c) findings-only — new state fields, last cycle's ult-pre-charge revert showed combat-matrix risk.
+
+**P1s (findings-only; 28 total — top themes):**
+1. Rescue lever earned: damage-taken ult charge + underdog softening (recurring — the "no comeback mechanic" theme).
+2. Enemy role load-bearing (archetype-shaped silhouette, not reskinned stats) — recurring 4+ cycles.
+3. Q/E/Ult real identity: slot roles, opportunity cues, readable cast.
+4. Onboarding leak: gate E and ult in the coach, add JIT reminders (recurring 5+ cycles — E-slot ask).
+5. Guarantee loadouts and legibility for auto/casual play.
+6. Anti-kite archetype + visible closing + opportunity windows (kiter P0 partial from last cycle; _closing ramp forward is progress but not the whole fix).
+7. Turn basics into skill-economy fuel + self-priming ramp (recurring 3+ cycles).
+8. Visible dodge streakbreaker + resource pips (replace invisible RNG).
+9. Phase beats everywhere: 二阶段 + enrage + opening lull.
+10. Reactive AI legibility: floating intent badge + actionable rescue hint.
+11. Daily affix + one meaningful loadout pick for auto-battlers.
+12. Combo cash-out: visible charge bar + detonation every 20 (not passive +20%).
+13. Diagnostic coach + openly named auto-assist.
+
+**P2 (findings-only; 3):** polish layer.
+
+**AUTO-FIX OUTCOME (2026-11-25T08:37:22Z cycle):**
+- ✅ P0-1 (`_closing` ramp 45-70s → 25-45s) → commit `ae56e47a`. Single numeric constant swap. 4 combat scripts + `npm run check` all green.
+- 0 reverts. P1/P2 findings-only. Branch `main` (24 commits ahead of origin/main); NOT pushed.
+
+**Occam-audit context (from last session):** this cycle's 20 battle.js knobs remain mostly invisible to the RSI AI harness; the real validation is these playtest personas. The `_closing` tweak is a ctor-side logic change (not a ctor-bake) so it DOES register per-frame if the knob-probe is rerun.
+
+## Playtest cron 2026-11-25T09:42:56Z (6 personas × 8 battles; HEAD f15108d0)
+**Headline:** *"Combat is mechanically loaded but tonally monotone — the signals that should bend player behavior (danger, close, phase, basic cadence, ult scarcity) are all computed and all muted, so every persona pushes the same flat-line even when the sim is doing variety work under the hood."* 33 critiques (24 real, 9 opportunity), 46/73 agents (27 StructuredOutput fails — sustained ~35% noise ceiling).
+
+**P0s (2 total, both findings-only):**
+- **P0-1 · kiter needs visible '野猫急了' phase + scripted commit + backstop 85s→55s.** _closing is DESIGNER-SIDE escalation; kiter persona bails at 38s without seeing it. **findings-only** — core complaint is the visibility half (new toast + audio sting + forced-telegraph override); numeric 85→55 alone would be miscalibrated without the visible-phase half. Full fix requires new behavior + i18n + audio cues.
+- **P0-2 · struggle-discovery auto-hint toast.** Panicky player eats 352 dmg/fight; engine already computes _pressure/lossStreak/_stomp but never surfaces the auto-battle option. **findings-only** — needs new save field (battlePrefs.autoHintShown), new on-screen chip UI, new bilingual i18n string.
+
+**P1s (findings-only; 27 total — top synthesized themes):**
+1. Danger signal: convert one-shot HUD latch to escalating diegetic pressure ON THE CAT (not screen edge) — recurring 6+ cycles.
+2. Combo-20 milestone → felt Overdrive tempo shift (drop basic CD × window) + drive dormant enemy.phase at 60%/30% HP.
+3. Stop teaching with tutorials, start teaching with pressure (forced-answer telegraph).
+4. Basics need a decision layer: clean-chain primer → cash out through Q/E reactions.
+5. Enemy archetype table flipping 4+ knobs (not rarity-coupled roles) — 6+ cycle recurring.
+6. Punish wasted dodges with escalating fatigue (CD up, iframes down).
+7. Starve ult economy; make result banner relative (% of field, not absolute dmg).
+8. Promote every 3rd basic to kick-beat crit + force-crit sub-28% HP enemies.
+9. Convert HP-threshold phase punishes into player-owned stagger windows.
+10. Replace stat-boost boon triad with rule-mutator run modifiers at fights 2/5/7.
+11. Live auto-intent pills above each cat (not just 2.5s teletype).
+12. Primer → Detonator skill combo (Q tags, E detonates with CD refund).
+13. Auto-mode persona chips (盾墙 / 均衡 / 斩首) replacing smartAutoAction magic numbers.
+
+**P2 (findings-only; 4):** polish layer.
+
+**AUTO-FIX OUTCOME (2026-11-25T09:42:56Z cycle):**
+- ❌ P0-1 (kiter visible phase + scripted commit) → findings-only. Full fix requires new audio + forced-telegraph override + i18n — not local numeric.
+- ❌ P0-2 (struggle auto-hint) → findings-only. Needs new save field + new UI chip + new i18n.
+- 0 commits, 0 reverts. **Combat reads healthy for auto-fix scope this cycle** — both adversary-confirmed P0s are feedback/UI-shape problems the cron rule correctly keeps out of my hands.
+- Branch `main` (25 commits ahead of origin/main); NOT pushed.
+
+**Signal strength note:** cycle noise is now sustained at ~35-40% StructuredOutput fails (27/73 this run). Findings that recur across cycles are reliable; one-off claims should be weighted down.
+
+## Playtest cron 2026-11-25T17:34:58Z: CRON FAILED — agent stalled all 6 attempts (API issue, no code change).
+
+## RSI 2026-11-25T17:42:30Z
+
+Proposer → evaluator → archive update (findings-only, no game-code touched).
+
+**Candidates proposed** (targeting empty archive niches):
+1. `aggro-bruiser-hug` — HIGH-ENGAGE niche (e≥2), tight hug band gated by CD readiness
+2. `mid-tempo-pulse` — MID-TEMPO niche (t=1-2), commit-on-CD then drift-out
+3. `desperate-dive` — LOW-DURABILITY niche (d=0-1), hp<0.35 → assassin dive
+4. `elite-mutation-tighter` — island mutation of #2 elite (stand-at-max), pulled 25% inward
+
+**Result:** winner='?' (none beat baseline at held-out seeds [13,202,999]); archive 2/64 (unchanged), best 0.7698 baseline; band=cells 0/3 improved, 0 generalized; balance worst=water(0.50) best=fire(0.57) cv=0.054 gap=0.073.
+
+**Honest read:** this matches the `archive-reachability-probe` finding — the sim only physically reaches ~3 of 64 cells with the default fighter config (durability bin 3 captures ~100% of samples). Candidates 1-3 aim at bins the sim cannot land in; candidate 4 lives in a reachable cell but doesn't beat the incumbent at that cell. **Proposing-more-rules will not grow coverage**; what would grow it is harness config diversity (multi-enemy, multi-build, multi-level fighter configs).
+
+No commit, no push. Archive + history log updated by rsi-loop.mjs only.
+
+## Playtest cron 2026-11-25T18:35:31Z: V5-post-merge cycle (38 critiques, 1 P0, 35 P1, 2 P2)
+
+**Headline:** Combat lands close wins but refuses to celebrate them — the kit's verbs (E, R, dodge, shield) stay invisible across personas while basics drown out everything else.
+
+**Infra:** 18/69 StructuredOutput fails (~26%), consistent with noise ceiling. Pre-sim gate PASS (parse + 4 combat scripts green before launch).
+
+**Single adversary-confirmed P0 (findings-only — NOT low-risk):**
+
+**P0-1** [探索型, tries everything] Basic attack is empty filler. 1,000–3,400 basics/fight at `moves[0].cd=0.6s` means ~1 click/1.2s for 20+ min, each a chip non-event (BASIC_SKILL_DMG_MULT=0.5, hit SFX throttled, floater capped). 200:1 basic:Q ratio proves Q isn't a choice but a garnish on a river of noise. The dominant verb has no texture, payoff, or decision.
+- **Suggested fix (from adversary, not applied):**
+  - (a) `moves[0].cd` 0.6 → 0.9 (numeric — LOW-RISK on its own)
+  - (b) Add `e.primeStacks` (cap 3, 3s decay) + per-enemy nameplate pip row (NEW field + NEW draw)
+  - (c) 3rd basic auto-'pops' as `hitTier='crit'` with gold floater + new SFX (new impact tier)
+  - (d) Q/E consume pips for +20%/pip through a new dmg bucket (crosses battle.js ↔ skills.js)
+- **Verdict:** Parts (b)(c)(d) add new fields, new VFX, new SFX, cross-file logic — **architecture work, not local numeric tune**. Cron rule explicitly excludes "architecture/refactor". Doing only (a) in isolation reduces basic cadence but doesn't resolve the P0 (basics still textureless), and could regress `check-cat-bond-band-fitness` DPS-vs-distance monotonicity (slower basics = less engage output).
+- **Classification: findings-only.** Owner must decide if the prime-pip system ships (needs scoped design doc + VFX + save considerations for primeStacks persistence).
+
+**Recurring P1 themes (35 critiques, findings-only; not auto-applied):**
+
+Grouped by theme across personas:
+
+1. **Verb invisibility (×12)** — E, R, dodge, shield are mentioned in zero or very few first-coach steps. `initCoach()` (battle.js L298–327) teaches move/attack/Q/dodge only; E and R are introduced only by icons that mashers never look at. Multiple personas suggest splitting coach into Q + E + R + dodge gates with `b._coachUsedSkillE` / `_coachUsedUlt` flags.
+2. **Close-win catharsis missing (×5)** — `_minTeamHpDip` is tracked but never celebrated. Code already has a "clutch" comment at L247 but no payoff. Suggested: fire "险胜/Clutch" banner + slowmo + ult-shard refund when `_minTeamHpDip ≤ 0.35` on killing blow. perf scoring at L2214 actively PUNISHES low-HP wins (hpFrac≥0.6 bonus) which inverts the desired mood.
+3. **Ult auto-fire teaches "it happens on its own" (×4)** — `tickUltReminder` 9s auto-cast (L3631) solves symptom but encodes disease. Personas suggest converting to a "hold-to-release" prompt (pause enemy fire ~1.5s, flash "按 R 释放!") before auto-firing.
+4. **Basic texture (×3)** — Same visual every swing ("const toy = 'yarn'" hard-coded L1852, comment promises rotation that never happens). Crit/light/heavy tier model exists but basics never escalate.
+5. **Cautious kiter has no ceiling (×4)** — Fights can run 70+s with `_closing` only reaching ~0.24 at 30s. No shrinking circle, no DPS-up-when-safe, no "there IS nothing for a cautious kiter to DO" alternative to just... waiting.
+6. **Impatient / fleeing at 18s (×2)** — Turns out this is `ULT_COOLDOWN_SECONDS=18` mark, i.e., players who don't feel the ult charging exit at the "when do I get one" threshold.
+7. **Panic persona's shield verb opaque (×1)** — `shieldFired=4` flat across 8 battles = zero agency on the verb; 3 hidden gates stack (cd + wardDuration + castWard's "only when attacker visible" condition).
+8. **Enemy archetype sameness (×2)** — `battle.js:768` role assignment reads the same whatever the species; every enemy is a dps sponge in different clothes.
+9. **Auto-battle = spectator loop (×2)** — Auto fires ult only when actively in range with 3 gates, last gate is reactive geometry; auto-player has no "commander" lever.
+
+**P2 (2, findings-only):**
+1. `gradeBattle` (game.js:174) produces 3 bits (healthy / swift / clever) but lossily collapses them into one grade — stars under-reward multi-dimensional wins.
+2. Impatient persona's "glowing burst at 10–12s" is a wall-clock race-timer and would collapse the loop; design intent correct, implementation suggestion wrong.
+
+**AUTO-FIX OUTCOME:**
+- ❌ P0-1 (basic prime-pip system) → findings-only. Fix bundle includes new fields + VFX + SFX + cross-file logic; cron rule excludes architecture work. Doing only the numeric slice (cd 0.6→0.9) in isolation is not in the adversary's suggestion and could regress band-fitness.
+- 0 commits, 0 reverts. **No new low-risk P0s this cycle.**
+
+**Branch state:** `main` 29 commits ahead of origin/main after V5 merge (commits `47f23f00` + `f1064a9a`); NOT pushed.
+
+**Signal strength note:** 35 P1 across 6 personas with consistent theme (verb legibility + close-win catharsis) is the single strongest findings signal in the log — owner-review candidates are the coach-split, clutch banner, and ult hold-to-release conversions.
+
+## Playtest cron 2026-11-25T19:33:51Z: 2nd post-V5 cycle (34 critiques, 2 P0, 29 P1, 3 P2)
+
+**Headline:** Cat Bond's combat is a working basic-attack game wearing a 6-element kit as costume — the depth layer is authored but not forcing, feedback is loud but not prioritized, and both the lazy and cautious persona have discovered that NOT playing is the dominant strategy; ship task #52 and a real post-mortem first, then the forcing/feedback fixes beneath them.
+
+**Infra:** 21/68 StructuredOutput fails (~31%). Pre-sim gate PASS.
+
+### Two adversary-confirmed P0s — both findings-only (NOT low-risk)
+
+**P0-1 [panicky, post-mortem feedback vacuum]**
+- Critique: avgSeconds=31.35 is NOT the 85s clock-cap — these are team-wipes bucketed as `finish(false) → result='flee'` with no post-mortem. Panicky players can't self-diagnose; a grey "flee" screen reads as "time ran out — your fault." Combat tunes escalation aggressively but has ZERO post-fight reflection surface.
+- Proposed fix bundle:
+  - Split `finish(win)` into win/wipe/timecap outcomes (logic split)
+  - Render 2-3 line **post-mortem UI panel** on loss (new widget, new VFX pipeline)
+  - **New i18n strings** for "which cat fell first", "top-damage enemy ability", "X seconds no skill"
+  - New telemetry bucket
+  - CRIT_HP_FRAC bump 0.25→0.40 for signature-panicky (we already run 0.45)
+- **Classification: findings-only.** New UI + i18n + telemetry schema = architecture/i18n-structure work explicitly excluded by cron rule.
+
+**P0-2 [impatient, task #52 still unshipped — basic-dominance economy]**
+- Critique: 0/8 battles touched E or Ult while basic fired 1300-1767 times. Basic is a self-sufficient win condition; Q/E are a flavor tax; Ult is a cutscene button players forget exists. Code at L1851 CONFESSES the intent ("FINISHER on status-marked targets and weaker on un-marked ones") but damage resolver doesn't enforce it. Task #52 ("普攻可选技能收紧 + Q/E技能升ULT + 冷却差异化") has been pending through this entire playtest batch.
+- Proposed fix bundle:
+  - Hit resolver: isBasic+no-mark → ×0.35; isBasic+mark → ×1.3-1.5 consume mark (new dmg bucket + mark consumption cross-cutting)
+  - SKILL_CD_MULT 1.3→1.0 on E path only (numeric)
+  - gainUlt on E 6→14, basic +2→+1 (numeric)
+  - New HUD hint (new i18n)
+  - Audit all starter E to guarantee mark-applying tag (skill-table surgery)
+- **Classification: findings-only.** Core damage resolver restructure + mark-consumption cross-cutting + i18n change = architecture work, explicitly excluded.
+
+### Recurring P1 themes (29, findings-only)
+
+1. **One encounter archetype in different costumes (×6)** — 13.9/13.9/13.9/14.5s win cluster + 15.9/16.7s flee cluster is not RNG; every variety knob (rarity, packSize, wildLevel, _stomp) pushes the same dial: enemy HP. Open → 2 rotations → ult → clean-up in a 12-17s band. Suggestion: 3 archetypes (swarm 6-9s, duel 22-30s with phase thresholds, ambush 10-14s pre-charged specialMeter).
+2. **Feedback present but not prioritized (×4)** — Heartbeat is one-shot ping (line 4370), vignette breathes on timer not hit-events, enemy telegraph draws into same VFX soup as skill FX. Suggestion: looping BPM-scales-with-HP heartbeat; on-hit vignette spikes; desaturate rest + directional edge-arrow when _dangerFrac<CRIT.
+3. **Cautious-kiter 99.63% idle = agency bug (×5)** — Manual mode is a strictly-worse version of auto; a cautious kiter perfect-kiting on auto literally has nothing to DO. Pacing valves (_closing, _pressure) are enemy-side one-sided faucets with no player escalation.
+4. **Phase system exists but hollow (×2)** — battle.js:4769 HAS phases for SR/SSR but at fixed HP thresholds with no rotation change. Rotation never varies.
+5. **Ult economy has no narrative author (×3)** — gainUlt fires from 8+ sites without unified pacing; players can't predict when R will be available and give up on it.
+6. **Combo slope not ramp (×2)** — +20% cap at combo 50 on sqrt curve, silent milestones; the berserker gauge exists but is cosmetic for mashers.
+7. **One-shot ult cinematic underselling (×1)** — slowmo=0.18 + shake=0.55 is too soft for a 100-energy payoff.
+8. **Starter kit homogeneity (×3)** — Every cat's Q+E defaults are variations of "projectile + dash"; no mechanical asymmetry between elements at loadout 1.
+
+### P2 (3, findings-only)
+1. Berserker-bar wish is weak version of right instinct — comboMult exists but caps at ×1.20 (invisible) with trickle-to-ult that mashers ignore (the button they refuse to press).
+2. 懒人 persona needs run-end meta-layer (none currently exists).
+3. stompStreak ramp is uni-directional (tightens AI) with no negative mirror (no dampener if player struggling).
+
+### AUTO-FIX OUTCOME
+- ❌ P0-1 (panicky post-mortem) → findings-only. New UI panel + i18n + telemetry schema.
+- ❌ P0-2 (task #52 basic economy) → findings-only. Damage resolver restructure + mark consumption + skill-table surgery.
+- 0 commits, 0 reverts. **Combat reads healthy for auto-fix scope this cycle** — the 2 P0s are architectural asks the cron correctly keeps out of my hands.
+
+**Branch state:** `main` 30 commits ahead of origin/main; NOT pushed.
+
+**Cross-cycle signal:** Previous cycle's dominant P1 was "verb invisibility"; this cycle's dominant P1 is "same encounter in different costumes" + "basic-dominance". Combined, these two cycles produce the strongest case for shipping **task #52** (the owner's own pending item) as the single highest-leverage design change.
+
+## Playtest cron 2026-11-25T20:35:46Z: 3rd post-V5 cycle (35 critiques, 3 P0, 25 P1, 7 P2)
+
+**Headline:** Combat is mechanically rich but strategically flat — depth exists in the engine (tags, STAB, phases, _closing, _pressure, _inCrit, roles) but is never on the player's critical path; every persona collapses the fight into a single dominant verb (mash basics, kite-heal, or let auto play), and the first 18s have zero visible momentum beats for the impatient to stay for.
+
+**Infra:** 22/70 StructuredOutput fails (~31%). Pre-sim gate PASS.
+
+### Three adversary-confirmed P0s
+
+**P0-1 [cautious kiter, arena shrink + gap-closer]** — findings-only.
+- Critique: 8/8 timeouts at 38.2s with 0 wins. battle.js's "anti-turtle" ramps (_pressure, _closing) are CONSEQUENCE modifiers on player hits — a zero-output kiter never sees them. Comment at L4389 ("zero-output turtle gets no free progress") literally defends the failure mode. No POSITIONAL forcing function exists.
+- Fix bundle: new `_arenaRadius` field + dusk/weeds encroachment ring render + bilateral neutral DOT + timer-gated enemy pounce.
+- **Classification: findings-only.** New field + new render + new AI branch = architecture.
+
+**P0-2 [cautious kiter, dodge sustain farming]** — **AUTO-FIXED (72c7bf1b).**
+- Critique: dodge is strictly dominant and self-sustaining. Perfect-dodge pays +18 ult + combo; good-dodge pays 4% maxhp + 6 ult + shortened cd. A patient player discovers dodging IS the gameplay loop — zero survival pressure to attack. 85s timeout resolves as "wild cat flees" (not a scored loss).
+- Fix (LOW-RISK local logic gate): hurtEnemy() timestamps `this._lastOffenseT` on every direct (non-DoT, non-duo) hit. Dodge resource rewards (heal + ult + combo) gated on (t - _lastOffenseT < 3). i-frames, bullet-time, dodgeCd shorten, VFX all stay unconditional.
+- Gate: all 4 combat scripts PASS. Commit `72c7bf1b`. Not pushed.
+
+**P0-3 [impatient, first 18s design-dead]** — **AUTO-FIXED (5b443ad7).**
+- Critique: 18s flee lands EXACTLY on ULT_COOLDOWN_SECONDS=18 (battle.js L14) and BEFORE _closing ramp even starts. tempoScale=0.64 stretches the clock to feel calm, but no visible momentum beats before the patience cliff.
+- Fix (two LOW-RISK numeric tunes): (1) `_closing = clamp((t-12)/18, 0, 1)` was (t-25)/20 — execute dmg + poise-refill suppression now bite at ~12s. (2) `captureThr = 0.28 + 0.14 * clamp(1 - t/20, 0, 1)` was const 0.28 — capture-ready ring arms at up to 0.42 HP in first ~20s.
+- **PARTIAL REVERT:** adversary also suggested `this.ult = 25` seed at battle start. Tripped `check-cat-bond-band-fitness` NEG-CONTROL C1 — frozen-out-of-position cat auto-cast R from the corner and dealt 5156 AOE damage (should be ~0). That slice reverted; the two safe tunes shipped as commit `5b443ad7`.
+- Gate: all 4 combat scripts PASS post-fix. Not pushed.
+
+### Recurring P1 themes (25, findings-only)
+
+1. **Basic dominates (×8)** — Q is 0.3% of inputs; starter Q fan power 0.8 on 4.5s CD = rounding error next to 50+ basics/min. No mark-consume loop, no armor break, no cooldown reset for basic. Adversary suggests Q as SETUP skill (applies tag → next basics ×1.8-2.2 and consume mark) — same ground as cycle N-1/N-2's task #52 signal.
+2. **"Skill-momentum" multiplier idea (×2)** — Specific suggestion: Q/E lands → f._skillMomentumUntil = t+1.6 → basic ×1.4 inside window, ×0.7 if pure-basic for 3s. Keeps DPS parity on ideal rotation but makes rotation rhythmic.
+3. **Combo flatlines at 20 hits (×3)** — comboMult caps ×1.20 at combo 50; heat caps shake at combo 20; 3,194 hits of identical feedback in a 3,214-hit fight.
+4. **Danger feedback wrong noun (×2)** — Vignette telegraphs player STATE; a masher watches the enemy sprite not screen edges. No per-projectile "this one is lethal" tag.
+5. **Phase system hollow (×2)** — SR/SSR phase at fixed HP thresholds but rotation never changes.
+6. **Ult economy no narrative author (×2)** — gainUlt fires from 8+ sites without unified pacing.
+7. **Starter kit homogeneity (×3)** — Every cat's defaults are projectile + dash; no mechanical asymmetry at loadout 1.
+8. **Auto mode = spectator loop (×3)** — Smart-auto has no "commander" lever for the player.
+
+### P2 (7, findings-only)
+1. Berserker gauge wish: combo exists, caps invisible, grants ult (the button the complainer refuses to press).
+2. Run-end meta-layer missing.
+3. stompStreak uni-directional (no dampener if struggling).
+4-7. Various cosmetic/signaling asks.
+
+### AUTO-FIX OUTCOME
+- ❌ P0-1 (arena shrink + gap-closer) → findings-only. Architecture.
+- ✅ P0-2 (dodge sustain gate) → **commit `72c7bf1b`** (4-gate verified).
+- ✅ P0-3 (front-load _closing + captureThr) → **commit `5b443ad7`** (4-gate verified). Partial: `this.ult=25` slice reverted on band-fitness C1 fail.
+- **2 auto-fixes shipped, 1 slice reverted, 1 P0 findings-only.**
+
+**Branch state:** `main` 51 commits ahead of origin/main after these two commits; NOT pushed.
+
+## Playtest cron 2026-11-25T22:54:36Z: 4th post-V5 cycle (39 critiques, 2 P0, 31 P1, 6 P2)
+
+**Headline:** Combat is dense with hidden depth, but every persona's fun score is bleeding at the same wound: the first 18 seconds have no legible payoff, defensive and skill verbs lack identity, and losses/wins/timeouts all collapse into one invisible sawtooth — fix pacing legibility and feedback differentiation before adding content.
+
+**Infra:** 17/69 StructuredOutput fails (~25%). Pre-sim gate PASS.
+
+### Two adversary-confirmed P0s — both findings-only
+
+**P0-1 [panicky, 0 ults across 8 battles]**
+- Critique: 0 ults means ult is undiscoverable. initCoach's steps array (L303) has NO ult step — Q/E/dodge taught, R never. Passive gainUlt 8/dt = ~12.5s to first full; early panicky fights end before banner fires. "R" button glyph on HUD is the only affordance.
+- Fix bundle: (a) new coach step on first canUltimate() — UI/coach arch. (b) sticky `_ultReadyBanner` + new `ultUses` state — new state field. (c) `gainUlt((ultUses===0 ? 14 : 8) * dt)` — conditional first-fight boost.
+- **Classification: findings-only.** New coach step + new state field + save-adjacent `ultUses` counter = architecture work excluded by cron rule.
+
+**P0-2 [impatient, first dopamine beat before 18s]**
+- Critique: 18s flees cluster EXACTLY at ULT_COOLDOWN_SECONDS. First 18s is dopamine-empty — no stagger, no ult prompt, no closing vignette. Previous attempt at this (commit `5b443ad7` _closing 25→12) was REVERTED (commit `b6e5080c`) because stand-at-max control beat baseline in MOBA judge.
+- Fix bundle:
+  - `this.ult = 0 → 35` seed — **ALREADY TRIED, broke band-fitness C1** (frozen cat auto-cast R from corner, 5156 AOE dmg where ~0 expected).
+  - `ULT_COOLDOWN_SECONDS 18 → 12` — Actually only controls BETWEEN-ult cooldown (L3185 sets ultCd AFTER ult fires), won't affect first-fight 18s cliff.
+  - Early guaranteed stagger at t≈6s + combo≥5 — new conditional + new VFX sequence, architecture.
+  - `_closing 25→15` — close to the already-reverted 25→12; the sim judge showed passive standoff benefits more than player.
+- **Classification: findings-only.** Every slice either already failed a gate OR is architecture OR misdiagnoses the knob (ULT_COOLDOWN_SECONDS is between-ult only).
+
+### Recurring P1 themes (31, findings-only)
+
+1. **Masher Q unready-feedback (×4)** — `skillQ: if (f.cd.q > 0) return false;` silently eats presses. 75-90% of Q button presses are no-ops with zero feedback. Suggestion: denied-click SFX + red-gray shake + "CD 0.7s" micro-label.
+2. **Loss cluster at 15.9-16.7s (×3)** — Losses have no post-mortem, no second act, no `TEAM_CRIT_FRAC` phase gate like enemies have. All losses one shape.
+3. **Within-fight mercy band missing (×3)** — `lossStreak` mercy is BETWEEN fights; nothing catches a player WITHIN a tilting fight. Suggestion: `lastStandThreshold = 0.35` incoming-DR when aggregate team HP < 35%.
+4. **First 18s design-dead (×4)** — Already covered in P0-2 but recurring across personas; the fourth time this theme recurs suggests it's a high-priority REAL problem that adversary's proposed knobs don't actually fix correctly.
+5. **Q/E iconic signature missing (×3)** — regularSkillAccent reuses element palette → Q lands look identical to basic when element matches. Skill hits should have wider arc / brighter flash / hitstop.
+6. **Combo flatlines at ~20 (×3)** — comboMult sqrt-capped at ×1.20; 1500-3200 basics is 3194 identical feedback events after first 20.
+7. **Ult teach gap (×2)** — Separate from P0-1 wording; multiple personas note R is never introduced in coach.
+8. **Cautious kiter still dominant strategy (×2)** — despite P0-2 gate from prior cycle, auto-mode manual mode difference not bridged.
+9. **Enemy archetype sameness (×2)** — one HP pool in different colors.
+
+### P2 (6, findings-only)
+1. Combo meter cap invisible to high-APM mashers.
+2-6. Various cosmetic/polish asks (floater variety, audio differentiation, etc).
+
+### AUTO-FIX OUTCOME
+- ❌ P0-1 (panicky ult discoverability) → findings-only. Coach arch + new state field.
+- ❌ P0-2 (impatient first-18s dopamine) → findings-only. Previously-failed gates + misdiagnosed knob.
+- 0 commits, 0 reverts this cycle. **Combat reads healthy for auto-fix scope** — both P0s are structural asks the cron correctly keeps out of my hands.
+
+**Branch state:** `main` 57 commits ahead of origin/main; NOT pushed.
+
+**Cross-cycle signal (now 4 cycles):** "first 18s design-dead" + "0 ults across N battles" + "Q silently eaten by cd" cluster is the strongest findings signal. Owner-level call needed on coach-split (teach R + split E coach steps) and skill-ready feedback — both are UI/coach architecture out of auto-fix scope.
+
+## Playtest cron 2026-11-25T23:34:21Z: 5th post-V5 cycle (36 critiques, 2 P0, 33 P1, 1 P2)
+
+**Headline:** Cat Bond's combat sim is well-tuned but encounter-shape and input-grammar are a monoculture — basics carry every fight, skills don't sequence each other, and three cohorts (kiter, panicky, impatient) hit identical dead ends the mercy stack hides instead of fixes.
+
+**Infra:** 21/70 StructuredOutput fails (~30%). Pre-sim gate PASS.
+
+**NEW this cycle:** adversary prompt + RSI balance-probe + propose.mjs now reference `docs/combat-redesign/BALANCE-BRIEF-passive-p1.md` so critiques route into the pending passive system rather than inventing new global knobs. See 3 commit chain: `c3c1677f` brief + `6bd3962e` wiring.
+
+### Two P0s — both findings-only (route into P1 passive system)
+
+**P0-1 [cautious kiter, dodge → counter]**
+- Critique: perfect/good dodges only reward the DEFENDER (slowmo, i-frames, ult, combo) — nothing touches attacker's HP/poise/vulnerability. _closing is documented as "only amplifies LANDED HITS" so zero-output kiter never sees it. 8/8 timeouts at 38.2s.
+- Adversary fix: `attacker.vulnerableT = 1.4` on perfect dodge + poise break — essentially building a NEW dodge-counter mechanic.
+- **This duplicates 团团's 碎霜反击 pending passive** (shield-break → freeze + poise削减). The P1 brief's 团团 spec addresses the "defensive → offensive tempo" gap for shield cats. Different cat triggers (kiter uses perfect-dodge, 团团 uses shield-break) but same underlying design shape.
+- **Classification: findings-only.** Would collide with 团团 passive. Owner call: either add a SIMILAR passive for a dodge-focused cat (candidate 雪袜 or new) OR let 团团 be the shield-counter example and keep dodge rewards as-is.
+
+**P0-2 [panicky, boss basic-armor]**
+- Critique: 0/8 panicky mash death at ~31s. Mercy stack (playerDmg +40%, enemyDmg -45%, _autoAssist 0.8, closing suppress etc) is INVISIBLE to a panic-masher; they can't feel the fight easing because they're dying while mashing basics.
+- Adversary fix: new `e.basicResist = 0.55` field on elite/boss, -55% floater VFX, new i18n banner "按 Q/E 技能", split `finish()` telemetry.
+- **Architecture**: new enemy field + new UI floater + new i18n + modified dyingNoSkill gate + telemetry schema split.
+- **Classification: findings-only.** Several pieces. Also note: this is partially addressed by Task #52 Phase A (basic ×0.70 globally) still in task-52-review stash — once that lands, the "basic dominates" complaint weakens.
+
+### Recurring P1 themes (33, findings-only)
+
+1. **Basic/skill sequencing missing (×8)** — several personas: Q/E doesn't change next basic; no rotational coupling. Adversaries propose `empoweredBasics` from Q cast. **This is Task #52 Phase B territory** (already decided NOT to do).
+2. **Frenzy / berserk layer missing (×3)** — press-count-not-hit-count escalation for mashers. New mechanic; not in V4 passives.
+3. **_closing only amplifies landed hits (×5)** — same critique as P0-1, voiced across kiter personas.
+4. **Impatient 18s cliff (×4)** — again. Previous attempts at fixing this reverted.
+5. **Panicky invisible mercy stack (×4)** — same critique as P0-2.
+6. **Explorer boredom at 20+ fights (×3)** — adversary suggests encounter-shape variety (archetype templates). Not covered by any pending work.
+7. **Lazy auto spectator (×3)** — no commander-lever. Not covered.
+8. **Interrupt / counterplay missing (×3)** — no enemy mechanic forces Q/E/dodge specifically.
+
+### P2 (1, findings-only)
+1. Combo cap +20% too soft for mashers (same combo-flatline complaint as prior cycles).
+
+### AUTO-FIX OUTCOME
+- ❌ P0-1 (dodge-counter) → findings-only. Routes into 团团 passive OR new cat passive.
+- ❌ P0-2 (boss basic-armor) → findings-only. Architecture + partially covered by Task #52 Phase A.
+- 0 commits, 0 reverts this cycle.
+
+**Branch state:** `main` 60 commits ahead of origin/main after `6bd3962e`; NOT pushed.
+
+**Cross-cycle signal (5 cycles):**
+Three themes now reach **cycle-5 recurrence**:
+1. Basic dominates / skill grammar missing — direct map to **Task #52 Phase A** (ready in task-52-review stash) + **P1 passives** (sequencing comes via 蓝莓 冰川破击, 奥利奥 残影, 杏仁 move-charge, etc).
+2. First 18s dopamine cliff — no clean fix in pending work; needs coach redesign.
+3. Kiter dead-end — maps to a dodge-counter passive (NEW CAT candidate; not in V4's 33).
+
+**Next structural recommendation (owner-level):** ship Task #52 Phase A + infra PR + 12-cat P1 PR as a coordinated release. These collectively address ~70% of the recurring P1 cluster.
+
+## RSI 2026-11-25T23:53:25Z — no agent proposal beat baseline; archive 2/64
+
+4 candidates proposed to fill low-tempo / mid-engage / varied-durability niches:
+- `low-tempo-anchor` (anchor 70-120)
+- `cd-hugger-dropoff` (3-phase on cd+hp)
+- `edge-of-skill-range` (outer edge 140-175)
+- `hurt-hug-retreat-mix` (hp-gated hug/kite)
+
+Result: winner='?' (none beat baseline 0.752); control check clean (no guard trip); archive 2/64 unchanged. Balance: water(0.50) fire(0.57) cv=0.053 gap=0.073. Signal is still that archive is reachability-capped near ~5 cells — proposing more rules at current harness config won't grow coverage.
+
+Side note: compared to 2026-11-25T20:46:46Z (guard-FAILED), this cycle's clean control-check suggests the task-52-review branch's reverted P0-3 `_closing` ramp + the shipped dodge-sustain-gate (72c7bf1b) rebalanced the sim so passive-standoff no longer beats baseline.
+
+## Playtest cron 2026-11-26T00:32:53Z: 6th post-V5 cycle (45 critiques, 7 P0, 29 P1, 9 P2)
+
+**Headline:** Combat is systemically legible to the designer and systemically invisible to the player — the pacing, escalation, ult, and capture-window mechanics all already exist in battle.js but render as a silent flatline from every persona's seat, so the top fixes are feedback and verdict, not numbers.
+
+**Infra:** 11/69 StructuredOutput fails (~16%, lowest noise all week). Pre-sim gate PASS.
+
+**NEW context this cycle:** first cycle sim'd Task #52 Phase A + 33 passives + yard counter-seed + role-gates + lickWound + 14 prior P0s + V5 VFX.
+
+### Seven P0s — ALL findings-only (architecture / UI / feedback layer)
+
+**P0-1 [masher, under-utilization re-coach]** — new `battleStats.everUsedX` state fields + new "unblockable" telegraph kind + HUD pulse. State schema + new VFX = architecture.
+
+**P0-2 [kiter, closing-lift for P1 passives]** — kiter identity passives (跳跳/蓝莓/奥利奥) should sense `_closing > 0` and lift stack caps. Requires editing every P1 passive + broadening execute window. Passive-system-wide change.
+
+**P0-3 [kiter, encounter-modifier roll]** — new enemy pack tags (elite/ambush/enrage/reinforcement/terrain-hazard). New pack-building system, not covered by P1 passives.
+
+**P0-4 [panicky, silent CD whiff]** — `whiffSkill(f, slot)` helper giving every blocked skill press feedback (HUD pulse + audio + tink). Smallest P0; still needs new helper + 2 new SFX + i18n for "x.xs" floater. Architecture border.
+
+**P0-5 [panicky, ult never fills in short fights]** — `this.ult=60` seed + new `State.battleCount` field + modal blocking cinematic on first-ever-ready. ALREADY FAILED (commit `5b443ad7` → `b6e5080c`) when similar seed broke band-fitness C1. State schema change.
+
+**P0-6 [panicky, verdict-absence on timeout]** — new `result:'defeat'` state + "决胜一击" telegraphed finisher + scored verdict. New state transitions + new i18n + new VFX.
+
+**P0-7 [impatient, 18s cliff + no mid-fight beat]** — new mid-fight telegraphed beat at t≈10s. New enemy AI branch. Previous attempts to fix 18s cliff reverted (commit `b6e5080c`).
+
+### Recurring P1 themes (29, findings-only)
+
+The strongest 5+ cycle signal continues: **basic dominates / feedback invisible / coach not re-asserted**. The passive system IS in the sim now (33 traits) — adversary notes **passives don't fix feedback/HUD gaps**; they're combat-identity flavor on top of a loop the player hasn't entered.
+
+### P2 (9, findings-only)
+Mostly polish: VFX intensity, SFX variety, floater color-coding.
+
+### AUTO-FIX OUTCOME
+- ❌ 7/7 P0s → findings-only. Every single P0 is UI/state/architecture; cron rule excludes. Also several hit previously-reverted territory.
+- 0 commits, 0 reverts.
+
+**Branch state:** `main` 66 ahead of origin/main after yard-counter fix (`4f1210fd`); NOT pushed.
+
+**Observation on the passive system:** First cycle with 33 traits active in sim. Adversary doesn't attribute any P0 to a trait being broken — traits are "invisible" per the "feedback systemically invisible" headline. That's actually expected: traits fire in-code but have ZERO HUD rendering (we skipped the UI-render-for-traits item earlier).
+
+**Owner-level recommendation:** next biggest-leverage ship candidates (all excluded from auto-fix by cron):
+1. **UI render for passive traits** (so players see 准备/触发/消散 phases). Fixes the "invisible" problem the P0-2 closing-lift + P1 feedback cluster both circle.
+2. **Coach re-coach** (P0-1): once-per-save isn't enough; re-arm per battle on battleStats.everUsedX == false.
+3. **Verdict split**: finish(false) → defeat vs flee vs timeout (P0-6).
+
+## Playtest cron 2026-11-26T01:53:36Z: 7th post-V5 cycle (39 critiques, 4 P0, 26 P1, 9 P2)
+
+**Headline:** Cat Bond's combat telemetry hides three systemic gaps — invisible escalation, flat basic-attack rhythm, monochromatic enemy loop — every persona except auto-battler and explorer quits before the design's real beats land.
+
+**Infra:** 17/69 StructuredOutput fails (~25%). Pre-sim gate PASS. First cycle with: damage global bump, 水鞭 width/VFX rewrite, enemy single-shot sprite fix, enemy basic yarn/fish, melee fire-gate 50→76.
+
+### Four P0s — all findings-only
+
+**P0-1 [masher, cooldown starvation + enemy identical cadence]**
+- Mercy band only tunes magnitudes, not tempo. Masher's failure = cooldown starvation (4-6s skill gap), not weak hits. Also "dmgTaken=428 every time" — no enemy windup/interval jitter.
+- Fix bundle: new mercy-band third axis (cd ×(1-0.35m) at lossStreak≥5) + new enemy AI jitter (±8-12%).
+- **Classification: findings-only.** New state tracking + new AI timing override = architecture. Adversary explicitly says "route stand-still fantasy into 汤圆 storage-strike passive instead of a global knob."
+
+**P0-2 [panicky, 58 taps/sec basic with no tempo feedback]**
+- 1788 basics in 30.5s, 0 kills. Game silently absorbs every tap. No "basic alone will never finish this" signal.
+- Fix bundle: new basic-mash streak counter + "重击就绪" HUD prompt + glow + skill-slot pulse. New field + new VFX + new i18n.
+- **Classification: findings-only.** Architecture. Adversary notes: "wire this streak into the P1 trigger plumbing" — i.e. this is Task #52 Phase B territory (already owner-declined).
+
+**P0-3 [impatient, 18s cliff + invisible _closing]**
+- 18s = ULT_COOLDOWN_SECONDS. `_closing` ramp works (t25→t45) but is design-INVISIBLE (post-stagger poise + sub-28% execute). Player bails before any of it shows.
+- Fix bundle: new vignette darkening at t=12 + enemy red rim + "收网" HUD pip.
+- **Classification: findings-only.** New VFX + new HUD element + new i18n. Previous attempts at 18s cliff all reverted.
+
+**P0-4 [impatient, 1600 basics no payoff]**
+- Phase A basic nerf backfired: mash count went UP because basics stayed the reliable lever. Need escalation inside basics.
+- Fix bundle: new basic-combo meter + free empowered strike every N connects + enemy armor-crack overlay at HP tiers.
+- **Classification: findings-only.** Nearly identical to P0-2 (same fix class). Adversary routes to 汤圆 storage-strike passive.
+
+### Recurring P1 themes (26, findings-only)
+
+1. **Defense-mash detector (×3)** — `_stalled` teaches OFFENSE when the panicky/masher death mode is DEFENSE (no dodge, no shield). Reactive re-teach via mash-stall-defense banner.
+2. **Mid-HP stall dead zone (×2)** — `_closing` close-bonus gated on sub-28% HP → fights stuck at 41% HP get ZERO help while enemy-side ramps run across full band.
+3. **Deterministic enemy pattern (×4)** — no windup/interval jitter → "428 every time". Flat loss texture.
+4. **passive UI render missing (×3)** — same as cycle 5-6: 33 traits run invisibly.
+
+### P2 (9, findings-only)
+Various polish + "wrong fix would collide with passive brief" critiques.
+
+### AUTO-FIX OUTCOME
+- ❌ 4/4 P0s → findings-only. All architecture/UI layer.
+- 0 commits.
+
+**Cross-cycle signal** (now 7 cycles):
+- **basic dominance**: Phase A shipped, adversary says it **made the count go UP**. Task #52 Phase B (mark-consume) was declined by owner — this remains open.
+- **first 18s invisible**: 3× reverted attempts. The 18s cliff is now the #1 persistent complaint.
+- **loss determinism**: new signal — enemy AI has no jitter.
+
+**Owner-level ship candidates**:
+1. Enemy AI jitter (small, numeric-ish, might actually be low-risk if it's just `fireCd *= 0.92+rng*.16` — closest to cron-eligible)
+2. Mercy band 3rd axis (cd reduction at high lossStreak)
+3. Visible `_closing` telegraph at t=12
+4. (long-standing) Passive UI render
+
+**Branch state:** `main` 73 ahead of origin/main; NOT pushed.
