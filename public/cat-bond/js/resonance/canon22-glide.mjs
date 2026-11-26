@@ -1,11 +1,11 @@
 // Canon 2.2 cloud waterfall: deterministic input-driven flight; replayable proof.
-function newGlide(operation,choice){return {operation,choice,training:choice==="train",openGlide:true,x:0,y:.5,target:.5,velocity:0,elapsed:0,attempts:0,started:false,solved:false,notice:"ready",gate:0,passed:[],route:[],lastSteer:0,steerTravel:0,routeUsed:null,liftTime:0,platform:false,frames:0,acc:0,inputs:[]};}
+function newGlide(operation,choice){return {operation,choice,training:choice==="train",openGlide:true,x:0,y:.5,target:.5,velocity:0,elapsed:0,attempts:0,started:false,solved:false,notice:"ready",gate:0,passed:[],route:[],lastSteer:0,steerTravel:0,routeUsed:null,liftTime:0,platform:false,frames:0,acc:0,inputs:[],sampledTarget:.5};}
 
-function steerGlide(f,y){if(!f||f.solved||!Number.isFinite(y))return false;const target=Math.max(.15,Math.min(.85,y));if(Math.abs(target-f.target)>.015){f.lastSteer++;f.steerTravel+=Math.abs(target-f.target);}f.target=target;f.started=true;f.notice="flying";const last=f.inputs.at(-1);if(last?.frame===f.frames)last.y=target;else if(last?.y!==target)f.inputs.push({frame:f.frames,y:target});return true;}
+function steerGlide(f,y){if(!f||f.solved||!Number.isFinite(y))return false;const target=Math.max(.15,Math.min(.85,y));f.target=target;f.started=true;f.notice="flying";const last=f.inputs.at(-1);if(last?.frame===f.frames)last.y=target;else if(last?.y!==target)f.inputs.push({frame:f.frames,y:target});return true;}
 
 function retryGlide(f,notice){const attempts=f.attempts+1;Object.assign(f,newGlide(f.operation,f.choice),{attempts,notice});}
 
-function glideStep(f){const dt=.02;f.frames++;f.elapsed=f.frames*dt;const lift=f.x>.13&&f.x<.39&&f.y<.43;const storm=f.x>.39&&f.x<.72;const wind=Math.sin(f.x*19)*.055+(storm&&f.routeUsed==="upper"?Math.sin(f.x*51)*.13:0);f.velocity+=((f.target-f.y)*5+wind+(lift?-.18:.07)-f.velocity*3)*dt;f.y+=f.velocity*dt; if(lift)f.liftTime+=dt;
+function glideStep(f){const dt=.02;if(Math.abs(f.target-f.sampledTarget)>.015){f.lastSteer++;f.steerTravel+=Math.abs(f.target-f.sampledTarget);f.sampledTarget=f.target;}f.frames++;f.elapsed=f.frames*dt;const lift=f.x>.13&&f.x<.39&&f.y<.43;const storm=f.x>.39&&f.x<.72;const wind=Math.sin(f.x*19)*.055+(storm&&f.routeUsed==="upper"?Math.sin(f.x*51)*.13:0);f.velocity+=((f.target-f.y)*5+wind+(lift?-.18:.07)-f.velocity*3)*dt;f.y+=f.velocity*dt; if(lift)f.liftTime+=dt;
  if(!f.routeUsed&&f.x>=.37){if(f.y<.41&&f.liftTime>=.7)f.routeUsed="upper";else if(f.y>.55)f.routeUsed="lower";else {retryGlide(f,"miss");return false;}}
  if(storm&&((f.routeUsed==="upper"&&f.y>.48)||(f.routeUsed==="lower"&&f.y<.50))){retryGlide(f,"miss");return false;}
  if(f.routeUsed==="lower"&&f.x>.55&&f.x<.68&&f.y>.64&&f.y<.80)f.platform=true;
