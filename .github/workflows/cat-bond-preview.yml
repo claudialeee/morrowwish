@@ -336,7 +336,8 @@ jobs:
         if: always()
         with:
           name: preview-title
-          path: preview-*.png
+          path: |
+            preview-*.png
             artifacts/cat-bond-layout/
           if-no-files-found: ignore
           retention-days: 3
