@@ -14,13 +14,13 @@ for(let variant=0;variant<2;variant++){
   if(scene.id==="finale:B-03")for(let i=0;i<6;i++)ok(e.supportAction(campaign.regions[i],campaign.support[i]),"support");
   const late=["mechanism:muling-unlock","npc:public-accountability","npc:second-garden-key"];
   for(const op of scene.requires.filter(x=>!late.includes(x)))ok(e.record(scene.id,op),scene.id+" "+op);
-  if(scene.id==="starfall:F-04")for(const [a,b,x,y] of campaign.links)for(let i=0;i<4;i++)ok(e.exchange({a,b,stage:["sendA","receiveB","sendB","receiveA"][i],actor:[a,b,b,a][i],action:[x,x,y,y][i]}),"exchange");
+  if(variant===1&&scene.id==="starfall:F-04")for(const [a,b,x,y] of campaign.links)for(let i=0;i<4;i++)ok(e.exchange({a,b,stage:["sendA","receiveB","sendB","receiveA"][i],actor:[a,b,b,a][i],action:[x,x,y,y][i]}),"exchange");
   while(e.view().cursor<scene.lines.length)ok(e.nextLine(),scene.id+" line");
   if(scene.choiceTiming!=="beforeAction"&&scene.choices.length)ok(e.choose(scene.choices[variant%scene.choices.length].id),scene.id+" choice");
   for(const op of scene.requires.filter(x=>late.includes(x)))ok(e.record(scene.id,op),op);
   ok(e.finish(),scene.id+" finish");e=makeEngine(campaign,e.snapshot());
  }
- assert.ok(e.view().ending&&e.view().ring);
+ assert.ok(e.view().ending&&e.view().ring);assert.equal(e.view().cargoComplete,variant===1);assert.equal(Object.values(e.snapshot().links).reduce((n,l)=>n+l.length,0),variant===1?24:0);assert.ok(e.view().support.every(p=>p.ready));
 }
 function fixture(id){const i=campaign.scenes.findIndex(x=>x.id===id),s=makeEngine(campaign).snapshot();s.scene=id;s.completed=campaign.scenes.slice(0,i).map(x=>x.id);s.choices={"sky:S-02":"lead","library:M-01":"open","starfall:F-01":"coordinate"};return s;}
 function setup(id,region,seed){const s=fixture(id),root={resonance:s,cats:[{uid:"main",species:"jinjc",personality:"gentle"},{uid:"m",species:"story_muling",storyActor:"muling"}],dex:{jinjc:1},coins:0,fish:0,battlePrefs:{teamUids:["main","m"]},resonanceExploration:{location:region,positions:{},interactions:{},pickups:{},cargo:null}};seed?.(root);const State={S:root,activeSlot:()=>"slot1",save:()=>({ok:true}),makeCat:(species,opts)=>({uid:species,species,...opts})};const b=createWorldBridge(State),rt=getSlotRuntime(State);ok(b.enter(region),"enter "+id);return {root,b,rt,x:createExplorer(b,region,{adventureActions:true})};}
@@ -42,8 +42,8 @@ walk(reload,F["rescue:trapped-cats"]);ok(reload.interact("rescue:trapped-cats"),
 const oldForest=fixture("forest:R-03");oldForest.evidence["forest:R-03"]=["puzzle:paired-water-gates"];oldForest.cursor=2;assert.equal(makeEngine(campaign,oldForest).view().cursor,0);assert.equal(makeEngine(campaign,oldForest).view().objective.length,4);
 const forge=run("forge:E-01","forge","puzzle:festival-lantern");recordNpc(forge,"xiaomao","forge");
 run("forge:E-03","forge","puzzle:heat-pressure");
-run("sky:S-01","sky","puzzle:sky-pouch",root=>root.resonance.links["forge:sky"]=["sendA","receiveB"]);
-const mail=run("sky:S-03","sky","puzzle:joint-flight",root=>root.resonance.links["forge:sky"]=["sendA","receiveB"]);walk(mail.x,layouts.sky.features["explore:letter-recipient"]);ok(mail.x.interact("explore:letter-recipient"),"deliver letter");assert.ok(!mail.b.view().objective.includes("explore:letter-recipient"),"letter proof");
+run("sky:S-01","sky","puzzle:sky-pouch");
+const mail=run("sky:S-03","sky","puzzle:joint-flight");walk(mail.x,layouts.sky.features["explore:letter-recipient"]);ok(mail.x.interact("explore:letter-recipient"),"deliver letter");assert.ok(!mail.b.view().objective.includes("explore:letter-recipient"),"letter proof");
 const lib=run("library:M-05","library","puzzle:two-route-model",null,o=>recordNpc(o,"moye","library"));assert.ok(!lib.b.view().ring,"model must not credit real links");
 run("starfall:F-01","starfall","puzzle:caravan-route",null,o=>{recordNpc(o,"lichuan","starfall");recordNpc(o,"xingya","starfall")});
 const star=setup("starfall:F-04","starfall");const proof={sceneId:"starfall:F-04",operation:"battle:observatory-echo",region:"starfall",verified:true,outcome:"win",token:star.rt.capture()};assert.equal(star.rt.evidence(proof).ok,false);walk(star.x,layouts.starfall.features["battle:observatory-echo"]);assert.equal(star.rt.evidence({...proof,outcome:"defeat",token:star.rt.capture()}).ok,false);ok(star.rt.evidence({...proof,token:star.rt.capture()}),"observatory victory evidence fixture");assert.equal(star.b.view().objective[0],"puzzle:distributed-routing");

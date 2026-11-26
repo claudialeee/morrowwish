@@ -71,8 +71,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  await talk('starfall:F-03','Muling');await scene('starfall:F-04');await scene('starfall:F-04');await button('Invite Xingya').or(button('Talk to Xingya')).click();await dialogue('starfall:F-04','Let Xingya coordinate repairs');
  await puzzle('Distributed observatory',['West','Relay','East']);
  await restore('Starfall sanctuary',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan'],'Beyond Stars',['Dew · Low','Starlight · Middle','Flower bell · High'],'starfall');
- const routes=[['harbor','forest','Beacon-guided supplies','Herbs and waterway map'],['forest','forge','Cooling water and herbs','Pumps and tools'],['forge','sky','Wind vanes and flight parts','Wind data and airship route'],['sky','library','Courier route','Archived flight maps'],['library','starfall','Star chart and coordinates','Astronomical observations'],['starfall','harbor','Navigation bell and star compass','Harbor navigation response']];
- for(const [a,b,forward,back] of routes){const key=a+':'+b;let v=await view();for(let i=v.links[key].length;i<4;i++){const actor=[a,b,b,a][i];await gotoRegion(actor);await ship(actor,i<2?forward:back);await page.waitForFunction(({key,i})=>CatBondResonance.view().links[key].length===i+1,{key,i});}}
+ const ready=await view();assert.equal(ready.ring,true);assert.equal(ready.cargoComplete,false);assert.ok(ready.support.every(s=>s.ready));
  await gotoRegion('starfall');await dialogue('starfall:F-04');await scene('starfall:F-05');
  assert.ok((await view()).ring);assert.equal((await view()).melodies.length,6);await log('chapter-6-real-ring');
  }
