@@ -71,6 +71,24 @@ for(const test of cases){
    await page.screenshot({path:out+'/'+name+'-ending.png'});
    assert.equal(await page.evaluate(()=>CatBondResonance.view().ending),true);
    assert.equal(await page.evaluate(()=>State.S.cats.find(c=>c.storyActor==='muling')?.uid),initial.away);
+   await button('Return to Sunlit Garden').click();
+   await page.waitForFunction(()=>__game.scene==='yard');
+   const trust=await page.evaluate(()=>State.S.resonance.trust.muling);
+   await button('Talk to Muling').click();
+   let ambient=page.locator('.res-ambient-simple');
+   await ambient.waitFor();assert.equal(await ambient.locator('h2').innerText(),'Decide together');
+   await ambient.getByRole('button',{name:'Maybe later',exact:true}).click();
+   assert.equal(await page.evaluate(()=>State.S.resonance.ambientDone.includes('muling:accountability')),false);
+   await button('Talk to Muling').click();await ambient.waitFor();
+   await ambient.getByRole('button',{name:'Ask everyone what they think',exact:true}).click();
+   await ambient.getByRole('button',{name:'Return to exploration',exact:true}).waitFor();
+   await page.screenshot({path:out+'/'+name+'-accountability.png'});
+   await ambient.getByRole('button',{name:'Return to exploration',exact:true}).click();
+   assert.equal(await page.evaluate(()=>State.S.resonance.ambientDone.includes('muling:accountability')),true);
+   assert.equal(await page.evaluate(()=>State.S.resonance.trust.muling),trust+1);
+   assert.equal(await page.evaluate(()=>CatBondResonance.view().ending),true);
+   console.log('AMBIENT BROWSER PASS muling:accountability (after real epilogue input)');
+
   }else await page.waitForFunction(id=>CatBondResonance.view().current?.id===id,test.next);
   assert.deepEqual(errors,[]);
   results.push({scene:test.scene,status:'passed',observed,choice:test.choice||null,initial});
