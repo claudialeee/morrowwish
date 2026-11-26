@@ -209,6 +209,13 @@ for(const marker of ['game_start','game_complete','game_over','game_retry','cat_
  if(!bondGame.includes(marker))throw Error('Cat Bond missing gameplay/analytics: '+marker);
 }
 const bondHTML=fs.readFileSync('public/cat-bond/index.html','utf8');
+// Classic scripts share one global lexical scope. Reject unresolved merge markers
+// and duplicate sources even if their cache-buster queries are different.
+if(/^(?:<<<<<<< |=======\s*$|>>>>>>> )/m.test(bondHTML))
+ throw Error('Cat Bond HTML contains unresolved merge conflict markers');
+const bondScripts=[...bondHTML.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map(m=>m[1].split(/[?#]/)[0]);
+if(new Set(bondScripts).size!==bondScripts.length)
+ throw Error('Cat Bond must load each classic script exactly once: '+bondScripts.filter((src,i)=>bondScripts.indexOf(src)!==i).join(', '));
 // Every active game module must keep a cache-buster, but the CI test must
 // not pin a stale version when the game's battle mechanics are improved.
 
