@@ -1,0 +1,31 @@
+// Run: node scripts/check-cat-bond-species-traits.mjs
+import fs from 'node:fs';
+import vm from 'node:vm';
+const w={};const sandbox=vm.createContext({window:w,console});
+for(const file of ['traits.js','trait-fx.js'])vm.runInContext(fs.readFileSync(new URL('../public/cat-bond/js/'+file,import.meta.url),'utf8'),sandbox);
+
+const T=w.CatTraits,F=w.CatBondTraitFX;
+const C=(sp,ex={})=>({cat:{species:sp,uid:sp},x:0,y:0,hp:100,maxhp:100,dmg:20,alive:true,...ex});
+const B=()=>({t:1,team:[],enemies:[],fields:[],ult:10,vfx:{ring(){}},hurtEnemy(e,n){e.hp=Math.max(0,e.hp-n);if(!e.hp)e.alive=false},hurtMe(n,x,y,c){c.hp-=n},gainUlt(n){this.ult=Math.min(100,this.ult+n)}});
+const check=(v,m)=>{if(!v)throw Error(m)};
+let cases=0;function test(name,fn){fn();cases++;console.log('PASS '+name)}
+const hit=(b,c,e,skill={kind:'melee',heavy:true},dmg=20)=>T.emit('onHitResolved',{battle:b,cat:c,target:e,skill,dmg});
+const tick=(b,c,dt)=>T.emit('onTick',{battle:b,cat:c,dt});
+test('33 registry entries and 33 distinct painter keys',()=>{check(F.ids.length===33&&F.ids.every(k=>T.TRAIT_BY_SPECIES[k]),'coverage')});
+test('Tangyuan consumes charge exactly once',()=>{let b=B(),c=C('tangyuan'),e=C('enemy');T.emit('onDamageTaken',{battle:b,cat:c,dmg:40});hit(b,c,e);check(e.hp===90&&c._emberCharge===0,'release');hit(b,c,e);check(e.hp===90,'repeat')});
+test('Dundun ignores expiry, freezes after enemy break, respects ICD',()=>{let b=B(),c=C('dundun'),e=C('enemy',{x:20});b.enemies=[e];T.emit('onShieldBreak',{battle:b,cat:c,reason:'expired'});check(e.hp===100,'expiry');T.emit('onShieldBreak',{battle:b,cat:c,reason:'enemyHit'});check(e.hp<100&&e.status.chill===1.2,'break');let hp=e.hp;b.t++;T.emit('onShieldBreak',{battle:b,cat:c,reason:'enemyHit'});check(e.hp===hp,'ICD')});
+for(const sp of ['duanduan','xuewa'])test(sp+' paths at 30/60/120fps',()=>{for(const fps of [30,60,120]){let b=B(),c=C(sp);for(let i=0;i<=fps;i++){b.t=i/fps;c.x=b.t*180;tick(b,c,1/fps)}check(c[sp==='duanduan'?'_duanduanTrail':'_xuewaTrail'].length>=9,'path '+fps)}});
+test('Fanmao only pulls own field and reduces distance',()=>{let b=B(),c=C('fanmao'),e=C('enemy',{x:50});b.enemies=[e];b.fields=[{x:0,y:0,r:90,side:'me',element:'water'}];tick(b,c,.5);check(e.x===50,'ownership');b.fields[0]._traitCaster=c;tick(b,c,.5);check(Math.hypot(e.x,e.y)<30,'pull')});
+test('Jiafei damage conservation',()=>{let b=B(),c=C('jiafei'),e=C('abi'),q={battle:b,cat:c,target:e,dmg:40};T.emit('onBeforeDamage',q);check(q.dmg<40&&c.hp<100&&Math.abs(q.dmg+100-c.hp-40)<1e-6,'redirect')});
+test('Bosi real bounded overheal armor',()=>{let b=B(),c=C('bosi'),e=C('abi');T.emit('onHealResolved',{battle:b,cat:c,target:e,requested:40,amount:0});check(e._traitArmor===24,'armor');T.emit('onHealResolved',{battle:b,cat:c,target:e,requested:100,amount:0});check(e._traitArmor===25,'cap')});
+test('Yunduo previous link receives healing',()=>{let b=B(),c=C('yunduo'),a=C('abi',{hp:30}),d=C('wumao',{hp:40});b.team=[c,a,d];T.emit('onHealResolved',{battle:b,cat:c,target:a,requested:20,amount:20});b.t++;T.emit('onHealResolved',{battle:b,cat:c,target:d,requested:20,amount:20});check(a.hp===35,'relay')});
+test('Nainai cleanse grants protection',()=>{let b=B(),c=C('nainai'),a=C('abi');tick(b,c,.1);check(a._cleanseGuardUntil===undefined,'no false trigger');T.emit('onCleanse',{battle:b,cat:c,target:a});check(a._cleanseGuardUntil===3,'guard')});
+test('Jinjc increases actual shared meter once',()=>{let b=B(),c=C('jinjc');b.team=[c,C('abi')];T.emit('onResourceGained',{battle:b,cat:c,amount:3});check(b.ult===13,'share');T.emit('onResourceGained',{battle:b,cat:c,amount:3});check(b.ult===13,'ICD')});
+test('Youling delayed echo executes and can miss',()=>{let b=B(),c=C('youling'),e=C('enemy',{x:20});tick(b,c,.1);hit(b,c,e,{kind:'projectile'});b.t+=1.2;tick(b,c,.1);check(e.hp===92,'echo');b.t+=2;hit(b,c,e,{kind:'projectile'});e.x+=100;b.t+=1.2;tick(b,c,.1);check(e.hp===92,'miss')});
+test('Sanhua counts actual casts not multihit',()=>{let b=B(),c=C('sanhua'),e=C('enemy'),q={id:'a',kind:'projectile'};T.emit('onSkillCast',{battle:b,cat:c,skill:q});hit(b,c,e,q);hit(b,c,e,q);check(e.hp===100,'first cast');q={id:'b',kind:'projectile'};T.emit('onSkillCast',{battle:b,cat:c,skill:q});hit(b,c,e,q);hit(b,c,e,q);check(e.hp===97,'second cast')});
+test('Doudou uses target facing',()=>{let b=B(),c=C('doudou',{x:-20}),e=C('enemy',{_moveFacing:0});hit(b,c,e);check(e.hp===86,'back');c.x=20;hit(b,c,e);check(e.hp===86,'front')});
+test('Derived events cannot retrigger',()=>{let b=B(),c=C('tangyuan');T.emit('onDamageTaken',{battle:b,cat:c,dmg:40,_isDerived:true});check(c._emberCharge===undefined,'derived')});
+test('33 painters, two phases, 24 sampled frames each',()=>{let depth=0;const g={addColorStop(p){check(p>=0&&p<=1,'gradient')}};const ctx=new Proxy({}, {get(o,k){if(k in o)return o[k];return (...a)=>{check(a.every(v=>typeof v!=='number'||Number.isFinite(v)),'finite '+k);if(k==='save')depth++;if(k==='restore')depth--;if(k==='ellipse')check(a[2]>=0&&a[3]>=0,'radius');if(String(k).includes('Gradient'))return g}},set(o,k,v){if(k==='globalAlpha')check(v>=0&&v<=1,'alpha');o[k]=v;return true}});for(const species of F.ids)for(const phase of ['ready','fire'])for(let i=0;i<24;i++)check(F.drawEvent(ctx,{species,phase,x:420,y:190,ox:220,oy:190,start:1,life:.8,radius:90},1+i/30),'painter '+species);check(depth===0,'save restore')});
+test('Niuniu dash completion arms echo despite frequent ticks, hits once',()=>{const b=B(),c=C('niuniu',{dashT:.2,pounce:true,x:10,y:20}),e=C('enemy',{x:100,y:20});tick(b,c,1/60);for(let i=0;i<12;i++){b.t+=1/60;c.x+=6;tick(b,c,1/60)}c.dashT=0;c.pounce=false;tick(b,c,1/60);check(c._niuniuEchoReady,'arm');hit(b,c,e);check(e.hp===90&&!c._niuniuEchoReady,'echo damage');check(b._traitFX.at(-1).ox===10,'real origin');hit(b,c,e);check(e.hp===90,'once')});
+test('Xianluo resonance resets on a different target without numeric IDs',()=>{const b=B(),c=C('xianluo'),e=C('enemy'),e2=C('enemy');hit(b,c,e,{kind:'projectile'},25);hit(b,c,e,{kind:'projectile'},25);check(e.hp===98,'resonance');hit(b,c,e2,{kind:'projectile'},25);check(e2.hp===100&&c._xianluoResonance===0,'reset')});
+console.log('Passed '+cases+' focused tests. Does not certify live battles or art quality.');
