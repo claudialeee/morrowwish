@@ -3408,14 +3408,15 @@ class CaptureBattle {
   // and return {total,kos,hits} for the shared consequence/banner logic.
   ultArchetype(f, skill, color, dmg) {
     skill={...skill,_traitCaster:f};
+    this._ultCastTargets=[];
     let total = 0, kos = 0, hits = 0;
     const strike = (e, mult, px, py) => {
       if (!e.alive) return;
       const before = e.alive;
       const r = this.resolveHit(e, 'me', skill, dmg * (mult || 1), px != null ? px : e.x, py != null ? py : e.y);
-      if (r.dealt > 0) { hits++; total += r.dealt; }
+      if (r.dealt > 0) { hits++; total += r.dealt; this._ultCastTargets.push({x:e.x,y:e.y}); }
       if (before && !e.alive) kos++;
-      this.vfx.impact(e.x, e.y, color);
+      if(!window.CatBondContactFX&&r.dealt>0)this.vfx.impact(e.x,e.y,color);
     };
     const diag = Math.hypot(this.W, this.H);
     const el = skill.element;
@@ -3429,8 +3430,7 @@ class CaptureBattle {
       for(const e of this.liveEnemies().slice()){
         if(Math.hypot(e.x-px,e.y-py)<=R)strike(e,1.08);
       }
-      this.vfx.burst(px,py,{count:16,color:'#d0d9ff',speed:170,life:.4,r:3});
-      this.vfx.shockwave(px,py,'#f5e4d4');
+      if(!window.CatBondUltVFX?.has(skill.id)){this.vfx.burst(px,py,{count:16,color:'#d0d9ff',speed:170,life:.4,r:3});this.vfx.shockwave(px,py,'#f5e4d4');}
     }else if (el === 'fire') {
       // 烈焰喷涌: a forward blaze CONE — hits enemies in a wide arc ahead, big on-aim.
       const half = 0.6, reach = diag * 0.5;
@@ -3440,19 +3440,17 @@ class CaptureBattle {
         if (Math.abs(da) > half) continue;
         strike(e, 1.15);
       }
-      for (let i = 0; i < 26; i++) { const a = aim + (Math.random() - 0.5) * half * 2, r = 40 + Math.random() * reach; this.vfx.burst(f.x + Math.cos(a) * r, f.y + Math.sin(a) * r, { count: 2, color, speed: 120, life: 0.5, r: 4, grav: -40 }); }
-      this.vfx.shockwave(f.x, f.y, color);
+      if(!window.CatBondUltVFX?.has(skill.id))for (let i = 0; i < 26; i++) { const a = aim + (Math.random() - 0.5) * half * 2, r = 40 + Math.random() * reach; this.vfx.burst(f.x + Math.cos(a) * r, f.y + Math.sin(a) * r, { count: 2, color, speed: 120, life: 0.5, r: 4, grav: -40 }); }
+      if(!window.CatBondUltVFX?.has(skill.id))this.vfx.shockwave(f.x, f.y, color);
     } else if (el === 'water') {
       // 汹涌怒涛: a giant expanding tidal RING — everyone on the field is swept, soaked.
       const R = diag * 0.55;
       for (const e of this.liveEnemies().slice()) { if (Math.hypot(e.x - f.x, e.y - f.y) <= R) strike(e, 1.0); }
-      this.vfx.ring(f.x, f.y, { r0: 20, vr: R * 2.6, life: 0.7, color, width: 14 });
-      this.vfx.ring(f.x, f.y, { r0: 40, vr: R * 2.2, life: 0.6, color: '#fff', width: 4 });
-      this.vfx.burst(f.x, f.y, { count: 26, color, speed: 340, life: 0.6, r: 3 });
+      if(!window.CatBondUltVFX?.has(skill.id)){this.vfx.ring(f.x,f.y,{r0:20,vr:R*2.6,life:.7,color,width:14});this.vfx.ring(f.x,f.y,{r0:40,vr:R*2.2,life:.6,color:'#fff',width:4});}
     } else if (el === 'elec') {
       // 雷霆万钧: chain LIGHTNING that forks to every enemy on the field.
-      for (const e of this.liveEnemies().slice()) { this.vfx.beam(f.x, f.y, e.x, e.y, color); strike(e, 1.1); }
-      this.vfx.ring(f.x, f.y, { r0: 14, vr: diag * 1.4, life: 0.4, color, width: 6 });
+      for (const e of this.liveEnemies().slice()) { if(!window.CatBondUltVFX?.has(skill.id))this.vfx.beam(f.x,f.y,e.x,e.y,color);strike(e,1.1); }
+      if(!window.CatBondUltVFX?.has(skill.id))this.vfx.ring(f.x,f.y,{r0:14,vr:diag*1.4,life:.4,color,width:6});
       this.shakeT = Math.max(this.shakeT, 0.5);
     } else if (skill.id==='sunbloom') {
       const g=this.solarGeometry(f,skill._solarAim??aim);
@@ -3474,9 +3472,7 @@ class CaptureBattle {
         strike(e, 1.2);
       }
       // Keep implosion inside the local fight, never a screen-spanning arc.
-      this.vfx.ring(f.x, f.y, { r0: Math.min(170,R*.34), vr: -240,
-        life: .42, color: '#8a55bb', width: 4 });
-      this.vfx.burst(f.x, f.y, { count: 28, color, speed: 300, life: 0.55, r: 3 });
+      if(!window.CatBondUltVFX?.has(skill.id))this.vfx.ring(f.x,f.y,{r0:Math.min(170,R*.34),vr:-240,life:.42,color:'#8a55bb',width:4});
     } else {
       // light (and any fallback): 圣耀爆发: radiant NOVA around the caster.
       const R = diag * 0.42;
@@ -4059,7 +4055,7 @@ class CaptureBattle {
       const _vend=this.beamVisualEnd(b), _ex0=b._ex, _ey0=b._ey;
       // Sweeping fire penetrates; water uses first visible contact. No damage mutation.
       if(window.CatBondSkillFX?.drawCombatBeam(ctx,b,this.t,
-        b.sk?.id==='flameSweep'?_ex0:_vend.ex,b.sk?.id==='flameSweep'?_ey0:_vend.ey))continue;
+        _ex0,_ey0))continue;
       b._ex=_vend.ex; b._ey=_vend.ey;
       const k=Math.max(0,b.t/b.max);
       if(b.sk?.id==='thunderStream'){
@@ -5949,7 +5945,7 @@ class CaptureBattle {
       // DIRECTIONAL impact sparks: spray along the hit normal (away from the attacker),
       // scaled by hit strength — reads as force, not a symmetric puff.
       const tier=hitTier||(frac>=.17?'heavy':'light');
-      this.vfx.impactType?.(e.x,e.y,tier,
+      if(skill?.id!=='crescentFan'||!window.CatBondMoonFX||tier==='crit')this.vfx.impactType?.(e.x,e.y,tier,
         {color:tier==='crit'?'#fff4cf':tier==='heavy'?'#ffdf9d':'#fff2c0',
           angle:normal.angle,skill});
       // Big-tier EXTRA ring + sparks so T3 skills (meteor/flameSweep/etc, power≥2.0)
