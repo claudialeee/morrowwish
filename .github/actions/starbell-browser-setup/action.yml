@@ -1,0 +1,40 @@
+name: Starbell pinned browser setup
+description: Install dependencies and reuse versioned Playwright Chromium binaries; verify the browser actually starts.
+inputs:
+  npm-ci:
+    description: Run npm ci before installing Playwright.
+    default: 'true'
+runs:
+  using: composite
+  steps:
+    - name: Install project dependencies
+      if: inputs.npm-ci == 'true'
+      shell: bash
+      run: npm ci
+    - name: Install pinned Playwright
+      shell: bash
+      run: npm install --no-save --no-package-lock playwright@1.57.0
+    - name: Restore exact Chromium cache
+      id: browsers
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: starbell-playwright-1.57.0-chromium-ubuntu24-${{ runner.arch }}-v1
+    - name: Install or verify Chromium
+      shell: bash
+      run: |
+        set -euo pipefail
+        npx playwright install chromium
+        probe() {
+          node --input-type=module -e 'import {chromium} from "playwright"; const b=await chromium.launch({headless:true}); try { const p=await b.newPage(); await p.setContent("<title>Starbell QA</title>"); if(await p.title()!=="Starbell QA") throw Error("Browser probe failed"); } finally { await b.close(); }'
+        }
+        if ! probe; then
+          npx playwright install --with-deps chromium
+          probe
+        fi
+    - name: Save usable Chromium cache before running tests
+      if: steps.browsers.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: starbell-playwright-1.57.0-chromium-ubuntu24-${{ runner.arch }}-v1

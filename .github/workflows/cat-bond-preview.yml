@@ -12,7 +12,6 @@ on:
       - 'package*.json'
       - 'scripts/test-cat-bond-*.mjs'
       - 'scripts/check-cat-bond-resonance-world.mjs'
-      - '.github/workflows/cat-bond-preview.yml'
       - 'scripts/cat-bond-test-start.mjs'
   workflow_dispatch:
 permissions:
@@ -90,9 +89,9 @@ jobs:
           fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,qaTier:'preview-smoke',fullReleaseAccepted:false,scope:'Prologue through Finale',storage:'local-only',productionApis:false,sources:fs.readFileSync('/tmp/cat-bond-preview-sources.txt','utf8').trim().split('\n')}));
           NODE
       - name: Install pinned Chromium test runtime once
-        run: |
-          npm install --no-save --no-package-lock playwright@1.57.0
-          npx playwright install --with-deps chromium
+        uses: ./.github/actions/starbell-browser-setup
+        with:
+          npm-ci: 'false'
       - name: Prepare reusable real-browser smoke
         run: |
           cat > .cat-bond-preview-smoke.mjs <<'NODE'

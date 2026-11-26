@@ -1,22 +1,22 @@
 name: Canon 2.2 chapter browser acceptance
 on:
   push:
-    branches: [review/starbell-canon13-player-experience]
+    branches: [review/starbell-canon13-player-experience, review/starbell-qa-optimization]
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-experience-*.mjs'
       - '.github/workflows/cat-bond-canon22-browser.yml'
+      - '.github/actions/starbell-browser-setup/**'
   workflow_dispatch:
     inputs:
       scope:
-        description: 'chapters or tail (finale and epilogue); fresh is a separate workflow'
-        type: choice
-        options: [chapters, tail]
+        description: 'chapters, tail, or comma-separated chapter IDs; scoped runs are not release evidence'
+        type: string
         default: chapters
 permissions:
   contents: read
 concurrency:
-  group: canon22-browser-${{ github.ref }}-${{ github.event_name == 'push' && (contains(github.event.head_commit.message, '[qa-tail]') && 'tail' || 'chapters') || inputs.scope }}
+  group: canon22-browser-${{ github.ref }}-${{ github.event_name == 'push' && (contains(github.event.head_commit.message, '[qa-toolchain]') && 'toolchain' || contains(github.event.head_commit.message, '[qa-full]') && 'final-full' || contains(github.event.head_commit.message, '[fresh-campaign]') && 'final-full' || contains(github.event.head_commit.message, '[qa-tail]') && 'tail' || 'incremental') || inputs.scope }}
   cancel-in-progress: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[replace-obsolete-qa]') }}
 jobs:
   select:
@@ -24,15 +24,27 @@ jobs:
     outputs:
       matrix: ${{ steps.scope.outputs.matrix }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - id: scope
         env:
-          TAIL: ${{ (github.event_name == 'push' && contains(github.event.head_commit.message, '[qa-tail]')) || inputs.scope == 'tail' }}
+          TOOLCHAIN_ONLY: ${{ github.event_name == 'push' && github.ref_name == 'review/starbell-qa-optimization' }}
+          BEFORE: ${{ github.event.before }}
+          HEAD: ${{ github.sha }}
+          MANUAL_SCOPE: ${{ github.event_name == 'workflow_dispatch' && inputs.scope || '' }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          if [[ "$TAIL" == 'true' ]]; then
-            echo 'matrix={"include":[{"chapter":"finale","entry":"finale:B-01"},{"chapter":"epilogue","entry":"epilogue:E-01"}]}' >> "$GITHUB_OUTPUT"
-          else
-            echo 'matrix={"include":[{"chapter":"harbor","entry":"harbor:H-01"},{"chapter":"forest","entry":"forest:R-01"},{"chapter":"forge","entry":"forge:E-01"},{"chapter":"sky","entry":"sky:S-01"},{"chapter":"library","entry":"library:M-01"},{"chapter":"starfall","entry":"starfall:F-01"},{"chapter":"finale","entry":"finale:B-01"},{"chapter":"epilogue","entry":"epilogue:E-01"}]}' >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          if [[ "$BEFORE" =~ ^[0-9a-f]{40}$ ]] && ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$BEFORE" || true
           fi
+          node scripts/cat-bond-experience-qa-scope.mjs --self-test
+          matrix=$(node scripts/cat-bond-experience-qa-scope.mjs)
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
   chapter:
     needs: select
     runs-on: ubuntu-24.04
@@ -50,9 +62,7 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci
-      - run: npm install --no-save --no-package-lock playwright@1.57.0
-      - run: npx playwright install --with-deps chromium
+      - uses: ./.github/actions/starbell-browser-setup
       - name: Produce synthetic starting snapshot, not playthrough evidence
         run: node scripts/cat-bond-experience-knowledge.mjs
       - name: Complete the chapter through real browser input

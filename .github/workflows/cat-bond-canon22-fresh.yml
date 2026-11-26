@@ -9,14 +9,18 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: canon22-fresh-${{ github.ref }}
-  cancel-in-progress: false
 jobs:
   fresh-campaign:
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[fresh-campaign]'))
     runs-on: ubuntu-24.04
     timeout-minutes: 55
+    concurrency:
+      group: canon22-fresh-${{ github.ref }}-${{ matrix.scope }}
+      cancel-in-progress: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[replace-obsolete-qa]') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [opening, campaign]
     env:
       CAT_BOND_CONTINUOUS: '1'
       CAT_BOND_EXPERIENCE: '1'
@@ -26,10 +30,9 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci
-      - run: npm install --no-save --no-package-lock playwright@1.57.0
-      - run: npx playwright install --with-deps chromium
+      - uses: ./.github/actions/starbell-browser-setup
       - name: Verify both real opening routes and title on all profiles
+        if: matrix.scope == 'opening'
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-opening.log 2>&1 &
           server=$!
@@ -42,7 +45,7 @@ jobs:
           done
           test "$failures" -eq 0
       - name: Fresh slot campaign through ending (real save reload between chapters)
-        if: always()
+        if: matrix.scope == 'campaign'
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-fresh.log 2>&1 &
           server=$!
@@ -53,7 +56,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: canon22-fresh-campaign
+          name: canon22-fresh-${{ matrix.scope }}
           path: |
             artifacts/cat-bond-experience/
             /tmp/canon22-fresh.log
