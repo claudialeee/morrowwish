@@ -232,3 +232,10 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .rw-world.rw-chase-mode:has(.rw-chase-stick):not([hidden])>.rw-shell{bottom:116px!important}
 @media(orientation:portrait){#stage .rw-world.rw-chase-mode:not([hidden])>.rw-shell{top:132px!important}}
 @media(max-height:500px) and (orientation:landscape){#stage .rw-world.rw-chase-mode:not([hidden])>.rw-chase-bar{top:45px}#stage .rw-world.rw-chase-mode:not([hidden])>.rw-shell{top:93px!important}#stage .rw-world.rw-chase-mode:has(.rw-chase-stick):not([hidden])>.rw-shell{inset:93px 92px 8px 112px!important}}
+
+/* Postgame: small groups of physically spaced visitors; no duplicate overhead nameplates. */
+#stage .sg-prologue-guide.sg-postgame-guide{width:min(310px,calc(100% - 24px));padding:8px 10px;gap:4px}
+#stage .sg-postgame-guide>div{display:flex;gap:5px;flex-wrap:wrap}
+#stage .sg-postgame-guide button{min-height:44px;padding:5px 8px;flex:1 1 auto}
+#stage .sg-npc-talk-marker.sg-guest-marker{min-height:44px;max-width:112px;min-width:56px;font-size:12px;padding:5px 8px;box-shadow:0 2px 5px #3a2b2533}
+#stage .sg-guest-marker::after{display:none}

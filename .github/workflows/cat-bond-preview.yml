@@ -288,6 +288,7 @@ jobs:
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in $(seq 1 15); do curl -fsS http://127.0.0.1:8766/cat-bond/ >/dev/null && break; sleep 1; done
           node .cat-bond-preview-smoke.mjs
+          node scripts/cat-bond-layout-acceptance.mjs
       - name: Publish only preview branch
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -336,5 +337,6 @@ jobs:
         with:
           name: preview-title
           path: preview-*.png
+            artifacts/cat-bond-layout/
           if-no-files-found: ignore
           retention-days: 3
