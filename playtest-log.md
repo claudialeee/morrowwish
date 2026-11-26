@@ -2112,3 +2112,13 @@ Top new signal this cycle:
 **Combat numerically healthy — 0 P0 this cycle, funMean 4.5, mashers at 6/10, explorers at 7/10.** The committed-heavy change this session appears to have moved the biggest needle (structural ask was eating 5 cycles; this cycle structural asks dropped to tuning + readout). Next pass should focus on readout / telemetry gaps + sim-harness timeout fix, not more AI knobs.
 
 **Branch state**: `main` 13 ahead of origin/main (committed-heavy + refactor Phase 0+1 + arcanePulse open + element-role review); push-main-lock intact until next "push main".
+
+## RSI 2026-11-26T23:48:21Z
+
+Archive expanded 2 → **3 cells** / 256. Two agent proposals replaced existing elites with higher scores.
+
+- **Winner** `agent:pulse-engage` 0.707 (vs baseline 0.619) at cell `1,2,3,3` — band: `(f)=>{const q=((f.cd&&f.cd.q)||0); const phase=Math.floor(q*2)%2; if(phase===0)return{min:40,max:70,rush:45,role:'melee'}; return{min:160,max:220,rush:170,role:'ranged'};}` — Q-CD-parity oscillator, half fight hugs, half mid-range
+- **Runner-up** `agent:linear-hp-drift` 0.700 at cell `1,3,3,3` — band: `(f)=>{const hp=f.hp/(f.maxhp||1); const mid=30+(1-hp)*200; return {min:mid,max:mid+50,rush:mid+3,role:'melee'};}` — smooth monotone retreat as HP drops
+- Control `stand-at-max-range` 0.408 at cell `2,2,3,3` (new cell, below baseline — gate PASSED ✓)
+
+5 niches still mostly empty (3/256 coverage). Findings-only, no battle.js apply.
