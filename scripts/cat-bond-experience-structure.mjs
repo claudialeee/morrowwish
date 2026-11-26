@@ -1,6 +1,7 @@
 // Offline authoring audit. Separates canonical data from observed player evidence.
 import fs from 'node:fs/promises';
 import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
+import {activities} from '../public/cat-bond/js/resonance/ambient-play.mjs';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {layouts,puzzleSpecs} from '../public/cat-bond/js/resonance/world-exploration.mjs';
@@ -116,3 +117,8 @@ for(const [region,d] of Object.entries(discoveries)){
 }
 await fs.writeFile(out+'/discovery-model-checks.json',JSON.stringify({revision,results:discoveryResults,limitations:['Model-state inputs, not actual walking, map UI or screenshots.']},null,2));
 console.log('DISCOVERY MODEL PASS',discoveryResults.length,'steps across',Object.keys(discoveries).length,'regions');
+
+// Every authored optional event has a reachable presentation contract, including non-Muling NPCs.
+assert.deepEqual(Object.keys(activities).sort(),campaign.ambient.map(a=>a.id).sort());
+for(const a of campaign.ambient){const p=activities[a.id];assert.ok(campaign.cast[a.npc]);for(const field of ['title','action','hint'])assert.ok(p[field].length===2&&p[field].every(t=>typeof t==='string'&&t.trim()),a.id+' '+field);}
+console.log('AMBIENT PRESENTATION CONTRACT PASS',campaign.ambient.length,'bilingual optional activities');
