@@ -66,6 +66,10 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Verify player-first opening and named party logic
+        run: |
+          node scripts/test-cat-bond-player-first.mjs
+          node scripts/test-cat-bond-story-party.mjs
       - name: Build isolated Cat Bond preview (no production Worker or D1)
         run: |
           set -eu
@@ -128,19 +132,19 @@ jobs:
                 if(await page.locator('#intro-slot-list [data-slot]').count()!==3)throw Error('Three save slots required');
                 await page.screenshot({path:'preview-'+prefix+'-slots.png'});
                 await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-                await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-01');
-                await page.waitForFunction(()=>document.querySelector('.cbcp-art')?.naturalWidth>0&&!document.querySelector('.cbcp-skip')?.disabled);
-                await page.locator('.cbcp-art').first().evaluate(img=>img.decode());
+                await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-05');
+                const intro=page.locator('#cb-player-first-intro');
+                await intro.waitFor({state:'visible'});
+                if(!/Star Bell.*memories/s.test(await intro.innerText()))throw Error('Missing spoiler-free world context');
+                if(await page.locator('.cbcp-root:not([hidden])').count())throw Error('Retired opening still playing');
                 await page.screenshot({path:'preview-'+prefix+'-opening.png'});
-                // Use actual player controls; this is a smoke test, not the separate full campaign gate.
-                // The opening also advances naturally; never wait for an earlier scene after it passed.
-                await page.locator('.cbcp-skip').click();
-                await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-04');
+                await intro.getByRole('button',{name:'Start exploring',exact:true}).click();
                 await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&window.__game?.scene==='yard'&&!document.querySelector('#panel.open .cat-starter-card'));
                 await page.waitForFunction(()=>State.S.cats.length===1&&State.listSaveSlots().find(s=>s.id==='slot1')?.exists);
                 const uid=await page.evaluate(()=>State.S.cats[0].uid);
-                const completed=await page.evaluate(()=>State.S.resonance.completed.slice(0,3).join(','));
-                if(completed!=='prologue:P-01,prologue:P-02,prologue:P-03')throw Error('Single skip must preserve every opening checkpoint');
+                const completed=await page.evaluate(()=>State.S.resonance.completed.slice(0,4).join(','));
+                if(completed!=='prologue:P-01,prologue:P-02,prologue:P-03,prologue:P-04')throw Error('Opening presentation checkpoints missing');
+                if(await page.evaluate(()=>CatBondResonance.view().muling!=='unmet'||Object.values(State.S.resonance.evidence).flat().some(op=>op.startsWith('cinematic:'))))throw Error('Opening grants unearned companion or old cinematic evidence');
                 if(await page.locator('#yard-actions').isVisible())throw Error('Garden floating dock must be hidden');
                 await page.locator('#map-menu').click();
                 const menu=page.locator('#cb-system-menu');
@@ -171,7 +175,7 @@ jobs:
                 await page.reload();
                 await page.locator('#intro-continue').click();
                 await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-                await page.waitForFunction(uid=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&State.S.cats[0].uid===uid&&CatBondResonance.view().current?.id==='prologue:P-04',uid);
+                await page.waitForFunction(uid=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&State.S.cats[0].uid===uid&&CatBondResonance.view().current?.id==='prologue:P-05',uid);
                 await page.screenshot({path:'preview-'+prefix+'-reloaded.png'});
                 if(external.length||errors.length)throw Error('Unexpected external requests / page errors: '+JSON.stringify({external,errors}));
                 console.log('PREVIEW NEW SLOT AND RELOAD VERIFIED: '+prefix+' '+page.url());
