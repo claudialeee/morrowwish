@@ -1231,3 +1231,33 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
  .single-screen-game #gameMenu .replay-choice-text strong{font-size:14px!important}
  .single-screen-game #gameMenu .replay-choice-text small{font-size:10px!important}
 }
+
+/* First-play coaching: make the existing guidance row an obvious help affordance. */
+.single-screen-game .guide-help{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:7px;min-width:0;width:100%;padding:2px 4px 2px 6px;margin:0;border:1px solid #e3b9a4;border-left:3px solid #b56874;border-radius:8px;background:#fffaf1;color:#673a50;text-align:left;cursor:pointer;touch-action:manipulation;}
+.single-screen-game .guide-help #visionTip{flex:1 1 auto;min-width:0;color:#673a50;overflow-wrap:break-word;}
+.single-screen-game .guide-help-icon{flex:0 0 21px;width:21px;height:21px;display:grid;place-items:center;border-radius:50%;background:#ead6e4;color:#634362;font:900 14px/1 system-ui,sans-serif;}
+.single-screen-game .guide-help:hover{background:#fff1dc;}
+.single-screen-game .guide-help:focus-visible{outline:2px solid #78517d;outline-offset:2px;}
+.single-screen-game #bonusQuick{filter:saturate(.78);}
+.single-screen-game #tool:not(:disabled){border-color:#a574ad!important;}
+.single-screen-game .coach-spot{pointer-events:none;width:7.5%;height:auto;aspect-ratio:1;margin:0;translate:-50% -50%;transform:none;}
+@media(max-height:650px) and (min-width:701px){.single-screen-game .guide-help{padding:1px 3px;gap:3px}.single-screen-game .guide-help-icon{width:17px;height:17px;flex-basis:17px;font-size:12px}}
+@media(max-width:700px){.single-screen-game .guide-help{min-height:36px;padding:3px 6px}.single-screen-game .guide-help-icon{width:24px;height:24px;flex-basis:24px}}
+
+/* Keep turn controls together in reading/tab order; optional challenges come last. */
+.single-screen-game .in-game-actions #tool{order:0!important}
+.single-screen-game .in-game-actions #wait{order:1!important}
+.single-screen-game .in-game-actions #restart.replay-menu-trigger{order:2!important}
+.single-screen-game .in-game-actions #bonusQuick{order:3!important}
+
+/* Pawsibly's actual unified settings dock: touch-sized visible controls, not the hidden legacy buttons. */
+html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-game-settings button{box-sizing:border-box!important;width:40px!important;min-width:40px!important;height:42px!important;min-height:42px!important}
+html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-fullscreen-toggle{box-sizing:border-box!important;flex:0 0 42px!important;width:42px!important;min-width:42px!important;max-width:42px!important;height:42px!important;min-height:42px!important}
+@media(max-width:700px){
+ html[data-mw-settings-game="pawsibly-innocent"]:not(.cg-play) .single-screen-game .in-game-head-row{display:flex!important;flex-direction:column!important;align-items:stretch!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;position:relative!important}
+ html[data-mw-settings-game="pawsibly-innocent"]:not(.cg-play) .single-screen-game .in-game-head-row .stage-left{width:calc(100% - 114px)!important;max-width:calc(100% - 114px)!important;align-self:flex-start!important}
+ html[data-mw-settings-game="pawsibly-innocent"]:not(.cg-play) .single-screen-game .in-game-head-row #heistStatus{position:absolute!important;top:7px!important;right:7px!important}
+ html[data-mw-settings-game="pawsibly-innocent"]:not(.cg-play) .single-screen-game .in-game-head-row #stageControls{width:100%!important;max-width:100%!important;display:flex!important;justify-content:center!important;flex-wrap:wrap!important;gap:3px!important;align-self:stretch!important}
+ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #menuButton{width:42px!important;min-width:42px!important;height:42px!important;min-height:42px!important;flex:0 0 42px!important}
+ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-game-settings{margin:0!important}
+}

@@ -91,6 +91,28 @@ try{
  const after=await page.evaluate(()=>({...window.__PAWSIBLY_TEST__.getState().cat}));
  console.log('Click movement:',JSON.stringify({before,after}));
  assert.notDeepEqual(after,before,'Mouse click must move the cat');
+ assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__.getState().got),1,'First real mouse click collects the indicated fish');
+ assert.match(await page.locator('#visionTip').textContent(),/One fish/,'Guidance responds to the collected fish');
+ await page.locator('#guideHelp').click();
+ assert.equal(await page.locator('[data-tab-panel="help"]').isVisible(),true,'Visible contextual help opens the existing tutorial');
+ await page.locator('#menuClose').click();
+ const touch=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+ try{const phone=await touch.newPage();await phone.route('**/api/session',r=>r.fulfill({status:204,body:''}));await phone.goto(url,{waitUntil:'load'});await phone.evaluate(()=>window.MorrowwishI18n.set('zh'));
+ await phone.screenshot({path:'test-results/pawsibly-onboarding-mobile-zh.png'});
+ assert.match(await phone.locator('#visionTip').textContent(),/偷够3条鱼.*猫门/);
+ const orders=await phone.locator('.in-game-actions').evaluate(el=>Array.from(el.querySelectorAll('button')).map(b=>[b.id,Number(getComputedStyle(b).order)]));assert.deepEqual(orders,[['tool',0],['wait',1],['restart',2],['bonusQuick',3]],'Primary turn controls come before optional challenges in visual and keyboard order');
+ const b=await phone.locator('#board').boundingBox();await phone.touchscreen.tap(b.x+b.width*.25,b.y+b.height*.5);
+ await phone.waitForFunction(()=>window.__PAWSIBLY_TEST__.getState().got===1);
+ assert.match(await phone.locator('#visionTip').textContent(),/到手1条/);
+ await phone.locator('#guideHelp').tap();assert.ok(await phone.locator('[data-tab-panel="help"]').isVisible());await phone.locator('#menuClose').tap();
+ await phone.evaluate(()=>window.MorrowwishI18n.set('en'));assert.match(await phone.locator('#visionTip').textContent(),/One fish/);
+ }finally{await touch.close()}
+ const run=await browser.newPage({viewport:{width:1250,height:900}});try{await run.route('**/api/session',r=>r.fulfill({status:204,body:''}));await run.goto(url,{waitUntil:'load'});await run.evaluate(()=>window.MorrowwishI18n.set('en'));await run.screenshot({path:'test-results/pawsibly-onboarding-desktop-en.png'});
+ assert.match(await run.locator('#visionTip').textContent(),/Steal 3 fish.*cat flap/);
+ const keys=['ArrowRight','ArrowRight','ArrowUp','ArrowLeft','ArrowDown','ArrowDown','ArrowDown','ArrowDown','ArrowRight','ArrowRight','ArrowRight','ArrowRight','ArrowRight','ArrowUp','ArrowDown','ArrowRight','ArrowRight'];let sawExit=false;
+ for(const key of keys){await run.keyboard.press(key);const state=await run.evaluate(()=>({got:window.__PAWSIBLY_TEST__.getState().got,done:window.__PAWSIBLY_TEST__.getState().done}));if(state.got===3&&!state.done){const hint=await run.locator('#visionTip').textContent();if(/Exit open.*green cat flap/.test(hint))sawExit=true;}if(state.done)break;}
+ assert.ok(sawExit,'The live guide must explain how to escape after the third fish');assert.ok(await run.evaluate(()=>window.__PAWSIBLY_TEST__.getState().winning),'New visitor completes first room using real keyboard controls');assert.ok(await run.locator('#overlay').isVisible());
+ }finally{await run.close()}
  assert.equal(errors.length,0,'No uncaught exception after clicking');
  await page.locator('#menuButton').click();
  assert.equal(await page.locator('#gameMenu').isVisible(),true,'Menu opens in the game frame');
@@ -393,12 +415,13 @@ try{
  await page.locator('#menuButton').click();
  await page.locator('[data-game-tab="help"]').click();
  assert.equal(await page.locator('#gameMenu #music, #gameMenu #sound, #gameMenu [data-set-lang]').count(),0,'Help must not duplicate header sound or language controls');
- assert.equal(await page.locator('#stageControls #music, #stageControls #sound').count(),2,'Music and sound effects must both remain in the visible game HUD');
+ const musicButton=page.locator('#stageControls #mw-game-settings .mw-settings-music');
+ const audioButton=page.locator('#stageControls #mw-game-settings .mw-settings-sfx');
+ assert.ok(await musicButton.isVisible()&&await audioButton.isVisible(),'Actual unified music and sound controls must remain visible in the game HUD');
  await page.locator('#menuClose').click();
- const audioButton=page.locator('#sound');
- await audioButton.evaluate(button=>button.click());
+ await audioButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),false,'Mute button must actually silence the score');
- await audioButton.evaluate(button=>button.click());
+ await audioButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Sound button must restore audio');
 
  // Cat gets a real, recorded piano theme; the five other games stay effects-only.
@@ -414,13 +437,12 @@ try{
  const playing=await page.evaluate(()=>window.MorrowwishCatMusic.status());
  assert.equal(playing.error,'','Recorded cat music must not report a playback error');
  assert.ok(playing.readyState>=2,'Recorded cat music must be decoded and playable');
- assert.match(await page.locator('#music').textContent(),/背景音乐/,'Chinese music control must be localized');
- const musicButton=page.locator('#music');
- await musicButton.evaluate(button=>button.click());
+ assert.match(await musicButton.getAttribute('aria-label'),/音乐/,'Chinese music control must be localized');
+ await musicButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishCatMusic.status().playing),false,'Music toggle must pause the recording');
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Music toggle must not mute effects');
- await musicButton.evaluate(button=>button.click());
- assert.equal(await page.evaluate(()=>window.MorrowwishCatMusic.status().playing),true,'Music toggle must resume the recorded theme');
+ await musicButton.click();
+ await page.waitForFunction(()=>window.MorrowwishCatMusic.status().playing===true);
  console.log('Real CC0 piano soundtrack and separate music/SFX controls:',JSON.stringify(playing));
 
  // Simulate a browser rejecting unprompted autoplay: the player must get a
