@@ -116,6 +116,26 @@ jobs:
           done
           echo "Real checkpoint replays: passed=$passed failed=$failed total=${#fixtures[@]}" | tee -a "$GITHUB_STEP_SUMMARY"
           test "$failed" -eq 0
+      - name: Require fresh campaign checkpoint coverage in every chapter
+        if: always() && matrix.scope == 'campaign'
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import {campaign} from './public/cat-bond/js/resonance/campaign.mjs';
+          const root='artifacts/cat-bond-experience/checkpoints/campaign-en-desktop';
+          assert.ok(fs.existsSync(root),'Fresh campaign checkpoint directory missing');
+          const fixtures=fs.readdirSync(root).filter(f=>f.endsWith('.json')).map(f=>JSON.parse(fs.readFileSync(root+'/'+f,'utf8')));
+          const expected=[...new Set(campaign.scenes.map(s=>s.chapter))];
+          for(const fixture of fixtures){
+            assert.equal(fixture.provenance,'real-input local browser save');
+            assert.equal(fixture.revision,process.env.GITHUB_SHA);
+          }
+          const captured=new Set(fixtures.map(f=>campaign.scenes.find(s=>s.id===f.scene)?.chapter));
+          const missing=expected.filter(ch=>!captured.has(ch));
+          console.log('Fresh campaign coverage:',JSON.stringify({expected,captured:[...captured],missing}));
+          assert.deepEqual(missing,[],'Fresh campaign must produce checkpoints in every story chapter');
+          JS
       - name: Isolated synthetic chapter checkpoint restore
         if: matrix.scope == 'targets'
         run: |
