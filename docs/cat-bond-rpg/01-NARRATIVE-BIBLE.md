@@ -1,5 +1,5 @@
 # CAT BOND — THE LAST RESONANCE
-## Narrative Bible · Canon 1.0 · 2026-11-24
+## Narrative Bible · Canon 1.1 · revised player-facing presentation
 
 **Status:** New canonical story foundation. Supersedes all previous Cat Bond RPG story bibles and plot drafts, including The Last Page.  
 **Working title:** The Last Resonance  

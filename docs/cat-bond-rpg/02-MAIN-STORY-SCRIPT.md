@@ -103,10 +103,10 @@ Muling: “有些老歌，听过就很难忘。剩下的得让这里的猫来唱
 
 The upper-canopy community and underground root keepers accuse each other of stealing water. 芽禾 asks the player to find a missing medicine shipment. 榆川 blocks access to the root tunnels.
 
-芽禾: “再没水，这一批药草就救不回来了。港口还在等我们的药呢！”  
-榆川: “下面的根也快干了。我不能把水都放上去。”  
-芽禾: “可是上周明明说好分水！”  
-Player: “先找出水去了哪里。光争谁该用水，水也不会回来。”  
+芽禾: “再没水，这一批药草就救不回来了。港口还在等我们的药呢！” / “Without water, we'll lose this whole batch of herbs. The harbor is waiting for them!”  
+榆川: “下面的根也快干了。我不能把水都放上去。” / “The roots below are drying out too. I can't send all the water upstairs.”  
+芽禾: “可是上周明明说好分水！” / “But we agreed to share it last week!”  
+Player: “先找出水去了哪里。光争谁该用水，水也不会回来。” / “Let's find where the water went. Arguing won't bring it back.”  
 **Playable hook:** follow two diverging wet trails, choose which community to help first, then discover the diversion. Preserve the other side's needs; do not resolve the argument before the investigation.
 
 ### R-02 — The Scent Trail
@@ -158,10 +158,10 @@ The forest sends cooling water and medicinal herbs to Emberforge. Emberforge lat
 The city's central furnace has stopped. 小铆 wants to use a new safety design. 烬婆 insists on restoring the old design first.
 
 **Arrival action:** a festival workshop goes dark halfway through a demonstration; the player catches a rolling tool, then helps 小铆 test a portable prototype. The forest's pump order is waiting.  
-小铆: “旧炉的阀门又卡住了。我的新设计能自动泄压。”  
-烬婆: “停手。没验证过的东西不能接进主炉。”  
-小铆: “可照旧图修，它还是会卡！给我一次测试的机会。”  
-Player: “先在小炉上试，不拿整座城冒险。”
+小铆: “旧炉的阀门又卡住了。我的新设计能自动泄压。” / “The old furnace valve is stuck again. My new design can release pressure automatically.”  
+烬婆: “停手。没验证过的东西不能接进主炉。” / “Stop. Nothing untested goes into the main furnace.”  
+小铆: “可照旧图修，它还是会卡！给我一次测试的机会。” / “Repair it to the old plans and it'll jam again! Give me a chance to test mine.”  
+Player: “先在小炉上试，不拿整座城冒险。” / “Test it on the small furnace first. We won't risk the whole city.”
 
 ### E-02 — The Hidden Blueprint
 **Gameplay:** Explore the old forge, collect parts, regulate temperature, and reconstruct a damaged safety diagram.
@@ -207,10 +207,10 @@ Emberforge builds wind vanes and flight components for Skyspine Isles. The isles
 The air routes are closed. 远帆 wants to become a courier; 翎羽 refuses to let him fly alone.
 
 **Arrival action:** a courier bag flies off a dock. Chase it using short gusts and safe glider practice; the bag contains a delivery waiting for the library.  
-远帆: “我能飞过去！我练了整整一个月。”  
-翎羽: “不行。那条风道跟出事那天一模一样。”  
-远帆: “可你连我的新航图都没看过。”  
-Player: “先看看今天的风，再让他自己说怎么飞。”
+远帆: “我能飞过去！我练了整整一个月。” / “I can make that flight! I've practiced for a whole month.”  
+翎羽: “不行。那条风道跟出事那天一模一样。” / “No. That wind channel looks just like the day of the accident.”  
+远帆: “可你连我的新航图都没看过。” / “You haven't even looked at my new route chart.”  
+Player: “先看看今天的风，再让他自己说怎么飞。” / “Let's read today's wind and hear how he plans to fly.”
 
 ### S-02 — The Flight Record
 **Gameplay:** Glide between islands, read wind patterns, and recover a damaged flight recorder.
@@ -266,10 +266,10 @@ The islands establish a courier route to Moonmirror Library. The library sends o
 白栞 wants to restore the complete catastrophe archive. 墨页 refuses to open sealed records.
 
 **Arrival action:** the player follows a library invitation delivered by the sky couriers. Two versions of the same historical record disagree.  
-白栞: “这里明明少了一页。不是虫蛀，是有人把它抽走了。”  
-墨页: “那部分封存了。你不知道公开它会引起什么。”  
-Player: “如果它能解释我为什么失忆，我至少需要知道哪些是事实。”  
-白栞: “那就从能核实的碎片开始。我们不公开别人的私人记忆。”
+白栞: “这里明明少了一页。不是虫蛀，是有人把它抽走了。” / “A page is missing. Not insects—someone took it out.”  
+墨页: “那部分封存了。你不知道公开它会引起什么。” / “That section was sealed. You don't know what releasing it could cause.”  
+Player: “如果它能解释我为什么失忆，我至少需要知道哪些是事实。” / “If it explains why I've lost my memories, I need to know what's true.”  
+白栞: “那就从能核实的碎片开始。我们不公开别人的私人记忆。” / “Then let's start with fragments we can verify. We won't publish anyone's private memories.”
 
 ### M-02 — The Mirror Rooms
 **Gameplay:** Navigate mirrored rooms, reconstruct fragmented records, distinguish original memories from Hollow Echo copies.
@@ -285,7 +285,7 @@ Player: “你以前就认识我？”
 Muling: “当然！你以前还会把铃铛挂反呢。”  
 Player: “原来我们早就是搭档了。为什么没告诉我？”  
 Muling: “我一直不知道该怎么开口。”  
-Player: “一路上我一直相信你。现在我想听实话，不是安慰。”  
+Player: “一路上我一直相信你。现在我想听实话，不是安慰。” / “I've trusted you all this way. Now I want the truth, not comfort.”  
 Muling: “我怕你恢复记忆后，又一次选择留在星铃里。”  
 Player: “当年到底发生了什么？”  
 Muling: “你为了保护大家，把自己的记忆留在了星铃里。”  
@@ -302,10 +302,10 @@ Player: “六地的记忆危机，和你有关吗？”
 Muling: “是我逐渐松开了封印。”  
 Player: “你知道记忆会受到影响？”  
 Muling: “知道。我以为恢复圣所就能及时补救。”  
-Player: “港口那些找不到家的人……你一开始就知道他们会有危险？我需要一点时间。”  
+Player: “港口那些找不到家的人……你一开始就知道他们会有危险？我需要一点时间。” / “Those cats who couldn't find their way home… You knew they could be in danger all along? I need some time.”  
 Muling: “是的。我会承担我做的事。”  
 Player: “你是想让我回来？”  
-Muling: “是。我知道有风险，还是继续做了。我以为我能赶在最坏的事情发生前修好它。我没有权利替大家决定。”
+Muling: “是。我知道有风险，还是继续做了。我以为我能赶在最坏的事情发生前修好它。我没有权利替大家决定。” / “Yes. I knew the risk and went ahead. I thought I could fix it before the worst happened. I had no right to decide for everyone.”
 
 Muling does not deny her actions or blame the player.
 
@@ -438,7 +438,7 @@ Player: “我们又见面啦。”
 Muling: “还有不少事情需要我去弥补。”  
 Player: “我们先听听大家的想法。”  
 Muling: “我可以留下来，一起修复吗？”  
-Player: “你可以留下修复，但原谅不是我替别人给你的。我们从这里重新开始。”
+Player: “你可以留下修复，但原谅不是我替别人给你的。我们从这里重新开始。” / “You can stay and help repair things, but I can't forgive you on everyone else's behalf. We can start again from here.”
 
 ---
 
@@ -488,4 +488,4 @@ The player gives Muling a second garden key. The Star Bell rings normally.
 - Regional chapters II–VI: Forest receives the harbor vessel and returns medicine; Forge needs forest cooling supplies and returns pumps; Sky receives flight parts and returns wind data; Library receives a courier delivery and returns records; Starfall receives coordinates and returns a beacon to Harbor. Each next destination follows a visible delivery or request, not a generic quest marker. A link is recorded only after verified two-way participation.
 - Distinct payoffs: Forest water visibly flows into both settlements; Forge restarts workshops; Sky opens a flight route; Library reveals the verified personal history; Starfall closes the route to Harbor. Let players revisit and witness changes. One chapter resolves its local problem, then adds one clear larger question.
 - Muling's field expertise is shown through repairs, humor, and real help. After H-04, maintain ambient behaviors and paired activities; her concealment remains fair-play evidence. Reassign or remove redundant NPCs only when gameplay roles and final network support remain explicit. Main and Muling use the approved same-series watercolor direction; final portrait/sprite approval is a separate art task.
-- The Chinese/English opening and harbor lines above are authoritative for the revised scenes. Later Chinese dialogue edits require English localization when migrated; no release until complete. Existing scene IDs are retained for reference, not permission to reuse old operation semantics. No automatic replays of the discarded opening, including on new slots, retries, language switches and resume.
+- The Chinese/English opening and harbor lines above are authoritative for the revised scenes. New and revised key lines include English counterparts; unchanged legacy dialogue must retain its validated English localization when migrated. No release until both languages are complete. Existing scene IDs are retained for reference, not permission to reuse old operation semantics. No automatic replays of the discarded opening, including on new slots, retries, language switches and resume.
