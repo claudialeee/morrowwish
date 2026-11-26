@@ -1,7 +1,32 @@
 # Experience Lab — start here
 Branch review/cat-bond-playtest-harness. Do not deploy or merge automatically.
 
-## Verified baseline (CI run 45780045518, commit 0dd413e)
+## Current verified checkpoint — 2026-11-26
+Tested game revision: `bf025cf2aa4b4f80cee92deaa2f617d7ae51cdb5`. [CI run 45835996647](https://github.com/claudialeee/morrowwish/actions/runs/45835996647), attempt 1: **9/9 story parts independently passed**, and the targets job passed. Eight chapter jobs started from synthetic chapter-entry saves only and completed every required scene and operation using real inputs; the opening job used a fresh slot. These are not a single continuous player-earned route. The continuous campaign job was cancelled during the browser route; its log blob is unavailable, so the cause and reached scene are unknown. The single cancelled job has been successfully re-run on the same SHA (attempt 2, job 140080359571). Do not call it passed until that attempt finishes. No game changes in this documentation-only checkpoint.
+
+| Story part | Actual result (attempt 1) | Download evidence |
+|---|---|---|
+| Prologue | Pass (fresh save) | [opening](https://github.com/claudialeee/morrowwish/actions/runs/45835996647/artifacts/15126345263) |
+| Harbor | 5 scenes pass | [harbor](https://github.com/claudialeee/morrowwish/actions/runs/45835996647/artifacts/15125746351) |
+| Forest | 4 scenes pass | [forest](https://github.com/claudialeee/morrowwish/actions/runs/45835996647/artifacts/15126710108) |
+| Forge | 4 scenes pass | [forge](https://github.com/claudialeee/morrowwish/actions/runs/45835996647/artifacts/15126510428) |
+| Sky | 5 scenes pass | [sky](https://github.com/claudialeee/morrowwish/actions/runs/45835996647/artifacts/15126265367) |
+| Library | 5 scenes pass | [library](https://github.com/claudialeee/morrowwish/actions/runs/45835996647/artifacts/15125421949) |
+| Starfall | 5 scenes pass | [starfall](https://github.com/claudialeee/morrowwish/actions/runs/45835996647/artifacts/15125312124) |
+| Finale | 4 scenes pass | [finale](https://github.com/claudialeee/morrowwish/actions/runs/45835996647/artifacts/15126960667) |
+| Epilogue | 3 scenes pass | [epilogue](https://github.com/claudialeee/morrowwish/actions/runs/45835996647/artifacts/15125361856) |
+| Targets | 36/36 restores; 5/5 emotional interactions; 3/3 current RPG encounter measurements won | [targets](https://github.com/claudialeee/morrowwish/actions/runs/45835996647/artifacts/15127470338) |
+
+Opening also passed 16 collectible passive contracts, 16 actual battle prototype hook checks, 24 image decodes, 18 actual game-rendered characters. Targets logged Forest auto 13.35s (1 Duo), manual 10.47s (0 Duo), Starfall auto 14.04s (1 Duo), all game-clock times. Three isolated encounters, not a statistical difficulty estimate. Use actual evidence before changing balance.
+
+### Remaining acceptance gates — do not declare complete
+- Fresh-slot continuous main story to ending and all real captured checkpoint replays. Prior verified continuous progress reached Forest R-03; the cancelled run has no retrievable progress evidence.
+- Production cinematic approval: source manifest has zero approved shots/assets; remaster cinematic assets are candidates allowed in explicit local staging only. Successful staged cinematics cannot certify production-ready art. Inspect all key frames (F-02, F-05, B-04, E-01), visual continuity and no old thin orange-cat layers before approval. Do not approve blindly.
+- Independent blind player-perspective assessment of every chapter and implemented optional activity, including no-meet/no-cargo and alternate choices; emotional payoff, clear next goal, repetition, enjoyable challenge, companion identity. Author-side 40-scene pre-audit is already available, not independent player evidence. Use these existing chapter packets to locate/reproduce issues; do not spend Work time rerunning known passing functional checks unless relevant to a fix.
+- Actual wild capture/collection, per-cat combat performance (not just passive helper checks), meaningful Duo visuals, mobile/portrait and landscape readability, both languages, actual audio, optional paths, legacy art reference cleanup. Earlier isolated or source checks are not a blanket pass.
+- No merge, release approval, deployment, or production analytics. All evidence tied to its tested revision; 7-day artifact retention.
+
+## Historical baseline (CI run 45780045518, commit 0dd413e)
 - Real Chromium: Chinese desktop opening with optional traveler encounter and skip both passed; Harbor H-01 arrival and NPC interaction plus normal save reload passed.
 - Engine-only: 3 paths x 40 scene records, all 28 choice options, no optional cargo; passed.
 - Legacy combat simulator: 7 policies x 2 seeds x 6 battles = 84 simulations executed. Execution success does not mean combat balance is accepted; see actual summary.json.
