@@ -1,0 +1,77 @@
+name: Starbell isolated blocker regression
+on:
+  push:
+    branches: [review/starbell-qa-targeted-8a3ae463]
+    paths: ['.github/workflows/starbell-blocker-regression.yml']
+permissions:
+  contents: read
+concurrency:
+  group: starbell-blocker-regression-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [interactions, cinematics]
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      SCOPE: ${{ matrix.scope }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Fresh synthetic fixtures for optional activities
+        if: matrix.scope == 'interactions'
+        run: |
+          node scripts/cat-bond-experience-knowledge.mjs
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-targeted-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          export CAT_BOND_TARGET_SCENES=$(node --input-type=module -e 'import {campaign} from "./public/cat-bond/js/resonance/campaign.mjs";import {discoveries} from "./public/cat-bond/js/resonance/regional-discoveries.mjs";const after=[...campaign.ambient.filter(a=>a.after!=="epilogue:E-03").map(a=>a.after),...Object.values(discoveries).map(d=>d.after)];console.log([...new Set(after.map(id=>campaign.scenes[campaign.scenes.findIndex(s=>s.id===id)+1].id))].join(","))')
+          node scripts/cat-bond-experience-targets.mjs
+      - name: Actual ambient NPC interaction regression
+        if: matrix.scope == 'interactions'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-ambient-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-ambient.mjs
+      - name: Actual painted discovery interaction regression
+        if: always() && matrix.scope == 'interactions'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-discovery-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-discoveries.mjs
+      - name: Candidate cinematic portrait crop regression
+        if: matrix.scope == 'cinematics'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-cinema-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-starfall-art-review.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-blocker-${{ matrix.scope }}
+          path: |
+            artifacts/cat-bond-experience/ambient
+            artifacts/cat-bond-experience/discoveries
+            artifacts/cat-bond-starfall/visual-review
+            /tmp/cb-*-server.log
+          retention-days: 30
