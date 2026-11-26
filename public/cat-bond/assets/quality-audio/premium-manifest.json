@@ -7,7 +7,7 @@
     "opening": "childhood",
     "garden": "life-in-silico",
     "atlas": "concerning-hobbits",
-    "harbor": "quirky-lane",
+    "harbor": "tomorrow",
     "forest": "enchanted-valley",
     "forge": "an-unexpected-party",
     "sky": "discovery",
@@ -35,9 +35,10 @@
       "author": "Scott Buckley",
       "license": "CC BY 4.0",
       "source": "https://www.scottbuckley.com.au/library/tomorrow/",
-      "notes": "Bright, playful orchestral fantasy. Title promises a joyful adventure.",
+      "notes": "Bright, playful orchestral fantasy; Windchime Town uses its cheerful village exploration theme.",
       "scenes": [
-        "title"
+        "title",
+        "harbor"
       ],
       "sourceSha256": "d2af250a3756b827b45e3b463486c09b2d314de02876b3489e4423e8caeb2da7",
       "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
@@ -119,9 +120,7 @@
       "license": "CC BY 4.0",
       "source": "https://www.scottbuckley.com.au/library/quirky-lane/",
       "notes": "Warm recorder and strings, then playful winds and vibes; bustling harbor, not slapstick.",
-      "scenes": [
-        "harbor"
-      ],
+      "scenes": [],
       "sourceSha256": "d3486d33f973e27cac0b959fa95a15c5150ee14f71cea6f6493f72cf6b024931",
       "edits": "1.2s equal-power loop join, two-pass loudness normalization, 44.1 kHz stereo MP3",
       "file": "premium-quirky-lane.mp3",
