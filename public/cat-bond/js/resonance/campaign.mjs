@@ -2497,7 +2497,7 @@ export const campaign = {
       "id": "muling:tea",
       "npc": "muling",
       "region": "garden",
-      "after": "prologue:P-05",
+      "after": "harbor:H-04",
       "before": "library:M-04",
       "operation": "ambient:brew-bitter-tea",
       "text": {
