@@ -91,6 +91,27 @@ try{
  const after=await page.evaluate(()=>({...window.__PAWSIBLY_TEST__.getState().cat}));
  console.log('Click movement:',JSON.stringify({before,after}));
  assert.notDeepEqual(after,before,'Mouse click must move the cat');
+ assert.equal(await page.evaluate(()=>window.__PAWSIBLY_TEST__.getState().got),1,'First real mouse click collects the indicated fish');
+ assert.match(await page.locator('#visionTip').textContent(),/One fish/,'Guidance responds to the collected fish');
+ await page.locator('#guideHelp').click();
+ assert.equal(await page.locator('[data-tab-panel="help"]').isVisible(),true,'Visible contextual help opens the existing tutorial');
+ await page.locator('#menuClose').click();
+ const touch=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+ try{const phone=await touch.newPage();await phone.route('**/api/session',r=>r.fulfill({status:204,body:''}));await phone.goto(url,{waitUntil:'load'});await phone.evaluate(()=>window.MorrowwishI18n.set('zh'));
+ await phone.screenshot({path:'test-results/pawsibly-onboarding-mobile-zh.png'});
+ assert.match(await phone.locator('#visionTip').textContent(),/偷够3条鱼.*猫门/);
+ const b=await phone.locator('#board').boundingBox();await phone.touchscreen.tap(b.x+b.width*.25,b.y+b.height*.5);
+ await phone.waitForFunction(()=>window.__PAWSIBLY_TEST__.getState().got===1);
+ assert.match(await phone.locator('#visionTip').textContent(),/到手1条/);
+ await phone.locator('#guideHelp').tap();assert.ok(await phone.locator('[data-tab-panel="help"]').isVisible());await phone.locator('#menuClose').tap();
+ await phone.evaluate(()=>window.MorrowwishI18n.set('en'));assert.match(await phone.locator('#visionTip').textContent(),/One fish/);
+ }finally{await touch.close()}
+ const run=await browser.newPage({viewport:{width:1250,height:900}});try{await run.route('**/api/session',r=>r.fulfill({status:204,body:''}));await run.goto(url,{waitUntil:'load'});await run.evaluate(()=>window.MorrowwishI18n.set('en'));await run.screenshot({path:'test-results/pawsibly-onboarding-desktop-en.png'});
+ assert.match(await run.locator('#visionTip').textContent(),/Steal 3 fish.*cat flap/);
+ const keys=['ArrowRight','ArrowRight','ArrowUp','ArrowLeft','ArrowDown','ArrowDown','ArrowDown','ArrowDown','ArrowRight','ArrowRight','ArrowRight','ArrowRight','ArrowRight','ArrowUp','ArrowDown','ArrowRight','ArrowRight'];let sawExit=false;
+ for(const key of keys){await run.keyboard.press(key);const state=await run.evaluate(()=>({got:window.__PAWSIBLY_TEST__.getState().got,done:window.__PAWSIBLY_TEST__.getState().done}));if(state.got===3&&!state.done){const hint=await run.locator('#visionTip').textContent();if(/Exit open.*green cat flap/.test(hint))sawExit=true;}if(state.done)break;}
+ assert.ok(sawExit,'The live guide must explain how to escape after the third fish');assert.ok(await run.evaluate(()=>window.__PAWSIBLY_TEST__.getState().winning),'New visitor completes first room using real keyboard controls');assert.ok(await run.locator('#overlay').isVisible());
+ }finally{await run.close()}
  assert.equal(errors.length,0,'No uncaught exception after clicking');
  await page.locator('#menuButton').click();
  assert.equal(await page.locator('#gameMenu').isVisible(),true,'Menu opens in the game frame');

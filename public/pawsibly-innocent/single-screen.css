@@ -1231,3 +1231,15 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
  .single-screen-game #gameMenu .replay-choice-text strong{font-size:14px!important}
  .single-screen-game #gameMenu .replay-choice-text small{font-size:10px!important}
 }
+
+/* First-play coaching: make the existing guidance row an obvious help affordance. */
+.single-screen-game .guide-help{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:7px;min-width:0;width:100%;padding:2px 4px 2px 6px;margin:0;border:1px solid #e3b9a4;border-left:3px solid #b56874;border-radius:8px;background:#fffaf1;color:#673a50;text-align:left;cursor:pointer;touch-action:manipulation;}
+.single-screen-game .guide-help #visionTip{flex:1 1 auto;min-width:0;color:#673a50;overflow-wrap:break-word;}
+.single-screen-game .guide-help-icon{flex:0 0 21px;width:21px;height:21px;display:grid;place-items:center;border-radius:50%;background:#ead6e4;color:#634362;font:900 14px/1 system-ui,sans-serif;}
+.single-screen-game .guide-help:hover{background:#fff1dc;}
+.single-screen-game .guide-help:focus-visible{outline:2px solid #78517d;outline-offset:2px;}
+.single-screen-game #bonusQuick{filter:saturate(.78);}
+.single-screen-game #tool:not(:disabled){border-color:#a574ad!important;}
+.single-screen-game .coach-spot{pointer-events:none;width:7.5%;height:auto;aspect-ratio:1;margin:0;transform:translate(-50%,-50%);}
+@media(max-height:650px) and (min-width:701px){.single-screen-game .guide-help{padding:1px 3px;gap:3px}.single-screen-game .guide-help-icon{width:17px;height:17px;flex-basis:17px;font-size:12px}}
+@media(max-width:700px){.single-screen-game .guide-help{min-height:36px;padding:3px 6px}.single-screen-game .guide-help-icon{width:24px;height:24px;flex-basis:24px}}

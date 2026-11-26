@@ -357,13 +357,14 @@ function contextualHint(){
  if(s.exposure>0&&!s.pressure&&!s.finalAlert)return lang==="zh"?"被发现，自动行走已停止。请点视野外的地板或躲纸箱。":"Spotted: auto-walk stopped. Tap a safe tile or hide in a box.";
  if(s.distractionTurns>0)return lang==="zh"?"主人分心了！趁这 "+s.distractionTurns+" 步偷鱼开溜。":"The owner is distracted! You have "+s.distractionTurns+" safe moves.";
  if(s.index===0&&!daily){
-  if(s.got===0)return lang==="zh"?"① 点旁边的小鱼。主人看见你才会追！":"① Tap the nearby fish. The owner chases if they spot you!";
-  if(s.got===1&&s.yarnThrows===0&&s.yarn>0)return lang==="zh"?"② 粉色是主人视野。试试扔毛球引开他！":"② Pink is the owner’s sight. Try throwing yarn to lure them away!";
-  if(s.got<NEED)return lang==="zh"?"③ 躲开粉色区域，再偷够三条鱼。":"③ Stay out of pink tiles and steal three fish.";
+  if(s.got===0)return lang==="zh"?"① 点小鱼移动 · 偷够3条鱼，从猫门逃走！":"① Tap the fish · Steal 3 fish, then escape through the cat flap!";
+  if(s.got===1&&s.yarnThrows===0&&s.yarn>0)return lang==="zh"?"② 到手1条！避开粉色视野；可扔毛球引开主人。":"② One fish! Avoid pink sight tiles; toss yarn to distract the owner.";
+  if(s.got<NEED)return lang==="zh"?"② 再偷"+(NEED-s.got)+"条鱼；纸箱可以藏身。":"② "+(NEED-s.got)+" more fish · Hide in boxes, avoid pink tiles.";
   return s.got<s.fish.length
-   ?(lang==="zh"?"✓ 猫门已开！想拿三星，还得偷第 4 条鱼。":"✓ Exit open! Steal the fourth fish for 3-star eligibility.")
-   :(lang==="zh"?"✓ 四条鱼到手！完成额外任务再逃脱。":"✓ All four fish! Complete the bonus quest and escape.");
+   ?(lang==="zh"?"③ 猫门已开！点绿色猫门逃走（第4条鱼可选）。":"③ Exit open! Tap the green cat flap to escape (4th fish optional).")
+   :(lang==="zh"?"③ 四条鱼到手！点绿色猫门逃走，额外任务可选。":"③ All four fish! Tap the green cat flap; bonus quest is optional.");
  }
+ if(!s.started)return lang==="zh"?"点地板移动 · 偷3条鱼 · 从猫门逃走。":"Tap a floor tile · steal 3 fish · reach the cat flap.";
  if(s.finalAlert)return lang==="zh"?"主人发现异样了，快去猫门！":"The owner is suspicious. Make your escape!";
  // Rising time-pressure (警戒升级) is the more urgent state — surface it ahead of the
  // ambient sleep/creak tips so the HUD always explains why the owner's sight widened.
@@ -376,7 +377,7 @@ function contextualHint(){
   if(s.index>=3&&s.got>=2)return lang==="zh"?"鱼少了！主人变警觉，尽快找机会从猫门溜走。":"Missing fish! The human is more watchful. Plan your escape.";
  return YARN_LEGEND[lang].vision;
 }
-function syncUI(){if($("visionTip"))$("visionTip").textContent=contextualHint();
+function syncUI(){const hint=contextualHint(),tip=$("visionTip");if(tip&&tip.textContent!==hint)tip.textContent=hint;const help=$("guideHelp");if(help){help.title=lang==="zh"?"查看玩法与操作":"How to play and controls";help.setAttribute("aria-label",hint+(lang==="zh"?"。打开玩法帮助":" Open gameplay help."));}
  updateCoach();
  if($("stage"))$("stage").classList.toggle("owner-following-yarn",!!s.yarnAnimating);
  if($("guardIntent"))$("guardIntent").textContent=guardLabel();
@@ -388,8 +389,8 @@ const MENU_TEXT={
 };
 function updateCoach(){
  const el=$("coachSpot");if(!el||!s)return;
- const show=!daily&&s.index===0&&(s.got===0||s.got>=NEED);
- const tile=s.got>=NEED?s.door:s.fish.find(f=>!s.taken.has(key(f)));
+ const show=!daily&&s.index===0&&(s.got===0||s.got>=NEED)&&!aimingYarn&&!s.yarnAnimating&&s.exposure===0;
+ const tile=s.got>=NEED?s.door:s.fish.filter(f=>!s.taken.has(key(f))&&pass(f)).sort((a,b)=>Math.abs(a.x-s.cat.x)+Math.abs(a.y-s.cat.y)-Math.abs(b.x-s.cat.x)-Math.abs(b.y-s.cat.y))[0];
  el.classList.toggle("active",!!show&&!!tile&&!menuOpen&&!s.done);
  if(show&&tile){el.style.left=((tile.x+.5)/W*100)+"%";el.style.top=((tile.y+.5)/H*100)+"%";}
 }
@@ -945,6 +946,7 @@ label(motif,810,43,"bold 29px system-ui","#fff8f5");
 /* No decorative central rug: it looked like a target despite having no effect. */
 if(night){round(0,0,840,588,0,"#6463a319");for(let i=0;i<12;i++){let x=30+i*67,y=110+(i*61)%440;shape(x,y,1.5+Math.sin(time*.002+i), "#fff9d1aa")}}
 }
+function guideTag(tile,text,offset=34,tint="#674962"){const x=(tile.x+.5)*T,y=Math.max(12,Math.min(564,(tile.y+.5)*T+offset));const w=Math.min(148,Math.max(70,text.length*10+18));const cx=Math.max(w/2+5,Math.min(835-w/2,x));round(cx-w/2,y,w,24,9,"#fffaf5f5");label(text,cx,y+17,"800 15px Nunito,system-ui",tint);}
 function draw(time){if(!s)return;if(s.outro){drawOutro(time);if(time-s.outro.startedAt>=s.outro.duration)endOutro();requestAnimationFrame(draw);return}const g=ctx.createLinearGradient(0,0,840,588);g.addColorStop(0,s.scene.wall);g.addColorStop(1,s.scene.floor[1]);ctx.fillStyle=g;ctx.fillRect(0,0,840,588);
 for(let y=0;y<H;y++)for(let x=0;x<W;x++){let px=x*T,py=y*T,alt=(x+y)%2;round(px+2,py+2,T-4,T-4,10,s.scene.floor[alt?0:1]);round(px+7,py+7,T-14,T-14,7,s.scene.floor[alt?1:0]);if((x*11+y*13)%9===0){shape(px+15,py+17,2,"#efd9c8");shape(px+22,py+25,1.4,"#efd9c8")}if(s.grid[y][x]==="#"){round(px+4,py+2,T-8,T-8,12,"#9d97b0");round(px+9,py+5,T-18,T-22,10,"#cac1d4");}if(s.grid[y][x]==="S")sofaDraw(px+T/2,py+T/2)}
 roomDecor(time);
@@ -1070,7 +1072,8 @@ const hu=s.human,ca=s.cat;
  if(!hidden(ca)){catDraw(catX,catY+9+Math.sin(time*.007)*2-hop,time)}
  else{catDraw(catX,catY+17-hop,time);round(ca.x*T+15,ca.y*T+45,54,27,5,"#e2b380");label("♡",(ca.x+.5)*T,ca.y*T+67,"19px system-ui","#c18395")}
 if(s.exposure>0&&!s.done){ctx.save();ctx.strokeStyle=s.exposure>=detectionLimit()-1?"#ed435e":"#f59b45";ctx.lineWidth=5;ctx.beginPath();ctx.arc((ca.x+.5)*T,(ca.y+.5)*T,34+Math.sin(time*.012)*4,0,Math.PI*2);ctx.stroke();ctx.restore()}
-if(!s.started&&!s.done){const x=Math.min(610,Math.max(6,s.cat.x*T-20)),y=Math.max(65,s.cat.y*T-99);round(x,y,225,38,14,"#fffdf5ef");const first=s.index===0&&!daily;label(first?(lang==="zh"?"先点旁边的小鱼！":"Tap the nearby fish!") : tr("startHint"),x+112,y+25,"bold 15px Nunito, system-ui","#8a5773");}
+if(!daily&&s.index===0&&!s.done&&!menuOpen&&!aimingYarn&&!s.yarnAnimating){if(!s.started){guideTag(s.cat,lang==="zh"?"你的小猫":"Your cat",38);guideTag(s.human,lang==="zh"?"主人":"Owner",36,"#9b415f");guideTag(s.door,lang==="zh"?"猫门 · 需3条鱼":"Exit · 3 fish",-47);}else if(s.got>=NEED&&s.exposure===0){guideTag(s.door,lang==="zh"?"从这里逃走！":"Escape here!",-44,"#376a48");}}
+if(!s.started&&!s.done&&(daily||s.index!==0)){const x=Math.min(610,Math.max(6,s.cat.x*T-20)),y=Math.max(65,s.cat.y*T-99);round(x,y,225,38,14,"#fffdf5ef");label(tr("startHint"),x+112,y+25,"bold 15px Nunito, system-ui","#8a5773");}
 for(let i=fx.length-1;i>=0;i--){const p=fx[i];shape(p.x,p.y,Math.max(1,p.life/8),p.col);p.x+=p.dx;p.y+=p.dy;p.dy+=.07;p.life--;if(p.life<0)fx.splice(i,1)}requestAnimationFrame(draw)}
 function canvasTile(e){const rect=c.getBoundingClientRect();return {x:Math.floor((e.clientX-rect.left)/rect.width*W),y:Math.floor((e.clientY-rect.top)/rect.height*H)}}
 function onClick(e){if(s?.outro){endOutro();return}if(s.done||menuOpen)return;const p=canvasTile(e);if(p.x<0||p.x>=W||p.y<0||p.y>=H)return;if(aimingYarn)throwYarnTo(p);else command(p.x,p.y)}
@@ -1159,6 +1162,7 @@ $("confirmReset").onclick=resetAllProgress;
 $("resetConfirm").addEventListener("pointerdown",e=>{if(e.target===$("resetConfirm"))cancelResetConfirm()});
 $("bonusQuick").onclick=()=>openMenu("rooms");
 $("quickHelp").onclick=()=>openMenu("help");
+$("guideHelp").onclick=()=>openMenu("help");
 $("menuClose").onclick=closeMenu;
 $("gameMenu").addEventListener("pointerdown",e=>{if(e.target===$("gameMenu"))closeMenu()});
 document.querySelectorAll("[data-game-tab]").forEach(el=>el.onclick=()=>setMenuTab(el.getAttribute("data-game-tab")));

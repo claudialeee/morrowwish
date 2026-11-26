@@ -18,6 +18,10 @@ vm.runInNewContext(source,{window,document,performance:{now:()=>1000},navigator:
  requestAnimationFrame:fn=>{if(frames++===0)fn(1250)},setInterval:fn=>{pendingIntervals.set(++intervalId,fn);return intervalId},clearInterval:id=>pendingIntervals.delete(id),setTimeout:()=>1,clearTimeout:nop},{timeout:2500});
 const test=window.__PAWSIBLY_TEST__;
 assert.equal(test.rooms.length,8);
+assert.match(nodes.get('visionTip').textContent,/Steal 3 fish.*cat flap/,'First screen explains the goal before any input');
+test.move(1,0);assert.equal(test.getState().got,1);assert.match(nodes.get('visionTip').textContent,/One fish.*pink sight/,'First pickup advances contextual coaching');
+nodes.get('guideHelp').onclick();assert.equal(nodes.get('gameMenu').hidden,false);nodes.get('menuClose').onclick();assert.equal(nodes.get('gameMenu').hidden,true);
+test.choose(0,false);
 const key=p=>p.x+','+p.y;
 const pass=(s,p)=>p.x>=0&&p.x<10&&p.y>=0&&p.y<7&&!['#','S'].includes(s.grid[p.y][p.x]);
 function path(s,a,b){const queue=[a],seen=new Set([key(a)]),prev=new Map();for(let i=0;i<queue.length;i++){
