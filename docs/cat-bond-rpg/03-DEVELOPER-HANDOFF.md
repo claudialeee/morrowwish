@@ -1,5 +1,7 @@
 # CAT BOND RPG — DEVELOPER HANDOFF
-## Implementation and QA contract · Canon 1.0 · 2026-11-24
+## Historical implementation foundations · Canon 2.0 migration override
+
+**Canon 2.0 supersedes all former scene tasks, chapter events, dialogue, and art requirements in this file.** Use 02 and ART-RESET-CANON2.md for the new campaign; preserve only compatible engine contracts. No old route or test evidence certifies the new implementation. New mainline mechanics, UI, localization, state transition, real browser route, and art validation must be completed before deployment.
 
 Read README.md, 01-NARRATIVE-BIBLE.md, and 02-MAIN-STORY-SCRIPT.md before touching Cat Bond RPG content.
 
