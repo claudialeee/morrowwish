@@ -5069,8 +5069,15 @@ class CaptureBattle {
         if (sd2 < 4900 && sd2 > 1) { const sd = Math.sqrt(sd2); ax += (sx / sd) * 0.8; ay += (sy / sd) * 0.8; }
       }
     }
+    // ENEMY AGGRESSION RAMP (playtest w1dgyb0za P0-1 kiter 99% idle auto-fix,
+    // unreviewed, not pushed): if the player has dealt no damage for N seconds,
+    // scale enemy approach speed up linearly 1.0 → 1.6× over the window t∈[4,10]s
+    // of idle. Resets the moment any player damage lands (this._lastOffenseT).
+    // Keeps pressure strictly on enemy MOVEMENT (no passive/skill collisions).
+    const idle = this._lastOffenseT == null ? this.t : (this.t - this._lastOffenseT);
+    const aggrMul = 1 + 0.6 * Math.max(0, Math.min(1, (idle - 4) / 6));
     // 束缚 bind ROOTS the enemy (no movement) but it can still aim + fire below.
-    const spd=e.rooted?0:e.speed*(1+e.aggro*.4+e.phase*.16)*this.moveMul(e); // all slows, including reflect wall
+    const spd=e.rooted?0:e.speed*(1+e.aggro*.4+e.phase*.16)*aggrMul*this.moveMul(e); // all slows, including reflect wall
     e.x = clamp(e.x + ax * spd * dt, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
     e.y = clamp(e.y + ay * spd * dt, this.topMargin, this.H - this.bottomMargin);
     if (spd>0.001 && Math.hypot(ax,ay)>0.07) {
