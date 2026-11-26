@@ -6,7 +6,7 @@ import {libraryBlocked,libraryPoints,catdexRecord} from "./library-mechanisms.mj
 export const REGION_KITS=Object.freeze({
  harbor:{name:["风铃镇","Windchime Town"],enemy:["铃光兽","Belllight beast"],npcs:["jiedeng","qilan"],element:"water",color:"#e7c775",kind:"surge",period:6.2,support:["真铃支援","True chime support"]},
  forest:{name:["眠根林","Rootsleep Forest"],enemy:["根须围猎","Root ambush"],npcs:["yahe","yuchuan"],element:"grass",color:"#97ba76",kind:"roots",period:6.8,support:["疏通根脉","Clear the roots"]},
- forge:{name:["千灯城","Lantern City"],enemy:["高温巡猎","Furnace hunt"],npcs:["jinpo","xiaomao"],element:"fire",color:"#e9a16b",kind:"embers",period:6.5,support:["冷却旁路","Coolant bypass"]},
+ forge:{name:["千灯城","Lantern City"],enemy:["灯影巡猎","Shadow hunt"],npcs:["jinpo","xiaomao"],element:"dark",color:"#a58ac8",kind:"shadows",period:6.5,support:["彩灯支援","Lantern support"]},
  sky:{name:["云脊群岛","Skyspine Isles"],enemy:["风切追逐","Gale chase"],npcs:["lingyu","yuanfan"],element:"elec",color:"#c6dce9",kind:"gale",period:6.1,support:["稳定气流","Stabilize the wind"]},
  library:{name:["月镜书库","Moonmirror Library"],enemy:["镜影反击","Mirror counter"],npcs:["moye","baikan"],element:"dark",color:"#b6a7dd",kind:"mirror",period:7.2,support:["辨认真迹","Reveal the original"]},
  starfall:{name:["星坠原","Starfall Expanse"],enemy:["星轨围猎","Orbital hunt"],npcs:["xingya","lichuan"],element:"light",color:"#e6c68b",kind:"orbit",period:7.0,support:["校准星图","Align the star chart"]}
@@ -47,7 +47,7 @@ export function buildPattern(kind,W,H,top,bottom,point,cycle){
  switch(kind){
   case "surge":return [stripe(0,y,W,y,44),stripe(0,clamp(y+area*.31,top,H-bottom),W,clamp(y+area*.31,top,H-bottom),25)];
   case "roots":return [circle(x,y,57),circle(x-W*.19,y+area*.13,47),circle(x+W*.19,y-area*.13,47)];
-  case "embers":return [circle(x,y,75),circle(x+W*.21,y,52)];
+  case "shadows":return [circle(x,y,75),circle(W-x,y,52)];
   case "gale":return [stripe(x-W*.3,top,x+W*.3,H-bottom,36),stripe(x-W*.55,top,x+W*.05,H-bottom,26)];
   case "mirror":return [circle(x,y,53),circle(W-x,y,53)];
   case "orbit":return [0,1,2].map(i=>{const a=cycle*.8+i*Math.PI*2/3;return circle(W*.5+Math.cos(a)*W*.24,top+area*.5+Math.sin(a)*area*.32,48);});
@@ -142,7 +142,7 @@ function install(){
  const bg=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){if(this.regionalCombat&&drawScene(ctx,W,H,this.regionalCombat.region))return;return bg.call(this,ctx,W,H);};
  function notice(b,zh,en){b.game.toast({zh,en});}
- const labels={surge:["铃光横扫，避开预警光带！","Belllight sweep: leave the marked lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["熔渣即将落下！","Molten fragments are about to fall!"],gale:["风切线即将贯穿战场，注意侧风推移！","Gale shear incoming. Counter the crosswind drift!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨正在轮转，避开落点！","Orbital markers are rotating. Keep clear!"]};
+ const labels={surge:["铃光横扫，避开预警光带！","Belllight sweep: leave the marked lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],shadows:["剪影复制了你的落点，快离开暗影！","Shadows copy your position. Move out of the dark zones!"],gale:["风切线即将贯穿战场，注意侧风推移！","Gale shear incoming. Counter the crosswind drift!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨正在轮转，避开落点！","Orbital markers are rotating. Keep clear!"]};
  function mount(game,b){
   document.getElementById("cb-region-combat")?.remove();
   const host=document.getElementById("battle-ui");if(!host)return;
@@ -165,7 +165,7 @@ function install(){
   const cats=living(b);
   if(r.kit.kind==="roots")for(const f of cats){f.rootT=0;f.rooted=false;if(f.status)delete f.status.bind;}
   else if(r.kit.kind==="mirror"){for(const e of b.liveEnemies())e.reflectT=0;}
-  else if(r.kit.kind==="embers"){for(const f of cats){if(f.status)delete f.status.burn;}}
+  else if(r.kit.kind==="shadows"){for(const f of cats)f.inv=Math.max(f.inv||0,1.2);}
   else if(r.kit.kind==="gale"){const duration=r.skyMethod==="escort-flight"?1.8:.8,before=b.ult;for(const f of cats)f.inv=Math.max(f.inv||0,duration);if(r.skyMethod==="fast-courier")b.gainUlt(12);r.skySupportEffect={method:r.skyMethod,chargeBefore:before,chargeAfter:b.ult,protected:cats.length,duration};}
   else if(r.kit.kind==="orbit"){applyStarfallSupport(b,cats,window.State.difficulty());}
   else{for(const f of cats)f.shieldT=Math.max(f.shieldT||0,2.5);}
@@ -175,7 +175,7 @@ function install(){
  function resolve(b,r,cast){
   for(const f of living(b)){
    if(!cast.patterns.some(p=>inPattern(p,f)))continue;
-   const hit=b.resolveHit(f,"wild",{element:r.kit.element,kind:"aoe",isBasic:false},Math.max(8,f.maxhp*(r.kit.kind==="embers"?.14:.10)),f.x,f.y);
+   const hit=b.resolveHit(f,"wild",{element:r.kit.element,kind:"aoe",isBasic:false},Math.max(8,f.maxhp*(r.kit.kind==="shadows"?.14:.10)),f.x,f.y);
    if(hit?.dealt>0){
     if(r.kit.kind==="roots")f.rootT=Math.max(f.rootT||0,1.5);
     if(r.kit.kind==="gale"){const dir=f.x<b.W/2?-1:1;f.x=clamp(f.x+dir*38,32,b.W-32);}
@@ -265,7 +265,7 @@ function install(){
   switch(r.kit.kind){
    case "surge":for(let i=-2;i<=2;i++)fire(a+i*.20,168,.47);break;
    case "roots":for(let i=-1;i<=1;i++)this.spawnProj(e.x,e.y,a+i*.22,138,e.dmg*.55,"wild",r.kit.color,8,"leaf",{element:"grass",isBasic:false,appliesTag:"bind"});break;
-   case "embers":for(let i=-1;i<=1;i++)fire(a+i*.28,220,.62,"forge-slag");break;
+   case "shadows":for(let i=-1;i<=1;i++)fire(a+i*.28,220,.62);break;
    case "gale":fire(a-.11,325,.66);fire(a+.11,325,.66);break;
    case "mirror":fire(a,200,.78);e.reflectT=Math.max(e.reflectT||0,.65);break;
    case "orbit":for(let i=0;i<7;i++)fire(a+i*Math.PI*2/7,165,.42);break;
@@ -275,7 +275,7 @@ function install(){
  const drawBattle=BP.draw;
  BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat){const active=cinematicActive(this),panel=document.getElementById("cb-region-combat");syncCinematicHud(panel,this);if(active)return result;if(this.regionalCombat.shadowLight){const l=shadowLight(this),g=ctx.createRadialGradient(l.x,l.y,4,l.x,l.y,l.r);g.addColorStop(0,"#ffe3a055");g.addColorStop(.75,"#ffe3a033");g.addColorStop(1,"#ffe3a000");ctx.save();ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);ctx.strokeStyle="#f7d48c";ctx.lineWidth=2;ctx.setLineDash([5,6]);ctx.beginPath();ctx.arc(l.x,l.y,l.r,0,Math.PI*2);ctx.stroke();ctx.restore();}draw(this,ctx);}if(this.libraryEncounter&&!this.duoCinematic&&!this.ultCinematic){ctx.save();for(const e of this.liveEnemies()){ctx.strokeStyle="#c5b9ff";ctx.globalAlpha=.45+.2*Math.sin(this.t*4);ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(e.x,e.y,Math.max(24,(e.r||24)*1.3),11,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}return result;};
  const libraryOp="battle:library-echo",libraryScene="library:M-02";
- const storyEcho={forge:{scene:"forge:E-03",op:"battle:shadow-beast",point:[.74,.40],title:["灯影剧场 · 剪影兽","Shadow theater · Shadow beast"],name:["剪影兽","Shadow beast"]},harbor:{scene:"harbor:H-04",op:"battle:chime-beast",point:[.195,.50],title:["铃房 · 铃光兽","Bell house · Belllight beast"],name:["铃光兽","Belllight beast"]},forest:{scene:"forest:R-03",op:"battle:root-echo",point:[.69,.53],title:["坍塌水道 · 空响根影","Collapsed channel · Hollow root echo"],name:["空响根影","Hollow root echo"]},library:{scene:libraryScene,op:libraryOp,point:libraryPoints[libraryOp],title:["镜影 · 守档幻象","Archive echo · Guardian illusion"],name:["守档幻象","Archive echo"]},starfall:{scene:"starfall:F-04",op:"battle:observatory-echo",point:[.78,.40],title:["观星台守卫 · 空响星轨","Observatory guardian · Echo orbit"],name:["空响星轨","Echo orbit"]}};
+ const storyEcho={forge:{scene:"forge:E-03",op:"battle:shadow-beast",point:[.74,.40],title:["灯影剧场 · 剪影兽","Shadow theater · Shadow beast"],name:["剪影兽","Shadow beast"]},harbor:{scene:"harbor:H-04",op:"battle:chime-beast",point:[.195,.50],title:["铃房 · 铃光兽","Bell house · Belllight beast"],name:["铃光兽","Belllight beast"]},forest:{scene:"forest:R-03",op:"battle:root-echo",point:[.69,.53],title:["月叶根桥 · 空响根影","Moonleaf bridge · Hollow root echo"],name:["空响根影","Hollow root echo"]},library:{scene:libraryScene,op:libraryOp,point:libraryPoints[libraryOp],title:["镜影 · 守档幻象","Archive echo · Guardian illusion"],name:["守档幻象","Archive echo"]},starfall:{scene:"starfall:F-04",op:"battle:observatory-echo",point:[.78,.40],title:["观星台守卫 · 空响星轨","Observatory guardian · Echo orbit"],name:["空响星轨","Echo orbit"]}};
  function libraryAvailable(game,region="library"){const d=storyEcho[region],v=window.CatBondResonance?.view(),root=window.State.S,p=root.resonanceExploration?.positions?.[region],q=d?.point;return !!d&&game?.scene==="map"&&!game.battle&&root.resonanceExploration?.location===region&&v?.current?.id===d.scene&&v.objective.includes(d.op)&&(region==="library"?!libraryBlocked(d.op,v.objective):v.objective[0]===d.op)&&p&&Math.hypot(p.x-q[0],p.y-q[1])<.072;}
  function prepareLibrary(game,region="library"){
   if(!libraryAvailable(game,region))return false;const d=storyEcho[region],root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam().filter(cat=>region!=="forest"||cat.storyActor!=="yahe");if(!team.length)return false;
