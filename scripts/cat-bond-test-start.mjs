@@ -8,8 +8,7 @@ export async function startNewAdventure(page,{slot='slot1',scene='map'}={}){
   await page.locator('#intro-slot-list [data-slot="'+slot+'"]').click({timeout:10000});
   await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,{timeout:15000});
   if(await page.evaluate(()=>!!window.__CAT_BOND_CANONICAL_ACTIVE__)){await finishCanonicalOpening(page);}else{
-  await page.locator('#panel.open .dex-cell').first().waitFor({state:'visible',timeout:15000});
-  await page.locator('#panel.open .dex-cell').first().click({timeout:10000});
+  await page.waitForFunction(()=>State.S.cats[0]?.species==='jinjc'&&State.S.cats.length===1);
   const skip=page.locator('.cb-story-overlay.is-visible .cb-story-skip');
   await skip.waitFor({state:'visible',timeout:15000});
   await skip.click({timeout:10000});}
@@ -42,8 +41,8 @@ export async function finishCanonicalOpening(page,{onStage=async()=>{}}={}){
  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-01'&&document.querySelector('.cbcp-art')?.naturalWidth>0);
  const skip=page.locator('.cbcp-skip');await skip.waitFor();await onStage('prologue P-01');await skip.click();
  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-04');
- await page.locator('#panel.open .cat-starter-card .dex-cell').first().waitFor();
- await onStage('starter');await page.locator('#panel.open .cat-starter-card .dex-cell').first().click();
+ await page.waitForFunction(()=>State.S.cats[0]?.species==='jinjc'&&State.S.cats.length===1&&!document.querySelector('#panel.open .cat-starter-card'));
+ await onStage('fixed protagonist');
  const guide=page.locator('.sg-prologue-guide');
  await guide.getByRole('button',{name:/^(Talk to Muling|与暮铃交谈)$/}).click();
  const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');

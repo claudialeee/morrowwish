@@ -61,18 +61,18 @@ export function inPattern(p,f){
 
 // In each region the arena leaves room for the cats, paths and attack indicators.
 const artFiles={
- harbor:["harbor-arena.webp","tide-shell.svg","harbor-arena.svg"],
- forest:["forest-arena.webp","rootbound.svg","forest-arena.svg"],
+ harbor:["harbor-arena.webp","tide-shell-watercolor.webp","harbor-arena.svg"],
+ forest:["forest-arena.webp","rootbound-watercolor.webp","forest-arena.svg"],
  forge:["emberforge-painted.webp","forge-guardian-painted.webp"],
- sky:["sky-arena.webp","gale-wing.svg","sky-arena.svg"],
- library:["library-arena.webp","mirror-sentinel.svg","library-arena.svg"],
- starfall:["starfall-arena.webp","orbit-sentinel.svg","starfall-arena.svg"],
+ sky:["sky-arena.webp","gale-wing-watercolor.webp","sky-arena.svg"],
+ library:["library-arena.webp","mirror-sentinel-watercolor.webp","library-arena.svg"],
+ starfall:["starfall-arena.webp","orbit-sentinel-watercolor.webp","starfall-arena.svg"],
 };
 const portraitFocalPoints={harbor:.78,forest:.20,forge:.50,sky:.68,library:.50,starfall:.65};
 const art={};
 function loadArt(){for(const [id,[background,enemy,fallback]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
- pair.background.src=new URL("../../assets/combat/"+background,import.meta.url).href;pair.enemy.src=new URL("../../assets/combat/"+enemy,import.meta.url).href;
+ pair.background.src=new URL("../../assets/combat/"+background,import.meta.url).href;if(enemy)pair.enemy.src=new URL("../../assets/combat/"+enemy,import.meta.url).href;
  if(fallback){pair.fallback=new Image();pair.fallback.decoding="async";pair.fallback.src=new URL("../../assets/combat/"+fallback,import.meta.url).href;}
  art[id]=pair;
 }}
@@ -85,20 +85,23 @@ function drawScene(ctx,W,H,region){
  ctx.restore();
  return true;
 }
+// Dedicated hand-painted regional creatures; combat and capture data are unchanged.
 function drawManifestation(ctx,e,b){
  if(b.libraryEncounter)return false;
  const img=art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
- const size=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62)),bob=Math.sin(b.t*3+e.i)*2;
+ const originalSize=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62));
+ const size=e.regionalEnemy==="forge"?originalSize:Math.max(92,Math.min(138,118*(b.catScale?.("enemy")||.95)/.95)),bob=e.frozen?0:Math.sin(b.t*3+e.i)*1.5;
  // Fit the authored creature within the existing visual box without stretching.
  const fit=Math.min(size/img.naturalWidth,size/img.naturalHeight),dw=img.naturalWidth*fit,dh=img.naturalHeight*fit;
  // Ground the unchanged silhouette at its visual foot anchor, not a
  // glow ring. The shadow stays planted during idle motion.
- ctx.save();ctx.translate(e.x,e.y+size*.06);ctx.scale(Math.max(1,dw*.34),Math.max(1,size*.055));
+ ctx.save();ctx.translate(e.x,e.y+(e.regionalEnemy==="forge"?size*.06:23));ctx.scale(Math.max(1,dw*.34),Math.max(1,size*.055));
  const contact=ctx.createRadialGradient(0,0,0,0,0,1);
  contact.addColorStop(0,"rgba(13,23,25,.46)");contact.addColorStop(.55,"rgba(13,23,25,.24)");contact.addColorStop(1,"rgba(13,23,25,0)");
  ctx.fillStyle=contact;ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();ctx.restore();
- ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);
- ctx.drawImage(img,-dw/2,size/2-dh,dw,dh);ctx.restore();return true;
+ const foot=e.regionalEnemy==="forge"?size*.06:23;
+ ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.translate(e.x,e.y+foot+bob);ctx.scale(e.face===-1?1:-1,1);
+ ctx.drawImage(img,-dw/2,-dh,dw,dh);ctx.restore();return true;
 }
 
 

@@ -24,7 +24,7 @@ function fog(c,t,storm,restored){
 }
 export function paintHarborEnvironment(c,view,frame){
  const t=reduced()?0:frame/60, storm=view.current?.id==="harbor:H-04", repaired=view.sanctuaries.includes("harbor"), sung=view.melodies.includes("harbor");
- c.save();c.scale(c.canvas.width/960,c.canvas.height/540);
+ c.save();c.scale((Number(c.canvas.dataset?.logicalWidth)||c.canvas.width)/960,(Number(c.canvas.dataset?.logicalHeight)||c.canvas.height)/540);
  if(storm){c.fillStyle="rgba(20,37,57,.24)";c.fillRect(0,0,960,540);}
  waterShimmer(c,t,storm);fog(c,t,storm,sung);
  if(repaired||storm&&!view.objective.includes("puzzle:beam-mirrors")){
@@ -123,7 +123,7 @@ export function paintHarborPuzzle(c,p,lang,cast,frame){
 // Final harbor ceremony: authored twilight illustration, resident portraits and a moving beacon.
 export function paintHarborCeremony(c,img,elapsed,lang,drawResident){
  const t=reduced()?2.4:elapsed,u=Math.min(1,t/3),ease=u*u*(3-2*u),w=960,h=540,zh=lang==="zh";
- c.save();c.scale(c.canvas.width/w,c.canvas.height/h);
+ c.save();c.scale((Number(c.canvas.dataset?.logicalWidth)||c.canvas.width)/w,(Number(c.canvas.dataset?.logicalHeight)||c.canvas.height)/h);
  const z=.97+.03*ease;c.save();c.translate(w*(1-z)/2,h*(1-z)/2);c.scale(z,z);
  window.CatBondSceneFit.draw(c,img,w,h,{top:"#142536",bottom:"#142c38"});c.restore();
  const night=c.createLinearGradient(0,h*.34,0,h);night.addColorStop(0,"rgba(10,24,36,0)");night.addColorStop(.65,"rgba(10,24,36,.4)");night.addColorStop(1,"rgba(8,19,30,.96)");c.fillStyle=night;c.fillRect(0,0,w,h);

@@ -106,11 +106,8 @@ try{
       await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true);
       const canonical=await page.evaluate(()=>!!window.__CAT_BOND_CANONICAL_ACTIVE__);
       if(canonical)await finishCanonicalOpening(page);else{
-      await page.waitForSelector('#panel.open .dex-cell',{timeout:20000});
       assert.equal(await page.locator('#intro').isVisible(),false,'Start must dismiss intro');
-      const starter=page.locator('#panel.open .dex-cell').first();
-      if(touch)await starter.tap();else await starter.click();
-      await page.waitForFunction(()=>window.State?.S?.cats?.length===1);
+      await page.waitForFunction(()=>window.State?.S?.cats?.length===1&&State.S.cats[0].species==='jinjc');
       const prologue=page.locator('.cb-story-overlay.is-visible');
       await prologue.waitFor({state:'visible',timeout:15000});
       const skip=prologue.locator('.cb-story-skip');

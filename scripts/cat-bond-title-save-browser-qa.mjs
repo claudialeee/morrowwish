@@ -84,15 +84,9 @@ for(const profile of [
   await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-01'&&document.querySelector('.cbcp-art')?.naturalWidth>0&&!document.querySelector('.cbcp-skip')?.disabled);
   await page.locator('.cbcp-skip').click();
   await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-04');
-  await checkVisible('#panel.open .dex-cell');
-  const starters=page.locator('.cat-story-starter-card .dex-cell');
-  assert.deepEqual(await starters.evaluateAll(cells=>cells.map(cell=>cell.dataset.id)),['jinjc','yunduo']);
-  for(const image of await starters.locator('img').all()){
-   assert.ok(await image.evaluate(async el=>{await el.decode();return el.naturalWidth>300&&el.getBoundingClientRect().height>0;}));
-  }
-  await screenshot('starter-breeds');
-  const selectedBreed=profile.mobile?'yunduo':'jinjc';
-  await starters.and(page.locator('[data-id="'+selectedBreed+'"]')).click();
+  assert.equal(await page.locator('#panel.open .cat-starter-card').count(),0,'No starter picker');
+  const selectedBreed='jinjc';
+  await screenshot('fixed-goldie-garden');
   assert.equal(await page.evaluate(()=>State.S.cats[0].species),selectedBreed);
   await page.locator('.sg-prologue-guide').getByRole('button',{name:'Talk to Muling'}).click();
   const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');await awakening.getByRole('button',{name:'Skip dialogue',exact:true}).click();
@@ -129,6 +123,9 @@ for(const profile of [
    assert.deepEqual(fit,{inside:true,aspect:true,scroll:true,solo:true},'Actual world frame fits after resize/fullscreen');
   };
   await checkStageFit();
+  const backing=await page.locator('.rw-surface').evaluate(c=>({w:c.width,h:c.height,css:c.getBoundingClientRect().width,dpr:window.devicePixelRatio}));
+  assert.ok(backing.w>=Math.min(2880,Math.max(960,backing.css*backing.dpr))-1,'Map backing resolution follows device pixels');
+  assert.ok(Math.abs(backing.w/backing.h-16/9)<.01,'Logical map aspect ratio preserved');
   const system=async()=>{await realPress(page.locator('#map-menu'));};
   const toggleWorldFullscreen=async()=>{await system();await realPress(page.locator('[data-system="page-settings"]'));await realPress(page.locator('[data-system="fullscreen"]'));};
   for(const sel of ['#mw-fullscreen-toggle','#mw-game-settings','#guide-help'])assert.equal(await page.locator(sel).isVisible(),false,sel+' must be inside the RPG menu');

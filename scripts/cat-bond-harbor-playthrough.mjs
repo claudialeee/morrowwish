@@ -270,7 +270,8 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     }
 
     await scene('prologue:P-04');
-    await page.locator('#panel .cat-starter-card .dex-cell').first().click();
+    await page.waitForFunction(()=>State.S.cats[0]?.species==='jinjc'&&State.S.cats.length===1);
+    assert.equal(await page.locator('#panel.open .cat-starter-card').count(),0);
     await button('Talk to Muling',page.locator('.sg-prologue-guide')).click();
     await readDialogue('prologue:P-04');
     const bell = page.locator('.res-garden-bell');

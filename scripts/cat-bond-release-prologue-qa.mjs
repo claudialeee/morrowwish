@@ -35,7 +35,7 @@ for(const profile of [
   await waitScene('prologue:P-01');await ready();
   assert.equal(await page.locator('.cbcp-subtitle-wrap').isVisible(),false,'Montage with no subtitle must have no obstruction');
   assert.equal(await page.locator('#cb-opening-cover').count(),1,'Opening cover stays mounted throughout all cinematic transitions');
-  assert.equal(await page.evaluate(()=>State.S.cats.length),0,'Opening before starter');
+  assert.deepEqual(await page.evaluate(()=>State.S.cats.map(c=>c.species)),['jinjc'],'Fixed protagonist before the opening');
   await page.locator('.cbcp-pause').click();
   const checkpoint=await page.evaluate(()=>State.S.openingPresentation.snapshot);
   assert.equal(checkpoint.paused,true);
@@ -81,7 +81,8 @@ for(const profile of [
   }
   await waitScene('prologue:P-04');
   assert.deepEqual(await page.evaluate(()=>State.S.resonance.completed.slice(0,3)),['prologue:P-01','prologue:P-02','prologue:P-03'],'One skip completes the verified opening checkpoints');
-  await page.locator('#panel.open .cat-starter-card .dex-cell').first().click();
+  assert.equal(await page.locator('#panel.open .cat-starter-card').count(),0,'No starter picker');
+  assert.deepEqual(await page.evaluate(()=>State.S.cats.map(c=>c.species)),['jinjc']);
   assert.equal(await page.evaluate(()=>State.S.cats.length),1);
   await guide.getByRole('button',{name:tr('与暮铃交谈','Talk to Muling'),exact:true}).click();
   const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');
