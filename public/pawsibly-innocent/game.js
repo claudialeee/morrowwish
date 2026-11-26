@@ -85,9 +85,11 @@ const fur=[["#f5b46d","#ce8952","#fff1cc",0],["#f5eeec","#c5a8a6","#fff",3],["#5
 const entryParams=new URLSearchParams(location.search),entryRoomRaw=Number(entryParams.get("room")),entryRoom=entryParams.has("room")&&Number.isInteger(entryRoomRaw)&&entryRoomRaw>=1&&entryRoomRaw<=8?entryRoomRaw-1:0,entryDaily=entryParams.get("daily")==="1",challengeGoal=Math.max(0,Math.min(9999999,Number(entryParams.get("beat"))||0));
 const c=$("board"),ctx=c.getContext("2d"),today=new Date().toISOString().slice(0,10),dpr=Math.min(2,window.devicePixelRatio||1);
 c.width=840*dpr;c.height=588*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+let guideFont=16;
 function fitCanvasPixels(){
  const rect=c.getBoundingClientRect();
  const cssWidth=Number(rect?.width)||840;
+ guideFont=Math.min(38,Math.max(16,Math.round(11*840/cssWidth)));
  const scale=Math.max(1,Math.min(2.5,cssWidth/840*(window.devicePixelRatio||1)));
  const w=Math.round(840*scale),h=Math.round(588*scale);
  if(c.width!==w||c.height!==h){c.width=w;c.height=h}
@@ -946,7 +948,7 @@ label(motif,810,43,"bold 29px system-ui","#fff8f5");
 /* No decorative central rug: it looked like a target despite having no effect. */
 if(night){round(0,0,840,588,0,"#6463a319");for(let i=0;i<12;i++){let x=30+i*67,y=110+(i*61)%440;shape(x,y,1.5+Math.sin(time*.002+i), "#fff9d1aa")}}
 }
-function guideTag(tile,text,offset=34,tint="#674962"){const x=(tile.x+.5)*T,y=Math.max(12,Math.min(564,(tile.y+.5)*T+offset));const w=Math.min(148,Math.max(70,text.length*10+18));const cx=Math.max(w/2+5,Math.min(835-w/2,x));round(cx-w/2,y,w,24,9,"#fffaf5f5");label(text,cx,y+17,"800 15px Nunito,system-ui",tint);}
+function guideTag(tile,text,offset=34,tint="#674962"){const x=(tile.x+.5)*T,h=guideFont+10,y=Math.max(8,Math.min(588-h-5,(tile.y+.5)*T+offset));const font="800 "+guideFont+"px Nunito,system-ui";ctx.font=font;const measured=ctx.measureText(text)?.width||[...text].reduce((a,ch)=>a+(/[\u3400-\u9fff]/.test(ch)?guideFont:guideFont*.62),0);const w=Math.min(250,Math.max(56,measured+16));const cx=Math.max(w/2+5,Math.min(835-w/2,x));round(cx-w/2,y,w,h,9,"#fffaf5f5");label(text,cx,y+guideFont+2,font,tint);}
 function draw(time){if(!s)return;if(s.outro){drawOutro(time);if(time-s.outro.startedAt>=s.outro.duration)endOutro();requestAnimationFrame(draw);return}const g=ctx.createLinearGradient(0,0,840,588);g.addColorStop(0,s.scene.wall);g.addColorStop(1,s.scene.floor[1]);ctx.fillStyle=g;ctx.fillRect(0,0,840,588);
 for(let y=0;y<H;y++)for(let x=0;x<W;x++){let px=x*T,py=y*T,alt=(x+y)%2;round(px+2,py+2,T-4,T-4,10,s.scene.floor[alt?0:1]);round(px+7,py+7,T-14,T-14,7,s.scene.floor[alt?1:0]);if((x*11+y*13)%9===0){shape(px+15,py+17,2,"#efd9c8");shape(px+22,py+25,1.4,"#efd9c8")}if(s.grid[y][x]==="#"){round(px+4,py+2,T-8,T-8,12,"#9d97b0");round(px+9,py+5,T-18,T-22,10,"#cac1d4");}if(s.grid[y][x]==="S")sofaDraw(px+T/2,py+T/2)}
 roomDecor(time);
@@ -971,7 +973,7 @@ for(const p of s.vases)vaseDraw(p.x*T+42,p.y*T+42,s.broken.has(key(p)),time);
 for(const p of s.fish)if(!s.taken.has(key(p)))fishDraw(p.x*T+42,p.y*T+40,time);
 // A quiet in-world first action cue, not another blocking explanation panel.
 // It disappears as soon as the player takes a step; it does not change difficulty.
-if(!daily&&s.index===0&&s.steps===0&&s.got===0){
+if(!daily&&s.index===0&&s.steps===0&&s.got===0&&!menuOpen&&!aimingYarn){
  const firstFish=s.fish.find(f=>Math.abs(f.x-s.cat.x)+Math.abs(f.y-s.cat.y)===1&&!s.taken.has(key(f)));
  if(firstFish){
   const fx=(firstFish.x+.5)*T,fy=(firstFish.y+.5)*T;
@@ -980,7 +982,7 @@ if(!daily&&s.index===0&&s.steps===0&&s.got===0){
   ctx.shadowColor='#db8cba';ctx.shadowBlur=15;
   ctx.beginPath();ctx.arc(fx,fy,33+3*Math.sin(time*.006),0,Math.PI*2);ctx.stroke();
   ctx.restore();
-  label(lang==='zh'?'点这条鱼':'TAP FISH',fx,fy-43,'800 13px Nunito,system-ui','#895679');
+  guideTag(firstFish,lang==='zh'?'点这条鱼':'Tap fish',-70,'#895679');
  }
 }
 if(s.yarnBall&&!s.itemsTaken.has("yarn"))yarnDraw((s.yarnBall.x+.5)*T,(s.yarnBall.y+.5)*T,time);
@@ -1072,7 +1074,7 @@ const hu=s.human,ca=s.cat;
  if(!hidden(ca)){catDraw(catX,catY+9+Math.sin(time*.007)*2-hop,time)}
  else{catDraw(catX,catY+17-hop,time);round(ca.x*T+15,ca.y*T+45,54,27,5,"#e2b380");label("♡",(ca.x+.5)*T,ca.y*T+67,"19px system-ui","#c18395")}
 if(s.exposure>0&&!s.done){ctx.save();ctx.strokeStyle=s.exposure>=detectionLimit()-1?"#ed435e":"#f59b45";ctx.lineWidth=5;ctx.beginPath();ctx.arc((ca.x+.5)*T,(ca.y+.5)*T,34+Math.sin(time*.012)*4,0,Math.PI*2);ctx.stroke();ctx.restore()}
-if(!daily&&s.index===0&&!s.done&&!menuOpen&&!aimingYarn&&!s.yarnAnimating){if(!s.started){guideTag(s.cat,lang==="zh"?"你的小猫":"Your cat",38);guideTag(s.human,lang==="zh"?"主人":"Owner",36,"#9b415f");guideTag(s.door,lang==="zh"?"猫门 · 需3条鱼":"Exit · 3 fish",-47);}else if(s.got>=NEED&&s.exposure===0){guideTag(s.door,lang==="zh"?"从这里逃走！":"Escape here!",-44,"#376a48");}}
+if(!daily&&s.index===0&&!s.done&&!menuOpen&&!aimingYarn&&!s.yarnAnimating){if(!s.started){guideTag(s.cat,lang==="zh"?"你的小猫":"Your cat",38);guideTag(s.human,lang==="zh"?"主人":"Owner",36,"#9b415f");guideTag(s.door,lang==="zh"?"猫门 · 需3条鱼":"Exit · 3 fish",-69);}else if(s.got>=NEED&&s.exposure===0){guideTag(s.door,lang==="zh"?"从这里逃走！":"Escape here!",-69,"#376a48");}}
 if(!s.started&&!s.done&&(daily||s.index!==0)){const x=Math.min(610,Math.max(6,s.cat.x*T-20)),y=Math.max(65,s.cat.y*T-99);round(x,y,225,38,14,"#fffdf5ef");label(tr("startHint"),x+112,y+25,"bold 15px Nunito, system-ui","#8a5773");}
 for(let i=fx.length-1;i>=0;i--){const p=fx[i];shape(p.x,p.y,Math.max(1,p.life/8),p.col);p.x+=p.dx;p.y+=p.dy;p.dy+=.07;p.life--;if(p.life<0)fx.splice(i,1)}requestAnimationFrame(draw)}
 function canvasTile(e){const rect=c.getBoundingClientRect();return {x:Math.floor((e.clientX-rect.left)/rect.width*W),y:Math.floor((e.clientY-rect.top)/rect.height*H)}}
