@@ -628,22 +628,41 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     // natural auto-combat charge and cast. Do not write charge, HP, timers or saves.
     const duoButton=page.locator('#duo-burst');
     const duoBefore=await page.evaluate(()=>__game.battle.duoUses);
-    assert(await page.evaluate(()=>!!__game.battle.duo),'The chosen pair must enter the regional encounter');
-    if(await duoButton.isVisible()&&await duoButton.isEnabled())await duoButton.click();
-    else await page.locator('#btn-auto').click();
-    await page.waitForFunction(n=>{const b=__game.battle;return b?.duoUses>n&&b.duoCinematic?.t>1&&b.duoCinematic.originalArt&&CatBondDuoHero.assetReady},duoBefore,{timeout:120000});
-    // Wait for the real renderer's fully visible painting, not the initial
-    // transparent fade-in. Verify the actual canvas draw metadata as well.
-    await page.waitForFunction(()=>{
-      const b=__game.battle,l=CatBondPremiumCinematics.lastLayout;
-      const p=b?.duoCinematic?(b.duoCinematic.max-b.duoCinematic.t)/b.duoCinematic.max:0;
-      return p>=.33&&p<=.65&&l?.effectPhase>=.30&&l.effectPhase<=.67&&
-        l.originalArt&&l.paintingDrawCount===1&&l.actorLayerCount===0&&
-        document.querySelector('#cb-forge-hud')?.dataset.cinematic==='true';
+    const pair=await page.evaluate(()=>{
+      const b=__game.battle;if(!b.duo)return null;
+      return [b.duo.a.uid,b.duo.b.uid].map(uid=>({uid,species:b.team.find(f=>f.cat.uid===uid)?.cat.species}));
     });
-    await shot('forge-duo-original-art');
-    await page.waitForFunction(()=>{const b=__game.battle;return b&&!b.duoCinematic&&b.duoUses>0&&document.querySelector('#cb-forge-hud')?.dataset.cinematic==='false'});
-    assert.equal(await page.evaluate(()=>CatBondDuoHero.assetSource),'63-original-painted-storyboards');
+    assert(pair?.length===2&&pair.every(c=>c.species),'The chosen pair must enter the regional encounter');
+    // Observe the real cut-in renderer, not the retired full-screen storyboard.
+    // No gameplay mutation: delegate to the original portrait function unchanged.
+    await page.evaluate(()=>{
+      const b=__game.battle,original=b.cinematicPortrait;
+      window.__cbDuoPortraitEvidence={};
+      b.cinematicPortrait=function(uid){
+        const art=original.call(this,uid),v=this.duoCinematic;
+        if(art&&v?.catUids?.includes(uid)&&!this.ultCinematic){
+          const pixels=art.getContext('2d').getImageData(0,0,art.width,art.height).data;
+          let visible=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i]>128)visible++;
+          if(visible>300)window.__cbDuoPortraitEvidence[uid]={visible,width:art.width,height:art.height};
+        }
+        return art;
+      };
+    });
+    try{
+      if(await duoButton.isVisible()&&await duoButton.isEnabled())await duoButton.click();
+      else if(!await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();
+      await page.waitForFunction(({n,uids})=>{
+        const b=__game.battle,v=b?.duoCinematic;
+        if(!v||b.duoUses<=n)return false;
+        const p=(v.max-v.t)/v.max;
+        return p>=.25&&p<=.8&&v.catUids?.length===2&&uids.every(uid=>v.catUids.includes(uid)&&window.__cbDuoPortraitEvidence[uid]?.visible>300);
+      },{n:duoBefore,uids:pair.map(c=>c.uid)},{timeout:120000});
+      await shot('forge-duo-actual-actors');
+      console.log('REAL DUO CUTIN',JSON.stringify({pair,portraits:await page.evaluate(()=>window.__cbDuoPortraitEvidence)}));
+      await page.waitForFunction(()=>{const b=__game.battle;return b&&!b.duoCinematic&&b.duoUses>0&&document.querySelector('#cb-forge-hud')?.dataset.cinematic==='false'});
+    }finally{
+      await page.evaluate(()=>{const b=__game.battle;if(b)delete b.cinematicPortrait;delete window.__cbDuoPortraitEvidence;});
+    }
     if(!await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();
     // Natural combat only: no HP, time, save or engine writes.
     for(const phase of [1,2]){await page.waitForFunction(p=>__game.battle?.forgeState?.phase>=p,phase,{timeout:150000});await shot('forge-phase-'+(phase+1));}
@@ -835,7 +854,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     });
     assert.deepEqual(slotIsolation,{newSlot:{different:true,mode:'map',location:null,forge:false,oldDetached:true,puzzle:false},melodies:['harbor','forest','forge'],slot:'slot1'});
     assert.deepEqual(errors,[]);
-    results.push({profile:name, captured, ...state, forestComplete:true,forgeComplete:true,forgeDuoOriginalArt:true,audio:audioEvidence});
+    results.push({profile:name, captured, ...state, forestComplete:true,forgeComplete:true,forgeDuoActualActors:true,audio:audioEvidence});
     await context.close();
   }
 } finally {
