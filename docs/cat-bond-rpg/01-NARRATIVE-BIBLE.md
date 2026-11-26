@@ -1,7 +1,7 @@
 # 星铃回响 — ECHOES OF THE STARBELL
-## Narrative Bible · Canon 1.3 · locked world and character foundations
+## Narrative Bible · Canon 2.0 · locked world and character foundations
 
-**Status:** Canon 1.3 preserves the locked causal foundations of 1.2. [02 — Main Story Script](02-MAIN-STORY-SCRIPT.md) governs current scene presentation, pacing and gameplay requirements; its optional cargo and chapter changes supersede older implementation descriptions below. Supersedes all previous Cat Bond RPG story bibles and plot drafts, including The Last Page.  
+**Status:** Canon 2.0 preserves the locked causal foundations of 1.2 while replacing all chapter-level events. [02 — Main Story Script](02-MAIN-STORY-SCRIPT.md) is the authority for all actual chapter events, clues, regional phenomena, tasks, character dialogue and presentation. Any older chapter examples, jobs, conflicts, cargo or mechanics in this Bible are historical, not mandatory story beats. Supersedes all previous Cat Bond RPG story bibles and plot drafts, including The Last Page.  
 **Title:** Echoes of the Starbell / 星铃回响  
 **Ending:** Complete Happy Ending  
 **Primary theme:** A bond is not ownership. Loving someone does not give you the right to choose another person's life or sacrifice someone else's memories for them.
@@ -10,7 +10,7 @@
 
 ## 1. The dramatic promise
 
-The player wakes in Sunlit Garden without a name or autobiographical memories. The player explores alone, learns about the renewed forgetting, then encounters the traveling researcher Muling (暮铃) by chance. They independently reach the harbor and cooperate in a rescue before becoming companions. Cats across six regions are beginning to forget their own lives as six ancient sanctuaries fall silent.
+The player wakes in Sunlit Garden without a name or autobiographical memories. The player explores alone, learns about the renewed forgetting, then encounters the traveling researcher Muling (暮铃) by chance. They independently reach the harbor and cooperate in a magical chime chase and real battle before becoming companions. Cats across six regions are beginning to forget their own lives as six ancient sanctuaries fall silent.
 
 The player travels with Muling, restores six melodies, meets memorable cats, builds relationships between distant communities, and gradually discovers that they were once the world's only First Bellkeeper.
 
