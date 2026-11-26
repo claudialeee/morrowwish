@@ -152,7 +152,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
             if(count===1)await shot(id.replace(':','-')+'-zh');
             await changeDialogueLanguage();assert.equal(await line.innerText(),english,'Language switch preserves exact dialogue cursor');
           }
-          await next.click();
+          await line.click();
         }
       }
       await advanceLines();
@@ -167,7 +167,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     }
     function expectedRegionalPortrait(actor){
       if(actor!=='muling')return '/npc/'+actor+'-painted.webp';
-      return '/cinematics/characters/muling/traveler-silver-cream.webp';
+      return '/core-art-remaster/leads/muling.webp';
     }
     async function readForestDialogue(id,choice) {
       const dialogue=page.locator('.res-host[data-scene="'+id+'"]');
@@ -230,6 +230,13 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
       if(await dialogue.isVisible())await dialogue.waitFor({state:'hidden'});
     }
     async function puzzle(label, inputs) {
+      const harborDirect={'Tide cave logbook':'explore:tide-logbook','Storm boat':'rescue:storm-boat','Lighthouse mirrors':'puzzle:beam-mirrors','Lighthouse sanctuary':'repair:harbor'};
+      if(harborDirect[label]){
+        const op=harborDirect[label];await checkObjective(op);
+        await button(label).click();
+        await page.waitForFunction(op=>!CatBondResonance.view().objective.includes(op),op,{timeout:35000});
+        await shot('adventure-'+label.toLowerCase().replaceAll(' ','-'));return;
+      }
       await button(label).click();
       const controls = page.locator('.rw-puzzle-controls');
       await controls.waitFor();
@@ -336,18 +343,11 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     await button('Invite Jiedeng').waitFor({state:'hidden'});
     const rewardBefore=await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish}));
     await button('Returning Tides').click();
-    const harborMelodyControls=page.locator('.rw-puzzle-controls');await harborMelodyControls.waitFor();
-    await button('Play example',harborMelodyControls).click();
-    await harborMelodyControls.and(page.locator('[data-demo-state="complete"]')).waitFor({state:'visible'});
-    assert.deepEqual(await harborMelodyControls.locator('.rw-quality-step').allTextContents(),['1 ●','2 ✿','3 ◆'],'Example shows all three actual note shapes without submission');
-    assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false,'Demo never commits melody');
-    await button('Starlight · Middle',harborMelodyControls).click(); // wrong note: retry must not commit a melody
-    assert.equal(await page.evaluate(()=>CatBondResonance.view().melodies.includes('harbor')),false);
-    for(const input of ['Dew · Low','Flower bell · High','Starlight · Middle'])await button(input,harborMelodyControls).click();
+    // Current Harbor direct-action ceremony; no retired note keypad or demo.
     await page.locator('.rw-world[data-ceremony="harbor"]').waitFor();
-    await page.locator('.rw-surface').scrollIntoViewIfNeeded();await page.waitForTimeout(750);await shot('harbor-ceremony');
-    await page.waitForTimeout(650);await shot('harbor-ceremony-late');
-    await harborMelodyControls.waitFor({state:'hidden'});
+    await shot('harbor-ceremony');
+    await page.waitForFunction(()=>!CatBondResonance.view().objective.includes('melody:harbor'),null,{timeout:35000});
+    await page.locator('.rw-world[data-ceremony="harbor"]').waitFor({state:'hidden'});
     assert.deepEqual(await page.evaluate(()=>({coins:State.S.coins,fish:State.S.fish})),{coins:rewardBefore.coins+35,fish:rewardBefore.fish+3},'Returning Tides grants its one-time canonical reward');
     await readDialogue('harbor:H-05');
     await scene('forest:R-01');
