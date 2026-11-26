@@ -168,6 +168,15 @@ jobs:
           node scripts/cat-bond-experience-targets.mjs
           node scripts/cat-bond-experience-emotional.mjs
           node scripts/cat-bond-experience-ambient.mjs
+      - name: All regional discoveries through actual map inputs
+        if: always() && matrix.scope == 'targets'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-discoveries-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-discoveries.mjs
       - name: Current RPG encounter measurement from isolated checkpoints
         if: always() && matrix.scope == 'targets'
         run: |
