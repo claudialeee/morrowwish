@@ -43,6 +43,7 @@ export function makeEngine(data,initial){
   if(e.includes(operation))return fail("duplicate-operation");
   if((current().orderedRequires||["starfall:F-01","starfall:F-02","starfall:F-04"].includes(sceneId))&&current().requires.find(op=>!e.includes(op))!==operation)return fail("story-operation-order");
   if(["npc:public-accountability","npc:second-garden-key"].includes(operation)&&s.cursor!==current().lines.length)return fail("dialogue-pending");
+  if(operation==="npc:public-accountability"&&current().choices.length&&!s.choices[s.scene])return fail("choice-pending");
   if(operation.startsWith("melody:")&&!s.sanctuaries.includes(operation.split(":")[1]))return fail("sanctuary-not-repaired");
   if(operation==="mechanism:muling-unlock"&&(!ring()||s.support.length!==6||!e.includes("battle:central-echo")||s.cursor!==current().lines.length))return fail("support-incomplete");
   s.evidence[s.scene]=e;add(e,operation);if(sceneId==="starfall:F-01"&&operation==="npc:central-dispute")s.trust.xingya++;if(sceneId==="starfall:F-01"&&operation==="npc:central-dispute-lichuan")s.trust.lichuan++;if(sceneId==="starfall:F-04"&&operation==="melody:starfall"){s.trust.xingya++;s.trust.lichuan++;}if(operation.startsWith("repair:"))add(s.sanctuaries,operation.split(":")[1]);if(operation.startsWith("melody:"))add(s.melodies,operation.split(":")[1]);return commit()}
