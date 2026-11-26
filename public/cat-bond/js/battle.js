@@ -2685,6 +2685,17 @@ class CaptureBattle {
   castOffensiveSkill(f, aim, sk, pow, col, _nowind) {
     if (this._debug) this._dbgFiringCat = f;   // debug-log: who is actually firing this skill
     this._lastSkillT = this.t;                 // stall-detector: player engaged a skill
+    // Owner 2026-11-26 "陨石/所有 aoe 技能落点应该在按按钮的时候就选定": snapshot the
+    // desktop cursor at CAST moment. lobAoe + the meteor-windup telegraph both read
+    // sk._castMouse first; live this.game.mouse is only a fallback. This freezes the
+    // landing point at the instant Q/E was pressed — mouse drift during the 1.5s meteor
+    // windup (or any lob flight) no longer drags the impact ring.
+    if (sk && f === this.me() && !this.game?.isTouch) {
+      const m = this.game?.mouse;
+      if (m && Number.isFinite(m.x) && Number.isFinite(m.y)) {
+        sk._castMouse = { x: m.x, y: m.y };
+      }
+    }
     // Owner 2026-11-26 "为什么寒冰爪没打到" — log every ATTEMPT so you can tell cast-never-fired
     // from cast-missed. Enemy also routes through castOffensive at times, so tag by firing side.
     if (this._debug && this._dbgLog && sk) {
@@ -2840,7 +2851,11 @@ class CaptureBattle {
     // destination point
     let tx, ty;
     if (f === this.me() && !this.game.isTouch) {
-      const m = this.game.mouse || {}; tx = m.x; ty = m.y;             // desktop: cursor
+      // Owner: landing point was decided when Q/E was pressed — use the snapshot from
+      // castOffensiveSkill, NOT live cursor (which drifts during meteor's 1.5s windup).
+      const snap = sk?._castMouse;
+      if (snap && Number.isFinite(snap.x) && Number.isFinite(snap.y)) { tx = snap.x; ty = snap.y; }
+      else { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
     } else {
       const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);   // mobile/AI/ally: target
       if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
@@ -3246,15 +3261,21 @@ class CaptureBattle {
       if (c.sk && c.sk.id === 'meteor') {
         let tx, ty;
         if (f === this.me() && !this.game.isTouch) {
-          const m = this.game.mouse || {}; tx = m.x; ty = m.y;
+          // Owner 2026-11-26: during the 1.5s windup the telegraph must stay locked at
+          // the cursor position AT CAST TIME, not drift with live mouse movement.
+          // castOffensiveSkill snapshots sk._castMouse — honor it here.
+          const snap = c.sk?._castMouse;
+          if (snap && Number.isFinite(snap.x) && Number.isFinite(snap.y)) { tx = snap.x; ty = snap.y; }
+          else { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
         } else {
           const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);
           if (tgt) { tx = tgt.x; ty = tgt.y; }
           else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
         }
+        // ALLY (not active me()) still tracks live target per earlier design.
         const owner = f.owner === 'wild' ? 'wild' : 'me';
-        const tgt = owner === 'me' ? (this.lockedEnemy() || this.nearestEnemy(f.x, f.y)) : null;
-        if (owner === 'me' && tgt) { tx = tgt.x; ty = tgt.y; }
+        const tgt = owner === 'me' && f !== this.me() ? (this.lockedEnemy() || this.nearestEnemy(f.x, f.y)) : null;
+        if (tgt) { tx = tgt.x; ty = tgt.y; }
         const R = 86;                                        // match the lobAoe burst radius
         const pulse = 0.5 + 0.5 * Math.sin(this.t * 10);
         // Pulsing red reticle that intensifies as impact approaches. Short-lived per frame so
