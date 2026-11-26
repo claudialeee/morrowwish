@@ -28,6 +28,12 @@ try{
   await page.locator('#intro-start').click();
   // Complete the real starter picker so the intro/panel cannot cover the arena.
   await page.locator('#panel.open .dex-cell').first().click();
+  // V4 explicitly retired duplicate purrNova. Require exact coverage of the live catalog,
+  // not an obsolete fixed count; a missing or newly added ultimate must fail.
+  const catalog=await page.evaluate(()=>({skills:Skills.SKILLS.filter(s=>s.ultCost>0).map(s=>s.id),renderers:Array.from(CatBondUltVFX.ids)}));
+  assert.equal(new Set(pairs.map(p=>p[2])).size,pairs.length,'No duplicate ultimate fixtures');
+  assert.deepEqual(new Set(pairs.map(p=>p[2])),new Set(catalog.skills),'Every live ultimate must have a screenshot fixture');
+  assert.deepEqual(new Set(catalog.renderers),new Set(catalog.skills),'Every live ultimate must have a dedicated renderer');
   const hashes=[];
   for(const [element,breed,skillId] of pairs){
    const result=await page.evaluate(({element,breed,skillId})=>{
@@ -76,9 +82,9 @@ try{
    hashes.push(crypto.createHash('sha256').update(data).digest('hex'));
    console.log('ULT REAL-BROWSER FRAME '+spec.name+' '+skillId+' '+JSON.stringify(result));
   }
-  assert.equal(new Set(hashes).size,8,'all eight separate skill effects must differ');
+  assert.equal(new Set(hashes).size,pairs.length,'all live ultimate effects must differ');
   assert.deepEqual(errors,[],'no JS exceptions in real-browser battle render');
   await page.close();
  }
- console.log('CAT BOND EIGHT LOCAL ULT VFX SCREENSHOT QA PASS');
+ console.log('CAT BOND ALL LIVE LOCAL ULT VFX SCREENSHOT QA PASS');
 }finally{await browser.close()}
