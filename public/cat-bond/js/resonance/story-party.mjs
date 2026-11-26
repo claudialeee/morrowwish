@@ -1,6 +1,6 @@
 // Authored recruitment, part of the same transaction as scene or reunion completion.
 export const recruitment = Object.freeze({
- "harbor:H-04":["muling"],"harbor:H-05":["qilan"],
+ "harbor:H-03":["muling"],"harbor:H-04":["muling"],"harbor:H-05":["qilan"],
  "forest:R-01":["yahe"],"forest:R-04":["yahe"],"forge:E-04":["xiaomao","jinpo"],
  "sky:S-05":["yuanfan","lingyu"],"library:M-05":["baikan"],
  "starfall:F-04":["xingya"]

@@ -64,7 +64,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(region!==expectedRegion||actor.region!==region&&npcId!=="muling")return fail("wrong-region");
   if(npcId==="muling"&&actor.region!==region&&!["temporary","companion","identity-revealed","betrayal-revealed"].includes(v.muling)&&!["starfall:F-03","starfall:F-04","starfall:F-05"].includes(s.id))return fail("companion-unavailable");
   if(npcId==="muling"&&s.id==="library:M-05"&&v.cursor>=s.lines.length&&v.choice)return fail("companion-unavailable");
-  const requiredActor=s.id==="starfall:F-01"?(v.objective[0]==="npc:central-dispute-lichuan"?"lichuan":v.objective[0]==="npc:central-dispute"?"xingya":null):{"harbor:H-01":"qilan","harbor:H-02":"jiedeng","forest:R-01":"yahe","forge:E-01":"xiaomao","sky:S-01":"yuanfan","library:M-01":"baikan","library:M-05":"moye","sky:S-04":"muling","library:M-03":"muling","starfall:F-03":"muling","epilogue:E-02":"muling"}[s.id];
+  const requiredActor=s.id==="starfall:F-01"?(v.objective[0]==="npc:central-dispute-lichuan"?"lichuan":v.objective[0]==="npc:central-dispute"?"xingya":null):{"harbor:H-01":"qilan","harbor:H-03":"jiedeng","forest:R-01":"yahe","forge:E-01":"xiaomao","sky:S-01":"yuanfan","library:M-01":"baikan","library:M-05":"moye","sky:S-04":"muling","library:M-03":"muling","starfall:F-03":"muling","epilogue:E-02":"muling"}[s.id];
   if(requiredActor&&v.objective.some(o=>o.startsWith("npc:"))&&npcId!==requiredActor)return fail("wrong-npc");
   if(s.lines.length&&!s.lines.some(l=>l.speaker===npcId)&&!s.choices.some(c=>c.npc===npcId))return fail("wrong-npc");
   const location=State.S.resonanceExploration?.location;if(campaign.regions.includes(region)&&location&&location!==region)return fail("wrong-map-location");
@@ -85,12 +85,13 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(kind==="npc"||!["cinematic","explore","travel","puzzle","rescue","repair","melody","battle","mechanism"].includes(kind))return fail("invalid-source");
   if(s.chapter==="starfall"){const w=State.S.resonanceExploration;if(!token||w?.location!=="starfall")return fail("starfall-action-required");if(kind==="cinematic"){const p=w.positions?.starfall;if(!p||Math.hypot(p.x-.92,p.y-.30)>=.072)return fail("walk-to-central-ruins");}else if(["explore","puzzle","repair","melody"].includes(kind)&&typeof physical!=="function")return fail("starfall-world-evidence-required");}
   if(s.chapter==="finale"&&(!token||region!=="starfall"||State.S.resonanceExploration?.location!=="starfall"))return fail("finale-action-required");
-  if(sceneId==="forest:R-03"){
+  if(sceneId==="forest:R-03"&&operation!=="puzzle:moonleaf-loop"){
    const w=State.S.resonanceExploration,p=w?.positions?.forest,q=layouts.forest.features[operation];
    if(!token||w?.location!=="forest"||!p||!q||Math.hypot(p.x-q[0],p.y-q[1])>=.072)return fail("walk-to-rescue");
    if(operation==="battle:root-echo"&&(!w.interactions?.["forest:R-03:rescue:steady-channel"]||!w.interactions?.["forest:R-03:explore:water-marks"]))return fail("rescue-trail-required");
    if(kind!=="battle"&&typeof physical!=="function")return fail("rescue-world-evidence-required");
   }
+  if(operation==="battle:chime-beast"){const w=State.S.resonanceExploration,p=w?.positions?.harbor,q=layouts.harbor.features[operation];if(!token||w?.location!=="harbor"||!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072)return fail("walk-to-bell-beast");}
   if(operation==="battle:observatory-echo"){const p=State.S.resonanceExploration?.positions?.starfall;if(!p||Math.hypot(p.x-.78,p.y-.40)>=.072)return fail("walk-to-observatory");}
   if(kind==="battle"&&outcome!=="win")return fail("battle-not-won");
   if(kind==="battle"&&!token)return fail("action-token-required");

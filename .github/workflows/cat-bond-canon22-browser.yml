@@ -1,0 +1,80 @@
+name: Canon 2.2 chapter browser acceptance
+on:
+  push:
+    branches: [review/starbell-canon13-player-experience]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/cat-bond-experience-*.mjs'
+      - '.github/workflows/cat-bond-canon22-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: canon22-browser-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  chapter:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {chapter: harbor, entry: 'harbor:H-01'}
+          - {chapter: forest, entry: 'forest:R-01'}
+          - {chapter: forge, entry: 'forge:E-01'}
+          - {chapter: sky, entry: 'sky:S-01'}
+          - {chapter: library, entry: 'library:M-01'}
+          - {chapter: starfall, entry: 'starfall:F-01'}
+          - {chapter: finale, entry: 'finale:B-01'}
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      CAT_BOND_TARGET_SCENES: ${{ matrix.entry }}
+      CAT_BOND_CHAPTERS: ${{ matrix.chapter }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Produce synthetic starting snapshot, not playthrough evidence
+        run: node scripts/cat-bond-experience-knowledge.mjs
+      - name: Complete the chapter through real browser input
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-browser.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-targets.mjs
+          node scripts/cat-bond-experience-chapters.mjs
+      - name: Reload actual chapter-derived saves across languages and screen profiles
+        run: |
+          root=artifacts/cat-bond-experience/chapter-acceptance/checkpoints/chapter-$CAT_BOND_CHAPTERS
+          test -d "$root"
+          mapfile -d '' fixtures < <(find "$root" -maxdepth 1 -name '*.json' -print0)
+          test "${#fixtures[@]}" -gt 0
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-replay.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          for fixture in "${fixtures[@]}"; do
+            for language in zh en; do
+              for profile in desktop portrait landscape; do
+                CAT_BOND_REPLAY_LANG="$language" CAT_BOND_REPLAY_PROFILE="$profile" node scripts/cat-bond-experience-replay.mjs "$fixture" --chapter-derived
+              done
+            done
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canon22-browser-${{ matrix.chapter }}
+          path: |
+            artifacts/cat-bond-experience/
+            /tmp/canon22-browser.log
+            /tmp/canon22-replay.log
+          if-no-files-found: warn
+          retention-days: 14

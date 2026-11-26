@@ -5,3 +5,8 @@ Base: 5eb47ee933f8e36be8121670b77b64700a7a07f0. Branch: review/starbell-canon22-
 - Migrate each scene against 03-DEVELOPER-HANDOFF.md; then add real input acceptance of the new mechanism, alternate paths, failed input and recovery, actual saved evidence and the next scene. Synthetic chapter starts must be labelled. Do not reuse legacy tasks to satisfy new gameplay.
 - H-02 chase, R-02 bridge, lantern city, star stones, six reciprocal replies and other full revised requirements remain unverified. Do not claim new campaign readiness or approved art.
 - Daily checkpoint is quick. Complete new campaign acceptance is explicit, not repeated on small edits. No main, deployment or Work use.
+
+## Integrated checkpoint
+- Canon source c833e7dda445b7a1aef1be3fcb8125fa06bc5fbf: imported chase, moonleaf bridge, light and star step interactions, finale reply logic, party and battle changes, and revised chapter driver. Preserved direct save UI, portrait framing and generic NPC menu state correction.
+- Previous integrated ef45a1f2b6fbce163297cad997c20bd13667b63a: five migration/model and stable-system jobs passed in run 45894830007. This is not approval of newly imported mechanics.
+- Source browser run 45895161657 tests seven revised chapters; source-SHA evidence only. New integrated checkpoint runs in parallel. Follow source failures and merge verified fixes; final integrated real-input chapter acceptance remains outstanding.
