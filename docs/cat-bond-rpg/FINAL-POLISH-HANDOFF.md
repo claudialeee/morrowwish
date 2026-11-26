@@ -1,0 +1,6 @@
+# Final polish — isolated candidate
+Base `e3ca2a446dbbe36de601553942ede424a75e979d`, branch `review/starbell-final-polish`. Main candidate remains frozen and its browser acceptance must continue independently.
+
+Implemented: actual animated bridge travel with arrival-based completion and blocked controls while moving; optional trapped-kitten rescue at lower root path with replayable evidence and a visible following cat; existing cat sprites in animated shadow audience instead of generic silhouettes; layered safe-island rock/grass drawing; Muling approaches, waits for the protagonist, shares the touch moment and walks back before moonleaf growth is saved; historical disaster map shows a falling star and six progressively darkened bells, then contrast with five lit bells and bilingual summary. No new forced task, no new art production, no runtime changes on main candidate until approved.
+
+The Work art scope remains actual watercolor backgrounds, layout integration, monster art and visual quality. Procedural presentation remains graybox and is not art-approved. Merge only after scoped CI passes and base acceptance is no longer disrupted. Scope: forest, forge, sky, starfall, epilogue, changed cinematic and garden code. Preserve current story and save contract.

@@ -165,13 +165,13 @@
     for(const npc of npcs){
       const a=HOME_ANCHORS[npc?.id];if(!a||!npc?.id)continue;
       const f=window.World?.gardenArtworkRect?.(width,height)||{x:0,y:0,width,height};
-      const x=Math.max(42,Math.min(width-42,f.x+f.width*a.x)),y=Math.max(90,Math.min(height-28,f.y+f.height*a.y));
+      let x=Math.max(42,Math.min(width-42,f.x+f.width*a.x)),y=Math.max(90,Math.min(height-28,f.y+f.height*a.y));const shared=npc.id==='muling'?window.GardenExploration?.companionPose?.(x,y):null;if(shared){x=Math.max(42,Math.min(width-42,shared.x));y=Math.max(90,Math.min(height-28,shared.y));if(shared.touching)y-=3*Math.sin(time*8);}
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
       try{const scale=a.scale*(npc.id==='muling'?.95:.68)*Math.max(.72,Math.min(1.1,height/460));const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale,time});
         if(visible===false)continue;
-        if(npc.id==='muling')syncTalkMarker(ctx,width,height,x,y,scale);
+        if(npc.id==='muling'&&!shared)syncTalkMarker(ctx,width,height,x,y,scale);
         if(npc.id==='muling'){ctx.save();ctx.font='600 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const stranger=window.CatBondResonance?.view?.().current?.id==='prologue:P-05';const label=window.MorrowwishI18n?.get?.()==='zh'?(stranger?'陌生猫':'暮铃'):(stranger?'Stranger':'Muling');const w=ctx.measureText(label).width+16;ctx.fillStyle='#fff2d9e8';ctx.beginPath();ctx.roundRect(x-w/2,y+5,w,21,10);ctx.fill();ctx.fillStyle='#594431';ctx.fillText(label,x,y+15.5);ctx.restore();}
-        lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*scale:y-30*scale,groundY:y,radius:Math.max(24,a.radius*.75*Math.min(1,width/1000))});}
+        if(!shared)lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*scale:y-30*scale,groundY:y,radius:Math.max(24,a.radius*.75*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }
     window.GardenExploration?.draw?.(root,ctx,width,height);
