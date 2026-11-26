@@ -32,7 +32,7 @@ function drawReady(c,a,b,t){const sp=species(a),x=a.x,y=a.y-4,col=colors[sp]||'#
  if(sp==='qisi'&&a._qisiStreak>0&&t-a._qisiStreakT<3)ember(c,x,y,t,a._qisiStreak/10,24);
  if(sp==='zherdd'&&a._zherddStillT>=1.5&&a._zherddStillT<=7.5)aura(c,x,y+12,t,col);
  if(sp==='nuowei'&&a._nuoweiTerritory)aura(c,x,y+12,t,col);
- if(sp==='yunduo')for(const a2 of a._linked||[]){if(a2.alive&&Math.hypot(x-a2.x,y-a2.y)<180){line(c,[[x,y],[x+(a2.x-x)*.5,y+(a2.y-y)*.5-9],[a2.x,a2.y]],'#e7d7ab',1.5,.45);}}
+ if(sp==='yunduo')for(const a2 of a._linked||[]){if(a2.alive&&(a._linkUntil?.get(a2)||0)>t&&Math.hypot(x-a2.x,y-a2.y)<300){line(c,[[x,y],[x+(a2.x-x)*.5,y+(a2.y-y)*.5-9],[a2.x,a2.y]],'#e7d7ab',1.5,.45);}}
  if(a._traitArmor>0){for(let j=0;j<4;j++)arc(c,x,y,29,j*TAU/4+t*.2,.75,'#ffedb3',3,.7,.82);}
  if((a._cleanseGuardUntil||0)>t)for(let j=0;j<3;j++)star(c,x+Math.cos(j*TAU/3+t)*24,y+Math.sin(j*TAU/3+t)*19,4,'#fff5df',.8);
  if(sp==='duanduan'||sp==='xuewa')for(const q of a[sp==='duanduan'?'_duanduanTrail':'_xuewaTrail']||[]){const k=cl(1-(t-q.t)/(sp==='duanduan'?1.6:2));if(k<=0)continue;
@@ -103,5 +103,6 @@ function draw(c,b){if(!c||!b)return;const t=b.t||0;c.save();
  if(e.status?.suppress>0){arc(c,e.x,e.y-18,19,t*.7,PI*1.3,'#9e82c6',2.6,.7,.6);}}
  for(const v of b._traitFX||[])if(t-v.start<v.life)drawEvent(c,v,t);
  c.restore();}
-window.CatBondTraitFX={draw,drawEvent,colors,ids:Object.freeze(Object.keys(PAINT))};
+function drawFront(c,b){c.save();for(const e of b.enemies||[]){if(!e.alive||!(e.status?.chill>0))continue;const fade=cl(e.status.chill/.18);for(let j=0;j<5;j++){const th=PI*.14+j*PI*.18;shard(c,e.x+Math.cos(th)*26,e.y+Math.sin(th)*17-7,th-PI/2,9+4*rnd(j),'#b3eafa',fade*.68);}}c.restore();}
+window.CatBondTraitFX={draw,drawFront,drawEvent,colors,ids:Object.freeze(Object.keys(PAINT))};
 })();
