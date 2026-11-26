@@ -1,4 +1,5 @@
 // Skyspine flight simulation. Ephemeral controls; only canonical world evidence is saved.
+import {newGlide,steerGlide,tickGlide,glideProof,validGlideProof} from "./canon22-glide.mjs";
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const routes={
  "puzzle:sky-pouch":[.65,.34,.64],
@@ -20,11 +21,13 @@ export const skySurvey={
 export const skyLaunch={ "puzzle:sky-pouch":[.10,.70],"explore:flight-recorder":[.18,.55],"puzzle:joint-flight":[.41,.51],"repair:sky":[.67,.50] };
 export const skyLanding={ "puzzle:sky-pouch":[.18,.55],"explore:flight-recorder":[.41,.51],"puzzle:joint-flight":[.58,.55],"repair:sky":[.89,.24] };
 export function newSkyFlight(operation,choice){
+ if(operation==="puzzle:joint-flight")return newGlide(operation,choice);
  const route=routes[operation];if(!route)return null;
  const training=operation==="puzzle:sky-pouch"||operation==="puzzle:joint-flight"&&choice==="train";
  return {operation,choice,training,route:[...route],x:0,y:.5,target:.5,velocity:0,gate:0,passed:[],elapsed:0,attempts:0,started:false,solved:false,notice:"ready",lastSteer:0,steerTravel:0};
 }
 export function steerSkyFlight(f,y){
+ if(f?.openGlide)return steerGlide(f,y);
  if(!f||f.solved||!Number.isFinite(y))return false;
  const target=clamp(y,.15,.85),change=Math.abs(target-f.target);if(change>.015){f.lastSteer++;f.steerTravel+=change;}f.target=target;f.started=true;f.notice="flying";return true;
 }
@@ -34,6 +37,7 @@ function reset(f,notice){
  Object.assign(f,{x:0,y:.5,target:.5,velocity:0,gate:0,passed:[],elapsed:0,started:false,notice,lastSteer:0,steerTravel:0,attempts:f.attempts+1});
 }
 export function tickSkyFlight(f,dt){
+ if(f?.openGlide)return tickGlide(f,dt);
  if(!f?.started||f.solved||!Number.isFinite(dt)||dt<=0)return false;
  dt=Math.min(dt,.05);f.elapsed+=dt;
  const lift=f.x>.42&&f.x<.57?-.05:0,wind=skyWind(f);
@@ -54,10 +58,12 @@ export function tickSkyFlight(f,dt){
  return false;
 }
 export function skyFlightProof(f){
+ if(f?.openGlide)return glideProof(f);
  if(!f?.solved)return null;
  return {operation:f.operation,choice:f.choice,attempts:f.attempts,elapsed:f.elapsed,passed:f.passed.map(p=>({...p})),landing:f.y,steers:f.lastSteer,steerTravel:f.steerTravel};
 }
 export function validSkyFlightProof(operation,choice,proof){
+ if(operation==="puzzle:joint-flight")return validGlideProof(operation,choice,proof);
  const f=newSkyFlight(operation,choice);
  if(!f||proof?.operation!==operation||proof.choice!==choice||!Number.isInteger(proof.attempts)||proof.attempts<0||!Number.isFinite(proof.elapsed)||proof.elapsed<(f.training?11.6:9.8)||!Number.isInteger(proof.steers)||proof.steers<3||!Number.isFinite(proof.steerTravel)||proof.steerTravel<.4||!Number.isFinite(proof.landing)||Math.abs(proof.landing-.5)>.13||proof.passed?.length!==3)return false;
  const tolerance=(f.training?.19:.14)+Math.min(proof.attempts,3)*.02;
@@ -101,19 +107,22 @@ export function paintSkyFlight(ctx,f,img,W,H,lang,drawCat,drawNpc){
  const wind=skyWind(f);
  for(let i=0;i<22;i++){const px=((i*.173+f.elapsed*.11)%1)*W,py=(.12+(i*.239)% .76)*H;ctx.strokeStyle=i%3===0?"#e6f7f86b":"#e6f7f82b";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px,py);ctx.quadraticCurveTo(px+22,py+wind*100,px+58,py+wind*180);ctx.stroke();}
  // Three distinct air corridors; the rest of each cross-section is a hazardous gust.
- for(let i=0;i<3;i++){const gx=track(gateX[i])*W,gy=f.route[i]*H,r=(f.training?.19:.14)*H+Math.min(f.attempts,3)*.02*H;
+ if(f.openGlide){
+ const start=track(.39)*W,end=track(.72)*W;ctx.fillStyle="#b8d6ef55";ctx.fillRect(start,H*.48,end-start,H*.07);ctx.strokeStyle="#e0f5df";ctx.lineWidth=3;ctx.setLineDash([9,8]);ctx.beginPath();ctx.moveTo(track(.12)*W,H*.36);ctx.lineTo(start,H*.30);ctx.lineTo(end,H*.30);ctx.stroke();ctx.beginPath();ctx.moveTo(track(.12)*W,H*.65);ctx.lineTo(start,H*.70);ctx.lineTo(end,H*.70);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#b9e6de66";ctx.fillRect(track(.13)*W,H*.15,(track(.39)-track(.13))*W,H*.28);ctx.fillStyle="#e4d2a5";ctx.beginPath();ctx.ellipse(track(.61)*W,H*.76,36,9,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle="#fff2d1";ctx.font="600 16px sans-serif";ctx.textAlign="center";ctx.fillText(t("上升气流 · 云瀑捷径","Updraft · Shortcut"),track(.32)*W,H*.20);ctx.fillText(t("外侧风路 · 安全岛","Outer route · Safe isle"),track(.57)*W,H*.83);
+ }else for(let i=0;i<3;i++){const gx=track(gateX[i])*W,gy=f.route[i]*H,r=(f.training?.19:.14)*H+Math.min(f.attempts,3)*.02*H;
  ctx.fillStyle=i<f.gate?"#71cfc328":"#da956e28";ctx.fillRect(gx-11,H*.10,22,Math.max(0,gy-r-H*.10));ctx.fillRect(gx-11,gy+r,22,Math.max(0,H*.90-gy-r));
  ctx.strokeStyle=i<f.gate?"#8cebd3":"#ffe4ad";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(gx,gy,19,r,0,0,Math.PI*2);ctx.stroke();}
  ctx.strokeStyle="#bff5e1";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(W*track(1),H*.5,25,H*.13,0,0,Math.PI*2);ctx.stroke();
  const g=ctx.createRadialGradient(x*W,y*H,2,x*W,y*H,65);g.addColorStop(0,"#d1f4e75c");g.addColorStop(1,"#d1f4e700");ctx.fillStyle=g;ctx.fillRect(x*W-65,y*H-65,130,130);
  if(f.operation==="puzzle:joint-flight"){const lead=f.choice==="lead";drawGlider(ctx,img,x+.045,y-.035,W,H,f.velocity);drawNpc(lead?"yuanfan":"lingyu",x+.045,y-.035,.64);drawGlider(ctx,img,x-.055,y+.07,W,H,f.velocity);drawNpc(lead?"lingyu":"yuanfan",x-.055,y+.07,.61);}
  drawGlider(ctx,img,x,y,W,H,f.velocity);drawCat(x,y);cloudLayers(ctx,img,f.elapsed,W,H,true);
- ctx.font="600 22px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";ctx.textAlign="center";ctx.fillStyle="#fff2d1";ctx.fillText(t("穿过风圈，抵达安全降落区","Cross the wind gates and land safely"),W/2,34);
- ctx.font="600 17px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";ctx.fillText(t("风向仪 ","Wind gauge ")+(wind>0?"↓":"↑")+" "+Math.round(Math.abs(wind)*100)+"   "+(f.x>.42&&f.x<.57?t("上升气流 · ","Updraft · "):"")+t("航标 ","Gates ")+f.gate+"/3",W/2,62);
+ ctx.font="600 22px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";ctx.textAlign="center";ctx.fillStyle="#fff2d1";ctx.fillText(f.openGlide?t("借风越过云瀑，选择自己的路线","Ride the wind around the waterfall"):t("穿过风圈，抵达安全降落区","Cross the wind gates and land safely"),W/2,34);
+ ctx.font="600 17px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";ctx.fillText(t("风向仪 ","Wind gauge ")+(wind>0?"↓":"↑")+" "+Math.round(Math.abs(wind)*100)+"   "+(f.x>.42&&f.x<.57?t("上升气流 · ","Updraft · "):"")+(f.openGlide?(f.routeUsed==="upper"?t("云瀑捷径","Shortcut"):f.routeUsed==="lower"?t("外侧风路","Outer route"):t("选择高处或低处","Choose high or low")):t("航标 ","Gates ")+f.gate+"/3"),W/2,62);
  const notices={ready:t("点击或拖动选择飞行高度；方向键 ↑ ↓","Tap or drag to steer altitude; ↑ ↓ keys"),miss:t("错过风圈，重新起飞 · 风圈已放宽","Missed a gate. Relaunch · wider gates"),edge:t("遇到强气流，重新起飞","Strong gust. Relaunch"),landing:t("降落高度不安全，重新起飞","Unsafe landing. Relaunch"),flying:t("保持在下一个风圈内，最后回到中央","Aim for the next gate, then return to center"),landed:t("安全降落","Safe landing")};
  const logs=zh?["旧风标：事故前，翎羽误判侧风。","断裂货索：远帆主动切断货物绳索。","记录仪：两只猫因此幸存。"]:["Old wind gauge: Lingyu misread the crosswind.","Severed cargo line: Yuanfan cut it deliberately.","Recorder: both siblings survived because of it."];
  if(f.operation==="explore:flight-recorder"&&f.gate>0&&f.notice==="flying"){ctx.fillStyle="#172d45e5";ctx.fillRect(0,H-74,W,28);ctx.fillStyle="#fff2d1";ctx.fillText(logs[f.gate-1],W/2,H-54,W-24);}
- ctx.fillText(notices[f.notice]||"",W/2,H-24,W-24);ctx.restore();
+ ctx.fillText(f.openGlide?({ready:t("选高处借风或沿低处绕行","Climb into the updraft or glide low"),miss:t("撞入回卷风带，换条路线再试","Caught in the gust. Try another route"),edge:t("偏离安全范围，重新起飞","Outside safe airspace. Relaunch"),landing:t("降落不稳，重新起飞","Unsafe landing. Relaunch"),flying:t("绕过云瀑后再回到中央高度","Return to middle altitude beyond the waterfall"),landed:t("安全降落","Safe landing")}[f.notice]||""):(notices[f.notice]||""),W/2,H-24,W-24);ctx.restore();
 }
 export function paintSkyWeather(ctx,v,frame,W,H,img){
  const t=frame/60,restored=v.melodies.includes("sky");ctx.save();if(img)cloudLayers(ctx,img,t,W,H);
