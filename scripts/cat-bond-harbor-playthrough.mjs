@@ -248,56 +248,24 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     await shot('title');
     await page.locator('#intro-start').click();
     await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-    for (const id of ['prologue:P-01','prologue:P-02','prologue:P-03']) {
-      await scene(id);
-      await page.locator('.cbcp-art').first().waitFor();
-      await page.waitForFunction(() => {
-        const image=document.querySelector('.cbcp-art');
-        const skip=document.querySelector('.cbcp-skip');
-        return image?.naturalWidth > 0 && skip && !skip.disabled;
-      });
-      if (id === 'prologue:P-01') {
-        await page.locator('.cbcp-art').first().evaluate(image=>image.decode());
-        await page.waitForTimeout(600);
-        await shot('opening');
-        assert.equal(await page.locator('.cbcp-language').isVisible(),false);
-        assert.equal(await page.evaluate(() => MorrowwishI18n.get()),'en');
-      }
-      if (id === 'prologue:P-01' && name === 'desktop') {
-        await scene('prologue:P-02');
-      } else {
-        await page.locator('.cbcp-skip').click();
-        break;
-      }
-    }
-
-    await scene('prologue:P-04');
-    await page.waitForFunction(()=>State.S.cats[0]?.species==='jinjc'&&State.S.cats.length===1);
-    assert.equal(await page.locator('#panel.open .cat-starter-card').count(),0);
-    await button('Talk to Muling',page.locator('.sg-prologue-guide')).click();
-    await readDialogue('prologue:P-04');
-    const bell = page.locator('.res-garden-bell');
-    await bell.waitFor();
-    await shot('garden');
-    const rect = await bell.boundingBox();
-    const x=Math.floor(rect.x+rect.width/2), y=Math.floor(rect.y+rect.height/3);
-    if (options.hasTouch) {
-      const cdp = await context.newCDPSession(page);
-      await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
-      await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+62}]});
-      await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-    } else {
-      await page.mouse.move(x,y);
-      await page.mouse.down();
-      await page.mouse.move(x,y+62,{steps:8});
-      await page.mouse.up();
-    }
+    // The current Player-First opening retires the old cinematic and bell.
+    // Follow the real visible opening and optional Muling encounter instead.
     await scene('prologue:P-05');
-    await readDialogue('prologue:P-05');
-    await button('World map',page.locator('.sg-prologue-guide')).click();
-    await shot('atlas');
-    await verifyAtlasCamera();
-    await tapLandmark(.5,.18);
+    const contextIntro=page.locator('#cb-player-first-intro');
+    await contextIntro.waitFor();
+    await shot('opening');
+    await contextIntro.getByRole('button',{name:'Start exploring',exact:true}).click();
+    assert.deepEqual(await page.evaluate(()=>State.S.cats.map(c=>c.species)),['jinjc']);
+    await page.locator('[data-npc-talk="muling"]').click();
+    const encounter=page.locator('#cb-traveler-encounter');
+    await encounter.getByRole('button',{name:'Find the chart pieces',exact:true}).click();
+    await encounter.waitFor({state:'detached'});
+    for(const id of ['chart-0','chart-1'])await page.locator('[data-garden-explore="'+id+'"]').click();
+    await page.locator('[data-npc-talk="muling"]').click();
+    for(const label of ['Continue','Say goodbye'])await encounter.getByRole('button',{name:label,exact:true}).click();
+    assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);
+    await shot('garden');
+    await page.locator('.sg-prologue-guide').getByRole('button',{name:'Next scene · Misttide Harbor',exact:true}).click();
     await scene('harbor:H-01');
     await page.locator('.rw-shell').evaluate(shell=>Promise.allSettled(shell.getAnimations().map(animation=>animation.finished)));
     await shot('harbor');
