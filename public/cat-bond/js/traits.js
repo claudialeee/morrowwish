@@ -1125,6 +1125,34 @@
     const pulled=before.find(([e,x,y])=>Math.hypot(e.x-x,e.y-y)>.1);
     if(pulled){mark(c,b,pulled[0]);c._pullCueAt=b.t+.7;}
   });
+  // A polling tick must not spend the cooldown of a real dash echo.
+  set('niuniu',{internalCooldown:0,triggerCondition:()=>true,effect(ctx){
+    const c=ctx.cat,b=ctx.battle;
+    if(ctx._event==='onTick'){
+      const dashing=(c.dashT||0)>0&&!!c.pounce;
+      if(dashing&&!c._niuniuPrevDashing)c._niuniuOrigin={x:c.x,y:c.y};
+      if(c._niuniuPrevDashing&&!dashing&&b.t>=(c._niuniuNextAt||0)){
+        c._niuniuEchoReady=true;c._niuniuEchoUntil=b.t+1.4;
+        mark(c,b,c,'ready',{ox:c._niuniuOrigin?.x??c.x,oy:c._niuniuOrigin?.y??c.y});
+      }
+      if(b.t>=(c._niuniuEchoUntil||0))c._niuniuEchoReady=false;
+      c._niuniuPrevDashing=dashing;return;
+    }
+    if(!c._niuniuEchoReady||b.t>=c._niuniuEchoUntil||!ctx.target?.alive||!(ctx.dmg>0))return;
+    c._niuniuEchoReady=false;c._niuniuNextAt=b.t+3;
+    b.hurtEnemy(ctx.target,ctx.dmg*.5,ctx.target.x,ctx.target.y,true);
+    mark(c,b,ctx.target,'fire',{ox:c._niuniuOrigin?.x??c.x,oy:c._niuniuOrigin?.y??c.y});
+  }});
+  // Real target reference avoids treating two enemies without numeric IDs as one.
+  set('xianluo',{triggerCondition:ctx=>ctx.target?.alive&&ctx.dmg>0,effect(ctx){
+    const c=ctx.cat,b=ctx.battle,e=ctx.target;
+    if(c._resonanceTarget===e)c._xianluoResonance=Math.min(6,(c._xianluoResonance||0)+1);
+    else{c._resonanceTarget=e;c._xianluoResonance=0;}
+    if(c._xianluoResonance>0){
+      b.hurtEnemy(e,ctx.dmg*.08*c._xianluoResonance,e.x,e.y,true);
+      mark(c,b,e,'fire',{level:c._xianluoResonance});
+    }
+  }});
   window.CatTraits.mark=mark;
 
 })();
