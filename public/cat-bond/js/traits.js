@@ -1091,6 +1091,40 @@
       c._abiCharged=false;ctx.skill._traitPower=1.4;ctx.skill._traitSize=1.3;mark(c,b,c,'fire');
     }
   }});
+
+  // Provide visible cues only on meaningful state transitions, not every frame.
+  function watch(species,events,snapshot,after){
+    const d=trait(species),fn=d.effect;d.effect=function(ctx){
+      const state=snapshot(ctx);fn(ctx);
+      if(events.includes(ctx._event))after(ctx,state);
+    };
+  }
+  for(const [sp,key] of [['abi','_abiCharged'],['wumao','_wumaoCharged'],['moqiu','_moqiuStalk'],['niuniu','_niuniuEchoReady'],['nietu','_nietuRootT'],['nuowei','_nuoweiTerritory'],['zherdd','_zherddStillT']]){
+    const ready=c=>['nietu','zherdd'].includes(sp)?(c[key]||0)>=1.5:sp==='wumao'?(c[key]||0)>=.99:!!c[key];
+    watch(sp,['onTick'],ctx=>ready(ctx.cat),(ctx,was)=>{if(!was&&ready(ctx.cat))mark(ctx.cat,ctx.battle,ctx.cat,'ready');});
+  }
+  // Senlin's permanent heavy form has a distinct impact on actual heavy hits.
+  const sen=trait('senlin'),senInit=sen.effect;
+  set('senlin',{subscribedEvents:['onTick','onHitResolved'],triggerCondition:ctx=>ctx._event==='onTick'?!ctx.cat._senlinApplied:heavy(ctx.skill)&&ctx.dmg>0,effect(ctx){
+    if(ctx._event==='onTick'){senInit(ctx);mark(ctx.cat,ctx.battle,ctx.cat,'ready');}
+    else mark(ctx.cat,ctx.battle,ctx.target);
+  }});
+  // Each actual restoration pulse can emit a short blossom cue on healed allies.
+  watch('zherdd',['onTick'],ctx=>(ctx.battle.team||[]).map(a=>[a,a.hp]),(ctx,before)=>{
+    for(const [a,hp] of before)if(a.hp>hp)mark(ctx.cat,ctx.battle,a);
+  });
+  // Field expiration (not per-frame particle spam). Snapshot coordinates, not mutable fields.
+  watch('yinghua',['onTick'],ctx=>Array.from(ctx.cat._yinghuaFields?.values()||[]),(ctx,before)=>{
+    const live=Array.from(ctx.cat._yinghuaFields?.values()||[]);
+    for(const q of before)if(!live.some(v=>v.cx===q.cx&&v.cy===q.cy))mark(ctx.cat,ctx.battle,{x:q.cx,y:q.cy},'fire');
+  });
+  // Detect meaningful pull on a real caster-owned field; avoid more than one
+  // impact per 0.7 seconds while the persistent field renderer handles motion.
+  for(const sp of ['meidu','fanmao'])watch(sp,['onTick'],ctx=>(ctx.battle.enemies||[]).filter(e=>e.alive).map(e=>[e,e.x,e.y]),(ctx,before)=>{
+    const c=ctx.cat,b=ctx.battle;if(b.t<(c._pullCueAt||0))return;
+    const pulled=before.find(([e,x,y])=>Math.hypot(e.x-x,e.y-y)>.1);
+    if(pulled){mark(c,b,pulled[0]);c._pullCueAt=b.t+.7;}
+  });
   window.CatTraits.mark=mark;
 
 })();
