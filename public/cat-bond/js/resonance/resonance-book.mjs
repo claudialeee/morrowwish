@@ -13,6 +13,7 @@ const tabs=[
  ["duo","双猫羁绊","Duo Bonds","openBondPanel",[]],
  ["workshop","工坊","Workshop","openWorkshop",[]],
  ["dex","Catdex","Catdex","openDex",[]],
+ ["wishes","星铃祈愿","Wishes"],
  ["bag","背包","Inventory"],
  ["shop","商店","Shop","openShop",[]],
  ["daily","签到","Daily","openDaily",[]],
@@ -113,6 +114,64 @@ function inventory(focusCraft=false){
  host.append(list);
  if(focusCraft)requestAnimationFrame(()=>{if(alive()&&host.isConnected)list.scrollIntoView({block:"nearest"})});
 }
+
+const wishDay=()=>new Date().toISOString().slice(0,10);
+const WISH_FISH=5;
+function wishPull(owner){
+ const s=state(),R=window.Raising,G=window.GameData,S=window.State;
+ if(!alive()||s!==owner||!(s.catchCount>0)||!R||!G)return {ok:false};
+ const r=R.init(),day=wishDay(),free=r.wishDay!==day;
+ if(!free&&!(s.fish>=WISH_FISH))return {ok:false};
+ const before={fish:s.fish,coins:s.coins,pity:r.pity.count,day:r.wishDay,total:r.wishTotal};
+ const roll=R.rollGacha(0),sp=roll.species,owned=s.cats.filter(cat=>cat.species===sp.id);
+ const reunion=owned.length>=2,cat=reunion?owned.reduce((a,b)=>S.catPower(a)>=S.catPower(b)?a:b):S.makeCat(sp.id,{affinity:20});
+ const priorAffinity=cat.affinity,priorDex=s.dex[sp.id],bonus=reunion?({N:10,R:25,SR:60,SSR:150}[sp.rarity]||10):0;
+ if(free)r.wishDay=day;else s.fish-=WISH_FISH;
+ r.wishTotal=(Number(r.wishTotal)||0)+1;
+ if(reunion){cat.affinity=Math.min(100,(cat.affinity||0)+10);s.coins+=bonus;}
+ else{R.decorateNewCat(cat);s.cats.push(cat);}
+ s.dex[sp.id]=(priorDex||0)+1;
+ if(!S.save()?.ok){
+  s.fish=before.fish;s.coins=before.coins;r.pity.count=before.pity;
+  for(const [key,value] of [["wishDay",before.day],["wishTotal",before.total]]){if(value===undefined)delete r[key];else r[key]=value;}
+  if(priorDex===undefined)delete s.dex[sp.id];else s.dex[sp.id]=priorDex;
+  if(reunion)cat.affinity=priorAffinity;else s.cats.splice(s.cats.indexOf(cat),1);
+  return {ok:false};
+ }
+ game().rebuildYard?.();game().refreshHUD?.();game().refreshCollectionGoal?.();
+ window.MorrowwishAudio?.effect?.("discover");
+ return {ok:true,sp,cat,reunion,bonus,free};
+}
+function wishes(result=null){
+ const s=state(),host=shell();host.setAttribute("translate","no");
+ const R=window.Raising,r=R?.init(),cap=R?.config?.PITY_CAP||40;
+ host.append(node("h2","",tr("星铃祈愿","Starbell Wishes")),node("p","rb-rule",tr("向星铃许下心愿，也许会有意想不到的小伙伴回应。探索和战斗收服仍然独立可玩。","Make a wish at the Starbell. A surprising companion may answer! Exploring and befriending wild cats remain independent.")));
+ if(!r||!(s.catchCount>0)){host.append(node("p","",tr("先通过战斗收服第一只野猫，再开启祈愿。","Befriend your first wild cat in battle to unlock wishes.")));return;}
+ const free=r.wishDay!==wishDay(),count=Math.max(0,Number(r.pity.count)||0);
+ const summary=node("div","rb-inventory");
+ summary.append(stat(tr("今日免费祈愿","Daily free wish"),free?tr("可领取","Available"):tr("已领取","Claimed")),stat(tr("史诗及以上保底","Epic or better guarantee"),count+"/"+cap),stat(tr("小鱼干","Fish"),s.fish),stat(tr("累计祈愿","Total wishes"),r.wishTotal||0));
+ host.append(summary);
+ const progress=node("progress","rb-health");progress.max=cap;progress.value=Math.min(cap,count);progress.setAttribute("aria-label",tr("祈愿保底进度","Wish guarantee progress"));host.append(progress);
+ const odds=node("div","rb-inventory");for(const k of ["N","R","SR","SSR"]){const v=window.GameData.RARITY[k];odds.append(stat(k+" · "+tr(v.name,({N:"Common",R:"Rare",SR:"Epic",SSR:"Legendary"})[k]),v.weight+"%"))}
+ host.append(node("h3","",tr("基础概率","Base odds")),odds,node("p","rb-rule",tr("连续39次未出现SR或SSR时，第40次至少为SR；保底时原N/R结果转为85% SR、15% SSR。每天UTC零点恢复一次免费祈愿，其后每次消耗5个游戏内小鱼干。无真钱消费。","After 39 wishes without SR or SSR, wish 40 guarantees SR or better; an N/R result at guarantee becomes 85% SR or 15% SSR. One free wish resets at 00:00 UTC; further wishes cost 5 in-game fish. No real money.")));
+ if(result?.ok){
+  const card=node("article","rb-recipe"),art=node("canvas","rb-recovery-art");
+  card.setAttribute("role","status");card.style.cssText="text-align:center;padding:16px;border:2px solid "+window.GameData.RARITY[result.sp.rarity].color+";border-radius:16px";
+  art.width=180;art.height=160;art.style.cssText="display:block;margin:8px auto;max-width:100%;width:180px;height:160px";
+  card.append(node("h3","",result.sp.rarity+" · "+window.GameData.speciesName(result.sp)),art,node("strong","",result.reunion?tr("熟悉的朋友再次回应！","A familiar friend answered!"):tr("新的小伙伴加入花园！","A new companion joins your garden!")),node("p","",result.reunion?tr("好感 +10（上限100） · 金币 +","Affinity +10 (max 100) · Coins +")+result.bonus:tr("已收入猫咪名册和Catdex。","Added to your roster and Catdex.")));
+  host.append(card);
+  requestAnimationFrame(()=>{if(alive()&&art.isConnected){window.CatArt.renderCatThumb(art,result.sp,result.cat);if(!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches)art.animate?.([{opacity:0,transform:"scale(.8)"},{opacity:1,transform:"scale(1)"}],{duration:450,easing:"ease-out"});}});
+ }
+ host.append(node("p","rb-rule",tr("每品种最多新增两只；再次遇见同品种会增加已有猫咪的好感并赠送金币。","Up to two new residents per breed; further matches increase an existing companion's affinity and award coins.")));
+ const actions=node("div","rb-actions"),pull=button(free?tr("免费祈愿一次","Free wish"):tr("祈愿一次 · 5小鱼干","Make a wish · 5 fish"),()=>{
+  pull.disabled=true;const outcome=wishPull(s);
+  if(!outcome.ok){game().toast(tr("祈愿未完成，资源未扣除。","Wish not completed; resources unchanged."));wishes();attach();return;}
+  wishes(outcome);attach();
+ });
+ pull.dataset.bookWish="true";pull.disabled=!free&&s.fish<WISH_FISH;
+ actions.append(pull,button(tr("查看猫咪图鉴","Open Catdex"),()=>select("dex")));host.append(actions);
+}
+
 function records(){
  const s=state(),host=shell();host.setAttribute("translate","no");host.append(node("h2","",tr("冒险成就","Adventure records")));
  const rows=node("div","rb-inventory"),discovered=Object.values(s.dex||{}).filter(n=>n>0).length;
@@ -123,7 +182,7 @@ function records(){
 function select(id,focusCraft=false){
  if(!alive())return false;const tab=tabs.find(t=>t[0]===id);if(!tab)return false;
  active.tab=id;window.UI.resetNavigation();
- const run=()=>{if(!alive())return false;if(id==="bag")inventory(focusCraft);else if(id==="records")records();else window.UI[tab[3]](...tab[4]);return true};
+ const run=()=>{if(!alive())return false;if(id==="bag")inventory(focusCraft);else if(id==="records")records();else if(id==="wishes")wishes();else window.UI[tab[3]](...tab[4]);return true};
  window.UI._navCurrent=run;run();attach();if(alive()&&panel()?.classList.contains('open'))window.SunlitGarden?.noteBookVisit?.(id);return true
 }
 function open(id="cats"){
@@ -144,7 +203,7 @@ function install(){
  ui.openExploreMenu=function(...args){if(active)return select("cats");if(stage()?.classList.contains("rb-canonical"))return open();return oldExplore.apply(this,args)};
  document.getElementById("map-menu")?.addEventListener("click",e=>{if(!window.CatBondSystemMenu)return;e.stopImmediatePropagation();window.CatBondSystemMenu.open()},true);
  window.addEventListener("cat-bond-active-save-changed",()=>{if(active){ui.closeAll();panel()?.replaceChildren()}});
- window.addEventListener("morrowwish-language-change",()=>{if(!alive())return;if(active.tab==="bag"&&panel()?.querySelector(".rb-content"))inventory();else if(active.tab==="records")records();else attach();});
+ window.addEventListener("morrowwish-language-change",()=>{if(!alive())return;if(active.tab==="bag"&&panel()?.querySelector(".rb-content"))inventory();else if(active.tab==="records")records();else if(active.tab==="wishes"){wishes();attach();}else attach();});
  window.addEventListener("cat-bond-resonance-changed",()=>{if(active&&!alive())ui.closeAll()});
  const guard=new MutationObserver(()=>{if(active&&!alive())ui.closeAll()});
  guard.observe(stage(),{childList:true,subtree:false,attributes:true,attributeFilter:["class"]});
