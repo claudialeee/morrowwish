@@ -41,9 +41,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm ci
-      - run: npm install --no-save --no-package-lock playwright@1.57.0
-      - run: npx playwright install --with-deps chromium
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
       - name: Stable non-narrative system regression (not revised chapter approval)
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-rpg-systems-server.log 2>&1 &
