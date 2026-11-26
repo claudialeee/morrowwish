@@ -5289,13 +5289,18 @@ class CaptureBattle {
       // the last enemy attack path that was hardcoded; now every enemy shot is element-tagged like
       // ours (owner: "敌人的常规攻击也用我们的常规攻击的 skill set"). isBasic marks it a light basic.
       const basicSk = { element: e.element, isBasic: true, appliesTag: (e.kit && e.kit.primary && e.kit.primary.appliesTag) || null };
-      // Owner 2026-11-26: '普攻还是箭头'. Enemy basic was hard-coded to 'ball' sprite — an
-      // arrow-looking generic shape. Pick a cat-themed toy (yarn/fish) PER basic tick so the
-      // enemy's basic reads the same way the player's does. Element doesn't override the toy —
-      // it's a yarn/fish THEMED generic basic; real authored skills (fireballMeow/hex) still
+      // Owner 2026-11-26 "为什么敌人又能吐毛球又能扔小鱼干": one cat = ONE toy
+      // (not alternating every basic tick). Deterministic per-species pick so the
+      // same breed always throws the same thing; still varies across the pack so
+      // the fight reads multi-toy. Authored skills (fireballMeow/hex) still
       // render as their authored sprites via castEnemySkill.
-      e._basicTick = (e._basicTick || 0) + 1;
-      const toy = e._basicTick % 2 === 0 ? 'fish' : 'yarn';
+      if (!e._toySprite) {
+        const name = e.species || e.cat?.species || 'x';
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+        e._toySprite = (hash & 1) ? 'fish' : 'yarn';
+      }
+      const toy = e._toySprite;
       this.spawnProj(e.x, e.y, lead, shotSpeed, dd, 'wild', wc, 7, toy, basicSk);
       if (e.rIdx >= 2) {
         this.spawnProj(e.x, e.y, lead + 0.22, 192, dd * 0.8, 'wild', wc, 6, toy, basicSk);
