@@ -339,11 +339,12 @@ function installCatBondSystemMenu(){
     ['yard-build',t('家园布置','Garden design'),''],['yard-seek',t('寻找野猫','Find wild cats'),''],
     ['yard-play',t('逗猫','Play with cats'),''],['yard-feed',t('喂食','Feed cats'),'']
   ].filter(([id])=>native({'yard-map':'#fab-map','yard-book':'#sg-book-entry','yard-build':'#fab-build','yard-seek':'#fab-seek','yard-play':'#fab-play','yard-feed':'#fab-feed'}[id])):[];
-  const rows=[
-    ...yardActions,
-    ...(world?[[ 'world-book',t('星月之书 · 养成','Resonance Book · companions'),''],['world-atlas',t('世界地图','World atlas'),''],['world-garden',t('阳光花园','Sunlit Garden'),''],['world-explore',t('任务与探索','Quests and exploration'),'']]:[]),
-    ...(world?camera.map((button,i)=>['camera-'+i,cameraLabels[i]?.[0]||button.textContent,'']):[]),
+  const dialogue=window.CatBondDialogueSettings;const rows=[
+    ...(dialogue?[]:yardActions),
+    ...(!dialogue&&world?[[ 'world-book',t('星月之书 · 养成','Resonance Book · companions'),''],['world-atlas',t('世界地图','World atlas'),''],['world-garden',t('阳光花园','Sunlit Garden'),''],['world-explore',t('任务与探索','Quests and exploration'),'']]:[]),
+    ...(!dialogue&&world?camera.map((button,i)=>['camera-'+i,cameraLabels[i]?.[0]||button.textContent,'']):[]),
     ['language',t('语言','Language'),t('中文','English')],
+    ...(dialogue?[['dialogue-auto',t('自动对白','Auto dialogue'),dialogue.auto?t('开启','On'):t('关闭','Off')],['dialogue-speed',t('对白速度','Dialogue speed'),dialogue.speed+'×'],['dialogue-history',t('对白记录','Dialogue history'),'']]:[]),
     ['music',t('背景音乐','Background music'),(window.MorrowwishMusic?.status?.().enabled??active('.mw-settings-music'))?t('开启','On'):t('关闭','Off')],
     ['effects',t('音效','Sound effects'),(window.MorrowwishAudio?.isEnabled?.()??active('.mw-settings-sfx'))?t('开启','On'):t('关闭','Off')],
     ...(battle?[['skills',t('技能说明','Skill guide'),'']]:[]),
@@ -368,7 +369,7 @@ function installCatBondSystemMenu(){
   }
   menu.querySelectorAll('[data-system]').forEach(btn=>bindMenuPress(btn,async()=>{
    const id=btn.dataset.system,selectors={language:'.mw-settings-language',effects:'.mw-settings-sfx',music:'.mw-settings-music',fullscreen:'#mw-fullscreen-toggle',share:'.mw-settings-share'};
-   if(id==='close'){close();toggle.focus();return;}
+   if(id==='close'){close();toggle.focus();return;}if(id.startsWith('dialogue-')){const settings=window.CatBondDialogueSettings;if(!settings)return;if(id==='dialogue-auto')settings.toggleAuto();if(id==='dialogue-speed')settings.cycleSpeed();if(id==='dialogue-history'){settings.toggleHistory();close();return;}render();return;}
    if(id.startsWith('yard-')){const target=native({'yard-map':'#fab-map','yard-book':'#sg-book-entry','yard-build':'#fab-build','yard-seek':'#fab-seek','yard-play':'#fab-play','yard-feed':'#fab-feed'}[id]);close();if(window.__game?.scene==='yard'&&!target?.disabled)target?.click();return;}
    if(id.startsWith('world-')){close();if(window.__game?.scene!=='map')return;if(id==='world-book'){window.ResonanceBook?.open?.('cats');return;}if(id==='world-garden'){native('.rw-world [data-world-nav="garden"]')?.click();return;}if(id==='world-atlas'){const back=native('.rw-world [data-world-nav="atlas"]');if(back&&!back.disabled)back.click();else if(window.WorldMap?.mode==='map')native('.rw-atlas-menu:not([open]) > summary')?.click();return;}if(id==='world-explore'){native('.rw-region-toggle,.rw-atlas-menu > summary')?.click();return;}}
    if(id.startsWith('camera-')){const target=document.querySelectorAll('.rw-world:not([hidden]) .rw-camera-controls button, .rw-world:not([hidden]) .rw-atlas-menu .rw-controls button')[Number(id.slice(7))];close();if(window.__game?.scene==='map'&&!target?.disabled)target?.click();return;}

@@ -47,3 +47,25 @@ html body #game-root #stage{width:100%!important;height:100%!important;max-width
 #stage .rw-world .rw-fit-rail .rw-button,#stage .rw-world .rw-fit-rail .rw-system-nav button{min-height:44px!important;border-radius:8px!important}
 #stage .rw-world .rw-fit-rail .rw-metrics{gap:8px}
 #stage #panel .cat-capture-card .first-adventure-tip{background:transparent!important;border:0!important;padding:4px 2px!important}
+
+/* RPG interaction pass: compact dialogue, no duplicate HUD or gray menu scrim. */
+html body #stage #cb-header-actions #hud,html body #stage #cb-header-actions .hud-pill,html body #stage #hud,html body #stage .hud-pill{display:none!important;visibility:hidden!important}
+html body #stage #cb-yard-return,html body #stage #cb-header #cb-yard-return,html[data-mw-fullscreen-game="cat-bond"] body #stage #cb-header #cb-yard-return{display:none!important}
+html body #stage #cb-system-menu:not([hidden]){background:transparent!important;backdrop-filter:none!important;align-items:flex-start!important;justify-content:flex-end!important;padding:58px 12px 12px!important}
+#stage #cb-system-menu .cb-system-card{width:min(460px,100%)!important;max-height:100%!important;background:#fff7e6!important;color:#493d2d!important;border:1px solid #bca274!important;box-shadow:0 5px 24px #50391b35!important;border-radius:12px!important}
+#stage #cb-system-menu .cb-system-rows button{min-height:38px!important;background:#f5ead1!important;border:1px solid #cfb98e!important;border-radius:7px!important;color:#534431!important;padding:6px 10px!important}
+.cb-confirm-dialog{position:fixed!important;inset:0!important;margin:auto!important;width:min(460px,calc(100% - 32px))!important;height:max-content!important;max-height:calc(100dvh - 32px)!important}
+#stage .res-host:not(.res-library-reveal){background:linear-gradient(0deg,#49362220,transparent 42%)!important;backdrop-filter:none!important}
+#stage .res-host .res-dialogue{width:min(860px,94%)!important;grid-template-columns:minmax(80px,22%) minmax(0,1fr)!important;gap:12px!important;align-items:end!important}
+#stage .res-host .res-dialogue:has(.res-portrait[hidden]){grid-template-columns:1fr!important}
+#stage .res-host .res-portrait{max-height:32vh!important;filter:drop-shadow(0 4px 8px #47332628)!important}
+#stage .res-host .res-body{padding:12px 18px!important;background:#fff7e8f5!important;border:1px solid #c7ad83!important;border-radius:10px!important;box-shadow:0 3px 14px #3d281e26!important;color:#46382b!important;cursor:pointer}
+#stage .res-host .res-speaker{font:600 14px/1.3 Georgia,"Songti SC","Noto Serif CJK SC",serif!important;color:#856336!important;margin:0 0 5px!important}
+#stage .res-host .res-line{font:500 clamp(14px,1.25vw,18px)/1.55 "PingFang SC","Noto Sans CJK SC",system-ui,sans-serif!important;min-height:0!important;margin:0!important;color:#493d32!important}
+#stage .res-host .res-choices:empty,#stage .res-host .res-controls,#stage .res-host .res-legacy-control{display:none!important}
+#stage .res-host .res-skip-top{position:absolute!important;top:12px!important;right:94px!important;min-height:36px!important;padding:6px 12px!important;background:#fff1d7!important;color:#56432f!important;border:1px solid #bca274!important;box-shadow:none!important}
+#stage:has(.res-host .res-dialogue) #cb-system-toggle{display:inline-flex!important;z-index:2147483000!important;right:10px!important;top:10px!important}
+#stage .res-host .res-history{color:#594b3a!important}
+#stage .res-host .res-prologue-context{color:#856a42!important}
+#stage .cat-capture-card .battle-grade,#stage .cat-capture-card .battle-rating,#stage .cat-capture-card .battle-reward-card{width:100%!important;max-width:none!important;margin:6px 0!important;box-sizing:border-box!important}
+@media(max-width:600px){#stage .res-host .res-dialogue{display:grid!important;width:100%!important;grid-template-columns:22% minmax(0,1fr)!important;gap:6px!important}#stage .res-host .res-body{padding:9px 10px!important}#stage .res-host .res-portrait{max-height:24vh!important;width:100%!important}}

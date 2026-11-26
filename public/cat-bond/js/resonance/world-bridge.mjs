@@ -133,27 +133,29 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(v.current?.id!==sceneId||w.location!==region||!campaign.regions.includes(region)||!v.objective.includes(op)||proof?.sceneId!==sceneId||proof.operation!==op||proof.region!==region||proof.verified!==true)return fail("invalid-world-evidence");
   if(!/^(explore|puzzle|rescue|repair|melody):/.test(op))return fail("owned-by-other-module");
   if(w.interactions[sceneId+":"+op])return fail("already-completed");
-  if(region==="sky"&&skyLaunch[op]){if(!skyPartsReady(v))return fail("sky-parts-required");const p=w.positions.sky,q=skyLaunch[op];if(!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072||!validSkyFlightProof(op,v.choice??null,proof.flightProof))return fail("incomplete-flight");}
+  // New RPG interaction: physical arrival + explicit interaction, not synthetic puzzle answers.
+  const direct=proof.adventureAction===true,point=region==="sky"&&skyLaunch[op]||layouts[region]?.features[op],position=w.positions[region];if(direct&&(!point||!position||Math.hypot(position.x-point[0],position.y-point[1])>=.072||!api?.isCurrentAction(proof.token)))return fail("walk-to-objective");
+  if(region==="sky"&&skyLaunch[op]){if(!skyPartsReady(v))return fail("sky-parts-required");const p=w.positions.sky,q=skyLaunch[op];if(!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072||(!direct&&!validSkyFlightProof(op,v.choice??null,proof.flightProof)))return fail("incomplete-flight");}
   if(op==="explore:tide-logbook"&&(!tideTrail.every((_,i)=>w.interactions[tideKey(i)])||!tideNear(w,[.87,.748])))return fail("incomplete-tide-trail");
   if(op==="explore:scent-trail"&&(!scentTrail.slice(0,-1).every((_,i)=>w.interactions[scentKey(i)])||!scentAt(w,scentTrail.length-1)))return fail("incomplete-scent-trail");
   if(op==="puzzle:paired-water-gates"){
     const pair=w.interactions[pairedKey];
     if(!validPair(State.S,pair)||!atForest(w,[.69,.53]))return fail("upper-gate-required");
-    if(proof.pair?.upper!==pair.upper||proof.pair?.lower!==pair.lower||proof.waterSequence?.join(",")!=="2,1,1")return fail("paired-flow-incomplete");
+    if(!direct&&(proof.pair?.upper!==pair.upper||proof.pair?.lower!==pair.lower||proof.waterSequence?.join(",")!=="2,1,1"))return fail("paired-flow-incomplete");
    }
   if(sceneId==="starfall:F-02"){
    const point=layouts.starfall.features[op],pos=w.positions.starfall;
    if(v.objective[0]!==op||!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("starfall-record-order");
-   const spec=puzzleSpecs[op];if(spec&&proof.starfallSequence?.join(",")!==spec.goal.join(","))return fail("starfall-record-order");
+   const spec=puzzleSpecs[op];if(!direct&&spec&&proof.starfallSequence?.join(",")!==spec.goal.join(","))return fail("starfall-record-order");
   }
   if(sceneId==="starfall:F-04"){
    const point=layouts.starfall.features[op],pos=w.positions.starfall;
    if(v.objective[0]!==op||!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("starfall-routing-order");
    const goal=puzzleSpecs[op]?.goal||(op==="melody:starfall"?[0,1,2]:null);
-   if(!goal||proof.starfallSequence?.join(",")!==goal.join(","))return fail("starfall-routing-order");
+   if(!goal||(!direct&&proof.starfallSequence?.join(",")!==goal.join(",")))return fail("starfall-routing-order");
    if(op==="melody:starfall"){
     const ids=["xingya","lichuan"],p=proof.participants;
-    if(!ids.every(id=>w.interactions["starfall:F-04:invite:"+id])||!Array.isArray(p)||p.length!==2||new Set(p).size!==2||!ids.every(id=>p.includes(id))||proof.responses?.length!==3||!proof.responses.every((n,i)=>n.actor===p[i%2]&&n.reply===(goal[i]+1)%3))return fail("local-response-required");
+    if(!ids.every(id=>w.interactions["starfall:F-04:invite:"+id])||!Array.isArray(p)||p.length!==2||new Set(p).size!==2||!ids.every(id=>p.includes(id))||(!direct&&(proof.responses?.length!==3||!proof.responses.every((n,i)=>n.actor===p[i%2]&&n.reply===(goal[i]+1)%3))))return fail("local-response-required");
    }
   }
   if(region==="library"){
@@ -161,7 +163,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
    const point=libraryPoints[op],pos=w.positions.library;
    if(!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("walk-to-objective");
    const record=catdexRecord(State.S),p=libraryPuzzle(op,record);
-   if(p&&(!proof.libraryValues||proof.libraryValues.join(",")!==p.goal.join(",")))return fail("library-record-unverified");
+   if(!direct&&p&&(!proof.libraryValues||proof.libraryValues.join(",")!==p.goal.join(",")))return fail("library-record-unverified");
    if(op==="puzzle:library-echo"&&(!record||proof.libraryRecord?.uid!==record.uid||proof.libraryRecord?.habit!==record.habit||proof.libraryRecord?.wins!==record.wins))return fail("library-catdex-required");
    if(op==="melody:library"&&(!["moye","baikan"].every(id=>w.interactions["library:M-05:invite:"+id])||v.objective.includes("repair:library")))return fail("local-response-required");
   }
@@ -171,7 +173,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(op==="melody:harbor"&&!["qilan","jiedeng"].every(id=>w.interactions["harbor:H-05:invite:"+id]))return fail("local-response-required");
   if(op==="melody:forest"&&!["yahe","yuchuan"].every(id=>w.interactions["forest:R-04:invite:"+id]))return fail("local-response-required");
   if(op==="melody:sky"&&!["lingyu","yuanfan"].every(id=>w.interactions["sky:S-05:invite:"+id]))return fail("local-response-required");
-  if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
+  if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||(!direct&&(proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
   const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:op==="puzzle:library-echo"?{uid:proof.libraryRecord.uid,species:proof.libraryRecord.species,habit:proof.libraryRecord.habit,wins:proof.libraryRecord.wins}:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;

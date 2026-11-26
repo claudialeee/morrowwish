@@ -169,7 +169,7 @@
             <div class="cbcp-topline">
               <div class="cbcp-heading"><span class="cbcp-kicker"></span><h2 class="cbcp-title"></h2></div>
               <div class="cbcp-tools">
-                <button class="cbcp-tool cbcp-language" type="button"></button>
+                <button class="cbcp-tool cbcp-back" type="button"></button><button class="cbcp-tool cbcp-language" type="button"></button>
                 <button class="cbcp-tool cbcp-pause" type="button"></button>
                 <button class="cbcp-tool cbcp-skip" type="button"></button>
               </div>
@@ -192,12 +192,13 @@
         title: this.root.querySelector('.cbcp-title'),
         speaker: this.root.querySelector('.cbcp-speaker'),
         subtitle: this.root.querySelector('.cbcp-subtitle'),
-        language: this.root.querySelector('.cbcp-language'),
+        back: this.root.querySelector('.cbcp-back'),language: this.root.querySelector('.cbcp-language'),
         pause: this.root.querySelector('.cbcp-pause'),
         skip: this.root.querySelector('.cbcp-skip'),
         continue: this.root.querySelector('.cbcp-continue'),
         progress: this.root.querySelector('.cbcp-progress')
       };
+      this.nodes.back.addEventListener('click',()=>{if(!this.scene||this.frameIndex<1||!this.frameReady)return;this.clearTimer();this.frameIndex--;this.frameElapsedMs=0;this.frameStartedAt=0;this.renderFrame();});
       this.nodes.language.addEventListener('click', () => this.requestLanguage(this.currentLanguage() === 'zh' ? 'en' : 'zh'));
       this.nodes.pause.addEventListener('click', () => this.paused ? this.resume() : this.pause());
       this.nodes.skip.addEventListener('click', () => this.skip());
@@ -440,6 +441,7 @@
       this.nodes.language.textContent = lang === 'zh' ? 'EN' : '中文';
       this.nodes.language.setAttribute('aria-label', lang === 'zh' ? '切换到英文' : 'Switch to Chinese');
       this.nodes.pause.textContent = this.paused ? (lang === 'zh' ? '继续播放' : 'Resume') : (lang === 'zh' ? '暂停' : 'Pause');
+      this.nodes.back.textContent=lang==='zh'?'上一幕':'Back';this.nodes.back.disabled=!this.frameReady||this.frameIndex===0;this.nodes.back.hidden=!this.scene?.openingFlow;
       this.nodes.skip.textContent = lang === 'zh' ? '跳过' : 'Skip';
       this.root.dataset.paused=String(this.paused);
       this.nodes.pause.disabled=!this.frameReady;
