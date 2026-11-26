@@ -69,6 +69,14 @@ function interact(id){if(owner!==rootState()||!eligible()||covered())return fals
  if(id.startsWith('chart-'))toast(s.parts.length===1?'两片航图都找到了！回去和陌生猫说话。':'找到了一片航图 · 1/2',s.parts.length===1?'Both chart pieces found! Return to the traveler.':'One chart piece found · 1/2');
  return true;
 }
+// Ending keepsakes are projections of earned scene evidence, not new checklist gates.
+function journeyKeepsakes(root,v){const c=root?.resonance?.completed||[],i=root?.resonanceExploration?.interactions||{};if(!c.includes('finale:B-04'))return null;return {map:c.includes('harbor:H-05'),moonleaf:c.includes('forest:R-04'),lantern:c.includes('forge:E-04')?(i['forge:E-01:puzzle:lantern-show']?.shape??2):null,cups:root.resonance?.choices?.['sky:S-04']==='search'?3:2,flight:i['sky:S-03:puzzle:joint-flight']?.route||null};}
+function drawJourney(ctx,w,h,art,root,v){const k=journeyKeepsakes(root,v);if(!k)return;const pos=(x,y)=>[art.x+art.width*x,art.y+art.height*y],s=Math.max(.7,Math.min(1.25,w/960));ctx.save();const place=(x,y,draw)=>{ctx.save();ctx.translate(...pos(x,y));ctx.scale(s,s);draw();ctx.restore();};const oval=(x,y,rx,ry,color)=>{ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();};
+if(k.map)place(.30,.53,()=>{ctx.fillStyle='#f4dfb3';ctx.fillRect(-23,-14,46,28);ctx.strokeStyle='#779c85';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-16,8);ctx.lineTo(-6,-4);ctx.lineTo(5,4);ctx.lineTo(17,-8);ctx.stroke();oval(17,-8,3,3,'#d39e61');});
+if(k.moonleaf)place(.76,.70,()=>{oval(0,4,22,7,'#987450');ctx.strokeStyle='#719b5d';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,3);ctx.quadraticCurveTo(-4,-14,1,-25);ctx.stroke();oval(-7,-17,12,5,'#a8cf85');oval(8,-26,13,6,'#d4e5a1');});
+if(k.lantern!==null)place(.60,.42,()=>{oval(0,0,17,20,'#f6bd74');oval(0,0,13,16,'#ffe1a0');ctx.fillStyle='#75553f';if(k.lantern===0){oval(0,0,7,4,'#75553f');ctx.beginPath();ctx.moveTo(-7,0);ctx.lineTo(-12,-5);ctx.lineTo(-12,5);ctx.fill();}else if(k.lantern===1){oval(-4,-2,4,6,'#75553f');oval(4,-2,4,6,'#75553f');}else{oval(0,2,7,6,'#75553f');ctx.beginPath();ctx.moveTo(-7,0);ctx.lineTo(-8,-9);ctx.lineTo(0,-4);ctx.lineTo(6,-10);ctx.lineTo(7,1);ctx.fill();}oval(12,-15,3,3,'#fff9cf');});
+place(.48,.67,()=>{oval(0,7,30,11,'#b5966e');for(let i=0;i<k.cups;i++){const x=(i-(k.cups-1)/2)*16;oval(x,0,6,5,'#f9eed9');oval(x,-3,5,2,'#b77b46');ctx.strokeStyle='#fff4df';ctx.beginPath();ctx.arc(x+6,0,3,-1,1);ctx.stroke();}});
+if(k.flight)place(.35,.70,()=>{ctx.fillStyle='#e8f2e7';ctx.fillRect(-13,-9,26,18);oval(0,1,8,3,'#c5dbe4');oval(6,-4,3,3,'#dcbf72');});ctx.restore();}
 function draw(parent,ctx,w,h){
  init(parent);if(owner!==rootState()){cancelChase();owner=rootState();closePopup();}
  const valid=eligible()&&!covered(),s=read(owner),v=view();
@@ -76,7 +84,7 @@ function draw(parent,ctx,w,h){
  const rect=ctx.canvas.getBoundingClientRect(),r=parent.getBoundingClientRect(),art=window.World?.gardenArtworkRect?.(w,h)||{x:0,y:0,width:w,height:h};
  if(!w||!h||!rect.width||!rect.height)return;
  if(pending&&(projection?.w!==w||projection?.h!==h||!window.__game?.yard?.entities?.includes(pending.cat)))cancelChase();
- projection={rect,r,w,h};
+ projection={rect,r,w,h};drawJourney(ctx,w,h,art,owner,v);
  const left=Math.max(0,art.x),right=Math.min(w,art.x+art.width),top=Math.max(0,art.y),bottom=Math.min(h,art.y+art.height);
  const guide=parent.querySelector('.sg-prologue-guide:not([hidden])')?.getBoundingClientRect(),marker=parent.querySelector('.sg-npc-talk-marker:not([hidden])')?.getBoundingClientRect();
  const placed=[];
@@ -94,5 +102,5 @@ function draw(parent,ctx,w,h){
  if(pending){if(Math.hypot(pending.cat.x-pending.x,pending.cat.y-pending.y)<12)finishChase();else if(performance.now()-pending.started>10000){cancelChase();toast('蝴蝶停下来了，再试一次吧。','The butterfly is waiting. Try again.');}}
 }
 function reset(){cancelChase();projection=null;if(layer)layer.hidden=true;closePopup();}
-window.GardenExploration=Object.freeze({draw,reset,read,reduce,beginChart:()=>read(rootState()).chartStarted||commit('chart-start'),chartReady:()=>read(rootState()).parts.length===2});
+window.GardenExploration=Object.freeze({draw,reset,read,reduce,journeyKeepsakes,beginChart:()=>read(rootState()).chartStarted||commit('chart-start'),chartReady:()=>read(rootState()).parts.length===2});
 })();

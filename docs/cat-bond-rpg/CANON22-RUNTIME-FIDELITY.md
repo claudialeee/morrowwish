@@ -1,0 +1,8 @@
+# Canon 2.2 fidelity increment — implementation, not visual approval
+- H-02: pursuit constrained to actual perimeter waypoints or explicit low-wall jump. Both proofs are replayed; no diagonal shortcut through arbitrary ground. Graybox wall and fish-lane markers need painted background alignment.
+- R-02/R-03: route-specific visible garden vista vs luminous fungi, recorded discovery proof; bridge gaps remain blocked. The bridge still uses node-to-node movement, not a continuous walking animation; optional wild-cat rescue is not yet implemented.
+- E-01: selected shape and angle persisted with proof; animated audience reacts differently to fish, butterfly or cat. Procedural kitten silhouettes and lantern are graybox, not final art.
+- S-03: upper and lower route scenery feedback and persistent replay proof. Landing on additional islands and restarting from a checkpoint remain unfinished.
+- E-03: earned map, moonleaf, lantern shape, tea cups and flight postcard projected into the garden from actual story/interaction state, not a new progression gate. Art and collision composition require manual review; branch-specific S-04 dialogue and actual joint planting remain unfinished.
+- B-01–03 retains existing verified combat/reply logic; final visual impact and F-04 actual local response evidence still need acceptance. Do not claim complete Canon fidelity.
+- New spatial test covers both chase routes, tampered route and lantern shape, and actual route-specific discovery. Await GitHub browser regression; previous SHA results are not acceptance of this change.
