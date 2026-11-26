@@ -44,7 +44,7 @@ export function mountSkyPendantShot(panel,url){
   }
   // Each repair beat approaches the clasp, makes a small adjustment, then withdraws.
   // Use the real painted cutout rather than a replacement cartoon paw.
-  const repair=[0,1,3,5].includes(cursor),tapping=cursor===11&&tapAt&&t<.55;
+  const repair=[0,1,3].includes(cursor),tapping=cursor===4&&tapAt&&t<.55;
   if(hand&&(repair||tapping)){
    const easing=n=>{n=Math.max(0,Math.min(1,n));return n*n*(3-2*n)};
    const approach=repair?(reduce()?.78:easing(progress/.65)*(1-.85*easing((progress-1.8)/.55))):easing(t/.10)*(1-easing((t-.16)/.37));
@@ -63,7 +63,7 @@ export function mountSkyPendantShot(panel,url){
    const gl=ctx.createRadialGradient(px,py,0,px,py,12);gl.addColorStop(0,"#fff1c5");gl.addColorStop(1,"#fff1c500");ctx.fillStyle=gl;ctx.fillRect(px-12,py-12,24,24);ctx.restore();
   }
   const shade=ctx.createRadialGradient(W*.50,H*.58,H*.20,W*.50,H*.55,W*.62);shade.addColorStop(0,"#15203400");shade.addColorStop(1,"#101d32ac");ctx.fillStyle=shade;ctx.fillRect(0,0,W,H);
-  if(!reduce()&&[1,3,5].includes(cursor)){
+  if(!reduce()&&[1,3].includes(cursor)){
    const p=Math.min(1,(now-start)/1100);const px=W*(.31+p*.27),py=H*.56;
    const glint=ctx.createRadialGradient(px,py,0,px,py,42);glint.addColorStop(0,"rgba(255,230,177,"+(.24*Math.sin(Math.PI*p))+")");glint.addColorStop(1,"#ffe7b100");
    ctx.fillStyle=glint;ctx.fillRect(px-42,py-42,84,84);
@@ -72,12 +72,12 @@ export function mountSkyPendantShot(panel,url){
   if(!reduce()&&(now-start<(repair?2400:1150)||tapAt&&t<.7))raf=requestAnimationFrame(draw);
  }
  function update(next,language){
-  const active=[0,1,3,5,11].includes(next);canvas.setAttribute("aria-label",language==="zh"?"暮铃旧铃坠特写":"Close-up of Muling’s old bell pendant");
+  const active=[0,1,3,4].includes(next);canvas.setAttribute("aria-label",language==="zh"?"暮铃旧铃坠特写":"Close-up of Muling’s old bell pendant");
   if(!active){canvas.hidden=true;delete canvas.dataset.repairAction;cursor=next;cancelAnimationFrame(raf);raf=0;return;}
   if(cursor!==next){delete canvas.dataset.repairAction;cursor=next;start=performance.now();tapAt=0;tapDirection=0;}
   canvas.hidden=!art.naturalWidth;if(!canvas.hidden&&!raf)raf=requestAnimationFrame(draw);
  }
- art.onload=()=>{if([0,1,3,5,11].includes(cursor)){canvas.hidden=false;if(!raf)raf=requestAnimationFrame(draw);}};
+ art.onload=()=>{if([0,1,3,4].includes(cursor)){canvas.hidden=false;if(!raf)raf=requestAnimationFrame(draw);}};
  function tap(index){tapAt=performance.now();tapDirection=index===1?-1:1;if(!canvas.hidden&&!raf)raf=requestAnimationFrame(draw);}
  return {update,tap,dispose(){closed=true;cancelAnimationFrame(raf);art.onload=null;handArt.onload=null;canvas.remove();}};
 }

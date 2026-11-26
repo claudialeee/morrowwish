@@ -40,7 +40,7 @@ function install(){
   if(region==="garden"&&id==="muling"&&v.current?.id==="prologue:P-05"&&!v.openingMet)return openingEncounter(api);
   if(region==="garden"&&(v.ending||skyChapterVisitors(v).includes(id)))return mountHomeConversation(id,api);
   const r=v.current?api.recordNPC({sceneId:v.current.id,npcId:id,region,token:api.captureAction()}):{ok:false};
-  if(r.ok){if(v.current.id==="starfall:F-01"&&!api.view().lineReady){window.__game?.toast?.({zh:"星芽：星图只该有一个中心。去问砾川，他为什么反对。",en:"Xingya: A star chart should have one center. Ask Lichuan why he disagrees."});return true;}api.showCurrent();return true}
+  if(r.ok){if(v.current.id==="epilogue:E-01"){window.__game?.toast?.({zh:"亲眼看见伙伴的新生活。可以回顾旅程了。",en:"You have seen your friends’ new lives. You can revisit the journey now."});return true;}if(v.current.id==="starfall:F-01"&&!api.view().lineReady){const next=api.view().objective[0];window.__game?.toast?.(next==="npc:central-dispute"?{zh:"砾川：那颗假星把商队困住了。去找星芽。",en:"Lichuan: The false star has trapped the caravan. Find Xingya."}:{zh:"先辨认真星，引导商队离开。",en:"Verify the real stars and guide the caravan to safety."});return true;}api.showCurrent();return true}
   const p=api.npcProfile(id);
   if(p){const a=api.ambientAvailable(region).filter(a=>a.npc===id);if(a.length){window.dispatchEvent(new CustomEvent("cat-bond-resonance-npc-profile",{detail:{...p,ambient:a}}));return true}}
   return false;
