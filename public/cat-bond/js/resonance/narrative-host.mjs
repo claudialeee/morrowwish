@@ -4,6 +4,8 @@ import {mountDialogue} from "./dialogue-ui.mjs";
 import {mountKeyExchange} from "./key-exchange.mjs";
 import {isLibraryReveal,mountLibraryReveal} from "./library-reveal.mjs";
 const lang=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
+// A blocked line is a gameplay checkpoint, not a modal dialogue screen.
+const awaitingGameplay=v=>!!v.current&&!v.lineReady&&!( !v.choice&&v.current.choices.length&&(v.current.choiceTiming==="beforeAction"||v.cursor===v.current.lines.length));
 const portraitRoot=new URL("../../assets/npc/",import.meta.url);
 const playerPortraits=new Map();
 function portrait(id){
@@ -31,6 +33,7 @@ function install(){
    game?.toast?.({zh:"回到阳光花园，与暮铃交谈。",en:"Return to Sunlit Garden and speak with Muling."});return false;
   }
   if(v.current.chapter==="starfall"&&(window.WorldMap?.currentRegion!=="starfall"||window.WorldMap?.mode!=="region")){game?.toast?.({zh:"请前往星坠原继续剧情。",en:"Travel to Starfall to continue the story."});return false;}
+  if(awaitingGameplay(v)){if(root)close();return false;}
   if(slot===State.S&&openedScene===v.current.id&&(dialogue||keyExchange)){(dialogue||keyExchange).render();return true}
   close();slot=State.S;openedScene=v.current.id;
   root=document.createElement("div");root.className="cb-story-overlay is-visible res-host";root.dataset.scene=openedScene;stage.append(root);
@@ -69,7 +72,7 @@ function install(){
    if(slot&&slot!==State.S){close();return}
    const v=runtime.view();if(!v.current)return;
    if(["epilogue:E-02","epilogue:E-03"].includes(v.current.id)&&window.__game?.scene!=="yard"){if(root)close();return;}
-   if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.current.lines[v.cursor]?.afterOperations?.length&&!v.lineReady){close();return;}
+   if(dialogue&&slot===State.S&&openedScene===v.current.id&&awaitingGameplay(v)){close();return;}
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.cursor===v.current.lines.length){
     if(v.current.id==="epilogue:E-02"&&v.objective.includes("npc:public-accountability")){const r=runtime.completeNPCScene({sceneId:v.current.id,operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:runtime.capture()});if(!r.ok)return;scheduleFinish();return}
     if(v.current.id==="epilogue:E-03"&&v.objective.includes("npc:second-garden-key")){showKey(runtime.capture());return}
