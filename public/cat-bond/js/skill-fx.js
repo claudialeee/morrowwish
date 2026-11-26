@@ -36,7 +36,8 @@ const LIST=[
 // Salvo/pulse skills (owner 2026-11-25 "多次发出能量波"): one cast releases 3 waves ~0.3s apart.
 // Dark & water flavors, so each gets a distinct hex/orb style with element-tinted trail.
 ['arcanePulse','hex','#b89cff',55,47],
-['tidalPulse','orb','#a0e6ff',54,48]
+['tidalPulse','orb','#a0e6ff',54,48],
+['crescentFan','orb','#e8e2ff',56,49]
 ];
 const REG=Object.fromEntries(LIST.map(([id,style,color,r,seed])=>[id,{style,color,r,seed}]));
 // AUTO-REGISTER generic template skills (#56): the factory in skills.js generates one

@@ -1105,7 +1105,9 @@
     '咳毛球': 'Hairball Hack', '弓背炸毛': 'Puff & Hiss', '拨下桌': 'Knock It Off',
     '舔毛理顺': 'Grooming', '舔伤口': 'Lick Wound', '纸箱埋伏': 'Box Ambush', '疯跑冲刺': 'Zoomies',
     '炸毛墙': 'Startle Static', '戏弄爪': 'Bat-Around', '居高临下': 'High Ground',
-    '咒波三连': 'Hex Triwave', '潮波三叠': 'Tide Triwave',
+    '咒波三连': 'Hex Triwave', '潮波三叠': 'Tide Triwave', '月华连弧': 'Crescent Fan',
+    '踏月之猫的招牌：一次挥出五道追踪月牙能量波，各自咬向最近目标。':
+      'Luna\'s signature — releases five crescent-moon waves at once, each homing onto the nearest target.',
     '蓄一发按出三连暗波：每 0.35 秒一发自动追击当下最近的敌人，不必一次放完。':
       'Hold one cast, release three dark waves — one every 0.35s auto-homes at the nearest enemy, so you don\'t burn it all at once.',
     '一发激起三叠潮波：每 0.3 秒一发自动追击当下最近的敌人，持续淋湿。':

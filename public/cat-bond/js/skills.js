@@ -323,6 +323,11 @@
     { id: 'apexPounce', name: '绝顶扑',   element: 'dark',  kind: 'pounce',     power: 2.3, cd: 4.0, ultCost: 0, heavy: true, upgradeOf: 'shadeLeap', tags: ['dash','heavy'],   appliesTag: null,    vfx: 'beam',      desc: '需要等级与金币双重积累的绝技，重创并击退。', unlock: { level: 12, cost: { coins: 200 } } },
     // ---- 品种专属 (breed-locked signature) ----
     { id: 'moonfang',   name: '月噬牙',   element: 'light', kind: 'aoe',        power: 2.6, cd: 0,   ultCost: 70, tags: ['light','ult','weaken'], appliesTag: ['blind','weaken'], vfx: 'ring', desc: '【必杀·品种专属】唯踏月血脉能领悟的月华獠牙，致盲并削弱。', unlock: { species: ['yuelian','xingchen','yinghua'] } },
+    // YUELIAN (月月) signature skill — a wide fan of 5 crescent-moon energy waves, each auto-homing.
+    // Species-locked so only 月月 learns it; placed below the Lv8 roster so it reads as a mature
+    // crescent arcana, not an early unlock. Slightly higher per-shot power than the generic swarm
+    // (0.52 vs prism/boltSwarm 0.34) + 5 shots + homing + maxLife 2.6s = roughly single-skill DPS.
+    { id: 'crescentFan', name: '月华连弧', element: 'light', kind: 'projectile', power: 0.52, cd: 5.6, ultCost: 0, shots: 5, spread: 0.55, homing: 3.0, maxProjLife: 2.6, tags: ['ranged','blind','moon'], appliesTag: 'blind', vfx: 'orb', desc: '踏月之猫的招牌：一次挥出五道追踪月牙能量波，各自咬向最近目标。', unlock: { species: ['yuelian'], level: 10 } },
     // ---- 领悟条件 (quirky quests) ----
     { id: 'veteranStrike', name: '百战斩', element: 'dark', kind: 'melee',      power: 2.3, cd: 3.4, ultCost: 0, heavy: true, upgradeOf: 'shadowSwipe', tags: ['bleed','heavy'], appliesTag: 'bleed', vfx: 'muzzle', desc: '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。', unlock: { quest: 'battlesWon10' } },
     { id: 'purrNova',   name: '呼噜新星', element: 'fire',  kind: 'aoe',        power: 2.8, cd: 0,   ultCost: 80, tags: ['burn','ult'],     appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】收服众多猫猫后领悟的爆裂新星。', unlock: { quest: 'catchFifteen' } },
