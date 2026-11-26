@@ -27,3 +27,10 @@ export function validReplyProof(regions,proof,stableAt){
   return p?.region===region&&p.next===regions[(i+1)%regions.length]&&times.every(t=>Number.isFinite(t)&&t>=0)&&p.clearAt<=p.firstAt&&p.secondAt-p.firstAt>=.5&&stableAt-p.secondAt>=1&&Number.isSafeInteger(p.interference)&&p.interference>=0&&(p.interference===0?p.interruptedAt===null:Number.isFinite(p.interruptedAt)&&p.interruptedAt<=p.firstAt);
  });
 }
+
+// B-03 already requires six sequential physical replies and a stable interval.
+// Keep each copied source short and the final echo substantial without a second HP grind.
+export function centralEchoHealth(teamMaxHp,isCentral){
+ const hp=Math.max(1,Number.isFinite(teamMaxHp)?teamMaxHp:1);
+ return Math.max(isCentral?55:35,Math.round(hp*(isCentral?1:.12)));
+}

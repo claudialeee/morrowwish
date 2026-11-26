@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {newReplyEdge,clearReplySource,disruptReply,advanceReply,replyProof,validReplyProof} from '../public/cat-bond/js/resonance/canon22-finale-replies.mjs';
+import {newReplyEdge,clearReplySource,disruptReply,advanceReply,replyProof,validReplyProof,centralEchoHealth} from '../public/cat-bond/js/resonance/canon22-finale-replies.mjs';
 import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
 const regions=campaign.regions,edges=regions.map((r,i)=>newReplyEdge(r,regions[(i+1)%regions.length]));
 assert.equal(advanceReply(edges[0],.05,1,true,2),null);assert.equal(edges[0].progress,0);assert.equal(replyProof(edges[0]),null);
@@ -12,3 +12,11 @@ assert.ok(disruptReply(edges[2],36));assert.equal(replyProof(edges[2]),null);ass
 for(let k=1;k<=60&&!edges[2].done;k++)advanceReply(edges[2],.05,36+k*.05,true,2);
 proof=edges.map(replyProof);assert.ok(validReplyProof(regions,proof,41));assert.equal(validReplyProof(regions,proof.map((e,i)=>i===2?{...e,firstAt:35}:e),41),false);
 console.log('Finale reply sources, interruption, independent fresh endpoint replies, stable interval and proof rejection passed');
+
+// Fresh-slot level-one party (138+145 HP), plus larger and solo teams.
+assert.equal(centralEchoHealth(283,true),283);
+assert.equal(centralEchoHealth(283,false),35);
+assert.equal(centralEchoHealth(138,false),35);
+assert.equal(centralEchoHealth(800,false),96);
+assert.equal(centralEchoHealth(800,true),800);
+console.log('Central echo pacing scales with actual team HP while preserving all six reply gates');

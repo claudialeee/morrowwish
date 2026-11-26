@@ -2,7 +2,7 @@ import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud}
 // Real-time finale adapter for the existing CaptureBattle; narrative state remains in the active slot.
 import {campaign} from "./campaign.mjs";
 import {REGION_KITS} from "./regional-combat.mjs";
-import {newReplyEdge,clearReplySource,disruptReply,advanceReply,replyProof,validReplyProof} from "./canon22-finale-replies.mjs";
+import {newReplyEdge,clearReplySource,disruptReply,advanceReply,replyProof,validReplyProof,centralEchoHealth} from "./canon22-finale-replies.mjs";
 export const PHASES=Object.freeze({
  "finale:B-01":"battle:inward-gates",
  "finale:B-02":"battle:identify-echo",
@@ -131,7 +131,8 @@ function install(){
    b.resonanceFinale=f;b.storyEncounter=true;b.captureReady=false;if(id==="finale:B-03")f.nodes.forEach((n,i)=>{n.reply=newReplyEdge(n.region,f.nodes[(i+1)%f.nodes.length].region)});
    b.enemies.forEach((e,i)=>{
      e.isBoss=true;e.rotation=[];e.ultSkill=null;e.specialMeter=-10000;e.fireCd=99999;e.reflectT=0;e.wardCd=99999;
-     e.maxhp=Math.max(55,Math.round(alive(b).reduce((n,x)=>n+x.maxhp,0)*(id==="finale:B-01"?(i===0?1:.20):id==="finale:B-02"?.25:(i===0?1.3:.14))));e.hp=e.maxhp;
+     const teamMaxHp=alive(b).reduce((n,x)=>n+x.maxhp,0);
+     e.maxhp=id==="finale:B-03"?centralEchoHealth(teamMaxHp,i===0):Math.max(55,Math.round(teamMaxHp*(id==="finale:B-01"?(i===0?1:.20):.25)));e.hp=e.maxhp;
      e.poiseMax=e.maxhp;e.poise=e.poiseMax;
      if(id==="finale:B-01"){e.finaleActor=i===0?"muling":"gate";e.gateIndex=i-1;e.combatName=i===0?["暮铃","Muling"]:["逆响锁","Inward lock"];}
      else if(id==="finale:B-02"){e.finaleActor="echo";e.echoGroup=Math.floor(i/2);e.impostor=(i%2)===((f.revision+e.echoGroup)%2);e.echoObserved=0;e.echoFirstBeat=null;e.echoGap=null;

@@ -121,7 +121,9 @@ async function run(chapter){
    const sample=()=>{
     const b=window.__game?.battle;
     if(!b||trace.samples.length>=1800)return;
-    trace.samples.push({t:b.t,duoUses:b.duoUses??null,result:b.result??null,
+    const finale=b.resonanceFinale;
+     trace.samples.push({t:b.t,duoUses:b.duoUses??null,result:b.result??null,
+      finale:finale?{elapsed:finale.elapsed,phase:finale.id,nodes:finale.nodes.map(n=>({region:n.region,done:n.done,integrity:n.integrity,progress:n.progress,cleared:n.reply?.cleared??null,interference:n.reply?.interference??null}))}:null,
      team:(b.team||[]).map(f=>({actor:f.cat?.storyActor||f.cat?.species||null,level:f.cat?.level??null,hp:f.hp,maxhp:f.maxhp,alive:f.alive})),
      enemies:(b.enemies||[]).map(f=>({hp:f.hp,maxhp:f.maxhp,alive:f.alive}))});
    };
@@ -133,7 +135,20 @@ async function run(chapter){
    await page.locator('#cb-forge-result').waitFor({timeout:180000});await shot(operation+'-result');assert.equal(await page.locator('#cb-forge-result h2').innerText(),'FURNACE STABILIZED');await page.locator('[data-forge-return]').click();
   }else if(type==='finale'){
    if(operation==='battle:identify-echo'){await page.waitForFunction(()=>__game.battle?.resonanceFinale?.probeChanged===true||!!document.getElementById('cb-finale-result'),null,{timeout:30000});await shot(operation+'-live-reply');}
-   await page.locator('#cb-finale-result').waitFor({timeout:240000});await shot(operation+'-result');assert.equal(await page.locator('#cb-finale-result').getAttribute('data-finale-outcome'),'saved');await page.locator('[data-finale-return]').click();
+   const result=page.locator('#cb-finale-result');
+    if(operation==='battle:central-echo'){
+     // The runtime has its own active-simulation time cap. CI rendering may run
+     // slower than real time; allow bounded wall-clock headroom, but fail on a frozen simulation.
+     const deadline=Date.now()+360000;let lastT=-1,lastAdvance=Date.now();
+     while(!await result.isVisible()){
+      const state=await page.evaluate(()=>({t:__game.battle?.t,phase:__game.battle?.resonanceFinale?.id,elapsed:__game.battle?.resonanceFinale?.elapsed}));
+      if(Number.isFinite(state.t)&&state.t>lastT){lastT=state.t;lastAdvance=Date.now();}
+      if(Date.now()-lastAdvance>35000||Date.now()>deadline)throw Error('Central echo simulation stalled or exceeded bounded wall time: '+JSON.stringify(state));
+      if(errors.length)throw Error('Central echo browser error: '+errors.join('; '));
+      await page.waitForTimeout(1000);
+     }
+    }else await result.waitFor({timeout:240000});
+    await shot(operation+'-result');assert.equal(await result.getAttribute('data-finale-outcome'),'saved');await page.locator('[data-finale-return]').click();
   }else{
    await page.waitForFunction(()=>__game.scene==='map',null,{timeout:180000});
    await page.locator('#library-battle-ok').waitFor();await shot(operation+'-result');await page.locator('#library-battle-ok').click();
@@ -148,6 +163,7 @@ async function run(chapter){
     clearInterval(trace.timer);delete window.__cbChapterBattleTrace;return trace.samples;
    }).catch(()=>[]);
    measurement.last=measurement.samples.at(-1)||null;
+    if(measurement.status!=='verified win')console.error('BATTLE LAST STATE',operation,JSON.stringify(measurement.last));
    await fs.writeFile(out+'/'+chapter+'-combat.json',JSON.stringify({provenance:'synthetic chapter start, actual browser battles',chapter,battles:battleMeasurements},null,2));
   }
   assert.ok(measurement.samples.length,'Actual combat telemetry is required: '+operation);
