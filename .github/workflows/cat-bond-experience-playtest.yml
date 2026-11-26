@@ -157,6 +157,42 @@ jobs:
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
           CAT_BOND_TARGET_SCENES="$entry" node scripts/cat-bond-experience-targets.mjs
           CAT_BOND_CHAPTERS="$SCOPE" node scripts/cat-bond-experience-chapters.mjs
+      - name: Reload chapter-derived saves and verify checkpoint coverage
+        if: always() && contains(fromJSON('["harbor","forest","forge","sky","library","starfall","finale","epilogue"]'), matrix.scope)
+        run: |
+          root=artifacts/cat-bond-experience/chapter-acceptance/checkpoints/chapter-$SCOPE
+          if [ ! -d "$root" ]; then echo 'No chapter-derived checkpoints available'; exit 1; fi
+          mapfile -d '' fixtures < <(find "$root" -maxdepth 1 -type f -name '*.json' -print0 | sort -z)
+          if [ "${#fixtures[@]}" -eq 0 ]; then echo 'No chapter-derived checkpoints available'; exit 1; fi
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-chapter-replay-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          passed=0
+          failed=0
+          for fixture in "${fixtures[@]}"; do
+            if node scripts/cat-bond-experience-replay.mjs "$fixture" --chapter-derived; then
+              passed=$((passed+1))
+            else
+              failed=$((failed+1))
+              echo "::error::Chapter-derived checkpoint replay failed: $fixture"
+            fi
+          done
+          echo "Chapter-derived replays (NOT fresh campaign): passed=$passed failed=$failed total=${#fixtures[@]}" | tee -a "$GITHUB_STEP_SUMMARY"
+          test "$failed" -eq 0
+          node --input-type=module - "$SCOPE" "$root" <<'JS'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import {campaign} from './public/cat-bond/js/resonance/campaign.mjs';
+          const [chapter,root]=process.argv.slice(2);
+          const expected=campaign.scenes.filter(s=>s.chapter===chapter).slice(1).map(s=>s.id);
+          assert.ok(expected.length,'Chapter must have post-entry scenes');
+          const captured=new Set(fs.readdirSync(root).filter(f=>f.endsWith('.json')).map(f=>JSON.parse(fs.readFileSync(root+'/'+f,'utf8')).scene));
+          const missing=expected.filter(id=>!captured.has(id));
+          console.log('Chapter-derived coverage:',JSON.stringify({chapter,expected,captured:[...captured],missing}));
+          assert.deepEqual(missing,[],'Missing post-entry scene saves');
+          JS
       - name: Generate review packet even after failed playthrough
         if: always() && (matrix.scope == 'opening' || matrix.scope == 'campaign')
         run: node scripts/cat-bond-experience-report.mjs
@@ -176,5 +212,6 @@ jobs:
             /tmp/cb-experience-server.log
             /tmp/cb-rpg-combat-server.log
             /tmp/cb-chapter-server.log
+            /tmp/cb-chapter-replay-server.log
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 30
