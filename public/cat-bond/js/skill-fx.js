@@ -29,7 +29,14 @@ const LIST=[
 ['frostClaw','ice','#a5e0f5',40,40],
 ['boltSwarm','orb','#dce8fe',48,41],['prismSwarm','orb','#fff0c7',48,42],
 ['vineMire','pool','#8fcf86',68,43],['meteor','shockwave','#ff7a3c',74,44],
-['glareField','ring','#fff1a8',70,45]
+['glareField','ring','#fff1a8',70,45],
+// 舔伤口 tank self-heal (owner call 2026-11-25). Warm cream color distinct from
+// 舔毛理顺 (teal aqua for support) and from 慢眨眼 (pink light burst).
+['lickWound','heal','#f6d6a8',52,46],
+// Salvo/pulse skills (owner 2026-11-25 "多次发出能量波"): one cast releases 3 waves ~0.3s apart.
+// Dark & water flavors, so each gets a distinct hex/orb style with element-tinted trail.
+['arcanePulse','hex','#b89cff',55,47],
+['tidalPulse','orb','#a0e6ff',54,48]
 ];
 const REG=Object.fromEntries(LIST.map(([id,style,color,r,seed])=>[id,{style,color,r,seed}]));
 // AUTO-REGISTER generic template skills (#56): the factory in skills.js generates one
@@ -66,6 +73,7 @@ function push(b,v){
  b.skillStrokes.push(v);
 }
 function cast(b,f,sk,aim){
+ if(sk?.id&&!REG[sk.id])syncGenerics();
  if(!b||!f||!REG[sk?.id]||sk?.ultCost||sk?.isBasic)return false;
  // Melee casts already have a physical three-claw VFX in battle.js.
  // A second circular skill glyph used to bury both the paws and the target.
@@ -87,6 +95,7 @@ function support(b,recipient,sk){
  return true;
 }
 function hit(b,target,sk,dealt,continuous=false){
+ if(sk?.id&&!REG[sk.id])syncGenerics();
  if(!b||!target||!REG[sk?.id]||!(dealt>0)||sk?.ultCost)return false;
  if(continuous){
   const key=sk.id+':'+(target.i??target.cat?.uid??'target');
@@ -95,10 +104,10 @@ function hit(b,target,sk,dealt,continuous=false){
   b._sigHitAt.set(key,b.t);
  }
  const g=REG[sk.id],big=(sk.heavy||['melee','dash','leap','pounce'].includes(sk.kind));
- const dur=sk.kind==='melee'?(sk.heavy?.26:.22):(big?.36:.25);
+ const dur=sk.kind==='melee'?(sk.heavy?.37:.30):(big?.40:.25);
  push(b,{kind:'signatureHit',skillId:sk.id,x:target.x,y:target.y,
   angle:Math.atan2(target.y-b.me().y,target.x-b.me().x),
-  life:dur,max:dur,seed:g.seed,heavy:!!big});
+  life:dur,max:dur,seed:g.seed,heavy:!!sk.heavy||['dash','leap','pounce'].includes(sk.kind)});
  return true;
 }
 // Certain move families share a grammar (claw, dash, heal, pounce), but an
@@ -183,7 +192,8 @@ function isMeleeId(id){
 }
 function drawMeleeContact(ctx,v,spec){
  if(v.kind==='signatureCast')return true; // the moving claw brush owns this phase
- const k=clip(v.life/v.max),p=1-k,R=Math.min(32,spec.r*.54);
+ const k=clip(v.life/v.max),p=1-k,R=Math.min(v.heavy?64:49,spec.r*.95+12);
+ drawHeavyImpact(ctx,v,spec);
  const sk=window.Skills?.skillById?.(v.skillId);
  const el=sk?.element||(/^gen_([^_]+)_melee$/.exec(v.skillId)||[])[1]||'fire';
  const heavy=!!v.heavy,spin=(v.seed||0)*.71;
@@ -193,7 +203,7 @@ function drawMeleeContact(ctx,v,spec){
  // Three tiny directional contact splinters, not a second full claw sweep.
  for(let j=-1;j<=1;j++){
   const y=j*R*.29,reach=R*(.40+.08*(j+1))*(1+.18*p);
-  stroke(ctx,j===0?'#fff8ea':spec.color,heavy?2.6:1.7,strength*(j===0?.9:.62));
+  stroke(ctx,j===0?'#fff8ea':spec.color,heavy?5.2:3.6,strength*(j===0?.9:.62));
   ctx.beginPath();ctx.moveTo(-reach*.36,y+R*.13);
   ctx.quadraticCurveTo(reach*.16,y-R*.13,reach,y-R*.21);
   ctx.stroke();
@@ -269,9 +279,265 @@ function drawMeleeContact(ctx,v,spec){
  }
  ctx.restore();return true;
 }
+
+ // Production combat visual pass: deterministic geometry, visual-only debris.
+ const hash=n=>{const q=Math.sin(n*127.1+311.7)*43758.5453;return q-Math.floor(q)};
+ function poly(c,pts,col){c.fillStyle=col;c.beginPath();pts.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fill();}
+ function flare(c,x,y,r,col,alpha=1){
+   if(r<=0)return;const g=c.createRadialGradient(x,y,0,x,y,r);
+   g.addColorStop(0,'#fffdf4');g.addColorStop(.19,col);g.addColorStop(1,'rgba(0,0,0,0)');
+   c.globalAlpha=alpha;c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();
+ }
+ function rock(c,x,y,r,seed,turn){
+   c.save();c.translate(x,y);c.rotate(turn);
+   const pts=Array.from({length:7},(_,i)=>{const a=i*TAU/7,rr=r*(.79+.23*hash(seed+i));return [Math.cos(a)*rr,Math.sin(a)*rr]});
+   poly(c,pts,'#422d35');
+   for(let i=0;i<7;i++)poly(c,[pts[i],pts[(i+1)%7],[-r*.13,-r*.20]],['#a36a45','#734539','#51353c','#48323b','#85553d','#c17c4c','#a36a45'][i]);
+   stroke(c,'#ff983d',Math.max(1,r*.11),Math.min(1,c.globalAlpha*.95));path(c,[pts[1],[-r*.13,-r*.2],pts[4]]);path(c,[[-r*.13,-r*.2],pts[6]]);
+   c.restore();
+ }
+ function meteorPoints(b){
+   return Array.from({length:6},(_,i)=>{const a=i*2.399,rr=i?b.r*(.32+.28*hash(i+8)):0;
+     return {x:b.tx+Math.cos(a)*rr,y:b.ty+Math.sin(a)*rr,r:i?8+hash(i+31)*7:20,lag:i?(.035+i*.055):0};});
+ }
+ function drawMeteorFlight(c,p,time=0){
+   const b=p.burst;if(b?.skill?.id!=='meteor')return false;
+   // The existing lob remains the authoritative damage clock. All rocks
+   // converge on its landing beat; smaller arrivals are decorative only.
+   const remaining=Math.max(0,p.life);
+   c.save();
+   for(const [i,m] of meteorPoints(b).entries()){
+     const q=clip((remaining-m.lag)/(.62+i*.035));
+     c.globalAlpha=.20+.28*(1-q);c.fillStyle='#2e2024';c.beginPath();c.ellipse(m.x,m.y,m.r*(1.2+q),m.r*.46,0,0,TAU);c.fill();
+     if(remaining>m.lag+.62+i*.035)continue;
+     if(q<=0&&i>0){const pop=clip(1-(m.lag-remaining)/.15);flare(c,m.x,m.y,m.r*1.6,'#ff9d42',.42*pop);continue;}
+     const x=m.x-q*116,y=m.y-q*190,r=m.r*(.85+.15*(1-q));
+     c.globalAlpha=.92;
+     const dx=-.52,dy=-.85,tail=50+r*2.4;
+     const g=c.createLinearGradient(x,y,x+dx*tail,y+dy*tail);
+     g.addColorStop(0,'#fff1a4');g.addColorStop(.27,'#ff922e');g.addColorStop(.68,'rgba(224,68,24,.65)');g.addColorStop(1,'rgba(112,43,35,0)');
+     c.fillStyle=g;c.beginPath();c.moveTo(x- r*.85,y+r*.35);
+     c.quadraticCurveTo(x+dx*tail*.52-r,y+dy*tail*.52,x+dx*tail,y+dy*tail);
+     c.quadraticCurveTo(x+dx*tail*.6+r,y+dy*tail*.6,x+r*.85,y-r*.35);c.closePath();c.fill();
+     for(let j=0;j<5;j++){const u=hash(i*17+j+Math.floor(time*14))*.85;point(c,x+dx*tail*u+(hash(j+i)-.5)*r,y+dy*tail*u,1.4+hash(j+9)*2,'#ffb34e');}
+     rock(c,x,y,r,i*11,time*(1+i*.12));
+   }
+   c.restore();return true;
+ }
+ function meteorImpact(b,burst){
+   push(b,{kind:'signatureHit',skillId:'meteor',x:burst.tx,y:burst.ty,r:burst.r,life:1.1,max:1.1,seed:44,meteorGround:true});
+ }
+ function drawMeteorGround(c,v){
+   const age=v.max-v.life,R=v.r||86;
+   c.save();c.translate(v.x,v.y);
+   for(const [i,m] of meteorPoints({tx:0,ty:0,r:R}).entries()){
+     const a=age-(i?i*.035:0);if(a<0)continue;
+     const p=clip(a/.65),fade=clip(v.life/.45),r=m.r;
+     c.globalAlpha=.60*fade;c.fillStyle='#493431';c.beginPath();c.ellipse(m.x,m.y,r*1.65,r*.75,0,0,TAU);c.fill();
+     for(let j=0;j<5;j++){const th=j*TAU/5+hash(i*13+j);const len=r*(1.4+hash(j+7));
+       stroke(c,'#332725',2,fade*.8);path(c,[[m.x,m.y],[m.x+Math.cos(th)*len*.55,m.y+Math.sin(th)*len*.35],[m.x+Math.cos(th+.3)*len,m.y+Math.sin(th+.3)*len*.64]]);}
+     if(a<.34){flare(c,m.x,m.y,r*(1.3+3*p),'#ff9836',clip(1-a/.34)*.9);
+       stroke(c,'#ffd18c',3,clip(1-a/.34));c.beginPath();c.ellipse(m.x,m.y,r*(1+3*p),r*(.4+1.4*p),0,0,TAU);c.stroke();}
+     for(let j=0;j<6;j++){const th=j*TAU/6+hash(i+j),d=r*(.5+p*2.8),x=m.x+Math.cos(th)*d,y=m.y+Math.sin(th)*d*.6-Math.sin(p*PI)*r*1.4;
+       c.globalAlpha=fade*(1-p*.35);rock(c,x,y,2+hash(i*7+j)*3,i*7+j,p*5);}
+     c.globalAlpha=.16*fade;point(c,m.x-7*p,m.y-r*.9-p*15,r*(.7+p),'#b7a29a');
+   }c.restore();return true;
+ }
+ 
+// V5: authored geometry for actual projectiles; positions/radii remain battle-owned.
+// No independent hit or damage event is created by these renderers.
+function drawIdentityProjectile(c,p,time=0){
+ const kind=p.kind;
+ if(!['fireball','lightningOrb','hex'].includes(kind))return false;
+ const r=Math.max(2,p.r||12),angle=Number.isFinite(p.ang)?p.ang:0;
+ c.save();c.translate(p.x,p.y);c.rotate(angle);c.globalAlpha=1;
+ if(kind==='fireball'){
+   // Compressed plasma, NOT a rocky meteor. Long narrow wake; incandescent core.
+   const tail=r*4.8,g=c.createLinearGradient(-tail,0,r,0);
+   g.addColorStop(0,'rgba(140,34,20,0)');g.addColorStop(.36,'rgba(221,61,23,.72)');
+   g.addColorStop(.78,'#ff8b36');g.addColorStop(1,'#ffdc76');
+   c.fillStyle=g;c.beginPath();c.moveTo(r*.66,0);
+   c.bezierCurveTo(r*.8,-r*.92,-r*.55,-r*.97,-tail,-r*.07);
+   c.bezierCurveTo(-r*1.35,r*.30,-r*.37,r*1.01,r*.66,0);c.fill();
+   for(let i=0;i<5;i++){
+     const a=time*15+i*TAU/5,yy=Math.sin(a)*r*.65;
+     stroke(c,i%2?'#ffe6a0':'#ff9c42',r*(i%2?.12:.22),.88);
+     c.beginPath();c.moveTo(-r*2.9,yy*.35);c.bezierCurveTo(-r*1.35,yy,-r*.15,-yy,r*.58,yy*.3);c.stroke();
+   }
+   const core=c.createRadialGradient(r*.22,-r*.17,0,0,0,r);
+   core.addColorStop(0,'#ffffe9');core.addColorStop(.34,'#fff0a2');
+   core.addColorStop(.66,'#ffad39');core.addColorStop(1,'#df4a1c');
+   c.globalAlpha=1;point(c,0,0,r*.85,core);
+   for(let j=0;j<9;j++){
+     const u=(time*4+j/9)%1,yy=(hash(j+5)-.5)*r*(1+u);
+     c.globalAlpha=(1-u)*.84;point(c,-r*(1+u*3.8),yy,1+hash(j)*1.7,'#ffd078');
+   }
+ }else if(kind==='lightningOrb'){
+   // Slow spherical electrical volume, with rotating internal arcs and surface forks.
+   flare(c,0,0,r*2.35,'#8da4ff',.28);
+   const g=c.createRadialGradient(-r*.22,-r*.28,0,0,0,r);
+   g.addColorStop(0,'#ffffeb');g.addColorStop(.36,'#f7db88');g.addColorStop(.73,'#a49de8');g.addColorStop(1,'#394283');
+   c.globalAlpha=.96;point(c,0,0,r,g);
+   for(let j=0;j<6;j++){
+     const a=time*5+j*TAU/6,pts=[];
+     for(let i=0;i<=8;i++){const t=i/8,rr=r*(.46+.75*t),th=a+Math.sin(i*2.4+j+time*21)*.24;pts.push([Math.cos(th)*rr,Math.sin(th)*rr]);}
+     stroke(c,'#5767cf',4.5,.60);path(c,pts);stroke(c,'#fff5c7',1.65,.95);path(c,pts);
+   }
+   for(let j=0;j<3;j++){stroke(c,'#d8e2ff',1.2,.85);c.beginPath();c.ellipse(0,0,r*.96,r*.36,time*4+j*PI/3,0,TAU);c.stroke();}
+ }else{
+   // Curse is a readable hollow sigil, not another damage orb.
+   c.rotate(time*2.4);for(let j=0;j<3;j++){stroke(c,j===0?'#492961':'#d9a9f8',j===0?5:1.8,.86);
+   c.beginPath();for(let i=0;i<=6;i++){let a=i*TAU/6+j*.36,rr=r*(1-j*.21);i?c.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):c.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}c.stroke();}
+   flare(c,0,0,r*.75,'#a167d1',.38);
+ }
+ c.restore();return true;
+}
+function drawIdentityMotion(c,v,time=0){
+ const id=v.skillId,water=id==='gen_water_dash'||id==='knockOff',
+ dark=id==='gen_dark_dash'||id==='shadeLeap'||id==='apexPounce',
+ elec=id==='staticPounce'||id==='voltRush',grass=id==='quakeStomp',
+ light=id==='highGround',fire=id==='gen_fire_dash';
+ if(!(water||dark||elec||grass||light||fire))return false;
+ const k=clip(v.life/Math.max(.001,v.max)),p=1-k,cast=v.kind==='signatureCast';
+ const col=water?'#75dff9':dark?'#c39df1':elec?'#f5dd79':grass?'#b8c18b':light?'#fff0bb':'#ff9750';
+ c.save();c.translate(v.x,v.y);c.rotate(v.angle||0);
+ if(cast){
+   // Local movement accent: never fake a distant hit or second actor.
+   if(elec){
+     for(let i=-2;i<=2;i++){const y=i*9;stroke(c,i%2?'#a9b7ff':'#fff5b5',i===0?3.4:1.8,k*.88);
+       path(c,[[-48,y],[-29,y-7],[-19,y+3],[-5,y-4],[14,y]]);}
+   }else if(water){
+     for(let j=0;j<4;j++){stroke(c,j%2?'#d8faff':'#369abf',4-j*.5,k*.85);
+       c.beginPath();c.moveTo(-48,j*9-14);c.bezierCurveTo(-32,-27+j*9,-13,12+j*6,19,j*5-8);c.stroke();}
+   }else if(dark){
+     for(let j=0;j<4;j++){c.globalAlpha=k*(.19+j*.1);c.fillStyle=j%2?'#634182':'#30243e';c.beginPath();c.moveTo(12,0);c.quadraticCurveTo(-8,-24+j*6,-61+j*7,-15+j*10);c.quadraticCurveTo(-23,28-j*4,12,0);c.fill();}
+   }else if(grass||light){
+     for(let j=0;j<5;j++){const x=-28+j*13;stroke(c,col,2.2,k*.85);path(c,[[x,18],[x+Math.sin(j)*6,-12-j%2*7]]);}
+   }else{
+     for(let j=0;j<5;j++){stroke(c,j%2?'#fff1b7':col,4,k*.8);path(c,[[-48,j*8-20],[-18,j*5-12],[10,j*4-8]]);}
+   }
+ }else if(grass){
+   c.globalAlpha=k*.65;c.fillStyle='#4d4539';c.beginPath();c.ellipse(0,0,30+18*p,12+9*p,0,0,TAU);c.fill();
+   for(let j=0;j<8;j++){const a=j*TAU/8,rr=12+36*p;stroke(c,'#49372d',2,k);path(c,[[0,0],[Math.cos(a)*rr*.6,Math.sin(a)*rr*.35],[Math.cos(a+.17)*rr,Math.sin(a+.17)*rr*.63]]);c.globalAlpha=k;rock(c,Math.cos(a)*rr,Math.sin(a)*rr*.65-10*Math.sin(p*PI),3+hash(j)*3,j,p*5);}
+ }else if(water){
+   for(let j=0;j<11;j++){const a=j*TAU/11,rr=(12+28*p);stroke(c,j%2?'#e6fcff':'#65c9ec',2.5,k);path(c,[[Math.cos(a)*rr*.42,Math.sin(a)*rr*.42],[Math.cos(a)*rr,Math.sin(a)*rr]]);}
+ }else if(dark){
+   for(let j=0;j<3;j++){stroke(c,j===1?'#f6dcff':'#71469c',j===1?2.8:5,k*.9);c.beginPath();c.moveTo(-24,-16+j*9);c.quadraticCurveTo(15,-25+j*10,31,5+j*7);c.stroke();}
+ }else{
+   flare(c,0,0,22+11*p,col,k*.6);
+   for(let j=0;j<7;j++){const a=j*TAU/7,rr=12+28*p;stroke(c,j%2?col:'#fff9db',2,k);path(c,[[Math.cos(a)*rr*.5,Math.sin(a)*rr*.5],[Math.cos(a)*rr,Math.sin(a)*rr]]);}
+ }
+ c.restore();return true;
+}
+function drawElectricStream(c,b,time,ex,ey){
+ const x=b._ox,y=b._oy,L=Math.hypot(ex-x,ey-y);if(L<1)return true;
+ const w=Math.max(5,(b.width||26)*.46),alpha=clip(Math.min((b.max-b.t)/.07,b.t/.12));
+ c.save();c.translate(x,y);c.rotate(Math.atan2(ey-y,ex-x));
+ // One continuously connected trunk with several independent, narrower branches.
+ for(let strand=0;strand<4;strand++){
+   const pts=[[0,0]],step=Math.floor(time*24);
+   for(let j=1;j<=24;j++){let u=j/24,edge=Math.sin(PI*u),off=(hash(step*61+j*19+strand*181)-.5)*w*(strand?2.4:1.35)*edge;pts.push([u*L,off]);}
+   stroke(c,'#5446a5',strand===0?w*1.65:5,alpha*.28);path(c,pts);
+   stroke(c,strand===0?'#d1ceff':'#9d9bff',strand===0?6:2.5,alpha*.85);path(c,pts);
+   stroke(c,'#fff8d2',strand===0?2.7:1.2,alpha);path(c,pts);
+   if(strand===0)for(let j=4;j<23;j+=4){const [xx,yy]=pts[j],side=j%3===0?1:-1;stroke(c,'#c8c0ff',1.5,alpha*.72);path(c,[[xx,yy],[xx+L*.026,yy+side*w*.85],[xx+L*.055,yy+side*w*.55],[Math.min(L,xx+L*.075),yy+side*w*1.3]]);}
+ }
+ flare(c,0,0,w*1.15,'#bcb4ff',alpha*.64);flare(c,L,0,w*1.05,'#fff1b0',alpha*.52);
+ c.restore();return true;
+}
+
+ function drawCombatBeam(c,b,time,ex,ey){
+   if(b.sk?.id==='thunderStream')return drawElectricStream(c,b,time,ex,ey);
+   const fire=b.sk?.id==='flameSweep',water=b.sk?.id==='waterJet';
+   if(!fire&&!water)return false;
+   const x=b._ox,y=b._oy,L=Math.hypot(ex-x,ey-y);if(L<1)return true;
+   const angle=Math.atan2(ey-y,ex-x),age=b.max-b.t,alpha=Math.min(1,age/.09,b.t/.12);
+   const w=(b.width||26)*(fire?.72:.43);
+   c.save();c.translate(x,y);c.rotate(angle);c.lineCap='round';c.lineJoin='round';
+   // Separate physical materials: turbulent combustion vs dense moving liquid.
+   // The hit box is untouched. Core width stays inside the real damage corridor.
+   const A=clip(alpha),N=36;
+   for(const [layer,mul,colors,opacity] of (fire?
+     [[0,1.55,['#7c2c26','#d34923','#7d2e20'],.45],[1,1.03,['#ff9d30','#f56923','#fca23c'],.95],[2,.63,['#fff2a4','#ffcf4d','#fff0ae'],1],[3,.25,['#ffffeb','#fff4b8','#ffffe2'],1]]:
+     [[0,1.63,['#1a658c','#48a5ce','#247bac'],.35],[1,1.12,['#1f8bb8','#41c4e7','#227ca4'],.95],[2,.70,['#a8f3ff','#68daf3','#c4f8ff'],.95],[3,.25,['#efffff','#ddfcff','#fff'],.97]])){
+     c.globalAlpha=A*opacity;
+     const grad=c.createLinearGradient(0,-w*mul,0,w*mul);
+     grad.addColorStop(0,colors[0]);grad.addColorStop(.48,colors[1]);grad.addColorStop(1,colors[2]);c.fillStyle=grad;c.beginPath();
+     for(const side of [-1,1])for(let j=0;j<=N;j++){
+       const u=(side===-1?j:N-j)/N,edge=(.35+.65*Math.min(1,u*9))*(1-(fire?.18:.04)*u);
+       const phase=u*(fire?31:22)-time*(fire?28:34);
+       const turbulence=fire?Math.sin(phase+side+layer)*.19+Math.sin(phase*2.31-layer*1.7)*.09:Math.sin(phase+layer)*.12+Math.cos(phase*1.6+side)*.065;
+       const yy=side*w*mul*edge*(1+turbulence*(layer===3?.24:1));
+       if(side===-1&&j===0)c.moveTo(u*L,yy);else c.lineTo(u*L,yy);
+     }c.closePath();c.fill();
+   }
+   for(let j=0;j<(fire?32:26);j++){
+     const u=((j/32+time*(fire?1.25:1.9))%1+1)%1,side=hash(j+3)>.5?1:-1;
+     const yy=side*w*(.15+.76*hash(j+20)),xx=u*L,span=Math.min(L-xx,12+hash(j+6)*33);
+     stroke(c,fire?(j%3?'#ffce66':'#fff5d2'):(j%3?'#d5fcff':'#227eae'),1+hash(j)*2,A*(.35+hash(j+7)*.45));
+     c.beginPath();c.moveTo(xx,yy);c.quadraticCurveTo(xx+span*.48,yy+Math.sin(time*20+j)*w*.25,xx+span,yy*.76);c.stroke();
+     if(fire&&j%3===0){
+       c.globalAlpha=A*.78;point(c,xx,yy*1.35,1.2+hash(j)*1.5,'#ffd18b');
+     }
+   }
+   flare(c,0,0,w*1.08,fire?'#ffc758':'#b9f5ff',A*.70);
+   if(water){
+     // Pressurized white foam, directional spray; do not create a second damage area.
+     flare(c,L,0,w*1.85,'#91edff',A*.64);
+     for(let j=0;j<19;j++){
+       const u=(time*3+j/19)%1,th=(hash(j+18)-.5)*PI*1.8;
+       const xx=L+Math.cos(th)*u*w*2.5,yy=Math.sin(th)*u*w*3.3;
+       stroke(c,j%3?'#d7faff':'#55c9ed',1.5+hash(j)*2,A*(1-u)*.82);
+       path(c,[[xx,yy],[xx-Math.cos(th)*w*.48,yy-Math.sin(th)*w*.5]]);
+     }
+   }
+   c.restore();return true;
+ }
+ function drawHeavyImpact(c,v,spec){
+   const p=1-clip(v.life/v.max),a=clip(v.life/.24),r=36+(v.heavy?14:0);
+   c.save();c.translate(v.x,v.y);c.rotate(v.angle||0);
+   if(p<.5)flare(c,0,0,r*.9,spec.color,a*(1-p*2)*.8);
+   for(let i=0;i<9;i++){const th=i*2.399,dist=r*(.18+p*.98),x=Math.cos(th)*dist,y=Math.sin(th)*dist*.72;
+     stroke(c,i%3===0?'#fff9e7':spec.color,2.5*(1-p)+.6,a*.85);
+     path(c,[[x,y],[x+Math.cos(th)*r*.26,y+Math.sin(th)*r*.22]]);}
+   c.restore();
+ }
+
+
+// Support effects use separate material silhouettes rather than generic rings.
+function drawIdentitySupport(c,v,time=0){
+ const id=v.skillId,shield=id==='bubbleVeil'||id==='guardStance',heal=id==='grooming'||id==='dawnHeal'||id==='tenderPaw',plant=id==='photosynth',aura=id==='blessFur',counter=id==='puffHiss';
+ if(!(shield||heal||plant||aura||counter)||v.kind!=='signatureCast')return false;
+ const k=clip(v.life/Math.max(.001,v.max)),p=1-k;
+ c.save();c.translate(v.x,v.y);
+ if(shield){
+   const r=27+6*ease(p),g=c.createRadialGradient(-r*.25,-r*.32,0,0,0,r);
+   g.addColorStop(0,'rgba(220,252,255,.02)');g.addColorStop(.72,'rgba(98,199,230,.12)');g.addColorStop(1,'rgba(209,251,255,.65)');
+   c.globalAlpha=k;point(c,0,0,r,g);
+   for(let j=0;j<3;j++){stroke(c,j===0?'#f4ffff':'#6ebad9',j===0?2.7:1.6,k*.95);c.beginPath();c.arc(0,0,r-j*2,-2.7+j*.35,.08+j*.45);c.stroke();}
+   if(id==='guardStance'){stroke(c,'#f5d28d',3,k);path(c,[[-17,6],[0,-19],[17,6],[0,23],[-17,6]]);}
+ }else if(plant){
+   for(let j=0;j<6;j++){
+     const a=j*TAU/6,x=Math.cos(a)*29,y=Math.sin(a)*13,stem=18*ease(p);
+     stroke(c,'#649e4a',2.4,k);c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x-5,y-stem*.5,x,y-stem);c.stroke();
+     c.globalAlpha=k*.9;poly(c,[[x,y-stem],[x-12,y-stem-5],[x-7,y-stem+5]],'#a9d875');poly(c,[[x,y-stem],[x+12,y-stem-5],[x+7,y-stem+5]],'#e1eca2');
+   }
+ }else if(counter){
+   for(let j=0;j<12;j++){const a=j*TAU/12,r=23+4*ease(p),x=Math.cos(a)*r,y=Math.sin(a)*r*.75; c.globalAlpha=k*.8;poly(c,[[x-3,y+3],[x+Math.cos(a)*15,y+Math.sin(a)*12],[x+5,y+1]],j%2?'#ffe0a7':'#bd5b32');}
+ }else{
+   const color=aura?'#f9cf7c':id==='grooming'?'#aee8db':'#ffd6d5';
+   for(let j=0;j<(aura?8:6);j++){const a=j*TAU/8+time*.9,phase=(p+j/8)%1,x=Math.cos(a)*(aura?40:24),y=15+Math.sin(a)*8-phase*36;
+     c.globalAlpha=k*Math.sin(PI*phase);if(aura){poly(c,[[x-3,y],[x,y-8],[x+3,y],[x,y+8]],color);}else{stroke(c,color,2.8,k*Math.sin(PI*phase));path(c,[[x-4,y],[x+4,y]]);path(c,[[x,y-4],[x,y+4]]);}}
+ }
+ c.restore();return true;
+}
+
 function draw(ctx,v,time=0){
+ if(v?.meteorGround)return drawMeteorGround(ctx,v);
  const spec=REG[v?.skillId];if(!spec||!ctx)return false;
  if(isMeleeId(v.skillId))return drawMeleeContact(ctx,v,spec);
+ if(drawIdentityMotion(ctx,v,time))return true;
+ if(drawIdentitySupport(ctx,v,time))return true;
  const p=1-clip(v.life/Math.max(.001,v.max)),k=clip(v.life/v.max),r=spec.r;
  const cast=v.kind==='signatureCast',angle=v.angle||0;
  ctx.save();ctx.translate(v.x,v.y);ctx.rotate(angle);
@@ -535,5 +801,5 @@ window.CatBondSkillFX={
  // access, so it reflects the full roster however the modules were load-ordered.
  get ids(){ syncGenerics(); return LIST.map(row=>row[0]); },
  has:id=>{ if(!REG[id])syncGenerics(); return !!REG[id]; },
- cast,support,hit,draw,drawStatus,drawDizzyStars};
+ cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawCombatBeam,drawIdentityProjectile};
 })();
