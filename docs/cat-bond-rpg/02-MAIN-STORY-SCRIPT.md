@@ -102,11 +102,13 @@
 
 ### harbor:H-01 · 会逃跑的铃声 / Catch that chime
 
-**实机事件与推进：** 集市不是任意魔法展示。当地猫在门前挂不同的铃，家猫用两声短铃叫对方回家。开场栖蓝正在帮一位老猫辨认门铃；她摇自己家的铃，老猫却往相反方向走，经过自家门口时仍认不出门。栖蓝扶她坐在鱼摊边；她摸出给家里小猫买的糖，却想不起该给谁。玩家看到的是一个具体的人失去生活，不只是铃变响。街上突然有一团卷着铃舌碎光的小回响，照搬刚才的呼唤，令所有门铃响成同一声。主角无意中哼出曲子的下一句，小回响立刻沿旧铃房方向退去（它重复旧旋律和路径，并非有意引诱）。主角主动追：想知道自己怎么会唱。暮铃察觉老猫的处境，先把糖包放好、请摊主照看她，再与主角追上去；她没有声称知道回响来自哪里。她需要主角的第一音恢复六铃，但也真心想陪伴主角；后续 M-04 必须由她承认两重动机，不能让玩家误以为一切友情都是演戏。若跳过序章，此处补一句星铃旧灾和近期遗忘。
+**实机事件与推进：** 集市不是任意魔法展示。当地猫在门前挂不同的铃，家猫用两声短铃叫对方回家。开场栖蓝正在帮一位老猫辨认门铃；她摇自己家的铃，老猫却往相反方向走，经过自家门口时仍认不出门。栖蓝扶她坐在鱼摊边；她摸出给家里小猫买的糖，却想不起该给谁。玩家看到的是一个具体的人失去生活，不只是铃变响。街上突然有一团卷着铃舌碎光的小回响，照搬刚才的呼唤，令所有门铃响成同一声。主角无意中哼出曲子的下一句，小回响立刻沿旧铃房方向退去（它重复旧旋律和路径，并非有意引诱）。主角主动追：想知道自己怎么会唱。暮铃察觉老猫的处境，先把糖包放好、请摊主照看她，再与主角追上去；她没有声称知道回响来自哪里。她需要主角的第一音恢复六铃，但也真心想陪伴主角；后续 M-04 必须由她承认两重动机，不能让玩家误以为一切友情都是演戏。若跳过花园初遇，暮铃此处先自报姓名；若跳过背景页，此处补一句星铃旧灾和近期遗忘。
 
 **关键对白（ZH / EN）：**
 
 - 栖蓝：阿婆，是这儿！你家铃上系着蓝绳呢。……哎？怎么全响了？ / Gran, over here! Yours has a blue ribbon. …Hey, why are they all ringing?
+- 暮铃（未在花园相识）：我叫暮铃。你也听见那声怪铃了？ / I'm Muling. Did you hear that strange chime too?
+- 暮铃（跳过背景页）：以前星铃碎过一次，那时也是这样，到处有猫忘事。 / The Star Bell broke once before. Cats all over started forgetting, just like this.
 - 主角：等一下……这调子我好像会。 / Wait… I think I know this tune.
 - 暮铃：它往旧铃房去了。走，别跟丢。 / It's heading for the old bell house. Come on.
 
@@ -348,7 +350,8 @@
 - 假暮铃：过来，我在这儿。 / Come here, I'm over here.
 - 主角：暮铃，老办法！ / Muling, our usual signal!
 - 暮铃（等玩家摇完才回两声）：听见了。过来吧。 / Heard you. Come on over.
-- 主角：我都换地方了，你还找得到我。是你！ / I moved, and you still found me. It's you!
+- 主角（换位置后）：我都换地方了，你还找得到我。是你！ / I moved, and you still found me. It's you!
+- 主角（改变节奏后）：这回我没按老节奏，你还是接上了。是你！ / I changed the rhythm, and you still answered. It's you!
 
 ### library:M-03 · 原来你认识我 / You knew me
 
@@ -532,11 +535,11 @@
 
 ### epilogue:E-02 · 道歉不只是说对不起 / More than an apology
 
-**实机事件与推进：** 暮铃主动承认自己松开封印、使别猫面临失忆；受影响猫可不立即原谅。玩家可陪伴、倾听或给空间。可选后日谈修复实际损害，不设道德分数或每日重复劳动。
+**实机事件与推进：** 返园途中可直接在花园门边遇到来检查家铃的檐灯，不要求额外地区重访；暮铃主动向他承认自己松开封印、使别猫面临失忆。他不替全镇宣布原谅。受影响猫可不立即原谅。玩家可陪伴、倾听或给空间。可选后日谈修复实际损害，不设道德分数或每日重复劳动。
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：封印是我打开的。阿婆连小孙子都忘了……是我害的。对不起。我先帮你把坏掉的家铃修好，行吗？ / I opened the seal. Gran forgot her own grandson… because of me. I'm sorry. Can I start by helping you mend the damaged house bells?
+- 暮铃：封印是我打开的。阿婆连家里的小猫都忘了……是我害的。对不起。我先帮你把坏掉的家铃修好，行吗？ / I opened the seal. Gran forgot the kitten waiting at home… because of me. I'm sorry. Can I start by helping you mend the damaged house bells?
 - 檐灯：那就从这儿开始吧。别的事，慢慢来。 / Then let's start here. The rest will take time.
 
 ### epilogue:E-03 · 第二把钥匙 / The second key
