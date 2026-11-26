@@ -2159,8 +2159,9 @@ class CaptureBattle {
     // for the update loop to release. Projectiles fly with light homing (sk.pulseHoming).
     if(sk.pulseCount && sk.pulseCount > 1){
       this._pulseQueue = this._pulseQueue || [];
-      const projKind = sk.element==='water' ? 'orb' : sk.element==='dark' ? 'hex' : 'orb';
-      const projR = sk.element==='dark' ? 12 : 11;
+      const projKind = sk.id==='crescentFan' ? 'crescent'
+        : sk.element==='water' ? 'orb' : sk.element==='dark' ? 'hex' : 'orb';
+      const projR = sk.id==='crescentFan' ? 14 : sk.element==='dark' ? 12 : 11;
       const spd = f.projSpeed*0.86, life = 1.9;
       // Wave 1 — immediate, uses the input aim.
       this.spawnProj(ex,ey,aim,spd,baseDmg,'me',col,projR,projKind,
@@ -3305,6 +3306,10 @@ class CaptureBattle {
     if (f._castSlow > 0) m *= 0.5;          // sluggish recovery after a heavy cast
     if ((f.reflectT || 0) > 0) m *= 0.5; // directional reflect wall: half movement speed
     if ((f.hasteT || 0) > 0) m *= 1.25;  // 静电舔毛 haste: brief move speed-up (elec heal tweak)
+    // TRAIT FLAGS (V4 audit #8): passives can set _speedMult (yinghua/yuelian support
+    // allies), _slowMult (yinghua binding), applied here so cat+ally movement reacts.
+    if (f._speedMult) m *= f._speedMult;
+    if (f._slowMult) m *= f._slowMult;
     return m;
   }
   canUltimate(){ return this.ult>=100 && this.ultCd<=0 && !this.ultCinematic; }
@@ -6534,6 +6539,38 @@ class CaptureBattle {
         ctx.quadraticCurveTo(2,-9,16,0);ctx.quadraticCurveTo(2,9,-14,0);ctx.fill();
         ctx.strokeStyle='#efffd5';ctx.lineWidth=1.5;
         ctx.beginPath();ctx.moveTo(-11,0);ctx.lineTo(13,0);ctx.stroke();
+      }else if(p.kind==='crescent'){
+        // 月华连弧: a glowing crescent-moon wave, each pulse flies toward its target.
+        // Shape = outer bezier arc + inner bezier notch (same lineage as moonfang
+        // ult). Rotates to match travel direction so it reads as a "slice" cutting
+        // forward, not a disc.
+        ctx.rotate(p.ang + Math.PI/2);
+        const r = p.r;
+        ctx.globalAlpha = 0.92;
+        ctx.fillStyle = '#f5edff';
+        ctx.beginPath();
+        ctx.moveTo(0, -r);
+        ctx.bezierCurveTo(r*1.35, -r*.5, r*1.35, r*.5, 0, r);
+        ctx.bezierCurveTo(r*.42, r*.55, r*.42, -r*.55, 0, -r);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 0.95; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -r);
+        ctx.bezierCurveTo(r*1.35, -r*.5, r*1.35, r*.5, 0, r);
+        ctx.stroke();
+        ctx.globalAlpha = 0.60; ctx.strokeStyle = '#b9b6e6'; ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(0, -r*.88);
+        ctx.bezierCurveTo(r*.45, -r*.5, r*.45, r*.5, 0, r*.88);
+        ctx.stroke();
+        // trailing sparkles
+        ctx.globalAlpha = 0.75; ctx.fillStyle = '#fffbea';
+        for(let s=0;s<3;s++){
+          ctx.beginPath();
+          ctx.arc(-r*0.1-s*3, (s%2?1:-1)*r*.25, 1.5, 0, Math.PI*2);
+          ctx.fill();
+        }
       }else if(p.kind==='lightningOrb'){
         // Unmistakable slow, crackling ORB, not a yellow generic bullet.
         const pulse=.94+.10*Math.sin(this.t*21);
