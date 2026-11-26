@@ -1116,6 +1116,16 @@ if(cgEmbed&&document.head){
   html.cg-play #stage>.in-game-top{width:100%!important;max-width:990px!important;min-height:43px!important;padding:4px 9px!important;flex:0 0 auto!important}
   html.cg-play #stage>.playfield{box-sizing:border-box!important;width:min(100%,calc((100dvh - 138px)*10/7))!important;height:auto!important;max-width:100%!important;max-height:calc(100dvh - 138px)!important;aspect-ratio:10/7!important;flex:0 1 auto!important;margin:0 auto!important}
   html.cg-play #stage>.playfield canvas{width:100%!important;height:100%!important;aspect-ratio:10/7!important}
+  /* Small embedded windows: keep the status and settings on one compact row.
+     The tutorial stays above the board, not over its playable tiles. */
+  @media(min-width:701px) and (max-height:550px){
+   html.cg-play #stage>.in-game-top{padding:3px 6px!important;gap:2px!important}
+   html.cg-play .in-game-head-row{display:grid!important;grid-template-columns:minmax(100px,1fr) max-content max-content!important;grid-template-areas:"room status tools"!important;gap:5px!important;padding:2px 6px!important;height:auto!important;min-height:42px!important}
+   html.cg-play .in-game-head-row #stageControls{grid-area:tools!important;width:auto!important;max-width:none!important}
+   html.cg-play .in-game-guidance{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)!important;gap:6px!important;padding:3px 6px!important}
+   html.cg-play .in-game-actions #tool,html.cg-play .in-game-actions #wait,html.cg-play .in-game-actions #restart{min-height:39px!important}
+   html.cg-play #stage>.playfield{flex:0 0 auto!important;align-self:center!important;width:min(100%,calc((100dvh - 138px)*10/7))!important;height:min(calc(100vw * .7),calc(100dvh - 138px))!important}
+  }
   @media(max-width:850px){
    html.cg-play #bonusQuick .bonus-star,html.cg-play #bonusQuickProgress{display:none!important}
    html.cg-play #bonusQuick{padding:3px 6px!important;gap:0!important}
