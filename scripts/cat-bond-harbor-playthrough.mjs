@@ -43,6 +43,17 @@ try {
        if(await atlas.count()&&await all.first().evaluate(el=>!!el.closest('.rw-atlas-menu'))){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
        const region=world.locator('.rw-region-toggle[aria-expanded="false"]');
        if(await region.count()&&await all.first().evaluate(el=>!!el.closest('#rw-region-actions'))){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
+       // Optional exploration is nested under its own details element.
+       const optional=world.locator('.rw-optional-actions:not([open]) > summary');
+       if(!await target.isVisible()&&await optional.count()&&await all.first().evaluate(el=>!!el.closest('.rw-optional-actions'))){
+        if(await optional.first().isVisible())await optional.first().click();
+        else{
+         const pages=Number(await world.getAttribute('data-fit-pages')||1),prev=world.locator('[data-fit-prev]'),next=world.locator('[data-fit-next]');
+         for(let i=0;i<pages&&await prev.isVisible()&&await prev.isEnabled()&&!await optional.first().isVisible();i++)await prev.click();
+         for(let i=0;i<pages&&await next.isVisible()&&await next.isEnabled()&&!await optional.first().isVisible();i++)await next.click();
+         if(await optional.first().isVisible())await optional.first().click();
+        }
+       }
        if(await target.isVisible())return;
        const count=Number(await world.getAttribute('data-fit-pages')||1),next=world.locator('[data-fit-next]'),prev=world.locator('[data-fit-prev]');
        const press=async locator=>options.hasTouch?locator.tap():locator.click();

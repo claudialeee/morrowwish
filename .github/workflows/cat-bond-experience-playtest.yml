@@ -12,9 +12,9 @@ on:
   workflow_dispatch:
     inputs:
       scope:
-        description: 'opening (fast) or campaign (deep authored route)'
+        description: 'opening, campaign, targets, or one full chapter'
         type: choice
-        options: [opening, campaign, targets]
+        options: [opening, campaign, targets, harbor, forest, forge, sky, library, starfall, finale, epilogue]
         default: opening
 permissions:
   contents: read
@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scope: ${{ fromJSON(github.event_name == 'push' && '["opening","campaign","targets"]' || format('["{0}"]', inputs.scope || 'opening')) }}
+        scope: ${{ fromJSON(github.event_name == 'push' && '["opening","campaign","targets","harbor","forest","forge","sky","library","starfall","finale","epilogue"]' || format('["{0}"]', inputs.scope || 'opening')) }}
     env:
       CAT_BOND_EXPERIENCE: '1'
       PROLOGUE_LANG: zh
@@ -63,9 +63,9 @@ jobs:
           node scripts/test-cat-bond-player-first.mjs
           node scripts/test-cat-bond-canon12-campaign.mjs
           node scripts/test-cat-bond-story-party.mjs
-        if: matrix.scope != 'campaign'
+        if: matrix.scope != 'campaign' && (matrix.scope == 'opening' || matrix.scope == 'targets')
       - name: Real browser evidence on loopback only
-        if: always() && matrix.scope != 'targets'
+        if: always() && (matrix.scope == 'opening' || matrix.scope == 'campaign')
         run: |
           node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-experience-server.log 2>&1 &
           server=$!
@@ -78,7 +78,7 @@ jobs:
             CAT_BOND_FULL_CAMPAIGN=0 node scripts/cat-bond-release-prologue-qa.mjs
           fi
       - name: Verify real save checkpoint reload
-        if: always() && matrix.scope != 'targets'
+        if: always() && (matrix.scope == 'opening' || matrix.scope == 'campaign')
         run: |
           fixture=$(find artifacts/cat-bond-experience/checkpoints -name 'harbor-H-01-*.json' -print -quit 2>/dev/null || true)
           if [ -z "$fixture" ]; then echo 'No Harbor checkpoint available'; exit 1; fi
@@ -106,17 +106,30 @@ jobs:
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
           node scripts/cat-bond-experience-rpg-combat.mjs
-      - name: Complete every chapter independently using real inputs
-        if: always() && matrix.scope == 'targets'
+      - name: Complete one entire chapter using real inputs
+        if: contains(fromJSON('["harbor","forest","forge","sky","library","starfall","finale","epilogue"]'), matrix.scope)
         run: |
+          case "$SCOPE" in
+            harbor) entry=harbor:H-01 ;;
+            forest) entry=forest:R-01 ;;
+            forge) entry=forge:E-01 ;;
+            sky) entry=sky:S-01 ;;
+            library) entry=library:M-01 ;;
+            starfall) entry=starfall:F-01 ;;
+            finale) entry=finale:B-01 ;;
+            epilogue) entry=epilogue:E-01 ;;
+            *) exit 2 ;;
+          esac
+          node scripts/cat-bond-experience-knowledge.mjs
           node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-chapter-server.log 2>&1 &
           server=$!
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
-          node scripts/cat-bond-experience-chapters.mjs
+          CAT_BOND_TARGET_SCENES="$entry" node scripts/cat-bond-experience-targets.mjs
+          CAT_BOND_CHAPTERS="$SCOPE" node scripts/cat-bond-experience-chapters.mjs
       - name: Generate review packet even after failed playthrough
-        if: always() && matrix.scope != 'targets'
+        if: always() && (matrix.scope == 'opening' || matrix.scope == 'campaign')
         run: node scripts/cat-bond-experience-report.mjs
       - name: Seeded legacy battle policy baseline
         if: always() && matrix.scope == 'opening'
