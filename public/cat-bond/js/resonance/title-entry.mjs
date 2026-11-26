@@ -8,12 +8,21 @@ export function finishCinematicScene(){return {ok:false,reason:"opening-animatio
 let active=null;
 function openContext(owner){
  const stage=document.getElementById("stage");if(!stage)return;
- const root=document.createElement("section");root.id="cb-player-first-intro";root.setAttribute("role","dialog");root.setAttribute("aria-modal","true");
- Object.assign(root.style,{position:"absolute",inset:"0",zIndex:"60",display:"grid",placeItems:"center",background:"#172e2cb8",padding:"16px"});
- const panel=document.createElement("div");Object.assign(panel.style,{maxWidth:"570px",width:"100%",padding:"clamp(15px,4vw,32px)",borderRadius:"18px",background:"#263d36f5",color:"#fff3dc",boxShadow:"0 8px 30px #15292277",maxHeight:"90%",overflow:"auto",boxSizing:"border-box"});
+ const root=document.createElement("section");root.id="cb-player-first-intro";root.setAttribute("role","dialog");root.setAttribute("aria-modal","true");root.setAttribute("aria-labelledby","cb-prologue-heading");
+ // A full-stage storybook page, not a floating card. Auto margins keep short
+ // viewports scrollable without clipping the heading or the action buttons.
+ Object.assign(root.style,{position:"absolute",inset:"0",zIndex:"60",display:"flex",flexDirection:"column",boxSizing:"border-box",overflow:"auto",overscrollBehavior:"contain",padding:"clamp(20px,5vmin,64px)",background:"radial-gradient(ellipse at 14% 8%, #fffdf5 0%, transparent 56%), radial-gradient(ellipse at 92% 100%, #e2ead8 0%, transparent 55%), linear-gradient(145deg, #fbf4e5, #f1e7d2)",color:"#443b2d"});
+ const panel=document.createElement("div");Object.assign(panel.style,{maxWidth:"760px",width:"100%",margin:"auto",flexShrink:"0",boxSizing:"border-box",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",gap:"clamp(16px,3vmin,30px)",background:"transparent"});
  const title=document.createElement("h2"),body=document.createElement("p"),personal=document.createElement("p"),row=document.createElement("div"),play=document.createElement("button"),skip=document.createElement("button");
- for(const b of [play,skip]){b.type="button";b.style.cssText="padding:9px 14px;margin:4px;color:#21382e;background:#f0d7a4;border:0;border-radius:10px;cursor:pointer";}
- title.style.marginTop="0";body.style.lineHeight="1.65";personal.style.color="#f4d49b";row.append(play,skip);panel.append(title,body,personal,row);root.append(panel);
+ title.id="cb-prologue-heading";
+ Object.assign(title.style,{margin:"0",fontFamily:"var(--cb-font-display, Georgia, serif)",fontSize:"clamp(30px,5vmin,56px)",fontWeight:"700",lineHeight:"1.18",color:"#4b3828",textShadow:"none"});
+ Object.assign(body.style,{margin:"0",fontSize:"clamp(16px,2.7vmin,23px)",lineHeight:"1.85",color:"#514638",textShadow:"none",overflowWrap:"anywhere"});
+ Object.assign(personal.style,{margin:"0",paddingTop:"clamp(12px,2vmin,20px)",borderTop:"1px solid #cdbb96",fontSize:"clamp(18px,3vmin,25px)",lineHeight:"1.65",fontWeight:"600",color:"#65502e",textShadow:"none",overflowWrap:"anywhere"});
+ Object.assign(row.style,{display:"flex",flexWrap:"wrap",justifyContent:"center",alignItems:"center",gap:"12px",width:"100%",marginTop:"4px"});
+ for(const b of [play,skip]){b.type="button";Object.assign(b.style,{padding:"12px 24px",minHeight:"44px",maxWidth:"100%",boxSizing:"border-box",fontFamily:"inherit",fontSize:"clamp(14px,2.2vmin,18px)",fontWeight:"600",lineHeight:"1.4",borderRadius:"10px",cursor:"pointer",textShadow:"none",whiteSpace:"normal"});}
+ Object.assign(play.style,{color:"#fffdf5",background:"#536b4d",border:"1px solid #536b4d",boxShadow:"0 3px 8px #51463822"});
+ Object.assign(skip.style,{color:"#65502e",background:"transparent",border:"1px solid #bba780",boxShadow:"none"});
+ row.append(play,skip);panel.append(title,body,personal,row);root.append(panel);
  function render(){title.textContent=tr("寻找名字","A name to find");body.textContent=tr("很久以前，六片土地的猫咪依靠一座古老的星铃维系记忆。一场灾难击坏了星铃，猫咪们开始忘记熟悉的地方、朋友，甚至自己的名字。灾难曾经平息，生活渐渐恢复。直到最近，失忆的现象再次出现。","Long ago, an ancient Star Bell helped the cats of six lands preserve their memories. A disaster damaged it, and cats began forgetting familiar places, friends, even their own names. The crisis subsided and life returned to normal. Recently, the forgetting began again.");personal.textContent=tr("今天，你在一座陌生的花园里醒来。你想不起自己的名字。","Today you wake in an unfamiliar garden, unable to remember your name.");play.textContent=tr("开始探索","Start exploring");skip.textContent=tr("跳过介绍","Skip introduction");}
  function dispose(){root.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("pagehide",dispose);if(active?.dispose===dispose)active=null;}
  play.onclick=skip.onclick=dispose;root.onkeydown=e=>{if(e.key==="Escape"){e.preventDefault();dispose();}};
