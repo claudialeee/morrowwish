@@ -5215,6 +5215,10 @@ class CaptureBattle {
         this.castEnemySkill(e, me, sk);
         e.skillCd[s] = Math.max(2.4, sk.cd || 3);              // honour the skill's own cd, floored
         e._castSlow = sk.castSlow || 0.6;                       // 后遗症: a readable/punishable recovery
+        // Owner 2026-11-26 "敌人攻击不要钱": stall the basic fire after casting a real
+        // skill so a volley doesn't instantly chain into a projectile stream. ≥1.1s
+        // of basic silence lets the player actually see + punish the cast window.
+        e.fireCd = Math.max(e.fireCd, 1.1);
         return;                                                 // one action this frame
       }
     }
@@ -5245,13 +5249,13 @@ class CaptureBattle {
       // so a cautious kiter faced identical shot cadence after 60s of poke-and-retreat. Playtest P0 #1
       // (kiter persona, 8 neutral timeouts in a row — no escalation). Now: at full pressure the enemy
       // fires up to ~38% faster, so turtle play is actively punished instead of ignored. 1.0 at pressure=0.
-      // Owner 2026-11-26 "敌人攻击想不要钱一样": stacked pressure+closing boosts
-      // compressed fireCd past the 0.38s floor on long fights (3 shots/sec = a
-      // wall of fire). Halve both boosts + raise the fireCd floor 0.38→0.60s so
-      // even at max pressure+closing the enemy caps at ~0.6s/shot (≈1.6 shots/s).
+      // Owner 2026-11-26 "敌人攻击不要钱 / 敌人也要有 CD": still too fast at 0.6s floor
+      // (~1.6 shots/s + volleys = wall-of-pellets). Floor 0.60→0.95s (~1 shot/s), keep
+      // boosts conservative. After a real-skill cast we separately stall fireCd to 1.1s
+      // above so cast → projectile stream can't chain.
       const pressureBoost = 1 + 0.30 * (this._pressure || 0);
       const closingFireBoost = 1 + 0.25 * (this._closing || 0);
-      e.fireCd = Math.max(0.60, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase / (pressureBoost * closingFireBoost);   // +floor; 感电降攻速
+      e.fireCd = Math.max(0.95, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase / (pressureBoost * closingFireBoost);   // +floor; 感电降攻速
       // Lead at the ACTUAL projectile speed so the intercept solution matches flight.
       const shotSpeed = 200 + e.rIdx * 34;
       let lead = this.leadAngle(e, me, shotSpeed);
