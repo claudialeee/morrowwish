@@ -175,14 +175,15 @@ window.addEventListener('DOMContentLoaded', () => {
   const renderIntroLocale=()=>{
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const set=(id,zh,enText)=>{const el=document.getElementById(id);if(el)el.textContent=en?enText:zh;};
-    set('cb-title-name','猫猫纽带','Cat Bond');
-    set('cb-title-subtitle','最后的回响','The Last Resonance');
+    set('cb-title-name','星铃回响','Echoes of the Starbell');
+    set('cb-title-subtitle','Echoes of the Starbell','星铃回响');
+    document.getElementById('intro')?.setAttribute('data-title-lang',en?'en':'zh');
     const start=document.querySelector('#intro-start strong');
     const next=document.querySelector('#intro-continue strong');
     if(start)start.textContent=en?'New Adventure':'开始新的冒险';
     if(next)next.textContent=en?'Continue Story':'继续故事';
     const tagline=document.querySelector('.cb-intro-tagline');
-    if(tagline)tagline.textContent=en?'Discover a world of wonders with your feline friends.':'与猫咪伙伴一起，去发现世界的奇迹。';
+    if(tagline)tagline.textContent=en?'Follow the echoes of the Starbell and uncover lost memories.':'循着星铃的回响，寻找遗失的记忆。';
     const kicker=document.querySelector('.cb-save-picker-kicker');
     if(kicker)kicker.textContent=en?'Save Archive':'存档';
     document.getElementById('intro-slot-close')?.setAttribute('aria-label',en?'Close':'关闭');
