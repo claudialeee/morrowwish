@@ -4,6 +4,8 @@ export function makeEngine(data,initial){
  const index=Object.fromEntries(data.scenes.map((x,i)=>[x.id,i])), byId=Object.fromEntries(data.scenes.map(x=>[x.id,x]));
  const fresh=()=>({schema:1,scene:data.scenes[0].id,completed:[],evidence:{},choices:{},trust:Object.fromEntries(Object.keys(data.cast).map(k=>[k,0])),links:Object.fromEntries(data.links.map(([a,b])=>[a+":"+b,[]])),sanctuaries:[],melodies:[],support:[],returned:[],postgame:[],ambientDone:[],cursor:0,revision:0});
  let s=initial==null?fresh():copy(initial);if(!s.ambientDone)s.ambientDone=[];if(!s.ruins)s.ruins={clears:s.postgame.includes("postgame:ruins")?1:0,duoClears:0,attempts:[]};
+ // A pre-revision save paused during the retired 15-line P-02 dialogue must replay the new anonymous shot, not fail validation or advance story.
+ if(data.canon==='The Last Resonance'&&s.scene==='prologue:P-02'&&byId[s.scene]?.lines.length===0&&Number.isInteger(s.cursor)&&s.cursor>0&&s.cursor<=15)s.cursor=0;
  const fail=reason=>({ok:false,reason}), commit=()=>({ok:true,state:copy({...s,revision:++s.revision})});
  const ring=()=>data.links.every(([a,b])=>s.links[a+":"+b].length===4);
  // Restored melodies are accepted only from their authored story operation, not a

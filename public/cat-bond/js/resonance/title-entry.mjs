@@ -116,7 +116,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
    const mode=classifyPrologue(runtime.view());
    if(mode!=='cinematic'){handoff(mode);return;}
    launching=true;
-   try{const saved=rootState.openingPresentation,view=runtime.view();const resume=saved?.slot===slot&&saved.revision===view.revision&&saved.snapshot?.sceneId===view.current.id&&Number.isInteger(saved.snapshot.frameIndex)&&saved.snapshot.frameIndex>=0&&Number.isFinite(saved.snapshot.elapsedMs)&&saved.snapshot.elapsedMs>=0?{slot,revision:saved.revision,snapshot:{...saved.snapshot,paused:true}}:null;const result=await controller.playCurrent(resume,{skip:skipRemaining});if(!result.ok&&live()){delete rootState.openingPresentation;window.State.save();showError(result.reason);}return result;}
+   try{const saved=rootState.openingPresentation,view=runtime.view();const resume=saved?.slot===slot&&saved.revision===view.revision&&saved.snapshot?.sceneId===view.current.id&&(!['prologue:P-02','prologue:P-03'].includes(view.current.id)||saved.snapshot.frameId===view.current.id+'-shot-0'&&saved.snapshot.frameIndex===0)&&Number.isInteger(saved.snapshot.frameIndex)&&saved.snapshot.frameIndex>=0&&Number.isFinite(saved.snapshot.elapsedMs)&&saved.snapshot.elapsedMs>=0?{slot,revision:saved.revision,snapshot:{...saved.snapshot,paused:true}}:null;const result=await controller.playCurrent(resume,{skip:skipRemaining});if(!result.ok&&live()){delete rootState.openingPresentation;window.State.save();showError(result.reason);}return result;}
    catch(e){const reason=e.message||'cinematic-failed';showError(reason);return {ok:false,reason};}
    finally{launching=false;}
   };

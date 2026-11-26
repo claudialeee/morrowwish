@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {makeEngine} from '../public/cat-bond/js/resonance/engine.mjs';
 import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
 import {buildCanonicalScene} from '../public/cat-bond/js/resonance-cinematic.mjs';
 const manifest=JSON.parse(fs.readFileSync('public/cat-bond/assets/cinematics/asset-manifest.json','utf8'));
@@ -20,3 +21,7 @@ assert.equal(get('prologue:P-05').lines[0].speaker,'muling');
 assert.deepEqual(get('prologue:P-05').requires,['travel:harbor']);
 const recall=get('starfall:F-02');const r=buildCanonicalScene({view:{current:recall,cursor:0,lineReady:true,objective:recall.requires.filter(x=>x.startsWith('cinematic:'))},campaign,manifest,staging:true});assert.equal(r.ok,true,r.reason);assert(r.scene.frames.some(f=>f.image.endsWith('keepers-choice.webp')));
 console.log('Mystery opening contract verified; duration '+duration+'ms.');
+
+const engine=makeEngine(campaign);assert(engine.record('prologue:P-01','cinematic:prologue-montage').ok);assert(engine.finish().ok);
+const legacy=engine.snapshot();legacy.cursor=9;const restored=makeEngine(campaign,legacy);assert.equal(restored.view().cursor,0);assert.equal(restored.view().current.id,'prologue:P-02');assert.deepEqual(restored.view().objective,['cinematic:sacrifice']);assert.deepEqual(restored.snapshot().completed,legacy.completed);
+console.log('Legacy opening cursor recovery preserves evidence and progression.');

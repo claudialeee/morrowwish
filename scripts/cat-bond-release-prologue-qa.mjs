@@ -67,14 +67,8 @@ for(const profile of [
    await waitScene('prologue:P-02');await ready();
    await screenshot('broken-echo');
    assert.equal(await page.locator('.cbcp-title').textContent(),tr('最后的回响','The Last Resonance'));
-   const seen=new Set();
-   while(await page.evaluate(()=>CatBondResonance.view().current?.id)==='prologue:P-02'){
-    const sub=await page.locator('.cbcp-subtitle').textContent().catch(()=>null);
-    if(sub)seen.add(sub);
-    if(['Bellkeeper','无名守铃者'].includes(await page.locator('.cbcp-speaker').textContent().catch(()=>null)))throw Error('Premature identity disclosure');
-    await page.waitForTimeout(180);
-   }
-   assert.deepEqual([...seen],exactLines('prologue:P-02'),'No character dialogue in the mystery opening');
+   await page.waitForFunction(expected=>document.querySelector('.cbcp-subtitle')?.textContent===expected,tr('「如果有一天……你忘记了我呢？」','“What if one day... you forget me?”'));
+   assert.ok(!((await page.locator('.cbcp-speaker').textContent().catch(()=>''))||'').trim(),'Anonymous caption must not name a character');
    await waitScene('prologue:P-03');await ready();
    await screenshot('morning-garden');
    assert.equal(await page.locator('.cbcp-title').textContent(),tr('最后的回响','The Last Resonance'));
@@ -83,7 +77,7 @@ for(const profile of [
   assert.deepEqual(await page.evaluate(()=>State.S.resonance.completed.slice(0,3)),['prologue:P-01','prologue:P-02','prologue:P-03'],'One skip completes the verified opening checkpoints');
   await page.locator('#panel.open .cat-starter-card .dex-cell').first().click();
   assert.equal(await page.evaluate(()=>State.S.cats.length),1);
-  await guide.getByRole('button',{name:tr('与暮铃交谈','Talk to Muling'),exact:true}).click();
+  await guide.getByRole('button',{name:tr('调查花园','Investigate the garden'),exact:true}).click();
   const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');
   await awakening.waitFor();await screenshot('awakening-dialogue');
   for(const line of exactLines('prologue:P-04')){await awakening.locator('.res-line').waitFor();assert.equal(await awakening.locator('.res-line').textContent(),line);await awakening.locator('.res-line').click();}
