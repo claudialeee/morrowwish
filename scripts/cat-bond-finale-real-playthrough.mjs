@@ -1,3 +1,4 @@
+import {captureExperienceMilestone} from './cat-bond-experience-recorder.mjs';
 // Normal-player continuation from the fresh-slot Harbor/Forest browser playthrough.
 // No save/evidence writes, injected story state, debug combat launch, or engine calls.
 // Read-only snapshots assert outcomes. Candidate cinematics are enabled ONLY in
@@ -174,6 +175,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  const from={x:k.x+k.width/2,y:k.y+k.height/2},to={x:b.x+b.width*.77,y:b.y+b.height*.54};
  if(options.hasTouch){const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[from]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[to]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}else{await page.mouse.move(from.x,from.y);await page.mouse.down();await page.mouse.move(to.x,to.y,{steps:10});await page.mouse.up();}
  await page.getByRole('heading',{name:'THE BELL RINGS AGAIN'}).waitFor();await shot('complete-ending');await button('Return to Sunlit Garden').click();assert.ok((await view()).ending);
+ await captureExperienceMilestone(page,'ending');
  await button('Continue exploring',page.locator('.sg-prologue-guide')).click();
  const repairs=[
  ['harbor',['Left mirror','Center mirror','Center mirror','Right mirror'],['Jiedeng','Qilan']],
@@ -223,6 +225,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await page.waitForFunction(()=>CatBondResonance.view().ending&&__game.scene==='yard');
  assert.deepEqual(await page.evaluate(()=>({returned:CatBondResonance.view().returned.length,cats:State.S.cats.map(c=>c.uid),coins:State.S.coins,postgame:CatBondResonance.view().postgame,ruins:CatBondResonance.view().ruins.clears})),saved);await shot('postgame-reloaded');
  await button('Garden Restoration',page.locator('.sg-prologue-guide')).click();await page.locator('[data-garden-project="starfall"]').click();const restoreMemorial=page.locator('[data-restore-project="starfall"]');if(await restoreMemorial.count())await restoreMemorial.click();await page.locator('[data-tend-project="starfall"]').waitFor();const oldVisits=await page.evaluate(()=>GardenProjects.progress().find(p=>p.id==='starfall').visits);await page.locator('[data-tend-project="starfall"]').click();await page.waitForFunction(v=>GardenProjects.progress().find(p=>p.id==='starfall').visits>v,oldVisits,{timeout:60000});await shot('postgame-real-garden-care');
+ await captureExperienceMilestone(page,'postgame');
  assert.ok(naturalDefeat,'Actual defeat remains unverified if player had to withdraw');
  return {normalFullPlaythrough:true,stagingCinematics:true,naturalDefeat,usedDuo,usedPromise,openingShots,endingShots,epilogueShots,postgame:saved.postgame.length,returned:saved.returned};
 }
