@@ -2619,7 +2619,9 @@ class CaptureBattle {
     // homing swarm lets EVERY pellet connect (its low per-pellet power is the balance lever, not a
     // hit cap — all pellets chase the same target so a 1-cap made it ~4× worse than a bolt). Spread
     // across multiple enemies is unchanged (each enemy tracked separately).
-    const perEnemyCap = sk.homing ? (sk.shots || 4) : 2;
+    // Owner 2026-11-26: non-homing straight volley compressed to 1 hit/target —
+    // a 5-pellet fan should spread damage across enemies, not flatten one cat.
+    const perEnemyCap = sk.homing ? (sk.shots || 4) : 1;
     const volley = { hitsByEnemy: new Map(), maxHitsPerEnemy: perEnemyCap };
     const ex = f.x + Math.cos(aim)*20, ey = f.y + Math.sin(aim)*20;
     for (let i = 0; i < n; i++) {
@@ -5244,13 +5246,13 @@ class CaptureBattle {
       // so a cautious kiter faced identical shot cadence after 60s of poke-and-retreat. Playtest P0 #1
       // (kiter persona, 8 neutral timeouts in a row — no escalation). Now: at full pressure the enemy
       // fires up to ~38% faster, so turtle play is actively punished instead of ignored. 1.0 at pressure=0.
-      const pressureBoost = 1 + 0.6 * (this._pressure || 0);
-      // Playtest P0 #1 (kiter 8/8): apply the long-pending "ramp enemy fire-rate under _closing"
-      // TODO at L4613. _closing is the time+hit-progress ramp (0 at fight start, 1 at ~70s-wall
-      // or full pack HP drained) — multiplying fireCd downward here means a drawn-out fight ALSO
-      // escalates cadence, not only hit consequences. Stacks under pressureBoost.
-      const closingFireBoost = 1 + 0.5 * (this._closing || 0);
-      e.fireCd = Math.max(0.38, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase / (pressureBoost * closingFireBoost);   // +floor; 感电降攻速
+      // Owner 2026-11-26 "敌人攻击想不要钱一样": stacked pressure+closing boosts
+      // compressed fireCd past the 0.38s floor on long fights (3 shots/sec = a
+      // wall of fire). Halve both boosts + raise the fireCd floor 0.38→0.60s so
+      // even at max pressure+closing the enemy caps at ~0.6s/shot (≈1.6 shots/s).
+      const pressureBoost = 1 + 0.30 * (this._pressure || 0);
+      const closingFireBoost = 1 + 0.25 * (this._closing || 0);
+      e.fireCd = Math.max(0.60, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase / (pressureBoost * closingFireBoost);   // +floor; 感电降攻速
       // Lead at the ACTUAL projectile speed so the intercept solution matches flight.
       const shotSpeed = 200 + e.rIdx * 34;
       let lead = this.leadAngle(e, me, shotSpeed);
