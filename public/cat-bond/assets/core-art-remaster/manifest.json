@@ -1,0 +1,222 @@
+{
+  "baseline": "16dd58ee1ccbfd854191076dbb3dd10de07c20bd",
+  "canon": "1.2",
+  "characters": [
+    {
+      "id": "player",
+      "name": "金渐层玩家",
+      "group": "leads",
+      "asset": "core-art-remaster/leads/player.webp"
+    },
+    {
+      "id": "muling",
+      "name": "暮铃",
+      "group": "leads",
+      "asset": "core-art-remaster/leads/muling.webp"
+    },
+    {
+      "id": "player-reveal",
+      "name": "金渐层 · 震惊",
+      "group": "leads",
+      "scene": "M-03",
+      "asset": "core-art-remaster/leads/player-reveal.webp"
+    },
+    {
+      "id": "muling-uneasy",
+      "name": "暮铃 · 迟疑",
+      "group": "leads",
+      "scene": "M-03 / M-04",
+      "asset": "core-art-remaster/leads/muling-uneasy.webp"
+    },
+    {
+      "id": "biscuit",
+      "name": "麦饼",
+      "rarity": "N",
+      "element": "火",
+      "breed": "橘白短尾曼岛猫",
+      "personality": "热心",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/biscuit.webp"
+    },
+    {
+      "id": "inkspot",
+      "name": "墨点",
+      "rarity": "N",
+      "element": "暗",
+      "breed": "黑白短毛家猫",
+      "personality": "腼腆",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/inkspot.webp"
+    },
+    {
+      "id": "puff",
+      "name": "绒蒲",
+      "rarity": "N",
+      "element": "草",
+      "breed": "蓝乳玳瑁异短",
+      "personality": "随和",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/puff.webp"
+    },
+    {
+      "id": "shell",
+      "name": "贝扣",
+      "rarity": "N",
+      "element": "水",
+      "breed": "奶白土耳其梵猫",
+      "personality": "爱凑热闹",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/shell.webp"
+    },
+    {
+      "id": "cinder",
+      "name": "炭栗",
+      "rarity": "R",
+      "element": "火",
+      "breed": "肉桂阿比西尼亚",
+      "personality": "大胆",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/cinder.webp"
+    },
+    {
+      "id": "ripplet",
+      "name": "漪舟",
+      "rarity": "R",
+      "element": "水",
+      "breed": "海豹重点布偶",
+      "personality": "耐心",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/ripplet.webp"
+    },
+    {
+      "id": "clover",
+      "name": "芽扣",
+      "rarity": "R",
+      "element": "草",
+      "breed": "玳瑁日本短尾猫",
+      "personality": "好奇",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/clover.webp"
+    },
+    {
+      "id": "fizz",
+      "name": "啪嗒",
+      "rarity": "R",
+      "element": "电",
+      "breed": "银斑埃及猫",
+      "personality": "急性子",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/fizz.webp"
+    },
+    {
+      "id": "button",
+      "name": "夜扣",
+      "rarity": "R",
+      "element": "暗",
+      "breed": "黑色德文卷毛",
+      "personality": "淘气",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/button.webp"
+    },
+    {
+      "id": "sunlace",
+      "name": "晴纱",
+      "rarity": "R",
+      "element": "光",
+      "breed": "金吉拉波斯",
+      "personality": "慢性子",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/sunlace.webp"
+    },
+    {
+      "id": "tidemark",
+      "name": "潮刻",
+      "rarity": "SR",
+      "element": "水",
+      "breed": "蓝烟挪威森林猫",
+      "personality": "可靠",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/tidemark.webp"
+    },
+    {
+      "id": "emberwing",
+      "name": "烬羽",
+      "rarity": "SR",
+      "element": "火",
+      "breed": "红虎斑索马里",
+      "personality": "爱冒险",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/emberwing.webp"
+    },
+    {
+      "id": "mossbell",
+      "name": "苔盏",
+      "rarity": "SR",
+      "element": "草",
+      "breed": "棕虎斑西伯利亚",
+      "personality": "护短",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/mossbell.webp"
+    },
+    {
+      "id": "zest",
+      "name": "柚弧",
+      "rarity": "SR",
+      "element": "电",
+      "breed": "雪豹纹孟加拉",
+      "personality": "坐不住",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/zest.webp"
+    },
+    {
+      "id": "nightloom",
+      "name": "织夜",
+      "rarity": "SSR",
+      "element": "暗",
+      "breed": "黑烟缅因",
+      "personality": "沉静",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/nightloom.webp"
+    },
+    {
+      "id": "aurora",
+      "name": "曦瓷",
+      "rarity": "SSR",
+      "element": "光",
+      "breed": "双色土耳其安哥拉",
+      "personality": "慷慨",
+      "group": "collectibles",
+      "asset": "core-art-remaster/collectibles/aurora.webp"
+    }
+  ],
+  "story": [
+    {
+      "id": "m03-reveal",
+      "scene": "M-03",
+      "name": "你早就认识我",
+      "beat": "拼合后的壁画让玩家认出昔日的自己与暮铃。",
+      "asset": "core-art-remaster/story/m03-reveal.webp"
+    },
+    {
+      "id": "f02-history",
+      "scene": "F-02",
+      "name": "星铃破碎的那一天",
+      "beat": "经验证的历史记录揭示玩家自愿留下记忆以稳住星铃。",
+      "asset": "core-art-remaster/story/f02-history.webp"
+    },
+    {
+      "id": "b04-reunion",
+      "scene": "B-04",
+      "name": "星铃重新响了",
+      "beat": "玩家记得暮铃，也记得两猫如何一路走来。",
+      "asset": "core-art-remaster/story/b04-reunion.webp"
+    },
+    {
+      "id": "e03-garden",
+      "scene": "E-03",
+      "name": "花园的第二把钥匙",
+      "beat": "暮铃在花园门边等候，玩家把第二把钥匙交给她。",
+      "asset": "core-art-remaster/story/e03-garden.webp"
+    }
+  ]
+}
