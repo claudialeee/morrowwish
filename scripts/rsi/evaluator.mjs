@@ -54,7 +54,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','painted-regions','world','worldmap','battle','ui','game','main'];
+const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','painted-regions','world','worldmap','traits','battle','ui','game','main'];
 
 // ============================================================================================
 // BOOT — identical fake-DOM + vm scaffold as scripts/check-cat-bond-combat-matrix.mjs (do not
@@ -220,12 +220,17 @@ function buildBattle(config, seed, scenario) {
   b.coach = null; b.autoMode = true;              // deterministic seeded auto-battle, no tutorial hold
   b.reserve = [];                                 // single field cat → clean hp/faint accounting, no subs
 
-  // inject the candidate loadout onto the player fighter
+  // inject the candidate loadout onto the player fighter.
+  // c.useNativeKit:true SKIPS the override so Skills.ensureLoadout()'s species-native q/e
+  // stay intact — used by balance-probe.mjs to measure PER-ELEMENT kit power honestly
+  // (overriding every cat with a synthetic fire-element loadout would erase element identity).
   const f = b.me(), lo = c.loadout ?? {};
-  f.qSkill = lo.q ? { id: 'rsiq', name: 'q', element: 'fire', ...lo.q } : null;
-  f.eSkill = lo.e ? { id: 'rsie', name: 'e', element: 'fire', ...lo.e } : null;
-  if (lo.basic) f.basicSkill = { id: 'rsibasic', name: 'basic', element: 'fire', ...lo.basic };
-  if (lo.ult) f.ultSkill = { id: 'rsiult', name: 'ult', element: 'fire', ...lo.ult };
+  if (!c.useNativeKit) {
+    f.qSkill = lo.q ? { id: 'rsiq', name: 'q', element: 'fire', ...lo.q } : null;
+    f.eSkill = lo.e ? { id: 'rsie', name: 'e', element: 'fire', ...lo.e } : null;
+    if (lo.basic) f.basicSkill = { id: 'rsibasic', name: 'basic', element: 'fire', ...lo.basic };
+    if (lo.ult) f.ultSkill = { id: 'rsiult', name: 'ult', element: 'fire', ...lo.ult };
+  }
 
   // rebuild the enemy pack to the scenario's fixed count (deterministic: makeEnemy keeps using the
   // seeded rng in order). Optional pins from config.enemy make the fight winnable/comparable.
@@ -261,9 +266,20 @@ function runScenario(config, seed, scenario, opts = {}) {
   // "cosmetic" bare-random calls can't make the metrics flaky. Pure function of (seed,config).
   return withDeterministicGlobals(seed, () => runScenarioInner(config, seed, scenario, opts));
 }
-function runScenarioInner(config, seed, scenario, { frames = 900, dt = 0.016 } = {}) {
+function runScenarioInner(config, seed, scenario, { frames = 900, dt = 0.016, knobOverride = null } = {}) {
   const { b, f } = buildBattle(config, seed, scenario);
   const pinned = scenario === 'solo-pinned';
+
+  // knob-usage probe hook: lets a diagnostic script force-pin specific battle fields to 0 (or
+  // override behavior) so we can measure how much each knob contributes to the score. Called
+  // AFTER construction so per-tick fields exist; the probe is responsible for re-pinning any
+  // field that the engine resets each frame (e.g. _pressure, _closing).
+  if (knobOverride) {
+    const orig = b.update.bind(b);
+    b.update = (dt_) => { const r = orig(dt_); try { knobOverride(b); } catch (_) {} return r; };
+    // also apply once before the first update so init-only consumers see the pin
+    try { knobOverride(b); } catch (_) {}
+  }
 
   // cheap "negated offense" tally: wrap resolveHit to count my attempts vs fully-negated ones.
   let atk = 0, atkNeg = 0;
@@ -382,7 +398,7 @@ export function evaluate(config = {}, opts = {}) {
   };
   const scenarios = opts.scenarios ?? SCENARIOS;
   const seeds = opts.seeds ?? [7, 42, 101];
-  const runOpts = { frames: opts.frames ?? 900, dt: opts.dt ?? 0.016 };
+  const runOpts = { frames: opts.frames ?? 900, dt: opts.dt ?? 0.016, knobOverride: opts.knobOverride ?? null };
 
   const perScenario = {};
   for (const scn of scenarios) {

@@ -1,6 +1,17 @@
 /* Cat Bond — PROPOSER harness (structural-rule half of a self-improving AI loop).
  * scripts/rsi/propose.mjs
  *
+ * ======================================================================
+ * PENDING (2026-11-25): P1 species-passive system is in the design branch.
+ * See docs/combat-redesign/BALANCE-BRIEF-passive-p1.md for the 12 cats + numbers.
+ * Current proposer picks winning positioning RULES assuming a passive-less
+ * sim; after the P1 PRs land, rule fitness will shift because 杏仁 rewards
+ * MOVE-based rules more, 桃桃 rewards STILLNESS-based rules more, 墨球
+ * rewards distance-based STEALTH rules etc. When traits.js exists, re-tag
+ * each proposed candidate with the P1 cat it best suits (via ai.band
+ * metadata) so archive cells don't rank rules against the wrong cat.
+ * ======================================================================
+ *
  * WHERE THIS SITS IN THE RSI LOOP (read evaluator.mjs first — this file builds ON it):
  *   The sibling NUMERIC optimizer tunes SCALARS (band distances, dodge chance) by search.
  *   This PROPOSER is the Eureka / FunSearch shape: a proposer emits candidate STRUCTURE —

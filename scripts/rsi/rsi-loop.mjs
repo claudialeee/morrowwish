@@ -32,6 +32,9 @@ function run(script) {
 const opt = run('optimize.mjs');
 // --- proposer: structural candidates ranked by the MOBA ground-truth judge ---
 const prop = run('propose.mjs');
+// --- balance probe: per-element matrix (owner: RSI 没发现系间平衡问题,做). Additive diagnostic;
+// does NOT gate the loop or affect optimizer/proposer. Emits a parseable JSON summary line.
+const bal = run('balance-probe.mjs');
 
 // Pull the headline numbers out of each script's stdout (they already print them).
 const grab = (txt, re) => { const m = (txt || '').match(re); if (!m) return '?'; const g = m[1] ?? m[2] ?? m[0]; return (g || '?').toString().trim(); };
@@ -59,10 +62,23 @@ try {
   archive = `archive ${a.coverage}/${a.maxCells} niches, best ${a.best ? a.best.score.toFixed(3) : '?'}`;
 } catch (_) {}
 
-const line = `${stamp}  judge=moba-groundtruth  ${optLine}  |  propose winner='${propWinner}' ${control}  |  band=${band}  |  ${archive}` +
-  (opt.ok && prop.ok ? '' : '  [!! a sub-script failed — see transcript]');
+// Pull balance-probe headline (worst element + cv so the loop surfaces system fairness drift).
+let balSummary = '?';
+if (bal.ok) {
+  const m = bal.out.match(/\[balance-probe-json\]\s*(\{.*\})/);
+  if (m) {
+    try {
+      const j = JSON.parse(m[1]);
+      balSummary = `balance worst=${j.worst.element}(${j.worst.score.toFixed(2)}) best=${j.best.element}(${j.best.score.toFixed(2)}) cv=${j.cv.toFixed(3)} gap=${j.gap.toFixed(3)}`;
+    } catch (_) {}
+  }
+}
+
+const line = `${stamp}  judge=moba-groundtruth  ${optLine}  |  propose winner='${propWinner}' ${control}  |  band=${band}  |  ${archive}  |  ${balSummary}` +
+  (opt.ok && prop.ok && bal.ok ? '' : '  [!! a sub-script failed — see transcript]');
 
 appendFileSync(HISTORY, line + '\n');
 console.log('[rsi-loop] ' + line);
 if (!opt.ok) console.log('--- optimize.mjs error tail ---\n' + opt.out.slice(-800));
 if (!prop.ok) console.log('--- propose.mjs error tail ---\n' + prop.out.slice(-800));
+if (!bal.ok) console.log('--- balance-probe.mjs error tail ---\n' + bal.out.slice(-800));
