@@ -6,7 +6,7 @@ on:
       - 'scripts/cat-bond-experience-*.mjs'
       - 'scripts/cat-bond-release-prologue-qa.mjs'
       - 'scripts/cat-bond-harbor-playthrough.mjs'
-      - 'public/cat-bond/css/rpg-fullbleed.css'
+      - 'public/cat-bond/**'
       - 'docs/cat-bond-rpg/EXPERIENCE-PRE-AUDIT.md'
       - '.github/workflows/cat-bond-experience-playtest.yml'
   workflow_dispatch:

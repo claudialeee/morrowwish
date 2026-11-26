@@ -3,7 +3,7 @@
 // Only independently accepted raster assets can be selected; missing art must never unlock narrative evidence.
 const bad=reason=>({ok:false,reason});
 const isBilingual=x=>typeof x?.zh==='string'&&x.zh.trim()&&typeof x?.en==='string'&&x.en.trim();
-const raster=/^assets\/cinematics\/[a-z0-9/_-]+\.(?:webp|png|avif|jpe?g)$/;
+const raster=/^assets\/(?:cinematics\/[a-z0-9/_-]+|core-art-remaster\/story\/[a-z0-9-]+|resonance-world-v2\/(?:atlas|harbor|forest|forge|sky|library|starfall))\.(?:webp|png|avif|jpe?g)$/;
 export function buildCanonicalScene({view,campaign,manifest,staging=false,openingRelease=false}) {
   const scene=view?.current;
   if(!scene||campaign?.canon!=='The Last Resonance')return bad('no-canon-scene');
@@ -96,7 +96,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
     }
   }
   if(scene.id==='finale:B-04'){
-    frames.unshift({id:'finale:B-04-memory-bell',image:'assets/cinematics/prologue/star-bell.webp',
+    frames.unshift({id:'finale:B-04-memory-bell',image:'assets/resonance-world-v2/starfall.webp',
       alt:{zh:'记忆回到守铃者身边',en:'The Bellkeeper’s memories return'},durationMs:3400,transitionMs:800,
       camera:{from:{x:0,y:0,scale:1.03},to:{x:0,y:0,scale:1.09}},effect:'sanctuary',note:392});
   }
