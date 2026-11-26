@@ -160,11 +160,14 @@ async function run(chapter){
   await page.waitForFunction(id=>CatBondResonance.view().current?.id!==id,id,{timeout:180000});
  }
  async function libraryEcho(){
-  await click('Hidden room · Verify memories');const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();
-  await click('Inspect Catdex',controls);const card=page.locator('[data-library-catdex-memory]');await card.waitFor();const interval=await card.getAttribute('data-library-catdex-memory');
-  assert.match(interval,/^\d+\.\d{2}$/);await page.locator('#panel .rb-close:visible,#panel .panel-dismiss:visible').first().click();await controls.waitFor();
-  const labels=await controls.getByRole('button',{name:/^Echo [ABC] · /}).allTextContents(),correct=labels.find(t=>t.endsWith(interval+'s'));assert.ok(correct,'Catdex evidence must identify an answer');
-  await click(correct,controls);await controls.waitFor({state:'hidden'});
+  await click('Two Mulings in the mirror');const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();
+  const status=controls.locator('[data-mirror-response]');await status.waitFor();
+  await click('Choose the left cat',controls);await status.waitFor();assert.equal(await status.getAttribute('data-position'),'0','guess cannot complete the scene');
+  await click('Move and ring',controls);await status.waitFor();
+  const left=Number(await status.getAttribute('data-left-facing')),right=Number(await status.getAttribute('data-right-facing')),position=Number(await status.getAttribute('data-position'));
+  assert.ok(position!==0&&(left===position)!==(right===position),'new action must distinguish the cats');
+  await shot('mirror-new-response');await click(left===position?'Choose the left cat':'Choose the right cat',controls);
+  await controls.waitFor({state:'hidden'});
  }
  try{
   await page.goto(origin+'/cat-bond/?lang=en&rpgDev=1');
@@ -211,8 +214,7 @@ async function run(chapter){
    await fly('Windwing sanctuary',[.67,.30,.64]);await invite('Lingyu');await invite('Yuanfan');await puzzle('Open Sky',[mid,high,low]);await dialogue('sky:S-05');
   }else if(chapter==='library'){
    await talk('Baikan');await puzzle('Sealed archive · Review records',['Public history','Living subjects','Seal notice']);await dialogue('library:M-01','Let affected families review personal records first');await scene('library:M-02');
-   await puzzle('Ground floor · Reflection gallery',['West mirror','Middle mirror','Middle mirror','Middle mirror','East mirror','East mirror']);await puzzle('Upper floor · Sealed mural',['Fallen star','Broken tongue','Emergency anchor']);await libraryEcho();
-   await battle('Archive echo · Guardian illusion','battle:library-echo');await dialogue('library:M-02');await scene('library:M-03');
+   await libraryEcho();await dialogue('library:M-02');await scene('library:M-03');
    await talk('Muling');await dialogue('library:M-03','I feel hurt');await scene('library:M-04');await puzzle('Hidden ledger · Resonance routes',['Original routes','Seal loosened','Inward routing']);await dialogue('library:M-04','I need some distance');await scene('library:M-05');
    await talk('Moye');await puzzle('Six-region model · Compare the two routes',['Converge inward','Connect neighbors','Receive distinct replies']);await dialogue('library:M-05');await restore('Moonmirror sanctuary',['Moon window','Neighbor bridge','Reciprocal reply'],['Moye','Baikan'],'Reflections',[high,low,mid]);await dialogue('library:M-05');
   }else if(chapter==='starfall'){
