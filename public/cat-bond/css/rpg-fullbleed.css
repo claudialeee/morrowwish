@@ -198,3 +198,37 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .rw-world>.rw-chase-jump{position:absolute;bottom:22px;right:16px;z-index:6;min-width:68px;min-height:48px;touch-action:manipulation}
 #stage #battle-ui .move{background:#fff3d9fa!important;color:#3b3020!important;box-shadow:0 2px 6px #49341f50!important;border:1px solid #a3885d55!important}
 @media(max-width:680px) and (orientation:portrait){#stage .rw-world>.rw-chase-bar{top:70px;font-size:12px;line-height:1.35;max-width:calc(100% - 16px)}#stage .rw-world>.rw-chase-stick{bottom:max(12px,env(safe-area-inset-bottom));left:12px}#stage .rw-world>.rw-chase-jump{bottom:max(22px,env(safe-area-inset-bottom))}}
+
+/* Minigames use reserved layout space, not a floating card over the playfield. */
+#stage .rw-world.rw-dedicated-puzzle:not([hidden]){--rw-game-top:64px;--rw-game-controls:min(36%,400px);--rw-game-gap:10px;background:#f2e7d7!important;overflow:hidden!important}
+#stage .rw-world.rw-dedicated-puzzle:not([hidden])>.rw-shell{inset:var(--rw-game-top) calc(var(--rw-game-controls) + 2 * var(--rw-game-gap)) var(--rw-game-gap) var(--rw-game-gap)!important;width:auto!important;height:auto!important;background:#26342e!important;border-radius:10px!important}
+#stage .rw-world.rw-dedicated-puzzle:not([hidden])>.rw-shell .rw-surface{width:min(100cqw,calc(100cqh * 1.77777778))!important;height:auto!important}
+#stage .rw-world.rw-dedicated-puzzle>.rw-dedicated-rail{position:absolute!important;left:auto!important;right:var(--rw-game-gap)!important;top:var(--rw-game-top)!important;bottom:var(--rw-game-gap)!important;width:var(--rw-game-controls)!important;height:auto!important;max-height:none!important;display:flex!important;flex-direction:column;gap:8px;overflow:auto!important;overscroll-behavior:contain;box-shadow:none!important;background:#fff9ee!important;padding:10px!important}
+#stage .rw-minigame-goal{display:flex;flex-direction:column;gap:5px;align-items:stretch;color:#493e2b}
+#stage .rw-minigame-title{font-size:clamp(15px,2vw,21px);line-height:1.25;color:#4a3c2c}
+#stage .rw-minigame-hint,#stage .rw-minigame-progress{margin:0;font-size:clamp(12px,1.35vw,15px);line-height:1.4;overflow-wrap:anywhere}
+#stage .rw-minigame-progress{color:#28634e;font-weight:700}
+#stage .rw-minigame-goal .rw-minigame-leave{align-self:flex-end;min-height:36px!important;padding:3px 10px!important;font-size:12px!important;background:transparent!important;color:#70583c!important;border-color:#c6b596!important}
+#stage .rw-dedicated-rail .rw-puzzle-controls{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;align-content:start;padding:0!important;margin:0!important}
+#stage .rw-dedicated-rail .rw-puzzle-controls> :not(button){grid-column:1/-1;min-width:0}
+#stage .rw-dedicated-rail .rw-puzzle-controls button{min-height:44px!important;white-space:normal!important;overflow-wrap:anywhere;font-size:clamp(12px,1.3vw,15px)!important;line-height:1.25;touch-action:manipulation}
+#stage .rw-dedicated-rail .rw-quality-cards .rw-quality-card{touch-action:none!important}
+#stage .rw-dedicated-rail .rw-puzzle-controls button[data-minigame-key]:not(:disabled):focus-visible{outline:3px solid #97652b;outline-offset:1px}
+
+@media(max-height:500px) and (orientation:landscape){#stage .rw-world.rw-dedicated-puzzle:not([hidden]){--rw-game-top:48px;--rw-game-controls:40%;--rw-game-gap:6px}#stage .rw-world.rw-dedicated-puzzle>.rw-dedicated-rail{padding:6px!important;gap:4px}#stage .rw-minigame-hint,#stage .rw-minigame-progress{font-size:12px}#stage .rw-minigame-title{font-size:15px}}
+@media(orientation:portrait){
+#stage .rw-world.rw-dedicated-puzzle:not([hidden]){--rw-game-top:62px;--rw-game-controls:47%;--rw-game-gap:8px}
+#stage .rw-world.rw-dedicated-puzzle:not([hidden])>.rw-shell{inset:var(--rw-game-top) var(--rw-game-gap) calc(var(--rw-game-controls) + 2 * var(--rw-game-gap)) var(--rw-game-gap)!important}
+#stage .rw-world.rw-dedicated-puzzle>.rw-dedicated-rail{top:auto!important;left:var(--rw-game-gap)!important;right:var(--rw-game-gap)!important;bottom:var(--rw-game-gap)!important;width:auto!important;height:var(--rw-game-controls)!important}
+#stage .rw-dedicated-rail .rw-puzzle-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#stage .rw-minigame-goal{position:relative;padding-right:0}
+}
+
+#stage .rw-dedicated-rail button[data-path-available="true"]{border-color:#58846c!important;background:#e1edda!important;color:#2e523e!important}
+#stage .rw-dedicated-rail button[data-path-available="false"]{opacity:.58}
+
+#stage .rw-world.rw-dedicated-puzzle>.rw-dedicated-rail{box-sizing:border-box}
+#stage .rw-world.rw-chase-mode:not([hidden])>.rw-shell{inset:112px 8px 8px!important;width:auto!important;height:auto!important}
+#stage .rw-world.rw-chase-mode:has(.rw-chase-stick):not([hidden])>.rw-shell{bottom:116px!important}
+@media(orientation:portrait){#stage .rw-world.rw-chase-mode:not([hidden])>.rw-shell{top:132px!important}}
+@media(max-height:500px) and (orientation:landscape){#stage .rw-world.rw-chase-mode:not([hidden])>.rw-chase-bar{top:45px}#stage .rw-world.rw-chase-mode:not([hidden])>.rw-shell{top:93px!important}#stage .rw-world.rw-chase-mode:has(.rw-chase-stick):not([hidden])>.rw-shell{inset:93px 92px 8px 112px!important}}
