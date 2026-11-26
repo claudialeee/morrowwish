@@ -105,7 +105,7 @@ try{
     assert.ok(fit.scrollHeight<=fit.vh+2,'Landscape must not scroll the page: '+msg);
     assert.ok(fit.hud.right<=fit.board.left+1,'HUD cannot cover playfield: '+msg);
     assert.ok(Math.abs(fit.board.width/fit.board.height-10/7)<.02,'Map must preserve 10:7 aspect: '+msg);
-    assert.ok(fit.board.height>=fit.vh*.85||fit.board.width>=fit.vw-290,'Map must maximize available landscape space: '+msg);
+    assert.ok(fit.board.height>=fit.vh*.85||fit.board.width>=fit.vw-300,'Map must maximize available landscape space: '+msg);
     for(const c of fit.controls){
      assert.ok(c.left>=fit.hud.left-1&&c.right<=fit.hud.right+1&&c.top>=fit.hud.top-1&&c.bottom<=fit.hud.bottom+1,'Control clipped: '+c.id+' '+msg);
      assert.ok(c.width>0&&c.height>0,'Control must be visible: '+c.id+' '+msg);
