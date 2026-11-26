@@ -898,6 +898,14 @@
       const elemOk=s.element===el||
         (s.element===splash&&!isUlt&&sideChoices.slice(0,sideLimit).includes(s.id));
       if(!elemOk)continue;
+      // ROLE × CATEGORY GATE (owner 2026-11-26 bug: fire tank 元宝 was learning
+      // ranged/beam/aoe/volley). The gated-skill branch above already role-checks,
+      // but this NON-gated branch was skipping it entirely — a tank/fighter could
+      // slot any native-element ranged/aoe. Apply roleAllowsSkill here too so the
+      // identity gate matches the one in gateMet(). Ults are exempt (signature/ult
+      // always allowed) to preserve 金乌焱/潮汐掌/etc on their native tank species.
+      if(!isUlt&&!alreadyEquipped&&
+         !roleAllowsSkill(cat.buildType||buildTypeForBreed(cat),s))continue;
       const awakenedNative=cat.skillAwakened&&cat.awakenedSkill===s.id&&s.element===el;
       if(!isUlt&&!alreadyEquipped&&!awakenedNative){
         if(s.element===el){
@@ -906,8 +914,15 @@
           // mirrorWall defined before staticPounce; previously Lv.1 electric
           // cats were left with no native Q skill.
           const native=SKILLS.filter(k=>k.element===el&&!k.unlock&&!k.ultCost);
+          const role=cat.buildType||buildTypeForBreed(cat);
+          // Ranking the attack pool must respect the role filter — otherwise a
+          // doudou assassin ranks leafDart (projectile, role-forbidden) as rank
+          // 0 and the first role-legal attack (thornCoil) gets ranked 2 and
+          // locked until bond ≥ 55 (owner 2026-11-26: starter kittens went
+          // learnable-empty after the role-gate fix).
           const attacking=native.filter(k=>
-            ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k.kind));
+            ['melee','projectile','dash','pounce','chain','beam','leap','aoe'].includes(k.kind)
+            &&roleAllowsSkill(role,k));
           if(['heal','buff'].includes(s.kind)){
             if(lvl<3&&bond<30)continue;
           }else{
