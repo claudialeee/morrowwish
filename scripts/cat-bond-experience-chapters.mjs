@@ -178,7 +178,7 @@ async function run(chapter){
   await click('Two Mulings in the mirror');const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();
   const status=controls.locator('[data-mirror-response]');await status.waitFor();
   await click('Choose the left cat',controls);await status.waitFor();assert.equal(await status.getAttribute('data-position'),'0','guess cannot complete the scene');
-  await click('Move and ring',controls);await status.waitFor();
+  await click('Move right',controls);await status.waitFor();assert.equal(await status.getAttribute('data-left-facing'),'0','moving without ringing must not answer');assert.equal(await status.getAttribute('data-right-facing'),'0');await click('Ring twice',controls);await status.waitFor();
   const left=Number(await status.getAttribute('data-left-facing')),right=Number(await status.getAttribute('data-right-facing')),position=Number(await status.getAttribute('data-position'));
   assert.ok(position!==0&&(left===position)!==(right===position),'new action must distinguish the cats');
   await shot('mirror-new-response');await click(left===position?'Choose the left cat':'Choose the right cat',controls);
