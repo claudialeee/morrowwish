@@ -59,15 +59,14 @@ console.log(JSON.stringify((function test(){
     let trail=x;
     for(let i=0;i<3;i++){const step=trail.scentStep();assert(step?.index===i,"ordered scent waypoint");assert(!trail.traceScent((i+1)%3).ok,"out-of-order scent");walk(trail,step.point);ok(trail.traceScent(i),"trace scent");trail=createExplorer(b,s.chapter);}
     assert(!trail.scentStep(),"completed trail must not reopen");
-   }else if(op==="puzzle:paired-water-gates"){
-    walk(x,p);assert(x.interact(op).reason==="upper-gate-required","cannot bypass upper gate");
-    State.S.cats.push({uid:"forest-fixture",species:"nainai",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});const gate=x.pairedGate();assert(gate&&!gate.ready,"upper gate available");walk(x,gate.point);ok(x.holdUpperGate(),"hold upper gate");
-    assert(!x.holdUpperGate().ok,"duplicate upper gate action");const restored=createExplorer(b,s.chapter);assert(restored.pairedGate().ready,"paired gate persists");
-    walk(restored,p);ok(restored.interact(op),"lower gate");assert(restored.puzzle.pair.upper==="forest-fixture"&&restored.puzzle.pair.lower==="player-fixture","helper and actual protagonist are distinct actors");assert(!b.recordWorld(s.id,op,{sceneId:s.id,operation:op,region:s.chapter,verified:true,token:b.capture()}).ok,"cannot bypass paired flow");solve(restored);State.S.cats=State.S.cats.filter(c=>c.uid!=="forest-fixture");
+   }else if(s.id==="forest:R-03"){
+    if(op==="rescue:steady-channel"){walk(x,layouts.forest.features["rescue:trapped-cats"]);assert(!x.interact("rescue:trapped-cats").ok,"cannot rescue before stabilizing");}
+    walk(x,p);const result=x.interact(op);ok(result,op);assert(!result.puzzle&&!x.puzzle,"no valve minigame");assert(!x.interact(op).ok,"duplicate rescue action"); 
    }else{walk(x,skyLaunch[op]||p);if(skyLaunch[op]){assert(!b.recordWorld(s.id,op,{sceneId:s.id,operation:op,region:s.chapter,verified:true,token:b.capture()}).ok,"cannot bypass flight");}const r=x.interact(op);ok(r,op);if(r.puzzle)solve(x);if(skyLanding[op]){assert(x.near(skyLanding[op]),"flight must land at actual destination");assert(createExplorer(b,s.chapter).near(skyLanding[op]),"landing must persist");}}
    assert(!b.view().objective.includes(op),"unrecorded "+op);physical++;
    if(physical===1){const p=x.rewardPoints()[0];walk(x,p.point);const cash=State.S.coins;ok(x.pickup(p.id),"cache reward");assert(State.S.coins>cash&&!x.pickup(p.id).ok,"duplicate reward");rewards++;}
-  }else host(e=>e.record(s.id,op));}
+  }else if(op==="battle:root-echo"){ok(b.enter("forest"),"enter forest rescue battle");const x=createExplorer(b,"forest"),rescueProof={sceneId:s.id,operation:op,region:"forest",verified:true,token:b.capture(),outcome:"win"};walk(x,[.31,.58]);assert(!runtime.evidence(rescueProof).ok,"remote victory rejected");walk(x,layouts.forest.features[op]);assert(!runtime.evidence({...rescueProof,outcome:"defeat",token:b.capture()}).ok,"defeat does not finish rescue");ok(runtime.evidence({...rescueProof,token:b.capture()}),"root echo victory evidence fixture");assert(b.view().objective[0]==="rescue:trapped-cats","free cats only after victory");}
+  else host(e=>e.record(s.id,op));}
   if(s.id==="starfall:F-04")links();
   while(b.view().cursor<s.lines.length)host(e=>e.nextLine());
   if(s.choices.length&&!b.view().choice)host(e=>e.choose(s.choices[0].id));

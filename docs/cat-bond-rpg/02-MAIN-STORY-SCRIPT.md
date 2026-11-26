@@ -123,7 +123,7 @@ Optional interaction: Muling fails to identify a harmless mushroom and 芽禾 la
 **Exit:** shared channel diagram unlocked. The old traveler record is evidence the melody predates current crisis, not a name reveal.
 
 ### R-03 — When the forest moves / 森林在移动
-**Play:** a root collapse separates the upper and lower paths. Player directs a partner to hold pressure while moving between three readable physical controls, water pressure, gate and roots. 芽禾 distributes water above, 榆川 holds the lower gate. An echo copies a familiar guiding whistle and moves false markers; real scent/water direction distinguishes it. Battle and rescue integrated: interrupt the echo to free obstructed roots; not a generic damage gate. Retry checkpoint retains solved safe operations. 
+**Play:** a root collapse separates the upper and lower paths. Meet 芽禾 at the upper path; she automatically steadies the channel while the protagonist and 暮铃 follow the wet water marks. Investigate the optional false call at the dry roots; it yields no progress. Defeat the non-capturable Hollow root echo using the regional root hazards, then physically reach 榆川 and free the trapped cats. No pressure/gate/lever minigame, no swapping control between cats. Failed combat retains the stabilized channel and verified trail. 
 芽禾: “药园先别管！下面还有猫没出来！” / “Forget the herb beds for now! There are cats still down there!”
 榆川: “我撑住闸门，你们把水往左引！” / “I'll hold the gate. Send the water left!”
 Muling: “我在这里。看水痕，别追那个声音。” / “I'm right here. Follow the water marks, not that voice.”
