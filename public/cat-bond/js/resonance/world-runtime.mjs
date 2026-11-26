@@ -325,7 +325,7 @@ function install(){
  function addNextSceneControl(container,v,w){
   if(!v.current||explorer?.puzzle||ceremony||explorer?.survey()?.remote)return;
   const id=v.current.id,chapter=v.current.chapter,owner=State.S;
-  const destination=chapter==="prologue"?"harbor":id==="epilogue:E-01"?(["harbor","forest"].includes(w.location)?w.location:"harbor"):chapter==="finale"?"starfall":chapter==="epilogue"?"garden":chapter;
+  const destination=chapter==="prologue"?"harbor":chapter==="finale"?"starfall":chapter==="epilogue"?"garden":chapter;
   let action,label;
   if(destination==="garden"){action=exitToYard;label=tr("下一场景 · 阳光花园","Next scene · Sunlit Garden");}
   else if(v.regions.includes(destination)&&(mode==="map"||w.location!==destination)){

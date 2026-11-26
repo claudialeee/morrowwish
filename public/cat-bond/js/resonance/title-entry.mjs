@@ -3,7 +3,7 @@ import {getSlotRuntime} from "./slot-runtime.mjs";
 const lang=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const tr=(zh,en)=>lang()==="zh"?zh:en;
 const introIds=new Set(["prologue:P-01","prologue:P-02","prologue:P-03","prologue:P-04"]);
-export function classifyPrologue(view){const id=view?.current?.id;if(introIds.has(id)||view?.ending||["epilogue:E-02","epilogue:E-03"].includes(id))return "garden";if(id==="prologue:P-05")return view.objective?.includes("travel:harbor")?"garden":"world";return "world";}
+export function classifyPrologue(view){const id=view?.current?.id;if(introIds.has(id)||view?.ending||["epilogue:E-01","epilogue:E-02","epilogue:E-03"].includes(id))return "garden";if(id==="prologue:P-05")return view.objective?.includes("travel:harbor")?"garden":"world";return "world";}
 export function finishCinematicScene(){return {ok:false,reason:"opening-animation-retired"};}
 let active=null;
 function openContext(owner){

@@ -2334,72 +2334,51 @@ export const campaign = {
       "id": "epilogue:E-01",
       "chapter": "epilogue",
       "title": {
-        "zh": "我们走过的路",
-        "en": "The roads we made"
+        "zh": "世界又热闹起来了",
+        "en": "The world is lively again"
       },
       "previous": "finale:B-04",
-      "lines": [
-        {
-          "speaker": "qilan",
-          "text": {
-            "zh": "下一班船去森林。你要搭个便船吗？",
-            "en": "Next boat's for the forest. Want a ride?"
-          }
-        },
-        {
-          "speaker": "yuchuan",
-          "text": {
-            "zh": "今天上面的人来帮我们检查水闸。等六地的修复安稳了，再回来找我和老伙伴们，我们也想跟你们旅行一趟。",
-            "en": "The cats above came to check the gates today. Once the repairs are stable, return to me and the other residents. We'd like to travel with you too."
-          }
-        }
-      ],
-      "requires": [
-        "npc:regional-reunion",
-        "cinematic:regional-reunion"
-      ],
+      "lines": [],
+      "requires": [],
       "choices": [],
-      "lineGate": [
-        "npc:regional-reunion"
-      ],
-      "choiceTiming": "afterDialogue",
-      "orderedRequires": true
+      "lineGate": [],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "epilogue:E-02",
       "chapter": "epilogue",
       "title": {
-        "zh": "道歉之后",
-        "en": "An apology with work attached"
+        "zh": "道歉不只是说对不起",
+        "en": "More than an apology"
       },
       "previous": "epilogue:E-01",
       "lines": [
         {
           "speaker": "muling",
           "text": {
-            "zh": "封印是我松开的。把大家的记忆汇进星铃的计划也是我的。不是意外。",
-            "en": "I loosened the seal. The plan to merge your memories into the Star Bell was mine. It wasn't an accident."
-          }
-        },
-        {
-          "speaker": "jiedeng",
-          "text": {
-            "zh": "先把受影响的航路修好。信任的事，以后慢慢说。",
-            "en": "Repair the damaged routes first. Trust will take longer."
-          }
-        },
-        {
-          "speaker": "yahe",
-          "text": {
-            "zh": "我愿意一起修水道。但有些猫还没准备好见你。",
-            "en": "I'll help repair the waterways. Some cats aren't ready to see you yet."
+            "zh": "封印是我打开的。阿婆连家里的小猫都忘了……是我害的。对不起。",
+            "en": "I opened the seal. Gran forgot the kitten waiting at home… because of me. I'm sorry."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我会尊重他们的决定。能做的修复，我会做完。",
-            "en": "I'll respect their choices. I'll finish the repairs I can make."
+            "zh": "我先帮你把坏掉的家铃修好，行吗？",
+            "en": "Can I start by helping you mend the damaged house bells?"
+          }
+        },
+        {
+          "speaker": "jiedeng",
+          "text": {
+            "zh": "那就从这儿开始吧。别的事，慢慢来。",
+            "en": "Then let's start here. The rest will take time."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "嗯。要是还有哪家需要帮忙，告诉我一声。",
+            "en": "Okay. Let me know if any other families need help."
           }
         }
       ],
@@ -2412,8 +2391,8 @@ export const campaign = {
           "npc": "muling",
           "method": "accountability-listen",
           "label": {
-            "zh": "听完各地伙伴的意见",
-            "en": "Listen to the residents"
+            "zh": "听他们把话说完",
+            "en": "Hear them out"
           }
         },
         {
@@ -2421,8 +2400,8 @@ export const campaign = {
           "npc": "muling",
           "method": "accountability-help",
           "label": {
-            "zh": "陪她完成第一次修复",
-            "en": "Join her first repair"
+            "zh": "愿意陪她一起修铃",
+            "en": "Offer to mend bells with her"
           }
         },
         {
@@ -2457,8 +2436,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "愿意。以后出发前，记得问我要不要一起去。",
-            "en": "I do. Next time you set off, remember to ask if I'd like to come along."
+            "zh": "可以啊。不过下次要做这么大的事，先跟我商量。",
+            "en": "You can. But next time it's something this big, talk to me first."
           }
         },
         {

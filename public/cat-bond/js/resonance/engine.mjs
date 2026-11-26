@@ -21,6 +21,8 @@ export function makeEngine(data,initial){
   if(s.completed.includes("forest:R-03"))s.evidence["forest:R-03"]=[...byId["forest:R-03"].requires];
   else if(s.scene==="forest:R-03")s.cursor=0;
  }
+ // E-01 no longer requires a regional revisit or cinematic. Preserve all existing completion evidence.
+ if(s.scene==="epilogue:E-01")s.cursor=0;
  if(typeof s.openingMet!=="boolean")s.openingMet=false;if(!s.ambientDone)s.ambientDone=[];if(!s.ruins)s.ruins={clears:s.postgame.includes("postgame:ruins")?1:0,duoClears:0,attempts:[]};
  const fail=reason=>({ok:false,reason}), commit=()=>({ok:true,state:copy({...s,revision:++s.revision})});
  const cargoComplete=()=>data.links.every(([a,b])=>s.links[a+":"+b].length===4);

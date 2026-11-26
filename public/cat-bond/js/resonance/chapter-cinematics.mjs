@@ -15,7 +15,7 @@ const developmentPreview=()=>{
  const isolated=location.origin==='https://cat-bond-preview.morrowwish.pages.dev'&&window.ARCADE_COLLECTOR==='/api/preview-disabled';
  return local||isolated;
 };
-const developmentReady=()=>developmentPreview()&&['starfall:F-02','starfall:F-05','finale:B-04','epilogue:E-01'].every(id=>{const current=campaign.scenes.find(s=>s.id===id);return !!current&&buildCanonicalScene({campaign,manifest:releaseManifest,view:{current,choice:null,objective:current.requires.filter(o=>o.startsWith('cinematic:')),cursor:0,lineReady:true},staging:true}).ok;});
+const developmentReady=()=>developmentPreview()&&['starfall:F-02','starfall:F-05','finale:B-04'].every(id=>{const current=campaign.scenes.find(s=>s.id===id);return !!current&&buildCanonicalScene({campaign,manifest:releaseManifest,view:{current,choice:null,objective:current.requires.filter(o=>o.startsWith('cinematic:')),cursor:0,lineReady:true},staging:true}).ok;});
 async function refreshReleaseManifest(){try{const response=await fetch(manifestURL);if(response.ok){releaseManifest=await response.json();window.dispatchEvent(new Event("cat-bond-resonance-changed"));}}catch{/* Invalid manifest remains locked. */}}
 refreshReleaseManifest();
 

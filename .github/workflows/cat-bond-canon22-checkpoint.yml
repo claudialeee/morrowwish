@@ -32,9 +32,15 @@ jobs:
           node --check public/cat-bond/js/resonance/sky-flight.mjs
           node --check public/cat-bond/js/resonance/world-runtime.mjs
           node --check public/cat-bond/js/resonance/campaign.mjs
+          node --check public/cat-bond/js/resonance/engine.mjs
+          node --check public/cat-bond/js/resonance/narrative-host.mjs
+          node --check public/cat-bond/js/resonance/title-entry.mjs
+          node --check public/cat-bond/js/resonance/chapter-cinematics.mjs
+          node --check public/cat-bond/js/resonance/slot-runtime.mjs
       - name: Verify implemented flight and scene contract
         run: |
           node scripts/test-cat-bond-canon22-glide.mjs
           node scripts/test-cat-bond-canon22-mirror.mjs
+          node scripts/test-cat-bond-canon22-epilogue.mjs
       - name: Run campaign integration regressions
         run: node scripts/test-cat-bond-canon12-campaign.mjs

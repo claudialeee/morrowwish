@@ -73,7 +73,7 @@ function install(){
    // Title handoff exclusively retires the four historical presentation checkpoints.
    // Background slot-change notifications cannot consume them before the context overlay is shown.
    if(/^prologue:P-0[1-4]$/.test(v.current.id)&&campaign.openingPresentationVersion===2)return;
-   if(["epilogue:E-02","epilogue:E-03"].includes(v.current.id)&&window.__game?.scene!=="yard"){if(root)close();return;}
+   if(["epilogue:E-01","epilogue:E-02","epilogue:E-03"].includes(v.current.id)&&window.__game?.scene!=="yard"){if(root)close();return;}
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&awaitingGameplay(v)){close();return;}
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.cursor===v.current.lines.length){
     if(v.current.id==="epilogue:E-02"&&v.objective.includes("npc:public-accountability")&&(!v.current.choices.length||v.choice)){const r=runtime.completeNPCScene({sceneId:v.current.id,operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:runtime.capture()});if(!r.ok)return;scheduleFinish();return}
@@ -82,7 +82,7 @@ function install(){
     if(v.objective.length&&(!v.current.choices.length||v.choice)){close();return;}
    }
    if(v.cursor===v.current.lines.length&&!v.objective.length&&(!v.current.choices.length||v.choice)){
-    const old=v.current.id,r=runtime.finish();if(r.ok){if(openedScene===old)close();if(old==="epilogue:E-03")showEndingTitle();}
+    const old=v.current.id,r=runtime.finish();if(r.ok){if(openedScene===old)close();if(old==="epilogue:E-03")showEndingTitle();else if(old==="epilogue:E-01"&&window.__game?.scene==="yard")show();}
    }
   })
  }
@@ -92,6 +92,7 @@ function install(){
   if(window.__game?.scene==="battle")return;
   const d=event.detail||{};if(window.CatBondResonanceNPC){if(!window.CatBondResonanceNPC.talk(d.npcId,d.region,d.sceneId))window.__game?.toast?.({zh:"暂时没有新的话题。",en:"Nothing new to discuss yet."});return}const r=runtime.recordNPC({...d,token:runtime.capture()});if(r.ok)show();
  });
+ window.addEventListener("cat-bond-garden-entered",scheduleFinish);
  window.addEventListener("cat-bond-resonance-changed",refresh);
  window.addEventListener("cat-bond-active-save-changed",close);
  window.addEventListener("cat-bond-illustrations-ready",()=>{if(dialogue&&slot===State.S)dialogue.render()});
