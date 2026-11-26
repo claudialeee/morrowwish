@@ -221,8 +221,8 @@
   }
   function breedFrame(o){
     const species=o.species||{},id=species.id||'tangyuan';
-    if(!breedLoaded)return {image:source,sx:0,sy:0,sw:w,sh:h};
     const starter=starterFrame(id);if(starter)return {image:starter,sx:0,sy:0,sw:starter.width,sh:starter.height};
+    if(!breedLoaded)return {image:source,sx:0,sy:0,sw:w,sh:h};
     if(breedCache[id])return {image:breedCache[id],sx:0,sy:0,sw:breedFrameSize.w,sh:breedFrameSize.h};
     const [base,tone,strength,kind]=BREED_LOOKS[id]||BREED_LOOKS.tangyuan;
     const canvas=document.createElement('canvas');
@@ -355,7 +355,10 @@
     }
     // An image draws as soon as its first frame has decoded. On older browsers
     // without AVIF decoding, preserve playability with the legacy renderer.
-    if(!loaded&&!breedLoaded)return;
+    const starter=starterFrame(o.species?.id);
+    // The canonical protagonist must never flash the legacy, differently proportioned atlas.
+    if(o.species?.id==='jinjc'&&!starter)return;
+    if(!starter&&!loaded&&!breedLoaded)return;
     const gr=o.growth||null;
     const scale=(o.scale||1)*(gr?.scale||1);
     const face=o.face===-1?-1:1;
@@ -411,7 +414,7 @@
     // Preserve its painted proportions instead of squeezing a whole cat into
     // the old, narrow half-cat rectangle. Keep feet planted at +35 and limit
     // the width so mobile garden/battle cats are still compact.
-    const dest=breedLoaded?(()=>{
+    const dest=(starter||breedLoaded)?(()=>{
       const width=Math.min(81,originalDest[2]*1.22);
       const height=width*(art.sh/art.sw);
       const feetY=originalDest[1]+originalDest[3];
@@ -461,6 +464,7 @@
   drawing.renderCatThumb=thumbnail;
   // Surface decoding state for the automated 25-breed art audit.
   window.CatBondArtworkStatus={
+    get protagonistLoaded(){return !!starterFrame('jinjc');},
     get breedsLoaded(){return breedLoaded;},
     get originalLoaded(){return loaded;},
     get gaitLayersBuilt(){return gaitLayersBuilt;},
