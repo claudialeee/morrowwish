@@ -1585,57 +1585,57 @@ export const campaign = {
         {
           "speaker": "baikan",
           "text": {
-            "zh": "借图的印记……暮铃，这不是你那只铃坠么？公开记录也写着，封印松开的那天，失忆又开始了。",
-            "en": "The mark on the borrowing record… Muling, isn't that your pendant? The public record also says the forgetting returned the day the seal was loosened."
+            "zh": "借图的印记……暮铃，这不是你那只铃坠么？",
+            "en": "The mark on the borrowing record… Muling, isn't that your pendant?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "借过图不代表就是你打开的。暮铃，我想听你自己说。",
-            "en": "Borrowing the map doesn't mean you opened the seal. Muling, I want to hear it from you."
+            "zh": "等一下。那天封印松了，失忆就又开始了？暮铃，我想听你自己说。",
+            "en": "Wait. The forgetting started again the day the seal was loosened? Muling, I want to hear it from you."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "是我。我把修好的线路拨向中央。",
-            "en": "It was me. I redirected the repaired routes toward the center."
+            "zh": "……是我。我松开了封印，才让你醒过来。那时我知道别的猫也可能开始忘事。",
+            "en": "…It was me. I loosened the seal so you'd wake up. I knew the other cats might start forgetting again."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "封印也是你松开的？",
-            "en": "Did you loosen the seal too?"
+            "zh": "风铃镇那只连家都找不到的猫……你那时候就知道为什么？",
+            "en": "That cat at Windchime Town who couldn't find home… you knew why, even then?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "是。我知道可能会有人失去记忆，以为自己来得及补救。",
-            "en": "Yes. I knew others might lose their memories. I thought I could fix it in time."
+            "zh": "……知道。我一个人唱不响那些铃。只有你能唱出开头。我怕告诉你，你就不肯跟我走了。",
+            "en": "…I knew. I couldn't wake those bells alone. Only you knew their first notes. I was afraid you'd refuse to come with me if I told you."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那些忘了回家路的猫呢？",
-            "en": "What about the cats who forgot their way home?"
+            "zh": "那些铃也是你故意调过去的？",
+            "en": "And you turned those bells toward the center on purpose?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我知道。我只是……太想让你回来了。",
-            "en": "I knew. I just... wanted you back so badly."
+            "zh": "嗯。万一接不起来，我想留一个办法。……对不起。那时候，我只想着怎么把你带回来。",
+            "en": "Yes. I wanted another way if we couldn't reconnect them. …I'm sorry. All I could think about was bringing you back."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "你没有权利替他们决定。也没有权利替我决定。",
-            "en": "You had no right to decide for them. Or for me."
+            "zh": "你明明可以告诉我，让我自己选。你也不能替其他猫决定。",
+            "en": "You could have told me and let me choose. You had no right to decide for the other cats either."
           }
         }
       ],
@@ -1730,8 +1730,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "我想知道以前的事，可我也不想忘了今天。不能拿他们的过去换我的。走吧，白栞，最后一座铃还没响呢。",
-            "en": "I want to know my past, but I don't want to forget today either. We can't trade their past for mine. Come on, Baikan. There's one bell left to wake."
+            "zh": "我想知道以前的事，可我也不想忘了今天。咱们在灯火节玩得多开心啊。不能拿他们的过去换我的。走吧，白栞，最后一座铃还没响呢。",
+            "en": "I want to know my past, but I don't want to forget today either. We had such a good time at the lantern festival. We can't trade their past for mine. Come on, Baikan. There's one bell left to wake."
           }
         }
       ],
@@ -2184,8 +2184,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "记得。也记得这一路你陪我做过的事。还有那两杯茶。",
-            "en": "I do. I remember everything we did together on this journey. And those two cups of tea."
+            "zh": "记得。我想起了我的名字，还有以前的事。以前说好了回家喝茶。风铃镇那场架、森林里那条绕来绕去的路……后来这些，我也都记得。",
+            "en": "I do. I remember my name and my life before. We promised to have tea back home. And that fight in Windchime Town, the winding forest path… I remember everything we've done since, too."
           }
         },
         {
