@@ -136,8 +136,35 @@ assert.deepEqual(JSON.parse(JSON.stringify(test.getState().guardTarget)),{x:4,y:
 assert.equal(chase.exposure,1,"One visible turn gives exactly one warning");
 assert.equal(chase.lives,3,"First sighting is not a capture");
 test.move(-1,0);
-assert.equal(chase.caughtCount,1,"Second consecutive exposed turn catches");
-assert.equal(chase.lives,2,"Second exposed turn costs one heart");
+assert.equal(chase.caughtCount,0,"Tutorial allows one additional exposed turn");
+assert.equal(chase.exposure,2,"Second tutorial exposure reaches full alert");
+assert.deepEqual(JSON.parse(JSON.stringify(chase.human)),{x:5,y:3},"Owner pursues immediately after first warning");
+nodes.get('wait').onclick();
+assert.equal(chase.caughtCount,1,"Third consecutive exposed turn catches in tutorial");
+assert.equal(chase.lives,2,"Capture costs one heart");
+// All normal rooms have a strict, predictable exposure threshold, including Wait.
+// Daily challenge never inherits the introductory grace turn.
+for(const [room,isDaily] of [...Array.from({length:8},(_,i)=>[i,false]),[0,true]]){
+ test.choose(room,isDaily);
+ const st=test.getState(),threshold=room===0&&!isDaily?3:2;
+ st.cat={x:0,y:0};st.catFrom={...st.cat};st.human={x:3,y:0};st.humanFrom={...st.human};
+ st.sleepTurns=0;st.lightTurns=0;st.noise=null;st.distractionTurns=0;st.guardMode="patrol";
+ assert.match(nodes.get('ruleStep2Text').textContent,new RegExp(threshold+' consecutive exposed turns'),'Help matches room threshold');
+ for(let turn=1;turn<=threshold;turn++){
+  nodes.get('wait').onclick();
+  assert.equal(st.caughtCount,turn===threshold?1:0,'Exact exposure threshold in room '+(room+1)+' daily='+isDaily);
+  if(turn<threshold)assert.equal(st.exposure,turn,'Warning counts exposed turns, not arbitrary alert units');
+ }
+}
+test.choose(0,false);
+const escapeWarning=test.getState();
+escapeWarning.cat={x:4,y:4};escapeWarning.catFrom={...escapeWarning.cat};escapeWarning.human={x:6,y:4};escapeWarning.humanFrom={...escapeWarning.human};
+nodes.get('wait').onclick();
+assert.equal(escapeWarning.exposure,1,"Visible player receives first warning");
+assert.match(nodes.get('pawsAlert').textContent,/Caught in 2 more exposed moves/,"First room shows the actual remaining turns");
+test.move(0,1);
+assert.equal(escapeWarning.exposure,0,"Hiding in a box clears warning");
+assert.equal(escapeWarning.caughtCount,0,"Successful escape costs no hearts");
 // Strict capture cap in every room, including the former tutorial grace period.
 for(let i=0;i<8;i++){
  test.choose(i,false);const st=test.getState();
@@ -281,7 +308,7 @@ assert.equal(hard.pressure,false,'Later room must start without time-pressure vi
 hard.steps=hard.room.goal-1;
 test.move(1,0);
 assert.equal(hard.pressure,true,'Spending the room step budget should raise guard alertness');
-assert.ok(/High alert|Spotted!/.test(nodes.get('visionTip').textContent),'Rising pressure must be explained in HUD');
+assert.ok(/High alert|Spotted!|DANGER!/.test(nodes.get('visionTip').textContent),'Rising pressure must be explained in HUD');
 assert.ok(source.includes('s.index>=3?1:0')&&source.includes('s.searchTurns=s.index>=5'),
  'Later rooms must widen sight and extend guard search memory');
 // Real step-by-step solutions through the post-balance guard AI (no shortcuts,
