@@ -1,7 +1,7 @@
 import "./narrative-host.mjs";
 import "./npc-world.mjs?v=garden-v3-1";
 import "./ambient-play.mjs";
-import "./world-runtime.mjs?v=player-first-nav-3";
+import "./world-runtime.mjs?v=regional-discovery-1";
 import "./title-entry.mjs?v=map-talk-1";
 // The prologue uses living discoveries instead of a standalone bell prop.
 import "./chapter-cinematics.mjs";
