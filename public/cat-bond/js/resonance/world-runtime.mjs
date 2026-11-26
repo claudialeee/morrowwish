@@ -363,7 +363,7 @@ function install(){
  const launchOp=reg==="sky"&&v.objective.find(op=>skyLaunch[op]&&hit(skyLaunch[op]));if(launchOp){visitFeature(launchOp,explorer.layout.features[launchOp]);return;}
  const f=Object.entries(explorer.layout.features).find(([op,p])=>!libraryBlocked(op,v.objective,v)&&op!=="explore:scent-trail"&&(op!=="puzzle:safety-blueprint"||!explorer.forgeStep())&&(op!=="puzzle:paired-water-gates"||explorer.pairedGate()?.ready)&&(op!=="explore:tide-logbook"||!explorer.tideStep())&&(!op.startsWith("melody:")||!v.objective.includes("repair:"+op.split(":")[1]))&&v.objective.includes(op)&&(!["starfall:F-02","starfall:F-04"].includes(v.current?.id)||v.objective[0]===op)&&hit(p));if(f){visitFeature(f[0],f[1]);return;}
  const memory=availableMemories(reg).find(m=>hit(m.point));if(memory){visitDuoMemory(memory);return;}
- const npc=storyNpcs().find(n=>hit(npcPosition(n))||hit([npcPosition(n)[0],npcPosition(n)[1]-.045]));if(npc){visitNpc(npc);return;}
+ const npc=storyNpcs().find(n=>hit(npcPosition(n))||hit([npcPosition(n)[0],Math.max(.035,npcPosition(n)[1]-.10)])||hit([npcPosition(n)[0],npcPosition(n)[1]-.045]));if(npc){visitNpc(npc);return;}
  const cache=explorer.rewardPoints().find(p=>!b.world().pickups[reg+":"+p.id]&&hit(p.point));if(cache){go(cache.point,()=>{report(explorer.pickup(cache.id),tr("发现宝藏","Treasure found"));render()});return;}
  if(wild&&hit(wild.point)){visitWild(reg);return;}
  pending=null;beginWalk();explorer.walk(x,y);

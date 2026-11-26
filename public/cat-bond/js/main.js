@@ -321,7 +321,7 @@ function installCatBondSystemMenu(){
  if(!toggle||!menu)return;
  const zh=()=>window.MorrowwishI18n?.get?.()==='zh';
  const t=(a,b)=>zh()?a:b;
- const close=()=>{menu.hidden=true;toggle.setAttribute('aria-expanded','false');};
+ let menuPage='home';const close=()=>{menu.hidden=true;menuPage='home';toggle.setAttribute('aria-expanded','false');};
  const open=()=>{menu.hidden=false;toggle.setAttribute('aria-expanded','true');render();menu.querySelector('button')?.focus();};
  const native=sel=>document.querySelector(sel);
  function render(){
@@ -339,7 +339,7 @@ function installCatBondSystemMenu(){
     ['yard-build',t('家园布置','Garden design'),''],['yard-seek',t('寻找野猫','Find wild cats'),''],
     ['yard-play',t('逗猫','Play with cats'),''],['yard-feed',t('喂食','Feed cats'),'']
   ].filter(([id])=>native({'yard-map':'#fab-map','yard-book':'#sg-book-entry','yard-build':'#fab-build','yard-seek':'#fab-seek','yard-play':'#fab-play','yard-feed':'#fab-feed'}[id])):[];
-  const dialogue=window.CatBondDialogueSettings;const rows=[
+  const dialogue=window.CatBondDialogueSettings;let rows=[
     ...(dialogue?[]:yardActions),
     ...(!dialogue&&world?[[ 'world-book',t('星月之书 · 养成','Resonance Book · companions'),''],['world-atlas',t('世界地图','World atlas'),''],['world-garden',t('阳光花园','Sunlit Garden'),''],['world-explore',t('任务与探索','Quests and exploration'),'']]:[]),
     ...(!dialogue&&world?camera.map((button,i)=>['camera-'+i,cameraLabels[i]?.[0]||button.textContent,'']):[]),
@@ -353,14 +353,30 @@ function installCatBondSystemMenu(){
     ...(!battle?[['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),'']]:[]),
     ...(!title&&!battle?[['title',t('返回标题画面','Return to title'),'']]:[])
   ];
-  menu.innerHTML='<div class="cb-system-card"><header><h2>'+t('系统菜单','System menu')+'</h2><button type="button" data-system="close" aria-label="'+t('关闭','Close')+'">×</button></header><div class="cb-system-rows">'+rows.map(([id,label,value])=>'<button type="button" data-system="'+id+'"><span>'+label+'</span><small>'+value+'</small></button>').join('')+'</div></div>';
+  const navigation=new Set(['yard-map','yard-book','world-book','world-atlas','world-garden','world-explore','skills']);
+  const settings=new Set(['language','music','effects','fullscreen','dialogue-auto','dialogue-speed','dialogue-history','share']);
+  const gardenActions=rows.filter(([id])=>['yard-build','yard-seek','yard-play','yard-feed'].includes(id));
+  const cameraActions=rows.filter(([id])=>id.startsWith('camera-'));
+  const saveActions=rows.filter(([id])=>['slots','title'].includes(id));
+  const pages={home:t('菜单','Menu'),settings:t('设置','Settings'),garden:t('花园活动','Garden activities'),camera:t('地图视角','Map view'),saves:t('存档与返回','Save & exit'),credits:t('关于与音乐署名','About & credits')};
+  if(menuPage==='home'){rows=rows.filter(([id])=>navigation.has(id));if(gardenActions.length)rows.push(['page-garden',pages.garden,'›']);if(cameraActions.length)rows.push(['page-camera',pages.camera,'›']);rows.push(['page-settings',pages.settings,'›']);if(saveActions.length&&!dialogue)rows.push(['page-saves',pages.saves,'›']);}
+  else if(menuPage==='settings'){rows=rows.filter(([id])=>settings.has(id));rows.push(['page-credits',pages.credits,'›']);}
+  else if(menuPage==='garden')rows=gardenActions;
+  else if(menuPage==='camera')rows=cameraActions;
+  else if(menuPage==='saves')rows=saveActions;
+  else rows=[];
+  const section=(label,list)=>list.length?'<section class="cb-menu-group">'+(label?'<h3>'+label+'</h3>':'')+list.map(([id,label,value])=>'<button type="button" data-system="'+id+'"><span>'+label+'</span>'+(value?'<small>'+value+'</small>':'<small aria-hidden="true">›</small>')+'</button>').join('')+'</section>':'';
+  const content=menuPage==='home'?section(t('冒险','Adventure'),rows.filter(([id])=>['yard-map','world-atlas','world-garden','world-explore','skills'].includes(id)))+section(t('伙伴与家园','Companions & home'),rows.filter(([id])=>['yard-book','world-book','page-garden'].includes(id)))+section(t('游戏','Game'),rows.filter(([id])=>['page-settings','page-saves','page-camera'].includes(id))):section('',rows);
+  menu.innerHTML='<div class="cb-system-card" data-menu-page="'+menuPage+'"><header>'+(menuPage!=='home'?'<button type="button" data-system="page-back" aria-label="'+t('返回菜单','Back to menu')+'">‹</button>':'')+'<h2>'+pages[menuPage]+'</h2><button type="button" data-system="close" aria-label="'+t('关闭','Close')+'">×</button></header><div class="cb-system-rows">'+content+'</div></div>';
   const sound=window.MorrowwishMusic?.status?.();
-  if(sound){
+  if(sound&&menuPage==='settings'){
    const levels=document.createElement('div');levels.style.cssText='grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:2px 0;font-size:11px';
    for(const [name,value,fn] of [[t('音乐音量','Music volume'),sound.volume,'setVolume'],[t('音效音量','Effects volume'),sound.effectsVolume,'setEffectsVolume']]){
     const label=document.createElement('label'),slider=document.createElement('input');label.textContent=name;label.style.cssText='display:flex;align-items:center;gap:8px;justify-content:space-between';slider.type='range';slider.min='0';slider.max='100';slider.value=String(Math.round(value*100));slider.setAttribute('aria-label',name);slider.dataset.audioVolume=fn==='setVolume'?'music':'effects';slider.style.cssText='width:min(45%,130px);min-width:72px;accent-color:#dfc391';const valueText=document.createElement('output');valueText.textContent=slider.value+'%';valueText.style.cssText='min-width:36px;text-align:right;font-size:12px;color:#dfc391';slider.oninput=()=>{window.MorrowwishMusic[fn](Number(slider.value)/100);valueText.textContent=slider.value+'%';};label.append(slider,valueText);levels.append(label);
    }
    menu.querySelector('.cb-system-rows').append(levels);
+  }
+  if(menuPage==='credits'){
    const credit=document.createElement('p');credit.className='cb-music-credit';
    credit.append(document.createTextNode('Music: Enchanted Valley — Kevin MacLeod (incompetech.com), '));
    const license=document.createElement('a');license.href='https://creativecommons.org/licenses/by/4.0/';license.target='_blank';license.rel='noopener noreferrer';license.textContent='CC BY 4.0';credit.append(license,document.createTextNode(' · Opus transcode'));
@@ -369,7 +385,7 @@ function installCatBondSystemMenu(){
   }
   menu.querySelectorAll('[data-system]').forEach(btn=>bindMenuPress(btn,async()=>{
    const id=btn.dataset.system,selectors={language:'.mw-settings-language',effects:'.mw-settings-sfx',music:'.mw-settings-music',fullscreen:'#mw-fullscreen-toggle',share:'.mw-settings-share'};
-   if(id==='close'){close();toggle.focus();return;}if(id.startsWith('dialogue-')){const settings=window.CatBondDialogueSettings;if(!settings)return;if(id==='dialogue-auto')settings.toggleAuto();if(id==='dialogue-speed')settings.cycleSpeed();if(id==='dialogue-history'){settings.toggleHistory();close();return;}render();return;}
+   if(id==='close'){close();toggle.focus();return;}if(id.startsWith('page-')){menuPage=id==='page-back'?'home':id.slice(5);render();return;}if(id.startsWith('dialogue-')){const settings=window.CatBondDialogueSettings;if(!settings)return;if(id==='dialogue-auto')settings.toggleAuto();if(id==='dialogue-speed')settings.cycleSpeed();if(id==='dialogue-history'){settings.toggleHistory();close();return;}render();return;}
    if(id.startsWith('yard-')){const target=native({'yard-map':'#fab-map','yard-book':'#sg-book-entry','yard-build':'#fab-build','yard-seek':'#fab-seek','yard-play':'#fab-play','yard-feed':'#fab-feed'}[id]);close();if(window.__game?.scene==='yard'&&!target?.disabled)target?.click();return;}
    if(id.startsWith('world-')){close();if(window.__game?.scene!=='map')return;if(id==='world-book'){window.ResonanceBook?.open?.('cats');return;}if(id==='world-garden'){native('.rw-world [data-world-nav="garden"]')?.click();return;}if(id==='world-atlas'){const back=native('.rw-world [data-world-nav="atlas"]');if(back&&!back.disabled)back.click();else if(window.WorldMap?.mode==='map')native('.rw-atlas-menu:not([open]) > summary')?.click();return;}if(id==='world-explore'){native('.rw-region-toggle,.rw-atlas-menu > summary')?.click();return;}}
    if(id.startsWith('camera-')){const target=document.querySelectorAll('.rw-world:not([hidden]) .rw-camera-controls button, .rw-world:not([hidden]) .rw-atlas-menu .rw-controls button')[Number(id.slice(7))];close();if(window.__game?.scene==='map'&&!target?.disabled)target?.click();return;}
