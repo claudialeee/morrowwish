@@ -99,7 +99,7 @@ class VFX {
       const style=C.classify(type,options.skill),max=['heal','cleanse','barrier','shieldBreak'].includes(style)?.42:type==='kill'?.44:.28;
       const live=this.fx.filter(e=>e.type==='contact').length;
       if(live<36){
-        this.fx.push({type:'contact',style,tier:type,element:options.skill?.element,angle:options.angle||0,x,y,life:max,max,scale:options.scale||1});
+        this.fx.push({type:'contact',style,tier:type,element:options.skill?.element,skillId:options.skill?.isBasic||options.skill?.ultCost?null:options.skill?.id,angle:options.angle||0,x,y,life:max,max,scale:options.scale||1});
       }
       return;
     }

@@ -1108,6 +1108,8 @@
     '咒波三连': 'Hex Triwave', '潮波三叠': 'Tide Triwave', '月华连弧': 'Crescent Fan',
     '踏月之猫的招牌：一次挥出五道追踪月牙能量波，各自咬向最近目标。':
       'Luna\'s signature — releases five crescent-moon waves at once, each homing onto the nearest target.',
+    '踏月之猫的招牌：一道道月牙能量波沿施放方向直线挥出。':
+      'Luna\'s signature — five crescent-moon waves release one at a time along the cast direction, flying straight.',
     '蓄一发按出三连暗波：每 0.35 秒一发自动追击当下最近的敌人，不必一次放完。':
       'Hold one cast, release three dark waves — one every 0.35s auto-homes at the nearest enemy, so you don\'t burn it all at once.',
     '一发激起三叠潮波：每 0.3 秒一发自动追击当下最近的敌人，持续淋湿。':
@@ -2071,7 +2073,10 @@
   "破防": "Guard Broken",
   "恢复中": "Recovering",
   "野猫韧性": "Wild cat poise",
-  "水枪": "Water Jet",
+  "水枪": "Water Lance",
+  "雷极磁场": "Magnetic Polarity",
+  "高压水凝成锋锐长枪，沿细直线贯穿多个敌人并持续造成伤害；施放时原地不动，收枪后短暂迟缓。": "A sharp lance of compressed water pierces enemies in a narrow line; channel in place, then recover briefly.",
+  "在目标方向展开双雷核，持续4秒牵引并电击两极之间的敌人。": "Deploy two electric poles for four seconds, drawing in and shocking enemies between them.",
   "坦克 / 格斗专属：极短时间完全格挡下一次攻击；结束后短暂易伤。": "Tank / Fighter only: Completely block the next hit for a moment, then briefly take extra damage.",
   "焰弹": "Flame Orb",
   "炽焰冲": "Flame Dash",
