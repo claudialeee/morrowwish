@@ -244,7 +244,7 @@
     { id: 'waterJet',   name: '水枪',     element: 'water', kind: 'beam', channel: 1.2, reach: 300, width: 26, power: 1.75, cd: 5.0, ultCost: 0, castSlow: 0.5, tags: ['soak','channel','ranged'], appliesTag: 'soak', vfx: 'beam', desc: '持续喷射高压水柱，沿直线不断造成伤害；喷射时原地不动，收枪后短暂迟缓（后遗症）。' },
     { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff', shieldType: 'barrier', power: 0, cd: 5.0, ultCost: 0, wardDuration: 5.2, tags: ['shield','soak'], appliesTag: null, vfx: 'ring', desc: '展开泡泡护盾，减伤 45%，持续约 5 秒——前排的持续减伤罩。' },
     { id: 'tidePool',   name: '潮汐池',   element: 'water', kind: 'aoe', power: 0.6, cd: 4.0, ultCost: 0, field: { element: 'water', tag: 'soak', life: 6 }, tags: ['soak','field'], appliesTag: 'soak', vfx: 'ring', desc: '抛出一片潮汐水域：站在其中持续淋湿；用⚡电系技能打入水域可引爆「元素反应」，范围内全体过载！' },
-    { id: 'tidalPulse', name: '潮波三叠', element: 'water', kind: 'projectile', power: 1.15, cd: 5.2, ultCost: 0, pulseCount: 3, pulseGap: 0.30, pulseHoming: 1.8, tags: ['soak','ranged','pulse'], appliesTag: 'soak', vfx: 'orb', desc: '一发激起三叠潮波：每 0.3 秒一发自动追击当下最近的敌人，持续淋湿。', unlock: { level: 5, element: 'water' } },
+    { id: 'tidalPulse', name: '潮波三叠', element: 'water', kind: 'projectile', power: 1.15, cd: 5.2, ultCost: 0, pulseCount: 3, pulseGap: 0.30, pulseHoming: 1.8, tags: ['soak','ranged','pulse'], appliesTag: 'soak', vfx: 'orb', desc: '一发激起三叠潮波：每 0.3 秒一发自动追击当下最近的敌人，持续淋湿。', unlock: { level: 5 } },
     // GRASS mirror of 潮汐池: a lingering aoe FIELD that BINDS (束缚) enemies standing in it, instead of
     // soaking them (owner: "草系也要有类似的，但是是束缚住对面"). Same aoe/field delivery (lobAoe reads
     // sk.field → spawnField applies the tag each frame); bind is a real soft-CC (roots movement, slows).
@@ -291,7 +291,7 @@
     // SALVO/PULSE projectile: ONE cast queues 3 waves ~0.35s apart. Each wave re-aims at the
     // NEAREST enemy at its own release time, so the player can watch the first wave land and
     // the second/third can retarget mid-cast. pulseCount/pulseGap/pulseHoming define the pattern.
-    { id: 'arcanePulse', name: '咒波三连', element: 'dark', kind: 'projectile', power: 1.1, cd: 5.5, ultCost: 0, pulseCount: 3, pulseGap: 0.35, pulseHoming: 1.6, tags: ['expose','ranged','pulse'], appliesTag: 'expose', vfx: 'orb', desc: '蓄一发按出三连暗波：每 0.35 秒一发自动追击当下最近的敌人，不必一次放完。', unlock: { level: 5, element: 'dark' } },
+    { id: 'arcanePulse', name: '咒波三连', element: 'dark', kind: 'projectile', power: 1.1, cd: 5.5, ultCost: 0, pulseCount: 3, pulseGap: 0.35, pulseHoming: 1.6, tags: ['expose','ranged','pulse'], appliesTag: 'expose', vfx: 'orb', desc: '蓄一发按出三连暗波：每 0.35 秒一发自动追击当下最近的敌人，不必一次放完。', unlock: { level: 5 } },
     { id: 'voidMaw',    name: '虚吞',     element: 'dark',  kind: 'aoe',        power: 2.5, cd: 0,   ultCost: 80, tags: ['curse','ult','rewind'],   appliesTag: ['dizzy','rewind'], vfx: 'shockwave', desc: '【必杀】深渊巨口吞噬，时间回溯——将目标斗志拉回数秒前！' },
     // ---- 光 light ----
     { id: 'prismBeam',  name: '棱光束',   element: 'light', kind: 'projectile', power: 1.2, cd: 2.6, ultCost: 0,  tags: ['ranged','blind'],appliesTag: 'blind', vfx: 'beam',      desc: '聚焦光束灼目，可致短暂失明。' },
