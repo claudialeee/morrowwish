@@ -20,9 +20,14 @@ function render(c,item,phase=0,t=.25){
  if(item.kind==='skill'){
    const v={kind:phase?'signatureHit':'signatureCast',skillId:sk.id,x:phase?ex:close,y,angle:0,heavy:!!sk.heavy,life:1-t,max:1};
    if(sk.id==='arcanePulse'){
-     const offsets=[0,24,-24];
-     if(phase){for(let j=0;j<3;j++)F.draw(c,{...v,umbralGround:true,r:sk.lobRadius,index:j,x:ex-20*j,y:ey+offsets[j],life:Math.max(.04,.62-(.12+j*.09+t*.15)),max:.62},time);}
-     else for(let j=0;j<3;j++)F.drawUmbralLob(c,{sx:x+16,sy:y,tx:ex-20*j,ty:ey+offsets[j],r:sk.lobRadius,index:j,height:106,flight:.76,age:.76*(.79-j*.30)},time);
+     // A real salvo timeline: only two shells may be airborne simultaneously.
+     const elapsed=phase?1.63+t*.15:.55+t*.18,offsets=[0,24,-24];
+     for(let j=0;j<sk.lobCount;j++){
+       const age=elapsed-j*sk.lobGap,tx=ex,ty=ey+offsets[j];
+       if(age<0)continue;
+       if(age<sk.lobFlight)F.drawUmbralLob(c,{sx:x+16,sy:y,tx,ty,r:sk.lobRadius,index:j,height:106,flight:sk.lobFlight,age},time);
+       else if(age-sk.lobFlight<.62)F.draw(c,{...v,umbralGround:true,r:sk.lobRadius,index:j,x:tx,y:ty,life:.62-(age-sk.lobFlight),max:.62},time);
+     }
    }else if(sk.id==='meteor'){if(phase){F.draw(c,{...v,meteorGround:true,r:86,life:1-t,max:1},time);}else F.drawMeteorFlight(c,{burst:{tx:ex,ty:ey,r:86,skill:sk},life:.42},time);}
    else if(sk.kind==='aoe'&&sk.field){if(phase)F.drawMaterialField(c,{element:sk.field.element||el,r:82,x:ex,y:ey,t:4},time);}
    if(sk.kind==='buff'&&sk.id==='mirrorWall')window.CatBondWardArt?.drawFlatWall(c,{x:ex,y:ey,angle:0,halfLength:110,age:.4,remaining:4,hitAge:phase?.18:0},time);
