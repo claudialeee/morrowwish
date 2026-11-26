@@ -80,6 +80,7 @@ function cast(b,f,sk,aim){
  // A second circular skill glyph used to bury both the paws and the target.
  // Keep the per-skill HIT accent, which spawns only after genuine contact.
  if(sk.kind==='melee')return true;
+ if(sk.id==='waterJet')return true; // spear renderer owns the cast silhouette
  if(sk.id==='mirrorWall')return true; // the physical 220px panel owns all visual feedback
  const g=REG[sk.id],dur=['beam','aoe','pounce','dash'].includes(sk.kind)?.51:.36;
  push(b,{kind:'signatureCast',skillId:sk.id,x:f.x,y:f.y,angle:aim||0,
@@ -98,6 +99,7 @@ function support(b,recipient,sk){
 function hit(b,target,sk,dealt,continuous=false){
  if(sk?.id&&!REG[sk.id])syncGenerics();
  if(!b||!target||!REG[sk?.id]||!(dealt>0)||sk?.ultCost)return false;
+ if(sk.id==='waterJet'&&continuous)return true; // beamHitFeedback owns directional entry/exit
  if(continuous){
   const key=sk.id+':'+(target.i??target.cat?.uid??'target');
   b._sigHitAt??=new Map();
@@ -349,6 +351,7 @@ function drawMeleeContact(ctx,v,spec){
 // No independent hit or damage event is created by these renderers.
 function drawIdentityProjectile(c,p,time=0){
  const kind=p.kind;
+ if(kind==='crescent')return drawMoonCrescent(c,p,time);
  if(!['fireball','lightningOrb','hex'].includes(kind))return false;
  const r=Math.max(2,p.r||12),angle=Number.isFinite(p.ang)?p.ang:0;
  c.save();c.translate(p.x,p.y);c.rotate(angle);c.globalAlpha=1;
@@ -447,7 +450,74 @@ function drawElectricStream(c,b,time,ex,ey){
  c.restore();return true;
 }
 
+
+ // Water spear: hard-edged compressed liquid, deliberately unlike frost crystals
+ // or continuous electricity. The pointed head and its trailing shaft are one shape.
+ function drawWaterLance(c,b,time,ex,ey){
+   const x=b._ox,y=b._oy,L=Math.hypot(ex-x,ey-y);
+   if(!(L>1))return true;
+   const age=Math.max(0,b.max-b.t),a=clip(Math.min(1,age/.055,b.t/.09));
+   const reach=L*ease(Math.min(1,age/.085));
+   if(reach<1)return true;
+   const w=Math.min(7,Math.max(3,(b.width||12)*.46)),head=Math.min(54,reach*.32);
+   const neck=reach-head,tail=Math.max(0,neck-9);
+   c.save();c.translate(x,y);c.rotate(Math.atan2(ey-y,ex-x));c.globalAlpha=a;
+   const g=c.createLinearGradient(0,-w*1.6,0,w*1.6);
+   g.addColorStop(0,'#196b97');g.addColorStop(.29,'#5ccbea');g.addColorStop(.48,'#eaffff');g.addColorStop(.65,'#82e7fa');g.addColorStop(1,'#247ca5');
+   c.fillStyle=g;c.strokeStyle='#276e91';c.lineWidth=1.1;c.lineJoin='round';
+   c.beginPath();c.moveTo(0,0);c.lineTo(Math.min(18,tail),-w*.48);
+   c.lineTo(tail,-w*.48);c.lineTo(neck,-w*1.4);c.lineTo(reach,0);
+   c.lineTo(neck,w*1.4);c.lineTo(tail,w*.48);c.lineTo(Math.min(18,tail),w*.48);c.closePath();c.fill();c.stroke();
+   stroke(c,'#f3ffff',1.7,a*.94);path(c,[[Math.min(12,tail),0],[Math.max(0,neck-1),0],[reach,0]]);
+   stroke(c,'#efffff',1.25,a*.83);path(c,[[neck,-w*1.4],[reach,0],[neck,w*1.4]]);
+   for(let j=0;j<9;j++){
+     const u=((time*3.8+j/9)%1+1)%1,xx=u*tail,side=j%2?1:-1;
+     const yy=side*(w*.7+hash(j+2)*w*.58);
+     stroke(c,j%3?'#b9f6ff':'#4198c5',.8+hash(j)*.7,a*(1-u)*.75);
+     path(c,[[Math.max(0,xx-12),yy],[xx,yy*.55]]);
+   }
+   c.restore();return true;
+ }
+ // Two directed contact marks: an entrance compression spark and an exit fan.
+ // The actual target radius and actual beam heading are provided by battle.js.
+ function drawWaterPierce(c,v){
+   const p=1-clip(v.life/v.max),a=clip(v.life/v.max),r=Math.max(8,v.radius||18);
+   c.save();c.translate(v.x,v.y);c.rotate(v.angle||0);
+   for(const side of [-1,1]){
+     const x=side*r*.73;
+     stroke(c,side<0?'#3a8fb9':'#78d9ed',3,a*.9);
+     path(c,[[x-5,-7*(1+p)],[x,0],[x-5,7*(1+p)]]);
+     stroke(c,'#f1ffff',1.4,a);
+     path(c,[[x-6,-5],[x,0],[x-6,5]]);
+     if(side>0)for(let i=0;i<5;i++){
+       const y=(i-2)*(3+8*p),d=8+p*(16+hash(i+11)*12);
+       stroke(c,i%2?'#72d8ec':'#e8ffff',1+hash(i)*.8,a*.86);
+       path(c,[[x+2,y*.2],[x+d,y]]);
+     }
+   }
+   stroke(c,'#ecffff',1.7,a*.78);path(c,[[-r,0],[r+6,0]]);
+   c.restore();return true;
+ }
+ function drawMoonCrescent(c,p,time){
+   const r=Math.max(7,p.r||14)*.82;
+   c.save();c.translate(p.x,p.y);c.rotate(Number.isFinite(p.ang)?p.ang:0);
+   // Convex cutting edge faces travel; long tapered horns, hollow trailing notch.
+   const shape=(scale,shift)=>{
+     c.beginPath();c.moveTo(-r*.70*scale+shift,-r*1.5*scale);
+     c.bezierCurveTo(r*1.70*scale+shift,-r*1.17*scale,r*1.70*scale+shift,r*1.17*scale,-r*.70*scale+shift,r*1.5*scale);
+     c.bezierCurveTo(r*.42*scale+shift,r*.82*scale,r*.42*scale+shift,-r*.82*scale,-r*.70*scale+shift,-r*1.5*scale);c.closePath();
+   };
+   c.globalAlpha=.22;c.fillStyle='#8b78bd';shape(1.05,-r*.8);c.fill();
+   c.globalAlpha=.98;const g=c.createLinearGradient(-r,0,r*1.4,0);
+   g.addColorStop(0,'#695893');g.addColorStop(.54,'#b6a0e0');g.addColorStop(.78,'#f8eaff');g.addColorStop(1,'#fffce7');
+   c.fillStyle=g;c.strokeStyle='#8065ab';c.lineWidth=1;shape(1,0);c.fill();c.stroke();
+   stroke(c,'#fffaf1',1.8,.94);c.beginPath();c.moveTo(-r*.7,-r*1.5);c.bezierCurveTo(r*1.7,-r*1.17,r*1.7,r*1.17,-r*.7,r*1.5);c.stroke();
+   for(let i=0;i<5;i++){const u=((time*3+i/5)%1+1)%1;c.globalAlpha=(1-u)*.7;point(c,-r*(1+2*u),(hash(i+17)-.5)*r*1.6,1+hash(i)*.7,'#eee3ff');}
+   c.restore();return true;
+ }
+
  function drawCombatBeam(c,b,time,ex,ey){
+   if(b.sk?.id==='waterJet')return drawWaterLance(c,b,time,ex,ey);
    if(b.sk?.id==='thunderStream')return drawElectricStream(c,b,time,ex,ey);
    const fire=b.sk?.id==='flameSweep',water=b.sk?.id==='waterJet';
    if(!fire&&!water)return false;
@@ -534,6 +604,8 @@ function drawIdentitySupport(c,v,time=0){
 }
 
 function draw(ctx,v,time=0){
+ if(v?.kind==='waterPierce')return drawWaterPierce(ctx,v);
+ if(v?.skillId==='waterJet'&&v.kind==='signatureHit')return drawWaterPierce(ctx,v);
  if(v?.meteorGround)return drawMeteorGround(ctx,v);
  const spec=REG[v?.skillId];if(!spec||!ctx)return false;
  if(isMeleeId(v.skillId))return drawMeleeContact(ctx,v,spec);
