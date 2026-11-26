@@ -3121,10 +3121,10 @@ class CaptureBattle {
     // Draw-only micro recoil: the target never leaves the beam's collision area.
     target._recoilX=(target._recoilX||0)+Math.cos(b.aim)*(first?3:1.4);
     target._recoilY=(target._recoilY||0)+Math.sin(b.aim)*(first?3:1.4);
-    this.vfx.impactType?.(target.x,target.y,'light',{color,angle:b.aim});
-    this.vfx.ring(target.x,target.y,{r0:first?9:5,
+    this.vfx.impactType?.(target.x,target.y,'light',{color,angle:b.aim,skill:b.sk});
+    if(!window.CatBondContactFX)this.vfx.ring(target.x,target.y,{r0:first?9:5,
       vr:first?105:74,life:first?.26:.19,color,width:first?2.8:1.8});
-    if(first)this.vfx.burst(target.x,target.y,
+    if(first&&!window.CatBondContactFX)this.vfx.burst(target.x,target.y,
       {count:this.game?.isTouch?4:6,color:'#fff5dc',speed:80,life:.2,r:2});
     // Gate camera and sound across all simultaneous beam targets.
     if(elapsed-(b._lastPulseAt??-99)>.33){
@@ -5950,11 +5950,11 @@ class CaptureBattle {
       const tier=hitTier||(frac>=.17?'heavy':'light');
       this.vfx.impactType?.(e.x,e.y,tier,
         {color:tier==='crit'?'#fff4cf':tier==='heavy'?'#ffdf9d':'#fff2c0',
-          angle:normal.angle});
+          angle:normal.angle,skill});
       // Big-tier EXTRA ring + sparks so T3 skills (meteor/flameSweep/etc, power≥2.0)
       // read as haymakers — on top of impactType's baseline. Element color pulls from
       // skill. Suppressed for continuous ticks (already filtered by !isDot).
-      if(pwrBoost>=.25){
+      if(pwrBoost>=.25&&!window.CatBondContactFX){
         const bigCol=this.elemColor(skill&&skill.element)||'#ffe8b5';
         const extraVr=90+pwrBoost*120;
         this.vfx.ring(e.x,e.y,{r0:7,vr:extraVr,life:.30,color:bigCol,width:3});
@@ -6157,7 +6157,7 @@ class CaptureBattle {
       }
       // Additional authored contact mark is strictly local. Continuous beams
       // are throttled per skill/target to avoid particle and audio overload.
-      if(dealt>0)window.CatBondSkillFX?.hit(this,target,skill,dealt,continuous);
+      if(dealt>0&&hpBefore>target.hp&&!window.CatBondContactFX)window.CatBondSkillFX?.hit(this,target,skill,dealt,continuous);
       if(continuous){
         this.vfx.trail(x,y,col,2.5);
       }else{
@@ -6169,7 +6169,7 @@ class CaptureBattle {
         // A true melee hit already receives hitstop, one contact flash,
         // and its own skill-specific ink. Do not pile on another wide ring
         // or 9-particle burst; keep these accents on moving impact skills.
-        if(skill?.kind!=='melee'&&
+        if(!window.CatBondContactFX&&skill?.kind!=='melee'&&
           (skill?.heavy||['dash','pounce','leap'].includes(skill?.kind))){
           this.vfx.ring(x,y,{r0:5,vr:90,life:.26,color:col,width:3});
           this.vfx.burst(x,y,{count:this.game.isTouch?5:9,
@@ -6177,7 +6177,7 @@ class CaptureBattle {
         }
       }
       // One clean elemental impact mark per beat; suppress spam from beams.
-      if(dealt>0&&skill?.kind!=='melee'&&skill?.element&&(skill.ultCost||0)===0&&
+      if(!window.CatBondContactFX&&dealt>0&&skill?.kind!=='melee'&&skill?.element&&(skill.ultCost||0)===0&&
         this.t-(this._lastRegularHitFx??-99)>.12){
         this._lastRegularHitFx=this.t;
         this.regularSkillAccent({x,y},skill.element,0,!!skill.isBasic,true);
@@ -6194,7 +6194,7 @@ class CaptureBattle {
       const dealt = this.applyEnemyHitEffects(target, skill || { element: null }, dmg, x, y);
       if (this._debug) this._dbg('enemy→me', skill, dmg, dealt, target);
       this.hurtMe(dealt, x, y, target);
-      this.vfx.impactType?.(x,y,'light',{color:col});
+      if(dealt>0)this.vfx.impactType?.(target.x,target.y,skill?.heavy?'heavy':'light',{color:col,skill,angle:Math.atan2(target.y-y,target.x-x)});
       return { blocked: false, reflected: false, dealt };
     }
   }
@@ -6528,7 +6528,7 @@ class CaptureBattle {
     for(const wall of this.barrierWalls||[])
       window.CatBondWardArt?.drawFlatWall?.(ctx,wall,this.t);
     // vfx under-layer (trails, rings, muzzle)
-    this.vfx.draw(ctx);
+    this.vfx.draw(ctx,'back');
     this.drawSkillStrokes(ctx);
     this.drawBeams(ctx);
     this.drawDeathRay(ctx);                        // 破坏死光 sweeping beam (additive + scorch)
@@ -6988,6 +6988,7 @@ class CaptureBattle {
     }
 
     window.CatBondTraitFX?.drawFront(ctx,this);
+    this.vfx.draw(ctx,'contact');
     // Distinct ULT glints above combatants, below damage floaters and HUD.
     for(const v of this.skillStrokes){
       if(v.kind==='ultimate')window.CatBondUltVFX?.draw(ctx,v,W,H,this.t,'front');
