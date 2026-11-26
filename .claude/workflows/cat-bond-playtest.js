@@ -183,12 +183,30 @@ const synth = await agent(
   { label:'synthesize', phase:'Synthesize', schema: REVIEW_SCHEMA }
 );
 
+// OWNER 2026-11-26 "不是有模拟不同 persona 的 playlets 吗??" — surface per-persona
+// voice funRating (1-10) into the return, so cycle logs carry real
+// telemetry-based scores, not just adversary vibe. Average per persona (a persona
+// voiced once per round; critiques carry that same rating per voiced observation).
+const funAgg = {};
+for (const c of allCritiques) {
+  if (c.fun == null || !c.persona) continue;
+  (funAgg[c.persona] ||= { sum: 0, n: 0 }).sum += c.fun;
+  funAgg[c.persona].n += 1;
+}
+const funRatings = Object.fromEntries(
+  Object.entries(funAgg).map(([p, v]) => [p, +(v.sum / v.n).toFixed(1)])
+);
+const funValues = Object.values(funRatings);
+const funMean = funValues.length ? +(funValues.reduce((a, b) => a + b, 0) / funValues.length).toFixed(2) : null;
+
 return {
   roundsRun: ROUNDS,
   personas: PERSONAS,
   battlesPerPersona: BATTLES,
   critiqueCount: allCritiques.length,
   headline: synth?.headline || '',
-  critiques: allCritiques.map(c => ({ persona:c.persona, verdict:c.critique.verdict, priority:c.critique.priority, riskLevel:c.critique.riskLevel, critique:c.critique.critique, suggestion:c.critique.suggestion })),
+  funRatings,                // { masher: 3.2, cautious: 5.0, ... }
+  funMean,                   // overall average across personas
+  critiques: allCritiques.map(c => ({ persona:c.persona, fun:c.fun, verdict:c.critique.verdict, priority:c.critique.priority, riskLevel:c.critique.riskLevel, critique:c.critique.critique, suggestion:c.critique.suggestion })),
   fixes: synth?.fixes || [],
 };
