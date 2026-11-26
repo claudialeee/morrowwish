@@ -23,6 +23,19 @@ for(let variant=0;variant<2;variant++){
  assert.ok(e.view().ending&&e.view().ring);assert.equal(e.view().cargoComplete,variant===1);assert.equal(Object.values(e.snapshot().links).reduce((n,l)=>n+l.length,0),variant===1?24:0);assert.ok(e.view().support.every(p=>p.ready));
 }
 function fixture(id){const i=campaign.scenes.findIndex(x=>x.id===id),s=makeEngine(campaign).snapshot();s.scene=id;s.completed=campaign.scenes.slice(0,i).map(x=>x.id);s.choices={"sky:S-02":"lead","library:M-01":"open","starfall:F-01":"coordinate"};return s;}
+// Optional tea must not be presumed in the required story route.
+const teaSkipped=fixture("sky:S-04"),teaTaken=fixture("sky:S-04");
+teaTaken.ambientDone=["muling:tea"];
+const skippedLine=makeEngine(campaign,teaSkipped).view().current.lines[4].text;
+const takenLine=makeEngine(campaign,teaTaken).view().current.lines[4].text;
+assert.match(skippedLine.zh,/语气/);assert.match(skippedLine.en,/sound so much/);
+assert.match(takenLine.zh,/喝茶/);assert.match(takenLine.en,/smell your tea/);
+assert.notDeepEqual(skippedLine,takenLine);
+assert.deepEqual(makeEngine(campaign,makeEngine(campaign,teaSkipped).snapshot()).view().current.lines[4].text,skippedLine);
+const ringLine=campaign.scenes.find(s=>s.id==="starfall:F-05").lines[0].text;
+assert.match(ringLine.en,/Each region sent its own reply/);assert.match(ringLine.zh,/自己送来的回应/);
+// Cinematic text stays canonical on both cargo routes; no conditional cinematic mutation.
+assert.equal(makeEngine(campaign,fixture("starfall:F-05")).view().current.lines[0].text.en,ringLine.en);
 function setup(id,region,seed){const s=fixture(id),root={resonance:s,cats:[{uid:"main",species:"jinjc",personality:"gentle"},{uid:"m",species:"story_muling",storyActor:"muling"}],dex:{jinjc:1},coins:0,fish:0,battlePrefs:{teamUids:["main","m"]},resonanceExploration:{location:region,positions:{},interactions:{},pickups:{},cargo:null}};seed?.(root);const State={S:root,activeSlot:()=>"slot1",save:()=>({ok:true}),makeCat:(species,opts)=>({uid:species,species,...opts})};const b=createWorldBridge(State),rt=getSlotRuntime(State);ok(b.enter(region),"enter "+id);return {root,b,rt,x:createExplorer(b,region,{adventureActions:true})};}
 function walk(x,p){assert.ok(x.walk(...p),"walk");for(let i=0;i<1000&&x.moving;i++)x.tick(.05);assert.ok(x.near(p),"not near "+p);}
 function solve(x){let p=x.puzzle;assert.ok(p,"no actual puzzle");if(p.type==="skyFlight"){let result;for(let i=0;i<1000&&x.puzzle;i++){const f=x.puzzle.flight,t=f.x<.24?f.route[0]:f.x<.49?f.route[1]:f.x<.74?f.route[2]:.5;if(!f.started||f.target!==t)x.flightSteer(t);let q=x.flightTick(.05);if(q){result=q;ok(q,"flight");}}assert.ok(result?.ok,"flight fail "+JSON.stringify(x.puzzle?.flight));return;}if(p.type==="pairedWater"){for(const i of [0,0,1,2])ok(x.operate(i),"paired");}else if(["mirrors","water","stars","routing","libraryMirrors"].includes(p.type)){for(let i=0;i<3;i++)for(let j=0;j<10&&x.puzzle&&x.puzzle.values[i]!==p.goal[i];j++)ok(x.operate(i),"dial");}else if(p.type==="heat"){for(let i=0;i<10&&x.puzzle&&x.puzzle.values[0]<p.goal[0];i++)ok(x.operate(0),"heat");for(let i=0;i<10&&x.puzzle&&x.puzzle.values[1]>p.goal[1];i++)ok(x.operate(1),"vent");}else{for(const i of p.goal)ok(x.operate(i),"sequence "+p.type);}assert.ok(!x.puzzle,"still puzzle "+p.type);}
