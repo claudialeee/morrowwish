@@ -273,8 +273,8 @@ export const campaign = {
       "id": "prologue:P-01",
       "chapter": "prologue",
       "title": {
-        "zh": "世界的背景",
-        "en": "The world in a few lines"
+        "zh": "花园醒来",
+        "en": "Awake in the garden"
       },
       "previous": null,
       "lines": [],
@@ -287,8 +287,8 @@ export const campaign = {
       "id": "prologue:P-02",
       "chapter": "prologue",
       "title": {
-        "zh": "独自醒来",
-        "en": "Awakening alone"
+        "zh": "没有名字的猫",
+        "en": "A cat without a name"
       },
       "previous": "prologue:P-01",
       "lines": [],
@@ -301,8 +301,8 @@ export const campaign = {
       "id": "prologue:P-03",
       "chapter": "prologue",
       "title": {
-        "zh": "风中的航图",
-        "en": "A map on the wind"
+        "zh": "一张不肯落地的地图",
+        "en": "A map that won't land"
       },
       "previous": "prologue:P-02",
       "lines": [],
@@ -315,8 +315,8 @@ export const campaign = {
       "id": "prologue:P-04",
       "chapter": "prologue",
       "title": {
-        "zh": "去港口",
-        "en": "The road to the harbor"
+        "zh": "出去看看",
+        "en": "Let's see what's out there"
       },
       "previous": "prologue:P-03",
       "lines": [],
@@ -329,8 +329,8 @@ export const campaign = {
       "id": "prologue:P-05",
       "chapter": "prologue",
       "title": {
-        "zh": "前往霁潮港",
-        "en": "Travel to Misttide Harbor"
+        "zh": "第一站，风铃镇",
+        "en": "First stop, Windchime Town"
       },
       "previous": "prologue:P-04",
       "lines": [],
@@ -1288,8 +1288,8 @@ export const campaign = {
       "id": "sky:S-05",
       "chapter": "sky",
       "title": {
-        "zh": "风把信送到了",
-        "en": "The mail arrives"
+        "zh": "月门那边的访客",
+        "en": "The visitor through the moon gate"
       },
       "previous": "sky:S-04",
       "lines": [
@@ -1310,29 +1310,29 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "第一条正式航线！我想继续往书库送信，你们愿意带上我吗？",
-            "en": "My first official route! I'd like to carry letters to the library. Will you take me along?"
+            "zh": "月门就在前面！我想继续探路，你们愿意带上我吗？",
+            "en": "The moon gate is just ahead! May I come along and scout the next route?"
           }
         },
         {
-          "speaker": "lingyu",
+          "speaker": "baikan",
           "text": {
-            "zh": "记得带备用绳。我留在这里照看航线；你们回来，我再带你们练飞行。",
-            "en": "Remember a spare rope. I'll tend the routes here; come back whenever you want to practice flying."
+            "zh": "前阵子也有只猫从月门借走了星铃的老图，问的是怎么打开旧封印。",
+            "en": "Someone recently came through the moon gate and borrowed an old Star Bell map. They wanted to know how to open the seal."
           }
         },
         {
-          "speaker": "yuanfan",
+          "speaker": "player",
           "text": {
-            "zh": "书库回信了！你在风铃镇唱的音是旧守铃人的信号。还有一次信号，就在最近的失忆发生前。",
-            "en": "The library replied! Your Windchime Town note was an old bellkeeper's signal. Another was recorded just before the recent memory loss."
+            "zh": "有人在查封印？那场失忆不是自己回来的吗？",
+            "en": "Someone was looking into the seal? Didn't the forgetting return on its own?"
           }
         },
         {
-          "speaker": "muling",
+          "speaker": "baikan",
           "text": {
-            "zh": "那份记录还在？……我们得去书库。",
-            "en": "That record still exists? ...We need to go to the library."
+            "zh": "进来吧，书库还有从前的公开壁画，我带你们去看。",
+            "en": "Come inside. The library still has public murals from those days. I'll show you."
           }
         }
       ],
@@ -1351,37 +1351,37 @@ export const campaign = {
       "id": "library:M-01",
       "chapter": "library",
       "title": {
-        "zh": "本该存在的一页",
-        "en": "A page that should exist"
+        "zh": "一面走得进去的镜子",
+        "en": "A mirror you can walk through"
       },
       "previous": "sky:S-05",
       "lines": [
         {
           "speaker": "baikan",
           "text": {
-            "zh": "你唱的第一个音，在一本很古老的守铃人记录里出现过。偏偏那一页不见了。",
-            "en": "Your first note appears in a very old bellkeeper's record. But that particular page is missing."
+            "zh": "这些镜子可不一般。你站过来，瞧，里头还留着从前的景象呢。",
+            "en": "These aren't ordinary mirrors. Stand here. See? They still hold scenes from the past."
           }
         },
         {
           "speaker": "moye",
           "text": {
-            "zh": "私人回忆不能随意翻看。不过公开的镜廊也许还保留着当年的画像。",
-            "en": "We can't freely browse private memories. But the public mirror gallery may still hold a picture from that time."
+            "zh": "旧画尽管看。只是别猫的私事，没点头就不要翻。",
+            "en": "Look at the old public pictures all you like. Leave private memories alone unless their owners say otherwise."
           }
         },
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "我是送信来的。回信提到一个没有署名的信号——会不会和我们一路遇见的失忆有关？",
-            "en": "I'm delivering letters. Your reply mentioned an unsigned signal. Could it explain the memory loss we've seen?"
+            "zh": "刚才白栞说，有猫查过旧封印。说不定这里能找到线索。",
+            "en": "Baikan said someone looked into the old seal. Maybe we'll find a clue here."
           }
         },
         {
           "speaker": "baikan",
           "text": {
-            "zh": "走，去镜廊！如果你真的来过这里，镜子或许能给我们答案。",
-            "en": "Come on, to the gallery! If you've really been here before, the mirrors might have an answer."
+            "zh": "走，去镜廊！那里还留着从前风铃镇的样子。",
+            "en": "Come on, to the gallery! It still holds pictures of Windchime Town as it used to be."
           }
         }
       ],
@@ -1420,8 +1420,8 @@ export const campaign = {
       "id": "library:M-02",
       "chapter": "library",
       "title": {
-        "zh": "镜中的两只暮铃",
-        "en": "Two Mulings in the mirror"
+        "zh": "假的暮铃",
+        "en": "The other Muling"
       },
       "previous": "library:M-01",
       "lines": [
@@ -1442,8 +1442,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "我换了地方，只有你会转过来找我。是你！",
-            "en": "I moved, and only you turned to find me. It's you!"
+            "zh": "这回我换了个办法，只有你接上了。是你！",
+            "en": "I changed what I did, and only you answered. It's you!"
           }
         },
         {
@@ -1468,8 +1468,8 @@ export const campaign = {
       "id": "library:M-03",
       "chapter": "library",
       "title": {
-        "zh": "你早就认识我",
-        "en": "You knew my name"
+        "zh": "原来你认识我",
+        "en": "You knew me"
       },
       "previous": "library:M-02",
       "lines": [
@@ -1571,23 +1571,23 @@ export const campaign = {
       "id": "library:M-04",
       "chapter": "library",
       "title": {
-        "zh": "线索与承认",
-        "en": "Clues and confession"
+        "zh": "那串不该响起的铃声",
+        "en": "The bell that should have stayed silent"
       },
       "previous": "library:M-03",
       "lines": [
         {
           "speaker": "baikan",
           "text": {
-            "zh": "借阅簿上有暮铃的名字。公开日志也记着：封印松动的那天，失忆又开始了。",
-            "en": "Muling's name is in the borrowing ledger. The public log also records that the forgetting began again on the day the seal loosened."
+            "zh": "借图的印记……暮铃，这不是你那只铃坠么？公开记录也写着，封印松开的那天，失忆又开始了。",
+            "en": "The mark on the borrowing record… Muling, isn't that your pendant? The public record also says the forgetting returned the day the seal was loosened."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "借过地图不代表她改了线路。暮铃，我想听你自己说。",
-            "en": "Borrowing a map doesn't mean she redirected the routes. Muling, I want to hear it from you."
+            "zh": "借过图不代表就是你打开的。暮铃，我想听你自己说。",
+            "en": "Borrowing the map doesn't mean you opened the seal. Muling, I want to hear it from you."
           }
         },
         {
@@ -1674,8 +1674,8 @@ export const campaign = {
       "id": "library:M-05",
       "chapter": "library",
       "title": {
-        "zh": "两条回家的路",
-        "en": "The two ways home"
+        "zh": "如果铃声只能属于一个人",
+        "en": "If the song belonged to only one cat"
       },
       "previous": "library:M-04",
       "lines": [
@@ -1696,36 +1696,36 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "所以就算我想起来了，港口那只猫也会忘记家？",
-            "en": "So even if I remember everything, the cat at the harbor would forget home?"
+            "zh": "所以就算我想起来了，风铃镇那只猫也会忘记家？",
+            "en": "So even if I remember everything, the cat in Windchime Town would forget home?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "是……我试过修另一条路线。修了很多年，没有一次收到完整的回应。",
-            "en": "Yes… I tried to repair the other route. For years, I never got a complete set of replies."
+            "zh": "我把铃修过好多次，可没有你，它们唱不起来。要是再失败，大家还是会慢慢忘掉一切。",
+            "en": "I repaired those bells so many times, but without you they wouldn't sing. If we fail again, everyone will slowly forget everything."
           }
         },
         {
           "speaker": "baikan",
           "text": {
-            "zh": "港口的灯、森林的路、炉城的火、天空的信——它们都重新活起来了。也许这次六座铃真的能互相听见。",
-            "en": "The harbor light, forest paths, forge fires, sky mail—they're alive again. Maybe this time all six bells can really hear one another."
+            "zh": "风铃镇的家铃、森林的月叶、千灯城的影戏、云海上的风铃……大家已经在互相报平安了。",
+            "en": "The house bells, the moonleaves, the lantern show, the wind chimes above the clouds… our friends are already answering each other."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我不能拿你的命运赌一次还没验证的方案。我先去星坠原，你们……不用等我。",
-            "en": "I can't gamble your fate on an untested route. I'll go ahead to Starfall. You... don't have to wait for me."
+            "zh": "我想，至少得有一只猫能把从前留下来……中央那边撑不了多久了。我先去稳住它。",
+            "en": "I thought at least one cat should get to keep the past… The center won't hold much longer. I'll go try to steady it."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "我想找回名字，但不是用别人的名字来换。走吧，白栞。我们得在暮铃动手前让最后一座铃响起来。",
-            "en": "I want my name back, but not in exchange for everyone else's. Come on, Baikan. We need to wake the last bell before Muling acts."
+            "zh": "我想知道以前的事，可我也不想忘了今天。不能拿他们的过去换我的。走吧，白栞，最后一座铃还没响呢。",
+            "en": "I want to know my past, but I don't want to forget today either. We can't trade their past for mine. Come on, Baikan. There's one bell left to wake."
           }
         }
       ],
@@ -1979,8 +1979,8 @@ export const campaign = {
       "id": "starfall:F-05",
       "chapter": "starfall",
       "title": {
-        "zh": "最后一声向内的铃",
-        "en": "One last inward call"
+        "zh": "最后一声错误的铃",
+        "en": "The last wrong chime"
       },
       "previous": "starfall:F-04",
       "lines": [
@@ -2169,7 +2169,7 @@ export const campaign = {
       "chapter": "finale",
       "title": {
         "zh": "星铃重新响了",
-        "en": "The bell rings normally"
+        "en": "The bell rings again"
       },
       "previous": "finale:B-03",
       "lines": [
@@ -2300,8 +2300,8 @@ export const campaign = {
       "id": "epilogue:E-03",
       "chapter": "epilogue",
       "title": {
-        "zh": "花园的第二把钥匙",
-        "en": "A key for the garden"
+        "zh": "第二把钥匙",
+        "en": "The second key"
       },
       "previous": "epilogue:E-02",
       "lines": [
