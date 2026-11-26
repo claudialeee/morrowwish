@@ -2146,7 +2146,7 @@ class CaptureBattle {
       return true;
     }
     if(id==='fireballMeow'){
-      this.spawnProj(ex,ey,aim,f.projSpeed*.75,baseDmg*1.5,'me','#ff9752',15,'fireball',sk,1.8);
+      this.spawnProj(ex,ey,aim,420,baseDmg,'me','#ff9752',15,'fireball',sk,.76);
       this.vfx.burst(ex,ey,{count:16,color:'#ffdb84',angle:aim,spread:.65,speed:175,life:.38});
       return true;
     }
@@ -3326,7 +3326,9 @@ class CaptureBattle {
     if (f._slowMult && (f._slowT??0)>this.t) m *= f._slowMult;
     return m;
   }
-  canUltimate(){ return this.ult>=100 && this.ultCd<=0 && !this.ultCinematic; }
+  canUltimate(){ return this.ult>=100 && this.ultCd<=0 && !this.ultCinematic && !this._solarUlt; }
+  solarGeometry(f,aim){return {x:f.x,y:f.y,aim,reach:Math.hypot(this.W,this.H)*.64,width:36};}
+  solarHits(e,g){const dx=e.x-g.x,dy=e.y-g.y,along=dx*Math.cos(g.aim)+dy*Math.sin(g.aim),cross=Math.abs(-dx*Math.sin(g.aim)+dy*Math.cos(g.aim));return along>=0&&along<=g.reach&&cross<=g.width+(e.r||18)*.5;}
   // Would the ult actually HIT something if cast now? Mirrors each archetype's real
   // geometry (fire = forward cone so the target must be roughly ahead; everything
   // else = a radius around the caster). Used to gate AUTO-cast so the AI doesn't
@@ -3342,6 +3344,7 @@ class CaptureBattle {
       return mx>0 && hp/mx < 0.72;
     }
     const live=this.liveEnemies(); if(!live.length) return false;
+    if(skill?.id==='sunbloom'){const g=this.solarGeometry(f,(f===this.me())?this.aim:(f._aim||0));return live.some(e=>this.solarHits(e,g));}
     if(el==='fire'){
       const aim=(f===this.me())?this.aim:(f._aim||0), half=0.6, reach=diag*0.5;
       return live.some(e=>{
@@ -3354,7 +3357,7 @@ class CaptureBattle {
     return live.some(e=>Math.hypot(e.x-f.x,e.y-f.y)<=R);
   }
   ultimate(){
-    if(this.ultCd>0||this.ultCinematic){
+    if(this.ultCd>0||this.ultCinematic||this._solarUlt){
       if(!this.autoMode&&this.ultCd>0&&this.t-(this._ultWarnAt??-999)>2.5){
         const en=window.MorrowwishI18n?.get?.()!=='zh';
         this.game.toast(en?'Ultimate cooldown: '+Math.ceil(this.ultCd)+'s':'必杀冷却中：'+Math.ceil(this.ultCd)+'秒');
@@ -3390,6 +3393,11 @@ class CaptureBattle {
     this._ultCastTargets=(locked?[locked,...ordered.filter(e=>e!==locked)]:ordered)
       .slice(0,7).map(e=>({x:e.x,y:e.y}));
     this.addShake?.(.55,this.aim);
+    if(skill?.id==='sunbloom'){
+      // Real commitment: charge locally, keep original direction, resolve only at release.
+      this._solarUlt={f,skill:{...skill,_solarAim:this.aim},t:.85,max:.85};f._castRoot=.85;
+      return true;
+    }
     this._pendingUlt = { f, skill };
     this.fireUltimatePayload();                    // detonate immediately, in place
     return true;
@@ -3446,6 +3454,9 @@ class CaptureBattle {
       for (const e of this.liveEnemies().slice()) { this.vfx.beam(f.x, f.y, e.x, e.y, color); strike(e, 1.1); }
       this.vfx.ring(f.x, f.y, { r0: 14, vr: diag * 1.4, life: 0.4, color, width: 6 });
       this.shakeT = Math.max(this.shakeT, 0.5);
+    } else if (skill.id==='sunbloom') {
+      const g=this.solarGeometry(f,skill._solarAim??aim);
+      for(const e of this.liveEnemies().slice())if(this.solarHits(e,g))strike(e,1.15);
     } else if (el === 'grass') {
       // 万木丛生: a huge lingering OVERGROWTH field — hits now + leaves a bind zone.
       const R = diag * 0.4;
@@ -3516,12 +3527,13 @@ class CaptureBattle {
       const dmg=f.dmg*skill.power*.42;                    // shared per-target base
       const {total,kos,hits}=this.ultArchetype(f,skill,color,dmg);
       this._ultConsequence(f,skill,color,total,kos,hits);
-      const duration=skill.id==='sunbloom'?1.9:skill.id==='voidMaw'?1.65:
+      const duration=skill.id==='sunbloom'?1.1:skill.id==='voidMaw'?1.65:
         skill.id==='tsunamiPaw'?1.5:1.36;
       this.skillStrokes.push({kind:'ultimate',skillId:skill.id,
         x:f.x,y:f.y,element:skill.element,color,
-        angle:f===this.me()?this.aim:(f._aim||0),targets:this._ultCastTargets||[],
-        life:duration,max:duration});
+        angle:skill._solarAim??(f===this.me()?this.aim:(f._aim||0)),targets:this._ultCastTargets||[],
+        reach:skill.id==='sunbloom'?this.solarGeometry(f,skill._solarAim??0).reach:undefined,
+        width:skill.id==='sunbloom'?36:undefined,life:duration,max:duration});
       this.vfx.text(f.x,f.y-48,this.elemSymbol(skill.element),color,11);
       this.game.toast(this.elemSymbol(skill.element)+' '+(window.MorrowwishI18n?.get?.()==='zh'?'必杀 · ':'Ultimate · ')+(window.CatBondI18n?.translate?.(skill.name)||skill.name)+(window.MorrowwishI18n?.get?.()==='zh'?'！':'!'));
       this.lastUltimate={skill:skill.id,element:skill.element,hits};
@@ -4411,6 +4423,7 @@ class CaptureBattle {
     // weighty beat but the cat can still inch/dodge; the per-hit `stop` is already brief.
     if (this.hitstop > 0 && this.slowmo <= 0) { this.hitstop = Math.max(0, this.hitstop - dt); dt *= 0.12; }
     this.t += dt;
+    if(this._solarUlt){const q=this._solarUlt;q.t-=dt;if(!q.f.alive||q.t<=0){q.f._castRoot=0;this._solarUlt=null;if(q.f.alive){this._pendingUlt={f:q.f,skill:q.skill};this.fireUltimatePayload();}}else q.f._castRoot=q.t;}
     this._lastDt = dt;                                  // shared by steering helpers (orbit/wander timers)
     if (this.coach) this.tickCoach(dt);                 // first-fight guided tutorial
     if (this.shakeT > 0) this.shakeT -= dt;
@@ -4494,7 +4507,7 @@ class CaptureBattle {
       if (f._castSlow > 0) f._castSlow=Math.max(0,f._castSlow-dt);   // 后遗症 recovery
       // SAFETY: a root flag with no live cast/beam backing it would freeze the cat
       // forever (the "卡在原地没动" auto-battle bug). Self-heal any orphaned root.
-      if (f._castRoot > 0 && !(this.pendingCasts||[]).some(c=>c.f===f)) f._castRoot = 0;
+      if (f._castRoot > 0 && this._solarUlt?.f!==f && !(this.pendingCasts||[]).some(c=>c.f===f)) f._castRoot = 0;
       if (f._beamRoot > 0 && !(this.beams||[]).some(b=>b.f===f)) f._beamRoot = 0;
       this.tickWards(f, dt);
       this.tickCatStatus(f, dt);              // DoT + soft-CC (slow) the enemy inflicted
@@ -4785,15 +4798,9 @@ class CaptureBattle {
               this.vfx.burst(p.x,p.y,{count:15,color:'#b6d5ff',
                 speed:130,life:.28,r:2.5});
             }
-            // fireball keeps its owner-authored area splash (routed through resolveHit)
+            // Direct, single-target fireball. The compact contact burst is not an AOE.
             if (p.kind === 'fireball' && r.dealt > 0) {
-              this.vfx.shockwave(p.x, p.y, '#ffc16e');
-              this.vfx.burst(p.x, p.y, { count: 32, color: '#ffbf71', speed: 240, life: .55, r: 5 });
-              this.skillStrokes.push({ kind: 'fireBurst', x: p.x, y: p.y, color: '#ffbd76', life: .45, max: .45 });
-              for (const other of this.liveEnemies().slice()) {
-                if (other === e || Math.hypot(other.x - p.x, other.y - p.y) > 105) continue;
-                this.resolveHit(other, 'me', p.skill || { element: p.element }, p.dmg * .36, other.x, other.y);
-              }
+              this.vfx.burst(p.x,p.y,{count:12,color:'#ffd18b',speed:120,life:.25,r:2.5});
             }
             p.life = 0;                         // landed or blocked: consume it
             break;
@@ -6498,6 +6505,7 @@ class CaptureBattle {
 
     this.drawFields(ctx);                // elemental ground zones, beneath the action
     window.CatBondTraitFX?.draw(ctx,this);
+    if(this._solarUlt){const q=this._solarUlt;window.CatBondUltVFX?.drawSolarCharge(ctx,this.solarGeometry(q.f,q.skill._solarAim),1-q.t/q.max,this.t);}
     for(const wall of this.barrierWalls||[])
       window.CatBondWardArt?.drawFlatWall?.(ctx,wall,this.t);
     // vfx under-layer (trails, rings, muzzle)
