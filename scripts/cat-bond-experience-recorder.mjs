@@ -40,19 +40,20 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
     if(event.kind!=='checkpoint'){record(event);return;}
     // Never treat a seeded entry as player-earned; retain later chapter saves separately.
     if(synthetic&&(!chapterEntry||event.scene===chapterEntry))return;
-    const {scene,slot,book,cursor,region}=event;
+    const {scene,slot,book,cursor,region,ending=false}=event;
     if(!/^[a-z]+:[A-Z]-\d{2}$/.test(scene)||!/^slot[123]$/.test(slot)||typeof book!=='string'||book.length>2000000)return;
     if(!Number.isInteger(cursor)||cursor<0)return;
-    const key=scene+'-'+cursor;
+    const key=scene+(ending?'--ending':'');
     // One early checkpoint per scene, rather than per frame or dialogue line.
-    if(saved.has(scene))return;
+    if(saved.has(key))return;
     try{
       const entry=JSON.parse(book).slots?.[slot],state=entry?.data?.state||entry?.data;
       if(state?.resonance?.scene!==scene||!state.cats?.length)return;
-      const fixture={schema:1,revision,run:id,scene,cursor:state.resonance.cursor,region,slot,provenance:synthetic?'synthetic chapter entry + real-input browser save':'real-input local browser save',...(chapterEntry?{chapterEntry,limitations:['Prior chapter history is synthetic; not fresh-slot campaign evidence.']}:{ }),storageState:{cookies:[],origins:[{origin:'http://127.0.0.1:8765',localStorage:[{name:'catbond_save_slots_v1',value:book},{name:'catbond_active_slot_v1',value:slot}]}]}};
-      const name=(scene+'-'+fixture.cursor).replace(':','-')+'.json';
+      if(ending&&!state.resonance.completed?.includes(scene))return;
+      const fixture={schema:1,revision,run:id,scene,ending,cursor:state.resonance.cursor,region,slot,provenance:synthetic?'synthetic chapter entry + real-input browser save':'real-input local browser save',...(chapterEntry?{chapterEntry,limitations:['Prior chapter history is synthetic; not fresh-slot campaign evidence.']}:{ }),storageState:{cookies:[],origins:[{origin:'http://127.0.0.1:8765',localStorage:[{name:'catbond_save_slots_v1',value:book},{name:'catbond_active_slot_v1',value:slot}]}]}};
+      const name=(key+'-'+fixture.cursor).replace(':','-')+'.json';
       fs.writeFileSync(path.join(checkpointDir,name),JSON.stringify(fixture,null,2));
-      saved.add(scene);record({kind:'checkpoint_saved',scene,cursor:fixture.cursor,region,provenance:fixture.provenance,fixture:'checkpoints/'+id+'/'+name});
+      saved.add(key);record({kind:'checkpoint_saved',scene,ending,cursor:fixture.cursor,region,provenance:fixture.provenance,fixture:'checkpoints/'+id+'/'+name});
     }catch(error){record({kind:'recorder_error',message:'checkpoint: '+String(error)});}
   });
   await page.addInitScript(()=>{
@@ -71,19 +72,20 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
       // Evidence is visible text. Scene/objective IDs are technical routing metadata,
       // not a source of knowledge for the spoiler-free player reviewer.
       const buttons=[...document.querySelectorAll('#stage button')].filter(visible).filter(e=>!e.disabled).map(e=>clean(e.getAttribute('aria-label')||e.innerText||e.title)).filter(Boolean).slice(0,80);
-      return {scene:v?.current?.id||null,cursor:v?.cursor??null,objective:v?.objective||[],
+      return {scene:v?.current?.id||(v?.ending?window.CatBondResonance.snapshot().scene:null),ending:v?.ending===true,cursor:v?.cursor??null,objective:v?.objective||[],
         area:game?.scene||null,region:window.WorldMap?.currentRegion||null,blocks,buttons};
     }
     function sample(){
       scheduled=false;
       try{const state=read(),key=JSON.stringify(state);
         if(key!==previous){previous=key;send({kind:'screen',...state});}
-        if(state.scene&&!captured.has(state.scene)&&['yard','map'].includes(state.area)&&!window.__game?.battle){
+        const checkpointKey=state.scene+(state.ending?'--ending':'');
+        if(state.scene&&!captured.has(checkpointKey)&&['yard','map'].includes(state.area)&&!window.__game?.battle){
           const slot=window.State?.activeSlot?.(),book=localStorage.getItem('catbond_save_slots_v1');
           if(slot&&book){
             const entry=JSON.parse(book).slots?.[slot],data=entry?.data?.state||entry?.data;
-            if(data?.resonance?.scene===state.scene&&data.cats?.length){
-              captured.add(state.scene);send({kind:'checkpoint',scene:state.scene,slot,book,cursor:state.cursor,region:state.region});
+            if(data?.resonance?.scene===state.scene&&data.cats?.length&&(!state.ending||data.resonance.completed?.includes(state.scene))){
+              captured.add(checkpointKey);send({kind:'checkpoint',scene:state.scene,ending:state.ending,slot,book,cursor:state.cursor,region:state.region});
             }
           }
         }
