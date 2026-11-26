@@ -2,11 +2,7 @@
   "schemaVersion": 2,
   "project": "Cat Bond — The Last Resonance",
   "branch": "rpg/cinematic-integration-v2",
-  "sourceCanon": [
-    "docs/cat-bond-rpg/01-NARRATIVE-BIBLE.md",
-    "docs/cat-bond-rpg/02-MAIN-STORY-SCRIPT.md",
-    "docs/cat-bond-rpg/03-DEVELOPER-HANDOFF.md"
-  ],
+  "sourceCanon": "Canon 1.2 — Full Player-First Campaign",
   "status": "integration-review-only; no production release",
   "reviewStatus": "Painted opening and closing sequences are staged for independent review. Production approval remains pending.",
   "assets": [
@@ -708,8 +704,7 @@
           }
         },
         "lines": [
-          2,
-          3
+          2
         ]
       }
     ],
@@ -736,8 +731,7 @@
         },
         "lines": [
           0,
-          1,
-          2
+          1
         ]
       },
       {
@@ -761,9 +755,8 @@
           }
         },
         "lines": [
-          3,
-          4,
-          5
+          2,
+          3
         ]
       }
     ],
@@ -788,7 +781,9 @@
             "scale": 1.1
           }
         },
-        "lines": []
+        "lines": [
+          0
+        ]
       },
       {
         "assetId": "closing-couriers-at-library",
@@ -810,7 +805,9 @@
             "scale": 1.1
           }
         },
-        "lines": []
+        "lines": [
+          1
+        ]
       }
     ],
     "starfall:F-02": [
@@ -886,7 +883,14 @@
             "scale": 1.12
           }
         },
-        "lines": [],
+        "lines": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
         "caption": {
           "zh": "我自愿走进应急锚室，以自己的记忆维持封印。那是我的选择。",
           "en": "I willingly entered the emergency anchor to sustain the seal with my memories. It was my choice."

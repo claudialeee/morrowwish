@@ -23,7 +23,7 @@ async function play(sceneId){
  const game=window.__game, slot=window.State.S, runtime=getSlotRuntime(window.State);
  const view=runtime.view();
  if(sceneId.startsWith("starfall:")){const pos=slot.resonanceExploration?.positions?.starfall;if(slot.resonanceExploration?.location!=="starfall"||!pos||Math.hypot(pos.x-.92,pos.y-.30)>=.072)return false;}
- if(active||game.scene!=="map"||window.WorldMap?.currentRegion!=="starfall"||view.current?.id!==sceneId||!view.objective.some(op=>op.startsWith("cinematic:")))return false;
+ const atRegion=window.WorldMap?.currentRegion,atScene=sceneId==="epilogue:E-01"?["harbor","forest"].includes(atRegion):atRegion==="starfall";if(active||game.scene!=="map"||!atScene||view.current?.id!==sceneId||!view.objective.some(op=>op.startsWith("cinematic:"))||view.objective.some(op=>!op.startsWith("cinematic:")))return false;
  const token=runtime.capture(), slotId=window.State.activeSlot(), controller={dispose:null,checkpoint:null};
  const current=()=>active===controller&&window.State.S===slot&&window.State.activeSlot()===slotId&&runtime.isCurrentAction(token);
  const checkpointKey="chapterPresentation";

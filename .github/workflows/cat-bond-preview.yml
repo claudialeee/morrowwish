@@ -70,6 +70,7 @@ jobs:
         run: |
           node scripts/test-cat-bond-player-first.mjs
           node scripts/test-cat-bond-story-party.mjs
+          node scripts/test-cat-bond-canon12-campaign.mjs
       - name: Build isolated Cat Bond preview (no production Worker or D1)
         run: |
           set -eu

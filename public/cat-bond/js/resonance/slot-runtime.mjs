@@ -59,15 +59,16 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(!check(token))return fail("stale-action");
   const v=view(),s=v.current,actor=campaign.cast[npcId];
   if(!s||s.id!==sceneId||!actor||npcId==="player")return fail("npc-unavailable");
+  if(sceneId==="epilogue:E-01"){const w=State.S.resonanceExploration,q=layouts[region]?.castPoints?.[npcId],p=w?.positions?.[region];if(!token||!v.ring||!v.objective.includes("npc:regional-reunion")||!["qilan","yuchuan"].includes(npcId)||actor.region!==region||w?.location!==region||!q||!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072)return fail("walk-to-story-npc");return op(sceneId,"npc:regional-reunion",{token});}
   const expectedRegion=s.chapter==="prologue"||s.chapter==="epilogue"?"garden":s.chapter;
   if(region!==expectedRegion||actor.region!==region&&npcId!=="muling")return fail("wrong-region");
   if(npcId==="muling"&&actor.region!==region&&!["temporary","companion","identity-revealed","betrayal-revealed"].includes(v.muling)&&!["starfall:F-03","starfall:F-04","starfall:F-05"].includes(s.id))return fail("companion-unavailable");
   if(npcId==="muling"&&s.id==="library:M-05"&&v.cursor>=s.lines.length&&v.choice)return fail("companion-unavailable");
-  const requiredActor=s.id==="starfall:F-01"?(v.objective.includes("npc:central-dispute")?"xingya":v.objective.includes("npc:central-dispute-lichuan")?"lichuan":null):{"harbor:H-01":"qilan","harbor:H-02":"jiedeng","sky:S-04":"muling","library:M-03":"muling","starfall:F-03":"muling","epilogue:E-02":"muling"}[s.id];
+  const requiredActor=s.id==="starfall:F-01"?(v.objective[0]==="npc:central-dispute-lichuan"?"lichuan":v.objective[0]==="npc:central-dispute"?"xingya":null):{"harbor:H-01":"qilan","harbor:H-02":"jiedeng","forest:R-01":"yahe","forge:E-01":"xiaomao","sky:S-01":"yuanfan","library:M-01":"baikan","library:M-05":"moye","sky:S-04":"muling","library:M-03":"muling","starfall:F-03":"muling","epilogue:E-02":"muling"}[s.id];
   if(requiredActor&&v.objective.some(o=>o.startsWith("npc:"))&&npcId!==requiredActor)return fail("wrong-npc");
   if(s.lines.length&&!s.lines.some(l=>l.speaker===npcId)&&!s.choices.some(c=>c.npc===npcId))return fail("wrong-npc");
   const location=State.S.resonanceExploration?.location;if(campaign.regions.includes(region)&&location&&location!==region)return fail("wrong-map-location");
-  const pending=v.objective.find(x=>x.startsWith("npc:"));
+  const pending=v.objective.find(x=>x.startsWith("npc:"));if(pending&&s.orderedRequires&&v.objective[0]!==pending)return fail("story-operation-order");
   if(pending&&["starfall:F-01","starfall:F-03"].includes(s.id)){const p=State.S.resonanceExploration?.positions?.starfall,point={xingya:[.51,.58],lichuan:[.78,.48],muling:[.92,.30]}[npcId];if(!token||location!=="starfall"||!p||!point||Math.hypot(p.x-point[0],p.y-point[1])>=.072)return fail("walk-to-story-npc");}
   if(!pending||["npc:public-accountability","npc:second-garden-key"].includes(pending))return {ok:true,dialogueOnly:true};
   return op(sceneId,pending,{token});
@@ -84,6 +85,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(kind==="npc"||!["cinematic","explore","travel","puzzle","rescue","repair","melody","battle","mechanism"].includes(kind))return fail("invalid-source");
   if(s.chapter==="starfall"){const w=State.S.resonanceExploration;if(!token||w?.location!=="starfall")return fail("starfall-action-required");if(kind==="cinematic"){const p=w.positions?.starfall;if(!p||Math.hypot(p.x-.92,p.y-.30)>=.072)return fail("walk-to-central-ruins");}else if(["explore","puzzle","repair","melody"].includes(kind)&&typeof physical!=="function")return fail("starfall-world-evidence-required");}
   if(s.chapter==="finale"&&(!token||region!=="starfall"||State.S.resonanceExploration?.location!=="starfall"))return fail("finale-action-required");
+  if(operation==="battle:observatory-echo"){const p=State.S.resonanceExploration?.positions?.starfall;if(!p||Math.hypot(p.x-.78,p.y-.40)>=.072)return fail("walk-to-observatory");}
   if(kind==="battle"&&outcome!=="win")return fail("battle-not-won");
   if(kind==="battle"&&!token)return fail("action-token-required");
   if(campaign.regions.includes(s.chapter)&&region!==s.chapter)return fail("wrong-region");

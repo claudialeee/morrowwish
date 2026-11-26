@@ -86,7 +86,7 @@ function drawScene(ctx,W,H,region){
 }
 // Dedicated hand-painted regional creatures; combat and capture data are unchanged.
 function drawManifestation(ctx,e,b){
- if(b.libraryEncounter)return false;
+ if(b.libraryEncounter?.region==="library")return false;
  const img=art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
  const originalSize=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62));
  const size=e.regionalEnemy==="forge"?originalSize:Math.max(92,Math.min(138,118*(b.catScale?.("enemy")||.95)/.95)),bob=e.frozen?0:Math.sin(b.t*3+e.i)*1.5;
@@ -153,13 +153,13 @@ function install(){
  function paintHud(b){
   const panel=document.getElementById("cb-region-combat");if(!panel||!b.regionalCombat)return;
   const r=b.regionalCombat,kit=r.kit,button=panel.querySelector("button");
-  panel.querySelector("span").textContent=b.libraryEncounter?tr(["守档幻象 · 躲开成对镜影","Archive echo · evade paired reflections"]):tr(kit.name)+" · "+tr(kit.enemy);
+  panel.querySelector("span").textContent=b.libraryEncounter?.region==="library"?tr(["守档幻象 · 躲开成对镜影","Archive echo · evade paired reflections"]):tr(kit.name)+" · "+tr(kit.enemy);
   button.hidden=!r.supportAvailable;button.disabled=r.supportUsed||!r.cast;
-  button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?tr(["Catdex · 核验回响","Catdex · verify echo"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Yuanfan · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Lingyu · Escort flight"]):tr(kit.support);
+  button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?.region==="library"?tr(["Catdex · 核验回响","Catdex · verify echo"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Yuanfan · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Lingyu · Escort flight"]):tr(kit.support);
  }
  function useSupport(b){
   const r=b.regionalCombat;if(!r||!r.supportAvailable||r.supportUsed||!r.cast||b.done||cinematicActive(b))return false;
-  if(b.libraryEncounter&&(!catdexRecord(window.State.S)||!window.State.S.resonanceExploration?.interactions?.["library:M-02:puzzle:library-echo"]))return false;
+  if(b.libraryEncounter?.region==="library"&&(!catdexRecord(window.State.S)||!window.State.S.resonanceExploration?.interactions?.["library:M-02:puzzle:library-echo"]))return false;
   r.supportUsed=true;r.cast=null;r.next=Math.max(r.next,4);
   const cats=living(b);
   if(r.kit.kind==="roots")for(const f of cats){f.rootT=0;f.rooted=false;if(f.status)delete f.status.bind;}
@@ -268,27 +268,28 @@ function install(){
  const drawBattle=BP.draw;
  BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat){const active=cinematicActive(this),panel=document.getElementById("cb-region-combat");syncCinematicHud(panel,this);if(active)return result;draw(this,ctx);}if(this.libraryEncounter&&!this.duoCinematic&&!this.ultCinematic){ctx.save();for(const e of this.liveEnemies()){ctx.strokeStyle="#c5b9ff";ctx.globalAlpha=.45+.2*Math.sin(this.t*4);ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(e.x,e.y,Math.max(24,(e.r||24)*1.3),11,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}return result;};
  const libraryOp="battle:library-echo",libraryScene="library:M-02";
- function libraryAvailable(game){const v=window.CatBondResonance?.view(),root=window.State.S,p=root.resonanceExploration?.positions?.library,q=libraryPoints[libraryOp];return game?.scene==="map"&&!game.battle&&root.resonanceExploration?.location==="library"&&v?.current?.id===libraryScene&&v.objective.includes(libraryOp)&&!libraryBlocked(libraryOp,v.objective)&&p&&Math.hypot(p.x-q[0],p.y-q[1])<.072;}
- function prepareLibrary(game){
-  if(!libraryAvailable(game))return false;const root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam();if(!team.length)return false;
+ const storyEcho={library:{scene:libraryScene,op:libraryOp,point:libraryPoints[libraryOp],title:["镜影 · 守档幻象","Archive echo · Guardian illusion"],name:["守档幻象","Archive echo"]},starfall:{scene:"starfall:F-04",op:"battle:observatory-echo",point:[.78,.40],title:["观星台守卫 · 空响星轨","Observatory guardian · Echo orbit"],name:["空响星轨","Echo orbit"]}};
+ function libraryAvailable(game,region="library"){const d=storyEcho[region],v=window.CatBondResonance?.view(),root=window.State.S,p=root.resonanceExploration?.positions?.[region],q=d?.point;return !!d&&game?.scene==="map"&&!game.battle&&root.resonanceExploration?.location===region&&v?.current?.id===d.scene&&v.objective.includes(d.op)&&(region==="library"?!libraryBlocked(d.op,v.objective):v.objective[0]===d.op)&&p&&Math.hypot(p.x-q[0],p.y-q[1])<.072;}
+ function prepareLibrary(game,region="library"){
+  if(!libraryAvailable(game,region))return false;const d=storyEcho[region],root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam();if(!team.length)return false;
   const sp=window.GameData.speciesById(team[0].species);if(!sp)return false;host.close?.();
-  window.UI.openBattleModePrompt(team,sp,{origin:"map",storyTitle:["镜影 · 守档幻象","Archive echo · Guardian illusion"],onStart:fighters=>{
-   if(root!==window.State.S||!libraryAvailable(game)||!fighters.length)return;
+  window.UI.openBattleModePrompt(team,sp,{origin:"map",storyTitle:d.title,onStart:fighters=>{
+   if(root!==window.State.S||!libraryAvailable(game,region)||!fighters.length)return;
    const token=host.captureAction(),base=window.GameData.speciesById(fighters[0].species);if(!base)return;
-   game._returnScene="map";game._battleTheme={region:"library",sky1:"#20253f",sky2:"#697ca8",ground:"#464967",ground2:"#232843",accent:"#b9b9e9"};
+   game._returnScene="map";game._battleTheme={region,sky1:"#20253f",sky2:"#697ca8",ground:"#464967",ground2:"#232843",accent:region==="starfall"?"#e8d19b":"#b9b9e9"};
    game.startBattle(fighters,base,{storyEncounter:"library-echo",pack:[base]});const b=game.battle;if(!b)return;
-   b.storyEncounter=true;b.captureReady=false;b.libraryEncounter={root,token,cleared:false};b.regionalCombat={region:"library",kit:REGION_KITS.library,next:2.9,cast:null,cycle:0,supportAvailable:!!catdexRecord(root),supportUsed:false};
-   const echo=b.enemies[0];if(echo){echo.regionalEnemy="library";echo.combatName=["守档幻象","Archive echo"];echo.element="dark";echo.role="sharpshooter";echo.regionalCd=2.2;echo.regionalCycle=0;echo.rotation=[];echo.ultSkill=null;echo.maxhp=Math.max(65,Math.round(living(b).reduce((n,f)=>n+f.maxhp,0)*.85));echo.hp=echo.maxhp;echo.poiseMax=Math.round(echo.maxhp*.6);echo.poise=echo.poiseMax;}
+   b.storyEncounter=true;b.captureReady=false;b.libraryEncounter={root,token,cleared:false,region,scene:d.scene,op:d.op};b.regionalCombat={region,kit:REGION_KITS[region],next:2.9,cast:null,cycle:0,supportAvailable:region==="starfall"||!!catdexRecord(root),supportUsed:false};
+   const echo=b.enemies[0];if(echo){echo.regionalEnemy=region;echo.combatName=d.name;echo.element="dark";echo.role="sharpshooter";echo.regionalCd=2.2;echo.regionalCycle=0;echo.rotation=[];echo.ultSkill=null;echo.maxhp=Math.max(65,Math.round(living(b).reduce((n,f)=>n+f.maxhp,0)*.85));echo.hp=echo.maxhp;echo.poiseMax=Math.round(echo.maxhp*.6);echo.poise=echo.poiseMax;}
    mount(game,b);game.updateBattleUI?.();
   }});return true;
  }
- window.addEventListener("cat-bond-resonance-battle-request",event=>{const x=event.detail;if(x?.sceneId===libraryScene&&x.operation===libraryOp&&x.region==="library"&&!prepareLibrary(window.__game))window.__game?.toast?.({zh:"先核验书库的全部记忆档案。",en:"Verify all library memory records first."});});
- function showLibraryResult(game,owner,recovery,outcome){
+ window.addEventListener("cat-bond-resonance-battle-request",event=>{const x=event.detail,d=storyEcho[x?.region];if(d&&x.sceneId===d.scene&&x.operation===d.op&&!prepareLibrary(window.__game,x.region))window.__game?.toast?.({zh:"请前往守卫所在的位置。",en:"Approach the guardian first."});});
+ function showLibraryResult(game,owner,recovery,outcome,region="library"){
   const ui=window.UI;if(!ui?.panel||window.State.S!==owner)return;
-  const win=outcome==="win",retry=!win,title=win?["守档幻象已消散","Archive echo defeated"]:outcome==="retreat"?["已从镜影战斗撤退","Retreated from the archive echo"]:outcome==="save-failed"?["战斗记录未保存","Battle result not saved"]:["队伍在镜影战斗中落败","Squad defeated by the archive echo"];
-  const detail=win?["真实记忆已核实。壁画中的身份线索可以继续调查。","The original memory is verified. Continue investigating the identity shown in the mural."]:["猫咪和档案进度已保留。休整或更换上阵猫咪后可以再次挑战。","Your cats and archive progress are preserved. Rest or change your team before trying again."];
+  const win=outcome==="win",retry=!win,title=region==="starfall"?(win?["星轨守卫已消散","Orbital guardian defeated"]:["星轨挑战未完成","Orbital challenge incomplete"]):win?["守档幻象已消散","Archive echo defeated"]:outcome==="retreat"?["已从镜影战斗撤退","Retreated from the archive echo"]:outcome==="save-failed"?["战斗记录未保存","Battle result not saved"]:["队伍在镜影战斗中落败","Squad defeated by the archive echo"];
+  const detail=region==="starfall"?(win?["观星台已安全。现在可以验证六地的分布式航线。","The observatory is safe. Verify the six regions’ distributed routes."]:["休整或更换队伍后再试。","Rest or change your team and try again."]):win?["真实记忆已核实。壁画中的身份线索可以继续调查。","The original memory is verified. Continue investigating the identity shown in the mural."]:["猫咪和档案进度已保留。休整或更换上阵猫咪后可以再次挑战。","Your cats and archive progress are preserved. Rest or change your team before trying again."];
   ui.panel('<span class="card-close">×</span><h2 class="center">'+tr(title)+'</h2><p class="sub">'+tr(detail)+'</p>'+(win?'<p class="center">+38 '+tr(["金币","coins"])+' · +2 '+tr(["小鱼干","fish"])+' · 28 XP</p>':'')+(ui.battleRecoveryMarkup?.(recovery)||'')+'<div class="btn-row" style="justify-content:center">'+(retry?'<button type="button" class="btn gold" id="library-retry-encounter">'+tr(["再次挑战","Retry encounter"])+'</button>':'')+'<button type="button" class="btn '+(retry?'ghost':'gold')+'" id="library-battle-ok">'+tr(["继续探索","Continue exploring"])+'</button></div>');
-  const ok=document.getElementById("library-battle-ok"),again=document.getElementById("library-retry-encounter");if(ok)ok.onclick=()=>ui.closeAll();if(again)again.onclick=()=>{ui.closeAll();if(owner!==window.State.S||!prepareLibrary(game))game.toast({zh:"请重新前往守档幻象所在的回廊。",en:"Return to the archive echo's gallery to retry."});};
+  const ok=document.getElementById("library-battle-ok"),again=document.getElementById("library-retry-encounter");if(ok)ok.onclick=()=>ui.closeAll();if(again)again.onclick=()=>{ui.closeAll();if(owner!==window.State.S||!prepareLibrary(game,region))game.toast({zh:"请重新前往守档幻象所在的回廊。",en:"Return to the archive echo's gallery to retry."});};
  }
  const end=GP.endBattle;
  GP.endBattle=function(){
@@ -297,12 +298,12 @@ function install(){
    const f=b.libraryEncounter,root=window.State.S,valid=f.root===root&&host?.isCurrentAction?.(f.token),win=b.result==="win"&&f.cleared,recovery={mode:window.State.difficulty(),fromMap:true,team:[]};let saved=false;
    if(valid){const oldCoins=root.coins,oldFish=root.fish,oldCats=(root.cats||[]).map(c=>[c,JSON.parse(JSON.stringify(c))]),oldShowcase=root.firstDuoShowcasePending;
     try{const seen=new Set();for(const fighter of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){if(!fighter.cat||fighter._reinforcement||seen.has(fighter.cat.uid))continue;seen.add(fighter.cat.uid);const before=fighter.alive?Math.max(.15,Math.min(1,fighter.hp/fighter.maxhp)):.15,after=recovery.mode==="hardcore"?window.State.setBattleHealth(fighter.cat,before):1;if(after===1){delete fighter.cat._hpFrac;delete fighter.cat._hpAt;}recovery.team.push({name:window.State.catName(fighter.cat),before:Math.round(before*100),after:Math.round(after*100)});}if(window.State.difficulty()!=="hardcore")window.State.healAllCats?.();if(b._firstDuoShowcase&&b.duoUses>0)root.firstDuoShowcasePending=false;
-     if(win){root.coins=(root.coins||0)+38;root.fish=(root.fish||0)+2;const participants=new Map([...(b.team||[]),...(b._benchFighters?.values?.()||[])].filter(f=>f.cat&&!f._reinforcement).map(f=>[f.cat.uid,f.cat]));for(const c of participants.values()){window.State.addXp?.(c,28);c.battlesWon=(c.battlesWon||0)+1;}saved=!!host.recordEvidence({sceneId:libraryScene,operation:libraryOp,region:"library",verified:true,outcome:"win",token:f.token})?.ok;}else saved=!!window.State.save()?.ok;
+     if(win){root.coins=(root.coins||0)+38;root.fish=(root.fish||0)+2;const participants=new Map([...(b.team||[]),...(b._benchFighters?.values?.()||[])].filter(f=>f.cat&&!f._reinforcement).map(f=>[f.cat.uid,f.cat]));for(const c of participants.values()){window.State.addXp?.(c,28);c.battlesWon=(c.battlesWon||0)+1;}saved=!!host.recordEvidence({sceneId:f.scene,operation:f.op,region:f.region,verified:true,outcome:"win",token:f.token})?.ok;}else saved=!!window.State.save()?.ok;
      if(!saved)throw Error("Library outcome save rejected");
     }catch(err){root.coins=oldCoins;root.fish=oldFish;root.firstDuoShowcasePending=oldShowcase;for(const [c,old] of oldCats){for(const k of Object.keys(c))if(!(k in old))delete c[k];Object.assign(c,old);}console.error(err);}
    }
    document.getElementById("cb-region-combat")?.remove();document.getElementById("battle-ui")?.classList.remove("on");const duo=document.getElementById("duo-burst");if(duo)duo.hidden=true;this.setBattleHelpVisible?.(false);this.battle=null;this._returnScene=null;this.scene="map";document.body.classList.add("cb-exploring");this.refreshHUD?.();window.WorldMap?.resumeRegion?.(false);
-   window.MorrowwishMusic?.switchScene?.("map");if(valid){if(win&&saved)window.MorrowwishAudio?.effect?.("combat_win");showLibraryResult(this,root,recovery,saved?(win?"win":b._voluntaryFlee?"retreat":"defeat"):"save-failed");}return;
+   window.MorrowwishMusic?.switchScene?.("map");if(valid){if(win&&saved)window.MorrowwishAudio?.effect?.("combat_win");showLibraryResult(this,root,recovery,saved?(win?"win":b._voluntaryFlee?"retreat":"defeat"):"save-failed",f.region);}return;
   }
   let committed=null;
   if(ruins&&b.done&&b.result==="win"&&ruins.root===window.State.S&&host?.isCurrentAction?.(ruins.token) ){
