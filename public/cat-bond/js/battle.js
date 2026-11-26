@@ -2268,6 +2268,10 @@ class CaptureBattle {
       wall.hitAge=.28;wall.hitOffset=Math.max(-wall.halfLength,Math.min(wall.halfLength,along));
       wall.hits=(wall.hits||0)+1;
       p.x=hitX;p.y=hitY;
+      if(wall.side==='me'&&wall.owner.cat?.species==='dundun'){
+        wall.hp=(wall.hp??wall.owner.maxhp*.28)-Math.max(0,p.dmg);
+        if(wall.hp<=0){wall.hp=0;wall.remaining=0;wall.owner.reflectT=0;window.CatTraits?.emit('onShieldBreak',{battle:this,cat:wall.owner,reason:'enemyHit'});}
+      }
       this.vfx.ring(hitX,hitY,{r0:5,vr:100,life:.24,color:'#d6faff',width:3});
       this.vfx.burst(hitX,hitY,{count:this.game.isTouch?5:9,
         color:'#c4f8ff',speed:90,life:.2,r:2});
@@ -2278,7 +2282,7 @@ class CaptureBattle {
         const incoming=p.vx*wall.nx+p.vy*wall.ny;
         p.vx-=2*incoming*wall.nx;p.vy-=2*incoming*wall.ny;
         p.ang=Math.atan2(p.vy,p.vx);p.spd=Math.hypot(p.vx,p.vy);
-        p.owner=wall.side;p.dmg*=.55;p._reflects=(p._reflects||0)+1;
+        p.owner=wall.side;p._traitCaster=wall.side==='me'?wall.owner:null;if(p.skill)p.skill={...p.skill,_traitCaster:p._traitCaster};p.dmg*=.55;p._reflects=(p._reflects||0)+1;
         p.life=Math.max(p.life,1.15);
         p._wallIgnoreUntil=this.t+.12;
         p.x+=wall.nx*4;p.y+=wall.ny*4;
@@ -3160,7 +3164,7 @@ class CaptureBattle {
       // no learned E skill → the classic pounce (contact-damage lunge)
       f.dashT=.26;f.inv=.3;
       f.pounce=true;f._dashAim=aim;
-      f._pounceSkill={id:'starterEPounce',kind:'pounce',element:f.element,power:1,ultCost:0};
+      f._pounceSkill={id:'starterEPounce',kind:'pounce',element:f.element,power:1,ultCost:0,_traitCaster:f};
       f._dashReach=135;f._dashTravel=0;f._pounceDmg=null;
       this.vfx.shockwave(f.x,f.y,col);
       this.vfx.burst(f.x,f.y,{count:12,color:col,angle:aim+Math.PI,spread:1.2,speed:220});
@@ -3486,6 +3490,7 @@ class CaptureBattle {
         if(!t.alive)continue;
         const before=t.hp;
         t.hp=Math.min(t.maxhp,t.hp+t.maxhp*pct);
+        window.CatTraits?.emit('onHealResolved',{battle:this,cat:f,target:t,amount:t.hp-before,requested:t.maxhp*pct,skill});
         if(t.hp>before+0.01){ healedAny=true;
           this.vfx.ring(t.x,t.y,{r0:8,vr:260,life:.5,color,width:6});
           this.vfx.burst(t.x,t.y,{count:this.game.isTouch?8:14,color,speed:120,life:.5,r:3,grav:-40});
@@ -5990,10 +5995,10 @@ class CaptureBattle {
     f = f || this.me();
     if (!f.alive) return;
     // LEVEL GAP: a higher-level wild pack hits genuinely harder (see constructor).
-    if (this.enemyLevelMult && this.enemyLevelMult !== 1) dmg *= this.enemyLevelMult;
+    if (!options.redirected && this.enemyLevelMult && this.enemyLevelMult !== 1) dmg *= this.enemyLevelMult;
     // First-fight coach: a beginner can take hits to learn, but never dies during
     // the tutorial — damage is gentled and HP floored so the first fight is safe.
-    if (this.coach) dmg *= 0.35;
+    if (!options.redirected && this.coach) dmg *= 0.35;
     // Barrier (shieldT) reduction now lives in resolveHit, which every enemy hit
     // routes through. hurtMe lands the (already shield-adjusted) damage.
     if(!options.redirected){
@@ -6905,7 +6910,7 @@ class CaptureBattle {
       visualY-=hop;
       window.CatBondWardArt?.draw(ctx,tf,visualX,visualY,this.t,this.catScale(isMe?'active':'ally'),'back');
       (window.CatMotion?.draw||CatArt.drawCat)(ctx,visualX,visualY,{
-        species:sp2,scale:this.catScale(isMe?'active':'ally'),face:visualFace,t:tf.t||this.t,
+        species:sp2,scale:this.catScale(isMe?'active':'ally')*(tf.cat?.species==='senlin'?1.4:1),face:visualFace,t:tf.t||this.t,
         pose:visualPose,motion:route?1:(tf.moving?.86:0),
         stride:route?this.duoRun.age*26:tf.t*13,mood:'happy',
         growth:window.Growth?.visual(tf.cat)||null
