@@ -59,6 +59,8 @@ try{
      await target.click();
     }
     const dialog=page.locator('.res-ambient-simple');await dialog.waitFor();
+    const choice=dialog.locator('[data-ambient-choice="'+event.id+'"]');
+    if(await choice.count())await choice.click();
     assert.equal(await dialog.locator('h2').innerText(),activities[event.id].title[1]);
     return dialog;
    }
