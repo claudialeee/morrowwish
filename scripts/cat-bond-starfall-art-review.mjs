@@ -40,9 +40,14 @@ try{
     const layout=await page.evaluate(()=>{
      const stack=document.querySelector(".cbcp-art-stack"),img=[...stack.querySelectorAll(".cbcp-art")].at(-1),sub=document.querySelector(".cbcp-subtitle-wrap"),r=sub.getBoundingClientRect(),bounds=stack.getBoundingClientRect();
      const layers=[...stack.children].slice([...stack.children].indexOf(img)+1).filter(el=>el.classList.contains("cbcp-layer"));
-     return {decoded:!!img?.complete&&img.naturalWidth>0,layers:layers.length,layerDecoded:layers.every(el=>el.complete&&el.naturalWidth>0),layerVisible:layers.every(el=>{const b=el.getBoundingClientRect();return b.width>0&&b.height>0&&b.right>bounds.left&&b.left<bounds.right&&b.bottom>bounds.top&&b.top<bounds.bottom}),subtitleFits:sub.hidden||r.left>=-1&&r.top>=-1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,overflow:!sub.hidden&&[...sub.querySelectorAll(".cbcp-speaker,.cbcp-subtitle")].some(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()].some(b=>b.left<r.left-1||b.right>r.right+1||b.top<r.top-1||b.bottom>r.bottom+1);})};
+     return {image:img?.currentSrc,fit:getComputedStyle(img).objectFit,transform:getComputedStyle(img).transform,backplate:getComputedStyle(document.querySelector('.cbcp-stage'),'::before').display,decoded:!!img?.complete&&img.naturalWidth>0,layers:layers.length,layerDecoded:layers.every(el=>el.complete&&el.naturalWidth>0),layerVisible:layers.every(el=>{const b=el.getBoundingClientRect();return b.width>0&&b.height>0&&b.right>bounds.left&&b.left<bounds.right&&b.bottom>bounds.top&&b.top<bounds.bottom}),subtitleFits:sub.hidden||r.left>=-1&&r.top>=-1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,overflow:!sub.hidden&&[...sub.querySelectorAll(".cbcp-speaker,.cbcp-subtitle")].some(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()].some(b=>b.left<r.left-1||b.right>r.right+1||b.top<r.top-1||b.bottom>r.bottom+1);})};
     });
     assert.ok(layout.decoded&&layout.layerDecoded&&layout.layerVisible&&layout.layers===(frame.layers||[]).length&&layout.subtitleFits&&!layout.overflow,JSON.stringify({name,id:frame.id,lang,layout}));
+    if(name==="portrait"&&/\/(f02-history|b04-reunion)\.webp(?:[?#]|$)/.test(layout.image)){
+     assert.equal(layout.fit,"contain","Both story actors must remain in the portrait frame");
+     assert.equal(layout.transform,"none","Do not crop actors with camera zoom");
+     assert.notEqual(layout.backplate,"none","Fill remaining area without a white card");
+    }
     await page.screenshot({path:out+"/"+name+"-"+frame.id.replaceAll(":","-")+"-"+lang+".png"});
     result.push({profile:name,scene:scene.id,frame:frame.id,lang,...layout});
    }
