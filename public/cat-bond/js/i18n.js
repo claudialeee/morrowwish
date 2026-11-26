@@ -1102,11 +1102,14 @@
 
     // ---- skill names ----
     // cat-instinct rework names (Spec A)
-    '咳毛球': 'Hairball Hack', '弓背炸毛': 'Puff & Hiss', '拨下桌': 'Knock It Off',
+    '咳毛球': 'Hairball Hack', '火球术': 'Fireball', '弓背炸毛': 'Puff & Hiss', '拨下桌': 'Knock It Off',
     '舔毛理顺': 'Grooming', '舔伤口': 'Lick Wound', '纸箱埋伏': 'Box Ambush', '疯跑冲刺': 'Zoomies',
     '炸毛墙': 'Startle Static', '戏弄爪': 'Bat-Around', '居高临下': 'High Ground',
-    '咒波三连': 'Hex Triwave', '潮波三叠': 'Tide Triwave',
-    // crescentFan 月华连弧 — WIP on branch `crescent-wip`; i18n entry restored when the skill ships.
+    '咒波三连': 'Hex Triwave', '潮波三叠': 'Tide Triwave', '月华连弧': 'Crescent Fan',
+    '踏月之猫的招牌：一次挥出五道追踪月牙能量波，各自咬向最近目标。':
+      'Luna\'s signature — releases five crescent-moon waves at once, each homing onto the nearest target.',
+    '踏月之猫的招牌：一道道月牙能量波沿施放方向直线挥出。':
+      'Luna\'s signature — five crescent-moon waves release one at a time along the cast direction, flying straight.',
     '蓄一发按出三连暗波：每 0.35 秒一发自动追击当下最近的敌人，不必一次放完。':
       'Hold one cast, release three dark waves — one every 0.35s auto-homes at the nearest enemy, so you don\'t burn it all at once.',
     '一发激起三叠潮波：每 0.3 秒一发自动追击当下最近的敌人，持续淋湿。':
@@ -1802,7 +1805,7 @@
     "吸收日光回复斗志，并洗去一种异常状态或挣脱束缚——草木的再生之力。": "Absorb sunlight to restore morale, cleanse a status effect or break free of roots.",
     "原地踩奶进入状态：每次叠一层（最多4层），层层提升伤害并回一点斗志；猫味十足的节奏型蓄能。": "Knead in place to stack up to four boosts, increasing damage and restoring a little morale.",
     "阳光烈焰": "Sunbeam Blaze",
-    "【必杀】日光唤醒藤蔓花海，束缚敌人并留下持续生长的领域。": "[Ultimate] Sunlight awakens vines, roots enemies and leaves a growing field.",
+    "【必杀】日光唤醒藤蔓花海，束缚敌人并留下持续生长的领域。": "[Ultimate] Sunlight awakens vines, roots enemies and leaves a growing field.", "【必杀】蓄力0.85秒后释放强力直线日光束，命中路径上的敌人。": "[Ultimate] Charge for 0.85s, then fire a powerful straight solar beam.", "短暂蓄力后射出高速压缩火球，命中第一个敌人并施加灼烧，不产生范围伤害。": "Briefly charge a fast compressed fireball that burns the first enemy hit, without splash damage.",
     "疯跑冲刺": "Zoomies Dash",
     "跳跃的电弧，在敌群间连锁跳跃，附加感电。": "An electric arc jumps between nearby enemies, shocking each one.",
     "球状闪电": "Ball Lightning",
@@ -2070,7 +2073,10 @@
   "破防": "Guard Broken",
   "恢复中": "Recovering",
   "野猫韧性": "Wild cat poise",
-  "水枪": "Water Jet",
+  "水枪": "Water Lance",
+  "雷极磁场": "Magnetic Polarity",
+  "高压水凝成锋锐长枪，沿细直线贯穿多个敌人并持续造成伤害；施放时原地不动，收枪后短暂迟缓。": "A sharp lance of compressed water pierces enemies in a narrow line; channel in place, then recover briefly.",
+  "在目标方向展开双雷核，持续4秒牵引并电击两极之间的敌人。": "Deploy two electric poles for four seconds, drawing in and shocking enemies between them.",
   "坦克 / 格斗专属：极短时间完全格挡下一次攻击；结束后短暂易伤。": "Tank / Fighter only: Completely block the next hit for a moment, then briefly take extra damage.",
   "焰弹": "Flame Orb",
   "炽焰冲": "Flame Dash",

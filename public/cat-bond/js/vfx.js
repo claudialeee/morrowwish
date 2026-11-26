@@ -93,6 +93,16 @@ class VFX {
   // Standard visual grammar. Purely local: no fullscreen hit overlay.
   // Combat mechanics (HP, invulnerability, hitstop) remain battle-owned.
   impactType(x,y,type='light',options={}){
+    const C=window.CatBondContactFX;
+    if(C){
+      // Per-contact duration and intensity, with a bounded visual pool.
+      const style=C.classify(type,options.skill),max=['heal','cleanse','barrier','shieldBreak'].includes(style)?.42:type==='kill'?.44:.28;
+      const live=this.fx.filter(e=>e.type==='contact').length;
+      if(live<36){
+        this.fx.push({type:'contact',style,tier:type,element:options.skill?.element,skillId:options.skill?.isBasic||options.skill?.ultCost?null:options.skill?.id,angle:options.angle||0,x,y,life:max,max,scale:options.scale||1});
+      }
+      return;
+    }
     const color=options.color||({
       light:'#fff1ce',heavy:'#ffe4a4',crit:'#fff3b4',stagger:'#ffd888',kill:'#fff1b3',
       heal:'#a6e9c5',guard:'#9ce5ce',reflect:'#addaff',
@@ -177,12 +187,14 @@ class VFX {
     this.fx = this.fx.filter(e => e.life > 0);
   }
 
-  draw(ctx) {
+  draw(ctx,layer='all') {
     for (const e of this.fx) {
+      if(layer==='back'&&e.type==='contact'||layer==='contact'&&e.type!=='contact')continue;
       const k = Math.max(0, e.life / e.max);
       ctx.save();
       ctx.globalAlpha = k;
-      if (e.type === 'spark') {
+      if(e.type==='contact'){ window.CatBondContactFX?.draw(ctx,e,this._t); }
+      else if (e.type === 'spark') {
         // Fine directional impact streaks, not floating dots.
         const a=Math.atan2(e.vy||1,e.vx||1),size=(e.r+2)*k;
         ctx.strokeStyle=e.color;ctx.lineWidth=Math.max(.8,size*.6);

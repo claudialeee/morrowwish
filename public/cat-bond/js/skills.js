@@ -227,7 +227,7 @@
   const SKILLS = [
     // ---- 火 fire ----
     { id: 'emberClaw',  name: '炽爪',     element: 'fire',  kind: 'melee',      power: 1.3, cd: 2.2, ultCost: 0,  tags: ['burn'],          appliesTag: 'burn',  vfx: 'muzzle',    desc: '燃烧的猫爪撕击，附加灼烧。' },
-    { id: 'fireballMeow', name: '咳毛球', element: 'fire',  kind: 'projectile', power: 1.65, cd: 3.0, ultCost: 0, windup: 0.4, castSlow: 0.6, precise: true, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '猫咪蓄力咳出滚烫毛球（短暂前摇）——正中威力暴涨并持续灼烧，擦边只是烫一下；施放后短暂迟缓。' },
+    { id: 'fireballMeow', name: '火球术', element: 'fire',  kind: 'projectile', power: 1.65, cd: 2.5, ultCost: 0, windup: 0.18, precise: true, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '短暂蓄力后射出高速压缩火球，命中第一个敌人并施加灼烧，不产生范围伤害。' },
     { id: 'puffHiss',   name: '弓背炸毛', element: 'fire',  kind: 'buff',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['buff','threat'], appliesTag: null, vfx: 'ring',      desc: '弓背炸毛虚张声势：自身伤害提升，并把靠得太近的敌人吓退一步。' },
     { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 2.7, damageChannel: 1.35, reach: 360, width: 22, sweep: .72, sweepPasses: 3, power: 1.85, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。', unlock: { level: 6, element: 'fire' } },
     { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
@@ -241,7 +241,7 @@
     { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.2, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿——淋湿会减速移动，并为元素反应铺垫。' },
     { id: 'knockOff',   name: '拨下桌',   element: 'water', kind: 'pounce',     power: 1.75, cd: 3.5, ultCost: 0,  heavy: true, tags: ['soak','dash','launch'], appliesTag: 'soak', vfx: 'beam', desc: '一掌把目标拨向场地边缘——重重击退并淋湿。侧后方突袭更狠。' },
     { id: 'grooming',   name: '舔毛理顺', element: 'water', kind: 'heal', healMode: 'area', power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'], appliesTag: null, vfx: 'orb', desc: '舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅辅助能领悟。', unlock: { element: 'water', role: ['support'] } },
-    { id: 'waterJet',   name: '水枪',     element: 'water', kind: 'beam', channel: 1.2, reach: 300, width: 26, power: 1.75, cd: 5.0, ultCost: 0, castSlow: 0.5, tags: ['soak','channel','ranged'], appliesTag: 'soak', vfx: 'beam', desc: '持续喷射高压水柱，沿直线不断造成伤害；喷射时原地不动，收枪后短暂迟缓（后遗症）。' },
+    { id: 'waterJet',   name: '水枪',     element: 'water', kind: 'beam', channel: 1.2, reach: 300, width: 12, power: 1.75, cd: 5.0, ultCost: 0, castSlow: 0.5, tags: ['soak','channel','ranged'], appliesTag: 'soak', vfx: 'beam', desc: '高压水凝成锋锐长枪，沿细直线贯穿多个敌人并持续造成伤害；施放时原地不动，收枪后短暂迟缓。' },
     { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff', shieldType: 'barrier', power: 0, cd: 5.0, ultCost: 0, wardDuration: 5.2, tags: ['shield','soak'], appliesTag: null, vfx: 'ring', desc: '展开泡泡护盾，减伤 45%，持续约 5 秒——前排的持续减伤罩。' },
     { id: 'tidePool',   name: '潮汐池',   element: 'water', kind: 'aoe', power: 0.6, cd: 4.0, ultCost: 0, field: { element: 'water', tag: 'soak', life: 6 }, tags: ['soak','field'], appliesTag: 'soak', vfx: 'ring', desc: '抛出一片潮汐水域：站在其中持续淋湿；用⚡电系技能打入水域可引爆「元素反应」，范围内全体过载！' },
     { id: 'tidalPulse', name: '潮波三叠', element: 'water', kind: 'projectile', power: 1.15, cd: 5.2, ultCost: 0, pulseCount: 3, pulseGap: 0.30, pulseHoming: 1.8, tags: ['soak','ranged','pulse'], appliesTag: 'soak', vfx: 'orb', desc: '一发激起三叠潮波：每 0.3 秒一发自动追击当下最近的敌人，持续淋湿。', unlock: { level: 5 } },
@@ -276,12 +276,13 @@
     { id: 'quakeStomp', name: '泰山压顶', element: 'grass', kind: 'leap',       power: 1.9, cd: 5.0, ultCost: 0,  heavy: true, tags: ['melee','stagger'], appliesTag: null, vfx: 'impact', desc: '腾空跃起，泰山压顶般砸向目标点，落地小范围震荡并击虚周围敌人。' },
     { id: 'photosynth', name: '光合',     element: 'grass', kind: 'heal', healMode: 'cleanse', power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal','cleanse'], appliesTag: null, vfx: 'orb', desc: '吸收日光回复斗志，并洗去一种异常状态或挣脱束缚——草木的再生之力。' },
     { id: 'knead',      name: '踩奶',     element: 'grass', kind: 'buff',       power: 0,   cd: 2.4, ultCost: 0,  tags: ['buff','knead'],  appliesTag: null,    vfx: 'orb',       desc: '原地踩奶进入状态：每次叠一层（最多4层），层层提升伤害并回一点斗志；猫味十足的节奏型蓄能。' },
-    { id: 'sunbloom', name: '阳光烈焰', element: 'grass', kind: 'aoe', power: 2.2, cd: 0, ultCost: 70, tags: ['bind','ult'], appliesTag: 'bind', vfx: 'shockwave', desc: '【必杀】日光唤醒藤蔓花海，束缚敌人并留下持续生长的领域。' },
+    { id: 'sunbloom', name: '阳光烈焰', element: 'grass', kind: 'aoe', power: 2.2, cd: 0, ultCost: 70, tags: ['ult'], vfx: 'beam', desc: '【必杀】蓄力0.85秒后释放强力直线日光束，命中路径上的敌人。' },
     // ---- 电 elec ----
     { id: 'staticPounce', name: '疯跑冲刺', element: 'elec', kind: 'dash',      power: 1.85, cd: 4.0, ultCost: 0,  heavy: true, tags: ['shock','dash'],  appliesTag: 'shock', vfx: 'beam',  desc: '半夜疯跑般的带电冲刺，撞中麻痹目标。侧后方突袭更狠。' },
     { id: 'boltArc',    name: '电弧',     element: 'elec',  kind: 'chain',      power: 1.35, cd: 2.2, ultCost: 0,  tags: ['shock','ranged'],appliesTag: 'shock', vfx: 'beam',      desc: '跳跃的电弧，在敌群间连锁跳跃，附加感电。' },
     { id: 'lightningOrb',name: '球状闪电', element: 'elec', kind: 'projectile', power: 1.5, cd: 4.8, ultCost: 0, homing: 3.4, tags: ['shock','ranged'], appliesTag: 'shock', vfx: 'orb', desc: '缓慢浮游的电球转向敌人，命中放出感电火花。', unlock: { level: 5, element: 'elec' } },
     { id: 'thunderStream',name: '雷流喷射', element: 'elec', kind: 'beam', channel: 1.22, reach: 270, width: 13, power: 1.75, cd: 5.5, ultCost: 0, tags: ['shock','channel','ranged'], appliesTag: 'shock', vfx: 'lightning', desc: '猫咪短暂站定，持续吐出可转向的折线雷电。', unlock: { level: 4, element: 'elec' } },
+    { id:'magneticField',name:'雷极磁场',element:'elec',kind:'aoe',power:.45,cd:9,ultCost:0,reach:180,tags:['shock','control','field'],appliesTag:'shock',vfx:'lightning',desc:'在目标方向展开双雷核，持续4秒牵引并电击两极之间的敌人。',unlock:{level:8,element:'elec',role:['control']} },
     { id: 'thunderYowl',name: '雷鸣啸',   element: 'elec',  kind: 'aoe',        power: 2.3, cd: 0,   ultCost: 70, tags: ['shock','ult'],   appliesTag: 'shock', vfx: 'beam',      desc: '【必杀】一声炸雷贯穿全场。' },
     // ---- 暗 dark ----
     { id: 'shadowSwipe',name: '影袭',     element: 'dark',  kind: 'melee',      power: 1.35,cd: 2.4, ultCost: 0,  tags: ['bleed'],         appliesTag: 'bleed', vfx: 'muzzle',    desc: '自暗影中突袭，造成撕裂伤。' },
@@ -327,9 +328,9 @@
     // Species-locked so only 月月 learns it; placed below the Lv8 roster so it reads as a mature
     // crescent arcana, not an early unlock. Slightly higher per-shot power than the generic swarm
     // (0.52 vs prism/boltSwarm 0.34) + 5 shots + homing + maxLife 2.6s = roughly single-skill DPS.
-    // crescentFan 月华连弧 — WIP on branch `crescent-wip` (owner: "放到一个新的 branch 上"
-    // 2026-11-26). Current attempt's projectile sprite + fan was wrong; redesigning as a
-    // moonSlash stroke (真空月牙波, 索隆月牙天冲 style) on the branch.
+    // Owner 2026-11-26: 月牙 moonblade MUST NOT home (直线挥出, 索隆月牙天冲式).
+    // pulseHoming removed; each wave flies straight along the caster's aim at release.
+    { id: 'crescentFan', name: '月华连弧', element: 'light', kind: 'projectile', power: 0.52, cd: 5.6, ultCost: 0, pulseCount: 5, pulseGap: 0.18, tags: ['ranged','blind','moon','pulse'], appliesTag: 'blind', vfx: 'fang', desc: '踏月之猫的招牌：一道道月牙能量波沿施放方向直线挥出。', unlock: { species: ['yuelian'], level: 10 } },
     // ---- 领悟条件 (quirky quests) ----
     { id: 'veteranStrike', name: '百战斩', element: 'dark', kind: 'melee',      power: 2.3, cd: 3.4, ultCost: 0, heavy: true, upgradeOf: 'shadowSwipe', tags: ['bleed','heavy'], appliesTag: 'bleed', vfx: 'muzzle', desc: '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。', unlock: { quest: 'battlesWon10' } },
     // 呼噜新星 purrNova removed per V4 (owner 2026-11-26): duplicated 金乌焱 sunflare (same fire
