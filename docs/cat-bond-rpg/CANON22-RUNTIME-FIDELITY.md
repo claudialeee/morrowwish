@@ -1,4 +1,7 @@
-# Canon 2.2 fidelity increment — implementation, not visual approval
+# Historical Canon 2.2 fidelity increment — superseded by final acceptance handoff
+
+**Historical record, not an active work queue.** Continuous bridge walking, optional wild-cat rescue, audience response, optional safe islands/checkpoint, joint moonleaf choreography and disaster presentation were implemented in later commits. Final art is integrated. See [PLAYTEST-WORK-HANDOFF.md](PLAYTEST-WORK-HANDOFF.md) for current evidence and remaining acceptance; do not recreate these completed tasks. Earlier graybox and pending statements below are retained only as provenance.
+
 - H-02: pursuit constrained to actual perimeter waypoints or explicit low-wall jump. Both proofs are replayed; no diagonal shortcut through arbitrary ground. Graybox wall and fish-lane markers need painted background alignment.
 - R-02/R-03: route-specific visible garden vista vs luminous fungi, recorded discovery proof; bridge gaps remain blocked. The bridge still uses node-to-node movement, not a continuous walking animation; optional wild-cat rescue is not yet implemented.
 - E-01: selected shape and angle persisted with proof; animated audience reacts differently to fish, butterfly or cat. Procedural kitten silhouettes and lantern are graybox, not final art.

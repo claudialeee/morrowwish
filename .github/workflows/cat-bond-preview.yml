@@ -206,6 +206,7 @@ jobs:
                 await encounter.waitFor({state:'detached'});
                 await page.waitForFunction(()=>CatBondResonance.view().openingMet===true);
                 await marker.waitFor({state:'hidden'});
+                if(await page.locator('#toasts .toast:visible').count()>1)throw Error('Exploration notices stack over cats and navigation');
                 await page.screenshot({path:'preview-'+prefix+'-garden-discovery.png'});
                 if(await guide.locator('button:visible').count()!==1)throw Error('Opening guide expanded after dialogue');
                 if(await page.locator('#yard-actions').isVisible())throw Error('Garden floating dock must be hidden');

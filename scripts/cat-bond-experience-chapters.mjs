@@ -71,6 +71,12 @@ async function run(chapter){
    const line=v.current.lines[v.cursor];
    await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.en);
    readLines.push({scene:id,cursor:v.cursor,speaker:line.speaker,text:line.text.en});
+   if(/^library:M-0[345]$/.test(id)){
+    const body=dlg.locator('.res-body'),panel=dlg.locator('.res-dialogue');
+    const [b,p]=await Promise.all([body.boundingBox(),panel.boundingBox()]);
+    assert.ok(b&&p&&b.width>=p.width*.9&&b.x>=0&&b.x+b.width<=1441,'Library reveal dialogue must occupy its full readable row');
+    if(v.cursor===0||v.cursor===v.current.lines.length-1)await page.waitForFunction(()=>{const stage=document.querySelector('.library-reveal-stage');const img=stage?.querySelector('.library-reveal-painting.is-current');return stage?.dataset.ready==='true'&&img&&Number(getComputedStyle(img).opacity)>=.95;});
+   }
    if(v.cursor===0||v.cursor===v.current.lines.length-1)await shot(id+'-'+v.cursor);
    await page.waitForFunction(()=>!document.querySelector('.res-host .res-skip-top')?.disabled);
    await dlg.locator('.res-line').click();

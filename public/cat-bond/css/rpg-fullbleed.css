@@ -183,3 +183,9 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 @media (max-aspect-ratio: 1/1){
  #stage .rw-world.rw-interaction-fit:not([hidden])>.rw-shell .rw-surface{width:min(100cqw,calc(100cqh * 1.77777778))!important;height:auto!important;aspect-ratio:16/9!important;}
 }
+
+/* Reveal scenes already have full-screen portraits; reserve the whole dialogue row for text. */
+#stage .res-host.res-library-reveal .res-dialogue{grid-template-columns:minmax(0,1fr)!important;width:min(860px,94%)!important;gap:0!important}
+#stage .res-host.res-library-reveal .res-portrait{display:none!important}
+#stage .res-host.res-library-reveal .res-body{grid-column:1/-1;min-width:0;box-sizing:border-box}
+@media(max-width:600px){#stage .res-host.res-library-reveal .res-dialogue{width:100%!important}}

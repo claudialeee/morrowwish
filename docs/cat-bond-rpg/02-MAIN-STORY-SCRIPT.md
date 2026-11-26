@@ -1,7 +1,7 @@
 # 星铃回响 · Echoes of the Starbell
 ## Canon 2.2 — A World Worth Remembering / 奇幻冒险完整重写
 
-**状态：Canon 2.2 — 最终源稿整改（第四轮），未迁移至运行时，未实机验收，未部署。** 本稿在 Canon 2.0 基础上完成反套路审查，取代此前 Canon 1.3 的全部章节事件、强制任务、玩家对白与美术接入要求；1.3 原稿及旧运行时保留作历史参照，不再作为新玩法验收标准。世界因果、核心身份、暮铃的责任、完整幸福结局保留。允许重做不够好玩的内容，不因资产或测试沉没成本降低品质。旧版本固定链接： https://github.com/claudialeee/morrowwish/blob/76aae0af7964d74bc44f4cd96742c3108dd294b0/docs/cat-bond-rpg/02-MAIN-STORY-SCRIPT.md
+**状态：Canon 2.2 — 权威剧本源稿（第四轮）。已进行运行时迁移并部署隔离试玩，最终候选版本的完整实机验收仍未签核。** 实施状态及准确 SHA 见 [最终验收交接](PLAYTEST-WORK-HANDOFF.md)。 本稿在 Canon 2.0 基础上完成反套路审查，取代此前 Canon 1.3 的全部章节事件、强制任务、玩家对白与美术接入要求；1.3 原稿及旧运行时保留作历史参照，不再作为新玩法验收标准。世界因果、核心身份、暮铃的责任、完整幸福结局保留。允许重做不够好玩的内容，不因资产或测试沉没成本降低品质。旧版本固定链接： https://github.com/claudialeee/morrowwish/blob/76aae0af7964d74bc44f4cd96742c3108dd294b0/docs/cat-bond-rpg/02-MAIN-STORY-SCRIPT.md
 
 ## 地区地理与名称（唯一公开命名）
 风铃镇（Windchime Town）是阳光花园外的山谷小镇，不在海边；镇民在屋檐挂家铃，用不同音色辨认家门。千灯城（Lantern City）是山地灯匠城，节庆光影是当地生活的一部分，不是工业设施。其余四地为眠根林（Rootsleep Forest）、云脊群岛（Skyspine Isles）、月镜书库（Moonmirror Library）、星坠原（Starfall Expanse）。风铃镇与千灯城的旧技术 ID 分别仍为 `harbor`、`forge`，只用于迁移定位，不得出现在玩家可见文本、地图、任务或音频字幕。角色檐灯（Yandeng，旧 ID `jiedeng`）是风铃镇修铃匠、栖蓝是镇中熟悉小巷的年轻探路者。归家调取代旧的海上旋律命名。总地图、区域图、道具、角色职业与场景音频都按山谷镇及灯匠城重构。
