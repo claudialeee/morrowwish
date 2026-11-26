@@ -296,7 +296,7 @@ function install(){
   const f=this.resonanceFinale;if(!f||!this.autoMode)return nearest.call(this,x,y);
   let list=this.liveEnemies().filter(e=>eligibleTarget(this,e));
   if(f.id==="finale:B-01"&&f.cast?.node>=0){const threatened=list.find(e=>e.gateIndex===f.cast.node);if(threatened)return threatened;}
-  return list.sort((a,c)=>Math.hypot(x-a.x,y-a.y)-Math.hypot(x-c.x,y-c.y))[0]||null;
+  return list.sort((a,c)=>Math.hypot(x-a.x,y-a.y)-Math.hypot(x-c.x,y-c.y))[0]||((f.id==="finale:B-02"&&!f.probeChanged)?this.liveEnemies()[0]:f.id==="finale:B-03"?this.liveEnemies().find(e=>e.finaleActor==="central"):null)||null;
  };
  function castPulse(b,f){
   const n=f.id==="finale:B-03"?(f.cycle%4===3&&f.nodes.some(n=>n.done)&&f.nodes.some(n=>!n.done)?f.nodes.filter(n=>n.done).at(-1):f.nodes.find(n=>!n.done)):f.nodes.find((n,i)=>i>=f.cycle%f.nodes.length&&!n.done)||f.nodes.find(n=>!n.done);
@@ -310,7 +310,7 @@ function install(){
   if(n?.done&&f.id!=="finale:B-03")return;
   const guards=alive(b).filter(x=>distance(x,c)<=r);
   if(n&&f.id==="finale:B-03"&&n.done&&!guards.length){disruptReply(n.reply,f.elapsed);n.done=false;n.progress=0;notice(b,"邻铃的回应被打断，回到光里重新接唱。","A neighbor reply was interrupted. Return to the light to reconnect.");}
-  if(n&&!n.done&&!guards.length){n.integrity=Math.max(0,n.integrity-(f.id==="finale:B-03"?regionalEffects(b,n.region).pulseDamage:32));n.progress=0;if(n.reply)disruptReply(n.reply,f.elapsed);if(n.integrity===0){notice(b,"地区伙伴无法继续行动。","A regional ally group can no longer continue.");f.failedProtection=true;b.finish(false);}}
+  if(n&&!n.done&&!guards.length){n.integrity=Math.max(0,n.integrity-(f.id==="finale:B-03"?regionalEffects(b,n.region).pulseDamage:32));n.progress=0;if(n.reply&&n.reply.interruptedAt!==f.elapsed)disruptReply(n.reply,f.elapsed);if(n.integrity===0){notice(b,"地区伙伴无法继续行动。","A regional ally group can no longer continue.");f.failedProtection=true;b.finish(false);}}
   for(const cat of guards)b.resolveHit(cat,"wild",{element:"dark",kind:"aoe",isBasic:false},Math.max(7,cat.maxhp*.12),cat.x,cat.y);
   if(c.style==="chain"){const dx=c.x-c.fromX,dy=c.y-c.fromY,len=Math.hypot(dx,dy)||1;for(const cat of alive(b)){if(guards.includes(cat))continue;const t=clamp(((cat.x-c.fromX)*dx+(cat.y-c.fromY)*dy)/(len*len),0,1);if(Math.hypot(cat.x-(c.fromX+dx*t),cat.y-(c.fromY+dy*t))<24)b.resolveHit(cat,"wild",{element:"dark",kind:"aoe",isBasic:false},Math.max(6,cat.maxhp*.09),cat.x,cat.y);}}
   paint(b);

@@ -92,6 +92,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
    if(operation==="battle:root-echo"&&(!w.interactions?.["forest:R-03:rescue:steady-channel"]||!w.interactions?.["forest:R-03:explore:water-marks"]))return fail("rescue-trail-required");
    if(kind!=="battle"&&typeof physical!=="function")return fail("rescue-world-evidence-required");
   }
+  if(operation==="battle:shadow-beast"){const w=State.S.resonanceExploration,p=w?.positions?.forge,q=layouts.forge.features[operation];if(!token||w?.location!=="forge"||!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072)return fail("walk-to-shadow-beast");}
   if(operation==="battle:chime-beast"){const w=State.S.resonanceExploration,p=w?.positions?.harbor,q=layouts.harbor.features[operation];if(!token||w?.location!=="harbor"||!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072)return fail("walk-to-bell-beast");}
   if(operation==="battle:observatory-echo"){const p=State.S.resonanceExploration?.positions?.starfall;if(!p||Math.hypot(p.x-.78,p.y-.40)>=.072)return fail("walk-to-observatory");}
   if(kind==="battle"&&outcome!=="win")return fail("battle-not-won");

@@ -198,7 +198,7 @@ async function run(chapter){
   }else if(chapter==='forge'){
    await puzzle('Lantern festival · Shadow show',['Cat','Aim left','Aim right','Continue festival']);await talk('Xiaomao');await dialogue('forge:E-01');await scene('forge:E-02');
    await puzzle('Light the stone bridge',['Cross the bridge','Aim left','Aim right','Cross the bridge']);await dialogue('forge:E-02');await scene('forge:E-03');
-   await battle('Forge guardian','battle:forge-guardian','forge');await dialogue('forge:E-03');await scene('forge:E-04');
+   await battle('Shadow beast','battle:shadow-beast');await dialogue('forge:E-03');await scene('forge:E-04');
    await restore('Hearth sanctuary',['Heat','Heat','Heat','Heat','Vent'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');
   }else if(chapter==='sky'){
    await fly('Catch the mail pouch · Practice gliding',[.65,.34,.64]);await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');

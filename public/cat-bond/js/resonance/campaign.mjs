@@ -914,11 +914,11 @@ export const campaign = {
         }
       ],
       "requires": [
-        "battle:forge-guardian"
+        "battle:shadow-beast"
       ],
       "choices": [],
       "lineGate": [
-        "battle:forge-guardian"
+        "battle:shadow-beast"
       ],
       "choiceTiming": "afterDialogue",
       "orderedRequires": true

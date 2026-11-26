@@ -30,6 +30,7 @@ jobs:
           node --check public/cat-bond/js/resonance/finale-combat.mjs
           node --check public/cat-bond/js/resonance/finale-latch.mjs
           node --check public/cat-bond/js/resonance/regional-combat.mjs
+          node --check public/cat-bond/js/battle.js
           node --check public/cat-bond/js/resonance/story-party.mjs
           node --check public/cat-bond/js/resonance/canon22-mirror.mjs
           node --check public/cat-bond/js/resonance/library-mechanisms.mjs

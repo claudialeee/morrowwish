@@ -3,9 +3,9 @@ import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud}
 // Wild cats remain collectible; scripted Forge/Finale encounters use separate adapters.
 import {libraryBlocked,libraryPoints,catdexRecord} from "./library-mechanisms.mjs";
 export const REGION_KITS=Object.freeze({
- harbor:{name:["霁潮港","Misttide Harbor"],enemy:["潮汐追猎","Tide pursuit"],npcs:["jiedeng","qilan"],element:"water",color:"#71c9d9",kind:"surge",period:6.2,support:["灯塔引航","Beacon guidance"]},
+ harbor:{name:["风铃镇","Windchime Town"],enemy:["潮汐追猎","Tide pursuit"],npcs:["jiedeng","qilan"],element:"water",color:"#71c9d9",kind:"surge",period:6.2,support:["灯塔引航","Beacon guidance"]},
  forest:{name:["眠根林","Rootsleep Forest"],enemy:["根须围猎","Root ambush"],npcs:["yahe","yuchuan"],element:"grass",color:"#97ba76",kind:"roots",period:6.8,support:["疏通根脉","Clear the roots"]},
- forge:{name:["赤炉环城","Emberforge City"],enemy:["高温巡猎","Furnace hunt"],npcs:["jinpo","xiaomao"],element:"fire",color:"#e9a16b",kind:"embers",period:6.5,support:["冷却旁路","Coolant bypass"]},
+ forge:{name:["千灯城","Lantern City"],enemy:["高温巡猎","Furnace hunt"],npcs:["jinpo","xiaomao"],element:"fire",color:"#e9a16b",kind:"embers",period:6.5,support:["冷却旁路","Coolant bypass"]},
  sky:{name:["云脊群岛","Skyspine Isles"],enemy:["风切追逐","Gale chase"],npcs:["lingyu","yuanfan"],element:"elec",color:"#c6dce9",kind:"gale",period:6.1,support:["稳定气流","Stabilize the wind"]},
  library:{name:["月镜书库","Moonmirror Library"],enemy:["镜影反击","Mirror counter"],npcs:["moye","baikan"],element:"dark",color:"#b6a7dd",kind:"mirror",period:7.2,support:["辨认真迹","Reveal the original"]},
  starfall:{name:["星坠原","Starfall Expanse"],enemy:["星轨围猎","Orbital hunt"],npcs:["xingya","lichuan"],element:"light",color:"#e6c68b",kind:"orbit",period:7.0,support:["校准星图","Align the star chart"]}
@@ -153,7 +153,7 @@ function install(){
  function paintHud(b){
   const panel=document.getElementById("cb-region-combat");if(!panel||!b.regionalCombat)return;
   const r=b.regionalCombat,kit=r.kit,button=panel.querySelector("button");
-  panel.querySelector("span").textContent=b.libraryEncounter?.region==="library"?tr(["守档幻象 · 躲开成对镜影","Archive echo · evade paired reflections"]):tr(kit.name)+" · "+tr(kit.enemy);
+  panel.querySelector("span").textContent=r.shadowLight?tr(["引剪影兽进入灯光再攻击","Draw the shadow beast into the light"]):b.libraryEncounter?.region==="library"?tr(["守档幻象 · 躲开成对镜影","Archive echo · evade paired reflections"]):tr(kit.name)+" · "+tr(kit.enemy);
   button.hidden=!r.supportAvailable;button.disabled=r.supportUsed||!r.cast;
   button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?.region==="library"?tr(["Catdex · 核验回响","Catdex · verify echo"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Yuanfan · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Lingyu · Escort flight"]):tr(kit.support);
  }
@@ -237,6 +237,11 @@ function install(){
   }
   return result;
  };
+ const shadowLight=b=>({x:b.W*.50,y:b.topMargin+(b.H-b.topMargin-b.bottomMargin)*.50,r:Math.min(118,b.W*.22,(b.H-b.topMargin-b.bottomMargin)*.28)});
+ const inLight=(b,e)=>{const l=shadowLight(b);return Math.hypot(e.x-l.x,e.y-l.y)<=l.r;};
+ const hurt=BP.hurtEnemy;
+ BP.hurtEnemy=function(e,dmg,...args){if(this.regionalCombat?.shadowLight&&!inLight(this,e))return 0;return hurt.call(this,e,dmg,...args);};
+ window.CatBondShadowCombat={steer(b,f){if(!b.regionalCombat?.shadowLight||!b.autoMode||!f.alive)return null;const l=shadowLight(b),dx=l.x-f.x,dy=l.y-f.y,d=Math.hypot(dx,dy);return d>18?{x:dx/d,y:dy/d}:{x:0,y:0};}};
  const capture=BP.startCaptureSeq;
  BP.startCaptureSeq=function(){if(this.libraryEncounter){this.libraryEncounter.cleared=true;this.projectiles=[];this.enemyProjectiles=[];this.finish(true);return;}if(this.regionalCombat&&this.enemies.some(e=>e.regionalEnemy))this._lastDropped=this.enemies[0];return capture.call(this);};
  const update=BP.update;
@@ -245,6 +250,7 @@ function install(){
  BP.updateEnemyAI=function(dt,e,me){
   const r=this.regionalCombat;
   if(!r||!e.regionalEnemy)return enemyAI.call(this,dt,e,me);
+  if(r.shadowLight&&me?.alive){const dx=me.x-e.x,dy=me.y-e.y,d=Math.hypot(dx,dy);if(d>32){e.x+=dx/d*Math.min(d,105*dt);e.y+=dy/d*Math.min(d,105*dt);}e.pose="idle";if(!inLight(this,e))e.reflectT=0;}
   const baseSpeed=e.speed,baseRole=e.role;
   if(r.kit.kind==="gale")e.speed*=1.28;
   if(r.kit.kind==="roots")e.speed*=.84;
@@ -266,9 +272,9 @@ function install(){
   this.vfx.ring(e.x,e.y,{r0:10,vr:160,life:.45,color:r.kit.color,width:3});
  };
  const drawBattle=BP.draw;
- BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat){const active=cinematicActive(this),panel=document.getElementById("cb-region-combat");syncCinematicHud(panel,this);if(active)return result;draw(this,ctx);}if(this.libraryEncounter&&!this.duoCinematic&&!this.ultCinematic){ctx.save();for(const e of this.liveEnemies()){ctx.strokeStyle="#c5b9ff";ctx.globalAlpha=.45+.2*Math.sin(this.t*4);ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(e.x,e.y,Math.max(24,(e.r||24)*1.3),11,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}return result;};
+ BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat){const active=cinematicActive(this),panel=document.getElementById("cb-region-combat");syncCinematicHud(panel,this);if(active)return result;if(this.regionalCombat.shadowLight){const l=shadowLight(this),g=ctx.createRadialGradient(l.x,l.y,4,l.x,l.y,l.r);g.addColorStop(0,"#ffe3a055");g.addColorStop(.75,"#ffe3a033");g.addColorStop(1,"#ffe3a000");ctx.save();ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);ctx.strokeStyle="#f7d48c";ctx.lineWidth=2;ctx.setLineDash([5,6]);ctx.beginPath();ctx.arc(l.x,l.y,l.r,0,Math.PI*2);ctx.stroke();ctx.restore();}draw(this,ctx);}if(this.libraryEncounter&&!this.duoCinematic&&!this.ultCinematic){ctx.save();for(const e of this.liveEnemies()){ctx.strokeStyle="#c5b9ff";ctx.globalAlpha=.45+.2*Math.sin(this.t*4);ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(e.x,e.y,Math.max(24,(e.r||24)*1.3),11,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}return result;};
  const libraryOp="battle:library-echo",libraryScene="library:M-02";
- const storyEcho={harbor:{scene:"harbor:H-04",op:"battle:chime-beast",point:[.195,.50],title:["铃房 · 铃舌兽","Bell house · Bell-tongue beast"],name:["铃舌兽","Bell-tongue beast"]},forest:{scene:"forest:R-03",op:"battle:root-echo",point:[.69,.53],title:["坍塌水道 · 空响根影","Collapsed channel · Hollow root echo"],name:["空响根影","Hollow root echo"]},library:{scene:libraryScene,op:libraryOp,point:libraryPoints[libraryOp],title:["镜影 · 守档幻象","Archive echo · Guardian illusion"],name:["守档幻象","Archive echo"]},starfall:{scene:"starfall:F-04",op:"battle:observatory-echo",point:[.78,.40],title:["观星台守卫 · 空响星轨","Observatory guardian · Echo orbit"],name:["空响星轨","Echo orbit"]}};
+ const storyEcho={forge:{scene:"forge:E-03",op:"battle:shadow-beast",point:[.74,.40],title:["灯影剧场 · 剪影兽","Shadow theater · Shadow beast"],name:["剪影兽","Shadow beast"]},harbor:{scene:"harbor:H-04",op:"battle:chime-beast",point:[.195,.50],title:["铃房 · 铃舌兽","Bell house · Bell-tongue beast"],name:["铃舌兽","Bell-tongue beast"]},forest:{scene:"forest:R-03",op:"battle:root-echo",point:[.69,.53],title:["坍塌水道 · 空响根影","Collapsed channel · Hollow root echo"],name:["空响根影","Hollow root echo"]},library:{scene:libraryScene,op:libraryOp,point:libraryPoints[libraryOp],title:["镜影 · 守档幻象","Archive echo · Guardian illusion"],name:["守档幻象","Archive echo"]},starfall:{scene:"starfall:F-04",op:"battle:observatory-echo",point:[.78,.40],title:["观星台守卫 · 空响星轨","Observatory guardian · Echo orbit"],name:["空响星轨","Echo orbit"]}};
  function libraryAvailable(game,region="library"){const d=storyEcho[region],v=window.CatBondResonance?.view(),root=window.State.S,p=root.resonanceExploration?.positions?.[region],q=d?.point;return !!d&&game?.scene==="map"&&!game.battle&&root.resonanceExploration?.location===region&&v?.current?.id===d.scene&&v.objective.includes(d.op)&&(region==="library"?!libraryBlocked(d.op,v.objective):v.objective[0]===d.op)&&p&&Math.hypot(p.x-q[0],p.y-q[1])<.072;}
  function prepareLibrary(game,region="library"){
   if(!libraryAvailable(game,region))return false;const d=storyEcho[region],root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam().filter(cat=>region!=="forest"||cat.storyActor!=="yahe");if(!team.length)return false;
@@ -278,16 +284,17 @@ function install(){
    const token=host.captureAction(),base=window.GameData.speciesById(fighters[0].species);if(!base)return;
    game._returnScene="map";game._battleTheme=region==="forest"?{region,sky1:"#253d39",sky2:"#789c79",ground:"#425844",ground2:"#263e36",accent:"#b6d9a3"}:{region,sky1:"#20253f",sky2:"#697ca8",ground:"#464967",ground2:"#232843",accent:region==="starfall"?"#e8d19b":"#b9b9e9"};
    game.startBattle(fighters,base,{storyEncounter:"library-echo",pack:[base]});const b=game.battle;if(!b)return;
-   b.storyEncounter=true;b.captureReady=false;b.libraryEncounter={root,token,cleared:false,region,scene:d.scene,op:d.op};b.regionalCombat={region,kit:REGION_KITS[region],next:2.9,cast:null,cycle:0,supportAvailable:region==="harbor"||region==="forest"||region==="starfall"||!!catdexRecord(root),supportUsed:false};
-   const echo=b.enemies[0];if(echo){echo.regionalEnemy=region;echo.combatName=d.name;echo.element="dark";echo.role="sharpshooter";echo.regionalCd=2.2;echo.regionalCycle=0;echo.rotation=[];echo.ultSkill=null;echo.maxhp=Math.max(65,Math.round(living(b).reduce((n,f)=>n+f.maxhp,0)*.85));echo.hp=echo.maxhp;echo.poiseMax=Math.round(echo.maxhp*.6);echo.poise=echo.poiseMax;}
+   b.storyEncounter=true;b.captureReady=false;b.libraryEncounter={root,token,cleared:false,region,scene:d.scene,op:d.op};b.regionalCombat={region,kit:REGION_KITS[region],next:2.9,cast:null,cycle:0,supportAvailable:region==="forge"||region==="harbor"||region==="forest"||region==="starfall"||!!catdexRecord(root),supportUsed:false};
+   if(region==="forge")b.regionalCombat.shadowLight=true;
+   const echo=b.enemies[0];if(echo){echo.regionalEnemy=region;echo.combatName=d.name;echo.element="dark";echo.role=region==="forge"?"brawler":"sharpshooter";echo.regionalCd=2.2;echo.regionalCycle=0;echo.rotation=[];echo.ultSkill=null;echo.maxhp=Math.max(65,Math.round(living(b).reduce((n,f)=>n+f.maxhp,0)*.85));echo.hp=echo.maxhp;echo.poiseMax=Math.round(echo.maxhp*.6);echo.poise=echo.poiseMax;}
    mount(game,b);game.updateBattleUI?.();
   }});return true;
  }
  window.addEventListener("cat-bond-resonance-battle-request",event=>{const x=event.detail,d=storyEcho[x?.region];if(d&&x.sceneId===d.scene&&x.operation===d.op&&!prepareLibrary(window.__game,x.region))window.__game?.toast?.({zh:"请前往守卫所在的位置。",en:"Approach the guardian first."});});
  function showLibraryResult(game,owner,recovery,outcome,region="library"){
   const ui=window.UI;if(!ui?.panel||window.State.S!==owner)return;
-  const win=outcome==="win",retry=!win,title=region==="harbor"?(win?["铃舌兽已消散","Bell-tongue beast defeated"]:["铃房仍不安全","Bell house still unsafe"]):region==="forest"?(win?["空响已消散","Hollow echo dispelled"]:["救援尚未完成","Rescue incomplete"]):region==="starfall"?(win?["星轨守卫已消散","Orbital guardian defeated"]:["星轨挑战未完成","Orbital challenge incomplete"]):win?["守档幻象已消散","Archive echo defeated"]:outcome==="retreat"?["已从镜影战斗撤退","Retreated from the archive echo"]:outcome==="save-failed"?["战斗记录未保存","Battle result not saved"]:["队伍在镜影战斗中落败","Squad defeated by the archive echo"];
-  const detail=region==="harbor"?(win?["铃房安静下来了。去找暮铃。","The bell house is quiet. Find Muling."]:["休整后再试。","Rest and try again."]):region==="forest"?(win?["根须松动了。沿水道找到被困的猫咪。","The roots loosened. Follow the channel to the trapped cats."]:["芽禾仍稳住水道，已调查的水痕不会丢失。休整后再试。","Yahe is holding the channel; the trail remains verified. Rest and retry."]):region==="starfall"?(win?["观星台已安全。现在可以验证六地的分布式航线。","The observatory is safe. Verify the six regions’ distributed routes."]:["休整或更换队伍后再试。","Rest or change your team and try again."]):win?["真实记忆已核实。壁画中的身份线索可以继续调查。","The original memory is verified. Continue investigating the identity shown in the mural."]:["猫咪和档案进度已保留。休整或更换上阵猫咪后可以再次挑战。","Your cats and archive progress are preserved. Rest or change your team before trying again."];
+  const win=outcome==="win",retry=!win,title=region==="forge"?(win?["剪影兽已消散","Shadow beast defeated"]:["灯影挑战未完成","Shadow challenge incomplete"]):region==="harbor"?(win?["铃舌兽已消散","Bell-tongue beast defeated"]:["铃房仍不安全","Bell house still unsafe"]):region==="forest"?(win?["空响已消散","Hollow echo dispelled"]:["救援尚未完成","Rescue incomplete"]):region==="starfall"?(win?["星轨守卫已消散","Orbital guardian defeated"]:["星轨挑战未完成","Orbital challenge incomplete"]):win?["守档幻象已消散","Archive echo defeated"]:outcome==="retreat"?["已从镜影战斗撤退","Retreated from the archive echo"]:outcome==="save-failed"?["战斗记录未保存","Battle result not saved"]:["队伍在镜影战斗中落败","Squad defeated by the archive echo"];
+  const detail=region==="forge"?(win?["影戏重新清晰了。去找烬婆。","The shadows are clear again. Find Jinpo."]:["将剪影兽引到灯光下，休整后再试。","Lure the beast into the light and try again."]):region==="harbor"?(win?["铃房安静下来了。去找暮铃。","The bell house is quiet. Find Muling."]:["休整后再试。","Rest and try again."]):region==="forest"?(win?["根须松动了。沿水道找到被困的猫咪。","The roots loosened. Follow the channel to the trapped cats."]:["芽禾仍稳住水道，已调查的水痕不会丢失。休整后再试。","Yahe is holding the channel; the trail remains verified. Rest and retry."]):region==="starfall"?(win?["观星台已安全。现在可以验证六地的分布式航线。","The observatory is safe. Verify the six regions’ distributed routes."]:["休整或更换队伍后再试。","Rest or change your team and try again."]):win?["真实记忆已核实。壁画中的身份线索可以继续调查。","The original memory is verified. Continue investigating the identity shown in the mural."]:["猫咪和档案进度已保留。休整或更换上阵猫咪后可以再次挑战。","Your cats and archive progress are preserved. Rest or change your team before trying again."];
   ui.panel('<span class="card-close">×</span><h2 class="center">'+tr(title)+'</h2><p class="sub">'+tr(detail)+'</p>'+(win?'<p class="center">+38 '+tr(["金币","coins"])+' · +2 '+tr(["小鱼干","fish"])+' · 28 XP</p>':'')+(ui.battleRecoveryMarkup?.(recovery)||'')+'<div class="btn-row" style="justify-content:center">'+(retry?'<button type="button" class="btn gold" id="library-retry-encounter">'+tr(["再次挑战","Retry encounter"])+'</button>':'')+'<button type="button" class="btn '+(retry?'ghost':'gold')+'" id="library-battle-ok">'+tr(["继续探索","Continue exploring"])+'</button></div>');
   const ok=document.getElementById("library-battle-ok"),again=document.getElementById("library-retry-encounter");if(ok)ok.onclick=()=>ui.closeAll();if(again)again.onclick=()=>{ui.closeAll();if(owner!==window.State.S||!prepareLibrary(game,region))game.toast({zh:"请重新前往守档幻象所在的回廊。",en:"Return to the archive echo's gallery to retry."});};
  }
