@@ -37,13 +37,8 @@ export function paintHarborEnvironment(c,view,frame){
  c.restore();
 }
 export function harborObjective(v,lang){
- const zh=lang==="zh",s=v.current?.id, has=x=>v.objective.includes(x);
- const line=s==="harbor:H-01"?["沿石径找到领航员栖蓝。","Follow the stone path to Qilan."]:
- s==="harbor:H-02"?["前往灯塔，与岬灯谈谈旧风暴。","Visit the lighthouse and ask Jiedeng about the old storm."]:
- s==="harbor:H-03"?["沿东岸追踪退潮刻痕，取回救援日志。","Follow the ebb marks on the eastern shore and recover the rescue log."]:
- s==="harbor:H-04"?!v.choice?["先选择救援顺序：找栖蓝先救船，或找岬灯先点亮灯塔。两项都要完成。","Choose the rescue order: talk to Qilan to rescue the boat first, or Jiedeng to light the lighthouse first. Both tasks must be completed."]:v.choice==="rescue"&&has("rescue:storm-boat")?["先打开潮汐闸门，协助栖蓝救援。","Open the tide gate and help Qilan with the rescue first."]:has("puzzle:beam-mirrors")?["前往灯塔校准镜面，照亮航路。","Align the lighthouse mirrors to light the channel."]:["返回码头，引导救援船入港。","Return to the quay and guide the rescue boat to safety."]:
- s==="harbor:H-05"?has("repair:harbor")?["修复灯塔圣所。","Restore the lighthouse sanctuary."]:has("melody:harbor")?["邀请栖蓝和岬灯，与港口居民合奏归潮调。","Invite Qilan and Jiedeng to perform Returning Tides together."]:["聆听暮铃的话。","Listen to Muling."]:
- v.melodies.includes("harbor")?["灯塔复明 · 补给航线已开放，可前往眠根林。","Beacon restored · Supply route open; travel to Rootsleep Forest."]:null;
+ const zh=lang==="zh",s=v.current?.id,has=x=>v.objective.includes(x);
+ const line=s==="harbor:H-01"?["沿石径找到栖蓝。","Follow the stone path to Qilan."]:s==="harbor:H-02"?["穿过风铃巷，从两条路中选择一条追上铃光。","Catch the moving chime along either of the two paths."]:s==="harbor:H-03"?["去旧铃房找檐灯。","Find Yandeng at the old bell house."]:s==="harbor:H-04"?["与伙伴一起击退铃舌兽。","Defeat the bell-tongue beast with your companion."]:s==="harbor:H-05"?has("repair:harbor")?["修复古铃圣所。","Restore the town bell sanctuary."]:has("melody:harbor")?["邀请栖蓝和檐灯，让古铃各自回应。","Invite Qilan and Yandeng to ring the bells together."]:["看看旧巡铃图。","Look at the old bellkeepers' map."]:v.melodies.includes("harbor")?["古铃已恢复 · 可前往眠根林。","Town bell restored · Travel to Rootsleep Forest."]:null;
  return line?.[zh?0:1]||"";
 }
 export function harborPuzzleHint(p,lang){
@@ -131,6 +126,6 @@ export function paintHarborCeremony(c,img,elapsed,lang,drawResident){
  glow(c,480,284,125,"rgba(255,219,157,.22)");
  for(const [id,x,y,s] of [["jiedeng",330,389,1.55],["qilan",630,389,1.55],["muling",480,383,1.12]])drawResident?.(c,id,{x,y,scale:s,time:t});
  for(let i=0;i<30;i++){const a=i*2.399+t*.23,rad=35+(i%10)*14+t*6;circle(c,480+Math.cos(a)*rad,285+Math.sin(a)*rad*.43-t*12,1.4+i%3*.5,"rgba(248,228,170,"+(.25+.25*Math.sin(t*2+i))+")");}
- text(c,zh?"归潮调":"The Song of Returning Tides",480,439,32,cream);text(c,zh?"灯塔复明 · 港口重新记起同伴与航路":"The beacon shines. The harbor remembers its companions and routes.",480,479,17,teal,"center",850);
+ text(c,zh?"归潮调":"The Song of Returning Tides",480,439,32,cream);text(c,zh?"风铃重新响起 · 镇上的猫记起了伙伴与家":"The chimes ring again. The townsfolk remember their companions and homes.",480,479,17,teal,"center",850);
  c.restore();
 }

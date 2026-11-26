@@ -2,9 +2,8 @@
 const W=960,H=540;
 const local=(l,zh,en)=>l==="zh"?zh:en;
 export function forgeObjective(v,explorer,l){
- const part=explorer?.forgeStep?.();
- if(part)return local(l,"旧工坊 · "+part.name[0],"Old workshop · "+part.name[1]);
- return local(l,...(v.current?.id==="forge:E-01"?(v.objective.includes("puzzle:festival-lantern")?["先在工坊试制安全提灯","Build a safe lantern at the workshop"]:["找小铆了解停炉原因","Find Xiaomao and learn why the furnace stopped"]):v.current?.id==="forge:E-02"?["重组安全图纸，了解旧事故","Reassemble the safety blueprint and uncover the accident"]:v.current?.id==="forge:E-03"?["调节炉温与压力，协力击败机械守卫","Balance heat and pressure, then face the guardian"]:["修复炉心，邀请两位居民共同奏响承火调","Repair the hearth and invite both residents to perform the Song of Ember"]));
+ const s=v.current?.id;
+ return local(l,...(s==="forge:E-01"?["选择灯的形状，给小猫们表演影子戏","Choose a lantern shape and put on a shadow show"]:s==="forge:E-02"?["移动灯光，照出真正的石桥","Move the lantern to reveal the real stone bridge"]:s==="forge:E-03"?["利用彩灯与伙伴击退剪影兽","Use the lanterns and your companions to defeat the shadow beast"]:["修复千灯圣所，邀请两位居民共同奏响承火调","Restore the Lantern sanctuary and invite both residents to perform the Song of Ember"]));
 }
 export function paintForgeEnvironment(ctx,v,frame,forced=null){
  const t=frame/60,restored=forced??v.melodies.includes("forge"),testing=!restored&&(v.current?.id==="forge:E-03"||v.sanctuaries.includes("forge"));
@@ -22,7 +21,7 @@ export function paintForgeCeremony(ctx,img,t,l,actor){
  const u=Math.min(1,t/3),z=.96+.04*u*u*(3-2*u);ctx.save();ctx.translate(W*(1-z)/2,H*(1-z)/2);ctx.scale(z,z);window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#172532",bottom:"#574037"});paintForgeEnvironment(ctx,{melodies:[],sanctuaries:[],current:{id:"forge:E-03"}},t*60,t>1.2);
  actor("jinpo",[.54,.48]);actor("xiaomao",[.64,.48]);
  const x=.59*W,y=.27*H;for(let i=0;i<3;i++){const a=Math.max(0,t-.5-i*.6)%2;ctx.strokeStyle="rgba(255,218,151,"+Math.max(0,.65-a*.3)+")";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y,18+a*75,8+a*29,0,0,Math.PI*2);ctx.stroke();}
- ctx.restore();if(t>2.8){ctx.save();ctx.globalAlpha=Math.min(1,(t-2.8)*2.4);forgeRouteDiagram(ctx,l);ctx.restore();}const shade=ctx.createLinearGradient(0,H*.70,0,H);shade.addColorStop(0,"rgba(17,21,28,0)");shade.addColorStop(1,"rgba(17,21,28,.88)");ctx.fillStyle=shade;ctx.fillRect(0,H*.70,W,H*.30);ctx.textAlign="center";ctx.fillStyle="#ffe4b0";ctx.font="600 30px Georgia,serif";ctx.fillText(local(l,"承火调","The Song of Ember"),W/2,H*.86);ctx.font="500 16px system-ui";ctx.fillText(local(l,"中央熔炉重新点燃 · 城市开始回应","The central furnace reignites · The city answers"),W/2,H*.93);
+ ctx.restore();if(t>2.8){ctx.save();ctx.globalAlpha=Math.min(1,(t-2.8)*2.4);forgeRouteDiagram(ctx,l);ctx.restore();}const shade=ctx.createLinearGradient(0,H*.70,0,H);shade.addColorStop(0,"rgba(17,21,28,0)");shade.addColorStop(1,"rgba(17,21,28,.88)");ctx.fillStyle=shade;ctx.fillRect(0,H*.70,W,H*.30);ctx.textAlign="center";ctx.fillStyle="#ffe4b0";ctx.font="600 30px Georgia,serif";ctx.fillText(local(l,"承火调","The Song of Ember"),W/2,H*.86);ctx.font="500 16px system-ui";ctx.fillText(local(l,"千灯重新亮起 · 城市开始回应","The lanterns shine again · The city answers"),W/2,H*.93);
 }
 
 export function paintForgeMarkers(ctx,markers,symbol,width){

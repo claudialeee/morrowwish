@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       scope:
-        description: 'chapters or full (fresh campaign + chapters)'
+        description: 'chapters, fresh (fresh slot only), or full'
         type: choice
-        options: [chapters, full]
+        options: [chapters, fresh, full]
         default: chapters
 permissions:
   contents: read
@@ -20,6 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   chapter:
+    if: github.event_name == 'push' || inputs.scope != 'fresh'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
@@ -87,7 +88,7 @@ jobs:
           retention-days: 14
 
   fresh-campaign:
-    if: github.event_name == 'workflow_dispatch' && inputs.scope == 'full'
+    if: (github.event_name == 'workflow_dispatch' && (inputs.scope == 'full' || inputs.scope == 'fresh')) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[fresh-campaign]'))
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     env:
@@ -101,7 +102,20 @@ jobs:
       - run: npm ci
       - run: npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
+      - name: Verify both real opening routes and title on all profiles
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-opening.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          failures=0
+          for locale in zh en; do
+            if ! PROLOGUE_LANG="$locale" node scripts/cat-bond-release-prologue-qa.mjs; then failures=$((failures+1)); fi
+          done
+          test "$failures" -eq 0
       - name: Fresh slot campaign through ending (real save reload between chapters)
+        if: always()
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-fresh.log 2>&1 &
           server=$!
@@ -116,4 +130,6 @@ jobs:
           path: |
             artifacts/cat-bond-experience/
             /tmp/canon22-fresh.log
+            /tmp/canon22-opening.log
+            artifacts/cat-bond-release-prologue/
           retention-days: 14

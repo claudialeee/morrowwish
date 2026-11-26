@@ -79,7 +79,7 @@ async function run(chapter){
   throw Error('Dialogue loop '+id);
  }
  async function puzzle(label,inputs){
-  const directHarbor={'Tide cave logbook':'explore:tide-logbook','Storm boat':'rescue:storm-boat','Lighthouse mirrors':'puzzle:beam-mirrors','Lighthouse sanctuary':'repair:harbor','Returning Tides':'melody:harbor'};
+  const directHarbor={'Tide cave logbook':'explore:tide-logbook','Storm boat':'rescue:storm-boat','Lighthouse mirrors':'puzzle:beam-mirrors','Town bell sanctuary':'repair:harbor','Returning Tides':'melody:harbor'};
   if(chapter==='harbor'&&directHarbor[label]){const operation=directHarbor[label];assert.ok((await view()).objective.includes(operation),'Expected required harbor action '+operation);await click(label);await op(operation);await shot(operation);return;}
   await click(label);const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();
   for(const input of inputs)await click(input,controls);
@@ -197,7 +197,7 @@ async function run(chapter){
    await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();await click('Run to corner 2',chase);await chase.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');
    await talk('Yandeng');await dialogue('harbor:H-03');await scene('harbor:H-04');
    await battle('Bell-tongue beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
-   await restore('Lighthouse sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Returning Tides',[low,high,mid]);await dialogue('harbor:H-05');
+   await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Returning Tides',[low,high,mid]);await dialogue('harbor:H-05');
   }else if(chapter==='forest'){
    await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');
    await puzzle('Moonleaf bridge',['Fork','Roots','Turn moonleaf','Roots','Far bank']);await dialogue('forest:R-02');await scene('forest:R-03');
@@ -207,7 +207,7 @@ async function run(chapter){
    await puzzle('Lantern festival · Shadow show',['Cat','Aim left','Aim right','Continue festival']);await talk('Xiaomao');await dialogue('forge:E-01');await scene('forge:E-02');
    await puzzle('Light the stone bridge',['Cross the bridge','Aim left','Aim right','Cross the bridge']);await dialogue('forge:E-02');await scene('forge:E-03');
    await battle('Shadow beast','battle:shadow-beast');await dialogue('forge:E-03');await scene('forge:E-04');
-   await restore('Hearth sanctuary',['Heat','Heat','Heat','Heat','Vent'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');
+   await restore('Lantern sanctuary',['Heat','Heat','Heat','Heat','Vent'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');
   }else if(chapter==='sky'){
    await flyWaterfall('Catch the wind · Practice gliding');await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
    await flyWaterfall('Find the moon gate · Cloud route');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
@@ -223,7 +223,7 @@ async function run(chapter){
    await talk('Lichuan');await talk('Xingya');await puzzle('Walk on starlight',['Jump to stone 2','Jump to stone 4','Jump to stone 6','Jump to stone 8']);await dialogue('starfall:F-01');await scene('starfall:F-02');
    await puzzle('Hollow Echo illusions',['Middle beacon','Right beacon','Left beacon']);await puzzle('Star chart',['Outer ring','Outer ring','Outer ring','Middle ring','Inner ring','Inner ring']);await click('Observatory · Complete record');await op('explore:catastrophe-record');await cinema('starfall:F-02','Remember the choice');
    await talk('Muling');await dialogue('starfall:F-03');await scene('starfall:F-04');
-   await puzzle('Distributed observatory',['West','Relay','East']);await restore('Starfall sanctuary',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan'],'Beyond Stars',[low,mid,high]);await dialogue('starfall:F-04');await cinema('starfall:F-05','Watch the story scene');
+   await puzzle('Test the neighboring bells',['West','Relay','East']);await restore('Starfall sanctuary',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan'],'Beyond Stars',[low,mid,high]);await dialogue('starfall:F-04');await cinema('starfall:F-05','Watch the story scene');
   }else if(chapter==='finale'){
    await battle('Approach the Star Bell','battle:inward-gates','finale');await dialogue('finale:B-01');await scene('finale:B-02');
    await battle('Approach the Star Bell','battle:identify-echo','finale');await dialogue('finale:B-02');await scene('finale:B-03');
