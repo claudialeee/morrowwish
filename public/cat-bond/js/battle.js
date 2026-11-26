@@ -3847,7 +3847,7 @@ class CaptureBattle {
     // milestones: juice ramps with the chain (Balatro-style crescendo)
     if (this.combo > 0 && this.combo % 10 === 0) {
       this.comboFlash = 0.5; this.shakeT = Math.max(this.shakeT, 0.15);
-      this.gainUlt(6,f);                                          // chains feed the ult
+      this.gainUlt(6);                                          // chains feed the ult
       const me = this.me();
       // The compact combo chip in the HUD replaces this mid-arena banner.
       this.vfx.ring(me.x, me.y, { r0: 10, vr: 420, life: 0.4, color: '#ffd36b', width: 4 });
@@ -4467,7 +4467,7 @@ class CaptureBattle {
         const kd = Math.exp(-6 * dt); f.kbx *= kd; f.kby *= kd;
         if (Math.abs(f.kbx) < 4 && Math.abs(f.kby) < 4) { f.kbx = 0; f.kby = 0; }
       }
-      for (const k in f.cd) if (f.cd[k] > 0) f.cd[k] -= dt;
+      for (const k in f.cd) if (f.cd[k] > 0) f.cd[k] -= dt/((f._baomaoChainUntil||0)>this.t?Math.max(.5,f._cdMult||1):1);
       if (f.inv > 0) f.inv -= dt;
       if (f.dashT > 0) f.dashT -= dt;
       else if(f.pounce){
@@ -6073,6 +6073,7 @@ class CaptureBattle {
     if ((target.reflectT || 0) > 0 && frontShot && (proj._reflects || 0) < 1) {
       proj._reflects = (proj._reflects || 0) + 1;
       proj.owner = side === 'me' ? 'wild' : 'me';
+      proj._traitCaster=proj.owner==='me'?target:null; if(proj.skill)proj.skill={...proj.skill,_traitCaster:proj._traitCaster};
       proj.vx = -proj.vx; proj.vy = -proj.vy; proj.life = Math.max(proj.life, 1.2);
       this.vfx.impactType?.(target.x,target.y,'reflect',{color:'#b8e0ff'});
       this.vfx.text(target.x, target.y - 40, '反弹', '#b8e0ff', 15);
