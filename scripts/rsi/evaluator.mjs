@@ -299,6 +299,17 @@ function runScenarioInner(config, seed, scenario, { frames = 900, dt = 0.016, kn
   const enemyInitHp = b.enemies.reduce((n, e) => n + (e.maxhp || 0), 0);
 
   let acts = 0, posFrames = 0, killTime = null;
+  // MULTI-SCALE SURVIVAL (SOTA MOBA judge upgrade 2026-11-26 — distinguish 'died in burst'
+  // from 'attritioned over time'; sample team HP at two checkpoints):
+  //   burstT ≈ 1s  (dt=0.016 → frame 62) — min HP over the opening second,
+  //                                         catches focus-fire one-shots.
+  //   sustainT ≈ 20s (dt=0.016 → frame 1250) — HP at long-haul checkpoint,
+  //                                         catches gradual attrition.
+  // If the fight ends early we sample whatever frame was reached.
+  const burstFrame = Math.min(frames, Math.round(1.0 / dt));
+  const sustainFrame = Math.min(frames, Math.round(20.0 / dt));
+  let hpMinBurst = teamInitHp;
+  let hpAtSustain = teamInitHp;
   for (let i = 0; i < frames; i++) {
     const beforeEnemyHp = b.enemies.reduce((n, e) => n + Math.max(0, e.alive ? e.hp : 0), 0);
     b.update(dt);
@@ -306,6 +317,9 @@ function runScenarioInner(config, seed, scenario, { frames = 900, dt = 0.016, kn
 
     const me = b.me();
     const live = b.liveEnemies();
+    const teamHpNow = b.team.reduce((n, t) => n + Math.max(0, t.hp || 0), 0);
+    if (i < burstFrame && teamHpNow < hpMinBurst) hpMinBurst = teamHpNow;
+    if (i === sustainFrame) hpAtSustain = teamHpNow;
     // acts%: enemy lost HP this frame OR I have a shot in flight
     const afterEnemyHp = b.enemies.reduce((n, e) => n + Math.max(0, e.alive ? e.hp : 0), 0);
     if (afterEnemyHp < beforeEnemyHp || (b.projectiles || []).some(p => p.owner === 'me')) acts++;
@@ -315,8 +329,12 @@ function runScenarioInner(config, seed, scenario, { frames = 900, dt = 0.016, kn
       if (nd >= 15 && nd <= 320) posFrames++;
     }
     if (live.length === 0 && killTime == null) killTime = b.t;
-    if (b.done && b.result !== 'win') break;   // fled/defeated: stop early (deterministic)
-    if (live.length === 0) break;              // pack cleared: the kill is logged; stop
+    // If sim ends before sustain checkpoint, record whatever HP is at exit.
+    if ((b.done && b.result !== 'win') || live.length === 0) {
+      if (i < sustainFrame) hpAtSustain = teamHpNow;
+      if (b.done && b.result !== 'win') break;
+      if (live.length === 0) break;
+    }
   }
 
   const teamEndHp = b.team.reduce((n, t) => n + Math.max(0, t.hp || 0), 0);
