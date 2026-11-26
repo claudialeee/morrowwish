@@ -1,0 +1,29 @@
+// Shared screen-aware map affordances. Geometry stays in the 960 x 540 world.
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(Math.max(lo,hi),v));
+export function markerMetrics(width,zoom=1,W=960){
+ const scale=Math.max(.1,width/W*zoom);
+ const r=clamp(19/scale,17,34),hit=clamp(22/scale,r,58),font=clamp(14/scale,16,32);
+ return {r,hit,font,h:font+12,scale};
+}
+const overlaps=(a,b,p=3)=>a.x<b.x+b.w+p&&a.x+a.w+p>b.x&&a.y<b.y+b.h+p&&a.y+a.h+p>b.y;
+export function layoutMarkerLabels(items,metrics,measure,W=960,H=540,avoid=[]){
+ const {r,h,font}=metrics,icons=items.map(m=>({x:m.x-r,y:m.y-r,w:2*r,h:2*r})),placed=[];
+ return items.map(m=>{
+  const w=Math.min(330,Math.max(46,measure(m.t,font)+16)),cx=clamp(m.x-w/2,4,W-w-4),c=[];
+  for(let i=0;i<5;i++){const d=r+7+i*(h+5);c.push([cx,m.y-d-h],[cx,m.y+d+(m.labelDy||0)],[clamp(m.x+r+8+i*18,4,W-w-4),m.y-h/2+i*(h+4)],[clamp(m.x-r-8-w-i*18,4,W-w-4),m.y-h/2-i*(h+4)]);}
+  const rect=c.map(([x,y])=>({x,y,w,h})).find(q=>q.y>=4&&q.y+h<=H-4&&![...icons,...avoid,...placed].some(b=>overlaps(q,b)));
+  if(rect)placed.push(rect);
+  return {...m,rect:rect||null,r,hit:metrics.hit};
+ });
+}
+export function pickMarker(items,x,y){
+ // A visible icon always wins; then a visible label; finally the nearest
+ // enlarged touch region. Blank space remains ordinary movement input.
+ const nearby=items.map(m=>({m,d:Math.hypot(x-m.x,y-m.y)})).sort((a,b)=>a.d-b.d);
+ const icon=nearby.find(({m,d})=>d<=m.r);
+ if(icon)return icon.m;
+ const label=items.find(m=>m.rect&&x>=m.rect.x&&x<=m.rect.x+m.rect.w&&y>=m.rect.y&&y<=m.rect.y+m.rect.h);
+ if(label)return label;
+ return nearby.find(({m,d})=>d<=m.hit)?.m||null;
+}
+export const discoveryNames={shell:["贝壳","Shell"],crab:["小螃蟹","Crab"],flag:["小旗","Pennant"],leaf:["叶子","Leaves"],thorn:["尖叶","Pointed leaves"],paper:["彩纸","Paper"],spark:["灯芯","Wick"],lantern:["提灯","Lantern"],feather:["羽毛","Feather"],cloud:["云端风景","Cloud view"],book:["书页","Book"],star:["星纹","Star pattern"],stone:["石片","Stone"]};
