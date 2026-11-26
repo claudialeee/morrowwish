@@ -2,7 +2,17 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 const root=process.argv[2]||'artifacts/cat-bond-experience';
-const files=(await fs.readdir(root)).filter(x=>x.endsWith('.jsonl')).sort();
+async function discover(dir){
+ const entries=await fs.readdir(dir,{withFileTypes:true});
+ const found=[];
+ for(const e of entries){
+  const p=path.join(dir,e.name);
+  if(e.isDirectory())found.push(...await discover(p));
+  else if(e.isFile()&&e.name.endsWith('.jsonl'))found.push(path.relative(root,p));
+ }
+ return found;
+}
+const files=(await discover(root)).sort();
 if(!files.length)throw Error('No real-play evidence was recorded');
 const summaries=[];
 for(const file of files){
@@ -25,10 +35,18 @@ for(const file of files){
    if(!last.seen.has(key)){last.seen.add(key);last.visibleText.push({atMs:e.ms,source:block.selector,text:block.text});}
   }
  }
- const timeline=[...scenes.values()].map(({seen,...s})=>({...s,actions:actions.filter(a=>a.scene===s.id&&a.ms>=s.atMs&&a.ms<=s.lastMs).length}));
+ const sequence=[...scenes.values()];
+ const timeline=sequence.map(({seen,...s},i)=>{
+  const endMs=sequence[i+1]?.atMs??events.at(-1)?.ms??s.lastMs;
+  const inputs=actions.filter(a=>a.ms>=s.atMs&&a.ms<endMs);
+  const counts=new Map();
+  for(const a of inputs){const k=a.action||'key:'+a.key;counts.set(k,(counts.get(k)||0)+1);}
+  const gaps=inputs.map((a,j)=>({fromMs:a.ms,toMs:inputs[j+1]?.ms??endMs})).map(g=>({...g,durationMs:g.toMs-g.fromMs})).sort((a,b)=>b.durationMs-a.durationMs).slice(0,3);
+  return {...s,durationMs:Math.max(0,endMs-s.atMs),actions:inputs.length,frequentActions:[...counts].sort((a,b)=>b[1]-a[1]).slice(0,5),longestInputGaps:gaps};
+ });
  const byAction={};
  for(const a of actions){const key=a.action||'key:'+a.key;byAction[key]=(byAction[key]||0)+1;}
- const result={file,run,observedChapters:[...chapters],screens:screens.length,actions:actions.length,
+ const result={file,run,checkpointCount:events.filter(e=>e.kind==='checkpoint_saved').length,observedChapters:[...chapters],screens:screens.length,actions:actions.length,
    elapsedMs:events.at(-1)?.ms??0,issues,frequentActions:Object.entries(byAction).sort((a,b)=>b[1]-a[1]).slice(0,15),
    timeline,limitations:['Authored route, not spontaneous player behavior.','Times include automation, waits, screenshots and device performance; not human engagement.','Only sampled visible DOM text; canvas art, dialogue skipped by automation, audio and unseen branches are not inferred.','Observed scenes do not establish completed chapters or gameplay quality.']};
  summaries.push(result);
@@ -37,8 +55,8 @@ await fs.writeFile(path.join(root,'review-packet.json'),JSON.stringify(summaries
 const lines=['# Cat Bond — experience evidence index','','This index is not a fun score or a release acceptance. Check runner exit status separately. For player-first critique, read each run JSONL in order and do not use the internal objective IDs as player knowledge.',''];
 for(const s of summaries){
  lines.push('## '+s.file,'','Observed chapters: '+(s.observedChapters.join(', ')||'none'), 'Screen changes: '+s.screens+'; inputs: '+s.actions+'; technical observations: '+s.issues.length,
- 'Frequent inputs: '+s.frequentActions.map(([a,n])=>a+' × '+n).join('; '),'','| Scene/area | First seen (s) | Screen changes | Visible text entries |','|---|---:|---:|---:|');
- for(const t of s.timeline)lines.push('| '+t.id.replaceAll('|','/')+' | '+Math.round(t.atMs/1000)+' | '+t.screenChanges+' | '+t.visibleText.length+' |');
+ 'Frequent inputs: '+s.frequentActions.map(([a,n])=>a+' × '+n).join('; '),'','| Scene/area | First seen (s) | Duration (s) | Inputs | Screen changes | Visible text entries |','|---|---:|---:|---:|---:|---:|');
+ for(const t of s.timeline)lines.push('| '+t.id.replaceAll('|','/')+' | '+Math.round(t.atMs/1000)+' | '+Math.round(t.durationMs/1000)+' | '+t.actions+' | '+t.screenChanges+' | '+t.visibleText.length+' |');
  lines.push('','Read the corresponding JSONL for full input and screen chronology; use the screenshots for visual context.','');
 }
 await fs.writeFile(path.join(root,'REVIEW-INDEX.md'),lines.join('\n')+'\n');
