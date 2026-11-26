@@ -30,11 +30,18 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
       ?asset?.status==='candidate'&&asset.stagingAllowed===true&&asset.runtimeAllowed===false
       :independentlyApproved;
     const recalled=(useStaging||!!approved)&&scene.id==='starfall:F-02'&&['opening-star-bell','opening-keepers-choice','opening-broken-bell-tongue'].includes(asset?.id)&&/^prologue:P-0[12]$/.test(asset.sceneKey);
-    const gardenPlate=release&&scene.id==='prologue:P-03'&&asset?.id==='opening-empty-garden-plate'&&asset.path==='assets/garden/sunlit-garden-landscape.webp';
-    if(!allowed||(!recalled&&asset.sceneKey!==scene.id)||(!gardenPlate&&!raster.test(asset.path)))return bad('unapproved-shot');
+    const environmentPlate=release&&(
+      scene.id==='prologue:P-03'&&asset?.id==='opening-empty-garden-plate'&&asset.path==='assets/garden/sunlit-garden-landscape.webp'||
+      scene.id==='prologue:P-01'&&asset?.id==='opening-central-environment'&&asset.path==='assets/resonance-world-v2/starfall.webp'||
+      scene.id==='prologue:P-01'&&asset?.id==='opening-harbor-environment'&&asset.path==='assets/resonance-world-v2/harbor-mist.webp');
+    if(!allowed||(!recalled&&asset.sceneKey!==scene.id)||(!environmentPlate&&!raster.test(asset.path)))return bad('unapproved-shot');
+    // Opening crops are locked to inspected pixel rectangles. CSS zoom alone would leak the old cat portrait, especially in the blurred backplate.
+    const requiredCrop=release&&(asset.id==='opening-broken-bell-tongue'?{x:.525,y:.325,width:.475,height:.475}:asset.id==='opening-central-environment'?{x:.58,y:0,width:.42,height:.42}:null);
+    if(requiredCrop&&(!shot.crop||Object.keys(requiredCrop).some(k=>shot.crop[k]!==requiredCrop[k])))return bad('opening-crop-required');
+    if(shot.crop&&!requiredCrop)return bad('unexpected-crop');
     if(unique.has(asset.path))return bad('repeated-shot-art');unique.add(asset.path);
     if(!isBilingual(shot.alt)||!Number.isFinite(shot.durationMs)||shot.durationMs<1200||shot.durationMs>20000||!Array.isArray(shot.lines))return bad('invalid-shot');
-    const base={id:scene.id+'-shot-'+i,image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,focus:shot.focus,transitionMs:shot.transitionMs||520,effect:shot.effect};
+    const base={id:scene.id+'-shot-'+i,image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,focus:shot.focus,transitionMs:shot.transitionMs||520,effect:shot.effect,crop:requiredCrop||undefined};
     if(!shot.lines.length){
       const openingCaptions={
         'opening-star-bell':{zh:'六座圣所曾用各自的歌互相回应，中央星铃为它们合拍。直到一颗陨星击碎了星铃。',en:'Six sanctuaries once answered each other in song, guided by the Star Bell. Then a fallen star shattered it.'},
@@ -119,6 +126,18 @@ export async function decodeCinematicImages(scene){
   for(const url of urls){
     const image=new Image();image.src=url;await image.decode();
     if(!image.naturalWidth||!image.naturalHeight)throw Error('Empty cinematic image: '+url);
+    // Convert the authorized source rectangle into a new raster before it reaches the presenter.
+    // Both the foreground and the blurred backplate use only the cropped pixels.
+    for(const frame of scene.frames.filter(f=>f.image===url&&f.crop)){
+      const {x,y,width,height}=frame.crop;
+      const sw=Math.floor(image.naturalWidth*width),sh=Math.floor(image.naturalHeight*height);
+      if(sw<1||sh<1)throw Error('Invalid cinematic crop: '+url);
+      const canvas=document.createElement('canvas');canvas.width=sw;canvas.height=sh;
+      const ctx=canvas.getContext('2d');if(!ctx)throw Error('Cinematic crop unavailable');
+      ctx.drawImage(image,Math.floor(image.naturalWidth*x),Math.floor(image.naturalHeight*y),sw,sh,0,0,sw,sh);
+      frame.image=canvas.toDataURL('image/png');
+      const cropped=new Image();cropped.src=frame.image;await cropped.decode();
+    }
   }
 }
 

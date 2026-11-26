@@ -41,5 +41,5 @@ const opening=buildCanonicalScene({view:{current:first,cursor:0,lineReady:true,o
 assert.equal(opening.ok,true);assert.equal(opening.scene.frames.length,8);
 assert.deepEqual(opening.scene.frames.slice(0,6).map(f=>f.id.split('-').at(-1)),openingCampaign.regions);
 for(const frame of opening.scene.frames){const bytes=fs.readFileSync(path.join('public/cat-bond',frame.image));assert.equal(bytes.subarray(8,12).toString(),'WEBP');}
-assert.deepEqual(opening.scene.frames.slice(6).map(f=>f.image),['assets/cinematics/prologue/star-bell.webp','assets/cinematics/prologue/harbor-at-twilight.webp']);
-console.log('Opening preserves both original P-01 paintings and presents six authored regional WebP plates.');
+assert.deepEqual(opening.scene.frames.slice(6).map(f=>f.image),['assets/resonance-world-v2/starfall.webp','assets/resonance-world-v2/harbor-mist.webp']);
+console.log('Opening presents six authored regional WebP plates and two character-free environment shots.');

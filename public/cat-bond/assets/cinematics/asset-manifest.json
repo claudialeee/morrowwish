@@ -666,6 +666,28 @@
       "stagingAllowed": true,
       "format": "webp",
       "source": "Existing Sunlit Garden painted environment; pending visual review."
+    },
+    {
+      "id": "opening-central-environment",
+      "kind": "cinematic-key-art",
+      "sceneKey": "prologue:P-01",
+      "path": "assets/resonance-world-v2/starfall.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Existing character-free central sanctuary environment; visually inspected source."
+    },
+    {
+      "id": "opening-harbor-environment",
+      "kind": "cinematic-key-art",
+      "sceneKey": "prologue:P-01",
+      "path": "assets/resonance-world-v2/harbor-mist.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Existing character-free harbor environment; visually inspected source."
     }
   ],
   "sceneKeys": [
@@ -1106,10 +1128,10 @@
   "prologueReleaseShots": {
     "prologue:P-01": [
       {
-        "assetId": "opening-star-bell",
+        "assetId": "opening-central-environment",
         "alt": {
-          "zh": "破碎前的星铃",
-          "en": "The Star Bell before the fracture"
+          "zh": "中央星铃与古老圣所",
+          "en": "The central Star Bell and ancient sanctuary"
         },
         "durationMs": 4000,
         "transitionMs": 650,
@@ -1127,17 +1149,23 @@
         },
         "lines": [],
         "effect": "impact",
-        "focus": "50% 50%",
+        "focus": "center",
         "caption": {
           "zh": "那一夜，星铃的声音断了。",
           "en": "That night, the Star Bell's song broke."
+        },
+        "crop": {
+          "x": 0.58,
+          "y": 0,
+          "width": 0.42,
+          "height": 0.42
         }
       },
       {
-        "assetId": "opening-harbor-at-twilight",
+        "assetId": "opening-harbor-environment",
         "alt": {
-          "zh": "暮色港口",
-          "en": "Harbor at twilight"
+          "zh": "寂静港口",
+          "en": "The silent harbor"
         },
         "durationMs": 4000,
         "transitionMs": 650,
@@ -1184,10 +1212,16 @@
           }
         },
         "lines": [],
-        "focus": "68% 52%",
+        "focus": "center",
         "caption": {
           "zh": "「如果有一天……你忘记了我呢？」",
           "en": "“What if one day... you forget me?”"
+        },
+        "crop": {
+          "x": 0.525,
+          "y": 0.325,
+          "width": 0.475,
+          "height": 0.475
         }
       }
     ],
@@ -1222,12 +1256,12 @@
     ]
   },
   "prologueReleaseAuthorization": {
-    "scope": "Existing opening environment/prop paintings plus exact Sunlit Garden landscape plate for spoiler-free review. No independent production visual approval. Identity-revealing paintings reserved for later scenes.",
+    "scope": "Exact existing character-free central, harbor and garden plates plus a mandatory pixel crop of the broken-bell painting; no independent production visual approval. No uncropped cat-bearing opening paintings.",
     "assets": [
-      "opening-star-bell",
-      "opening-harbor-at-twilight",
       "opening-broken-bell-tongue",
-      "opening-empty-garden-plate"
+      "opening-empty-garden-plate",
+      "opening-central-environment",
+      "opening-harbor-environment"
     ]
   },
   "openingRegionMontage": [

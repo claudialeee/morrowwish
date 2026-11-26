@@ -6,9 +6,9 @@ This script follows the canonical rules in 01-NARRATIVE-BIBLE.md. It covers the 
 ## PROLOGUE — THE SILENT BELL
 
 ### P-01 — The Broken Song
-Single continuous opening, preserving three internal save checkpoints. Six brief region plates, then the Star Bell and harbor. No identifiable protagonists, no sacrifice explanation.
+Single continuous opening, preserving three internal save checkpoints. Six brief region plates, then a crop of the character-free central sanctuary and the empty harbor. No identifiable protagonists, no sacrifice explanation.
 ### P-02 — A Broken Echo
-Broken bell close-up. Anonymous caption: “如果有一天……你忘记了我呢？” No character speaker.
+Mandatory pixel crop of the existing broken bell painting, excluding the recognizable cat. Anonymous caption: “如果有一天……你忘记了我呢？” No character speaker.
 ### P-03 — Morning Light
 Existing Sunlit Garden environment. A bell rings. No Muling or waiting montage. Target 28.2 seconds of authored shots.
 ### P-04 — Awakening
