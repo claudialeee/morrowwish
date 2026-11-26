@@ -20,6 +20,14 @@
 | 星原 | 找暮铃，不牺牲别的猫 | 当年的选择与约定；六地真的可以相互回应 | 保住所有声音 |
 | 终章 | 与伙伴一起回家 | 恢复所有记忆，暮铃承担责任 | 自由世界 |
 
+## 中文原生对白规范（先中文，后英文适配）
+中文是创作原文，不是英文逐句对译。说话像真实的角色：短、自然、有停顿、有潜台词，不把玩法说明或编剧主题塞进角色嘴里。不用“真正的回应”“验证方案”“保持个体记忆”等抽象词替代角色眼前看见的具体事物。动作提示由地图、特效或 UI 承担，人物只说自己有理由说的话。
+- 主角：好奇、直接，有一点得意和玩心；遇到背叛会追问，不做长篇道德演讲。
+- 暮铃：聪明、嘴硬、带点干巴巴的幽默，伤心时反而说得少；前期双关不能泄露身份，不用网络流行语。
+- 栖蓝/远帆：兴奋、敢试、语速快，不能说成任务引导机器人。芽禾活泼俏皮；榆川话少，务实；小铆一张嘴就是点子，烬婆老练爽利；白栞爱发现，墨页沉静但不打官腔；星芽专注，砾川直来直去。
+- 每句尽量表达一个意思；能演出来就不解释。仅在确实发生过的事件上引用回忆；对跳过可选花园相遇的路线，B-04 不提那张地图，可替换为“记得啊。港口那首歌、森林里的路，还有咱们一路遇到的事，我都记得。 / I do. The harbor song, the forest paths, everything we've been through together. I remember it all.”
+- 英文独立本地化，确保意义、人物态度、伏笔与分支条件一致，不要求字对字。UI 目标也必须中文原生，不使用开发术语；例如“跟着亮起来的月叶走”，不写“验证真实路径”；“让六座铃接着唱”，不写“完成双向共鸣配置”。实际运行时与所有分支仍需母语级复核。
+
 ## 每章的玩家体验硬要求
 开场迅速给可玩的奇观；一次主要玩法有真实选择或技巧、可读反馈、失败可恢复；短对白穿插行动。每章提供一个可选秘密、一次队伍成长/伙伴机会、一项可见世界变化。既可沿主线流畅推进，也可主动偏离探索；不必清空地图。不强迫大量新系统；必要时新增可复用的真正玩法。不得将操作列表或按钮确认当作游玩，不准因减少测试而保留原无聊事件。下文为完整主线的场景、行动、触发、关键中英对白和出口要求，具体数值、动画时长、操作细节需根据实机迭代。场景 ID 是设计迁移定位，不要求保留旧 operation IDs。选择仅在改变路线、帮助方式或关系反馈时保留；台词带条件的必须由真实状态触发。所有关键对话和操作目标双语；可选内容不得成为必要理解条件。
 
@@ -33,7 +41,7 @@
 
 **关键对白（ZH / EN）：**
 
-- 星铃的声音曾守护六地的记忆。多年前它破碎，灾难平息后，猫咪们重新过上了平静的生活。直到最近，遗忘又开始了。 / The Star Bell once guarded the memories of six lands. It broke long ago, but peace returned. Recently, the forgetting began again.
+- 很久以前，星铃守护着六片土地上的猫咪。有一年，星铃碎了，许多猫渐渐忘了朋友、家园，甚至自己的名字。后来，灾难终于平息。可最近，又有猫开始忘事了。 / Long ago, the Star Bell protected the memories of cats across six lands. Then it shattered, and many cats forgot their friends, their homes, even their own names. The disaster finally passed. But lately, the forgetting has returned.
 
 ### prologue:P-02 · 没有名字的猫 / A cat without a name
 
@@ -41,8 +49,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 主角：这里是哪儿？……我叫什么来着？ / Where am I? …What was my name?
-- 主角（听见铃才说）：那座铃刚才好像在叫我。 / That bell almost sounded like it was calling me.
+- 主角：咦，这是哪儿？……等等，我叫什么？ / Huh? Where am I? …Wait, what's my name?
+- 主角（听见铃才说）：刚才那声铃……怎么有点耳熟？ / That chime… why does it sound so familiar?
 
 ### prologue:P-03 · 一张不肯落地的地图 / A map that won't land
 
@@ -50,8 +58,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：等等！那张图还不能拿去做鸟窝！ / Wait! That map isn't ready to become a bird's nest!
-- 暮铃：谢啦，叫我暮铃。霁潮港也有一座古铃，说不定能告诉你些什么。 / Thanks. I'm Muling. Misttide Harbor has an old bell too. Maybe it can tell you something.
+- 暮铃：哎！别飞了！我就剩这一张地图啦！ / Hey! Come back! That's my last map!
+- 暮铃：谢啦，我叫暮铃。你说那座铃听着耳熟？霁潮港也有一座，要不要去碰碰运气？ / Thanks! I'm Muling. That bell sounds familiar to you? There's another in Misttide Harbor. Might be worth a visit.
 
 ### prologue:P-04 · 出去看看 / Let's see what's out there
 
@@ -59,7 +67,7 @@
 
 **关键对白（ZH / EN）：**
 
-- 主角：如果古铃认得我，我就去找它。 / If an old bell recognizes me, I'll go find it.
+- 主角：反正在这儿也想不起来。去港口看看吧！ / I'm not remembering anything here. Off to the harbor, then!
 
 ### prologue:P-05 · 第一站，霁潮港 / First stop, Misttide Harbor
 
@@ -79,9 +87,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 栖蓝：抓住它！它把整条街的铃都弄乱了！ / Catch it! It's scrambled every bell on this street!
-- 主角：等等，这首曲子……我会唱下一句！ / Wait, this tune… I know the next note!
-- 暮铃：你也认得它？那就一起追。 / You recognize it too? Let's follow it.
+- 栖蓝：抓住它！它把一条街的铃都闹醒啦！ / It's woken up every bell on the street!
+- 主角：咦？后面是不是……这样唱？ / Huh? Doesn't the tune go… like this?
+- 暮铃：你会唱这首？走，跟上它！ / You know that tune? Come on, let's follow it!
 
 ### harbor:H-02 · 屋檐上的追逐 / A rooftop romp
 
@@ -89,8 +97,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 栖蓝：左边是近路！右边有鱼干……你自己选吧！ / Left is a shortcut! Right has dried fish… your choice!
-- 暮铃：专心。你是来找名字的，不是来找晚饭的。 / Focus. You're looking for your name, not dinner.
+- 栖蓝：左边能抄近道！右边……哎，不许偷吃鱼干！ / Shortcut on the left! On the right… hey, no stealing fish!
+- 暮铃：喂，鱼干待会儿再买。咱们追哪边？ / Hey, fish can wait. Which way are we going?
 - 主角：它钻进那座旧房子了！ / It slipped into that old house!
 
 ### harbor:H-03 · 唱歌的旧房子 / The house that hums
@@ -99,9 +107,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 岬灯：这座铃好多年没响过了。你刚一来，它就醒了。 / This bell hasn't rung in years. You arrive, and suddenly it's awake.
-- 主角：墙上的曲子，和我刚才唱的一样。 / The tune on the wall is the one I just sang.
-- 暮铃：看真正亮起来的铃。别跟那些重复的声音走。 / Follow the bells that really light up, not the repeated sounds.
+- 岬灯：怪事。这铃哑了好些年，你一开口，它倒响了。 / Strange. That bell's been silent for years. One note from you, and it rings.
+- 主角：你看！我刚才唱的，是不是墙上这段？ / Look! Isn't that the tune I just sang?
+- 暮铃：看灯！哪盏铃亮了，咱们就往哪儿走。那些假声别理。 / Watch the lights. Follow whichever bell really lights up. Ignore the false echoes.
 
 ### harbor:H-04 · 两只猫，一场漂亮的胜利 / Two cats, one good fight
 
@@ -109,11 +117,11 @@
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：我让它停一下，你来！ / I'll hold it still. Your turn!
+- 暮铃：我困住它了！趁现在！ / I've got it pinned! Now!
 - 主角：看我的！ / Watch this!
-- 暮铃（胜利后）：刚才那一下，像是我们练过很多次。 / That last move felt like we'd practiced it a hundred times.
-- 主角：说不定我以前是个很厉害的冒险家！ / Maybe I used to be a brilliant adventurer!
-- 暮铃：那我得趁你涨价前找你组队。一起走？ / Then I'd better recruit you before your rates go up. Together?
+- 暮铃（胜利后）：配合得不错嘛。差点以为咱俩以前练过。 / Nice teamwork. Almost felt like we'd done that before.
+- 主角：嘿嘿，说不定我以前可厉害了！ / Heh. Maybe I used to be really good at this!
+- 暮铃：那我可得先占个队友的位置。一起走？ / Then I'd better claim a spot on your team. Coming with me?
 
 ### harbor:H-05 · 一首我忘记的歌 / A song I forgot
 
@@ -121,9 +129,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 主角：这不是我刚学会的歌。我以前一定听过。 / I didn't just learn that song. I must have heard it before.
-- 岬灯：这唱法很古老。森林的古铃也刻着这种叶子。 / That's a very old version. The forest bell has the same leaf mark.
-- 栖蓝：带上我！我早想看看会走路的树了！ / Take me along! I've always wanted to see a tree that walks!
+- 主角：奇怪，我连名字都忘了，这首歌怎么还记得？ / Strange. I've forgotten my own name, but I still know this song.
+- 岬灯：这调子啊，现在没几只猫会唱喽。瞧，铃上这片叶子，眠根林里也有。 / Hardly anyone sings it that way anymore. See this leaf on the bell? There's one just like it in Rootsleep Forest.
+- 栖蓝：我也去！听说那儿的树还能自己搬家呢！ / I'm coming too! I hear the trees there move house all by themselves!
 
 ## 第二章 · 森林把路藏起来了 / Chapter II — The forest that hides its paths
 
@@ -135,9 +143,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 芽禾：别踩那朵花——啊啾！……好吧，它先打喷嚏了。 / Don't step on that flower—achoo! …Well, it sneezed first.
-- 主角：你见过这个叶子记号吗？ / Have you seen this leaf mark?
-- 芽禾：见过！月叶会朝着古铃开，只是最近森林总把路藏起来。 / Yes! Moonleaves open toward the old bell, but lately the forest keeps hiding its paths.
+- 芽禾：小心脚下，那花会——啊啾！……喂，怎么又喷我一脸！ / Watch your step! That flower—achoo! …Hey! Right in my face again!
+- 主角：芽禾，你瞧，这片叶子眼熟吗？ / Yahe, does this leaf look familiar?
+- 芽禾：这是月叶呀！顺着亮叶子就能找到古铃。不过最近树老是搬家，路也跟着变。 / A moonleaf! Follow the glowing leaves to the old bell. Only lately the trees keep moving, and the paths move with them.
 
 ### forest:R-02 · 一条会长出来的路 / A path that grows
 
@@ -145,9 +153,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 榆川：这道刻痕已经缺了一半。咦，你怎么知道下一笔？ / Half this carving is gone. How did you know the next stroke?
-- 主角：不知道……我的爪子比我先想起来了。 / I don't know… my paw remembered before I did.
-- 暮铃：另一条路应该通向隔壁的古铃。……旧图上画过。 / The other path should lead to the neighboring bell. …I've seen it on an old map.
+- 榆川：这图缺了一半。……你怎么知道剩下的该往哪儿画？ / Half this drawing is missing. …How did you know where the next stroke goes?
+- 主角：我也说不上来。画着画着，爪子自己就动了。 / I couldn't tell you. My paw just knew where to go.
+- 暮铃：这条岔路通向另一座铃。……哦，我以前见过图。 / That branch leads to another bell. …Oh, I've seen the map before.
 
 ### forest:R-03 · 森林的坏梦 / The forest's bad dream
 
@@ -155,9 +163,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 主角：这朵花刚刚不是已经被我碰过了吗？ / Didn't I already touch this flower?
-- 芽禾：真的花会变，假的只会照着刚才的样子来！ / Real flowers change. The fake ones just repeat!
-- 暮铃：这次走你选的路。我跟着。 / Your route this time. I'll follow.
+- 主角：不对呀，刚才不是已经从这朵花旁边走过去了吗？ / Hang on. Didn't we just walk past that flower?
+- 芽禾：你再碰一下试试！真的会开花，假的只会学上一次。 / Touch it again! The real one opens. The fake one just copies what it did last time.
+- 暮铃：你带路。这回我跟着你。 / You lead. I'll follow this time.
 
 ### forest:R-04 · 树记得我的爪印 / The tree remembers my paw
 
@@ -165,9 +173,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 主角：这条路好像是我自己画的。可我一点也不记得。 / It feels like I drew this path myself, but I can't remember it.
-- 榆川：火焰印是炉城的古老标记。那里的灯匠也许知道这是谁的图。 / The flame mark belongs to Emberforge's old lantern makers. They might know whose drawing this is.
-- 芽禾：带一颗月叶种子走吧！记得别给它浇鱼汤。 / Take a moonleaf seed! Just don't water it with fish soup.
+- 主角：这笔画得也太顺手了……难不成以前真来过？ / That felt far too familiar… maybe I've really been here before.
+- 榆川：这个火纹我认得。去赤炉环城找灯匠吧，他们兴许知道是谁刻的。 / I know that flame mark. Try the lantern makers in Emberforge. They might know who carved it.
+- 芽禾：给，带颗月叶种子回去！浇水就行，鱼汤留着自己喝啊。 / Here, take a moonleaf seed! Just water it. Save the fish soup for yourself.
 
 ## 第三章 · 不肯熄灭的影子 / Chapter III — The lanterns that lost their colors
 
@@ -179,8 +187,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 小铆：看！我的猫耳灯能投出一只比房子还大的猫！ / Look! My cat-eared lantern can cast a cat bigger than a house!
-- 主角：它怎么不跟着你走了？ / Why isn't its shadow following you?
+- 小铆：看！我这盏猫耳灯一亮，墙上那只猫比房子还大！ / When my cat-eared lantern lights up, the cat on the wall is bigger than a house!
+- 主角：呃……你的影子怎么自己走了？ / Uh… why is your shadow walking away?
 - 小铆：糟了，影子戏还没开场，影子们自己跑出来啦！ / Oh no! The show hasn't even started and the shadows have escaped!
 
 ### forge:E-02 · 影子搭起来的桥 / A bridge made of shadows
@@ -189,9 +197,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 烬婆：这是守铃人的章。很久没见过了。 / That's a bellkeeper's seal. I haven't seen one in years.
-- 主角：守铃人？我以前认识他们吗？ / A bellkeeper? Did I know them?
-- 小铆：先把影子桥搭起来！你照这边，我去另一边。 / Let's build the shadow bridge first! Light this side and I'll take the other.
+- 烬婆：哟，守铃人的印。好多年没见着了。 / Well, a bellkeeper's seal. Haven't seen one of those in years.
+- 主角：守铃人？我怎么会有他们的印？ / A bellkeeper? Why would I have their seal?
+- 小铆：把灯往这边转一点！对，就差一截，我去照那头！ / Turn the light this way! Yes, one gap left. I'll light the other end!
 
 ### forge:E-03 · 最大的影子猫 / The biggest shadow cat
 
@@ -199,9 +207,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 小铆：它变得比我的灯笼还大了！这可不在演出计划里！ / It's bigger than my lantern! That wasn't in the show!
-- 暮铃：站到灯光里，它就没法藏起来。 / Get into the light and it can't hide.
-- 烬婆：我来守灯，你们尽管上。 / I'll keep the light steady. Go!
+- 小铆：它变得比我的灯笼还大了！等会儿！我没编这一出啊！ / Hang on! This wasn't in my script!
+- 暮铃：往亮处躲！它在那儿藏不住。 / Stay in the light! It can't hide there.
+- 烬婆：灯我看着，去吧！ / I'll mind the light. Go!
 
 ### forge:E-04 · 把星星挂回夜空 / Hang the stars back up
 
@@ -209,9 +217,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 烬婆：这是月镜书库的旧藏书章。那里也许有你在找的名字。 / That's Moonmirror Library's old seal. Your name may be there.
-- 小铆：给你这盏猫耳灯！耳朵歪一点才有精神。 / Have this cat-eared lantern! Crooked ears give it character.
-- 暮铃：下一站得飞上去。……你先答应别笑我。 / We'll have to fly to the next place. …Promise you won't laugh at me.
+- 烬婆：月镜书库的旧印啊。想查守铃人的事，去那儿准没错。 / An old Moonmirror Library seal. That's the place to look up the bellkeepers.
+- 小铆：送你！耳朵是有点歪……这叫特色！ / It's yours! The ears are a little crooked… that's character!
+- 暮铃：接下来得飞。先说好，谁笑谁自己走。 / Next stop means flying. And anyone who laughs can walk.
 
 ## 第四章 · 天空中的秘密岛屿 / Chapter IV — The island beyond the clouds
 
@@ -223,8 +231,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 远帆：那朵云看起来像鱼！要不要从它嘴里飞过去？ / That cloud looks like a fish! Want to fly through its mouth?
-- 暮铃：我当然不怕高。我只是……在确认地面还在。 / Of course I'm not afraid of heights. I'm just… checking the ground is still there.
+- 远帆：瞧那朵云，像不像条大鱼？走，咱们从鱼嘴里钻过去！ / See that cloud? Looks like a giant fish! Come on, let's fly through its mouth!
+- 暮铃：谁怕高了？我就是看看……地还在不在。 / Scared of heights? Me? I'm just checking… the ground's still there.
 
 ### sky:S-02 · 地图上没有的岛 / The island not on the map
 
@@ -232,7 +240,7 @@
 
 **关键对白（ZH / EN）：**
 
-- 翎羽：那扇门很久没出现过了。别盯着云的形状，看风吹出的缺口。 / That gate hasn't appeared in ages. Don't watch the shapes of the clouds; watch the gaps the wind opens.
+- 翎羽：那扇门好久没露面了。别光看云，瞧风把它们往哪儿吹。 / That gate hasn't shown itself in ages. Don't just watch the clouds. See where the wind blows them.
 - 远帆：我们试试从上面绕过去！ / Let's try going around from above!
 
 ### sky:S-03 · 倒流的云瀑 / The upside-down waterfall
@@ -241,9 +249,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 远帆：看真正的风圈！那片一模一样的云是假的。 / Watch the real wind rings! That identical cloud is a copy.
+- 远帆：跟着风圈飞！那朵云刚才就长那样，一点没变，是假的！ / Follow the wind rings! That cloud hasn't changed a bit since we passed it. It's a copy!
 - 主角：暮铃，抓紧，我们快到了！ / Hold tight, Muling. We're almost there!
-- 暮铃：我的围巾可能已经比我先到了。 / My scarf may have arrived before I did.
+- 暮铃：我还没到呢，围巾倒先飞过去了！ / I'm not even there yet, and my scarf's already made it!
 
 ### sky:S-04 · 留着的那杯茶 / A cup for someone missing
 
@@ -251,10 +259,10 @@
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：有个朋友答应我，等事情结束，就回花园喝茶。 / A friend promised we'd have tea in the garden when it was all over.
+- 暮铃：以前有只猫跟我说，等忙完了，回花园喝茶。 / Someone once told me we'd have tea in the garden when all our work was done.
 - 主角：那后来呢？ / What happened after that?
-- 暮铃：我一直给他留着一杯。 / I've kept a cup for them ever since.
-- 主角：你帮我找名字，我也帮你找朋友吧。 / You help me find my name. I'll help you find your friend.
+- 暮铃：……那杯茶，我就一直留着。 / …I've kept a cup for them ever since.
+- 主角：那等找到我的名字，咱们也去找你那位朋友！ / Then once we find my name, let's look for your friend too!
 - 暮铃：……好。 / …All right.
 
 ### sky:S-05 · 门那边有人认识这首歌 / Someone beyond the gate knows the song
@@ -263,8 +271,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 白栞（门的回应）：这首歌！最近失忆开始前，也有猫用它打开过这扇门。你是谁？ / That song! Someone used it to open this gate just before the forgetting returned. Who are you?
-- 主角：我正想知道。 / That's exactly what I'm trying to find out.
+- 白栞（门的回应）：咦，是这首曲子！前阵子还没闹失忆的时候，也有只猫这么唱过。你是哪位？ / Oh, that tune! Just before the forgetting started again, another cat sang it like that. Who are you?
+- 主角：我也想弄明白呢。 / That's what I'd like to know, too.
 - 暮铃：……我们进去吧。 / …Let's go in.
 
 ## 第五章 · 镜子里的另一个我 / Chapter V — The cat on the other side
@@ -277,8 +285,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 白栞：这里的镜子能留下过去的样子。你看，它不只会照出现在的你。 / These mirrors preserve how things once looked. They reflect more than just who you are now.
-- 墨页：公开的旧图可以看，别人的私人回忆仍属于他们。 / The public records are open. Private memories still belong to their owners.
+- 白栞：这些镜子可不一般。你站过来，瞧，里头还留着从前的景象呢。 / These aren't ordinary mirrors. Stand here. See? They still hold scenes from the past.
+- 墨页：旧画尽管看。只是别猫的私事，没点头就不要翻。 / Look at the old public pictures all you like. Leave private memories alone unless their owners say otherwise.
 
 ### library:M-02 · 假的暮铃 / The other Muling
 
@@ -288,8 +296,8 @@
 
 - 假的暮铃：我在这里。我在这里。 / I'm right here. I'm right here.
 - 主角：那我刚才说了什么？ / Then what did I just say?
-- 白栞：回响会照着过去重复，却不知道你现在在问什么。 / An echo repeats the past. It doesn't know what you're asking now.
-- 暮铃：过来，我在等你回答。 / Come here. I'm waiting for your answer.
+- 白栞：看出来了吧？它只会学舌，你换句话，它就接不上了。 / See? It can only parrot what it heard. Ask something new and it can't answer.
+- 暮铃：在这儿呢！刚才你问什么来着？ / Over here! What were you asking just now?
 
 ### library:M-03 · 原来你认识我 / You knew me
 
@@ -299,10 +307,10 @@
 
 - 主角：画里的那只猫……是我？ / That cat in the picture… is me?
 - 暮铃：是。 / Yes.
-- 主角：你从花园就知道我是谁？ / You knew who I was back in the garden?
-- 暮铃：……我们以前一起守过星铃。你把自己的记忆留在那里，才让灾难停下来。 / …We tended the Star Bell together. You left your memories there to stop the disaster.
+- 主角：那在花园的时候……你就认出我了？ / So back in the garden… you already recognized me?
+- 暮铃：……以前，我们俩一起守着星铃。那场灾难要不是你把记忆留在铃里，早就控制不住了。 / …We used to look after the Star Bell together. You left your memories inside it. Without that, the disaster would never have stopped.
 - 主角：为什么不告诉我？ / Why didn't you tell me?
-- 暮铃：我怕你又做出同样的选择。 / I was afraid you'd make the same choice again.
+- 暮铃：我怕你知道了，又把自己丢下。 / I was afraid you'd leave yourself behind again if you knew.
 
 ### library:M-04 · 那串不该响起的铃声 / The bell that should have stayed silent
 
@@ -310,10 +318,10 @@
 
 **关键对白（ZH / EN）：**
 
-- 主角：所以我们一路遇到的那些怪事……是从你打开封印以后开始的？ / So all those strange things we saw… they began after you opened the seal?
-- 暮铃：是。我知道有危险。我以为自己来得及把你救回来。 / Yes. I knew it was dangerous. I thought I could bring you back in time.
-- 主角：那些忘记自己家门的猫，也不是意外？ / The cats who forgot their own homes… that wasn't an accident either?
-- 暮铃：对不起。是我做的。 / I'm sorry. I did this.
+- 主角：等一下……失忆、那些假回响，都是你松开封印以后才有的？ / Wait… the forgetting, all those false echoes… they started after you loosened the seal?
+- 暮铃：……是。我知道可能会出事，可我以为还来得及。 / …Yes. I knew things could go wrong, but I thought I had time.
+- 主角：港口那只连家都找不到的猫……你那时候就知道为什么？ / That cat at the harbor who couldn't even find home… you knew why, even then?
+- 暮铃：……知道。对不起。 / …I knew. I'm sorry.
 
 ### library:M-05 · 如果铃声只能属于一个人 / If the song belonged to only one cat
 
@@ -321,12 +329,12 @@
 
 **关键对白（ZH / EN）：**
 
-- 白栞：把所有声音送进中央，它们就会变成一个声音。别的猫会失去自己的过去。 / Send every voice to the center and they become one voice. The other cats lose their own pasts.
-- 主角：如果让它们一个接一个地唱呢？ / What if they sing to one another instead?
-- 暮铃：我试了很多年……没有一次所有铃都回答。我不能再失去你。 / I tried for years… not once did every bell answer. I can't lose you again.
-- 主角：那这次，让我们一起试。 / Then this time, let's try together.
+- 白栞：你看，六盏铃都往中间响，颜色就混成一团了。你的记忆能回来，可其他猫的过去就没了。 / Look. When all six bells ring into the center, their colors merge. You get your memories back, but every other cat loses their past.
+- 主角：那……不往中间送，让它们互相接着唱呢？ / Then… what if they sing to one another instead of into the center?
+- 暮铃：我试过。好多年了，一座响了，另一座又没声。我真的……不想再失去你。 / I've tried. For years. One bell rings, another goes quiet. I just… can't bear to lose you again.
+- 主角：以前是你自己找办法。这回不一样啊。 / You were looking for a way on your own before. It's different this time.
 - 暮铃：……我先去星坠原。 / …I'm going to Starfall.
-- 主角：走吧。我们还差最后一座铃。 / Come on. There's one bell left.
+- 主角：走，去星坠原。最后一座铃还没响呢。 / Come on, to Starfall. There's one bell left to wake.
 
 ## 第六章 · 星星落在地上的地方 / Chapter VI — Where the stars fell
 
@@ -338,9 +346,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 砾川：天上的星星有些是假的，脚下会亮的才是路。 / Some stars in the sky are false. The ones that light beneath your feet mark the way.
-- 星芽：刚才那只银色猫已经过去了。你在找她？ / A silver cat passed here earlier. Are you looking for her?
-- 主角：嗯。还有一个约定。 / Yes. And a promise.
+- 砾川：别光顾着抬头。踩下去会亮的石头，才是真路。 / Don't spend all your time looking up. Stones that light beneath your paws are the real path.
+- 星芽：刚才有只银色的猫过去了。你是来找她的？ / A silver cat went by a little while ago. Are you looking for her?
+- 主角：嗯。我还有话没跟她说完。 / Yeah. We still have something to talk about.
 
 ### starfall:F-02 · 星铃破碎的那一天 / The day the bell broke
 
@@ -348,9 +356,9 @@
 
 **关键对白（ZH / EN）：**
 
-- 过去的暮铃：再给我们一点时间，我们一起找办法！ / Give us a little more time. We'll find a way together!
-- 过去的主角：已经有猫认不出自己的家人了。我愿意留下自己的记忆，让星铃先安静下来。 / Cats are already forgetting their families. I'll leave my memories here so the Star Bell can fall quiet.
-- 过去的暮铃：那你答应我，不要放弃回来的办法。 / Then promise you won't give up on finding a way back.
+- 过去的暮铃：再等等！一定还有办法，咱们再找找！ / Wait! There has to be another way. Let's keep looking!
+- 过去的主角：已经有猫连家人都认不出来了。再等下去，谁也不知道会怎样。用我的记忆吧，先让星铃安静下来。 / Some cats can't recognize their own families anymore. Who knows what will happen if we wait? Use my memories. We have to quiet the Star Bell first.
+- 过去的暮铃：那你得答应我，一定要想办法回来。 / Then promise me you'll find a way back.
 - 过去的主角：我答应你。 / I promise.
 
 ### starfall:F-03 · 等了太久的猫 / The cat who waited too long
@@ -359,11 +367,11 @@
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：我每天都泡两杯茶。每次以为终于能接通它们，另一座铃又没了声音。 / I made two cups of tea every day. Every time I thought the bells would connect, another went silent.
-- 主角：所以你连自己的记忆也准备放弃？ / So you were going to give up your own memories too?
-- 暮铃：只要你回来。 / As long as you came back.
-- 主角：可是我回来以后，你就不认识我了。港口、森林里的朋友也一样。那不是我想要的家。 / But then you wouldn't know me. Neither would our friends in the harbor or the forest. That's not the home I want.
-- 主角：这一次，先听听他们的回答。 / This time, listen to their answer first.
+- 暮铃：我每天都泡两杯茶。每次有座铃响了，我都以为这回你该回来了。可另一座又没声了…… / I made two cups of tea every day. Every time a bell rang, I thought this would be the time you'd come home. Then another went silent…
+- 主角：你是说……连你自己也会把我忘了？ / You mean… even you'd forget me?
+- 暮铃：……只要你能回来。 / …As long as you come back.
+- 主角：可我回来了，你却不认识我。栖蓝、芽禾他们也不认识自己的朋友了。暮铃，我不想要那样的家。 / But I'd come back, and you wouldn't know me. Qilan, Yahe and the others wouldn't recognize their friends either. Muling, that's not the home I want.
+- 主角：咱们先听听大家怎么说，好不好？ / Let's hear what our friends have to say first, all right?
 
 ### starfall:F-04 · 世界在唱另一首歌 / The world sings a different song
 
@@ -373,7 +381,7 @@
 
 - 栖蓝：港口听见了！还是你最开始唱的那首！ / The harbor hears you! It's that song you sang when we first met!
 - 芽禾：月叶开啦，森林也在回答！ / The moonleaves are open! The forest is answering too!
-- 星芽：六个声音都在这里，而且谁也没有消失。 / All six voices are here, and none of them has disappeared.
+- 星芽：一个、两个……六个！都在呢，一个也没少！ / One, two… six! They're all here. Not one missing!
 
 ### starfall:F-05 · 最后一声错误的铃 / The last wrong chime
 
@@ -381,8 +389,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：它又开始吞掉声音了……如果这次失败呢？ / It's swallowing the voices again… What if we fail this time?
-- 主角：那就一起守住它们。不要一个人做决定了。 / Then let's protect those voices together. Don't make that choice alone.
+- 暮铃：又来了……要是这次也失败，我怎么办？ / It's happening again… what if this time fails too?
+- 主角：那就一起想办法。暮铃，别再丢下我们自己扛了。 / Then we'll find a way together. Muling, don't leave us behind and try to carry it all yourself.
 
 ## 终章 · 我们都在这里 / Finale — All of us are here
 
@@ -394,7 +402,7 @@
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：别碰最后的锁！我不能再让你消失！ / Don't touch the last lock! I can't let you disappear again!
+- 暮铃：别碰那把锁！我不能再眼睁睁看你消失了！ / Don't touch that lock! I can't watch you disappear again!
 - 主角：这次我不是一个人。 / This time, I'm not alone.
 
 ### finale:B-02 · 不会回答的声音 / A voice that cannot answer
@@ -404,8 +412,8 @@
 **关键对白（ZH / EN）：**
 
 - 假回响：我会在这里等你。 / I'll wait for you here.
-- 主角：那句话我听过。可你不知道自己在等谁。 / I've heard those words. But you don't know who you're waiting for.
-- 暮铃：它只会重复，不会等你回答！ / It only repeats. It never waits for your answer!
+- 主角：你学得倒挺像。可你知道自己在等谁吗？ / That sounds just like her. But do you even know who you're waiting for?
+- 暮铃：别听它的！它就会学刚才那句，根本不管你说了什么！ / Don't listen to it! It just repeats the last line, no matter what you say!
 
 ### finale:B-03 · 六个不同的声音 / Six different voices
 
@@ -415,10 +423,10 @@
 
 - 栖蓝：听见你了！ / We hear you!
 - 小铆：灯都亮着！ / All the lanterns are lit!
-- 白栞：是真的，不是重复的声音！ / They're real, not copies!
-- 暮铃：每只猫……都还是自己。 / Every cat… is still themselves.
-- 主角：最后的锁，你可以自己决定。 / The last lock is your choice.
-- 暮铃：我来。这次，我们一起回家。 / I'll open it. This time, we'll go home together.
+- 白栞：对上了！这次真的有猫在回答！ / They match! This time someone's really answering!
+- 暮铃：大家……都还记得自己是谁。 / Everyone… still remembers who they are.
+- 主角：还剩那把锁。暮铃，你来开吧。 / Just the lock left. Muling, you can open it.
+- 暮铃：……嗯。这回一起回家。 / …Yeah. We're going home together this time.
 
 ### finale:B-04 · 星铃重新响了 / The bell rings again
 
@@ -427,9 +435,9 @@
 **关键对白（ZH / EN）：**
 
 - 暮铃：你……还记得我吗？ / Do you… remember me?
-- 主角：记得。也记得这一路你陪我做过的事。 / I do. And I remember everything we did together on this journey.
-- 暮铃：还有我做错的事。 / And the things I did wrong.
-- 主角：也记得。我们先去看看大家。 / I remember those too. Let's go see everyone first.
+- 主角：记得啊。花园、那张飞走的地图、还有咱们一路遇到的事，我都记得。 / I do. The garden, that runaway map, everything we've been through together. I remember it all.
+- 暮铃：……那些我做错的事呢？ / …And the things I did wrong?
+- 主角：也记得。走吧，先看看大家怎么样了。 / Those too. Come on. Let's see how everyone's doing.
 
 ## 尾声 · 花园的第二把钥匙 / Epilogue — The second garden key
 
@@ -441,7 +449,7 @@
 
 **关键对白（ZH / EN）：**
 
-- 栖蓝：现在这里的铃声都听话啦！下次我们去哪里冒险？ / The bells behave themselves now! Where shall we adventure next?
+- 栖蓝：这下整条街的铃可算老实了！哎，下回去哪儿玩？ / Finally, the bells on this street are behaving! Hey, where are we off to next?
 
 ### epilogue:E-02 · 道歉不只是说对不起 / More than an apology
 
@@ -449,8 +457,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：是我让遗忘重新开始的。我会把能修好的地方修好。 / I'm the one who started the forgetting again. I'll repair what I can.
-- 岬灯：先从这里开始吧。信任的事，慢慢来。 / Let's start here. Trust will take time.
+- 暮铃：这次大家又开始失忆，是因为我。对不起。接下来该修的、该补的，我会一件件做。 / I'm the reason the forgetting started again. I'm sorry. I'll put things right, one step at a time.
+- 岬灯：那就从这儿开始吧。别的事，慢慢来。 / Then let's start here. The rest will take time.
 
 ### epilogue:E-03 · 第二把钥匙 / The second key
 
@@ -458,10 +466,10 @@
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：我……还可以留下吗？ / May I… still stay?
-- 主角：可以。以后出发前，记得问我要不要一起去。 / Yes. Next time you set off, remember to ask if I'd like to come.
-- 暮铃：那我可以有一把花园钥匙吗？ / Then may I have a garden key?
-- 主角：早就给你留好了。茶也还热着。 / I've already saved you one. The tea is still warm.
+- 暮铃：我还能……住在这里吗？ / Can I… still stay here?
+- 主角：当然。不过以后去哪儿，记得先叫上我。 / Of course. But next time you're going somewhere, ask me first.
+- 暮铃：那……能给我一把钥匙吗？ / Then… may I have a key?
+- 主角：喏，早给你留着呢。进来吧，茶还热着。 / Here. I saved one for you. Come in. The tea's still warm.
 
 ## 通关后
 庭院中的猫咪真实来访；可选节庆、飞行、星桥等挑战可重复但不强制刷分；区域野猫、秘密路线、猫咪阵容和合击提供继续探索的理由。暮铃修复造成的损害与道歉不以万能原谅收尾，玩家不负责替她跑六次重复劳动。禁止以另一轮世界末日推翻完整结局。
