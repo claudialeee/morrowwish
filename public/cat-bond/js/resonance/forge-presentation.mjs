@@ -4,7 +4,7 @@ const local=(l,zh,en)=>l==="zh"?zh:en;
 export function forgeObjective(v,explorer,l){
  const part=explorer?.forgeStep?.();
  if(part)return local(l,"旧工坊 · "+part.name[0],"Old workshop · "+part.name[1]);
- return local(l,...(v.current?.id==="forge:E-01"?["沿街道找到烬婆和小铆，了解停炉原因","Meet Jinpo and Xiaomao along the street"]:v.current?.id==="forge:E-02"?["重组安全图纸，了解旧事故","Reassemble the safety blueprint and uncover the accident"]:v.current?.id==="forge:E-03"?["调节炉温与压力，协力击败机械守卫","Balance heat and pressure, then face the guardian"]:["修复炉心，邀请两位居民共同奏响承火调","Repair the hearth and invite both residents to perform the Song of Ember"]));
+ return local(l,...(v.current?.id==="forge:E-01"?(v.objective.includes("puzzle:festival-lantern")?["先在工坊试制安全提灯","Build a safe lantern at the workshop"]:["找小铆了解停炉原因","Find Xiaomao and learn why the furnace stopped"]):v.current?.id==="forge:E-02"?["重组安全图纸，了解旧事故","Reassemble the safety blueprint and uncover the accident"]:v.current?.id==="forge:E-03"?["调节炉温与压力，协力击败机械守卫","Balance heat and pressure, then face the guardian"]:["修复炉心，邀请两位居民共同奏响承火调","Repair the hearth and invite both residents to perform the Song of Ember"]));
 }
 export function paintForgeEnvironment(ctx,v,frame,forced=null){
  const t=frame/60,restored=forced??v.melodies.includes("forge"),testing=!restored&&(v.current?.id==="forge:E-03"||v.sanctuaries.includes("forge"));
