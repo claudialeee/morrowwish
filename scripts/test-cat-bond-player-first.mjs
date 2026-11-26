@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import {campaign} from "../public/cat-bond/js/resonance/campaign.mjs";
 import {makeEngine} from "../public/cat-bond/js/resonance/engine.mjs";
 const ok=r=>assert.equal(r.ok,true,r.reason);
-for(const meet of [false,true]){const e=makeEngine(campaign);for(let i=0;i<4;i++){assert.deepEqual(e.view().objective,[]);ok(e.finish());}assert.equal(e.view().muling,"unmet");assert.equal(e.view().current.id,"prologue:P-05");assert.equal(e.finish().ok,false);if(meet){ok(e.meetTraveler());assert.equal(e.meetTraveler().ok,false);}ok(e.record("prologue:P-05","travel:harbor"));ok(e.finish());assert.equal(e.view().current.lines[2].text.zh.includes("又见面"),meet);assert.equal(e.nextLine().ok,false);ok(e.record("harbor:H-01","npc:harbor-arrival"));for(let i=0;i<6;i++)ok(e.nextLine());ok(e.finish());assert.equal(e.view().muling,"temporary");}
+for(const meet of [false,true]){const e=makeEngine(campaign);for(let i=0;i<4;i++){assert.deepEqual(e.view().objective,[]);ok(e.finish());}assert.equal(e.view().muling,"unmet");assert.equal(e.view().current.id,"prologue:P-05");assert.equal(e.finish().ok,false);if(meet){ok(e.meetTraveler());assert.equal(e.meetTraveler().ok,false);}ok(e.record("prologue:P-05","travel:harbor"));ok(e.finish());assert.equal(e.view().current.lines[1].text.zh.includes("我叫暮铃"),!meet);assert.equal(e.nextLine().ok,false);ok(e.record("harbor:H-01","npc:harbor-arrival"));while(e.view().cursor<e.view().current.lines.length)ok(e.nextLine());ok(e.finish());assert.equal(e.view().muling,"temporary");}
 const old=makeEngine(campaign).snapshot();old.scene="prologue:P-02";old.completed=["prologue:P-01"];old.cursor=12;delete old.openingPresentationVersion;assert.equal(makeEngine(campaign,old).view().cursor,0);
 console.log("Player-first opening and optional encounter passed");
 
@@ -11,8 +11,10 @@ import {createPuzzle,movePuzzle} from "../public/cat-bond/js/resonance/world-exp
 const firstForest=campaign.scenes.findIndex(s=>s.id==="forest:R-01");
 const forestSave=makeEngine(campaign).snapshot();forestSave.scene="forest:R-01";forestSave.completed=campaign.scenes.slice(0,firstForest).map(s=>s.id);
 const forest=makeEngine(campaign,forestSave);const drain=()=>{while(forest.view().cursor<forest.view().current.lines.length)ok(forest.nextLine());};
-ok(forest.record("forest:R-01","npc:forest-dispute"));drain();ok(forest.finish());assert.equal(forest.choose("gardens").ok,false);assert.equal(forest.nextLine().ok,false);ok(forest.record("forest:R-02","explore:scent-trail"));drain();ok(forest.choose("roots"));ok(forest.finish());assert.equal(forest.finish().ok,false);
-assert.equal(createPuzzle("puzzle:paired-water-gates"),null);assert.equal(forest.record("forest:R-03","rescue:trapped-cats").ok,false);assert.equal(forest.record("forest:R-03","puzzle:paired-water-gates").ok,false);for(const op of ["rescue:steady-channel","explore:water-marks","battle:root-echo","rescue:trapped-cats"])ok(forest.record("forest:R-03",op));drain();ok(forest.finish());assert.equal(forest.record("forest:R-04","melody:forest").ok,false);ok(forest.record("forest:R-04","repair:forest"));const song=createPuzzle("melody:forest");song.participants=["yahe","yuchuan"];assert.equal(movePuzzle(song,1),false);assert.equal(movePuzzle(song,2),false);assert.deepEqual(song.values,[1]);assert.equal(movePuzzle(song,0),false);assert.equal(movePuzzle(song,2),true);ok(forest.record("forest:R-04","melody:forest"));drain();ok(forest.finish());assert.equal(forest.view().current.id,"forge:E-01");console.log("Chapter II: clues, choice, echo rescue, melody and next region passed");
+ok(forest.record("forest:R-01","npc:forest-dispute"));drain();ok(forest.finish());
+assert.equal(forest.nextLine().ok,false);assert.equal(forest.record("forest:R-02","explore:scent-trail").ok,false);ok(forest.record("forest:R-02","puzzle:moonleaf-crossing"));drain();ok(forest.finish());
+assert.equal(forest.record("forest:R-03","battle:root-echo").ok,false);ok(forest.record("forest:R-03","puzzle:moonleaf-loop"));drain();ok(forest.finish());
+assert.equal(forest.record("forest:R-04","melody:forest").ok,false);ok(forest.record("forest:R-04","repair:forest"));const song=createPuzzle("melody:forest");song.participants=["yahe","yuchuan"];assert.equal(movePuzzle(song,1),false);assert.equal(movePuzzle(song,2),false);assert.deepEqual(song.values,[1]);assert.equal(movePuzzle(song,0),false);assert.equal(movePuzzle(song,2),true);ok(forest.record("forest:R-04","melody:forest"));drain();ok(forest.finish());assert.equal(forest.view().current.id,"forge:E-01");console.log("Moonleaf routes and forest melody passed");
 
 
 // The landing screen is strictly single-language in both directions.
@@ -36,28 +38,8 @@ console.log("Single-locale title and live EN/ZH/EN switching passed");
 import {hasPendingDialogue,awaitingGameplay} from "../public/cat-bond/js/resonance/dialogue-ui.mjs";
 {
 
- // H-04 choice precedes both the dialogue and rescue actions. The NPC and
- // Continue Story controls must share the same predicate as the dialogue UI.
- const harborState=makeEngine(campaign).snapshot();
- const harborIndex=campaign.scenes.findIndex(s=>s.id==="harbor:H-04");
- harborState.scene="harbor:H-04";harborState.completed=campaign.scenes.slice(0,harborIndex).map(s=>s.id);
- for(const choice of campaign.scenes[harborIndex].choices){
-  const e=makeEngine(campaign,harborState),v=e.view();
-  assert.equal(v.lineReady,false);
-  assert.equal(hasPendingDialogue(v),true,"Unchosen before-action dialogue must be reachable");
-  assert.equal(awaitingGameplay(v),false);
-  assert.equal(e.record(v.current.id,v.current.requires[0]).ok,false);
-  assert.equal(e.choose(choice.id).ok,true);
-  assert.equal(hasPendingDialogue(e.view()),true);
-  while(e.view().lineReady&&e.view().cursor<e.view().current.lines.length)assert.equal(e.nextLine().ok,true);
-  assert.equal(hasPendingDialogue(e.view()),false,"Action-gated lines must remain gated");
-  assert.equal(awaitingGameplay(e.view()),true);
-  for(const op of e.view().objective)assert.equal(e.record(v.current.id,op).ok,true);
-  assert.equal(hasPendingDialogue(e.view()),true,"Dialogue resumes after both operations");
-  while(e.view().cursor<e.view().current.lines.length)assert.equal(e.nextLine().ok,true);
-  assert.equal(hasPendingDialogue(e.view()),false);
-  assert.equal(e.finish().ok,true);
- }
- console.log("Harbor H-04 both before-action choice routes passed shared dialogue entry gate");
-
+ // Harbor dialogue must wait for actual battle evidence.
+ const harborState=makeEngine(campaign).snapshot(),i=campaign.scenes.findIndex(s=>s.id==="harbor:H-04");
+ harborState.scene="harbor:H-04";harborState.completed=campaign.scenes.slice(0,i).map(s=>s.id);
+ const e=makeEngine(campaign,harborState),v=e.view();assert.equal(v.lineReady,false);assert.equal(awaitingGameplay(v),true);assert.equal(e.nextLine().ok,false);assert.equal(e.record(v.current.id,"rescue:storm-boat").ok,false);ok(e.record(v.current.id,"battle:chime-beast"));assert.equal(hasPendingDialogue(e.view()),true);while(e.view().cursor<e.view().current.lines.length)ok(e.nextLine());ok(e.finish());
 }
