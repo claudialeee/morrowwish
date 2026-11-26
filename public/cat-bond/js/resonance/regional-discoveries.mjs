@@ -144,8 +144,8 @@ const raw={
           0.095
         ],
         [
-          "水路恢复后，枯根旁冒出了新叶。",
-          "Fresh leaves grow beside the roots now that water flows again."
+          "古铃重新响起，月叶桥旁冒出了新叶。",
+          "Fresh leaves grow beside the moonleaf bridge now that the old bell rings again."
         ],
         [],
         "return"
@@ -227,7 +227,7 @@ const raw={
           0.095
         ],
         [
-          "炉城重新亮了，小灯也映着暖光。",
+          "千灯城的灯火又亮了，小提灯也映着暖光。",
           "The city lights are back; the little lantern catches their glow."
         ],
         [],
@@ -312,8 +312,8 @@ const raw={
           -0.075
         ],
         [
-          "远处的信使穿过云层。你把景色画成明信片。",
-          "Couriers cross the clouds. You sketch the view onto a postcard."
+          "远处的浮岛从云层中露出来。你把景色画成明信片。",
+          "A distant island emerges from the clouds. You sketch the view onto a postcard."
         ],
         [],
         "return"
@@ -413,8 +413,8 @@ const raw={
       "Star-pattern stone"
     ],
     "returnSouvenir": [
-      "商队徽章",
-      "Caravan badge"
+      "星路纪念章",
+      "Star trail badge"
     ],
     "steps": [
       [
@@ -465,8 +465,8 @@ const raw={
           0.09
         ],
         [
-          "相同纹样！这是旧商队留下的路边刻痕。",
-          "A match! An old caravan left this roadside carving."
+          "相同纹样！这是昔日巡铃人留下的星路记号。",
+          "A match! An old bellkeeper left this trail mark."
         ],
         [
           "stone"
@@ -484,8 +484,8 @@ const raw={
           0.085
         ],
         [
-          "商队重新出发，留下一枚旅行徽章。",
-          "The caravan sets off again, leaving a travel badge."
+          "星石重新亮起，砾川留下了一枚星路纪念章。",
+          "The star stones shine again. Lichuan leaves a star trail badge."
         ],
         [],
         "return"
