@@ -20,7 +20,7 @@ export function openFinaleLatch(){
  let started=null, frame=0;
  function render(){
   heading.textContent=text("最后的锁","The last lock");
-  hint.textContent=text("扶住铃链，听六地持续回应。暮铃会亲手打开最后的锁。","Steady the chain and listen to the six lands. Muling will open the final lock herself.");
+  hint.textContent=text("按住铃链按钮约 1.5 秒，直到进度条填满；电脑也可按住空格键。暮铃会亲手打开最后的锁。","Hold the chain button for about 1.5 seconds until the bar fills; on desktop, you can also hold Space. Muling will open the final lock herself.");
   hold.textContent=text("按住铃链","Hold the bell chain");
   cancel.textContent=text("返回","Back");
   overlay.setAttribute("aria-label",heading.textContent);
