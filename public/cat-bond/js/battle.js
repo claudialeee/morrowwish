@@ -5148,8 +5148,8 @@ class CaptureBattle {
       else if (dist < 220 && e.role === 'ambusher' && (e.challenge || 0) > 0) kind = 'pounce';  // ambusher leap
       // Big-AOE lob is now rarer (30%, SR+ only) and on its own cooldown so the
       // screen isn't constantly full of ground bursts; mostly a focused barrage.
-      else if (dist >= 130 && dist < 340) kind = (e.rIdx >= 1 && (e.lobCd||0) <= 0 && this.rng() < 0.3) ? "lob" : "barrage";
-      else if (dist < 320) kind = 'barrage';
+      else if (dist >= 130 && dist < 340) kind = (e.rIdx >= 1 && (e.lobCd||0) <= 0 && this.rng() < 0.3) ? "lob" : "volley";
+      else if (dist < 320) kind = 'volley';
       if (kind) {
         if (kind === 'lob') e.lobCd = 7 + this.rng() * 3;                             // per-enemy AOE throttle
         if (kind === 'smash') {
@@ -5380,7 +5380,7 @@ class CaptureBattle {
     if (!me || !me.alive) me = this.nearestEnemyTeamCat(e);
     if (!me) return;
     const dist = Math.hypot(me.x - e.x, me.y - e.y);
-    if (e.telegraphKind === 'nova' && dist > 180) e.telegraphKind = 'barrage';   // too far for a self-burst
+    if (e.telegraphKind === 'nova' && dist > 180) e.telegraphKind = 'volley';   // too far for a self-burst
     // CHARGED ULT release: fire the breed's signature ult ONCE at REDUCED power (×0.6 so a wild
     // ult never out-damages a player ult of the same tier), applying its element + status tag as a
     // wide radial burst. Consumes the charge (ultFired). This is the symmetric answer to the player
@@ -5406,7 +5406,7 @@ class CaptureBattle {
     const sk = e.skill;
     const col = sk ? this.elemColor(sk.element) : '#ff4d6d';
     const pow = sk ? sk.power : 0.9;
-    const kindName = { nova: '猫猫怒涛', barrage: '连射', lob: '落雷', pounce: '猛扑' };
+    const kindName = { nova: '猫猫怒涛', volley: '连射', lob: '落雷', pounce: '猛扑' };
     // Enemy windup ring and projectile trajectory are the warning; do not flood the HUD.
     if (e.telegraphKind === 'pounce') {
       // ambusher leap — set up a POUNCE the SHARED advanceLunge animates over frames (never a one-frame

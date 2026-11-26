@@ -360,8 +360,7 @@
     // 直线多发弹幕 (barrage): a FAN of straight low-power darts. Per-pellet power is deliberately
     // low (stays ranged-weak → control-legal, never a nuke) and the suppression comes from volume,
     // not a single big hit. Role-gated to dps/control (backline suppression/zoning) — tanks/fighters
-    // get no ranged, assassins no long gun. This is the skill the enemy barrage delivery now casts.
-    barrage:{ kind: 'projectile', power: 0.42, cd: 4.6, vfx: 'muzzle', nameKey: 'volley', descZh: '一次扇形射出多枚弹丸压制，单发威力低但覆盖面广。' },
+    // barrage removed per V4 owner 2026-11-26.
     dash:   { kind: 'dash',       power: 1.35, cd: 4.0, vfx: 'beam',   nameKey: 'rush', descZh: '带电般冲刺撞击，侧后方突袭更狠。' },
     shield: { kind: 'buff',       power: 0,    cd: 7.0, vfx: 'ring',   nameKey: 'ward', descZh: '展开元素护罩，短时减伤。', shield: true },
     heal:   { kind: 'heal',       power: 0,    cd: 7.5, vfx: 'orb',    nameKey: 'heal', descZh: '安抚自身，回复斗志。' },
@@ -405,14 +404,6 @@
         (w.retaliateBurn?'；近身受击灼烧攻击者':w.regenPct?'；护盾期间缓慢恢复生命':'')+'。';
     }
     else if (arch === 'heal') { sk.tags = ['heal']; }
-    else if (arch === 'barrage') {
-      // Straight multi-dart fan. Low per-pellet power keeps the SUM modest. Authored for
-      // dps (ranged suppression) + fighter (a frontline burst-forward volley) via allowRoles —
-      // this is the ONE ranged skill a fighter may learn, overriding its usual no-ranged rule.
-      // The enemy barrage delivery casts this exact skill.
-      sk.shots = 5; sk.spread = 0.24; sk.tags = [kit.tag, 'ranged']; sk.appliesTag = kit.tag;
-      sk.allowRoles = ['dps','fighter'];
-    }
     else { sk.tags = [kit.tag]; sk.appliesTag = kit.tag; }
     // carry the element micro-tweaks forward so battle.js can read them if it wants
     Object.assign(sk, tw);
@@ -428,7 +419,6 @@
       }
       // Every element gets its own straight multi-dart barrage (role-gated to dps/control). It is a
       // distinct archetype (not covered by the 5 above), so it always generates for all six elements.
-      out.push(_genSkill(el, 'barrage'));
     }
     // Keep former duplicate dash IDs parseable for historical saves, without
     // offering them to new players. Never delete a stored player's old skill.

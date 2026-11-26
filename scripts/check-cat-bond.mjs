@@ -1007,18 +1007,7 @@ assert.ok(jiafeiRot[0] && !jiafeiRot[0].generic,'圆宝 rotation leads with an a
 const xianluoRot=Skills.enemyKitFor('xianluo',10).rotation;
 assert.ok(xianluoRot[0] && !xianluoRot[0].generic,'露露 rotation leads with an authored skill, got '+(xianluoRot[0]&&xianluoRot[0].id));
 
-// BARRAGE (直线多发弹幕) is authored for dps + fighter ONLY (allowRoles override of the usual
-// "fighter learns no ranged" rule), and stays LOW per-pellet power (never a nuke).
-for(const el of Skills.ELEMENT_ORDER){
-  const bar=Skills.skillById('gen_'+el+'_barrage');
-  assert.ok(bar&&bar.shots>=4,'每系都有 barrage 弹幕技能 ('+el+')');
-  assert.ok(bar.power<0.6,'barrage 单发低伤 (ranged-weak, '+el+' power='+bar.power+')');
-  assert.equal((bar.allowRoles||[]).slice().sort().join(','),'dps,fighter','barrage 仅 dps+fighter ('+el+')');
-}
-const barGate=(role,sp)=>Skills.roleAllowsSkill(role,Skills.skillById('gen_'+Skills.elementOf(sp)+'_barrage'));
-assert.ok(barGate('dps','youling')&&barGate('fighter','senlin'),'dps+fighter 可学 barrage');
-assert.ok(!barGate('tank','tangyuan')&&!barGate('control','mengmai')&&!barGate('assassin','doudou')&&!barGate('support','rongrong'),
-  'tank/control/assassin/support 不可学 barrage');
+// (barrage generic skill deleted per V4 owner 2026-11-26; its assertions removed.)
 // 追踪弹群 (homing volley): elec + light, multi-shot + homing, low per-pellet.
 for(const [id,el] of [['boltSwarm','elec'],['prismSwarm','light']]){
   const sw=Skills.skillById(id);
