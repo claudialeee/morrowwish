@@ -1,4 +1,5 @@
 import { campaign } from "./campaign.mjs";
+import {mirrorProof} from "./canon22-mirror.mjs";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary} from "./library-mechanisms.mjs";
 import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache} from "./sky-flight.mjs";
 // Actual walkable region mechanics. Story progression is never stored here.
@@ -105,7 +106,6 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   if(["starfall:F-02","starfall:F-04"].includes(v.current.id)&&op!==v.objective[0])return {ok:false,reason:v.current.id==="starfall:F-02"?"starfall-record-order":"starfall-routing-order"};
   if(v.current.orderedRequires&&op!==v.objective[0])return {ok:false,reason:"story-operation-order"};
   if(region==="library"&&libraryBlocked(op,v.objective,v))return {ok:false,reason:"library-previous-station"};
-  if(op==="puzzle:library-echo"&&!bridge.libraryRecord())return {ok:false,reason:"library-catdex-required"};
   if(region==="library"&&op==="melody:library"&&v.objective.includes("repair:library"))return {ok:false,reason:"library-repair-first"};
   if(op.startsWith("battle:"))return {ok:false,reason:"battle-host-required"};
   if(v.current.id==="harbor:H-04"){
@@ -140,7 +140,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   }
   if(!active)return {ok:false,reason:"no-interaction"};const f=layout.features[active.operation];
   if(!near(region==="sky"&&skyLaunch[active.operation]||f)||(puzzle&&!puzzle.solved))return {ok:false,reason:"incomplete-physical-action"};
-  const result=bridge.recordWorld(active.sceneId,active.operation,{...active,verified:true,participants:active.adventureAction?active.participants:puzzle?.participants,responses:puzzle?.response,pair:puzzle?.pair,waterSequence:puzzle?.type==="pairedWater"?puzzle.values:undefined,flightProof:skyFlightProof(puzzle?.flight),libraryValues:puzzle?.type.startsWith("library")?puzzle.values:undefined,libraryRecord:active.adventureAction?bridge.libraryRecord():puzzle?.record,starfallSequence:puzzle?.values});
+  const result=bridge.recordWorld(active.sceneId,active.operation,{...active,verified:true,participants:active.adventureAction?active.participants:puzzle?.participants,responses:puzzle?.response,pair:puzzle?.pair,waterSequence:puzzle?.type==="pairedWater"?puzzle.values:undefined,flightProof:skyFlightProof(puzzle?.flight),libraryValues:puzzle?.type.startsWith("library")?puzzle.values:undefined,mirrorProof:mirrorProof(puzzle?.mirror),libraryRecord:active.adventureAction?bridge.libraryRecord():puzzle?.record,starfallSequence:puzzle?.values});
   if(result.ok){if((active.adventureAction||puzzle?.type==="skyFlight")&&skyLanding[active.operation])pos=[...skyLanding[active.operation]];active=null;puzzle=null;}return result;
  }
  function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(puzzle.type==="skyFlight"){steerSkyFlight(puzzle.flight,[.30,.50,.70][i]);return {ok:true,pending:true};}if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(deferHarborMelody&&puzzle.operation==="melody:harbor"||deferForestMelody&&puzzle.operation==="melody:forest"||deferSkyMelody&&puzzle.operation==="melody:sky"||deferForgeMelody&&puzzle.operation==="melody:forge"||deferLibraryMelody&&puzzle.operation==="melody:library"||deferStarfallMelody&&puzzle.operation==="melody:starfall")return {ok:true,pending:true,ceremony:true};return complete();}
