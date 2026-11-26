@@ -6,6 +6,8 @@ on:
       - 'scripts/cat-bond-experience-*.mjs'
       - 'scripts/cat-bond-release-prologue-qa.mjs'
       - 'scripts/cat-bond-harbor-playthrough.mjs'
+      - 'public/cat-bond/css/rpg-fullbleed.css'
+      - 'docs/cat-bond-rpg/EXPERIENCE-PRE-AUDIT.md'
       - '.github/workflows/cat-bond-experience-playtest.yml'
   workflow_dispatch:
     inputs:
@@ -23,13 +25,17 @@ jobs:
   evidence:
     runs-on: ubuntu-24.04
     timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: ${{ fromJSON(github.event_name == 'push' && '["opening","campaign"]' || format('["{0}"]', inputs.scope || 'opening')) }}
     env:
       CAT_BOND_EXPERIENCE: '1'
       PROLOGUE_LANG: zh
       PROLOGUE_PROFILE: desktop
       CAT_BOND_PROFILE: desktop
       CAT_BOND_FULL_CAMPAIGN: '1'
-      SCOPE: ${{ inputs.scope || 'opening' }}
+      SCOPE: ${{ matrix.scope }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -40,7 +46,15 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Offline narrative and gameplay structure
         run: node scripts/cat-bond-experience-structure.mjs
+      - name: Engine-only knowledge paths and choice coverage
+        run: |
+          node scripts/cat-bond-experience-knowledge.mjs
+          node scripts/test-cat-bond-player-first.mjs
+          node scripts/test-cat-bond-canon12-campaign.mjs
+          node scripts/test-cat-bond-story-party.mjs
+        if: matrix.scope == 'opening'
       - name: Real browser evidence on loopback only
+        if: always()
         run: |
           node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-experience-server.log 2>&1 &
           server=$!
@@ -65,10 +79,13 @@ jobs:
       - name: Generate review packet even after failed playthrough
         if: always()
         run: node scripts/cat-bond-experience-report.mjs
+      - name: Seeded legacy battle policy baseline
+        if: always() && matrix.scope == 'opening'
+        run: node scripts/cat-bond-experience-combat.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cat-bond-experience-evidence
+          name: cat-bond-experience-evidence-${{ matrix.scope }}
           path: |
             artifacts/cat-bond-experience/
             artifacts/cat-bond-release-prologue/

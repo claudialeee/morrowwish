@@ -10,7 +10,9 @@ html body #stage #cb-header #cb-yard-return{display:none!important}
 #stage .rw-world>.rw-shell::before{display:none!important}
 #stage .rw-world:not([hidden])>.rw-shell .rw-surface{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;width:max(100cqw,calc(100cqh * 1.77777778))!important;height:auto!important;max-width:none!important;max-height:none!important;aspect-ratio:16/9!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important}
 #stage .rw-world:not([hidden])>.rw-head{position:absolute!important;top:12px!important;left:14px!important;right:100px!important;width:auto!important;max-width:none!important;display:block!important;z-index:4!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;pointer-events:none!important}
-#stage .rw-world>.rw-head>.rw-button,#stage .rw-region-toggle,#stage .rw-atlas-menu:not([open])>summary{display:none!important}
+#stage .rw-world>.rw-head>.rw-button:not([data-next-scene]),#stage .rw-region-toggle,#stage .rw-atlas-menu:not([open])>summary{display:none!important}
+/* Preserve the one explicit main-story affordance while secondary controls stay in the menu. */
+#stage .rw-world>.rw-head>button[data-next-scene]{display:block!important;pointer-events:auto!important;max-width:min(62vw,440px);min-height:36px;margin-top:5px;white-space:normal;overflow-wrap:anywhere;}
 #stage .rw-world .rw-brand{width:max-content;max-width:min(62vw,440px);padding:7px 12px;background:#fff4dbea;border-radius:10px;box-shadow:0 2px 10px #513a2026}
 #stage .rw-world .rw-brand strong{color:#483927!important;font-size:clamp(16px,2vw,25px)}
 #stage .rw-world .rw-fit-summary{font-size:12px;color:#695540!important;white-space:normal}
