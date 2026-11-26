@@ -1,8 +1,8 @@
-# CAT BOND — THE LAST RESONANCE
-## Narrative Bible · Canon 1.2 · player-first campaign rewrite
+# 星铃回响 — ECHOES OF THE STARBELL
+## Narrative Bible · Canon 1.3 · locked world and character foundations
 
-**Status:** New canonical story foundation. Supersedes all previous Cat Bond RPG story bibles and plot drafts, including The Last Page.  
-**Working title:** The Last Resonance  
+**Status:** Canon 1.3 preserves the locked causal foundations of 1.2. [02 — Main Story Script](02-MAIN-STORY-SCRIPT.md) governs current scene presentation, pacing and gameplay requirements; its optional cargo and chapter changes supersede older implementation descriptions below. Supersedes all previous Cat Bond RPG story bibles and plot drafts, including The Last Page.  
+**Title:** Echoes of the Starbell / 星铃回响  
 **Ending:** Complete Happy Ending  
 **Primary theme:** A bond is not ownership. Loving someone does not give you the right to choose another person's life or sacrifice someone else's memories for them.
 
