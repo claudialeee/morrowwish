@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
+import {makeEngine} from '../public/cat-bond/js/resonance/engine.mjs';
+import {getSlotRuntime} from '../public/cat-bond/js/resonance/slot-runtime.mjs';
+import {createExplorer,layouts} from '../public/cat-bond/js/resonance/world-exploration.mjs';
+import {createWorldBridge} from '../public/cat-bond/js/resonance/world-bridge.mjs';
+import {newMirror,advanceMirror,mirrorProof,validMirrorProof} from '../public/cat-bond/js/resonance/canon22-mirror.mjs';
+for(const seed of ['a','b',undefined]){
+ const m=newMirror(seed),correct=m.trueSide===0?0:2,wrong=correct===0?2:0;
+ assert.equal(advanceMirror(m,correct),false,'guess must not solve');
+ assert.equal(advanceMirror(m,1),false);assert.equal(m.faces[m.trueSide],1);assert.equal(m.faces[1-m.trueSide],0);
+ assert.equal(advanceMirror(m,wrong),false);assert.equal(m.position,0);
+ advanceMirror(m,1);advanceMirror(m,1);assert.equal(m.faces[m.trueSide],-1);assert.equal(m.faces[1-m.trueSide],0);
+ assert.equal(advanceMirror(m,correct),true);const proof=mirrorProof(m);assert.ok(validMirrorProof(seed,proof));
+ assert.equal(validMirrorProof(seed,{trace:[correct],choice:m.trueSide}),false);assert.equal(validMirrorProof(seed,{...proof,choice:1-m.trueSide}),false);
+}
+const scene=campaign.scenes.find(x=>x.id==='library:M-02');
+assert.deepEqual(scene.requires,['puzzle:library-echo']);
+const index=campaign.scenes.indexOf(scene),story=makeEngine(campaign).snapshot();
+story.scene=scene.id;story.completed=campaign.scenes.slice(0,index).map(x=>x.id);
+const root={resonance:story,cats:[],dex:{},coins:0,fish:0,resonanceExploration:{location:'library',positions:{},interactions:{},pickups:{}}};
+const State={S:root,activeSlot:()=>'mirror-test',save:()=>({ok:true})};
+const rt=getSlotRuntime(State),bridge=createWorldBridge(State);
+assert.ok(bridge.enter('library').ok);
+const explorer=createExplorer(bridge,'library',{adventureActions:true}),op=scene.requires[0],point=layouts.library.features[op];
+assert.equal(explorer.interact(op).ok,false);
+assert.ok(explorer.walk(...point));for(let i=0;i<1000&&explorer.moving;i++)explorer.tick(.05);
+assert.ok(explorer.near(point));assert.ok(explorer.interact(op).puzzle);
+assert.equal(explorer.puzzle.type,'libraryCompanion');assert.equal(explorer.operate(0).pending,true);
+assert.ok(bridge.view().objective.includes(op));assert.equal(bridge.recordWorld(scene.id,op,{sceneId:scene.id,operation:op,region:'library',verified:true,adventureAction:true,token:rt.capture()}).ok,false);
+assert.ok(explorer.operate(1).pending);const m=explorer.puzzle.mirror,correct=m.faces[0]===m.position?0:2;
+assert.ok(explorer.operate(correct).ok);assert.ok(!explorer.puzzle);assert.deepEqual(bridge.view().objective,[]);
+assert.ok(root.resonanceExploration.interactions[scene.id+':'+op].trace.length>=2);
+assert.deepEqual(getSlotRuntime(State).view().objective,[]);
+console.log('Canon 2.2: new-position recognition, wrong/early choice, no Catdex dependency, forged proof rejection, world bridge and reload passed');
