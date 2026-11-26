@@ -90,8 +90,8 @@ export const campaign = {
     "jiedeng": {
       "id": "jiedeng",
       "name": {
-        "zh": "岬灯",
-        "en": "Jiedeng"
+        "zh": "檐灯",
+        "en": "Yandeng"
       },
       "region": "harbor",
       "artDirection": {
@@ -345,51 +345,37 @@ export const campaign = {
       "id": "harbor:H-01",
       "chapter": "harbor",
       "title": {
-        "zh": "找不到家的船",
-        "en": "A boat without a way home"
+        "zh": "会逃跑的铃声",
+        "en": "Catch that chime"
       },
       "previous": "prologue:P-05",
       "lines": [
         {
           "speaker": "qilan",
           "text": {
-            "zh": "那位渔夫刚才在自家门口迷路了。看海上！那艘船绕着礁石打转，快帮我把它带回来！",
-            "en": "That fisherman just got lost outside his own door. Look out to sea! A boat is circling the reef. Help me bring it home!"
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "他忘了家，我忘了名字……那座铃会不会也知道些什么？",
-            "en": "He forgot his home; I forgot my name. Could that bell know something about me?"
+            "zh": "阿婆，是这儿！你家铃上系着蓝绳呢。……哎？怎么全响了？",
+            "en": "Gran, over here! Yours has a blue ribbon. …Hey, why are they all ringing?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我是暮铃，来找古铃的。星铃曾经破碎，最近失忆又出现了。港口的铃可能藏着线索。",
-            "en": "I'm Muling, looking for old bells. The Star Bell broke long ago, and the forgetting has returned. The harbor bell might hold a clue."
-          }
-        },
-        {
-          "speaker": "qilan",
-          "text": {
-            "zh": "我是栖蓝，领航员！可是灯塔没亮，船找不到安全的路。",
-            "en": "I'm Qilan, a navigator! The lighthouse is dark, and the boat can't find a safe route."
+            "zh": "我叫暮铃。以前星铃碎过一次，那时也是这样，到处有猫忘事。",
+            "en": "I'm Muling. The Star Bell broke once before. Cats all over started forgetting, just like this."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "先救船。等大家安全了，我们一起听听那座铃。",
-            "en": "Let's save the boat first. Once everyone's safe, let's listen to that bell."
+            "zh": "等一下……这调子我好像会。",
+            "en": "Wait… I think I know this tune."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我有工具和绳子。你愿意搭把手的话，我在港口等你。",
-            "en": "I've got tools and rope. If you'd like to help, I'll be here at the harbor."
+            "zh": "它往旧铃房去了。走，别跟丢。",
+            "en": "It's heading for the old bell house. Come on."
           }
         }
       ],
@@ -400,269 +386,188 @@ export const campaign = {
       "lineGate": [
         "npc:harbor-arrival"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "harbor:H-02",
       "chapter": "harbor",
       "title": {
-        "zh": "两盏灯",
-        "en": "Two lights"
+        "zh": "穿过风铃巷",
+        "en": "Through Chime Lane"
       },
       "previous": "harbor:H-01",
       "lines": [
         {
-          "speaker": "jiedeng",
-          "text": {
-            "zh": "别点灯。光路没校准，亮错方向比没有灯更危险。",
-            "en": "Don't light it. Until the beam is aligned, a false light is worse than none."
-          }
-        },
-        {
           "speaker": "qilan",
           "text": {
-            "zh": "那就校准它！我读得懂潮汐表。",
-            "en": "Then let's align it! I can read the tide charts."
+            "zh": "它又绕回来了！你从鱼摊那边过去，我堵这头！",
+            "en": "It's coming around again! You go past the fish stall; I'll cover this end!"
           }
         },
         {
-          "speaker": "jiedeng",
+          "speaker": "muling",
           "text": {
-            "zh": "我见过灯指错路的后果。先别出海，退潮时能找到旧航海日志。",
-            "en": "I've seen what happens when a beacon points the wrong way. Stay ashore for now; the old logbook appears at low tide."
+            "zh": "转角看不见就摇两下。我听得见。",
+            "en": "If we lose sight of each other, ring twice. I'll hear you."
           }
         },
         {
-          "speaker": "qilan",
+          "speaker": "player",
           "text": {
-            "zh": "我来读潮汐，你来找日志。看，我们已经有办法了！",
-            "en": "I'll read the tide; you find the logbook. See? We've already got a plan!"
-          }
-        },
-        {
-          "speaker": "jiedeng",
-          "text": {
-            "zh": "日志里有安全航道的记号。找到它就能校准灯塔。",
-            "en": "The log marks the safe channel. Find it and we can align the beacon."
+            "zh": "好，两下。",
+            "en": "Got it. Twice."
           }
         }
       ],
       "requires": [
-        "npc:keeper-talk"
+        "puzzle:chime-chase"
       ],
-      "choices": [
-        {
-          "id": "comfort",
-          "label": {
-            "zh": "先安慰栖蓝",
-            "en": "Comfort Qilan first"
-          },
-          "npc": "qilan",
-          "method": "navigator-trust"
-        },
-        {
-          "id": "ask",
-          "label": {
-            "zh": "先询问岬灯过去的风暴",
-            "en": "Ask Jiedeng about the old storm"
-          },
-          "npc": "jiedeng",
-          "method": "keeper-trust"
-        }
+      "choices": [],
+      "lineGate": [
+        "puzzle:chime-chase"
       ],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "harbor:H-03",
       "chapter": "harbor",
       "title": {
-        "zh": "盐渍航海日志",
-        "en": "Salt on the logbook"
+        "zh": "唱歌的旧房子",
+        "en": "The house that hums"
       },
       "previous": "harbor:H-02",
       "lines": [
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "当年我关了主灯，想拦住出海的船。救援船却已经在海上了。",
-            "en": "I shut off the main light to keep boats ashore. The rescue boat had already left."
-          }
-        },
-        {
-          "speaker": "qilan",
-          "text": {
-            "zh": "备用灯的消息没有送到船上，所以他们找不到方向？",
-            "en": "The backup signal never reached the boat, so they lost their bearings?"
-          }
-        },
-        {
-          "speaker": "jiedeng",
-          "text": {
-            "zh": "是。船员活了下来，可我从此不敢再把航线交给别人。",
-            "en": "Yes. The crew survived, but I haven't trusted anyone else with a route since."
-          }
-        },
-        {
-          "speaker": "qilan",
-          "text": {
-            "zh": "那这次你照亮礁石，我带船绕过去。我们试一次！",
-            "en": "Then light up the reef this time, and I'll steer around it. Let's try!"
-          }
-        },
-        {
-          "speaker": "jiedeng",
-          "text": {
-            "zh": "……好。风暴快到了，航图给我。",
-            "en": "…All right. The storm's coming. Show me the chart."
+            "zh": "慢着。你刚才唱的，能再唱一遍么？",
+            "en": "Hold on. Can you sing what you just sang?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "风起来了。先决定怎么把船带回安全水域。",
-            "en": "The wind's picking up. Let's decide how to bring the boat to safety."
+            "zh": "是墙上这段？我可没学过呀。",
+            "en": "The tune on the wall? I've never learned it."
+          }
+        },
+        {
+          "speaker": "jiedeng",
+          "text": {
+            "zh": "这就怪了。老曲子没几只猫会唱。",
+            "en": "That's odd. Hardly anyone knows the old tune."
           }
         }
       ],
       "requires": [
-        "explore:tide-logbook"
+        "npc:keeper-talk"
       ],
       "choices": [],
       "lineGate": [
-        "explore:tide-logbook"
+        "npc:keeper-talk"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "harbor:H-04",
       "chapter": "harbor",
       "title": {
-        "zh": "雾里那声铃",
-        "en": "The bell in the fog"
+        "zh": "两只猫，一场漂亮的胜利",
+        "en": "Two cats, one good fight"
       },
       "previous": "harbor:H-03",
       "lines": [
         {
-          "speaker": "jiedeng",
-          "text": {
-            "zh": "礁石在左边。光路给你了，航线你选！",
-            "en": "Reefs to port. The light is yours; choose your route!"
-          }
-        },
-        {
-          "speaker": "qilan",
-          "text": {
-            "zh": "看见了！我会跟着真正的灯走。",
-            "en": "I see it! I'll follow the real light."
-          }
-        },
-        {
           "speaker": "muling",
           "text": {
-            "zh": "听我的铃声，别听海里的假铃。准备好了，我们一起行动！",
-            "en": "Listen to my bell, not the false one out at sea. When you're ready, we'll move together!"
+            "zh": "我按住它了！快！",
+            "en": "I've pinned it! Now!"
           }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我的航图又湿透了……不过刚才配合得真好。你找名字，我找古铃，一起走吧？",
-            "en": "My map is soaked again… but we made a good team. You're looking for your name, I'm looking for old bells. Shall we travel together?"
-          },
-          "afterOperations": [
-            "puzzle:beam-mirrors",
-            "rescue:storm-boat"
-          ]
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "好啊！不过下次你得把航图放进防水袋。",
-            "en": "Of course! But next time, put that map in a waterproof pouch."
-          },
-          "afterOperations": [
-            "puzzle:beam-mirrors",
-            "rescue:storm-boat"
-          ]
+            "zh": "你没事吧？",
+            "en": "Are you all right?"
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "没事。……就是这下得洗毛了。",
+            "en": "Fine. …I'll need a bath, though."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "嘿嘿，咱俩还挺厉害。",
+            "en": "Heh. We make a pretty good team."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "那就接着搭个伴？我也想去看看别的古铃。",
+            "en": "Shall we stick together, then? I want to see the other bells too."
+          }
         }
       ],
       "requires": [
-        "puzzle:beam-mirrors",
-        "rescue:storm-boat"
+        "battle:chime-beast"
       ],
-      "choices": [
-        {
-          "id": "rescue",
-          "label": {
-            "zh": "先救援",
-            "en": "Prioritize rescue"
-          },
-          "npc": "qilan",
-          "method": "rapid-rescue"
-        },
-        {
-          "id": "calibrate",
-          "label": {
-            "zh": "先校准灯塔",
-            "en": "Calibrate the lighthouse first"
-          },
-          "npc": "jiedeng",
-          "method": "precise-beacon"
-        }
+      "choices": [],
+      "lineGate": [
+        "battle:chime-beast"
       ],
-      "lineGate": [],
-      "choiceTiming": "beforeAction"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "harbor:H-05",
       "chapter": "harbor",
       "title": {
-        "zh": "第一个音",
-        "en": "The first note"
+        "zh": "一首我忘记的歌",
+        "en": "A song I forgot"
       },
       "previous": "harbor:H-04",
       "lines": [
         {
+          "speaker": "jiedeng",
+          "text": {
+            "zh": "这张旧图上也有那段曲子。瞧，这片叶子是眠根林的路标。",
+            "en": "The old map has that tune too. See the leaf? That's the sign for Rootsleep Forest."
+          }
+        },
+        {
           "speaker": "player",
           "text": {
-            "zh": "等等……我明明不记得自己的名字，为什么会唱这首歌？",
-            "en": "Wait... I can't even remember my name. How do I know this song?"
+            "zh": "这不是我醒来的花园吗？画图的猫也去过那里！",
+            "en": "Isn't that the garden where I woke up? Whoever drew this has been there!"
           }
         },
         {
-          "speaker": "muling",
+          "speaker": "player",
           "text": {
-            "zh": "那是归潮调很久以前的唱法。你竟然记得第一个音。",
-            "en": "That's a very old version of Returning Tide. Somehow you remember its first note."
-          }
-        },
-        {
-          "speaker": "qilan",
-          "text": {
-            "zh": "归潮调！船回港的时候，我们就唱这个。",
-            "en": "Returning Tide! We sing it when boats come home."
+            "zh": "画图的猫说不定认识我！",
+            "en": "Maybe whoever drew it knew me!"
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "灯塔恢复了。至少现在，船能重新找到回家的路。",
-            "en": "The lighthouse is working. At least the boats can find their way home again."
+            "zh": "我那张图出了镇就全是空白。要不咱们一起画第一条路？",
+            "en": "My map is blank beyond the town. Want to draw the first trail together?"
           }
         },
         {
-          "speaker": "qilan",
+          "speaker": "jiedeng",
           "text": {
-            "zh": "眠根林的药草船没到。我跟你们去，顺便画一张不会把猫带丢的航图！",
-            "en": "The forest's medicine boat is missing. I'll come with you and draw a chart that won't get anyone lost!"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "眠根林的古铃旁有旧旅人留下的刻记。或许那儿能解释你为什么认得这首歌。",
-            "en": "The old bell in Rootsleep Forest has carvings left by travelers. Maybe they can explain why you know this song."
+            "zh": "去吧。到了记得摇铃，给我报个平安。",
+            "en": "Go on, then. Ring back when you arrive."
           }
         }
       ],
@@ -672,45 +577,54 @@ export const campaign = {
       ],
       "choices": [],
       "lineGate": [
+        "repair:harbor",
         "melody:harbor"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "forest:R-01",
       "chapter": "forest",
       "title": {
-        "zh": "会走动的森林 · 药草园",
-        "en": "The Moving Forest · Herb garden"
+        "zh": "会挪窝的树",
+        "en": "Trees that move"
       },
       "previous": "harbor:H-05",
       "lines": [
         {
           "speaker": "yahe",
           "text": {
-            "zh": "欢迎来眠根林！树根昨晚自己搬了家，连药篮都被挂到了树上。地下的伙伴也失去了消息。",
-            "en": "Welcome to Rootsleep Forest! The roots moved overnight, and even the medicine basket ended up in a tree. We haven't heard from our friends underground."
+            "zh": "看着脚下呀！这条桥昨天还通着呢，今天又拐回来了。",
+            "en": "Watch your step! This bridge led somewhere yesterday. Today it just turns back."
           }
         },
         {
-          "speaker": "qilan",
+          "speaker": "player",
           "text": {
-            "zh": "我见过药船停在树冠下。跟着药香走，也许能找到它。",
-            "en": "I saw the medicine boat stop beneath the canopy. Follow the herbal scent and we might find it."
+            "zh": "这张图是风铃镇找来的。你见过这片叶子吗？",
+            "en": "We found this map at Windchime Town. Have you seen this leaf?"
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "认得！我能沿着药香找过去。别踩到会打喷嚏的花——啊，已经晚了！",
-            "en": "I do! I can follow the scent. Don't step on the sneezing flowers—oh, too late!"
+            "zh": "月叶呀！老路就在那边。能不能走过去，就得看你的本事啦。",
+            "en": "A moonleaf! The old path is over there. Getting across is another matter."
           }
         },
         {
-          "speaker": "muling",
+          "speaker": "yahe",
           "text": {
-            "zh": "我负责认路。至于那些会打喷嚏的花……你先走。",
-            "en": "I'll navigate. As for those sneezing flowers… after you."
+            "zh": "噗！哈哈，你头上长了颗小太阳！",
+            "en": "Pfft! Ha! You've got a little sun on your head!"
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "你还笑我？低头看看你自己！",
+            "en": "You're laughing at me? Look at your own paws!"
           }
         }
       ],
@@ -718,125 +632,97 @@ export const campaign = {
         "npc:forest-dispute"
       ],
       "choices": [],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
+      "lineGate": [
+        "npc:forest-dispute"
+      ],
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "forest:R-02",
       "chapter": "forest",
       "title": {
-        "zh": "树冠小径与地下根洞",
-        "en": "Canopy path and root cavern"
+        "zh": "一条会长出来的路",
+        "en": "A path that grows"
       },
       "previous": "forest:R-01",
       "lines": [
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "药篮在这里！病根缠住了分水口，我拿药来救树，没想到水道也塌了。",
-            "en": "The medicine basket is here! Sick roots tangled the water junction. I brought medicine to save the tree, but the channel collapsed too."
-          }
-        },
-        {
-          "speaker": "yahe",
-          "text": {
-            "zh": "这根大树把上面和地下连在一起。它要是倒了，两边都危险！",
-            "en": "This great tree connects the canopy and the tunnels. If it falls, both are in danger!"
+            "zh": "图上少了一截。你怎么知道该往这边画？",
+            "en": "A piece of the map is missing. How did you know the line goes this way?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "先稳住水道。看地上的水痕，别被树根绕晕了。",
-            "en": "Let's steady the channel. Follow the water marks and don't let the roots turn us around."
+            "zh": "不知道……就是觉得该这么走。",
+            "en": "I don't know… it just felt right."
           }
         },
         {
-          "speaker": "yuchuan",
+          "speaker": "muling",
           "text": {
-            "zh": "等等！下面传来求救声。有猫被困在塌陷的水道里，先救他们！",
-            "en": "Wait! Someone's calling for help below. Cats are trapped in the collapsed channel. Let's rescue them first!"
+            "zh": "我看得懂这几个老路标。可缺的这一笔，得靠你啦。",
+            "en": "I can read these old trail marks. But that missing line is all yours."
+          }
+        },
+        {
+          "speaker": "qilan",
+          "text": {
+            "zh": "这次不是照着老图走啦。这一笔是咱们画的。",
+            "en": "We're not just following the old map now. This line is ours."
           }
         }
       ],
       "requires": [
-        "explore:scent-trail"
+        "puzzle:moonleaf-crossing"
       ],
-      "choices": [
-        {
-          "id": "gardens",
-          "label": {
-            "zh": "优先恢复药草园",
-            "en": "Prioritize the gardens"
-          },
-          "npc": "yahe",
-          "method": "herbal-supplies"
-        },
-        {
-          "id": "roots",
-          "label": {
-            "zh": "优先稳定地下根系",
-            "en": "Stabilize the roots first"
-          },
-          "npc": "yuchuan",
-          "method": "root-stability"
-        }
-      ],
+      "choices": [],
       "lineGate": [
-        "explore:scent-trail"
+        "puzzle:moonleaf-crossing"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "forest:R-03",
       "chapter": "forest",
       "title": {
-        "zh": "坍塌水道 · 回声救援",
-        "en": "Collapsed channel · Echo rescue"
+        "zh": "森林的坏梦",
+        "en": "The forest's bad dream"
       },
       "previous": "forest:R-02",
       "lines": [
         {
+          "speaker": "player",
+          "text": {
+            "zh": "暮铃，等等！那条桥又绕回去了。",
+            "en": "Muling, wait! That bridge loops back again."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "……还真是。行，这回你带路。",
+            "en": "…You're right. Fine, you lead this time."
+          }
+        },
+        {
           "speaker": "yahe",
           "text": {
-            "zh": "被困的伙伴安全了！水也终于流回药草园。",
-            "en": "The trapped cats are safe! Water is finally flowing back to the garden."
-          }
-        },
-        {
-          "speaker": "yuchuan",
-          "text": {
-            "zh": "你们听，根在慢慢舒展。刚才那个声音根本不是我们的伙伴。幸好你们找到了真正的路。",
-            "en": "Listen, the roots are stretching out again. That voice wasn't our friend at all. Good thing you found the real trail."
-          }
-        },
-        {
-          "speaker": "yahe",
-          "text": {
-            "zh": "快看！刚才还蔫着的花全开了！下次来，我请你们喝花茶。",
-            "en": "Look! All those wilted flowers just opened! Come back sometime and I'll make you flower tea."
-          }
-        },
-        {
-          "speaker": "yuchuan",
-          "text": {
-            "zh": "成交。我留下照看水闸。你们去古根圣所吧，那里会响起相枝调。",
-            "en": "Deal. I'll stay and watch the gates. Go to the ancient root sanctuary; the Branching Song will sound there."
+            "zh": "这边这边！桥长过来了！",
+            "en": "Over here! The bridge is growing toward us!"
           }
         }
       ],
       "requires": [
-        "rescue:steady-channel",
-        "explore:water-marks",
-        "battle:root-echo",
-        "rescue:trapped-cats"
+        "puzzle:moonleaf-loop"
       ],
       "choices": [],
       "lineGate": [
-        "rescue:steady-channel",
-        "explore:water-marks",
-        "battle:root-echo",
-        "rescue:trapped-cats"
+        "puzzle:moonleaf-loop"
       ],
       "choiceTiming": "afterDialogue",
       "orderedRequires": true
@@ -845,51 +731,44 @@ export const campaign = {
       "id": "forest:R-04",
       "chapter": "forest",
       "title": {
-        "zh": "古根圣所 · 相枝调",
-        "en": "Ancient-root sanctuary · Living Roots"
+        "zh": "树记得我的爪印",
+        "en": "The tree remembers my paw"
       },
       "previous": "forest:R-03",
       "lines": [
         {
-          "speaker": "player",
+          "speaker": "yuchuan",
           "text": {
-            "zh": "这个刻记……我好像知道下一笔应该往哪儿画。难道我以前来过这里？",
-            "en": "This carving… I think I know where the next stroke goes. Have I been here before?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "那条线通往另一座古铃。另一条通往星铃。",
-            "en": "That line leads to another old bell. The other leads to the Star Bell."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "暮铃，我还没说第二条线通向哪里。你怎么知道的？",
-            "en": "Muling, I hadn't told you where the second line went. How did you know?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我见过类似的图。只是隔壁的铃已经很多年没有回音了。",
-            "en": "I've seen drawings like it. The neighboring bell hasn't answered in years."
+            "zh": "这是旧路上的画。千灯城灯匠的火纹还在，去问烬婆吧，她认得这种老东西。",
+            "en": "That's the old trail map. The lantern makers' mark is still here. Ask Jinpo in Lantern City; she knows old things like this."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "港口的航图也刻着一条横线！我以为那是旧航路。要不带上图纸，问问赤炉环城的工匠？",
-            "en": "The harbor chart has a cross-line too! I thought it was an old shipping route. Let's take the drawings to the smiths of Ember Ring."
+            "zh": "檐灯！听见没有？我们到啦！",
+            "en": "Yandeng! Can you hear us? We made it!"
           }
         },
         {
-          "speaker": "muling",
+          "speaker": "yahe",
           "text": {
-            "zh": "如果炉城的工匠认得这个记号，也许我们就能找到你以前的足迹。",
-            "en": "If the forge artisans recognize that mark, we might finally find a trace of your past."
+            "zh": "种子给你。回去记得浇水，别拿鱼汤浇啊。",
+            "en": "Here, take a seed. Water it when you get home. No fish soup!"
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "路断了，铃声却能过去！那只猫当年是不是也想把它们接起来？",
+            "en": "The road's broken, but the bells can still reach each other! Was that cat trying to reconnect them too?"
+          }
+        },
+        {
+          "speaker": "yahe",
+          "text": {
+            "zh": "等你回来，咱们去看看种子长成什么样。说好啦！",
+            "en": "When you come back, we'll see how that seed has grown. Deal?"
           }
         }
       ],
@@ -902,60 +781,61 @@ export const campaign = {
         "repair:forest",
         "melody:forest"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "forge:E-01",
       "chapter": "forge",
       "title": {
-        "zh": "没有火花的庆典",
-        "en": "A festival without fire"
+        "zh": "全城的灯笼都在跳舞",
+        "en": "A city of dancing lanterns"
       },
       "previous": "forest:R-04",
       "lines": [
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "接住我的飞轮！漂亮！欢迎来灯火节——呃，本来应该有很多灯的。",
-            "en": "Catch my flywheel! Nice! Welcome to the Lantern Festival—uh, there are usually a lot more lanterns."
+            "zh": "来来来，你也挑盏灯！瞧，我这只猫的耳朵都能动。",
+            "en": "Come on, choose a lantern! Look, my cat's ears can move!"
           }
         },
         {
-          "speaker": "qilan",
+          "speaker": "player",
           "text": {
-            "zh": "森林的水闸缺一台泵。还有，刚才那一下差点把我的航图烤熟！",
-            "en": "The forest gates need a pump. Also, that almost roasted my chart!"
-          }
-        },
-        {
-          "speaker": "xiaomao",
-          "text": {
-            "zh": "主炉卡住了。你们要不要和我一起把节日救回来？",
-            "en": "The main furnace is jammed. Want to help me save the festival?"
+            "zh": "你刚才那只猫……怎么还在跑？",
+            "en": "That cat you just made… why's it still running?"
           }
         },
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "先去安全的工坊试试，别让主炉再喷火了。",
-            "en": "Test it in the safe workshop first. We don't need the main furnace spitting fire again."
+            "zh": "别添灯了。旧戏没散，越照越乱。",
+            "en": "No more lights. The old shadows won't fade; you're just making it worse."
           }
         },
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "好！我的新阀门终于能派上用场了！",
-            "en": "Great! My new valve finally gets its moment!"
+            "zh": "它耳朵都歪成这样了，还有猫喜欢？",
+            "en": "Even with ears that crooked, they like it?"
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "你瞧，那个小家伙都在学它歪耳朵了。下回去我家演吧！",
+            "en": "Look, that kitten's trying to bend its ears just like yours. Come put on a show at my place!"
           }
         }
       ],
       "requires": [
-        "puzzle:festival-lantern",
+        "puzzle:lantern-show",
         "npc:forge-dispute"
       ],
       "choices": [],
       "lineGate": [
-        "puzzle:festival-lantern",
+        "puzzle:lantern-show",
         "npc:forge-dispute"
       ],
       "choiceTiming": "afterDialogue",
@@ -965,105 +845,81 @@ export const campaign = {
       "id": "forge:E-02",
       "chapter": "forge",
       "title": {
-        "zh": "被擦掉的签名",
-        "en": "The missing signature"
+        "zh": "影子底下的桥",
+        "en": "The bridge beneath the shadows"
       },
       "previous": "forge:E-01",
       "lines": [
         {
-          "speaker": "player",
+          "speaker": "jinpo",
           "text": {
-            "zh": "这张古铃图上也有森林的刻记！不过炉子的旧图漏了一次测试。",
-            "en": "The old bell diagram has the same mark as the forest! But the furnace plan is missing a safety test."
+            "zh": "这纹是我家老灯匠的。以前守铃人来过，留下个灯匣。",
+            "en": "That's my family's old mark. A bellkeeper once came here and left a lantern case."
           }
         },
         {
-          "speaker": "jinpo",
+          "speaker": "player",
           "text": {
-            "zh": "上次是我急着点亮节日的灯，出了岔子。今天可不能再来一次。",
-            "en": "Last time I rushed to light the festival lanterns and things went wrong. Not again today."
+            "zh": "守铃人？能让我看看么？",
+            "en": "A bellkeeper? Can I see it?"
           }
         },
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "那就试试我的新设计吧！让炉子好好喘口气。",
-            "en": "Let's try my new design! Time to let that furnace breathe."
+            "zh": "先把灯往这边挪。桥就在底下，照亮就能走！",
+            "en": "Move the lantern this way first. The bridge is right there; we just need to light it up!"
           }
         }
       ],
       "requires": [
-        "puzzle:safety-blueprint"
+        "puzzle:shadow-bridge"
       ],
-      "choices": [
-        {
-          "id": "publish",
-          "label": {
-            "zh": "立即公开已核实的安全事实",
-            "en": "Publish verified safety findings now"
-          },
-          "npc": "xiaomao",
-          "method": "worker-transparency"
-        },
-        {
-          "id": "private",
-          "label": {
-            "zh": "请烬婆先亲自向工人说明",
-            "en": "Let Jinpo explain to the workers first"
-          },
-          "npc": "jinpo",
-          "method": "shared-repair"
-        }
-      ],
+      "choices": [],
       "lineGate": [
-        "puzzle:safety-blueprint"
+        "puzzle:shadow-bridge"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "forge:E-03",
       "chapter": "forge",
       "title": {
-        "zh": "会反击的熔炉",
-        "en": "The furnace that fights back"
+        "zh": "最大的影子猫",
+        "en": "The biggest shadow cat"
       },
       "previous": "forge:E-02",
       "lines": [
         {
-          "speaker": "jinpo",
-          "text": {
-            "zh": "小心！火焰挡住了出口，压力还在上升！",
-            "en": "Careful! Flames are blocking the exit, and the pressure's still rising!"
-          }
-        },
-        {
           "speaker": "xiaomao",
           "text": {
-            "zh": "先泄压，再关进料！师傅，替我看住温度！",
-            "en": "Vent first, then stop the feed! Master, watch the temperature for me!"
-          }
-        },
-        {
-          "speaker": "jinpo",
-          "text": {
-            "zh": "温度降下来了！趁现在，去找真正的阀门！",
-            "en": "The temperature's falling! Now, find the real valve!"
+            "zh": "糟了！它钻进灯影里了！",
+            "en": "Oh no! It's slipped into the shadows!"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "右边那道火没有热气，是回响。真正的阀在下面！",
-            "en": "The flame on the right gives off no heat. It's an echo. The real valve is below!"
+            "zh": "引它过来。等它站到灯底下再打。",
+            "en": "Draw it over here. Strike when it's under the light."
+          }
+        },
+        {
+          "speaker": "jinpo",
+          "text": {
+            "zh": "灯有我呢！",
+            "en": "I'll keep the light on!"
           }
         }
       ],
       "requires": [
-        "puzzle:heat-pressure",
         "battle:forge-guardian"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": [
+        "battle:forge-guardian"
+      ],
       "choiceTiming": "afterDialogue",
       "orderedRequires": true
     },
@@ -1071,55 +927,58 @@ export const campaign = {
       "id": "forge:E-04",
       "chapter": "forge",
       "title": {
-        "zh": "把灯点起来",
-        "en": "Light the lanterns"
+        "zh": "把星星挂回夜空",
+        "en": "Hang the stars back up"
       },
       "previous": "forge:E-03",
       "lines": [
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "灯火节回来啦！小铆，第一盏灯就用你的图纸。",
-            "en": "The Lantern Festival is back! Xiaomao, the first lantern will use your design."
+            "zh": "这月牙印是月镜书库的。以前巡铃人从云脊那扇月门进去。想查名字，去那儿。",
+            "en": "That crescent is Moonmirror Library's seal. The old bellkeepers entered through a moon gate in Skyspine. Look for your name there."
           }
         },
         {
-          "speaker": "xiaomao",
+          "speaker": "jinpo",
           "text": {
-            "zh": "给师傅！我们的第一盏灯。下次做个猫耳朵形状的！",
-            "en": "For you, Master! Our first lantern. Next time we'll give it cat ears!"
+            "zh": "我想起来了。那是落星之后。那猫说，要是哪天有谁忘了怎么回家，就把这匣子给它。",
+            "en": "I remember now. It was after the star fell. The cat said, if someone ever forgot the way home, I should give them this case."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "这图上有六座铃。这个记号我居然能一笔画出来……",
-            "en": "There are six bells on this diagram. Somehow I can draw this mark in a single stroke…"
-          },
-          "afterOperations": [
-            "repair:forge",
-            "melody:forge"
-          ]
+            "zh": "怎么像是专门留给我的……？",
+            "en": "It's almost as if someone left it for me…"
+          }
         },
         {
-          "speaker": "muling",
+          "speaker": "player",
           "text": {
-            "zh": "这是守铃人用的记号。月镜书库有他们的记录，那里也许有你的名字。",
-            "en": "It's a bellkeeper's mark. Moonmirror Library keeps their records. Your name might be there."
+            "zh": "连这条路都没画完……它后来去哪儿了？",
+            "en": "This trail isn't even finished… Where did that cat go?"
+          }
+        },
+        {
+          "speaker": "jinpo",
+          "text": {
+            "zh": "不知道。书库留着那时候的画，去那儿看看吧。",
+            "en": "I don't know. The library keeps pictures from those days. Have a look there."
           }
         },
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "我的飞翼零件做好啦！我带一套去云脊，剩下的交给师傅送到森林。云脊见！",
-            "en": "My glider parts are ready! I'll take a set to Skyspine, and Master can send the rest to the forest. See you there!"
+            "zh": "这盏送你！耳朵歪是特色，不许笑。",
+            "en": "This one's yours! The crooked ear is a feature, not a mistake."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "去云脊群岛吧。信使知道通往书库的航路。终于有个明确的线索了。",
-            "en": "Let's head to Skyspine Isles. The couriers know the way to the library. At last, a real lead."
+            "zh": "非得飞过去啊？……那你们可不许笑。",
+            "en": "We really have to fly there? …No laughing, all right?"
           }
         }
       ],
@@ -1128,8 +987,12 @@ export const campaign = {
         "melody:forge"
       ],
       "choices": [],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
+      "lineGate": [
+        "repair:forge",
+        "melody:forge"
+      ],
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "sky:S-01",
@@ -1810,69 +1673,43 @@ export const campaign = {
       "id": "starfall:F-01",
       "chapter": "starfall",
       "title": {
-        "zh": "走不出星原的商队",
-        "en": "The caravan that cannot leave"
+        "zh": "踩着星光走",
+        "en": "Walking on starlight"
       },
       "previous": "library:M-05",
       "lines": [
         {
           "speaker": "lichuan",
           "text": {
-            "zh": "第三次了。那颗假星总把我们带回原地。",
-            "en": "Third time. That false star keeps bringing us back here."
+            "zh": "站稳。等旁边两块石头亮了，再挑一块跳。",
+            "en": "Steady. Wait for the two stones beside you to light up, then pick one to jump to."
           }
         },
         {
           "speaker": "xingya",
           "text": {
-            "zh": "我能修路标，可那颗假星一直把信号带偏。",
-            "en": "I can fix the beacons, but that false star keeps pulling their signals off course."
+            "zh": "刚才有只银色的猫过去了。你是来找她的？",
+            "en": "A silver cat went by a little while ago. Are you looking for her?"
           }
         },
         {
-          "speaker": "lichuan",
+          "speaker": "player",
           "text": {
-            "zh": "别看假星，认脚下的石柱。商队里还有小猫，得先把他们带出去。",
-            "en": "Ignore the false star and watch the stone pillars. There are kittens in the caravan. We have to get them out first."
-          }
-        },
-        {
-          "speaker": "baikan",
-          "text": {
-            "zh": "救出商队就去观星台。暮铃走过的那条路，应该就在那儿。",
-            "en": "Once the caravan is safe, let's head to the observatory. The path Muling took should be there."
+            "zh": "嗯。我还有话没跟她说完。",
+            "en": "Yeah. We still have something to talk about."
           }
         }
       ],
       "requires": [
         "npc:central-dispute-lichuan",
         "npc:central-dispute",
-        "puzzle:caravan-route"
+        "puzzle:star-steps"
       ],
-      "choices": [
-        {
-          "id": "coordinate",
-          "label": {
-            "zh": "让星芽协调修复",
-            "en": "Let Xingya coordinate repairs"
-          },
-          "npc": "xingya",
-          "method": "coordinated-repair"
-        },
-        {
-          "id": "distribute",
-          "label": {
-            "zh": "由各聚落共同决策",
-            "en": "Share decisions among settlements"
-          },
-          "npc": "lichuan",
-          "method": "distributed-repair"
-        }
-      ],
+      "choices": [],
       "lineGate": [
         "npc:central-dispute-lichuan",
         "npc:central-dispute",
-        "puzzle:caravan-route"
+        "puzzle:star-steps"
       ],
       "choiceTiming": "afterDialogue",
       "orderedRequires": true
@@ -1947,58 +1784,58 @@ export const campaign = {
       "id": "starfall:F-03",
       "chapter": "starfall",
       "title": {
-        "zh": "被她记错的约定",
-        "en": "The promise she kept wrong"
+        "zh": "等了太久的猫",
+        "en": "The cat who waited too long"
       },
       "previous": "starfall:F-02",
       "lines": [
         {
+          "speaker": "muling",
+          "text": {
+            "zh": "我每天都泡两杯茶。每次有座铃响了，我都以为这回你该回来了。可另一座又没声了……",
+            "en": "I made two cups of tea every day. Every time a bell rang, I thought this would be the time you'd come home. Then another went silent…"
+          }
+        },
+        {
           "speaker": "player",
           "text": {
-            "zh": "我记起来了。我说过会想办法回来，从没说过你必须一个人救我。",
-            "en": "I remember. I promised to find a way back. I never said you had to save me alone."
+            "zh": "你是说……连你自己也会把我忘了？",
+            "en": "You mean… even you'd forget me?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我在花园等了那么多年。每次修好一座铃，另一座又没了声音。我以为再也等不到你了。",
-            "en": "I waited in the garden for so many years. Every time I fixed one bell, another fell silent. I thought you'd never come back."
+            "zh": "我以为再失败，谁的过去都留不住。至少……你还能记得。",
+            "en": "I thought if we failed again, nobody would keep their past. At least… you could remember."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "你把所有猫的记忆送进星铃，就能换出我的？",
-            "en": "If you send every cat's memories into the bell, you can release mine?"
+            "zh": "那栖蓝呢？她的地图才画了一条路。芽禾还等着看月叶。小铆连影戏都约好了。",
+            "en": "What about Qilan? She's only drawn one trail. Yahe's waiting to see the moonleaf grow. Xiaomao's already promised us a show."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "我不想回到一个谁都不认识我的家。",
+            "en": "I don't want to go home to a world where nobody knows me."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "咱们先听听大家怎么说，好不好？",
+            "en": "Let's hear what our friends have to say first, all right?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "可以。封印会稳定，你会记起来。包括我的记忆在内，其他猫都会失去属于自己的过去。",
-            "en": "Yes. The seal will stabilize and you'll remember. Every other cat, including me, will lose their own past."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "那不是你一个人的代价。港口的家、森林的朋友、我们走过的路，都不是你可以替他们放弃的东西。",
-            "en": "That's not a cost you bear alone. Homes at the harbor, friends in the forest, the roads we traveled—none of them are yours to give up for others."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我每天都泡两杯茶。如果这次又失败，我还能等到你吗？",
-            "en": "I make two cups of tea every day. If this fails again, will you ever come home?"
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "别再等了。这次我就在你面前，还有一路认识的朋友。我们先让六座铃一起响，好吗？",
-            "en": "No more waiting. I'm right here, and so are the friends we met along the way. Let's make all six bells ring together, all right?"
+            "zh": "好，先试一次。那把锁……先别动。",
+            "en": "All right. One try first. But leave that lock alone for now."
           }
         }
       ],
@@ -2009,53 +1846,60 @@ export const campaign = {
       "lineGate": [
         "npc:central-ruin"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "starfall:F-04",
       "chapter": "starfall",
       "title": {
-        "zh": "世界正在回答",
-        "en": "The world answers"
+        "zh": "世界在唱另一首歌",
+        "en": "The world sings a different song"
       },
       "previous": "starfall:F-03",
       "lines": [
         {
-          "speaker": "qilan",
+          "speaker": "jiedeng",
           "text": {
-            "zh": "港口听见星原的铃声了！岬灯说灯塔也在回应。大家都准备好了。",
-            "en": "Harbor heard Starfall's bell! Jiedeng says the lighthouse is answering too. Everyone is ready."
+            "zh": "听见啦！这就摇回去！",
+            "en": "Yandeng (Windchime Town): We hear you! Ringing back now!"
           }
         },
         {
-          "speaker": "lichuan",
+          "speaker": "yahe",
           "text": {
-            "zh": "商队安全回来了。我在路上听见了另外几座圣所的铃声——不是幻象。",
-            "en": "The caravan returned safely. On the way I heard the bells of the other sanctuaries—they weren't illusions."
+            "zh": "眠根林也在！",
+            "en": "Rootsleep is here too!"
           }
         },
         {
           "speaker": "xingya",
           "text": {
-            "zh": "听！六座铃在唱歌，每座的音都不同，却能接住下一座的声音。我们做到了！",
-            "en": "Listen! Six bells are singing. Each has a different note, but each picks up the next. We did it!"
+            "zh": "听！最后一个地方也答上了！",
+            "en": "Listen! The last place answered too!"
+          }
+        },
+        {
+          "speaker": "jiedeng",
+          "text": {
+            "zh": "小金猫，回来的时候记得叫我们一声。",
+            "en": "Little golden cat, give us a ring when you get home."
           }
         }
       ],
       "requires": [
-        "battle:observatory-echo",
         "puzzle:distributed-routing",
         "repair:starfall",
         "melody:starfall"
       ],
       "choices": [],
       "lineGate": [
-        "battle:observatory-echo",
         "puzzle:distributed-routing",
         "repair:starfall",
         "melody:starfall"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "starfall:F-05",
@@ -2735,5 +2579,6 @@ export const campaign = {
   ],
   "openingPresentationVersion": 2,
   "fullCampaignPresentationVersion": 2,
-  "openingRevision": "canon-1.2-player-first-opening"
+  "openingRevision": "canon-1.2-player-first-opening",
+  "runtimeRevision": "canon-2.2-spatial-implementation"
 };

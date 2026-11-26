@@ -17,7 +17,7 @@ function starStep(p,i){
 }
 function bridgeStep(p,i){
  const active=p.operation==="puzzle:moonleaf-loop"?1-p.branch:p.branch;
- const edge=([[1],[0,active===0?2:3],[4],[4],[active===0?2:3]])[p.node];
+ const edge=([[1],[0,active===0?2:3],active===0?[1,4]:[4],active===1?[1,4]:[4],[2,3]])[p.node];
  if(!edge.includes(i)){p.warning="gap";return;}
  p.node=i;p.visited.push(i);if(i===2||i===3)p.route=i===2?"upper":"lower";p.solved=i===4;
 }

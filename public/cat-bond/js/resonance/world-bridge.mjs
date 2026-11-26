@@ -1,6 +1,7 @@
 // Chat 3 physical-world adapter. Chat 4 owns the sole narrative mutation path.
 import {campaign} from "./campaign.mjs";
 import {validMirrorProof} from "./canon22-mirror.mjs";
+import {spatialKind,validSpatialProof} from "./canon22-spatial.mjs";
 import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyCache} from "./sky-flight.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
 import {layouts,puzzleSpecs} from "./world-exploration.mjs";
@@ -141,7 +142,8 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(region==="sky"&&skyLaunch[op]){if(!skyPartsReady(v))return fail("sky-parts-required");const p=w.positions.sky,q=skyLaunch[op];if(!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072||(!direct&&!validSkyFlightProof(op,v.choice??null,proof.flightProof)))return fail("incomplete-flight");}
   if(op==="explore:tide-logbook"&&(!tideTrail.every((_,i)=>w.interactions[tideKey(i)])||!tideNear(w,[.87,.748])))return fail("incomplete-tide-trail");
   if(op==="explore:scent-trail"&&(!scentTrail.slice(0,-1).every((_,i)=>w.interactions[scentKey(i)])||!scentAt(w,scentTrail.length-1)))return fail("incomplete-scent-trail");
-  if(sceneId==="forest:R-03"){
+  if(spatialKind(op)&&(!point||!position||Math.hypot(position.x-point[0],position.y-point[1])>=.072||direct||!api.isCurrentAction(proof.token)||!validSpatialProof(op,proof.spatialProof)))return fail("spatial-proof-required");
+  if(sceneId==="forest:R-03"&&!spatialKind(op)){
    if(!direct||!proof.token||!api.isCurrentAction(proof.token)||!point||!atForest(w,point))return fail("walk-to-rescue");
    if(op==="explore:water-marks"&&!w.interactions["forest:R-03:rescue:steady-channel"])return fail("rescue-partner-required");
    if(op==="rescue:trapped-cats"&&(!w.interactions["forest:R-03:explore:water-marks"]||v.objective.includes("battle:root-echo")))return fail("rescue-echo-blocking");
@@ -184,7 +186,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||(!direct&&(proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
-  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:op==="puzzle:library-echo"?{trace:[...proof.mirrorProof.trace],choice:proof.mirrorProof.choice}:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
+  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:spatialKind(op)?proof.spatialProof:op==="puzzle:library-echo"?{trace:[...proof.mirrorProof.trace],choice:proof.mirrorProof.choice}:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function harborInvited(){const v=view(),w=world();return v.current?.id==="harbor:H-05"?["qilan","jiedeng"].filter(id=>w.interactions["harbor:H-05:invite:"+id]):[];}
  function inviteHarbor(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={qilan:[.16,.60],jiedeng:[.195,.50]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="harbor"||v.current?.id!=="harbor:H-05"||v.objective.includes("repair:harbor")||!v.objective.includes("melody:harbor")||!token||!api.isCurrentAction(token)||!tideNear(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["harbor:H-05:invite:"+id]:true}}));}
