@@ -1530,7 +1530,15 @@ class CaptureBattle {
       if(sk.kind==='leap')return dist>70&&dist<240;         // 泰山压顶 reach band
       if(sk.kind==='pounce')return dist>60&&dist<300;       // 飞扑 gap-closer band
       if(sk.id==='prismBeam')return dist<525;                // actual piercing ray reach
-      return dist<460;
+      // Owner 2026-11-26 bug: "shadowTendrils fires at dist=279 but reach=240". The catch-all
+      // dist<460 ignored sk.reach entirely. The kitRangeBand positioning uses skillEngageReach
+      // per-kind (L1094-1115); mirror those bounds here so the fire-gate and the band agree.
+      // +12 is the frame-slip margin matching prismBeam's ±5 pattern.
+      if(sk.kind==='beam')      return dist<=(sk.reach||300)+12;   // tendrils 240, waterJet 300
+      if(sk.kind==='chain')     return dist<=240;                  // boltArc ~200
+      if(sk.kind==='aoe')       return dist<=(sk.reach||240)+12;   // magneticField 180, arcanePulse 340
+      if(sk.kind==='projectile')return dist<=Math.max(this.basicAttackRange(f,tgt),sk.reach||0)+12;
+      return dist<460;                                              // unknown kinds: unchanged
     };
     if(f.cd.q<=0&&offensive(f.qSkill,'q')){
       if(this.skillQ(f,aimFor(f.qSkill))!==false){this.markAutoAction(f,'技能：'+(f.qSkill?.name||'毛球散射'));return;}
