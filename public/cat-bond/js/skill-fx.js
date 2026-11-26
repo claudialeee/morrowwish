@@ -390,7 +390,7 @@ function draw(ctx,v,time=0){
    ctx.beginPath();ctx.ellipse(0,0,radius,radius*(style==='pool'||style==='stomp'?.46:.83),0,0,TAU);ctx.stroke();
   }
   if(style==='heart'){
-   ctx.globalAlpha=k*.9;ctx.fillStyle='#ffd4de';ctx.font='18px sans-serif';ctx.textAlign='center';ctx.fillText('♥',0,-R*.18);
+   ctx.globalAlpha=k*.9;ctx.fillStyle='#ffd4de';ctx.font='18px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, sans-serif';ctx.textAlign='center';ctx.fillText('♥',0,-R*.18);
   }
   if(style==='fur')for(let j=0;j<7;j++)point(ctx,Math.cos(j*TAU/7)*R*.5,Math.sin(j*TAU/7)*R*.4,3,color);
  }

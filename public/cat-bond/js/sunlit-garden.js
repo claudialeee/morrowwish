@@ -146,7 +146,7 @@
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
       try{const scale=a.scale*(npc.id==='muling'?.95:.68)*Math.max(.72,Math.min(1.1,height/460));const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale,time});
         if(visible===false)continue;
-        if(npc.id==='muling'){ctx.save();ctx.font='600 12px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const label=window.MorrowwishI18n?.get?.()==='zh'?'暮铃':'Muling';const w=ctx.measureText(label).width+16;ctx.fillStyle='#fff2d9e8';ctx.beginPath();ctx.roundRect(x-w/2,y+5,w,21,10);ctx.fill();ctx.fillStyle='#594431';ctx.fillText(label,x,y+15.5);ctx.restore();}
+        if(npc.id==='muling'){ctx.save();ctx.font='600 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const label=window.MorrowwishI18n?.get?.()==='zh'?'暮铃':'Muling';const w=ctx.measureText(label).width+16;ctx.fillStyle='#fff2d9e8';ctx.beginPath();ctx.roundRect(x-w/2,y+5,w,21,10);ctx.fill();ctx.fillStyle='#594431';ctx.fillText(label,x,y+15.5);ctx.restore();}
         lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*scale:y-30*scale,groundY:y,radius:Math.max(24,a.radius*.75*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }

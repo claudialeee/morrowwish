@@ -309,7 +309,7 @@ function paintIntroCatGallery() {
   ctx.shadowColor='rgba(8,10,23,.55)';ctx.shadowBlur=22;ctx.shadowOffsetY=10;
   ctx.drawImage(scratch,minX,minY,srcW,srcH,w*.5-drawW*.5,catBottom-drawH,drawW,drawH);
   ctx.restore();
-  ctx.globalAlpha=.75;ctx.fillStyle='#f3d8aa';ctx.font='16px Georgia';ctx.textAlign='center';
+  ctx.globalAlpha=.75;ctx.fillStyle='#f3d8aa';ctx.font='16px Cat Bond Fraunces, Cat Bond WenKai GB, KaiTi, serif';ctx.textAlign='center';
   ctx.fillText('✦',w*.18,h*.34);ctx.fillText('✧',w*.82,h*.22);ctx.fillText('✦',w*.72,h*.72);
 }
 

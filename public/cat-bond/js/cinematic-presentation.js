@@ -99,6 +99,14 @@
 .cbcp-footer{position:absolute!important;right:clamp(10px,2vw,24px);bottom:max(10px,env(safe-area-inset-bottom));background:transparent!important;border:0!important;padding:0!important;pointer-events:none}
 .cbcp-footer .cbcp-footer-actions{pointer-events:auto}
 .cbcp-footer .cbcp-progress{display:none!important}
+.cbcp-root[data-opening-flow="true"] .cbcp-footer{left:clamp(10px,2vw,24px);justify-content:space-between}
+.cbcp-root[data-opening-flow="true"] .cbcp-back{pointer-events:auto;margin-right:auto}
+.cbcp-root[data-opening-flow="true"] .cbcp-language{display:none!important}
+.cbcp-back[hidden],.cbcp-language[hidden]{display:none!important}
+.cbcp-back:disabled{opacity:.48;cursor:default}
+.cbcp-root{font-family:var(--cb-font-body,system-ui,sans-serif)}
+.cbcp-kicker,.cbcp-title,.cbcp-speaker{font-family:var(--cb-font-display,Georgia,serif)}
+.cbcp-tool,.cbcp-action,.cbcp-subtitle{font-family:var(--cb-font-body,system-ui,sans-serif)}
 .cbcp-tool,.cbcp-action,.cbcp-action-primary{background:#f5e8cbf2!important;border:1px solid #a78b59!important;color:#493e2b!important;border-radius:10px!important;box-shadow:0 2px 6px #523a2626!important}
 .cbcp-subtitle-wrap{bottom:clamp(60px,10vh,90px)!important;width:min(860px,calc(100% - 24px))!important;background:#fff6e9ed!important;border:1px solid #c6aa77;border-radius:12px;text-shadow:none!important;padding:10px 16px!important}
 .cbcp-subtitle,.cbcp-speaker{color:#493e2b!important}
@@ -169,7 +177,7 @@
             <div class="cbcp-topline">
               <div class="cbcp-heading"><span class="cbcp-kicker"></span><h2 class="cbcp-title"></h2></div>
               <div class="cbcp-tools">
-                <button class="cbcp-tool cbcp-back" type="button"></button><button class="cbcp-tool cbcp-language" type="button"></button>
+                <button class="cbcp-tool cbcp-language" type="button"></button>
                 <button class="cbcp-tool cbcp-pause" type="button"></button>
                 <button class="cbcp-tool cbcp-skip" type="button"></button>
               </div>
@@ -179,6 +187,7 @@
             </div>
           </div>
           <div class="cbcp-footer">
+            <button class="cbcp-action cbcp-back" type="button" hidden></button>
             <div class="cbcp-progress" aria-hidden="true"></div>
             <div class="cbcp-footer-actions">
               <button class="cbcp-action cbcp-continue cbcp-action-primary" type="button"></button>
@@ -438,21 +447,25 @@
     updateControls() {
       const lang = this.currentLanguage();
       if (!this.nodes) return;
+      this.root.dataset.openingFlow=String(!!this.scene?.openingFlow);
+      this.nodes.language.hidden=!!this.scene?.openingFlow;
       this.nodes.language.textContent = lang === 'zh' ? 'EN' : '中文';
       this.nodes.language.setAttribute('aria-label', lang === 'zh' ? '切换到英文' : 'Switch to Chinese');
       this.nodes.pause.textContent = this.paused ? (lang === 'zh' ? '继续播放' : 'Resume') : (lang === 'zh' ? '暂停' : 'Pause');
-      this.nodes.back.textContent=lang==='zh'?'上一幕':'Back';this.nodes.back.disabled=!this.frameReady||this.frameIndex===0;this.nodes.back.hidden=!this.scene?.openingFlow;
+      this.nodes.back.textContent=lang==='zh'?'上一幕':'Previous scene';this.nodes.back.disabled=!this.frameReady||this.frameIndex===0;this.nodes.back.hidden=!this.scene?.openingFlow;
       this.nodes.skip.textContent = lang === 'zh' ? '跳过' : 'Skip';
       this.root.dataset.paused=String(this.paused);
       this.nodes.pause.disabled=!this.frameReady;
       this.nodes.skip.disabled=!this.frameReady;
       this.nodes.skip.hidden = !this.scene?.allowSkip;
-      this.nodes.continue.textContent = (this.scene?.openingFlow&&!this.scene.openingFinal)||this.frameIndex < (this.scene?.frames?.length || 1) - 1
-        ? (lang === 'zh' ? '继续' : 'Continue')
-        : (lang === 'zh' ? '完成' : 'Finish');
+      this.nodes.continue.textContent = this.scene?.openingFlow
+        ? (lang === 'zh' ? '下一幕' : 'Next scene')
+        : this.frameIndex < (this.scene?.frames?.length || 1) - 1
+          ? (lang === 'zh' ? '继续' : 'Continue')
+          : (lang === 'zh' ? '完成' : 'Finish');
       this.nodes.continue.hidden = !this.scene;
       this.nodes.continue.disabled = !this.frameReady;
-      this.nodes.continue.setAttribute('aria-label',lang==='zh'?'下一幕':'Next shot');
+      this.nodes.continue.setAttribute('aria-label',this.nodes.continue.textContent);
     }
 
     startTimer(remainingOverride) {

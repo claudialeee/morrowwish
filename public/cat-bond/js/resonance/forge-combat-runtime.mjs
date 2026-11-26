@@ -216,7 +216,7 @@ function drawBossEffects(ctx,b){
   if(b.forgeVictorySequence){
     ctx.fillStyle="rgba(12,20,27,.46)";ctx.fillRect(0,0,b.W,b.H);
     ctx.textAlign="center";ctx.fillStyle="#f4d7a7";ctx.shadowColor="#e18b54";ctx.shadowBlur=18;
-    ctx.font="900 "+Math.max(22,Math.min(42,b.W*.045))+"px Georgia,serif";
+    ctx.font="900 "+Math.max(22,Math.min(42,b.W*.045))+"px Cat Bond Fraunces, Cat Bond WenKai GB, KaiTi, serif";
     ctx.fillText(tr("炉心归于平稳","THE FURNACE FALLS QUIET"),b.W/2,b.H*.28);
     ctx.shadowBlur=0;
   }

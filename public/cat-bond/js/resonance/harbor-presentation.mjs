@@ -7,7 +7,7 @@ function path(c,p){c.beginPath();p.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x
 function shape(c,p,fill){path(c,p);c.closePath();c.fillStyle=fill;c.fill();}
 function stroke(c,p,color,w=2){path(c,p);c.strokeStyle=color;c.lineWidth=w;c.lineCap="round";c.lineJoin="round";c.stroke();}
 function circle(c,x,y,r,color){c.beginPath();c.arc(x,y,r,0,TAU);c.fillStyle=color;c.fill();}
-function text(c,s,x,y,n=16,color=cream,align="center",max=undefined){c.font="600 "+n+"px system-ui,sans-serif";c.fillStyle=color;c.textAlign=align;c.textBaseline="middle";max?c.fillText(s,x,y,max):c.fillText(s,x,y);}
+function text(c,s,x,y,n=16,color=cream,align="center",max=undefined){c.font="600 "+n+"px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, sans-serif";c.fillStyle=color;c.textAlign=align;c.textBaseline="middle";max?c.fillText(s,x,y,max):c.fillText(s,x,y);}
 function box(c,x,y,w,h,fill,edge){c.beginPath();c.roundRect(x,y,w,h,9);c.fillStyle=fill;c.fill();if(edge){c.strokeStyle=edge;c.lineWidth=1.4;c.stroke();}}
 function glow(c,x,y,r,color){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,color);g.addColorStop(1,"transparent");circle(c,x,y,r,g);}
 const water=[[.365,.535],[.75,.49],[.79,.54],[.68,.69],[.51,.94],[.47,.98],[.38,.77],[.37,.68]];

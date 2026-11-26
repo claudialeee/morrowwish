@@ -1291,14 +1291,14 @@ function npcDraw(ctx,npc,time){
  ctx.save();ctx.fillStyle='rgba(25,31,37,.22)';ctx.beginPath();ctx.ellipse(npc.x,npc.y+18,28,8,0,0,Math.PI*2);ctx.fill();
  const draw=window.CatMotion?.draw||window.CatArt?.drawCat;
  if(draw)draw(ctx,npc.x,npc.y+bob,{species:sp,scale:.92,face:1,t:time,pose:'idle',motion:.08,mood:'happy'});
- ctx.fillStyle='rgba(24,29,39,.82)';ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.fillStyle='rgba(24,29,39,.82)';ctx.font='800 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
  const label=isZh()?npc.name:npc.en,ww=Math.max(54,ctx.measureText(label).width+18);
  ctx.beginPath();ctx.roundRect(npc.x-ww/2,npc.y-88+bob,ww,23,10);ctx.fill();
  ctx.fillStyle='#fff7e8';ctx.fillText(label,npc.x,npc.y-76+bob);
  const memory=npcHasMemory(npc)||!!root.memoryReady[npc.id];
  const mark=!root.choices[npc.id]?'✦':(memory&&!root.revealed[npc.id]?'!':(state()?.story?.bossDefeated?'★':'·'));
  ctx.fillStyle=mark==='!'?'#ffd36b':mark==='★'?'#c8e7bd':'#ffe8ae';ctx.beginPath();ctx.arc(npc.x+30,npc.y-82+bob,10,0,Math.PI*2);ctx.fill();
- ctx.fillStyle='#465345';ctx.font='900 11px system-ui';ctx.fillText(mark,npc.x+30,npc.y-81+bob);
+ ctx.fillStyle='#465345';ctx.font='900 11px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, sans-serif';ctx.fillText(mark,npc.x+30,npc.y-81+bob);
  ctx.restore();
 }
 window.CatBondNPC={
