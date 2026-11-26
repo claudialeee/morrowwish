@@ -1490,45 +1490,46 @@ export const campaign = {
       "id": "library:M-02",
       "chapter": "library",
       "title": {
-        "zh": "不会记住你的镜子",
-        "en": "The mirror that lies"
+        "zh": "镜中的两只暮铃",
+        "en": "Two Mulings in the mirror"
       },
       "previous": "library:M-01",
       "lines": [
         {
           "speaker": "player",
           "text": {
-            "zh": "它学会了声音，却不知道那句话是什么意思。",
-            "en": "It learned the voice, but it doesn't know what the words mean."
-          }
-        },
-        {
-          "speaker": "baikan",
-          "text": {
-            "zh": "这就是空白回响。就像镜子里的影子，只会模仿，不会真正回应你。",
-            "en": "That's the Hollow Echo. Like a shadow in a mirror: it can copy you, but it can't truly answer."
+            "zh": "暮铃，刚才有两只猫同时摇了铃。",
+            "en": "Muling, two cats just rang their bells at once."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "别靠太近。它会模仿你熟悉的声音，我先把镜面固定住。",
-            "en": "Don't get too close. It can imitate voices you know. I'll secure the mirror."
+            "zh": "听见了。过来吧。",
+            "en": "Heard you. Come on over."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "我换了地方，只有你会转过来找我。是你！",
+            "en": "I moved, and only you turned to find me. It's you!"
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "走吧。那边的门是真的。",
+            "en": "Come on. That door over there is real."
           }
         }
       ],
       "requires": [
-        "puzzle:library-reflections",
-        "puzzle:mirror-records",
-        "puzzle:library-echo",
-        "battle:library-echo"
+        "puzzle:library-echo"
       ],
       "choices": [],
       "lineGate": [
-        "puzzle:library-reflections",
-        "puzzle:mirror-records",
-        "puzzle:library-echo",
-        "battle:library-echo"
+        "puzzle:library-echo"
       ],
       "choiceTiming": "afterDialogue",
       "orderedRequires": true
