@@ -1,0 +1,30 @@
+name: Cancel superseded Canon 2.2 QA
+on:
+  push:
+    branches: [ops/cancel-superseded-canon22-45909696107]
+    paths: ['.github/workflows/cancel-superseded-canon22.yml']
+permissions:
+  actions: write
+  contents: read
+jobs:
+  cancel:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Cancel only the obsolete campaign, never the frozen candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          id=45909696107
+          endpoint="repos/$GITHUB_REPOSITORY/actions/runs/$id"
+          run=$(gh api "$endpoint")
+          test "$(jq -r .head_sha <<< "$run")" = "306ed83f46921b0de792aecdd3c21c11c520a570"
+          test "$(jq -r .head_branch <<< "$run")" = "review/starbell-canon13-player-experience"
+          test "$(jq -r .name <<< "$run")" = "Canon 2.2 fresh-slot acceptance"
+          if [ "$(jq -r .status <<< "$run")" != completed ]; then
+            gh api -X POST "$endpoint/cancel"
+            echo "Cancellation requested for obsolete run $id"
+          else
+            echo "Obsolete run already completed"
+          fi
