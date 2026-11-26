@@ -27,3 +27,6 @@ CI has opening, campaign and targets jobs. Read each result separately; target r
 
 ## Runner migration checkpoint
 Canon 1.2 browser runner now uses forest scent investigation before choice, single-player rescue with false clue and real echo battle (no retired paired-water objective), plus current Sky mail-pouch, flight-choice, delivery and tea choice order. Harbor gated post-rescue dialogue is read explicitly. These are source-aligned changes awaiting actual CI, not claims of verified chapter completion. Other legacy assertions may still need repair.
+
+## Verified target fixtures (run 45780443380)
+All 36/36 active scene checkpoints successfully restored via the real Continue flow, including roster/cursor assertions. Download the targets artifact at https://github.com/claudialeee/morrowwish/actions/runs/45780443380. These are revision-bound synthetic saves. Latest full campaign failed at obsolete harbor optional map minigame expectation; the runner now uses the current simple ambient interaction. New targeted dialogue checks (S-04, M-03, F-03, E-02, E-03) exercise visible controls from synthetic fixtures, record subsequent real dialogue and input evidence in emotional-targets/, and must never be counted as a fresh full campaign. Pending CI. Combat policy summaries are now emitted in CI for review without downloading the entire artifact.

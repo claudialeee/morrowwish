@@ -85,6 +85,7 @@ jobs:
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
           node scripts/cat-bond-experience-targets.mjs
+          node scripts/cat-bond-experience-emotional.mjs
       - name: Generate review packet even after failed playthrough
         if: always() && matrix.scope != 'targets'
         run: node scripts/cat-bond-experience-report.mjs

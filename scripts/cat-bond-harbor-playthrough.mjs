@@ -273,41 +273,15 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     await button('Talk to Qilan').click();
     await readDialogue('harbor:H-01');
     await scene('harbor:H-02');
-    const mapActivity = page.getByRole('heading',{name:'Check the harbor route with Muling'});
-    await tapLandmark(.34,.478); // stationary Muling at the harbor route junction
-    await mapActivity.waitFor();
-    await button('Close',page.locator('.res-ambient-route')).click();
-    await mapActivity.waitFor({state:'hidden'});
-    await tapLandmark(.34,.478); // stationary Muling at the harbor route junction
-    await mapActivity.waitFor();
-    const mapBoard = page.locator('.res-ambient-map');
-    async function dragMarker(target) {
-      const markerButton = mapBoard.locator('[data-piece="marker"]');
-      const targetButton = mapBoard.locator('[data-piece="'+target+'"]');
-      await Promise.all([markerButton,targetButton].map(control=>control.locator('img').evaluate(image=>image.decode())));
-      const marker = await markerButton.boundingBox();
-      const destination = await targetButton.boundingBox();
-      assert.ok(marker?.height && destination?.height,'Route marker and destination must be visible');
-      const from = {x:marker.x+marker.width/2,y:marker.y+marker.height/2};
-      const to = {x:destination.x+destination.width/2,y:destination.y+destination.height/2};
-      if (options.hasTouch) {
-        const cdp = await context.newCDPSession(page);
-        await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[from]});
-        await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[to]});
-        await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-        await cdp.detach();
-      } else {
-        await page.mouse.move(from.x,from.y);
-        await page.mouse.down();
-        await page.mouse.move(to.x,to.y,{steps:8});
-        await page.mouse.up();
-      }
-    }
-    await shot('muling-map');
-    await dragMarker('lighthouse');
-    await page.getByText('Drag the route marker to the pier in the east',{exact:true}).waitFor();
-    await dragMarker('pier');
-    await button('Return to exploration').click();
+    // Current optional encounter uses a simple dialogue/action, not the retired drag board.
+    const mapActivity=page.locator('.res-ambient-simple');
+    await button('Talk to Muling').click();await mapActivity.waitFor();
+    await button('Maybe later',mapActivity).click();await mapActivity.waitFor({state:'hidden'});
+    assert.equal(await page.evaluate(()=>State.S.resonance.ambientDone.includes('muling:map')),false);
+    await button('Talk to Muling').click();await mapActivity.waitFor();await shot('muling-map');
+    await button('Turn the map around',mapActivity).click();
+    await button('Return to exploration',mapActivity).click();
+    assert.equal(await page.evaluate(()=>State.S.resonance.ambientDone.includes('muling:map')),true);
     await button('Talk to Jiedeng').click();
     await page.locator('.res-host[data-scene="harbor:H-02"]').waitFor();
     await shot('dialogue');
@@ -720,7 +694,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
       for(let i=1;i<=3;i++){await page.waitForFunction(g=>Number(document.querySelector('[data-sky-flight-status]')?.dataset.gates)===g,i,{timeout:18000});await move(i===3?.5:heights[i]);}
       await end();await status.waitFor({state:'hidden',timeout:20000});if(send)await send.detach();
     }
-    await skyFlight('Catch the mail pouch · Practice gliding',[.68,.29,.66],true);
+    await skyFlight('Catch the mail pouch · Practice gliding',[.65,.34,.64],true);
     await button('Talk to Yuanfan').click();await skyDialogue('sky:S-01');await scene('sky:S-02');
     const skyChoice=name==='portrait'?'Train on a joint route first':'Let Yuanfan lead';
     await skyFlight('Flight recorder',[.68,.29,.66]);await skyDialogue('sky:S-02',skyChoice);await scene('sky:S-03');

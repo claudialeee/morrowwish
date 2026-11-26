@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 
-export async function attachExperienceRecorder(context, page, {id, root = 'artifacts/cat-bond-experience'} = {}) {
+export async function attachExperienceRecorder(context, page, {id, root = 'artifacts/cat-bond-experience', synthetic = false} = {}) {
   if (process.env.CAT_BOND_EXPERIENCE !== '1') return;
   if (!/^[a-zA-Z0-9_-]+$/.test(id)) throw new Error('Invalid experience run id');
   fs.mkdirSync(root, {recursive:true});
@@ -25,7 +25,7 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
   const saved=new Set();
   record({kind:'run',id,profile:process.env.CAT_BOND_PROFILE||process.env.PROLOGUE_PROFILE||'unknown',
     language:id.startsWith('campaign-')?'en':process.env.PROLOGUE_LANG||'en',mode:id.startsWith('campaign-')?'authored campaign':id.startsWith('free-')?'free play':'opening',
-    revision});
+    revision,provenance:synthetic?'synthetic checkpoint + real subsequent inputs':'fresh real-input browser route'});
   // Only local acceptance server can be contacted. It uses ephemeral SQLite.
   await context.route('**/*', route => {
     const url = new URL(route.request().url());
@@ -37,6 +37,7 @@ export async function attachExperienceRecorder(context, page, {id, root = 'artif
   page.on('response',res=>{if(res.status()>=400&&res.url().startsWith('http://127.0.0.1:8765/'))record({kind:'http_error',status:res.status(),url:res.url()});});
   await page.exposeBinding('__cbExperienceEmit',(_,event)=>{
     if(event.kind!=='checkpoint'){record(event);return;}
+    if(synthetic)return;
     const {scene,slot,book,cursor,region}=event;
     if(!/^[a-z]+:[A-Z]-\d{2}$/.test(scene)||!/^slot[123]$/.test(slot)||typeof book!=='string'||book.length>2000000)return;
     if(!Number.isInteger(cursor)||cursor<0)return;
