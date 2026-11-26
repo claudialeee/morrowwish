@@ -37,6 +37,6 @@ assert.equal(canLandSkyFlight(resting),1);assert.ok(landSkyFlight(resting));cons
 steerSkyFlight(resting,.30);for(let i=0;i<500&&!resting.attempts;i++)tickSkyFlight(resting,.02);assert.equal(resting.attempts,1);assert.equal(resting.x,checkpoint);assert.equal(resting.paused,true);
 steerSkyFlight(resting,.72);for(let i=0;i<1500&&!resting.solved;i++){if(resting.x>.74&&resting.target!==.5)steerSkyFlight(resting,.5);tickSkyFlight(resting,.02);}
 assert.ok(resting.solved);const rested=skyFlightProof(resting);assert.ok(validSkyFlightProof(op,'lead',rested));assert.equal(rested.stops.length,1);assert.equal(validSkyFlightProof(op,'lead',{...rested,stops:[{island:2,frame:rested.stops[0].frame}]}),false);
-const scene=campaign.scenes.find(s=>s.id==='sky:S-03');assert.deepEqual(scene.requires,[op]);
+const scene=campaign.scenes.find(s=>s.id==='sky:S-03');assert.deepEqual(scene.requires,[op,'repair:sky','melody:sky']);assert.deepEqual(campaign.scenes.find(s=>s.id==='sky:S-05').requires,[]);assert.ok(scene.lines.slice(3).every(l=>l.afterOperations?.includes('melody:sky')),'remote reply cannot precede local melody');
 assert.ok(scene.lines.every(l=>l.text.zh&&l.text.en));assert.ok(!scene.lines.some(l=>/mail|deliver|信袋|送信/i.test(l.text.en+' '+l.text.zh)));
 console.log('Canon 2.2: continuous glide, both routes, variable frame rates, retry, forged proof rejection and no delivery gate passed');
