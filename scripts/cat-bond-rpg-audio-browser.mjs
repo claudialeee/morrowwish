@@ -31,7 +31,7 @@ try{
   await waitTrack('title');
   await menu.locator('[data-system="close"]').click();
   const manifest=await page.evaluate(()=>fetch('assets/quality-audio/premium-manifest.json',{cache:'no-cache'}).then(r=>r.json()));
-  assert.equal(title.source,'premium-mp3:'+manifest.scenes.title,'must use the active licensed title recording');
+  assert.equal(title.source,'premium-mp3:'+(manifest.scenes.title==='tomorrow'?'childhood':manifest.scenes.title),'must use a calm title recording, never Tomorrow');
   await page.locator('#intro-start').click();
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
   await page.locator('#cb-player-first-intro').waitFor({state:'visible'});await waitTrack('opening');assert.equal(await page.evaluate(()=>MorrowwishMusic.status().source),'premium-mp3:'+manifest.scenes.opening);

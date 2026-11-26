@@ -3,8 +3,8 @@ import vm from 'node:vm';
 import fs from 'node:fs';
 const code=fs.readFileSync(new URL('../public/cat-bond/js/rpg-audio.js',import.meta.url),'utf8');
 let visual='',region='harbor';
-const sources=[],requests=[],regions=['harbor','forest','forge','sky','library','starfall'];
-const p={value:0,setValueAtTime(){},setTargetAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){},cancelScheduledValues(){}};
+const sources=[],requests=[],gainEvents=[],regions=['harbor','forest','forge','sky','library','starfall'];
+const p={value:0,setValueAtTime(v,t){gainEvents.push(['set',v,t]);},setTargetAtTime(){},linearRampToValueAtTime(v,t){gainEvents.push(['ramp',v,t]);},exponentialRampToValueAtTime(){},cancelScheduledValues(){}};
 const node=()=>({gain:{...p},frequency:{...p},pan:{...p},connect(){},disconnect(){},start(){},stop(){if(this.ended)return;this.ended=true;queueMicrotask(()=>this.onended?.());}});
 class Context{
  currentTime=0;state='suspended';sampleRate=24000;destination={};
@@ -34,4 +34,8 @@ assert.equal(music.skipCeremony('forest'),false,'cannot skip another region');
 assert.equal(music.skipCeremony('starfall'),true);await settle();
 visual='';state.resonance.melodies.push('starfall');state.resonance.revision++;music.sync();await settle();
 assert.equal(music.status().track,'starfall');assert.equal(requests.filter(x=>x==='song-starfall').length,1,'no replay after explicit skip');
-console.log('Audio lifecycle regression PASS');
+// Regression: title never uses the rejected fallback; every re-entry has a deliberately gentle gain envelope.
+window.__CAT_BOND_STARTED__=false;window.__game.scene='yard';gainEvents.length=0;music.sync();await settle();
+assert.equal(music.status().track,'title');assert.ok(gainEvents.some(([k,v,t])=>k==='ramp'&&v===.12&&t===1.2));assert.ok(gainEvents.some(([k,v,t])=>k==='ramp'&&v===.52&&t===4));assert.ok(!gainEvents.some(([k,v])=>k==='ramp'&&v===1));assert.ok(!requests.includes('title'));
+music.setEnabled(false);await settle();gainEvents.length=0;music.setEnabled(true);await settle();assert.equal(music.status().track,'title');assert.ok(gainEvents.some(([k,v,t])=>k==='ramp'&&v===.52&&t===4));
+console.log('Audio lifecycle and gentle title onset regression PASS');

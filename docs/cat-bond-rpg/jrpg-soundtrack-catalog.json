@@ -3,7 +3,7 @@
   "review": "jrpg-orchestral-candidate-not-listening-approved",
   "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
   "scenes": {
-    "title": "first-flight",
+    "title": "tale-peace",
     "opening": "tale-peace",
     "garden": "tranquil-spring",
     "postgarden": "tranquil-spring",
@@ -30,23 +30,14 @@
     "ending": "wipe-tears"
   },
   "tracks": {
-    "first-flight": {
-      "title": "A Dream of First Flight",
-      "author": "Jonathan Shaw (www.jshaw.co.uk)",
-      "license": "CC BY 3.0",
-      "source": "https://opengameart.org/content/a-dream-of-first-flight-rpg-orchestral-essentials-title-music",
-      "notes": "标题：明亮、可记忆的冒险主题；不要悬疑预告片。",
-      "scenes": [
-        "title"
-      ]
-    },
     "tale-peace": {
       "title": "A Tale of Peace",
       "author": "Jonathan Shaw (www.jshaw.co.uk)",
       "license": "CC BY 3.0",
       "source": "https://opengameart.org/content/a-tale-of-peace-rpg-orchestral-essentials-peace-music",
-      "notes": "序章：温柔地交代失忆与世界背景，不先制造悲伤。",
+      "notes": "首页与序章共用温柔主题。首页运行时四秒渐入并降低增益；拒绝强烈起奏、铜管冲击与鼓点。",
       "scenes": [
+        "title",
         "opening"
       ]
     },

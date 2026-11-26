@@ -23,7 +23,7 @@ function assetManifest(){return manifestTask??=(fetch(new URL('manifest.json',as
 function premiumManifest(){return premiumManifestTask??=fetch(new URL('premium-manifest.json',qualityRoot),{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null);}
 async function loadPremium(id){
  if(id.startsWith('song-')||(id==='forest'&&forestOriginal))return null;
- const m=await premiumManifest(),name=m?.schema===1&&m?.scenes?.[id],e=name&&m?.tracks?.[name];
+ const m=await premiumManifest(),mapped=m?.schema===1&&m?.scenes?.[id],name=id==='title'&&mapped==='tomorrow'&&m?.tracks?.childhood?'childhood':mapped,e=name&&m?.tracks?.[name];
  if(!e||!/^premium-[a-z0-9-]+\.mp3$/.test(e.file)||e.seconds<40||e.seconds>480)return null;
  try{const r=await fetch(new URL(e.file,qualityRoot));if(!r.ok)throw Error('missing premium track');
  const O=window.OfflineAudioContext||window.webkitOfflineAudioContext;
@@ -36,7 +36,7 @@ async function loadPremium(id){
 }
 async function loadRecorded(id){const premium=await loadPremium(id);if(premium)return premium;
  if(id==='forest'&&!forestOriginal){try{const b=await decodeQuality('enchanted-valley');smoothLoop(b);recordedIds.add(id);return b;}catch{}}
- const manifest=await assetManifest(),entry=manifest?.tracks?.[id];if(!entry)return null;try{const response=await fetch(new URL(entry.file,assetRoot));if(!response.ok)throw Error('Audio HTTP '+response.status);const bytes=await response.arrayBuffer();const O=window.OfflineAudioContext||window.webkitOfflineAudioContext;const decoder=new O(2,1,24000);const decoded=await decoder.decodeAudioData(bytes);const samples=Math.min(decoded.length,Math.round(entry.seconds*decoded.sampleRate));const trim=decoder.createBuffer(decoded.numberOfChannels,samples,decoded.sampleRate);for(let c=0;c<decoded.numberOfChannels;c++)trim.copyToChannel(decoded.getChannelData(c).subarray(0,samples),c);if(!id.startsWith('song-'))smoothLoop(trim);recordedIds.add(id);return trim;}catch{return null;}}
+ const manifest=await assetManifest(),entry=manifest?.tracks?.[id==='title'?'garden':id];if(!entry)return null;try{const response=await fetch(new URL(entry.file,assetRoot));if(!response.ok)throw Error('Audio HTTP '+response.status);const bytes=await response.arrayBuffer();const O=window.OfflineAudioContext||window.webkitOfflineAudioContext;const decoder=new O(2,1,24000);const decoded=await decoder.decodeAudioData(bytes);const samples=Math.min(decoded.length,Math.round(entry.seconds*decoded.sampleRate));const trim=decoder.createBuffer(decoded.numberOfChannels,samples,decoded.sampleRate);for(let c=0;c<decoded.numberOfChannels;c++)trim.copyToChannel(decoded.getChannelData(c).subarray(0,samples),c);if(!id.startsWith('song-'))smoothLoop(trim);recordedIds.add(id);return trim;}catch{return null;}}
 
 const key='cat-bond-rpg-audio-v1',clamp=n=>Math.max(0,Math.min(1,Number(n)||0));
 let prefs={enabled:true,music:.65,fx:.8};
@@ -51,7 +51,7 @@ function musicMix(id){
  return {low:dramatic?-2:ceremony?-2.5:-3.5,high:dramatic?1:1.8,rate:1};
 }
 function connectMusic(source,gain,id){
- const profile=premiumIds.has(id)?{low:0,high:0,rate:1}:musicMix(id);if(source.playbackRate)source.playbackRate.value=profile.rate;
+ const profile=id==='title'?{low:-4,high:-2,rate:1}:premiumIds.has(id)?{low:0,high:0,rate:1}:musicMix(id);if(source.playbackRate)source.playbackRate.value=profile.rate;
  if(typeof ctx.createBiquadFilter!=='function'){source.connect(gain);gain.connect(bus);return [];}
  const bass=ctx.createBiquadFilter(),air=ctx.createBiquadFilter();bass.type='lowshelf';bass.frequency.value=210;bass.gain.value=profile.low;air.type='highshelf';air.frequency.value=1900;air.gain.value=profile.high;
  source.connect(bass);bass.connect(air);air.connect(gain);gain.connect(bus);return [bass,air];
@@ -69,7 +69,7 @@ function mix(){
 }
 async function getBuffer(id){
  if(cache.has(id)){const v=cache.get(id);cache.delete(id);cache.set(id,v);return v;}
- const task=renderQueue.then(async()=>{if(id!==desired&&pending?.id!==id&&id!=='song-'+read().amb)throw Error('Superseded audio request');return await loadRecorded(id)||await score.render(id);});renderQueue=task.catch(()=>{});cache.set(id,task);
+ const task=renderQueue.then(async()=>{if(id!==desired&&pending?.id!==id&&id!=='song-'+read().amb)throw Error('Superseded audio request');return await loadRecorded(id)||await score.render(id==='title'?'garden':id);});renderQueue=task.catch(()=>{});cache.set(id,task);
  try{const b=await task;cacheBytes.set(id,b.length*b.numberOfChannels*4);trimCache(id);return b;}catch(e){cache.delete(id);cacheBytes.delete(id);throw e;}
 }
 function trimCache(keep){let bytes=[...cacheBytes.values()].reduce((n,b)=>n+b,0);for(const id of cache.keys()){if(cache.size<=2&&bytes<=48*1024*1024)break;if(id===keep||id===active?.id||id===retiring?.id||id===pending?.id||!cacheBytes.has(id))continue;bytes-=cacheBytes.get(id);cacheBytes.delete(id);cache.delete(id);}}
@@ -108,10 +108,10 @@ function select(id){
   if(token!==serial||desired!==id||!prefs.enabled||hidden||paused)return;
   pending=null;const old=active;
   const source=ctx.createBufferSource(),gain=ctx.createGain(),switchTime=now(),t=switchTime;
-  source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(1,t+.65);const filters=connectMusic(source,gain,id);
+  source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);if(id==='title'){gain.gain.linearRampToValueAtTime(.12,t+1.2);gain.gain.linearRampToValueAtTime(.52,t+4);}else gain.gain.linearRampToValueAtTime(1,t+.65);const filters=connectMusic(source,gain,id);
   const next={id,source,gain,buffer,filters,started:t,stopping:false};active=next;
   musicSources.add(next);source.onended=()=>{musicSources.delete(next);if(retiring===next)retiring=null;source.disconnect();gain.disconnect();for(const filter of filters)filter.disconnect();if(active===next){active=null;if(ceremony?.id===id){if(ceremony.visual&&ceremony.root===root)performedVisual.add(ceremony.region);ceremony=null;}tick();}trimCache(desired);};
-  if(retiring&&retiring!==old){try{retiring.gain.gain.setValueAtTime(0,now());retiring.source.stop(now());}catch{}}retiring=old;dispose(old,.65,switchTime);source.start(t);blocked=false;unavailable=false;
+  if(retiring&&retiring!==old){try{retiring.gain.gain.setValueAtTime(0,now());retiring.source.stop(now());}catch{}}retiring=old;dispose(old,id==='title'?1.4:.65,switchTime);source.start(t);blocked=false;unavailable=false;
   if(ceremony?.id===id)ceremony.started=true;
  }).catch(()=>{if(token===serial){pending=null;unavailable=true;lastErrorAt=Date.now();}});
 }
@@ -180,7 +180,7 @@ function foley(id){
 }
 function read(){
  const game=window.__game,state=window.State?.S,story=state?.resonance,id=story?.scene||'',region=window.WorldMap?.mode==='region'?window.WorldMap.currentRegion:null;
- const contextIntro=document.querySelector('#cb-player-first-intro');if(contextIntro)return{id:'opening',amb:''};
+ const contextIntro=document.querySelector('#cb-player-first-intro:not([hidden])');if(contextIntro)return{id:'opening',amb:''};
  const cinematic=document.querySelector('.cbcp-root:not([hidden]),#cb-opening-cover'),dialogue=document.querySelector('.res-host.is-visible,.res-npc-dialogue');
  const finale=game?.scene==='battle'?game.battle?.resonanceFinale?.id:null;
  if(finale)return {id:({'finale:B-01':'finale1','finale:B-02':'finale2','finale:B-03':'finale3'})[finale]||'battle',amb:''};
