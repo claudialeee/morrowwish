@@ -47,7 +47,7 @@ const targets={
 let layer=null,buttons=new Map(),owner=null,popup=null,pending=null,projection=null;
 function closePopup(){popup?.remove();popup=null;}
 function init(parent){if(layer)return;layer=document.createElement('div');layer.className='sg-exploration-layer';layer.setAttribute('aria-label','Garden discoveries');parent.append(layer);
- for(const [id,target] of Object.entries(targets)){const b=document.createElement('button');b.type='button';b.className='sg-discovery sg-discovery-'+target.type;b.dataset.gardenExplore=id;b.hidden=true;b.innerHTML='<svg viewBox="-24 -24 48 48" aria-hidden="true">'+shapes[target.type]+'</svg>';b.onclick=()=>interact(id);layer.append(b);buttons.set(id,b);}
+ for(const [id,target] of Object.entries(targets)){const b=document.createElement('button');b.type='button';b.className='sg-discovery sg-discovery-'+target.type;b.dataset.gardenExplore=id;b.hidden=true;b.innerHTML='<svg viewBox="-24 -24 48 48" aria-hidden="true">'+shapes[target.type]+'</svg><span class="sg-discovery-label"></span>';b.onclick=()=>interact(id);layer.append(b);buttons.set(id,b);}
 }
 function pulse(id){const b=buttons.get(id);if(!b)return;const cat=window.__game?.yard?.entities?.find(e=>e.cat.species==='jinjc');if(cat&&id==='butterfly'){cat.pounceT=.8;cat.setPose?.('play',.8);}window.MorrowwishAudio?.effect?.('discover');}
 function snackChoice(){if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice';popup.setAttribute('role','dialog');popup.setAttribute('aria-label',tr('鱼饼','Fish cake'));
@@ -98,12 +98,12 @@ function draw(parent,ctx,w,h){
   b.hidden=!show;if(!show)continue;
   const p=def.points[id==='butterfly'?Math.min(2,s.butterfly):0];
   const preferredX=rect.left+(left+(right-left)*p[0])/w*rect.width-r.left,preferredY=rect.top+(top+(bottom-top)*p[1])/h*rect.height-r.top;
-  const clamp=(a,lo,hi)=>Math.max(lo,Math.min(Math.max(lo,hi),a));let x=clamp(preferredX,25,r.width-25),y=clamp(preferredY,54,r.height-42);
-  const hit=(box,a,b)=>box&&a+r.left+25>box.left&&a+r.left-25<box.right&&b+r.top+25>box.top&&b+r.top-25<box.bottom;
-  const blocked=(a,b)=>hit(guide,a,b)||hit(marker,a,b)||placed.some(([u,v])=>Math.hypot(u-a,v-b)<50);
-  if(blocked(x,y)){const candidates=[[0,-58],[58,0],[-58,0],[0,-116],[0,58],[58,-58],[-58,-58],[116,0],[-116,0]];for(const [dx,dy] of candidates){const a=clamp(x+dx,25,r.width-25),q=clamp(y+dy,54,r.height-42);if(!blocked(a,q)){x=a;y=q;break;}}}
+  const clamp=(a,lo,hi)=>Math.max(lo,Math.min(Math.max(lo,hi),a));let x=clamp(preferredX,54,r.width-54),y=clamp(preferredY,60,r.height-48);
+  const hit=(box,a,b)=>box&&a+r.left+54>box.left&&a+r.left-54<box.right&&b+r.top+42>box.top&&b+r.top-42<box.bottom;
+  const blocked=(a,b)=>hit(guide,a,b)||hit(marker,a,b)||placed.some(([u,v])=>Math.abs(u-a)<108&&Math.abs(v-b)<84);
+  if(blocked(x,y)){const candidates=[[0,-86],[110,0],[-110,0],[0,-172],[0,86],[110,-86],[-110,-86],[110,86],[-110,86],[220,0],[-220,0]];for(const [dx,dy] of candidates){const a=clamp(x+dx,54,r.width-54),q=clamp(y+dy,60,r.height-48);if(!blocked(a,q)){x=a;y=q;break;}}}
   placed.push([x,y]);b.style.left=x+'px';b.style.top=y+'px';
-  const label=tr(...def.labels);if(b.getAttribute('aria-label')!==label){b.setAttribute('aria-label',label);b.title=label;}
+  const label=tr(...def.labels);if(b.getAttribute('aria-label')!==label){b.setAttribute('aria-label',label);b.title=label;b.querySelector('.sg-discovery-label').textContent=label;}
  }
  if(pending){const now=performance.now(),arrived=Math.hypot(pending.cat.x-pending.x,pending.cat.y-pending.y)<12;
  if(pending.id==='moonleaf'){if(pending.arrived===null&&arrived&&now-pending.started>=1200){pending.arrived=now;pending.cat.setPose?.('play',.8);window.MorrowwishAudio?.effect?.('discover');}if(pending.arrived!==null){const t=now-pending.arrived;if(t<750){ctx.save();ctx.globalAlpha=Math.sin(Math.PI*t/750);finalArt(ctx,'garden-moonleaf-touch',w*.5,h*.31,Math.min(w*.45,360),h*.46);ctx.strokeStyle='#f4e5a2';ctx.lineWidth=2;for(let i=0;i<6;i++){const a=i*Math.PI/3+t*.003,r=18+t*.035;ctx.beginPath();ctx.arc(pending.x+Math.cos(a)*r,pending.y-18+Math.sin(a)*r*.6,3,0,Math.PI*2);ctx.stroke();}ctx.restore();}if(t>=1700)finishChase();}else if(now-pending.started>10000){cancelChase();toast('走近月叶再试一次。','Walk closer to the moonleaf and try again.');}}
