@@ -25,13 +25,15 @@ async function run(chapter){
  const scene=id=>page.waitForFunction(id=>CatBondResonance.view().current?.id===id,id,{timeout:35000});
  const shot=id=>page.screenshot({path:out+'/'+chapter+'-'+id.replace(':','-')+'.png'});
  async function click(label,scope=page){
-  const b=scope.getByRole('button',{name:label,exact:true});
+  const b=scope.getByRole('button',{name:label,exact:true}).first();
   if(scope===page&&!await b.isVisible()){
    const hidden=page.getByRole('button',{name:label,exact:true,includeHidden:true}).or(page.locator('button').and(page.getByText(label,{exact:true})));
    await hidden.first().waitFor({state:'attached'});
    if(!await b.isVisible()&&await page.locator('.rw-region-toggle[aria-expanded="false"],.rw-atlas-menu:not([open]) > summary').count()){
     await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();
    }
+   const optional=page.locator('.rw-optional-actions:not([open]) > summary:visible');
+   if(!await b.isVisible()&&await optional.count())await optional.first().click();
    const prev=page.locator('[data-fit-prev]:visible'),next=page.locator('[data-fit-next]:visible');
    for(let i=0;i<20&&!await b.isVisible()&&await prev.count()&&await prev.isEnabled();i++)await prev.click();
    for(let i=0;i<20&&!await b.isVisible()&&await next.count()&&await next.isEnabled();i++)await next.click();
@@ -39,7 +41,13 @@ async function run(chapter){
   steps.push({scene:(await view()).current?.id,action:label});await b.click();
  }
  const op=async(id)=>page.waitForFunction(op=>!CatBondResonance.view().objective.includes(op),id,{timeout:35000});
- async function talk(npc){await click('Talk to '+npc);}
+ async function talk(npc){
+  const before=await view();
+  const pending=before.objective.find(o=>o.startsWith('npc:'));
+  await click('Talk to '+npc);
+  if(pending&&!['npc:public-accountability','npc:second-garden-key'].includes(pending))await op(pending);
+  else if(before.current?.lines.length)await page.locator('.res-host[data-scene="'+before.current.id+'"]').waitFor();
+ }
  async function dialogue(id,choice){
   const dlg=page.locator('.res-host[data-scene="'+id+'"]');
   for(let i=0;i<50;i++){
@@ -118,18 +126,31 @@ async function run(chapter){
   await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
   await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene(start);
   assert.ok(!(await view()).completed.includes(start),'Chapter start is not already completed');
+  await page.waitForFunction(()=>['map','yard'].includes(__game.scene));
+  // Continue can restore to the atlas rather than directly to its region.
+  // Navigate via the actual visible next-scene control; never set WorldMap state.
+  if(await page.evaluate(()=>__game.scene==='map'&&WorldMap.mode!=='region')){
+   await page.locator('[data-next-scene="'+start+'"]:visible').click();
+  }
   await page.waitForFunction(()=>WorldMap.mode==='region'||__game.scene==='yard');
+  if(['finale','epilogue'].includes(chapter)&&await page.evaluate(()=>__game.scene==='yard')){
+   const travel=page.getByRole('button',{name:'Explore',exact:true});
+   if(await travel.isVisible())await travel.click();
+   else {await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();}
+   await page.locator('[data-next-scene="'+start+'"]:visible').click();
+   await page.waitForFunction(()=>WorldMap.mode==='region');
+  }
   if(chapter==='harbor'){
    await talk('Qilan');await dialogue('harbor:H-01');await scene('harbor:H-02');
    await talk('Jiedeng');await dialogue('harbor:H-02','Comfort Qilan first');await scene('harbor:H-03');
-   await click('Inspect the ebb marks · 1/2');await click('Find the dry steps · 2/2');await puzzle('Tide cave logbook',['Ebb mark','Dry steps','Logbook chest']);await dialogue('harbor:H-03');await scene('harbor:H-04');
+   await click('Inspect the ebb marks · 1/2');await page.waitForFunction(()=>!!State.S.resonanceExploration.interactions['harbor:H-03:tide:0']);await click('Find the dry steps · 2/2');await page.waitForFunction(()=>!!State.S.resonanceExploration.interactions['harbor:H-03:tide:1']);await puzzle('Tide cave logbook',['Ebb mark','Dry steps','Logbook chest']);await dialogue('harbor:H-03');await scene('harbor:H-04');
    await talk('Qilan');await dialogue('harbor:H-04','Prioritize rescue');await puzzle('Storm boat',['Secure','Secure','Signal','Guide','Guide','Signal']);await puzzle('Lighthouse mirrors',['Left mirror','Left mirror','Center mirror','Center mirror','Right mirror']);await dialogue('harbor:H-04');await scene('harbor:H-05');
    await restore('Lighthouse sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Jiedeng'],'Returning Tides',[low,high,mid]);await dialogue('harbor:H-05');
   }else if(chapter==='forest'){
    await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');
    for(const label of ['Forest floor · Scattered herbs · 1/3','Canopy · Moving roots · 2/3','Root cavern · Medicine and sick roots · 3/3'])await click(label);
-   await dialogue('forest:R-02','Prioritize the gardens');await scene('forest:R-03');
-   await click('Meet Yahe · Stabilize the channel');await click('Inspect the wet water marks');await battle('Dispel the mimicking echo','battle:root-echo');await click('Free the roots · Rescue the cats');await dialogue('forest:R-03');await scene('forest:R-04');
+   await op('explore:scent-trail');await dialogue('forest:R-02','Prioritize the gardens');await scene('forest:R-03');
+   await click('Meet Yahe · Stabilize the channel');await op('rescue:steady-channel');await click('Inspect the wet water marks');await op('explore:water-marks');await battle('Dispel the mimicking echo','battle:root-echo');await click('Free the roots · Rescue the cats');await op('rescue:trapped-cats');await dialogue('forest:R-03');await scene('forest:R-04');
    await restore('Ancient-root sanctuary',['Upstream','Branch','Roots'],['Yahe','Yuchuan'],'Living Roots',[mid,low,high]);await dialogue('forest:R-04');
   }else if(chapter==='forge'){
    await puzzle('Workshop · Build a safe lantern',['Fit frame','Fit relief valve','Light safely']);await talk('Xiaomao');await dialogue('forge:E-01');await scene('forge:E-02');
@@ -161,7 +182,7 @@ async function run(chapter){
    await click('Help Muling release the last lock');const latch=page.getByRole('button',{name:'Hold the bell chain',exact:true});await latch.waitFor();await latch.focus();await page.keyboard.down('Space');try{await page.waitForTimeout(1800);}finally{await page.keyboard.up('Space');}
    await scene('finale:B-04');await cinema('finale:B-04','Watch the story scene');
   }else if(chapter==='epilogue'){
-   await talk('Qilan');await cinema('epilogue:E-01','Revisit the restored regions');await scene('epilogue:E-02');await talk('Muling');await dialogue('epilogue:E-02','Give everyone some time');await scene('epilogue:E-03');await talk('Muling');await dialogue('epilogue:E-03');
+   await talk('Qilan');await cinema('epilogue:E-01','Revisit the restored regions');await scene('epilogue:E-02');if(await page.evaluate(()=>__game.scene!=='yard'))await page.locator('[data-next-scene="epilogue:E-02"]:visible').click();await page.waitForFunction(()=>__game.scene==='yard');await talk('Muling');await dialogue('epilogue:E-02','Give everyone some time');await scene('epilogue:E-03');await talk('Muling');await dialogue('epilogue:E-03');
    await click('Give Muling the key');await page.getByRole('heading',{name:'THE BELL RINGS AGAIN'}).waitFor();await shot('ending');assert.equal((await view()).ending,true);
   }
   if(next)await scene(next);

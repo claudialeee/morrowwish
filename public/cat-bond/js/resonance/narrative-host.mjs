@@ -14,13 +14,15 @@ function portrait(id,scene,cursor){
 function install(){
  const stage=document.getElementById("stage"),State=window.State;
  if(!stage||!State||window.CatBondResonance)return;
- let dialogue=null,root=null,slot=null,openedScene=null,scheduled=false,keyExchange=null,libraryReveal=null;
+ let dialogue=null,root=null,slot=null,openedScene=null,scheduled=false,keyExchange=null,libraryReveal=null,deferredDialogue=null;
  const announce=detail=>{const savedSlot=State.S;queueMicrotask(()=>{if(savedSlot!==State.S)return;window.dispatchEvent(new CustomEvent("cat-bond-resonance-changed",{detail}));if(detail.joined?.length){const names=detail.joined.map(id=>campaign.cast[id].name);window.__game?.toast?.({zh:names.map(n=>n.zh).join("、")+" 已加入战队 · 可在队伍中选择出战",en:names.map(n=>n.en).join(", ")+" joined the party · select them in Party"});if(window.__game?.scene==="yard")window.__game?.rebuildYard?.();}if(detail.left?.length){window.__game?.toast?.({zh:"暮铃暂时离开战队",en:"Muling has temporarily left the party"});}if(detail.trustChanges?.length){const names=detail.trustChanges.map(c=>({zh:campaign.cast[c.id].name.zh+" "+(c.delta>0?"+":"")+c.delta,en:campaign.cast[c.id].name.en+" "+(c.delta>0?"+":"")+c.delta}));window.__game?.toast?.({zh:"信任变化 · "+names.map(n=>n.zh).join(" / "),en:"Trust changed · "+names.map(n=>n.en).join(" / ")});}})};
  const runtime=getSlotRuntime(State);runtime.subscribe(announce);
  function close(){libraryReveal?.dispose();libraryReveal=null;keyExchange?.dispose();keyExchange=null;dialogue?.dispose();dialogue=null;root?.remove();root=null;openedScene=null;slot=null;}
  function show(){
   const v=runtime.view(),game=window.__game;
   if(!v.current||game?.scene==="battle"||document.getElementById("cb-finale-result"))return false;
+  // Regional battle rewards must be acknowledged before the next story overlay.
+  if(document.querySelector('#panel.open #library-battle-ok')){deferredDialogue={owner:State.S,id:v.current.id};return false;}
   // Cinematic-only scenes have a physical entrance and an approved shot sequence.
   // Reading their dialogue in the journal must never consume the cinematic cursor.
   if(v.current.chapter!=="prologue"&&v.current.requires.some(op=>op.startsWith("cinematic:"))&&v.objective.some(op=>op.startsWith("cinematic:"))){
@@ -95,7 +97,7 @@ function install(){
  window.addEventListener("cat-bond-illustrations-ready",()=>{if(dialogue&&slot===State.S)dialogue.render()});
  // Detect external world/battle commits and slot replacements without a second progression store.
  let observedRoot=State.S,observedRevision=State.S.resonance?.revision??-1,observedView=runtime.view();
- setInterval(()=>{const revision=State.S.resonance?.revision??-1;if(observedRoot!==State.S||observedRevision!==revision){const sameSlot=observedRoot===State.S,old=observedView;observedRoot=State.S;observedRevision=revision;observedView=runtime.view();refresh();
+ setInterval(()=>{if(deferredDialogue){const pending=deferredDialogue;if(pending.owner!==State.S||pending.id!==runtime.view().current?.id)deferredDialogue=null;else if(!document.querySelector('#panel.open #library-battle-ok')&&window.__game?.scene!=='battle'){deferredDialogue=null;show();}}const revision=State.S.resonance?.revision??-1;if(observedRoot!==State.S||observedRevision!==revision){const sameSlot=observedRoot===State.S,old=observedView;observedRoot=State.S;observedRevision=revision;observedView=runtime.view();refresh();
   if(sameSlot&&!dialogue&&window.__game?.scene!=="battle"&&old.current?.id===observedView.current?.id&&(old.objective.length>observedView.objective.length||(!old.lineReady&&observedView.lineReady))&&(!old.lineReady||observedView.objective.length===0)&&observedView.lineReady&&observedView.cursor<observedView.current.lines.length)show();
  }},200);
  window.addEventListener("cat-bond-resonance-evidence",event=>{
