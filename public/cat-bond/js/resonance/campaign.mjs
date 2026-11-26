@@ -1930,19 +1930,15 @@ export const campaign = {
         }
       ],
       "requires": [
-        "explore:crater-fragment",
         "puzzle:echo-navigation",
         "puzzle:star-map",
-        "explore:ruin-fragment",
         "explore:catastrophe-record",
         "cinematic:starfall-memory"
       ],
       "choices": [],
       "lineGate": [
-        "explore:crater-fragment",
         "puzzle:echo-navigation",
         "puzzle:star-map",
-        "explore:ruin-fragment",
         "explore:catastrophe-record"
       ],
       "choiceTiming": "afterDialogue"
