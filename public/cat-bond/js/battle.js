@@ -6328,17 +6328,12 @@ class CaptureBattle {
     const m = this.game.mouse;
     if (m) { ctx.strokeStyle = 'rgba(255,211,107,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(m.x, m.y, 9, 0, Math.PI * 2); ctx.moveTo(m.x - 13, m.y); ctx.lineTo(m.x + 13, m.y); ctx.moveTo(m.x, m.y - 13); ctx.lineTo(m.x, m.y + 13); ctx.stroke(); }
 
-    this.drawAimPreview(ctx);
-
-    // Manual target guide stays below the cat bodies and is thin enough not
-    // to clutter a small phone. Tapping a wild cat locks it until it leaves.
+    // Keep target feedback local: a screen-spanning lock tether obscures the fight.
+    // The locked enemy also receives its own reticle in the enemy render pass.
     if(!this.autoMode && (this.game.isTouch||this._lockIdx!=null)){
       const target=this.lockedEnemy();
-      const actor=this.me();
-      if(target&&actor){
-        ctx.save();ctx.strokeStyle='rgba(247,215,130,.46)';
-        ctx.lineWidth=1.7;ctx.setLineDash([5,8]);
-        ctx.beginPath();ctx.moveTo(actor.x,actor.y-5);ctx.lineTo(target.x,target.y-5);ctx.stroke();
+      if(target && Number.isFinite(target.x) && Number.isFinite(target.y)){
+        ctx.save();
         ctx.setLineDash([]);
         ctx.strokeStyle='rgba(255,235,159,.85)';ctx.lineWidth=1.7;
         ctx.beginPath();ctx.arc(target.x,target.y,34+2*Math.sin(this.t*3),0,Math.PI*2);ctx.stroke();
@@ -6986,54 +6981,6 @@ class CaptureBattle {
 
   // Aggregate pack 斗志 (morale/HP) bar at the top — makes the win condition
   // legible: the player always sees how close the whole pack is to being tamed.
-  // Live AIM PREVIEW for the active cat: a trajectory line for directional skills
-  // and a landing impact-zone circle for lob/placed AOE, so the player can see
-  // where a skill will go/land BEFORE committing. Only on manual control.
-  drawAimPreview(ctx) {
-    if (this.autoMode || this.ultCinematic) return;
-    const f = this.me(); if (!f || !f.alive) return;
-    const aim = this.aim || 0;
-    // which off-cooldown offensive skill is the player most likely about to fire?
-    const q = f.qSkill, e = f.eSkill;
-    const readyLob = (sk, cd) => sk && sk.kind === 'aoe' && cd <= 0;
-    const readyDir = (sk, cd) => sk && (sk.kind === 'projectile' || sk.kind === 'chain') && cd <= 0;
-    // landing-zone preview for a lob AOE (prefer Q, then E)
-    const lob = readyLob(q, f.cd.q) ? q : readyLob(e, f.cd.e) ? e : null;
-    if (lob) {
-      const col = this.elemColor(lob.element);
-      let tx, ty;
-      if (!this.game.isTouch) { const mo = this.game.mouse || {}; tx = mo.x; ty = mo.y; }
-      else { const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y); if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; } }
-      ctx.save();
-      // dashed arc from caster to landing point
-      ctx.strokeStyle = withAlpha(col, 0.5); ctx.lineWidth = 2; ctx.setLineDash([4, 6]);
-      ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
-      // impact zone (radius 86 matches lobAoe R)
-      const pulse = 0.35 + 0.2 * Math.abs(Math.sin(this.t * 4));
-      ctx.globalAlpha = pulse; ctx.fillStyle = withAlpha(col, 0.18); ctx.beginPath(); ctx.arc(tx, ty, 86, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 0.8; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
-      ctx.beginPath(); ctx.arc(tx, ty, 86, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-      ctx.restore();
-      return;
-    }
-    // trajectory line for a directional projectile/chain skill
-    const dir = readyDir(q, f.cd.q) ? q : readyDir(e, f.cd.e) ? e : null;
-    if (dir) {
-      const col = this.elemColor(dir.element);
-      const len = 300;
-      ctx.save();
-      ctx.strokeStyle = withAlpha(col, 0.45); ctx.lineWidth = 2.5; ctx.setLineDash([10, 8]);
-      ctx.beginPath(); ctx.moveTo(f.x, f.y);
-      ctx.lineTo(f.x + Math.cos(aim) * len, f.y + Math.sin(aim) * len); ctx.stroke();
-      ctx.setLineDash([]);
-      // arrowhead
-      const ex = f.x + Math.cos(aim) * len, ey = f.y + Math.sin(aim) * len;
-      ctx.fillStyle = withAlpha(col, 0.8); ctx.translate(ex, ey); ctx.rotate(aim);
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-12, -6); ctx.lineTo(-12, 6); ctx.closePath(); ctx.fill();
-      ctx.restore();
-    }
-  }
-
   // Hero portraits reuse actual breed artwork; no floating stickers or generic globes.
   cinematicPortrait(uid) {
     if(!uid)return null;
