@@ -1,4 +1,4 @@
-name: Starbell save direct regression
+name: Starbell full save and UI regression
 on:
   push:
     branches: [review/starbell-save-direct-regression-9ded60d]
@@ -8,7 +8,7 @@ permissions:
 jobs:
   direct:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,10 +23,10 @@ jobs:
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
-          node scripts/cat-bond-starbell-save-direct-probe.mjs
+          CAT_BOND_QA_OUTPUT=artifacts/starbell-save-full node scripts/cat-bond-title-save-browser-qa.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: starbell-save-direct
-          path: artifacts/starbell-save-direct
+          name: starbell-save-full
+          path: artifacts/starbell-save-full
           retention-days: 30
