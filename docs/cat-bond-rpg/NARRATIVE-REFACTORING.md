@@ -14,3 +14,6 @@ Harbor rescue and Qilan's invitation → forest water mystery and repeated route
 
 ## Validation
 Scene-by-scene invariant check and story-party unit test executed in JavaScript with strict assertions. Browser playthrough and full CI are outstanding. Do not merge to the auto-deploying combined branch until explicitly approved.
+
+## Lightweight RPG direction — second pass
+The story, cats, exploration, and short battles are the product. Do not introduce potion crafting, equipment forging, skill trees, mandatory garden management, or new resource currencies. Roles are narrative identities, not required subsystems. This pass revises 30 existing dialogue beats, shortens the opening lore, links the old song, familiar diagram, recent unsigned signal, and two cups of tea into an escalating personal mystery. It corrects stale paired-water-gate dialogue and removes promises of unimplemented workshop services. All scene/evidence gates remain unchanged. The 24-step cargo exchange gate is an existing pacing risk; it is not simplified in this pass and needs a separate world-runtime and progression QA change before release. Two full engine variants and the broader narrative regression passed in a JavaScript harness; no browser QA or deployment.
