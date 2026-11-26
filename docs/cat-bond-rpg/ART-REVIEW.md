@@ -1,10 +1,10 @@
 # Morrow Wish · 美术素材集中审查
 
-快照：[`0f671156510c`](https://github.com/claudialeee/morrowwish/commit/0f671156510c612da12f6ce49b6094276a296671)（`rpg/release-combined-next`）。完整 Git tree，未截断。仓库实际图片 **457** 件，其中 Cat Bond **104** 件，其他 **353** 件。图集按文件计数，不等于角色/帧数量。该页只整理已有素材，不改变游戏路径、不部署、不代表通过美术验收。
+快照：[`0f671156510c`](https://github.com/claudialeee/morrowwish/commit/0f671156510c612da12f6ce49b6094276a296671)（`rpg/release-combined-next`）。完整 Git tree，未截断。仓库实际图片 **454** 件，其中 Cat Bond **101** 件，其他 **353** 件。图集按文件计数，不等于角色/帧数量。该页只整理已有素材，不改变游戏路径、不部署、不代表通过美术验收。
 
 ## 如何审查
 
-- 点缩略图或文件名打开原文件；按场景和功能查看。旧版已替换的地图、战斗、合击、角色表情和背景已从清理分支移除；有效移动精灵与设施保留。
+- 点缩略图或文件名打开原文件；按场景和功能查看。旧版已替换的地图、战斗、合击、角色表情和背景已从清理分支移除；旧线条猫移动精灵已全部移除；有效水彩角色与设施保留。
 - 正在使用的 63 幅双猫合击图：`duo-storyboard-21x3-v3.webp`，21 种元素组合 × 3 阶段，游戏代码 `duo-premium.js` 引用该图集。旧图集已删除。33 只可移动猫源自水彩图集（32 格）、独立加菲及两个首发覆盖图，不等于 33 个独立文件。
 - 金豆、云朵的 `starter-portraits` 与 `player-portraits` 用途不同：前者由 real-kittens 读取，后者为剧情头像；不能直接合并。
 - [现有猫咪成长预览](../../public/cat-bond/adult-preview.html) · [合击预览源码](../../public/cat-bond/duo-preview.html) · [电影演出预览源码](../../public/cat-bond/cinematic-preview.html)。GitHub 链接显示源码，试玩部署上的 HTML 才能执行。
@@ -59,6 +59,8 @@
 - `yard-storybook.svg`
 - `yard_bg.png`
 
+> 第二轮：删除暮铃三个线条 SVG（muling-follow-sprite、muling-follow-step-a、muling-follow-step-b）；暮铃庭院、地图与对话继续使用 traveler-silver-cream.webp。禁用旧程序绘制猫回退，合击展示用水彩渲染；正式 63 幅合击不变。
+
 ## Cat Bond 全部实际图片（分类画廊）
 
 ### 01 · 首页、阳光花园与背景（4）
@@ -77,15 +79,15 @@
 | [<img src="../../public/cat-bond/assets/player-portraits/yunduo.webp" width="210" alt="yunduo.webp">](../../public/cat-bond/assets/player-portraits/yunduo.webp)<br>[yunduo.webp](../../public/cat-bond/assets/player-portraits/yunduo.webp)<br>`player-portraits/yunduo.webp`<br>100.1 KiB<br>剧情头像 | [<img src="../../public/cat-bond/assets/starter-portraits/jinjc.webp" width="210" alt="jinjc.webp">](../../public/cat-bond/assets/starter-portraits/jinjc.webp)<br>[jinjc.webp](../../public/cat-bond/assets/starter-portraits/jinjc.webp)<br>`starter-portraits/jinjc.webp`<br>107.1 KiB<br>首发渲染 | [<img src="../../public/cat-bond/assets/starter-portraits/yunduo.webp" width="210" alt="yunduo.webp">](../../public/cat-bond/assets/starter-portraits/yunduo.webp)<br>[yunduo.webp](../../public/cat-bond/assets/starter-portraits/yunduo.webp)<br>`starter-portraits/yunduo.webp`<br>108.1 KiB<br>首发渲染 |
 | [<img src="../../public/cat-bond/assets/watercolor-cats-v2.webp" width="210" alt="watercolor-cats-v2.webp">](../../public/cat-bond/assets/watercolor-cats-v2.webp)<br>[watercolor-cats-v2.webp](../../public/cat-bond/assets/watercolor-cats-v2.webp)<br>`watercolor-cats-v2.webp`<br>9.2 KiB<br>移动猫渲染源 |  |  |
 
-### 03 · 暮铃：立绘与移动表现（11）
+### 03 · 暮铃：水彩立绘（8）
 
 | | | |
 |---|---|---|
 | [<img src="../../public/cat-bond/assets/cinematics/characters/muling/traveler-determined.webp" width="210" alt="traveler-determined.webp">](../../public/cat-bond/assets/cinematics/characters/muling/traveler-determined.webp)<br>[traveler-determined.webp](../../public/cat-bond/assets/cinematics/characters/muling/traveler-determined.webp)<br>`cinematics/characters/muling/traveler-determined.webp`<br>84.3 KiB<br>清单：candidate | [<img src="../../public/cat-bond/assets/cinematics/characters/muling/traveler-dry.webp" width="210" alt="traveler-dry.webp">](../../public/cat-bond/assets/cinematics/characters/muling/traveler-dry.webp)<br>[traveler-dry.webp](../../public/cat-bond/assets/cinematics/characters/muling/traveler-dry.webp)<br>`cinematics/characters/muling/traveler-dry.webp`<br>77.7 KiB<br>清单：candidate |  |
 | [<img src="../../public/cat-bond/assets/cinematics/characters/muling/traveler-garden-sunlit.webp" width="210" alt="traveler-garden-sunlit.webp">](../../public/cat-bond/assets/cinematics/characters/muling/traveler-garden-sunlit.webp)<br>[traveler-garden-sunlit.webp](../../public/cat-bond/assets/cinematics/characters/muling/traveler-garden-sunlit.webp)<br>`cinematics/characters/muling/traveler-garden-sunlit.webp`<br>95.1 KiB | [<img src="../../public/cat-bond/assets/cinematics/characters/muling/traveler-nervous.webp" width="210" alt="traveler-nervous.webp">](../../public/cat-bond/assets/cinematics/characters/muling/traveler-nervous.webp)<br>[traveler-nervous.webp](../../public/cat-bond/assets/cinematics/characters/muling/traveler-nervous.webp)<br>`cinematics/characters/muling/traveler-nervous.webp`<br>94.2 KiB<br>清单：candidate | [<img src="../../public/cat-bond/assets/cinematics/characters/muling/traveler-neutral.webp" width="210" alt="traveler-neutral.webp">](../../public/cat-bond/assets/cinematics/characters/muling/traveler-neutral.webp)<br>[traveler-neutral.webp](../../public/cat-bond/assets/cinematics/characters/muling/traveler-neutral.webp)<br>`cinematics/characters/muling/traveler-neutral.webp`<br>75.1 KiB<br>清单：candidate |
 | [<img src="../../public/cat-bond/assets/cinematics/characters/muling/traveler-silver-cream.webp" width="210" alt="traveler-silver-cream.webp">](../../public/cat-bond/assets/cinematics/characters/muling/traveler-silver-cream.webp)<br>[traveler-silver-cream.webp](../../public/cat-bond/assets/cinematics/characters/muling/traveler-silver-cream.webp)<br>`cinematics/characters/muling/traveler-silver-cream.webp`<br>146.4 KiB<br>清单：candidate · 当前暮铃剧情头像 | [<img src="../../public/cat-bond/assets/cinematics/characters/muling/traveler-warm.webp" width="210" alt="traveler-warm.webp">](../../public/cat-bond/assets/cinematics/characters/muling/traveler-warm.webp)<br>[traveler-warm.webp](../../public/cat-bond/assets/cinematics/characters/muling/traveler-warm.webp)<br>`cinematics/characters/muling/traveler-warm.webp`<br>73.9 KiB<br>清单：candidate | [<img src="../../public/cat-bond/assets/cinematics/characters/muling/traveler-worried.webp" width="210" alt="traveler-worried.webp">](../../public/cat-bond/assets/cinematics/characters/muling/traveler-worried.webp)<br>[traveler-worried.webp](../../public/cat-bond/assets/cinematics/characters/muling/traveler-worried.webp)<br>`cinematics/characters/muling/traveler-worried.webp`<br>71.7 KiB<br>清单：candidate |
-|  | [<img src="../../public/cat-bond/assets/npc/muling-follow-sprite.svg" width="210" alt="muling-follow-sprite.svg">](../../public/cat-bond/assets/npc/muling-follow-sprite.svg)<br>[muling-follow-sprite.svg](../../public/cat-bond/assets/npc/muling-follow-sprite.svg)<br>`npc/muling-follow-sprite.svg`<br>4.0 KiB | [<img src="../../public/cat-bond/assets/npc/muling-follow-step-a.svg" width="210" alt="muling-follow-step-a.svg">](../../public/cat-bond/assets/npc/muling-follow-step-a.svg)<br>[muling-follow-step-a.svg](../../public/cat-bond/assets/npc/muling-follow-step-a.svg)<br>`npc/muling-follow-step-a.svg`<br>4.0 KiB |
-| [<img src="../../public/cat-bond/assets/npc/muling-follow-step-b.svg" width="210" alt="muling-follow-step-b.svg">](../../public/cat-bond/assets/npc/muling-follow-step-b.svg)<br>[muling-follow-step-b.svg](../../public/cat-bond/assets/npc/muling-follow-step-b.svg)<br>`npc/muling-follow-step-b.svg`<br>4.1 KiB |  |  |
+
+
 
 
 ### 04 · 十二位居民与旧表情图（12）

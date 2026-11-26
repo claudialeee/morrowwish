@@ -282,7 +282,6 @@
     breedCache[id]=canvas;
     return {image:canvas,sx:0,sy:0,sw:canvas.width,sh:canvas.height};
   }
-  const fallbackDraw=drawing.drawCat;
   // Soft contact shadows have a dense center and transparent perimeter,
   // preserving the actual painted sprite and its grounded position.
   function contactShadow(ctx,x,y,rx,ry,opacity){
@@ -336,12 +335,12 @@
     // Jiafei isn't in the fixed 8x4 breed atlas. Render its own original
     // transparent 2D watercolor asset for map, yard, battle, and portraits.
     if(o.species?.id==='jiafei'){
-      if(!paintJiafei(ctx,x,y,o))fallbackDraw(ctx,x,y,o);
+      paintJiafei(ctx,x,y,o);
       return;
     }
     // An image draws as soon as its first frame has decoded. On older browsers
     // without AVIF decoding, preserve playability with the legacy renderer.
-    if(!loaded&&!breedLoaded){fallbackDraw(ctx,x,y,o);return;}
+    if(!loaded&&!breedLoaded)return;
     const gr=o.growth||null;
     const scale=(o.scale||1)*(gr?.scale||1);
     const face=o.face===-1?-1:1;
@@ -465,7 +464,7 @@
     window.dispatchEvent(new Event('cat-bond-illustrations-ready'));
   };
   source.onerror=()=>{
-    console.warn('Cat Bond kitten art failed to load; retaining playable fallback.');
+    console.warn('Cat Bond watercolor art failed to load; no legacy vector substitute.');
   };
   breedSheet.onload=()=>{
     breedLoaded=breedSheet.naturalWidth===breedFrameSize.w*3
@@ -490,7 +489,7 @@
     jiafeiPortraits.clear();
     window.dispatchEvent?.(new Event('cat-bond-illustrations-ready'));
   };
-  jiafeiSprite.onerror=()=>{console.warn('Jiafei 2D sprite unavailable; keeping playable fallback');};
+  jiafeiSprite.onerror=()=>{console.warn('Jiafei watercolor sprite unavailable; no legacy vector substitute');};
   jiafeiSprite.src='/cat-bond/assets/jiafei-watercolor-v2.webp?v=approved-flat-face-watercolor-20261122';
   
 })();
