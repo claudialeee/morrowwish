@@ -4,7 +4,7 @@ import {hasPendingDialogue} from "./dialogue-ui.mjs";
 import { openFinaleLatch } from "./finale-latch.mjs";
 import { createWorldBridge } from "./world-bridge.mjs";
 import {availableDiscoveries,layoutDiscoveries,paintDiscovery} from "./regional-discoveries.mjs";
-import {markerMetrics,layoutMarkerLabels,pickMarker,discoveryNames} from "./map-affordances.mjs";
+import {markerMetrics,layoutMarkerLabels,pickMarker,discoveryNames} from "./map-affordances.mjs?v=npc-talk-bubble-1";
 import { createExplorer,layouts,exchangeOptions,distance } from "./world-exploration.mjs";
 import {paintHarborEnvironment,paintHarborPuzzle,harborObjective,harborPuzzleHint,paintHarborCeremony} from "./harbor-presentation.mjs";
 import {paintForgeEnvironment,paintForgeCeremony,forgeObjective,paintForgePuzzle} from "./forge-presentation.mjs";
@@ -455,15 +455,29 @@ function install(){
   markerHits.splice(0,markerHits.length,...placed);
   const metadata=JSON.stringify(placed.map(({x,y,r,hit,rect,t,k,target})=>({x,y,r,hit,rect,t,k,target})));if(canvas.dataset.affordances!==metadata)canvas.dataset.affordances=metadata;
   for(const m of placed){
+   if(m.bubble)continue;
    ctx.save();if(m.origin&&(m.origin[0]!==m.x||m.origin[1]!==m.y)){ctx.beginPath();ctx.moveTo(...m.origin);ctx.lineTo(m.x,m.y);ctx.strokeStyle="#775632b5";ctx.lineWidth=1.5;ctx.stroke();}ctx.beginPath();ctx.arc(m.x,m.y,r,0,Math.PI*2);ctx.fillStyle="#fff2dcf5";ctx.shadowColor="#37281988";ctx.shadowBlur=6;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle="#835f34";ctx.lineWidth=2.5;ctx.stroke();
    if(m.discovery){ctx.translate(m.x,m.y);ctx.scale(r/21,r/21);ctx.translate(-m.x,-m.y);paintDiscovery(ctx,{...m.discovery,point:[m.x/W,m.y/H]},W,H,frame/60);}
    else symbol(ctx,m.k,m.x,m.y,r/24,m.col);
    ctx.restore();
   }
-  for(const m of placed){if(!m.rect)continue;const {x,y,w,h}=m.rect;
+  for(const m of placed){if(!m.rect||m.bubble)continue;const {x,y,w,h}=m.rect;
    ctx.save();ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(Math.max(x,Math.min(x+w,m.x)),Math.max(y,Math.min(y+h,m.y)));ctx.strokeStyle="#775632b5";ctx.lineWidth=1.6;ctx.stroke();
    ctx.beginPath();ctx.roundRect(x,y,w,h,6);ctx.fillStyle="#fff3dff5";ctx.fill();ctx.strokeStyle="#a17d49";ctx.lineWidth=1.5;ctx.stroke();
    ctx.font="700 "+font+"px "+family;ctx.fillStyle="#493322";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(m.t,x+w/2,y+h/2,w-8);ctx.restore();
+  }
+  // Canvas equivalent of .sg-npc-talk-marker in rpg-fullbleed.css:
+  // same cream fill, gold outline, rounded body, speech glyph and tail.
+  for(const m of placed){if(!m.bubble)continue;
+   const {x,y,w,h}=m.bubble,u=1/metrics.scale,cx=x+w/2,cy=y+h/2;
+   ctx.save();ctx.fillStyle="#fff1d2";ctx.strokeStyle="#aa844c";ctx.lineWidth=u;ctx.shadowColor="#3a2b2533";ctx.shadowBlur=8*u;ctx.shadowOffsetY=3*u;
+   ctx.beginPath();ctx.roundRect(x,y,w,h,12*u);ctx.fill();ctx.shadowColor="transparent";ctx.stroke();
+   ctx.beginPath();ctx.moveTo(cx-5*u,y+h-.5*u);ctx.lineTo(cx,y+h+5*u);ctx.lineTo(cx+5*u,y+h-.5*u);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(cx-5*u,y+h-.5*u);ctx.lineTo(cx,y+h+5*u);ctx.lineTo(cx+5*u,y+h-.5*u);ctx.stroke();
+   const fs=m.bubbleFont,g=17*u;ctx.font="700 "+fs+"px "+family;
+   const labelWidth=Math.min(ctx.measureText(m.t).width,Math.max(1,w-36*u)),left=cx-(g+5*u+labelWidth)/2;
+   ctx.save();ctx.translate(left,cy-g/2);ctx.scale(g/24,g/24);ctx.strokeStyle="#654923";ctx.lineWidth=1.7;ctx.lineJoin="round";
+   ctx.beginPath();ctx.moveTo(4,4);ctx.lineTo(20,4);ctx.lineTo(20,16);ctx.lineTo(9,16);ctx.lineTo(4,20);ctx.closePath();ctx.stroke();ctx.lineWidth=2.5;ctx.lineCap="round";for(const dx of [8,12,16]){ctx.beginPath();ctx.moveTo(dx,10);ctx.lineTo(dx+.1,10);ctx.stroke();}ctx.restore();
+   ctx.fillStyle="#654923";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(m.t,left+g+5*u,cy,labelWidth);ctx.restore();
   }
  }
 
