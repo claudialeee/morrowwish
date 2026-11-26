@@ -330,10 +330,25 @@
     if(sp.id&&Object.prototype.hasOwnProperty.call(indices,sp.id)) return indices[sp.id];
     return paletteIndex[options.palette||sp.palette]??0;
   }
+  // Use the actual named NPC watercolor artwork for every gameplay render.
+  const storyImages=new Map(),storyPortraits=new Map();
+  function storyImage(sp){
+    if(!storyImages.has(sp.id)){const img=new Image();storyImages.set(sp.id,img);img.onload=()=>{for(const [canvas,species] of storyPortraits){if(species.id!==sp.id)continue;storyPortraits.delete(canvas);if(canvas.isConnected!==false)thumbnail(canvas,species);}window.dispatchEvent(new Event('cat-bond-illustrations-ready'));};img.src='/cat-bond/'+sp.storyArt;}
+    return storyImages.get(sp.id);
+  }
+  function paintStory(ctx,x,y,o){
+    const image=storyImage(o.species);if(!image.complete||!image.naturalWidth)return;
+    const s=(o.scale||1)*(o.growth?.scale||1),t=o.t||0,pose=o.pose||'idle',moving=['walk','run','dash','duo-swipe','duo-highfive','duo-guard'].includes(pose);
+    const fit=Math.min(90/image.naturalWidth,102/image.naturalHeight),aw=image.naturalWidth*fit,ah=image.naturalHeight*fit;
+    ctx.save();ctx.translate(x,y);ctx.scale((o.face===-1?-1:1)*s,s);contactShadow(ctx,0,32,31,5,.24);
+    ctx.translate(0,moving?-Math.abs(Math.sin(t*9))*2:Math.sin(t*2)*.4);if(pose==='sleep'||pose==='loaf'){ctx.translate(0,7);ctx.scale(1,.82);}
+    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(image,-aw/2,36-ah,aw,ah);ctx.restore();
+  }
   function render(ctx,x,y,options){
     const o=options||{},t=o.t||0,pose=o.pose||'idle',mood=o.mood||'neutral';
     // Jiafei isn't in the fixed 8x4 breed atlas. Render its own original
     // transparent 2D watercolor asset for map, yard, battle, and portraits.
+    if(o.species?.storyArt){paintStory(ctx,x,y,o);return;}
     if(o.species?.id==='jiafei'){
       paintJiafei(ctx,x,y,o);
       return;
@@ -438,6 +453,7 @@
     render(ctx,logicalW/2,logicalH*.60,{
       species,scale,pose:'sit',mood:'neutral',t:.6,motion:0
     });
+    if(species?.storyArt&&!storyImage(species).naturalWidth)storyPortraits.set(canvas,species);
     if(species?.id==='jiafei'&&!jiafeiLoaded)jiafeiPortraits.set(canvas,species);
     if(!breedLoaded)pendingPortraits.set(canvas,species);
   }

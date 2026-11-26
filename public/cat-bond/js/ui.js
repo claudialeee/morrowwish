@@ -1469,7 +1469,7 @@ const UI = {
     });
   },
   openBreedPicker() {
-    const cats = State.S.cats; this._breedSel = [];
+    const cats = State.S.cats.filter(c=>!c.storyActor); this._breedSel = [];
     const render = () => {
       const chips = cats.map(c => { const sp = GameData.speciesById(c.species); const sel = this._breedSel.includes(c.uid); return `<div class="chip ${sel ? 'sel' : ''}" data-uid="${c.uid}"><canvas width="44" height="38"></canvas><div><div style="font-weight:700">${GameData.speciesName(sp)}</div><div class="tiny">${GameData.RARITY[sp.rarity].name}</div></div></div>`; }).join('');
       this.panel(`<span class="card-close">×</span><h2>🥚 选两只猫繁育</h2><p class="sub">已选 ${this._breedSel.length}/2</p><div class="roster">${chips}</div><div class="btn-row"><button class="btn gold" id="bp-go" ${this._breedSel.length === 2 ? '' : 'disabled'}>开始孵化</button></div>`);
@@ -1645,7 +1645,7 @@ const UI = {
         ${group.length>1?'<span class="breed-group-count">×'+group.length+'</span>':''}
         <canvas width="90" height="76"></canvas>
         <div class="name">${GameData.speciesName(sp)}</div>
-        <div class="rarity rarity-${sp.rarity}">${GameData.RARITY[sp.rarity].name}</div>
+        <div class="rarity rarity-${sp.rarity}">${sp.storyActor?(english?'Story companion':'剧情伙伴'):GameData.RARITY[sp.rarity].name}</div>
         <div class="tiny">${english?'Top Lv.':'最高等级 '}${strongest.level}</div>
       </button>`;
     }).join('');

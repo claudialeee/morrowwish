@@ -461,7 +461,7 @@ function rollVisitors(minutes) {
   init();
   const out = [];
   if (minutes < 10) return out;
-  const owned = State.S.cats || [];
+  const owned = (State.S.cats || []).filter(c=>!GameData.speciesById(c.species)?.storyActor);
   // boost from 机敏 cats + stored watch-luck
   let luckBoost = 0;
   owned.forEach(c => { if (c.personality === 'clever') luckBoost += 0.02; });
@@ -505,6 +505,7 @@ function startBreeding(uidA, uidB) {
   if (uidA === uidB) return { ok: false, msg: '需要两只不同的猫猫' };
   const a = findCat(uidA), b = findCat(uidB);
   if (!a || !b) return { ok: false, msg: '找不到猫猫' };
+  if(a.storyActor||b.storyActor)return {ok:false,msg:'剧情伙伴不能繁育'};
   if (isBusy(uidA) || isBusy(uidB)) return { ok: false, msg: '猫猫正在忙（工作或繁育中）' };
   r.breeding = { aUid: uidA, bUid: uidB, progress: 0, duration: BREED_SECONDS, done: false, startAt: Date.now() };
   return { ok: true };

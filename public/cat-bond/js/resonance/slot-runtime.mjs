@@ -1,6 +1,7 @@
 import {campaign} from "./campaign.mjs";
 import {makeEngine} from "./engine.mjs";
 import {layouts} from "./world-exploration.mjs";
+import {storyPartyPatch} from "./story-party.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason});
 const runtimes=new WeakMap();
@@ -32,21 +33,25 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   let r=fn(engine);
   if(!r?.ok)return r||fail("invalid-transition");
   if(State.S!==root||State.activeSlot?.()!==slot||!check(token))return fail("slot-changed");
+  let party=null;try{party=storyPartyPatch(root,previous,r.state,State.makeCat?.bind(State),cat=>globalThis.window?.Raising?.decorateNewCat?.(cat,{shinyOdds:0}));}catch(error){return fail("story-recruitment-failed");}
+  const oldParty=party?Object.fromEntries(Object.keys(party.fields).map(k=>[k,root[k]])):null;
   busy=true;
   const restore=(key,value)=>{if(value===undefined)delete root[key];else root[key]=value};
   try{
    root.resonance=clone(r.state);
    if(root.npcStories){delete root.npcStories.harborKeeper;delete root.npcStories.mulingCompanion;if(!Object.keys(root.npcStories).length)delete root.npcStories;}
    if(patch)for(const [key,value] of Object.entries(patch))restore(key,clone(value));
+   if(party)for(const [key,value] of Object.entries(party.fields))restore(key,value);
    let saved;try{saved=State.save()}catch{saved=fail("save-exception")}
    if(!saved?.ok){
     restore("resonance",old);restore("npcStories",oldSamples);
+    if(oldParty)for(const [key,value] of Object.entries(oldParty))restore(key,value);
     if(patch)for(const [key,value] of Object.entries(oldPhysical))restore(key,value);
     return fail(saved?.reason||"save-failed");
    }
   }finally{busy=false}
   const trustChanges=Object.entries(r.state.trust).flatMap(([id,value])=>value===previous.trust[id]?[]:[{id,delta:value-previous.trust[id],value}]);
-  if(State.S===root&&State.activeSlot?.()===slot)for(const listener of listeners){try{listener({revision:r.state.revision,sceneId:r.state.scene,trustChanges})}catch(error){console.error("Narrative notification failed after local save",error)}}
+  if(State.S===root&&State.activeSlot?.()===slot)for(const listener of listeners){try{listener({revision:r.state.revision,sceneId:r.state.scene,trustChanges,joined:party?.joined||[],left:party?.left||[]})}catch(error){console.error("Narrative notification failed after local save",error)}}
   return {ok:true,state:clone(r.state)};
  }
  const op=(sceneId,operation,options)=>transaction(e=>e.record(sceneId,operation),options);
@@ -140,7 +145,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(!(scene?.id==="library:M-05"&&v.cursor>=scene.lines.length&&v.choice)&&((scene?.chapter===region&&scripted)||((availableAmbient||scene?.chapter===region&&hasDialogue)&&["temporary","companion","identity-revealed"].includes(v.muling))||(scene?.id==="harbor:H-01"&&region==="harbor")))ids.push("muling");return ids.map(id=>({...npcProfile(id),scripted:id==="muling"}));}
  // Compatibility query: ordinary world exploration never mounts a companion.
  // Joint flight and paired-water tasks render their participants in their own mechanism.
- const follows=()=>["companion","identity-revealed","betrayal-revealed"].includes(view().muling);
+ const follows=()=>false;
  function meetTraveler(token){if(!token||!check(token))return fail("stale-action");return transaction(e=>e.meetTraveler(),{token});}
  return Object.freeze({capture,meetTraveler,isCurrentAction:check,completeNPCScene,commitFinaleVictory,commitRuinsVictory,subscribe,exchange,initialize:()=>State.S.resonance?{ok:true,state:clone(State.S.resonance)}:transaction(e=>({ok:true,state:e.snapshot()})),npcProfile,residents,follows,view,snapshot:()=>read().snapshot(),choose:(id,token)=>transaction(e=>e.choose(id),{token}),nextLine:token=>transaction(e=>e.nextLine(),{token}),finish:token=>transaction(e=>e.finish(),{token}),recordNPC,evidence,ambient,support,postgame,ambientAvailable:region=>read().ambientAvailable(region),supportProfile:region=>read().supportProfile(region)});
 }

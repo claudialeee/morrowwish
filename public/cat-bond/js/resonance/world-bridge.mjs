@@ -22,14 +22,15 @@ const tideKey=i=>"harbor:H-03:tide:"+i;
 const tideNear=(w,p)=>{const q=w.positions.harbor;return !!q&&Math.hypot(q.x-p[0],q.y-p[1])<.072;};
 const scentKey=i=>"forest:R-02:scent:"+i;
 const scentAt=(w,i)=>{const p=w.positions.forest,q=scentTrail[i]?.point;return !!p&&!!q&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
-const upperGate={point:[.53,.40],npc:"yahe",name:["与芽禾撑开上层水闸","Open the upper gate with Yahe"],clue:["第一只猫留在上层控制水压；带另一只猫沿根桥前往地下水闸。","The first cat stays to regulate pressure. Lead the other cat across the root bridge to the lower gate."]};
+const upperGate={point:[.53,.40],npc:"yahe",name:["与芽禾撑开上层水闸","Open the upper gate with Yahe"],clue:["队友会自动留在上层控制水压；你沿根桥前往地下水闸。","Your teammate automatically regulates pressure upstairs. Walk across the root bridge to the lower gate."]};
 const pairedKey="forest:R-03:upper-gate";
  function forestPair(root){
   const cats=root.cats||[],selected=(root.duoRelations?.active||[]).map(id=>cats.find(c=>c.uid===id)).filter(Boolean);
-  const team=[...selected,...cats].filter((c,i,a)=>a.findIndex(x=>x.uid===c.uid)===i);
-  return team.length?{upper:team[0].uid,lower:team[1]?.uid||"muling"}:null;
+  const player=cats.find(c=>c.species==="jinjc")||cats[0];const team=[...(root.battlePrefs?.teamUids||[]).map(id=>cats.find(c=>c.uid===id)).filter(Boolean),...selected,...cats];
+  const helper=team.find(c=>c.uid!==player?.uid);
+  return player&&helper?{upper:helper.uid,lower:player.uid}:null;
  }
- const validPair=(root,p)=>!!p&&typeof p==="object"&&p.upper!==p.lower&&root.cats?.some(c=>c.uid===p.upper)&&(p.lower==="muling"||root.cats?.some(c=>c.uid===p.lower));
+ const validPair=(root,p)=>!!p&&typeof p==="object"&&p.upper!==p.lower&&root.cats?.some(c=>c.uid===p.upper)&&root.cats?.some(c=>c.uid===p.lower);
 const atForest=(w,q)=>{const p=w.positions.forest;return !!p&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
 // Muling's six letters are optional post-ending scenes. They do not reopen the seal or reverse the ending.
 const homeLetters={

@@ -231,6 +231,7 @@ P.castDuo=function(){
   // two-cat watercolor paintings, also used in the canonical V13 trailer.
   // This override must remain aligned with the cast in battle.js.
   this.duoCinematic.originalArt=true;
+  this.duoCinematic.actorUids=[this.duo?.a?.uid,this.duo?.b?.uid];
   this.duoCinematic.tier=this.duo?.tier||1;
   this.duoCinematic.variant=this.duoCinematic.tier>=3?'finale':
    this.duoCinematic.tier>=2?'cross':'pounce';
