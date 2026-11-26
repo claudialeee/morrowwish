@@ -4231,7 +4231,9 @@ class CaptureBattle {
       const k=Math.max(0,v.life/v.max),p=1-k;
       ctx.save();ctx.globalAlpha=Math.min(1,k*.95);
       ctx.lineCap='round';ctx.lineJoin='round';
-      if(v.kind==='signatureCast'||v.kind==='signatureHit'){
+      if(v.kind==='moonImpact'){
+        window.CatBondMoonFX?.drawImpact(ctx,v,this.t);
+      }else if(v.kind==='signatureCast'||v.kind==='signatureHit'){
         window.CatBondSkillFX?.draw(ctx,v,this.t);
       }else if(v.kind==='regularAccent'){
         this.drawRegularSkillAccent(ctx,v,k,p);
@@ -4793,6 +4795,7 @@ class CaptureBattle {
             }
             const r = this.resolveHit(e, 'me', p.skill || { element: p.element }, p.dmg, p.x, p.y, p);
             if (r.reflected) break;            // bounced back — projectile lives, now enemy-owned
+            if(p.kind==='crescent'&&r.dealt>0)this.skillStrokes.push({kind:'moonImpact',x:e.x,y:e.y,angle:Math.atan2(p.vy,p.vx),radius:32,life:.38,max:.38});
             if(p.kind==='lightningOrb'&&r.dealt>0){
               this.vfx.impact(p.x,p.y,'#ffe1a1');
               this.vfx.burst(p.x,p.y,{count:15,color:'#b6d5ff',
@@ -6533,6 +6536,7 @@ class CaptureBattle {
     // projectiles with glow
     for (const p of this.projectiles) {
       if(window.CatBondSkillFX?.drawMeteorFlight(ctx,p,this.t))continue;
+      if(window.CatBondMoonFX?.drawProjectile(ctx,p,this.t))continue;
       if(window.CatBondSkillFX?.drawIdentityProjectile(ctx,p,this.t))continue;
       // ADDITIVE TAPERED RIBBON trail from the position history (bright/wide head →
       // transparent tail), drawn under the body. Round caps hide the segment seams.
