@@ -948,19 +948,21 @@
     for(const e of b.enemies){if(!e.alive||!near(c,e,90))continue;const boss=!!(e.boss||e.isBoss||e.rIdx>=3);
       e.status ||= {};const tag=boss?'soak':'chill';e.status[tag]=Math.max(e.status[tag]||0,boss?1.5:1.2);
       e.tags ||= [];if(!e.tags.includes(tag))e.tags.push(tag);
-      if(boss&&Number.isFinite(e.poise))e.poise=Math.max(1,e.poise-12);
-      b.hurtEnemy(e,c.dmg*.35,e.x,e.y,true);
+      if(boss){e._slowMult=.5;e._slowT=b.t+1.5;}
+      if(boss&&Number.isFinite(e.poise))e.poise=Math.max(1,e.poise-(e.poiseMax||60)*.20);
+      b.hurtEnemy(e,c.dmg*.6,e.x,e.y,true);
     }
   }});
-  set('jiafei',{subscribedEvents:['onBeforeDamage'],triggerCondition:ctx=>ctx.target&&ctx.target!==ctx.cat&&ctx.cat.alive&&speciesOf(ctx.target)!=='jiafei'&&near(ctx.cat,ctx.target,130)&&ctx.dmg>0,effect(ctx){
-    const c=ctx.cat,b=ctx.battle,n=Math.min(ctx.dmg*.22,Math.max(0,c.hp-1));
+  set('jiafei',{subscribedEvents:['onBeforeDamage'],triggerCondition:ctx=>ctx.target&&ctx.target!==ctx.cat&&ctx.cat.alive&&speciesOf(ctx.target)!=='jiafei'&&near(ctx.cat,ctx.target,220)&&ctx.dmg>0,effect(ctx){
+    const c=ctx.cat,b=ctx.battle,n=Math.min(ctx.dmg*.30,Math.max(0,c.hp-1));
     if(n<=0)return;ctx.dmg-=n;b.hurtMe(n,c.x,c.y,c,{redirected:true});mark(c,b,ctx.target,'fire',{link:true});
   }});
   set('yunduo',{subscribedEvents:['onHealResolved'],triggerCondition:ctx=>ctx.amount>0&&ctx.target&&ctx.target!==ctx.cat,effect(ctx){
     const c=ctx.cat,b=ctx.battle;
-    c._linked ||= [];c._linked=c._linked.filter(a=>a!==ctx.target&&a.alive);c._linked.unshift(ctx.target);c._linked.length=Math.min(2,c._linked.length);
-    for(const a of c._linked){if(a===ctx.target||!near(c,a,180))continue;const n=Math.min(a.maxhp-a.hp,ctx.amount*.25);if(n>0){a.hp+=n;mark(c,b,a,'fire',{link:true});}}
-    mark(c,b,ctx.target,'ready',{link:true});
+    c._linkUntil ||= new WeakMap();c._linked ||= [];
+    c._linked=c._linked.filter(a=>a!==ctx.target&&a.alive&&(c._linkUntil.get(a)||0)>b.t);
+    for(const a of c._linked){if(speciesOf(a)==='yunduo'||!near(c,a,300))continue;const n=Math.min(a.maxhp-a.hp,ctx.amount*.25);if(n>0){a.hp+=n;mark(c,b,a,'fire',{link:true});}}
+    if(speciesOf(ctx.target)!=='yunduo'){c._linked.unshift(ctx.target);c._linked.length=Math.min(2,c._linked.length);c._linkUntil.set(ctx.target,b.t+4);mark(c,b,ctx.target,'ready',{link:true});}
   }});
   set('bosi',{subscribedEvents:['onHealResolved','onTick'],triggerCondition:()=>true,effect(ctx){
     const c=ctx.cat,b=ctx.battle;if(ctx._event==='onHealResolved'){
@@ -974,7 +976,7 @@
     const c=ctx.cat,b=ctx.battle;const a=b.team.find(a=>a.alive&&a!==c);b.ult=Math.min(100,b.ult+Math.min(4,ctx.amount));mark(c,b,a,'fire',{link:true});
   }});
   const oldQ=trait('qisi').effect;
-  set('qisi',{effect(ctx){if(ctx.battle.t-(ctx.cat._qisiStreakT??-99)>3)ctx.cat._qisiStreak=0;oldQ(ctx);mark(ctx.cat,ctx.battle,ctx.target);}});
+  set('qisi',{subscribedEvents:['onHitResolved','onTick'],triggerCondition:ctx=>ctx._event==='onTick'||ctx.skill?.kind==='melee',effect(ctx){const c=ctx.cat,b=ctx.battle;if(ctx._event==='onTick'){if(b.t-(c._qisiStreakT??-99)>3)c._qisiStreak=0;return;}if(b.t-(c._qisiStreakT??-99)>3)c._qisiStreak=0;oldQ(ctx);mark(c,b,ctx.target);}});
   set('lanbao',{triggerCondition:ctx=>!!ctx.target&&!!ctx.skill&&(heavy(ctx.skill)&&ctx.target._frostStack>0||['chill','soak'].includes(ctx.skill.appliesTag)),effect(ctx){
     const e=ctx.target,b=ctx.battle,c=ctx.cat;if(b.t-(e._frostStackT??-99)>5)e._frostStack=0;
     if(heavy(ctx.skill)&&e._frostStack>0){const n=e._frostStack;e._frostStack=0;bonus(ctx,ctx.dmg*.3*n);}
