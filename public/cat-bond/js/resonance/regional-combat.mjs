@@ -61,24 +61,23 @@ export function inPattern(p,f){
 
 // In each region the arena leaves room for the cats, paths and attack indicators.
 const artFiles={
- harbor:["harbor-arena.webp","tide-shell-watercolor.webp","harbor-arena.svg"],
- forest:["forest-arena.webp","rootbound-watercolor.webp","forest-arena.svg"],
+ harbor:["harbor-arena.webp","tide-shell-watercolor.webp"],
+ forest:["forest-arena.webp","rootbound-watercolor.webp"],
  forge:["emberforge-painted.webp","forge-guardian-painted.webp"],
- sky:["sky-arena.webp","gale-wing-watercolor.webp","sky-arena.svg"],
- library:["library-arena.webp","mirror-sentinel-watercolor.webp","library-arena.svg"],
- starfall:["starfall-arena.webp","orbit-sentinel-watercolor.webp","starfall-arena.svg"],
+ sky:["sky-arena.webp","gale-wing-watercolor.webp"],
+ library:["library-arena.webp","mirror-sentinel-watercolor.webp"],
+ starfall:["starfall-arena.webp","orbit-sentinel-watercolor.webp"],
 };
 const portraitFocalPoints={harbor:.78,forest:.20,forge:.50,sky:.68,library:.50,starfall:.65};
 const art={};
-function loadArt(){for(const [id,[background,enemy,fallback]] of Object.entries(artFiles)){
+function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
  pair.background.src=new URL("../../assets/combat/"+background,import.meta.url).href;if(enemy)pair.enemy.src=new URL("../../assets/combat/"+enemy,import.meta.url).href;
- if(fallback){pair.fallback=new Image();pair.fallback.decoding="async";pair.fallback.src=new URL("../../assets/combat/"+fallback,import.meta.url).href;}
  art[id]=pair;
 }}
 function drawScene(ctx,W,H,region){
  const pair=art[region],ready=image=>image?.complete&&image.naturalWidth>0;
- const img=ready(pair?.background)?pair.background:pair?.fallback;
+ const img=pair?.background;
  if(!ready(img))return false;
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
  window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#e7dceb",bottom:"#d9c0aa",portraitFocus:portraitFocalPoints[region]??.5});

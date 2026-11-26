@@ -123,4 +123,4 @@ function atlas(){
 }
 return {...Object.fromEntries(Object.keys(palettes).map((id,i)=>[id,scene(id,i)])),atlas:atlas()};
 };
-const dir=new URL("../public/cat-bond/assets/resonance-world-v2/",import.meta.url);fs.mkdirSync(dir,{recursive:true});for(const [id,svg] of Object.entries(generateArt()))fs.writeFileSync(new URL(id+".svg",dir),svg);
+const dir=new URL("../artifacts/retired-cat-bond-world-art/",import.meta.url);fs.mkdirSync(dir,{recursive:true});for(const [id,svg] of Object.entries(generateArt()))fs.writeFileSync(new URL(id+".svg",dir),svg);
