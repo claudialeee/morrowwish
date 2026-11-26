@@ -223,7 +223,7 @@ async function run(chapter){
    await talk('Lichuan');await talk('Xingya');await puzzle('Walk on starlight',['Jump to stone 2','Jump to stone 4','Jump to stone 6','Jump to stone 8']);await dialogue('starfall:F-01');await scene('starfall:F-02');
    await puzzle('Hollow Echo illusions',['Middle beacon','Right beacon','Left beacon']);await puzzle('Star chart',['Outer ring','Outer ring','Outer ring','Middle ring','Inner ring','Inner ring']);await click('Observatory · Complete record');await op('explore:catastrophe-record');await cinema('starfall:F-02','Remember the choice');
    await talk('Muling');await dialogue('starfall:F-03');await scene('starfall:F-04');
-   await puzzle('Test the neighboring bells',['West','Relay','East']);await restore('Starfall sanctuary',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan'],'Beyond Stars',[low,mid,high]);await dialogue('starfall:F-04');await cinema('starfall:F-05','Watch the story scene');
+   await puzzle('Test the neighboring bells',['Ring the local bell']);await restore('Starfall sanctuary',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan'],'Beyond Stars',[low,mid,high]);await dialogue('starfall:F-04');await cinema('starfall:F-05','Watch the story scene');
   }else if(chapter==='finale'){
    await battle('Approach the Star Bell','battle:inward-gates','finale');await dialogue('finale:B-01');await scene('finale:B-02');
    await battle('Approach the Star Bell','battle:identify-echo','finale');await dialogue('finale:B-02');await scene('finale:B-03');

@@ -1,0 +1,5 @@
+import assert from 'node:assert/strict';
+import {newNeighborTrial,advanceNeighborTrial,neighborTrialProof,validNeighborTrial} from '../public/cat-bond/js/resonance/canon22-neighbor-trial.mjs';
+const regions=['harbor','forest','forge','sky','library','starfall'];
+for(const dt of [.02,.033,.05]){const s=newNeighborTrial(regions);assert.equal(neighborTrialProof(s),null);let notes=[];for(let i=0;i<500&&!s.done;i++)notes.push(...advanceNeighborTrial(s,dt));assert.equal(notes.length,12);assert.deepEqual(notes.filter(n=>n.endpoint===0).map(n=>n.region),regions);assert.deepEqual(notes.filter(n=>n.endpoint===1).map(n=>n.region),[...regions.slice(1),regions[0]]);const p=neighborTrialProof(s);assert.ok(validNeighborTrial(regions,p));assert.equal(validNeighborTrial(regions,{...p,events:p.events.slice(0,-1)}),false);assert.equal(validNeighborTrial(regions,{...p,frames:p.frames-1}),false);assert.equal(validNeighborTrial(regions,{...p,events:p.events.map((x,i)=>i===0?{...x,region:"starfall"}:x)}),false);}
+console.log('F04 temporary short trial: twelve distinct endpoint replies; rejects incomplete or altered evidence; not a finale unlock');

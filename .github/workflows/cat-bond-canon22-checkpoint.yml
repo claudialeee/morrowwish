@@ -57,6 +57,7 @@ jobs:
           node scripts/test-cat-bond-canon22-mirror.mjs
           node scripts/test-cat-bond-canon22-ledger.mjs
           node scripts/test-cat-bond-canon22-route-model.mjs
+          node scripts/test-cat-bond-canon22-neighbor-trial.mjs
           node scripts/test-cat-bond-canon22-epilogue.mjs
           node scripts/test-cat-bond-canon22-spatial.mjs
           node scripts/test-cat-bond-canon22-finale.mjs

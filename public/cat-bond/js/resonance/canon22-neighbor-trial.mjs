@@ -1,0 +1,6 @@
+// A local melody launches a short, temporary test of neighboring bells.
+// Distinct from B-03's durable reciprocal battle edges and final lock.
+export function newNeighborTrial(regions){return {regions:[...regions],frame:0,acc:0,events:[],done:false};}
+export function advanceNeighborTrial(s,dt){if(!s||s.done||!Number.isFinite(dt)||dt<=0)return [];const emitted=[];s.acc+=Math.min(dt,.1);while(s.acc+1e-9>=.02&&!s.done){s.acc-=.02;s.frame++;const k=s.events.length;if(k<s.regions.length*2&&s.frame===20+14*k){const edge=Math.floor(k/2),endpoint=k%2,from=s.regions[edge],to=s.regions[(edge+1)%s.regions.length],event={edge,endpoint,region:endpoint?to:from,frame:s.frame};s.events.push(event);emitted.push(event);}if(s.events.length===s.regions.length*2&&s.frame>=20+14*(s.events.length-1)+20)s.done=true;}return emitted;}
+export function neighborTrialProof(s){return s?.done?{kind:"short-neighbor-trial",frames:s.frame,events:s.events.map(e=>({...e}))}:null;}
+export function validNeighborTrial(regions,p){if(p?.kind!=="short-neighbor-trial"||!Number.isInteger(p.frames)||p.frames<1||p.frames>500||!Array.isArray(p.events))return false;const s=newNeighborTrial(regions);for(let i=0;i<p.frames&&!s.done;i++)advanceNeighborTrial(s,.02);return s.done&&s.frame===p.frames&&JSON.stringify(s.events)===JSON.stringify(p.events);}

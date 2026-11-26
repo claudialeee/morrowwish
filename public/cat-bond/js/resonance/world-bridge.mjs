@@ -2,6 +2,7 @@
 import {campaign} from "./campaign.mjs";
 import {validMirrorProof} from "./canon22-mirror.mjs";
 import {spatialKind,validSpatialProof} from "./canon22-spatial.mjs";
+import {validNeighborTrial} from "./canon22-neighbor-trial.mjs";
 import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyCache} from "./sky-flight.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
 import {layouts,puzzleSpecs} from "./world-exploration.mjs";
@@ -164,6 +165,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
    const goal=puzzleSpecs[op]?.goal||(op==="melody:starfall"?[0,1,2]:null);
    if(!goal||(!direct&&proof.starfallSequence?.join(",")!==goal.join(",")))return fail("starfall-routing-order");
    if(op==="melody:starfall"){
+    if(direct||!campaign.regions.filter(r=>r!=="starfall").every(r=>v.melodies.includes(r))||!validNeighborTrial(campaign.regions,proof.shortRing))return fail("short-reply-trial-incomplete");
     const ids=["xingya","lichuan"],p=proof.participants;
     if(!ids.every(id=>w.interactions["starfall:F-04:invite:"+id])||!Array.isArray(p)||p.length!==2||new Set(p).size!==2||!ids.every(id=>p.includes(id))||(!direct&&(proof.responses?.length!==3||!proof.responses.every((n,i)=>n.actor===p[i%2]&&n.reply===(goal[i]+1)%3))))return fail("local-response-required");
    }
@@ -187,7 +189,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||(!direct&&(proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
-  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:spatialKind(op)?proof.spatialProof:op==="puzzle:library-echo"?{trace:[...proof.mirrorProof.trace],choice:proof.mirrorProof.choice}:op==="explore:routing-record"?{question:proof.libraryQuestion}:region==="sky"&&proof.flightProof?proof.flightProof:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
+  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:spatialKind(op)?proof.spatialProof:op==="puzzle:library-echo"?{trace:[...proof.mirrorProof.trace],choice:proof.mirrorProof.choice}:op==="explore:routing-record"?{question:proof.libraryQuestion}:op==="melody:starfall"?proof.shortRing:region==="sky"&&proof.flightProof?proof.flightProof:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function harborInvited(){const v=view(),w=world();return v.current?.id==="harbor:H-05"?["qilan","jiedeng"].filter(id=>w.interactions["harbor:H-05:invite:"+id]):[];}
  function inviteHarbor(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={qilan:[.16,.60],jiedeng:[.195,.50]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="harbor"||v.current?.id!=="harbor:H-05"||v.objective.includes("repair:harbor")||!v.objective.includes("melody:harbor")||!token||!api.isCurrentAction(token)||!tideNear(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["harbor:H-05:invite:"+id]:true}}));}

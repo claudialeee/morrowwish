@@ -8,3 +8,5 @@
 - New spatial test covers both chase routes, tampered route and lantern shape, and actual route-specific discovery. Await GitHub browser regression; previous SHA results are not acceptance of this change.
 
 - S-04 now reads the three shared tea lines, pauses for the player's choice, then presents only the corresponding two-line response. Requires meeting Muling; choose cannot skip or replay the choice, and reload retains the selected response. Two cups are displayed procedurally in the conversation; a third cup only appears in the ending garden for the search promise. Actual seating animation and scenery are still graybox/visual acceptance items.
+
+- F-04 now has one local bell input rather than three routing switches. The final Starfall melody produces a temporary six-edge / twelve-endpoint short-reply trial, with independently timed sound and an animated ring. The proof is stored separately from B-03 and requires all five previous local melodies, the Starfall NPCs and their melody. This demonstrates authored in-game replies, not a claim of human playtest or final stable unlock.
