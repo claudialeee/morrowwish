@@ -2062,3 +2062,53 @@ Top new signal this cycle:
 **Combat numerically healthy — 0 P0 this cycle.** All 21 P1 + 15 P2 are `local-numeric` or `additive-flag` under the taxonomy; feedback-layer and compounding-reward asks, not architectural. Logged for owner review.
 
 **Branch state**: `main` 0 ahead of origin/main (squash-pushed `022d88d4` this session); push-main-lock intact until next "push main".
+
+---
+
+## Cycle wvgm0261a — 2026-11-26 (POST committed-heavy `f67c1583` + Phase 0/1 refactor foundation)
+
+**Workflow**: `wvgm0261a` — 6 personas × 8 battles × 1 round
+**Agents**: 73 spawned, 49 delivered, 24 StructuredOutput retry-cap losses
+**Distribution**: 35 critiques → **0 P0**, 19 P1, 16 P2
+**Headline**: "Combat math is largely healthy — the real P0s are instrumentation lies (cautious sim-harness clipped before the backstop; auto-cast telemetry counts key presses) and the top P1s are READOUT gaps (no pack-HP ribbon, no damage-source attribution, no colored skill-tap receipts, no in-fight verb pulse), not more rubber-band knobs."
+
+### funRatings (per-persona voice-rated fun 1-10, piped from telemetry per owner 2026-11-26)
+
+| Persona | Fun |
+|---|---|
+| 狂按型 button masher | **6** ↑ (prior cycles 3-5) |
+| 探索型 explorer | **7** ↑ (prior cycles 4-6) |
+| 懒人型 auto-battler | 5 |
+| 谨慎型 cautious kiter | 3 |
+| 手忙脚乱型 panicky | 3 |
+| 没耐心型 impatient | 3 |
+| **funMean** | **4.5** (first measured cycle) |
+
+### Auto-fix outcome
+
+**Combat reads healthy — zero P0 produced.** Shift is noteworthy: prior 5 cycles all headlined "no forcing function" → this cycle headline is "readout gaps + sim-harness artifacts". committed-heavy (`f67c1583`: smash gate `_stomp/_pressure` lowered + forcedFloor against mashers + smashCd 9+3 → 6+2) appears to have **absorbed the structural P1 that survived 5 cycles**.
+
+### P1 themes (19)
+
+- **Cautious kiter (×3)**: 8/8 "timeouts at exactly 38.2s" is a **sim-harness artifact** — `scripts/playtest-sim.mjs:181 MAXT=60` × `tempoScale=0.64` = 38.4s game-time, so the 85s backstop never fires in sim. Suggestion: bump `MAXT=140` + rerun before treating kiter as a design problem.
+- **Panicky (×3)**: auto-cast telemetry counts KEY PRESSES, not engine casts (`skillsUsed.dodge=0` on auto doesn't mean dodge didn't happen). Needs engine-level cast counter.
+- **Masher (×4)**: combo crescendo saturates at 50, font-size ramp tops at combo 15 → from combo 50→500+ everything identical. Proposed: 3-tier milestone (every 10 / 25 / 50) + font ladder extension.
+- **Masher (×2)**: pack-HP variance 493 vs 177 is enemyUlt meter fill rate × forcedFloor interaction; existing losing-throttle gates one beat too late. Proposed: `chunked` multiplier on ultMeter fill.
+- **Explorer (×3)**: stomp ratchet ceiling; E has zero decision-cost.
+- **Lazy (×4)**: smartAutoAction threshold drops skill casts; auto-dodge invisible in telemetry.
+- **Impatient (×3)**: `captureReady` cosmetic — still want real execute ×2.2 on sub-28% HP.
+
+### P2 themes (16)
+
+- Pack-HP ribbon (top-of-screen aggregated enemy HP)
+- Damage-source attribution strip
+- Colored skill-tap receipts (tap feedback distinct per slot)
+- In-fight verb pulse HUD (dodge icon pulse @ 150dmg burst / shield @ 40% HP / ult @ meter-sat-3s)
+- Pre-battle encounter banner (per-fight mutator preview)
+- ...
+
+### Verdict
+
+**Combat numerically healthy — 0 P0 this cycle, funMean 4.5, mashers at 6/10, explorers at 7/10.** The committed-heavy change this session appears to have moved the biggest needle (structural ask was eating 5 cycles; this cycle structural asks dropped to tuning + readout). Next pass should focus on readout / telemetry gaps + sim-harness timeout fix, not more AI knobs.
+
+**Branch state**: `main` 13 ahead of origin/main (committed-heavy + refactor Phase 0+1 + arcanePulse open + element-role review); push-main-lock intact until next "push main".
