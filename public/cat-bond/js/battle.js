@@ -2212,7 +2212,7 @@ class CaptureBattle {
     if (type === 'protect') {
       // Protect 守护: full block, tiny window, then a vulnerable 后遗症.
       f.protectT = 0.8; f._protectVuln = 1.2;        // after it drops → vulnerableT
-      this.vfx.ring(f.x,f.y,{r0:14,vr:120,life:.5,color:'#9be7c4',width:6});
+      this.vfx.impactType?.(f.x,f.y,'guard',{color:'#9be7c4'});
       this.vfx.text(f.x,f.y-34,'守护','#9be7c4',14);
     } else if (type === 'reflect') {
       // Reflect 反弹壁: bounces projectiles; caster is rooted/slowed while up.
@@ -2243,7 +2243,7 @@ class CaptureBattle {
       f._wardReduction=Math.max(0,Math.min(.8,sk?.wardReduction??.45));
       f._wardRegenPct=sk?.wardRegenPct||0;
       f._wardRetaliateBurn=!!sk?.wardRetaliateBurn;
-      this.vfx.ring(f.x,f.y,{r0:10,vr:190,life:.55,color:'#9dd8ff',width:4});
+      this.vfx.impactType?.(f.x,f.y,'barrier',{color:'#9dd8ff'});
       this.vfx.text(f.x,f.y-34,'护盾','#9dd8ff',14);
     }
     return true;
@@ -2270,7 +2270,7 @@ class CaptureBattle {
       p.x=hitX;p.y=hitY;
       if(wall.side==='me'&&wall.owner.cat?.species==='dundun'){
         wall.hp=(wall.hp??wall.owner.maxhp*.28)-Math.max(0,p.dmg);
-        if(wall.hp<=0){wall.hp=0;wall.remaining=0;wall.owner.reflectT=0;window.CatTraits?.emit('onShieldBreak',{battle:this,cat:wall.owner,reason:'enemyHit'});}
+        if(wall.hp<=0){wall.hp=0;wall.remaining=0;wall.owner.reflectT=0;this.vfx.impactType?.(hitX,hitY,'shieldBreak');window.CatTraits?.emit('onShieldBreak',{battle:this,cat:wall.owner,reason:'enemyHit'});}
       }
       this.vfx.ring(hitX,hitY,{r0:5,vr:100,life:.24,color:'#d6faff',width:3});
       this.vfx.burst(hitX,hitY,{count:this.game.isTouch?5:9,
@@ -2839,8 +2839,9 @@ class CaptureBattle {
       f.x = clamp(f.x + Math.cos(aim) * step, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
       f.y = clamp(f.y + Math.sin(aim) * step, this.topMargin, this.H - this.bottomMargin);
       f._dashTravel = (f._dashTravel || 0) + Math.hypot(f.x - x0, f.y - y0);
+      if(side==='me'&&Math.hypot(f.x-x0,f.y-y0)>.1){this._travelFX ||= [];const prev=this._travelFX.at(-1);if(prev&&prev.actor===f&&this.t-prev.start<.035&&Math.hypot(prev.x2-x0,prev.y2-y0)<2){prev.x2=f.x;prev.y2=f.y;prev.start=this.t;}else this._travelFX.push({actor:f,x:x0,y:y0,x2:f.x,y2:f.y,start:this.t,element:f._pounceSkill?.element||f.element,aim});if(this._travelFX.length>90)this._travelFX.shift();}
       if (f._dashReach != null && f._dashTravel >= f._dashReach - .01) f.dashT = 0;
-      if (f._pounceSkill?.element === 'elec') this.vfx.trail(f.x, f.y, '#ffe6a1', 3);
+      if (f._pounceSkill?.element === 'elec'&&!window.CatBondSkillFX?.drawTravel) this.vfx.trail(f.x, f.y, '#ffe6a1', 3);
     }
     // contact on the nearest foe (resolves ONCE, then ends the pounce)
     if (f.pounce) {
@@ -2857,7 +2858,7 @@ class CaptureBattle {
         this.resolveHit(tgt, side, contact || { element: f.element }, dmg, tgt.x, tgt.y);
         const steal = contact && (contact.lifesteal || contact.leech);
         if (steal && f.alive) f.hp = Math.min(f.maxhp, f.hp + dmg * steal);
-        if (contact?.element === 'elec') {
+        if (contact?.element === 'elec'&&!window.CatBondContactFX) {
           this.vfx.burst(tgt.x, tgt.y, { count: this.game.isTouch ? 9 : 15, color: '#ffe29a', speed: 150, life: .34, r: 3.2 });
           this.vfx.ring(tgt.x, tgt.y, { r0: 9, vr: 120, life: .25, color: '#8da8ef', width: 4 });
         }
@@ -2873,9 +2874,8 @@ class CaptureBattle {
     f.x = clamp(tx, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
     f.y = clamp(ty, this.topMargin, this.H - this.bottomMargin);
     f._hop = 0;
-    this.vfx.shockwave(tx, ty, col);
-    this.vfx.ring(tx, ty, { r0: 8, vr: R * 7, life: 0.34, color: col, width: 6 });
-    this.vfx.burst(tx, ty, { count: this.game.isTouch ? 10 : 16, color: col, speed: 230, life: 0.42, r: 4, grav: 260 });
+    if(window.CatBondContactFX)this.vfx.impactType(tx,ty,'heavy',{skill:f._leapSkill,scale:1.08});
+    else{this.vfx.shockwave(tx,ty,col);this.vfx.ring(tx,ty,{r0:8,vr:R*7,life:.34,color:col,width:6});}
     this.shakeT = Math.max(this.shakeT, 0.2); this.hitstop = Math.max(this.hitstop, 0.05);
     for (const e of this.liveEnemies()) {
       if (Math.hypot(e.x - tx, e.y - ty) > R) continue;
@@ -4455,6 +4455,7 @@ class CaptureBattle {
     }
     for(const v of this.skillStrokes)v.life-=dt;
     this.skillStrokes=this.skillStrokes.filter(v=>v.life>0);
+    if(this._travelFX)this._travelFX=this._travelFX.filter(v=>this.t-v.start<.32);
     if(this.duo){
       this.duoCd=Math.max(0,this.duoCd-dt);
       if([this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)))
@@ -6105,7 +6106,7 @@ class CaptureBattle {
       if(side==='wild'&&target.cat?.species==='dundun'){
         if(!(target._traitWardHP>0))target._traitWardHP=target.maxhp*.28;
         const absorbed=Math.min(raw-dmg,target._traitWardHP);dmg=raw-absorbed;target._traitWardHP-=absorbed;
-        if(target._traitWardHP<=1e-6){target._traitWardHP=0;target.shieldT=0;window.CatTraits?.emit('onShieldBreak',{battle:this,cat:target,reason:'enemyHit'});}
+        if(target._traitWardHP<=1e-6){target._traitWardHP=0;target.shieldT=0;this.vfx.impactType?.(target.x,target.y,'shieldBreak');window.CatTraits?.emit('onShieldBreak',{battle:this,cat:target,reason:'enemyHit'});}
       }
       // Fire barrier trades some prevention for a close-range burn counter.
       if(side==='wild'&&target._wardRetaliateBurn&&
@@ -6526,6 +6527,7 @@ class CaptureBattle {
       window.CatBondWardArt?.drawFlatWall?.(ctx,wall,this.t);
     // vfx under-layer (trails, rings, muzzle)
     this.vfx.draw(ctx,'back');
+    window.CatBondSkillFX?.drawTravel(ctx,this._travelFX||[],this.t);
     this.drawSkillStrokes(ctx);
     this.drawBeams(ctx);
     this.drawDeathRay(ctx);                        // 破坏死光 sweeping beam (additive + scorch)
