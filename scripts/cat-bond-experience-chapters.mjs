@@ -18,7 +18,7 @@ async function run(chapter){
  const fixture=JSON.parse(await fs.readFile(root+'/synthetic-checkpoints/'+start.replace(':','-')+'.json','utf8'));
  assert.equal(fixture.provenance,'synthetic engine-model browser-restored');
  const context=await browser.newContext({storageState:fixture.storageState,viewport:{width:1440,height:900}});
- const page=await context.newPage(),errors=[],readLines=[],steps=[];
+ const page=await context.newPage(),errors=[],readLines=[],steps=[],battleMeasurements=[];
  page.setDefaultTimeout(18000);page.on('pageerror',e=>errors.push(e.message));
  await attachExperienceRecorder(context,page,{id:'chapter-'+chapter,root:out,synthetic:true,chapterEntry:start});
  const view=()=>page.evaluate(()=>CatBondResonance.view());
@@ -98,6 +98,23 @@ async function run(chapter){
   await shot(operation+'-battle');
   const before=await page.evaluate(()=>__game.battle?.team?.map(f=>({actor:f.cat?.storyActor||f.cat?.species,level:f.cat?.level,hp:f.hp,maxhp:f.maxhp})));
   const t=Date.now();
+  const measurement={scene:(await view()).current?.id,operation,type,mode:'auto',initialTeam:before,status:'started',samples:[]};
+  battleMeasurements.push(measurement);
+  // Read-only observation of the actual game. Keep the last live battle state
+  // even when the battle object is destroyed before the result panel appears.
+  await page.evaluate(()=>{
+   if(window.__cbChapterBattleTrace)clearInterval(window.__cbChapterBattleTrace.timer);
+   const trace={samples:[]};
+   const sample=()=>{
+    const b=window.__game?.battle;
+    if(!b||trace.samples.length>=1800)return;
+    trace.samples.push({t:b.t,duoUses:b.duoUses??null,result:b.result??null,
+     team:(b.team||[]).map(f=>({actor:f.cat?.storyActor||f.cat?.species||null,level:f.cat?.level??null,hp:f.hp,maxhp:f.maxhp,alive:f.alive})),
+     enemies:(b.enemies||[]).map(f=>({hp:f.hp,maxhp:f.maxhp,alive:f.alive}))});
+   };
+   sample();trace.timer=setInterval(sample,250);window.__cbChapterBattleTrace=trace;
+  });
+  try{
   if(type==='forge'){
    for(let i=0;i<240;i++){if(await page.locator('#cb-forge-result').isVisible())break;const support=page.locator('[data-forge-support-button]');if(await support.isVisible()&&await support.isEnabled())await support.click();await page.waitForTimeout(750);}
    await page.locator('#cb-forge-result').waitFor({timeout:180000});await shot(operation+'-result');assert.equal(await page.locator('#cb-forge-result h2').innerText(),'FURNACE STABILIZED');await page.locator('[data-forge-return]').click();
@@ -112,7 +129,20 @@ async function run(chapter){
    await page.waitForFunction(()=>__game.scene==='map',null,{timeout:180000});
    await page.locator('#library-battle-ok').waitFor();await shot(operation+'-result');await page.locator('#library-battle-ok').click();
   }
-  await op(operation);if(operation==='battle:central-echo')assert.equal(await page.evaluate(()=>CatBondResonance.snapshot().support.length),6,'All six regions must have answered');steps.push({battle:operation,wallSeconds:(Date.now()-t)/1000,team:before,result:'verified win'});
+  await op(operation);if(operation==='battle:central-echo')assert.equal(await page.evaluate(()=>CatBondResonance.snapshot().support.length),6,'All six regions must have answered');
+  measurement.status='verified win';
+  }finally{
+   measurement.wallSeconds=(Date.now()-t)/1000;
+   measurement.samples=await page.evaluate(()=>{
+    const trace=window.__cbChapterBattleTrace;
+    if(!trace)return [];
+    clearInterval(trace.timer);delete window.__cbChapterBattleTrace;return trace.samples;
+   }).catch(()=>[]);
+   measurement.last=measurement.samples.at(-1)||null;
+   await fs.writeFile(out+'/'+chapter+'-combat.json',JSON.stringify({provenance:'synthetic chapter start, actual browser battles',chapter,battles:battleMeasurements},null,2));
+  }
+  assert.ok(measurement.samples.length,'Actual combat telemetry is required: '+operation);
+  steps.push({battle:operation,wallSeconds:measurement.wallSeconds,team:before,result:measurement.status,gameSeconds:measurement.last?.t,duoUses:measurement.last?.duoUses});
  }
  async function cinema(id,label){
   await scene(id);await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady(),null,{timeout:15000});await click(label);
@@ -195,11 +225,13 @@ async function run(chapter){
   const missing=expected.flatMap(s=>s.requires.filter(op=>!final.snapshot.evidence[s.id]?.includes(op)).map(op=>s.id+'/'+op));
   assert.deepEqual(missing,[],'Every required chapter operation must be durably recorded');
   assert.ok(expected.every(s=>final.view.completed.includes(s.id)),'All chapter scenes must be completed');
+  const requiredBattles=expected.flatMap(s=>s.requires.filter(op=>op.startsWith('battle:')));
+  assert.deepEqual(requiredBattles.filter(op=>!battleMeasurements.some(b=>b.operation===op&&b.status==='verified win'&&b.samples.length)),[],'Every required battle needs real outcome and telemetry');
   assert.deepEqual(errors,[]);
-  return {chapter,status:'passed',start,next,scenes:expected.map(s=>s.id),readLines,steps,stagingArt:chapter==='starfall'||chapter==='finale'||chapter==='epilogue'};
+  return {chapter,status:'passed',start,next,scenes:expected.map(s=>s.id),readLines,steps,battleMeasurements:battleMeasurements.map(({samples,...m})=>({...m,sampleCount:samples.length})),stagingArt:chapter==='starfall'||chapter==='finale'||chapter==='epilogue'};
  }catch(e){
   await shot('FAIL').catch(()=>{});const observed=await view().catch(()=>null);
-  return {chapter,status:'failed',start,next,error:String(e).slice(0,2500),stack:String(e.stack||'').slice(0,3000),lastActions:steps.slice(-5),observedScene:observed?.current?.id,remaining:observed?.objective,completed:expected.filter(s=>observed?.completed.includes(s.id)).map(s=>s.id),readLines,steps,pageErrors:errors};
+  return {chapter,status:'failed',start,next,error:String(e).slice(0,2500),stack:String(e.stack||'').slice(0,3000),lastActions:steps.slice(-5),observedScene:observed?.current?.id,remaining:observed?.objective,completed:expected.filter(s=>observed?.completed.includes(s.id)).map(s=>s.id),readLines,steps,battleMeasurements:battleMeasurements.map(({samples,...m})=>({...m,sampleCount:samples.length})),pageErrors:errors};
  }finally{await context.close();}
 }
 try{
