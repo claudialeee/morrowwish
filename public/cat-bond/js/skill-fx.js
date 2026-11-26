@@ -16,7 +16,7 @@ const LIST=[
 ['boxAmbush','box','#c3a37f',55,16],['quakeStomp','stomp','#a6c48b',61,17],
 ['photosynth','sun','#c0eeab',55,18],['staticPounce','dash','#ffe9a1',66,19],
 ['boltArc','chain','#fbdb8c',71,20],['lightningOrb','orb','#dce8fe',54,21],
-['thunderStream','thunder','#fff1b0',69,22],['magneticField','chain','#b5a6ff',46,50],['shadowSwipe','shadow','#ad91db',57,23],
+['thunderStream','thunder','#fff1b0',69,22],['magneticField','chain','#b5a6ff',46,50],['shadowSwipe','shadow','#ad91db',57,23],['shadowTendrils','shadow','#b08ada',42,53],
 ['shadeLeap','mist','#a78ac9',61,24],['batAround','claw','#b99bdd',42,25],
 ['hex','hex','#b298d4',51,26],['prismBeam','prism','#fff0c7',64,27],
 ['highGround','comet','#ffe6ae',62,28],['blessFur','halo','#f9e8b9',57,29],
@@ -80,7 +80,7 @@ function cast(b,f,sk,aim){
  // A second circular skill glyph used to bury both the paws and the target.
  // Keep the per-skill HIT accent, which spawns only after genuine contact.
  if(sk.kind==='melee')return true;
- if(['waterJet','magneticField'].includes(sk.id))return true;
+ if(['waterJet','magneticField','shadowTendrils'].includes(sk.id))return true;
  if(sk.id==='mirrorWall')return true; // the physical 220px panel owns all visual feedback
  const g=REG[sk.id],dur=['beam','aoe','pounce','dash'].includes(sk.kind)?.51:.36;
  push(b,{kind:'signatureCast',skillId:sk.id,x:f.x,y:f.y,angle:aim||0,
@@ -606,7 +606,53 @@ function drawElectricStream(c,b,time,ex,ey){
    c.restore();return true;
  }
 
+
+ // Solid tapered ribbons, not recolored flame particles. Each arm grows from the
+ // mouth, fans into the authored corridor, then curls with its own phase.
+ function drawShadowTendrils(c,b,time,ex,ey){
+   const x=b._ox,y=b._oy,L=Math.hypot(ex-x,ey-y);
+   if(L<1)return true;
+   const age=Math.max(0,b.max-b.t),a=clip(Math.min(1,age/.10,b.t/.15));
+   const reach=L*ease(clip(age/.11)),w=b.width||30;
+   if(reach<1||a<=0)return true;
+   c.save();c.translate(x,y);c.rotate(Math.atan2(ey-y,ex-x));
+   for(const j of [-2,2,-1,1,0]){
+     const n=30,span=reach*(1-Math.abs(j)*.075),points=[];
+     for(let i=0;i<=n;i++){
+       const u=i/n,en=Math.sin(u*PI*.8),tip=Math.pow(u,3);
+       const yy=j*w*.34*Math.sin(u*PI*.54)+Math.sin(u*8.6-time*7+j*1.7)*w*.23*en+Math.sin(time*5+j)*w*.11*tip;
+       const xx=span*u-7*tip*Math.sin(time*5+j);
+       const r=(5.4+Math.abs(j)*.3)*Math.pow(1-u,.62)+.25;
+       points.push([xx,yy,r]);
+     }
+     const grad=c.createLinearGradient(0,0,span,0);
+     grad.addColorStop(0,'#34213e');grad.addColorStop(.35,'#51306c');grad.addColorStop(.75,'#76509b');grad.addColorStop(1,'#ae83d5');
+     c.globalAlpha=a*.98;c.fillStyle=grad;c.strokeStyle='#281b3e';c.lineWidth=1.4;
+     c.beginPath();points.forEach(([px,py,r],i)=>i?c.lineTo(px,py-r):c.moveTo(px,py-r));
+     for(let i=n;i>=0;i--){const [px,py,r]=points[i];c.lineTo(px,py+r);}
+     c.closePath();c.fill();c.stroke();
+     stroke(c,j%2?'#b99ae0':'#9972c5',1.5,a*.78);
+     path(c,points.slice(1,-2).map(([px,py,r])=>[px,py-r*.5]));
+     for(let k=5;k<n-3;k+=5){const [px,py,r]=points[k];
+       c.globalAlpha=a*.75;c.fillStyle='#cab0e7';c.beginPath();c.ellipse(px,py+r*.18,Math.max(.5,r*.5),Math.max(.3,r*.21),0,0,TAU);c.fill();}
+   }
+   c.restore();return true;
+ }
+ function drawShadowBind(c,v,time){
+   const k=clip(v.life/v.max),p=1-k,r=Math.max(10,v.radius||18);
+   c.save();c.translate(v.x,v.y);c.rotate(v.angle||0);
+   for(let j=0;j<3;j++){
+     const y=(j-1)*r*.46,rx=r*(.87+.15*p);
+     for(const [col,width,alpha] of [['#2e1c43',5.4,.96],['#9162be',3.4,.92],['#d3b3ef',1.05,.88]]){
+       stroke(c,col,width,k*alpha);c.beginPath();c.ellipse(0,y,rx,r*.43,-.28+j*.23,PI*.04,PI*1.02);c.stroke();
+     }
+   }
+   for(let i=0;i<4;i++){const a=i*TAU/4+time*2;point(c,Math.cos(a)*r,Math.sin(a)*r*.6,1.4,k>.5?'#eed8fc':'#ad84d3');}
+   c.restore();return true;
+ }
+
  function drawCombatBeam(c,b,time,ex,ey){
+   if(b.sk?.id==='shadowTendrils')return drawShadowTendrils(c,b,time,ex,ey);
    if(b.sk?.id==='waterJet')return drawWaterLance(c,b,time,ex,ey);
    if(b.sk?.id==='thunderStream')return drawElectricStream(c,b,time,ex,ey);
    const fire=b.sk?.id==='flameSweep',water=b.sk?.id==='waterJet';
@@ -694,6 +740,7 @@ function drawIdentitySupport(c,v,time=0){
 }
 
 function draw(ctx,v,time=0){
+ if(v?.kind==='shadowBindHit'||(v?.skillId==='shadowTendrils'&&v.kind==='signatureHit'))return drawShadowBind(ctx,v,time);
  if(v?.kind==='waterPierce'||(v?.skillId==='waterJet'&&v.kind==='signatureHit'))return drawWaterPierce(ctx,v);
  if(v?.meteorGround)return drawMeteorGround(ctx,v);
  const spec=REG[v?.skillId];if(!spec||!ctx)return false;
