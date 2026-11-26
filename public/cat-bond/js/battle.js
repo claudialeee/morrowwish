@@ -5459,8 +5459,14 @@ class CaptureBattle {
       const dmg = e.dmg * (ult.power || 2.0) * 0.6;              // reduced-power enemy ult
       const n = 16 + e.rIdx * 4;
       const off = this.rng() * Math.PI;
+      // Playtest w9bg40pg8 P0-1 (masher 5/8 identical 428-dmg flees, auto-fix,
+      // unreviewed, not pushed): tag every pellet of this volley with a shared
+      // ultCastUid so resolveHit can cap cumulative single-cast damage per
+      // target cat at ≤35% maxhp, rescuing mashers who can't interrupt or dodge
+      // the 1.7s telegraph. Non-ult volleys untouched — only this one cast.
+      const ultCastUid = ++this._ultCastUidCounter || (this._ultCastUidCounter = 1);
       for (let i = 0; i < n; i++)
-        this.spawnProj(e.x, e.y, off + (i / n) * Math.PI * 2, 230, dmg, 'wild', ucol, 8, 'ball', { element: ult.element || e.element, appliesTag: ult.appliesTag });
+        this.spawnProj(e.x, e.y, off + (i / n) * Math.PI * 2, 230, dmg, 'wild', ucol, 8, 'ball', { element: ult.element || e.element, appliesTag: ult.appliesTag, _ultCastUid: ultCastUid, _ultCastCapFrac: 0.35 });
       this.vfx.shockwave(e.x, e.y, ucol);
       this.vfx.ring(e.x, e.y, { r0: 12, vr: 620, life: 0.5, color: ucol, width: 8 });
       this.vfx.ring(e.x, e.y, { r0: 24, vr: 420, life: 0.4, color: '#fff', width: 3 });
@@ -6102,6 +6108,20 @@ class CaptureBattle {
   resolveHit(target, side, skill, dmg, x, y, proj) {
     if (!target || !target.alive) return { blocked: false, reflected: false, dealt: 0 };
     if ((target.inv || 0) > 0 || (target.flash || 0) > 0) return { blocked: false, reflected: false, dealt: 0 };
+    // Playtest w9bg40pg8 P0-1 (auto-fix, unreviewed, not pushed): per-target
+    // per-enemyUlt-cast cumulative damage cap. Tagged pellets share a
+    // _ultCastUid; once accumulated damage on THIS target from THIS cast
+    // reaches capFrac × maxhp, subsequent pellets of the same volley clamp to
+    // 0. Rescues mashers who can't interrupt or dodge the 1.7s telegraph.
+    if (skill && skill._ultCastUid && target.maxhp) {
+      const uid = skill._ultCastUid;
+      target._ultCastHit = target._ultCastHit || {};
+      const cap = target.maxhp * (skill._ultCastCapFrac || 0.35);
+      const prior = target._ultCastHit[uid] || 0;
+      if (prior >= cap) return { blocked: false, reflected: false, dealt: 0 };
+      dmg = Math.min(dmg, cap - prior);
+      target._ultCastHit[uid] = prior + Math.max(0, dmg);
+    }
     const col = this.elemColor(skill && skill.element);
     // 1) PROTECT (守护): fully blocks the next hit of any kind for its window.
     if ((target.protectT || 0) > 0) {
