@@ -24,13 +24,13 @@ try{
  for(const asset of assets){assert.ok(asset.width>0&&asset.height>0&&asset.opaque>0,asset.id);if(asset.group!=='story')assert.ok(asset.transparent>0,asset.id+' transparent background');}
  // Test-only gallery invokes the same CatArt renderer used by the live game. It does not alter saves.
  const roster=await page.evaluate(async()=>{
-  const list=[GameData.speciesById('jinjc'),GameData.speciesById('story_muling'),...GameData.SPECIES];
+  const list=[GameData.speciesById('jinjc'),...Object.values(GameData.STORY_SPECIES),...GameData.SPECIES];
   const stage=document.createElement('section');stage.id='core-art-review-gallery';stage.style.cssText='position:fixed;inset:0;z-index:999999;background:#f5ebda;color:#42392f;display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:16px;overflow:auto';
   document.body.append(stage);
   for(const sp of list){
    const cell=document.createElement('div'),canvas=document.createElement('canvas'),name=document.createElement('p');
    canvas.width=200;canvas.height=225;canvas.style.cssText='width:160px;height:180px';
-   name.textContent=sp.name+' · '+sp.id;cell.style.cssText='text-align:center;min-height:235px';cell.append(canvas,name);stage.append(cell);
+   name.textContent=sp.name+' · '+sp.id;cell.dataset.reviewActor=sp.id;cell.style.cssText='text-align:center;min-height:235px';cell.append(canvas,name);stage.append(cell);
    CatArt.renderCatThumb(canvas,sp);
   }
   const until=Date.now()+15000;
@@ -38,7 +38,10 @@ try{
   while(Date.now()<until&&!Array.from(stage.querySelectorAll('canvas')).every(visible))await new Promise(r=>setTimeout(r,100));
   return Array.from(stage.querySelectorAll('canvas')).map((c,i)=>({id:list[i].id,rendered:visible(c)}));
  });
- assert.equal(roster.length,18);assert.ok(roster.every(x=>x.rendered),'all cats must render via actual game renderer');
+ assert.equal(roster.length,30);assert.equal(new Set(roster.map(x=>x.id)).size,30);assert.ok(roster.every(x=>x.rendered),'all cats must render via actual game renderer');
+ // Individual screenshots preserve evidence for actors below the gallery fold.
+ await fs.mkdir(out+'/actors',{recursive:true});
+ for(const actor of roster){assert.match(actor.id,/^[a-z0-9_]+$/);await page.locator('[data-review-actor="'+actor.id+'"]').screenshot({path:out+'/actors/'+actor.id+'.png'});}
  // Verify the actual combat prototype consumes the species-specific passive.
  // These isolated calculations are not player-input battle outcomes.
  const passiveChecks=await page.evaluate(()=>{
@@ -94,5 +97,5 @@ try{
  assert.equal(passiveChecks.length,29);
  assert.deepEqual(passiveChecks.filter(c=>!c.pass),[],'All active roster passives must pass actual battle prototype assertions');
  console.log('BROWSER PASSIVE HOOK PASS',passiveChecks.length,'actual battle prototype checks (not encounter outcomes)');
- assert.deepEqual(errors,[]);await page.screenshot({path:out+'/rendered-gallery.png'});await fs.writeFile(out+'/index.json',JSON.stringify({assets,roster},null,2));console.log('CORE ART BROWSER PASS',assets.length,'decoded images,',roster.length,'actual game-rendered cats');
+ assert.deepEqual(errors,[]);await page.locator('#core-art-review-gallery').evaluate(e=>e.scrollTop=0);await page.screenshot({path:out+'/rendered-gallery.png'});await fs.writeFile(out+'/index.json',JSON.stringify({assets,roster},null,2));console.log('CORE ART BROWSER PASS',assets.length,'decoded images,',roster.length,'actual game-rendered cats');
 }finally{await browser.close();}
