@@ -1469,7 +1469,7 @@ const UI = {
     });
   },
   openBreedPicker() {
-    const cats = State.S.cats.filter(c=>!c.storyActor); this._breedSel = [];
+    const cats = State.S.cats.filter(c=>GameData.SPECIES.some(sp=>sp.id===c.species)); this._breedSel = [];
     const render = () => {
       const chips = cats.map(c => { const sp = GameData.speciesById(c.species); const sel = this._breedSel.includes(c.uid); return `<div class="chip ${sel ? 'sel' : ''}" data-uid="${c.uid}"><canvas width="44" height="38"></canvas><div><div style="font-weight:700">${GameData.speciesName(sp)}</div><div class="tiny">${GameData.RARITY[sp.rarity].name}</div></div></div>`; }).join('');
       this.panel(`<span class="card-close">×</span><h2>🥚 选两只猫繁育</h2><p class="sub">已选 ${this._breedSel.length}/2</p><div class="roster">${chips}</div><div class="btn-row"><button class="btn gold" id="bp-go" ${this._breedSel.length === 2 ? '' : 'disabled'}>开始孵化</button></div>`);
@@ -3496,7 +3496,7 @@ const UI = {
       yunduo:['布偶猫','Ragdoll'],
     };
     const options=storyOpening
-      ?Object.keys(storyBreeds).map(id=>GameData.speciesById(id))
+      ?[GameData.speciesById('jinjc')]
       :GameData.SPECIES.filter(sp=>sp.rarity==='N').slice(0,3);
     const english=window.MorrowwishI18n?.get?.()!=='zh',locale=english?1:0;
     const elements={fire:['火系','Fire'],grass:['草系','Nature'],water:['水系','Water'],light:['光系','Light']};
@@ -3532,7 +3532,7 @@ const collectiblePortraits=new Map();
 const portraitRequests=new WeakMap();
 function renderCollectiblePortrait(canvas,species,cat){
   if(!canvas||!species)return;
-  const folders={jinjc:'starter-portraits',yunduo:'starter-portraits'};
+  const folders={yunduo:'starter-portraits'};
   const folder=folders[species.id];
   const request={};
   portraitRequests.set(canvas,request);

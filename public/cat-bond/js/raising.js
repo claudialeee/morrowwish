@@ -506,7 +506,7 @@ function startBreeding(uidA, uidB) {
   if (uidA === uidB) return { ok: false, msg: '需要两只不同的猫猫' };
   const a = findCat(uidA), b = findCat(uidB);
   if (!a || !b) return { ok: false, msg: '找不到猫猫' };
-  if(a.storyActor||b.storyActor)return {ok:false,msg:'剧情伙伴不能繁育'};
+  if(![a,b].every(c=>GameData.SPECIES.some(sp=>sp.id===c.species)))return {ok:false,msg:'只有收藏猫咪可以繁育'};
   if (isBusy(uidA) || isBusy(uidB)) return { ok: false, msg: '猫猫正在忙（工作或繁育中）' };
   r.breeding = { aUid: uidA, bUid: uidB, progress: 0, duration: BREED_SECONDS, done: false, startAt: Date.now() };
   return { ok: true };
@@ -514,7 +514,7 @@ function startBreeding(uidA, uidB) {
 
 function breedPreview(uidA, uidB) {
   const a = findCat(uidA), b = findCat(uidB);
-  if (!a || !b) return null;
+  if (!a || !b || ![a,b].every(c=>GameData.SPECIES.some(sp=>sp.id===c.species))) return null;
   const combo = findCombo(a.species, b.species);
   let shinyOdds = SHINY_RATE;
   if (a.trait === 'fortune' || b.trait === 'fortune') shinyOdds *= 2;
@@ -549,7 +549,7 @@ function collectEgg() {
   if (!r.breeding) return { ok: false, msg: '暖窝里没有蛋' };
   if (!r.breeding.done) return { ok: false, msg: '蛋还没孵好' };
   const a = findCat(r.breeding.aUid), b = findCat(r.breeding.bUid);
-  if (!a || !b) { r.breeding = null; return { ok: false, msg: '父母不见了' }; }
+  if (!a || !b || ![a,b].every(c=>GameData.SPECIES.some(sp=>sp.id===c.species))) { r.breeding = null; return { ok: false, msg: '繁育对象不再可用' }; }
 
   // decide species: combo target, else inherit a parent
   const combo = findCombo(a.species, b.species);
