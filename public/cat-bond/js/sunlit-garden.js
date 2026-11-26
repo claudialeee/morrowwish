@@ -67,14 +67,14 @@
     const en=isEnglish(),ending=!!v.ending,epilogue=['epilogue:E-02','epilogue:E-03'].includes(scene),talk=!ending&&(epilogue||v.cursor<v.current.lines.length),departure=scene==='prologue:P-05'&&!talk;
     const seen=state()?.sunlitGarden?.bookGuide||[],next=guideTabs.find(t=>!seen.includes(t[0]));
     const key=scene+'|'+talk+'|'+en+'|'+v.openingMet+'|'+seen.join(',')+'|'+(ending?v.postgame.length+'|'+v.returned.length:'');if(key===guideKey)return;guideKey=key;
-    guide.replaceChildren();
+    guide.replaceChildren();guide.classList.remove('sg-minimal-opening');
     const title=document.createElement('strong');
     title.textContent=ending?(en?'The world answers again':'六地再次回应'):epilogue?(scene==='epilogue:E-02'?(en?'A promise to repair':'承担责任'):(en?'The second garden key':'第二把花园钥匙')):departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
     const hint=document.createElement('span');hint.textContent=ending?(en?'After the adventure · '+v.postgame.length+'/13 tasks · '+v.returned.length+'/12 visitors':'冒险之后 · '+v.postgame.length+'/13 项任务 · '+v.returned.length+'/12 位来访伙伴'):epilogue?(en?'Speak with Muling and finish the story in Sunlit Garden.':'与暮铃交谈，在阳光花园完成故事。'):departure?(en?'Prepare your companions before heading to Misttide Harbor.':'整理伙伴，准备前往霁潮港。'):talk?(en?'Open Resonance Book to explore your cats, party, workshop and Catdex, then speak to Muling.':'可打开星月之书查看猫咪、队伍、工坊和 Catdex，再与暮铃交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
     guide.append(title,hint);
     const row=document.createElement('div');guide.append(row);
     const add=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};row.append(b)};
-    if(!epilogue&&!ending&&next&&(talk||departure)){
+    if(!epilogue&&!ending&&next&&talk&&!departure){
       hint.textContent=en?'Optional companion guide · '+seen.length+'/4. Next: '+next[2]+'. You may continue the story at any time.':'可选养成引导 · '+seen.length+'/4。下一步：'+next[1]+'。随时可以继续剧情。';
       add('查看'+next[1],'Explore '+next[2],()=>window.ResonanceBook?.open(next[0]));
     }
@@ -82,10 +82,15 @@
     if(ending){add('花园复兴','Garden Restoration',()=>window.GardenProjects?.open?.());add('继续探索','Continue exploring',()=>game.openWorldMap());}
     if(departure){
       title.textContent=en?'Find your name':'寻找自己的名字';hint.textContent=en?'You woke up without memories. Explore the garden or head to Misttide Harbor for clues.':'你在花园醒来，却想不起自己的名字。可以自由探索，也可以去霁潮港寻找线索。';
-      if(!v.openingMet)add('看看陌生猫的航图（可选）','Help the stranger with her chart (optional)',()=>narrativeAdapter?.interactHomeNpc('muling'));
-      add('阅读旧铃木牌（可选）','Read the old bell plaque (optional)',()=>game.toast({zh:'多年前，一颗坠落的星辰击坏了星铃。许多猫咪因此忘记了家园和亲友。愿每一只迷路的猫，都能找到回家的路。',en:'Years ago a falling star damaged the Star Bell. Many cats forgot their homes and loved ones. May every lost cat find its way home.'}));
+      guide.classList.add('sg-minimal-opening');
       add('下一场景 · 霁潮港','Next scene · Misttide Harbor',()=>{game.openWorldMap();if(game.scene==='map')window.WorldMap?.enterRegion?.('harbor')});
-      add('前往世界地图','World map',()=>game.openWorldMap());
+      row.firstElementChild.classList.add('sg-main-continue');
+      const details=document.createElement('details');details.className='sg-explore-options';
+      const summary=document.createElement('summary');summary.textContent=en?'Explore clues':'探索线索';details.append(summary);row.append(details);
+      const optional=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};details.append(b);};
+      if(!v.openingMet)optional('看看陌生猫的航图（可选）','Help the stranger with her chart (optional)',()=>narrativeAdapter?.interactHomeNpc('muling'));
+      optional('阅读旧铃木牌（可选）','Read the old bell plaque (optional)',()=>game.toast({zh:'多年前，一颗坠落的星辰击坏了星铃。许多猫咪因此忘记了家园和亲友。愿每一只迷路的猫，都能找到回家的路。',en:'Years ago a falling star damaged the Star Bell. Many cats forgot their homes and loved ones. May every lost cat find its way home.'}));
+
     }
   }
   function ensureRoot(){

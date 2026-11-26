@@ -1,5 +1,5 @@
 import "./narrative-host.mjs";
-import "./npc-world.mjs?v=player-first-opening-2";
+import "./npc-world.mjs?v=encounter-fix-1";
 import "./ambient-play.mjs";
 import "./world-runtime.mjs?v=player-first-nav-3";
 import "./title-entry.mjs?v=player-first-opening-2";

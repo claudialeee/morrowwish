@@ -145,6 +145,26 @@ jobs:
                 const completed=await page.evaluate(()=>State.S.resonance.completed.slice(0,4).join(','));
                 if(completed!=='prologue:P-01,prologue:P-02,prologue:P-03,prologue:P-04')throw Error('Opening presentation checkpoints missing');
                 if(await page.evaluate(()=>CatBondResonance.view().muling!=='unmet'||Object.values(State.S.resonance.evidence).flat().some(op=>op.startsWith('cinematic:'))))throw Error('Opening grants unearned companion or old cinematic evidence');
+                // Actual encounter input on all three deployed profiles; no state mutation or forced click.
+                const guide=page.locator('.sg-prologue-guide');
+                await guide.waitFor({state:'visible'});
+                if(await guide.locator('button:visible').count()!==1)throw Error('Opening guide must expose only the primary navigation button');
+                await guide.locator('summary').click();
+                await guide.getByRole('button',{name:'Help the stranger with her chart (optional)',exact:true}).click();
+                const encounter=page.locator('#cb-traveler-encounter');
+                await encounter.getByRole('button',{name:'Pick up the chart',exact:true}).waitFor({state:'visible'});
+                await page.screenshot({path:'preview-'+prefix+'-encounter.png'});
+                await encounter.getByRole('button',{name:'Leave for now',exact:true}).click();
+                await encounter.waitFor({state:'detached'});
+                await guide.locator('summary').click();
+                await guide.getByRole('button',{name:'Help the stranger with her chart (optional)',exact:true}).click();
+                await encounter.getByRole('button',{name:'Pick up the chart',exact:true}).click();
+                await encounter.getByRole('button',{name:'Return the chart',exact:true}).waitFor({state:'visible'});
+                await encounter.locator('.res-line').click();
+                await encounter.getByRole('button',{name:'Say goodbye',exact:true}).click();
+                await encounter.waitFor({state:'detached'});
+                await page.waitForFunction(()=>CatBondResonance.view().openingMet===true);
+                if(await guide.locator('button:visible').count()!==1)throw Error('Opening guide expanded after dialogue');
                 if(await page.locator('#yard-actions').isVisible())throw Error('Garden floating dock must be hidden');
                 await page.locator('#map-menu').click();
                 const menu=page.locator('#cb-system-menu');
@@ -176,7 +196,11 @@ jobs:
                 await page.locator('#intro-continue').click();
                 await page.locator('#intro-slot-list [data-slot="slot1"]').click();
                 await page.waitForFunction(uid=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&State.S.cats[0].uid===uid&&CatBondResonance.view().current?.id==='prologue:P-05',uid);
+                if(!await page.evaluate(()=>CatBondResonance.view().openingMet))throw Error('Encounter completion lost on reload');
                 await page.screenshot({path:'preview-'+prefix+'-reloaded.png'});
+                await page.locator('.sg-prologue-guide').getByRole('button',{name:'Next scene · Misttide Harbor',exact:true}).click();
+                await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01'&&WorldMap.currentRegion==='harbor');
+                await page.screenshot({path:'preview-'+prefix+'-harbor.png'});
                 if(external.length||errors.length)throw Error('Unexpected external requests / page errors: '+JSON.stringify({external,errors}));
                 console.log('PREVIEW NEW SLOT AND RELOAD VERIFIED: '+prefix+' '+page.url());
               }catch(error){

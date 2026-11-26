@@ -125,3 +125,19 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .rw-world .rw-fit-rail .rw-optional-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px}
 #stage .rw-world .rw-fit-rail .rw-optional-grid .rw-button{white-space:normal;min-width:0}
 #stage .res-ambient-dismiss{margin-inline-start:8px;background:transparent!important;color:#786249!important}
+
+/* Opening encounter has its own actions, not the retired generic dialogue toolbar.
+   Keep controls visible even under the fullbleed dialogue simplification. */
+#stage #cb-traveler-encounter .cb-encounter-controls{display:flex!important;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px!important}
+#stage #cb-traveler-encounter .cb-encounter-controls button{min-height:44px;cursor:pointer;margin:0;padding:7px 12px}
+#stage #cb-traveler-encounter .cb-encounter-next{background:#e7ca91!important;border-color:#ab854d!important;color:#44341f!important;font-weight:750;flex:1 1 auto}
+#stage #cb-traveler-encounter .cb-encounter-language{margin-left:auto}
+#stage .sg-prologue-guide.sg-minimal-opening{width:min(320px,calc(100% - 24px));padding:9px 11px;gap:5px}
+#stage .sg-minimal-opening>div{display:flex;align-items:center;gap:6px}
+#stage .sg-minimal-opening .sg-main-continue{flex:1 1 auto;min-height:44px;background:#e7ca91!important;font-weight:750!important}
+#stage .sg-explore-options{flex:0 1 auto}
+#stage .sg-explore-options summary{cursor:pointer;min-height:44px;display:flex;align-items:center;padding:0 7px;font-weight:650;color:#725631}
+#stage .sg-explore-options summary::after{content:" ▾";padding-left:4px}
+#stage .sg-explore-options[open]{flex:1 1 100%;display:grid;gap:4px}
+#stage .sg-explore-options[open] button{display:block;width:100%;margin:3px 0 0;text-align:left}
+@media(max-height:480px){#stage #cb-traveler-encounter .res-portrait{max-height:24vh!important}#stage #cb-traveler-encounter .cb-encounter-controls{margin-top:6px!important;gap:4px}#stage #cb-traveler-encounter .cb-encounter-controls button{min-height:40px;padding:5px 8px}}

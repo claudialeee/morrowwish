@@ -89,7 +89,7 @@ for(const profile of [
   const selectedBreed='jinjc';
   assert.equal(await page.evaluate(()=>State.S.cats[0].species),selectedBreed);
   assert.equal(await page.evaluate(()=>CatBondResonance.view().muling),'unmet');
-  await page.locator('.sg-prologue-guide').getByRole('button',{name:'World map'}).click();
+  await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="yard-map"]').click();
   await waitMap();
   const atlasMenu=page.locator('.rw-atlas-menu > summary');
   assert.equal(await page.locator('.rw-system-nav').isVisible(),false,'Atlas controls start collapsed');
