@@ -9,14 +9,14 @@ import {chromium} from 'playwright';
 
 const base=process.env.MOBILE_PLAYTEST_ORIGIN||'http://127.0.0.1:8765';
 const moves=[
- ['waterJet','lanbao','channel'],
- ['thunderStream','xianluo','channel'],
- ['flameSweep','jinwu','channel'],
- ['lightningOrb','xianluo','orb'],
- ['boltArc','xianluo','chain'],
- ['voltRush','xianluo','dash'],
- ['shadowSwipe','xingchen','melee'],
- ['frostClaw','lanbao','melee'], // water-typed Blueberry; NEVER electric
+ ['waterJet','ripplet','channel'],
+ ['thunderStream','fizz','channel'],
+ ['flameSweep','emberwing','channel'],
+ ['lightningOrb','fizz','orb'],
+ ['boltArc','fizz','chain'],
+ ['voltRush','fizz','dash'],
+ ['shadowSwipe','inkspot','melee'],
+ ['frostClaw','ripplet','melee'], // water-typed Blueberry; NEVER electric
 ];
 const browser=await chromium.launch({headless:true});
 try{
@@ -40,7 +40,7 @@ try{
     State.S.battlePrefs={...(State.S.battlePrefs||{}),
       manualTutorialSeen:true,tutorialSeen:true,autoBattle:false};
     const g=window.__game;
-    g.startBattle([cat],GameData.speciesById('doudou'));
+    g.startBattle([cat],GameData.SPECIES[0]);
     const b=g.battle,f=b.me(),sk=Skills.skillById(id);
     if(!b||!f||!sk)throw Error('Cannot start '+id);
     b.coach=null;b.autoMode=false;b.aim=0;b.t=.6;
@@ -115,7 +115,7 @@ try{
       b.meleeStrike(f,0,sk,18,'#c9a6df');
       if(target.hp>=hp)throw Error('close claw never hit');
       if(id==='frostClaw'){
-        if(sk.element!=='water'||Skills.secondaryOf('lanbao')!==null)
+        if(sk.element!=='water'||Skills.secondaryOf('ripplet')!==null)
           throw Error('Blueberry Frost Claw must be Water and single-element');
         if(b.vfx.fx.filter(v=>v.type==='slash').length!==2)
           throw Error('Frost Claw must paint precisely one short swipe per contact');
@@ -124,7 +124,7 @@ try{
       }
       mode='close-contact';
     }
-    if(window.CatBondUltHero||b.ultHero)throw Error('full-screen cat overlay');
+    if(b.ultHero||b.duoCinematic)throw Error('full-screen cat overlay');
     g.draw();
     return {id,mode,hpLost:Math.round(hp-target.hp),
       arena:[g.W,g.H],catX:Math.round(f.x),hasBeam:b.beams.length>0,

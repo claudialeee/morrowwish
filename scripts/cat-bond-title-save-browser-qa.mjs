@@ -142,7 +142,7 @@ for(const profile of [
    await realPress(page.locator('.rb-close'));
    await page.locator('#panel.open').waitFor({state:'hidden',timeout:5000});
   }
-  if(await page.locator('.rw-atlas-menu[open]').count()){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
+  // Explore is now an idempotent open action; close via a real map pointer, below.
   await screenshot('world-atlas');
   // Physical departure from the merged canonical opening.
   const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);
