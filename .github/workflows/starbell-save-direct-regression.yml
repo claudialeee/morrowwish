@@ -1,0 +1,32 @@
+name: Starbell save direct regression
+on:
+  push:
+    branches: [review/starbell-save-direct-regression-9ded60d]
+    paths: ['.github/workflows/starbell-save-direct-regression.yml']
+permissions:
+  contents: read
+jobs:
+  direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-save-direct-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-starbell-save-direct-probe.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-save-direct
+          path: artifacts/starbell-save-direct
+          retention-days: 30
