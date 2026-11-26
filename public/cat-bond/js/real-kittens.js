@@ -82,6 +82,9 @@
   };
   const breedCache=Object.create(null);
   const framedBreedCache=Object.create(null);
+  const starterFrames=new Map(),starterImages=new Map();
+  for(const id of ['jinjc','yunduo']){const image=new Image();starterImages.set(id,image);image.onload=()=>{delete breedCache[id];for(const key of Object.keys(animatedRigCache))if(key.includes(':'+id+':'))delete animatedRigCache[key];replayPortraits();};image.src='/cat-bond/assets/starter-portraits/'+id+'.webp';}
+  function starterFrame(id){const im=starterImages.get(id);if(!im?.complete||!im.naturalWidth)return null;if(starterFrames.has(id))return starterFrames.get(id);const c=document.createElement('canvas');c.width=breedFrameSize.w;c.height=breedFrameSize.h;const ctx=c.getContext('2d'),s=Math.min(c.width/im.naturalWidth,c.height/im.naturalHeight);ctx.drawImage(im,(c.width-im.naturalWidth*s)/2,c.height-im.naturalHeight*s,im.naturalWidth*s,im.naturalHeight*s);starterFrames.set(id,c);return c;}
   const animatedRigCache=Object.create(null);
   // Never mirror a half-cat. Every source contains a whole face, paws and tail.
   function framedBreed(slot){
@@ -91,7 +94,12 @@
     const ctx=frame.getContext('2d');
     ctx.drawImage(breedSheet,slot*breedFrameSize.w,0,
       breedFrameSize.w,breedFrameSize.h,0,0,frame.width,frame.height);
-    framedBreedCache[slot]=frame;
+    const pixels=ctx.getImageData(0,0,frame.width,frame.height),a=pixels.data,W=frame.width,H=frame.height,seen=new Uint8Array(W*H),queue=[];
+    const exterior=i=>{const p=i*4,r=a[p],g=a[p+1],b=a[p+2];return a[p+3]<24||(g>=r*.90&&g>b*1.16&&g-r>-18);};
+    const visit=i=>{if(i<0||i>=W*H||seen[i]||!exterior(i))return;seen[i]=1;queue.push(i);};
+    for(let x=0;x<W;x++){visit(x);visit((H-1)*W+x);}for(let y=0;y<H;y++){visit(y*W);visit(y*W+W-1);}
+    for(let q=0;q<queue.length;q++){const i=queue[q],x=i%W,y=Math.floor(i/W);a[i*4+3]=0;if(x>0)visit(i-1);if(x<W-1)visit(i+1);if(y>0)visit(i-W);if(y<H-1)visit(i+W);}
+    ctx.putImageData(pixels,0,0);framedBreedCache[slot]=frame;
     return frame;
   }
   let gaitLayersBuilt=0;
@@ -214,6 +222,7 @@
   function breedFrame(o){
     const species=o.species||{},id=species.id||'tangyuan';
     if(!breedLoaded)return {image:source,sx:0,sy:0,sw:w,sh:h};
+    const starter=starterFrame(id);if(starter)return {image:starter,sx:0,sy:0,sw:starter.width,sh:starter.height};
     if(breedCache[id])return {image:breedCache[id],sx:0,sy:0,sw:breedFrameSize.w,sh:breedFrameSize.h};
     const [base,tone,strength,kind]=BREED_LOOKS[id]||BREED_LOOKS.tangyuan;
     const canvas=document.createElement('canvas');

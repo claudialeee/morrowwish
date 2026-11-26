@@ -341,7 +341,7 @@ function installCatBondSystemMenu(){
   ].filter(([id])=>native({'yard-map':'#fab-map','yard-book':'#sg-book-entry','yard-build':'#fab-build','yard-seek':'#fab-seek','yard-play':'#fab-play','yard-feed':'#fab-feed'}[id])):[];
   const dialogue=window.CatBondDialogueSettings;let rows=[
     ...(dialogue?[]:yardActions),
-    ...(!dialogue&&world?[[ 'world-book',t('星月之书 · 养成','Resonance Book · companions'),''],['world-atlas',t('世界地图','World atlas'),''],['world-garden',t('阳光花园','Sunlit Garden'),''],['world-explore',t('任务与探索','Quests and exploration'),'']]:[]),
+    ...(!dialogue&&world?[[ 'world-book',t('星月之书','Resonance Book'),''],['world-atlas',t('世界地图','World atlas'),''],['world-garden',t('阳光花园','Sunlit Garden'),''],['world-explore',t('任务与探索','Quests and exploration'),'']]:[]),
     ...(!dialogue&&world?camera.map((button,i)=>['camera-'+i,cameraLabels[i]?.[0]||button.textContent,'']):[]),
     ['language',t('语言','Language'),t('中文','English')],
     ...(dialogue?[['dialogue-auto',t('自动对白','Auto dialogue'),dialogue.auto?t('开启','On'):t('关闭','Off')],['dialogue-speed',t('对白速度','Dialogue speed'),dialogue.speed+'×'],['dialogue-history',t('对白记录','Dialogue history'),'']]:[]),

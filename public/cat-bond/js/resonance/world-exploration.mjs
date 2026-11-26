@@ -93,7 +93,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
  }
  function near(p){return live()&&!dest&&distance(pos,p)<.072;}
  function survey(){return region==="sky"?bridge.surveyStatus():null;}
- function startSurvey(){const s=survey();if(!s||puzzle||!near(s.from))return {ok:false,reason:"walk-to-survey"};if(!s.remote&&cargo)return {ok:false,reason:"cargo-busy"};active={survey:s.operation,token:bridge.capture()};puzzle=createPuzzle(s.operation);return {ok:true,puzzle:true};}
+ function startSurvey(){const s=survey();if(!s||puzzle||!near(s.from))return {ok:false,reason:"walk-to-survey"};if(!s.remote&&cargo)return {ok:false,reason:"cargo-busy"};active={survey:s.operation,token:bridge.capture(),adventureAction:adventureActions};if(adventureActions)return complete();puzzle=createPuzzle(s.operation);return {ok:true,puzzle:true};}
  function interact(op){
   if(survey()?.remote)return {ok:false,reason:"return-from-survey"};
   if(op==="explore:scent-trail"){const step=bridge.scentStep();return step?traceScent(step.index):{ok:false,reason:"walk-to-scent"};}
@@ -124,17 +124,17 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
  function traceScent(index){const step=bridge.scentStep();if(!step||step.index!==index||!near(step.point))return {ok:false,reason:"walk-to-scent"};return bridge.traceScent(index,bridge.capture());}
  function startHomeRepair(){
   const q=bridge.homeQuest(region);if(!q||q.repaired||!near(q.point)||puzzle)return {ok:false,reason:"postgame-repair-unavailable"};
-  active={homeRepair:true,token:bridge.capture()};puzzle=createPuzzle("repair:"+region);return puzzle?{ok:true,puzzle:true}:{ok:false,reason:"unimplemented"};
+  active={homeRepair:true,token:bridge.capture(),adventureAction:adventureActions};if(adventureActions)return complete();puzzle=createPuzzle("repair:"+region);return puzzle?{ok:true,puzzle:true}:{ok:false,reason:"unimplemented"};
  }
  function meetHomeResident(id){
   const q=bridge.homeQuest(region),n=localNpcs().find(n=>n.id===id);if(!q?.repaired||!n||!near(n.point))return {ok:false,reason:"postgame-visit-unavailable"};
   return bridge.meetHomeResident(region,id,n.point,bridge.capture());
  }
  function complete(){
-  if(active?.survey){const s=survey();if(s?.operation!==active.survey||!near(s.from)||!puzzle?.solved)return {ok:false,reason:"incomplete-flight"};const result=bridge.finishSurvey(s.operation,skyFlightProof(puzzle.flight),active.token);if(result.ok){path=s.remote?mainPath:skySurveyPath;pos=[...s.to];active=null;puzzle=null;}return result;}
+  if(active?.survey){const s=survey();if(s?.operation!==active.survey||!near(s.from)||(!active.adventureAction&&!puzzle?.solved))return {ok:false,reason:"incomplete-flight"};const result=bridge.finishSurvey(s.operation,active.adventureAction?{adventureAction:true}:skyFlightProof(puzzle.flight),active.token);if(result.ok){path=s.remote?mainPath:skySurveyPath;pos=[...s.to];active=null;puzzle=null;}return result;}
   if(active?.homeRepair){
-   const q=bridge.homeQuest(region);if(!q||!near(q.point)||!puzzle?.solved)return {ok:false,reason:"incomplete-physical-action"};
-   const r=bridge.finishHomeRepair(region,active.token,{values:puzzle.values,flightProof:skyFlightProof(puzzle.flight)});if(r.ok){active=null;puzzle=null;}return r;
+   const q=bridge.homeQuest(region);if(!q||!near(q.point)||(!active.adventureAction&&!puzzle?.solved))return {ok:false,reason:"incomplete-physical-action"};
+   const r=bridge.finishHomeRepair(region,active.token,{adventureAction:active.adventureAction,values:puzzle?.values,flightProof:skyFlightProof(puzzle?.flight)});if(r.ok){active=null;puzzle=null;}return r;
   }
   if(!active)return {ok:false,reason:"no-interaction"};const f=layout.features[active.operation];
   if(!near(region==="sky"&&skyLaunch[active.operation]||f)||(puzzle&&!puzzle.solved))return {ok:false,reason:"incomplete-physical-action"};

@@ -16,7 +16,7 @@ function drawResident(ctx,id,{x,y,scale=1,time=0}){
  const image=residentImage(id);
  if(!image?.complete||!image.naturalWidth)return false;
  const height=84*scale,width=height*image.naturalWidth/image.naturalHeight;
- ctx.drawImage(image,x-width/2,y-height+Math.sin(time*2)*scale,width,height);
+ ctx.drawImage(image,x-width/2,y-height,width,height);
  return true;
 }
 function install(){
