@@ -9,6 +9,7 @@ on:
       - 'scripts/cat-bond-starfall-art-review.mjs'
       - 'scripts/test-cat-bond-companion-rarity.mjs'
       - 'scripts/test-cat-bond-core-art-roster.mjs'
+      - 'scripts/cat-bond-core-art-browser.mjs'
       - 'scripts/test-cat-bond-canon12-campaign.mjs'
       - 'public/cat-bond/**'
       - 'docs/cat-bond-rpg/EXPERIENCE-PRE-AUDIT.md'
