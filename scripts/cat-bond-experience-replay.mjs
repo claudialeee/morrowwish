@@ -25,12 +25,21 @@ const expected=entry?.data?.state||entry?.data;
 assert.equal(expected?.resonance?.scene,fixture.scene,'Fixture must contain the expected saved scene');
 assert.ok(expected.cats?.length,'Fixture must contain a party');
 const party=cats=>cats.map(c=>({uid:c.uid,species:c.species,actor:c.storyActor||null,level:c.level??null}));
+const profiles={
+ desktop:{viewport:{width:1440,height:900},hasTouch:false},
+ portrait:{viewport:{width:390,height:844},hasTouch:true},
+ landscape:{viewport:{width:844,height:390},hasTouch:true}
+};
+const profile=process.env.CAT_BOND_REPLAY_PROFILE||'desktop';
+const lang=process.env.CAT_BOND_REPLAY_LANG||'zh';
+assert.ok(Object.hasOwn(profiles,profile),'Unknown replay profile');
+assert.ok(['zh','en'].includes(lang),'Unknown replay language');
 const browser=await chromium.launch({headless:!process.argv.includes('--headed')});
 try{
- const context=await browser.newContext({storageState:fixture.storageState,viewport:{width:1440,height:900}});
+ const context=await browser.newContext({storageState:fixture.storageState,...profiles[profile]});
  await context.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===origin||['data:','blob:'].includes(u.protocol)?route.continue():route.abort();});
  const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(origin+'/cat-bond/?lang=zh&rpgDev=1');
+ await page.goto(origin+'/cat-bond/?lang='+lang+'&rpgDev=1');
  await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
  await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="'+fixture.slot+'"]').click();
  await page.waitForFunction(scene=>window.CatBondResonance?.view()?.current?.id===scene,fixture.scene,{timeout:15000});
@@ -44,10 +53,11 @@ try{
  for(const key of ['interactions','pickups','cargo']){
    if(Object.hasOwn(expected.resonanceExploration||{},key))assert.deepEqual(actual.exploration?.[key],expected.resonanceExploration[key],'Restored exploration '+key);
  }
+ assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),lang,'Restored UI language');
  assert.deepEqual(errors,[]);
- console.log('PASS checkpoint restore',fixture.provenance,fixture.scene,fixture.slot);
+ console.log('PASS checkpoint restore',fixture.provenance,fixture.scene,fixture.slot,lang,profile);
  const evidenceDir=path.join(path.dirname(file),'replays');
  await fs.mkdir(evidenceDir,{recursive:true});
- await page.screenshot({path:path.join(evidenceDir,path.basename(file,'.json')+'.png')});
+ await page.screenshot({path:path.join(evidenceDir,path.basename(file,'.json')+'-'+lang+'-'+profile+'.png')});
  if(process.argv.includes('--headed'))await page.waitForEvent('close',{timeout:0});
 }finally{await browser.close();}
