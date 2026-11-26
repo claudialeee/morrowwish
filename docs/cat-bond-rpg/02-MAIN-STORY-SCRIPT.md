@@ -15,7 +15,7 @@
 - 每章设置有吸引力的开头、至少一个独特玩法高潮、一项可见的世界变化、一个个人线索、一个值得获得的伙伴/成长机会和一个非强制探索惊喜；不为满足指标而堆任务。不强制集齐所有猫、刷技能、送货、锻造、造药或反复回访。六区域已有招募与被动设计继续利用，不按稀有度锁主线；战斗难度需实测。
 - 暮铃必须在旅程中真实协作、保护、出错、开玩笑；玩家也帮助她。离队后伙伴变化真实可感，主线不被卡死；两杯茶只引用确实发生的互动或主线已建立的约定。任何新增情感动作先验证是否能通过现有资源表达，但允许为高价值体验增加机制或美术。
 - 选择必须改变可见行动、支援或反馈；不能全部只有隐藏分数。失败就近恢复，不要求重读无关剧情。任何删减必须保留信息、因果、玩家选择和真正的挑战，而非跳过测试。
-- 下列每场景的玩法描述是实施与验收目标，不宣称现已可玩。对话为已写入当前候选运行时的中英成对文本（开场除外），实际演出还有条件化对白/界面文本；后续允许依据实机改写。
+- 下列每场景的玩法描述是实施与验收目标，不宣称现已可玩。除重写的第一章与开场外，对话基于已写入候选运行时的中英成对文本，实际演出还有条件化对白/界面文本；后续允许依据实机改写。
 
 ### 序章实际开场文案（ZH / EN）
 星铃守护着六片土地猫咪的记忆。多年前它破碎，许多猫忘了亲友、家园，甚至自己的名字。灾难平息后，生活恢复了。直到最近，遗忘又开始了。今天，你在一座陌生的花园里醒来。 / The Star Bell guards the memories of cats across six lands. Years ago it broke, and many cats forgot their friends, homes, even their names. Peace returned, until the forgetting began again. Today you wake in an unfamiliar garden.
@@ -43,74 +43,87 @@
 
 ### prologue:P-05 · 前往霁潮港 / Travel to Misttide Harbor
 
-**玩法与叙事要求：** 到港即可自由走动；两条初遇路径自然汇合。不给强制组队或剧透。用海上失控小船吸引玩家，进入港口冒险。
+**玩法与叙事要求：** 到港即可自由走动；两条初遇路径自然汇合。不给强制组队或剧透。用集市里突然逃跑、会模仿古铃旋律的光团吸引玩家，进入港口冒险。
 
-### harbor:H-01 · 找不到家的船 / A boat without a way home
+## 第一章 · 追着铃声跑的小怪物 / Chapter I — Catch That Chime!
 
-**玩法与叙事要求：** 渔夫在自家门口徘徊，栖蓝认出不对；画面上小船绕礁石，玩家不靠读长对白也能知道要救谁。市场是安全探索区；可先捕捉或发现野猫。临时协作先于长久招募。
+**本章全面重写（待运行时迁移）：** 取消救船、校准航道、航海日志、事故调查与长辈管教的主线。霁潮港仍是海滨小镇，但港口只是环境，不是故事主题。核心是一次轻松、神奇、逐渐变得危险的追逐冒险。玩家主动追寻与自己有关的第一条线索，暮铃在行动中成为朋友。节奏为惊喜 → 追逐 → 发现 → 战斗 → 温馨与新线索。保留星铃、当地记忆受损、古老旋律、栖蓝加入与岬灯提供帮助的因果功能。
+
+### harbor:H-01 · 会逃跑的铃声 / Catch that chime!
+
+**开场事件：** 玩家走进集市，商铺的铃突然从近到远接连响起；一团长着猫耳轮廓的金蓝色小回响从摊位跃过，在玩家面前重复花园里那个短音。主角不由自主地接上下一音。小回响再次跳走，掠过猫咪们晒着的鱼干和纸灯笼；栖蓝正追它，差点撞进篮子。不给大段背景或任务列表，玩家可以立刻跟上。可在安全街区自由活动，追逐目标不因探索而永久逃走。
+ 
+**对白（ZH / EN）：**
+- 栖蓝：抓住它！它一来，整条街的铃都不听使唤啦！ / Catch it! Every bell on this street goes haywire when it shows up!
+- 主角：等等！这声音……我好像会唱下一句。 / Wait! That sound… I think I know the next note.
+- 暮铃（已相识）：又是你！这次飞走的可不是我的地图。 / You again! At least it isn't my map flying away this time.
+- 暮铃（未相识）：我是暮铃。那小东西在重复古铃的声音。你也认得那个音？ / I'm Muling. That little thing is copying the sound of an old bell. Do you recognize it too?
+- 主角：我得追上它。也许它知道我忘记了什么。 / I've got to catch up. Maybe it can tell me something about what I've forgotten.
+
+**目标提示：** 追上会唱古老旋律的光团。 / Follow the glowing echo with the familiar tune.
+**玩家所得：** 第一条直接关联自身过去的线索；无需先见岬灯、接受救援或领取物品。跳过序章的玩家由暮铃补一句必要背景：“星铃曾经破碎，最近又有猫开始忘记自己的过去。” / “The Star Bell broke long ago. Recently, cats have started forgetting their past again.”
+
+### harbor:H-02 · 屋檐上的追逐 / A rooftop romp
+
+**玩法：** 小回响沿着真实地图路径移动，在摊位、屋檐、鱼篮旁停顿或跃迁；在一个可读岔路提供捷径或更稳的路线。栖蓝给方向，暮铃帮忙拦住另一头，玩家通过移动、观察光迹和位置选择缩短距离。支持点击移动/键盘和可控的慢速路线；不做三个“调查痕迹”按钮，不需跳跃系统。追上即可推进，走错路可回头，不扣成长资源。旁边的鱼摊猫突然把自己家门铃叫成陌生声音，提供失忆的具体旁证；栖蓝替它找回家门，主线不需要玩家代办。小回响最终钻进一个废弃铃房，门内传出同一段曲子。
 
 **对白（ZH / EN）：**
+- 栖蓝：左边是近路，右边绕过鱼摊。选你喜欢的！ / Left is a shortcut; right goes around the fish stall. Pick whichever you like!
+- 暮铃：我去另一头堵它。记得看路，别撞到鱼干！ / I'll cut it off at the other end. Watch out for the dried fish!
+- 栖蓝：哎呀！它又把我刚才的声音学走了！ / Oh no! It's copying what I just said again!
+- 主角：那里！它钻进了铃房。 / There! It slipped into that bell house.
 
-- 栖蓝：那位渔夫刚才在自家门口迷路了。看海上！那艘船绕着礁石打转，快帮我把它带回来！ / That fisherman just got lost outside his own door. Look out to sea! A boat is circling the reef. Help me bring it home!
-- 无名守铃者：他忘了家，我忘了名字……那座铃会不会也知道些什么？ / He forgot his home; I forgot my name. Could that bell know something about me?
-- 暮铃：我是暮铃，来找古铃的。星铃曾经破碎，最近失忆又出现了。港口的铃可能藏着线索。 / I'm Muling, looking for old bells. The Star Bell broke long ago, and the forgetting has returned. The harbor bell might hold a clue.
-- 栖蓝：我是栖蓝，领航员！可是灯塔没亮，船找不到安全的路。 / I'm Qilan, a navigator! The lighthouse is dark, and the boat can't find a safe route.
-- 无名守铃者：先救船。等大家安全了，我们一起听听那座铃。 / Let's save the boat first. Once everyone's safe, let's listen to that bell.
-- 暮铃：我有工具和绳子。你愿意搭把手的话，我在港口等你。 / I've got tools and rope. If you'd like to help, I'll be here at the harbor.
+**选择：** 抄近路 / Take the shortcut；绕到另一侧 / Circle around. 实际路线不同；两种都能通关。沿安全区可选发现一只害羞野猫和贝壳奖励，不以稀有猫堵主线。
 
-### harbor:H-02 · 两盏灯 / Two lights
+### harbor:H-03 · 唱歌的旧房子 / The house that hums
 
-**玩法与叙事要求：** 灯塔望远镜或海面光束让错误灯路一眼可见。将旧事故解释压缩成安全航道线索，不做家长式争论。选择从岸边援助或先校灯；用可见的安全路线展示两条选择的差别。
-
-**对白（ZH / EN）：**
-
-- 岬灯：别点灯。光路没校准，亮错方向比没有灯更危险。 / Don't light it. Until the beam is aligned, a false light is worse than none.
-- 栖蓝：那就校准它！我读得懂潮汐表。 / Then let's align it! I can read the tide charts.
-- 岬灯：我见过灯指错路的后果。先别出海，退潮时能找到旧航海日志。 / I've seen what happens when a beacon points the wrong way. Stay ashore for now; the old logbook appears at low tide.
-- 栖蓝：我来读潮汐，你来找日志。看，我们已经有办法了！ / I'll read the tide; you find the logbook. See? We've already got a plan!
-- 岬灯：日志里有安全航道的记号。找到它就能校准灯塔。 / The log marks the safe channel. Find it and we can align the beacon.
-
-**选择：** 先安慰栖蓝 / Comfort Qilan first； 先询问岬灯过去的风暴 / Ask Jiedeng about the old storm
-
-### harbor:H-03 · 盐渍航海日志 / Salt on the logbook
-
-**玩法与叙事要求：** 潮洞成为短探索挑战：跟着退潮路径走，日志作为自然发现，不要求逐条点击三份记录。高低水位提供可选绕路、贝壳或野猫。找到航线后直接转入救援。
+**玩法：** 岬灯看守旧铃房，不是阻挠年轻猫的反派。他让玩家亲自听古铃：玩家的短音让屋内一列沉睡的小铃逐个亮起，暮铃下意识接出后半句又停住。主角发现墙上的残缺旋律与自己刚才唱的相同，但最后一音缺失。轻量空间声光挑战：跟着亮起的铃选择一条正确路径，实际到达后听见完整前奏；错误路线出现可爱的重复音，允许立即改正。不是背谱，不强制听力；所有提示同时用图形表现。小回响反复模仿前奏，越来越多的假声汇聚成一个危险的回响体。它没有人格或阴谋，只是古铃失去真正回应后产生的模仿现象。
 
 **对白（ZH / EN）：**
+- 岬灯：这座铃好多年没响过了。奇怪，它在你面前倒是挺精神。 / That bell hasn't rung in years. Strange how lively it is around you.
+- 主角：墙上的曲子……我刚才唱的就是这个。 / That tune on the wall… it's the one I just sang.
+- 暮铃：跟着真正亮起来的铃走。那些只会重复的声音，不必理会。 / Follow the bells that really light up. Ignore the ones that only repeat.
+- 岬灯：听见了吗？它把声音越叠越多了！ / Hear that? The echoes are piling up!
 
-- 岬灯：当年我关了主灯，想拦住出海的船。救援船却已经在海上了。 / I shut off the main light to keep boats ashore. The rescue boat had already left.
-- 栖蓝：备用灯的消息没有送到船上，所以他们找不到方向？ / The backup signal never reached the boat, so they lost their bearings?
-- 岬灯：是。船员活了下来，可我从此不敢再把航线交给别人。 / Yes. The crew survived, but I haven't trusted anyone else with a route since.
-- 栖蓝：那这次你照亮礁石，我带船绕过去。我们试一次！ / Then light up the reef this time, and I'll steer around it. Let's try!
-- 岬灯：……好。风暴快到了，航图给我。 / …All right. The storm's coming. Show me the chart.
-- 无名守铃者：风起来了。先决定怎么把船带回安全水域。 / The wind's picking up. Let's decide how to bring the boat to safety.
+**目标提示：** 找到真正的古铃，别被假声音带偏。 / Find the real bell; don't follow false echoes.
+**回报：** 玩家亲自发现自己确实认识古铃旋律；首次公平伏笔暮铃熟悉它。不得揭示守铃人身份。
 
-### harbor:H-04 · 雾里那声铃 / The bell in the fog
+### harbor:H-04 · 两只猫，一场漂亮的胜利 / Two cats, one good fight
 
-**玩法与叙事要求：** 主高潮：校准光束与救援并联或有序，海浪、假铃和短战斗有清楚反馈。暮铃守灯、主角行动；救援成功才永久入队。失败就近重试，不重读对话。救援结束的湿航图笑话让两只猫成为伙伴。
+**玩法：** 回响体阻塞古铃，主动进入一场短而有趣的战斗。首次允许暮铃临时加入实际战斗；她的暗系控制给玩家制造真实攻击窗口，玩家可用移动、普通技能、闪避与新手友好的合击提示。回响制造可见假光圈，真正的铃光由岬灯提供识别依据；玩家绕开假光圈、攻击真实目标。前半段允许轻松掌握操作，后半段有一个简短的协作高潮。不是只点击“战斗”然后等待，也不要求操控两只猫、收集特定阵容、背六种元素或连续点击六个铃。失败从战斗前重试，保留发现的线索。战斗获胜后回响消散，小铃停止乱响，两个角色共同完成后续真实回应。
+ 
+**对白（ZH / EN）：**
+- 暮铃：我让它停一会儿，你来！ / I'll hold it still for a moment. Your turn!
+- 主角：好！看我的。 / All right! Watch this.
+- 暮铃（胜利后）：不错嘛。刚才那一下，我们配合得像是练过很多次。 / Not bad. That last move felt like we'd practiced together a hundred times.
+- 主角：说不定我以前是个很厉害的冒险家！ / Maybe I used to be a brilliant adventurer!
+- 暮铃：那我得赶紧找你组队，免得你以后涨价。 / Then I'd better recruit you before your rates go up.
+- 暮铃：我还想去看看别的古铃。你愿意一起走吗？ / I want to visit the other old bells. Would you like to come along?
+- 主角：当然！下一座铃，说不定就记得我的名字。 / Of course! The next bell might remember my name.
+
+**回报：** 暮铃正式入队，玩家真实体验过组合技与伙伴价值。暂缓同行者可先探索，之后随时接受；不凭空招募。不要在没有真实战斗/协作时播放胜利对白。
+
+### harbor:H-05 · 一首我忘记的歌 / A song I forgot
+
+**玩法与故事回报：** 古铃回应主角，栖蓝与岬灯唱出当地归潮调的后半段，暮铃在其中一处抢先唱出半个音。集市恢复正常的铃声；此前忘记家门的猫认出自己的门铃，具体展示修复效果，不宣称全部记忆恢复。古铃露出一枚熟悉的枝叶形刻记，岬灯指出眠根林的古铃有相同标记。主角的冒险目标明确：去森林寻找能解释自己为何认得这首歌的刻记。栖蓝希望亲自看看新地方，作为剧情伙伴加入；不需要为物资运输而旅行。地图解锁、收集探索、队伍成长与返回花园可选。
 
 **对白（ZH / EN）：**
+- 主角：这首歌不是我刚学会的。我以前一定听过它。 / I didn't just learn this song. I must have heard it before.
+- 岬灯：这是归潮调的旧唱法。我也只在很老的记录里见过。 / That's the old way of singing Returning Tide. I've only seen it in very old records.
+- 栖蓝：看，铃下面有一片叶子的记号！眠根林也有这种刻记。 / Look, there's a leaf carved beneath the bell! Rootsleep Forest has marks like that too.
+- 暮铃：看来你找到了一条真正的线索。 / Looks like you've found a real lead.
+- 主角：那就去森林吧。我们一起。 / Then let's go to the forest. Together.
+- 栖蓝：带上我！我早就想看看会走路的树了！ / Take me along! I've always wanted to see a tree that walks!
 
-- 岬灯：礁石在左边。光路给你了，航线你选！ / Reefs to port. The light is yours; choose your route!
-- 栖蓝：看见了！我会跟着真正的灯走。 / I see it! I'll follow the real light.
-- 暮铃：听我的铃声，别听海里的假铃。准备好了，我们一起行动！ / Listen to my bell, not the false one out at sea. When you're ready, we'll move together!
-- 暮铃：我的航图又湿透了……不过刚才配合得真好。你找名字，我找古铃，一起走吧？ / My map is soaked again… but we made a good team. You're looking for your name, I'm looking for old bells. Shall we travel together?
-- 无名守铃者：好啊！不过下次你得把航图放进防水袋。 / Of course! But next time, put that map in a waterproof pouch.
+**章末目标：** 去眠根林，寻找相同的古铃刻记。 / Visit Rootsleep Forest and find the matching carving.
+**明确解答：** 主角的失忆不是无关的普通事件；他认得失传旋律，且与古铃有关。**新悬念：** 为什么只有主角能唱出旧版开头，森林里还有什么关于他的痕迹？
 
-**选择：** 先救援 / Prioritize rescue； 先校准灯塔 / Calibrate the lighthouse first
-
-### harbor:H-05 · 第一个音 / The first note
-
-**玩法与叙事要求：** 真正的回报：灯塔亮起、渔夫认出家、主角唱出古老第一音。提示森林有能解释第一音的旧刻记。招募栖蓝与可选捕捉、合击体验承接下章；物资交换可选。不要再加跑腿门槛。
-
-**对白（ZH / EN）：**
-
-- 无名守铃者：等等……我明明不记得自己的名字，为什么会唱这首歌？ / Wait... I can't even remember my name. How do I know this song?
-- 暮铃：那是归潮调很久以前的唱法。你竟然记得第一个音。 / That's a very old version of Returning Tide. Somehow you remember its first note.
-- 栖蓝：归潮调！船回港的时候，我们就唱这个。 / Returning Tide! We sing it when boats come home.
-- 栖蓝：灯塔恢复了。至少现在，船能重新找到回家的路。 / The lighthouse is working. At least the boats can find their way home again.
-- 栖蓝：眠根林的药草船没到。我跟你们去，顺便画一张不会把猫带丢的航图！ / The forest's medicine boat is missing. I'll come with you and draw a chart that won't get anyone lost!
-- 暮铃：眠根林的古铃旁有旧旅人留下的刻记。或许那儿能解释你为什么认得这首歌。 / The old bell in Rootsleep Forest has carvings left by travelers. Maybe they can explain why you know this song.
+### 第一章实施阻断项（不准用原救船任务冒充完成）
+- 新建集市回响追逐的真实移动/分岔玩法、铃房的声光挑战及临时暮铃战斗协作；可以重用通用寻路、镜光及战斗组件，但主线不得再要求救船、日志、航道校准。原港口探索与野猫收集不必删除；若保留船只救援，只能是可选支线且不阻塞主线。
+- 重写 H-01–H-05 的运行时对白、任务与条件、选择映射、地图目标、触发和存档/队伍迁移；正式入队发生在 H-04 真正胜利后。检查两条暮铃初遇路线、主角已发现/未发现花园铃、可选支线跳过、双语和横竖屏。
+- 剧情跨章保持港口居民具体失忆、古调、区域回应、栖蓝与岬灯关系功能。后续可出现普通船只作为世界背景，但任何把玩家当成运输工或把已删救船说成亲历的对白均要改。森林开头以刻记为主目标，药材事件是途中发现。终章港口贡献改为真正铃声回应，不需要玩家重新救船。
+- 通过真实输入验证追逐、错误路线可恢复、光声提示、战斗胜负、伙伴实际参战、奖励、章节推进；新旧测试各自对应版本，不得将旧船只流程测试成功当作新章验收。
+- 目标是玩家在第一分钟进入有吸引力的行动，而不是精确保证时长；无剧透实机评估须记录何时第一次行动、第一次产生个人好奇、第一次笑/惊喜的可见设计依据，不能伪造情绪。
 
 ### forest:R-01 · 会走动的森林 · 药草园 / The Moving Forest · Herb garden
 
@@ -379,7 +392,7 @@
 
 ### starfall:F-04 · 世界正在回答 / The world answers
 
-**玩法与叙事要求：** 观星台守卫战与最后一座铃恢复。玩家听见前五地的真实回应，证明伙伴旅程有意义。物资运输全部可选，不得要求24步送收货或补刷六地交换。每地的主线救援和合作构成可核验回应；六个声音各不相同。模型验证一次，不做第二轮跑腿。
+**玩法与叙事要求：** 观星台守卫战与最后一座铃恢复。玩家听见前五地的真实回应，证明伙伴旅程有意义。物资运输全部可选，不得要求24步送收货或补刷六地交换。每地的主线冒险和真实合作构成可核验回应；六个声音各不相同。模型验证一次，不做第二轮跑腿。
 
 **对白（ZH / EN）：**
 
@@ -487,7 +500,7 @@
 |---|---|---|
 | 对白 | 清楚目标、每章线索、减少说教、保留情感与双语 | 已提交第一轮运行时改写（28场景，76组对白）；仍需审查其他运行时文本与实机 |
 | 序章 | 可跳过仍能懂；古铃特殊回应和明确港口目标 | 新设计，须完成实际触发与双路线验证 |
-| 港口 | 有紧迫救援、真实双猫协作和可见居民恢复 | 待实机审查及玩法重构 |
+| 港口 | 全新回响追逐、铃房探索、真实双猫战斗与个人线索 | 新剧本已重写；原救船运行时必须替换，尚未实施 |
 | 森林 | 自由探险、真假线索与明显世界变化 | 待实机审查及玩法重构 |
 | 熔炉 | 灯火节、合并工件与图纸流程、战斗机制 | 待玩法重构 |
 | 天空 | 实际飞行、分支路线、茶与陪伴 | 待实机审查及玩法重构 |
