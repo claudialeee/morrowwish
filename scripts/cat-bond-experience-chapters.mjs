@@ -85,6 +85,16 @@ async function run(chapter){
  async function invite(npc){await click('Invite '+npc);await page.getByRole('button',{name:'Invite '+npc,exact:true,includeHidden:true}).waitFor({state:'detached'});}
  async function restore(label,inputs,people,melody,notes){await puzzle(label,inputs);for(const npc of people)await invite(npc);await puzzle(melody,notes);}
  const low='Dew · Low',mid='Starlight · Middle',high='Flower bell · High';
+ async function flyWaterfall(label){
+  await click(label);const status=page.locator('[data-sky-flight-status][data-route="open"]');await status.waitFor();
+  const box=await page.locator('.rw-surface').boundingBox();assert.ok(box,"flight surface");
+  await page.mouse.click(box.x+box.width*.35,box.y+box.height*.30);
+  // Route is continuous, not a three-gate sequence. Read only visual progress via
+  // the canvas status; the underlying flight completion must come from real pointer input.
+  await page.waitForFunction(()=>Number(document.querySelector('[data-sky-flight-status]')?.dataset.progress)>=.74,{timeout:20000});
+  await page.mouse.click(box.x+box.width*.35,box.y+box.height*.50);
+  await status.waitFor({state:'hidden',timeout:20000});
+}
  async function fly(label,heights){
   await click(label);const status=page.locator('[data-sky-flight-status]');await status.waitFor();const box=await page.locator('.rw-surface').boundingBox();
   const p=y=>({x:box.x+box.width*.30,y:box.y+box.height*y});
@@ -196,7 +206,7 @@ async function run(chapter){
   }else if(chapter==='sky'){
    await fly('Catch the mail pouch · Practice gliding',[.65,.34,.64]);await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
    await fly('Flight recorder',[.68,.29,.66]);await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
-   await fly('Joint gliding platform',[.29,.72,.31]);await dialogue('sky:S-03');await click('Isolated mail station · Deliver the pouch');await scene('sky:S-04');
+   await flyWaterfall('Joint gliding platform');await dialogue('sky:S-03');await scene('sky:S-04');
    await talk('Muling');await dialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
    await fly('Windwing sanctuary',[.67,.30,.64]);await invite('Lingyu');await invite('Yuanfan');await puzzle('Open Sky',[mid,high,low]);await dialogue('sky:S-05');
   }else if(chapter==='library'){
