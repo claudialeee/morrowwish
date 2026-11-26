@@ -1244,43 +1244,42 @@ export const campaign = {
       "id": "sky:S-03",
       "chapter": "sky",
       "title": {
-        "zh": "云上的信",
-        "en": "A letter in the clouds"
+        "zh": "倒流的云瀑",
+        "en": "The upside-down waterfall"
       },
       "previous": "sky:S-02",
       "lines": [
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "姐姐，右边有上升气流，我走右边！",
-            "en": "Sis, there's an updraft on the right. I'm taking it!"
+            "zh": "借这股风往上飞！前面就是月牙岩！",
+            "en": "Ride this updraft! That's the crescent rock ahead!"
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "暮铃，快到了！",
+            "en": "Muling, we're almost there!"
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "我还没到呢，围巾倒先飞过去了！",
+            "en": "My scarf made it before I did!"
           }
         },
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "看见了！我就在你身后。前面云洞是安全的！",
-            "en": "I see it! I'm right behind you. The opening in the clouds is safe!"
-          }
-        },
-        {
-          "speaker": "xiaomao",
-          "text": {
-            "zh": "稳住左翼！暮铃，你的围巾比我们飞得还快！",
-            "en": "Steady the left wing! Muling, your scarf is flying faster than we are!"
-          }
-        },
-        {
-          "speaker": "yuanfan",
-          "text": {
-            "zh": "前面就是孤岛的收信站。把包交给收信的伙伴，别让信再飞走啦！",
-            "en": "The isolated island's mail station is ahead. Deliver the pouch to its recipient!"
+            "zh": "前面那座岛能落脚。先歇一会儿吧。",
+            "en": "There's a safe island ahead. Let's rest there."
           }
         }
       ],
       "requires": [
-        "puzzle:joint-flight",
-        "explore:letter-recipient"
+        "puzzle:joint-flight"
       ],
       "choices": [],
       "lineGate": [
