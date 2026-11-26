@@ -79,6 +79,55 @@ try{
   assert.ok(fit.tool.bottom<=fit.board.top+2&&fit.bonus.bottom<=fit.board.top+2,
    'Objectives and yarn must remain visible ABOVE the board');
  }
+
+ // Landscape mobile regression: actual touch context, not merely a narrow
+ // desktop window. Test both entry and live rotation in both languages.
+ const landscape=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+ try{
+  const phone=await landscape.newPage();
+  await phone.route('**/api/session',r=>r.fulfill({status:204,body:''}));
+  await phone.goto(url,{waitUntil:'load'});
+  await phone.waitForSelector('#mw-game-settings');
+  for(const lang of ['zh','en']){
+   await phone.evaluate(lang=>window.MorrowwishI18n.set(lang),lang);
+   for(const viewport of [{width:844,height:390},{width:852,height:320},{width:667,height:300},{width:570,height:280}]){
+    await phone.setViewportSize(viewport);
+    await phone.waitForTimeout(100);
+    const fit=await phone.evaluate(()=>{
+     const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}};
+     const stage=rect(document.querySelector('#stage')),board=rect(document.querySelector('#board')),hud=rect(document.querySelector('.in-game-top'));
+     const ids=['stageHome','heistStatus','guideHelp','guardStatus','menuButton','mw-fullscreen-toggle','tool','wait','restart','bonusQuick'];
+     const elements=[...ids.map(id=>document.getElementById(id)),...document.querySelectorAll('#mw-game-settings button')].filter(e=>e&&e.getClientRects().length);
+     return {stage,board,hud,controls:elements.map(e=>({id:e.id||e.className,...rect(e)})),vw:innerWidth,vh:innerHeight,scrollHeight:document.scrollingElement.scrollHeight};
+    });
+    const msg=lang+' '+viewport.width+'x'+viewport.height+' '+JSON.stringify(fit);
+    assert.ok(fit.stage.left>=-1&&fit.stage.right<=fit.vw+1&&fit.stage.top>=-1&&fit.stage.bottom<=fit.vh+1,'Landscape stage fits: '+msg);
+    assert.ok(fit.scrollHeight<=fit.vh+2,'Landscape must not scroll the page: '+msg);
+    assert.ok(fit.hud.right<=fit.board.left+1,'HUD cannot cover playfield: '+msg);
+    assert.ok(Math.abs(fit.board.width/fit.board.height-10/7)<.02,'Map must preserve 10:7 aspect: '+msg);
+    assert.ok(fit.board.height>=fit.vh*.85||fit.board.width>=fit.vw-290,'Map must maximize available landscape space: '+msg);
+    for(const c of fit.controls){
+     assert.ok(c.left>=fit.hud.left-1&&c.right<=fit.hud.right+1&&c.top>=fit.hud.top-1&&c.bottom<=fit.hud.bottom+1,'Control clipped: '+c.id+' '+msg);
+     assert.ok(c.width>0&&c.height>0,'Control must be visible: '+c.id+' '+msg);
+    }
+    for(let i=0;i<fit.controls.length;i++)for(let j=i+1;j<fit.controls.length;j++){
+     const a=fit.controls[i],b=fit.controls[j];
+     assert.ok(Math.min(a.right,b.right)-Math.max(a.left,b.left)<=1||Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)<=1,'Controls overlap: '+a.id+' / '+b.id+' '+msg);
+    }
+    await phone.screenshot({path:'test-results/pawsibly-landscape-'+lang+'-'+viewport.width+'x'+viewport.height+'.png'});
+    await phone.locator('#menuButton').tap();
+    assert.ok(await phone.locator('#gameMenu').isVisible(),'Landscape menu remains usable');
+    await phone.locator('#menuClose').tap();
+   }
+  }
+  await phone.setViewportSize({width:844,height:390});
+  const b=await phone.locator('#board').boundingBox();
+  await phone.touchscreen.tap(b.x+b.width*.25,b.y+b.height*.5);
+  await phone.waitForFunction(()=>window.__PAWSIBLY_TEST__.getState().got===1);
+  await phone.setViewportSize({width:390,height:844});
+  await phone.waitForTimeout(100);
+  assert.equal(await phone.evaluate(()=>window.__PAWSIBLY_TEST__.getState().got),1,'Rotation preserves run state');
+ }finally{await landscape.close()}
  await page.setViewportSize({width:1250,height:900});
  assert.ok(initial.opaque>500,'Canvas must actually contain drawn pixels');
  assert.ok(initial.uniqueColors>12,'Canvas needs colorful room artwork, not a blank rectangle');
