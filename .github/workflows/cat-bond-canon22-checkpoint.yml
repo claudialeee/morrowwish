@@ -1,0 +1,34 @@
+name: Canon 2.2 implementation checkpoint
+on:
+  push:
+    branches: [review/starbell-canon13-player-experience]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/test-cat-bond-canon22-*.mjs'
+      - 'scripts/test-cat-bond-canon12-campaign.mjs'
+      - '.github/workflows/cat-bond-canon22-checkpoint.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: canon22-checkpoint-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify changed runtime syntax
+        run: |
+          node --check public/cat-bond/js/resonance/canon22-glide.mjs
+          node --check public/cat-bond/js/resonance/sky-flight.mjs
+          node --check public/cat-bond/js/resonance/world-runtime.mjs
+          node --check public/cat-bond/js/resonance/campaign.mjs
+      - name: Verify implemented flight and scene contract
+        run: node scripts/test-cat-bond-canon22-glide.mjs
+      - name: Run campaign integration regressions
+        run: node scripts/test-cat-bond-canon12-campaign.mjs
