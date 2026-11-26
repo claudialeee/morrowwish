@@ -18,7 +18,7 @@ export const layouts={
    "puzzle:beam-mirrors":[.153,.44,"灯塔反射镜","Lighthouse mirrors"],
    "rescue:storm-boat":[.19,.89,"遇险小船","Storm boat"],
    "repair:harbor":[.131,.341,"古铃圣所","Town bell sanctuary"],
-   "melody:harbor":[.131,.341,"归潮调","Returning Tides"]
+   "melody:harbor":[.131,.341,"归家调","Coming Home"]
   }
  },
  forest:{name:["眠根林","Rootsleep Forest"],paths:[[.095,.90],[.20,.84],[.31,.73],[.35,.64],[.31,.58],[.265,.53],[.25,.49],[.30,.43],[.27,.35],[.29,.31],[.36,.31],[.42,.28],[.44,.36],[.39,.40],[.53,.40],[.56,.47],[.64,.53],[.69,.53],[.77,.44],[.83,.37],[.81,.32],[.83,.27],[.88,.24],[.89,.20]],castPoints:{yahe:[.30,.43],yuchuan:[.64,.53]},features:{"puzzle:moonleaf-crossing":[.30,.43,"拨动月叶 · 根桥","Moonleaf bridge"],"puzzle:moonleaf-loop":[.64,.53,"打破森林回环","Break the forest loop"],"explore:scent-trail":[.69,.53,"气味踪迹","Scent trail"],"rescue:steady-channel":[.53,.40,"与芽禾会合 · 稳住水道","Meet Yahe · Stabilize the channel"],"explore:water-marks":[.56,.47,"调查湿润水痕","Inspect the wet water marks"],"battle:root-echo":[.69,.53,"击退模仿声音的空响","Dispel the mimicking echo"],"rescue:trapped-cats":[.77,.44,"解开根须 · 救出伙伴","Free the roots · Rescue the cats"],"repair:forest":[.89,.20,"古根圣所","Ancient-root sanctuary"],"melody:forest":[.89,.20,"相枝调","Living Roots"]}},

@@ -122,15 +122,18 @@ export async function decodeCinematicImages(scene){
   }
 }
 
-export function mountResonanceCinematics({root,rendererFactory,engine,campaign,manifest,getSlotKey,onPersist,onResolved,onError,language,onLanguageChange,staging=false,openingRelease=false,onCheckpoint,decorateScene,preload=decodeCinematicImages}){
+export function mountResonanceCinematics({root,rendererFactory,engine,campaign,manifest,getSlotKey,onPersist,onResolved,onError,language,onLanguageChange,staging=false,openingRelease=false,onCheckpoint,decorateScene,beforeResolve,preload=decodeCinematicImages}){
   if(!root||typeof rendererFactory!=='function'||!engine?.view||!engine?.snapshot||typeof getSlotKey!=='function'||(typeof engine.evidence!=='function'&&typeof onPersist!=='function'))throw Error('Missing canonical host dependencies');
   let active=null,sequence=0,disposed=false;
   const valid=run=>!disposed&&active===run&&getSlotKey()===run.slot&&engine.view().current?.id===run.id&&engine.snapshot().revision===run.revision;
   const report=reason=>{onError?.({reason});return bad(reason)};
   // Scene results are committed only through the official engine.
   // World/puzzle/combat operations are NEVER recorded by this presentation layer.
-  function resolve(event,skipped){
-    const run=active;if(!run||event.sceneId!==run.id||!valid(run))return;
+  async function resolve(event,skipped){
+    const run=active;if(!run||event.sceneId!==run.id||!valid(run)||run.resolving)return;
+    run.resolving=true;
+    try{if(beforeResolve&&await beforeResolve({sceneId:run.id,skipped})===false)return;}catch(error){if(valid(run))onError?.({sceneId:run.id,reason:error.message});return;}
+    if(!valid(run))return;
     active=null;
     const current=engine.view().current;
     const transactional=typeof engine.evidence==='function';

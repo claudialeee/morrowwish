@@ -111,6 +111,6 @@ export function paintHarborCeremony(c,img,elapsed,lang,drawResident){
  glow(c,480,284,125,"rgba(255,219,157,.22)");
  for(const [id,x,y,s] of [["jiedeng",330,389,1.55],["qilan",630,389,1.55],["muling",480,383,1.12]])drawResident?.(c,id,{x,y,scale:s,time:t});
  for(let i=0;i<30;i++){const a=i*2.399+t*.23,rad=35+(i%10)*14+t*6;circle(c,480+Math.cos(a)*rad,285+Math.sin(a)*rad*.43-t*12,1.4+i%3*.5,"rgba(248,228,170,"+(.25+.25*Math.sin(t*2+i))+")");}
- text(c,zh?"归潮调":"The Song of Returning Tides",480,439,32,cream);text(c,zh?"风铃重新响起 · 镇上的猫记起了伙伴与家":"The chimes ring again. The townsfolk remember their companions and homes.",480,479,17,teal,"center",850);
+ text(c,zh?"归家调":"The Song of Coming Home",480,439,32,cream);text(c,zh?"风铃重新响起 · 镇上的猫记起了伙伴与家":"The chimes ring again. The townsfolk remember their companions and homes.",480,479,17,teal,"center",850);
  c.restore();
 }

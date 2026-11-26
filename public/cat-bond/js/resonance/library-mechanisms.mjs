@@ -30,6 +30,17 @@ export function libraryPuzzle(op,record){
  const goals={librarySeal:[0,2,1],libraryMirrors:[1,3,2],libraryMural:[2,0,1],libraryEcho:[record?.correct??1],libraryLedger:[0],libraryRestore:[1,0,2],libraryRoutes:[0,1,2]};
  return {type,operation:op,initial:type==="libraryMirrors"?[0,0,0]:[],values:type==="libraryMirrors"?[0,0,0]:[],goal:goals[type],record:record||null,mistakes:0,solved:false,response:[]};
 }
+// Coordinates match the six visible bells and the center of the model.
+export function routeGesture(start,end){
+ const pts=Array.from({length:6},(_,i)=>[.5+.22*Math.cos(i*Math.PI/3-Math.PI/2),.47+.16*Math.sin(i*Math.PI/3-Math.PI/2)]);
+ const nearest=p=>pts.findIndex(q=>Math.hypot(p[0]-q[0],p[1]-q[1])<.06);
+ const a=nearest(start),b=nearest(end);
+ if(a<0)return -1;
+ if(Math.hypot(end[0]-.5,end[1]-.47)<.075)return 0;
+ if(b>=0&&(Math.abs(a-b)===1||Math.abs(a-b)===5))return 1;
+ return -1;
+}
+
 export function advanceLibrary(p,i){
  if(!p||!p.type?.startsWith("library")||p.solved||!Number.isInteger(i)||i<0||i>2)return false;
  if(p.type==="libraryCompanion"){p.solved=advanceMirror(p.mirror,i);p.mistakes=p.mirror.mistakes;return p.solved;}
@@ -43,7 +54,7 @@ export function advanceLibrary(p,i){
 }
 const words={
  libraryCompanion:[["镜中的两只暮铃","Two Mulings in the mirror"],["它们都摇了两下铃。换个位置再摇铃，看看谁会转向你。","Both rang twice. Move and ring again; see who turns toward you."],[["选左边的猫","Choose the left cat"],["换位置，摇铃","Move and ring"],["选右边的猫","Choose the right cat"]]],
- libraryRoutes:[["六地模型 · 两条回家的路","Six-region model · Two ways home"],["试试两种办法，看看记忆会怎样变化。这只是模型，还没有证明真能成功。","Try both routes and see what happens to memories. This is only a model, not proof that either route will hold."],[["中央汇集","Converge inward"],["接通邻路","Connect neighbors"],["结束演示","Finish demonstration"]]],
+ libraryRoutes:[["六地模型 · 两条回家的路","Six-region model · Two ways home"],["把彩色铃拖向中央，或拖向相邻的铃。比较两种结果；这只是模型。","Drag a colored bell to the center or to its neighbor. Compare both outcomes; this is only a model."],[["中央汇集","Converge inward"],["接通邻路","Connect neighbors"],["结束演示","Finish demonstration"]]],
  librarySeal:[["一面走得进去的镜子","A mirror you can walk through"],["随意查看三面公共记忆镜，看看它们留下了什么景象。","Explore the three public memory mirrors in any order."],[["旧巡铃路","Old bell trail"],["书库旧画","Library mural"],["风铃镇旧景","Windchime Town in the past"]]],
  libraryMirrors:[["镜光回廊","Reflection gallery"],["旋转三面镜子，使光从左侧月窗折向隐藏的门。","Rotate the three mirrors to carry moonlight into the hidden doorway."],[["西镜","West mirror"],["中镜","Middle mirror"],["东镜","East mirror"]]],
  libraryMural:[["封存壁画","The sealed mural"],["按历史先后接合碎片：坠星、断裂的铃舌、应急锚室。","Reassemble the fragments in historical order: fallen star, broken tongue, emergency anchor."],[["断裂的铃舌","Broken tongue"],["应急锚室","Emergency anchor"],["坠落的星","Fallen star"]]],
@@ -72,7 +83,7 @@ export function paintLibraryPuzzle(c,p,lang,W,H){
  [.23,.50,.77].forEach((x,i)=>{frame(x-.12,.34,.24,.33);const q=cards[i];t(q[l],x,.41,18,"#543b55");t(q[2+l],x,.53,12,"#356b68");});t(l?"Ask a question. There is no correct order.":"任选一个问题，不需要排序。",.5,.74,18);c.restore();return true;
  }
  if(p.type==="libraryRoutes"){
-  const n=p.routeMode===0?1:p.routeMode===1?2:p.routeMode===2?3:0,colors=["#57a0b8","#6baf83","#d69464","#c3a2de","#8f92bd","#d6bc6b"],names=l?["Windchime","Forest","Lantern","Sky","Library","Starfall"]:["风铃镇","森林","千灯城","云岛","书库","星原"],pts=names.map((_,i)=>[.5+.22*Math.cos(i*Math.PI/3-Math.PI/2),.47+.16*Math.sin(i*Math.PI/3-Math.PI/2)]);c.lineWidth=3*s;for(let i=0;i<6;i++){const a=pts[i],b=n===1?[.5,.47]:pts[(i+1)%6];c.strokeStyle=n===1?"#b18192":n===3?colors[i]:"#b2a7b8";c.setLineDash(n===2?[5*s,6*s]:[]);c.beginPath();c.moveTo(X(a[0]),Y(a[1]));c.lineTo(X(b[0]),Y(b[1]));c.stroke();}c.setLineDash([]);pts.forEach((q,i)=>{c.fillStyle=n===1?"#b18192":colors[i];c.beginPath();c.arc(X(q[0]),Y(q[1]),18*s,0,2*Math.PI);c.fill();t(names[i],q[0],q[1]+.052,13);});c.fillStyle="#dac4ab";c.beginPath();c.arc(X(.5),Y(.47),24*s,0,2*Math.PI);c.fill();t(n===1?(l?"Home":"旧花园"):(l?"Bell":"星铃"),.5,.47,13);const memory=["resonance-world-v2/harbor.webp","resonance-world-v2/forge.webp","core-art-remaster/story/e03-garden.webp"];for(const [i,path] of memory.entries()){const x=.18+i*.32,y=.25,fade=n===1&&i<2;c.save();c.globalAlpha=fade?.23:1;cover(c,image(path),X(x-.10),Y(y-.05),X(.20),Y(.10));c.restore();}t((l?["Choose either route","One home brightens; other memories fade","Each neighbor keeps their memories","Demonstration complete"]:["任选一种办法","旧花园亮起，别猫的记忆褪色","各地的记忆都还在","演示结束，还要实际去试"])[n],.5,.73,19);xs.forEach((x,i)=>t(w[2][i][l],x,.82,13));c.restore();return true;
+  const n=p.routeMode===0?1:p.routeMode===1?2:p.routeMode===2?3:0,colors=["#57a0b8","#6baf83","#d69464","#c3a2de","#8f92bd","#d6bc6b"],names=l?["Windchime","Forest","Lantern","Sky","Library","Starfall"]:["风铃镇","森林","千灯城","云岛","书库","星原"],pts=names.map((_,i)=>[.5+.22*Math.cos(i*Math.PI/3-Math.PI/2),.47+.16*Math.sin(i*Math.PI/3-Math.PI/2)]);c.lineWidth=3*s;for(let i=0;i<6;i++){const a=pts[i],b=n===1?[.5,.47]:pts[(i+1)%6];c.strokeStyle=n===1?"#b18192":n===3?colors[i]:"#b2a7b8";c.setLineDash(n===2?[5*s,6*s]:[]);c.beginPath();c.moveTo(X(a[0]),Y(a[1]));c.lineTo(X(b[0]),Y(b[1]));c.stroke();}c.setLineDash([]);pts.forEach((q,i)=>{c.fillStyle=n===1?"#b18192":colors[i];c.beginPath();c.arc(X(q[0]),Y(q[1]),18*s,0,2*Math.PI);c.fill();t(names[i],q[0],q[1]+.052,13);});c.fillStyle="#dac4ab";c.beginPath();c.arc(X(.5),Y(.47),24*s,0,2*Math.PI);c.fill();t(n===1?(l?"Home":"旧花园"):(l?"Bell":"星铃"),.5,.47,13);const memory=["canon22-final-art/garden-route-map.webp","canon22-final-art/garden-lantern.webp","core-art-remaster/story/e03-garden.webp"],captions=l?["Qilan remembers her trail","Xiaomao remembers the lantern","Your old home"]:["栖蓝记得新路","小铆记得歪耳灯","你从前的家"];for(const [i,path] of memory.entries()){const x=.18+i*.32,y=.30,fade=n===1&&i<2;c.save();c.globalAlpha=fade?.23:1;cover(c,image(path),X(x-.10),Y(y-.035),X(.20),Y(.07));c.restore();t(captions[i],x,y+.07,12,fade?"#9d8d98":"#356b68");}t((l?["Choose either route","One home brightens; other memories fade","Each neighbor keeps their memories","Demonstration complete"]:["任选一种办法","旧花园亮起，别猫的记忆褪色","各地的记忆都还在","演示结束，还要实际去试"])[n],.5,.73,19);xs.forEach((x,i)=>t(w[2][i][l],x,.82,13));c.restore();return true;
  }else if(p.type==="libraryMirrors"){
   // Optical ray is actually reflected at each junction; wrong orientation sends it away from the next mirror.
   const pts=[[.15,.53],[.3,.53],[.5,.43],[.7,.53],[.85,.53]].map(([x,y])=>[X(x),Y(y)]);

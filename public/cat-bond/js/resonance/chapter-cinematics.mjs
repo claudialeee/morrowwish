@@ -38,10 +38,31 @@ async function play(sceneId){
  active=controller;
  let root,player;
  const close=()=>{
+  controller.cancelAcknowledgement?.();
   player?.dispose();
   root?.remove();
   if(active===controller)active=null;
  };
+ // Explicit acknowledgement is part of the scene, not a timed toast.
+ function acknowledge(title,body,label,{ring=false}={}){
+  return new Promise(resolve=>{
+   root.hidden=false;
+   const panel=document.createElement("section");panel.dataset.canonAcknowledgement=sceneId;
+   panel.style.cssText="position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:rgba(42,32,56,.76);overflow:auto";
+   const card=document.createElement("div");card.style.cssText="width:min(100%,520px);box-sizing:border-box;background:#fff5e9;color:#493852;border-radius:18px;padding:22px;text-align:center;box-shadow:0 8px 30px #30223b66";
+   const h=document.createElement("h2"),p=document.createElement("p"),button=document.createElement("button");
+   const localize=()=>{const l=language();h.textContent=title[l];p.textContent=body[l];button.textContent=label[l];};
+   p.style.cssText="line-height:1.65;margin:12px 0 20px";button.type="button";button.style.cssText="min-height:48px;padding:10px 20px;border-radius:12px;background:#765c91;color:white;border:0;font:inherit;cursor:pointer";
+   card.append(h,p,button);panel.append(card);root.append(panel);localize();button.focus();
+   const playReply=()=>{window.MorrowwishAudio?.note?.(392,.20,.12);window.setTimeout(()=>{if(current())window.MorrowwishAudio?.note?.(523.25,.22,.12);},260);};
+   if(ring)playReply();
+   const cleanup=()=>{window.removeEventListener("morrowwish-language-change",localize);panel.remove();};
+   window.addEventListener("morrowwish-language-change",localize);
+   controller.cancelAcknowledgement=()=>{cleanup();resolve(false);};
+   button.addEventListener("click",()=>{if(!current()){cleanup();resolve(false);return;}if(ring)playReply();cleanup();controller.cancelAcknowledgement=null;resolve(true);},{once:true});
+  });
+ }
+
  controller.dispose=close;
  const error=()=>{
   if(!current())return;
@@ -56,6 +77,7 @@ async function play(sceneId){
   root=document.createElement("div");
   root.className="res-chapter-cinematic cb-story-overlay is-visible";
   document.getElementById("stage").append(root);
+  if(sceneId==="finale:B-04"&&!slot[checkpointKey]?.snapshot){const replied=await acknowledge({zh:"暮铃摇了两下铃",en:"Muling rings twice"},{zh:"熟悉的报平安铃声。现在，轮到你回应她了。",en:"The familiar signal: I am safe. Now it is your turn to answer."},{zh:"摇两下铃回应",en:"Ring twice in reply"},{ring:true});if(!replied||!current()){close();return false;}}
   player=mountResonanceCinematics({
    root, engine:runtime, campaign, manifest,
    rendererFactory:window.CatBondCinematicPresentation.create,
@@ -65,6 +87,7 @@ async function play(sceneId){
    onLanguageChange:next=>window.MorrowwishI18n?.set?.(next),
    onError:error,
    onCheckpoint:persist,
+   beforeResolve:({sceneId,skipped})=>sceneId==="starfall:F-02"&&skipped?acknowledge({zh:"星芽",en:"Xingya"},{zh:"当年落星击碎星铃，六地接不起来，是你自愿留下记忆才救了大家。你还答应过暮铃要找到回家的办法；如今已经有五地在唱了。",en:"When the fallen star broke the Star Bell and the six lands could not answer, you chose to leave your memories to save everyone. You promised Muling you would find a way home; today five lands are singing again."},{zh:"继续",en:"Continue"}):true,
    onResolved:()=>{
     if(!current())return;
     const result=runtime.finish(token);

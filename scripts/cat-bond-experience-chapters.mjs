@@ -99,7 +99,7 @@ async function run(chapter){
   if(!checkedPuzzleLayout){checkedPuzzleLayout=true;const original=page.viewportSize();try{for(const viewport of [{width:390,height:844},{width:844,height:390}]){await page.setViewportSize(viewport);await measure();}}finally{await page.setViewportSize(original);}await measure();}
  }
  async function puzzle(label,inputs){
-  const directHarbor={'Tide cave logbook':'explore:tide-logbook','Storm boat':'rescue:storm-boat','Lighthouse mirrors':'puzzle:beam-mirrors','Town bell sanctuary':'repair:harbor','Returning Tides':'melody:harbor'};
+  const directHarbor={'Tide cave logbook':'explore:tide-logbook','Storm boat':'rescue:storm-boat','Lighthouse mirrors':'puzzle:beam-mirrors','Town bell sanctuary':'repair:harbor','Coming Home':'melody:harbor'};
   if(chapter==='harbor'&&directHarbor[label]){const operation=directHarbor[label];assert.ok((await view()).objective.includes(operation),'Expected required harbor action '+operation);await click(label);await op(operation);await shot(operation);return;}
   await click(label);const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();await checkPuzzleLayout();
   for(const input of inputs)await click(input,controls);
@@ -191,6 +191,7 @@ async function run(chapter){
  }
  async function cinema(id,label){
   await scene(id);await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady(),null,{timeout:15000});await click(label);
+  if(id==='finale:B-04'){const reply=page.getByRole('button',{name:'Ring twice in reply',exact:true});await reply.waitFor();await shot(id+'-ring-reply');await reply.click();}
   await page.locator('.cbcp-art').first().waitFor();await shot(id+'-cinematic');
   await page.waitForFunction(id=>CatBondResonance.view().current?.id!==id,id,{timeout:180000});
  }
@@ -240,7 +241,7 @@ async function run(chapter){
    await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();await page.keyboard.down('ArrowUp');await page.waitForTimeout(920);await page.keyboard.up('ArrowUp');await page.keyboard.down('ArrowRight');await chase.waitFor({state:'hidden',timeout:15000});await page.keyboard.up('ArrowRight');await chase.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');
    await talk('Yandeng');await dialogue('harbor:H-03');await scene('harbor:H-04');
    await battle('Belllight beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
-   await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Returning Tides',[low,high,mid]);await dialogue('harbor:H-05');
+   await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');
   }else if(chapter==='forest'){
    await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');
    await puzzle('Moonleaf bridge',['Fork','Roots','Turn moonleaf','Roots','Free the trapped kitten','Far bank']);await dialogue('forest:R-02');await scene('forest:R-03');
