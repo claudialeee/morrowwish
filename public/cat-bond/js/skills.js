@@ -979,18 +979,24 @@
   }
 
   // BASIC-ELIGIBLE: a skill the player may slot as their LEFT-CLICK basic attack.
-  // The basic should stay light + spammable, so only low/mid-power attack skills
-  // qualify — NOT heavy hitters, wind-up casts, channels, ults or gated signatures.
-  // Threshold 1.35 intentionally INCLUDES 烈焰猫爪/炽爪 (emberClaw, power 1.3) per
-  // design, while excluding 彗星爪 1.7 / 潮汐咬 1.5 and the like.
-  const BASIC_MAX_POWER = 1.35;
+  // Owner 2026-11-26 "只能用最基础的近战/远程技能作为普攻 → 应该放宽": gated
+  // skills (unlock.level/element/species) and tier-2 upgrades ARE allowed as
+  // basic if their power is reasonable. Hard disallows: heavy (knockOff/pounce
+  // slams), windup (fireballMeow brings its own precise mini-game), channel
+  // (waterJet/flameSweep), ult-cost, pulse (multi-wave would spam frames),
+  // aoe/leap/beam (too splashy). Power cap raised 1.35→1.95 to admit frostLance
+  // 1.95 (precise-chill) and keep out the 2.0+ heavy strikes.
+  const BASIC_MAX_POWER = 1.95;
   function basicEligible(sk){
     if(!sk)return false;
-    const atk=['melee','projectile','dash','pounce','chain'];   // no leap/aoe (too splashy for a basic)
-    return atk.includes(sk.kind)
-      && (sk.ultCost||0)===0
-      && (sk.power||0)>0 && (sk.power||0)<=BASIC_MAX_POWER
-      && !sk.heavy && !sk.windup && !sk.channel && !sk.unlock;   // light, instant, innate only
+    const atk=['melee','projectile','dash','pounce','chain'];
+    if(!atk.includes(sk.kind))return false;
+    if((sk.ultCost||0)>0)return false;
+    if(!((sk.power||0)>0)||(sk.power||0)>BASIC_MAX_POWER)return false;
+    if(sk.heavy||sk.windup||sk.channel||sk.pulseCount)return false;
+    const tags=sk.tags||[];
+    if(tags.includes('pulse'))return false;    // tag 'heavy' is semantic only (e.g. frostLance precise-chill) — allowed; field sk.heavy=true (knockOff slam) remains blocked above
+    return true;
   }
   // The pool of basic-eligible skills a given cat can actually equip (already-learned
   // / innate only — mirrors learnableSkills). UI reads this to populate the basic slot.
@@ -1095,9 +1101,20 @@
     // choices; never wipe custom equipment or break legacy IDs in save files.
     const current=Array.isArray(cat.loadout)?cat.loadout.slice():[];
     const learned=new Set(Array.isArray(cat.learned)?cat.learned:[]);
+    // Owner 2026-11-26 "水鞭为什么不能成为普攻技能了": basic slot (idx 0) must NOT
+    // auto-promote a basic-eligible tier-1 to its tier-2 if the tier-2 exceeds the
+    // basic power cap — that would strip the player's chosen basic to the innate
+    // toy toss. Only slots 1-2 (Q/E) auto-upgrade; slot 0 only upgrades if the
+    // upgrade is also basic-eligible.
     for(let i=0;i<current.length;i++){
       const next=upgradeTargetOf(current[i]);
-      if(next&&learned.has(next))current[i]=next;
+      if(next&&learned.has(next)){
+        if(i===0){
+          const upSk=skillById(next);
+          if(!upSk||!basicEligible(upSk))continue;   // keep tier-1 as basic
+        }
+        current[i]=next;
+      }
     }
     if(Array.isArray(cat.loadout)&&current.some((id,i)=>id!==cat.loadout[i])){
       cat.loadout=current.slice();
