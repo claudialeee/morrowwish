@@ -1072,6 +1072,25 @@
     // Provisional coefficient bounded by attack power; tune against runtime DoT rules.
     bonus(ctx,Math.min(c.dmg*1.2,e.maxhp*.012*ttl));
   }});
+
+  const oldSenlin=trait('senlin').effect;
+  set('senlin',{subscribedEvents:['onTick','onHitResolved'],triggerCondition:ctx=>ctx._event==='onTick'?!ctx.cat._senlinApplied:heavy(ctx.skill),effect(ctx){
+    if(ctx._event==='onTick')oldSenlin(ctx);else if(ctx.target)mark(ctx.cat,ctx.battle,ctx.target,'fire',{radius:44});
+  }});
+  set('yinghua',{subscribedEvents:['onFieldExpired'],triggerCondition:ctx=>ctx.field?.element==='light'&&ctx.field?._traitCaster===ctx.cat,effect(ctx){
+    const c=ctx.cat,b=ctx.battle,f=ctx.field;mark(c,b,f,'fire',{radius:f.r});
+    for(const e of b.enemies||[])if(e.alive&&near(e,f,f.r)){e._slowMult=.6;e._slowT=b.t+2;}
+  }});
+  // Frames are checked at actual cast release; a missed charged projectile consumes
+  // its charge too. The bonus is baked into the cast before it is split into pellets.
+  const oldAbi=trait('abi').effect;
+  set('abi',{subscribedEvents:['onTick','onSkillCast'],triggerCondition:()=>true,effect(ctx){
+    const c=ctx.cat,b=ctx.battle;
+    if(ctx._event==='onTick'){oldAbi(ctx);return;}
+    if(c._abiCharged&&ctx.skill?.kind==='projectile'){
+      c._abiCharged=false;ctx.skill._traitPower=1.4;ctx.skill._traitSize=1.3;mark(c,b,c,'fire');
+    }
+  }});
   window.CatTraits.mark=mark;
 
 })();
