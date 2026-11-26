@@ -1,6 +1,6 @@
 # Cat Bond RPG — Canon & Script Index
 
-**Status: AUTHORITATIVE STORY SOURCE · Canon 1.1 · player-first opening and clarity revision**
+**Status: AUTHORITATIVE STORY SOURCE · Canon 1.2 · full player-first campaign rewrite**
 
 This folder contains the only current narrative canon for Cat Bond's new six-region RPG campaign. Every coding, narrative, art, QA, and integration chat working on the RPG must read this index and the linked documents before making story-related changes.
 
@@ -45,3 +45,7 @@ When in doubt, follow the new Bible and ask for clarification rather than import
 
 ## Canon 1.1 migration status
 The owner's V3 playtest direction supersedes the historical opening: no opening animation; public catastrophe context, solo awakening, chance meeting, independent harbor travel, temporary cooperation, earned companionship. The main script and Bible govern this presentation; handoff and cinematic/runtime contracts record the required migration. Existing code and earlier test counts remain legacy evidence, not proof that the revision is playable. Keep the six-region story, late reveals and happy ending. Do not deploy a document-only revision as a gameplay update.
+
+
+## Canon 1.2 full campaign
+All six chapter scripts plus final battle and epilogue have been rewritten under the approved V3/V4 principles; the approved spoiler-free opening is retained and clarified. 02 is the current source for scene flow and bilingual key lines, 01 for locked causal rules, 03 for adaptation gates. No old runtime or visual implementation is certified by this update.

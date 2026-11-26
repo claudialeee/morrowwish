@@ -1,5 +1,5 @@
 # CAT BOND — THE LAST RESONANCE
-## Narrative Bible · Canon 1.1 · revised player-facing presentation
+## Narrative Bible · Canon 1.2 · player-first campaign rewrite
 
 **Status:** New canonical story foundation. Supersedes all previous Cat Bond RPG story bibles and plot drafts, including The Last Page.  
 **Working title:** The Last Resonance  
@@ -526,3 +526,7 @@ Final title: **THE BELL RINGS AGAIN.**
 
 ## 14. Player knowledge boundary — Canon 1.1 presentation amendment
 Public from the start: six lands, ancient central Star Bell, historical damage by falling star, loss of familiar people/places/names, previous stabilization and renewed forgetting. The player knows they cannot remember their name or past, not why. The public sign and observable harbor incident teach the consequences. Six sanctuaries, local melodies and repair are introduced through play, not a lecture. Locked private facts (former identity, sacrifice, Muling's prior relationship and responsibility, inward plan and its cost, final seal) stay hidden until their existing reveal chapters. An optional encounter cannot be a hard prerequisite for harbor entry. Main and Muling's visible coat choices follow the owner's fixed golden / pale silver direction; no change to hidden identity. Casting may be streamlined without altering the six-region causal network. All prior locked causal facts remain unchanged.
+
+
+## 15. Canon 1.2 campaign presentation
+The rewritten 02-MAIN-STORY-SCRIPT is authoritative for playable chapter sequence, scene dialogue, choice actions, local consequences and presentation. Section 6 retains world/cast/causal anchors; where a presentation detail differs, the new script controls. Distinct chapter fantasy: harbor rescue, living forest investigation, festival engineering, free flight and companion intimacy, archive mystery and betrayal, star navigation and reciprocal proof. Muling's departure after M-05 is real gameplay separation, with other companions or local aid available; no mandatory collectible. Complete local problems visibly before each next destination. No early history scene or public reveal of private facts. Do not interpret the final proof as a substitute for real reciprocal participation and sustained live replies. Locked facts §12 unchanged.
