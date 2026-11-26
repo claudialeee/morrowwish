@@ -706,6 +706,8 @@
     '返回': 'Back',
     // ---- title / studio / intro ----
     '猫猫纽带': 'Cat Bond',
+    '星铃回响': 'Echoes of the Starbell',
+    '循着星铃的回响，寻找遗失的记忆。': 'Follow the echoes of the Starbell and uncover lost memories.',
     'STUDIO 工作室 呈现': 'STUDIO presents',
     '一群会思考的小猫咪住在你的庭院里。陪它们玩耍、喂养、建立': 'A yard full of thinking little cats lives with you. Play with them, feed them, build',
     '好感纽带': 'bonds of affection',
