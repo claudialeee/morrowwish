@@ -71,8 +71,8 @@ try{
        return {id:a.id,size:blob.size,expectedBytes:a.bytes,dimensions:c.width+'x'+c.height,expectedDimensions:a.canvas,clear:clear/(c.width*c.height),opaque:opaque/(c.width*c.height),type:blob.type};
       }));
      });
-     assert.equal(portraits.length,20,'Every new painted character portrait must be checked');
-     assert.equal(new Set(portraits.map(p=>p.id)).size,20);
+     const expectedPortraits=['baikan','jiedeng','jinpo','lichuan','lingyu','moye','qilan','xiaomao','xingya','yahe','yuanfan','yuchuan'].map(id=>id+'-painted').concat(['determined','dry','nervous','neutral','warm','worried','silver-cream'].map(id=>'muling-traveler-'+id));
+     assert.deepEqual(portraits.map(p=>p.id).sort(),expectedPortraits.sort(),'Every active portrait is present and checked exactly once');
      for(const p of portraits){
       assert.equal(p.size,p.expectedBytes,'Stale or wrong portrait: '+p.id);
       assert.equal(p.dimensions,p.expectedDimensions,'Wrong portrait dimensions: '+p.id);
@@ -84,6 +84,25 @@ try{
     await page.locator('#intro-start').waitFor();await shot('title');
     await page.locator('#intro-start').click();await page.locator('#intro-slot-list [data-slot="slot1"]').waitFor();await shot('slots');
     await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+    await page.waitForFunction(()=>document.querySelector('#cb-player-first-intro')||document.querySelector('.cbcp-art')?.naturalWidth>0);
+    if(await page.locator('#cb-player-first-intro').count()){
+     const intro=page.locator('#cb-player-first-intro');await intro.waitFor();await shot('opening');
+     await button('Start exploring','开始探索',intro).click();await scene('prologue:P-05');
+     await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&__game.scene==='yard');
+     assert.equal(await page.locator('#panel.open .cat-starter-card').count(),0);
+     await shot('starter');const guide=page.locator('.sg-prologue-guide');await guide.locator('summary').click();
+     await button('Help the stranger with her chart (optional)','看看陌生猫的航图（可选）',guide).click();
+     const encounter=page.locator('#cb-traveler-encounter');
+     await button('Pick up the chart','捡起航图',encounter).waitFor();await shot('player-dialogue');
+     await button('Pick up the chart','捡起航图',encounter).click();
+     await button('Return the chart','归还航图',encounter).click();
+     await button('Say goodbye','告别',encounter).waitFor();
+     const art=encounter.locator('img.res-portrait');await art.waitFor();await art.evaluate(img=>img.decode());
+     await shot('muling-dialogue');await button('Say goodbye','告别',encounter).click();await encounter.waitFor({state:'detached'});
+     await checkTheme();await shot('garden');
+     await button('Next scene · Misttide Harbor','下一场景 · 霁潮港',guide).click();await scene('harbor:H-01');
+     await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-atlas"]').click();await page.locator('.rw-surface').waitFor();await shot('atlas');
+    }else{
     for(const id of ['prologue:P-01','prologue:P-02','prologue:P-03']){
      await scene(id);await page.waitForFunction(()=>document.querySelector('.cbcp-art')?.naturalWidth>0&&!document.querySelector('.cbcp-skip')?.disabled);
      await page.locator('.cbcp-art').first().evaluate(img=>img.decode());
@@ -122,6 +141,8 @@ try{
     }else{await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y+62,{steps:8});await page.mouse.up();}
     await scene('prologue:P-05');await dialogue('prologue:P-05');
     await button('World map','前往世界地图',page.locator('.sg-prologue-guide')).click();await page.locator('.rw-surface').waitFor();await shot('atlas');
+
+    }
     const nav=page.locator('.rw-system-nav');
     const book=nav.getByRole('button',{name:tr('Resonance Book','星月之书'),exact:true,includeHidden:true});
     const reveal=async target=>{

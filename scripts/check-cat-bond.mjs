@@ -10,7 +10,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','ward-art','ult-vfx','skill-fx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','adult-art','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
+const ORDER = ['vfx','ward-art','ult-vfx','skill-fx','catart','real-kittens','data','running-cats','skills','growth','adult-art','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','battle','duo-bond','ui','game','main'];
 
 // ---- minimal DOM ----
 const listeners = {};               // "id:type" or "type" -> handler
@@ -1184,9 +1184,9 @@ assert.ok(sandbox.window.WorldMap.REGIONS.find(r=>r.id==='sakura')
   assert.equal(elecSeeds,0,'counter-floor stands down vs elec when the player already owns a grass counter');
   St.S.cats=savedCats;                                     // restore
 }
-const cuteSource=fs.readFileSync(DIR+'js/cute-cats.js','utf8');
-assert.ok(cuteSource.includes('sp.chubby')&&cuteSource.includes('sp.flatFace'),
-  'shared cat-art renderer uses Exotic Shorthair breed traits');
+const paintedKittenSource=fs.readFileSync(DIR+'js/real-kittens.js','utf8');
+assert.ok(paintedKittenSource.includes('jiafeiSprite')&&paintedKittenSource.includes("o.species?.id==='jiafei'"),
+  'active painted renderer has a dedicated Exotic Shorthair sprite');
 const fallbackArt=fs.readFileSync(DIR+'js/catart.js','utf8');
 assert.ok(fallbackArt.includes('flatFace:')&&fallbackArt.includes('chubby:'),
   'fallback cat-art renderer preserves chubby/flat-face traits');

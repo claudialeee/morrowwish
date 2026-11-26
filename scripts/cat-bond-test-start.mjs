@@ -6,7 +6,7 @@ export async function startNewAdventure(page,{slot='slot1',scene='map'}={}){
   await start.click({timeout:10000});
   await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
   await page.locator('#intro-slot-list [data-slot="'+slot+'"]').click({timeout:10000});
-  await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,{timeout:15000});
+  await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,null,{timeout:15000});
   if(await page.evaluate(()=>!!window.__CAT_BOND_CANONICAL_ACTIVE__)){await finishCanonicalOpening(page);}else{
   await page.waitForFunction(()=>State.S.cats[0]?.species==='jinjc'&&State.S.cats.length===1);
   const skip=page.locator('.cb-story-overlay.is-visible .cb-story-skip');
