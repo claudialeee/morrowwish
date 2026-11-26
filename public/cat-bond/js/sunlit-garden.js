@@ -70,7 +70,7 @@
     guide.replaceChildren();guide.classList.remove('sg-minimal-opening');
     const title=document.createElement('strong');
     title.textContent=ending?(en?'The world answers again':'六地再次回应'):epilogue?(scene==='epilogue:E-02'?(en?'A promise to repair':'承担责任'):(en?'The second garden key':'第二把花园钥匙')):departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
-    const hint=document.createElement('span');hint.textContent=ending?(en?'After the adventure · '+v.postgame.length+'/13 tasks · '+v.returned.length+'/12 visitors':'冒险之后 · '+v.postgame.length+'/13 项任务 · '+v.returned.length+'/12 位来访伙伴'):epilogue?(en?'Speak with Muling and finish the story in Sunlit Garden.':'与暮铃交谈，在阳光花园完成故事。'):departure?(en?'Prepare your companions before heading to Misttide Harbor.':'整理伙伴，准备前往霁潮港。'):talk?(en?'Open Resonance Book to explore your cats, party, workshop and Catdex, then speak to Muling.':'可打开星月之书查看猫咪、队伍、工坊和 Catdex，再与暮铃交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
+    const hint=document.createElement('span');hint.textContent=ending?(en?'After the adventure · '+v.postgame.length+'/13 tasks · '+v.returned.length+'/12 visitors':'冒险之后 · '+v.postgame.length+'/13 项任务 · '+v.returned.length+'/12 位来访伙伴'):epilogue?(en?'Speak with Muling and finish the story in Sunlit Garden.':'与暮铃交谈，在阳光花园完成故事。'):departure?(en?'Prepare your companions before heading to Windchime Town.':'整理伙伴，准备前往风铃镇。'):talk?(en?'Open Resonance Book to explore your cats, party, workshop and Catdex, then speak to Muling.':'可打开星月之书查看猫咪、队伍、工坊和 Catdex，再与暮铃交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
     guide.append(title,hint);
     const row=document.createElement('div');guide.append(row);
     const add=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};row.append(b)};
@@ -81,9 +81,9 @@
     if(talk||ending)add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));
     if(ending){add('花园复兴','Garden Restoration',()=>window.GardenProjects?.open?.());add('继续探索','Continue exploring',()=>game.openWorldMap());}
     if(departure){
-      title.textContent=en?'Find your name':'寻找自己的名字';hint.textContent=en?'Tap things in the garden to discover small surprises, or head to Misttide Harbor.':'点击花园里的小事物探索惊喜，也可以随时前往霁潮港。';
+      title.textContent=en?'Find your name':'寻找自己的名字';hint.textContent=en?'Tap things in the garden to discover small surprises, or head to Windchime Town.':'点击花园里的小事物探索惊喜，也可以随时前往风铃镇。';
       guide.classList.add('sg-minimal-opening');
-      add('下一场景 · 霁潮港','Next scene · Misttide Harbor',()=>{game.openWorldMap();if(game.scene==='map')window.WorldMap?.enterRegion?.('harbor')});
+      add('下一场景 · 风铃镇','Next scene · Windchime Town',()=>{game.openWorldMap();if(game.scene==='map')window.WorldMap?.enterRegion?.('harbor')});
       row.firstElementChild.classList.add('sg-main-continue');
 
 

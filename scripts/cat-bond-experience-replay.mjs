@@ -25,6 +25,8 @@ const expected=entry?.data?.state||entry?.data;
 assert.equal(expected?.resonance?.scene,fixture.scene,'Fixture must contain the expected saved scene');
 assert.ok(expected.cats?.length,'Fixture must contain a party');
 const expectedEnding=fixture.ending===true;
+const gardenTransition=!expectedEnding&&fixture.scene==='epilogue:E-01';
+const restoredScene=gardenTransition?'epilogue:E-02':fixture.scene;
 if(expectedEnding)assert.ok(expected.resonance.completed.includes(fixture.scene),'Terminal fixture must contain completed last scene');
 const party=cats=>cats.map(c=>({uid:c.uid,species:c.species,actor:c.storyActor||null,level:c.level??null}));
 const profiles={
@@ -44,17 +46,21 @@ try{
  await page.goto(origin+'/cat-bond/?lang='+lang+'&rpgDev=1');
  await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
  await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="'+fixture.slot+'"]').click();
- await page.waitForFunction(({scene,ending})=>{const v=window.CatBondResonance?.view();return ending?v?.ending===true&&window.CatBondResonance.snapshot().scene===scene:v?.current?.id===scene;},{scene:fixture.scene,ending:expectedEnding},{timeout:15000});
+ await page.waitForFunction(({scene,ending})=>{const v=window.CatBondResonance?.view();return ending?v?.ending===true&&window.CatBondResonance.snapshot().scene===scene:v?.current?.id===scene;},{scene:restoredScene,ending:expectedEnding},{timeout:15000});
  await page.waitForFunction(()=>['map','yard'].includes(window.__game?.scene));
  const actual=await page.evaluate(()=>({story:CatBondResonance.snapshot(),ending:CatBondResonance.view().ending,cats:State.S.cats,away:State.S.storyAway?.muling?.uid||null,exploration:State.S.resonanceExploration,team:State.S.battlePrefs?.teamUids,duo:State.S.duoRelations,dex:State.S.dex}));
  assert.deepEqual(party(actual.cats),party(expected.cats),'Restored party identity/order/levels');
  assert.equal(actual.away,expected.storyAway?.muling?.uid||null,'Restored away companion identity');
  assert.equal(actual.ending,expectedEnding,'Ending state must survive reload');
+ if(gardenTransition)assert.equal(await page.evaluate(()=>__game.scene),'yard','E-01 must return to the garden');
  if(expected.battlePrefs?.teamUids)assert.deepEqual(actual.team,expected.battlePrefs.teamUids,'Active lineup');
  if(expected.duoRelations)assert.deepEqual(actual.duo,expected.duoRelations,'Duo relationships and chosen pair');
  if(expected.dex)assert.deepEqual(actual.dex,expected.dex,'Collection progress');
  for(const key of ['scene','cursor','completed','evidence','choices','melodies','sanctuaries','trust','links','support','returned','postgame','ambientDone','openingMet','ruins']){
-   if(Object.hasOwn(expected.resonance,key))assert.deepEqual(actual.story[key],expected.resonance[key],'Restored story '+key);
+   if(Object.hasOwn(expected.resonance,key)){
+     const want=gardenTransition&&key==='scene'?restoredScene:gardenTransition&&key==='cursor'?0:gardenTransition&&key==='completed'?[...expected.resonance.completed,'epilogue:E-01']:expected.resonance[key];
+     assert.deepEqual(actual.story[key],want,'Restored story '+key);
+   }
  }
  for(const key of ['interactions','pickups','cargo']){
    if(Object.hasOwn(expected.resonanceExploration||{},key))assert.deepEqual(actual.exploration?.[key],expected.resonanceExploration[key],'Restored exploration '+key);

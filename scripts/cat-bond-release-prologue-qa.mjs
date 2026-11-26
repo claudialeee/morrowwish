@@ -51,7 +51,7 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  assert.equal(await page.evaluate(()=>GardenExploration.read(State.S).butterfly),3);
  assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);assert.equal(await page.evaluate(()=>CatBondResonance.residents('garden').some(n=>n.id==='muling')),false);}
  else assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),false);
- await screenshot('garden');await press(guide.getByRole('button',{name:tr('下一场景 · 霁潮港','Next scene · Misttide Harbor'),exact:true}));await waitScene('harbor:H-01');
+ await screenshot('garden');await press(guide.getByRole('button',{name:tr('下一场景 · 风铃镇','Next scene · Windchime Town'),exact:true}));await waitScene('harbor:H-01');
  assert.equal(await page.evaluate(()=>WorldMap.currentRegion),'harbor');assert.equal(await page.evaluate(()=>WorldMap.mode),'region');
  const next=page.locator('[data-next-scene="harbor:H-01"]');await next.waitFor({state:'attached'});await screenshot('harbor');
  // Main story affordance must be visible without menu navigation.

@@ -25,7 +25,7 @@ async function run(chapter){
  page.setDefaultTimeout(18000);page.on('pageerror',e=>errors.push(e.message));
  await attachExperienceRecorder(context,page,{id:(continuous?'fresh-':'chapter-')+chapter,root:out,synthetic:!continuous,chapterEntry:continuous?null:start});
  const view=()=>page.evaluate(()=>CatBondResonance.view());
- const scene=id=>page.waitForFunction(id=>CatBondResonance.view().current?.id===id,id,{timeout:35000});
+ const scene=id=>page.waitForFunction(id=>{const v=CatBondResonance.view();return v.current?.id===id||(id==='epilogue:E-01'&&v.current?.id==='epilogue:E-02'&&v.completed.includes(id));},id,{timeout:35000});
  const shot=id=>page.screenshot({path:out+'/'+chapter+'-'+id.replace(':','-')+'.png'});
  async function click(label,scope=page){
   const b=scope.getByRole('button',{name:label,exact:true}).first();
@@ -177,7 +177,7 @@ async function run(chapter){
    // Start from a new slot, no fixture or direct state mutation.
    await page.locator('.sg-prologue-guide').getByRole('button',{name:/Next scene/}).click();await scene(start);
   }else{await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene(start);}
-  assert.ok(!(await view()).completed.includes(start),'Chapter start is not already completed');
+  assert.ok(start==='epilogue:E-01'||!(await view()).completed.includes(start),'Chapter start is not already completed');
   await page.waitForFunction(()=>['map','yard'].includes(__game.scene));
   // Continue can restore to the atlas rather than directly to its region.
   // Navigate via the actual visible next-scene control; never set WorldMap state.
@@ -243,7 +243,7 @@ async function run(chapter){
   assert.deepEqual(requiredBattles.filter(op=>!battleMeasurements.some(b=>b.operation===op&&b.status==='verified win'&&b.samples.length)),[],'Every required battle needs real outcome and telemetry');
   assert.deepEqual(errors,[]);
   if(continuous){
-   const expectedCount=campaign.scenes.indexOf(expected.at(-1))+1;assert.equal(final.snapshot.completed.length,expectedCount,'Fresh route must preserve all previous chapter history');
+   const expectedCount=campaign.scenes.indexOf(expected.at(-1))+1+(next==='epilogue:E-01'&&final.snapshot.completed.includes(next)?1:0);assert.equal(final.snapshot.completed.length,expectedCount,'Fresh route must preserve all previous chapter history');
    earnedSave=await context.storageState();await fs.writeFile(out+'/fresh-earned-save-'+chapter+'.json',JSON.stringify({provenance:'fresh real inputs, chapter boundary reload',storageState:earnedSave,completed:expectedCount},null,2));
   }
   return {chapter,status:'passed',start,next,scenes:expected.map(s=>s.id),readLines,steps,battleMeasurements:battleMeasurements.map(({samples,...m})=>({...m,sampleCount:samples.length})),stagingArt:chapter==='starfall'||chapter==='finale'||chapter==='epilogue'};

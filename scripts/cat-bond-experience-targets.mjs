@@ -54,13 +54,15 @@ try{
      assert.deepEqual(setup.errors,[]);
      await setup.ctx.close();setup=null;
      restored=await open(storageState);await continueSlot(restored.page);
-     await restored.page.waitForFunction(id=>CatBondResonance.view().current?.id===id,model.scene,{timeout:20000});
+     const gardenTransition=model.scene==='epilogue:E-01',restoredScene=gardenTransition?'epilogue:E-02':model.scene;
+     await restored.page.waitForFunction(id=>CatBondResonance.view().current?.id===id,restoredScene,{timeout:20000});
      await restored.page.waitForFunction(()=>['map','yard'].includes(window.__game?.scene));
      const actual=await restored.page.evaluate(()=>({scene:CatBondResonance.view().current.id,cursor:CatBondResonance.view().cursor,objective:CatBondResonance.view().objective,
        party:State.S.cats.map(c=>({uid:c.uid,species:c.species,actor:c.storyActor||null})),away:State.S.storyAway?.muling?.uid||null,area:__game.scene}));
-     assert.equal(actual.scene,model.scene);assert.equal(actual.cursor,model.snapshot.cursor);
+     assert.equal(actual.scene,restoredScene);assert.equal(actual.cursor,gardenTransition?0:model.snapshot.cursor);
+     if(gardenTransition){assert.equal(actual.area,'yard');assert.deepEqual(await restored.page.evaluate(()=>CatBondResonance.snapshot().completed),[...model.snapshot.completed,'epilogue:E-01']);}
      assert.deepEqual(actual.party,seeded.party);assert.equal(actual.away,seeded.away);assert.deepEqual(restored.errors,[]);
-     const fixture={schema:1,revision,scene:model.scene,cursor:actual.cursor,region:seeded.region,slot:'slot1',provenance:'synthetic engine-model browser-restored',limitations:['Earlier narrative evidence is seeded, not earned in browser.','Physical interaction history, optional exploration, economy and battle progression are not reproduced.','Not evidence that target scene can be completed or that a real player reached it.'],storageState};
+     const fixture={schema:1,revision,scene:model.scene,cursor:model.snapshot.cursor,restoredScene,region:seeded.region,slot:'slot1',provenance:'synthetic engine-model browser-restored',limitations:['Earlier narrative evidence is seeded, not earned in browser.','Physical interaction history, optional exploration, economy and battle progression are not reproduced.','Not evidence that target scene can be completed or that a real player reached it.'],storageState};
      await fs.writeFile(out+'/'+file,JSON.stringify(fixture,null,2));
      await restored.page.screenshot({path:out+'/'+file.replace('.json','.png')});
      results.push({scene:model.scene,status:'restored',area:actual.area,party:actual.party.map(c=>c.actor||c.species),objective:actual.objective});
