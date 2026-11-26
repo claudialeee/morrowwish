@@ -3504,7 +3504,7 @@ const UI = {
       const element=Skills.elementOf(sp.id);
       const breed=storyOpening?storyBreeds[sp.id][locale]:'';
       const portrait=storyOpening
-        ?`<img class="starter-portrait" src="assets/starter-portraits/${sp.id}.webp" alt="" width="180" height="180">`
+        ?`<img class="starter-portrait" src="${sp.id==='jinjc'?'assets/core-art-remaster/leads/player.webp':'assets/starter-portraits/'+sp.id+'.webp'}" alt="" width="180" height="180">`
         :'<canvas width="90" height="76"></canvas>';
       return `<button type="button" class="dex-cell" data-id="${sp.id}" aria-label="${breed||GameData.speciesName(sp)}">
         ${portrait}

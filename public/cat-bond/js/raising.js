@@ -123,11 +123,12 @@ const TRAITS = {
 
 // ---------- breeding target combos (either order; others inherit a parent) ----------
 const BREED_COMBOS = [
-  { a: 'tangyuan', b: 'doudou',  result: 'sanhua',   chance: 0.4,  note: '橘猫 + 狸花 → 三花' },
-  { a: 'lanbao',   b: 'dundun',  result: 'yunduo',   chance: 0.35, note: '蓝猫 + 银渐层 → 布偶云朵' },
-  { a: 'xianluo',  b: 'yinghua', result: 'youling',  chance: 0.3,  note: '暹罗 + 樱花 → 幽灵' },
-  { a: 'senlin',   b: 'jinwu',   result: 'xingchen', chance: 0.12, note: '森林 + 金乌 → 星尘(极罕见)' },
-  { a: 'niuniu',   b: 'nainai',  result: 'lixiao',   chance: 0.4,  note: '奶牛 + 奶白 → 礼小绅士' },
+ {a:'biscuit',b:'cinder',result:'emberwing',chance:.25,note:'火系伙伴 → 烬羽'},
+ {a:'shell',b:'ripplet',result:'tidemark',chance:.25,note:'水系伙伴 → 潮刻'},
+ {a:'puff',b:'clover',result:'mossbell',chance:.25,note:'草系伙伴 → 苔盏'},
+ {a:'fizz',b:'clover',result:'zest',chance:.20,note:'疾风伙伴 → 柚弧'},
+ {a:'inkspot',b:'button',result:'nightloom',chance:.08,note:'暗系伙伴 → 织夜'},
+ {a:'sunlace',b:'shell',result:'aurora',chance:.08,note:'光水伙伴 → 曦瓷'}
 ];
 
 const MEMENTOS = ['小鱼骨', '毛线球', '松果', '贝壳', '铃铛', '干花', '玻璃珠', '猫薄荷'];
@@ -461,7 +462,7 @@ function rollVisitors(minutes) {
   init();
   const out = [];
   if (minutes < 10) return out;
-  const owned = (State.S.cats || []).filter(c=>!GameData.speciesById(c.species)?.storyActor);
+  const owned = (State.S.cats || []).filter(c=>GameData.SPECIES.some(sp=>sp.id===c.species));
   // boost from 机敏 cats + stored watch-luck
   let luckBoost = 0;
   owned.forEach(c => { if (c.personality === 'clever') luckBoost += 0.02; });
