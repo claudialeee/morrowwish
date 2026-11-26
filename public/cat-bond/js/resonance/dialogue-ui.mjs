@@ -1,3 +1,4 @@
+import {mountSkyLookout} from "./sky-lookout.mjs";
 // Host-mounted dialogue controller; no save store and no fallback artwork.
 // The host must resolve approved art, own scene transitions, and call render after gameplay.
 export const hasDialogueChoice=v=>!!(v.current&&!v.choice&&v.current.choices.length&&(v.current.choiceTiming==="beforeAction"||v.cursor===(v.current.choiceAt??v.current.lines.length)));
@@ -9,7 +10,7 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  if(!root||typeof resolvePortrait!=="function"||typeof onPersist!=="function")throw Error("Dialogue host adapter incomplete");
  const el=(tag,cls)=>{const e=document.createElement(tag);if(cls)e.className=cls;return e};
  const panel=el("section","res-dialogue"),art=el("img","res-portrait"),body=el("div","res-body"),name=el("h2","res-speaker"),line=el("p","res-line"),choices=el("div","res-choices"),tools=el("div","res-controls"),history=el("div","res-history");
- const context=el('p','res-prologue-context');context.style.cssText='font-size:clamp(11px,1.5vw,14px);line-height:1.4;color:#e3c68f;margin:0 0 8px';
+ const context=el('div','res-prologue-context');let lookout=null;context.style.cssText='font-size:clamp(11px,1.5vw,14px);line-height:1.4;color:#e3c68f;margin:0 0 8px';
  panel.setAttribute("role","region");line.setAttribute("aria-live","polite");art.alt="";history.hidden=true;body.append(context,name,line,choices,tools,history);panel.append(art,body);root.append(panel);
  // The same line can re-render on a narrative revision or language toggle.
  // Do not cancel an in-flight portrait decode by assigning its unchanged URL.
@@ -31,9 +32,9 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  // during the microtask between an engine commit and the host closing it.
  if(awaitingGameplay(v)){root.style.setProperty("display","none","important");panel.hidden=true;onAwaitAction?.({reason:"gameplay-or-scene-transition",scene:s.id,objective:v.objective});return;}
  root.style.removeProperty("display");
- context.hidden=true;context.textContent='';
+ context.hidden=true;if(s.id!=='sky:S-04'){lookout?.dispose();lookout=null;context.textContent='';}
  context.classList.remove("res-harbor-context");
- if(s.id==="sky:S-04"){context.hidden=false;context.style.textAlign="center";context.replaceChildren();const cups=el("div");cups.style.cssText="display:flex;justify-content:center;gap:8px";for(let n=0;n<2;n++){const cup=el("img");cup.src="assets/canon22-final-art/garden-teacup.webp";cup.alt="";cup.style.cssText="width:48px;height:42px;object-fit:contain";cups.append(cup);}context.append(cups);const caption=el("span");caption.style.display="block";caption.textContent=k==="zh"?"云海观景台 · 暮铃摆好两杯茶":"Cloud lookout · Muling sets out two cups";context.append(caption);}else context.style.textAlign="";
+ if(s.id==="sky:S-04"){context.hidden=false;context.style.textAlign="center";if(!lookout)lookout=mountSkyLookout(context,{player:resolvePortrait("player",s.id,v.cursor),muling:resolvePortrait("muling",s.id,v.cursor),language:lang});lookout.render(k,v.choice);} else context.style.textAlign="";
  panel.dataset.speaker=l?.speaker||"";
  const choiceVisible=hasDialogueChoice(v);
  if(choiceVisible)for(const c of s.choices){const b=el("button");b.type="button";b.textContent=c.label[k];b.addEventListener("click",()=>{if(persist(engine.choose(c.id)))render()});choices.append(b)}
@@ -47,6 +48,6 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  if(!l&&!choiceVisible)onAwaitAction?.({reason:"gameplay-or-scene-transition",scene:s.id,objective:v.objective});
  }
  function keyboard(ev){if(disposed||panel.hidden||ev.target?.closest?.("button,select,input,textarea"))return;if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();next()}else if(ev.key==="Escape"){ev.preventDefault();window.CatBondSystemMenu?.open?.()}}
- function dispose(){if(disposed)return;disposed=true;stop();window.removeEventListener("morrowwish-language-change",render);panel.removeEventListener("keydown",keyboard);root.removeEventListener("click",clickAdvance);skipButton.remove();if(window.CatBondDialogueSettings===preferences)delete window.CatBondDialogueSettings;panel.remove()}
+ function dispose(){if(disposed)return;disposed=true;lookout?.dispose();stop();window.removeEventListener("morrowwish-language-change",render);panel.removeEventListener("keydown",keyboard);root.removeEventListener("click",clickAdvance);skipButton.remove();if(window.CatBondDialogueSettings===preferences)delete window.CatBondDialogueSettings;panel.remove()}
  panel.tabIndex=0;panel.addEventListener("keydown",keyboard);window.addEventListener("morrowwish-language-change",render);render();if(!disposed&&!panel.hidden)panel.focus();return {render,dispose};
 }

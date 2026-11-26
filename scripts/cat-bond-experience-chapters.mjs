@@ -193,7 +193,7 @@ async function run(chapter){
   await scene(id);await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady(),null,{timeout:15000});await click(label);
   await page.locator('.cbcp-art').first().waitFor();await shot(id+'-cinematic');
   if(id==='finale:B-04'){const reply=page.getByRole('button',{name:'Ring twice in reply',exact:true});await reply.waitFor();await shot(id+'-ring-reply');await reply.click();}
-  if(id==='starfall:F-02'&&!continuous){await page.locator('.cbcp-skip').click();const summary=page.locator('[data-canon-acknowledgement="starfall:F-02"]');await summary.waitFor();assert.match(await summary.innerText(),/promised Muling/);assert.equal((await view()).current.id,id);await shot(id+'-skip-summary');await click('Continue',summary);}
+  if(id==='starfall:F-02'&&!continuous){await page.waitForFunction(()=>document.querySelector('.cbcp-root')?.dataset.frameId==='starfall:F-02-last-patrol',{},{timeout:45000});await shot(id+'-lamp-handoff');await page.locator('.cbcp-skip').click();const summary=page.locator('[data-canon-acknowledgement="starfall:F-02"]');await summary.waitFor();assert.match(await summary.innerText(),/promised Muling/);assert.equal((await view()).current.id,id);await shot(id+'-skip-summary');await click('Continue',summary);}
   await page.waitForFunction(id=>CatBondResonance.view().current?.id!==id,id,{timeout:180000});
  }
  async function libraryEcho(){
@@ -257,7 +257,7 @@ async function run(chapter){
    await flyWaterfall('Catch the wind · Practice gliding');await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
    await flyWaterfall('Find the moon gate · Cloud route');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
    await flyWaterfall('Joint gliding platform');await dialogue('sky:S-03');await click('Windwing sanctuary');await op('repair:sky');await invite('Lingyu');await invite('Yuanfan');await puzzle('Open Sky',[mid,high,low]);await dialogue('sky:S-03');await scene('sky:S-04');assert.ok((await view()).melodies.includes('sky'),'Sky must answer before the tea scene');
-   await talk('Muling');await dialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
+   await talk('Muling');const lookout=page.locator('.sky-lookout-view');await lookout.waitFor();await click('Walk around the lookout');assert.equal(await lookout.getAttribute('data-pose'),'walk');await click('Sit beside Muling');assert.equal(await lookout.getAttribute('data-pose'),'sit');await shot('sky-lookout-sit');await dialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
    await dialogue('sky:S-05');
   }else if(chapter==='library'){
    await talk('Baikan');await dialogue('library:M-01');await scene('library:M-02');
