@@ -26,11 +26,13 @@ try {
     await page.goto(origin+'/cat-bond/?lang=en'+(fullCampaign?'&rpgDev=1':''));
     await page.waitForFunction(() => window.WorldMap === window.CatBondCanonicalWorld && window.CatBondResonance && window.__game);
     assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),false,'Production entry must not enable unreviewed staging art');
+    const changeDialogueLanguage=async()=>{await page.locator('#cb-system-toggle').click();await page.locator('#cb-system-menu [data-system="page-settings"]').click();await page.locator('#cb-system-menu [data-system="language"]').click();await page.locator('#cb-system-menu [data-system="close"]').click();};
     const button = (name, scope = page) => {
-      const target=scope.getByRole('button',{name,exact:true});
+      if(name==='Continue'&&scope!==page){const line=scope.locator('.res-line');if(scope.toString().includes('res-host'))return line;}
+      const target=name==='Approach wild cat'?scope.locator('button[data-wild-rarity]'):scope.getByRole('button',{name,exact:true});
       // Look up the exact text even when its paged-out ancestor hides the
       // accessible name. Real clicks still use the visible role locator.
-      const all=scope.getByRole('button',{name,exact:true,includeHidden:true}).or(scope.locator('button').and(scope.getByText(name,{exact:true})));
+      const all=name==='Approach wild cat'?target:scope.getByRole('button',{name,exact:true,includeHidden:true}).or(scope.locator('button').and(scope.getByText(name,{exact:true})));
       const reveal=async()=>{if(await target.isVisible())return;await all.waitFor({state:'attached',timeout:30000});if(await target.isVisible())return;const world=page.locator('.rw-world:not([hidden])');if(!(await world.isVisible()))return;
        const atlas=world.locator('.rw-atlas-menu:not([open]) > summary');
        if(await atlas.count()&&await all.first().evaluate(el=>!!el.closest('.rw-atlas-menu'))){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
@@ -44,7 +46,7 @@ try {
       };
       const click=target.click.bind(target),wait=target.waitFor.bind(target),enabled=target.isEnabled.bind(target);
       target.isEnabled=async opts=>{await reveal();return enabled(opts)};
-      target.click=async opts=>{if(['World atlas','Sunlit Garden'].includes(name)&&await all.first().evaluate(el=>!!el.dataset.worldNav).catch(()=>false)){await page.locator('#map-menu').click();return page.locator('#cb-system-menu [data-system="'+(name==='World atlas'?'world-atlas':'world-garden')+'"]').click(opts);}if(scope===page&&['+','−','Overview','Follow cat'].includes(name)){await page.locator('#map-menu').click();const label={'+':'Zoom in','−':'Zoom out','Overview':'Overview','Follow cat':'Follow cat'}[name];return page.locator('#cb-system-menu').getByRole('button',{name:label,exact:true}).click(opts);}await reveal();return click(opts)};
+      target.click=async opts=>{if(['World atlas','Sunlit Garden'].includes(name)&&await all.first().evaluate(el=>!!el.dataset.worldNav).catch(()=>false)){await page.locator('#map-menu').click();return page.locator('#cb-system-menu [data-system="'+(name==='World atlas'?'world-atlas':'world-garden')+'"]').click(opts);}if(scope===page&&['+','−','Overview','Follow cat'].includes(name)){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="page-camera"]').click();const label={'+':'Zoom in','−':'Zoom out','Overview':'Overview','Follow cat':'Follow cat'}[name];return page.locator('#cb-system-menu').getByRole('button',{name:label,exact:true}).click(opts);}await reveal();return click(opts)};
       target.waitFor=async opts=>{if(opts?.state==='hidden'&&/^(Invite |Deliver )/.test(name))return all.waitFor({...opts,state:'detached'});if(!opts||!['hidden','detached'].includes(opts.state))await reveal();return wait(opts)};
       if(/^(Invite |Returning Tides)/.test(name))target.count=()=>all.count();
       return target;
@@ -131,7 +133,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
       async function advanceLines(){
         if(!id.startsWith('harbor:')){if(await advance.isVisible()&&await advance.isEnabled())await advance.click();return;}
         const next=button('Continue',dialogue);let count=0;
-        while(await next.isVisible()&&await next.isEnabled()){
+        while(await dialogue.isVisible()&&await page.evaluate(id=>{const v=CatBondResonance.view();return v.current?.id===id&&v.lineReady&&v.cursor<v.current.lines.length},id)){
           assert.ok(++count<30,'Dialogue must progress without looping: '+id);
           const line=dialogue.locator('.res-line'),english=await line.innerText();assert.ok(english.trim()&&!/[\u3400-\u9fff]/.test(english),'English dialogue is localized');
           const expected=await page.evaluate(sceneId=>{const v=CatBondResonance.view();return v.current?.id===sceneId&&v.lineReady?v.current.lines[v.cursor]:null},id);
@@ -144,9 +146,9 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
             assert.ok((await portrait.getAttribute('src'))?.endsWith('.webp'),'Authored portrait must be loaded');
           }
           if(name==='portrait'){
-            await dialogue.locator('[data-res-language]').click();await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,expected.text.zh);
+            await changeDialogueLanguage();await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,expected.text.zh);
             if(count===1)await shot(id.replace(':','-')+'-zh');
-            await dialogue.locator('[data-res-language]').click();assert.equal(await line.innerText(),english,'Language switch preserves exact dialogue cursor');
+            await changeDialogueLanguage();assert.equal(await line.innerText(),english,'Language switch preserves exact dialogue cursor');
           }
           await next.click();
         }
@@ -182,17 +184,17 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
           catch(e){await shot(id.replace(':','-')+'-portrait-failure-'+line.speaker);console.error('Actual dialogue portrait failed',await portrait.evaluate(img=>({src:img.src,current:img.currentSrc,complete:img.complete,width:img.naturalWidth})));throw e;}
           if(line.speaker==='muling'&&id==='forest:R-04'&&!observed.includes('muling'))await shot('forest-muling-portrait');
         }
-        await dialogue.locator('[data-res-language]').click();
+        await changeDialogueLanguage();
         assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),'zh');
         await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.zh);
         if(!observed.length)await shot(id.replace(':','-')+'-zh-dialogue');
-        await dialogue.locator('[data-res-language]').click();
+        await changeDialogueLanguage();
         assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),'en');
         await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
         observed.push(line.speaker);
-        await button('Continue',dialogue).click();
+        await dialogue.locator('.res-line').click();
       }
-      if(await dialogue.isVisible())await button('Close',dialogue).click();
+      if(await dialogue.isVisible())await dialogue.waitFor({state:'hidden'});
       if(!choice)assert.equal(observed.length,{'forest:R-01':4,'forest:R-02':4,'forest:R-03':4,'forest:R-04':6}[id],id+' all canonical dialogue lines');
     }
     async function readForgeDialogue(id,choice) {
@@ -213,17 +215,17 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
           const expected=expectedRegionalPortrait(line.speaker,id,v.cursor);
           await page.waitForFunction(({actor,expected})=>{const d=document.querySelector('.res-host .res-dialogue'),img=d?.querySelector('.res-portrait');return d?.dataset.speaker===actor&&img?.complete&&img.naturalWidth>0&&img.currentSrc.endsWith(expected)},{actor:line.speaker,expected});
         }
-        await dialogue.locator('[data-res-language]').click();
+        await changeDialogueLanguage();
         await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.zh);
         if(!observed)await shot(id.replace(':','-')+'-'+first+'-zh');
-        await dialogue.locator('[data-res-language]').click();
+        await changeDialogueLanguage();
         await page.waitForFunction(text=>document.querySelector('.res-host .res-line')?.textContent===text,line.text.en);
         if(!observed)await shot(id.replace(':','-')+'-'+first+'-en');
         observed++;
-        await button('Continue',dialogue).click();
+        await dialogue.locator('.res-line').click();
       }
       assert(observed>0,id+' canonical dialogue actually read');
-      if(await dialogue.isVisible())await button('Close',dialogue).click();
+      if(await dialogue.isVisible())await dialogue.waitFor({state:'hidden'});
     }
     async function puzzle(label, inputs) {
       await button(label).click();
@@ -256,9 +258,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
         await page.locator('.cbcp-art').first().evaluate(image=>image.decode());
         await page.waitForTimeout(600);
         await shot('opening');
-        await page.locator('.cbcp-language').click();
-        assert.equal(await page.evaluate(() => MorrowwishI18n.get()),'zh');
-        await page.locator('.cbcp-language').click();
+        assert.equal(await page.locator('.cbcp-language').isVisible(),false);
         assert.equal(await page.evaluate(() => MorrowwishI18n.get()),'en');
       }
       if (id === 'prologue:P-01' && name === 'desktop') {
@@ -437,7 +437,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     await shot('garden-return');
     if(process.env.CAT_BOND_AUDIO_ACCEPTANCE==='1'){
       await page.locator('#map-menu').click();
-      const system=page.locator('#cb-system-menu');await system.waitFor({state:'visible'});
+      const system=page.locator('#cb-system-menu');await system.waitFor({state:'visible'});await system.locator('[data-system="page-settings"]').click();
       await system.locator('[data-audio-volume="music"]').fill('46');
       await page.waitForFunction(()=>MorrowwishMusic.status().volume===.46);
       await system.locator('[data-system="close"]').click();
@@ -517,7 +517,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     assert.equal(await card(1).isDisabled(),true);
     await shot('forest-overpressure-recovery'); // historical artifact label; now verifies pressure lock
     if(name==='portrait'){
-      const changeLocale=async()=>{await page.locator('#map-menu').click();await page.locator('[data-system="language"]').click();await page.locator('[data-system="close"]').click();};
+      const changeLocale=async()=>{await page.locator('#map-menu').click();await page.locator('[data-system="page-settings"]').click();await page.locator('[data-system="language"]').click();await page.locator('[data-system="close"]').click();};
       await changeLocale();await page.waitForFunction(()=>MorrowwishI18n.get()==='zh');
       await verifyPressure('水压 2/2');await shot('forest-paired-flow-zh');await changeLocale();await page.waitForFunction(()=>MorrowwishI18n.get()==='en');
     }
@@ -750,15 +750,15 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
           await dlg.locator('[data-sky-taps="1"]').waitFor();await shot('sky-pendant-tap-one');
           await dlg.locator('[data-sky-taps="2"]').waitFor();await shot('sky-pendant-tap-two');
         }
-        await dlg.locator('[data-res-language]').click();
+        await changeDialogueLanguage();
         await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.zh);
         if(!seen)await shot(id.replace(':','-')+'-zh');
-        await dlg.locator('[data-res-language]').click();
+        await changeDialogueLanguage();
         await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.en);
-        seen++;await button('Continue',dlg).click();
+        seen++;await dlg.locator('.res-line').click();
       }
       assert.equal(seen,{'sky:S-01':4,'sky:S-02':3,'sky:S-03':3,'sky:S-04':12}[id],id+' all real dialogue lines');
-      if(await dlg.isVisible())await button('Close',dlg).click();
+      if(await dlg.isVisible())await dlg.waitFor({state:'hidden'});
     }
     async function skyFlight(label,heights,failFirst=false){
       await button(label).click();const status=page.locator('[data-sky-flight-status]');await status.waitFor();
@@ -821,12 +821,12 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
           if(id==='library:M-03'&&seen===9){assert.equal(await stage.getAttribute('data-mode'),'anchor');assert.match(await painting.getAttribute('src'),/star-bell\.webp$/);await stage.locator('.library-anchor-detail').waitFor();}
           if([0,4,7,9,14].includes(seen))await shot(id.replace(':','-')+'-shot-'+seen);
         }
-        await dlg.locator('[data-res-language]').click();
+        await changeDialogueLanguage();
         await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.zh);
         if(!seen)await shot(id.replace(':','-')+'-zh');
-        await dlg.locator('[data-res-language]').click();
+        await changeDialogueLanguage();
         await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.en);
-        seen++;await button('Continue',dlg).click();
+        seen++;await dlg.locator('.res-line').click();
       }
       assert.equal(seen,{'library:M-01':4,'library:M-03':15,'library:M-04':8,'library:M-05':8}[id]);
       if(choice){if(id==="library:M-05"){await button("Close",dlg).click();await dlg.waitFor({state:"hidden"});assert.equal(await button("Moonmirror sanctuary").count(),0,"Sanctuary repair is gated before the archive choice");await button("Continue story").click();await dlg.waitFor();await button(choice,dlg).waitFor();await shot("library-choice-resumed");}await button(choice,dlg).click();if(id==="library:M-05"){await dlg.locator('.library-reveal-stage[data-mode="departure"][data-ready="true"]').waitFor();await page.waitForTimeout(850);await shot("library-departure");await dlg.waitFor({state:"hidden"});}else await shot(id.replace(':','-')+'-choice');}

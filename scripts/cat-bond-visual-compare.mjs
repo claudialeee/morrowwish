@@ -26,9 +26,9 @@ try{
    const dialogue=async id=>{
     const box=page.locator('.res-host[data-scene="'+id+'"]');await box.waitFor();
     let steps=0;
-    while(await box.isVisible()&&await button('Continue','继续',box).isEnabled()){
+    while(await box.isVisible()&&await page.evaluate(id=>{const v=CatBondResonance.view();return v.current?.id===id&&v.lineReady&&v.cursor<v.current.lines.length},id)){
      assert.ok(++steps<40,'Dialogue did not advance: '+id);
-     await button('Continue','继续',box).click();
+     if(await button('Continue','继续',box).isVisible())await button('Continue','继续',box).click();else await box.locator('.res-line').click();
     }
     if(await box.isVisible()&&await button('Close','关闭',box).isVisible())await button('Close','关闭',box).click();
    };
@@ -71,8 +71,8 @@ try{
        return {id:a.id,size:blob.size,expectedBytes:a.bytes,dimensions:c.width+'x'+c.height,expectedDimensions:a.canvas,clear:clear/(c.width*c.height),opaque:opaque/(c.width*c.height),type:blob.type};
       }));
      });
-     assert.equal(portraits.length,19,'Every new painted character portrait must be checked');
-     assert.equal(new Set(portraits.map(p=>p.id)).size,19);
+     assert.equal(portraits.length,20,'Every new painted character portrait must be checked');
+     assert.equal(new Set(portraits.map(p=>p.id)).size,20);
      for(const p of portraits){
       assert.equal(p.size,p.expectedBytes,'Stale or wrong portrait: '+p.id);
       assert.equal(p.dimensions,p.expectedDimensions,'Wrong portrait dimensions: '+p.id);
@@ -98,7 +98,7 @@ try{
     // Capture Muling's actual dialogue, not the player's first line.
     for(let i=0;i<12;i++){
      if(await firstDialogue.locator('.res-dialogue').getAttribute('data-speaker')==='muling')break;
-     await button('Continue','继续',firstDialogue).click();
+     if(await button('Continue','继续',firstDialogue).isVisible())await button('Continue','继续',firstDialogue).click();else await firstDialogue.locator('.res-line').click();
     }
     assert.equal(await firstDialogue.locator('.res-dialogue').getAttribute('data-speaker'),'muling');
     const mulingArt=firstDialogue.locator('img.res-portrait');

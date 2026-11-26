@@ -17,6 +17,7 @@ try{
   const title=await page.evaluate(()=>MorrowwishMusic.status());
   // Exercise the visible title menu before opening the save picker (which hides the menu).
   const menu=page.locator('#cb-system-menu');
+  await menu.locator('[data-system="page-settings"]').click();
   await menu.locator('[data-audio-volume="music"]').fill('37');
   await menu.locator('[data-audio-volume="effects"]').fill('42');
   await page.waitForFunction(()=>MorrowwishMusic.status().volume===.37&&MorrowwishMusic.status().effectsVolume===.42&&MorrowwishAudio.status().volume===.42);
@@ -49,6 +50,7 @@ try{
   const settings=await page.evaluate(()=>MorrowwishMusic.status());
   assert.equal(settings.enabled,false);assert.equal(settings.volume,.37);assert.equal(settings.effectsVolume,.42);
   await page.locator('#cb-system-toggle').click();
+  await page.locator('#cb-system-menu [data-system="page-settings"]').click();
   assert.equal(await page.locator('[data-audio-volume="music"]').inputValue(),'37');
   assert.equal(await page.locator('[data-audio-volume="effects"]').inputValue(),'42');
   await page.locator('#cb-system-menu [data-system="close"]').click();

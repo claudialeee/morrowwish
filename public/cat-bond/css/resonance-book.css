@@ -154,3 +154,10 @@ html.cb-cg #stage.rb-canonical.cb-sunlit-garden #cg-yard-dock #sg-book-entry{
 }
 #stage .sg-prologue-guide>div{display:flex;flex-wrap:wrap;gap:6px}
 #stage .sg-prologue-guide>div button{white-space:normal;min-height:34px}
+
+/* Small-screen book: the large multi-row navigation must scroll with content,
+   not cover the first Catdex card after scrollIntoView or a touch scroll. */
+@media(max-width:680px) and (orientation:portrait){
+ #stage #panel.rb-open>.card.rb-card .rb-navigation{position:relative;top:auto}
+ #stage #panel.rb-open>.card.rb-card .dex-cell{scroll-margin-block:12px}
+}
