@@ -71,7 +71,7 @@ jobs:
           set -eu
           mkdir -p /tmp/cat-bond-preview/site
           cp -a public/cat-bond /tmp/cat-bond-preview/site/
-          for dir in audio art icons; do cp -a "public/$dir" /tmp/cat-bond-preview/site/; done
+          for dir in audio art icons pawsibly-innocent; do cp -a "public/$dir" /tmp/cat-bond-preview/site/; done
           find public -maxdepth 1 -type f \( -name '*.js' -o -name '*.css' \) -exec cp {} /tmp/cat-bond-preview/site/ \;
           # RPG uses its own committed recordings. No mutable production audio imports.
           test -d /tmp/cat-bond-preview/site/cat-bond/assets/audio
@@ -145,11 +145,28 @@ jobs:
                 await page.locator('#map-menu').click();
                 const menu=page.locator('#cb-system-menu');
                 await menu.waitFor({state:'visible'});
-                for(const id of ['yard-map','yard-book','yard-build','yard-seek','yard-play','yard-feed']){
+                for(const id of ['yard-map','yard-book','page-garden','leisure','page-settings','page-saves']){
                   if(!await menu.locator('[data-system="'+id+'"]').isVisible())throw Error('Missing menu action '+id);
                 }
+                if(await page.locator('#hud').isVisible())throw Error('Wallet must not cover garden');
+                if(await page.locator('#cb-yard-return').isVisible())throw Error('Duplicate yard return');
+                const scrim=await menu.evaluate(el=>getComputedStyle(el).backgroundColor);
+                if(scrim!=='rgba(0, 0, 0, 0)'&&scrim!=='transparent')throw Error('Menu must not dim the artwork: '+scrim);
                 await page.screenshot({path:'preview-'+prefix+'-garden-menu.png'});
-                await menu.locator('[data-system="close"]').click();
+                await menu.locator('[data-system="page-garden"]').click();
+                for(const id of ['yard-build','yard-seek','yard-play','yard-feed'])if(!await menu.locator('[data-system="'+id+'"]').isVisible())throw Error('Missing garden action '+id);
+                await menu.locator('[data-system="page-back"]').click();
+                await menu.locator('[data-system="page-settings"]').click();
+                for(const id of ['language','music','effects'])if(!await menu.locator('[data-system="'+id+'"]').isVisible())throw Error('Missing setting '+id);
+                await page.screenshot({path:'preview-'+prefix+'-settings.png'});
+                await menu.locator('[data-system="page-back"]').click();
+                await menu.locator('[data-system="page-saves"]').click();
+                if(!await menu.locator('[data-system="slots"]').isVisible())throw Error('Save management is not reachable');
+                await menu.locator('[data-system="page-back"]').click();
+                await menu.locator('[data-system="yard-book"]').click();
+                await page.locator('.rb-wallet').waitFor({state:'visible'});
+                await page.screenshot({path:'preview-'+prefix+'-book-wallet.png'});
+                if(await page.locator('#hud').isVisible())throw Error('Wallet must remain inside the book');
                 await page.screenshot({path:'preview-'+prefix+'-garden.png'});
                 await page.reload();
                 await page.locator('#intro-continue').click();

@@ -23,12 +23,12 @@ for(const profile of [
  const waitMap=()=>page.waitForFunction(()=>window.__game?.scene==='map',{timeout:15000});
  const openInGameSlots=async()=>{
   await page.locator('#map-menu').click();
-  await page.locator('[data-system="slots"]').click();
+  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="slots"]').click();
   await checkVisible('.cb-slot-manager');
  };
  const openTitleSlots=async()=>{
   await page.locator('#cb-system-toggle').click();
-  await page.locator('[data-system="slots"]').click();
+  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="slots"]').click();
   await checkVisible('.cb-slot-manager');
   assert.equal(await page.locator('.cb-slot-manager [data-slot-sync], [data-recovery-code], .cb-cloud-code-row').count(),0,'No manual cloud or recovery-code controls');
  };
@@ -47,16 +47,16 @@ for(const profile of [
   await screenshot('title-zh');
   await page.locator('#cb-system-toggle').click();
   assert.equal(await page.locator('[data-system="cloud"]').count(),0);
-  await page.locator('[data-system="language"]').click();
+  await page.locator('[data-system="page-settings"]').click();await page.locator('[data-system="language"]').click();
   await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='en');
   await page.locator('[data-system="close"]').click();
   assert.match(await page.locator('#intro-start').innerText(),/New Adventure/);
   await screenshot('title-en');
   if(profile.portal){assert.equal(await page.locator('#mw-fullscreen-toggle').isVisible(),false,'Portal owns fullscreen')}
-  else{await page.locator('#cb-system-toggle').click();await page.locator('[data-system="fullscreen"]').click();
+  else{await page.locator('#cb-system-toggle').click();await page.locator('[data-system="page-settings"]').click();await page.locator('[data-system="fullscreen"]').click();
   await page.waitForFunction(()=>document.fullscreenElement?.id==='stage'||document.documentElement.classList.contains('mw-fs-active'));
   await screenshot('fullscreen-title');
-  await page.locator('#cb-system-toggle').click();await page.locator('[data-system="fullscreen"]').click();
+  await page.locator('#cb-system-toggle').click();await page.locator('[data-system="page-settings"]').click();await page.locator('[data-system="fullscreen"]').click();
   await page.waitForFunction(()=>!document.fullscreenElement&&!document.documentElement.classList.contains('mw-fs-active'));}
   await page.locator('#intro-start').click();
   await checkVisible('#intro-slot-panel.is-open');
@@ -81,7 +81,7 @@ for(const profile of [
   assert.equal(dock.length,0,'All garden dock actions are consolidated');
   await page.locator('#map-menu').click();
   const systemMenu=page.locator('#cb-system-menu');
-  for(const id of ['yard-map','yard-book','yard-build','yard-seek','yard-play','yard-feed'])assert.ok(await systemMenu.locator('[data-system="'+id+'"]').isVisible(),'Missing garden menu entry '+id);
+  for(const id of ['yard-map','yard-book','page-garden','page-settings','page-saves'])assert.ok(await systemMenu.locator('[data-system="'+id+'"]').isVisible(),'Missing menu entry '+id);await systemMenu.locator('[data-system="page-garden"]').click();for(const id of ['yard-build','yard-seek','yard-play','yard-feed'])assert.ok(await systemMenu.locator('[data-system="'+id+'"]').isVisible(),'Missing garden menu entry '+id);await systemMenu.locator('[data-system="page-back"]').click();
   await systemMenu.locator('[data-system="yard-book"]').click();
   await checkVisible('#panel.rb-open.open');
   await page.locator('[data-book-tab="workshop"]').click();
@@ -115,7 +115,7 @@ for(const profile of [
   // A normal new save has earned its own coins through production and Daily.
   // No injected resources, buildings, story progress or simulated clicks.
   let relocated=null,relocatedDecor=null;
-  const openFacilities=async()=>{await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="yard-build"]').click();await checkVisible('#panel.open [data-build="scratcher"]')};
+  const openFacilities=async()=>{await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="page-garden"]').click();await page.locator('#cb-system-menu [data-system="yard-build"]').click();await checkVisible('#panel.open [data-build="scratcher"]')};
   const chooseSpot=async moving=>{
    const spot=await page.evaluate(moving=>{
     const g=window.__game,cv=document.querySelector('#scene'),r=cv.getBoundingClientRect(),old=g.yard.placement?.relocating;
@@ -225,13 +225,13 @@ for(const profile of [
   await revealBook();
   await page.locator('[data-book-tab="bag"]').click();
   await page.locator('#map-menu').click();
-  await page.locator('[data-system="language"]').click();
+  await page.locator('[data-system="page-settings"]').click();await page.locator('[data-system="language"]').click();
   await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='zh');
   await page.locator('[data-system="close"]').click();
   assert.match(await page.locator('.rb-brand strong').innerText(),/星月之书/);
   await screenshot('book-zh');
   await page.locator('#map-menu').click();
-  await page.locator('[data-system="language"]').click();
+  await page.locator('[data-system="page-settings"]').click();await page.locator('[data-system="language"]').click();
   await page.waitForFunction(()=>window.MorrowwishI18n?.get?.()==='en');
   await page.locator('[data-system="close"]').click();
   assert.match(await page.locator('.rb-brand strong').innerText(),/Resonance Book/);
@@ -273,7 +273,7 @@ for(const profile of [
   assert.deepEqual((await page.evaluate(()=>State.S.sunlitGarden.bookGuide)).sort(),['cats','dex','party','workshop']);
   // A real title-menu navigation, not a special test entry.
   await page.locator('#map-menu').click();
-  await page.locator('[data-system="title"]').click();
+  await page.locator('[data-system="page-saves"]').click();await page.locator('[data-system="title"]').click();
   await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__,{timeout:30000});
   // Start the third slot through the actual title picker, preserving the two earlier adventures.
