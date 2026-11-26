@@ -7,8 +7,18 @@ export function markerMetrics(width,zoom=1,W=960){
 }
 const overlaps=(a,b,p=3)=>a.x<b.x+b.w+p&&a.x+a.w+p>b.x&&a.y<b.y+b.h+p&&a.y+a.h+p>b.y;
 export function layoutMarkerLabels(items,metrics,measure,W=960,H=540,avoid=[]){
- const {r,h,font}=metrics,icons=items.map(m=>({x:m.x-r,y:m.y-r,w:2*r,h:2*r})),placed=[];
- return items.map(m=>{
+ const {r,h,font}=metrics,icons=[],placed=[];
+ const iconRect=(x,y)=>({x:x-r,y:y-r,w:2*r,h:2*r});
+ // Keep interactive art off painted faces. A moved marker retains its true
+ // interaction target and a short visual tether to the original location.
+ const positioned=items.map(m=>{
+  const offsets=[[0,0],[0,-2*r-6],[2*r+6,0],[-2*r-6,0],[0,2*r+6],[2*r+6,-2*r-6],[-2*r-6,-2*r-6],[2*r+6,2*r+6],[-2*r-6,2*r+6]];
+  const points=offsets.map(([dx,dy])=>[clamp(m.x+dx,r+3,W-r-3),clamp(m.y+dy,r+3,H-r-3)]);
+  const p=points.find(([x,y])=>![...avoid,...icons].some(b=>overlaps(iconRect(x,y),b,1)))||points[0];
+  icons.push(iconRect(...p));
+  return {...m,x:p[0],y:p[1],origin:[m.x,m.y]};
+ });
+ return positioned.map(m=>{
   const w=Math.min(330,Math.max(46,measure(m.t,font)+16)),cx=clamp(m.x-w/2,4,W-w-4),c=[];
   for(let i=0;i<5;i++){const d=r+7+i*(h+5);c.push([cx,m.y-d-h],[cx,m.y+d+(m.labelDy||0)],[clamp(m.x+r+8+i*18,4,W-w-4),m.y-h/2+i*(h+4)],[clamp(m.x-r-8-w-i*18,4,W-w-4),m.y-h/2-i*(h+4)]);}
   const rect=c.map(([x,y])=>({x,y,w,h})).find(q=>q.y>=4&&q.y+h<=H-4&&![...icons,...avoid,...placed].some(b=>overlaps(q,b)));
