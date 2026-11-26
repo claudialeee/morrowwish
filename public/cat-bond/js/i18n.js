@@ -1102,7 +1102,7 @@
 
     // ---- skill names ----
     // cat-instinct rework names (Spec A)
-    '咳毛球': 'Hairball Hack', '弓背炸毛': 'Puff & Hiss', '拨下桌': 'Knock It Off',
+    '咳毛球': 'Hairball Hack', '火球术': 'Fireball', '弓背炸毛': 'Puff & Hiss', '拨下桌': 'Knock It Off',
     '舔毛理顺': 'Grooming', '舔伤口': 'Lick Wound', '纸箱埋伏': 'Box Ambush', '疯跑冲刺': 'Zoomies',
     '炸毛墙': 'Startle Static', '戏弄爪': 'Bat-Around', '居高临下': 'High Ground',
     '咒波三连': 'Hex Triwave', '潮波三叠': 'Tide Triwave', '月华连弧': 'Crescent Fan',
@@ -1803,7 +1803,7 @@
     "吸收日光回复斗志，并洗去一种异常状态或挣脱束缚——草木的再生之力。": "Absorb sunlight to restore morale, cleanse a status effect or break free of roots.",
     "原地踩奶进入状态：每次叠一层（最多4层），层层提升伤害并回一点斗志；猫味十足的节奏型蓄能。": "Knead in place to stack up to four boosts, increasing damage and restoring a little morale.",
     "阳光烈焰": "Sunbeam Blaze",
-    "【必杀】日光唤醒藤蔓花海，束缚敌人并留下持续生长的领域。": "[Ultimate] Sunlight awakens vines, roots enemies and leaves a growing field.",
+    "【必杀】日光唤醒藤蔓花海，束缚敌人并留下持续生长的领域。": "[Ultimate] Sunlight awakens vines, roots enemies and leaves a growing field.", "【必杀】蓄力0.85秒后释放强力直线日光束，命中路径上的敌人。": "[Ultimate] Charge for 0.85s, then fire a powerful straight solar beam.", "短暂蓄力后射出高速压缩火球，命中第一个敌人并施加灼烧，不产生范围伤害。": "Briefly charge a fast compressed fireball that burns the first enemy hit, without splash damage.",
     "疯跑冲刺": "Zoomies Dash",
     "跳跃的电弧，在敌群间连锁跳跃，附加感电。": "An electric arc jumps between nearby enemies, shocking each one.",
     "球状闪电": "Ball Lightning",
