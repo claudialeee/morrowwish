@@ -1504,58 +1504,65 @@ export const campaign = {
       "id": "library:M-04",
       "chapter": "library",
       "title": {
-        "zh": "六条路都指向中央",
-        "en": "All the arrows point inward"
+        "zh": "线索与承认",
+        "en": "Clues and confession"
       },
       "previous": "library:M-03",
       "lines": [
         {
           "speaker": "baikan",
           "text": {
-            "zh": "这些不是旧图。上面是最近的修复日期。",
-            "en": "These aren't old maps. They show recent repair dates."
+            "zh": "借阅簿上有暮铃的名字。公开日志也记着：封印松动的那天，失忆又开始了。",
+            "en": "Muling's name is in the borrowing ledger. The public log also records that the forgetting began again on the day the seal loosened."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "暮铃，港口、森林、炉城……每次修好之后，都是你把线路拨过去的？",
-            "en": "Muling, the harbor, the forest, the forge… you redirected each route after we fixed it?"
+            "zh": "借过地图不代表她改了线路。暮铃，我想听你自己说。",
+            "en": "Borrowing a map doesn't mean she redirected the routes. Muling, I want to hear it from you."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "是。我需要它们通向中央。",
-            "en": "Yes. I needed them to lead to the center."
+            "zh": "是我。我把修好的线路拨向中央。",
+            "en": "It was me. I redirected the repaired routes toward the center."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "最近的失忆，也是你做的？",
-            "en": "And the forgetting that's happening now—was that you too?"
+            "zh": "封印也是你松开的？",
+            "en": "Did you loosen the seal too?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我松开了封印。我知道会有风险，以为来得及补救。",
-            "en": "I loosened the seal. I knew there was a risk. I thought I could fix it in time."
+            "zh": "是。我知道可能会有人失去记忆，以为自己来得及补救。",
+            "en": "Yes. I knew others might lose their memories. I thought I could fix it in time."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "栖蓝说过，那位渔夫连自己的家门都不认识。你听到的时候，就已经知道原因了吗？",
-            "en": "Qilan told us about a fisherman who couldn't recognize his own door. When you heard that, did you already know why?"
+            "zh": "那些忘了回家路的猫呢？",
+            "en": "What about the cats who forgot their way home?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "知道。我只是……太想让你回来了。",
+            "zh": "我知道。我只是……太想让你回来了。",
             "en": "I knew. I just... wanted you back so badly."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "你没有权利替他们决定。也没有权利替我决定。",
+            "en": "You had no right to decide for them. Or for me."
           }
         }
       ],

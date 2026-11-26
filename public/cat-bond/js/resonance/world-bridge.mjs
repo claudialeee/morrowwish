@@ -174,6 +174,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
    if(!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("walk-to-objective");
    const record=catdexRecord(State.S),p=libraryPuzzle(op,record);
    if(op==="puzzle:library-echo"){if(direct||!validMirrorProof(record?.uid,proof.mirrorProof))return fail("library-record-unverified");}
+   else if(op==="explore:routing-record"){if(direct||!Number.isInteger(proof.libraryQuestion)||proof.libraryQuestion<0||proof.libraryQuestion>2)return fail("library-record-unverified");}
    else if(!direct&&p&&(!proof.libraryValues||proof.libraryValues.join(",")!==p.goal.join(",")))return fail("library-record-unverified");
    if(op==="melody:library"&&(!["moye","baikan"].every(id=>w.interactions["library:M-05:invite:"+id])||v.objective.includes("repair:library")))return fail("local-response-required");
   }
@@ -186,7 +187,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||(!direct&&(proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
-  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:spatialKind(op)?proof.spatialProof:op==="puzzle:library-echo"?{trace:[...proof.mirrorProof.trace],choice:proof.mirrorProof.choice}:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
+  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:spatialKind(op)?proof.spatialProof:op==="puzzle:library-echo"?{trace:[...proof.mirrorProof.trace],choice:proof.mirrorProof.choice}:op==="explore:routing-record"?{question:proof.libraryQuestion}:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function harborInvited(){const v=view(),w=world();return v.current?.id==="harbor:H-05"?["qilan","jiedeng"].filter(id=>w.interactions["harbor:H-05:invite:"+id]):[];}
  function inviteHarbor(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={qilan:[.16,.60],jiedeng:[.195,.50]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="harbor"||v.current?.id!=="harbor:H-05"||v.objective.includes("repair:harbor")||!v.objective.includes("melody:harbor")||!token||!api.isCurrentAction(token)||!tideNear(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["harbor:H-05:invite:"+id]:true}}));}

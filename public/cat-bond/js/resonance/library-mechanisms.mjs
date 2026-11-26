@@ -7,7 +7,7 @@ export const libraryPoints=Object.freeze({
  "puzzle:mirror-records":[.51,.48,"二层 · 封存壁画","Upper floor · Sealed mural"],
  "puzzle:library-echo":[.67,.40,"镜中的两只暮铃","Two Mulings in the mirror"],
  "battle:library-echo":[.76,.40,"镜影 · 守档幻象","Archive echo · Guardian illusion"],
- "explore:routing-record":[.82,.36,"密档 · 共鸣路径","Hidden ledger · Resonance routes"],
+ "explore:routing-record":[.82,.36,"公开记录 · 调查","Public records · Investigation"],
  "puzzle:two-route-model":[.82,.36,"六地桌上模型 · 验证两条路线","Six-region model · Compare the two routes"],
  "repair:library":[.89,.29,"月镜圣所","Moonmirror sanctuary"],
  "melody:library":[.89,.29,"照影调","Reflections"]
@@ -27,12 +27,13 @@ export function libraryPuzzle(op,record){
  const types={"explore:sealed-archive":"librarySeal","puzzle:library-reflections":"libraryMirrors","puzzle:mirror-records":"libraryMural","puzzle:library-echo":"libraryEcho","explore:routing-record":"libraryLedger","repair:library":"libraryRestore","puzzle:two-route-model":"libraryRoutes"};
  if(op==="puzzle:library-echo")return {type:"libraryCompanion",operation:op,values:[],goal:[],record:null,mirror:newMirror(record?.uid),mistakes:0,solved:false};
  const type=types[op];if(!type)return null;
- const goals={librarySeal:[0,2,1],libraryMirrors:[1,3,2],libraryMural:[2,0,1],libraryEcho:[record?.correct??1],libraryLedger:[2,0,1],libraryRestore:[1,0,2],libraryRoutes:[0,1,2]};
+ const goals={librarySeal:[0,2,1],libraryMirrors:[1,3,2],libraryMural:[2,0,1],libraryEcho:[record?.correct??1],libraryLedger:[0],libraryRestore:[1,0,2],libraryRoutes:[0,1,2]};
  return {type,operation:op,initial:type==="libraryMirrors"?[0,0,0]:[],values:type==="libraryMirrors"?[0,0,0]:[],goal:goals[type],record:record||null,mistakes:0,solved:false,response:[]};
 }
 export function advanceLibrary(p,i){
  if(!p||!p.type?.startsWith("library")||p.solved||!Number.isInteger(i)||i<0||i>2)return false;
  if(p.type==="libraryCompanion"){p.solved=advanceMirror(p.mirror,i);p.mistakes=p.mirror.mistakes;return p.solved;}
+ if(p.type==="libraryLedger"){p.question=i;p.values=[0];p.solved=true;return true;}
  if(p.type==="libraryMirrors")p.values[i]=(p.values[i]+1)%4;
  else if(i===p.goal[p.values.length])p.values.push(i);
  else{p.mistakes++;p.values=[];}
@@ -45,7 +46,7 @@ const words={
  libraryMirrors:[["镜光回廊","Reflection gallery"],["旋转三面镜子，使光从左侧月窗折向隐藏的门。","Rotate the three mirrors to carry moonlight into the hidden doorway."],[["西镜","West mirror"],["中镜","Middle mirror"],["东镜","East mirror"]]],
  libraryMural:[["封存壁画","The sealed mural"],["按历史先后接合碎片：坠星、断裂的铃舌、应急锚室。","Reassemble the fragments in historical order: fallen star, broken tongue, emergency anchor."],[["断裂的铃舌","Broken tongue"],["应急锚室","Emergency anchor"],["坠落的星","Fallen star"]]],
  libraryEcho:[["识别复制记忆","Recognize the copied memory"],["打开 Catdex 核对个体记忆记录，再选出匹配的回响。","Inspect the individual memory record in Catdex, then match its echo."],[["回响甲","Echo A"],["回响乙","Echo B"],["回响丙","Echo C"]]],
- libraryLedger:[["复原隐藏路由","Restore the hidden routing ledger"],["按修改记录的时间顺序核对：原始路径、封印松动、圣所转向中央。","Verify in chronological order: original routes, loosened seal, inward sanctuary routing."],[["封印松动","Seal loosened"],["转向中央","Inward routing"],["原始路径","Original routes"]]],
+ libraryLedger:[["公开记录 · 调查","Public records · Investigation"],["这三份记录提供线索，不证明是谁修改了线路。","These records are clues, not proof of who redirected the routes."],[["问借图的事","Ask about the borrowed map"],["问失忆的事","Ask about the memory loss"],["直接问暮铃","Ask Muling directly"]]],
  libraryRestore:[["圣所 · 邻地回应","Sanctuary · Neighboring replies"],["先对准月窗，再接通邻地镜桥，最后让两地共同回应。","Align the moon window, reconnect the neighboring mirror bridge, then let both regions answer."],[["邻地镜桥","Neighbor bridge"],["月窗","Moon window"],["相互回应","Reciprocal reply"]]]
 };
 export function libraryWords(p){const w=words[p.type];if(!w)return null;if(p.type!=="libraryEcho")return w;return [w[0],w[1],w[2].map((v,i)=>v.map(t=>t+" · "+echoInterval(p,i).toFixed(2)+"s"))]}
@@ -64,6 +65,10 @@ export function paintLibraryPuzzle(c,p,lang,W,H){
  const xs=[.3,.5,.7],Yc=Y(.53);
  if(p.type==="libraryCompanion"){const m=p.mirror;const art=image("core-art-remaster/leads/muling.webp");[.30,.70].forEach((x,i)=>{frame(x-.13,.32,.26,.36);if(ready(art)){c.save();c.translate(X(x),Y(.49));if(m.faces[i]<0)c.scale(-1,1);let k=Math.min(W*.16/art.naturalWidth,H*.29/art.naturalHeight);c.drawImage(art,-art.naturalWidth*k/2,-art.naturalHeight*k/2,art.naturalWidth*k,art.naturalHeight*k);c.restore();}t(m.faces[i]===0?(l?"Facing the old spot":"朝着原来的位置"):m.faces[i]===1?(l?"Turns right · replies":"转向右侧 · 摇铃"):(l?"Turns left · replies":"转向左侧 · 摇铃"),x,.64,15);});const px=.5+m.position*.32;t(l?"You":"你",px,.75,18,"#27685b");c.fillStyle="#d3a360";c.beginPath();c.arc(X(px),Y(.70),8*s,0,2*Math.PI);c.fill();t(m.mistakes?(l?"Try a new signal before choosing":"先换位置，再观察回应"):(l?"The two look identical. Watch their actions.":"外表一样，注意它们的动作。"),.5,.81,16);c.restore();return true;}
 
+ if(p.type==="libraryLedger"){
+ const cards=[["借阅簿","Borrowing ledger","暮铃借过旧地图","Muling borrowed the old map"],["公开日志","Public log","失忆复发与封印松动同日","Memory loss and seal breach: same day"],["线路图","Route map","近期线路指向中央","Recent routes point inward"]];
+ [.23,.50,.77].forEach((x,i)=>{frame(x-.12,.34,.24,.33);const q=cards[i];t(q[l],x,.41,18,"#543b55");t(q[2+l],x,.53,12,"#356b68");});t(l?"Ask a question. There is no correct order.":"任选一个问题，不需要排序。",.5,.74,18);c.restore();return true;
+ }
  if(p.type==="libraryRoutes"){
   const n=p.values.length,colors=["#57a0b8","#6baf83","#d69464","#c3a2de","#8f92bd","#d6bc6b"],names=l?["Harbor","Forest","Forge","Sky","Library","Starfall"]:["港口","森林","炉城","云岛","书库","星原"],pts=names.map((_,i)=>[.5+.22*Math.cos(i*Math.PI/3-Math.PI/2),.47+.16*Math.sin(i*Math.PI/3-Math.PI/2)]);c.lineWidth=3*s;for(let i=0;i<6;i++){const a=pts[i],b=n===1?[.5,.47]:pts[(i+1)%6];c.strokeStyle=n===1?"#b18192":n===3?colors[i]:"#b2a7b8";c.setLineDash(n===2?[5*s,6*s]:[]);c.beginPath();c.moveTo(X(a[0]),Y(a[1]));c.lineTo(X(b[0]),Y(b[1]));c.stroke();}c.setLineDash([]);pts.forEach((q,i)=>{c.fillStyle=n===1?"#b18192":colors[i];c.beginPath();c.arc(X(q[0]),Y(q[1]),18*s,0,2*Math.PI);c.fill();t(names[i],q[0],q[1]+.052,13);});c.fillStyle="#dac4ab";c.beginPath();c.arc(X(.5),Y(.47),24*s,0,2*Math.PI);c.fill();t(n===1?(l?"Merged":"混合"):(l?"Bell":"星铃"),.5,.47,13);t((l?["Select a route","Identities merge","Lines alone do not answer","Six identities preserved"]:["选择路线","身份被混在一起","光有线路不会回应","六个身份各自保留"])[n],.5,.73,19);xs.forEach((x,i)=>t(w[2][i][l],x,.82,13));c.restore();return true;
  }else if(p.type==="libraryMirrors"){

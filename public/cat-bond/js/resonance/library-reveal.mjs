@@ -9,7 +9,7 @@ export function revealShot(id,c,choice=null){
   return shot(library,"present",["player","muling"],"月镜书库 · 现实","Moonmirror Library · Present");
  }
  if(id==="library:M-04"){
-  if(c<2)return shot(atlas,"ledger",["baikan"],"白栞核实的记录 · 六路指向中央","Verified ledger · Six paths point inward");
+  if(c<2)return shot(atlas,"ledger",["baikan"],"公开线索 · 尚不能证明责任","Public clues · Responsibility not yet established");
   return shot(library,"fracture",["player","muling"],"月镜书库 · 信任的裂痕","Moonmirror Library · Trust fractured");
  }
  if(c<3)return shot(atlas,"routes",["moye","baikan"],"两条路径 · 中央汇集与邻地共鸣","Two routes · Inward convergence and neighboring resonance");

@@ -209,7 +209,7 @@ async function run(chapter){
   }else if(chapter==='library'){
    await talk('Baikan');await puzzle('Sealed archive · Review records',['Public history','Living subjects','Seal notice']);await dialogue('library:M-01','Let affected families review personal records first');await scene('library:M-02');
    await libraryEcho();await dialogue('library:M-02');await scene('library:M-03');
-   await talk('Muling');await dialogue('library:M-03','I feel hurt');await scene('library:M-04');await puzzle('Hidden ledger · Resonance routes',['Original routes','Seal loosened','Inward routing']);await dialogue('library:M-04','I need some distance');await scene('library:M-05');
+   await talk('Muling');await dialogue('library:M-03','I feel hurt');await scene('library:M-04');await puzzle('Public records · Investigation',['Ask about the borrowed map']);await dialogue('library:M-04','I need some distance');await scene('library:M-05');
    await talk('Moye');await puzzle('Six-region model · Compare the two routes',['Converge inward','Connect neighbors','Receive distinct replies']);await dialogue('library:M-05');await restore('Moonmirror sanctuary',['Moon window','Neighbor bridge','Reciprocal reply'],['Moye','Baikan'],'Reflections',[high,low,mid]);await dialogue('library:M-05');
   }else if(chapter==='starfall'){
    await talk('Lichuan');await talk('Xingya');await puzzle('Walk on starlight',['Jump to stone 2','Jump to stone 4','Jump to stone 6','Jump to stone 8']);await dialogue('starfall:F-01');await scene('starfall:F-02');
