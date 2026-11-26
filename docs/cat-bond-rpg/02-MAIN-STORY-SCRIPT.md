@@ -35,7 +35,7 @@
 - 主角：好奇、直接，有一点得意和玩心；遇到背叛会追问，不做长篇道德演讲。
 - 暮铃：聪明、嘴硬、带点干巴巴的幽默，伤心时反而说得少；前期双关不能泄露身份，不用网络流行语。
 - 栖蓝/远帆：兴奋、敢试、语速快，不能说成任务引导机器人。芽禾活泼俏皮；榆川话少，务实；小铆一张嘴就是点子，烬婆老练爽利；白栞爱发现，墨页沉静但不打官腔；星芽专注，砾川直来直去。
-- 每句尽量表达一个意思；能演出来就不解释。仅在确实发生过的事件上引用回忆；B-04 的默认对白只回忆必经风铃镇与森林事件，不提可错过的花园初遇。
+- 每句尽量表达一个意思；能演出来就不解释。仅在确实发生过的事件上引用回忆；B-04 的默认对白只回忆必经风铃镇与森林事件及 F-02 已证实的旧茶约，不提可错过的花园初遇；额外茶杯只在对应选择发生后回收。
 - 英文独立本地化，确保意义、人物态度、伏笔与分支条件一致，不要求字对字。UI 目标也必须中文原生，不使用开发术语；例如“跟着亮起来的月叶走”，不写“验证真实路径”；“让六座铃接着唱”，不写“完成双向共鸣配置”。实际运行时与所有分支仍需母语级复核。
 
 ## 每章的玩家体验硬要求
@@ -141,10 +141,10 @@
 **关键对白（ZH / EN）：**
 
 - 檐灯：这张旧图上也有那段曲子。瞧，这片叶子是眠根林的路标。 / The old map has that tune too. See the leaf? That's the sign for Rootsleep Forest.
+- 主角：这不是我醒来的花园吗？画图的猫也去过那里！ / Isn't that the garden where I woke up? Whoever drew this has been there!
 - 主角：画图的猫说不定认识我！ / Maybe whoever drew it knew me!
 - 栖蓝：我认路。走，咱们去问问！ / I know the way. Come on, let's ask!
 - 檐灯：到了记得摇铃，给我报个平安。 / Ring back when you arrive, so I know you're safe.
-- 主角：这不是我醒来的花园吗？画图的猫也去过那里！ / Isn't that the garden where I woke up? Whoever drew this has been there!
 
 
 ## 第二章 · 森林把路藏起来了 / Chapter II — The forest that hides its paths
@@ -234,10 +234,10 @@
 **关键对白（ZH / EN）：**
 
 - 烬婆：这月牙印是月镜书库的。以前巡铃人从云脊那扇月门进去。想查名字，去那儿。 / That crescent is Moonmirror Library's seal. The old bellkeepers entered through a moon gate in Skyspine. Look for your name there.
-- 小铆：这盏送你！耳朵歪是特色，不许笑。 / This one's yours! The crooked ear is a feature, not a mistake.
-- 暮铃：接下来得飞。先说好，谁笑谁自己走。 / Next stop means flying. Anyone who laughs can walk.
 - 烬婆：我想起来了。那猫说，要是哪天有谁忘了怎么回家，就把这匣子给它。 / I remember now. The cat said, if someone ever forgot the way home, I should give them this case.
 - 主角：怎么像是专门留给我的……？ / It's almost as if someone left it for me…
+- 小铆：这盏送你！耳朵歪是特色，不许笑。 / This one's yours! The crooked ear is a feature, not a mistake.
+- 暮铃：接下来得飞。先说好，谁笑谁自己走。 / Next stop means flying. Anyone who laughs can walk.
 
 
 ## 第四章 · 天空中的秘密岛屿 / Chapter IV — The island beyond the clouds
@@ -274,18 +274,19 @@
 
 ### sky:S-04 · 留着的那杯茶 / A cup for someone missing
 
-**实机事件与推进：** 落地后是星空和云海观景台，玩家实际坐下或走动，暮铃摆两杯茶；短而必经的相处。主角先给今天发生的事起个名字（例如穿过鱼嘴云或围巾先到），暮铃以此为话题；玩家可选玩笑、陪坐或帮忙寻找朋友，三种回应各有一句不同的双语反馈。玩家现在想保留的是与新朋友一起度过的日子。无修铃坠动画，无历史图。若未做额外茶互动，也因本幕确实建立两杯茶约定而可回收。
+**实机事件与推进：** 落地后是星空和云海观景台，玩家实际坐下或走动，暮铃摆两杯茶；短而必经的相处。主角可提起今天飞行的趣事，暮铃以此为话题；听完两杯茶的故事，玩家三选一：玩笑、陪坐或帮忙找朋友。每个选择只播放对应的一组双语对白，默认为陪坐。玩家现在想保留的是与新朋友一起度过的日子。无修铃坠动画，无历史图。若未做额外茶互动，必经的两杯茶故事仍可回收；仅帮忙找朋友分支建立多带杯子的约定。
 
 **关键对白（ZH / EN）：**
 
 - 暮铃：以前有只猫跟我说，等忙完了，回花园喝茶。 / Someone once told me we'd have tea in the garden when all our work was done.
 - 主角：那后来呢？ / What happened after that?
 - 暮铃：……那杯茶，我就一直留着。 / …I've kept a cup for them ever since.
-- 主角：等找到我的名字，咱们也去找你那位朋友！下回多带一只杯子。 / Once we find my name, let's look for your friend too! We'll bring another cup next time.
-- 暮铃：……好。 / …All right.
-- 暮铃（玩家开玩笑）：你还好意思说，那朵云差点把咱俩都吞了。 / You're one to talk. That cloud nearly swallowed us both.
-- 暮铃（玩家陪坐）：这样也挺好。今天先记住今天吧。 / This is nice too. Let's remember today for what it is.
-- 暮铃（玩家主动提出帮忙）：那……说定了。 / Then… it's a promise.
+- 主角（玩笑）：下次可得把茶杯系在围巾上，省得飞丢了。 / Next time, tie the cups to your scarf so they don't fly away.
+- 暮铃（玩笑）：那围巾可要收两份飞行费了。 / Then my scarf gets to charge two airfares.
+- 主角（陪坐）：那我陪你坐一会儿。 / I'll sit with you for a while, then.
+- 暮铃（陪坐）：好。今天先记住今天吧。 / Okay. Let's remember today for what it is.
+- 主角（帮忙找朋友）：等找到我的名字，咱们也去找你那位朋友！下回多带一只杯子。 / Once we find my name, let's look for your friend too! We'll bring another cup next time.
+- 暮铃（帮忙找朋友）：那……说定了。 / Then… it's a promise.
 
 
 ### sky:S-05 · 月门那边的访客 / The visitor through the moon gate
@@ -296,8 +297,9 @@
 
 - 白栞：咦，你们从月门来的？前阵子也有只猫走这条路，还借走了星铃的老图。 / Oh, you came through the moon gate? Someone else took that route recently and borrowed an old map of the Star Bell.
 - 主角：老图？上面会不会有守铃人的名字？ / An old map? Could it have the bellkeepers' names?
-- 白栞：进来吧，我给你找。 / Come inside. I'll look for it.
+- 白栞：那只猫问的是怎么打开旧封印，没问名字。 / That cat wanted to know how to open the old seal, not find a name.
 - 主角：有人在查封印？那场失忆不是自己回来的吗？ / Someone was looking into the seal? Didn't the forgetting return on its own?
+- 白栞：进来吧，我给你找。 / Come inside. I'll look for it.
 
 ## 第五章 · 镜子里的另一个我 / Chapter V — The cat on the other side
 
@@ -424,7 +426,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：那一声……跟当年一模一样。你刚才连灯火节都想不起来了！ / That sound… it's exactly like last time. You couldn't even remember the lantern festival just now!
+- 主角（看着纪念灯）：咦……这盏灯是哪来的？ / Huh… where did this lantern come from?
+- 暮铃：千灯城呀！咱俩一起做的！……那一声，跟当年一模一样。 / Lantern City! We made it together! …That sound was exactly like last time.
 - 主角：等等，你看！砾川那边又亮了。还没完呢！ / Wait, look! Lichuan's light is back. It's not over yet!
 
 ## 终章 · 我们都在这里 / Finale — All of us are here
@@ -437,7 +440,7 @@
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：别碰那把锁！我不能再眼睁睁看你消失了！ / Don't touch that lock! I can't watch you disappear again!
+- 暮铃：别碰那把锁！再这样下去，你连这一路的事都要忘了！ / Don't touch that lock! At this rate you'll forget our whole journey too!
 - 主角：这次我不是一个人。 / This time, I'm not alone.
 
 ### finale:B-02 · 不会回答的声音 / A voice that cannot answer
@@ -485,7 +488,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 栖蓝：这下整条街的铃可算老实了！哎，下回去哪儿玩？ / Finally, the bells on this street are behaving! Hey, where are we off to next?
+- 栖蓝（重访风铃镇且在场）：这下整条街的铃可算老实了！哎，下回去哪儿玩？ / Finally, the bells on this street are behaving! Hey, where are we off to next?
+- 当地居民（重访其他地区）：回来啦！今天可有好东西看，自己去逛逛吧。 / You're back! There's plenty to see today. Go have a look.
 
 ### epilogue:E-02 · 道歉不只是说对不起 / More than an apology
 
@@ -498,7 +502,7 @@
 
 ### epilogue:E-03 · 第二把钥匙 / The second key
 
-**实机事件与推进：** 回阳光花园。真实获得的月叶、灯笼等形成旅程的可见痕迹；门旁的木名牌可以翻到新的一面：玩家自定义显示名则呈现该名，否则保持无文字的猫爪刻记，不强造本名。并排添上新的爪印，形成过去的家和自己重新选择的家的可见区别。暮铃把当初的两只杯子放好；若天空主角说过多带杯子，庭院来客时桌上会多一只杯子，作为无需任务的回报。暮铃在门外询问是否留下，主角给第二把钥匙。两杯茶，普通铃声，恢复自由游玩。
+**实机事件与推进：** 回阳光花园。真实获得的月叶、灯笼等形成旅程的可见痕迹；门旁的木名牌可以翻到新的一面：玩家自定义显示名则呈现该名，否则保持无文字的猫爪刻记，不强造本名。并排添上新的爪印，形成过去的家和自己重新选择的家的可见区别。暮铃把当初的两只杯子放好；若天空主角选择帮忙找朋友并说过多带杯子，庭院来客时桌上会多一只杯子，作为无需任务的回报。暮铃在门外询问是否留下，主角给第二把钥匙。两杯茶，普通铃声，恢复自由游玩。
 
 **关键对白（ZH / EN）：**
 
