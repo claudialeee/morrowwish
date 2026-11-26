@@ -1,0 +1,52 @@
+// Conservative incremental chapter selection. Never substitute this for full release acceptance.
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+const entries=Object.freeze({
+  harbor:'harbor:H-01', forest:'forest:R-01', forge:'forge:E-01', sky:'sky:S-01',
+  library:'library:M-01', starfall:'starfall:F-01', finale:'finale:B-01', epilogue:'epilogue:E-01'
+});
+const all=Object.keys(entries);
+const local=Object.freeze({
+  'public/cat-bond/js/resonance/harbor-presentation.mjs':['harbor'],
+  'public/cat-bond/js/resonance/forge-presentation.mjs':['forge']
+});
+function impact(files) {
+  if (!files.length || files.some(f=>!Object.hasOwn(local,f))) return all;
+  const affected=new Set(files.flatMap(f=>local[f]));
+  return all.filter(ch=>affected.has(ch));
+}
+function choose({manual='',message='',files=[],review=false}={}) {
+  if (manual==='chapters'||message.includes('[qa-full]')||message.includes('[fresh-campaign]')) return all;
+  if (manual==='tail'||(!manual&&message.includes('[qa-tail]'))) return ['finale','epilogue'];
+  if (manual) {
+    const requested=manual.split(',').map(s=>s.trim());
+    if (requested.some(s=>!Object.hasOwn(entries,s))) throw Error('Invalid explicit chapter scope: '+manual);
+    return all.filter(s=>requested.includes(s));
+  }
+  if (review) return ['harbor']; // isolated toolchain smoke only, never release evidence
+  return impact(files);
+}
+const harbor=Object.keys(local)[0], forge=Object.keys(local)[1];
+assert.deepEqual(choose({files:[harbor]}),['harbor']);
+assert.deepEqual(choose({files:[forge,harbor]}),['harbor','forge']);
+assert.deepEqual(choose({files:[harbor,'public/cat-bond/js/resonance/engine.mjs']}),all);
+assert.deepEqual(choose({files:[]}),all);
+assert.deepEqual(choose({files:[harbor],message:'[qa-full]'}),all);
+assert.deepEqual(choose({files:[harbor],message:'[fresh-campaign]'}),all);
+assert.deepEqual(choose({manual:'sky,forest'}),['forest','sky']);
+assert.deepEqual(choose({manual:'tail'}),['finale','epilogue']);
+assert.deepEqual(choose({manual:'chapters',review:true}),all);
+assert.throws(()=>choose({manual:'sky,typo'}));
+if (process.argv.includes('--self-test')) { console.log('QA scope: 10 assertions passed'); process.exit(0); }
+const {BEFORE='',HEAD='',MANUAL_SCOPE='',COMMIT_MESSAGE='',TOOLCHAIN_ONLY='false'}=process.env;
+let files=[];
+if (/^[0-9a-f]{40}$/.test(BEFORE)&&/^[0-9a-f]{40}$/.test(HEAD)&&!/^0+$/.test(BEFORE)) {
+  try {
+    // Diff all commits in the push, not only the last commit. Unknown/unavailable base => full.
+    files=execFileSync('git',['diff','--no-renames','--name-only','-z',BEFORE,HEAD],{encoding:'utf8'}).split('\0').filter(Boolean);
+  } catch (e) { console.error('No reliable changed-file set; selecting full matrix'); }
+}
+const chapters=choose({manual:MANUAL_SCOPE,message:COMMIT_MESSAGE,files,review:TOOLCHAIN_ONLY==='true'});
+const result={include:chapters.map(chapter=>({chapter,entry:entries[chapter]}))};
+console.error(JSON.stringify({head:HEAD,changedFiles:files,selected:chapters,fullChapterMatrix:chapters.length===all.length,isolatedSmoke:TOOLCHAIN_ONLY==='true'},null,2));
+console.log(JSON.stringify(result));

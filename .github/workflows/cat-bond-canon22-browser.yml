@@ -10,14 +10,13 @@ on:
   workflow_dispatch:
     inputs:
       scope:
-        description: 'chapters or tail (finale and epilogue); fresh is a separate workflow'
-        type: choice
-        options: [chapters, tail]
+        description: 'chapters, tail, or comma-separated chapter IDs; scoped runs are not release evidence'
+        type: string
         default: chapters
 permissions:
   contents: read
 concurrency:
-  group: canon22-browser-${{ github.ref }}-${{ github.event_name == 'push' && (contains(github.event.head_commit.message, '[qa-tail]') && 'tail' || 'chapters') || inputs.scope }}
+  group: canon22-browser-${{ github.ref }}-${{ github.event_name == 'push' && (contains(github.event.head_commit.message, '[qa-full]') && 'final-full' || contains(github.event.head_commit.message, '[fresh-campaign]') && 'final-full' || contains(github.event.head_commit.message, '[qa-tail]') && 'tail' || 'incremental') || inputs.scope }}
   cancel-in-progress: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[replace-obsolete-qa]') }}
 jobs:
   select:
@@ -25,18 +24,27 @@ jobs:
     outputs:
       matrix: ${{ steps.scope.outputs.matrix }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - id: scope
         env:
           TOOLCHAIN_ONLY: ${{ github.event_name == 'push' && github.ref_name == 'review/starbell-qa-optimization' }}
-          TAIL: ${{ (github.event_name == 'push' && contains(github.event.head_commit.message, '[qa-tail]')) || inputs.scope == 'tail' }}
+          BEFORE: ${{ github.event.before }}
+          HEAD: ${{ github.sha }}
+          MANUAL_SCOPE: ${{ github.event_name == 'workflow_dispatch' && inputs.scope || '' }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          if [[ "$TOOLCHAIN_ONLY" == 'true' ]]; then
-            echo 'matrix={"include":[{"chapter":"harbor","entry":"harbor:H-01"}]}' >> "$GITHUB_OUTPUT"
-          elif [[ "$TAIL" == 'true' ]]; then
-            echo 'matrix={"include":[{"chapter":"finale","entry":"finale:B-01"},{"chapter":"epilogue","entry":"epilogue:E-01"}]}' >> "$GITHUB_OUTPUT"
-          else
-            echo 'matrix={"include":[{"chapter":"harbor","entry":"harbor:H-01"},{"chapter":"forest","entry":"forest:R-01"},{"chapter":"forge","entry":"forge:E-01"},{"chapter":"sky","entry":"sky:S-01"},{"chapter":"library","entry":"library:M-01"},{"chapter":"starfall","entry":"starfall:F-01"},{"chapter":"finale","entry":"finale:B-01"},{"chapter":"epilogue","entry":"epilogue:E-01"}]}' >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          if [[ "$BEFORE" =~ ^[0-9a-f]{40}$ ]] && ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$BEFORE" || true
           fi
+          node scripts/cat-bond-experience-qa-scope.mjs --self-test
+          matrix=$(node scripts/cat-bond-experience-qa-scope.mjs)
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
   chapter:
     needs: select
     runs-on: ubuntu-24.04
