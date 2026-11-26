@@ -6504,7 +6504,23 @@ class CaptureBattle {
     }
 
     this.drawFields(ctx);                // elemental ground zones, beneath the action
-    window.CatBondTraitFX?.draw(ctx,this);
+    window.CatBondTraitFX?.draw(ctx,this,(out,x,y,angle,color,alpha,id,time)=>{
+      // Composite the same animated breed artwork used by living fighters into
+      // a transparent reusable buffer. Tint only the sprite, never the arena.
+      const draw=window.CatMotion?.draw||window.CatArt?.drawCat,sp=GameData.speciesById(id);
+      if(!draw||!sp||!out.canvas?.ownerDocument)return false;
+      let tile=this._traitGhostTile;
+      if(!tile){tile=out.canvas.ownerDocument.createElement('canvas');tile.width=192;tile.height=192;this._traitGhostTile=tile;}
+      const c=tile.getContext('2d');if(!c)return false;
+      c.save();try{
+        c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;c.globalCompositeOperation='source-over';c.clearRect(0,0,192,192);
+        const owner=this.team.find(a=>a.cat?.species===id);
+        draw(c,96,96,{species:sp,scale:this.catScale('ally'),face:Math.cos(angle)<0?-1:1,t:time,pose:'play',motion:1,stride:time*25,mood:'happy',growth:owner?(window.Growth?.visual(owner.cat)||null):null});
+        c.globalCompositeOperation='source-atop';c.globalAlpha=.72;c.fillStyle=color;c.fillRect(0,0,192,192);
+      }finally{c.restore();}
+      out.save();try{out.globalAlpha=Math.max(0,Math.min(1,alpha*.68));out.drawImage(tile,x-96,y-96);}finally{out.restore();}
+      return true;
+    });
     if(this._solarUlt){const q=this._solarUlt;window.CatBondUltVFX?.drawSolarCharge(ctx,this.solarGeometry(q.f,q.skill._solarAim),1-q.t/q.max,this.t);}
     for(const wall of this.barrierWalls||[])
       window.CatBondWardArt?.drawFlatWall?.(ctx,wall,this.t);
