@@ -1,0 +1,24 @@
+name: Publish CEO photo once with native Bluesky links
+on:
+  push:
+    branches: ['social/ceo-bluesky-20261126']
+    paths: ['.github/workflows/ceo-bluesky-20261126.yml']
+permissions:
+  contents: read
+concurrency:
+  group: ceo-bluesky-20261126
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.event.head_commit.message == 'Publish approved CEO photo with native Bluesky facets'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      MORROW_BLUESKY_HANDLE: ${{ secrets.MORROW_BLUESKY_HANDLE }}
+      MORROW_BLUESKY_APP_PASSWORD: ${{ secrets.MORROW_BLUESKY_APP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/publish-ceo-20261126.mjs
