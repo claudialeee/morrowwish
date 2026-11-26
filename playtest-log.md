@@ -1667,3 +1667,56 @@ Impatient (×6):
 **0 of 1 P0 auto-fixed.** The sole P0 fails the cron's low-risk filter: it requires editing unshipped-passive design brief + multi-system routing between `_closing` and three P1 passives. Logged for owner review.
 
 **Branch state:** `main` 5 ahead of origin/main; NOT pushed.
+
+---
+
+## Playtest cron — 2026-11-26T05:42Z  (w1dgyb0za)
+
+**Headline (adversary synthesis)**: Cat Bond's combat is diagnostically rich but experientially silent — the engine already measures the fight (mercy ramps, closing windows, dodge tiers, auto skill-casts) and then hides all of it, so every persona feels they're fighting a flat HP bar. P0 fix is one legibility pass across those hidden systems + an enemy-side aggression ramp to end the 99% idle equilibrium.
+
+**Distribution**: 43 critiques → **2 P0**, 33 P1, 8 P2. (18 StructuredOutput retry-cap losses; 56/74 agents delivered.)
+
+### P0 outcomes
+
+- **P0-1 `谨慎型` — 99% idle equilibrium**: enemy approach speed ramps 1.0→1.6× over t∈[4,10]s since last player damage; resets on any hit landed. **Auto-fixed, commit `eb20a36a`**. 4 gates + `npm run check` all green.
+- **P0-2 `没耐心型` — flat tempoScale 0.64 kills the arc**: adversary proposed time+HP ramp (0.64 → 1.00 by 14s → 1.15 under 30% HP). Applied → **band-fitness NEG-CONTROL C1 failed** (frozen cat dealt 1544 dmg instead of ~0; the tempo climax fired while a "frozen" control still processed scaled dt). **Reverted, downgraded to findings-only.** Design-level: tempo ramp needs to EXCLUDE pinned/frozen controls from the climax branch. Owner review required.
+
+### P1 themes (findings-only, 33 critiques, cross-persona recurrence)
+
+Button masher (×6):
+- Identical 428-dmg flee losses imply mercy silent-failure OR scripted-oneshot enemy burst that still exceeds mercy's % cut.
+- Loss debrief is a scalar tautology; `_obs` already has texture (threats/dodgedThreats/perfectDodges) but isn't surfaced.
+- Combo rewards hit count, not variety — masher gets the same ×1.20 cap as a weaver.
+- Basic/Q-E DPS gap too narrow at BASIC_POWER_MULT=0.85 → Q/E feels optional.
+- 汤圆 P1 storage-strike is the masher-recovery verb but gated to one cat — mashers without 汤圆 are stranded.
+- 2653-2889 inputs/27s = ~90% clicks have no feedback.
+
+Cautious kiter (×7):
+- 99% idle equilibrium (now partly addressed by P0-1 ramp).
+- Perfect-dodge sustain economy gates on recent offense, kiter never qualifies.
+
+Explorer (×5):
+- Baseline pack solved 88% / 0 faints → encounter solved, not under-varied.
+- Phase system is enemy-only; player has no mid-fight escalation beat.
+
+Panicky (×5):
+- Current mash-stall teach can't find a panicked player.
+- Discovery-failure dressed as pacing.
+
+Lazy (×4):
+- End-of-battle shows nothing the player can decide on.
+
+Impatient (×6):
+- Now partly addressed design-wise by P0-2 (reverted); needs frozen-control exclusion to re-ship.
+- 18s wall = one ULT_COOLDOWN_SECONDS tick past climax; ult timing mismatched with arc.
+
+### P2 themes (8 findings-only)
+
+- "Global 怒气槽 / 霸体 / 评价卡" asks keep surfacing — all collide with pending 汤圆/团团/绒绒 P1 passives. Route into traits, not global knobs.
+- Juice at x50/100/500 cosmetics vs. onboarding root-cause — adversary rejects every cycle.
+
+### Auto-fix summary
+
+**1 of 2 P0 auto-fixed**: `eb20a36a` P0-1 enemy aggression ramp (green). P0-2 tempo ramp **reverted** on band-fitness NEG-CONTROL C1 failure; downgraded to findings-only for owner-review (needs frozen-control exclusion).
+
+**Branch state:** `main` 18 ahead of origin/main; NOT pushed.
