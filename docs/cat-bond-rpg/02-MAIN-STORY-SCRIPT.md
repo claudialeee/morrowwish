@@ -267,11 +267,11 @@
 
 ### sky:S-05 · 门那边有人认识这首歌 / Someone beyond the gate knows the song
 
-**实机事件与推进：** 石门在主角第一音及当地真实回应下打开，向月镜书库传出可见短光信号。白栞从门的另一端回应：最近失忆重现前，有猫曾用同样的信号打开它。暮铃突然沉默。远帆选择加入冒险；无需运信。
+**实机事件与推进：** 石门在主角第一音及当地真实回应下打开，向月镜书库传出可见短光信号。白栞从门的另一端回应：最近失忆重现前，有猫曾从书库一侧用同样的旧调开启石门；唱出旧调或开启普通门不等于主角独有的发起古铃共鸣能力。暮铃突然沉默。远帆选择加入冒险；无需运信。
 
 **关键对白（ZH / EN）：**
 
-- 白栞（门的回应）：咦，是这首曲子！前阵子还没闹失忆的时候，也有只猫这么唱过。你是哪位？ / Oh, that tune! Just before the forgetting started again, another cat sang it like that. Who are you?
+- 白栞（门的回应）：咦，是这首曲子！前阵子还没闹失忆的时候，也有只猫从里面唱着这调子开过门。你是哪位？ / Oh, that tune! Just before the forgetting began again, someone sang it to open this door from inside. Who are you?
 - 主角：我也想弄明白呢。 / That's what I'd like to know, too.
 - 暮铃：……我们进去吧。 / …Let's go in.
 
