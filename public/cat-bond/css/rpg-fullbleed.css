@@ -226,3 +226,9 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 
 #stage .rw-dedicated-rail button[data-path-available="true"]{border-color:#58846c!important;background:#e1edda!important;color:#2e523e!important}
 #stage .rw-dedicated-rail button[data-path-available="false"]{opacity:.58}
+
+#stage .rw-world.rw-dedicated-puzzle>.rw-dedicated-rail{box-sizing:border-box}
+#stage .rw-world.rw-chase-mode:not([hidden])>.rw-shell{inset:112px 8px 8px!important;width:auto!important;height:auto!important}
+#stage .rw-world.rw-chase-mode:has(.rw-chase-stick):not([hidden])>.rw-shell{bottom:116px!important}
+@media(orientation:portrait){#stage .rw-world.rw-chase-mode:not([hidden])>.rw-shell{top:132px!important}}
+@media(max-height:500px) and (orientation:landscape){#stage .rw-world.rw-chase-mode:not([hidden])>.rw-chase-bar{top:45px}#stage .rw-world.rw-chase-mode:not([hidden])>.rw-shell{top:93px!important}#stage .rw-world.rw-chase-mode:has(.rw-chase-stick):not([hidden])>.rw-shell{inset:93px 92px 8px 112px!important}}
