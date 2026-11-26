@@ -1,3 +1,4 @@
+import {attachExperienceRecorder} from './cat-bond-experience-recorder.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {chromium} from 'playwright';
@@ -20,6 +21,7 @@ try {
   for (const {name, ...options} of profiles.filter(p=>!process.env.CAT_BOND_PROFILE||p.name===process.env.CAT_BOND_PROFILE)) {
     const context = await browser.newContext(options);
     const page = await context.newPage();
+    await attachExperienceRecorder(context,page,{id:'campaign-en-'+name});
     const errors = [];
     page.on('pageerror', error => {errors.push(error.message);console.error('Actual browser page error',error.stack||error.message);});
     await page.route('**/*', route => /^(data:|blob:)/.test(route.request().url())||route.request().url().startsWith(origin + '/') ? route.continue() : route.abort());
