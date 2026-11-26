@@ -28,7 +28,16 @@ export function skyChapterVisitors(view){return view&&!view.ending&&view.complet
  };
 export function homeConversation(id,view,profile,snapshot){
  const q=lines[id];if(skyChapterVisitors(view).includes(id)){const visit=skyVisit[id];return profile?.methods?.includes(q.method)?visit.alternate:visit.normal;}if(!q||!view?.ending||(id!=="muling"&&!view.returned?.includes(id)))return null;
- if(id==="muling")return muling[snapshot?.choices?.["library:M-04"]]||q.normal;
+ if(id==="muling"){
+  const c=snapshot?.choices||{},base=muling[c["library:M-04"]]||q.normal;
+  const responses={
+   "sky:S-04":{joke:["云朵茶会的约定，我还记得。","I still remember our promise of a tea party in the clouds."],company:["谢谢你那天安静地陪我坐着。","Thank you for sitting quietly beside me that day."],search:["你曾愿意陪我寻找那个朋友。","You offered to help me look for that friend."]},
+   "library:M-03":{details:["你问过的事实，我都会如实告诉你。","I'll tell you the truth about everything you asked."],hurt:["我记得你说过受伤，我会尊重那份感受。","I remember how hurt you felt, and I'll respect that."],space:["我会给你需要的时间。","I'll give you the time you need."]},
+   "finale:B-01":{stop:["谢谢你让我停下来听见大家。","Thank you for asking me to stop and listen."],challenge:["你提醒我不能替任何人决定。","You reminded me not to decide for anyone else."]},
+   "epilogue:E-02":{listen:["我会继续听居民们的意见。","I'll keep listening to the residents."],help:["谢谢你陪我完成第一次修复。","Thank you for joining my first repair."],space:["我会尊重大家需要的时间。","I'll respect the time everyone needs."]}
+  };
+  return [0,1].map(i=>[base[i],...Object.entries(responses).map(([scene,variants])=>variants[c[scene]]?.[i]).filter(Boolean)].join(i?" ":""));
+ }
  return q.alternate&&profile?.methods?.includes(q.method)?q.alternate:q.normal;
 }
 export function mountHomeConversation(id,api){

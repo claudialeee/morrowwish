@@ -10,7 +10,7 @@ console.log(JSON.stringify((function test(){
  const storage=new Map(),ls={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},window={};
  new Function("window","localStorage",stateSource)(window,ls);
  const State=window.State,assert=(x,m)=>{if(!x)throw Error(m)},ok=(r,m)=>assert(r?.ok,m+": "+r?.reason);
- assert(State.startNewGame("slot1"),"slot1");let b=createWorldBridge(State),runtime=getSlotRuntime(State),notified=0;runtime.subscribe(()=>notified++);let physical=0,walking=0,deliveries=0,puzzles=0,localInvites=0,rewards=0,fixture=0;
+ assert(State.startNewGame("slot1"),"slot1");State.S.cats.push({uid:"player-fixture",species:"jinjc",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});ok(State.save(),"fixed protagonist fixture");let b=createWorldBridge(State),runtime=getSlotRuntime(State),notified=0;runtime.subscribe(()=>notified++);let physical=0,walking=0,deliveries=0,puzzles=0,localInvites=0,rewards=0,fixture=0;
  function host(fn){const e=makeEngine(campaign,State.S.resonance),r=fn(e);ok(r,"host fixture");State.S.resonance=r.state;ok(State.save(),"fixture save");fixture++;}
  function walk(x,p){let old=x.position;x.walk(...p);let ticks=0;while(x.moving&&ticks++<1000)x.tick(.05);assert(!x.moving&&x.near(p),"walk arrival "+p);walking+=ticks;return old;}
  function solve(x){let p=x.puzzle;assert(p,"puzzle not mounted");const n=p.type;
@@ -31,8 +31,8 @@ console.log(JSON.stringify((function test(){
  for(let scene=0;scene<34;scene++){
   let v=b.view(),s=v.current;if(!s||s.id==="finale:B-01")break;
   if(s.choices.length&&s.choiceTiming==="beforeAction")host(e=>e.choose(s.choices[0].id));
-  if(s.id==="sky:S-02"){ok(b.enter("sky"),"enter before cargo");const x=createExplorer(b,"sky");walk(x,skyLaunch["explore:flight-recorder"]);assert(x.interact("explore:flight-recorder").reason==="sky-parts-required","flight requires forge parts");transfer("forge","sky",0);transfer("forge","sky",1);assert(!b.cargoSpec("forge","sky"),"cannot send flight data before route restoration");}
-  if(s.id==="library:M-02"){State.S.cats.push({uid:"library-fixture",species:"nainai",personality:"gentle",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});State.S.dex.nainai=1;ok(b.enter("library"),"enter library");const x=createExplorer(b,"library");walk(x,x.layout.features["puzzle:mirror-records"]);assert(x.interact("puzzle:mirror-records").reason==="library-previous-station","must solve mirror gallery first");}
+  if(s.id==="sky:S-01"){ok(b.enter("sky"),"enter before cargo");const x=createExplorer(b,"sky");walk(x,skyLaunch["puzzle:sky-pouch"]);assert(x.interact("puzzle:sky-pouch").reason==="sky-parts-required","flight requires forge parts");transfer("forge","sky",0);transfer("forge","sky",1);assert(!b.cargoSpec("forge","sky"),"cannot send flight data before route restoration");}
+  if(s.id==="library:M-02"){State.S.cats.push({uid:"library-fixture",species:"nainai",personality:"gentle",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});State.S.dex.nainai=1;ok(b.enter("library"),"enter library");const x=createExplorer(b,"library");walk(x,x.layout.features["puzzle:mirror-records"]);assert(["library-previous-station","story-operation-order"].includes(x.interact("puzzle:mirror-records").reason),"must solve mirror gallery first");}
   const ops=s.id==="harbor:H-04"?[...s.requires].reverse():s.requires;
   if(s.id==="harbor:H-04"){
    ok(b.enter("harbor"),"enter Harbor");
@@ -40,7 +40,7 @@ console.log(JSON.stringify((function test(){
    walk(x,x.layout.features["puzzle:beam-mirrors"]);
    assert(x.interact("puzzle:beam-mirrors").reason==="rescue-first","rescue choice must change the action order");
   }
-  for(const op of ops){if(s.id==="library:M-05"&&op==="repair:library"){ok(b.enter("library"),"enter library for route choice");const early=createExplorer(b,"library");walk(early,early.layout.features[op]);assert(early.interact(op).reason==="library-previous-station","repair must wait until the two routes dialogue and archive choice");while(b.view().cursor<s.lines.length)host(e=>e.nextLine());assert(early.interact(op).reason==="library-previous-station","reading dialogue alone must not unlock repair");host(e=>e.choose(s.choices[0].id));}if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
+  for(const op of ops){if(s.id==="library:M-05"&&op==="repair:library"){ok(b.enter("library"),"enter library for route choice");const early=createExplorer(b,"library");walk(early,early.layout.features[op]);assert(early.interact(op).reason==="library-previous-station","repair must wait until the two routes dialogue");while(b.view().cursor<s.lines.length)host(e=>e.nextLine());}if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
    if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(s.chapter==="library"){const restored=createExplorer(b,"library");assert(restored.invited.length===2,"library invitations persist");}if(["forest","sky"].includes(s.chapter)){const restored=createExplorer(b,s.chapter);assert(restored.invited.length===2&&x.localNpcs().every(n=>restored.invited.includes(n.id)),s.chapter+" invitations must survive reload");}}
    if(op==="explore:tide-logbook"){
@@ -63,7 +63,7 @@ console.log(JSON.stringify((function test(){
     walk(x,p);assert(x.interact(op).reason==="upper-gate-required","cannot bypass upper gate");
     State.S.cats.push({uid:"forest-fixture",species:"nainai",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});const gate=x.pairedGate();assert(gate&&!gate.ready,"upper gate available");walk(x,gate.point);ok(x.holdUpperGate(),"hold upper gate");
     assert(!x.holdUpperGate().ok,"duplicate upper gate action");const restored=createExplorer(b,s.chapter);assert(restored.pairedGate().ready,"paired gate persists");
-    walk(restored,p);ok(restored.interact(op),"lower gate");assert(restored.puzzle.pair.upper==="forest-fixture"&&restored.puzzle.pair.lower==="muling","two separate actors");assert(!b.recordWorld(s.id,op,{sceneId:s.id,operation:op,region:s.chapter,verified:true,token:b.capture()}).ok,"cannot bypass paired flow");solve(restored);State.S.cats=State.S.cats.filter(c=>c.uid!=="forest-fixture");
+    walk(restored,p);ok(restored.interact(op),"lower gate");assert(restored.puzzle.pair.upper==="forest-fixture"&&restored.puzzle.pair.lower==="player-fixture","helper and actual protagonist are distinct actors");assert(!b.recordWorld(s.id,op,{sceneId:s.id,operation:op,region:s.chapter,verified:true,token:b.capture()}).ok,"cannot bypass paired flow");solve(restored);State.S.cats=State.S.cats.filter(c=>c.uid!=="forest-fixture");
    }else{walk(x,skyLaunch[op]||p);if(skyLaunch[op]){assert(!b.recordWorld(s.id,op,{sceneId:s.id,operation:op,region:s.chapter,verified:true,token:b.capture()}).ok,"cannot bypass flight");}const r=x.interact(op);ok(r,op);if(r.puzzle)solve(x);if(skyLanding[op]){assert(x.near(skyLanding[op]),"flight must land at actual destination");assert(createExplorer(b,s.chapter).near(skyLanding[op]),"landing must persist");}}
    assert(!b.view().objective.includes(op),"unrecorded "+op);physical++;
    if(physical===1){const p=x.rewardPoints()[0];walk(x,p.point);const cash=State.S.coins;ok(x.pickup(p.id),"cache reward");assert(State.S.coins>cash&&!x.pickup(p.id).ok,"duplicate reward");rewards++;}

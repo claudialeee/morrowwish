@@ -75,7 +75,7 @@ function install(){
    if(["epilogue:E-02","epilogue:E-03"].includes(v.current.id)&&window.__game?.scene!=="yard"){if(root)close();return;}
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&awaitingGameplay(v)){close();return;}
    if(dialogue&&slot===State.S&&openedScene===v.current.id&&v.cursor===v.current.lines.length){
-    if(v.current.id==="epilogue:E-02"&&v.objective.includes("npc:public-accountability")){const r=runtime.completeNPCScene({sceneId:v.current.id,operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:runtime.capture()});if(!r.ok)return;scheduleFinish();return}
+    if(v.current.id==="epilogue:E-02"&&v.objective.includes("npc:public-accountability")&&(!v.current.choices.length||v.choice)){const r=runtime.completeNPCScene({sceneId:v.current.id,operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:runtime.capture()});if(!r.ok)return;scheduleFinish();return}
     if(v.current.id==="epilogue:E-03"&&v.objective.includes("npc:second-garden-key")){showKey(runtime.capture());return}
     if(libraryReveal?.departurePending(v))return;
     if(v.objective.length&&(!v.current.choices.length||v.choice)){close();return;}
