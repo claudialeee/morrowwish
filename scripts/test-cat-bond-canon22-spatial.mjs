@@ -6,7 +6,7 @@ for(const [op,paths] of [
  ['puzzle:moonleaf-loop',[[step(1),step(2),leaf,step(2),step(4)],[step(1),step(3),step(4)]]],
  ['puzzle:star-steps',[[step(7),step(1),step(3),step(5),step(7)],[step(2),step(4),step(6),step(7)]]],
  ['puzzle:shadow-bridge',[[cross,aim(.2),cross,aim(.72),cross]]],
- ['puzzle:lantern-show',[[{type:'shape',i:2},aim(.2),aim(.72),cross],[cross]]]
+ ['puzzle:lantern-show',[[{type:'shape',i:2},aim(.2),aim(.72),cross],[aim(.2),cross]]]
 ]){
  for(const actions of paths){const p=newSpatial(op);assert.equal(validSpatialProof(op,spatialProof(p)),false);for(const a of actions)spatialInput(p,a);assert.ok(p.solved,op);const proof=spatialProof(p);assert.ok(validSpatialProof(op,proof),op);assert.equal(validSpatialProof(op,{...proof,trace:[]}),false);assert.equal(validSpatialProof(op,{...proof,frames:1}),false);}
 }
@@ -25,3 +25,7 @@ const walking=newSpatial('puzzle:moonleaf-crossing');assert.ok(startBridgeWalk(w
 const {chaseVisualY,chaseLogicalY}=await import('../public/cat-bond/js/resonance/canon22-spatial.mjs');
 for(const y of [.2,.27,.35,.49,.5,.73,.8])assert.ok(Math.abs(chaseLogicalY(chaseVisualY(y))-y)<1e-9);
 assert.ok(Math.abs(chaseVisualY(.27)-.35)<1e-9);
+
+// An untouched festival cannot produce completion proof; illuminated bridge completes on arrival.
+const untouched=newSpatial("puzzle:lantern-show");spatialInput(untouched,cross);assert.equal(untouched.solved,false);assert.equal(spatialProof(untouched),null);assert.equal(untouched.warning,"show");spatialInput(untouched,aim(.72));spatialInput(untouched,cross);assert.ok(validSpatialProof(untouched.operation,spatialProof(untouched)));
+const stoneWalk=newSpatial("puzzle:shadow-bridge");assert.equal(startBridgeWalk(stoneWalk,cross),false);spatialInput(stoneWalk,aim(.72));assert.ok(startBridgeWalk(stoneWalk,cross));assert.equal(spatialProof(stoneWalk),null);advanceBridgeWalk(stoneWalk,.1);assert.ok(bridgeWalkPosition(stoneWalk)[0]>.19);assert.equal(spatialInput(stoneWalk,aim(.2)),false);while(stoneWalk.walk)advanceBridgeWalk(stoneWalk,.05);assert.ok(stoneWalk.solved);assert.ok(validSpatialProof(stoneWalk.operation,spatialProof(stoneWalk)));console.log("Lantern engagement and stone bridge arrival gates passed");
