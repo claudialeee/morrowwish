@@ -1,160 +1,31 @@
-# CAT BOND RPG — DEVELOPER HANDOFF
-## Historical implementation foundations · Canon 2.0 migration override
+# 星铃回响 · Canon 2.1 — 实施与验收合同
+**状态：新剧本未迁移，禁止部署，禁止用旧流程验收新版本。** 以 01 世界观、02 完整剧本、ART-RESET-CANON2.md 为唯一设计依据。原手册从Git历史查阅，不混合旧任务。
 
-**Canon 2.0 supersedes all former scene tasks, chapter events, dialogue, and art requirements in this file.** Use 02 and ART-RESET-CANON2.md for the new campaign; preserve only compatible engine contracts. No old route or test evidence certifies the new implementation. New mainline mechanics, UI, localization, state transition, real browser route, and art validation must be completed before deployment.
+## 1. 版本与迁移
+- 风铃镇 / Windchime Town（内部 `harbor`）、千灯城 / Lantern City（内部 `forge`）、檐灯 / Yandeng（内部 `jiedeng`）、归家调 / Homeward Tune。保持内部键只是工程选择，所有玩家可见称呼、地理、人物身份、对话、任务、图鉴、音频字幕、地图、插画、成就和标题都必须更新。原海岸、灯塔、船、潮汐、炉心工业事故不得进入新版主线。旧资产路径可留历史引用，不可被当成新地图。
+- 重写 campaign.mjs 与全部地区剧情/世界机制，不简单重命名旧救援、运输、修理任务。旧测试和存档语义不能用于新版。未发布存档允许版本隔离或清晰迁移；禁止使用旧完成状态自动证明新挑战已完成。
+- 各槽独立保存故事状态、真实动作证据、选择、伙伴身份/战斗/入队/离队、世界变化、路线和新线索。确保中断/重启安全。正常移动、失败重试、回花园和下一场景直达不需要旧任务补刷。
+- 实现先做可玩灰盒并验证真实动作，再生产匹配地图分层、怪物与动画。严禁静态图+按钮冒充新玩法。代码、测试、美术可并行，但必须依据同一版剧本与地理。
 
-Read README.md, 01-NARRATIVE-BIBLE.md, and 02-MAIN-STORY-SCRIPT.md before touching Cat Bond RPG content.
-
-## 1. Source-of-truth rules
-
-- The new Cat Bond RPG folder is the only current narrative authority.
-- The old docs/cat-bond-the-last-page-story-bible.md is an archived, non-canonical draft.
-- These documents do not mean the game code has already been migrated. Inspect the live source and identify legacy story content before implementation.
-- Do not silently combine the old Last Page plot with The Last Resonance.
-- Do not change locked canon facts without explicit owner approval.
-- Story state must be saved per save slot. Never use one global story-state object shared by all three slots.
-
-## 2. Required player-facing RPG structure
-
-- The overworld/map is the main RPG interface and shows the current main quest, story progress, region status, and next objective.
-- NPCs must exist physically in the world, with distinct character art, identity, personality, dialogue, relationships, and quest state.
-- Sunlit Garden is a living home and cultivation sanctuary, not the main RPG dashboard. Cats and NPCs can return there as the campaign progresses.
-- Keep cat collection, training, workshop, Catdex, Duo Bond, Duo Promises, battles, and exploration. Integrate them into the narrative instead of removing them to make room for story.
-- Main story scenes need clear entry conditions, objectives, player actions, exit conditions, and saved progress.
-- Provide skip and language controls for cinematic scenes. Switching Chinese/English during an open scene must update the scene immediately.
-
-## 3. Story-state model
-
-Persist the following categories per save slot. Exact implementation names are up to engineering, but semantics must remain intact.
-
-### Main progression
-- Current chapter and scene.
-- Unlocked regions and map routes.
-- Six sanctuary restoration states.
-- Six melody recovery states.
-- Muling identity reveal and Reverse Resonance reveal states.
-- Final battle phase and ending completion.
-
-### Reciprocal regional links
-Track each pair independently:
-- Harbor ↔ Forest.
-- Forest ↔ Emberforge.
-- Emberforge ↔ Skyspine.
-- Skyspine ↔ Moonmirror.
-- Moonmirror ↔ Starfall.
-- Starfall ↔ Harbor.
-
-A link counts only after both sides have sent and received a meaningful response. A one-way quest completion or a prerecorded signal is not sufficient.
-
-### NPC and choice state
-- Each major NPC's relationship and chapter outcome.
-- The player's six regional decisions.
-- Muling relationship responses and post-reveal trust state.
-- Which NPCs have returned to Sunlit Garden and which final-battle support actions they can perform.
-
-### Collection and duo state
-- Collected cats and Catdex records.
-- Duo Bond levels.
-- Completed Duo Promises.
-- Selected battle roster and duo combinations.
-
-Do not require every optional cat to finish the main story. Collection depth should enrich the final battle, not create an arbitrary hard lock.
-
-## 4. System-to-story integration
-
-| Existing system | Required narrative function |
+## 2. 场景迁移矩阵
+| 场景 | 运行时任务与必须验证的行为 |
 |---|---|
-| Cat collection | Gives the player individual companions with distinct combat roles and identities |
-| Catdex | Records verified identity, habits, discovered memories, and helps distinguish real cats from Hollow Echo copies |
-| Duo Bond | Enables paired cats to recognize mismatched copied behavior and interrupt false echoes |
-| Duo Promises | Unlocks special coordinated responses in the final battle and relationship scenes |
-| Sunlit Garden | Shows the growing community, returning NPCs, cat activities, and postgame life |
-| Workshop | Produces region-specific repair parts and practical support used in the campaign |
-| World map | Shows the six regions, current objective, restored routes, and reciprocal links |
-| Six melodies | Restore the six sanctuaries and unlock the final network configuration |
-| Three save slots | Each slot retains its own chapter, choices, collected cats, relationships, and ending |
+| P-01–05 | 可跳过背景，独自探索，路牌提示风铃镇，偶遇暮铃可跳过；两路线汇合且未提前组队 |
+| H-01–05 | 镇内家铃异常、真实走位追逐、两声铃约定、旧铃房、双猫战斗、旧巡铃图、镇民回应、栖蓝探路、檐灯留守 |
+| R-01–04 | 月叶和根桥状态实际改变可走区域，两条路线可达，旧图补笔，回环可识别，根系战斗可选，风铃镇双向回复 |
+| E-01–04 | 千灯城灯火节，真实石桥被影遮挡，拖动灯光露出通路，剪影兽走位战，旧灯匣揭出月门，森林双向回复 |
+| S-01–05 | 可控滑翔、两条飞行路线、风圈和回卷、真正落地，云海茶席、天空与千灯城双向回复、借图线索；无必打Boss |
+| M-01–05 | 公共镜廊，实际两声铃互动辨认真暮铃，本地古铃恢复后与天空互答，壁画及借阅/观测记录逐步揭露，清楚的双方案模型，暮铃离队和无回应 |
+| F-01–05 | 实际星桥踏石挑战，历史记录不剧透，星原古铃恢复，两条剩余邻地双向回复，暮铃启动向内方案，保留备战机会 |
+| B-01–04 | 可玩三阶段战斗，实际同伴支援、真实六条邻地回复、当地猫切换主声路、暮铃自愿开锁、完整稳定环路、恢复名字与两声铃回收 |
+| E-01–03 | 一处可选重访、暮铃道歉并承担责任、第二把钥匙，返回自由世界 |
 
-## 5. Region implementation checklist
-
-Every region needs:
-- A distinct visual theme and music.
-- An explorable map with more than a straight corridor.
-- Important NPCs physically present and interactable.
-- A complete local story with conflict, reveal, climax, and resolution.
-- A unique exploration or puzzle mechanic.
-- A combat encounter or boss with a region-specific identity.
-- A melody scene in which local cats contribute; the player cannot complete the melody alone.
-- At least one clue about the main mystery.
-- A cross-region exchange that persists after the chapter.
-- A later return or final-battle role for its important NPCs.
-
-Do not use the same quest sequence six times.
-
-## 6. Final battle acceptance
-
-The final battle is not accepted if it is only a boss health bar followed by a cutscene.
-
-It must include:
-1. **Muling phase:** inward routes, reversed melodies, recognizable former-partner moves, and player actions that interrupt the inward gates.
-2. **Hollow Echo phase:** copied cats/NPCs, Catdex identity clues, Duo Bond interruption, Duo Promise special actions.
-3. **Six Notes Return phase:** all six regional NPC groups physically perform their actions; the player protects them, activates melodies, and defeats the Hollow Echo.
-4. **Choice consequence:** earlier choices change support methods, dialogue, and at least some battle conditions or rewards.
-5. **Muling's final action:** she opens the final neighbor path after the player and NPCs have made the ring possible. Her action completes the mechanism but does not replace the player's work.
-6. **Resolution:** all memories remain with their owners; the player's memories return; the Hollow Echo dissipates; the Happy Ending is complete.
-
-## 7. Cinematic and art standards
-
-- Opening must not trigger a cinematic: optional short public-background text over the live garden, immediately dismissible. Identity reveal, betrayal reveal, major chapter climaxes, final battle and ending need authored cinematic staging. Historical sacrifice footage is eligible only after Chapter V/VI reveal gates.
-- Use polished original key art, layered depth, camera movement, lighting, particles, character acting, and sound design.
-- No crude line cats, cheap paper-cutout animation, static text-card sequences, or simple image carousels as substitutes for scenes.
-- Do not use a generic sprite in place of a named NPC's character art.
-- Duo scenes must use the approved polished original-art direction and preserve the actual selected cats where the system requires it.
-- Test portrait mobile, landscape mobile, and desktop. Keep dialogue readable and controls reachable.
-
-## 8. Localization and dialogue
-
-- Chinese and English are both complete deliverables, not optional polish.
-- Preserve each character's distinct voice.
-- No exposition monologues that explain the entire world.
-- Player dialogue choices must be touch, mouse, and keyboard accessible.
-- Changing language during a scene updates the currently visible text, choice labels, and subtitles immediately.
-- Check every branch and every post-reveal line for mixed-language fragments.
-
-## 9. QA and Supervisor gate
-
-Before reporting a story task complete:
-- Compare the implemented scene to the exact Bible and script sections.
-- Verify entry/exit triggers and reload persistence.
-- Play the scene in Chinese and English.
-- Test the relevant choices and confirm downstream consequences.
-- Inspect actual rendered character art and cinematic transitions on mobile and desktop.
-- Verify Catdex, Duo Bond, Duo Promises, garden, map, and combat integrations where relevant.
-- Check that no archived Last Page plot element has been reintroduced.
-- Have a distinct adversarial review challenge the implementation. If no independent reviewer is available, label it self-review; do not claim independent approval.
-- Report PASS / FAIL / PARTIAL with evidence. A commit is not proof of gameplay completion or deployment.
-
-## 10. Forbidden shortcuts
-
-- Do not replace story scenes with static paragraphs or a slideshow.
-- Do not make Muling a shallow villain or excuse her actions.
-- Do not let the player solve the crisis alone with a newly invented power.
-- Do not make NPCs decorative quest markers.
-- Do not make the six regions interchangeable.
-- Do not make the Catdex a magic device that can restore stolen memories.
-- Do not treat a one-way signal as a completed reciprocal regional link.
-- Do not claim the new canon is live until the actual game has been migrated, tested, deployed, and verified.
-
-
-## 11. Canon 1.1 opening migration and acceptance
-- P-01..P-05 retain scene references but replace old operations: public context dismiss/skip; solo movement; optional map rescue with stranger; independent harbor travel; harbor arrival. Neither map rescue nor optional sign is a prerequisite for travel. H-01 accepts or defers temporary cooperation; H-04 verifies actual rescue and establishes companion; H-05 requires actual local response. Persist encounter, introduction, accepted/deferred cooperation and companion states per slot; no duplicate rewards or introductions. A player bypassing the map must receive public introduction at the harbor.
-- Remove all new-game/continue automatic opening animation triggers, not the archived art itself. Never mark historical footage completed by a click on a substitute. Legacy saves preserve inventory, progression and earned relationships; new opening flags migrate explicitly, with no forced replay of old cutscenes.
-- Keep the V3 exploration loop: optional discovery, side routes, paired actions, combat, ability-gated return, visible post-repair change, souvenirs and garden return. Do not turn the opening into a conversation chain. The player must understand what the Star Bell is, what forgetting means, and why they are going to the harbor without knowing the late secrets.
-- Cold-player check: after two minutes, ask for the world problem and immediate personal objective in their own words; after the harbor, ask what changed and why they want to visit the forest. Check both languages, desktop/mobile, skip/alternate encounter/reload/deferral. Verify no premature companion HUD or spoiler assets/subtitles/accessibility text. Narrative-only edits are not proof of runtime migration.
-
-
-## 12. Canon 1.2 full-campaign adaptation gate
-All 40 scene references are retained but the entire critical path in 02 is rewritten. For each scene map entry/action/exit/evidence, bilingual lines and choice consequences to actual runtime; do not treat old tests as coverage. Chapter II needs investigation evidence, real paired channel operation and visible water flow; III a safe prototype test and public accountability; IV a meaningful delivered letter, gliding and companion moment; V verified mural, route ledger, separation and interactive two-route model; VI verified catastrophe gate and six real reciprocal links; finale three distinct mechanical phases and Muling's free last-lock action. Preserve optional exploration and checkpoint retry in every region. Cold-player checks: can they explain the local goal on arrival, why a character disagrees, what their action changed, and why the next region matters? Confirm the original six-link four-stage evidence remains intact. Before implementation, plan localization/operation migration and per-slot save compatibility. No runtime or deployment claim for this document commit.
-
-
-## Owner amendment: single-avatar exploration and real story companions
-RPG is not released; no legacy RPG migration is required. Control one protagonist in exploration; teammates assist automatically. Muling and the 12 regional actors become real selectable battle roster members, not wild catches or map-following avatars. Use existing two active cats (one directly controlled), reserves and elemental Duo Bond. Muling leaves at M-05 and returns at E-03 with her own progress; other NPCs join on regional resolution. The 33 collectible species stay separate. Verify clean-slot play, recruitment, actual combo damage/status, swap, and current-version reload.
+## 3. 游戏与界面
+核心为移动、探索、真实战斗、伙伴招募与成长、猫咪收集、合击、庭院、可选秘密；不增加制作和运输前置。NPC入队必须有动机和真实状态；地区留守者可回铃，不得分身。玩家只操控一只猫。非必需Boss可给战斗成长机会，不强制刷图鉴或稀有度。战斗提示、地图路标、下一场景入口、短目标都要清楚；语言不混杂，剧情内不弹语言按钮。保留可访问替代动作，不用听力、色觉或反应速度阻塞主线。
+ 
+## 4. 真实验证
+- 所有40场景具有唯一事件、对白与退出条件；技术键与显示名称分离。维护一个正式剧情文件，不复制旧对白进新场景。对文档、UI、资源清单、场景元数据执行旧名字扫描，历史/技术引用单独白名单。
+- 每个地区独立浏览器测试；完整新游戏连续主线、典型探索路线、跳过序章和可选初遇、无额外猫/货运、两种语言、移动及桌面布局；伙伴参战/离队/重聚、实际战斗结果、存档及失败恢复、动态地图状态、声音与实际角色资源。
+- 六条邻地回复必须有实际双方证据；短试铃与稳定闭环独立状态。不得用自动注入、合成截图、旧任务完成或测试专用跳关冒充玩家通关。最终回归同一SHA。
+- 从玩家视角独立检查故事是否易懂、是否有好奇心、玩法是否重复、是否能主动探索。中文母语审核覆盖对话、UI、战斗与支线；美术审核实际画面。任何失败先整改再验，不把常规品质判断返给用户。
+- 本文不证明新版本已实现。未有实际浏览器证据不得声称可玩、过测、达到商业品质或可部署。
