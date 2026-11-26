@@ -12,7 +12,7 @@ const RARITY = {
 // species fields:
 //  id, name, palette (CAT_PALETTES key), pattern, eyeColor, rarity, fluffy, ears, point(optional)
 //  desc, base stats {pow, agi, vit, cha}
-const SPECIES = [
+const LEGACY_SPECIES = [
   // ---------- N (普通) ----------
   { id: 'tangyuan', name: '汤圆',   palette: 'orange',      pattern: 'tabby',   eyeColor: '#6fcf97', rarity: 'N', desc: '爱睡懒觉的橘猫，据说三斤起步。',       base: { pow: 7, agi: 8, vit: 6, cha: 5 } },
   { id: 'doudou',   name: '豆豆',   palette: 'brownTabby',  pattern: 'tabby',   eyeColor: '#f2c94c', rarity: 'N', desc: '标准狸花猫，机灵又好动。',             base: { pow: 7, agi: 5, vit: 8, cha: 5 } },
@@ -100,7 +100,314 @@ const EN_NAMES={
   "mengmai": "Midnight", "fanmao": "Vanilla",
   "bosi": "Pompom", "wumao": "Peach"
 };
-SPECIES.forEach(sp=>{sp.nameEn=EN_NAMES[sp.id]||sp.name;if(sp.id==='jinjc')sp.storyArt='assets/core-art-remaster/leads/player.webp';});
+LEGACY_SPECIES.forEach(sp=>{sp.nameEn=EN_NAMES[sp.id]||sp.name;if(sp.id==='jinjc'){sp.storyArt='assets/core-art-remaster/leads/player.webp';sp.collectible=false;}});
+// Only these authored species appear in the current collectible catalog and random draws.
+const SPECIES = [
+  {
+    "id": "biscuit",
+    "name": "麦饼",
+    "nameEn": "Biscuit",
+    "rarity": "N",
+    "element": "fire",
+    "role": "fighter",
+    "desc": "橘白短尾曼岛猫，热心。",
+    "palette": "orange",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 7,
+      "agi": 6,
+      "vit": 7,
+      "cha": 5
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/biscuit.webp"
+  },
+  {
+    "id": "inkspot",
+    "name": "墨点",
+    "nameEn": "Inkspot",
+    "rarity": "N",
+    "element": "dark",
+    "role": "control",
+    "desc": "黑白短毛家猫，腼腆。",
+    "palette": "black",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 5,
+      "agi": 7,
+      "vit": 6,
+      "cha": 8
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/inkspot.webp"
+  },
+  {
+    "id": "puff",
+    "name": "绒蒲",
+    "nameEn": "Puff",
+    "rarity": "N",
+    "element": "grass",
+    "role": "tank",
+    "desc": "蓝乳玳瑁异短，随和。",
+    "palette": "brownTabby",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 5,
+      "agi": 4,
+      "vit": 10,
+      "cha": 6
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/puff.webp"
+  },
+  {
+    "id": "shell",
+    "name": "贝扣",
+    "nameEn": "Shell",
+    "rarity": "N",
+    "element": "water",
+    "role": "support",
+    "desc": "奶白土耳其梵猫，爱凑热闹。",
+    "palette": "blue",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 5,
+      "agi": 6,
+      "vit": 7,
+      "cha": 8
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/shell.webp"
+  },
+  {
+    "id": "cinder",
+    "name": "炭栗",
+    "nameEn": "Cinder",
+    "rarity": "R",
+    "element": "fire",
+    "role": "assassin",
+    "desc": "肉桂阿比西尼亚，大胆。",
+    "palette": "orange",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 10,
+      "agi": 10,
+      "vit": 5,
+      "cha": 6
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/cinder.webp"
+  },
+  {
+    "id": "ripplet",
+    "name": "漪舟",
+    "nameEn": "Ripplet",
+    "rarity": "R",
+    "element": "water",
+    "role": "fighter",
+    "desc": "海豹重点布偶，耐心。",
+    "palette": "blue",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 8,
+      "agi": 7,
+      "vit": 9,
+      "cha": 7
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/ripplet.webp"
+  },
+  {
+    "id": "clover",
+    "name": "芽扣",
+    "nameEn": "Clover",
+    "rarity": "R",
+    "element": "grass",
+    "role": "control",
+    "desc": "玳瑁日本短尾猫，好奇。",
+    "palette": "brownTabby",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 6,
+      "agi": 9,
+      "vit": 7,
+      "cha": 9
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/clover.webp"
+  },
+  {
+    "id": "fizz",
+    "name": "啪嗒",
+    "nameEn": "Fizz",
+    "rarity": "R",
+    "element": "elec",
+    "role": "dps",
+    "desc": "银斑埃及猫，急性子。",
+    "palette": "silver",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 8,
+      "agi": 11,
+      "vit": 6,
+      "cha": 6
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/fizz.webp"
+  },
+  {
+    "id": "button",
+    "name": "夜扣",
+    "nameEn": "Button",
+    "rarity": "R",
+    "element": "dark",
+    "role": "assassin",
+    "desc": "黑色德文卷毛，淘气。",
+    "palette": "black",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 9,
+      "agi": 10,
+      "vit": 5,
+      "cha": 7
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/button.webp"
+  },
+  {
+    "id": "sunlace",
+    "name": "晴纱",
+    "nameEn": "Sunlace",
+    "rarity": "R",
+    "element": "light",
+    "role": "support",
+    "desc": "金吉拉波斯，慢性子。",
+    "palette": "white",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 5,
+      "agi": 6,
+      "vit": 8,
+      "cha": 11
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/sunlace.webp"
+  },
+  {
+    "id": "tidemark",
+    "name": "潮刻",
+    "nameEn": "Tidemark",
+    "rarity": "SR",
+    "element": "water",
+    "role": "tank",
+    "desc": "蓝烟挪威森林猫，可靠。",
+    "palette": "blue",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 10,
+      "agi": 8,
+      "vit": 14,
+      "cha": 9
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/tidemark.webp"
+  },
+  {
+    "id": "emberwing",
+    "name": "烬羽",
+    "nameEn": "Emberwing",
+    "rarity": "SR",
+    "element": "fire",
+    "role": "dps",
+    "desc": "红虎斑索马里，爱冒险。",
+    "palette": "orange",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 13,
+      "agi": 13,
+      "vit": 8,
+      "cha": 9
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/emberwing.webp"
+  },
+  {
+    "id": "mossbell",
+    "name": "苔盏",
+    "nameEn": "Mossbell",
+    "rarity": "SR",
+    "element": "grass",
+    "role": "fighter",
+    "desc": "棕虎斑西伯利亚，护短。",
+    "palette": "brownTabby",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 12,
+      "agi": 9,
+      "vit": 13,
+      "cha": 9
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/mossbell.webp"
+  },
+  {
+    "id": "zest",
+    "name": "柚弧",
+    "nameEn": "Zest",
+    "rarity": "SR",
+    "element": "elec",
+    "role": "assassin",
+    "desc": "雪豹纹孟加拉，坐不住。",
+    "palette": "silver",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 13,
+      "agi": 15,
+      "vit": 8,
+      "cha": 7
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/zest.webp"
+  },
+  {
+    "id": "nightloom",
+    "name": "织夜",
+    "nameEn": "Nightloom",
+    "rarity": "SSR",
+    "element": "dark",
+    "role": "control",
+    "desc": "黑烟缅因，沉静。",
+    "palette": "black",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 14,
+      "agi": 14,
+      "vit": 15,
+      "cha": 18
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/nightloom.webp"
+  },
+  {
+    "id": "aurora",
+    "name": "曦瓷",
+    "nameEn": "Aurora",
+    "rarity": "SSR",
+    "element": "light",
+    "role": "support",
+    "desc": "双色土耳其安哥拉，慷慨。",
+    "palette": "white",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 12,
+      "agi": 15,
+      "vit": 14,
+      "cha": 19
+    },
+    "storyArt": "assets/core-art-remaster/collectibles/aurora.webp"
+  }
+];
 function speciesName(sp){
  if(typeof sp==='string')sp=speciesById(sp);
  if(!sp)return (window.MorrowwishI18n?.get?.()==='zh'?'猫猫':'Kitten');
@@ -356,7 +663,7 @@ const STORY_SPECIES = Object.freeze({
     "storyArt": "assets/npc/lichuan-painted.webp"
   }
 });
-function speciesById(id) { return STORY_SPECIES[id] || SPECIES.find(s => s.id === id); }
+function speciesById(id) { return STORY_SPECIES[id] || SPECIES.find(s => s.id === id) || LEGACY_SPECIES.find(s => s.id === id); }
 
 function rollSpecies(luck = 0) {
   const rarities = Object.values(RARITY);

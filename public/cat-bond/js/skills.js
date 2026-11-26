@@ -199,7 +199,7 @@
     fanmao: 'water', bosi: 'light', wumao: 'elec', jiafei: 'fire',
   };
 
-  function elementOf(speciesId) { return window.GameData?.STORY_SPECIES?.[speciesId]?.element || SPECIES_ELEMENT[speciesId] || 'light'; }
+  function elementOf(speciesId) { return window.GameData?.speciesById?.(speciesId)?.element || SPECIES_ELEMENT[speciesId] || 'light'; }
 
   // 0.5 | 1 | 1.5 | 2
   function effectiveness(atkEl, defEl) {
@@ -660,6 +660,7 @@
     jinwu: 'sunflare', yuelian: 'moonlitHalo', xingchen: 'voidMaw',
     xianluo: 'thunderYowl', yinghua: 'moonlitHalo', senlin: 'sunbloom',
     youling: 'voidMaw', lanbao: 'tsunamiPaw',
+    nightloom:'voidMaw',aurora:'moonlitHalo',emberwing:'sunflare',tidemark:'tsunamiPaw',mossbell:'sunbloom',zest:'thunderYowl',
   };
 
   function speciesOf(cat) {
@@ -1181,6 +1182,7 @@
       yuelian:'control'}; // ☀️ light SSR = 月月 控制/辅助 (not raw dps)
       // 松松(SSR grass)=坦克; 星星(SSR dark)=assassin & 月月(SSR light)=dps resolve via stats.
       // v2: light needs ONE frontline (support×5/control×1/dps×1 had zero); 三花 7/7/7/9 balanced → bruiser
+    if(sp?.role)return sp.role;
     if(BREED_ROLES[cat.species])return BREED_ROLES[cat.species];
     // rank the four stats; primary = biggest, secondary = next (ties: pow>agi>vit>cha)
     const order=['pow','agi','vit','cha'];
@@ -1449,6 +1451,12 @@
   // ==========================================================================
   // {evolvesTo, req:{level?,bond?,item?}}. Pure data; integrator swaps species.
   const EVOLUTION = {
+    biscuit:{evolvesTo:'emberwing',req:{level:16,bond:80,item:'赤焰晶'}},
+    puff:{evolvesTo:'mossbell',req:{level:16,bond:80,item:'翠藤芽'}},
+    shell:{evolvesTo:'tidemark',req:{level:16,bond:80,item:'月华露'}},
+    fizz:{evolvesTo:'zest',req:{level:16,bond:80,item:'流光珠'}},
+    inkspot:{evolvesTo:'nightloom',req:{level:16,bond:80}},
+    sunlace:{evolvesTo:'aurora',req:{level:16,bond:80}},
     // The three STARTERS (fire/grass/water) each evolve into their element's
     // strongest SSR — a long-horizon payoff so a common starter can become a
     // legend. Dark & light SSR (星星/月月) are caught in the Moonshadow Ruins,
