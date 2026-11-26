@@ -183,7 +183,7 @@
     zherdd:   'grass',  // 折耳佛系
     qisi:     'fire',   // 起司橘白，暖色贪吃
     duanduan: 'elec',   // 曼基康矮脚，小电球冲刺
-    jinjc:    'light',  // 金渐层华贵金光
+    jinjc:    'elec',   // V4 §8 Q1 LOCKED 2026-11-25: 金渐层 migrated 光 → 电 (dianLiGongXiang trait)
     nuowei:   'grass',  // 挪威森林山林王者
     baomao:   'dark',   // 豹猫野性爆发
     // SR
@@ -1073,6 +1073,23 @@
   // Keep valid player-chosen equipment; backfill new unlocks and safely migrate
   // legacy 2/3-slot saves without erasing the rest of the user's progress.
   function ensureLoadout(cat){
+    // V4 §8 Q1 C2 one-shot migration (owner-locked 2026-11-25): jinjc 金豆
+    // migrated from 光 → 电. A legacy save still has light-only skills equipped
+    // on the loadout. Strip them ONCE per save (stamp on State.S) so the next
+    // ensureLoadout pass can slot in proper elec skills via defaults. Learned[]
+    // untouched per §8 Q1 ("entries stay, non-equippable").
+    if (cat.species === 'jinjc' && Array.isArray(cat.loadout)) {
+      const S = window.State && State.S;
+      if (S && !S._jinjcMigratedAt) {
+        for (let i = 0; i < cat.loadout.length; i++) {
+          const id = cat.loadout[i]; if (!id) continue;
+          const sk = skillById(id);
+          if (sk && sk.element === 'light') cat.loadout[i] = null;
+        }
+        cat.autoSkillLoadout = null;  // force re-default for proper elec kit
+        S._jinjcMigratedAt = (window.State && State.todayKey) ? State.todayKey() : 'migrated';
+      }
+    }
     // Promote saved tier-1 IDs to learned upgrades before calculating legal
     // choices; never wipe custom equipment or break legacy IDs in save files.
     const current=Array.isArray(cat.loadout)?cat.loadout.slice():[];

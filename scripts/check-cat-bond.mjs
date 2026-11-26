@@ -1032,7 +1032,7 @@ const expectedPrimary={
  tangyuan:'fire',doudou:'grass',xiaohui:'water',moqiu:'dark',
  nainai:'light',nietu:'grass',niuniu:'elec',sanhua:'light',
  lixiao:'dark',lanbao:'water',dundun:'water',yunduo:'light',
- zherdd:'grass',qisi:'fire',duanduan:'elec',jinjc:'light',
+ zherdd:'grass',qisi:'fire',duanduan:'elec',jinjc:'elec',
  nuowei:'grass',baomao:'dark',jiafei:'fire',xianluo:'elec',
  yinghua:'light',senlin:'grass',youling:'dark',jinwu:'fire',
  yuelian:'light',xingchen:'dark',abi:'fire',meidu:'grass',
