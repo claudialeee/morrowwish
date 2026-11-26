@@ -25,7 +25,15 @@ import {paintSkyFlight,paintSkyWeather,skyLaunch,skyPartsReady} from "./sky-flig
 
 
 // Preserve existing rarity odds; a region filters species, not the rarity distribution.
-function pickWild(ids){const species=ids.map(id=>GameData.speciesById(id)).filter(Boolean),tiers=[...new Set(species.map(s=>s.rarity))];const weights=tiers.map(t=>GameData.RARITY[t]?.weight||0);let roll=Math.random()*weights.reduce((a,b)=>a+b,0),tier=tiers.at(-1);for(let i=0;i<tiers.length;i++){roll-=weights[i];if(roll<0){tier=tiers[i];break;}}const group=species.filter(s=>s.rarity===tier);return group[Math.floor(Math.random()*group.length)];}
+function pickWild(ids,luck=0,preferNew=false){
+ const species=ids.map(id=>GameData.speciesById(id)).filter(Boolean),tiers=[...new Set(species.map(s=>s.rarity))];
+ const weights=tiers.map(t=>(GameData.RARITY[t]?.weight||0)*(t==="N"?1-luck*.6:1+luck*({R:1,SR:2,SSR:3}[t]||0)));
+ let roll=Math.random()*weights.reduce((a,b)=>a+b,0),tier=tiers.at(-1);
+ for(let i=0;i<tiers.length;i++){roll-=weights[i];if(roll<0){tier=tiers[i];break;}}
+ const group=species.filter(s=>s.rarity===tier),newCats=group.filter(s=>!State.S.dex?.[s.id]);
+ const pool=preferNew&&newCats.length&&Math.random()<.65?newCats:group;
+ return pool[Math.floor(Math.random()*pool.length)];
+}
 const regions=nodes.map(([id,x,y],i)=>({id,x,y,name:layouts[id].name[0],sub:layouts[id].name[1],speciesPool:pools[id],difficulty:i+1,theme:{region:id},unlock:i?{after:nodes[i-1][0]}:null}));
 function install(){
  let fitPage=0,fitKey="",fitNotice="",fitObserver=null,fitFrame=0;
@@ -212,8 +220,27 @@ function install(){
   // combat and unlock Duo without an unlucky rare-enemy progression wall.
   const novice=id==="harbor"&&(State.S.catchCount||0)===0;
   const candidates=novice?pools[id].filter(key=>GameData.speciesById(key)?.rarity==="N"):pools[id];
-  const species=pickWild(candidates);
-  wild={species:novice?{...species,encounterLevel:1}:species,point:[(p[2][0]+p[3][0])/2,(p[2][1]+p[3][1])/2]};
+  const species=pickWild(candidates,0,!novice);
+  const t=novice?.5:.25+Math.random()*.5;
+  wild={species:novice?{...species,encounterLevel:1}:species,point:[p[2][0]*(1-t)+p[3][0]*t,p[2][1]*(1-t)+p[3][1]*t]};
+ }
+ function lureWild(id){
+  const s=State.S;
+  if(!(s.catchCount>0)||!(s.luckLure>0)||!wild||wildRegion!==id||wild.species.rarity!=="N"||pending||explorer.puzzle||explorer.cargo||ceremony)return;
+  const previous=wild,amount=s.luckLure;
+  const species=pickWild(pools[id],.9,true);
+  s.luckLure--;
+  if(!State.save()?.ok){s.luckLure=amount;return;}
+  wild={...previous,species};
+  notice=["幸运诱饵引来新的脚步声！","A lucky lure attracted fresh footsteps!"];
+  window.MorrowwishAudio?.effect?.("discover");render();
+ }
+ function wildClue(sp){
+  const rarity=sp?.rarity;
+  if(rarity==="SSR")return tr("传说邂逅 · 接近野猫","Legendary sighting · Approach wild cat");
+  if(rarity==="SR")return tr("史诗邂逅 · 接近野猫","Epic sighting · Approach wild cat");
+  if(rarity==="R")return tr("稀有邂逅 · 接近野猫","Rare sighting · Approach wild cat");
+  return tr("接近野猫","Approach wild cat");
  }
  function resumeRegion(won){
   const id=current().world().location;
@@ -288,7 +315,7 @@ function install(){
   if(v.objective.length&&v.objective.every(op=>op.startsWith("cinematic:")))actions.append(B(v.current?.id==="starfall:F-02"?tr("回想当年的抉择","Remember the choice"):tr("观看剧情","Watch the story scene"),()=>go(explorer.layout.paths.at(-1),()=>window.CatBondChapterCinematics.play(v.current.id))));
  }
  for(const memory of availableMemories(w.location))actions.append(B(memory.name,()=>visitDuoMemory(memory)));
- if(wild?.species)actions.append(B(tr("接近野猫","Approach wild cat"),()=>visitWild(w.location)));if(actions.children.length)host.append(actions);const opts=exchangeOptions(b,w.location,campaign.links);if(opts.length||explorer.cargo){const c=E("div","rw-cargo");c.append(E("strong","",tr("邻地物资交流","Neighbor exchange")));for(const o of explorer.cargo?[explorer.cargo]:opts){const carrying=!!explorer.cargo;c.append(B((carrying?tr("交付 ","Deliver "):tr("领取 ","Collect "))+cargoName(o.action),()=>visitCargo(o,carrying)));}host.append(c);}}}makeFitRail(head,shell);
+ if(wild?.species){const sighting=B(wildClue(wild.species),()=>visitWild(w.location));sighting.dataset.wildRarity=wild.species.rarity;actions.append(sighting);if(State.S.catchCount>0&&State.S.luckLure>0&&wild.species.rarity==="N"&&!explorer.cargo)actions.append(B(tr("使用幸运诱饵 · 1","Use lucky lure · 1"),()=>lureWild(w.location)));}if(actions.children.length)host.append(actions);const opts=exchangeOptions(b,w.location,campaign.links);if(opts.length||explorer.cargo){const c=E("div","rw-cargo");c.append(E("strong","",tr("邻地物资交流","Neighbor exchange")));for(const o of explorer.cargo?[explorer.cargo]:opts){const carrying=!!explorer.cargo;c.append(B((carrying?tr("交付 ","Deliver "):tr("领取 ","Collect "))+cargoName(o.action),()=>visitCargo(o,carrying)));}host.append(c);}}}makeFitRail(head,shell);
  draw();}
  function point(e){const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height];}
  function cameraEnabled(){return mode==="map"||!!explorer&&!explorer.puzzle&&!ceremony;}
