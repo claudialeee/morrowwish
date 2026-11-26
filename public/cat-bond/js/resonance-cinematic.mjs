@@ -89,7 +89,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
       const shot=i===0?original[0]:i===3?original[1]:null;
       const [zh,en]=journeys[i];
       frames.push({...shot,id:'epilogue:E-01-exchange-'+region,image:shot?.image||'assets/resonance-world-v2/'+region+'.webp',
-       alt:{zh,en},durationMs:5400,transitionMs:680,kicker:{zh,en},
+       alt:{zh,en},durationMs:5400,transitionMs:680,kicker:{zh,en},subtitle:i<2?{zh:{speaker:campaign.cast[scene.lines[i].speaker].name.zh,text:scene.lines[i].text.zh},en:{speaker:campaign.cast[scene.lines[i].speaker].name.en,text:scene.lines[i].text.en}}:undefined,
        camera:{from:{x:i%2?1:-1,y:0,scale:1.025},to:{x:i%2?-2:2,y:0,scale:1.075}},
        layers:names.map(([id],j)=>({image:'assets/npc/'+id+'-painted.webp',kind:'actor',x:j===0?23:76,y:80,width:22,travel:j===0?4:-4})),
        effect:'sanctuary',note:[261.63,293.66,329.63,392,440,523.25][i]});
