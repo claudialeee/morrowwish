@@ -282,7 +282,8 @@ for(const profile of [
   await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true&&window.State.activeSlot()==='slot3');
   await checkVisible('#cb-canonical-opening');
   assert.equal(await page.evaluate(()=>State.activeSlot()),'slot3');
-  assert.equal(await page.evaluate(()=>State.S.cats.length),0);
+  await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc');
+  assert.deepEqual(await page.evaluate(()=>State.S.cats.map(c=>c.species)),['jinjc']);
   assert.equal(await page.evaluate(()=>World.gardenDecorations().length),0,'Fresh slot does not inherit decorations');
   assert.equal(await page.evaluate(()=>State.S.sunlitGarden?.bookGuide?.length||0),0,'Fresh slot does not inherit onboarding');
   await page.reload();await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&!window.__CAT_BOND_STARTED__);
@@ -294,7 +295,7 @@ for(const profile of [
   await page.locator('.cb-confirm-dialog [data-confirm-accept]').click();
   await page.waitForFunction(()=>window.State.getSaveSlot('slot1')===null);
   assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot2').data.state.cats[0].uid),first);
-  assert.equal(await page.evaluate(()=>window.State.getSaveSlot('slot3').data.state.cats.length),0);
+  assert.deepEqual(await page.evaluate(()=>window.State.getSaveSlot('slot3').data.state.cats.map(c=>c.species)),['jinjc']);
   assert.equal(await page.locator('[data-title-delete="slot1"]').count(),0);
   await screenshot('title-after-delete');
   assert.deepEqual(errors,[],'no page runtime exceptions');

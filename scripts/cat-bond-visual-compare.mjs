@@ -91,8 +91,13 @@ try{
      await page.locator('.cbcp-skip').click();
      if(out.endsWith('/after'))break;
     }
-    await scene('prologue:P-04');const starter=page.locator('#panel .cat-starter-card .dex-cell').first();await starter.waitFor();await shot('starter');
-    await starter.click();await button('Talk to Muling','与暮铃交谈',page.locator('.sg-prologue-guide')).click();
+    await scene('prologue:P-04');
+    const starter=page.locator('#panel .cat-starter-card .dex-cell').first();
+    if(out.endsWith('/after')){
+     await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&window.__game?.scene==='yard');
+     assert.equal(await page.locator('#panel.open .cat-starter-card').count(),0,'Fixed protagonist does not show a picker');await shot('starter');
+    }else{await starter.waitFor();await shot('starter');await starter.click();}
+    await button('Talk to Muling','与暮铃交谈',page.locator('.sg-prologue-guide')).click();
     const firstDialogue=page.locator('.res-host[data-scene="prologue:P-04"]');await firstDialogue.waitFor();
     await shot('player-dialogue');
     // Capture Muling's actual dialogue, not the player's first line.

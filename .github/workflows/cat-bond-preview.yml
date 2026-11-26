@@ -136,7 +136,7 @@ jobs:
                 // The opening also advances naturally; never wait for an earlier scene after it passed.
                 await page.locator('.cbcp-skip').click();
                 await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-04');
-                await page.locator('#panel .cat-starter-card .dex-cell').first().click();
+                await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&window.__game?.scene==='yard'&&!document.querySelector('#panel.open .cat-starter-card'));
                 await page.waitForFunction(()=>State.S.cats.length===1&&State.listSaveSlots().find(s=>s.id==='slot1')?.exists);
                 const uid=await page.evaluate(()=>State.S.cats[0].uid);
                 const completed=await page.evaluate(()=>State.S.resonance.completed.slice(0,3).join(','));
@@ -171,7 +171,7 @@ jobs:
                 await page.reload();
                 await page.locator('#intro-continue').click();
                 await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-                await page.waitForFunction(uid=>State.S.cats.length===1&&State.S.cats[0].uid===uid&&CatBondResonance.view().current?.id==='prologue:P-04',uid);
+                await page.waitForFunction(uid=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&State.S.cats[0].uid===uid&&CatBondResonance.view().current?.id==='prologue:P-04',uid);
                 await page.screenshot({path:'preview-'+prefix+'-reloaded.png'});
                 if(external.length||errors.length)throw Error('Unexpected external requests / page errors: '+JSON.stringify({external,errors}));
                 console.log('PREVIEW NEW SLOT AND RELOAD VERIFIED: '+prefix+' '+page.url());
