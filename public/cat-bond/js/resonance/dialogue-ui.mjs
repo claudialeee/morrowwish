@@ -2,6 +2,9 @@
 // The host must resolve approved art, own scene transitions, and call render after gameplay.
 export const hasDialogueChoice=v=>!!(v.current&&!v.choice&&v.current.choices.length&&(v.current.choiceTiming==="beforeAction"||v.cursor===v.current.lines.length));
 export const awaitingGameplay=v=>!!(v.current&&!v.lineReady&&!hasDialogueChoice(v));
+// A before-action choice intentionally makes lineReady false until chosen.
+// Entry controls must still open the dialogue for that choice.
+export const hasPendingDialogue=v=>!!(v.current&&(hasDialogueChoice(v)||(v.lineReady&&v.cursor<v.current.lines.length)));
 export function mountDialogue({root,engine,campaign,language,resolvePortrait,onPersist,onClose,onAwaitAction,onLanguage,onRender}) {
  if(!root||typeof resolvePortrait!=="function"||typeof onPersist!=="function")throw Error("Dialogue host adapter incomplete");
  const el=(tag,cls)=>{const e=document.createElement(tag);if(cls)e.className=cls;return e};

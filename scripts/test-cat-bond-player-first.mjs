@@ -32,3 +32,32 @@ for(const [locale,expected,start,cont] of [["en","Echoes of the Starbell","New A
  titleLang=locale;renderTitle();assert.equal(node("cb-title-name").textContent,expected);assert.equal(node("#intro-start strong").textContent,start);assert.equal(node("#intro-continue strong").textContent,cont);assert.equal(/[\u4e00-\u9fff]/.test(node(".cb-intro-tagline").textContent),locale==="zh");assert.equal(titleNodes.has("cb-title-subtitle"),false);
 }
 console.log("Single-locale title and live EN/ZH/EN switching passed");
+
+import {hasPendingDialogue,awaitingGameplay} from "../public/cat-bond/js/resonance/dialogue-ui.mjs";
+{
+
+ // H-04 choice precedes both the dialogue and rescue actions. The NPC and
+ // Continue Story controls must share the same predicate as the dialogue UI.
+ const harborState=makeEngine(campaign).snapshot();
+ const harborIndex=campaign.scenes.findIndex(s=>s.id==="harbor:H-04");
+ harborState.scene="harbor:H-04";harborState.completed=campaign.scenes.slice(0,harborIndex).map(s=>s.id);
+ for(const choice of campaign.scenes[harborIndex].choices){
+  const e=makeEngine(campaign,harborState),v=e.view();
+  assert.equal(v.lineReady,false);
+  assert.equal(hasPendingDialogue(v),true,"Unchosen before-action dialogue must be reachable");
+  assert.equal(awaitingGameplay(v),false);
+  assert.equal(e.record(v.current.id,v.current.requires[0]).ok,false);
+  assert.equal(e.choose(choice.id).ok,true);
+  assert.equal(hasPendingDialogue(e.view()),true);
+  while(e.view().lineReady&&e.view().cursor<e.view().current.lines.length)assert.equal(e.nextLine().ok,true);
+  assert.equal(hasPendingDialogue(e.view()),false,"Action-gated lines must remain gated");
+  assert.equal(awaitingGameplay(e.view()),true);
+  for(const op of e.view().objective)assert.equal(e.record(v.current.id,op).ok,true);
+  assert.equal(hasPendingDialogue(e.view()),true,"Dialogue resumes after both operations");
+  while(e.view().cursor<e.view().current.lines.length)assert.equal(e.nextLine().ok,true);
+  assert.equal(hasPendingDialogue(e.view()),false);
+  assert.equal(e.finish().ok,true);
+ }
+ console.log("Harbor H-04 both before-action choice routes passed shared dialogue entry gate");
+
+}

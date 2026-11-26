@@ -1,4 +1,5 @@
 import { campaign } from "./campaign.mjs";
+import {hasPendingDialogue} from "./dialogue-ui.mjs";
 import { openFinaleLatch } from "./finale-latch.mjs";
 import { createWorldBridge } from "./world-bridge.mjs";
 import {availableDiscoveries,layoutDiscoveries,paintDiscovery} from "./regional-discoveries.mjs";
@@ -332,7 +333,7 @@ function install(){
   }else if(mode==="region"&&w.location===destination){
    const primary=[...host.querySelectorAll('button[data-quest-primary="true"]')].find(b=>!b.disabled);
    if(primary){action=()=>{if(primary.isConnected&&!primary.disabled)primary.click()};label=tr("下一场景 · ","Next scene · ")+v.current.title[lang()];}
-   else if(v.lineReady&&(v.cursor<v.current.lines.length||v.current.choices?.length&&!v.choice)&&!v.objective.some(o=>o.startsWith("npc:")||o.startsWith("cinematic:"))){
+   else if(hasPendingDialogue(v)&&!v.objective.some(o=>o.startsWith("npc:")||o.startsWith("cinematic:"))){
     action=()=>window.CatBondResonance?.showCurrent?.();label=tr("继续剧情","Continue story");
    }
   }
