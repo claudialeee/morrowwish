@@ -62,7 +62,7 @@ html body #stage #cb-system-menu:not([hidden]){background:transparent!important;
 #stage .res-host .res-body{padding:12px 18px!important;background:#fff7e8f5!important;border:1px solid #c7ad83!important;border-radius:10px!important;box-shadow:0 3px 14px #3d281e26!important;color:#46382b!important;cursor:pointer}
 #stage .res-host .res-speaker{font:600 14px/1.3 var(--cb-font-display)!important;color:#856336!important;margin:0 0 5px!important}
 #stage .res-host .res-line{font:500 clamp(14px,1.25vw,18px)/1.55 var(--cb-font-body)!important;min-height:0!important;margin:0!important;color:#493d32!important}
-#stage .res-host .res-choices:empty,#stage .res-host .res-controls,#stage .res-host .res-legacy-control{display:none!important}
+#stage .res-host .res-choices:empty,#stage .res-host .res-controls:has(.res-legacy-control),#stage .res-host .res-legacy-control{display:none!important}
 #stage .res-host .res-skip-top{position:absolute!important;top:12px!important;right:94px!important;min-height:36px!important;padding:6px 12px!important;background:#fff1d7!important;color:#56432f!important;border:1px solid #bca274!important;box-shadow:none!important}
 #stage:has(.res-host .res-dialogue) #cb-system-toggle{display:inline-flex!important;z-index:2147483000!important;right:10px!important;top:10px!important}
 #stage .res-host .res-history{color:#594b3a!important}

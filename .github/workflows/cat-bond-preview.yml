@@ -156,7 +156,8 @@ jobs:
                 await page.screenshot({path:'preview-'+prefix+'-encounter.png'});
                 await encounter.getByRole('button',{name:'Leave for now',exact:true}).click();
                 await encounter.waitFor({state:'detached'});
-                await guide.locator('summary').click();
+                await guide.waitFor({state:'visible'});
+                if(!await guide.locator('details').evaluate(el=>el.open))await guide.locator('summary').click();
                 await guide.getByRole('button',{name:'Help the stranger with her chart (optional)',exact:true}).click();
                 await encounter.getByRole('button',{name:'Pick up the chart',exact:true}).click();
                 await encounter.getByRole('button',{name:'Return the chart',exact:true}).waitFor({state:'visible'});
