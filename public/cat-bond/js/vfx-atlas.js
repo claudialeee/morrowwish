@@ -9,7 +9,7 @@ const labels=['普通命中','重击','斩击','重砸','火焰命中','水流�
 const tags=['burn','soak','shock','oil','chill','dizzy','bleed','blind','bind','expose','weaken','rust','rewind'];
 const elements=['fire','water','grass','elec','dark','light'];
 function getCases(){const sk=window.Skills.SKILLS.filter(s=>!s.legacy);
- return [...sk.map(s=>({id:s.id,name:s.name,group:s.ultCost?'ult':s.element,kind:s.ultCost?'ult':'skill',sk:s})),...window.CatBondTraitFX.ids.map(id=>({id,name:names[id]||id,group:'passive',kind:'passive'})),...effects.map((id,i)=>({id,name:labels[i],group:'contact',kind:'contact'})),...tags.map(id=>({id,name:id,group:'status',kind:'status'})),...elements.flatMap((a,i)=>elements.slice(i).map(b=>({id:[a,b].sort().join('+'),name:a+' + '+b,group:'duo',kind:'duo'}))),{id:'magneticField',name:'雷极磁场（未接入战斗）',group:'prototype',kind:'magnetic'}];}
+ return [...sk.map(s=>({id:s.id,name:s.name,group:s.ultCost?'ult':s.element,kind:s.id==='magneticField'?'magnetic':s.ultCost?'ult':'skill',sk:s})),...window.CatBondTraitFX.ids.map(id=>({id,name:names[id]||id,group:'passive',kind:'passive'})),...effects.map((id,i)=>({id,name:labels[i],group:'contact',kind:'contact'})),...tags.map(id=>({id,name:id,group:'status',kind:'status'})),...elements.flatMap((a,i)=>elements.slice(i).map(b=>({id:[a,b].sort().join('+'),name:a+' + '+b,group:'duo',kind:'duo'})))];}
 function oval(c,x,y,rx,ry,color){c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,T);c.fill();}
 function cat(c,x,y,col,face=1){c.save();c.translate(x,y);oval(c,0,15,23,7,'#3c5044');c.scale(face,1);c.lineWidth=2;c.strokeStyle='#4c5047';c.fillStyle=col;c.beginPath();c.moveTo(-18,0);c.bezierCurveTo(-26,-10,-28,-27,-15,-21);c.lineTo(-6,-14);c.lineTo(9,-15);c.lineTo(20,-26);c.lineTo(23,-6);c.bezierCurveTo(29,14,10,20,-5,17);c.bezierCurveTo(-20,18,-25,9,-18,0);c.closePath();c.fill();c.stroke();oval(c,5,-3,1.8,2.2,'#393c36');oval(c,15,-3,1.8,2.2,'#393c36');oval(c,10,3,2.5,1.4,'#9e7469');c.restore();}
 function stage(c){c.fillStyle='#435a48';c.fillRect(0,0,W,H);c.fillStyle='#536b50';c.fillRect(12,12,W-24,H-24);c.strokeStyle='#61765a';c.lineWidth=.8;for(let i=24;i<W;i+=42){c.beginPath();c.moveTo(i,15);c.lineTo(i,H-15);c.stroke();}for(let i=24;i<H;i+=42){c.beginPath();c.moveTo(15,i);c.lineTo(W-15,i);c.stroke();}c.strokeStyle='#849378';c.lineWidth=1;c.strokeRect(12,12,W-24,H-24);}
@@ -22,7 +22,7 @@ function render(c,item,phase=0,t=.25){
    if(sk.id==='meteor'){if(phase){F.draw(c,{...v,meteorGround:true,r:86,life:1-t,max:1},time);}else F.drawMeteorFlight(c,{burst:{tx:ex,ty:ey,r:86,skill:sk},life:.42},time);}
    else if(sk.kind==='aoe'&&sk.field){if(phase)F.drawMaterialField(c,{element:sk.field.element||el,r:82,x:ex,y:ey,t:4},time);}
    if(sk.kind==='buff'&&sk.id==='mirrorWall')window.CatBondWardArt?.drawFlatWall(c,{x:ex,y:ey,angle:0,halfLength:110,age:.4,remaining:4,hitAge:phase?.18:0},time);
-   if(sk.kind==='beam'){F.drawCombatBeam(c,{sk,_ox:x,_oy:y,width:sk.width||22,max:1.4,t:.7},time,ex,ey);}
+   if(sk.kind==='beam'){F.drawCombatBeam(c,{sk,_ox:x,_oy:y,width:sk.width||22,max:1.4,t:.7},time,sk.id==='waterJet'?ex+65:ex,ey);}
    else if(['waterLash','frostLance','prismBeam'].includes(sk.id)){F.drawInstantLine(c,{kind:sk.id==='waterLash'?'water':sk.id==='frostLance'?'ice':'prism',x,y,x2:ex+65,y2:ey,life:.7,max:1},time);}
    else if(sk.kind==='chain'){F.drawInstantLine(c,{kind:'lightning',x,y,x2:ex,y2:ey,life:.82,max:1},time);F.drawInstantLine(c,{kind:'lightning',x:ex,y:ey,x2:ex+58,y2:ey-73,life:.73,max:1},time);}
    else if(sk.kind==='projectile'&&!phase){
@@ -38,6 +38,7 @@ function render(c,item,phase=0,t=.25){
      if(sk.id!=='mirrorWall')F.draw(c,{...v,kind:'signatureCast',x:phase?ex:close},time);
      if(phase)contact(sk.kind==='heal'?'heal':'barrier','light');
    }else if(phase){if(sk.id==='crescentFan')M.drawImpact(c,{x:ex,y:ey,angle:0,radius:32,life:1-t,max:1},time);
+     else if(sk.id==='waterJet')F.draw(c,{kind:'waterPierce',x:ex,y:ey,radius:18,angle:0,life:1-t,max:1},time);
      else contact(C.classify(sk.heavy||melee?'heavy':'light',sk),sk.heavy||melee?'heavy':'light');}
    else if(!['projectile','beam','chain','melee','dash','pounce','leap','aoe'].includes(sk.kind))F.draw(c,v,time);
  }else if(item.kind==='ult'){
