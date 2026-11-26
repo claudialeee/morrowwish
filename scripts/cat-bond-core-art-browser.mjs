@@ -42,6 +42,53 @@ try{
  // Individual screenshots preserve evidence for actors below the gallery fold.
  await fs.mkdir(out+'/actors',{recursive:true});
  for(const actor of roster){assert.match(actor.id,/^[a-z0-9_]+$/);await page.locator('[data-review-actor="'+actor.id+'"]').screenshot({path:out+'/actors/'+actor.id+'.png'});}
+ // Isolated cut-in rendering, not a battle outcome: exercise the current
+ // CaptureBattle renderer with every actor and each unordered element pair.
+ const duoCases=await page.evaluate(()=>{
+  const list=[GameData.speciesById('jinjc'),...Object.values(GameData.STORY_SPECIES),...GameData.SPECIES];
+  const pairs=new Map(),elements=['fire','water','grass','elec','dark','light'];
+  const add=(a,b)=>{if(!a||!b||a.id===b.id)throw Error('Missing distinct pair');const ids=[a.id,b.id].sort();pairs.set(ids.join('+'),ids);};
+  for(let i=0;i<list.length;i+=2)add(list[i],list[i+1]);
+  for(let i=0;i<elements.length;i++)for(let j=i;j<elements.length;j++){
+   const a=list.find(s=>Skills.elementOf(s.id)===elements[i]);
+   const b=list.find(s=>s.id!==a?.id&&Skills.elementOf(s.id)===elements[j]);
+   add(a,b);
+  }
+  return [...pairs.values()];
+ });
+ const duoDir=out+'/duo-cutins';await fs.mkdir(duoDir,{recursive:true});
+ const duoResults=[];
+ for(const pair of duoCases){
+  for(const [profile,width,height] of [['desktop',1440,900],['portrait',390,844],['landscape',844,390]]){
+   const result=await page.evaluate(async({pair,width,height})=>{
+    const P=Battle.CaptureBattle.prototype,b=Object.create(P);
+    const cats=pair.map(id=>State.makeCat(id,id==='jinjc'?{protagonist:true}:{}));
+    b.team=cats.map(cat=>({cat}));b._benchFighters=new Map();b.reserve=[];b._cinematicPortraits=new Map();b.topMargin=0;
+    b.duoCinematic={t:1.6,max:3.2,name:'Duo',catUids:cats.map(c=>c.uid),first:'#f7cfa5',second:'#e7bafb'};
+    const portraits=cats.map(c=>b.cinematicPortrait(c.uid));
+    const count=canvas=>{if(!canvas)return 0;const pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;let n=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i]>128)n++;return n;};
+    const until=Date.now()+10000;
+    while(Date.now()<until&&portraits.some(c=>count(c)<=300))await new Promise(r=>setTimeout(r,100));
+    const visible=portraits.map(count);
+    const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+    const ctx=canvas.getContext('2d'),draw=ctx.drawImage,seen=[];
+    ctx.fillStyle='#667c72';ctx.fillRect(0,0,width,height);
+    ctx.drawImage=function(source,...args){const i=portraits.indexOf(source);if(i>=0)seen.push(pair[i]);return draw.call(this,source,...args);};
+    b.drawCatCutin(ctx,width,height);
+    return {visible,seen,elementPair:pair.map(id=>Skills.elementOf(id)).sort().join('+'),png:canvas.toDataURL('image/png')};
+   },{pair,width,height});
+   const {png,...evidence}=result;
+   const file=pair.join('+')+'-'+profile+'.png';
+   assert.ok(pair.every(id=>/^[a-z0-9_]+$/.test(id)));
+   await fs.writeFile(duoDir+'/'+file,Buffer.from(png.split(',')[1],'base64'));
+   duoResults.push({pair,profile,file,...evidence,pass:evidence.visible.every(n=>n>300)&&evidence.seen.join('+')===pair.join('+')});
+  }
+ }
+ await fs.writeFile(duoDir+'/index.json',JSON.stringify({provenance:'isolated actual game cut-in renderer, not live battle or aesthetic approval',results:duoResults},null,2));
+ assert.equal(new Set(duoResults.flatMap(r=>r.pair)).size,30);
+ assert.equal(new Set(duoResults.map(r=>r.elementPair)).size,21);
+ assert.deepEqual(duoResults.filter(r=>!r.pass),[],'Every selected duo cut-in must render both actual actor portraits');
+ console.log('DUO CUTIN RENDER PASS',duoResults.length,'frames, 30 actors, 21 element pairs; isolated renderer only');
  // Verify the actual combat prototype consumes the species-specific passive.
  // These isolated calculations are not player-input battle outcomes.
  const passiveChecks=await page.evaluate(()=>{
