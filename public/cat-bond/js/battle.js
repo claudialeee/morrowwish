@@ -849,7 +849,9 @@ class CaptureBattle {
     // durable than a lean one (暹罗/樱花 lean on dodge, not HP). VIT also grows with
     // level, so the spread widens over a run. Base 55→80, VIT ×5→×8 lifts everyone
     // off the old flat ~95-115 band (e.g. 汤圆 95→144, 森林 115→176).
-    const maxhp = Math.round((80 + s.vit * 8) * affMult);
+    // Owner 2026-11-26: raise player HP alongside new defense formula (flat+pct).
+    // 80+vit*8 → 110+vit*10 gives +37% floor, +25% per-vit scaling.
+    const maxhp = Math.round((110 + s.vit * 10) * affMult);
     // element + a learned loadout from the skill library (Q / E slots)
     const element = (window.Skills && Skills.elementOf) ? Skills.elementOf(cat.species) : null;
     let loadout = null;
@@ -6112,6 +6114,16 @@ class CaptureBattle {
       dmg*=f._dmgTakenMult||1;
       if((f._cleanseGuardUntil||0)>this.t)dmg*=.8;
       const armor=Math.min(dmg,f._traitArmor||0); f._traitArmor=Math.max(0,(f._traitArmor||0)-armor);dmg-=armor;
+      // DEFENSE (owner 2026-11-26, playtest-driven): mix of flat absorb + % reduction,
+      // both scale with vit + level, so high-level cats both brush off chip damage AND
+      // soften big hits. Flat goes first (chip-immunity), then pct. Capped so the enemy
+      // can always land ≥1 point of damage.
+      const _f = f.cat || f;
+      const _vit = (_f.stats && _f.stats.vit) || 6;
+      const _lv = _f.level || 1;
+      const flat = 2 + _vit * 0.3 + _lv * 0.2;
+      const pct = Math.min(0.35, 0.08 + _vit * 0.012 + _lv * 0.004);
+      dmg = Math.max(1, (Math.max(0, dmg - flat)) * (1 - pct));
       if(dmg>0){for(const ally of this.team||[]){if(!ally.alive||ally===f)continue;const ev={battle:this,cat:ally,target:f,dmg};window.CatTraits?.emit('onBeforeDamage',ev);dmg=ev.dmg;if(dmg<=0)break;}}
     }
     const beforeHP=f.hp;

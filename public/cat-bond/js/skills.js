@@ -984,14 +984,15 @@
   // Owner 2026-11-26 lock: basic = light + spammable tier-1 only.
   // Rules:
   //   - melee / projectile kind only (no dash/pounce/chain/leap/aoe/beam)
-  //   - power ≤ 1.35 (emberClaw 1.3, frostClaw 1.22, waterLash 1.2, leafDart 1.0)
+  //   - power ≤ 1.60 (admits thornCoil 1.55 so grass fighter 枫枫 has a basic;
+  //     keeps out frostLance 1.95, tidalBite 1.5 excluded by other filters)
   //   - no sk.heavy field (knockOff slam)
   //   - no sk.windup (fireballMeow precise-shot)
   //   - no sk.channel / pulseCount (continuous / multi-wave)
   //   - no ultCost
   //   - no unlock requirement (purchased or Lv-gated advanced skills shouldn't basic-spam)
-  //   - no tag 'heavy' or 'precise' (frostLance is precise+heavy tagged, excluded)
-  const BASIC_MAX_POWER = 1.35;
+  //   - no tag 'heavy' or 'precise' (frostLance precise+heavy tagged, tidalBite heavy tag)
+  const BASIC_MAX_POWER = 1.60;
   function basicEligible(sk){
     if(!sk)return false;
     if(sk.kind!=='melee'&&sk.kind!=='projectile')return false;
