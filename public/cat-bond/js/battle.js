@@ -2532,6 +2532,7 @@ class CaptureBattle {
     sk={...sk,_traitCaster:f};
     if(!sk.isBasic)window.CatTraits?.emit('onSkillCast',{battle:this,cat:f,skill:sk});
     if(sk.heavy)pow*=f._heavyBonus||1;
+    pow*=sk._traitPower||1;
     // 后遗症 (post-cast recovery): heavy skills leave the caster briefly sluggish.
     if (sk && sk.castSlow) f._castSlow = sk.castSlow;
     const kind = sk ? sk.kind : 'projectile';
@@ -2738,6 +2739,7 @@ class CaptureBattle {
         }
       }
     }
+    for(const field of this.fields)if(field.t<=0&&field._traitCaster?.alive)window.CatTraits?.emit('onFieldExpired',{battle:this,cat:field._traitCaster,field});
     this.fields = this.fields.filter(f => f.t > 0);
   }
   detonateField(fld, proj) {
@@ -3866,6 +3868,7 @@ class CaptureBattle {
 
   spawnProj(x, y, ang, spd, dmg, owner, color, r, kind, skill, life) {
     const L = life || 2.2;
+    if(owner==='me')r*=skill?._traitSize||1;
     const p = { x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, owner, color, r, r0: r, kind, life: L, maxLife: L, ang, skill: skill || null, _traitCaster:owner==='me'?skill?._traitCaster||null:null };
     if (this._debug && owner === 'me') p._firedBy = this._dbgFiringCat;   // debug-log: tag the actual firing cat so projectile hits name the right ally
     // Optional projectile behaviours carried from the skill:
@@ -6956,6 +6959,7 @@ class CaptureBattle {
       }
     }
 
+    window.CatBondTraitFX?.drawFront(ctx,this);
     // Distinct ULT glints above combatants, below damage floaters and HUD.
     for(const v of this.skillStrokes){
       if(v.kind==='ultimate')window.CatBondUltVFX?.draw(ctx,v,W,H,this.t,'front');
