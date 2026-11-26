@@ -1311,7 +1311,7 @@ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-fullscreen-to
   display:grid!important;grid-template-columns:minmax(0,1fr) max-content!important;
   grid-template-areas:"room status" "tools tools"!important;gap:4px!important;
   height:auto!important;min-height:0!important;max-height:none!important;
-  padding:4px!important;align-items:center!important;overflow:visible!important;
+  padding:4px 2px!important;align-items:center!important;overflow:visible!important;
  }
  html:not(.cg-play) .single-screen-game #stage .in-game-head-row .stage-left{
   grid-area:room!important;width:100%!important;max-width:none!important;min-width:0!important;
@@ -1322,8 +1322,8 @@ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-fullscreen-to
   padding:3px 4px!important;
  }
  html:not(.cg-play) .single-screen-game #stage #stageHome{
-  width:36px!important;min-width:36px!important;max-width:36px!important;
-  height:40px!important;min-height:40px!important;padding:0!important;
+  width:40px!important;min-width:40px!important;max-width:40px!important;
+  height:44px!important;min-height:44px!important;padding:0!important;
  }
  html:not(.cg-play) .single-screen-game #stage #stageHomeLabel{display:none!important}
  html:not(.cg-play) .single-screen-game #stage #roomNum,
@@ -1339,22 +1339,22 @@ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-fullscreen-to
  html:not(.cg-play) .single-screen-game #stage #stageControls{
   grid-area:tools!important;display:flex!important;justify-content:center!important;align-items:center!important;
   flex-wrap:wrap!important;width:100%!important;max-width:100%!important;min-width:0!important;
-  height:auto!important;gap:3px!important;margin:0!important;
+  height:auto!important;gap:2px!important;margin:0!important;
  }
  html:not(.cg-play) .single-screen-game #stage #quickHelp{display:none!important}
  html:not(.cg-play) .single-screen-game #stage #stageControls #menuButton,
  html:not(.cg-play) .single-screen-game #stage #stageControls #mw-fullscreen-toggle{
-  box-sizing:border-box!important;flex:0 0 40px!important;width:40px!important;min-width:40px!important;
-  max-width:40px!important;height:42px!important;min-height:42px!important;padding:0!important;
+  box-sizing:border-box!important;flex:0 0 42px!important;width:42px!important;min-width:42px!important;
+  max-width:42px!important;height:44px!important;min-height:44px!important;padding:0!important;
  }
  html:not(.cg-play) .single-screen-game #stage #menuButtonLabel{display:none!important}
  html:not(.cg-play) .single-screen-game #stage #stageControls #mw-game-settings{
-  flex:0 1 auto!important;min-width:0!important;max-width:100%!important;gap:3px!important;
+  flex:0 1 auto!important;min-width:0!important;max-width:100%!important;gap:2px!important;
   margin:0!important;padding:0!important;flex-wrap:wrap!important;
  }
  html:not(.cg-play) .single-screen-game #stage #stageControls #mw-game-settings button{
-  box-sizing:border-box!important;flex:0 0 36px!important;width:36px!important;min-width:36px!important;
-  max-width:36px!important;height:42px!important;min-height:42px!important;
+  box-sizing:border-box!important;flex:0 0 40px!important;width:40px!important;min-width:40px!important;
+  max-width:40px!important;height:44px!important;min-height:44px!important;
  }
  html:not(.cg-play) .single-screen-game #stage .in-game-guidance{
   display:grid!important;grid-template-columns:minmax(0,1fr)!important;
@@ -1374,7 +1374,7 @@ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-fullscreen-to
  html:not(.cg-play) .single-screen-game #stage .in-game-actions #restart,
  html:not(.cg-play) .single-screen-game #stage .in-game-actions #bonusQuick{
   box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:none!important;
-  height:auto!important;min-height:42px!important;max-height:none!important;
+  height:auto!important;min-height:44px!important;max-height:none!important;
   padding:3px 5px!important;margin:0!important;font-size:11px!important;white-space:normal!important;
   flex-direction:row!important;justify-content:center!important;align-items:center!important;
  }

@@ -82,12 +82,14 @@ try{
 
  // Landscape mobile regression: actual touch context, not merely a narrow
  // desktop window. Test both entry and live rotation in both languages.
- const landscape=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+ const landscape=await browser.newContext({viewport:{width:844,height:390},deviceScaleFactor:2,isMobile:true,hasTouch:true});
  try{
   const phone=await landscape.newPage();
   await phone.route('**/api/session',r=>r.fulfill({status:204,body:''}));
   await phone.goto(url,{waitUntil:'load'});
   await phone.waitForSelector('#mw-game-settings');
+  assert.ok(await phone.evaluate(()=>document.querySelector('.in-game-top').getBoundingClientRect().right<=document.querySelector('#board').getBoundingClientRect().left+1),'Direct landscape entry must use side-by-side layout');
+  await phone.setViewportSize({width:390,height:844});
   for(const lang of ['zh','en']){
    await phone.evaluate(lang=>window.MorrowwishI18n.set(lang),lang);
    for(const viewport of [{width:844,height:390},{width:852,height:320},{width:667,height:300},{width:570,height:280}]){
@@ -98,7 +100,7 @@ try{
      const stage=rect(document.querySelector('#stage')),board=rect(document.querySelector('#board')),hud=rect(document.querySelector('.in-game-top'));
      const ids=['stageHome','heistStatus','guideHelp','guardStatus','menuButton','mw-fullscreen-toggle','tool','wait','restart','bonusQuick'];
      const elements=[...ids.map(id=>document.getElementById(id)),...document.querySelectorAll('#mw-game-settings button')].filter(e=>e&&e.getClientRects().length);
-     return {stage,board,hud,controls:elements.map(e=>({id:e.id||e.className,...rect(e)})),vw:innerWidth,vh:innerHeight,scrollHeight:document.scrollingElement.scrollHeight};
+     return {stage,board,hud,controls:elements.map(e=>{const r=rect(e),target=e.matches('button,a'),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return {id:e.id||e.className,...r,target,clickable:!target||e.disabled||e.contains(hit)};}),vw:innerWidth,vh:innerHeight,scrollHeight:document.scrollingElement.scrollHeight};
     });
     const msg=lang+' '+viewport.width+'x'+viewport.height+' '+JSON.stringify(fit);
     assert.ok(fit.stage.left>=-1&&fit.stage.right<=fit.vw+1&&fit.stage.top>=-1&&fit.stage.bottom<=fit.vh+1,'Landscape stage fits: '+msg);
@@ -109,6 +111,8 @@ try{
     for(const c of fit.controls){
      assert.ok(c.left>=fit.hud.left-1&&c.right<=fit.hud.right+1&&c.top>=fit.hud.top-1&&c.bottom<=fit.hud.bottom+1,'Control clipped: '+c.id+' '+msg);
      assert.ok(c.width>0&&c.height>0,'Control must be visible: '+c.id+' '+msg);
+     assert.ok(c.clickable,'Control center is obstructed: '+c.id+' '+msg);
+     if(c.target&&c.id!=='guideHelp')assert.ok(c.width>=39&&c.height>=43,'Touch target too small: '+c.id+' '+msg);
     }
     for(let i=0;i<fit.controls.length;i++)for(let j=i+1;j<fit.controls.length;j++){
      const a=fit.controls[i],b=fit.controls[j];
@@ -124,6 +128,22 @@ try{
   const b=await phone.locator('#board').boundingBox();
   await phone.touchscreen.tap(b.x+b.width*.25,b.y+b.height*.5);
   await phone.waitForFunction(()=>window.__PAWSIBLY_TEST__.getState().got===1);
+  // Safari-like fullscreen fallback must remain playable when entered in landscape.
+  await phone.locator('#stage').evaluate(e=>Object.defineProperty(e,'requestFullscreen',{value:undefined,configurable:true}));
+  await phone.locator('#mw-fullscreen-toggle').tap();
+  await phone.waitForFunction(()=>document.documentElement.classList.contains('mw-fs-active'));
+  await phone.waitForTimeout(100);
+  const immersive=await phone.evaluate(()=>{
+   const board=document.querySelector('#board').getBoundingClientRect(),hud=document.querySelector('.in-game-top').getBoundingClientRect(),stage=document.querySelector('#stage').getBoundingClientRect();
+   return {fallback:document.querySelector('#stage').classList.contains('mw-immersive-fallback'),stage:stage.toJSON(),board:board.toJSON(),hud:hud.toJSON(),vw:innerWidth,vh:innerHeight};
+  });
+  assert.ok(immersive.fallback,'Mobile uses reversible fullscreen fallback');
+  assert.ok(immersive.hud.right<=immersive.board.left+1,'Landscape fullscreen HUD cannot cover board: '+JSON.stringify(immersive));
+  assert.ok(immersive.board.bottom<=immersive.vh+1&&immersive.board.right<=immersive.vw+1,'Landscape fullscreen board fits: '+JSON.stringify(immersive));
+  assert.ok(Math.abs(immersive.board.width/immersive.board.height-10/7)<.02,'Fullscreen map aspect remains intact');
+  await phone.screenshot({path:'test-results/pawsibly-landscape-fullscreen.png'});
+  await phone.locator('#mw-fullscreen-toggle').tap();
+  await phone.waitForFunction(()=>!document.documentElement.classList.contains('mw-fs-active'));
   await phone.setViewportSize({width:390,height:844});
   await phone.waitForTimeout(100);
   assert.equal(await phone.evaluate(()=>window.__PAWSIBLY_TEST__.getState().got),1,'Rotation preserves run state');
