@@ -10,7 +10,8 @@ await fs.mkdir(out,{recursive:true});
 const cases=[
  {id:'forest-auto',scene:'forest:R-03',region:'forest',op:'battle:root-echo',label:'Dispel the mimicking echo',auto:true},
  {id:'forest-manual',scene:'forest:R-03',region:'forest',op:'battle:root-echo',label:'Dispel the mimicking echo',auto:false},
- {id:'starfall-auto',scene:'starfall:F-04',region:'starfall',op:'battle:observatory-echo',label:'Observatory guardian · Echo orbit',auto:true}
+ {id:'starfall-auto',scene:'starfall:F-04',region:'starfall',op:'battle:observatory-echo',label:'Observatory guardian · Echo orbit',auto:true},
+ {id:'starfall-manual',scene:'starfall:F-04',region:'starfall',op:'battle:observatory-echo',label:'Observatory guardian · Echo orbit',auto:false}
 ];
 const results=[],browser=await chromium.launch({headless:true});
 process.env.CAT_BOND_EXPERIENCE='1';
@@ -26,7 +27,11 @@ try{for(const test of cases){
   await page.goto(origin+'/cat-bond/?lang=en&rpgDev=1');
   await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
   await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-  await page.waitForFunction(id=>CatBondResonance.view().current?.id===id&&WorldMap.mode==='region',test.scene);
+  await page.waitForFunction(id=>CatBondResonance.view().current?.id===id,test.scene);
+  if(await page.evaluate(()=>__game.scene==='map'&&WorldMap.mode!=='region')){
+    await page.locator('[data-next-scene="'+test.scene+'"]:visible').click();
+  }
+  await page.waitForFunction(()=>WorldMap.mode==='region');
   async function clickWorld(label){
    const b=page.getByRole('button',{name:label,exact:true});
    if(!await b.isVisible()){
@@ -78,6 +83,7 @@ try{for(const test of cases){
   const displayedWin=/Hollow echo dispelled|Orbital guardian defeated/.test(title);
   assert.equal(won,displayedWin,'Visible result and durable narrative evidence must agree');
   assert.deepEqual(errors,[]);
+  assert.ok(samples.length,'At least one real battle sample must be recorded');
   const result={id:test.id,status:'measured',outcome:won?'win':'non-win',title,wallSeconds:elapsed,gameSeconds:last?.t,initial,last,samples};
   results.push(result);await page.screenshot({path:out+'/'+test.id+'-result.png'});
   console.log('RPG COMBAT',JSON.stringify({id:test.id,outcome:result.outcome,title,wallSeconds:elapsed,gameSeconds:last?.t,team:initial.team,duoUses:last?.duoUses}));
