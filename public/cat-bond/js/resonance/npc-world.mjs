@@ -42,6 +42,9 @@ function install(){
   const v=api.view();if(requestedScene&&requestedScene!==v.current?.id)return false;
   if(region==="garden"&&id==="muling"&&v.current?.id==="prologue:P-05"&&!v.openingMet)return openingEncounter(api);
   if(region==="garden"&&skyChapterVisitors(v).includes(id)&&!api.ambientAvailable(region).some(a=>a.npc===id))return mountHomeConversation(id,api);
+  // A completed story must not be treated as a pending scene. Muling’s home
+  // conversation is the ending’s payoff, even if an old scene is retained in view.
+  if(region==="garden"&&v.ending&&id==="muling")return mountHomeConversation(id,api);
   const r=v.current?api.recordNPC({sceneId:v.current.id,npcId:id,region,token:api.captureAction()}):{ok:false};
   const storyPending=v.current&&(v.objective.some(o=>o.startsWith("npc:"))||hasPendingDialogue(v));
   if(r.ok&&(!r.dialogueOnly||storyPending)){if(v.current.id==="epilogue:E-01"){window.__game?.toast?.({zh:"亲眼看见伙伴的新生活。可以回顾旅程了。",en:"You have seen your friends’ new lives. You can revisit the journey now."});return true;}if(v.current.id==="starfall:F-01"&&!api.view().lineReady){const next=api.view().objective[0];window.__game?.toast?.(next==="npc:central-dispute"?{zh:"砾川：那颗假星把商队困住了。去找星芽。",en:"Lichuan: The false star has trapped the caravan. Find Xingya."}:{zh:"先辨认真星，引导商队离开。",en:"Verify the real stars and guide the caravan to safety."});return true;}api.showCurrent();return true}

@@ -137,6 +137,9 @@ function install(){
  function makeFitRail(head,shell){
   const activePuzzle=explorer?.puzzle;
   host.classList.toggle("rw-chase-mode",activePuzzle?.spatial?.kind==="chase");
+  // A dedicated playfield is not a compact exploration grid. Clear the old
+  // layout before the early returns; otherwise grid-area and camera cover rules survive.
+  if(activePuzzle||ceremony)host.classList.remove("rw-region-compact","rw-fit-wide","rw-forest-landscape");
   host.classList.toggle("rw-dedicated-puzzle",!!activePuzzle&&activePuzzle.spatial?.kind!=="chase"&&!ceremony);
   if(activePuzzle&&activePuzzle.spatial?.kind!=="chase"&&!ceremony){
    const p=activePuzzle,row=host.querySelector(".rw-puzzle-controls");

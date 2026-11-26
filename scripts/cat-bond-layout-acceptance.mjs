@@ -42,7 +42,7 @@ try{for(const {name,...profile} of profiles){
  }
  assert.equal(seen.size,13,name+' all visitors accessible across groups');
  // Real input opens the conversation; selecting a guest never edits story state.
- const marker=page.locator('[data-npc-talk="muling"]');await marker.click();await page.locator('.res-host').waitFor({state:'visible'});await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+ const marker=page.locator('[data-npc-talk="muling"]');await marker.click();await page.locator('.res-home-conversation, .res-ambient-simple').waitFor({state:'visible'});await page.reload();await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
  await page.waitForFunction(()=>CatBondResonance.view().ending&&__game.scene==='yard');
  await page.locator('.sg-postgame-guide').getByRole('button',{name:'Continue exploring',exact:true}).click();
  const surface=page.locator('.rw-surface');await surface.waitFor();await page.waitForFunction(()=>JSON.parse(document.querySelector('.rw-surface')?.dataset.affordances||'[]').length>=7);
