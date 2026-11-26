@@ -639,6 +639,22 @@
       "dialogueRuntimeAllowed": true,
       "source": "original luminous fantasy painting; cleaned alpha WebP",
       "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "muling-traveler-silver-cream",
+      "kind": "character-portrait",
+      "characterId": "muling",
+      "phase": "companion",
+      "expression": "neutral",
+      "path": "assets/cinematics/characters/muling/traveler-silver-cream.webp",
+      "format": "webp",
+      "canvas": "960x887",
+      "bytes": 149874,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "Owner-selected cream silver shaded watercolor portrait",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
     }
   ],
   "sceneKeys": [

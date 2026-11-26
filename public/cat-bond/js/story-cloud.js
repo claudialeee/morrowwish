@@ -253,8 +253,7 @@ function renderPortraits(root){
   window.CatArt.renderCatThumb(player,window.GameData?.speciesById?.(cat.species),cat);
  const muling=root.querySelector('[data-cb-muling-portrait]');
  if(muling){
-  const mood=root.dataset.kind==='reveal'?'worried':'warm';
-  const src='/cat-bond/assets/cinematics/characters/muling/traveler-'+mood+'.webp';
+  const src='/cat-bond/assets/cinematics/characters/muling/traveler-silver-cream.webp';
   const paint=image=>{
    if(!muling.isConnected||muling.dataset.portraitSrc!==src||!image.naturalWidth)return;
    const ctx=muling.getContext('2d');if(!ctx)return;

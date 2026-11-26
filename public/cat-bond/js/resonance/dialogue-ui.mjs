@@ -6,7 +6,7 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  const el=(tag,cls)=>{const e=document.createElement(tag);if(cls)e.className=cls;return e};
  const panel=el("section","res-dialogue"),art=el("img","res-portrait"),body=el("div","res-body"),name=el("h2","res-speaker"),line=el("p","res-line"),choices=el("div","res-choices"),tools=el("div","res-controls"),history=el("div","res-history");
  const context=el('p','res-prologue-context');context.style.cssText='font-size:clamp(11px,1.5vw,14px);line-height:1.4;color:#e3c68f;margin:0 0 8px';
- panel.setAttribute("role","region");line.setAttribute("aria-live","polite");art.alt="";history.hidden=true;body.append(context,name,line,choices,tools,history);panel.append(art,body);root.append(panel);const pendantShot=root.dataset.scene==="sky:S-04"?mountSkyPendantShot(panel,resolvePortrait("muling","sky:S-04",11)):null;
+ panel.setAttribute("role","region");line.setAttribute("aria-live","polite");art.alt="";history.hidden=true;body.append(context,name,line,choices,tools,history);panel.append(art,body);root.append(panel);const pendantShot=root.dataset.scene==="sky:S-04"?mountSkyPendantShot(panel,new URL("../../assets/cinematics/characters/muling/traveler-nervous.webp",import.meta.url).href):null;
  // The same line can re-render on a narrative revision or language toggle.
  // Do not cancel an in-flight portrait decode by assigning its unchanged URL.
  function setPortrait(url){if(!url){art.hidden=true;if(art.hasAttribute("src"))art.removeAttribute("src");return;}if(art.getAttribute("src")!==url)art.setAttribute("src",url);art.hidden=false;}
