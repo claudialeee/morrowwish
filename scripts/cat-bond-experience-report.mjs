@@ -9,7 +9,7 @@ for(const file of files){
  const raw=(await fs.readFile(path.join(root,file),'utf8')).trim();
  const events=raw?raw.split('\n').map(line=>JSON.parse(line)):[];
  const run=events.find(e=>e.kind==='run')||{};
- const screens=events.filter(e=>e.kind==='screen'), actions=events.filter(e=>e.kind==='action'||e.kind==='key');
+ const screens=events.filter(e=>e.kind==='screen'), actions=events.filter(e=>['action','key','gesture'].includes(e.kind));
  const issues=events.filter(e=>['pageerror','http_error','recorder_error','truncated'].includes(e.kind));
  const scenes=new Map();let last=null;
  const chapters=new Set();
@@ -25,7 +25,7 @@ for(const file of files){
    if(!last.seen.has(key)){last.seen.add(key);last.visibleText.push({atMs:e.ms,source:block.selector,text:block.text});}
   }
  }
- const timeline=[...scenes.values()].map(({seen,...s})=>({...s,actions:actions.filter(a=>a.ms>=s.atMs&&a.ms<=s.lastMs).length}));
+ const timeline=[...scenes.values()].map(({seen,...s})=>({...s,actions:actions.filter(a=>a.scene===s.id&&a.ms>=s.atMs&&a.ms<=s.lastMs).length}));
  const byAction={};
  for(const a of actions){const key=a.action||'key:'+a.key;byAction[key]=(byAction[key]||0)+1;}
  const result={file,run,observedChapters:[...chapters],screens:screens.length,actions:actions.length,
