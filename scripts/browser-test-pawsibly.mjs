@@ -100,6 +100,7 @@ try{
  try{const phone=await touch.newPage();await phone.route('**/api/session',r=>r.fulfill({status:204,body:''}));await phone.goto(url,{waitUntil:'load'});await phone.evaluate(()=>window.MorrowwishI18n.set('zh'));
  await phone.screenshot({path:'test-results/pawsibly-onboarding-mobile-zh.png'});
  assert.match(await phone.locator('#visionTip').textContent(),/偷够3条鱼.*猫门/);
+ const orders=await phone.locator('.in-game-actions').evaluate(el=>Array.from(el.querySelectorAll('button')).map(b=>[b.id,Number(getComputedStyle(b).order)]));assert.deepEqual(orders,[['tool',0],['wait',1],['restart',2],['bonusQuick',3]],'Primary turn controls come before optional challenges in visual and keyboard order');
  const b=await phone.locator('#board').boundingBox();await phone.touchscreen.tap(b.x+b.width*.25,b.y+b.height*.5);
  await phone.waitForFunction(()=>window.__PAWSIBLY_TEST__.getState().got===1);
  assert.match(await phone.locator('#visionTip').textContent(),/到手1条/);

@@ -1240,6 +1240,12 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
 .single-screen-game .guide-help:focus-visible{outline:2px solid #78517d;outline-offset:2px;}
 .single-screen-game #bonusQuick{filter:saturate(.78);}
 .single-screen-game #tool:not(:disabled){border-color:#a574ad!important;}
-.single-screen-game .coach-spot{pointer-events:none;width:7.5%;height:auto;aspect-ratio:1;margin:0;transform:translate(-50%,-50%);}
+.single-screen-game .coach-spot{pointer-events:none;width:7.5%;height:auto;aspect-ratio:1;margin:0;translate:-50% -50%;transform:none;}
 @media(max-height:650px) and (min-width:701px){.single-screen-game .guide-help{padding:1px 3px;gap:3px}.single-screen-game .guide-help-icon{width:17px;height:17px;flex-basis:17px;font-size:12px}}
 @media(max-width:700px){.single-screen-game .guide-help{min-height:36px;padding:3px 6px}.single-screen-game .guide-help-icon{width:24px;height:24px;flex-basis:24px}}
+
+/* Keep turn controls together in reading/tab order; optional challenges come last. */
+.single-screen-game .in-game-actions #tool{order:0!important}
+.single-screen-game .in-game-actions #wait{order:1!important}
+.single-screen-game .in-game-actions #restart.replay-menu-trigger{order:2!important}
+.single-screen-game .in-game-actions #bonusQuick{order:3!important}
