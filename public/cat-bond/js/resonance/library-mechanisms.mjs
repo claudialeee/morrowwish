@@ -1,10 +1,11 @@
 // Moonmirror Library: three physical archive stations, verified Catdex records,
 // and independent reconstruction of the hidden inward-route ledger.
+import {newMirror,advanceMirror} from "./canon22-mirror.mjs";
 export const libraryPoints=Object.freeze({
  "explore:sealed-archive":[.17,.73,"封存档案 · 审阅记录","Sealed archive · Review records"],
  "puzzle:library-reflections":[.29,.60,"一层 · 镜光回廊","Ground floor · Reflection gallery"],
  "puzzle:mirror-records":[.51,.48,"二层 · 封存壁画","Upper floor · Sealed mural"],
- "puzzle:library-echo":[.67,.40,"暗室 · 记忆核验","Hidden room · Verify memories"],
+ "puzzle:library-echo":[.67,.40,"镜中的两只暮铃","Two Mulings in the mirror"],
  "battle:library-echo":[.76,.40,"镜影 · 守档幻象","Archive echo · Guardian illusion"],
  "explore:routing-record":[.82,.36,"密档 · 共鸣路径","Hidden ledger · Resonance routes"],
  "puzzle:two-route-model":[.82,.36,"六地桌上模型 · 验证两条路线","Six-region model · Compare the two routes"],
@@ -24,18 +25,21 @@ export function catdexRecord(root){
 }
 export function libraryPuzzle(op,record){
  const types={"explore:sealed-archive":"librarySeal","puzzle:library-reflections":"libraryMirrors","puzzle:mirror-records":"libraryMural","puzzle:library-echo":"libraryEcho","explore:routing-record":"libraryLedger","repair:library":"libraryRestore","puzzle:two-route-model":"libraryRoutes"};
+ if(op==="puzzle:library-echo")return {type:"libraryCompanion",operation:op,values:[],goal:[],record:null,mirror:newMirror(record?.uid),mistakes:0,solved:false};
  const type=types[op];if(!type)return null;
  const goals={librarySeal:[0,2,1],libraryMirrors:[1,3,2],libraryMural:[2,0,1],libraryEcho:[record?.correct??1],libraryLedger:[2,0,1],libraryRestore:[1,0,2],libraryRoutes:[0,1,2]};
  return {type,operation:op,initial:type==="libraryMirrors"?[0,0,0]:[],values:type==="libraryMirrors"?[0,0,0]:[],goal:goals[type],record:record||null,mistakes:0,solved:false,response:[]};
 }
 export function advanceLibrary(p,i){
  if(!p||!p.type?.startsWith("library")||p.solved||!Number.isInteger(i)||i<0||i>2)return false;
+ if(p.type==="libraryCompanion"){p.solved=advanceMirror(p.mirror,i);p.mistakes=p.mirror.mistakes;return p.solved;}
  if(p.type==="libraryMirrors")p.values[i]=(p.values[i]+1)%4;
  else if(i===p.goal[p.values.length])p.values.push(i);
  else{p.mistakes++;p.values=[];}
  p.solved=p.values.length===p.goal.length&&p.values.every((n,k)=>n===p.goal[k]);return p.solved;
 }
 const words={
+ libraryCompanion:[["镜中的两只暮铃","Two Mulings in the mirror"],["它们都摇了两下铃。换个位置再摇铃，看看谁会转向你。","Both rang twice. Move and ring again; see who turns toward you."],[["选左边的猫","Choose the left cat"],["换位置，摇铃","Move and ring"],["选右边的猫","Choose the right cat"]]],
  libraryRoutes:[["六地模型 · 两条回家的路","Six-region model · Two ways home"],["模拟中央汇集，再试邻路，最后让六地各自回应。这里只是模型，不会替代真实回信。","Simulate convergence, test neighbor paths, then let each token answer. This model never counts as real replies."],[["中央汇集","Converge inward"],["接通邻路","Connect neighbors"],["各地回应","Receive distinct replies"]]],
  librarySeal:[["档案封存原因","Why the archive was sealed"],["先审阅公开历史，再核对仍在世的当事猫，最后查看封存说明。","Review the public history, identify living subjects, then read why their records were sealed."],[["公开历史","Public history"],["封存说明","Seal notice"],["在世当事猫","Living subjects"]]],
  libraryMirrors:[["镜光回廊","Reflection gallery"],["旋转三面镜子，使光从左侧月窗折向隐藏的门。","Rotate the three mirrors to carry moonlight into the hidden doorway."],[["西镜","West mirror"],["中镜","Middle mirror"],["东镜","East mirror"]]],
@@ -58,6 +62,8 @@ export function paintLibraryPuzzle(c,p,lang,W,H){
  c.save();cover(c,image("resonance-world-v2/library.webp"),0,0,W,H);c.fillStyle="#99759033";c.fillRect(0,0,W,H);frame(.08,.08,.84,.83);
  t(w[0][l],.5,.15,27,"#543b55");t(w[1][l],.5,.23,16);
  const xs=[.3,.5,.7],Yc=Y(.53);
+ if(p.type==="libraryCompanion"){const m=p.mirror;const art=image("core-art-remaster/leads/muling.webp");[.30,.70].forEach((x,i)=>{frame(x-.13,.32,.26,.36);if(ready(art)){c.save();c.translate(X(x),Y(.49));if(m.faces[i]<0)c.scale(-1,1);let k=Math.min(W*.16/art.naturalWidth,H*.29/art.naturalHeight);c.drawImage(art,-art.naturalWidth*k/2,-art.naturalHeight*k/2,art.naturalWidth*k,art.naturalHeight*k);c.restore();}t(m.faces[i]===0?(l?"Facing the old spot":"朝着原来的位置"):m.faces[i]===1?(l?"Turns right · replies":"转向右侧 · 摇铃"):(l?"Turns left · replies":"转向左侧 · 摇铃"),x,.64,15);});const px=.5+m.position*.32;t(l?"You":"你",px,.75,18,"#27685b");c.fillStyle="#d3a360";c.beginPath();c.arc(X(px),Y(.70),8*s,0,2*Math.PI);c.fill();t(m.mistakes?(l?"Try a new signal before choosing":"先换位置，再观察回应"):(l?"The two look identical. Watch their actions.":"外表一样，注意它们的动作。"),.5,.81,16);c.restore();return true;}
+
  if(p.type==="libraryRoutes"){
   const n=p.values.length,colors=["#57a0b8","#6baf83","#d69464","#c3a2de","#8f92bd","#d6bc6b"],names=l?["Harbor","Forest","Forge","Sky","Library","Starfall"]:["港口","森林","炉城","云岛","书库","星原"],pts=names.map((_,i)=>[.5+.22*Math.cos(i*Math.PI/3-Math.PI/2),.47+.16*Math.sin(i*Math.PI/3-Math.PI/2)]);c.lineWidth=3*s;for(let i=0;i<6;i++){const a=pts[i],b=n===1?[.5,.47]:pts[(i+1)%6];c.strokeStyle=n===1?"#b18192":n===3?colors[i]:"#b2a7b8";c.setLineDash(n===2?[5*s,6*s]:[]);c.beginPath();c.moveTo(X(a[0]),Y(a[1]));c.lineTo(X(b[0]),Y(b[1]));c.stroke();}c.setLineDash([]);pts.forEach((q,i)=>{c.fillStyle=n===1?"#b18192":colors[i];c.beginPath();c.arc(X(q[0]),Y(q[1]),18*s,0,2*Math.PI);c.fill();t(names[i],q[0],q[1]+.052,13);});c.fillStyle="#dac4ab";c.beginPath();c.arc(X(.5),Y(.47),24*s,0,2*Math.PI);c.fill();t(n===1?(l?"Merged":"混合"):(l?"Bell":"星铃"),.5,.47,13);t((l?["Select a route","Identities merge","Lines alone do not answer","Six identities preserved"]:["选择路线","身份被混在一起","光有线路不会回应","六个身份各自保留"])[n],.5,.73,19);xs.forEach((x,i)=>t(w[2][i][l],x,.82,13));c.restore();return true;
  }else if(p.type==="libraryMirrors"){
