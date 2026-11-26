@@ -6,9 +6,11 @@ import {createWorldBridge} from "../public/cat-bond/js/resonance/world-bridge.mj
 import {createExplorer,exchangeOptions,layouts} from "../public/cat-bond/js/resonance/world-exploration.mjs";
 import {skyLaunch,skyLanding} from "../public/cat-bond/js/resonance/sky-flight.mjs";
 const stateSource=fs.readFileSync(new URL("../public/cat-bond/js/state.js",import.meta.url),"utf8");
+const dataSource=fs.readFileSync(new URL("../public/cat-bond/js/data.js",import.meta.url),"utf8");
 console.log(JSON.stringify((function test(){
  const storage=new Map(),ls={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,String(v)),removeItem:k=>storage.delete(k)},window={};
- new Function("window","localStorage",stateSource)(window,ls);
+ new Function("window",dataSource)(window);
+ new Function("window","localStorage","GameData",stateSource)(window,ls,window.GameData);
  const State=window.State,assert=(x,m)=>{if(!x)throw Error(m)},ok=(r,m)=>assert(r?.ok,m+": "+r?.reason);
  assert(State.startNewGame("slot1"),"slot1");State.S.cats.push({uid:"player-fixture",species:"jinjc",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});ok(State.save(),"fixed protagonist fixture");let b=createWorldBridge(State),runtime=getSlotRuntime(State),notified=0;runtime.subscribe(()=>notified++);let rescueBattleCommits=0,physical=0,walking=0,deliveries=0,puzzles=0,localInvites=0,rewards=0,fixture=0;
  function host(fn){const e=makeEngine(campaign,State.S.resonance),r=fn(e);ok(r,"host fixture");State.S.resonance=r.state;ok(State.save(),"fixture save");fixture++;}
@@ -107,7 +109,7 @@ console.log(JSON.stringify((function test(){
   walk(x,q.point);const beforeRepair=JSON.stringify(State.S);assert(!b.finishHomeRepair(region,runtime.capture()).ok,"repair without solved mechanism");assert(JSON.stringify(State.S)===beforeRepair,"invalid repair changed save");const repairCoins=State.S.coins,repairFish=State.S.fish;ok(x.startHomeRepair(),"repair after ending");solve(x);letters++;assert(State.S.coins===repairCoins+25&&State.S.fish===repairFish+2,"exact letter reward "+region);assert(!x.startHomeRepair().ok,"duplicate repair "+region);assert(State.S.coins===repairCoins+25&&State.S.fish===repairFish+2,"duplicate repair reward "+region);assert(State.loadSlot("slot1"),"reload after letter "+region);
   x=createExplorer(b,region);assert(x.homeQuest()?.repaired,"letter saved");
   for(const n of x.localNpcs()){walk(x,n.point);assert(!b.meetHomeResident(n.id,[0,0],runtime.capture()).ok,"forged NPC location rejected");const beforeCoins=State.S.coins,beforeFish=State.S.fish,last=x.homeQuest().actors.filter(a=>!a.visited).length===1;ok(x.meetHomeResident(n.id),"invite resident");assert(State.S.coins===beforeCoins+(last?40:0)&&State.S.fish===beforeFish+(last?3:0),"exact reunion reward "+n.id);assert(!x.meetHomeResident(n.id).ok,"duplicate NPC "+n.id);assert(State.S.coins===beforeCoins+(last?40:0)&&State.S.fish===beforeFish+(last?3:0),"duplicate NPC reward "+n.id);const snapshot=JSON.stringify(State.S.resonance);assert(State.loadSlot("slot1"),"reload after NPC "+n.id);assert(JSON.stringify(State.S.resonance)===snapshot,"NPC narrative persistence "+n.id);x=createExplorer(b,region);}
-  assert(!x.homeQuest(),"reunion completed");reunions++;assert(runtime.residents("garden").length===1+reunions*2,"only actual reunited residents appear in garden");
+  assert(!x.homeQuest(),"reunion completed");const actor={harbor:"jiedeng",forest:"yuchuan",library:"moye",starfall:"lichuan"}[region];if(actor){assert(State.S.cats.filter(c=>c.storyActor===actor&&c.species==="story_"+actor).length===1,"real recruited cat persisted: "+actor);assert(State.S.cats.find(c=>c.storyActor===actor).stats.pow>0,"real species stats: "+actor);}reunions++;assert(runtime.residents("garden").length===1+reunions*2,"only actual reunited residents appear in garden");
  }
  assert(b.view().returned.length===12&&b.view().postgame.length===12,"all six regional reunions persisted");
  // Fixture-based transaction regression only: actual combat is covered by the browser matrix.
