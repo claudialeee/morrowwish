@@ -4941,3 +4941,6 @@ body.cb-exploring #stage #yard-actions{
   outline:2px solid #b85d56;outline-offset:2px;
 }
 
+
+/* Debug-only controls must not occupy a player-facing garden action slot. */
+#stage #yard-actions #fab-debug-unlock[hidden],html.cb-cg #cg-yard-dock #yard-actions #fab-debug-unlock[hidden]{display:none!important}

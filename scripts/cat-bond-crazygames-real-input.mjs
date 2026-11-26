@@ -108,8 +108,9 @@ try{
           return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,
             width:r.width,height:r.height};
         };
+        // The developer-only button is separately required to be hidden in normal play.
         const buttons=[...tabs.querySelectorAll('button'),
-          ...actions.querySelectorAll('button')];
+          ...actions.querySelectorAll('button:not(#fab-debug-unlock)')];
         const visible=buttons.map(el=>{
           const r=el.getBoundingClientRect();
           const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
@@ -129,6 +130,8 @@ try{
       }
       assert.ok(menuLayout?.directParent,
         'CrazyGames menu buttons must share the same dock: '+JSON.stringify(menuLayout));
+      assert.equal(await page.locator('#fab-debug-unlock').count(),1,'Debug-only control must not be duplicated');
+      assert.equal(await page.locator('#fab-debug-unlock').isVisible(),false,'Normal player must never see the debug unlock control');
       assert.equal(menuLayout.count,10,'Exactly 5 tabs + 5 garden actions');
       assert.equal(await page.locator('#cg-yard-dock').isVisible(),true,
         'Both independent yard-only navigation groups must appear only in the yard');
