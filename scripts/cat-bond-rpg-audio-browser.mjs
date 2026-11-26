@@ -33,16 +33,14 @@ try{
   assert.equal(title.source,'premium-mp3:tomorrow','must use licensed candidate title recording');
   await page.locator('#intro-start').click();
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-  await page.waitForFunction(()=>document.querySelector('.cbcp-root:not([hidden])')?.dataset.ready==='true');
-  await waitTrack('opening');
-  assert.equal(await page.evaluate(()=>MorrowwishMusic.status().source),'premium-mp3:childhood');
-  await page.locator('.cbcp-pause').click();
-  await page.waitForFunction(()=>MorrowwishMusic.status().audioState==='suspended');
-  await page.locator('.cbcp-pause').click();
-  await waitTrack('opening');
-  await page.locator('.cbcp-skip').click();
-  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-04');
-  assert.deepEqual(await page.evaluate(()=>State.S.resonance.completed.slice(0,3)),['prologue:P-01','prologue:P-02','prologue:P-03']);
+  await page.locator('#cb-player-first-intro').getByRole('button',{name:'Start exploring',exact:true}).click();
+  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-05'&&__game.scene==='yard');
+  await waitTrack('garden');
+  assert.deepEqual(await page.evaluate(()=>State.S.resonance.completed.slice(0,4)),['prologue:P-01','prologue:P-02','prologue:P-03','prologue:P-04']);
+  await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="page-settings"]').click();
+  await page.locator('#cb-system-menu [data-system="music"]').click();await page.waitForFunction(()=>!MorrowwishMusic.status().playing);
+  await page.locator('#cb-system-menu [data-system="music"]').click();await waitTrack('garden');
+  await page.locator('#cb-system-menu [data-system="page-back"]').click();await page.locator('#cb-system-menu [data-system="close"]').click();
   await page.evaluate(()=>MorrowwishMusic.setEnabled(false));
   await page.waitForFunction(()=>!MorrowwishMusic.status().playing);
   await page.reload();
@@ -54,7 +52,7 @@ try{
   assert.equal(await page.locator('[data-audio-volume="music"]').inputValue(),'37');
   assert.equal(await page.locator('[data-audio-volume="effects"]').inputValue(),'42');
   await page.locator('#cb-system-menu [data-system="close"]').click();
-  assert.deepEqual(errors,[]);output.push({profile:name,title,settings,opening:true,pauseResume:true,actualMenuControls:true,errors});
+  assert.deepEqual(errors,[]);output.push({profile:name,title,settings,opening:'player-first context and garden music',musicToggleResume:true,actualMenuControls:true,errors});
   await context.close();
  }
  const page=await browser.newPage();await page.goto(url);await page.waitForFunction(()=>window.CatBondOriginalScore);

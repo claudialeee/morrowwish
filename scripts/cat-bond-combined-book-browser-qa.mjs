@@ -71,10 +71,10 @@ for(const profile of [
   assert.match(await page.locator('#intro-slot-heading').innerText(),/Choose a slot/);
   await screenshot('three-slots-en');
   await page.locator('#intro-slot-list [data-slot="slot1"]').click();
-  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-01'&&document.querySelector('.cbcp-art')?.naturalWidth>0&&!document.querySelector('.cbcp-skip')?.disabled);
-  await page.locator('.cbcp-skip').click();
-  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-04');
-  await checkVisible('#panel.open .dex-cell');await page.locator('#panel.open .dex-cell').first().click();
+  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-05');
+  const intro=page.locator('#cb-player-first-intro');await intro.getByRole('button',{name:'Start exploring',exact:true}).click();
+  await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&__game.scene==='yard');
+  assert.equal(await page.locator('#panel.open .cat-starter-card').count(),0,'Fixed protagonist has no starter picker');
   assert.equal(await page.locator('#tabbar').isVisible(),false,'Legacy management tabs are replaced by Book');
   assert.equal(await page.locator('#fab-build').isVisible(),false,'Building belongs to garden facilities');
   const dock=await page.evaluate(()=>[...document.querySelectorAll('#yard-actions button')].filter(b=>b.getClientRects().length&&getComputedStyle(b).display!=='none').map(b=>{const q=b.getBoundingClientRect();return {id:b.id,left:q.left,right:q.right,top:q.top,bottom:q.bottom,hit:b.contains(document.elementFromPoint(q.x+q.width/2,q.y+q.height/2))}}));
@@ -106,7 +106,7 @@ for(const profile of [
   assert.ok(gardenFit.bushes&&gardenFit.cats,'All interactive scenery belongs to the contained original painting: '+JSON.stringify(gardenFit));
   await screenshot('garden-book-dock');
   for(const [label,tab] of [['Party','party'],['Catdex','dex']]){
-   await page.locator('.sg-prologue-guide').getByRole('button',{name:'Explore '+label,exact:true}).click();
+   await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="yard-book"]').click();await page.locator('[data-book-tab="'+tab+'"]').click();
    assert.equal(await page.locator('[data-book-tab][aria-current="page"]').getAttribute('data-book-tab'),tab);
    await page.locator('.rb-close').click();
   }
@@ -181,14 +181,9 @@ for(const profile of [
    relocated={u:afterMove.facility.gardenU,v:afterMove.facility.gardenV,level:afterMove.facility.level};
    await screenshot('garden-facility-relocated');
   }
-  await page.locator('.sg-prologue-guide').getByRole('button',{name:'Talk to Muling'}).click();
-  const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');await awakening.getByRole('button',{name:'Skip dialogue',exact:true}).click();
-  const bell=page.locator('.res-garden-bell');await bell.waitFor();
-  const rect=await bell.boundingBox();const x=Math.floor(rect.x+rect.width/2),y=Math.floor(rect.y+rect.height/3);
-  if(profile.mobile){const cdp=await context.newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+62}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();}
-  else{await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x,y+62,{steps:8});await page.mouse.up();}
-  for(const id of ['prologue:P-05']){const dlg=page.locator('.res-host[data-scene="'+id+'"]');await dlg.waitFor();const skip=dlg.getByRole('button',{name:'Skip dialogue',exact:true});if(await skip.isVisible()&&await skip.isEnabled())await skip.click();const close=dlg.getByRole('button',{name:'Close',exact:true});if(await close.isVisible())await close.click();}
-  await page.locator('.sg-prologue-guide').getByRole('button',{name:'World map'}).click();
+  await page.locator('.sg-prologue-guide').getByRole('button',{name:'Next scene · Misttide Harbor',exact:true}).click();
+  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01'&&WorldMap.currentRegion==='harbor');
+  await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-atlas"]').click();
   await waitMap();
   await page.locator('.rw-system-nav').waitFor({state:'attached'});
   assert.equal(await page.locator('.rw-regions [data-region]').count(),6);
@@ -280,7 +275,7 @@ for(const profile of [
   await page.locator('#intro-start').click();
   await page.locator('#intro-slot-list [data-slot="slot3"]').click();
   await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true&&window.State.activeSlot()==='slot3');
-  await checkVisible('#cb-canonical-opening');
+  await checkVisible('#cb-player-first-intro');await page.locator('#cb-player-first-intro').getByRole('button',{name:'Start exploring',exact:true}).click();
   assert.equal(await page.evaluate(()=>State.activeSlot()),'slot3');
   await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc');
   assert.deepEqual(await page.evaluate(()=>State.S.cats.map(c=>c.species)),['jinjc']);
