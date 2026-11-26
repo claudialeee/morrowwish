@@ -5,10 +5,9 @@ import {mountKeyExchange} from "./key-exchange.mjs";
 import {isLibraryReveal,mountLibraryReveal} from "./library-reveal.mjs";
 const lang=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const portraitRoot=new URL("../../assets/npc/",import.meta.url);
-const playerPortraits=new Map();
-function portrait(id){
- if(id==="player"){const selected=window.State?.S?.cats?.[0],sp=selected?.species;if((sp==="jinjc"||sp==="yunduo")&&!selected.appearance&&!selected.variant)return new URL("../player-portraits/"+sp+".webp",portraitRoot).href;if(!sp||!window.CatBondArtworkStatus?.breedsLoaded||!window.CatArt?.renderCatThumb)return null;const key=JSON.stringify([window.State.S.cats[0].uid,sp,window.State.S.cats[0].appearance,window.State.S.cats[0].variant]);if(!playerPortraits.has(key)){const c=document.createElement("canvas");c.width=400;c.height=460;window.CatArt.renderCatThumb(c,window.GameData.speciesById(sp),window.State.S.cats[0]);playerPortraits.set(key,c.toDataURL("image/png"));}return playerPortraits.get(key)}
- if(id==="muling")return new URL("../cinematics/characters/muling/traveler-silver-cream.webp",portraitRoot).href;
+function portrait(id,scene,cursor){
+ if(id==="player")return new URL("../core-art-remaster/leads/"+(scene==="library:M-03"&&cursor>=2?"player-reveal":"player")+".webp",portraitRoot).href;
+ if(id==="muling")return new URL("../core-art-remaster/leads/"+(["library:M-03","library:M-04"].includes(scene)?"muling-uneasy":"muling")+".webp",portraitRoot).href;
  if(campaign.regions.includes(campaign.cast[id]?.region))return new URL(id+"-painted.webp",portraitRoot).href;
  return null;
 }
@@ -53,7 +52,7 @@ function install(){
   const ending=document.createElement("section");ending.className="cb-story-overlay is-visible res-ending-title";
   ending.setAttribute("role","dialog");ending.setAttribute("aria-modal","true");
   Object.assign(ending.style,{position:"absolute",inset:"0",zIndex:"40",display:"grid",placeItems:"center",overflow:"hidden",background:"#152237"});
-  const art=document.createElement("img");art.src=new URL("../../assets/cinematics/prologue/garden-at-dawn.webp",import.meta.url).href;
+  const art=document.createElement("img");art.src=new URL("../../assets/core-art-remaster/story/e03-garden.webp",import.meta.url).href;
   art.alt="";Object.assign(art.style,{position:"absolute",inset:"0",width:"100%",height:"100%",objectFit:"contain",opacity:".80"});
   const card=document.createElement("div");Object.assign(card.style,{position:"relative",textAlign:"center",padding:"24px",color:"#fff5dc",textShadow:"0 3px 20px #142239",background:"linear-gradient(90deg,transparent,#152237aa,transparent)",maxWidth:"95%"});
   const title=document.createElement("h2");title.textContent="THE BELL RINGS AGAIN";title.style.font="700 clamp(24px,5vw,54px) Georgia,serif";title.style.letterSpacing=".10em";

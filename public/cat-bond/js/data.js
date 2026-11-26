@@ -100,7 +100,7 @@ const EN_NAMES={
   "mengmai": "Midnight", "fanmao": "Vanilla",
   "bosi": "Pompom", "wumao": "Peach"
 };
-SPECIES.forEach(sp=>{sp.nameEn=EN_NAMES[sp.id]||sp.name;});
+SPECIES.forEach(sp=>{sp.nameEn=EN_NAMES[sp.id]||sp.name;if(sp.id==='jinjc')sp.storyArt='assets/core-art-remaster/leads/player.webp';});
 function speciesName(sp){
  if(typeof sp==='string')sp=speciesById(sp);
  if(!sp)return (window.MorrowwishI18n?.get?.()==='zh'?'猫猫':'Kitten');
@@ -125,7 +125,7 @@ const STORY_SPECIES = Object.freeze({
       "vit": 7,
       "cha": 9
     },
-    "storyArt": "assets/npc/../cinematics/characters/muling/traveler-silver-cream.webp"
+    "storyArt": "assets/core-art-remaster/leads/muling.webp"
   },
   "story_qilan": {
     "id": "story_qilan",
