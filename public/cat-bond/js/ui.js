@@ -1770,6 +1770,7 @@ const UI = {
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${sp.rarity}">◆${rar.name}</span> <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
+      ${window.Skills?.breedPassive?.(sp.id)?(()=>{const p=Skills.breedPassive(sp.id),k=window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";return `<p class="cat-skill-roadmap" data-breed-passive="${sp.id}"><strong>${k==="zh"?"专属被动":"Breed passive"} · ${p.name[k]}</strong> · ${p.desc[k]}</p>`;})():""}
       ${window.Skills?'<p class="cat-skill-roadmap">✨ '+Skills.progressionHint(cat)+'</p>':''}
       ${State.S.masteryBadges?.[sp.id]
         ?'<p class="mastery-detail">🏅 '+(window.MorrowwishI18n?.get?.()==='zh'

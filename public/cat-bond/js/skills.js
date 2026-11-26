@@ -1542,6 +1542,225 @@
     ];
   }
 
+  // Current 16 collectible identities. Pure, bounded combat modifiers; story actors remain neutral.
+  const BREED_PASSIVES=Object.freeze({
+  "biscuit": {
+    "name": {
+      "zh": "初炉余温",
+      "en": "First Embers"
+    },
+    "desc": {
+      "zh": "开战前6秒，普通攻击与主动攻击技能伤害+10%。",
+      "en": "During the first 6 seconds, basic and active attack damage +10%."
+    },
+    "channel": "damage",
+    "factor": 1.1,
+    "when": "opening"
+  },
+  "inkspot": {
+    "name": {
+      "zh": "墨影沉心",
+      "en": "Ink Composure"
+    },
+    "desc": {
+      "zh": "战斗超过8秒，Q/E技能冷却缩短10%。",
+      "en": "After 8 seconds, Q/E skill cooldowns are 10% shorter."
+    },
+    "channel": "skillCd",
+    "factor": 0.9,
+    "when": "late"
+  },
+  "puff": {
+    "name": {
+      "zh": "绒甲",
+      "en": "Soft Armor"
+    },
+    "desc": {
+      "zh": "斗志高于65%时，直接受击伤害降低10%。",
+      "en": "Above 65% HP, direct incoming damage −10%."
+    },
+    "channel": "incoming",
+    "factor": 0.9,
+    "when": "healthy"
+  },
+  "shell": {
+    "name": {
+      "zh": "护潮",
+      "en": "Sheltering Tide"
+    },
+    "desc": {
+      "zh": "治疗斗志低于50%的伙伴时，治疗量+12%。",
+      "en": "Healing targets below 50% HP restores 12% more."
+    },
+    "channel": "heal",
+    "factor": 1.12,
+    "when": "targetLow"
+  },
+  "cinder": {
+    "name": {
+      "zh": "余烬不灭",
+      "en": "Last Cinder"
+    },
+    "desc": {
+      "zh": "自身斗志低于45%时，普通攻击与主动攻击技能伤害+12%。",
+      "en": "Below 45% HP, basic and active attack damage +12%."
+    },
+    "channel": "damage",
+    "factor": 1.12,
+    "when": "low"
+  },
+  "ripplet": {
+    "name": {
+      "zh": "叠浪",
+      "en": "Layered Current"
+    },
+    "desc": {
+      "zh": "护盾持续期间，直接受击伤害额外降低10%。",
+      "en": "While shielded, direct incoming damage −10%."
+    },
+    "channel": "incoming",
+    "factor": 0.9,
+    "when": "shield"
+  },
+  "clover": {
+    "name": {
+      "zh": "新芽节拍",
+      "en": "Fresh Growth"
+    },
+    "desc": {
+      "zh": "斗志高于65%时，Q/E技能冷却缩短8%。",
+      "en": "Above 65% HP, Q/E skill cooldowns are 8% shorter."
+    },
+    "channel": "skillCd",
+    "factor": 0.92,
+    "when": "healthy"
+  },
+  "fizz": {
+    "name": {
+      "zh": "动能电荷",
+      "en": "Kinetic Charge"
+    },
+    "desc": {
+      "zh": "移动时发出普攻，冷却缩短10%。",
+      "en": "Basic attacks fired while moving have 10% shorter cooldown."
+    },
+    "channel": "basicCd",
+    "factor": 0.9,
+    "when": "moving"
+  },
+  "button": {
+    "name": {
+      "zh": "夜行伏击",
+      "en": "Night Prowl"
+    },
+    "desc": {
+      "zh": "移动时发动普通攻击或主动攻击技能，伤害+10%。",
+      "en": "Basic or active attacks cast while moving deal 10% more damage."
+    },
+    "channel": "damage",
+    "factor": 1.1,
+    "when": "moving"
+  },
+  "sunlace": {
+    "name": {
+      "zh": "晴日抚慰",
+      "en": "Sunlit Comfort"
+    },
+    "desc": {
+      "zh": "自身斗志高于65%时，治疗量+10%。",
+      "en": "Above 65% HP, outgoing healing +10%."
+    },
+    "channel": "heal",
+    "factor": 1.1,
+    "when": "healthy"
+  },
+  "tidemark": {
+    "name": {
+      "zh": "退潮坚守",
+      "en": "Low-Tide Stand"
+    },
+    "desc": {
+      "zh": "斗志低于45%时，直接受击伤害降低14%。",
+      "en": "Below 45% HP, direct incoming damage −14%."
+    },
+    "channel": "incoming",
+    "factor": 0.86,
+    "when": "low"
+  },
+  "emberwing": {
+    "name": {
+      "zh": "升温羽焰",
+      "en": "Rising Flame"
+    },
+    "desc": {
+      "zh": "战斗第6至15秒内，普通攻击与主动攻击技能伤害+13%。",
+      "en": "From seconds 6 through 15, basic and active attack damage +13%."
+    },
+    "channel": "damage",
+    "factor": 1.13,
+    "when": "mid"
+  },
+  "mossbell": {
+    "name": {
+      "zh": "藤甲反攻",
+      "en": "Bramble Resolve"
+    },
+    "desc": {
+      "zh": "护盾持续期间，普通攻击与主动攻击技能伤害+12%。",
+      "en": "While shielded, basic and active attack damage +12%."
+    },
+    "channel": "damage",
+    "factor": 1.12,
+    "when": "shield"
+  },
+  "zest": {
+    "name": {
+      "zh": "闪弧步",
+      "en": "Arc Step"
+    },
+    "desc": {
+      "zh": "移动时发动Q/E技能，冷却缩短12%。",
+      "en": "Q/E skills cast while moving have 12% shorter cooldown."
+    },
+    "channel": "skillCd",
+    "factor": 0.88,
+    "when": "moving"
+  },
+  "nightloom": {
+    "name": {
+      "zh": "织夜回响",
+      "en": "Nightweave"
+    },
+    "desc": {
+      "zh": "斗志低于45%时，Q/E技能冷却缩短15%。",
+      "en": "Below 45% HP, Q/E skill cooldowns are 15% shorter."
+    },
+    "channel": "skillCd",
+    "factor": 0.85,
+    "when": "low"
+  },
+  "aurora": {
+    "name": {
+      "zh": "曦光共济",
+      "en": "Aurora's Grace"
+    },
+    "desc": {
+      "zh": "治疗斗志低于35%的伙伴时，治疗量+16%。",
+      "en": "Healing targets below 35% HP restores 16% more."
+    },
+    "channel": "heal",
+    "factor": 1.16,
+    "when": "targetCritical"
+  }
+});
+  function breedPassive(species){return BREED_PASSIVES[typeof species==='string'?species:species?.species]||null;}
+  function breedPassiveFactor(f,channel,time=0,target=null){
+    const p=breedPassive(f?.cat?.species);if(!p||p.channel!==channel||f.alive===false)return 1;
+    const hp=f.maxhp>0?f.hp/f.maxhp:1,thp=target?.maxhp>0?target.hp/target.maxhp:1;
+    const active={opening:time<6,late:time>=8,healthy:hp>.65,low:hp<.45,shield:f.shieldT>0,moving:!!f.moving,mid:time>=6&&time<=15,targetLow:thp<.5,targetCritical:thp<.35}[p.when];
+    return active?p.factor:1;
+  }
+
   // ==========================================================================
   // PUBLIC API
   // ==========================================================================
@@ -1558,7 +1777,7 @@
     // --- risky combo-chain ---
     CHAIN, chainMultiplier, chainVulnerability, backfireDamage, chainState, advanceChain,
     // --- learning / loadouts ---
-    SIGNATURE_SKILL, SPECIES_SECONDARY, secondaryOf, secondaryChoices, secondaryLimit,
+    SIGNATURE_SKILL, BREED_PASSIVES, breedPassive, breedPassiveFactor, SPECIES_SECONDARY, secondaryOf, secondaryChoices, secondaryLimit,
     learnableSkills, defaultLoadout, ensureLoadout,
     basicEligible, basicChoices,
     // --- build types (按品种 + 流派自动配装) ---

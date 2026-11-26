@@ -40,3 +40,26 @@ const raising=await fs.readFile(root+'js/raising.js','utf8');
 const combos=vm.runInNewContext(raising.match(/const BREED_COMBOS = (\[[\s\S]*?\n\]);/)[1]);
 for(const c of combos)for(const id of [c.a,c.b,c.result])assert.ok(ids.has(id),'retired breeding species '+id);
 console.log('CORE ART ROSTER PASS',ids.size,'collectibles, 24 WebP headers, six regional pools, element/role/skill mappings, draw and breeding contracts');
+
+// Every new collectible has exactly one bounded, conditional passive.
+assert.equal(Object.keys(Skills.BREED_PASSIVES).length,16);
+for(const id of ids){
+ const p=Skills.breedPassive(id);assert.ok(p?.name.zh&&p?.name.en&&p?.desc.zh&&p?.desc.en);
+ const f={cat:{species:id},hp:100,maxhp:100,alive:true,moving:false,shieldT:0},target={hp:100,maxhp:100};
+ let t=20;
+ if(p.when==='opening')t=0;
+ if(p.when==='late')t=9;
+ if(p.when==='mid')t=10;
+ if(p.when==='low')f.hp=30;
+ if(p.when==='shield')f.shieldT=1;
+ if(p.when==='moving')f.moving=true;
+ if(p.when==='targetLow'||p.when==='targetCritical')target.hp=20;
+ assert.equal(Skills.breedPassiveFactor(f,p.channel,t,target),p.factor,id+' active');
+ const other=p.channel==='damage'?'incoming':'damage';
+ assert.equal(Skills.breedPassiveFactor(f,other,t,target),1,id+' unrelated channel');
+ t=p.when==='late'?0:30;f.hp=p.when==='healthy'?30:100;f.shieldT=0;f.moving=false;target.hp=100;
+ assert.equal(Skills.breedPassiveFactor(f,p.channel,t,target),1,id+' inactive');
+ f.alive=false;assert.equal(Skills.breedPassiveFactor(f,p.channel,0,target),1,id+' fainted');
+}
+assert.equal(Skills.breedPassive('jinjc'),null);assert.equal(Skills.breedPassive('story_muling'),null);
+console.log('BREED PASSIVE CONTRACT PASS',16,'active/inactive/channel checks');
