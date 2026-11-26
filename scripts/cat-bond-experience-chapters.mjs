@@ -20,7 +20,7 @@ async function run(chapter){
  const context=await browser.newContext({storageState:fixture.storageState,viewport:{width:1440,height:900}});
  const page=await context.newPage(),errors=[],readLines=[],steps=[];
  page.setDefaultTimeout(18000);page.on('pageerror',e=>errors.push(e.message));
- await attachExperienceRecorder(context,page,{id:'chapter-'+chapter,root:out,synthetic:true});
+ await attachExperienceRecorder(context,page,{id:'chapter-'+chapter,root:out,synthetic:true,chapterEntry:start});
  const view=()=>page.evaluate(()=>CatBondResonance.view());
  const scene=id=>page.waitForFunction(id=>CatBondResonance.view().current?.id===id,id,{timeout:35000});
  const shot=id=>page.screenshot({path:out+'/'+chapter+'-'+id.replace(':','-')+'.png'});
