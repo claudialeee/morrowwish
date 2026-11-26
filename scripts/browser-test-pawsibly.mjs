@@ -415,12 +415,13 @@ try{
  await page.locator('#menuButton').click();
  await page.locator('[data-game-tab="help"]').click();
  assert.equal(await page.locator('#gameMenu #music, #gameMenu #sound, #gameMenu [data-set-lang]').count(),0,'Help must not duplicate header sound or language controls');
- assert.equal(await page.locator('#stageControls #music, #stageControls #sound').count(),2,'Music and sound effects must both remain in the visible game HUD');
+ const musicButton=page.locator('#stageControls #mw-game-settings .mw-settings-music');
+ const audioButton=page.locator('#stageControls #mw-game-settings .mw-settings-sfx');
+ assert.ok(await musicButton.isVisible()&&await audioButton.isVisible(),'Actual unified music and sound controls must remain visible in the game HUD');
  await page.locator('#menuClose').click();
- const audioButton=page.locator('#sound');
- await audioButton.evaluate(button=>button.click());
+ await audioButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),false,'Mute button must actually silence the score');
- await audioButton.evaluate(button=>button.click());
+ await audioButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Sound button must restore audio');
 
  // Cat gets a real, recorded piano theme; the five other games stay effects-only.
@@ -436,13 +437,12 @@ try{
  const playing=await page.evaluate(()=>window.MorrowwishCatMusic.status());
  assert.equal(playing.error,'','Recorded cat music must not report a playback error');
  assert.ok(playing.readyState>=2,'Recorded cat music must be decoded and playable');
- assert.match(await page.locator('#music').textContent(),/背景音乐/,'Chinese music control must be localized');
- const musicButton=page.locator('#music');
- await musicButton.evaluate(button=>button.click());
+ assert.match(await musicButton.getAttribute('aria-label'),/音乐/,'Chinese music control must be localized');
+ await musicButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishCatMusic.status().playing),false,'Music toggle must pause the recording');
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Music toggle must not mute effects');
- await musicButton.evaluate(button=>button.click());
- assert.equal(await page.evaluate(()=>window.MorrowwishCatMusic.status().playing),true,'Music toggle must resume the recorded theme');
+ await musicButton.click();
+ await page.waitForFunction(()=>window.MorrowwishCatMusic.status().playing===true);
  console.log('Real CC0 piano soundtrack and separate music/SFX controls:',JSON.stringify(playing));
 
  // Simulate a browser rejecting unprompted autoplay: the player must get a

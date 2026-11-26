@@ -1249,3 +1249,15 @@ html[data-mw-fullscreen-game="pawsibly-innocent"] #stageControls > #mw-fullscree
 .single-screen-game .in-game-actions #wait{order:1!important}
 .single-screen-game .in-game-actions #restart.replay-menu-trigger{order:2!important}
 .single-screen-game .in-game-actions #bonusQuick{order:3!important}
+
+/* Pawsibly's actual unified settings dock: touch-sized visible controls, not the hidden legacy buttons. */
+html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-game-settings button{box-sizing:border-box!important;width:40px!important;min-width:40px!important;height:42px!important;min-height:42px!important}
+html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-fullscreen-toggle{box-sizing:border-box!important;flex:0 0 42px!important;width:42px!important;min-width:42px!important;max-width:42px!important;height:42px!important;min-height:42px!important}
+@media(max-width:700px){
+ html[data-mw-settings-game="pawsibly-innocent"]:not(.cg-play) .single-screen-game .in-game-head-row{display:flex!important;flex-direction:column!important;align-items:stretch!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;position:relative!important}
+ html[data-mw-settings-game="pawsibly-innocent"]:not(.cg-play) .single-screen-game .in-game-head-row .stage-left{width:calc(100% - 114px)!important;max-width:calc(100% - 114px)!important;align-self:flex-start!important}
+ html[data-mw-settings-game="pawsibly-innocent"]:not(.cg-play) .single-screen-game .in-game-head-row #heistStatus{position:absolute!important;top:7px!important;right:7px!important}
+ html[data-mw-settings-game="pawsibly-innocent"]:not(.cg-play) .single-screen-game .in-game-head-row #stageControls{width:100%!important;max-width:100%!important;display:flex!important;justify-content:center!important;flex-wrap:wrap!important;gap:3px!important;align-self:stretch!important}
+ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #menuButton{width:42px!important;min-width:42px!important;height:42px!important;min-height:42px!important;flex:0 0 42px!important}
+ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-game-settings{margin:0!important}
+}
