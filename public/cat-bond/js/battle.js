@@ -5478,6 +5478,13 @@ class CaptureBattle {
         return;
       }
       e.telegraph -= dt;
+      // Re-pin smash disc to the LIVE active cat during the first half of the windup
+      // so a cat-swap (or the active cat walking away) doesn't leave an orphan red circle
+      // in empty grass. Lock in the late half so dodge timing stays meaningful.
+      if (e.telegraphKind === 'smash' && e.smashTarget && (e.telegraph / (e.telegraphMax || 1)) > 0.5) {
+        const liveMe = this.me?.();
+        if (liveMe && liveMe.alive) { e.smashTarget.x = liveMe.x; e.smashTarget.y = liveMe.y; }
+      }
       if (Math.random() < 0.5) this.vfx.burst(e.x, e.y, { count: 1, color: '#ff4d6d', speed: 40, life: 0.3 });
       if (e.telegraph <= 0) { this.unleashEnemySpecial(e, me); }   // lock auto-clears next frame (recomputed)
       return;
