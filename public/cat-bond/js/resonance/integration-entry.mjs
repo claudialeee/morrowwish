@@ -1,5 +1,5 @@
 import "./narrative-host.mjs";
-import "./npc-world.mjs?v=immersive-ui-20261125";
+import "./npc-world.mjs?v=muling-map-silver-20261125";
 import "./ambient-play.mjs";
 import "./world-runtime.mjs?v=immersive-release-20261125";
 import "./title-entry.mjs?v=immersive-release-20261125";
