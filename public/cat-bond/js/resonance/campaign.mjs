@@ -2027,12 +2027,14 @@ export const campaign = {
         }
       ],
       "requires": [
+        "battle:observatory-echo",
         "puzzle:distributed-routing",
         "repair:starfall",
         "melody:starfall"
       ],
       "choices": [],
       "lineGate": [
+        "battle:observatory-echo",
         "puzzle:distributed-routing",
         "repair:starfall",
         "melody:starfall"
@@ -2737,5 +2739,6 @@ export const campaign = {
     }
   ],
   "openingPresentationVersion": 2,
+  "fullCampaignPresentationVersion": 2,
   "openingRevision": "canon-1.2-player-first-opening"
 };

@@ -6,6 +6,12 @@ export function makeEngine(data,initial){
  let s=initial==null?fresh():copy(initial);
  // Reset only legacy opening dialogue cursors; all other save fields are preserved.
  if(data.openingPresentationVersion===2&&s.openingPresentationVersion!==2){if(s.scene?.startsWith("prologue:"))s.cursor=0;s.openingPresentationVersion=2;}
+ if(data.fullCampaignPresentationVersion===2&&s.fullCampaignPresentationVersion!==2){
+  if(!s.scene?.startsWith("prologue:")&&!s.scene?.startsWith("harbor:")&&!s.scene?.startsWith("forest:")&&s.completed?.length<data.scenes.length)s.cursor=0;
+  if(s.completed?.length===data.scenes.length)s.cursor=byId[s.scene]?.lines.length??s.cursor;
+  for(const [from,to] of [["sky:S-03","sky:S-02"],["library:M-05","library:M-01"],["starfall:F-04","starfall:F-01"]])if(s.choices?.[from]&&!s.choices[to])s.choices[to]=s.choices[from];
+  s.fullCampaignPresentationVersion=2;
+ }
  if(typeof s.openingMet!=="boolean")s.openingMet=false;if(!s.ambientDone)s.ambientDone=[];if(!s.ruins)s.ruins={clears:s.postgame.includes("postgame:ruins")?1:0,duoClears:0,attempts:[]};
  const fail=reason=>({ok:false,reason}), commit=()=>({ok:true,state:copy({...s,revision:++s.revision})});
  const ring=()=>data.links.every(([a,b])=>s.links[a+":"+b].length===4);

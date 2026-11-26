@@ -85,6 +85,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(kind==="npc"||!["cinematic","explore","travel","puzzle","rescue","repair","melody","battle","mechanism"].includes(kind))return fail("invalid-source");
   if(s.chapter==="starfall"){const w=State.S.resonanceExploration;if(!token||w?.location!=="starfall")return fail("starfall-action-required");if(kind==="cinematic"){const p=w.positions?.starfall;if(!p||Math.hypot(p.x-.92,p.y-.30)>=.072)return fail("walk-to-central-ruins");}else if(["explore","puzzle","repair","melody"].includes(kind)&&typeof physical!=="function")return fail("starfall-world-evidence-required");}
   if(s.chapter==="finale"&&(!token||region!=="starfall"||State.S.resonanceExploration?.location!=="starfall"))return fail("finale-action-required");
+  if(operation==="battle:observatory-echo"){const p=State.S.resonanceExploration?.positions?.starfall;if(!p||Math.hypot(p.x-.78,p.y-.40)>=.072)return fail("walk-to-observatory");}
   if(kind==="battle"&&outcome!=="win")return fail("battle-not-won");
   if(kind==="battle"&&!token)return fail("action-token-required");
   if(campaign.regions.includes(s.chapter)&&region!==s.chapter)return fail("wrong-region");
