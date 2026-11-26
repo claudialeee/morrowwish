@@ -12,7 +12,7 @@ Branch review/cat-bond-playtest-harness. Do not deploy or merge automatically.
 1. Read EXPERIENCE-PRE-AUDIT.md for author-side critique and prioritized leads (spoilers).
 2. For first-player review, do not read future chapters: use knowledge/<route>-<chapter>.json (engine dialogue model) or a real browser run's evidence JSONL (actual visible text and inputs).
 3. Prefer checkpoints/ real browser saves; use synthetic-checkpoints/ only for local targeted review when real earned save is unavailable. The synthetic runner creates saves from actual engine transition snapshots and storyPartyPatch, then opens them via the normal Continue menu and checks scene/party/cursor. It does NOT reproduce earlier physical puzzle history, optional activities, combat progress or currency. Never count it as a real playthrough.
-4. Review chapter start and emotional peaks; prioritize H-04, S-04, M-03/04/05, F-02/03, B-03/04, E-02/03. No need to repeat all optional cargo deliveries or static code reading.
+4. Review every chapter, reachable scene, branch and implemented optional activity; prioritize H-04, S-04, M-03/04/05, F-02/03, B-03/04, E-02/03 for early investigation, not as a coverage limit. Reuse revision-matched evidence where appropriate; record unexecuted cases as unverified. The full-game coverage matrix and independent acceptance gate in EXPERIENCE-PLAYTEST.md govern handoff.
 5. Record player-visible confusion, boring/repeated action, emotional payoff, causal mismatch; compare before/after on the same target. Actual reactions remain hypotheses until tested by humans.
 6. Use local loopback server, no analytics or deployment. Keep game changes on an independent review branch.
 
