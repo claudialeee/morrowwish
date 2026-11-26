@@ -26,6 +26,9 @@ jobs:
         run: |
           node --check public/cat-bond/js/resonance/canon22-glide.mjs
           node --check public/cat-bond/js/resonance/canon22-spatial.mjs
+          node --check public/cat-bond/js/resonance/canon22-finale-replies.mjs
+          node --check public/cat-bond/js/resonance/finale-combat.mjs
+          node --check public/cat-bond/js/resonance/finale-latch.mjs
           node --check public/cat-bond/js/resonance/regional-combat.mjs
           node --check public/cat-bond/js/resonance/story-party.mjs
           node --check public/cat-bond/js/resonance/canon22-mirror.mjs
@@ -46,6 +49,7 @@ jobs:
           node scripts/test-cat-bond-canon22-mirror.mjs
           node scripts/test-cat-bond-canon22-epilogue.mjs
           node scripts/test-cat-bond-canon22-spatial.mjs
+          node scripts/test-cat-bond-canon22-finale.mjs
           node scripts/test-cat-bond-player-first.mjs
           node scripts/test-cat-bond-story-party.mjs
       - name: Run campaign integration regressions

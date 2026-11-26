@@ -2,12 +2,14 @@ import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud}
 // Real-time finale adapter for the existing CaptureBattle; narrative state remains in the active slot.
 import {campaign} from "./campaign.mjs";
 import {REGION_KITS} from "./regional-combat.mjs";
+import {newReplyEdge,clearReplySource,disruptReply,advanceReply,replyProof,validReplyProof} from "./canon22-finale-replies.mjs";
 export const PHASES=Object.freeze({
  "finale:B-01":"battle:inward-gates",
  "finale:B-02":"battle:identify-echo",
  "finale:B-03":"battle:central-echo"
 });
 const REGIONS=Object.keys(REGION_KITS);
+const finaleNodes=(id,W,H,top,bottom)=>nodePositions(W,H,top,bottom).filter((_,i)=>id!=="finale:B-01"||i%2===0);
 const ALLIES=Object.fromEntries(REGIONS.map(region=>[
  region,Object.values(campaign.cast).filter(actor=>actor.region===region)
 ]));
@@ -109,21 +111,21 @@ function install(){
    const catSp=fighters.map(c=>window.GameData.speciesById(c.species)).filter(Boolean);
    if(!catSp.length)return;
    // The lead species is a physics/stat template only. Finale enemies are not collectible cats.
-   const pack=id==="finale:B-01"?[base,...Array(6).fill(base)]:id==="finale:B-02"?[catSp[0],catSp[0],catSp[1]||catSp[0],catSp[1]||catSp[0],base,base]:[base];
+   const pack=id==="finale:B-01"?[base,...Array(3).fill(base)]:id==="finale:B-02"?[catSp[0],catSp[0],catSp[1]||catSp[0],catSp[1]||catSp[0],base,base]:[base,...Array(6).fill(base)];
    game.startBattle(fighters,base,{storyEncounter:"finale",pack});
    const b=game.battle;if(!b)return;
-   const f={id,root,token:host().captureAction(),revision:host().snapshot().revision,nodes:nodePositions(b.W,b.H,b.topMargin,b.bottomMargin),elapsed:0,cast:null,cooldown:2.8,cycle:0,confirmed:new Set(),verifiedGroups:new Set(),done:false,clueOpen:false,lastDuoUse:0,echoQuietUntil:0,wrongUntil:0,wrongCount:0,echoGroups:3};
-   b.resonanceFinale=f;b.storyEncounter=true;b.captureReady=false;
+   const f={id,root,token:host().captureAction(),revision:host().snapshot().revision,nodes:finaleNodes(id,b.W,b.H,b.topMargin,b.bottomMargin),elapsed:0,cast:null,cooldown:2.8,cycle:0,confirmed:new Set(),verifiedGroups:new Set(),done:false,clueOpen:false,lastDuoUse:0,echoQuietUntil:0,wrongUntil:0,wrongCount:0,echoGroups:3,probe:null,probeChanged:false,extractionStopped:false};
+   b.resonanceFinale=f;b.storyEncounter=true;b.captureReady=false;if(id==="finale:B-03")f.nodes.forEach((n,i)=>{n.reply=newReplyEdge(n.region,f.nodes[(i+1)%f.nodes.length].region)});
    b.enemies.forEach((e,i)=>{
      e.isBoss=true;e.rotation=[];e.ultSkill=null;e.specialMeter=-10000;e.fireCd=99999;e.reflectT=0;e.wardCd=99999;
-     e.maxhp=Math.max(55,Math.round(alive(b).reduce((n,x)=>n+x.maxhp,0)*(id==="finale:B-01"?(i===0?1:.20):id==="finale:B-02"?.32:1.6)));e.hp=e.maxhp;
+     e.maxhp=Math.max(55,Math.round(alive(b).reduce((n,x)=>n+x.maxhp,0)*(id==="finale:B-01"?(i===0?1:.20):id==="finale:B-02"?.25:(i===0?1.3:.14))));e.hp=e.maxhp;
      e.poiseMax=e.maxhp;e.poise=e.poiseMax;
      if(id==="finale:B-01"){e.finaleActor=i===0?"muling":"gate";e.gateIndex=i-1;e.combatName=i===0?["暮铃","Muling"]:["逆响锁","Inward lock"];}
      else if(id==="finale:B-02"){e.finaleActor="echo";e.echoGroup=Math.floor(i/2);e.impostor=(i%2)===((f.revision+e.echoGroup)%2);e.echoObserved=0;e.echoFirstBeat=null;e.echoGap=null;
       e.echoCat=e.echoGroup===2?null:fighters[e.echoGroup]||fighters[0];e.echoHabit=e.echoGroup===2?1.40:echoHabit(e.echoCat);e.dexVerified=false;e.combatName=e.echoGroup===2?["暮铃的回应","Muling’s reply"]:[window.State.catName(e.echoCat),window.State.catName(e.echoCat)];}
-     else{e.finaleActor="central";e.combatName=["空白回响","Hollow Echo"];}
+     else{e.finaleActor=i===0?"central":"reply-source";e.gateIndex=i-1;e.combatName=i===0?["空白回响","Hollow Echo"]:["复制声源","Copied source"];}
    });
-   if(id==="finale:B-03"){const done=host().snapshot().support||[];for(const n of f.nodes)n.done=done.includes(n.region);}
+   if(id==="finale:B-03"){for(const n of f.nodes){n.done=false;n.progress=0;}}
    mount(b);paint(b);
   }});return true;
  }
@@ -143,9 +145,7 @@ function install(){
  // the record again and toggling battle mode cannot farm charge.
  function verifyEchoRecord(b,e){
   const f=b.resonanceFinale;
-  if(f?.id!=="finale:B-02"||!f.clueOpen||!e.alive||e.finaleActor!=="echo"||e.echoObserved<1||!identifyEcho(e.echoHabit,e.echoGap))return false;
-  const hasRecord=e.echoGroup===2||!!(e.echoCat&&window.State.S.dex?.[e.echoCat.species]>0);
-  if(!hasRecord)return false;
+  if(f?.id!=="finale:B-02"||!f.probeChanged||!e.alive||e.finaleActor!=="echo"||e.echoObserved<1||!e.impostor)return false;
   e.dexVerified=true;
   if(!f.verifiedGroups.has(e.echoGroup)){
    f.verifiedGroups.add(e.echoGroup);
@@ -159,7 +159,7 @@ function install(){
   return true;
  }
  function verifyCatdex(b){
-  const f=b.resonanceFinale;if(!f?.clueOpen||f.id!=="finale:B-02"||!b.autoMode)return;
+  const f=b.resonanceFinale;if(!f?.probeChanged||f.id!=="finale:B-02"||!b.autoMode)return;
   for(const e of b.liveEnemies())if(!e.dexVerified)verifyEchoRecord(b,e);
  }
  function paint(b){
@@ -169,13 +169,13 @@ function install(){
   set("[data-finale-title]",tr(...sceneTitle[f.id]));
   const first=f.id==="finale:B-01",second=f.id==="finale:B-02";
   const enemyName=document.getElementById("wild-name");
-  if(enemyName)enemyName.textContent=first?tr("暮铃","Muling"):tr("空白回响","Hollow Echo");
+  if(enemyName)enemyName.textContent=first?tr("防护节点","Protection nodes"):tr("空白回响","Hollow Echo");
   const next=f.nodes.find(node=>!node.done);
   const effect=next&&f.id==="finale:B-03"?regionalEffects(b,next.region):null;
   const bonus=effect?" · "+tr("协作 "+effect.required.toFixed(1)+"秒 / 失守伤害 "+effect.pulseDamage,"Hold "+effect.required.toFixed(1)+"s / unguarded damage "+effect.pulseDamage)+(effect.gardenLevel?tr(" · 家园 Lv."," · Garden Lv.")+effect.gardenLevel:""):"";
   const reply=next?tr(...REPLY_OBJECTIVES[next.region])+bonus:tr("六段旋律已归位，攻击中央回响。","All six melodies have returned. Strike the central echo.");
-  set("[data-finale-objective]",first?tr("打断六个逆响锁。挡住袭向地区伙伴的铃声。","Break all six inward locks. Intercept bell pulses aimed at the regional allies."):second?tr("观察回应节拍；攻击第二次敲击过早的回响。","Observe the reply rhythm. Strike the echo whose second beat is too early."):reply);
-  set("[data-finale-count]",first?f.nodes.filter(n=>n.done).length+"/6":second?f.confirmed.size+"/"+f.echoGroups:f.nodes.filter(n=>n.done).length+"/6"+(next?" · "+Math.floor(100*next.progress/(next.required||4))+"%":""));
+  set("[data-finale-objective]",first?tr("击破三个防护节点，不要攻击暮铃。","Break the three protection nodes; do not attack Muling."):second?(f.probeChanged?tr("暮铃已停止抽取。击破不回应新位置的复制影像！","Muling stopped the extraction. Strike the copies that ignore your new position!"):tr("改变位置，观察谁真正回应你。","Move to a new position and watch which replies are genuine.")):next?(next.reply?.cleared?tr("守住铃光，等两地分别回铃。","Stay in the bell light while both lands reply."):tr("击破亮区里的复制声源，再守住铃光。","Break the copied source in the light, then hold the light.")):tr("六条邻路都已回应，等待稳定后攻击中央。","All six edges replied; wait for stability, then strike the center."));
+  set("[data-finale-count]",first?f.nodes.filter(n=>n.done).length+"/"+f.nodes.length:second?f.confirmed.size+"/"+f.echoGroups:f.nodes.filter(n=>n.done).length+"/6"+(next?" · "+Math.floor(100*next.progress/(next.required||4))+"%":""));
   const regionStatus=el.querySelector("[data-finale-regions]"),warning=el.querySelector("[data-finale-warning]");
   regionStatus.hidden=second;
   if(!second){
@@ -185,14 +185,14 @@ function install(){
   warning.hidden=second||!f.cast;
   if(!warning.hidden){const n=f.nodes[f.cast.node];warning.textContent=n?tr("铃声来袭：守护 ","Incoming pulse: protect ")+tr(...REGION_KITS[n.region].name):tr("中央回响：离开预警范围","Central echo: leave the marked area");}
   const clue=el.querySelector("[data-finale-clue]");
-  clue.hidden=!second;
+  clue.hidden=true;
   clue.textContent=f.clueOpen?tr("收起 Catdex","Close Catdex"):tr("查看 Catdex 记录","Check Catdex record");
   clue.setAttribute("aria-expanded",String(f.clueOpen));
   const focus=el.querySelector("[data-finale-focus]");
-  focus.hidden=!second||!f.clueOpen||b.autoMode;
-  if(!focus.hidden){const candidates=b.liveEnemies().filter(e=>e.echoObserved&&e.finaleActor==="echo");const signature=candidates.map(e=>e.i).join(",");if(focus.dataset.signature!==signature){focus.dataset.signature=signature;focus.replaceChildren();for(const e of candidates){const button=document.createElement("button");button.type="button";button.dataset.echo=String(e.i);button.onclick=()=>{if(b.done||!e.alive||e.echoGap===null)return;b._lockIdx=e.i;if(identifyEcho(e.echoHabit,e.echoGap)){const verified=verifyEchoRecord(b,e);notice(b,verified?"识别正确！共鸣蓄力增加。":"发现不一致的节拍，试着击破这道回响！",verified?"Correct identification! Resonance gained.":"A mismatched rhythm! Try breaking this echo.");b.vfx.ring(e.x,e.y,{r0:16,vr:150,life:.55,color:"#9edcd2",width:4});}else wrongReply(b,e);paint(b)};focus.append(button);}}for(const button of focus.children){const i=Number(button.dataset.echo),group=Math.floor(i/2);button.textContent=tr(["上","中","下"][group]+(i%2?"右":"左"),["Top","Mid","Bottom"][group]+(i%2?" R":" L"));button.setAttribute("aria-pressed",String(b._lockIdx===i));}}
+  focus.hidden=!second||!f.probeChanged||b.autoMode;
+  if(!focus.hidden){const candidates=b.liveEnemies().filter(e=>e.echoObserved&&e.finaleActor==="echo");const signature=candidates.map(e=>e.i).join(",");if(focus.dataset.signature!==signature){focus.dataset.signature=signature;focus.replaceChildren();for(const e of candidates){const button=document.createElement("button");button.type="button";button.dataset.echo=String(e.i);button.onclick=()=>{if(b.done||!e.alive||e.echoGap===null)return;b._lockIdx=e.i;if(e.impostor&&e.echoObserved){const verified=verifyEchoRecord(b,e);notice(b,verified?"识别正确！共鸣蓄力增加。":"发现不一致的节拍，试着击破这道回响！",verified?"Correct identification! Resonance gained.":"A mismatched rhythm! Try breaking this echo.");b.vfx.ring(e.x,e.y,{r0:16,vr:150,life:.55,color:"#9edcd2",width:4});}else wrongReply(b,e);paint(b)};focus.append(button);}}for(const button of focus.children){const i=Number(button.dataset.echo),group=Math.floor(i/2);button.textContent=tr(["上","中","下"][group]+(i%2?"右":"左"),["Top","Mid","Bottom"][group]+(i%2?" R":" L"));button.setAttribute("aria-pressed",String(b._lockIdx===i));}}
   const record=el.querySelector("[data-finale-record]");
-  record.hidden=!second||!f.clueOpen;
+  record.hidden=true;
   if(!record.hidden){
    const groups=[0,1,2].filter(group=>!f.confirmed.has(group));
    const entries=groups.map(group=>{
@@ -209,7 +209,7 @@ function install(){
  }
  function points(b){
   const f=b.resonanceFinale,old=f.nodes;
-  f.nodes=nodePositions(b.W,b.H,b.topMargin,b.bottomMargin).map((n,i)=>({...n,integrity:old[i].integrity,progress:old[i].progress,required:old[i].required,done:old[i].done}));
+  f.nodes=finaleNodes(f.id,b.W,b.H,b.topMargin,b.bottomMargin).map((n,i)=>({...n,integrity:old[i].integrity,progress:old[i].progress,required:old[i].required,done:old[i].done,reply:old[i].reply}));
   if(f.cast){const n=f.nodes[f.cast.node];if(n){f.cast.x=n.x;f.cast.y=n.y;}else{const me=b.me();if(me){f.cast.x=me.x;f.cast.y=me.y;}}const actor=b.liveEnemies().find(e=>e.finaleActor==="muling"||e.finaleActor==="central");if(actor){f.cast.fromX=actor.x;f.cast.fromY=actor.y;}}
  }
  const resize=BP.onResize;
@@ -217,7 +217,7 @@ function install(){
  const ai=BP.updateEnemyAI;
  BP.updateEnemyAI=function(dt,e,me){
   const f=this.resonanceFinale;if(!f)return ai.call(this,dt,e,me);
-  if(e.finaleActor==="gate"){const n=f.nodes[e.gateIndex];e.x=n.x;e.y=n.y;e.vx=e.vy=0;e.pose="idle";return;}
+  if(e.finaleActor==="gate"||e.finaleActor==="reply-source"){const n=f.nodes[e.gateIndex];e.x=n.x;e.y=n.y;e.vx=e.vy=0;e.pose="idle";return;}
   if(e.finaleActor==="echo"){
    const area=this.H-this.topMargin-this.bottomMargin;
    const offset=Math.max(.16,Math.min(.23,100/this.W));
@@ -232,7 +232,8 @@ function install(){
  const hurt=BP.hurtEnemy;
  BP.hurtEnemy=function(e,dmg,...args){
   const f=this.resonanceFinale;if(!f)return hurt.call(this,e,dmg,...args);
-  if(e.finaleActor==="muling"||(e.finaleActor==="central"&&!f.nodes.every(n=>n.done)))return 0;
+  if(e.finaleActor==="muling"||(e.finaleActor==="central"&&!validReplyProof(REGIONS,f.nodes.map(n=>replyProof(n.reply)),f.elapsed)))return 0;
+  if(e.finaleActor==="reply-source"){const n=f.nodes[e.gateIndex];if(!n||f.nodes.find(x=>!x.done)!==n||!alive(this).some(x=>distance(x,n)<=82))return 0;}
   if(e.finaleActor==="echo"&&(!e.impostor||e.echoObserved<1)){
     // A premature or incorrect hit cannot remove a genuine reply.
     if(!this.autoMode&&this._lockIdx===e.i&&!args[2]&&!args[3]&&f.elapsed>=f.wrongUntil){
@@ -243,13 +244,13 @@ function install(){
   // An automatic strike can arrive on the same frame as a measured reply or
   // mode switch. Verify the observed record before damage can remove that
   // group; paint() alone is too late when a fast hit defeats the echo.
-  if(e.finaleActor==="echo"&&this.autoMode&&f.clueOpen)verifyEchoRecord(this,e);
+  if(e.finaleActor==="echo"&&this.autoMode&&f.probeChanged)verifyEchoRecord(this,e);
   const r=hurt.call(this,e,e.finaleActor==="echo"&&e.dexVerified?dmg*1.25:dmg,...args);
+  if(e.finaleActor==="reply-source"&&!e.alive){const n=f.nodes[e.gateIndex];clearReplySource(n.reply,f.elapsed);this.vfx.ring(n.x,n.y,{r0:15,vr:160,life:.6,color:n.color,width:4});paint(this);}
   if(e.finaleActor==="gate"&&!e.alive){
     const n=f.nodes[e.gateIndex];n.done=true;n.integrity=Math.max(1,n.integrity);
     const broken=f.nodes.filter(n=>n.done).length;
-    if(broken===2)notice(this,"暮铃：共鸣锁正在松动，星铃还需要稳定！","Muling: The resonance locks are loosening. We still need to stabilize the bell!");
-    if(broken===4)notice(this,"守铃者：最后一道锁打开了！让我们听听六地的回应！","Bellkeeper: The last lock is open! Let's listen to the six regions!");
+    if(broken===2)notice(this,"防护节点正在松动，最后的锁仍在暮铃手里。","The protection nodes are loosening. Muling still holds the final lock.");
     if(f.cast?.node===e.gateIndex)f.cast=null;
     this.vfx.ring(n.x,n.y,{r0:18,vr:200,life:.55,color:n.color,width:5});paint(this);
     if(f.nodes.every(n=>n.done)){const muling=this.enemies.find(x=>x.finaleActor==="muling");muling.alive=false;muling.hp=0;}
@@ -265,8 +266,8 @@ function install(){
   if(!e?.alive)return false;
   const f=b.resonanceFinale;if(!f)return true;
   if(f.id==="finale:B-01")return e.finaleActor==="gate";
-  if(f.id==="finale:B-02")return e.finaleActor==="echo"&&e.echoObserved>=1&&identifyEcho(e.echoHabit,e.echoGap);
-  return e.finaleActor==="central";
+  if(f.id==="finale:B-02")return e.finaleActor==="echo"&&f.probeChanged&&e.echoObserved>=1&&e.impostor;
+  const next=f.nodes.find(n=>!n.done);return next?e.finaleActor==="reply-source"&&f.nodes[e.gateIndex]===next:e.finaleActor==="central"&&validReplyProof(REGIONS,f.nodes.map(n=>replyProof(n.reply)),f.elapsed);
  }
  const command=BP.commandedTarget;
  BP.commandedTarget=function(x,y){
@@ -298,7 +299,7 @@ function install(){
   return list.sort((a,c)=>Math.hypot(x-a.x,y-a.y)-Math.hypot(x-c.x,y-c.y))[0]||null;
  };
  function castPulse(b,f){
-  const n=f.id==="finale:B-03"?f.nodes.find(n=>!n.done):f.nodes.find((n,i)=>i>=f.cycle%6&&!n.done)||f.nodes.find(n=>!n.done);
+  const n=f.id==="finale:B-03"?(f.cycle%4===3&&f.nodes.some(n=>n.done)&&f.nodes.some(n=>!n.done)?f.nodes.filter(n=>n.done).at(-1):f.nodes.find(n=>!n.done)):f.nodes.find((n,i)=>i>=f.cycle%f.nodes.length&&!n.done)||f.nodes.find(n=>!n.done);
   const actor=b.liveEnemies().find(e=>e.finaleActor==="muling"||e.finaleActor==="central");
   if(!actor)return;
   if(n){const broken=f.nodes.filter(n=>n.done).length;f.cast={node:f.nodes.indexOf(n),remaining:Math.max(.85,1.4-broken*.06),x:n.x,y:n.y,fromX:actor.x,fromY:actor.y,style:f.id==="finale:B-01"&&f.cycle%2===1?"chain":"pulse"};f.cycle++;}
@@ -306,9 +307,10 @@ function install(){
  }
  function releasePulse(b,f,c){
   const n=f.nodes[c.node],r=56;
-  if(n?.done)return;
+  if(n?.done&&f.id!=="finale:B-03")return;
   const guards=alive(b).filter(x=>distance(x,c)<=r);
-  if(n&&!n.done&&!guards.length){n.integrity=Math.max(0,n.integrity-(f.id==="finale:B-03"?regionalEffects(b,n.region).pulseDamage:32));n.progress=0;if(n.integrity===0){notice(b,"地区伙伴无法继续行动。","A regional ally group can no longer continue.");f.failedProtection=true;b.finish(false);}}
+  if(n&&f.id==="finale:B-03"&&n.done&&!guards.length){disruptReply(n.reply,f.elapsed);n.done=false;n.progress=0;notice(b,"邻铃的回应被打断，回到光里重新接唱。","A neighbor reply was interrupted. Return to the light to reconnect.");}
+  if(n&&!n.done&&!guards.length){n.integrity=Math.max(0,n.integrity-(f.id==="finale:B-03"?regionalEffects(b,n.region).pulseDamage:32));n.progress=0;if(n.reply)disruptReply(n.reply,f.elapsed);if(n.integrity===0){notice(b,"地区伙伴无法继续行动。","A regional ally group can no longer continue.");f.failedProtection=true;b.finish(false);}}
   for(const cat of guards)b.resolveHit(cat,"wild",{element:"dark",kind:"aoe",isBasic:false},Math.max(7,cat.maxhp*.12),cat.x,cat.y);
   if(c.style==="chain"){const dx=c.x-c.fromX,dy=c.y-c.fromY,len=Math.hypot(dx,dy)||1;for(const cat of alive(b)){if(guards.includes(cat))continue;const t=clamp(((cat.x-c.fromX)*dx+(cat.y-c.fromY)*dy)/(len*len),0,1);if(Math.hypot(cat.x-(c.fromX+dx*t),cat.y-(c.fromY+dy*t))<24)b.resolveHit(cat,"wild",{element:"dark",kind:"aoe",isBasic:false},Math.max(6,cat.maxhp*.09),cat.x,cat.y);}}
   paint(b);
@@ -318,55 +320,21 @@ function install(){
  function tick(b,dt){
   const f=b.resonanceFinale;if(!f||b.done)return;
   if(f.root!==window.State.S||!host()?.isCurrentAction?.(f.token)||host()?.view()?.current?.id!==f.id){b.finish(false);return;}
-  if(f.id==="finale:B-02"){
-   const duoTriggered=b.duoUses>f.lastDuoUse;
-   if(duoTriggered){
-    f.lastDuoUse=b.duoUses;
-    const pair=b.duo;
-    if(pair&&alive(b).filter(x=>[pair.a.uid,pair.b.uid].includes(x.cat.uid)).length===2){
-     for(const e of b.liveEnemies().filter(e=>e.impostor)){
-      e.echoObserved=1;
-      b.vfx.ring(e.x,e.y,{r0:16,vr:170,life:.65,color:"#f4db96",width:5});
-     }
-     if(window.CatRelations?.memoryList?.(pair.a,pair.b)?.includes("sakura")){
-      f.echoQuietUntil=f.elapsed+2.8;
-      notice(b,"双猫约定 · 打断下一次回声。","Duo Promise · The next copied reply is interrupted.");
-     }
-    }
-   }
-  }
   if(b.captureSeq||b.duoCinematic||b.ultCinematic||b.game.battleHelpOpen||b.coachHoldsEnemies?.())return;
   const d=clamp(dt*(b.tempoScale??.64),0,.06);f.elapsed+=d;
   // Count only active simulation time; do not trap a player in a stalled encounter.
   if(f.elapsed>145){b._timeCapLoss=true;f.timedOut=true;b.finish(false);return;}
   if(f.id==="finale:B-02"){
-   if(f.lastAuto!==b.autoMode||f.lastLock!==b._lockIdx){f.lastAuto=b.autoMode;f.lastLock=b._lockIdx;paint(b);}
-   const beat=f.elapsed%2.8,prev=(f.elapsed-d)%2.8;
-   const learning=f.clueOpen;
-   let newClue=false;
-   for(const e of b.liveEnemies()){
-    const [firstBeat,secondBeat]=rhythm(f.id,e.impostor,e.echoHabit);
-    if(prev<firstBeat&&beat>=firstBeat){
-     e.echoFirstBeat=firstBeat;
-     b.vfx.ring(e.x,e.y,{r0:10,vr:150,life:.50,color:"#d7c7a8",width:3});
-    }
-    if(prev<secondBeat&&beat>=secondBeat){
-     b.vfx.ring(e.x,e.y,{r0:10,vr:150,life:.50,color:"#d7c7a8",width:3});
-     if(e.echoFirstBeat!==null){
-      newClue||=e.echoGap===null;
-      e.echoGap=secondBeat-e.echoFirstBeat;
-      e.echoObserved=1;
-     }
-     if(e.impostor&&f.elapsed>=f.echoQuietUntil){
-      const me=b.me();
-      if(me){
-       const angle=Math.atan2(me.y-e.y,me.x-e.x);
-       b.spawnProj(e.x,e.y,angle,185,e.dmg*.62,"wild","#ccbbeb",7,"ball",{element:e.element,isBasic:true});
-      }
-     }
-    }
+   const me=b.me();if(!me?.alive)return;
+   if(!f.probe)f.probe={x:me.x,y:me.y,uid:me.cat.uid};
+   if(!f.probeChanged&&f.probe.uid!==me.cat.uid)f.probe={x:me.x,y:me.y,uid:me.cat.uid};
+   if(!f.probeChanged&&Math.hypot(me.x-f.probe.x,me.y-f.probe.y)>=48){
+    f.probeChanged=true;f.extractionStopped=true;
+    for(const e of b.liveEnemies()){e.echoObserved=1;e.echoGap=0;e.replyAt={x:me.x,y:me.y};if(!e.impostor)b.vfx.ring(e.x,e.y,{r0:10,vr:150,life:.6,color:"#f6dfa1",width:4});}
+    notice(b,"暮铃：是我压住了他们的声音。我把它停了！小心！","Muling: I drowned out their voices. I've stopped it! Watch out!");
+    paint(b);
    }
-   if(learning&&newClue)paint(b);
+   if(f.probeChanged&&f.elapsed>=f.cooldown){f.cooldown=f.elapsed+3.5;for(const e of b.liveEnemies().filter(e=>e.impostor)){const angle=Math.atan2(me.y-e.y,me.x-e.x);b.spawnProj(e.x,e.y,angle,185,e.dmg*.45,"wild","#ccbbeb",7,"ball",{element:e.element,isBasic:true});}paint(b);}
    return;
   }
   if(f.cast){f.cast.remaining-=d;if(f.cast.remaining<=0){const c=f.cast;f.cast=null;releasePulse(b,f,c);f.cooldown=3.1;}}
@@ -378,9 +346,11 @@ function install(){
   const need=regionalEffects(b,next.region).required;
   if(next.required!==need){next.required=need;paint(b);}
   const near=alive(b).some(x=>distance(x,next)<=56);
-  next.progress=holdProgress(next.progress,d,near,false,need);next.required=need;
+  const response=advanceReply(next.reply,d,f.elapsed,near,need);next.progress=next.reply.progress;next.required=need;
+  if(response==="first"){b.vfx.ring(next.x,next.y,{r0:8,vr:130,life:.6,color:next.color,width:3});window.MorrowwishAudio?.note?.(329.63,.3,.12);}
+  if(response==="second"){const neighbor=f.nodes[(f.nodes.indexOf(next)+1)%f.nodes.length];b.vfx.ring(neighbor.x,neighbor.y,{r0:8,vr:160,life:.7,color:neighbor.color,width:4});window.MorrowwishAudio?.note?.(440,.35,.12);}
   const progressBucket=Math.floor(next.progress/need*20);if(f.progressBucket!==progressBucket){f.progressBucket=progressBucket;paint(b);}
-  if(next.progress>=need){
+  if(next.reply.done){
    // Stage the verified physical action in this fight; a retreat cannot grant narrative evidence.
    next.done=true;if(f.cast?.node===f.nodes.indexOf(next)){f.cast=null;f.cooldown=Math.max(f.cooldown,2.0);}b.vfx.ring(next.x,next.y,{r0:15,vr:240,life:.8,color:next.color,width:5});
    for(const cat of alive(b))cat.hp=Math.min(cat.maxhp,cat.hp+Math.ceil(cat.maxhp*(next.region==="forest"?.09:.035)));
@@ -396,7 +366,7 @@ function install(){
  const capture=BP.startCaptureSeq;
  BP.startCaptureSeq=function(){
   const f=this.resonanceFinale;if(!f)return capture.call(this);
-  const success=f.id==="finale:B-01"?f.nodes.every(n=>n.done&&n.integrity>0):f.id==="finale:B-02"?f.confirmed.size===f.echoGroups:f.nodes.every(n=>n.done&&n.integrity>0);
+  const success=f.id==="finale:B-01"?f.nodes.every(n=>n.done&&n.integrity>0):f.id==="finale:B-02"?f.extractionStopped&&f.confirmed.size===f.echoGroups:f.nodes.every(n=>n.done&&n.integrity>0)&&validReplyProof(REGIONS,f.nodes.map(n=>replyProof(n.reply)),f.elapsed);
   if(!success){this.finish(false);return;}
   f.done=true;this.projectiles=[];this.captureSeq={t:.8,max:.8,x:this.W/2,y:this.H/2,sp:null,cat:null};
  };
@@ -421,8 +391,10 @@ function install(){
   syncCinematicHud(document.getElementById("cb-finale-hud"),this);
   if(cinematicActive(this))return;
   ctx.save();ctx.lineWidth=2;
+  if(f.id==="finale:B-02"&&f.probeChanged){const me=this.me();if(me?.alive)for(const e of this.liveEnemies().filter(e=>!e.impostor)){ctx.strokeStyle="#f7dd9b";ctx.globalAlpha=.65;ctx.setLineDash([5,8]);ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(me.x,me.y);ctx.stroke();}ctx.setLineDash([]);ctx.globalAlpha=1;}
   if(f.id==="finale:B-03"){for(let i=0;i<f.nodes.length;i++){const n=f.nodes[i],next=f.nodes[(i+1)%f.nodes.length];if(!n.done)continue;ctx.save();ctx.strokeStyle=n.color;ctx.shadowColor=n.color;ctx.shadowBlur=10;ctx.globalAlpha=.7+.2*Math.sin(f.elapsed*3+i);ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(next.x,next.y);ctx.stroke();ctx.restore();}}
   if(f.id!=="finale:B-02")for(const n of f.nodes){
+    if(f.id==="finale:B-03"&&n===f.nodes.find(x=>!x.done)){const g=ctx.createRadialGradient(n.x,n.y,4,n.x,n.y,82);g.addColorStop(0,"#ffe8af88");g.addColorStop(1,"#ffe8af00");ctx.fillStyle=g;ctx.fillRect(n.x-82,n.y-82,164,164);}
     ctx.strokeStyle=n.color;ctx.fillStyle="rgba(20,28,42,.82)";ctx.beginPath();ctx.arc(n.x,n.y,24,0,Math.PI*2);ctx.fill();ctx.stroke();
     ctx.globalAlpha=n.done?.95:.58;ctx.strokeStyle=n.color;ctx.beginPath();ctx.arc(n.x,n.y,19,-Math.PI/2,-Math.PI/2+Math.PI*2*(n.done?1:f.id==="finale:B-03"?n.progress/(n.required||4):n.integrity/100));ctx.stroke();
     ctx.globalAlpha=1;
@@ -463,8 +435,8 @@ function install(){
   if(win&&valid&&active.isCurrentAction(f.token)){
    const proof={sceneId:f.id,operation:PHASES[f.id],region:"starfall",verified:true,outcome:"win",token:f.token};
    const r=f.id==="finale:B-03"
-    ?active.commitFinaleVictory({...proof,participants:f.nodes.map(({region,action})=>({region,action}))})
-    :active.recordEvidence(proof);
+    ?active.commitFinaleVictory({...proof,participants:f.nodes.map(({region,action})=>({region,action})),replies:f.nodes.map(n=>replyProof(n.reply)),stableAt:f.elapsed})
+    :active.recordEvidence({...proof,extractionStopped:f.extractionStopped,probeChanged:f.probeChanged});
    committed=!!r?.ok;
   }
   if(same&&valid&&(!win||!committed)){if(!win){const result=window.State.save();if(!result?.ok)restoreHealth();}else restoreHealth();}
@@ -484,7 +456,7 @@ function install(){
    const drawn=window.CatBondResonanceNPC?.drawResident?.(ctx,"muling",{x:e.x,y:e.y+28,scale:e.finaleActor==="muling"?.78:.58,time:b.t});
    ctx.restore();return !!drawn;
   }
-  if(e.finaleActor==="gate"){
+  if(e.finaleActor==="gate"||e.finaleActor==="reply-source"){
    ctx.save();ctx.translate(e.x,e.y);ctx.rotate(b.t*.28);ctx.strokeStyle="#d7c49b";ctx.lineWidth=3;ctx.shadowColor="#e4b87b";ctx.shadowBlur=9;
    for(let i=0;i<3;i++){ctx.rotate(Math.PI/3);ctx.beginPath();ctx.ellipse(0,0,22,9,0,0,Math.PI*2);ctx.stroke();}
    ctx.restore();return true;
@@ -500,6 +472,7 @@ function install(){
  }
  function guardSteering(b,fighter){
   const f=b.resonanceFinale;if(!f||!b.autoMode||!fighter.alive)return null;
+  if(f.id==="finale:B-02"&&!f.probeChanged){const me=b.me();if(!me||me.cat.uid!==fighter.cat.uid||!f.probe)return null;const target={x:f.probe.x<b.W/2?b.W*.78:b.W*.22,y:clamp(f.probe.y,b.topMargin+32,b.H-b.bottomMargin-32)},dx=target.x-fighter.x,dy=target.y-fighter.y,d=Math.hypot(dx,dy);return d>1?{x:dx/d,y:dy/d}:{x:0,y:0};}
   const n=f.id==="finale:B-01"&&f.cast?.node>=0?f.nodes[f.cast.node]:f.id==="finale:B-03"?f.nodes.find(n=>!n.done):null;
   if(!n||n.done)return null;
   // Assign one actual living fighter to defend the node, leaving the others free to attack.

@@ -2,6 +2,7 @@ import {campaign} from "./campaign.mjs";
 import {makeEngine} from "./engine.mjs";
 import {layouts} from "./world-exploration.mjs";
 import {storyPartyPatch} from "./story-party.mjs";
+import {validReplyProof} from "./canon22-finale-replies.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason});
 const runtimes=new WeakMap();
@@ -77,7 +78,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   const v=view();if(!token||!check(token)||verified!==true||region!=="garden"||npcId!=="muling"||sceneId!==v.current?.id||!v.objective.includes(operation)||v.cursor!==v.current.lines.length||!["npc:public-accountability","npc:second-garden-key"].includes(operation))return fail("npc-scene-incomplete");
   return op(sceneId,operation,{token});
  }
- function evidence({sceneId,operation,region,verified,outcome,token}={},physical){
+ function evidence({sceneId,operation,region,verified,outcome,token,extractionStopped,probeChanged,stableUnlock}={},physical){
   if(!check(token))return fail("stale-action");
   const s=view().current;
   if(!s||sceneId!==s.id||verified!==true||!s.requires.includes(operation))return fail("invalid-evidence");
@@ -97,13 +98,16 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(kind==="battle"&&!token)return fail("action-token-required");
   if(campaign.regions.includes(s.chapter)&&region!==s.chapter)return fail("wrong-region");
   if(kind==="travel"&&region!==operation.split(":")[1])return fail("wrong-destination");
+  if(sceneId==="finale:B-02"&&operation==="battle:identify-echo"&&(extractionStopped!==true||probeChanged!==true))return fail("live-response-required");
+  if(operation==="mechanism:muling-unlock"){const proof=State.S.resonanceExploration?.interactions?.["finale:B-03:live-replies"];if(stableUnlock!==true||!validReplyProof(campaign.regions,proof?.replies,proof?.stableAt))return fail("stable-replies-required");}
   if(physical&&!["explore","puzzle","rescue","repair","melody","travel"].includes(kind))return fail("invalid-physical-source");
   return op(sceneId,operation,{token,physical});
  }
  function ambient({id,operation,region,verified,token}={}){if(verified!==true||!read().ambientAvailable(region).some(a=>a.id===id&&a.operation===operation))return fail("invalid-ambient-evidence");return transaction(e=>e.ambient(id,operation),{token})}
- function commitFinaleVictory({sceneId,operation,region,participants,verified,outcome,token}={}){
+ function commitFinaleVictory({sceneId,operation,region,participants,replies,stableAt,verified,outcome,token}={}){
   if(!token||!check(token)||verified!==true||outcome!=="win"||sceneId!=="finale:B-03"||operation!=="battle:central-echo"||region!=="starfall"||State.S.resonanceExploration?.location!=="starfall")return fail("invalid-finale-victory");
   if(!Array.isArray(participants)||participants.some(x=>!x)||participants.length!==campaign.regions.length||new Set(participants.map(x=>x?.region)).size!==participants.length||participants.some(({region,action})=>!campaign.regions.includes(region)||campaign.support[campaign.regions.indexOf(region)]!==action))return fail("incomplete-finale-support");
+  if(!validReplyProof(campaign.regions,replies,stableAt))return fail("live-replies-incomplete");
   return transaction(engine=>{
    const saved=engine.snapshot();
    for(const {region,action} of participants){
@@ -112,7 +116,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
     if(!result.ok)return result;
    }
    return engine.record(sceneId,operation);
-  },{token,physical:old=>({coins:(old.coins||0)+180,fish:(old.fish||0)+8})});
+  },{token,physical:old=>({coins:(old.coins||0)+180,fish:(old.fish||0)+8,resonanceExploration:{...old.resonanceExploration,interactions:{...old.resonanceExploration?.interactions,["finale:B-03:live-replies"]:{replies:clone(replies),stableAt}}}})});
  }
  function support({region,action,verified,token}={}){if(verified!==true)return fail("support-unverified");if(!token)return fail("action-token-required");return transaction(e=>e.supportAction(region,action),{token})}
  function exchange({a,b,stage,actor,action,verified,token}={},physical){if(verified!==true||!token)return fail("exchange-unverified");const w=State.S.resonanceExploration;if(w?.location!==actor)return fail("wrong-map-location");const cargo=w.cargo;if(typeof physical!=="function"||!cargo||!["a","b","stage","actor","action"].every(k=>cargo[k]===({a,b,stage,actor,action})[k]))return fail("exchange-evidence-missing");const path=layouts[actor]?.paths,index=["sendA","receiveB","sendB","receiveA"].indexOf(stage),to=index%2===0?1:0,point=actor==="forge"?[[.35,.76],[.79,.364]][to]:path?.[to===0?1:path.length-2],pos=w.positions?.[actor];

@@ -20,7 +20,7 @@ export function openFinaleLatch(){
  let started=null, frame=0;
  function render(){
   heading.textContent=text("最后的锁","The last lock");
-  hint.textContent=text("扶住放松的铃链，让暮铃打开最后一道锁。","Hold the loose bell chain while Muling opens the last lock.");
+  hint.textContent=text("扶住铃链，听六地持续回应。暮铃会亲手打开最后的锁。","Steady the chain and listen to the six lands. Muling will open the final lock herself.");
   hold.textContent=text("按住铃链","Hold the bell chain");
   cancel.textContent=text("返回","Back");
   overlay.setAttribute("aria-label",heading.textContent);
@@ -40,7 +40,7 @@ export function openFinaleLatch(){
   if(started===null)return;
   progress.value=Math.min(1,(now-started)/1450);
   if(progress.value<1){frame=requestAnimationFrame(tick);return;}
-  const result=api.recordEvidence({sceneId:view.current.id,operation,region:"starfall",verified:true,token});
+  const result=api.recordEvidence({sceneId:view.current.id,operation,region:"starfall",verified:true,token,stableUnlock:true});
   if(result.ok){
    window.MorrowwishAudio?.effect?.("discover");
    close();

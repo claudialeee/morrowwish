@@ -1944,62 +1944,29 @@ export const campaign = {
       "chapter": "finale",
       "title": {
         "zh": "不要替我选择",
-        "en": "Don't make the choice for me"
+        "en": "Don't choose for me"
       },
       "previous": "starfall:F-05",
       "lines": [
         {
           "speaker": "muling",
           "text": {
-            "zh": "别碰最后的锁！封印还没有稳定！",
-            "en": "Don't touch the last lock! The seal isn't stable yet!"
+            "zh": "别碰那把锁！再这样下去，你连这一路的事都要忘了！",
+            "en": "Don't touch that lock! At this rate you'll forget our whole journey too!"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "我不会毁掉封印。我要让每座铃都能听见别的声音。",
-            "en": "I won't break the seal. I'm going to let every bell hear the others."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "你又要冒险——",
-            "en": "You're risking yourself again—"
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你听，港口的灯还亮着。大家都在等我们的回答。我不是一个人来的。",
-            "en": "Listen. The harbor light is still burning. Everyone is waiting for our answer. I didn't come alone."
+            "zh": "这次我不是一个人。",
+            "en": "This time, I'm not alone."
           }
         }
       ],
       "requires": [
         "battle:inward-gates"
       ],
-      "choices": [
-        {
-          "id": "stop",
-          "npc": "muling",
-          "method": "final-stop",
-          "label": {
-            "zh": "暮铃，停下来听听大家的声音",
-            "en": "Muling, stop and hear everyone"
-          }
-        },
-        {
-          "id": "challenge",
-          "npc": "muling",
-          "method": "final-challenge",
-          "label": {
-            "zh": "不要再替我和别人做决定",
-            "en": "Don't decide for me or anyone else"
-          }
-        }
-      ],
+      "choices": [],
       "lineGate": [
         "battle:inward-gates"
       ],
@@ -2009,31 +1976,45 @@ export const campaign = {
       "id": "finale:B-02",
       "chapter": "finale",
       "title": {
-        "zh": "模仿不等于回应",
-        "en": "A copy cannot answer"
+        "zh": "不会回答的声音",
+        "en": "A voice that cannot answer"
       },
       "previous": "finale:B-01",
       "lines": [
         {
           "speaker": "muling",
+          "narration": true,
           "text": {
-            "zh": "空白回响：“我会在这里等你。”",
-            "en": "Hollow Echo: “I'll wait for you here.”"
-          },
-          "narration": true
+            "zh": "假回响：我会在这里等你。",
+            "en": "False echo: I'll wait for you here."
+          }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那句话我听过。可你不知道自己在等谁。",
-            "en": "I've heard those words. But you don't know who you're waiting for."
+            "zh": "你学得倒挺像。可你知道自己在等谁吗？",
+            "en": "That sounds just like her. But do you even know who you're waiting for?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "听它的节拍！它只会重复，不会等你回应。",
-            "en": "Listen to its rhythm! It can repeat, but it can't wait for your answer."
+            "zh": "别听它的！它就会学刚才那句，根本不管你说了什么！",
+            "en": "Don't listen to it! It just repeats the last line, no matter what you say!"
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "是我把他们的声音压下去了。够了！",
+            "en": "I'm the one drowning out their voices. No more!"
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "我把它停了。小心，剩下的回响全过来了！",
+            "en": "I've stopped it. Watch out—the echoes are all coming this way!"
           }
         }
       ],
@@ -2050,72 +2031,51 @@ export const campaign = {
       "id": "finale:B-03",
       "chapter": "finale",
       "title": {
-        "zh": "六个真实的回答",
-        "en": "Six living replies"
+        "zh": "六个不同的声音",
+        "en": "Six different voices"
       },
       "previous": "finale:B-02",
       "lines": [
         {
-          "speaker": "qilan",
+          "speaker": "jiedeng",
           "text": {
-            "zh": "港口收到星原的信号！灯路正常！",
-            "en": "Harbor has Starfall's signal! Beacon steady!"
+            "zh": "听见你了！",
+            "en": "We hear you!"
           }
         },
         {
-          "speaker": "yahe",
+          "speaker": "jinpo",
           "text": {
-            "zh": "上面和下面都收到啦！",
-            "en": "Both upper and lower settlements received it!"
-          }
-        },
-        {
-          "speaker": "xiaomao",
-          "text": {
-            "zh": "炉城的灯都亮着！火焰也稳住了！",
-            "en": "Every lantern in the forge is glowing! The flames are steady!"
-          }
-        },
-        {
-          "speaker": "yuanfan",
-          "text": {
-            "zh": "信号送到了，回信也到了！",
-            "en": "Signal delivered—and the reply's back!"
-          }
-        },
-        {
-          "speaker": "baikan",
-          "text": {
-            "zh": "是真正的声音！镜子里的假回响消失了！",
-            "en": "Those are real voices! The false echoes in the mirrors are gone!"
+            "zh": "往亮处来！",
+            "en": "Come into the light!"
           }
         },
         {
           "speaker": "xingya",
           "text": {
-            "zh": "最后一声也接上了！六座铃，谁都没少！",
-            "en": "The final note is in place! Six bells, not one missing!"
+            "zh": "接上了！这次没断！",
+            "en": "It's connected! It's holding!"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "它们都还记得自己……原来真的可以。",
-            "en": "They all still remember who they are… It really is possible."
+            "zh": "大家……都还记得自己是谁。",
+            "en": "Everyone… still remembers who they are."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "只差你的那把锁。你可以自己决定打开它。",
-            "en": "Only your lock remains. You can choose to open it."
+            "zh": "听见了吗？是他们自己的声音。暮铃，开吧。",
+            "en": "Hear that? Those are their own voices. Muling, open it."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我来打开它。这一次，我们一起回家。",
-            "en": "I'll open it. This time, we'll go home together."
+            "zh": "……嗯。这回一起回家。",
+            "en": "…Yeah. We're going home together this time."
           }
         }
       ],
@@ -2580,5 +2540,5 @@ export const campaign = {
   "openingPresentationVersion": 2,
   "fullCampaignPresentationVersion": 2,
   "openingRevision": "canon-1.2-player-first-opening",
-  "runtimeRevision": "canon-2.2-spatial-implementation"
+  "runtimeRevision": "canon-2.2-finale-implementation"
 };

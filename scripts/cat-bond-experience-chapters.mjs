@@ -129,11 +129,7 @@ async function run(chapter){
    for(let i=0;i<240;i++){if(await page.locator('#cb-forge-result').isVisible())break;const support=page.locator('[data-forge-support-button]');if(await support.isVisible()&&await support.isEnabled())await support.click();await page.waitForTimeout(750);}
    await page.locator('#cb-forge-result').waitFor({timeout:180000});await shot(operation+'-result');assert.equal(await page.locator('#cb-forge-result h2').innerText(),'FURNACE STABILIZED');await page.locator('[data-forge-return]').click();
   }else if(type==='finale'){
-   if(operation==='battle:identify-echo'){
-    const clue=page.locator('[data-finale-clue]');await clue.waitFor();await clue.click();
-    await page.waitForFunction(()=>__game.battle?.resonanceFinale?.clueOpen===true);
-    await shot(operation+'-catdex');
-   }
+   if(operation==='battle:identify-echo'){await page.waitForFunction(()=>__game.battle?.resonanceFinale?.probeChanged===true||!!document.getElementById('cb-finale-result'),null,{timeout:30000});await shot(operation+'-live-reply');}
    await page.locator('#cb-finale-result').waitFor({timeout:240000});await shot(operation+'-result');assert.equal(await page.locator('#cb-finale-result').getAttribute('data-finale-outcome'),'saved');await page.locator('[data-finale-return]').click();
   }else{
    await page.waitForFunction(()=>__game.scene==='map',null,{timeout:180000});
@@ -221,7 +217,7 @@ async function run(chapter){
    await talk('Muling');await dialogue('starfall:F-03');await scene('starfall:F-04');
    await puzzle('Distributed observatory',['West','Relay','East']);await restore('Starfall sanctuary',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan'],'Beyond Stars',[low,mid,high]);await dialogue('starfall:F-04');await cinema('starfall:F-05','Watch the story scene');
   }else if(chapter==='finale'){
-   await battle('Approach the Star Bell','battle:inward-gates','finale');await dialogue('finale:B-01','Muling, stop and hear everyone');await scene('finale:B-02');
+   await battle('Approach the Star Bell','battle:inward-gates','finale');await dialogue('finale:B-01');await scene('finale:B-02');
    await battle('Approach the Star Bell','battle:identify-echo','finale');await dialogue('finale:B-02');await scene('finale:B-03');
    await battle('Approach the Star Bell','battle:central-echo','finale');await dialogue('finale:B-03');
    await click('Help Muling release the last lock');const latch=page.getByRole('button',{name:'Hold the bell chain',exact:true});await latch.waitFor();await latch.focus();await page.keyboard.down('Space');try{await page.waitForTimeout(1800);}finally{await page.keyboard.up('Space');}
