@@ -1218,7 +1218,7 @@
     // dark element and give each element a varied role spread. (蓝莓/豆豆/杏仁 reach their new roles
     // via base-stat tweaks in data.js, so they are NOT listed here.)
     const BREED_ROLES={tangyuan:'tank',qisi:'fighter',senlin:'fighter',jiafei:'tank',
-      youling:'dps',mengmai:'control',lixiao:'fighter',meidu:'control',
+      youling:'dps',mengmai:'control',xingchen:'control',lixiao:'fighter',meidu:'control', // 星星: SSR spatial-control identity
       sanhua:'fighter'};   // v2: light needs ONE frontline (support×5/control×1/dps×1 had zero); 三花 7/7/7/9 balanced → bruiser
     if(BREED_ROLES[cat.species])return BREED_ROLES[cat.species];
     // rank the four stats; primary = biggest, secondary = next (ties: pow>agi>vit>cha)
