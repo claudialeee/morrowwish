@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {newSpatial,spatialInput,spatialProof,validSpatialProof,tickSpatial,chasePoint,startBridgeWalk,advanceBridgeWalk,bridgeWalkPosition} from '../public/cat-bond/js/resonance/canon22-spatial.mjs';
+import {newSpatial,spatialInput,spatialProof,validSpatialProof,tickSpatial,chasePoint,startBridgeWalk,advanceBridgeWalk,bridgeWalkPosition,bridgeReachable,spatialControls,spatialTap} from '../public/cat-bond/js/resonance/canon22-spatial.mjs';
 const step=i=>({type:'step',i}),leaf={type:'leaf'},aim=x=>({type:'aim',x}),cross={type:'cross'};
 for(const [op,paths] of [
  ['puzzle:moonleaf-crossing',[[step(1),step(3),leaf,step(3),step(4)],[step(1),step(2),step(4)]]],
@@ -34,3 +34,5 @@ assert.ok(direct.solved);assert.equal(direct.route,'lane');assert.ok(validSpatia
 const shortcut=newSpatial('puzzle:chime-chase');spatialInput(shortcut,{type:'direction',dx:1,dy:0});for(let i=0;i<25;i++)tickSpatial(shortcut,.02);
 spatialInput(shortcut,{type:'direction',dx:0,dy:0});const stop=[...shortcut.player];for(let i=0;i<12;i++)tickSpatial(shortcut,.02);assert.deepEqual(shortcut.player,stop);
 spatialInput(shortcut,{type:'jump'});for(let i=0;i<40&&!shortcut.solved;i++)tickSpatial(shortcut,.02);assert.ok(shortcut.wallCrossed||shortcut.solved);
+
+const guidedBridge=newSpatial('puzzle:moonleaf-crossing');assert.deepEqual(bridgeReachable(guidedBridge),[1]);assert.deepEqual(spatialControls(guidedBridge).filter(x=>x.available).map(x=>x.action.i),[1]);spatialInput(guidedBridge,{type:'step',i:1});assert.ok(bridgeReachable(guidedBridge).includes(2));spatialInput(guidedBridge,{type:'leaf'});assert.ok(bridgeReachable(guidedBridge).includes(3));assert.equal(spatialTap(newSpatial('puzzle:shadow-bridge'),.5,.9),null,'Unrelated bottom-area tap must not cross the bridge');
