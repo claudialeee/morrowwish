@@ -634,7 +634,7 @@ class CaptureBattle {
     const by=Math.min(this.H-this.bottomMargin-8,Math.max(this.topMargin+12,v.y+rad*.64+18));
     ctx.save();
     ctx.globalAlpha=Math.min(1,v.age/.35,v.remaining/.6);
-    ctx.font='700 10px system-ui,sans-serif';
+    ctx.font='700 10px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.textAlign='center';ctx.textBaseline='middle';
     const label=summary+'  '+Math.ceil(v.remaining)+'s';
     const width=Math.min(this.W-18,ctx.measureText(label).width+18);
@@ -6296,7 +6296,7 @@ class CaptureBattle {
       ctx.fillStyle='rgba(30,26,45,'+(Math.min(.10,Math.sin(Math.PI*elapsed/v.max)*.10))+')';
       ctx.fillRect(0,0,W,H);
       ctx.textAlign='center';
-      ctx.font='800 '+(this.game.isTouch?12:15)+'px system-ui';
+      ctx.font='800 '+(this.game.isTouch?12:15)+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='rgba(255,253,238,'+(k*.92)+')';
       ctx.shadowColor=v.first;ctx.shadowBlur=9;
       // Always balance the inner save. The previous conditional skipped
@@ -6659,7 +6659,7 @@ class CaptureBattle {
         ctx.globalAlpha = 0.5 + 0.4 * Math.abs(Math.sin(this.t * 10));
         ctx.strokeStyle = '#ffd36b'; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(e.x, e.y, 30 + 3 * Math.sin(this.t * 10), 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = '#ffd36b'; ctx.font = '13px system-ui'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffd36b'; ctx.font = '13px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('💫', e.x, e.y - 48);
         ctx.restore();
       }
@@ -6682,7 +6682,7 @@ class CaptureBattle {
         const pulse = 0.5 + 0.4 * Math.abs(Math.sin(this.t * 5));
         ctx.globalAlpha = pulse; ctx.strokeStyle = '#ff5a7a'; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(e.x, e.y, 34 + 3 * Math.sin(this.t * 5), 0, Math.PI * 2); ctx.stroke();
-        ctx.globalAlpha = pulse; ctx.fillStyle = '#ff5a7a'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+        ctx.globalAlpha = pulse; ctx.fillStyle = '#ff5a7a'; ctx.font = 'bold 13px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('🎯 集火', e.x, e.y - 98);
         ctx.restore();
       }
@@ -6704,7 +6704,7 @@ class CaptureBattle {
         const shown=Object.keys(e.status)
           .filter(tg=>e.status[tg]>0&&icons[tg])
           .sort((a,b)=>priority.indexOf(a)-priority.indexOf(b)).slice(0,8);
-        ctx.save();ctx.font='11px sans-serif';ctx.textAlign='center';
+        ctx.save();ctx.font='11px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';
         shown.forEach((tg,i)=>{
           const row=Math.floor(i/4), col=i%4;
           const inRow=Math.min(4,shown.length-row*4);
@@ -6809,7 +6809,7 @@ class CaptureBattle {
       // tell at a glance which kitten you're driving.
       if (isMe) {
         ctx.save(); ctx.globalAlpha = 0.9; ctx.fillStyle = '#ffd36b'; ctx.textAlign = 'center';
-        ctx.font = '12px system-ui, sans-serif';
+        ctx.font = '12px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
         const grownScale=window.Growth?.visual(tf.cat)?.scale||1;
         ctx.fillText('▾', tf.x, tf.y - Math.max(51,this.catScale('active')*72*grownScale) + 2 * Math.sin(this.t * 4));
         ctx.restore();
@@ -6821,13 +6821,13 @@ class CaptureBattle {
       if(v.kind==='ultimate')window.CatBondUltVFX?.draw(ctx,v,W,H,this.t,'front');
     }
     // particles & floaters
-    for (const q of this.particles) { ctx.save(); ctx.globalAlpha = Math.max(0, q.life); ctx.fillStyle = q.color; ctx.font = `${q.size}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText(q.ch, q.x, q.y); ctx.restore(); }
+    for (const q of this.particles) { ctx.save(); ctx.globalAlpha = Math.max(0, q.life); ctx.fillStyle = q.color; ctx.font = `${q.size}px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif`; ctx.textAlign = 'center'; ctx.fillText(q.ch, q.x, q.y); ctx.restore(); }
     for(const fl of this.floaters){
       const age=1-Math.max(0,Math.min(1,fl.life/(fl.max||.62)));
       const kick=1+.21*Math.sin(Math.min(1,age*4)*Math.PI);
       ctx.save();ctx.globalAlpha=Math.min(1,Math.max(0,fl.life/.20));
       ctx.fillStyle=fl.color;
-      ctx.font='900 '+Math.round((fl.size||15)*kick)+'px sans-serif';
+      ctx.font='900 '+Math.round((fl.size||15)*kick)+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.textAlign='center';ctx.lineWidth=3;
       ctx.strokeStyle='rgba(34,30,41,.55)';
       ctx.strokeText(fl.text,fl.x,fl.y);ctx.fillText(fl.text,fl.x,fl.y);
@@ -6839,7 +6839,7 @@ class CaptureBattle {
       const k=Math.min(1,this._captureBanner/1.2),pop=1+0.2*Math.sin((1-k)*Math.PI);
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       ctx.save(); ctx.globalAlpha=Math.min(1,k*1.3); ctx.textAlign='center';
-      ctx.font='900 '+((this.game.isTouch?26:36)*pop)+'px system-ui, sans-serif';
+      ctx.font='900 '+((this.game.isTouch?26:36)*pop)+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='#ffd36b'; ctx.shadowColor='#ff9b3c'; ctx.shadowBlur=18;
       ctx.fillText(en?'FINISH IT!':'收服它！',W/2,this.topMargin+70);
       ctx.restore();
@@ -6871,12 +6871,12 @@ class CaptureBattle {
       // banner
       const pop=1+0.18*Math.sin(k*Math.PI);
       ctx.globalAlpha=Math.min(1,k*2);ctx.textAlign='center';
-      ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px system-ui, sans-serif';
+      ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='#ffd36b';ctx.shadowColor='#ff9b3c';ctx.shadowBlur=18;
       ctx.fillText(en?'🏠 TAMED!':'🏠 收服成功！',W/2,this.topMargin+70);
       // CLUTCH sub-banner (playtest P0): a knife-edge win reads differently from a comfy one.
       if(this._clutch){
-        ctx.font='900 '+((this.game.isTouch?17:23)*pop)+'px system-ui, sans-serif';
+        ctx.font='900 '+((this.game.isTouch?17:23)*pop)+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
         ctx.fillStyle='#ff6b6b';ctx.shadowColor='#ffb3b3';ctx.shadowBlur=14;
         ctx.fillText(en?'✦ CLUTCH!':'✦ 险胜！',W/2,this.topMargin+104);
       }
@@ -6887,7 +6887,7 @@ class CaptureBattle {
       const k=Math.min(1,this._ultReadyBanner/1.4);
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       ctx.save(); ctx.globalAlpha=Math.min(1,k*1.4); ctx.textAlign='center';
-      ctx.font='900 '+(this.game.isTouch?22:30)+'px system-ui, sans-serif';
+      ctx.font='900 '+(this.game.isTouch?22:30)+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='#9d7bff'; ctx.shadowColor='#c3a6ff'; ctx.shadowBlur=16;
       ctx.fillText(en?'⚡ ULTIMATE READY — press R':'⚡ 必杀就绪 — 按 R 释放',W/2,this.topMargin+44);
       ctx.restore();
@@ -6897,7 +6897,7 @@ class CaptureBattle {
       const span=this._ultResultText.includes('×')||this._ultResultText.includes('KO')?2.0:1.4;
       const k=Math.min(1,this._ultResultBanner/span),pop=1+0.18*Math.sin((1-k)*Math.PI);
       ctx.save(); ctx.globalAlpha=Math.min(1,k*1.5); ctx.textAlign='center';
-      ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px system-ui, sans-serif';
+      ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle=this._ultResultColor; ctx.shadowColor=this._ultResultColor; ctx.shadowBlur=20;
       ctx.fillText(this._ultResultText,W/2,this.topMargin+104);
       ctx.restore();
@@ -6907,7 +6907,7 @@ class CaptureBattle {
       const k=Math.min(1,this._stallBanner/1.2),pulse=0.6+0.4*Math.abs(Math.sin(this.t*6));
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       ctx.save();ctx.globalAlpha=Math.min(1,k*1.5)*pulse;ctx.textAlign='center';
-      ctx.font='900 '+(this.game.isTouch?20:27)+'px system-ui, sans-serif';
+      ctx.font='900 '+(this.game.isTouch?20:27)+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='#ffd36b';ctx.shadowColor='#ff9b3c';ctx.shadowBlur=16;
       ctx.fillText(en?'Use a SKILL (Q/E) to break its guard!':'用技能 (Q/E) 破防才能收服！',W/2,this.topMargin+150);
       ctx.restore();
@@ -6919,7 +6919,7 @@ class CaptureBattle {
       ctx.globalAlpha=.67+.25*Math.max(0,this.comboT)/1.3;
       ctx.fillStyle='rgba(45,58,64,.54)';
       ctx.beginPath();ctx.roundRect(x-32,y-17,65,29,12);ctx.fill();
-      ctx.textAlign='center';ctx.font='800 15px system-ui';ctx.fillStyle='#ffe0a3';
+      ctx.textAlign='center';ctx.font='800 15px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.fillStyle='#ffe0a3';
       ctx.fillText('×'+this.combo,x,y+3);
       ctx.strokeStyle='#ffe0a3';ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(x,y,21,-Math.PI/2,-Math.PI/2+2*Math.PI*Math.max(0,this.comboT)/1.3);ctx.stroke();
@@ -6937,7 +6937,7 @@ class CaptureBattle {
       ctx.restore();
     } else if (this.game.isTouch && this.combo < 2) {
       // hint on touch devices
-      ctx.save(); ctx.globalAlpha = 0.4; ctx.fillStyle = '#fff'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
+      ctx.save(); ctx.globalAlpha = 0.4; ctx.fillStyle = '#fff'; ctx.font = '12px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.textAlign = 'center';
       // First-fight tutorial and the virtual joystick already explain touch controls.
       ctx.restore();
     }
@@ -6963,7 +6963,7 @@ class CaptureBattle {
     if(s.chill!=null){
       ctx.globalAlpha=.49;ctx.strokeStyle='#a9daf0';ctx.lineWidth=2;
       ctx.beginPath();ctx.ellipse(e.x,e.y+21,25,7,0,0,Math.PI*2);ctx.stroke();
-      ctx.globalAlpha=.72;ctx.fillStyle='#e7f8ff';ctx.font='12px system-ui';
+      ctx.globalAlpha=.72;ctx.fillStyle='#e7f8ff';ctx.font='12px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.textAlign='center';ctx.fillText('❄',e.x-31,e.y+13);
       ctx.fillText('❄',e.x+31,e.y+13);
     }
@@ -6977,7 +6977,7 @@ class CaptureBattle {
     if (s.blind != null) {                 // Blinded: visible ground ring instead of ugly black face.
       ctx.globalAlpha = .73;ctx.strokeStyle = '#b49bdb';ctx.lineWidth = 2.2;
       ctx.beginPath();ctx.ellipse(e.x,e.y + 14,29,9,0,0,Math.PI*2);ctx.stroke();
-      ctx.globalAlpha = .88;ctx.fillStyle = '#dcc9f2';ctx.font = '13px system-ui,sans-serif';
+      ctx.globalAlpha = .88;ctx.fillStyle = '#dcc9f2';ctx.font = '13px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.textAlign = 'center';ctx.fillText('✧',e.x-28,e.y+7);ctx.fillText('✧',e.x+28,e.y+7);
     }
     window.CatBondSkillFX?.drawStatus(ctx,e,this.t);
@@ -7092,7 +7092,7 @@ class CaptureBattle {
       ctx.strokeStyle=c.second||'#e7bafb';ctx.lineWidth=4;ctx.lineCap='round';
       ctx.beginPath();ctx.moveTo(W*.39,bandY+bandH*.53);
       ctx.quadraticCurveTo(W*.5,bandY+bandH*(.12+.1*leap),W*.61,bandY+bandH*.53);ctx.stroke();
-      ctx.fillStyle='#fce9c6';ctx.font='900 '+Math.round(Math.min(32,W*.08))+'px system-ui';
+      ctx.fillStyle='#fce9c6';ctx.font='900 '+Math.round(Math.min(32,W*.08))+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.textAlign='center';ctx.fillText('×',W*.5,bandY+bandH*.49);
     }else{
       drawPortrait(c.uid,W*.32);
@@ -7104,7 +7104,7 @@ class CaptureBattle {
       ctx.moveTo(tx+rad-8,ty);ctx.lineTo(tx+rad+10,ty);
       ctx.moveTo(tx,ty-rad-10);ctx.lineTo(tx,ty-rad+8);
       ctx.moveTo(tx,ty+rad-8);ctx.lineTo(tx,ty+rad+10);ctx.stroke();
-      if(target){ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff2d4';
+      if(target){ctx.font='800 12px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff2d4';
         ctx.fillText(en?'TARGET LOCK':'目标锁定',tx,ty+rad+22);}
     }
     const label=duo?(en?'DUO BOND · DOUBLE POUNCE':'双猫默契 · 合力飞扑')
@@ -7112,10 +7112,10 @@ class CaptureBattle {
     const title=c.name||label;
     ctx.textAlign='center';ctx.shadowColor=c.color||c.first||'#f9dba8';
     ctx.shadowBlur=12;ctx.fillStyle='#fff9ef';
-    ctx.font='900 '+Math.round(Math.min(duo?22:28,W*.055))+'px system-ui';
+    ctx.font='900 '+Math.round(Math.min(duo?22:28,W*.055))+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.fillText(title,W*.5,bandY+bandH*.89,W*.82);
     ctx.shadowBlur=0;ctx.fillStyle='#edd6a5';
-    ctx.font='800 '+Math.round(Math.min(13,W*.033))+'px system-ui';
+    ctx.font='800 '+Math.round(Math.min(13,W*.033))+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.fillText(label,W*.5,bandY+bandH*.97,W*.82);
     ctx.restore();
   }
@@ -7160,12 +7160,12 @@ class CaptureBattle {
     // 5) skill name banner
     ctx.globalAlpha = Math.min(1, elapsed / 0.35) * (c.t < 0.6 ? c.t / 0.6 : 1);
     ctx.textAlign = 'center';
-    ctx.font = `900 ${this.game.isTouch ? 30 : 42}px system-ui, sans-serif`;
+    ctx.font = `900 ${this.game.isTouch ? 30 : 42}px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif`;
     ctx.shadowColor = col; ctx.shadowBlur = 24;
     ctx.fillStyle = '#fff';
     ctx.fillText(c.name, W / 2, H * 0.5);
     ctx.shadowBlur = 0; ctx.globalAlpha = (ctx.globalAlpha) * 0.9;
-    ctx.font = `700 ${this.game.isTouch ? 12 : 15}px system-ui, sans-serif`;
+    ctx.font = `700 ${this.game.isTouch ? 12 : 15}px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif`;
     ctx.fillStyle = col;
     ctx.fillText(en ? 'ULTIMATE' : '必 杀 技', W / 2, H * 0.5 + (this.game.isTouch ? 26 : 34));
     ctx.restore();
@@ -7185,7 +7185,7 @@ class CaptureBattle {
     const bw = Math.min(360, W - 120), bx = (W - bw) / 2, by = 16, bh = 12;
     const ready = this.captureReady;
     ctx.save();
-    ctx.textAlign = 'center'; ctx.font = '700 11px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.font = '700 11px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.fillStyle = ready ? '#ffd36b' : 'rgba(255,250,239,.95)';
     ctx.fillText(ready ? (zh ? '斗志将尽 · 收服它！' : 'Almost tamed — capture it!') : (zh ? '野猫斗志' : 'Wild morale'), W / 2, by - 3);
     // track
@@ -7207,7 +7207,7 @@ class CaptureBattle {
     ctx.strokeStyle='rgba(114,124,101,.28)';
     ctx.lineWidth=1;
     rr(ctx,x-cardW/2,y-23,cardW,poise?52:36,12);ctx.fill();ctx.stroke();
-    ctx.textAlign='center';ctx.font='700 11px system-ui, sans-serif';
+    ctx.textAlign='center';ctx.font='700 11px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.fillStyle='#4d5b49';ctx.fillText(label,x,y-9);
     ctx.fillStyle='rgba(112,132,110,.16)';
     rr(ctx,x-w/2,y-3,w,h,3);ctx.fill();
@@ -7233,7 +7233,7 @@ class CaptureBattle {
         ctx.strokeStyle='#df847d';ctx.lineWidth=1.6;
         rr(ctx,x-poiseW/2,yy,poiseW,poiseH,5);ctx.stroke();
       }
-      ctx.textAlign='center';ctx.font='800 10px system-ui, sans-serif';
+      ctx.textAlign='center';ctx.font='800 10px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle=(broken||shattered)?'#ae534b':'#90641e';
       ctx.fillText(broken?('虚弱 '+poise.stagger.toFixed(1)+'s'):
         (shattered?'破防':(poise.recovering?'恢复中':'韧性')),x,y+29);

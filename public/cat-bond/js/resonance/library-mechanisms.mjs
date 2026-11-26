@@ -51,7 +51,7 @@ const ready=i=>i?.complete&&i.naturalWidth;
 function cover(c,i,x,y,w,h){if(!ready(i))return;let k=Math.max(w/i.naturalWidth,h/i.naturalHeight),dw=i.naturalWidth*k,dh=i.naturalHeight*k;c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.drawImage(i,x+(w-dw)/2,y+(h-dh)/2,dw,dh);c.restore()}
 export function paintLibraryPuzzle(c,p,lang,W,H){
  const w=libraryWords(p);if(!w)return false;const l=lang==="zh"?0:1,s=W/960,X=n=>n*W,Y=n=>n*H;
- const t=(str,x,y,size=20,col="#4d3b52")=>{c.font="600 "+size*s+"px system-ui,sans-serif";c.fillStyle=col;c.textAlign="center";c.textBaseline="middle";c.fillText(str,X(x),Y(y),W*.88)};
+ const t=(str,x,y,size=20,col="#4d3b52")=>{c.font="600 "+size*s+"px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";c.fillStyle=col;c.textAlign="center";c.textBaseline="middle";c.fillText(str,X(x),Y(y),W*.88)};
  const frame=(x,y,width,height)=>{c.beginPath();c.roundRect(X(x),Y(y),X(width),Y(height),12*s);c.fillStyle="#fff5e9ee";c.fill();c.strokeStyle="#b6a3cf";c.lineWidth=1.5*s;c.stroke()};
  c.save();cover(c,image("resonance-world-v2/library.webp"),0,0,W,H);c.fillStyle="#99759033";c.fillRect(0,0,W,H);frame(.08,.08,.84,.83);
  t(w[0][l],.5,.15,27,"#543b55");t(w[1][l],.5,.23,16);

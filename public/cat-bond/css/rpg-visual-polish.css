@@ -20,8 +20,8 @@
   --cbv-radius: 8px;
   --cbv-card-radius: 12px;
   --cbv-shadow: 0 12px 34px #0c22243b;
-  --cbv-serif: Georgia, "Songti SC", "Noto Serif SC", serif;
-  --cbv-sans: system-ui, "PingFang SC", "Noto Sans SC", sans-serif;
+  --cbv-serif:var(--cb-font-display);
+  --cbv-sans:var(--cb-font-body);
 }
 #stage .rw-world[data-region="harbor"] { --cbv-accent:#8bb9b5; }
 #stage .rw-world[data-region="forest"] { --cbv-accent:#9bb591; }

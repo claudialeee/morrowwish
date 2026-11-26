@@ -1,5 +1,5 @@
 /* Emberforge E-03 encounter UI — scoped; does not alter the shared battle HUD. */
-.cb-forge-hud{position:absolute;z-index:8;top:66px;left:50%;transform:translateX(-50%);width:min(326px,calc(100% - 34px));padding:9px 12px 10px;border:1px solid rgba(210,164,111,.7);border-radius:13px;background:linear-gradient(145deg,rgba(25,35,43,.93),rgba(42,37,34,.88));box-shadow:0 8px 26px rgba(5,10,15,.34),inset 0 1px rgba(255,231,191,.14);color:#f1dfc2;pointer-events:auto;font-family:system-ui,sans-serif}
+.cb-forge-hud{position:absolute;z-index:8;top:66px;left:50%;transform:translateX(-50%);width:min(326px,calc(100% - 34px));padding:9px 12px 10px;border:1px solid rgba(210,164,111,.7);border-radius:13px;background:linear-gradient(145deg,rgba(25,35,43,.93),rgba(42,37,34,.88));box-shadow:0 8px 26px rgba(5,10,15,.34),inset 0 1px rgba(255,231,191,.14);color:#f1dfc2;pointer-events:auto;font-family:var(--cb-font-body)}
 .cb-forge-title{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:10px;letter-spacing:.11em;font-weight:900;color:#f0c38d}
 .cb-forge-objective{margin:3px 0 7px;font-size:11px;line-height:1.35;color:#e4d3b9}
 .cb-forge-heat{display:grid;grid-template-columns:auto 1fr 34px;gap:7px;align-items:center;font-size:9px;font-weight:800;color:#d5b994}
@@ -15,7 +15,7 @@
 .cb-forge-result{position:absolute;z-index:90;inset:0;display:grid;place-items:center;padding:20px;background:rgba(8,14,21,.72);backdrop-filter:blur(7px)}
 .cb-forge-result-card{width:min(430px,100%);padding:27px 25px 23px;border:1px solid rgba(216,175,128,.75);border-radius:19px;background:linear-gradient(145deg,#28343d,#1b252e 72%,#3b302a);box-shadow:0 20px 65px rgba(0,0,0,.45);text-align:center;color:#f3e3c9}
 .cb-forge-result-kicker{font-size:10px;letter-spacing:.18em;color:#c99c70;font-weight:900}
-.cb-forge-result-card h2{font:800 clamp(22px,5vw,32px) Georgia,serif;color:#f4d6a6;margin:12px 0}
+.cb-forge-result-card h2{font:800 clamp(22px,5vw,32px) var(--cb-font-display);color:#f4d6a6;margin:12px 0}
 .cb-forge-result-card p{font-size:13px;line-height:1.6;color:#d5c6b1}
 .cb-forge-rewards{margin:16px 0;padding:11px;border-radius:10px;background:rgba(199,148,91,.13);color:#f3d4a6;font-size:12px}
 .cb-forge-result-actions{display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap}
@@ -32,7 +32,7 @@
 
 .cb-forge-heat [data-forge-pressure]{background:linear-gradient(90deg,#418d90,#9bded4,#e79c65);box-shadow:0 0 8px #77bdb4}.cb-forge-hud[data-exposed="true"]{border-color:#9be6c8;box-shadow:0 0 16px #8ce4b638}.cb-forge-hud[data-pressure-alert="true"] [data-forge-pressure-value]{color:#ff956e}.cb-forge-hud[data-assist="jinpo"] [data-forge-jinpo],.cb-forge-hud[data-assist="xiaomao"] [data-forge-xiaomao]{border-color:#c4f0d7;box-shadow:0 0 6px #9ad6b877}.cb-forge-objective{min-height:1.35em}
 
-.cb-dex-forge-record{display:flex;align-items:center;gap:12px;border:1px solid #ba9965;border-radius:12px;padding:12px;margin:14px 0;background:linear-gradient(120deg,#f7ead6,#e9ddc9);color:#4a382a}.cb-dex-forge-record img{width:84px;height:84px;object-fit:contain;flex:none;background:radial-gradient(ellipse,#a17a4a55,transparent 70%)}.cb-dex-forge-record div{min-width:0}.cb-dex-forge-record small{font-size:10px;letter-spacing:.08em;color:#8b5a36}.cb-dex-forge-record strong{display:block;font:700 17px/1.25 Georgia,serif}.cb-dex-forge-record p{font-size:12px;line-height:1.5;margin:4px 0}.cb-dex-forge-record span{font-size:11px;color:#576b4c}
+.cb-dex-forge-record{display:flex;align-items:center;gap:12px;border:1px solid #ba9965;border-radius:12px;padding:12px;margin:14px 0;background:linear-gradient(120deg,#f7ead6,#e9ddc9);color:#4a382a}.cb-dex-forge-record img{width:84px;height:84px;object-fit:contain;flex:none;background:radial-gradient(ellipse,#a17a4a55,transparent 70%)}.cb-dex-forge-record div{min-width:0}.cb-dex-forge-record small{font-size:10px;letter-spacing:.08em;color:#8b5a36}.cb-dex-forge-record strong{display:block;font:700 17px/1.25 var(--cb-font-display)}.cb-dex-forge-record p{font-size:12px;line-height:1.5;margin:4px 0}.cb-dex-forge-record span{font-size:11px;color:#576b4c}
 
 /* Portrait: the original team and charge cards own the upper corners.
    Give the furnace controls their own bottom-left rail, opposite the native

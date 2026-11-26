@@ -843,7 +843,7 @@
       ctx.strokeStyle=target?'#ffe3a7':(cur===reg2.id?GOLD:(open?'rgba(255,244,218,.82)':'rgba(255,255,255,.24)'));
       roundRect(ctx,x,y,cw,ch,11);ctx.stroke();
       ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.font=(W<420?'800 10px':'800 13px')+' system-ui,sans-serif';
+      ctx.font=(W<420?'800 10px':'800 13px')+' Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle=open?'#fff9e9':'rgba(255,255,255,.66)';
       ctx.shadowColor='rgba(0,0,0,.95)';ctx.shadowBlur=6;
       ctx.fillText(zh?reg2.name:reg2.sub,mn.px,y+ch-14);
@@ -857,18 +857,18 @@
           ctx.beginPath();ctx.arc(x+cw-11,y+11,6,-Math.PI/2,-Math.PI/2+frac*Math.PI*2);ctx.stroke();
         }
         ctx.fillStyle='rgba(255,235,196,.98)';
-        ctx.font=W<420?'9px system-ui':'11px system-ui';
+        ctx.font=W<420?'9px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif':'11px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
         ctx.fillText('★'.repeat(Math.min(3,reg2.difficulty)),x+cw-17,y+12);
       }
       ctx.restore();
       if(target){
         ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.font=(W<420?'800 8px':'800 10px')+' system-ui,sans-serif';
+        ctx.font=(W<420?'800 8px':'800 10px')+' Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
         ctx.fillStyle='#ffe2a4';ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=5;
         ctx.fillText(zh?'✦ 主线目标':'✦ MAIN QUEST',mn.px,y-13);
         ctx.restore();
       }else if(!open){
-        ctx.font=W<420?'8px system-ui':'10px system-ui';
+        ctx.font=W<420?'8px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif':'10px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
         ctx.textAlign='center';ctx.textBaseline='top';
         ctx.fillStyle='rgba(238,221,255,.78)';
         var lockLabel=unlockHint(reg2);
@@ -877,7 +877,7 @@
       }else{
         var localNpc=window.CatBondNPC?.forRegion?.(reg2.id)?.[0];
         if(localNpc){
-          ctx.font=W<420?'800 8px system-ui':'800 10px system-ui';
+          ctx.font=W<420?'800 8px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif':'800 10px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
           ctx.fillStyle='rgba(255,226,183,.92)';ctx.textAlign='center';ctx.textBaseline='top';
           ctx.fillText('✦ '+(zh?localNpc.name:localNpc.en),mn.px,y+ch+7);
         }
@@ -891,8 +891,8 @@
       ctx.fillStyle = 'rgba(30,20,45,0.92)'; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.fill();
       ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = '700 15px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-      ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
+      ctx.font = '700 15px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.fillStyle = '#fff';
+      ctx.font = (W<=360?'700 13px':'700 15px')+' Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
     }
     // Story-first atlas: chapter, six recovered memories and a concrete next objective.
@@ -906,9 +906,9 @@
     var headW=Math.min(W-28,W<650?460:620),headX=(W-headW)/2,headY=W<650?62:38;
     ctx.fillStyle='rgba(13,13,29,.76)';roundRect(ctx,headX,headY,headW,62,14);ctx.fill();
     ctx.strokeStyle='rgba(255,211,145,.38)';ctx.lineWidth=1;roundRect(ctx,headX,headY,headW,62,14);ctx.stroke();
-    ctx.font=(W<420?'800 11px':'800 14px')+' system-ui,sans-serif';ctx.fillStyle='#f8e5c9';
+    ctx.font=(W<420?'800 11px':'800 14px')+' Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.fillStyle='#f8e5c9';
     ctx.fillText(zh?'✦ 星铃之路 · 主线冒险':'✦ THE STAR BELL ATLAS · MAIN STORY',W/2,headY+8);
-    ctx.font=(W<420?'9px':'10px')+' system-ui,sans-serif';ctx.fillStyle='rgba(242,222,205,.78)';
+    ctx.font=(W<420?'9px':'10px')+' Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.fillStyle='rgba(242,222,205,.78)';
     ctx.fillText(chapter+'  ·  '+count+'/6 '+(zh?'段记忆':'MEMORIES'),W/2,headY+29);
     var barW=Math.min(headW-44,360),barX=(W-barW)/2,barY=headY+48;
     ctx.fillStyle='rgba(255,255,255,.16)';roundRect(ctx,barX,barY,barW,4,4);ctx.fill();
@@ -916,9 +916,9 @@
     var panelW=W-24,panelX=12,panelY=H-66;
     ctx.fillStyle='rgba(14,16,31,.9)';roundRect(ctx,panelX,panelY,panelW,54,12);ctx.fill();
     ctx.strokeStyle='rgba(233,197,142,.48)';ctx.lineWidth=1;roundRect(ctx,panelX,panelY,panelW,54,12);ctx.stroke();
-    ctx.textAlign='left';ctx.font=(W<420?'800 9px':'800 10px')+' system-ui,sans-serif';ctx.fillStyle='#e9c58e';
+    ctx.textAlign='left';ctx.font=(W<420?'800 9px':'800 10px')+' Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.fillStyle='#e9c58e';
     ctx.fillText(zh?'当前目标 · MAIN QUEST':'CURRENT OBJECTIVE · MAIN QUEST',panelX+12,panelY+8);
-    ctx.font=(W<420?'10px':'12px')+' system-ui,sans-serif';ctx.fillStyle='#fff5e8';
+    ctx.font=(W<420?'10px':'12px')+' Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.fillStyle='#fff5e8';
     var maxChars=W<420?39:90,shortObjective=objective.length>maxChars?objective.slice(0,maxChars-1)+'…':objective;
     ctx.fillText(shortObjective,panelX+12,panelY+27);
     ctx.restore();
@@ -1118,7 +1118,7 @@
       // encounter; the tag is compact but legible on small touch screens.
       if(spInfo){
         const label='Lv.'+(s.level||1)+' · '+spInfo.rarity;
-        ctx.save();ctx.textAlign='center';ctx.font='800 11px system-ui';
+        ctx.save();ctx.textAlign='center';ctx.font='800 11px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
         const ww=Math.max(62,ctx.measureText(label).width+17);
         ctx.fillStyle='#fffcf1e8';ctx.strokeStyle=rColor;ctx.lineWidth=1.5;
         ctx.beginPath();ctx.roundRect(s.x-ww/2,by-76,ww,23,10);
@@ -1182,7 +1182,7 @@
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       const hint=game.isTouch?(en?'Tap to walk · Drag to pan':'轻点草坪行走 · 手指拖动平移地图')
         :(en?'Click to walk · Mouse drag to pan':'点击草坪行走 · 鼠标拖拽查看周围');
-      ctx.font='700 12px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font='700 12px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
       const hw=Math.min(W-16,ctx.measureText(hint).width+24),hx=W/2,hy=Math.max(95,H-74);
       ctx.fillStyle='rgba(255,252,242,.92)';
       roundRect(ctx,hx-hw/2,hy-14,hw,29,13);ctx.fill();
@@ -1228,22 +1228,22 @@
     ctx.fillStyle = 'rgba(27,16,38,0.6)';
     roundRect(ctx,hx,hy,hw,hh,12);ctx.fill();
     ctx.textAlign='left';ctx.textBaseline='top';
-    ctx.font=compact?'700 14px system-ui,sans-serif':'700 18px system-ui,sans-serif';ctx.fillStyle='#fff';
+    ctx.font=compact?'700 14px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif':'700 18px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.fillStyle='#fff';
     ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?w.region.name:w.region.sub,hx+12,hy+6);
-    ctx.font=compact?'10px system-ui,sans-serif':'12px system-ui,sans-serif';ctx.fillStyle=w.region.theme.accent;
+    ctx.font=compact?'10px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif':'12px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.fillStyle=w.region.theme.accent;
     ctx.fillText(w.region.sub+' · '+'★'.repeat(w.region.difficulty),hx+12,hy+(compact?28:30),hw-20);
     var bx=hx+12,by=hy+hh+8,bw=hw-24;
     ctx.fillStyle = 'rgba(0,0,0,0.4)'; roundRect(ctx, bx, by, bw, 10, 5); ctx.fill();
     ctx.fillStyle = w.region.theme.accent;
     roundRect(ctx, bx, by, bw * Math.max(0, Math.min(1, prog.explored)), 10, 5); ctx.fill();
-    ctx.font = '11px system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.font = '11px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
     ctx.fillText('探索度 ' + Math.round(prog.explored * 100) + '%', bx, by + 14);
 
     // Keyboard help is not useful on phones and overlapped the controls.
     if(!game.isTouch&&game.H>=530){
       ctx.textAlign='center';ctx.fillStyle='rgba(27,16,38,0.6)';
       roundRect(ctx,W/2-170,game.H-46,340,32,10);ctx.fill();
-      ctx.fillStyle='rgba(255,255,255,0.85)';ctx.font='13px system-ui,sans-serif';ctx.textBaseline='middle';
+      ctx.fillStyle='rgba(255,255,255,0.85)';ctx.font='13px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textBaseline='middle';
       ctx.fillText('点击行走 · 按住鼠标拖拽视角 · WASD也可移动',W/2,game.H-30);
     }
     // Keep the legacy canvas control only as a standalone fallback.
@@ -1252,8 +1252,8 @@
       ctx.fillStyle = 'rgba(30,20,45,0.92)'; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.fill();
       ctx.strokeStyle = PINK; ctx.lineWidth = 1.5; roundRect(ctx, bbx, bby, bbw, bbh, 12); ctx.stroke();
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = '700 15px system-ui, sans-serif'; ctx.fillStyle = '#fff';
-      ctx.font = (W<=360?'700 13px':'700 15px')+' system-ui, sans-serif';
+      ctx.font = '700 15px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.fillStyle = '#fff';
+      ctx.font = (W<=360?'700 13px':'700 15px')+' Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillText(window.MorrowwishI18n?.get?.()==='zh'?(W<=360?'← 庭院':'← 回庭院'):'← Yard', bbx + bbw / 2, bby + bbh / 2);
     }
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';

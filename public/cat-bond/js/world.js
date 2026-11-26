@@ -276,7 +276,7 @@ class CatEntity {
     });
     // name + level tag
     ctx.save();
-    ctx.font = 'bold 11px sans-serif';
+    ctx.font = 'bold 11px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
     roundTag(ctx, this.x, this.y - 44 * this._renderedYardVisualScale, `${State.catName(this.cat)} Lv.${this.cat.level}`);
@@ -302,7 +302,7 @@ class CatEntity {
     ctx.beginPath(); ctx.arc(bx - 13, by + 18, 2, 0, Math.PI * 2); ctx.fill();
     // emoji
     ctx.globalAlpha = Math.max(0, Math.min(1, k));
-    ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '16px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(this.bubble, bx, by + 1);
     ctx.restore();
   }
@@ -317,7 +317,7 @@ class CatEntity {
 }
 
 function roundTag(ctx, x, y, text) {
-  ctx.font = 'bold 11px sans-serif';
+  ctx.font = 'bold 11px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
   const w = ctx.measureText(text).width + 12;
   ctx.fillStyle = 'rgba(20,12,30,0.75)';
   roundRectPath(ctx, x - w / 2, y - 9, w, 16, 8); ctx.fill();
@@ -907,13 +907,13 @@ class YardScene {
        gg.addColorStop(1,coinBubble?'rgba(213,155,52,.18)':'rgba(255,211,107,.15)');
       ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(b.x, b.y + bob, 20, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(b.x, b.y + bob, 17, 0, Math.PI * 2); ctx.stroke();
-      ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '20px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       if(coinBubble&&window.CatBondGoldCoin)
          window.CatBondGoldCoin.draw(ctx,b.x,b.y+bob+1,23);
        else ctx.fillText(b.icon || '🪙', b.x, b.y + bob + 1);
       // little "!" pulse to draw the eye
       ctx.globalAlpha = 0.5 + 0.5 * Math.abs(Math.sin(b.t * 5));
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 12px sans-serif'; ctx.fillText('✦', b.x + 15, b.y + bob - 14);
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.fillText('✦', b.x + 15, b.y + bob - 14);
       ctx.restore();
     }
 
@@ -927,7 +927,7 @@ class YardScene {
       ctx.fillStyle = ga; ctx.beginPath(); ctx.arc(g.x, g.y, 42, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
       (window.CatMotion?.draw||CatArt.drawCat)(ctx, g.x, g.y, { palette: 'flame', pattern: 'solid', eyeColor: '#fff6c0', scale: 1.0, face: g.vx < 0 ? -1 : 1, t: g.t, pose: 'walk', mood: 'happy', growth: { stage: 2, scale: 1.1, aura: '#ffd36b', sparkle: true, gem: true, gemColor: '#ffd36b' } });
-      ctx.save(); ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffd36b';
+      ctx.save(); ctx.font = 'bold 11px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffd36b';
       ctx.fillText('🌟金运喵·点我!', g.x, g.y - 44);
       ctx.restore();
     }
@@ -935,7 +935,7 @@ class YardScene {
     // --- rising float texts (+N, 连击) ---
     if (this.floatTexts) for (const f of this.floatTexts) {
       ctx.save(); ctx.globalAlpha = Math.max(0, 1 - f.t);
-      ctx.fillStyle = f.color; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = f.color; ctx.font = 'bold 15px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.textAlign = 'center';
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.strokeText(f.text, f.x, f.y); ctx.fillText(f.text, f.x, f.y);
       ctx.restore();
     }
@@ -943,7 +943,7 @@ class YardScene {
     // pet particles (hearts)
     for (const p of this.petParticles) {
       ctx.save(); ctx.globalAlpha = Math.max(0, p.life);
-      ctx.fillStyle = p.color; ctx.font = `${p.size}px sans-serif`;
+      ctx.fillStyle = p.color; ctx.font = `${p.size}px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif`;
       if(p.ch==='🪙'&&window.CatBondGoldCoin)
          window.CatBondGoldCoin.draw(ctx,p.x,p.y-6,p.size);
        else ctx.fillText(p.ch,p.x,p.y);
@@ -998,16 +998,16 @@ class YardScene {
           const fy=b.y-30*depth-ph*22*depth;ctx.globalAlpha=(1-ph)*0.8;
           ctx.fillRect(fx,fy,2.4*depth,1.4*depth);}
       }else if(b.type==='cave'||b.type==='hammock'){
-        ctx.font=(13*depth|0)+'px system-ui';ctx.fillStyle='#9fb6d8';
+        ctx.font=(13*depth|0)+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.fillStyle='#9fb6d8';
         for(let i=0;i<3;i++){const ph=(tick*0.6+i*0.4)%1;ctx.globalAlpha=(1-ph)*0.85;
           ctx.fillText('z',b.x+10*depth+ph*10*depth,b.y-34*depth-ph*20*depth);}
       }else if(b.type==='catnip'){
-        ctx.font=(13*depth|0)+'px system-ui';
+        ctx.font=(13*depth|0)+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
         for(let i=0;i<3;i++){const ph=(tick*1.1+i*0.6)%1;ctx.globalAlpha=(1-ph)*0.9;
           ctx.fillText(i%2?'🎵':'♪',b.x-12*depth+i*12*depth+Math.sin(tick*2+i)*4,
             b.y-24*depth-ph*24*depth);}
       }else{ // cattree perch sparkle
-        ctx.font=(12*depth|0)+'px system-ui';
+        ctx.font=(12*depth|0)+'px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
         for(let i=0;i<3;i++){const ph=(tick*1.4+i*0.7)%1;ctx.globalAlpha=(1-ph)*0.9;
           ctx.fillText('✨',b.x-8*depth+i*8*depth,b.y-86*depth-ph*14*depth);}
       }
@@ -1016,7 +1016,7 @@ class YardScene {
     if(lvl>1){
       ctx.save();ctx.fillStyle='#fff5d9eb';ctx.strokeStyle='#ba965f';ctx.lineWidth=1.1;
       ctx.beginPath();ctx.roundRect(b.x-15,b.y-96*depth,30,18,7);ctx.fill();ctx.stroke();
-      ctx.fillStyle='#785931';ctx.font='800 11px system-ui';ctx.textAlign='center';
+      ctx.fillStyle='#785931';ctx.font='800 11px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';
       ctx.fillText('Lv.'+lvl,b.x,b.y-83*depth);ctx.restore();
     }
   }
@@ -1033,7 +1033,7 @@ class YardScene {
       ctx.shadowBlur=0;
       ctx.fillStyle='#fff9e4';ctx.beginPath();
       ctx.roundRect(hide.spot.x-45,hide.spot.y-79,90,28,12);ctx.fill();
-      ctx.font='800 12px system-ui';ctx.fillStyle='#40553d';ctx.textAlign='center';
+      ctx.font='800 12px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.fillStyle='#40553d';ctx.textAlign='center';
       ctx.fillText('Lv.'+(hide.level||1)+' · '+hide.species.rarity,
         hide.spot.x,hide.spot.y-61);
       ctx.restore();
@@ -1046,9 +1046,9 @@ class YardScene {
       ctx.strokeStyle='#dba85e';ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(hide.spot.x,hide.spot.y,49+pulse,0,Math.PI*2);ctx.stroke();
       ctx.fillStyle='#fff8e8';ctx.beginPath();ctx.arc(hide.spot.x,hide.spot.y-55,17,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#84624d';ctx.font='bold 20px system-ui';ctx.textAlign='center';
+      ctx.fillStyle='#84624d';ctx.font='bold 20px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';
       ctx.fillText('↓',hide.spot.x,hide.spot.y-47);
-      ctx.font='800 12px system-ui';
+      ctx.font='800 12px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='#40553d';
       ctx.fillText('Lv.'+(hide.level||1)+' · '+hide.species.rarity,
         hide.spot.x,hide.spot.y-83);
@@ -1378,7 +1378,7 @@ class YardScene {
     ctx.fillStyle=p.valid?'#f5ffed':'#fff2ee';
     ctx.strokeStyle=p.valid?'#3a826a':'#ae535d';ctx.lineWidth=2;
     ctx.beginPath();ctx.roundRect(p.x-40,p.y-106,80,24,10);ctx.fill();ctx.stroke();
-    ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#365943';
+    ctx.font='800 12px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#365943';
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     ctx.fillText(p.valid?(p.relocating?(en?'✓ Move here':'✓ 移到这里'):(en?'✓ Tap to build':'✓ 点击建造')):(en?'× Blocked':'× 有遮挡'),p.x,p.y-94);
     ctx.restore();

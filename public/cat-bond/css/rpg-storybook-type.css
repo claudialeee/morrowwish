@@ -1,0 +1,15 @@
+/* Storybook typography: self-hosted OFL font assets. */
+@font-face{font-family:"Cat Bond Nunito";src:url("../assets/fonts/Nunito-Variable.woff2") format("woff2");font-weight:200 1000;font-style:normal;font-display:swap}
+@font-face{font-family:"Cat Bond Fraunces";src:url("../assets/fonts/Fraunces-Variable.ttf") format("truetype");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Cat Bond KuaiLe";src:url("../assets/fonts/Zcool-KuaiLe-SC.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;unicode-range:U+2E80-2FFF,U+3000-303F,U+31C0-31EF,U+3400-4DBF,U+4E00-9FFF,U+F900-FAFF,U+FF00-FFEF}
+:root{
+ --cb-font-body:"Cat Bond Nunito","Yuanti SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC",system-ui,sans-serif;
+ --cb-font-display:"Cat Bond Fraunces","Cat Bond KuaiLe","Kaiti SC","STKaiti","KaiTi","Songti SC","Noto Serif CJK SC",Georgia,serif;
+}
+body,#stage{font-family:var(--cb-font-body)}
+button,input,select,textarea{font-family:var(--cb-font-body)}
+#stage :is(h1,h2,h3,.game-logo,.rb-brand strong,.res-speaker){font-family:var(--cb-font-display);font-optical-sizing:auto;letter-spacing:normal}
+#stage :is(.game-logo,.rb-brand strong){font-variation-settings:"SOFT" 75,"WONK" 1}
+#stage :is(.res-line,.res-history,.cb-intro-tagline,.rw-hint,.rb-content p){font-family:var(--cb-font-body);letter-spacing:normal}
+#stage :is(.rb-stat strong,.battle-grade b,.battle-grade strong,.mv-name){font-variant-numeric:tabular-nums}
+@media(max-width:480px){#stage :is(.res-line,.res-history,.rb-content p){overflow-wrap:anywhere}}
