@@ -760,6 +760,9 @@
     // suppression fan authored for dps+fighter) that wins over the category rules below — a
     // fighter's "no ranged" identity bends ONLY for the specific skills we opt in, nothing else.
     if (Array.isArray(sk.allowRoles)) return sk.allowRoles.includes(role);
+    // Fire support has no weak innate ranged attack; retain its ordinary claw
+    // as a legal starter, not access to high-power fire DPS skills.
+    if(role==='support'&&sk.id==='emberClaw')return true;
     const c = skillCategory(sk);
     switch (role) {
       case 'tank':     return c !== 'ranged-weak' && c !== 'ranged-strong';            // wall: no backline guns
@@ -970,10 +973,8 @@
       (!retiredDash.has(sk.id)||equipped.has(sk.id)) &&
       (!upgrades.has(sk.id)||equipped.has(sk.id)));
   }
-  // Role-identity filter for AUTO-EQUIP only (recommendLoadout/ensureLoadout). Deny off-role
-  // categories UNLESS removing them would leave the cat with no legal attack — never strand a
-  // slot. The manual learn pool (learnableSkills) stays unfiltered so the starter-attack
-  // guarantee and player choice are preserved; the gate shapes what the game AUTO-picks.
+  // Auto-equipment and manual equipment share the same strict role gate.
+  // Explicit starter exceptions belong in roleAllowsSkill, not an off-role fallback.
   function roleFilterForAutoEquip(cat, pool) {
     const role = cat.buildType || buildTypeForBreed(cat);
     // The innate toy basic is always available. Never restore forbidden active skills.
@@ -1038,9 +1039,8 @@
   // Earlier builds filled the first four arbitrary skills and accidentally
   // put an ultimate in Q/E; every cat then appeared to have the same attacks.
   function defaultLoadout(cat){
-    // Auto-equip respects the role identity gate (tank won't be handed a ranged poke, dps a
-    // shield, etc.) — but ults stay available, and the filter self-disables if it would leave no
-    // attack (so a cat is never auto-equipped attack-less). Manual learnableSkills is unfiltered.
+    // Auto-equip respects the same role identity gate as manual learning and
+    // equipping; native ultimates retain their existing exemption.
     const rawPool=learnableSkills(cat);
     const ultsPool=rawPool.filter(sk=>sk.ultCost>0);
     const pool=roleFilterForAutoEquip(cat, rawPool.filter(sk=>!(sk.ultCost>0))).concat(ultsPool);
@@ -1317,7 +1317,7 @@
     role=BUILD_TYPES[role]?role:buildTypeForBreed(cat);
     const own=elementOf(cat.species);
     const splash=secondaryOf(cat);
-    // Auto-recommend respects the role identity gate (self-disables if it would leave no attack).
+    // Auto-recommend respects the role identity gate.
     const allUnlocked=roleFilterForAutoEquip(cat,(learnableSkills(cat)||[]).filter(sk=>sk.ultCost===0));
     const unlockedIds=new Set(allUnlocked.map(sk=>sk.id));
     const pool=allUnlocked.filter(sk=>!upgradeTargetOf(sk.id)||
