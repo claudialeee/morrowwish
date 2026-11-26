@@ -38,11 +38,11 @@ export function mountHomeConversation(id,api){
  const root=document.createElement("div");root.className="cb-story-overlay is-visible res-host res-home-conversation";
  const panel=document.createElement("section");panel.className="res-dialogue";panel.setAttribute("role","dialog");panel.setAttribute("aria-modal","true");
  const art=document.createElement("img");art.className="res-portrait";art.alt="";art.src=new URL(id==="muling"?"../../assets/cinematics/characters/muling/traveler-silver-cream.webp":"../../assets/npc/"+id+"-painted.webp",import.meta.url).href;
- const body=document.createElement("div");body.className="res-body";const title=document.createElement("h2"),line=document.createElement("p"),controls=document.createElement("div"),close=document.createElement("button"),language=document.createElement("button");
- title.className="res-speaker";line.className="res-line";controls.className="res-controls";close.type=language.type="button";
- controls.append(close,language);body.append(title,line,controls);panel.append(art,body);root.append(panel);
- function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh";title.textContent=actor.name[zh?"zh":"en"];line.textContent=copy[zh?0:1];close.textContent=zh?"关闭":"Close";language.textContent=zh?"English":"中文";panel.setAttribute("aria-label",title.textContent);}
+ const body=document.createElement("div");body.className="res-body";const title=document.createElement("h2"),line=document.createElement("p"),controls=document.createElement("div"),close=document.createElement("button");
+ title.className="res-speaker";line.className="res-line";controls.className="res-controls";close.type="button";
+ controls.append(close);body.append(title,line,controls);panel.append(art,body);root.append(panel);
+ function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh";title.textContent=actor.name[zh?"zh":"en"];line.textContent=copy[zh?0:1];close.textContent=zh?"关闭":"Close";panel.setAttribute("aria-label",title.textContent);}
  function dispose(){root.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("pagehide",dispose);}
- close.onclick=dispose;language.onclick=()=>window.MorrowwishI18n?.set?.(window.MorrowwishI18n.get()==="zh"?"en":"zh");root.addEventListener("cat-bond-close",dispose);root.addEventListener("keydown",e=>{if(e.key==="Escape")dispose();});
+ close.onclick=dispose;root.addEventListener("cat-bond-close",dispose);root.addEventListener("keydown",e=>{if(e.key==="Escape")dispose();});
  if(owner!==window.State.S)return false;stage.append(root);window.addEventListener("morrowwish-language-change",render);window.addEventListener("cat-bond-active-save-changed",dispose);window.addEventListener("pagehide",dispose,{once:true});render();close.focus();return true;
 }

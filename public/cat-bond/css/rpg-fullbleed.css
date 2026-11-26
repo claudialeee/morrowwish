@@ -131,7 +131,6 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage #cb-traveler-encounter .cb-encounter-controls{display:flex!important;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px!important}
 #stage #cb-traveler-encounter .cb-encounter-controls button{min-height:44px;cursor:pointer;margin:0;padding:7px 12px}
 #stage #cb-traveler-encounter .cb-encounter-next{background:#e7ca91!important;border-color:#ab854d!important;color:#44341f!important;font-weight:750;flex:1 1 auto}
-#stage #cb-traveler-encounter .cb-encounter-language{margin-left:auto}
 #stage .sg-prologue-guide.sg-minimal-opening{width:min(320px,calc(100% - 24px));padding:9px 11px;gap:5px}
 #stage .sg-minimal-opening>div{display:flex;align-items:center;gap:6px}
 #stage .sg-minimal-opening .sg-main-continue{flex:1 1 auto;min-height:44px;background:#e7ca91!important;font-weight:750!important}
@@ -141,3 +140,10 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .sg-explore-options[open]{flex:1 1 100%;display:grid;gap:4px}
 #stage .sg-explore-options[open] button{display:block;width:100%;margin:3px 0 0;text-align:left}
 @media(max-height:480px){#stage #cb-traveler-encounter .res-portrait{max-height:24vh!important}#stage #cb-traveler-encounter .cb-encounter-controls{margin-top:6px!important;gap:4px}#stage #cb-traveler-encounter .cb-encounter-controls button{min-height:40px;padding:5px 8px}}
+
+/* Physical NPC talk affordance: map coordinates follow the painted cat, not the HUD. */
+#stage .sg-npc-talk-marker{position:absolute;z-index:3;transform:translate(-50%,-100%);display:flex;align-items:center;justify-content:center;gap:5px;min-height:36px;min-width:54px;padding:5px 9px;border:1px solid #aa844c;border-radius:12px;background:#fff1d2;color:#654923;box-shadow:0 3px 8px #3a2b2533;font:700 12px var(--cb-font-body);cursor:pointer;pointer-events:auto;white-space:nowrap}
+#stage .sg-npc-talk-marker::after{content:"";position:absolute;bottom:-5px;left:calc(50% - 4px);width:8px;height:8px;transform:rotate(45deg);background:#fff1d2;border-right:1px solid #aa844c;border-bottom:1px solid #aa844c}
+#stage .sg-npc-talk-marker[hidden],#stage .sg-hotspots.is-placing .sg-npc-talk-marker,#stage:has(.res-host,#cb-player-first-intro,#panel.open,#cb-system-menu:not([hidden])) .sg-npc-talk-marker{display:none!important}
+#stage .sg-npc-talk-marker:focus-visible{outline:2px solid #714e23;outline-offset:3px}
+#stage .res-host [data-res-language],#stage .res-host .cb-encounter-language{display:none!important}

@@ -11,17 +11,24 @@ function install(){
   const token=api.captureAction();
   bell.onpointerdown=e=>{if(e.button>0||drag)return;bell.setPointerCapture(e.pointerId);drag={id:e.pointerId,y:e.clientY,pull:0,slot:window.State.S};e.preventDefault()};
   bell.onpointermove=e=>{if(drag?.id!==e.pointerId)return;drag.pull=Math.max(0,Math.min(95,e.clientY-drag.y));bell.style.setProperty("--pull",drag.pull+"px");bell.style.setProperty("--swing",Math.min(14,drag.pull/5)+"deg")};
-  bell.onpointerup=e=>{if(drag?.id!==e.pointerId)return;const d=drag;drag=null;bell.style.setProperty("--pull","0px");bell.style.setProperty("--swing","0deg");if(d.slot===window.State.S&&d.pull>=45)ring(token)};
+  bell.onpointerup=e=>{if(drag?.id!==e.pointerId)return;const d=drag;drag=null;bell.style.setProperty("--pull","0px");bell.style.setProperty("--swing","0deg");if(d.slot===window.State.S&&(d.pull>=45||api.view().current?.id==="prologue:P-05"))ring(token)};
   bell.onpointercancel=()=>{drag=null;bell?.style.setProperty("--pull","0px");bell?.style.setProperty("--swing","0deg")};
-  let keys=0;bell.onkeydown=e=>{if(e.key!=="ArrowDown"&&e.key!=="Enter")return;e.preventDefault();if(e.key==="ArrowDown"){keys=Math.min(60,keys+15);bell.style.setProperty("--pull",keys+"px");bell.style.setProperty("--swing",keys/5+"deg");}else if(keys>=45){keys=0;ring(token)}};
+  let keys=0;bell.onkeydown=e=>{if(e.key!=="ArrowDown"&&e.key!=="Enter")return;e.preventDefault();if(e.key==="ArrowDown"){keys=Math.min(60,keys+15);bell.style.setProperty("--pull",keys+"px");bell.style.setProperty("--swing",keys/5+"deg");}else if(keys>=45||api.view().current?.id==="prologue:P-05"){keys=0;ring(token)}};
  }
  function ring(token){
   if(!bell||window.__game?.scene!=="yard")return;
-  const v=api.view();if(v.current?.id!=="prologue:P-04"||!v.objective.includes("explore:garden-bell"))return;
+  const v=api.view();
+  if(v.current?.id==="prologue:P-05"){window.MorrowwishAudio?.effect?.("discover");window.MorrowwishAudio?.note?.(660,.6,.2);inspect();return;}
+  if(v.current?.id!=="prologue:P-04"||!v.objective.includes("explore:garden-bell"))return;
   const r=api.recordEvidence({sceneId:"prologue:P-04",operation:"explore:garden-bell",region:"garden",verified:true,token});
   if(!r.ok){bell.querySelector(".res-bell-label").textContent=tr("保存失败，再拉一次","Save failed. Pull again.");return}
   window.MorrowwishAudio?.effect?.("discover");window.MorrowwishAudio?.note?.(660,.6,.2);closeBell();
  }
+ function inspect(){
+  if(window.__game?.scene!=="yard"||api.view().current?.id!=="prologue:P-05")return;
+  window.__game?.toast?.({zh:"多年前，一颗坠落的星辰击坏了星铃。许多猫咪因此忘记了家园和亲友。愿每一只迷路的猫，都能找到回家的路。",en:"Years ago a falling star damaged the Star Bell. Many cats forgot their homes and loved ones. May every lost cat find its way home."});
+ }
+ window.CatBondGardenBell=Object.freeze({inspect});
  function refresh(){
   const game=window.__game;
   if(!window.__CAT_BOND_STARTED__||game?.scene!=="yard"){closeBell();return;}
@@ -29,7 +36,8 @@ function install(){
   if(view.current?.id==="prologue:P-04"){
    if(view.objective.includes("explore:garden-bell")&&view.cursor===view.current.lines.length)drawBell();
    else closeBell();
-  }else{
+  }else if(view.current?.id==="prologue:P-05"){drawBell();bell.querySelector(".res-bell-label").textContent=tr("调查旧铃","Inspect old bell");bell.setAttribute("aria-label",tr("调查旧铃","Inspect old bell"));}
+  else{
    closeBell();
    if(view.current?.id==='prologue:P-05'&&view.cursor<view.current.lines.length)api.showCurrent();
   }
@@ -38,8 +46,8 @@ function install(){
  window.addEventListener("cat-bond-resonance-changed",refresh);
  window.addEventListener("morrowwish-language-change",()=>{
   if(!bell)return;
-  bell.setAttribute("aria-label",tr("拉动花园的旧铃","Pull the old garden bell"));
-  bell.querySelector(".res-bell-label").textContent=tr("向下拉动铃绳","Pull the bell cord down");
+  const optional=api.view().current?.id==="prologue:P-05";bell.setAttribute("aria-label",optional?tr("调查旧铃","Inspect old bell"):tr("拉动花园的旧铃","Pull the old garden bell"));
+  bell.querySelector(".res-bell-label").textContent=optional?tr("调查旧铃","Inspect old bell"):tr("向下拉动铃绳","Pull the bell cord down");
  });
 }
 document.addEventListener("DOMContentLoaded",install,{once:true});

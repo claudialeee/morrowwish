@@ -21,7 +21,7 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  assert.equal(await page.evaluate(()=>Object.values(State.S.resonance.evidence).flat().some(o=>o.startsWith('cinematic:'))),false);
  await screenshot('context');await press(intro.getByRole('button',{name:meet?tr('开始探索','Start exploring'):tr('跳过介绍','Skip introduction'),exact:true}));
  const guide=page.locator('.sg-prologue-guide');
- if(meet){await press(guide.locator('summary'));await press(guide.getByRole('button',{name:tr('看看陌生猫的航图（可选）','Help the stranger with her chart (optional)'),exact:true}));const encounter=page.locator('#cb-traveler-encounter');
+ if(meet){await press(page.locator('[data-npc-talk="muling"]'));const encounter=page.locator('#cb-traveler-encounter');
  for(const label of [tr('捡起航图','Pick up the chart'),tr('归还航图','Return the chart'),tr('告别','Say goodbye')])await press(encounter.getByRole('button',{name:label,exact:true}));
  assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);assert.equal(await page.evaluate(()=>CatBondResonance.residents('garden').some(n=>n.id==='muling')),false);}
  else assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),false);

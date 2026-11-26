@@ -21,7 +21,7 @@
   const HOTSPOTS = [
     {id:'facilities',zh:'家园布置',en:'Garden design',action:()=>window.UI?.openBuild?.()}
   ];
-  let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null,hitState=null,guide=null,guideKey='';
+  let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null,hitState=null,guide=null,guideKey='',talkMarker=null;
   const isEnglish=()=>window.MorrowwishI18n?.get?.()!=='zh';
   const state=()=>window.State?.S||null;
   function canonicalProgress(){
@@ -89,9 +89,23 @@
       const summary=document.createElement('summary');summary.textContent=en?'Explore clues':'探索线索';details.append(summary);row.append(details);
       const optional=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};details.append(b);};
       if(!v.openingMet)optional('看看陌生猫的航图（可选）','Help the stranger with her chart (optional)',()=>narrativeAdapter?.interactHomeNpc('muling'));
-      optional('阅读旧铃木牌（可选）','Read the old bell plaque (optional)',()=>game.toast({zh:'多年前，一颗坠落的星辰击坏了星铃。许多猫咪因此忘记了家园和亲友。愿每一只迷路的猫，都能找到回家的路。',en:'Years ago a falling star damaged the Star Bell. Many cats forgot their homes and loved ones. May every lost cat find its way home.'}));
+      optional('阅读旧铃木牌（可选）','Read the old bell plaque (optional)',()=>window.CatBondGardenBell?.inspect?.());
 
     }
+  }
+  function syncTalkMarker(ctx,width,height,x,y,scale){
+    if(!talkMarker)return;
+    const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden]),#cb-player-first-intro,#cb-system-menu:not([hidden])');
+    if(covered||game?.yard?.placement){talkMarker.hidden=true;return;}
+    const canvasRect=ctx.canvas.getBoundingClientRect(),r=root.getBoundingClientRect();
+    if(!width||!height||!r.width||!r.height){talkMarker.hidden=true;return;}
+    const px=canvasRect.left-r.left+x/width*canvasRect.width;
+    const py=canvasRect.top-r.top+(y-112*scale)/height*canvasRect.height;
+    talkMarker.style.left=Math.max(34,Math.min(r.width-34,px))+'px';
+    talkMarker.style.top=Math.max(44,Math.min(r.height-14,py))+'px';
+    const label=isEnglish()?'Talk':'对话';
+    if(talkMarker.dataset.locale!==label){talkMarker.dataset.locale=label;talkMarker.querySelector('span').textContent=label;talkMarker.setAttribute('aria-label',isEnglish()?'Talk to the cat':'与猫咪对话');}
+    talkMarker.hidden=false;
   }
   function ensureRoot(){
     if(root||!document.getElementById('stage'))return root;
@@ -105,6 +119,10 @@
       root.append(b);
     }
     const actions=document.getElementById('yard-actions');if(actions&&!document.getElementById('sg-book-entry')){const book=document.createElement('button');book.id='sg-book-entry';book.type='button';book.className='fab sg-book-entry';book.onclick=()=>{if(active&&game?.scene==='yard')window.ResonanceBook?.open()};actions.prepend(book);}
+    talkMarker=document.createElement('button');talkMarker.type='button';talkMarker.className='sg-npc-talk-marker';talkMarker.dataset.npcTalk='muling';talkMarker.hidden=true;
+    talkMarker.innerHTML='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H9l-5 4z"/><path d="M8 10h.1m4 0h.1m4 0h.1" stroke-width="2.5" stroke-linecap="round"/></svg><span></span>';
+    talkMarker.onclick=()=>{if(active&&game?.scene==='yard'&&state()===visitedState&&narrativeAdapter?.getHomeNpcs?.().some(n=>n.id==='muling'))narrativeAdapter.interactHomeNpc('muling');};
+    root.append(talkMarker);
     guide=document.createElement('section');guide.className='sg-prologue-guide';guide.hidden=true;root.append(guide);document.getElementById('stage').append(root);renderLabels();return root;
   }
   function init(controller){
@@ -130,7 +148,7 @@
     if(root)root.inert=false;
     root?.classList.add('is-active');document.getElementById('stage')?.classList.add('cb-sunlit-garden');renderLabels();refreshGuide();
   }
-  function leave(){window.GardenProjects?.resetSlot?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;}
+  function leave(){window.GardenProjects?.resetSlot?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;if(talkMarker)talkMarker.hidden=true;}
   function registerNarrativeAdapter(adapter){
     if(!adapter||typeof adapter.getHomeNpcs!=='function'||typeof adapter.drawHomeNpc!=='function'||
        typeof adapter.interactHomeNpc!=='function')return false;
@@ -143,6 +161,7 @@
     if(root)root.inert=!!game.yard?.placement;
     if(projects)window.GardenProjects?.draw?.(ctx,width,height,time);
     if(!residents)return;
+    if(talkMarker)talkMarker.hidden=true;
     if(!narrativeAdapter&&window.CatBondResonanceNPC?.gardenAdapter)registerNarrativeAdapter(window.CatBondResonanceNPC.gardenAdapter);
     lastNpcHits=[];hitState=null;if(!narrativeAdapter)return;
     let npcs;try{npcs=narrativeAdapter.getHomeNpcs()||[]}catch(error){console.warn('Garden NPC availability failed',error);return}
@@ -154,6 +173,7 @@
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
       try{const scale=a.scale*(npc.id==='muling'?.95:.68)*Math.max(.72,Math.min(1.1,height/460));const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale,time});
         if(visible===false)continue;
+        if(npc.id==='muling')syncTalkMarker(ctx,width,height,x,y,scale);
         if(npc.id==='muling'){ctx.save();ctx.font='600 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const stranger=window.CatBondResonance?.view?.().current?.id==='prologue:P-05';const label=window.MorrowwishI18n?.get?.()==='zh'?(stranger?'陌生猫':'暮铃'):(stranger?'Stranger':'Muling');const w=ctx.measureText(label).width+16;ctx.fillStyle='#fff2d9e8';ctx.beginPath();ctx.roundRect(x-w/2,y+5,w,21,10);ctx.fill();ctx.fillStyle='#594431';ctx.fillText(label,x,y+15.5);ctx.restore();}
         lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*scale:y-30*scale,groundY:y,radius:Math.max(24,a.radius*.75*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
