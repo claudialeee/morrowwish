@@ -2195,7 +2195,7 @@ class CaptureBattle {
       // velocity and acceleration so each wave actually clears the caster before the
       // next lands, AND still reads as "slow-start → fast rip" visually.
       const startSpd = f.projSpeed * 1.0;
-      const projR = 22;   // owner 2026-11-26: "月弧的大小要再宽一点" (14 → 22, +57%)
+      const projR = 22;   // owner 2026-11-26: widen the moon arc (14 → 22, +57%)
       this._pulseQueue = this._pulseQueue || [];
       this.skillStrokes = this.skillStrokes || [];
       // Target direction at cast time: snapshot now so the fan reads as "pointed at
