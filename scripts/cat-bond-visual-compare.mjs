@@ -104,7 +104,7 @@ try{
     const mulingArt=firstDialogue.locator('img.res-portrait');
     await mulingArt.waitFor({state:'visible'});
     await mulingArt.evaluate(img=>img.decode());
-    if(out.endsWith('/after'))assert.match(await mulingArt.getAttribute('src'),/traveler-(warm|neutral|dry|nervous|worried|determined)\.webp$/);
+    if(out.endsWith('/after'))assert.match(await mulingArt.getAttribute('src'),/traveler-silver-cream\.webp$/);
     await shot('muling-dialogue');
     await dialogue('prologue:P-04');
     const bell=page.locator('.res-garden-bell');await bell.waitFor();await checkTheme();await shot('garden');

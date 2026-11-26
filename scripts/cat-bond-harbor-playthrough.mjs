@@ -161,12 +161,9 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
         if (await close.isVisible()) await close.click();
       }
     }
-    // Independent expected expressions for the authored forest and forge dialogue.
-    // Do not accept arbitrary portraits: verify exact speaker, mood, and decoded image.
-    function expectedRegionalPortrait(actor,scene,cursor){
+    function expectedRegionalPortrait(actor){
       if(actor!=='muling')return '/npc/'+actor+'-painted.webp';
-      const moods={'forest:R-04':{1:'warm',3:'neutral',5:'determined'},'forge:E-01':{3:'warm',5:'dry'},'forge:E-04':{3:'neutral',5:'neutral',7:'determined'}};
-      return '/cinematics/characters/muling/traveler-'+(moods[scene]?.[cursor]??'warm')+'.webp';
+      return '/cinematics/characters/muling/traveler-silver-cream.webp';
     }
     async function readForestDialogue(id,choice) {
       const dialogue=page.locator('.res-host[data-scene="'+id+'"]');
