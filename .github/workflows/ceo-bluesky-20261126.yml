@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
-      MORROW_BLUESKY_HANDLE: ${{ secrets.MORROW_BLUESKY_HANDLE }}
+      MORROW_BLUESKY_HANDLE: morrowwishgames.bsky.social
       MORROW_BLUESKY_APP_PASSWORD: ${{ secrets.MORROW_BLUESKY_APP_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
