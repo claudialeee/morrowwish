@@ -1,0 +1,66 @@
+name: Cat Bond experience playtest (isolated)
+on:
+  push:
+    branches: [review/cat-bond-playtest-harness]
+    paths:
+      - 'scripts/cat-bond-experience-*.mjs'
+      - 'scripts/cat-bond-release-prologue-qa.mjs'
+      - 'scripts/cat-bond-harbor-playthrough.mjs'
+      - '.github/workflows/cat-bond-experience-playtest.yml'
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'opening (fast) or campaign (deep authored route)'
+        type: choice
+        options: [opening, campaign]
+        default: opening
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-experience-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      PROLOGUE_LANG: zh
+      PROLOGUE_PROFILE: desktop
+      CAT_BOND_PROFILE: desktop
+      CAT_BOND_FULL_CAMPAIGN: '1'
+      SCOPE: ${{ inputs.scope || 'opening' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Real browser evidence on loopback only
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-experience-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          if [ "$SCOPE" = campaign ]; then
+            node scripts/cat-bond-harbor-playthrough.mjs
+          else
+            CAT_BOND_FULL_CAMPAIGN=0 node scripts/cat-bond-release-prologue-qa.mjs
+          fi
+      - name: Generate review packet even after failed playthrough
+        if: always()
+        run: node scripts/cat-bond-experience-report.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cat-bond-experience-evidence
+          path: |
+            artifacts/cat-bond-experience/
+            artifacts/cat-bond-release-prologue/
+            artifacts/cat-bond-harbor/
+            /tmp/cb-experience-server.log
+          if-no-files-found: warn
+          retention-days: 7
