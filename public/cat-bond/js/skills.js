@@ -879,7 +879,9 @@
     const splash = secondaryOf(cat);
     const lvl = cat.level || 1;
     const bond = cat.affinity || 0;
-    const rIdx = rarityIdx((speciesOf(cat) || {}).rarity || cat.rarity || 'N');
+    const sp=speciesOf(cat);
+    // Story companions unlock power by training/bond, not immediate SSR privilege.
+    const rIdx = cat.protagonist ? 1 : Math.min(rarityIdx(sp?.rarity || cat.rarity || 'N'),sp?.storyActor?1:3);
     const tier = bondTier(bond);
     const sideChoices=secondaryChoices(cat).map(s=>s.id);
     const sideLimit=secondaryLimit(cat);
@@ -1181,6 +1183,7 @@
       yuelian:'control'}; // ☀️ light SSR = 月月 控制/辅助 (not raw dps)
       // 松松(SSR grass)=坦克; 星星(SSR dark)=assassin & 月月(SSR light)=dps resolve via stats.
       // v2: light needs ONE frontline (support×5/control×1/dps×1 had zero); 三花 7/7/7/9 balanced → bruiser
+    if(sp?.storyRole&&BUILD_TYPES[sp.storyRole])return sp.storyRole;
     if(BREED_ROLES[cat.species])return BREED_ROLES[cat.species];
     // rank the four stats; primary = biggest, secondary = next (ties: pow>agi>vit>cha)
     const order=['pow','agi','vit','cha'];
@@ -1398,7 +1401,7 @@
   }
 
   function progressionHint(cat){
-    const sp=speciesOf(cat),rare=rarityIdx(sp?.rarity||'N');
+    const sp=speciesOf(cat),rare=cat.protagonist?1:Math.min(rarityIdx(sp?.rarity||'N'),sp?.storyActor?1:3);
     const lv=cat.level||1,bond=cat.affinity||0;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     if(rare===0&&!cat.skillAwakened&&lv<4&&bond<40)

@@ -42,10 +42,36 @@ let S = DEFAULT_STATE();
 
 // --- cat instance factory ---
 let _uid = 1;
+const OWNED_STAT_VERSION = 1;
+const STAT_KEYS = ['pow','agi','vit','cha'];
+// Largest remainder: a defined integer budget, with no extra multiplier from
+// the breed's original base-stat sum. Keep every stat positive.
+function allocateOwnedStats(profile, budget) {
+  const weights=STAT_KEYS.map(k=>Math.max(1,Number(profile?.[k])||1));
+  const total=weights.reduce((a,b)=>a+b,0);
+  const rest=Math.max(0,Math.round(budget)-STAT_KEYS.length);
+  const parts=weights.map(w=>rest*w/total);
+  const points=parts.map(p=>Math.floor(p)+1);
+  const order=STAT_KEYS.map((_,i)=>i).sort((a,b)=>(parts[b]%1)-(parts[a]%1)||a-b);
+  const missing=Math.round(budget)-points.reduce((a,b)=>a+b,0);
+  for(let i=0;i<missing;i++)points[order[i]]++;
+  return Object.fromEntries(STAT_KEYS.map((k,i)=>[k,points[i]]));
+}
+function migrateOwnedStats(cat) {
+  const sp=GameData.speciesById(cat.species);
+  if(!sp||cat._ownedStatVersion===OWNED_STAT_VERSION)return;
+  const levels=Math.max(0,(Number(cat.level)||1)-1);
+  const mult=GameData.ownedBudget(cat);
+  const bonus=cat.awaken?.length&&STAT_KEYS.includes(cat.awaken)?1.25:1;
+  const budget=32*mult+levels*5.5*mult*bonus;
+  cat.stats=allocateOwnedStats(cat.stats||sp.base,budget);
+  delete cat._gacc;
+  cat._ownedStatVersion=OWNED_STAT_VERSION;
+}
 function makeCat(speciesId, opts = {}) {
   const sp = GameData.speciesById(speciesId);
-  const rar = GameData.RARITY[sp.rarity];
-  const jitter = () => 0.85 + Math.random() * 0.3;
+  const protagonist=opts.protagonist===true;
+  const profile=sp.storyActor||protagonist?sp.base:Object.fromEntries(STAT_KEYS.map(k=>[k,sp.base[k]*(.95+Math.random()*.10)]));
   return {
     uid: 'c' + (_uid++) + '_' + Math.floor(Math.random() * 9999),
     species: speciesId,
@@ -53,12 +79,10 @@ function makeCat(speciesId, opts = {}) {
     level: 1,
     xp: 0,
     affinity: opts.affinity || 0,     // 0..100 bond
-    stats: {
-      pow: Math.round(sp.base.pow * rar.statMul * jitter()),
-      agi: Math.round(sp.base.agi * rar.statMul * jitter()),
-      vit: Math.round(sp.base.vit * rar.statMul * jitter()),
-      cha: Math.round(sp.base.cha * rar.statMul * jitter()),
-    },
+    ...(protagonist?{protagonist:true}:{}),
+    ...(sp.storyActor?{storyActor:sp.storyActor}:{}),
+    _ownedStatVersion:OWNED_STAT_VERSION,
+    stats: allocateOwnedStats(profile,32*GameData.ownedBudget(protagonist?{protagonist:true}:sp)),
     hunger: 70,       // 0..100, decays over time
     joy: 70,          // 0..100
     caughtAt: opts.caughtAt || Date.now(),
@@ -101,14 +125,13 @@ function catName(cat) {
 // Per-level growth is shaped by the cat's BREED identity, RARITY and awaken branch,
 // not a flat bump — so a cat levels up ALONG its character. A breed's base-stat
 // profile sets how each stat grows (a high-pow bruiser gains more pow/level), the
-// rarity statMul scales total growth (legends out-scale commons), and an awakened
+// owned rarity budget caps total growth (legends gain at most 15%), and an awakened
 // branch pours extra into its chosen stat. This makes level genuinely matter and
 // keeps distinct breeds feeling distinct as they grow.
 function statGrowth(cat) {
   const sp = GameData.speciesById(cat.species);
   const base = (sp && sp.base) || { pow: 6, agi: 6, vit: 6, cha: 6 };
-  const rar = sp ? GameData.RARITY[sp.rarity] : null;
-  const rarMul = rar ? rar.statMul : 1;                 // N 1.0 → SSR 2.1
+  const rarMul = GameData.ownedBudget(cat);
   const total = base.pow + base.agi + base.vit + base.cha || 1;
   // ~5.5 stat-points per level for a common, scaled by rarity, split by the breed's
   // profile so the biggest base stat grows fastest. Awaken branch gets a bonus share.
@@ -133,8 +156,8 @@ function addXp(cat, amount) {
     // accumulate fractional growth so small per-level shares still add up cleanly
     cat._gacc = cat._gacc || { pow: 0, agi: 0, vit: 0, cha: 0 };
     for (const k of ['pow', 'agi', 'vit', 'cha']) {
-      cat._gacc[k] += g[k] + (Math.random() * 0.6 - 0.3);   // tiny jitter so twins differ
-      const whole = Math.max(1, Math.round(cat._gacc[k]));   // always at least +1
+      cat._gacc[k] += g[k];
+      const whole = Math.max(0, Math.floor(cat._gacc[k]+1e-9));
       cat.stats[k] += whole;
       cat._gacc[k] -= whole;
     }
@@ -334,10 +357,19 @@ function normalizeLoadedState(data) {
   if ('treats' in next) { next.fish = (next.fish || 0) + (next.treats || 0); delete next.treats; }
   if ('yarn' in next) { next.coins = (next.coins || 0) + (next.yarn || 0); delete next.yarn; }
   if (next.raising && 'yarn' in next.raising) { next.coins = (next.coins || 0) + (next.raising.yarn || 0); delete next.raising.yarn; }
-  if (Array.isArray(next.cats)) for (const c of next.cats) {
-    if (!Array.isArray(c.learned)) c.learned = [];
-    if (typeof c.battlesWon !== 'number') c.battlesWon = 0;
+  if (Array.isArray(next.cats)) {
+    // The fixed opening Goldie is the first owned cat, not every Goldie breed.
+    if(next.cats[0]?.species==='jinjc'&&!next.cats.some(c=>c.protagonist)){
+      const hero=next.cats[0];hero.protagonist=true;delete hero._ownedStatVersion;
+    }
+    for (const c of next.cats) {
+      if (!Array.isArray(c.learned)) c.learned = [];
+      if (typeof c.battlesWon !== 'number') c.battlesWon = 0;
+      migrateOwnedStats(c);
+    }
   }
+  // Muling may be temporarily outside the roster during the library chapter.
+  for(const c of Object.values(next.storyAway||{}))if(c?.species)migrateOwnedStats(c);
   return next;
 }
 let sessionStartedAt = Date.now();

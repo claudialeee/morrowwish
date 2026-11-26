@@ -374,9 +374,7 @@ const UI = {
     const maxHp=Math.round((80+(s.vit||0)*8)*mult);
     const carried=State.catHpFraction?.(cat)??1;
     const hp=Math.round(maxHp*carried);
-    const rarity=sp.rarity||'N';
-    const r={N:en?'Common':'普通',R:en?'Rare':'稀有',
-      SR:en?'Epic':'史诗',SSR:en?'Legendary':'传说'};
+    const rarityMeta=GameData.rarityInfo(cat,en),rarity=rarityMeta.key;
     const element=window.Skills?.elementOf?.(cat.species)||'light';
     const elements={
       fire:['🔥',en?'Fire':'火'],water:['💧',en?'Water':'水'],
@@ -389,7 +387,7 @@ const UI = {
     // "defense" numbers (VIT affects max HP; there is no defense stat).
     const damage=(6+(s.pow||0)*.7)*(bond.dmgMult||1)*.62;
     const speed=120*(1+Math.min(.2,Math.max(0,s.agi||0)*.0035));
-    return {level:cat.level||1,rarity,rarityName:r[rarity]||rarity,
+    return {level:cat.level||1,rarity,rarityName:rarityMeta.name,rarityLabel:rarityMeta.label,
       element,elementLabel:(elements[element]||['✨',''])[0]+' '+(elements[element]||['',''])[1],
       power:State.catPower(cat),pow:s.pow||0,agi:s.agi||0,vit:s.vit||0,cha:s.cha||0,
       damage:Math.round(damage*10)/10,speed:Math.round(speed*10)/10,
@@ -401,7 +399,7 @@ const UI = {
     const f=this.battleCatFacts(cat);
     return '<span class="squad-statline squad-statline-primary">'
       +'<span class="squad-level">Lv.'+f.level+'</span>'
-      +'<span class="squad-rarity rarity-'+f.rarity+'">'+f.rarity+' · '+f.rarityName+'</span>'
+      +'<span class="squad-rarity rarity-'+f.rarity+'">'+f.rarityLabel+'</span>'
       +'<span class="squad-element">'+f.elementLabel+'</span></span>'
       +'<span class="squad-statline squad-statline-secondary">'
       +'<span>'+(en?'Power ':'战力 ')+f.power+'</span>'
@@ -515,7 +513,7 @@ const UI = {
         '<canvas width="72" height="68" aria-hidden="true"></canvas>'+
         '<div class="explore-cat-summary"><strong>'+esc(State.catName(cat))+'</strong>'+
         '<small>'+(i===0?(en?'Leader':'领队'):(en?'Partner':'搭档'))+
-        ' · Lv.'+f.level+' · '+esc(f.rarity)+' · '+(en?'Power ':'战力 ')+f.power+'</small>'+
+        ' · Lv.'+f.level+' · '+esc(f.rarityLabel)+' · '+(en?'Power ':'战力 ')+f.power+'</small>'+
         '<small>❤ <span data-menu-hp="'+esc(cat.uid)+'">'+f.hp+'/'+f.maxHp+'</span> · '+(en?'Bond ':'好感 ')+f.affinity+
         ' · '+(en?'Full ':'饱食 ')+Math.round(cat.hunger||0)+'%</small>'+
         '<div class="explore-cat-skills">'+skills+'</div>'+
@@ -1645,7 +1643,8 @@ const UI = {
         ${group.length>1?'<span class="breed-group-count">×'+group.length+'</span>':''}
         <canvas width="90" height="76"></canvas>
         <div class="name">${GameData.speciesName(sp)}</div>
-        <div class="rarity rarity-${sp.rarity}">${sp.storyActor?(english?'Story companion':'剧情伙伴'):GameData.RARITY[sp.rarity].name}</div>
+        <div class="rarity rarity-${GameData.rarityInfo(group.length===1?strongest:sp,english).key}">${GameData.rarityInfo(group.length===1?strongest:sp,english).label}</div>
+        ${sp.storyActor?'<div class="tiny">'+(english?'Story companion':'剧情伙伴')+'</div>':''}
         <div class="tiny">${english?'Top Lv.':'最高等级 '}${strongest.level}</div>
       </button>`;
     }).join('');
@@ -1768,7 +1767,7 @@ const UI = {
     const battleMetric=(name,value)=>'<div class="cat-detail-metric"><span>'+name+
       '</span><strong>'+value+'</strong></div>';
     host.innerHTML = `
-      <h2>${dispName}${sub} <span class="rarity-${sp.rarity}">◆${rar.name}</span> <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
+      <h2>${dispName}${sub} <span class="rarity-${facts.rarity}">◆${facts.rarityLabel}</span> ${sp.storyActor?'<span class="tiny">'+(en?'Story companion':'剧情伙伴')+'</span>':''} <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
       ${window.Skills?'<p class="cat-skill-roadmap">✨ '+Skills.progressionHint(cat)+'</p>':''}
       ${State.S.masteryBadges?.[sp.id]

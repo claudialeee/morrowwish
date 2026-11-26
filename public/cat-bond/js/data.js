@@ -115,7 +115,8 @@ const STORY_SPECIES = Object.freeze({
     "nameEn": "Muling",
     "element": "dark",
     "desc": "银渐层旅行者，擅长暗影与回响。",
-    "rarity": "R",
+    "rarity": "SSR",
+    "storyRole": "assassin",
     "palette": "silver",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -135,6 +136,7 @@ const STORY_SPECIES = Object.freeze({
     "element": "water",
     "desc": "港口领航员。",
     "rarity": "R",
+    "storyRole": "control",
     "palette": "blue",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -153,7 +155,8 @@ const STORY_SPECIES = Object.freeze({
     "nameEn": "Jiedeng",
     "element": "light",
     "desc": "灯塔守望者。",
-    "rarity": "R",
+    "rarity": "SR",
+    "storyRole": "tank",
     "palette": "cream",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -172,7 +175,8 @@ const STORY_SPECIES = Object.freeze({
     "nameEn": "Yahe",
     "element": "grass",
     "desc": "森林药草师。",
-    "rarity": "R",
+    "rarity": "N",
+    "storyRole": "support",
     "palette": "brownTabby",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -191,7 +195,8 @@ const STORY_SPECIES = Object.freeze({
     "nameEn": "Yuchuan",
     "element": "grass",
     "desc": "地下根系守护者。",
-    "rarity": "R",
+    "rarity": "SR",
+    "storyRole": "tank",
     "palette": "brownTabby",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -210,7 +215,8 @@ const STORY_SPECIES = Object.freeze({
     "nameEn": "Xiaomao",
     "element": "elec",
     "desc": "年轻工匠。",
-    "rarity": "R",
+    "rarity": "N",
+    "storyRole": "dps",
     "palette": "silver",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -229,7 +235,8 @@ const STORY_SPECIES = Object.freeze({
     "nameEn": "Jinpo",
     "element": "fire",
     "desc": "炉城工匠。",
-    "rarity": "R",
+    "rarity": "SR",
+    "storyRole": "fighter",
     "palette": "orange",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -249,6 +256,7 @@ const STORY_SPECIES = Object.freeze({
     "element": "elec",
     "desc": "群岛信使。",
     "rarity": "R",
+    "storyRole": "dps",
     "palette": "silver",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -268,6 +276,7 @@ const STORY_SPECIES = Object.freeze({
     "element": "light",
     "desc": "经验丰富的飞行员。",
     "rarity": "R",
+    "storyRole": "fighter",
     "palette": "cream",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -287,6 +296,7 @@ const STORY_SPECIES = Object.freeze({
     "element": "light",
     "desc": "书库研究者。",
     "rarity": "R",
+    "storyRole": "support",
     "palette": "cream",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -305,7 +315,8 @@ const STORY_SPECIES = Object.freeze({
     "nameEn": "Moye",
     "element": "dark",
     "desc": "档案守护者。",
-    "rarity": "R",
+    "rarity": "SR",
+    "storyRole": "control",
     "palette": "silver",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -324,7 +335,8 @@ const STORY_SPECIES = Object.freeze({
     "nameEn": "Xingya",
     "element": "elec",
     "desc": "星原观测者。",
-    "rarity": "R",
+    "rarity": "SR",
+    "storyRole": "dps",
     "palette": "silver",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -343,7 +355,8 @@ const STORY_SPECIES = Object.freeze({
     "nameEn": "Lichuan",
     "element": "fire",
     "desc": "星原商队向导。",
-    "rarity": "R",
+    "rarity": "N",
+    "storyRole": "fighter",
     "palette": "orange",
     "pattern": "solid",
     "eyeColor": "#7ee7c4",
@@ -357,6 +370,22 @@ const STORY_SPECIES = Object.freeze({
   }
 });
 function speciesById(id) { return STORY_SPECIES[id] || SPECIES.find(s => s.id === id); }
+
+// Owned combat budget is independent of wild rarity odds and encounter stats.
+// Breed profiles determine distribution, never an additional rarity multiplier.
+const OWNED_RARITY_BUDGET = Object.freeze({N:1,R:1.05,SR:1.10,SSR:1.15});
+function ownedBudget(catOrSpecies) {
+  if(catOrSpecies?.protagonist)return OWNED_RARITY_BUDGET.R;
+  const sp=catOrSpecies?.species ? speciesById(catOrSpecies.species) : catOrSpecies;
+  return OWNED_RARITY_BUDGET[sp?.rarity] || 1;
+}
+function rarityInfo(cat, en=false) {
+  const sp=cat?.species ? speciesById(cat.species) : cat;
+  if(cat?.protagonist)return {key:'hero',name:en?'Protagonist':'主角',label:en?'Protagonist':'主角'};
+  const key=sp?.rarity||'N';
+  const name=en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[key]):RARITY[key].name;
+  return {key,name,label:key+' · '+name};
+}
 
 function rollSpecies(luck = 0) {
   const rarities = Object.values(RARITY);
@@ -372,4 +401,4 @@ function rollSpecies(luck = 0) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-window.GameData = { RARITY, SPECIES, STORY_SPECIES, speciesById, speciesName, rollSpecies };
+window.GameData = { RARITY, SPECIES, STORY_SPECIES, speciesById, speciesName, rollSpecies, OWNED_RARITY_BUDGET, ownedBudget, rarityInfo };

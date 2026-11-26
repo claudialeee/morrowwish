@@ -152,7 +152,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }else if(mode==='new'||State.S.cats.length===0){
       {
         const id='jinjc';
-        const starter=State.makeCat(id,{affinity:20});
+        const starter=State.makeCat(id,{affinity:20,protagonist:true});
         if(window.Raising)Raising.decorateNewCat(starter);
         State.S.cats.push(starter);State.S.dex[id]=(State.S.dex[id]||0)+1;
         State.save();

@@ -36,7 +36,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
  try{
   const rt=getSlotRuntime(State),init=rt.initialize();if(!init.ok)return fail(init.reason);
   if(!live())return fail("slot-changed");
-  if(!owner.cats.length){const id="jinjc",starter=State.makeCat(id,{affinity:20}),previous=owner.dex[id];window.Raising?.decorateNewCat?.(starter);owner.cats.push(starter);owner.dex[id]=(previous||0)+1;let ok=false;try{ok=State.save()?.ok===true}catch{}if(!ok){owner.cats.pop();if(previous===undefined)delete owner.dex[id];else owner.dex[id]=previous;return fail("fixed-protagonist-save-failed");}window.arcadeMetric?.("bond_starter_chosen",{starter:id});}
+  if(!owner.cats.length){const id="jinjc",starter=State.makeCat(id,{affinity:20,protagonist:true}),previous=owner.dex[id];window.Raising?.decorateNewCat?.(starter);owner.cats.push(starter);owner.dex[id]=(previous||0)+1;let ok=false;try{ok=State.save()?.ok===true}catch{}if(!ok){owner.cats.pop();if(previous===undefined)delete owner.dex[id];else owner.dex[id]=previous;return fail("fixed-protagonist-save-failed");}window.arcadeMetric?.("bond_starter_chosen",{starter:id});}
   const showContext=introIds.has(rt.view().current?.id);
   // Retired entries carry no mandatory operations. Do not manufacture cinematic or gameplay evidence.
   while(introIds.has(rt.view().current?.id)){const v=rt.view();if(v.objective.length||v.current.lines.length)return fail("old-opening-data");const result=rt.finish(rt.capture());if(!result.ok)return fail(result.reason);if(!live())return fail("slot-changed");}
