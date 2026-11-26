@@ -41,7 +41,7 @@ export function harborObjective(v,lang){
  const line=s==="harbor:H-01"?["沿石径找到领航员栖蓝。","Follow the stone path to Qilan."]:
  s==="harbor:H-02"?["前往灯塔，与岬灯谈谈旧风暴。","Visit the lighthouse and ask Jiedeng about the old storm."]:
  s==="harbor:H-03"?["沿东岸追踪退潮刻痕，取回救援日志。","Follow the ebb marks on the eastern shore and recover the rescue log."]:
- s==="harbor:H-04"?!v.choice?["与领航员或守灯人商议救援顺序。","Speak to the navigator or keeper to choose the rescue order."]:v.choice==="rescue"&&has("rescue:storm-boat")?["先打开潮汐闸门，协助栖蓝救援。","Open the tide gate and help Qilan with the rescue first."]:has("puzzle:beam-mirrors")?["前往灯塔校准镜面，照亮航路。","Align the lighthouse mirrors to light the channel."]:["返回码头，引导救援船入港。","Return to the quay and guide the rescue boat to safety."]:
+ s==="harbor:H-04"?!v.choice?["先选择救援顺序：找栖蓝先救船，或找岬灯先点亮灯塔。两项都要完成。","Choose the rescue order: talk to Qilan to rescue the boat first, or Jiedeng to light the lighthouse first. Both tasks must be completed."]:v.choice==="rescue"&&has("rescue:storm-boat")?["先打开潮汐闸门，协助栖蓝救援。","Open the tide gate and help Qilan with the rescue first."]:has("puzzle:beam-mirrors")?["前往灯塔校准镜面，照亮航路。","Align the lighthouse mirrors to light the channel."]:["返回码头，引导救援船入港。","Return to the quay and guide the rescue boat to safety."]:
  s==="harbor:H-05"?has("repair:harbor")?["修复灯塔圣所。","Restore the lighthouse sanctuary."]:has("melody:harbor")?["邀请栖蓝和岬灯，与港口居民合奏归潮调。","Invite Qilan and Jiedeng to perform Returning Tides together."]:["聆听暮铃的话。","Listen to Muling."]:
  v.melodies.includes("harbor")?["灯塔复明 · 补给航线已开放，可前往眠根林。","Beacon restored · Supply route open; travel to Rootsleep Forest."]:null;
  return line?.[zh?0:1]||"";

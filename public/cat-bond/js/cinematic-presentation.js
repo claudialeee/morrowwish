@@ -50,8 +50,9 @@
 .cbcp-tool:hover,.cbcp-action:hover{background:rgba(49,71,78,.94)}
 .cbcp-tool:focus-visible,.cbcp-action:focus-visible{outline:2px solid #f0d29a;outline-offset:3px}
 .cbcp-subtitle-wrap{box-sizing:border-box;position:absolute;z-index:7;left:50%;bottom:clamp(22px,5.2vw,66px);width:min(900px,calc(100% - 36px));transform:translateX(-50%);text-align:center;text-shadow:0 2px 14px #06111a}
-.cbcp-speaker{display:block;margin-bottom:7px;color:#e2c28f;font:600 12px/1.3 Georgia,"Noto Serif SC",serif;letter-spacing:.08em}
-.cbcp-subtitle{margin:0;color:#fff6e8;font:500 clamp(15px,2vw,22px)/1.6 system-ui,"Noto Sans SC",sans-serif;white-space:pre-line;overflow-wrap:anywhere}
+.cbcp-speaker{display:block;margin-bottom:4px;color:#e2c28f;font:700 var(--cbcp-dialogue-size)/1.3 Georgia,"Noto Serif SC",serif;letter-spacing:.03em}
+.cbcp-subtitle-wrap{--cbcp-dialogue-size:clamp(15px,2vw,22px)}
+.cbcp-subtitle{margin:0;color:#fff6e8;font:500 var(--cbcp-dialogue-size)/1.6 system-ui,"Noto Sans SC",sans-serif;white-space:pre-line;overflow-wrap:anywhere}
 .cbcp-footer{z-index:8;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,#182a35,#101d28);border-top:1px solid rgba(181,140,85,.35)}
 .cbcp-progress{display:flex;align-items:center;gap:6px;min-width:0;flex:1}
 .cbcp-progress-dot{width:6px;height:6px;border-radius:50%;background:#64747a;transition:background .2s,transform .2s}
@@ -72,14 +73,16 @@
  .cbcp-tool,.cbcp-action{min-height:44px;padding:9px 10px;font-size:11px}
  .cbcp-tools{gap:5px}
  .cbcp-subtitle-wrap{bottom:16px;width:calc(100% - 28px)}
- .cbcp-subtitle{font-size:clamp(14px,3.8vw,18px);line-height:1.48}
+ .cbcp-subtitle-wrap{--cbcp-dialogue-size:clamp(14px,3.8vw,18px)}
+ .cbcp-subtitle{line-height:1.48}
  .cbcp-footer{padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px))}
 }
 @media(max-height:460px) and (orientation:landscape){
  .cbcp-stage{aspect-ratio:auto}
  .cbcp-title{font-size:clamp(18px,4.5vh,27px)}
  .cbcp-subtitle-wrap{bottom:10px}
- .cbcp-subtitle{font-size:clamp(13px,3vh,17px);line-height:1.35}
+ .cbcp-subtitle-wrap{--cbcp-dialogue-size:clamp(13px,3vh,17px)}
+ .cbcp-subtitle{line-height:1.35}
  .cbcp-footer{padding:5px 9px}
  .cbcp-tool,.cbcp-action{min-height:44px;padding:7px 10px}
 }
