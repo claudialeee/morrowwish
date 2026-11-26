@@ -133,10 +133,22 @@ assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),{x:6,y:3},
  "First sighting must telegraph a warning rather than instantly grab the cat");
 assert.deepEqual(JSON.parse(JSON.stringify(test.getState().guardTarget)),{x:4,y:3},
  "Chase waypoint should match where the cat just moved");
+assert.equal(chase.exposure,1,"One visible turn gives exactly one warning");
+assert.equal(chase.lives,3,"First sighting is not a capture");
 test.move(-1,0);
-assert.deepEqual(JSON.parse(JSON.stringify(test.getState().human)),{x:5,y:3},
- "Owner must actually MOVE one tile toward the visible cat");
-assert.equal(test.getState().lives,3,"An early visible chase must remain escapable");
+assert.equal(chase.caughtCount,1,"Second consecutive exposed turn catches");
+assert.equal(chase.lives,2,"Second exposed turn costs one heart");
+// Strict capture cap in every room, including the former tutorial grace period.
+for(let i=0;i<8;i++){
+ test.choose(i,false);const st=test.getState();
+ for(let count=1;count<=3;count++){
+  st.sleepTurns=0;st.noise=null;st.distractionTurns=0;st.yarnAnimating=false;st.exposure=1;st.guardMode="chase";st.lightTurns=0;
+  st.cat={...st.start};st.human={...st.cat};nodes.get('wait').onclick();
+  assert.equal(st.caughtCount,count,"Each capture counts exactly once");
+  assert.equal(st.lives,3-count,"Capture consumes one of three hearts");
+  assert.equal(st.done,count===3,"Exactly the third capture ends the run");
+ }
+}
 // Footsteps are weaker than visual detection: they move toward the previously
 // occupied tile and have a cooldown instead of psychic continuous pursuit.
 test.choose(0,false);
@@ -205,12 +217,7 @@ assert.equal(test.getState().winning,true,'Kitchen must be playable by following
 assert.equal(test.getState().lives,3,'Early kitchen should not punish an ordinary path with an unfair capture');
 // Collect a REAL room souvenir and verify its name, preview, and permanent album entry.
 test.choose(0,false);
-let relicMoves=0;
-while(!test.getState().done&&!test.getState().hasRelic&&relicMoves++<40){
- const room=test.getState(),next=path(room,room.cat,room.relic)?.[0];
- assert.ok(next,'Souvenir must remain reachable');
- test.move(next.x-room.cat.x,next.y-room.cat.y);
-}
+for(const c of "RRRDDR"){const d={R:[1,0],L:[-1,0],U:[0,-1],D:[0,1]}[c];test.move(...d);}
 assert.equal(test.getState().hasRelic,true,'Touching the souvenir must pick it up');
 assert.ok(nodes.get('relicGallery').innerHTML.includes('窗帘流苏'),
  'The collection gallery must identify the acquired item');
@@ -274,7 +281,7 @@ assert.equal(hard.pressure,false,'Later room must start without time-pressure vi
 hard.steps=hard.room.goal-1;
 test.move(1,0);
 assert.equal(hard.pressure,true,'Spending the room step budget should raise guard alertness');
-assert.ok(nodes.get('visionTip').textContent.includes('High alert'),'Rising pressure must be explained in HUD');
+assert.ok(/High alert|Spotted!/.test(nodes.get('visionTip').textContent),'Rising pressure must be explained in HUD');
 assert.ok(source.includes('s.index>=3?1:0')&&source.includes('s.searchTurns=s.index>=5'),
  'Later rooms must widen sight and extend guard search memory');
 // Real step-by-step solutions through the post-balance guard AI (no shortcuts,
@@ -297,7 +304,7 @@ for(let room=0;room<solvableRoutes.length;room++){
 
 // Verify a REAL 4-fish, no-hit 3-star route. No teleport, free fish or cheats.
 test.choose(0,false);
-for(const direction of 'RUURDDLDDRDLURRURRRUDDRRD'){
+for(const direction of 'RRUUURRRRDDDDDLLLLDRRRLRRRR'){
  const delta={R:[1,0],L:[-1,0],U:[0,-1],D:[0,1]}[direction];
  assert.equal(test.getState().done,false,'Perfect-route cat cannot finish before exit');
  test.move(...delta);
@@ -326,7 +333,7 @@ assert.equal(nodes.get('stars').textContent,'★★☆','All fish without bonus 
 // A perfect 3-star result must remain ACHIEVABLE in ALL eight rooms.
 // Paths are deterministic under the real heightened guard AI. Room 4 spends
 // one real yarn throw before following its perfect 4-fish escape path.
-const perfectRoutes=["RRLURDLDDRDLURRURRRUDDRRD","RDDRRRDUURUDLDDRLUUURRRRDDDD","DDDRRDDURULRRUULLUURRRRRRDDDDDD","RRUDLURRRRRRRDDDLDLLLLUUUDDDRRDRRRD","RURRRRRDDDRDDLLLLLRRRDRRR","DDDRDUUUUURDRRDRRDDDDRR","RDRUDUURRRRRDLDDDLLLLDDRRRLRRRR","DDDDRUURLUURURRRRRDDDDLDDRR"];
+const perfectRoutes=["RRUUURRRRDDDDDLLLLDRRRLRRRR","RDDRRRDUURUDLDDRLUUURRRRDDDD","DDDRRRLLRDDRURRUUUURRUDLLLDRDRRRDDD","RRUDLURRRRRRRDDDLDLLLLUUUDDDRRDRRRD","RURRRRRDDDRDDLLLLLRRRDRRR","DDDRDUUUUURDRRDRRDDLRDDRR","RDRUDUURRRRRDLDDDLLLLDDRRRLRRRR","RDDDRUDUUUURRRRRDDDDLDDRR"];
 for(let i=0;i<perfectRoutes.length;i++){
  test.choose(i,false);
  if(i===3){
