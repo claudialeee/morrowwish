@@ -86,6 +86,15 @@ jobs:
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
           node scripts/cat-bond-experience-targets.mjs
           node scripts/cat-bond-experience-emotional.mjs
+      - name: Current RPG encounter measurement from isolated checkpoints
+        if: always() && matrix.scope == 'targets'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs > /tmp/cb-rpg-combat-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-rpg-combat.mjs
       - name: Generate review packet even after failed playthrough
         if: always() && matrix.scope != 'targets'
         run: node scripts/cat-bond-experience-report.mjs
@@ -101,5 +110,6 @@ jobs:
             artifacts/cat-bond-release-prologue/
             artifacts/cat-bond-harbor/
             /tmp/cb-experience-server.log
+            /tmp/cb-rpg-combat-server.log
           if-no-files-found: warn
           retention-days: 7
