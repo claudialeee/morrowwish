@@ -187,7 +187,7 @@ function install(){
  }
  function tick(b,dt){
   const r=b.regionalCombat;if(!r||b.done||b.captureSeq||b.coachHoldsEnemies?.()||b.game.battleHelpOpen||b.duoRun||b.duoCinematic||b.ultCinematic)return;
-  if(!living(b).length||!b.liveEnemies().length)return;
+  if((r.hazardEnabled===false&&!b.postgameRuins)||!living(b).length||!b.liveEnemies().length)return;
   if(r.cast){
     if(r.kit.kind==="gale"){const direction=r.cycle%2?1:-1;for(const f of living(b)){if((f.inv||0)>0)continue;f.x=clamp(f.x+direction*22*Math.min(.05,dt),32,b.W-32);}}
     r.cast.remaining-=dt;
@@ -203,12 +203,12 @@ function install(){
  }
  function draw(b,ctx){
   const r=b.regionalCombat,cast=r?.cast;if(!cast)return;
-  ctx.save();ctx.fillStyle=r.kit.color;ctx.strokeStyle=r.kit.color;ctx.lineCap="round";
+  ctx.save();ctx.fillStyle="#cc6d58";ctx.strokeStyle="#cc6d58";ctx.lineCap="round";
   for(const p of cast.patterns){
-    ctx.globalAlpha=.2;ctx.beginPath();
+    ctx.globalAlpha=.12;ctx.beginPath();
     if(p.shape==="circle"){ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();}
     else{ctx.lineWidth=p.w;ctx.moveTo(p.x1,p.y1);ctx.lineTo(p.x2,p.y2);ctx.stroke();}
-    ctx.globalAlpha=.92;ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();
+    ctx.globalAlpha=.65;ctx.lineWidth=1.6;ctx.setLineDash([]);ctx.beginPath();
     if(p.shape==="circle"){ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.stroke();}
     else{const dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.hypot(dx,dy)||1,nx=-dy/len*p.w/2,ny=dx/len*p.w/2;ctx.moveTo(p.x1+nx,p.y1+ny);ctx.lineTo(p.x2+nx,p.y2+ny);ctx.moveTo(p.x1-nx,p.y1-ny);ctx.lineTo(p.x2-nx,p.y2-ny);ctx.stroke();}
     ctx.setLineDash([]);
@@ -229,7 +229,7 @@ function install(){
    const received=canonical?window.CatBondResonance?.supportProfile?.(region)?.received||[]:[];
    const supportAvailable=canonical&&(snapshot?.sanctuaries?.includes(region)||received.length>0);
    const skyMethods=region==="sky"?window.CatBondResonance?.view?.()?.support?.find(x=>x.region==="sky")?.methods||[]:[];const skyMethod=skyMethods.includes("fast-courier")?"fast-courier":skyMethods.includes("escort-flight")?"escort-flight":null;
-   this.battle.regionalCombat={region,kit,next:3.7,cast:null,cycle:0,supportAvailable,supportUsed:false,skyMethod};
+   this.battle.regionalCombat={region,kit,hazardEnabled:manifestation,next:3.7,cast:null,cycle:0,supportAvailable,supportUsed:false,skyMethod};
    if(manifestation&&this.battle.enemies[1]){
     const e=this.battle.enemies[1];e.regionalEnemy=region;e.combatName=kit.enemy;e.element=kit.element;e.role=kit.kind==="gale"?"ambusher":kit.kind==="mirror"?"sharpshooter":"skirmisher";
     e.maxhp=Math.max(45,Math.round(e.maxhp*.48));e.hp=e.maxhp;e.poiseMax=Math.round(e.maxhp*.55);e.poise=e.poiseMax;e.regionalCd=2.6;e.regionalCycle=0;e.rotation=[];e.ultSkill=null;
