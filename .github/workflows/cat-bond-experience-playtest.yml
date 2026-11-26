@@ -235,3 +235,46 @@ jobs:
             /tmp/cb-chapter-replay-server.log
           if-no-files-found: warn
           retention-days: 30
+  opening-ui:
+    if: github.event_name == 'push' || inputs.scope == 'opening'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [zh, en]
+        profile: [desktop, portrait, landscape]
+        exclude:
+          - language: zh
+            profile: desktop
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      PROLOGUE_LANG: ${{ matrix.language }}
+      PROLOGUE_PROFILE: ${{ matrix.profile }}
+      CAT_BOND_FULL_CAMPAIGN: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Fresh opening with both traveler paths
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-opening-ui-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-release-prologue-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cat-bond-opening-${{ matrix.language }}-${{ matrix.profile }}
+          path: |
+            artifacts/cat-bond-experience/
+            artifacts/cat-bond-release-prologue/
+            /tmp/cb-opening-ui-server.log
+          if-no-files-found: error
+          retention-days: 30
