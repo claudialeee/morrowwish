@@ -3967,6 +3967,7 @@ class CaptureBattle {
   // the player can see where a reaction can be set up and detonated.
   drawFields(ctx){
     for(const fld of this.fields){
+      if(window.CatBondSkillFX?.drawMaterialField(ctx,fld,this.t))continue;
       const k=Math.max(0,fld.t/fld.max), pulse=0.5+0.5*Math.sin(this.t*4);
       // FIRE fields (陨石灼烧 / etc.) get a proper burning-ground look: a dark scorch base,
       // flickering ember halo, and rising additive embers — not the generic dashed ellipse.
