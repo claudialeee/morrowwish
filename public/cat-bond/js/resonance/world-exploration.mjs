@@ -17,10 +17,10 @@ export const layouts={
   }
  },
  forest:{name:["眠根林","Rootsleep Forest"],paths:[[.095,.90],[.20,.84],[.31,.73],[.35,.64],[.31,.58],[.265,.53],[.25,.49],[.30,.43],[.27,.35],[.29,.31],[.36,.31],[.42,.28],[.44,.36],[.39,.40],[.53,.40],[.56,.47],[.64,.53],[.69,.53],[.77,.44],[.83,.37],[.81,.32],[.83,.27],[.88,.24],[.89,.20]],castPoints:{yahe:[.30,.43],yuchuan:[.64,.53]},features:{"explore:scent-trail":[.69,.53,"气味踪迹","Scent trail"],"puzzle:paired-water-gates":[.69,.53,"地下闸门 · 救出被困伙伴","Lower gate · Rescue trapped cats"],"repair:forest":[.89,.20,"古根圣所","Ancient-root sanctuary"],"melody:forest":[.89,.20,"相枝调","Living Roots"]}},
- forge:{name:["赤炉环城","Emberforge City"],castPoints:{jinpo:[.35,.65],xiaomao:[.53,.50]},paths:[[.1,.86],[.35,.76],[.35,.50],[.63,.50],[.74,.40],[.88,.30]],features:{"puzzle:safety-blueprint":[.35,.50,"安全图纸","Safety blueprint"],"puzzle:heat-pressure":[.63,.50,"炉心控制台","Furnace controls"],"repair:forge":[.88,.30,"炉心圣所","Hearth sanctuary"],"melody:forge":[.88,.30,"承火调","Song of Ember"],"battle:forge-guardian":[.74,.40,"守炉者","Forge guardian"]}},
- sky:{name:["云脊群岛","Skyspine Isles"],castPoints:{lingyu:[.10,.70],yuanfan:[.18,.55]},paths:[[.10,.80],[.10,.70],[.16,.61],[.18,.55],[.41,.51],[.58,.55],[.67,.50],[.72,.43],[.74,.36],[.84,.30],[.89,.24]],features:{"explore:flight-recorder":[.41,.51,"飞行记录仪","Flight recorder"],"puzzle:joint-flight":[.58,.55,"双猫滑翔台","Joint gliding platform"],"repair:sky":[.89,.24,"风翼圣所","Windwing sanctuary"],"melody:sky":[.89,.24,"逐风调","Open Sky"]}},
+ forge:{name:["赤炉环城","Emberforge City"],castPoints:{jinpo:[.35,.65],xiaomao:[.53,.50]},paths:[[.1,.86],[.35,.76],[.35,.50],[.63,.50],[.74,.40],[.88,.30]],features:{"puzzle:festival-lantern":[.35,.76,"工坊 · 试制安全提灯","Workshop · Build a safe lantern"],"puzzle:safety-blueprint":[.35,.50,"安全图纸","Safety blueprint"],"puzzle:heat-pressure":[.63,.50,"炉心控制台","Furnace controls"],"repair:forge":[.88,.30,"炉心圣所","Hearth sanctuary"],"melody:forge":[.88,.30,"承火调","Song of Ember"],"battle:forge-guardian":[.74,.40,"守炉者","Forge guardian"]}},
+ sky:{name:["云脊群岛","Skyspine Isles"],castPoints:{lingyu:[.10,.70],yuanfan:[.18,.55]},paths:[[.10,.80],[.10,.70],[.16,.61],[.18,.55],[.41,.51],[.58,.55],[.67,.50],[.72,.43],[.74,.36],[.84,.30],[.89,.24]],features:{"puzzle:sky-pouch":[.10,.70,"追赶信袋 · 练习滑翔","Catch the mail pouch · Practice gliding"],"explore:letter-recipient":[.67,.50,"孤岛收信站 · 交付信袋","Isolated mail station · Deliver the pouch"],"explore:flight-recorder":[.41,.51,"飞行记录仪","Flight recorder"],"puzzle:joint-flight":[.58,.55,"双猫滑翔台","Joint gliding platform"],"repair:sky":[.89,.24,"风翼圣所","Windwing sanctuary"],"melody:sky":[.89,.24,"逐风调","Open Sky"]}},
  library:{name:["月镜书库","Moonmirror Library"],paths:[[.10,.83],[.17,.73],[.22,.60],[.29,.60],[.46,.58],[.51,.48],[.50,.42],[.67,.40],[.76,.40],[.82,.36],[.89,.29]],castPoints:libraryInvitations,features:libraryPoints},
- starfall:{name:["星坠原","Starfall Expanse"],castPoints:{xingya:[.51,.58],lichuan:[.78,.48]},paths:[[.10,.90],[.23,.78],[.34,.68],[.41,.58],[.42,.52],[.51,.58],[.68,.55],[.78,.48],[.78,.40],[.84,.33],[.92,.30]],features:{"explore:crater-fragment":[.23,.78,"陨坑 · 冲击碎片","Crater · Impact fragment"],"puzzle:echo-navigation":[.34,.68,"空响幻象","Hollow Echo illusions"],"puzzle:star-map":[.42,.52,"星图仪","Star chart"],"explore:ruin-fragment":[.68,.55,"古迹 · 破损圣所记录","Ruins · Sanctuary record"],"explore:catastrophe-record":[.78,.40,"天文台 · 完整灾变记录","Observatory · Complete record"],"puzzle:distributed-routing":[.84,.33,"分布式观星仪","Distributed observatory"],"repair:starfall":[.92,.30,"星原圣所","Starfall sanctuary"],"melody:starfall":[.92,.30,"续星调","Beyond Stars"]}}
+ starfall:{name:["星坠原","Starfall Expanse"],castPoints:{xingya:[.51,.58],lichuan:[.78,.48]},paths:[[.10,.90],[.23,.78],[.34,.68],[.41,.58],[.42,.52],[.51,.58],[.68,.55],[.78,.48],[.78,.40],[.84,.33],[.92,.30]],features:{"puzzle:caravan-route":[.34,.68,"辨认真星 · 引导商队","Verify the stars · Guide the caravan"],"explore:crater-fragment":[.23,.78,"陨坑 · 冲击碎片","Crater · Impact fragment"],"puzzle:echo-navigation":[.34,.68,"空响幻象","Hollow Echo illusions"],"puzzle:star-map":[.42,.52,"星图仪","Star chart"],"explore:ruin-fragment":[.68,.55,"古迹 · 破损圣所记录","Ruins · Sanctuary record"],"explore:catastrophe-record":[.78,.40,"天文台 · 完整灾变记录","Observatory · Complete record"],"puzzle:distributed-routing":[.84,.33,"分布式观星仪","Distributed observatory"],"repair:starfall":[.92,.30,"星原圣所","Starfall sanctuary"],"melody:starfall":[.92,.30,"续星调","Beyond Stars"]}}
 };
 export const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const segment=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy)));return {p:[a[0]+t*dx,a[1]+t*dy],t};};
@@ -30,6 +30,8 @@ export const puzzleSpecs={
  "explore:tide-logbook":{type:"tide",initial:[],goal:[2,0,1]},
  "puzzle:beam-mirrors":{type:"mirrors",initial:[0,1,0],goal:[2,3,1],mod:4},
  "puzzle:paired-water-gates":{type:"pairedWater",initial:[0,0,0],goal:[2,1,1]},
+ "puzzle:festival-lantern":{type:"lantern",initial:[],goal:[0,1,2]},
+ "puzzle:caravan-route":{type:"echo",initial:[],goal:[2,0,1]},
  "puzzle:safety-blueprint":{type:"blueprint",initial:[],goal:[2,0,1]},
  "puzzle:heat-pressure":{type:"heat",initial:[35,20],goal:[55,25]},
  "puzzle:mirror-records":{type:"memory",initial:[],goal:[1,2,0]},
@@ -61,7 +63,7 @@ export function movePuzzle(p,i){
   else if(p.values[0]===2&&p.values[1]===1)p.values[2]=1;else p.mistakes++;
  }
  else if(p.type==="echo"){if(i===p.goal[p.values.length])p.values.push(i);else{p.values=[];p.mistakes++;}}
- else if(["blueprint","memory","rescue","melody","tide","scent"].includes(p.type)){
+ else if(["lantern","blueprint","memory","rescue","melody","tide","scent"].includes(p.type)){
   if(i===p.goal[p.values.length])p.values.push(i);else if(p.type==="rescue"&&p.assist==="qilan"&&!p.assisted){p.assisted=true;p.assistedAt=p.values.length;}else{if(p.type!=="melody"){p.values=[];p.response=[];}p.mistakes++;}
   if(p.type==="melody")p.response=p.values.map((n,j)=>({actor:p.participants?.[j%2],reply:(n+1)%3}));
  }
@@ -93,7 +95,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
  }
  function near(p){return live()&&!dest&&distance(pos,p)<.072;}
  function survey(){return region==="sky"?bridge.surveyStatus():null;}
- function startSurvey(){const s=survey();if(!s||puzzle||!near(s.from))return {ok:false,reason:"walk-to-survey"};if(!s.remote&&cargo)return {ok:false,reason:"cargo-busy"};active={survey:s.operation,token:bridge.capture(),adventureAction:adventureActions};if(adventureActions)return complete();puzzle=createPuzzle(s.operation);return {ok:true,puzzle:true};}
+ function startSurvey(){const s=survey();if(!s||puzzle||!near(s.from))return {ok:false,reason:"walk-to-survey"};if(!s.remote&&cargo)return {ok:false,reason:"cargo-busy"};active={survey:s.operation,token:bridge.capture(),adventureAction:false};puzzle=createPuzzle(s.operation);return {ok:true,puzzle:true};}
  function interact(op){
   if(survey()?.remote)return {ok:false,reason:"return-from-survey"};
   if(op==="explore:scent-trail"){const step=bridge.scentStep();return step?traceScent(step.index):{ok:false,reason:"walk-to-scent"};}
@@ -102,6 +104,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   if(op==="explore:tide-logbook"&&bridge.tideStep())return {ok:false,reason:"incomplete-tide-trail"};
   if(op==="puzzle:paired-water-gates"&&!bridge.pairedGate()?.ready)return {ok:false,reason:"upper-gate-required"};
   if(["starfall:F-02","starfall:F-04"].includes(v.current.id)&&op!==v.objective[0])return {ok:false,reason:v.current.id==="starfall:F-02"?"starfall-record-order":"starfall-routing-order"};
+  if(v.current.orderedRequires&&op!==v.objective[0])return {ok:false,reason:"story-operation-order"};
   if(region==="library"&&libraryBlocked(op,v.objective,v))return {ok:false,reason:"library-previous-station"};
   if(op==="puzzle:library-echo"&&!bridge.libraryRecord())return {ok:false,reason:"library-catdex-required"};
   if(region==="library"&&op==="melody:library"&&v.objective.includes("repair:library"))return {ok:false,reason:"library-repair-first"};
@@ -114,7 +117,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   if(op.startsWith("melody:")&&!localNpcs().every(n=>invited.has(n.id)))return {ok:false,reason:"invite-local-cats"};
   if(region==="sky"&&skyLaunch[op]&&!skyPartsReady(v))return {ok:false,reason:"sky-parts-required"};
   if(op==="puzzle:joint-flight"&&!v.choice)return {ok:false,reason:"choice-pending"};
-  active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};if(adventureActions&&!(region==="forest"&&["puzzle:paired-water-gates","melody:forest"].includes(op))){active.adventureAction=true;active.participants=[...invited];if(op.startsWith("melody:"))return {ok:true,ceremony:true};return complete();}puzzle=createPuzzle(op,v.choice??null,region==="library"?bridge.libraryRecord():null);if(region==="harbor")harborAssist(puzzle,v);if(puzzle?.type==="pairedWater")puzzle.pair=bridge.pairedGate().pair;if(puzzle?.type==="melody")puzzle.participants=[...invited];
+  active={sceneId:v.current.id,operation:op,region,token:bridge.capture()};if(adventureActions&&!(["forest","forge","sky","library","starfall"].includes(region)&&(op.startsWith("puzzle:")||op.startsWith("repair:")||op.startsWith("melody:")||!!skyLaunch[op]||!!libraryPuzzle(op,bridge.libraryRecord())))){active.adventureAction=true;active.participants=[...invited];if(op.startsWith("melody:"))return {ok:true,ceremony:true};return complete();}puzzle=createPuzzle(op,v.choice??null,region==="library"?bridge.libraryRecord():null);if(region==="harbor")harborAssist(puzzle,v);if(puzzle?.type==="pairedWater")puzzle.pair=bridge.pairedGate().pair;if(puzzle?.type==="melody")puzzle.participants=[...invited];
   if(puzzle)return {ok:true,puzzle:true};
   if(!op.startsWith("explore:"))return {ok:false,reason:"unimplemented"};
   return complete();

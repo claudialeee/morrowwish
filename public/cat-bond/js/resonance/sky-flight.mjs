@@ -1,6 +1,7 @@
 // Skyspine flight simulation. Ephemeral controls; only canonical world evidence is saved.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const routes={
+ "puzzle:sky-pouch":[.65,.34,.64],
  "explore:flight-recorder":[.68,.29,.66],
  "puzzle:joint-flight":[.29,.72,.31],
  "repair:sky":[.67,.30,.64],
@@ -15,11 +16,11 @@ export const skySurvey={
  "survey:outbound":{from:[.67,.50],to:skySurveyPath[0],name:["飞往远风岛","Fly to Farwind Isle"]},
  "survey:return":{from:skySurveyPath[0],to:[.67,.50],name:["返回信使码头","Return to Courier Dock"]}
 };
-export const skyLaunch={ "explore:flight-recorder":[.18,.55],"puzzle:joint-flight":[.41,.51],"repair:sky":[.67,.50] };
-export const skyLanding={ "explore:flight-recorder":[.41,.51],"puzzle:joint-flight":[.58,.55],"repair:sky":[.89,.24] };
+export const skyLaunch={ "puzzle:sky-pouch":[.10,.70],"explore:flight-recorder":[.18,.55],"puzzle:joint-flight":[.41,.51],"repair:sky":[.67,.50] };
+export const skyLanding={ "puzzle:sky-pouch":[.18,.55],"explore:flight-recorder":[.41,.51],"puzzle:joint-flight":[.58,.55],"repair:sky":[.89,.24] };
 export function newSkyFlight(operation,choice){
  const route=routes[operation];if(!route)return null;
- const training=operation==="puzzle:joint-flight"&&choice==="train";
+ const training=operation==="puzzle:sky-pouch"||operation==="puzzle:joint-flight"&&choice==="train";
  return {operation,choice,training,route:[...route],x:0,y:.5,target:.5,velocity:0,gate:0,passed:[],elapsed:0,attempts:0,started:false,solved:false,notice:"ready",lastSteer:0,steerTravel:0};
 }
 export function steerSkyFlight(f,y){
