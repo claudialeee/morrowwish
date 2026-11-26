@@ -80,13 +80,27 @@ jobs:
       - name: Verify real save checkpoint reload
         if: always() && (matrix.scope == 'opening' || matrix.scope == 'campaign')
         run: |
-          fixture=$(find artifacts/cat-bond-experience/checkpoints -name 'harbor-H-01-*.json' -print -quit 2>/dev/null || true)
-          if [ -z "$fixture" ]; then echo 'No Harbor checkpoint available'; exit 1; fi
+          root=artifacts/cat-bond-experience/checkpoints
+          if [ ! -d "$root" ]; then echo 'No real checkpoints available'; exit 1; fi
+          mapfile -d '' fixtures < <(find "$root" -type f -name '*.json' -print0 | sort -z)
+          if [ "${#fixtures[@]}" -eq 0 ]; then echo 'No real checkpoints available'; exit 1; fi
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-replay-server.log 2>&1 &
           server=$!
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
-          node scripts/cat-bond-experience-replay.mjs "$fixture"
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          passed=0
+          failed=0
+          for fixture in "${fixtures[@]}"; do
+            if node scripts/cat-bond-experience-replay.mjs "$fixture"; then
+              passed=$((passed+1))
+            else
+              failed=$((failed+1))
+              echo "::error::Checkpoint replay failed: $fixture"
+            fi
+          done
+          echo "Real checkpoint replays: passed=$passed failed=$failed total=${#fixtures[@]}" | tee -a "$GITHUB_STEP_SUMMARY"
+          test "$failed" -eq 0
       - name: Isolated synthetic chapter checkpoint restore
         if: matrix.scope == 'targets'
         run: |
