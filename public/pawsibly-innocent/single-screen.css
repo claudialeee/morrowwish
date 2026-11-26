@@ -1383,3 +1383,26 @@ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-fullscreen-to
  }
  html:not(.cg-play) .single-screen-game #stage .in-game-actions #bonusQuick .bonus-star{font-size:12px!important}
 }
+
+/* CI found a 2px guide/menu overlap at 570x280 in English: the flex
+   column was shrinking its header to accommodate a tall bonus label.
+   Reserve actual child heights; reclaim space from decorative padding. */
+@media (orientation:landscape) and (min-width:500px) and (max-height:500px){
+ html:not(.cg-play) .single-screen-game #stage .in-game-top>.in-game-head-row,
+ html:not(.cg-play) .single-screen-game #stage .in-game-top>.in-game-guidance{
+  flex:0 0 auto!important;
+ }
+ html:not(.cg-play) .single-screen-game #stage.stage>.in-game-top{
+  justify-content:safe center!important;
+ }
+}
+@media (orientation:landscape) and (min-width:500px) and (max-height:320px){
+ html:not(.cg-play) .single-screen-game #stage.stage>.in-game-top{padding:2px!important}
+ html:not(.cg-play) .single-screen-game #stage .in-game-head-row{padding:2px!important;gap:3px!important}
+ html:not(.cg-play) .single-screen-game #stage .in-game-guidance{padding:2px!important;gap:3px!important}
+ html:not(.cg-play) .single-screen-game #stage .in-game-actions{gap:3px!important}
+ html:not(.cg-play) .single-screen-game #stage .in-game-actions #bonusQuick{gap:3px!important;padding:2px 3px!important}
+ html:not(.cg-play) .single-screen-game #stage .in-game-actions #bonusQuick .bonus-star{display:none!important}
+ html:not(.cg-play) .single-screen-game #stage .in-game-actions #bonusQuickText{font-size:10px!important;line-height:1.1!important;flex:1 1 auto!important;min-width:0!important}
+ html:not(.cg-play) .single-screen-game #stage .in-game-actions #bonusQuickProgress{flex:0 0 auto!important}
+}
