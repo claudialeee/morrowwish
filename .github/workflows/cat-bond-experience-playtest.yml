@@ -192,14 +192,18 @@ jobs:
           passed=0
           failed=0
           for fixture in "${fixtures[@]}"; do
-            if node scripts/cat-bond-experience-replay.mjs "$fixture" --chapter-derived; then
-              passed=$((passed+1))
-            else
-              failed=$((failed+1))
-              echo "::error::Chapter-derived checkpoint replay failed: $fixture"
-            fi
+            for lang in zh en; do
+              for profile in desktop portrait landscape; do
+                if CAT_BOND_REPLAY_LANG="$lang" CAT_BOND_REPLAY_PROFILE="$profile" node scripts/cat-bond-experience-replay.mjs "$fixture" --chapter-derived; then
+                  passed=$((passed+1))
+                else
+                  failed=$((failed+1))
+                  echo "::error::Chapter-derived checkpoint replay failed: $fixture ($lang/$profile)"
+                fi
+              done
+            done
           done
-          echo "Chapter-derived replays (NOT fresh campaign): passed=$passed failed=$failed total=${#fixtures[@]}" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "Chapter-derived replays (NOT fresh campaign or full mobile playthrough): passed=$passed failed=$failed total=$(("${#fixtures[@]}" * 6))" | tee -a "$GITHUB_STEP_SUMMARY"
           test "$failed" -eq 0
           node --input-type=module - "$SCOPE" "$root" <<'JS'
           import fs from 'node:fs';
