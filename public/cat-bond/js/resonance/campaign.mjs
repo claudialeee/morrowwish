@@ -778,8 +778,8 @@ export const campaign = {
       "id": "forest:R-03",
       "chapter": "forest",
       "title": {
-        "zh": "塌陷水道 · 双猫救援",
-        "en": "Collapsed channel · Partner rescue"
+        "zh": "坍塌水道 · 回声救援",
+        "en": "Collapsed channel · Echo rescue"
       },
       "previous": "forest:R-02",
       "lines": [
@@ -813,13 +813,20 @@ export const campaign = {
         }
       ],
       "requires": [
-        "puzzle:paired-water-gates"
+        "rescue:steady-channel",
+        "explore:water-marks",
+        "battle:root-echo",
+        "rescue:trapped-cats"
       ],
       "choices": [],
       "lineGate": [
-        "puzzle:paired-water-gates"
+        "rescue:steady-channel",
+        "explore:water-marks",
+        "battle:root-echo",
+        "rescue:trapped-cats"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "forest:R-04",
