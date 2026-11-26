@@ -350,8 +350,35 @@ function drawMeleeContact(ctx,v,spec){
 
 /* Actual travel renderer for remaining projectile families. Art is centered on
  * simulation positions. Basic toy attacks and hostile warning darts stay small. */
+/* Instant line skills use actual runtime start/end points (no fake end impact). */
+function drawInstantLine(c,v,time=0){
+ const id=v.kind;if(!['water','ice','prism','lightning'].includes(id))return false;
+ const dx=v.x2-v.x,dy=v.y2-v.y,L=Math.hypot(dx,dy),k=clip(v.life/Math.max(.001,v.max)),p=1-k;
+ if(L<1||k<=0)return true;
+ c.save();c.translate(v.x,v.y);c.rotate(Math.atan2(dy,dx));
+ if(id==='lightning'){
+   const pts=[[0,0]],n=Math.max(4,Math.min(18,Math.ceil(L/15))),step=Math.floor(time*24);
+   for(let j=1;j<n;j++){const u=j/n;pts.push([u*L,(hash(step*53+j*17)-.5)*16*Math.sin(PI*u)]);}pts.push([L,0]);
+   for(const [w,col,a] of [[9,'#544598',.36],[4.5,'#aca7f6',.90],[1.7,'#fff7d3',1]]){stroke(c,col,w,k*a);path(c,pts);}
+   for(let j=2;j<n-1;j+=3){const [x,y]=pts[j];const side=j%2?1:-1;stroke(c,'#d6c9ff',1.2,k*.7);path(c,[[x,y],[x+12,y+side*8],[x+22,y+side*5]]);}
+ }else{
+   const w=id==='water'?8:id==='ice'?9:7;
+   const pal=id==='water'?['#1c6e9e','#52badb','#e7ffff']:id==='ice'?['#365c9a','#94c6f2','#f0ffff']:['#756ba7','#c5d3ff','#fffbe3'];
+   const center=u=>id==='water'?Math.sin(u*PI*2-p*5)*7*Math.sin(PI*u):0;
+   for(const [mul,col,a] of [[1.2,pal[0],.52],[.75,pal[1],.94],[.26,pal[2],1]]){
+     c.globalAlpha=k*a;c.fillStyle=col;c.beginPath();
+     for(const side of [-1,1])for(let j=0;j<=32;j++){const u=(side<0?j:32-j)/32;
+       const taper=.18+.82*Math.sin(PI*Math.pow(u,.72)),yy=center(u)+side*w*mul*taper;
+       if(side<0&&j===0)c.moveTo(0,yy);else c.lineTo(L*u,yy);}
+     c.closePath();c.fill();
+   }
+   for(let j=0;j<12;j++){const u=(j/12+p*.55)%1,x=L*u,y=center(u)+(hash(j+10)-.5)*w;stroke(c,pal[2],id==='ice'?1.8:1.3,k*.75);path(c,[[x-8,y],[x+6,y*.8]]);
+      if(id==='ice'&&j%3===0){c.globalAlpha=k*.7;poly(c,[[x-4,y],[x,y-4],[x+7,y],[x,y+2]],pal[1]);}}
+ }
+ c.restore();return true;
+}
 function drawMaterialProjectile(c,p,time=0){
- if(p.burst||p.owner!=='me'||p.skill?.isBasic||!p.skill||['fish','yarn','fur','claw','crescent','fireball','lightningOrb','hex'].includes(p.kind))return false;
+ if(p.burst||p.owner!=='me'||p.skill?.isBasic||!p.skill||['fish','yarn','claw','crescent','fireball','lightningOrb','hex'].includes(p.kind))return false;
  const sk=p.skill,id=sk.id||'',el=sk.element;
  if(!['water','fire','grass','elec','dark','light'].includes(el))return false;
  const r=Math.max(5,Math.min(20,p.r||8)),ang=Math.hypot(p.vx||0,p.vy||0)>0?Math.atan2(p.vy,p.vx):(p.ang||0);
@@ -885,5 +912,5 @@ window.CatBondSkillFX={
  // access, so it reflects the full roster however the modules were load-ordered.
  get ids(){ syncGenerics(); return LIST.map(row=>row[0]); },
  has:id=>{ if(!REG[id])syncGenerics(); return !!REG[id]; },
- cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawCombatBeam,drawIdentityProjectile,drawMaterialField,drawTravel};
+ cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawCombatBeam,drawIdentityProjectile,drawMaterialField,drawTravel,drawInstantLine};
 })();
