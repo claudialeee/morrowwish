@@ -84,10 +84,24 @@ async function run(chapter){
   }
   throw Error('Dialogue loop '+id);
  }
+ let checkedPuzzleLayout=false;
+ async function checkPuzzleLayout(){
+  const rail=page.locator('.rw-dedicated-rail'),surface=page.locator('.rw-world .rw-surface');
+  await rail.waitFor();
+  const measure=async()=>{await page.waitForFunction(()=>{const a=document.querySelector('.rw-dedicated-rail'),b=document.querySelector('.rw-world .rw-surface');if(!a||!b)return false;const x=a.getBoundingClientRect(),y=b.getBoundingClientRect();return x.width>0&&y.width>0&&(x.left>=y.right-1||y.bottom<=x.top+1||x.bottom<=y.top+1||y.left>=x.right-1);});
+   assert.ok(await rail.locator('.rw-minigame-title').isVisible(),'Minigame goal is visible');
+   assert.ok(await rail.locator('.rw-minigame-hint').isVisible(),'Minigame controls are explained');
+   const [a,b]=await Promise.all([rail.boundingBox(),surface.boundingBox()]);
+   assert.ok(a&&b&&b.width>80&&b.height>45,'Playable scene is not collapsed');
+   assert.ok(a.x>=-1&&a.y>=-1&&a.x+a.width<=page.viewportSize().width+1&&a.y+a.height<=page.viewportSize().height+1,'Controls remain on screen');
+  };
+  await measure();
+  if(!checkedPuzzleLayout){checkedPuzzleLayout=true;const original=page.viewportSize();try{for(const viewport of [{width:390,height:844},{width:844,height:390}]){await page.setViewportSize(viewport);await measure();}}finally{await page.setViewportSize(original);}await measure();}
+ }
  async function puzzle(label,inputs){
   const directHarbor={'Tide cave logbook':'explore:tide-logbook','Storm boat':'rescue:storm-boat','Lighthouse mirrors':'puzzle:beam-mirrors','Town bell sanctuary':'repair:harbor','Returning Tides':'melody:harbor'};
   if(chapter==='harbor'&&directHarbor[label]){const operation=directHarbor[label];assert.ok((await view()).objective.includes(operation),'Expected required harbor action '+operation);await click(label);await op(operation);await shot(operation);return;}
-  await click(label);const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();
+  await click(label);const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();await checkPuzzleLayout();
   for(const input of inputs)await click(input,controls);
   await controls.waitFor({state:'hidden',timeout:35000});
  }
@@ -95,7 +109,7 @@ async function run(chapter){
  async function restore(label,inputs,people,melody,notes){await puzzle(label,inputs);for(const npc of people)await invite(npc);await puzzle(melody,notes);}
  const low='Dew · Low',mid='Starlight · Middle',high='Flower bell · High';
  async function flyWaterfall(label){
-  await click(label);const status=page.locator('[data-sky-flight-status][data-route="open"]');await status.waitFor();
+  await click(label);const status=page.locator('[data-sky-flight-status][data-route="open"]');await status.waitFor();await checkPuzzleLayout();
   const box=await page.locator('.rw-surface').boundingBox();assert.ok(box,"flight surface");
   await page.mouse.click(box.x+box.width*.35,box.y+box.height*.30);
   // Route is continuous, not a three-gate sequence. Read only visual progress via
@@ -105,7 +119,7 @@ async function run(chapter){
   await status.waitFor({state:'hidden',timeout:20000});
 }
  async function fly(label,heights){
-  await click(label);const status=page.locator('[data-sky-flight-status]');await status.waitFor();const box=await page.locator('.rw-surface').boundingBox();
+  await click(label);const status=page.locator('[data-sky-flight-status]');await status.waitFor();await checkPuzzleLayout();const box=await page.locator('.rw-surface').boundingBox();
   const p=y=>({x:box.x+box.width*.30,y:box.y+box.height*y});
   let q=p(heights[0]);await page.mouse.move(q.x,q.y);await page.mouse.down();
   try{for(let i=1;i<=3;i++){await page.waitForFunction(g=>Number(document.querySelector('[data-sky-flight-status]')?.dataset.gates)===g,i,{timeout:25000});q=p(i===3?.5:heights[i]);await page.mouse.move(q.x,q.y,{steps:5});}}finally{await page.mouse.up();}
@@ -181,7 +195,7 @@ async function run(chapter){
   await page.waitForFunction(id=>CatBondResonance.view().current?.id!==id,id,{timeout:180000});
  }
  async function libraryEcho(){
-  await click('Two Mulings in the mirror');const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();
+  await click('Two Mulings in the mirror');const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();await checkPuzzleLayout();
   const status=controls.locator('[data-mirror-response]');await status.waitFor();
   await click('Choose the left cat',controls);await status.waitFor();assert.equal(await status.getAttribute('data-position'),'0','guess cannot complete the scene');
   await click('Move and ring',controls);await status.waitFor();
