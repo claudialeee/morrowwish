@@ -100,9 +100,9 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   if(scene.id==='finale:B-04'){
     frames.unshift({id:'finale:B-04-memory-bell',image:'assets/resonance-world-v2/starfall.webp',
       alt:{zh:'记忆回到守铃者身边',en:'The Bellkeeper’s memories return'},durationMs:3400,transitionMs:800,
-      camera:{from:{x:0,y:0,scale:1.03},to:{x:0,y:0,scale:1.09}},effect:'sanctuary',note:392});
+      camera:{from:{x:0,y:0,scale:1.03},to:{x:0,y:0,scale:1.09}},effect:'sanctuary',note:392,requireReply:true,subtitle:{zh:{speaker:'暮铃',text:'星铃重新响了。暮铃走到你身边，轻轻摇了两下铃。'},en:{speaker:'Muling',text:'The Star Bell rings again. Muling comes to your side and rings twice.'}}});
   }
-  return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.id==='prologue:P-02'?{zh:'抉择',en:'The Choice'}:scene.title,chapter:{zh:'星铃回响',en:'Echoes of the Starbell'},mode:'auto',allowSkip:true,frames}};
+  return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.id==='prologue:P-02'?{zh:'抉择',en:'The Choice'}:scene.title,chapter:{zh:'星铃回响',en:'Echoes of the Starbell'},mode:'auto',allowSkip:scene.id!=='finale:B-04',frames}};
 }
 
 // Pure permission check: no save, story mutation, staging or URL override.

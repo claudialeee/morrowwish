@@ -77,7 +77,6 @@ async function play(sceneId){
   root=document.createElement("div");
   root.className="res-chapter-cinematic cb-story-overlay is-visible";
   document.getElementById("stage").append(root);
-  if(sceneId==="finale:B-04"&&!slot[checkpointKey]?.snapshot){const replied=await acknowledge({zh:"暮铃摇了两下铃",en:"Muling rings twice"},{zh:"熟悉的报平安铃声。现在，轮到你回应她了。",en:"The familiar signal: I am safe. Now it is your turn to answer."},{zh:"摇两下铃回应",en:"Ring twice in reply"},{ring:true});if(!replied||!current()){close();return false;}}
   player=mountResonanceCinematics({
    root, engine:runtime, campaign, manifest,
    rendererFactory:window.CatBondCinematicPresentation.create,

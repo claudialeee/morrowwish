@@ -223,7 +223,7 @@
       this.nodes.pause.addEventListener('click', () => this.paused ? this.resume() : this.pause());
       this.nodes.skip.addEventListener('click', () => this.skip());
       this.nodes.continue.addEventListener('click', () => this.next(true));
-      this.nodes.stage.addEventListener('click', event => {if(!event.target.closest('button,a,input,select,textarea'))this.next(true);});
+      this.nodes.stage.addEventListener('click', event => {if(!this.scene?.frames?.[this.frameIndex]?.requireReply&&!event.target.closest('button,a,input,select,textarea'))this.next(true);});
       this.updateControls();
     }
 
@@ -288,6 +288,7 @@
         this.nodes.continue.disabled = false;
         if(this.activeEffect!==frame.effect||this.activeEffectImage!==frame.image){this.activeEffect=frame.effect;this.activeEffectImage=frame.image;if(!this.paused)this.playEffect(frame.effect,frame);}
         if(!this.paused)this.playSfx(frame.sfx);
+        if(frame.requireReply&&!this.paused){window.MorrowwishAudio?.note?.(392,.20,.12);window.setTimeout(()=>{if(this.scene&&this.scene.frames[this.frameIndex]===frame)window.MorrowwishAudio?.note?.(523.25,.20,.12);},260);}
         this.startAtmosphere();
         this.options.onFrameChange?.({sceneId:this.scene.id,frameIndex:this.frameIndex,frameId:frame.id||null});
         if (!this.paused) this.startTimer();
@@ -481,7 +482,7 @@
       this.nodes.pause.disabled=!this.frameReady;
       this.nodes.skip.disabled=!this.frameReady;
       this.nodes.skip.hidden = !this.scene?.allowSkip;
-      this.nodes.continue.textContent = this.scene?.openingFlow
+      this.nodes.continue.textContent = this.scene?.frames?.[this.frameIndex]?.requireReply ? (lang === 'zh' ? '摇两下铃回应' : 'Ring twice in reply') : this.scene?.openingFlow
         ? (lang === 'zh' ? '下一幕' : 'Next scene')
         : this.frameIndex < (this.scene?.frames?.length || 1) - 1
           ? (lang === 'zh' ? '继续' : 'Continue')
@@ -493,7 +494,7 @@
 
     startTimer(remainingOverride) {
       this.clearTimer();
-      if (!this.scene || !this.frameReady || this.paused || this.scene.mode === 'manual') return;
+      if (!this.scene || !this.frameReady || this.paused || this.scene.mode === 'manual' || this.scene.frames[this.frameIndex]?.requireReply) return;
       const duration = Number(this.scene.frames[this.frameIndex]?.durationMs) || 0;
       if (duration <= 0) return;
       const remaining = remainingOverride == null ? Math.max(0, duration - this.frameElapsedMs) : Math.max(0, remainingOverride);
@@ -509,6 +510,7 @@
 
     next(manual = false) {
       if (!this.scene || !this.frameReady || (this.paused && !manual)) return;
+      if(this.scene.frames[this.frameIndex]?.requireReply){if(!manual)return;window.MorrowwishAudio?.note?.(392,.20,.12);window.setTimeout(()=>window.MorrowwishAudio?.note?.(523.25,.20,.12),260);}
       this.clearTimer();
       if (this.frameIndex < this.scene.frames.length - 1) {
         this.frameIndex += 1;

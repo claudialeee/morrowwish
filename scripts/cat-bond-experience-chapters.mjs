@@ -191,8 +191,9 @@ async function run(chapter){
  }
  async function cinema(id,label){
   await scene(id);await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady(),null,{timeout:15000});await click(label);
-  if(id==='finale:B-04'){const reply=page.getByRole('button',{name:'Ring twice in reply',exact:true});await reply.waitFor();await shot(id+'-ring-reply');await reply.click();}
   await page.locator('.cbcp-art').first().waitFor();await shot(id+'-cinematic');
+  if(id==='finale:B-04'){const reply=page.getByRole('button',{name:'Ring twice in reply',exact:true});await reply.waitFor();await shot(id+'-ring-reply');await reply.click();}
+  if(id==='starfall:F-02'&&!continuous){await page.locator('.cbcp-skip').click();const summary=page.locator('[data-canon-acknowledgement="starfall:F-02"]');await summary.waitFor();assert.match(await summary.innerText(),/promised Muling/);assert.equal((await view()).current.id,id);await shot(id+'-skip-summary');await click('Continue',summary);}
   await page.waitForFunction(id=>CatBondResonance.view().current?.id!==id,id,{timeout:180000});
  }
  async function libraryEcho(){
@@ -262,7 +263,7 @@ async function run(chapter){
    await talk('Baikan');await dialogue('library:M-01');await scene('library:M-02');
    await libraryEcho();await dialogue('library:M-02');await click('Moonmirror sanctuary');await op('repair:library');await invite('Moye');await invite('Baikan');await puzzle('Reflections',[high,low,mid]);await dialogue('library:M-02');await scene('library:M-03');assert.ok((await view()).melodies.includes('library'),'Library must answer before the identity reveal');
    await talk('Muling');await dialogue('library:M-03','I feel hurt');await scene('library:M-04');await puzzle('Public records · Investigation',['Ask about the borrowed map']);await dialogue('library:M-04','I need some distance');await scene('library:M-05');
-   await talk('Moye');await puzzle('Six-region model · Compare the two routes',['Converge inward','Connect neighbors','Finish demonstration']);await dialogue('library:M-05');
+   await talk('Moye');await click('Six-region model · Compare the two routes');const routes=page.locator('.rw-puzzle-controls');await routes.waitFor();await checkPuzzleLayout();const surface=page.locator('.rw-surface'),box=await surface.boundingBox();assert.ok(box);const dragBell=async(a,b)=>{await page.mouse.move(box.x+box.width*a[0],box.y+box.height*a[1]);await page.mouse.down();await page.mouse.move(box.x+box.width*b[0],box.y+box.height*b[1],{steps:8});await page.mouse.up();};await dragBell([.5,.40],[.5,.54]);await page.getByText('Routes explored 1/2',{exact:true}).waitFor();await shot('route-inward');await dragBell([.5,.40],[.5+.22*Math.sqrt(3)/2,.47]);await page.getByText('Routes explored 2/2',{exact:true}).waitFor();await shot('route-neighbors');await click('Finish demonstration',routes);await dialogue('library:M-05');
   }else if(chapter==='starfall'){
    await talk('Lichuan');await talk('Xingya');await puzzle('Walk on starlight',['Jump to stone 2','Jump to stone 4','Jump to stone 6','Jump to stone 8']);await dialogue('starfall:F-01');await scene('starfall:F-02');
    assert.deepEqual((await view()).objective,['explore:catastrophe-record','cinematic:starfall-memory']);await click('Observatory · Complete record');await op('explore:catastrophe-record');await cinema('starfall:F-02','Remember the choice');
