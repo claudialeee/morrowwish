@@ -1,7 +1,11 @@
 # V4 Audit Checklist — brutally honest cross-reference
 
 **Status:** 2026-11-25 cold read of the V4 proposal archive (10/11/12 docs +
-BALANCE-BRIEF) against the live `public/cat-bond/js/` code. No code touched.
+BALANCE-BRIEF) against the live `public/cat-bond/js/` code.
+
+**Refreshed:** 2026-11-26 after crescent + merge cycle. Rows closed this pass:
+A1, A2, B1–B5, C1, C2, C4, G1 (via C1). Two NEW rows added for post-V4 authored
+additions (N1 shadowTendrils, N2 arcanePulse → umbralBarrage rework).
 
 **Legend for "Current code state":**
 - **DONE** — V4 item present in code, matches spec, non-stub
@@ -10,11 +14,13 @@ BALANCE-BRIEF) against the live `public/cat-bond/js/` code. No code touched.
 - **WRONGLY-ADDED** — in code but V4 says delete / reshape
 - **CONTRADICTS** — code does the OPPOSITE of V4
 
-**TL;DR:** the trait system in `traits.js` LOOKS like 33 cats are implemented,
-but a one-line wiring bug in `battle.js` makes every single trait a no-op
-(see row #1). Below that: 金豆 element migration is undone, form awakening
-is unimplemented (0/14), ~8 traits are stubs flagged as working, and 4 traits
-read a field schema (`fld.cx`) the game never produces (silent dead code).
+**TL;DR (as of 2026-11-26 refresh):** the stop-the-line wiring bugs A1 + A2
+are now fixed — traits dispatch correctly and field-reading traits land in
+the field. 金豆 element migration (C1/C2/C4) and the full purrNova delete
+(B1–B5) are also shipped. **Still open:** emit sites A3/A4/A5/A6/A7/A11 are
+missing (so ≥5 traits remain stubs and multi-hit skills re-fire traits),
+~7 trait flags are never consumed by battle.js (D4/D13/D17/D25/D28/D29/D30),
+form awakening is 0/14, and the trait VFX layer (I4) is unbuilt.
 
 ---
 
@@ -165,20 +171,20 @@ V4 §2.6 table:
 | 暗 dark | 0 | 1 | 1 | 3 | 1 | 0 | 6 |
 | 光 light | 0 | 1 | 1 | 0 | 1 | 3 | 6 |
 
-Computed from live code (skills.js SPECIES_ELEMENT + buildTypeForBreed with BREED_ROLES overrides):
+Computed from live code (skills.js SPECIES_ELEMENT + buildTypeForBreed with BREED_ROLES overrides), post-C1:
 
 | Element | Tank | Fighter | DPS | Assassin | Control | Support | Total |
 |---|---|---|---|---|---|---|---|
 | 火 fire | tangyuan,jiafei (2) | qisi,jinwu (2) | abi (1) | — | — | — | 5 ✅ |
 | 水 water | dundun (1) | lanbao (1) | xiaohui (1) | — | fanmao (1) | xuewa (1) | 5 ✅ |
 | 草 grass | nietu (1) | senlin,nuowei (2) | — | doudou (1) | meidu (1) | zherdd (1) | 6 ✅ |
-| 电 elec | — | — | xianluo,wumao (2) | niuniu (1) | duanduan (1) | — (jinjc missing!) | 4 ❌ |
+| 电 elec | — | — | xianluo,wumao (2) | niuniu (1) | duanduan (1) | jinjc (1) | 5 ✅ |
 | 暗 dark | — | lixiao (1) | youling (1) | moqiu,baomao,xingchen (3) | mengmai (1) | — | 6 ✅ |
-| 光 light | — | sanhua (1) | yuelian (1) | — | yinghua (1) | nainai,yunduo,bosi,jinjc (4) | 7 ❌ |
+| 光 light | — | sanhua (1) | yuelian (1) | — | yinghua (1) | nainai,yunduo,bosi (3) | 6 ✅ |
 
 | # | V4 item | Type | State | file:line | Owner-action |
 |---|---|---|---|---|---|
-| G1 | Element×role matrix completeness | element-change | **CONTRADICTS** — one off-by-one per element in elec (missing support) and light (extra support), both tied to the un-done jinjc migration (C1). Fix C1 → matrix balances. | `skills.js:168-200` | C1. |
+| G1 | Element×role matrix completeness | element-change | **DONE** (this cycle, 2026-11-26) — C1 landed. Matrix now matches V4 §2.6 exactly. jinjc moved from light-support to elec-support; light drops to 3 supports (nainai/yunduo/bosi) and elec gains jinjc. | `skills.js:168-200` | — |
 | G2 | V4 §2.3 says 月月 is DPS (ranged band). Code BREED_ROLES does NOT force yuelian; stat-matrix infers dps (agi17, pow14) ✓. | role | **DONE** | computed above | None. |
 | G3 | V4 §2.5 says 樱桃 (yinghua) is Control. Code stat-matrix: agi11,cha12 → control (via `cha|agi`). | role | **DONE** | computed | None. |
 | G4 | V4 §2.4 says 墨球 (moqiu) is Assassin. Stat-matrix: pow7,agi6 → assassin. | role | **DONE** | computed | None. |
@@ -274,18 +280,30 @@ The owner-locked P1 numbers (BALANCE-BRIEF §Specific numbers) should appear ver
 
 ---
 
-## TOP 10 MISSES BY SEVERITY
+## Section N — Post-V4 authored additions (not in V4 docs)
 
-1. **A1 — Every trait is dead code.** `battle.js` emits `{cat: fighter}`; `traitForCat` reads `cat.species` which is undefined on the fighter wrapper. Zero of the 33 traits can ever fire until this one-line wiring is fixed. (Blocks P1 ship.)
-2. **C1 — 金豆 element migration (光 → 电) still undone.** `skills.js:186` reads `jinjc: 'light'`, owner V4 §8 Q1 locked this as "migrate now 2026-11-25". Blocks element balance matrix (G1) and jinjc trait (D32).
-3. **E1 — Form awakening infrastructure 0/14.** `cat.formId` is read by the trait gate but never set. `EVOLUTION` still replaces `speciesId` (CONTRADICTS §9.1 "speciesId never replaced"). The entire P3 phase is unstarted.
-4. **A2 — Field schema mismatch.** 4 traits (meidu/fanmao/nuowei/yinghua) read `fld.cx/cy` where battle.js stores `fld.x/y`. Silently broken even after A1 fix.
-5. **D11, D12, D14, D32, D33 — 5 P1+P2 traits are self-admitted stubs** (yunduo, bosi, jiafei, jinjc, nainai) because their required emit sites (A5, A7) were never added.
-6. **A6 — `onSkillCast` emit missing.** 绅绅/花花 fire on hit-landed, not skill-cast. Means their rhythm/variety semantics are measured against a different event than V4 specs.
-7. **A11 — No per-cast dedup guard.** Multi-hit skills (tidalPulse/arcanePulse/boltSwarm/prismSwarm) will fire 蓝莓/幽幽/芝士/露露/dauntreated traits 3–5× per cast.
-8. **Trait-side flags unread by battle.js.** `_dmgTakenMult` (nietu), `_dmgOutMult` (nuowei), `_heavyBonus` (senlin), `_slowMult` (yinghua), `_speedMult/_cdMult` (baomao, xuewa), `_fireRateMult` (mengmai) — all set by traits, none consumed. 7+ traits effectively do nothing even after A1.
+Skills/traits/content added since the V4 archive was frozen. These are not
+specced in V4-10/11/12 but shipped to fix owner-reported gaps.
+
+| # | Addition | Type | State | file:line | Notes |
+|---|---|---|---|---|---|
+| N1 | `shadowTendrils` 暗影触手 — dark beam/channel, Lv6+dark+control auto-learn | skill-add | **DONE** (commit `15ae616e`, 2026-11-26) — identity-gated beam with bind tag, channel 1.6s, autoLearn=true so any cat that meets Lv6 + dark + control gets it without trainer. Also introduced `allowRoles` role-gate enforcement to fix Y夜夜 missing the skill. | `skills.js:296`; autoLearn plumbing at `skills.js:833` | New dark-control identity skill; fills the missing elec/dark control archetype gap. |
+| N2 | `arcanePulse` reworked into **Umbral Barrage** (暗星轰击) lob-salvo | skill-change | **DONE** (commit `ceeaa352`, 2026-11-26) — kind changed from pulse/aoe burst to 3-shot lobbed ground-target salvo (lobCount:3, lobGap:.42, lobFlight:.76, lobRadius:46). Was a duplicate-ish ranged pulse; now a unique dark-DPS artillery cast. Lv5+dark+dps unlock. | `skills.js:295` | Partially moots A11's worry about pulseCount re-firing traits for arcanePulse — new shape is 3 discrete lobs not a single multi-hit skill, so each lob is its own hit-cast anyway. Still worth confirming the trait-dedup semantics once A11 lands. |
+
+---
+
+## TOP 10 MISSES BY SEVERITY (refreshed 2026-11-26)
+
+1. **E1 — Form awakening infrastructure 0/14.** `cat.formId` is read by the trait gate but never set. `EVOLUTION` still replaces `speciesId` (CONTRADICTS §9.1 "speciesId never replaced"). The entire P3 phase is unstarted. **[TOP MISS now that A1/A2/C1 are closed.]**
+2. **D11, D12, D14, D32, D33 — 5 P1+P2 traits are self-admitted stubs** (yunduo, bosi, jiafei, jinjc, nainai) because their required emit sites (A5, A7) were never added.
+3. **A6 — `onSkillCast` emit missing.** 绅绅/花花 fire on hit-landed, not skill-cast. Means their rhythm/variety semantics are measured against a different event than V4 specs.
+4. **A11 — No per-cast dedup guard.** Multi-hit skills (tidalPulse/boltSwarm/prismSwarm) will fire 蓝莓/幽幽/芝士/露露 traits 3–5× per cast. (arcanePulse is now 3 discrete lobs per N2, so moot for it.)
+5. **Trait-side flags unread by battle.js.** `_dmgTakenMult` (nietu), `_dmgOutMult` (nuowei), `_heavyBonus` (senlin), `_slowMult` (yinghua), `_speedMult/_cdMult` (baomao, xuewa), `_fireRateMult` (mengmai) — all set by traits, none consumed. 7+ traits effectively do nothing even after A1.
+6. **A3 — Shield-break emit site missing.** 团团 fires on natural shield expiry, cheesing freeze every time a shield times out. V4 §11 explicitly bans this.
+7. **A4 / A5 / A7 — onStatusApplied / onHealResolved / onCleanse emits missing.** Blocks lanbao/jinwu precision timing + all heal-reactive and cleanse-reactive stubs.
+8. **I4 — No trait VFX layer.** `vfxId` declared on every trait, consumed by nothing. V4 §1.4 and §5 explicitly require 3-phase visible feedback; players will have no idea when their passive fires.
 9. **F3 — ult count is 7, not V4's 8.** Likely purrNova was the 8th and is correctly deleted, but V4 §15 roster hasn't been reconciled.
-10. **I4 — No trait VFX layer.** `vfxId` declared on every trait, consumed by nothing. V4 §1.4 and §5 explicitly require 3-phase visible feedback; players will have no idea when their passive fires.
+10. **I2 — "Traits should change decision-making, not raw numbers."** 7+ P1/P2 traits are flat ±% damage multipliers. Design-level question for the owner: accept the current reading, or redesign toward decision-shaping effects.
 
 ---
 
