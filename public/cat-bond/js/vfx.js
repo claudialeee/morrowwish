@@ -210,7 +210,7 @@ class VFX {
         ctx.beginPath(); ctx.moveTo(0, -6 * k); ctx.lineTo(e.len * (0.5 + k), 0); ctx.lineTo(0, 6 * k); ctx.closePath(); ctx.fill();
         // No circular muzzle stamp; the directional cone is the visual cue.
       } else if (e.type === 'text') {
-        ctx.fillStyle = e.color; ctx.font = `bold ${e.size}px Cat Bond Nunito, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif`; ctx.textAlign = 'center';
+        ctx.fillStyle = e.color; ctx.font = `bold ${e.size}px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif`; ctx.textAlign = 'center';
         ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.strokeText(e.str, e.x, e.y); ctx.fillText(e.str, e.x, e.y);
       } else if (e.type === 'orb') {
         const a=e.baseA+(1-k)*6,rad=e.rad*k,x=e.x+Math.cos(a)*rad,y=e.y+Math.sin(a)*rad;
