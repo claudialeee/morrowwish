@@ -16,6 +16,19 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  try{
  await page.goto('http://127.0.0.1:8765/cat-bond/?lang='+locale);
  await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
+ const nameExpected=tr('星铃回响','Echoes of the Starbell');
+ await page.waitForFunction(name=>document.querySelector('#cb-title-name')?.textContent===name,nameExpected);
+ const title=await page.evaluate(()=>{
+  const panel=document.querySelector('#intro .cb-title-content'),title=document.querySelector('#cb-title-name'),button=document.querySelector('#intro-start');
+  const style=getComputedStyle(panel),bounds=el=>{const r=el.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom};};
+  return {name:title.textContent,documentTitle:document.title,background:style.backgroundColor,image:style.backgroundImage,border:style.borderTopWidth,shadow:style.boxShadow,title:bounds(title),button:bounds(button),width:innerWidth,height:innerHeight};
+ });
+ await screenshot('title');
+ assert.equal(title.name,nameExpected);assert.ok(title.documentTitle.includes(nameExpected),'Localized browser title');
+ assert.equal(title.background,'rgba(0, 0, 0, 0)','No title card background');
+ assert.equal(title.image,'none','No title card gradient');assert.equal(title.border,'0px');assert.equal(title.shadow,'none');
+ for(const rect of [title.title,title.button])assert.ok(rect.left>=-1&&rect.top>=-1&&rect.right<=title.width+1&&rect.bottom<=title.height+1,'Title and start button fit viewport: '+JSON.stringify(title));
+ await fs.writeFile(output+'/'+name+'-'+(meet?'meet':'skip')+'-title.json',JSON.stringify(title,null,2));
  await press(page.locator('#intro-start'));await press(page.locator('#intro-slot-list [data-slot="slot1"]'));await waitScene('prologue:P-05');
  const intro=page.locator('#cb-player-first-intro');await intro.waitFor();assert.match(await intro.innerText(),locale==='zh'?/星铃.*记忆/s:/Star Bell.*memories/s);
  assert.equal(await page.locator('.cbcp-root:not([hidden])').count(),0);assert.deepEqual(await page.evaluate(()=>State.S.cats.map(c=>c.species)),['jinjc']);
