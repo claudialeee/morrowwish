@@ -24,6 +24,8 @@ const entry=book.slots?.[fixture.slot];
 const expected=entry?.data?.state||entry?.data;
 assert.equal(expected?.resonance?.scene,fixture.scene,'Fixture must contain the expected saved scene');
 assert.ok(expected.cats?.length,'Fixture must contain a party');
+const expectedEnding=fixture.ending===true;
+if(expectedEnding)assert.ok(expected.resonance.completed.includes(fixture.scene),'Terminal fixture must contain completed last scene');
 const party=cats=>cats.map(c=>({uid:c.uid,species:c.species,actor:c.storyActor||null,level:c.level??null}));
 const profiles={
  desktop:{viewport:{width:1440,height:900},hasTouch:false},
@@ -42,12 +44,16 @@ try{
  await page.goto(origin+'/cat-bond/?lang='+lang+'&rpgDev=1');
  await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
  await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="'+fixture.slot+'"]').click();
- await page.waitForFunction(scene=>window.CatBondResonance?.view()?.current?.id===scene,fixture.scene,{timeout:15000});
+ await page.waitForFunction(({scene,ending})=>{const v=window.CatBondResonance?.view();return ending?v?.ending===true&&window.CatBondResonance.snapshot().scene===scene:v?.current?.id===scene;},{scene:fixture.scene,ending:expectedEnding},{timeout:15000});
  await page.waitForFunction(()=>['map','yard'].includes(window.__game?.scene));
- const actual=await page.evaluate(()=>({story:CatBondResonance.snapshot(),cats:State.S.cats,away:State.S.storyAway?.muling?.uid||null,exploration:State.S.resonanceExploration}));
+ const actual=await page.evaluate(()=>({story:CatBondResonance.snapshot(),ending:CatBondResonance.view().ending,cats:State.S.cats,away:State.S.storyAway?.muling?.uid||null,exploration:State.S.resonanceExploration,team:State.S.battlePrefs?.teamUids,duo:State.S.duoRelations,dex:State.S.dex}));
  assert.deepEqual(party(actual.cats),party(expected.cats),'Restored party identity/order/levels');
  assert.equal(actual.away,expected.storyAway?.muling?.uid||null,'Restored away companion identity');
- for(const key of ['scene','cursor','completed','evidence','choices','melodies','sanctuaries','ending']){
+ assert.equal(actual.ending,expectedEnding,'Ending state must survive reload');
+ if(expected.battlePrefs?.teamUids)assert.deepEqual(actual.team,expected.battlePrefs.teamUids,'Active lineup');
+ if(expected.duoRelations)assert.deepEqual(actual.duo,expected.duoRelations,'Duo relationships and chosen pair');
+ if(expected.dex)assert.deepEqual(actual.dex,expected.dex,'Collection progress');
+ for(const key of ['scene','cursor','completed','evidence','choices','melodies','sanctuaries','trust','links','support','returned','postgame','ambientDone','openingMet','ruins']){
    if(Object.hasOwn(expected.resonance,key))assert.deepEqual(actual.story[key],expected.resonance[key],'Restored story '+key);
  }
  for(const key of ['interactions','pickups','cargo']){
