@@ -25,7 +25,13 @@ function install(){
  let overlay=null,active=null;const el=(tag,cls,copy)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(copy)n.textContent=copy;return n;};
  function close(){overlay?.remove();overlay=null;active=null;}
  function render(){
-  if(!active||!overlay)return;const {event,done}=active,a=activities[event.id];overlay.replaceChildren();
+  if(!active||!overlay)return;overlay.replaceChildren();
+  if(!active.event){
+   const panel=el("section","res-ambient-card");panel.append(el("h2","",t("想一起做什么？","What shall we do together?")));
+   for(const event of active.options){const choice=el("button","res-ambient-action",t(...activities[event.id].title));choice.type="button";choice.dataset.ambientChoice=event.id;choice.onclick=()=>{if(active.slot!==window.State.S||!api.isCurrentAction(active.token)||!atRegion(event.region)){close();return;}active.event=event;render();};panel.append(choice);}
+   const dismiss=el("button","res-ambient-action res-ambient-dismiss",t("稍后再聊","Maybe later"));dismiss.type="button";dismiss.onclick=close;panel.append(dismiss);overlay.append(panel);return;
+  }
+  const {event,done}=active,a=activities[event.id];
   const panel=el("section","res-ambient-card");const title=el("h2","",t(...a.title)),hint=el("p","",done?event.text[locale()]:t(...a.hint));panel.append(title,hint);
 
   if(done)panel.append(el("small","",t("信任 +1","Trust +1")));
@@ -33,7 +39,7 @@ function install(){
   button.onclick=()=>{if(done){close();return;}if(active.slot!==window.State.S||!api.isCurrentAction(active.token)||!atRegion(event.region)){close();return;}const r=api.ambient({id:event.id,operation:event.operation,region:event.region,verified:true,token:active.token});if(r.ok){active.done=true;render();}else hint.textContent=t("未能保存，请重试。","Unable to save. Try again.");};
   panel.append(button);if(!done){const dismiss=el("button","res-ambient-action res-ambient-dismiss",t("稍后再聊","Maybe later"));dismiss.type="button";dismiss.onclick=close;panel.append(dismiss);}overlay.append(panel);
  }
- window.addEventListener("cat-bond-resonance-npc-profile",e=>{const profile=e.detail;if(overlay||!profile?.id)return;const event=profile.ambient?.find(a=>a.npc===profile.id&&activities[a.id]);if(!event||!atRegion(event.region)||!api.ambientAvailable(event.region).some(a=>a.id===event.id))return;active={event,slot:window.State.S,token:api.captureAction(),done:false};overlay=el("div","cb-story-overlay is-visible res-ambient-simple");overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");stage.append(overlay);render();});
+ window.addEventListener("cat-bond-resonance-npc-profile",e=>{const profile=e.detail;if(overlay||!profile?.id)return;const options=(profile.ambient||[]).filter(a=>a.npc===profile.id&&activities[a.id]&&atRegion(a.region)&&api.ambientAvailable(a.region).some(e=>e.id===a.id));if(!options.length)return;active={options,event:options.length===1?options[0]:null,slot:window.State.S,token:api.captureAction(),done:false};overlay=el("div","cb-story-overlay is-visible res-ambient-simple");overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");stage.append(overlay);render();});
  window.addEventListener("morrowwish-language-change",render);window.addEventListener("cat-bond-active-save-changed",close);
 }
 if(typeof document!=="undefined"){if(document.readyState==="complete")install();else document.addEventListener("DOMContentLoaded",install,{once:true});}
