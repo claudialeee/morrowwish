@@ -1,4 +1,4 @@
-// Locked script dialogue + authored localization and optional ambient interactions.
+// Canon 1.2 staged runtime adaptation; later operations remain intact.
 export const campaign = {
   "canon": "The Last Resonance",
   "version": 1,
@@ -83,8 +83,9 @@ export const campaign = {
         "zh": "细长而优雅的成年母猫，烟银长毛与琥珀眼，靛青旅行披肩；旧铜铃坠始终一致；最终战使用独立环形铃器与仪式服，而非放大原角色",
         "en": "Slender adult silver-smoke longhair, amber eyes, indigo travel mantle; consistent aged bronze bell pendant. Finale: distinct ritual attire and ring instrument, never an enlarged sprite."
       },
-      "expressionNotes": "平静、冷幽默、紧张敲铃、悲伤、警惕、悔意、释然",
-      "artStatus": "unproduced"
+      "expressionNotes": "温暖、俏皮、好奇、专注、坦诚、悔意、释然",
+      "artStatus": "unproduced",
+      "narrativeRole": "core"
     },
     "jiedeng": {
       "id": "jiedeng",
@@ -98,7 +99,8 @@ export const campaign = {
         "en": "Older broad-shouldered slate cat, dense fur, weathered keeper coat and lighthouse key; grounded posture"
       },
       "expressionNotes": "沉默、忧虑、坚决、释然",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "regional"
     },
     "qilan": {
       "id": "qilan",
@@ -112,7 +114,8 @@ export const campaign = {
         "en": "Young slender blue-gray shorthair, teal navigator scarf and tide chart; quick movement"
       },
       "expressionNotes": "好奇、急躁、勇敢、喜悦",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "core"
     },
     "yahe": {
       "id": "yahe",
@@ -126,7 +129,8 @@ export const campaign = {
         "en": "Young warm-brown tabby, woven herbal satchel, bright eyes, forward stance"
       },
       "expressionNotes": "热情、怀疑、担忧、欣慰",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "support"
     },
     "yuchuan": {
       "id": "yuchuan",
@@ -140,7 +144,8 @@ export const campaign = {
         "en": "Sturdy dark-brown adult with long brows, root work gear and water gauge; quiet stance"
       },
       "expressionNotes": "克制、固执、专注、信任",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "regional"
     },
     "jinpo": {
       "id": "jinpo",
@@ -154,7 +159,8 @@ export const campaign = {
         "en": "Older muscular tortoiseshell, scorched leather apron, goggles and hammer; asymmetric silhouette"
       },
       "expressionNotes": "严厉、羞愧、专注、骄傲",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "support"
     },
     "xiaomao": {
       "id": "xiaomao",
@@ -168,7 +174,8 @@ export const campaign = {
         "en": "Lean young tabby, oversized tool belt, wrist guards and rivet drawings; expressive ears"
       },
       "expressionNotes": "兴奋、不服、专注、成就感",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "core"
     },
     "lingyu": {
       "id": "lingyu",
@@ -182,7 +189,8 @@ export const campaign = {
         "en": "Mature silver tabby, long legs, fitted flight mantle and wind gauge; protective stance"
       },
       "expressionNotes": "认真、戒备、动摇、欣慰",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "support"
     },
     "yuanfan": {
       "id": "yuanfan",
@@ -196,7 +204,8 @@ export const campaign = {
         "en": "Young cream long-legged cat, light glider harness and worn flight log; forward silhouette"
       },
       "expressionNotes": "期待、委屈、坚定、自豪",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "core"
     },
     "moye": {
       "id": "moye",
@@ -210,7 +219,8 @@ export const campaign = {
         "en": "Adult black longhair, narrow eyes, layered ink archivist robe and silver bookmark; precise movement"
       },
       "expressionNotes": "疏离、迟疑、忧虑、坦然",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "regional"
     },
     "baikan": {
       "id": "baikan",
@@ -224,7 +234,8 @@ export const campaign = {
         "en": "Young white-and-gray cat, asymmetric folio strap, lens and archive pen; sharp gaze"
       },
       "expressionNotes": "求知、急切、震惊、温和",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "core"
     },
     "xingya": {
       "id": "xingya",
@@ -238,7 +249,8 @@ export const campaign = {
         "en": "Young amber shorthair, angular silhouette, star-map bracer and observatory instrument; tense posture"
       },
       "expressionNotes": "专注、争执、惊愕、信任",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "support"
     },
     "lichuan": {
       "id": "lichuan",
@@ -252,7 +264,8 @@ export const campaign = {
         "en": "Adult sandy longhair, rugged caravan gear, star compass and long scarf; steady broad silhouette"
       },
       "expressionNotes": "冷幽默、怀疑、沉着、宽慰",
-      "artStatus": "unproduced"
+      "artStatus": "unproduced",
+      "narrativeRole": "regional"
     }
   },
   "scenes": [
@@ -260,14 +273,12 @@ export const campaign = {
       "id": "prologue:P-01",
       "chapter": "prologue",
       "title": {
-        "zh": "六座圣所",
-        "en": "Six Sanctuaries"
+        "zh": "世界的背景",
+        "en": "The world in a few lines"
       },
       "previous": null,
       "lines": [],
-      "requires": [
-        "cinematic:prologue-montage"
-      ],
+      "requires": [],
       "choices": [],
       "lineGate": [],
       "choiceTiming": "afterDialogue"
@@ -276,120 +287,12 @@ export const campaign = {
       "id": "prologue:P-02",
       "chapter": "prologue",
       "title": {
-        "zh": "首任守铃者的选择",
-        "en": "The First Bellkeeper's Choice"
+        "zh": "独自醒来",
+        "en": "Awakening alone"
       },
       "previous": "prologue:P-01",
-      "lines": [
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "还有办法。我们还没试完所有办法。",
-            "en": "There is another way. We haven't tried everything."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "来不及了。",
-            "en": "There is no time."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "那就再找一天。",
-            "en": "Then give us one more day."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "它已经进入港口了。再等下去，连他们是谁都不会记得。",
-            "en": "It's already reached the harbor. If we wait, they won't even remember who they are."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "那就让我去。",
-            "en": "Then let me go."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你去了也一样。",
-            "en": "It would be the same if you went."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "你答应过我，不会再一个人做这种决定。",
-            "en": "You promised me you wouldn't make a decision like this alone again."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "我知道。",
-            "en": "I know."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "那就回答我。你听见了吗？",
-            "en": "Then answer me. Did you hear me?"
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "听见了。",
-            "en": "I heard you."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "看着我。",
-            "en": "Look at me."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "对不起。",
-            "en": "I'm sorry."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我不要你的道歉。",
-            "en": "I don't want your apology."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "如果他们还能回应彼此，就让他们自己发出声音。",
-            "en": "If they can still answer one another, let them find their own voices."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "你回来以后，亲自告诉我这句话是什么意思。",
-            "en": "When you come back, tell me yourself what you meant."
-          }
-        }
-      ],
-      "requires": [
-        "cinematic:sacrifice"
-      ],
+      "lines": [],
+      "requires": [],
       "choices": [],
       "lineGate": [],
       "choiceTiming": "afterDialogue"
@@ -398,14 +301,12 @@ export const campaign = {
       "id": "prologue:P-03",
       "chapter": "prologue",
       "title": {
-        "zh": "等待的岁月",
-        "en": "Years of Waiting"
+        "zh": "风中的航图",
+        "en": "A map on the wind"
       },
       "previous": "prologue:P-02",
       "lines": [],
-      "requires": [
-        "cinematic:waiting"
-      ],
+      "requires": [],
       "choices": [],
       "lineGate": [],
       "choiceTiming": "afterDialogue"
@@ -414,85 +315,12 @@ export const campaign = {
       "id": "prologue:P-04",
       "chapter": "prologue",
       "title": {
-        "zh": "苏醒",
-        "en": "Awakening"
+        "zh": "去港口",
+        "en": "The road to the harbor"
       },
       "previous": "prologue:P-03",
-      "lines": [
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "这里是……？",
-            "en": "Where am I...?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "阳光花园。",
-            "en": "Sunlit Garden."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你认识我？",
-            "en": "Do you know me?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我叫暮铃。你呢？",
-            "en": "I'm Muling. And you?"
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "我不知道。",
-            "en": "I don't know."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "那就先不找名字。名字不会跑。",
-            "en": "Then leave the name for now. It isn't going anywhere."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "这里发生过什么？",
-            "en": "What happened here?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "很久以前，有一座钟停了。现在它又开始出声了。",
-            "en": "Long ago, a bell fell silent. Now it has begun to sound again."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "为什么？",
-            "en": "Why?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "这正是我想查清楚的事。",
-            "en": "That's exactly what I want to find out."
-          }
-        }
-      ],
-      "requires": [
-        "explore:garden-bell"
-      ],
+      "lines": [],
+      "requires": [],
       "choices": [],
       "lineGate": [],
       "choiceTiming": "afterDialogue"
@@ -501,54 +329,11 @@ export const campaign = {
       "id": "prologue:P-05",
       "chapter": "prologue",
       "title": {
-        "zh": "旅程",
-        "en": "The Journey"
+        "zh": "前往霁潮港",
+        "en": "Travel to Misttide Harbor"
       },
       "previous": "prologue:P-04",
-      "lines": [
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你一个人不行吗？",
-            "en": "Can't you do it alone?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "如果我一个人行，我就不会站在这里了。",
-            "en": "If I could, I wouldn't be standing here."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "那我们一起去。",
-            "en": "Then we'll go together."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "你甚至不知道自己是谁。",
-            "en": "You don't even know who you are."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "但我知道他们需要帮助。",
-            "en": "But I know they need help."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "……还是没变。",
-            "en": "...You haven't changed."
-          }
-        }
-      ],
+      "lines": [],
       "requires": [
         "travel:harbor"
       ],
@@ -560,51 +345,51 @@ export const campaign = {
       "id": "harbor:H-01",
       "chapter": "harbor",
       "title": {
-        "zh": "雾中抵达",
-        "en": "Arrival in the Fog"
+        "zh": "找不到家的船",
+        "en": "A boat without a way home"
       },
       "previous": "prologue:P-05",
       "lines": [
         {
           "speaker": "qilan",
           "text": {
-            "zh": "你们是来修灯塔的吗？",
-            "en": "Are you here to repair the lighthouse?"
+            "zh": "刚送一位渔夫回家。他在那里住了二十年，却找不到自己的门。外海还有艘船在打转——能帮我把它带回来吗？",
+            "en": "I just walked a fisherman home. He'd lived there for twenty years, yet couldn't find his own door. Now a boat is circling the reef. Will you help me bring it back?"
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "原来不只我记不起过去。",
+            "en": "So I'm not the only one who's forgotten."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "如果灯塔愿意配合的话。",
-            "en": "If the lighthouse is willing to cooperate."
+            "zh": "你好，我叫暮铃，是来调查古铃的旅行者。多年前星铃坏了，猫咪们开始失去记忆。最近又出现了。",
+            "en": "Hello, I'm Muling. I'm a traveler investigating old bells. When the Star Bell broke, cats began losing memories. It's happening again."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "灯塔又不会说话。",
-            "en": "Lighthouses can't talk."
+            "zh": "我是栖蓝，领航员！可是灯塔没亮，船找不到安全的路。",
+            "en": "I'm Qilan, a navigator! The lighthouse is dark, and the boat can't find a safe route."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "有人连自己的家都忘了……和我一样。栖蓝，我们先把船救回来。",
+            "en": "Someone forgot their own home... just like me. Qilan, let's bring that boat back first."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "那就比某些人好沟通。",
-            "en": "Then it should be easier to deal with than some people."
-          }
-        },
-        {
-          "speaker": "qilan",
-          "text": {
-            "zh": "你是在说我吗？",
-            "en": "Are you talking about me?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我可没点名。",
-            "en": "I didn't name anyone."
+            "zh": "我有工具和绳子。你愿意搭把手的话，我在港口等你。",
+            "en": "I've got tools and rope. If you'd like to help, I'll be here at the harbor."
           }
         }
       ],
@@ -612,51 +397,53 @@ export const campaign = {
         "npc:harbor-arrival"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": [
+        "npc:harbor-arrival"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
       "id": "harbor:H-02",
       "chapter": "harbor",
       "title": {
-        "zh": "拒绝点灯的守灯人",
-        "en": "The Keeper Who Refuses"
+        "zh": "两盏灯",
+        "en": "Two lights"
       },
       "previous": "harbor:H-01",
       "lines": [
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "灯亮了，船就会回来。可有些船不应该再出海。",
-            "en": "If the light comes on, the boats will return. But some boats should never sail again."
+            "zh": "别点灯。光路没校准，亮错方向比没有灯更危险。",
+            "en": "Don't light it. Until the beam is aligned, a false light is worse than none."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "你又在说以前的事情。",
-            "en": "You're talking about the past again."
+            "zh": "那就校准它！我读得懂潮汐表。",
+            "en": "Then let's align it! I can read the tide charts."
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "你根本不知道以前发生了什么。",
-            "en": "You have no idea what happened back then."
+            "zh": "你留在岸上。上次我也以为来得及。",
+            "en": "Stay ashore. Last time I thought we had time, too."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "那你倒是告诉我啊！",
-            "en": "Then tell me!"
+            "zh": "你不能每次都替我选。我们先找到旧航海日志吧。",
+            "en": "You can't choose for me every time. Let's find the old logbook first."
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "我不想再看见有人因为一盏灯而受伤。",
-            "en": "I don't want anyone else hurt because of a light."
+            "zh": "退潮后它会露出来。看完日志，我们再决定怎么救船。",
+            "en": "It should emerge at low tide. Read it, then we'll decide how to rescue the boat."
           }
         }
       ],
@@ -690,51 +477,51 @@ export const campaign = {
       "id": "harbor:H-03",
       "chapter": "harbor",
       "title": {
-        "zh": "被淹没的航海日志",
-        "en": "The Flooded Logbook"
+        "zh": "盐渍航海日志",
+        "en": "Salt on the logbook"
       },
       "previous": "harbor:H-02",
       "lines": [
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "我以为关掉灯，就能保护他们。",
-            "en": "I thought putting out the light would protect them."
+            "zh": "当年我关了主灯，想拦住出海的船。救援船却已经在海上了。",
+            "en": "I shut off the main light to keep boats ashore. The rescue boat had already left."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "你保护不了所有人。",
-            "en": "You can't protect everyone."
+            "zh": "备用灯的消息没有送到船上，所以他们找不到方向？",
+            "en": "The backup signal never reached the boat, so they lost their bearings?"
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "我知道。",
-            "en": "I know."
+            "zh": "是。船员活了下来，可我从此不敢再把航线交给别人。",
+            "en": "Yes. The crew survived, but I haven't trusted anyone else with a route since."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "那你为什么还不肯让我自己试一次？",
-            "en": "Then why won't you let me try for myself?"
+            "zh": "那今天你看灯，我看海。我们谁也别替谁做决定。",
+            "en": "Then today you watch the light and I watch the sea. Neither of us decides for the other."
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "因为我不想再失去任何人。",
-            "en": "Because I don't want to lose anyone else."
+            "zh": "……先把你的航图给我看看。",
+            "en": "…Let me see your chart first."
           }
         },
         {
-          "speaker": "qilan",
+          "speaker": "player",
           "text": {
-            "zh": "我也不想。但我不能一辈子待在港口。",
-            "en": "Neither do I. But I can't spend my whole life in the harbor."
+            "zh": "风起来了。先决定怎么把船带回安全水域。",
+            "en": "The wind's picking up. Let's decide how to bring the boat to safety."
           }
         }
       ],
@@ -751,31 +538,53 @@ export const campaign = {
       "id": "harbor:H-04",
       "chapter": "harbor",
       "title": {
-        "zh": "风暴救援",
-        "en": "Storm Rescue"
+        "zh": "雾里那声铃",
+        "en": "The bell in the fog"
       },
       "previous": "harbor:H-03",
       "lines": [
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "左边的光路！栖蓝，跟着我说的做！",
-            "en": "The beam on the left! Qilan, follow my directions!"
+            "zh": "礁石在左边。光路给你了，航线你选！",
+            "en": "Reefs to port. The light is yours; choose your route!"
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "这次我自己掌舵！",
-            "en": "I'm taking the helm myself this time!"
+            "zh": "看见了！我会跟着真正的灯走。",
+            "en": "I see it! I'll follow the real light."
           }
         },
         {
-          "speaker": "jiedeng",
+          "speaker": "muling",
           "text": {
-            "zh": "好。那我负责照亮你的路。",
-            "en": "All right. I'll light your way."
+            "zh": "我守住这边，你去另一边。准备好了就一起行动。",
+            "en": "I'll hold this side. Take the other. We'll act when you're ready."
           }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "刚才那声铃，你也听见了吗？我想查清它。你找名字，我找铃，一起走吧？",
+            "en": "Did you hear that bell just now? I want to find out what it was. You're looking for a name, I'm looking for a bell. Shall we travel together?"
+          },
+          "afterOperations": [
+            "puzzle:beam-mirrors",
+            "rescue:storm-boat"
+          ]
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "好啊。下次把航图收好。",
+            "en": "Sure. Keep your map somewhere safe next time."
+          },
+          "afterOperations": [
+            "puzzle:beam-mirrors",
+            "rescue:storm-boat"
+          ]
         }
       ],
       "requires": [
@@ -809,51 +618,51 @@ export const campaign = {
       "id": "harbor:H-05",
       "chapter": "harbor",
       "title": {
-        "zh": "第一段旋律",
-        "en": "The First Melody"
+        "zh": "第一个音",
+        "en": "The first note"
       },
       "previous": "harbor:H-04",
       "lines": [
         {
           "speaker": "player",
           "text": {
-            "zh": "你刚才唱的那一段是什么？",
-            "en": "What was that part you sang?"
+            "zh": "等等……我明明不记得自己的名字，为什么会唱这首歌？",
+            "en": "Wait... I can't even remember my name. How do I know this song?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "古歌。",
-            "en": "An old song."
+            "zh": "你唱的不是现在的版本。那是很久以前的唱法。",
+            "en": "That's not how they sing it now. That's a much older version."
           }
         },
         {
-          "speaker": "player",
+          "speaker": "qilan",
           "text": {
-            "zh": "你以前听过？",
-            "en": "You've heard it before?"
+            "zh": "归潮调！船回港的时候，我们就唱这个。",
+            "en": "Returning Tide! We sing it when boats come home."
+          }
+        },
+        {
+          "speaker": "qilan",
+          "text": {
+            "zh": "灯塔恢复了。至少现在，船能重新找到回家的路。",
+            "en": "The lighthouse is working. At least the boats can find their way home again."
+          }
+        },
+        {
+          "speaker": "qilan",
+          "text": {
+            "zh": "眠根林的药草船没到。我跟你们去，顺便画一张不会把猫带丢的航图！",
+            "en": "The forest's medicine boat is missing. I'll come with you and draw a chart that won't get anyone lost!"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "听过很多。",
-            "en": "Many times."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你为什么看起来难过？",
-            "en": "Why do you look sad?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "因为有些歌，最好不要一个人唱。",
-            "en": "Some songs are better not sung alone."
+            "zh": "眠根林也有一首古歌。也许到了那里，你就能再想起一点什么。",
+            "en": "The forest has an old song too. Perhaps you'll remember something else when we get there."
           }
         }
       ],
@@ -871,37 +680,37 @@ export const campaign = {
       "id": "forest:R-01",
       "chapter": "forest",
       "title": {
-        "zh": "两座森林",
-        "en": "Two Forests"
+        "zh": "会走动的森林 · 药草园",
+        "en": "The Moving Forest · Herb garden"
       },
       "previous": "harbor:H-05",
       "lines": [
         {
           "speaker": "yahe",
           "text": {
-            "zh": "他们把水全拿走了！",
-            "en": "They've taken all the water!"
+            "zh": "从港口来的药材还没送到，药草园的水昨晚也少了一半。树根竟然自己移了位置！",
+            "en": "The medicine shipment from Harbor never arrived. Half our garden water vanished overnight, and the roots have moved!"
           }
         },
         {
-          "speaker": "yuchuan",
+          "speaker": "qilan",
           "text": {
-            "zh": "我们每天都在维护根系，你们却从来不问水去了哪里。",
-            "en": "We maintain the roots every day, but you never ask where the water goes."
+            "zh": "我们的补给船在树冠下停过。芽禾，你认得那里的路吗？",
+            "en": "Our supply boat stopped beneath the canopy. Yahe, do you know the way from there?"
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "那你为什么不说？",
-            "en": "Then why didn't you say anything?"
+            "zh": "认得！我能沿着药香找过去。别踩到会打喷嚏的花——啊，已经晚了！",
+            "en": "I do! I can follow the scent. Don't step on the sneezing flowers—oh, too late!"
           }
         },
         {
-          "speaker": "yuchuan",
+          "speaker": "muling",
           "text": {
-            "zh": "因为你们从来没有问过。",
-            "en": "Because you never asked."
+            "zh": "好呀。我们沿路找痕迹，先弄清发生了什么。",
+            "en": "Of course. We'll follow the clues and see what happened."
           }
         }
       ],
@@ -916,37 +725,37 @@ export const campaign = {
       "id": "forest:R-02",
       "chapter": "forest",
       "title": {
-        "zh": "药草踪迹",
-        "en": "The Scent Trail"
+        "zh": "树冠小径与地下根洞",
+        "en": "Canopy path and root cavern"
       },
       "previous": "forest:R-01",
       "lines": [
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "我以为只要水还在，他们就会明白。",
-            "en": "I thought as long as the water kept flowing, they'd understand."
+            "zh": "药材在这里。病根昨晚突然移动，堵住了分水口，我把药拿来救它们，却没来得及告诉大家。",
+            "en": "The medicine is here. Sick roots moved last night and blocked the junction. I brought medicine to treat them but didn't tell anyone in time."
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "我只看见水越来越少。",
-            "en": "All I saw was less and less water."
+            "zh": "这条暗渠竟然通向我的药草园！原来你一直在帮我们。",
+            "en": "This hidden channel leads to my garden! You've been helping us all along."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "两边都缺水。我们先稳住一边，再疏通另一边。",
+            "en": "Both sides need water. Let's stabilize one side, then reopen the other."
           }
         },
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "我忘了告诉你们，水被送到了哪里。",
-            "en": "I forgot to tell you where it was going."
-          }
-        },
-        {
-          "speaker": "yahe",
-          "text": {
-            "zh": "你不能总是替别人决定什么是最好的。",
-            "en": "You can't always decide what is best for other people."
+            "zh": "等等！下面传来求救声。有猫被困在塌陷的水道里，先救他们！",
+            "en": "Wait! Someone's calling for help below. Cats are trapped in the collapsed channel. Let's rescue them first!"
           }
         }
       ],
@@ -976,102 +785,111 @@ export const campaign = {
       "lineGate": [
         "explore:scent-trail"
       ],
-      "choiceTiming": "beforeAction"
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "forest:R-03",
       "chapter": "forest",
       "title": {
-        "zh": "根系坍塌",
-        "en": "The Root Collapse"
+        "zh": "坍塌水道 · 回声救援",
+        "en": "Collapsed channel · Echo rescue"
       },
       "previous": "forest:R-02",
       "lines": [
         {
           "speaker": "yahe",
           "text": {
-            "zh": "我不想再靠猜测知道你们在做什么。",
-            "en": "I don't want to keep guessing what you're doing."
+            "zh": "被困的伙伴安全了！水也终于流回药草园。",
+            "en": "The trapped cats are safe! Water is finally flowing back to the garden."
           }
         },
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "那就把水量、时间和路线都写下来。",
-            "en": "Then let's write down the volumes, times, and routes."
+            "zh": "谢谢你们。树根重新舒展开了。以后我们把两条水路画在同一张图上。",
+            "en": "Thank you. The roots are stretching out again. From now on let's put both channels on one map."
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "每个月一起检查。",
-            "en": "We'll inspect them together every month."
+            "zh": "下次一起巡水道吧！我带花茶，你别又忘了带杯子。",
+            "en": "Let's check the channels together next time! I'll bring flower tea. Don't forget your cup again."
           }
         },
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "成交。",
-            "en": "Deal."
+            "zh": "成交。我留下照看水闸。你们去古根圣所吧，那里会响起相枝调。",
+            "en": "Deal. I'll stay and watch the gates. Go to the ancient root sanctuary; the Branching Song will sound there."
           }
         }
       ],
       "requires": [
-        "puzzle:paired-water-gates"
+        "rescue:steady-channel",
+        "explore:water-marks",
+        "battle:root-echo",
+        "rescue:trapped-cats"
       ],
       "choices": [],
-      "lineGate": ["puzzle:paired-water-gates"],
-      "choiceTiming": "afterDialogue"
+      "lineGate": [
+        "rescue:steady-channel",
+        "explore:water-marks",
+        "battle:root-echo",
+        "rescue:trapped-cats"
+      ],
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "forest:R-04",
       "chapter": "forest",
       "title": {
-        "zh": "第二段旋律",
-        "en": "The Second Melody"
+        "zh": "古根圣所 · 相枝调",
+        "en": "Ancient-root sanctuary · Living Roots"
       },
       "previous": "forest:R-03",
       "lines": [
         {
           "speaker": "player",
           "text": {
-            "zh": "这里有两种方向。",
-            "en": "There are two directions here."
+            "zh": "又是那种感觉。石头上的图……我好像曾经亲手画过。",
+            "en": "That feeling again. The drawing on the stone... it's as if I once drew it myself."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "嗯。",
-            "en": "Mm."
+            "zh": "一条通向中央星铃，另一条通向邻近圣所。",
+            "en": "One leads to the central Star Bell, the other to the neighboring sanctuary."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "为什么？",
-            "en": "Why?"
+            "zh": "暮铃，我还没说第二条线通向哪里。你怎么知道的？",
+            "en": "Muling, I hadn't told you where the second line went. How did you know?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "中央星铃需要听见六座圣所。先让声音传回中央，才能判断它们是否恢复。",
-            "en": "The Star Bell needs to hear all six sanctuaries. We must send the sound inward first to know whether they've recovered."
+            "zh": "以前看过类似的图。先恢复中央的声音吧，另一条很久没有回应了。",
+            "en": "I've seen a similar diagram before. Let's restore the central sound first. The other path hasn't answered in a long time."
           }
         },
         {
-          "speaker": "player",
+          "speaker": "qilan",
           "text": {
-            "zh": "另一条路呢？",
-            "en": "And the other path?"
+            "zh": "港口的航图也刻着一条横线！我以为那是旧航路。要不带上图纸，问问赤炉环城的工匠？",
+            "en": "The harbor chart has a cross-line too! I thought it was an old shipping route. Let's take the drawings to the smiths of Ember Ring."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "旧路。断了很久。",
-            "en": "An old route. Broken for a long time."
+            "zh": "赤炉环城应该还留着原来的图纸。去那里吧。",
+            "en": "The old plans should still be in Ember Ring. Let's go there."
           }
         }
       ],
@@ -1080,85 +898,97 @@ export const campaign = {
         "melody:forest"
       ],
       "choices": [],
-      "lineGate": ["repair:forest","melody:forest"],
+      "lineGate": [
+        "repair:forest",
+        "melody:forest"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
       "id": "forge:E-01",
       "chapter": "forge",
       "title": {
-        "zh": "沉寂的熔炉",
-        "en": "The Silent Furnace"
+        "zh": "没有火花的庆典",
+        "en": "A festival without fire"
       },
       "previous": "forest:R-04",
       "lines": [
-{"speaker":"jinpo","text":{"zh":"先把旧炉的安全系统修好。没有经过验证的设计，不能接进主炉。","en":"Restore the old safety system first. An untested design cannot be connected to the main furnace."}},
-{"speaker":"xiaomao","text":{"zh":"旧阀门在高温时会卡住。我做了独立的泄压旁路，至少先看看图纸。","en":"The old valve jams at high temperatures. I made an independent relief bypass. At least look at the blueprint."}}, 
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "师傅说机器坏了可以修，人心坏了就不一定。",
-            "en": "Master says machines can be repaired, but hearts aren't always so easy."
+            "zh": "小心！那是我的泄压阀——呼，接得漂亮！",
+            "en": "Careful! That's my relief valve—whew, nice catch!"
           }
         },
         {
-          "speaker": "muling",
+          "speaker": "qilan",
           "text": {
-            "zh": "听起来她很会修机器。",
-            "en": "Sounds like she's good with machines."
+            "zh": "森林的水闸缺一台泵。还有，刚才那一下差点把我的航图烤熟！",
+            "en": "The forest gates need a pump. Also, that almost roasted my chart!"
           }
         },
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "她也很会骂人。",
-            "en": "She's also good at yelling."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "那倒是挺有精神的。",
-            "en": "At least she's spirited."
-          }
-        }
-      ],
-      "requires": [
-        "npc:forge-dispute"
-      ],
-      "choices": [],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
-    },
-    {
-      "id": "forge:E-02",
-      "chapter": "forge",
-      "title": {
-        "zh": "隐藏的图纸",
-        "en": "The Hidden Blueprint"
-      },
-      "previous": "forge:E-01",
-      "lines": [
-{"speaker":"jinpo","text":{"zh":"那年为了赶节庆，我缩短了安全测试。管路破裂，两位工人受了伤。","en":"I shortened the safety test to meet the festival deadline. A pipe ruptured and two workers were injured."}}, 
-        {
-          "speaker": "xiaomao",
-          "text": {
-            "zh": "你教我所有东西，为什么唯独不让我看这张图？",
-            "en": "You taught me everything. Why wouldn't you let me see this one diagram?"
+            "zh": "当然，可主炉又卡住了。我的新设计能自动泄压。",
+            "en": "Of course, but the main furnace jammed again. My new design vents pressure automatically."
           }
         },
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "因为我不想让你变成我这样。",
-            "en": "Because I didn't want you to turn out like me."
+            "zh": "收起来。没验证过的东西不准接主炉。",
+            "en": "Put it away. Nothing untested goes into the main furnace."
           }
         },
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "我不需要你永远正确。我需要你相信我能知道真相。",
-            "en": "I don't need you to always be right. I need you to trust me with the truth."
+            "zh": "旧图纸也不是永远正确的！",
+            "en": "The old plans aren't always right!"
+          }
+        }
+      ],
+      "requires": [
+        "puzzle:festival-lantern",
+        "npc:forge-dispute"
+      ],
+      "choices": [],
+      "lineGate": [
+        "puzzle:festival-lantern",
+        "npc:forge-dispute"
+      ],
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
+    },
+    {
+      "id": "forge:E-02",
+      "chapter": "forge",
+      "title": {
+        "zh": "被擦掉的签名",
+        "en": "The missing signature"
+      },
+      "previous": "forge:E-01",
+      "lines": [
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "这张图有两道声音路线，和森林的一样。可这里的测试日期被擦掉了。谁提前开炉了？",
+            "en": "This drawing has two sound routes, just like the forest's. But the test date was erased. Who started the furnace early?"
+          }
+        },
+        {
+          "speaker": "jinpo",
+          "text": {
+            "zh": "我。庆典等着，我以为不会出事。",
+            "en": "I did. The festival was waiting. I thought nothing would go wrong."
+          }
+        },
+        {
+          "speaker": "xiaomao",
+          "text": {
+            "zh": "我不是想证明师傅错了。我只想知道这次怎么不再伤到别人。",
+            "en": "I'm not trying to prove you wrong. I want to know how we keep anyone else from getting hurt."
           }
         }
       ],
@@ -1169,8 +999,8 @@ export const campaign = {
         {
           "id": "publish",
           "label": {
-            "zh": "立即公布事故记录",
-            "en": "Publish the accident record now"
+            "zh": "立即公开已核实的安全事实",
+            "en": "Publish verified safety findings now"
           },
           "npc": "xiaomao",
           "method": "worker-transparency"
@@ -1178,8 +1008,8 @@ export const campaign = {
         {
           "id": "private",
           "label": {
-            "zh": "先让烬婆与工人私下交流",
-            "en": "Let Jinpo speak to the workers first"
+            "zh": "请烬婆先亲自向工人说明",
+            "en": "Let Jinpo explain to the workers first"
           },
           "npc": "jinpo",
           "method": "shared-repair"
@@ -1194,27 +1024,39 @@ export const campaign = {
       "id": "forge:E-03",
       "chapter": "forge",
       "title": {
-        "zh": "熔炉试验",
-        "en": "The Furnace Test"
+        "zh": "会反击的熔炉",
+        "en": "The furnace that fights back"
       },
       "previous": "forge:E-02",
       "lines": [
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "这次要是出了问题，责任算我的。",
-            "en": "If something goes wrong this time, the responsibility is mine."
+            "zh": "压力在升——把阀交给我！",
+            "en": "Pressure's rising—give me the valve!"
           }
         },
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "不。设计是我们一起做的。责任也一起承担。",
-            "en": "No. We designed it together. We share the responsibility."
+            "zh": "我知道！先泄压，再关进料。师傅，帮我看温度！",
+            "en": "I know! Vent first, then stop the feed. Watch the temperature for me!"
           }
         },
-{"speaker":"jinpo","text":{"zh":"小铆，泄压阀交给你。按你设计的步骤来。","en":"Xiaomao, the relief valve is yours. Follow the procedure you designed."}},
-{"speaker":"xiaomao","text":{"zh":"好。师傅，请帮我稳住冷却水路。","en":"All right. Master, please keep the coolant circuit steady."}}
+        {
+          "speaker": "jinpo",
+          "text": {
+            "zh": "……温度稳定。你继续。",
+            "en": "…Temperature steady. Keep going."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "右边那道火没有热气，是回响。真正的阀在下面！",
+            "en": "The flame on the right gives off no heat. It's an echo. The real valve is below!"
+          }
+        }
       ],
       "requires": [
         "puzzle:heat-pressure",
@@ -1222,60 +1064,62 @@ export const campaign = {
       ],
       "choices": [],
       "lineGate": [],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "forge:E-04",
       "chapter": "forge",
       "title": {
-        "zh": "第三首旋律",
-        "en": "The Third Melody"
+        "zh": "把灯点起来",
+        "en": "Light the lanterns"
       },
       "previous": "forge:E-03",
       "lines": [
-{"speaker":"jinpo","text":{"zh":"当年缩短测试的是我。我向两位受伤的工人和全城道歉。新安全设计由小铆负责，所有测试记录都公开。","en":"I cut the test short. I apologize to the injured workers and the city. Xiaomao will lead the new safety design, and all test records will be public."}},
-{"speaker":"xiaomao","text":{"zh":"我们一起把承火调送回炉心。这次每一份记录都会留下。","en":"Let's carry the Song of Ember back to the furnace together. This time, every record stays."}}, 
         {
-          "speaker": "player",
-          "afterOperations": ["repair:forge","melody:forge"],
+          "speaker": "jinpo",
           "text": {
-            "zh": "既然另一条存在，为什么不用？",
-            "en": "If the other path exists, why not use it?"
+            "zh": "庆典终于能开了。小铆，第一盏灯就用你画的图纸。",
+            "en": "The festival can finally begin. Xiaomao, let's light the first lantern using your design."
           }
         },
         {
-          "speaker": "muling",
+          "speaker": "xiaomao",
           "text": {
-            "zh": "因为它断了。",
-            "en": "Because it's broken."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "不能修吗？",
-            "en": "Can't we fix it?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "理论上可以。",
-            "en": "In theory, yes."
+            "zh": "师傅，第一盏灯给你。不过它的图纸我可要留着。",
+            "en": "The first lantern is yours. I'm keeping its blueprint, though."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那我们为什么不试？",
-            "en": "Then why don't we try?"
+            "zh": "这张图上有六条线路。为什么我一碰星铃的图案，就觉得那么熟悉？",
+            "en": "There are six routes on this plan. Why does the Star Bell symbol feel so familiar when I touch it?"
+          },
+          "afterOperations": [
+            "repair:forge",
+            "melody:forge"
+          ]
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "那是旧时的记号。书库或许还留着守铃人的记录。",
+            "en": "It's an old symbol. The library may still have records of the bellkeepers."
+          }
+        },
+        {
+          "speaker": "xiaomao",
+          "text": {
+            "zh": "我的飞翼零件做好啦！我带一套去云脊，剩下的交给师傅送到森林。云脊见！",
+            "en": "My glider parts are ready! I'll take a set to Skyspine, and Master can send the rest to the forest. See you there!"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "因为修好一条路，和让路的另一头有人回应，是两回事。",
-            "en": "Because repairing a path and having someone answer at the other end are two different things."
+            "zh": "先去找云脊的信使。通往书库的航线只有他们熟悉。",
+            "en": "Let's find the Skyspine couriers. They know the route to the library."
           }
         }
       ],
@@ -1291,120 +1135,85 @@ export const campaign = {
       "id": "sky:S-01",
       "chapter": "sky",
       "title": {
-        "zh": "断裂的航线",
-        "en": "The Broken Air Route"
+        "zh": "接住风",
+        "en": "Catch the wind"
       },
       "previous": "forge:E-04",
       "lines": [
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "我已经不是小孩子了。",
-            "en": "I'm not a little child anymore."
+            "zh": "接住那个包！里头是去书库的信——哇，你飞得比我第一次好多了！",
+            "en": "Catch that pouch! It's mail for the library—wow, you're better than I was on my first flight!"
+          }
+        },
+        {
+          "speaker": "xiaomao",
+          "text": {
+            "zh": "我的飞翼真的飞起来了！呃……降落好像还需要改进。",
+            "en": "My glider actually flies! Er... the landing might need work."
           }
         },
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "我知道。",
-            "en": "I know."
+            "zh": "远帆，离开外侧风道。那条路不能飞。",
+            "en": "Yuanfan, stay away from the outer wind channel. That route is closed."
           }
         },
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "那你为什么还要替我决定？",
-            "en": "Then why do you keep deciding for me?"
-          }
-        },
-        {
-          "speaker": "lingyu",
-          "text": {
-            "zh": "因为我知道飞出去以后会发生什么。",
-            "en": "Because I know what can happen once you fly out there."
+            "zh": "我画了新航图。你看都没看。",
+            "en": "I drew a new route. You haven't even looked."
           }
         }
       ],
       "requires": [
+        "puzzle:sky-pouch",
         "npc:sky-dispute"
       ],
       "choices": [],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
+      "lineGate": [
+        "puzzle:sky-pouch",
+        "npc:sky-dispute"
+      ],
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "sky:S-02",
       "chapter": "sky",
       "title": {
-        "zh": "飞行记录",
-        "en": "The Flight Record"
+        "zh": "风中的旧记录",
+        "en": "The wind recorder"
       },
       "previous": "sky:S-01",
       "lines": [
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "我以为只要不让你飞，就不会再出事。",
-            "en": "I thought if I stopped you flying, nothing else would go wrong."
+            "zh": "那天是我判断错了风。我一直以为是你太冒险。",
+            "en": "I read the wind wrong that day. I kept telling myself you were reckless."
           }
         },
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "可我已经学会了飞。",
-            "en": "But I've learned to fly."
+            "zh": "我割掉货绳，是为了让我们都能飞回去。",
+            "en": "I cut the cargo rope so both of us could fly home."
           }
         },
         {
-          "speaker": "lingyu",
+          "speaker": "qilan",
           "text": {
-            "zh": "我知道。只是我一直没敢承认。",
-            "en": "I know. I just haven't dared admit it."
+            "zh": "我也曾被岬灯拦在岸上。远帆，选一条你能说明白的航线，我们一起试飞。",
+            "en": "Jiedeng used to keep me ashore too. Yuanfan, choose a route you can explain, and we'll try it together."
           }
         }
       ],
       "requires": [
         "explore:flight-recorder"
-      ],
-      "choices": [],
-      "lineGate": [
-        "explore:flight-recorder"
-      ],
-      "choiceTiming": "afterDialogue"
-    },
-    {
-      "id": "sky:S-03",
-      "chapter": "sky",
-      "title": {
-        "zh": "并肩飞行",
-        "en": "The Joint Flight"
-      },
-      "previous": "sky:S-02",
-      "lines": [
-        {
-          "speaker": "lingyu",
-          "text": {
-            "zh": "这次我不会替你选路线。",
-            "en": "This time I won't choose your route for you."
-          }
-        },
-        {
-          "speaker": "yuanfan",
-          "text": {
-            "zh": "那你跟着我吗？",
-            "en": "Will you fly with me?"
-          }
-        },
-        {
-          "speaker": "lingyu",
-          "text": {
-            "zh": "当然。我又没说不陪你。",
-            "en": "Of course. I never said I wouldn't come along."
-          }
-        }
-      ],
-      "requires": [
-        "puzzle:joint-flight"
       ],
       "choices": [
         {
@@ -1426,107 +1235,137 @@ export const campaign = {
           "method": "escort-flight"
         }
       ],
-      "lineGate": [],
-      "choiceTiming": "beforeAction"
+      "lineGate": [
+        "explore:flight-recorder"
+      ],
+      "choiceTiming": "afterDialogue"
+    },
+    {
+      "id": "sky:S-03",
+      "chapter": "sky",
+      "title": {
+        "zh": "云上的信",
+        "en": "A letter in the clouds"
+      },
+      "previous": "sky:S-02",
+      "lines": [
+        {
+          "speaker": "yuanfan",
+          "text": {
+            "zh": "姐姐，右边有上升气流，我走右边！",
+            "en": "Sis, there's an updraft on the right. I'm taking it!"
+          }
+        },
+        {
+          "speaker": "lingyu",
+          "text": {
+            "zh": "收到。我跟着你，不替你选。",
+            "en": "Understood. I'm following you, not choosing for you."
+          }
+        },
+        {
+          "speaker": "xiaomao",
+          "text": {
+            "zh": "稳住左翼！这次别把我的新螺丝吹走——还有暮铃的围巾！",
+            "en": "Hold the left wing! Don't lose my new screws to the wind this time—or Muling's scarf!"
+          }
+        },
+        {
+          "speaker": "yuanfan",
+          "text": {
+            "zh": "前面就是孤岛的收信站。把包交给收信的伙伴，别让信再飞走啦！",
+            "en": "The isolated island's mail station is ahead. Deliver the pouch to its recipient!"
+          }
+        }
+      ],
+      "requires": [
+        "puzzle:joint-flight",
+        "explore:letter-recipient"
+      ],
+      "choices": [],
+      "lineGate": [
+        "puzzle:joint-flight"
+      ],
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "sky:S-04",
       "chapter": "sky",
       "title": {
-        "zh": "暮铃未寄出的回答",
-        "en": "Muling's Unsent Answer"
+        "zh": "留着的那杯茶",
+        "en": "A cup for someone missing"
       },
       "previous": "sky:S-03",
       "lines": [
         {
           "speaker": "player",
           "text": {
-            "zh": "你为什么总收集这些坏掉的东西？",
-            "en": "Why do you always collect broken things?"
+            "zh": "你旅行这么久，是在找什么吗？",
+            "en": "You've traveled a long time. Are you looking for something?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "因为它们曾经有用。",
-            "en": "Because they were useful once."
+            "zh": "有个朋友说过，等事情结束，我们就回花园喝茶。我等了很久。",
+            "en": "A friend once said we'd go back to the garden for tea when it was all over. I've waited a long time."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "修好了呢？",
-            "en": "And if you fix them?"
+            "zh": "找到了呢？",
+            "en": "What if you find them?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "就可以继续响。",
-            "en": "They can ring again."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "如果修不好？",
-            "en": "What if you can't fix them?"
+            "zh": "那就请他们喝茶。以前有人教过我，铃响两次就知道彼此平安。",
+            "en": "I'll invite them for tea. Someone once taught me that two bell notes mean we're both safe."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "那就留下来。",
-            "en": "Then I'll keep them."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你在等谁？",
-            "en": "Who are you waiting for?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "一个我以为会回来的家伙。",
-            "en": "Someone I thought would come back."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "他没有回来？",
-            "en": "They never came back?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "没有。",
-            "en": "No."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "那你还等吗？",
-            "en": "Are you still waiting?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "……我不知道。",
-            "en": "...I don't know."
+            "zh": "……你喝茶也总是先闻一下。没什么，我们继续走吧。",
+            "en": "...You always smell your tea first, too. Never mind. Let's keep going."
           }
         }
       ],
       "requires": [
         "npc:broken-pendant"
       ],
-      "choices": [],
+      "choices": [
+        {
+          "id": "joke",
+          "npc": "muling",
+          "method": "tea-joke",
+          "label": {
+            "zh": "等找到朋友，我们三个一起喝茶",
+            "en": "When you find them, all three of us can have tea"
+          }
+        },
+        {
+          "id": "company",
+          "npc": "muling",
+          "method": "tea-company",
+          "label": {
+            "zh": "安静地陪她坐一会儿",
+            "en": "Sit with her for a while"
+          }
+        },
+        {
+          "id": "search",
+          "npc": "muling",
+          "method": "tea-search",
+          "label": {
+            "zh": "愿意陪你一起找",
+            "en": "I'll help you look"
+          }
+        }
+      ],
       "lineGate": [],
       "choiceTiming": "afterDialogue"
     },
@@ -1534,94 +1373,181 @@ export const campaign = {
       "id": "sky:S-05",
       "chapter": "sky",
       "title": {
-        "zh": "第四段旋律",
-        "en": "The Fourth Melody"
+        "zh": "风把信送到了",
+        "en": "The mail arrives"
       },
       "previous": "sky:S-04",
-      "lines": [],
+      "lines": [
+        {
+          "speaker": "yuanfan",
+          "text": {
+            "zh": "第一条正式航线！我想继续往书库送信，你们愿意带上我吗？",
+            "en": "My first official route! I'd like to carry letters to the library. Will you take me along?"
+          }
+        },
+        {
+          "speaker": "lingyu",
+          "text": {
+            "zh": "记得带备用绳。我留在这里照看航线；你们回来，我再带你们练飞行。",
+            "en": "Remember a spare rope. I'll tend the routes here; come back whenever you want to practice flying."
+          }
+        },
+        {
+          "speaker": "yuanfan",
+          "text": {
+            "zh": "书库回信了！你在港口唱的音是旧守铃人的信号。还有一次信号，就在最近的失忆发生前。",
+            "en": "The library replied! Your harbor note was an old bellkeeper's signal. Another signal was recorded just before the recent memory loss."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "那份记录还在？……我们得去书库。",
+            "en": "That record still exists? ...We need to go to the library."
+          }
+        }
+      ],
       "requires": [
         "repair:sky",
         "melody:sky"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": [
+        "repair:sky",
+        "melody:sky"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
       "id": "library:M-01",
       "chapter": "library",
       "title": {
-        "zh": "封存档案",
-        "en": "The Sealed Archive"
+        "zh": "本该存在的一页",
+        "en": "A page that should exist"
       },
       "previous": "sky:S-05",
       "lines": [
         {
-          "speaker": "moye",
-          "text": {
-            "zh": "不是所有真相都适合一次性公开。",
-            "en": "Not every truth should be made public all at once."
-          }
-        },
-        {
           "speaker": "baikan",
           "text": {
-            "zh": "不公开，错误就会继续发生。",
-            "en": "If we don't make it public, mistakes will keep happening."
+            "zh": "这本书的目录说这里有一位守铃人的记录。可正文少了一页。",
+            "en": "The index lists a bellkeeper's record here. But the page is missing."
           }
         },
         {
           "speaker": "moye",
           "text": {
-            "zh": "有些记录会伤害还活着的人。",
-            "en": "Some records will hurt people who are still alive."
+            "zh": "那部分封存了。里面有活着的猫的私人记忆。",
+            "en": "That section is sealed. It contains personal memories of cats still alive."
+          }
+        },
+        {
+          "speaker": "yuanfan",
+          "text": {
+            "zh": "我是送信来的。回信提到一个没有署名的信号——会不会和我们一路遇见的失忆有关？",
+            "en": "I'm delivering letters. Your reply mentioned an unsigned signal. Could it explain the memory loss we've seen?"
           }
         },
         {
           "speaker": "baikan",
           "text": {
-            "zh": "被隐藏的记录也会。",
-            "en": "So will records we hide."
+            "zh": "那就先查能核实的事实。别把别人的回忆当证据乱拿。",
+            "en": "Then let's start with verifiable facts. We can't just take other cats' memories as evidence."
           }
         }
       ],
       "requires": [
-        "npc:archive-dispute"
+        "npc:archive-dispute",
+        "explore:sealed-archive"
       ],
-      "choices": [],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
+      "choices": [
+        {
+          "id": "open",
+          "label": {
+            "zh": "公开已核实的公共历史（保护私人记忆）",
+            "en": "Publish verified public history (protect private memories)"
+          },
+          "npc": "baikan",
+          "method": "full-records"
+        },
+        {
+          "id": "review",
+          "label": {
+            "zh": "先请相关家庭审阅个人档案",
+            "en": "Let affected families review personal records first"
+          },
+          "npc": "moye",
+          "method": "verified-records"
+        }
+      ],
+      "lineGate": [
+        "npc:archive-dispute",
+        "explore:sealed-archive"
+      ],
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "library:M-02",
       "chapter": "library",
       "title": {
-        "zh": "镜厅",
-        "en": "The Mirror Rooms"
+        "zh": "不会记住你的镜子",
+        "en": "The mirror that lies"
       },
       "previous": "library:M-01",
-      "lines": [],
+      "lines": [
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "它记得声音，却不知道声音是谁发出来的。",
+            "en": "It remembers the sound but doesn't know who made it."
+          }
+        },
+        {
+          "speaker": "baikan",
+          "text": {
+            "zh": "空白回响就是这样。它会模仿记忆，却不会理解记忆。",
+            "en": "That's the Hollow Echo. It can imitate a memory without understanding it."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "别靠太近。它会模仿你熟悉的声音，我先把镜面固定住。",
+            "en": "Don't get too close. It can imitate voices you know. I'll secure the mirror."
+          }
+        }
+      ],
       "requires": [
-        "puzzle:mirror-records"
+        "puzzle:library-reflections",
+        "puzzle:mirror-records",
+        "puzzle:library-echo",
+        "battle:library-echo"
       ],
       "choices": [],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
+      "lineGate": [
+        "puzzle:library-reflections",
+        "puzzle:mirror-records",
+        "puzzle:library-echo",
+        "battle:library-echo"
+      ],
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "library:M-03",
       "chapter": "library",
       "title": {
-        "zh": "身份揭晓",
-        "en": "The Identity Reveal"
+        "zh": "你早就认识我",
+        "en": "You knew my name"
       },
       "previous": "library:M-02",
       "lines": [
         {
           "speaker": "player",
           "text": {
-            "zh": "壁画上的那只猫……是你？",
-            "en": "That cat in the mural... is that you?"
+            "zh": "画里这只猫……是我？",
+            "en": "That cat in the mural… is me?"
           }
         },
         {
@@ -1634,165 +1560,139 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "你认识我？",
-            "en": "You know me?"
+            "zh": "旁边是你。你从花园见到我时就认识我？",
+            "en": "And that's you beside me. You knew me when we met in the garden?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "从你还会把铃铛挂反的时候就认识。",
-            "en": "Since you used to hang bells upside down."
+            "zh": "……认识。我们以前一起守过星铃。",
+            "en": "…I did. We used to tend the Star Bell together."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那你为什么一直不说？",
-            "en": "Then why didn't you ever tell me?"
+            "zh": "那我是谁？",
+            "en": "Then who am I?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "因为我害怕。",
-            "en": "Because I was afraid."
+            "zh": "你是第一位守铃人。当年为了让灾难停下来，你把自己的名字和记忆留在了星铃里。",
+            "en": "You were the First Bellkeeper. To stop the disaster, you left your name and memories inside the Star Bell."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "怕什么？",
-            "en": "Of what?"
+            "zh": "为什么不告诉我？",
+            "en": "Why didn't you tell me?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "怕你想起一切之后，再一次做出那个决定。",
-            "en": "That once you remembered everything, you'd make that same choice again."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "我当年做了什么？",
-            "en": "What did I do back then?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "你把自己留在了星铃里。",
-            "en": "You left yourself inside the Star Bell."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你看着我这么做？",
-            "en": "You watched me do it?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "是。",
-            "en": "Yes."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你为什么不拦住我？",
-            "en": "Why didn't you stop me?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我拦了。",
-            "en": "I tried."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我没能拦住。",
-            "en": "I couldn't stop you."
+            "zh": "我怕你知道之后，又会做一样的选择。",
+            "en": "I was afraid that once you knew, you'd make the same choice again."
           }
         }
       ],
       "requires": [
         "npc:identity-confrontation"
       ],
-      "choices": [],
-      "lineGate": [],
+      "choices": [
+        {
+          "id": "details",
+          "npc": "muling",
+          "method": "identity-details",
+          "label": {
+            "zh": "我想知道更多事实",
+            "en": "I want to know more"
+          }
+        },
+        {
+          "id": "hurt",
+          "npc": "muling",
+          "method": "identity-hurt",
+          "label": {
+            "zh": "我觉得受伤",
+            "en": "I feel hurt"
+          }
+        },
+        {
+          "id": "space",
+          "npc": "muling",
+          "method": "identity-space",
+          "label": {
+            "zh": "我需要一点时间",
+            "en": "I need some time"
+          }
+        }
+      ],
+      "lineGate": [
+        "npc:identity-confrontation"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
       "id": "library:M-04",
       "chapter": "library",
       "title": {
-        "zh": "背叛揭晓",
-        "en": "The Betrayal Reveal"
+        "zh": "六条路都指向中央",
+        "en": "All the arrows point inward"
       },
       "previous": "library:M-03",
       "lines": [
         {
-          "speaker": "player",
+          "speaker": "baikan",
           "text": {
-            "zh": "六地的记忆危机，是你造成的？",
-            "en": "You're the reason the six regions are losing memories?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "是我让封印逐渐松动。",
-            "en": "I gradually loosened the seal."
+            "zh": "这些不是旧图。上面是最近的修复日期。",
+            "en": "These aren't old maps. They show recent repair dates."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "你知道会发生什么？",
-            "en": "You knew what would happen?"
+            "zh": "暮铃，港口、森林、炉城……每次修好之后，都是你把线路拨过去的？",
+            "en": "Muling, the harbor, the forest, the forge… you redirected each route after we fixed it?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我知道记忆会开始流失。我以为圣所恢复后就能修复。",
-            "en": "I knew memories would start to slip away. I thought I could repair it once the sanctuaries recovered."
+            "zh": "是。我需要它们通向中央。",
+            "en": "Yes. I needed them to lead to the center."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "你把所有人置于危险之中。",
-            "en": "You put everyone in danger."
+            "zh": "最近的失忆，也是你做的？",
+            "en": "And the forgetting that's happening now—was that you too?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我知道。",
-            "en": "I know."
+            "zh": "我松开了封印。我知道会有风险，以为来得及补救。",
+            "en": "I loosened the seal. I knew there was a risk. I thought I could fix it in time."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "为了让我回来？",
-            "en": "To bring me back?"
+            "zh": "栖蓝说过，那位渔夫连自己的家门都不认识。你听到的时候，就已经知道原因了吗？",
+            "en": "Qilan told us about a fisherman who couldn't recognize his own door. When you heard that, did you already know why?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "是。",
-            "en": "Yes."
+            "zh": "知道。我只是……太想让你回来了。",
+            "en": "I knew. I just... wanted you back so badly."
           }
         }
       ],
@@ -1837,336 +1737,117 @@ export const campaign = {
       "id": "library:M-05",
       "chapter": "library",
       "title": {
-        "zh": "两条路线",
-        "en": "The Two Routes"
+        "zh": "两条回家的路",
+        "en": "The two ways home"
       },
       "previous": "library:M-04",
       "lines": [
         {
-          "speaker": "player",
+          "speaker": "moye",
           "text": {
-            "zh": "如果走中央路线，他们都会失去记忆？",
-            "en": "If we use the central route, they'll all lose their memories?"
+            "zh": "两条路线的原件都在这里。我留下保管档案。白栞，把核实过的记录带去星坠原。",
+            "en": "Both original route plans are here. I'll safeguard the archives. Baikan, take the verified records to Starfall."
           }
         },
         {
-          "speaker": "muling",
+          "speaker": "baikan",
           "text": {
-            "zh": "是。",
-            "en": "Yes."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "包括你？",
-            "en": "Including you?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "包括我。",
-            "en": "Including me."
+            "zh": "中央路线能替换封印，却会把每只猫的记忆混在一起。",
+            "en": "The inward route can replace the seal, but it would merge every cat's memories."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "你还准备这么做？",
-            "en": "You're still going to do it?"
+            "zh": "所以就算我想起来了，港口那只猫也会忘记家？",
+            "en": "So even if I remember everything, the cat at the harbor would forget home?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我没有找到更可靠的办法。",
-            "en": "I haven't found a more reliable way."
+            "zh": "是……我试过修另一条路线。修了很多年，没有一次收到完整的回应。",
+            "en": "Yes… I tried to repair the other route. For years, I never got a complete set of replies."
+          }
+        },
+        {
+          "speaker": "baikan",
+          "text": {
+            "zh": "你们带来的航图、炉城图纸和信件不是传说。它们能互相核实。我跟你们去验证最后一段。",
+            "en": "Your charts, furnace plans, and letters aren't legends. They corroborate one another. I'll come help verify the final route."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "我不能拿你的命运赌一次还没验证的方案。我先去星坠原，你们……不用等我。",
+            "en": "I can't gamble your fate on an untested route. I'll go ahead to Starfall. You... don't have to wait for me."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "你不能替他们决定。",
-            "en": "You can't decide for them."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我知道你会这么说。",
-            "en": "I knew you'd say that."
+            "zh": "我想找回我的名字，但不是用其他猫的名字来换。走吧，白栞。还有一条路没试过。",
+            "en": "I want my name back, but not at the cost of everyone else's. Come on, Baikan. There's one route we haven't tried."
           }
         }
       ],
       "requires": [
         "npc:two-routes",
+        "puzzle:two-route-model",
         "repair:library",
         "melody:library"
       ],
-      "choices": [
-        {
-          "id": "open",
-          "label": {
-            "zh": "立即公开档案",
-            "en": "Release all records now"
-          },
-          "npc": "baikan",
-          "method": "full-records"
-        },
-        {
-          "id": "review",
-          "label": {
-            "zh": "让相关家庭先审阅个人档案",
-            "en": "Let affected families review personal records first"
-          },
-          "npc": "moye",
-          "method": "verified-records"
-        }
+      "choices": [],
+      "lineGate": [
+        "npc:two-routes",
+        "puzzle:two-route-model"
       ],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "starfall:F-01",
       "chapter": "starfall",
       "title": {
-        "zh": "中央控制之争",
-        "en": "The Central-Control Dispute"
+        "zh": "走不出星原的商队",
+        "en": "The caravan that cannot leave"
       },
       "previous": "library:M-05",
       "lines": [
         {
-          "speaker": "xingya",
-          "text": {
-            "zh": "分散决策只会让错误变多。",
-            "en": "Spreading decisions around will only multiply mistakes."
-          }
-        },
-        {
           "speaker": "lichuan",
           "text": {
-            "zh": "把所有决定交给一个人，只会让错误变得更大。",
-            "en": "Giving all decisions to one person only makes mistakes bigger."
+            "zh": "第三次了。那颗假星总把我们带回原地。",
+            "en": "Third time. That false star keeps bringing us back here."
           }
         },
         {
           "speaker": "xingya",
           "text": {
-            "zh": "你根本不相信系统。",
-            "en": "You don't trust the system at all."
+            "zh": "接上统一控制器，所有路标就能用同一个数据。",
+            "en": "Connect one controller and every beacon can use the same data."
           }
         },
         {
           "speaker": "lichuan",
           "text": {
-            "zh": "我不相信没有人能回应的系统。",
-            "en": "I don't trust a system no one can answer."
+            "zh": "上一个统一的东西坏了，我们就走不出去。能不能让每个营地自己确认方向？",
+            "en": "The last single system broke and we got stranded. Could each camp confirm its own bearings?"
+          }
+        },
+        {
+          "speaker": "baikan",
+          "text": {
+            "zh": "先让商队脱险。我带着五地的记录，栖蓝认得真航标；等大家安全，再验证两种路线。",
+            "en": "Let's get the caravan to safety. I have records from five lands, and Qilan knows real beacons. Once they're safe, we'll test the two routes."
           }
         }
       ],
       "requires": [
-        "npc:central-dispute"
-      ],
-      "choices": [],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
-    },
-    {
-      "id": "starfall:F-02",
-      "chapter": "starfall",
-      "title": {
-        "zh": "星坠记录",
-        "en": "The Starfall Record"
-      },
-      "previous": "starfall:F-01",
-      "lines": [],
-      "requires": [
-        "puzzle:star-map",
-        "explore:catastrophe-record"
-      ],
-      "choices": [],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
-    },
-    {
-      "id": "starfall:F-03",
-      "chapter": "starfall",
-      "title": {
-        "zh": "暮铃的计划",
-        "en": "Muling's Plan"
-      },
-      "previous": "starfall:F-02",
-      "lines": [
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我知道你已经看见了。",
-            "en": "I know you've seen it now."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你准备把所有猫咪的记忆送进中央星铃。",
-            "en": "You're going to send every cat's memories into the Star Bell."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "是。",
-            "en": "Yes."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "让他们失去自己的一生，只为了让我回来？",
-            "en": "Make them lose their entire lives just to bring me back?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我不想让你永远留在那个地方。",
-            "en": "I don't want you to stay in that place forever."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "我当年选择了这么做。",
-            "en": "I chose to do that."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我知道。",
-            "en": "I know."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你不尊重我的选择。",
-            "en": "You don't respect my choice."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我尊重过。然后我等了这么多年。",
-            "en": "I did. And then I waited all those years."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "所以你决定替所有人做选择？",
-            "en": "So you've decided to choose for everyone?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我愿意承担代价。",
-            "en": "I'm willing to bear the cost."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你不能替他们承担他们自己的记忆。",
-            "en": "You can't bear the cost of their memories for them."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "如果我不这么做，最后所有人都会失去一切。",
-            "en": "If I don't, everyone will lose everything in the end."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你怎么知道？",
-            "en": "How do you know?"
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "因为我已经找了这么多年。",
-            "en": "Because I've searched for years."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你只是再也不相信他们能做到。",
-            "en": "You've just stopped believing they can do it."
-          }
-        }
-      ],
-      "requires": [
-        "npc:central-ruin"
-      ],
-      "choices": [],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
-    },
-    {
-      "id": "starfall:F-04",
-      "chapter": "starfall",
-      "title": {
-        "zh": "归环成为可能",
-        "en": "The Ring Becomes Possible"
-      },
-      "previous": "starfall:F-03",
-      "lines": [
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你说他们不能互相回应。",
-            "en": "You said they couldn't answer one another."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "一次回应不代表永远稳定。",
-            "en": "One answer doesn't mean it will last forever."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "那就让他们继续回应。",
-            "en": "Then let them keep answering."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "你还是和以前一样。",
-            "en": "You're still the same as before."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "不一样了。这次我不是一个人。",
-            "en": "I'm not. This time I'm not alone."
-          }
-        }
-      ],
-      "requires": [
-        "puzzle:distributed-routing",
-        "repair:starfall",
-        "melody:starfall"
+        "npc:central-dispute-lichuan",
+        "npc:central-dispute",
+        "puzzle:caravan-route"
       ],
       "choices": [
         {
@@ -2189,47 +1870,225 @@ export const campaign = {
         }
       ],
       "lineGate": [
+        "npc:central-dispute-lichuan",
+        "npc:central-dispute",
+        "puzzle:caravan-route"
+      ],
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
+    },
+    {
+      "id": "starfall:F-02",
+      "chapter": "starfall",
+      "title": {
+        "zh": "星铃破碎的那一天",
+        "en": "The day the bell broke"
+      },
+      "previous": "starfall:F-01",
+      "lines": [
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "再给我们一点时间。我们还可以一起找办法！",
+            "en": "Give us more time. We can still find a way together!"
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "港口已经有猫认不出家人了。再等下去，会有更多猫失去自己。",
+            "en": "Cats at the harbor can no longer recognize their families. If we wait, more will lose themselves."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "那让我跟你一起去。",
+            "en": "Then let me go with you."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "这次需要一个固定的记忆来稳住星铃。我愿意留下自己的。",
+            "en": "This time the bell needs one fixed memory reference to stabilize it. I'm choosing to leave mine."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "那你答应我，别放弃回来的办法。",
+            "en": "Then promise you won't give up on finding a way back."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "我答应你。",
+            "en": "I promise."
+          }
+        }
+      ],
+      "requires": [
+        "explore:crater-fragment",
+        "puzzle:echo-navigation",
+        "puzzle:star-map",
+        "explore:ruin-fragment",
+        "explore:catastrophe-record",
+        "cinematic:starfall-memory"
+      ],
+      "choices": [],
+      "lineGate": [
+        "explore:crater-fragment",
+        "puzzle:echo-navigation",
+        "puzzle:star-map",
+        "explore:ruin-fragment",
+        "explore:catastrophe-record"
+      ],
+      "choiceTiming": "afterDialogue"
+    },
+    {
+      "id": "starfall:F-03",
+      "chapter": "starfall",
+      "title": {
+        "zh": "被她记错的约定",
+        "en": "The promise she kept wrong"
+      },
+      "previous": "starfall:F-02",
+      "lines": [
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "我记起来了。我说过会想办法回来，从没说过你必须一个人救我。",
+            "en": "I remember. I promised to find a way back. I never said you had to save me alone."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "我守着那个花园，一年又一年。每次试着接通六地，都没有完整的回应。我不能再看着你消失。",
+            "en": "I waited in that garden year after year. Every attempt to connect the six lands failed to get a full reply. I can't watch you disappear again."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "你把所有猫的记忆送进星铃，就能换出我的？",
+            "en": "If you send every cat's memories into the bell, you can release mine?"
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "可以。封印会稳定，你会记起来。包括我的记忆在内，其他猫都会失去属于自己的过去。",
+            "en": "Yes. The seal will stabilize and you'll remember. Every other cat, including me, will lose their own past."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "那不是你一个人的代价。港口的家、森林的朋友、我们走过的路，都不是你可以替他们放弃的东西。",
+            "en": "That's not a cost you bear alone. Homes at the harbor, friends in the forest, the roads we traveled—none of them are yours to give up for others."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "我每天都泡两杯茶。如果这次又失败，我还能等到你吗？",
+            "en": "I make two cups of tea every day. If this fails again, will you ever come home?"
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "这一次，有那么多伙伴陪我一起走。先听听他们的回答，好吗？",
+            "en": "This time, I have so many friends walking with me. Let's hear their answers first, all right?"
+          }
+        }
+      ],
+      "requires": [
+        "npc:central-ruin"
+      ],
+      "choices": [],
+      "lineGate": [
+        "npc:central-ruin"
+      ],
+      "choiceTiming": "afterDialogue"
+    },
+    {
+      "id": "starfall:F-04",
+      "chapter": "starfall",
+      "title": {
+        "zh": "世界正在回答",
+        "en": "The world answers"
+      },
+      "previous": "starfall:F-03",
+      "lines": [
+        {
+          "speaker": "qilan",
+          "text": {
+            "zh": "港口听见星原的铃声了！岬灯说灯塔也在回应。大家都准备好了。",
+            "en": "Harbor heard Starfall's bell! Jiedeng says the lighthouse is answering too. Everyone is ready."
+          }
+        },
+        {
+          "speaker": "lichuan",
+          "text": {
+            "zh": "商队安全回来了。我在路上听见了另外几座圣所的铃声——不是幻象。",
+            "en": "The caravan returned safely. On the way I heard the bells of the other sanctuaries—they weren't illusions."
+          }
+        },
+        {
+          "speaker": "xingya",
+          "text": {
+            "zh": "六座圣所都在回应！就像六只猫在合唱，每个声音不同，却能一起唱下去。",
+            "en": "All six sanctuaries are answering! Like six cats singing together, every voice is different, yet they can carry the song."
+          }
+        }
+      ],
+      "requires": [
+        "battle:observatory-echo",
         "puzzle:distributed-routing",
         "repair:starfall",
         "melody:starfall"
       ],
-      "choiceTiming": "beforeAction"
+      "choices": [],
+      "lineGate": [
+        "battle:observatory-echo",
+        "puzzle:distributed-routing",
+        "repair:starfall",
+        "melody:starfall"
+      ],
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "starfall:F-05",
       "chapter": "starfall",
       "title": {
-        "zh": "最后的逆响",
-        "en": "The Last Inward Call"
+        "zh": "最后一声向内的铃",
+        "en": "One last inward call"
       },
       "previous": "starfall:F-04",
       "lines": [
         {
-          "speaker": "muling",
-          "text": {
-            "zh": "跟我回来。",
-            "en": "Come back with me."
-          }
-        },
-        {
           "speaker": "player",
           "text": {
-            "zh": "我已经回来了。",
-            "en": "I've already come back."
+            "zh": "六地都回应了。你看，这些不是试音，是他们真的在互相帮忙。",
+            "en": "All six answered. Look—these aren't test tones. They're actually helping one another."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "那就跟我回到以前。",
-            "en": "Then come back to the way things were."
+            "zh": "我看见了。可是中央一旦震荡，那些回应还撑得住吗？我不能在没有验证前放弃封印。",
+            "en": "I see. But can those replies hold when the center begins to shake? I can't abandon the seal before we know."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "以前已经过去了。",
-            "en": "Those days are gone."
+            "zh": "那就在这里验证。别再一个人替所有猫决定。",
+            "en": "Then we'll prove it here. Stop deciding for everyone on your own."
           }
         }
       ],
@@ -2244,68 +2103,97 @@ export const campaign = {
       "id": "finale:B-01",
       "chapter": "finale",
       "title": {
-        "zh": "逆响守铃者暮铃",
-        "en": "Phase One: Muling, the Reverse Bellkeeper"
+        "zh": "不要替我选择",
+        "en": "Don't make the choice for me"
       },
       "previous": "starfall:F-05",
       "lines": [
         {
           "speaker": "muling",
           "text": {
-            "zh": "你为什么总是先看别人？",
-            "en": "Why do you always look at everyone else first?"
+            "zh": "别碰最后的锁！封印还没有稳定！",
+            "en": "Don't touch the last lock! The seal isn't stable yet!"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "因为他们就在我身边。",
-            "en": "Because they're right here beside me."
+            "zh": "我不会毁掉封印。我会把路留给其他猫。",
+            "en": "I'm not destroying the seal. I'm leaving a path for the others."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "这次看着我！",
-            "en": "Look at me this time!"
+            "zh": "你又要冒险——",
+            "en": "You're risking yourself again—"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "我一直在看你。",
-            "en": "I've been looking at you all along."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "也看见了你做过的事。",
-            "en": "I've also seen what you've done."
+            "zh": "你听，港口的灯还亮着。大家都在等我们的回答。我不是一个人来的。",
+            "en": "Listen. The harbor light is still burning. Everyone is waiting for our answer. I didn't come alone."
           }
         }
       ],
       "requires": [
         "battle:inward-gates"
       ],
-      "choices": [],
-      "lineGate": [],
+      "choices": [
+        {
+          "id": "stop",
+          "npc": "muling",
+          "method": "final-stop",
+          "label": {
+            "zh": "暮铃，停下来听听大家的声音",
+            "en": "Muling, stop and hear everyone"
+          }
+        },
+        {
+          "id": "challenge",
+          "npc": "muling",
+          "method": "final-challenge",
+          "label": {
+            "zh": "不要再替我和别人做决定",
+            "en": "Don't decide for me or anyone else"
+          }
+        }
+      ],
+      "lineGate": [
+        "battle:inward-gates"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
       "id": "finale:B-02",
       "chapter": "finale",
       "title": {
-        "zh": "空白回响",
-        "en": "Phase Two: The Hollow Echo"
+        "zh": "模仿不等于回应",
+        "en": "A copy cannot answer"
       },
       "previous": "finale:B-01",
       "lines": [
         {
           "speaker": "muling",
           "text": {
-            "zh": "别看它的脸！看它做了什么！",
-            "en": "Don't look at its face! Look at what it did!"
+            "zh": "空白回响：“我会在这里等你。”",
+            "en": "Hollow Echo: “I'll wait for you here.”"
+          },
+          "narration": true
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "那句话我听过。可你不知道自己在等谁。",
+            "en": "I've heard those words. But you don't know who you're waiting for."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "听它的节拍！它只会重复，不会等你回应。",
+            "en": "Listen to its rhythm! It can repeat, but it can't wait for your answer."
           }
         }
       ],
@@ -2313,44 +2201,81 @@ export const campaign = {
         "battle:identify-echo"
       ],
       "choices": [],
-      "lineGate": [],
+      "lineGate": [
+        "battle:identify-echo"
+      ],
       "choiceTiming": "afterDialogue"
     },
     {
       "id": "finale:B-03",
       "chapter": "finale",
       "title": {
-        "zh": "六音归环",
-        "en": "Phase Three: Six Notes Return"
+        "zh": "六个真实的回答",
+        "en": "Six living replies"
       },
       "previous": "finale:B-02",
       "lines": [
         {
+          "speaker": "qilan",
+          "text": {
+            "zh": "港口收到星原的信号！灯路正常！",
+            "en": "Harbor has Starfall's signal! Beacon steady!"
+          }
+        },
+        {
+          "speaker": "yahe",
+          "text": {
+            "zh": "上面和下面都收到啦！",
+            "en": "Both upper and lower settlements received it!"
+          }
+        },
+        {
+          "speaker": "xiaomao",
+          "text": {
+            "zh": "压力稳定！这次是我们一起验证的！",
+            "en": "Pressure steady! We verified it together this time!"
+          }
+        },
+        {
+          "speaker": "yuanfan",
+          "text": {
+            "zh": "信号送到了，回信也到了！",
+            "en": "Signal delivered—and the reply's back!"
+          }
+        },
+        {
+          "speaker": "baikan",
+          "text": {
+            "zh": "是真正的回应，不是回响复制的！",
+            "en": "Genuine replies, not copies!"
+          }
+        },
+        {
+          "speaker": "xingya",
+          "text": {
+            "zh": "六地的读数可以互相校验！",
+            "en": "All six sets of readings can check one another!"
+          }
+        },
+        {
           "speaker": "muling",
           "text": {
-            "zh": "他们真的……还记得彼此。",
-            "en": "They really... still remember each other."
+            "zh": "真的……没有谁被混在一起。",
+            "en": "It's real… no one's memories are being merged."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "他们一直都可以。",
-            "en": "They always could."
+            "zh": "只差你的那把锁。你可以自己决定打开它。",
+            "en": "Only your lock remains. You can choose to open it."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我以为已经太迟了。",
-            "en": "I thought it was already too late."
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "你只是没有再给他们机会。",
-            "en": "You just stopped giving them a chance."
+            "zh": "我来。这次不替任何猫选。",
+            "en": "I'll do it. This time I won't choose for anyone else."
           }
         }
       ],
@@ -2368,51 +2293,37 @@ export const campaign = {
       "id": "finale:B-04",
       "chapter": "finale",
       "title": {
-        "zh": "最后一音",
-        "en": "The Final Note"
+        "zh": "星铃重新响了",
+        "en": "The bell rings normally"
       },
       "previous": "finale:B-03",
       "lines": [
         {
           "speaker": "muling",
           "text": {
-            "zh": "我以为……只要你回来就好了。",
-            "en": "I thought... everything would be fine if only you came back."
+            "zh": "你……还记得我吗？",
+            "en": "Do you… remember me?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "我回来了。",
-            "en": "I'm back."
+            "zh": "记得。还有那两杯茶。我们说好要回花园的。",
+            "en": "I remember. And those two cups of tea. We promised we'd return to the garden."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "可是我做了那么多错事。",
-            "en": "But I've done so much wrong."
+            "zh": "还有我做错的事。",
+            "en": "And the things I did wrong."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "我知道。",
-            "en": "I know."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "你还愿意让我留下吗？",
-            "en": "Would you still let me stay?"
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "这次，我们一起决定以后怎么走。",
-            "en": "This time, let's decide together where we go from here."
+            "zh": "也记得。回去吧，茶凉了可以再泡，其他事我们慢慢做。",
+            "en": "I remember that too. Let's go home. Cold tea can be brewed again. We'll work on the rest, little by little."
           }
         }
       ],
@@ -2427,54 +2338,107 @@ export const campaign = {
       "id": "epilogue:E-01",
       "chapter": "epilogue",
       "title": {
-        "zh": "六地回应",
-        "en": "Six Regions Answer"
+        "zh": "我们走过的路",
+        "en": "The roads we made"
       },
       "previous": "finale:B-04",
-      "lines": [],
+      "lines": [
+        {
+          "speaker": "qilan",
+          "text": {
+            "zh": "下一班船去森林。你要搭个便船吗？",
+            "en": "Next boat's for the forest. Want a ride?"
+          }
+        },
+        {
+          "speaker": "yuchuan",
+          "text": {
+            "zh": "今天上面的人来帮我们检查水闸。等六地的修复安稳了，再回来找我和老伙伴们，我们也想跟你们旅行一趟。",
+            "en": "The cats above came to check the gates today. Once the repairs are stable, return to me and the other residents. We'd like to travel with you too."
+          }
+        }
+      ],
       "requires": [
+        "npc:regional-reunion",
         "cinematic:regional-reunion"
       ],
       "choices": [],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
+      "lineGate": [
+        "npc:regional-reunion"
+      ],
+      "choiceTiming": "afterDialogue",
+      "orderedRequires": true
     },
     {
       "id": "epilogue:E-02",
       "chapter": "epilogue",
       "title": {
-        "zh": "暮铃承担责任",
-        "en": "Muling Takes Responsibility"
+        "zh": "道歉之后",
+        "en": "An apology with work attached"
       },
       "previous": "epilogue:E-01",
       "lines": [
         {
           "speaker": "muling",
           "text": {
-            "zh": "是我削弱了封印。我原本打算将每只猫的记忆汇入中央星铃。",
-            "en": "I weakened the seal. I intended to merge every cat's memories into the Star Bell."
+            "zh": "封印是我松开的。把大家的记忆汇进星铃的计划也是我的。不是意外。",
+            "en": "I loosened the seal. The plan to merge your memories into the Star Bell was mine. It wasn't an accident."
+          }
+        },
+        {
+          "speaker": "jiedeng",
+          "text": {
+            "zh": "先把受影响的航路修好。信任的事，以后慢慢说。",
+            "en": "Repair the damaged routes first. Trust will take longer."
+          }
+        },
+        {
+          "speaker": "yahe",
+          "text": {
+            "zh": "我愿意一起修水道。但有些猫还没准备好见你。",
+            "en": "I'll help repair the waterways. Some cats aren't ready to see you yet."
           }
         },
         {
           "speaker": "muling",
-          "narration": true,
           "text": {
-            "zh": "有些猫很愤怒。另一些愿意和暮铃继续合作，却还没有准备好原谅她。",
-            "en": "Some cats are angry. Others are willing to work beside Muling, but are not ready to forgive her."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "我接受你们的决定。我不会要求你们原谅我，也不会要求任何回报。",
-            "en": "I accept your decisions. I will not ask you to forgive me, or ask for anything in return."
+            "zh": "我会尊重他们的决定。能做的修复，我会做完。",
+            "en": "I'll respect their choices. I'll finish the repairs I can make."
           }
         }
       ],
       "requires": [
         "npc:public-accountability"
       ],
-      "choices": [],
+      "choices": [
+        {
+          "id": "listen",
+          "npc": "muling",
+          "method": "accountability-listen",
+          "label": {
+            "zh": "听完各地伙伴的意见",
+            "en": "Listen to the residents"
+          }
+        },
+        {
+          "id": "help",
+          "npc": "muling",
+          "method": "accountability-help",
+          "label": {
+            "zh": "陪她完成第一次修复",
+            "en": "Join her first repair"
+          }
+        },
+        {
+          "id": "space",
+          "npc": "muling",
+          "method": "accountability-space",
+          "label": {
+            "zh": "给大家留一点时间",
+            "en": "Give everyone some time"
+          }
+        }
+      ],
       "lineGate": [],
       "choiceTiming": "afterDialogue"
     },
@@ -2482,51 +2446,30 @@ export const campaign = {
       "id": "epilogue:E-03",
       "chapter": "epilogue",
       "title": {
-        "zh": "阳光花园",
-        "en": "Sunlit Garden"
+        "zh": "花园的第二把钥匙",
+        "en": "A key for the garden"
       },
       "previous": "epilogue:E-02",
       "lines": [
         {
           "speaker": "muling",
           "text": {
-            "zh": "你还记得我吗？",
-            "en": "Do you still remember me?"
+            "zh": "你还愿意让我留下吗？",
+            "en": "Would you still let me stay?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "记得。",
-            "en": "I do."
+            "zh": "愿意。以后出发前，记得问我要不要一起去。",
+            "en": "I do. Next time you set off, remember to ask if I'd like to come along."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "也记得我做过什么？",
-            "en": "And you remember what I did?"
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "记得。",
-            "en": "I do."
-          }
-        },
-        {
-          "speaker": "muling",
-          "text": {
-            "zh": "那你还愿意让我留下？",
-            "en": "Then would you still let me stay?"
-          }
-        },
-        {
-          "speaker": "player",
-          "text": {
-            "zh": "留下来吧。这次，我们一起决定以后怎么走。",
-            "en": "Stay. This time, let's decide together where we go from here."
+            "zh": "那……我可以有一把花园钥匙吗？",
+            "en": "Then… may I have a garden key?"
           }
         }
       ],
@@ -2610,12 +2553,12 @@ export const campaign = {
       "id": "muling:tea",
       "npc": "muling",
       "region": "garden",
-      "after": "prologue:P-05",
+      "after": "harbor:H-04",
       "before": "library:M-04",
       "operation": "ambient:brew-bitter-tea",
       "text": {
-        "zh": "苦一点才好。甜茶只会让我忘了自己刚才在想什么。",
-        "en": "Bitter is better. Sweet tea only makes me forget what I was thinking."
+        "zh": "今天的茶有点苦，配一块蜂蜜饼刚刚好！",
+        "en": "Today's tea is a little bitter. A honey biscuit would go perfectly with it!"
       },
       "action": "sip-tea"
     },
@@ -2627,8 +2570,8 @@ export const campaign = {
       "before": "library:M-04",
       "operation": "ambient:inspect-map",
       "text": {
-        "zh": "地图没有画错。是我们刚才把左边当成了右边。好吧，是我。",
-        "en": "The map isn't wrong. We mistook left for right. Fine. I did."
+        "zh": "好啦，地图转个方向就对了！下次换你领路。",
+        "en": "There we go! The map was upside down. You can lead next time!"
       },
       "action": "check-map"
     },
@@ -2640,8 +2583,8 @@ export const campaign = {
       "before": "library:M-04",
       "operation": "ambient:share-cooked-meal",
       "text": {
-        "zh": "我按图纸做的。为什么锅里还会冒烟？……别尝。",
-        "en": "I followed the diagram. Why is the pot still smoking? ...Don't taste it."
+        "zh": "咦，锅在冒烟！看来今天的料理叫烟熏惊喜。我们再试一次吧！",
+        "en": "Oh, the pot's smoking! Today's special is a smoky surprise. Let's try again!"
       },
       "action": "burnt-meal"
     },
@@ -2665,8 +2608,8 @@ export const campaign = {
       "after": "epilogue:E-03",
       "operation": "ambient:repair-garden-bell",
       "text": {
-        "zh": "这次先问问大家要不要修。我不替他们决定。",
-        "en": "Let's ask everyone if they want it repaired first. I won't decide for them."
+        "zh": "花园的铃铛等着修好呢！先问问大家想不想一起动手。",
+        "en": "The garden bell is ready for a repair! Let's ask everyone whether they'd like to join."
       },
       "action": "ask-permission"
     },
@@ -2814,5 +2757,8 @@ export const campaign = {
       },
       "action": "guide-caravan"
     }
-  ]
+  ],
+  "openingPresentationVersion": 2,
+  "fullCampaignPresentationVersion": 2,
+  "openingRevision": "canon-1.2-player-first-opening"
 };

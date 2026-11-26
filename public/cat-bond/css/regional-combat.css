@@ -1,8 +1,11 @@
 /* Region mechanic HUD: scoped to normal regional wild-cat battles. */
-.cb-region-combat{position:absolute;top:64px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:space-between;gap:8px;max-width:calc(100% - 32px);padding:6px 9px;background:rgba(23,37,50,.88);border:1px solid #b58c55;border-radius:9px;color:#e6d8bd;font:700 11px system-ui;z-index:8;pointer-events:auto}
-.cb-region-combat button{min-height:34px;white-space:nowrap;border:1px solid #b58c55;background:#354957;color:#f1e4ca;border-radius:6px;padding:4px 8px;font:700 11px system-ui}
+.cb-region-combat{position:absolute;top:64px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:space-between;gap:8px;max-width:calc(100% - 32px);padding:6px 9px;background:rgba(23,37,50,.88);border:1px solid #b58c55;border-radius:9px;color:#e6d8bd;font:700 11px var(--cb-font-body);z-index:8;pointer-events:auto}
+.cb-region-combat button{min-height:34px;white-space:nowrap;border:1px solid #b58c55;background:#354957;color:#f1e4ca;border-radius:6px;padding:4px 8px;font:700 11px var(--cb-font-body)}
 .cb-region-combat button:disabled{opacity:.5}
 @media(max-width:600px){.cb-region-combat{top:60px;max-width:calc(100% - 20px);font-size:10px}.cb-region-combat button{font-size:10px;min-height:30px}}
 
 #battle-ui .cb-region-combat{top:var(--cb-rpg-hud-top,110px);pointer-events:none}.cb-region-combat button{pointer-events:auto}
 @media(max-width:600px){#battle-ui .cb-region-combat{left:auto;right:10px;transform:none;max-width:calc(100% - 92px)}}
+
+/* Authored Duo and ultimate artwork must not be obscured by regional attack controls. */
+#battle-ui .cb-region-combat[data-cinematic="true"],#battle-ui .cb-region-combat[data-cinematic="true"] button{visibility:hidden;pointer-events:none}

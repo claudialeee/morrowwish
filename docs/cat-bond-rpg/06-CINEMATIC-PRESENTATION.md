@@ -103,3 +103,7 @@ A scene is not accepted because the API returns successfully. Verify actual rend
 
 ## Supervisor contract v1 — integration override
 Integration target: rpg/integration. Only scoped Chat 6 files proposed. No changes to shared entry, game, state, i18n, package or CI. Chat 2 invokes installGameCinematicHost with slot-scoped checkpointStore {read(),write(value)} implementing its own existing save/rollback. Chat 4 supplies transactional runtime and canonical campaign and owns eligibility and finish(). Pass rendererFactory from CatBondCinematicPresentation.create and shared MorrowwishI18n language callbacks. Rejected SVGs archived at 4e42ac8ec8ac23215154462c5e9f62bde589b46a; excluded from this branch. Portrait is an unapproved candidate; no actual normal-flow cinematic accepted yet. Missing approved shots fail closed without story evidence. This section supersedes conflicting older examples.
+
+
+## Canon 1.1 override — no opening cinematic
+This supersedes any older registration or supervisor example that launches P-01/P-02/P-03 as a montage on new game. Opening is live gameplay; a single optional text overlay is not a historical cinematic. Existing sacrifice/waiting assets may be archived for Chapter V/VI; only the narrative host may authorize them after identity/betrayal reveal gates. Do not expose them through thumbnails, skip summaries, save previews, auto-resume, subtitles or background preloads that become visible. Existing renderer remains available for later reveals and ending. No runtime implementation is asserted by this document change.

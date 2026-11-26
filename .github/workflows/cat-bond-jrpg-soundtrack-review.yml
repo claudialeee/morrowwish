@@ -1,0 +1,53 @@
+name: Cat Bond JRPG soundtrack review (no deployment)
+on:
+  push:
+    branches: [review/prologue-light-fullscreen]
+    paths:
+      - 'docs/cat-bond-rpg/jrpg-soundtrack-catalog.json'
+      - 'scripts/build-cat-bond-jrpg-soundtrack.py'
+      - 'scripts/check-cat-bond-jrpg-soundtrack.mjs'
+      - '.github/workflows/cat-bond-jrpg-soundtrack-review.yml'
+permissions:
+  contents: write
+concurrency:
+  group: cat-bond-jrpg-soundtrack-review
+  cancel-in-progress: true
+jobs:
+  import:
+    if: github.ref == 'refs/heads/review/prologue-light-fullscreen'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Import all new recordings atomically
+        run: |
+          command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+          python3 scripts/build-cat-bond-jrpg-soundtrack.py
+          node scripts/check-cat-bond-jrpg-soundtrack.mjs
+          node --check public/cat-bond/js/rpg-audio.js
+          node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jrpg-score-audition
+          path: |
+            public/cat-bond/assets/quality-audio/premium-jrpg-*.mp3
+            public/cat-bond/assets/quality-audio/premium-manifest.json
+            public/cat-bond/assets/quality-audio/music-credits.html
+          retention-days: 14
+      - name: Commit candidates to review branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin review/prologue-light-fullscreen
+          test "$(git rev-parse FETCH_HEAD)" = "$GITHUB_SHA"
+          git add public/cat-bond/assets/quality-audio/premium-jrpg-*.mp3 public/cat-bond/assets/quality-audio/premium-manifest.json public/cat-bond/assets/quality-audio/music-credits.html
+          if ! git diff --cached --quiet; then
+            git commit -m "Import all measured JRPG soundtrack candidates (listening approval pending)"
+            git push origin HEAD:review/prologue-light-fullscreen
+          fi

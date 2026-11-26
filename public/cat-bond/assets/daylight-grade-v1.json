@@ -1,0 +1,434 @@
+{
+  "edition": "daylight-grade-v1",
+  "assets": [
+    {
+      "path": "cinematics/characters/muling/traveler-neutral.webp",
+      "beforeSha256": "c4fd3aa3392fb6aa72821fcffd9c1c67548b0588eaea109c1b0f8e14e8ca0229",
+      "afterSha256": "1f5ffe08862457fcb37238e1f6476afb4e75a5400ab3e640638380000909d122",
+      "beforeLuma": 124.43,
+      "afterLuma": 140.3,
+      "size": [
+        960,
+        887
+      ]
+    },
+    {
+      "path": "cinematics/closing/couriers-at-library.webp",
+      "beforeSha256": "48af7afb1df50a153a6347c53e46884e238fe86f7199b154fc8000a20f84b728",
+      "afterSha256": "13baacfa0f0ebad72d1e98bf8b852e7f763806f4180c20a2b9a20e5790866a13",
+      "beforeLuma": 155.84,
+      "afterLuma": 177.05,
+      "size": [
+        1024,
+        506
+      ]
+    },
+    {
+      "path": "cinematics/closing/final-note.webp",
+      "beforeSha256": "b1d1999a4285b9142ca6e0266097d4ead70744fd549d9fdd836d80d75faa0a37",
+      "afterSha256": "5f1e932a2e404eccef9d71ba129a15ed71dd45fc9bc38d06e8504dc27478e5df",
+      "beforeLuma": 153.65,
+      "afterLuma": 174.6,
+      "size": [
+        1024,
+        536
+      ]
+    },
+    {
+      "path": "cinematics/closing/harbor-forest-delivery.webp",
+      "beforeSha256": "0e297a23fc819a0b156ffdff8277618ceceeedb18bf1d65b486fb1bd5fd92c72",
+      "afterSha256": "800b769124b9910de659f700d5198cbc39abba483f9d43482fcef8e55a714fe0",
+      "beforeLuma": 153.75,
+      "afterLuma": 174.88,
+      "size": [
+        1024,
+        509
+      ]
+    },
+    {
+      "path": "cinematics/closing/inward-call.webp",
+      "beforeSha256": "f7971a04e3bf12103126e7e0a7c2f7bda9f470558a68eed54c94036f89a2f418",
+      "afterSha256": "c6e1448aae1833e5bba4f9ada7f6141a7a989f4baa9ec93410ef07e270c6c900",
+      "beforeLuma": 92.12,
+      "afterLuma": 107.52,
+      "size": [
+        1024,
+        473
+      ]
+    },
+    {
+      "path": "cinematics/closing/memories-return.webp",
+      "beforeSha256": "0796febb48895ef4b7a041ee6550907ed686ff1d96bb7715339ced8a64bab4a4",
+      "afterSha256": "6e402dfee7d19227f382ca5c03eeff35e995fa6db97c833501d0c68951db2368",
+      "beforeLuma": 144.88,
+      "afterLuma": 166.78,
+      "size": [
+        1024,
+        507
+      ]
+    },
+    {
+      "path": "cinematics/closing/pendant-signal.webp",
+      "beforeSha256": "5f8afa674cce2c52be58dbc65239fc44211be45e3dc472880645f718ec02a06a",
+      "afterSha256": "eb7f4063a45c0cccfb5f0d25cc5f05d3614c6b6b94c81cc9ea73b3dc836bdd14",
+      "beforeLuma": 99.57,
+      "afterLuma": 114.24,
+      "size": [
+        1024,
+        505
+      ]
+    },
+    {
+      "path": "cinematics/prologue/broken-bell-tongue.webp",
+      "beforeSha256": "a0a5619a7c1f59a1c1d017e234ccbde0696bc44329aca4946f06508295505b67",
+      "afterSha256": "0b900198b6ba977fa699b119ee8724db4818d165a4273feb742b9c9fca706664",
+      "beforeLuma": 113.69,
+      "afterLuma": 128.64,
+      "size": [
+        1024,
+        508
+      ]
+    },
+    {
+      "path": "cinematics/prologue/garden-at-dawn.webp",
+      "beforeSha256": "a67f145acc2244415beb07827d41df44b7c0e6b80c69b0cd6138b4e3d12d27fc",
+      "afterSha256": "c5a1fe6c7f2176d9022ae9a7d4d3549a2acf46131a9ae234442faca3159809e4",
+      "beforeLuma": 130.76,
+      "afterLuma": 155.98,
+      "size": [
+        1024,
+        508
+      ]
+    },
+    {
+      "path": "cinematics/prologue/harbor-at-twilight.webp",
+      "beforeSha256": "9d13a1e5e6211b941818ab1075c120dd11dd4c49e2ac441accfa3885918fa58f",
+      "afterSha256": "1048bcab7fe2cf02b09e9a1b7eed8472f1f2f75328823f6d0c6504355490c404",
+      "beforeLuma": 110.87,
+      "afterLuma": 126.06,
+      "size": [
+        1024,
+        508
+      ]
+    },
+    {
+      "path": "cinematics/prologue/keepers-choice.webp",
+      "beforeSha256": "34e23cb1a81475e37bb2f416f4e1688c764766b99b3ff983ea8432ca65aa9fd8",
+      "afterSha256": "72c4e5473f45633745281f581bd5696bf563e4078251c6d9a9d8ca9400a96b20",
+      "beforeLuma": 124.49,
+      "afterLuma": 138.47,
+      "size": [
+        1024,
+        508
+      ]
+    },
+    {
+      "path": "cinematics/prologue/star-bell.webp",
+      "beforeSha256": "947ade56a0228917d01e681640ef520348912bd2fa575e04ddc68a2233f114ee",
+      "afterSha256": "c93e867fb5ad77239b3b3ddaae3ebd04e1d40a58f9ed18fe8b3c9d5b23b743ae",
+      "beforeLuma": 122.03,
+      "afterLuma": 147.71,
+      "size": [
+        1024,
+        508
+      ]
+    },
+    {
+      "path": "cinematics/prologue/waiting-at-workbench.webp",
+      "beforeSha256": "007cc7e6664a21c5a3ab13cd7d8c03c79dc914234ac1e175a7648a6c11dd2590",
+      "afterSha256": "dc6afbae16baf59fc2005f0b1c32911720b1c1efd5d0f83b32e7f840d35e4111",
+      "beforeLuma": 95.33,
+      "afterLuma": 122.75,
+      "size": [
+        1024,
+        508
+      ]
+    },
+    {
+      "path": "combat/emberforge-painted.webp",
+      "beforeSha256": "115792a45c15f287f738d854f6aa05f6d62524a605f38fe7af08e1640d2fbf79",
+      "afterSha256": "694c44077c95f796ce159f7224aad101b8d9037a471a7d742af12a9daab91ae0",
+      "beforeLuma": 77.84,
+      "afterLuma": 105.26,
+      "size": [
+        1439,
+        810
+      ]
+    },
+    {
+      "path": "combat/forge-guardian-painted.webp",
+      "beforeSha256": "956fa6f0ffc936d5314b0046c6f835fa95e47989cd74f4fef0ad7f5e1e81ff90",
+      "afterSha256": "031f0d8ec1d6f5dd09e4a4c09f8a9f4ee2cb7e332c6ab9e7624c81c3fd5de11b",
+      "beforeLuma": 100.87,
+      "afterLuma": 114.55,
+      "size": [
+        768,
+        702
+      ]
+    },
+    {
+      "path": "combat/star-bell-arena-portrait.webp",
+      "beforeSha256": "eaade15c31039ec8aab86638f87b15c488376383a414b468095d312bcbf3bc38",
+      "afterSha256": "9450893994f0f8bd47f7993b5e4a529a420bdb2d15674ef789d30f2d163589c8",
+      "beforeLuma": 103.72,
+      "afterLuma": 119.71,
+      "size": [
+        900,
+        1294
+      ]
+    },
+    {
+      "path": "combat/star-bell-arena-wide.webp",
+      "beforeSha256": "faf1870efda612738384e714ec2dffaed834445a651f9e58e355ed309eb43d74",
+      "afterSha256": "d291aaf549cb8f5593d43452f1a23ebf2528432abcab981d2eb2e29c1f30ca15",
+      "beforeLuma": 101.96,
+      "afterLuma": 118.04,
+      "size": [
+        1439,
+        810
+      ]
+    },
+    {
+      "path": "garden/sunlit-garden-landscape.webp",
+      "beforeSha256": "5b56b6792a3f07ec79dc0d76f26d46cfbc9879dc0ceaaf19b644b6be413e2c10",
+      "afterSha256": "7f7bb53bd9c83f6d02b77fdaf3c05a0f80766ffd3a27ca14954644db3ba70f56",
+      "beforeLuma": 141.14,
+      "afterLuma": 164.23,
+      "size": [
+        1439,
+        810
+      ]
+    },
+    {
+      "path": "garden/sunlit-garden-portrait.webp",
+      "beforeSha256": "8b82c7a9baf46f58cca90f9ea9566a19b203be682663bb00cf6e5b38bd7b4f1b",
+      "afterSha256": "1cf2946ab3384e4d52456af2d87bcb20e4dc9d9d4653f27ee3241d4624e13563",
+      "beforeLuma": 146.0,
+      "afterLuma": 168.68,
+      "size": [
+        810,
+        1439
+      ]
+    },
+    {
+      "path": "npc/baikan-painted.webp",
+      "beforeSha256": "3ef6fce89cec6d82ffdc8c4fb273bc1416f629aab1d34c4ef896d0a053b9d398",
+      "afterSha256": "7ca24b3fef469e411d6bbb31732286361a1f845e0987d728990697a5c21a3771",
+      "beforeLuma": 132.47,
+      "afterLuma": 145.95,
+      "size": [
+        580,
+        637
+      ]
+    },
+    {
+      "path": "npc/jiedeng-painted.webp",
+      "beforeSha256": "b1a9055f4ff89bd67b90ae00144dc0f7ea9ad410859b9cf431d74a1dccfe9da0",
+      "afterSha256": "c4268a6603da5d94479f5b3f87666124364bd201a7ad24c5391597b6d71c13f8",
+      "beforeLuma": 84.56,
+      "afterLuma": 102.75,
+      "size": [
+        520,
+        638
+      ]
+    },
+    {
+      "path": "npc/jinpo-painted.webp",
+      "beforeSha256": "d803b9cff16e91ad285f53020566b2ab9ad4c7efe898eabf423d86060c5c011f",
+      "afterSha256": "c1d4db1e2b497969fc537abcccb85d419b34d33c49d9b4e627ee0a2202f2a87a",
+      "beforeLuma": 117.89,
+      "afterLuma": 134.92,
+      "size": [
+        547,
+        680
+      ]
+    },
+    {
+      "path": "npc/lichuan-painted.webp",
+      "beforeSha256": "602c8421bcb1675a28275367c04a5fa22a558cb7313c9c2308018bb2d408375c",
+      "afterSha256": "3da2b7e2e33dfe3549e749bc279746891f966f228e56bd7d2625ad0f71e83be1",
+      "beforeLuma": 115.86,
+      "afterLuma": 132.75,
+      "size": [
+        580,
+        617
+      ]
+    },
+    {
+      "path": "npc/lingyu-painted.webp",
+      "beforeSha256": "a88d59b4c9e3f286200077efb967795710b5e9cb7e11c7c53e2ab9991b590f3b",
+      "afterSha256": "d1649f428b3ef73828ff5f910ee2a234c96c296812d621409d6a7f56929fe4e6",
+      "beforeLuma": 118.9,
+      "afterLuma": 134.76,
+      "size": [
+        580,
+        672
+      ]
+    },
+    {
+      "path": "npc/moye-painted.webp",
+      "beforeSha256": "570cc1dff8d4aef9e0ceed50007e57ece0990b3009e41de659d7d9ceea3357be",
+      "afterSha256": "d6ce8086cd3c449ccc17649d9fd86641fc52f7a1d78094efc7586d4d8a561c3a",
+      "beforeLuma": 86.73,
+      "afterLuma": 104.66,
+      "size": [
+        370,
+        680
+      ]
+    },
+    {
+      "path": "npc/qilan-painted.webp",
+      "beforeSha256": "9d26defbf3f483d225ec3dba49e40439fdd98265e3b14e287de27b1e00b946ad",
+      "afterSha256": "c998d3a058f220a79312225e0602114169be0fcb11d2ff7f6fefc93f47c17bf7",
+      "beforeLuma": 120.68,
+      "afterLuma": 136.98,
+      "size": [
+        410,
+        640
+      ]
+    },
+    {
+      "path": "npc/xiaomao-painted.webp",
+      "beforeSha256": "9f6b944c383b1664c9efe48aa3131c070f2fa0bd57032f8ff4359fb9670ba300",
+      "afterSha256": "0a782ece56a3a1639af4bf5fd8d4c17329e2b89a07ecdfdd75c784619145c407",
+      "beforeLuma": 121.81,
+      "afterLuma": 137.24,
+      "size": [
+        416,
+        680
+      ]
+    },
+    {
+      "path": "npc/xingya-painted.webp",
+      "beforeSha256": "72c8658b2fc4b91265a24a9b627affc1604a4680947fb900b36564137b31fefd",
+      "afterSha256": "53627d3c952bfa82b65a222329dd7f33bb6f3631609ee30c93b1e32f48081e3f",
+      "beforeLuma": 138.05,
+      "afterLuma": 152.87,
+      "size": [
+        580,
+        678
+      ]
+    },
+    {
+      "path": "npc/yahe-painted.webp",
+      "beforeSha256": "ef6b891b68d09f8c172de04d8d77ed8db04719e2f51f84e816179f0a47a7c645",
+      "afterSha256": "2de9e7a3115154c0c895ae21b0530823bb29f1248542a806612d2f8ab4b9f06e",
+      "beforeLuma": 130.55,
+      "afterLuma": 145.59,
+      "size": [
+        480,
+        640
+      ]
+    },
+    {
+      "path": "npc/yuanfan-painted.webp",
+      "beforeSha256": "5c38502811990f4925429f15275e760cd58292cca3c0db82278fd520eaa590aa",
+      "afterSha256": "08e90f247fdec34d1a27df5c84a1b05b67b73a9a727729f9fb48c9e80899097b",
+      "beforeLuma": 139.91,
+      "afterLuma": 155.35,
+      "size": [
+        580,
+        643
+      ]
+    },
+    {
+      "path": "npc/yuchuan-painted.webp",
+      "beforeSha256": "b70600db52c713b7cfd3e85d525746e758a63ea53bec816db48c37b7df13525f",
+      "afterSha256": "931aa3675da1fd0e00cea83c53f9fc84ab7af1738c9064cc1de1148c2f61b249",
+      "beforeLuma": 112.07,
+      "afterLuma": 129.03,
+      "size": [
+        480,
+        640
+      ]
+    },
+    {
+      "path": "resonance-world-v2/atlas.webp",
+      "beforeSha256": "ce575ea10b29d1c6652e41149da8d2d46361877d5af01a4965f3417489498fa6",
+      "afterSha256": "accb3af69d99490f02910693ed7d28f2bbd999ab61d7fe04d52a01af288a5397",
+      "beforeLuma": 129.34,
+      "afterLuma": 152.46,
+      "size": [
+        1439,
+        810
+      ]
+    },
+    {
+      "path": "resonance-world-v2/forest.webp",
+      "beforeSha256": "c0b210893bc5193d4e8288baf5cbcd1783fe66013db5706ba5463b173b646725",
+      "afterSha256": "9e3b5670eb672cc89534cd31e69a17f80f9de8e76eff61df4e4f99c2064f8df1",
+      "beforeLuma": 130.61,
+      "afterLuma": 154.33,
+      "size": [
+        1439,
+        810
+      ]
+    },
+    {
+      "path": "resonance-world-v2/forge.webp",
+      "beforeSha256": "ef4355cad60adefe4f352d405ebcc602d3893da4a88e4f14ddf91bb0948bcbce",
+      "afterSha256": "97646408bd8e8b4ee155d1bceaa920811d8a45db7f8c481f278d3ce0214755f2",
+      "beforeLuma": 115.03,
+      "afterLuma": 142.06,
+      "size": [
+        1439,
+        810
+      ]
+    },
+    {
+      "path": "resonance-world-v2/harbor-mist.webp",
+      "beforeSha256": "ae828711acb4ce0a4175e0f900792c03cc02160c8080ac9bbd81113713416142",
+      "afterSha256": "e71e6a1873d778a603f232642fddbe1c15875c36449ad91172995bbc8d3e3af6",
+      "beforeLuma": 134.65,
+      "afterLuma": 159.45,
+      "size": [
+        1439,
+        810
+      ]
+    },
+    {
+      "path": "resonance-world-v2/harbor.webp",
+      "beforeSha256": "45c5be86ee40595df232fdc00b20ecae9a133abe01bc90f06f53139918e7d8eb",
+      "afterSha256": "64f635987fab96e2bdb274b2b4c0158e2685c75a356ab66c527d49ee6c971046",
+      "beforeLuma": 123.11,
+      "afterLuma": 148.05,
+      "size": [
+        1439,
+        810
+      ]
+    },
+    {
+      "path": "resonance-world-v2/library.webp",
+      "beforeSha256": "66479a455fddcbf72bc7246348885804b859b7796f69fcee9075fd9a56353dff",
+      "afterSha256": "c04e1b7727494d5f26803243493787440cc53d831f53c83e14fb25b387176fc2",
+      "beforeLuma": 142.99,
+      "afterLuma": 166.31,
+      "size": [
+        1439,
+        810
+      ]
+    },
+    {
+      "path": "resonance-world-v2/sky.webp",
+      "beforeSha256": "47839bc4c1d420790d1c6360a1371728379e88a7655cbdca24e23337c620e6c2",
+      "afterSha256": "e512838570ed34e6cfae3986fedda97cb484c298bd2da13068a0137d682ebfc0",
+      "beforeLuma": 176.49,
+      "afterLuma": 194.1,
+      "size": [
+        1439,
+        810
+      ]
+    },
+    {
+      "path": "resonance-world-v2/starfall.webp",
+      "beforeSha256": "c423eba2386d7cd18d28f40bb847e0a376ac33728011842b2032d3fb710f6ef8",
+      "afterSha256": "d266fd91728379bc5b24802f35b5baaeae806d14879c88f407db82cf27719c5e",
+      "beforeLuma": 134.48,
+      "afterLuma": 159.35,
+      "size": [
+        1439,
+        810
+      ]
+    }
+  ]
+}

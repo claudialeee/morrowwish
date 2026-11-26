@@ -46,13 +46,14 @@
     if (st <= 0) return null;
     return {
       stage: st,
-      // A mature cat is visibly older without becoming oversized in the
-      // courtyard, expedition map or combat. Always scale the entire painting uniformly.
-      scale: st === 2 ? 1.10 : 1.06,
-      aura: st === 2 ? (AWAKEN[cat.awaken] ? AWAKEN[cat.awaken].color : '#ffd36b') : null,
-      sparkle: st === 2,
-      gem: st >= 1,                        // a floating gem badge
-      gemColor: st === 2 && AWAKEN[cat.awaken] ? AWAKEN[cat.awaken].color : '#cbd4ff',
+      // Retired progression has no approved independent mature paintings.
+      // Keep the original breed identity and visual footprint for legacy saves.
+      // Stage data and powerMult remain intact; no synthetic transformation.
+      scale: 1,
+      aura: null,
+      sparkle: false,
+      gem: false,
+      gemColor: null,
     };
   }
 

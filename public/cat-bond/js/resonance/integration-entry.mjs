@@ -1,13 +1,14 @@
 import "./narrative-host.mjs";
-import "./npc-world.mjs";
+import "./npc-world.mjs?v=garden-v3-1";
 import "./ambient-play.mjs";
-import "./world-runtime.mjs";
-import "./title-entry.mjs";
-import "./garden-bell.mjs";
+import "./world-runtime.mjs?v=regional-discovery-2";
+import "./title-entry.mjs?v=map-talk-1";
+// The prologue uses living discoveries instead of a standalone bell prop.
 import "./chapter-cinematics.mjs";
-import "./forge-combat-runtime.mjs";
-import "./regional-combat.mjs";
-import "./finale-combat.mjs";
+import "./forge-combat-runtime.mjs?v=storybook-arenas";
+import "./regional-combat.mjs?v=dedicated-watercolor-monsters-20261125";
+import "./finale-combat.mjs?v=storybook-arenas";
+import "./resonance-book.mjs";
 
 window.__CAT_BOND_CANONICAL_RELEASE__ = true;
 // Production entry may use approved shots or the explicitly authorized opening

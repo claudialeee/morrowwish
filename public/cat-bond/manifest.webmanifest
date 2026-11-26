@@ -1,7 +1,7 @@
 {
-  "name": "猫猫纽带 · Cat Bond",
-  "short_name": "Cat Bond",
-  "description": "在温柔的小庭院里与猫咪建立纽带。",
+  "name": "星铃回响 · Echoes of the Starbell",
+  "short_name": "Starbell",
+  "description": "循着星铃的回响，寻找遗失的记忆。",
   "start_url": "/cat-bond/",
   "scope": "/cat-bond/",
   "display": "fullscreen",

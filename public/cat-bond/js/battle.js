@@ -180,7 +180,7 @@ class CaptureBattle {
     // opening-grace + masher-guard nets are gated !autoMode, so a losing auto player gets
     // NOTHING). When a casual auto player has lost ≥2 in a row, let those same nets fire at
     // ~60% strength so repeated auto losses ease too. 0 for manual / hardcore / winning auto.
-    this._autoAssist = (this.autoMode && this.difficultyMode !== 'hardcore'
+    this._autoAssist = (!!window.State?.S?.battlePrefs?.autoBattle && this.difficultyMode !== 'hardcore'
       && ((this.aiP.lossStreak || 0) >= 2)) ? 0.6 : 0;
     this._obs = { dodgeSignSum: 0, dodgeN: 0, rangeSum: 0, rangeN: 0, rangeT: 0, threats: 0, dodgedThreats: 0, fires: 0, frames: 0, dmgTaken: 0 };
     // stompStreak (flawless-win count) tightens the knobs: snappier windups, less
@@ -350,6 +350,11 @@ class CaptureBattle {
     return k === 'move' || k === 'attack' || k === 'skill';
   }
 
+  refreshFieldDuo(){
+    const next=window.CatRelations?.active(this.team.filter(f=>f.alive&&!f._reinforcement).map(f=>f.cat))||null;
+    const old=this.duo;if(next?.a?.uid!==old?.a?.uid||next?.b?.uid!==old?.b?.uid)this.duoCharge=0;
+    this.duo=next;
+  }
   duoReady(){
     return !!(this.duo&&this.duoCharge>=100&&this.duoCd<=0&&
       [this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)));
@@ -634,7 +639,7 @@ class CaptureBattle {
     const by=Math.min(this.H-this.bottomMargin-8,Math.max(this.topMargin+12,v.y+rad*.64+18));
     ctx.save();
     ctx.globalAlpha=Math.min(1,v.age/.35,v.remaining/.6);
-    ctx.font='700 10px system-ui,sans-serif';
+    ctx.font='700 10px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.textAlign='center';ctx.textBaseline='middle';
     const label=summary+'  '+Math.ceil(v.remaining)+'s';
     const width=Math.min(this.W-18,ctx.measureText(label).width+18);
@@ -886,8 +891,8 @@ class CaptureBattle {
     // CatMotion.draw applies a further 0.70 watercolor-art scale. Compare
     // the VISIBLE cat against the exploration lead (1.0 * .70), not against
     // the input number here: combat hero should be ~0.98 of map hero.
-    const readable=clamp(.93*ratio,.87,1.04);
-    if(role==='active')return Math.min(1.10,readable*1.12);
+    const readable=clamp(1.03*ratio,.96,1.16);
+    if(role==='active')return Math.min(1.23,readable*1.12);
     if(role==='enemy')return readable*.95;
     return readable;
   }
@@ -1778,6 +1783,8 @@ class CaptureBattle {
     // fighter's smoothed velocity so allies glide instead of twitching. Note the old
     // code moved by the RAW (unnormalized) mx/my — magnitude varied wildly frame to
     // frame; smoothSteer normalizes to a unit heading, so speed is now steady too.
+    const assignment=this.resonanceFinale&&window.CatBondFinaleCombat?.guardSteering?.(this,f);
+    if(assignment){mx=assignment.x;my=assignment.y;evasive=false;if(!mx&&!my){f._svx=0;f._svy=0;}}
     const dir = this.smoothSteer(f, mx, my, evasive ? 22 : 8);
     if (dir) { f._moveFacing = Math.atan2(dir.y,dir.x); if(f.reflectT>0)f._wallDesiredAngle=Math.atan2(tgt.y-f.y,tgt.x-f.x); }
     // Freeze a cat's REAL position while it's performing the duo-combo run: its SPRITE is drawn along a
@@ -3675,6 +3682,7 @@ class CaptureBattle {
     incoming.x=out.x;incoming.y=out.y;incoming.moving=false;
     incoming.inv=Math.max(incoming.inv||0,0.8);
     this.team[this.active]=incoming;
+    this.refreshFieldDuo();
     this.reserveSwapReadyAt=Date.now()+6000;
     this.vfx.ring(incoming.x,incoming.y,{r0:9,vr:270,life:.38,color:'#b6e3bf',width:4});
     this.game.buildTeamSlots?.();
@@ -5647,12 +5655,14 @@ class CaptureBattle {
       // last ~3s — re-applying its best recent damage like rewinding a clock.
       if (info.rewind) {
         let lo = e.hp; for (const h of e._hpHist) if (h.hp < lo) lo = h.hp;
-        if (lo < e.hp) { const d = e.hp - lo; e.hp = lo; this.vfx.text(e.x, e.y - 40, '⏪ 回溯 -' + Math.round(d), info.color, 16); this.vfx.ring(e.x, e.y, { r0: 10, vr: 480, life: 0.5, color: info.color, width: 5 }); if (e.hp <= 0 && e.alive) { e.alive = false; this._lastDropped = e; this.spawnBurst(e.x, e.y, '💫', info.color, 12); } }
+        if (this.resonanceFinale && lo < e.hp) { this.hurtEnemy(e,e.hp-lo,e.x,e.y,true); }
+        else if (lo < e.hp) { const d = e.hp - lo; e.hp = lo; this.vfx.text(e.x, e.y - 40, '⏪ 回溯 -' + Math.round(d), info.color, 16); this.vfx.ring(e.x, e.y, { r0: 10, vr: 480, life: 0.5, color: info.color, width: 5 }); if (e.hp <= 0 && e.alive) { e.alive = false; this._lastDropped = e; this.spawnBurst(e.x, e.y, '💫', info.color, 12); } }
         delete e.status[tg]; e.tags = (e.tags || []).filter(t => t !== tg); continue;
       }
       // damage-over-time
       if (info.dps) {
         const d = e.maxhp * info.dps * dt;
+        if(this.resonanceFinale){this.hurtEnemy(e,d,e.x,e.y,true);continue;}
         e.hp = Math.max(0, e.hp - d);
         if (Math.random() < dt * 3) this.vfx.text(e.x + (Math.random() * 16 - 8), e.y - 18, '-' + Math.max(1, Math.round(e.maxhp * info.dps)), info.color, 10);
         if (e.hp <= 0 && e.alive) { e.alive = false; this._lastDropped = e; this.spawnBurst(e.x, e.y, '💫', info.color, 10); this.game.toast(e.sp.name + ' 倒下了！'); }
@@ -6097,6 +6107,7 @@ class CaptureBattle {
     sub.x = f.x; sub.y = f.y; sub.inv = 1.0;
     this.reserve = this.reserve.filter(c => c !== pick);
     if (idx >= 0) this.team[idx] = sub; else this.team.push(sub);
+    this.refreshFieldDuo();
     this.game.buildTeamSlots?.();
     if (wasActive || !this.me()?.alive) this.active = this.team.indexOf(sub);
     this.vfx.ring(sub.x, sub.y, { r0: 8, vr: 320, life: 0.5, color: '#9be7c4', width: 5 });
@@ -6292,7 +6303,7 @@ class CaptureBattle {
       ctx.fillStyle='rgba(30,26,45,'+(Math.min(.10,Math.sin(Math.PI*elapsed/v.max)*.10))+')';
       ctx.fillRect(0,0,W,H);
       ctx.textAlign='center';
-      ctx.font='800 '+(this.game.isTouch?12:15)+'px system-ui';
+      ctx.font='800 '+(this.game.isTouch?12:15)+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='rgba(255,253,238,'+(k*.92)+')';
       ctx.shadowColor=v.first;ctx.shadowBlur=9;
       // Always balance the inner save. The previous conditional skipped
@@ -6324,17 +6335,12 @@ class CaptureBattle {
     const m = this.game.mouse;
     if (m) { ctx.strokeStyle = 'rgba(255,211,107,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(m.x, m.y, 9, 0, Math.PI * 2); ctx.moveTo(m.x - 13, m.y); ctx.lineTo(m.x + 13, m.y); ctx.moveTo(m.x, m.y - 13); ctx.lineTo(m.x, m.y + 13); ctx.stroke(); }
 
-    this.drawAimPreview(ctx);
-
-    // Manual target guide stays below the cat bodies and is thin enough not
-    // to clutter a small phone. Tapping a wild cat locks it until it leaves.
+    // Keep target feedback local: a screen-spanning lock tether obscures the fight.
+    // The locked enemy also receives its own reticle in the enemy render pass.
     if(!this.autoMode && (this.game.isTouch||this._lockIdx!=null)){
       const target=this.lockedEnemy();
-      const actor=this.me();
-      if(target&&actor){
-        ctx.save();ctx.strokeStyle='rgba(247,215,130,.46)';
-        ctx.lineWidth=1.7;ctx.setLineDash([5,8]);
-        ctx.beginPath();ctx.moveTo(actor.x,actor.y-5);ctx.lineTo(target.x,target.y-5);ctx.stroke();
+      if(target && Number.isFinite(target.x) && Number.isFinite(target.y)){
+        ctx.save();
         ctx.setLineDash([]);
         ctx.strokeStyle='rgba(255,235,159,.85)';ctx.lineWidth=1.7;
         ctx.beginPath();ctx.arc(target.x,target.y,34+2*Math.sin(this.t*3),0,Math.PI*2);ctx.stroke();
@@ -6618,7 +6624,9 @@ class CaptureBattle {
         ctx.translate(-e.x, -(e.y + 33 * crouch));
       }
       window.CatBondWardArt?.draw(ctx,e,e.x,e.y,this.t,this.catScale('enemy'),'back');
-      if(e.regionalEnemy && window.CatBondRegionalArt?.drawManifestation(ctx,e,this)){
+      if(this.resonanceFinale && window.CatBondFinaleCombat?.drawEnemy?.(ctx,e,this)){
+        // Canonical finale character/ritual presentation.
+      }else if(e.regionalEnemy && window.CatBondRegionalArt?.drawManifestation(ctx,e,this)){
         // Authored non-collectible manifestation sprite.
       }else if(e.visualKind==='forge-guardian' && window.CatBondForgeCombat?.drawEnemy){
         window.CatBondForgeCombat.drawEnemy(ctx,e,this);
@@ -6653,7 +6661,7 @@ class CaptureBattle {
         ctx.globalAlpha = 0.5 + 0.4 * Math.abs(Math.sin(this.t * 10));
         ctx.strokeStyle = '#ffd36b'; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(e.x, e.y, 30 + 3 * Math.sin(this.t * 10), 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = '#ffd36b'; ctx.font = '13px system-ui'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffd36b'; ctx.font = '13px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('💫', e.x, e.y - 48);
         ctx.restore();
       }
@@ -6676,14 +6684,14 @@ class CaptureBattle {
         const pulse = 0.5 + 0.4 * Math.abs(Math.sin(this.t * 5));
         ctx.globalAlpha = pulse; ctx.strokeStyle = '#ff5a7a'; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(e.x, e.y, 34 + 3 * Math.sin(this.t * 5), 0, Math.PI * 2); ctx.stroke();
-        ctx.globalAlpha = pulse; ctx.fillStyle = '#ff5a7a'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+        ctx.globalAlpha = pulse; ctx.fillStyle = '#ff5a7a'; ctx.font = 'bold 13px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('🎯 集火', e.x, e.y - 98);
         ctx.restore();
       }
       const elemSym = this.elemSymbol(e.element);
       const isZh=window.MorrowwishI18n?.get?.()==="zh";
       const combatLabel=e.combatName?e.combatName[isZh?0:1]:(GameData.speciesName?.(e.sp)||e.sp.name);
-      const tagOffset=e.visualKind==="forge-guardian"?Math.min(105,Math.max(78,this.H*.23)):78;
+      const tagOffset=e.visualKind==="forge-guardian"?Math.min(118,Math.max(88,this.H*.23)):Math.max(94,Math.round(this.catScale('enemy')*99)+(e.regionalEnemy?10:0));
       this.hpTag(ctx, e.x, Math.max(26,e.y-tagOffset), e.hp / e.maxhp, GameData.RARITY[e.sp.rarity].color,
         `${elemSym} ${combatLabel} Lv.${e.level}`, {current:e.poise,max:e.poiseMax,stagger:e.staggerT,recovering:e.poiseRecovering});
       // Compact status grid BELOW the HP + poise card. Lift the card to reserve
@@ -6698,7 +6706,7 @@ class CaptureBattle {
         const shown=Object.keys(e.status)
           .filter(tg=>e.status[tg]>0&&icons[tg])
           .sort((a,b)=>priority.indexOf(a)-priority.indexOf(b)).slice(0,8);
-        ctx.save();ctx.font='11px sans-serif';ctx.textAlign='center';
+        ctx.save();ctx.font='11px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';
         shown.forEach((tg,i)=>{
           const row=Math.floor(i/4), col=i%4;
           const inRow=Math.min(4,shown.length-row*4);
@@ -6803,7 +6811,7 @@ class CaptureBattle {
       // tell at a glance which kitten you're driving.
       if (isMe) {
         ctx.save(); ctx.globalAlpha = 0.9; ctx.fillStyle = '#ffd36b'; ctx.textAlign = 'center';
-        ctx.font = '12px system-ui, sans-serif';
+        ctx.font = '12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
         const grownScale=window.Growth?.visual(tf.cat)?.scale||1;
         ctx.fillText('▾', tf.x, tf.y - Math.max(51,this.catScale('active')*72*grownScale) + 2 * Math.sin(this.t * 4));
         ctx.restore();
@@ -6815,13 +6823,13 @@ class CaptureBattle {
       if(v.kind==='ultimate')window.CatBondUltVFX?.draw(ctx,v,W,H,this.t,'front');
     }
     // particles & floaters
-    for (const q of this.particles) { ctx.save(); ctx.globalAlpha = Math.max(0, q.life); ctx.fillStyle = q.color; ctx.font = `${q.size}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText(q.ch, q.x, q.y); ctx.restore(); }
+    for (const q of this.particles) { ctx.save(); ctx.globalAlpha = Math.max(0, q.life); ctx.fillStyle = q.color; ctx.font = `${q.size}px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif`; ctx.textAlign = 'center'; ctx.fillText(q.ch, q.x, q.y); ctx.restore(); }
     for(const fl of this.floaters){
       const age=1-Math.max(0,Math.min(1,fl.life/(fl.max||.62)));
       const kick=1+.21*Math.sin(Math.min(1,age*4)*Math.PI);
       ctx.save();ctx.globalAlpha=Math.min(1,Math.max(0,fl.life/.20));
       ctx.fillStyle=fl.color;
-      ctx.font='900 '+Math.round((fl.size||15)*kick)+'px sans-serif';
+      ctx.font='900 '+Math.round((fl.size||15)*kick)+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.textAlign='center';ctx.lineWidth=3;
       ctx.strokeStyle='rgba(34,30,41,.55)';
       ctx.strokeText(fl.text,fl.x,fl.y);ctx.fillText(fl.text,fl.x,fl.y);
@@ -6833,7 +6841,7 @@ class CaptureBattle {
       const k=Math.min(1,this._captureBanner/1.2),pop=1+0.2*Math.sin((1-k)*Math.PI);
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       ctx.save(); ctx.globalAlpha=Math.min(1,k*1.3); ctx.textAlign='center';
-      ctx.font='900 '+((this.game.isTouch?26:36)*pop)+'px system-ui, sans-serif';
+      ctx.font='900 '+((this.game.isTouch?26:36)*pop)+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='#ffd36b'; ctx.shadowColor='#ff9b3c'; ctx.shadowBlur=18;
       ctx.fillText(en?'FINISH IT!':'收服它！',W/2,this.topMargin+70);
       ctx.restore();
@@ -6865,12 +6873,12 @@ class CaptureBattle {
       // banner
       const pop=1+0.18*Math.sin(k*Math.PI);
       ctx.globalAlpha=Math.min(1,k*2);ctx.textAlign='center';
-      ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px system-ui, sans-serif';
+      ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='#ffd36b';ctx.shadowColor='#ff9b3c';ctx.shadowBlur=18;
       ctx.fillText(en?'🏠 TAMED!':'🏠 收服成功！',W/2,this.topMargin+70);
       // CLUTCH sub-banner (playtest P0): a knife-edge win reads differently from a comfy one.
       if(this._clutch){
-        ctx.font='900 '+((this.game.isTouch?17:23)*pop)+'px system-ui, sans-serif';
+        ctx.font='900 '+((this.game.isTouch?17:23)*pop)+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
         ctx.fillStyle='#ff6b6b';ctx.shadowColor='#ffb3b3';ctx.shadowBlur=14;
         ctx.fillText(en?'✦ CLUTCH!':'✦ 险胜！',W/2,this.topMargin+104);
       }
@@ -6881,7 +6889,7 @@ class CaptureBattle {
       const k=Math.min(1,this._ultReadyBanner/1.4);
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       ctx.save(); ctx.globalAlpha=Math.min(1,k*1.4); ctx.textAlign='center';
-      ctx.font='900 '+(this.game.isTouch?22:30)+'px system-ui, sans-serif';
+      ctx.font='900 '+(this.game.isTouch?22:30)+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='#9d7bff'; ctx.shadowColor='#c3a6ff'; ctx.shadowBlur=16;
       ctx.fillText(en?'⚡ ULTIMATE READY — press R':'⚡ 必杀就绪 — 按 R 释放',W/2,this.topMargin+44);
       ctx.restore();
@@ -6891,7 +6899,7 @@ class CaptureBattle {
       const span=this._ultResultText.includes('×')||this._ultResultText.includes('KO')?2.0:1.4;
       const k=Math.min(1,this._ultResultBanner/span),pop=1+0.18*Math.sin((1-k)*Math.PI);
       ctx.save(); ctx.globalAlpha=Math.min(1,k*1.5); ctx.textAlign='center';
-      ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px system-ui, sans-serif';
+      ctx.font='900 '+((this.game.isTouch?24:34)*pop)+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle=this._ultResultColor; ctx.shadowColor=this._ultResultColor; ctx.shadowBlur=20;
       ctx.fillText(this._ultResultText,W/2,this.topMargin+104);
       ctx.restore();
@@ -6901,7 +6909,7 @@ class CaptureBattle {
       const k=Math.min(1,this._stallBanner/1.2),pulse=0.6+0.4*Math.abs(Math.sin(this.t*6));
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       ctx.save();ctx.globalAlpha=Math.min(1,k*1.5)*pulse;ctx.textAlign='center';
-      ctx.font='900 '+(this.game.isTouch?20:27)+'px system-ui, sans-serif';
+      ctx.font='900 '+(this.game.isTouch?20:27)+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='#ffd36b';ctx.shadowColor='#ff9b3c';ctx.shadowBlur=16;
       ctx.fillText(en?'Use a SKILL (Q/E) to break its guard!':'用技能 (Q/E) 破防才能收服！',W/2,this.topMargin+150);
       ctx.restore();
@@ -6913,7 +6921,7 @@ class CaptureBattle {
       ctx.globalAlpha=.67+.25*Math.max(0,this.comboT)/1.3;
       ctx.fillStyle='rgba(45,58,64,.54)';
       ctx.beginPath();ctx.roundRect(x-32,y-17,65,29,12);ctx.fill();
-      ctx.textAlign='center';ctx.font='800 15px system-ui';ctx.fillStyle='#ffe0a3';
+      ctx.textAlign='center';ctx.font='800 15px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.fillStyle='#ffe0a3';
       ctx.fillText('×'+this.combo,x,y+3);
       ctx.strokeStyle='#ffe0a3';ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(x,y,21,-Math.PI/2,-Math.PI/2+2*Math.PI*Math.max(0,this.comboT)/1.3);ctx.stroke();
@@ -6931,7 +6939,7 @@ class CaptureBattle {
       ctx.restore();
     } else if (this.game.isTouch && this.combo < 2) {
       // hint on touch devices
-      ctx.save(); ctx.globalAlpha = 0.4; ctx.fillStyle = '#fff'; ctx.font = '12px system-ui'; ctx.textAlign = 'center';
+      ctx.save(); ctx.globalAlpha = 0.4; ctx.fillStyle = '#fff'; ctx.font = '12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif'; ctx.textAlign = 'center';
       // First-fight tutorial and the virtual joystick already explain touch controls.
       ctx.restore();
     }
@@ -6957,7 +6965,7 @@ class CaptureBattle {
     if(s.chill!=null){
       ctx.globalAlpha=.49;ctx.strokeStyle='#a9daf0';ctx.lineWidth=2;
       ctx.beginPath();ctx.ellipse(e.x,e.y+21,25,7,0,0,Math.PI*2);ctx.stroke();
-      ctx.globalAlpha=.72;ctx.fillStyle='#e7f8ff';ctx.font='12px system-ui';
+      ctx.globalAlpha=.72;ctx.fillStyle='#e7f8ff';ctx.font='12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.textAlign='center';ctx.fillText('❄',e.x-31,e.y+13);
       ctx.fillText('❄',e.x+31,e.y+13);
     }
@@ -6971,7 +6979,7 @@ class CaptureBattle {
     if (s.blind != null) {                 // Blinded: visible ground ring instead of ugly black face.
       ctx.globalAlpha = .73;ctx.strokeStyle = '#b49bdb';ctx.lineWidth = 2.2;
       ctx.beginPath();ctx.ellipse(e.x,e.y + 14,29,9,0,0,Math.PI*2);ctx.stroke();
-      ctx.globalAlpha = .88;ctx.fillStyle = '#dcc9f2';ctx.font = '13px system-ui,sans-serif';
+      ctx.globalAlpha = .88;ctx.fillStyle = '#dcc9f2';ctx.font = '13px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.textAlign = 'center';ctx.fillText('✧',e.x-28,e.y+7);ctx.fillText('✧',e.x+28,e.y+7);
     }
     window.CatBondSkillFX?.drawStatus(ctx,e,this.t);
@@ -6980,54 +6988,6 @@ class CaptureBattle {
 
   // Aggregate pack 斗志 (morale/HP) bar at the top — makes the win condition
   // legible: the player always sees how close the whole pack is to being tamed.
-  // Live AIM PREVIEW for the active cat: a trajectory line for directional skills
-  // and a landing impact-zone circle for lob/placed AOE, so the player can see
-  // where a skill will go/land BEFORE committing. Only on manual control.
-  drawAimPreview(ctx) {
-    if (this.autoMode || this.ultCinematic) return;
-    const f = this.me(); if (!f || !f.alive) return;
-    const aim = this.aim || 0;
-    // which off-cooldown offensive skill is the player most likely about to fire?
-    const q = f.qSkill, e = f.eSkill;
-    const readyLob = (sk, cd) => sk && sk.kind === 'aoe' && cd <= 0;
-    const readyDir = (sk, cd) => sk && (sk.kind === 'projectile' || sk.kind === 'chain') && cd <= 0;
-    // landing-zone preview for a lob AOE (prefer Q, then E)
-    const lob = readyLob(q, f.cd.q) ? q : readyLob(e, f.cd.e) ? e : null;
-    if (lob) {
-      const col = this.elemColor(lob.element);
-      let tx, ty;
-      if (!this.game.isTouch) { const mo = this.game.mouse || {}; tx = mo.x; ty = mo.y; }
-      else { const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y); if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; } }
-      ctx.save();
-      // dashed arc from caster to landing point
-      ctx.strokeStyle = withAlpha(col, 0.5); ctx.lineWidth = 2; ctx.setLineDash([4, 6]);
-      ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
-      // impact zone (radius 86 matches lobAoe R)
-      const pulse = 0.35 + 0.2 * Math.abs(Math.sin(this.t * 4));
-      ctx.globalAlpha = pulse; ctx.fillStyle = withAlpha(col, 0.18); ctx.beginPath(); ctx.arc(tx, ty, 86, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 0.8; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
-      ctx.beginPath(); ctx.arc(tx, ty, 86, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-      ctx.restore();
-      return;
-    }
-    // trajectory line for a directional projectile/chain skill
-    const dir = readyDir(q, f.cd.q) ? q : readyDir(e, f.cd.e) ? e : null;
-    if (dir) {
-      const col = this.elemColor(dir.element);
-      const len = 300;
-      ctx.save();
-      ctx.strokeStyle = withAlpha(col, 0.45); ctx.lineWidth = 2.5; ctx.setLineDash([10, 8]);
-      ctx.beginPath(); ctx.moveTo(f.x, f.y);
-      ctx.lineTo(f.x + Math.cos(aim) * len, f.y + Math.sin(aim) * len); ctx.stroke();
-      ctx.setLineDash([]);
-      // arrowhead
-      const ex = f.x + Math.cos(aim) * len, ey = f.y + Math.sin(aim) * len;
-      ctx.fillStyle = withAlpha(col, 0.8); ctx.translate(ex, ey); ctx.rotate(aim);
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-12, -6); ctx.lineTo(-12, 6); ctx.closePath(); ctx.fill();
-      ctx.restore();
-    }
-  }
-
   // Hero portraits reuse actual breed artwork; no floating stickers or generic globes.
   cinematicPortrait(uid) {
     if(!uid)return null;
@@ -7086,7 +7046,7 @@ class CaptureBattle {
       ctx.strokeStyle=c.second||'#e7bafb';ctx.lineWidth=4;ctx.lineCap='round';
       ctx.beginPath();ctx.moveTo(W*.39,bandY+bandH*.53);
       ctx.quadraticCurveTo(W*.5,bandY+bandH*(.12+.1*leap),W*.61,bandY+bandH*.53);ctx.stroke();
-      ctx.fillStyle='#fce9c6';ctx.font='900 '+Math.round(Math.min(32,W*.08))+'px system-ui';
+      ctx.fillStyle='#fce9c6';ctx.font='900 '+Math.round(Math.min(32,W*.08))+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.textAlign='center';ctx.fillText('×',W*.5,bandY+bandH*.49);
     }else{
       drawPortrait(c.uid,W*.32);
@@ -7098,7 +7058,7 @@ class CaptureBattle {
       ctx.moveTo(tx+rad-8,ty);ctx.lineTo(tx+rad+10,ty);
       ctx.moveTo(tx,ty-rad-10);ctx.lineTo(tx,ty-rad+8);
       ctx.moveTo(tx,ty+rad-8);ctx.lineTo(tx,ty+rad+10);ctx.stroke();
-      if(target){ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff2d4';
+      if(target){ctx.font='800 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff2d4';
         ctx.fillText(en?'TARGET LOCK':'目标锁定',tx,ty+rad+22);}
     }
     const label=duo?(en?'DUO BOND · DOUBLE POUNCE':'双猫默契 · 合力飞扑')
@@ -7106,10 +7066,10 @@ class CaptureBattle {
     const title=c.name||label;
     ctx.textAlign='center';ctx.shadowColor=c.color||c.first||'#f9dba8';
     ctx.shadowBlur=12;ctx.fillStyle='#fff9ef';
-    ctx.font='900 '+Math.round(Math.min(duo?22:28,W*.055))+'px system-ui';
+    ctx.font='900 '+Math.round(Math.min(duo?22:28,W*.055))+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.fillText(title,W*.5,bandY+bandH*.89,W*.82);
     ctx.shadowBlur=0;ctx.fillStyle='#edd6a5';
-    ctx.font='800 '+Math.round(Math.min(13,W*.033))+'px system-ui';
+    ctx.font='800 '+Math.round(Math.min(13,W*.033))+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.fillText(label,W*.5,bandY+bandH*.97,W*.82);
     ctx.restore();
   }
@@ -7154,12 +7114,12 @@ class CaptureBattle {
     // 5) skill name banner
     ctx.globalAlpha = Math.min(1, elapsed / 0.35) * (c.t < 0.6 ? c.t / 0.6 : 1);
     ctx.textAlign = 'center';
-    ctx.font = `900 ${this.game.isTouch ? 30 : 42}px system-ui, sans-serif`;
+    ctx.font = `900 ${this.game.isTouch ? 30 : 42}px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif`;
     ctx.shadowColor = col; ctx.shadowBlur = 24;
     ctx.fillStyle = '#fff';
     ctx.fillText(c.name, W / 2, H * 0.5);
     ctx.shadowBlur = 0; ctx.globalAlpha = (ctx.globalAlpha) * 0.9;
-    ctx.font = `700 ${this.game.isTouch ? 12 : 15}px system-ui, sans-serif`;
+    ctx.font = `700 ${this.game.isTouch ? 12 : 15}px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif`;
     ctx.fillStyle = col;
     ctx.fillText(en ? 'ULTIMATE' : '必 杀 技', W / 2, H * 0.5 + (this.game.isTouch ? 26 : 34));
     ctx.restore();
@@ -7179,7 +7139,7 @@ class CaptureBattle {
     const bw = Math.min(360, W - 120), bx = (W - bw) / 2, by = 16, bh = 12;
     const ready = this.captureReady;
     ctx.save();
-    ctx.textAlign = 'center'; ctx.font = '700 11px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.font = '700 11px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.fillStyle = ready ? '#ffd36b' : 'rgba(255,250,239,.95)';
     ctx.fillText(ready ? (zh ? '斗志将尽 · 收服它！' : 'Almost tamed — capture it!') : (zh ? '野猫斗志' : 'Wild morale'), W / 2, by - 3);
     // track
@@ -7201,7 +7161,7 @@ class CaptureBattle {
     ctx.strokeStyle='rgba(114,124,101,.28)';
     ctx.lineWidth=1;
     rr(ctx,x-cardW/2,y-23,cardW,poise?52:36,12);ctx.fill();ctx.stroke();
-    ctx.textAlign='center';ctx.font='700 11px system-ui, sans-serif';
+    ctx.textAlign='center';ctx.font='700 11px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.fillStyle='#4d5b49';ctx.fillText(label,x,y-9);
     ctx.fillStyle='rgba(112,132,110,.16)';
     rr(ctx,x-w/2,y-3,w,h,3);ctx.fill();
@@ -7227,7 +7187,7 @@ class CaptureBattle {
         ctx.strokeStyle='#df847d';ctx.lineWidth=1.6;
         rr(ctx,x-poiseW/2,yy,poiseW,poiseH,5);ctx.stroke();
       }
-      ctx.textAlign='center';ctx.font='800 10px system-ui, sans-serif';
+      ctx.textAlign='center';ctx.font='800 10px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle=(broken||shattered)?'#ae534b':'#90641e';
       ctx.fillText(broken?('虚弱 '+poise.stagger.toFixed(1)+'s'):
         (shattered?'破防':(poise.recovering?'恢复中':'韧性')),x,y+29);

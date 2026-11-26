@@ -245,14 +245,29 @@ function drawBackdrop(canvas,region){
  ctx.quadraticCurveTo(0,r*.48,-r*.4,r*.31);ctx.closePath();ctx.stroke();
  ctx.beginPath();ctx.arc(0,r*.4,r*.08,0,Math.PI*2);ctx.stroke();ctx.restore();
 }
+const legacyMulingPortraits=new Map();
 function renderPortraits(root){
  const S=state(),cat=S?.cats?.find(c=>c.uid===S.battlePrefs?.teamUids?.[0])||S?.cats?.[0];
  const player=root.querySelector('[data-cb-player-portrait]');
  if(player&&cat&&window.CatArt?.renderCatThumb)
   window.CatArt.renderCatThumb(player,window.GameData?.speciesById?.(cat.species),cat);
  const muling=root.querySelector('[data-cb-muling-portrait]');
- const sp=bossSpecies();
- if(muling&&sp&&window.CatArt?.renderCatThumb)window.CatArt.renderCatThumb(muling,sp);
+ if(muling){
+  const src='/cat-bond/assets/cinematics/characters/muling/traveler-silver-cream.webp';
+  const paint=image=>{
+   if(!muling.isConnected||muling.dataset.portraitSrc!==src||!image.naturalWidth)return;
+   const ctx=muling.getContext('2d');if(!ctx)return;
+   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,muling.width,muling.height);
+   const fit=Math.min(muling.width/image.naturalWidth,muling.height/image.naturalHeight)*.96;
+   const w=image.naturalWidth*fit,h=image.naturalHeight*fit;
+   ctx.drawImage(image,(muling.width-w)/2,(muling.height-h)/2,w,h);
+  };
+  muling.dataset.portraitSrc=src;
+  let image=legacyMulingPortraits.get(src);
+  if(!image){image=new Image();legacyMulingPortraits.set(src,image);image.src=src;}
+  if(image.complete&&image.naturalWidth)paint(image);
+  else image.addEventListener('load',()=>paint(image),{once:true});
+ }
 }
 function renderStoryActors(root,page,kind,index,time=performance.now()/1000){
  const left=root.querySelector('[data-cb-scene-player]'),right=root.querySelector('[data-cb-scene-companion]');
@@ -968,7 +983,7 @@ function openSlotManager(){
   }).join('');
   list.querySelectorAll('[data-save]').forEach(btn=>btn.onclick=async()=>{
    const id=btn.dataset.save,slot=window.State.listSaveSlots().find(x=>x.id===id);
-   if(slot?.exists&&!confirm(t('覆盖存档位 ','Overwrite Save Slot ')+slot.number+t('？其他两个存档不会改变。','? The other two slots will remain unchanged.')))return;
+   if(slot?.exists&&!await window.CatBondConfirm.slot('overwrite',slot.number))return;
    const result=window.State.saveToSlot(id,{overwriteConfirmed:!!slot?.exists});
    if(!result?.ok){say(t('本机存档写入失败，请检查浏览器存储空间。','Local save failed. Check available browser storage and retry.'));return;}
    say(t('已保存到存档位 ','Saved to Slot ')+slot.number);
@@ -977,16 +992,16 @@ function openSlotManager(){
   });
   list.querySelectorAll('[data-remove-save]').forEach(btn=>btn.onclick=async()=>{
    const id=btn.dataset.removeSave,slot=State.listSaveSlots().find(x=>x.id===id);
-   if(!slot?.exists||!confirm(t('永久删除存档位 ','Delete save slot ')+slot.number+t('？其他存档不受影响。','? Other slots are unaffected.')))return;
+   if(!slot?.exists||!await window.CatBondConfirm.slot('delete',slot.number))return;
    const result=State.deleteSaveSlot(id,{confirmed:true});
    if(!result.ok){say(t('未删除存档。请返回标题画面后重试。','Save not deleted. Return to the title and retry.'));return;}
    render();
    say(t('存档已删除。','Save deleted.'));
    void queueSync(id,true).catch(()=>{});
   });
-  list.querySelectorAll('[data-load]').forEach(btn=>btn.onclick=()=>{
+  list.querySelectorAll('[data-load]').forEach(btn=>btn.onclick=async()=>{
    const id=btn.dataset.load;
-   if(!confirm(t('读取存档位 ','Load Save Slot ')+window.State.listSaveSlots().find(x=>x.id===id)?.number+t(' 并重新载入游戏？当前进度会先自动保存到原存档位。',' and restart the game? Current progress will first be saved to its active slot.')))return;
+   const selected=window.State.listSaveSlots().find(x=>x.id===id);if(!selected?.readable||!await window.CatBondConfirm.slot('load',selected.number))return;
    if(playing){const saved=window.State.save();if(!saved?.ok){say(t('当前进度保存失败，未切换存档。','Could not save the current progress; the active slot was not changed.'));return;}}
    try{sessionStorage.setItem('catbond_resume_slot_v1',id);}
    catch(error){say(t('无法启动读档，请重试。','Could not prepare the load operation. Please retry.'));return;}
@@ -1276,14 +1291,14 @@ function npcDraw(ctx,npc,time){
  ctx.save();ctx.fillStyle='rgba(25,31,37,.22)';ctx.beginPath();ctx.ellipse(npc.x,npc.y+18,28,8,0,0,Math.PI*2);ctx.fill();
  const draw=window.CatMotion?.draw||window.CatArt?.drawCat;
  if(draw)draw(ctx,npc.x,npc.y+bob,{species:sp,scale:.92,face:1,t:time,pose:'idle',motion:.08,mood:'happy'});
- ctx.fillStyle='rgba(24,29,39,.82)';ctx.font='800 12px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.fillStyle='rgba(24,29,39,.82)';ctx.font='800 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
  const label=isZh()?npc.name:npc.en,ww=Math.max(54,ctx.measureText(label).width+18);
  ctx.beginPath();ctx.roundRect(npc.x-ww/2,npc.y-88+bob,ww,23,10);ctx.fill();
  ctx.fillStyle='#fff7e8';ctx.fillText(label,npc.x,npc.y-76+bob);
  const memory=npcHasMemory(npc)||!!root.memoryReady[npc.id];
  const mark=!root.choices[npc.id]?'✦':(memory&&!root.revealed[npc.id]?'!':(state()?.story?.bossDefeated?'★':'·'));
  ctx.fillStyle=mark==='!'?'#ffd36b':mark==='★'?'#c8e7bd':'#ffe8ae';ctx.beginPath();ctx.arc(npc.x+30,npc.y-82+bob,10,0,Math.PI*2);ctx.fill();
- ctx.fillStyle='#465345';ctx.font='900 11px system-ui';ctx.fillText(mark,npc.x+30,npc.y-81+bob);
+ ctx.fillStyle='#465345';ctx.font='900 11px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, sans-serif';ctx.fillText(mark,npc.x+30,npc.y-81+bob);
  ctx.restore();
 }
 window.CatBondNPC={

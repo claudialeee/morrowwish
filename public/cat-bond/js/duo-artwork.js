@@ -17,12 +17,6 @@ const watercolorsReady=()=>!!(
  window.CatBondArtworkStatus?.breedsLoaded||
  window.CatBondArtworkStatus?.originalLoaded
 );
-const scene=new Image();scene.decoding='async';
-let sceneOK=false;
-scene.onload=()=>{sceneOK=scene.naturalWidth===480&&scene.naturalHeight===405;
- window.dispatchEvent(new Event('cat-bond-duo-art-ready'));};
-scene.onerror=()=>{sceneOK=false;};
-scene.src=(window.CatBondDuoAssetBase||'assets/')+'duo-scene-backgrounds.webp?v=20261121-pastel-v1';
 // Warm, storybook environments. Avoid uniform solid-blue / solid-purple shots.
 const palette={
  storm:['#f1e9e4','#faf2e9','#d9e9d6','#71857d'],
@@ -70,12 +64,6 @@ function backdrop(ctx,W,H,p,key){
  ctx.save();const gradient=ctx.createLinearGradient(0,0,W,H);
  gradient.addColorStop(0,colors[0]);gradient.addColorStop(.55,colors[1]);gradient.addColorStop(1,colors[2]);
  ctx.fillStyle=gradient;ctx.fillRect(0,0,W,H);
- if(sceneOK){
-  ctx.save();ctx.globalAlpha=kind==='storm'?.16:.20;
-  const sx=(idx%2)*240,sy=Math.floor(idx/2)*135;
-  ctx.drawImage(scene,sx,sy,240,135,0,0,W,H);
-  ctx.restore();
- }
  // Lightweight mist and directional motion: different elements are never
  // dark-purple copies of each other.
  ctx.save();ctx.globalAlpha=kind==='storm'?.07:.12;

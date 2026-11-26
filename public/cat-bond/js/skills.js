@@ -199,7 +199,7 @@
     fanmao: 'water', bosi: 'light', wumao: 'elec', jiafei: 'fire',
   };
 
-  function elementOf(speciesId) { return SPECIES_ELEMENT[speciesId] || 'light'; }
+  function elementOf(speciesId) { return window.GameData?.STORY_SPECIES?.[speciesId]?.element || SPECIES_ELEMENT[speciesId] || 'light'; }
 
   // 0.5 | 1 | 1.5 | 2
   function effectiveness(atkEl, defEl) {

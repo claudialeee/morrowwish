@@ -1,0 +1,76 @@
+name: Cat Bond final release acceptance
+run-name: ${{ github.event.label.name == 'cat-bond-full-qa' && format('Full release QA {0}', github.event.pull_request.head.sha) || 'Ignored label event' }}
+on:
+  pull_request:
+    branches: [rpg/cat-bond-takeover]
+    types: [labeled]
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-full-${{ github.event.label.name == 'cat-bond-full-qa' && github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.head_ref == 'rpg/release-combined-next' && github.event.label.name == 'cat-bond-full-qa' }}
+jobs:
+  release-request:
+    if: github.head_ref == 'rpg/release-combined-next' && github.event.label.name == 'cat-bond-full-qa' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify exact immutable release candidate
+        env:
+          SOURCE: ${{ github.event.pull_request.head.sha }}
+        run: |
+          test "$(git rev-parse HEAD^2)" = "$SOURCE"
+          test "$(git rev-parse HEAD^{tree})" = "$(git rev-parse "$SOURCE^{tree}")"
+          echo "Exact release candidate $SOURCE"
+  campaign:
+    needs: release-request
+    uses: ./.github/workflows/cat-bond-harbor-flow.yml
+    with:
+      combined: true
+  score:
+    needs: release-request
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check score edition
+        run: |
+          node scripts/check-cat-bond-audio-assets.mjs
+          test -s public/cat-bond/assets/daylight-grade-v1.json
+          node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
+  controls:
+    needs: release-request
+    uses: ./.github/workflows/cat-bond-combined-controls.yml
+    with:
+      combined: true
+  prologue:
+    needs: release-request
+    uses: ./.github/workflows/cat-bond-release-prologue-qa.yml
+    with:
+      combined: true
+  book:
+    needs: release-request
+    uses: ./.github/workflows/cat-bond-resonance-book-qa.yml
+    with:
+      combined: true
+  audio:
+    needs: release-request
+    uses: ./.github/workflows/cat-bond-rpg-audio-qa.yml
+    with:
+      combined: true
+  visual:
+    needs: release-request
+    uses: ./.github/workflows/cat-bond-visual-polish-qa.yml
+    with:
+      combined: true
+  core:
+    needs: release-request
+    uses: ./.github/workflows/cat-bond-core-regression.yml
+    with:
+      combined: true

@@ -10,6 +10,7 @@ const errors=[];
 try{
  for(const profile of [
   {name:'phone',width:390,height:844,mobile:true,touch:true},
+  {name:'landscape',width:844,height:390,mobile:true,touch:true},
   {name:'desktop',width:1180,height:760,mobile:false,touch:false}
  ]){
   const context=await browser.newContext({
@@ -99,8 +100,8 @@ try{
   await frame.locator('#replay').click();
   assert.equal(await frame.evaluate(()=>window.__duoPreviewState.mode),'sequence');
   assert.equal(await frame.evaluate(()=>window.__duoPreviewState.activeTier),1);
-  await frame.waitForFunction(()=>window.__duoPreviewState.activeTier===2,{timeout:4000});
-  await frame.waitForFunction(()=>window.__duoPreviewState.activeTier===3,{timeout:4000});
+  await frame.waitForFunction(()=>window.__duoPreviewState.activeTier===2,null,{timeout:6000});
+  await frame.waitForFunction(()=>window.__duoPreviewState.activeTier===3,null,{timeout:6000});
   await frame.locator('#pause').click();
   assert.equal(await frame.evaluate(()=>window.__duoPreviewState.paused),true);
   const shell=await page.locator('#cb-duo-viewer .cb-duo-viewer-shell').boundingBox();

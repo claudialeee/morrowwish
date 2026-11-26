@@ -27,6 +27,10 @@
 .cbcp-art-stack{position:absolute;inset:0;overflow:hidden}.cbcp-layer{pointer-events:none}
 .cbcp-stage::before{content:'';position:absolute;inset:-15px;background:var(--cbcp-backplate,none) center/cover no-repeat;filter:blur(14px) brightness(.52);opacity:.85;pointer-events:none}
 .cbcp-fx{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+.cbcp-subtitle-wrap[hidden]{display:none!important}
+.cbcp-stage[data-subtitle="false"] .cbcp-vignette{background:radial-gradient(ellipse at center,transparent 72%,rgba(5,12,19,.18) 100%)}
+.cbcp-stage[data-subtitle="false"] .cbcp-art-stack{inset:0}
+.cbcp-stage{cursor:pointer;touch-action:manipulation}
 .cbcp-subtitle-wrap{padding:12px 18px;background:linear-gradient(90deg,transparent,rgba(7,14,24,.78) 16%,rgba(7,14,24,.78) 84%,transparent)}
 @media(orientation:portrait) and (max-width:680px){
   .cbcp-stage::before{content:'';position:absolute;inset:-15px;background:var(--cbcp-backplate,none) center/cover no-repeat;filter:blur(14px) brightness(.52);opacity:.85;pointer-events:none}
@@ -45,9 +49,10 @@
 .cbcp-tool,.cbcp-action{min-height:40px;padding:9px 13px;border:1px solid rgba(212,184,132,.65);border-radius:5px;background:rgba(18,34,43,.78);color:#f6e9d2;font:600 12px/1.2 system-ui,sans-serif;cursor:pointer;backdrop-filter:blur(8px)}
 .cbcp-tool:hover,.cbcp-action:hover{background:rgba(49,71,78,.94)}
 .cbcp-tool:focus-visible,.cbcp-action:focus-visible{outline:2px solid #f0d29a;outline-offset:3px}
-.cbcp-subtitle-wrap{position:absolute;z-index:7;left:50%;bottom:clamp(22px,5.2vw,66px);width:min(900px,calc(100% - 36px));transform:translateX(-50%);text-align:center;text-shadow:0 2px 14px #06111a}
-.cbcp-speaker{display:block;margin-bottom:7px;color:#e2c28f;font:600 12px/1.3 Georgia,"Noto Serif SC",serif;letter-spacing:.08em}
-.cbcp-subtitle{margin:0;color:#fff6e8;font:500 clamp(15px,2vw,22px)/1.6 system-ui,"Noto Sans SC",sans-serif;white-space:pre-line}
+.cbcp-subtitle-wrap{box-sizing:border-box;position:absolute;z-index:7;left:50%;bottom:clamp(22px,5.2vw,66px);width:min(900px,calc(100% - 36px));transform:translateX(-50%);text-align:center;text-shadow:0 2px 14px #06111a}
+.cbcp-speaker{display:block;margin-bottom:4px;color:#e2c28f;font:700 var(--cbcp-dialogue-size)/1.3 Georgia,"Noto Serif SC",serif;letter-spacing:.03em}
+.cbcp-subtitle-wrap{--cbcp-dialogue-size:clamp(15px,2vw,22px)}
+.cbcp-subtitle{margin:0;color:#fff6e8;font:500 var(--cbcp-dialogue-size)/1.6 system-ui,"Noto Sans SC",sans-serif;white-space:pre-line;overflow-wrap:anywhere}
 .cbcp-footer{z-index:8;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,#182a35,#101d28);border-top:1px solid rgba(181,140,85,.35)}
 .cbcp-progress{display:flex;align-items:center;gap:6px;min-width:0;flex:1}
 .cbcp-progress-dot{width:6px;height:6px;border-radius:50%;background:#64747a;transition:background .2s,transform .2s}
@@ -62,21 +67,22 @@
   .cbcp-stage{aspect-ratio:auto;min-height:0}
  .cbcp-art,.cbcp-layer{object-fit:contain;background:#101d28}
  .cbcp-topline{flex-wrap:wrap}
- .cbcp-heading{max-width:100%}
- .cbcp-heading{max-width:64%}
+ .cbcp-heading{max-width:64%;min-width:0;overflow-wrap:anywhere}
  .cbcp-kicker{font-size:9px;letter-spacing:.14em}
  .cbcp-title{font-size:clamp(19px,5.2vw,28px)}
  .cbcp-tool,.cbcp-action{min-height:44px;padding:9px 10px;font-size:11px}
  .cbcp-tools{gap:5px}
  .cbcp-subtitle-wrap{bottom:16px;width:calc(100% - 28px)}
- .cbcp-subtitle{font-size:clamp(14px,3.8vw,18px);line-height:1.48}
+ .cbcp-subtitle-wrap{--cbcp-dialogue-size:clamp(14px,3.8vw,18px)}
+ .cbcp-subtitle{line-height:1.48}
  .cbcp-footer{padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px))}
 }
 @media(max-height:460px) and (orientation:landscape){
  .cbcp-stage{aspect-ratio:auto}
  .cbcp-title{font-size:clamp(18px,4.5vh,27px)}
  .cbcp-subtitle-wrap{bottom:10px}
- .cbcp-subtitle{font-size:clamp(13px,3vh,17px);line-height:1.35}
+ .cbcp-subtitle-wrap{--cbcp-dialogue-size:clamp(13px,3vh,17px)}
+ .cbcp-subtitle{line-height:1.35}
  .cbcp-footer{padding:5px 9px}
  .cbcp-tool,.cbcp-action{min-height:44px;padding:7px 10px}
 }
@@ -84,6 +90,32 @@
  .cbcp-art,.cbcp-layer{transition:none!important;will-change:auto}
  .cbcp-crossfade{animation:none!important}
 }
+/* Full bleed: no backplate or separate footer band. */
+.cbcp-root,.cbcp-shell,.cbcp-stage{background:transparent!important;min-height:0!important}
+.cbcp-shell{display:block!important;position:relative!important}
+.cbcp-stage{position:absolute!important;inset:0!important}
+.cbcp-stage::before{display:none!important}
+.cbcp-stage .cbcp-art-stack{inset:0!important}
+.cbcp-stage .cbcp-art{object-fit:cover!important;background:transparent!important}
+.cbcp-stage .cbcp-layer{background:transparent!important}
+.cbcp-vignette{background:linear-gradient(0deg,#392c2060,transparent 28%,transparent 82%,#392c2038)!important}
+.cbcp-footer{position:absolute!important;right:clamp(10px,2vw,24px);bottom:max(10px,env(safe-area-inset-bottom));background:transparent!important;border:0!important;padding:0!important;pointer-events:none}
+.cbcp-footer .cbcp-footer-actions{pointer-events:auto}
+.cbcp-footer .cbcp-progress{display:none!important}
+.cbcp-root[data-opening-flow="true"] .cbcp-footer{left:clamp(10px,2vw,24px);justify-content:space-between}
+.cbcp-root[data-opening-flow="true"] .cbcp-back{pointer-events:auto;margin-right:auto}
+.cbcp-root[data-opening-flow="true"] .cbcp-language{display:none!important}
+.cbcp-back[hidden],.cbcp-language[hidden]{display:none!important}
+.cbcp-back:disabled{opacity:.48;cursor:default}
+.cbcp-root{font-family:var(--cb-font-body,system-ui,sans-serif)}
+.cbcp-kicker,.cbcp-title,.cbcp-speaker{font-family:var(--cb-font-display,Georgia,serif)}
+.cbcp-tool,.cbcp-action,.cbcp-subtitle{font-family:var(--cb-font-body,system-ui,sans-serif)}
+.cbcp-tool,.cbcp-action,.cbcp-action-primary{background:#f5e8cbf2!important;border:1px solid #a78b59!important;color:#493e2b!important;border-radius:10px!important;box-shadow:0 2px 6px #523a2626!important}
+.cbcp-subtitle-wrap{bottom:clamp(48px,9vh,85px)!important;width:min(1000px,calc(100% - 24px))!important;background:transparent!important;border:0!important;border-radius:0;box-shadow:none!important;padding:12px 16px!important;text-shadow:0 1px 3px #21160f,0 2px 8px #21160f,0 0 16px #21160f!important;isolation:isolate}
+.cbcp-subtitle-wrap::before{content:"";position:absolute;inset:-18px -12px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at center,rgba(40,26,19,.72) 0%,rgba(40,26,19,.55) 38%,transparent 76%)}
+.cbcp-subtitle,.cbcp-speaker{color:#fff9ed!important}
+.cbcp-speaker{color:#ffe3ad!important}
+@media(max-width:600px){.cbcp-subtitle-wrap{bottom:clamp(42px,8vh,70px)!important;padding:8px 10px!important}}
 `;
 
   function validateScene(scene) {
@@ -156,11 +188,12 @@
                 <button class="cbcp-tool cbcp-skip" type="button"></button>
               </div>
             </div>
-            <div class="cbcp-subtitle-wrap" aria-live="polite">
+            <div class="cbcp-subtitle-wrap" aria-live="polite" hidden>
               <span class="cbcp-speaker"></span><p class="cbcp-subtitle"></p>
             </div>
           </div>
           <div class="cbcp-footer">
+            <button class="cbcp-action cbcp-back" type="button" hidden></button>
             <div class="cbcp-progress" aria-hidden="true"></div>
             <div class="cbcp-footer-actions">
               <button class="cbcp-action cbcp-continue cbcp-action-primary" type="button"></button>
@@ -174,16 +207,18 @@
         title: this.root.querySelector('.cbcp-title'),
         speaker: this.root.querySelector('.cbcp-speaker'),
         subtitle: this.root.querySelector('.cbcp-subtitle'),
-        language: this.root.querySelector('.cbcp-language'),
+        back: this.root.querySelector('.cbcp-back'),language: this.root.querySelector('.cbcp-language'),
         pause: this.root.querySelector('.cbcp-pause'),
         skip: this.root.querySelector('.cbcp-skip'),
         continue: this.root.querySelector('.cbcp-continue'),
         progress: this.root.querySelector('.cbcp-progress')
       };
+      this.nodes.back.addEventListener('click',()=>{if(!this.scene||this.frameIndex<1||!this.frameReady)return;this.clearTimer();this.frameIndex--;this.frameElapsedMs=0;this.frameStartedAt=0;this.renderFrame();});
       this.nodes.language.addEventListener('click', () => this.requestLanguage(this.currentLanguage() === 'zh' ? 'en' : 'zh'));
       this.nodes.pause.addEventListener('click', () => this.paused ? this.resume() : this.pause());
       this.nodes.skip.addEventListener('click', () => this.skip());
-      this.nodes.continue.addEventListener('click', () => this.next());
+      this.nodes.continue.addEventListener('click', () => this.next(true));
+      this.nodes.stage.addEventListener('click', event => {if(!event.target.closest('button,a,input,select,textarea'))this.next(true);});
       this.updateControls();
     }
 
@@ -209,7 +244,7 @@
       const scene = typeof sceneId === 'object' ? sceneId : this.scenes.get(sceneId);
       if (!scene) throw new Error(`Unknown cinematic scene: ${sceneId}`);
       validateScene(scene);
-      this.stop();
+      this.stop({preserveFrame:!!scene.openingFlow});
       this.scene = scene;
       this.frameIndex = clamp(options.frameIndex, 0, scene.frames.length - 1);
       this.frameElapsedMs = Math.max(0, Number(options.elapsedMs) || 0);
@@ -289,7 +324,19 @@
           node.style.opacity = String(clamp(layer.opacity ?? 1,0,1));
           node.style.mixBlendMode = layer.blend || 'normal';
           node.src = layer.image;
-          this.applyCamera(node,frame.camera,Number(layer.depth)||0,frame.durationMs,frame.transitionMs);
+          if(layer.kind==='actor'){
+            const x=clamp(Number(layer.x)||50,12,88),y=clamp(Number(layer.y)||80,45,91);
+            node.style.inset='auto';node.style.left=x+'%';node.style.top=y+'%';node.style.background='transparent';
+            node.style.width=clamp(Number(layer.width)||22,12,30)+'%';
+            node.style.height='auto';node.style.maxHeight='46%';node.style.objectFit='contain';
+            node.style.transform='translate(-50%,-100%)';
+            node.style.filter='drop-shadow(0 9px 12px rgba(10,15,24,.38))';
+            if(!prefersReducedMotion()&&node.animate){
+              const dx=clamp(Number(layer.travel)||0,-8,8);
+              const a=node.animate([{transform:'translate(-50%,-100%) translateX('+(-dx)+'vw)',opacity:0},{transform:'translate(-50%,-100%) translateX(0)',opacity:1},{transform:'translate(-50%,-100%) translateX('+dx+'vw)',opacity:1}],{duration:Math.max(1200,frame.durationMs),fill:'both',easing:'ease-in-out'});
+              a.currentTime=frame.shotOffsetMs||0;if(this.paused)a.pause();
+            }
+          }else this.applyCamera(node,frame.camera,Number(layer.depth)||0,frame.durationMs,frame.transitionMs);
           this.nodes.stack.appendChild(node);
         }
         ready();
@@ -314,7 +361,10 @@
     }
 
     playEffect(effect,frame){
-      // Existing game sound controls remain authoritative. No background music.
+      // All cinematic cues share the RPG audio director and sound-volume controls.
+      const director=window.MorrowwishMusic;
+      const cue=({sanctuary:'sanctuary',impact:'impact',blackout:'impact',seal:'seal',seasons:'seasons',memory:'memory'})[effect];
+      if(cue&&director?.cue){director.cue(cue,frame.note);return;}
       const audio=window.MorrowwishAudio;
       if(effect==='sanctuary')audio?.note?.(frame.note,.7,.13);
       if(effect==='impact'||effect==='blackout')audio?.note?.(196,.7,.16);
@@ -385,6 +435,9 @@
       this.nodes.subtitle.textContent = line || '';
       this.nodes.speaker.hidden = !speaker;
       this.nodes.subtitle.hidden = !line;
+      const hasSubtitle=!!(speaker||line);
+      this.nodes.subtitle.closest(".cbcp-subtitle-wrap").hidden = !hasSubtitle;
+      this.nodes.stage.dataset.subtitle=String(hasSubtitle);
     }
 
     renderProgress() {
@@ -400,19 +453,25 @@
     updateControls() {
       const lang = this.currentLanguage();
       if (!this.nodes) return;
+      this.root.dataset.openingFlow=String(!!this.scene?.openingFlow);
+      this.nodes.language.hidden=!!this.scene?.openingFlow;
       this.nodes.language.textContent = lang === 'zh' ? 'EN' : '中文';
       this.nodes.language.setAttribute('aria-label', lang === 'zh' ? '切换到英文' : 'Switch to Chinese');
       this.nodes.pause.textContent = this.paused ? (lang === 'zh' ? '继续播放' : 'Resume') : (lang === 'zh' ? '暂停' : 'Pause');
+      this.nodes.back.textContent=lang==='zh'?'上一幕':'Previous scene';this.nodes.back.disabled=!this.frameReady||this.frameIndex===0;this.nodes.back.hidden=!this.scene?.openingFlow;
       this.nodes.skip.textContent = lang === 'zh' ? '跳过' : 'Skip';
       this.root.dataset.paused=String(this.paused);
       this.nodes.pause.disabled=!this.frameReady;
       this.nodes.skip.disabled=!this.frameReady;
       this.nodes.skip.hidden = !this.scene?.allowSkip;
-      const manual = this.scene?.mode === 'manual' || !(Number(this.scene?.frames?.[this.frameIndex]?.durationMs) > 0);
-      this.nodes.continue.textContent = this.frameIndex < (this.scene?.frames?.length || 1) - 1
-        ? (lang === 'zh' ? '继续' : 'Continue')
-        : (lang === 'zh' ? '完成' : 'Finish');
-      this.nodes.continue.hidden = !manual && this.scene?.mode !== 'manual';
+      this.nodes.continue.textContent = this.scene?.openingFlow
+        ? (lang === 'zh' ? '下一幕' : 'Next scene')
+        : this.frameIndex < (this.scene?.frames?.length || 1) - 1
+          ? (lang === 'zh' ? '继续' : 'Continue')
+          : (lang === 'zh' ? '完成' : 'Finish');
+      this.nodes.continue.hidden = !this.scene;
+      this.nodes.continue.disabled = !this.frameReady;
+      this.nodes.continue.setAttribute('aria-label',this.nodes.continue.textContent);
     }
 
     startTimer(remainingOverride) {
@@ -431,8 +490,8 @@
       this.frameStartedAt = 0;
     }
 
-    next() {
-      if (!this.scene || !this.frameReady || this.paused) return;
+    next(manual = false) {
+      if (!this.scene || !this.frameReady || (this.paused && !manual)) return;
       this.clearTimer();
       if (this.frameIndex < this.scene.frames.length - 1) {
         this.frameIndex += 1;
@@ -441,7 +500,7 @@
         this.renderFrame();
       } else {
         const completed = this.scene;
-        this.stop();
+        this.stop({preserveFrame:!!completed.openingFlow&&!completed.openingFinal});
         this.options.onComplete?.({ sceneId: completed.id, sourceSceneId: completed.sourceSceneId || null });
       }
     }
@@ -457,6 +516,7 @@
       if(this.fxRAF)cancelAnimationFrame(this.fxRAF);this.fxRAF=0;
       this.nodes.stack.getAnimations?.({subtree:true}).forEach(a=>a.pause());
       this.audio?.pause();
+      window.MorrowwishMusic?.cancelCinematicSounds?.();
       this.updateControls();
       this.options.onCheckpoint?.(this.snapshot());
       return this.snapshot();
@@ -521,11 +581,11 @@
     }
 
     playSfx(sfx) {
-      if (!sfx?.src || typeof Audio === 'undefined') return;
+      if (!sfx?.src || typeof Audio === 'undefined' || window.MorrowwishAudio?.isEnabled?.()===false) return;
       try {
         this.audio?.pause();
         this.audio = new Audio(sfx.src);
-        this.audio.volume = clamp(sfx.volume ?? 0.6, 0, 1);
+        this.audio.volume = clamp((sfx.volume ?? 0.6)*(window.MorrowwishMusic?.status?.().effectsVolume??1), 0, 1);
         const result = this.audio.play();
         result?.catch?.(() => {});
       } catch (_) { /* Audio is optional; visual playback must continue. */ }
@@ -544,7 +604,8 @@
       return true;
     }
 
-    stop() {
+    stop({preserveFrame=false}={}) {
+      preserveFrame=preserveFrame&&!this.root.hidden&&!!this.nodes.stack.querySelector('.cbcp-art');
       this.clearTimer();
       this.scene = null;
       this.renderToken++;
@@ -553,12 +614,13 @@
       if(this.fxRAF)cancelAnimationFrame(this.fxRAF);this.fxRAF=0;
       const fx=this.root.querySelector('.cbcp-fx');fx?.getContext('2d')?.clearRect(0,0,fx.width,fx.height);
       this.frameReady = false;this.root.dataset.ready='false';delete this.root.dataset.frameId;
-      this.nodes.stack.replaceChildren();
-      this.nodes.stage.style.removeProperty('--cbcp-backplate');
+      if(!preserveFrame){this.nodes.stack.replaceChildren();this.nodes.stage.style.removeProperty('--cbcp-backplate');}
       this.paused = false;
       this.frameElapsedMs = 0;
-      this.root.hidden = true;
+      this.root.hidden = !preserveFrame;
+      if(preserveFrame){this.nodes.continue.disabled=true;this.nodes.skip.disabled=true;this.nodes.pause.disabled=true;}
       this.audio?.pause();
+      window.MorrowwishMusic?.cancelCinematicSounds?.();
       return this;
     }
 
@@ -568,7 +630,7 @@
       if (event.key === 'Escape') {
         if (this.scene.allowSkip) { event.preventDefault(); this.skip(); }
       } else if (event.key === ' ' || event.key === 'Enter') {
-        if (this.scene.mode === 'manual') { event.preventDefault(); this.next(); }
+        if (!event.repeat) { event.preventDefault(); this.next(true); }
       }
     }
 

@@ -102,7 +102,7 @@ It must include:
 
 ## 7. Cinematic and art standards
 
-- Prologue, identity reveal, betrayal reveal, major chapter climaxes, final battle, and ending need authored cinematic staging.
+- Opening must not trigger a cinematic: optional short public-background text over the live garden, immediately dismissible. Identity reveal, betrayal reveal, major chapter climaxes, final battle and ending need authored cinematic staging. Historical sacrifice footage is eligible only after Chapter V/VI reveal gates.
 - Use polished original key art, layered depth, camera movement, lighting, particles, character acting, and sound design.
 - No crude line cats, cheap paper-cutout animation, static text-card sequences, or simple image carousels as substitutes for scenes.
 - Do not use a generic sprite in place of a named NPC's character art.
@@ -141,3 +141,18 @@ Before reporting a story task complete:
 - Do not make the Catdex a magic device that can restore stolen memories.
 - Do not treat a one-way signal as a completed reciprocal regional link.
 - Do not claim the new canon is live until the actual game has been migrated, tested, deployed, and verified.
+
+
+## 11. Canon 1.1 opening migration and acceptance
+- P-01..P-05 retain scene references but replace old operations: public context dismiss/skip; solo movement; optional map rescue with stranger; independent harbor travel; harbor arrival. Neither map rescue nor optional sign is a prerequisite for travel. H-01 accepts or defers temporary cooperation; H-04 verifies actual rescue and establishes companion; H-05 requires actual local response. Persist encounter, introduction, accepted/deferred cooperation and companion states per slot; no duplicate rewards or introductions. A player bypassing the map must receive public introduction at the harbor.
+- Remove all new-game/continue automatic opening animation triggers, not the archived art itself. Never mark historical footage completed by a click on a substitute. Legacy saves preserve inventory, progression and earned relationships; new opening flags migrate explicitly, with no forced replay of old cutscenes.
+- Keep the V3 exploration loop: optional discovery, side routes, paired actions, combat, ability-gated return, visible post-repair change, souvenirs and garden return. Do not turn the opening into a conversation chain. The player must understand what the Star Bell is, what forgetting means, and why they are going to the harbor without knowing the late secrets.
+- Cold-player check: after two minutes, ask for the world problem and immediate personal objective in their own words; after the harbor, ask what changed and why they want to visit the forest. Check both languages, desktop/mobile, skip/alternate encounter/reload/deferral. Verify no premature companion HUD or spoiler assets/subtitles/accessibility text. Narrative-only edits are not proof of runtime migration.
+
+
+## 12. Canon 1.2 full-campaign adaptation gate
+All 40 scene references are retained but the entire critical path in 02 is rewritten. For each scene map entry/action/exit/evidence, bilingual lines and choice consequences to actual runtime; do not treat old tests as coverage. Chapter II needs investigation evidence, real paired channel operation and visible water flow; III a safe prototype test and public accountability; IV a meaningful delivered letter, gliding and companion moment; V verified mural, route ledger, separation and interactive two-route model; VI verified catastrophe gate and six real reciprocal links; finale three distinct mechanical phases and Muling's free last-lock action. Preserve optional exploration and checkpoint retry in every region. Cold-player checks: can they explain the local goal on arrival, why a character disagrees, what their action changed, and why the next region matters? Confirm the original six-link four-stage evidence remains intact. Before implementation, plan localization/operation migration and per-slot save compatibility. No runtime or deployment claim for this document commit.
+
+
+## Owner amendment: single-avatar exploration and real story companions
+RPG is not released; no legacy RPG migration is required. Control one protagonist in exploration; teammates assist automatically. Muling and the 12 regional actors become real selectable battle roster members, not wild catches or map-following avatars. Use existing two active cats (one directly controlled), reserves and elemental Duo Bond. Muling leaves at M-05 and returns at E-03 with her own progress; other NPCs join on regional resolution. The 33 collectible species stay separate. Verify clean-slot play, recruitment, actual combo damage/status, swap, and current-version reload.

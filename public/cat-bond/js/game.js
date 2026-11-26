@@ -138,7 +138,7 @@ class Game {
 
   openWorldMap() {
     const story=window.CatBondResonance?.view?.(),id=story?.current?.id;
-    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(id==='prologue:P-04'||(id==='prologue:P-05'&&story.cursor<story.current.lines.length))){this.toast({zh:'先完成与暮铃的交谈和花园调查。',en:'Talk to Muling and investigate the garden before leaving.'});return false;}
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&story?.current?.chapter==='prologue'&&id!=='prologue:P-05'){this.toast({zh:'请先进入花园。',en:'Enter the garden first.'});return false;}
     window.SunlitGarden?.leave?.();
     // Clear messages from the garden encounter tutorial before navigating.
     // The global toast queue otherwise covers the exploration map and cats
@@ -163,7 +163,7 @@ class Game {
     document.body.classList.remove('cb-exploring');
     document.getElementById('yard-actions').classList.remove('hidden');
     document.getElementById('tabbar').classList.remove('hidden');
-    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('hud').classList.add('hidden');
     this.yard?.refreshYardSwitch();
     window.SunlitGarden?.enter?.();
   }
@@ -589,7 +589,9 @@ class Game {
       const en=window.MorrowwishI18n?.get?.()!=='zh';
       const label=en?'☰ Menu':'☰ 菜单';
       if(menuBtn.textContent!==label)menuBtn.textContent=label;
-      menuBtn.setAttribute('aria-label',en?'Open exploration menu':'打开探险管理菜单');
+      const bookEnabled=!!window.ResonanceBook;
+      menuBtn.setAttribute('aria-label',bookEnabled?(en?'Open system menu':'打开系统菜单'):(en?'Open exploration menu':'打开探险管理菜单'));
+      menuBtn.setAttribute('aria-controls',bookEnabled?'cb-system-menu':'panel');
     }
     if(this.scene==='map' && this.t>=(this._nextExploreHealthTick||0)){
       this._nextExploreHealthTick=this.t+1;
@@ -1285,8 +1287,9 @@ class Game {
     if(basic&&this.isTouch)basic.textContent=english?'Tap':'点按';
     const helpBtn=document.getElementById('battle-help-toggle');
     if(helpBtn){
-      const label=english?'? Controls':'? 操作';
-      if(helpBtn.textContent!==label)helpBtn.textContent=label;
+      const caption=helpBtn.querySelector('.battle-top-label');
+      const label=english?' Controls':' 操作';
+      if(caption&&caption.textContent!==label)caption.textContent=label;
       helpBtn.setAttribute('aria-label',english?'Show battle controls':'查看手动战斗操作说明');
     }
     this.syncTouchBattleUI();
@@ -1641,6 +1644,7 @@ class Game {
     // Casual: full heal. Hardcore field encounters: remaining HP carries on,
     // and State.catHpFraction replenishes it continuously over five minutes.
     const recovery={mode:State.difficulty(),fromMap,team:[]};
+    if(!win&&fromMap&&b.regionalCombat?.region==="sky")recovery.sky={outcome:b._voluntaryFlee?"retreat":"defeat",species:b.wild.id,owner:State.S};
     try {
       const seen=new Set();
       for(const f of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){
@@ -1850,6 +1854,7 @@ class Game {
   refreshHUD() {
     // Only two currencies remain: 🪙 coins and 🐠 fish. The old 🐟 treats / 🧶 yarn
     // pills were removed from the HUD, so guard those lookups defensively.
+    const hud=document.getElementById('hud');if(hud){hud.hidden=true;hud.style.setProperty('display','none','important');}const yardReturn=document.getElementById('cb-yard-return');if(yardReturn){yardReturn.hidden=true;yardReturn.style.setProperty('display','none','important');}
     const coinsEl = document.getElementById('coins');
     if (coinsEl) coinsEl.textContent = State.S.coins;
     const fishEl = document.getElementById('fish');

@@ -1,0 +1,166 @@
+/* Full bleed, single menu and consistent parchment UI. */
+html body #game-root{padding:0!important}
+html body #game-root #stage{border:0!important;border-radius:0!important;box-shadow:none!important;overflow:hidden!important;background:#ead5b6!important}
+#stage #hud{display:none!important}
+html body #stage #cb-header{background:transparent!important;border:0!important;box-shadow:none!important;pointer-events:none!important}
+#stage #cb-header>*{pointer-events:auto}
+html body #stage #cb-header #cb-yard-return{display:none!important}
+#stage .rw-world:not([hidden]){inset:0!important;display:block!important;padding:0!important;background:transparent!important;overflow:hidden!important}
+#stage .rw-world:not([hidden])>.rw-shell{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;background:transparent!important;overflow:hidden!important;container-type:size;display:block!important;max-width:none!important;max-height:none!important}
+#stage .rw-world>.rw-shell::before{display:none!important}
+#stage .rw-world:not([hidden])>.rw-shell .rw-surface{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;width:max(100cqw,calc(100cqh * 1.77777778))!important;height:auto!important;max-width:none!important;max-height:none!important;aspect-ratio:16/9!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important}
+#stage .rw-world:not([hidden])>.rw-head{position:absolute!important;top:12px!important;left:14px!important;right:100px!important;width:auto!important;max-width:none!important;display:block!important;z-index:4!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;pointer-events:none!important}
+#stage .rw-world>.rw-head>.rw-button,#stage .rw-region-toggle,#stage .rw-atlas-menu:not([open])>summary{display:none!important}
+#stage .rw-world .rw-brand{width:max-content;max-width:min(62vw,440px);padding:7px 12px;background:#fff4dbea;border-radius:10px;box-shadow:0 2px 10px #513a2026}
+#stage .rw-world .rw-brand strong{color:#483927!important;font-size:clamp(16px,2vw,25px)}
+#stage .rw-world .rw-fit-summary{font-size:12px;color:#695540!important;white-space:normal}
+#stage .rw-world:not([hidden])>.rw-fit-rail{position:absolute!important;left:auto!important;right:12px!important;top:62px!important;bottom:auto!important;width:min(400px,calc(100% - 24px))!important;height:auto!important;max-height:calc(100% - 82px)!important;padding:8px!important;border:1px solid #bea170!important;border-radius:12px!important;background:#fff6e9f5!important;box-shadow:0 5px 22px #47321d38!important;overflow:auto!important;overscroll-behavior:contain!important;z-index:5!important}
+#stage .rw-world>.rw-fit-rail[hidden],#stage .rw-atlas-mode>.rw-atlas-rail:has(.rw-atlas-menu:not([open])){display:none!important}
+#stage .rw-world .rw-atlas-menu[open]{position:static!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important}
+#stage .rw-world .rw-atlas-menu[open]>summary{display:list-item!important;position:sticky!important;top:0!important;background:#f3e5ca!important}
+#stage .rw-world .rw-fit-rail:has(.rw-puzzle-controls){top:auto!important;bottom:12px!important;max-height:65%!important;right:12px!important;width:min(450px,calc(100% - 24px))!important}
+#stage .rw-world .rw-floating-notice{position:absolute!important;left:14px;bottom:14px;max-width:min(320px,70%);z-index:4;margin:0!important}
+#stage #battle-ui .battle-topbar,#stage #battle-ui .battle-tools,#stage #battle-ui .team-slot,#stage #battle-ui .move,#stage #battle-ui .cb-region-combat,#stage #battle-ui #ult-wrap{background:#f6e9cde8!important;border:0!important;box-shadow:0 2px 8px #4f351c24!important;border-radius:10px!important;color:#493e2b!important}
+#stage #battle-ui .team-slot.active{outline:2px solid #b18b4d!important;outline-offset:-2px!important}
+#stage #battle-ui .move-bar{background:transparent!important;border:0!important;box-shadow:none!important}
+#stage #battle-ui .battle-tools .tiny-btn{background:transparent!important;border:0!important;box-shadow:none!important}
+#stage #battle-ui .battle-tools #btn-auto.is-auto{background:#d9e4c7!important;border-radius:6px}
+#stage #panel .cat-capture-card{box-sizing:border-box!important;width:min(720px,100%)!important;padding:clamp(12px,2vw,28px)!important;background:#fff7e6!important;color:#4c3e2b!important;border:1px solid #b89b66!important;border-radius:14px!important}
+#stage #panel .cat-capture-card :is(.skill-reveal-card,.duo-unlock,.first-adventure-tip,.golden-paw-unlock,.first-capture-rewards,.collection-reward,.reunion-reward){box-sizing:border-box!important;width:100%!important;max-width:none!important;margin:8px 0!important;padding:12px 14px!important;background:#f5e9ce!important;border:1px solid #cdb685!important;border-radius:10px!important;color:#51422d!important;text-align:left!important;box-shadow:none!important}
+#stage #panel .cat-capture-card :is(.skill-reveal-card,.duo-unlock,.golden-paw-unlock) :is(b,strong,span,small,p){color:inherit!important}
+#stage #panel .cat-capture-card .btn-row{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(145px,100%),1fr))!important;gap:8px!important;margin:14px 0 0!important;width:100%!important}
+#stage #panel .cat-capture-card .btn-row>.btn{width:100%!important;min-width:0!important;min-height:44px!important;height:100%!important;margin:0!important;padding:9px 12px!important;white-space:normal!important;background:#eedbb4!important;color:#493e2b!important;border:1px solid #ae905d!important;border-radius:8px!important;box-shadow:none!important}
+#stage #panel .cat-capture-card .btn-row>#cr-next{background:#d4b47a!important}
+#stage .rb-wallet{display:flex;justify-content:flex-end;gap:8px;padding:5px 12px;background:#f5e8cd;border-bottom:1px solid #d3bd8e}
+#stage .rb-wallet .rb-stat{display:flex;align-items:center;gap:8px;margin:0!important;padding:4px 10px!important;border:0!important;background:transparent!important;color:#493e2b!important}
+@media(max-width:680px) and (orientation:portrait){#stage .rw-world>.rw-head{left:8px!important;top:8px!important;right:82px!important}#stage .rw-world .rw-brand{max-width:calc(100vw - 110px)}#stage .rw-world>.rw-fit-rail{right:8px!important;width:calc(100% - 16px)!important}#stage .rw-world .rw-fit-rail:has(.rw-puzzle-controls){max-height:48%!important}#stage #panel .cat-capture-card .btn-row{grid-template-columns:1fr!important}}
+
+/* Actual stage bounds, not just the art inside a framed desktop stage. */
+html body #game-root #stage{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important}
+#stage #intro .cb-title-landscape{background-size:cover!important;background-position:center!important}
+#stage .rw-world .rw-fit-rail:not(:has(.rw-puzzle-controls)){scrollbar-width:thin}
+#stage .rw-world .rw-fit-rail:has(.rw-puzzle-controls){scrollbar-width:thin}
+#stage .rw-world .rw-brand{pointer-events:none}
+
+#stage .rw-world .rw-brand{max-width:100%}
+#stage .rw-world .rw-fit-summary{display:block!important;max-width:100%;overflow-wrap:normal;line-height:1.3}
+#stage .rw-world .rw-fit-rail .rw-button,#stage .rw-world .rw-fit-rail .rw-system-nav button{min-height:44px!important;border-radius:8px!important}
+#stage .rw-world .rw-fit-rail .rw-metrics{gap:8px}
+#stage #panel .cat-capture-card .first-adventure-tip{background:transparent!important;border:0!important;padding:4px 2px!important}
+
+/* RPG interaction pass: compact dialogue, no duplicate HUD or gray menu scrim. */
+html body #stage #cb-header-actions #hud,html body #stage #cb-header-actions .hud-pill,html body #stage #hud,html body #stage .hud-pill{display:none!important;visibility:hidden!important}
+html body #stage #cb-yard-return,html body #stage #cb-header #cb-yard-return,html[data-mw-fullscreen-game="cat-bond"] body #stage #cb-header #cb-yard-return{display:none!important}
+html body #stage #cb-system-menu:not([hidden]){background:transparent!important;backdrop-filter:none!important;align-items:flex-start!important;justify-content:flex-end!important;padding:58px 12px 12px!important}
+#stage #cb-system-menu .cb-system-card{width:min(460px,100%)!important;max-height:100%!important;background:#fff7e6!important;color:#493d2d!important;border:1px solid #bca274!important;box-shadow:0 5px 24px #50391b35!important;border-radius:12px!important}
+#stage #cb-system-menu .cb-system-rows button{min-height:38px!important;background:#f5ead1!important;border:1px solid #cfb98e!important;border-radius:7px!important;color:#534431!important;padding:6px 10px!important}
+.cb-confirm-dialog{position:fixed!important;inset:0!important;margin:auto!important;width:min(460px,calc(100% - 32px))!important;height:max-content!important;max-height:calc(100dvh - 32px)!important}
+#stage .res-host:not(.res-library-reveal){background:linear-gradient(0deg,#49362220,transparent 42%)!important;backdrop-filter:none!important}
+#stage .res-host .res-dialogue{width:min(860px,94%)!important;grid-template-columns:minmax(80px,22%) minmax(0,1fr)!important;gap:12px!important;align-items:end!important}
+#stage .res-host .res-dialogue:has(.res-portrait[hidden]){grid-template-columns:1fr!important}
+#stage .res-host .res-portrait{max-height:32vh!important;filter:drop-shadow(0 4px 8px #47332628)!important}
+#stage .res-host .res-body{padding:12px 18px!important;background:#fff7e8f5!important;border:1px solid #c7ad83!important;border-radius:10px!important;box-shadow:0 3px 14px #3d281e26!important;color:#46382b!important;cursor:pointer}
+#stage .res-host .res-speaker{font:600 14px/1.3 var(--cb-font-display)!important;color:#856336!important;margin:0 0 5px!important}
+#stage .res-host .res-line{font:500 clamp(14px,1.25vw,18px)/1.55 var(--cb-font-body)!important;min-height:0!important;margin:0!important;color:#493d32!important}
+#stage .res-host .res-choices:empty,#stage .res-host .res-controls:has(.res-legacy-control),#stage .res-host .res-legacy-control{display:none!important}
+#stage .res-host .res-skip-top{position:absolute!important;top:12px!important;right:94px!important;min-height:36px!important;padding:6px 12px!important;background:#fff1d7!important;color:#56432f!important;border:1px solid #bca274!important;box-shadow:none!important}
+#stage:has(.res-host .res-dialogue) #cb-system-toggle{display:inline-flex!important;z-index:2147483000!important;right:10px!important;top:10px!important}
+#stage .res-host .res-history{color:#594b3a!important}
+#stage .res-host .res-prologue-context{color:#856a42!important}
+#stage .cat-capture-card .battle-grade,#stage .cat-capture-card .battle-rating,#stage .cat-capture-card .battle-reward-card{width:100%!important;max-width:none!important;margin:6px 0!important;box-sizing:border-box!important}
+@media(max-width:600px){#stage .res-host .res-dialogue{display:grid!important;width:100%!important;grid-template-columns:22% minmax(0,1fr)!important;gap:6px!important}#stage .res-host .res-body{padding:9px 10px!important}#stage .res-host .res-portrait{max-height:24vh!important;width:100%!important}}
+
+/* Context-sensitive RPG menu: navigation first, settings and save management on separate pages. */
+html body #stage #cb-system-menu:not([hidden]){background:none!important;align-items:flex-start!important;justify-content:flex-end!important}
+html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24px))!important;max-height:100%!important;overflow:auto!important;padding:14px!important;background:#fff9ed!important;border:1px solid #cbb58c!important;box-shadow:0 7px 25px #503b252c!important}
+#stage #cb-system-menu .cb-system-card header{gap:10px;margin:0 0 8px!important;padding:0 0 8px;border-bottom:1px solid #e6d8bd}
+#stage #cb-system-menu .cb-system-card header h2{flex:1;font:600 19px/1.3 var(--cb-font-display)!important}
+#stage #cb-system-menu .cb-system-card header button{min-width:32px!important;min-height:32px!important;border:0!important;background:transparent!important;color:#806442!important;padding:0!important;font-size:22px!important}
+#stage #cb-system-menu .cb-system-rows{display:flex!important;flex-direction:column!important;gap:10px!important}
+#stage #cb-system-menu .cb-menu-group{display:flex;flex-direction:column;gap:0}
+#stage #cb-system-menu .cb-menu-group h3{margin:4px 0 4px;padding:0 8px;color:#947b54;font-size:11px;letter-spacing:.07em;font-weight:600}
+#stage #cb-system-menu .cb-system-rows button{display:flex!important;justify-content:space-between!important;min-height:38px!important;padding:8px 10px!important;border:0!important;border-bottom:1px solid #e9dec9!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font:500 14px/1.3 var(--cb-font-body)!important}
+#stage #cb-system-menu .cb-system-rows button:last-child{border-bottom:0!important}
+#stage #cb-system-menu .cb-system-rows button:hover,#stage #cb-system-menu .cb-system-rows button:focus-visible{background:#f0e4ca!important;border-radius:6px!important}
+#stage #cb-system-menu .cb-system-rows small{font-size:12px;color:#89734c!important}
+#stage #cb-system-menu .cb-system-rows>div{display:flex!important;flex-direction:column;gap:10px!important}
+#stage #cb-system-menu .cb-system-rows output{color:#76613f!important}
+@media(max-height:480px) and (orientation:landscape){html body #stage #cb-system-menu .cb-system-card{width:min(560px,100%)!important;padding:10px!important}#stage #cb-system-menu .cb-system-card[data-menu-page=home] .cb-system-rows{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px!important}#stage #cb-system-menu .cb-system-rows button{min-height:32px!important;font-size:12px!important}}
+
+/* Keep global typography quiet and readable; remove oversized nested reward panels. */
+#stage button,#stage input,#stage select,#stage .rb-open,#stage #panel{font-family:var(--cb-font-body)}
+#stage :is(.rb-open,#panel,.cb-system-card) :is(h1,h2,h3){font-family:var(--cb-font-display);line-height:1.3}
+#stage #panel .cat-capture-card :is(.battle-grade,.battle-rating,.battle-reward-card,.battle-heal-summary,.battle-exp-card,.battle-level-card){font-size:clamp(12px,1.1vw,15px)!important;padding:8px 10px!important;margin:5px 0!important;background:#f7ecd6!important;color:#534431!important;border-color:#d5c09a!important;box-sizing:border-box!important;width:100%!important;max-width:none!important}
+#stage #panel .cat-capture-card details[open]>summary .capture-detail-hint{font-size:0}
+#stage #panel .cat-capture-card details[open]>summary .capture-detail-hint::after{content:'−';font-size:14px}
+
+#stage .res-ambient-simple{position:absolute;inset:0;display:grid;place-items:center;background:none!important;backdrop-filter:none!important}
+#stage .res-ambient-card,#stage .res-key-handover{width:min(440px,calc(100% - 24px));max-height:96%;overflow:auto;background:#fff8e9;color:#534431;padding:16px;border:1px solid #c5a774;border-radius:12px;box-sizing:border-box;text-align:center;box-shadow:0 6px 22px #513b2330}
+#stage .res-ambient-card h2,#stage .res-key-handover h2{font:600 20px var(--cb-font-display);color:#59452f;margin:0 0 9px}
+#stage .res-ambient-card button,#stage .res-key-handover button{min-height:40px;padding:8px 16px;border:1px solid #b99b66;border-radius:8px;background:#e9d4ad;color:#493e2b;cursor:pointer}
+#stage .res-route-preview{position:relative;aspect-ratio:16/9;background:url("../assets/resonance-world-v2/harbor.webp") center/cover;border-radius:8px;margin:10px 0}
+#stage .res-route-west{position:absolute;top:22%;left:5%;font-size:12px;background:#fff2d7;color:#6c512d;padding:5px 7px;border-radius:6px;border:1px solid #c1a477}
+#stage .res-key-handover img{height:min(22vh,110px);object-fit:contain}
+#stage #cb-leisure{position:absolute;inset:0;display:flex;flex-direction:column;z-index:2147483000;background:#fff8e8}
+#stage #cb-leisure header{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;color:#57442d;min-height:44px}
+#stage #cb-leisure header button{min-height:36px;background:#eddab2;border:1px solid #bfa16a;border-radius:8px;color:#58442d;padding:5px 10px}
+#stage #cb-leisure iframe{width:100%;flex:1;min-height:0;border:0}
+#stage #panel .first-capture-rewards .capture-detail-hint::after{content:attr(data-collapsed);font-size:12px}
+#stage #panel .first-capture-rewards[open] .capture-detail-hint::after{content:attr(data-open);font-size:12px}
+
+/* Quest panel: current objective, main actions, then optional exploration. */
+#stage .rw-world .rw-fit-rail .rw-camera-controls[hidden]{display:none!important}
+#stage .rw-world .rw-fit-rail .rw-objective{display:grid!important;grid-template-columns:minmax(0,1fr);gap:8px;padding:12px!important}
+#stage .rw-world .rw-fit-rail .rw-current{gap:5px}
+#stage .rw-world .rw-fit-rail .rw-current strong{font-size:clamp(18px,2vw,23px)!important;line-height:1.25}
+#stage .rw-world .rw-fit-rail .rw-next-label{margin-top:6px;font-size:12px!important;font-weight:700;color:#806135!important;letter-spacing:0}
+#stage .rw-world .rw-fit-rail .rw-next{font-size:clamp(15px,1.6vw,18px)!important;line-height:1.5;color:#493e2b!important;white-space:normal}
+#stage .rw-world .rw-fit-rail .rw-quest-progress{border-top:1px solid #d6c3a3;padding-top:7px;color:#786249;font-size:12px}
+#stage .rw-world .rw-fit-rail .rw-quest-progress summary,#stage .rw-world .rw-fit-rail .rw-optional-actions summary{cursor:pointer;padding:5px 0;font-weight:700}
+#stage .rw-world .rw-fit-rail .rw-world-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+#stage .rw-world .rw-fit-rail .rw-action-heading,#stage .rw-world .rw-fit-rail .rw-optional-actions{grid-column:1/-1}
+#stage .rw-world .rw-fit-rail .rw-action-heading{font-size:14px;color:#72552f;padding:4px 2px}
+#stage .rw-world .rw-fit-rail .rw-world-actions [data-quest-primary]{background:#ead4a4!important;border-color:#b08a4d!important;font-weight:700}
+#stage .rw-world .rw-fit-rail .rw-optional-actions{border-top:1px solid #d6c3a3;color:#786249;padding:5px 0}
+#stage .rw-world .rw-fit-rail .rw-optional-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px}
+#stage .rw-world .rw-fit-rail .rw-optional-grid .rw-button{white-space:normal;min-width:0}
+#stage .res-ambient-dismiss{margin-inline-start:8px;background:transparent!important;color:#786249!important}
+
+/* Opening encounter has its own actions, not the retired generic dialogue toolbar.
+   Keep controls visible even under the fullbleed dialogue simplification. */
+#stage #cb-traveler-encounter .cb-encounter-controls{display:flex!important;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px!important}
+#stage #cb-traveler-encounter .cb-encounter-controls button{min-height:44px;cursor:pointer;margin:0;padding:7px 12px}
+#stage #cb-traveler-encounter .cb-encounter-next{background:#e7ca91!important;border-color:#ab854d!important;color:#44341f!important;font-weight:750;flex:1 1 auto}
+#stage .sg-prologue-guide.sg-minimal-opening{width:min(320px,calc(100% - 24px));padding:9px 11px;gap:5px}
+#stage .sg-minimal-opening>div{display:flex;align-items:center;gap:6px}
+#stage .sg-minimal-opening .sg-main-continue{flex:1 1 auto;min-height:44px;background:#e7ca91!important;font-weight:750!important}
+#stage .sg-explore-options{flex:0 1 auto}
+#stage .sg-explore-options summary{cursor:pointer;min-height:44px;display:flex;align-items:center;padding:0 7px;font-weight:650;color:#725631}
+#stage .sg-explore-options summary::after{content:" ▾";padding-left:4px}
+#stage .sg-explore-options[open]{flex:1 1 100%;display:grid;gap:4px}
+#stage .sg-explore-options[open] button{display:block;width:100%;margin:3px 0 0;text-align:left}
+@media(max-height:480px){#stage #cb-traveler-encounter .res-portrait{max-height:24vh!important}#stage #cb-traveler-encounter .cb-encounter-controls{margin-top:6px!important;gap:4px}#stage #cb-traveler-encounter .cb-encounter-controls button{min-height:40px;padding:5px 8px}}
+
+/* Physical NPC talk affordance: map coordinates follow the painted cat, not the HUD. */
+#stage .sg-npc-talk-marker{position:absolute;z-index:3;transform:translate(-50%,-100%);display:flex;align-items:center;justify-content:center;gap:5px;min-height:36px;min-width:54px;padding:5px 9px;border:1px solid #aa844c;border-radius:12px;background:#fff1d2;color:#654923;box-shadow:0 3px 8px #3a2b2533;font:700 12px var(--cb-font-body);cursor:pointer;pointer-events:auto;white-space:nowrap}
+#stage .sg-npc-talk-marker::after{content:"";position:absolute;bottom:-5px;left:calc(50% - 4px);width:8px;height:8px;transform:rotate(45deg);background:#fff1d2;border-right:1px solid #aa844c;border-bottom:1px solid #aa844c}
+#stage .sg-npc-talk-marker[hidden],#stage .sg-hotspots.is-placing .sg-npc-talk-marker,#stage:has(.res-host,#cb-player-first-intro,#panel.open,#cb-system-menu:not([hidden])) .sg-npc-talk-marker{display:none!important}
+#stage .sg-npc-talk-marker:focus-visible{outline:2px solid #714e23;outline-offset:3px}
+#stage .res-host [data-res-language],#stage .res-host .cb-encounter-language{display:none!important}
+
+/* Discoveries sit in the illustration, with generous invisible touch targets. */
+#stage .sg-exploration-layer{position:absolute;inset:0;pointer-events:none;z-index:1}
+#stage .sg-exploration-layer[hidden],#stage .sg-discovery[hidden]{display:none!important}
+#stage .sg-discovery{position:absolute;transform:translate(-50%,-50%);width:48px;height:48px;padding:4px;display:grid;place-items:center;background:none!important;border:0!important;box-shadow:none!important;cursor:pointer;pointer-events:auto;color:#6f4f35;touch-action:manipulation}
+#stage .sg-discovery svg{width:33px;height:33px;overflow:visible;filter:drop-shadow(0 1px 1px #6b51374d);pointer-events:none}
+#stage .sg-discovery-butterfly svg{animation:sg-flutter .95s ease-in-out infinite;transform-origin:center}
+#stage .sg-discovery-seed svg,#stage .sg-discovery-door svg{animation:sg-glint 2.4s ease-in-out infinite}
+#stage .sg-discovery:focus-visible{outline:2px solid #986b35;outline-offset:1px;border-radius:50%}
+#stage .sg-discovery:hover svg{filter:drop-shadow(0 0 4px #fff0b5)}
+#stage .sg-discovery-choice{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(285px,90%);padding:14px;border:1px solid #b99a65;border-radius:14px;background:#fff1da;color:#684f35;box-shadow:0 5px 24px #634b3b44;pointer-events:auto;z-index:4;font:600 13px var(--cb-font-body)}
+#stage .sg-discovery-choice p{margin:0 0 7px}
+#stage .sg-discovery-choice button{display:block;width:100%;min-height:40px;margin:4px 0;padding:7px;background:#f3dfba;color:#60482f;border:1px solid #c6a779;border-radius:8px;cursor:pointer}
+#stage .sg-hotspots.is-placing .sg-exploration-layer,#stage:has(.res-host,#cb-player-first-intro,#panel.open,#cb-system-menu:not([hidden])) .sg-exploration-layer{display:none!important}
+@keyframes sg-flutter{0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-4px) scaleX(.62)}}
+@keyframes sg-glint{0%,100%{opacity:.64}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){#stage .sg-discovery svg{animation:none!important}}

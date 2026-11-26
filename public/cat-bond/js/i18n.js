@@ -132,6 +132,32 @@
     '? 玩法': '? Guide',
     '重新查看玩法引导': 'Review gameplay guide',
     '玩法指引': 'Gameplay guide',
+    "请等猫咪使用完该设施。": "Wait until the facility is free.",
+    " · 选择新位置": " · Choose a new location",
+    " · 可移动": " · Ready",
+    " · 有遮挡": " · Blocked",
+    "已移动 ": "Moved ",
+    "已布置 ": "Placed ",
+    "保存失败，未消耗急救包。": "Save failed. No first-aid kits were spent.",
+    "该猫咪已不在当前存档。": "Companion is no longer in this save.",
+    "未能保存双猫搭档，请重试。": "Could not save this duo. Please retry.",
+    "保存失败，未消耗小鱼干。": "Save failed. No fish spent.",
+    "猫咪已召回，未领取的资源仍然保留。": "Companion recalled. Stored resources remain available.",
+    "保存失败，派工状态未改变。": "Save failed. Companion assignment unchanged.",
+    "移除": "Remove",
+    "装饰布置": "Decorations",
+    "家园装饰": "Garden decoration",
+    "自由布置属于你的花园。装饰不产出资源，也不改变剧情进度。": "Make this garden your own. Decorations do not produce resources or affect story progress.",
+    "已布置装饰": "Placed decorations",
+    "已移除 · +": "Removed · +",
+    "未能保存移除操作。": "Could not save removal.",
+    "奖励未领取，请在可领取时重试。": "Reward not claimed. Please retry if available.",
+    "打开系统菜单": "Open system menu",
+    "暖光庭灯": "Amber garden lantern",
+    "带有星铃纹样的庭灯，只用于装饰。": "A warm lantern engraved with the Star Bell motif. Decorative only.",
+    "月花陶盆": "Moonflower planter",
+    "种着月白色和淡紫花朵的陶盆，只用于装饰。": "A glazed pot of ivory and violet flowers. Decorative only.",
+    "✓ 移到这里": "✓ Move here",
     "赤炉锻造台": "Emberforge smithy",
     "依照小铆的新安全设计锻造工具。强化工具提升此工位产出 25%。": "Forge tools using Xiaomao’s safe design. Reinforced tools increase this station’s production by 25%.",
     "已装备强化工具 · +25%": "Reinforced tools equipped · +25%",
@@ -680,6 +706,8 @@
     '返回': 'Back',
     // ---- title / studio / intro ----
     '猫猫纽带': 'Cat Bond',
+    '星铃回响': 'Echoes of the Starbell',
+    '循着星铃的回响，寻找遗失的记忆。': 'Follow the echoes of the Starbell and uncover lost memories.',
     'STUDIO 工作室 呈现': 'STUDIO presents',
     '一群会思考的小猫咪住在你的庭院里。陪它们玩耍、喂养、建立': 'A yard full of thinking little cats lives with you. Play with them, feed them, build',
     '好感纽带': 'bonds of affection',
@@ -2313,8 +2341,8 @@
     // Chinese mode needs an explicit Chinese form (it has no Han to convert).
     try {
       document.title = lang() === 'en'
-        ? 'Cat Bond — Raise cats, capture wild ones | Morrow Wish'
-        : '猫猫纽带 — 养猫、收服野猫 | Morrow Wish';
+        ? 'Echoes of the Starbell | Morrow Wish'
+        : '星铃回响 | Morrow Wish';
     } catch (e) {}
     if (observer) observer.observe(document.body, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ATTRS });
     busy = false;

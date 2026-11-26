@@ -7,7 +7,7 @@ function path(c,p){c.beginPath();p.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x
 function shape(c,p,fill){path(c,p);c.closePath();c.fillStyle=fill;c.fill();}
 function stroke(c,p,color,w=2){path(c,p);c.strokeStyle=color;c.lineWidth=w;c.lineCap="round";c.lineJoin="round";c.stroke();}
 function circle(c,x,y,r,color){c.beginPath();c.arc(x,y,r,0,TAU);c.fillStyle=color;c.fill();}
-function text(c,s,x,y,n=16,color=cream,align="center",max=undefined){c.font="600 "+n+"px system-ui,sans-serif";c.fillStyle=color;c.textAlign=align;c.textBaseline="middle";max?c.fillText(s,x,y,max):c.fillText(s,x,y);}
+function text(c,s,x,y,n=16,color=cream,align="center",max=undefined){c.font="600 "+n+"px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, sans-serif";c.fillStyle=color;c.textAlign=align;c.textBaseline="middle";max?c.fillText(s,x,y,max):c.fillText(s,x,y);}
 function box(c,x,y,w,h,fill,edge){c.beginPath();c.roundRect(x,y,w,h,9);c.fillStyle=fill;c.fill();if(edge){c.strokeStyle=edge;c.lineWidth=1.4;c.stroke();}}
 function glow(c,x,y,r,color){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,color);g.addColorStop(1,"transparent");circle(c,x,y,r,g);}
 const water=[[.365,.535],[.75,.49],[.79,.54],[.68,.69],[.51,.94],[.47,.98],[.38,.77],[.37,.68]];
@@ -24,7 +24,7 @@ function fog(c,t,storm,restored){
 }
 export function paintHarborEnvironment(c,view,frame){
  const t=reduced()?0:frame/60, storm=view.current?.id==="harbor:H-04", repaired=view.sanctuaries.includes("harbor"), sung=view.melodies.includes("harbor");
- c.save();c.scale(c.canvas.width/960,c.canvas.height/540);
+ c.save();c.scale((Number(c.canvas.dataset?.logicalWidth)||c.canvas.width)/960,(Number(c.canvas.dataset?.logicalHeight)||c.canvas.height)/540);
  if(storm){c.fillStyle="rgba(20,37,57,.24)";c.fillRect(0,0,960,540);}
  waterShimmer(c,t,storm);fog(c,t,storm,sung);
  if(repaired||storm&&!view.objective.includes("puzzle:beam-mirrors")){
@@ -41,7 +41,7 @@ export function harborObjective(v,lang){
  const line=s==="harbor:H-01"?["沿石径找到领航员栖蓝。","Follow the stone path to Qilan."]:
  s==="harbor:H-02"?["前往灯塔，与岬灯谈谈旧风暴。","Visit the lighthouse and ask Jiedeng about the old storm."]:
  s==="harbor:H-03"?["沿东岸追踪退潮刻痕，取回救援日志。","Follow the ebb marks on the eastern shore and recover the rescue log."]:
- s==="harbor:H-04"?!v.choice?["与领航员或守灯人商议救援顺序。","Speak to the navigator or keeper to choose the rescue order."]:v.choice==="rescue"&&has("rescue:storm-boat")?["先打开潮汐闸门，协助栖蓝救援。","Open the tide gate and help Qilan with the rescue first."]:has("puzzle:beam-mirrors")?["前往灯塔校准镜面，照亮航路。","Align the lighthouse mirrors to light the channel."]:["返回码头，引导救援船入港。","Return to the quay and guide the rescue boat to safety."]:
+ s==="harbor:H-04"?!v.choice?["先选择救援顺序：找栖蓝先救船，或找岬灯先点亮灯塔。两项都要完成。","Choose the rescue order: talk to Qilan to rescue the boat first, or Jiedeng to light the lighthouse first. Both tasks must be completed."]:v.choice==="rescue"&&has("rescue:storm-boat")?["先打开潮汐闸门，协助栖蓝救援。","Open the tide gate and help Qilan with the rescue first."]:has("puzzle:beam-mirrors")?["前往灯塔校准镜面，照亮航路。","Align the lighthouse mirrors to light the channel."]:["返回码头，引导救援船入港。","Return to the quay and guide the rescue boat to safety."]:
  s==="harbor:H-05"?has("repair:harbor")?["修复灯塔圣所。","Restore the lighthouse sanctuary."]:has("melody:harbor")?["邀请栖蓝和岬灯，与港口居民合奏归潮调。","Invite Qilan and Jiedeng to perform Returning Tides together."]:["聆听暮铃的话。","Listen to Muling."]:
  v.melodies.includes("harbor")?["灯塔复明 · 补给航线已开放，可前往眠根林。","Beacon restored · Supply route open; travel to Rootsleep Forest."]:null;
  return line?.[zh?0:1]||"";
@@ -111,8 +111,8 @@ function sequence(c,p,l,t,cast){
 export function paintHarborPuzzle(c,p,lang,cast,frame){
  if(!["tide","mirrors","rescue","melody"].includes(p.type))return false;
  const l=lang==="zh"?0:1,t=reduced()?0:frame/60,words=puzzleWords[p.type];
- c.save();c.fillStyle="rgba(8,23,35,.67)";c.fillRect(0,0,960,540);
- box(c,118,63,724,414,"rgba(17,42,55,.92)","#bfa575");
+ c.save();c.fillStyle="rgba(94,65,68,.12)";c.fillRect(0,0,960,540);
+ box(c,118,63,724,414,"rgba(73,61,70,.88)","#d0b9a1");
  text(c,words[0][l],480,98,26,cream);text(c,harborPuzzleHint(p,lang),480,119,15,teal,"center",675);
  if(p.type==="mirrors")mirrors(c,p,l);else if(p.type==="rescue")rescue(c,p,l,t);else sequence(c,p,l,t,cast);
  if(p.type==="rescue")text(c,(l?"Rescue stage ":"救援阶段 ")+(p.values.length+1)+"/"+p.goal.length,480,398,17,teal);
@@ -123,7 +123,7 @@ export function paintHarborPuzzle(c,p,lang,cast,frame){
 // Final harbor ceremony: authored twilight illustration, resident portraits and a moving beacon.
 export function paintHarborCeremony(c,img,elapsed,lang,drawResident){
  const t=reduced()?2.4:elapsed,u=Math.min(1,t/3),ease=u*u*(3-2*u),w=960,h=540,zh=lang==="zh";
- c.save();c.scale(c.canvas.width/w,c.canvas.height/h);
+ c.save();c.scale((Number(c.canvas.dataset?.logicalWidth)||c.canvas.width)/w,(Number(c.canvas.dataset?.logicalHeight)||c.canvas.height)/h);
  const z=.97+.03*ease;c.save();c.translate(w*(1-z)/2,h*(1-z)/2);c.scale(z,z);
  window.CatBondSceneFit.draw(c,img,w,h,{top:"#142536",bottom:"#142c38"});c.restore();
  const night=c.createLinearGradient(0,h*.34,0,h);night.addColorStop(0,"rgba(10,24,36,0)");night.addColorStop(.65,"rgba(10,24,36,.4)");night.addColorStop(1,"rgba(8,19,30,.96)");c.fillStyle=night;c.fillRect(0,0,w,h);

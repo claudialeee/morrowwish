@@ -2,211 +2,10 @@
   "schemaVersion": 2,
   "project": "Cat Bond — The Last Resonance",
   "branch": "rpg/cinematic-integration-v2",
-  "sourceCanon": [
-    "docs/cat-bond-rpg/01-NARRATIVE-BIBLE.md",
-    "docs/cat-bond-rpg/02-MAIN-STORY-SCRIPT.md",
-    "docs/cat-bond-rpg/03-DEVELOPER-HANDOFF.md"
-  ],
+  "sourceCanon": "Canon 1.2 — Full Player-First Campaign",
   "status": "integration-review-only; no production release",
   "reviewStatus": "Painted opening and closing sequences are staged for independent review. Production approval remains pending.",
   "assets": [
-    {
-      "id": "region-misttide-harbor",
-      "kind": "environment-key-art",
-      "path": "assets/cinematics/regions/region-misttide-harbor.svg",
-      "label": "Misttide Harbor / 霁潮港",
-      "sourceSceneId": null,
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "region-rootsleep-forest",
-      "kind": "environment-key-art",
-      "path": "assets/cinematics/regions/region-rootsleep-forest.svg",
-      "label": "Rootsleep Forest / 眠根林",
-      "sourceSceneId": null,
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "region-emberforge-city",
-      "kind": "environment-key-art",
-      "path": "assets/cinematics/regions/region-emberforge-city.svg",
-      "label": "Emberforge City / 赤炉环城",
-      "sourceSceneId": null,
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "region-skyspine-isles",
-      "kind": "environment-key-art",
-      "path": "assets/cinematics/regions/region-skyspine-isles.svg",
-      "label": "Skyspine Isles / 云脊群岛",
-      "sourceSceneId": null,
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "region-moonmirror-library",
-      "kind": "environment-key-art",
-      "path": "assets/cinematics/regions/region-moonmirror-library.svg",
-      "label": "Moonmirror Library / 月镜书库",
-      "sourceSceneId": null,
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "region-starfall-expanse",
-      "kind": "environment-key-art",
-      "path": "assets/cinematics/regions/region-starfall-expanse.svg",
-      "label": "Starfall Expanse / 星坠原",
-      "sourceSceneId": null,
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "p01-six-sanctuaries",
-      "kind": "cinematic-key-art",
-      "path": "assets/cinematics/prologue/p01-six-sanctuaries.svg",
-      "sceneKey": "prologue:P-01",
-      "sourceSceneId": "P-01",
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "p02-first-bellkeepers-choice",
-      "kind": "cinematic-key-art",
-      "path": "assets/cinematics/prologue/p02-first-bellkeepers-choice.svg",
-      "sceneKey": "prologue:P-02",
-      "sourceSceneId": "P-02",
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "p03-years-of-waiting",
-      "kind": "cinematic-key-art",
-      "path": "assets/cinematics/prologue/p03-years-of-waiting.svg",
-      "sceneKey": "prologue:P-03",
-      "sourceSceneId": "P-03",
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "p04-awakening",
-      "kind": "cinematic-key-art",
-      "path": "assets/cinematics/prologue/p04-awakening.svg",
-      "sceneKey": "prologue:P-04",
-      "sourceSceneId": "P-04",
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "p05-the-journey",
-      "kind": "cinematic-key-art",
-      "path": "assets/cinematics/prologue/p05-the-journey.svg",
-      "sceneKey": "prologue:P-05",
-      "sourceSceneId": "P-05",
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "b03-six-notes-return",
-      "kind": "cinematic-key-art",
-      "path": "assets/cinematics/finale/b03-six-notes-return.svg",
-      "sceneKey": "finale:B-03",
-      "sourceSceneId": "B-03",
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "e01-six-regions-answer",
-      "kind": "cinematic-key-art",
-      "path": "assets/cinematics/epilogue/e01-six-regions-answer.svg",
-      "sceneKey": "epilogue:E-01",
-      "sourceSceneId": "E-01",
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "e03-sunlit-garden",
-      "kind": "cinematic-key-art",
-      "path": "assets/cinematics/epilogue/e03-sunlit-garden.svg",
-      "sceneKey": "epilogue:E-03",
-      "sourceSceneId": "E-03",
-      "format": "svg",
-      "canvas": "2400x1350",
-      "status": "rejected",
-      "runtimeAllowed": false,
-      "reviewReason": "Geometric study; insufficient painterly detail/character acting; not a formal runtime asset.",
-      "archiveRef": "4e42ac8ec8ac23215154462c5e9f62bde589b46a"
-    },
-    {
-      "id": "muling-traveler-neutral",
-      "kind": "character-portrait",
-      "characterId": "muling",
-      "phase": "companion",
-      "expression": "neutral",
-      "path": "assets/cinematics/characters/muling/traveler-neutral.webp",
-      "format": "webp",
-      "canvas": "960x887",
-      "bytes": 193086,
-      "status": "candidate",
-      "runtimeAllowed": false,
-      "source": "original generated portrait; alpha WebP",
-      "reviewReason": "Individual portrait produced; independent visual QA and normal-game integration pending."
-    },
     {
       "id": "opening-star-bell",
       "kind": "cinematic-key-art",
@@ -216,7 +15,8 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
     },
     {
       "id": "opening-harbor-at-twilight",
@@ -227,7 +27,8 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
     },
     {
       "id": "opening-keepers-choice",
@@ -238,7 +39,8 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
     },
     {
       "id": "opening-broken-bell-tongue",
@@ -249,7 +51,8 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
     },
     {
       "id": "opening-waiting-at-workbench",
@@ -260,7 +63,8 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
     },
     {
       "id": "opening-garden-at-dawn",
@@ -271,7 +75,8 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
     },
     {
       "id": "closing-inward-call",
@@ -282,7 +87,8 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
     },
     {
       "id": "closing-pendant-signal",
@@ -293,7 +99,8 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
     },
     {
       "id": "closing-final-note",
@@ -304,7 +111,8 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
     },
     {
       "id": "closing-memories-return",
@@ -315,7 +123,8 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
     },
     {
       "id": "closing-harbor-forest-delivery",
@@ -326,7 +135,8 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
     },
     {
       "id": "closing-couriers-at-library",
@@ -337,7 +147,312 @@
       "runtimeAllowed": false,
       "stagingAllowed": true,
       "format": "webp",
-      "source": "original raster painting produced for this integration"
+      "source": "original raster painting produced for this integration",
+      "canvas": "1672x941"
+    },
+    {
+      "id": "baikan-painted",
+      "kind": "character-portrait",
+      "characterId": "baikan",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/baikan-painted.webp",
+      "format": "webp",
+      "canvas": "474x564",
+      "bytes": 116752,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "jiedeng-painted",
+      "kind": "character-portrait",
+      "characterId": "jiedeng",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/jiedeng-painted.webp",
+      "format": "webp",
+      "canvas": "428x531",
+      "bytes": 102778,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "jinpo-painted",
+      "kind": "character-portrait",
+      "characterId": "jinpo",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/jinpo-painted.webp",
+      "format": "webp",
+      "canvas": "500x574",
+      "bytes": 125652,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "lichuan-painted",
+      "kind": "character-portrait",
+      "characterId": "lichuan",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/lichuan-painted.webp",
+      "format": "webp",
+      "canvas": "546x563",
+      "bytes": 171012,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "lingyu-painted",
+      "kind": "character-portrait",
+      "characterId": "lingyu",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/lingyu-painted.webp",
+      "format": "webp",
+      "canvas": "491x546",
+      "bytes": 120476,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "moye-painted",
+      "kind": "character-portrait",
+      "characterId": "moye",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/moye-painted.webp",
+      "format": "webp",
+      "canvas": "498x547",
+      "bytes": 120462,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "qilan-painted",
+      "kind": "character-portrait",
+      "characterId": "qilan",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/qilan-painted.webp",
+      "format": "webp",
+      "canvas": "358x492",
+      "bytes": 80530,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "xiaomao-painted",
+      "kind": "character-portrait",
+      "characterId": "xiaomao",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/xiaomao-painted.webp",
+      "format": "webp",
+      "canvas": "415x574",
+      "bytes": 99072,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "xingya-painted",
+      "kind": "character-portrait",
+      "characterId": "xingya",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/xingya-painted.webp",
+      "format": "webp",
+      "canvas": "456x563",
+      "bytes": 127388,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "yahe-painted",
+      "kind": "character-portrait",
+      "characterId": "yahe",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/yahe-painted.webp",
+      "format": "webp",
+      "canvas": "345x523",
+      "bytes": 89274,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "yuanfan-painted",
+      "kind": "character-portrait",
+      "characterId": "yuanfan",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/yuanfan-painted.webp",
+      "format": "webp",
+      "canvas": "448x546",
+      "bytes": 110414,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "yuchuan-painted",
+      "kind": "character-portrait",
+      "characterId": "yuchuan",
+      "phase": "regional-resident",
+      "expression": "daily",
+      "path": "assets/npc/yuchuan-painted.webp",
+      "format": "webp",
+      "canvas": "511x580",
+      "bytes": 138198,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "muling-traveler-determined",
+      "kind": "character-portrait",
+      "characterId": "muling",
+      "phase": "companion",
+      "expression": "determined",
+      "path": "assets/cinematics/characters/muling/traveler-determined.webp",
+      "format": "webp",
+      "canvas": "705x750",
+      "bytes": 86368,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "muling-traveler-dry",
+      "kind": "character-portrait",
+      "characterId": "muling",
+      "phase": "companion",
+      "expression": "dry",
+      "path": "assets/cinematics/characters/muling/traveler-dry.webp",
+      "format": "webp",
+      "canvas": "705x750",
+      "bytes": 79516,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "muling-traveler-nervous",
+      "kind": "character-portrait",
+      "characterId": "muling",
+      "phase": "companion",
+      "expression": "nervous",
+      "path": "assets/cinematics/characters/muling/traveler-nervous.webp",
+      "format": "webp",
+      "canvas": "705x750",
+      "bytes": 96428,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "muling-traveler-neutral",
+      "kind": "character-portrait",
+      "characterId": "muling",
+      "phase": "companion",
+      "expression": "neutral",
+      "path": "assets/cinematics/characters/muling/traveler-neutral.webp",
+      "format": "webp",
+      "canvas": "705x750",
+      "bytes": 76918,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "muling-traveler-warm",
+      "kind": "character-portrait",
+      "characterId": "muling",
+      "phase": "companion",
+      "expression": "warm",
+      "path": "assets/cinematics/characters/muling/traveler-warm.webp",
+      "format": "webp",
+      "canvas": "705x750",
+      "bytes": 75642,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "muling-traveler-worried",
+      "kind": "character-portrait",
+      "characterId": "muling",
+      "phase": "companion",
+      "expression": "worried",
+      "path": "assets/cinematics/characters/muling/traveler-worried.webp",
+      "format": "webp",
+      "canvas": "705x750",
+      "bytes": 73468,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "original luminous fantasy painting; cleaned alpha WebP",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
+    },
+    {
+      "id": "muling-traveler-silver-cream",
+      "kind": "character-portrait",
+      "characterId": "muling",
+      "phase": "companion",
+      "expression": "neutral",
+      "path": "assets/cinematics/characters/muling/traveler-silver-cream.webp",
+      "format": "webp",
+      "canvas": "960x887",
+      "bytes": 149874,
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "dialogueRuntimeAllowed": true,
+      "source": "Owner-selected cream silver shaded watercolor portrait",
+      "reviewReason": "Integrated in character dialogue/resident/encounter presentation. Portrait asset verification does not grant independent cinematic shot approval."
     }
   ],
   "sceneKeys": [
@@ -589,8 +704,7 @@
           }
         },
         "lines": [
-          2,
-          3
+          2
         ]
       }
     ],
@@ -617,8 +731,7 @@
         },
         "lines": [
           0,
-          1,
-          2
+          1
         ]
       },
       {
@@ -642,9 +755,8 @@
           }
         },
         "lines": [
-          3,
-          4,
-          5
+          2,
+          3
         ]
       }
     ],
@@ -669,7 +781,9 @@
             "scale": 1.1
           }
         },
-        "lines": []
+        "lines": [
+          0
+        ]
       },
       {
         "assetId": "closing-couriers-at-library",
@@ -691,7 +805,96 @@
             "scale": 1.1
           }
         },
-        "lines": []
+        "lines": [
+          1
+        ]
+      }
+    ],
+    "starfall:F-02": [
+      {
+        "assetId": "opening-star-bell",
+        "alt": {
+          "zh": "撞击前的星铃与六座圣所",
+          "en": "The Star Bell and six sanctuaries before the impact"
+        },
+        "durationMs": 5500,
+        "transitionMs": 760,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.12
+          }
+        },
+        "lines": [],
+        "caption": {
+          "zh": "陨星撞击中央星铃。六座圣所同时受损。",
+          "en": "A fallen star struck the Star Bell. All six sanctuaries were damaged."
+        }
+      },
+      {
+        "assetId": "opening-broken-bell-tongue",
+        "alt": {
+          "zh": "破碎铃舌留下的灾变记录",
+          "en": "The broken bell tongue and the catastrophe"
+        },
+        "durationMs": 5500,
+        "transitionMs": 760,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": -2,
+            "y": 0,
+            "scale": 1.12
+          }
+        },
+        "lines": [],
+        "caption": {
+          "zh": "铃舌碎裂，失去回应的回响开始积聚。",
+          "en": "The bell tongue shattered. Unanswered echoes began to gather."
+        }
+      },
+      {
+        "assetId": "opening-keepers-choice",
+        "alt": {
+          "zh": "守铃者主动走入应急锚室",
+          "en": "The Bellkeeper willingly enters the emergency anchor"
+        },
+        "durationMs": 5500,
+        "transitionMs": 760,
+        "camera": {
+          "from": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.02
+          },
+          "to": {
+            "x": 2,
+            "y": 0,
+            "scale": 1.12
+          }
+        },
+        "lines": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "caption": {
+          "zh": "我自愿走进应急锚室，以自己的记忆维持封印。那是我的选择。",
+          "en": "I willingly entered the emergency anchor to sustain the seal with my memories. It was my choice."
+        }
       }
     ]
   },

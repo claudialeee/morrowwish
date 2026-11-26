@@ -106,7 +106,257 @@ function speciesName(sp){
  if(!sp)return (window.MorrowwishI18n?.get?.()==='zh'?'猫猫':'Kitten');
  return window.MorrowwishI18n?.get?.()==='zh'?sp.name:(sp.nameEn||sp.name);
 }
-function speciesById(id) { return SPECIES.find(s => s.id === id); }
+// Named story actors are real combat species with unique IDs, but never enter the wild/breeding/gacha pool.
+const STORY_SPECIES = Object.freeze({
+  "story_muling": {
+    "id": "story_muling",
+    "storyActor": "muling",
+    "name": "暮铃",
+    "nameEn": "Muling",
+    "element": "dark",
+    "desc": "银渐层旅行者，擅长暗影与回响。",
+    "rarity": "R",
+    "palette": "silver",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 8,
+      "agi": 9,
+      "vit": 7,
+      "cha": 9
+    },
+    "storyArt": "assets/npc/../cinematics/characters/muling/traveler-silver-cream.webp"
+  },
+  "story_qilan": {
+    "id": "story_qilan",
+    "storyActor": "qilan",
+    "name": "栖蓝",
+    "nameEn": "Qilan",
+    "element": "water",
+    "desc": "港口领航员。",
+    "rarity": "R",
+    "palette": "blue",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 7,
+      "agi": 9,
+      "vit": 8,
+      "cha": 8
+    },
+    "storyArt": "assets/npc/qilan-painted.webp"
+  },
+  "story_jiedeng": {
+    "id": "story_jiedeng",
+    "storyActor": "jiedeng",
+    "name": "岬灯",
+    "nameEn": "Jiedeng",
+    "element": "light",
+    "desc": "灯塔守望者。",
+    "rarity": "R",
+    "palette": "cream",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 7,
+      "agi": 6,
+      "vit": 10,
+      "cha": 9
+    },
+    "storyArt": "assets/npc/jiedeng-painted.webp"
+  },
+  "story_yahe": {
+    "id": "story_yahe",
+    "storyActor": "yahe",
+    "name": "芽禾",
+    "nameEn": "Yahe",
+    "element": "grass",
+    "desc": "森林药草师。",
+    "rarity": "R",
+    "palette": "brownTabby",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 6,
+      "agi": 8,
+      "vit": 8,
+      "cha": 10
+    },
+    "storyArt": "assets/npc/yahe-painted.webp"
+  },
+  "story_yuchuan": {
+    "id": "story_yuchuan",
+    "storyActor": "yuchuan",
+    "name": "榆川",
+    "nameEn": "Yuchuan",
+    "element": "grass",
+    "desc": "地下根系守护者。",
+    "rarity": "R",
+    "palette": "brownTabby",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 9,
+      "agi": 6,
+      "vit": 10,
+      "cha": 7
+    },
+    "storyArt": "assets/npc/yuchuan-painted.webp"
+  },
+  "story_xiaomao": {
+    "id": "story_xiaomao",
+    "storyActor": "xiaomao",
+    "name": "小铆",
+    "nameEn": "Xiaomao",
+    "element": "elec",
+    "desc": "年轻工匠。",
+    "rarity": "R",
+    "palette": "silver",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 8,
+      "agi": 10,
+      "vit": 7,
+      "cha": 7
+    },
+    "storyArt": "assets/npc/xiaomao-painted.webp"
+  },
+  "story_jinpo": {
+    "id": "story_jinpo",
+    "storyActor": "jinpo",
+    "name": "烬婆",
+    "nameEn": "Jinpo",
+    "element": "fire",
+    "desc": "炉城工匠。",
+    "rarity": "R",
+    "palette": "orange",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 10,
+      "agi": 6,
+      "vit": 9,
+      "cha": 7
+    },
+    "storyArt": "assets/npc/jinpo-painted.webp"
+  },
+  "story_yuanfan": {
+    "id": "story_yuanfan",
+    "storyActor": "yuanfan",
+    "name": "远帆",
+    "nameEn": "Yuanfan",
+    "element": "elec",
+    "desc": "群岛信使。",
+    "rarity": "R",
+    "palette": "silver",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 7,
+      "agi": 11,
+      "vit": 7,
+      "cha": 7
+    },
+    "storyArt": "assets/npc/yuanfan-painted.webp"
+  },
+  "story_lingyu": {
+    "id": "story_lingyu",
+    "storyActor": "lingyu",
+    "name": "翎羽",
+    "nameEn": "Lingyu",
+    "element": "light",
+    "desc": "经验丰富的飞行员。",
+    "rarity": "R",
+    "palette": "cream",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 8,
+      "agi": 9,
+      "vit": 8,
+      "cha": 7
+    },
+    "storyArt": "assets/npc/lingyu-painted.webp"
+  },
+  "story_baikan": {
+    "id": "story_baikan",
+    "storyActor": "baikan",
+    "name": "白栞",
+    "nameEn": "Baikan",
+    "element": "light",
+    "desc": "书库研究者。",
+    "rarity": "R",
+    "palette": "cream",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 6,
+      "agi": 8,
+      "vit": 8,
+      "cha": 10
+    },
+    "storyArt": "assets/npc/baikan-painted.webp"
+  },
+  "story_moye": {
+    "id": "story_moye",
+    "storyActor": "moye",
+    "name": "墨页",
+    "nameEn": "Moye",
+    "element": "dark",
+    "desc": "档案守护者。",
+    "rarity": "R",
+    "palette": "silver",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 9,
+      "agi": 7,
+      "vit": 9,
+      "cha": 7
+    },
+    "storyArt": "assets/npc/moye-painted.webp"
+  },
+  "story_xingya": {
+    "id": "story_xingya",
+    "storyActor": "xingya",
+    "name": "星芽",
+    "nameEn": "Xingya",
+    "element": "elec",
+    "desc": "星原观测者。",
+    "rarity": "R",
+    "palette": "silver",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 8,
+      "agi": 9,
+      "vit": 7,
+      "cha": 8
+    },
+    "storyArt": "assets/npc/xingya-painted.webp"
+  },
+  "story_lichuan": {
+    "id": "story_lichuan",
+    "storyActor": "lichuan",
+    "name": "砾川",
+    "nameEn": "Lichuan",
+    "element": "fire",
+    "desc": "星原商队向导。",
+    "rarity": "R",
+    "palette": "orange",
+    "pattern": "solid",
+    "eyeColor": "#7ee7c4",
+    "base": {
+      "pow": 9,
+      "agi": 7,
+      "vit": 9,
+      "cha": 7
+    },
+    "storyArt": "assets/npc/lichuan-painted.webp"
+  }
+});
+function speciesById(id) { return STORY_SPECIES[id] || SPECIES.find(s => s.id === id); }
 
 function rollSpecies(luck = 0) {
   const rarities = Object.values(RARITY);
@@ -122,4 +372,4 @@ function rollSpecies(luck = 0) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-window.GameData = { RARITY, SPECIES, speciesById, speciesName, rollSpecies };
+window.GameData = { RARITY, SPECIES, STORY_SPECIES, speciesById, speciesName, rollSpecies };

@@ -1,5 +1,10 @@
 name: Cat Bond fast combat regression
 on:
+  workflow_call:
+    inputs:
+      combined:
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
@@ -8,14 +13,21 @@ on:
       - 'scripts/check-cat-bond-ai.mjs'
       - 'scripts/check-cat-bond-invariants.mjs'
       - '.github/workflows/cat-bond-core-regression.yml'
+  pull_request:
+    branches: [rpg/cat-bond-takeover]
+    paths:
+      - 'public/cat-bond/js/**'
+      - 'scripts/check-cat-bond*.mjs'
+      - '.github/workflows/cat-bond-core-regression.yml'
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: cat-bond-core-${{ github.ref }}
+  group: cat-bond-core-${{ github.ref }}-${{ inputs.combined && github.run_id || 'legacy' }}
   cancel-in-progress: true
 jobs:
   core:
+    if: inputs.combined || github.head_ref != 'rpg/release-combined-next'
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:

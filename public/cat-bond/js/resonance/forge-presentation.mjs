@@ -4,7 +4,7 @@ const local=(l,zh,en)=>l==="zh"?zh:en;
 export function forgeObjective(v,explorer,l){
  const part=explorer?.forgeStep?.();
  if(part)return local(l,"旧工坊 · "+part.name[0],"Old workshop · "+part.name[1]);
- return local(l,...(v.current?.id==="forge:E-01"?["沿街道找到烬婆和小铆，了解停炉原因","Meet Jinpo and Xiaomao along the street"]:v.current?.id==="forge:E-02"?["重组安全图纸，了解旧事故","Reassemble the safety blueprint and uncover the accident"]:v.current?.id==="forge:E-03"?["调节炉温与压力，协力击败机械守卫","Balance heat and pressure, then face the guardian"]:["修复炉心，邀请两位居民共同奏响承火调","Repair the hearth and invite both residents to perform the Song of Ember"]));
+ return local(l,...(v.current?.id==="forge:E-01"?(v.objective.includes("puzzle:festival-lantern")?["先在工坊试制安全提灯","Build a safe lantern at the workshop"]:["找小铆了解停炉原因","Find Xiaomao and learn why the furnace stopped"]):v.current?.id==="forge:E-02"?["重组安全图纸，了解旧事故","Reassemble the safety blueprint and uncover the accident"]:v.current?.id==="forge:E-03"?["调节炉温与压力，协力击败机械守卫","Balance heat and pressure, then face the guardian"]:["修复炉心，邀请两位居民共同奏响承火调","Repair the hearth and invite both residents to perform the Song of Ember"]));
 }
 export function paintForgeEnvironment(ctx,v,frame,forced=null){
  const t=frame/60,restored=forced??v.melodies.includes("forge"),testing=!restored&&(v.current?.id==="forge:E-03"||v.sanctuaries.includes("forge"));
@@ -52,7 +52,7 @@ function forgePart(c,n,x,y,scale=1,lit=true){c.save();c.translate(x,y);c.scale(s
 function forgeGauge(c,x,y,v,target,max,name,color){const r=54,a0=Math.PI*.75,arc=Math.PI*1.5;c.save();c.translate(x,y);c.beginPath();c.arc(0,0,r+7,0,Math.PI*2);c.fillStyle="#253842";c.fill();c.strokeStyle="#ab875a";c.lineWidth=3;c.stroke();c.beginPath();c.arc(0,0,r-4,a0,a0+arc);c.strokeStyle="#3e5358";c.lineWidth=6;c.stroke();c.beginPath();c.arc(0,0,r-4,a0,a0+arc*Math.max(0,Math.min(1,v/max)));c.strokeStyle=color;c.lineWidth=6;c.stroke();for(let i=0;i<=10;i++){const a=a0+arc*i/10;forgeLine(c,[[Math.cos(a)*(r-9),Math.sin(a)*(r-9)],[Math.cos(a)*(r-17),Math.sin(a)*(r-17)]],"#b7bcaa",1.2);}const at=a0+arc*target/max;forgeLine(c,[[Math.cos(at)*(r-13),Math.sin(at)*(r-13)],[Math.cos(at)*(r+1),Math.sin(at)*(r+1)]],"#a5ecdb",4);const a=a0+arc*v/max;forgeLine(c,[[0,0],[Math.cos(a)*(r-17),Math.sin(a)*(r-17)]],color,3);c.beginPath();c.arc(0,0,4,0,Math.PI*2);c.fillStyle="#d6c098";c.fill();forgeText(c,name,0,-r-19,17);forgeText(c,v+" / "+target,0,31,16,v===target?"#b4f4d7":"#f2c68f");c.restore();}
 export function paintForgePuzzle(c,p,l,actor){
  if(!["heat","blueprint"].includes(p.type))return false;
- c.save();c.fillStyle="rgba(9,17,22,.63)";c.fillRect(0,0,W,H);forgePlate(c,100,50,760,436,"#304047","#c8a06a");
+ c.save();c.fillStyle="rgba(96,62,50,.12)";c.fillRect(0,0,W,H);forgePlate(c,100,50,760,436,"#574551","#ddbb94");
  for(const x of [115,845])for(const y of [65,471])forgeBolt(c,x,y);
  const heat=p.type==="heat";
  forgeText(c,heat?local(l,"熔炉控制台","Furnace control station"):local(l,"旧工坊 · 安全图纸","Old workshop · Safety blueprint"),480,83,26);

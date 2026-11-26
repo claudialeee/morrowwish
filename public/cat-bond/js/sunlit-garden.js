@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const HOME_ANCHORS = Object.freeze({
-    muling:{x:.66,y:.72,scale:1.08,radius:65},
+    muling:{x:.60,y:.70,scale:1.30,radius:72},
     jiedeng:{x:.15,y:.54,scale:.92,radius:46}, qilan:{x:.25,y:.59,scale:.86,radius:44},
     yahe:{x:.34,y:.56,scale:.90,radius:45}, yuchuan:{x:.42,y:.58,scale:.98,radius:48},
     jinpo:{x:.86,y:.50,scale:.98,radius:48}, xiaomao:{x:.91,y:.58,scale:.82,radius:42},
@@ -19,13 +19,9 @@
     bond:'<path d="M12 9c-2-4-8-4-9 1s5 9 9 4l4-5c2-3 6-2 6 2s-5 6-8 2"/><path d="m8 4 1 2m6-2-1 2"/>'
   });
   const HOTSPOTS = [
-    {id:'cats',icon:'🐾',zh:'猫咪',en:'Cats',left:'12%',top:'57%',action:()=>window.UI?.openCatHub?.('solo')},
-    {id:'facilities',icon:'⌂',zh:'家园设施',en:'Facilities',left:'29%',top:'34%',action:()=>window.UI?.openBuild?.()},
-    {id:'catdex',icon:'▤',zh:'Catdex',en:'Catdex',left:'55%',top:'36%',action:()=>window.UI?.openDex?.()},
-    {id:'workshop',icon:'⚒',zh:'工坊',en:'Workshop',left:'81%',top:'43%',action:()=>window.UI?.openWorkshop?.()},
-    {id:'bond',icon:'∞',zh:'双猫羁绊',en:'Duo Bond',left:'77%',top:'71%',action:()=>window.UI?.openBondPanel?.()}
+    {id:'facilities',zh:'家园布置',en:'Garden design',action:()=>window.UI?.openBuild?.()}
   ];
-  let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null,hitState=null,guide=null,guideKey='';
+  let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null,hitState=null,guide=null,guideKey='',talkMarker=null;
   const isEnglish=()=>window.MorrowwishI18n?.get?.()!=='zh';
   const state=()=>window.State?.S||null;
   function canonicalProgress(){
@@ -47,31 +43,65 @@
       b.querySelector('.sg-hotspot-label').textContent=label;
       b.title=label;b.setAttribute('aria-label',label);
     }
+    const book=document.getElementById('sg-book-entry');if(book){book.textContent=en?'Resonance Book':'星月之书';book.title=book.textContent;book.setAttribute('aria-label',book.textContent);}
     const map=document.getElementById('fab-map');
     if(map){map.title=en?'Return to the world map':'返回世界地图';map.setAttribute('aria-label',map.title);
       const small=map.querySelector('small');if(small)small.textContent=en?'World':'地图';}
   }
+  const guideTabs=[['cats','猫咪','Cats'],['party','队伍','Party'],['workshop','工坊','Workshop'],['dex','Catdex','Catdex']];
+  function noteBookVisit(tab){
+    const s=state(),scene=window.CatBondResonance?.view?.()?.current?.id;
+    if(!active||game?.scene!=='yard'||s!==visitedState||!['prologue:P-04','prologue:P-05'].includes(scene)||!guideTabs.some(t=>t[0]===tab))return;
+    const previous=s.sunlitGarden,seen=Array.isArray(previous?.bookGuide)?previous.bookGuide:[];
+    if(seen.includes(tab))return;
+    s.sunlitGarden={...(previous||{schema:1}),bookGuide:[...seen,tab]};
+    let saved=false;try{saved=window.State.save()?.ok===true}catch{}
+    if(!saved){if(previous===undefined)delete s.sunlitGarden;else s.sunlitGarden=previous;}
+  }
   function refreshGuide(){
     if(!guide)return;
     const v=window.CatBondResonance?.view?.(),scene=v?.current?.id;
-    const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden])');
-    const show=active&&game?.scene==='yard'&&state()?.cats?.length>0&&!covered&&(scene==='prologue:P-04'||scene==='prologue:P-05');
+    const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden]),#cb-player-first-intro');
+    const show=active&&game?.scene==='yard'&&state()?.cats?.length>0&&!covered&&(scene==='prologue:P-04'||scene==='prologue:P-05'||scene==='epilogue:E-02'||scene==='epilogue:E-03'||v?.ending);
     guide.hidden=!show;if(!show){guideKey='';return}
-    const en=isEnglish(),talk=v.cursor<v.current.lines.length,departure=scene==='prologue:P-05'&&!talk;
-    const key=scene+'|'+talk+'|'+en;if(key===guideKey)return;guideKey=key;
-    guide.replaceChildren();
+    const en=isEnglish(),ending=!!v.ending,epilogue=['epilogue:E-02','epilogue:E-03'].includes(scene),talk=!ending&&(epilogue||v.cursor<v.current.lines.length),departure=scene==='prologue:P-05'&&!talk;
+    const seen=state()?.sunlitGarden?.bookGuide||[],next=guideTabs.find(t=>!seen.includes(t[0]));
+    const key=scene+'|'+talk+'|'+en+'|'+v.openingMet+'|'+seen.join(',')+'|'+(ending?v.postgame.length+'|'+v.returned.length:'');if(key===guideKey)return;guideKey=key;
+    guide.replaceChildren();guide.classList.remove('sg-minimal-opening');
     const title=document.createElement('strong');
-    title.textContent=departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
-    const hint=document.createElement('span');hint.textContent=departure?(en?'Prepare your companions before heading to Misttide Harbor.':'整理伙伴，准备前往霁潮港。'):talk?(en?'Speak with the traveler by the garden path.':'与花园小径旁的旅人交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
+    title.textContent=ending?(en?'The world answers again':'六地再次回应'):epilogue?(scene==='epilogue:E-02'?(en?'A promise to repair':'承担责任'):(en?'The second garden key':'第二把花园钥匙')):departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
+    const hint=document.createElement('span');hint.textContent=ending?(en?'After the adventure · '+v.postgame.length+'/13 tasks · '+v.returned.length+'/12 visitors':'冒险之后 · '+v.postgame.length+'/13 项任务 · '+v.returned.length+'/12 位来访伙伴'):epilogue?(en?'Speak with Muling and finish the story in Sunlit Garden.':'与暮铃交谈，在阳光花园完成故事。'):departure?(en?'Prepare your companions before heading to Misttide Harbor.':'整理伙伴，准备前往霁潮港。'):talk?(en?'Open Resonance Book to explore your cats, party, workshop and Catdex, then speak to Muling.':'可打开星月之书查看猫咪、队伍、工坊和 Catdex，再与暮铃交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
     guide.append(title,hint);
     const row=document.createElement('div');guide.append(row);
     const add=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};row.append(b)};
-    if(talk)add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));
-    if(departure){
-      add('猫咪队伍','Companions',()=>window.UI?.openCatHub?.('solo'));
-      add('工坊','Workshop',()=>window.UI?.openWorkshop?.());
-      add('前往世界地图','World map',()=>game.openWorldMap());
+    if(!epilogue&&!ending&&next&&talk&&!departure){
+      hint.textContent=en?'Optional companion guide · '+seen.length+'/4. Next: '+next[2]+'. You may continue the story at any time.':'可选养成引导 · '+seen.length+'/4。下一步：'+next[1]+'。随时可以继续剧情。';
+      add('查看'+next[1],'Explore '+next[2],()=>window.ResonanceBook?.open(next[0]));
     }
+    if(talk||ending)add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));
+    if(ending){add('花园复兴','Garden Restoration',()=>window.GardenProjects?.open?.());add('继续探索','Continue exploring',()=>game.openWorldMap());}
+    if(departure){
+      title.textContent=en?'Find your name':'寻找自己的名字';hint.textContent=en?'Tap things in the garden to discover small surprises, or head to Misttide Harbor.':'点击花园里的小事物探索惊喜，也可以随时前往霁潮港。';
+      guide.classList.add('sg-minimal-opening');
+      add('下一场景 · 霁潮港','Next scene · Misttide Harbor',()=>{game.openWorldMap();if(game.scene==='map')window.WorldMap?.enterRegion?.('harbor')});
+      row.firstElementChild.classList.add('sg-main-continue');
+
+
+    }
+  }
+  function syncTalkMarker(ctx,width,height,x,y,scale){
+    if(!talkMarker)return;
+    const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden]),#cb-player-first-intro,#cb-system-menu:not([hidden])');
+    if(covered||game?.yard?.placement){talkMarker.hidden=true;return;}
+    const canvasRect=ctx.canvas.getBoundingClientRect(),r=root.getBoundingClientRect();
+    if(!width||!height||!r.width||!r.height){talkMarker.hidden=true;return;}
+    const px=canvasRect.left-r.left+x/width*canvasRect.width;
+    const py=canvasRect.top-r.top+(y-112*scale)/height*canvasRect.height;
+    talkMarker.style.left=Math.max(34,Math.min(r.width-34,px))+'px';
+    talkMarker.style.top=Math.max(44,Math.min(r.height-14,py))+'px';
+    const label=isEnglish()?'Talk':'对话';
+    if(talkMarker.dataset.locale!==label){talkMarker.dataset.locale=label;talkMarker.querySelector('span').textContent=label;talkMarker.setAttribute('aria-label',isEnglish()?'Talk to the cat':'与猫咪对话');}
+    talkMarker.hidden=false;
   }
   function ensureRoot(){
     if(root||!document.getElementById('stage'))return root;
@@ -84,6 +114,11 @@
       b.addEventListener('click',()=>{if(active&&game?.scene==='yard')item.action?.();});
       root.append(b);
     }
+    const actions=document.getElementById('yard-actions');if(actions&&!document.getElementById('sg-book-entry')){const book=document.createElement('button');book.id='sg-book-entry';book.type='button';book.className='fab sg-book-entry';book.onclick=()=>{if(active&&game?.scene==='yard')window.ResonanceBook?.open()};actions.prepend(book);}
+    talkMarker=document.createElement('button');talkMarker.type='button';talkMarker.className='sg-npc-talk-marker';talkMarker.dataset.npcTalk='muling';talkMarker.hidden=true;
+    talkMarker.innerHTML='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H9l-5 4z"/><path d="M8 10h.1m4 0h.1m4 0h.1" stroke-width="2.5" stroke-linecap="round"/></svg><span></span>';
+    talkMarker.onclick=()=>{if(active&&game?.scene==='yard'&&state()===visitedState&&narrativeAdapter?.getHomeNpcs?.().some(n=>n.id==='muling'))narrativeAdapter.interactHomeNpc('muling');};
+    root.append(talkMarker);
     guide=document.createElement('section');guide.className='sg-prologue-guide';guide.hidden=true;root.append(guide);document.getElementById('stage').append(root);renderLabels();return root;
   }
   function init(controller){
@@ -109,31 +144,37 @@
     if(root)root.inert=false;
     root?.classList.add('is-active');document.getElementById('stage')?.classList.add('cb-sunlit-garden');renderLabels();refreshGuide();
   }
-  function leave(){window.GardenProjects?.resetSlot?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;}
+  function leave(){window.GardenProjects?.resetSlot?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;if(talkMarker)talkMarker.hidden=true;window.GardenExploration?.reset?.();}
   function registerNarrativeAdapter(adapter){
     if(!adapter||typeof adapter.getHomeNpcs!=='function'||typeof adapter.drawHomeNpc!=='function'||
        typeof adapter.interactHomeNpc!=='function')return false;
     narrativeAdapter=adapter;lastNpcHits=[];hitState=null;return true;
   }
-  function draw(ctx,width,height,time){
+  function draw(ctx,width,height,time,{projects=true,residents=true}={}){
     if(!active||game?.scene!=='yard')return;
     if(visitedState!==state())enter();
     root?.classList.toggle('is-placing',!!game.yard?.placement);refreshGuide();
     if(root)root.inert=!!game.yard?.placement;
-    window.GardenProjects?.draw?.(ctx,width,height,time);
+    if(projects)window.GardenProjects?.draw?.(ctx,width,height,time);
+    if(!residents)return;
+    if(talkMarker)talkMarker.hidden=true;
     if(!narrativeAdapter&&window.CatBondResonanceNPC?.gardenAdapter)registerNarrativeAdapter(window.CatBondResonanceNPC.gardenAdapter);
     lastNpcHits=[];hitState=null;if(!narrativeAdapter)return;
     let npcs;try{npcs=narrativeAdapter.getHomeNpcs()||[]}catch(error){console.warn('Garden NPC availability failed',error);return}
     if(!Array.isArray(npcs))return;hitState=state();
     for(const npc of npcs){
       const a=HOME_ANCHORS[npc?.id];if(!a||!npc?.id)continue;
-      const x=width*a.x,y=height*a.y;
+      const f=window.World?.gardenArtworkRect?.(width,height)||{x:0,y:0,width,height};
+      const x=Math.max(42,Math.min(width-42,f.x+f.width*a.x)),y=Math.max(90,Math.min(height-28,f.y+f.height*a.y));
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
-      try{const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale:a.scale,time});
+      try{const scale=a.scale*(npc.id==='muling'?.95:.68)*Math.max(.72,Math.min(1.1,height/460));const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale,time});
         if(visible===false)continue;
-        lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*a.scale:y,radius:Math.max(24,a.radius*Math.min(1,width/1000))});}
+        if(npc.id==='muling')syncTalkMarker(ctx,width,height,x,y,scale);
+        if(npc.id==='muling'){ctx.save();ctx.font='600 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const stranger=window.CatBondResonance?.view?.().current?.id==='prologue:P-05';const label=window.MorrowwishI18n?.get?.()==='zh'?(stranger?'陌生猫':'暮铃'):(stranger?'Stranger':'Muling');const w=ctx.measureText(label).width+16;ctx.fillStyle='#fff2d9e8';ctx.beginPath();ctx.roundRect(x-w/2,y+5,w,21,10);ctx.fill();ctx.fillStyle='#594431';ctx.fillText(label,x,y+15.5);ctx.restore();}
+        lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*scale:y-30*scale,groundY:y,radius:Math.max(24,a.radius*.75*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }
+    window.GardenExploration?.draw?.(root,ctx,width,height);
   }
   function handleTap(x,y){
     if(!active||game?.scene!=='yard')return false;
@@ -151,12 +192,17 @@
     }
     return !!window.GardenProjects?.tap?.(x,y);
   }
+  function placementBlocked(x,y){
+    if(!active||game?.scene!=='yard'||visitedState!==state())return false;
+    if(window.GardenProjects?.placementBlocked?.(x,y))return true;
+    return hitState===state()&&lastNpcHits.some(n=>Math.hypot(n.x-x,(n.groundY-y)*1.6)<Math.max(26,n.radius*.65));
+  }
   function getProgress(){
     const p=canonicalProgress();
     return{chapter:p.chapter,completedScenes:p.completed.length,restoredSanctuaries:p.sanctuaries.slice(),
       returnedNpcIds:p.returned.slice(),postgameEvents:p.postgame.slice(),ending:p.ending};
   }
-  const api={init,enter,leave,draw,handleTap,getProgress,registerNarrativeAdapter,homeAnchors:HOME_ANCHORS};
+  const api={init,enter,leave,draw,handleTap,getProgress,noteBookVisit,placementBlocked,registerNarrativeAdapter,homeAnchors:HOME_ANCHORS};
   window.SunlitGarden=api;
   window.addEventListener('DOMContentLoaded',()=>init(window.__game),{once:true});
 })();

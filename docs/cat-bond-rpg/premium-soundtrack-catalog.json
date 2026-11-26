@@ -1,0 +1,200 @@
+{
+  "schema": 1,
+  "review": "cozy-fantasy-candidate-not-listening-approved",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "scenes": {
+    "title": "tomorrow",
+    "opening": "childhood",
+    "garden": "life-in-silico",
+    "atlas": "concerning-hobbits",
+    "harbor": "quirky-lane",
+    "forest": "enchanted-valley",
+    "forge": "an-unexpected-party",
+    "sky": "discovery",
+    "library": "reverie",
+    "starfall": "golden-hour",
+    "betrayal": "reverie",
+    "battle": "jubilee",
+    "boss-harbor": "into-the-wilds",
+    "boss-forest": "into-the-wilds",
+    "boss-forge": "into-the-wilds",
+    "boss-sky": "into-the-wilds",
+    "boss-library": "into-the-wilds",
+    "boss-starfall": "into-the-wilds",
+    "finale1": "into-the-wilds",
+    "finale2": "call-to-adventure",
+    "finale3": "where-stars-fall",
+    "muling": "childhood",
+    "ending": "life-in-silico",
+    "identity": "reverie",
+    "postgarden": "life-in-silico"
+  },
+  "tracks": {
+    "tomorrow": {
+      "title": "Tomorrow",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/tomorrow/",
+      "download": "https://www.scottbuckley.com.au/wp-content/audio/sb_tomorrow.mp3",
+      "notes": "Bright, playful orchestral fantasy. Title promises a joyful adventure.",
+      "scenes": [
+        "title"
+      ]
+    },
+    "childhood": {
+      "title": "Childhood",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/childhood/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2019/01/sb_childhood.mp3",
+      "scenes": [
+        "opening",
+        "muling"
+      ],
+      "notes": "Tender, innocent piano and strings for story and Muling; sadness must remain gentle and resolve toward hope."
+    },
+    "life-in-silico": {
+      "title": "Life in Silico",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/life-in-silico/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2021/07/sb_lifeinsilico.mp3",
+      "notes": "Bubbly piano and strings for domestic warmth; check that the bittersweet ending does not dominate.",
+      "scenes": [
+        "garden",
+        "ending",
+        "postgarden"
+      ]
+    },
+    "concerning-hobbits": {
+      "title": "Concerning Hobbits",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/concerning-hobbits/",
+      "download": "https://www.scottbuckley.com.au/wp-content/audio/sb_concerninghobbits.mp3",
+      "notes": "Carefree classical adventure; this is Buckley's own piece, not the film soundtrack.",
+      "scenes": [
+        "atlas"
+      ]
+    },
+    "quirky-lane": {
+      "title": "Quirky Lane",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/quirky-lane/",
+      "download": "https://www.scottbuckley.com.au/wp-content/audio/iha/sb_iha_quirkylane.mp3",
+      "notes": "Warm recorder and strings, then playful winds and vibes; bustling harbor, not slapstick.",
+      "scenes": [
+        "harbor"
+      ]
+    },
+    "enchanted-valley": {
+      "title": "Enchanted Valley",
+      "author": "Kevin MacLeod (incompetech.com)",
+      "license": "CC BY 4.0",
+      "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093",
+      "local": "enchanted-valley.ogg",
+      "scenes": [
+        "forest"
+      ],
+      "notes": "Existing forest-only candidate. Preserve previously imported recording."
+    },
+    "an-unexpected-party": {
+      "title": "An Unexpected Party",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/an-unexpected-party/",
+      "download": "https://www.scottbuckley.com.au/wp-content/audio/sb_anunexpectedparty.mp3",
+      "notes": "Playful chamber orchestration for a lively workshop; reject if it sounds too comedic.",
+      "scenes": [
+        "forge"
+      ]
+    },
+    "discovery": {
+      "title": "Discovery",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/discovery/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/01/sb_discovery.mp3",
+      "scenes": [
+        "sky"
+      ],
+      "notes": "Optimistic flight adventure; verify hybrid synth/brass do not overwhelm relaxed exploration."
+    },
+    "reverie": {
+      "title": "Reverie",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/reverie/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/03/sb_reverie.mp3",
+      "scenes": [
+        "library",
+        "betrayal",
+        "identity"
+      ],
+      "notes": "Dreamlike intimacy for library and revelations; no horror or persistent melancholy."
+    },
+    "golden-hour": {
+      "title": "Golden Hour",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/golden-hour/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2023/02/GoldenHour.mp3",
+      "notes": "Warm mystery and discovery instead of ominous suspense.",
+      "scenes": [
+        "starfall"
+      ]
+    },
+    "jubilee": {
+      "title": "Jubilee",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/jubilee/",
+      "download": "https://www.scottbuckley.com.au/wp-content/audio/sb_jubilee.mp3",
+      "notes": "Buoyant orchestral adventure; ordinary combat feels like a challenge, not danger music.",
+      "scenes": [
+        "battle"
+      ]
+    },
+    "into-the-wilds": {
+      "title": "Into The Wilds",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/into-the-wilds/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2024/11/IntoTheWilds.mp3",
+      "notes": "Heroic fantasy combat with positive momentum; reject sustained threat or excessive brass.",
+      "scenes": [
+        "boss-harbor",
+        "boss-forest",
+        "boss-forge",
+        "boss-sky",
+        "boss-library",
+        "boss-starfall",
+        "finale1"
+      ]
+    },
+    "call-to-adventure": {
+      "title": "Call To Adventure",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/call-to-adventure/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2023/01/CallToAdventure.mp3",
+      "notes": "Heroic theme with softer middle and triumphant resolution; finale escalation only.",
+      "scenes": [
+        "finale2"
+      ]
+    },
+    "where-stars-fall": {
+      "title": "Where Stars Fall",
+      "author": "Scott Buckley",
+      "license": "CC BY 4.0",
+      "source": "https://www.scottbuckley.com.au/library/where-stars-fall/",
+      "download": "https://www.scottbuckley.com.au/library/wp-content/uploads/2021/02/sb_wherestarsfall.mp3",
+      "scenes": [
+        "finale3"
+      ],
+      "notes": "Uplifting orchestral resolution, reserved for the final climax; not general exploration."
+    }
+  },
+  "direction": "Joyful cat fantasy adventure; warmth, curiosity and hope take priority over cinematic scale. Even twists must remain emotionally safe and ultimately uplifting."
+}

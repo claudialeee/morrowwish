@@ -1,0 +1,223 @@
+/* Shared parchment, aged brass and olive palette sampled in spirit from the illustrated garden. */
+:root{--rpg-paper:#fff7e5;--rpg-pale:#eee2c6;--rpg-ink:#493e2b;--rpg-gold:#ac8951;--rpg-olive:#59634a;--rpg-wood:#514431}
+.cb-confirm-dialog{box-sizing:border-box;width:min(420px,calc(100vw - 30px));max-height:calc(100dvh - 24px);overflow:auto;padding:24px;border:1px solid #bda16b;border-radius:12px;background:linear-gradient(150deg,#fff9ea,#eee1c5);color:#493e2b;box-shadow:0 16px 60px #29201688;font:15px/1.6 var(--cb-font-body)}
+.cb-confirm-dialog::backdrop{background:#29241799;backdrop-filter:blur(3px)}
+.cb-confirm-dialog h2{font:700 23px/1.3 var(--cb-font-display);margin:0 0 12px}
+.cb-confirm-dialog p{margin:0 0 20px}
+.cb-confirm-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.cb-confirm-actions button{min-height:44px;padding:8px 18px;border:1px solid #ae9467;border-radius:6px;background:#fff8e9;color:#493e2b;font:650 14px var(--cb-font-body);cursor:pointer}
+.cb-confirm-actions .cb-confirm-primary{background:#59634a;color:#fff7e5}
+.cb-confirm-actions .cb-confirm-danger{background:#87563e;color:#fff7e5}
+.cb-confirm-actions button:focus-visible{outline:2px solid #896b35;outline-offset:2px}
+#stage #cb-opening-cover{position:absolute;inset:0;z-index:2299;background:#171710;pointer-events:auto}
+#stage{--cbv-night:#514431;--cbv-night-hover:#6b593e;--cbv-night-text:#fff5dd;--cbv-night-line:#bca16b;--cbv-paper:#f2e6cc;--cbv-paper-light:#fff8e8;--cbv-paper-ink:#493e2b;--cbv-muted:#766c55}
+#stage #map-menu,#stage #cb-system-toggle,#stage.cb-sunlit-garden #yard-actions .fab,#stage.rb-canonical.cb-sunlit-garden #yard-actions #sg-book-entry,#stage .rb-world-entry,#stage .sg-prologue-guide button,#stage .rw-system-nav button{background:#f1e3c4!important;color:#493e2b!important;border:1px solid #a98a53!important;box-shadow:0 2px 8px #35271540!important;text-shadow:none!important;border-radius:8px!important}
+#stage #map-menu,#stage #cb-system-toggle{min-height:38px!important;font-weight:700!important}
+#stage .sg-prologue-guide,#stage .rw-objective,#stage .res-host .res-body{background:#514431ee!important;color:#fff5dd!important;border-color:#bda16b!important}
+#stage #panel.rb-open .rb-navigation{background:#eadcc0!important;color:#493e2b!important;box-shadow:0 2px 7px #67502c26}
+#stage #panel.rb-open .rb-masthead{background:linear-gradient(90deg,#fff7e8 4%,#f0e1c4ed 65%,#e6d1a7aa),url("../assets/resonance-world-v2/harbor-mist.webp") center 45%/cover!important;border-bottom:1px solid #bda16b}
+#stage #panel.rb-open .rb-brand small,#stage #panel.rb-open .rb-brand strong{color:#5a4830!important}
+#stage #panel.rb-open .rb-tabs{background:#e6d7b8!important;border-bottom-color:#ab8951}
+#stage #panel.rb-open .rb-tab{color:#584b35!important;background:transparent!important;border-radius:0!important}
+#stage #panel.rb-open .rb-tab[aria-current="page"]{background:#fff7e5!important;color:#493e2b!important;border-bottom-color:#9a763c!important}
+#stage #panel.rb-open :is(.rb-close,.rb-home,.rb-action,.rb-craft-link){background:#f5e7c8!important;color:#493e2b!important;border-color:#ac8951!important}
+#stage .cb-system-card,#stage .cb-slot-manager-card,#stage #intro .cb-save-picker-card{background:linear-gradient(145deg,#fff7e5,#eee1c5)!important;color:#493e2b!important;border-color:#bda16b!important}
+#stage .cb-system-card h2,#stage .cb-system-card header button,#stage .cb-slot-manager-card :is(h2,.cb-cloud-lead,.cb-cloud-footnote,.cb-cloud-eyebrow),#stage #intro .cb-save-picker-card :is(h2,.cb-save-picker-desc,.cb-save-picker-kicker,.cb-save-picker-close){color:#493e2b!important}
+#stage .cb-system-rows button,#stage .cb-slot-manager-row,#stage #intro .cb-save-slot{background:#f1e4c9!important;color:#493e2b!important;border-color:#bda16b!important}
+#stage .cb-system-rows :is(small,output){color:#675638!important}
+#stage .cb-slot-manager-row :is(strong,span,small),#stage #intro .cb-save-slot :is(strong,small,span){color:#493e2b!important}
+#stage #intro .cb-save-slot.empty-slot{background:#f9efd9!important;border-color:#bda16b!important}
+#stage #intro .cb-intro-actions button#intro-continue{background:#f1e4c9!important;color:#493e2b!important}
+#stage .cb-slot-manager-actions button{background:#fff7e5!important;color:#493e2b!important;border-color:#bda16b!important}
+#stage .cb-slot-manager-actions button[data-remove-save]{background:#f2dfd0!important;color:#783f2d!important}
+#stage .cb-system-rows input[type=range]{accent-color:#77633c!important}
+
+/* Override the more-specific original header rules as well as fullscreen and portal reparenting. */
+#stage #map-actions > #map-menu,html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #map-menu,html.cb-cg #stage #cg-top-tools #map-menu,
+#stage #hud .hud-pill,#stage .hud-pill{background:#f1e3c4!important;border-color:#a98a53!important;color:#493e2b!important;box-shadow:0 2px 7px #35271533!important;text-shadow:none!important}
+#stage .hud-pill{border:1px solid #a98a53!important;border-radius:8px!important}
+#stage .sg-build-toggle,#stage .sg-build-button,#stage .sg-build-actions button{background:#f3e5c6!important;color:#493e2b!important;border-color:#a98a53!important}
+
+#stage .sg-hotspot{background:#f1e3c4!important;color:#493e2b!important;border-color:#a98a53!important;text-shadow:none!important;box-shadow:0 2px 8px #35271540!important}
+#stage .sg-hotspot-label{color:#493e2b!important}
+#stage .sg-hotspot-facilities{left:var(--sg-facility-x,29%)!important;top:var(--sg-facility-y,34%)!important}
+#stage .res-garden-bell{left:var(--sg-bell-x,20%)!important;top:var(--sg-bell-y,22%)!important}
+#stage .res-bell-label{background:#514431ee;color:#fff5dd;border:1px solid #bda16b}
+
+#stage #yard-actions .fab:hover,#stage #map-actions > #map-menu:hover,#stage .sg-hotspot:hover{background-color:#e5d1a7!important}
+
+#stage #panel .cat-starter-card .starter-portrait{
+ width:100%;max-width:180px;height:auto;aspect-ratio:1;object-fit:contain;
+ display:block;margin:0 auto 4px;pointer-events:none;
+}
+#stage #panel .cat-starter-card .dex-cell{min-width:0;background:#fffaf0}
+#stage #panel.open>.cat-capture-card{
+ box-sizing:border-box;max-height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;
+}
+#stage #panel .cat-capture-card #cr{
+ width:clamp(96px,22vh,180px)!important;height:auto!important;aspect-ratio:9/7;
+}
+#stage #panel .cat-story-starter-card .dex-grid{
+ grid-template-columns:repeat(2,minmax(0,1fr));max-width:440px;margin-inline:auto;
+}
+
+#stage .rw-world:not([hidden]){
+ color:#443746;background:linear-gradient(145deg,#fffcf3,#f3eaf1);
+}
+#stage .rw-world .rw-head{border-color:#d8cbbf}
+#stage .rw-world :is(.rw-brand small,.rw-brand strong,.rw-fit-summary,.rw-current strong,.rw-current small,.rw-metric b){color:#443746}
+#stage .rw-world :is(.rw-location,.rw-next,.rw-metric span,.rw-hint,.rw-harbor-status,.rw-region-status){
+ color:#605061;
+}
+#stage .rw-world :is(.rw-objective,.rw-notice,.rw-harbor-guide,.rw-current-actions span,.rw-cargo span){
+ background:#fff8ea!important;color:#443746!important;border-color:#d8c3a9!important;
+}
+#stage .rw-world .rw-button:not([data-note]){
+ background:#fbf2e4;color:#443746;border-color:#cbb8a0;box-shadow:none;
+}
+#stage .rw-world .rw-button:not([data-note]):enabled:hover{
+ background:#f0e1db;border-color:#a78692;
+}
+#stage .rw-world .rw-button:focus-visible,#stage .rw-atlas-menu summary:focus-visible{
+ outline:2px solid #785789;outline-offset:2px;
+}
+#stage .rw-world .rw-button[aria-current="location"]{
+ background:#eedded;border-color:#a786a0;
+}
+#stage .rw-world .rw-button:disabled{opacity:.58}
+
+#stage .cb-story-overlay.res-host{
+ background:linear-gradient(0deg,#4e394c78,transparent 76%);
+}
+#stage .res-host .res-body{
+ background:#fff9ed!important;color:#403342!important;
+ border-color:#d5baa7!important;box-shadow:0 10px 32px #533e4933;
+}
+#stage .res-host :is(.res-speaker,.res-line,.res-history){color:#4a354b}
+#stage .res-host :is(.res-controls,.res-choices)>button{
+ background:#f7eadb;color:#433345;border-color:#c8afaa;
+}
+#stage .res-host :is(.res-controls,.res-choices)>button:enabled:hover{
+ background:#eddfef;border-color:#a786a0;
+}
+#stage .res-host .res-portrait{filter:drop-shadow(0 5px 12px #48384755)}
+#stage .sg-prologue-guide{
+ background:#fff9edee!important;color:#493948!important;border-color:#cdb49d!important;
+}
+
+#stage #battle-ui .battle-tools{
+ background:#fff7ea;border-color:#d8c3b1;
+}
+#stage #battle-ui .battle-tools .tiny-btn{color:#4d3b51!important}
+#stage #battle-ui .battle-tools #btn-auto.is-auto{
+ background:#ebddeb!important;color:#533859!important;
+}
+#stage #battle-ui .cb-region-combat{
+ background:#fff8e9ed;color:#483747;border-color:#d4b8a4;
+}
+#stage #battle-ui .cb-region-combat button{
+ background:#efe0ed;color:#563b57;border-color:#bda4bb;
+}
+@media(max-width:520px){
+ #stage #battle-ui .battle-tools #battle-help-toggle{overflow:hidden}
+ #stage #battle-ui .battle-tools .battle-top-label{display:none!important}
+}
+
+#stage #panel.open:not(.rb-open)>.card,
+#stage #panel.rb-open .rb-navigation{
+ border-radius:12px;
+ border-color:#d4b8a4;
+}
+#stage #panel :is(.panel-back,.rb-home,.rb-close,.rb-action,.rb-craft-link).btn,
+#stage #panel .cat-highlight-card .btn.ghost{
+ background:#f7eadb;color:#483747;border-color:#cbb8a0;
+}
+#stage #panel .cat-highlight-card :is(h2,h3),#stage #panel.rb-open .rb-brand strong{
+ color:#493948;
+}
+#stage #panel .cat-highlight-card .dex-cell:not(.locked){
+ border-color:#d8c3b1;background:#fff8ed;color:#493948;
+}
+#stage #panel .cat-highlight-card .dex-cell:not(.locked):focus-visible{
+ outline:2px solid #785789;outline-offset:2px;
+}
+#stage .sg-prologue-guide :is(h2,h3,strong,p){color:#493948}
+
+/* Immersive exploration chrome: one menu, one control system. Legacy buttons
+   remain in the DOM because their existing handlers enforce gameplay rules. */
+#stage.cb-sunlit-garden #yard-actions,
+html.cb-cg #stage.cb-sunlit-garden #cg-yard-dock>#yard-actions,
+#stage.cb-sunlit-garden .sg-hotspot-facilities{display:none!important}
+#stage .rw-world:not([hidden])>.rw-controls:not(.rw-puzzle-controls){display:none!important}
+#stage .cb-system-card{overflow:auto!important;overscroll-behavior:contain;max-height:100%}
+#stage .cb-music-credit{grid-column:1/-1;font:11px/1.4 var(--cb-font-body);color:#675638;margin:4px 0}
+#stage .cb-music-credit a{color:inherit;text-decoration:underline}
+#stage :is(.rw-world,.sg-prologue-guide,.cb-system-card) button:not([data-note]),
+#stage #map-menu:not([hidden]),#stage #cb-system-toggle,
+#stage .rw-atlas-menu summary{
+ box-sizing:border-box;min-height:44px!important;padding:8px 14px!important;
+ border:1px solid #aa8c59!important;border-radius:9px!important;
+ background:#f5e8cb!important;color:#493e2b!important;
+ font:650 13px/1.25 var(--cb-font-body)!important;text-shadow:none!important;box-shadow:0 2px 5px #503c241c!important;
+}
+#stage :is(.rw-world,.sg-prologue-guide,.cb-system-card) button:not([data-note]):enabled:hover,
+#stage #map-menu:not([hidden]):hover,#stage #cb-system-toggle:hover,
+#stage .rw-atlas-menu summary:hover{background:#e9d7b0!important}
+#stage :is(.rw-world,.sg-prologue-guide,.cb-system-card) button:disabled{opacity:.48!important}
+#stage .cb-system-card header button{min-width:44px}
+#stage .rw-world .rw-fit-rail button{min-height:44px!important}
+#stage .rw-world:is(.rw-region-compact,.rw-atlas-mode):not([hidden]){
+ grid-template-rows:auto minmax(0,1fr)!important;gap:4px!important;
+ padding:4px 6px max(6px,env(safe-area-inset-bottom,0px))!important;
+ background:#f7efdf!important;
+}
+#stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-shell{
+ grid-area:2/1/3/-1!important;position:relative;min-height:0;max-width:none!important;
+ border:0!important;border-radius:9px;overflow:hidden;
+ background:#e7dac3;
+}
+#stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-head{
+ padding:0 0 3px!important;gap:6px;margin:0!important;
+}
+#stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-head .rw-brand small{display:none}
+#stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-region-toggle{
+ position:absolute;left:14px;bottom:14px;z-index:3;
+}
+#stage .rw-world.rw-atlas-mode>.rw-atlas-rail{
+ position:absolute;left:14px;bottom:14px;z-index:3;width:auto!important;
+}
+#stage .rw-region-compact>.rw-fit-rail{bottom:66px!important;z-index:4}
+#stage .rw-world.rw-region-compact>.rw-shell .rw-surface{
+ max-width:none!important;max-height:none!important;
+ width:min(100cqw,calc(100cqh * 1.77777778))!important;height:auto!important;
+ outline:0!important;border-radius:0!important;
+}
+@media (orientation:landscape) {
+ #stage .rw-world.rw-region-compact>.rw-shell .rw-surface:not([data-camera="[1,0,0]"]){
+  width:max(100cqw,calc(100cqh * 1.77777778))!important;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+ }
+}
+@media (orientation:portrait) {
+ #stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-shell{place-items:start center}
+ #stage .rw-world:is(.rw-region-compact,.rw-atlas-mode)>.rw-shell .rw-surface{width:100%!important;max-height:100%!important}
+}
+#stage #cb-canonical-opening .cbcp-progress{visibility:hidden}
+#stage #cb-canonical-opening .cbcp-heading .cbcp-kicker{display:none}
+
+
+/* Match the fullscreen return control and HUD with the parchment palette. */
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-yard-return,
+html.cb-cg #stage #cb-yard-return,#stage #cb-header #cb-yard-return{
+ background:#f5e8cb!important;color:#493e2b!important;border:1px solid #aa8c59!important;
+ border-radius:9px!important;box-shadow:0 2px 5px #503c241c!important;text-shadow:none!important;
+}
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions > #hud .hud-pill,
+#stage #hud .hud-pill{background:#f5e8cb!important;color:#493e2b!important;border-color:#aa8c59!important}
+#stage .rw-world.rw-atlas-mode>.rw-shell::before{
+ content:"";position:absolute;inset:-12px;background:url("../assets/resonance-world-v2/atlas.webp") center/cover;
+ filter:blur(18px) saturate(.72);opacity:.5;pointer-events:none;
+}
+#stage .rw-world.rw-atlas-mode>.rw-shell .rw-surface{position:relative;z-index:1}
+@media(min-width:701px) and (min-height:501px){
+ html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header #cb-yard-return{min-height:44px!important;font:650 13px/1.25 var(--cb-font-body)!important}
+}

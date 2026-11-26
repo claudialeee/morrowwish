@@ -240,6 +240,8 @@ function stationCap(st) {
   return Math.round(t.cap * (1 + 0.5 * (st.level - 1)));
 }
 
+// Wind readings recovered on Farwind Isle calibrate the existing lookout; no new currency or station.
+function skyLookoutCalibrated(){const s=State.S;return !!(s.resonance?.completed?.includes("sky:S-05")&&s.resonanceExploration?.pickups?.["sky:survey-cache"]);}
 // per-HOUR production for a station (0 if no worker or non-producing type).
 function stationRate(st) {
   const t = STATION_TYPES[st.type];
@@ -252,7 +254,7 @@ function stationRate(st) {
   mult *= 1 + bondLevel(cat) * 0.04;                               // gift-bond buff
   const tr = TRAITS[cat.trait];
   if (tr && tr.res && tr.res[t.res]) mult *= tr.res[t.res];
-  return t.base * Math.pow(1.15, st.level - 1) * mult * (st.type==="forge"&&st.reinforced?1.25:1);
+  return t.base * Math.pow(1.15, st.level - 1) * mult * (st.type==="watch"&&skyLookoutCalibrated()?1.25:1) * (st.type==="forge"&&st.reinforced?1.25:1);
 }
 
 function isBusy(uid) {
@@ -353,7 +355,7 @@ function stationsView() {
       ratePerHour: Math.round(stationRate(st) * 10) / 10,
       catName: cat ? speciesName(cat) : null, active: !!cat,
       assignedUid: st.assignedUid || null,
-      desc: t.desc, reinforced:!!st.reinforced,
+      desc: t.desc, reinforced:!!st.reinforced, skyCalibrated:st.type==="watch"&&skyLookoutCalibrated(),
     };
   });
 }
@@ -459,7 +461,7 @@ function rollVisitors(minutes) {
   init();
   const out = [];
   if (minutes < 10) return out;
-  const owned = State.S.cats || [];
+  const owned = (State.S.cats || []).filter(c=>!GameData.speciesById(c.species)?.storyActor);
   // boost from 机敏 cats + stored watch-luck
   let luckBoost = 0;
   owned.forEach(c => { if (c.personality === 'clever') luckBoost += 0.02; });
@@ -503,6 +505,7 @@ function startBreeding(uidA, uidB) {
   if (uidA === uidB) return { ok: false, msg: '需要两只不同的猫猫' };
   const a = findCat(uidA), b = findCat(uidB);
   if (!a || !b) return { ok: false, msg: '找不到猫猫' };
+  if(a.storyActor||b.storyActor)return {ok:false,msg:'剧情伙伴不能繁育'};
   if (isBusy(uidA) || isBusy(uidB)) return { ok: false, msg: '猫猫正在忙（工作或繁育中）' };
   r.breeding = { aUid: uidA, bUid: uidB, progress: 0, duration: BREED_SECONDS, done: false, startAt: Date.now() };
   return { ok: true };

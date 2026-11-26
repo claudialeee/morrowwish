@@ -1,0 +1,71 @@
+name: Cat Bond premium soundtrack candidate build
+on:
+  push:
+    branches: [review/cat-bond-premium-soundtrack]
+    paths:
+      - 'scripts/build-cat-bond-premium-soundtrack.py'
+      - 'scripts/check-cat-bond-premium-soundtrack.mjs'
+      - 'docs/cat-bond-rpg/premium-soundtrack-catalog.json'
+      - '.github/workflows/cat-bond-premium-soundtrack.yml'
+permissions:
+  contents: write
+concurrency:
+  group: cat-bond-premium-soundtrack-review
+  cancel-in-progress: true
+jobs:
+  master:
+    if: github.ref == 'refs/heads/review/cat-bond-premium-soundtrack'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: review/cat-bond-premium-soundtrack
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Fetch and master licensed recordings
+        run: |
+          command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+          python3 scripts/build-cat-bond-premium-soundtrack.py
+          node scripts/check-cat-bond-premium-soundtrack.mjs
+          node --check public/cat-bond/js/rpg-audio.js
+          node --check public/cat-bond/js/main.js
+          node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: premium-soundtrack-listening-candidates
+          path: |
+            public/cat-bond/assets/quality-audio/premium-*.mp3
+            public/cat-bond/assets/quality-audio/premium-manifest.json
+            public/cat-bond/assets/quality-audio/music-credits.html
+          retention-days: 14
+      - name: Commit mastered candidates to review branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin review/cat-bond-premium-soundtrack
+          test "$(git rev-parse FETCH_HEAD)" = "$GITHUB_SHA"
+          git add public/cat-bond/assets/quality-audio/premium-*.mp3 public/cat-bond/assets/quality-audio/premium-manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Import measured licensed soundtrack candidates (listening approval pending)"
+            git push origin HEAD:review/cat-bond-premium-soundtrack
+          fi
+      - run: npm ci && npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Real browser title, opening, volume and pause/resume
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/premium-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          node scripts/cat-bond-rpg-audio-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: premium-soundtrack-browser-evidence
+          path: artifacts/cat-bond-audio/
+          if-no-files-found: warn

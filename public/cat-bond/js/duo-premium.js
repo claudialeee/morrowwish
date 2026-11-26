@@ -32,10 +32,10 @@ function atmosphere(g,W,H,index){
 function feather(g,W,H){
  g.save();g.globalCompositeOperation='destination-in';
  let f=g.createLinearGradient(0,0,W,0);
- for(const [p,a] of [[0,0],[.035,.02],[.09,.16],[.16,.68],[.23,1],[.77,1],[.84,.68],[.91,.16],[.965,.02],[1,0]])f.addColorStop(p,'rgba(255,255,255,'+a+')');
+ for(const [p,a] of [[0,0],[.025,.06],[.06,.35],[.12,.84],[.18,1],[.82,1],[.88,.84],[.94,.35],[.975,.06],[1,0]])f.addColorStop(p,'rgba(255,255,255,'+a+')');
  g.fillStyle=f;g.fillRect(0,0,W,H);
  f=g.createLinearGradient(0,0,0,H);
- for(const [p,a] of [[0,0],[.045,.02],[.12,.16],[.22,.72],[.31,1],[.69,1],[.78,.72],[.88,.16],[.955,.02],[1,0]])f.addColorStop(p,'rgba(255,255,255,'+a+')');
+ for(const [p,a] of [[0,0],[.035,.07],[.09,.40],[.15,.86],[.21,1],[.79,1],[.85,.86],[.91,.40],[.965,.07],[1,0]])f.addColorStop(p,'rgba(255,255,255,'+a+')');
  g.fillStyle=f;g.fillRect(0,0,W,H);
  g.save();g.scale(W,H);const v=g.createRadialGradient(.5,.5,.34,.5,.5,.79);
  v.addColorStop(0,'#fff');v.addColorStop(.65,'#fff');v.addColorStop(.79,'rgba(255,255,255,.94)');
@@ -147,7 +147,10 @@ function draw(ctx,W,H,seq){
  const artW=Math.min(W,H*ASPECT),artH=artW/ASPECT,artX=(W-artW)/2,artY=(H-artH)/2;
  const pw=Math.max(1,Math.round(artW*dpr)),ph=Math.max(1,Math.round(artH*dpr));
  if(painting.width!==pw||painting.height!==ph){painting.width=pw;painting.height=ph;}
- stageCtx.setTransform(dpr,0,0,dpr,0,0);stageCtx.clearRect(0,0,W,H);if(!still)atmosphere(stageCtx,W,H,index);
+ stageCtx.setTransform(dpr,0,0,dpr,0,0);stageCtx.clearRect(0,0,W,H);
+ // In live combat the illustrated arena must remain visible around the
+ // painting. Gallery previews retain their authored full-coverage backdrop.
+ if(!still){stageCtx.save();stageCtx.globalAlpha=gallery?1:.22;atmosphere(stageCtx,W,H,index);stageCtx.restore();}
  const cameraPhase=p*Math.PI*2;
  const zoom=still?1:1.003+.004*(.5+.5*Math.sin(cameraPhase-.7));
  const driftX=still?0:Math.sin(cameraPhase)*artW*.002;

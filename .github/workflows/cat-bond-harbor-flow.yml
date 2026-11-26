@@ -1,32 +1,43 @@
 name: Cat Bond Misttide Harbor playthrough
 
 on:
+  workflow_call:
+    inputs:
+      combined:
+        type: boolean
+        default: false
   pull_request:
     branches: [main, rpg/integration, rpg/cat-bond-takeover]
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-harbor-playthrough.mjs'
+      - 'scripts/check-cat-bond-resonance-world.mjs'
+      - 'scripts/cat-bond-starfall-playthrough.mjs'
+      - 'scripts/cat-bond-finale-real-playthrough.mjs'
       - 'scripts/cat-bond-local-cloud-server.mjs'
       - '.github/workflows/cat-bond-harbor-flow.yml'
 
 permissions:
   contents: read
 
-# Only the newest acceptance run for a given PR is useful; never cancel another PR.
+# Combined release calls are isolated by caller run ID; ordinary PR pushes cannot cancel them.
+# Other branches retain their legacy acceptance behavior.
 concurrency:
-  group: cat-bond-harbor-acceptance-${{ github.event.pull_request.number }}
+  group: cat-bond-harbor-acceptance-${{ github.event.pull_request.number }}-${{ inputs.combined && github.run_id || 'legacy' }}
   cancel-in-progress: true
 
 jobs:
   harbor:
+    if: inputs.combined || github.head_ref != 'rpg/release-combined-next'
     runs-on: ubuntu-24.04
-    timeout-minutes: 18
+    timeout-minutes: 55
     strategy:
       fail-fast: false
       matrix:
         profile: [desktop, portrait, landscape]
     env:
       CAT_BOND_PROFILE: ${{ matrix.profile }}
+      CAT_BOND_FULL_CAMPAIGN: ${{ github.head_ref == 'rpg/release-combined-next' && '1' || '0' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,8 +48,14 @@ jobs:
       - run: npm install --no-save --no-package-lock playwright@1.57.0
       - run: npx playwright install --with-deps chromium
       - name: Cat Bond canonical world regression (independent of studio dashboard)
-        run: node scripts/check-cat-bond-resonance-world.mjs
-      - name: Play from a new slot on desktop and mobile
+        run: |
+          node scripts/check-cat-bond-resonance-world.mjs
+          node scripts/test-cat-bond-resonance.mjs
+          node scripts/test-cat-bond-resonance-slot.mjs
+          node scripts/test-cat-bond-resonance-combat.mjs
+          node scripts/test-cat-bond-forge-combat.mjs
+          node scripts/test-cat-bond-resonance-ambient.mjs
+      - name: Play from a new slot on desktop and mobile (combined branch through finale)
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/harbor-server.log 2>&1 &
           server=$!

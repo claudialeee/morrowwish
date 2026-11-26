@@ -6,25 +6,25 @@ The descriptions below translate the approved character biographies into visual 
 
 ## 1. Player — The Unnamed First Bellkeeper
 
-**Identity rule:** The player is the selected playable cat. Do not overwrite the player's chosen breed, fur pattern, or display name with a fixed protagonist model.
+**Identity rule (owner-approved V3 direction):** New RPG games begin with a fixed golden-shaded protagonist. This is a visual choice, not a reveal of their name or identity. Preserve existing save data and collected cats; do not silently rewrite legacy save slots.
 
 **Visual motif:** The First Note is represented by a small, worn brass half-ring clasp and a fine six-spoke engraving that appears only when the player interacts with an original sanctuary. It is a visual language for the role, not a royal emblem, prophecy mark or inherited power.
 
 **Presentation**
-- Keep the selected cat's face and body proportions visible in every scene.
+- Keep the protagonist's approved golden-shaded face and body proportions visible in every scene.
 - Use a practical travel mantle or harness only as an optional visual layer; it must not conceal the selected cat's coat or species.
 - Early campaign: muted travel materials, repaired stitching, no ceremonial crown or hero armor.
 - Memory-return scenes: warmer light and restored personal details, not a body transformation.
-- Past First Bellkeeper flashback: same selected cat silhouette and recognizable coat, with the old keeper clasp and the original bell cord.
+- Past First Bellkeeper flashback: same approved protagonist silhouette and recognizable coat, with the old keeper clasp and the original bell cord.
 - Emotional acting: observant eyes, slightly forward ears, protective stance; avoid a permanently smiling mascot expression.
 
 **Forbidden:** fixed white-cat protagonist, royal/chosen-one styling, a new species at the reveal, a magical forehead tattoo that replaces the canon First Note, or a costume that implies the player was born to rule.
 
 ## 2. Muling (暮铃) — The One Who Waited
 
-**Core silhouette:** medium-tall, lean and long-limbed feline; narrow shoulders, elegant but not fragile; slightly asymmetrical ear tufts; long tail with a dark tapered tip. Her outline should be recognizable in silhouette before the pendant is visible.
+**Core silhouette (owner-approved direction):** a pale silver-shaded or cream-silver cat; the final silhouette must be designed to distinguish her from the golden-shaded protagonist while sharing the same watercolor shape language as approved NPC artwork. Retain her travel equipment and identifiable pendant.
 
-**Core appearance:** deep dusk-slate coat with subtle charcoal tabby shading, smoke-silver muzzle/chest and cheek highlights, muted amber eyes. The value range is controlled and warm enough to remain approachable. Do not make her pitch-black or skeletal.
+**Core appearance:** pale silver or cream-silver shading, softly rendered coat and approachable expression. Eye color, markings, proportions and tail pattern are to be locked after approval of the new portrait; do not recycle the former dusk-slate model or an unrelated NPC as final art.
 
 **Costume:** travel-researcher mantle in desaturated blue-green, weathered seam piping, small map pockets, one shoulder clasp and a practical repair pouch. No villain spikes, horns, skull motifs or oversized armor.
 
@@ -35,7 +35,7 @@ The descriptions below translate the approved character biographies into visual 
 | Phase | Story timing | Visual change | Must remain unchanged |
 |---|---|---|---|
 | Traveling researcher | P-04 through Chapter IV | mantle neat but visibly repaired; pendant mostly closed; relaxed ears; dry, observant expression | face, amber eyes, coat, ear tufts, pendant shape |
-| Truth exposed | M-03 through F-04 | same costume; pendant opened to reveal the mechanism; tired eyes, tense shoulders, less guarded gaze; a few reversed resonance traces on the mantle | same body, face, fur, eye color, pendant and silhouette |
+| Truth exposed | M-03 through F-04 | same costume; pendant opened to reveal the mechanism; tired eyes, tense shoulders, less guarded gaze; a few reversed resonance traces on the mantle | same approved body, face, fur, eye color, pendant and silhouette |
 | Reverse Bellkeeper | B-01 through B-04 | mantle edges lifted by inward resonance; broken brass light-lines orbit the same pendant; fabric worn and pulled by force; expression conflicted, not monstrous | same face and body; no horns, extra limbs, skull mask, black transformation or unrelated boss creature |
 
 **Emotional expression sheet:** guarded half-smile; dry amusement; private grief; nervous pendant tap; fear held behind control; anger without cruelty; recognition of the six replies; remorse; quiet relief.
@@ -148,8 +148,12 @@ The descriptions below translate the approved character biographies into visual 
 - Use a character-specific palette; avoid giving multiple NPCs the same coat silhouette.
 - NPC pairs must contrast in shape language as well as color: broad/narrow, still/quick, angular/soft, vertical/low.
 - Do not invent species/breed labels that are not in the canon. These are design traits, not biological claims.
-- The first playable character sheet is a presentation reference only; the player's chosen cat remains the in-game protagonist.
+- The first playable character sheet is a presentation reference only; the fixed golden-shaded protagonist and pale silver Muling must be approved against the same mature NPC watercolor references. Collected cats retain their individual identities.
 
 ## 5. Asset completion status
 
 This visual bible is the approved design specification. Character turnaround sheets and individual runtime portraits are separate asset deliverables and must be listed individually in the asset manifest. A written design is not a completed character illustration.
+
+
+## Canon 1.1 art handoff
+Use the strongest existing NPC watercolor artworks as style references, not as a mandatory roster or final substitute for either hero. Compare shape, facial construction, texture, contour, palette, scale and lighting. Portraits, overworld sprites, battle and duo presentations must depict the same approved characters. No new art is claimed by this documentation revision; both hero assets remain pending approval and integration. Existing NPCs may be consolidated only after their story functions are reassigned.

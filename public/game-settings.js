@@ -144,7 +144,9 @@ function toggleMusic(){
  }
  sync();
 }
+function catBondAudioMenu(){return route==='cat-bond'&&window.__CAT_BOND_STARTED__&&window.__game?.scene!=='battle'&&window.CatBondSystemMenu?.open;}
 function toggleEffects(){
+ if(catBondAudioMenu()){window.CatBondSystemMenu.open();return;}
  const api=fxAPI();
  if(api?.toggle)api.toggle();
  else if(route==='pawsibly-innocent')document.getElementById('sound')?.click();
@@ -188,6 +190,7 @@ function sync(){
  btnSfx.textContent=fxOn?'◖))':'◖';
  btnSfx.setAttribute('aria-pressed',String(!!fxOn));
  btnSfx.title=chinese?(fxOn?'关闭音效':'开启音效'):(fxOn?'Turn sound effects off':'Turn sound effects on');
+ if(catBondAudioMenu()){btnSfx.textContent='♫';btnSfx.title=chinese?'音乐与音效设置':'Music and sound settings';btnSfx.removeAttribute('aria-pressed');btnSfx.setAttribute('aria-haspopup','dialog');}else{btnSfx.removeAttribute('aria-haspopup');}
  btnSfx.setAttribute('aria-label',btnSfx.title);
  btnShare.textContent='↗';
  btnShare.title=chinese?'分享游戏':'Share game';
@@ -204,7 +207,8 @@ function openShare(){
   'flip-dash':['反转冲刺','Flip Dash'],
   'parcel-panic':['包裹分拣','Parcel Panic']
  };
- const title=niceNames[route]?.[chinese?0:1]||document.title.split(/[|—]/)[0].trim();
+ const starbell=route==='cat-bond'&&document.querySelector('meta[name="cat-bond-campaign"][content="last-resonance"]')&&document.getElementById('cb-title-name');
+ const title=starbell?(chinese?'星铃回响':'Echoes of the Starbell'):(niceNames[route]?.[chinese?0:1]||document.title.split(/[|—]/)[0].trim());
  // Never share a transient fullscreen/query-state URL, only the game link.
  const url=new URL('/'+route+'/',location.origin).href;
  const message=chinese

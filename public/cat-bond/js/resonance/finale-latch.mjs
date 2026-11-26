@@ -30,10 +30,14 @@ export function openFinaleLatch(){
   reset();overlay.remove();
   window.removeEventListener("morrowwish-language-change",render);
   window.removeEventListener("cat-bond-resonance-changed",check);
+  window.removeEventListener("cat-bond-active-save-changed",close);
+  window.removeEventListener("pagehide",close);
+  window.removeEventListener("blur",reset);
  }
- function check(){if(!api.isCurrentAction(token))close();}
+ function check(){if(!api.isCurrentAction(token)||window.__game?.scene!=="map"||window.WorldMap?.currentRegion!=="starfall")close();}
  function tick(now){
-  if(!api.isCurrentAction(token)){close();return;}
+  if(!api.isCurrentAction(token)||window.__game?.scene!=="map"||window.WorldMap?.currentRegion!=="starfall"){close();return;}
+  if(started===null)return;
   progress.value=Math.min(1,(now-started)/1450);
   if(progress.value<1){frame=requestAnimationFrame(tick);return;}
   const result=api.recordEvidence({sceneId:view.current.id,operation,region:"starfall",verified:true,token});
@@ -44,7 +48,7 @@ export function openFinaleLatch(){
  }
  function start(){if(started!==null)return;started=performance.now();frame=requestAnimationFrame(tick);}
  hold.onpointerdown=event=>{if(event.button>0)return;hold.setPointerCapture(event.pointerId);start();};
- hold.onpointerup=hold.onpointercancel=reset;
+ hold.onpointerup=hold.onpointercancel=hold.onlostpointercapture=reset;
  hold.onkeydown=event=>{if([" ","Enter"].includes(event.key)){event.preventDefault();start();}};
  hold.onkeyup=event=>{if([" ","Enter"].includes(event.key)){event.preventDefault();reset();}};
  hold.onblur=reset;
@@ -52,5 +56,8 @@ export function openFinaleLatch(){
  overlay.onkeydown=event=>{if(event.key==="Escape")close();};
  window.addEventListener("morrowwish-language-change",render);
  window.addEventListener("cat-bond-resonance-changed",check);
+ window.addEventListener("cat-bond-active-save-changed",close);
+ window.addEventListener("pagehide",close);
+ window.addEventListener("blur",reset);
  render();hold.focus();
 }

@@ -63,3 +63,32 @@ for(const personality of personalities){
  assert.equal(identifyEcho(habit,null),false);
 }
 console.log("Individual Catdex rhythm and measured-mismatch regression passed");
+
+import {ruinsEncounterProfile,applyStarfallSupport} from "../public/cat-bond/js/resonance/regional-combat.mjs";
+import {classifyPrologue} from "../public/cat-bond/js/resonance/title-entry.mjs";
+const field=[{level:8},{level:10},{level:99},{level:99},{level:99}];
+assert.deepEqual(ruinsEncounterProfile(field,"legendary","casual"),{level:9,escorts:0});
+assert.deepEqual(ruinsEncounterProfile(field,"duo","casual"),{level:9,escorts:1});
+assert.deepEqual(ruinsEncounterProfile(field,"legendary","hardcore"),{level:10,escorts:1});
+assert.deepEqual(ruinsEncounterProfile(field,"duo","hardcore"),{level:11,escorts:1});
+assert.deepEqual(ruinsEncounterProfile([{level:1}],"duo","hardcore"),{level:3,escorts:0});
+assert.equal(ruinsEncounterProfile([],"legendary","casual"),null);
+assert.equal(classifyPrologue({ending:true,current:null}),"garden");
+for(const id of ["epilogue:E-02","epilogue:E-03"])assert.equal(classifyPrologue({current:{id}}),"garden");
+assert.equal(classifyPrologue({current:{id:"starfall:F-04"}}),"world");
+console.log("Ruins active-field balance and completed-slot garden handoff PASS");
+
+// Starfall local allies must charge the real player meter. Only a real cast
+// by the promised duo earns the casual recovery; reserves never receive it.
+for(const [difficulty,mode,promised,duoUses,expected] of [
+ ["casual","duo",true,1,true],["hardcore","duo",true,1,false],
+ ["casual","legendary",true,1,false],["casual","duo",false,1,false],
+ ["casual","duo",true,0,false]]){
+ const cats=["a","b","reserve"].map(uid=>({cat:{uid},alive:true,maxhp:100,hp:40,shieldT:0}));
+ const battle={ult:20,postgameRuins:{mode,promised},duoUses,duo:{a:{uid:"a"},b:{uid:"b"}},
+ gainUlt(n){this.ult+=n;},healUnit(f,n){f.hp=Math.min(f.maxhp,f.hp+n);}};
+ applyStarfallSupport(battle,cats,difficulty);
+ assert.equal(battle.ult,35);
+ assert.deepEqual(cats.map(c=>[c.hp,c.shieldT]),expected?[[60,4],[60,4],[40,0]]:[[40,0],[40,0],[40,0]]);
+}
+console.log("Starfall shared ultimate and earned Duo recovery PASS");

@@ -1,12 +1,16 @@
 // Chat 3 physical-world adapter. Chat 4 owns the sole narrative mutation path.
 import {campaign} from "./campaign.mjs";
+import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyCache} from "./sky-flight.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
+import {layouts,puzzleSpecs} from "./world-exploration.mjs";
+import {applyDiscovery} from "./regional-discoveries.mjs";
+import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord} from "./library-mechanisms.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
 const scentTrail=Object.freeze([
- {point:[.31,.58],name:["湿苔上的气味","Scent on damp moss"],clue:["湿苔上留下了药箱经过的痕迹。沿上方林道继续追踪。","The medicine crate passed through the damp moss. Follow the upper path."]},
- {point:[.42,.28],name:["林间药草痕迹","Herbs on the canopy path"],clue:["药草散落在通往根系水道的路上。","Loose herbs lead toward the root channel."]},
- {point:[.69,.53],name:["根系药材藏处","Medicine at the root channel"],clue:["药材被送去治疗地下根系。旁边的秘密水路一直通向芽禾的药草园。","The medicine was diverted to treat the underground roots. A hidden channel also leads directly to Yahe’s herb gardens."]}
+ {point:[.31,.58],name:["林地 · 散落的药叶","Forest floor · Scattered herbs"],clue:["芽禾：就是港口送来的药材！湿苔上还有药箱拖过的痕迹，顺着香味往树冠走。","Yahe: These are the herbs from Harbor! The crate left a trail on the moss; follow the scent toward the canopy."]},
+ {point:[.42,.28],name:["树冠 · 会动的树根","Canopy · Moving roots"],clue:["树根缓缓移动，挂着药箱的布条。芽禾辨认出药香来自地下洞口，而不是药草园。","Roots slowly move with a strip of cloth from the medicine crate. Yahe recognizes the scent coming from a cavern below, not the garden."]},
+ {point:[.69,.53],name:["地下根洞 · 药箱与病根","Root cavern · Medicine and sick roots"],clue:["找到了药箱、病根和被堵塞的分水口。隐藏水渠通往药草园；先听榆川解释，再决定救援顺序。","Found the crate, sick roots and blocked junction. A hidden channel leads to the garden; hear Yuchuan before choosing the rescue order."]}
 ]);
 const tideTrail=[
  {point:[.82,.45],name:["查看退潮刻痕","Inspect the ebb marks"],clue:["退潮刻痕指向码头尽头。沿东岸石径寻找露出的台阶。","The ebb marks point toward the end of the pier. Follow the eastern stone path to the exposed steps."]},
@@ -19,14 +23,15 @@ const tideKey=i=>"harbor:H-03:tide:"+i;
 const tideNear=(w,p)=>{const q=w.positions.harbor;return !!q&&Math.hypot(q.x-p[0],q.y-p[1])<.072;};
 const scentKey=i=>"forest:R-02:scent:"+i;
 const scentAt=(w,i)=>{const p=w.positions.forest,q=scentTrail[i]?.point;return !!p&&!!q&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
-const upperGate={point:[.53,.40],npc:"yahe",name:["与芽禾撑开上层水闸","Open the upper gate with Yahe"],clue:["第一只猫留在上层控制水压；带另一只猫沿根桥前往地下水闸。","The first cat stays to regulate pressure. Lead the other cat across the root bridge to the lower gate."]};
+const upperGate={point:[.53,.40],npc:"yahe",name:["呼唤伙伴 · 稳住上层水闸","Call partner · Hold the upper gate"],clue:["伙伴留下稳住水压。你沿根桥前往地下闸门，救出被困的猫咪。","Your partner holds the pressure upstairs. Cross the root bridge to the lower gate and rescue the trapped cats."]};
 const pairedKey="forest:R-03:upper-gate";
  function forestPair(root){
   const cats=root.cats||[],selected=(root.duoRelations?.active||[]).map(id=>cats.find(c=>c.uid===id)).filter(Boolean);
-  const team=[...selected,...cats].filter((c,i,a)=>a.findIndex(x=>x.uid===c.uid)===i);
-  return team.length?{upper:team[0].uid,lower:team[1]?.uid||"muling"}:null;
+  const player=cats.find(c=>c.species==="jinjc")||cats[0];const team=[...(root.battlePrefs?.teamUids||[]).map(id=>cats.find(c=>c.uid===id)).filter(Boolean),...selected,...cats];
+  const helper=team.find(c=>c.storyActor==="yahe"&&c.uid!==player?.uid)||team.find(c=>c.storyActor==="muling"&&c.uid!==player?.uid)||team.find(c=>c.uid!==player?.uid);
+  return player&&helper?{upper:helper.uid,lower:player.uid}:null;
  }
- const validPair=(root,p)=>!!p&&typeof p==="object"&&p.upper!==p.lower&&root.cats?.some(c=>c.uid===p.upper)&&(p.lower==="muling"||root.cats?.some(c=>c.uid===p.lower));
+ const validPair=(root,p)=>!!p&&typeof p==="object"&&p.upper!==p.lower&&root.cats?.some(c=>c.uid===p.upper)&&root.cats?.some(c=>c.uid===p.lower);
 const atForest=(w,q)=>{const p=w.positions.forest;return !!p&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
 // Muling's six letters are optional post-ending scenes. They do not reopen the seal or reverse the ending.
 const homeLetters={
@@ -62,10 +67,6 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  }
  function position(region,x,y){if(world().location!==region||!campaign.regions.includes(region)||!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>1||y<0||y>1)return fail("invalid-position");return physical(w=>({...w,positions:{...w.positions,[region]:{x,y}}}));}
  function patch(change,reward){return prior=>{const w=prior.resonanceExploration||{};return {resonanceExploration:change(clone(w)),coins:(prior.coins||0)+(reward.coins||0),fish:(prior.fish||0)+(reward.fish||0)};};}
- function forgeStep(){const v=view(),w=world();if(v.current?.id!=="forge:E-02"||w.location!=="forge"||!v.objective.includes("puzzle:safety-blueprint"))return null;const index=forgeParts.findIndex((_,i)=>!w.interactions[forgeKey(i)]);return index<0?null:{...clone(forgeParts[index]),index,total:forgeParts.length};}
- function collectForgePart(index,token){const step=forgeStep(),w=world(),api=resolveNarrative();if(!step||step.index!==index||!token||!api.isCurrentAction(token)||!forgeNear(w,step.point))return fail("walk-to-objective");return physical(x=>({...x,interactions:{...x.interactions,[forgeKey(index)]:true}}));}
- function forgeInvited(){const v=view(),w=world();return (v.current?.id==="forge:E-04"||v.completed.includes("forge:E-04"))?["jinpo","xiaomao"].filter(id=>w.interactions["forge:E-04:invite:"+id]):[];}
- function inviteForge(id,point,token){const api=resolveNarrative(),v=view(),w=world(),p={jinpo:[.35,.65],xiaomao:[.53,.50]}[id];if(!p||point[0]!==p[0]||point[1]!==p[1]||w.location!=="forge"||v.current?.id!=="forge:E-04"||!v.objective.includes("melody:forge")||!token||!api.isCurrentAction(token)||!forgeNear(w,p))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["forge:E-04:invite:"+id]:true}}));}
  function tideStep(){
   const v=view(),w=world();
   if(v.current?.id!=="harbor:H-03"||w.location!=="harbor"||!v.objective.includes("explore:tide-logbook"))return null;
@@ -86,7 +87,6 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  function traceScent(index,token){
   const step=scentStep(),w=world(),api=resolveNarrative();
   if(!step||step.index!==index||!token||!api.isCurrentAction(token)||!scentAt(w,index))return fail("walk-to-scent");
-  if(!view().choice)return fail("choice-pending");
   if(index===scentTrail.length-1)return recordWorld("forest:R-02","explore:scent-trail",{sceneId:"forest:R-02",operation:"explore:scent-trail",region:"forest",verified:true,token});
   const r=physical(x=>({...x,interactions:{...x.interactions,[scentKey(index)]:true}}));
   return r.ok?{...r,pending:true}:r;
@@ -109,51 +109,102 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   const actors=Object.values(campaign.cast).filter(n=>n.region===region).map((n,i)=>({id:n.id,reply:spec.reply[i],visited:!!w.interactions[homeVisitKey(region,n.id)]}));
   return {...clone(spec),letterText:clone(spec.letter),region,letter,reunion,actors,repaired:v.postgame.includes(letter.id)};
  }
- function finishHomeRepair(region,token){
+ function finishHomeRepair(region,token,proof){
   const q=homeQuest(region),w=world(),pos=w.positions[region],api=resolveNarrative();
   if(!q||q.repaired||!token||!api.isCurrentAction(token)||!pos||Math.hypot(pos.x-q.point[0],pos.y-q.point[1])>=.072)return fail("postgame-repair-unavailable");
+  const operation="repair:"+region,goal=libraryPuzzle(operation,null)?.goal||puzzleSpecs[operation]?.goal;
+  if(!proof?.adventureAction&&(region==="sky"?!validSkyFlightProof(operation,null,proof?.flightProof):!goal||!Array.isArray(proof?.values)||proof.values.length!==goal.length||!goal.every((n,i)=>proof.values[i]===n)))return fail("postgame-mechanism-incomplete");
   const reward={coins:25,fish:2},r=api.postgame({...q.letter,verified:true,token},patch(x=>x,reward));cachedRoot=null;
   return r.ok?{...r,reward}:r;
  }
  function meetHomeResident(region,id,point,token){
   const q=homeQuest(region),w=world(),pos=w.positions[region],api=resolveNarrative();
-  if(!q?.repaired||!q.actors.some(a=>a.id===id&&!a.visited)||!token||!api.isCurrentAction(token)||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("postgame-visit-unavailable");
+  const canonicalPoint=layouts[region]?.castPoints[id];
+  if(!q?.repaired||!q.actors.some(a=>a.id===id&&!a.visited)||!token||!api.isCurrentAction(token)||!pos||!canonicalPoint||!Array.isArray(point)||point[0]!==canonicalPoint[0]||point[1]!==canonicalPoint[1]||Math.hypot(pos.x-canonicalPoint[0],pos.y-canonicalPoint[1])>=.072)return fail("postgame-visit-unavailable");
   const change=x=>({...x,interactions:{...x.interactions,[homeVisitKey(region,id)]:true}});
   if(q.actors.some(a=>a.id!==id&&!a.visited))return physical(change);
-  const r=api.postgame({...q.reunion,verified:true,token},patch(change,{coins:0,fish:0}));cachedRoot=null;return r;
+  const reward={coins:40,fish:3},r=api.postgame({...q.reunion,verified:true,token},patch(change,reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
+ function forgeStep(){const v=view(),w=world();if(v.current?.id!=="forge:E-02"||w.location!=="forge"||!v.objective.includes("puzzle:safety-blueprint"))return null;const index=forgeParts.findIndex((_,i)=>!w.interactions[forgeKey(i)]);return index<0?null:{...clone(forgeParts[index]),index,total:forgeParts.length};}
+ function collectForgePart(index,token){const step=forgeStep(),w=world(),api=resolveNarrative();if(!step||step.index!==index||!token||!api.isCurrentAction(token)||!forgeNear(w,step.point))return fail("walk-to-objective");return physical(x=>({...x,interactions:{...x.interactions,[forgeKey(index)]:true}}));}
+ function forgeInvited(){const v=view(),w=world();return (v.current?.id==="forge:E-04"||v.completed.includes("forge:E-04"))?["jinpo","xiaomao"].filter(id=>w.interactions["forge:E-04:invite:"+id]):[];}
+ function inviteForge(id,point,token){const api=resolveNarrative(),v=view(),w=world(),p={jinpo:[.35,.65],xiaomao:[.53,.50]}[id];if(!p||point[0]!==p[0]||point[1]!==p[1]||w.location!=="forge"||v.current?.id!=="forge:E-04"||!v.objective.includes("melody:forge")||!token||!api.isCurrentAction(token)||!forgeNear(w,p))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["forge:E-04:invite:"+id]:true}}));}
  function recordWorld(sceneId,op,proof){
   const api=resolveNarrative(),v=view(),region=v.current?.chapter,w=world();
   if(v.current?.id!==sceneId||w.location!==region||!campaign.regions.includes(region)||!v.objective.includes(op)||proof?.sceneId!==sceneId||proof.operation!==op||proof.region!==region||proof.verified!==true)return fail("invalid-world-evidence");
   if(!/^(explore|puzzle|rescue|repair|melody):/.test(op))return fail("owned-by-other-module");
   if(w.interactions[sceneId+":"+op])return fail("already-completed");
+  // New RPG interaction: physical arrival + explicit interaction, not synthetic puzzle answers.
+  const direct=proof.adventureAction===true;if(v.current.orderedRequires&&v.objective[0]!==op)return fail("story-operation-order");if(["puzzle:festival-lantern","puzzle:caravan-route","puzzle:heat-pressure","puzzle:safety-blueprint","repair:forge","repair:forest"].includes(op)&&(direct||proof.starfallSequence?.join(",")!==puzzleSpecs[op].goal.join(",")))return fail("mechanism-incomplete");if(["puzzle:sky-pouch","puzzle:joint-flight","explore:flight-recorder","repair:sky","puzzle:two-route-model"].includes(op)&&direct)return fail("mechanism-incomplete");const point=region==="sky"&&skyLaunch[op]||layouts[region]?.features[op],position=w.positions[region];if(direct&&(!point||!position||Math.hypot(position.x-point[0],position.y-point[1])>=.072||!api?.isCurrentAction(proof.token)))return fail("walk-to-objective");
+  if(op==="explore:letter-recipient"&&(!w.interactions["sky:S-03:puzzle:joint-flight"]||!position||Math.hypot(position.x-.67,position.y-.50)>=.072))return fail("walk-to-objective");
+  if(region==="sky"&&skyLaunch[op]){if(!skyPartsReady(v))return fail("sky-parts-required");const p=w.positions.sky,q=skyLaunch[op];if(!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072||(!direct&&!validSkyFlightProof(op,v.choice??null,proof.flightProof)))return fail("incomplete-flight");}
   if(op==="explore:tide-logbook"&&(!tideTrail.every((_,i)=>w.interactions[tideKey(i)])||!tideNear(w,[.87,.748])))return fail("incomplete-tide-trail");
   if(op==="explore:scent-trail"&&(!scentTrail.slice(0,-1).every((_,i)=>w.interactions[scentKey(i)])||!scentAt(w,scentTrail.length-1)))return fail("incomplete-scent-trail");
+  if(sceneId==="forest:R-03"){
+   if(!direct||!proof.token||!api.isCurrentAction(proof.token)||!point||!atForest(w,point))return fail("walk-to-rescue");
+   if(op==="explore:water-marks"&&!w.interactions["forest:R-03:rescue:steady-channel"])return fail("rescue-partner-required");
+   if(op==="rescue:trapped-cats"&&(!w.interactions["forest:R-03:explore:water-marks"]||v.objective.includes("battle:root-echo")))return fail("rescue-echo-blocking");
+  }
   if(op==="puzzle:paired-water-gates"){
     const pair=w.interactions[pairedKey];
     if(!validPair(State.S,pair)||!atForest(w,[.69,.53]))return fail("upper-gate-required");
-    if(proof.pair?.upper!==pair.upper||proof.pair?.lower!==pair.lower||proof.waterSequence?.join(",")!=="2,1,1")return fail("paired-flow-incomplete");
+    if(!direct&&(proof.pair?.upper!==pair.upper||proof.pair?.lower!==pair.lower||proof.waterSequence?.join(",")!=="2,1,1"))return fail("paired-flow-incomplete");
    }
+  if(sceneId==="starfall:F-02"){
+   const point=layouts.starfall.features[op],pos=w.positions.starfall;
+   if(v.objective[0]!==op||!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("starfall-record-order");
+   const spec=puzzleSpecs[op];if(!direct&&spec&&proof.starfallSequence?.join(",")!==spec.goal.join(","))return fail("starfall-record-order");
+  }
+  if(sceneId==="starfall:F-04"){
+   const point=layouts.starfall.features[op],pos=w.positions.starfall;
+   if(v.objective[0]!==op||!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("starfall-routing-order");
+   const goal=puzzleSpecs[op]?.goal||(op==="melody:starfall"?[0,1,2]:null);
+   if(!goal||(!direct&&proof.starfallSequence?.join(",")!==goal.join(",")))return fail("starfall-routing-order");
+   if(op==="melody:starfall"){
+    const ids=["xingya","lichuan"],p=proof.participants;
+    if(!ids.every(id=>w.interactions["starfall:F-04:invite:"+id])||!Array.isArray(p)||p.length!==2||new Set(p).size!==2||!ids.every(id=>p.includes(id))||(!direct&&(proof.responses?.length!==3||!proof.responses.every((n,i)=>n.actor===p[i%2]&&n.reply===(goal[i]+1)%3))))return fail("local-response-required");
+   }
+  }
+  if(region==="library"){
+   if(libraryBlocked(op,v.objective,v))return fail("library-previous-station");
+   const point=libraryPoints[op],pos=w.positions.library;
+   if(!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("walk-to-objective");
+   const record=catdexRecord(State.S),p=libraryPuzzle(op,record);
+   if(!direct&&p&&(!proof.libraryValues||proof.libraryValues.join(",")!==p.goal.join(",")))return fail("library-record-unverified");
+   if(op==="puzzle:library-echo"&&(!record||proof.libraryRecord?.uid!==record.uid||proof.libraryRecord?.habit!==record.habit||proof.libraryRecord?.wins!==record.wins))return fail("library-catdex-required");
+   if(op==="melody:library"&&(!["moye","baikan"].every(id=>w.interactions["library:M-05:invite:"+id])||v.objective.includes("repair:library")))return fail("local-response-required");
+  }
   if(op==="puzzle:safety-blueprint"&&(!forgeParts.every((_,i)=>w.interactions[forgeKey(i)])||!forgeNear(w,[.35,.50])))return fail("incomplete-forge-parts");
   if(op==="melody:forge"&&(!["jinpo","xiaomao"].every(id=>w.interactions["forge:E-04:invite:"+id])||!forgeNear(w,[.88,.30])))return fail("local-response-required");
-  if(op==="melody:forest"&&!["yahe","yuchuan"].every(id=>w.interactions["forest:R-04:invite:"+id]))return fail("local-response-required");
   if(op==="melody:harbor"&&v.objective.includes("repair:harbor"))return fail("harbor-repair-first");
   if(op==="melody:harbor"&&!["qilan","jiedeng"].every(id=>w.interactions["harbor:H-05:invite:"+id]))return fail("local-response-required");
-  if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))return fail("local-response-required");}
+  if(op==="melody:forest"&&!["yahe","yuchuan"].every(id=>w.interactions["forest:R-04:invite:"+id]))return fail("local-response-required");
+  if(op==="melody:sky"&&!["lingyu","yuanfan"].every(id=>w.interactions["sky:S-05:invite:"+id]))return fail("local-response-required");
+  if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||(!direct&&(proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))))return fail("local-response-required");}
   const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
-  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,interactions:{...x.interactions,[sceneId+":"+op]:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
+  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:op==="puzzle:library-echo"?{uid:proof.libraryRecord.uid,species:proof.libraryRecord.species,habit:proof.libraryRecord.habit,wins:proof.libraryRecord.wins}:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function harborInvited(){const v=view(),w=world();return v.current?.id==="harbor:H-05"?["qilan","jiedeng"].filter(id=>w.interactions["harbor:H-05:invite:"+id]):[];}
  function inviteHarbor(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={qilan:[.16,.60],jiedeng:[.195,.50]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="harbor"||v.current?.id!=="harbor:H-05"||v.objective.includes("repair:harbor")||!v.objective.includes("melody:harbor")||!token||!api.isCurrentAction(token)||!tideNear(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["harbor:H-05:invite:"+id]:true}}));}
  function forestInvited(){const v=view(),w=world();return v.current?.id==="forest:R-04"||v.completed.includes("forest:R-04")?["yahe","yuchuan"].filter(id=>w.interactions["forest:R-04:invite:"+id]):[];}
  function inviteForest(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={yahe:[.30,.43],yuchuan:[.64,.53]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="forest"||v.current?.id!=="forest:R-04"||v.objective.includes("repair:forest")||!v.objective.includes("melody:forest")||!token||!api.isCurrentAction(token)||!atForest(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["forest:R-04:invite:"+id]:true}}));}
- function cargoSpec(a,b){const l=campaign.links.find(([x,y])=>x===a&&y===b);if(!l)return null;const v=view(),i=(v.links[a+":"+b]||[]).length,actor=[a,b,b,a][i];if(i>=4||!v.regions.includes(a)||!v.regions.includes(b))return null;const end=a==="starfall"?"starfall:F-02":campaign.scenes.filter(s=>s.chapter===a).at(-1)?.id;if(!v.completed.includes(end))return null;return {a,b,stage:stages[i],actor,action:l[i<2?2:3],from:i%2===0?0:1,to:i%2===0?1:0};}
- function pickupCargo(option){const w=world(),s=option&&cargoSpec(option.a,option.b);if(w.cargo)return fail("cargo-busy");if(!s||w.location!==s.actor||!["a","b","stage","actor","action","from","to"].every(k=>option[k]===s[k]))return fail("invalid-cargo");return physical(x=>({...x,cargo:s}));}
+ function starfallInvited(){const v=view(),w=world();return v.current?.id==="starfall:F-04"?["xingya","lichuan"].filter(id=>w.interactions["starfall:F-04:invite:"+id]):[];}
+ function inviteStarfall(id,point,token){const v=view(),w=world(),api=resolveNarrative(),expected=layouts.starfall.castPoints[id],p=w.positions.starfall;if(!expected||!p||w.location!=="starfall"||v.current?.id!=="starfall:F-04"||v.objective.includes("repair:starfall")||!v.objective.includes("melody:starfall")||!token||!api.isCurrentAction(token)||Math.hypot(p.x-expected[0],p.y-expected[1])>=.072)return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["starfall:F-04:invite:"+id]:true}}));}
+ function skyInvited(){const v=view(),w=world();return v.current?.id==="sky:S-05"||v.completed.includes("sky:S-05")?["lingyu","yuanfan"].filter(id=>w.interactions["sky:S-05:invite:"+id]):[];}
+ function inviteSky(id,point,token){const api=resolveNarrative(),v=view(),w=world(),p=w.positions.sky,q={lingyu:[.10,.70],yuanfan:[.18,.55]}[id];if(!q||point[0]!==q[0]||point[1]!==q[1]||w.location!=="sky"||v.current?.id!=="sky:S-05"||v.objective.includes("repair:sky")||!v.objective.includes("melody:sky")||!token||!api.isCurrentAction(token)||!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072)return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["sky:S-05:invite:"+id]:true}}));}
+ function libraryInvited(){const v=view(),w=world();return v.current?.id==="library:M-05"||v.completed.includes("library:M-05")?Object.keys(libraryInvitations).filter(id=>w.interactions["library:M-05:invite:"+id]):[];}
+ function inviteLibrary(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected=libraryInvitations[id],p=w.positions.library;if(!expected||!p||Math.hypot(p.x-expected[0],p.y-expected[1])>=.072||point.join(",")!==expected.join(",")||w.location!=="library"||v.current?.id!=="library:M-05"||libraryBlocked("melody:library",v.objective,v)||v.objective.includes("repair:library")||!v.objective.includes("melody:library")||!token||!api.isCurrentAction(token))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["library:M-05:invite:"+id]:true}}));}
+ function cargoSpec(a,b){const l=campaign.links.find(([x,y])=>x===a&&y===b);if(!l)return null;const v=view(),i=(v.links[a+":"+b]||[]).length,actor=[a,b,b,a][i];if(i>=4||!v.regions.includes(a)||!v.regions.includes(b))return null;const end=a==="starfall"?"starfall:F-02":campaign.scenes.filter(s=>s.chapter===a).at(-1)?.id;if(!v.completed.includes(end)||a==="forge"&&b==="sky"&&i>=2&&!v.completed.includes("sky:S-05"))return null;return {a,b,stage:stages[i],actor,action:l[i<2?2:3],from:i%2===0?0:1,to:i%2===0?1:0};}
+ function pickupCargo(option){const w=world(),s=option&&cargoSpec(option.a,option.b);if(w.cargo)return fail("cargo-busy");const path=s&&layouts[s.actor]?.paths,p=s&&w.positions[s.actor],point=(!s?null:s.actor==="forge"?[[.35,.76],[.79,.364]][s.from]:path?.[s.from===0?1:path.length-2]);if(!point||!p||Math.hypot(p.x-point[0],p.y-point[1])>=.072)return fail("walk-to-cargo");if(!s||w.location!==s.actor||!["a","b","stage","actor","action","from","to"].every(k=>option[k]===s[k]))return fail("invalid-cargo");return physical(x=>({...x,cargo:s}));}
  function exchange(a,b,proof){const api=resolveNarrative(),s=cargoSpec(a,b),w=world();if(!s||!w.cargo||w.location!==s.actor||proof?.region!==s.actor||proof.stage!==s.stage||proof.action!==s.action||proof.verified!==true||!["a","b","stage","actor","action","from","to"].every(k=>w.cargo[k]===s[k]))return fail("exchange-evidence-missing");
+  const path=layouts[s.actor].paths,point=(!s?null:s.actor==="forge"?[[.35,.76],[.79,.364]][s.to]:path[s.to===0?1:path.length-2]),p=w.positions[s.actor];if(!p||Math.hypot(p.x-point[0],p.y-point[1])>=.072)return fail("walk-to-recipient");
   if(typeof api?.exchange!=="function"||!proof.token)return fail("canonical-exchange-unavailable");
   const reward={coins:10,fish:1},r=api.exchange({a,b,stage:s.stage,actor:s.actor,action:s.action,verified:true,token:proof.token},patch(x=>({...x,cargo:null}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
- function pickupReward(region,id){const w=world();if(w.location!==region||!/^cache-[12]$/.test(id)||w.pickups[region+":"+id])return fail("already-collected");return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
- return Object.freeze({view,world,enter,position,recordWorld,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,forestInvited,inviteForest,forgeStep,collectForgePart,forgeInvited,inviteForge,tideStep,traceTide,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
+ function surveyStatus(){const v=view(),w=world();if(w.location!=="sky"||!v.completed.includes("sky:S-05"))return null;const remote=!!w.interactions["sky:survey-island"],operation=remote?"survey:return":"survey:outbound";return {remote,operation,...clone(skySurvey[operation]),cache:!w.pickups["sky:survey-cache"]};}
+ function finishSurvey(operation,proof,token){const s=surveyStatus(),w=world(),p=w.positions.sky,api=resolveNarrative();if(!s||s.operation!==operation||!token||!api.isCurrentAction(token)||!p||Math.hypot(p.x-s.from[0],p.y-s.from[1])>=.072||(!proof?.adventureAction&&!validSkyFlightProof(operation,null,proof))||!s.remote&&w.cargo?.actor==="sky")return fail("incomplete-flight");return physical(x=>({...x,positions:{...x.positions,sky:{x:s.to[0],y:s.to[1]}},interactions:{...x.interactions,["sky:survey-island"]:!s.remote}}));}
+ function discover(region,id){const result=applyDiscovery(region,id,world(),view());if(!result.ok||result.decoy)return result;const saved=physical(()=>result.next);return saved.ok?{ok:true,message:result.message,souvenir:result.souvenir}:saved;}
+ function pickupReward(region,id){const w=world();if(region==="sky"&&id==="survey-cache"){const s=surveyStatus(),p=w.positions.sky;if(!s?.remote||!s.cache||!p||Math.hypot(p.x-skySurveyCache[0],p.y-skySurveyCache[1])>=.072)return fail("walk-to-cache");return physical(x=>({...x,pickups:{...x.pickups,"sky:survey-cache":true}}),{coins:45,fish:4});}if(w.location!==region||w.pickups[region+":"+id])return fail("already-collected");const secret=region==="starfall"&&id==="starfall-hidden-record";if(secret){const p=w.positions.starfall;if(!view().completed.includes("starfall:F-02")||!p||Math.hypot(p.x-.41,p.y-.58)>=.072)return fail("walk-to-cache");}else {if(!/^cache-[12]$/.test(id))return fail("invalid-cache");const path=layouts[region]?.paths,p=w.positions[region],pair=region==="forge"?(id==="cache-1"?[[.225,.81],[.225,.81]]:[[.35,.705],[.35,.705]]):id==="cache-1"?path?.slice(0,2):path?.slice(-3,-1);if(!p||!pair||pair.length!==2||Math.hypot(p.x-(pair[0][0]+pair[1][0])/2,p.y-(pair[0][1]+pair[1][1])/2)>=.072)return fail("walk-to-cache");}return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),secret?{coins:30,fish:2}:id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
+ return Object.freeze({view,world,enter,position,discover,recordWorld,surveyStatus,finishSurvey,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,forestInvited,inviteForest,forgeStep,collectForgePart,forgeInvited,inviteForge,skyInvited,inviteSky,libraryInvited,inviteLibrary,starfallInvited,inviteStarfall,libraryRecord:()=>catdexRecord(State.S),tideStep,traceTide,scentStep,traceScent,pairedGate,holdUpperGate,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
 }

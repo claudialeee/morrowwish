@@ -58,6 +58,14 @@ html.duo-embedded #locked{margin:6px 0 0}
  html.duo-embedded .controls{margin:6px 0 3px}
  html.duo-embedded .controls button{min-height:40px}
 }
+@media(max-height:480px) and (orientation:landscape){
+ html.duo-embedded body{padding:4px 6px;overflow:auto}
+ html.duo-embedded .viewer{padding:3px}
+ html.duo-embedded #duo-canvas{width:min(100%,calc((100dvh - 132px)*16/9))!important;height:auto!important;max-height:calc(100dvh - 132px)!important}
+ html.duo-embedded .controls{margin:4px 0}
+ html.duo-embedded .controls button,html.duo-embedded .tier-controls button{min-height:34px;padding:4px 8px}
+ html.duo-embedded #trust-note{margin:3px 0}
+}
 </style>
 </head>
 <body><main>
@@ -100,15 +108,21 @@ html.duo-embedded #locked{margin:6px 0 0}
  msg('locked-body','需要先在游戏中培养两只猫的默契，达到20后解锁对应的合击。没有公开的全部技能总览。',
     'Grow trust between your two cats to 20 to unlock their duo technique. No complete move gallery is available.');
  msg('pause','暂停','Pause');
- if(!State.load())return;
- const q=new URLSearchParams(location.search);
- const roster=State.S.cats||[],active=State.S.duoRelations?.active||[];
+ const q=new URLSearchParams(location.search),embedded=q.get('embedded')==='1';
+ let root=null,owner=null,slot=null;
+ if(embedded){
+  try{owner=parent.State;slot=owner?.activeSlot();if(!owner||slot!==q.get('slot'))return;root=owner.S;}catch{return;}
+ }else{
+  slot=State.activeSlot();const data=State.getSaveSlot(slot)?.data;root=data?.state||data;
+ }
+ if(!root)return;
+ const roster=root.cats||[],active=root.duoRelations?.active||[];
  const uidA=q.get('a')||active[0],uidB=q.get('b')||active[1];
  const catA=roster.find(c=>c.uid===uidA),catB=roster.find(c=>c.uid===uidB);
  if(!catA||!catB||catA.uid===catB.uid)return;
  const key=[catA.uid,catB.uid].sort().join(':');
- const rel=State.S.duoRelations?.pairs?.[key];
- if(!rel||rel.value<20)return;
+ const rel=root.duoRelations?.pairs?.[key];
+ if(!rel||!(Number(rel.value)>=20))return;
  const trust=Number(rel.value),maxTier=trust>=90?3:trust>=60?2:1;
  const duo=CatRelations.title(catA,catB);
  if(!duo||!window.CatBondDuoHero)return;
@@ -121,7 +135,8 @@ html.duo-embedded #locked{margin:6px 0 0}
   ?'Trust '+trust+'/100 · All three duo tiers unlocked · Select one or replay all three'
   :'Trust '+trust+'/100 · Tier '+maxTier+' unlocked · Keep adventuring to unlock the next tier';
  document.getElementById('trust-note').textContent=english?noteEn:note;
- document.getElementById('skill-title').textContent=duo.name+' · '+State.catName(catA)+' × '+State.catName(catB);
+ const name=cat=>embedded?owner.catName(cat):(cat.nickname||GameData.speciesName(cat.species));
+ document.getElementById('skill-title').textContent=duo.name+' · '+name(catA)+' × '+name(catB);
  const tierNames={
   1:['等级 1 · 默契 20','Tier 1 · Trust 20'],
   2:['等级 2 · 默契 60','Tier 2 · Trust 60'],
@@ -142,7 +157,7 @@ html.duo-embedded #locked{margin:6px 0 0}
   grass:'#8ccb9f',light:'#fff1bc',water:'#9cd7f7'};
  const first=Skills.elementOf(catA.species),second=Skills.elementOf(catB.species);
  let start=performance.now(),paused=false,held=0,sequenceMode=true;
- let selectedTier=1,currentTier=1;
+ let selectedTier=1,currentTier=1,artClockStarted=false;
  const pauseButton=document.getElementById('pause');
  function setActiveTier(t){
   currentTier=t;
@@ -166,7 +181,8 @@ html.duo-embedded #locked{margin:6px 0 0}
   ctx.setTransform(pixel,0,0,pixel,0,0);
   ctx.clearRect(0,0,w,h);
   if(!CatBondDuoHero.assetReady){
-   ctx.fillStyle='#e8e2f1';ctx.fillRect(0,0,w,h);return;
+   ctx.fillStyle='#e8e2f1';ctx.fillRect(0,0,w,h);ctx.fillStyle='#51495d';ctx.font='600 14px system-ui';ctx.textAlign='center';
+   ctx.fillText(window.CatBondPremiumCinematics?.failed?(english?'Artwork unavailable — close and retry':'原画暂不可用，请关闭后重试'):(english?'Loading original painting…':'正在加载原画…'),w/2,h/2);return;
   }
   let tier,elapsed;
   const seconds=Math.max(0,ms/1000);
@@ -185,7 +201,13 @@ html.duo-embedded #locked{margin:6px 0 0}
    first:colors[first],second:colors[second]
   },lookup);
  }
- function frame(now){render(paused?held:now-start);requestAnimationFrame(frame);}
+ function frame(now){
+  if(embedded&&(owner.S!==root||owner.activeSlot()!==slot)){document.getElementById('unlocked').hidden=true;document.getElementById('locked').hidden=false;return;}
+  // Do not skip unlocked tiers while original paintings decode.
+  if(!CatBondDuoHero.assetReady){start=now;held=0;artClockStarted=false;render(0);}
+  else{if(!artClockStarted){start=now;held=0;artClockStarted=true;}render(paused?held:now-start);}
+  requestAnimationFrame(frame);
+ }
  replayButton.onclick=replayAll;
  pauseButton.onclick=()=>{
   paused=!paused;
@@ -202,6 +224,7 @@ html.duo-embedded #locked{margin:6px 0 0}
   selectTier,replayAll
  };
  window.__duoPreviewReady=true;
+ if(embedded)window.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();parent.document.querySelector('#cb-duo-viewer .cb-duo-viewer-close')?.click();}});
  requestAnimationFrame(frame);
 })();;
 </script></body></html>

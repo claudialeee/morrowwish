@@ -97,22 +97,20 @@ window.addEventListener('DOMContentLoaded', () => {
     slotPanel.classList.add('is-open');slotPanel.setAttribute('aria-hidden','false');
     const language=slotPanel.querySelector('[data-slot-language]');
     if(language){language.textContent=en?'中文':'English';language.setAttribute('aria-label',en?'Switch to Chinese':'切换到英文');}
-    slotList.querySelectorAll('[data-title-delete]').forEach(button=>button.onclick=()=>{
+    slotList.querySelectorAll('[data-title-delete]').forEach(button=>button.onclick=async()=>{
       const id=button.dataset.titleDelete;
       const selected=State.listSaveSlots().find(s=>s.id===id);
-      if(!selected?.exists||!confirm(en?'Permanently delete Slot '+selected.number+'?':'永久删除存档位 '+selected.number+'？'))return;
+      if(!selected?.exists||!await window.CatBondConfirm.slot('delete',selected.number))return;
       const result=State.deleteSaveSlot(id,{confirmed:true});
-      if(!result.ok){alert(en?'Could not delete this save.':'无法删除此存档。');return;}
+      if(!result.ok){await window.CatBondConfirm.notice({zh:'无法删除此存档。',en:'Could not delete this save.'});return;}
       openSlots(slotMode);
     });
-    slotList.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',()=>{
+    slotList.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',async()=>{
       const id=button.dataset.slot;
       if(slotMode==='new'){
         const selected=State.listSaveSlots().find(s=>s.id===id);
         const occupied=!!selected?.exists;
-        if(occupied&&!window.confirm(en
-          ?'Overwrite Save Slot '+selected.number+'? Its existing adventure will be replaced. The other two slots will remain untouched.'
-          :'确定覆盖存档位 '+selected.number+'？原有冒险将被替换，另外两个存档位不会受到影响。'))return;
+        if(occupied&&!await window.CatBondConfirm.slot('overwrite',selected.number))return;
         beginGame('new',id,occupied);
       }else beginGame('continue',id);
     }));
@@ -135,13 +133,14 @@ window.addEventListener('DOMContentLoaded', () => {
         if(!State.startNewGame(slotId,{overwriteConfirmed}))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'无法创建存档，请检查存储空间或覆盖确认。':'Could not create the save. Check storage space or overwrite confirmation.');
       }else if(!State.loadSlot(slotId))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'存档为空或已损坏，无法读取。':'The selected save is empty or damaged');
       window.__CAT_BOND_CANONICAL_ACTIVE__=!!window.CatBondTitlePrologue?.available?.();
+      if(window.__CAT_BOND_CANONICAL_ACTIVE__)window.CatBondOpeningCover.show();
       game.start();
       closeSlots();
       document.getElementById('intro').classList.add('hide');
       window.__CAT_BOND_STARTED__=true;
       window.arcadeMetric?.('bond_entered',{mode,slot:slotId});
     }catch(error){
-      starting=false;
+      starting=false;window.CatBondOpeningCover.hide();
       console.error('Cat Bond start failed',error);
       const hint=document.getElementById('start-error');
       if(hint){hint.hidden=false;hint.textContent=(window.MorrowwishI18n?.get?.()==='zh'?'游戏启动失败，请刷新页面重试：':'Game failed to start. Please refresh: ')+(error?.message||'');}
@@ -151,7 +150,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(mode==='new'||State.S.cats.length===0)){
       enterAdventure(()=>{State.save();game.openWorldMap();});
     }else if(mode==='new'||State.S.cats.length===0){
-      UI.openStarter(id=>{
+      {
+        const id='jinjc';
         const starter=State.makeCat(id,{affinity:20});
         if(window.Raising)Raising.decorateNewCat(starter);
         State.S.cats.push(starter);State.S.dex[id]=(State.S.dex[id]||0)+1;
@@ -159,11 +159,10 @@ window.addEventListener('DOMContentLoaded', () => {
         const enterWorld=()=>{
           State.save();game.rebuildYard();game.refreshHUD();game.openWorldMap();game.refreshFirstQuest?.();
         };
-        // Let the player choose their actual companion first; the cinematic
-        // then stages that cat waking beneath the garden bench.
+        // Stage the fixed golden-shaded protagonist waking beneath the garden bench.
         enterAdventure(enterWorld);
         window.arcadeMetric?.('bond_starter_chosen',{starter:id});
-      });
+      }
     }else{
       const report=window.Raising?Raising.applyOffline(Date.now()):State.applyIdle();
       game.rebuildYard();game.refreshHUD();
@@ -176,14 +175,14 @@ window.addEventListener('DOMContentLoaded', () => {
   const renderIntroLocale=()=>{
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const set=(id,zh,enText)=>{const el=document.getElementById(id);if(el)el.textContent=en?enText:zh;};
-    set('cb-title-name','猫猫纽带','Cat Bond');
-    set('cb-title-subtitle','最后的回响','The Last Resonance');
+    set('cb-title-name','星铃回响','Echoes of the Starbell');
+    document.getElementById('intro')?.setAttribute('data-title-lang',en?'en':'zh');
     const start=document.querySelector('#intro-start strong');
     const next=document.querySelector('#intro-continue strong');
     if(start)start.textContent=en?'New Adventure':'开始新的冒险';
     if(next)next.textContent=en?'Continue Story':'继续故事';
     const tagline=document.querySelector('.cb-intro-tagline');
-    if(tagline)tagline.textContent=en?'When the world forgets, bonds will guide you home.':'当世界忘记彼此，羁绊仍能引你归来。';
+    if(tagline)tagline.textContent=en?'Follow the echoes of the Starbell and uncover lost memories.':'循着星铃的回响，寻找遗失的记忆。';
     const kicker=document.querySelector('.cb-save-picker-kicker');
     if(kicker)kicker.textContent=en?'Save Archive':'存档';
     document.getElementById('intro-slot-close')?.setAttribute('aria-label',en?'Close':'关闭');
@@ -310,7 +309,7 @@ function paintIntroCatGallery() {
   ctx.shadowColor='rgba(8,10,23,.55)';ctx.shadowBlur=22;ctx.shadowOffsetY=10;
   ctx.drawImage(scratch,minX,minY,srcW,srcH,w*.5-drawW*.5,catBottom-drawH,drawW,drawH);
   ctx.restore();
-  ctx.globalAlpha=.75;ctx.fillStyle='#f3d8aa';ctx.font='16px Georgia';ctx.textAlign='center';
+  ctx.globalAlpha=.75;ctx.fillStyle='#f3d8aa';ctx.font='16px Cat Bond Fraunces, Cat Bond WenKai GB, KaiTi, serif';ctx.textAlign='center';
   ctx.fillText('✦',w*.18,h*.34);ctx.fillText('✧',w*.82,h*.22);ctx.fillText('✦',w*.72,h*.72);
 }
 
@@ -322,7 +321,7 @@ function installCatBondSystemMenu(){
  if(!toggle||!menu)return;
  const zh=()=>window.MorrowwishI18n?.get?.()==='zh';
  const t=(a,b)=>zh()?a:b;
- const close=()=>{menu.hidden=true;toggle.setAttribute('aria-expanded','false');};
+ let menuPage='home';const close=()=>{menu.hidden=true;menuPage='home';toggle.setAttribute('aria-expanded','false');};
  const open=()=>{menu.hidden=false;toggle.setAttribute('aria-expanded','true');render();menu.querySelector('button')?.focus();};
  const native=sel=>document.querySelector(sel);
  function render(){
@@ -332,29 +331,75 @@ function installCatBondSystemMenu(){
   if(menu.hidden)return;
   const title=!window.__CAT_BOND_STARTED__,battle=window.__game?.scene==='battle';
   const active=sel=>native(sel)?.getAttribute('aria-pressed')==='true';
-  const rows=[
+  const yard=!title&&window.__game?.scene==='yard',world=!title&&window.__game?.scene==='map';
+  const camera=[...document.querySelectorAll('.rw-world:not([hidden]) .rw-camera-controls button, .rw-world:not([hidden]) .rw-atlas-menu .rw-controls button')];
+  const cameraLabels=camera.length===4?[[t('缩小地图','Zoom out')],[t('放大地图','Zoom in')],[t('跟随猫咪','Follow cat')],[t('显示全图','Overview')]]:[[t('缩小地图','Zoom out')],[t('放大地图','Zoom in')],[t('显示全图','Overview')]];
+  const yardActions=yard?[
+    ['yard-map',t('世界地图','World map'),''],['yard-book',t('星月之书','Resonance Book'),''],
+    ['yard-build',t('家园布置','Garden design'),''],['yard-seek',t('寻找野猫','Find wild cats'),''],
+    ['yard-play',t('逗猫','Play with cats'),''],['yard-feed',t('喂食','Feed cats'),'']
+  ].filter(([id])=>native({'yard-map':'#fab-map','yard-book':'#sg-book-entry','yard-build':'#fab-build','yard-seek':'#fab-seek','yard-play':'#fab-play','yard-feed':'#fab-feed'}[id])):[];
+  const dialogue=window.CatBondDialogueSettings;let rows=[
+    ...(dialogue?[]:yardActions),
+    ...(!dialogue&&world?[[ 'world-book',t('星月之书','Resonance Book'),''],['world-atlas',t('世界地图','World atlas'),''],['world-garden',t('阳光花园','Sunlit Garden'),''],['world-explore',t('任务与探索','Quests and exploration'),'']]:[]),
+    ...(!dialogue&&world?camera.map((button,i)=>['camera-'+i,cameraLabels[i]?.[0]||button.textContent,'']):[]),
     ['language',t('语言','Language'),t('中文','English')],
-    ...(native('.mw-settings-music')?[['music',t('背景音乐','Background music'),active('.mw-settings-music')?t('开启','On'):t('关闭','Off')]]:[]),
-    ['effects',t('音效','Sound effects'),active('.mw-settings-sfx')?t('开启','On'):t('关闭','Off')],
+    ...(dialogue?[['dialogue-auto',t('自动对白','Auto dialogue'),dialogue.auto?t('开启','On'):t('关闭','Off')],['dialogue-speed',t('对白速度','Dialogue speed'),dialogue.speed+'×'],['dialogue-history',t('对白记录','Dialogue history'),'']]:[]),
+    ['music',t('背景音乐','Background music'),(window.MorrowwishMusic?.status?.().enabled??active('.mw-settings-music'))?t('开启','On'):t('关闭','Off')],
+    ['effects',t('音效','Sound effects'),(window.MorrowwishAudio?.isEnabled?.()??active('.mw-settings-sfx'))?t('开启','On'):t('关闭','Off')],
     ...(battle?[['skills',t('技能说明','Skill guide'),'']]:[]),
     ...(native('#mw-fullscreen-toggle')?[['fullscreen',t('全屏','Fullscreen'),active('#mw-fullscreen-toggle')?t('退出','Exit'):t('进入','Enter')]]:[]),
     ['share',t('分享游戏','Share game'),''],
     ...(!battle?[['slots',title?t('管理存档','Manage saves'):t('保存 / 读取游戏','Save / Load game'),'']]:[]),
     ...(!title&&!battle?[['title',t('返回标题画面','Return to title'),'']]:[])
   ];
-  menu.innerHTML='<div class="cb-system-card"><header><h2>'+t('系统菜单','System menu')+'</h2><button type="button" data-system="close" aria-label="'+t('关闭','Close')+'">×</button></header><div class="cb-system-rows">'+rows.map(([id,label,value])=>'<button type="button" data-system="'+id+'"><span>'+label+'</span><small>'+value+'</small></button>').join('')+'</div></div>';
-  menu.querySelectorAll('[data-system]').forEach(btn=>bindMenuPress(btn,()=>{
+  const navigation=new Set(['yard-map','yard-book','world-book','world-atlas','world-garden','world-explore','skills']);
+  const settings=new Set(['language','music','effects','fullscreen','dialogue-auto','dialogue-speed','dialogue-history','share']);
+  const gardenActions=rows.filter(([id])=>['yard-build','yard-seek','yard-play','yard-feed'].includes(id));
+  const cameraActions=rows.filter(([id])=>id.startsWith('camera-'));
+  const saveActions=rows.filter(([id])=>['slots','title'].includes(id));
+  const pages={home:t('菜单','Menu'),settings:t('设置','Settings'),garden:t('花园活动','Garden activities'),camera:t('地图视角','Map view'),saves:t('存档与返回','Save & exit'),credits:t('关于与音乐署名','About & credits')};
+  if(menuPage==='home'){rows=rows.filter(([id])=>navigation.has(id));if(gardenActions.length)rows.push(['page-garden',pages.garden,'›']);if(yard&&!dialogue&&!document.documentElement.classList.contains('cb-cg'))rows.push(['leisure',t('猫猫捣蛋 · 休闲小游戏','Pawsibly Innocent · optional game'),'›']);if(cameraActions.length)rows.push(['page-camera',pages.camera,'›']);rows.push(['page-settings',pages.settings,'›']);if(saveActions.length&&!dialogue)rows.push(['page-saves',pages.saves,'›']);}
+  else if(menuPage==='settings'){rows=rows.filter(([id])=>settings.has(id));rows.push(['page-credits',pages.credits,'›']);}
+  else if(menuPage==='garden')rows=gardenActions;
+  else if(menuPage==='camera')rows=cameraActions;
+  else if(menuPage==='saves')rows=saveActions;
+  else rows=[];
+  const section=(label,list)=>list.length?'<section class="cb-menu-group">'+(label?'<h3>'+label+'</h3>':'')+list.map(([id,label,value])=>'<button type="button" data-system="'+id+'"><span>'+label+'</span>'+(value?'<small>'+value+'</small>':'<small aria-hidden="true">›</small>')+'</button>').join('')+'</section>':'';
+  const content=menuPage==='home'?section(t('冒险','Adventure'),rows.filter(([id])=>['yard-map','world-atlas','world-garden','world-explore','skills'].includes(id)))+section(t('伙伴与家园','Companions & home'),rows.filter(([id])=>['yard-book','world-book','page-garden','leisure'].includes(id)))+section(t('游戏','Game'),rows.filter(([id])=>['page-settings','page-saves','page-camera'].includes(id))):section('',rows);
+  menu.innerHTML='<div class="cb-system-card" data-menu-page="'+menuPage+'"><header>'+(menuPage!=='home'?'<button type="button" data-system="page-back" aria-label="'+t('返回菜单','Back to menu')+'">‹</button>':'')+'<h2>'+pages[menuPage]+'</h2><button type="button" data-system="close" aria-label="'+t('关闭','Close')+'">×</button></header><div class="cb-system-rows">'+content+'</div></div>';
+  const sound=window.MorrowwishMusic?.status?.();
+  if(sound&&menuPage==='settings'){
+   const levels=document.createElement('div');levels.style.cssText='grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:2px 0;font-size:11px';
+   for(const [name,value,fn] of [[t('音乐音量','Music volume'),sound.volume,'setVolume'],[t('音效音量','Effects volume'),sound.effectsVolume,'setEffectsVolume']]){
+    const label=document.createElement('label'),slider=document.createElement('input');label.textContent=name;label.style.cssText='display:flex;align-items:center;gap:8px;justify-content:space-between';slider.type='range';slider.min='0';slider.max='100';slider.value=String(Math.round(value*100));slider.setAttribute('aria-label',name);slider.dataset.audioVolume=fn==='setVolume'?'music':'effects';slider.style.cssText='width:min(45%,130px);min-width:72px;accent-color:#dfc391';const valueText=document.createElement('output');valueText.textContent=slider.value+'%';valueText.style.cssText='min-width:36px;text-align:right;font-size:12px;color:#dfc391';slider.oninput=()=>{window.MorrowwishMusic[fn](Number(slider.value)/100);valueText.textContent=slider.value+'%';};label.append(slider,valueText);levels.append(label);
+   }
+   menu.querySelector('.cb-system-rows').append(levels);
+  }
+  if(menuPage==='credits'){
+   const credit=document.createElement('p');credit.className='cb-music-credit';
+   credit.append(document.createTextNode('Music: Enchanted Valley — Kevin MacLeod (incompetech.com), '));
+   const license=document.createElement('a');license.href='https://creativecommons.org/licenses/by/4.0/';license.target='_blank';license.rel='noopener noreferrer';license.textContent='CC BY 4.0';credit.append(license,document.createTextNode(' · Opus transcode'));
+   const soundtrack=document.createElement('a');soundtrack.href='assets/quality-audio/music-credits.html';soundtrack.target='_blank';soundtrack.rel='noopener noreferrer';soundtrack.textContent=t('全部音乐候选试听与署名','Soundtrack auditions & credits');credit.append(document.createElement('br'),soundtrack);
+   menu.querySelector('.cb-system-rows').append(credit);
+  }
+  menu.querySelectorAll('[data-system]').forEach(btn=>bindMenuPress(btn,async()=>{
    const id=btn.dataset.system,selectors={language:'.mw-settings-language',effects:'.mw-settings-sfx',music:'.mw-settings-music',fullscreen:'#mw-fullscreen-toggle',share:'.mw-settings-share'};
-   if(id==='close'){close();toggle.focus();return;}
+   if(id==='close'){close();toggle.focus();return;}if(id==='leisure'){close();if(window.__game?.scene!=='yard'||document.getElementById('cb-leisure'))return;const panel=document.createElement('section');panel.id='cb-leisure';panel.setAttribute('role','dialog');panel.setAttribute('aria-label',t('猫猫捣蛋','Pawsibly Innocent'));const top=document.createElement('header'),label=document.createElement('strong'),back=document.createElement('button'),frame=document.createElement('iframe');label.textContent=t('猫猫捣蛋 · 自由游玩','Pawsibly Innocent · Free play');back.textContent=t('返回花园','Return to garden');const prior=window.MorrowwishMusic?.status?.().enabled;window.MorrowwishMusic?.setEnabled?.(false);frame.src='/pawsibly-innocent/?lang='+(zh()?'zh':'en');frame.title=t('猫猫捣蛋','Pawsibly Innocent');back.onclick=()=>{panel.remove();if(prior)window.MorrowwishMusic?.setEnabled?.(true);};top.append(label,back);panel.append(top,frame);document.getElementById('stage').append(panel);return;}if(id.startsWith('page-')){menuPage=id==='page-back'?'home':id.slice(5);render();return;}if(id.startsWith('dialogue-')){const settings=window.CatBondDialogueSettings;if(!settings)return;if(id==='dialogue-auto')settings.toggleAuto();if(id==='dialogue-speed')settings.cycleSpeed();if(id==='dialogue-history'){settings.toggleHistory();close();return;}render();return;}
+   if(id.startsWith('yard-')){const target=native({'yard-map':'#fab-map','yard-book':'#sg-book-entry','yard-build':'#fab-build','yard-seek':'#fab-seek','yard-play':'#fab-play','yard-feed':'#fab-feed'}[id]);close();if(window.__game?.scene==='yard'&&!target?.disabled)target?.click();return;}
+   if(id.startsWith('world-')){close();if(window.__game?.scene!=='map')return;if(id==='world-book'){window.ResonanceBook?.open?.('cats');return;}if(id==='world-garden'){native('.rw-world [data-world-nav="garden"]')?.click();return;}if(id==='world-atlas'){const back=native('.rw-world [data-world-nav="atlas"]');if(back&&!back.disabled)back.click();else if(window.WorldMap?.mode==='map')native('.rw-atlas-menu:not([open]) > summary')?.click();return;}if(id==='world-explore'){native('.rw-region-toggle,.rw-atlas-menu > summary')?.click();return;}}
+   if(id.startsWith('camera-')){const target=document.querySelectorAll('.rw-world:not([hidden]) .rw-camera-controls button, .rw-world:not([hidden]) .rw-atlas-menu .rw-controls button')[Number(id.slice(7))];close();if(window.__game?.scene==='map'&&!target?.disabled)target?.click();return;}
    if(id==='slots'){close();window.CatBondCloudSave?.openSlots?.();return;}
    if(id==='skills'){close();window.__game?.toggleBattleSkillGuide?.(true);return;}
    if(id==='title'){
-    if(!confirm(t('保存当前进度并返回标题画面？','Save current progress and return to title?')))return;
+    if(!await window.CatBondConfirm.ask({title:{zh:'返回标题画面？',en:'Return to title?'},message:{zh:'当前冒险将先保存。',en:'Your current adventure will be saved first.'},accept:{zh:'保存并返回',en:'Save and return'}}))return;
     const result=State.save();
-    if(!result?.ok){alert(t('保存失败，未返回标题。','Save failed. The game remains open.'));return;}
+    if(!result?.ok){await window.CatBondConfirm.notice({zh:'保存失败，未返回标题。',en:'Save failed. The game remains open.'});return;}
     State.hardReset();location.reload();return;
    }
    if(id==='language'&&!native(selectors.language)){window.MorrowwishI18n?.set?.(zh()?'en':'zh');render();return;}
+   if(id==='music'&&window.MorrowwishMusic){window.MorrowwishMusic.toggle();render();return;}
+   if(id==='effects'&&window.MorrowwishAudio){window.MorrowwishAudio.toggle();render();return;}
    native(selectors[id])?.click();
    if(id==='share')close();else if(id==='fullscreen'){close();}else setTimeout(render,120);
   }));

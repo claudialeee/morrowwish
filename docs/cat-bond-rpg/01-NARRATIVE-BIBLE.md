@@ -1,5 +1,5 @@
 # CAT BOND — THE LAST RESONANCE
-## Narrative Bible · Canon 1.0 · 2026-11-24
+## Narrative Bible · Canon 1.2 · player-first campaign rewrite
 
 **Status:** New canonical story foundation. Supersedes all previous Cat Bond RPG story bibles and plot drafts, including The Last Page.  
 **Working title:** The Last Resonance  
@@ -10,7 +10,7 @@
 
 ## 1. The dramatic promise
 
-The player wakes in Sunlit Garden without a name or autobiographical memories. A mysterious traveler named Muling (暮铃) asks for help: cats across six regions are beginning to forget their own lives as six ancient sanctuaries fall silent.
+The player wakes in Sunlit Garden without a name or autobiographical memories. The player explores alone, learns about the renewed forgetting, then encounters the traveling researcher Muling (暮铃) by chance. They independently reach the harbor and cooperate in a rescue before becoming companions. Cats across six regions are beginning to forget their own lives as six ancient sanctuaries fall silent.
 
 The player travels with Muling, restores six melodies, meets memorable cats, builds relationships between distant communities, and gradually discovers that they were once the world's only First Bellkeeper.
 
@@ -360,7 +360,7 @@ Muling must be lovable before she is revealed as the antagonist. Her helpful act
 
 ### Reveal order
 
-1. **Prologue:** Muling almost uses an old private name, then corrects herself.
+1. **Prologue:** Muling demonstrates practical familiarity with old bells and routes. No private name, shared memory, historical sacrifice, or other explicit identity giveaway.
 2. **Chapter I:** She unconsciously completes the player's melody.
 3. **Chapter II:** She recognizes hidden sanctuary mechanisms without needing to inspect them.
 4. **Chapter III:** Her pendant matches a keeper symbol in the old blueprint.
@@ -515,10 +515,18 @@ Final title: **THE BELL RINGS AGAIN.**
 
 ## 13. Production quality requirements
 
-- The prologue, major reveals, final battle, and ending require cinematic staging—not static text cards or a simple image carousel.
+- Opening: immediately controllable garden with one optional short text overlay explaining the public catastrophe; no opening animation or historical flashback. Major reveals, final battle, and ending require cinematic staging—not static text cards or a simple image carousel.
 - Use high-quality original painted key art, layered depth, controlled camera movement, lighting, particles, character animation, and sound design.
 - No crude line cats, cheap paper-cutout animation, generic enlarged sprites, or unrelated placeholder art.
 - Each region needs its own visual identity, music, ambience, NPC animations, exploration grammar, and boss presentation.
 - All scenes must work on desktop and mobile. Dialogue, choices, skip, and language switching must remain usable.
 - Chinese and English must be complete and consistent. Switching language during an open scene must update the visible scene immediately.
 - The overworld map, main quest, current objective, and NPCs are the RPG's primary interface. Sunlit Garden is a living sanctuary and cultivation hub, not a replacement for the world map.
+
+
+## 14. Player knowledge boundary — Canon 1.1 presentation amendment
+Public from the start: six lands, ancient central Star Bell, historical damage by falling star, loss of familiar people/places/names, previous stabilization and renewed forgetting. The player knows they cannot remember their name or past, not why. The public sign and observable harbor incident teach the consequences. Six sanctuaries, local melodies and repair are introduced through play, not a lecture. Locked private facts (former identity, sacrifice, Muling's prior relationship and responsibility, inward plan and its cost, final seal) stay hidden until their existing reveal chapters. An optional encounter cannot be a hard prerequisite for harbor entry. Main and Muling's visible coat choices follow the owner's fixed golden / pale silver direction; no change to hidden identity. Casting may be streamlined without altering the six-region causal network. All prior locked causal facts remain unchanged.
+
+
+## 15. Canon 1.2 campaign presentation
+The rewritten 02-MAIN-STORY-SCRIPT is authoritative for playable chapter sequence, scene dialogue, choice actions, local consequences and presentation. Section 6 retains world/cast/causal anchors; where a presentation detail differs, the new script controls. Distinct chapter fantasy: harbor rescue, living forest investigation, festival engineering, free flight and companion intimacy, archive mystery and betrayal, star navigation and reciprocal proof. Muling's departure after M-05 is real gameplay separation, with other companions or local aid available; no mandatory collectible. Complete local problems visibly before each next destination. No early history scene or public reveal of private facts. Do not interpret the final proof as a substitute for real reciprocal participation and sustained live replies. Locked facts §12 unchanged.

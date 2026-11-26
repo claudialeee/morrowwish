@@ -6,10 +6,9 @@ export async function startNewAdventure(page,{slot='slot1',scene='map'}={}){
   await start.click({timeout:10000});
   await page.locator('#intro-slot-panel.is-open').waitFor({state:'visible',timeout:10000});
   await page.locator('#intro-slot-list [data-slot="'+slot+'"]').click({timeout:10000});
-  await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,{timeout:15000});
+  await page.waitForFunction(()=>window.__CAT_BOND_STARTED__===true,null,{timeout:15000});
   if(await page.evaluate(()=>!!window.__CAT_BOND_CANONICAL_ACTIVE__)){await finishCanonicalOpening(page);}else{
-  await page.locator('#panel.open .dex-cell').first().waitFor({state:'visible',timeout:15000});
-  await page.locator('#panel.open .dex-cell').first().click({timeout:10000});
+  await page.waitForFunction(()=>State.S.cats[0]?.species==='jinjc'&&State.S.cats.length===1);
   const skip=page.locator('.cb-story-overlay.is-visible .cb-story-skip');
   await skip.waitFor({state:'visible',timeout:15000});
   await skip.click({timeout:10000});}
@@ -39,12 +38,15 @@ export async function continueSavedAdventure(page,{slot='slot1',scene='map'}={})
 }
 
 export async function finishCanonicalOpening(page,{onStage=async()=>{}}={}){
- for(const id of ['prologue:P-01','prologue:P-02','prologue:P-03']){
-  await page.waitForFunction(id=>window.CatBondResonance?.view()?.current?.id===id&&document.querySelector('.cbcp-art')?.naturalWidth>0,id);
-  const skip=page.locator('.cbcp-skip');await skip.waitFor();await onStage('prologue '+id);await skip.click();
- }
- await page.locator('#panel.open .cat-starter-card .dex-cell').first().waitFor();
- await onStage('starter');await page.locator('#panel.open .cat-starter-card .dex-cell').first().click();
+ await page.waitForFunction(()=>document.querySelector("#cb-player-first-intro")||document.querySelector(".cbcp-art")?.naturalWidth>0);
+ const playerFirst=await page.evaluate(()=>CatBondResonance.view().current?.id==="prologue:P-05");
+ if(playerFirst){const intro=page.locator("#cb-player-first-intro");await intro.waitFor({state:"visible"});await intro.getByRole("button",{name:/^(Start exploring|开始探索)$/}).click();await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==="jinjc"&&__game.scene==="yard");await onStage("fixed protagonist");await page.locator(".sg-prologue-guide").getByRole("button",{name:/Next scene.*Misttide Harbor|下一场景.*霁潮港/}).click();await page.waitForFunction(()=>CatBondResonance.view().current?.id==="harbor:H-01"&&__game.scene==="map");await page.locator("#map-menu").click();await page.locator("#cb-system-menu [data-system=\"world-atlas\"]").click();await page.waitForFunction(()=>WorldMap.mode==="map");await onStage("world map");return;}
+
+ await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-01'&&document.querySelector('.cbcp-art')?.naturalWidth>0);
+ const skip=page.locator('.cbcp-skip');await skip.waitFor();await onStage('prologue P-01');await skip.click();
+ await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-04');
+ await page.waitForFunction(()=>State.S.cats[0]?.species==='jinjc'&&State.S.cats.length===1&&!document.querySelector('#panel.open .cat-starter-card'));
+ await onStage('fixed protagonist');
  const guide=page.locator('.sg-prologue-guide');
  await guide.getByRole('button',{name:/^(Talk to Muling|与暮铃交谈)$/}).click();
  const awakening=page.locator('.res-host[data-scene="prologue:P-04"]');
@@ -54,9 +56,10 @@ export async function finishCanonicalOpening(page,{onStage=async()=>{}}={}){
  const journey=page.locator('.res-host[data-scene="prologue:P-05"]');
  await journey.getByRole('button',{name:/^(Skip dialogue|跳过对白)$/}).click();
  await guide.getByRole('button',{name:/^(World map|前往世界地图)$/}).click();
+ const atlasMenu=page.locator('.rw-atlas-menu:not([open]) > summary');if(await atlasMenu.count()){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();}
  await page.locator('.rw-regions [data-region="harbor"]').click();
  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='harbor:H-01');
- await page.locator('.rw-head').getByRole('button',{name:/^(World atlas|世界地图)$/}).click();
+ await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-atlas"]').click();
  await page.waitForFunction(()=>window.__game?.scene==='map'&&WorldMap.mode==='map');
  await onStage('world map');
 }

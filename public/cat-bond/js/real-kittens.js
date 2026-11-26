@@ -82,6 +82,9 @@
   };
   const breedCache=Object.create(null);
   const framedBreedCache=Object.create(null);
+  const starterFrames=new Map(),starterImages=new Map();
+  for(const id of ['jinjc','yunduo']){const image=new Image();starterImages.set(id,image);image.onload=()=>{delete breedCache[id];for(const key of Object.keys(animatedRigCache))if(key.includes(':'+id+':'))delete animatedRigCache[key];replayPortraits();};image.src='/cat-bond/assets/starter-portraits/'+id+'.webp';}
+  function starterFrame(id){const im=starterImages.get(id);if(!im?.complete||!im.naturalWidth)return null;if(starterFrames.has(id))return starterFrames.get(id);const c=document.createElement('canvas');c.width=breedFrameSize.w;c.height=breedFrameSize.h;const ctx=c.getContext('2d'),s=Math.min(c.width/im.naturalWidth,c.height/im.naturalHeight);ctx.drawImage(im,(c.width-im.naturalWidth*s)/2,c.height-im.naturalHeight*s,im.naturalWidth*s,im.naturalHeight*s);starterFrames.set(id,c);return c;}
   const animatedRigCache=Object.create(null);
   // Never mirror a half-cat. Every source contains a whole face, paws and tail.
   function framedBreed(slot){
@@ -91,7 +94,12 @@
     const ctx=frame.getContext('2d');
     ctx.drawImage(breedSheet,slot*breedFrameSize.w,0,
       breedFrameSize.w,breedFrameSize.h,0,0,frame.width,frame.height);
-    framedBreedCache[slot]=frame;
+    const pixels=ctx.getImageData(0,0,frame.width,frame.height),a=pixels.data,W=frame.width,H=frame.height,seen=new Uint8Array(W*H),queue=[];
+    const exterior=i=>{const p=i*4,r=a[p],g=a[p+1],b=a[p+2];return a[p+3]<24||(g>=r*.90&&g>b*1.16&&g-r>-18);};
+    const visit=i=>{if(i<0||i>=W*H||seen[i]||!exterior(i))return;seen[i]=1;queue.push(i);};
+    for(let x=0;x<W;x++){visit(x);visit((H-1)*W+x);}for(let y=0;y<H;y++){visit(y*W);visit(y*W+W-1);}
+    for(let q=0;q<queue.length;q++){const i=queue[q],x=i%W,y=Math.floor(i/W);a[i*4+3]=0;if(x>0)visit(i-1);if(x<W-1)visit(i+1);if(y>0)visit(i-W);if(y<H-1)visit(i+W);}
+    ctx.putImageData(pixels,0,0);framedBreedCache[slot]=frame;
     return frame;
   }
   let gaitLayersBuilt=0;
@@ -214,6 +222,7 @@
   function breedFrame(o){
     const species=o.species||{},id=species.id||'tangyuan';
     if(!breedLoaded)return {image:source,sx:0,sy:0,sw:w,sh:h};
+    const starter=starterFrame(id);if(starter)return {image:starter,sx:0,sy:0,sw:starter.width,sh:starter.height};
     if(breedCache[id])return {image:breedCache[id],sx:0,sy:0,sw:breedFrameSize.w,sh:breedFrameSize.h};
     const [base,tone,strength,kind]=BREED_LOOKS[id]||BREED_LOOKS.tangyuan;
     const canvas=document.createElement('canvas');
@@ -273,7 +282,16 @@
     breedCache[id]=canvas;
     return {image:canvas,sx:0,sy:0,sw:canvas.width,sh:canvas.height};
   }
-  const fallbackDraw=drawing.drawCat;
+  // Soft contact shadows have a dense center and transparent perimeter,
+  // preserving the actual painted sprite and its grounded position.
+  function contactShadow(ctx,x,y,rx,ry,opacity){
+    ctx.save();ctx.translate(x,y);ctx.scale(Math.max(.1,rx),Math.max(.1,ry));
+    const g=ctx.createRadialGradient(0,0,0,0,0,1);
+    g.addColorStop(0,'rgba(35,38,32,'+opacity+')');
+    g.addColorStop(.55,'rgba(35,38,32,'+(opacity*.55)+')');
+    g.addColorStop(1,'rgba(35,38,32,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
   function paintJiafei(ctx,x,y,o){
     if(!jiafeiLoaded)return false;
     const growth=o.growth||null,s=(o.scale||1)*(growth?.scale||1);
@@ -289,8 +307,7 @@
       grad.addColorStop(1,growth.aura+'00');
       ctx.fillStyle=grad;ctx.beginPath();ctx.arc(0,0,56,0,Math.PI*2);ctx.fill();
     }
-    ctx.fillStyle='rgba(73,63,51,.15)';
-    ctx.beginPath();ctx.ellipse(0,32,31,5,0,0,Math.PI*2);ctx.fill();
+    contactShadow(ctx,0,32,31,5,.24);
     // Feet stay planted at y≈+33 as in the 32 watercolor breeds.
     ctx.translate(0,-bob);
     if(pose==='sleep'||pose==='loaf'){ctx.translate(0,7);ctx.scale(1,.82);}
@@ -300,7 +317,9 @@
     // not the WebP canvas's empty pixels. Uniform scaling preserves the wide
     // cheeks, short paws, planted baseline and all gameplay hitboxes.
     const visualScale=.86;
-    const artW=92*visualScale,artH=105*visualScale;
+    const nativeW=jiafeiSprite.naturalWidth,nativeH=jiafeiSprite.naturalHeight;
+    const fit=Math.min(92*visualScale/nativeW,105*visualScale/nativeH);
+    const artW=nativeW*fit,artH=nativeH*fit;
     ctx.drawImage(jiafeiSprite,-artW/2,36-artH,artW,artH);
     if(growth?.gem){ctx.font='12px system-ui';ctx.fillStyle=growth.gemColor||'#e8bb68';ctx.fillText('✦',20,-47);}
     ctx.restore();
@@ -311,17 +330,32 @@
     if(sp.id&&Object.prototype.hasOwnProperty.call(indices,sp.id)) return indices[sp.id];
     return paletteIndex[options.palette||sp.palette]??0;
   }
+  // Use the actual named NPC watercolor artwork for every gameplay render.
+  const storyImages=new Map(),storyPortraits=new Map();
+  function storyImage(sp){
+    if(!storyImages.has(sp.id)){const img=new Image();storyImages.set(sp.id,img);img.onload=()=>{for(const [canvas,species] of storyPortraits){if(species.id!==sp.id)continue;storyPortraits.delete(canvas);if(canvas.isConnected!==false)thumbnail(canvas,species);}window.dispatchEvent(new Event('cat-bond-illustrations-ready'));};img.src='/cat-bond/'+sp.storyArt;}
+    return storyImages.get(sp.id);
+  }
+  function paintStory(ctx,x,y,o){
+    const image=storyImage(o.species);if(!image.complete||!image.naturalWidth)return;
+    const s=(o.scale||1)*(o.growth?.scale||1),t=o.t||0,pose=o.pose||'idle',moving=['walk','run','dash','duo-swipe','duo-highfive','duo-guard'].includes(pose);
+    const fit=Math.min(90/image.naturalWidth,102/image.naturalHeight),aw=image.naturalWidth*fit,ah=image.naturalHeight*fit;
+    ctx.save();ctx.translate(x,y);ctx.scale((o.face===-1?-1:1)*s,s);contactShadow(ctx,0,32,31,5,.24);
+    ctx.translate(0,moving?-Math.abs(Math.sin(t*9))*2:Math.sin(t*2)*.4);if(pose==='sleep'||pose==='loaf'){ctx.translate(0,7);ctx.scale(1,.82);}
+    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(image,-aw/2,36-ah,aw,ah);ctx.restore();
+  }
   function render(ctx,x,y,options){
     const o=options||{},t=o.t||0,pose=o.pose||'idle',mood=o.mood||'neutral';
     // Jiafei isn't in the fixed 8x4 breed atlas. Render its own original
     // transparent 2D watercolor asset for map, yard, battle, and portraits.
+    if(o.species?.storyArt){paintStory(ctx,x,y,o);return;}
     if(o.species?.id==='jiafei'){
-      if(!paintJiafei(ctx,x,y,o))fallbackDraw(ctx,x,y,o);
+      paintJiafei(ctx,x,y,o);
       return;
     }
     // An image draws as soon as its first frame has decoded. On older browsers
     // without AVIF decoding, preserve playability with the legacy renderer.
-    if(!loaded&&!breedLoaded){fallbackDraw(ctx,x,y,o);return;}
+    if(!loaded&&!breedLoaded)return;
     const gr=o.growth||null;
     const scale=(o.scale||1)*(gr?.scale||1);
     const face=o.face===-1?-1:1;
@@ -354,8 +388,7 @@
       ctx.fillStyle=aura;ctx.beginPath();ctx.ellipse(0,0,55,45,0,0,Math.PI*2);ctx.fill();
     }
     // Shadow stays on the ground even while the kitten is hopping.
-    ctx.fillStyle='rgba(73,63,51,.12)';
-    ctx.beginPath();ctx.ellipse(0,33,27-hop*.2,4.3-hop*.13,0,0,Math.PI*2);ctx.fill();
+    contactShadow(ctx,0,33,27-hop*.2,4.3-hop*.13,.22);
     ctx.translate(footfall*movement*.95,-bob);
     ctx.translate(0,33);
     ctx.rotate(sway);
@@ -420,6 +453,7 @@
     render(ctx,logicalW/2,logicalH*.60,{
       species,scale,pose:'sit',mood:'neutral',t:.6,motion:0
     });
+    if(species?.storyArt&&!storyImage(species).naturalWidth)storyPortraits.set(canvas,species);
     if(species?.id==='jiafei'&&!jiafeiLoaded)jiafeiPortraits.set(canvas,species);
     if(!breedLoaded)pendingPortraits.set(canvas,species);
   }
@@ -446,7 +480,7 @@
     window.dispatchEvent(new Event('cat-bond-illustrations-ready'));
   };
   source.onerror=()=>{
-    console.warn('Cat Bond kitten art failed to load; retaining playable fallback.');
+    console.warn('Cat Bond watercolor art failed to load; no legacy vector substitute.');
   };
   breedSheet.onload=()=>{
     breedLoaded=breedSheet.naturalWidth===breedFrameSize.w*3
@@ -471,7 +505,7 @@
     jiafeiPortraits.clear();
     window.dispatchEvent?.(new Event('cat-bond-illustrations-ready'));
   };
-  jiafeiSprite.onerror=()=>{console.warn('Jiafei 2D sprite unavailable; keeping playable fallback');};
+  jiafeiSprite.onerror=()=>{console.warn('Jiafei watercolor sprite unavailable; no legacy vector substitute');};
   jiafeiSprite.src='/cat-bond/assets/jiafei-watercolor-v2.webp?v=approved-flat-face-watercolor-20261122';
   
 })();

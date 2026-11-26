@@ -1,0 +1,77 @@
+name: Cat Bond brighter orchestral recording — development branch only
+on:
+  workflow_call:
+    inputs:
+      combined:
+        type: boolean
+        default: false
+      verify_only:
+        type: boolean
+        default: false
+  pull_request:
+    branches: [rpg/cat-bond-takeover]
+    paths:
+      - 'scripts/reorchestrate-cat-bond-score.mjs'
+      - 'public/cat-bond/js/rpg-audio-score.js'
+      - 'scripts/grade-cat-bond-art.py'
+      - 'public/cat-bond/assets/daylight-grade-v1.json'
+      - '.github/workflows/cat-bond-bright-score-render.yml'
+permissions:
+  contents: write
+concurrency:
+  group: cat-bond-bright-score-${{ github.event.pull_request.number }}-${{ inputs.combined && github.run_id || 'legacy' }}
+  cancel-in-progress: false
+jobs:
+  render:
+    if: inputs.combined && github.head_ref == 'rpg/release-combined-next' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check score edition
+        id: edition
+        run: |
+          if node scripts/check-cat-bond-audio-assets.mjs && test -f public/cat-bond/assets/daylight-grade-v1.json; then
+            echo "render=false" >> "$GITHUB_OUTPUT"
+          else
+            if [ "${{ inputs.verify_only }}" = true ]; then echo "Release requires verified committed audio assets"; exit 1; fi
+            echo "render=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Render actual replacement recordings with the licensed existing soundbank
+        if: steps.edition.outputs.render == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq fluidsynth fluid-soundfont-gm ffmpeg
+          node --input-type=module -e "import fs from 'node:fs';import vm from 'node:vm';const window={};vm.runInNewContext(fs.readFileSync('public/cat-bond/js/rpg-audio-score.js','utf8'),{window});const s=window.CatBondOriginalScore;for(const id of s.ids){const a=s.arrange(id);if(!a.notes.length||a.notes.some(n=>!Number.isFinite(n.m)))throw Error(id);}for(const id of s.regions)s.response(id);console.log('All score arrangements validated');"
+          if ! node scripts/check-cat-bond-audio-assets.mjs; then node scripts/render-cat-bond-score.mjs; fi
+          python3 -m pip install --quiet pillow
+          python3 scripts/grade-cat-bond-art.py
+          node scripts/check-cat-bond-audio-assets.mjs
+          node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
+      - name: Atomically integrate verified recordings into the development branch
+        if: steps.edition.outputs.render == 'true'
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          branch=refs/heads/rpg/release-combined-next
+          current=$(git ls-remote origin "$branch" | cut -f1)
+          test "$current" = "$EXPECTED"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/cat-bond/js/rpg-audio-score.js public/cat-bond/assets/
+          git diff --cached --quiet && exit 0
+          git commit -m "Integrate hopeful score recordings and brighter authored RPG paintings"
+          git push origin HEAD:"$branch"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cat-bond-daylight-before-after
+          path: artifacts/cat-bond-daylight/
+          if-no-files-found: ignore
+          retention-days: 7
