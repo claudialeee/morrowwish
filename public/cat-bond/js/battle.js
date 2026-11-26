@@ -2057,10 +2057,10 @@ class CaptureBattle {
       this.skillStrokes.push({kind:'water',x:ex,y:ey,x2:endX,y2:endY,
         color:col,life:.42,max:.42});
       // Tail flick: a spray-burst at the end of the whip to sell the crack.
-      this.vfx.burst(endX,endY,{count:14,color:'#bff2ff',angle:aim,spread:.9,speed:220,life:.38,r:2.6});
-      this.vfx.ring(endX,endY,{r0:6,vr:160,life:.3,color:'#9fe1fc',width:2.5});
+      if(!window.CatBondContactFX)this.vfx.burst(endX,endY,{count:14,color:'#bff2ff',angle:aim,spread:.9,speed:220,life:.38,r:2.6});
+      if(!window.CatBondContactFX)this.vfx.ring(endX,endY,{r0:6,vr:160,life:.3,color:'#9fe1fc',width:2.5});
       // Three droplet puffs along the whip body to give the line water weight.
-      for(let i=0;i<3;i++){
+      if(!window.CatBondContactFX)for(let i=0;i<3;i++){
         const r=120+i*120;
         this.vfx.burst(ex+Math.cos(aim)*r, ey+Math.sin(aim)*r,
           {count:3,color:'#c8f0ff',speed:50,life:.32,r:2});
@@ -2074,9 +2074,9 @@ class CaptureBattle {
         if(hit.dealt>0){
           // Water PILLAR on hit — a rising ring + vertical splash, distinct from
           // the generic vfx.impact dart.
-          this.vfx.ring(e.x,e.y,{r0:10,vr:260,life:.38,color:'#8cdef7',width:4});
+          if(!window.CatBondContactFX){this.vfx.ring(e.x,e.y,{r0:10,vr:260,life:.38,color:'#8cdef7',width:4});
           this.vfx.burst(e.x,e.y-8,{count:10,color:'#aeeaff',angle:-Math.PI/2,spread:.5,speed:170,life:.42,r:3});
-          this.vfx.burst(e.x,e.y,{count:6,color:'#5cb8d8',speed:90,life:.28,r:2});
+          this.vfx.burst(e.x,e.y,{count:6,color:'#5cb8d8',speed:90,life:.28,r:2});}
           hits++;
         }
       }
@@ -2088,7 +2088,7 @@ class CaptureBattle {
       const endX=ex+Math.cos(aim)*range,endY=ey+Math.sin(aim)*range;
       this.skillStrokes.push({kind:frost?'ice':'prism',x:ex,y:ey,x2:endX,y2:endY,
         color:col,life:.45,max:.45});
-      for(let i=0;i<4;i++){
+      if(!window.CatBondContactFX)for(let i=0;i<4;i++){
         const r=60+i*125;
         this.vfx.ring(ex+Math.cos(aim)*r,ey+Math.sin(aim)*r,
           {r0:4,vr:80,life:.26,color:frost?'#b8eaff':'#fefcbb',width:2});
@@ -2099,7 +2099,7 @@ class CaptureBattle {
         const side=Math.abs(-dx*Math.sin(aim)+dy*Math.cos(aim));
         if(along<0||along>range||side>width+e.r*.5)continue;
         const hit=this.resolveHit(e,'me',sk,baseDmg*(frost?1.12:1.18),e.x,e.y);
-        if(hit.dealt>0){this.vfx.impact(e.x,e.y,col);hits++;}
+        if(hit.dealt>0){if(!window.CatBondContactFX)this.vfx.impact(e.x,e.y,col);hits++;}
       }
       if(hits)this.shakeT=Math.max(this.shakeT,.13);
       return true;
@@ -2936,15 +2936,15 @@ class CaptureBattle {
     let node = this.targetEnemy ? this.targetEnemy() : this.nearestEnemy(f.x, f.y);
     let n = 0, power = dmg;
     while (node && n < MAX) {
-      hit.add(node.i);
-      this.vfx.beam(from.x, from.y, node.x, node.y, col);
-      this.vfx.impact(node.x, node.y, col);
+      hit.add(node);
+      if(window.CatBondSkillFX?.drawInstantLine)this.skillStrokes.push({kind:'lightning',x:from.x,y:from.y,x2:node.x,y2:node.y,life:.35,max:.35,color:col});
+      else{this.vfx.beam(from.x,from.y,node.x,node.y,col);this.vfx.impact(node.x,node.y,col);}
       this.resolveHit(node, 'me', sk, power, node.x, node.y);
       from = { x: node.x, y: node.y };
       power *= 0.82;                                 // each jump a little weaker
       // next nearest live, unhit enemy within jump range
       let best = null, bd = JUMP_R;
-      for (const e of this.liveEnemies()) { if (hit.has(e.i)) continue; const dd = Math.hypot(e.x - from.x, e.y - from.y); if (dd < bd) { bd = dd; best = e; } }
+      for (const e of this.liveEnemies()) { if (hit.has(e)) continue; const dd = Math.hypot(e.x - from.x, e.y - from.y); if (dd < bd) { bd = dd; best = e; } }
       node = best; n++;
     }
   }
@@ -4252,6 +4252,7 @@ class CaptureBattle {
 
   drawSkillStrokes(ctx){
     for(const v of this.skillStrokes){
+      if(window.CatBondSkillFX?.drawInstantLine(ctx,v,this.t))continue;
       const k=Math.max(0,v.life/v.max),p=1-k;
       ctx.save();ctx.globalAlpha=Math.min(1,k*.95);
       ctx.lineCap='round';ctx.lineJoin='round';
@@ -6226,7 +6227,7 @@ class CaptureBattle {
       const dealt = this.applyEnemyHitEffects(target, skill || { element: null }, dmg, x, y);
       if (this._debug) this._dbg('enemy→me', skill, dmg, dealt, target);
       this.hurtMe(dealt, x, y, target);
-      if(dealt>0)this.vfx.impactType?.(target.x,target.y,skill?.heavy?'heavy':'light',{color:col,skill,angle:Math.atan2(target.y-y,target.x-x)});
+      if(dealt>0)this.vfx.impactType?.(target.x,target.y,skill?.heavy?'heavy':'light',{color:col,skill,angle:this.hitNormal(target,x,y,'wild').angle});
       return { blocked: false, reflected: false, dealt };
     }
   }
