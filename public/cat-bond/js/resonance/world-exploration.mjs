@@ -59,7 +59,7 @@ export function createPuzzle(op,choice=null,record=null){
  return spec&&{...spec,operation:op,values:[...spec.initial],response:[],mistakes:0,solved:false};
 }
 export function movePuzzle(p,i){
- if(!p||p.solved||!Number.isInteger(i)||i<0||i>2)return false;
+ if(!p||p.solved||!Number.isInteger(i)||i<0||i>(p.type==="libraryCompanion"?4:2))return false;
  if(p.type.startsWith("library"))return advanceLibrary(p,i);
  if(p.type==="routing"&&p.operation==="puzzle:distributed-routing"){p.values=[...p.goal];}
  else if(["mirrors","stars","water","routing"].includes(p.type)){p.values[i]=(p.values[i]+1)%p.mod;}
