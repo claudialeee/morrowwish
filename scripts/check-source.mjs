@@ -378,6 +378,7 @@ if(!dashboard.includes('id="focus-grid"'))throw new Error('Flagship performance 
 console.log('Seven game analytics cards, compact acquisition channels and actionable telemetry checked.');
 
 console.log('Morrow Wish Cloudflare Pages source, Analytics, branding and game labels checked.');
+await import('./check-skill-registry-drift.mjs');
 await import('./check-pawsibly.mjs');
 await import('./check-cat-bond.mjs');
 await import('./check-cat-bond-host.mjs');
