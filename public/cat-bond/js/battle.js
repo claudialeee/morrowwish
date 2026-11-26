@@ -2741,9 +2741,10 @@ class CaptureBattle {
     if (!this.fields.length) return;
     const REACT = { water: 'elec', elec: 'water', fire: 'grass', grass: 'fire', dark: 'light', light: 'dark' };
     for (const fld of this.fields) {
-      fld.t -= dt; fld._drip += dt;
+      const fieldDt=Math.max(0,Math.min(dt,fld.t));
+      fld.t -= dt; fld._drip += fld.kind==='magneticField'?fieldDt:dt;
       const targets = fld.side === 'me' ? this.liveEnemies() : this.team.filter(t => t.alive);
-      if(fld.kind==='magneticField'){this.tickMagneticField(fld,targets,dt);continue;}
+      if(fld.kind==='magneticField'){this.tickMagneticField(fld,targets,fieldDt);continue;}
       // drip the field's status + tiny damage ~3x/sec to anyone standing inside
       if (fld._drip >= 0.33) {
         fld._drip = 0;
@@ -3041,6 +3042,7 @@ class CaptureBattle {
   tickBeams(dt) {
     if (!this.beams.length) return;
     for (const b of this.beams) {
+      const beamDt=Math.max(0,Math.min(dt,b.t));
       b.t -= dt;
       const f = b.f;
       if (!f || !f.alive) { b.t = 0; continue; }
@@ -3091,16 +3093,13 @@ class CaptureBattle {
       const ox = f.x + Math.cos(b.aim) * 22, oy = f.y + Math.sin(b.aim) * 22;
       const ex = ox + Math.cos(b.aim) * b.len, ey = oy + Math.sin(b.aim) * b.len;
       b._ox = ox; b._oy = oy; b._ex = ex; b._ey = ey;
-      b.tickAcc += dt;
+      b.tickAcc += beamDt;
       const STEP = 1 / 8;                                        // 8 damage ticks/sec
       while (b.tickAcc >= STEP) {
         b.tickAcc -= STEP;
         const hitDmg = b.dps * STEP;
         const list = b.owner === 'me' ? this.liveEnemies() : this.team.filter(t => t.alive);
-        // STOP-AT-FIRST-TARGET (owner 2026-11-26): a non-sweep beam (waterJet,
-        // thunderStream, frostLance-beam, etc.) must damage only the FIRST target the
-        // centerline crosses — matching the visual truncation in beamVisualEnd(). Only
-        // flameSweep (with sweepPasses) is explicitly designed to penetrate the pack.
+        // Water lance and sweeping fire penetrate; other beams stop at first contact.
         const flame = b.sk?.id === 'flameSweep', pierce=b.sk?.id==='waterJet';
         let candidates = list.filter(e =>
           this.pointToSeg(e.x, e.y, ox, oy, ex, ey) <= b.width + (e.r || 18) * 0.5);
@@ -4097,7 +4096,7 @@ class CaptureBattle {
       if(b._ox==null)continue;
       // paint only up to the first enemy the stream hits (visual; damage uses b._ex/_ey)
       const _vend=this.beamVisualEnd(b), _ex0=b._ex, _ey0=b._ey;
-      // Sweeping fire penetrates; water uses first visible contact. No damage mutation.
+      // Water lance and sweeping fire use full reach; other beams stop at contact. No damage mutation.
       if(window.CatBondSkillFX?.drawCombatBeam(ctx,b,this.t,
         ['flameSweep','waterJet'].includes(b.sk?.id)?_ex0:_vend.ex,['flameSweep','waterJet'].includes(b.sk?.id)?_ey0:_vend.ey))continue;
       b._ex=_vend.ex; b._ey=_vend.ey;
@@ -4735,7 +4734,7 @@ class CaptureBattle {
       // cd), routed through resolveHit so dodge i-frames and shields fully negate.
       // Makes melee range genuinely dangerous — you can't just stand in the pack.
       if (e.swipeCd > 0) e.swipeCd -= dt;
-      if (!coachHold && e.swipeCd <= 0) {
+      if (!coachHold && !(e._beamRoot>0) && e.swipeCd <= 0) {
         for (const tf of this.team) {
           if (!tf.alive || tf.inv > 0) continue;
           if (Math.hypot(tf.x - e.x, tf.y - e.y) < (e.r || 20) + (tf.r || 20) + 8) {
@@ -5062,6 +5061,7 @@ class CaptureBattle {
     e.face = dx < 0 ? -1 : 1;
     if (e.inv > 0) e.inv -= dt;
     if (e.dodgeCd > 0) e.dodgeCd -= dt;
+    if(e._beamRoot>0){e.pose='idle';return;} // fixed-aim wild channel: no movement or overlapping AI casts
     e.aggro = 1 - e.hp / e.maxhp;
     const hpFrac=e.hp/e.maxhp;
     // Elites visibly change behavior at half HP; SSR have a second last stand.
@@ -5555,7 +5555,6 @@ class CaptureBattle {
     const k = sk.kind;
     this.vfx.muzzle(e.x, e.y, aim, col);
     if(sk.id==='magneticField'){this.castMagneticField(e,aim,sk,dmg,col,'wild');return;}
-    if(sk.id==='waterJet'){this.castBeam(e,aim,sk,dmg,col,'wild');return;}
     if (k === 'aoe') { this.enemyLobAoe(e, me, col); e.inv = Math.max(e.inv || 0, 0.12); return; }
     if (k === 'dash' || k === 'leap' || k === 'pounce') {
       // GAP-CLOSER: set up a POUNCE that the SHARED advanceLunge animates over frames (same code the
@@ -5591,8 +5590,8 @@ class CaptureBattle {
     // is fired as ONE authored projectile with its own sprite kind — matching how the
     // player's castDistinctProjectile delivers the same skills.
     if (k === 'beam') {
-      // Beam enemies still shoot a tight 3-dart fast burst (no beam-channel enemy behavior).
-      this.castVolley(e, aim, { ...sk, shots: 3, spread: 0.06, homing: false }, dmg, col, 'wild');
+      // Wild and allied cats now share authored beam silhouettes and hit geometry.
+      this.castBeam(e,aim,sk,dmg,col,'wild');
       return;
     }
     if (sk.shots > 1) {
@@ -6239,7 +6238,7 @@ class CaptureBattle {
       const dealt = this.applyEnemyHitEffects(target, skill || { element: null }, dmg, x, y);
       if (this._debug) this._dbg('enemy→me', skill, dmg, dealt, target);
       this.hurtMe(dealt, x, y, target);
-      if(dealt>0)this.vfx.impactType?.(target.x,target.y,skill?.heavy?'heavy':'light',{color:col,skill,angle:this.hitNormal(target,x,y,'wild').angle});
+      if(dealt>0&&!skill?.isChanneledTick)this.vfx.impactType?.(target.x,target.y,skill?.heavy?'heavy':'light',{color:col,skill,angle:this.hitNormal(target,x,y,'wild').angle});
       return { blocked: false, reflected: false, dealt };
     }
   }
