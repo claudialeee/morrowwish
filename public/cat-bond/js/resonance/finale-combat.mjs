@@ -14,13 +14,25 @@ const ALLIES=Object.fromEntries(REGIONS.map(region=>[
  region,Object.values(campaign.cast).filter(actor=>actor.region===region)
 ]));
 const REPLY_OBJECTIVES={
- harbor:["守护岬灯与栖蓝，接通灯塔信号。","Guard Jiedeng and Qilan as they align the lighthouse signal."],
- forest:["守护芽禾与榆川，维持双向树根水道。","Guard Yahe and Yuchuan as they reopen the paired root channel."],
- forge:["守护烬婆与小铆，稳定声闸。","Guard Jinpo and Xiaomao as they stabilize the sound gate."],
- sky:["守护翎羽与远帆，将旋律送过空中航路。","Guard Lingyu and Yuanfan as they carry the melody across the air route."],
- library:["守护墨页与白栞，辨出正确的旋律次序。","Guard Moye and Baikan as they identify the authentic melody order."],
- starfall:["守护星芽与砾川，校准星图并接回港口。","Guard Xingya and Lichuan as they align the star map and close the route to Harbor."]
+ harbor:["守住风铃镇的铃光，让檐灯和栖蓝接唱。","Hold Windchime's bell light so Yandeng and Qilan can answer."],
+ forest:["守住眠根林的铃光，等芽禾与榆川回应。","Hold Rootsleep's bell light while Yahe and Yuchuan answer."],
+ forge:["靠近千灯城照亮的安全位置。","Stay in the safe light from Lantern City."],
+ sky:["借云岛的风，守住真正的铃声。","Ride the sky winds and protect the genuine chime."],
+ library:["守住月镜书库的回应，不让复制声夺走它。","Protect Moonmirror's answer from the copied sound."],
+ starfall:["守住星坠原，让最后一对邻铃接唱。","Protect Starfall as the final neighbors answer."]
 };
+const REPLY_TONES=[392,523.25,329.63,659.25,440,587.33];
+export function memoryReply(region,actors=[]){
+ const has=id=>actors.includes(id);
+ return ({
+ harbor:["檐灯：小金猫，听见啦！","Yandeng: Little golden cat, we hear you!"],
+ forest:["芽禾：月叶又长过来了！这次不会断！","Yahe: The moonleaf is growing toward us! It won't break this time!"],
+ forge:has("xiaomao")?["小铆：歪耳灯在这儿！往亮处来！","Xiaomao: The crooked-ear lantern is here! Come into the light!"]:["烬婆：歪耳灯还亮着呢！往这边来！","Jinpo: The crooked-ear lantern is still lit! Come this way!"],
+ sky:has("yuanfan")?["远帆：还记得云瀑吗？借风！","Yuanfan: Remember the waterfall? Ride the wind!"]:["翎羽：云瀑那股风来了！稳住！","Lingyu: Here comes the waterfall's wind! Hold steady!"],
+ library:["墨页：这是我们的声音，不是旧记录！","Moye: These are our voices, not old records!"],
+ starfall:["星芽：最后一个地方也答上了！","Xingya: The last neighbor has answered!"]
+ })[region]||["听见了！","We hear you!"];
+}
 const ACTIONS=["lighthouse-signal","paired-root-channel","sound-gate-repair","aerial-melody","authentic-melody-order","star-map-alignment"];
 const COLORS=["#7ccedc","#a8cc86","#ed9967","#c6e1f0","#cab1e3","#f1d39c"];
 const clamp=(n,a,b)=>Math.min(Math.max(n,a),b);
@@ -69,6 +81,7 @@ export function holdProgress(progress,dt,near,interrupted,required){
  return clamp(progress+(near&&!interrupted?dt:-dt*.5),0,required);
 }
 
+function battleActorPresent(b,id){return b.team.some(f=>f.alive&&f.cat?.storyActor===id);}
 function install(){
  const GP=window.Game?.prototype,BP=window.Battle?.CaptureBattle?.prototype;
  if(!GP||!BP||window.CatBondFinaleCombat)return;
@@ -347,8 +360,8 @@ function install(){
   if(next.required!==need){next.required=need;paint(b);}
   const near=alive(b).some(x=>distance(x,next)<=56);
   const response=advanceReply(next.reply,d,f.elapsed,near,need);next.progress=next.reply.progress;next.required=need;
-  if(response==="first"){b.vfx.ring(next.x,next.y,{r0:8,vr:130,life:.6,color:next.color,width:3});window.MorrowwishAudio?.note?.(329.63,.3,.12);}
-  if(response==="second"){const neighbor=f.nodes[(f.nodes.indexOf(next)+1)%f.nodes.length];b.vfx.ring(neighbor.x,neighbor.y,{r0:8,vr:160,life:.7,color:neighbor.color,width:4});window.MorrowwishAudio?.note?.(440,.35,.12);}
+  if(response==="first"){b.vfx.ring(next.x,next.y,{r0:8,vr:130,life:.6,color:next.color,width:3});window.MorrowwishAudio?.note?.(REPLY_TONES[REGIONS.indexOf(next.region)],.3,.12);}
+  if(response==="second"){const neighbor=f.nodes[(f.nodes.indexOf(next)+1)%f.nodes.length];b.vfx.ring(neighbor.x,neighbor.y,{r0:8,vr:160,life:.7,color:neighbor.color,width:4});window.MorrowwishAudio?.note?.(REPLY_TONES[REGIONS.indexOf(neighbor.region)],.35,.12);}
   const progressBucket=Math.floor(next.progress/need*20);if(f.progressBucket!==progressBucket){f.progressBucket=progressBucket;paint(b);}
   if(next.reply.done){
    // Stage the verified physical action in this fight; a retreat cannot grant narrative evidence.
@@ -358,7 +371,7 @@ function install(){
    if(next.region==="harbor")for(const n of f.nodes)if(!n.done)n.integrity=Math.min(100,n.integrity+12);
    if(next.region==="sky")f.cooldown=Math.max(f.cooldown,4.6);
    if(next.region==="library")b.projectiles=b.projectiles.filter(p=>p.owner!=="wild");
-   notice(b,REGION_KITS[next.region].name[0]+" · 旋律归位，队伍恢复。",REGION_KITS[next.region].name[1]+" · Melody restored; team steadied.");paint(b);
+   notice(b,...memoryReply(next.region,b.team.filter(c=>c.alive).map(c=>c.cat?.storyActor).filter(Boolean)));paint(b);
   }
  }
  const update=BP.update;
@@ -392,7 +405,7 @@ function install(){
   if(cinematicActive(this))return;
   ctx.save();ctx.lineWidth=2;
   if(f.id==="finale:B-02"&&f.probeChanged){const me=this.me();if(me?.alive)for(const e of this.liveEnemies().filter(e=>!e.impostor)){ctx.strokeStyle="#f7dd9b";ctx.globalAlpha=.65;ctx.setLineDash([5,8]);ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(me.x,me.y);ctx.stroke();}ctx.setLineDash([]);ctx.globalAlpha=1;}
-  if(f.id==="finale:B-03"){for(let i=0;i<f.nodes.length;i++){const n=f.nodes[i],next=f.nodes[(i+1)%f.nodes.length];if(!n.done)continue;ctx.save();ctx.strokeStyle=n.color;ctx.shadowColor=n.color;ctx.shadowBlur=10;ctx.globalAlpha=.7+.2*Math.sin(f.elapsed*3+i);ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(next.x,next.y);ctx.stroke();ctx.restore();}}
+  if(f.id==="finale:B-03"){for(let i=0;i<f.nodes.length;i++){const n=f.nodes[i],next=f.nodes[(i+1)%f.nodes.length];if(!n.done&&!n.reply?.firstAt)continue;ctx.save();ctx.strokeStyle=n.color;ctx.shadowColor=n.color;ctx.shadowBlur=10;ctx.globalAlpha=.7+.2*Math.sin(f.elapsed*3+i);ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(n.done?next.x:(n.x+next.x)/2,n.done?next.y:(n.y+next.y)/2);ctx.stroke();if(n.done){const travel=(f.elapsed*.8+i*.17)%1;ctx.fillStyle=n.color;for(const t of [travel,1-travel]){ctx.beginPath();ctx.arc(n.x+(next.x-n.x)*t,n.y+(next.y-n.y)*t,3.5,0,Math.PI*2);ctx.fill();}}ctx.restore();}}
   if(f.id!=="finale:B-02")for(const n of f.nodes){
     if(f.id==="finale:B-03"&&n===f.nodes.find(x=>!x.done)){const g=ctx.createRadialGradient(n.x,n.y,4,n.x,n.y,82);g.addColorStop(0,"#ffe8af88");g.addColorStop(1,"#ffe8af00");ctx.fillStyle=g;ctx.fillRect(n.x-82,n.y-82,164,164);}
     ctx.strokeStyle=n.color;ctx.fillStyle="rgba(20,28,42,.82)";ctx.beginPath();ctx.arc(n.x,n.y,24,0,Math.PI*2);ctx.fill();ctx.stroke();
@@ -401,6 +414,8 @@ function install(){
     if(f.id==="finale:B-03"||f.id==="finale:B-01"){
       const actors=ALLIES[n.region];
       for(const [j,actor] of actors.entries()){
+        // A deployed companion already has a real battle entity; show only remote residents here.
+        if(battleActorPresent(this,actor.id))continue;
         window.CatBondResonanceNPC?.drawResident?.(ctx,actor.id,{
           x:n.x+(j-.5)*26,y:n.y+15,scale:.43,time:f.elapsed
         });

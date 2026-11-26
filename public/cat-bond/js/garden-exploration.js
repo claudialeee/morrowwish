@@ -1,7 +1,7 @@
 // V3 opening discoveries: real map targets, optional, slot-local and independent of story proof.
 (function(){
 'use strict';
-const fresh=()=>({chartStarted:false,parts:[],butterfly:0,seed:false,snack:null,door:false,nameplate:false,nameplateHome:false, keepsakes:[]});
+const fresh=()=>({chartStarted:false,parts:[],butterfly:0,seed:false,snack:null,door:false,nameplate:false,nameplateHome:false,moonleafTouched:false, keepsakes:[]});
 function read(root){const saved=root?.sunlitGarden?.exploration||{};return {...fresh(),...saved,parts:[...new Set((saved.parts||[]).filter(i=>i===0||i===1))],keepsakes:[...new Set(saved.keepsakes||[])]};}
 function reduce(before,event,canOpenDoor=false){
  const next={...before,parts:[...before.parts],keepsakes:[...before.keepsakes]};
@@ -15,6 +15,7 @@ function reduce(before,event,canOpenDoor=false){
  case 'door':if(!canOpenDoor||next.door)return null;next.door=true;remember('old-garden-postcard');break;
  case 'nameplate':if(next.nameplate)return null;next.nameplate=true;break;
  case 'nameplate-home':if(!canOpenDoor||next.nameplateHome)return null;next.nameplateHome=true;break;
+ case 'moonleaf-touch':if(!canOpenDoor||next.moonleafTouched)return null;next.moonleafTouched=true;break;
  default:return null;
  }return next;
 }
@@ -37,6 +38,7 @@ const targets={
  butterfly:{labels:['追蝴蝶','Chase butterfly'],type:'butterfly',points:[[.36,.46],[.79,.55],[.48,.68]]},
  seed:{labels:['花丛里的亮光','Glint among flowers'],type:'seed',points:[[.87,.70]]},
  snack:{labels:['鱼饼','Fish cake'],type:'snack',points:[[.15,.56]]},
+ moonleaf:{labels:['和暮铃一起碰月叶','Touch the moonleaf with Muling'],type:'seed',points:[[.76,.70]]},
  nameplate:{labels:['翻看木名牌','Turn the wooden nameplate'],type:'nameplate',points:[[.25,.40]]},
  door:{labels:['旧屋的秘密','Old house mystery'],type:'door',points:[[.18,.37]]},
  'chart-0':{labels:['飞走的航图 · 1','Windblown chart · 1'],type:'chart',points:[[.75,.36]]},
@@ -52,13 +54,13 @@ function snackChoice(){if(popup)return;popup=document.createElement('section');p
  const p=document.createElement('p');p.textContent=tr('一小块香喷喷的鱼饼。','A delicious little fish cake.');popup.append(p);
  for(const [id,a,b] of [['snack-keep','带在身上','Keep for later'],['snack-eat','现在吃掉','Eat now'],['close','暂时不拿','Leave it']]){const button=document.createElement('button');button.type='button';button.textContent=tr(a,b);button.onclick=()=>{if(owner!==rootState()||!eligible()){closePopup();return}if(id==='close'){closePopup();return}if(commit(id)){closePopup();pulse('snack');toast(id==='snack-keep'?'把鱼饼放进小包，留给旅途。':'香香脆脆的，适合出门前吃。',id==='snack-keep'?'You tuck the fish cake away for the road.':'A crisp little breakfast.');}};popup.append(button);}layer.append(popup);
 }
-function cancelChase(){if(!pending)return;delete pending.cat._gardenExploreTarget;pending=null;const b=buttons.get('butterfly');if(b)b.disabled=false;}
-function startChase(){if(pending||!projection)return false;const cat=window.__game?.yard?.entities?.find(e=>e.cat.species==='jinjc'),b=buttons.get('butterfly');if(!cat||!b||cat._gardenRest||cat._playBuildT>0){toast('小猫正在忙，等一下再追蝴蝶。','Your cat is busy. Try the butterfly again in a moment.');return false;}
- const {rect,r,w,h}=projection,ground=window.World?.gardenGround?.(w,h);if(!ground)return false;const bound=(n,a,b)=>Math.max(a,Math.min(b,n));const x=bound((r.left+parseFloat(b.style.left)-rect.left)/rect.width*w,ground.left,ground.right),y=bound((r.top+parseFloat(b.style.top)-rect.top)/rect.height*h+18,ground.top,ground.bottom);pending={cat,x,y,owner,started:performance.now()};cat._gardenExploreTarget={x,y};b.disabled=true;return true;}
-function finishChase(){if(!pending)return;const {cat}=pending,s=read(owner);cancelChase();if(!commit('butterfly'))return;cat.pounceT=.8;cat.setPose?.('play',.8);pulse('butterfly');toast(s.butterfly===2?'蝴蝶飞走了，一片小花落在耳尖。纪念：落在耳尖的花':'蝴蝶又飞到了另一处！ '+(s.butterfly+1)+'/3',s.butterfly===2?'The butterfly flies free. A flower lands on your ear. Keepsake: a little flower.':'The butterfly flutters away! '+(s.butterfly+1)+'/3');}
+function cancelChase(){if(!pending)return;delete pending.cat._gardenExploreTarget;const id=pending.id;pending=null;const b=buttons.get(id);if(b)b.disabled=false;}
+function startChase(id='butterfly'){if(pending||!projection)return false;const cat=window.__game?.yard?.entities?.find(e=>e.cat.species==='jinjc'),b=buttons.get(id);if(!cat||!b||cat._gardenRest||cat._playBuildT>0){toast('小猫正在忙，等一下再追蝴蝶。','Your cat is busy. Try the butterfly again in a moment.');return false;}
+ const {rect,r,w,h}=projection,ground=window.World?.gardenGround?.(w,h);if(!ground)return false;const bound=(n,a,b)=>Math.max(a,Math.min(b,n));const x=bound((r.left+parseFloat(b.style.left)-rect.left)/rect.width*w,ground.left,ground.right),y=bound((r.top+parseFloat(b.style.top)-rect.top)/rect.height*h+18,ground.top,ground.bottom);pending={cat,x,y,id,owner,started:performance.now()};cat._gardenExploreTarget={x,y};b.disabled=true;return true;}
+function finishChase(){if(!pending)return;const {cat,id}=pending,s=read(owner);cancelChase();if(id==='moonleaf'){if(!view()?.ending||!commit('moonleaf-touch'))return;cat.setPose?.('play',.8);pulse(id);toast('暮铃也碰了碰月叶，两片新叶舒展开来。','Muling touches the moonleaf too, and two new leaves unfold.');return;}if(!commit('butterfly'))return;cat.pounceT=.8;cat.setPose?.('play',.8);pulse('butterfly');toast(s.butterfly===2?'蝴蝶飞走了，一片小花落在耳尖。纪念：落在耳尖的花':'蝴蝶又飞到了另一处！ '+(s.butterfly+1)+'/3',s.butterfly===2?'The butterfly flies free. A flower lands on your ear. Keepsake: a little flower.':'The butterfly flutters away! '+(s.butterfly+1)+'/3');}
 function interact(id){if(owner!==rootState()||!eligible()||covered())return false;const b=buttons.get(id);if(!b||b.hidden)return false;
  const s=read(owner);
- if(id==='butterfly'){closePopup();return startChase();}cancelChase();
+ if(id==='butterfly'||id==='moonleaf'){closePopup();return startChase(id);}cancelChase();
  if(id==='snack'){snackChoice();return true;}closePopup();
  if(id==='nameplate'){const ended=!!view()?.ending,event=ended?'nameplate-home':'nameplate';if(!commit(event))return false;pulse(id);toast(ended?'旧名牌旁添上两道新的爪印。这里是我们的家。':'旧木牌背面只剩一笔磨掉的刻字，旁边有两道爪痕。',''+(ended?'Two new paw marks beside the old nameplate. This is our home.':'One worn stroke remains on the back of the wooden nameplate, beside two paw marks.'));return true;}
  if(id==='door'&&!view()?.completed?.includes('harbor:H-05')){toast('旧屋的门关着。门缝里似乎夹着一张褪色的画。也许旅行回来后再看看。','The old house is closed. A faded picture peeks through the door. Try again after your journey.');return true;}
@@ -73,7 +75,7 @@ function interact(id){if(owner!==rootState()||!eligible()||covered())return fals
 function journeyKeepsakes(root,v){const c=root?.resonance?.completed||[],i=root?.resonanceExploration?.interactions||{};if(!c.includes('finale:B-04'))return null;return {map:c.includes('harbor:H-05'),moonleaf:c.includes('forest:R-04'),lantern:c.includes('forge:E-04')?(i['forge:E-01:puzzle:lantern-show']?.shape??2):null,cups:root.resonance?.choices?.['sky:S-04']==='search'?3:2,flight:i['sky:S-03:puzzle:joint-flight']?.route||null};}
 function drawJourney(ctx,w,h,art,root,v){const k=journeyKeepsakes(root,v);if(!k)return;const pos=(x,y)=>[art.x+art.width*x,art.y+art.height*y],s=Math.max(.7,Math.min(1.25,w/960));ctx.save();const place=(x,y,draw)=>{ctx.save();ctx.translate(...pos(x,y));ctx.scale(s,s);draw();ctx.restore();};const oval=(x,y,rx,ry,color)=>{ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();};
 if(k.map)place(.30,.53,()=>{ctx.fillStyle='#f4dfb3';ctx.fillRect(-23,-14,46,28);ctx.strokeStyle='#779c85';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-16,8);ctx.lineTo(-6,-4);ctx.lineTo(5,4);ctx.lineTo(17,-8);ctx.stroke();oval(17,-8,3,3,'#d39e61');});
-if(k.moonleaf)place(.76,.70,()=>{oval(0,4,22,7,'#987450');ctx.strokeStyle='#719b5d';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,3);ctx.quadraticCurveTo(-4,-14,1,-25);ctx.stroke();oval(-7,-17,12,5,'#a8cf85');oval(8,-26,13,6,'#d4e5a1');});
+if(k.moonleaf)place(.76,.70,()=>{oval(0,4,22,7,'#987450');ctx.strokeStyle='#719b5d';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,3);ctx.quadraticCurveTo(-4,-14,1,-25);ctx.stroke();oval(-7,-17,read(root).moonleafTouched?12:5,5,'#a8cf85');oval(8,-26,read(root).moonleafTouched?13:5,6,'#d4e5a1');if(read(root).moonleafTouched){oval(-13,-29,3,3,'#ffecc0');oval(15,-32,3,3,'#ffecc0');}});
 if(k.lantern!==null)place(.60,.42,()=>{oval(0,0,17,20,'#f6bd74');oval(0,0,13,16,'#ffe1a0');ctx.fillStyle='#75553f';if(k.lantern===0){oval(0,0,7,4,'#75553f');ctx.beginPath();ctx.moveTo(-7,0);ctx.lineTo(-12,-5);ctx.lineTo(-12,5);ctx.fill();}else if(k.lantern===1){oval(-4,-2,4,6,'#75553f');oval(4,-2,4,6,'#75553f');}else{oval(0,2,7,6,'#75553f');ctx.beginPath();ctx.moveTo(-7,0);ctx.lineTo(-8,-9);ctx.lineTo(0,-4);ctx.lineTo(6,-10);ctx.lineTo(7,1);ctx.fill();}oval(12,-15,3,3,'#fff9cf');});
 place(.48,.67,()=>{oval(0,7,30,11,'#b5966e');for(let i=0;i<k.cups;i++){const x=(i-(k.cups-1)/2)*16;oval(x,0,6,5,'#f9eed9');oval(x,-3,5,2,'#b77b46');ctx.strokeStyle='#fff4df';ctx.beginPath();ctx.arc(x+6,0,3,-1,1);ctx.stroke();}});
 if(k.flight)place(.35,.70,()=>{ctx.fillStyle='#e8f2e7';ctx.fillRect(-13,-9,26,18);oval(0,1,8,3,'#c5dbe4');oval(6,-4,3,3,'#dcbf72');});ctx.restore();}
@@ -88,7 +90,7 @@ function draw(parent,ctx,w,h){
  const left=Math.max(0,art.x),right=Math.min(w,art.x+art.width),top=Math.max(0,art.y),bottom=Math.min(h,art.y+art.height);
  const guide=parent.querySelector('.sg-prologue-guide:not([hidden])')?.getBoundingClientRect(),marker=parent.querySelector('.sg-npc-talk-marker:not([hidden])')?.getBoundingClientRect();
  const placed=[];
- for(const [id,b] of buttons){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?!s.door:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(Number(id.at(-1)));
+ for(const [id,b] of buttons){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?!s.door:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):id==='moonleaf'?!!v?.ending&&!!journeyKeepsakes(owner,v)?.moonleaf&&!s.moonleafTouched:s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(Number(id.at(-1)));
   b.hidden=!show;if(!show)continue;
   const p=def.points[id==='butterfly'?Math.min(2,s.butterfly):0];
   const preferredX=rect.left+(left+(right-left)*p[0])/w*rect.width-r.left,preferredY=rect.top+(top+(bottom-top)*p[1])/h*rect.height-r.top;

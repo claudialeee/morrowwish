@@ -1136,8 +1136,8 @@ export const campaign = {
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "前面那座岛能落脚。先歇一会儿吧。",
-            "en": "There's a safe island ahead. Let's rest there."
+            "zh": "看，月门就在前面。走哪条路都能飞到这里。",
+            "en": "Look, the moon gate is just ahead. Either route leads here."
           }
         }
       ],
@@ -1294,6 +1294,20 @@ export const campaign = {
       "previous": "sky:S-04",
       "lines": [
         {
+          "speaker": "jinpo",
+          "text": {
+            "zh": "喂！云上那只小金猫，别把灯摔了！",
+            "en": "Hey, little golden cat up in the clouds! Don't drop that lantern!"
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "听见啦！下次给你带云朵看！",
+            "en": "I hear you! Next time I'll show you some clouds!"
+          }
+        },
+        {
           "speaker": "yuanfan",
           "text": {
             "zh": "第一条正式航线！我想继续往书库送信，你们愿意带上我吗？",
@@ -1310,8 +1324,8 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "书库回信了！你在港口唱的音是旧守铃人的信号。还有一次信号，就在最近的失忆发生前。",
-            "en": "The library replied! Your harbor note was an old bellkeeper's signal. Another signal was recorded just before the recent memory loss."
+            "zh": "书库回信了！你在风铃镇唱的音是旧守铃人的信号。还有一次信号，就在最近的失忆发生前。",
+            "en": "The library replied! Your Windchime Town note was an old bellkeeper's signal. Another was recorded just before the recent memory loss."
           }
         },
         {
@@ -1793,8 +1807,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "港口已经有猫认不出家人了。再等下去，会有更多猫失去自己。",
-            "en": "Cats at the harbor can no longer recognize their families. If we wait, more will lose themselves."
+            "zh": "风铃镇已经有猫认不出家人了。再等下去，会有更多猫失去自己。",
+            "en": "Cats in Windchime Town can no longer recognize their families. If we wait, more will lose themselves."
           }
         },
         {
@@ -1973,22 +1987,23 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "六地都回应了。这次不是中央替它们发声，是每个地方自己送来的回应。",
-            "en": "All six answered. This time the center isn't speaking for them. Each region sent its own reply."
-          }
+            "zh": "刚才六地都送来了自己的回应。咦……这盏灯是哪来的？",
+            "en": "Each region sent its own reply. Huh… where did this lantern come from?"
+          },
+          "narration": false
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "可是星铃还在发抖。如果它再次吞掉声音……我会再失去你。",
-            "en": "But the Star Bell is still shaking. If it swallows their voices again… I'll lose you again."
+            "zh": "千灯城呀！咱俩一起做的！……那一声，跟当年一模一样。",
+            "en": "Lantern City! We made it together! …That sound was exactly like last time."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那就一起守住它们的声音。听，朋友们已经来了。",
-            "en": "Then let's protect their voices together. Listen, our friends are here."
+            "zh": "等等，你看！砾川那边又亮了。还没完呢！我们一起守住它们的声音。",
+            "en": "Wait, look! Lichuan's light is back. It's not over yet! Let's protect their voices together."
           }
         }
       ],
