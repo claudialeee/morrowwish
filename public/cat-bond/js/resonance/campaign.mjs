@@ -667,37 +667,37 @@ export const campaign = {
       "id": "forest:R-01",
       "chapter": "forest",
       "title": {
-        "zh": "两座森林",
-        "en": "Two Forests"
+        "zh": "会走动的森林 · 药草园",
+        "en": "The Moving Forest · Herb garden"
       },
       "previous": "harbor:H-05",
       "lines": [
         {
           "speaker": "yahe",
           "text": {
-            "zh": "救命呀，我最珍贵的药草都快变成干草了！地下那边是不是把水全截走了？",
-            "en": "Help! My prized herbs are turning into hay! Did the underground village take all the water?"
+            "zh": "从港口来的药材还没送到，药草园的水昨晚也少了一半。树根竟然自己移了位置！",
+            "en": "The medicine shipment from Harbor never arrived. Half our garden water vanished overnight, and the roots have moved!"
           }
         },
         {
-          "speaker": "yuchuan",
+          "speaker": "player",
           "text": {
-            "zh": "我们那边的古树也在缺水。根系水道堵了，再少一点水就护不住树了。",
-            "en": "Our ancient tree is thirsty too. The root channels are blocked. Any less water and we can't protect it."
+            "zh": "先找药材吧。它们最后出现在哪里？",
+            "en": "Let's find the medicine first. Where was it last seen?"
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "咦？那水究竟跑哪儿了？我记录了最近的水量，可以沿气味找到漏水处。",
-            "en": "Huh? Where did the water go? I've logged the water levels. We can follow the scent to the leak."
+            "zh": "树冠小径。我认得药香，也能照顾受伤的猫。让我和你们一起去！",
+            "en": "On the canopy path. I know the scent and can care for injured cats. Let me come with you!"
           }
         },
         {
-          "speaker": "yuchuan",
+          "speaker": "muling",
           "text": {
-            "zh": "好。先找到真正的堵塞点，别让两座村子互相怪罪。",
-            "en": "Good. Let's find the blockage before our villages blame each other."
+            "zh": "好呀。我们沿路找痕迹，先弄清发生了什么。",
+            "en": "Of course. We'll follow the clues and see what happened."
           }
         }
       ],
@@ -712,37 +712,37 @@ export const campaign = {
       "id": "forest:R-02",
       "chapter": "forest",
       "title": {
-        "zh": "药草踪迹",
-        "en": "The Scent Trail"
+        "zh": "树冠小径与地下根洞",
+        "en": "Canopy path and root cavern"
       },
       "previous": "forest:R-01",
       "lines": [
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "这条暗渠是我偷偷改的。本想让你的药草园先喝到水，没想到根团堵住了分流口。",
-            "en": "I secretly diverted this channel to water your herbs first. I didn't expect roots to block the junction."
+            "zh": "药材在这里。病根昨晚突然移动，堵住了分水口，我把药拿来救它们，却没来得及告诉大家。",
+            "en": "The medicine is here. Sick roots moved last night and blocked the junction. I brought medicine to treat them but didn't tell anyone in time."
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "你是为了帮我？我还以为你把水抢走了！",
-            "en": "You were helping me? I thought you'd taken our water!"
+            "zh": "这条暗渠竟然通向我的药草园！原来你一直在帮我们。",
+            "en": "This hidden channel leads to my garden! You've been helping us all along."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "两边都缺水。我们先稳住一边，再疏通另一边。",
+            "en": "Both sides need water. Let's stabilize one side, then reopen the other."
           }
         },
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "我该早些告诉你。现在上面的药草和下面的树根都等着水，得选个优先顺序。",
-            "en": "I should have told you. Now the herbs above and roots below both need water. We must choose which to stabilize first."
-          }
-        },
-        {
-          "speaker": "yahe",
-          "text": {
-            "zh": "选完就去双猫水闸！我们两个位置都得有人，叫上伙伴一起操作吧。",
-            "en": "Then to the paired water gates! Both stations need a cat. Let's bring a partner."
+            "zh": "等等！水道下面塌了，还有猫被困在那里！我们得用上下两道闸门一起救援。",
+            "en": "Wait! The channel below has collapsed, and cats are trapped! We must use both gates together to rescue them."
           }
         }
       ],
@@ -772,43 +772,43 @@ export const campaign = {
       "lineGate": [
         "explore:scent-trail"
       ],
-      "choiceTiming": "beforeAction"
+      "choiceTiming": "afterDialogue"
     },
     {
       "id": "forest:R-03",
       "chapter": "forest",
       "title": {
-        "zh": "根系坍塌",
-        "en": "The Root Collapse"
+        "zh": "塌陷水道 · 双猫救援",
+        "en": "Collapsed channel · Partner rescue"
       },
       "previous": "forest:R-02",
       "lines": [
         {
           "speaker": "yahe",
           "text": {
-            "zh": "水终于流回来啦！你听，地下的树根也在咕噜咕噜喝水。",
-            "en": "The water's back! Listen, even the underground roots are gulping it down."
+            "zh": "被困的伙伴安全了！水也终于流回药草园。",
+            "en": "The trapped cats are safe! Water is finally flowing back to the garden."
           }
         },
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "这次上面和下面都有水。我们要把两条水路画在同一张图上。",
-            "en": "Both levels have water now. Let's put both channels on one shared map."
+            "zh": "谢谢你们。树根重新舒展开了。以后我们把两条水路画在同一张图上。",
+            "en": "Thank you. The roots are stretching out again. From now on let's put both channels on one map."
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "那我负责药草园，咱们每月一起检查。花茶我请！",
-            "en": "I'll look after the herbs. Monthly checks together—and tea is on me!"
+            "zh": "我负责药草园，你负责地下根系。每月一起检查，花茶我请！",
+            "en": "I'll tend the garden and you'll care for the roots. Monthly checks together—and tea is on me!"
           }
         },
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "成交。古根圣所也通水了。请两村的猫一起唱相枝调吧。",
-            "en": "Deal. The ancient-root sanctuary has water again. Let's have both villages answer Living Roots together."
+            "zh": "成交。我带大家到古根圣所，让两村重新唱起相枝调。",
+            "en": "Deal. I'll bring everyone to the ancient-root sanctuary so both villages can sing Living Roots again."
           }
         }
       ],
@@ -825,51 +825,51 @@ export const campaign = {
       "id": "forest:R-04",
       "chapter": "forest",
       "title": {
-        "zh": "第二段旋律",
-        "en": "The Second Melody"
+        "zh": "古根圣所 · 相枝调",
+        "en": "Ancient-root sanctuary · Living Roots"
       },
       "previous": "forest:R-03",
       "lines": [
         {
           "speaker": "player",
           "text": {
-            "zh": "第二首歌一响，我又想起一张图……这里的机器也画着两条声音路线。",
-            "en": "The second song reminded me of a drawing... this machine shows two sound paths too."
+            "zh": "第二首歌响了……我又想起一张图。石头上刻着两条声音路线。",
+            "en": "The second song is ringing... I remember a drawing. There are two sound paths carved into the stone."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "一条通向中央星铃，另一条通向隔壁圣所。它们以前都能用。",
-            "en": "One leads to the central Star Bell, the other to the neighboring sanctuary. Both once worked."
+            "zh": "一条通向中央星铃，另一条通向邻近圣所。",
+            "en": "One leads to the central Star Bell, the other to the neighboring sanctuary."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "可为什么刚才你只打开了通往中央的那条？",
-            "en": "Why did you open only the one leading to the center?"
+            "zh": "你怎么知道？我还没看清第二条路呢。",
+            "en": "How did you know? I hadn't even seen the second path clearly."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "那条比较快，先让六首歌都恢复。另一条很久没收到邻居回应了。",
-            "en": "It's faster. Let's restore all six songs first. The other path hasn't heard from its neighbor in years."
+            "zh": "以前看过类似的图。先恢复中央的声音吧，另一条很久没有回应了。",
+            "en": "I've seen a similar diagram before. Let's restore the central sound first. The other path hasn't answered in a long time."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "也许不是路坏了，而是两头的猫没联系。赤炉环城不是正需要药草吗？",
-            "en": "Maybe the path isn't the problem. Maybe the cats stopped talking. Doesn't Emberforge need herbs?"
+            "zh": "也许它在等隔壁的伙伴回应。带上药草和水路图，我们去赤炉环城看看吧。",
+            "en": "Maybe it's waiting for its neighbors to answer. Let's bring the herbs and channel map to Emberforge."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "有道理。我们带着药草和水路图去吧。下一首歌，就藏在一座会唱歌的熔炉里。",
-            "en": "Good point. Let's bring the herbs and channel plans. Our next song is hidden in a furnace that sings."
+            "zh": "好啊。下一首歌，就藏在一座会唱歌的熔炉里。",
+            "en": "Of course. Our next song is hidden in a singing furnace."
           }
         }
       ],

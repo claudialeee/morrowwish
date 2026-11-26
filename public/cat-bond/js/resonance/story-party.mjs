@@ -1,7 +1,7 @@
 // Authored recruitment, part of the same transaction as scene completion.
 export const recruitment = Object.freeze({
  "harbor:H-04":["muling"],"harbor:H-05":["qilan","jiedeng"],
- "forest:R-04":["yahe","yuchuan"],"forge:E-04":["xiaomao","jinpo"],
+ "forest:R-01":["yahe"],"forest:R-04":["yuchuan"],"forge:E-04":["xiaomao","jinpo"],
  "sky:S-05":["yuanfan","lingyu"],"library:M-05":["baikan","moye"],
  "starfall:F-04":["xingya","lichuan"]
 });
@@ -18,7 +18,7 @@ export function storyPartyPatch(root,previous,next,makeCat,decorate=()=>{}){
  const player=cats.find(c=>c.species==="jinjc")||cats[0];
  const seed=(a,b)=>{if(!a||!b||a.uid===b.uid)return;const k=[a.uid,b.uid].sort().join(":");const p=duo.pairs[k]||(duo.pairs[k]={value:0,lastPlay:0});p.value=Math.max(20,p.value||0);};
  for(const scene of finished){
-  for(const actor of recruitment[scene]||[]){
+  for(const actor of scene==="forest:R-04"?["yahe",...recruitment[scene]]:recruitment[scene]||[]){
    if(cats.some(c=>c.storyActor===actor)||away[actor])continue;
    const cat=makeCat("story_"+actor,{affinity:35});decorate(cat);cat.storyActor=actor;cat.shiny=false;
    for(const other of cats)if(other===player||other.storyActor)seed(other,cat);

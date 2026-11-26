@@ -7,9 +7,9 @@ import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexReco
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
 const scentTrail=Object.freeze([
- {point:[.31,.58],name:["湿苔上的气味","Scent on damp moss"],clue:["湿苔上留下了药箱经过的痕迹。沿上方林道继续追踪。","The medicine crate passed through the damp moss. Follow the upper path."]},
- {point:[.42,.28],name:["林间药草痕迹","Herbs on the canopy path"],clue:["药草散落在通往根系水道的路上。","Loose herbs lead toward the root channel."]},
- {point:[.69,.53],name:["根系药材藏处","Medicine at the root channel"],clue:["药材被送去治疗地下根系。旁边的秘密水路一直通向芽禾的药草园。","The medicine was diverted to treat the underground roots. A hidden channel also leads directly to Yahe’s herb gardens."]}
+ {point:[.31,.58],name:["林地 · 散落的药叶","Forest floor · Scattered herbs"],clue:["芽禾：就是港口送来的药材！湿苔上还有药箱拖过的痕迹，顺着香味往树冠走。","Yahe: These are the herbs from Harbor! The crate left a trail on the moss; follow the scent toward the canopy."]},
+ {point:[.42,.28],name:["树冠 · 会动的树根","Canopy · Moving roots"],clue:["树根缓缓移动，挂着药箱的布条。芽禾辨认出药香来自地下洞口，而不是药草园。","Roots slowly move with a strip of cloth from the medicine crate. Yahe recognizes the scent coming from a cavern below, not the garden."]},
+ {point:[.69,.53],name:["地下根洞 · 药箱与病根","Root cavern · Medicine and sick roots"],clue:["找到了药箱、病根和被堵塞的分水口。隐藏水渠通往药草园；先听榆川解释，再决定救援顺序。","Found the crate, sick roots and blocked junction. A hidden channel leads to the garden; hear Yuchuan before choosing the rescue order."]}
 ]);
 const tideTrail=[
  {point:[.82,.45],name:["查看退潮刻痕","Inspect the ebb marks"],clue:["退潮刻痕指向码头尽头。沿东岸石径寻找露出的台阶。","The ebb marks point toward the end of the pier. Follow the eastern stone path to the exposed steps."]},
@@ -22,12 +22,12 @@ const tideKey=i=>"harbor:H-03:tide:"+i;
 const tideNear=(w,p)=>{const q=w.positions.harbor;return !!q&&Math.hypot(q.x-p[0],q.y-p[1])<.072;};
 const scentKey=i=>"forest:R-02:scent:"+i;
 const scentAt=(w,i)=>{const p=w.positions.forest,q=scentTrail[i]?.point;return !!p&&!!q&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
-const upperGate={point:[.53,.40],npc:"yahe",name:["与芽禾撑开上层水闸","Open the upper gate with Yahe"],clue:["队友会自动留在上层控制水压；你沿根桥前往地下水闸。","Your teammate automatically regulates pressure upstairs. Walk across the root bridge to the lower gate."]};
+const upperGate={point:[.53,.40],npc:"yahe",name:["呼唤伙伴 · 稳住上层水闸","Call partner · Hold the upper gate"],clue:["伙伴留下稳住水压。你沿根桥前往地下闸门，救出被困的猫咪。","Your partner holds the pressure upstairs. Cross the root bridge to the lower gate and rescue the trapped cats."]};
 const pairedKey="forest:R-03:upper-gate";
  function forestPair(root){
   const cats=root.cats||[],selected=(root.duoRelations?.active||[]).map(id=>cats.find(c=>c.uid===id)).filter(Boolean);
   const player=cats.find(c=>c.species==="jinjc")||cats[0];const team=[...(root.battlePrefs?.teamUids||[]).map(id=>cats.find(c=>c.uid===id)).filter(Boolean),...selected,...cats];
-  const helper=team.find(c=>c.uid!==player?.uid);
+  const helper=team.find(c=>c.storyActor==="yahe"&&c.uid!==player?.uid)||team.find(c=>c.storyActor==="muling"&&c.uid!==player?.uid)||team.find(c=>c.uid!==player?.uid);
   return player&&helper?{upper:helper.uid,lower:player.uid}:null;
  }
  const validPair=(root,p)=>!!p&&typeof p==="object"&&p.upper!==p.lower&&root.cats?.some(c=>c.uid===p.upper)&&root.cats?.some(c=>c.uid===p.lower);
@@ -86,7 +86,6 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  function traceScent(index,token){
   const step=scentStep(),w=world(),api=resolveNarrative();
   if(!step||step.index!==index||!token||!api.isCurrentAction(token)||!scentAt(w,index))return fail("walk-to-scent");
-  if(!view().choice)return fail("choice-pending");
   if(index===scentTrail.length-1)return recordWorld("forest:R-02","explore:scent-trail",{sceneId:"forest:R-02",operation:"explore:scent-trail",region:"forest",verified:true,token});
   const r=physical(x=>({...x,interactions:{...x.interactions,[scentKey(index)]:true}}));
   return r.ok?{...r,pending:true}:r;

@@ -6,7 +6,7 @@ let completed=[];
 function finish(scene){const previous={completed:[...completed]};completed.push(scene);const p=storyPartyPatch(root,previous,{completed},factory);if(p)Object.assign(root,p.fields);return p;}
 assert.equal(finish("prologue:P-05"),null);
 finish("harbor:H-04");const m=root.cats.find(c=>c.storyActor==="muling");assert.ok(m);assert.deepEqual(root.battlePrefs.teamUids,["c1",m.uid]);assert.equal(root.duoRelations.pairs[["c1",m.uid].sort().join(":")].value,20);
-m.level=9;for(const id of ["harbor:H-05","forest:R-04","forge:E-04","sky:S-05","library:M-05","starfall:F-04"])finish(id);
+m.level=9;finish("harbor:H-05");finish("forest:R-01");assert.ok(root.cats.some(c=>c.storyActor==="yahe"));for(const id of ["forest:R-04","forge:E-04","sky:S-05","library:M-05","starfall:F-04"])finish(id);
 assert.equal(root.cats.length,13);assert.equal(root.cats.some(c=>c.storyActor==="muling"),false);assert.equal(root.storyAway.muling.uid,m.uid);
 finish("epilogue:E-03");assert.equal(root.cats.length,14);assert.equal(root.cats.find(c=>c.storyActor==="muling").level,9);assert.equal(root.cats.find(c=>c.storyActor==="muling").uid,m.uid);assert.equal(new Set(root.cats.map(c=>c.species)).size,14);
 assert.equal(storyPartyPatch(root,{completed},{completed},factory),null);
