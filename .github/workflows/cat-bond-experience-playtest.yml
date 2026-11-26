@@ -4,6 +4,10 @@ on:
     branches: [review/cat-bond-playtest-harness]
     paths:
       - 'scripts/cat-bond-experience-*.mjs'
+      - 'scripts/cat-bond-all-skills-visual-smoke.mjs'
+      - 'scripts/cat-bond-combat-skills-visual-smoke.mjs'
+      - 'scripts/cat-bond-starbell-progression-probe.mjs'
+      - 'scripts/cat-bond-title-save-browser-qa.mjs'
       - 'scripts/cat-bond-release-prologue-qa.mjs'
       - 'scripts/cat-bond-harbor-playthrough.mjs'
       - 'scripts/cat-bond-starfall-playthrough.mjs'
@@ -346,4 +350,49 @@ jobs:
             artifacts/cat-bond-audio/
             /tmp/cb-audio-server.log
           if-no-files-found: warn
+          retention-days: 30
+
+  rpg-systems:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [skills, combat, progression, saves]
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      SCOPE: ${{ matrix.scope }}
+      CAT_BOND_QA_OUTPUT: artifacts/starbell-parallel/saves
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: RPG-only system regression on fixed acceptance revision
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-rpg-systems-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          case "$SCOPE" in
+            skills) node scripts/cat-bond-all-skills-visual-smoke.mjs ;;
+            combat) node scripts/cat-bond-combat-skills-visual-smoke.mjs ;;
+            progression) node scripts/cat-bond-starbell-progression-probe.mjs ;;
+            saves) node scripts/cat-bond-title-save-browser-qa.mjs ;;
+            *) exit 2 ;;
+          esac
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-rpg-systems-${{ matrix.scope }}
+          path: |
+            artifacts/starbell-parallel
+            /tmp/cat-bond-all-skills-*.png
+            /tmp/cat-bond-skill-*.png
+            /tmp/cb-rpg-systems-server.log
           retention-days: 30

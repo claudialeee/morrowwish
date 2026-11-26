@@ -41,10 +41,10 @@ for(const profile of [
   await page.waitForFunction(()=>window.__CAT_BOND_READY__===true&&window.CatBondArtworkStatus?.breedsLoaded===true,{timeout:30000});
   const painting=await page.locator('.cb-title-landscape').evaluate(async element=>{
    const style=getComputedStyle(element);
-   const match=style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/);
+   const match=style.backgroundImage.match(/url\(["']?([^"')]+)["']?\)/);
    if(!match)throw Error('Missing opening painting: '+style.backgroundImage);
    const image=new Image();image.src=match[1];await image.decode();
-   return {url:image.src,width:image.naturalWidth,height:image.naturalHeight,repeat:style.backgroundRepeat,size:style.backgroundSize,visible:element.getBoundingClientRect().height>0&&style.visibility==='visible'&&Number(style.opacity)>0};
+   return {url:image.src,width:image.naturalWidth,height:image.naturalHeight,repeat:style.backgroundRepeat.split(',').at(-1).trim(),size:style.backgroundSize.split(',').at(-1).trim(),visible:element.getBoundingClientRect().height>0&&style.visibility==='visible'&&Number(style.opacity)>0};
   });
   assert.ok(painting.url.endsWith('/assets/garden/title-bell-sanctuary.webp'),'New opening painting for '+profile.name);
   assert.ok(painting.width>=1600&&painting.height>=900&&painting.visible,'Opening painting decodes at usable resolution');
@@ -99,6 +99,7 @@ for(const profile of [
   assert.equal(await page.locator('.rw-region-status').count(),6);
   assert.match(await page.locator('.rw-current').innerText(),/Prologue|Chapter/);
   {await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
+  assert.equal(await page.locator('.rw-system-nav').isVisible(),true,'Explore opens idempotently');
   const mapBounds=await page.evaluate(()=>{const h=document.querySelector('.rw-world'),s=h.querySelector('.rw-surface');return {map:s.getBoundingClientRect().toJSON(),view:h.getBoundingClientRect().toJSON(),wide:h.classList.contains('rw-atlas-wide')};});
   assert.ok(mapBounds.map.left<=mapBounds.view.left+1&&mapBounds.map.right>=mapBounds.view.right-1&&mapBounds.map.top<=mapBounds.view.top+1&&mapBounds.map.bottom>=mapBounds.view.bottom-1,'Atlas covers the stage without bars');
   const realPress=async locator=>{
@@ -142,7 +143,7 @@ for(const profile of [
    await realPress(page.locator('.rb-close'));
    await page.locator('#panel.open').waitFor({state:'hidden',timeout:5000});
   }
-  if(await page.locator('.rw-atlas-menu[open]').count()){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();};
+  // Explore is now an idempotent open action; close via a real map pointer, below.
   await screenshot('world-atlas');
   // Physical departure from the merged canonical opening.
   const surface=page.locator('.rw-surface');await surface.waitFor();const atlas=await surface.boundingBox();await page.mouse.click(atlas.x+atlas.width*.5,atlas.y+atlas.height*.18);
