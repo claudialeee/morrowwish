@@ -37,7 +37,7 @@ const LIST=[
 // Dark & water flavors, so each gets a distinct hex/orb style with element-tinted trail.
 ['arcanePulse','hex','#b89cff',55,47],
 ['tidalPulse','orb','#a0e6ff',54,48],
-['crescentFan','prism','#e8e2ff',66,49]
+['crescentFan','fang','#e8e2ff',66,49]
 ];
 const REG=Object.fromEntries(LIST.map(([id,style,color,r,seed])=>[id,{style,color,r,seed}]));
 // AUTO-REGISTER generic template skills (#56): the factory in skills.js generates one

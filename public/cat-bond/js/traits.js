@@ -55,9 +55,15 @@
   }
 
   // Find the trait attached to a cat (by species). Returns null if none.
+  // ACCEPTS BOTH SHAPES: battle.js emits `{cat: fighter}` where fighter is the in-
+  // battle actor and the species is nested at `fighter.cat.species`. Also accepts
+  // a raw save-cat `{species: 'xxx'}`. Fixes V4 audit miss #1 — before this branch
+  // every emit returned null and ALL 33 passives were dead code.
   function traitForCat(cat) {
-    if (!cat || !cat.species) return null;
-    const traitId = TRAIT_BY_SPECIES[cat.species];
+    if (!cat) return null;
+    const speciesId = cat.species || (cat.cat && cat.cat.species);
+    if (!speciesId) return null;
+    const traitId = TRAIT_BY_SPECIES[speciesId];
     return traitId ? TRAITS[traitId] : null;
   }
 
@@ -369,7 +375,7 @@
       for (const fld of b.fields) {
         if (fld.side !== 'me' || fld.element !== 'grass') continue;
         // Pull enemies within field radius
-        const cx = fld.cx + 25, cy = fld.cy + 25;   // offset by 25 per spec
+        const cx = fld.x + 25, cy = fld.y + 25;   // offset by 25 per spec
         for (const e of b.enemies) {
           if (!e.alive) continue;
           const dx = cx - e.x, dy = cy - e.y;
@@ -541,7 +547,7 @@
       if (b.fields) {
         for (const fld of b.fields) {
           if (fld.element !== 'grass') continue;
-          if (Math.hypot(c.x - fld.cx, c.y - fld.cy) <= (fld.r || 90)) { inField = true; break; }
+          if (Math.hypot(c.x - fld.x, c.y - fld.y) <= (fld.r || 90)) { inField = true; break; }
         }
       }
       c._nuoweiTerritory = inField;
@@ -760,12 +766,12 @@
         if (fld.side !== 'me' || fld.element !== 'water') continue;
         for (const e of b.enemies) {
           if (!e.alive) continue;
-          const dx = e.x - fld.cx, dy = e.y - fld.cy;
+          const dx = e.x - fld.x, dy = e.y - fld.y;
           const d = Math.hypot(dx, dy);
           if (d > (fld.r || 90) || d < 10) continue;
           const angle = Math.atan2(dy, dx) + 0.26 * dt;  // ~15°/s rotation
-          e.x = fld.cx + d * Math.cos(angle);
-          e.y = fld.cy + d * Math.sin(angle);
+          e.x = fld.x + d * Math.cos(angle);
+          e.y = fld.y + d * Math.sin(angle);
         }
       }
     },
@@ -803,7 +809,7 @@
         for (const fld of b.fields) {
           if (fld.side !== 'me' || fld.element !== 'light') continue;
           live.add(fld);
-          c._yinghuaFields.set(fld, { cx: fld.cx, cy: fld.cy });
+          c._yinghuaFields.set(fld, { cx: fld.x, cy: fld.y });
         }
       }
       for (const [fld, pos] of c._yinghuaFields) {
