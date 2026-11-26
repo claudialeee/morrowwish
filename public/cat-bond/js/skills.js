@@ -1544,7 +1544,7 @@
     ];
   }
 
-  // Current 16 collectible identities. Pure, bounded combat modifiers; story actors remain neutral.
+  // Current 16 collectible identities and 13 authored story companions. Bounded combat modifiers.
   const BREED_PASSIVES=Object.freeze({
   "biscuit": {
     "name": {
@@ -1753,13 +1753,181 @@
     "channel": "heal",
     "factor": 1.16,
     "when": "targetCritical"
+  },
+  "story_muling": {
+    "name": {
+      "zh": "暮影回响",
+      "en": "Dusk Echo"
+    },
+    "desc": {
+      "zh": "闪避后2.5秒内普通攻击和主动攻击伤害+18%，每10秒最多触发一次。",
+      "en": "After dodging, basic and active attack damage +18% for 2.5s, once per 10s."
+    },
+    "channel": "damage",
+    "factor": 1.18,
+    "when": "afterDodge",
+    "event": "dodge"
+  },
+  "story_yuchuan": {
+    "name": {
+      "zh": "根脉守护",
+      "en": "Rootbound Shelter"
+    },
+    "desc": {
+      "zh": "附近伙伴斗志低于45%时，自动施加3秒护盾（减伤35%），冷却16秒。",
+      "en": "When a nearby ally is below 45% HP, grant a 3s shield (35% damage reduction), 16s cooldown."
+    },
+    "channel": "event",
+    "event": "guard"
+  },
+  "story_xingya": {
+    "name": {
+      "zh": "星轨校准",
+      "en": "Orbital Calibration"
+    },
+    "desc": {
+      "zh": "交替施放攻击型Q/E时，若另一技能尚在冷却，缩短其1.2秒冷却，每5秒最多触发一次。",
+      "en": "Alternating offensive Q/E casts reduces the other skill's remaining cooldown by 1.2s, once per 5s."
+    },
+    "channel": "event",
+    "event": "alternate"
+  },
+  "story_qilan": {
+    "name": {
+      "zh": "潮路指引",
+      "en": "Tide Guide"
+    },
+    "desc": {
+      "zh": "战斗前6秒，Q/E技能冷却缩短10%。",
+      "en": "Q/E cooldowns are 10% shorter during the first 6s."
+    },
+    "channel": "skillCd",
+    "factor": 0.9,
+    "when": "opening"
+  },
+  "story_jiedeng": {
+    "name": {
+      "zh": "灯塔余辉",
+      "en": "Beacon Glow"
+    },
+    "desc": {
+      "zh": "护盾持续期间直接受击伤害降低8%。",
+      "en": "While shielded, direct incoming damage −8%."
+    },
+    "channel": "incoming",
+    "factor": 0.92,
+    "when": "shield"
+  },
+  "story_yahe": {
+    "name": {
+      "zh": "药草救急",
+      "en": "Herbal Aid"
+    },
+    "desc": {
+      "zh": "治疗斗志低于50%的伙伴时，治疗量+12%。",
+      "en": "Healing targets below 50% HP restores 12% more."
+    },
+    "channel": "heal",
+    "factor": 1.12,
+    "when": "targetLow"
+  },
+  "story_xiaomao": {
+    "name": {
+      "zh": "铆钉节拍",
+      "en": "Rivet Rhythm"
+    },
+    "desc": {
+      "zh": "战斗前6秒，普通攻击冷却缩短9%。",
+      "en": "Basic attack cooldowns are 9% shorter during the first 6s."
+    },
+    "channel": "basicCd",
+    "factor": 0.91,
+    "when": "opening"
+  },
+  "story_jinpo": {
+    "name": {
+      "zh": "炉火不息",
+      "en": "Everlasting Forge"
+    },
+    "desc": {
+      "zh": "战斗8秒后，普通攻击和主动攻击伤害+12%。",
+      "en": "After 8s, basic and active attack damage +12%."
+    },
+    "channel": "damage",
+    "factor": 1.12,
+    "when": "late"
+  },
+  "story_yuanfan": {
+    "name": {
+      "zh": "顺风传信",
+      "en": "Tailwind Courier"
+    },
+    "desc": {
+      "zh": "移动时普通攻击冷却缩短10%。",
+      "en": "While moving, basic attack cooldown −10%."
+    },
+    "channel": "basicCd",
+    "factor": 0.9,
+    "when": "moving"
+  },
+  "story_lingyu": {
+    "name": {
+      "zh": "破风俯冲",
+      "en": "Windbreak"
+    },
+    "desc": {
+      "zh": "移动时普通攻击和主动攻击伤害+10%。",
+      "en": "While moving, basic and active attack damage +10%."
+    },
+    "channel": "damage",
+    "factor": 1.1,
+    "when": "moving"
+  },
+  "story_baikan": {
+    "name": {
+      "zh": "静心研读",
+      "en": "Quiet Study"
+    },
+    "desc": {
+      "zh": "自身斗志高于65%时，Q/E技能冷却缩短10%。",
+      "en": "Above 65% HP, Q/E cooldowns are 10% shorter."
+    },
+    "channel": "skillCd",
+    "factor": 0.9,
+    "when": "healthy"
+  },
+  "story_moye": {
+    "name": {
+      "zh": "墨印回读",
+      "en": "Ink Archive"
+    },
+    "desc": {
+      "zh": "战斗8秒后，Q/E技能冷却缩短12%。",
+      "en": "After 8s, Q/E cooldowns are 12% shorter."
+    },
+    "channel": "skillCd",
+    "factor": 0.88,
+    "when": "late"
+  },
+  "story_lichuan": {
+    "name": {
+      "zh": "商路韧性",
+      "en": "Caravan Resolve"
+    },
+    "desc": {
+      "zh": "斗志低于45%时直接受击伤害降低10%。",
+      "en": "Below 45% HP, direct incoming damage −10%."
+    },
+    "channel": "incoming",
+    "factor": 0.9,
+    "when": "low"
   }
 });
   function breedPassive(species){return BREED_PASSIVES[typeof species==='string'?species:species?.species]||null;}
   function breedPassiveFactor(f,channel,time=0,target=null){
-    const p=breedPassive(f?.cat?.species);if(!p||p.channel!==channel||f.alive===false)return 1;
+    const p=breedPassive(f?.cat?.species);if(!p||p.channel!==channel||p.channel==='event'||f.alive===false)return 1;
     const hp=f.maxhp>0?f.hp/f.maxhp:1,thp=target?.maxhp>0?target.hp/target.maxhp:1;
-    const active={opening:time<6,late:time>=8,healthy:hp>.65,low:hp<.45,shield:f.shieldT>0,moving:!!f.moving,mid:time>=6&&time<=15,targetLow:thp<.5,targetCritical:thp<.35}[p.when];
+    const active={opening:time<6,late:time>=8,healthy:hp>.65,low:hp<.45,shield:f.shieldT>0,moving:!!f.moving,mid:time>=6&&time<=15,targetLow:thp<.5,targetCritical:thp<.35,afterDodge:time<(f._storyEchoUntil??-1)}[p.when];
     return active?p.factor:1;
   }
 

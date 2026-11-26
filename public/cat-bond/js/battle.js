@@ -2004,6 +2004,29 @@ class CaptureBattle {
   }
   // Positive outgoing buffs share one additive bucket; weakness is a penalty.
   passiveFactor(f,channel,target=null){return window.Skills?.breedPassiveFactor?.(f,channel,this.t||0,target)??1;}
+  storyPassiveEvent(f,event,slot=null){
+    if(!f?.alive)return false;
+    const p=window.Skills?.breedPassive?.(f.cat?.species),t=this.t||0;
+    if(!p||p.event!==event)return false;
+    if(event==='alternate'){
+      const previous=f._storyLastAttackSlot;f._storyLastAttackSlot=slot;
+      if(!previous||previous===slot||t<(f._storyPassiveReadyAt??0))return false;
+      const other=slot==='q'?'e':'q';
+      if(!(f.cd?.[other]>0))return false;
+      f.cd[other]=Math.max(0,f.cd[other]-1.2);f._storyPassiveReadyAt=t+5;
+    }else if(event==='dodge'){
+      if(t<(f._storyPassiveReadyAt??0))return false;
+      f._storyEchoUntil=t+2.5;f._storyPassiveReadyAt=t+10;
+    }else if(event==='guard'){
+      if(t<(f._storyPassiveReadyAt??0))return false;
+      const target=this.team.filter(a=>a!==f&&a.alive&&a.maxhp>0&&a.hp/a.maxhp<.45&&Math.hypot(a.x-f.x,a.y-f.y)<=190&&!(a.shieldT>.25||a.reflectT>0||a.protectT>0)).sort((a,b)=>a.hp/a.maxhp-b.hp/b.maxhp)[0];
+      if(!target||!this.castWard(target,'barrier',{wardDuration:3,wardReduction:.35}))return false;
+      f._storyPassiveReadyAt=t+16;
+    }else return false;
+    const name=p.name[window.MorrowwishI18n?.get?.()==='zh'?'zh':'en'];
+    this.vfx?.text?.(f.x,f.y-42,name,'#e6ce88',13);
+    return true;
+  }
   outgoingBuffMult(f){ return (1 + (f.damageBoostT > 0 ? 0.25 : 0) + 0.12 * (f.kneadStacks || 0)) * (f.weakened ? 0.5 : 1) * this.passiveFactor(f,'damage'); }
   kneadMult(f){ return 1 + 0.12 * (f && f.kneadStacks || 0); }
   castSupportSkill(f,sk,aim){
@@ -2442,6 +2465,7 @@ class CaptureBattle {
     this.castOffensiveSkill(f, aim, attack, pow, col);
     this.gainUlt(8);
     this.markMoveSeen(f,sk);
+    this.storyPassiveEvent(f,'alternate','q');
     // Suppress repeated action labels; they used to cover the health bars.
     return true;
   }
@@ -3100,6 +3124,7 @@ class CaptureBattle {
     }
     this.gainUlt(6);
     this.markMoveSeen(f,sk);
+    this.storyPassiveEvent(f,'alternate','e');
     // The dash animation is the feedback: no blocking combat toast.
     return true;
   }
@@ -3110,6 +3135,7 @@ class CaptureBattle {
     // A real escape tool now: a LONG i-frame dash that travels AWAY from danger,
     // plus a short bullet-time on every use so it actually buys breathing room.
     f.dodgeCd = 1.2; f.dashT = 0.32; f.inv = 0.5;
+    this.storyPassiveEvent(f,'dodge');
     // Pick the dash direction: honor the player's held movement if any; otherwise
     // flee the nearest incoming shot (or the nearest enemy) instead of lurching
     // toward the aim reticle (which points AT the enemy — the old useless behavior).
@@ -4371,6 +4397,7 @@ class CaptureBattle {
       if (f._castRoot > 0 && !(this.pendingCasts||[]).some(c=>c.f===f)) f._castRoot = 0;
       if (f._beamRoot > 0 && !(this.beams||[]).some(b=>b.f===f)) f._beamRoot = 0;
       this.tickWards(f, dt);
+      this.storyPassiveEvent(f,'guard');
       this.tickCatStatus(f, dt);              // DoT + soft-CC (slow) the enemy inflicted
       if (f.hitFlash > 0) f.hitFlash -= dt;
       const vdt2 = this._vfxDt != null ? this._vfxDt : dt;

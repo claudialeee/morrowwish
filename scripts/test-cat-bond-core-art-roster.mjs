@@ -10,8 +10,9 @@ const cats=manifest.characters.filter(c=>c.group==='collectibles'),ids=new Set(c
 assert.equal(ids.size,16);assert.equal(GameData.SPECIES.length,16);
 assert.deepEqual([...GameData.SPECIES.map(c=>c.id)].sort(),[...ids].sort());
 const elements={'火':'fire','水':'water','草':'grass','电':'elec','暗':'dark','光':'light'};
-for(const tier of ['N','R','SR','SSR'])assert.equal(GameData.SPECIES.filter(c=>c.rarity===tier).length,{N:4,R:6,SR:4,SSR:2}[tier]);
-assert.equal(new Set(GameData.SPECIES.filter(c=>c.rarity==='R').map(c=>c.element)).size,6);
+for(const tier of ['N','R','SR','SSR'])assert.equal(GameData.SPECIES.filter(c=>c.rarity===tier).length,{N:4,R:5,SR:4,SSR:3}[tier]);
+assert.equal(new Set(GameData.SPECIES.map(c=>c.element)).size,6);
+assert.deepEqual([...GameData.SPECIES.filter(c=>c.rarity==='SSR').map(c=>c.element)].sort(),['fire','light','water']);
 for(const c of cats){
  const sp=GameData.speciesById(c.id);assert.equal(sp.name,c.name);assert.equal(sp.rarity,c.rarity);assert.equal(sp.storyArt,'assets/'+c.asset);
  assert.equal(Skills.elementOf(c.id),elements[c.element]);
@@ -42,7 +43,7 @@ for(const c of combos)for(const id of [c.a,c.b,c.result])assert.ok(ids.has(id),'
 console.log('CORE ART ROSTER PASS',ids.size,'collectibles, 24 WebP headers, six regional pools, element/role/skill mappings, draw and breeding contracts');
 
 // Every new collectible has exactly one bounded, conditional passive.
-assert.equal(Object.keys(Skills.BREED_PASSIVES).length,16);
+assert.equal(Object.keys(Skills.BREED_PASSIVES).length,29);
 for(const id of ids){
  const p=Skills.breedPassive(id);assert.ok(p?.name.zh&&p?.name.en&&p?.desc.zh&&p?.desc.en);
  const f={cat:{species:id},hp:100,maxhp:100,alive:true,moving:false,shieldT:0},target={hp:100,maxhp:100};
@@ -61,5 +62,5 @@ for(const id of ids){
  assert.equal(Skills.breedPassiveFactor(f,p.channel,t,target),1,id+' inactive');
  f.alive=false;assert.equal(Skills.breedPassiveFactor(f,p.channel,0,target),1,id+' fainted');
 }
-assert.equal(Skills.breedPassive('jinjc'),null);assert.equal(Skills.breedPassive('story_muling'),null);
+assert.equal(Skills.breedPassive('jinjc'),null);for(const id of Object.keys(GameData.STORY_SPECIES))assert.ok(Skills.breedPassive(id),id+' story passive');
 console.log('BREED PASSIVE CONTRACT PASS',16,'active/inactive/channel checks');
