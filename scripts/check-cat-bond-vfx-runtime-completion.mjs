@@ -15,7 +15,7 @@ const ctx=new Proxy({}, {get(o,k){if(k in o)return o[k];return (...a)=>{calls++;
 const cases=w.CatBondVFXAtlas.getCases();
 check(new Set(cases.map(x=>x.group+':'+x.id)).size===cases.length,"atlas has no duplicate entries");
 for(const item of cases)for(let phase=0;phase<2;phase++)for(const t of [.05,.2,.32,.55,.8]){w.CatBondVFXAtlas.render(ctx,item,phase,t);frames++;if(depth!==0)throw Error("unbalanced canvas stack "+item.id)}
-check(cases.length===156&&frames===1560,"156 cases / 1560 isolated rendering samples");
+check(cases.length===157&&frames===1570,"157 cases / 1570 isolated rendering samples");
 const fx=new w.VFX();fx.impactType(100,100,'heavy',{skill:S.skillById('fireballMeow')});
 check(fx.fx[0].skillId==='fireballMeow','contact carries actual skill identity');
 fx.draw(ctx,'contact');check(depth===0,'authored hit balances canvas stack');
