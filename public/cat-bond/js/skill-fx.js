@@ -396,6 +396,25 @@ function drawMaterialProjectile(c,p,time=0){
  }
  c.restore();return true;
 }
+function drawTravel(c,segments,t){
+ for(const v of segments){
+   const fade=clip(1-(t-v.start)/.32),dx=v.x2-v.x,dy=v.y2-v.y,L=Math.hypot(dx,dy);
+   if(fade<=0||L<.1)continue;
+   const el=v.element,palette={elec:['#6655bd','#c1baff','#fff1b9'],dark:['#3e2c59','#9a70d4','#dfbcff'],water:['#267da5','#74d8ed','#e7ffff'],fire:['#9c4828','#ff9a42','#fff0a4'],grass:['#507443','#9bc66e','#edf2b1'],light:['#8698c9','#c2dcff','#fffdeb']}[el]||['#997a5b','#e0bb90','#fff1d0'];
+   c.save();c.translate(v.x2,v.y2);c.rotate(Math.atan2(dy,dx));
+   const len=Math.min(75,L+26),w=el==='elec'?8:el==='dark'?12:9;
+   const g=c.createLinearGradient(-len,0,0,0);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(.65,palette[0]);g.addColorStop(1,palette[1]);
+   c.globalAlpha=fade*.52;c.fillStyle=g;c.beginPath();c.moveTo(-len,0);c.bezierCurveTo(-len*.5,-w*1.6,-len*.16,-w,0,-w*.4);c.lineTo(0,w*.4);c.bezierCurveTo(-len*.16,w,-len*.5,w*1.6,-len,0);c.fill();
+   for(let j=0;j<3;j++){
+     const yy=(j-1)*w*.8;stroke(c,j===1?palette[2]:palette[1],j===1?1.8:2.8,fade*.74);
+     c.beginPath();c.moveTo(-len,yy*.45);
+     if(el==='elec'){for(let k=1;k<=6;k++){const u=k/6;c.lineTo(-len*(1-u),yy+Math.sin(k*2.9+j*5)*w*.55*Math.sin(PI*u));}}
+     else c.bezierCurveTo(-len*.7,yy-w*.4,-len*.3,yy+w*.3,0,yy*.65);
+     c.stroke();
+   }
+   c.restore();
+ }
+}
 function drawMaterialField(c,f,t){
  const el=f.element,R=f.r;if(!(R>0)||!['water','grass','light','elec','dark'].includes(el))return false;
  const a=clip(f.t/.35),col=({water:'#83d7ee',grass:'#a4c878',light:'#fff0b7',elec:'#bab0f9',dark:'#a589ce'})[el];
@@ -866,5 +885,5 @@ window.CatBondSkillFX={
  // access, so it reflects the full roster however the modules were load-ordered.
  get ids(){ syncGenerics(); return LIST.map(row=>row[0]); },
  has:id=>{ if(!REG[id])syncGenerics(); return !!REG[id]; },
- cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawCombatBeam,drawIdentityProjectile,drawMaterialField};
+ cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawCombatBeam,drawIdentityProjectile,drawMaterialField,drawTravel};
 })();
