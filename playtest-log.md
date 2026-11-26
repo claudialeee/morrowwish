@@ -1610,3 +1610,60 @@ Various polish + "wrong fix would collide with passive brief" critiques.
 4. (long-standing) Passive UI render
 
 **Branch state:** `main` 73 ahead of origin/main; NOT pushed.
+
+## RSI
+
+RSI cycle 2026-11-26T02:49Z: agent-proposed `burst-window-bimodal` (bimodal CD-reactive: contact 32-60 when BOTH q+e ready, retreat 220-280 otherwise) scored 0.779 vs baseline 0.788 — did NOT beat the engine, but filled a new MAP-Elites cell `1,2,3` (engage 0.42 / tempo 0.74 / durability 1.00) and ranked #2 overall, ahead of hand-authored `ready-aware-hitrun` and `stand-at-max-range` control. Archive coverage still 2/64 (replaced the max-range control elite rather than adding a third niche). Four other agent proposals (berserker-deep-hug, fence-sitter-inversion, crit-hp-sprint, hp-linear-slider) ranked below baseline; none filled new cells. BandBody format bug (statement body vs function expression) in prior cycles silently dropped all agent proposals — fixed this cycle; previous RSI history entries did NOT evaluate agent candidates, only hand-authored rules.
+
+---
+
+## Playtest cron — 2026-11-26T03:36Z  (wn6wmtgzj)
+
+**Headline (adversary synthesis)**: Combat is mechanically healthy but legibility-starved — five of six personas can't read the systems the game has already built. Tutoring teaches 1 of 5 verbs; autoMode silently strips the rest; the kiter is orphaned by Phase A's basic nerf; every passive payoff the P1 brief is about to ship will land invisible unless feedback tiers, charge pips, and attribution surfaces go in first.
+
+**Distribution**: 39 critiques → **1 P0**, 32 P1, 6 P2.  (18 agents hit StructuredOutput retry cap and were lost; 52/70 delivered.)
+
+### P0 (findings-only — NOT auto-fix-eligible)
+
+- **P0-1 `谨慎型 cautious` — kiter orphaned by _closing bias.** `_closing` (battle.js:4607) ramps 25→45s and only (a) suppresses stagger-poise refill and (b) adds +0..0.25 execute dmg on sub-28% HP non-bosses. Both require the player to ALREADY land meaningful hits — a kiter by definition isn't chain-breaking or shoving enemies under 28%, so `_closing` is dead-letter for them and fights slide to the 85s backstop as timeout-flees. Resolution system has no path that converts kiting MOTION into closure.
+  - **Adversary's suggested fix**: route into P1 passive brief (tune 杏仁 move-charge to discharge at ~20s kiting; add forced-release clause to 汤圆 storage-strike when t>50s + idle 3s) + extend `_closing` with a motion-distance-keyed secondary effect.
+  - **Why findings-only, not auto-fix**: multi-file design change (BALANCE-BRIEF-passive-p1.md edit + battle.js logic extension + couples with unshipped 杏仁/汤圆/跳跳 passives). Not a local numeric tune / balance multiplier / passive floor / additive feedback cue — this is architecture-adjacent routing between unshipped systems. Owner review required.
+
+### P1 (findings-only, ranked by cross-persona recurrence)
+
+Button masher (×4):
+- Basic nerf (Task #52 Phase A, 0.70 mult) is explicitly a losing build-order by design, and the game never tells the masher — opening coach teaches 1-of-5 verbs then goes silent. No adaptive nudge after N flees. Fix hooks exist (`this._obs`, coach step renderer) but unused.
+- 13.8s avg fight is BELOW P1-brief's own 15s assumption for 杏仁/桃桃/墨青 passives → 4-5 P1 cats will underfire by the brief's own "Dead-Trait" criterion.
+- Coach silently self-destructs when `autoMode=true` (battle.js:317, :351) → touch players + anyone who toggled auto once never see the tutorial AGAIN.
+- Coach curriculum is missing the ult step entirely; R (loudest button) is not on the teaching path.
+
+Cautious kiter (×6):
+- 36 pokes + 1 Q = timeout is the honest readout of kiter orphaning. 99% basic-idle + timeout-every-fight reads sleepy.
+- No archetype-reactive levers — the "player is stuck" detectors are blind to the cautious-kiter signature.
+
+Explorer (×6):
+- 290:1 basic-to-skill ratio is a red herring — hold-to-fire basic on 0.5s cd naturally dominates.
+- Phase system exists in battle.js but is enemy-only (:5006); no player-side phase bump.
+- 88% win / 0 faints across 8 battles → baseline encounter is solved, not under-varied; escalation gap.
+
+Panicky (×4):
+- Discovery failure dressed as pacing. Current fix stack conceals it — mash-stall teach can't find the panicked player.
+
+Lazy auto-battler (×3):
+- Battle ends → player learns nothing, decides nothing. Not a scoring-card gap; a feedback-loop gap.
+
+Impatient (×6):
+- 8 battles, 0 shields, 0 dodges, 0 ults is damning — game onboarded one verb and forgot the rest.
+- Enemy "Wild morale" bar shows absolute values; player can't gauge progress.
+
+### P2 (findings-only, surface asks rejected)
+
+- Global 怒气槽 / auto-poise ask: collides with 汤圆 storage-strike + 团团 shield-break-freeze passives — route into those, not a new global knob.
+- "Longer-range Q, slow/root E, burst-finisher ult" wish: band-aid; real gap is Cat Bond has no readable archetype contract.
+- Juice at x50/x100/x500: cosmetic layer over an onboarding problem; adversary rejects.
+
+### Auto-fix outcome
+
+**0 of 1 P0 auto-fixed.** The sole P0 fails the cron's low-risk filter: it requires editing unshipped-passive design brief + multi-system routing between `_closing` and three P1 passives. Logged for owner review.
+
+**Branch state:** `main` 5 ahead of origin/main; NOT pushed.
