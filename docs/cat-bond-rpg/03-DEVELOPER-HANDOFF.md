@@ -102,7 +102,7 @@ It must include:
 
 ## 7. Cinematic and art standards
 
-- Prologue, identity reveal, betrayal reveal, major chapter climaxes, final battle, and ending need authored cinematic staging.
+- Opening must not trigger a cinematic: optional short public-background text over the live garden, immediately dismissible. Identity reveal, betrayal reveal, major chapter climaxes, final battle and ending need authored cinematic staging. Historical sacrifice footage is eligible only after Chapter V/VI reveal gates.
 - Use polished original key art, layered depth, camera movement, lighting, particles, character acting, and sound design.
 - No crude line cats, cheap paper-cutout animation, static text-card sequences, or simple image carousels as substitutes for scenes.
 - Do not use a generic sprite in place of a named NPC's character art.
@@ -141,3 +141,10 @@ Before reporting a story task complete:
 - Do not make the Catdex a magic device that can restore stolen memories.
 - Do not treat a one-way signal as a completed reciprocal regional link.
 - Do not claim the new canon is live until the actual game has been migrated, tested, deployed, and verified.
+
+
+## 11. Canon 1.1 opening migration and acceptance
+- P-01..P-05 retain scene references but replace old operations: public context dismiss/skip; solo movement; optional map rescue with stranger; independent harbor travel; harbor arrival. Neither map rescue nor optional sign is a prerequisite for travel. H-01 accepts or defers temporary cooperation; H-04 verifies actual rescue and establishes companion; H-05 requires actual local response. Persist encounter, introduction, accepted/deferred cooperation and companion states per slot; no duplicate rewards or introductions. A player bypassing the map must receive public introduction at the harbor.
+- Remove all new-game/continue automatic opening animation triggers, not the archived art itself. Never mark historical footage completed by a click on a substitute. Legacy saves preserve inventory, progression and earned relationships; new opening flags migrate explicitly, with no forced replay of old cutscenes.
+- Keep the V3 exploration loop: optional discovery, side routes, paired actions, combat, ability-gated return, visible post-repair change, souvenirs and garden return. Do not turn the opening into a conversation chain. The player must understand what the Star Bell is, what forgetting means, and why they are going to the harbor without knowing the late secrets.
+- Cold-player check: after two minutes, ask for the world problem and immediate personal objective in their own words; after the harbor, ask what changed and why they want to visit the forest. Check both languages, desktop/mobile, skip/alternate encounter/reload/deferral. Verify no premature companion HUD or spoiler assets/subtitles/accessibility text. Narrative-only edits are not proof of runtime migration.
