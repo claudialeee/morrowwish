@@ -1,5 +1,5 @@
 # 星铃回响 — ECHOES OF THE STARBELL
-## Narrative Bible · Canon 2.0 · locked world and character foundations
+## Narrative Bible · Canon 2.1 · locked world and character foundations
 
 **Status:** Canon 2.0 preserves the locked causal foundations of 1.2 while replacing all chapter-level events. [02 — Main Story Script](02-MAIN-STORY-SCRIPT.md) is the authority for all actual chapter events, clues, regional phenomena, tasks, character dialogue and presentation. Any older chapter examples, jobs, conflicts, cargo or mechanics in this Bible are historical, not mandatory story beats. Supersedes all previous Cat Bond RPG story bibles and plot drafts, including The Last Page.  
 **Title:** Echoes of the Starbell / 星铃回响  
@@ -100,7 +100,7 @@ Muling's plan does not require the six regions to trust one another or answer on
 5. The central Star Bell returns to its original role as coordinator. The emergency anchor is no longer required.
 6. The player's stored name and memories are released back to the player. Every other cat keeps their own memories.
 
-The ring cannot be activated by connecting empty pipes or repeating a prerecorded tune. Its defining condition is real reciprocal participation between living communities. A one-way signal, forced response, or copied echo does not count.
+Temporary neighbor test calls can be sent and acknowledged even while the main bell output is inward; these demonstrate participation, not a completed stable ring. Muling's final lock still prevents stable coordinated neighbor routing. The ring cannot be activated by connecting empty pipes or repeating a prerecorded tune. Its defining condition is real reciprocal participation between living communities. A one-way signal, forced response, or copied echo does not count.
 
 ### 3.3 Why Muling knows the original method but rejects it
 
