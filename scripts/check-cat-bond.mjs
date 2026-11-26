@@ -1832,12 +1832,13 @@ for(const mode of ['casual','hardcore']){
 State.setDifficulty(savedDifficulty);
 
 
-// Eight REAL ultimate identities — two fire and two light spells have to draw
-// differently despite sharing an element. None may paint over the whole arena.
+// Seven REAL ultimate identities (purrNova removed per V4 2026-11-26 as a dup of
+// sunflare). Each must draw differently despite sharing an element. None may paint
+// over the whole arena.
 const ultIDs=['sunflare','tsunamiPaw','sunbloom','thunderYowl',
-  'voidMaw','moonlitHalo','moonfang','purrNova'];
+  'voidMaw','moonlitHalo','moonfang'];
 assert.deepEqual(Array.from(sandbox.window.CatBondUltVFX.ids),ultIDs,
-  'all eight skill-id renderers are registered');
+  'all seven skill-id renderers are registered');
 assert.ok(!sandbox.window.CatBondUltHero,'no full-screen ultimate art module');
 const ultBattle=new sandbox.window.Battle.CaptureBattle(game,[starter],GameData.speciesById('doudou'));
 const localCtx=new Proxy(canvasCtx,{get(target,key){

@@ -330,7 +330,9 @@
     { id: 'crescentFan', name: '月华连弧', element: 'light', kind: 'projectile', power: 0.52, cd: 5.6, ultCost: 0, shots: 5, spread: 0.55, homing: 3.0, maxProjLife: 2.6, tags: ['ranged','blind','moon'], appliesTag: 'blind', vfx: 'orb', desc: '踏月之猫的招牌：一次挥出五道追踪月牙能量波，各自咬向最近目标。', unlock: { species: ['yuelian'], level: 10 } },
     // ---- 领悟条件 (quirky quests) ----
     { id: 'veteranStrike', name: '百战斩', element: 'dark', kind: 'melee',      power: 2.3, cd: 3.4, ultCost: 0, heavy: true, upgradeOf: 'shadowSwipe', tags: ['bleed','heavy'], appliesTag: 'bleed', vfx: 'muzzle', desc: '身经百战方能领悟：随它出战并赢得十场战斗后解锁的致命一击。', unlock: { quest: 'battlesWon10' } },
-    { id: 'purrNova',   name: '呼噜新星', element: 'fire',  kind: 'aoe',        power: 2.8, cd: 0,   ultCost: 80, tags: ['burn','ult'],     appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】收服众多猫猫后领悟的爆裂新星。', unlock: { quest: 'catchFifteen' } },
+    // 呼噜新星 purrNova removed per V4 (owner 2026-11-26): duplicated 金乌焱 sunflare (same fire
+    // aoe ult; sunflare power 2.4 ultCost 70 is the canonical one). Keep this comment as a
+    // dedup marker so a future agent doesn't re-add it.
     { id: 'tenderPaw',  name: '抚心掌',   element: 'light', kind: 'heal', healMode: 'single', healPct: 0.62,       power: 0,   cd: 7.0, ultCost: 0, upgradeOf: 'dawnHeal', tags: ['heal'],           appliesTag: null,    vfx: 'orb',       desc: '被长久撸爱后领悟的治愈掌，回复更多斗志。', unlock: { quest: 'pet40' } },
   ];
 

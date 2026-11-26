@@ -1140,7 +1140,7 @@ class Game {
       // gated / learned skills
       cometClaw: '☄️', tidalBite: '🦷', thornLash: '🌵', frostLance: '❄️',
       voltRush: '🏃', apexPounce: '🐆', moonfang: '🌝', veteranStrike: '⚔️',
-      purrNova: '💥', tenderPaw: '🫶',
+      tenderPaw: '🫶',
       // element-NEUTRAL tank reflect wall — a wall/shield icon, not the generic element-fallback paw
       mirrorWall: '🪞',
     };

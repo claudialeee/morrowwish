@@ -3323,7 +3323,7 @@ class CaptureBattle {
       return mx>0 && hp/mx < 0.72;
     }
     const live=this.liveEnemies(); if(!live.length) return false;
-    if(el==='fire'&&skill.id!=='purrNova'){
+    if(el==='fire'){
       const aim=(f===this.me())?this.aim:(f._aim||0), half=0.6, reach=diag*0.5;
       return live.some(e=>{
         if(Math.hypot(e.x-f.x,e.y-f.y)>reach) return false;
@@ -3392,19 +3392,7 @@ class CaptureBattle {
     const diag = Math.hypot(this.W, this.H);
     const el = skill.element;
     const aim = (f === this.me()) ? this.aim : (f._aim || 0);
-    if(skill.id==='purrNova'){
-      // 呼噜新星: a genuine 360-degree fire explosion (not sunflare's cone).
-      const R=diag*.4;
-      for(const e of this.liveEnemies().slice()){
-        if(Math.hypot(e.x-f.x,e.y-f.y)<=R)strike(e,1.05);
-      }
-      this.vfx.ring(f.x,f.y,{r0:20,vr:R*2.4,life:.5,color:'#ffb66d',width:9});
-      for(let i=0;i<22;i++){
-        const a=i*2*Math.PI/22,r=28+Math.random()*R;
-        this.vfx.burst(f.x+Math.cos(a)*r,f.y+Math.sin(a)*r,
-          {count:2,color,speed:95,life:.55,r:3,grav:-34});
-      }
-    }else if(skill.id==='moonfang'){
+    if(skill.id==='moonfang'){
       // 月噬牙: slash the target with two moon fangs, not a self-centered halo.
       const target=this.lockedEnemy()||this.nearestEnemy(f.x,f.y);
       const px=target?.x??(f.x+Math.cos(aim)*170);

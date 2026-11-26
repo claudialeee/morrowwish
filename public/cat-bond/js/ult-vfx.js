@@ -8,7 +8,7 @@ const PI=Math.PI,T=PI*2,clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const ease=t=>{t=clamp(t);return t*t*(3-2*t)};
 const h=n=>{const x=Math.sin(n*91.97+33.07)*43758.545;return x-Math.floor(x)};
 const ID=Object.freeze(['sunflare','tsunamiPaw','sunbloom','thunderYowl',
- 'voidMaw','moonlitHalo','moonfang','purrNova']);
+ 'voidMaw','moonlitHalo','moonfang']);
 const col={
  sunflare:['#e95231','#ffb352','#fff4c9'],
  tsunamiPaw:['#2784b5','#7bdded','#eefeff'],
@@ -16,8 +16,7 @@ const col={
  thunderYowl:['#779ddc','#ffe29a','#ffffff'],
  voidMaw:['#514079','#a983dd','#f4dcff'],
  moonlitHalo:['#a5a4d4','#fff0bf','#ffffff'],
- moonfang:['#7d80c7','#d3d3ff','#fffcf2'],
- purrNova:['#db4e32','#ffae60','#fff0a6']
+ moonfang:['#7d80c7','#d3d3ff','#fffcf2']
 };
 function ring(c,x,y,r,c0,w,a,yr=1){
  c.globalAlpha=a;c.lineWidth=w;c.strokeStyle=c0;c.beginPath();
@@ -217,32 +216,10 @@ function moonfang(c,s){
  }
  c.restore();
 }
-function purrNova(c,s){
- const {x,y,R,p,a,front,time}=s;
- if(front){
-  for(let j=0;j<20;j++){
-   const th=j*T/20+time*.6,rr=R*p*(.65+.30*h(j));
-   star(c,x+Math.cos(th)*rr,y+Math.sin(th)*rr,2.5,'#fff2b2',a*.78);
-  }
- }else{
-  // FULL CIRCLE EXPLOSION: a scorched ground disc with 12 jagged radial petals.
-  // Visually and geometrically distinct from sunflare's forward cone.
-  const r=R*p;ring(c,x,y,18+r,'#ffbf64',7,a*.7,.68);
-  for(let j=0;j<14;j++){
-   const th=j*T/14+time*.3,reach=r*(.7+.28*h(j+8));
-   c.save();c.translate(x,y);c.rotate(th);
-   c.globalAlpha=a*(j%3?.58:.88);
-   c.fillStyle=j%3===0?'#fff0a8':j%3===1?'#ffb357':'#fc6b3e';
-   c.beginPath();c.moveTo(20,-12);c.quadraticCurveTo(reach*.53,-24,reach+12,0);
-   c.quadraticCurveTo(reach*.62,18,20,12);c.closePath();c.fill();
-   c.restore();
-  }
-  glow(c,x,y,Math.max(30,r*.55),'#ffbd74',a*.16);
- }
-}
+// purrNova removed per V4 (dup of sunflare) — owner 2026-11-26.
 const paint=Object.freeze({
  sunflare,tsunamiPaw,sunbloom,thunderYowl,voidMaw,
- moonlitHalo,moonfang,purrNova
+ moonlitHalo,moonfang
 });
 function has(id){return !!paint[id]}
 function draw(ctx,v,W,H,time=0,layer='back'){

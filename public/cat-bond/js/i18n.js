@@ -1330,7 +1330,7 @@
     // new gated skill names
     '彗星爪': 'Comet Claw', '潮汐咬': 'Tidal Bite', '荆棘鞭': 'Thorn Lash',
     '霜锥': 'Frost Lance', '雷遁突袭': 'Volt Rush', '绝顶扑': 'Apex Pounce',
-    '月噬牙': 'Moonfang', '百战斩': 'Veteran Strike', '呼噜新星': 'Purr Nova', '抚心掌': 'Tender Paw',
+    '月噬牙': 'Moonfang', '百战斩': 'Veteran Strike', '抚心掌': 'Tender Paw',
     // new gated skill descriptions
     '付费领悟的重爪：拖着火尾的一记猛击，灼烧更重。': 'A paid-training heavy claw trailing fire — hits hard and burns deeper.',
     '用小鱼干向训练师换来的近身咬击，淋湿并重创。': 'A melee bite traded for fish — soaks and crushes the target.',
@@ -1819,7 +1819,6 @@
     "雷遁突袭": "Thunder Dash",
     "绝顶扑": "Sky Pounce",
     "百战斩": "Battle Claws",
-    "呼噜新星": "Purr Nova",
     "抚心掌": "Soothing Paw",
     "烈焰爪": "Flame Claw",
     "碧波爪": "Wave Claw",

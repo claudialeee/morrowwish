@@ -14,7 +14,6 @@ const pairs=[
   ['dark','xingchen','voidMaw'],
   ['light','yuelian','moonlitHalo'],
   ['light','yuelian','moonfang'],
-  ['fire','jinwu','purrNova'],
 ];
 const browser=await chromium.launch({headless:true});
 try{
