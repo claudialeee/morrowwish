@@ -2339,8 +2339,8 @@
     // Chinese mode needs an explicit Chinese form (it has no Han to convert).
     try {
       document.title = lang() === 'en'
-        ? 'Cat Bond — Raise cats, capture wild ones | Morrow Wish'
-        : '猫猫纽带 — 养猫、收服野猫 | Morrow Wish';
+        ? 'Echoes of the Starbell | Morrow Wish'
+        : '星铃回响 | Morrow Wish';
     } catch (e) {}
     if (observer) observer.observe(document.body, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ATTRS });
     busy = false;
