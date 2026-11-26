@@ -3,7 +3,7 @@
 // Only independently accepted raster assets can be selected; missing art must never unlock narrative evidence.
 const bad=reason=>({ok:false,reason});
 const isBilingual=x=>typeof x?.zh==='string'&&x.zh.trim()&&typeof x?.en==='string'&&x.en.trim();
-const raster=/^assets\/(?:cinematics\/[a-z0-9/_-]+|core-art-remaster\/story\/[a-z0-9-]+|resonance-world-v2\/(?:atlas|harbor|forest|forge|sky|library|starfall))\.(?:webp|png|avif|jpe?g)$/;
+const raster=/^assets\/(?:cinematics\/[a-z0-9/_-]+|core-art-remaster\/story\/[a-z0-9-]+|canon22-final-art\/history-impact|resonance-world-v2\/(?:atlas|harbor|forest|forge|sky|library|starfall))\.(?:webp|png|avif|jpe?g)$/;
 export function buildCanonicalScene({view,campaign,manifest,staging=false,openingRelease=false}) {
   const scene=view?.current;
   if(!scene||campaign?.canon!=='The Last Resonance')return bad('no-canon-scene');
@@ -62,6 +62,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   }
   if(covered.length!==scene.lines.length||covered.some((v,i)=>v!==i))return bad('incomplete-or-reordered-dialogue');
   if(!frames.length)return bad('nothing-to-play');
+  if(scene.id==='starfall:F-02'&&useStaging){const impact=assets.get('canon22-history-impact');if(impact?.sceneKey===scene.id&&impact.status==='candidate'&&impact.stagingAllowed===true&&impact.runtimeAllowed===false&&raster.test(impact.path)){const alt={zh:'陨星击裂古老的星铃',en:'A fallen star cracks the ancient Star Bell'};frames.unshift({id:'starfall:F-02-impact',image:impact.path,alt,durationMs:3400,transitionMs:680,camera:{from:{x:0,y:0,scale:1.02},to:{x:0,y:0,scale:1.08}}});}}
   if(scene.id==='starfall:F-02'){const historical=frames.find(f=>f.effect==='history-collapse');if(historical){const text={zh:'当年六地未能接唱，你自愿留下记忆救了大家。今天已经有五地重新响起。',en:'The six lands could not answer one another then; you offered your memories to save them. Today five bells are ringing again.'};frames.push({...historical,id:'starfall:F-02-present-five',effect:'history-present',durationMs:4700,shotDurationMs:4700,shotOffsetMs:0,subtitle:{zh:{speaker:'星芽',text:text.zh},en:{speaker:'Xingya',text:text.en}},alt:text});}}
   // The six existing painted world plates establish the six sanctuaries before
   // the original Star Bell image. They are not substitutes for any of the six

@@ -1,3 +1,4 @@
+import {canonArt,visibleBounds} from "./canon22-art.mjs";
 import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud} from "./battle-hud.mjs";
 // Regional combat extensions: attach to actual CaptureBattle instances, never to campaign state.
 // Wild cats remain collectible; scripted Forge/Finale encounters use separate adapters.
@@ -77,7 +78,7 @@ function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)
 }}
 function drawScene(ctx,W,H,region){
  const pair=art[region],ready=image=>image?.complete&&image.naturalWidth>0;
- const img=pair?.background;
+ const img=region==="forge"&&window.__game?.battle?.regionalCombat?.shadowLight?(canonArt("lantern-theater")||pair?.background):pair?.background;
  if(!ready(img))return false;
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
  window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#e7dceb",bottom:"#d9c0aa",portraitFocus:portraitFocalPoints[region]??.5});
@@ -87,11 +88,11 @@ function drawScene(ctx,W,H,region){
 // Dedicated hand-painted regional creatures; combat and capture data are unchanged.
 function drawManifestation(ctx,e,b){
  if(b.libraryEncounter?.region==="library")return false;
- const img=art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
+ const shadow=e.regionalEnemy==="forge"&&b.regionalCombat?.shadowLight,painted=shadow&&canonArt("shadow-beast");const img=painted||art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
  const originalSize=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62));
  const size=e.regionalEnemy==="forge"?originalSize:Math.max(92,Math.min(138,118*(b.catScale?.("enemy")||.95)/.95)),bob=e.frozen?0:Math.sin(b.t*3+e.i)*1.5;
  // Fit the authored creature within the existing visual box without stretching.
- const fit=Math.min(size/img.naturalWidth,size/img.naturalHeight),dw=img.naturalWidth*fit,dh=img.naturalHeight*fit;
+ const src=painted?visibleBounds(img):[0,0,img.naturalWidth,img.naturalHeight];const fit=Math.min(size/src[2],size/src[3]),dw=src[2]*fit,dh=src[3]*fit;
  // Ground the unchanged silhouette at its visual foot anchor, not a
  // glow ring. The shadow stays planted during idle motion.
  ctx.save();ctx.translate(e.x,e.y+(e.regionalEnemy==="forge"?size*.06:23));ctx.scale(Math.max(1,dw*.34),Math.max(1,size*.055));
@@ -100,7 +101,7 @@ function drawManifestation(ctx,e,b){
  ctx.fillStyle=contact;ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();ctx.restore();
  const foot=e.regionalEnemy==="forge"?size*.06:23;
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.translate(e.x,e.y+foot+bob);ctx.scale(e.face===-1?1:-1,1);
- ctx.drawImage(img,-dw/2,-dh,dw,dh);ctx.restore();return true;
+ if(painted){const x=b.W*.50,y=b.topMargin+(b.H-b.topMargin-b.bottomMargin)*.50,r=Math.min(118,b.W*.22,(b.H-b.topMargin-b.bottomMargin)*.28);if(Math.hypot(e.x-x,e.y-y)>r)ctx.filter="brightness(.55) saturate(.75)";}ctx.drawImage(img,...src,-dw/2,-dh,dw,dh);ctx.restore();return true;
 }
 
 

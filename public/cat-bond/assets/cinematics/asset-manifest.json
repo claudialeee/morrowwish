@@ -541,6 +541,17 @@
       "stagingAllowed": true,
       "format": "webp",
       "source": "Work remaster or existing region painting; review branch only"
+    },
+    {
+      "id": "canon22-history-impact",
+      "kind": "cinematic-key-art",
+      "sceneKey": "starfall:F-02",
+      "path": "assets/canon22-final-art/history-impact.webp",
+      "status": "candidate",
+      "runtimeAllowed": false,
+      "stagingAllowed": true,
+      "format": "webp",
+      "source": "Canon 2.2 final art handoff; preview composition pending"
     }
   ],
   "sceneKeys": [

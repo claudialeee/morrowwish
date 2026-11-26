@@ -1,3 +1,4 @@
+import {paintArt,paintPlate} from "./canon22-art.mjs";
 // Skyspine flight simulation. Ephemeral controls; only canonical world evidence is saved.
 import {newGlide,steerGlide,tickGlide,glideProof,validGlideProof,landableGlide,holdGlide} from "./canon22-glide.mjs";
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -96,6 +97,7 @@ function cloudLayers(ctx,img,t,W,H,foreground=false){
  }ctx.restore();
 }
 function drawGlider(ctx,img,x,y,W,H,tilt){
+ if(paintArt(ctx,"sky-glider",x*W,y*H-14,112,74,.5,.5,Math.max(-.18,Math.min(.18,tilt))))return;
  const layers=getLayers(ctx,img);if(!layers)return;
  ctx.save();ctx.translate(x*W,y*H-14);ctx.rotate(Math.max(-.18,Math.min(.18,tilt)));ctx.globalAlpha=.96;ctx.drawImage(layers.glider,-49,-33,98,62);ctx.restore();
 }
@@ -104,14 +106,14 @@ export function paintSkyFlight(ctx,f,img,W,H,lang,drawCat,drawNpc){
  const zh=lang==="zh",t=(a,b)=>zh?a:b;
  const reverse=f.operation==="survey:return",track=n=>reverse?.88-n*.76:.12+n*.76,x=track(f.x),y=f.y;
  ctx.save();
- ctx.drawImage(img,-(reverse?1-f.x:f.x)*W*.08,-H*.03,W*1.08,H*1.06);cloudLayers(ctx,img,f.elapsed,W,H);
+ if(!(f.openGlide&&!f.practice&&paintPlate(ctx,"sky-cloudfall",W,H)))ctx.drawImage(img,-(reverse?1-f.x:f.x)*W*.08,-H*.03,W*1.08,H*1.06);cloudLayers(ctx,img,f.elapsed,W,H);
  const veil=ctx.createLinearGradient(0,0,0,H);veil.addColorStop(0,"#102a44b8");veil.addColorStop(.28,"#183d6320");veil.addColorStop(.72,"#183d6320");veil.addColorStop(1,"#102a44d9");ctx.fillStyle=veil;ctx.fillRect(0,0,W,H);
  const wind=skyWind(f);
  for(let i=0;i<22;i++){const px=((i*.173+f.elapsed*.11)%1)*W,py=(.12+(i*.239)% .76)*H;ctx.strokeStyle=i%3===0?"#e6f7f86b":"#e6f7f82b";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px,py);ctx.quadraticCurveTo(px+22,py+wind*100,px+58,py+wind*180);ctx.stroke();}
  // Three distinct air corridors; the rest of each cross-section is a hazardous gust.
  if(f.practice){const x=track(.13)*W,w=(track(.39)-track(.13))*W;ctx.fillStyle="#b9e6de66";ctx.fillRect(x,H*.15,w,H*.28);ctx.fillStyle="#fff2d1";ctx.font="600 16px sans-serif";ctx.textAlign="center";ctx.fillText(t("借上升气流","Catch the updraft"),x+w/2,H*.20);ctx.fillStyle="#e4d2a5";ctx.beginPath();ctx.ellipse(track(1)*W,H*.62,36,9,0,Math.PI*2);ctx.fill();}
  else if(f.openGlide){
- const start=track(.39)*W,end=track(.72)*W;ctx.fillStyle="#b8d6ef55";ctx.fillRect(start,H*.48,end-start,H*.07);ctx.strokeStyle="#e0f5df";ctx.lineWidth=3;ctx.setLineDash([9,8]);ctx.beginPath();ctx.moveTo(track(.12)*W,H*.36);ctx.lineTo(start,H*.30);ctx.lineTo(end,H*.30);ctx.stroke();ctx.beginPath();ctx.moveTo(track(.12)*W,H*.65);ctx.lineTo(start,H*.70);ctx.lineTo(end,H*.70);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#b9e6de66";ctx.fillRect(track(.13)*W,H*.15,(track(.39)-track(.13))*W,H*.28);for(const [isle,rx] of [[.61,36],[.79,28]]){const ix=track(isle)*W,iy=H*.76;ctx.save();ctx.translate(ix,iy);ctx.fillStyle="#8b9da4";ctx.beginPath();ctx.moveTo(-rx,0);ctx.quadraticCurveTo(-rx*.6,18,-rx*.18,31);ctx.lineTo(rx*.22,23);ctx.quadraticCurveTo(rx*.85,12,rx,0);ctx.closePath();ctx.fill();ctx.fillStyle="#b0b6a1";ctx.beginPath();ctx.ellipse(0,0,rx,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#c9d2ad";ctx.beginPath();ctx.ellipse(0,-3,rx*.85,6,0,0,Math.PI*2);ctx.fill();for(let i=0;i<5;i++){ctx.strokeStyle="#789b86";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-rx*.6+i*rx*.3,-4);ctx.lineTo(-rx*.6+i*rx*.3+3,-11);ctx.stroke();}ctx.restore();}
+ const start=track(.39)*W,end=track(.72)*W;ctx.fillStyle="#b8d6ef55";ctx.fillRect(start,H*.48,end-start,H*.07);ctx.strokeStyle="#e0f5df";ctx.lineWidth=3;ctx.setLineDash([9,8]);ctx.beginPath();ctx.moveTo(track(.12)*W,H*.36);ctx.lineTo(start,H*.30);ctx.lineTo(end,H*.30);ctx.stroke();ctx.beginPath();ctx.moveTo(track(.12)*W,H*.65);ctx.lineTo(start,H*.70);ctx.lineTo(end,H*.70);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#b9e6de66";ctx.fillRect(track(.13)*W,H*.15,(track(.39)-track(.13))*W,H*.28);for(const [isle,rx] of [[.61,36],[.79,28]]){const ix=track(isle)*W,iy=H*.76;if(paintArt(ctx,"sky-safety-island",ix,iy,rx*2.7,80,.5,.18))continue;ctx.save();ctx.translate(ix,iy);ctx.fillStyle="#8b9da4";ctx.beginPath();ctx.moveTo(-rx,0);ctx.quadraticCurveTo(-rx*.6,18,-rx*.18,31);ctx.lineTo(rx*.22,23);ctx.quadraticCurveTo(rx*.85,12,rx,0);ctx.closePath();ctx.fill();ctx.fillStyle="#b0b6a1";ctx.beginPath();ctx.ellipse(0,0,rx,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#c9d2ad";ctx.beginPath();ctx.ellipse(0,-3,rx*.85,6,0,0,Math.PI*2);ctx.fill();for(let i=0;i<5;i++){ctx.strokeStyle="#789b86";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-rx*.6+i*rx*.3,-4);ctx.lineTo(-rx*.6+i*rx*.3+3,-11);ctx.stroke();}ctx.restore();}
  ctx.fillStyle="#fff2d1";ctx.font="600 16px sans-serif";ctx.textAlign="center";ctx.fillText(t("上升气流 · 云瀑捷径","Updraft · Shortcut"),track(.32)*W,H*.20);ctx.fillText(t("外侧风路 · 安全岛","Outer route · Safe isle"),track(.57)*W,H*.83);if(f.paused){ctx.fillStyle="#fff2d1";ctx.fillText(t("安全岛 · 休息好了就继续起飞","Safe isle · Relaunch when ready"),W*.5,H*.92);}if(f.platform){ctx.fillStyle="#e8ffdb";ctx.fillText(t("看见云海下的灯火！","Lanterns glow below the clouds!"),track(.61)*W,H*.88);}if(f.routeUsed==="upper"){ctx.fillStyle="#e8ffdb";ctx.fillText(t("月牙岩就在前面","Crescent rock ahead"),track(.58)*W,H*.25);}
  }else for(let i=0;i<3;i++){const gx=track(gateX[i])*W,gy=f.route[i]*H,r=(f.training?.19:.14)*H+Math.min(f.attempts,3)*.02*H;
  ctx.fillStyle=i<f.gate?"#71cfc328":"#da956e28";ctx.fillRect(gx-11,H*.10,22,Math.max(0,gy-r-H*.10));ctx.fillRect(gx-11,gy+r,22,Math.max(0,H*.90-gy-r));
