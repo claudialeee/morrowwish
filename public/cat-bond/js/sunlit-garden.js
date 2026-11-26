@@ -81,15 +81,11 @@
     if(talk||ending)add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));
     if(ending){add('花园复兴','Garden Restoration',()=>window.GardenProjects?.open?.());add('继续探索','Continue exploring',()=>game.openWorldMap());}
     if(departure){
-      title.textContent=en?'Find your name':'寻找自己的名字';hint.textContent=en?'You woke up without memories. Explore the garden or head to Misttide Harbor for clues.':'你在花园醒来，却想不起自己的名字。可以自由探索，也可以去霁潮港寻找线索。';
+      title.textContent=en?'Find your name':'寻找自己的名字';hint.textContent=en?'Tap things in the garden to discover small surprises, or head to Misttide Harbor.':'点击花园里的小事物探索惊喜，也可以随时前往霁潮港。';
       guide.classList.add('sg-minimal-opening');
       add('下一场景 · 霁潮港','Next scene · Misttide Harbor',()=>{game.openWorldMap();if(game.scene==='map')window.WorldMap?.enterRegion?.('harbor')});
       row.firstElementChild.classList.add('sg-main-continue');
-      const details=document.createElement('details');details.className='sg-explore-options';
-      const summary=document.createElement('summary');summary.textContent=en?'Explore clues':'探索线索';details.append(summary);row.append(details);
-      const optional=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};details.append(b);};
-      if(!v.openingMet)optional('看看陌生猫的航图（可选）','Help the stranger with her chart (optional)',()=>narrativeAdapter?.interactHomeNpc('muling'));
-      optional('阅读旧铃木牌（可选）','Read the old bell plaque (optional)',()=>window.CatBondGardenBell?.inspect?.());
+
 
     }
   }
@@ -148,7 +144,7 @@
     if(root)root.inert=false;
     root?.classList.add('is-active');document.getElementById('stage')?.classList.add('cb-sunlit-garden');renderLabels();refreshGuide();
   }
-  function leave(){window.GardenProjects?.resetSlot?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;if(talkMarker)talkMarker.hidden=true;}
+  function leave(){window.GardenProjects?.resetSlot?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;if(talkMarker)talkMarker.hidden=true;window.GardenExploration?.reset?.();}
   function registerNarrativeAdapter(adapter){
     if(!adapter||typeof adapter.getHomeNpcs!=='function'||typeof adapter.drawHomeNpc!=='function'||
        typeof adapter.interactHomeNpc!=='function')return false;
@@ -178,6 +174,7 @@
         lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*scale:y-30*scale,groundY:y,radius:Math.max(24,a.radius*.75*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }
+    window.GardenExploration?.draw?.(root,ctx,width,height);
   }
   function handleTap(x,y){
     if(!active||game?.scene!=='yard')return false;

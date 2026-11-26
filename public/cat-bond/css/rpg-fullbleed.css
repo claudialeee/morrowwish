@@ -147,3 +147,20 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .sg-npc-talk-marker[hidden],#stage .sg-hotspots.is-placing .sg-npc-talk-marker,#stage:has(.res-host,#cb-player-first-intro,#panel.open,#cb-system-menu:not([hidden])) .sg-npc-talk-marker{display:none!important}
 #stage .sg-npc-talk-marker:focus-visible{outline:2px solid #714e23;outline-offset:3px}
 #stage .res-host [data-res-language],#stage .res-host .cb-encounter-language{display:none!important}
+
+/* Discoveries sit in the illustration, with generous invisible touch targets. */
+#stage .sg-exploration-layer{position:absolute;inset:0;pointer-events:none;z-index:1}
+#stage .sg-exploration-layer[hidden],#stage .sg-discovery[hidden]{display:none!important}
+#stage .sg-discovery{position:absolute;transform:translate(-50%,-50%);width:48px;height:48px;padding:4px;display:grid;place-items:center;background:none!important;border:0!important;box-shadow:none!important;cursor:pointer;pointer-events:auto;color:#6f4f35;touch-action:manipulation}
+#stage .sg-discovery svg{width:33px;height:33px;overflow:visible;filter:drop-shadow(0 1px 1px #6b51374d);pointer-events:none}
+#stage .sg-discovery-butterfly svg{animation:sg-flutter .95s ease-in-out infinite;transform-origin:center}
+#stage .sg-discovery-seed svg,#stage .sg-discovery-door svg{animation:sg-glint 2.4s ease-in-out infinite}
+#stage .sg-discovery:focus-visible{outline:2px solid #986b35;outline-offset:1px;border-radius:50%}
+#stage .sg-discovery:hover svg{filter:drop-shadow(0 0 4px #fff0b5)}
+#stage .sg-discovery-choice{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(285px,90%);padding:14px;border:1px solid #b99a65;border-radius:14px;background:#fff1da;color:#684f35;box-shadow:0 5px 24px #634b3b44;pointer-events:auto;z-index:4;font:600 13px var(--cb-font-body)}
+#stage .sg-discovery-choice p{margin:0 0 7px}
+#stage .sg-discovery-choice button{display:block;width:100%;min-height:40px;margin:4px 0;padding:7px;background:#f3dfba;color:#60482f;border:1px solid #c6a779;border-radius:8px;cursor:pointer}
+#stage .sg-hotspots.is-placing .sg-exploration-layer,#stage:has(.res-host,#cb-player-first-intro,#panel.open,#cb-system-menu:not([hidden])) .sg-exploration-layer{display:none!important}
+@keyframes sg-flutter{0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-4px) scaleX(.62)}}
+@keyframes sg-glint{0%,100%{opacity:.64}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){#stage .sg-discovery svg{animation:none!important}}

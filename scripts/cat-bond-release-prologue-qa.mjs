@@ -22,7 +22,16 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  await screenshot('context');await press(intro.getByRole('button',{name:meet?tr('开始探索','Start exploring'):tr('跳过介绍','Skip introduction'),exact:true}));
  const guide=page.locator('.sg-prologue-guide');
  if(meet){await press(page.locator('[data-npc-talk="muling"]'));const encounter=page.locator('#cb-traveler-encounter');
- for(const label of [tr('捡起航图','Pick up the chart'),tr('归还航图','Return the chart'),tr('告别','Say goodbye')])await press(encounter.getByRole('button',{name:label,exact:true}));
+ assert.equal(await page.locator('.res-garden-bell').count(),0);
+ await press(encounter.getByRole('button',{name:tr('寻找航图','Find the chart pieces'),exact:true}));
+ await encounter.waitFor({state:'detached'});
+ for(const id of ['chart-0','chart-1'])await press(page.locator('[data-garden-explore="'+id+'"]'));
+ await press(page.locator('[data-npc-talk="muling"]'));
+ for(const label of [tr('继续','Continue'),tr('告别','Say goodbye')])await press(encounter.getByRole('button',{name:label,exact:true}));
+ for(let i=0;i<3;i++)await press(page.locator('[data-garden-explore="butterfly"]'));
+ await press(page.locator('[data-garden-explore="seed"]'));
+ await press(page.locator('[data-garden-explore="snack"]'));await press(page.getByRole('button',{name:tr('带在身上','Keep for later'),exact:true}));
+ assert.equal(await page.evaluate(()=>GardenExploration.read(State.S).butterfly),3);
  assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);assert.equal(await page.evaluate(()=>CatBondResonance.residents('garden').some(n=>n.id==='muling')),false);}
  else assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),false);
  await screenshot('garden');await press(guide.getByRole('button',{name:tr('下一场景 · 霁潮港','Next scene · Misttide Harbor'),exact:true}));await waitScene('harbor:H-01');

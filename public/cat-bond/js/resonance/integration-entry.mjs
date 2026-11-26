@@ -1,9 +1,9 @@
 import "./narrative-host.mjs";
-import "./npc-world.mjs?v=map-talk-1";
+import "./npc-world.mjs?v=garden-v3-1";
 import "./ambient-play.mjs";
 import "./world-runtime.mjs?v=player-first-nav-3";
 import "./title-entry.mjs?v=map-talk-1";
-import "./garden-bell.mjs?v=map-talk-1";
+// The prologue uses living discoveries instead of a standalone bell prop.
 import "./chapter-cinematics.mjs";
 import "./forge-combat-runtime.mjs?v=storybook-arenas";
 import "./regional-combat.mjs?v=dedicated-watercolor-monsters-20261125";

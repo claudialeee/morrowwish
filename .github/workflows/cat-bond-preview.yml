@@ -70,6 +70,7 @@ jobs:
         run: |
           node scripts/test-cat-bond-player-first.mjs
           node scripts/test-cat-bond-story-party.mjs
+          node scripts/test-cat-bond-garden-exploration.mjs
           node scripts/test-cat-bond-canon12-campaign.mjs
           node scripts/test-cat-bond-resonance.mjs
           node scripts/test-cat-bond-resonance-slot.mjs
@@ -154,27 +155,31 @@ jobs:
                 await guide.waitFor({state:'visible'});
                 if(await guide.locator('button:visible').count()!==1)throw Error('Opening guide must expose only the primary navigation button');
                 const marker=page.locator('[data-npc-talk="muling"]');
-                const oldBell=page.getByRole('button',{name:'Inspect old bell',exact:true});
-                await oldBell.waitFor({state:'visible'});
-                await oldBell.click();
-                if(await page.evaluate(()=>CatBondResonance.view().current?.id)!=='prologue:P-05')throw Error('Optional old bell must not advance story');
-                await marker.waitFor({state:'visible'});
-                await marker.click();
+                if(await page.locator('.res-garden-bell').count())throw Error('Detached garden bell must be removed');
+                const discover=id=>page.locator('[data-garden-explore="'+id+'"]');
+                for(let i=0;i<3;i++)await discover('butterfly').click();
+                await discover('butterfly').waitFor({state:'hidden'});
+                await discover('seed').click();
+                await discover('snack').click();
+                await page.getByRole('button',{name:'Keep for later',exact:true}).click();
+                await discover('door').click();
+                await marker.waitFor({state:'visible'});await marker.click();
                 const encounter=page.locator('#cb-traveler-encounter');
-                await encounter.getByRole('button',{name:'Pick up the chart',exact:true}).waitFor({state:'visible'});
                 if(await encounter.getByRole('button',{name:/^(English|中文|EN)$/}).count())throw Error('Language toggle must not appear in dialogue');
-                await page.screenshot({path:'preview-'+prefix+'-encounter.png'});
                 await encounter.getByRole('button',{name:'Leave for now',exact:true}).click();
+                await encounter.waitFor({state:'detached'});await marker.click();
+                await encounter.getByRole('button',{name:'Find the chart pieces',exact:true}).click();
                 await encounter.waitFor({state:'detached'});
-                await guide.waitFor({state:'visible'});
+                await discover('chart-0').click();
+                if(await page.evaluate(()=>CatBondResonance.view().openingMet))throw Error('One piece cannot complete the encounter');
+                await discover('chart-1').click();
                 await marker.click();
-                await encounter.getByRole('button',{name:'Pick up the chart',exact:true}).click();
-                await encounter.getByRole('button',{name:'Return the chart',exact:true}).waitFor({state:'visible'});
-                await encounter.locator('.res-line').click();
+                await encounter.getByRole('button',{name:'Continue',exact:true}).click();
                 await encounter.getByRole('button',{name:'Say goodbye',exact:true}).click();
                 await encounter.waitFor({state:'detached'});
                 await page.waitForFunction(()=>CatBondResonance.view().openingMet===true);
                 await marker.waitFor({state:'hidden'});
+                await page.screenshot({path:'preview-'+prefix+'-garden-discovery.png'});
                 if(await guide.locator('button:visible').count()!==1)throw Error('Opening guide expanded after dialogue');
                 if(await page.locator('#yard-actions').isVisible())throw Error('Garden floating dock must be hidden');
                 await page.locator('#map-menu').click();
