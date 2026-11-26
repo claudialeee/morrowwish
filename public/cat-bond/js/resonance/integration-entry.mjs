@@ -6,7 +6,7 @@ import "./title-entry.mjs?v=fixed-goldie-polish-20261125";
 import "./garden-bell.mjs?v=sunlit-bell";
 import "./chapter-cinematics.mjs";
 import "./forge-combat-runtime.mjs?v=storybook-arenas";
-import "./regional-combat.mjs?v=fixed-goldie-polish-20261125";
+import "./regional-combat.mjs?v=dedicated-watercolor-monsters-20261125";
 import "./finale-combat.mjs?v=storybook-arenas";
 import "./resonance-book.mjs";
 

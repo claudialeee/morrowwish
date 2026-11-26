@@ -61,12 +61,12 @@ export function inPattern(p,f){
 
 // In each region the arena leaves room for the cats, paths and attack indicators.
 const artFiles={
- harbor:["harbor-arena.webp",null,"harbor-arena.svg"],
- forest:["forest-arena.webp",null,"forest-arena.svg"],
+ harbor:["harbor-arena.webp","tide-shell-watercolor.webp","harbor-arena.svg"],
+ forest:["forest-arena.webp","rootbound-watercolor.webp","forest-arena.svg"],
  forge:["emberforge-painted.webp","forge-guardian-painted.webp"],
- sky:["sky-arena.webp",null,"sky-arena.svg"],
- library:["library-arena.webp",null,"library-arena.svg"],
- starfall:["starfall-arena.webp",null,"starfall-arena.svg"],
+ sky:["sky-arena.webp","gale-wing-watercolor.webp","sky-arena.svg"],
+ library:["library-arena.webp","mirror-sentinel-watercolor.webp","library-arena.svg"],
+ starfall:["starfall-arena.webp","orbit-sentinel-watercolor.webp","starfall-arena.svg"],
 };
 const portraitFocalPoints={harbor:.78,forest:.20,forge:.50,sky:.68,library:.50,starfall:.65};
 const art={};
@@ -85,30 +85,23 @@ function drawScene(ctx,W,H,region){
  ctx.restore();
  return true;
 }
-// Use the same existing watercolor breed renderer as the player's cats
-// for former flat-SVG regional manifestations; no species/stat/capture mutation.
-const manifestationLooks={harbor:"lanbao",forest:"nuowei",sky:"yuelian",library:"youling",starfall:"xingchen"};
+// Dedicated hand-painted regional creatures; combat and capture data are unchanged.
 function drawManifestation(ctx,e,b){
  if(b.libraryEncounter)return false;
- const look=manifestationLooks[e.regionalEnemy];
- if(look){
-  const species=window.GameData?.speciesById(look),draw=window.CatMotion?.draw||window.CatArt?.drawCat;
-  if(!species||!draw)return false;
-  draw(ctx,e.x,e.y,{species,scale:(b.catScale?.("enemy")||.95)*1.10,face:e.face,t:e.t||b.t,stride:e.stride,motion:e.motion||0,pose:e.frozen?"idle":e.pose||"idle",mood:"alert"});
-  return true;
- }
  const img=art[e.regionalEnemy]?.enemy;if(!img?.complete||!img.naturalWidth)return false;
- const size=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62)),bob=Math.sin(b.t*3+e.i)*2;
+ const originalSize=Math.max(96,Math.min(166,126*(b.catScale?.("enemy")||.62)/.62));
+ const size=e.regionalEnemy==="forge"?originalSize:Math.max(92,Math.min(138,118*(b.catScale?.("enemy")||.95)/.95)),bob=e.frozen?0:Math.sin(b.t*3+e.i)*1.5;
  // Fit the authored creature within the existing visual box without stretching.
  const fit=Math.min(size/img.naturalWidth,size/img.naturalHeight),dw=img.naturalWidth*fit,dh=img.naturalHeight*fit;
  // Ground the unchanged silhouette at its visual foot anchor, not a
  // glow ring. The shadow stays planted during idle motion.
- ctx.save();ctx.translate(e.x,e.y+size*.06);ctx.scale(Math.max(1,dw*.34),Math.max(1,size*.055));
+ ctx.save();ctx.translate(e.x,e.y+(e.regionalEnemy==="forge"?size*.06:23));ctx.scale(Math.max(1,dw*.34),Math.max(1,size*.055));
  const contact=ctx.createRadialGradient(0,0,0,0,0,1);
  contact.addColorStop(0,"rgba(13,23,25,.46)");contact.addColorStop(.55,"rgba(13,23,25,.24)");contact.addColorStop(1,"rgba(13,23,25,0)");
  ctx.fillStyle=contact;ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();ctx.restore();
- ctx.save();ctx.translate(e.x,e.y-size*.44+bob);ctx.scale(e.face===-1?1:-1,1);
- ctx.drawImage(img,-dw/2,size/2-dh,dw,dh);ctx.restore();return true;
+ const foot=e.regionalEnemy==="forge"?size*.06:23;
+ ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.translate(e.x,e.y+foot+bob);ctx.scale(e.face===-1?1:-1,1);
+ ctx.drawImage(img,-dw/2,-dh,dw,dh);ctx.restore();return true;
 }
 
 
