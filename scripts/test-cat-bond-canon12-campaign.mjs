@@ -21,23 +21,16 @@ for(let variant=0;variant<2;variant++){
   const late=["mechanism:muling-unlock","npc:public-accountability","npc:second-garden-key"];
   for(const op of scene.requires.filter(x=>!late.includes(x)))ok(e.record(scene.id,op),scene.id+" "+op);
   if(variant===1&&scene.id==="starfall:F-04")for(const [a,b,x,y] of campaign.links)for(let i=0;i<4;i++)ok(e.exchange({a,b,stage:["sendA","receiveB","sendB","receiveA"][i],actor:[a,b,b,a][i],action:[x,x,y,y][i]}),"exchange");
-  while(e.view().cursor<scene.lines.length)ok(e.nextLine(),scene.id+" line");
-  if(scene.choiceTiming!=="beforeAction"&&scene.choices.length)ok(e.choose(scene.choices[variant%scene.choices.length].id),scene.id+" choice");
+  while(e.view().cursor<scene.lines.length){if(scene.choiceAt===e.view().cursor&&!e.view().choice)ok(e.choose(scene.choices[variant%scene.choices.length].id),scene.id+" branch");ok(e.nextLine(),scene.id+" line");}
+  if(scene.choiceTiming!=="beforeAction"&&scene.choices.length&&!e.view().choice)ok(e.choose(scene.choices[variant%scene.choices.length].id),scene.id+" choice");
   for(const op of scene.requires.filter(x=>late.includes(x)))ok(e.record(scene.id,op),op);
   ok(e.finish(),scene.id+" finish");e=makeEngine(campaign,e.snapshot());
  }
  assert.ok(e.view().ending&&e.view().ring);assert.equal(e.view().cargoComplete,variant===1);assert.equal(Object.values(e.snapshot().links).reduce((n,l)=>n+l.length,0),variant===1?24:0);assert.ok(e.view().support.every(p=>p.ready));
 }
 function fixture(id){const i=campaign.scenes.findIndex(x=>x.id===id),s=makeEngine(campaign).snapshot();s.scene=id;s.completed=campaign.scenes.slice(0,i).map(x=>x.id);s.choices={"sky:S-02":"lead","library:M-01":"open","starfall:F-01":"coordinate"};return s;}
-// Optional tea must not be presumed in the required story route.
-const teaSkipped=fixture("sky:S-04"),teaTaken=fixture("sky:S-04");
-teaTaken.ambientDone=["muling:tea"];
-const skippedLine=makeEngine(campaign,teaSkipped).view().current.lines[4].text;
-const takenLine=makeEngine(campaign,teaTaken).view().current.lines[4].text;
-assert.match(skippedLine.zh,/语气/);assert.match(skippedLine.en,/sound so much/);
-assert.match(takenLine.zh,/喝茶/);assert.match(takenLine.en,/smell your tea/);
-assert.notDeepEqual(skippedLine,takenLine);
-assert.deepEqual(makeEngine(campaign,makeEngine(campaign,teaSkipped).snapshot()).view().current.lines[4].text,skippedLine);
+// Each tea choice gets exactly its own two lines; no skipped choice or premature finish.
+for(const id of ["joke","company","search"]){const e=makeEngine(campaign,fixture("sky:S-04"));assert.equal(e.choose(id).ok,false);assert.equal(e.nextLine().ok,false);ok(e.record("sky:S-04","npc:broken-pendant"));for(let i=0;i<3;i++)ok(e.nextLine());assert.equal(e.nextLine().ok,false);assert.equal(e.finish().ok,false);ok(e.choose(id));assert.deepEqual(e.view().current.lines.slice(3),campaign.scenes.find(s=>s.id==="sky:S-04").choiceResponses[id]);const restored=makeEngine(campaign,e.snapshot());assert.deepEqual(restored.view().current.lines.slice(3),e.view().current.lines.slice(3));ok(restored.nextLine());ok(restored.nextLine());ok(restored.finish());}
 const ringLine=campaign.scenes.find(s=>s.id==="starfall:F-05").lines[0].text;
 assert.match(ringLine.en,/Each region sent its own reply/);assert.match(ringLine.zh,/自己送来的回应/);
 // Cinematic text stays canonical on both cargo routes; no conditional cinematic mutation.

@@ -82,12 +82,13 @@ for(let variant=0;variant<3;variant++){
   // do not turn that technical order into claims about the rendered player's knowledge.
   for(const op of scene.requires.filter(x=>!late.has(x)))ok(e.record(scene.id,op),scene.id+' '+op);
   while(e.view().cursor<scene.lines.length){
+   if(scene.choiceAt===e.view().cursor&&!e.view().choice)choose();
    const v=e.view();assert.equal(v.lineReady,true,scene.id+' line gate');
    const l=v.current.lines[v.cursor];
    emit(scene,{kind:'dialogue',cursor:v.cursor,speaker:l.speaker,text:l.text});
    ok(e.nextLine(),scene.id+' line');
   }
-  if(scene.choiceTiming!=='beforeAction'&&scene.choices.length)choose();
+  if(scene.choiceTiming!=='beforeAction'&&scene.choices.length&&!e.view().choice)choose();
   for(const op of scene.requires.filter(x=>late.has(x)))ok(e.record(scene.id,op),scene.id+' '+op);
   if(variant===2&&scene.id==='starfall:F-04')checkCargo(e);
   ok(e.finish(),scene.id+' finish');

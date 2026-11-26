@@ -13,8 +13,8 @@ function verify(data,makeEngine){
   const deferred=scene.requires.filter(op=>["npc:public-accountability","npc:second-garden-key"].includes(op));for(const op of deferred)assert(!e.record(scene.id,op).ok,"premature epilogue action");
   for(const op of scene.requires.filter(op=>op!=="mechanism:muling-unlock"&&!deferred.includes(op))){pass(e.record(scene.id,op),op);assert(!e.record(scene.id,op).ok,"duplicate")}
   if(scene.id==="starfall:F-04"){assert(!e.finish().ok,"early finish");links(e);assert(e.view().ring,"ring");}
-  for(const l of scene.lines){assert(l.text.zh&&l.text.en,"bilingual");pass(e.nextLine(),"line "+scene.id)}
-  if(scene.choices.length&&scene.choiceTiming==="afterDialogue")pass(e.choose(scene.choices[variant].id),"after choice");
+  for(const l of scene.lines){if(scene.choiceAt===e.view().cursor&&!e.view().choice)pass(e.choose(scene.choices[variant].id),"mid-scene choice");assert(l.text.zh&&l.text.en,"bilingual");pass(e.nextLine(),"line "+scene.id)}
+  if(scene.choices.length&&scene.choiceTiming==="afterDialogue"&&!e.view().choice)pass(e.choose(scene.choices[variant].id),"after choice");
   for(const op of deferred)pass(e.record(scene.id,op),"completed epilogue action");
   if(scene.requires.includes("mechanism:muling-unlock"))pass(e.record(scene.id,"mechanism:muling-unlock"),"unlock");
   const snap=e.snapshot();e=makeEngine(data,JSON.parse(JSON.stringify(snap)));assert(e.snapshot().cursor===snap.cursor,"restore");pass(e.finish(),scene.id);links(e);return e}

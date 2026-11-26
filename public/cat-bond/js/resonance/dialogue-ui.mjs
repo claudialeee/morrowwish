@@ -1,6 +1,6 @@
 // Host-mounted dialogue controller; no save store and no fallback artwork.
 // The host must resolve approved art, own scene transitions, and call render after gameplay.
-export const hasDialogueChoice=v=>!!(v.current&&!v.choice&&v.current.choices.length&&(v.current.choiceTiming==="beforeAction"||v.cursor===v.current.lines.length));
+export const hasDialogueChoice=v=>!!(v.current&&!v.choice&&v.current.choices.length&&(v.current.choiceTiming==="beforeAction"||v.cursor===(v.current.choiceAt??v.current.lines.length)));
 export const awaitingGameplay=v=>!!(v.current&&!v.lineReady&&!hasDialogueChoice(v));
 // A before-action choice intentionally makes lineReady false until chosen.
 // Entry controls must still open the dialogue for that choice.
@@ -33,6 +33,7 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  root.style.removeProperty("display");
  context.hidden=true;context.textContent='';
  context.classList.remove("res-harbor-context");
+ if(s.id==="sky:S-04"){context.hidden=false;context.style.textAlign="center";context.innerHTML='<svg viewBox="0 0 116 34" width="116" height="34" aria-hidden="true"><ellipse cx="58" cy="29" rx="54" ry="4" fill="#997657"/><g fill="#f6dfb8" stroke="#ae8c61" stroke-width="1.4"><path d="M20 12h29l-3 15H23z M68 12h29l-3 15H71z"/><path d="M49 15q10 0 5 8h-7 M97 15q10 0 5 8h-7" fill="none"/></g><g fill="#ac7750"><ellipse cx="34.5" cy="12" rx="14" ry="3"/><ellipse cx="82.5" cy="12" rx="14" ry="3"/></g><path d="M29 7q-4-4 0-7 M40 7q-4-4 0-7 M77 7q-4-4 0-7 M88 7q-4-4 0-7" stroke="#f4e3c8" stroke-opacity=".75" fill="none"/></svg>';const caption=el("span");caption.style.display="block";caption.textContent=k==="zh"?"云海观景台 · 暮铃摆好两杯茶":"Cloud lookout · Muling sets out two cups";context.append(caption);}else context.style.textAlign="";
  panel.dataset.speaker=l?.speaker||"";
  const choiceVisible=hasDialogueChoice(v);
  if(choiceVisible)for(const c of s.choices){const b=el("button");b.type="button";b.textContent=c.label[k];b.addEventListener("click",()=>{if(persist(engine.choose(c.id)))render()});choices.append(b)}

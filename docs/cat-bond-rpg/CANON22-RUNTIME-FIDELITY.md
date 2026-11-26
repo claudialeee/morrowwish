@@ -6,3 +6,5 @@
 - E-03: earned map, moonleaf, lantern shape, tea cups and flight postcard projected into the garden from actual story/interaction state, not a new progression gate. Art and collision composition require manual review; branch-specific S-04 dialogue and actual joint planting remain unfinished.
 - B-01–03 retains existing verified combat/reply logic; final visual impact and F-04 actual local response evidence still need acceptance. Do not claim complete Canon fidelity.
 - New spatial test covers both chase routes, tampered route and lantern shape, and actual route-specific discovery. Await GitHub browser regression; previous SHA results are not acceptance of this change.
+
+- S-04 now reads the three shared tea lines, pauses for the player's choice, then presents only the corresponding two-line response. Requires meeting Muling; choose cannot skip or replay the choice, and reload retains the selected response. Two cups are displayed procedurally in the conversation; a third cup only appears in the ending garden for the search promise. Actual seating animation and scenery are still graybox/visual acceptance items.

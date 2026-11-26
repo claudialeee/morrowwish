@@ -55,7 +55,7 @@ async function run(chapter){
   const dlg=page.locator('.res-host[data-scene="'+id+'"]');
   for(let i=0;i<50;i++){
    const v=await view();if(v.current?.id!==id)return;
-   const canChoose=!v.choice&&v.current.choices.length>0&&(v.current.choiceTiming==='beforeAction'||v.cursor===v.current.lines.length);
+   const canChoose=!v.choice&&v.current.choices.length>0&&(v.current.choiceTiming==='beforeAction'||v.cursor===(v.current.choiceAt??v.current.lines.length));
    const canRead=v.lineReady&&v.cursor<v.current.lines.length;
    if(!canChoose&&!canRead){if(id!=='epilogue:E-03'&&await dlg.isVisible())await dlg.waitFor({state:'hidden',timeout:20000});return;}
    if(!await dlg.isVisible()){

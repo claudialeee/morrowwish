@@ -10,8 +10,8 @@ for(const scene of campaign.scenes){
  if(scene.id==='finale:B-03')for(let i=0;i<6;i++)assert.ok(e.supportAction(campaign.regions[i],campaign.support[i]).ok);
  const late=['mechanism:muling-unlock','npc:public-accountability','npc:second-garden-key'];
  for(const op of scene.requires.filter(x=>!late.includes(x)))assert.ok(e.record(scene.id,op).ok,scene.id+' '+op);
- while(e.view().cursor<scene.lines.length)assert.ok(e.nextLine().ok);
- if(scene.choiceTiming!=='beforeAction'&&scene.choices.length)assert.ok(e.choose(scene.choices[0].id).ok);
+ while(e.view().cursor<scene.lines.length){if(scene.choiceAt===e.view().cursor&&!e.view().choice)assert.ok(e.choose(scene.choices[0].id).ok);assert.ok(e.nextLine().ok);}
+ if(scene.choiceTiming!=='beforeAction'&&scene.choices.length&&!e.view().choice)assert.ok(e.choose(scene.choices[0].id).ok);
  for(const op of scene.requires.filter(x=>late.includes(x)))assert.ok(e.record(scene.id,op).ok);
  assert.ok(e.finish().ok,scene.id);
 }

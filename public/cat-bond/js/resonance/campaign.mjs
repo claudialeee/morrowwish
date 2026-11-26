@@ -1161,38 +1161,38 @@ export const campaign = {
       "previous": "sky:S-03",
       "lines": [
         {
-          "speaker": "player",
-          "text": {
-            "zh": "你旅行这么久，是在找什么吗？",
-            "en": "You've traveled a long time. Are you looking for something?"
-          }
-        },
-        {
           "speaker": "muling",
           "text": {
-            "zh": "有个朋友答应我，等事情结束就回花园喝茶。后来我一直给他留着一杯。",
-            "en": "A friend promised we'd have tea in the garden when it was all over. I've kept a cup for them ever since."
+            "zh": "以前有只猫跟我说，等忙完了，回花园喝茶。",
+            "en": "Someone once told me we'd have tea in the garden when all our work was done."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那我们也帮你找吧。你帮我找名字，我帮你找朋友。",
-            "en": "Then let's help you look, too. You help me find my name; I'll help you find your friend."
+            "zh": "那后来呢？",
+            "en": "What happened after that?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "那就请他们喝茶。以前有人教过我，铃响两次就知道彼此平安。",
-            "en": "I'll invite them for tea. Someone once taught me that two bell notes mean we're both safe."
+            "zh": "……那杯茶，我就一直留着。",
+            "en": "…I've kept a cup for them ever since."
+          }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "那我陪你坐一会儿。",
+            "en": "I'll sit with you for a while, then."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "……你喝茶也总是先闻一下。没什么，我们继续走吧。",
-            "en": "...You always smell your tea first, too. Never mind. Let's keep going."
+            "zh": "好。今天先记住今天吧。",
+            "en": "Okay. Let's remember today for what it is."
           }
         }
       ],
@@ -1205,8 +1205,8 @@ export const campaign = {
           "npc": "muling",
           "method": "tea-joke",
           "label": {
-            "zh": "等找到朋友，我们三个一起喝茶",
-            "en": "When you find them, all three of us can have tea"
+            "zh": "开个玩笑，让她放松一下",
+            "en": "Lighten the mood with a joke"
           }
         },
         {
@@ -1228,8 +1228,61 @@ export const campaign = {
           }
         }
       ],
-      "lineGate": [],
-      "choiceTiming": "afterDialogue"
+      "lineGate": [
+        "npc:broken-pendant"
+      ],
+      "choiceTiming": "afterDialogue",
+      "choiceAt": 3,
+      "choiceResponses": {
+        "joke": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "下次可得把茶杯系在围巾上，省得飞丢了。",
+              "en": "Next time, tie the cups to your scarf so they don't fly away."
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "那围巾可要收两份飞行费了。",
+              "en": "Then my scarf gets to charge two airfares."
+            }
+          }
+        ],
+        "company": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "那我陪你坐一会儿。",
+              "en": "I'll sit with you for a while, then."
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "好。今天先记住今天吧。",
+              "en": "Okay. Let's remember today for what it is."
+            }
+          }
+        ],
+        "search": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "等找到我的名字，咱们也去找你那位朋友！下回多带一只杯子。",
+              "en": "Once we find my name, let's look for your friend too! We'll bring another cup next time."
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "那……说定了。",
+              "en": "Then… it's a promise."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "sky:S-05",

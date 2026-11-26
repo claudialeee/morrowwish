@@ -40,7 +40,7 @@ console.log(JSON.stringify((function test(){
   if(s.id==="sky:S-01"){ok(b.enter("sky"),"enter before cargo");const x=createExplorer(b,"sky");walk(x,skyLaunch["puzzle:sky-pouch"]);assert(x.interact("puzzle:sky-pouch").ok,"flight available without optional cargo");transfer("forge","sky",0);transfer("forge","sky",1);assert(!b.cargoSpec("forge","sky"),"cannot send flight data before route restoration");}
   if(s.id==="library:M-02"){State.S.cats.push({uid:"library-fixture",species:"nainai",personality:"gentle",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});State.S.dex.nainai=1;ok(b.enter("library"),"enter library");const x=createExplorer(b,"library");walk(x,x.layout.features["puzzle:mirror-records"]);assert(!x.interact("puzzle:mirror-records").ok,"retired mural sorting cannot advance the live mirror scene");}
   const ops=s.requires;
-  for(const op of ops){if(s.id==="library:M-05"&&op==="repair:library"){ok(b.enter("library"),"enter library for route choice");const early=createExplorer(b,"library");walk(early,early.layout.features[op]);assert(early.interact(op).reason==="library-previous-station","repair must wait until the two routes dialogue");while(b.view().cursor<s.lines.length)host(e=>e.nextLine());}if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
+  for(const op of ops){if(s.id==="library:M-05"&&op==="repair:library"){ok(b.enter("library"),"enter library for route choice");const early=createExplorer(b,"library");walk(early,early.layout.features[op]);assert(early.interact(op).reason==="library-previous-station","repair must wait until the two routes dialogue");while(b.view().cursor<s.lines.length){if(s.choiceAt===b.view().cursor&&!b.view().choice)host(e=>e.choose(s.choices[0].id));host(e=>e.nextLine());}}if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
    if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(s.chapter==="library"){const restored=createExplorer(b,"library");assert(restored.invited.length===2,"library invitations persist");}if(["forest","sky"].includes(s.chapter)){const restored=createExplorer(b,s.chapter);assert(restored.invited.length===2&&x.localNpcs().every(n=>restored.invited.includes(n.id)),s.chapter+" invitations must survive reload");}}
    if(op==="explore:tide-logbook"){
@@ -65,7 +65,7 @@ console.log(JSON.stringify((function test(){
   }else if(["battle:chime-beast","battle:shadow-beast"].includes(op)){ok(b.enter(s.chapter),"enter actual encounter location");const x=createExplorer(b,s.chapter),proof={sceneId:s.id,operation:op,region:s.chapter,verified:true,token:b.capture(),outcome:"win"};assert(!runtime.evidence(proof).ok,"remote victory rejected");walk(x,layouts[s.chapter].features[op]);assert(!runtime.evidence({...proof,outcome:"defeat",token:b.capture()}).ok,"defeat rejected");ok(runtime.evidence({...proof,token:b.capture()}),"battle fixture");rescueBattleCommits++;}else if(op==="battle:root-echo"){ok(b.enter("forest"),"enter forest rescue battle");const x=createExplorer(b,"forest"),rescueProof={sceneId:s.id,operation:op,region:"forest",verified:true,token:b.capture(),outcome:"win"};walk(x,[.31,.58]);assert(!runtime.evidence(rescueProof).ok,"remote victory rejected");walk(x,layouts.forest.features[op]);assert(!runtime.evidence({...rescueProof,outcome:"defeat",token:b.capture()}).ok,"defeat does not finish rescue");ok(runtime.evidence({...rescueProof,token:b.capture()}),"root echo victory evidence fixture");rescueBattleCommits++;assert(b.view().objective[0]==="rescue:trapped-cats","free cats only after victory");}
   else host(e=>e.record(s.id,op));}
   if(s.id==="starfall:F-04"){assert(b.view().ring,"all melodies unlock the story");assert(!b.view().cargoComplete,"optional deliveries remain incomplete");}
-  while(b.view().cursor<s.lines.length)host(e=>e.nextLine());
+  while(b.view().cursor<s.lines.length){if(s.choiceAt===b.view().cursor&&!b.view().choice)host(e=>e.choose(s.choices[0].id));host(e=>e.nextLine());}
   if(s.choices.length&&!b.view().choice)host(e=>e.choose(s.choices[0].id));
   host(e=>e.finish());
   if(s.id==="sky:S-05"){
@@ -91,7 +91,7 @@ console.log(JSON.stringify((function test(){
   if(scene.id==="finale:B-03")for(const [i,region] of campaign.regions.entries())host(e=>e.supportAction(region,campaign.support[i]));
   if(scene.choices.length&&scene.choiceTiming==="beforeAction")host(e=>e.choose(scene.choices[0].id));
   for(const op of scene.requires.filter(op=>!["mechanism:muling-unlock","npc:public-accountability","npc:second-garden-key"].includes(op)))host(e=>e.record(scene.id,op));
-  while(b.view().cursor<scene.lines.length)host(e=>e.nextLine());
+  while(b.view().cursor<scene.lines.length){if(scene.choiceAt===b.view().cursor&&!b.view().choice)host(e=>e.choose(scene.choices[0].id));host(e=>e.nextLine());}
   if(scene.choices.length&&!b.view().choice)host(e=>e.choose(scene.choices[0].id));
   for(const op of b.view().objective)host(e=>e.record(scene.id,op));host(e=>e.finish());
  }

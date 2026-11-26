@@ -42,7 +42,7 @@ try{
     while(e.view().current.id!==target){const s=e.view().current;
      if(s.choices.length&&s.choiceTiming==="beforeAction")yes(e.choose(s.choices[0].id));
      for(const op of s.requires)yes(e.record(s.id,op));
-     while(e.view().cursor<s.lines.length)yes(e.nextLine());
+     while(e.view().cursor<s.lines.length){if(s.choiceAt===e.view().cursor&&!e.view().choice)yes(e.choose(s.choices[0].id));yes(e.nextLine());}
      if(s.choices.length&&!e.view().choice)yes(e.choose(s.choices[0].id));
      yes(e.finish());
     }
