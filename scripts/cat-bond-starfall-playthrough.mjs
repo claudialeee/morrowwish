@@ -143,33 +143,10 @@ export async function playStarfallFromForge({page,button,scene,shot,puzzle,readD
  await scene("starfall:F-04");if(await button("Starfall Expanse").isVisible())await button("Starfall Expanse").click();
  await button("Invite Lichuan").waitFor();assert.equal(await button("Invite Xingya").isVisible(),false);
  await invite("Lichuan");const beforeMelody=(await get()).trust;await button("Beyond Stars").click();const melody=page.locator(".rw-puzzle-controls");await melody.waitFor();for(const n of ["Dew · Low","Starlight · Middle","Flower bell · High"])await button(n,melody).click();await page.waitForTimeout(1000);await shot("starfall-beyond-stars-ceremony");await melody.waitFor({state:"hidden"});const afterMelody=(await get()).trust;assert.equal(afterMelody.xingya,beforeMelody.xingya+1);assert.equal(afterMelody.lichuan,beforeMelody.lichuan+1);
- assert.equal((await get()).ring,false,"Sixth melody cannot replace incomplete cargo");
- assert.equal((await get()).lineReady,false);
- await page.locator(".rw-world").evaluate(el=>{el.scrollTop=0;});await checkStarfallLayout(true);await shot("starfall-missing-exchanges");
- const routes=[
-  ["harbor","forest","Beacon-guided supplies","Herbs and waterway map"],
-  ["forest","forge","Cooling water and herbs","Pumps and tools"],
-  ["forge","sky","Wind vanes and flight parts","Wind data and airship route"],
-  ["sky","library","Courier route","Archived flight maps"],
-  ["library","starfall","Star chart and coordinates","Astronomical observations"],
-  ["starfall","harbor","Navigation bell and star compass","Harbor navigation response"]
- ];
- const names={harbor:"Misttide Harbor",forest:"Rootsleep Forest",forge:"Emberforge City",sky:"Skyspine Isles",library:"Moonmirror Library",starfall:"Starfall Expanse"};
- for(const [a,b,forward,back] of routes){
-   const key=a+":"+b;
-   for(let i=(await get()).links[key].length;i<4;i++){
-    const actor=[a,b,b,a][i],cargo=i<2?forward:back;
-    const label=names[actor]+" · "+(i%2?"Receive ":"Send ")+cargo;
-    await button(label).click();
-    await page.waitForFunction(actor=>WorldMap.mode==="region"&&WorldMap.currentRegion===actor,actor);
-    await ship(actor,cargo);
-    assert.equal((await get()).links[key].length,i+1,"Only the actual delivery may advance "+key);
-   }
- }
- const ready=await get();assert.equal(ready.ring,true);assert.equal(ready.melodies.length,6);assert.equal(ready.sanctuaries.length,6);
- assert.equal(Object.values(ready.links).reduce((n,s)=>n+s.length,0),24);
- assert.ok(ready.support.every(s=>s.ready&&s.received.length===2));
- if(await page.evaluate(()=>WorldMap.currentRegion)!=="starfall")await button("Return to Starfall").click();
+ const ready=await get();assert.equal(ready.ring,true,"Six restored melodies unlock story without manual cargo");assert.equal(ready.lineReady,true);assert.equal(ready.melodies.length,6);assert.equal(ready.sanctuaries.length,6);assert.ok(ready.support.every(s=>s.ready));
+ assert.equal(ready.cargoComplete,false,"Manual cargo remains unfinished");
+ assert.equal(await page.locator(".rw-starfall-ledger").count(),0,"No mandatory cargo ledger");
+ await shot("starfall-story-ready-without-cargo");
  await chapterDialog("starfall:F-04");await scene("starfall:F-05");
  await movie("Watch the story scene","starfall:F-05","finale:B-01");
  await shot("starfall-finale-entry");
