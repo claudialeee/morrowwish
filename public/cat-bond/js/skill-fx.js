@@ -347,9 +347,73 @@ function drawMeleeContact(ctx,v,spec){
  
 // V5: authored geometry for actual projectiles; positions/radii remain battle-owned.
 // No independent hit or damage event is created by these renderers.
+
+/* Actual travel renderer for remaining projectile families. Art is centered on
+ * simulation positions. Basic toy attacks and hostile warning darts stay small. */
+function drawMaterialProjectile(c,p,time=0){
+ if(p.burst||p.owner!=='me'||p.skill?.isBasic||!p.skill||['fish','yarn','fur','claw','crescent','fireball','lightningOrb','hex'].includes(p.kind))return false;
+ const sk=p.skill,id=sk.id||'',el=sk.element;
+ if(!['water','fire','grass','elec','dark','light'].includes(el))return false;
+ const r=Math.max(5,Math.min(20,p.r||8)),ang=Math.hypot(p.vx||0,p.vy||0)>0?Math.atan2(p.vy,p.vx):(p.ang||0);
+ const colors={water:['#246f9f','#71d7f2','#f2ffff'],grass:['#416c42','#a6d779','#f2f9cc'],elec:['#5650a7','#baacff','#fff4b7'],dark:['#403056','#a786dc','#f2dbff'],light:['#8792ca','#d9e6ff','#ffffeb'],fire:['#9c3c21','#ff9a43','#fff4b8']}[el];
+ c.save();c.translate(p.x,p.y);c.rotate(ang);
+ const [dark,col,white]=colors,tail=r*(id==='frostLance'?4:2.8);
+ const grad=c.createLinearGradient(-tail,0,r,0);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(.6,col);grad.addColorStop(1,white);
+ c.globalAlpha=.68;c.fillStyle=grad;
+ c.beginPath();c.moveTo(-tail,0);c.quadraticCurveTo(-r,-r*.72,r*.8,-r*.24);c.quadraticCurveTo(r,-r*.0,r*.8,r*.24);c.quadraticCurveTo(-r,r*.72,-tail,0);c.fill();
+ c.globalAlpha=1;
+ if(id==='frostLance'){
+   poly(c,[[-r*1.8,0],[-r*.4,-r*.62],[r*1.8,0],[-r*.4,r*.62]],dark);
+   poly(c,[[-r*1.8,0],[-r*.4,-r*.62],[r*1.8,0]],white);
+   poly(c,[[-r*1.8,0],[r*1.8,0],[-r*.4,r*.62]],col);
+ }else if(el==='water'){
+   const length=id==='waterLash'?r*2.1:r*1.25;
+   for(let j=0;j<3;j++){
+     c.globalAlpha=1-j*.13;c.fillStyle=j===0?dark:j===1?col:white;
+     const rr=r*(1-j*.28);c.beginPath();c.moveTo(length-j*2,0);c.bezierCurveTo(r,-rr,-r,-rr*.8,-r*1.3,0);c.bezierCurveTo(-r,rr*.8,r,rr,length-j*2,0);c.fill();
+   }
+   for(let j=0;j<5;j++){const u=(time*3+j/5)%1;c.globalAlpha=(1-u)*.8;point(c,-r-u*tail,(hash(j)-.5)*r*2,1+hash(j+2)*1.4,col);}
+ }else if(el==='grass'){
+   if(id==='leafDart'||p.kind==='leaf'){
+     c.globalAlpha=1;c.fillStyle=dark;c.beginPath();c.moveTo(-r*1.4,0);c.quadraticCurveTo(-r,-r*1.05,r*1.6,0);c.quadraticCurveTo(0,r*1.05,-r*1.4,0);c.fill();
+     c.fillStyle=col;c.beginPath();c.moveTo(-r*1.2,0);c.quadraticCurveTo(0,-r*.9,r*1.4,0);c.quadraticCurveTo(0,r*.6,-r*1.2,0);c.fill();stroke(c,white,1.3,.85);path(c,[[-r,0],[r*1.4,0]]);
+   }else{
+     c.save();c.rotate(time*5);const bloom=id==='sporeBloom';
+     const g=c.createRadialGradient(-r*.25,-r*.28,0,0,0,r);g.addColorStop(0,white);g.addColorStop(.5,col);g.addColorStop(1,dark);point(c,0,0,r*.9,g);
+     for(let j=0;j<(bloom?7:3);j++){const th=j*TAU/(bloom?7:3);c.save();c.rotate(th);c.globalAlpha=.82;poly(c,[[r*.2,0],[r*.9,-r*.45],[r*1.15,0],[r*.9,r*.35]],col);c.restore()}c.restore();
+   }
+ }else if(el==='elec'){
+   flare(c,0,0,r*1.55,col,.35);point(c,0,0,r*.72,dark);point(c,0,0,r*.42,white);
+   for(let j=0;j<4;j++){const th=j*TAU/4+time*8;stroke(c,j%2?white:col,1.8,.93);path(c,[[0,0],[Math.cos(th)*r*.6,Math.sin(th)*r*.6],[Math.cos(th+.43)*r*.95,Math.sin(th+.43)*r*.95],[Math.cos(th)*r*1.2,Math.sin(th)*r*1.2]])}
+ }else if(el==='dark'){
+   c.save();c.rotate(time*4);for(let j=0;j<3;j++){c.rotate(TAU/3);c.globalAlpha=.8;c.fillStyle=j?col:dark;c.beginPath();c.moveTo(r,0);c.quadraticCurveTo(0,-r*1.25,-r,0);c.quadraticCurveTo(-r*.1,-r*.35,r,0);c.fill()}point(c,0,0,r*.38,white);c.restore();
+ }else if(el==='light'){
+   poly(c,[[-r*1.6,0],[0,-r*.62],[r*1.6,0],[0,r*.62]],dark);
+   poly(c,[[-r*1.2,0],[0,-r*.5],[r*1.6,0],[0,r*.5]],col);
+   poly(c,[[0,-r*.4],[r*1.5,0],[0,r*.4]],white);
+ }else{
+   point(c,0,0,r*.9,dark);point(c,r*.18,0,r*.68,col);point(c,r*.28,-r*.15,r*.36,white);
+ }
+ c.restore();return true;
+}
+function drawMaterialField(c,f,t){
+ const el=f.element,R=f.r;if(!(R>0)||!['water','grass','light','elec','dark'].includes(el))return false;
+ const a=clip(f.t/.35),col=({water:'#83d7ee',grass:'#a4c878',light:'#fff0b7',elec:'#bab0f9',dark:'#a589ce'})[el];
+ c.save();c.translate(f.x,f.y);
+ // Draw the exact gameplay boundary, while keeping the luminous material inside.
+ const g=c.createRadialGradient(0,0,0,0,0,R);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(.78,col);g.addColorStop(1,'rgba(0,0,0,0)');
+ c.globalAlpha=.12*a;c.fillStyle=g;c.beginPath();c.arc(0,0,R,0,TAU);c.fill();
+ stroke(c,col,1.4,.66*a);c.beginPath();c.arc(0,0,R,0,TAU);c.stroke();
+ if(el==='water'){for(let j=0;j<5;j++){const th=j*TAU/5+t*.7;stroke(c,j%2?'#d5faff':'#3d91b4',j%2?1.5:3.4,.64*a);c.beginPath();c.ellipse(0,0,R*(.76-.07*j),R*(.76-.07*j),0,th,th+.91);c.stroke();}}
+ else if(el==='grass'){for(let j=0;j<9;j++){const th=j*TAU/9,rr=R*(.64+.15*hash(j)),x=Math.cos(th)*rr,y=Math.sin(th)*rr;c.save();c.translate(x,y);c.rotate(th+PI/2);stroke(c,'#4b713e',3.5,.85*a);c.beginPath();c.moveTo(-12,5);c.quadraticCurveTo(0,-15,13,-4);c.stroke();c.globalAlpha=.85*a;poly(c,[[0,-4],[-8,-12],[0,-15],[7,-8]],col);c.restore();}}
+ else if(el==='light'){for(let j=0;j<8;j++){const th=j*TAU/8+t*.2,rr=R*.68,x=Math.cos(th)*rr,y=Math.sin(th)*rr;c.globalAlpha=.65*a;poly(c,[[x-3,y],[x,y-11],[x+3,y],[x,y+6]],col);}}
+ else{for(let j=0;j<5;j++){const th=j*TAU/5+t*.6,rr=R*.83;stroke(c,col,2,.65*a);path(c,[[Math.cos(th)*rr,Math.sin(th)*rr],[Math.cos(th+.12)*rr*.82,Math.sin(th+.12)*rr*.82],[Math.cos(th+.3)*rr,Math.sin(th+.3)*rr]]);}}
+ c.restore();return true;
+}
+
 function drawIdentityProjectile(c,p,time=0){
  const kind=p.kind;
- if(!['fireball','lightningOrb','hex'].includes(kind))return false;
+ if(!['fireball','lightningOrb','hex'].includes(kind))return drawMaterialProjectile(c,p,time);
  const r=Math.max(2,p.r||12),angle=Number.isFinite(p.ang)?p.ang:0;
  c.save();c.translate(p.x,p.y);c.rotate(angle);c.globalAlpha=1;
  if(kind==='fireball'){
@@ -802,5 +866,5 @@ window.CatBondSkillFX={
  // access, so it reflects the full roster however the modules were load-ordered.
  get ids(){ syncGenerics(); return LIST.map(row=>row[0]); },
  has:id=>{ if(!REG[id])syncGenerics(); return !!REG[id]; },
- cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawCombatBeam,drawIdentityProjectile};
+ cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawCombatBeam,drawIdentityProjectile,drawMaterialField};
 })();
