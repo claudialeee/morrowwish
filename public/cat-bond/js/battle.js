@@ -6360,9 +6360,7 @@ class CaptureBattle {
 
     this.drawPackMorale(ctx, W);
 
-    // aim reticle
-    const m = this.game.mouse;
-    if (m) { ctx.strokeStyle = 'rgba(255,211,107,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(m.x, m.y, 9, 0, Math.PI * 2); ctx.moveTo(m.x - 13, m.y); ctx.lineTo(m.x + 13, m.y); ctx.moveTo(m.x, m.y - 13); ctx.lineTo(m.x, m.y + 13); ctx.stroke(); }
+    // The desktop cursor is sufficient; do not paint a persistent targeting overlay.
 
     // Keep target feedback local: a screen-spanning lock tether obscures the fight.
     // The locked enemy also receives its own reticle in the enemy render pass.
@@ -7219,7 +7217,7 @@ class CaptureBattle {
       ctx.textAlign='center';ctx.font='800 10px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle=(broken||shattered)?'#ae534b':'#90641e';
       ctx.fillText(broken?('虚弱 '+poise.stagger.toFixed(1)+'s'):
-        (shattered?'破防':(poise.recovering?'恢复中':'韧性')),x,y+29);
+        (shattered?'破防':(poise.recovering?'恢复中':'韧性')),x,y+21);
     }
     ctx.restore();
   }

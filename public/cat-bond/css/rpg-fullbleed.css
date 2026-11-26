@@ -189,3 +189,12 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .res-host.res-library-reveal .res-portrait{display:none!important}
 #stage .res-host.res-library-reveal .res-body{grid-column:1/-1;min-width:0;box-sizing:border-box}
 @media(max-width:600px){#stage .res-host.res-library-reveal .res-dialogue{width:100%!important}}
+
+/* Direct pursuit: preserve the entire playfield and keep only compact controls. */
+#stage .rw-world>.rw-chase-bar{position:absolute;top:60px;left:50%;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100% - 24px);box-sizing:border-box;padding:6px 10px;border-radius:12px;background:#fff7e8ed;color:#493e2b;font-size:clamp(12px,2.6vw,16px);box-shadow:0 2px 8px #47371d26}
+#stage .rw-chase-bar button{min-height:34px;flex-shrink:0;font-size:12px;padding:4px 8px}
+#stage .rw-world>.rw-chase-stick{position:absolute;bottom:12px;left:12px;width:92px;height:92px;display:grid;place-items:center;z-index:6;border-radius:50%;background:#fff7e8bc;border:2px solid #9c8969;touch-action:none;user-select:none;box-sizing:border-box}
+#stage .rw-chase-knob{display:block;width:34px;height:34px;border-radius:50%;background:#a28c66;border:2px solid #fff4d9;pointer-events:none}
+#stage .rw-world>.rw-chase-jump{position:absolute;bottom:22px;right:16px;z-index:6;min-width:68px;min-height:48px;touch-action:manipulation}
+#stage #battle-ui .move{background:#fff3d9fa!important;color:#3b3020!important;box-shadow:0 2px 6px #49341f50!important;border:1px solid #a3885d55!important}
+@media(max-width:680px) and (orientation:portrait){#stage .rw-world>.rw-chase-bar{top:70px;font-size:12px;line-height:1.35;max-width:calc(100% - 16px)}#stage .rw-world>.rw-chase-stick{bottom:max(12px,env(safe-area-inset-bottom));left:12px}#stage .rw-world>.rw-chase-jump{bottom:max(22px,env(safe-area-inset-bottom))}}
