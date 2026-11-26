@@ -656,7 +656,10 @@
   function secondaryChoices(cat) {
     const secondary=secondaryOf(cat);
     if(!secondary)return [];
-    const native=SKILLS.filter(s=>s.element===secondary&&!s.unlock&&!s.ultCost);
+    // Select the curated side pair from role-legal skills BEFORE applying the slot cap.
+    // Otherwise Jinwu awakens the second choice while the first (illegal) choice occupies the only unlocked slot.
+    const role=cat.buildType||buildTypeForBreed(cat);
+    const native=SKILLS.filter(s=>s.element===secondary&&!s.unlock&&!s.ultCost&&roleAllowsSkill(role,s));
     const attacks=native.filter(s=>SECONDARY_ATTACK_KINDS.has(s.kind));
     const first=attacks.find(s=>!s.generic)||attacks[0]||null;
     const support=native.find(s=>(s.kind==='buff'||s.kind==='heal')&&!s.generic)
