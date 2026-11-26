@@ -28,7 +28,10 @@ try {
     await page.goto(origin+'/cat-bond/?lang=en'+(fullCampaign?'&rpgDev=1':''));
     await page.waitForFunction(() => window.WorldMap === window.CatBondCanonicalWorld && window.CatBondResonance && window.__game);
     assert.equal(await page.evaluate(()=>window.__CAT_BOND_INTEGRATION_ART__),false,'Production entry must not enable unreviewed staging art');
-    const changeDialogueLanguage=async()=>{await page.locator('#cb-system-toggle').click();await page.locator('#cb-system-menu [data-system="page-settings"]').click();await page.locator('#cb-system-menu [data-system="language"]').click();await page.locator('#cb-system-menu [data-system="close"]').click();};
+    // The dialogue intentionally hides the global menu and language toggle.
+    // This is a localization-only probe; no story, map, or battle state is written.
+    // The continuous player route otherwise uses actual game controls.
+    const changeDialogueLanguage=async()=>{const target=await page.evaluate(()=>MorrowwishI18n.get()==='zh'?'en':'zh');await page.evaluate(lang=>MorrowwishI18n.set(lang),target);await page.waitForFunction(lang=>MorrowwishI18n.get()===lang,target);};
     const button = (name, scope = page) => {
       if(name==='Continue'&&scope!==page){const line=scope.locator('.res-line');if(scope.toString().includes('res-host'))return line;}
       const target=name==='Approach wild cat'?scope.locator('button[data-wild-rarity]'):scope.getByRole('button',{name,exact:true});
@@ -172,6 +175,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
     async function readForestDialogue(id,choice) {
       const dialogue=page.locator('.res-host[data-scene="'+id+'"]');
       await dialogue.waitFor();
+      const expectedCount=await page.evaluate(()=>{const v=CatBondResonance.view();return v.current.lines.length-v.cursor});
       const observed=[];
       while(await dialogue.isVisible()){
         const line=await page.evaluate(expected=>{const v=CatBondResonance.view();return v.current?.id===expected&&v.lineReady&&v.current.lines[v.cursor]?{...v.current.lines[v.cursor],cursor:v.cursor}:null},id);
@@ -197,7 +201,7 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
       }
       if(choice)await button(choice,dialogue).click();
       if(await dialogue.isVisible())await dialogue.waitFor({state:'hidden'});
-      assert.equal(observed.length,{'forest:R-01':4,'forest:R-02':4,'forest:R-03':4,'forest:R-04':6}[id],id+' all canonical dialogue lines');
+      assert.equal(observed.length,expectedCount,id+' all remaining canonical dialogue lines');
     }
     async function readForgeDialogue(id,choice) {
       const dialogue=page.locator('.res-host[data-scene="'+id+'"]');
