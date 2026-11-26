@@ -28,6 +28,18 @@ function walk(x,p){assert.ok(x.walk(...p),"walk");for(let i=0;i<1000&&x.moving;i
 function solve(x){let p=x.puzzle;assert.ok(p,"no actual puzzle");if(p.type==="skyFlight"){let result;for(let i=0;i<1000&&x.puzzle;i++){const f=x.puzzle.flight,t=f.x<.24?f.route[0]:f.x<.49?f.route[1]:f.x<.74?f.route[2]:.5;if(!f.started||f.target!==t)x.flightSteer(t);let q=x.flightTick(.05);if(q){result=q;ok(q,"flight");}}assert.ok(result?.ok,"flight fail "+JSON.stringify(x.puzzle?.flight));return;}if(p.type==="pairedWater"){for(const i of [0,0,1,2])ok(x.operate(i),"paired");}else if(["mirrors","water","stars","routing","libraryMirrors"].includes(p.type)){for(let i=0;i<3;i++)for(let j=0;j<10&&x.puzzle&&x.puzzle.values[i]!==p.goal[i];j++)ok(x.operate(i),"dial");}else if(p.type==="heat"){for(let i=0;i<10&&x.puzzle&&x.puzzle.values[0]<p.goal[0];i++)ok(x.operate(0),"heat");for(let i=0;i<10&&x.puzzle&&x.puzzle.values[1]>p.goal[1];i++)ok(x.operate(1),"vent");}else{for(const i of p.goal)ok(x.operate(i),"sequence "+p.type);}assert.ok(!x.puzzle,"still puzzle "+p.type);}
 function recordNpc(o,id,region){walk(o.x,layouts[region].castPoints[id]);ok(o.rt.recordNPC({sceneId:o.b.view().current.id,npcId:id,region,token:o.rt.capture()}),"NPC "+id)}
 function run(id,region,op,seed,prepare){const o=setup(id,region,seed);prepare?.(o);const p=skyLaunch[op]||layouts[region].features[op];walk(o.x,p);const r=o.x.interact(op);ok(r,id+" "+op);assert.ok(r.puzzle,id+" was auto completed");solve(o.x);assert.ok(!o.b.view().objective.includes(op),id+" proof not saved");return o;}
+const forestRescue=setup("forest:R-03","forest");const F=layouts.forest.features;const rescueProof=(operation,outcome)=>({sceneId:"forest:R-03",operation,region:"forest",verified:true,token:forestRescue.rt.capture(),outcome});
+assert.equal(forestRescue.x.interact("puzzle:paired-water-gates").ok,false);
+walk(forestRescue.x,F["rescue:trapped-cats"]);assert.equal(forestRescue.x.interact("rescue:trapped-cats").ok,false);
+walk(forestRescue.x,F["battle:root-echo"]);assert.equal(forestRescue.rt.evidence(rescueProof("battle:root-echo","win")).ok,false);
+walk(forestRescue.x,F["rescue:steady-channel"]);ok(forestRescue.x.interact("rescue:steady-channel"),"partner stabilizes automatically");assert.equal(forestRescue.x.puzzle,null);
+const reload=createExplorer(forestRescue.b,"forest",{adventureActions:true});
+walk(reload,[.39,.40]);assert.equal(reload.interact("explore:water-marks").ok,false,"false dry trail cannot produce evidence");
+walk(reload,F["explore:water-marks"]);ok(reload.interact("explore:water-marks"),"inspect real marks");assert.equal(reload.puzzle,null);
+walk(reload,F["battle:root-echo"]);assert.equal(forestRescue.rt.evidence(rescueProof("battle:root-echo","defeat")).ok,false);assert.equal(forestRescue.b.view().objective[0],"battle:root-echo");
+ok(forestRescue.rt.evidence(rescueProof("battle:root-echo","win")),"root echo victory evidence fixture");assert.equal(forestRescue.b.view().objective[0],"rescue:trapped-cats");
+walk(reload,F["rescue:trapped-cats"]);ok(reload.interact("rescue:trapped-cats"),"rescue cats after victory");assert.equal(reload.puzzle,null);assert.deepEqual(forestRescue.b.view().objective,[]);
+const oldForest=fixture("forest:R-03");oldForest.evidence["forest:R-03"]=["puzzle:paired-water-gates"];oldForest.cursor=2;assert.equal(makeEngine(campaign,oldForest).view().cursor,0);assert.equal(makeEngine(campaign,oldForest).view().objective.length,4);
 const forge=run("forge:E-01","forge","puzzle:festival-lantern");recordNpc(forge,"xiaomao","forge");
 run("forge:E-03","forge","puzzle:heat-pressure");
 run("sky:S-01","sky","puzzle:sky-pouch",root=>root.resonance.links["forge:sky"]=["sendA","receiveB"]);

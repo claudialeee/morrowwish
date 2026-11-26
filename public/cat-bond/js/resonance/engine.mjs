@@ -14,6 +14,13 @@ export function makeEngine(data,initial){
   if(s.completed?.includes("sky:S-02")&&!s.choices["sky:S-02"])s.choices["sky:S-02"]="train";
   s.fullCampaignPresentationVersion=2;
  }
+ // A completed legacy rescue remains completed; a partially played rescue restarts only R-03.
+ if(byId["forest:R-03"]?.requires.includes("battle:root-echo")&&s.evidence?.["forest:R-03"]?.includes("puzzle:paired-water-gates")){
+  const old=s.evidence["forest:R-03"];
+  s.evidence["forest:R-03"]=old.filter(op=>op!=="puzzle:paired-water-gates");
+  if(s.completed.includes("forest:R-03"))s.evidence["forest:R-03"]=[...byId["forest:R-03"].requires];
+  else if(s.scene==="forest:R-03")s.cursor=0;
+ }
  if(typeof s.openingMet!=="boolean")s.openingMet=false;if(!s.ambientDone)s.ambientDone=[];if(!s.ruins)s.ruins={clears:s.postgame.includes("postgame:ruins")?1:0,duoClears:0,attempts:[]};
  const fail=reason=>({ok:false,reason}), commit=()=>({ok:true,state:copy({...s,revision:++s.revision})});
  const ring=()=>data.links.every(([a,b])=>s.links[a+":"+b].length===4);

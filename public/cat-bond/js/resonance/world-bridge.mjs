@@ -139,6 +139,11 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(region==="sky"&&skyLaunch[op]){if(!skyPartsReady(v))return fail("sky-parts-required");const p=w.positions.sky,q=skyLaunch[op];if(!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072||(!direct&&!validSkyFlightProof(op,v.choice??null,proof.flightProof)))return fail("incomplete-flight");}
   if(op==="explore:tide-logbook"&&(!tideTrail.every((_,i)=>w.interactions[tideKey(i)])||!tideNear(w,[.87,.748])))return fail("incomplete-tide-trail");
   if(op==="explore:scent-trail"&&(!scentTrail.slice(0,-1).every((_,i)=>w.interactions[scentKey(i)])||!scentAt(w,scentTrail.length-1)))return fail("incomplete-scent-trail");
+  if(sceneId==="forest:R-03"){
+   if(!direct||!proof.token||!api.isCurrentAction(proof.token)||!point||!atForest(w,point))return fail("walk-to-rescue");
+   if(op==="explore:water-marks"&&!w.interactions["forest:R-03:rescue:steady-channel"])return fail("rescue-partner-required");
+   if(op==="rescue:trapped-cats"&&(!w.interactions["forest:R-03:explore:water-marks"]||v.objective.includes("battle:root-echo")))return fail("rescue-echo-blocking");
+  }
   if(op==="puzzle:paired-water-gates"){
     const pair=w.interactions[pairedKey];
     if(!validPair(State.S,pair)||!atForest(w,[.69,.53]))return fail("upper-gate-required");
