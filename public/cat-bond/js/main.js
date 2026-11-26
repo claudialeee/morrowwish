@@ -176,7 +176,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const set=(id,zh,enText)=>{const el=document.getElementById(id);if(el)el.textContent=en?enText:zh;};
     set('cb-title-name','星铃回响','Echoes of the Starbell');
-    set('cb-title-subtitle','Echoes of the Starbell','星铃回响');
     document.getElementById('intro')?.setAttribute('data-title-lang',en?'en':'zh');
     const start=document.querySelector('#intro-start strong');
     const next=document.querySelector('#intro-continue strong');

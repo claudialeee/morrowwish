@@ -633,35 +633,35 @@ for(let attempt=0;attempt<8&&!point.visible;attempt++){const shell=await surface
       return [b.duo.a.uid,b.duo.b.uid].map(uid=>({uid,species:b.team.find(f=>f.cat.uid===uid)?.cat.species}));
     });
     assert(pair?.length===2&&pair.every(c=>c.species),'The chosen pair must enter the regional encounter');
-    // Observe the real cut-in renderer, not the retired full-screen storyboard.
-    // No gameplay mutation: delegate to the original portrait function unchanged.
+    // Observe the renderer actually installed by duo-bond.js. No combat mutations.
     await page.evaluate(()=>{
-      const b=__game.battle,original=b.cinematicPortrait;
-      window.__cbDuoPortraitEvidence={};
-      b.cinematicPortrait=function(uid){
-        const art=original.call(this,uid),v=this.duoCinematic;
-        if(art&&v?.catUids?.includes(uid)&&!this.ultCinematic){
-          const pixels=art.getContext('2d').getImageData(0,0,art.width,art.height).data;
-          let visible=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i]>128)visible++;
-          if(visible>300)window.__cbDuoPortraitEvidence[uid]={visible,width:art.width,height:art.height};
-        }
-        return art;
+      const hero=CatBondDuoHero,original=hero.draw;
+      window.__cbDuoEvidence={original,frames:[]};
+      hero.draw=function(ctx,W,H,seq,lookup){
+        const draw=CatArt.drawCat,seen=[];
+        CatArt.drawCat=function(c,x,y,opts){const result=draw.call(this,c,x,y,opts);if(c===ctx)seen.push(opts?.species?.id);return result;};
+        try{
+          const result=original.call(this,ctx,W,H,seq,lookup);
+          const p=(seq.max-seq.t)/seq.max;
+          if(p>=.25&&p<=.8&&seen.length===2)window.__cbDuoEvidence.frames.push({uids:[...seq.actorUids||[]],seen,p});
+          return result;
+        }finally{CatArt.drawCat=draw;}
       };
     });
     try{
       if(await duoButton.isVisible()&&await duoButton.isEnabled())await duoButton.click();
       else if(!await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();
-      await page.waitForFunction(({n,uids})=>{
+      await page.waitForFunction(({n,pair})=>{
         const b=__game.battle,v=b?.duoCinematic;
         if(!v||b.duoUses<=n)return false;
         const p=(v.max-v.t)/v.max;
-        return p>=.25&&p<=.8&&v.catUids?.length===2&&uids.every(uid=>v.catUids.includes(uid)&&window.__cbDuoPortraitEvidence[uid]?.visible>300);
-      },{n:duoBefore,uids:pair.map(c=>c.uid)},{timeout:120000});
+        return p>=.25&&p<=.8&&window.__cbDuoEvidence.frames.some(f=>f.uids.length===2&&f.uids.every((uid,i)=>pair.find(c=>c.uid===uid)?.species===f.seen[i]));
+      },{n:duoBefore,pair},{timeout:120000});
       await shot('forge-duo-actual-actors');
-      console.log('REAL DUO CUTIN',JSON.stringify({pair,portraits:await page.evaluate(()=>window.__cbDuoPortraitEvidence)}));
+      console.log('REAL DUO CUTIN',JSON.stringify({pair,frames:await page.evaluate(()=>window.__cbDuoEvidence.frames)}));
       await page.waitForFunction(()=>{const b=__game.battle;return b&&!b.duoCinematic&&b.duoUses>0&&document.querySelector('#cb-forge-hud')?.dataset.cinematic==='false'});
     }finally{
-      await page.evaluate(()=>{const b=__game.battle;if(b)delete b.cinematicPortrait;delete window.__cbDuoPortraitEvidence;});
+      await page.evaluate(()=>{if(window.__cbDuoEvidence){CatBondDuoHero.draw=window.__cbDuoEvidence.original;delete window.__cbDuoEvidence;}});
     }
     if(!await page.evaluate(()=>__game.battle.autoMode))await page.locator('#btn-auto').click();
     // Natural combat only: no HP, time, save or engine writes.

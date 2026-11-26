@@ -25,6 +25,8 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  });
  await screenshot('title');
  assert.equal(title.name,nameExpected);assert.ok(title.documentTitle.includes(nameExpected),'Localized browser title');
+ assert.equal(await page.locator('#cb-title-subtitle').count(),0,'No second-language subtitle');
+ const tagline=await page.locator('.cb-intro-tagline').innerText();assert.equal(/[\u4e00-\u9fff]/.test(tagline),locale==='zh','Single-language tagline');
  assert.equal(title.background,'rgba(0, 0, 0, 0)','No title card background');
  assert.equal(title.image,'none','No title card gradient');assert.equal(title.border,'0px');assert.equal(title.shadow,'none');
  for(const rect of [title.title,title.button])assert.ok(rect.left>=-1&&rect.top>=-1&&rect.right<=title.width+1&&rect.bottom<=title.height+1,'Title and start button fit viewport: '+JSON.stringify(title));

@@ -207,7 +207,8 @@ function openShare(){
   'flip-dash':['反转冲刺','Flip Dash'],
   'parcel-panic':['包裹分拣','Parcel Panic']
  };
- const title=niceNames[route]?.[chinese?0:1]||document.title.split(/[|—]/)[0].trim();
+ const starbell=route==='cat-bond'&&document.querySelector('meta[name="cat-bond-campaign"][content="last-resonance"]')&&document.getElementById('cb-title-name');
+ const title=starbell?(chinese?'星铃回响':'Echoes of the Starbell'):(niceNames[route]?.[chinese?0:1]||document.title.split(/[|—]/)[0].trim());
  // Never share a transient fullscreen/query-state URL, only the game link.
  const url=new URL('/'+route+'/',location.origin).href;
  const message=chinese
