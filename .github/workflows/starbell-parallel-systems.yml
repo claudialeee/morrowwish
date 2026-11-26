@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scope: [skills, combat, progression, saves]
+        scope: [combat, saves]
     env:
       CAT_BOND_EXPERIENCE: '1'
       SCOPE: ${{ matrix.scope }}

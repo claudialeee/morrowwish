@@ -60,8 +60,8 @@ try{
       if(b.beams.length!==1||!f._beamRoot)throw Error('missing live channel '+id);
       if(id==='flameSweep'&&(b.beams[0].len>165||!(sk.sweep>.6)))
         throw Error('flame must have short reach and real left-right sweep');
-      if(id==='thunderStream'&&(b.beams[0].width>18||b.beams[0].len<200))
-        throw Error('lightning stream must be narrow and sustained');
+      if(id==='thunderStream'&&(b.beams[0].width!==sk.width||b.beams[0].len!==sk.reach||b.beams[0].max!==sk.channel||sk.channel<1))
+        throw Error('RPG lightning stream must preserve its authored broad, sustained beam geometry');
       for(let t=0;t<5;t++)b.tickBeams(.08);
       if(b.beams.length!==1)throw Error('channel ended too soon '+id);
       if(target.hp>=hp)throw Error('channel never dealt any damage '+id);
