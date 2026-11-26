@@ -292,7 +292,7 @@
     // SALVO/PULSE projectile: ONE cast queues 3 waves ~0.35s apart. Each wave re-aims at the
     // NEAREST enemy at its own release time, so the player can watch the first wave land and
     // the second/third can retarget mid-cast. pulseCount/pulseGap/pulseHoming define the pattern.
-    { id: 'arcanePulse', name: '咒波三连', element: 'dark', kind: 'projectile', power: 1.1, cd: 5.5, ultCost: 0, pulseCount: 3, pulseGap: 0.35, pulseHoming: 1.6, tags: ['expose','ranged','pulse'], appliesTag: 'expose', vfx: 'orb', desc: '蓄一发按出三连暗波：每 0.35 秒一发自动追击当下最近的敌人，不必一次放完。', unlock: { level: 5 } },
+    { id:'arcanePulse', name:'暗星轰击', element:'dark', kind:'aoe', power:.78, cd:6.5, ultCost:0, reach:340, lobCount:3, lobGap:.42, lobFlight:.76, lobRadius:46, lobSpread:24, tags:['ranged','lob','salvo'], appliesTag:null, vfx:'umbralLob', allowRoles:['dps'], unlock:{level:5,element:'dark',role:['dps']}, desc:'向锁定地面连续抛射三颗暗星能量弹，落地小范围爆裂；落点固定，不追踪。暗系输出专属。' },
     { id:'shadowTendrils', name:'暗影触手', element:'dark', kind:'beam', power:.65, cd:8, ultCost:0, channel:1.6, windup:.22, castSlow:.4, reach:240, width:30, statusDuration:.65, tags:['control','bind','channel','ranged'], appliesTag:'bind', vfx:'tendrils', allowRoles:['control'], unlock:{level:6,element:'dark',role:['control']}, desc:'持续喷出多条暗影触手，贯穿前方狭长区域，低伤害压制并短暂束缚敌人。暗系控制专属。' },
     { id: 'voidMaw',    name: '虚吞',     element: 'dark',  kind: 'aoe',        power: 2.5, cd: 0,   ultCost: 80, tags: ['curse','ult','rewind'],   appliesTag: ['dizzy','rewind'], vfx: 'shockwave', desc: '【必杀】深渊巨口吞噬，时间回溯——将目标斗志拉回数秒前！' },
     // ---- 光 light ----
@@ -1059,7 +1059,7 @@
     const role=cat.buildType||buildTypeForBreed(cat);
     const backline=role==='dps'||role==='control'||role==='support';
     const rangedKind=sk=>['projectile','beam','chain','aoe'].includes(sk.kind);
-    const q=(role==='control'?own.find(sk=>sk.allowRoles?.length===1&&sk.allowRoles[0]==='control'):null)
+    const q=(['control','dps'].includes(role)?own.find(sk=>sk.allowRoles?.length===1&&sk.allowRoles[0]===role):null)
       ||(backline?(own.find(rangedKind)||pool.find(rangedKind)):null)
       ||own.find(sk=>attackKinds.includes(sk.kind))
       ||pool.find(sk=>attackKinds.includes(sk.kind))||null;
@@ -1288,7 +1288,7 @@
     // real moves (咳毛球/烈焰罩/彗星爪), not a generic barrage. Lead with an authored own-element
     // attack; add a second of a DIFFERENT kind (also authored-first) for variety.
     const authored = attacks.filter(sk => !sk.generic);
-    const rotLead = (role==='control'?authored.find(sk=>sk.element===own&&sk.allowRoles?.length===1&&sk.allowRoles[0]==='control'):null)
+    const rotLead = (['control','dps'].includes(role)?authored.find(sk=>sk.element===own&&sk.allowRoles?.length===1&&sk.allowRoles[0]===role):null)
       ||authored.find(sk => sk.element === own) || authored[0] || primary;
     const rotation = [];
     if (rotLead) rotation.push(rotLead);
@@ -1352,7 +1352,7 @@
       q=pick(sk=>sk.kind==='heal')||pick(isShieldSkill);
       e=pick(attack,q)||pick(sk=>sk.kind==='buff',q);
     }else if(role==='dps'){
-      q=pick(ranged)||pick(attack);
+      q=pick(sk=>sk.allowRoles?.length===1&&sk.allowRoles[0]==='dps'&&attack(sk))||pick(ranged)||pick(attack);
       e=pick(sk=>attack(sk)&&sk.kind!==q?.kind,q)||pick(attack,q);
     }else if(role==='assassin'){
       // Assassin should prioritize a genuine gap closer over fighter's

@@ -35,7 +35,7 @@ const LIST=[
 ['lickWound','heal','#f6d6a8',52,46],
 // Salvo/pulse skills (owner 2026-11-25 "多次发出能量波"): one cast releases 3 waves ~0.3s apart.
 // Dark & water flavors, so each gets a distinct hex/orb style with element-tinted trail.
-['arcanePulse','hex','#b89cff',55,47],
+['arcanePulse','umbralLob','#b89cff',46,47],
 ['tidalPulse','orb','#a0e6ff',54,48],
 ['crescentFan','fang','#e8e2ff',66,49]
 ];
@@ -80,7 +80,7 @@ function cast(b,f,sk,aim){
  // A second circular skill glyph used to bury both the paws and the target.
  // Keep the per-skill HIT accent, which spawns only after genuine contact.
  if(sk.kind==='melee')return true;
- if(['waterJet','magneticField','shadowTendrils'].includes(sk.id))return true;
+ if(['waterJet','magneticField','shadowTendrils','arcanePulse'].includes(sk.id))return true;
  if(sk.id==='mirrorWall')return true; // the physical 220px panel owns all visual feedback
  const g=REG[sk.id],dur=['beam','aoe','pounce','dash'].includes(sk.kind)?.51:.36;
  push(b,{kind:'signatureCast',skillId:sk.id,x:f.x,y:f.y,angle:aim||0,
@@ -302,6 +302,65 @@ function drawMeleeContact(ctx,v,spec){
    return Array.from({length:6},(_,i)=>{const a=i*2.399,rr=i?b.r*(.32+.28*hash(i+8)):0;
      return {x:b.tx+Math.cos(a)*rr,y:b.ty+Math.sin(a)*rr,r:i?8+hash(i+31)*7:20,lag:i?(.035+i*.055):0};});
  }
+
+ // Arc height is a draw-only z coordinate over the real ground path.
+ function umbralLobPosition(b,p){
+   p=clip(p);
+   return {x:b.sx+(b.tx-b.sx)*p,y:b.sy+(b.ty-b.sy)*p-4*(b.height||96)*p*(1-p),
+     gx:b.sx+(b.tx-b.sx)*p,gy:b.sy+(b.ty-b.sy)*p};
+ }
+ function drawUmbralLob(c,b,time=0){
+   const p=clip(b.age/b.flight),q=umbralLobPosition(b,p),R=b.r||46;
+   c.save();
+   // Exact-radius danger circle with an inward clock, never a cosmetic oversized hitbox.
+   c.globalAlpha=.11;c.fillStyle='#49305d';c.beginPath();c.arc(b.tx,b.ty,R,0,TAU);c.fill();
+   stroke(c,'#583565',1.6,.65);c.beginPath();c.arc(b.tx,b.ty,R,0,TAU);c.stroke();
+   stroke(c,'#c8a1ee',2.1,.88);c.beginPath();c.arc(b.tx,b.ty,R,-PI/2,-PI/2+TAU*p);c.stroke();
+   c.globalAlpha=.24;c.fillStyle='#281b38';c.beginPath();c.ellipse(q.gx,q.gy,12,6,0,0,TAU);c.fill();
+   // Curved tapered trailing ribbon from the previous physical trajectory, not a straight line.
+   const body=12+2*Math.sin(PI*p),tail=Math.min(p,.24);
+   for(let i=14;i>=1;i--){
+     const a=i/14,z=umbralLobPosition(b,p-tail*a),z2=umbralLobPosition(b,p-tail*(i-1)/14);
+     stroke(c,i%3===0?'#c7a0ef':'#6a3b99',Math.max(1,body*(1-a)*1.15),.62*(1-a));
+     path(c,[[z.x,z.y],[z2.x,z2.y]]);
+   }
+   c.translate(q.x,q.y);c.globalAlpha=1;
+   const g=c.createRadialGradient(-3,-4,1,0,0,body);
+   g.addColorStop(0,'#e9ceff');g.addColorStop(.20,'#a371e3');g.addColorStop(.40,'#322044');g.addColorStop(.70,'#17101f');g.addColorStop(.90,'#643d9b');g.addColorStop(1,'#ba91ea');
+   c.fillStyle=g;c.beginPath();c.arc(0,0,body,0,TAU);c.fill();
+   stroke(c,'#d2b3ff',1.7,.95);c.beginPath();c.arc(0,0,body,-1.9+time*4,.2+time*4);c.stroke();
+   stroke(c,'#7950b5',1.6,.85);c.beginPath();c.arc(0,0,body+2,1+time*3,3.4+time*3);c.stroke();
+   for(let i=0;i<5;i++){
+     const ang=i*TAU/5+time*4+b.index*.9;
+     const rr=body*(.7+hash(i+5)*.55);c.globalAlpha=.9;
+     point(c,Math.cos(ang)*rr,Math.sin(ang)*rr,1.2+hash(i)*1.3,'#e0bcff');
+   }
+   c.restore();return true;
+ }
+ function drawUmbralImpact(c,v){
+   const p=1-clip(v.life/v.max),k=1-p,R=v.r||46;
+   c.save();c.translate(v.x,v.y);
+   c.globalAlpha=.32*k;c.fillStyle='#32213e';c.beginPath();c.arc(0,0,R*(.55+.45*p),0,TAU);c.fill();
+   // Dark central void gives a strong silhouette on pale watercolor backgrounds.
+   const pop=clip(1-p/.42),r=R*(.18+.74*ease(p));
+   if(pop>0){
+     flare(c,0,0,R*(.42+.48*p),'#a16bdf',.76*pop);
+     c.globalAlpha=pop*.95;c.fillStyle='#1d142d';c.beginPath();c.arc(0,0,R*.18*(.6+pop),0,TAU);c.fill();
+   }
+   for(const [color,width,alpha] of [['#3b244e',5,.85],['#985fce',3,.92],['#e7c9ff',1.2,.9]]){
+     stroke(c,color,width,k*alpha);c.beginPath();c.arc(0,0,r,0,TAU);c.stroke();
+   }
+   for(let i=0;i<9;i++){
+     const a=i*TAU/9+hash(i+v.index*17)*.52,d=R*(.22+.71*p)*(.68+.32*hash(i+19));
+     const x=Math.cos(a)*d,y=Math.sin(a)*d,sz=(3+hash(i+21)*5)*k;
+     c.globalAlpha=.85*k;c.fillStyle=i%3?'#8555b9':'#e1bdff';c.beginPath();
+     c.moveTo(x+Math.cos(a)*sz,y+Math.sin(a)*sz);
+     c.lineTo(x+Math.cos(a+2.5)*sz*.55,y+Math.sin(a+2.5)*sz*.55);
+     c.lineTo(x+Math.cos(a-2.5)*sz,y+Math.sin(a-2.5)*sz);c.closePath();c.fill();
+   }
+   c.restore();return true;
+ }
+
  function drawMeteorFlight(c,p,time=0){
    const b=p.burst;if(b?.skill?.id!=='meteor')return false;
    // The existing lob remains the authoritative damage clock. All rocks
@@ -740,6 +799,8 @@ function drawIdentitySupport(c,v,time=0){
 }
 
 function draw(ctx,v,time=0){
+ if(v?.umbralGround)return drawUmbralImpact(ctx,v);
+ if(v?.skillId==='arcanePulse'&&v.kind==='signatureHit')return drawUmbralImpact(ctx,{...v,r:17,index:0});
  if(v?.kind==='shadowBindHit'||(v?.skillId==='shadowTendrils'&&v.kind==='signatureHit'))return drawShadowBind(ctx,v,time);
  if(v?.kind==='waterPierce'||(v?.skillId==='waterJet'&&v.kind==='signatureHit'))return drawWaterPierce(ctx,v);
  if(v?.meteorGround)return drawMeteorGround(ctx,v);
@@ -1010,5 +1071,5 @@ window.CatBondSkillFX={
  // access, so it reflects the full roster however the modules were load-ordered.
  get ids(){ syncGenerics(); return LIST.map(row=>row[0]); },
  has:id=>{ if(!REG[id])syncGenerics(); return !!REG[id]; },
- cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawCombatBeam,drawIdentityProjectile,drawMaterialField,drawTravel,drawInstantLine};
+ cast,support,hit,draw,drawStatus,drawDizzyStars,drawMeteorFlight,meteorImpact,drawUmbralLob,umbralLobPosition,drawCombatBeam,drawIdentityProjectile,drawMaterialField,drawTravel,drawInstantLine};
 })();

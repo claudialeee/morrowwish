@@ -245,6 +245,7 @@ class CaptureBattle {
     this.beams = [];                     // channeled beam skills (水枪/flamethrower): continuous line damage
     this.fields = [];                    // lingering elemental ground zones (Terraformer): apply tags, can be detonated
     this.skillStrokes=[]; // Short-lived authored 2D spell shapes (not recolored bullets)
+    this._umbralLobs=[];
     this.duoField=null; // Elemental field lasting through several combat seconds
     this.particles = [];
     this.floaters = [];                  // damage numbers
@@ -2566,7 +2567,7 @@ class CaptureBattle {
     const kind = sk ? sk.kind : 'projectile';
     // Close-range claws have a single painted brush: do not add a second
     // rotating circular elemental cast badge over the kitten's head.
-    if((sk?.ultCost||0)===0&&kind!=='melee'&&!['waterJet','magneticField','shadowTendrils'].includes(sk.id))
+    if((sk?.ultCost||0)===0&&kind!=='melee'&&!['waterJet','magneticField','shadowTendrils','arcanePulse'].includes(sk.id))
       this.regularSkillAccent(f,sk?.element||f.element,aim,!!sk?.isBasic);
     // Skill IDs select 39 different local silhouettes; generic element accents
     // remain as a subtle baseline and projectile mechanics are untouched.
@@ -2593,6 +2594,8 @@ class CaptureBattle {
       this.meleeStrike(f, aim, sk, f.dmg * pow * 1.6, col);
     } else if(sk.id==='magneticField'){
       this.castMagneticField(f,aim,sk,f.dmg*pow,col,'me');
+    } else if(sk.id==='arcanePulse'){
+      this.castUmbralBarrage(f,aim,sk,f.dmg*pow,col,'me');
     } else if (kind === 'aoe') {
       this.lobAoe(f, aim, sk, f.dmg * pow, col);
     } else if (kind === 'dash') {
@@ -2700,6 +2703,68 @@ class CaptureBattle {
     }
     this.vfx.muzzle(f.x, f.y, ang, col);
   }
+
+  // Ground-locked artillery: each ball has its own launch/flight/impact clock.
+  // No projectile steering, interception, contact collision or target re-aim.
+  castUmbralBarrage(f,aim,sk,dmg,col,side='me',target=null){
+    const reach=sk.reach||340,mouse=this.game?.mouse;
+    let tgt=target;
+    if(!tgt&&side==='me'){
+      if(f===this.me()&&!this.game?.isTouch&&Number.isFinite(mouse?.x)&&Number.isFinite(mouse?.y))tgt=mouse;
+      else tgt=this.lockedEnemy?.()||this.nearestEnemy(f.x,f.y);
+    }
+    let dx=(tgt?.x??(f.x+Math.cos(aim)*reach))-f.x,dy=(tgt?.y??(f.y+Math.sin(aim)*reach))-f.y;
+    const dist=Math.hypot(dx,dy)||1,scale=Math.min(1,reach/dist);dx*=scale;dy*=scale;
+    const nx=dist>1?-dy/(Math.hypot(dx,dy)||1):-Math.sin(aim),ny=dist>1?dx/(Math.hypot(dx,dy)||1):Math.cos(aim);
+    const shots=sk.lobCount||3,gap=sk.lobGap||.42,flight=sk.lobFlight||.76;
+    this._umbralLobs??=[];
+    for(let i=0;i<shots;i++){
+      const offset=i===0?0:(i%2?1:-1)*(sk.lobSpread||24)*Math.ceil(i/2);
+      let ox=dx+nx*offset,oy=dy+ny*offset;
+      const l=Math.hypot(ox,oy)||1,k=Math.min(1,reach/l);ox*=k;oy*=k;
+      const tx=clamp(f.x+ox,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
+      const ty=clamp(f.y+oy,this.topMargin,this.H-this.bottomMargin);
+      const b={caster:f,owner:side,skill:{...sk,_traitCaster:side==='me'?f:null},dmg,col,tx,ty,r:sk.lobRadius||46,
+        wait:i*gap,flight,age:0,launched:false,index:i};
+      if(i===0)this.launchUmbralLob(b);
+      this._umbralLobs.push(b);
+    }
+  }
+  launchUmbralLob(b){
+    const f=b.caster,angle=Math.atan2(b.ty-f.y,b.tx-f.x);
+    b.sx=f.x+Math.cos(angle)*16;b.sy=f.y+Math.sin(angle)*16;
+    b.height=66+Math.min(42,Math.hypot(b.tx-b.sx,b.ty-b.sy)*.13);
+    b.launched=true;
+    this.vfx.muzzle?.(b.sx,b.sy,angle,b.col);
+  }
+  tickUmbralLobs(dt){
+    if(!this._umbralLobs?.length||!(dt>0))return;
+    const keep=[];
+    for(const b of this._umbralLobs){
+      let step=dt;
+      if(!b.launched){
+        if(!b.caster?.alive)continue;
+        if(b.wait>step){b.wait-=step;keep.push(b);continue;}
+        step-=b.wait;b.wait=0;this.launchUmbralLob(b);
+      }
+      b.age+=step;
+      if(b.age+1e-8<b.flight){keep.push(b);continue;}
+      this.impactUmbralLob(b);
+    }
+    this._umbralLobs=keep;
+  }
+  impactUmbralLob(b){
+    // The displayed ground circle IS the damage circle; no homing or extra invisible splash.
+    this.skillStrokes.push({kind:'signatureHit',skillId:'arcanePulse',umbralGround:true,x:b.tx,y:b.ty,r:b.r,index:b.index,life:.62,max:.62});
+    const targets=b.owner==='me'?this.liveEnemies():this.team.filter(f=>f.alive);
+    for(const target of targets){
+      if(Math.hypot(target.x-b.tx,target.y-b.ty)<=b.r)
+        this.resolveHit(target,b.owner,b.skill,b.dmg,b.tx,b.ty);
+    }
+    this.shakeT=Math.max(this.shakeT||0,this.game?.isTouch?.045:.075);
+    window.MorrowwishAudio?.effect?.('combat_magic');
+  }
+
   // Detonate a lobbed AOE at its landing point: everyone inside R takes the hit.
   burstAt(p) {
     const b = p.burst; if (!b) return;
@@ -4474,7 +4539,7 @@ class CaptureBattle {
       }
     }
     if(this.coach)this.coachSeconds+=dt;
-    // Release queued salvo/pulse projectiles (arcanePulse / tidalPulse). Runs on real
+    // Release queued straight/homing pulse projectiles (crescentFan / tidalPulse). Runs on real
     // frame time (pre tempoScale) so its spacing matches the authored pulseGap seconds.
     this.updatePulseQueue&&this.updatePulseQueue();
     this.ultCd=Math.max(0,this.ultCd-dt); // real frame time, before simulation slowdown
@@ -4794,6 +4859,7 @@ class CaptureBattle {
     }
 
     // ---- 对波: opposing projectiles clash mid-field (signature 羁绊之旅 feel) ----
+    this.tickUmbralLobs(dt);
     this.tickProjectileClash(dt);
     // ---- projectiles ----
     for (const p of this.projectiles) {
@@ -5608,6 +5674,7 @@ class CaptureBattle {
     const dmg = e.dmg * (sk.power || 1) * (e.status && e.status.weaken ? 0.5 : 1);
     const k = sk.kind;
     this.vfx.muzzle(e.x, e.y, aim, col);
+    if(sk.id==='arcanePulse'){this.castUmbralBarrage(e,aim,sk,dmg,col,'wild',me);return;}
     if(sk.id==='magneticField'){this.castMagneticField(e,aim,sk,dmg,col,'wild');return;}
     if (k === 'aoe') { this.enemyLobAoe(e, me, col); e.inv = Math.max(e.inv || 0, 0.12); return; }
     if (k === 'dash' || k === 'leap' || k === 'pounce') {
@@ -6658,6 +6725,8 @@ class CaptureBattle {
     this.drawBeams(ctx);
     this.drawDeathRay(ctx);                        // 破坏死光 sweeping beam (additive + scorch)
 
+    // Artillery ground telegraphs and elevated lob silhouettes are shared by both sides.
+    for(const b of this._umbralLobs||[])if(b.launched)window.CatBondSkillFX?.drawUmbralLob(ctx,b,this.t);
     // projectiles with glow
     for (const p of this.projectiles) {
       if(window.CatBondSkillFX?.drawMeteorFlight(ctx,p,this.t))continue;
