@@ -1905,7 +1905,7 @@ class CaptureBattle {
     // ones, pushing Q/E priming. (Playtest P1: basic was a self-sufficient win cond.)
     f._basicTick = (f._basicTick || 0) + 1;
     const toy = 'yarn';
-    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*BASIC_POWER_MULT*this.outgoingBuffMult(f), 'me', col, 7, toy, { element: f.element, isBasic: true }, 0.5);
+    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*BASIC_POWER_MULT*this.outgoingBuffMult(f), 'me', col, 7, toy, { element: f.element, isBasic: true, _traitCaster:f }, 0.5);
     this.vfx.muzzle(mx, my, aim, col);
     this.regularSkillAccent(f,f.element,aim,true);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
@@ -1961,17 +1961,18 @@ class CaptureBattle {
         }
         this.vfx.ring(f.x,f.y,{r0:R*0.3,vr:R*2,life:.6,color:'#8fe0ff',width:5});
         this.vfx.text(f.x,f.y-34,window.MorrowwishI18n?.get?.()!=='zh'?'regen field':'回复领域','#a8e9f0',14);
-        this.gainUlt(6); window.CatBondSkillFX?.support(this,f,sk);
+        this.gainUlt(6,f); window.CatBondSkillFX?.support(this,f,sk);
         return any;
       }
       const canCleanse = (sk.healMode==='cleanse'||sk.tags?.includes('cleanse')) && t.status && Object.keys(t.status).length;
       // 元素愈合微调 (generic template tweaks): `big`/single heals more (light), `hot`
       // leaves a regen-over-time. An un-wounded target still accepts a hot/cleanse refresh.
       const hasHot = !!sk.hot;
-      if(t.hp>=t.maxhp-.5 && !canCleanse && !hasHot)return false;
+      if(t.hp>=t.maxhp-.5 && !canCleanse && !hasHot&&f.cat?.species!=='bosi')return false;
       const pct = sk.healPct ?? ((sk.healMode==='single'||sk.big) ? 0.46 : 0.34); // learned heal upgrade matters
-      const amount=Math.min(t.maxhp-t.hp,Math.max(14,t.maxhp*pct));
+      const requested=Math.max(14,t.maxhp*pct),amount=Math.min(t.maxhp-t.hp,requested);
       t.hp=Math.min(t.maxhp,t.hp+amount);
+      window.CatTraits?.emit('onHealResolved',{battle:this,cat:f,target:t,amount,requested,skill:sk});
       if(hasHot){ t.hotT=Math.max(t.hotT||0,4.0); t.hotRate=t.maxhp*0.035; }   // ~3.5%/s for 4s (water)
       if(sk.selfBuff){ f.damageBoostT=Math.max(f.damageBoostT||0,3.0); }       // fire self-heal also buffs
       if(sk.haste){ t.hasteT=Math.max(t.hasteT||0,4.0); }                      // elec heal → brief speed-up
@@ -1980,6 +1981,7 @@ class CaptureBattle {
       if(canCleanse){
         const worst=Object.keys(t.status)[0];
         delete t.status[worst]; t.tags=(t.tags||[]).filter(x=>x!==worst);
+        window.CatTraits?.emit('onCleanse',{battle:this,cat:f,target:t,tag:worst,skill:sk});
         this.vfx.text(t.x,t.y-50,'✦ '+(window.MorrowwishI18n?.get?.()!=='zh'?'cleansed':'净化'),'#cfeed8',13);
         this.vfx.impactType?.(t.x,t.y,'cleanse',{color:'#bcebd0'});
       }
@@ -2024,7 +2026,7 @@ class CaptureBattle {
         if(t!==f)this.vfx.beam(f.x,f.y,t.x,t.y,'#ffd9a0');
       }
     }else return false;
-    this.gainUlt(6);
+    this.gainUlt(6,f);
     window.CatBondSkillFX?.support(this,t,sk);
     // Skill impact visual and icon communicate the attack; no repeated toast.
     return true;
@@ -2195,7 +2197,7 @@ class CaptureBattle {
       if(!tgt)continue;
       const ang=Math.atan2(tgt.y-caster.y,tgt.x-caster.x);
       const ex=caster.x+Math.cos(ang)*23, ey=caster.y+Math.sin(ang)*23;
-      const fakeSk={id:p.skillId,element:p.element,homing:p.homing,isDerived:true,
+      const fakeSk={id:p.skillId,element:p.element,homing:p.homing,isDerived:true,_traitCaster:caster,
         appliesTag:p.skillId==='tidalPulse'?'soak':'expose',power:1};
       this.spawnProj(ex,ey,ang,p.spd,p.baseDmg,'me',p.col,p.projR,p.projKind,fakeSk,p.life);
       this.vfx.burst(ex,ey,{count:7,color:p.col,angle:ang,spread:.5,speed:130,life:.26,r:2.1});
@@ -2237,6 +2239,7 @@ class CaptureBattle {
     } else {
       // Barrier 护盾: % reduction for a duration (the classic bubble).
       f.shieldT=sk?.wardDuration||4.8;
+      if(f.cat?.species==='dundun')f._traitWardHP=f.maxhp*.28;
       f._wardReduction=Math.max(0,Math.min(.8,sk?.wardReduction??.45));
       f._wardRegenPct=sk?.wardRegenPct||0;
       f._wardRetaliateBurn=!!sk?.wardRetaliateBurn;
@@ -2403,7 +2406,7 @@ class CaptureBattle {
         f.hp=Math.min(f.maxhp,f.hp+f.maxhp*f._wardRegenPct*dt);
     }
     if(f.shieldT<=0){
-      f._wardReduction=null;f._wardRegenPct=0;f._wardRetaliateBurn=false;
+      f._wardReduction=null;f._wardRegenPct=0;f._wardRetaliateBurn=false;f._traitWardHP=0;
     }
     if (f.protectT > 0) { f.protectT = Math.max(0, f.protectT - dt); if (f.protectT === 0 && f._protectVuln) { f.vulnerableT = f._protectVuln; f._protectVuln = 0; } }
     if(f.reflectT>0)f.reflectT=Math.max(0,f.reflectT-dt);
@@ -2522,6 +2525,9 @@ class CaptureBattle {
       window.MorrowwishAudio?.effect?.('charge');
       return;
     }
+    sk={...sk,_traitCaster:f};
+    if(!sk.isBasic)window.CatTraits?.emit('onSkillCast',{battle:this,cat:f,skill:sk});
+    if(sk.heavy)pow*=f._heavyBonus||1;
     // 后遗症 (post-cast recovery): heavy skills leave the caster briefly sluggish.
     if (sk && sk.castSlow) f._castSlow = sk.castSlow;
     const kind = sk ? sk.kind : 'projectile';
@@ -2668,7 +2674,7 @@ class CaptureBattle {
     this.vfx.ring(b.tx, b.ty, { r0: 12, vr: b.r * 6, life: 0.4, color: b.col, width: 7 });
     this.vfx.burst(b.tx, b.ty, { count: this.game.isTouch ? 12 : 22, color: b.col, speed: 240, life: 0.5, r: 4 });
     if (side === 'me') {
-      for (const e of this.liveEnemies()) if (Math.hypot(e.x - b.tx, e.y - b.ty) <= b.r) this.resolveHit(e, 'me', b.skill, b.dmg, e.x, e.y);
+      for (const e of this.liveEnemies()) if (Math.hypot(e.x - b.tx, e.y - b.ty) <= b.r) this.resolveHit(e, 'me', b.skill, b.dmg, e.x, e.y,p);
     } else {
       for (const tf of this.team) if (tf.alive && Math.hypot(tf.x - b.tx, tf.y - b.ty) <= b.r) this.resolveHit(tf, 'wild', b.skill, b.dmg, tf.x, tf.y);
     }
@@ -2687,7 +2693,7 @@ class CaptureBattle {
       element: spec.element || sk?.element,      // what this field IS (fire/water/elec…)
       tag: spec.tag,                             // status it drips to units standing inside
       dps: spec.dps || 0,                        // optional small ground damage
-      t: spec.life || 5, max: spec.life || 5, _drip: 0, skill: sk || null,
+      t: spec.life || 5, max: spec.life || 5, _drip: 0, skill: sk || null,_traitCaster:sk?._traitCaster||null,
     });
   }
   // Tick fields: drip tags/damage to units inside; check for a reacting projectile
@@ -3160,7 +3166,7 @@ class CaptureBattle {
       this.vfx.burst(f.x,f.y,{count:12,color:col,angle:aim+Math.PI,spread:1.2,speed:220});
       this.regularSkillAccent(f,f.element,aim);
     }
-    this.gainUlt(6);
+    this.gainUlt(6,f);
     this.markMoveSeen(f,sk);
     // The dash animation is the feedback: no blocking combat toast.
     return true;
@@ -3258,7 +3264,7 @@ class CaptureBattle {
         if (recentOffense) {
           const heal = Math.round(f.maxhp * 0.04);
           f.hp = Math.min(f.maxhp, f.hp + heal);
-          this.gainUlt(6);
+          this.gainUlt(6,f);
           this.vfx.text(f.x, f.y - 42, 'nice!', '#bfe9ff', 13);
         }
         f.dodgeCd = 0.7;                                  // next dodge sooner — learnable timing
@@ -3310,8 +3316,8 @@ class CaptureBattle {
     if ((f.hasteT || 0) > 0) m *= 1.25;  // 静电舔毛 haste: brief move speed-up (elec heal tweak)
     // TRAIT FLAGS (V4 audit #8): passives can set _speedMult (yinghua/yuelian support
     // allies), _slowMult (yinghua binding), applied here so cat+ally movement reacts.
-    if (f._speedMult) m *= f._speedMult;
-    if (f._slowMult) m *= f._slowMult;
+    if (f._speedMult && (f._speedBuffUntil??0)>this.t) m *= f._speedMult;
+    if (f._slowMult && (f._slowT??0)>this.t) m *= f._slowMult;
     return m;
   }
   canUltimate(){ return this.ult>=100 && this.ultCd<=0 && !this.ultCinematic; }
@@ -3387,6 +3393,7 @@ class CaptureBattle {
   // cats' ultimates look and play differently; all funnel damage through resolveHit
   // and return {total,kos,hits} for the shared consequence/banner logic.
   ultArchetype(f, skill, color, dmg) {
+    skill={...skill,_traitCaster:f};
     let total = 0, kos = 0, hits = 0;
     const strike = (e, mult, px, py) => {
       if (!e.alive) return;
@@ -3790,14 +3797,14 @@ class CaptureBattle {
     this.game.updateSkillLabels?.();
   }
 
-  gainUlt(n) {
+  gainUlt(n, actor=null) {
     const before = this.ult;
     this.ult = Math.min(100, this.ult + n);
     // Trait system: onResourceGained for 金豆 电力共享 (shares ult to lowest-ult ally).
     // No-op until traits-p2 PR registers it. gainUlt is the ult meter chokepoint.
-    if (n > 0 && window.CatTraits) {
+    if (n > 0 && actor?.alive && window.CatTraits) {
       window.CatTraits.emit('onResourceGained',
-        { battle: this, cat: this.me(), amount: n, newTotal: this.ult });
+        { battle: this, cat: actor, amount: this.ult-before, newTotal: this.ult });
     }
     // Rising edge: the instant the meter first fills, announce it (banner + sting +
     // button pulse) so players actually press R. (Playtest P2: 0 ults fired in 8
@@ -3840,7 +3847,7 @@ class CaptureBattle {
     // milestones: juice ramps with the chain (Balatro-style crescendo)
     if (this.combo > 0 && this.combo % 10 === 0) {
       this.comboFlash = 0.5; this.shakeT = Math.max(this.shakeT, 0.15);
-      this.gainUlt(6);                                          // chains feed the ult
+      this.gainUlt(6,f);                                          // chains feed the ult
       const me = this.me();
       // The compact combo chip in the HUD replaces this mid-arena banner.
       this.vfx.ring(me.x, me.y, { r0: 10, vr: 420, life: 0.4, color: '#ffd36b', width: 4 });
@@ -3854,7 +3861,7 @@ class CaptureBattle {
 
   spawnProj(x, y, ang, spd, dmg, owner, color, r, kind, skill, life) {
     const L = life || 2.2;
-    const p = { x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, owner, color, r, r0: r, kind, life: L, maxLife: L, ang, skill: skill || null };
+    const p = { x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, owner, color, r, r0: r, kind, life: L, maxLife: L, ang, skill: skill || null, _traitCaster:owner==='me'?skill?._traitCaster||null:null };
     if (this._debug && owner === 'me') p._firedBy = this._dbgFiringCat;   // debug-log: tag the actual firing cat so projectile hits name the right ally
     // Optional projectile behaviours carried from the skill:
     //  grow  — radius expands over flight (bigger area the longer it travels)
@@ -5214,7 +5221,8 @@ class CaptureBattle {
         if ((sk.kind === 'projectile' || sk.kind === 'beam' || sk.kind === 'chain') &&
             (this.reflectCovers(me, e.x, e.y) || this.wallBlockingLine(e.x, e.y, me.x, me.y, 'wild'))) continue;
         this.castEnemySkill(e, me, sk);
-        e.skillCd[s] = Math.max(2.4, sk.cd || 3);              // honour the skill's own cd, floored
+        e._lastAttackT=this.t;
+        e.skillCd[s] = Math.max(2.4, sk.cd || 3)/(e.status?.suppress>0?.6:1);              // honour the skill's own cd, floored
         e._castSlow = sk.castSlow || 0.6;                       // 后遗症: a readable/punishable recovery
         return;                                                 // one action this frame
       }
@@ -5252,7 +5260,8 @@ class CaptureBattle {
       // even at max pressure+closing the enemy caps at ~0.6s/shot (≈1.6 shots/s).
       const pressureBoost = 1 + 0.30 * (this._pressure || 0);
       const closingFireBoost = 1 + 0.25 * (this._closing || 0);
-      e.fireCd = Math.max(0.60, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase / (pressureBoost * closingFireBoost);   // +floor; 感电降攻速
+      e._lastAttackT=this.t;
+      e.fireCd = Math.max(0.60, e.fireRate * (1 - e.aggro * 0.35)) * (e.slowed ? 1.8 : 1) * manualEase / (pressureBoost * closingFireBoost)/(e.status?.suppress>0?.6:1);   // +floor; 感电降攻速
       // Lead at the ACTUAL projectile speed so the intercept solution matches flight.
       const shotSpeed = 200 + e.rIdx * 34;
       let lead = this.leadAngle(e, me, shotSpeed);
@@ -5814,7 +5823,7 @@ class CaptureBattle {
     return !hardStun;                                         // false → updateEnemyAI skipped (full lock)
   }
 
-  hurtEnemy(e, dmg, fx, fy, isDot, fromDuo = false, hitTier = null, skill = null) {
+  hurtEnemy(e, dmg, fx, fy, isDot, fromDuo = false, hitTier = null, skill = null, actor = null) {
     // 谨慎型 P0: timestamp the most recent DIRECT offense so that the dodge-
     // sustain economy (good-dodge heal + ult grant, perfect-dodge +18 ult) can
     // gate on "player is actually pressuring" — screensaver kiters with zero
@@ -5916,7 +5925,7 @@ class CaptureBattle {
       // ATTACKER SELF-RECOIL: the striker rocks back a touch along -normal (draw-only
       // offset), selling the force exchange. me() for basics/melee; harmless if attacker
       // unknown.
-      const atk = this.me && this.me();
+      const atk = actor || (this.me && this.me());
       if(atk&&atk.alive){atk._recoilX=-normal.x*7;atk._recoilY=-normal.y*7;}
       // DIRECTIONAL impact sparks: spray along the hit normal (away from the attacker),
       // scaled by hit strength — reads as force, not a symmetric puff.
@@ -5965,7 +5974,7 @@ class CaptureBattle {
       this.floater(e.x,e.y-24,'-'+Math.round(scaled),numberColor,big);
     }
     this.spawnBurst(fx, fy, '✦', '#ffd36b', 3);
-    this.gainUlt(3);
+    this.gainUlt(3,actor);
     if(e.hp<=0&&e.alive){
       e.alive=false;this._lastDropped=e;
       this.vfx.impactType?.(e.x,e.y,'kill',{color:'#ffeca9'});
@@ -5974,10 +5983,10 @@ class CaptureBattle {
       // Trait system: emit onTargetKilled for the killing cat (currently me()).
       // No-op until traits-p2 PR registers 斑斑 狩猎本能. _isDerived suppresses echoes.
       window.CatTraits && window.CatTraits.emit('onTargetKilled',
-        { battle: this, cat: this.me(), target: e, _isDerived: isDot });
+        { battle: this, cat: actor, target: e, _isDerived: isDot||!!skill?.isDerived });
     }
   }
-  hurtMe(dmg, fx, fy, f) {
+  hurtMe(dmg, fx, fy, f, options={}) {
     f = f || this.me();
     if (!f.alive) return;
     // LEVEL GAP: a higher-level wild pack hits genuinely harder (see constructor).
@@ -5987,7 +5996,16 @@ class CaptureBattle {
     if (this.coach) dmg *= 0.35;
     // Barrier (shieldT) reduction now lives in resolveHit, which every enemy hit
     // routes through. hurtMe lands the (already shield-adjusted) damage.
+    if(!options.redirected){
+      dmg*=f._dmgTakenMult||1;
+      if((f._cleanseGuardUntil||0)>this.t)dmg*=.8;
+      const armor=Math.min(dmg,f._traitArmor||0); f._traitArmor=Math.max(0,(f._traitArmor||0)-armor);dmg-=armor;
+      if(dmg>0){for(const ally of this.team||[]){if(!ally.alive||ally===f)continue;const ev={battle:this,cat:ally,target:f,dmg};window.CatTraits?.emit('onBeforeDamage',ev);dmg=ev.dmg;if(dmg<=0)break;}}
+    }
+    const beforeHP=f.hp;
     f.hp = Math.max(this.coach ? 1 : 0, f.hp - dmg);
+    if(!options.redirected&&beforeHP>f.hp)window.CatTraits?.emit('onDamageTaken',{battle:this,cat:f,dmg:beforeHP-f.hp});
+    if(dmg<=0)return;
     if(dmg>0&&this.t-(this._lastHurtSfx??-5)>.24){
       window.MorrowwishAudio?.effect?.('combat_hurt');
       this._lastHurtSfx=this.t;
@@ -6040,6 +6058,7 @@ class CaptureBattle {
       target.protectT=0;
       target.vulnerableT=Math.max(target.vulnerableT||0,target._protectVuln||1.2);
       target._protectVuln=0;
+      if(side==='wild'&&dmg>0)window.CatTraits?.emit('onShieldBreak',{battle:this,cat:target,reason:'enemyHit'});
       this.vfx.impactType?.(target.x,target.y,'shieldBreak',{color:'#d4f5eb'});
       this.vfx.text(target.x,target.y-40,
         window.MorrowwishI18n?.get?.()==='zh'?'格挡!':'BLOCK!', '#cbefd8',14);
@@ -6064,8 +6083,14 @@ class CaptureBattle {
     //    barrier only chips it (0.85) so standing in the circle behind a shield still
     //    hurts; the real answer is to leave the telegraphed disc / dodge for i-frames.
     if ((target.shieldT || 0) > 0) {
+      const raw=dmg;
       dmg *= (skill && skill.unblockable)
         ? 0.85 : 1-Math.max(0,Math.min(.8,target._wardReduction??.45));
+      if(side==='wild'&&target.cat?.species==='dundun'){
+        if(!(target._traitWardHP>0))target._traitWardHP=target.maxhp*.28;
+        const absorbed=Math.min(raw-dmg,target._traitWardHP);dmg=raw-absorbed;target._traitWardHP-=absorbed;
+        if(target._traitWardHP<=1e-6){target._traitWardHP=0;target.shieldT=0;window.CatTraits?.emit('onShieldBreak',{battle:this,cat:target,reason:'enemyHit'});}
+      }
       // Fire barrier trades some prevention for a close-range burn counter.
       if(side==='wild'&&target._wardRetaliateBurn&&
          this.t-(target._lastWardRetaliateAt??-99)>=1){
@@ -6094,16 +6119,18 @@ class CaptureBattle {
       // Only a hit on an ALREADY staggered enemy is a critical contact.
       const alreadyStaggered=!!(target.staggerT>0);
       // 纸箱埋伏 Box Ambush: the primed cat's next non-basic skill forces stagger.
-      const amb = this.me(); if (amb && amb._ambush && !isBasic) { amb._ambush = false; this.triggerStagger(target); }
+      const amb = proj?._traitCaster || skill?._traitCaster || null; if (amb && amb._ambush && !isBasic) { amb._ambush = false; this.triggerStagger(target); }
       // Stagger (+30%) joins the incoming vulnerability bucket in hurtEnemy().
-      const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
+      const actor=proj?._traitCaster||skill?._traitCaster||null;
+      const dealt = this.applyHitEffects(target, skill || { element: null }, dmg*(actor?._dmgOutMult||1), x, y);
       if (this._debug) this._dbg('me→enemy', skill, dmg, dealt, target, proj);
       // Channel damage is steady pressure, not a rapid sequence of hard
       // camera pauses. Normal melee/chain/projectiles retain their hitstop.
       const continuous=!!skill?.isChanneledTick;
       const heavyMove=!!skill?.heavy||['melee','dash','pounce','leap'].includes(skill?.kind);
       const hitTier=continuous?null:alreadyStaggered?'crit':heavyMove?'heavy':'light';
-      this.hurtEnemy(target,dealt,x,y,continuous,false,hitTier,skill);
+      const hpBefore=target.hp;
+      this.hurtEnemy(target,dealt,x,y,continuous,false,hitTier,skill,actor);
       if(dealt>0){
         this._lastPoiseHitEnemy=target.i;
         this._lastPoiseHitAt=this.t;
@@ -6138,9 +6165,8 @@ class CaptureBattle {
       }
       // Trait system: onHitResolved for the attacker cat (caster = me()).
       // Covers 芝士/露露/小雾/幽幽/月月/豆豆/夜夜 in P2. No-op until P1/P2 PRs land.
-      if (dealt > 0) {
-        window.CatTraits && window.CatTraits.emit('onHitResolved',
-          { battle: this, cat: this.me(), target, skill, dmg: dealt, _isDerived: !!(proj && proj._isDerived) });
+      if (dealt > 0 && actor?.alive) {
+        window.CatTraits?.emit('onHitResolved',{battle:this,cat:actor,target,skill,dmg:Math.max(0,hpBefore-target.hp),_isDerived:!!(proj?._isDerived||skill?.isDerived)});
       }
       return { blocked: false, reflected: false, dealt };
     } else {
@@ -6148,19 +6174,8 @@ class CaptureBattle {
       // special can leave a DoT/soft-CC on the cat (mirror of applyHitEffects).
       const dealt = this.applyEnemyHitEffects(target, skill || { element: null }, dmg, x, y);
       if (this._debug) this._dbg('enemy→me', skill, dmg, dealt, target);
-      // Trait system: onBeforeDamage lets a trait preempt / redirect (圆宝 同甘共苦).
-      // Emit BEFORE hurtMe so the trait can mutate ctx.redirect or ctx.dmg.
-      if (dealt > 0 && window.CatTraits) {
-        window.CatTraits.emit('onBeforeDamage',
-          { battle: this, cat: target, dmg: dealt, skill });
-      }
       this.hurtMe(dealt, x, y, target);
       this.vfx.impactType?.(x,y,'light',{color:col});
-      // onDamageTaken fires AFTER dmg applied — for 汤圆 (store incoming → next heavy).
-      if (dealt > 0 && window.CatTraits) {
-        window.CatTraits.emit('onDamageTaken',
-          { battle: this, cat: target, dmg: dealt, skill });
-      }
       return { blocked: false, reflected: false, dealt };
     }
   }
@@ -6473,6 +6488,7 @@ class CaptureBattle {
     }
 
     this.drawFields(ctx);                // elemental ground zones, beneath the action
+    window.CatBondTraitFX?.draw(ctx,this);
     for(const wall of this.barrierWalls||[])
       window.CatBondWardArt?.drawFlatWall?.(ctx,wall,this.t);
     // vfx under-layer (trails, rings, muzzle)
