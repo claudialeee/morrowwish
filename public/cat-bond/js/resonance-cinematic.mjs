@@ -32,7 +32,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
     if(!allowed||(!recalled&&asset.sceneKey!==scene.id)||!raster.test(asset.path))return bad('unapproved-shot');
     if(unique.has(asset.path))return bad('repeated-shot-art');unique.add(asset.path);
     if(!isBilingual(shot.alt)||!Number.isFinite(shot.durationMs)||shot.durationMs<1200||shot.durationMs>20000||!Array.isArray(shot.lines))return bad('invalid-shot');
-    const base={id:scene.id+'-shot-'+i,image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,focus:shot.focus,transitionMs:shot.transitionMs||520,effect:scene.id==="starfall:F-05"&&asset.id==="remaster-f05-atlas"?"ring-slip":shot.effect};
+    const base={id:scene.id+'-shot-'+i,image:asset.path,alt:shot.alt,durationMs:shot.durationMs,camera:shot.camera,focus:shot.focus,transitionMs:shot.transitionMs||520,effect:scene.id==="starfall:F-05"&&asset.id==="remaster-f05-atlas"?"ring-slip":scene.id==="starfall:F-02"&&asset.id==="remaster-f02-atlas"?"history-collapse":shot.effect};
     if(!shot.lines.length){
       const openingCaptions={
         'opening-star-bell':{zh:'六座圣所曾用各自的歌互相回应，中央星铃为它们合拍。直到一颗陨星击碎了星铃。',en:'Six sanctuaries once answered each other in song, guided by the Star Bell. Then a fallen star shattered it.'},
@@ -62,6 +62,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   }
   if(covered.length!==scene.lines.length||covered.some((v,i)=>v!==i))return bad('incomplete-or-reordered-dialogue');
   if(!frames.length)return bad('nothing-to-play');
+  if(scene.id==='starfall:F-02'){const historical=frames.find(f=>f.effect==='history-collapse');if(historical){const text={zh:'当年六地未能接唱，你自愿留下记忆救了大家。今天已经有五地重新响起。',en:'The six lands could not answer one another then; you offered your memories to save them. Today five bells are ringing again.'};frames.push({...historical,id:'starfall:F-02-present-five',effect:'history-present',durationMs:4700,shotDurationMs:4700,shotOffsetMs:0,subtitle:{zh:{speaker:'星芽',text:text.zh},en:{speaker:'Xingya',text:text.en}},alt:text});}}
   // The six existing painted world plates establish the six sanctuaries before
   // the original Star Bell image. They are not substitutes for any of the six
   // owner-selected opening paintings, nor a general staging-art bypass.

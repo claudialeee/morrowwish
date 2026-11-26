@@ -1,7 +1,7 @@
 import { campaign } from "./campaign.mjs";
 import {newNeighborTrial,advanceNeighborTrial,neighborTrialProof} from "./canon22-neighbor-trial.mjs";
 import {mirrorProof} from "./canon22-mirror.mjs";
-import {newSpatial,spatialInput,spatialProof,tickSpatial,spatialKind} from "./canon22-spatial.mjs";
+import {newSpatial,spatialInput,spatialProof,tickSpatial,spatialKind,startBridgeWalk,advanceBridgeWalk} from "./canon22-spatial.mjs";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary} from "./library-mechanisms.mjs";
 import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache,landSkyFlight} from "./sky-flight.mjs";
 // Actual walkable region mechanics. Story progression is never stored here.
@@ -151,8 +151,8 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
  }
  function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(puzzle.type==="skyFlight"){steerSkyFlight(puzzle.flight,[.30,.50,.70][i]);return {ok:true,pending:true};}if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(puzzle.operation==="melody:starfall"){active.shortRing=newNeighborTrial(campaign.regions);if(!deferStarfallMelody){while(!active.shortRing.done)advanceNeighborTrial(active.shortRing,.02);}}if(deferHarborMelody&&puzzle.operation==="melody:harbor"||deferForestMelody&&puzzle.operation==="melody:forest"||deferSkyMelody&&puzzle.operation==="melody:sky"||deferForgeMelody&&puzzle.operation==="melody:forge"||deferLibraryMelody&&puzzle.operation==="melody:library"||deferStarfallMelody&&puzzle.operation==="melody:starfall")return {ok:true,pending:true,ceremony:true};return complete();}
  function advanceShortRing(dt){return active?.shortRing?advanceNeighborTrial(active.shortRing,dt):[];}
- function spatialAct(action){if(puzzle?.type!=="canonSpatial"||!live())return {ok:false,reason:"no-spatial-action"};if(!puzzle.solved)puzzle.solved=spatialInput(puzzle.spatial,action);return puzzle.solved?complete():{ok:true,pending:true};}
- function spatialTick(dt){if(puzzle?.type!=="canonSpatial"||!live()||!tickSpatial(puzzle.spatial,dt))return null;puzzle.solved=true;return complete();}
+ function spatialAct(action){if(puzzle?.type!=="canonSpatial"||!live())return {ok:false,reason:"no-spatial-action"};const s=puzzle.spatial;if(s.walk)return {ok:true,pending:true};if(adventureActions&&s.kind==="bridge"&&action.type==="step"){startBridgeWalk(s,action);return {ok:true,pending:true};}if(!puzzle.solved)puzzle.solved=spatialInput(s,action);return puzzle.solved?complete():{ok:true,pending:true};}
+ function spatialTick(dt){if(puzzle?.type!=="canonSpatial"||!live())return null;const s=puzzle.spatial;if(s.kind==="bridge"){if(!advanceBridgeWalk(s,dt))return null;puzzle.solved=s.solved;return puzzle.solved?complete():{ok:true,pending:true};}if(!tickSpatial(s,dt))return null;puzzle.solved=true;return complete();}
  function flightLand(){return puzzle?.type==="skyFlight"&&live()&&landSkyFlight(puzzle.flight);}
  function flightSteer(y){return puzzle?.type==="skyFlight"&&live()&&steerSkyFlight(puzzle.flight,y);}
  function flightTick(dt){if(puzzle?.type!=="skyFlight"||!live()||!tickSkyFlight(puzzle.flight,dt))return null;puzzle.solved=true;return complete();}

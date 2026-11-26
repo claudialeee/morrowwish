@@ -1,0 +1,67 @@
+name: Starbell final polish scoped acceptance
+on:
+  push:
+    branches: [review/starbell-final-polish]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: starbell-final-polish-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          for test in scripts/test-cat-bond-canon22-*.mjs; do node "$test"; done
+          node scripts/test-cat-bond-garden-exploration.mjs
+          node scripts/check-cat-bond-resonance-world.mjs
+          node --check public/cat-bond/js/cinematic-presentation.js
+          node --check public/cat-bond/js/sunlit-garden.js
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {chapter: forest, entry: 'forest:R-01'}
+          - {chapter: forge, entry: 'forge:E-01'}
+          - {chapter: sky, entry: 'sky:S-01'}
+          - {chapter: starfall, entry: 'starfall:F-01'}
+          - {chapter: epilogue, entry: 'epilogue:E-01'}
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      CAT_BOND_CHAPTERS: ${{ matrix.chapter }}
+      CAT_BOND_TARGET_SCENES: ${{ matrix.entry }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/polish-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-knowledge.mjs
+          node scripts/cat-bond-experience-targets.mjs
+          node scripts/cat-bond-experience-chapters.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-polish-${{ matrix.chapter }}
+          path: |
+            artifacts/cat-bond-experience/
+            /tmp/polish-server.log
+          retention-days: 14
