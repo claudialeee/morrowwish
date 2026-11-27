@@ -62,8 +62,9 @@ concurrency:
   # actual pending push deployment: GitHub retains only one pending run per group.
   # Successful renders and real push/dispatch deployments retain one safe queue.
   group: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'success' && 'morrowwish-cloudflare-pages-skipped-review' || 'morrowwish-cloudflare-pages-production' }}
-  # Finish the active production deployment even on frequent collaborator pushes.
-  cancel-in-progress: false
+  # The newest candidate supersedes older predeployment runs. Verification is
+  # repeated against the last successful release, including skipped commits.
+  cancel-in-progress: true
 
 jobs:
   deploy:
