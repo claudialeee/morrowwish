@@ -46,8 +46,8 @@ firstSeen=localStorage.getItem("arcade-visitor-day-v2")||"";
 if(!/^[0-9a-f-]{20,64}$/i.test(visitor)){visitor=globalThis.crypto?.randomUUID?.()||"";firstSeen=day;localStorage.setItem("arcade-visitor-v2",visitor);localStorage.setItem("arcade-visitor-day-v2",firstSeen);}
 persistent=!!visitor;
 }}catch{}
-let activeSince=performance.now(),lastActivity=-Infinity,activePending=0,playing=false;
-function activeTick(now=performance.now()){if(playing&&document.visibilityState==="visible")activePending+=Math.max(0,Math.min(now,lastActivity+60000)-activeSince);activeSince=now;}
+let activeSince=performance.now(),lastActivity=-Infinity,activePending=0,playing=false,visible=document.visibilityState==="visible";
+function activeTick(now=performance.now()){if(playing&&visible)activePending+=Math.max(0,Math.min(now,lastActivity+60000)-activeSince);activeSince=now;}
 function markActivity(){activeTick();lastActivity=performance.now();}
 for(const name of ["pointerdown","keydown","touchstart"])window.addEventListener(name,markActivity,{passive:true});
 const eventCounts={starts:0,ends:0,abandons:0,retries:0,shares:0,clicks:0,completion:0};
@@ -214,13 +214,13 @@ const hasAction=firstMs>=0&&!firstMsSent;
 send({kind:"session",seq:flushSeq++,seconds:deltaSec,activeSeconds,firstMs:hasAction?firstMs:-1,...dif,signals,levels:level,score});
 for(const k of Object.keys(eventCounts))lastSent[k]=eventCounts[k];for(const k of Object.keys(signals))lastSignals[k]=signalCounts[k];if(hasAction)firstMsSent=true;lastClock=now;activePending-=activeSeconds*1000;
 }
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flush();else{lastClock=performance.now();activeSince=lastClock;lastActivity=-Infinity;}});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){flush();visible=false;}else{visible=true;lastClock=performance.now();activeSince=lastClock;lastActivity=-Infinity;}});
 window.addEventListener("pagehide",()=>{
  // The mini games are endless; leaving before game-over is abandonment, not a clear.
  if((game==="flip-dash"||game==="parcel-panic")&&window.__MWMiniActive){window.__MWMiniActive=false;event("run_abandoned",{reason:"exit"});}
  flush(true);closed=true;
 });
-window.addEventListener("pageshow",e=>{if(e.persisted){closed=false;lastClock=performance.now();}});
+window.addEventListener("pageshow",e=>{if(e.persisted){closed=false;lastClock=performance.now();activeSince=lastClock;visible=document.visibilityState==="visible";lastActivity=-Infinity;}});
  // Keep engaged sessions visible during long mobile play without per-click writes.
  setInterval(()=>{if(!closed&&document.visibilityState==="visible")flush()},60000);
 })();

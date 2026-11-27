@@ -239,7 +239,9 @@ seed('a','2026-11-22','a1','session',{seconds:20,shares:0});
 seed('b','2026-11-22','b1','session',{seconds:10,shares:0});
 const headlineResponse=await api(cachedReq(),env);
 assert.equal(headlineResponse.status,200);
-assert.deepEqual((await headlineResponse.json()).rollup.headlineMetrics,{
+const {d7Eligible:headlineD7Eligible,d7Returned:headlineD7Returned,...headlineLegacy}= (await headlineResponse.json()).rollup.headlineMetrics;
+assert.ok(headlineD7Eligible>=0&&headlineD7Returned<=headlineD7Eligible);
+assert.deepEqual(headlineLegacy,{
  uniqueBrowsers:2,untrackedBrowserVisits:1,avgSessionSeconds:30,measuredSessionCount:2,
  shareClicks:0,d1Eligible:2,d1Returned:1
 },'Headline metrics use stable anonymous visitors and distinct measured sessions');
@@ -286,7 +288,9 @@ seed('other','2026-11-23','bond3');rows.at(-1).game='cat-bond';
 const scoped=await (await api(rangeRequest('2026-11-22','2026-11-23'),env)).json();
 const townMetrics=scoped.byGame.find(g=>g.game==='tiny-town').headlineMetrics;
 const bondMetrics=scoped.byGame.find(g=>g.game==='cat-bond').headlineMetrics;
-assert.deepEqual(townMetrics,{uniqueBrowsers:1,untrackedBrowserVisits:0,avgSessionSeconds:30,measuredSessionCount:1,shareClicks:0,d1Eligible:1,d1Returned:0});
+const {d7Eligible:townD7Eligible,d7Returned:townD7Returned,...townLegacy}=townMetrics;
+assert.equal(townD7Eligible,0);assert.equal(townD7Returned,0);
+assert.deepEqual(townLegacy,{uniqueBrowsers:1,untrackedBrowserVisits:0,avgSessionSeconds:30,measuredSessionCount:1,shareClicks:0,d1Eligible:1,d1Returned:0});
 assert.equal(bondMetrics.uniqueBrowsers,2);
 assert.equal(bondMetrics.avgSessionSeconds,90);
 assert.equal(bondMetrics.shareClicks,3);

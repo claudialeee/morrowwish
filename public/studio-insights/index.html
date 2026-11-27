@@ -303,12 +303,14 @@ function renderSignals(gameRows){
    rows.push(line(lang==='zh'?'新指标覆盖浏览量':'New-metric tracked views',format(eng.trackedViews)),line(lang==='zh'?'实际开玩浏览器':'Browsers that played',format(eng.playedBrowsers)),line(lang==='zh'?'有效玩家（活跃≥5分钟）':'Effective browsers (active ≥5 min)',format(eng.effectiveBrowsers)));
    if(eng.fiveMinuteEligible>0)rows.push(line(lang==='zh'?'开玩后活跃满5分钟':'Played ≥5 active minutes',rate(eng.fiveMinuteViews,eng.fiveMinuteEligible)));
    if(eng.avgActiveSeconds!=null)rows.push(line(lang==='zh'?'平均有效游玩时长':'Mean active play time',t('seconds',{n:eng.avgActiveSeconds})));
+   const days=eng.dailyEffective||[];for(const day of days.slice(-7))if(day.effective>0)rows.push(line(day.day+' · '+(lang==='zh'?'有效 / 区间首次有效':'Effective / first observed effective'),format(day.effective)+' / '+format(day.firstObserved)));
+   for(const z of eng.sourceMetrics||[])if(z.views>0)rows.push(line(z.source+' · '+(lang==='zh'?'访问 / 开玩 / 有效':'Views / played / effective'),[z.views,z.played,z.effective].map(format).join(' / ')));
    if(g.id==='starbell-preview'){
     const sv=eng.signalViews||{},sc=eng.signalCounts||{};
     for(const [mode,zh,en] of [['portrait','竖屏','Portrait'],['landscape','横屏','Landscape']]){const m=eng.mode?.[mode];if(m?.views)rows.push(line((lang==='zh'?zh+'开玩率':en+' play rate'),rate(m.played,m.views)));}
     for(const [key,zh,en] of [['rpg_new','新游戏','New game'],['rpg_continue','继续存档','Continue save'],['rpg_ending','完整剧情通关','Story completed'],['rpg_opening','完成开场','Opening completed']])if(sv[key]!=null)rows.push(line(lang==='zh'?zh:en,format(sv[key])));
     for(const [key,zh,en] of [['prologue','序章','Prologue'],['harbor','风铃镇','Windchime Town'],['forest','眠根林','Forest'],['forge','千灯城','Lantern City'],['sky','云海','Sky'],['library','书库','Library'],['starfall','星坠原','Starfall'],['finale','终章','Finale'],['epilogue','尾声','Epilogue']]){
-      const entered=sv['rpg_enter_'+key],done=sv['rpg_done_'+key];if(entered!=null||done!=null)rows.push(line((lang==='zh'?zh+' · 进入 / 完成':en+' · Entered / finished'),format(entered||0)+' / '+format(done||0)));
+      const entered=sv['rpg_enter_'+key],done=sv['rpg_done_'+key];if(entered!=null||done!=null)rows.push(line((lang==='zh'?zh+' · 进入 / 完成':en+' · Entered / finished'),format(entered||0)+' / '+format(done||0)));if(sc['rpg_time_'+key]>0)rows.push(line((lang==='zh'?zh+' · 总有效时长':en+' · total active time'),t('seconds',{n:sc['rpg_time_'+key]})));
     }
     const puzzleIds=[...new Set(Object.keys(sc).filter(k=>/^rpg_p(?:start|done|leave)_/.test(k)).map(k=>k.replace(/^rpg_p(?:start|done|leave)_/,'')))].sort();
     for(const key of puzzleIds)rows.push(line(key.replaceAll('_',' ')+' · '+(lang==='zh'?'开始 / 完成 / 未完成退出':'Started / completed / left'),[sc['rpg_pstart_'+key]||0,sc['rpg_pdone_'+key]||0,sc['rpg_pleave_'+key]||0].map(format).join(' / ')));
