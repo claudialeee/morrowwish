@@ -41,6 +41,7 @@
   function renderLabels(){
     if(!root)return;
     const en=isEnglish();
+    root.setAttribute('aria-label',en?'Sunlit Garden locations':'阳光花园地点');
     for(const item of HOTSPOTS){
       const b=root.querySelector('[data-garden-action="'+item.id+'"]');if(!b)continue;
       const label=en?item.en:item.zh;
@@ -53,7 +54,7 @@
     if(map){map.title=en?'Return to the world map':'返回世界地图';map.setAttribute('aria-label',map.title);
       const small=map.querySelector('small');if(small)small.textContent=en?'World':'地图';}
   }
-  const guideTabs=[['cats','猫咪','Cats'],['party','队伍','Party'],['workshop','工坊','Workshop'],['dex','Catdex','Catdex']];
+  const guideTabs=[['cats','猫咪','Cats'],['party','队伍','Party'],['workshop','工坊','Workshop'],['dex','图鉴','Catdex']];
   function noteBookVisit(tab){
     const s=state(),scene=window.CatBondResonance?.view?.()?.current?.id;
     if(!active||game?.scene!=='yard'||s!==visitedState||!['prologue:P-04','prologue:P-05'].includes(scene)||!guideTabs.some(t=>t[0]===tab))return;
@@ -119,7 +120,7 @@
   function ensureRoot(){
     if(root||!document.getElementById('stage'))return root;
     root=document.createElement('nav');root.id='sunlit-garden-hotspots';root.className='sg-hotspots';root.inert=true;
-    root.setAttribute('aria-label','Sunlit Garden locations');
+    root.setAttribute('aria-label',isEnglish()?'Sunlit Garden locations':'阳光花园地点');
     for(const item of HOTSPOTS){
       const b=document.createElement('button');b.type='button';b.className='sg-hotspot sg-hotspot-'+item.id;
       b.dataset.gardenAction=item.id;

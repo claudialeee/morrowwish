@@ -49,7 +49,7 @@ const targets={
 };
 let layer=null,buttons=new Map(),owner=null,popup=null,pending=null,projection=null;
 function closePopup(){popup?.remove();popup=null;}
-function init(parent){if(layer)return;layer=document.createElement('div');layer.className='sg-exploration-layer';layer.setAttribute('aria-label','Garden discoveries');parent.append(layer);
+function init(parent){if(layer)return;layer=document.createElement('div');layer.className='sg-exploration-layer';layer.setAttribute('aria-label',tr('花园探索','Garden discoveries'));parent.append(layer);
  for(const [id,target] of Object.entries(targets)){const b=document.createElement('button');b.type='button';b.className='sg-discovery sg-discovery-'+target.type;b.dataset.gardenExplore=id;b.hidden=true;b.innerHTML='<svg viewBox="-24 -24 48 48" aria-hidden="true">'+shapes[target.type]+'</svg><span class="sg-discovery-label"></span>';b.onclick=()=>interact(id);layer.append(b);buttons.set(id,b);}
 }
 function pulse(id){const b=buttons.get(id);if(!b)return;const cat=window.__game?.yard?.entities?.find(e=>e.cat.uid===owner?.cats?.[0]?.uid)||window.__game?.yard?.entities?.find(e=>e.cat.species==='jinjc');if(cat&&id==='butterfly'){cat.pounceT=.8;cat.setPose?.('play',.8);}window.MorrowwishAudio?.effect?.('discover');}
@@ -104,7 +104,7 @@ function placeMarker(px,py,bw,bh,W,H,avoid=[]){
  return {x:best[0],y:best[1],box:rect(best)};
 }
 function draw(parent,ctx,w,h,npcRects=[]){
- init(parent);if(owner!==rootState()){cancelChase();owner=rootState();closePopup();}
+ init(parent);const layerLabel=tr('花园探索','Garden discoveries');if(layer.getAttribute('aria-label')!==layerLabel)layer.setAttribute('aria-label',layerLabel);if(owner!==rootState()){cancelChase();owner=rootState();closePopup();}
  const valid=eligible()&&!covered(),s=read(owner),v=view();
  if(!valid){cancelChase();closePopup();layer.hidden=true;return;}layer.hidden=false;
  const rect=ctx.canvas.getBoundingClientRect(),r=parent.getBoundingClientRect(),art=window.World?.gardenArtworkRect?.(w,h)||{x:0,y:0,width:w,height:h};
