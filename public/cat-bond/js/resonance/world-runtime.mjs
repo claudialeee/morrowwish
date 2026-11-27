@@ -139,12 +139,38 @@ function install(){
   select(fitPage);
  }
  function makeFitRail(head,shell){
-  const activePuzzle=explorer?.puzzle;
+  const activePuzzle=explorer?.puzzle,festival=activePuzzle?.operation==="puzzle:lantern-show";
+  host.classList.toggle("rw-festival-story",festival);
+  host.classList.toggle("rw-story-ceremony",!!ceremony);
   host.classList.toggle("rw-chase-mode",activePuzzle?.spatial?.kind==="chase");
   // A dedicated playfield is not a compact exploration grid. Clear the old
   // layout before the early returns; otherwise grid-area and camera cover rules survive.
   if(activePuzzle||ceremony)host.classList.remove("rw-region-compact","rw-fit-wide","rw-forest-landscape");
-  host.classList.toggle("rw-dedicated-puzzle",!!activePuzzle&&activePuzzle.spatial?.kind!=="chase"&&!ceremony);
+  host.classList.toggle("rw-dedicated-puzzle",!!activePuzzle&&!festival&&activePuzzle.spatial?.kind!=="chase"&&!ceremony);
+  if(ceremony){
+   // Let the story payoff breathe. No inactive controls or quest checklists
+   // over the ceremony; progress still commits only after the live animation.
+   for(const n of [...host.children])if(n!==shell)n.remove();
+   const caption=E("div","rw-ceremony-caption");caption.setAttribute("role","status");
+   caption.append(E("strong","",tr("听，大家在回应","Listen, they're answering")),E("span","",tr("这一次，每座铃都唱着自己的歌。","This time, each bell sings its own song.")));
+   host.append(caption);return;
+  }
+  if(festival){
+   const row=host.querySelector(".rw-puzzle-controls"),p=activePuzzle.spatial;
+   if(row){
+    const card=E("section","rw-festival-card");card.setAttribute("aria-label",tr("灯火节剧情互动","Lantern festival story"));
+    const title=E("strong","rw-festival-title",tr("小铆的第一场影戏","Xiaomao's first shadow show"));
+    const line=E("p","rw-festival-line",p.audience?tr(["小铆：快看，他们喜欢这条鱼！","小铆：蝴蝶飞起来了！大家都在看呢。","小铆：原来歪耳朵也能这么可爱！"][p.shape],["Xiaomao: Look, they love the fish!","Xiaomao: The butterfly is flying! Everyone is watching.","Xiaomao: Even a crooked ear can be cute!"][p.shape]):tr("小铆：我的歪耳灯没人来看……你愿意陪我演一场吗？","Xiaomao: Nobody came to see my crooked-ear lantern. Will you put on a show with me?"));
+    line.setAttribute("aria-live","polite");
+    const hint=E("p","rw-festival-hint",tr("选一个影子就好。也可以左右拖动灯光，不用得分。","Choose any shadow. Drag the light if you like; there is no score."));
+    const buttons=[...row.querySelectorAll("button")];const leave=buttons.pop();if(leave)leave.remove();
+    buttons.slice(0,3).forEach((button,i)=>{button.setAttribute("aria-pressed",String(p.shape===i));button.dataset.minigameKey=String(i+1);});
+    const finish=buttons.at(-1);if(finish){finish.classList.add("rw-festival-finish");finish.dataset.minigameKey="4";}
+    for(const n of [...host.children])if(n!==head&&n!==shell&&n!==row)n.remove();
+    card.append(title,line,hint,row);host.append(card);
+    canvas.focus({preventScroll:true});return;
+   }
+  }
   if(activePuzzle&&activePuzzle.spatial?.kind!=="chase"&&!ceremony){
    const p=activePuzzle,row=host.querySelector(".rw-puzzle-controls");
    if(row){
@@ -415,7 +441,7 @@ function install(){
  const chaseKeys={arrowleft:[-1,0],a:[-1,0],arrowright:[1,0],d:[1,0],arrowup:[0,-1],w:[0,-1],arrowdown:[0,1],s:[0,1]};
  let heldChaseKeys=[];
  function chaseKey(e,release=false){if(explorer?.puzzle?.spatial?.kind!=="chase")return false;const k=e.key.toLowerCase();if(k===" "||k==="spacebar"){e.preventDefault();e.stopPropagation();if(!release&&!e.repeat)chaseInput({type:"jump"});return true;}if(!chaseKeys[k])return false;e.preventDefault();e.stopPropagation();heldChaseKeys=heldChaseKeys.filter(x=>x!==k);if(!release)heldChaseKeys.push(k);chaseDirection(...(chaseKeys[heldChaseKeys.at(-1)]||[0,0]));return true;}
- function key(e){if(dialoguePaused())return;if(chaseKey(e))return;if(explorer?.puzzle?.type==="skyFlight"&&["ArrowUp","ArrowDown"].includes(e.key)){e.preventDefault();explorer.flightSteer(explorer.puzzle.flight.target+(e.key==="ArrowUp"?-.13:.13));return;}if(cameraEnabled()&&(e.key==="+"||e.key==="="||e.key==="-")){e.preventDefault();scale(e.key==="-"?.83:1.2,.5,.5);return;}if(cameraEnabled()&&(mode==="map"||e.shiftKey)){const d={ArrowLeft:[.08,0],ArrowRight:[-.08,0],ArrowUp:[0,.08],ArrowDown:[0,-.08]}[e.key];if(d){e.preventDefault();followCamera=false;pan=[pan[0]+d[0],pan[1]+d[1]];contain();draw();}else if(e.key==="+"||e.key==="=")scale(1.2,.5,.5);else if(e.key==="-")scale(.83,.5,.5);}else if(explorer?.puzzle&&/^[1-9]$/.test(e.key)){const button=host.querySelector(`[data-minigame-key="${e.key}"]`);if(button&&!button.disabled){e.preventDefault();button.click();}}else if(explorer?.puzzle){if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," "].includes(e.key))e.preventDefault();return;}else if(explorer){const d={ArrowLeft:[-.05,0],ArrowRight:[.05,0],ArrowUp:[0,-.05],ArrowDown:[0,.05]}[e.key];if(d){e.preventDefault();pending=null;beginWalk();explorer.walk(explorer.position[0]+d[0],explorer.position[1]+d[1]);}}}
+ function key(e){if(dialoguePaused())return;if(chaseKey(e))return;if(explorer?.puzzle?.operation==="puzzle:lantern-show"&&["ArrowLeft","ArrowRight"].includes(e.key)){e.preventDefault();spatialAct({type:"aim",x:Math.max(0,Math.min(1,explorer.puzzle.spatial.angle+(e.key==="ArrowLeft"?-.1:.1)))});return;}if(explorer?.puzzle?.type==="skyFlight"&&["ArrowUp","ArrowDown"].includes(e.key)){e.preventDefault();explorer.flightSteer(explorer.puzzle.flight.target+(e.key==="ArrowUp"?-.13:.13));return;}if(cameraEnabled()&&(e.key==="+"||e.key==="="||e.key==="-")){e.preventDefault();scale(e.key==="-"?.83:1.2,.5,.5);return;}if(cameraEnabled()&&(mode==="map"||e.shiftKey)){const d={ArrowLeft:[.08,0],ArrowRight:[-.08,0],ArrowUp:[0,.08],ArrowDown:[0,-.08]}[e.key];if(d){e.preventDefault();followCamera=false;pan=[pan[0]+d[0],pan[1]+d[1]];contain();draw();}else if(e.key==="+"||e.key==="=")scale(1.2,.5,.5);else if(e.key==="-")scale(.83,.5,.5);}else if(explorer?.puzzle&&/^[1-9]$/.test(e.key)){const button=host.querySelector(`[data-minigame-key="${e.key}"]`);if(button&&!button.disabled){e.preventDefault();button.click();}}else if(explorer?.puzzle){if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," "].includes(e.key))e.preventDefault();return;}else if(explorer){const d={ArrowLeft:[-.05,0],ArrowRight:[.05,0],ArrowUp:[0,-.05],ArrowDown:[0,.05]}[e.key];if(d){e.preventDefault();pending=null;beginWalk();explorer.walk(explorer.position[0]+d[0],explorer.position[1]+d[1]);}}}
  function go(p,fn){const w=current().world(),saved=w.positions[w.location];if(explorer.near(p)&&saved&&distance([saved.x,saved.y],p)<.072){fn();return;}pending={p:[...p],fn};beginWalk();if(!explorer.walk(...p))pending=null;}
  function spatialAct(action){if(!action||ceremony)return;const r=explorer?.spatialAct(action);if(!r)return;report(r,r.ok&&!r.pending?[ "成功 · 继续探索","Success · Continue exploring"]:"");render();}
  function operate(i){if(ceremony||demoActive)return;const before=explorer.puzzle,p=before,op=explorer.active?.operation,owner=State.S;const correctNote=p?.goal?.[p.values.length]===i;
@@ -468,7 +494,20 @@ function install(){
  function visitCache(cache){if(!cache)return;go(cache.point,()=>{reportPickup(explorer.pickup(cache.id),["发现信使补给","Courier cache discovered"]);render()});}
  function visitSurvey(s){go(s.from,()=>{report(explorer.startSurvey());render()});}
  function pendingInvites(v=current().view()){const region=current().world().location;return explorer&&v.objective.includes("melody:"+region)&&!v.objective.includes("repair:"+region)?explorer.localNpcs().filter(n=>!explorer.invited.includes(n.id)):[];}
- function visitFeature(op,p){if(op.startsWith("melody:")&&pendingInvites().length){regionMenuOpen=true;notice="";render();return;}regionMenuOpen=false;go(current().world().location==="sky"&&skyLaunch[op]||p,()=>{if(op.startsWith("battle:")){requestBattle(op,current().world().location);return;}const result=explorer.interact(op);if(result.ceremony){ceremony={owner:State.S,explorer,region:op.split(":")[1],elapsed:0,notes:0};if(ceremony.region==="harbor")image("harbor-ceremony");render();return;}report(result,result.ok&&!result.puzzle?starfallClues[op]||[ "已完成 · 继续冒险","Completed · Continue your adventure"]:"");render()});}
+ function startStoryMelody(op){
+  const r=explorer.interact(op);if(!r.ok){report(r);render();return;}
+  if(r.ceremony){ceremony={owner:State.S,explorer,region:op.split(":")[1],elapsed:0,notes:0};if(ceremony.region==="harbor")image("harbor-ceremony");render();return;}
+  const song=explorer.puzzle;
+  if(song?.type==="melody"&&song.residentLead){operate(song.goal[2]);return;}
+  report(r);render();
+ }
+ function visitFeature(op,p){if(op.startsWith("melody:")&&pendingInvites().length){regionMenuOpen=true;notice="";render();return;}regionMenuOpen=false;go(current().world().location==="sky"&&skyLaunch[op]||p,()=>{if(op.startsWith("battle:")){requestBattle(op,current().world().location);return;}if(op.startsWith("melody:")){startStoryMelody(op);return;}const result=explorer.interact(op);if(result.ceremony){ceremony={owner:State.S,explorer,region:op.split(":")[1],elapsed:0,notes:0};if(ceremony.region==="harbor")image("harbor-ceremony");render();return;}if(result.ok&&!result.puzzle&&op.startsWith("repair:")){
+   const melody="melody:"+op.split(":")[1],target=explorer.layout.features[melody],v=current().view();
+   // The repair action is explicit and proximity-verified. The resident-led
+   // response follows immediately, using a fresh action token and real proof.
+   if(v.objective.includes(melody)&&v.objective[0]===melody&&target&&explorer.near(target)&&!pendingInvites(v).length){startStoryMelody(melody);return;}
+  }
+  report(result,result.ok&&!result.puzzle?starfallClues[op]||[ "已完成 · 继续冒险","Completed · Continue your adventure"]:"");render()});}
  function storyNpcs(){const region=current().world().location,v=current().view(),hidden=(v.current?.id==="forest:R-01"?"yuchuan":v.current?.id==="forge:E-01"&&v.objective.includes("puzzle:festival-lantern")?"jinpo":v.current?.id==="sky:S-01"&&v.objective.includes("puzzle:sky-pouch")?"lingyu":null),locals=explorer.localNpcs().filter(n=>n.id!==hidden),residents=(window.CatBondResonance?.residents?.(region)||[]).filter(n=>n.id!==hidden);return [...locals,...residents.filter(n=>!locals.some(l=>l.id===n.id)).map((n,i)=>({...n,point:n.id==="muling"?(region==="harbor"?[.34,.478]:region==="sky"?[.74,.36]:region==="starfall"?(v.current?.id==="starfall:F-03"?[.92,.30]:[.86,.36]):explorer.layout.paths.at(-2)):explorer.layout.paths[Math.max(1,Math.min(explorer.layout.paths.length-2,Math.round((i+1)*explorer.layout.paths.length/(residents.length+1))))]}))];}
  function isMainNpc(npc,v,missing=pendingInvites(v)){
   const invite=missing.some(n=>n.id===npc.id),chooseFirst=v.current?.choiceTiming==="beforeAction"&&v.current.choices?.length&&!v.choice;
