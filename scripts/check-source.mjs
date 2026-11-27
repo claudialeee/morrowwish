@@ -1426,3 +1426,5 @@ await import('./check-hidden-story-language.mjs');
 // Universal preflight: dashboards may NEVER erase previously reported metrics.
 // This is intentionally part of npm run check, not only the deployment workflow.
 await import('./test-dashboard-sorting.mjs');
+
+if(!homepage.includes('id="rpg" aria-labelledby="rpg-heading"')||!homepage.includes('<h2 id="rpg-heading">RPG</h2>')||!homepage.includes('<a href="#rpg">RPG</a>')||homepage.indexOf('id="rpg"')>homepage.indexOf('id="worlds"'))throw Error('Starbell must have its own first RPG section and navigation anchor');

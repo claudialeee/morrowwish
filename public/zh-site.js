@@ -4,3 +4,5 @@ window.MORROW_ZH_STORIES=Object.assign(window.MORROW_ZH_STORIES||{},{"ONE-CLICK 
 Object.assign(window.MORROW_ZH_STORIES,{"PUBLIC PLAYTEST · PREVIEW":"公开试玩 · 试玩版","A watercolor fantasy RPG. Discover lost memories, befriend companions and uncover the mystery of the Starbell.":"水彩幻想角色扮演游戏。寻回遗失记忆，与伙伴结伴冒险，揭开星铃之谜。","Story-driven RPG":"剧情冒险","Local saves only":"仅本地存档","Play the preview":"开始试玩","Starbell fantasy sanctuary":"星铃幻想圣所"});
 
 Object.assign(window.MORROW_ZH_STORIES,{"FEATURED GAME · PREVIEW":"主推游戏 · 试玩版","Story-driven fantasy RPG":"幻想剧情 RPG","Explore six regions":"探索六大地区","MORE WORLDS TO GET LOST IN":"更多值得沉浸的世界"});
+
+Object.assign(window.MORROW_ZH_STORIES,{"01 / ROLE-PLAYING GAMES":"01 / 角色扮演游戏"});
