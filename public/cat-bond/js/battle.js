@@ -1111,8 +1111,14 @@ class CaptureBattle {
     // per-build engagement profile: pref = preferred standoff as a FRACTION of skillReach, tol =
     // width of the safety bell (how far from pref is still comfortable), close = how much a backliner
     // hates hugging. Frontliners: low pref, wide tol, ~0 closeness penalty.
+    // Owner 2026-11-27: tank body-block only for MELEE-shaped tank kits. A tank with
+    // a beam/ranged skill needs standoff for its actual output (combat-matrix:276
+    // asserts tank+beam deals ≥1900 dmg over 12s — hugging at 54px breaks it).
+    const tankHasRanged = build === 'tank' && skills.some(sk =>
+      sk && (sk.kind === 'beam' || sk.kind === 'projectile' || sk.kind === 'chain'));
     const P={
-      tank:     {pref:0.30,tol:1.00,close:0.15},
+      // Melee tank plants on top. Ranged-skill tank keeps its original profile.
+      tank:     tankHasRanged ? {pref:0.30,tol:1.00,close:0.15} : {pref:0.18,tol:0.55,close:0.10},
       fighter:  {pref:0.34,tol:0.95,close:0.18},
       assassin: {pref:0.26,tol:1.00,close:0.12},
       dps:      {pref:0.62,tol:0.48,close:0.95},
@@ -1147,8 +1153,14 @@ class CaptureBattle {
     }
     // Build the band around the best-scoring distance. HARD CONSTRAINT: min ≤ basicRange so the
     // basic always connects (the old "ranged cat can't basic" bug). Frontliners keep a close floor.
-    const halfLo=frontliner?(meleeReady?20:26):24, halfHi=frontliner?26:22;
-    let min=clampN(bestD-halfLo, frontliner?32:40, basicRange);
+    // Owner 2026-11-27: tank hugs TIGHTER than other frontliners (body-block). Shrink its
+    // half-widths and let its min floor go below the generic frontliner floor of 32.
+    // Gated on melee-shaped tank only — a tank with a beam/ranged skill keeps standoff.
+    const isHugTank = build === 'tank' && !tankHasRanged;
+    const halfLo = isHugTank ? 12 : (frontliner ? (meleeReady?20:26) : 24);
+    const halfHi = isHugTank ? 18 : (frontliner ? 26 : 22);
+    const minFloor = isHugTank ? 22 : (frontliner ? 32 : 40);
+    let min=clampN(bestD-halfLo, minFloor, basicRange);
     let max=Math.max(min+16, bestD+halfHi);
     // Frontline breed with its melee special on cooldown: a little breathing room while it recharges
     // (hit-and-run), but it NEVER becomes a backline kiter — bestD already sits at contact for them.
@@ -1250,10 +1262,43 @@ class CaptureBattle {
   // then move by the SMOOTHED heading. This removes the twitch while staying responsive
   // (K≈8 → it re-aims in ~1/8s, fast enough to still kite/dodge). Returns the moved-by
   // unit vector (or null if effectively idle). Does NOT change top speed.
+  // Owner 2026-11-27: tank body-block. For an enemy tgt pick the most-threatened
+  // ally (lowest HP fraction, skip tanks because they interpose themselves) and
+  // return a point ~28px from tgt on the segment toward that ally. Caller eases
+  // toward it; combined with the tight band this plants the tank between enemy
+  // and backline. Returns null if no interpose target makes sense (e.g. no non-
+  // tank ally alive, or tgt is the only target and already engaged).
+  tankInterposePoint(f, tgt) {
+    if (!tgt || !tgt.alive) return null;
+    let bestAlly = null, bestFrac = 1.01;
+    for (const a of this.team) {
+      if (!a || !a.alive || a === f) continue;
+      const bt = a.cat?.buildType || window.Skills?.buildTypeForBreed?.(a.cat);
+      if (bt === 'tank') continue;                 // other tanks peel for themselves
+      const frac = a.maxhp ? a.hp / a.maxhp : 1;
+      if (frac < bestFrac) { bestFrac = frac; bestAlly = a; }
+    }
+    if (!bestAlly) return null;
+    // If the ally is far from the enemy, interposing would pull us off-contact
+    // and break our own output. Only interpose when the enemy is already within
+    // ~threat range of the ally.
+    const ad = Math.hypot(bestAlly.x - tgt.x, bestAlly.y - tgt.y);
+    if (ad > 340) return null;
+    const dx = bestAlly.x - tgt.x, dy = bestAlly.y - tgt.y, d = ad || 1;
+    // Interpose offset: 28px off the enemy toward the ally — inside tank's
+    // kitRangeBand (pref 0.18 × skillReach, min floor 22).
+    const off = 28;
+    return { x: tgt.x + (dx / d) * off, y: tgt.y + (dy / d) * off };
+  }
   smoothSteer(f,mx,my,K){
     const mag=Math.hypot(mx,my);
     const dx=mag>1e-4?mx/mag:0, dy=mag>1e-4?my/mag:0;   // desired unit heading
-    const a=Math.min(1,(this._lastDt||0.016)*(K||8));
+    // Owner 2026-11-27: 炸毛墙 (reflectT) is a directional stance — not just half
+    // move speed (moveMul already ×0.5) but ALSO sluggish turning so a tank
+    // commits to one face. Scale K down to 40% while the wall is up.
+    let k = K || 8;
+    if ((f.reflectT || 0) > 0) k *= 0.4;
+    const a=Math.min(1,(this._lastDt||0.016)*k);
     f._svx=(f._svx||0)+(dx-(f._svx||0))*a;
     f._svy=(f._svy||0)+(dy-(f._svy||0))*a;
     const sm=Math.hypot(f._svx,f._svy);
@@ -1650,6 +1695,25 @@ class CaptureBattle {
         this.wallFlankVector(f,tgt,'me')){
       const flank=this.wallFlankVector(f,tgt,'me');
       mx=flank.x;my=flank.y;
+    }
+    else if ((f.cat.buildType||Skills.buildTypeForBreed(f.cat))==='tank' &&
+             !([f.qSkill, f.eSkill].filter(Boolean).some(sk => sk.kind==='beam' || sk.kind==='projectile' || sk.kind==='chain'))) {
+      // Owner 2026-11-27: tank body-block — plant between the enemy and the ally
+      // it's aiming at, so its hitbox eats shots and its radius forces the enemy
+      // to walk around (封死技能/攻击路径). Gated to melee-shaped tanks only;
+      // a tank with ranged skills (e.g. the beam kit in combat-matrix:276) needs
+      // standoff for its own output and falls through to the generic band branch.
+      const block = this.tankInterposePoint(f, tgt);
+      if (block) {
+        const bx = block.x - f.x, by = block.y - f.y, bd = Math.hypot(bx, by) || 1;
+        mx = bx / bd; my = by / bd;
+      } else {
+        const band = this.kitRangeBand(f);
+        const nx = dx / dist, ny = dy / dist;
+        const steer = this.bandSteer(f, nx, ny, dist, band, dt);
+        mx = steer.x; my = steer.y;
+      }
+      for (const o of this.team) { if (o === f || !o.alive) continue; const sx = f.x - o.x, sy = f.y - o.y, sd2 = sx * sx + sy * sy; if (sd2 < 3600 && sd2 > 1) { const sd = Math.sqrt(sd2); mx += sx / sd * 0.6; my += sy / sd * 0.6; } }
     }
     else {
       // same KIT-BASED band as the active cat: brawler allies rush, ranged allies
