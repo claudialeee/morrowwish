@@ -32,7 +32,7 @@ const segment=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,
 const closest=(path,p)=>path.slice(1).map((b,i)=>({i,...segment(p,path[i],b)})).sort((a,b)=>distance(a.p,p)-distance(b.p,p))[0];
 const stages=["sendA","receiveB","sendB","receiveA"];
 // Canon 2.2: the actual regional challenge precedes restoration; never reopen retired dial puzzles on the required path.
-export const canonRestorationPrerequisites=Object.freeze({"repair:forest":"forest:R-03","repair:forge":"forge:E-03","repair:starfall":"starfall:F-03"});
+export const canonRestorationPrerequisites=Object.freeze({"repair:harbor":"harbor:H-04","repair:forest":"forest:R-03","repair:forge":"forge:E-03","repair:starfall":"starfall:F-03"});
 export const puzzleSpecs={
  "explore:tide-logbook":{type:"tide",initial:[],goal:[2,0,1]},
  "puzzle:beam-mirrors":{type:"mirrors",initial:[0,1,0],goal:[2,3,1],mod:4},

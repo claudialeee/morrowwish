@@ -165,12 +165,21 @@ function install(){
  function makeFitRail(head,shell){
   const activePuzzle=explorer?.puzzle,festival=activePuzzle?.operation==="puzzle:lantern-show";
   host.classList.toggle("rw-festival-story",festival);
+  host.classList.toggle("rw-story-ceremony",!!ceremony);
   host.classList.toggle("rw-chase-mode",activePuzzle?.spatial?.kind==="chase");
   // A dedicated playfield is not a compact exploration grid. Clear the old
   // layout before the early returns; otherwise grid-area and camera cover rules survive.
   if(activePuzzle||ceremony)host.classList.remove("rw-region-compact","rw-fit-wide","rw-forest-landscape");
   host.classList.toggle("rw-dedicated-puzzle",!!activePuzzle&&!festival&&activePuzzle.spatial?.kind!=="chase"&&!ceremony);
   const native=nativePuzzleFile();host.classList.toggle("rw-native-puzzle",!!native);if(native){host.style.setProperty("--rw-puzzle-art",`url("${new URL("../../assets/mobile-portrait/"+native,import.meta.url).href}")`);}else host.style.removeProperty("--rw-puzzle-art");
+  if(ceremony){
+   // Let the story payoff breathe. No inactive controls or quest checklists
+   // over the ceremony; progress still commits only after the live animation.
+   for(const n of [...host.children])if(n!==shell)n.remove();
+   const caption=E("div","rw-ceremony-caption");caption.setAttribute("role","status");
+   caption.append(E("strong","",tr("听，大家在回应","Listen, they're answering")),E("span","",tr("这一次，每座铃都唱着自己的歌。","This time, each bell sings its own song.")));
+   host.append(caption);return;
+  }
   if(festival){
    const row=host.querySelector(".rw-puzzle-controls"),p=activePuzzle.spatial;
    if(row){
@@ -522,7 +531,20 @@ function install(){
  function visitCache(cache){if(!cache)return;go(cache.point,()=>{reportPickup(explorer.pickup(cache.id),["发现信使补给","Courier cache discovered"]);render()});}
  function visitSurvey(s){go(s.from,()=>{report(explorer.startSurvey());render()});}
  function pendingInvites(v=current().view()){const region=current().world().location;return explorer&&v.objective.includes("melody:"+region)&&!v.objective.includes("repair:"+region)?explorer.localNpcs().filter(n=>!explorer.invited.includes(n.id)):[];}
- function visitFeature(op,p){if(beforeActionDialogue(current().view())){window.CatBondResonance?.showCurrent?.();return;}if(op.startsWith("melody:")&&pendingInvites().length){regionMenuOpen=true;notice="";render();return;}regionMenuOpen=false;go(current().world().location==="sky"&&skyLaunch[op]||p,()=>{if(op.startsWith("battle:")){requestBattle(op,current().world().location);return;}const result=explorer.interact(op);if(result.ceremony){ceremony={owner:State.S,explorer,region:op.split(":")[1],elapsed:0,notes:0};if(ceremony.region==="harbor")image("harbor-ceremony");render();return;}report(result,result.ok&&!result.puzzle?starfallClues[op]||[ "已完成 · 继续冒险","Completed · Continue your adventure"]:"");render()});}
+ function startStoryMelody(op){
+  const r=explorer.interact(op);if(!r.ok){report(r);render();return;}
+  if(r.ceremony){ceremony={owner:State.S,explorer,region:op.split(":")[1],elapsed:0,notes:0};if(ceremony.region==="harbor")image("harbor-ceremony");render();return;}
+  const song=explorer.puzzle;
+  if(song?.type==="melody"&&song.residentLead){operate(song.goal[2]);return;}
+  report(r);render();
+ }
+ function visitFeature(op,p){if(beforeActionDialogue(current().view())){window.CatBondResonance?.showCurrent?.();return;}if(op.startsWith("melody:")&&pendingInvites().length){regionMenuOpen=true;notice="";render();return;}regionMenuOpen=false;go(current().world().location==="sky"&&skyLaunch[op]||p,()=>{if(op.startsWith("battle:")){requestBattle(op,current().world().location);return;}if(op.startsWith("melody:")){startStoryMelody(op);return;}const result=explorer.interact(op);if(result.ceremony){ceremony={owner:State.S,explorer,region:op.split(":")[1],elapsed:0,notes:0};if(ceremony.region==="harbor")image("harbor-ceremony");render();return;}if(result.ok&&!result.puzzle&&op.startsWith("repair:")){
+   const melody="melody:"+op.split(":")[1],target=explorer.layout.features[melody],v=current().view();
+   // The repair action is explicit and proximity-verified. The resident-led
+   // response follows immediately, using a fresh action token and real proof.
+   if(v.objective.includes(melody)&&v.objective[0]===melody&&target&&explorer.near(target)&&!pendingInvites(v).length){startStoryMelody(melody);return;}
+  }
+  report(result,result.ok&&!result.puzzle?starfallClues[op]||[ "已完成 · 继续冒险","Completed · Continue your adventure"]:"");render()});}
  function storyNpcs(){const region=current().world().location,v=current().view(),hidden=(v.current?.id==="forest:R-01"?"yuchuan":v.current?.id==="forge:E-01"&&v.objective.includes("puzzle:festival-lantern")?"jinpo":v.current?.id==="sky:S-01"&&v.objective.includes("puzzle:sky-pouch")?"lingyu":null),locals=explorer.localNpcs().filter(n=>n.id!==hidden),residents=(window.CatBondResonance?.residents?.(region)||[]).filter(n=>n.id!==hidden);return [...locals,...residents.filter(n=>!locals.some(l=>l.id===n.id)).map((n,i)=>({...n,point:n.id==="muling"?(region==="harbor"?[.34,.478]:region==="sky"?[.74,.36]:region==="starfall"?(v.current?.id==="starfall:F-03"?[.92,.30]:[.86,.36]):explorer.layout.paths.at(-2)):explorer.layout.paths[Math.max(1,Math.min(explorer.layout.paths.length-2,Math.round((i+1)*explorer.layout.paths.length/(residents.length+1))))]}))];}
  function isMainNpc(npc,v,missing=pendingInvites(v)){
   const invite=missing.some(n=>n.id===npc.id),chooseFirst=v.current?.choiceTiming==="beforeAction"&&v.current.choices?.length&&!v.choice;

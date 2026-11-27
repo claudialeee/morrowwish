@@ -57,3 +57,7 @@ Scope: new-game players only. No old-save compatibility requirement. Automated t
 ## Current scope and gaps
 
 This patch adds all 40 scene intents, moves five existing dialogue introductions ahead of actions, makes recruitment practice optional, shortens the second forest bridge start and turns the forest melody into a single resident-led reply. The core first bridge, flight, mirror choice, two-route comparison and real battles remain. Actual visual quality, optional scene art and human engagement are not established by the source audit. No work-mode credits were requested.
+
+## Restoration flow revision
+
+All six sanctuary repair/reply pairs use one explicit map interaction. The two physical operations remain separate evidence, with fresh tokens and the original ceremony completion/neighbor-trial checks. Town residents are automatically ready once the town battle is complete and the sanctuary repaired. No forced invite checklist, note panel, or duplicate click. A short full-stage ceremony with a readable story caption replaces the control drawer. If the response cannot start, the saved repair is retained and the remaining action stays available. Browser acceptance must click each repair once, observe the actual ceremony, and wait for both operations to be earned, with no direct test-side state mutation. Art and emotional impact remain a separate visual/human gate.
