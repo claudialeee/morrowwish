@@ -150,7 +150,7 @@ jobs:
             const origin=process.env.CAT_BOND_SMOKE_ORIGIN || 'https://cat-bond-preview.morrowwish.pages.dev';
             const audioOnly=process.env.CAT_BOND_QA_SCOPE==='audio';
             const profiles=[{name:'desktop',viewport:{width:1280,height:800}},{name:'portrait',viewport:{width:390,height:844},hasTouch:true},{name:'landscape',viewport:{width:844,height:390},hasTouch:true}];
-            const results=await Promise.allSettled((audioOnly?profiles.slice(0,1):profiles).map(async profile=>{
+            const results=await Promise.allSettled((audioOnly?profiles.slice(0,2):profiles).map(async profile=>{
               const {name,...device}=profile; if(device.hasTouch)device.isMobile=true;
               const prefix=(process.env.CAT_BOND_SMOKE_STAGE || 'live')+'-'+name;
               const context=await browser.newContext(device);
@@ -201,10 +201,11 @@ jobs:
                   // Audio-only: no campaign, layout, art or slot regression. Use the
                   // real audio director and real decoded local/online recordings.
                   // Scene selection is isolated in this disposable browser context.
-                  await page.locator('#cb-title-name').click();
-                  await page.waitForFunction(()=>window.MorrowwishMusic?.status().playing);
+                  await page.locator('#intro-start').click();
+                  await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+                  await page.locator('#cb-player-first-intro').getByRole('button',{name:'Start exploring',exact:true}).click();
+                  await page.waitForFunction(()=>window.__CAT_BOND_STARTED__&&window.__game?.scene==='yard'&&window.WorldMap&&window.MorrowwishMusic?.status().playing);
                   await page.evaluate(()=>{
-                    window.__CAT_BOND_STARTED__=true;
                     window.__game.scene='map';
                     window.WorldMap.mode='region';
                     window.WorldMap.currentRegion='harbor';
@@ -214,6 +215,8 @@ jobs:
                   await town();
                   const before=await page.evaluate(()=>MorrowwishMusic.status().currentTime);
                   await page.waitForFunction(t=>MorrowwishMusic.status().currentTime>t+.1,before);
+                  await page.evaluate(()=>MorrowwishMusic.setVolume(.35));
+                  if(await page.evaluate(()=>MorrowwishMusic.status().volume)!==.35)throw Error('Music volume control failed');
                   await page.evaluate(()=>MorrowwishMusic.setEnabled(false));
                   await page.waitForFunction(()=>!MorrowwishMusic.status().playing);
                   await page.evaluate(()=>MorrowwishMusic.setEnabled(true));
