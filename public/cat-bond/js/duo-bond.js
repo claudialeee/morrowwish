@@ -165,6 +165,8 @@ P.tickBondStory=function(){
 };
 const originalUpdate=P.update;
 P.update=function(dt){
+ // Warm only the current eligible pair and trust tier before the cinematic.
+ if(this.H>this.W&&this.duo){const pair=[this.duo.a?.element,this.duo.b?.element].sort().join('+');const key=this.duo.elements||this.duo.elementPair||pair;window.CatBondPremiumCinematics?.preparePortrait?.(key,this.duo.tier||1);}
  const result=originalUpdate.call(this,dt);
  if(!this.done){
   // The real game resumes as the full-screen painting dissolves. Keep
@@ -225,6 +227,13 @@ P.update=function(dt){
 };
 const originalCast=P.castDuo;
 P.castDuo=function(){
+ if(this.H>this.W&&this.duo&&this.duoReady()){
+  const key=this.duo.elements||this.duo.elementPair||[this.duo.a?.element,this.duo.b?.element].sort().join('+');
+  const rec=window.CatBondPremiumCinematics?.preparePortrait?.(key,this.duo.tier||1);
+  // A pending image must not consume a charged attack; on a failed download,
+  // combat remains playable without substituting a rejected visual fallback.
+  if(rec?.status==='loading')return false;
+ }
  const ok=originalCast.call(this);
  if(ok&&this.duoCinematic){
   // Live combat MUST use the owner-approved complete 63-frame original
