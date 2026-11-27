@@ -2,17 +2,19 @@
 const allowed=new Set(["flip-dash","parcel-panic","tower-tuck","traffic-tangle","tiny-town","echo-heist","elsewhere","pocket-aquarium","pawsibly-innocent","cat-bond"]);
 const route=location.pathname.split("/").filter(Boolean)[0];
 const game=window.ARCADE_GAME_ID||(allowed.has(route)?route:"hub");
+const isBond=game==="cat-bond"||game==="starbell-preview";
 // Synthetic yard fixtures must not inflate real player conversions.
 const bondQa=route==='cat-bond'&&new URLSearchParams(location.search).has('autodev');
-const disabled=!!(route&&!allowed.has(route)) || bondQa ||
+const previewQa=game==="starbell-preview"&&(new URLSearchParams(location.search).has("qa")||new URLSearchParams(location.search).has("rpgDev")||location.hostname!=="cat-bond-preview.morrowwish.pages.dev");
+const disabled=!!(route&&!allowed.has(route)) || bondQa || previewQa || (game==="starbell-preview"&&(navigator.globalPrivacyControl===true||navigator.doNotTrack==="1")) ||
   (route==='cat-bond' && window.CatBondPlatform?.firstPartyAnalytics===false);
-const site=window.ARCADE_GAME_ID?"legacy":"arcade";
+const site=game==="starbell-preview"?"starbell-preview":window.ARCADE_GAME_ID?"legacy":"arcade";
 const collector=window.ARCADE_COLLECTOR||"/api/session";
 const ref=document.referrer;
 const start=performance.now(),viewId=globalThis.crypto?.randomUUID?.()||Math.random().toString(16).slice(2)+Date.now().toString(16);
 const day=new Date().toISOString().slice(0,10);
 let source="direct",referrer="",utmSource="",utmMedium="",utmCampaign="";
-try{if(ref){const u=new URL(ref),host=u.hostname.toLowerCase();referrer=host.slice(0,110);source=["morrowwish.vercel.app","tiny-arcade-lab.vercel.app","after-work-tiny-town.vercel.app",location.hostname].includes(host)?"internal":"external";}}catch{}
+try{if(ref){const u=new URL(ref),host=u.hostname.toLowerCase();referrer=host.slice(0,110);source=["morrowwish.vercel.app","morrowwish.pages.dev","tiny-arcade-lab.vercel.app","after-work-tiny-town.vercel.app",location.hostname].includes(host)?"internal":"external";}}catch{}
 try{const q=new URLSearchParams(location.search);const clean=v=>(v||"").replace(/[^a-zA-Z0-9 _.-]/g,"").slice(0,45);utmSource=clean(q.get("utm_source"));utmMedium=clean(q.get("utm_medium"));utmCampaign=clean(q.get("utm_campaign"));}catch{}
 // Attribute itch.io iframe launches even when the game wrapper has no UTM
 // query parameters. Itch-hosted HTML5 frames can have an itch.zone referrer.
@@ -56,7 +58,7 @@ let bondEntryAwaitingFirstBattle=false,townFirstBuildSeen=false,bondBattlesThisP
 // Enter -> first run -> first finished attempt -> replay a finished attempt.
 let firstRunStarted=false,firstRunFinished=false,firstReplaySeen=false;
 function event(eventName,p={}){const n=String(eventName||"").toLowerCase();
-const beginsRun=game==="cat-bond"?(n==="bond_entered"||n==="game_start"):
+const beginsRun=isBond?(n==="bond_entered"||n==="game_start"):
  game==="tiny-town"?["town_charter_wonder","town_charter_care","town_charter_dream","game_retry"].includes(n):
  n==="run_start"||n==="game_start";
 const finishesRun=["run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose"].includes(n);
@@ -69,7 +71,7 @@ if(finishesRun&&firstRunStarted&&!firstRunFinished){firstRunFinished=true;signal
 // Count a deliberate entry into an interactive game as its start, not a later
 // combat/building milestone. Battle attempts and fresh-town replays are still
 // counted as further runs, without counting the first battle twice.
-if(game==="cat-bond"&&n==="bond_entered"){
+if(isBond&&n==="bond_entered"){
  eventCounts.starts++;
  bondEntryAwaitingFirstBattle=true;
 }
@@ -78,7 +80,7 @@ if(game==="tiny-town"&&(n==="town_charter_wonder"||n==="town_charter_care"||n===
  townFirstBuildSeen=false;
 }
 if(n==="run_start"||n==="game_start"||n==="town_started"||n==="town_started-game"){
- if(game==="cat-bond"&&n==="game_start"&&bondEntryAwaitingFirstBattle){
+ if(isBond&&n==="game_start"&&bondEntryAwaitingFirstBattle){
   bondEntryAwaitingFirstBattle=false; // The first battle belongs to the entered run.
  }else if(game==="tiny-town"&&(n==="town_started"||n==="town_started-game")){
   if(!townFirstBuildSeen){signal("town_first_build");townFirstBuildSeen=true;}
@@ -131,7 +133,7 @@ if(n==="game_complete"&&game==="pocket-aquarium"){signal("aquarium_completed");c
 if(game==="flip-dash"&&(n==="run_end"||n==="game_over")){signal("flip_finished");const duration=Number(p?.duration)||0;if(duration>=10)signal("flip_10s");if(duration>=30)signal("flip_30s");}
 if(game==="parcel-panic"){if(n==="parcel_sorted")signal("parcel_sorted");if(n==="parcel_missed")signal("parcel_missed");if(n==="parcel_ten_sorted")signal("parcel_ten_sorted");}
 
-if(game==="cat-bond"){
+if(isBond){
  const rare=["R","SR","SSR"].includes(String(p?.rarity));
  // V2 records comparable battle attempts across both yard and open world.
  // Historical yard-spawn-only rare encounters remain preserved in D1.
@@ -188,7 +190,7 @@ document.addEventListener("click",e=>{
 },true);
 // New Cat Bond acquisition cohort, without modifying past visit rows.
 const shared={game,site,viewId,visitor,firstSeen,source,referrer,utmSource,utmMedium,utmCampaign,
- trackingVersion:game==="cat-bond"?11:undefined};
+ trackingVersion:isBond?11:undefined};
 function send(data){if(disabled)return;try{
  const body=JSON.stringify({...shared,...data}),blob=new Blob([body],{type:"text/plain;charset=UTF-8"});
  // Foreground events should be requested immediately. sendBeacon is most

@@ -125,17 +125,17 @@ jobs:
           const root='/tmp/cat-bond-preview/site';
           const file=root+'/cat-bond/index.html';
           let html=fs.readFileSync(file,'utf8');
-          html=html.replace(/<script[^>]+src=["'][^"']*telemetry\.js[^"']*["'][^>]*><\/script>/gi,'');
-          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><style>html[lang^="zh"] #cb-preview-note [lang="en"],html:not([lang^="zh"]) #cb-preview-note [lang="zh"]{display:none!important}</style><script>window.ARCADE_COLLECTOR="/api/preview-disabled";window.arcadeMetric=()=>{};</script></head>');
+          // Keep the real telemetry script; QA visits are disabled by its query guard.
+          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><style>html[lang^="zh"] #cb-preview-note [lang="en"],html:not([lang^="zh"]) #cb-preview-note [lang="zh"]{display:none!important}</style><script>window.ARCADE_GAME_ID="starbell-preview";window.ARCADE_COLLECTOR=(new URLSearchParams(location.search).has("qa")||location.hostname!=="cat-bond-preview.morrowwish.pages.dev")?"/api/preview-disabled":"https://morrowwish.pages.dev/api/starbell-preview-session";window.arcadeMetric=()=>{};</script></head>');
           const sha=process.env.SOURCE_SHA;
           html=html.replace(/<body([^>]*)>/i,'<body$1><aside id="cb-preview-note" data-source-sha="'+sha+'" role="note" style="position:fixed;z-index:2147483647;bottom:3px;left:3px;pointer-events:none;background:#202332e8;color:white;font:10px system-ui;padding:3px 6px;border-radius:4px"><span lang="en">Preview (not release-approved) · '+sha.slice(0,10)+' · Prologue–Finale · Local saves only</span><span lang="zh">试玩版（非正式发行） · '+sha.slice(0,10)+' · 序章至终章 · 仅本地存档</span></aside>');
           fs.writeFileSync(file,html);
           fs.writeFileSync(root+'/index.html','<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="0;url=/cat-bond/"></head><body><a href="/cat-bond/">Echoes of the Starbell Preview</a></body></html>');
           fs.writeFileSync(root+'/robots.txt','User-agent: *\nDisallow: /\n');
-          fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\'; form-action \'self\'\n');
-          fs.writeFileSync(root+'/telemetry.js','window.arcadeMetric=()=>{};');
+          fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\' https://morrowwish.pages.dev/api/starbell-preview-session; form-action \'self\'\n');
+          // The copied telemetry script sends only the independent preview game ID.
           fs.writeFileSync(root+'/_worker.js','export default {fetch(request,env){const u=new URL(request.url);if(u.pathname.startsWith("/api/")||u.pathname==="/api")return Response.json({error:"Preview: production APIs disabled; use local saves."},{status:403});return env.ASSETS.fetch(request)}};');
-          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,qaTier:'preview-smoke',qaScope:process.env.CAT_BOND_QA_SCOPE,fullReleaseAccepted:false,scope:'Prologue through Finale',storage:'local-only',productionApis:false,sources:fs.readFileSync('/tmp/cat-bond-preview-sources.txt','utf8').trim().split('\n')}));
+          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,qaTier:'preview-smoke',qaScope:process.env.CAT_BOND_QA_SCOPE,fullReleaseAccepted:false,scope:'Prologue through Finale',storage:'local-only',productionApis:false,previewTelemetry:'starbell-preview',sources:fs.readFileSync('/tmp/cat-bond-preview-sources.txt','utf8').trim().split('\n')}));
           NODE
       - name: Install pinned Chromium test runtime once
         uses: ./.github/actions/starbell-browser-setup
