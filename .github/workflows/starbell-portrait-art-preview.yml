@@ -175,10 +175,17 @@ jobs:
             console.log('LIVE PORTRAIT PASS',process.env.PREVIEW_URL);
           }finally{await browser.close()}
           NODE
+      - name: Verify live portrait developer map jump and isolated saves
+        env:
+          CAT_BOND_SMOKE_ORIGIN: https://starbell-portrait-preview.morrowwish.pages.dev
+          STARBELL_DEVELOPER_PORTRAIT: '1'
+        run: node scripts/test-starbell-developer-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: portrait-live-proof
-          path: portrait-live-*.png
+          path: |
+            portrait-live-*.png
+            artifacts/cat-bond-layout/developer-*.png
           if-no-files-found: ignore
           retention-days: 14

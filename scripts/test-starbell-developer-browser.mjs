@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {mkdir} from 'node:fs/promises';
 const browser=await chromium.launch({headless:true}),origin=process.env.CAT_BOND_SMOKE_ORIGIN||'http://127.0.0.1:8766';
-const context=await browser.newContext({viewport:{width:1280,height:800}}),page=await context.newPage();
+const portrait=process.env.STARBELL_DEVELOPER_PORTRAIT==='1';
+const context=await browser.newContext(portrait?{viewport:{width:390,height:844},isMobile:true,hasTouch:true}:{viewport:{width:1280,height:800}}),page=await context.newPage();
 const areas=['garden','harbor','forest','forge','sky','library','starfall','finale'];
 await mkdir('artifacts/cat-bond-layout',{recursive:true});
 try{
