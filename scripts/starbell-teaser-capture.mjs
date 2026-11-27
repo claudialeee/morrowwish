@@ -6,7 +6,7 @@ const origin=process.env.TRAILER_ORIGIN||'https://cat-bond-preview.morrowwish.pa
 const evidence={origin,source:process.env.GITHUB_SHA,clips:[],errors:[]};
 async function open(region){
  const ctx=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:2,isMobile:true,hasTouch:true});
- const p=await ctx.newPage();p.setDefaultTimeout(6000);
+ const p=await ctx.newPage();p.setDefaultTimeout(15000);
  p.on('pageerror',e=>evidence.errors.push(region+': '+e.message));
  await p.goto(origin+'/cat-bond/?developer=1&qa=trailer&reset=1&region='+region+'&lang=en',{waitUntil:'domcontentloaded',timeout:45000});
  await p.locator('#starbell-developer-menu').waitFor({timeout:45000});
@@ -33,8 +33,9 @@ async function dialogue(p,id){
   const host=p.locator('.res-host[data-scene="'+id+'"]');
   if(!await host.isVisible()){await host.waitFor({timeout:2200}).catch(()=>{});if(!await host.isVisible())return;}
   if(!v.choice&&v.current.choices.length&&(v.current.choiceTiming==='beforeAction'||v.cursor===(v.current.choiceAt??v.current.lines.length))){await click(p,v.current.choices[0].label.en);continue;}
-  if(!v.lineReady||v.cursor>=v.current.lines.length)return;
-  await host.locator('.res-line').click();await p.waitForTimeout(100);
+  if(v.cursor>=v.current.lines.length)return;
+  if(!v.lineReady){await p.waitForTimeout(300);continue;}
+  await host.locator('.res-line').click();await p.waitForTimeout(220);
  }
 }
 async function record(p,id,secs,action){

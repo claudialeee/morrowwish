@@ -29,9 +29,10 @@ game(ordered[0],4,{chase:'Follow the runaway chime',glide:'Ride the wind',lanter
 card('companions','story-art/cloud-lookout.jpg',4,'Companions worth finding.','A little courage. A little magic.');
 game(ordered[1],4,{chase:'Follow the runaway chime',glide:'Ride the wind',lantern:'Bring light to the city',battle:'Stand together'}[ordered[1]]);
 if(ordered[2])game(ordered[2],4,{chase:'Follow the runaway chime',glide:'Ride the wind',lantern:'Bring light to the city',battle:'Stand together'}[ordered[2]]);
+else if(clips.has('garden'))game('garden',4,'A place to call home');
 else card('forest','canon22-final-art/forest-root-bridge.webp',4,'Explore six magical regions.','');
 if(ordered[3])game(ordered[3],4,{chase:'Follow the runaway chime',glide:'Ride the wind',lantern:'Bring light to the city',battle:'Stand together'}[ordered[3]]);
-else card('mystery','core-art-remaster/leads/muling.webp',4,'What have you forgotten?','');
+else card('mystery','canon22-final-art/windchime-wisp.webp',4,'What have you forgotten?','');
 card('end','garden/title-bell-sanctuary.webp',6,'STARBELL','Free playable preview  ·  morrowwish.vercel.app',true);
 fs.writeFileSync(root+'/timeline.txt',seq.map(s=>"file '"+path.basename(s)+"'").join('\n')+'\n');
 const file=root+'/Echoes-of-the-Starbell-Teaser.mp4';

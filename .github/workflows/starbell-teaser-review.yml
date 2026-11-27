@@ -15,6 +15,11 @@ jobs:
         with:
           node-version: '22'
       - uses: ./.github/actions/starbell-browser-setup
+      - name: Install video encoder and fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          ffmpeg -version | head -1
       - name: Capture real preview gameplay
         run: node scripts/starbell-teaser-capture.mjs
       - name: Render trailer with original art and music
