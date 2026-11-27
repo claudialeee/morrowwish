@@ -17,7 +17,10 @@ function run(w){
  const a=actor(100,150,0),e=actor(300,150,1),outside=actor(300,250,2),mid=actor(200,150,3);
  let hits=[];
  const b=Object.assign(Object.create(P),{W:800,H:550,topMargin:50,bottomMargin:50,game:{isTouch:false,mouse:{x:300,y:150}},team:[a],enemies:[e,outside,mid],_umbralLobs:[],skillStrokes:[],vfx:{muzzle(){}},me(){return a},liveEnemies(){return this.enemies.filter(e=>e.alive)},resolveHit(...args){hits.push(args)}});
- const cast=()=>b.castUmbralBarrage(a,0,sk,10,'#b89cff');
+ // Phase 2 snapshot pipeline: engine reads sk._cast.mouse at cast time rather
+ // than live b.game.mouse. Mirror that here so the cursor-lock contract is tested.
+ const castSk=()=>({...sk,_cast:{mouse:{...b.game.mouse},target:null}});
+ const cast=()=>b.castUmbralBarrage(a,0,castSk(),10,'#b89cff');
  const reset=()=>{b._umbralLobs=[];b.skillStrokes=[];hits=[];a.alive=true;e.x=300;e.y=150;b.game.mouse={x:300,y:150};b.team=[a];b.enemies=[e,outside,mid]};
  cast();check(b._umbralLobs.length===3&&b._umbralLobs.filter(x=>x.launched).length===1,'three shells scheduled, first immediate');
  check(b._umbralLobs.map(x=>x.ty).join(',')==='150,174,126','precise first, two fixed scatter landings');

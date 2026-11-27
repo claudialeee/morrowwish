@@ -292,7 +292,7 @@
     // SALVO/PULSE projectile: ONE cast queues 3 waves ~0.35s apart. Each wave re-aims at the
     // NEAREST enemy at its own release time, so the player can watch the first wave land and
     // the second/third can retarget mid-cast. pulseCount/pulseGap/pulseHoming define the pattern.
-    { id:'arcanePulse', name:'暗星轰击', element:'dark', kind:'aoe', power:.78, cd:6.5, ultCost:0, reach:340, lobCount:3, lobGap:.42, lobFlight:.76, lobRadius:46, lobSpread:24, tags:['ranged','lob','salvo'], appliesTag:null, vfx:'umbralLob', allowRoles:['dps','control'], autoLearn:true, unlock:{level:5,element:'dark',role:['dps','control']}, desc:'向锁定地面连续抛射三颗暗星能量弹，落地小范围爆裂；落点固定，不追踪。暗系输出/控制共享。' },
+    { id:'arcanePulse', name:'暗星轰击', element:'dark', kind:'aoe', power:.78, cd:6.5, ultCost:0, reach:340, lobCount:3, lobGap:.42, lobFlight:.76, lobRadius:46, lobSpread:24, tags:['ranged','lob','salvo'], appliesTag:null, vfx:'umbralLob', allowRoles:['dps'], autoLearn:true, unlock:{level:5,element:'dark',role:['dps']}, desc:'向锁定地面连续抛射三颗暗星能量弹，落地小范围爆裂；落点固定，不追踪。暗系输出专属。' },
     { id:'shadowTendrils', name:'暗影触手', element:'dark', kind:'beam', power:.65, cd:8, ultCost:0, channel:1.6, windup:.22, castSlow:.4, reach:240, width:30, statusDuration:.65, tags:['control','bind','channel','ranged'], appliesTag:'bind', vfx:'tendrils', allowRoles:['control'], autoLearn:true, unlock:{level:6,element:'dark',role:['control']}, desc:'持续喷出多条暗影触手，贯穿前方狭长区域，低伤害压制并短暂束缚敌人。暗系控制专属。' },
     { id: 'voidMaw',    name: '虚吞',     element: 'dark',  kind: 'aoe',        power: 2.5, cd: 0,   ultCost: 80, tags: ['curse','ult','rewind'],   appliesTag: ['dizzy','rewind'], vfx: 'shockwave', desc: '【必杀】深渊巨口吞噬，时间回溯——将目标斗志拉回数秒前！' },
     // ---- 光 light ----
