@@ -2,6 +2,7 @@ import {attachExperienceRecorder} from './cat-bond-experience-recorder.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {chromium} from 'playwright';
+import {installLocaleProbe,inspectLocale} from './cat-bond-locale-purity.mjs';
 const locale=process.env.PROLOGUE_LANG==='zh'?'zh':'en',tr=(zh,en)=>locale==='zh'?zh:en;
 const output='artifacts/cat-bond-release-prologue/'+locale;await fs.mkdir(output,{recursive:true});
 const browser=await chromium.launch({headless:true});let failed=false;
@@ -9,8 +10,9 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  const {name,...options}=profile;
  for(const meet of [true,false]){
  const context=await browser.newContext(options),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await installLocaleProbe(page);const localeIssues=[];
  await attachExperienceRecorder(context,page,{id:'opening-'+locale+'-'+name+'-'+(meet?'meet':'skip')});
- const screenshot=id=>page.screenshot({path:output+'/'+name+'-'+(meet?'meet':'skip')+'-'+id+'.png'});
+ const screenshot=async id=>{if(id!=='FAIL')localeIssues.push(...await inspectLocale(page,locale,'opening:'+id));return page.screenshot({path:output+'/'+name+'-'+(meet?'meet':'skip')+'-'+id+'.png'});};
  const waitScene=id=>page.waitForFunction(id=>window.CatBondResonance?.view()?.current?.id===id,id,{timeout:45000});
  const press=async locator=>{await locator.waitFor({state:'visible'});if(options.hasTouch)await locator.tap();else await locator.click();};
  try{
@@ -61,6 +63,7 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  await screenshot('first-conversation');
  await page.reload();await page.waitForFunction(()=>window.__CAT_BOND_READY__);await press(page.locator('#intro-continue'));await press(page.locator('#intro-slot-list [data-slot="slot1"]'));await waitScene('harbor:H-01');assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),meet);assert.equal(await page.locator('#cb-player-first-intro').count(),0);
  assert.equal(await page.evaluate(()=>State.getSaveSlot('slot2')),null);assert.equal(await page.evaluate(()=>State.getSaveSlot('slot3')),null);assert.deepEqual(errors,[]);
+ await fs.writeFile(output+'/'+name+'-'+(meet?'meet':'skip')+'-locale.json',JSON.stringify(localeIssues,null,2));assert.deepEqual(localeIssues,[],'P1 opening locale purity');
  console.log('PASS',name,locale,meet?'encounter':'skip','opening, direct travel, real NPC action, persistence');
  }catch(e){failed=true;console.error('FAIL',name,meet,e);await screenshot('FAIL').catch(()=>{});}finally{await context.close();}
  }

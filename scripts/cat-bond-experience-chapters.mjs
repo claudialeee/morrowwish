@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
+import {installLocaleProbe,inspectLocale} from './cat-bond-locale-purity.mjs';
 import {attachExperienceRecorder,captureExperienceMilestone} from './cat-bond-experience-recorder.mjs';
 const root=process.argv[2]||'artifacts/cat-bond-experience',out=root+'/chapter-acceptance',origin='http://127.0.0.1:8765';
 await fs.mkdir(out,{recursive:true});
@@ -21,12 +22,13 @@ async function run(chapter){
  if(fixture)assert.equal(fixture.provenance,'synthetic engine-model browser-restored');
  const context=await browser.newContext({...(continuous?(earnedSave?{storageState:earnedSave}:{}):{storageState:fixture.storageState}),viewport:{width:1440,height:900}});
  await context.route('**/*',r=>{const u=new URL(r.request().url());return u.origin===origin||['data:','blob:'].includes(u.protocol)?r.continue():r.abort();});
- const page=await context.newPage(),errors=[],readLines=[],steps=[],battleMeasurements=[];
+ const page=await context.newPage(),errors=[],readLines=[],steps=[],battleMeasurements=[],localeIssues=[];
+ await installLocaleProbe(page);
  page.setDefaultTimeout(18000);page.on('pageerror',e=>errors.push(e.message));
  await attachExperienceRecorder(context,page,{id:(continuous?'fresh-':'chapter-')+chapter,root:out,synthetic:!continuous,chapterEntry:continuous?null:start});
  const view=()=>page.evaluate(()=>CatBondResonance.view());
  const scene=id=>page.waitForFunction(id=>{const v=CatBondResonance.view();return v.current?.id===id||(id==='epilogue:E-01'&&v.current?.id==='epilogue:E-02'&&v.completed.includes(id));},id,{timeout:35000});
- const shot=id=>page.screenshot({path:out+'/'+chapter+'-'+id.replace(':','-')+'.png'});
+ const shot=async id=>{if(id!=='FAIL')localeIssues.push(...await inspectLocale(page,'en',chapter+':'+id));return page.screenshot({path:out+'/'+chapter+'-'+id.replace(':','-')+'.png'});};
  async function click(label,scope=page){
   const b=scope.getByRole('button',{name:label,exact:true}).first();
   if(scope===page&&!await b.isVisible()){
@@ -301,6 +303,8 @@ async function run(chapter){
   const requiredBattles=expected.flatMap(s=>s.requires.filter(op=>op.startsWith('battle:')));
   assert.deepEqual(requiredBattles.filter(op=>!battleMeasurements.some(b=>b.operation===op&&b.status==='verified win'&&b.samples.length)),[],'Every required battle needs real outcome and telemetry');
   assert.deepEqual(errors,[]);
+  await fs.writeFile(out+'/'+chapter+'-locale.json',JSON.stringify(localeIssues,null,2));
+  assert.deepEqual(localeIssues,[],'English chapter UI/Canvas purity');
   if(continuous){
    const expectedCount=campaign.scenes.indexOf(expected.at(-1))+1+(next==='epilogue:E-01'&&final.snapshot.completed.includes(next)?1:0);assert.equal(final.snapshot.completed.length,expectedCount,'Fresh route must preserve all previous chapter history');
    earnedSave=await context.storageState();await fs.writeFile(out+'/fresh-earned-save-'+chapter+'.json',JSON.stringify({provenance:'fresh real inputs, chapter boundary reload',storageState:earnedSave,completed:expectedCount},null,2));

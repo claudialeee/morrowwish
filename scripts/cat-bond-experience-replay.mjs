@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {chromium} from 'playwright';
+import {installLocaleProbe,inspectLocale} from './cat-bond-locale-purity.mjs';
 const origin='http://127.0.0.1:8765';
 const args=process.argv.slice(2),batch=args.includes('--batch'),headed=args.includes('--headed');
 const files=args.filter(a=>!a.startsWith('--'));
@@ -40,7 +41,7 @@ const context=await browser.newContext({storageState:fixture.storageState,...pro
 let page;
 try{
  await context.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===origin||['data:','blob:'].includes(u.protocol)?route.continue():route.abort();});
- page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ page=await context.newPage();await installLocaleProbe(page);const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(origin+'/cat-bond/?lang='+lang+'&rpgDev=1');
  await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
  await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="'+fixture.slot+'"]').click();
@@ -65,6 +66,8 @@ try{
  }
  assert.equal(await page.evaluate(()=>MorrowwishI18n.get()),lang,'Restored UI language');
  assert.deepEqual(errors,[]);
+ const leaks=await inspectLocale(page,lang,fixture.scene+' '+profile);
+ assert.deepEqual(leaks,[],'P1 checkpoint locale purity');
  console.log('PASS checkpoint restore',fixture.provenance,fixture.scene,fixture.slot,lang,profile);
  const evidenceDir=path.join(path.dirname(file),'replays');
  await fs.mkdir(evidenceDir,{recursive:true});

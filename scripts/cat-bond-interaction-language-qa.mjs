@@ -4,6 +4,7 @@ import {finishCanonicalOpening} from './cat-bond-test-start.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
+import {installLocaleProbe,inspectLocale} from './cat-bond-locale-purity.mjs';
 
 const root=(process.env.CAT_BOND_QA_ORIGIN||'http://127.0.0.1:8765').replace(/\/$/,'');
 const profiles=[
@@ -50,6 +51,7 @@ try{
   const ctx=await browser.newContext({viewport:{width:p.width,height:p.height},
     isMobile:p.width<500,hasTouch:p.width<500});
   const page=await ctx.newPage(),errors=[];
+  await installLocaleProbe(page);
   page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(()=>{
    const han=/[\u3400-\u9fff]/;
@@ -160,7 +162,7 @@ try{
       throw Error('Action unexpectedly disabled: '+action.selector);
      }
      await target.click({timeout:10000});
-     const leaks=p.lang==='en'?await visibleLeaks(page):[];
+     const leaks=await inspectLocale(page,p.lang,action.name);
      if(leaks.length)failures.push(p.host+' '+p.lang+' '+action.name+': '+JSON.stringify(leaks));
      const result=await page.evaluate(()=>({
        panel:document.querySelector('#panel .card')?.innerText?.slice(0,220)||'',

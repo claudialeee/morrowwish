@@ -5,6 +5,7 @@ import {finishCanonicalOpening} from './cat-bond-test-start.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
+import {installLocaleProbe,inspectLocale} from './cat-bond-locale-purity.mjs';
 
 const origin=(process.env.CAT_BOND_QA_ORIGIN||'http://127.0.0.1:8765').replace(/\/$/,'');
 const cases=[
@@ -37,6 +38,7 @@ try{
       hasTouch:profile.touch,isMobile:profile.touch
     });
     const page=await context.newPage(),pageErrors=[];
+    await installLocaleProbe(page);
     page.on('pageerror',error=>pageErrors.push(error.message));
     const q=profile.host==='crazygames'
       ?'&utm_source=crazygames&utm_medium=portal&utm_campaign=cat-bond-language-audit':'';
@@ -179,7 +181,8 @@ try{
             detail:!!document.querySelector('#cat-detail')};
         });
         if(!result?.open)failures.push(profile.host+' '+profile.lang+' '+key+' did not open a panel');
-        if(profile.lang==='en'&&audit.leaks.length)
+        audit.leaks=await inspectLocale(page,profile.lang,key);
+        if(audit.leaks.length)
           failures.push(profile.host+' '+profile.width+' '+key+' untranslated: '+
             JSON.stringify(audit.leaks.slice(0,12)));
         if(['cat-detail','cat-detail-advanced'].includes(key)){

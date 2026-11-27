@@ -3,6 +3,12 @@
 **状态：工程验收通过，可交付 Work 进行高价值玩家体验与创意精修；不是正式生产发行批准。**  
 更新：2026-11-26 PT。开发分支 `review/starbell-canon13-player-experience`，独立试玩地址：https://cat-bond-preview.morrowwish.pages.dev/cat-bond/ 。不修改 main，不发布生产环境。
 
+## P1 — 交付前语言一致性必修项（尚未验收）
+
+- 中文模式不得出现英文游戏文案，英文模式不得出现中文；仅允许品牌、标准稀有度、按键与语言切换控件的明确例外。图鉴统一中文“图鉴”、英文“Catdex”。
+- 覆盖序章、六地区、终章、尾声、NPC 对话、战斗、图鉴、庭院、动态提示；复用章节实机与双语存档恢复验证，并对 DOM 文本、可访问名称、Canvas 最终绘制文字增加断言。
+- 必须通过 `Starbell P1 locale purity` 源码及浏览器检查，以及同一提交的章节回归；失败按场景记录真实文案，不得使用大范围豁免或以旧版通过替代当前验收。新检查已接入，当前未确认 CI 结果；不构成正式交付批准。
+
 ## 1. 已验证的候选版本
 
 - 剧情/玩法验收基线：[f4704fa0672ffcdca6ddd4bbdc95baaee3186cf2](https://github.com/claudialeee/morrowwish/commit/f4704fa0672ffcdca6ddd4bbdc95baaee3186cf2)。

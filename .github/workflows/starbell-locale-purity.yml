@@ -1,0 +1,68 @@
+name: Starbell P1 locale purity
+on:
+  push:
+    branches: [review/starbell-canon13-player-experience]
+    paths:
+      - 'public/cat-bond/**'
+      - 'public/lang.js'
+      - 'public/game-settings.js'
+      - 'scripts/cat-bond-*language*.mjs'
+      - 'scripts/cat-bond-locale-purity.mjs'
+      - 'scripts/test-cat-bond-canon22-locale-purity.mjs'
+      - '.github/workflows/starbell-locale-purity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: starbell-locale-purity-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test-cat-bond-canon22-locale-purity.mjs
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [panels, interactions, opening-en, opening-zh]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Locale purity in real browser
+        env:
+          SCOPE: ${{ matrix.scope }}
+        run: |
+          set -euo pipefail
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-locale.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          case "$SCOPE" in
+            panels) node scripts/cat-bond-language-audit.mjs ;;
+            interactions) node scripts/cat-bond-interaction-language-qa.mjs ;;
+            opening-en) PROLOGUE_LANG=en CAT_BOND_FULL_CAMPAIGN=0 node scripts/cat-bond-release-prologue-qa.mjs ;;
+            opening-zh) PROLOGUE_LANG=zh CAT_BOND_FULL_CAMPAIGN=0 node scripts/cat-bond-release-prologue-qa.mjs ;;
+          esac
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-locale-${{ matrix.scope }}
+          path: |
+            .check/cat-bond-language-audit
+            .check/cat-bond-interaction-language
+            artifacts/cat-bond-release-prologue
+            /tmp/starbell-locale.log
+          include-hidden-files: true
+          if-no-files-found: warn
