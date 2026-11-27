@@ -4944,3 +4944,9 @@ body.cb-exploring #stage #yard-actions{
 
 /* Debug-only controls must not occupy a player-facing garden action slot. */
 #stage #yard-actions #fab-debug-unlock[hidden],html.cb-cg #cg-yard-dock #yard-actions #fab-debug-unlock[hidden]{display:none!important}
+
+/* Tall/portrait viewports use the whole game area, independent of desktop caps. */
+@media (orientation:portrait){
+  #game-root{width:100%;height:100%;height:100dvh;min-height:0}
+  #stage{width:100%;height:100%;max-width:none;max-height:none;margin:0;border-radius:0;box-shadow:none}
+}
