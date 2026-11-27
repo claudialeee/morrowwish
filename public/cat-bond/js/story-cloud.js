@@ -951,7 +951,7 @@ async function copyText(value){
 function openSlotManager(){
  document.querySelector('.cb-slot-manager')?.remove();
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-slot-manager';
- overlay.innerHTML='<section class="cb-cloud-card cb-slot-manager-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button><button class="cb-picker-language" data-modal-language type="button"></button>'+
+ overlay.innerHTML='<section class="cb-cloud-card cb-slot-manager-card"><button class="cb-cloud-close" type="button" aria-label="Close">×</button>'+
   '<p class="cb-cloud-eyebrow">'+t('存档','Save Archive')+'</p><h2>'+t('三个冒险存档位','Three adventure slots')+'</h2>'+
   '<p class="cb-cloud-lead">'+t('保存会把当前进度复制到所选存档位；读取会重新载入该存档。每个存档互相独立。','Save copies the current progress into the selected slot. Load restarts from that slot. Each save remains independent.')+'</p>'+
   '<div class="cb-slot-manager-list"></div><div class="cb-cloud-status" id="cb-slot-status" role="status"></div>'+
@@ -959,7 +959,6 @@ function openSlotManager(){
  (document.fullscreenElement||document.getElementById('stage')||document.body).append(overlay);
  const close=()=>{window.removeEventListener('morrowwish-language-change',updateLocale);overlay.remove();};
  overlay.querySelector('.cb-cloud-close').onclick=close;
- overlay.querySelector('[data-modal-language]')?.addEventListener('click',()=>window.MorrowwishI18n?.set?.(isZh()?'en':'zh'));
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  const list=overlay.querySelector('.cb-slot-manager-list');
  const status=overlay.querySelector('#cb-slot-status');
@@ -1010,7 +1009,6 @@ function openSlotManager(){
  }
  const updateLocale=()=>{
   overlay.querySelector('.cb-cloud-close').setAttribute('aria-label',t('关闭','Close'));
-  const localeButton=overlay.querySelector('[data-modal-language]');if(localeButton){localeButton.textContent=t('English','中文');localeButton.setAttribute('aria-label',t('切换到英文','Switch to Chinese'));}
   overlay.querySelector('.cb-cloud-eyebrow').textContent=t('存档','Save Archive');
   overlay.querySelector('h2').textContent=t('三个冒险存档位','Three adventure slots');
   overlay.querySelector('.cb-cloud-lead').textContent=t('选择存档读取，或保存当前进度。','Choose a save to load, or save your current progress.');
