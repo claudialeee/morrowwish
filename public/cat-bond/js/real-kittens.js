@@ -82,8 +82,8 @@
   };
   const breedCache=Object.create(null);
   const framedBreedCache=Object.create(null);
-  const starterFrames=new Map(),starterImages=new Map();
-  for(const id of ['jinjc','yunduo']){const image=new Image();starterImages.set(id,image);image.onload=()=>{delete breedCache[id];for(const key of Object.keys(animatedRigCache))if(key.includes(':'+id+':'))delete animatedRigCache[key];replayPortraits();};image.src=id==='jinjc'?'/cat-bond/assets/core-art-remaster/leads/player.webp':'/cat-bond/assets/starter-portraits/'+id+'.webp';}
+  const starterFrames=new Map(),starterImages=new Map(),playerPortraits=new Map();
+  for(const id of ['jinjc','yunduo']){const image=new Image();starterImages.set(id,image);image.onload=()=>{delete breedCache[id];for(const key of Object.keys(animatedRigCache))if(key.includes(':'+id+':'))delete animatedRigCache[key];replayPortraits();if(id==='jinjc'){for(const [canvas,species] of playerPortraits){if(canvas.isConnected!==false)thumbnail(canvas,species);}playerPortraits.clear();}};if(id==='jinjc')image.onerror=()=>playerPortraits.clear();image.src=id==='jinjc'?'/cat-bond/assets/core-art-remaster/leads/player.webp':'/cat-bond/assets/starter-portraits/'+id+'.webp';}
   function starterFrame(id){const im=starterImages.get(id);if(!im?.complete||!im.naturalWidth)return null;if(starterFrames.has(id))return starterFrames.get(id);const c=document.createElement('canvas');c.width=breedFrameSize.w;c.height=breedFrameSize.h;const ctx=c.getContext('2d'),s=Math.min(c.width/im.naturalWidth,c.height/im.naturalHeight);ctx.drawImage(im,(c.width-im.naturalWidth*s)/2,c.height-im.naturalHeight*s,im.naturalWidth*s,im.naturalHeight*s);starterFrames.set(id,c);return c;}
   const animatedRigCache=Object.create(null);
   // Never mirror a half-cat. Every source contains a whole face, paws and tail.
@@ -221,8 +221,9 @@
   }
   function breedFrame(o){
     const species=o.species||{},id=species.id||'tangyuan';
-    if(!breedLoaded)return {image:source,sx:0,sy:0,sw:w,sh:h};
+    if(id!=='jinjc'&&!breedLoaded)return {image:source,sx:0,sy:0,sw:w,sh:h};
     const starter=starterFrame(id);if(starter)return {image:starter,sx:0,sy:0,sw:starter.width,sh:starter.height};
+    if(!breedLoaded)return {image:source,sx:0,sy:0,sw:w,sh:h};
     if(breedCache[id])return {image:breedCache[id],sx:0,sy:0,sw:breedFrameSize.w,sh:breedFrameSize.h};
     const [base,tone,strength,kind]=BREED_LOOKS[id]||BREED_LOOKS.tangyuan;
     const canvas=document.createElement('canvas');
@@ -355,7 +356,8 @@
     }
     // An image draws as soon as its first frame has decoded. On older browsers
     // without AVIF decoding, preserve playability with the legacy renderer.
-    if(!loaded&&!breedLoaded)return;
+    const playerReady=o.species?.id==='jinjc'&&!!starterFrame('jinjc');
+    if(!loaded&&!breedLoaded&&!playerReady)return;
     const gr=o.growth||null;
     const scale=(o.scale||1)*(gr?.scale||1);
     const face=o.face===-1?-1:1;
@@ -411,7 +413,7 @@
     // Preserve its painted proportions instead of squeezing a whole cat into
     // the old, narrow half-cat rectangle. Keep feet planted at +35 and limit
     // the width so mobile garden/battle cats are still compact.
-    const dest=breedLoaded?(()=>{
+    const dest=(breedLoaded||playerReady)?(()=>{
       const width=Math.min(81,originalDest[2]*1.22);
       const height=width*(art.sh/art.sw);
       const feetY=originalDest[1]+originalDest[3];
@@ -455,6 +457,7 @@
     });
     if(species?.storyArt&&!storyImage(species).naturalWidth)storyPortraits.set(canvas,species);
     if(species?.id==='jiafei'&&!jiafeiLoaded)jiafeiPortraits.set(canvas,species);
+    if(species?.id==='jinjc'&&!starterFrame('jinjc'))playerPortraits.set(canvas,species);
     if(!breedLoaded)pendingPortraits.set(canvas,species);
   }
   drawing.drawCat=render;
