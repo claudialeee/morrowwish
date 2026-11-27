@@ -1,5 +1,5 @@
 (()=>{"use strict";
-const allowed=new Set(["flip-dash","parcel-panic","tower-tuck","traffic-tangle","tiny-town","echo-heist","elsewhere","pocket-aquarium","pawsibly-innocent","cat-bond"]);
+const allowed=new Set(["flip-dash","parcel-panic","tower-tuck","traffic-tangle","tiny-town","echo-heist","elsewhere","pocket-aquarium","pawsibly-innocent","cat-bond","starbell-preview"]);
 const route=location.pathname.split("/").filter(Boolean)[0];
 const game=window.ARCADE_GAME_ID||(allowed.has(route)?route:"hub");
 // Synthetic yard fixtures must not inflate real player conversions.

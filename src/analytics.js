@@ -146,8 +146,8 @@ function mainStats(x){
       .map(r=>r.view_id).filter(id=>visitIds.has(id)));
     // First-run/first-finish signals are the canonical page-load funnel.
     // Legacy rows fall back to real counters; each page load contributes once.
-    const isBond=part.every(r=>r.game==="cat-bond"||!r.game)&&
-      part.some(r=>r.game==="cat-bond");
+    const bondIds=new Set(["cat-bond","starbell-preview"]);
+    const isBond=part.every(r=>bondIds.has(r.game)||!r.game)&&part.some(r=>bondIds.has(r.game));
     // Cat Bond "play" means entering the game world (bond_entered), not
     // starting an individual battle. Other games use their first-run signal.
     const startedIds=viewsWith(d=>isBond?Number(d.signals?.bond_enter)>0:
@@ -162,7 +162,7 @@ function mainStats(x){
     // Funnel denominators always count unique page visits, never battle-count
     // / visit. Cat Bond's old starts mixed game entry and fighting, so only
     // visits explicitly tagged with v11 tracking can enter its new funnel.
-    const v2Ids=new Set(visitsOf.filter(r=>r.game==="cat-bond"&&
+    const v2Ids=new Set(visitsOf.filter(r=>bondIds.has(r.game)&&
       Number(r.data.trackingVersion)>=11&&r.view_id).map(r=>r.view_id));
     const v2Entered=new Set(sessionsOf.filter(r=>v2Ids.has(r.view_id)&&
       Number(r.data.signals?.bond_enter)>0).map(r=>r.view_id));
@@ -186,7 +186,7 @@ function mainStats(x){
   // Acquisition view: one compact channel row across all visible games.
   // Only real game-page visits count towards start rate; homepage and internal hops
   // are excluded. Joining by view_id avoids double-counting incremental beacons.
-  const eligible=new Set(["pawsibly-innocent","cat-bond","elsewhere","tiny-town","flip-dash","parcel-panic","pocket-aquarium"]);
+  const eligible=new Set(["pawsibly-innocent","cat-bond","elsewhere","tiny-town","flip-dash","parcel-panic","pocket-aquarium","starbell-preview"]);
   // itch.io embeds use both utm_source=itch and utm_source=itchio (Cat Bond).
   // Canonicalize at report time so previously stored visits are re-attributed
   // without fabricating any new player events or altering the original logs.
@@ -231,7 +231,7 @@ function mainStats(x){
   })).sort((a,b)=>b.pageviews-a.pageviews);
   // Click-attribution is opt-in by telemetry version, so historical visits do
   // not distort this new conversion baseline (no invented 0-click sessions).
-  const featuredIds=["pawsibly-innocent","tiny-town","cat-bond","elsewhere"];
+  const featuredIds=["pawsibly-innocent","tiny-town","cat-bond","elsewhere","starbell-preview"];
   const homeSessions=new Map();
   for(const s of sessions.filter(s=>s.game==="hub"&&s.view_id)){
     if(!homeSessions.has(s.view_id))homeSessions.set(s.view_id,[]);
@@ -378,13 +378,16 @@ export async function api(req,env){
    async()=>!!env.ARCADE_ANALYTICS_KEY&&(req.headers.get("x-analytics-key")===env.ARCADE_ANALYTICS_KEY||await hasSession(req,env)),json);
  if(p.startsWith("/api/youtube/"))return nativeYouTubeRoute(req,env,
    async()=>!!env.ARCADE_ANALYTICS_KEY&&(req.headers.get("x-analytics-key")===env.ARCADE_ANALYTICS_KEY||await hasSession(req,env)),json);
- if(p==="/api/session"||p==="/api/elsewhere-collect"){
+ if(p==="/api/session"||p==="/api/elsewhere-collect"||p==="/api/starbell-preview-session"){
   if(req.method!=="POST")return json({error:"POST required"},405);
-  const origin=req.headers.get("Origin");if(origin){try{if(!new Set([new URL(req.url).origin,"https://morrowwish.vercel.app"]).has(new URL(origin).origin))return json({error:"Origin not allowed"},403)}catch{return json({error:"Invalid origin"},403)}}
+  const preview=p==="/api/starbell-preview-session",origin=req.headers.get("Origin");
+  if(preview&&origin!=="https://cat-bond-preview.morrowwish.pages.dev")return json({error:"Origin not allowed"},403);
+  if(!preview&&origin){try{if(!new Set([new URL(req.url).origin,"https://morrowwish.vercel.app"]).has(new URL(origin).origin))return json({error:"Origin not allowed"},403)}catch{return json({error:"Invalid origin"},403)}}
   const raw=await req.text();if(raw.length>4000)return json({error:"Payload too large"},413);
   let data;try{data=JSON.parse(raw)}catch{return json({error:"Invalid JSON"},400)}
   if(!data||typeof data!=="object")return json({error:"Invalid event"},400);
-  const category=p==="/api/session"?"arcade":"elsewhere";
+  const category=p==="/api/elsewhere-collect"?"elsewhere":"arcade";
+  if(preview&&data.game!=="starbell-preview"||!preview&&data.game==="starbell-preview")return json({error:"Invalid game for collector"},400);
   if(category==="arcade"&&!["visit","session"].includes(data.kind))return json({error:"Invalid kind"},400);
   if(category==="elsewhere"&&!["world_open","chapter_view","choice_made","chapter_completed","life_completed","life_restarted","ending_view","share_clicked","ending_feedback"].includes(data.event))return json({error:"Invalid event"},400);
   data._device=/mobile|android|iphone/i.test(req.headers.get("User-Agent")||"")?"mobile":"desktop";data._country=req.cf?.country||"unknown";
@@ -395,7 +398,7 @@ export async function api(req,env){
   const smoke=category==="arcade"&&(data.kind==="visit"||data.kind==="session")&&data.smokeProbe==="mw-qa-v1"&&/^mw-qa-[0-9a-f-]{36}$/.test(viewId)&&qaGames.has(game);
   const storageCategory=smoke?"diagnostic":category;
   await env.DB.prepare("INSERT INTO events(category,day,ts,game,visitor,view_id,run_id,event_name,kind,payload) VALUES(?,?,?,?,?,?,?,?,?,?)").bind(storageCategory,day,now,game,visitor,viewId,runId,tidy(data.event,48),tidy(data.kind,48),JSON.stringify(data)).run();
-  return json({ok:true},202);
+  const accepted=json({ok:true},202);if(preview){accepted.headers.set("Access-Control-Allow-Origin",origin);accepted.headers.set("Vary","Origin");}return accepted;
  }
  // Only isolated diagnostic tokens may be queried; this endpoint never
  // exposes real user events. Delete the matching probe immediately on read.
