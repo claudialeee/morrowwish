@@ -1,0 +1,608 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "sourceBlobMatches": 129,
+  "sourceMismatches": [],
+  "files": [
+    {
+      "file": "crazygames/cover-landscape.png",
+      "source": "approved-covers/cover-landscape.jpg",
+      "bytes": 2919976,
+      "sha256": "77ba3fd3f48da4b64274ea23d787b5724467fddefcb483483937f13501570e6c",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "crazygames/cover-portrait.png",
+      "source": "approved-covers/cover-portrait.jpg",
+      "bytes": 1517983,
+      "sha256": "ffee174aa64220d391097a92e2a93b4454107f51244a399d95e0c557109616c4",
+      "dimensions": [
+        800,
+        1200
+      ],
+      "originalDimensions": [
+        800,
+        1200
+      ],
+      "crop": false
+    },
+    {
+      "file": "crazygames/cover-square.png",
+      "source": "approved-covers/cover-square.jpg",
+      "bytes": 1146713,
+      "sha256": "fcc58abd4a3114d4c1b1a6cb1b8eeb2a8613d871bfd145b8837da0c4b880c728",
+      "dimensions": [
+        800,
+        800
+      ],
+      "originalDimensions": [
+        800,
+        800
+      ],
+      "crop": false
+    },
+    {
+      "file": "crazygames/real-gameplay-landscape.mp4",
+      "source": "output/media/landscape-variety.mp4",
+      "bytes": 2024510,
+      "sha256": "e9591d9fe8d3f67f469c20b5107a798cd65de554d79a04653603ac40dcdf5bed",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "duration": 17.36,
+      "audio": false,
+      "codec": "h264",
+      "technicalPass": true
+    },
+    {
+      "file": "crazygames/real-gameplay-portrait.mp4",
+      "source": "output/media/portrait-variety.mp4",
+      "bytes": 1551034,
+      "sha256": "6e7c33602c6629d7e9d775f92d2f5e4e192383628a8bd3c82712fa3f2daf9e98",
+      "dimensions": [
+        1080,
+        1620
+      ],
+      "duration": 17.4,
+      "audio": false,
+      "codec": "h264",
+      "technicalPass": true
+    },
+    {
+      "file": "y8/continuous.mp4",
+      "source": "output/media/landscape-continuous.mp4",
+      "bytes": 3760534,
+      "sha256": "c7dd7a2c687621ca29195e1e47ed529692d45b1cbb752fa41f89357328b0787e",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "duration": 39.08,
+      "audio": false,
+      "codec": "h264",
+      "technicalPass": true
+    },
+    {
+      "file": "y8/landscape-promo.jpg",
+      "source": "output/media/landscape-two-cat-garden.png",
+      "bytes": 297199,
+      "sha256": "38075443b4f77d8b8a11dbd99656a748dfe1925df5b849133d3de9f911109a48",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/portrait-promo.jpg",
+      "source": "output/media/vertical-two-cat-garden.png",
+      "bytes": 189077,
+      "sha256": "a761f0a301d64eeb7e69f369bb6bfb8458986681edf1c1a8b1b784ace2d3f0d1",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "originalDimensions": [
+        1080,
+        1920
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/widescreen.jpg",
+      "source": "output/media/landscape-catdex.png",
+      "bytes": 107488,
+      "sha256": "51707214ad660cf31300a93992a8db35d5479d98f1c3f5580f238711d150dd46",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "gamepix/landscape.jpg",
+      "source": "output/media/landscape-two-cat-garden.png",
+      "bytes": 170493,
+      "sha256": "1ec1908aacbd25188c5ca36e6da70336d564e61e865cfb3259fc67eb9dd7ef11",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "gamepix/icon.png",
+      "source": "approved-covers/cover-square.jpg",
+      "bytes": 522141,
+      "sha256": "0ae2b9e54e958ce79a692609c87aee3aaf7dd17839d1d467e4e858da268b7bed",
+      "dimensions": [
+        512,
+        512
+      ],
+      "originalDimensions": [
+        800,
+        800
+      ],
+      "crop": false
+    },
+    {
+      "file": "gamedistribution/square.png",
+      "source": "approved-covers/cover-square.jpg",
+      "bytes": 522141,
+      "sha256": "0ae2b9e54e958ce79a692609c87aee3aaf7dd17839d1d467e4e858da268b7bed",
+      "dimensions": [
+        512,
+        512
+      ],
+      "originalDimensions": [
+        800,
+        800
+      ],
+      "crop": false
+    },
+    {
+      "file": "gamedistribution/card.png",
+      "source": "approved-covers/cover-landscape.jpg",
+      "bytes": 378206,
+      "sha256": "3bae637ce7809138d870541e24496a9034a0489ad76388b94665195139cb9346",
+      "dimensions": [
+        512,
+        384
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": true
+    },
+    {
+      "file": "gamedistribution/small.png",
+      "source": "approved-covers/cover-landscape.jpg",
+      "bytes": 54141,
+      "sha256": "adfdde97842c1cfd78eeced900362505ad821cde41078901110bb17c1ee13910",
+      "dimensions": [
+        200,
+        120
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": true
+    },
+    {
+      "file": "gamepix/cat-bond-gamepix-candidate.zip",
+      "source": "output/cat-bond-gamepix-candidate.zip",
+      "bytes": 36929821,
+      "sha256": "9ac69e576418dadbe66569590304fb933ec28e9da42c4f6de7c1558c0b7538d6"
+    },
+    {
+      "file": "itch/screenshots/two-cat-garden.jpg",
+      "source": "output/media/landscape-two-cat-garden.png",
+      "bytes": 170493,
+      "sha256": "1ec1908aacbd25188c5ca36e6da70336d564e61e865cfb3259fc67eb9dd7ef11",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/landscape-two-cat-garden.jpg",
+      "source": "output/media/landscape-two-cat-garden.png",
+      "bytes": 297199,
+      "sha256": "38075443b4f77d8b8a11dbd99656a748dfe1925df5b849133d3de9f911109a48",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/vertical-two-cat-garden.jpg",
+      "source": "output/media/vertical-two-cat-garden.png",
+      "bytes": 189077,
+      "sha256": "a761f0a301d64eeb7e69f369bb6bfb8458986681edf1c1a8b1b784ace2d3f0d1",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "originalDimensions": [
+        1080,
+        1920
+      ],
+      "crop": false
+    },
+    {
+      "file": "itch/screenshots/catdex.jpg",
+      "source": "output/media/landscape-catdex.png",
+      "bytes": 107488,
+      "sha256": "51707214ad660cf31300a93992a8db35d5479d98f1c3f5580f238711d150dd46",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/landscape-catdex.jpg",
+      "source": "output/media/landscape-catdex.png",
+      "bytes": 193250,
+      "sha256": "b5949e055baa2701ddf8fcdee40007dc6cf3d18287154453026327fc5fe2e77b",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/vertical-catdex.jpg",
+      "source": "output/media/vertical-catdex.png",
+      "bytes": 181053,
+      "sha256": "e62865d161a285c818202f3ace58141dbd1763dc0097cf014255d9c231bdeb3d",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "originalDimensions": [
+        1080,
+        1920
+      ],
+      "crop": false
+    },
+    {
+      "file": "itch/screenshots/workshop.jpg",
+      "source": "output/media/landscape-workshop.png",
+      "bytes": 133366,
+      "sha256": "8467f0fe9bce9893aad7d853a51df3087879829caa3c9ef625242823399021de",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/landscape-workshop.jpg",
+      "source": "output/media/landscape-workshop.png",
+      "bytes": 234397,
+      "sha256": "f09e62fb73874519a735201b3187fae5441889653bb51b9f23d4ce672e90d196",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/vertical-workshop.jpg",
+      "source": "output/media/vertical-workshop.png",
+      "bytes": 217669,
+      "sha256": "1a47c0616cc79f0dd6c44a81759b591292e70bcb8f3465ff79d48087b730029b",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "originalDimensions": [
+        1080,
+        1920
+      ],
+      "crop": false
+    },
+    {
+      "file": "itch/screenshots/companions.jpg",
+      "source": "output/media/landscape-companions.png",
+      "bytes": 97596,
+      "sha256": "3bc74998db04825f08442d31ce1edcf7c0bb15d868e4c5ea7461dc709a2b596a",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/landscape-companions.jpg",
+      "source": "output/media/landscape-companions.png",
+      "bytes": 172821,
+      "sha256": "dd6081567a12fcbe3ea8019ebf0e785e5360e95ad2506eaf752ea604ca47484b",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/vertical-companions.jpg",
+      "source": "output/media/vertical-companions.png",
+      "bytes": 134573,
+      "sha256": "bfa774d6ec48b96c5940c42d240ff3f462629dbf340989b35206e79f0279d6f3",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "originalDimensions": [
+        1080,
+        1920
+      ],
+      "crop": false
+    },
+    {
+      "file": "itch/screenshots/battle.jpg",
+      "source": "output/media/landscape-battle.png",
+      "bytes": 143422,
+      "sha256": "e7ae178bf35792c94af632e6ab6c401cadd9cc78430086d66e189564846af5a2",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/landscape-battle.jpg",
+      "source": "output/media/landscape-battle.png",
+      "bytes": 245168,
+      "sha256": "6d0bb807f663edc32218f002227625f642b341315d48ebc3e69d6030f9518029",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/vertical-battle.jpg",
+      "source": "output/media/vertical-battle.png",
+      "bytes": 153888,
+      "sha256": "189219ef9f4871cec8c0a48c4221893ca212a7390c50a0c76fdf3aaa0cd970d3",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "originalDimensions": [
+        1080,
+        1920
+      ],
+      "crop": false
+    },
+    {
+      "file": "itch/screenshots/capture-result.jpg",
+      "source": "output/media/landscape-capture-result.png",
+      "bytes": 120023,
+      "sha256": "a3c88c7b9f5bfe986f36dd1d4329881d00e4905bb100cadf43e261f6379c7391",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/landscape-capture-result.jpg",
+      "source": "output/media/landscape-capture-result.png",
+      "bytes": 210479,
+      "sha256": "3193849eda36d2718432ebb7a20cb7e26f16c1e4f4eee55dbe74fdee753bd6c1",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/vertical-capture-result.jpg",
+      "source": "output/media/vertical-capture-result.png",
+      "bytes": 188138,
+      "sha256": "c4ad13bfa66d6179cca9a3c10bf2ae17d61521970cd6739f757d9d12ea767229",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "originalDimensions": [
+        1080,
+        1920
+      ],
+      "crop": false
+    },
+    {
+      "file": "itch/screenshots/exploration.jpg",
+      "source": "output/media/landscape-exploration.png",
+      "bytes": 49143,
+      "sha256": "c69b4686f6b3bd6698b198bf0e95b837c42bad259101243f6ce907b76be9cbbe",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/landscape-exploration.jpg",
+      "source": "output/media/landscape-exploration.png",
+      "bytes": 75936,
+      "sha256": "7b2d5f94a8111ec2947826b7e6864d62e2fb0fc9c3c916d8f4cfeb3048e51ec4",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "y8/alternates/vertical-exploration.jpg",
+      "source": "output/media/vertical-exploration.png",
+      "bytes": 72386,
+      "sha256": "ec1c1cc665aa1407b765885cb27dc43c453970125b73eaa66271e2282eb389f8",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "originalDimensions": [
+        1080,
+        1920
+      ],
+      "crop": false
+    },
+    {
+      "file": "itch/cover-candidate.jpg",
+      "source": "approved-covers/cover-landscape.jpg",
+      "bytes": 559472,
+      "sha256": "b5f524f98f1b24b713b735e34a9adbcc4596609854e86004917201403305b98a",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalDimensions": [
+        1920,
+        1080
+      ],
+      "crop": false
+    },
+    {
+      "file": "itch/gameplay-preview.mp4",
+      "source": "output/media/landscape-variety.mp4",
+      "bytes": 2024510,
+      "sha256": "e9591d9fe8d3f67f469c20b5107a798cd65de554d79a04653603ac40dcdf5bed",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "duration": 17.36,
+      "audio": false,
+      "codec": "h264",
+      "technicalPass": true
+    },
+    {
+      "file": "_verification/manifest.json",
+      "source": "handoff/manifest.json",
+      "bytes": 11474,
+      "sha256": "544a72a6da4fd30209322eeb923220b1b3904163f452c0c90e00a73ee9253310"
+    },
+    {
+      "file": "_verification/gamepix-build-report.json",
+      "source": "output/gamepix-build-report.json",
+      "bytes": 323,
+      "sha256": "a6f086cb6407221a04eacb37aa29dd5032f54c0886a4c685b37e38cdb87b6626"
+    },
+    {
+      "file": "_verification/real-capture-report.json",
+      "source": "output/real-capture-report.json",
+      "bytes": 3699,
+      "sha256": "5679f1d35b4b4b34ff5a7dd7cee594e9f50ee7da2d2e69b72142d7043cdf8d32"
+    }
+  ],
+  "zipChecks": [
+    {
+      "file": "gamepix/cat-bond-gamepix-candidate.zip",
+      "files": 127,
+      "portraitCount": 63,
+      "crcPass": true,
+      "pass": true,
+      "sha256": "9ac69e576418dadbe66569590304fb933ec28e9da42c4f6de7c1558c0b7538d6"
+    }
+  ],
+  "technicalFailures": [
+    "Missing qa-input/y8-standard-garden.png",
+    "Missing qa-input/y8-standard-companions.png",
+    "Missing qa-input/gamepix-portrait-garden.png",
+    "y8 actual SDK ID/build missing",
+    "gamedistribution actual SDK ID/build missing",
+    "standalone-qa not passed",
+    "itch-live-parity not passed"
+  ],
+  "technicalPass": false,
+  "visualApproved": false,
+  "portalSaved": false,
+  "qaStatus": {
+    "standalone-qa": false,
+    "itch-live-parity": false
+  }
+}
