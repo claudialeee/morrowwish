@@ -1,0 +1,12 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "platform": "y8",
+  "bytes": 36930453,
+  "sha256": "05768334f53f50ce2cf97582193ce141c5eae6135a9749ee01068fbaa247d363",
+  "fileCount": 128,
+  "sdkConfigurationPresent": false,
+  "awaitingSdkId": true,
+  "runtimeVerified": false,
+  "portalSaved": false,
+  "reviewReady": false
+}

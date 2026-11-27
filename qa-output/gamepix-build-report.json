@@ -1,0 +1,12 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "platform": "gamepix",
+  "bytes": 36929818,
+  "sha256": "b7ca3f093f74091df2fee3626473e91665687aaff281e0470658d811995befd9",
+  "fileCount": 127,
+  "sdkConfigurationPresent": false,
+  "awaitingSdkId": false,
+  "runtimeVerified": false,
+  "portalSaved": false,
+  "reviewReady": false
+}
