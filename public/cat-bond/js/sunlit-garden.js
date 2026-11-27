@@ -112,7 +112,7 @@
     b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length;b.dataset.questPrimary=String(main);b.hidden=false;
     if(cell){b.style.left=cell.x+'px';b.style.top=cell.box.bottom+'px';return;}
     const px=canvasRect.left-r.left+x/width*canvasRect.width,py=canvasRect.top-r.top+(y-112*scale)/height*canvasRect.height;
-    const bw=b.offsetWidth||72,bh=b.offsetHeight||44;
+    const bw=Math.max(44,b.offsetWidth||72),bh=Math.max(44,b.offsetHeight||44);
     const p=window.GardenExploration?.placeMarker?.(px,py-bh/2,bw,bh,r.width,r.height,avoid)||{x:Math.max(bw/2,Math.min(r.width-bw/2,px)),y:Math.max(bh/2,py-bh/2)};
     b.style.left=p.x+'px';b.style.top=(p.y+bh/2)+'px';avoid.push(p.box||{left:p.x-bw/2,top:p.y-bh/2,right:p.x+bw/2,bottom:p.y+bh/2});
   }

@@ -36,6 +36,7 @@ try{for(const {name,...profile} of profiles){
   await page.waitForFunction(n=>{const d=JSON.parse(document.querySelector('[data-guest-layout]')?.dataset.guestLayout||'{}');return d.page===n&&d.visible?.length===5&&d.visible.every(x=>x.box);},i);
   const metrics=await page.evaluate(()=>{const root=document.querySelector('[data-guest-layout]'),r=root.getBoundingClientRect(),d=JSON.parse(root.dataset.guestLayout);return {d,w:r.width,h:r.height,buttons:[...root.querySelectorAll('.sg-npc-talk-marker:not([hidden])')].map(el=>{const b=el.getBoundingClientRect();return {id:el.dataset.npcTalk,x:b.x-r.x,y:b.y-r.y,w:b.width,h:b.height,hit:document.elementFromPoint(b.x+b.width/2,b.y+b.height/2)?.closest('.sg-npc-talk-marker')===el};})};});
   assert.equal(metrics.buttons.length,5,name+' visible visitor controls');
+  assert.ok(metrics.buttons.every(b=>b.w>=44&&b.h>=44),name+' all visitor controls retain full 44px touch targets');
   for(const b of metrics.buttons){seen.add(b.id);assert.ok(b.w>=44&&b.h>=44&&b.x>=-1&&b.y>=-1&&b.x+b.w<=metrics.w+1&&b.y+b.h<=metrics.h+1&&b.hit,name+' inaccessible visitor '+JSON.stringify(b));}
   const boxes=metrics.d.visible.map(x=>x.box);for(let a=0;a<boxes.length;a++)for(let b=a+1;b<boxes.length;b++){const x=boxes[a],y=boxes[b];assert.ok(Math.min(x.right,y.right)<=Math.max(x.left,y.left)||Math.min(x.bottom,y.bottom)<=Math.max(x.top,y.top),name+' visitor footprint overlap '+JSON.stringify([x,y]));}
   await page.screenshot({path:out+'/'+name+'-garden-'+i+'.png'});await page.locator('[data-guest-page]').click();

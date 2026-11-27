@@ -263,7 +263,10 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 /* Global story marker hierarchy: optional exploration stays visible, never leads. */
 #stage .sg-npc-talk-marker[data-quest-primary="true"]{min-height:45px;min-width:84px;font-size:18px;padding:6px 12px;border:2px solid #b17d28;background:#fff1ca;color:#5c3a16;box-shadow:0 0 0 2px #d6ac64,0 3px 8px #3a2b2533;z-index:5}
 #stage .sg-npc-talk-marker[data-quest-primary="true"]::before{content:"";position:absolute;width:10px;height:10px;left:calc(50% - 5px);top:-15px;transform:rotate(45deg);background:#e9b955;border:1px solid #875e27}
-#stage .sg-npc-talk-marker[data-quest-primary="false"]{min-height:32px;min-width:48px;font-size:12px;padding:4px 7px;background:#fbf5e9;border-color:#b4a58c;color:#716858;box-shadow:none}
+#stage .sg-npc-talk-marker[data-quest-primary="false"]{min-height:44px;min-width:48px;font-size:12px;padding:4px 7px;background:#fbf5e9;border-color:#b4a58c;color:#716858;box-shadow:none}
+#stage .sg-npc-talk-marker.sg-guest-marker{box-sizing:border-box;min-height:44px;min-width:56px;max-width:112px;max-height:44px;line-height:1.2;white-space:nowrap}
+#stage .sg-npc-talk-marker.sg-guest-marker span{overflow:hidden;text-overflow:ellipsis;min-width:0}
+#stage .sg-npc-talk-marker.sg-guest-marker svg{flex:none}
 #stage .sg-npc-talk-marker[data-quest-primary="false"]::after{background:#fbf5e9;border-color:#b4a58c}
 #stage .sg-discovery[data-quest-primary="false"]{width:76px;height:56px;grid-template-rows:29px auto;gap:2px;color:#716858}
 #stage .sg-discovery[data-quest-primary="false"]::before{width:30px;height:30px;background:#f8f1e2;border:1px solid #a59a86;box-shadow:none}
