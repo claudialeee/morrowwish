@@ -260,6 +260,19 @@ async function run(chapter){
    const fit=await page.evaluate(()=>{const stage=document.querySelector('#stage').getBoundingClientRect(),dock=document.querySelector('#battle-ui .move-bar').getBoundingClientRect(),buttons=[...document.querySelectorAll('#battle-ui .move-bar .move')].filter(e=>e.getBoundingClientRect().width&&getComputedStyle(e).display!=='none').map(e=>{const r=e.getBoundingClientRect();return {id:e.id,w:r.width,h:r.height,left:r.left,top:r.top,right:r.right,bottom:r.bottom};});return {stage:{left:stage.left,top:stage.top,right:stage.right,bottom:stage.bottom},dock:{top:dock.top,bottom:dock.bottom},buttons,fieldBottom:stage.top+__game.H-__game.battle.bottomMargin};});
    assert.ok(fit.buttons.length>=5&&fit.buttons.every(r=>r.w>=44&&r.h>=44&&r.left>=fit.stage.left-1&&r.right<=fit.stage.right+1&&r.bottom<=fit.stage.bottom+1),'portrait skill targets '+JSON.stringify(fit));
    assert.ok(fit.fieldBottom<=fit.dock.top+2,'combat field reserved above skill dock '+JSON.stringify(fit));
+   if(type==='finale'){
+    const goal=page.locator('#cb-finale-compact'),details=page.locator('#cb-finale-hud');
+    await goal.waitFor({state:'visible'});await page.waitForFunction(()=>document.querySelector('#cb-finale-compact [data-compact-goal]')?.textContent&&document.querySelector('#cb-finale-compact [data-compact-count]')?.textContent);
+    assert.equal(await details.isVisible(),false,'Finale details must not cover the field by default');
+    const original=page.viewportSize();
+    for(const viewport of operation==='battle:inward-gates'?[{width:320,height:568},original,{width:430,height:932}]:[original]){
+     await page.setViewportSize(viewport);
+     await page.waitForFunction(()=>{const g=document.querySelector('#cb-finale-compact'),bar=document.querySelector('#battle-ui .battle-topbar'),menu=document.querySelector('#cb-system-toggle'),r=g.getBoundingClientRect(),b=bar.getBoundingClientRect(),m=menu?.getBoundingClientRect();return r.height>=44&&r.width>=44&&r.bottom<=b.top+1&&(!m||r.right<=m.left+1)&&g.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2));});
+     await shot(operation+'-goal-'+viewport.width);
+    }
+    await page.setViewportSize(original);await goal.tap();await details.waitFor({state:'visible'});
+    assert.equal(await goal.getAttribute('aria-expanded'),'true');await goal.tap();await details.waitFor({state:'hidden'});assert.equal(await goal.getAttribute('aria-expanded'),'false');
+   }
   }
   await shot(operation+'-battle');
   const before=await page.evaluate(()=>__game.battle?.team?.map(f=>({actor:f.cat?.storyActor||f.cat?.species,level:f.cat?.level,hp:f.hp,maxhp:f.maxhp})));

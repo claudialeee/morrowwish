@@ -174,3 +174,25 @@
 }
 
 #stage{--cb-portrait-safe-top:env(safe-area-inset-top,0px);--cb-portrait-safe-bottom:env(safe-area-inset-bottom,0px)}
+
+/* Finale on a phone: a persistent goal in the unused strip left of the Menu.
+ * Details remain accessible on demand, while the default field stays clear. */
+#stage #battle-ui .cb-finale-compact{display:none!important}
+@media (orientation:portrait) and (max-width:700px){
+ #stage #battle-ui.on .cb-finale-compact{
+  position:absolute;z-index:11;top:calc(env(safe-area-inset-top,0px) + 2px);left:max(7px,env(safe-area-inset-left,0px));right:calc(88px + env(safe-area-inset-right,0px));
+  height:44px;min-height:44px;width:auto;display:grid!important;grid-template-columns:minmax(0,1fr) auto auto;
+  align-items:center;gap:4px;padding:4px 7px;box-sizing:border-box;border:1px solid #bfa77a;border-radius:9px;
+  background:#f6e9cdee;color:#493e2b;font:700 12px/1.2 var(--cb-font-body);text-align:left;pointer-events:auto;touch-action:manipulation;
+ }
+ #stage #battle-ui.on .cb-finale-compact [data-compact-goal]{min-width:0;overflow-wrap:anywhere}
+ #stage #battle-ui.on .cb-finale-compact [data-compact-count]{font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}
+ #stage #battle-ui.on .cb-finale-compact .cb-finale-chevron{font-size:12px}
+ #stage #battle-ui.on .cb-finale-compact[data-cinematic="true"]{visibility:hidden!important;pointer-events:none!important}
+ #stage #battle-ui.on .cb-finale-hud:not(.cb-finale-details-open){display:none!important}
+ #stage #battle-ui.on .cb-finale-hud.cb-finale-details-open{pointer-events:auto;max-height:calc(100% - var(--cb-rpg-hud-top,200px) - 140px - env(safe-area-inset-bottom,0px));overflow:auto}
+ #stage #battle-ui.on .cb-finale-hud [data-finale-focus] button{min-height:44px}
+ /* The primary action already names the current objective; do not repeat the
+    identical status in the heading directly above it. */
+ #stage .rw-world.rw-region-compact>.rw-head:has(>[data-next-scene]) .rw-fit-summary{display:none!important}
+}
