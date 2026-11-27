@@ -100,23 +100,46 @@
  #stage .res-host .res-dialogue .res-choices button{min-height:44px!important;white-space:normal;overflow-wrap:anywhere}
 }
 
+/* The desktop title keeps its authored landscape painting; portrait uses the
+   two canonical transparent lead paintings over the existing native portrait garden. */
+#stage #intro .cb-title-leads{display:none!important}
 /* Portrait title and combat: keep the actual painting sharp, provide a stable
    bottom skill dock and reserve the same clearance in the combat simulation. */
 @media (orientation:portrait) and (max-width:700px){
  #stage #intro.cb-rpg-intro:not(.hide){
-  background:#24242b!important;
+  background:#f3e1c1!important;
+  grid-template-rows:minmax(0,1fr) auto!important;
+  padding:calc(44px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))!important;
+  gap:0!important;
  }
  #stage #intro .cb-title-landscape{
-  background-image:linear-gradient(0deg,#24242b,transparent 36%),url('../assets/garden/title-bell-sanctuary.webp')!important;
+  inset:0!important;
+  background:linear-gradient(0deg,#24242b 0%,rgba(36,36,43,.96) 17%,rgba(36,36,43,.65) 30%,transparent 53%),url('../assets/garden/sunlit-garden-portrait.webp') center top/contain no-repeat!important;
   background-size:100% 100%,contain!important;
-  background-position:center,center top!important;
   background-repeat:no-repeat!important;
-  bottom:36%!important;
+ }
+ #stage #intro .cb-title-leads{
+  grid-area:1/1!important;position:relative;z-index:2;
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:end;gap:2px;align-self:stretch;justify-self:center;
+  width:min(100%,500px);height:100%;min-height:0;min-width:0;
+  box-sizing:border-box;padding:0 0 4px;pointer-events:none;
+ }
+ #stage #intro .cb-title-leads .cb-title-lead{
+  display:block;width:100%;height:100%;min-height:0;min-width:0;
+  max-width:100%;max-height:100%;object-fit:contain;object-position:center bottom;
+  filter:drop-shadow(0 5px 4px rgba(54,39,31,.20));
  }
  #stage #intro .cb-title-content{
-  width:min(100%,420px)!important;padding:12px!important;box-sizing:border-box!important;
-  max-height:58%!important;overflow:auto;overscroll-behavior:contain;
+  grid-area:2/1!important;align-self:end!important;justify-self:center!important;
+  width:min(100%,420px)!important;padding:8px 2px 0!important;box-sizing:border-box!important;
+  margin:0!important;max-height:none!important;overflow:visible;gap:8px!important;
  }
+ #stage #intro .cb-intro-titleblock{gap:5px!important}
+ #stage #intro .cb-intro-actions{margin:4px 0 0!important}
+ #stage #intro .cb-intro-actions button:is(#intro-start,#intro-continue){min-height:48px!important}
+ #stage #intro #cb-title-name{line-height:1.08!important}
+ #stage:has(#intro:not(.hide)) #cb-system-toggle{min-height:44px!important}
  #stage #battle-ui.on .move-bar{
   left:8px!important;right:8px!important;bottom:max(8px,env(safe-area-inset-bottom,0px))!important;
   transform:none!important;width:auto!important;max-width:none!important;

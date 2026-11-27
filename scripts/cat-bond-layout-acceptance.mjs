@@ -11,7 +11,32 @@ const profiles=[{name:'portrait',viewport:{width:390,height:844},isMobile:true,h
 try{for(const {name,...profile} of profiles){
  const context=await browser.newContext(profile),page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));await page.goto(origin+'/cat-bond/?lang=en&rpgDev=1');
- await page.locator('#intro-start').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+ await page.locator('#intro-start').waitFor({state:'visible'});
+ if(name==='portrait'){
+  // Real title art, not the synthetic postgame fixture below.
+  for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){
+   await page.setViewportSize(viewport);
+   await page.waitForFunction(()=>[...document.querySelectorAll('.cb-title-lead')].length===2&&[...document.querySelectorAll('.cb-title-lead')].every(i=>i.complete&&i.naturalWidth>0&&i.getBoundingClientRect().height>0));
+   await page.evaluate(()=>document.fonts.ready);
+   const m=await page.evaluate(()=>{
+    const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
+    const root=document.querySelector('#intro'),art=root.querySelector('.cb-title-leads'),content=root.querySelector('.cb-title-content');
+    return {root:rect(root),art:rect(art),content:rect(content),cats:[...art.querySelectorAll('img')].map(i=>{const r=rect(i),scale=Math.min(r.width/i.naturalWidth,r.height/i.naturalHeight);return {src:new URL(i.src).pathname,fit:getComputedStyle(i).objectFit,r,paintW:i.naturalWidth*scale,paintH:i.naturalHeight*scale};}),buttons:[...content.querySelectorAll('button')].map(b=>{const r=rect(b);return {r,hit:b.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2))};})};
+   });
+   assert.deepEqual(m.cats.map(c=>c.src),['/cat-bond/assets/core-art-remaster/leads/player.webp','/cat-bond/assets/core-art-remaster/leads/muling.webp']);
+   assert.ok(m.art.bottom<=m.content.top+1&&m.content.bottom<=m.root.bottom+1,'title art and text must be separate '+JSON.stringify(m));
+   assert.ok(m.cats.every(c=>c.fit==='contain'&&c.paintW>=100&&c.paintH>=135&&c.r.left>=m.root.left-1&&c.r.right<=m.root.right+1&&c.r.top>=m.root.top-1&&c.r.bottom<=m.content.top+1),'both original cats fully visible and legible '+JSON.stringify(m));
+   assert.ok(m.cats[0].r.right<=m.cats[1].r.left+1,'cats do not overlap');
+   assert.ok(m.buttons.every(b=>b.r.height>=44&&b.r.width>=44&&b.hit&&b.r.bottom<=m.root.bottom+1),'title actions accessible '+JSON.stringify(m));
+   await page.screenshot({path:out+'/portrait-title-'+viewport.width+'.png'});
+  }
+  await page.setViewportSize(profile.viewport);
+ }else{
+  assert.equal(await page.locator('.cb-title-leads').isVisible(),false,name+' desktop/landscape title stays unchanged');
+  await page.screenshot({path:out+'/'+name+'-title.png'});
+ }
+ if(profile.hasTouch)await page.locator('#intro-start').tap();else await page.locator('#intro-start').click();
+ await page.locator('#intro-slot-list [data-slot="slot1"]').click();
  await page.locator('#cb-player-first-intro').getByRole('button',{name:'Start exploring',exact:true}).click();
  await page.waitForFunction(()=>State.S.cats.length===1&&window.__game?.scene==='yard');
  await page.evaluate(async()=>{
