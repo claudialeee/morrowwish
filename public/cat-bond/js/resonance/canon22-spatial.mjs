@@ -37,7 +37,7 @@ function starStep(p,i){
  if(!starEdges[p.node].includes(i)){p.warning="fall";return;}
  p.node=i;p.visited.push(i);p.route=p.route||(i===1?"upper":"lower");if((i===3||i===6)&&!p.discoveries.includes("starlight-"+i))p.discoveries.push("starlight-"+i);p.solved=i===7;
 }
-export function bridgeReachable(p){const active=p.operation==="puzzle:moonleaf-loop"?1-p.branch:p.branch;return ([[1],[0,2,3],[1,4],[1,4],[2,3]])[p.node]||[];}
+export function bridgeReachable(p){return ([[1],[2,3],[4],[4],[]])[p.node]||[];}
 function bridgeStep(p,i){
  const edge=bridgeReachable(p);
  if(!edge.includes(i)){p.warning="gap";return;}
@@ -55,7 +55,7 @@ function routeChase(p,shortcut=false){
  if(p.chaseActive||p.phase>=chaseStages.length||shortcut&&p.phase!==1)return false;
  if(p.readyPounce){if(shortcut)return false;p.pouncing=true;p.chaseActive=true;p.waypoints=[[...p.chime]];p.moves++;return true;}
  const route=chaseStages[p.phase];
- p.chimeWaypoints=route.map(q=>[...q]);
+ p.chimeWaypoints=(shortcut?[[.5,.48],[.5,.27]]:route).map(q=>[...q]);
  p.waypoints=(shortcut?[[.5,.27]]:p.phase===2?[[.27,.27]]:route).map(q=>[...q]);
  p.chaseActive=true;p.moves++;p.jumping=shortcut;p.wallCrossed=p.wallCrossed||shortcut;
  return true;
@@ -108,8 +108,8 @@ export function spatialInput(p,a){
 export function spatialProof(p){return p?.solved?{operation:p.operation,trace:p.trace.map(x=>({...x})),frames:p.frame,route:p.route,discoveries:[...p.discoveries],...(p.operation==="puzzle:lantern-show"?{shape:p.shape,angle:p.angle}: {})}:null;}
 export function validSpatialProof(op,proof){
  const p=newSpatial(op);if(!p||proof?.operation!==op||!Array.isArray(proof.trace)||proof.trace.length<1||proof.trace.length>500||!Number.isInteger(proof.frames)||proof.frames<0||proof.frames>6000)return false;
- for(const a of proof.trace){if(p.solved)return false;if(p.kind==="chase"){if(!Number.isInteger(a.frame)||a.frame<p.frame||a.frame>=proof.frames)return false;while(p.frame<a.frame&&!p.solved)chaseStep(p);if(p.solved)return false;}const n=p.trace.length;spatialInput(p,a);if(p.trace.length!==n+1)return false;}
- if(p.kind==="chase")while(p.frame<proof.frames&&!p.solved)chaseStep(p);
+ for(const a of proof.trace){if(p.solved)return false;if(p.kind==="chase"){if(!Number.isInteger(a.frame)||a.frame<p.frame||a.frame>=proof.frames)return false;while(p.frame<a.frame&&!p.solved&&p.chaseActive)chaseStep(p);if(p.solved||p.frame!==a.frame)return false;}const n=p.trace.length;spatialInput(p,a);if(p.trace.length!==n+1)return false;}
+ if(p.kind==="chase")while(p.frame<proof.frames&&!p.solved&&p.chaseActive)chaseStep(p);
  return p.solved&&p.frame===proof.frames&&p.route===proof.route&&JSON.stringify(p.discoveries)===JSON.stringify(proof.discoveries||[])&&(op!=="puzzle:lantern-show"||p.shape===proof.shape&&p.angle===proof.angle);
 }
 export function spatialTap(p,x,y){
