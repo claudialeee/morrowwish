@@ -2551,3 +2551,34 @@ This cycle ran against HEAD pre-83f00177 / pre-d4ca902d / pre-5fc451d7 (pre-defe
 
 ### Session arc
 w06q78tip 4.33 → w892jymfa 4.5 → wowed850p 5.0 → wb3r7ejxm 4.33 → wmbjeusi4 4.17 → wyirqg3vx 4.67.
+
+RSI cycle 2026-11-27T19:47:02Z: no agent proposal beat the MOBA judge; archive coverage 2/256.
+
+## Playtest cycle w61dao149 — 2026-11-27 (post 5fc451d7 symmetric defense)
+
+**Headline**: Combat telemetry is honest but UI/feedback layers are stealing the earned payoff — deterministic caps, invisible ramps, silent cast rejections, and a timeout judge that logs clear dominations as losses are flattening every persona's fun ceiling.
+
+**funMean 4.33** (↓0.34 vs wyirqg3vx 4.67):
+- 狂按 **4** (↓3 from wyirqg3vx 7) / 探索 7 / 懒人 5 / 手忙脚乱 4 / 谨慎 3 / 没耐心 3
+
+**Masher regression**: 7→4 is the biggest single persona swing in session. Symmetric defense (5fc451d7) may have made player hits feel weaker by flat+pct on enemy side.
+
+### Auto-fixes this cycle: 1 (of 6 fix-P0 candidates)
+
+- **Fix 0 (ult-cap non-deterministic + input-sensitive)**: FINDINGS-ONLY — requires 2 new state flags set during telegraph window + reaction-aware rng. Scope > local-numeric.
+- **Fix 1 (per-tick frame-damage aggregate cap)**: FINDINGS-ONLY — "identical pattern to _ultCastUid" but requires new _playerFrameDmg + CORNERED screen pulse VFX. Medium scope.
+- **Fix 2 (steepen basicTimeScalar)**: FINDINGS-ONLY — risk flagged "Low-medium power creep".
+- **Fix 3 (split PLAYER_SKILL_CD_MULT)**: FINDINGS-ONLY — risk "Medium".
+- **Fix 4 (E-priority shunt in auto-planner)**: **AUTO-FIXED in e5def513**. One conditional, Low risk, scoped. Gate green pre-commit.
+- **Fix 5 (timeout judge: dominant-defense draw → win)**: FINDINGS-ONLY — "Medium" risk, reroutes loss→win.
+
+### Critiques: 32 total
+- 25 P1 (8 local-numeric + 16 additive-flag + 1 architectural)
+- 7 P2 (1 local-numeric + 5 additive-flag + 1 architectural)
+- 0 critique-tier P0
+
+### Harness
+25/71 agent calls hit StructuredOutput retry cap. 46 succeeded.
+
+### Session arc
+w06q78tip 4.33 → w892jymfa 4.5 → wowed850p 5.0 → wb3r7ejxm 4.33 → wmbjeusi4 4.17 → wyirqg3vx 4.67 → w61dao149 **4.33** (symmetric defense effect visible)
