@@ -63,13 +63,13 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   if(covered.length!==scene.lines.length||covered.some((v,i)=>v!==i))return bad('incomplete-or-reordered-dialogue');
   if(!frames.length)return bad('nothing-to-play');
   if(scene.id==='starfall:F-02'&&useStaging){const impact=assets.get('canon22-history-impact');if(impact?.sceneKey===scene.id&&impact.status==='candidate'&&impact.stagingAllowed===true&&impact.runtimeAllowed===false&&raster.test(impact.path)){const alt={zh:'陨星击裂古老的星铃',en:'A fallen star cracks the ancient Star Bell'};frames.unshift({id:'starfall:F-02-impact',image:impact.path,alt,durationMs:3400,transitionMs:680,camera:{from:{x:0,y:0,scale:1.02},to:{x:0,y:0,scale:1.08}}});}}
-  if(scene.id==='starfall:F-02'){const historical=frames.find(f=>f.effect==='history-collapse');if(historical){const text={zh:'当年六地未能接唱，你自愿留下记忆救了大家。今天已经有五地重新响起。',en:'The six lands could not answer one another then; you offered your memories to save them. Today five bells are ringing again.'};frames.push({...historical,id:'starfall:F-02-present-five',effect:'history-present',durationMs:4700,shotDurationMs:4700,shotOffsetMs:0,subtitle:{zh:{speaker:'星芽',text:text.zh},en:{speaker:'Xingya',text:text.en}},alt:text});}}
+  if(scene.id==='starfall:F-02'){const historical=frames.find(f=>f.effect==='history-collapse');if(historical){const text={zh:'当年六地未能接唱，你自愿留下记忆救了大家。今天已经有五地重新响起。',en:'The six lands could not answer one another then; you offered your memories to save them. Today five bells are ringing again.'};frames.push({...historical,id:'starfall:F-02-present-five',effect:'history-present',durationMs:4700,shotDurationMs:4700,shotOffsetMs:0,subtitle:{zh:{speaker:'星芽',text:text.zh},en:{speaker:'Nova',text:text.en}},alt:text});}}
   // Last patrol is a separate historical shot before the central choice. Reuse the painted
   // Lantern City workshop, its actual resident and an existing painted lantern prop.
   if(scene.id==='starfall:F-02'){
     const beforeChoice=frames.findIndex(f=>f.id.includes('-line-0'));
     const patrol={id:'starfall:F-02-last-patrol',image:'assets/story-art/lantern-entrustment.jpg',
-      alt:{zh:'最后一次巡访：守铃人把旧灯匣托付给烬婆',en:'The last patrol: the Bellkeeper entrusts the old lamp case to Jinpo'},
+      alt:{zh:'最后一次巡访：守铃人把旧灯匣托付给烬婆',en:'The last patrol: the Bellkeeper entrusts the old lamp case to Ember'},
       durationMs:6500,transitionMs:650,subtitle:{zh:{speaker:'过去的守铃人',text:'要是连回家的路都忘了，就让找到它的猫去书库。'},en:{speaker:'The Bellkeeper, long ago',text:'If I ever forget the way home, let whoever finds this look in the library.'}},
       camera:{from:{x:0,y:0,scale:1},to:{x:0,y:0,scale:1}}};
     frames.splice(Math.max(0,beforeChoice),0,patrol);
@@ -110,7 +110,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   if(scene.id==='finale:B-04'){
     frames.unshift({id:'finale:B-04-memory-bell',image:'assets/resonance-world-v2/starfall.webp',
       alt:{zh:'记忆回到守铃者身边',en:'The Bellkeeper’s memories return'},durationMs:3400,transitionMs:800,
-      layers:[{image:'assets/core-art-remaster/leads/player.webp',kind:'actor',x:42,y:68,width:18,travel:2},{image:'assets/core-art-remaster/leads/muling.webp',kind:'actor',x:58,y:68,width:18,travel:-2}],camera:{from:{x:0,y:0,scale:1},to:{x:0,y:0,scale:1.04}},effect:'sanctuary',note:392,requireReply:true,subtitle:{zh:{speaker:'暮铃',text:'星铃重新响了。暮铃走到你身边，轻轻摇了两下铃。'},en:{speaker:'Muling',text:'The Star Bell rings again. Muling comes to your side and rings twice.'}}});
+      layers:[{image:'assets/core-art-remaster/leads/player.webp',kind:'actor',x:42,y:68,width:18,travel:2},{image:'assets/core-art-remaster/leads/muling.webp',kind:'actor',x:58,y:68,width:18,travel:-2}],camera:{from:{x:0,y:0,scale:1},to:{x:0,y:0,scale:1.04}},effect:'sanctuary',note:392,requireReply:true,subtitle:{zh:{speaker:'暮铃',text:'星铃重新响了。暮铃走到你身边，轻轻摇了两下铃。'},en:{speaker:'Luna',text:'The Star Bell rings again. Luna comes to your side and rings twice.'}}});
   }
   return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.id==='prologue:P-02'?{zh:'抉择',en:'The Choice'}:scene.title,chapter:{zh:'星铃回响',en:'Echoes of the Starbell'},mode:'auto',allowSkip:scene.id!=='finale:B-04',frames}};
 }
