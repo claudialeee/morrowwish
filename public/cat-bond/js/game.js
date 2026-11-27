@@ -557,12 +557,19 @@ class Game {
     highlight(data.target||null);
   }
 
+  worldDialogueOpen() {
+    return !!window.__CAT_BOND_CANONICAL_ACTIVE__ && !!document.querySelector('.cb-story-overlay.is-visible .res-dialogue, .cb-story-overlay.is-visible .res-key-exchange, .res-dialogue[aria-modal="true"]');
+  }
+
   loop(ts) {
     // Schedule the NEXT frame first, so a thrown error in update/draw can never
     // permanently freeze the game (the cats-don't-move failure mode).
     requestAnimationFrame(t => this.loop(t));
     const dt = Math.min(0.05, (ts - this._lastTs) / 1000 || 0);
-    this._lastTs = ts; this.t += dt;
+    this._lastTs = ts;
+    const dialoguePaused = (this.scene === 'yard' || this.scene === 'map') && this.worldDialogueOpen();
+    if (!dialoguePaused) this.t += dt;
+    else { this.mouse.active = false; this.mouse.down = false; this._mapMouseDrag = null; }
     // decay cursor "activity" so cats lose interest when the mouse stops
     if (this.mouse.active) { this.mouse.idle += dt; if (this.mouse.idle > 1.2) this.mouse.active = false; }
     // idle/placement economy tick (online == offline). butterfly flag → yard event
@@ -600,7 +607,7 @@ class Game {
       UI.refreshExploreHealth?.();
     }
     if(this.scene==='yard'){
-      this.yard.update(dt);
+      if (!this.worldDialogueOpen()) this.yard.update(dt);
       if(this.t>=(this._nextQuestTick||0)){
         this._nextQuestTick=this.t+0.3;
         this.refreshFirstQuest();
@@ -614,7 +621,7 @@ class Game {
       // behind the dialog. A full-screen lock on encounter is the intended feel.
       const panelOpen = document.getElementById('panel')?.classList.contains('open') ||
         !!document.querySelector('.cb-story-overlay,.cb-cloud-overlay');
-      if (!panelOpen) WorldMap.update(dt);
+      if (!panelOpen && !this.worldDialogueOpen()) WorldMap.update(dt);
     }
     else if (this.scene === 'battle' && this.battle) {
       if(this.battleHelpOpen)return; // Pause while the player reads controls.
@@ -839,6 +846,7 @@ class Game {
   }
 
   yardTap(x, y) {
+    if (this.worldDialogueOpen()) return;
     if(this.yard?.placement){
       // Commit the exact chosen canvas coordinate in this event. The old
       // two-step confirm allowed mouse movement to shift the selected site.
