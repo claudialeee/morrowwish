@@ -2582,3 +2582,47 @@ RSI cycle 2026-11-27T19:47:02Z: no agent proposal beat the MOBA judge; archive c
 
 ### Session arc
 w06q78tip 4.33 → w892jymfa 4.5 → wowed850p 5.0 → wb3r7ejxm 4.33 → wmbjeusi4 4.17 → wyirqg3vx 4.67 → w61dao149 **4.33** (symmetric defense effect visible)
+RSI cycle 2026-11-27T20:46:52Z: no agent proposal beat the MOBA judge; archive coverage 2/256.
+
+## RSI cycle 2026-11-27T21:29:01Z — AGENT WINNER (first this session)
+
+**Winner**: `agent:allied-hp-peeler` — score **0.7060** (vs prior baseline 0.6918, **+2.05%**)
+
+**bandBody**: `function(f){const hp=f.hp/(f.maxhp||1);const team=this.team||[];const alliedHurt=team.some(m=>m!==f&&m.alive&&(m.hp/(m.maxhp||1))<0.5);if(alliedHurt){const min=60,max=100;return {min,max,rush:min+5,role:'tank',hp};}const min=70,max=140;return {min,max,rush:min+10,role:'bruiser',hp};}`
+
+**What it does**: Reads `this.team` (new extended API, requires `this` binding fix in propose.mjs). If any ally HP<0.5, the cat shifts tight (60-100) with role='tank' to draw aggro (peel). Otherwise baseline-like 70-140 bruiser band.
+
+**Why it won**: Spec §1a role theory — peel/body-block protects the carry. The judge's multi-survival term (0.26 weight × 0.6 multi weighting) rewards keeping the hurt ally alive. This is the first candidate to exploit the extended `this.*` context (team / enemies / _stomp / _closing / t).
+
+**Archive**: 2/256 (unchanged cell count — displaced baseline from cell 1,3,3,3 but same cell).
+
+**Owner decision pending**: candidate lives in `scripts/rsi/agent-candidates.json` and MAP-Elites archive. Per RSI cron spec step (5), NOT auto-applied to game code — awaiting owner approval to port `allied-hp-peeler.bandBody` into `public/cat-bond/js/battle.js` `kitRangeBand()` as a peel branch.
+
+## Playtest cycle wj9ntrtir — 2026-11-27 (post 5fc451d7 + e5def513)
+
+**Headline**: Combat math is now in band, but every persona except 探索型 is bleeding fun to a single root cause — the game teaches, telegraphs, and acknowledges almost nothing, so recent tuning wins are invisible to the players they were built for.
+
+**funMean 4.0** (new session low, ↓0.33 vs w61dao149 4.33):
+- 探索 7 / 懒人 5 / 狂按 4 / 手忙脚乱 3 / 没耐心 3 / 谨慎 **2**
+
+### Auto-fixes this cycle: 0 (2 fix-P0 candidates, both compound multi-file features)
+
+- **Fix 0 (diegetic verb-teaching: mash-combo auto-Q + E coach step + defensive hint)**: FINDINGS-ONLY — compound feature (adds `_mashStreak` state + coach step with new zh/en strings + telegraph annotation). New i18n entries excluded by cron.
+- **Fix 1 (make invisible systems visible: closeBonus floater + pin-flash + cd-deny pulse + ult-energy toast + ult pre-charge beats)**: FINDINGS-ONLY — compound multi-system juice refactor. 5+ coordinated sites. Exceeds "local numeric tune or additive/incremental logic" cron rule.
+
+### Session trend (8 cycles)
+4.33 → 4.5 → 5.0 → 4.33 → 4.17 → 4.67 → 4.33 → **4.0**
+
+Downtrend ominous. HEAD now has `5fc451d7` (symmetric defense) + `e5def513` (E-priority shunt). Hypothesis: player feels symmetric defense (enemies now resist player chain-stacks via same flat+pct that was previously player-only) as a general damage dampening. Masher 7→4→4 across last 3 cycles confirms the sticky regression.
+
+### Critiques: 36 total
+- 28 P1 (2 local-numeric + 26 additive-flag)
+- 7 P2 (1 local-numeric + 6 additive-flag)
+- 1 P3
+- 0 critique-tier P0
+
+### Harness
+27/77 agent calls hit StructuredOutput retry cap. 50 succeeded.
+
+### RSI parallel: first agent winner surfaced
+RSI cycle 2026-11-27T21:29:01Z (separately in session): `agent:allied-hp-peeler` beat baseline +2.05% (0.706 vs 0.692). Awaits owner approval to port peel branch into kitRangeBand.
