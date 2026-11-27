@@ -299,6 +299,9 @@ class CatEntity {
       mood: atPlay?(sleepy?'sleepy':'happy'):this.mood(),
       growth: growthForm,
     });
+    // Starbell is a story RPG: keep courtyard characters free of persistent name/level tags.
+    // The protagonist's identity is unknown; dialogue and party UI own their labels.
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__)return;
     // Keep the label above the tallest painted silhouette, including a hop.
     // The old 44px anchor was calibrated for a squat legacy sprite and covered the face.
     if(sp?.id==='jinjc'&&!window.CatBondArtworkStatus?.protagonistLoaded)return;
