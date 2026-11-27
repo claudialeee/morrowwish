@@ -227,7 +227,7 @@
 - 主角：你瞧，那个小家伙都在学它歪耳朵了。下回去我家演吧！ / Look, that kitten's trying to bend its ears just like yours. Come put on a show at my place!
 
 
-### forge:E-02 · 影子底下的桥 / The bridge beneath the shadows
+### forge:E-02 · 藏灯室的三只影子 / Three shadows in the lantern vault
 
 **实机事件与推进：** 保留新版寻找三只影子猫。玩家拖动灯光，发现藏灯室附近三个隐藏剪影；找到全部后继续。不要恢复旧桥面解谜或工业控制小游戏。灯影不能凭空成为实体。烬婆认出火纹属于她家曾替巡铃人制作的灯。她指出藏灯室中有旧灯匣；匣底刻守铃人标记和书库旧章，玩家照亮桥后首次看见它。盒内图还未取出。
 
@@ -370,6 +370,8 @@
 - 暮铃（玩家追问或伤心）：我本该早点告诉你。 / I should have told you sooner.
 
 
+**M-03 选择后的回应（运行时已接入）：** 选择了解事实，暮铃陪主角寻找旧记录；选择受伤，暮铃道歉且不要求立即原谅；选择需要时间，暮铃尊重停顿。每条路线都有主角表态和暮铃的独立双语回应，保留相同的剧情出口，不把情感抉择变成无回应的按钮。
+
 ### library:M-04 · 那串不该响起的铃声 / The bell that should have stayed silent
 
 **实机事件与推进：** 白羽在借阅记录认出暮铃铃坠的印记，找出她借走的中央旧图和日期；墨页出示公开星铃观测记录，显示封印松开当天失忆重新出现。玩家在借阅桌并排查看借阅印、观测日期与公开旧图。只能证实暮铃借过图、失忆与封印松开同日；尚不能推出她亲手开锁。玩家选择先问为何借图，还是那天发生了什么；两条追问以不同顺序进入同一坦白，不做拖线配对或正确答案亮灯。直接找暮铃时白羽简短说清两件事实。秘密调铃由主角回想旅途中亲眼见过的操作后追问，暮铃自认；旧图不是行为监控记录。不是回放未见事件。证据仅证明借图、日期与路径，暮铃亲口确认是她松开封印并秘密调向中央。不要用万能镜子看到从未记录的私密动作。
@@ -386,6 +388,8 @@
 - 主角：你明明可以告诉我，让我自己选。 / You could have told me and let me choose.
 - 暮铃：……对不起。那时候，我只想着怎么把你带回来。 / …I'm sorry. All I could think about was bringing you back.
 
+
+**M-04 选择后的回应（运行时已接入）：** 愤怒路线明确其他猫的权利；距离路线不讨论原谅，转向墨页与替代方案；理解路线明确理解不等于原谅。暮铃分别回应，不要求主角当场和解。
 
 ### library:M-05 · 如果铃声只能属于一个人 / If the song belonged to only one cat
 
@@ -541,6 +545,8 @@
 
 - 暮铃：封印是我打开的。阿婆连家里的小猫都忘了……是我害的。对不起。我先帮你把坏掉的家铃修好，行吗？ / I opened the seal. Gran forgot the kitten waiting at home… because of me. I'm sorry. Can I start by helping you mend the damaged house bells?
 - 檐灯：那就从这儿开始吧。别的事，慢慢来。 / Then let's start here. The rest will take time.
+
+**E-02 选择后的回应（运行时已接入）：** 倾听、主动帮忙、留出时间分别有实际对白。即使主角愿意协助，暮铃也明确由自己承担道歉和修复责任，不让玩家替她完成责任。
 
 ### epilogue:E-03 · 第二把钥匙 / The second key
 
