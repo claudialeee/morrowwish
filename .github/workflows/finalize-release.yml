@@ -7,15 +7,14 @@ permissions:
   contents: write
 jobs:
   final-media:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 7
     steps:
       - uses: actions/checkout@v4
       - name: Install free media tools
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y ffmpeg
-          python3 -m pip install --break-system-packages pillow
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          python3 -c 'import PIL' || python3 -m pip install --break-system-packages pillow
       - name: Assemble final assets, decode videos, verify ZIP bytes and provenance
         run: python3 finalize-release.py
       - name: Save files and measured final report
