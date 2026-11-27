@@ -658,7 +658,8 @@ const UI = {
       const prev=WorldMap.REGIONS.find(x=>x.id===r.unlock?.after);
       const own=r.unlock?.own?GameData.speciesById(r.unlock.own):null;
       const requirement=!r.unlock?(en?'Ready to explore':'开局即可探索')
-        :en?'Explore '+prev.sub+' '+Math.round(r.unlock.explore*100)+'%'+(own?' · Befriend '+own.name:'')
+        :!Number.isFinite(r.unlock.explore)?(en?'Continue the story in '+(prev?.sub||'the previous region'):'推进'+(prev?.name||'上一地区')+'的剧情')
+        :en?'Explore '+prev.sub+' '+Math.round(r.unlock.explore*100)+'%'+(own?' · Befriend '+GameData.speciesName(own):'')
         :'探索「'+prev.name+'」'+Math.round(r.unlock.explore*100)+'%'+(own?' · 拥有「'+own.name+'」':'');
       const icon=({home:'🏡',sakura:'🌸',creek:'💧',volcano:'🔥',ruins:'🌙'})[r.id]||'🐾';
       return `<button type="button" class="map-destination ${open?'available':'locked'}" data-region="${r.id}" ${open?'':'disabled'}>
@@ -669,7 +670,7 @@ const UI = {
       </button>`;
     }).join('');
     this.panel(`<span class="card-close">×</span><div class="map-chooser">
-      <h2>${en?'🗺️ Explore five regions':'🗺️ 探索五个地区'}</h2>
+      <h2>${en?'🗺️ Explore regions':'🗺️ 探索各地区'}</h2>
       <p>${en?'Each region has its own scenery, wild cats and treasures. Unlock the next by exploring.'
         :'每个地区都有独立场景、野猫与宝藏。提高探索度，逐步解锁新地图。'}</p>
       <div class="map-destination-list">${rows}</div>
@@ -1146,7 +1147,7 @@ const UI = {
     const gainStr = Object.entries(gains).filter(([, v]) => v > 0).map(([k, v]) => `${this.resIcon(k)}+${v}`).join(' ');
     const visitors = (r.visitors || []).map(v => {
       const giftText = this.formatVisitorGift(v.gift);
-      return `<div class="wb-visitor ${v.rare ? 'rare' : ''}"><b>${v.name}</b> 来访${giftText ? ' · 留下 ' + giftText : ''}${v.rare ? ' ✨稀客!' : ''}</div>`;
+      return `<div class="wb-visitor ${v.rare ? 'rare' : ''}"><b>${v.speciesId&&GameData.speciesById(v.speciesId)?GameData.speciesName(GameData.speciesById(v.speciesId)):v.name}</b> 来访${giftText ? ' · 留下 ' + giftText : ''}${v.rare ? ' ✨稀客!' : ''}</div>`;
     }).join('');
     this.panel(`<span class="card-close">×</span>
       <h2 class="center">😺 欢迎回来</h2>

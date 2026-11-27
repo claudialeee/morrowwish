@@ -86,7 +86,7 @@ try{
               'roster':()=>UI.openRoster(),
               'breed-roster':()=>UI.openBreedRoster(GameData.speciesById(cat.species)),
               'workshop':()=>UI.openWorkshop(),
-              'build':()=>UI.openBuild(),
+              'build':()=>{if(__game.scene==='map')WorldMap.exitToYard();if(__game.scene!=='yard')throw Error('Garden build fixture requires yard');UI.openBuild();},
               'cat-dex':()=>UI.openDex(),
               'daily':()=>UI.openDaily(),
               'shop':()=>UI.openShop(),
@@ -109,7 +109,7 @@ try{
               },
               'welcome-back':()=>UI.openWelcomeBack({
                 minutes:15,capped:false,produced:{coins:25,fish:2},
-                gains:{coins:3},visitors:[{name:'Test Visitor',gift:{coins:1},rare:true}]
+                gains:{coins:3},visitors:[{name:GameData.SPECIES[0].name,speciesId:GameData.SPECIES[0].id,gift:{coins:1},rare:true}]
               }),
               'battle-recovery':()=>UI.openBattleRecoveryResult({
                 mode:'casual',fromMap:false,

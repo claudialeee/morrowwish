@@ -38,6 +38,7 @@
   // Hide both groups during map and battle; keep top settings independent.
   // Reparent the original nodes so existing game listeners and IDs survive.
   if(crazygames && typeof document.addEventListener==='function'){
+    const updatePortalLabels=()=>{const zh=window.MorrowwishI18n?.get?.()==='zh';for(const [id,a,b] of [['cg-yard-dock','游戏菜单与庭院操作','Game menus and garden actions'],['tabbar','游戏菜单','Game menus'],['yard-actions','庭院操作','Garden actions'],['cg-top-tools','游戏设置与菜单','Game settings and menu'],['cg-battle-hud','战斗状态','Combat status']])document.getElementById(id)?.setAttribute('aria-label',zh?a:b);};
     const mountYardDock=()=>{
       // Portal players must not have outbound first-party navigation, even hidden.
       document.querySelectorAll('a.cb-home').forEach(el=>el.remove());
@@ -97,7 +98,9 @@
           combat.insertBefore(hud,combat.firstChild);
         }
       }
+      updatePortalLabels();
     };
+    window.addEventListener('morrowwish-language-change',updatePortalLabels);
     if(document.readyState==='loading')
       document.addEventListener('DOMContentLoaded',mountYardDock,{once:true});
     else mountYardDock();
