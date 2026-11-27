@@ -2834,7 +2834,7 @@ const UI = {
     this.panel(`<span class="card-close">×</span>
       <h2>${label}</h2>
       <p class="sub" style="font-weight:750;color:#765e85">
-        ${opts.bossElement?((en?'Guardian battle · Element: ':'守卫战 · 属性：')+bossLabel):((opts.storyTitle?(en?'Story encounter':'剧情战斗'):(en?'Wild cat':'野生猫咪'))+' · Lv.'+encounterLvl+' · '+wildSp.rarity)}
+        ${opts.bossElement?((en?'Guardian battle · Element: ':'守卫战 · 属性：')+bossLabel):`${opts.storyTitle?(en?'Story encounter':'剧情战斗'):(en?'Wild cat':'野生猫咪')} · Lv.${encounterLvl} · <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>`}
       </p>
       ${opts.bossElement?'':this.matchupWarning(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en)}
       <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
