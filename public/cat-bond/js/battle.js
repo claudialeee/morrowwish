@@ -2711,7 +2711,8 @@ class CaptureBattle {
         attacker: (isAlly?'ALLY:':'WILD:') + nameOf(f), target: '(attempt)',
         skill: (sk.id || sk.name || '?') + '[attempt]',
         kind: sk.kind || '-', element: sk.element || '-',
-        raw: '-', dealt: '-', elemMult: '-', lvlSuppress: '-',
+        raw: '-', dealt: '-', final: '-', elemMult: '-', reactMult: '-', postMult: '-', total: '-',
+        tier: '-', trait: '-', lvlSuppress: '-', combo: '-',
         tgtHp: nearest ? ('dist='+Math.round(dist)+' facing_aim='+aim.toFixed(2)) : 'no-target',
       });
     }
@@ -2942,6 +2943,23 @@ class CaptureBattle {
     const b = p.burst; if (!b) return;
     if(b.skill?.id==='meteor')window.CatBondSkillFX?.meteorImpact(this,b);
     const side = p.owner === 'wild' ? 'wild' : 'me';
+    // DEBUG: tell me-whether-meteor-reached-the-ground (zero-victim = ring dropped
+    // but no enemy in b.r). Owner found meteor rows missing from the damage log —
+    // this proves cast→flight→burst arrived even when no enemy was inside the disc.
+    if (this._debug && this._dbgLog && b.skill) {
+      const victims = side === 'me'
+        ? this.liveEnemies().filter(e => Math.hypot(e.x - b.tx, e.y - b.ty) <= b.r).length
+        : this.team.filter(t => t.alive && Math.hypot(t.x - b.tx, t.y - b.ty) <= b.r).length;
+      this._dbgLog.push({
+        t: +this.t.toFixed(2),
+        who: '*** ' + (side==='me'?'ALLY':'WILD') + ' AOE BURST ' + (b.skill.id||b.skill.name||'?') + ' lands('+Math.round(b.tx)+','+Math.round(b.ty)+') victims='+victims,
+        attacker:'(burst)', target:'(burst)', skill:(b.skill.id||b.skill.name||'?')+'[burst]',
+        kind: b.skill.kind || '-', element: b.skill.element || '-',
+        raw: Math.round(b.dmg), dealt: '-', final: '-', elemMult: '-', reactMult: '-', postMult: '-', total: '-',
+        tier: '-', trait: '-', lvlSuppress: '-', combo: '-',
+        tgtHp: 'r='+b.r+' victims='+victims,
+      });
+    }
     this.vfx.shockwave(b.tx, b.ty, b.col);
     this.vfx.ring(b.tx, b.ty, { r0: 12, vr: b.r * 6, life: 0.4, color: b.col, width: 7 });
     this.vfx.burst(b.tx, b.ty, { count: this.game.isTouch ? 12 : 22, color: b.col, speed: 240, life: 0.5, r: 4 });
@@ -6566,15 +6584,14 @@ class CaptureBattle {
       const amb = proj?._traitCaster || skill?._traitCaster || null; if (amb && amb._ambush && !isBasic) { amb._ambush = false; this.triggerStagger(target); }
       // Stagger (+30%) joins the incoming vulnerability bucket in hurtEnemy().
       const actor=proj?._traitCaster||skill?._traitCaster||null;
-      const dealt = this.applyHitEffects(target, skill || { element: null }, dmg*(actor?._dmgOutMult||1), x, y);
-      if (this._debug) this._dbg('me→enemy', skill, dmg, dealt, target, proj);
-      // Channel damage is steady pressure, not a rapid sequence of hard
-      // camera pauses. Normal melee/chain/projectiles retain their hitstop.
+      const traitMult = actor?._dmgOutMult || 1;
+      const dealt = this.applyHitEffects(target, skill || { element: null }, dmg*traitMult, x, y);
       const continuous=!!skill?.isChanneledTick;
       const heavyMove=!!skill?.heavy||['melee','dash','pounce','leap'].includes(skill?.kind);
       const hitTier=continuous?null:alreadyStaggered?'crit':heavyMove?'heavy':'light';
       const hpBefore=target.hp;
       this.hurtEnemy(target,dealt,x,y,continuous,false,hitTier,skill,actor);
+      if (this._debug) this._dbg('me→enemy', skill, dmg, dealt, target, proj, Math.max(0, hpBefore - target.hp), { traitMult, hitTier, hpBefore });
       if(dealt>0){
         this._lastPoiseHitEnemy=target.i;
         this._lastPoiseHitAt=this.t;
@@ -6617,8 +6634,9 @@ class CaptureBattle {
       // Enemy hit on a cat: type matchup matters defensively too, and an enemy
       // special can leave a DoT/soft-CC on the cat (mirror of applyHitEffects).
       const dealt = this.applyEnemyHitEffects(target, skill || { element: null }, dmg, x, y);
-      if (this._debug) this._dbg('enemy→me', skill, dmg, dealt, target);
+      const hpBeforeMe = target.hp;
       this.hurtMe(dealt, x, y, target);
+      if (this._debug) this._dbg('enemy→me', skill, dmg, dealt, target, null, Math.max(0, hpBeforeMe - target.hp), { traitMult: 1, hitTier: null, hpBefore: hpBeforeMe });
       if(dealt>0&&!skill?.isChanneledTick)this.vfx.impactType?.(target.x,target.y,skill?.heavy?'heavy':'light',{color:col,skill,angle:this.hitNormal(target,x,y,'wild').angle});
       return { blocked: false, reflected: false, dealt };
     }
@@ -6720,7 +6738,7 @@ class CaptureBattle {
 
   // DEBUG (?debug=1): record one resolved hit with its full damage factor breakdown so a real
   // fight can be inspected/exported afterward — settles "why this damage" without guessing.
-  _dbg(dir, skill, rawDmg, dealt, target, proj) {
+  _dbg(dir, skill, rawDmg, dealt, target, proj, finalDmg, extra) {
     if (!this._dbgLog) return;
     const playerHits = dir === 'me→enemy';                         // attacker is YOUR cat
     const el = skill && skill.element;
@@ -6743,6 +6761,20 @@ class CaptureBattle {
       atkName = FOE + nameOf(byElem || live[0] || target);
     }
     const tgtName = (playerHits ? FOE : MINE) + nameOf(target);
+    // Reaction/elem/basic-tag multiplier bucket (what applyHitEffects did BEFORE hurtEnemy).
+    // rawDmg already includes skill.power + bond + BASIC_POWER_MULT + traitMult; dealt is
+    // post-reaction/elem. The FINAL HP delta is finalDmg (post-vuln/stagger/combo/execute/
+    // closing/levelSup). The 'mult' column separates the two phases:
+    //   reactMult = dealt / rawDmg        (combo+elem+basic-tag+conductive, from applyHitEffects)
+    //   postMult  = finalDmg / dealt      (vuln+stagger+combo+exec+closing+levelSup, from hurtEnemy)
+    //   total     = finalDmg / rawDmg
+    const safe = n => (Number.isFinite(n) && n > 0) ? n : 0;
+    const reactMult = rawDmg > 0 ? (dealt / rawDmg) : 1;
+    const finalN = safe(finalDmg);
+    const postMult = dealt > 0 && finalN > 0 ? (finalN / dealt) : 1;
+    const total = rawDmg > 0 && finalN > 0 ? (finalN / rawDmg) : 1;
+    const hitTier = extra?.hitTier || '-';
+    const traitM = extra?.traitMult || 1;
     this._dbgLog.push({
       t: +this.t.toFixed(2),
       who: atkName + ' → ' + tgtName,                              // e.g. 我方·蓝莓 → 敌方·露露
@@ -6751,8 +6783,15 @@ class CaptureBattle {
       kind: skill && skill.kind || (skill && skill.isBasic ? 'basic' : '-'),
       element: el || '-',
       raw: Math.round(rawDmg), dealt: Math.round(dealt),
+      final: Math.round(finalN),
       elemMult: +elem.toFixed(2),
+      reactMult: +reactMult.toFixed(2),
+      postMult: +postMult.toFixed(2),
+      total: +total.toFixed(2),
+      tier: hitTier,
+      trait: +traitM.toFixed(2),
       lvlSuppress: +((playerHits ? this.levelSuppression : this.enemyLevelMult) || 1).toFixed(2),
+      combo: this.combo || 0,
       tgtHp: Math.round(target?.hp ?? 0) + '/' + Math.round(target?.maxhp ?? 0),
     });
   }
@@ -6766,8 +6805,8 @@ class CaptureBattle {
   copyDebugLog() {
     const rows = (this._dbgLog && this._dbgLog.length) ? this._dbgLog : (window.CatBondDebugLast || []);
     if (!rows.length) return false;
-    const header = 't\twho\tskill\tkind\telem\traw\tdealt\telemMult\tlvlSup\ttgtHp';
-    const body = rows.map(r => [r.t, r.who, r.skill, r.kind, r.element, r.raw, r.dealt, r.elemMult, r.lvlSuppress, r.tgtHp].join('\t')).join('\n');
+    const header = 't\twho\tskill\tkind\telem\traw\tdealt\tfinal\telemMult\treactM\tpostM\ttotal\ttier\ttrait\tlvlSup\tcombo\ttgtHp';
+    const body = rows.map(r => [r.t, r.who, r.skill, r.kind, r.element, r.raw, r.dealt, r.final, r.elemMult, r.reactMult, r.postMult, r.total, r.tier, r.trait, r.lvlSuppress, r.combo, r.tgtHp].join('\t')).join('\n');
     const text = header + '\n' + body;
     try { navigator.clipboard?.writeText(text); } catch (_) {}
     console.log(text);
@@ -6788,8 +6827,8 @@ class CaptureBattle {
       // AUTO-COPY to clipboard the instant a recorded fight ends — the battle UI (and the 🐛 button)
       // vanish on the auto-return to the yard, so there was no chance to click "export" (owner:
       // "打完就直接退出了"). Now the log is already in your clipboard; a toast confirms it.
-      const header = 't\twho\tskill\tkind\telem\traw\tdealt\telemMult\tlvlSup\ttgtHp';
-      const text = header + '\n' + rows.map(r => [r.t, r.who, r.skill, r.kind, r.element, r.raw, r.dealt, r.elemMult, r.lvlSuppress, r.tgtHp].join('\t')).join('\n');
+      const header = 't\twho\tskill\tkind\telem\traw\tdealt\tfinal\telemMult\treactM\tpostM\ttotal\ttier\ttrait\tlvlSup\tcombo\ttgtHp';
+      const text = header + '\n' + rows.map(r => [r.t, r.who, r.skill, r.kind, r.element, r.raw, r.dealt, r.final, r.elemMult, r.reactMult, r.postMult, r.total, r.tier, r.trait, r.lvlSuppress, r.combo, r.tgtHp].join('\t')).join('\n');
       window.CatBondDebugText = text;               // plain-text form, also grabbable via copy(CatBondDebugText)
       try { navigator.clipboard?.writeText(text); } catch (_) {}
       this.game?.toast?.(window.MorrowwishI18n?.get?.()==='zh'?'🐛 战斗日志已复制到剪贴板':'🐛 Fight log copied to clipboard');
