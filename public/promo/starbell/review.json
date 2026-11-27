@@ -1,25 +1,22 @@
 {
   "slug": "starbell",
-  "video": "/promo/starbell/story-trailer-en-v6-46048714109.mp4",
-  "poster": "/promo/starbell/story-trailer-en-v6-46048714109.jpg",
+  "video": "/promo/starbell/story-trailer-en-v7-46055654472.mp4",
+  "poster": "/promo/starbell/story-trailer-en-v7-46055654472.jpg",
   "duration": 42,
-  "version": "V6",
-  "createdAt": "2026-11-27T18:23:50.688Z",
-  "updatedAt": "2026-11-27T18:23:50.688Z",
+  "version": "V7",
+  "createdAt": "2026-11-27T19:35:20.810Z",
+  "updatedAt": "2026-11-27T19:35:20.810Z",
   "source": {
-    "sha": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
-    "scope": "isolated portrait engineering preview",
+    "sha": "3106a71570bcb2d4c22c255ed4ed9501702024f5",
+    "scope": "unified development candidate; isolated real browser capture",
     "productionApis": false,
     "telemetry": false,
-    "storage": "local-only",
-    "fullReleaseAccepted": false,
-    "targetedLayoutGate": true,
-    "fullCampaignRevalidated": false
+    "storage": "local-only"
   },
   "sourceByClip": {
-    "shadow": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
-    "battle": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
-    "explore": "be928fe708a0d0974b158bb153cd0a5d25a80e1d"
+    "explore": "3106a71570bcb2d4c22c255ed4ed9501702024f5",
+    "shadow": "3106a71570bcb2d4c22c255ed4ed9501702024f5",
+    "battle": "3106a71570bcb2d4c22c255ed4ed9501702024f5"
   },
   "music": {
     "title": "Soar",
@@ -29,7 +26,7 @@
     "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
     "edited": true
   },
-  "renderRun": 46048714109,
+  "renderRun": 46055654472,
   "approved": false,
   "published": false,
   "shots": [
@@ -46,7 +43,7 @@
       "transitionOut": 0.5
     },
     {
-      "scene": "sky",
+      "scene": "library",
       "seconds": 2.5,
       "clearSeconds": 1.5,
       "transitionOut": 0.5
@@ -64,7 +61,7 @@
       "transitionOut": 0.5
     },
     {
-      "scene": "forest",
+      "scene": "starfall",
       "seconds": 3,
       "clearSeconds": 2,
       "transitionOut": 0.5
