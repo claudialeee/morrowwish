@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {newSpatial,spatialInput,spatialProof,validSpatialProof,tickSpatial,chasePoint,startBridgeWalk,advanceBridgeWalk,bridgeWalkPosition,bridgeReachable,spatialControls,spatialTap} from '../public/cat-bond/js/resonance/canon22-spatial.mjs';
+import {newSpatial,spatialInput,spatialProof,validSpatialProof,tickSpatial,chasePoint,startBridgeWalk,advanceBridgeWalk,bridgeWalkPosition,bridgeReachable,spatialControls,spatialTap,spatialTravelPose} from '../public/cat-bond/js/resonance/canon22-spatial.mjs';
 const step=i=>({type:'step',i}),leaf={type:'leaf'},aim=x=>({type:'aim',x}),cross={type:'cross'};
 for(const [op,paths] of [
  ['puzzle:moonleaf-crossing',[[step(1),step(3),leaf,step(3),step(4)],[step(1),step(2),step(4)]]],
@@ -44,3 +44,5 @@ assert.deepEqual(intercept,{type:'target',x:.8,y:.27});
 spatialInput(tapChase,intercept);
 for(let i=0;i<2500&&!tapChase.solved;i++)tickSpatial(tapChase,.02);
 assert.ok(tapChase.solved&&validSpatialProof(tapChase.operation,spatialProof(tapChase)));
+
+const hopping=newSpatial('puzzle:star-steps');assert.equal(startBridgeWalk(hopping,step(7)),false);assert.ok(startBridgeWalk(hopping,step(1)));assert.equal(hopping.node,0);advanceBridgeWalk(hopping,.1);const pose=spatialTravelPose(hopping);assert.ok(pose.lift>0&&pose.point[1]<pose.ground[1]);assert.equal(spatialInput(hopping,step(3)),false);while(hopping.walk)advanceBridgeWalk(hopping,.02);assert.equal(hopping.node,1);for(const i of [3,5,7]){assert.ok(startBridgeWalk(hopping,step(i)));while(hopping.walk)advanceBridgeWalk(hopping,.02);}assert.ok(hopping.solved);assert.ok(validSpatialProof(hopping.operation,spatialProof(hopping)));assert.deepEqual(hopping.visited,[0,1,3,5,7]);console.log('Animated starstone hopping and original proof replay verified');

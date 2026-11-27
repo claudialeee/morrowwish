@@ -233,7 +233,7 @@ async function run(chapter){
   const directHarbor={'Tide cave logbook':'explore:tide-logbook','Storm boat':'rescue:storm-boat','Lighthouse mirrors':'puzzle:beam-mirrors','Town bell sanctuary':'repair:harbor','Coming Home':'melody:harbor'};
   if(chapter==='harbor'&&directHarbor[label]){const operation=directHarbor[label];assert.ok((await view()).objective.includes(operation),'Expected required harbor action '+operation);await click(label);await op(operation);await shot(operation);return;}
   await click(label);const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();await checkPuzzleLayout();
-  for(const input of inputs){if(locale==='zh'&&input==='Roots'&&['Moonleaf bridge','Break the forest loop'].includes(label))await click('地下',controls,true);else await click(input,controls);}
+  for(const input of inputs){if(locale==='zh'&&input==='Roots'&&['Moonleaf bridge','Break the forest loop'].includes(label))await click('地下',controls,true);else await click(input,controls);if(input==='Jump to stone 2'){await page.waitForFunction(()=>document.querySelector('.rw-world')?.dataset.spatialMotion==='jump');await shot('starstone-midjump');}if(input==='Free the trapped kitten')await shot('forest-kitten-follows');}
   await controls.waitFor({state:'hidden',timeout:35000});
  }
  async function invite(npc){await click('Invite '+npc);await page.getByRole('button',{name:local('Invite '+npc),exact:true,includeHidden:true}).waitFor({state:'detached'});}
