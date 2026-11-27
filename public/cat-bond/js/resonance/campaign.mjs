@@ -476,23 +476,23 @@ export const campaign = {
       "id": "harbor:H-04",
       "chapter": "harbor",
       "title": {
-        "zh": "两只猫，一场漂亮的胜利",
-        "en": "Two cats, one good fight"
+        "zh": "铃房终于安静了",
+        "en": "The bell house falls quiet"
       },
       "previous": "harbor:H-03",
       "lines": [
         {
           "speaker": "muling",
           "text": {
-            "zh": "它散开了！幸好刚才咱俩一起把它拦住了。",
-            "en": "It's dispersed! Good thing we stopped it together."
+            "zh": "它散开了！铃房终于安静下来了。你还好吗？",
+            "en": "It's gone! The bell house is finally quiet. Are you all right?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "你没事吧？",
-            "en": "Are you all right?"
+            "zh": "我没事。你呢？",
+            "en": "I'm all right. How about you?"
           }
         },
         {
@@ -505,8 +505,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "嘿嘿，咱俩还挺厉害。",
-            "en": "Heh. We make a pretty good team."
+            "zh": "嘿嘿，看来我们能帮上忙。",
+            "en": "Heh. Looks like we can make a difference."
           }
         },
         {
@@ -889,8 +889,8 @@ export const campaign = {
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "它散开啦！你看，幕布上的影子又跟得上我们了！",
-            "en": "It’s gone! Look, the shadows on the screen are following us again!"
+            "zh": "它散开啦！你看，灯光下的影子终于不再乱跑了！",
+            "en": "It's gone! Look, the shadows under the lanterns have finally stopped wandering!"
           }
         },
         {
@@ -1696,15 +1696,15 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "那些铃也是你故意调过去的？",
-            "en": "And you turned those bells toward the center on purpose?"
+            "zh": "你也故意把那些古铃的回应引向中央星铃？",
+            "en": "And you deliberately routed the old bells' replies toward the central Star Bell?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "嗯。万一接不起来，我想留一个办法。……对不起。那时候，我只想着怎么把你带回来。",
-            "en": "Yes. I wanted another way if we couldn't reconnect them. …I'm sorry. All I could think about was bringing you back."
+            "zh": "嗯。万一六座铃接不起来，我就想把记忆集中到星铃里，好让你记起从前。……对不起。那时候，我只想着怎么把你带回来。",
+            "en": "Yes. If the six bells couldn't reconnect, I planned to gather the memories in the Star Bell so you could remember. …I'm sorry. All I could think about was bringing you back."
           }
         },
         {
@@ -2015,15 +2015,15 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "你是说……连你自己也会把我忘了？",
-            "en": "You mean… even you'd forget me?"
+            "zh": "你等了这么久……难道你也开始忘记以前的事了？",
+            "en": "You waited all that time… Have you started forgetting things too?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我以为再失败，谁的过去都留不住。至少……你还能记得。",
-            "en": "I thought if we failed again, nobody would keep their past. At least… you could remember."
+            "zh": "有时候我连花园里的约定都差点想不起来。我害怕再失败，谁的过去都留不住。所以我想，至少……你还能记得。",
+            "en": "Sometimes I could barely remember our promise in the garden. I was afraid that if we failed again, nobody would keep their past. So I thought… at least you could remember."
           }
         },
         {
