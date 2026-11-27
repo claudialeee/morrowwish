@@ -557,12 +557,72 @@ class Game {
     highlight(data.target||null);
   }
 
+  yardPlayer() {
+    if (!window.__CAT_BOND_CANONICAL_ACTIVE__ || this.scene!=='yard') return null;
+    const starter=State.S?.cats?.[0];
+    return this.yard?.entities?.find(e=>e.cat.uid===starter?.uid)||
+      this.yard?.entities?.find(e=>e.cat.species===starter?.species)||null;
+  }
+  yardExploreEnabled() { return !!this.yardPlayer()&&!this.yard?.placement; }
+  yardWalkTo(x,y,onArrival=null) {
+    const e=this.yardPlayer();
+    if(!e||!this.yardExploreEnabled()||this.worldDialogueOpen()||e._gardenExploreTarget||e._gardenRest||e._playBuildT>0||e._buildTarget||e._gardenTask)return false;
+    const b=World.gardenGround(this.W,this.H);
+    const target={x:Math.max(b.left,Math.min(b.right,x)),y:Math.max(b.top,Math.min(b.bottom,y))};
+    e._gardenManualTarget=target;
+    this._yardArrival=onArrival?{owner:State.S,entity:e,target,callback:onArrival}:null;
+    return true;
+  }
+  updateYardExploration(dt) {
+    const player=this.yardPlayer(),enabled=this.yardExploreEnabled();
+    for(const e of this.yard?.entities||[])e._gardenPlayerControlled=!!player&&e===player;
+    if(!enabled){this._yardCamera=null;this._yardArrival=null;return;}
+    if(this.worldDialogueOpen())return;
+    const covered=document.querySelector('#panel.open,.cb-story-overlay,.cbcp-root:not([hidden]),#cb-player-first-intro,#cb-system-menu:not([hidden])');
+    if(!covered){
+      const k=this.keys,dx=Number(!!(k.arrowright||k.d))-Number(!!(k.arrowleft||k.a)),dy=Number(!!(k.arrowdown||k.s))-Number(!!(k.arrowup||k.w));
+      if(dx||dy){const n=Math.hypot(dx,dy);this.yardWalkTo(player.x+dx/n*55,player.y+dy/n*55);this._yardKeyboardWalking=true;}
+      else if(this._yardKeyboardWalking){this._yardKeyboardWalking=false;delete player._gardenManualTarget;}
+    }
+    const a=this._yardArrival;
+    if(a&&(a.owner!==State.S||a.entity!==player)){this._yardArrival=null;}
+    else if(a&&!covered&&Math.hypot(player.x-a.target.x,player.y-a.target.y)<7){
+      this._yardArrival=null;delete player._gardenManualTarget;a.callback();
+    }
+    const W=this.W,H=this.H,z=window.CatBondResonance?.view?.()?.ending?1:(H>W*1.12?1.38:1.65);
+    const tx=Math.max(W*(1-z),Math.min(0,W*.5-player.x*z));
+    const ty=Math.max(H*(1-z),Math.min(0,H*.65-player.y*z));
+    const c=this._yardCamera;
+    if(!c||c.W!==W||c.H!==H||c.owner!==State.S)this._yardCamera={z,tx,ty,W,H,owner:State.S};
+    else{const f=1-Math.exp(-7*Math.max(0,dt));c.z=z;c.tx+=(tx-c.tx)*f;c.ty+=(ty-c.ty)*f;}
+  }
+  yardViewportRect() {
+    const r=this.canvas.getBoundingClientRect(),c=this.yardExploreEnabled()?this._yardCamera:null;
+    if(!c)return r;
+    return {left:r.left+c.tx*r.width/this.W,top:r.top+c.ty*r.height/this.H,width:r.width*c.z,height:r.height*c.z,
+      right:r.left+(c.tx+this.W*c.z)*r.width/this.W,bottom:r.top+(c.ty+this.H*c.z)*r.height/this.H};
+  }
+  yardInputPoint(x,y) {
+    const c=this.scene==='yard'&&this.yardExploreEnabled()?this._yardCamera:null;
+    return c?{x:(x-c.tx)/c.z,y:(y-c.ty)/c.z}:{x,y};
+  }
+  yardNear(x,y,radius=.25) {
+    const p=this.yardPlayer();
+    return !p||!this.yardExploreEnabled()||Math.hypot((p.x-x)/this.W,(p.y-y)/this.H)<=radius;
+  }
+  worldDialogueOpen() {
+    return !!window.__CAT_BOND_CANONICAL_ACTIVE__ && !!document.querySelector('.cb-story-overlay.is-visible .res-dialogue, .cb-story-overlay.is-visible .res-key-exchange, .res-dialogue[aria-modal="true"]');
+  }
+
   loop(ts) {
     // Schedule the NEXT frame first, so a thrown error in update/draw can never
     // permanently freeze the game (the cats-don't-move failure mode).
     requestAnimationFrame(t => this.loop(t));
     const dt = Math.min(0.05, (ts - this._lastTs) / 1000 || 0);
-    this._lastTs = ts; this.t += dt;
+    this._lastTs = ts;
+    const dialoguePaused = (this.scene === 'yard' || this.scene === 'map') && this.worldDialogueOpen();
+    if (!dialoguePaused) this.t += dt;
+    else { this.mouse.active = false; this.mouse.down = false; this._mapMouseDrag = null; this.keys={}; }
     // decay cursor "activity" so cats lose interest when the mouse stops
     if (this.mouse.active) { this.mouse.idle += dt; if (this.mouse.idle > 1.2) this.mouse.active = false; }
     // idle/placement economy tick (online == offline). butterfly flag → yard event
@@ -600,7 +660,8 @@ class Game {
       UI.refreshExploreHealth?.();
     }
     if(this.scene==='yard'){
-      this.yard.update(dt);
+      this.updateYardExploration(dt);
+      if (!this.worldDialogueOpen()) this.yard.update(dt);
       if(this.t>=(this._nextQuestTick||0)){
         this._nextQuestTick=this.t+0.3;
         this.refreshFirstQuest();
@@ -614,7 +675,7 @@ class Game {
       // behind the dialog. A full-screen lock on encounter is the intended feel.
       const panelOpen = document.getElementById('panel')?.classList.contains('open') ||
         !!document.querySelector('.cb-story-overlay,.cb-cloud-overlay');
-      if (!panelOpen) WorldMap.update(dt);
+      if (!panelOpen && !this.worldDialogueOpen()) WorldMap.update(dt);
     }
     else if (this.scene === 'battle' && this.battle) {
       if(this.battleHelpOpen)return; // Pause while the player reads controls.
@@ -647,7 +708,7 @@ class Game {
     ctx.setLineDash([]);
     ctx.clearRect(0,0,this.W,this.H);
     try {
-      if (this.scene === 'yard') this.yard.draw(ctx);
+      if (this.scene === 'yard') {const c=this.yardExploreEnabled()?this._yardCamera:null;if(c){ctx.translate(c.tx,c.ty);ctx.scale(c.z,c.z);}this.yard.draw(ctx);}
       else if (this.scene === 'map' && window.WorldMap) WorldMap.draw(ctx);
       else if (this.scene === 'battle' && this.battle) this.battle.draw(ctx);
     } finally { ctx.restore(); }
@@ -659,7 +720,7 @@ class Game {
     const pos = e => {
       const r = c.getBoundingClientRect();
       const p = e.touches ? e.touches[0] : e;
-      return { x: p.clientX - r.left, y: p.clientY - r.top };
+      return this.yardInputPoint(p.clientX-r.left,p.clientY-r.top);
     };
     const down = e => {
       const { x, y } = pos(e);
@@ -713,7 +774,7 @@ class Game {
 
     // ---- touch: multi-touch aware. In battle, LEFT half = virtual joystick (move),
     //      RIGHT half = hold-to-fire (auto-aims nearest enemy). Elsewhere = tap. ----
-    const touchPos = t => { const r = c.getBoundingClientRect(); return { x: t.clientX - r.left, y: t.clientY - r.top }; };
+    const touchPos = t => { const r = c.getBoundingClientRect(); return this.yardInputPoint(t.clientX-r.left,t.clientY-r.top); };
     c.addEventListener('touchstart', e => {
       e.preventDefault();
       for (const t of e.changedTouches) {
@@ -819,7 +880,9 @@ class Game {
     // real-time key polling for the action battle (held keys stay down)
     const keyName = e => (e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase());
     window.addEventListener('keydown', e => {
+      if(this.scene==='yard'&&this.worldDialogueOpen())return;
       this.keys[keyName(e)] = true;
+      if(this.yardExploreEnabled()&&['arrowup','arrowdown','arrowleft','arrowright'].includes(keyName(e))&&!document.querySelector('#panel.open,.cb-story-overlay,#cb-system-menu:not([hidden])'))e.preventDefault();
       if (this.scene === 'battle' && ['w', 'a', 's', 'd', ' ', 'tab', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(keyName(e))) e.preventDefault();
     });
     window.addEventListener('keyup', e => { this.keys[keyName(e)] = false; });
@@ -839,6 +902,7 @@ class Game {
   }
 
   yardTap(x, y) {
+    if (this.worldDialogueOpen()) return;
     if(this.yard?.placement){
       // Commit the exact chosen canvas coordinate in this event. The old
       // two-step confirm allowed mouse movement to shift the selected site.
@@ -849,7 +913,7 @@ class Game {
     }
     if (window.SunlitGarden?.handleTap?.(x, y)) return;
     const hit = this.yard.handleTap(x, y);
-    if (!hit) return;
+    if (!hit) {this.yardWalkTo(x,y);return;}
     if (hit.type === 'building') {
       const started=this.yard.inviteCatToBuilding(hit.building);
       this.toast(started

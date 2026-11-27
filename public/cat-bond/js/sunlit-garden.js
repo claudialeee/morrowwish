@@ -80,7 +80,7 @@
     guide.append(title,hint);
     const row=document.createElement('div');guide.append(row);
     const add=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};row.append(b)};
-    if(talk){add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));row.lastElementChild.classList.add('sg-main-continue');}
+    if(talk){add('与暮铃交谈','Talk to Muling',()=>approachHomeNpc('muling'));row.lastElementChild.classList.add('sg-main-continue');}
     if(!epilogue&&!ending&&next&&talk&&!departure){
       hint.textContent=en?'Talk to Muling to continue the story. Optional: explore '+next[2]+'.':'与暮铃交谈推进主线。也可以查看'+next[1]+'（可选）。';
       add('查看'+next[1],'Explore '+next[2],()=>window.ResonanceBook?.open(next[0]));
@@ -96,22 +96,29 @@
 
     }
   }
+  function approachHomeNpc(id){
+    if(!active||game?.scene!=='yard'||game.worldDialogueOpen?.())return false;
+    const hit=lastNpcHits.find(n=>n.id===id);
+    const talk=()=>{if(active&&state()===visitedState&&narrativeAdapter?.getHomeNpcs?.().some(n=>n.id===id))narrativeAdapter.interactHomeNpc(id);};
+    if(hit&&game.yardExploreEnabled?.()&&!game.yardNear?.(hit.x,hit.groundY,.12)&&!window.CatBondResonance?.view?.()?.ending)return game.yardWalkTo?.(hit.x,hit.groundY,talk)||false;
+    talk();return true;
+  }
   function getTalkMarker(npc){
     if(talkMarkers.has(npc.id))return talkMarkers.get(npc.id);
     const b=document.createElement('button');b.type='button';b.className='sg-npc-talk-marker';b.dataset.npcTalk=npc.id;b.hidden=true;
     b.innerHTML='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H9l-5 4z"/><path d="M8 10h.1m4 0h.1m4 0h.1" stroke-width="2.5" stroke-linecap="round"/></svg><span></span>';
-    b.onclick=()=>{if(active&&game?.scene==='yard'&&state()===visitedState&&narrativeAdapter?.getHomeNpcs?.().some(n=>n.id===npc.id))narrativeAdapter.interactHomeNpc(npc.id);};
+    b.onclick=()=>approachHomeNpc(npc.id);
     root.append(b);talkMarkers.set(npc.id,b);return b;
   }
   function hideTalkMarkers(){for(const b of talkMarkers.values())b.hidden=true;}
   function syncTalkMarker(ctx,width,height,npc,x,y,scale,avoid,cell=null){
     const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden]),#cb-player-first-intro,#cb-system-menu:not([hidden])');
     if(covered||game?.yard?.placement)return;
-    const canvasRect=ctx.canvas.getBoundingClientRect(),r=root.getBoundingClientRect();
+    const canvasRect=(game.yardViewportRect?.()||ctx.canvas.getBoundingClientRect()),r=root.getBoundingClientRect();
     if(!width||!height||!r.width||!r.height)return;
     const b=getTalkMarker(npc),en=isEnglish(),raw=npc.name,profileName=typeof raw==='string'?raw:raw?.[en?'en':'zh'];
     const label=npc.id==='muling'&&window.CatBondResonance?.view?.().current?.id==='prologue:P-05'?(en?'Stranger':'陌生猫'):(profileName||npc.id);
-    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length;b.dataset.questPrimary=String(main);b.hidden=false;
+    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length;b.dataset.questPrimary=String(main);if(!main&&!v?.ending&&npc.id!=='muling'&&!game.yardNear?.(x,y,.25)){b.hidden=true;return;}b.hidden=false;
     if(cell){b.style.left=cell.x+'px';b.style.top=cell.box.bottom+'px';return;}
     const px=canvasRect.left-r.left+x/width*canvasRect.width,py=canvasRect.top-r.top+(y-112*scale)/height*canvasRect.height;
     const bw=Math.max(44,b.offsetWidth||72),bh=Math.max(44,b.offsetHeight||44);
@@ -177,7 +184,7 @@
     if(!Array.isArray(npcs))return;hitState=state();
     const v=window.CatBondResonance?.view?.(),ending=!!v?.ending;
     if(ending){const {ids}=syncGuestPage(v),shown=new Set(ids.slice(guestPage*GUESTS_PER_PAGE,(guestPage+1)*GUESTS_PER_PAGE));npcs=npcs.filter(n=>n.id==='muling'||shown.has(n.id));npcs.sort((a,b)=>Number(b.id==='muling')-Number(a.id==='muling'));}
-    const talkPositions=[],npcRects=[],r=root.getBoundingClientRect(),canvasRect=ctx.canvas.getBoundingClientRect();
+    const talkPositions=[],npcRects=[],r=root.getBoundingClientRect(),canvasRect=(game.yardViewportRect?.()||ctx.canvas.getBoundingClientRect());
     const occupied=[];
     if(ending){for(const el of [guide,...document.querySelectorAll('#map-menu,#cb-system-toggle,.sg-hotspot,#tabbar')]){if(!el||el.hidden||!el.getClientRects().length||getComputedStyle(el).visibility==='hidden')continue;const b=el.getBoundingClientRect();if(b.width&&b.height)occupied.push({left:b.left-r.left,top:b.top-r.top,right:b.right-r.left,bottom:b.bottom-r.top});}}
     const toRect=(x,y,scale)=>{const cx=canvasRect.left-r.left+x/width*canvasRect.width,cy=canvasRect.top-r.top+y/height*canvasRect.height,sx=canvasRect.width/width,sy=canvasRect.height/height;return {left:cx-40*scale*sx,right:cx+40*scale*sx,top:cy-98*scale*sy,bottom:cy+5*scale*sy};};
@@ -212,7 +219,7 @@
       for(let i=lastNpcHits.length-1;i>=0;i--){const h=lastNpcHits[i];
         if(Math.hypot(x-h.x,y-h.y)>h.radius)continue;
         try{const current=narrativeAdapter.getHomeNpcs();if(!Array.isArray(current)||!current.some(n=>n?.id===h.id))continue;
-          const result=narrativeAdapter.interactHomeNpc(h.id);return result!==false&&result?.ok!==false;
+          return approachHomeNpc(h.id);
         }catch(error){console.warn('Garden NPC interaction failed',error);return false;}
       }
     }

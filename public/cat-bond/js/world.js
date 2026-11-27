@@ -161,6 +161,23 @@ class CatEntity {
       this.motion=0;
       return;
     }
+    // In Starbell the chosen protagonist is player-controlled, not a wandering visitor.
+    if(this._gardenPlayerControlled&&!this._gardenTask&&!this._buildTarget){
+      const target=this._gardenExploreTarget||this._gardenManualTarget;
+      const bounds=gardenGround(this.W,this.H),dx=target?target.x-this.x:0,dy=target?target.y-this.y:0,dist=Math.hypot(dx,dy);
+      const step=Math.min(dt,.05),speed=Math.min(220,Math.max(0,dist*6));
+      if(dist>3){
+        this.pose='walk';this.walkVX=dx/dist*speed;this.walkVY=dy/dist*speed;
+        this.x=Math.max(bounds.left,Math.min(bounds.right,this.x+this.walkVX*step));
+        this.y=Math.max(bounds.top,Math.min(bounds.bottom,this.y+this.walkVY*step));
+        if(Math.abs(dx)>3)this.face=dx<0?-1:1;
+        this.motion=Math.min(1,speed/38);this.stride+=step*(2.6+speed*.11);
+      }else{
+        if(this._gardenManualTarget)delete this._gardenManualTarget;
+        this.pose='idle';this.motion=this.walkVX=this.walkVY=this.vx=this.vy=0;
+      }
+      return;
+    }
     this.timer -= dt;
     if (this.timer <= 0) this.pickBehavior();
 
@@ -819,7 +836,7 @@ class YardScene {
     const { W, H } = this.game;
     const horizon = H * 0.4;
     const t = this.game.t;
-    const dt = 1 / 60;   // fixed step for draw-time ambient motion (petals/fireflies)
+    const dt = this.game.worldDialogueOpen?.()?0:1 / 60;   // Freeze ambient drift during dialogue.
 
     // --- hand-painted watercolor backdrop (sky/hills/lake/meadow/tree baked in) ---
     const portraitGarden = H > W * 1.12 && YARD_BG_PORTRAIT_READY;
@@ -851,7 +868,7 @@ class YardScene {
 
     // --- drifting clouds (gentle parallax over the painted sky) ---
     for (const c of this.clouds) {
-      c.x += c.spd; if (c.x > W + 80) c.x = -80;
+      c.x += c.spd * dt * 60; if (c.x > W + 80) c.x = -80;
       ctx.save(); ctx.globalAlpha = 0.24; ctx.fillStyle = 'rgba(246,239,220,0.76)';
       for (const [dx, dy, r] of [[0, 0, 18], [18, 4, 14], [-16, 4, 13], [4, -8, 13]])
         { ctx.beginPath(); ctx.arc(c.x + dx * c.s, c.y + dy, r * c.s, 0, Math.PI * 2); ctx.fill(); }
@@ -860,7 +877,7 @@ class YardScene {
 
     // fireflies: soft glowing motes drifting near the ground (bloom)
     for (const fl of this.fireflies) {
-      fl.x += (fl.bx - fl.x) * dt * 0.5; fl.y += (fl.by - fl.y) * dt * 0.5 + Math.sin(t * 2 + fl.ph) * 0.3;
+      fl.x += (fl.bx - fl.x) * dt * 0.5; fl.y += (fl.by - fl.y) * dt * 0.5 + Math.sin(t * 2 + fl.ph) * 0.3 * dt * 60;
       if (Math.hypot(fl.bx - fl.x, fl.by - fl.y) < 12) { fl.bx = Math.random() * W; fl.by = H * 0.45 + Math.random() * (H * 0.5); }
       const glow = 0.4 + 0.5 * Math.abs(Math.sin(t * 2.5 + fl.ph));
       ctx.save(); ctx.globalCompositeOperation = 'lighter';

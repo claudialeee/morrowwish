@@ -114,7 +114,7 @@ try{for(const {name,...profile} of profiles){
  if(name==='portrait'){
   const g=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),s=document.querySelector('.rw-shell').getBoundingClientRect(),r=document.querySelector('.rw-fit-rail').getBoundingClientRect();return {fit:a.left<=s.left+1&&a.right>=s.right-1&&a.top<=s.top+1&&a.bottom>=s.bottom-1,clear:r.height<=s.height*.31};});
   assert.ok(g.fit&&g.clear,'regional art fills viewport and controls remain compact');
-  assert.deepEqual(JSON.parse(await surface.getAttribute('data-camera')),[1,0,0],'enter region at full overview');
+  assert.ok(JSON.parse(await surface.getAttribute('data-camera'))[0]>1,'enter region with local follow camera by default');
   const rail=page.locator('.rw-fit-rail');await rail.getByRole('button',{name:'Follow cat',exact:true}).click();
   assert.ok(JSON.parse(await surface.getAttribute('data-camera'))[0]>1,'optional follow camera');
   await rail.getByRole('button',{name:'Overview',exact:true}).click();

@@ -396,7 +396,7 @@ async function run(chapter){
     await shot('prologue-intro');
     await page.locator('[data-npc-talk="muling"]').click();const encounter=page.locator('#cb-traveler-encounter');
     await encounter.getByRole('button',{name:'寻找航图',exact:true}).click();await encounter.waitFor({state:'detached'});
-    for(const id of ['chart-0','chart-echo','chart-1']){await page.locator('[data-garden-explore="'+id+'"]').click();await shot('prologue-'+id);}
+    for(const id of ['chart-0','chart-echo','chart-1']){await page.locator('[data-garden-explore="'+id+'"]').click();await page.waitForFunction(id=>{const s=GardenExploration.read(State.S);return id==='chart-echo'?s.chartEcho:s.parts.includes(Number(id.at(-1)));},id);await shot('prologue-'+id);}
     await page.locator('[data-npc-talk="muling"]').click();await shot('prologue-encounter');
     await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'告别',exact:true}).click();
     await encounter.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);await shot('prologue-garden');
