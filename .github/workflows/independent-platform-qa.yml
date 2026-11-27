@@ -1,0 +1,46 @@
+name: Cat Bond independent packaging and live parity QA
+on:
+  push:
+    branches: [review/cat-bond-platform-qa-20261127]
+    paths: ['.github/workflows/independent-platform-qa.yml','independent-package-qa.mjs','export-extra-platform-media.py']
+permissions:
+  contents: write
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install free local tools
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          python3 -m pip install --break-system-packages pillow
+      - name: Test existing GamePix ZIP as actual standalone game
+        continue-on-error: true
+        run: node independent-package-qa.mjs
+      - name: Generate additional native platform media
+        continue-on-error: true
+        run: python3 export-extra-platform-media.py
+      - name: Build existing SDK candidates if configured
+        env:
+          Y8_APP_ID: ${{ vars.Y8_APP_ID }}
+          GD_GAME_ID: ${{ vars.GD_GAME_ID }}
+        run: |
+          mkdir -p qa-output
+          if [ -n "$Y8_APP_ID" ]; then python3 export-platform.py y8 && cp output/cat-bond-y8-candidate.zip output/y8-build-report.json qa-output/; else echo 'Y8 actual App ID not configured' > qa-output/y8-blocked.txt; fi
+          if [ -n "$GD_GAME_ID" ]; then python3 export-platform.py gamedistribution && cp output/cat-bond-gamedistribution-candidate.zip output/gamedistribution-build-report.json qa-output/; else echo 'GD actual game ID not configured' > qa-output/gamedistribution-blocked.txt; fi
+      - name: Verify actual public itch.io embed
+        continue-on-error: true
+        run: |
+          CAT_BOND_SOURCE=source/public/cat-bond node handoff/verify-itch-live.mjs || true
+          cp .check/cat-bond-platform-drafts/itch-live-parity.json qa-output/
+      - name: Commit measured results only
+        if: always()
+        run: |
+          git config user.name 'Morrow Wish release QA'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -rf qa-output/gamepix-extracted
+          git add -f qa-output
+          git diff --cached --quiet || git commit -m 'Save independent platform QA evidence [skip ci]'
+          git push origin HEAD:review/cat-bond-platform-qa-20261127
