@@ -22,7 +22,9 @@ jobs:
             curl -fsS --max-time 20 "$base/$file" -o /tmp/boss-live.webp
             cmp "public/cat-bond/assets/$file" /tmp/boss-live.webp
           done
-          python3 - <<'PY'
+          python3 -m venv /tmp/starbell-art-qa
+          /tmp/starbell-art-qa/bin/pip -q install 'Pillow==11.3.0'
+          /tmp/starbell-art-qa/bin/python - <<'PY'
           from PIL import Image,ImageOps,ImageDraw
           import base64,io
           names=[
@@ -49,3 +51,68 @@ jobs:
           data=base64.b64encode(f.getvalue()).decode()
           for i in range(0,len(data),3000):print('BOSS_CONTACT_SHEET '+data[i:i+3000])
           PY
+
+  live-browser-telemetry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 36c44d2cfe39ade6d38b2ed0258dc4b98b137fb3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Inspect actual live browser events and route every request to isolated diagnostics
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {randomUUID} from 'node:crypto';
+          import {chromium} from 'playwright';
+          const collector='https://morrowwish.pages.dev/api/starbell-preview-session';
+          const b=await chromium.launch({headless:true});
+          try{
+            for(const [origin,portrait] of [['https://cat-bond-preview.morrowwish.pages.dev',false],['https://starbell-portrait-preview.morrowwish.pages.dev',true]]){
+              const probe='mw-qa-'+randomUUID(),events=[],errors=[];
+              const ctx=await b.newContext(portrait?{viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2}:{viewport:{width:1280,height:800}});
+              await ctx.route('**/api/starbell-preview-session',async route=>{
+                const req=route.request();
+                if(req.method()!=='POST'){await route.abort();return;}
+                const e=JSON.parse(req.postData()||'{}');
+                events.push(e);
+                // Never let a synthetic browser visit enter the normal arcade category.
+                const body={...e,viewId:probe,visitor:'ci-smoke',smokeProbe:'mw-qa-v1'};
+                const res=await route.fetch({postData:JSON.stringify(body),timeout:15000});
+                assert.equal(res.status(),202);
+                assert.equal(res.headers()['access-control-allow-origin'],origin);
+                await route.fulfill({response:res});
+              });
+              try{
+                const p=await ctx.newPage();p.on('pageerror',e=>errors.push(e.message));p.on('console',msg=>{if(/content security policy.*connect-src/i.test(msg.text()))errors.push(msg.text());});
+                // Real public URL: no qa or developer parameter that would turn off tracking.
+                await p.goto(origin+'/cat-bond/?lang=en',{waitUntil:'domcontentloaded'});
+                await p.waitForFunction(()=>document.body.dataset.sourceSha==='36c44d2cfe39ade6d38b2ed0258dc4b98b137fb3');
+                assert.equal(await p.evaluate(()=>window.ARCADE_GAME_ID),'starbell-preview');
+                assert.equal(await p.evaluate(()=>window.ARCADE_COLLECTOR),collector);
+                await p.waitForTimeout(1200);
+                assert.ok(events.some(e=>e.kind==='visit'&&e.game==='starbell-preview'&&e.metricsVersion===1),'No real browser visit emitted');
+                await p.locator('#intro-start').click();
+                await p.locator('#intro-slot-list [data-slot="slot1"]').click();
+                await p.waitForFunction(()=>window.State?.S&&window.__game?.scene==='yard',{},{timeout:30000});
+                await p.waitForTimeout(1200);
+                // Visibility/session lifecycle is triggered by genuine browser input.
+                await p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+                await p.waitForTimeout(1000);
+                assert.ok(events.some(e=>e.kind==='session'),'No real browser session emitted');
+                assert.ok(events.some(e=>Number(e.signals?.rpg_new)>0),'Missing new-game signal from actual UI');
+                assert.deepEqual(errors,[]);
+                console.log('ACTUAL CLIENT TELEMETRY PASS',origin);
+              }finally{
+                await ctx.close();
+                const q=await fetch('https://morrowwish.pages.dev/api/diagnostic-check?probe='+probe);
+                assert.ok(q.ok);const d=await q.json();assert.ok(d.recorded&&d.sessionRecorded&&d.removed,'Diagnostic events not read back and cleaned');
+              }
+            }
+          }finally{await b.close();}
+          NODE
