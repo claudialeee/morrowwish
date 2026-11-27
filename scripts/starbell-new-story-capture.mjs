@@ -73,20 +73,6 @@ try{
   await click(p,'Belllight beast');await p.locator('#panel [data-battle-auto="true"]').click();await p.locator('#bp-go').click();await p.locator('#battle-ui.on').waitFor();const tutorial=p.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();
   await record(p,'battle',30,async()=>{const btn=p.locator('#duo-burst');for(let i=0;i<65;i++){if(await p.evaluate(()=>!!__game.battle?.duoCinematic))break;if(await btn.isVisible()&&await btn.isEnabled()){await btn.tap();break;}await p.waitForTimeout(350);}});
  }),
- attempt('shadow','forge',async p=>{
-  await click(p,'Help Xiaomao put on a show');
-  const card=p.locator('.rw-festival-card');await card.waitFor({timeout:20000});
-  if(!(await card.locator('.rw-festival-title').innerText()).includes('Shadow Puppet Show'))throw Error('Old shadow-show UI detected');
-  evidence.shadowTitle=await card.locator('.rw-festival-title').innerText();
-  await p.waitForFunction(()=>performance.getEntriesByType('resource').some(x=>x.name.includes('/mobile-portrait/lantern-shadow-square.webp')));
-  await record(p,'shadow',9,async()=>{
-    await card.getByRole('button',{name:'Butterfly',exact:true}).tap();
-    await p.waitForTimeout(3900);
-    await card.getByRole('button',{name:'Cat',exact:true}).tap();
-    await p.waitForTimeout(3900);
-    if(await card.getByRole('button',{name:'Cat',exact:true}).getAttribute('aria-pressed')!=='true')throw Error('Cat shadow selection not reflected');
-  });
- }),
  attempt('explore','forest',async p=>{
   const close=p.locator('#panel.open .panel-dismiss');
   if(await close.isVisible())await close.click();
@@ -107,6 +93,5 @@ try{
  ]);
 }finally{await browser.close();await fs.writeFile(out+'/capture-evidence.json',JSON.stringify(evidence,null,2));}
 if(!evidence.forestMovement)throw Error('Forest movement proof missing');
-for(const id of ['explore','shadow','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
+for(const id of ['explore','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
 const battle=evidence.clips.find(x=>x.id==='battle');if(!battle.observations.some(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards'&&x.asset?.includes('/mobile-portrait/duo/')))throw Error('No verified live native portrait duo');
-for(const [id,asset] of [['shadow','lantern-shadow-square.webp']]){const cl=evidence.clips.find(x=>x.id===id);if(!cl.observations.some(x=>x.resources.some(u=>u.includes('/mobile-portrait/'+asset))))throw Error('Native mini-game artwork not loaded: '+id);}

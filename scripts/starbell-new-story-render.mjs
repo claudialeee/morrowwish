@@ -5,21 +5,18 @@ import {execFileSync} from 'node:child_process';
 const out='artifacts/starbell-story-trailer',assets='public/cat-bond/assets',portrait=assets+'/mobile-portrait';
 const proof=JSON.parse(fs.readFileSync(out+'/capture-evidence.json','utf8'));
 const clips=new Map(proof.clips.map(x=>[x.id,x]));
-for(const id of ['explore','shadow','battle'])if(!clips.has(id))throw Error('Missing live gameplay '+id);
+for(const id of ['explore','battle'])if(!clips.has(id))throw Error('Missing live gameplay '+id);
 const ff=args=>execFileSync('ffmpeg',['-hide_banner','-loglevel','error','-y',...args],{stdio:'inherit'});
 const shots=[
 {id:'hook',d:4.5,src:portrait+'/skyspine-isles.webp',caption:'You thought this was\na new journey.',motion:true},
-{id:'explore',d:4,game:'explore',caption:'A world you’ve never seen.'},
-{id:'library',d:2.5,src:portrait+'/moonmirror-library-tall.webp',motion:true},
-{id:'melody',d:4.5,src:portrait+'/windchime-town-tall.webp',caption:'A melody you’ve\nnever learned.',motion:true},
-{id:'friends',d:4.5,src:assets+'/story-art/cloud-lookout.jpg',pos:'50% center',caption:'Friends you’ll never\nwant to forget.',motion:true},
-{id:'starfall',d:3,src:portrait+'/starfall-expanse.webp',caption:'Discover a world of wonder.',motion:true},
-{id:'shadow',d:8,game:'shadow',offset:.3},
+{id:'secret',d:5,src:portrait+'/story-broken-bell.webp',caption:'But your story began\nlong before you woke up.',motion:true},
+{id:'explore',d:4,game:'explore'},
+{id:'friends',d:3,src:portrait+'/story-cloud-tea.webp',motion:true},
 {id:'battle',d:6,game:'battle',offset:Math.max(0,Math.min(24,(clips.get('battle').observations.find(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards')?.t||2)-1.6))},
-{id:'secret',d:5,src:portrait+'/prologue-garden.webp',map:assets+'/canon22-final-art/garden-route-map.webp',caption:'But your story began\nlong before you woke up.',motion:true},
 {id:'end',d:4.5,src:portrait+'/title-bell-sanctuary.webp',title:true,motion:true}
 ];
-const overlap=.5;const total=shots.reduce((a,s)=>a+s.d,0)-overlap*(shots.length-1);if(total!==42)throw Error('Timeline '+total);
+const overlap=.5;const total=shots.reduce((a,s)=>a+s.d,0)-overlap*(shots.length-1);if(total!==24.5)throw Error('Timeline '+total);
+const secondHookAt=shots[0].d-overlap;if(secondHookAt>4)throw Error('Late story hook');
 for(const [i,s] of shots.entries()){if(!s.caption)continue;const words=s.caption.trim().split(/\s+/).length,clear=s.d-(i>0?overlap:0)-(i<shots.length-1?overlap:0);if(clear<Math.max(2,words/2.5))throw Error('Insufficient reading time: '+s.id+' '+clear);console.log('READING',s.id,words,'words',clear,'seconds unobscured');}
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 const page=await browser.newPage({viewport:{width:1080,height:1920},deviceScaleFactor:1});
@@ -57,11 +54,12 @@ try{
    document.body.replaceChildren();
    const el=(cls,t,host=document.body)=>{const x=document.createElement('div');x.className=cls;if(t)x.textContent=t;host.append(x);return x;};
    if(!s.game){const a=el('art');a.style.backgroundImage='url("'+src+'")';a.style.backgroundPosition=s.pos||'center';}
-   if(s.map){el('secretshade');const m=document.createElement('img');m.className='map';m.src=map;document.body.append(m);}
+   if(s.map)throw Error('Inset artwork prohibited');
    if(s.caption){el('shade');const caption=el('caption',s.caption);if(caption.scrollWidth>caption.clientWidth)throw Error('Caption overflow');const b=caption.getBoundingClientRect();if(b.top<960||b.bottom>1600)throw Error('Caption outside lower safe area');}
    if(s.title){el('brand','MORROW WISH');const title=el('title');el('small','Echoes of the',title);el('','STARBELL',title);el('bottomshade');const c=el('cta','Play the free demo');el('site','morrowwish.vercel.app',c);const credit=el('credit','Music: Soar — Scott Buckley · CC BY 4.0');credit.style.cssText='position:absolute;bottom:180px;left:0;right:0;text-align:center;font:24px Cat Bond Nunito,sans-serif;color:#fff4dc';}
   },{s,src:s.src?rel(s.src):null,map:s.map?rel(s.map):null});
   await page.evaluate(async()=>{await document.fonts.load('500 84px "EB Garamond"');await document.fonts.ready;await Promise.all([...document.images].map(i=>i.decode()));const a=document.querySelector('.art');if(a){const url=getComputedStyle(a).backgroundImage.match(/url\("(.*)"\)/)?.[1];if(url){const im=new Image();im.src=url;await im.decode();}}});
+  const framing=await page.evaluate(async()=>{const a=document.querySelector('.art');if(!a)return null;const url=getComputedStyle(a).backgroundImage.match(/url\("(.*)"\)/)?.[1];const im=new Image();im.src=url;await im.decode();const b=a.getBoundingClientRect();if(b.x!==0||b.y!==0||b.width!==1080||b.height!==1920||getComputedStyle(a).backgroundSize!=='cover')throw Error('Artwork not full bleed');if(im.naturalWidth/im.naturalHeight>0.76||im.naturalWidth/im.naturalHeight<0.45)throw Error('Non portrait source');return {width:im.naturalWidth,height:im.naturalHeight,fit:'full-bleed-cover'};});
   await page.screenshot({path:overlay,omitBackground:true,animations:'disabled'});
   if(s.game){
     const clip=clips.get(s.game),crop=clip.rect;
@@ -77,7 +75,7 @@ try{
   }else ff(['-loop','1','-framerate','30','-i',overlay,'-t',String(s.d),'-vf','setsar=1,format=yuv420p',...enc,dest]);
   const duration=Number(execFileSync('ffprobe',['-v','error','-show_entries','format=duration','-of','csv=p=0',dest],{encoding:'utf8'}));
   if(Math.abs(duration-s.d)>.1)throw Error('Shot duration '+s.id+' '+duration);
-  seq.push(dest);frames.push({id:s.id,seconds:s.d,live:!!s.game,caption:s.caption||null});console.log('SHOT',s.id,duration,s.game?'LIVE':'ART');
+  seq.push(dest);frames.push({id:s.id,seconds:s.d,live:!!s.game,caption:s.caption||null,framing:framing||{width:1080,height:1920,fit:'native-portrait-gameplay'}});console.log('SHOT',s.id,duration,s.game?'LIVE':'ART');
  }
  // Each transition uses only its boundary frames; the middle of every shot
  // remains at full opacity. Generate explicit CFR segments to avoid join stalls.
@@ -95,11 +93,11 @@ try{
  seq.splice(0,seq.length,...parts);
  fs.writeFileSync(out+'/timeline.txt',seq.map(s=>"file '"+path.basename(s)+"'").join('\n')+'\n');
  const file=out+'/Echoes-of-the-Starbell-Official-Trailer-EN.mp4';
- ff(['-f','concat','-safe','0','-i',out+'/timeline.txt','-i','/tmp/approved-v6.mp4','-t',String(total),'-map','0:v:0','-map','1:a:0','-c:v','libx264','-preset','veryfast','-crf','18','-pix_fmt','yuv420p','-r','30','-g','60','-threads','4','-c:a','copy','-movflags','+faststart',file]);
- ff(['-i',file,'-vf','fps=1/2,scale=270:480,tile=7x3','-frames:v','1',out+'/contact-en.jpg']);
+ ff(['-f','concat','-safe','0','-i',out+'/timeline.txt','-i',out+'/score.wav','-t',String(total),'-map','0:v:0','-map','1:a:0','-c:v','libx264','-preset','veryfast','-crf','18','-pix_fmt','yuv420p','-r','30','-g','60','-threads','4','-c:a','aac','-b:a','192k','-movflags','+faststart',file]);
+ ff(['-i',file,'-vf','fps=1/2,scale=270:480,tile=7x2','-frames:v','1',out+'/contact-en.jpg']);
  ff(['-i',file,'-frames:v','1',out+'/first-frame.png']);
  ff(['-i',file,'-f','null','-']);
  const info=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-show_format','-of','json',file],{encoding:'utf8'}));
  if(+info.streams[0].nb_frames!==Math.round(total*30)||Math.abs(+info.format.duration-total)>.1||info.streams[0].width!==1080||info.streams[0].height!==1920||!info.streams.some(s=>s.codec_type==='audio'))throw Error('Invalid output');
- fs.writeFileSync(out+'/proof-en.json',JSON.stringify({version:'V7',live:{...proof,sourceByClip:Object.fromEntries(proof.clips.map(c=>[c.id,proof.source.sha]))},shots:frames,firstCaption:shots[0].caption,captionPlacement:'lower-third-safe',endingTransition:'0.5s continuous crossfade at all nine boundaries; single CFR encode',duration:total,readingWpm:150,transitionCount:shots.length-1,music:{title:'Soar',artist:'Scott Buckley',license:'CC BY 4.0',source:'https://www.scottbuckley.com.au/library/soar/',licenseUrl:'https://creativecommons.org/licenses/by/4.0/',edited:true},format:info.format},null,2));console.log('TRAILER COMPLETE',file);
+ fs.writeFileSync(out+'/proof-en.json',JSON.stringify({version:'V8',live:{...proof,sourceByClip:Object.fromEntries(proof.clips.map(c=>[c.id,proof.source.sha]))},shots:frames,firstCaption:shots[0].caption,captionPlacement:'lower-third-safe',endingTransition:'0.5s frame-exact crossfades; single CFR encode',secondHookAt,secondHookClearAt:secondHookAt+overlap,framing:'native portrait full-bleed; no inset maps or mixed aspect ratios',audioEnvelope:JSON.parse(fs.readFileSync(out+'/score-proof.json','utf8')),duration:total,readingWpm:150,transitionCount:shots.length-1,music:{title:'Soar',artist:'Scott Buckley',license:'CC BY 4.0',source:'https://www.scottbuckley.com.au/library/soar/',licenseUrl:'https://creativecommons.org/licenses/by/4.0/',edited:true},format:info.format},null,2));console.log('TRAILER COMPLETE',file);
 }finally{await browser.close();}

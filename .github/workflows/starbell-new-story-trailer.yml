@@ -37,18 +37,10 @@ jobs:
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           node scripts/starbell-new-story-capture.mjs
-      - uses: actions/download-artifact@v4
-        with:
-          name: starbell-new-story-trailer-review
-          run-id: 46048714109
-          github-token: ${{ github.token }}
-          path: /tmp/approved-v6
-      - name: Preserve the approved score and render the new V7 timeline
+      - name: Build quieter score and compact V8 native portrait trailer
         run: |
-          set -euo pipefail
-          file=$(find /tmp/approved-v6 -name Echoes-of-the-Starbell-Official-Trailer-EN.mp4 -type f -print -quit)
-          test -s "$file"
-          cp "$file" /tmp/approved-v6.mp4
+          curl -fL --retry 3 'https://www.scottbuckley.com.au/library/wp-content/uploads/2019/12/sb_soar.mp3' -o artifacts/starbell-story-trailer/soar.mp3
+          python3 scripts/starbell-new-story-score-edit.py
           python3 scripts/starbell-new-story-particles.py
           node scripts/starbell-new-story-render.mjs
       - uses: actions/upload-artifact@v4
