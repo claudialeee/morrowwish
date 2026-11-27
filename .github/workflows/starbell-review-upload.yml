@@ -73,7 +73,10 @@ jobs:
           import fs from 'node:fs';
           const proof=JSON.parse(fs.readFileSync('public/promo/starbell/review-proof.json','utf8'));
           const updatedAt=new Date().toISOString();
-          fs.writeFileSync('public/promo/starbell/review.json',JSON.stringify({slug:'starbell',video:'/promo/starbell/story-trailer-en-v3-45961511253.mp4',poster:'/promo/starbell/story-trailer-en-v3-45961511253.jpg',duration:36,version:'V3',createdAt:updatedAt,updatedAt,source:proof.live.source,music:proof.music,renderRun:45961511253,approved:false,published:false,shots:proof.shots.map(s=>({scene:s.id,seconds:s.seconds}))},null,2)+'\n');
+          const priorPath='public/promo/starbell/review.json';
+          const prior=fs.existsSync(priorPath)?JSON.parse(fs.readFileSync(priorPath,'utf8')):{};
+          const revision=prior.renderRun===45961511253&&prior.version?prior.version:'V'+Math.max(3,(Number(String(prior.version||'V2').replace(/^V/,''))||2)+1);
+          fs.writeFileSync('public/promo/starbell/review.json',JSON.stringify({slug:'starbell',video:'/promo/starbell/story-trailer-en-v3-45961511253.mp4',poster:'/promo/starbell/story-trailer-en-v3-45961511253.jpg',duration:36,version:revision,createdAt:updatedAt,updatedAt,source:proof.live.source,music:proof.music,renderRun:45961511253,approved:false,published:false,shots:proof.shots.map(s=>({scene:s.id,seconds:s.seconds}))},null,2)+'\n');
           const p='public/promo/review/index.html';
           let h=fs.readFileSync(p,'utf8');
           if(!h.includes("'/promo/starbell/review.json")){
@@ -86,6 +89,7 @@ jobs:
           h=h.replace("data.createdAt||data.latestVersion||'latest'","entry.createdAt||data.createdAt||data.latestVersion||'latest'");
           if(!h.includes('Music credit: '))h=h.replace("video.addEventListener('play',", "if(entry.music){const music=document.createElement('small');music.textContent='Music credit: '+entry.music.title+' — '+entry.music.artist+' · '+entry.music.license+' (edited)';const link=document.createElement('a');link.href=entry.music.source;link.textContent=' Source';link.target='_blank';link.rel='noopener';music.append(link);article.append(music);}\n   video.addEventListener('play',");
           if(!h.includes('entry.version ?'))h=h.replace("note.textContent=Number(entry.duration||0).toFixed(1)+' 秒 · '","note.textContent=(entry.version ? entry.version+' · '+formatDate(entry.updatedAt||entry.createdAt)+' 更新 · ' : '')+Number(entry.duration||0).toFixed(1)+' 秒 · '");
+          if(!h.includes('star?.version'))h=h.replace("$('version').textContent=(data.latestVersion||data.version||'最新版本')+(data.createdAt?' · '+formatDate(data.createdAt)+' 更新':'')+' · '+box.children.length+' 条';","const newest=[data.createdAt,star?.updatedAt||star?.createdAt].filter(Boolean).sort().at(-1);\n  $('version').textContent=(data.latestVersion||data.version||'最新版本')+(star?.version?' · 星铃回响 '+star.version:'')+(newest?' · '+formatDate(newest)+' 更新（PT）':'')+' · '+box.children.length+' 条';");
           fs.writeFileSync(p,h);
           NODE
       - name: Commit review assets only, never publish to social networks
@@ -140,7 +144,7 @@ jobs:
           set -euo pipefail
           for i in {1..12}; do
             if curl -fsS 'https://morrowwish.vercel.app/promo/review/?qa=starbell-45961511253' | grep -q 'data.trailers.unshift(star)' &&
-               curl -fsS 'https://morrowwish.vercel.app/promo/starbell/review.json?qa=45961511253' | jq -e '.renderRun==45961511253 and .approved==false' >/dev/null &&
+               curl -fsS 'https://morrowwish.vercel.app/promo/starbell/review.json?qa=45961511253' | jq -e '.renderRun==45961511253 and .approved==false and (.version|test("^V[0-9]+$")) and (.updatedAt|type=="string")' >/dev/null &&
                curl -fsS -r 0-4095 'https://morrowwish.vercel.app/promo/starbell/story-trailer-en-v3-45961511253.mp4?qa=45961511253' -o /tmp/starbell-range.mp4 &&
                test -s /tmp/starbell-range.mp4; then
               echo 'VERIFIED https://morrowwish.vercel.app/promo/review/'
