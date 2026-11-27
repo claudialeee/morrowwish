@@ -39,15 +39,20 @@ try{
     const corners=[[0,0],[c.width-1,0],[0,c.height-1],[c.width-1,c.height-1],[c.width>>1,c.height>>1]].map(([x,y])=>g.getImageData(x,y,1,1).data[3]);
     return {result,l,corners,loaded:api.preparePortrait(key,tier).im.naturalWidth};
    },{...sample,w,h});
-   assert.ok(v.result&&v.loaded>=720);assert.equal(v.l.asset,'/assets/mobile-portrait/duo/'+sample.file);assert.equal(v.l.extendedPainting,false);assert.equal(v.l.actorLayerCount,0);assert.equal(v.l.paintingDrawCount,1);assert.deepEqual(v.l.art,{x:0,y:0,width:w,height:h});assert.ok(v.corners.every(a=>a>=250),'all viewport corners painted at peak '+JSON.stringify(v));
+   assert.ok(v.result&&v.loaded>=720);assert.equal(new URL(v.l.asset,origin).pathname,'/assets/mobile-portrait/duo/'+sample.file);assert.equal(v.l.extendedPainting,false);assert.equal(v.l.actorLayerCount,0);assert.equal(v.l.paintingDrawCount,1);assert.deepEqual(v.l.art,{x:0,y:0,width:w,height:h});assert.ok(v.corners.every(a=>a>=250),'all viewport corners painted at peak '+JSON.stringify(v));
    // Explicitly capture the native painting rather than a screenshot of the test log.
    if(cases.length<=6||w===390)await page.screenshot({path:out+'/'+sample.file.replace('.webp','')+'-'+w+'.png'});
    // At the start/end of a live cut-in no art should cover the battle canvas.
    const faded=await page.evaluate(({key,tier,w,h})=>{const c=document.querySelector('canvas'),g=c.getContext('2d');g.clearRect(0,0,w,h);window.CatBondPremiumCinematics.draw(g,w,h,{elements:key,tier,t:3.2,max:3.2});return g.getImageData(0,0,1,1).data[3];},{...sample,w,h});assert.equal(faded,0);
   }
  }
- const missing=await page.evaluate(()=>{const api=window.CatBondPremiumCinematics,c=document.querySelector('canvas'),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);api.draw(g,390,844,{elements:'invalid',tier:1,t:0,max:3.2});return g.getImageData(0,0,1,1).data[3];});
- assert.equal(missing,0);
+ const missingPair=await page.evaluate(files=>window.CatBondPremiumCinematics.keys.flatMap(key=>[1,2,3].map(tier=>({key,tier,file:key.replace('+','-')+'-tier-'+tier+'.webp'}))).find(x=>!files.includes(x.file))||null,files);
+ if(missingPair){
+  await page.evaluate(({key,tier})=>{window.CatBondPremiumCinematics.preparePortrait(key,tier);},missingPair);
+  await page.waitForFunction(({key,tier})=>window.CatBondPremiumCinematics.preparePortrait(key,tier).status==='error',missingPair);
+  const missing=await page.evaluate(({key,tier})=>{const api=window.CatBondPremiumCinematics,c=document.querySelector('canvas'),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);api.draw(g,390,844,{elements:key,tier,t:1.6,max:3.2});return {alpha:g.getImageData(0,0,1,1).data[3],ready:api.portraitReady(key,tier)};},missingPair);
+  assert.deepEqual(missing,{alpha:0,ready:false},'missing paintings must never use a fallback');
+ }
  await page.setViewportSize({width:844,height:390});
  const wide=await page.evaluate(()=>{const c=document.querySelector('canvas');c.width=844;c.height=390;c.style.width='844px';c.style.height='390px';window.CatBondPremiumCinematics.draw(c.getContext('2d'),844,390,{elements:'dark+dark',tier:1,t:1.6,max:3.2,hideCaptions:true});return window.CatBondPremiumCinematics.lastLayout;});
  assert.equal(wide.source,'63-original-painted-storyboards');assert.equal(wide.actorLayerCount,0);assert.equal(wide.paintingDrawCount,1);await page.screenshot({path:out+'/landscape-original.png'});
