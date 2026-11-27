@@ -4,6 +4,7 @@ import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
 import {makeEngine} from '../public/cat-bond/js/resonance/engine.mjs';
 import {layouts} from '../public/cat-bond/js/resonance/world-exploration.mjs';
 import {skyLaunch} from '../public/cat-bond/js/resonance/sky-flight.mjs';
+const origin=process.env.CAT_BOND_SMOKE_ORIGIN||'http://127.0.0.1:8765';
 const portrait=process.env.STARBELL_MINIGAME_PROFILE==='portrait',lang=portrait?'zh':'en';
 const browser=await chromium.launch({headless:true});
 const late=new Set(['mechanism:muling-unlock','npc:public-accountability','npc:second-garden-key']);
@@ -37,13 +38,13 @@ try{for(const [region,scene,op] of cases){
  const context=await browser.newContext(portrait?{viewport:{width:390,height:844},isMobile:true,hasTouch:true}:{viewport:{width:1280,height:800}});
  const page=await context.newPage();page.setDefaultTimeout(20000);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await context.route('**/*',r=>{const u=new URL(r.request().url());return u.origin==='http://127.0.0.1:8765'||['data:','blob:'].includes(u.protocol)?r.continue():r.abort()});
+ await context.route('**/*',r=>{const u=new URL(r.request().url());return u.origin===origin||['data:','blob:'].includes(u.protocol)?r.continue():r.abort()});
  const press=async l=>portrait?l.tap():l.click();
  const button=(zh,en,within=page)=>within.getByRole('button',{name:lang==='zh'?zh:en,exact:true});
  const row=page.locator('.rw-puzzle-controls:visible'),surface=page.locator('.rw-surface');
  try{
   const snapshot=checkpoint(scene,op),point=(region==='sky'&&skyLaunch[op]||layouts[region].features[op]).slice(0,2);
-  await page.goto('http://127.0.0.1:8765/cat-bond/?developer=1&qa=minigame&region='+region+'&reset=1&lang='+lang);
+  await page.goto(origin+'/cat-bond/?developer=1&qa=minigame&region='+region+'&reset=1&lang='+lang);
   await page.locator('#starbell-developer-menu').waitFor();
   await page.evaluate(({snapshot,region,point})=>{
    if(!window.__STARBELL_DEVELOPER__)throw Error('Isolated developer slot required');

@@ -2,6 +2,29 @@
 set -euo pipefail
 base=35ef1c1979513bd7d98b07bb804d842dc47bfcfd
 source_sha=${SOURCE_SHA:-$GITHUB_SHA}
+# The integrated candidate must have its own exact-commit combined browser gate.
+# Reuse only unchanged approved music, never earlier gameplay acceptance.
+if [[ -f .github/workflows/starbell-integrated-guardians.yml ]]; then
+  git fetch --no-tags --depth=1 origin c457f85d219a4282e2a1bd7216fdcb31e31dac93
+  test "$(git rev-parse HEAD)" = "$source_sha"
+  git diff --quiet c457f85d219a4282e2a1bd7216fdcb31e31dac93 "$source_sha" -- public/cat-bond/assets/audio public/cat-bond/assets/quality-audio public/cat-bond/js/rpg-audio.js public/cat-bond/js/rpg-audio-score.js scripts/import-starbell-region-music.mjs scripts/import-cat-bond-windchime-music.mjs
+  gh api "repos/$GITHUB_REPOSITORY/actions/runs/46065269370" | jq -e '.head_sha=="c457f85d219a4282e2a1bd7216fdcb31e31dac93" and .status=="completed" and .conclusion=="success"' >/dev/null
+  gh api "repos/$GITHUB_REPOSITORY/actions/runs/46065269370/artifacts" | jq -e 'any(.artifacts[]; .name=="starbell-approved-audio" and .expired==false)' >/dev/null
+  for attempt in $(seq 1 120); do
+    run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-integrated-guardians.yml/runs?head_sha=$source_sha&branch=review%2Fstarbell-integrated-guardians-20261127" | jq -c '.workflow_runs[0] // {}')
+    if [[ $(jq -r .head_sha <<<"$run") == "$source_sha" && $(jq -r .status <<<"$run") == completed ]]; then
+      test "$(jq -r .conclusion <<<"$run")" = success
+      id=$(jq -r .id <<<"$run")
+      gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id/jobs?per_page=100" | jq -e '([.jobs[]|select((.name=="integrated (wide)" or .name=="integrated (portrait)") and .conclusion=="success")]|length)==2' >/dev/null
+      { echo "INTEGRATED_GATE=$id"; echo "FOCUSED_GATE=46065269370"; echo "AUDIO_SOURCE_SHA=c457f85d219a4282e2a1bd7216fdcb31e31dac93"; } >> "$GITHUB_ENV"
+      echo "Exact integrated guardian, minigame, garden and telemetry acceptance passed"
+      exit 0
+    fi
+    sleep 5
+  done
+  echo "Integrated acceptance incomplete; refusing preview deploy" >&2
+  exit 1
+fi
 # Exact garden camera runtime accepted on both devices. Reuse unchanged audio bytes
 # and previous deployed gameplay gates only when all non-infrastructure inputs match.
 if bash scripts/starbell-garden-release-scope.sh "$source_sha"; then

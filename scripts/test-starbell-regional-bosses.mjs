@@ -108,6 +108,6 @@ console.log('29 approved localized names, seven stable templates, portrait coord
  }
  const festivalSource=readFileSync(new URL('js/resonance/world-runtime.mjs',root),'utf8');
  assert.ok(festivalSource.includes('const actor=campaign.cast.xiaomao.name;'));
- assert.ok(festivalSource.includes('actor.en}’s First Shadow Puppet Show'));
- assert.ok(festivalSource.includes('actor.zh}的第一场皮影戏'));
+ assert.ok(festivalSource.includes('actor.en}’s Shadow Puppet Theater'));
+ assert.ok(festivalSource.includes('actor.zh}的皮影小剧场'));
  console.log('Runtime display-name audit PASS: '+checked+' source/preview files, festival labels use the canonical cast');

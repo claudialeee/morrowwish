@@ -87,6 +87,7 @@ jobs:
           if [[ "$GITHUB_EVENT_NAME" != push ]]; then mode=full; fi
           if [[ -n "${ACCEPTED_RUNTIME:-}" && -n "${OPENING_GATE:-}" ]]; then mode=accepted; fi
           if [[ -n "${FOCUSED_GATE:-}" ]]; then mode=focused; fi
+          if [[ -n "${INTEGRATED_GATE:-}" ]]; then mode=integrated; fi
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "CAT_BOND_QA_SCOPE=$mode" >> "$GITHUB_ENV"
           echo "Preview QA: $mode (deployed base: ${live_sha:-unknown})"
@@ -163,7 +164,7 @@ jobs:
         with:
           npm-ci: 'false'
       - name: Prepare reusable real-browser smoke
-        if: steps.qa.outputs.mode != 'focused'
+        if: steps.qa.outputs.mode != 'focused' && steps.qa.outputs.mode != 'integrated'
         run: |
           cat > .cat-bond-preview-smoke.mjs <<'NODE'
           import {chromium} from 'playwright';
@@ -405,7 +406,7 @@ jobs:
           }finally{await browser.close()}
           NODE
       - name: Run isolated predeployment browser smoke
-        if: steps.qa.outputs.mode != 'focused'
+        if: steps.qa.outputs.mode != 'focused' && steps.qa.outputs.mode != 'integrated'
         env:
           CAT_BOND_SMOKE_ORIGIN: http://127.0.0.1:8766
           CAT_BOND_SMOKE_STAGE: local
@@ -488,7 +489,15 @@ jobs:
         env:
           CAT_BOND_SMOKE_STAGE: live
         run: |
-          if [[ "$CAT_BOND_QA_SCOPE" == focused ]]; then
+          if [[ "$CAT_BOND_QA_SCOPE" == integrated ]]; then
+            export CAT_BOND_SMOKE_ORIGIN=https://cat-bond-preview.morrowwish.pages.dev
+            for profile in wide portrait; do
+              STARBELL_BOSS_PROFILE="$profile" node scripts/test-starbell-regional-bosses-browser.mjs
+              STARBELL_MINIGAME_PROFILE="$profile" node scripts/test-starbell-player-first-browser.mjs
+            done
+            node scripts/test-starbell-garden-camera.mjs
+            node scripts/test-starbell-approved-region-music.mjs
+          elif [[ "$CAT_BOND_QA_SCOPE" == focused ]]; then
             export CAT_BOND_SMOKE_ORIGIN=https://cat-bond-preview.morrowwish.pages.dev STARBELL_FOCUS_PROFILE=wide
             if [[ -n "${GARDEN_GATE:-}" ]]; then
               node scripts/test-starbell-garden-camera.mjs

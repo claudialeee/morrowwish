@@ -49,3 +49,4 @@ jobs:
           node scripts/test-starbell-regional-bosses-browser.mjs
           node scripts/test-starbell-player-first-browser.mjs
           node scripts/test-starbell-garden-camera.mjs
+          node scripts/test-starbell-finale-framing-farwind.mjs
