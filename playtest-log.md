@@ -2494,3 +2494,37 @@ Mid-turn supervisor retroactive flag caught that the `fixes[]` array had 3 P0-ti
 - **Fix 0 (combo-tier)**: FINDINGS-ONLY — cross-cutting shake/hitstop system, not local.
 - **Fix 1 (ult button state)**: FINDINGS-ONLY — touches bilingual strings = i18n structure (cron excludes).
 - **Fix 2 (stompStreak ratchet + auto-assist gate)**: AUTO-FIXED in `cd623f76`. Two numeric lines, battle.js cache-buster bumped. Full 4-script gate + `npm run check` green pre-commit.
+
+## Playtest cycle wmbjeusi4 — 2026-11-27 (post cd623f76 stompStreak fix)
+
+**Headline**: Combat is winnable and legal but legibility-starved — the engine secretly tunes pressure the player can neither see nor learn from, so mashers die mysteriously, kiters hoard verbs, explorers cruise at 95% HP, and the auto-battler sees eight identical silhouettes; fix input-ack honesty and raise visible enemy threat before layering any new tuning.
+
+**funMean 4.17** (↓0.16 vs wb3r7ejxm 4.33 — lowest in session):
+- 狂按 6 / 探索 6 / 懒人 5 / 谨慎 **2** (↓1) / 没耐心 3 / 手忙脚乱 3
+
+### Session arc
+- w06q78tip 4.33 → w892jymfa 4.5 → wowed850p 5.0 → wb3r7ejxm 4.33 → wmbjeusi4 **4.17**
+- wowed850p peak was harness variance; combat baseline is 4.17-4.5.
+
+### Critiques: 34 total
+- **1 critique-tier P0 (first non-zero)** — 没耐心 impatient persona: "nothing raises ambient enemy pressure"
+- 24 P1 (4 local-numeric + 20 additive-flag)
+- 9 P2 (2 local-numeric + 7 additive-flag)
+
+### Fixes-array: 2 P0
+- **Fix 0 (enemyThreatScalar)**: AUTO-FIXED in **727e1fd9**. Symmetric helper mirror of basicTimeScalar: 0.9× (0-6s grace) ramp to 1.35× (18s), hold. Only applies to non-ult enemy hits. Gate green pre-commit.
+- **Fix 1 (mashing feedback — cooldown toast + cinematic ack + fizzle)**: FINDINGS-ONLY. Touches ultimate() + skillQ + skillE + dodge + battle-draw.js + 2 i18n strings — multi-file + new i18n = NOT local numeric, excluded by cron rule.
+
+### Harness
+27 of 75 agent calls hit StructuredOutput retry cap. 48 succeeded.
+
+### Top P1 themes (findings-only)
+1. Rejected-press silent (ultimate cooldown toast rate-limited 2.5s+gated on !autoMode; skillQ/E/dodge silent on CD)
+2. basicTimeScalar time-only ramp activates AFTER masher times out — hybridize with basicsLanded (symmetric to 517480e8 enemy-side)
+3. Rolling 2s damage-taken window → red vignette + shake when ≥12% maxhp
+4. Enemy heavy-cast telegraph binary — only smash/nova/ult have ring, mid-tier (meteor/hex/fireballMeow/lightningOrb/beams ≥1.2×) fire instantly after generic muzzle
+5. 谨慎 2 again — kiter still doesn't engage, no help from tank body-block
+
+### Carryovers from wb3r7ejxm not yet addressed
+- Fix 0 (combo tier): findings-only (cross-cutting)
+- Fix 1 (ult button state): findings-only (i18n structure)
