@@ -2395,3 +2395,32 @@ critiqueCount 41, 21 subagent retries capped. Core synth intact; 狂按 7 new se
 
 ### 谨慎 kiter 回到 2
 tank body-block (c078cb38) 没救 kiter — kiter persona 根本不打，没触发 tank 身体挡的路径。kiter 的锁-2 结构性问题需要独立处理（adversary 一直说"idle-decay HP window"，但 additive-flag）。
+
+## Playtest cycle w892jymfa — 2026-11-27 post Phase 4 + origin-main merge
+
+**Headline**: Combat is mechanically alive but perceptually dishonest — every persona has a real win or loss happening that the UI either hides, mislabels, or steals from them; fix the feedback contract before shipping more damage knobs.
+
+**funMean 4.5** (↑ 0.17 from w06q78tip 4.33):
+- 狂按 7 / 探索 6 / 懒人 6 / 没耐心 3 / 手忙脚乱 3 / 谨慎 **2**
+
+### Auto-fixes this cycle: 0 (no adversary-confirmed P0)
+
+29 critiques. 19 P1 (15 additive-flag + 4 local-numeric), 10 P2 (7 additive-flag + 2 local-numeric + 1 architectural).
+
+### Harness failures
+30 of 73 agent calls failed with StructuredOutput retry-cap 5. Workflow still produced a full result from the 43 that succeeded; adversary stage was partial-coverage. Treat below as representative, not exhaustive.
+
+### Top P1 themes (findings-only)
+1. **Feedback-contract** — adversary consensus: masher ate silent timeout-loss at 92% HP because no fight-clock HUD + no flee-warning + 'win' predicate doesn't recognize `flee-dominant` bucket already existing in finish() at battle.js:6643 (game.js:1598 still treats only `result==='win'` as a win — cosmetic lie).
+2. **Panicky input rejects are silent** — 2,700 inputs, 4% Q success. The reject path exists but no visual "nope, on CD" / "nope, no target" tell.
+3. **Cautious kiter 97% idle** — damage ramp `basicTimeScalar()` is wrong gear; needs cadence ramp (fire-rate speedup or forced engagement), not raw dmg-up.
+4. **Explorer 8/8 at 95% HP** — no verb-gate exists in any encounter. Trivial sweep. Adversary says "difficulty curve doesn't require element/skill variety".
+5. **Impatient per-hit wild damage flat** — recent P0s moved tempo/meter/execute but not per-hit wild dmg; player eats 11+ pokes before 下class escalates.
+
+### Harness telemetry bug flagged by masher adversary
+`scripts/playtest-sim.mjs:80-87` hard-codes masher persona to only tap Q at 8% and NEVER tap E. So "e=0 damage across 8 battles" is BY CONSTRUCTION, same shape as the already-fixed 懒人 ult=0 telemetry lie (e5d6c137). Fix proposed: add `if(me.cd.e<=0 && o.rng()<0.05) o.tap(g,'e');` to make next cycle's telemetry truthful. Still findings-only — not auto-applying because adversary flagged collision with pending P1 passive brief.
+
+### Compared to w06q78tip (same scope)
+- 谨慎 still 2 — confirms tank body-block (c078cb38) + tank+wall gate don't help kiter persona (kiter doesn't engage ⇒ never triggers gate)
+- 狂按 7 (+1) and 懒人 6 (+1) — telemetry noise but trending up
+- 没耐心 and 手忙脚乱 both 3 — persistent low ceiling
