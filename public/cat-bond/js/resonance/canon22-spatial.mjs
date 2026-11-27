@@ -161,9 +161,9 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
   // different constellations. Unvisited edges are never presented as earned.
   c.save();c.lineWidth=Math.max(1.5,unit*.004);c.strokeStyle="#f7e9baae";c.shadowColor="#efd7a9";c.shadowBlur=8;
   c.beginPath();p.visited.forEach((i,j)=>{const q=pt(starPosition(p,i));j?c.lineTo(...q):c.moveTo(...q);});if(p.walk)c.lineTo(...pt(pose.ground));c.stroke();c.restore();
-  for(let i=0;i<starNodes.length;i++){const q=starPosition(p,i),visited=p.visited.includes(i),lit=visited||starEdges[p.node].includes(i);const [x,y]=pt(q),radius=unit*(visited?.055:lit?.042:.024);
+  for(let i=0;i<starNodes.length;i++){const q=starPosition(p,i),visited=p.visited.includes(i),reachable=starEdges[p.node].includes(i),lit=i===p.node||reachable;const [x,y]=pt(q),radius=unit*(i===p.node?.055:reachable?.042:.024);
    if(lit){const g=c.createRadialGradient(x,y,1,x,y,radius);g.addColorStop(0,visited?"#fff0bdc0":"#d8e4ee80");g.addColorStop(1,"#f4df8c00");c.fillStyle=g;c.fillRect(x-radius,y-radius,radius*2,radius*2);}
-   c.save();c.fillStyle=visited?"#f6dca0":lit?"#bdcedb":"#596877";c.strokeStyle=lit?"#f6ebcf":"#8494a0";c.lineWidth=1.5;c.beginPath();c.moveTo(x-unit*.023,y);c.lineTo(x-unit*.009,y-unit*.014);c.lineTo(x+unit*.015,y-unit*.012);c.lineTo(x+unit*.025,y+unit*.006);c.lineTo(x+unit*.007,y+unit*.016);c.lineTo(x-unit*.018,y+unit*.012);c.closePath();c.fill();c.stroke();c.restore();
+   c.save();c.fillStyle=lit?(visited?"#f6dca0":"#bdcedb"):visited?"#917e68":"#596877";c.strokeStyle=lit?"#f6ebcf":"#8494a0";c.lineWidth=1.5;c.beginPath();c.moveTo(x-unit*.023,y);c.lineTo(x-unit*.009,y-unit*.014);c.lineTo(x+unit*.015,y-unit*.012);c.lineTo(x+unit*.025,y+unit*.006);c.lineTo(x+unit*.007,y+unit*.016);c.lineTo(x-unit*.018,y+unit*.012);c.closePath();c.fill();c.stroke();c.restore();
   }
   for(const i of [3,6]){const q=starPosition(p,i),collected=p.discoveries.includes("starlight-"+i);dot([q[0],q[1]-.055],unit*(collected?.008:.012),collected?"#f9e7a4":"#ffefb9");}
   const [gx,gy]=pt(pose.ground);c.save();c.fillStyle="rgba(24,27,52,"+(.25-pose.lift*1.5)+")";c.beginPath();c.ellipse(gx,gy+unit*.015,unit*.032,unit*.008,0,0,Math.PI*2);c.fill();c.restore();
