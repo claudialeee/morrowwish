@@ -42,33 +42,46 @@ function forgeText(c,s,x,y,size=16,color="#f3dfb8"){c.font="600 "+size+"px syste
 function forgeLine(c,points,col,width=3){c.beginPath();for(const [i,p] of points.entries())i?c.lineTo(...p):c.moveTo(...p);c.strokeStyle=col;c.lineWidth=width;c.lineCap="round";c.lineJoin="round";c.stroke();}
 function forgeBolt(c,x,y){c.beginPath();c.arc(x,y,3.2,0,Math.PI*2);c.fillStyle="#b9a17b";c.fill();forgeLine(c,[[x-1.8,y],[x+1.8,y]],"#5d503d",.9);}
 function forgePart(c,n,x,y,scale=1,lit=true){c.save();c.translate(x,y);c.scale(scale,scale);c.globalAlpha=lit?1:.28;
- const metal=c.createLinearGradient(-34,-20,28,22);metal.addColorStop(0,"#7d5a40");metal.addColorStop(.46,"#ddbb7d");metal.addColorStop(1,"#755941");c.fillStyle=metal;c.strokeStyle="#ddc08a";c.lineWidth=2;
- if(n===0){c.beginPath();c.moveTo(-29,15);c.lineTo(-29,-9);c.quadraticCurveTo(-29,-23,-14,-23);c.lineTo(13,-23);c.quadraticCurveTo(28,-23,28,-8);c.lineTo(28,15);c.strokeStyle="#b18b5b";c.lineWidth=13;c.stroke();c.strokeStyle="#ebc88d";c.lineWidth=2;c.stroke();for(const xx of [-29,28]){c.fillRect(xx-9,10,18,9);forgeBolt(c,xx,14);}}
- else if(n===1){c.fillRect(-29,-8,58,16);c.strokeRect(-29,-8,58,16);c.beginPath();c.arc(0,0,17,0,Math.PI*2);c.fill();c.stroke();forgeLine(c,[[0,-17],[0,-27]],"#d4b481",5);c.beginPath();c.arc(0,-27,12,0,Math.PI*2);c.strokeStyle="#e2c18c";c.lineWidth=3;c.stroke();for(let i=0;i<6;i++){const a=i*Math.PI/3;forgeLine(c,[[0,-27],[Math.cos(a)*11,-27+Math.sin(a)*11]],"#c4a16b",1.6);}}
- else {c.fillRect(-29,-22,9,44);c.fillRect(20,-22,9,44);c.fillRect(-29,-22,58,8);c.fillRect(-29,14,58,8);forgeLine(c,[[-21,-14],[20,14],[20,-14],[-21,14]],"#b99362",5);for(const xx of [-25,25])for(const yy of [-18,18])forgeBolt(c,xx,yy);}
+ c.strokeStyle="#ebc88d";c.lineWidth=3;c.fillStyle="#e7ad78";
+ if(n===0){c.beginPath();c.ellipse(0,0,26,32,0,0,Math.PI*2);c.fill();c.stroke();}
+ else if(n===1){forgeText(c,"✦",0,0,42,"#ffe3a7");}
+ else {forgeLine(c,[[-24,24],[-24,-22],[24,-22],[24,24],[-24,24]],"#ebc88d",4);}
+
  c.restore();
 }
-function forgeGauge(c,x,y,v,target,max,name,color){const r=54,a0=Math.PI*.75,arc=Math.PI*1.5;c.save();c.translate(x,y);c.beginPath();c.arc(0,0,r+7,0,Math.PI*2);c.fillStyle="#253842";c.fill();c.strokeStyle="#ab875a";c.lineWidth=3;c.stroke();c.beginPath();c.arc(0,0,r-4,a0,a0+arc);c.strokeStyle="#3e5358";c.lineWidth=6;c.stroke();c.beginPath();c.arc(0,0,r-4,a0,a0+arc*Math.max(0,Math.min(1,v/max)));c.strokeStyle=color;c.lineWidth=6;c.stroke();for(let i=0;i<=10;i++){const a=a0+arc*i/10;forgeLine(c,[[Math.cos(a)*(r-9),Math.sin(a)*(r-9)],[Math.cos(a)*(r-17),Math.sin(a)*(r-17)]],"#b7bcaa",1.2);}const at=a0+arc*target/max;forgeLine(c,[[Math.cos(at)*(r-13),Math.sin(at)*(r-13)],[Math.cos(at)*(r+1),Math.sin(at)*(r+1)]],"#a5ecdb",4);const a=a0+arc*v/max;forgeLine(c,[[0,0],[Math.cos(a)*(r-17),Math.sin(a)*(r-17)]],color,3);c.beginPath();c.arc(0,0,4,0,Math.PI*2);c.fillStyle="#d6c098";c.fill();forgeText(c,name,0,-r-19,17);forgeText(c,v+" / "+target,0,31,16,v===target?"#b4f4d7":"#f2c68f");c.restore();}
-export function paintForgePuzzle(c,p,l,actor){
- if(!["heat","blueprint"].includes(p.type))return false;
- c.save();c.fillStyle="rgba(96,62,50,.12)";c.fillRect(0,0,W,H);forgePlate(c,100,50,760,436,"#574551","#ddbb94");
- for(const x of [115,845])for(const y of [65,471])forgeBolt(c,x,y);
- const heat=p.type==="heat";
- forgeText(c,heat?local(l,"熔炉控制台","Furnace control station"):local(l,"旧工坊 · 安全图纸","Old workshop · Safety blueprint"),480,83,26);
- forgeText(c,heat?local(l,"加热升温升压 · 泄压保留温度 · 冷却同时降低两者","Heat raises both readings · Vent holds heat · Coolant lowers both"):local(l,"承重结构在先，冷却管路其次，独立泄压装置最后。","Fit the frame, connect the cooling circuit, then install the relief valve."),480,116,15,"#d7d7c4");
- if(heat){
-  forgeGauge(c,350,209,p.values[0],p.goal[0],70,local(l,"炉温","Temperature"),"#f5b06b");
-  forgeGauge(c,610,209,p.values[1],p.goal[1],45,local(l,"炉压","Pressure"),"#98e2d8");
-  actor?.("jinpo",[.16,.46],.8);actor?.("xiaomao",[.84,.46],.8);
-  forgeText(c,local(l,"烬婆 · 冷却","Jinpo · Coolant"),158,264,12,"#d4c3a7");forgeText(c,local(l,"小铆 · 泄压","Xiaomao · Relief"),802,264,12,"#d4c3a7");
- }else{
-  const xs=[330,480,630];forgeLine(c,[[330,208],[630,208]],"#c3aa7b",3);
-  for(const [i,x] of xs.entries()){forgePlate(c,x-53,153,106,108,"#31464f",i<p.values.length?"#9cdac6":"#a88c61");if(i<p.values.length)forgePart(c,p.values[i],x,204,.96);else forgeText(c,"?",x,205,30,"#cfb685");forgeText(c,String(i+1),x,274,13,"#d7c294");}
+function paintFestivalStars(c,p,l){
+ const centers=[.30,.50,.70].map(x=>x*W), colors=["#ffd594","#b6e9fc","#ffd2e0"];
+ c.save();
+ forgePlate(c,166,103,628,342,"#604665","#dfbf96");
+ forgeText(c,local(l,"点亮三盏星灯","Light the three festival stars"),480,137,25);
+ for(let i=0;i<centers.length;i++){
+  const x=centers[i],target=x+(p.goal[i]-1)*50,aim=x+(p.values[i]-1)*50,color=colors[i],lit=target===aim;
+  for(const step of [-1,0,1]){c.beginPath();c.arc(x+step*50,228,3,0,Math.PI*2);c.fillStyle="#ba9eb0";c.fill();}
+  const beam=c.createLinearGradient(x,340,aim,228);beam.addColorStop(0,color+"cc");beam.addColorStop(1,color+(lit?"ab":"44"));
+  c.beginPath();c.moveTo(x-10,337);c.lineTo(aim-24,228);c.lineTo(aim+24,228);c.lineTo(x+10,337);c.closePath();c.fillStyle=beam;c.fill();
+  if(lit){
+   const glow=c.createRadialGradient(target,228,4,target,228,50);glow.addColorStop(0,color+"bb");glow.addColorStop(1,color+"00");c.fillStyle=glow;c.fillRect(target-50,178,100,100);
+  }
+  forgeText(c,lit?"✦":"✧",target,228,43,lit?color:"#f2e5ec");
+  forgePlate(c,x-63,319,126,74,"#594563",color);
+  forgeText(c,["↙","↑","↗"][p.values[i]],x,339,25,color);
+  forgeText(c,[local(l,"左灯","Left light"),local(l,"中灯","Center light"),local(l,"右灯","Right light")][i],x,371,16);
  }
- const names=heat?[[local(l,"加热","Heat"),"+5 / +5"],[local(l,"泄压","Vent"),"0 / −5"],[local(l,"冷却","Cool"),"−5 / −10"]]:[[local(l,"管路","Pipes"),""],[local(l,"阀门","Valve"),""],[local(l,"炉架","Frame"),""]];
- for(const [i,[name,sub]] of names.entries()){const x=(.3+i*.2)*W;forgePlate(c,x-65,294,130,92,"#4a463d","#b79b6d");if(heat){forgeText(c,["↑","↘","↓"][i],x,318,25,i===0?"#f5b06b":"#a6e6d4");forgeText(c,sub,x,365,12,"#cdd5c7");}else forgePart(c,i,x,324,.63);forgeText(c,name,x,347,17);}
- const foot=heat?(p.mistakes?local(l,"安全联锁已触发 · 重新校准","Safety interlock triggered · Recalibrate"):local(l,"绿色刻线为目标值。两项同时达标才会启动。","Green ticks mark the targets. Both readings must match.")):(p.mistakes?local(l,"安装顺序不正确 · 已拆回零件","Incorrect assembly order · Parts returned"):local(l,"已收集三件零件 · 按照图纸重组","All three parts collected · Rebuild the assembly"));
- forgeText(c,foot,480,430,15,p.mistakes?"#f5bc99":"#a7e6d3");c.restore();return true;
+ c.restore();return true;
+}
+export function paintForgePuzzle(c,p,l){
+ if(p.type==="lanternFocus")return paintFestivalStars(c,p,l);
+ if(p.type!=="blueprint")return false;
+ c.save();
+ forgePlate(c,100,50,760,436,"#574551","#ddbb94");
+ for(const x of [115,845])for(const y of [65,471])forgeBolt(c,x,y);
+ forgeText(c,local(l,"旧工坊 · 节灯图纸","Old workshop · Festival lantern blueprint"),480,83,26);
+ forgeText(c,local(l,"先搭灯架，再安灯罩，最后挂上灯芯。","Build the frame, fit the shade, then hang the light."),480,116,15,"#d7d7c4");
+ forgeLine(c,[[330,208],[630,208]],"#c3aa7b",3);
+ for(const [i,x] of [330,480,630].entries()){forgePlate(c,x-53,153,106,108,"#31464f",i<p.values.length?"#9cdac6":"#a88c61");if(i<p.values.length)forgePart(c,p.values[i],x,204,.96);else forgeText(c,"?",x,205,30,"#cfb685");}
+ const names=[local(l,"灯罩","Shade"),local(l,"灯芯","Light"),local(l,"灯架","Frame")];
+ for(const [i,name] of names.entries()){const x=(.3+i*.2)*W;forgePlate(c,x-65,294,130,92,"#4a463d","#b79b6d");forgePart(c,i,x,324,.63);forgeText(c,name,x,356,17);}
+ c.restore();return true;
 }
 function forgeRouteDiagram(c,l){
  forgePlate(c,636,22,300,155,"#263942","#d2b683");

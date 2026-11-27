@@ -22,7 +22,7 @@ console.log(JSON.stringify((function test(){
   else if(n==="libraryRoutes"){ok(x.operate(2),"premature model reply rejected");assert(x.puzzle,"cannot skip both demonstrations");ok(x.operate(1),"neighbor route");ok(x.operate(0),"inward route");ok(x.operate(2),"compare both outcomes");}
   else if(n==="pairedWater"){ok(x.operate(1),"lower cannot open without pressure");assert(x.puzzle.values[1]===0,"premature lower opening");ok(x.operate(0),"raise");ok(x.operate(0),"stable");ok(x.operate(1),"open lower");ok(x.operate(0),"pressure stays locked");assert(x.puzzle.values[0]===2&&x.puzzle.values[1]===1,"pressure cannot overshoot or close gate");ok(x.operate(1),"repeat opening");assert(x.puzzle.values[1]===1,"gate stays open");ok(x.operate(2),"clear roots");}
   else if(["mirrors","water","stars","routing","libraryMirrors"].includes(n)){for(let i=0;i<3;i++){while(x.puzzle&&x.puzzle.values[i]!==p.goal[i])ok(x.operate(i),"dial");}}
-  else if(n==="heat"){while(x.puzzle&&x.puzzle.values[0]<p.goal[0])ok(x.operate(0),"heat");while(x.puzzle&&x.puzzle.values[1]>p.goal[1])ok(x.operate(1),"vent");}
+  else if(n==="lanternFocus"){assert(!p.solved,"festival stars begin unlit");ok(x.operate(0),"align left spotlight");ok(x.operate(1),"align center spotlight");ok(x.operate(2),"align right spotlight");}
   else if(n==="skyFlight"){
    for(let i=0;i<100;i++)x.flightTick(.05);assert(x.puzzle.flight.x===0,"idle flight must not advance");
    ok(x.operate(1),"launch");for(let i=0;i<400&&x.puzzle?.flight.started;i++)x.flightTick(.05);assert(x.puzzle?.flight.attempts>0,"no steering must fail");

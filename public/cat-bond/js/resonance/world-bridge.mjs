@@ -19,7 +19,11 @@ const tideTrail=[
  {point:[.82,.45],name:["查看退潮刻痕","Inspect the ebb marks"],clue:["退潮刻痕指向码头尽头。沿东岸石径寻找露出的台阶。","The ebb marks point toward the end of the pier. Follow the eastern stone path to the exposed steps."]},
  {point:[.80,.682],name:["寻找干燥石阶","Find the dry steps"],clue:["潮水退去，旧日志匣的入口就在前方。","The water has receded. The entrance to the old logbook chest is just ahead."]}
 ];
-const forgeParts=[{point:[.30,.78],name:["拾取炉架","Recover the frame"],clue:["炉架上刻着节庆日期，安全测试被提前结束。","The festival date is etched on the frame. The safety test was cut short."]},{point:[.35,.58],name:["寻找旧管路","Recover the old pipe"],clue:["破裂的冷却管旁记着两名受伤工人。","The fractured cooling pipe records two injured workers."]},{point:[.44,.50],name:["取回泄压阀","Recover the relief valve"],clue:["小铆的新阀门能让压力在高温下独立释放。","Xiaomao’s new valve lets pressure escape independently of heat."]}];
+const forgeParts=[
+ {point:[.30,.78],name:["拾取旧灯架","Recover the old frame"],clue:["灯架刻着第一届灯火节的日期。","The frame bears the first lantern festival’s date."]},
+ {point:[.35,.58],name:["拾取绢灯罩","Recover the silk shade"],clue:["绢面上还留着一对小猫的剪影。","Two kitten silhouettes still show on the silk."]},
+ {point:[.44,.50],name:["找回星光灯芯","Recover the starlight wick"],clue:["小铆留下的灯芯，把一点光投成满墙星星。","Xiaomao’s wick turns a spark into a wall of stars."]}
+];
 const forgeKey=i=>"forge:E-02:part:"+i;
 const forgeNear=(w,p)=>{const q=w.positions.forge;return !!q&&Math.hypot(q.x-p[0],q.y-p[1])<.072;};
 const tideKey=i=>"harbor:H-03:tide:"+i;
