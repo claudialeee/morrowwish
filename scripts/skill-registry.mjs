@@ -245,8 +245,8 @@ export const SKILL_RUNTIME = {
       { where: 'custom fan renderer', note: 'L4407+: authored fan geometry + gradient' },
     ],
     _sources: [
-      { file: 'public/cat-bond/js/battle.js', regex: "b\\.sk\\?\\.id\\s*===\\s*'flameSweep'" },
-      { file: 'public/cat-bond/js/battle.js', regex: "\\['flameSweep','waterJet','shadowTendrils'\\]" },
+      { file: 'public/cat-bond/js/battle-draw.js', regex: "b\\.sk\\?\\.id\\s*===\\s*'flameSweep'" },
+      { file: 'public/cat-bond/js/battle-draw.js', regex: "\\['flameSweep','waterJet','shadowTendrils'\\]" },
     ],
   },
 
@@ -264,7 +264,7 @@ export const SKILL_RUNTIME = {
     ],
     _sources: [
       { file: 'public/cat-bond/js/battle.js', regex: "sk\\.id\\s*===\\s*'thunderStream'" },
-      { file: 'public/cat-bond/js/battle.js', regex: "b\\.sk\\?\\.id\\s*===\\s*'thunderStream'" },
+      { file: 'public/cat-bond/js/battle-draw.js', regex: "b\\.sk\\?\\.id\\s*===\\s*'thunderStream'" },
     ],
   },
 

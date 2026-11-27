@@ -27,11 +27,24 @@ const here = path.dirname(url.fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '..');
 const battlePath = path.join(repo, 'public/cat-bond/js/battle.js');
 const battleSrc = fs.readFileSync(battlePath, 'utf8');
+// Owner 2026-11-27 Phase 4 code-split: draw* methods moved to battle-draw.js. Any
+// `_sources` entry may legitimately live in EITHER file now. We load both and
+// resolve per-entry via src.file.
+const drawPath = path.join(repo, 'public/cat-bond/js/battle-draw.js');
+const drawSrc = fs.existsSync(drawPath) ? fs.readFileSync(drawPath, 'utf8') : '';
+const FILE_SRC = {
+  'public/cat-bond/js/battle.js': battleSrc,
+  'public/cat-bond/js/battle-draw.js': drawSrc,
+};
 
-// Smoke-parse battle.js so we fail early on any syntax drift. We don't execute it — the
-// file depends on tons of DOM/window globals — but new vm.Script catches parse errors.
+// Smoke-parse both files so we fail early on any syntax drift. We don't execute them — they
+// depend on tons of DOM/window globals — but new vm.Script catches parse errors.
 try { new vm.Script(battleSrc, { filename: 'battle.js' }); }
 catch (e) { console.error('battle.js failed to parse:', e.message); process.exit(1); }
+if (drawSrc) {
+  try { new vm.Script(drawSrc, { filename: 'battle-draw.js' }); }
+  catch (e) { console.error('battle-draw.js failed to parse:', e.message); process.exit(1); }
+}
 
 const registryUrl = url.pathToFileURL(path.join(here, 'skill-registry.mjs')).href;
 const { SKILL_RUNTIME, SKILL_RUNTIME_VERIFIED_IDS } = await import(registryUrl);
@@ -47,16 +60,17 @@ for (const id of SKILL_RUNTIME_VERIFIED_IDS) {
     continue;
   }
   for (const src of sources) {
-    if (src.file !== 'public/cat-bond/js/battle.js') {
-      drift.push({ id, kind: 'bad-file', msg: `_sources entry points at ${src.file}; this checker only reads battle.js` });
+    const fileSrc = FILE_SRC[src.file];
+    if (fileSrc == null) {
+      drift.push({ id, kind: 'bad-file', msg: `_sources entry points at ${src.file}; checker reads only battle.js / battle-draw.js` });
       continue;
     }
     let re;
     try { re = new RegExp(src.regex); }
     catch (e) { drift.push({ id, kind: 'bad-regex', msg: `invalid regex ${JSON.stringify(src.regex)}: ${e.message}` }); continue; }
     checkedRegexes++;
-    if (!re.test(battleSrc)) {
-      drift.push({ id, kind: 'missing-match', msg: `regex no longer matches battle.js: /${src.regex}/` });
+    if (!re.test(fileSrc)) {
+      drift.push({ id, kind: 'missing-match', msg: `regex no longer matches ${src.file}: /${src.regex}/` });
     }
   }
 }

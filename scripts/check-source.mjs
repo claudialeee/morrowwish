@@ -1118,7 +1118,9 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  const cbUi=fs.readFileSync('public/cat-bond/js/ui.js','utf8');
  const cbCss=fs.readFileSync('public/cat-bond/css/style.css','utf8');
  const cbGame=fs.readFileSync('public/cat-bond/js/game.js','utf8');
- const cbBattle=fs.readFileSync('public/cat-bond/js/battle.js','utf8');
+ // Owner 2026-11-27 Phase 4 code-split: draw* methods moved to battle-draw.js. Concat
+ // both files so the drawX string checks resolve wherever a method lives.
+ const cbBattle=fs.readFileSync('public/cat-bond/js/battle.js','utf8')+'\n'+fs.readFileSync('public/cat-bond/js/battle-draw.js','utf8');
  const cbState=fs.readFileSync('public/cat-bond/js/state.js','utf8');
  const cbRel=fs.readFileSync('public/cat-bond/js/cat-relationships.js','utf8');
  for(const js of [cbUi,cbGame,cbBattle,cbState,cbRel])new Function(js);

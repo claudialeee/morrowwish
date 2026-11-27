@@ -10,7 +10,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','ward-art','ult-vfx','skill-fx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','adult-art','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','traits','battle','duo-bond','ui','game','main'];
+const ORDER = ['vfx','ward-art','ult-vfx','skill-fx','catart','cute-cats','real-kittens','data','running-cats','skills','growth','adult-art','state','cat-relationships','raising','painted-regions','scenery','world','worldmap','duo-signatures','duo-hero','traits','battle','battle-draw','duo-bond','ui','game','main'];
 
 // ---- minimal DOM ----
 const listeners = {};               // "id:type" or "type" -> handler
@@ -1795,7 +1795,9 @@ noSummonBattle.duoCharge=100;noSummonBattle.duoCd=0;
 assert.equal(noSummonBattle.castDuo(),true,'normal duo resonance castable');
 noSummonBattle.duoCinematic.payload();
 assert.equal(noSummonBattle.team.length,2,'normal duo does not call third cat');
-const fieldVisualSource=fs.readFileSync(DIR+'js/battle.js','utf8');
+// Owner 2026-11-27 Phase 4 code-split: drawDuoField moved to battle-draw.js. Check
+// both files so these strings resolve wherever they live.
+const fieldVisualSource=fs.readFileSync(DIR+'js/battle.js','utf8')+'\n'+fs.readFileSync(DIR+'js/battle-draw.js','utf8');
 assert.ok(fieldVisualSource.includes('Pulse damage')&&
   fieldVisualSource.includes('v.remaining')&&fieldVisualSource.includes('召唤队友'),
   'resonance shows pulse damage, support identity and timer on the battlefield');

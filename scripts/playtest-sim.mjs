@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','painted-regions','world','worldmap','battle','ui','game','main'];
+const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','painted-regions','world','worldmap','battle','battle-draw','ui','game','main'];
 
 // ---------- deterministic RNG (seedable) so runs are reproducible ----------
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}

@@ -54,7 +54,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
 const DIR = 'public/cat-bond/';
-const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','painted-regions','world','worldmap','traits','battle','ui','game','main'];
+const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','painted-regions','world','worldmap','traits','battle','battle-draw','ui','game','main'];
 
 // ============================================================================================
 // BOOT — identical fake-DOM + vm scaffold as scripts/check-cat-bond-combat-matrix.mjs (do not
