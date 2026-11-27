@@ -1,5 +1,6 @@
 // Native portrait chase: projection and hit testing share the same art-space geometry.
 import {chasePoint} from "./canon22-spatial.mjs";
+import {paintArt} from "./canon22-art.mjs";
 export const chaseCorners=[[.2,.27],[.8,.27],[.8,.73],[.2,.73]];
 const clamp=n=>Math.max(0,Math.min(1,n));
 const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
@@ -30,7 +31,7 @@ export function drawPortraitChase(c,p,w,h,lang,drawCat){
  const a=at([.5,.27]),b=at([.5,.73]);c.strokeStyle="#ffe5a1";c.beginPath();c.moveTo(...a);c.lineTo(...b);c.stroke();
  const dot=(q,r,fill,stroke)=>{c.beginPath();c.arc(...q,r,0,Math.PI*2);c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=2;c.stroke();}};
  if(!p.direct)for(const q of chaseCorners){dot(at(q),13,"#654b28a8","#fff2b8");dot(at(q),7,"#f7ce66","#aa7928");}
- const bell=at(chasePoint(p));dot(bell,20,"#cceaff88");dot(bell,10,"#4696da","#f0faff");dot([bell[0]-3,bell[1]-3],3,"#ffffff");
+ const bell=at(chasePoint(p));dot(bell,20,"#cceaff88");if(!paintArt(c,"windchime-wisp",bell[0],bell[1],36,36,.5,.5)){dot(bell,10,"#4696da","#f0faff");dot([bell[0]-3,bell[1]-3],3,"#ffffff");}
  const pos=at(p.player);drawCat(pos[0],pos[1]-(p.jumping?18:0),!!p.moving||!!p.waypoints.length||p.jumping);
  if(p.jumping){c.font="700 15px sans-serif";c.textAlign="center";c.fillStyle="#fff7df";c.strokeStyle="#674e2c";c.lineWidth=3;c.strokeText(lang==="zh"?"跳！":"Jump!",pos[0],pos[1]-56);c.fillText(lang==="zh"?"跳！":"Jump!",pos[0],pos[1]-56);}
  c.restore();

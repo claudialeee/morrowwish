@@ -50,12 +50,12 @@ function install(){
  const portraitRemote=()=>!!explorer?.survey()?.remote;
  const project=p=>portraitMap()?projectPortrait(portraitId(),p,portraitRemote()):p;
  const unproject=p=>portraitMap()?unprojectPortrait(portraitId(),p,portraitRemote()):p;
- function setMapGeometry(){const p=portraitMap();W=p?540:960;H=p?960:540;if(canvas){canvas.dataset.logicalWidth=String(W);canvas.dataset.logicalHeight=String(H);}return p;}
+ function setMapGeometry(){const p=portraitMap();W=p?(portraitId()==='library'?574:540):960;H=p?960:540;if(canvas){canvas.dataset.logicalWidth=String(W);canvas.dataset.logicalHeight=String(H);canvas.style.setProperty('--rw-map-ratio',W+'/'+H);canvas.style.setProperty('--rw-map-width-ratio',String(W/H));}return p;}
  function sceneArt(id){const file=portraitMap()?portraitAsset(id,portraitRemote()):null;if(!file)return image(id);const key="portrait:"+file;if(art[key])return art[key];const im=new Image();art[key]=im;im.onload=()=>{if(canvas)draw();};im.src=new URL("../../assets/mobile-portrait/"+file,import.meta.url).href;return im;}
  function drawMapPlate(img){if(portraitMap())ctx.drawImage(img,0,0,W,H);else window.CatBondSceneFit.draw(ctx,img,W,H);}
 
  let fitPage=0,fitKey="",fitNotice="",fitObserver=null,fitFrame=0;
- let regionMenuOpen=false,atlasMenuOpen=false,optionalOpen=null,cargoOpen=null,waterHintPuzzle=null,waterHint=null;
+ let lastPortrait=null,regionMenuOpen=false,atlasMenuOpen=false,optionalOpen=null,cargoOpen=null,waterHintPuzzle=null,waterHint=null;
  let demoPuzzle=null,demoActive=false,demoGeneration=0,demoShown=false,demoIndex=-1;
  const melodyShapes=["●","◆","✿"],melodyNames=[["露珠","Dew"],["星光","Starlight"],["花铃","Flower bell"]];
  const pitches={harbor:[261.63,329.63,392],forest:[392,523.25,659.25],forge:[261.63,329.63,392],sky:[392,523.25,659.25],library:[329.63,440,587.33],starfall:[329.63,493.88,659.25]};
@@ -91,7 +91,7 @@ function install(){
   row.append(status,grid);
  }
  function portraitLayout(){return matchMedia("(orientation:portrait) and (max-width:700px)").matches;}
- function scheduleFit(){if(fitFrame)return;fitFrame=requestAnimationFrame(()=>{fitFrame=0;fitRail();});}
+ function scheduleFit(){if(fitFrame)return;fitFrame=requestAnimationFrame(()=>{fitFrame=0;if(!host||host.hidden)return;const p=portraitLayout();if(lastPortrait!==null&&lastPortrait!==p){zoom=1;pan=[0,0];followCamera=false;render();return;}fitRail();draw();});}
  function fitRail(){
   if(!host||host.hidden||!host.isConnected)return;
   const rail=host.querySelector(".rw-fit-rail"),head=host.querySelector(".rw-head");
@@ -108,7 +108,7 @@ function install(){
   host.style.setProperty("--rw-rail-limit",limit+"px");
   if(mode==="map"||host.classList.contains("rw-region-compact")){
    const portrait=portraitLayout(),menu=rail.querySelector(".rw-atlas-menu"),camera=rail.querySelector(".rw-menu-camera"),toggle=host.querySelector(".rw-region-toggle");
-   if(menu)menu.open=portrait||atlasMenuOpen;
+   if(menu)menu.open=atlasMenuOpen;
    if(camera)camera.hidden=!portrait;
    if(mode==="region"){rail.hidden=!regionMenuOpen;toggle?.setAttribute("aria-expanded",String(!rail.hidden));}
    host.dataset.fitPages="1";host.dataset.fitPage="0";return;
@@ -209,13 +209,13 @@ function install(){
   if(currentHeading&&brand){const summary=E("span","rw-fit-summary",currentHeading.textContent);summary.title=currentHeading.textContent;brand.append(summary);}
   if(mode==="map"){
    const menu=E("details","rw-atlas-menu");
-   menu.open=portraitLayout()||atlasMenuOpen;
+   menu.open=atlasMenuOpen;
    menu.append(E("summary","",tr("旅程与地区","Journey and regions")));
    for(const item of items){
     if(item.matches(".rw-notice"))continue;
     menu.append(item);
    }
-   menu.addEventListener("toggle",()=>{if(menu.isConnected&&!portraitLayout())atlasMenuOpen=menu.open;});
+   menu.addEventListener("toggle",()=>{if(menu.isConnected)atlasMenuOpen=menu.open;});
    rail.append(menu);
    host.append(rail);
    fitRail();
@@ -277,7 +277,7 @@ function install(){
    current();host.replaceChildren();host.hidden=true;canvas=ctx=null;
    if(game.scene==="map")render();
   });}
- function enterMap(){current();clearRewardPopup();stopDemo();host?.classList.remove("rw-region-compact");atlasMenuOpen=false;regionMenuOpen=false;optionalOpen=cargoOpen=null;ceremony=null;mode="map";explorer=null;pending=null;notice="";selectedRoute=null;zoom=1;pan=[0,0];followCamera=false;render();return true;}
+ function enterMap(){current();clearRewardPopup();stopDemo();host?.classList.remove("rw-region-compact");atlasMenuOpen=portraitLayout();regionMenuOpen=false;optionalOpen=cargoOpen=null;ceremony=null;mode="map";explorer=null;pending=null;notice="";selectedRoute=null;zoom=1;pan=[0,0];followCamera=false;render();return true;}
  function enterRegion(id){const b=current();clearRewardPopup();stopDemo();regionMenuOpen=portraitLayout();waterHintPuzzle=null;waterHint=null;ceremony=null;const r=b.enter(id);if(!r.ok){notice=tr("暂时无法前往","Cannot travel yet")+" · "+reason(r.reason);render();return false;}mode="region";explorer=createExplorer(b,id,{deferForestMelody:true,deferSkyMelody:true,deferForgeMelody:true,deferHarborMelody:true,deferLibraryMelody:true,deferStarfallMelody:true,adventureActions:true});pending=null;notice="";zoom=1;pan=[0,0];followCamera=false;if(wildRegion!==id){optionalOpen=cargoOpen=null;wildRegion=id;spawnDelay=0;wild=null;}if(!wild&&spawnDelay<=0)spawnWild(id);render();return true;}
  function spawnWild(id){
   const p=explorer.layout.paths;
@@ -340,7 +340,7 @@ function install(){
   img.src=new URL(id==="harbor-ceremony"?"../../assets/resonance-world-v2/harbor.webp":"../../assets/resonance-world-v2/"+(id==="harbor"?"harbor-mist":id)+".webp",import.meta.url).href;
   return img;
  }
- function render(){if(!host)return;if(!window.CatBondResonance?.view){host.replaceChildren(E("p","rw-notice",tr("正式剧情正在初始化","Initializing the canonical story")));host.hidden=game.scene!=="map";return;}const b=current(),v=b.view(),w=b.world();revision=sync();if(explorer?.puzzle?.type!=="melody"&&demoPuzzle!==null)stopDemo();if(explorer?.puzzle?.type!=="pairedWater"){waterHintPuzzle=null;waterHint=null;}if(demoActive){demoGeneration++;demoActive=false;demoIndex=-1;window.MorrowwishMusic?.stopQuality?.();}host.replaceChildren();host.hidden=game.scene!=="map";if(ceremony)host.dataset.ceremony=ceremony.region;else delete host.dataset.ceremony;const forestRegion=mode==="region"&&w.location==="forest",forgeRegion=mode==="region"&&w.location==="forge",regionStep=mode+"/"+w.location+"/"+(v.current?.id||"")+"/"+(explorer?.puzzle?.operation||"explore");if(fitKey!==regionStep){fitKey=regionStep;fitPage=0;fitNotice="";optionalOpen=null;}host.dataset.regionStep=regionStep;host.classList.toggle("rw-interaction-fit",!!explorer?.puzzle||!!ceremony);host.classList.toggle("rw-atlas-mode",mode==="map");if(mode==="map")host.classList.remove("rw-region-compact");host.classList.toggle("rw-forest-region",forestRegion);host.classList.toggle("rw-forge-region",forgeRegion);host.classList.toggle("rw-library-region",mode==="region"&&w.location==="library");host.classList.toggle("rw-sky-region",mode==="region"&&w.location==="sky");
+ function render(){if(!host)return;lastPortrait=portraitLayout();if(!window.CatBondResonance?.view){host.replaceChildren(E("p","rw-notice",tr("正式剧情正在初始化","Initializing the canonical story")));host.hidden=game.scene!=="map";return;}const b=current(),v=b.view(),w=b.world();revision=sync();if(explorer?.puzzle?.type!=="melody"&&demoPuzzle!==null)stopDemo();if(explorer?.puzzle?.type!=="pairedWater"){waterHintPuzzle=null;waterHint=null;}if(demoActive){demoGeneration++;demoActive=false;demoIndex=-1;window.MorrowwishMusic?.stopQuality?.();}host.replaceChildren();host.hidden=game.scene!=="map";if(ceremony)host.dataset.ceremony=ceremony.region;else delete host.dataset.ceremony;const forestRegion=mode==="region"&&w.location==="forest",forgeRegion=mode==="region"&&w.location==="forge",regionStep=mode+"/"+w.location+"/"+(v.current?.id||"")+"/"+(explorer?.puzzle?.operation||"explore");if(fitKey!==regionStep){fitKey=regionStep;fitPage=0;fitNotice="";optionalOpen=null;}host.dataset.regionStep=regionStep;host.classList.toggle("rw-interaction-fit",!!explorer?.puzzle||!!ceremony);host.classList.toggle("rw-atlas-mode",mode==="map");if(mode==="map")host.classList.remove("rw-region-compact");host.classList.toggle("rw-forest-region",forestRegion);host.classList.toggle("rw-forge-region",forgeRegion);host.classList.toggle("rw-library-region",mode==="region"&&w.location==="library");host.classList.toggle("rw-sky-region",mode==="region"&&w.location==="sky");
  const head=E("header","rw-head"),brand=E("div","rw-brand");brand.append(E("small","",tr("猫猫纽带","CAT BOND")),E("strong","",mode==="map"?tr("星铃回响","Echoes of the Starbell"):tr(...layouts[w.location].name)));head.append(brand);if(mode!=="map"){const back=B(tr("世界地图","World atlas"),enterMap,!!ceremony);back.dataset.worldNav="atlas";head.append(back);}const home=B(tr("阳光花园","Sunlit Garden"),exitToYard,!!ceremony);home.dataset.worldNav="garden";head.append(home);host.append(head);if(forestRegion){const credit=E("p","rw-hint rw-quality-credit");const link=E("a","",tr("魔法山谷","Enchanted Valley"));link.dataset.originalTitle="Enchanted Valley";link.href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200093";link.target="_blank";link.rel="noopener noreferrer";const license=E("a","",tr("知识共享署名 4.0 国际许可","CC BY 4.0"));license.href="https://creativecommons.org/licenses/by/4.0/";license.target="_blank";license.rel="noopener noreferrer";credit.dataset.originalArtist="Kevin MacLeod";credit.append(link,document.createTextNode(tr(" · 作者：凯文·麦克劳德 · "," by Kevin MacLeod (incompetech.com), ")),license,document.createTextNode(tr(" · 已转换音频格式。",", transcoded to Opus.")));host.append(credit);}
  if(mode==="map"){
   const nav=E("nav","rw-system-nav");
@@ -577,7 +577,7 @@ function install(){
   ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
  }
- function draw(){if(!ctx||!canvas)return;if(portraitLayout()&&explorer?.puzzle?.spatial?.kind==="chase"){const rect=canvas.getBoundingClientRect(),w=rect.width,h=rect.height;if(!w||!h)return;const dpr=Math.min(3,window.devicePixelRatio||1),pw=Math.round(w*dpr),ph=Math.round(h*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}ctx.setTransform(pw/w,0,0,ph/h,0,0);const im=chaseArt();host.dataset.artReady=String(!!(im.complete&&im.naturalWidth));canvas.dataset.camera="[1,0,0]";canvas.dataset.affordances="[]";const leader=State.S.cats?.find(c=>c.species==="jinjc")||State.S.cats?.[0];drawPortraitChase(ctx,explorer.puzzle.spatial,w,h,lang(),(x,y,walk)=>{const fn=window.CatMotion?.draw||window.CatArt?.drawCat,sp=leader&&GameData.speciesById(leader.species);if(fn&&sp)fn(ctx,x,y,{species:sp,scale:.66,t:frame/60,face:1,pose:walk?"walk":"idle"});});return;}setMapGeometry();if(cameraEnabled())contain();fitWorldBacking();const b=current(),v=b.view(),w=b.world();
+ function draw(){if(!ctx||!canvas)return;if(portraitLayout()&&explorer?.puzzle?.spatial?.kind==="chase"){const rect=canvas.getBoundingClientRect(),w=rect.width,h=rect.height;if(!w||!h)return;const dpr=Math.min(3,window.devicePixelRatio||1),pw=Math.round(w*dpr),ph=Math.round(h*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}ctx.setTransform(pw/w,0,0,ph/h,0,0);const im=chaseArt();host.dataset.artReady=String(!!(im.complete&&im.naturalWidth));canvas.dataset.camera="[1,0,0]";canvas.dataset.logicalWidth=String(w);canvas.dataset.logicalHeight=String(h);canvas.dataset.affordances="[]";const leader=State.S.cats?.find(c=>c.species==="jinjc")||State.S.cats?.[0];drawPortraitChase(ctx,explorer.puzzle.spatial,w,h,lang(),(x,y,walk)=>{const fn=window.CatMotion?.draw||window.CatArt?.drawCat,sp=leader&&GameData.speciesById(leader.species);if(fn&&sp)fn(ctx,x,y,{species:sp,scale:.66,t:frame/60,face:1,pose:walk?"walk":"idle"});});return;}setMapGeometry();if(cameraEnabled())contain();fitWorldBacking();const b=current(),v=b.view(),w=b.world();
  // Publish the rendered transform as read-only DOM metadata for actual pointer-coordinate QA.
  const transform=cameraEnabled()?[zoom,...pan]:[1,0,0],cameraValue=JSON.stringify(transform);if(canvas.dataset.camera!==cameraValue)canvas.dataset.camera=cameraValue;mapMarks.length=0;markerHits.length=0;actorAvoid.length=0;if((explorer?.puzzle||ceremony)&&canvas.dataset.affordances!=="[]")canvas.dataset.affordances="[]";ctx.clearRect(0,0,W,H);ctx.fillStyle="#122637";ctx.fillRect(0,0,W,H);const img=sceneArt(mode==="map"?"atlas":w.location);host.dataset.artReady=String(!!(img.complete&&img.naturalWidth));if(!img.complete||!img.naturalWidth){text(tr("正在载入场景原画","Loading environment artwork"),.5,.5,21);return;}
  if(mode==="map"){ctx.save();ctx.translate(pan[0]*W,pan[1]*H);ctx.scale(zoom,zoom);drawMapPlate(img);for(const [a,z] of campaign.links){let u=regions.find(n=>n.id===a),d=regions.find(n=>n.id===z),n=v.links[a+":"+z].length,harborRoute=a==="harbor"&&z==="forest"&&v.completed.includes("harbor:H-05");ctx.strokeStyle=n===4?"#ffe5a6":harborRoute?"#a6e6d2":"#c7c5aa";ctx.globalAlpha=(n===4||harborRoute) ? .95 : .5;ctx.lineWidth=n===4?4:harborRoute?3:2;ctx.setLineDash(n===4||harborRoute?[]:[9,9]);ctx.beginPath();const up=project([u.x,u.y]),dp=project([d.x,d.y]);ctx.moveTo(up[0]*W,up[1]*H);ctx.lineTo(dp[0]*W,dp[1]*H);ctx.stroke();}ctx.setLineDash([]);ctx.globalAlpha=1;for(const n of regions){const open=v.regions.includes(n.id),done=v.melodies.includes(n.id);mark(n.x,n.y,done?"bell":open?"star":"lock",tr(n.name,n.sub)+(open?"":tr(" · 未解锁"," · Locked")),open?"#f5d89f":"#84949e",0,null,null,n.id!==(v.current?.chapter==="prologue"?"harbor":v.current?.chapter==="finale"?"starfall":v.current?.chapter));if(w.location===n.id){ctx.beginPath();const pos=project([n.x,n.y]);ctx.arc(pos[0]*W,pos[1]*H,23,0,Math.PI*2);ctx.strokeStyle="#adf1d5";ctx.lineWidth=2;ctx.stroke();}}mark(.5,.5,"bell",tr("中央星铃","Star Bell"),v.ring?"#ffe6a7":"#b49a6d",0,null,null,v.current?.chapter!=="finale");paintMapMarkers();ctx.restore();return;}

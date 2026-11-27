@@ -303,7 +303,10 @@
         this.options.onCheckpoint?.(this.snapshot());
       };
       // A subtitle change on the same authored shot must not restart zoom or fade.
-      if (this.activeImage === frame.image && this.nodes.stack.querySelector('.cbcp-art')) { ready(); return; }
+      const portraitShot=window.matchMedia('(orientation:portrait) and (max-width:700px)').matches&&/\/(f02-history|b04-reunion)\.webp(?:[?#]|$)/.exec(frame.image);
+      const presentedImage=portraitShot?'assets/mobile-portrait/story-'+portraitShot[1]+'.webp':frame.image;
+      this.nodes.stage.dataset.nativePortrait=String(!!portraitShot);
+      if (this.activeImage === presentedImage && this.nodes.stack.querySelector('.cbcp-art')) { ready(); return; }
       const previous = Array.from(this.nodes.stack.children);
       const image = document.createElement('img');
       image.className = 'cbcp-art';
@@ -317,9 +320,9 @@
       image.addEventListener('load', async () => {
         try { await image.decode?.(); } catch (_) { fail(); return; }
         if (token !== this.renderToken || !this.scene) { image.remove(); return; }
-        this.activeImage = frame.image;
-        this.nodes.stage.style.setProperty('--cbcp-backplate',`url("${frame.image}")`);
-        this.applyCamera(image, frame.camera, 1, frame.shotDurationMs||frame.durationMs, frame.transitionMs, (frame.shotOffsetMs||0)+this.frameElapsedMs);
+        this.activeImage = presentedImage;
+        this.nodes.stage.style.setProperty('--cbcp-backplate',`url("${presentedImage}")`);
+        if(!portraitShot)this.applyCamera(image, frame.camera, 1, frame.shotDurationMs||frame.durationMs, frame.transitionMs, (frame.shotOffsetMs||0)+this.frameElapsedMs);
         requestAnimationFrame(() => {
           if (token !== this.renderToken) return;
           // Never spend the first painted shot (or a restored paused shot) behind a blank fade.
@@ -357,7 +360,7 @@
         ready();
       }, {once:true});
       this.nodes.stack.appendChild(image);
-      image.src = frame.image;
+      image.src = presentedImage;
     }
 
     applyCamera(node, camera, depth = 1, durationMs = 5600, transitionMs = 520, offset=0) {

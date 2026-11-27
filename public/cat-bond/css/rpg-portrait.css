@@ -223,7 +223,7 @@
 @media (orientation:portrait) and (max-width:700px){
  #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact):not([hidden]):not(.rw-chase-mode):not(.rw-dedicated-puzzle){display:block!important;padding:0!important;background:#efe1c7!important}
  #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact):not([hidden])>.rw-shell{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:0!important;container-type:size}
- #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact):not([hidden])>.rw-shell>.rw-surface{position:absolute!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;width:max(100cqw,calc(100cqh * .5625))!important;height:auto!important;aspect-ratio:9/16!important;max-width:none!important;max-height:none!important}
+ #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact):not([hidden])>.rw-shell>.rw-surface{position:absolute!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;width:max(100cqw,calc(100cqh * var(--rw-map-width-ratio,.5625)))!important;height:auto!important;aspect-ratio:var(--rw-map-ratio,9/16)!important;max-width:none!important;max-height:none!important}
  #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact):not([hidden])>.rw-head{position:absolute!important;top:max(8px,env(safe-area-inset-top))!important;left:8px!important;right:8px!important;z-index:5!important;width:auto!important;padding:0 76px 0 0!important;pointer-events:none}
  #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact)>.rw-head .rw-brand{background:#fff6e4eb!important;box-shadow:0 2px 10px #54412633!important;border-radius:10px;pointer-events:auto}
  #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact)>.rw-head>button{pointer-events:auto}
@@ -231,4 +231,14 @@
  #stage .rw-world.rw-region-compact:has(>.rw-fit-rail:not([hidden]))>.rw-region-toggle{bottom:calc(29dvh + 14px)!important;right:8px!important}
  #stage .rw-world.rw-region-compact:has(>.rw-fit-rail[hidden])>.rw-region-toggle{bottom:max(8px,env(safe-area-inset-bottom))!important;right:8px!important}
  #stage .rw-world.rw-region-compact>.rw-region-toggle{position:absolute!important;z-index:7!important;top:auto!important;left:auto!important;min-height:44px!important}
+}
+
+@media (orientation:portrait) and (max-width:700px){
+ #stage .rw-world.rw-region-compact>.rw-region-toggle{display:block!important}
+ #stage .rw-world.rw-atlas-mode>.rw-atlas-rail:has(.rw-atlas-menu:not([open])){display:block!important}
+ #stage .rw-world.rw-atlas-mode>.rw-atlas-rail .rw-atlas-menu>summary{display:block!important;min-height:44px;cursor:pointer}
+ #stage .library-reveal-stage[data-native-portrait="true"] .library-reveal-painting{object-fit:cover!important;object-position:center!important;transform:none!important}
+ #stage .cbcp-stage[data-native-portrait="true"] .cbcp-art-stack{inset:0!important}
+ #stage .cbcp-stage[data-native-portrait="true"] .cbcp-art{object-fit:cover!important;object-position:center!important;transform:none!important}
+ #stage .cbcp-stage[data-native-portrait="true"]::before{display:none!important}
 }

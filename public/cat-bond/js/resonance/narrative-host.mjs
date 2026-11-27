@@ -56,7 +56,7 @@ function install(){
   const ending=document.createElement("section");ending.className="cb-story-overlay is-visible res-ending-title";
   ending.setAttribute("role","dialog");ending.setAttribute("aria-modal","true");
   Object.assign(ending.style,{position:"absolute",inset:"0",zIndex:"40",display:"grid",placeItems:"center",overflow:"hidden",background:"#f6e9dc",alignContent:"end",padding:"clamp(12px,4vh,38px)"});
-  const art=document.createElement("img");art.src=new URL("../../assets/core-art-remaster/story/e03-garden.webp",import.meta.url).href;
+  const art=document.createElement("img");art.src=new URL(window.matchMedia("(orientation:portrait) and (max-width:700px)").matches?"../../assets/mobile-portrait/story-e03-garden.webp":"../../assets/core-art-remaster/story/e03-garden.webp",import.meta.url).href;
   art.alt="";Object.assign(art.style,{position:"absolute",inset:"0 0 20% 0",width:"100%",height:"80%",objectFit:"contain",objectPosition:"center"});
   const card=document.createElement("div");Object.assign(card.style,{position:"relative",textAlign:"center",padding:"10px 22px",color:"#50415d",borderRadius:"18px",background:"#fff5e9ef",maxWidth:"95%"});
   const title=document.createElement("h2");title.textContent="THE BELL RINGS AGAIN";title.style.font="700 clamp(24px,5vw,54px) Georgia,serif";title.style.letterSpacing=".10em";
