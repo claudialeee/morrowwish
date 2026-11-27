@@ -17,6 +17,7 @@ jobs:
     timeout-minutes: 25
     env:
       SOURCE_SHA: 0ef3eff2c67f310fbd76e39d1acca5ed5e603020
+      TELEMETRY_SHA: 1806d4e57b46be628918b3d67b8573ae88d36100
       PREVIEW_URL: https://starbell-portrait-preview.morrowwish.pages.dev
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -62,6 +63,9 @@ jobs:
           cp -a public/cat-bond /tmp/starbell-portrait/site/
           for dir in audio art icons pawsibly-innocent; do cp -a "public/$dir" /tmp/starbell-portrait/site/; done
           find public -maxdepth 1 -type f \( -name '*.js' -o -name '*.css' \) -exec cp {} /tmp/starbell-portrait/site/ \;
+          git fetch --no-tags --depth=1 origin "$TELEMETRY_SHA"
+          git show "$TELEMETRY_SHA:public/telemetry.js" > /tmp/starbell-portrait/site/telemetry.js
+          node --check /tmp/starbell-portrait/site/telemetry.js
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const root='/tmp/starbell-portrait/site',file=root+'/cat-bond/index.html',sha=process.env.SOURCE_SHA;
@@ -69,19 +73,14 @@ jobs:
           html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_GAME_ID="starbell-preview";window.ARCADE_COLLECTOR=(new URLSearchParams(location.search).has("qa")||new URLSearchParams(location.search).has("rpgDev")||new URLSearchParams(location.search).has("developer")||location.hostname!=="starbell-portrait-preview.morrowwish.pages.dev")?"/api/preview-disabled":"https://morrowwish.pages.dev/api/starbell-preview-session";window.arcadeMetric=()=>{};</script></head>');
           html=html.replace(/<body([^>]*)>/i,'<body$1 data-source-sha="'+sha+'">');
           fs.writeFileSync(file,html);
-          const telemetryFile=root+'/telemetry.js';
-          let telemetry=fs.readFileSync(telemetryFile,'utf8');
-          const oldGuard='location.hostname!=="cat-bond-preview.morrowwish.pages.dev"';
-          if(!telemetry.includes(oldGuard))throw Error('Expected preview telemetry guard not found');
-          telemetry=telemetry.replace(oldGuard,'!["cat-bond-preview.morrowwish.pages.dev","starbell-portrait-preview.morrowwish.pages.dev"].includes(location.hostname)');
-          fs.writeFileSync(telemetryFile,telemetry);
+          // Only the pinned telemetry asset is overlaid; approved game assets and local saves remain unchanged.
           fs.writeFileSync(root+'/index.html','<!doctype html><html><head><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="0;url=/cat-bond/"></head><body><a href="/cat-bond/">Echoes of the Starbell</a></body></html>');
           fs.writeFileSync(root+'/robots.txt','User-agent: *\nDisallow: /\n');
           fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\' https://morrowwish.pages.dev/api/starbell-preview-session; form-action \'self\'\n');
           // An explicit 404 page disables Pages' SPA fallback for unavailable APIs.
           // No Worker or recursive redirect is needed: all API requests remain local.
           fs.writeFileSync(root+'/404.html','<!doctype html><html><head><meta name="robots" content="noindex,nofollow"></head><body>Preview APIs disabled; local saves only.</body></html>');
-          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,scope:'isolated portrait engineering preview',productionApis:false,telemetry:'starbell-preview',storage:'local-only',fullReleaseAccepted:false,sourceGate:45941020775,campaignGate:45941020787}));
+          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,scope:'isolated portrait engineering preview',productionApis:false,telemetry:'starbell-preview',telemetrySha:process.env.TELEMETRY_SHA,storage:'local-only',fullReleaseAccepted:false,sourceGate:45941020775,campaignGate:45941020787}));
           NODE
           python3 - <<'PY'
           import pathlib
@@ -140,6 +139,12 @@ jobs:
             await page.reload();
             await page.waitForTimeout(300);
             assert.equal(new Set(observed.filter(e=>e.kind==='visit').map(e=>e.viewId)).size,2);
+            const entered=page.waitForRequest(req=>req.url()===collector&&req.method()==='POST'&&JSON.parse(req.postData()||'{}').signals?.rpg_new===1);
+            await page.locator('#intro-start').tap();
+            await page.locator('#intro-slot-list [data-slot="slot1"]').tap();
+            await entered;
+            assert.ok(observed.some(e=>e.metricsVersion===1));
+            await page.evaluate(()=>localStorage.clear());
             await page.goto(process.env.PREVIEW_URL+'/cat-bond/?lang=zh&qa=portrait-handoff');
             const beforeQa=observed.length;
             assert.equal(await page.locator('body').getAttribute('data-source-sha'),process.env.SOURCE_SHA);
