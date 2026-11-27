@@ -52,13 +52,42 @@ try{for(const {name,...profile} of profiles){
  async function reachable(){return page.evaluate(()=>{const e=document.querySelector('.rw-surface'),r=e.getBoundingClientRect(),s=e.parentElement.getBoundingClientRect(),[z,px,py]=JSON.parse(e.dataset.camera);return JSON.parse(e.dataset.affordances).map(m=>({t:m.t,target:m.target,x:r.left+(m.x/960*z+px)*r.width,y:r.top+(m.y/540*z+py)*r.height})).filter(m=>m.x>=s.left+12&&m.x<=s.right-12&&m.y>=s.top+12&&m.y<=s.bottom-12&&document.elementFromPoint(m.x,m.y)===e);});}
  const atlasSeen=new Map();const capture=async()=>{for(const m of await reachable())atlasSeen.set(m.t,m);};await capture();
  const box=await page.locator('.rw-shell').boundingBox();
- if(name==='portrait'){const before=await surface.getAttribute('data-camera');for(let i=0;i<4;i++){await swipe(box.width*.7,0);await capture();}assert.notEqual(await surface.getAttribute('data-camera'),before,'portrait touch drag must move cropped map');await page.screenshot({path:out+'/'+name+'-atlas-left.png'});for(let i=0;i<8;i++){await swipe(-box.width*.7,0);await capture();}await page.screenshot({path:out+'/'+name+'-atlas-right.png'});}
+ if(name==='portrait'){
+  const assertFit=async()=>{
+   const g=await page.evaluate(()=>{const r=s=>{const b=document.querySelector(s).getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,height:b.height};};return {art:r('.rw-surface'),shell:r('.rw-shell'),rail:r('.rw-fit-rail'),head:r('.rw-head'),stage:r('#stage')};});
+   assert.ok(g.art.width>0&&Math.abs(g.art.width/g.art.height-16/9)<.03,'undistorted canvas '+JSON.stringify(g));
+   assert.ok(g.art.left>=g.shell.left-1&&g.art.right<=g.shell.right+1&&g.art.top>=g.shell.top-1&&g.art.bottom<=g.shell.bottom+1,'entire canvas visible '+JSON.stringify(g));
+   assert.ok(g.head.bottom<=g.shell.top+1&&g.shell.bottom<=g.rail.top+1&&g.rail.bottom<=g.stage.bottom+1,'head, art and controls must not overlap '+JSON.stringify(g));
+  };
+  for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){
+   await page.setViewportSize(viewport);await page.waitForTimeout(250);await assertFit();
+   assert.ok((await reachable()).length>=7,'all atlas markers reachable before any drag at '+viewport.width);
+   await page.screenshot({path:out+'/portrait-atlas-'+viewport.width+'.png'});
+  }
+  await page.setViewportSize(profile.viewport);await page.waitForTimeout(250);
+  const before=await surface.getAttribute('data-camera');await swipe(box.width*.5,0);
+  assert.equal(await surface.getAttribute('data-camera'),before,'default full map must not pan');
+  const rail=page.locator('.rw-atlas-rail');await rail.getByRole('button',{name:'+',exact:true}).click();
+  assert.ok(JSON.parse(await surface.getAttribute('data-camera'))[0]>1,'explicit zoom available');
+  await rail.getByRole('button',{name:'Overview',exact:true}).click();
+  assert.deepEqual(JSON.parse(await surface.getAttribute('data-camera')),[1,0,0],'overview restores the actual full map');
+  await assertFit();await capture();
+ }
  else{await capture();}
  assert.ok(atlasSeen.size>=7,name+' reachable atlas markers '+JSON.stringify([...atlasSeen.keys()]));
- // Test an actual tap on an unlocked region after dragging, not a DOM menu shortcut.
+ // Test an actual tap on an unlocked region from the default overview, not a DOM menu shortcut.
  let points=await reachable();const target=points.find(m=>/Windchime|Forest|Lantern|Skyspine|Moonmirror|Starfall/.test(m.t));assert.ok(target,name+' no reachable region');
  if(cdp)await page.touchscreen.tap(target.x,target.y);else await page.mouse.click(target.x,target.y);
  await page.waitForFunction(()=>WorldMap.mode==='region');await page.waitForFunction(()=>JSON.parse(document.querySelector('.rw-surface')?.dataset.affordances||'[]').length>0);await page.screenshot({path:out+'/'+name+'-region.png'});
- if(name==='portrait'){const a=await surface.getAttribute('data-camera');await swipe(box.width*.65,0);await swipe(-box.width*.65,0);assert.ok(await surface.getAttribute('data-camera'),'regional camera transform');}
+ if(name==='portrait'){
+  const g=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),s=document.querySelector('.rw-shell').getBoundingClientRect(),r=document.querySelector('.rw-fit-rail').getBoundingClientRect();return {fit:a.left>=s.left-1&&a.right<=s.right+1&&a.top>=s.top-1&&a.bottom<=s.bottom+1,clear:s.bottom<=r.top+1};});
+  assert.ok(g.fit&&g.clear,'regional overview and action rail must not overlap');
+  assert.deepEqual(JSON.parse(await surface.getAttribute('data-camera')),[1,0,0],'enter region at full overview');
+  const rail=page.locator('.rw-fit-rail');await rail.getByRole('button',{name:'Follow cat',exact:true}).click();
+  assert.ok(JSON.parse(await surface.getAttribute('data-camera'))[0]>1,'optional follow camera');
+  await rail.getByRole('button',{name:'Overview',exact:true}).click();
+  assert.deepEqual(JSON.parse(await surface.getAttribute('data-camera')),[1,0,0],'region overview restores the whole painting');
+  await page.screenshot({path:out+'/portrait-region-overview.png'});
+ }
  assert.deepEqual(errors,[]);console.log('LAYOUT PASS',name,'visitors',seen.size,'atlas markers',atlasSeen.size);await context.close();
 }}finally{await browser.close();}
