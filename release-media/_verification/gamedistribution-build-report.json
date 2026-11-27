@@ -1,0 +1,12 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "platform": "gamedistribution",
+  "bytes": 36930602,
+  "sha256": "c69ceef0370e6cc78585cd8c59b8e3a2ebcdae712d090401ed5105edaa1936e9",
+  "fileCount": 128,
+  "sdkConfigurationPresent": false,
+  "awaitingSdkId": true,
+  "runtimeVerified": false,
+  "portalSaved": false,
+  "reviewReady": false
+}

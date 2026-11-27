@@ -1,7 +1,7 @@
 // Cat Bond coins are gold. OS-provided U+1FA99 emoji usually looks gold.
 (()=>{
   'use strict';
-  const SRC='/cat-bond/assets/gold-coin.svg?v=gold-currency-20261122';
+  const SRC='assets/gold-coin.svg?v=gold-currency-20261122';
   const img=new Image(); img.src=SRC;
   const SKIP='script,style,noscript,textarea,code,pre,svg';
   function icon(){

@@ -1,0 +1,12 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "platform": "itch",
+  "bytes": 36929818,
+  "sha256": "b5469baa05313dcf699a28887bfb9f5897b4d8526b2c951e7e3999b21c8ef78c",
+  "fileCount": 127,
+  "sdkConfigurationPresent": false,
+  "awaitingSdkId": false,
+  "runtimeVerified": false,
+  "portalSaved": false,
+  "reviewReady": false
+}

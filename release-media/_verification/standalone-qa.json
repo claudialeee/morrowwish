@@ -1,0 +1,50 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "tests": [
+    {
+      "name": "desktop",
+      "width": 1280,
+      "height": 720,
+      "errors": [],
+      "failedRequests": [],
+      "external": [],
+      "pass": true,
+      "captureEarned": true,
+      "debugHidden": true,
+      "language": "en",
+      "overflow": false,
+      "savedCats": 2,
+      "savedLocalStorageCats": 2
+    },
+    {
+      "name": "y8-standard",
+      "width": 760,
+      "height": 570,
+      "errors": [],
+      "failedRequests": [],
+      "external": [],
+      "pass": true,
+      "debugHidden": true,
+      "language": "en",
+      "overflow": false,
+      "savedCats": 2,
+      "savedLocalStorageCats": 2
+    },
+    {
+      "name": "gamepix-portrait",
+      "width": 720,
+      "height": 1280,
+      "errors": [],
+      "failedRequests": [],
+      "external": [],
+      "pass": true,
+      "debugHidden": true,
+      "language": "en",
+      "overflow": false,
+      "savedCats": 2,
+      "savedLocalStorageCats": 2
+    }
+  ],
+  "portalVerified": false,
+  "pass": true
+}

@@ -130,10 +130,10 @@ window.addEventListener('DOMContentLoaded', () => {
   // A native app or Steam wrapper can suspend the WebView without unloading.
   // Persist on both pagehide and backgrounding; keep the save key compatible
   // with existing browser players for eventual cloud-save migration.
-  window.addEventListener('beforeunload', () => State.save());
-  window.addEventListener('pagehide', () => State.save());
+  window.addEventListener('beforeunload', () => {if(window.__CAT_BOND_STARTED__) State.save()});
+  window.addEventListener('pagehide', () => {if(window.__CAT_BOND_STARTED__) State.save()});
   document.addEventListener('visibilitychange', () => {
-    if(document.visibilityState === 'hidden') State.save();
+    if(document.visibilityState === 'hidden' && window.__CAT_BOND_STARTED__) State.save();
   });
 });
 
