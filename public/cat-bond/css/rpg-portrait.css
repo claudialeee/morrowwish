@@ -291,3 +291,28 @@
 /* Hidden is the source of truth, regardless of older atlas display rules. */
 #stage .rw-world.rw-atlas-mode>.rw-atlas-rail[hidden],#stage .rw-world.rw-region-compact>.rw-fit-rail[hidden]{display:none!important}
 #stage .rw-world.rw-atlas-mode>.rw-atlas-rail .rw-atlas-menu>summary{display:none!important}
+
+/* One story action, no permanently open checklist; the festival is a scene, not a dial puzzle. */
+#stage .rw-world .rw-next-cue{position:absolute!important;z-index:5;left:50%;bottom:12px;transform:translateX(-50%);max-width:min(86%,440px);min-height:44px;padding:9px 16px!important;background:#fff2d8f5!important;color:#654923!important;border:1px solid #a6804e!important;border-radius:12px!important;white-space:normal!important;box-shadow:0 3px 12px #35281b44;font-weight:750!important}
+#stage .rw-world:has(>.rw-fit-rail:not([hidden])) .rw-next-cue,#stage:has(.res-host .res-dialogue:not([hidden])) .rw-next-cue{display:none!important}
+#stage .rw-world.rw-festival-story:not([hidden]){display:block!important;padding:0!important;background:#402e27!important;overflow:hidden!important}
+#stage .rw-world.rw-festival-story>.rw-shell{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;border-radius:0!important;container-type:size}
+#stage .rw-world.rw-festival-story>.rw-shell>.rw-surface{position:absolute!important;inset:auto!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;width:min(100cqw,calc(100cqh * 1.77777778))!important;height:auto!important;max-width:100%!important;max-height:100%!important;aspect-ratio:16/9!important;touch-action:none}
+#stage .rw-world.rw-festival-story>.rw-head{position:absolute!important;top:4px!important;left:8px!important;right:auto!important;z-index:4!important;max-width:55%!important;pointer-events:none}
+#stage .rw-world.rw-festival-story>.rw-head button{display:none!important}
+#stage .rw-world .rw-festival-card{position:absolute;z-index:6;bottom:max(10px,env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:min(94%,620px);box-sizing:border-box;padding:10px 14px;border:1px solid #d4b480;border-radius:14px;background:#fff5e6f5;color:#604a37;box-shadow:0 3px 18px #39291d55;text-align:center}
+#stage .rw-world .rw-festival-title{display:block;font-size:clamp(15px,2vw,20px);line-height:1.25}
+#stage .rw-world .rw-festival-line{margin:5px 0;font-size:clamp(13px,1.5vw,16px);line-height:1.35}
+#stage .rw-world .rw-festival-hint{margin:3px 0 7px;font-size:12px;line-height:1.25;color:#715b46}
+#stage .rw-world .rw-festival-card>.rw-puzzle-controls{position:static!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));width:auto!important;height:auto!important;max-height:none!important;overflow:visible!important;gap:5px!important;margin:0!important;padding:0!important;background:transparent!important}
+#stage .rw-world .rw-festival-card button{min-height:44px!important;white-space:normal!important;margin:0!important}
+#stage .rw-world .rw-festival-card button[aria-pressed=true]{background:#f0d3a0!important;border:2px solid #9e6c36!important}
+#stage .rw-world .rw-festival-card .rw-festival-finish{grid-column:1/-1;background:#916039!important;color:#fff8e9!important;font-weight:800!important}
+@media (orientation:portrait) and (max-width:700px){
+ #stage .rw-world.rw-festival-story>.rw-shell>.rw-surface{inset:0!important;width:100%!important;height:100%!important;aspect-ratio:auto!important;transform:none!important}
+ #stage .rw-world .rw-next-cue{bottom:max(66px,env(safe-area-inset-bottom,0px))!important}
+}
+@media (orientation:landscape) and (max-height:480px){
+ #stage .rw-world .rw-festival-card{width:min(60%,540px);left:auto;right:8px;transform:none;bottom:8px;padding:7px 10px}
+ #stage .rw-world .rw-festival-hint{margin:2px 0}
+}

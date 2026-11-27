@@ -106,7 +106,8 @@ export function spatialTap(p,x,y){
 export function spatialControls(p){
  if(p.kind==="bridge")return [{label:["拨动月叶","Turn moonleaf"],action:{type:"leaf"}},...bridgeNodes.map((_,i)=>({label:[["起点","岔路","树冠","地下","对岸"][i],["Start","Fork","Canopy","Roots","Far bank"][i]],action:{type:"step",i},available:bridgeReachable(p).includes(i)})),...(p.operation==="puzzle:moonleaf-crossing"&&p.node===3&&!p.discoveries.includes("rescued-kitten")?[{label:["帮小猫离开根丛","Free the trapped kitten"],action:{type:"rescue"}}]:[])];
  if(p.kind==="stars")return starEdges[p.node].map(i=>({label:["跳向星石 "+(i+1),"Jump to stone "+(i+1)],action:{type:"step",i}}));
- if(p.kind==="light")return [...(p.operation==="puzzle:lantern-show"?["鱼","蝴蝶","猫"].map((x,i)=>({label:[x,["Fish","Butterfly","Cat"][i]],action:{type:"shape",i}})):[]),...[[.2,"向左","Aim left"],[.5,"居中","Aim center"],[.72,"向右","Aim right"]].map(([x,zh,en])=>({label:[zh,en],action:{type:"aim",x}})),{label:p.operation==="puzzle:lantern-show"?["继续庆典","Continue festival"]:["走过石桥","Cross the bridge"],action:{type:"cross"}}];
+ if(p.operation==="puzzle:lantern-show")return [...["鱼","蝴蝶","猫"].map((x,i)=>({label:[x,["Fish","Butterfly","Cat"][i]],action:{type:"shape",i}})),{label:["演完啦，去找小铆","Finish the show and meet Xiaomao"],action:{type:"cross"}}];
+ if(p.kind==="light")return [...[],...[[.2,"向左","Aim left"],[.5,"居中","Aim center"],[.72,"向右","Aim right"]].map(([x,zh,en])=>({label:[zh,en],action:{type:"aim",x}})),{label:p.operation==="puzzle:lantern-show"?["继续庆典","Continue festival"]:["走过石桥","Cross the bridge"],action:{type:"cross"}}];
  return [...chaseLoop.map(([x,y],i)=>({label:["跑向街角 "+(i+1),"Run to corner "+(i+1)],action:{type:"target",x,y}})),{label:["跳过低墙 · 抄近路","Jump the low wall · Shortcut"],action:{type:"jump"}}];
 }
 export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackground=false){
@@ -117,8 +118,29 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
  }else if(p.kind==="stars"){
   for(let i=0;i<starNodes.length;i++){const q=starNodes[i],lit=i===p.node||starEdges[p.node].includes(i);if(lit){const [x,y]=pt(q),g=c.createRadialGradient(x,y,1,x,y,46);g.addColorStop(0,"#f4df8c88");g.addColorStop(1,"#f4df8c00");c.fillStyle=g;c.fillRect(x-46,y-46,92,92);}dot(q,18,lit?"#e7d59e":"#51616a");}drawCat?.(...starNodes[p.node]);label(tr("只有相邻星石被照亮","Only neighboring stones light up"),[.5,.08],22);
  }else if(p.kind==="light"){
-  const angle=p.angle,show=p.operation==="puzzle:lantern-show",size=24+Math.abs(angle-.5)*110;const lamp=[angle,.24],shadow=[.30+(1-angle)*.40,.48];if(!paintArt(c,"garden-lantern",angle*W,.24*H,62,76))dot(lamp,18,"#ffe5a7");const [lx,ly]=pt(lamp);const g=c.createRadialGradient(lx,ly,5,lx,ly,W*.58);g.addColorStop(0,"#ffdc9c88");g.addColorStop(1,"#ffdc9c00");c.fillStyle=g;c.fillRect(0,0,W,H);if(show){const [x,y]=pt(shadow);c.save();c.beginPath();c.rect(W*.23,H*.29,W*.54,H*.36);c.clip();if(!paintArt(c,["shadow-fish","shadow-butterfly","shadow-cat"][p.shape],x,y,size*2.8,size*1.8,.5,.5,angle-.5)){c.fillStyle="#17212d";c.beginPath();c.ellipse(x,y,size,size*.6,angle-.5,0,Math.PI*2);c.fill();if(p.shape===0){c.beginPath();c.moveTo(x-size,y);c.lineTo(x-size*1.6,y-size*.6);c.lineTo(x-size*1.6,y+size*.6);c.fill();}else if(p.shape===1){dot([shadow[0]-.045,.53],size*.65,"#17212d");dot([shadow[0]+.045,.53],size*.65,"#17212d");}else{for(const d of [-1,1]){c.beginPath();c.moveTo(x+d*size*.55,y-size*.25);c.lineTo(x+d*size*.9,y-size);c.lineTo(x+d*size*.15,y-size*.4);c.fill();}}}c.restore();// Three animated audience silhouettes respond to the chosen shape.
-const phase=time*3;for(let i=0;i<3;i++){const ax=.23+i*.25+Math.sin(phase+i)*.025,ay=.72+(p.shape===0?Math.sin(phase+i)*.018:p.shape===1?-Math.abs(Math.sin(phase*1.5+i))*.065:Math.sin(phase+i)*.012);const [cx,cy]=pt([ax,ay]);c.save();c.translate(cx,cy);c.rotate(p.shape===2?Math.sin(phase+i)*.20:0);c.translate(-cx,-cy);drawCat?.(ax,ay,p.shape!==0,["biscuit","puff","clover"][i],.45);c.restore();}dot([shadow[0]+.075,.48],5,"#ffe8a3");drawNpc?.("xiaomao",.89,.77,.65);label(tr(["小猫在学鱼游泳","小猫在扑蝴蝶","小猫在追尾巴"][p.shape],["The kittens mimic swimming fish","The kittens chase butterflies","The kittens chase their tails"][p.shape]),[.5,.88],15);label(tr("移动灯笼，看看影子怎么变","Move the lantern and watch the shadow"),[.5,.08],22);}else{const lit=Math.abs(angle-.72)<=.14;c.save();if(!lit)c.filter="brightness(.32) saturate(.55)";if(!paintBridge(c,"lantern-stone-crossing",[.22,.64],[.82,.64],W,H,83))line([.22,.64],[.82,.64],lit?"#dbcba7":"#25323c",40);c.restore();if(Math.abs(angle-.2)<.15)label(tr("壁龛：第一盏歪耳灯","Alcove: the first crooked-ear lantern"),[.28,.43]);drawCat?.(.19,.64);label(tr("照亮石桥，再走过去","Light the stone bridge before crossing"),[.5,.08],22);}label(tr("拖动灯光","Drag the light"),[angle,.34]);
+  const angle=p.angle,show=p.operation==="puzzle:lantern-show";
+  if(show){
+   // The painted audience is already part of the theater. Do not scatter tiny
+   // unrelated cat sprites over it. Animate the actual chosen shadow instead.
+   const unit=Math.min(W,H),lightX=.24+.52*angle,shadowX=.5+(.5-angle)*.30;
+   const phase=time*2,shadowY=.45+Math.sin(phase)*(p.shape===1?.026:.012);
+   const size=unit*(.27+Math.abs(angle-.5)*.28),lx=lightX*W,ly=.24*H;
+   const glow=c.createRadialGradient(lx,ly,0,lx,ly,unit*.38);
+   glow.addColorStop(0,"#ffdc9c77");glow.addColorStop(1,"#ffdc9c00");c.fillStyle=glow;c.fillRect(0,0,W,H);
+   c.save();c.beginPath();c.rect(W*.23,H*.29,W*.54,H*.35);c.clip();
+   const x=shadowX*W,y=shadowY*H;
+   c.globalAlpha=.86;
+   if(p.shape===1)c.translate(0,Math.sin(phase*1.8)*unit*.008);
+   paintArt(c,["shadow-fish","shadow-butterfly","shadow-cat"][p.shape],x,y,size*1.35,size*(p.shape===1?.68:.85),.5,.5,Math.sin(phase)*(p.shape===2?.08:.045)+(angle-.5)*.22);
+   c.restore();
+   paintArt(c,"garden-lantern",lx,ly,unit*.14,unit*.16);
+   // Gentle audience acknowledgment in the illustrated foreground, not fake
+   // animated actors. The story response is delivered in the readable caption.
+   if(p.audience){for(const [i,ax] of [.14,.87].entries()){const k=.5+.5*Math.sin(phase+i),ay=.68-k*.025;c.save();c.globalAlpha=.35+.45*k;dot([ax,ay],unit*.008,"#fff0b3");dot([ax+(i?-.035:.035),ay-.035],unit*.005,"#ffe0a2");c.restore();}}
+  }else{
+   const lamp=[angle,.24];if(!paintArt(c,"garden-lantern",angle*W,.24*H,62,76))dot(lamp,18,"#ffe5a7");
+   const [lx,ly]=pt(lamp),g=c.createRadialGradient(lx,ly,5,lx,ly,W*.58);g.addColorStop(0,"#ffdc9c88");g.addColorStop(1,"#ffdc9c00");c.fillStyle=g;c.fillRect(0,0,W,H);
+   const lit=Math.abs(angle-.72)<=.14;c.save();if(!lit)c.filter="brightness(.32) saturate(.55)";if(!paintBridge(c,"lantern-stone-crossing",[.22,.64],[.82,.64],W,H,83))line([.22,.64],[.82,.64],lit?"#dbcba7":"#25323c",40);c.restore();if(Math.abs(angle-.2)<.15)label(tr("壁龛：第一盏歪耳灯","Alcove: the first crooked-ear lantern"),[.28,.43]);drawCat?.(.19,.64);label(tr("照亮石桥，再走过去","Light the stone bridge before crossing"),[.5,.08],22);label(tr("拖动灯光","Drag the light"),[angle,.34]);}
  }else{
   const project=([x,y])=>[x,chaseVisualY(y)];for(let i=0;i<4;i++){const corner=project(chaseLoop[i]);line(corner,project(chaseLoop[(i+1)%4]),"#fff2c250",painted?2:10);if(!p.direct){dot(corner,14,"#453426cc");dot(corner,8,"#ffe5a1");}}if(!painted)line([.29,.5],[.71,.5],"#c7a875",16);line(project([.5,.73]),project([.5,.27]),"#f1d7a488",5);label(tr("低墙","Low wall"),[.5,.46],15);const q=project(chasePoint(p));dot(q,30,"#f3d68588");if(!paintArt(c,"windchime-wisp",q[0]*W,q[1]*H,52,52,.5,.5))dot(q,10,"#fff3b3");const player=project(p.player);drawCat?.(player[0],player[1]-(p.jumping?.045:0),!!p.moving||!!p.waypoints.length||p.jumping);if(p.jumping)label(tr("跳！","Jump!"),[player[0],player[1]-.085],16);
  }

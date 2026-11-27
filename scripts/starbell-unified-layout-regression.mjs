@@ -33,7 +33,7 @@ try{
    await page.waitForFunction(r=>window.WorldMap?.mode==='region'&&WorldMap.currentRegion===r&&document.querySelector('.rw-quest-toggle'),region);
    await page.evaluate(()=>document.getElementById('starbell-developer-menu')?.remove());
    const toggle=page.locator('.rw-head .rw-quest-toggle'),rail=page.locator('.rw-fit-rail');
-   assert.equal(await toggle.innerText(),'主线任务');assert.equal(await rail.isVisible(),false,region+' starts collapsed');
+   assert.equal(await toggle.innerText(),'主线任务');assert.equal(await rail.isVisible(),false,region+' starts collapsed');const cue=page.locator(".rw-next-cue");if(await page.locator("button[data-next-scene]").count()){assert.ok(await cue.isVisible(),region+" has a visible next action without opening the quest drawer");}
    await shot(region+'-closed');await toggle.tap();await rail.waitFor();
    assert.equal(await toggle.getAttribute('aria-expanded'),'true');
    assert.equal(await rail.locator('.rw-objective').count(),1);

@@ -28,7 +28,8 @@ const labels=Object.freeze({
   "Break the forest loop": "打破森林回环",
   "Ancient-root sanctuary": "古根圣所",
   "Living Roots": "相枝调",
-  "Lantern festival · Shadow show": "灯火节 · 影子戏",
+  "Help Xiaomao put on a show": "帮小铆演一场灯影",
+  "Finish the show and meet Xiaomao": "演完啦，去找小铆",
   "Light the stone bridge": "照亮石桥",
   "Shadow beast": "剪影兽",
   "Lantern sanctuary": "千灯圣所",
@@ -420,7 +421,7 @@ async function run(chapter){
    await puzzle('Break the forest loop',['Fork','Canopy','Turn moonleaf','Canopy','Far bank']);await dialogue('forest:R-03');await scene('forest:R-04');
    await restore('Ancient-root sanctuary',[],['Yahe','Yuchuan'],'Living Roots',[mid,low,high]);await dialogue('forest:R-04');
   }else if(chapter==='forge'){
-   await puzzle('Lantern festival · Shadow show',['Cat','Aim left','Aim right','Continue festival']);await talk('Xiaomao');await dialogue('forge:E-01');await scene('forge:E-02');
+   await click('Help Xiaomao put on a show');const festival=page.locator('.rw-festival-card');await festival.waitFor();assert.equal(await page.locator('.rw-dedicated-rail:visible').count(),0,'Festival must be a story scene, not a control rail');assert.equal(await festival.locator('button').count(),4);await click('Cat',festival);assert.equal(await festival.getByRole('button',{name:local('Cat'),exact:true}).getAttribute('aria-pressed'),'true');await shot('festival-story');await click('Finish the show and meet Xiaomao',festival);await op('puzzle:lantern-show');await festival.waitFor({state:'hidden'});await talk('Xiaomao');await dialogue('forge:E-01');await scene('forge:E-02');
    await puzzle('Light the stone bridge',['Cross the bridge','Aim left','Aim right','Cross the bridge']);await dialogue('forge:E-02');await scene('forge:E-03');
    await battle('Shadow beast','battle:shadow-beast');await dialogue('forge:E-03');await scene('forge:E-04');
    await restore('Lantern sanctuary',[],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');await trial('xiaomao',['deploy','warn','impact']);

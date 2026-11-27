@@ -67,7 +67,7 @@ jobs:
       - name: Detect relevant gameplay changes
         id: relevant
         run: |
-          if git diff-tree --no-commit-id --name-only -r HEAD | grep -Eq 'world-exploration\.mjs|world-bridge\.mjs|cat-bond-experience-chapters\.mjs|starbell-unified-layout\.yml'; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
+          if git diff-tree --no-commit-id --name-only -r HEAD | grep -Eq 'world-exploration\.mjs|world-bridge\.mjs|world-runtime\.mjs|canon22-spatial\.mjs|campaign\.mjs|cat-bond-experience-chapters\.mjs|starbell-unified-layout\.yml'; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
       - uses: actions/setup-node@v4
         if: steps.relevant.outputs.run == 'true'
         with:

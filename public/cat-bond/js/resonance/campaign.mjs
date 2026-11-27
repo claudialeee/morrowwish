@@ -796,15 +796,15 @@ export const campaign = {
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "来来来，你也挑盏灯！瞧，我这只猫的耳朵都能动。",
-            "en": "Come on, choose a lantern! Look, my cat's ears can move!"
+            "zh": "谢谢你陪我！我还以为大家只喜欢那些漂亮的大灯呢。",
+            "en": "Thanks for helping me! I thought everyone only liked the big, fancy lanterns."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "你刚才那只猫……怎么还在跑？",
-            "en": "That cat you just made… why's it still running?"
+            "zh": "等等，灯都停了，台上那片影子怎么还在动？",
+            "en": "Wait. The lantern has stopped. Why is that shadow still moving?"
           }
         },
         {
