@@ -227,6 +227,7 @@ async function run(chapter){
    assert.ok(a.x>=-1&&a.y>=-1&&a.x+a.width<=page.viewportSize().width+1&&a.y+a.height<=page.viewportSize().height+1,'Controls remain on screen');
   };
   await measure();
+  if(portrait){const original=page.viewportSize();try{for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){await page.setViewportSize(viewport);await measure();await page.waitForFunction(()=>{const w=document.querySelector('.rw-world'),r=w?.querySelector('.rw-dedicated-rail'),s=w?.querySelector('.rw-shell'),c=s?.querySelector('.rw-surface');if(!w||!r||!s||!c)return false;const a=r.getBoundingClientRect(),b=s.getBoundingClientRect(),d=w.getBoundingClientRect(),f=c.getBoundingClientRect();return a.height<=d.height*.44&&b.height>=d.height*.43&&b.width>=d.width-2&&a.top>=b.bottom-1&&f.height>=b.height-2&&f.width>=b.width-2;},null,{timeout:5000});await shot('portrait-minigame-'+(await view()).current.id.replace(':','-')+'-'+viewport.width);}}finally{await page.setViewportSize(original);}}
   if(!checkedPuzzleLayout){checkedPuzzleLayout=true;const original=page.viewportSize();if(!portrait){try{for(const viewport of [{width:390,height:844},{width:844,height:390}]){await page.setViewportSize(viewport);await measure();}}finally{await page.setViewportSize(original);}}await measure();}
  }
  async function puzzle(label,inputs){
@@ -346,6 +347,7 @@ async function run(chapter){
    await page.locator('#library-battle-ok').waitFor();await shot(operation+'-result');await page.locator('#library-battle-ok').click();
   }
   await op(operation);if(operation==='battle:central-echo')assert.equal(await page.evaluate(()=>CatBondResonance.snapshot().support.length),6,'All six regions must have answered');
+  if(portrait){await page.waitForFunction(()=>{const stage=document.querySelector('#stage')?.getBoundingClientRect(),world=document.querySelector('.rw-world:not([hidden])')?.getBoundingClientRect(),dialog=document.querySelector('.res-host.is-visible'),r=dialog?.getBoundingClientRect()||world;if(!stage||!r||stage.height<=stage.width||r.height<=r.width)return false;const scene=dialog?.dataset.scene;if(dialog&&!dialog.classList.contains('res-library-reveal')&&!dialog.classList.contains('res-emotional-art')&&scene&&!getComputedStyle(dialog,'::before').backgroundImage.includes('/mobile-portrait/'))return false;return r.width>=stage.width*.95&&r.height>=stage.height*.95;},null,{timeout:15000});await shot(operation+'-portrait-return');}
   measurement.status='verified win';
   }finally{
    measurement.wallSeconds=(Date.now()-t)/1000;
