@@ -37,6 +37,10 @@ assert.ok(explorer.near(q));const fakeRoot=structuredClone(root);delete fakeRoot
 const fakeState={S:fakeRoot,activeSlot:()=>'forged-mirror',save:()=>({ok:true})};
 const forged=createWorldBridge(fakeState);assert.equal(createExplorer(forged,'library',{adventureActions:true}).interact('repair:library').ok,false,'repair requires verified mirror trace');
 const reloaded=createExplorer(bridge,'library',{adventureActions:true});assert.ok(reloaded.interact('repair:library').ok);assert.deepEqual(bridge.view().objective,['melody:library']);
-assert.equal(reloaded.interact('melody:library').ok,false,'cannot restore without both locals');
-assert.deepEqual(getSlotRuntime(State).view().objective,['melody:library']);
+assert.deepEqual(reloaded.invited.sort(),['baikan','moye'],'both residents attend after verified repair');
+assert.equal(bridge.recordWorld(scene.id,'melody:library',{sceneId:scene.id,operation:'melody:library',region:'library',verified:true,adventureAction:true,participants:[],token:rt.capture()}).ok,false,'cannot bypass both residents');
+assert.ok(reloaded.interact('melody:library').puzzle);
+assert.equal(reloaded.puzzle.values.length,2,'residents lead the first two notes');
+assert.ok(reloaded.operate(reloaded.puzzle.goal[2]).ok);
+assert.ok(!getSlotRuntime(State).view().objective.includes('melody:library'));
 console.log('Canon 2.2: new-position recognition, wrong/early choice, no Catdex dependency, forged proof rejection, world bridge and reload passed');

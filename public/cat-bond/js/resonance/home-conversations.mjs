@@ -40,6 +40,11 @@ export function homeConversation(id,view,profile,snapshot){
  }
  return q.alternate&&profile?.methods?.includes(q.method)?q.alternate:q.normal;
 }
+const visits={
+ qilan:{action:["一起标出回家的航线","Mark the route home together"],done:["你们在新航图上标出花园。以后每次迷路，都能顺着这条线回家。纪念物：栖蓝的新航图。","Together you mark the garden on the new chart. Whenever you lose your way, this route will lead home. Keepsake: Qilan’s new route chart."]},
+ yahe:{action:["一起给月叶浇水","Water the moonleaf together"],done:["新芽在水珠下舒展开来。芽禾把第一片新叶留给花园。纪念物：月叶新芽。","A new shoot unfurls beneath the droplets. Yahe leaves the first new leaf in the garden. Keepsake: Moonleaf sprout."]},
+ xiaomao:{action:["点亮歪耳猫灯","Light the crooked-ear lantern"],done:["歪耳猫的影子跳上墙，小铆笑着把灯挂好。纪念物：歪耳灯。","The crooked-eared cat’s shadow jumps onto the wall. Xiaomao hangs the lantern with a grin. Keepsake: Crooked-ear lantern."]}
+};
 export function mountHomeConversation(id,api){
  const view=api.view(),actor=campaign.cast[id],copy=homeConversation(id,view,api.supportProfile(actor?.region),api.snapshot());
  const stage=document.getElementById("stage");if(!stage||!copy||window.__game?.scene!=="yard")return false;
@@ -49,9 +54,9 @@ export function mountHomeConversation(id,api){
  const art=document.createElement("img");art.className="res-portrait";art.alt="";art.src=new URL(id==="muling"?"../../assets/core-art-remaster/leads/muling.webp":"../../assets/npc/"+id+"-painted.webp",import.meta.url).href;
  const body=document.createElement("div");body.className="res-body";const title=document.createElement("h2"),line=document.createElement("p"),controls=document.createElement("div"),close=document.createElement("button");
  title.className="res-speaker";line.className="res-line";controls.className="res-controls";close.type="button";
- controls.append(close);body.append(title,line,controls);panel.append(art,body);root.append(panel);
- function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh";title.textContent=actor.name[zh?"zh":"en"];line.textContent=copy[zh?0:1];close.textContent=zh?"关闭":"Close";panel.setAttribute("aria-label",title.textContent);}
+ const visit=view.ending&&view.returned?.includes(id)?visits[id]:null,action=document.createElement("button");action.type="button";action.dataset.homeRevisit=id;let finished=!!window.GardenExploration?.read(owner).keepsakes.includes("revisit-"+id);if(visit)controls.append(action);controls.append(close);body.append(title,line,controls);panel.append(art,body);root.append(panel);
+ function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh";title.textContent=actor.name[zh?"zh":"en"];line.textContent=visit&&finished?visit.done[zh?0:1]:copy[zh?0:1];if(visit){action.hidden=finished;action.textContent=visit.action[zh?0:1];}close.textContent=zh?"关闭":"Close";panel.setAttribute("aria-label",title.textContent);}
  function dispose(){root.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("pagehide",dispose);}
- close.onclick=dispose;root.addEventListener("cat-bond-close",dispose);root.addEventListener("keydown",e=>{if(e.key==="Escape")dispose();});
+ action.onclick=()=>{if(owner!==window.State.S||window.__game?.scene!=="yard"||!visit||finished)return;if(window.GardenExploration?.completeRevisit(id)){finished=true;window.MorrowwishAudio?.effect?.("discover");window.__game?.toast?.({zh:visit.done[0],en:visit.done[1]});render();close.focus();}};close.onclick=dispose;root.addEventListener("cat-bond-close",dispose);root.addEventListener("keydown",e=>{if(e.key==="Escape")dispose();});
  if(owner!==window.State.S)return false;stage.append(root);window.addEventListener("morrowwish-language-change",render);window.addEventListener("cat-bond-active-save-changed",dispose);window.addEventListener("pagehide",dispose,{once:true});render();close.focus();return true;
 }

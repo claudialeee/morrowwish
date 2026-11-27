@@ -10,12 +10,13 @@ apply('seed');assert.equal(reduce(s,'seed'),null);
 apply('snack-keep');assert.equal(reduce(s,'snack-eat'),null);
 assert.equal(reduce(s,'door'),null);apply('door',true);
 assert.deepEqual(read({sunlitGarden:{exploration:s}}),s);assert.equal(read({}).parts.length,0);
-assert.equal(new Set(s.keepsakes).size,4);
+assert.equal(new Set(s.keepsakes).size,5);
 apply('nameplate');assert.equal(reduce(s,'nameplate'),null);assert.equal(reduce(s,'nameplate-home'),null);apply('nameplate-home',true);assert.equal(reduce(s,'nameplate-home',true),null);assert.equal(read({}).nameplate,false);
 console.log('V3 optional discovery reducer: two distinct chart pieces, three butterfly hops, seed, fish cake, return mystery, slot separation passed');
 
 const journey=win.GardenExploration.journeyKeepsakes;assert.equal(journey({resonance:{completed:[]}},{}),null);const earned={resonance:{completed:['harbor:H-05','forest:R-04','forge:E-04','finale:B-04'],choices:{'sky:S-04':'search'}},resonanceExploration:{interactions:{'forge:E-01:puzzle:lantern-show':{shape:1},'sky:S-03:puzzle:joint-flight':{route:'lower'}}}};assert.deepEqual(journey(earned,{}),{map:true,moonleaf:true,lantern:1,cups:3,flight:'lower'});assert.equal(journey({...earned,resonance:{...earned.resonance,choices:{'sky:S-04':'company'}}},{}).cups,2);console.log('Earned garden callbacks depend on story, selected lantern and tea promise');
 
+for(const id of ['qilan','yahe','xiaomao']){assert.equal(reduce(s,'revisit-'+id),null);apply('revisit-'+id,true);assert.equal(reduce(s,'revisit-'+id,true),null);assert.ok(read({sunlitGarden:{exploration:s}}).keepsakes.includes('revisit-'+id));}
 assert.equal(reduce(s,'moonleaf-touch'),null);apply('moonleaf-touch',true);assert.equal(reduce(s,'moonleaf-touch',true),null);assert.ok(read({sunlitGarden:{exploration:s}}).moonleafTouched);
 
 const pose=win.GardenExploration.moonleafPose,home={x:100,y:100},target={x:300,y:200};assert.equal(pose(0,0,home,target).x,100);assert.equal(pose(600,0,home,target).x,200);assert.equal(pose(1200,0,home,target).x,300);assert.equal(pose(1500,0,home,target,1200).touching,true);assert.equal(pose(2900,0,home,target,1200).x,100);assert.equal(pose(2900,0,home,target,1200).done,true);

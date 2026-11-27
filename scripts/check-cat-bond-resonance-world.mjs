@@ -42,7 +42,7 @@ console.log(JSON.stringify((function test(){
   const ops=s.requires;
   for(const op of ops){if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
-   if(op.startsWith("melody:")){walk(x,p);assert(!x.interact(op).ok,"melody without local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}if(s.chapter==="library"){const restored=createExplorer(b,"library");assert(restored.invited.length===2,"library invitations persist");}if(["forest","sky"].includes(s.chapter)){const restored=createExplorer(b,s.chapter);assert(restored.invited.length===2&&x.localNpcs().every(n=>restored.invited.includes(n.id)),s.chapter+" invitations must survive reload");}}
+   if(op.startsWith("melody:")){walk(x,p);if(s.chapter==="harbor"){assert(!x.interact(op).ok,"first melody still requires local NPC");for(const n of x.localNpcs()){walk(x,n.point);ok(x.inviteNpc(n.id),"invite NPC");localInvites++;}}else{assert(x.localNpcs().every(n=>x.invited.includes(n.id)),"residents automatically attend after repair");}if(s.chapter==="library"){const restored=createExplorer(b,"library");assert(restored.invited.length===2,"library invitations persist");}if(["forest","sky"].includes(s.chapter)){const restored=createExplorer(b,s.chapter);assert(restored.invited.length===2&&x.localNpcs().every(n=>restored.invited.includes(n.id)),s.chapter+" invitations must survive reload");}}
    if(op==="explore:tide-logbook"){
     walk(x,p);assert(x.interact(op).reason==="incomplete-tide-trail","cannot bypass tide trail");
     let trail=x;
@@ -78,7 +78,7 @@ console.log(JSON.stringify((function test(){
   }
  }
  assert(b.view().current.id==="finale:B-01","did not reach finale: "+b.view().current.id);
- assert(b.view().ring&&b.view().melodies.length===6&&b.view().sanctuaries.length===6,"ring or sanctuaries incomplete");assert(deliveries===2&&localInvites===12,"wrong exchange/participation counts");links();assert(deliveries===24&&b.view().cargoComplete,"optional deliveries still available at finale");
+ assert(b.view().ring&&b.view().melodies.length===6&&b.view().sanctuaries.length===6,"ring or sanctuaries incomplete");assert(deliveries===2&&localInvites===2,"wrong exchange/participation counts");links();assert(deliveries===24&&b.view().cargoComplete,"optional deliveries still available at finale");
  assert(!State.S.lastResonanceWorld,"parallel story state still created");
  const old=State.S.resonance,oldW=JSON.stringify(b.world());const oldExplorer=createExplorer(b,b.world().location),oldToken=runtime.capture();
  assert(State.startNewGame("slot2"),"slot2");assert(!oldExplorer.walk(.2,.2),"stale world explorer can move");assert(!runtime.nextLine(oldToken).ok,"stale scene lease accepted");assert(b.view().current.id==="prologue:P-01"&&!b.world().location,"slot2 leaked");

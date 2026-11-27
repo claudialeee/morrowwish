@@ -268,7 +268,7 @@ async function run(chapter){
    await restore('Lantern sanctuary',['Turn left light','Turn center light','Turn right light'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');
   }else if(chapter==='sky'){
    await flyWaterfall('Catch the wind · Practice gliding');await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
-   await flyWaterfall('Find the moon gate · Cloud route');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
+   await click('Find the moon gate · Cloud route');await op('explore:flight-recorder');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
    await flyWaterfall('Joint gliding platform');await dialogue('sky:S-03');await click('Windwing sanctuary');await op('repair:sky');await puzzle('Open Sky',[low]);await dialogue('sky:S-03');await scene('sky:S-04');assert.ok((await view()).melodies.includes('sky'),'Sky must answer before the tea scene');
    await talk('Muling');const lookout=page.locator('.sky-lookout-view');await lookout.waitFor();await click('Walk around the lookout');assert.equal(await lookout.getAttribute('data-pose'),'walk');await click('Sit beside Muling');assert.equal(await lookout.getAttribute('data-pose'),'sit');await page.locator('.sky-lookout-painting').evaluate(img=>img.decode());await artProfiles('sky-lookout-sit',page.locator('.sky-lookout-painting'),page.getByRole('button',{name:'Walk around the lookout'}));await dialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
    await dialogue('sky:S-05');
