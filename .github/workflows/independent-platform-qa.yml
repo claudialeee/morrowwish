@@ -2,7 +2,7 @@ name: Cat Bond independent packaging and live parity QA
 on:
   push:
     branches: [review/cat-bond-platform-qa-20261127]
-    paths: ['.github/workflows/independent-platform-qa.yml','independent-package-qa.mjs','export-extra-platform-media.py']
+    paths: ['.github/workflows/independent-platform-qa.yml','independent-package-qa.mjs','export-extra-platform-media.py','export-platform.py']
 permissions:
   contents: write
 jobs:
@@ -16,6 +16,18 @@ jobs:
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
           python3 -m pip install --break-system-packages pillow
+      - name: Rebuild corrected GamePix ZIP and separate internal SDK templates
+        env:
+          Y8_APP_ID: ${{ vars.Y8_APP_ID }}
+          GD_GAME_ID: ${{ vars.GD_GAME_ID }}
+        run: |
+          python3 export-platform.py gamepix
+          python3 export-platform.py y8 --awaiting-id
+          python3 export-platform.py gamedistribution --awaiting-id
+          python3 export-platform.py itch
+          mkdir -p qa-output
+          cp output/cat-bond-*-candidate.zip output/*-build-report.json qa-output/
+          find output -maxdepth 1 -name '*awaiting-sdk-id.zip' -exec cp {} qa-output/ \;
       - name: Test existing GamePix ZIP as actual standalone game
         continue-on-error: true
         run: node independent-package-qa.mjs

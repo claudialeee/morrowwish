@@ -27,8 +27,8 @@ try{
  r.debugHidden=!(await page.locator('#fab-debug-unlock').isVisible());
  r.language=await page.evaluate(()=>document.documentElement.lang);
  r.overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2);
- await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.State?.S?.cats?.length>=2,{timeout:20000});
- r.savedCats=await page.evaluate(()=>State.S.cats.length);r.pass=r.debugHidden&&!r.overflow&&r.savedCats>=2&&r.language.startsWith('en')&&!r.errors.length&&!r.failedRequests.length&&!r.external.length;
+ await page.reload({waitUntil:'domcontentloaded'});await tap('#intro-start');await page.waitForFunction(()=>window.State?.S?.cats?.length>=2,{timeout:20000});
+ r.savedCats=await page.evaluate(()=>State.S.cats.length);const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('catbond_save_v1')||'{}').cats?.length||0);r.savedLocalStorageCats=saved;r.pass=saved>=2&&r.debugHidden&&!r.overflow&&r.savedCats>=2&&r.language.startsWith('en')&&!r.errors.length&&!r.failedRequests.length&&!r.external.length;
  }catch(e){r.error=String(e);await shot('failure').catch(()=>{})}finally{await ctx.close();fs.writeFileSync(out+'/standalone-qa.json',JSON.stringify(report,null,2)+'\n')}
  }
  report.pass=report.tests.every(x=>x.pass)&&report.tests.length===3;
