@@ -15,8 +15,8 @@ jobs:
     timeout-minutes: 18
     env:
       GH_TOKEN: ${{ github.token }}
-      RENDER_RUN: '45961868814'
-      RENDER_SHA: 8e241b1072653a0120ed80ba4514896305f2be7d
+      RENDER_RUN: '45963748496'
+      RENDER_SHA: f144a5b5ac9b6d4114384c767eb197b354b6c138
     steps:
       - name: Await exact new English render, reject incomplete artifacts
         run: |
@@ -36,7 +36,7 @@ jobs:
         with:
           name: starbell-new-story-trailer-review
           path: /tmp/rendered
-          run-id: 45961868814
+          run-id: 45963748496
           github-token: ${{ github.token }}
       - uses: actions/checkout@v4
         with:
@@ -55,19 +55,19 @@ jobs:
           file=$(find /tmp/rendered -name Echoes-of-the-Starbell-Official-Trailer-EN.mp4 -type f -print -quit)
           proof=$(find /tmp/rendered -name proof-en.json -type f -print -quit)
           test -s "$file" && test -s "$proof"
-          jq -e '.firstCaption=="You thought this was\na new journey." and .live.origin=="https://starbell-portrait-preview.morrowwish.pages.dev" and .music.title=="Soar" and ([.shots[].live]|map(select(.==true))|length)>=3 and ([.shots[]|select(.id=="duo" or .id=="chase")]|length)==0' "$proof"
+          jq -e '.firstCaption=="You thought this was\na new journey." and .live.origin=="https://starbell-portrait-preview.morrowwish.pages.dev" and .music.title=="Soar" and ([.shots[].live]|map(select(.==true))|length)>=3 and ([.shots[]|select(.id=="duo" or .id=="chase" or .id=="glide")]|length)==0 and ([.shots[]|select(.id=="shadow" and .live==true)]|length)==1 and .captionPlacement=="lower-third-safe"' "$proof"
           test "$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x "$file")" = "1080x1920"
           ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$file" | grep -qx audio
           ffmpeg -v error -i "$file" -f null -
           mkdir -p public/promo/starbell
-          target=public/promo/starbell/story-trailer-en-v3-45961868814.mp4
+          target=public/promo/starbell/story-trailer-en-v4-45963748496.mp4
           cp "$file" "$target"
           # Cloudflare Pages enforces a 25 MiB file cap.
           if [ "$(stat -c%s "$target")" -ge 25000000 ]; then
             ffmpeg -v error -y -i "$file" -c:v libx264 -preset medium -b:v 4000k -maxrate 4800k -bufsize 8000k -c:a aac -b:a 192k -movflags +faststart "$target"
           fi
           test "$(stat -c%s "$target")" -lt 25000000
-          ffmpeg -v error -y -i "$target" -frames:v 1 -q:v 2 public/promo/starbell/story-trailer-en-v3-45961868814.jpg
+          ffmpeg -v error -y -i "$target" -frames:v 1 -q:v 2 public/promo/starbell/story-trailer-en-v4-45963748496.jpg
           cp "$proof" public/promo/starbell/review-proof.json
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -75,8 +75,8 @@ jobs:
           const updatedAt=new Date().toISOString();
           const priorPath='public/promo/starbell/review.json';
           const prior=fs.existsSync(priorPath)?JSON.parse(fs.readFileSync(priorPath,'utf8')):{};
-          const revision=prior.renderRun===45961868814&&prior.version?prior.version:'V'+Math.max(3,(Number(String(prior.version||'V2').replace(/^V/,''))||2)+1);
-          fs.writeFileSync('public/promo/starbell/review.json',JSON.stringify({slug:'starbell',video:'/promo/starbell/story-trailer-en-v3-45961868814.mp4',poster:'/promo/starbell/story-trailer-en-v3-45961868814.jpg',duration:36,version:revision,createdAt:updatedAt,updatedAt,source:proof.live.source,music:proof.music,renderRun:45961868814,approved:false,published:false,shots:proof.shots.map(s=>({scene:s.id,seconds:s.seconds}))},null,2)+'\n');
+          const revision=prior.renderRun===45963748496&&prior.version?prior.version:'V'+Math.max(3,(Number(String(prior.version||'V2').replace(/^V/,''))||2)+1);
+          fs.writeFileSync('public/promo/starbell/review.json',JSON.stringify({slug:'starbell',video:'/promo/starbell/story-trailer-en-v4-45963748496.mp4',poster:'/promo/starbell/story-trailer-en-v4-45963748496.jpg',duration:36,version:revision,createdAt:updatedAt,updatedAt,source:proof.live.source,music:proof.music,renderRun:45963748496,approved:false,published:false,shots:proof.shots.map(s=>({scene:s.id,seconds:s.seconds}))},null,2)+'\n');
           const p='public/promo/review/index.html';
           let h=fs.readFileSync(p,'utf8');
           if(!h.includes("'/promo/starbell/review.json")){
@@ -90,6 +90,7 @@ jobs:
           if(!h.includes('Music credit: '))h=h.replace("video.addEventListener('play',", "if(entry.music){const music=document.createElement('small');music.textContent='Music credit: '+entry.music.title+' — '+entry.music.artist+' · '+entry.music.license+' (edited)';const link=document.createElement('a');link.href=entry.music.source;link.textContent=' Source';link.target='_blank';link.rel='noopener';music.append(link);article.append(music);}\n   video.addEventListener('play',");
           if(!h.includes('entry.version ?'))h=h.replace("note.textContent=Number(entry.duration||0).toFixed(1)+' 秒 · '","note.textContent=(entry.version ? entry.version+' · '+formatDate(entry.updatedAt||entry.createdAt)+' 更新 · ' : '')+Number(entry.duration||0).toFixed(1)+' 秒 · '");
           if(!h.includes('star?.version'))h=h.replace("$('version').textContent=(data.latestVersion||data.version||'最新版本')+(data.createdAt?' · '+formatDate(data.createdAt)+' 更新':'')+' · '+box.children.length+' 条';","const newest=[data.createdAt,star?.updatedAt||star?.createdAt].filter(Boolean).sort().at(-1);\n  $('version').textContent=(data.latestVersion||data.version||'最新版本')+(star?.version?' · 星铃回响 '+star.version:'')+(newest?' · '+formatDate(newest)+' 更新（PT）':'')+' · '+box.children.length+' 条';");
+          h=h.replace("['glide','云海']","['shadow','千灯城皮影表演']");
           fs.writeFileSync(p,h);
           NODE
       - name: Commit review assets only, never publish to social networks
@@ -125,12 +126,12 @@ jobs:
       - name: Build existing website with review-only media changes
         run: |
           set -euo pipefail
-          test -s public/promo/starbell/story-trailer-en-v3-45961868814.mp4
+          test -s public/promo/starbell/story-trailer-en-v4-45963748496.mp4
           npm ci
           npm install --no-save --no-package-lock sharp@0.34.5
           bash scripts/fetch-cat-music.sh
           GITHUB_SHA="$(git rev-parse HEAD)" npm run build:pages
-          test -s cloudflare-pages/public/promo/starbell/story-trailer-en-v3-45961868814.mp4
+          test -s cloudflare-pages/public/promo/starbell/story-trailer-en-v4-45963748496.mp4
           test "$(jq '.trailers|length' cloudflare-pages/public/promo/latest-review.json)" = 7
           grep -q 'data.trailers.unshift(star)' cloudflare-pages/public/promo/review/index.html
       - name: Upload to the existing Cloudflare Pages project
@@ -143,9 +144,9 @@ jobs:
         run: |
           set -euo pipefail
           for i in {1..12}; do
-            if curl -fsS 'https://morrowwish.vercel.app/promo/review/?qa=starbell-45961868814' | grep -q 'data.trailers.unshift(star)' &&
-               curl -fsS 'https://morrowwish.vercel.app/promo/starbell/review.json?qa=45961868814' | jq -e '.renderRun==45961868814 and .approved==false and (.version|test("^V[0-9]+$")) and (.updatedAt|type=="string")' >/dev/null &&
-               curl -fsS -r 0-4095 'https://morrowwish.vercel.app/promo/starbell/story-trailer-en-v3-45961868814.mp4?qa=45961868814' -o /tmp/starbell-range.mp4 &&
+            if curl -fsS 'https://morrowwish.vercel.app/promo/review/?qa=starbell-45963748496' | grep -q 'data.trailers.unshift(star)' &&
+               curl -fsS 'https://morrowwish.vercel.app/promo/starbell/review.json?qa=45963748496' | jq -e '.renderRun==45963748496 and .approved==false and (.version|test("^V[0-9]+$")) and (.updatedAt|type=="string")' >/dev/null &&
+               curl -fsS -r 0-4095 'https://morrowwish.vercel.app/promo/starbell/story-trailer-en-v4-45963748496.mp4?qa=45963748496' -o /tmp/starbell-range.mp4 &&
                test -s /tmp/starbell-range.mp4; then
               echo 'VERIFIED https://morrowwish.vercel.app/promo/review/'
               exit 0
