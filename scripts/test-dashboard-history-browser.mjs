@@ -141,7 +141,10 @@ try{
      'Archived metrics retain original post link');
    assert.equal(await page.locator('#games-total').count(),0,'Seven-game aggregate row must be removed');
    assert.equal(await page.locator('#games tfoot').count(),0,'Game table must not render a totals footer');
-   assert.equal(await page.locator('#games tr').count(),7,'All seven individual game rows must remain');
+   assert.equal(await page.locator('#games tr').count(),8,'Seven existing games plus the independent Starbell preview must remain');
+   const previewRow=page.locator('#games tr').first();
+   assert.equal(await previewRow.locator('a').getAttribute('href'),'https://cat-bond-preview.morrowwish.pages.dev/cat-bond/','Starbell must be first and use the separate preview URL');
+   assert.ok((await previewRow.locator('td').allTextContents()).slice(1).every(x=>x.trim()===''),'Unobserved Starbell data stays blank');
    const visibleText=await page.locator('body').innerText();
    assert.ok(!/统计起点：11\/22 00:00|Since Nov 22, 2026, 12:00 AM PT/.test(visibleText),
      'Reporting start date must not be shown in the dashboard');
