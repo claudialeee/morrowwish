@@ -29,6 +29,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
+      - name: Hold preview deployment at owner request
+        run: |
+          echo 'Preview deployment is paused until explicitly authorized.'
+          exit 1
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
