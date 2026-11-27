@@ -288,8 +288,10 @@ async function run(chapter){
    const sample=()=>{
     const b=window.__game?.battle;
     if(!b||trace.samples.length>=1800)return;
+    const duo=b.duoCinematic,art=window.CatBondPremiumCinematics?.lastLayout;
+    const nativeDuo=duo?.t>0&&art?.source==="63-native-portrait-painted-storyboards"&&art.opacity>.65?{key:duo.elements,tier:duo.tier,asset:art.asset,extended:art.extendedPainting,layers:art.actorLayerCount,viewport:art.viewport,art:art.art}:null;
     const finale=b.resonanceFinale;
-     trace.samples.push({t:b.t,duoUses:b.duoUses??null,result:b.result??null,
+     trace.samples.push({t:b.t,duoUses:b.duoUses??null,nativeDuo,result:b.result??null,
       finale:finale?{elapsed:finale.elapsed,phase:finale.id,nodes:finale.nodes.map(n=>({region:n.region,done:n.done,integrity:n.integrity,progress:n.progress,cleared:n.reply?.cleared??null,interference:n.reply?.interference??null}))}:null,
      team:(b.team||[]).map(f=>({actor:f.cat?.storyActor||f.cat?.species||null,level:f.cat?.level??null,hp:f.hp,maxhp:f.maxhp,alive:f.alive})),
      enemies:(b.enemies||[]).map(f=>({hp:f.hp,maxhp:f.maxhp,alive:f.alive}))});
@@ -317,6 +319,10 @@ async function run(chapter){
     }else await result.waitFor({timeout:240000});
     await shot(operation+'-result');assert.equal(await result.getAttribute('data-finale-outcome'),'saved');await page.locator('[data-finale-return]').click();
   }else{
+   if(portrait&&operation==="battle:chime-beast"&&await page.evaluate(()=>typeof CatBondPremiumCinematics?.portraitReady==="function")){
+    await page.waitForFunction(()=>{const b=window.__game?.battle,l=window.CatBondPremiumCinematics?.lastLayout;return b?.duoCinematic?.t>0&&l?.source==="63-native-portrait-painted-storyboards"&&l.opacity>.8&&l.asset?.includes("dark-light-tier-");},null,{timeout:60000});
+    await shot("first-live-native-duo");
+   }
    await page.waitForFunction(()=>__game.scene==='map',null,{timeout:180000});
    await page.locator('#library-battle-ok').waitFor();await shot(operation+'-result');await page.locator('#library-battle-ok').click();
   }
@@ -334,6 +340,11 @@ async function run(chapter){
    await fs.writeFile(out+'/'+chapter+'-combat.json',JSON.stringify({provenance:'synthetic chapter start, actual browser battles',chapter,battles:battleMeasurements},null,2));
   }
   assert.ok(measurement.samples.length,'Actual combat telemetry is required: '+operation);
+  if(portrait&&operation==='battle:chime-beast'&&await page.evaluate(()=>typeof CatBondPremiumCinematics?.portraitReady==='function')){
+   const shown=measurement.samples.find(s=>s.nativeDuo?.key==='dark+light'&&s.nativeDuo?.asset?.includes('dark-light-tier-')&&s.nativeDuo.extended===false&&s.nativeDuo.layers===0);
+   assert.ok(shown,'Real first battle must render the matching native portrait duo');
+   assert.ok(measurement.samples.some(s=>s.duoUses>0),'Duo must actually execute in battle');
+  }
   steps.push({battle:operation,wallSeconds:measurement.wallSeconds,team:before,result:measurement.status,gameSeconds:measurement.last?.t,duoUses:measurement.last?.duoUses});
  }
  async function artProfiles(label,art,action=null){
