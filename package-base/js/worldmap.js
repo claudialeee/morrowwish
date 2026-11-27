@@ -534,11 +534,24 @@
     updateRegion(dt);
   }
 
+  // One world-unit transform for every viewport. The logical world, saved
+  // coordinates, collision radii and artwork remain unchanged. Zoom only when
+  // the viewport would exceed the map, preserving aspect ratio and input.
+  function regionViewport(){
+    const screenW=Math.max(1,game?.W||1),screenH=Math.max(1,game?.H||1);
+    const scale=Math.max(1,screenW/WORLD_W,screenH/WORLD_H);
+    return {scale,width:Math.min(WORLD_W,screenW/scale),height:Math.min(WORLD_H,screenH/scale)};
+  }
+  function clampCamera(cam,view=regionViewport()){
+    cam.x=Math.max(0,Math.min(Math.max(0,WORLD_W-view.width),cam.x));
+    cam.y=Math.max(0,Math.min(Math.max(0,WORLD_H-view.height),cam.y));
+  }
   function setDestination(sx,sy){
     if(mode!=='region'||!world||!game)return false;
+    const view=regionViewport();clampCamera(world.cam,view);
     world.panMode=false;
-    world.target={x:Math.max(60,Math.min(WORLD_W-60,world.cam.x+sx)),
-      y:Math.max(60,Math.min(WORLD_H-60,world.cam.y+sy))};
+    world.target={x:Math.max(60,Math.min(WORLD_W-60,world.cam.x+sx/view.scale)),
+      y:Math.max(60,Math.min(WORLD_H-60,world.cam.y+sy/view.scale))};
     return true;
   }
 
@@ -546,8 +559,9 @@
   function panBy(dx,dy){
     if(mode!=='region'||!world||!game)return false;
     world.panMode=true;world.target=null;world.pvx=0;world.pvy=0;world.moving=false;
-    world.cam.x=Math.max(0,Math.min(Math.max(0,WORLD_W-game.W),world.cam.x-dx));
-    world.cam.y=Math.max(0,Math.min(Math.max(0,WORLD_H-game.H),world.cam.y-dy));
+    const view=regionViewport();
+    world.cam.x-=dx/view.scale;world.cam.y-=dy/view.scale;
+    clampCamera(world.cam,view);
     return true;
   }
 
@@ -589,13 +603,13 @@
     w.py = Math.max(60, Math.min(WORLD_H - 60, w.py + w.pvy * dt));
 
     // Dragging locks the view. Walking resumes smooth follow.
+    const view=regionViewport();
     if(!w.panMode){
-      var tx = w.px - game.W / 2, ty = w.py - game.H / 2;
+      var tx = w.px - view.width / 2, ty = w.py - view.height / 2;
       w.cam.x += (tx - w.cam.x) * Math.min(1, dt * 6);
       w.cam.y += (ty - w.cam.y) * Math.min(1, dt * 6);
     }
-    w.cam.x = Math.max(0, Math.min(Math.max(0,WORLD_W - game.W), w.cam.x));
-    w.cam.y = Math.max(0, Math.min(Math.max(0,WORLD_H - game.H), w.cam.y));
+    clampCamera(w.cam,view);
 
     // ---- fog-of-exploration: mark the grid cell under the player ----
     var gx = Math.floor((w.px / WORLD_W) * GRID_C);
@@ -997,7 +1011,12 @@
   // ================================================================
   function drawRegion(ctx) {
     var w = world; if (!w) return;
-    var W = game.W, H = game.H, th = w.region.theme, cam = w.cam;
+    const screenW=game.W,screenH=game.H,view=regionViewport();
+    var W = view.width, H = view.height, th = w.region.theme, cam = w.cam;
+    // Clamp on draw as well as update: resize can happen while a panel pauses
+    // simulation. Background and entities share this exact uniform transform.
+    clampCamera(cam,view);
+    ctx.save();ctx.scale(view.scale,view.scale);
 
     // The explored regions share the illustrated garden art, with region-specific
     // tint; retain the original thematic fallback for unsupported browsers.
@@ -1112,6 +1131,8 @@
 
     ctx.restore();
 
+    ctx.restore(); // world transform; HUD remains in screen-space CSS pixels.
+    W=screenW;H=screenH;
     // collect flash
     if (w.flash > 0) {
       ctx.globalAlpha = w.flash;
@@ -1215,7 +1236,7 @@
     handleTap: handleTap,
     setDestination: setDestination,
     panBy: panBy,
-    get view(){return world&&{camX:world.cam.x,camY:world.cam.y,px:world.px,py:world.py,panMode:!!world.panMode,target:!!world.target};},
+    get view(){return world&&{camX:world.cam.x,camY:world.cam.y,px:world.px,py:world.py,panMode:!!world.panMode,target:!!world.target, targetWorld:world.target?{x:world.target.x,y:world.target.y}:null,...regionViewport()};},
     onEncounter: onEncounter,
     onCollect: onCollect,
     onExit: onExit,

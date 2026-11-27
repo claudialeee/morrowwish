@@ -43,6 +43,6 @@ with zipfile.ZipFile(zpath,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
     for f in files: z.write(f,f.relative_to(dest).as_posix())
 with zipfile.ZipFile(zpath) as z:
     assert z.testzip() is None and 'index.html' in z.namelist()
-report={'sourceCommit':'7637c688dc6efee7145bf6fe46e25f704d57e6fc','platform':platform,'bytes':zpath.stat().st_size,'sha256':hashlib.sha256(zpath.read_bytes()).hexdigest(),'fileCount':len(files),'sdkConfigurationPresent':configured,'awaitingSdkId':platform in ('y8','gamedistribution') and not configured,'runtimeVerified':False,'portalSaved':False,'reviewReady':False}
+report={'portraitViewportFix':'20261127-uniform-world-camera-and-portal-stage','worldmapSha256':hashlib.sha256((dest/'js/worldmap.js').read_bytes()).hexdigest(),'cssSha256':hashlib.sha256((dest/'css/style.css').read_bytes()).hexdigest(),'sourceCommit':'7637c688dc6efee7145bf6fe46e25f704d57e6fc','platform':platform,'bytes':zpath.stat().st_size,'sha256':hashlib.sha256(zpath.read_bytes()).hexdigest(),'fileCount':len(files),'sdkConfigurationPresent':configured,'awaitingSdkId':platform in ('y8','gamedistribution') and not configured,'runtimeVerified':False,'portalSaved':False,'reviewReady':False}
 (out/f'{platform}-build-report.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

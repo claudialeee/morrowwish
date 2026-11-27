@@ -4944,3 +4944,14 @@ body.cb-exploring #stage #yard-actions{
 
 /* Debug-only controls must not occupy a player-facing garden action slot. */
 #stage #yard-actions #fab-debug-unlock[hidden],html.cb-cg #cg-yard-dock #yard-actions #fab-debug-unlock[hidden]{display:none!important}
+
+/* Tall/portrait viewports use the whole game area, independent of desktop caps. */
+@media (orientation:portrait){
+  #game-root{width:100%;height:100%;height:100dvh;min-height:0}
+  #stage{width:100%;height:100%;max-width:none;max-height:none;margin:0;border-radius:0;box-shadow:none}
+}
+
+/* Every standalone portal (not only CrazyGames) is an iframe-sized game. */
+html.cb-third-party,html.cb-third-party body{width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;overscroll-behavior:none}
+html.cb-third-party #game-root{width:100%;height:100%;height:100dvh;min-height:0;overflow:hidden}
+html.cb-third-party #stage{width:100%;height:100%;max-width:none;max-height:none;min-width:0;min-height:0;margin:0;border-radius:0;box-shadow:none}

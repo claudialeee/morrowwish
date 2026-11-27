@@ -1,0 +1,2 @@
+# Portrait defect correction — release hold
+Previous media/ZIPs predate the viewport correction and must not be uploaded. The immutable source snapshot is preserved. `source-overlay/public/cat-bond/` contains the canonical web fix; `package-base/` contains that same camera transform plus a full-viewport standalone CSS rule. The production website is untouched. New assets and ZIPs are eligible only after `portrait-fix-qa/report.json` passes and actual visual inspection. SDK and draft gates remain separate.
