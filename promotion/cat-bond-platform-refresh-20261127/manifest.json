@@ -177,23 +177,50 @@
           512
         ]
       ],
-      "notes": "Reuse approved art and existing record; verify Build ready."
+      "notes": "Verify existing record, build status and actual image slots. Official https://partners.gamepix.com/guidelines/submission and https://partners.gamepix.com/sdk/doc/javascript; relative paths, no third-party external links, pause audio/gameplay during ads and resume correctly. No timer-triggered ads."
     },
     {
       "name": "GameDistribution",
       "priority": 4,
       "action": "locate-existing-draft-update",
-      "url": "https://gamedistribution.com/developers/",
+      "url": "https://developer.gamedistribution.com/",
       "build": "standalone portal-specific SDK integration; verify actual existing record and specs",
-      "notes": "No guessed draft ID or dimensions; read current upload requirements. No ad SDK on official game."
+      "notes": "Mandatory SDK, actual assigned game ID, iframe SDK activation and real preroll completion in portal; no fabricated ad events. Thumbnails are original representative illustrations, not screenshots. Official https://gamedistribution.com/developers/faq/general-questions/what-are-the-requirements-for-the-thumbnails/",
+      "images": [
+        [
+          "square",
+          512,
+          512
+        ],
+        [
+          "card",
+          512,
+          384
+        ],
+        [
+          "small",
+          200,
+          120
+        ],
+        [
+          "wide-optional",
+          1280,
+          550
+        ],
+        [
+          "landscape-optional",
+          1280,
+          720
+        ]
+      ]
     },
     {
       "name": "itch.io",
       "priority": 5,
-      "action": "prepare-existing-published-project-update",
+      "action": "verify-live-embed-and-update-existing-published-project-if-needed",
       "url": "https://morrowwishgames.itch.io/cat-bond",
       "build": "verify current actual embedded/hosted game, prepare replacement only if needed",
-      "notes": "Already public; prepare update in existing project, do not publish public changes without explicit authorization; do not create duplicate."
+      "notes": "User explicitly requires latest playable build. Inspect actual public Run game iframe chain, compare index/duo-premium.js/portrait files with frozen source. Existing publication script creates an iframe pointing at canonical production, but this is not proof of actual uploaded ZIP. Public listing last updated Nov 21 UTC. If already current, preserve wrapper and refresh outdated copy/media only; otherwise repair existing project and publish corrected update, verify anonymously. Never make duplicate."
     }
   ],
   "excluded": [
@@ -212,11 +239,23 @@
   ],
   "globalGates": [
     "No paid tools, purchases, subscriptions or TinyFish; inspect free quota before executing chargeable tasks. If free quota cannot be verified, do not spend.",
-    "No public submit for review, publish, production deployment, or modification of Starbell Echo, main, original production files, or other games.",
+    "No public submission for review on CrazyGames/Y8/GamePix/GameDistribution (draft preparation scope), no production deployment, no modifications of Starbell Echo, main, original production files or other games. Explicit exception: ensure existing itch.io public playable build is current; correct and publish existing project update if needed.",
     "Every image and video must match frozen real Cat Bond build; no old V14/13 footage, generic AI art or invented mechanics.",
     "No browser chrome, dev overlay, debug HUD, external promo, misleading seeded outcomes, clipped controls, duplicated scenes, language mixing or visibly low-quality imagery.",
     "Inspect current portal specs/AI disclosure; use existing records and actual existing SDK credentials without exposing secrets; never guess review answers.",
     "Test exact uploaded builds on real desktop/mobile UI, no fake PASS; record screenshot evidence, file sizes, hashes, source commit, version/date, portal save confirmation and remaining blockers per platform.",
     "If not accessible, continue other independent platforms; do not misrepresent local packaging as portal draft completion."
+  ],
+  "verifiedPublicListing": {
+    "url": "https://morrowwishgames.itch.io/cat-bond",
+    "lastUpdatedUTC": "2026-11-21T06:13:00Z",
+    "status": "released HTML5; playable embedded version not yet verified",
+    "aiDisclosure": "AI Assisted — code, graphics, text",
+    "source": "public listing checked 2026-11-27"
+  },
+  "executionBlockers": [
+    "Current Chat container has no DNS/network access to GitHub or game hosts; full repository and latest media cannot be fetched for local recording.",
+    "GitHub connector can read/write files but exposes no workflow dispatch or billing/remaining Actions quota endpoint. No new paid run authorized.",
+    "Browser connector only reads existing tabs; no authenticated portal write or upload. TinyFish prohibited."
   ]
 }
