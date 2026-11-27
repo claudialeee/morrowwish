@@ -15,8 +15,8 @@ jobs:
     timeout-minutes: 18
     env:
       GH_TOKEN: ${{ github.token }}
-      RENDER_RUN: '46073356421'
-      RENDER_SHA: 90fa94f512bb6e6a22f87c08ef7dacb0170cc209
+      RENDER_RUN: '46073562456'
+      RENDER_SHA: 3ed45f1938dfef3b5fb1f8f8dca810181391ac47
     steps:
       - name: Await exact new English render, reject incomplete artifacts
         run: |
@@ -36,7 +36,7 @@ jobs:
         with:
           name: starbell-new-story-trailer-review
           path: /tmp/rendered
-          run-id: 46073356421
+          run-id: 46073562456
           github-token: ${{ github.token }}
       - uses: actions/checkout@v4
         with:
@@ -55,19 +55,19 @@ jobs:
           file=$(find /tmp/rendered -name Echoes-of-the-Starbell-Official-Trailer-EN.mp4 -type f -print -quit)
           proof=$(find /tmp/rendered -name proof-en.json -type f -print -quit)
           test -s "$file" && test -s "$proof"
-          jq -e '.version=="V8" and .firstCaption=="You thought this was\na new journey." and .live.source.sha=="3106a71570bcb2d4c22c255ed4ed9501702024f5" and .live.source.productionApis==false and .live.source.telemetry==false and (.live.forestMovement.before!=.live.forestMovement.after) and ([.live.sourceByClip[]]|length)==2 and ([.shots[].id]==["hook","secret","explore","friends","battle","end"]) and .shots[1].caption=="But your story began\nlong before you woke up." and .secondHookAt<=4 and .secondHookClearAt<=4.5 and .duration==24.5 and .transitionCount==5 and .audioEnvelope.battleLiftDb>=8 and .music.title=="Soar" and ([.shots[]|select(.live)]|length)==2 and ([.shots[]|select(.words>0 and .clearSeconds<([2,(.words/2.5)]|max))]|length)==0 and ([.shots[]|select(.framing.fit!="full-bleed-cover" and .framing.fit!="native-portrait-gameplay")]|length)==0' "$proof"
+          jq -e '.version=="V9" and .firstCaption=="You thought this was\na new journey." and .live.source.sha=="3106a71570bcb2d4c22c255ed4ed9501702024f5" and .live.source.productionApis==false and .live.source.telemetry==false and (.live.forestMovement.before!=.live.forestMovement.after) and ([.live.sourceByClip[]]|length)==2 and ([.shots[].id]==["hook","secret","explore","melody","friends","battle","end"]) and .shots[1].caption=="But your story began\nlong before you woke up." and .shots[2].caption=="A world you’ve never seen." and .shots[3].caption=="A melody you’ve\nnever learned." and .shots[4].caption=="Friends you’ll never\nwant to forget." and .secondHookAt<=4 and .secondHookClearAt<=4.5 and .duration==29 and .transitionCount==6 and .audioEnvelope.battleLiftDb>=8 and .music.title=="Soar" and ([.shots[]|select(.live)]|length)==2 and ([.shots[]|select(.words>0 and .clearSeconds<([2,(.words/2.5)]|max))]|length)==0 and ([.shots[]|select(.framing.fit!="full-bleed-cover" and .framing.fit!="native-portrait-gameplay")]|length)==0' "$proof"
           test "$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x "$file")" = "1080x1920"
           ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$file" | grep -qx audio
           ffmpeg -v error -i "$file" -f null -
           mkdir -p public/promo/starbell
-          target=public/promo/starbell/story-trailer-en-v8-46073356421.mp4
+          target=public/promo/starbell/story-trailer-en-v9-46073562456.mp4
           cp "$file" "$target"
           # Cloudflare Pages enforces a 25 MiB file cap.
           if [ "$(stat -c%s "$target")" -ge 25000000 ]; then
             ffmpeg -v error -y -i "$file" -c:v libx264 -preset medium -b:v 4000k -maxrate 4800k -bufsize 8000k -c:a aac -b:a 192k -movflags +faststart "$target"
           fi
           test "$(stat -c%s "$target")" -lt 25000000
-          ffmpeg -v error -y -i "$target" -frames:v 1 -q:v 2 public/promo/starbell/story-trailer-en-v8-46073356421.jpg
+          ffmpeg -v error -y -i "$target" -frames:v 1 -q:v 2 public/promo/starbell/story-trailer-en-v9-46073562456.jpg
           cp "$proof" public/promo/starbell/review-proof.json
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -75,8 +75,8 @@ jobs:
           const updatedAt=new Date().toISOString();
           const priorPath='public/promo/starbell/review.json';
           const prior=fs.existsSync(priorPath)?JSON.parse(fs.readFileSync(priorPath,'utf8')):{};
-          const revision=proof.version;if(revision!=='V8')throw Error('Unexpected trailer version');
-          fs.writeFileSync('public/promo/starbell/review.json',JSON.stringify({slug:'starbell',video:'/promo/starbell/story-trailer-en-v8-46073356421.mp4',poster:'/promo/starbell/story-trailer-en-v8-46073356421.jpg',duration:proof.duration,version:revision,createdAt:updatedAt,updatedAt,source:proof.live.source,sourceByClip:proof.live.sourceByClip,music:proof.music,renderRun:46073356421,approved:false,published:false,shots:proof.shots.map(s=>({scene:s.id,seconds:s.seconds,clearSeconds:s.clearSeconds,transitionOut:s.transitionOut})),readingWpm:proof.readingWpm,transitionCount:proof.transitionCount,secondHookAt:proof.secondHookAt,framing:proof.framing,audioEnvelope:proof.audioEnvelope},null,2)+'\n');
+          const revision=proof.version;if(revision!=='V9')throw Error('Unexpected trailer version');
+          fs.writeFileSync('public/promo/starbell/review.json',JSON.stringify({slug:'starbell',video:'/promo/starbell/story-trailer-en-v9-46073562456.mp4',poster:'/promo/starbell/story-trailer-en-v9-46073562456.jpg',duration:proof.duration,version:revision,createdAt:updatedAt,updatedAt,source:proof.live.source,sourceByClip:proof.live.sourceByClip,music:proof.music,renderRun:46073562456,approved:false,published:false,shots:proof.shots.map(s=>({scene:s.id,seconds:s.seconds,clearSeconds:s.clearSeconds,transitionOut:s.transitionOut})),readingWpm:proof.readingWpm,transitionCount:proof.transitionCount,secondHookAt:proof.secondHookAt,framing:proof.framing,audioEnvelope:proof.audioEnvelope},null,2)+'\n');
           const p='public/promo/review/index.html';
           let h=fs.readFileSync(p,'utf8');
           if(!h.includes("'/promo/starbell/review.json")){
@@ -90,7 +90,7 @@ jobs:
           if(!h.includes('Music credit: '))h=h.replace("video.addEventListener('play',", "if(entry.music){const music=document.createElement('small');music.textContent='Music credit: '+entry.music.title+' — '+entry.music.artist+' · '+entry.music.license+' (edited)';const link=document.createElement('a');link.href=entry.music.source;link.textContent=' Source';link.target='_blank';link.rel='noopener';music.append(link);article.append(music);}\n   video.addEventListener('play',");
           if(!h.includes('entry.version ?'))h=h.replace("note.textContent=Number(entry.duration||0).toFixed(1)+' 秒 · '","note.textContent=(entry.version ? entry.version+' · '+formatDate(entry.updatedAt||entry.createdAt)+' 更新 · ' : '')+Number(entry.duration||0).toFixed(1)+' 秒 · '");
           if(!h.includes('star?.version'))h=h.replace("$('version').textContent=(data.latestVersion||data.version||'最新版本')+(data.createdAt?' · '+formatDate(data.createdAt)+' 更新':'')+' · '+box.children.length+' 条';","const newest=[data.createdAt,star?.updatedAt||star?.createdAt].filter(Boolean).sort().at(-1);\n  $('version').textContent=(data.latestVersion||data.version||'最新版本')+(star?.version?' · 星铃回响 '+star.version:'')+(newest?' · '+formatDate(newest)+' 更新（PT）':'')+' · '+box.children.length+' 条';");
-          h=h.replace(/'starbell':\s*\[\[.*?\]\],/, "'starbell':[['hook','云海开场'],['secret','故事悬念'],['explore','眠根林探索'],['friends','伙伴'],['battle','双猫合击'],['end','试玩邀请']],");
+          h=h.replace(/'starbell':\s*\[\[.*?\]\],/, "'starbell':[['hook','云海开场'],['secret','故事悬念'],['explore','眠根林探索'],['melody','神秘旋律'],['friends','伙伴'],['battle','双猫合击'],['end','试玩邀请']],");
           fs.writeFileSync(p,h);
           NODE
       - name: Commit review assets only, never publish to social networks
@@ -126,12 +126,12 @@ jobs:
       - name: Build existing website with review-only media changes
         run: |
           set -euo pipefail
-          test -s public/promo/starbell/story-trailer-en-v8-46073356421.mp4
+          test -s public/promo/starbell/story-trailer-en-v9-46073562456.mp4
           npm ci
           npm install --no-save --no-package-lock sharp@0.34.5
           bash scripts/fetch-cat-music.sh
           GITHUB_SHA="$(git rev-parse HEAD)" npm run build:pages
-          test -s cloudflare-pages/public/promo/starbell/story-trailer-en-v8-46073356421.mp4
+          test -s cloudflare-pages/public/promo/starbell/story-trailer-en-v9-46073562456.mp4
           test "$(jq '.trailers|length' cloudflare-pages/public/promo/latest-review.json)" = 7
           grep -q 'data.trailers.unshift(star)' cloudflare-pages/public/promo/review/index.html
       - name: Upload to the existing Cloudflare Pages project
@@ -144,9 +144,9 @@ jobs:
         run: |
           set -euo pipefail
           for i in {1..12}; do
-            if curl -fsS 'https://morrowwish.vercel.app/promo/review/?qa=starbell-46073356421' | grep -q 'data.trailers.unshift(star)' &&
-               curl -fsS 'https://morrowwish.vercel.app/promo/starbell/review.json?qa=46073356421' | jq -e '.renderRun==46073356421 and .approved==false and .version=="V8" and (.updatedAt|type=="string")' >/dev/null &&
-               curl -fsS -r 0-4095 'https://morrowwish.vercel.app/promo/starbell/story-trailer-en-v8-46073356421.mp4?qa=46073356421' -o /tmp/starbell-range.mp4 &&
+            if curl -fsS 'https://morrowwish.vercel.app/promo/review/?qa=starbell-46073562456' | grep -q 'data.trailers.unshift(star)' &&
+               curl -fsS 'https://morrowwish.vercel.app/promo/starbell/review.json?qa=46073562456' | jq -e '.renderRun==46073562456 and .approved==false and .version=="V9" and (.updatedAt|type=="string")' >/dev/null &&
+               curl -fsS -r 0-4095 'https://morrowwish.vercel.app/promo/starbell/story-trailer-en-v9-46073562456.mp4?qa=46073562456' -o /tmp/starbell-range.mp4 &&
                test -s /tmp/starbell-range.mp4; then
               echo 'VERIFIED https://morrowwish.vercel.app/promo/review/'
               exit 0
