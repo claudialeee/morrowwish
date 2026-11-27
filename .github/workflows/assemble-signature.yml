@@ -1,0 +1,44 @@
+name: Assemble genuine signature skill and SSR promo candidates
+on:
+  push:
+    branches: [review/cat-bond-signature-media-20261127]
+    paths: ['assemble-signature.py','.github/workflows/assemble-signature.yml']
+permissions:
+  actions: read
+  contents: write
+jobs:
+  media:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Await existing targeted recording jobs and import evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run watch 46071796457 --interval 15 || true
+          gh run watch 46071855122 --interval 15 || true
+          mkdir -p signature-input/landscape signature-input/portrait
+          git fetch --depth=1 origin review/cat-bond-signature-landscape-20261127
+          if git cat-file -e FETCH_HEAD:signature-capture/landscape-report.json 2>/dev/null; then
+            git archive FETCH_HEAD signature-capture/landscape signature-capture/landscape-report.json | tar -x --strip-components=1 -C signature-input/landscape
+          fi
+          git fetch --depth=1 origin review/cat-bond-release-bundle-20261127
+          if git cat-file -e FETCH_HEAD:signature-capture/portrait-report.json 2>/dev/null; then
+            git archive FETCH_HEAD signature-capture/portrait signature-capture/portrait-report.json | tar -x --strip-components=1 -C signature-input/portrait
+          fi
+      - name: Validate and assemble authentic final videos
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          python3 -c 'import PIL' || python3 -m pip install --break-system-packages pillow
+          python3 assemble-signature.py
+      - name: Save generated candidates and actual verification evidence
+        if: always()
+        run: |
+          if [ -d signature-media ]; then
+            git config user.name 'Morrow Wish release QA'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -f signature-media
+            git diff --cached --quiet || git commit -m 'Save genuine signature and SSR media candidates [skip ci]'
+            git push origin HEAD:review/cat-bond-signature-media-20261127
+          fi
