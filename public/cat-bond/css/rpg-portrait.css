@@ -429,3 +429,15 @@
  #stage .rw-world.rw-chase-mode:not([hidden])>.rw-chase-bar{display:grid!important;grid-template-columns:1fr 1fr;gap:4px!important}
  #stage .rw-world.rw-chase-mode .rw-chase-status{background:#fff7e8ed;border-radius:8px;padding:4px;font-size:12px!important}
 }
+
+/* Combat victory, final-act dialogue and regional restoration never revert to a wide plate on phones. */
+@media (orientation:portrait) and (max-width:700px){
+ #stage .res-host:is([data-scene="forge:E-03"],[data-scene="finale:B-01"],[data-scene="finale:B-02"],[data-scene="finale:B-03"]){isolation:isolate;overflow:hidden;background:#e8dac4!important}
+ #stage .res-host:is([data-scene="forge:E-03"],[data-scene="finale:B-01"],[data-scene="finale:B-02"],[data-scene="finale:B-03"])::before{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;background-position:center;background-size:cover;background-repeat:no-repeat}
+ #stage .res-host[data-scene="forge:E-03"]::before{background-image:url("../assets/mobile-portrait/lantern-city.webp")}
+ #stage .res-host[data-scene="finale:B-01"]::before{background-image:url("../assets/mobile-portrait/battle-finale.webp")}
+ #stage .res-host[data-scene="finale:B-02"]::before{background-image:url("../assets/mobile-portrait/battle-finale-chorus.webp")}
+ #stage .res-host[data-scene="finale:B-03"]::before{background-image:url("../assets/mobile-portrait/battle-finale-lock.webp")}
+ #stage .rw-world.rw-story-ceremony:not([hidden])>.rw-shell{inset:0!important;width:100%!important;height:100%!important;background:transparent!important}
+ #stage .rw-world.rw-story-ceremony:not([hidden])>.rw-shell>.rw-surface{inset:0!important;left:0!important;top:0!important;transform:none!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;aspect-ratio:auto!important}
+}

@@ -76,7 +76,7 @@ jobs:
           # Opening dialogue and Harbor portrait plates affect no other chapters.
           baseline=4d09ad3c8468cb3a4a5bdc4b6d26cf400d7765ab
           if git cat-file -e "$baseline^{commit}" && git merge-base --is-ancestor "$baseline" HEAD && ! git diff --name-only "$baseline" HEAD | grep -Ev '^(public/cat-bond/(css/rpg-portrait\.css|index\.html|js/resonance/(npc-world|world-runtime|sky-flight|integration-entry|canon22-spatial|world-mechanisms|library-mechanisms|world-exploration|world-bridge)\.mjs)|scripts/(cat-bond-release-prologue-qa|cat-bond-experience-chapters|starbell-unified-layout-regression|cat-bond-canon22-migration-audit)\.mjs|\.github/workflows/starbell-unified-layout\.yml)$'; then
-            if [[ "$CAT_BOND_CHAPTERS" != "finale" && "$CAT_BOND_CHAPTERS" != "epilogue" ]]; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
+            if [[ "$CAT_BOND_CHAPTERS" != "epilogue" ]]; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
             exit 0
           fi
           if git diff-tree --no-commit-id --name-only -r HEAD | grep -Eq 'world-exploration\.mjs|world-bridge\.mjs|world-runtime\.mjs|canon22-spatial\.mjs|campaign\.mjs|cat-bond-experience-chapters\.mjs|starbell-unified-layout\.yml'; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
@@ -104,7 +104,7 @@ jobs:
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
           node scripts/cat-bond-experience-targets.mjs
-          if [[ "$CAT_BOND_CHAPTERS" != "finale" && "$CAT_BOND_CHAPTERS" != "epilogue" ]]; then export CAT_BOND_PORTRAIT=1; fi
+          if [[ "$CAT_BOND_CHAPTERS" != "epilogue" ]]; then export CAT_BOND_PORTRAIT=1; fi
           node scripts/cat-bond-experience-chapters.mjs
       - uses: actions/upload-artifact@v4
         if: always()

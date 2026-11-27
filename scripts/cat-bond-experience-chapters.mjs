@@ -335,7 +335,9 @@ async function run(chapter){
    await page.waitForFunction(()=>__game.scene==='map',null,{timeout:180000});
    await page.locator('#library-battle-ok').waitFor();await shot(operation+'-result');await page.locator('#library-battle-ok').click();
   }
-  await op(operation);if(operation==='battle:central-echo')assert.equal(await page.evaluate(()=>CatBondResonance.snapshot().support.length),6,'All six regions must have answered');
+  await op(operation);
+  if(portrait){const original=page.viewportSize();for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){await page.setViewportSize(viewport);await page.waitForFunction(()=>{const stage=document.querySelector('#stage'),r=stage?.getBoundingClientRect();if(!r||r.height<=r.width||r.width<innerWidth*.9)return false;const story=stage.querySelector('.res-host:not([hidden])');if(story){const box=story.getBoundingClientRect(),css=getComputedStyle(story,'::before');return box.height>box.width&&box.height>=r.height*.9&&(!css.backgroundImage.includes('mobile-portrait')||css.backgroundSize==='cover');}const world=stage.querySelector('.rw-world:not([hidden])');if(!world)return false;const c=world.querySelector('.rw-surface'),b=c?.getBoundingClientRect();return b&&b.height>b.width&&Number(c.dataset.logicalHeight)>Number(c.dataset.logicalWidth);},null,{timeout:15000});await shot(operation+'-postbattle-'+viewport.width);}await page.setViewportSize(original);}
+  if(operation==='battle:central-echo')assert.equal(await page.evaluate(()=>CatBondResonance.snapshot().support.length),6,'All six regions must have answered');
   measurement.status='verified win';
   }finally{
    measurement.wallSeconds=(Date.now()-t)/1000;
