@@ -74,6 +74,7 @@ function runGuardianMatrix(src,emit){
  const main=matrix.filter(r=>r.mode==="casual"&&r.teamType==="plain"&&r.size!=="L");
  assert(main.length===14&&main.every(r=>r.result==="win"&&r.casts>=1&&r.enemyAttacks>=1),"on-level casual regression");
  const reserve=matrix.filter(r=>r.teamType==="reserve");for(const r of reserve){const p=matrix.find(x=>x.id===r.id&&x.mode==="hardcore"&&x.teamType==="plain");assert(r.level===p.level&&r.maxhp===p.maxhp,"reserve inflated boss "+r.id);}
+ const solo=matrix.filter(r=>r.teamType==="solo");assert(solo.every(r=>r.result==="win"&&r.t<85),"solo accessible without a time-cap loss");
  const bonded=matrix.filter(r=>r.teamType==="bonded");assert(bonded.every(r=>r.result==="win"&&r.duo>=1),"bonded team failed to use duo");
  const phases=main.filter(r=>["starfall","mastery"].includes(r.id));assert(phases.every(r=>r.dark),"phase skipped");
  return {matrix,mechanism};

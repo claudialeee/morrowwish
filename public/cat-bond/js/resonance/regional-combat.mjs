@@ -180,7 +180,7 @@ function install(){
  function resolve(b,r,cast){
   for(const f of living(b)){
    if(!cast.patterns.some(p=>inPattern(p,f)))continue;
-   const hit=b.resolveHit(f,"wild",{element:r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element,kind:"aoe",isBasic:false},Math.max(8,f.maxhp*(r.balance?.hazard??(r.kit.kind==="embers"?.14:.10))),f.x,f.y);
+   const hit=b.resolveHit(f,"wild",{element:cast.element||(r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element),kind:"aoe",isBasic:false},Math.max(8,f.maxhp*(r.balance?.hazard??(r.kit.kind==="embers"?.14:.10))),f.x,f.y);
    if(hit?.dealt>0){
     if(r.kit.kind==="roots")f.rootT=Math.max(f.rootT||0,1.5);
     if(r.kit.kind==="gale"){const dir=f.x<b.W/2?-1:1;f.x=clamp(f.x+dir*38,32,b.W-32);}
@@ -202,7 +202,7 @@ function install(){
   r.next-=dt;
   if(r.next<=0){
    const t=target(b);if(!t)return;
-   r.cast={remaining:1.45,max:1.45,patterns:buildPattern(r.kit.kind,b.W,b.H,b.topMargin,b.bottomMargin,t,r.cycle++)};
+   r.cast={remaining:1.45,max:1.45,element:r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element,patterns:buildPattern(r.kit.kind,b.W,b.H,b.topMargin,b.bottomMargin,t,r.cycle++)};
    const line=b.libraryEncounter?.bossId==="library"?["镜影即将反击，躲开标记！","Mirror counter incoming: dodge the marked areas!"]:labels[r.kit.kind];notice(b,line[0],line[1]);paintHud(b);
   }
  }

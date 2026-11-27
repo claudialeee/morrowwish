@@ -16,7 +16,7 @@ export const GUARDIAN_BALANCE=Object.freeze({
  sky:{hp:2.20,attack:1,first:1.6,period:5.5,shot:2.7,hazard:.12},
  library:{hp:2.25,attack:1,first:1.6,period:6.2,shot:3.3,hazard:.13},
  starfall:{hp:2.65,attack:1.08,first:1.6,period:5.8,shot:3.1,hazard:.14},
- mastery:{hp:3.15,attack:1.16,first:1.4,period:4.4,shot:2.5,hazard:.17}
+ mastery:{hp:3.15,attack:1.30,first:1.4,period:4.1,shot:2.3,hazard:.20}
 });
 export function guardianProfile(id,field,difficulty){
  const p=GUARDIAN_BALANCE[id];if(!p||!field.length)return null;
@@ -27,7 +27,10 @@ export function guardianProfile(id,field,difficulty){
  const averageLevel=active.reduce((n,f)=>n+(f.cat?.level||1),0)/active.length;
  const reference=(130+10*(averageLevel-1))*active.length;
  const base=reference*.35+sum*.65;
- return {...p,hp:Math.max(65,Math.round(base*p.hp*(hardcore?1.12:1))),hazard:p.hazard*(hardcore?1.18:1),hardcore};
+ // Solo attacks lack the two-cat reaction and focus-fire synergy; scale for
+ // the actual available damage rather than simply halving a paired HP pool.
+ const solo=active.length===1?({harbor:.62,forest:.55,forge:.85,sky:.70,library:.78,starfall:.72,mastery:.78}[id]):1;
+ return {...p,hp:Math.max(65,Math.round(base*p.hp*solo*(hardcore?1.12:1))),hazard:p.hazard*(hardcore?1.18:1),hardcore};
 }
 // Stable encounter archetypes, not additional collectible cats.
 export const bossTemplates=Object.freeze({harbor:"shell",forest:"clover",forge:"cinder",sky:"fizz",library:"button",starfall:"sunlace",mastery:"aurora"});
