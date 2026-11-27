@@ -2455,3 +2455,35 @@ RSI cycle 2026-11-27T09:06:50Z: no agent proposal beat the MOBA judge; archive c
 - All non-cautious personas held or improved
 - 谨慎 2→3 (+1): marginal win. Still ceiling.
 - 探索 6→7 and 懒人 6→7: adversary says explorer "wins at 95% HP 8/8" — a success-feeling signal but masks difficulty-curve gap.
+
+## Playtest cycle wb3r7ejxm — 2026-11-27 (post 修 + 523f0a64, 15 ahead)
+
+**Headline**: Cat Bond's combat reads legibly but feels flat and verb-shallow — several personas are winning without engaging (lazy 99% HP auto-stomps), losing without learning (panicky 0/8 timeout ejections), or engaged-but-bored (impatient/kiter flatline at 3/10) because feedback dynamic range, encounter silhouette variance, and defensive-verb relevance all sit under threshold.
+
+**funMean 4.33** (↓0.67 vs wowed850p 5.0, same as w06q78tip):
+- 狂按 6 / 探索 6 / 懒人 5 / 谨慎 **3** / 手忙脚乱 3 / 没耐心 3
+
+### Auto-fixes this cycle: 0 (no adversary-confirmed P0)
+
+43 critiques. 28 P1 (6 local-numeric + 22 additive-flag). 15 P2 (3 local-numeric + 12 additive-flag). All findings-only per cron rule.
+
+### Harness
+16 of 73 agent calls hit StructuredOutput retry cap. 57 succeeded.
+
+### Note on known-red upstream state
+**修 3 tests all GREEN** as of 523f0a64 — the full 7-script gate passed pre-cycle.
+
+### Top P1 themes (findings-only)
+1. **Ult button state illegible** — ultimate() throttles cooldown toast to once/2.5s; mashers press 11× in 2s and see ~1 toast. Masher eyes on arena, not reading floating text. Need live CD/meter numeral + per-press denial shake.
+2. **Incoming-DPS invisibility** — 546 dmg death produces no "you are bleeding 2× baseline" cue. Needs _recentDmgWindow ring + red ring telegraph when sum ≥ 20% maxhp in 2s AND currentHp ≤ 55%.
+3. **Timeout is semantically empty** — 92% HP timeout = "nothing happened" is a legal end-state, rewarding zero intent. Needs `timeoutVerdict` based on enemyHpFrac at expiry (soft-win vs soft-loss).
+4. **E-slot ignored 8/8 at 75% winrate** — depth-rot. P1 passives don't fix E-side depth.
+5. **谨慎 3 persistence** — kiter still ceiling at 3; tank body-block + wall gate didn't help (kiter doesn't engage).
+
+### Session trend (last 4 cycles)
+- w06q78tip: 4.33
+- w892jymfa: 4.5
+- wowed850p: 5.0 (session peak)
+- wb3r7ejxm: 4.33 (regression)
+
+Regression suggests wowed850p high was high-variance of the harness, not a durable improvement — no combat-code change between the two cycles (modulo the 修 fixes which only touched tests + arcanePulse allowRoles, not perceptual channels).
