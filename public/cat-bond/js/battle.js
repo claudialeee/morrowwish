@@ -3301,7 +3301,21 @@ class CaptureBattle {
     const JUMP_R = 240, MAX = 4;
     let from = { x: f.x, y: f.y };
     const hit = new Set();
-    let node = this.targetEnemy ? this.targetEnemy() : this.nearestEnemy(f.x, f.y);
+    // Owner 2026-11-27 Phase 2.4: first-node freeze. Prior behavior re-picked
+    // nearest at fire time (via this.targetEnemy() / this.nearestEnemy(f.x,f.y)).
+    // If the chain has a windup/pulse delay, the target moved between press and
+    // fire, and the first bolt could leap to a different enemy than the player
+    // aimed at. Now honor sk._cast.target as the seed when set — pick the enemy
+    // nearest to the SNAPSHOT point, not the caster's current pos. Jumps after
+    // the first node stay live (subsequent chain hops want to adapt to who's
+    // still alive and reachable).
+    let node;
+    const seed = sk?._cast?.target;
+    if (seed && Number.isFinite(seed.x) && Number.isFinite(seed.y)) {
+      node = this.nearestEnemy(seed.x, seed.y);
+    } else {
+      node = this.targetEnemy ? this.targetEnemy() : this.nearestEnemy(f.x, f.y);
+    }
     let n = 0, power = dmg;
     while (node && n < MAX) {
       hit.add(node);

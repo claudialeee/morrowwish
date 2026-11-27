@@ -456,6 +456,38 @@ function main() {
     });
   }
 
+  // ---- Phase 2.4 regression: chain first-node freeze ----
+  // Chain skill (boltArc) cast at enemy at X. Then enemy teleports BEFORE chainBolt fires
+  // (simulated via spawn-a-second-enemy at a far position; first enemy stays close). Assert:
+  // post Phase 2.4, chain's first bolt hits the enemy nearest to the SNAPSHOT point (the one
+  // at cast-time), NOT the one that's now closest to caster after a hypothetical move.
+  const chainSk = SKILLS_LIST.find(s => s.id === 'boltArc') || SKILLS_LIST.find(s => s.kind === 'chain');
+  if (chainSk) {
+    const CASTER = { x: 400, y: 360 };
+    const SEED_TARGET = { x: 550, y: 360 }; // 150px right — snapshot points here
+    resetProbe(chainSk.id, { x: CASTER.x, y: CASTER.y, r: 18, _aim: 0 });
+    const { f, aim, e } = setupCastContext(b, CASTER, SEED_TARGET);
+    // Spawn a decoy closer to the caster NOW (after snapshot): if the fix is missing,
+    // chainBolt will pick this decoy instead of the frozen SEED_TARGET enemy.
+    const decoy = b.enemies.find(x => x !== e && x.alive) || null;
+    if (decoy) {
+      decoy.x = CASTER.x + 30;
+      decoy.y = CASTER.y;
+      decoy.hp = decoy.maxhp = 100000;
+      decoy.alive = true; decoy.inv = 0; decoy.flash = 0;
+    }
+    castAndStep(b, f, chainSk, aim, 200, 0.016);
+    const firstHit = probe.chain[0];
+    const snapshotWins = firstHit && Math.hypot(firstHit.x - SEED_TARGET.x, firstHit.y - SEED_TARGET.y) < 20;
+    tested++;
+    if (snapshotWins) {
+      results.push({ skillId: chainSk.id + '[phase2.4]', kind: 'chain-freeze', ok: true, reason: 'chain first-node honored sk._cast.target snapshot (ignored closer decoy)' });
+    } else {
+      violations++;
+      results.push({ skillId: chainSk.id + '[phase2.4]', kind: 'chain-freeze', ok: false, reason: `chain first-node did NOT freeze — hit at ${firstHit ? `(${firstHit.x.toFixed(0)},${firstHit.y.toFixed(0)})` : 'none'}, expected near seed (550,360)`, landing: firstHit });
+    }
+  }
+
   console.log('  SKILL-LIST size: ' + SKILLS_LIST.length + '  tested: ' + tested + '  skipped: ' + skipped + '  violations: ' + violations);
   console.log('');
 
