@@ -6,18 +6,18 @@ export const activities={
  "muling:bells":{title:["修理旧铃","The old bell"],action:["帮暮铃修理","Help Luna repair it"],hint:["暮铃打开工具袋，请你帮忙扶稳旧铃。","Luna opens the toolbox and asks you to steady the old bell."]},
  "muling:cooking":{"title":["烟熏惊喜","A smoky surprise"],"action":["一起尝尝今天的料理","Taste today's cooking together"],"hint":["暮铃端来一盘微微焦黑的点心，偷偷看你的表情。","Luna brings over a slightly scorched snack and watches your expression."]},
  "muling:accountability":{"title":["一起决定","Decide together"],"action":["先听听大家的想法","Ask everyone what they think"],"hint":["暮铃带来了修花园铃铛的提议。这一次，她没有擅自开始。","Luna brings a proposal to repair the garden bell. This time, she hasn't started without asking."]},
- "jiedeng:maintain-lighthouse":{"title":["灯塔的值守","Keeping the light"],"action":["陪檐灯检查灯光","Check the light with Alder"],"hint":["檐灯正在记录灯塔的光。他把记录本向你挪了挪。","Alder is checking the beacon. He shifts his logbook toward you."]},
- "qilan:chart-harbor":{"title":["下一趟航程","The next voyage"],"action":["和栖蓝看看新航图","Look over the new chart"],"hint":["栖蓝摊开航图，上面画着几条新的路线。","Skye unfolds a chart with several new routes drawn on it."]},
+ "jiedeng:maintain-lighthouse":{"title":["家铃的声音","Keeping the house bells ringing"],"action":["陪檐灯检查家铃","Check the house bells with Alder"],"hint":["檐灯正记下每家不同的门铃声，怕哪一家又找不着回家的路。","Alder is recording each home's distinctive chime, so no one loses their way home again."]},
+ "qilan:chart-harbor":{"title":["下一段旅程","The next journey"],"action":["和栖蓝看看新巡铃图","Look over the new chart"],"hint":["栖蓝摊开巡铃图，上面画着几条新的路线。","Skye unfolds a chart with several new routes drawn on it."]},
  "yahe:plant-herbs":{"title":["药草园的新芽","New garden shoots"],"action":["看看水渠和新芽","Look at the channels and shoots"],"hint":["芽禾蹲在新苗旁，正犹豫要把下一批种子种在哪里。","Fern sits beside the seedlings, wondering where to plant the next seeds."]},
  "yuchuan:inspect-water":{"title":["水边的记录","Notes by the water"],"action":["陪榆川核对水量","Review the water readings"],"hint":["榆川把两份水量记录放在一起，等你来看看。","Rowan lays two water-level records side by side for you to see."]},
- "jinpo:test-safety":{"title":["安全不是一个人的事","Safety is shared"],"action":["听听烬婆和小栗的意见","Listen to Ember and Pip"],"hint":["烬婆把炉城的新图纸铺在桌上，特地留了一个空白位置。","Ember spreads a new forge diagram on the table, deliberately leaving space for comments."]},
- "xiaomao:assemble-part":{"title":["小栗的新阀门","Pip's new valve"],"action":["看看小栗的成果","Look at Pip's work"],"hint":["小栗举起刚做好的阀门，兴奋地向你展示。","Pip proudly holds up a newly finished valve."]},
+ "jinpo:test-safety":{"title":["一起设计新花灯","Designing a new lantern together"],"action":["听听烬婆和小栗的意见","Listen to Ember and Pip"],"hint":["烬婆把新灯架的图样铺在桌上，留了块空白让小栗画自己的主意。","Ember spreads a lantern-frame design on the table, leaving a space for Pip's own ideas."]},
+ "xiaomao:assemble-part":{"title":["小栗的新灯架","Pip's new lantern frame"],"action":["看看小栗的成果","Look at Pip's work"],"hint":["小栗举起刚做好的灯架，兴奋地让你看看歪耳猫的影子。","Pip proudly lifts a new lantern frame to show you the crooked-eared cat's shadow."]},
  "lingyu:prepare-flight":{"title":["出发前的风","Wind before departure"],"action":["陪翎羽观察风向","Watch the wind with Wren"],"hint":["翎羽望着飘动的风标，准备下一趟飞行。","Wren watches the wind markers before the next flight."]},
  "yuanfan:deliver-cargo":{"title":["自己的路线","A route of my own"],"action":["听远帆讲讲新路线","Hear Finn's route"],"hint":["远帆指着自己画出的航线，眼里闪着期待。","Finn points to a route drawn in their own hand, eyes bright with anticipation."]},
  "moye:catalog-record":{"title":["档案的新规则","New archive rules"],"action":["看看档案的查阅说明","Read the archive guide"],"hint":["墨页正在整理新目录，把公共记录与私人记录分开。","Quill is sorting the new catalogue, separating public from personal records."]},
  "baikan:verify-document":{"title":["再核对一次","Check once more"],"action":["陪白羽比对原件","Compare the originals"],"hint":["白羽发现了另一份记录，想先把两份放在一起看看。","Ivy has found another record and wants to compare the originals first."]},
  "xingya:align-observatory":{"title":["各地的星图","Each settlement's stars"],"action":["看看各地送来的观测记录","Review the settlements' readings"],"hint":["星芽桌上不再只有一张中央星图，而是六地送来的记录。","Nova's desk now holds readings from the six regions, rather than just one central star chart."]},
- "lichuan:guide-caravan":{"title":["有回信的旅程","A journey with replies"],"action":["听砾川说下一趟旅行","Hear about Flint's next journey"],"hint":["砾川整理着行囊，旁边放着写给港口朋友的信。","Flint packs a bag beside a letter addressed to a friend at the harbor."]}
+ "lichuan:guide-caravan":{"title":["有回信的旅程","A journey with replies"],"action":["听砾川说下一趟旅行","Hear about Flint's next journey"],"hint":["砾川整理着行囊，旁边放着写给风铃镇朋友的信。","Flint packs a bag beside a letter addressed to a friend in Windchime Town."]}
 };
 function install(){
  const stage=document.getElementById("stage"),api=window.CatBondResonance;if(!stage||!api)return;
