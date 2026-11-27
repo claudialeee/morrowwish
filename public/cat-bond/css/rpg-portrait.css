@@ -370,3 +370,20 @@
  #stage .res-host[data-scene="harbor:H-05"]::before{background-image:url("../assets/mobile-portrait/harbor-ceremony-matched.webp")!important}
  #stage .res-host .res-skip-top{right:max(12px,env(safe-area-inset-right,0px))!important}
 }
+
+/* Flight is an edge-to-edge portrait playfield with a compact, reserved control dock. */
+@media (orientation:portrait) and (max-width:700px){
+ #stage .rw-world.rw-native-puzzle.rw-dedicated-puzzle:has(.rw-active-flight):not([hidden]){--rw-flight-dock:144px;--rw-game-top:56px;--rw-game-gap:0px;background:var(--rw-puzzle-art) center/cover no-repeat!important}
+ #stage .rw-world.rw-native-puzzle.rw-dedicated-puzzle:has(.rw-active-flight [data-sky-land]):not([hidden]){--rw-flight-dock:194px}
+ #stage .rw-world.rw-native-puzzle.rw-dedicated-puzzle:has(.rw-active-flight):not([hidden])>.rw-shell{inset:var(--rw-game-top) 0 calc(var(--rw-flight-dock) + env(safe-area-inset-bottom,0px)) 0!important;width:auto!important;height:auto!important;background:transparent!important}
+ #stage .rw-world.rw-native-puzzle.rw-dedicated-puzzle:has(.rw-active-flight)>.rw-dedicated-rail{inset:auto 6px max(6px,env(safe-area-inset-bottom,0px))!important;height:auto!important;min-height:0!important;max-height:calc(var(--rw-flight-dock) - 6px)!important;width:auto!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;gap:4px!important;overflow:auto!important;box-sizing:border-box!important}
+ #stage .rw-world:has(.rw-active-flight) .rw-minigame-goal{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:3px 5px!important;align-items:center!important;padding:4px 7px!important;border-radius:9px;background:#fff7e8ed;color:#493e2b}
+ #stage .rw-world:has(.rw-active-flight) .rw-minigame-title{font-size:13px!important;line-height:1.2!important}
+ #stage .rw-world:has(.rw-active-flight) .rw-minigame-hint{grid-column:1/-1;font-size:11px!important;line-height:1.3!important}
+ #stage .rw-world:has(.rw-active-flight) .rw-minigame-goal>.rw-minigame-leave{grid-column:2;grid-row:1;min-height:30px!important;padding:2px 6px!important;font-size:11px!important}
+ #stage .rw-world:has(.rw-active-flight) .rw-minigame-goal>.rw-scene-motive{display:none!important}
+ #stage .rw-world:has(.rw-active-flight) .rw-dedicated-rail .rw-active-flight{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important;width:100%!important}
+ #stage .rw-world:has(.rw-active-flight) .rw-active-flight>.rw-sky-flight-status{grid-column:1/-1!important;background:#fff7e8ed;color:#493e2b!important;padding:4px 7px!important;border-radius:8px;font-size:11px!important;line-height:1.25!important;margin:0!important;min-height:0!important;overflow-wrap:anywhere}
+ #stage .rw-world:has(.rw-active-flight) .rw-active-flight>button{min-height:44px!important;width:100%!important;margin:0!important;padding:4px!important;box-shadow:none!important}
+ #stage .rw-world:has(.rw-active-flight) .rw-active-flight>button[data-sky-land]{grid-column:1/-1!important}
+}
