@@ -15,6 +15,9 @@ on:
       - 'scripts/cat-bond-test-start.mjs'
       - 'scripts/import-cat-bond-windchime-music.mjs'
       - 'scripts/check-cat-bond-audio-assets.mjs'
+      - 'scripts/starbell-release-gate.sh'
+      - 'scripts/starbell-garden-release-scope.sh'
+      - 'scripts/test-starbell-telemetry.mjs'
       - '.github/workflows/cat-bond-preview.yml'
   workflow_dispatch:
 permissions:
@@ -475,6 +478,9 @@ jobs:
             sleep 4
           done
           grep -Fq "data-source-sha=\"$SOURCE_SHA\"" /tmp/live-preview.html
+          curl -fsS "$URL/telemetry.js?sha=$SOURCE_SHA" -o /tmp/starbell-live-telemetry.js
+          cmp public/telemetry.js /tmp/starbell-live-telemetry.js
+          if grep -Fq "metricsVersion:1" public/telemetry.js; then node scripts/test-starbell-telemetry.mjs /tmp/starbell-live-telemetry.js; fi
           for endpoint in session cat-bond-cloud-save; do
             test "$(curl -sS -o /dev/null -w '%{http_code}' "$URL/api/$endpoint")" = 403
           done
