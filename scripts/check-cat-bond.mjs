@@ -482,10 +482,14 @@ assert.ok(Math.abs((10000-balanceEnemy.hp)-162)<.001,
   'stagger, armor break and capped 20% combo are one additive hit bucket');
 balanceEnemy.hp=10000;balanceEnemy.flash=0;
 balanceEnemy.status={rust:10,expose:4};damageBalance.combo=50;
+// Owner 2026-11-26 formula refactor — vuln bucket cap raised 0.50 → 0.80 after
+// merging vulnerableFlat 1.3 into the hurtBucket as +0.30. staggerT=2 persists
+// from the prior sub-test (shared fixture), so bucket is rust 0.12 + expose 0.20
+// + stagger 0.30 = 0.62 (uncapped, below 0.80) + combo cap 0.20 = 0.82.
+// Expected: 100 × 1.82 = 182. (Was 170 under old 0.50 cap that clipped 0.62 → 0.50.)
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,false);
-// 100 × (vuln cap 1.70) × 1.0 = 170 (was 153 under 0.9 player nerf)
-assert.ok(Math.abs((10000-balanceEnemy.hp)-170)<.001,
-  'vulnerability caps at +50%, combo caps at +20%');
+assert.ok(Math.abs((10000-balanceEnemy.hp)-182)<.001,
+  'vulnerability caps at +80% (post-vuln merge) — rust+expose+stagger+combo stack');
 assert.ok(damageBalance.comboMult()<=1.20,'combo never exceeds +20%');
 const playerVulnerable=damageBalance.me();
 playerVulnerable.status={expose:4,rust:8};

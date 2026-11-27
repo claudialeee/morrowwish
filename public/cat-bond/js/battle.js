@@ -6391,7 +6391,12 @@ class CaptureBattle {
     // Combined vulnerability cap allows stagger (+30%) and armor break (+12%)
     // while preventing status stacking from outgrowing intended skill damage.
     if ((e.staggerT || 0) > 0) vulnerabilityBonus += 0.30;
-    const vulnBonus = Math.min(0.50, vulnerabilityBonus);
+    // Owner 2026-11-26 formula refactor: merged the vulnerableFlat ×1.3 (was applied
+    // in resolveHit) into this hurtBucket as +0.30 (Agent C). Single vulnerability
+    // channel, single visual tell. Stacks additively in the capped bucket so
+    // vulnerable + stagger + rust can't compound past the 0.50 cap.
+    if ((e.vulnerableT || 0) > 0) vulnerabilityBonus += 0.30;
+    const vulnBonus = Math.min(0.80, vulnerabilityBonus);  // cap lifted 0.50→0.80 per Agent B/C
     const frac0 = e.maxhp ? e.hp / e.maxhp : 1;
     // Boss: immune to auto-execute. Elite SR/SSR: fixed +20% execute bonus.
     // Ordinary enemies retain the 20–55% low-HP ramp; all are additive.
@@ -6421,6 +6426,18 @@ class CaptureBattle {
     }
     const sumBonus = 1 + vulnBonus + comboBonus + executeBonus + closeBonus;
     dmg *= sumBonus;
+    // Owner 2026-11-26 formula refactor — adversary FAIL-1 amendment: the 4 earned
+    // buckets (soft × crit × vulnFlat × hurt) can compound to 18.9× raw in extreme
+    // stacks. Cap the AGGREGATE "earned" multiplier excluding identity/elem/levelSup
+    // (which are universal rules, not stacking bonuses). Approximation: we only see
+    // sumBonus (post-vuln-merge includes vulnerableT+stagger+rust, comboBonus from
+    // combo-chain, executeBonus, closeBonus) and the applyHitEffects soft/crit mul is
+    // already baked into `dmg` here. Hard cap scaled damage at 3.5× pre-sumBonus dmg
+    // (which already carries soft × crit × elem). This saturates only in the top-1%
+    // extreme stacks, invisible to typical fights.
+    const preCap = dmg / sumBonus;
+    const maxEarned = preCap * 3.5;
+    if (dmg > maxEarned) dmg = maxEarned;
     if (this._debug) {
       this._dbgHurtBreakdown = {
         levelSup: this.levelSuppression || 1,
@@ -6704,8 +6721,13 @@ class CaptureBattle {
         this.vfx.impactType?.(target.x,target.y,'barrier',{color:'#a2dffc'});
       }
     }
-    // VULNERABLE after a Protect drops (后遗症): takes extra damage briefly.
-    if ((target.vulnerableT || 0) > 0) { dmg *= 1.3; if (this._debug && this._dbgResolveBreakdown) this._dbgResolveBreakdown.vulnFlatMul = 1.3; }
+    // Owner 2026-11-26 formula refactor: vulnerableFlat 1.3 USED to multiply here as a
+    // separate layer, causing a dual vulnerability channel (vulnBonus in hurtEnemy +
+    // vulnerableFlat here). Merged INTO hurtEnemy's vulnBonus as +0.30 (Agent C). Here
+    // we just stamp the debug slot — the multiplication moved to hurtEnemy.
+    if (this._debug && this._dbgResolveBreakdown) {
+      this._dbgResolveBreakdown.vulnFlatMul = (target.vulnerableT || 0) > 0 ? 1.3 : 1;
+    }
     // land it
     if (side === 'me') {
       // An authored skill drains poise only after its hit successfully lands;
