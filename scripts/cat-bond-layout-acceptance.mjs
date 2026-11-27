@@ -25,16 +25,17 @@ try{for(const {name,...profile} of profiles){
     const cropX=(i.naturalWidth*scale-r.width)*.5,cropY=(i.naturalHeight*scale-r.height)*.5;
     // Manually inspected source painting: both cover cats are inside this conservative normalized bounding box.
     const cats={left:.13*i.naturalWidth*scale-cropX,right:.87*i.naturalWidth*scale-cropX,top:.41*i.naturalHeight*scale-cropY,bottom:.70*i.naturalHeight*scale-cropY};
-    return {root:rect(root),art:rect(art),content:rect(content),image:{src:new URL(i.currentSrc).pathname,fit:getComputedStyle(i).objectFit,position:getComputedStyle(i).objectPosition,r,cats},spoilers:root.querySelectorAll('.cb-title-lead,img[src*="/leads/"]').length,buttons:[...content.querySelectorAll('button')].map(b=>{const r=rect(b);return {r,hit:b.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2))};})};
+    return {root:rect(root),art:rect(art),content:rect(content),image:{src:new URL(i.currentSrc).pathname,fit:getComputedStyle(i).objectFit,position:getComputedStyle(i).objectPosition,r,cats},title:{r:rect(root.querySelector('#cb-title-name')),visibility:getComputedStyle(root.querySelector('#cb-title-name')).visibility,display:getComputedStyle(root.querySelector('#cb-title-name')).display,opacity:getComputedStyle(root.querySelector('#cb-title-name')).opacity},spoilers:root.querySelectorAll('.cb-title-lead,img[src*="/leads/"]').length,buttons:[...content.querySelectorAll('button')].map(b=>{const r=rect(b);return {r,hit:b.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2))};})};
    });
    assert.equal(m.image.src,'/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp','native portrait illustration');
+   assert.ok(m.title.r.width>0&&m.title.r.height>0&&m.title.r.left>=m.root.left-1&&m.title.r.right<=m.root.right+1&&m.title.r.top>=m.root.top-1&&m.title.r.bottom<=m.root.bottom+1&&m.title.visibility==='visible'&&m.title.display!=='none'&&Number(m.title.opacity)>0,'title must be visible within the stage '+JSON.stringify(m.title));
    assert.equal(m.spoilers,0,'no plot lead portraits on the title');
    assert.ok(m.art.height>=m.root.height-2&&m.art.width>=m.root.width-2,'native title fills stage '+JSON.stringify(m));
    const {r,cats,fit,position}=m.image;
    assert.equal(fit,'cover');assert.equal(position,'50% 50%');
    assert.ok(r.width>=135&&r.height>=135&&r.left>=m.root.left-1&&r.right<=m.root.right+1&&r.top>=m.root.top-1&&r.bottom<=m.root.bottom+1,'cover frame is full bleed '+JSON.stringify(m));
    assert.ok(cats.left>=0&&cats.right<=r.width+1&&cats.top>=0&&cats.bottom<=r.height+1,'both original cover cats remain fully within the frame '+JSON.stringify(m));
-   assert.ok(m.buttons.every(b=>b.r.height>=44&&b.r.width>=44&&b.hit&&b.r.bottom<=m.root.bottom+1),'title actions accessible '+JSON.stringify(m));
+   assert.ok(m.buttons.every(b=>b.r.height>=44&&b.r.width>=44&&b.hit&&b.r.bottom<=m.root.bottom+1&&b.r.left>=m.root.left-1&&b.r.right<=m.root.right+1&&b.r.top>=m.root.top-1),'title actions accessible '+JSON.stringify(m));
    await page.screenshot({path:out+'/portrait-title-'+viewport.width+'.png'});
   }
   await page.setViewportSize(profile.viewport);
@@ -46,6 +47,9 @@ try{for(const {name,...profile} of profiles){
  await page.locator('#intro-slot-list [data-slot="slot1"]').click();
  await page.locator('#cb-player-first-intro').getByRole('button',{name:'Start exploring',exact:true}).click();
  await page.waitForFunction(()=>State.S.cats.length===1&&window.__game?.scene==='yard');
+ await page.locator('.sg-opening-quest .sg-quest-toggle').waitFor({state:'visible'});
+ assert.equal(await page.locator('.sg-quest-detail').isVisible(),false,'main quest panel starts collapsed');
+ await page.locator('[data-npc-talk="muling"][data-quest-primary="true"] .sg-quest-exclamation').waitFor({state:'visible'});
  await page.evaluate(async()=>{
   const {campaign}=await import('/cat-bond/js/resonance/campaign.mjs'),{makeEngine}=await import('/cat-bond/js/resonance/engine.mjs');
   const e=makeEngine(campaign);const ok=r=>{if(!r.ok)throw Error(r.reason);};

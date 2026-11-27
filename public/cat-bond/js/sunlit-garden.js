@@ -69,7 +69,9 @@
     const v=window.CatBondResonance?.view?.(),scene=v?.current?.id;
     const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden]),#cb-player-first-intro');
     const show=active&&game?.scene==='yard'&&state()?.cats?.length>0&&!covered&&(scene==='prologue:P-04'||scene==='prologue:P-05'||scene==='epilogue:E-02'||scene==='epilogue:E-03'||v?.ending);
-    guide.hidden=!show;if(!show){guideKey='';return}
+    guide.hidden=!show;if(!show){guideKey='';openingQuestOpen=false;return}
+    if(scene==='prologue:P-05'){refreshOpeningQuest(v);return;}
+    guide.classList.remove('sg-opening-quest');
     const en=isEnglish(),ending=!!v.ending,epilogue=['epilogue:E-02','epilogue:E-03'].includes(scene),talk=!ending&&(epilogue||v.cursor<v.current.lines.length),departure=scene==='prologue:P-05'&&!talk;
     const seen=state()?.sunlitGarden?.bookGuide||[],next=guideTabs.find(t=>!seen.includes(t[0])),guests=ending?syncGuestPage(v):{ids:[],pages:1};
     const echo=scene==='prologue:P-05'&&!!state()?.sunlitGarden?.exploration?.chartEcho;const key=scene+'|'+talk+'|'+en+'|'+v.openingMet+'|'+echo+'|'+seen.join(',')+'|'+(ending?guestRosterKey+'|'+guestPage+'|'+v.postgame.length:'');if(key===guideKey)return;guideKey=key;
@@ -96,6 +98,35 @@
 
     }
   }
+  function refreshOpeningQuest(v){
+    const en=isEnglish(),p=window.GardenExploration?.read?.(state()),met=!!v.openingMet;
+    const phase=met?'depart':!p?.chartStarted?'meet':!p.parts.includes(0)?'chart':!p.chartEcho?'bell':'return';
+    const key='opening|'+phase+'|'+en;
+    if(key===guideKey)return;guideKey=key;openingQuestOpen=false;
+    guide.classList.remove('sg-minimal-opening','sg-postgame-guide');guide.classList.add('sg-opening-quest');
+    guide.replaceChildren();
+    const toggle=document.createElement('button');toggle.type='button';toggle.className='sg-quest-toggle';toggle.textContent=en?'Main quest':'主线任务';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','sg-opening-quest-detail');
+    const detail=document.createElement('div');detail.id='sg-opening-quest-detail';detail.className='sg-quest-detail';detail.hidden=true;
+    const title=document.createElement('strong'),hint=document.createElement('span'),row=document.createElement('div');detail.append(title,hint,row);
+    const copy={
+      meet:['和陌生猫聊聊','Talk to the stranger','花园里有一只陌生猫，去看看它想说什么。','A stranger is in the garden. See what they have to say.'],
+      chart:['找回飞走的航图','Find the windblown chart','寻找被风吹走的航图片段。','Look for the chart piece carried off by the wind.'],
+      bell:['看看旧铃','Investigate the old bell','旧铃突然响了，去看看发生了什么。','The old bell suddenly rang. Go see what happened.'],
+      return:['回去找陌生猫','Return to the stranger','把旧铃的奇怪回应告诉那只猫，听它把话说完。','Tell the stranger how the bell answered and hear them out.'],
+      depart:['寻找自己的名字','Find your name','暮铃说风铃镇也许有线索。准备好再出发，也可以继续在花园探索。','Muling says there may be a clue in Windchime Town. Leave when ready, or keep exploring the garden.']
+    }[phase];
+    title.textContent=copy[en?1:0];hint.textContent=copy[en?3:2];
+    const close=()=>{openingQuestOpen=false;detail.hidden=true;toggle.setAttribute('aria-expanded','false');};
+    toggle.onclick=()=>{openingQuestOpen=!openingQuestOpen;detail.hidden=!openingQuestOpen;toggle.setAttribute('aria-expanded',String(openingQuestOpen));};
+    const add=(zh,english,action,primary=true)=>{const b=document.createElement('button');b.type='button';b.textContent=en?english:zh;if(primary)b.className='sg-main-continue';b.onclick=()=>{if(active&&game?.scene==='yard'&&state()===visitedState){close();action();}};row.append(b);};
+    const travel=()=>{game.openWorldMap();if(game.scene==='map')window.WorldMap?.enterRegion?.('harbor')};
+    if(phase==='meet'||phase==='return')add('与陌生猫交谈','Talk to the stranger',()=>approachHomeNpc('muling'));
+    if(phase==='chart'||phase==='bell')add('回到花园探索','Return to garden exploration',()=>{});
+    if(phase==='depart')add('下一场景 · 风铃镇','Next scene · Windchime Town',travel);
+    // Preserve the existing optional encounter, but never advertise departure as the current quest.
+    if(phase==='meet')add('跳过此次相遇','Skip this encounter',travel,false);
+    guide.append(toggle,detail);
+  }
   function approachHomeNpc(id){
     if(!active||game?.scene!=='yard'||game.worldDialogueOpen?.())return false;
     const hit=lastNpcHits.find(n=>n.id===id);
@@ -106,7 +137,7 @@
   function getTalkMarker(npc){
     if(talkMarkers.has(npc.id))return talkMarkers.get(npc.id);
     const b=document.createElement('button');b.type='button';b.className='sg-npc-talk-marker';b.dataset.npcTalk=npc.id;b.hidden=true;
-    b.innerHTML='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H9l-5 4z"/><path d="M8 10h.1m4 0h.1m4 0h.1" stroke-width="2.5" stroke-linecap="round"/></svg><span></span>';
+    b.innerHTML='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H9l-5 4z"/><path d="M8 10h.1m4 0h.1m4 0h.1" stroke-width="2.5" stroke-linecap="round"/></svg><i class="sg-quest-exclamation" aria-hidden="true">!</i><span></span>';
     b.onclick=()=>approachHomeNpc(npc.id);
     root.append(b);talkMarkers.set(npc.id,b);return b;
   }
@@ -118,7 +149,7 @@
     if(!width||!height||!r.width||!r.height)return;
     const b=getTalkMarker(npc),en=isEnglish(),raw=npc.name,profileName=typeof raw==='string'?raw:raw?.[en?'en':'zh'];
     const label=npc.id==='muling'&&window.CatBondResonance?.view?.().current?.id==='prologue:P-05'?(en?'Stranger':'陌生猫'):(profileName||npc.id);
-    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length;b.dataset.questPrimary=String(main);if(!main&&!v?.ending&&npc.id!=='muling'&&!game.yardNear?.(x,y,.25)){b.hidden=true;return;}b.hidden=false;
+    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const progress=window.GardenExploration?.read?.(state()),main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.id==='prologue:P-05'?(!v.openingMet&&(!progress?.chartStarted||!!progress?.chartEcho)):(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length);b.dataset.questPrimary=String(main);b.title=main?(en?'Main quest':'主线任务'):'';if(!main&&!v?.ending&&npc.id!=='muling'&&!game.yardNear?.(x,y,.25)){b.hidden=true;return;}b.hidden=false;
     if(cell){b.style.left=cell.x+'px';b.style.top=cell.box.bottom+'px';return;}
     const px=canvasRect.left-r.left+x/width*canvasRect.width,py=canvasRect.top-r.top+(y-112*scale)/height*canvasRect.height;
     const bw=Math.max(44,b.offsetWidth||72),bh=Math.max(44,b.offsetHeight||44);
@@ -202,7 +233,6 @@
         const visible=depth&&window.__CAT_BOND_CANONICAL_ACTIVE__?depth.withForeground(ctx,asset,f,x,y,scale,paint):paint();
         if(visible===false)continue;
         npcRects.push(toRect(x,y,scale));if(!shared)talkPositions.push({npc,x,y,scale,cell});
-        if(npc.id==='muling'&&!ending){ctx.save();ctx.font='600 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const stranger=window.CatBondResonance?.view?.().current?.id==='prologue:P-05';const label=window.MorrowwishI18n?.get?.()==='zh'?(stranger?'陌生猫':'暮铃'):(stranger?'Stranger':'Muling');const w=ctx.measureText(label).width+16;ctx.fillStyle='#fff2d9e8';ctx.beginPath();ctx.roundRect(x-w/2,y+5,w,21,10);ctx.fill();ctx.fillStyle='#594431';ctx.fillText(label,x,y+15.5);ctx.restore();}
         if(!shared)lastNpcHits.push({id:npc.id,x,y:npc.id==='muling'?y-52*scale:y-30*scale,groundY:y,radius:Math.max(24,a.radius*.75*Math.min(1,width/1000))});}
       catch(error){console.warn('Sunlit Garden NPC art unavailable:',npc.id,error);}
     }
