@@ -295,6 +295,7 @@ function renderSignals(gameRows){
   const title=gameNames[g.id]?.[lang]||g.id;
   const feedback=g.id==='pawsibly-innocent'&&Number(signals.play_feedback_fun)>0?'<p class="focus-subtitle">'+escapeHTML(t('feelPrefix'))+' · '+format(signals.play_feedback_fun)+'</p>':'';
   if(g.id==='starbell-preview'&&valid){for(const [label,key] of [[lang==='zh'?'战斗开始':'Battles started','bond_battle_start_v2'],[lang==='zh'?'战斗结算':'Battles finished','bond_battle_end_v2'],[lang==='zh'?'战斗胜利':'Battles won','bond_battle_win_v2']]){const value=count(key);if(value!=='')rows.push(line(label,value));}}
+  if(g.id==='starbell-preview'&&valid&&r.previewModes){const m=r.previewModes;if(m.portrait+m.landscape>0){rows.push(line(lang==='zh'?'竖屏浏览量':'Portrait pageviews',format(m.portrait)),line(lang==='zh'?'横屏浏览量':'Landscape pageviews',format(m.landscape)));}if(m.unknown>0)rows.push(line(lang==='zh'?'历史未区分版本':'Historical unclassified views',format(m.unknown)));}
   const legacy='';
    const newMetrics=bond&&active?'<details class="studio-advanced"><summary>'+
    escapeHTML(lang==='zh'?'新版漏斗 · 更新后访问':'New funnel · post-update visits')+

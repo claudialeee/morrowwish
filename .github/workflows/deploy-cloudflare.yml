@@ -515,7 +515,7 @@ jobs:
             test "$(curl -sSL --max-time 15 -o /dev/null -w '%{http_code}' "$origin/api/summary?days=7")" = 401
           done
           origin=https://morrowwish.pages.dev
-          preview_origin=https://cat-bond-preview.morrowwish.pages.dev
+          for preview_origin in https://cat-bond-preview.morrowwish.pages.dev https://starbell-portrait-preview.morrowwish.pages.dev; do
           probe="mw-qa-$(node -e "process.stdout.write(require('node:crypto').randomUUID())")"
           for kind in visit session; do
             body=$(printf '{"kind":"%s","game":"starbell-preview","viewId":"%s","visitor":"ci-smoke","smokeProbe":"mw-qa-v1","starts":1,"ends":1}' "$kind" "$probe")
@@ -527,7 +527,8 @@ jobs:
           for key in recorded sessionRecorded startRecorded endRecorded removed; do
             printf '%s' "$check" | grep -Fq "\"$key\":true"
           done
-          echo "Exact release and independent preview diagnostic ingestion verified: $GITHUB_SHA"
+          done
+          echo "Exact release and both independent preview diagnostic ingestions verified: $GITHUB_SHA"
       - name: Publish automatic game promotion kit for each release
         if: steps.scope.outputs.scope == 'full'
         uses: actions/upload-artifact@v4

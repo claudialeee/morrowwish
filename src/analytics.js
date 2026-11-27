@@ -181,7 +181,7 @@ function mainStats(x){
     return {pageviews,headlineMetrics:scopedMetrics(visitsOf,sessionsOf),visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews:startedIds.size,startRate:funnelAvailable?pct(startedIds.size,distinctPageVisits):null,visitFunnel,starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),abandons:sum(sessionsOf,"abandons"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals,conversion,historicalVisitFunnel};
   };
   const breakdown=(key)=>{let m=new Map();for(let r of visits){let v=tidy(r.data[key],100);if(!v)v=key==="referrer"&&r.data.source==="direct"?"direct_no_referrer":"unknown";m.set(v,(m.get(v)||0)+1)}return [...m].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,16)};
-  const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}return {game,...z,sources}}).sort((a,b)=>b.pageviews-a.pageviews);
+  const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}const previewModes=game==="starbell-preview"?Object.fromEntries(["portrait","landscape","unknown"].map(mode=>[mode,g.filter(r=>r.kind==="visit"&&(r.data.previewMode||"unknown")===mode).length])):undefined;return {game,...z,sources,...(previewModes?{previewModes}:{})}}).sort((a,b)=>b.pageviews-a.pageviews);
   const byDay=dates.map(day=>{let r=rows.filter(x=>localDay(Number(x.ts)||Date.parse(x.day+"T00:00:00Z"))===day),v=r.filter(x=>x.kind==="visit"),s=r.filter(x=>x.kind==="session");return {day,pageviews:v.length,visitors:visitors(v),starts:sum(s,"starts"),retries:sum(s,"retries"),shares:sum(s,"shares")}});
   // Acquisition view: one compact channel row across all visible games.
   // Only real game-page visits count towards start rate; homepage and internal hops
@@ -381,7 +381,8 @@ export async function api(req,env){
  if(p==="/api/session"||p==="/api/elsewhere-collect"||p==="/api/starbell-preview-session"){
   if(req.method!=="POST")return json({error:"POST required"},405);
   const preview=p==="/api/starbell-preview-session",origin=req.headers.get("Origin");
-  if(preview&&origin!=="https://cat-bond-preview.morrowwish.pages.dev")return json({error:"Origin not allowed"},403);
+  const previewMode=origin==="https://cat-bond-preview.morrowwish.pages.dev"?"landscape":origin==="https://starbell-portrait-preview.morrowwish.pages.dev"?"portrait":null;
+  if(preview&&!previewMode)return json({error:"Origin not allowed"},403);
   if(!preview&&origin){try{if(!new Set([new URL(req.url).origin,"https://morrowwish.vercel.app"]).has(new URL(origin).origin))return json({error:"Origin not allowed"},403)}catch{return json({error:"Invalid origin"},403)}}
   const raw=await req.text();if(raw.length>4000)return json({error:"Payload too large"},413);
   let data;try{data=JSON.parse(raw)}catch{return json({error:"Invalid JSON"},400)}
@@ -390,6 +391,7 @@ export async function api(req,env){
   if(preview&&data.game!=="starbell-preview"||!preview&&data.game==="starbell-preview")return json({error:"Invalid game for collector"},400);
   if(category==="arcade"&&!["visit","session"].includes(data.kind))return json({error:"Invalid kind"},400);
   if(category==="elsewhere"&&!["world_open","chapter_view","choice_made","chapter_completed","life_completed","life_restarted","ending_view","share_clicked","ending_feedback"].includes(data.event))return json({error:"Invalid event"},400);
+  if(preview)data.previewMode=previewMode;
   data._device=/mobile|android|iphone/i.test(req.headers.get("User-Agent")||"")?"mobile":"desktop";data._country=req.cf?.country||"unknown";
   const now=Date.now(),day=new Date(now).toISOString().slice(0,10),game=category==="elsewhere"?"elsewhere":tidy(data.game||"hub",40),visitor=tidy(data.visitor,80),viewId=tidy(data.viewId,90)||tidy(data.session,90)||crypto.randomUUID(),runId=tidy(data.runId,90);
   // Real gameplay and isolated deployment probes share the same D1 INSERT.
