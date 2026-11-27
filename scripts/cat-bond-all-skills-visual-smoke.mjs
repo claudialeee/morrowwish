@@ -50,7 +50,7 @@ try{
       if(!sk||sk.ultCost)throw Error('No normal skill '+id);
       // Element-neutral utility skills (e.g. the reflect wall) match no element;
       // any painted cat can showcase them, so fall back to the roster's first.
-      const native=GameData.SPECIES.find(sp=>Skills.elementOf(sp.id)===sk.element)
+      const native=(sk.unlock?.species?.[0]&&GameData.speciesById(sk.unlock.species[0]))||GameData.SPECIES.find(sp=>Skills.elementOf(sp.id)===sk.element)
         ||(sk.element==='neutral'?GameData.SPECIES[0]:null);
       if(!native)throw Error('No cat for element '+sk.element);
       const cat=State.makeCat(native.id,{affinity:70});
@@ -67,7 +67,31 @@ try{
       b.skillStrokes=[];b.vfx.clear();
       const support=sk.kind==='heal'||sk.kind==='buff';
       const melee=sk.kind==='melee';
-      const emitted=support?CatBondSkillFX.support(b,f,sk):
+      // These authored effects no longer paint an obsolete circular caster glyph.
+      // Exercise the real gameplay payload and assert its renderer, not a fake cast stamp.
+      const physical=['waterJet','shadowTendrils','magneticField','arcanePulse'].includes(id);
+      let physicalHook=null,physicalMethod=null;
+      if(physical){
+        b.aim=0; f.y=target.y;
+        f.x=Math.max(46,Math.min(f.x,g.W-46-180));
+        target.x=f.x+(id==='magneticField'?(sk.reach||180):Math.min(100,(sk.reach||240)*.6));
+        target.inv=target.flash=target.shieldT=target.protectT=target.reflectT=0;
+        const before=target.hp;
+        b.castOffensiveSkill(f,0,{...sk,_castTarget:{x:target.x,y:target.y}},sk.power,b.elemColor(sk.element),true);
+        if(id==='magneticField'){
+          if(!b.fields.some(field=>field.kind==='magneticField'))throw Error('Magnetic poles not created');
+          b.tickFields(.6);physicalHook=window.CatBondMagneticFX;physicalMethod='draw';
+        }else if(id==='arcanePulse'){
+          if(b._umbralLobs.length!==3)throw Error('Three artillery launches required');
+          b.tickUmbralLobs(.82);physicalHook=CatBondSkillFX;physicalMethod='drawUmbralLob';
+        }else{
+          if(!b.beams.some(beam=>beam.sk.id===id))throw Error('Live channel not created '+id);
+          b.tickBeams(.25);physicalHook=CatBondSkillFX;physicalMethod='drawCombatBeam';
+        }
+        if(!(target.hp<before))throw Error('Physical skill caused no real damage '+id);
+        if(typeof physicalHook?.[physicalMethod]!=='function')throw Error('Missing renderer '+id);
+      }
+      const emitted=physical?true:support?CatBondSkillFX.support(b,f,sk):
         CatBondSkillFX.cast(b,f,sk,0);
       if(!emitted)throw Error('Cast signature failed '+id);
       if(melee){
@@ -87,7 +111,7 @@ try{
         // Sample mid-sweep; the first frame correctly contains no teleporting
         // fully painted slash, and the last frame is almost transparent.
         b.vfx.update(.055);
-      }else if(!support&&!CatBondSkillFX.hit(b,target,sk,24,false)){
+      }else if(!physical&&!support&&!CatBondSkillFX.hit(b,target,sk,24,false)){
         throw Error('Contact art failed '+id);
       }
       b.skillStrokes.forEach(s=>s.life=s.max*.64);
@@ -98,7 +122,11 @@ try{
       const isMirror=id==='mirrorWall';
       if(isMirror)f.reflectT=3;
       const original=CatBondSkillFX.draw,originalWard=window.CatBondWardArt?.draw;
-      let drawn=0,wardDrawn=0;
+      let drawn=0,wardDrawn=0,physicalDrawn=0;
+      const originalPhysical=physicalHook?.[physicalMethod];
+      if(physical)physicalHook[physicalMethod]=function(...args){
+        const result=originalPhysical.apply(this,args);if(result!==false)physicalDrawn++;return result;
+      };
       CatBondSkillFX.draw=function(ctx,s,time){
         if(s?.skillId===id)drawn++;
         return original.apply(this,arguments);
@@ -109,15 +137,18 @@ try{
       };
       try{g.draw()}finally{
         CatBondSkillFX.draw=original;
+        if(physical)physicalHook[physicalMethod]=originalPhysical;
         if(isMirror&&originalWard)CatBondWardArt.draw=originalWard;
       }
       if(isMirror){
         if(wardDrawn<2||!f.reflectT)throw Error('Physical mirror wall not in real battle '+id+': '+wardDrawn);
+      }else if(physical){
+        if(physicalDrawn<1)throw Error('Physical renderer not used in live battle '+id);
       }else if(drawn<(support||melee?1:2)){
         throw Error('Signature not in actual battle '+id+': '+drawn);
       }
       if(b.ultHero||b.duoCinematic)throw Error('full-screen art during normal skill');
-      return {id,skillName:sk.name,style:sk.kind,drawn,
+      return {id,skillName:sk.name,style:sk.kind,drawn,physicalDrawn,
         hasCast:b.skillStrokes.some(s=>s.kind==='signatureCast'),
         hasHit:b.skillStrokes.some(s=>s.kind==='signatureHit'),
         dimensions:[g.W,g.H]};
