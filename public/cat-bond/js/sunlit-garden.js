@@ -21,7 +21,7 @@
   const HOTSPOTS = [
     {id:'facilities',zh:'家园布置',en:'Garden design',action:()=>window.UI?.openBuild?.()}
   ];
-  let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null,hitState=null,guide=null,guideKey='';
+  let game=null,root=null,active=false,lastNpcHits=[],narrativeAdapter=null,visitedState=null,hitState=null,guide=null,guideKey='',openingQuestOpen=false;
   const talkMarkers=new Map();
   let guestPage=0,guestRosterKey='';
   const GUESTS_PER_PAGE=4;
