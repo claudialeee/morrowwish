@@ -33,7 +33,8 @@ function install(){
   if(v.current.chapter==="epilogue"&&game?.scene!=="yard"){
    game?.toast?.({zh:"回到阳光花园，与暮铃交谈。",en:"Return to Sunlit Garden and speak with Muling."});return false;
   }
-  if(v.current.chapter==="starfall"&&(window.WorldMap?.currentRegion!=="starfall"||window.WorldMap?.mode!=="region")){game?.toast?.({zh:"请前往星坠原继续剧情。",en:"Travel to Starfall to continue the story."});return false;}
+  if(v.current.chapter==="finale"&&(window.WorldMap?.currentRegion!=="finale"||window.WorldMap?.mode!=="region")){game?.toast?.({zh:"请前往中央星铃继续终章。",en:"Travel to the Star Bell to continue the finale."});return false;}
+   if(v.current.chapter==="starfall"&&(window.WorldMap?.currentRegion!=="starfall"||window.WorldMap?.mode!=="region")){game?.toast?.({zh:"请前往星坠原继续剧情。",en:"Travel to Starfall to continue the story."});return false;}
   if(awaitingGameplay(v)){if(root)close();return false;}
   if(slot===State.S&&openedScene===v.current.id&&(dialogue||keyExchange)){(dialogue||keyExchange).render();return true}
   close();slot=State.S;openedScene=v.current.id;

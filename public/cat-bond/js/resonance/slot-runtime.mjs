@@ -85,7 +85,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   const kind=operation.split(":")[0];
   if(kind==="npc"||!["cinematic","explore","travel","puzzle","rescue","repair","melody","battle","mechanism"].includes(kind))return fail("invalid-source");
   if(s.chapter==="starfall"){const w=State.S.resonanceExploration;if(!token||w?.location!=="starfall")return fail("starfall-action-required");if(kind==="cinematic"){const p=w.positions?.starfall;if(!p||Math.hypot(p.x-.92,p.y-.30)>=.072)return fail("walk-to-central-ruins");}else if(["explore","puzzle","repair","melody"].includes(kind)&&typeof physical!=="function")return fail("starfall-world-evidence-required");}
-  if(s.chapter==="finale"&&(!token||region!=="starfall"||State.S.resonanceExploration?.location!=="starfall"))return fail("finale-action-required");
+  if(s.chapter==="finale"&&(!token||region!=="finale"||State.S.resonanceExploration?.location!=="finale"))return fail("finale-action-required");
   if(sceneId==="forest:R-03"&&operation!=="puzzle:moonleaf-loop"){
    const w=State.S.resonanceExploration,p=w?.positions?.forest,q=layouts.forest.features[operation];
    if(!token||w?.location!=="forest"||!p||!q||Math.hypot(p.x-q[0],p.y-q[1])>=.072)return fail("walk-to-rescue");
@@ -106,7 +106,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
  }
  function ambient({id,operation,region,verified,token}={}){if(verified!==true||!read().ambientAvailable(region).some(a=>a.id===id&&a.operation===operation))return fail("invalid-ambient-evidence");return transaction(e=>e.ambient(id,operation),{token})}
  function commitFinaleVictory({sceneId,operation,region,participants,replies,stableAt,verified,outcome,token}={}){
-  if(!token||!check(token)||verified!==true||outcome!=="win"||sceneId!=="finale:B-03"||operation!=="battle:central-echo"||region!=="starfall"||State.S.resonanceExploration?.location!=="starfall")return fail("invalid-finale-victory");
+  if(!token||!check(token)||verified!==true||outcome!=="win"||sceneId!=="finale:B-03"||operation!=="battle:central-echo"||region!=="finale"||State.S.resonanceExploration?.location!=="finale")return fail("invalid-finale-victory");
   if(!Array.isArray(participants)||participants.some(x=>!x)||participants.length!==campaign.regions.length||new Set(participants.map(x=>x?.region)).size!==participants.length||participants.some(({region,action})=>!campaign.regions.includes(region)||campaign.support[campaign.regions.indexOf(region)]!==action))return fail("incomplete-finale-support");
   if(!validReplyProof(campaign.regions,replies,stableAt))return fail("live-replies-incomplete");
   return transaction(engine=>{

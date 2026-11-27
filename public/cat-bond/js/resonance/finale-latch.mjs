@@ -5,7 +5,7 @@ export function openFinaleLatch(){
  const operation="mechanism:muling-unlock";
  if(!stage||document.querySelector(".res-finale-latch")||view.current?.id!=="finale:B-03"||
     view.cursor!==view.current.lines.length||!view.objective.includes(operation)||
-    !view.ring||window.__game?.scene!=="map"||window.WorldMap.currentRegion!=="starfall")return;
+    !view.ring||window.__game?.scene!=="map"||window.WorldMap.currentRegion!=="finale")return;
  const token=api.captureAction();
  const overlay=document.createElement("section");
  overlay.className="cb-story-overlay is-visible res-finale-latch";
@@ -34,13 +34,13 @@ export function openFinaleLatch(){
   window.removeEventListener("pagehide",close);
   window.removeEventListener("blur",reset);
  }
- function check(){if(!api.isCurrentAction(token)||window.__game?.scene!=="map"||window.WorldMap?.currentRegion!=="starfall")close();}
+ function check(){if(!api.isCurrentAction(token)||window.__game?.scene!=="map"||window.WorldMap?.currentRegion!=="finale")close();}
  function tick(now){
-  if(!api.isCurrentAction(token)||window.__game?.scene!=="map"||window.WorldMap?.currentRegion!=="starfall"){close();return;}
+  if(!api.isCurrentAction(token)||window.__game?.scene!=="map"||window.WorldMap?.currentRegion!=="finale"){close();return;}
   if(started===null)return;
   progress.value=Math.min(1,(now-started)/1450);
   if(progress.value<1){frame=requestAnimationFrame(tick);return;}
-  const result=api.recordEvidence({sceneId:view.current.id,operation,region:"starfall",verified:true,token,stableUnlock:true});
+  const result=api.recordEvidence({sceneId:view.current.id,operation,region:"finale",verified:true,token,stableUnlock:true});
   if(result.ok){
    window.MorrowwishAudio?.effect?.("discover");
    close();

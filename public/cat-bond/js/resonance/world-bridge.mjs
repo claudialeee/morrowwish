@@ -65,6 +65,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  }
  function enter(region){
   const story=view();
+  if(region==="finale"){if(!story.ring||story.current?.chapter!=="finale")return fail("region-locked");return physical(w=>({...w,location:region}));}
   if(!campaign.regions.includes(region)||!story.regions.includes(region))return fail("region-locked");
   if(globalThis.window?.__STARBELL_DEVELOPER__&&story.current?.id==="prologue:P-05")return physical(w=>({...w,location:region}));
   const departure=region==="harbor"&&story.current?.id==="prologue:P-05"&&story.objective.includes("travel:harbor");
@@ -74,7 +75,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   return api.evidence({sceneId:story.current.id,operation:"travel:harbor",region,verified:true,token:api.capture()},
    prior=>({resonanceExploration:{...prior.resonanceExploration,location:region}}));
  }
- function position(region,x,y){if(world().location!==region||!campaign.regions.includes(region)||!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>1||y<0||y>1)return fail("invalid-position");return physical(w=>({...w,positions:{...w.positions,[region]:{x,y}}}));}
+ function position(region,x,y){if(world().location!==region||!(campaign.regions.includes(region)||region==="finale")||!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>1||y<0||y>1)return fail("invalid-position");return physical(w=>({...w,positions:{...w.positions,[region]:{x,y}}}));}
  function patch(change,reward){return prior=>{const w=prior.resonanceExploration||{};return {resonanceExploration:change(clone(w)),coins:(prior.coins||0)+(reward.coins||0),fish:(prior.fish||0)+(reward.fish||0)};};}
  function tideStep(){
   const v=view(),w=world();

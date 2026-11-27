@@ -109,7 +109,7 @@ function install(){
  const sceneTitle={"finale:B-01":["逆响守铃者","The Reverse Bellkeeper"],"finale:B-02":["空白回响","The Hollow Echo"],"finale:B-03":["六音归环","Six Notes Return"]};
  function available(game,id){
   const h=host(),v=h?.view?.(),root=window.State.S;
-  return typeof h?.captureAction==="function"&&typeof h?.isCurrentAction==="function"&&game?.scene==="map"&&!game.battle&&v?.current?.id===id&&v.ring===true&&v.objective.includes(PHASES[id])&&v.melodies?.length===6&&v.support?.length===6&&v.support.every(profile=>profile.ready===true)&&root.resonanceExploration?.location==="starfall";
+  return typeof h?.captureAction==="function"&&typeof h?.isCurrentAction==="function"&&game?.scene==="map"&&!game.battle&&v?.current?.id===id&&v.ring===true&&v.objective.includes(PHASES[id])&&v.melodies?.length===6&&v.support?.length===6&&v.support.every(profile=>profile.ready===true)&&root.resonanceExploration?.location==="finale";
  }
  function prep(game,id){
   if(!available(game,id))return false;
@@ -452,7 +452,7 @@ function install(){
   let committed=false;const oldHealth=new Map();const restoreHealth=()=>{for(const [cat,old] of oldHealth){if(old.frac===undefined)delete cat._hpFrac;else cat._hpFrac=old.frac;if(old.at===undefined)delete cat._hpAt;else cat._hpAt=old.at;}};
   if(same&&valid){const State=window.State;for(const cat of root.cats||[])oldHealth.set(cat,{frac:cat._hpFrac,at:cat._hpAt});const seen=new Set();for(const fighter of [...b.team,...(b._benchFighters?.values?.()||[])]){const cat=fighter.cat;if(!cat||fighter._reinforcement||seen.has(cat.uid))continue;seen.add(cat.uid);if(State.difficulty()==="hardcore")State.setBattleHealth(cat,fighter.alive?clamp(fighter.hp/fighter.maxhp,.15,1):.15);else{delete cat._hpFrac;delete cat._hpAt;}}if(State.difficulty()==="casual")State.healAllCats?.();}
   if(win&&valid&&active.isCurrentAction(f.token)){
-   const proof={sceneId:f.id,operation:PHASES[f.id],region:"starfall",verified:true,outcome:"win",token:f.token};
+   const proof={sceneId:f.id,operation:PHASES[f.id],region:"finale",verified:true,outcome:"win",token:f.token};
    const r=f.id==="finale:B-03"
     ?active.commitFinaleVictory({...proof,participants:f.nodes.map(({region,action})=>({region,action})),replies:f.nodes.map(n=>replyProof(n.reply)),stableAt:f.elapsed})
     :active.recordEvidence({...proof,extractionStopped:f.extractionStopped,probeChanged:f.probeChanged});
@@ -465,7 +465,7 @@ function install(){
   this.toast(committed?{zh:"本阶段目标已达成。",en:"The objective is complete."}:win?{zh:"剧情保存失败，请重新挑战。",en:"Story save failed. Retry the encounter."}:b._voluntaryFlee&&!f.failedProtection?{zh:"队伍撤离，休整后再挑战。",en:"Withdrawn. Rest and retry the encounter."}:{zh:"先休整一下，准备好再来挑战！",en:"Rest up, then give it another try!"});
   if(same&&valid)resultPanel(this,b,f,committed,win);
  };
- window.addEventListener("cat-bond-resonance-battle-request",e=>{const d=e.detail;if(d?.region==="starfall"&&PHASES[d.sceneId]===d.operation)prep(window.__game,d.sceneId);});
+ window.addEventListener("cat-bond-resonance-battle-request",e=>{const d=e.detail;if(d?.region==="finale"&&PHASES[d.sceneId]===d.operation)prep(window.__game,d.sceneId);});
  window.addEventListener("resize",()=>requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-finale-hud"))));
  window.addEventListener("morrowwish-language-change",()=>{const b=window.__game?.battle;if(b?.resonanceFinale){paint(b);requestAnimationFrame(()=>positionObjectiveHud(document.getElementById("cb-finale-hud")));}});
  function drawEnemy(ctx,e,b){

@@ -154,7 +154,7 @@ export function mountResonanceCinematics({root,rendererFactory,engine,campaign,m
         persist(engine.nextLine());
       }
       for(const op of current.requires.filter(x=>x.startsWith('cinematic:'))){
-        if(engine.view().objective.includes(op))persist(transactional?engine.evidence({sceneId:run.id,operation:op,region:current.chapter==="finale"?"starfall":current.chapter,verified:true,token:run.token}):engine.record(run.id,op));
+        if(engine.view().objective.includes(op))persist(transactional?engine.evidence({sceneId:run.id,operation:op,region:current.chapter,verified:true,token:run.token}):engine.record(run.id,op));
       }
       // Host owns finish() and all non-cinematic event transitions.
       onResolved?.({sceneId:run.id,skipped,slot:run.slot,remaining:engine.view().objective});
