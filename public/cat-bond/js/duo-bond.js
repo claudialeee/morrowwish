@@ -250,10 +250,9 @@ P.castDuo=function(){
 };
 const originalCutin=P.drawCatCutin;
 P.drawCatCutin=function(ctx,W,H){
- if(this.duoCinematic?.t>0&&window.CatBondDuoHero?.draw){
-  window.CatBondDuoHero.draw(ctx,W,H,this.duoCinematic,uid=>
-    this.team.find(f=>f.cat.uid===uid)?.cat||
-    this._benchFighters?.get(uid)?.cat||this.reserve.find(c=>c.uid===uid));
+ if(this.duoCinematic?.t>0){
+  // Fail closed: never dispatch to a generic portrait cut-in.
+  window.CatBondDuoHero?.draw?.(ctx,W,H,this.duoCinematic);
  }else originalCutin.call(this,ctx,W,H);
  if(this._duoRelease&&window.CatBondDuoReleaseVFX)
   window.CatBondDuoReleaseVFX.draw(ctx,W,H,this._duoRelease);
