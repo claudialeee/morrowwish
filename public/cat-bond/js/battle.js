@@ -1977,7 +1977,16 @@ class CaptureBattle {
   // at two different call sites, making the effective attacker multiplier hard to
   // read. identityMul(f) returns ONE product consumed at every cast entry; the
   // resolveHit traitMult site is gone (now covered here, no double-dip).
-  identityMul(f){ return this.outgoingBuffMult(f) * (f?._dmgOutMult || 1); }
+  identityMul(f){
+    // Owner 2026-11-27: in hardcore, player outgoing multiplier chain stacks 3.5×+
+    // (elem × react × aff × outBuff × bond) vs enemy's near-naked 1× side — asymmetry
+    // owner flagged via live log. Tag player cats (this.team includes f) with 0.8× to
+    // close the gap by ~20% without touching any individual buff. Casual unchanged.
+    const _mul = this.outgoingBuffMult(f) * (f?._dmgOutMult || 1);
+    const _isPlayer = this.team && this.team.includes(f);
+    if (this.difficultyMode === 'hardcore' && _isPlayer) return _mul * 0.8;
+    return _mul;
+  }
   // Owner 2026-11-27 refactor Phase 2.0: single-source cast-context snapshot.
   // Stamps sk._cast = {aim, caster, side, mouse, target, ray240, t} at the top of
   // castOffensiveSkill. All landing-point-resolving handlers read from this
