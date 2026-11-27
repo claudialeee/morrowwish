@@ -4,6 +4,7 @@ import {newMirror,advanceMirror,mirrorStagePose} from "./canon22-mirror.mjs";
 import {visibleBounds} from "./canon22-art.mjs";
 export const libraryPoints=Object.freeze({
  "puzzle:library-echo":[.67,.40,"镜中的两只暮铃","Two Lunas in the mirror"],
+ "battle:mirror-guardian":[.76,.40,"镜影守卫","Mirror Guardian"],
  "explore:routing-record":[.82,.36,"公开记录 · 调查","Public records · Investigation"],
  "puzzle:two-route-model":[.82,.36,"六地桌上模型 · 验证两条路线","Six-region model · Compare the two routes"],
  "repair:library":[.89,.29,"月镜圣所","Moonmirror sanctuary"],

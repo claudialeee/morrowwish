@@ -1438,6 +1438,23 @@ export const campaign = {
           }
         },
         {
+          "speaker": "moye",
+          "text": {
+            "zh": "门前的镜影在学你们的招式！先打散它，才能让古铃恢复。",
+            "en": "That mirror guardian is copying your attacks! Dispel it before restoring the bell."
+          }
+        },
+        {
+          "speaker": "baikan",
+          "text": {
+            "zh": "镜廊终于安静了。去古铃那边吧！",
+            "en": "The gallery is quiet at last. Let's go to the bell!"
+          },
+          "afterOperations": [
+            "battle:mirror-guardian"
+          ]
+        },
+        {
           "speaker": "lingyu",
           "text": {
             "zh": "书库那边听得见吗？云海这边一切平安！",
@@ -1460,6 +1477,7 @@ export const campaign = {
       ],
       "requires": [
         "puzzle:library-echo",
+        "battle:mirror-guardian",
         "repair:library",
         "melody:library"
       ],
@@ -1963,12 +1981,14 @@ export const campaign = {
         }
       ],
       "requires": [
+        "battle:star-guardian",
         "puzzle:distributed-routing",
         "repair:starfall",
         "melody:starfall"
       ],
       "choices": [],
       "lineGate": [
+        "battle:star-guardian",
         "puzzle:distributed-routing",
         "repair:starfall",
         "melody:starfall"

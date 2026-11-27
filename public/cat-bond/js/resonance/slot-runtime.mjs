@@ -94,6 +94,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   }
   if(operation==="battle:shadow-beast"){const w=State.S.resonanceExploration,p=w?.positions?.forge,q=layouts.forge.features[operation];if(!token||w?.location!=="forge"||!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072)return fail("walk-to-shadow-beast");}
   if(operation==="battle:chime-beast"){const w=State.S.resonanceExploration,p=w?.positions?.harbor,q=layouts.harbor.features[operation];if(!token||w?.location!=="harbor"||!p||Math.hypot(p.x-q[0],p.y-q[1])>=.072)return fail("walk-to-bell-beast");}
+  if(["battle:mirror-guardian","battle:star-guardian"].includes(operation)){const w=State.S.resonanceExploration,p=w?.positions?.[region],q=layouts[region]?.features?.[operation];if(!token||w?.location!==region||!p||!q||Math.hypot(p.x-q[0],p.y-q[1])>=.072)return fail("walk-to-regional-boss");}
   if(operation==="battle:observatory-echo"){const p=State.S.resonanceExploration?.positions?.starfall;if(!p||Math.hypot(p.x-.78,p.y-.40)>=.072)return fail("walk-to-observatory");}
   if(kind==="battle"&&outcome!=="win")return fail("battle-not-won");
   if(kind==="battle"&&!token)return fail("action-token-required");
