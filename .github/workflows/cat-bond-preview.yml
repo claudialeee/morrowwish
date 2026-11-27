@@ -128,10 +128,8 @@ jobs:
           node scripts/test-cat-bond-companion-talents.mjs
           node scripts/test-cat-bond-side-adventures.mjs
           node scripts/test-cat-bond-regional-discoveries.mjs
-          node scripts/test-cat-bond-canon12-campaign.mjs
           node scripts/test-cat-bond-resonance.mjs
           node scripts/test-cat-bond-resonance-slot.mjs
-          node scripts/check-cat-bond-resonance-world.mjs
       - name: Build isolated Cat Bond preview (no production Worker or D1)
         run: |
           set -eu
@@ -452,12 +450,13 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN"
           git fetch --depth=1 origin review/starbell-canon13-player-experience
           test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_SHA" # never publish a superseded commit
-          WRANGLER="$PWD/node_modules/.bin/wrangler"
+          REPO="$PWD"
+          WRANGLER="$REPO/node_modules/.bin/wrangler"
           cd /tmp/cat-bond-preview
           "$WRANGLER" pages deploy site --project-name morrowwish --branch cat-bond-preview --commit-hash "$SOURCE_SHA"
           # The exact same responsive build serves both existing public preview aliases.
-          git fetch --depth=1 origin review/starbell-canon13-player-experience
-          test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_SHA"
+          git -C "$REPO" fetch --depth=1 origin review/starbell-canon13-player-experience
+          test "$(git -C "$REPO" rev-parse FETCH_HEAD)" = "$SOURCE_SHA"
           "$WRANGLER" pages deploy site --project-name morrowwish --branch starbell-portrait-preview --commit-hash "$SOURCE_SHA"
       - name: Verify stable preview alias and API isolation
         run: |

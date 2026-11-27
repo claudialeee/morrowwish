@@ -32,8 +32,10 @@ function impact(files) {
 const visualFidelityFiles=new Set(["public/cat-bond/js/resonance/library-mechanisms.mjs","public/cat-bond/js/resonance/dialogue-ui.mjs","public/cat-bond/js/resonance/sky-lookout.mjs","public/cat-bond/css/resonance-host.css","scripts/cat-bond-experience-chapters.mjs","scripts/cat-bond-experience-qa-scope.mjs",".github/workflows/cat-bond-preview.yml","docs/cat-bond-rpg/PLAYTEST-WORK-HANDOFF.md"]);
 const fidelityFiles=new Set(["public/cat-bond/js/resonance-cinematic.mjs","public/cat-bond/js/resonance/dialogue-ui.mjs","public/cat-bond/js/resonance/library-mechanisms.mjs","scripts/cat-bond-experience-chapters.mjs","scripts/cat-bond-experience-qa-scope.mjs","public/cat-bond/js/resonance/sky-lookout.mjs","docs/cat-bond-rpg/PLAYTEST-WORK-HANDOFF.md"]);
 const audioOnly=new Set(["public/cat-bond/js/rpg-audio.js","scripts/test-cat-bond-rpg-audio-lifecycle.mjs","scripts/cat-bond-title-audio-qa.mjs","scripts/cat-bond-experience-qa-scope.mjs",".github/workflows/cat-bond-canon22-browser.yml",".github/workflows/cat-bond-preview.yml"]);
+const libraryRecheckFiles=new Set(['scripts/cat-bond-experience-chapters.mjs','scripts/cat-bond-experience-qa-scope.mjs','scripts/starbell-release-gate.sh','.github/workflows/cat-bond-preview.yml','.github/workflows/cat-bond-canon22-checkpoint.yml']);
 function choose({manual='',message='',files=[],review=false}={}) {
   if (manual==='chapters'||message.includes('[qa-full]')||message.includes('[fresh-campaign]')) return all;
+  if(!manual&&message.includes('[qa-library-recheck]')&&files.length&&files.every(f=>libraryRecheckFiles.has(f)))return ['library'];
   if(!manual&&message.includes('[qa-windchime-playtest]')&&files.length&&files.every(f=>openingPlaytestFiles.has(f)))return ['harbor'];
   if(!manual&&message.includes('[qa-late-playtest]')&&files.length&&files.every(f=>latePlaytestFiles.has(f)))return ['forge','sky','starfall'];
   if(!manual&&message.includes('[qa-festival-playtest]')&&files.length&&files.every(f=>festivalPlaytestFiles.has(f)))return ['forest','forge'];
@@ -52,6 +54,8 @@ function choose({manual='',message='',files=[],review=false}={}) {
   if (review) return ['harbor']; // isolated toolchain smoke only, never release evidence
   return impact(files);
 }
+assert.deepEqual(choose({files:[...libraryRecheckFiles],message:'[qa-library-recheck]'}),['library']);
+assert.deepEqual(choose({files:[...libraryRecheckFiles,'public/cat-bond/js/resonance/engine.mjs'],message:'[qa-library-recheck]'}),all);
 const harbor=Object.keys(local)[0], forge=Object.keys(local)[1];
 assert.deepEqual(choose({files:[harbor]}),['harbor']);
 assert.deepEqual(choose({files:[forge,harbor]}),['harbor','forge']);

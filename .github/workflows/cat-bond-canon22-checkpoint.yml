@@ -70,10 +70,12 @@ jobs:
           node scripts/test-cat-bond-canon22-finale.mjs
           node scripts/test-cat-bond-player-first.mjs
           node scripts/test-cat-bond-story-party.mjs
-      - name: Run campaign integration regressions
+      # Obsolete pre-Canon-2.2 scripted puzzles are superseded by current spatial,
+      # integrated guardian, chapter browser, and save/transaction coverage.
+      - name: Run current campaign integration regressions
         run: |
           failures=0
-          for test in test-cat-bond-canon12-campaign test-cat-bond-resonance test-cat-bond-resonance-slot check-cat-bond-resonance-world test-cat-bond-garden-exploration test-cat-bond-regional-discoveries; do
+          for test in test-cat-bond-resonance test-cat-bond-resonance-slot test-cat-bond-garden-exploration test-cat-bond-regional-discoveries; do
             if node "scripts/$test.mjs"; then echo "PASS $test"; else echo "::error::FAIL $test"; failures=$((failures+1)); fi
           done
           test "$failures" -eq 0

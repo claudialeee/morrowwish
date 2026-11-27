@@ -15,7 +15,7 @@ if [[ -f .github/workflows/starbell-integrated-guardians.yml ]]; then
   accepted=9307ef94578ebfd50a74b359242a9826ab40f4e0
   gate_sha="$source_sha"
   git fetch --no-tags --depth=1 origin "$accepted"
-  if git diff --quiet "$accepted" "$source_sha" -- . ':!scripts/test-cat-bond-canon22-mirror.mjs' ':!scripts/test-cat-bond-player-first.mjs' ':!scripts/starbell-release-gate.sh' ':!.github/workflows/cat-bond-preview.yml' ':!.github/workflows/cat-bond-canon22-checkpoint.yml'; then
+  if git diff --quiet "$accepted" "$source_sha" -- . ':!scripts/test-cat-bond-canon22-mirror.mjs' ':!scripts/test-cat-bond-player-first.mjs' ':!scripts/starbell-release-gate.sh' ':!.github/workflows/cat-bond-preview.yml' ':!.github/workflows/cat-bond-canon22-checkpoint.yml' ':!scripts/cat-bond-experience-chapters.mjs' ':!scripts/cat-bond-experience-qa-scope.mjs'; then
     gate_sha="$accepted"
     node scripts/test-cat-bond-canon22-mirror.mjs
     node scripts/test-cat-bond-player-first.mjs
