@@ -33,6 +33,7 @@ const visualFidelityFiles=new Set(["public/cat-bond/js/resonance/library-mechani
 const fidelityFiles=new Set(["public/cat-bond/js/resonance-cinematic.mjs","public/cat-bond/js/resonance/dialogue-ui.mjs","public/cat-bond/js/resonance/library-mechanisms.mjs","scripts/cat-bond-experience-chapters.mjs","scripts/cat-bond-experience-qa-scope.mjs","public/cat-bond/js/resonance/sky-lookout.mjs","docs/cat-bond-rpg/PLAYTEST-WORK-HANDOFF.md"]);
 const audioOnly=new Set(["public/cat-bond/js/rpg-audio.js","scripts/test-cat-bond-rpg-audio-lifecycle.mjs","scripts/cat-bond-title-audio-qa.mjs","scripts/cat-bond-experience-qa-scope.mjs",".github/workflows/cat-bond-canon22-browser.yml",".github/workflows/cat-bond-preview.yml"]);
 function choose({manual='',message='',files=[],review=false}={}) {
+  if (manual==='chapters'||message.includes('[qa-full]')||message.includes('[fresh-campaign]')) return all;
   if(!manual&&message.includes('[qa-windchime-playtest]')&&files.length&&files.every(f=>openingPlaytestFiles.has(f)))return ['harbor'];
   if(!manual&&message.includes('[qa-late-playtest]')&&files.length&&files.every(f=>latePlaytestFiles.has(f)))return ['forge','sky','starfall'];
   if(!manual&&message.includes('[qa-festival-playtest]')&&files.length&&files.every(f=>festivalPlaytestFiles.has(f)))return ['forest','forge'];
@@ -41,7 +42,6 @@ function choose({manual='',message='',files=[],review=false}={}) {
   if(!manual&&message.includes('[qa-title-audio]')&&files.length&&files.every(f=>audioOnly.has(f)))return [];
   if(!manual&&message.includes('[qa-fidelity-visual]')&&files.length&&files.every(f=>visualFidelityFiles.has(f)))return ['sky','library','starfall','finale','epilogue'];
   if(!manual&&message.includes('[qa-fidelity-3]')&&files.length&&files.every(f=>fidelityFiles.has(f)))return ['sky','library','starfall'];
-  if (manual==='chapters'||message.includes('[qa-full]')||message.includes('[fresh-campaign]')) return all;
   if (manual==='tail'||(!manual&&message.includes('[qa-tail]'))) return ['finale','epilogue'];
   if (manual) {
     const requested=manual.split(',').map(s=>s.trim());
@@ -73,7 +73,17 @@ assert.deepEqual(choose({files:[...audioOnly],message:'[qa-title-audio]'}),[]);
 assert.deepEqual(choose({files:[...audioOnly,'public/cat-bond/js/resonance/engine.mjs'],message:'[qa-title-audio]'}),all);
 assert.deepEqual(choose({files:[...openingPlaytestFiles],message:'[qa-windchime-playtest]'}),['harbor']);
 assert.deepEqual(choose({files:[...openingPlaytestFiles,'public/cat-bond/js/resonance/engine.mjs'],message:'[qa-windchime-playtest]'}),all);
-if (process.argv.includes('--self-test')) { console.log('QA scope: 15 assertions passed'); process.exit(0); }
+for (const [tag, paths] of [
+  ['qa-windchime-playtest',openingPlaytestFiles], ['qa-late-playtest',latePlaytestFiles],
+  ['qa-festival-playtest',festivalPlaytestFiles], ['qa-homecoming-playtest',homecomingFiles],
+  ['qa-story-art',storyArtFiles], ['qa-title-audio',audioOnly],
+  ['qa-fidelity-visual',visualFidelityFiles], ['qa-fidelity-3',fidelityFiles]
+]) {
+  for (const full of ['qa-full','fresh-campaign']) {
+    assert.deepEqual(choose({files:[...paths],message:`[${tag}] [${full}]`}),all);
+  }
+}
+if (process.argv.includes('--self-test')) { console.log('QA scope: all assertions passed (including 16 mixed-marker cases)'); process.exit(0); }
 const {BEFORE='',HEAD='',MANUAL_SCOPE='',COMMIT_MESSAGE='',TOOLCHAIN_ONLY='false'}=process.env;
 let files=[];
 if (/^[0-9a-f]{40}$/.test(BEFORE)&&/^[0-9a-f]{40}$/.test(HEAD)&&!/^0+$/.test(BEFORE)) {
