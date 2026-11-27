@@ -255,8 +255,8 @@ function renderHud(game,b){
   set("[data-forge-pressure-label]",en?"PRESSURE":"炉内压力");set("[data-forge-pressure-value]",Math.round(s.pressure)+"%");const pressure=p.querySelector("[data-forge-pressure]");if(pressure)pressure.style.width=s.pressure+"%";
   const open=s.ventOpen>0,button=p.querySelector("[data-forge-support-button]");
   if(button){button.disabled=s.supportCharges<=0||open;button.textContent=open?(en?"CORE EXPOSED":"炉心暴露中"):en?("VENT · "+s.supportCharges):("协力泄压 · "+s.supportCharges);}
-  set("[data-forge-support-title]",en?"Jinpo & Xiaomao":"烬婆与小铆");
-  p.dataset.assist=s.assist;p.dataset.exposed=String(open);p.dataset.pressureAlert=String(s.pressure>=75&&!open);set("[data-forge-support-note]",s.assist==="xiaomao"?(en?"Xiaomao · extra pressure relief":"小铆 · 额外泄压"):(en?"Jinpo · extra cooling":"烬婆 · 额外冷却"));
+  set("[data-forge-support-title]",en?"Ember & Pip":"烬婆与小栗");
+  p.dataset.assist=s.assist;p.dataset.exposed=String(open);p.dataset.pressureAlert=String(s.pressure>=75&&!open);set("[data-forge-support-note]",s.assist==="xiaomao"?(en?"Pip · extra pressure relief":"小栗 · 额外泄压"):(en?"Ember · extra cooling":"烬婆 · 额外冷却"));
   const objective=p.querySelector("[data-forge-objective]");if(objective)objective.textContent=open?(en?"Core exposed · "+Math.ceil(s.ventOpen)+"s — strike now!":"炉心暴露 · "+Math.ceil(s.ventOpen)+"秒，立即攻击！"):s.cast?(en?({hammerfall:"Hammerfall · dodge the marked impact", "slag-fan":"Slag fan · move sideways", "steam-vents":"Steam vents · escape the marked zones"}[s.cast.kind]):({hammerfall:"重锤锁定 · 躲开标记区域", "slag-fan":"熔渣扇击 · 横向闪避", "steam-vents":"蒸汽喷口 · 远离标记区域"}[s.cast.kind])):(en?"Protect the test rig. Vent before striking the core.":"保护试验炉，先泄压再攻击炉心。");
 }
 function removeHud(){document.getElementById("cb-forge-hud")?.remove();}
@@ -369,7 +369,7 @@ GP.startBattle=function(team,wildSpecies,opts={}){
     enemy.forgeCast=null;enemy.telegraph=0;enemy.staggerT=Math.max(enemy.staggerT||0,1.15);
     b.vfx?.ring?.(enemy.x,enemy.y,{r0:35,vr:480,life:.72,color:"#ffe0a3",width:8});
     b.vfx?.burst?.(enemy.x,enemy.y,{count:18,color:"#ffc17b",speed:190,life:.48,r:3});
-    toast(this,"烬婆与小铆打开冷却旁路！炉心暴露六秒。","Jinpo and Xiaomao open the coolant bypass! Core exposed for six seconds.");
+    toast(this,"烬婆与小栗打开冷却旁路！炉心暴露六秒。","Ember and Pip open the coolant bypass! Core exposed for six seconds.");
     window.MorrowwishAudio?.effect?.("discover");renderHud(this,b);return true;
   };
   const label=document.getElementById("wild-name");
