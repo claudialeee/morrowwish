@@ -67,6 +67,9 @@ export async function finishCanonicalOpening(page,{onStage=async()=>{}}={}){
 // Discover through actual directional input, not a hidden DOM click or save mutation.
 export async function gardenDiscovery(page,id,{touch=false}={}){
  const marker=page.locator('[data-garden-explore="'+id+'"]');
+ // The draw loop sets the world point on its first eligible frame after dialogue closes.
+ // Wait for that frame instead of treating a still-hidden newly unlocked chart as missing.
+ await page.waitForFunction(id=>{const b=document.querySelector('[data-garden-explore="'+id+'"]');return !!(b?._gardenWorldPoint&&window.__game?.yardPlayer?.()&&!document.querySelector('.res-host'));},id,{timeout:15000});
  for(let i=0;i<45&&!await marker.isVisible();i++){
   const d=await marker.evaluate(b=>{const g=window.__game,p=g?.yardPlayer?.(),t=b._gardenWorldPoint;return p&&t?{dx:(t.x-p.x)/g.W,dy:(t.y-p.y)/g.H}:null});
   if(!d)throw Error('Missing discovery route: '+id);
