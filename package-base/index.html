@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="catbond-original-art-21x3-release" content="63-painted-poses-v3-20261122">
+  <link rel="preload" as="image" href="assets/duo-storyboard-21x3-v3.webp?v=approved-duo-original-20261122">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="catbond-crazygames-ui-release" content="yard-website-menu-all-panels-localized-20261123-v12" />
+  <meta name="catbond-crazygames-battle-qa" content="menu-restored-hp-poise-catdex-reserves-portrait-v5" />
+  <meta name="catbond-crazygames-skill-label-release" content="full-text-no-ellipsis-computed-layout-validated-v6" />
+  <meta name="catbond-crazygames-mobile-controls-qa" content="full-skill-names-icon-only-help-no-auto-overlap-v7" />
+  <meta name="theme-color" content="#e4ede0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Cat Bond" />
+  
+  <title>Cat Bond — Raise cats, capture wild ones | Morrow Wish</title>
+  <!-- Cat Bond release QA: clear battle modes, retina cats, explore/bond/collect progression and mobile controls. -->
+  <meta name="description" content="Meet 33 adorable cat breeds, bond with your kitten team, earn Golden Paw medals in battles, and explore a cozy world. Cat Bond is free to play in your browser." />
+  
+  
+  
+  
+  
+  <link rel="icon" type="image/svg+xml" href="icons/cat-bond.svg" />
+  <script src="js/platform.js?v=cg-battle-hud-top-tools-20261123-v3"></script>
+  <link rel="stylesheet" href="css/style.css?v=debug-garden-visibility-20261126" />
+  <script src="lang.js" defer></script>
+  <script src="studio-audio.js?v=duo-release-foley-20261122" defer></script>
+  
+  <!-- Audio controls are unified in /game-settings.js; obsolete duplicate dock removed. -->
+<style id="cb-battle-help-integrated">
+/* Battle skill reference is part of the ? Controls dialog, never a floating HUD button. */
+#stage #battle-ui #battle-skill-info-toggle,
+html[data-mw-fullscreen-game="cat-bond"] #stage #cb-header-actions #battle-skill-info-toggle,
+html[data-mw-fullscreen-game="cat-bond"] #stage:has(#battle-ui.on) #cb-header-actions #battle-skill-info-toggle,
+#stage #battle-ui #battle-skill-guide{display:none!important}
+#battle-help .battle-help-skills{margin:12px 0 0;padding:10px 12px;border:1px solid #d4dbcc;border-radius:12px;background:#fffdf5;color:#4d604f}
+#battle-help .battle-help-skills summary{cursor:pointer;font-weight:850;font-size:13px;line-height:1.45}
+#battle-help .battle-help-skill-row{padding:8px 0 6px;border-top:1px solid #dfe5da}
+#battle-help .battle-help-skill-row:first-of-type{margin-top:9px}
+#battle-help .battle-help-skill-row strong{display:block;font-size:12px;line-height:1.4}
+#battle-help .battle-help-skill-row p{margin:3px 0 0!important;font-size:11.5px;line-height:1.45}
+</style><script>window.arcadeMetric=function(){};</script>
+<script src="portal-lifecycle.js" defer></script>
+</head>
+<body>
+  
+  <div id="game-root">
+    <div id="stage">
+      <canvas id="scene"></canvas>
+
+      <!-- Top HUD -->
+      <div id="hud">
+        <div class="hud-pill" aria-label="Coin balance"><span class="ico"><img class="cb-gold-coin" src="assets/gold-coin.svg?v=gold-currency-20261122" alt="coin" width="16" height="16"></span><span id="coins">0</span></div>
+        <div class="hud-pill"><span class="ico">🐠</span><span id="fish">0</span></div>
+        <div class="hud-spacer"></div>
+        <div class="scene-title">🏡 庭院</div>
+      </div>
+
+      <!-- Toasts -->
+      <div id="toasts"></div>
+      <div id="first-quest" role="region" aria-label="猫猫冒险指引" aria-live="polite" hidden></div>
+      <button id="guide-help" type="button" hidden aria-label="重新查看玩法引导">? 玩法</button>
+      <button id="yard-surprise" type="button" hidden></button>
+      <!-- Compact exploration action buttons aligned below the top-right utilities. -->
+      <nav id="map-actions" hidden aria-label="兼容旧地图入口（统一由顶部菜单访问）">
+        <button id="map-squad" type="button" hidden aria-label="选择出战队伍">🐾 出战队伍</button>
+        <button id="map-index" type="button" hidden>🗺️ 世界目录</button>
+        <button id="map-menu" type="button" hidden aria-label="打开探险管理菜单" aria-haspopup="dialog" aria-controls="panel" aria-expanded="false">☰ 菜单</button>
+      </nav>
+      <button id="collection-goal" type="button" aria-label="打开猫猫冒险目标" hidden></button>
+      <button id="yard-cat-switch" type="button" aria-label="切换庭院中的猫猫" hidden></button>
+
+      <!-- Yard floating actions -->
+      <div id="yard-actions">
+        <button class="fab map-fab" id="fab-map" title="查看五个探索地区" aria-label="探索五张地图">🗺️<small>地图</small></button>
+        <button class="fab" id="fab-build" title="庭院建造" aria-label="庭院建造游乐设施">🏗️</button>
+        <button class="fab" id="fab-seek" title="主动寻找野猫（不会自动刷新）" aria-label="主动寻找野猫">🌿</button>
+        <button class="fab" id="fab-play" title="逗猫">🪶</button>
+        <button class="fab" id="fab-feed" title="喂食">🍖</button>
+        <!-- DEBUG: unlock-all button for high-level combat testing. Only shown when ?debug=1. English-only label; dev-tool, not a shipped feature. -->
+        <button class="fab" id="fab-debug-unlock" title="DEBUG: unlock all 33 cats + all skills + Lv50" aria-label="DEBUG unlock all" hidden>🧪<small>DBG</small></button>
+      </div>
+
+     <div id="yard-placement-dock" hidden role="group" aria-label="庭院设施放置">
+        <div class="cb-placement-heading"><span class="cb-placement-seal" aria-hidden="true">✿</span>
+          <span class="cb-placement-heading-text"><strong>布置我的猫咪庭院</strong><small>点击草坪直接建造 · 拖动调整位置</small></span></div>
+        <span id="yard-placement-status">点击草坪直接建造 · 无需确认</span>
+        <div class="yard-placement-actions">
+          <button id="yard-placement-cancel" type="button">取消</button>
+        </div>
+      </div>
+      <!-- Battle UI (real-time arena) -->
+      <div id="battle-ui">
+        <div class="battle-topbar">
+          <div class="battle-enemy-summary">
+            <span id="wild-name">野生猫猫</span>
+            <div class="battle-enemy-track" role="progressbar" aria-label="Enemy health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span id="battle-enemy-hp-fill"></span></div>
+            <div class="battle-poise-row">
+              <span id="battle-poise-label" class="battle-poise-label">韧性</span>
+              <div class="battle-poise-track" role="progressbar" aria-label="Enemy poise" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span id="battle-enemy-poise-fill"></span></div>
+            </div>
+          </div>
+          <div class="battle-tools" role="group" aria-label="战斗操作">
+            <button class="btn ghost tiny-btn battle-help-trigger" id="battle-help-toggle" type="button" aria-label="查看手动战斗操作说明" aria-expanded="false" title="查看战斗操作说明">?<span class="battle-top-label"> 操作</span></button>
+            <button class="btn ghost tiny-btn" id="btn-auto" type="button" aria-pressed="false" title="自动控制移动、攻击、技能及闪避">🤖 自动战斗：关</button>
+            <button class="btn ghost tiny-btn" id="btn-flee" title="撤退">🏳️<span class="battle-top-label"> 撤退</span></button>
+            <!-- DEBUG: battle damage-log recorder — only revealed when ?debug=1 (game.js
+                 reads battle._debugAvailable to toggle hidden). First click = start recording;
+                 second = copy to clipboard. Owner request 2026-11-26: battle damage-log recorder. -->
+            <button class="btn ghost tiny-btn" id="btn-debug" type="button" aria-pressed="false" title="DEBUG: record this fight's damage log (?debug=1 only)" hidden>🐛<span class="battle-top-label"> 记录</span></button>
+          </div>
+        </div>
+        <div class="battle-hint" id="battle-hint">WASD 移动 · 鼠标瞄准 · 左键攻击 · 空格键闪避</div>
+        <div id="battle-coach-card" role="status" aria-live="polite" hidden></div>
+        <div id="battle-help" class="battle-help-sheet" role="dialog" aria-modal="true" aria-labelledby="battle-help-title" hidden>
+          <div class="battle-help-content">
+            <button class="battle-help-close" id="battle-help-close" type="button" aria-label="关闭操作说明">×</button>
+            <h3 id="battle-help-title">战斗怎么操作？</h3>
+            <div id="battle-help-body"></div>
+            <button class="btn gold" id="battle-help-start" type="button">知道了，继续战斗</button>
+          </div>
+        </div>
+
+        <button id="duo-burst" type="button" hidden aria-label="双猫合击">
+          <span class="duo-burst-emblem" aria-hidden="true">✦</span>
+          <span class="duo-burst-label">双猫合击</span>
+          <span class="duo-burst-track" aria-hidden="true"><i></i></span>
+        </button>
+        <!-- Active cards and reserves share a normal-flow rail. No overlap. -->
+        <div id="battle-squad-rail" aria-label="我方猫咪队伍">
+          <div id="team-slots"></div>
+          <div id="bench-slots" aria-label="可替换上场的猫咪" hidden></div>
+        </div>
+
+        <!-- ultimate meter -->
+        <div id="ult-wrap">
+          <span class="ult-label">必杀</span>
+          <div class="ult-track"><span id="ult-bar"></span></div>
+        </div>
+
+        <!-- A single readable skill card (hover/focus) and explicit touch help.
+             Kept OUTSIDE the action buttons so it never casts by accident. -->
+        <div id="battle-skill-tooltip" class="battle-skill-tooltip" role="status" hidden></div>
+        <button type="button" id="battle-skill-info-toggle" class="battle-skill-info-toggle"
+          aria-expanded="false" aria-controls="battle-skill-guide">ⓘ 技能说明</button>
+        <section id="battle-skill-guide" class="battle-skill-guide" aria-label="技能说明" hidden>
+          <button type="button" id="battle-skill-guide-close" aria-label="关闭技能说明">×</button>
+          <h3 id="battle-skill-guide-title">当前猫咪的技能</h3>
+          <div id="battle-skill-guide-body"></div>
+        </section>
+        <!-- move bar (bottom) -->
+        <div class="move-bar">
+          <button class="move" id="mv-basic" data-move="basic"><span class="mv-icon">🧶</span><span class="mv-name">毛球出击</span><span class="mv-k">左键/J</span></button>
+          <button class="move" id="mv-q" data-move="q"><span class="mv-icon">🧶</span><span class="mv-name">技能一</span><span class="mv-k">Q</span></button>
+          <button class="move" id="mv-e" data-move="e"><span class="mv-icon">💨</span><span class="mv-name">技能二</span><span class="mv-k">E</span></button>
+          <button class="move" id="mv-lock" type="button" data-move="lock" aria-label="锁定野猫"><span class="mv-icon">◎</span><span class="mv-name">锁定</span><span class="mv-k">切换</span></button>
+          <button class="move" id="mv-dodge" data-move="dodge" title="闪避伤害，短暂无敌（空格键）" aria-label="闪避伤害，短暂无敌（空格键）"><span class="mv-icon">🌀</span><span class="mv-name">闪避</span><span class="mv-k">空格键</span></button>
+          <button class="move ult" id="ult-btn" data-move="ult" title="必杀技"><span class="mv-icon">🌪️</span><span class="mv-name">喵之怒涛</span><span class="mv-k">R</span></button>
+        </div>
+      </div>
+
+      <!-- Bottom tabs -->
+      <div id="tabbar">
+        <button class="tab" data-tab="cats"><span class="ico" style="position:relative">🐾<span id="cat-duo-dot" hidden aria-hidden="true"></span></span><span class="nav-caption">猫咪</span></button>
+        <button class="tab" data-tab="work"><span class="ico">🧶</span><span class="nav-caption">工坊</span></button>
+        <button class="tab" data-tab="dex"><span class="ico">📖</span>图鉴</button>
+        <button class="tab" data-tab="daily"><span class="ico" style="position:relative">🎁<span id="daily-dot" class="hidden" style="position:absolute;top:-2px;right:-4px;width:8px;height:8px;background:#ff5a5a;border-radius:50%"></span></span>签到</button>
+        <button class="tab" data-tab="shop"><span class="ico">🛒</span>商店</button>
+      </div>
+
+      <!-- Overlay panel host -->
+      <div id="panel" class="panel"></div>
+
+      <div class="studio-stamp">🌙 MORROW·WISH</div>
+
+      <!-- Intro -->
+      <div id="intro">
+        <canvas id="intro-stars"></canvas>
+        <div class="studio-badge">
+          <span class="studio-moon">🌙</span>
+          <span class="studio-text">MORROW·<span class="studio-wish">WISH</span></span>
+          <span class="studio-tag">STUDIO 工作室 呈现</span>
+        </div>
+        <h1 class="game-logo">猫猫纽带<span class="logo-en">Cat Bond</span></h1>
+        <div class="intro-cat-gallery"><canvas id="intro-cats" width="720" height="172" role="img" aria-label="Four expressive cats from Cat Bond"></canvas><span class="intro-cat-glint" aria-hidden="true">✦</span></div>
+        <button class="btn gold" id="intro-start">开始冒险 🐱</button>
+        <div class="intro-gallery-caption">✿ 在庭院遇见命中注定的搭档 ✿</div>
+        <p>每只小猫都有自己的脾气。一起冒险、玩耍、变强，慢慢成为彼此最好的搭档。</p>
+        <div class="intro-features" aria-label="猫猫纽带的四种玩法">
+          <span id="intro-breed-count">🐾 收集 33 种猫</span>
+          <span>⚔️ 双猫合击 · 觉醒新技能</span>
+          <span>🧶 工坊赚金币 · 培养猫</span>
+          <span>🗺️ 解锁地图 · 发现秘密</span>
+        </div>
+        <div class="intro-guide"><strong>开局只要一步：选一只小猫，寻找第一位伙伴</strong></div>
+        <p id="start-error" hidden role="alert"></p>
+        <button class="btn ghost" id="intro-reset" style="margin-top:6px">🗑️ 重置存档（出问题点这里）</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ?v= cache-buster: bump this number whenever JS changes so the browser can't serve stale code -->
+  <script src="js/contact-fx.js?v=runtime-completion-v2-20261125"></script>
+    <script src="js/vfx.js?v=runtime-completion-v2-20261125"></script>
+  <script src="js/ward-art.js?v=paw-grounded-shield-20261122"></script>
+  <script src="js/catart.js?v=36"></script>
+
+  <script src="js/cute-cats.js?v=1-storybook"></script>
+
+  <script src="js/real-kittens.js?v=jiafei-approved-flatface-20261122-v4"></script>
+  <script src="js/data.js?v=jiafei-sr-20261122-v2"></script>
+  <script src="js/running-cats.js?v=seamless-illustrated-sprites-20261120"></script>
+  <script src="js/skills.js?v=tank-no-dup-self-heal-20261127"></script>
+  <script src="js/growth.js?v=growth-feature-retired-20261122"></script>
+  <script src="js/adult-art.js?v=compact-grown-proportions-20261122"></script>
+  <script src="js/state.js?v=expedition-hp-recovery-20261122-1"></script>
+  <script src="js/cat-relationships.js?v=two-currency-duomem-20261122"></script>
+  <script src="js/raising.js?v=two-currency-20261122"></script>
+  <script src="js/painted-regions.js?v=five-distinct-worlds-20261120"></script>
+  <script src="js/scenery.js?v=five-distinct-worlds-20261120"></script>
+  <script src="js/world.js?v=yard-first-battle-counter-20261125"></script>
+  <script src="js/worldmap.js?v=region-level-gate-20261127"></script>
+  <script src="js/duo-portraits.js?v=32-breeds-21-poses-3-tiers-20261122"></script>
+  <script src="js/duo-artwork.js?v=32-breeds-pastel-20261122"></script>
+  <script src="js/duo-signatures.js?v=duo-pastel-20261121"></script>
+  <script src="js/duo-director.js?v=three-tiers-21-cameras-20261122"></script>
+  <script src="js/duo-summons.js?v=cinematic-spirit-20261121"></script>
+  <script src="js/duo-finale.js?v=cinematic-v5-20261121"></script>
+<script src="js/duo-premium.js?v=native-portrait-20261127"></script>
+  <script src="js/duo-hero.js?v=original-63-only-20261123-v1"></script>
+  <script src="js/ult-vfx.js?v=resolve-script-conflict-20261126"></script>
+  <script src="js/magnetic-fx.js?v=resolve-script-conflict-20261126"></script>
+  <script src="js/skill-fx.js?v=merge-crescent-umbral-20261126"></script>
+  <script src="js/traits.js?v=resolve-script-conflict-20261126"></script>
+  <script src="js/moon-fx.js?v=merge-luminous-overhead-20261126"></script>
+  <script src="js/trait-fx.js?v=resolve-script-conflict-20261126"></script>
+  <script src="js/battle.js?v=ternary-timeout-outcome-20261127"></script>
+  <script src="js/duo-bond.js?v=native-portrait-20261127"></script>
+  <script src="js/ui.js?v=region-level-gate-20261127"></script>
+  <script src="js/game.js?v=debug-unlock-real-lv50-stats-20261126"></script>
+  <script src="js/main.js?v=cg-intro-safe-reset-20261123-v9"></script>
+  <script src="js/gold-coins.js?v=gold-i18n-coordination-20261123-v2"></script>
+  <!-- Morrow Wish bilingual display layer (ZH->EN); loads after game so it can translate rendered text. -->
+  <script src="js/i18n.js?v=region-level-gate-20261127"></script>
+  <!-- Canonical unified analytics. Auto-detects the "cat-bond" route; respects Do Not Track / GPC. -->
+  
+<script src="game-fullscreen.js?v=skills-in-controls-20261122-v1" defer></script><script src="game-settings.js?v=full-share-yarn-20261121-2" defer></script></body>
+</html>

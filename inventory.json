@@ -1,0 +1,725 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "sourceFiles": [
+    {
+      "path": "public/cat-bond/COMBAT-REDESIGN.md",
+      "gitBlob": "55f9ca872a1a320a233d1993e0f5e61cdbb93674",
+      "bytes": 9344
+    },
+    {
+      "path": "public/cat-bond/adult-preview.html",
+      "gitBlob": "5de4a1e2fdbac7d000e2b357485ff87be0f49a69",
+      "bytes": 4513
+    },
+    {
+      "path": "public/cat-bond/assets/battle-garden.svg",
+      "gitBlob": "13d07cdddd89e1225d528f8979f2d61aa4a3c22d",
+      "bytes": 72079
+    },
+    {
+      "path": "public/cat-bond/assets/duo-premium-sheet.webp",
+      "gitBlob": "edb7231bfde08c4dc963ce800aea5997c352052e",
+      "bytes": 336426
+    },
+    {
+      "path": "public/cat-bond/assets/duo-scene-backgrounds.webp",
+      "gitBlob": "ac9dbce94fd5cc1c236970cdee529f28b3976f50",
+      "bytes": 2328
+    },
+    {
+      "path": "public/cat-bond/assets/duo-stage-clean-21x3-v1.webp",
+      "gitBlob": "c9e7162edcc4139b8b71bc14e266554961fb3590",
+      "bytes": 203600
+    },
+    {
+      "path": "public/cat-bond/assets/duo-storyboard-21x3-v3.webp",
+      "gitBlob": "7b653b91ca5d1e04337c1b0d2fcbab85603e9a5b",
+      "bytes": 2158484
+    },
+    {
+      "path": "public/cat-bond/assets/gold-coin.svg",
+      "gitBlob": "2ca20693c72f80e9908d9b900cd1ee70d5b0304c",
+      "bytes": 1825
+    },
+    {
+      "path": "public/cat-bond/assets/jiafei-watercolor-v1.avif",
+      "gitBlob": "71ad4f576bfe96a484cf1cc4ec9c5b349c31c015",
+      "bytes": 5268
+    },
+    {
+      "path": "public/cat-bond/assets/jiafei-watercolor-v2.webp",
+      "gitBlob": "f66285db8549be1c92045aa15c2a3372cecaa3a5",
+      "bytes": 7630
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-dark-tier-1.webp",
+      "gitBlob": "ea2f3a683011dedddf1dc635dadbb5ee5f926d9d",
+      "bytes": 516918
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-dark-tier-2.webp",
+      "gitBlob": "0ad99aecca2bbb5fab73fa11680bd14de1cc4992",
+      "bytes": 512836
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-dark-tier-3.webp",
+      "gitBlob": "ee1e9e961878747ba4cf4a7774b2f5047d591857",
+      "bytes": 569142
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-elec-tier-1.webp",
+      "gitBlob": "ca9113b07bd3401b331c56bf5ad8f99959c7a50d",
+      "bytes": 566176
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-elec-tier-2.webp",
+      "gitBlob": "d112cec0c6b02340e2bfc564a28409d48799a239",
+      "bytes": 468422
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-elec-tier-3.webp",
+      "gitBlob": "e803a5fa8fe392decc789784d86b5496a7256c49",
+      "bytes": 497490
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-fire-tier-1.webp",
+      "gitBlob": "99c1855311be9d98895676cf09464f46f5f04ffa",
+      "bytes": 490178
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-fire-tier-2.webp",
+      "gitBlob": "681a187db45500228fe52d010386b1a2b74e733a",
+      "bytes": 469050
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-fire-tier-3.webp",
+      "gitBlob": "18308474a271eb2dd9fef75ba14fc562862f5072",
+      "bytes": 566028
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-grass-tier-1.webp",
+      "gitBlob": "f8b60527c6ea6659b01333d0833ae834bc1aa968",
+      "bytes": 524630
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-grass-tier-2.webp",
+      "gitBlob": "358ffe7547b96f16054640a72da4f1004be97fb2",
+      "bytes": 562762
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-grass-tier-3.webp",
+      "gitBlob": "a19cb175ff1c224055b9d5da61d8b4324d0c921c",
+      "bytes": 494290
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
+      "gitBlob": "96af89aa17fdbe2dad52c3cce0f0b7d5611498ce",
+      "bytes": 427254
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-light-tier-2.webp",
+      "gitBlob": "ba90dca9abf72203b4b23023b3f699323d575698",
+      "bytes": 601692
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-light-tier-3.webp",
+      "gitBlob": "8caa55e674a54b11aa037e6050696ac9910f8310",
+      "bytes": 494612
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-water-tier-1.webp",
+      "gitBlob": "3aa952d093917abcd55afdbe5b88a5559ab44add",
+      "bytes": 494926
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-water-tier-2.webp",
+      "gitBlob": "f75a93f309c0a826bb595e4a3b04b8f1ddf69d69",
+      "bytes": 555692
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/dark-water-tier-3.webp",
+      "gitBlob": "7c645d28f455cf1a08774406f4c5ae869e87afa9",
+      "bytes": 503410
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-elec-tier-1.webp",
+      "gitBlob": "b1e87e52f44ce138698f6466c4b8d46c4b69a053",
+      "bytes": 462364
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-elec-tier-2.webp",
+      "gitBlob": "52988a75426345bdaab3f656a1e3fbe50ed95154",
+      "bytes": 475344
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-elec-tier-3.webp",
+      "gitBlob": "a657ecb7607d8fc6f72976b679ea6962d30ed817",
+      "bytes": 479816
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-fire-tier-1.webp",
+      "gitBlob": "0f6850b680aed057eb937faa4d3b8c23d7c51ea1",
+      "bytes": 564934
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-fire-tier-2.webp",
+      "gitBlob": "af6a330a0d3ebfbf50679260346ee23272874725",
+      "bytes": 480632
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-fire-tier-3.webp",
+      "gitBlob": "15fb2aea25a87a60604d725801fc363a641fe05e",
+      "bytes": 452488
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-grass-tier-1.webp",
+      "gitBlob": "f630a7e105e4fc5d97889ff92aa9839c3b0437d2",
+      "bytes": 434630
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-grass-tier-2.webp",
+      "gitBlob": "fc9ea7060bf65b5d4a2a7a1580c23db5d2515d04",
+      "bytes": 507370
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-grass-tier-3.webp",
+      "gitBlob": "f0403c2caddcb0894b59c7f63d3db107f6b62903",
+      "bytes": 525382
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-light-tier-1.webp",
+      "gitBlob": "80533c5e217a04237face603481bf23b109db507",
+      "bytes": 452344
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-light-tier-2.webp",
+      "gitBlob": "62574322b8b37061f3ac7280112b57793b44ce5f",
+      "bytes": 467856
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-light-tier-3.webp",
+      "gitBlob": "9085dac3316c92506063c471c24d2cfa0805bd79",
+      "bytes": 494474
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-water-tier-1.webp",
+      "gitBlob": "3f5699bb90b556a233e4bbac22db2786cea8d8c5",
+      "bytes": 477044
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-water-tier-2.webp",
+      "gitBlob": "6eebc37ad3abfde538502480b17dcb45ca67e7b0",
+      "bytes": 494748
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/elec-water-tier-3.webp",
+      "gitBlob": "05bb6d9f693e6bf0bd9f9d7c2ca596cb778a5010",
+      "bytes": 551694
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-fire-tier-1.webp",
+      "gitBlob": "74a04695342310d1ae42e532365603317373c926",
+      "bytes": 533404
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-fire-tier-2.webp",
+      "gitBlob": "3157373857f32c4b41a9de921bacc604a624e487",
+      "bytes": 439700
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-fire-tier-3.webp",
+      "gitBlob": "9aae67d1e372b1e7a18f8a7bed3c422bef8252c5",
+      "bytes": 552620
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-grass-tier-1.webp",
+      "gitBlob": "9543652633fbf83f4b22108bfba3e38e4ec3ed28",
+      "bytes": 507804
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-grass-tier-2.webp",
+      "gitBlob": "0582ee3095ab2ff89388d63d49e096968c0d547d",
+      "bytes": 553512
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-grass-tier-3.webp",
+      "gitBlob": "6c15d1128fba8261e2be6414acd6e8df64ae2278",
+      "bytes": 537636
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-light-tier-1.webp",
+      "gitBlob": "1d18534cf38098a975416895bf28c6373db6c2c2",
+      "bytes": 480004
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-light-tier-2.webp",
+      "gitBlob": "6d443a1b2f63d9970abbfad4ff0a946a3bb3a07a",
+      "bytes": 488910
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-light-tier-3.webp",
+      "gitBlob": "d19dfd553db7b96c251e69e9bf8e5365069187d5",
+      "bytes": 470322
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-water-tier-1.webp",
+      "gitBlob": "154dceebae8f7625344053dddd43e98cd11591e1",
+      "bytes": 515564
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-water-tier-2.webp",
+      "gitBlob": "c235a0d10d7f34e7a1eeab1add55275a91accc33",
+      "bytes": 549328
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/fire-water-tier-3.webp",
+      "gitBlob": "29f82555b9aba533a68997c70242946c2deee887",
+      "bytes": 485034
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/grass-grass-tier-1.webp",
+      "gitBlob": "b37ce3641de8c1f9ca30647a7e84e5974a77cd93",
+      "bytes": 520978
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/grass-grass-tier-2.webp",
+      "gitBlob": "c55b579db2504f62ea033a9cac975e7e0b71370d",
+      "bytes": 465398
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/grass-grass-tier-3.webp",
+      "gitBlob": "527438ddb3878fcf95c20e39c70e13c9cbd8b3f8",
+      "bytes": 445222
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/grass-light-tier-1.webp",
+      "gitBlob": "6236cdcc518f482b8eeaaa261de7cae2d2573459",
+      "bytes": 481294
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/grass-light-tier-2.webp",
+      "gitBlob": "85e992bab5f58e996963919b0de356309b71770c",
+      "bytes": 561552
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/grass-light-tier-3.webp",
+      "gitBlob": "9a64841fdca83aa73e7bf459998a366c52b75be0",
+      "bytes": 504372
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/grass-water-tier-1.webp",
+      "gitBlob": "1edcc2a37124c832ae3494a6db79e80b9baf0bad",
+      "bytes": 491176
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/grass-water-tier-2.webp",
+      "gitBlob": "25f605ab23d66af5f7d0df3e6d94e7f527244166",
+      "bytes": 504638
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/grass-water-tier-3.webp",
+      "gitBlob": "bbc5aee7c167a828872c8a70e269e2d93e416235",
+      "bytes": 546884
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/light-light-tier-1.webp",
+      "gitBlob": "1aebfd3286c1b014a0f617d8204924495996bf98",
+      "bytes": 473750
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/light-light-tier-2.webp",
+      "gitBlob": "173080907338abf39782feccb63b710683fb7949",
+      "bytes": 490310
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/light-light-tier-3.webp",
+      "gitBlob": "2562879fce384908bd8194bed177ff6456ca7079",
+      "bytes": 413130
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/light-water-tier-1.webp",
+      "gitBlob": "d17fd37517d2f52eeedb531389fc261276a5474f",
+      "bytes": 522228
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/light-water-tier-2.webp",
+      "gitBlob": "13d60a36289d8ae3786bc849c9a5bdb0db59d789",
+      "bytes": 555984
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/light-water-tier-3.webp",
+      "gitBlob": "a1d2895913c5a8a3915ef03ebf7701741ca53dbb",
+      "bytes": 535434
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/water-water-tier-1.webp",
+      "gitBlob": "e547a1d6fafbdccfc6e90bb8e5cde07dfb08dc10",
+      "bytes": 490908
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/water-water-tier-2.webp",
+      "gitBlob": "78ef6ee031d492aa35342db793d416b6dccd4315",
+      "bytes": 519482
+    },
+    {
+      "path": "public/cat-bond/assets/mobile-portrait/duo/water-water-tier-3.webp",
+      "gitBlob": "4bfc2e1911113ea1d13b3e82f52b261decb002e1",
+      "bytes": 506174
+    },
+    {
+      "path": "public/cat-bond/assets/watercolor-cats-v2.webp",
+      "gitBlob": "516514a564ca0bd20a4833f3095edf969d00f2a4",
+      "bytes": 9400
+    },
+    {
+      "path": "public/cat-bond/assets/yard-storybook.svg",
+      "gitBlob": "dc11c50f10b783d6bfaf888000ce5d7266ce8a6a",
+      "bytes": 55847
+    },
+    {
+      "path": "public/cat-bond/assets/yard_bg.png",
+      "gitBlob": "196c3ca88101755ef24bc275adef2f8dc6ee9d22",
+      "bytes": 1478380
+    },
+    {
+      "path": "public/cat-bond/css/style.css",
+      "gitBlob": "1e4df7bce9081e55692b6807989d7cd31219466b",
+      "bytes": 256305
+    },
+    {
+      "path": "public/cat-bond/duo-preview.html",
+      "gitBlob": "06ce04b5afc36d490e7aa82f27a12579b563e2f0",
+      "bytes": 8095
+    },
+    {
+      "path": "public/cat-bond/duo-showcase.html",
+      "gitBlob": "68bccbf58a559fc49801837ff679c4a00013e3d2",
+      "bytes": 90284
+    },
+    {
+      "path": "public/cat-bond/index.html",
+      "gitBlob": "fc2d8a4e3b6a087254d8573e842b3bf36be41111",
+      "bytes": 18755
+    },
+    {
+      "path": "public/cat-bond/js/adult-art.js",
+      "gitBlob": "78b24b68445455fa75bc202488cfd15862daebdb",
+      "bytes": 4239
+    },
+    {
+      "path": "public/cat-bond/js/battle.js",
+      "gitBlob": "4a91c9ab834e400d2673953fc6fca8a078d2de54",
+      "bytes": 492900
+    },
+    {
+      "path": "public/cat-bond/js/breed-atlas.js",
+      "gitBlob": "5d78faa357758ef8135b8f3b0d09b8dbd344f27b",
+      "bytes": 194987
+    },
+    {
+      "path": "public/cat-bond/js/cat-relationships.js",
+      "gitBlob": "54abf38f9711f939b4f4793ce83a6196584f2459",
+      "bytes": 16641
+    },
+    {
+      "path": "public/cat-bond/js/catart.js",
+      "gitBlob": "db54f1e99d27df2e8333c2e016b0ac9c6a6ca5fe",
+      "bytes": 22838
+    },
+    {
+      "path": "public/cat-bond/js/complete-kittens.js",
+      "gitBlob": "c9cd4fc524ae5ffb7c45570827ae97928b638b73",
+      "bytes": 9912
+    },
+    {
+      "path": "public/cat-bond/js/contact-fx.js",
+      "gitBlob": "a9b71f29a5471cdbb86a731cfc45a9b66aa2814e",
+      "bytes": 8535
+    },
+    {
+      "path": "public/cat-bond/js/cute-cats.js",
+      "gitBlob": "7bd9feaddb4bc7b5e53be4c578f6dbb7df59ccd5",
+      "bytes": 12887
+    },
+    {
+      "path": "public/cat-bond/js/data.js",
+      "gitBlob": "0af7a13c631a05bbd9c2a96288501fe5deecb8e2",
+      "bytes": 10551
+    },
+    {
+      "path": "public/cat-bond/js/duo-artwork.js",
+      "gitBlob": "1bfd2a3a7ccc3bb4bd0e5694aca2028a41d34159",
+      "bytes": 9973
+    },
+    {
+      "path": "public/cat-bond/js/duo-bond.js",
+      "gitBlob": "8aff9c8951b7270b1a3161d296b99379e92e56ad",
+      "bytes": 12724
+    },
+    {
+      "path": "public/cat-bond/js/duo-breed-art.js",
+      "gitBlob": "6641478cd41c9edbe4dda5e92a9e0a6d908377d8",
+      "bytes": 14155
+    },
+    {
+      "path": "public/cat-bond/js/duo-director.js",
+      "gitBlob": "b3d2b7930492badd325dd4409f0720d24a8f4608",
+      "bytes": 14166
+    },
+    {
+      "path": "public/cat-bond/js/duo-finale.js",
+      "gitBlob": "a39a654adb2d1461bf44689e19c6c3afe8d4180b",
+      "bytes": 7941
+    },
+    {
+      "path": "public/cat-bond/js/duo-hero.js",
+      "gitBlob": "eb735bc74e25461d6afb5b8e4cc6f78a5b5ab4e5",
+      "bytes": 653
+    },
+    {
+      "path": "public/cat-bond/js/duo-portraits.js",
+      "gitBlob": "7626311cf7a2b8a572f666d7fe8304051174fc24",
+      "bytes": 14105
+    },
+    {
+      "path": "public/cat-bond/js/duo-premium.js",
+      "gitBlob": "36420bb799627e4584099328d08717e19cca0241",
+      "bytes": 15760
+    },
+    {
+      "path": "public/cat-bond/js/duo-signatures.js",
+      "gitBlob": "95cd646b8b5905fb6539e9ab99172a9576213ff9",
+      "bytes": 12787
+    },
+    {
+      "path": "public/cat-bond/js/duo-summons.js",
+      "gitBlob": "3dea2145a6ca0620cb991c4377341fe6eb7f0971",
+      "bytes": 7304
+    },
+    {
+      "path": "public/cat-bond/js/game.js",
+      "gitBlob": "1650f7fc2cd618a11e1b40915be64bd9ee6b0b56",
+      "bytes": 100154
+    },
+    {
+      "path": "public/cat-bond/js/gold-coins.js",
+      "gitBlob": "f21cbb46655256221235ff4c195bd934517fbe31",
+      "bytes": 3261
+    },
+    {
+      "path": "public/cat-bond/js/growth.js",
+      "gitBlob": "725a4bf0ec925387a8e5554dc29f8f2afb8da756",
+      "bytes": 3066
+    },
+    {
+      "path": "public/cat-bond/js/i18n.js",
+      "gitBlob": "5a0f64003ca5fcb01c0cb2941e7db7fb3fcae158",
+      "bytes": 150497
+    },
+    {
+      "path": "public/cat-bond/js/kitten-illustrations.js",
+      "gitBlob": "885c3ae63b10ae2bd0e1fb9855907f4ce9545b1c",
+      "bytes": 59014
+    },
+    {
+      "path": "public/cat-bond/js/magnetic-fx.js",
+      "gitBlob": "c633700577aab3afca3d88dd6613114f51ef79e0",
+      "bytes": 5490
+    },
+    {
+      "path": "public/cat-bond/js/main.js",
+      "gitBlob": "073fe4b671fdd23b88da364707120bacb0270eb2",
+      "bytes": 11789
+    },
+    {
+      "path": "public/cat-bond/js/moon-fx.js",
+      "gitBlob": "a19b835dd213491c2e2a0007a6f7e3565f471ce9",
+      "bytes": 6020
+    },
+    {
+      "path": "public/cat-bond/js/painted-regions.js",
+      "gitBlob": "27c44c1afb9093f35d53a94018bdcd6088e14ec1",
+      "bytes": 14757
+    },
+    {
+      "path": "public/cat-bond/js/platform.js",
+      "gitBlob": "e3df6f94232b08bc44aca79572f06598db0eb57a",
+      "bytes": 5112
+    },
+    {
+      "path": "public/cat-bond/js/raising.js",
+      "gitBlob": "e9ec138db9c4803445f71e23a6f9fd89dc19461c",
+      "bytes": 30349
+    },
+    {
+      "path": "public/cat-bond/js/real-kittens.js",
+      "gitBlob": "97b48b414c04dc1d7b732283ef9da316830ce31a",
+      "bytes": 23357
+    },
+    {
+      "path": "public/cat-bond/js/running-cats.js",
+      "gitBlob": "39442c7aed7709eab478ae14d0adb6a43790a98d",
+      "bytes": 1998
+    },
+    {
+      "path": "public/cat-bond/js/scenery.js",
+      "gitBlob": "b952b45eef22804662a3724ef6dc95f16fe59738",
+      "bytes": 7712
+    },
+    {
+      "path": "public/cat-bond/js/skill-fx.js",
+      "gitBlob": "0c926d07ec48ba02786f2a96c0f251d2949ef5ab",
+      "bytes": 59933
+    },
+    {
+      "path": "public/cat-bond/js/skills.js",
+      "gitBlob": "d0ec76da41e199b3137773bf91d2f25c2b2b0174",
+      "bytes": 114868
+    },
+    {
+      "path": "public/cat-bond/js/state.js",
+      "gitBlob": "a71c3876f01ffac1c4c572c3975036a4695be446",
+      "bytes": 13915
+    },
+    {
+      "path": "public/cat-bond/js/trait-fx.js",
+      "gitBlob": "5a3fd9f06217952c849b39ac63e8132f14cda74a",
+      "bytes": 20667
+    },
+    {
+      "path": "public/cat-bond/js/traits.js",
+      "gitBlob": "6274b92abadf61cb4d5e609820ef78e3c77412e3",
+      "bytes": 52895
+    },
+    {
+      "path": "public/cat-bond/js/ui.js",
+      "gitBlob": "d99f877a120905bc815392f4af35caa0b0bd3f38",
+      "bytes": 215426
+    },
+    {
+      "path": "public/cat-bond/js/ult-vfx.js",
+      "gitBlob": "f5f21ccbe470951c2a019a8c1100189188fc5e15",
+      "bytes": 10399
+    },
+    {
+      "path": "public/cat-bond/js/vfx-atlas.js",
+      "gitBlob": "0408788bda4f26ab880470015fdd4c8e0c411108",
+      "bytes": 9470
+    },
+    {
+      "path": "public/cat-bond/js/vfx.js",
+      "gitBlob": "f05c2a3501f425caab8272ec238ee88be4479f43",
+      "bytes": 20409
+    },
+    {
+      "path": "public/cat-bond/js/ward-art.js",
+      "gitBlob": "5a3c4b795c2f385a1f94e88d58b17de245719b8c",
+      "bytes": 9552
+    },
+    {
+      "path": "public/cat-bond/js/world.js",
+      "gitBlob": "4178268011ff433c5b69ea4cf421a8dddecbd36a",
+      "bytes": 69901
+    },
+    {
+      "path": "public/cat-bond/js/worldmap.js",
+      "gitBlob": "7dc5a62522e21a7896764f6c37ade7eddee9efbd",
+      "bytes": 65195
+    },
+    {
+      "path": "public/cat-bond/manifest.webmanifest",
+      "gitBlob": "0a647f6a710db89cbd53fe2e0dc9fd8a5980d77a",
+      "bytes": 510
+    },
+    {
+      "path": "public/cat-bond/species-vfx-review.html",
+      "gitBlob": "498e029afad1b57d6f3e5d395ce0652b65124cc8",
+      "bytes": 4120
+    },
+    {
+      "path": "public/cat-bond/vfx-atlas-standalone.html",
+      "gitBlob": "db58ad6f734f39bb14f82c6cc90c2685ccd64088",
+      "bytes": 273553
+    },
+    {
+      "path": "public/cat-bond/vfx-review-v5.html",
+      "gitBlob": "b3c38a97db15c18c016727fbcddb6e1e106df6a7",
+      "bytes": 5203
+    }
+  ],
+  "sharedFiles": [
+    {
+      "path": "public/game-fullscreen.js",
+      "gitBlob": "e545100f407b27f03a8a1025f7f66e6695316c17",
+      "bytes": 26227
+    },
+    {
+      "path": "public/game-settings.js",
+      "gitBlob": "408cf8378ab5cfab7ff701c13de7e80d09309154",
+      "bytes": 18751
+    },
+    {
+      "path": "public/icons/cat-bond.svg",
+      "gitBlob": "9b47a97f6d01944c3f957541f4167228991dc722",
+      "bytes": 2914
+    },
+    {
+      "path": "public/lang.js",
+      "gitBlob": "505325a82f2405a25c692481c9f2d8b50001b1b7",
+      "bytes": 23359
+    },
+    {
+      "path": "public/social-share.js",
+      "gitBlob": "3e2fcfa7e34d7c994b17f2b2564b42b322f2d410",
+      "bytes": 8624
+    },
+    {
+      "path": "public/studio-audio.js",
+      "gitBlob": "66a3f0285073de020d77201fc0a6e40d5a832311",
+      "bytes": 19327
+    },
+    {
+      "path": "public/studio-music.js",
+      "gitBlob": "d1cb8023d5035c54d40effa067d05de413ca9b3b",
+      "bytes": 8598
+    },
+    {
+      "path": "public/telemetry.js",
+      "gitBlob": "87d7853a4ebb00d07a8b098a912283bea00b7b44",
+      "bytes": 15049
+    }
+  ],
+  "approvedCovers": [
+    {
+      "path": "promotion/crazygames-covers-approved-20261122/cover-landscape.jpg",
+      "gitBlob": "b890b014fa0b443c8d1d4d522b3676503a3055b4",
+      "bytes": 495200
+    },
+    {
+      "path": "promotion/crazygames-covers-approved-20261122/cover-portrait.jpg",
+      "gitBlob": "a181625421361e646d602c22d20be266ce92b359",
+      "bytes": 275704
+    },
+    {
+      "path": "promotion/crazygames-covers-approved-20261122/cover-square.jpg",
+      "gitBlob": "5d1579ffc152fb9b977265cf1b208b8db1d769ed",
+      "bytes": 215973
+    }
+  ],
+  "portraitFiles": 63,
+  "baseCandidate": {
+    "fileCount": 127,
+    "patched": [
+      "public/cat-bond/index.html",
+      "public/cat-bond/js/platform.js",
+      "public/cat-bond/js/game.js",
+      "public/studio-audio.js",
+      "public/game-settings.js",
+      "public/game-fullscreen.js"
+    ],
+    "portalSdkVerified": false,
+    "runtimeVerified": false,
+    "remoteMusicRemoved": true,
+    "originalSnapshotUnchanged": true
+  }
+}

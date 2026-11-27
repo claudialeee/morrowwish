@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "https://morrowwish.pages.dev/$1"
-    }
-  ]
-}

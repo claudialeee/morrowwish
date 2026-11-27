@@ -1,5 +1,0 @@
-Happy Clappy Loop — OwlishMedia
-Source: https://opengameart.org/content/happy-clappy-loop
-License: CC0 1.0 Universal, https://creativecommons.org/publicdomain/zero/1.0/
-The original WAV is converted to a compact Ogg/Opus file during deployment.
-The recording is used as optional background music for Pawsibly Innocent only.

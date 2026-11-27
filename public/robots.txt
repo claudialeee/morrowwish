@@ -1,5 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /studio-insights/
-Disallow: /api/
-Sitemap: https://morrowwish.vercel.app/sitemap.xml

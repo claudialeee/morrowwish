@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-11-27",
+  "status": "handoff-prepared-not-rendered-not-uploaded",
+  "game": {
+    "title": "Cat Bond",
+    "titleZh": "猫猫纽带",
+    "studio": "Morrow Wish",
+    "source": "public/cat-bond/",
+    "officialUrl": "https://morrowwish.vercel.app/cat-bond/",
+    "exclude": "Starbell Echo / 星铃回响",
+    "sourceEvidence": {
+      "speciesCount": 33,
+      "portraitDuoCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+      "sourceIndexBlob": "fc2d8a4e3b6a087254d8573e842b3bf36be41111",
+      "speciesDataBlob": "0af7a13c631a05bbd9c2a96288501fe5deecb8e2",
+      "battleBlob": "4a91c9ab834e400d2673953fc6fca8a078d2de54"
+    },
+    "freeze": "Record exact deployed/selected source commit and confirm source-to-live parity before any capture. Recheck all copy against that commit."
+  },
+  "copy": {
+    "short": "Collect adorable cats, explore illustrated regions, grow your garden, and build a two-cat team for real-time adventures.",
+    "description": "Start with a curious kitten and make the Sunlit Garden your own. Discover wild cats, explore beautifully illustrated regions, care for and train your companions, and build friendships as your cat family grows. Choose a two-cat team for real-time encounters, use skills and dodges in manual battles, or switch to Auto Battle for a more relaxed adventure. Discover rare companions, develop your collection in Catdex, and uncover shared memories as your cats grow closer.",
+    "instructions": "Choose a starter kitten, then click or tap the highlighted grass to meet a wild cat. Win encounters to welcome companions. Use the garden and Cats menus to care for and train your cats, choose a duo, and explore the world map. In battle, use the on-screen controls or select Auto Battle. Follow the in-game Controls guide for keyboard, mouse and touch inputs. Progress is saved locally in your browser.",
+    "tags": [
+      "Cats",
+      "Animals",
+      "Cute",
+      "Adventure",
+      "Collection",
+      "Simulation",
+      "Strategy"
+    ],
+    "language": "English default; verify Chinese switch and complete English localization",
+    "claimsToVerify": [
+      "33 collectible cats in source as of audit; omit number unless frozen build confirms actual accessible catalogue",
+      "five regions; omit numeric claim until verified",
+      "exact controls and save behavior on each platform"
+    ]
+  },
+  "masters": {
+    "root": ".check/cat-bond-platform-drafts",
+    "coverSource": "promotion/crazygames-covers-approved-20261122/",
+    "covers": "Retain user-approved original composition; no AI redrawing, blur padding, stretch, title substitution or crop that removes key cats. Use approved originals at native sizes or acquire approved alternative.",
+    "screenshots": [
+      "garden",
+      "collection-catdex",
+      "duo-team-promise",
+      "workshop",
+      "region-map",
+      "exploration",
+      "battle",
+      "rare-capture"
+    ],
+    "nativeViewports": [
+      "1920x1080",
+      "1080x1920",
+      "1080x1620",
+      "760x570",
+      "720x1280"
+    ],
+    "recordings": {
+      "landscapeMontage": "18-20 s silent, native 1920x1080; collection/garden/exploration/team progression dominate, brief ordinary combat",
+      "portraitMontage": "18-20 s silent, native 1080x1620; independently captured, never crop landscape",
+      "y8Continuous": "one continuous 1920x1080 real normal-speed take; actual gameplay from first frame; no internal edit, sped-up footage, black bars or fabricated result; garden first capture → duo team/charge → workshop/Catdex → exploration → duo promise → ordinary battle → rare capture if achievable in same take. Prioritize coherent actual play over squeezing every scene into 20 s; verify current duration cap in portal.",
+      "internalDuoQA": "Separate non-uploaded native portrait and landscape screenshots/video, demonstrate new 63 portrait assets, no old fallback; keep full-screen duo cinematics out of public platform media unless user explicitly changes earlier instruction."
+    }
+  },
+  "platforms": [
+    {
+      "name": "CrazyGames",
+      "priority": 1,
+      "action": "update-existing-draft",
+      "url": "https://developer.crazygames.com/games/cda65c21-75f7-4ce5-b717-62b425097981",
+      "build": "existing external iframe; verify deployed parity and actual developer preview",
+      "images": [
+        [
+          "landscape",
+          1920,
+          1080
+        ],
+        [
+          "portrait",
+          800,
+          1200
+        ],
+        [
+          "square",
+          800,
+          800
+        ]
+      ],
+      "videos": [
+        [
+          "landscape",
+          1920,
+          1080,
+          20
+        ],
+        [
+          "portrait",
+          1080,
+          1620,
+          20
+        ]
+      ],
+      "notes": "Existing approved covers unchanged if still accurate; old V14 videos are obsolete; do not invoke automatic submit; leave quality gate HOLD."
+    },
+    {
+      "name": "Y8",
+      "priority": 2,
+      "action": "update-existing-draft",
+      "url": "https://developer.y8.com/games/cat_bond/edit#media",
+      "build": "standalone ZIP with actual existing App ID/SDK; verify guest, blur, save and all local assets",
+      "images": [
+        [
+          "standard",
+          760,
+          570,
+          2
+        ],
+        [
+          "widescreen",
+          1280,
+          720,
+          5
+        ],
+        [
+          "landscape-promo",
+          1920,
+          1080,
+          5
+        ],
+        [
+          "portrait-promo",
+          1080,
+          1920,
+          5
+        ],
+        [
+          "game-card",
+          760,
+          570,
+          2
+        ]
+      ],
+      "videos": [
+        [
+          "continuous",
+          1920,
+          1080,
+          null
+        ]
+      ],
+      "notes": "Historical video min 15 sec/max 50 MB; confirm actual portal; real native screenshots not reillustrated. No duplicate game.",
+      "recordVerification": "Historical record link; confirm signed-in portal"
+    },
+    {
+      "name": "GamePix",
+      "priority": 3,
+      "action": "update-existing-draft",
+      "url": "https://my.gamepix.com/games/cat-bond",
+      "build": "standalone build; SDK-free permitted by official guidelines; integrate permitted GamePix SDK if targeting monetization, verify actual portal",
+      "images": [
+        [
+          "landscape",
+          1280,
+          720
+        ],
+        [
+          "portrait",
+          720,
+          1280
+        ],
+        [
+          "icon",
+          512,
+          512
+        ]
+      ],
+      "notes": "Verify existing record, build status and actual image slots. Official https://partners.gamepix.com/guidelines/submission and https://partners.gamepix.com/sdk/doc/javascript; relative paths, no third-party external links, pause audio/gameplay during ads and resume correctly. No timer-triggered ads.",
+      "imageSpecStatus": "historical draft sizes, not verified current portal requirements"
+    },
+    {
+      "name": "GameDistribution",
+      "priority": 4,
+      "action": "locate-existing-draft-update",
+      "url": "https://developer.gamedistribution.com/",
+      "build": "standalone portal-specific SDK integration; verify actual existing record and specs",
+      "notes": "Mandatory SDK, actual assigned game ID, iframe SDK activation and real preroll completion in portal; no fabricated ad events. Thumbnails are original representative illustrations, not screenshots. Official https://gamedistribution.com/developers/faq/general-questions/what-are-the-requirements-for-the-thumbnails/",
+      "images": [
+        [
+          "square",
+          512,
+          512
+        ],
+        [
+          "card",
+          512,
+          384
+        ],
+        [
+          "small",
+          200,
+          120
+        ],
+        [
+          "wide-optional",
+          1280,
+          550
+        ],
+        [
+          "landscape-optional",
+          1280,
+          720
+        ]
+      ]
+    },
+    {
+      "name": "itch.io",
+      "priority": 5,
+      "action": "verify-live-embed-and-update-existing-published-project-if-needed",
+      "url": "https://morrowwishgames.itch.io/cat-bond",
+      "build": "verify current actual embedded/hosted game, prepare replacement only if needed",
+      "notes": "User explicitly requires latest playable build. Inspect actual public Run game iframe chain, compare index/duo-premium.js/portrait files with frozen source. Existing publication script creates an iframe pointing at canonical production, but this is not proof of actual uploaded ZIP. Public listing last updated Nov 21 UTC. If already current, preserve wrapper and refresh outdated copy/media only; otherwise repair existing project and publish corrected update, verify anonymously. Never make duplicate."
+    }
+  ],
+  "excluded": [
+    {
+      "name": "Poki",
+      "reason": "paused per earlier platform ROI/exclusivity discussion"
+    },
+    {
+      "name": "Kongregate",
+      "reason": "paused per earlier platform ROI discussion"
+    },
+    {
+      "name": "Newgrounds",
+      "reason": "AI-policy mismatch; excluded"
+    }
+  ],
+  "globalGates": [
+    "No paid tools, purchases, subscriptions or TinyFish; inspect free quota before executing chargeable tasks. If free quota cannot be verified, do not spend.",
+    "No public submission for review on CrazyGames/Y8/GamePix/GameDistribution (draft preparation scope), no production deployment, no modifications of Starbell Echo, main, original production files or other games. Explicit exception: ensure existing itch.io public playable build is current; correct and publish existing project update if needed.",
+    "Every image and video must match frozen real Cat Bond build; no old V14/13 footage, generic AI art or invented mechanics.",
+    "No browser chrome, dev overlay, debug HUD, external promo, misleading seeded outcomes, clipped controls, duplicated scenes, language mixing or visibly low-quality imagery.",
+    "Inspect current portal specs/AI disclosure; use existing records and actual existing SDK credentials without exposing secrets; never guess review answers.",
+    "Test exact uploaded builds on real desktop/mobile UI, no fake PASS; record screenshot evidence, file sizes, hashes, source commit, version/date, portal save confirmation and remaining blockers per platform.",
+    "If not accessible, continue other independent platforms; do not misrepresent local packaging as portal draft completion."
+  ],
+  "verifiedPublicListing": {
+    "url": "https://morrowwishgames.itch.io/cat-bond",
+    "lastUpdatedUTC": "2026-11-21T06:13:00Z",
+    "status": "released HTML5; playable embedded version not yet verified",
+    "aiDisclosure": "AI Assisted — code, graphics, text",
+    "source": "public listing checked 2026-11-27"
+  },
+  "executionBlockers": [
+    "Current Chat container has no DNS/network access to GitHub or game hosts; full repository and latest media cannot be fetched for local recording.",
+    "GitHub connector can read/write files but exposes no workflow dispatch or billing/remaining Actions quota endpoint. No new paid run authorized.",
+    "Browser connector only reads existing tabs; no authenticated portal write or upload. TinyFish prohibited."
+  ],
+  "tools": {
+    "mediaValidator": "verify-media.py",
+    "itchLiveParity": "verify-itch-live.mjs",
+    "status": "source committed; execution not yet possible against real media/live game"
+  }
+}
