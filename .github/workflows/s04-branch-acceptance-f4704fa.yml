@@ -1,0 +1,109 @@
+name: S04 choice and garden callback focused acceptance
+on:
+  push:
+    branches: [ops/final-acceptance-f4704fa]
+    paths: ['.github/workflows/s04-branch-acceptance-f4704fa.yml']
+permissions:
+  contents: read
+jobs:
+  branches:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      CAT_BOND_TARGET_SCENES: 'sky:S-04'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f4704fa0672ffcdca6ddd4bbdc95baaee3186cf2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Run three real choice interactions and garden callbacks
+        run: |
+          set -eu
+          test "$(git rev-parse HEAD)" = "f4704fa0672ffcdca6ddd4bbdc95baaee3186cf2"
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/s04-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-knowledge.mjs
+          node scripts/cat-bond-experience-targets.mjs
+          cat > .s04-branch-acceptance.mjs <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs/promises';
+          import {chromium} from 'playwright';
+          const origin='http://127.0.0.1:8765',out='artifacts/s04-branches';
+          await fs.mkdir(out,{recursive:true});
+          const fixture=JSON.parse(await fs.readFile('artifacts/cat-bond-experience/synthetic-checkpoints/sky-S-04.json','utf8'));
+          assert.equal(fixture.provenance,'synthetic engine-model browser-restored');
+          const variants=[
+           ['joke','Lighten the mood with a joke','Then my scarf gets to charge two airfares.','tea party in the clouds',2],
+           ['company','Sit with her for a while',"Okay. Let's remember today for what it is.",'sitting quietly beside me',2],
+           ['search',"I'll help you look","Then… it's a promise.",'help me look for that friend',3]];
+          const browser=await chromium.launch({headless:true});
+          try{for(const [id,label,response,returnCopy,cups] of variants){
+           const ctx=await browser.newContext({storageState:fixture.storageState,viewport:{width:1440,height:900}});
+           const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+           const state=()=>page.evaluate(()=>CatBondResonance.view());
+           const enter=async()=>{await page.goto(origin+'/cat-bond/?lang=en&rpgDev=1');await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();};
+           await enter();await page.waitForFunction(()=>CatBondResonance.view().current?.id==='sky:S-04'&&__game.scene==='map');
+           const talk=page.getByRole('button',{name:'Talk to Muling',exact:true}).first();
+           if(!await talk.isVisible()){await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();}
+           await talk.click();
+           const dlg=page.locator('.res-host[data-scene="sky:S-04"]'),lookout=dlg.locator('.sky-lookout-view');await lookout.waitFor();
+           assert.equal(await dlg.locator('.sky-lookout-cup').count(),2);
+           assert.equal(await dlg.locator('.res-skip-top').isDisabled(),true,'Initial lookout requires a real interaction');
+           await dlg.getByRole('button',{name:id==='company'?'Sit beside Muling':'Walk around the lookout',exact:true}).click();
+           assert.equal(await lookout.getAttribute('data-pose'),id==='company'?'sit':'walk');
+           let spoken=[];
+           for(let i=0;i<12;i++){
+            const v=await state();if(v.current?.id!=='sky:S-04')break;
+            if(!v.choice&&v.cursor===v.current.choiceAt){await dlg.getByRole('button',{name:label,exact:true}).click();await page.waitForFunction(id=>CatBondResonance.view().choice===id,id);continue;}
+            const l=v.current.lines[v.cursor];if(!l)break;
+            await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,l.text.en);
+            spoken.push(l.text.en);if(l.text.en===response)await page.screenshot({path:out+'/'+id+'-reply.png'});
+            await dlg.locator('.res-line').click();
+            await page.waitForFunction(cursor=>{const v=CatBondResonance.view();return v.current?.id!=='sky:S-04'||v.cursor>cursor},v.cursor);
+           }
+           assert.ok(spoken.includes(response),id+' correct branch reply');
+           assert.equal((await page.evaluate(()=>CatBondResonance.snapshot())).choices['sky:S-04'],id,'choice actually persisted');
+           await page.waitForFunction(()=>CatBondResonance.view().current?.id==='sky:S-05');
+           // Only the later chapters are synthetic: start from the actual earned S04
+           // choice, complete the model tail, and restore the garden in the real browser.
+           await page.evaluate(async()=>{
+            if(location.origin!=='http://127.0.0.1:8765')throw Error('local only');
+            const {campaign}=await import('/cat-bond/js/resonance/campaign.mjs'),{makeEngine}=await import('/cat-bond/js/resonance/engine.mjs'),{storyPartyPatch}=await import('/cat-bond/js/resonance/story-party.mjs');
+            const root=State.S,previous=CatBondResonance.snapshot(),e=makeEngine(campaign,previous),late=new Set(['mechanism:muling-unlock','npc:public-accountability','npc:second-garden-key']);const ok=r=>{if(!r.ok)throw Error(r.reason);};
+            for(const s of campaign.scenes.slice(campaign.scenes.findIndex(s=>s.id===e.view().current.id))){
+             if(s.choiceTiming==='beforeAction'&&s.choices.length&&!e.view().choice)ok(e.choose(s.choices[0].id));
+             if(s.id==='finale:B-03')for(let i=0;i<campaign.regions.length;i++)ok(e.supportAction(campaign.regions[i],campaign.support[i]));
+             for(const op of s.requires.filter(op=>!late.has(op)))ok(e.record(s.id,op));
+             while(e.view().cursor<s.lines.length){if(s.choiceAt===e.view().cursor&&!e.view().choice)ok(e.choose(s.choices[0].id));ok(e.nextLine());}
+             if(s.choiceTiming!=='beforeAction'&&s.choices.length&&!e.view().choice)ok(e.choose(s.choices[0].id));
+             for(const op of s.requires.filter(op=>late.has(op)))ok(e.record(s.id,op));ok(e.finish());
+            }
+            const next=e.snapshot(),patch=storyPartyPatch(root,previous,next,State.makeCat.bind(State),cat=>window.Raising?.decorateNewCat?.(cat,{shinyOdds:0}));
+            if(patch)Object.assign(root,patch.fields);root.resonance=next;root.resonanceExploration={location:'garden',positions:{},interactions:{},pickups:{},cargo:null};delete root.chapterPresentation;if(!State.save()?.ok)throw Error('tail fixture save failed');
+           });
+           await enter();await page.waitForFunction(()=>CatBondResonance.view().ending&&__game.scene==='yard');
+           assert.equal(await page.evaluate(()=>GardenExploration.journeyKeepsakes(State.S,{}).cups),cups);
+           await page.screenshot({path:out+'/'+id+'-garden.png'});
+           await page.locator('[data-npc-talk="muling"]').click();const home=page.locator('.res-home-conversation .res-line');await home.waitFor();assert.ok((await home.innerText()).includes(returnCopy),id+' correct garden callback');
+           await page.screenshot({path:out+'/'+id+'-garden-callback.png'});assert.deepEqual(errors,[]);await ctx.close();
+           console.log('S04 BRANCH PASS',id,'cups',cups,'real dialogue and garden callback; intervening chapters synthetic');
+          }}finally{await browser.close();}
+          NODE
+          node .s04-branch-acceptance.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: s04-branch-acceptance
+          path: |
+            artifacts/s04-branches/
+            /tmp/s04-server.log
+          if-no-files-found: warn
+          retention-days: 7
