@@ -84,3 +84,7 @@
 @media(max-width:700px){.library-anchor-detail{right:4%;top:9%;width:22%;min-width:0}.library-reveal-stage[data-mode="anchor"] .library-reveal-cast{inset-inline:2% 23%}}
 @media(max-height:480px) and (orientation:landscape){.library-anchor-detail{top:8%;width:12%;min-width:0}}
 @media(prefers-reduced-motion:reduce){.library-anchor-detail{animation:none}}
+
+/* A chapter painting must fully own the viewport even during image decode/crossfade. */
+#stage .res-chapter-cinematic.cbcp-root:not([hidden]){background:#ead7c1!important}
+#stage:has(.res-chapter-cinematic:not([hidden]))>.rw-world{visibility:hidden!important;pointer-events:none!important}

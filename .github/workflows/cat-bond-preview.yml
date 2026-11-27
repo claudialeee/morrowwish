@@ -306,10 +306,9 @@ jobs:
           set -eu
           URL=https://cat-bond-preview.morrowwish.pages.dev
           for attempt in $(seq 1 15); do
-            if curl -fsS "$URL/preview-version.json?sha=$SOURCE_SHA" | grep -Fq "$SOURCE_SHA"; then break; fi
+            if curl -fsS "$URL/preview-version.json?sha=$SOURCE_SHA&qa=version-$attempt" -o /tmp/live-preview-version.json && python3 -c 'import json,os; assert json.load(open("/tmp/live-preview-version.json"))["sha"] == os.environ["SOURCE_SHA"]'; then break; fi
             sleep 4
           done
-          curl -fsS "$URL/preview-version.json?sha=$SOURCE_SHA" > /tmp/live-preview-version.json
           python3 - <<'PY'
           import json, os
           version = json.load(open('/tmp/live-preview-version.json'))

@@ -16,8 +16,10 @@ function impact(files) {
   const affected=new Set(files.flatMap(f=>local[f]));
   return all.filter(ch=>affected.has(ch));
 }
+const visualFidelityFiles=new Set(["public/cat-bond/js/resonance/library-mechanisms.mjs","public/cat-bond/js/resonance/dialogue-ui.mjs","public/cat-bond/js/resonance/sky-lookout.mjs","public/cat-bond/css/resonance-host.css","scripts/cat-bond-experience-chapters.mjs","scripts/cat-bond-experience-qa-scope.mjs",".github/workflows/cat-bond-preview.yml","docs/cat-bond-rpg/PLAYTEST-WORK-HANDOFF.md"]);
 const fidelityFiles=new Set(["public/cat-bond/js/resonance-cinematic.mjs","public/cat-bond/js/resonance/dialogue-ui.mjs","public/cat-bond/js/resonance/library-mechanisms.mjs","scripts/cat-bond-experience-chapters.mjs","scripts/cat-bond-experience-qa-scope.mjs","public/cat-bond/js/resonance/sky-lookout.mjs","docs/cat-bond-rpg/PLAYTEST-WORK-HANDOFF.md"]);
 function choose({manual='',message='',files=[],review=false}={}) {
+  if(!manual&&message.includes('[qa-fidelity-visual]')&&files.length&&files.every(f=>visualFidelityFiles.has(f)))return ['sky','library','starfall','finale','epilogue'];
   if(!manual&&message.includes('[qa-fidelity-3]')&&files.length&&files.every(f=>fidelityFiles.has(f)))return ['sky','library','starfall'];
   if (manual==='chapters'||message.includes('[qa-full]')||message.includes('[fresh-campaign]')) return all;
   if (manual==='tail'||(!manual&&message.includes('[qa-tail]'))) return ['finale','epilogue'];
@@ -46,6 +48,7 @@ assert.deepEqual(choose({files:[harbor,'public/cat-bond/js/resonance/engine.mjs'
 assert.deepEqual(choose({files:[],message:'[qa-toolchain]'}),all);
 assert.deepEqual(choose({files:[...fidelityFiles],message:'[qa-fidelity-3]'}),['sky','library','starfall']);
 assert.deepEqual(choose({files:[...fidelityFiles,'public/cat-bond/js/resonance/engine.mjs'],message:'[qa-fidelity-3]'}),all);
+assert.deepEqual(choose({files:[...visualFidelityFiles],message:'[qa-fidelity-visual]'}),['sky','library','starfall','finale','epilogue']);
 if (process.argv.includes('--self-test')) { console.log('QA scope: 13 assertions passed'); process.exit(0); }
 const {BEFORE='',HEAD='',MANUAL_SCOPE='',COMMIT_MESSAGE='',TOOLCHAIN_ONLY='false'}=process.env;
 let files=[];

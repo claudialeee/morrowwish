@@ -16,7 +16,7 @@ export function mountSkyLookout(context,{player,muling,language,onReady}){
   if(disposed)return;choice=selected||"";const zh=k==="zh";
   sit.textContent=zh?"坐到暮铃身边":"Sit beside Muling";walk.textContent=zh?"沿观景台走走":"Walk around the lookout";
   sit.setAttribute("aria-pressed",String(pose==="sit"));walk.setAttribute("aria-pressed",String(pose==="walk"));
-  caption.textContent=choice==="joke"?(zh?"暮铃笑了。":"Muling smiles."):choice==="search"?(zh?"约好了，下次多带一杯。":"A promise: bring another cup next time."):pose==="sit"?(zh?"两只猫静静看着云海。":"The two cats watch the clouds together."):pose==="walk"?(zh?"云海在脚下流动，暮铃在茶杯旁等你。":"Clouds drift below; Muling waits beside the tea."):zh?"暮铃摆好了两杯茶。":"Muling sets out two cups.";
+  caption.textContent=choice==="joke"?(zh?"暮铃笑了。":"Muling smiles."):choice==="search"?(zh?"约好了，下次多带一杯。":"A promise: bring another cup next time."):pose==="sit"?(zh?"两只猫静静看着云海。":"The two cats watch the clouds together."):pose==="walk"?(zh?"云海在脚下流动，暮铃在茶杯旁等你。":"Clouds drift below; Muling waits beside the tea."):zh?"暮铃摆好了两杯茶。坐到她身边，或沿观景台走走。":"Muling sets out two cups. Sit beside her or walk around the lookout.";
   stage.dataset.pose=pose||"arrival";stage.dataset.choice=choice;
   a.style.left=pose==="sit"?"38%":pose==="walk"?"25%":"18%";a.style.transform=pose==="sit"?"translateX(-50%) scale(.89)":"translateX(-50%)";
  }
