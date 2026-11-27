@@ -1910,7 +1910,7 @@ class CaptureBattle {
       // A skill fired from the BASIC slot hits for notably LESS than the same skill in a
       // Q/E slot: it's a short-cooldown, spammable left-click, so per-hit power is scaled
       // down (BASIC_SKILL_DMG_MULT). The identical skill in Q/E still pays full power.
-      const pow = (sk.power || 1) * BASIC_SKILL_DMG_MULT * BASIC_POWER_MULT * this.outgoingBuffMult(f);
+      const pow = (sk.power || 1) * BASIC_SKILL_DMG_MULT * this.basicTimeScalar() * this.outgoingBuffMult(f);
       this.castOffensiveSkill(f, aim, { ...sk, isBasic: true }, pow, col, true);   // _nowind: no wind-up on a basic
       if (f === this.me() && (this.t - (this._lastPawSfx || -3) > .45)) {
         window.MorrowwishAudio?.effect?.('combat_swing'); this._lastPawSfx = this.t;
@@ -1930,7 +1930,7 @@ class CaptureBattle {
     // ones, pushing Q/E priming. (Playtest P1: basic was a self-sufficient win cond.)
     f._basicTick = (f._basicTick || 0) + 1;
     const toy = 'yarn';
-    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*BASIC_POWER_MULT*this.outgoingBuffMult(f), 'me', col, 7, toy, { element: f.element, isBasic: true, _traitCaster:f }, 0.5);
+    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*this.basicTimeScalar()*this.outgoingBuffMult(f), 'me', col, 7, toy, { element: f.element, isBasic: true, _traitCaster:f }, 0.5);
     this.vfx.muzzle(mx, my, aim, col);
     this.regularSkillAccent(f,f.element,aim,true);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
@@ -1965,6 +1965,13 @@ class CaptureBattle {
   }
   // Positive outgoing buffs share one additive bucket; weakness is a penalty.
   outgoingBuffMult(f){ return (1 + (f.damageBoostT > 0 ? 0.25 : 0) + 0.12 * (f.kneadStacks || 0)) * (f.weakened ? 0.5 : 1); }
+  // Owner 2026-11-26 playtest cycle w62cwoq5u P0-1 (local-numeric auto-fix):
+  // reward an ENGAGED masher past the skill-use window. BASIC_POWER_MULT 0.85 is a
+  // deliberate pre-45s nerf to force skill use; after 45s, ramp to 1.10 by 75s so a
+  // committed basic-stream closes a drawn-out fight BEFORE the 85s guillotine. One
+  // call site (player basic only); ult echoes, skill procs, and enemy basics stay
+  // flat at BASIC_POWER_MULT = 0.85.
+  basicTimeScalar() { return BASIC_POWER_MULT + 0.25 * Math.max(0, Math.min(1, (this.t - 45) / 30)); }
   kneadMult(f){ return 1 + 0.12 * (f && f.kneadStacks || 0); }
   castSupportSkill(f,sk,aim){
     if(!sk)return false;
