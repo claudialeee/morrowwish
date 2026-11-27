@@ -2347,3 +2347,31 @@ Pattern across 3 cycles: all elites keep landing in `*,*,3,3` (high durability +
 
 ### Workflow health
 critiqueCount 40, 24 subagent retries capped. Core synth intact. No P0s means telemetry-lie-fixes (e5d6c137 + 564729e7) may finally be filtering the adversary's fabricated P0 noise — real issues getting P1-tier labels.
+
+## Playtest cycle wcmawej7p — 2026-11-27 (post Phase 2+3 refactor local)
+
+**Headline**: Combat is winnable across all personas but dead-ends on three fronts: E/dodge decorative, long-tail timeouts persist, feedback channels silently eat player intent.
+
+**funMean 4.50** — stable at wave:
+- 狂按型 **7** (+1 from wpt9x2xs6 6) — new high across session
+- 探索型 6 / 懒人型 5 / 谨慎型 3 / 手忙脚乱 3 / 没耐心 3
+
+### P0 findings (1, additive-flag → findings-only)
+
+- **谨慎 kiter idle-decay HP window** — `_lastPlayerHitT` stamped each player hit; if `this.t - _lastPlayerHitT > N`, enemy HP tick decays. Punishes pure-kite play. Reason findings-only: new field + new per-frame write + new consumer gate; not a local-numeric tune.
+
+### Top P1 findings-only (26)
+
+- Inline denied-ult feedback on `#ult-btn` (color-coded cd/energy) — `game.js` HUD update, `battle.js` reject branches stamp `_ultDenyFlash` — **additive-flag**
+- Dominance auto-capture (teamHp≥0.70 && wildHp≤0.18 && t>20 for 3s → finish(true)) — battle.js:5100. **additive-flag**
+- Fix dead ult-cinematic shake — reportedly stale code path — **local-numeric** (needs repro)
+- Universal heavy-hit flinch i-frame — closes P0-1 ult-cap leak — **local-numeric**
+- Kiter dodge→basic-damage-window (close-call dodge gives `+10 ult, +20% next basic`) — battle.js:3577. **additive-flag**
+- Per-encounter enemy affixes (HP±20% jitter) — **additive-flag**
+
+### Auto-fixes this cycle: 0
+
+Rationale: the single adversary-confirmed P0 (kiter idle-decay) is additive-flag — new field + write gate + consumer. Cron auto-fix bar is strict local-numeric. Routed to owner review.
+
+### Workflow health
+critiqueCount 41, 21 subagent retries capped. Core synth intact; 狂按 7 new session-high confirms formula refactor + basic-time-scalar + ternary-timeout + Phase 2+3 refactor are landing on their target persona.
