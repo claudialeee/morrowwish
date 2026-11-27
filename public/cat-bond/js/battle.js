@@ -7054,7 +7054,33 @@ class CaptureBattle {
     } catch (_) {}
   }
   finish(win) {
-    this.done = true; this.result = win ? 'win' : 'flee'; this.shakeT = 0.5;
+    this.done = true;
+    if (win) { this.result = 'win'; }
+    else {
+      // Owner 2026-11-27 (playtest cycles w62cwoq5u/wm8tsdl5o/wpt9x2xs6 top P0):
+      // split the monolithic 'flee' terminal state into ternary buckets so a
+      // 'differential' outcome is honestly reported. Prior code labeled a 92%
+      // HP chip-barely-missed-capture timeout and a 32% HP out-DPS'd cornering
+      // with the SAME 'wild cat fled' card. Now:
+      //   flee-dominant  = timeout but player clearly winning (team hp ≥ 0.70 + wild pack ≤ 0.30)
+      //   flee-cornered  = team got out-traded (team hp < 0.25)
+      //   flee-stalemate = anything in between (the generic 'got away' story)
+      // All three legacy-safe: downstream consumers reading result.startsWith('flee')
+      // keep working. The cycle-log banner can branch on the sub-tag.
+      try {
+        const alive = this.team ? this.team.filter(c => c.alive) : [];
+        let teamHp = 0, teamMax = 0;
+        for (const c of alive) { teamHp += Math.max(0, c.hp); teamMax += c.maxhp || 0; }
+        const teamFrac = teamMax ? teamHp / teamMax : 0;
+        let wildHp = 0, wildMax = 0;
+        for (const e of (this.enemies || [])) { if (e.alive) { wildHp += Math.max(0, e.hp); wildMax += e.maxhp || 0; } }
+        const wildFrac = wildMax ? wildHp / wildMax : 0;
+        if (teamFrac >= 0.70 && wildFrac <= 0.30) this.result = 'flee-dominant';
+        else if (teamFrac < 0.25)                 this.result = 'flee-cornered';
+        else                                      this.result = 'flee-stalemate';
+      } catch (_) { this.result = 'flee'; }
+    }
+    this.shakeT = 0.5;
     if (this._debug) this._dbgDump();
   }
 
