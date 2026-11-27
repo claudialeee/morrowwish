@@ -175,6 +175,7 @@ function setupCastContext(b, CASTER, ENEMY) {
     b.game.mouse = { x: ENEMY.x, y: ENEMY.y, active: true, idle: 0, down: false };
     b.game.isTouch = false;
   }
+  b.autoMode = false;
 
   b.pendingCasts = [];
   b._pulseQueue = [];

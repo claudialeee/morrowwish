@@ -2690,11 +2690,13 @@ class CaptureBattle {
     // sk._castMouse first; live this.game.mouse is only a fallback. This freezes the
     // landing point at the instant Q/E was pressed — mouse drift during the 1.5s meteor
     // windup (or any lob flight) no longer drags the impact ring.
-    if (sk && f === this.me() && !this.game?.isTouch) {
+    if (sk && f === this.me() && !this.game?.isTouch && !this.autoMode) {
       const m = this.game?.mouse;
       if (m && Number.isFinite(m.x) && Number.isFinite(m.y)) {
         sk._castMouse = { x: m.x, y: m.y };
       }
+    } else if (sk) {
+      sk._castMouse = null;
     }
     // Owner 2026-11-26 "为什么寒冰爪没打到" — log every ATTEMPT so you can tell cast-never-fired
     // from cast-missed. Enemy also routes through castOffensive at times, so tag by firing side.
@@ -2850,9 +2852,10 @@ class CaptureBattle {
     const R = 86;                                   // burst radius
     // destination point
     let tx, ty;
-    if (f === this.me() && !this.game.isTouch) {
+    if (f === this.me() && !this.game.isTouch && !this.autoMode) {
       // Owner: landing point was decided when Q/E was pressed — use the snapshot from
       // castOffensiveSkill, NOT live cursor (which drifts during meteor's 1.5s windup).
+      // In auto-mode the player isn't aiming; fall through to the enemy-targeting branch.
       const snap = sk?._castMouse;
       if (snap && Number.isFinite(snap.x) && Number.isFinite(snap.y)) { tx = snap.x; ty = snap.y; }
       else { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
@@ -3079,7 +3082,7 @@ class CaptureBattle {
   // the arc telegraphs where it lands, so it rewards good spacing, not spam.
   leapSlam(f, aim, sk, dmg, col) {
     let tx, ty;
-    if (f === this.me() && !this.game.isTouch) { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
+    if (f === this.me() && !this.game.isTouch && !this.autoMode) { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
     else { const t = this.lockedEnemy() || this.nearestEnemy(f.x, f.y); if (t) { tx = t.x; ty = t.y; } else { tx = f.x + Math.cos(aim) * 190; ty = f.y + Math.sin(aim) * 190; } }
     // cap leap range so it stays a reach, not a teleport — but long enough to reach a ranged
     // kiter's ~200px standoff (泰山压顶 is a committed mid-range gap-closer, not a short hop).
@@ -3260,10 +3263,12 @@ class CaptureBattle {
       // frame using the same locked/nearest-enemy rule as lobAoe, so a moving target is tracked.
       if (c.sk && c.sk.id === 'meteor') {
         let tx, ty;
-        if (f === this.me() && !this.game.isTouch) {
+        if (f === this.me() && !this.game.isTouch && !this.autoMode) {
           // Owner 2026-11-26: during the 1.5s windup the telegraph must stay locked at
           // the cursor position AT CAST TIME, not drift with live mouse movement.
-          // castOffensiveSkill snapshots sk._castMouse — honor it here.
+          // castOffensiveSkill snapshots sk._castMouse — honor it here. In auto-mode the
+          // player isn't aiming; fall through to the enemy-targeting branch below so the
+          // red ring lands on the actual target, not the idle cursor.
           const snap = c.sk?._castMouse;
           if (snap && Number.isFinite(snap.x) && Number.isFinite(snap.y)) { tx = snap.x; ty = snap.y; }
           else { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
