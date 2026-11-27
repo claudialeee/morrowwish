@@ -1,0 +1,28 @@
+name: Cancel obsolete Starbell chapter run 45932747089
+on:
+  push:
+    branches: [ops/cancel-obsolete-starbell-45932747089]
+    paths: ['.github/workflows/cancel-obsolete-starbell-45932747089.yml']
+permissions:
+  actions: write
+  contents: read
+jobs:
+  cancel-obsolete:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Cancel only the explicitly superseded chapter regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          run=45932747089
+          info=$(gh api "repos/$GH_REPO/actions/runs/$run")
+          jq -e '.head_branch=="review/starbell-canon13-player-experience" and .head_sha=="4ba40ca2fba1fa9ef74fff0983428bb3a18d0356" and .name=="Canon 2.2 chapter browser acceptance" and .event=="push"' <<<"$info"
+          current=$(gh api "repos/$GH_REPO/git/ref/heads/review/starbell-canon13-player-experience" --jq .object.sha)
+          test "$current" != "4ba40ca2fba1fa9ef74fff0983428bb3a18d0356"
+          if [[ $(jq -r .status <<<"$info") == completed ]]; then echo "Old run already completed"; exit 0; fi
+          gh api --method POST "repos/$GH_REPO/actions/runs/$run/cancel"
+          echo "Cancel request accepted for $run"
