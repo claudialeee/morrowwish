@@ -2226,3 +2226,35 @@ Archive 3 → **2 cells** (regression — prior pulse-engage elite at `1,2,3,3` 
 **Winning bandBody**: `(f)=>({min:90,max:140,rush:95,role:'ranged',hp:f.hp/(f.maxhp||1)})` — a pure fixed 90-140 retreat-floor ranged band with ZERO reactivity. Beat 4 richer HP/CD-reactive proposals + the engine baseline.
 
 Findings-only. The pulse-engage loss (was 0.707) + the stripped-down retreat-floor winning suggests either (a) the HELD-OUT seed [13,202,999] rotation this cycle favors passive/stable bands, or (b) reactive bands' exploit depends on specific seed luck. Worth a seed-salt pass next cycle.
+
+## Playtest cycle wm8tsdl5o — 2026-11-27
+
+**Headline**: Combat lies to the player at the terminal state and starves them of verb feedback mid-fight — ship the backstop-truth split, the lance i-frame-forcer, the time-OR-hit-progress basic ramp, and the _closing/miss/resist readouts before any new global tuning.
+
+**funMean 4.17 (-0.50 vs w62cwoq5u 4.67)** — first regression in 3 cycles:
+- 狂按型 6 / 探索型 6 (-1) / 懒人型 5 / 手忙脚乱 3 / 没耐心 3 / 谨慎型 **2** (back down from 3)
+
+### P0 findings (3 — all additive-flag, findings-only per cron rule)
+
+1. **Split 85s backstop into defeat vs flee by HP/trade truth** — battle.js:5100. `_timeCapDefeat` field + `你撑不住了 / overpowered` banner when `teamHpFrac < 0.40 || dmgTrade > 2:1`. Current monolithic `flee` card lies to players who got out-traded. Reason findings-only: new field + banner + i18n string + routing branch.
+2. **Add 'lance' telegraph (the only i-frame-answered verb) + fix latent `_obs.dodges` counter never incremented** — battle.js:5646 + dodge handler sites. Current `forcedFloor` gate reads `_obs.dodges === 0` but the counter is NEVER incremented (grep: one occurrence, no `++`). Permanent `noDodges === true` makes smash teaching invisible. New enemy `telegraphKind: 'lance'` (0.9s windup, red LINE telegraph, unblockable straight projectile at 1.4× walk speed, ~12-15% maxhp, one-shot per enemy per fight). Also increment `_obs.dodges` at every `this.dodge(f)` call site. Reason findings-only: new enemy kind + new render path + new i18n.
+3. **Convert basicTimeScalar from pure wall-clock to time-OR-hit-progress** — battle.js:1980. `basicTimeScalar() = 0.85 + 0.25 × max(clamp((t-45)/30,0,1), clamp(_basicHitStreak/30,0,1))`. Fast fights don't collapse the ramp; mash-progress also unlocks. Reason findings-only: adds `_basicHitStreak` field + consumer path (not a pure one-line tune).
+
+### Top P1 findings (24 — all additive-flag or local-numeric, findings-only)
+
+- `_closing` vignette + pulsing "野猫要跑了" flee-warning banner — battle.js ~7708
+- Enemy archetype roll per wave (aggressive/skittish/tanky/jittery) + pre-wave banner — battle.js spawn
+- Make E a setup verb: Q-detonates E-mark for +25% within 3s — battle.js skillE + resolveHit
+- Impatient: give 2.5× ult meter in the first 12s of a fresh fight — sub-18s ult payoff
+- Kiter: harness fix — pin the sim-side mock cat to a dps/ranged kit (currently stuck on tangyuan tank)
+
+### Auto-fixes this cycle: 0
+
+Rationale: all 3 adversary-confirmed P0s are `additive-flag` (new fields + consumers + i18n + render paths). Cron auto-fix bar is strict LOW-RISK local-numeric tune only. Routed to owner review.
+
+### Latent bug surfaced (findings-only, not a P0)
+
+`_obs.dodges` is read in battle.js:5642 but **never incremented** — permanently 0, so `forcedFloor` always thinks the player hasn't dodged. Easy fix: `this._obs && (this._obs.dodges = (this._obs.dodges||0)+1)` inside `this.dodge(f)`. Flagged for owner.
+
+### Workflow health
+critiqueCount 29, 34 subagent retries capped (worst rate of 5 cycles). Core synth + fixes intact.
