@@ -112,7 +112,7 @@ final = f.dmg × skill.power × outgoingBuffMult × _dmgOutMult     // 攻击端
 5. Fold `basicTagMul` into softBucket (owner said 完全删 — skipped)
 6. Cap `critComboMult` at one factor per hit (checkCombo already returns first match)
 
-**Implementation status** (as of commit `2ea89182`):
+**Implementation status** (as of commit `80b49758` — identity merge + basicTagMul cleanup):
 - #1 implemented (3.5× earned ceiling in hurtEnemy)
 - #2 implemented (`comboIsCrit` requires `bonusMult >= 1`)
 - #3 implemented (vulnerableT merged into vulnBonus +0.30, bucket cap 0.50 → 0.80)
@@ -188,3 +188,20 @@ caught two LIES in the prior status table:
 | 5. starter Q real pow fix (supervisor-corrected) | `8988d30b` | local |
 | 6. earned-bucket ceiling real fix (supervisor-corrected) | `8988d30b` | local |
 | 7. basic-time-scalar (playtest P0 auto-fix) | `314b449d` | local |
+| 8. Formula refactor Commit 3b (identity merge + basicTagMul vestigial cleanup) | `80b49758` | local |
+
+## Current refactor head: `80b49758`
+
+Formula layering after all commits above:
+
+```
+dmg = f.dmg × skill.power × identityMul(f)       // attacker identity (merged outgoingBuff + _dmgOutMult)
+    × elem                                        // universal matchup (0.5–2.0)
+    × softMul × critComboMult                    // apply-hit bucket (soft additive, crit mult)
+    × sumBonus                                   // 1 + (vuln+stagger+rust) + combo + execute + close
+      clipped by earned ceiling: earnedReact × sumBonus ≤ 3.5
+    × levelSuppression                           // (in hurtEnemy earlier)
+```
+
+Debug TSV (`_dbgLog`) surfaces every multiplier: `atkDmg skPow outBuff bond trait` for identity,
+`elemM reactM postM total tier` for stage outputs, `vulnB comboB execB closeB` for sumBonus.
