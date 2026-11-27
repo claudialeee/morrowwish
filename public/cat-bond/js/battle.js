@@ -219,7 +219,11 @@ class CaptureBattle {
     // mercy band, so it has its own full-strength deepening path).
     const streakAssist = (this.difficultyMode !== 'hardcore' && ((this.aiP.lossStreak || 0) >= 2))
       ? ((this.aiP.lossStreak || 0) >= 4 ? 0.8 : 0.6) : 0;
-    const autoBaseline = (this.autoMode && this.difficultyMode !== 'hardcore') ? 0.4 : 0;
+    // Adversary P0 wb3r7ejxm fix 2 part 2: gate the auto-assist floor behind the
+    // new stompStreak ratchet. A stomping lazy player (stompStreak ≥ 2) stops getting
+    // the +0.4 assist that was designed to protect struggling casuals — so the
+    // existing _stomp*0.8 pack bonus (L733) + aiReact/aiJitter can bite.
+    const autoBaseline = (this.autoMode && this.difficultyMode !== 'hardcore' && (this.aiP.stompStreak | 0) < 2) ? 0.4 : 0;
     this._autoAssist = Math.max(streakAssist, autoBaseline);
     this._obs = { dodgeSignSum: 0, dodgeN: 0, rangeSum: 0, rangeN: 0, rangeT: 0, threats: 0, dodgedThreats: 0, fires: 0, frames: 0, dmgTaken: 0 };
     // stompStreak (flawless-win count) tightens the knobs: snappier windups, less
@@ -2596,7 +2600,10 @@ class CaptureBattle {
     // Anti-stomp: a flawless win (won, took ZERO damage) ramps the challenge next
     // time; getting touched at all resets it. Keeps dominators honest instead of
     // the old backwards contract that made enemies EASIER against them.
-    if (won && (o.dmgTaken || 0) <= 0) p.stompStreak = clamp((p.stompStreak | 0) + 1, 0, 5);
+    // Adversary P0 wb3r7ejxm fix 2: a lazy auto-player at 99% HP + 63 dmg/fight IS stomping,
+    // but the old flawless-zero-damage gate zeroed the counter on any pellet. hpFrac >= 0.92
+    // keeps the ratchet alive across near-flawless wins, still wiping on a real hit-in.
+    if (won && hpFrac >= 0.92) p.stompStreak = clamp((p.stompStreak | 0) + 1, 0, 5);
     else p.stompStreak = 0;
     // Mercy band (mirror of stompStreak): consecutive DEFEATS bend next fight toward
     // the player. A win zeroes it; a real loss (team wipe / timeout, NOT a voluntary
