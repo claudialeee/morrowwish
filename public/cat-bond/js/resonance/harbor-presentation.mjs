@@ -114,3 +114,18 @@ export function paintHarborCeremony(c,img,elapsed,lang,drawResident){
  text(c,zh?"归家调":"The Song of Coming Home",480,439,32,cream);text(c,zh?"风铃重新响起 · 镇上的猫记起了伙伴与家":"The chimes ring again. The townsfolk remember their companions and homes.",480,479,17,teal,"center",850);
  c.restore();
 }
+
+/* Native portrait painting: landmarks, residents, glow and captions share the art's cover transform. */
+export function paintHarborPortraitCeremony(c,img,W,H,elapsed,lang,drawResident){
+ if(!img?.complete||!img.naturalWidth)return;
+ const t=reduced()?2.4:elapsed,zh=lang==="zh",k=Math.max(W/img.naturalWidth,H/img.naturalHeight),w=img.naturalWidth*k,h=img.naturalHeight*k,x=(W-w)/2,y=(H-h)/2;
+ const at=(px,py)=>[x+px*w,y+py*h];
+ c.save();c.drawImage(img,x,y,w,h);
+ const bell=at(.31,.15);glow(c,...bell,Math.max(28,W*.16),"rgba(255,228,160,.38)");
+ for(let i=0;i<3;i++){const q=(t*.35+i/3)%1;c.beginPath();c.ellipse(bell[0],bell[1],10+q*W*.22,5+q*W*.10,0,0,TAU);c.strokeStyle="rgba(255,244,190,"+(.55*(1-q))+")";c.lineWidth=2;c.stroke();}
+ for(const [id,px,py] of [["jiedeng",.42,.68],["muling",.52,.69],["qilan",.62,.68]]){const [ax,ay]=at(px,py);drawResident?.(c,id,{x:ax,y:ay,scale:Math.min(1.0,W/640),time:t});}
+ const fade=c.createLinearGradient(0,H*.79,0,H);fade.addColorStop(0,"transparent");fade.addColorStop(1,"#253326e6");c.fillStyle=fade;c.fillRect(0,H*.79,W,H*.21);
+ text(c,zh?"归家调":"The Song of Coming Home",W/2,H*.88,Math.min(32,W*.052),cream,"center",W*.9);
+ text(c,zh?"风铃重新响起，记忆回到镇上":"The town remembers. The chimes ring again.",W/2,H*.93,Math.min(20,W*.033),teal,"center",W*.9);
+ c.restore();
+}

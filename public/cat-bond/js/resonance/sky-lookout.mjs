@@ -4,6 +4,8 @@ export function mountSkyLookout(context,{player,muling,language,onReady}){
  const doc=context.ownerDocument,make=(tag,cls)=>{const n=doc.createElement(tag);n.className=cls;return n;};
  const stage=make("div","sky-lookout-view"),actions=make("div","sky-lookout-actions"),caption=make("span","sky-lookout-caption");
  stage.style.cssText="position:relative;overflow:hidden;border-radius:12px;height:clamp(100px,21vh,192px);background:center 43% / cover url("+asset("resonance-world-v2/sky.webp")+");isolation:isolate";
+ const tall=()=>window.matchMedia("(orientation:portrait) and (max-width:700px)").matches;
+ const arrivalArt=()=>{stage.style.backgroundImage=`url("${asset(tall()?"mobile-portrait/story-cloud-tea.webp":"resonance-world-v2/sky.webp")}")`;stage.style.backgroundPosition=tall()?"center 57%":"center 43%";};arrivalArt();
  const seated=make("img","sky-lookout-painting");seated.src=asset("story-art/cloud-lookout.jpg");seated.alt="";seated.decoding="async";seated.hidden=true;
  seated.style.cssText="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#c6cdee;z-index:2;pointer-events:none";
  actions.style.cssText="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:4px 0";
@@ -22,7 +24,7 @@ export function mountSkyLookout(context,{player,muling,language,onReady}){
   caption.textContent=choice==="joke"?(zh?"暮铃笑了。":"Muling smiles."):choice==="search"?(zh?"约好了，下次多带一杯。":"A promise: bring another cup next time."):pose==="sit"?(zh?"两只猫静静看着云海。":"The two cats watch the clouds together."):pose==="walk"?(zh?"云海在脚下流动，暮铃在茶杯旁等你。":"Clouds drift below; Muling waits beside the tea."):zh?"暮铃摆好了两杯茶。坐到她身边，或沿观景台走走。":"Muling sets out two cups. Sit beside her or walk around the lookout.";
   seated.hidden=pose!=="sit";seated.alt=zh?"两只猫在云海前并肩喝茶":"Two cats share tea side by side above the clouds";
   stage.style.height=pose==="sit"?"clamp(95px,24dvh,210px)":"clamp(85px,17dvh,150px)";
-  stage.dataset.pose=pose||"arrival";stage.dataset.choice=choice;
+  stage.dataset.pose=pose||"arrival";stage.dataset.choice=choice;arrivalArt();
   a.style.left=pose==="sit"?"41%":pose==="walk"?"25%":"18%";
   b.style.left=pose==="sit"?"60%":"66%";
   a.style.transform=pose==="sit"?"translate(-50%, 6%) scale(.89)":"translateX(-50%)";
