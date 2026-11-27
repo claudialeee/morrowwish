@@ -362,3 +362,11 @@
  #stage #intro.cb-rpg-intro:not(.hide)>.cb-title-content>.cb-intro-actions>button{width:100%!important;max-width:none!important;margin:0!important;min-height:48px!important}
  #stage #intro.cb-rpg-intro:not(.hide)>.cb-title-content>.cb-intro-actions>button[hidden]{display:none!important}
 }
+
+/* Native portrait story plates: keep post-combat/ceremony dialogue full bleed without altering desktop compositions. */
+@media (orientation:portrait) and (max-width:700px){
+ #stage .res-host:is([data-scene="harbor:H-04"],[data-scene="harbor:H-05"])::before{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
+ #stage .res-host[data-scene="harbor:H-04"]::before{background-image:url("../assets/mobile-portrait/windchime-town-tall.webp")!important}
+ #stage .res-host[data-scene="harbor:H-05"]::before{background-image:url("../assets/mobile-portrait/harbor-ceremony-matched.webp")!important}
+ #stage .res-host .res-skip-top{right:max(12px,env(safe-area-inset-right,0px))!important}
+}
