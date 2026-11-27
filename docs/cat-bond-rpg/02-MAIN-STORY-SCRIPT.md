@@ -4,7 +4,7 @@
 **状态：Canon 2.2 — 权威剧本源稿（第四轮）。已进行运行时迁移并部署隔离试玩，最终候选版本的完整实机验收仍未签核。** 实施状态及准确 SHA 见 [最终验收交接](PLAYTEST-WORK-HANDOFF.md)。 本稿在 Canon 2.0 基础上完成反套路审查，取代此前 Canon 1.3 的全部章节事件、强制任务、玩家对白与美术接入要求；1.3 原稿及旧运行时保留作历史参照，不再作为新玩法验收标准。世界因果、核心身份、暮铃的责任、完整幸福结局保留。允许重做不够好玩的内容，不因资产或测试沉没成本降低品质。旧版本固定链接： https://github.com/claudialeee/morrowwish/blob/76aae0af7964d74bc44f4cd96742c3108dd294b0/docs/cat-bond-rpg/02-MAIN-STORY-SCRIPT.md
 
 ## 地区地理与名称（唯一公开命名）
-风铃镇（Windchime Town）是阳光花园外的山谷小镇，不在海边；镇民在屋檐挂家铃，用不同音色辨认家门。千灯城（Lantern City）是山地灯匠城，节庆光影是当地生活的一部分，不是工业设施。其余四地为眠根林（Rootsleep Forest）、云脊群岛（Skyspine Isles）、月镜书库（Moonmirror Library）、星坠原（Starfall Expanse）。风铃镇与千灯城的旧技术 ID 分别仍为 `harbor`、`forge`，只用于迁移定位，不得出现在玩家可见文本、地图、任务或音频字幕。角色檐灯（Yandeng，旧 ID `jiedeng`）是风铃镇修铃匠、栖蓝是镇中熟悉小巷的年轻探路者。归家调取代旧的海上旋律命名。总地图、区域图、道具、角色职业与场景音频都按山谷镇及灯匠城重构。
+风铃镇（Windchime Town）是阳光花园外的山谷小镇，不在海边；镇民在屋檐挂家铃，用不同音色辨认家门。千灯城（Lantern City）是山地灯匠城，节庆光影是当地生活的一部分，不是工业设施。其余四地为眠根林（Rootsleep Forest）、云脊群岛（Skyspine Isles）、月镜书库（Moonmirror Library）、星坠原（Starfall Expanse）。风铃镇与千灯城的旧技术 ID 分别仍为 `harbor`、`forge`，只用于迁移定位，不得出现在玩家可见文本、地图、任务或音频字幕。角色檐灯（Alder，旧 ID `jiedeng`）是风铃镇修铃匠、栖蓝是镇中熟悉小巷的年轻探路者。归家调取代旧的海上旋律命名。总地图、区域图、道具、角色职业与场景音频都按山谷镇及灯匠城重构。
 
 ## 游戏承诺与因果
 玩家醒来后只知道自己丢了名字，星铃守护记忆且近日遗忘复发。追随古铃给出的个人线索旅行，先发现不可能在现实发生的奇幻现象，再学会当地的玩法、结识猫咪、取得答案。每个地方恢复的真实回应让最终解法有根基。地图线索不应只引向下一章；至少风铃镇与森林、森林与千灯城的回铃应让玩家在中途就看到此前帮助的角色仍在行动。幕间可自由探索、捕捉/招募猫咪和培养队伍，主线不被刷资源、物资、好感或稀有度阻塞。主角是固定金渐层，暮铃是银渐层；单猫操控，伙伴实际参战。每一章不同的主要动作：追逐、地形探索、光影空间、飞行、镜中推理、星光遗迹、综合战斗。不存在必须到每地区调解一桩纠纷的模板。
@@ -43,12 +43,12 @@
 中文是创作原文，不是英文逐句对译。说话像真实的角色：短、自然、有停顿、有潜台词，不把玩法说明或编剧主题塞进角色嘴里。不用“真正的回应”“验证方案”“保持个体记忆”等抽象词替代角色眼前看见的具体事物。动作提示由地图、特效或 UI 承担，人物只说自己有理由说的话。
 - 主角：好奇、直接，有一点得意和玩心；遇到背叛会追问，不做长篇道德演讲。
 - 暮铃：聪明、嘴硬、带点干巴巴的幽默，伤心时反而说得少；前期双关不能泄露身份，不用网络流行语。
-- 栖蓝/远帆：兴奋、敢试、语速快，不能说成任务引导机器人。芽禾活泼俏皮；榆川话少，务实；小铆一张嘴就是点子，烬婆老练爽利；白栞爱发现，墨页沉静但不打官腔；星芽专注，砾川直来直去。
+- 栖蓝/远帆：兴奋、敢试、语速快，不能说成任务引导机器人。芽禾活泼俏皮；榆川话少，务实；小栗一张嘴就是点子，烬婆老练爽利；白羽爱发现，墨页沉静但不打官腔；星芽专注，砾川直来直去。
 - 每句尽量表达一个意思；能演出来就不解释。仅在确实发生过的事件上引用回忆；B-04 的默认对白只回忆必经风铃镇与森林事件及 F-02 已证实的旧茶约，不提可错过的花园初遇；额外茶杯只在对应选择发生后回收。
 - 英文独立本地化，确保意义、人物态度、伏笔与分支条件一致，不要求字对字。UI 目标也必须中文原生，不使用开发术语；例如“跟着亮起来的月叶走”，不写“验证真实路径”；“让六座铃接着唱”，不写“完成双向共鸣配置”。实际运行时与所有分支仍需母语级复核。
 
 ## 每章的玩家体验硬要求
-开场迅速给可玩的奇观；一次主要玩法有真实选择或技巧、可读反馈、失败可恢复；短对白穿插行动。每章提供一个可选秘密、一次队伍成长/伙伴机会、一项可见世界变化。既可沿主线流畅推进，也可主动偏离探索；不必清空地图。不强迫大量新系统；必要时新增可复用的真正玩法。不得将操作列表或按钮确认当作游玩，不准因减少测试而保留原无聊事件。地区Boss不设配额。剧情伙伴加入必须有自身动机：栖蓝探路、小铆试飞、远帆想去书库看古地图、白栞追查失忆；不能每章自动派发一只猫。未加入的居民以所在地短回应和本地支援完成主线，避免所有NPC同时拥进队伍。下文为完整主线的场景、行动、触发、关键中英对白和出口要求，具体数值、动画时长、操作细节需根据实机迭代。场景 ID 是设计迁移定位，不要求保留旧 operation IDs。选择仅在改变路线、帮助方式或关系反馈时保留；台词带条件的必须由真实状态触发。所有关键对话和操作目标双语；可选内容不得成为必要理解条件。
+开场迅速给可玩的奇观；一次主要玩法有真实选择或技巧、可读反馈、失败可恢复；短对白穿插行动。每章提供一个可选秘密、一次队伍成长/伙伴机会、一项可见世界变化。既可沿主线流畅推进，也可主动偏离探索；不必清空地图。不强迫大量新系统；必要时新增可复用的真正玩法。不得将操作列表或按钮确认当作游玩，不准因减少测试而保留原无聊事件。地区Boss不设配额。剧情伙伴加入必须有自身动机：栖蓝探路、小栗试飞、远帆想去书库看古地图、白羽追查失忆；不能每章自动派发一只猫。未加入的居民以所在地短回应和本地支援完成主线，避免所有NPC同时拥进队伍。下文为完整主线的场景、行动、触发、关键中英对白和出口要求，具体数值、动画时长、操作细节需根据实机迭代。场景 ID 是设计迁移定位，不要求保留旧 operation IDs。选择仅在改变路线、帮助方式或关系反馈时保留；台词带条件的必须由真实状态触发。所有关键对话和操作目标双语；可选内容不得成为必要理解条件。
 
 ## 序章 · 一座陌生的花园 / Prologue — The garden with no name
 
@@ -78,7 +78,7 @@
 **关键对白（ZH / EN）：**
 
 - 暮铃：哎！别飞了！我就剩这一张地图啦！ / Hey! Come back! That's my last map!
-- 暮铃：谢啦，我叫暮铃。风铃镇有座老铃，听说附近有猫认识以前的旅行者。要不要去碰碰运气？ / Thanks! I'm Muling. Windchime Town has an old bell, and some cats there remember the travelers who used to visit. Might be worth a look.
+- 暮铃：谢啦，我叫暮铃。风铃镇有座老铃，听说附近有猫认识以前的旅行者。要不要去碰碰运气？ / Thanks! I'm Luna. Windchime Town has an old bell, and some cats there remember the travelers who used to visit. Might be worth a look.
 
 ### prologue:P-04 · 出去看看 / Let's see what's out there
 
@@ -107,7 +107,7 @@
 **关键对白（ZH / EN）：**
 
 - 栖蓝：阿婆，是这儿！你家铃上系着蓝绳呢。……哎？怎么全响了？ / Gran, over here! Yours has a blue ribbon. …Hey, why are they all ringing?
-- 暮铃（未在花园相识）：我叫暮铃。你也听见那声怪铃了？ / I'm Muling. Did you hear that strange chime too?
+- 暮铃（未在花园相识）：我叫暮铃。你也听见那声怪铃了？ / I'm Luna. Did you hear that strange chime too?
 - 暮铃（跳过背景页）：以前星铃碎过一次，那时也是这样，到处有猫忘事。 / The Star Bell broke once before. Cats all over started forgetting, just like this.
 - 主角：等一下……这调子我好像会。 / Wait… I think I know this tune.
 - 暮铃：它往旧铃房去了。走，别跟丢。 / It's heading for the old bell house. Come on.
@@ -131,7 +131,7 @@
 - 檐灯：慢着。你刚才唱的，能再唱一遍么？ / Hold on. Can you sing what you just sang?
 - 主角：是墙上这段？我可没学过呀。 / The tune on the wall? I've never learned it.
 - 檐灯：这就怪了。老曲子没几只猫会唱。 / That's odd. Hardly anyone knows the old tune.
-- 暮铃：檐灯，你守住那盏灯。它要过来了！ / Yandeng, keep that lamp steady. Here it comes!
+- 暮铃：檐灯，你守住那盏灯。它要过来了！ / Alder, keep that lamp steady. Here it comes!
 
 ### harbor:H-04 · 两只猫，一场漂亮的胜利 / Two cats, one good fight
 
@@ -193,7 +193,7 @@
 
 **关键对白（ZH / EN）：**
 
-- 主角：暮铃，等等！那条桥又绕回去了。 / Muling, wait! That bridge loops back again.
+- 主角：暮铃，等等！那条桥又绕回去了。 / Luna, wait! That bridge loops back again.
 - 暮铃：……还真是。行，这回你带路。 / …You're right. Fine, you lead this time.
 - 芽禾：这边这边！桥长过来了！ / Over here! The bridge is growing toward us!
 
@@ -203,8 +203,8 @@
 
 **关键对白（ZH / EN）：**
 
-- 榆川：这是旧路上的画。千灯城灯匠的火纹还在，去问烬婆吧，她认得这种老东西。 / That's the old trail map. The lantern makers' mark is still here. Ask Jinpo in Lantern City; she knows old things like this.
-- 栖蓝：檐灯！听见没有？我们到啦！ / Yandeng! Can you hear us? We made it!
+- 榆川：这是旧路上的画。千灯城灯匠的火纹还在，去问烬婆吧，她认得这种老东西。 / That's the old trail map. The lantern makers' mark is still here. Ask Ember in Lantern City; she knows old things like this.
+- 栖蓝：檐灯！听见没有？我们到啦！ / Alder! Can you hear us? We made it!
 - 芽禾：种子给你。回去记得浇水，别拿鱼汤浇啊。 / Here, take a seed. Water it when you get home. No fish soup!
 - 主角：路断了，铃声却能过去！那只猫当年是不是也想把它们接起来？ / The road's broken, but the bells can still reach each other! Was that cat trying to reconnect them too?
 - 芽禾：等你回来，咱们去看看种子长成什么样。说好啦！ / When you come back, we'll see how that seed has grown. Deal?
@@ -216,40 +216,40 @@
 
 ### forge:E-01 · 全城的灯笼都在跳舞 / A city of dancing lanterns
 
-**实机事件与推进：** 灯火节有当地传统：每只猫用一盏灯在墙上投出自己最想记住的事。烬婆正为小铆的一盏歪耳灯调光；玩家移动灯，让影子落在舞台上，自选鱼、蝴蝶或猫轮廓；拖动时影子大小与方向立即变化，附近小猫追逐影子的动作随轮廓改变（鱼潜水、蝴蝶扑翅、猫追尾巴）。暮铃在纪念灯上添一颗小星。无需达到指定大小或评分即可继续；未选时保留初始轮廓。小铆原本怕自己的歪耳猫灯没人喜欢。玩家选的轮廓实际出现在影戏旁；暮铃添星后，附近小猫模仿它，歪耳灯成为观众最喜欢的一盏。小铆先惊讶，再邀请大家以后到花园办一场小影戏。主角拥有一段现在的回忆，而不是只寻找过去。小铆认得森林火纹，带玩家见烬婆。烬婆见到旧图先认出她家做过的灯匣，却想不起把灯匣交给谁；这是回响造成的真实记忆缺失，恢复灯火后才解开。回响让影戏里已演完的剪影不断重复，越叠越黑，挡住通向旧藏灯室的路；不是所有影子突然有生命。
+**实机事件与推进：** 灯火节有当地传统：每只猫用一盏灯在墙上投出自己最想记住的事。烬婆正为小栗的一盏歪耳灯调光；玩家移动灯，让影子落在舞台上，自选鱼、蝴蝶或猫轮廓；拖动时影子大小与方向立即变化，附近小猫追逐影子的动作随轮廓改变（鱼潜水、蝴蝶扑翅、猫追尾巴）。暮铃在纪念灯上添一颗小星。无需达到指定大小或评分即可继续；未选时保留初始轮廓。小栗原本怕自己的歪耳猫灯没人喜欢。玩家选的轮廓实际出现在影戏旁；暮铃添星后，附近小猫模仿它，歪耳灯成为观众最喜欢的一盏。小栗先惊讶，再邀请大家以后到花园办一场小影戏。主角拥有一段现在的回忆，而不是只寻找过去。小栗认得森林火纹，带玩家见烬婆。烬婆见到旧图先认出她家做过的灯匣，却想不起把灯匣交给谁；这是回响造成的真实记忆缺失，恢复灯火后才解开。回响让影戏里已演完的剪影不断重复，越叠越黑，挡住通向旧藏灯室的路；不是所有影子突然有生命。
 
 **关键对白（ZH / EN）：**
 
-- 小铆：来来来，你也挑盏灯！瞧，我这只猫的耳朵都能动。 / Come on, choose a lantern! Look, my cat's ears can move!
+- 小栗：来来来，你也挑盏灯！瞧，我这只猫的耳朵都能动。 / Come on, choose a lantern! Look, my cat's ears can move!
 - 主角：你刚才那只猫……怎么还在跑？ / That cat you just made… why's it still running?
 - 烬婆：别添灯了。旧戏没散，越照越乱。 / No more lights. The old shadows won't fade; you're just making it worse.
-- 小铆：它耳朵都歪成这样了，还有猫喜欢？ / Even with ears that crooked, they like it?
+- 小栗：它耳朵都歪成这样了，还有猫喜欢？ / Even with ears that crooked, they like it?
 - 主角：你瞧，那个小家伙都在学它歪耳朵了。下回去我家演吧！ / Look, that kitten's trying to bend its ears just like yours. Come put on a show at my place!
 
 
 ### forge:E-02 · 影子底下的桥 / The bridge beneath the shadows
 
-**实机事件与推进：** 灯影不能凭空成为实体。旧藏灯室有一条原本就存在的石桥，被反复叠加的影子遮住，黑暗区域的方向提示消失。玩家转动一盏可拖动的灯，让真实桥面清晰、影子缩短，走到对岸；同一盏灯也可转向侧壁龛，照出一小段昔日影戏；小铆认出烬婆年轻时做的第一盏歪耳灯。可选发现，无通关门槛。烬婆认出火纹属于她家曾替巡铃人制作的灯。她指出藏灯室中有旧灯匣；匣底刻守铃人标记和书库旧章，玩家照亮桥后首次看见它。盒内图还未取出。
+**实机事件与推进：** 灯影不能凭空成为实体。旧藏灯室有一条原本就存在的石桥，被反复叠加的影子遮住，黑暗区域的方向提示消失。玩家转动一盏可拖动的灯，让真实桥面清晰、影子缩短，走到对岸；同一盏灯也可转向侧壁龛，照出一小段昔日影戏；小栗认出烬婆年轻时做的第一盏歪耳灯。可选发现，无通关门槛。烬婆认出火纹属于她家曾替巡铃人制作的灯。她指出藏灯室中有旧灯匣；匣底刻守铃人标记和书库旧章，玩家照亮桥后首次看见它。盒内图还未取出。
 
 **关键对白（ZH / EN）：**
 
 - 烬婆：这纹是我家老灯匠的。以前守铃人来过，留下个灯匣。 / That's my family's old mark. A bellkeeper once came here and left a lantern case.
 - 主角：守铃人？能让我看看么？ / A bellkeeper? Can I see it?
-- 小铆：先把灯往这边挪。桥就在底下，照亮就能走！ / Move the lantern this way first. The bridge is right there; we just need to light it up!
+- 小栗：先把灯往这边挪。桥就在底下，照亮就能走！ / Move the lantern this way first. The bridge is right there; we just need to light it up!
 
 ### forge:E-03 · 最大的影子猫 / The biggest shadow cat
 
-**实机事件与推进：** 本章主战斗：重复影戏聚成剪影兽，移动时有可读剪影预警，玩家把敌人引入灯光范围才露出真身；小铆维持灯，烬婆给一处安全亮区，玩家通过真实走位/技能打出窗口。没有温压控制、不做第二道灯光谜；可通过普通技能取胜，不强迫火或光猫。战后小铆主动修好自己造成的乱子（演出未照顾观众但不是回响起因），先问旁边猫想看什么，再重开影戏。
+**实机事件与推进：** 本章主战斗：重复影戏聚成剪影兽，移动时有可读剪影预警，玩家把敌人引入灯光范围才露出真身；小栗维持灯，烬婆给一处安全亮区，玩家通过真实走位/技能打出窗口。没有温压控制、不做第二道灯光谜；可通过普通技能取胜，不强迫火或光猫。战后小栗主动修好自己造成的乱子（演出未照顾观众但不是回响起因），先问旁边猫想看什么，再重开影戏。
 
 **关键对白（ZH / EN）：**
 
-- 小铆：糟了！它钻进灯影里了！ / Oh no! It's slipped into the shadows!
+- 小栗：糟了！它钻进灯影里了！ / Oh no! It's slipped into the shadows!
 - 暮铃：引它过来。等它站到灯底下再打。 / Draw it over here. Strike when it's under the light.
 - 烬婆：灯有我呢！ / I'll keep the light on!
 
 ### forge:E-04 · 把星星挂回夜空 / Hang the stars back up
 
-**实机事件与推进：** 当地猫唱承火调，灯火重新显出每家不同的影戏。旧灯匣内保存完整地理巡铃图（灾后修复标注未完成），带守铃人标记及月镜书库藏书章，并画一扇月形门在云脊群岛。烬婆恢复记忆后想起：落星之后的最后一次巡访，一只赶路的猫在普通旧灯匣里留下修铃图和一句归家嘱咐，说若有一天连回家的路都忘了，就让来找它的猫去书库。她只记得嘱咐，没看清来客的脸。匣中还画着两个邻铃各自的颜色与没有接完的旧路径；随即让玩家听见森林答铃，知道当年没完成的办法并非无用。可以猜是失忆前的自己、暮铃、另一只当年幸存的巡铃猫留下的，不提前给唯一答案。此处首次提出旧图是有人刻意留给将来的猫，而不是一串随机路标。森林芽禾回应千灯城小铆的报平安铃，两者各有声音；可见实际跨地回复。小铆将歪耳灯送主角并自愿同行去试飞，非强制送货。小铆在旁示范旋钮维修，暮铃协助调整向中央的路径；不增加另一次可疑停顿。
+**实机事件与推进：** 当地猫唱承火调，灯火重新显出每家不同的影戏。旧灯匣内保存完整地理巡铃图（灾后修复标注未完成），带守铃人标记及月镜书库藏书章，并画一扇月形门在云脊群岛。烬婆恢复记忆后想起：落星之后的最后一次巡访，一只赶路的猫在普通旧灯匣里留下修铃图和一句归家嘱咐，说若有一天连回家的路都忘了，就让来找它的猫去书库。她只记得嘱咐，没看清来客的脸。匣中还画着两个邻铃各自的颜色与没有接完的旧路径；随即让玩家听见森林答铃，知道当年没完成的办法并非无用。可以猜是失忆前的自己、暮铃、另一只当年幸存的巡铃猫留下的，不提前给唯一答案。此处首次提出旧图是有人刻意留给将来的猫，而不是一串随机路标。森林芽禾回应千灯城小栗的报平安铃，两者各有声音；可见实际跨地回复。小栗将歪耳灯送主角并自愿同行去试飞，非强制送货。小栗在旁示范旋钮维修，暮铃协助调整向中央的路径；不增加另一次可疑停顿。
 
 **关键对白（ZH / EN）：**
 
@@ -258,7 +258,7 @@
 - 主角：怎么像是专门留给我的……？ / It's almost as if someone left it for me…
 - 主角：连这条路都没画完……它后来去哪儿了？ / This trail isn't even finished… Where did that cat go?
 - 烬婆：不知道。书库留着那时候的画，去那儿看看吧。 / I don't know. The library keeps pictures from those days. Have a look there.
-- 小铆：这盏送你！耳朵歪是特色，不许笑。 / This one's yours! The crooked ear is a feature, not a mistake.
+- 小栗：这盏送你！耳朵歪是特色，不许笑。 / This one's yours! The crooked ear is a feature, not a mistake.
 - 暮铃：非得飞过去啊？……那你们可不许笑。 / We really have to fly there? …No laughing, all right?
 
 
@@ -288,12 +288,12 @@
 
 ### sky:S-03 · 倒流的云瀑 / The upside-down waterfall
 
-**实机事件与推进：** 飞行本身是高潮：短连续滑翔，穿上升气流、绕云瀑、找安全落点，云瀑内的短路需要先借风爬升再横切，外侧路线由两个安全岛串接、可随时停下来观景；可降低下降速度与扩大落脚区，不自动代替玩家选方向。风的异常表现是上升气流周期重复造成一段强回卷，真实风圈由翎羽的风旗标出，不再添加假云选择题。抵达后远帆和翎羽从两侧唱逐风调，风路恢复，月门显露；千灯城与天空风铃传出实际短回复：留城的烬婆叫主角旅途中得到的昵称“小金猫”（小铆在场时也可叫小铆），小铆或远帆向灯城回铃。玩家看到云海下那座城仍亮着，且有人记得自己；这就是旅途中又一次远距离被朋友认出来，不用解释传输机制。无强制Boss。
+**实机事件与推进：** 飞行本身是高潮：短连续滑翔，穿上升气流、绕云瀑、找安全落点，云瀑内的短路需要先借风爬升再横切，外侧路线由两个安全岛串接、可随时停下来观景；可降低下降速度与扩大落脚区，不自动代替玩家选方向。风的异常表现是上升气流周期重复造成一段强回卷，真实风圈由翎羽的风旗标出，不再添加假云选择题。抵达后远帆和翎羽从两侧唱逐风调，风路恢复，月门显露；千灯城与天空风铃传出实际短回复：留城的烬婆叫主角旅途中得到的昵称“小金猫”（小栗在场时也可叫小栗），小栗或远帆向灯城回铃。玩家看到云海下那座城仍亮着，且有人记得自己；这就是旅途中又一次远距离被朋友认出来，不用解释传输机制。无强制Boss。
 
 **关键对白（ZH / EN）：**
 
 - 远帆：借这股风往上飞！前面就是月牙岩！ / Ride this updraft! That's the crescent rock ahead!
-- 主角：暮铃，快到了！ / Muling, we're almost there!
+- 主角：暮铃，快到了！ / Luna, we're almost there!
 - 暮铃：我还没到呢，围巾倒先飞过去了！ / My scarf made it before I did!
 - 烬婆（远处回铃）：喂！云上那只小金猫，别把灯摔了！ / Hey, little golden cat up in the clouds! Don't drop that lantern!
 - 主角：听见啦！下次给你带云朵看！ / I hear you! Next time I'll show you some clouds!
@@ -318,15 +318,15 @@
 
 ### sky:S-05 · 月门那边的访客 / The visitor through the moon gate
 
-**实机事件与推进：** 月门原本是书库的普通访客入口，认识旧调即可开门；主角第一音与当地恢复的古铃只是让其风路可达。白栞从里面回应，说明前阵子有猫借走中央星铃的旧图后就从门离开，借阅登记由白栞在书库保管，此处不展示印记；她只说借阅者查的是如何开启旧封印，而非名字名册。她还发现借阅者留下了被退回的旧修铃图，上面当时未接完的两地如今已经答上；玩家从刚听见的烬婆回铃可知旅行已经改变某件过去没做成的事。不要展示借阅者字迹、外貌或银铃印。玩家第一次知道近期有猫主动碰过封印，但嫌疑人尚不确定。这个事实与失忆时间接近，后来可验证暮铃来过书库、取得旧图；不暗示只有主角能唱的能力也被另一猫使用。白栞邀请主角看公开壁画；书库尚未恢复，不在此处提前确认跨地回复。
+**实机事件与推进：** 月门原本是书库的普通访客入口，认识旧调即可开门；主角第一音与当地恢复的古铃只是让其风路可达。白羽从里面回应，说明前阵子有猫借走中央星铃的旧图后就从门离开，借阅登记由白羽在书库保管，此处不展示印记；她只说借阅者查的是如何开启旧封印，而非名字名册。她还发现借阅者留下了被退回的旧修铃图，上面当时未接完的两地如今已经答上；玩家从刚听见的烬婆回铃可知旅行已经改变某件过去没做成的事。不要展示借阅者字迹、外貌或银铃印。玩家第一次知道近期有猫主动碰过封印，但嫌疑人尚不确定。这个事实与失忆时间接近，后来可验证暮铃来过书库、取得旧图；不暗示只有主角能唱的能力也被另一猫使用。白羽邀请主角看公开壁画；书库尚未恢复，不在此处提前确认跨地回复。
 
 **关键对白（ZH / EN）：**
 
-- 白栞：咦，你们从月门来的？前阵子也有只猫走这条路，还借走了星铃的老图。 / Oh, you came through the moon gate? Someone else took that route recently and borrowed an old map of the Star Bell.
+- 白羽：咦，你们从月门来的？前阵子也有只猫走这条路，还借走了星铃的老图。 / Oh, you came through the moon gate? Someone else took that route recently and borrowed an old map of the Star Bell.
 - 主角：老图？上面会不会有守铃人的名字？ / An old map? Could it have the bellkeepers' names?
-- 白栞：那只猫问的是怎么打开旧封印，没问名字。 / That cat wanted to know how to open the old seal, not find a name.
+- 白羽：那只猫问的是怎么打开旧封印，没问名字。 / That cat wanted to know how to open the old seal, not find a name.
 - 主角：有人在查封印？那场失忆不是自己回来的吗？ / Someone was looking into the seal? Didn't the forgetting return on its own?
-- 白栞：进来吧，我给你找。 / Come inside. I'll look for it.
+- 白羽：进来吧，我给你找。 / Come inside. I'll look for it.
 
 ## 第五章 · 镜子里的另一个我 / Chapter V — The cat on the other side
 
@@ -334,21 +334,21 @@
 
 ### library:M-01 · 一面走得进去的镜子 / A mirror you can walk through
 
-**实机事件与推进：** 白栞邀请玩家进入公共记忆镜廊：镜子保存旧事件的图像，不恢复个人真实记忆。墨页解释只有当事人允许才打开私人回忆，主线使用公开壁画和修铃记录，不需要隐私政策选择。主角进入镜像风铃镇，看到走过的场景却有细节不对。
+**实机事件与推进：** 白羽邀请玩家进入公共记忆镜廊：镜子保存旧事件的图像，不恢复个人真实记忆。墨页解释只有当事人允许才打开私人回忆，主线使用公开壁画和修铃记录，不需要隐私政策选择。主角进入镜像风铃镇，看到走过的场景却有细节不对。
 
 **关键对白（ZH / EN）：**
 
-- 白栞：这些镜子可不一般。你站过来，瞧，里头还留着从前的景象呢。 / These aren't ordinary mirrors. Stand here. See? They still hold scenes from the past.
+- 白羽：这些镜子可不一般。你站过来，瞧，里头还留着从前的景象呢。 / These aren't ordinary mirrors. Stand here. See? They still hold scenes from the past.
 - 墨页：旧画尽管看。只是别猫的私事，没点头就不要翻。 / Look at the old public pictures all you like. Leave private memories alone unless their owners say otherwise.
 
-### library:M-02 · 假的暮铃 / The other Muling
+### library:M-02 · 假的暮铃 / The other Luna
 
-**实机事件与推进：** 只保留一个真正有情感的镜中选择，不轮流重做前四章。镜中风铃镇的两声铃反复响起；两只暮铃出现，一只重复上一次的两声，另一只会回应玩家当下的位置。第一轮两只暮铃可能碰巧同时响两声；玩家可换到另一边再发信号，或先摇一下、停顿、再摇两下。真暮铃按新位置转身并等主角完成后回两声；假暮铃始终朝旧方向、按固定间隔重复。至少有一个因玩家新行动而变化的可见证据才允许确认。听觉非必要；错误可立即退回，不靠猜美术差异。这个信号在 H-02、H-04 都已实际发生，必须无条件成立。辨认后合力打开公开壁画的真实门；此处没有必打Boss。墨页与白栞引导主角唱出书库古铃的第一音，两位居民接续本地旋律，镜廊恢复正常。翎羽由天空古铃向书库报平安，墨页回铃，完成天空与书库的实际短回复。古铃恢复后的旋钮调整由墨页主持，暮铃按旧图帮忙；玩家可见主声路指向中央，不给予作者式的危险提示。
+**实机事件与推进：** 只保留一个真正有情感的镜中选择，不轮流重做前四章。镜中风铃镇的两声铃反复响起；两只暮铃出现，一只重复上一次的两声，另一只会回应玩家当下的位置。第一轮两只暮铃可能碰巧同时响两声；玩家可换到另一边再发信号，或先摇一下、停顿、再摇两下。真暮铃按新位置转身并等主角完成后回两声；假暮铃始终朝旧方向、按固定间隔重复。至少有一个因玩家新行动而变化的可见证据才允许确认。听觉非必要；错误可立即退回，不靠猜美术差异。这个信号在 H-02、H-04 都已实际发生，必须无条件成立。辨认后合力打开公开壁画的真实门；此处没有必打Boss。墨页与白羽引导主角唱出书库古铃的第一音，两位居民接续本地旋律，镜廊恢复正常。翎羽由天空古铃向书库报平安，墨页回铃，完成天空与书库的实际短回复。古铃恢复后的旋钮调整由墨页主持，暮铃按旧图帮忙；玩家可见主声路指向中央，不给予作者式的危险提示。
 
 **关键对白（ZH / EN）：**
 
 - 假暮铃：过来，我在这儿。 / Come here, I'm over here.
-- 主角：暮铃，老办法！ / Muling, our usual signal!
+- 主角：暮铃，老办法！ / Luna, our usual signal!
 - 暮铃（等玩家摇完才回两声）：听见了。过来吧。 / Heard you. Come on over.
 - 主角（换位置后）：我都换地方了，你还找得到我。是你！ / I moved, and you still found me. It's you!
 - 主角（改变节奏后）：这回我没按老节奏，你还是接上了。是你！ / I changed the rhythm, and you still answered. It's you!
@@ -372,11 +372,11 @@
 
 ### library:M-04 · 那串不该响起的铃声 / The bell that should have stayed silent
 
-**实机事件与推进：** 白栞在借阅记录认出暮铃铃坠的印记，找出她借走的中央旧图和日期；墨页出示公开星铃观测记录，显示封印松开当天失忆重新出现。玩家在借阅桌并排查看借阅印、观测日期与公开旧图。只能证实暮铃借过图、失忆与封印松开同日；尚不能推出她亲手开锁。玩家选择先问为何借图，还是那天发生了什么；两条追问以不同顺序进入同一坦白，不做拖线配对或正确答案亮灯。直接找暮铃时白栞简短说清两件事实。秘密调铃由主角回想旅途中亲眼见过的操作后追问，暮铃自认；旧图不是行为监控记录。不是回放未见事件。证据仅证明借图、日期与路径，暮铃亲口确认是她松开封印并秘密调向中央。不要用万能镜子看到从未记录的私密动作。
+**实机事件与推进：** 白羽在借阅记录认出暮铃铃坠的印记，找出她借走的中央旧图和日期；墨页出示公开星铃观测记录，显示封印松开当天失忆重新出现。玩家在借阅桌并排查看借阅印、观测日期与公开旧图。只能证实暮铃借过图、失忆与封印松开同日；尚不能推出她亲手开锁。玩家选择先问为何借图，还是那天发生了什么；两条追问以不同顺序进入同一坦白，不做拖线配对或正确答案亮灯。直接找暮铃时白羽简短说清两件事实。秘密调铃由主角回想旅途中亲眼见过的操作后追问，暮铃自认；旧图不是行为监控记录。不是回放未见事件。证据仅证明借图、日期与路径，暮铃亲口确认是她松开封印并秘密调向中央。不要用万能镜子看到从未记录的私密动作。
 
 **关键对白（ZH / EN）：**
 
-- 白栞：借图的印记……暮铃，这不是你那只铃坠么？ / The mark on the borrowing record… Muling, isn't that your pendant?
+- 白羽：借图的印记……暮铃，这不是你那只铃坠么？ / The mark on the borrowing record… Luna, isn't that your pendant?
 - 主角：等一下。那天封印松了，失忆就又开始了？ / Wait. The forgetting started again the day the seal was loosened?
 - 暮铃：……是我。我松开了封印，才让你醒过来。那时我知道别的猫也可能开始忘事。 / …It was me. I loosened the seal so you'd wake up. I knew the other cats might start forgetting again.
 - 主角：风铃镇那只连家都找不到的猫……你那时候就知道为什么？ / That cat at Windchime Town who couldn't find home… you knew why, even then?
@@ -389,11 +389,11 @@
 
 ### library:M-05 · 如果铃声只能属于一个人 / If the song belonged to only one cat
 
-**实机事件与推进：** 一个可操作的直观模型只设两种可见动作：把各色铃声拖向中央星铃，或让旁边两只铃依次接唱。第一种让代表主角的旧花园画亮起来，同时阿婆认不出孩子、小铆忘记歪耳灯等记忆缩影逐一褪色；第二种让每幅缩影保持颜色、旧花园逐渐亮起。图示为后果演示而非真实消除记忆，操作不需要懂任何术语。两条路必须都真实演示；模型只显示短时运行，完整环能否承受中央持续失稳仍未证明。中央正在失去封印内的旧记忆锚：若没有稳定替代，旧记忆可能再也找不回来，且回响可能覆盖旅途中形成的新记忆。不是主角肉体将凭空消失。玩家可用灯火节的纪念灯或必经的风铃镇糖包意象理解新记忆也值得守护；不解释分布式系统。暮铃过去修过铃但从未得到完整回应；她看见观测铃重复一声、旧花园缩影开始褪色，决定去星坠原稳住旧装置。她此前知道集中方式要付出记忆代价，仍把它视作如果灾难再次吞掉所有记忆时至少能救回主角的办法；主角不接受她把所有猫当筹码。她不承诺放弃向内方案，但不是无缘无故逃离。暮铃离开后，主角习惯性摇两声铃，第一次没有回音；无需对白解释。玩家决定去最后一座铃，让朋友一起证明另一条路可行；白栞加入协助。
+**实机事件与推进：** 一个可操作的直观模型只设两种可见动作：把各色铃声拖向中央星铃，或让旁边两只铃依次接唱。第一种让代表主角的旧花园画亮起来，同时阿婆认不出孩子、小栗忘记歪耳灯等记忆缩影逐一褪色；第二种让每幅缩影保持颜色、旧花园逐渐亮起。图示为后果演示而非真实消除记忆，操作不需要懂任何术语。两条路必须都真实演示；模型只显示短时运行，完整环能否承受中央持续失稳仍未证明。中央正在失去封印内的旧记忆锚：若没有稳定替代，旧记忆可能再也找不回来，且回响可能覆盖旅途中形成的新记忆。不是主角肉体将凭空消失。玩家可用灯火节的纪念灯或必经的风铃镇糖包意象理解新记忆也值得守护；不解释分布式系统。暮铃过去修过铃但从未得到完整回应；她看见观测铃重复一声、旧花园缩影开始褪色，决定去星坠原稳住旧装置。她此前知道集中方式要付出记忆代价，仍把它视作如果灾难再次吞掉所有记忆时至少能救回主角的办法；主角不接受她把所有猫当筹码。她不承诺放弃向内方案，但不是无缘无故逃离。暮铃离开后，主角习惯性摇两声铃，第一次没有回音；无需对白解释。玩家决定去最后一座铃，让朋友一起证明另一条路可行；白羽加入协助。
 
 **关键对白（ZH / EN）：**
 
-- 白栞：看，阿婆认不出小猫了。这样能找回你的过去，可其他猫的记忆全没了。 / Look, Gran doesn't recognize the kitten. You'd get your past back this way, but every other cat would lose theirs.
+- 白羽：看，阿婆认不出小猫了。这样能找回你的过去，可其他猫的记忆全没了。 / Look, Gran doesn't recognize the kitten. You'd get your past back this way, but every other cat would lose theirs.
 - 主角：像森林和风铃镇那样，让旁边的铃接着唱呢？ / What if the neighboring bells answer each other, like the forest and Windchime Town?
 - 暮铃：我把铃修过好多次，可没有你，它们唱不起来。要是再失败，大家还是会慢慢忘掉一切。 / I repaired those bells so many times, but without you they wouldn't sing. If we fail again, everyone will slowly forget everything.
 - 暮铃：我想，至少得有一只猫能把从前留下来…… / I thought at least one cat should get to keep the past…
@@ -428,7 +428,7 @@
 - 过去的主角：已经有猫连家人都认不出来了。再等下去，谁也不知道会怎样。用我的记忆吧，先让星铃安静下来。 / Some cats can't recognize their own families anymore. Who knows what will happen if we wait? Use my memories. We have to quiet the Star Bell first.
 - 过去的暮铃：那你得答应我，一定要想办法回来。 / Then promise me you'll find a way back.
 - 过去的主角：我答应你。 / I promise.
-- 星芽（跳过历史演出）：当年六地接不起来，是你自己留下记忆，才救了大家。你还答应过暮铃，要找到回家的办法。 / The six lands couldn't connect back then. You chose to leave your memories behind to save everyone. And you promised Muling you'd find a way home.
+- 星芽（跳过历史演出）：当年六地接不起来，是你自己留下记忆，才救了大家。你还答应过暮铃，要找到回家的办法。 / The six lands couldn't connect back then. You chose to leave your memories behind to save everyone. And you promised Luna you'd find a way home.
 - 星芽：当年没来得及让大家都唱起来。可你听，今天已经有五个地方在唱了。 / Back then there wasn't time to get everyone singing. But listen—five places are singing today.
 
 
@@ -441,7 +441,7 @@
 - 暮铃：我每天都泡两杯茶。每次有座铃响了，我都以为这回你该回来了。可另一座又没声了…… / I made two cups of tea every day. Every time a bell rang, I thought this would be the time you'd come home. Then another went silent…
 - 主角：你是说……连你自己也会把我忘了？ / You mean… even you'd forget me?
 - 暮铃：我以为再失败，谁的过去都留不住。至少……你还能记得。 / I thought if we failed again, nobody would keep their past. At least… you could remember.
-- 主角：那栖蓝呢？她的地图才画了一条路。芽禾还等着看月叶。小铆连影戏都约好了。 / What about Qilan? She's only drawn one trail. Yahe's waiting to see the moonleaf grow. Xiaomao's already promised us a show.
+- 主角：那栖蓝呢？她的地图才画了一条路。芽禾还等着看月叶。小栗连影戏都约好了。 / What about Skye? She's only drawn one trail. Fern's waiting to see the moonleaf grow. Pip's already promised us a show.
 - 主角：我不想回到一个谁都不认识我的家。 / I don't want to go home to a world where nobody knows me.
 - 主角：咱们先听听大家怎么说，好不好？ / Let's hear what our friends have to say first, all right?
 - 暮铃：好，先试一次。那把锁……先别动。 / All right. One try first. But leave that lock alone for now.
@@ -453,7 +453,7 @@
 
 **关键对白（ZH / EN）：**
 
-- 檐灯（风铃镇）：听见啦！这就摇回去！ / Yandeng (Windchime Town): We hear you! Ringing back now!
+- 檐灯（风铃镇）：听见啦！这就摇回去！ / Alder (Windchime Town): We hear you! Ringing back now!
 - 芽禾：眠根林也在！ / Rootsleep is here too!
 - 星芽：听！最后一个地方也答上了！ / Listen! The last place answered too!
 - 檐灯（远处）：小金猫，回来的时候记得叫我们一声。 / Little golden cat, give us a ring when you get home.
@@ -467,7 +467,7 @@
 
 - 主角（看着纪念灯）：咦……这盏灯是哪来的？ / Huh… where did this lantern come from?
 - 暮铃：千灯城呀！咱俩一起做的！……那一声，跟当年一模一样。 / Lantern City! We made it together! …That sound was exactly like last time.
-- 主角：等等，你看！砾川那边又亮了。还没完呢！ / Wait, look! Lichuan's light is back. It's not over yet!
+- 主角：等等，你看！砾川那边又亮了。还没完呢！ / Wait, look! Flint's light is back. It's not over yet!
 
 ## 终章 · 我们都在这里 / Finale — All of us are here
 
@@ -497,15 +497,15 @@
 
 ### finale:B-03 · 六个不同的声音 / Six different voices
 
-**实机事件与推进：** 终战只用已经学过的两种玩家机制：读真铃的战斗窗口与利用灯光/位置避险，不把六套地区小游戏塞进Boss。六地伙伴的贡献由他们真实执行并可见：风铃镇与森林回声保持相邻连接，千灯城烬婆（小铆在场则协助战场）照亮安全位置，天空翎羽（远帆在场则协助）送来风使散开的假影远离，书库墨页与星原星芽维持最后两条回复（白栞在场可协助）；三阶段实际战斗（识别真身、保住安全位、持续输出）。玩家熟悉控制与队伍合击，伙伴有不同支援而非六次确认。中央集中抽取已关闭，但回响仍在冲击旧封印。各地守铃猫把本地旋钮从中央转向相邻铃（星原由星芽操作），六条双向回复可见。与 F-04 空载短试不同，玩家须利用两种战斗机制击破复制声源、保住真实铃光；每击破一个实际声源，受它干扰的一对邻铃恢复，伙伴继续接唱。每条边单独记录收到的新回复；再次被干扰则变暗，不能仅凭 Boss 血量假定成功。最后锁仍挡住完整环路。回响施压时，邻居短回复仍持续，各地不同颜色没有混合，暮铃亲眼看见伙伴没有忘记彼此：檐灯叫主角小金猫、小铆或留城的烬婆提到歪耳灯、远帆或翎羽提起云端飞行，均引用必经事件与实际在场/远程状态。回铃顺序可见，不给玩家额外确认按钮。她主动解除最后锁，让六个相邻通道真正连成环；立即进行一次完整稳定合唱，持续成功才归还主角记忆。主角不可强迫她，也不能以胜利标志伪造邻居回应。
+**实机事件与推进：** 终战只用已经学过的两种玩家机制：读真铃的战斗窗口与利用灯光/位置避险，不把六套地区小游戏塞进Boss。六地伙伴的贡献由他们真实执行并可见：风铃镇与森林回声保持相邻连接，千灯城烬婆（小栗在场则协助战场）照亮安全位置，天空翎羽（远帆在场则协助）送来风使散开的假影远离，书库墨页与星原星芽维持最后两条回复（白羽在场可协助）；三阶段实际战斗（识别真身、保住安全位、持续输出）。玩家熟悉控制与队伍合击，伙伴有不同支援而非六次确认。中央集中抽取已关闭，但回响仍在冲击旧封印。各地守铃猫把本地旋钮从中央转向相邻铃（星原由星芽操作），六条双向回复可见。与 F-04 空载短试不同，玩家须利用两种战斗机制击破复制声源、保住真实铃光；每击破一个实际声源，受它干扰的一对邻铃恢复，伙伴继续接唱。每条边单独记录收到的新回复；再次被干扰则变暗，不能仅凭 Boss 血量假定成功。最后锁仍挡住完整环路。回响施压时，邻居短回复仍持续，各地不同颜色没有混合，暮铃亲眼看见伙伴没有忘记彼此：檐灯叫主角小金猫、小栗或留城的烬婆提到歪耳灯、远帆或翎羽提起云端飞行，均引用必经事件与实际在场/远程状态。回铃顺序可见，不给玩家额外确认按钮。她主动解除最后锁，让六个相邻通道真正连成环；立即进行一次完整稳定合唱，持续成功才归还主角记忆。主角不可强迫她，也不能以胜利标志伪造邻居回应。
 
 **关键对白（ZH / EN）：**
 
 - 檐灯（远程）：听见你了！ / We hear you!
-- 烬婆（远程，小铆若在战场可代说）：往亮处来！ / Come into the light!
+- 烬婆（远程，小栗若在战场可代说）：往亮处来！ / Come into the light!
 - 星芽：接上了！这次没断！ / It's connected! It's holding!
 - 暮铃：大家……都还记得自己是谁。 / Everyone… still remembers who they are.
-- 主角：听见了吗？是他们自己的声音。暮铃，开吧。 / Hear that? Those are their own voices. Muling, open it.
+- 主角：听见了吗？是他们自己的声音。暮铃，开吧。 / Hear that? Those are their own voices. Luna, open it.
 - 暮铃：……嗯。这回一起回家。 / …Yeah. We're going home together this time.
 
 ### finale:B-04 · 星铃重新响了 / The bell rings again
@@ -544,7 +544,7 @@
 
 ### epilogue:E-03 · 第二把钥匙 / The second key
 
-**实机事件与推进：** 回阳光花园。真实获得的月叶、灯笼等形成旅程的可见痕迹；门旁的木名牌可以翻到新的一面：玩家自定义显示名则呈现该名，否则保持无文字的猫爪刻记，不强造本名。并排添上新的爪印，形成过去的家和自己重新选择的家的可见区别。暮铃把当初的两只杯子放好；若天空主角选择帮忙找朋友并说过多带杯子，庭院来客时桌上会多一只杯子，作为无需任务的回报。暮铃在门外询问是否留下，主角给第二把钥匙。返园时世界状态已准备好三项兑现内容（玩家可直接喝茶，不必逐项观看）：栖蓝展示新增道路的地图，芽禾送的种子在玩家返园时由芽禾当场种下，魔法月叶在两只猫先后碰触后舒展第一片叶子（芽禾不在场时可由暮铃陪玩家完成），小铆的歪耳灯在花园投出影戏（可由留城的烬婆托来，不强制招募），远帆或翎羽来访时带来一张云端明信片。不是新任务清单；玩家可以当场走动看，也可直接喝茶。两杯茶，普通铃声，恢复自由游玩。
+**实机事件与推进：** 回阳光花园。真实获得的月叶、灯笼等形成旅程的可见痕迹；门旁的木名牌可以翻到新的一面：玩家自定义显示名则呈现该名，否则保持无文字的猫爪刻记，不强造本名。并排添上新的爪印，形成过去的家和自己重新选择的家的可见区别。暮铃把当初的两只杯子放好；若天空主角选择帮忙找朋友并说过多带杯子，庭院来客时桌上会多一只杯子，作为无需任务的回报。暮铃在门外询问是否留下，主角给第二把钥匙。返园时世界状态已准备好三项兑现内容（玩家可直接喝茶，不必逐项观看）：栖蓝展示新增道路的地图，芽禾送的种子在玩家返园时由芽禾当场种下，魔法月叶在两只猫先后碰触后舒展第一片叶子（芽禾不在场时可由暮铃陪玩家完成），小栗的歪耳灯在花园投出影戏（可由留城的烬婆托来，不强制招募），远帆或翎羽来访时带来一张云端明信片。不是新任务清单；玩家可以当场走动看，也可直接喝茶。两杯茶，普通铃声，恢复自由游玩。
 
 **关键对白（ZH / EN）：**
 
@@ -552,12 +552,12 @@
 - 主角：可以啊。不过下次要做这么大的事，先跟我商量。 / You can. But next time it's something this big, talk to me first.
 - 暮铃：那……能给我一把钥匙吗？ / Then… may I have a key?
 - 主角：喏，早给你留着呢。进来吧，茶还热着。 / Here. I saved one for you. Come in. The tea's still warm.
-- 小铆（若在场）：说好了的影戏！这回我给每只猫留了座。 / The shadow show, as promised! I saved a seat for every cat.
+- 小栗（若在场）：说好了的影戏！这回我给每只猫留了座。 / The shadow show, as promised! I saved a seat for every cat.
 
 
 ## 玩家动力最终约束（全章适用）
 - 玩家只需理解三件事，不要求掌握技术因果。每次剧情新信息必须在相邻场景里得到可见证据；同一谜底不由三名NPC重复解释。
-- 不增加新的强制任务、收集门槛、好感门槛或数值计时。栖蓝的地图、芽禾的月叶、小铆的影戏是必经关系事件，尾声直接兑现；可选探索只提供更多发现。角色缺席时由其实际所在地回铃或留下礼物，不复制NPC。
+- 不增加新的强制任务、收集门槛、好感门槛或数值计时。栖蓝的地图、芽禾的月叶、小栗的影戏是必经关系事件，尾声直接兑现；可选探索只提供更多发现。角色缺席时由其实际所在地回铃或留下礼物，不复制NPC。
 - 主角发现自己过去留下的不是通关指南，而是灾前工作图和应急归家嘱咐；F-02 展示当年真实失败及当前新条件。暮铃的恐惧可以理解，但不合理化其擅自决定全世界命运的责任。
 - 每章离开前必须有已经兑现的具体回报，而不是只给下一张地图；至少一次当场角色主动反应。庭院纪念物和可选发现是生活痕迹，不变为收藏门槛。
 - 前四章逐步推进三个问题：谁认识我、是谁刻意留下归家路线、近期是谁碰过封印。不得通过暮铃的可疑特写、提前公布银铃借阅印或作者解释直接给谜底。可以让玩家猜中关系，但责任与代价仍须由独立证据揭晓。

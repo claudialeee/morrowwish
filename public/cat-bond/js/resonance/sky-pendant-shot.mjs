@@ -1,10 +1,10 @@
-// A close shot from Muling's existing painted traveler portrait. No duplicate story state.
+// A close shot from Luna's existing painted traveler portrait. No duplicate story state.
 // Warp only the pendant's pixels for a short damped swing, leaving the surrounding painting still.
 export function mountSkyPendantShot(panel,url){
  const canvas=document.createElement("canvas");canvas.className="res-sky-pendant-shot";canvas.width=480;canvas.height=300;canvas.hidden=true;
  canvas.setAttribute("role","img");panel.append(canvas);
  const ctx=canvas.getContext("2d"),art=new Image(),handArt=new Image();art.decoding="async";art.src=url;
- // Isolate only Muling's painted hand. The finale's environment and bell never appear here.
+ // Isolate only Luna's painted hand. The finale's environment and bell never appear here.
  handArt.decoding="async";handArt.src=new URL("../../assets/cinematics/closing/pendant-signal.webp",import.meta.url).href;
  let hand=null;
  function prepareHand(){
@@ -72,7 +72,7 @@ export function mountSkyPendantShot(panel,url){
   if(!reduce()&&(now-start<(repair?2400:1150)||tapAt&&t<.7))raf=requestAnimationFrame(draw);
  }
  function update(next,language){
-  const active=[0,1,3,4].includes(next);canvas.setAttribute("aria-label",language==="zh"?"暮铃旧铃坠特写":"Close-up of Muling’s old bell pendant");
+  const active=[0,1,3,4].includes(next);canvas.setAttribute("aria-label",language==="zh"?"暮铃旧铃坠特写":"Close-up of Luna’s old bell pendant");
   if(!active){canvas.hidden=true;delete canvas.dataset.repairAction;cursor=next;cancelAnimationFrame(raf);raf=0;return;}
   if(cursor!==next){delete canvas.dataset.repairAction;cursor=next;start=performance.now();tapAt=0;tapDirection=0;}
   canvas.hidden=!art.naturalWidth;if(!canvas.hidden&&!raf)raf=requestAnimationFrame(draw);

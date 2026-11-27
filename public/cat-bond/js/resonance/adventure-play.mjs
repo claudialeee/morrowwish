@@ -2,9 +2,9 @@ import {companionTalents,activateCompanionTalents} from "./companion-talents.mjs
 import {sideAdventures,newSideState,sideAction,dryLanes,herbs,weights,basketTotals,starPoints,starLinks} from "./side-adventures.mjs";
 const zh=()=>window.MorrowwishI18n?.get?.()==="zh",tr=p=>p[zh()?0:1],pair=(a,b)=>[a,b],el=(tag,cls,text)=>{const x=document.createElement(tag);if(cls)x.className=cls;if(text!==undefined)x.textContent=text;return x;};
 const svgNS="http://www.w3.org/2000/svg",svg=(tag,attrs={})=>{const e=document.createElementNS(svgNS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));return e;};
-const titleNames={qilan:["栖蓝","Qilan"],yahe:["芽禾","Yahe"],xiaomao:["小铆","Xiaomao"]};
+const titleNames={qilan:["栖蓝","Skye"],yahe:["芽禾","Fern"],xiaomao:["小栗","Pip"]};
 const regions={qilan:"harbor",yahe:"forest",xiaomao:"forge"};
-const trialHelp={qilan:["把能量充到100，再释放大招击响练习铃。","Build charge to 100, then cast an ultimate to ring the practice bell."],yahe:["小猫只有55%生命。让芽禾上场，治疗它，再护送它回家。","The kitten has 55% HP. Bring Yahe onto the field, heal it, then escort it home."],xiaomao:["让小铆上场，等到预警出现后测试护盾。","Bring Xiaomao onto the field, then test the shield when the attack warning appears."]};
+const trialHelp={qilan:["把能量充到100，再释放大招击响练习铃。","Build charge to 100, then cast an ultimate to ring the practice bell."],yahe:["小猫只有55%生命。让芽禾上场，治疗它，再护送它回家。","The kitten has 55% HP. Bring Fern onto the field, heal it, then escort it home."],xiaomao:["让小栗上场，等到预警出现后测试护盾。","Bring Pip onto the field, then test the shield when the attack warning appears."]};
 export function newTrial(id){
  const actor={cat:{storyActor:id},hp:100,maxhp:100,alive:true},ally={cat:{storyActor:"practice"},hp:id==="yahe"?55:100,maxhp:100,alive:true,shieldT:0};
  const b={regionalCombat:{cast:null},t:0,ult:id==="qilan"?88:0,team:[ally],gainUlt(n){this.ult=Math.min(100,this.ult+n)},healUnit(f,n){f.hp=Math.min(f.maxhp,f.hp+n)}};
@@ -56,8 +56,8 @@ export function mountTalentTrial(id){
   else if(!done&&id==="qilan")r.append(button(pair("释放大招","Cast ultimate"),act("cast"),{id:"cast"}));
   else if(!done&&id==="yahe")r.append(button(pair("护送小猫回家","Escort kitten home"),act("escort"),{id:"escort"}));
   else if(!done&&id==="xiaomao")r.append(s.phase===1?button(pair("触发攻击预警","Trigger attack warning"),act("warn"),{id:"warn"}):button(pair("承受练习冲击","Test the incoming hit"),act("impact"),{id:"impact"}));
-  if(done)status.textContent=tr(id==="qilan"?pair("练习铃响了！专长提供的12点能量让大招提前释放。","The practice bell rings! Tailwind supplied the 12 charge needed to cast."):id==="yahe"?pair("小猫安全到家！芽禾恢复了20点生命。","The kitten is home! Yahe restored 20 HP."):pair("护盾生效！40点练习伤害只造成22点损伤。","The ward worked! The 40-point practice hit dealt only 22 damage."));
-  else if(s.phase)status.textContent=tr(id==="xiaomao"&&s.phase===1?pair("小铆已就位，触发一次攻击预警。","Xiaomao is ready. Trigger an attack warning."):t.notice);
+  if(done)status.textContent=tr(id==="qilan"?pair("练习铃响了！专长提供的12点能量让大招提前释放。","The practice bell rings! Tailwind supplied the 12 charge needed to cast."):id==="yahe"?pair("小猫安全到家！芽禾恢复了20点生命。","The kitten is home! Fern restored 20 HP."):pair("护盾生效！40点练习伤害只造成22点损伤。","The ward worked! The 40-point practice hit dealt only 22 damage."));
+  else if(s.phase)status.textContent=tr(id==="xiaomao"&&s.phase===1?pair("小栗已就位，触发一次攻击预警。","Pip is ready. Trigger an attack warning."):t.notice);
  }});
 }
 let queue=[],watch=null;

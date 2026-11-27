@@ -23,7 +23,7 @@ export function paintHarborEnvironment(c,view,frame){
 }
 export function harborObjective(v,lang){
  const zh=lang==="zh",s=v.current?.id,has=x=>v.objective.includes(x);
- const line=s==="harbor:H-01"?["沿石径找到栖蓝。","Follow the stone path to Qilan."]:s==="harbor:H-02"?["穿过风铃巷，从两条路中选择一条追上铃光。","Catch the moving chime along either of the two paths."]:s==="harbor:H-03"?["去旧铃房找檐灯。","Find Yandeng at the old bell house."]:s==="harbor:H-04"?["与伙伴一起击退铃光兽。","Defeat the belllight beast with your companion."]:s==="harbor:H-05"?has("repair:harbor")?["修复古铃圣所。","Restore the town bell sanctuary."]:has("melody:harbor")?["邀请栖蓝和檐灯，让古铃各自回应。","Invite Qilan and Yandeng to ring the bells together."]:["看看旧巡铃图。","Look at the old bellkeepers' map."]:v.melodies.includes("harbor")?["古铃已恢复 · 可前往眠根林。","Town bell restored · Travel to Rootsleep Forest."]:null;
+ const line=s==="harbor:H-01"?["沿石径找到栖蓝。","Follow the stone path to Skye."]:s==="harbor:H-02"?["穿过风铃巷，从两条路中选择一条追上铃光。","Catch the moving chime along either of the two paths."]:s==="harbor:H-03"?["去旧铃房找檐灯。","Find Alder at the old bell house."]:s==="harbor:H-04"?["与伙伴一起击退铃光兽。","Defeat the belllight beast with your companion."]:s==="harbor:H-05"?has("repair:harbor")?["修复古铃圣所。","Restore the town bell sanctuary."]:has("melody:harbor")?["邀请栖蓝和檐灯，让古铃各自回应。","Invite Skye and Alder to ring the bells together."]:["看看旧巡铃图。","Look at the old bellkeepers' map."]:v.melodies.includes("harbor")?["古铃已恢复 · 可前往眠根林。","Town bell restored · Travel to Rootsleep Forest."]:null;
  return line?.[zh?0:1]||"";
 }
 export function harborPuzzleHint(p,lang){
@@ -31,10 +31,10 @@ export function harborPuzzleHint(p,lang){
  if(p.type==="rescue"){
   const step=p.values.length;
   const gateTurns=p.goal.indexOf(2),remaining=Math.max(0,gateTurns-step);
-  const hint=remaining?[ "转动闸门绞盘，剩余 "+remaining+" 格。","Turn the tide-gate winch: "+remaining+" notch(es) remaining."]:step===gateTurns?["闸门已完全打开。发出通航信号。","The gate is fully open. Signal the channel."]:step===gateTurns+1?["引导栖蓝穿过狭窄闸口。","Guide Qilan through the narrow gate."]:step===gateTurns+2?["继续引导，避开浅滩，靠近安全码头。","Guide past the shoal toward the safe quay."]:["发出靠岸确认信号。","Signal to confirm docking."];
-  return (p.assistedAt===step?(l?"Qilan steadies the boat. ":"栖蓝稳住了船。"):"")+hint[l];
+  const hint=remaining?[ "转动闸门绞盘，剩余 "+remaining+" 格。","Turn the tide-gate winch: "+remaining+" notch(es) remaining."]:step===gateTurns?["闸门已完全打开。发出通航信号。","The gate is fully open. Signal the channel."]:step===gateTurns+1?["引导栖蓝穿过狭窄闸口。","Guide Skye through the narrow gate."]:step===gateTurns+2?["继续引导，避开浅滩，靠近安全码头。","Guide past the shoal toward the safe quay."]:["发出靠岸确认信号。","Signal to confirm docking."];
+  return (p.assistedAt===step?(l?"Skye steadies the boat. ":"栖蓝稳住了船。"):"")+hint[l];
  }
- if(p.assist==="jiedeng"){const i=p.values.findIndex((n,j)=>n!==p.goal[j]);if(i>=0)return ["岬灯：先校准","Jiedeng: align "][l]+puzzleWords.mirrors[2][i][l];}
+ if(p.assist==="jiedeng"){const i=p.values.findIndex((n,j)=>n!==p.goal[j]);if(i>=0)return ["檐灯：先校准","Alder: align "][l]+puzzleWords.mirrors[2][i][l];}
  if(p.type==="tide")return ["顺着刻痕和石阶找到日志匣。","Trace the marks and steps to the logbook chest."][l];
  if(p.type==="melody")return ["按上方音符的顺序敲响铃音，聆听居民回应。","Play the notes in the displayed order and hear the residents answer."][l];
  return puzzleWords[p.type][1][l];

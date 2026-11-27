@@ -10,7 +10,7 @@ const routes={
  "survey:outbound":[.72,.27,.67],
  "survey:return":[.28,.73,.29]
 };
-// Xiaomao brings flight parts after the forge chapter; manual cargo is optional.
+// Pip brings flight parts after the forge chapter; manual cargo is optional.
 export const skyPartsReady=v=>!!(v.completed?.includes("forge:E-04")||v.links?.["forge:sky"]?.includes("receiveB"));
 // A separate painted island is reachable by flight only, never by the main walking path.
 export const skySurveyPath=[[.27,.235],[.30,.22],[.34,.218],[.39,.20]];
@@ -123,17 +123,17 @@ export function paintSkyFlight(ctx,f,img,W,H,lang,drawCat,drawNpc,nativeBackgrou
  if(f.operation==="puzzle:joint-flight"){
   const lead=f.choice==="lead",direction=reverse?-1:1,clamp=n=>Math.max(.08,Math.min(.92,n)),bob=Math.sin(f.elapsed*2.3)*.015;
   const guideX=clamp(x+direction*.105),guideY=clamp(y-.105+bob),partnerX=clamp(x-direction*.105),partnerY=clamp(y+.092-bob);
-  // Formation follows the player's steering. Muling travels beside the
+  // Formation follows the player's steering. Luna travels beside the
   // protagonist; the two guides no longer replace her in her own story beat.
   drawGlider(ctx,img,guideX,guideY,W,H,f.velocity);drawNpc(lead?"yuanfan":"lingyu",guideX,guideY,.58);
   drawGlider(ctx,img,partnerX,partnerY,W,H,f.velocity*.8);drawNpc("muling",partnerX,partnerY,.64);
  }
  drawGlider(ctx,img,x,y,W,H,f.velocity);drawCat(x,y);if(!nativeBackground)cloudLayers(ctx,img,f.elapsed,W,H,true);
- if(nativeBackground){ctx.font="700 17px sans-serif";ctx.textAlign="center";ctx.fillStyle="#fff8e6";ctx.shadowColor="#203b48";ctx.shadowBlur=5;ctx.shadowOffsetY=1;ctx.fillText(t("风向 ","Wind ")+(wind>0?"↓":"↑")+" "+Math.round(Math.abs(wind)*100),W/2,24);ctx.shadowBlur=0;ctx.shadowOffsetY=0;if(f.operation==="explore:flight-recorder"&&f.gate>0&&f.notice==="flying"){const lines=zh?["旧风标：事故前，翎羽误判侧风。","断裂货索：远帆主动切断货物绳索。","记录仪：两只猫因此幸存。"]:["Old wind gauge: Lingyu misread the crosswind.","Severed cargo line: Yuanfan cut it deliberately.","Recorder: both siblings survived because of it."];ctx.font="600 16px sans-serif";ctx.shadowColor="#203b48";ctx.shadowBlur=5;ctx.fillText(lines[f.gate-1],W/2,H-22,W-24);}ctx.restore();return;}
+ if(nativeBackground){ctx.font="700 17px sans-serif";ctx.textAlign="center";ctx.fillStyle="#fff8e6";ctx.shadowColor="#203b48";ctx.shadowBlur=5;ctx.shadowOffsetY=1;ctx.fillText(t("风向 ","Wind ")+(wind>0?"↓":"↑")+" "+Math.round(Math.abs(wind)*100),W/2,24);ctx.shadowBlur=0;ctx.shadowOffsetY=0;if(f.operation==="explore:flight-recorder"&&f.gate>0&&f.notice==="flying"){const lines=zh?["旧风标：事故前，翎羽误判侧风。","断裂货索：远帆主动切断货物绳索。","记录仪：两只猫因此幸存。"]:["Old wind gauge: Wren misread the crosswind.","Severed cargo line: Finn cut it deliberately.","Recorder: both siblings survived because of it."];ctx.font="600 16px sans-serif";ctx.shadowColor="#203b48";ctx.shadowBlur=5;ctx.fillText(lines[f.gate-1],W/2,H-22,W-24);}ctx.restore();return;}
  ctx.font="600 22px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";ctx.textAlign="center";ctx.fillStyle="#fff2d1";ctx.fillText(f.practice?t("第一次滑翔 · 借风再落地","First glide · catch the wind and land"):f.openGlide?t("借风越过云瀑，选择自己的路线","Ride the wind around the waterfall"):t("穿过风圈，抵达安全降落区","Cross the wind gates and land safely"),W/2,34);
  ctx.font="600 17px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";ctx.fillText(t("风向仪 ","Wind gauge ")+(wind>0?"↓":"↑")+" "+Math.round(Math.abs(wind)*100)+"   "+(f.x>.42&&f.x<.57?t("上升气流 · ","Updraft · "):"")+(f.practice?t("安全落地","Land safely"):f.openGlide?(f.routeUsed==="upper"?t("云瀑捷径","Shortcut"):f.routeUsed==="lower"?t("外侧风路","Outer route"):t("选择高处或低处","Choose high or low")):t("航标 ","Gates ")+f.gate+"/3"),W/2,62);
  const notices={ready:t("点击或拖动选择飞行高度；方向键 ↑ ↓","Tap or drag to steer altitude; ↑ ↓ keys"),miss:t("错过风圈，重新起飞 · 风圈已放宽","Missed a gate. Relaunch · wider gates"),edge:t("遇到强气流，重新起飞","Strong gust. Relaunch"),landing:t("降落高度不安全，重新起飞","Unsafe landing. Relaunch"),flying:t("保持在下一个风圈内，最后回到中央","Aim for the next gate, then return to center"),landed:t("安全降落","Safe landing")};
- const logs=zh?["旧风标：事故前，翎羽误判侧风。","断裂货索：远帆主动切断货物绳索。","记录仪：两只猫因此幸存。"]:["Old wind gauge: Lingyu misread the crosswind.","Severed cargo line: Yuanfan cut it deliberately.","Recorder: both siblings survived because of it."];
+ const logs=zh?["旧风标：事故前，翎羽误判侧风。","断裂货索：远帆主动切断货物绳索。","记录仪：两只猫因此幸存。"]:["Old wind gauge: Wren misread the crosswind.","Severed cargo line: Finn cut it deliberately.","Recorder: both siblings survived because of it."];
  if(f.operation==="explore:flight-recorder"&&f.gate>0&&f.notice==="flying"){ctx.fillStyle="#172d45e5";ctx.fillRect(0,H-74,W,28);ctx.fillStyle="#fff2d1";ctx.fillText(logs[f.gate-1],W/2,H-54,W-24);}
  ctx.fillText(f.practice?({ready:t("升高借风，随后回到中央","Climb into the updraft, then return to middle altitude"),flying:t("借风后回到中央高度落地","Catch the wind, then descend to the landing"),landing:t("落地不稳，再飞一次","Unsteady landing. Try again"),edge:t("偏离安全范围，重新起飞","Outside safe airspace. Relaunch")}[f.notice]||""):f.openGlide?({ready:t("选高处借风或沿低处绕行","Climb into the updraft or glide low"),miss:t("撞入回卷风带，换条路线再试","Caught in the gust. Try another route"),edge:t("偏离安全范围，重新起飞","Outside safe airspace. Relaunch"),landing:t("降落不稳，重新起飞","Unsafe landing. Relaunch"),flying:t("绕过云瀑后再回到中央高度","Return to middle altitude beyond the waterfall"),landed:t("安全降落","Safe landing")}[f.notice]||""):(notices[f.notice]||""),W/2,H-24,W-24);ctx.restore();
 }
