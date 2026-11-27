@@ -72,9 +72,9 @@ const ready=i=>i?.complete&&i.naturalWidth;
 function cover(c,i,x,y,w,h){if(!ready(i))return;let k=Math.max(w/i.naturalWidth,h/i.naturalHeight),dw=i.naturalWidth*k,dh=i.naturalHeight*k;c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.drawImage(i,x+(w-dw)/2,y+(h-dh)/2,dw,dh);c.restore()}
 export function paintLibraryPuzzle(c,p,lang,W,H,visual={}){
  const w=libraryWords(p);if(!w)return false;const l=lang==="zh"?0:1,s=W/960,X=n=>n*W,Y=n=>n*H;
- const t=(str,x,y,size=20,col="#4d3b52")=>{c.font="600 "+size*s+"px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";c.fillStyle=col;c.textAlign="center";c.textBaseline="middle";c.fillText(str,X(x),Y(y),W*.88)};
+ const t=(str,x,y,size=20,col="#4d3b52")=>{c.font="600 "+(visual.nativeBackground?Math.max(17,size*s):size*s)+"px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";c.fillStyle=col;c.textAlign="center";c.textBaseline="middle";c.fillText(str,X(x),Y(y),W*.88)};
  const frame=(x,y,width,height)=>{c.beginPath();c.roundRect(X(x),Y(y),X(width),Y(height),12*s);c.fillStyle="#fff5e9ee";c.fill();c.strokeStyle="#b6a3cf";c.lineWidth=1.5*s;c.stroke()};
- c.save();cover(c,image("resonance-world-v2/library.webp"),0,0,W,H);c.fillStyle="#99759033";c.fillRect(0,0,W,H);if(p.type!=="libraryCompanion")frame(.08,.08,.84,.83);
+ c.save();if(!visual.nativeBackground){cover(c,image("resonance-world-v2/library.webp"),0,0,W,H);c.fillStyle="#99759033";c.fillRect(0,0,W,H);if(p.type!=="libraryCompanion")frame(.08,.08,.84,.83);}else if(p.type!=="libraryCompanion"){frame(.04,.10,.92,.76);}
  if(!["libraryRoutes","libraryCompanion"].includes(p.type)){t(w[0][l],.5,.15,27,"#543b55");t(w[1][l],.5,.23,16);}
  const xs=[.3,.5,.7],Yc=Y(.53);
  if(p.type==="libraryCompanion"){
@@ -83,7 +83,7 @@ export function paintLibraryPuzzle(c,p,lang,W,H,visual={}){
  const unit=Math.min(W,H),glow=(x,y,r,col)=>{const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,"transparent");c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);};
  const actor=(im,x,y,maxW,maxH,facing=1,squeeze=1)=>{if(!ready(im))return;const b=visibleBounds(im),k=Math.min(maxW/b[2],maxH/b[3]),w=b[2]*k,h=b[3]*k;c.save();c.translate(x,y);c.scale(facing<0?-squeeze:squeeze,1);c.drawImage(im,...b,-w/2,-h,w,h);c.restore();};
  // Full-stage arched mirrors, rather than a card board with written answers.
- c.fillStyle="#18263d70";c.fillRect(0,0,W,H);
+ if(!visual.nativeBackground){c.fillStyle="#18263d70";c.fillRect(0,0,W,H);}
  for(const [i,x] of [.30,.70].entries()){
   const cx=X(x),left=X(x-.145),right=X(x+.145),top=Y(.20),bottom=Y(.68),arch=Y(.33),r=X(.145);
   const path=()=>{c.beginPath();c.moveTo(left,bottom);c.lineTo(left,arch);c.bezierCurveTo(left,top,right,top,right,arch);c.lineTo(right,bottom);c.closePath();};
