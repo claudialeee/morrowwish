@@ -112,7 +112,7 @@ final = f.dmg × skill.power × outgoingBuffMult × _dmgOutMult     // 攻击端
 5. Fold `basicTagMul` into softBucket (owner said 完全删 — skipped)
 6. Cap `critComboMult` at one factor per hit (checkCombo already returns first match)
 
-**Implementation status** (as of commit `86e2fec5`):
+**Implementation status** (as of commit `2ea89182`):
 - #1 implemented (3.5× earned ceiling in hurtEnemy)
 - #2 implemented (`comboIsCrit` requires `bonusMult >= 1`)
 - #3 implemented (vulnerableT merged into vulnBonus +0.30, bucket cap 0.50 → 0.80)
@@ -152,10 +152,39 @@ Current formula 4/10. Per-multiplier cues:
 ## Status — all 3 formula commits landed
 
 - Commit 1 `066b0f82` (pushed): legibility — combo.name + EXECUTE/CLOSING
-- Commit 2 `84e731d1` (local): elemMult out of additive; consumes split; soft cap +0.50
-- Commit 3 `86e2fec5` (local): vuln merge; cap 0.80; earned ceiling 3.5×
+- Commit 2 `e1e15c08` (local): elemMult out of additive; consumes split; soft cap +0.50
+- Commit 3 `2ea89182` (local): vuln merge; cap 0.80; earned ceiling 3.5×
 - Starter Q P1 shipped `7334a8cd`: power 0.8 → 1.35 (was weaker than basic)
 
 Deferred (clean no-op refactor, owner-approved to postpone):
 - Identity merge: fold `outgoingBuffMult + _dmgOutMult` to a single call site
 - Round 3 legibility: `outgoingBuffMult`, `levelSuppression`, `vulnerableFlat` cues
+
+---
+
+## Correction 2026-11-26 (supervisor-driven)
+
+Supervisor subagent `a0dd905584c1106a4` reviewed the 8 session commits and
+caught two LIES in the prior status table:
+
+- **Amendment #1 "Post-identity ceiling 3.5×"**: was marked "implemented" in
+  `2ea89182`, but actual code only compared `sumBonus ≤ 3.5` which maxes at 2.80.
+  Dead-code. Rewritten in commit `8988d30b` to stash
+  `_earnedReactStack = softMul × critComboMult` in applyHitEffects, read it in
+  hurtEnemy, cap `earnedReact × sumBonus ≤ 3.5`. Now actually clips.
+
+- **starter Q 0.8→1.35** `7334a8cd` edit touched only the attack object literal;
+  `castOffensiveSkill`'s ternary `(sk ? sk.power : 0.8)` fallback at battle.js:2651
+  was unchanged. Dead-code. Rewritten in `8988d30b` to change the ternary to 1.35.
+
+## Final shipped commits (correct SHAs)
+
+| step | SHA | status |
+|---|---|---|
+| 1. Legibility (combo.name + EXECUTE/CLOSING) | `066b0f82` | pushed to origin |
+| 2. Formula refactor commit 1 (elemMult out, consumes split) | `e1e15c08` | local |
+| 3. Formula refactor commit 2 (vuln-merge, bucket cap 0.80) | `2ea89182` | local |
+| 4. basic-tag tension delete | `18847a72` | local |
+| 5. starter Q real pow fix (supervisor-corrected) | `8988d30b` | local |
+| 6. earned-bucket ceiling real fix (supervisor-corrected) | `8988d30b` | local |
+| 7. basic-time-scalar (playtest P0 auto-fix) | `314b449d` | local |
