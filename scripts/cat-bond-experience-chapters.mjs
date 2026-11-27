@@ -21,15 +21,15 @@ const labels=Object.freeze({
   "Lighthouse mirrors": "灯塔反射镜",
   "Chase the runaway chime": "穿过风铃巷",
   "Take shortcut": "抄近路",
-  "Belllight beast": "铃光兽",
+  "Belltongue Beast": "铃舌兽",
   "Town bell sanctuary": "古铃圣所",
   "Coming Home": "归家调",
   "Moonleaf bridge": "拨动月叶 · 根桥",
   "Break the forest loop": "打破森林回环",
   "Ancient-root sanctuary": "古根圣所",
   "Living Roots": "相枝调",
-  "Help Xiaomao put on a show": "帮小铆演一场灯影",
-  "Finish the show and meet Xiaomao": "演完啦，去找小铆",
+  "Help Xiaomao put on a show": "帮小栗演一场灯影",
+  "Finish the show and meet Xiaomao": "演完啦，去找小栗",
   "Light the stone bridge": "照亮石桥",
   "Shadow beast": "剪影兽",
   "Lantern sanctuary": "千灯圣所",
@@ -40,7 +40,7 @@ const labels=Object.freeze({
   "Windwing sanctuary": "风翼圣所",
   "Open Sky": "逐风调",
   "Walk around the lookout": "沿观景台走走",
-  "Sit beside Muling": "坐到暮铃身边",
+  "Sit beside Luna": "坐到暮铃身边",
   "Moonmirror sanctuary": "月镜圣所",
   "Reflections": "照影调",
   "Public records · Investigation": "公开记录 · 调查",
@@ -57,15 +57,15 @@ const labels=Object.freeze({
   "Beyond Stars": "续星调",
   "Watch the story scene": "观看剧情",
   "Approach the Star Bell": "前往中央星铃",
-  "Help Muling release the last lock": "协助暮铃打开最后一道锁",
+  "Help Luna release the last lock": "协助暮铃打开最后一道锁",
   "Hold the bell chain": "按住铃链",
-  "Give Muling the key": "交给暮铃",
+  "Give Luna the key": "交给暮铃",
   "THE BELL RINGS AGAIN": "星铃再次响起",
   "Return to Sunlit Garden": "回到阳光花园",
   "Choose the left cat": "选左边的猫",
   "Move and ring": "换位置，摇铃",
   "Choose the right cat": "选右边的猫",
-  "Two Mulings in the mirror": "镜中的两只暮铃",
+  "Two Lunas in the mirror": "镜中的两只暮铃",
   "Dew · Low": "露珠 · 低音",
   "Starlight · Middle": "星光 · 中音",
   "Flower bell · High": "花铃 · 高音",
@@ -114,12 +114,12 @@ const labels=Object.freeze({
   "Invite Yuchuan": "邀请 榆川",
   "Talk to Jinpo": "交谈 烬婆",
   "Invite Jinpo": "邀请 烬婆",
-  "Talk to Xiaomao": "交谈 小铆",
-  "Invite Xiaomao": "邀请 小铆",
+  "Talk to Xiaomao": "交谈 小栗",
+  "Invite Xiaomao": "邀请 小栗",
   "Talk to Yuanfan": "交谈 远帆",
   "Invite Yuanfan": "邀请 远帆",
-  "Talk to Baikan": "交谈 白栞",
-  "Invite Baikan": "邀请 白栞",
+  "Talk to Baikan": "交谈 白羽",
+  "Invite Baikan": "邀请 白羽",
   "Talk to Moye": "交谈 墨页",
   "Invite Moye": "邀请 墨页",
   "Talk to Lichuan": "交谈 砾川",
@@ -387,13 +387,13 @@ async function run(chapter){
   await scene(id);await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady(),null,{timeout:15000});await click(label);
   await page.locator('.cbcp-art').first().waitFor();await shot(id+'-cinematic');
   if(id==='finale:B-04'){const reply=page.getByRole('button',{name:locale==='zh'?'摇两下铃回应':'Ring twice in reply',exact:true});await reply.waitFor();await shot(id+'-ring-reply');await reply.click();}
-  if(id==='starfall:F-02'&&!continuous){await page.waitForFunction(()=>{const root=document.querySelector('.cbcp-root');if(root?.dataset.frameId!=='starfall:F-02-last-patrol')return false;const art=root.querySelector('.cbcp-art[src$="lantern-entrustment.jpg"]');return art&&art.complete&&art.naturalWidth>0&&Number(getComputedStyle(art).opacity)>=.95;},{},{timeout:45000});await shot(id+'-lamp-handoff');await page.locator('.cbcp-skip').click();const summary=page.locator('[data-canon-acknowledgement="starfall:F-02"]');await summary.waitFor();assert.match(await summary.innerText(),locale==='zh'?/答应过暮铃/:/promised Muling/);assert.equal((await view()).current.id,id);await shot(id+'-skip-summary');await click('Continue',summary);}
+  if(id==='starfall:F-02'&&!continuous){await page.waitForFunction(()=>{const root=document.querySelector('.cbcp-root');if(root?.dataset.frameId!=='starfall:F-02-last-patrol')return false;const art=root.querySelector('.cbcp-art[src$="lantern-entrustment.jpg"]');return art&&art.complete&&art.naturalWidth>0&&Number(getComputedStyle(art).opacity)>=.95;},{},{timeout:45000});await shot(id+'-lamp-handoff');await page.locator('.cbcp-skip').click();const summary=page.locator('[data-canon-acknowledgement="starfall:F-02"]');await summary.waitFor();assert.match(await summary.innerText(),locale==='zh'?/答应过暮铃/:/promised Luna/);assert.equal((await view()).current.id,id);await shot(id+'-skip-summary');await click('Continue',summary);}
   await page.waitForFunction(id=>CatBondResonance.view().current?.id!==id,id,{timeout:180000});
  }
  async function libraryEcho(){
-  await click('Two Mulings in the mirror');const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();await checkPuzzleLayout();
+  await click('Two Lunas in the mirror');const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();await checkPuzzleLayout();
   const status=controls.locator('[data-mirror-response]');await status.waitFor();
-  await click('Choose the left cat',controls);await status.waitFor();assert.equal(await status.getAttribute('data-position'),'0','guess cannot complete the scene');
+  assert.ok(await controls.getByRole('button',{name:local('Choose the left cat'),exact:true}).isDisabled());assert.ok(await controls.getByRole('button',{name:local('Choose the right cat'),exact:true}).isDisabled());assert.equal(await status.getAttribute('data-position'),'0','guess cannot complete the scene');
   await click('Move and ring',controls);await status.waitFor();
   const left=Number(await status.getAttribute('data-left-facing')),right=Number(await status.getAttribute('data-right-facing')),position=Number(await status.getAttribute('data-position'));
   assert.ok(position!==0&&(left===position)!==(right===position),'new action must distinguish the cats');
@@ -447,7 +447,7 @@ async function run(chapter){
    await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();if(portrait){await page.waitForFunction(()=>document.querySelector('.rw-world')?.dataset.artReady==='true');for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){await page.setViewportSize(viewport);await page.waitForFunction(()=>{const e=document.querySelector('.rw-chase-mode .rw-surface'),r=e?.getBoundingClientRect(),s=e?.parentElement?.getBoundingClientRect();return !!r&&!!s&&r.height>=s.height-2&&r.width>=s.width-2&&r.height>r.width;});await page.screenshot({path:out+'/portrait-chase-'+viewport.width+'.png'});}await page.setViewportSize({width:390,height:844});}
    const follow=page.locator('[data-chase-follow]'),shortcut=page.locator('[data-chase-shortcut]');await activate(follow);await page.waitForFunction(()=>!document.querySelector('[data-chase-follow]')?.disabled);if(portrait)await activate(shortcut);else await activate(follow);await page.waitForFunction(()=>!document.querySelector('[data-chase-follow]')?.disabled);await activate(follow);await page.waitForFunction(()=>{const el=document.querySelector('[data-chase-follow]');return el&&!el.disabled&&/Pounce|扑住/.test(el.textContent);});await activate(follow);await chase.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');
    await talk('Yandeng');await dialogue('harbor:H-03');await scene('harbor:H-04');
-   await battle('Belllight beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
+   await battle('Belltongue Beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
    await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');await trial('qilan',['deploy','cast']);
   }else if(chapter==='forest'){
    await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');await trial('yahe',['deploy','escort']);
@@ -464,7 +464,7 @@ async function run(chapter){
    await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
    await click('Find the moon gate · Cloud route');await op('explore:flight-recorder');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
    await flyWaterfall('Joint gliding platform');await dialogue('sky:S-03');await restore('Windwing sanctuary');await dialogue('sky:S-03');await scene('sky:S-04');assert.ok((await view()).melodies.includes('sky'),'Sky must answer before the tea scene');
-   await talk('Muling');const lookout=page.locator('.sky-lookout-view');await lookout.waitFor();await click('Walk around the lookout');assert.equal(await lookout.getAttribute('data-pose'),'walk');await click('Sit beside Muling');assert.equal(await lookout.getAttribute('data-pose'),'sit');await page.locator('.sky-lookout-painting').evaluate(img=>img.decode());await artProfiles('sky-lookout-sit',page.locator('.sky-lookout-painting'),page.getByRole('button',{name:local('Walk around the lookout')}));await dialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
+   await talk('Muling');const lookout=page.locator('.sky-lookout-view');await lookout.waitFor();await click('Walk around the lookout');assert.equal(await lookout.getAttribute('data-pose'),'walk');await click('Sit beside Luna');assert.equal(await lookout.getAttribute('data-pose'),'sit');await page.locator('.sky-lookout-painting').evaluate(img=>img.decode());await artProfiles('sky-lookout-sit',page.locator('.sky-lookout-painting'),page.getByRole('button',{name:local('Walk around the lookout')}));await dialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
    await dialogue('sky:S-05');
   }else if(chapter==='library'){
    await talk('Baikan');await dialogue('library:M-01');await scene('library:M-02');
@@ -480,11 +480,11 @@ async function run(chapter){
    assert.equal(await page.evaluate(()=>WorldMap.currentRegion),'finale');await battle('Approach the Star Bell','battle:inward-gates','finale');assert.equal(await page.evaluate(()=>WorldMap.currentRegion),'finale');await dialogue('finale:B-01');await scene('finale:B-02');
    await battle('Approach the Star Bell','battle:identify-echo','finale');await dialogue('finale:B-02');await scene('finale:B-03');
    await battle('Approach the Star Bell','battle:central-echo','finale');await dialogue('finale:B-03');
-   await click('Help Muling release the last lock');const latch=page.getByRole('button',{name:local('Hold the bell chain'),exact:true});await latch.waitFor();if(portrait){const r=await latch.boundingBox();await gesture({x:r.x+r.width/2,y:r.y+r.height/2},null,1800);}else{await latch.focus();await page.keyboard.down('Space');try{await page.waitForTimeout(1800);}finally{await page.keyboard.up('Space');}}
+   await click('Help Luna release the last lock');const latch=page.getByRole('button',{name:local('Hold the bell chain'),exact:true});await latch.waitFor();if(portrait){const r=await latch.boundingBox();await gesture({x:r.x+r.width/2,y:r.y+r.height/2},null,1800);}else{await latch.focus();await page.keyboard.down('Space');try{await page.waitForTimeout(1800);}finally{await page.keyboard.up('Space');}}
    await scene('finale:B-04');await cinema('finale:B-04','Watch the story scene');
   }else if(chapter==='epilogue'){
    if(await page.evaluate(()=>__game.scene!=='yard'))await page.locator('[data-next-scene="epilogue:E-01"]:visible').click();await page.waitForFunction(()=>__game.scene==='yard');assert.equal(await page.locator('#first-quest').isVisible(),false,'The legacy catch tutorial must stay hidden during homecoming');await scene('epilogue:E-02');if(!await page.locator('.res-host[data-scene="epilogue:E-02"]').isVisible())await talk('Muling');await dialogue('epilogue:E-02','Give everyone some time');await scene('epilogue:E-03');await talk('Muling');await dialogue('epilogue:E-03');
-   await click('Give Muling the key');await page.getByRole('heading',{name:local('THE BELL RINGS AGAIN')}).waitFor();await page.locator('.res-ending-title img').evaluate(img=>img.decode());await artProfiles('ending',page.locator('.res-ending-title img'),page.getByRole('button',{name:local('Return to Sunlit Garden')}));assert.equal((await view()).ending,true);await captureExperienceMilestone(page,'ending');
+   await click('Give Luna the key');await page.getByRole('heading',{name:local('THE BELL RINGS AGAIN')}).waitFor();await page.locator('.res-ending-title img').evaluate(img=>img.decode());await artProfiles('ending',page.locator('.res-ending-title img'),page.getByRole('button',{name:local('Return to Sunlit Garden')}));assert.equal((await view()).ending,true);await captureExperienceMilestone(page,'ending');
   }
   if(next)await scene(next);
   const final=await page.evaluate(()=>({view:CatBondResonance.view(),snapshot:CatBondResonance.snapshot()}));

@@ -6400,7 +6400,8 @@ class CaptureBattle {
       e.alive=false;this._lastDropped=e;
       this.vfx.impactType?.(e.x,e.y,'kill',{color:'#ffeca9'});
       this.spawnBurst(e.x,e.y,'💫','#ffd36b',12);
-      this.game.toast(e.sp.name+' 斗志耗尽！');
+      const zhName=e.combatName?.[0]||e.sp.name,enName=e.combatName?.[1]||e.sp.nameEn||GameData.speciesName(e.sp);
+      this.game.toast({zh:zhName+' 斗志耗尽！',en:enName+' is out of morale!'});
     }
   }
   hurtMe(dmg, fx, fy, f) {
