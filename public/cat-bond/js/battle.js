@@ -6179,11 +6179,12 @@ class CaptureBattle {
       const _vit = (_f.stats && _f.stats.vit) || 6;
       const _lv = _f.level || 1;
       // Owner 2026-11-27 pick (d)+(a): shrink flat+pct lv/vit coefficients AND cap flat.
-      // Prior (2+vit*0.3+lv*0.2, 0.08+vit*0.012+lv*0.004) made Lv50/vit182 eat 80-90%
-      // of incoming enemy damage even at level parity (log evidence: 106→32, 66→10, 70→12).
       // Softer curve: flat coeffs vit*0.15+lv*0.1 (half), pct coeffs vit*0.006+lv*0.002 (half).
-      // Flat soft-capped at 15 so late-game cats still take real chip damage.
-      const flat = Math.min(15, 2 + _vit * 0.15 + _lv * 0.1);
+      // Owner follow-up: hardcore flat cap TIGHTER (8) so enemies hit harder — hardcore
+      // is meant to be challenging and chip-immunity contradicts that. Casual stays 15
+      // to prevent late-game casual chip-immunity on near-maxed tanks.
+      const _hardcore = this.difficultyMode === 'hardcore';
+      const flat = Math.min(_hardcore ? 8 : 15, 2 + _vit * 0.15 + _lv * 0.1);
       const pct = Math.min(0.35, 0.08 + _vit * 0.006 + _lv * 0.002);
       dmg = Math.max(1, (Math.max(0, dmg - flat)) * (1 - pct));
       if(dmg>0){for(const ally of this.team||[]){if(!ally.alive||ally===f)continue;const ev={battle:this,cat:ally,target:f,dmg};window.CatTraits?.emit('onBeforeDamage',ev);dmg=ev.dmg;if(dmg<=0)break;}}
