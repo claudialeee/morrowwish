@@ -12,17 +12,21 @@ try{
   await menu('overview');let c=await snapshot();assert.equal(c.z,1);assert.equal(c.tx,0);assert.equal(c.ty,0);
   const before=await snapshot();
   const box=await page.locator('#scene').boundingBox();
+  const free=async (spread=0)=>page.evaluate(({spread})=>{const c=document.getElementById('scene'),r=c.getBoundingClientRect();for(const fy of [.48,.40,.56,.33,.65,.72])for(const fx of [.5,.42,.58,.32,.68]){const x=r.left+r.width*fx,y=r.top+r.height*fy;if([x-spread,x,x+spread].every(a=>document.elementFromPoint(a,y)===c))return {x,y};}throw Error('No unobstructed canvas points '+JSON.stringify({r:r.toJSON(),center:document.elementFromPoint(r.left+r.width*.5,r.top+r.height*.48)?.outerHTML.slice(0,500)}));},{spread});
   if(name==='wide'){await page.mouse.move(box.x+box.width*.5,box.y+box.height*.48);await page.mouse.wheel(0,-500);}
   else{
     const dev=await ctx.newCDPSession(page);
-    const x=box.x+box.width*.5,y=box.y+box.height*.48;
+    const {x,y}=await free(35);
+    await page.evaluate(()=>{window.__gardenTouchQA=[];for(const type of ['touchstart','touchmove','touchend','touchcancel'])document.addEventListener(type,e=>{window.__gardenTouchQA.push({type:e.type,n:e.touches.length,target:e.target.id||e.target.className,z:__game._yardCamera.z,points:[...e.touches].map(t=>[t.clientX,t.clientY])})},{capture:true,passive:true});});
+    await dev.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:x-35,y,id:0}]});
     await dev.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:x-35,y,id:0},{x:x+35,y,id:1}]});
-    await dev.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x-85,y,id:0},{x:x+85,y,id:1}]});
+    for(let d=45;d<=85;d+=10){await dev.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x-d,y,id:0},{x:x+d,y,id:1}]});await page.waitForTimeout(30);}
     await dev.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    console.log('GARDEN TOUCH PINCH',JSON.stringify(await page.evaluate(()=>({events:__gardenTouchQA,z:__game._yardCamera.z,gesture:__game._yardTouchGesture}))));
   }
   await page.waitForFunction(()=>__game._yardCamera.z>1.5);
   c=await snapshot();assert.equal(c.follow,false);
-  const x=box.x+box.width*.52,y=box.y+box.height*.48;
+  const {x,y}=name==='wide'?{x:box.x+box.width*.52,y:box.y+box.height*.48}:await free(0);
   if(name==='wide'){await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+45,y+40,{steps:5});await page.mouse.up();}
   else{const dev=await ctx.newCDPSession(page);await dev.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:0}]});await dev.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+45,y:y+40,id:0}]});await dev.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}
   const pan=await snapshot();assert.ok(Math.abs(pan.tx-c.tx)+Math.abs(pan.ty-c.ty)>10,'drag pans');
