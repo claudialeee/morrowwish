@@ -144,7 +144,7 @@ jobs:
                     const paths=names.map(name=>'canon22-final-art/'+name+'.webp').concat(['resonance-world-v2/atlas.webp','resonance-world-v2/harbor.webp','resonance-world-v2/harbor-mist.webp','resonance-world-v2/forge.webp','combat/harbor-arena.webp','combat/tide-shell-watercolor.webp','story-art/cloud-lookout.jpg','story-art/lantern-entrustment.jpg','story-art/library-shared-memories.jpg']);
                     return Promise.all(paths.map(async name=>{const im=new Image();im.src='assets/'+name;await im.decode();if(!im.naturalWidth||!im.naturalHeight)throw Error('Empty art '+name);return {name,w:im.naturalWidth,h:im.naturalHeight};}));
                   });
-                  if(art.length!==28)throw Error('Missing final watercolor assets');
+                  if(art.length!==31||new Set(art.map(a=>a.name)).size!==31)throw Error('Missing or duplicate final watercolor assets: '+art.length);
                   console.log('FINAL WATERcolors DECODED',JSON.stringify(art));
                 }
                 if(!await page.evaluate(()=>window.ARCADE_COLLECTOR==='/api/preview-disabled'&&window.__CAT_BOND_INTEGRATION_ART__===false))throw Error('Preview isolation / art approval marker mismatch');
