@@ -2287,3 +2287,33 @@ critiqueCount 29, 34 subagent retries capped (worst rate of 5 cycles). Core synt
 
 ### Workflow health
 critiqueCount 38, 19 subagent retries capped. Core synth intact; P0 count dropped 3→2 vs wm8tsdl5o (reasonable given telemetry fix will clean up future-cycle fabricated P0s).
+
+## Playtest cycle woxkxnyqr — 2026-11-27
+
+**Headline**: Combat math is largely sound after the recent P0 ramp fixes, but half the adversarial 'P0s' this cycle are harness telemetry lies, and the real pain is a feedback blackout — three of four player verbs silently reject, enemy hits are anonymous.
+
+**funMean 4.17** (same as wm8tsdl5o — wupz2ckhy's 4.50 was mid-swing):
+- 狂按 6 / 懒人 6 (+1) / 探索 6 (-1) / 没耐心 3 / 谨慎 **2** / 手忙 **2** (-2)
+- 谨慎 kiter 5 cycles locked at 2 — not noise anymore
+- 手忙 crashed 4→2 this cycle (potentially a true regression from last-fight sim state)
+
+### Auto-fixed P0 (1)
+
+- **P0-1/P0-3 Relax wrapCast caster predicate** `564729e7`: `args[0] === b.me()` was too strict; null-arg keyboard paths defaulted internally to `me()` but failed the wrapper gate. Masher now reports q=12/ult=2 (was 0/0); explorer dodge=13 (was 0). **Harness-only, local-numeric**. ALL 5 gates PASS.
+
+### P0 findings-only (1)
+
+- **Unified silent-cast-rejection channel** — new `_rejectInput(slot, reason, f)` helper + per-slot throttle toast + wire Q/E/dodge/ult blocked branches. Three of four player verbs silently return on cd/windup/channel gates with zero feedback. **additive-flag** on game-code — new field + helper + 4 call sites + i18n strings → findings-only.
+
+### Top P1 findings (22 — all findings-only)
+
+- Chip-floor symmetry — kill '-0' floater lie on player→wild hits via `scaled = Math.max(1, scaled)` — **local-numeric**
+- Auto-mode ult failsafe: let 9s idle backstop fire in auto mode — **local-numeric**
+- Per-target repeat-strike aesthetic (`e._repeatStrikes` fades color warm, glyph swap at 2/4/6) — **additive-flag**
+- comboMult ceiling 1.20→1.32 at chain 100 (reward sustained mashers) — **local-numeric**
+- Panicky aim-leniency (projectile late-life micro-homing) — findings-only (same as wupz2ckhy P0-2)
+
+### Auto-fixes this cycle: 1 (harness-only follow-up to e5d6c137 telemetry fix)
+
+### Workflow health
+critiqueCount 36, 23 subagent retries capped. Core synth intact. Explicit headline this cycle: "half the P0s are telemetry lies" — my own 2 cycles ago fix was over-tightened; relax landed this cycle.
