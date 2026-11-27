@@ -157,7 +157,7 @@ function install(){
   const r=b.regionalCombat,kit=r.kit,button=panel.querySelector("button");
   panel.querySelector("span").textContent=r.shadowLight?tr(["引剪影兽进入灯光再攻击","Draw the shadow beast into the light"]):b.libraryEncounter?.region==="library"?tr(["守档幻象 · 躲开成对镜影","Archive echo · evade paired reflections"]):tr(kit.name)+" · "+tr(kit.enemy);
   button.hidden=!r.supportAvailable;button.disabled=r.supportUsed||!r.cast;
-  button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?.region==="library"?tr(["Catdex · 核验回响","Catdex · verify echo"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Yuanfan · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Lingyu · Escort flight"]):tr(kit.support);
+  button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?.region==="library"?tr(["图鉴 · 核验回响","Catdex · verify echo"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Yuanfan · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Lingyu · Escort flight"]):tr(kit.support);
  }
  function useSupport(b){
   const r=b.regionalCombat;if(!r||!r.supportAvailable||r.supportUsed||!r.cast||b.done||cinematicActive(b))return false;

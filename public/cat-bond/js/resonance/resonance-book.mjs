@@ -156,12 +156,12 @@ function wishes(result=null){
  host.append(summary);
  const progress=node("progress","rb-health");progress.max=cap;progress.value=Math.min(cap,count);progress.setAttribute("aria-label",tr("祈愿保底进度","Wish guarantee progress"));host.append(progress);
  const odds=node("div","rb-inventory");for(const k of ["N","R","SR","SSR"]){const v=window.GameData.RARITY[k];odds.append(stat(k+" · "+tr(v.name,({N:"Common",R:"Rare",SR:"Epic",SSR:"Legendary"})[k]),v.weight+"%"))}
- host.append(node("h3","",tr("基础概率","Base odds")),odds,node("p","rb-rule",tr("连续39次未出现SR或SSR时，第40次至少为SR；保底时原N/R结果转为85% SR、15% SSR。每天UTC零点恢复一次免费祈愿，其后每次消耗5个游戏内小鱼干。无真钱消费。","After 39 wishes without SR or SSR, wish 40 guarantees SR or better; an N/R result at guarantee becomes 85% SR or 15% SSR. One free wish resets at 00:00 UTC; further wishes cost 5 in-game fish. No real money.")));
+ host.append(node("h3","",tr("基础概率","Base odds")),odds,node("p","rb-rule",tr("连续39次未出现SR或SSR时，第40次至少为SR；保底时原N/R结果转为85% SR、15% SSR。每天协调世界时零点恢复一次免费祈愿，其后每次消耗5个游戏内小鱼干。无真钱消费。","After 39 wishes without SR or SSR, wish 40 guarantees SR or better; an N/R result at guarantee becomes 85% SR or 15% SSR. One free wish resets at 00:00 UTC; further wishes cost 5 in-game fish. No real money.")));
  if(result?.ok){
   const card=node("article","rb-recipe"),art=node("canvas","rb-recovery-art");
   card.setAttribute("role","status");card.style.cssText="text-align:center;padding:16px;border:2px solid "+window.GameData.RARITY[result.sp.rarity].color+";border-radius:16px";
   art.width=180;art.height=160;art.style.cssText="display:block;margin:8px auto;max-width:100%;width:180px;height:160px";
-  card.append(node("h3","",result.sp.rarity+" · "+window.GameData.speciesName(result.sp)),art,node("strong","",result.reunion?tr("熟悉的朋友再次回应！","A familiar friend answered!"):tr("新的小伙伴加入花园！","A new companion joins your garden!")),node("p","",result.reunion?tr("好感 +10（上限100） · 金币 +","Affinity +10 (max 100) · Coins +")+result.bonus:tr("已收入猫咪名册和Catdex。","Added to your roster and Catdex.")));
+  card.append(node("h3","",result.sp.rarity+" · "+window.GameData.speciesName(result.sp)),art,node("strong","",result.reunion?tr("熟悉的朋友再次回应！","A familiar friend answered!"):tr("新的小伙伴加入花园！","A new companion joins your garden!")),node("p","",result.reunion?tr("好感 +10（上限100） · 金币 +","Affinity +10 (max 100) · Coins +")+result.bonus:tr("已收入猫咪名册和图鉴。","Added to your roster and Catdex.")));
   host.append(card);
   requestAnimationFrame(()=>{if(alive()&&art.isConnected){window.CatArt.renderCatThumb(art,result.sp,result.cat);if(!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches)art.animate?.([{opacity:0,transform:"scale(.8)"},{opacity:1,transform:"scale(1)"}],{duration:450,easing:"ease-out"});}});
  }
@@ -179,7 +179,7 @@ function records(){
  const s=state(),host=shell();host.setAttribute("translate","no");host.append(node("h2","",tr("冒险成就","Adventure records")));
  const rows=node("div","rb-inventory"),discovered=Object.values(s.dex||{}).filter(n=>n>0).length;
  for(const [zh,en,v] of [["发现品种","Breeds discovered",discovered+"/"+window.GameData.SPECIES.length],["金爪徽章","Golden Paw medals",Object.values(s.masteryBadges||{}).filter(Boolean).length],["捕捉次数","Captures",s.catchCount||0],["猫咪互动","Cat interactions",s.petCount||0],["恢复圣所","Restored sanctuaries",(s.resonance?.sanctuaries?.length||0)+"/6"],["旋律","Melodies",(s.resonance?.melodies?.length||0)+"/6"]])rows.append(stat(tr(zh,en),v));
- host.append(rows,node("p","",tr("品种与战斗评级奖励仍可在 Catdex 查看和领取。","Collection and battle-grade rewards remain available in Catdex.")),button(tr("查看 Catdex","Open Catdex"),()=>select("dex")));
+ host.append(rows,node("p","",tr("品种与战斗评级奖励仍可在图鉴查看和领取。","Collection and battle-grade rewards remain available in Catdex.")),button(tr("查看图鉴","Open Catdex"),()=>select("dex")));
  const keeps=earnedKeepsakes(s.resonanceExploration?.interactions),gardenNames={"ear-flower":["耳尖的小花","Little flower"],"golden-seed":["浅金色种子","Golden seed"],"fish-cake":["鱼饼","Fish cake"],"old-garden-postcard":["旧花园明信片","Old garden postcard"],"windblown-chart":["风中的航图","Windblown chart"],"revisit-qilan":["栖蓝的新航图","Qilan’s new route chart"],"revisit-yahe":["芽禾的月叶新芽","Yahe’s moonleaf sprout"],"revisit-xiaomao":["小铆的歪耳灯","Xiaomao’s crooked-ear lantern"]};
  const garden=(s.sunlitGarden?.exploration?.keepsakes||[]).map(id=>gardenNames[id]).filter(Boolean);
  const names=[...garden,...keeps.map(k=>k.name)];

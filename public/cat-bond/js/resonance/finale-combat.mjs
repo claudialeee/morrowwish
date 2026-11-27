@@ -200,7 +200,7 @@ function install(){
   if(!warning.hidden){const n=f.nodes[f.cast.node];warning.textContent=n?tr("铃声来袭：守护 ","Incoming pulse: protect ")+tr(...REGION_KITS[n.region].name):tr("中央回响：离开预警范围","Central echo: leave the marked area");}
   const clue=el.querySelector("[data-finale-clue]");
   clue.hidden=true;
-  clue.textContent=f.clueOpen?tr("收起 Catdex","Close Catdex"):tr("查看 Catdex 记录","Check Catdex record");
+  clue.textContent=f.clueOpen?tr("收起图鉴","Close Catdex"):tr("查看图鉴记录","Check Catdex record");
   clue.setAttribute("aria-expanded",String(f.clueOpen));
   const focus=el.querySelector("[data-finale-focus]");
   focus.hidden=!second||!f.probeChanged||b.autoMode;
@@ -214,7 +214,7 @@ function install(){
     const cat=echoes[0]?.echoCat;
     const area=group===0?tr("上方","Upper pair"):group===1?tr("中间","Middle pair"):tr("下方","Lower pair");
     if(group===2){const beats=echoes.map(e=>e.echoGap===null?"…":e.echoGap.toFixed(2)+(e.dexVerified?" ×":""));return area+" · "+tr("暮铃：第二次铃坠轻响应间隔 1.40 秒","Muling: the second pendant tap follows after 1.40s")+" · "+beats.join(" / ")+"s";}
-    if(!cat||!(window.State.S.dex?.[cat.species]>0))return area+" · "+tr("Catdex 暂无记录","No Catdex record");
+    if(!cat||!(window.State.S.dex?.[cat.species]>0))return area+" · "+tr("图鉴暂无记录","No Catdex record");
     const intervals=echoes.map(e=>e.echoGap===null?"…":e.echoGap.toFixed(2)+(e.dexVerified?" ×":""));
     return area+" · "+window.State.catName(cat)+" · "+tr("习惯 ","Habit ")+echoHabit(cat).toFixed(2)+"s · "+intervals.join(" / ")+"s";
    });

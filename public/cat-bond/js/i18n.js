@@ -1401,7 +1401,7 @@
     '技能训练师': 'Skill Trainer',
     '学习新技能': 'Learn new skills',
     '强力技能需要习得：付费学习、达到等级或亲密、成为特定品种，或完成领悟条件。':
-      'Powerful skills must be learned — pay a trainer, reach a level or affinity, match a breed, or fulfil a 领悟 condition.',
+      'Powerful skills are learned through training, levels, affection, breed traits, or mastery challenges.',
     '暂时没有可学习的技能。': 'No skills ready to learn right now.',
     '尚未满足条件': 'Still locked',
     '立即领悟': 'Learn now',
@@ -2216,7 +2216,7 @@
     "第四章 · 最后的守铃者": "CHAPTER IV · THE LAST BELLKEEPER",
     "第五章 · 逆响": "CHAPTER V · THE REVERSED BELL",
     "终章 · 最后一页": "FINAL CHAPTER · THE LAST PAGE",
-    "前往阳光花园，找到纸鸢，追查那本没有名字的 Catdex。": "Go to Sunlit Garden, find Kite, and investigate the nameless Catdex.",
+    "前往阳光花园，找到纸鸢，追查那本没有名字的图鉴。": "Go to Sunlit Garden, find Kite, and investigate the nameless Catdex.",
     "前往樱花林，找出被改写的旧约。": "Go to Sakura Woods and uncover who rewrote the old promise.",
     "前往溪谷，弄清你为何主动交出自己的名字。": "Go to Creek Valley and learn why you willingly gave your name away.",
     "前往火山口，找出烬禾隐瞒的灾变真相。": "Go to the Volcano and uncover the catastrophe Jinhe concealed.",
@@ -2274,14 +2274,15 @@
     return str.replace(/\bLv\.\s*(\d+)/g,'等级 $1')
       .replace(/\bAI\s*(?=策略|战斗|规则)/g,'智能')
       .replace(/\bHP\b/g,'生命值')
-      .replace(/\bXP\b/g,'经验');
+      .replace(/\bXP\b/g,'经验')
+      .replace(/\bCatdex\b/gi,'图鉴');
   }
 
   // Mode-aware translate: the public API + the canvas hook. In English mode it
   // converts ZH->EN; in Chinese mode it leaves text as-is.
   function translate(str) {
     if (typeof str !== 'string' || !str) return str;
-    if (lang() !== 'en') return str;
+    if (lang() !== 'en') return toChinese(str);
     return toEnglish(str);
   }
 

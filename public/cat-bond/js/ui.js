@@ -2167,7 +2167,7 @@ const UI = {
       : '';
     this.panel(`<span class="card-close">×</span>
       <h2>🎓 ${State.catName(cat)} · ${en?'Skill Trainer':'技能训练师'}</h2>
-      <p class="sub">${en?'Powerful skills must be learned — pay a trainer, reach a level or affinity, match a breed, or fulfil a 领悟 condition.':'强力技能需要习得：付费学习、达到等级或亲密、成为特定品种，或完成领悟条件。'}</p>
+      <p class="sub">${en?'Powerful skills are learned through training, levels, affection, breed traits, or mastery challenges.':'强力技能需要习得：付费学习、达到等级或亲密、成为特定品种，或完成领悟条件。'}</p>
       <div class="sk-list">${readyHtml}${lockedHtml}</div>
       <div class="btn-row"><button class="btn gold" id="tr-back">← ${en?'Back':'返回'}</button></div>`);
     document.querySelectorAll('#panel [data-learn]').forEach(b => b.onclick = () => {
