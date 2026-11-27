@@ -5,7 +5,7 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disab
 const liveOrigin='https://starbell-portrait-preview.morrowwish.pages.dev';
 const origin='http://127.0.0.1:8765';
 const version=await (await fetch(liveOrigin+'/preview-version.json?trailer='+Date.now())).json();
-if(version.sha!==process.env.TRAILER_GAME_SHA)throw Error('Live portrait source changed; refusing mismatched capture');
+if(version.sha!==process.env.TRAILER_GAME_SHA||version.sha==='b7195bb31d43450c33e2a1a985c40c8f121c6ffd')throw Error('Live portrait source changed; refusing mismatched capture');
 const evidence={origin:liveOrigin,captureOrigin:origin,source:version,script:process.env.GITHUB_SHA,clips:[],errors:[]};console.log('LIVE SOURCE',JSON.stringify(version));
 async function open(region){
  const ctx=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:2,isMobile:true,hasTouch:true,reducedMotion:'reduce'});
@@ -74,14 +74,14 @@ try{
  attempt('shadow','forge',async p=>{
   await click(p,'Help Xiaomao put on a show');
   const card=p.locator('.rw-festival-card');await card.waitFor({timeout:20000});
+  if(!(await card.locator('.rw-festival-title').innerText()).includes('Shadow Puppet Show'))throw Error('Old shadow-show UI detected');
+  evidence.shadowTitle=await card.locator('.rw-festival-title').innerText();
   await p.waitForFunction(()=>performance.getEntriesByType('resource').some(x=>x.name.includes('/mobile-portrait/lantern-shadow-square.webp')));
-  await record(p,'shadow',6,async()=>{
-    await card.getByRole('button',{name:'Fish',exact:true}).tap();
-    await p.waitForTimeout(1500);
+  await record(p,'shadow',9,async()=>{
     await card.getByRole('button',{name:'Butterfly',exact:true}).tap();
-    await p.waitForTimeout(1700);
+    await p.waitForTimeout(3900);
     await card.getByRole('button',{name:'Cat',exact:true}).tap();
-    await p.waitForTimeout(1000);
+    await p.waitForTimeout(3900);
     if(await card.getByRole('button',{name:'Cat',exact:true}).getAttribute('aria-pressed')!=='true')throw Error('Cat shadow selection not reflected');
   });
  }),
