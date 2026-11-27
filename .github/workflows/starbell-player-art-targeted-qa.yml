@@ -1,0 +1,77 @@
+name: Starbell golden protagonist targeted browser QA
+on:
+  push:
+    branches: [review/starbell-player-art-browser-qa]
+permissions:
+  contents: read
+jobs:
+  art:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock playwright@1.57.0
+      - run: npx playwright install --with-deps chromium
+      - name: Only protagonist opening, movement and character detail
+        run: |
+          mkdir -p artifacts/player-art
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-art-server.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          cat > player-art-qa.mjs <<'JS'
+          import {chromium} from 'playwright';
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs/promises';
+          const browser=await chromium.launch();
+          const origin='http://127.0.0.1:8765';
+          const results=[];
+          try {
+            for(const [name,viewport,mobile] of [['desktop',{width:1440,height:900},false],['mobile',{width:390,height:844},true]]) {
+              const ctx=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,deviceScaleFactor:mobile?3:1});
+              await ctx.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===origin||['data:','blob:'].includes(u.protocol)?route.continue():route.abort()});
+              const page=await ctx.newPage();
+              const errors=[];page.on('pageerror',e=>errors.push(e.message));
+              try {
+                await page.goto(origin+'/cat-bond/?lang=en&rpgDev=1');
+                await page.waitForFunction(()=>window.__CAT_BOND_READY__);
+                const art=await page.evaluate(async()=>{const im=new Image();im.src='/cat-bond/assets/core-art-remaster/leads/player.webp';await im.decode();const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.drawImage(im,0,0);const p=g.getImageData(0,0,c.width,c.height).data;let l=c.width,r=-1,t=c.height,b=-1;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++)if(p[(y*c.width+x)*4+3]>32){l=Math.min(l,x);r=Math.max(r,x);t=Math.min(t,y);b=Math.max(b,y)}return {width:c.width,height:c.height,bounds:[l,t,r,b]};});
+                assert.deepEqual([art.width,art.height],[1080,1444]);assert(art.bounds[3]<art.height-1,'Source art touches bottom edge');
+                await page.locator('#intro-start').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+                await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-05');
+                await page.locator('#cb-player-first-intro').getByRole('button',{name:'Start exploring',exact:true}).click();
+                await page.waitForFunction(()=>__game.scene==='yard');
+                await page.evaluate(()=>{window.__artMotion=[];const draw=CatMotion.draw;CatMotion.draw=function(ctx,x,y,o){if(o.species?.id==='jinjc'){window.__artMotion.push({pose:o.pose,x,y,w:ctx.canvas.width,h:ctx.canvas.height});if(window.__artMotion.length>300)window.__artMotion.shift();}return draw.call(this,ctx,x,y,o);};});
+                await page.screenshot({path:'artifacts/player-art/'+name+'-garden.png'});
+                await page.locator('.sg-prologue-guide').getByRole('button',{name:/Next scene/}).click();
+                await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01'&&__game.scene==='map');
+                const surface=page.locator('.rw-surface');
+                await surface.waitFor({state:'visible'});
+                await page.waitForFunction(()=>__artMotion.some(s=>s.pose==='idle'));
+                await page.screenshot({path:'artifacts/player-art/'+name+'-idle.png'});
+                await page.evaluate(()=>{window.__artMotion=[];});
+                if(mobile){const box=await surface.boundingBox();await page.touchscreen.tap(box.x+box.width*.63,box.y+box.height*.66);}
+                else {await surface.focus();await page.keyboard.press('ArrowRight');}
+                await page.waitForFunction(()=>__artMotion.some(s=>s.pose==='walk'),null,{timeout:5000});
+                await page.screenshot({path:'artifacts/player-art/'+name+'-movement.png'});
+                await page.evaluate(()=>UI.openCatDetail(State.S.cats.find(c=>c.species==='jinjc')));
+                await page.locator('#panel.open').waitFor({state:'visible'});
+                await page.screenshot({path:'artifacts/player-art/'+name+'-character.png'});
+                assert.deepEqual(errors,[]);
+                results.push({name,art,pass:true});
+              } catch(e){await page.screenshot({path:'artifacts/player-art/'+name+'-failure.png'}).catch(()=>{});results.push({name,error:String(e),errors});}
+              finally {await ctx.close();}
+            }
+          } finally {await browser.close();await fs.writeFile('artifacts/player-art/report.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results));}
+          assert(results.length===2&&results.every(x=>x.pass),'Targeted browser QA failed');
+          JS
+          node player-art-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-player-art-desktop-mobile
+          path: |
+            artifacts/player-art
+            /tmp/starbell-art-server.log
+          retention-days: 7
