@@ -1,0 +1,35 @@
+name: Cat Bond latest real-input release capture
+on:
+  push:
+    branches: [review/cat-bond-release-bundle-20261127]
+    paths: ['.github/workflows/release-capture.yml', 'capture-ci.mjs']
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Build candidate ZIP
+        run: python3 export-platform.py gamepix
+      - name: Record normal speed real-input gameplay
+        id: record
+        continue-on-error: true
+        run: node capture-ci.mjs
+      - name: Save evidence and candidate files to isolated branch
+        if: always()
+        run: |
+          git config user.name 'Morrow Wish release QA'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          find output -name '*.webm' -size +90M -delete
+          git add -f output/real-capture-report.json output/raw output/media output/cat-bond-gamepix-candidate.zip output/gamepix-build-report.json || true
+          git diff --cached --quiet || git commit -m 'Record latest Cat Bond release candidates and evidence [skip ci]'
+          git push origin HEAD:review/cat-bond-release-bundle-20261127
+      - name: Require completed capture
+        if: steps.record.outcome != 'success'
+        run: exit 1
