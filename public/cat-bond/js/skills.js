@@ -412,7 +412,15 @@
       sk.desc=sk.name+'：'+Math.round(w.reduction*100)+'%减伤，持续'+w.duration+'秒'+
         (w.retaliateBurn?'；近身受击灼烧攻击者':w.regenPct?'；护盾期间缓慢恢复生命':'')+'。';
     }
-    else if (arch === 'heal') { sk.tags = ['heal']; }
+    else if (arch === 'heal') {
+      sk.tags = ['heal'];
+      // Owner 2026-11-27 '两个舔伤口和舔毛重复了': tanks already have lickWound
+      // (neutral-element self-heal, role:['tank']). Generic per-element heal
+      // (gen_fire_heal '暖阳舔毛' etc.) should NOT also offer itself to tanks, or
+      // the loadout picker shows two self-heals side by side. Non-tank roles still
+      // get the element-flavored heal gap-filler.
+      sk.allowRoles = ['fighter','dps','assassin','control','support'];
+    }
     else { sk.tags = [kit.tag]; sk.appliesTag = kit.tag; }
     // carry the element micro-tweaks forward so battle.js can read them if it wants
     Object.assign(sk, tw);
