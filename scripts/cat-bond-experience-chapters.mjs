@@ -252,6 +252,7 @@ async function run(chapter){
  const low='Dew · Low',mid='Starlight · Middle',high='Flower bell · High';
  async function flyWaterfall(label){
   await click(label);const status=page.locator('[data-sky-flight-status][data-route="open"]');await status.waitFor();await checkPuzzleLayout();
+  if(portrait){const original=page.viewportSize();for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){await page.setViewportSize(viewport);await page.waitForFunction(()=>{const w=document.querySelector('.rw-world'),s=w?.querySelector('.rw-surface'),r=w?.querySelector('.rw-dedicated-rail');if(!s||!r)return false;const a=s.getBoundingClientRect(),b=r.getBoundingClientRect(),c=w.getBoundingClientRect(),buttons=[...r.querySelectorAll('.rw-active-flight>button')].slice(0,3).map(e=>e.getBoundingClientRect());return a.width>=c.width-2&&a.height>=c.height*.5&&a.bottom<=b.top+1&&b.height<=200&&buttons.length===3&&buttons.every(x=>x.height>=44&&x.width>=44&&Math.abs(x.top-buttons[0].top)<2&&x.bottom<=b.bottom+1);});await shot('flight-compact-'+viewport.width);}await page.setViewportSize(original);}
   const box=await page.locator('.rw-surface').boundingBox();assert.ok(box,"flight surface");
   await tapAt(box.x+box.width*.35,box.y+box.height*.30);
   // Route is continuous, not a three-gate sequence. Read only visual progress via
