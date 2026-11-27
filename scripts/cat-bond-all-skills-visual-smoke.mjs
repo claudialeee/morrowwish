@@ -82,7 +82,7 @@ try{
           throw Error('Melee must use exactly one short brush stroke '+id);
         if(b.skillStrokes.some(stroke=>stroke.kind==='clawSlash'||
           stroke.kind==='signatureCast'))throw Error('Duplicate melee cast layers '+id);
-        if(!b.skillStrokes.some(stroke=>stroke.kind==='signatureHit'&&stroke.skillId===id))
+        if(!b.vfx.fx.some(effect=>effect.type==='contact'&&effect.skillId===id&&effect.life>0&&Math.hypot(effect.x-target.x,effect.y-target.y)<target.r+12))
           throw Error('Melee contact did not spawn its own skill accent '+id);
         // Sample mid-sweep; the first frame correctly contains no teleporting
         // fully painted slash, and the last frame is almost transparent.
@@ -98,9 +98,9 @@ try{
       const isMirror=id==='mirrorWall';
       if(isMirror)f.reflectT=3;
       const original=CatBondSkillFX.draw,originalWard=window.CatBondWardArt?.draw;
-      let drawn=0,wardDrawn=0;
+      let drawn=0,wardDrawn=0,meleeContactDrawn=0;
       CatBondSkillFX.draw=function(ctx,s,time){
-        if(s?.skillId===id)drawn++;
+        if(s?.skillId===id){drawn++;if(s.kind==='signatureHit')meleeContactDrawn++;}
         return original.apply(this,arguments);
       };
       if(isMirror&&originalWard)CatBondWardArt.draw=function(ctx,unit,...args){
@@ -113,6 +113,8 @@ try{
       }
       if(isMirror){
         if(wardDrawn<2||!f.reflectT)throw Error('Physical mirror wall not in real battle '+id+': '+wardDrawn);
+      }else if(melee&&meleeContactDrawn!==1){
+        throw Error('Expected exactly one authored melee contact draw '+id+': '+meleeContactDrawn);
       }else if(drawn<(support||melee?1:2)){
         throw Error('Signature not in actual battle '+id+': '+drawn);
       }
