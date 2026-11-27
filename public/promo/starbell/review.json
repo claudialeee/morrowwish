@@ -1,11 +1,11 @@
 {
   "slug": "starbell",
-  "video": "/promo/starbell/story-trailer-en-v7-46055654472.mp4",
-  "poster": "/promo/starbell/story-trailer-en-v7-46055654472.jpg",
-  "duration": 42,
-  "version": "V7",
-  "createdAt": "2026-11-27T19:35:20.810Z",
-  "updatedAt": "2026-11-27T19:35:20.810Z",
+  "video": "/promo/starbell/story-trailer-en-v9-46073562456.mp4",
+  "poster": "/promo/starbell/story-trailer-en-v9-46073562456.jpg",
+  "duration": 29,
+  "version": "V9",
+  "createdAt": "2026-11-27T22:02:00.389Z",
+  "updatedAt": "2026-11-27T22:02:00.389Z",
   "source": {
     "sha": "3106a71570bcb2d4c22c255ed4ed9501702024f5",
     "scope": "unified development candidate; isolated real browser capture",
@@ -15,7 +15,6 @@
   },
   "sourceByClip": {
     "explore": "3106a71570bcb2d4c22c255ed4ed9501702024f5",
-    "shadow": "3106a71570bcb2d4c22c255ed4ed9501702024f5",
     "battle": "3106a71570bcb2d4c22c255ed4ed9501702024f5"
   },
   "music": {
@@ -26,7 +25,7 @@
     "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
     "edited": true
   },
-  "renderRun": 46055654472,
+  "renderRun": 46073562456,
   "approved": false,
   "published": false,
   "shots": [
@@ -37,21 +36,21 @@
       "transitionOut": 0.5
     },
     {
+      "scene": "secret",
+      "seconds": 5,
+      "clearSeconds": 4,
+      "transitionOut": 0.5
+    },
+    {
       "scene": "explore",
       "seconds": 4,
       "clearSeconds": 3,
       "transitionOut": 0.5
     },
     {
-      "scene": "library",
-      "seconds": 2.5,
-      "clearSeconds": 1.5,
-      "transitionOut": 0.5
-    },
-    {
       "scene": "melody",
-      "seconds": 4.5,
-      "clearSeconds": 3.5,
+      "seconds": 3.5,
+      "clearSeconds": 2.5,
       "transitionOut": 0.5
     },
     {
@@ -61,27 +60,9 @@
       "transitionOut": 0.5
     },
     {
-      "scene": "starfall",
-      "seconds": 3,
-      "clearSeconds": 2,
-      "transitionOut": 0.5
-    },
-    {
-      "scene": "shadow",
-      "seconds": 8,
-      "clearSeconds": 7,
-      "transitionOut": 0.5
-    },
-    {
       "scene": "battle",
       "seconds": 6,
       "clearSeconds": 5,
-      "transitionOut": 0.5
-    },
-    {
-      "scene": "secret",
-      "seconds": 5,
-      "clearSeconds": 4,
       "transitionOut": 0.5
     },
     {
@@ -92,5 +73,17 @@
     }
   ],
   "readingWpm": 150,
-  "transitionCount": 9
+  "transitionCount": 6,
+  "secondHookAt": 4,
+  "framing": "native portrait full-bleed; no inset maps or mixed aspect ratios",
+  "audioEnvelope": {
+    "sourceStartSeconds": 0,
+    "duration": 29,
+    "fadeInSeconds": 1.4,
+    "gainRampEndsAt": 19,
+    "fadeOutSeconds": 2.5,
+    "openingRms": 117.82,
+    "battleRms": 1464,
+    "battleLiftDb": 21.82
+  }
 }

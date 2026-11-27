@@ -44,7 +44,7 @@ footer{max-width:1260px;margin:auto;padding:2px 22px 32px;font-size:12px;color:#
 <script>
 const names={'starbell':'星铃回响 · 英文剧情预告','cat-bond':'猫猫纽带','pawsibly-innocent':'猫猫捣蛋','tiny-town':'自由小镇','elsewhere':'平行人生','flip-dash':'Flip Dash','parcel-panic':'快递大作战','pocket-aquarium':'口袋水族馆'};
 const highlights={
- 'starbell':[['hook','开场'],['melody','神秘旋律'],['friends','伙伴'],['shadow','千灯城皮影表演'],['battle','战斗'],['secret','故事悬念']],
+ 'starbell':[['hook','云海开场'],['secret','故事悬念'],['explore','眠根林探索'],['melody','神秘旋律'],['friends','伙伴'],['battle','双猫合击'],['end','试玩邀请']],
  'cat-bond':[['cat-upgrade','一键升级'],['duo-partners','双猫搭档'],['duo-map-walk','前往双猫约定'],['duo-promise','地图双猫约定'],['duo-quarrel','小猫闹别扭'],['duo-reconcile','哄好和解'],['work-after','猫咪打工'],['tease','逗猫'],['map-explore','探索地图'],['map-management','地图养成'],['battle-hud','血条与技能栏'],['battle-skills','技能实战'],['duo','新版双猫合击'],['rare-capture','收服稀有猫'],['ssr-showcase','SSR传说猫']],
  'pawsibly-innocent':[['escape-attempt','客厅偷鱼'],['narrow-pursuit','险些被抓'],['narrow-achievement','侥幸逃脱成就'],['room-kitchen','厨房'],['room-laundry','洗衣房'],['room-library','图书馆'],['room-garden','花园'],['caught-attempt','被抓住']],
  'tiny-town':[['opening-three-choices','开场三个选择'],['board','小镇棋盘'],['resident-profile','居民喜好'],['combination','组合碰撞'],['neighbor-story','居民故事'],['legendary','传奇建筑'],['ending','小镇结局']],
@@ -75,7 +75,7 @@ async function refresh(){
    const article=document.createElement('article'),heading=document.createElement('h2'),
      video=document.createElement('video'),nav=document.createElement('div'),a=document.createElement('a'),note=document.createElement('small');
    heading.textContent=names[entry.slug]+(entry.paused?' · 暂停制作（保留上一版）':'');video.controls=true;video.playsInline=true;video.preload='metadata';
-   const cacheToken=encodeURIComponent(entry.createdAt||entry.createdAt||entry.createdAt||entry.createdAt||entry.createdAt||data.createdAt||data.latestVersion||'latest');
+   const cacheToken=encodeURIComponent(entry.createdAt||entry.createdAt||entry.createdAt||entry.createdAt||entry.createdAt||entry.createdAt||data.createdAt||data.latestVersion||'latest');
    video.src=entry.video+'?revision='+cacheToken;
    if(entry.poster&&entry.poster.startsWith('/promo/'))video.poster=entry.poster+'?revision='+cacheToken;
    const times={};let offset=0;
