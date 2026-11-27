@@ -258,12 +258,27 @@
     "crazygames-canonical": true,
     "itch-public": true
   },
-  "visualReviewPending": true,
+  "visualReviewPending": false,
   "sdkGate": {
     "y8": "actual App ID unavailable",
     "gamedistribution": "actual game ID unavailable"
   },
   "portalSaved": false,
   "reviewSubmitted": false,
-  "knownVisualIssue": "Native portrait region exploration has a blank lower area; omitted from public portrait preview. Landscape exploration remains genuine."
+  "knownVisualIssue": "Native portrait region exploration has a blank lower area; omitted from public portrait preview. Landscape exploration remains genuine.",
+  "visualReview": {
+    "reviewedContactSheets": [
+      "final-cover-review.jpg",
+      "final-platform-screens.jpg",
+      "final-landscape-frames.jpg",
+      "final-portrait-frames.jpg"
+    ],
+    "decision": "Accepted for existing-record draft preparation; portal preview and SDK gates remain open.",
+    "limitations": [
+      "GamePix exact ZIP portrait screenshot shows genuine top/bottom page margins; not cropped, stretched or presented as full-bleed.",
+      "Portrait exploration has excess blank lower area and is omitted from portrait preview. Landscape exploration has a thin blank edge from actual game layout.",
+      "Only earned common-cat captures shown; no SSR capture claimed or simulated.",
+      "Gameplay previews contain genuine UI panels rather than full-cinematic duo animation; do not present cover artwork as live gameplay."
+    ]
+  }
 }
