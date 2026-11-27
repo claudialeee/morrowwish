@@ -1,0 +1,23 @@
+name: Starbell portrait source gate
+on:
+  push:
+    branches: [review/starbell-mobile-portrait]
+    paths:
+      - 'scripts/check-source.mjs'
+      - '.github/workflows/starbell-portrait-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: starbell-portrait-source-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run check

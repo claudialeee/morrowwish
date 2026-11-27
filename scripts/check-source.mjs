@@ -5,7 +5,7 @@ for (const file of [
   'public/elsewhere/app.js','public/telemetry.js','public/lang.js',
   'public/zh-site.js','public/zh-stories.js','public/zh-polish.js',
   'public/studio-insights/index.html','public/art/morrowwish-mark.svg','public/pawsibly-innocent/index.html','public/pawsibly-innocent/game.js','public/icons/pawsibly-innocent.svg',
-  'public/cat-bond/index.html','public/cat-bond/js/i18n.js','public/cat-bond/js/game.js','public/cat-bond/js/sunlit-garden.js','public/cat-bond/assets/sunlit-garden-cinematic.svg','public/cat-bond/assets/sunlit-garden-portrait.svg','scripts/sunlit-garden-visual-qa.mjs','.github/workflows/sunlit-garden-visual-qa.yml','public/icons/cat-bond.svg','public/art/cat-bond-scene.svg',
+  'public/cat-bond/index.html','public/cat-bond/js/i18n.js','public/cat-bond/js/game.js','public/cat-bond/js/sunlit-garden.js','public/cat-bond/assets/garden/sunlit-garden-landscape.webp','public/cat-bond/assets/garden/sunlit-garden-portrait.webp','scripts/sunlit-garden-visual-qa.mjs','.github/workflows/sunlit-garden-visual-qa.yml','public/icons/cat-bond.svg','public/art/cat-bond-scene.svg',
   'src/worker.js','src/analytics.js','cloudflare-pages/wrangler.jsonc'
 ]) if (!fs.existsSync(file)) throw new Error('Missing required file: '+file);
 
