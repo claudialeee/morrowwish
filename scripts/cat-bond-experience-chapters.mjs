@@ -20,6 +20,7 @@ const labels=Object.freeze({
   "Storm boat": "遇险小船",
   "Lighthouse mirrors": "灯塔反射镜",
   "Chase the runaway chime": "穿过风铃巷",
+  "Take shortcut": "抄近路",
   "Belllight beast": "铃光兽",
   "Town bell sanctuary": "古铃圣所",
   "Coming Home": "归家调",
@@ -157,7 +158,7 @@ async function run(chapter){
    const hidden=page.getByRole('button',{name:label,exact:true,includeHidden:true}).or(page.locator('button').and(page.getByText(label,{exact:true})));
    await hidden.first().waitFor({state:'attached'});
    if(!await b.isVisible()&&await page.locator('.rw-region-toggle[aria-expanded="false"],.rw-atlas-menu:not([open]) > summary').count()){
-    await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();
+    const t=page.locator('.rw-region-toggle[aria-expanded="false"]:visible,.rw-atlas-menu:not([open]) > summary:visible').first();if(await t.count())await t.click();else{await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();}
    }
    const optional=page.locator('.rw-optional-actions:not([open]) > summary:visible');
    if(!await b.isVisible()&&await optional.count())await optional.first().click();
