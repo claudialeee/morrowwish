@@ -1,13 +1,13 @@
 {
   "slug": "starbell",
-  "video": "/promo/starbell/story-trailer-en-v4-45963748496.mp4",
-  "poster": "/promo/starbell/story-trailer-en-v4-45963748496.jpg",
-  "duration": 36,
-  "version": "V4",
-  "createdAt": "2026-11-27T08:14:36.402Z",
-  "updatedAt": "2026-11-27T08:14:36.402Z",
+  "video": "/promo/starbell/story-trailer-en-v5-45966047185.mp4",
+  "poster": "/promo/starbell/story-trailer-en-v5-45966047185.jpg",
+  "duration": 42,
+  "version": "V5",
+  "createdAt": "2026-11-27T08:34:44.933Z",
+  "updatedAt": "2026-11-27T08:34:44.933Z",
   "source": {
-    "sha": "b7195bb31d43450c33e2a1a985c40c8f121c6ffd",
+    "sha": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
     "scope": "isolated portrait engineering preview",
     "productionApis": false,
     "telemetry": false,
@@ -24,49 +24,71 @@
     "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
     "edited": true
   },
-  "renderRun": 45963748496,
+  "renderRun": 45966047185,
   "approved": false,
   "published": false,
   "shots": [
     {
       "scene": "hook",
-      "seconds": 3
+      "seconds": 4.5,
+      "clearSeconds": 4,
+      "transitionOut": 0.5
     },
     {
       "scene": "garden",
-      "seconds": 3
+      "seconds": 4,
+      "clearSeconds": 3,
+      "transitionOut": 0.5
     },
     {
       "scene": "sky",
-      "seconds": 1
+      "seconds": 2.5,
+      "clearSeconds": 1.5,
+      "transitionOut": 0.5
     },
     {
       "scene": "melody",
-      "seconds": 4
+      "seconds": 4.5,
+      "clearSeconds": 3.5,
+      "transitionOut": 0.5
     },
     {
       "scene": "friends",
-      "seconds": 3
+      "seconds": 4.5,
+      "clearSeconds": 3.5,
+      "transitionOut": 0.5
     },
     {
       "scene": "forest",
-      "seconds": 3
+      "seconds": 3,
+      "clearSeconds": 2,
+      "transitionOut": 0.5
     },
     {
       "scene": "shadow",
-      "seconds": 5
+      "seconds": 8,
+      "clearSeconds": 7,
+      "transitionOut": 0.5
     },
     {
       "scene": "battle",
-      "seconds": 6
+      "seconds": 6,
+      "clearSeconds": 5,
+      "transitionOut": 0.5
     },
     {
       "scene": "secret",
-      "seconds": 3
+      "seconds": 5,
+      "clearSeconds": 4,
+      "transitionOut": 0.5
     },
     {
       "scene": "end",
-      "seconds": 5
+      "seconds": 4.5,
+      "clearSeconds": 4,
+      "transitionOut": 0
     }
-  ]
+  ],
+  "readingWpm": 150,
+  "transitionCount": 9
 }
