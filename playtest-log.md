@@ -2375,3 +2375,23 @@ Rationale: the single adversary-confirmed P0 (kiter idle-decay) is additive-flag
 
 ### Workflow health
 critiqueCount 41, 21 subagent retries capped. Core synth intact; 狂按 7 new session-high confirms formula refactor + basic-time-scalar + ternary-timeout + Phase 2+3 refactor are landing on their target persona.
+
+## Playtest cycle w06q78tip — 2026-11-27 (post Phase 4 code-split + tank+wall)
+
+**Headline**: Strong anti-kite/anti-stall plumbing but zero player-side comeback verbs and invisible ramps — fights read flat and bimodal.
+
+**funMean 4.33**:
+- 狂按型 6 / 探索型 6 / 懒人型 5 / 手忙脚乱 4 / 没耐心 3 / 谨慎 **2**
+
+### Auto-fixes this cycle: 0 (no adversary P0)
+
+30 critiques. 22 P1 (3 local-numeric, 19 additive-flag), 8 P2. All findings-only.
+
+### Top P1 findings
+- Mid-fight _staggered exposure (t>25s + enemy>80% hp + playerDmg<15% → hitbox ×1.5, dmg-taken ×1.8, move ×0.5 for 8s)
+- Clutch window (first player hpFrac<0.30 → incoming ×0.5 for 1.4s, one-shot per fight)
+- Per-pack archetype (rush/turtle/burst) — encounter-shape variance w/o touching player systems
+- Ult primed window (0.8s) before auto-cast fires — gives masher last-chance manual grab
+
+### 谨慎 kiter 回到 2
+tank body-block (c078cb38) 没救 kiter — kiter persona 根本不打，没触发 tank 身体挡的路径。kiter 的锁-2 结构性问题需要独立处理（adversary 一直说"idle-decay HP window"，但 additive-flag）。
