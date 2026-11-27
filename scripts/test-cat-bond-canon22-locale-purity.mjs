@@ -36,6 +36,8 @@ vm.runInContext(fs.readFileSync('public/cat-bond/js/i18n.js','utf8'),context);
 const i18n=context.window.CatBondI18n;
 assert.equal(i18n.toChinese('Catdex · 核验回响'),'图鉴 · 核验回响');
 assert.equal(i18n.toEnglish('图鉴'),'Catdex');
+assert.equal(i18n.toEnglish('关闭'),'Close');
+assert.equal(i18n.toEnglish('关闭面板'),'Close panel');
 assert.equal(localeLeak('查看 Catdex 记录','zh'),true);
 assert.equal(localeLeak('Catdex · 核验回响','en'),true);
 assert.equal(localeLeak('Collect cats','zh'),true);

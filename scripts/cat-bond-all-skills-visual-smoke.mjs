@@ -102,7 +102,8 @@ try{
         b.meleeStrike(f,0,sk,24,'#e6b7fa');
         const blades=b.vfx.fx.filter(effect=>effect.type==='slash');
         if(!(target.hp<before))throw Error('Real melee contact did not land '+id);
-        if(blades.length!==1||blades[0].radius>60||blades[0].max>.27)
+        // Heavy strikes intentionally have a 0.34s weighted follow-through; regular strikes 0.26s.
+        if(blades.length!==1||blades[0].radius>60||blades[0].heavy!==!!sk.heavy||Math.abs(blades[0].max-(sk.heavy?.34:.26))>1e-6)
           throw Error('Melee must use exactly one short brush stroke '+id);
         if(b.skillStrokes.some(stroke=>stroke.kind==='clawSlash'||
           stroke.kind==='signatureCast'))throw Error('Duplicate melee cast layers '+id);

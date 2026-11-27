@@ -381,6 +381,7 @@
     '关闭面板 / Close panel': 'Close panel',
     '关闭面板': 'Close panel',
     '关闭 / Close': 'Close',
+    '关闭': 'Close',
     '页面导航': 'Page navigation',
     '← 返回上一页': '← Back',
     '返回上一页': 'Back',
