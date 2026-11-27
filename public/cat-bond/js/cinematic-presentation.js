@@ -181,7 +181,7 @@
       this.root.classList.add('cbcp-root');
       this.root.hidden = true;
       this.root.innerHTML = `
-        <div class="cbcp-shell" role="dialog" aria-modal="true" aria-label="Cat Bond cinematic">
+        <div class="cbcp-shell" role="dialog" aria-modal="true" aria-label="">
           <div class="cbcp-stage">
             <div class="cbcp-art-stack"></div>
             <canvas class="cbcp-fx" aria-hidden="true"></canvas><div class="cbcp-vignette"></div>
@@ -471,6 +471,7 @@
     updateControls() {
       const lang = this.currentLanguage();
       if (!this.nodes) return;
+      this.root.querySelector('.cbcp-shell')?.setAttribute('aria-label',lang==='zh'?'剧情动画':'Story cinematic');
       this.root.dataset.openingFlow=String(!!this.scene?.openingFlow);
       this.nodes.language.hidden=!!this.scene?.openingFlow;
       this.nodes.language.textContent = lang === 'zh' ? 'EN' : '中文';
