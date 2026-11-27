@@ -75,7 +75,7 @@ jobs:
           fi
           # Opening dialogue and Harbor portrait plates affect no other chapters.
           baseline=4d09ad3c8468cb3a4a5bdc4b6d26cf400d7765ab
-          if git cat-file -e "$baseline^{commit}" && git merge-base --is-ancestor "$baseline" HEAD && ! git diff --name-only "$baseline" HEAD | grep -Ev '^(public/cat-bond/(css/rpg-portrait\.css|index\.html|js/resonance/(npc-world|world-runtime|sky-flight|integration-entry|canon22-spatial|world-mechanisms|library-mechanisms)\.mjs)|scripts/(cat-bond-release-prologue-qa|cat-bond-experience-chapters|starbell-unified-layout-regression)\.mjs|\.github/workflows/starbell-unified-layout\.yml)$'; then
+          if git cat-file -e "$baseline^{commit}" && git merge-base --is-ancestor "$baseline" HEAD && ! git diff --name-only "$baseline" HEAD | grep -Ev '^(public/cat-bond/(css/rpg-portrait\.css|index\.html|js/resonance/(npc-world|world-runtime|sky-flight|integration-entry|canon22-spatial|world-mechanisms|library-mechanisms|world-exploration|world-bridge)\.mjs)|scripts/(cat-bond-release-prologue-qa|cat-bond-experience-chapters|starbell-unified-layout-regression|cat-bond-canon22-migration-audit)\.mjs|\.github/workflows/starbell-unified-layout\.yml)$'; then
             if [[ "$CAT_BOND_CHAPTERS" != "finale" && "$CAT_BOND_CHAPTERS" != "epilogue" ]]; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
             exit 0
           fi

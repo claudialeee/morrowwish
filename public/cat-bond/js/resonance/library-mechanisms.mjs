@@ -3,17 +3,16 @@
 import {newMirror,advanceMirror,mirrorStagePose} from "./canon22-mirror.mjs";
 import {visibleBounds} from "./canon22-art.mjs";
 export const libraryPoints=Object.freeze({
- "explore:sealed-archive":[.17,.73,"公共记忆镜廊","Public memory gallery"],
- "puzzle:library-reflections":[.29,.60,"一层 · 镜光回廊","Ground floor · Reflection gallery"],
- "puzzle:mirror-records":[.51,.48,"二层 · 封存壁画","Upper floor · Sealed mural"],
+
+
  "puzzle:library-echo":[.67,.40,"镜中的两只暮铃","Two Mulings in the mirror"],
- "battle:library-echo":[.76,.40,"镜影 · 守档幻象","Archive echo · Guardian illusion"],
+
  "explore:routing-record":[.82,.36,"公开记录 · 调查","Public records · Investigation"],
  "puzzle:two-route-model":[.82,.36,"六地桌上模型 · 验证两条路线","Six-region model · Compare the two routes"],
  "repair:library":[.89,.29,"月镜圣所","Moonmirror sanctuary"],
  "melody:library":[.89,.29,"照影调","Reflections"]
 });
-export const libraryOrder=["puzzle:library-reflections","puzzle:mirror-records","puzzle:library-echo","battle:library-echo"];
+export const libraryOrder=["puzzle:library-echo"];
 export const libraryInvitations={moye:[.22,.60],baikan:[.46,.58]};
 export function libraryBlocked(op,objective,view){if(op==="explore:sealed-archive"&&objective.includes("npc:archive-dispute"))return true;if(op==="puzzle:two-route-model"&&objective.includes("npc:two-routes"))return true;if(["repair:library","melody:library"].includes(op)&&(objective.includes("puzzle:library-echo")||(op==="melody:library"&&objective.includes("repair:library"))))return true;const i=libraryOrder.indexOf(op);return i>0&&libraryOrder.slice(0,i).some(k=>objective.includes(k))}
 export function catdexRecord(root){
@@ -25,7 +24,7 @@ export function catdexRecord(root){
  return {uid:cat.uid,species:cat.species,name:cat.nickname||cat.name||cat.species,habit,trait:h.slice(1),wins,correct:(Math.round(habit*100)+String(cat.species).length)%3};
 }
 export function libraryPuzzle(op,record){
- const types={"explore:sealed-archive":"librarySeal","puzzle:library-reflections":"libraryMirrors","puzzle:mirror-records":"libraryMural","puzzle:library-echo":"libraryEcho","explore:routing-record":"libraryLedger","repair:library":"libraryRestore","puzzle:two-route-model":"libraryRoutes"};
+ const types={"puzzle:library-echo":"libraryEcho","explore:routing-record":"libraryLedger","repair:library":"libraryRestore","puzzle:two-route-model":"libraryRoutes"};
  if(op==="puzzle:library-echo")return {type:"libraryCompanion",operation:op,values:[],goal:[],record:null,mirror:newMirror(record?.uid),mistakes:0,solved:false};
  const type=types[op];if(!type)return null;
  const goals={librarySeal:[0,2,1],libraryMirrors:[1,3,2],libraryMural:[2,0,1],libraryEcho:[record?.correct??1],libraryLedger:[0],libraryRestore:[1,0,2],libraryRoutes:[0,1,2]};

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
+import {layouts,createPuzzle,puzzleSpecs} from '../public/cat-bond/js/resonance/world-exploration.mjs';
+import {libraryPoints} from '../public/cat-bond/js/resonance/library-mechanisms.mjs';
 const spec=fs.readFileSync(new URL('../docs/cat-bond-rpg/02-MAIN-STORY-SCRIPT.md',import.meta.url),'utf8');
 assert.match(spec,/Canon 2\.2/);
 const ids=[...spec.matchAll(/^###\s+([a-z]+:[A-Z]-\d\d)\b/gm)].map(x=>x[1]);
@@ -9,6 +11,7 @@ assert.deepEqual(campaign.scenes.map(s=>s.id),ids,'Identity alignment is not gam
 // Legacy IDs reused for new actions (flight-recorder, broken-pendant, distributed-routing,
  // NPC meeting IDs) are NOT retired operations. Their runtime is checked by browser tests.
 const retiredIds=new Set(['explore:tide-logbook','puzzle:beam-mirrors','rescue:storm-boat','explore:scent-trail','puzzle:paired-water-gates','rescue:steady-channel','explore:water-marks','battle:root-echo','rescue:trapped-cats','puzzle:festival-lantern','puzzle:safety-blueprint','puzzle:heat-pressure','battle:forge-guardian','explore:letter-recipient','explore:sealed-archive','puzzle:mirror-records','puzzle:caravan-route','battle:observatory-echo']);
+for(const op of ["explore:tide-logbook","puzzle:beam-mirrors","rescue:storm-boat","explore:scent-trail","puzzle:paired-water-gates","rescue:steady-channel","explore:water-marks","battle:root-echo","rescue:trapped-cats","puzzle:festival-lantern","puzzle:safety-blueprint","puzzle:heat-pressure","battle:forge-guardian","explore:letter-recipient","explore:sealed-archive","puzzle:mirror-records","puzzle:caravan-route","battle:observatory-echo","puzzle:library-reflections","battle:library-echo","puzzle:echo-navigation","puzzle:star-map","explore:crater-fragment","explore:ruin-fragment"]){assert.ok(!Object.values(layouts).some(l=>Object.hasOwn(l.features,op)),op+' retired map entry');assert.ok(!Object.hasOwn(puzzleSpecs,op),op+' retired spec');assert.ok(!Object.hasOwn(libraryPoints,op),op+' retired library entry');assert.ok(!createPuzzle(op),op+' retired constructor');}
 const stale=campaign.scenes.flatMap(s=>s.requires.filter(op=>retiredIds.has(op)).map(op=>({scene:s.id,op})));
 assert.deepEqual(stale,[],'Retired required operations must never return to Canon 2.2');
 const names=[{actor:'jiedeng',expected:'檐灯',actual:campaign.cast.jiedeng.name.zh}].filter(x=>x.expected!==x.actual);
