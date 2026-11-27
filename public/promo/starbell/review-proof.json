@@ -15,369 +15,6 @@
     "script": "7f6942feeba8265376df33718d880e8c1b23bc2b",
     "clips": [
       {
-        "id": "garden",
-        "seconds": 5,
-        "frames": 91,
-        "rect": null,
-        "observations": [
-          {
-            "t": 0.144,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 0.24,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 0.311,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 0.412,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 0.54,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 0.674,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 0.726,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 0.812,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 0.958,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 1.038,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 1.152,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 1.235,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 1.339,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 1.416,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 1.535,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 1.643,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 1.761,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 1.853,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 1.934,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 2.039,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 2.159,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 2.238,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 2.375,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 2.439,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 2.512,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 2.67,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 2.722,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 2.841,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 2.94,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 3.067,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 3.142,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 3.287,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 3.433,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 3.435,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 3.515,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 3.627,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 3.717,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 3.814,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 3.914,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 4.014,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 4.124,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 4.331,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 4.447,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 4.499,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 4.595,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 4.741,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 4.78,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 4.88,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 4.978,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          },
-          {
-            "t": 5.136,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp"
-            ]
-          }
-        ],
-        "scene": {
-          "scene": "yard",
-          "region": "garden",
-          "story": "prologue:P-05"
-        }
-      },
-      {
         "id": "shadow",
         "seconds": 9,
         "frames": 181,
@@ -4858,10 +4495,482 @@
           "region": "harbor",
           "story": "harbor:H-04"
         }
+      },
+      {
+        "id": "explore",
+        "seconds": 5,
+        "frames": 167,
+        "rect": null,
+        "observations": [
+          {
+            "t": 0.13,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 0.248,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 0.317,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 0.417,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 0.527,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 0.612,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 0.73,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 0.816,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 0.907,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 1.052,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 1.109,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 1.222,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 1.34,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 1.424,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 1.533,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 1.619,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 1.731,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 1.878,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 1.932,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 2.027,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 2.128,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 2.234,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 2.31,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 2.419,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 2.525,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 2.687,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 2.75,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 2.836,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 2.927,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 3.038,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 3.123,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 3.244,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 3.327,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 3.487,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 3.541,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 3.627,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 3.748,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 3.844,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 3.953,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 4.043,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 4.142,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 4.229,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 4.358,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 4.455,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 4.546,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 4.644,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 4.754,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 4.856,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 4.945,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          },
+          {
+            "t": 5.043,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
+            ]
+          }
+        ],
+        "scene": {
+          "scene": "map",
+          "region": "forest",
+          "story": "forest:R-01"
+        }
       }
     ],
     "errors": [],
-    "shadowTitle": "The First Shadow Puppet Show"
+    "shadowTitle": "The First Shadow Puppet Show",
+    "sourceByClip": {
+      "shadow": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
+      "battle": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
+      "explore": "be928fe708a0d0974b158bb153cd0a5d25a80e1d"
+    },
+    "forestMovement": {
+      "before": "null",
+      "after": "{\"x\":0.26865384615384624,\"y\":0.7713461538461538}"
+    }
   },
   "shots": [
     {
@@ -4874,13 +4983,14 @@
       "words": 7
     },
     {
-      "id": "garden",
+      "id": "explore",
       "seconds": 4,
       "live": true,
       "caption": "A world you’ve never seen.",
       "clearSeconds": 3,
       "transitionOut": 0.5,
-      "words": 5
+      "words": 5,
+      "source": "be928fe708a0d0974b158bb153cd0a5d25a80e1d"
     },
     {
       "id": "sky",
@@ -4977,8 +5087,8 @@
     "format_long_name": "QuickTime / MOV",
     "start_time": "0.000000",
     "duration": "42.000000",
-    "size": "25508141",
-    "bit_rate": "4858693",
+    "size": "24666859",
+    "bit_rate": "4698449",
     "probe_score": 100,
     "tags": {
       "major_brand": "isom",
@@ -4986,5 +5096,7 @@
       "compatible_brands": "isomiso2avc1mp41",
       "encoder": "Lavf60.16.100"
     }
-  }
+  },
+  "edit": "Only courtyard shot replaced; preserved V5 approved shadow, battle, score and reading schedule",
+  "priorRender": 45966047185
 }
