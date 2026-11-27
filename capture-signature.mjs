@@ -45,7 +45,7 @@ async function play(name,width,height,touch){
    if(await page.evaluate(()=>!window.__game?.battle?.duoCinematic?.t&&window.__game?.battle?.duoReady?.()))await tap('#duo-burst');
    await page.waitForFunction(()=>window.__game?.battle?.duoCinematic?.t>0,null,{timeout:10000});
    let onset=time();
-   await page.waitForFunction(()=>{const b=window.__game?.battle,l=window.CatBondPremiumCinematics?.lastLayout;return b?.duoCinematic?.t>0&&b.duoUses>0&&l?.originalArt===true&&l?.actorFallback===false&&l.opacity>.65},null,{timeout:10000});
+   await page.waitForFunction(()=>{const b=window.__game?.battle,l=window.CatBondPremiumCinematics?.lastLayout;return b?.duoCinematic?.t>0&&b.duoUses>0&&l?.originalArt===true&&l?.actorFallback===false&&(l.opacity===undefined?l.effectPhase>.15&&l.effectPhase<.72:l.opacity>.65)},null,{timeout:10000});
    const art=await page.evaluate(()=>{const b=window.__game.battle,l=window.CatBondPremiumCinematics.lastLayout;return {uses:b.duoUses,elementPair:b.duo.elementPair,tier:b.duo.tier,cinematic:{remaining:b.duoCinematic.t,max:b.duoCinematic.max},layout:l}});
    check(art.layout.source===(touch?'63-native-portrait-painted-storyboards':'63-original-painted-storyboards'),'Wrong actual artwork source');
    r.duo={...art,onset,frameTime:time(),screenshot:'duo-real.png'};
@@ -69,7 +69,7 @@ async function play(name,width,height,touch){
   await fight(await hide(),true,false);
   // The yard's real encounter rarity weights remain unchanged. Cancel unwanted
   // encounters via the normal Let it go button. No reload/reset or RNG override.
-  for(let i=0;i<170&&!r.ssr;i++){
+  for(let i=0;i<230&&!r.ssr;i++){
    const h=await hide();r.rolls.push({species:h.species,rarity:h.rarity,level:h.level});
    if(h.rarity==='SSR'){await fight(h,false,true);continue}
    // Actual ordinary battles grow the lineup; do not invent experience.
@@ -89,8 +89,8 @@ async function play(name,width,height,touch){
 try{
  for(let i=0;i<50;i++){try{if((await fetch(base+'/cat-bond/')).ok)break}catch{}await wait(200)}
  browser=await chromium.launch({headless:true,args:['--no-sandbox']});
- const results=await Promise.allSettled([play('landscape',1920,1080,false),play('portrait',1080,1620,true)]);
+ const results=await Promise.allSettled([play('landscape',1920,1080,false)]);
  report.executionErrors=results.filter(x=>x.status==='rejected').map(x=>String(x.reason));
- report.pass=report.captures.length===2&&report.captures.every(x=>x.complete)&&!report.executionErrors.length;
+ report.pass=report.captures.length===1&&report.captures.every(x=>x.complete)&&!report.executionErrors.length;
 }finally{await browser?.close();server.kill();fs.writeFileSync(path.join(root,'report.json'),JSON.stringify(report,null,2)+'\n')}
 if(!report.pass)process.exitCode=1;

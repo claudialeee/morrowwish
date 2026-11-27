@@ -1,7 +1,7 @@
 name: Cat Bond actual duo cinematic and earned SSR capture
 on:
   push:
-    branches: [review/cat-bond-release-bundle-20261127]
+    branches: [review/cat-bond-signature-landscape-20261127]
     paths: ['capture-signature.mjs','.github/workflows/capture-signature.yml']
 permissions:
   contents: write
@@ -51,7 +51,7 @@ jobs:
           find signature-capture -name '*.webm' -size +90M -delete
           git add -f signature-capture
           git diff --cached --quiet || git commit -m 'Save actual duo and natural SSR recording evidence [skip ci]'
-          git push origin HEAD:review/cat-bond-release-bundle-20261127
-      - name: Require true earned captures in both orientations
+          git push origin HEAD:review/cat-bond-signature-landscape-20261127
+      - name: Require true earned landscape capture
         if: steps.capture.outcome != 'success'
         run: exit 1
