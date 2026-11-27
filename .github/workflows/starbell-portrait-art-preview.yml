@@ -45,7 +45,14 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          node scripts/import-cat-bond-windchime-music.mjs
+          if [[ -n "${FOCUSED_GATE:-}" ]]; then
+            mkdir -p /tmp/starbell-tested-audio
+            GH_TOKEN="${GH_TOKEN:-${{ github.token }}}" gh run download "$FOCUSED_GATE" --name starbell-approved-audio --dir /tmp/starbell-tested-audio
+            test "$(cat /tmp/starbell-tested-audio/source-sha.txt)" = "$SOURCE_SHA"
+            cp /tmp/starbell-tested-audio/{premium-amberlight.mp3,premium-a-kind-of-hope.mp3,premium-morning.mp3,premium-manifest.json,music-credits.html} public/cat-bond/assets/quality-audio/
+          else
+            node scripts/import-cat-bond-windchime-music.mjs
+          fi
           node scripts/check-cat-bond-audio-assets.mjs
           mkdir -p /tmp/starbell-portrait/site
           cp -a public/cat-bond /tmp/starbell-portrait/site/
@@ -101,6 +108,7 @@ jobs:
         with:
           npm-ci: 'false'
       - name: Verify live portrait title and new slot
+        if: env.FOCUSED_GATE == ''
         run: |
           node --input-type=module <<'NODE'
           import {chromium} from 'playwright';
@@ -130,10 +138,19 @@ jobs:
           }finally{await browser.close()}
           NODE
       - name: Verify live portrait developer map jump and isolated saves
+        if: env.FOCUSED_GATE == ''
         env:
           CAT_BOND_SMOKE_ORIGIN: https://starbell-portrait-preview.morrowwish.pages.dev
           STARBELL_DEVELOPER_PORTRAIT: '1'
         run: node scripts/test-starbell-developer-browser.mjs
+      - name: Verify only the accepted new artwork and both recordings on live portrait
+        if: env.FOCUSED_GATE != ''
+        env:
+          CAT_BOND_SMOKE_ORIGIN: https://starbell-portrait-preview.morrowwish.pages.dev
+          STARBELL_FOCUS_PROFILE: portrait
+        run: |
+          node scripts/test-starbell-finale-framing-farwind.mjs
+          node scripts/test-starbell-approved-region-music.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

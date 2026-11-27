@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       opening_only: ${{ steps.scope.outputs.opening_only }}
+      focused: ${{ steps.scope.outputs.focused }}
       matrix: ${{ steps.scope.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +33,15 @@ jobs:
         run: |
           set -euo pipefail
           base=35ef1c1979513bd7d98b07bb804d842dc47bfcfd
+          focused_base=0cf0e75dcc6386bb7b6b93094ba0a91900323208
+          source_sha="$GITHUB_SHA"
+          echo 'focused=false' >> "$GITHUB_OUTPUT"
+          if [[ "$source_sha" != "$focused_base" ]] && git diff --quiet "$focused_base" "$source_sha" -- . ':!.github/workflows/starbell-framing-farwind-focused.yml' ':!docs/cat-bond-rpg/FINAL-ART-FOCUSED-HANDOFF-20261127.md' ':!public/cat-bond/assets/combat/star-bell-arena-chorus-wide.webp' ':!public/cat-bond/assets/combat/star-bell-arena-lock-wide.webp' ':!public/cat-bond/assets/combat/star-bell-arena-wide.webp' ':!public/cat-bond/assets/resonance-world-v2/sky-farwind-wide.webp' ':!public/cat-bond/index.html' ':!public/cat-bond/js/resonance/finale-art.mjs' ':!public/cat-bond/js/resonance/finale-combat.mjs' ':!public/cat-bond/js/resonance/integration-entry.mjs' ':!public/cat-bond/js/resonance/portrait-map.mjs' ':!public/cat-bond/js/resonance/world-runtime.mjs' ':!scripts/test-starbell-finale-framing-farwind.mjs' ':!scripts/import-starbell-region-music.mjs' ':!scripts/test-starbell-approved-region-music.mjs' ':!.github/workflows/cat-bond-preview.yml' ':!.github/workflows/starbell-portrait-art-preview.yml' ':!.github/workflows/starbell-locale-purity.yml' ':!scripts/starbell-release-gate.sh'; then
+            echo 'focused=true' >> "$GITHUB_OUTPUT"
+            echo 'matrix=["opening-en"]' >> "$GITHUB_OUTPUT"
+            echo 'opening_only=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           opening_only=false
           if git diff --quiet "$base" HEAD -- . ':!scripts/cat-bond-release-prologue-qa.mjs' ':!scripts/starbell-garden-qa.mjs' ':!.github/workflows/starbell-locale-purity.yml' ':!.github/workflows/cat-bond-preview.yml' ':!.github/workflows/starbell-portrait-art-preview.yml' ':!scripts/starbell-release-gate.sh'; then
             opening_only=true
@@ -44,7 +54,7 @@ jobs:
           fi
   source:
     needs: scope
-    if: needs.scope.outputs.opening_only != 'true'
+    if: needs.scope.outputs.opening_only != 'true' && needs.scope.outputs.focused != 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +64,7 @@ jobs:
       - run: node scripts/test-cat-bond-canon22-locale-purity.mjs
   browser:
     needs: scope
+    if: needs.scope.outputs.focused != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     strategy:

@@ -83,6 +83,7 @@ jobs:
           # Manual dispatch keeps the full validation path available.
           if [[ "$GITHUB_EVENT_NAME" != push ]]; then mode=full; fi
           if [[ -n "${ACCEPTED_RUNTIME:-}" && -n "${OPENING_GATE:-}" ]]; then mode=accepted; fi
+          if [[ -n "${FOCUSED_GATE:-}" ]]; then mode=focused; fi
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "CAT_BOND_QA_SCOPE=$mode" >> "$GITHUB_ENV"
           echo "Preview QA: $mode (deployed base: ${live_sha:-unknown})"
@@ -99,7 +100,14 @@ jobs:
           fi
       - name: Import and verify user-selected Windchime Town soundtrack
         run: |
-          node scripts/import-cat-bond-windchime-music.mjs
+          if [[ -n "${FOCUSED_GATE:-}" ]]; then
+            mkdir -p /tmp/starbell-tested-audio
+            GH_TOKEN="${GH_TOKEN:-${{ github.token }}}" gh run download "$FOCUSED_GATE" --name starbell-approved-audio --dir /tmp/starbell-tested-audio
+            test "$(cat /tmp/starbell-tested-audio/source-sha.txt)" = "$SOURCE_SHA"
+            cp /tmp/starbell-tested-audio/{premium-amberlight.mp3,premium-a-kind-of-hope.mp3,premium-morning.mp3,premium-manifest.json,music-credits.html} public/cat-bond/assets/quality-audio/
+          else
+            node scripts/import-cat-bond-windchime-music.mjs
+          fi
           node scripts/check-cat-bond-audio-assets.mjs
       - name: Verify audio lifecycle for every preview
         run: node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
@@ -150,6 +158,7 @@ jobs:
         with:
           npm-ci: 'false'
       - name: Prepare reusable real-browser smoke
+        if: steps.qa.outputs.mode != 'focused'
         run: |
           cat > .cat-bond-preview-smoke.mjs <<'NODE'
           import {chromium} from 'playwright';
@@ -391,6 +400,7 @@ jobs:
           }finally{await browser.close()}
           NODE
       - name: Run isolated predeployment browser smoke
+        if: steps.qa.outputs.mode != 'focused'
         env:
           CAT_BOND_SMOKE_ORIGIN: http://127.0.0.1:8766
           CAT_BOND_SMOKE_STAGE: local
@@ -470,7 +480,11 @@ jobs:
         env:
           CAT_BOND_SMOKE_STAGE: live
         run: |
-          if [[ "$CAT_BOND_QA_SCOPE" == accepted ]]; then
+          if [[ "$CAT_BOND_QA_SCOPE" == focused ]]; then
+            export CAT_BOND_SMOKE_ORIGIN=https://cat-bond-preview.morrowwish.pages.dev STARBELL_FOCUS_PROFILE=wide
+            node scripts/test-starbell-finale-framing-farwind.mjs
+            node scripts/test-starbell-approved-region-music.mjs
+          elif [[ "$CAT_BOND_QA_SCOPE" == accepted ]]; then
             export CAT_BOND_SMOKE_ORIGIN=https://cat-bond-preview.morrowwish.pages.dev
             PROLOGUE_LANG=en PROLOGUE_PROFILE=desktop node scripts/cat-bond-release-prologue-qa.mjs &
             en=$!

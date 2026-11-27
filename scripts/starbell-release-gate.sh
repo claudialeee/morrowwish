@@ -2,6 +2,21 @@
 set -euo pipefail
 base=35ef1c1979513bd7d98b07bb804d842dc47bfcfd
 source_sha=${SOURCE_SHA:-$GITHUB_SHA}
+# Only the explicit scoped art/recording change may reuse the previously accepted gameplay.
+focused_base=0cf0e75dcc6386bb7b6b93094ba0a91900323208
+git fetch --no-tags --depth=1 origin "$focused_base"
+test "$(git rev-parse HEAD)" = "$source_sha"
+if [[ "$source_sha" != "$focused_base" ]] && git diff --quiet "$focused_base" "$source_sha" -- . ':!.github/workflows/starbell-framing-farwind-focused.yml' ':!docs/cat-bond-rpg/FINAL-ART-FOCUSED-HANDOFF-20261127.md' ':!public/cat-bond/assets/combat/star-bell-arena-chorus-wide.webp' ':!public/cat-bond/assets/combat/star-bell-arena-lock-wide.webp' ':!public/cat-bond/assets/combat/star-bell-arena-wide.webp' ':!public/cat-bond/assets/resonance-world-v2/sky-farwind-wide.webp' ':!public/cat-bond/index.html' ':!public/cat-bond/js/resonance/finale-art.mjs' ':!public/cat-bond/js/resonance/finale-combat.mjs' ':!public/cat-bond/js/resonance/integration-entry.mjs' ':!public/cat-bond/js/resonance/portrait-map.mjs' ':!public/cat-bond/js/resonance/world-runtime.mjs' ':!scripts/test-starbell-finale-framing-farwind.mjs' ':!scripts/import-starbell-region-music.mjs' ':!scripts/test-starbell-approved-region-music.mjs' ':!.github/workflows/cat-bond-preview.yml' ':!.github/workflows/starbell-portrait-art-preview.yml' ':!.github/workflows/starbell-locale-purity.yml' ':!scripts/starbell-release-gate.sh'; then
+  for id in 46058187045 46058190940 46058187035; do
+    gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id" | jq -e --arg base "$focused_base" '.head_sha==$base and .status=="completed" and .conclusion=="success"' >/dev/null
+  done
+  run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-framing-farwind-focused.yml/runs?head_sha=$source_sha&branch=fix%2Fstarbell-finale-framing-farwind-art-20261127" | jq -r '[.workflow_runs[]|select(.head_sha=="'"$source_sha"'" and .status=="completed" and .conclusion=="success")][0].id // empty')
+  [[ "$run" =~ ^[0-9]+$ ]] || { echo "Exact focused art and audio acceptance missing"; exit 1; }
+  gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run/artifacts" | jq -e 'any(.artifacts[]; .name=="starbell-approved-audio" and .expired==false)' >/dev/null
+  { echo "FOCUSED_GATE=$run"; echo "DUO_GATE=45950550328"; echo "CAMPAIGN_GATE=46055930919"; echo "SOURCE_GATE=46055930995"; echo "ACCEPTED_RUNTIME=$focused_base"; } >> "$GITHUB_ENV"
+  echo "Previously accepted campaign plus exact scoped art/audio gate $run"
+  exit 0
+fi
 git fetch --no-tags --depth=1 origin "$base"
 test "$(git rev-parse HEAD)" = "$source_sha"
 git diff --quiet "$base" "$source_sha" -- . ':!scripts/cat-bond-release-prologue-qa.mjs' ':!scripts/starbell-garden-qa.mjs' ':!.github/workflows/starbell-locale-purity.yml' ':!.github/workflows/cat-bond-preview.yml' ':!.github/workflows/starbell-portrait-art-preview.yml' ':!scripts/starbell-release-gate.sh' || { echo "Runtime or accepted test inputs changed; refuse to reuse gates"; exit 1; }

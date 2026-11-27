@@ -30,7 +30,7 @@ for(const path of paths){
 const browser=await chromium.launch({headless:true});
 try{
  await mkdir('artifacts/starbell-framing',{recursive:true});
- for(const [name,options] of [['wide',{viewport:{width:1280,height:800}}],['portrait',{viewport:{width:390,height:844},isMobile:true,hasTouch:true}]]){
+ for(const [name,options] of [['wide',{viewport:{width:1280,height:800}}],['portrait',{viewport:{width:390,height:844},isMobile:true,hasTouch:true}]].filter(([p])=>!process.env.STARBELL_FOCUS_PROFILE||p===process.env.STARBELL_FOCUS_PROFILE)){
   const ctx=await browser.newContext(options),page=await ctx.newPage();
   await page.goto(origin+'/cat-bond/?developer=1&qa=framing&region=finale&reset=1&lang=en');
   await page.waitForFunction(()=>window.__game?.scene==='map'&&window.WorldMap?.currentRegion==='finale'&&document.querySelector('.rw-surface')?.dataset.camera==='[1,0,0]'&&document.querySelector('[data-art-ready=true]'));
