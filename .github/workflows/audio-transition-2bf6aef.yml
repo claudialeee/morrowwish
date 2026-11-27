@@ -1,0 +1,104 @@
+name: Audio-only title to garden transition acceptance
+on:
+  push:
+    branches: [ops/final-acceptance-f4704fa]
+    paths: ['.github/workflows/audio-transition-2bf6aef.yml']
+permissions:
+  contents: read
+jobs:
+  audio:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 2bf6aef51ca53494309d76cad1beb5bff7ee5f06
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Verify exact audio candidate and existing transition and settings controls
+        run: |
+          set -eu
+          test "$(git rev-parse HEAD)" = "2bf6aef51ca53494309d76cad1beb5bff7ee5f06"
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/cb-audio-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          cat > .audio-transition-check.mjs <<'NODE'
+          import assert from 'node:assert/strict';
+          import {chromium} from 'playwright';
+          import fs from 'node:fs/promises';
+          const browser=await chromium.launch({headless:true});
+          const url='http://127.0.0.1:8765/cat-bond/';
+          const profiles=[{name:'desktop',viewport:{width:1440,height:900}},{name:'portrait',viewport:{width:390,height:844},hasTouch:true},{name:'landscape',viewport:{width:844,height:390},hasTouch:true}];
+          const output=[];
+          const origin=new URL(url).origin;
+          const isolate=context=>context.route('**/*',r=>{const u=new URL(r.request().url());return u.origin===origin||['data:','blob:'].includes(u.protocol)?r.continue():r.abort()});
+          try{
+           for(const profile of profiles){
+            const {name,...opts}=profile,context=await browser.newContext(opts),page=await context.newPage(),errors=[];
+            await isolate(context);
+            page.on('pageerror',e=>errors.push(e.message));
+            await page.goto(url+'?lang=en');
+            await page.waitForFunction(()=>window.MorrowwishMusic&&window.CatBondOriginalScore&&window.__CAT_BOND_READY__);
+            await page.locator('#cb-system-toggle').click();
+            const waitTrack=id=>page.waitForFunction(id=>{const s=MorrowwishMusic.status();return s.track===id&&s.playing&&s.currentTime>.05},id,{timeout:90000});
+            await waitTrack('title');
+            const title=await page.evaluate(()=>MorrowwishMusic.status());
+            // Exercise the visible title menu before opening the save picker (which hides the menu).
+            const menu=page.locator('#cb-system-menu');
+            await menu.locator('[data-system="page-settings"]').click();
+            await menu.locator('[data-audio-volume="music"]').fill('37');
+            await menu.locator('[data-audio-volume="effects"]').fill('42');
+            await page.waitForFunction(()=>MorrowwishMusic.status().volume===.37&&MorrowwishMusic.status().effectsVolume===.42&&MorrowwishAudio.status().volume===.42);
+            await menu.locator('[data-system="effects"]').click();
+            await page.waitForFunction(()=>MorrowwishAudio.status().enabled===false&&MorrowwishMusic.status().playing===true);
+            await menu.locator('[data-system="effects"]').click();
+            await page.waitForFunction(()=>MorrowwishAudio.status().enabled===true);
+            await menu.locator('[data-system="music"]').click();
+            await page.waitForFunction(()=>!MorrowwishMusic.status().playing&&MorrowwishAudio.status().enabled);
+            await menu.locator('[data-system="music"]').click();
+            await waitTrack('title');
+            await menu.locator('[data-system="close"]').click();
+            const manifest=await page.evaluate(()=>fetch('assets/quality-audio/premium-manifest.json',{cache:'no-cache'}).then(r=>r.json()));
+            assert.equal(title.source,'premium-mp3:'+(manifest.scenes.title==='tomorrow'?'childhood':manifest.scenes.title),'must use a calm title recording, never Tomorrow');
+            await page.locator('#intro-start').click();
+            await page.locator('#intro-slot-list [data-slot="slot1"]').click();
+            await page.locator('#cb-player-first-intro').waitFor({state:'visible'});await waitTrack('opening');assert.equal(await page.evaluate(()=>MorrowwishMusic.status().source),'premium-mp3:'+manifest.scenes.opening);
+            await page.locator('#cb-player-first-intro').getByRole('button',{name:'Start exploring',exact:true}).click();
+            await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-05'&&__game.scene==='yard');
+            await waitTrack('garden');
+            assert.deepEqual(await page.evaluate(()=>State.S.resonance.completed.slice(0,4)),['prologue:P-01','prologue:P-02','prologue:P-03','prologue:P-04']);
+            await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="page-settings"]').click();
+            await page.locator('#cb-system-menu [data-system="music"]').click();await page.waitForFunction(()=>!MorrowwishMusic.status().playing);
+            await page.locator('#cb-system-menu [data-system="music"]').click();await waitTrack('garden');
+            await page.locator('#cb-system-menu [data-system="page-back"]').click();await page.locator('#cb-system-menu [data-system="close"]').click();
+            await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="page-settings"]').click();
+            await page.locator('#cb-system-menu [data-system="music"]').click();await page.locator('#cb-system-menu [data-system="close"]').click();
+            await page.waitForFunction(()=>!MorrowwishMusic.status().playing);
+            await page.reload();
+            await page.waitForFunction(()=>window.MorrowwishMusic&&window.__CAT_BOND_READY__);
+            const settings=await page.evaluate(()=>MorrowwishMusic.status());
+            assert.equal(settings.enabled,false);assert.equal(settings.volume,.37);assert.equal(settings.effectsVolume,.42);
+            await page.locator('#cb-system-toggle').click();
+            await page.locator('#cb-system-menu [data-system="page-settings"]').click();
+            assert.equal(await page.locator('[data-audio-volume="music"]').inputValue(),'37');
+            assert.equal(await page.locator('[data-audio-volume="effects"]').inputValue(),'42');
+            await page.locator('#cb-system-menu [data-system="close"]').click();
+            assert.deepEqual(errors,[]);output.push({profile:name,title,settings,opening:'player-first context and garden music',musicToggleResume:true,actualMenuControls:true,errors});
+            await context.close();
+           }
+           await fs.mkdir('artifacts/cat-bond-audio',{recursive:true});await fs.writeFile('artifacts/cat-bond-audio/title-transition-results.json',JSON.stringify(output,null,2));console.log('TITLE TRANSITIONS PASS',JSON.stringify(output));
+          }finally{await browser.close();}
+          NODE
+          node .audio-transition-check.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audio-transition-2bf6aef
+          path: artifacts/cat-bond-audio/
+          if-no-files-found: warn
+          retention-days: 7
