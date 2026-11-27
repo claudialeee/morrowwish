@@ -6143,24 +6143,46 @@ class CaptureBattle {
     // (now tuned to 1.2-1.5) and effectiveness (up to 2x) from COMPOUNDING into 3-5x
     // spikes — a 1.5 reaction on a 2x-effective hit is 2.5x, not 3.0x. Reductions
     // (combo<1 "steam/douse", elem<1 resist) subtract their shortfall the same way.
+    // Owner 2026-11-26 formula refactor (consensus of 3 round-1 agents + round-2
+    // adversarial amendments). Prior formula folded elemMult INTO the additive react
+    // bucket so a 2× matchup read as "big combo"; both consumes:false (bloom/steam)
+    // AND consumes:true (shatter/chainAll/explode) combos lived in the same additive
+    // bucket. New layering:
+    //
+    //   1. elemMult → UNIVERSAL multiplicative (0.5-2.0 always applies, NEVER in bucket)
+    //   2. soft bucket (additive, capped +0.50)  ← consumes:false combos (bloom/burn|fire)
+    //                                               AND negative-mult combos (steam/douse,
+    //                                               bonusMult<1) stay here so counter-element
+    //                                               setups don't double-penalize (adversary
+    //                                               FAIL-2 warning)
+    //   3. critComboMult → MULTIPLICATIVE (consumes:true combos with bonusMult≥1 only)
+    //                                               — big one-shot reactions (shatter/chainAll/
+    //                                               explode) that pay a tag cost deserve to
+    //                                               compound with matchup
+    //   4. bucket floor +0.25 preserves the 0.25× reduction floor from the old design
+    //
+    // Net math for common cases (verified by TTK sim agent): Case A clean hit 0% delta,
+    // Case B bloom +0% delta, Case C stagger+execute+consume-combo +8.2% (within ±10%).
     const combo = Skills.checkCombo ? Skills.checkCombo(e.tags, skill) : null;
     const elem = this.elemMult(skill.element, e.sp.id);
-    let bonus = 0;                                   // sum of (factor-1) contributions
-    if (combo) bonus += (combo.bonusMult || 1) - 1;
-    bonus += elem - 1;
-    // Owner 2026-11-26: remove the hidden conductive (+0.20 for elec on soak) —
-    // it duplicated the soak|elec combo table entry (chainAll ×1.5) and added a
-    // non-consuming layer that wasn't in the combo language. Soak+elec interaction
-    // is now expressed EXCLUSIVELY through the combo table.
-    const reactMulFloor = Math.max(0.25, 1 + bonus);
-    dmg *= reactMulFloor;
+    const comboBonusMult = combo ? (combo.bonusMult || 1) : 1;
+    // Classify: additive soft (consumes:false OR bonusMult<1) vs multiplicative crit.
+    const comboIsCrit = !!(combo && combo.consumes && comboBonusMult >= 1);
+    let softBucket = 0;
+    if (combo && !comboIsCrit) softBucket += comboBonusMult - 1;   // bloom + steam + douse
+    const critComboMult = comboIsCrit ? comboBonusMult : 1;
+    // Clamp the soft bucket so stacked DoT amps can't run away. Floor 0.25 so a steam
+    // reduction + any other negative source never drives dealt to zero (adversary
+    // amendment #4). The elem matchup multiplies OUTSIDE the bucket.
+    const softMul = Math.max(0.25, 1 + Math.min(0.50, Math.max(-0.75, softBucket)));
+    dmg *= elem * softMul * critComboMult;
     if (this._debug) {
       this._dbgApplyBreakdown = {
-        comboBonus: combo ? ((combo.bonusMult||1)-1) : 0,
+        comboBonus: combo ? (comboBonusMult - 1) : 0,
         comboEffect: combo?.effect || null, comboConsumes: !!combo?.consumes,
+        comboIsCrit, critComboMult,
         elemMul: elem,
-        conductive: 0, bonusSum: bonus,
-        reactMulFloor,
+        conductive: 0, softBucket, softMul,
         tags: (e.tags||[]).slice(),
         statusActive: Object.keys(e.status||{}).filter(k=>e.status[k]>0),
       };
