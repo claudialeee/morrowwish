@@ -190,7 +190,11 @@ function runBattle(env, persona, rng){
     const orig = b[name].bind(b);
     b[name] = (...args) => {
       const r = orig(...args);
-      if (r !== false && args[0] === b.me()) m.skillsUsed[slot]++;
+      // Playtest cycle woxkxnyqr P0: prior wrapCast predicate `args[0] === b.me()` was too strict —
+      // several keyboard-call paths invoke b.skillQ() / b.ultimate() with no first-arg (which the
+      // function then internally defaults to b.me()). Null-check first so those count too.
+      const caster = (args[0] == null) ? b.me() : args[0];
+      if (r !== false && caster === b.me()) m.skillsUsed[slot]++;
       return r;
     };
   };
