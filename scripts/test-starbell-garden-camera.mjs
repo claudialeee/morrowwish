@@ -32,8 +32,9 @@ try{
   await menu('out');assert.ok((await snapshot()).z<pan.z);
   await menu('in');assert.ok((await snapshot()).z>1);
   await menu('follow');assert.equal((await snapshot()).follow,true);
-  await menu('overview');assert.equal((await snapshot()).z,1);
   await gardenDiscovery(page,'seed',{touch:name==='portrait'});
+  assert.ok((await snapshot()).z>1,'discovery at zoomed view');
+  await menu('overview');assert.equal((await snapshot()).z,1);
   assert.ok(await page.evaluate(()=>GardenExploration.read(State.S).seed),'discovery remains reachable');
   assert.deepEqual(errors,[]);console.log('GARDEN CAMERA PASS',name,lang);
   await ctx.close();

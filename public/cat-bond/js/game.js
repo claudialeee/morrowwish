@@ -594,6 +594,7 @@ class Game {
     let c=this._yardCamera;
     if(!c||c.owner!==State.S)this._yardCamera=c={z:initialZoom,tx:W*.5-player.x*initialZoom,ty:H*.65-player.y*initialZoom,W,H,owner:State.S,follow:true,manual:false};
     else if(c.W!==W||c.H!==H){c.tx*=W/c.W;c.ty*=H/c.H;c.W=W;c.H=H;if(!c.manual)c.z=initialZoom;}
+    if(!c.manual)c.z=initialZoom;
     if(c.follow){const f=1-Math.exp(-7*Math.max(0,dt));const tx=Math.max(W*(1-c.z),Math.min(0,W*.5-player.x*c.z)),ty=Math.max(H*(1-c.z),Math.min(0,H*.65-player.y*c.z));c.tx+=(tx-c.tx)*f;c.ty+=(ty-c.ty)*f;}
     this.clampYardCamera();
   }
