@@ -162,9 +162,9 @@ try{
    assert.deepEqual(cells.slice(5,8),[mixed?'8 / 121 · 6.6%':'8 / 26 · 30.8%',
     '7 / 8 · 87.5%',mixed?'7 / 121 · 5.8%':'7 / 26 · 26.9%'],
     'Visit conversion must be deduplicated, not raw battle totals');
-   assert.deepEqual(cells.slice(8),mixed?['43',language==='zh'?'92 秒':'92 sec','30%','0']:['','','',''],'Cat Bond metrics are independent and preserve observed zero');
+   assert.deepEqual(cells.slice(8),mixed?['43',language==='zh'?'92 秒':'92 sec','3 / 10 · 30%','0']:['','','',''],'Cat Bond metrics are independent and preserve observed zero');
    const townRow=page.locator('#games tr').filter({has:page.locator('a[href="/tiny-town/"]')});
-   assert.deepEqual((await townRow.locator('td').allTextContents()).slice(8),['11',language==='zh'?'35 秒':'35 sec','20%','2'],'Tiny Town has its own metrics, not Cat Bond or website totals');
+   assert.deepEqual((await townRow.locator('td').allTextContents()).slice(8),['11',language==='zh'?'35 秒':'35 sec','1 / 5 · 20%','2'],'Tiny Town has its own metrics, not Cat Bond or website totals');
    const gameTableWrap=page.locator('#games').locator('xpath=ancestor::div[contains(@class,"table-wrap")]').first();
    assert.equal(await gameTableWrap.evaluate(el=>getComputedStyle(el).borderTopWidth),'0px',
      'Current game table must not have an outer frame');
@@ -214,7 +214,7 @@ try{
    assert.equal(filteredValues[1],'','Missing homepage observations stay blank');
    assert.equal(filteredValues.length,2);
    const selectedTown=page.locator('#games tr').filter({has:page.locator('a[href="/tiny-town/"]')});
-   assert.deepEqual((await selectedTown.locator('td').allTextContents()).slice(1),['7','3','1','0','3 / 7 · 42.9%','1 / 3 · 33.3%','1 / 7 · 14.3%','5',language==='zh'?'18 秒':'18 sec','0%','0']);
+   assert.deepEqual((await selectedTown.locator('td').allTextContents()).slice(1),['7','3','1','0','3 / 7 · 42.9%','1 / 3 · 33.3%','1 / 7 · 14.3%','5',language==='zh'?'18 秒':'18 sec','0 / 2 · 0%','0']);
    assert.ok((await gameRow.locator('td').allTextContents()).slice(1).every(v=>v===''),'Other game must not borrow selected game metrics');
    assert.equal(await page.locator('#video-metrics-detail').isVisible(),false,'Native snapshot captured outside selected dates is excluded');
    assert.equal(await page.locator('#archived-first-round').isVisible(),true,'Archive snapshot inside selected dates is retained');
