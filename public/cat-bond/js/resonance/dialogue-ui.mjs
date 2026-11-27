@@ -21,7 +21,7 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  const displayName=(id,s,k)=>id==='player'&&campaign.scenes.findIndex(x=>x.id===s.id)<campaign.scenes.findIndex(x=>x.id==='library:M-03')?(k==='zh'?'你':'You'):campaign.cast[id].name[k];
  const persist=r=>{if(!r.ok){panel.dataset.error=r.reason||"save-failed";line.setAttribute("aria-label",lang()==="zh"?"保存或推进失败，请重试":"Unable to save or advance. Retry.");return false}delete panel.dataset.error;line.removeAttribute("aria-label");onPersist(r.state);return true};
  function stop(){clearTimeout(timer);timer=0}
- const lookoutPending=v=>v.current?.id==="sky:S-04"&&v.cursor===0&&!lookout?.pose;
+ const lookoutPending=()=>false; // A quiet rest never blocks the next line.
  function next(){const v=engine.view();if(lookoutPending(v)||!v.current||!v.lineReady||v.cursor>=v.current.lines.length)return;const l=v.current.lines[v.cursor];if(persist(engine.nextLine())){sessionHistory.push(l);render()}}
  function skip(){const v=engine.view();if(!v.current||lookoutPending(v))return;while(engine.view().lineReady&&engine.view().cursor<v.current.lines.length){const l=v.current.lines[engine.view().cursor];if(!persist(engine.nextLine()))break;sessionHistory.push(l)}render()}
  function button(id,fn){const b=el("button");b.type="button";b.addEventListener("click",fn);tools.append(b);buttons[id]=b;return b}
@@ -43,14 +43,14 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  root.classList.toggle("res-emotional-art",painted);painting.hidden=!painted;
  if(painted&&!painting.hasAttribute("src"))painting.src=new URL("../../assets/story-art/lantern-entrustment.jpg",import.meta.url).href;
  if(key!==beatKey){clearTimeout(beatTimer);beatKey=key;if(moment?.key==="signal"){window.MorrowwishAudio?.note?.(392,.22,.11);beatTimer=setTimeout(()=>{if(!disposed&&beatKey===key)window.MorrowwishAudio?.note?.(523.25,.25,.12);},260);}}
- const choiceVisible=hasDialogueChoice(v);
+ const choiceVisible=hasDialogueChoice(v);panel.dataset.storyMood=moment?.key==="fracture"?"quiet":moment?.key==="tea"?"warm":moment?.key==="signal"?"bright":"";
  if(choiceVisible)for(const c of s.choices){const b=el("button");b.type="button";b.textContent=c.label[k];b.addEventListener("click",()=>{if(persist(engine.choose(c.id)))render()});choices.append(b)}
  if(l){const actor=campaign.cast[l.speaker],url=l.narration?null:resolvePortrait(l.speaker,s.id,v.cursor);if(painted){panel.hidden=false;setPortrait(null);delete panel.dataset.missingPortrait;name.textContent=displayName(l.speaker,s,k);line.textContent=l.text[k]}else if(!url){panel.hidden=false;setPortrait(null);name.textContent=l.narration?s.title[k]:displayName(l.speaker,s,k);line.textContent=l.text[k];if(l.narration)delete panel.dataset.missingPortrait;else panel.dataset.missingPortrait=l.speaker}else{panel.hidden=false;setPortrait(url);delete panel.dataset.missingPortrait;name.textContent=displayName(l.speaker,s,k);line.textContent=l.text[k]}}
  else{panel.hidden=false;const last=choiceVisible?s.lines[Math.max(0,v.cursor-1)]:null,url=last?resolvePortrait(last.speaker,s.id,Math.max(0,v.cursor-1)):null;setPortrait(url);delete panel.dataset.missingPortrait;name.textContent=choiceVisible?(k==="zh"?"你的选择":"Your choice"):s.title[k];line.textContent=choiceVisible?s.title[k]:""}
  for(const id of ["next","skip","auto"])buttons[id].hidden=!!choiceVisible;speedSelect.hidden=!!choiceVisible;
  buttons.next.disabled=!l||!!choiceVisible||lookoutPending(v);buttons.skip.disabled=!l||!!choiceVisible||lookoutPending(v);buttons.auto.disabled=!l||!!choiceVisible||lookoutPending(v);buttons.history.setAttribute("aria-pressed",String(showHistory));
  for(const h of sessionHistory){const p=el("p");p.textContent=(h.narration?s.title[k]:displayName(h.speaker,s,k))+" · "+h.text[k];history.append(p)}
- if(automatic&&l&&!choiceVisible&&!lookoutPending(v))timer=setTimeout(()=>{if(document.getElementById("cb-system-menu")?.hidden!==false)next();else render();},Math.max(850,Math.min(5500,(800+l.text[k].length*48)/speed)));
+ if(automatic&&l&&!choiceVisible&&!lookoutPending(v))timer=setTimeout(()=>{if(document.getElementById("cb-system-menu")?.hidden!==false)next();else render();},Math.max(850,Math.min(5500,(800+l.text[k].length*48+(moment?.key==="fracture"?750:moment?.key==="tea"?400:0))/speed)));
  onRender?.(v,k);
  if(!l&&!choiceVisible)onAwaitAction?.({reason:"gameplay-or-scene-transition",scene:s.id,objective:v.objective});
  }

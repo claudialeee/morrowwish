@@ -360,8 +360,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "她还攥着给家里小猫买的糖呢。以前星铃碎了，也有猫这样忘事。叫我暮铃吧。",
-            "en": "She's still holding candy for her kitten. Cats forgot things like this when the Star Bell broke. I'm Muling."
+            "zh": "你看，她还拿着给小猫买的糖呢。我叫暮铃。",
+            "en": "Look, she's still holding candy for her kitten. I'm Muling."
           }
         },
         {
@@ -463,8 +463,8 @@ export const campaign = {
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "这就怪了。老曲子没几只猫会唱。",
-            "en": "That's odd. Hardly anyone knows the old tune."
+            "zh": "这首歌只有以前看守星铃的猫会唱。你真的一点也不记得？",
+            "en": "Only the cats who once guarded the Star Bell knew that song. You really don't remember?"
           }
         }
       ],
@@ -482,8 +482,8 @@ export const campaign = {
       "id": "harbor:H-04",
       "chapter": "harbor",
       "title": {
-        "zh": "两只猫，一场漂亮的胜利",
-        "en": "Two cats, one good fight"
+        "zh": "旧铃房的怪影",
+        "en": "A strange shadow in the bell house"
       },
       "previous": "harbor:H-03",
       "lines": [
@@ -750,16 +750,16 @@ export const campaign = {
       "id": "forest:R-04",
       "chapter": "forest",
       "title": {
-        "zh": "树记得我的爪印",
-        "en": "The tree remembers my paw"
+        "zh": "古树下",
+        "en": "Beneath the old tree"
       },
       "previous": "forest:R-03",
       "lines": [
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "古树露出了旧刻记。你看，花园旁有两串爪印，还有千灯城灯匠的火纹。",
-            "en": "The old tree has revealed an old carving: two sets of pawprints beside the garden, and the lantern makers' mark."
+            "zh": "这棵树的树皮上好像刻着什么。等铃响了，花就会开，咱们再凑近看看。",
+            "en": "Something is carved into this tree. When the bell rings, the flowers open. Then we can look closer."
           }
         },
         {
@@ -767,7 +767,11 @@ export const campaign = {
           "text": {
             "zh": "檐灯！听见没有？我们到啦！",
             "en": "Yandeng! Can you hear us? We made it!"
-          }
+          },
+          "afterOperations": [
+            "repair:forest",
+            "melody:forest"
+          ]
         },
         {
           "speaker": "yahe",
@@ -779,21 +783,33 @@ export const campaign = {
             "key": "seed",
             "zh": "一颗要带回花园的种子",
             "en": "A seed to take home"
-          }
+          },
+          "afterOperations": [
+            "repair:forest",
+            "melody:forest"
+          ]
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "路明明断了，铃声却传过去了。画图的猫是不是也在找让六地重新说话的办法？",
-            "en": "The path is broken, but the sound made it through. Was the mapmaker trying to let all six places talk again?"
-          }
+            "zh": "两串爪印……还有一盏灯的图案。咦，这串爪印怎么跟我的一样？",
+            "en": "Two sets of pawprints... and a lantern mark. Wait, why does this pawprint look like mine?"
+          },
+          "afterOperations": [
+            "repair:forest",
+            "melody:forest"
+          ]
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "去千灯城问问烬婆吧。等你回来，我们再一起看看种子长成了什么样。",
-            "en": "Ask Jinpo in Lantern City. When you come back, we'll see what the seed has grown into."
-          }
+            "zh": "那盏灯是千灯城的标记，烬婆一定认识。等你回来，咱们再看种子长成什么样！",
+            "en": "That's a Lantern City mark. Jinpo will know it. When you return, we'll see what the seed has grown into!"
+          },
+          "afterOperations": [
+            "repair:forest",
+            "melody:forest"
+          ]
         }
       ],
       "requires": [
@@ -801,12 +817,10 @@ export const campaign = {
         "melody:forest"
       ],
       "choices": [],
-      "lineGate": [
-        "repair:forest",
-        "melody:forest"
-      ],
+      "lineGate": [],
       "choiceTiming": "afterDialogue",
-      "orderedRequires": true
+      "orderedRequires": true,
+      "beforeActionLines": 1
     },
     {
       "id": "forge:E-01",
@@ -958,8 +972,8 @@ export const campaign = {
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "这月牙印是月镜书库的。以前巡铃人从云脊那扇月门进去。想查名字，去那儿。",
-            "en": "That crescent is Moonmirror Library's seal. The old bellkeepers entered through a moon gate in Skyspine. Look for your name there."
+            "zh": "灯匣上还有个印，被烟熏黑了。等灯重新亮起来，咱们就能看清。",
+            "en": "There's a mark on the case, blackened by smoke. Once the lanterns are lit, we'll see it."
           }
         },
         {
@@ -967,28 +981,44 @@ export const campaign = {
           "text": {
             "zh": "我想起来了。那是落星之后。那猫说，要是哪天有谁忘了怎么回家，就把这匣子给它。",
             "en": "I remember now. It was after the star fell. The cat said, if someone ever forgot the way home, I should give them this case."
-          }
+          },
+          "afterOperations": [
+            "repair:forge",
+            "melody:forge"
+          ]
         },
         {
           "speaker": "player",
           "text": {
             "zh": "它怎么知道会有猫忘了回家？为什么连我醒来的花园都画了进去？",
             "en": "How did they know a cat would forget the way home? Why did they draw the garden where I woke up?"
-          }
+          },
+          "afterOperations": [
+            "repair:forge",
+            "melody:forge"
+          ]
         },
         {
           "speaker": "player",
           "text": {
             "zh": "而且这条线画到一半就停了。那只猫后来没能走完吗？",
             "en": "And this line stops halfway. Did the mapmaker never finish the journey?"
-          }
+          },
+          "afterOperations": [
+            "repair:forge",
+            "melody:forge"
+          ]
         },
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "不知道。书库留着那时候的画，去那儿看看吧。",
-            "en": "I don't know. The library keeps pictures from those days. Have a look there."
-          }
+            "zh": "月牙印！那是书库的标记。从云上的月门就能进去，去那里找找看。",
+            "en": "A crescent! That's the library's mark. Go through the moon gate above the clouds to find out more."
+          },
+          "afterOperations": [
+            "repair:forge",
+            "melody:forge"
+          ]
         },
         {
           "speaker": "xiaomao",
@@ -1000,14 +1030,22 @@ export const campaign = {
             "key": "lantern",
             "zh": "歪耳灯 · 花园里的下一场影戏",
             "en": "The crooked-ear lantern · A show in the garden"
-          }
+          },
+          "afterOperations": [
+            "repair:forge",
+            "melody:forge"
+          ]
         },
         {
           "speaker": "muling",
           "text": {
             "zh": "非得飞过去啊？……那你们可不许笑。",
             "en": "We really have to fly there? …No laughing, all right?"
-          }
+          },
+          "afterOperations": [
+            "repair:forge",
+            "melody:forge"
+          ]
         }
       ],
       "requires": [
@@ -1015,12 +1053,10 @@ export const campaign = {
         "melody:forge"
       ],
       "choices": [],
-      "lineGate": [
-        "repair:forge",
-        "melody:forge"
-      ],
+      "lineGate": [],
       "choiceTiming": "afterDialogue",
-      "orderedRequires": true
+      "orderedRequires": true,
+      "beforeActionLines": 1
     },
     {
       "id": "sky:S-01",
@@ -1445,8 +1481,8 @@ export const campaign = {
       "id": "library:M-02",
       "chapter": "library",
       "title": {
-        "zh": "假的暮铃",
-        "en": "The other Muling"
+        "zh": "镜廊",
+        "en": "The mirror hall"
       },
       "previous": "library:M-01",
       "lines": [
@@ -1520,8 +1556,8 @@ export const campaign = {
       "id": "library:M-03",
       "chapter": "library",
       "title": {
-        "zh": "原来你认识我",
-        "en": "You knew me"
+        "zh": "墙上的画",
+        "en": "The painting on the wall"
       },
       "previous": "library:M-02",
       "lines": [
@@ -1628,8 +1664,8 @@ export const campaign = {
       "id": "library:M-04",
       "chapter": "library",
       "title": {
-        "zh": "那串不该响起的铃声",
-        "en": "The bell that should have stayed silent"
+        "zh": "借书记录",
+        "en": "The borrowing record"
       },
       "previous": "library:M-03",
       "lines": [
@@ -1736,23 +1772,23 @@ export const campaign = {
       "id": "library:M-05",
       "chapter": "library",
       "title": {
-        "zh": "如果铃声只能属于一个人",
-        "en": "If the song belonged to only one cat"
+        "zh": "桌上的模型",
+        "en": "The model on the table"
       },
       "previous": "library:M-04",
       "lines": [
         {
           "speaker": "moye",
           "text": {
-            "zh": "看这个模型。旧记录里有两种让星铃重新响起的办法。白栞，你带上记录。",
-            "en": "Look at this model. The old records show two ways to make the Star Bell ring again. Baikan, take the records."
+            "zh": "看桌上的小铃。想让大铃重新响，有两种办法。",
+            "en": "Look at the little bells on the table. There are two ways to make the big bell ring again."
           }
         },
         {
           "speaker": "baikan",
           "text": {
-            "zh": "第一种把所有记忆收进星铃。第二种让六座铃彼此唱和，各自的记忆都能留下。",
-            "en": "The first sends everyone's memories into the Star Bell. The second lets six bells answer one another, so every cat keeps their own memories."
+            "zh": "一种把大家的记忆都收进去。另一种让小铃互相回应，谁的记忆都不用拿走。",
+            "en": "One takes everyone's memories into it. The other lets the little bells answer each other without taking anyone's memories."
           }
         },
         {
@@ -1778,8 +1814,8 @@ export const campaign = {
         {
           "speaker": "baikan",
           "text": {
-            "zh": "风铃镇的家铃、森林的月叶、千灯城的影戏、云海上的风铃……大家已经在互相报平安了。",
-            "en": "The house bells, the moonleaves, the lantern show, the wind chimes above the clouds… our friends are already answering each other."
+            "zh": "可你听，一路上大家都在报平安。他们已经能听见彼此了。",
+            "en": "But listen. Everyone's been ringing to say they're safe. They can already hear each other."
           },
           "afterOperations": [
             "puzzle:two-route-model"
@@ -2250,8 +2286,8 @@ export const campaign = {
       "id": "finale:B-04",
       "chapter": "finale",
       "title": {
-        "zh": "星铃重新响了",
-        "en": "The bell rings again"
+        "zh": "最后一声铃",
+        "en": "The last chime"
       },
       "previous": "finale:B-03",
       "lines": [
@@ -2309,8 +2345,8 @@ export const campaign = {
       "id": "epilogue:E-02",
       "chapter": "epilogue",
       "title": {
-        "zh": "道歉不只是说对不起",
-        "en": "More than an apology"
+        "zh": "回访风铃镇",
+        "en": "A return visit"
       },
       "previous": "epilogue:E-01",
       "lines": [
@@ -2382,8 +2418,8 @@ export const campaign = {
       "id": "epilogue:E-03",
       "chapter": "epilogue",
       "title": {
-        "zh": "第二把钥匙",
-        "en": "The second key"
+        "zh": "花园的傍晚",
+        "en": "Evening in the garden"
       },
       "previous": "epilogue:E-02",
       "lines": [

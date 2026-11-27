@@ -9,10 +9,10 @@ export function revealShot(id,c,choice=null){
   return shot(library,"present",["player","muling"],"月镜书库 · 现实","Moonmirror Library · Present");
  }
  if(id==="library:M-04"){
-  if(c<2)return shot(atlas,"ledger",["baikan"],"借阅记录 · 与暮铃铃坠相同的印记","Borrowing record · A mark matching Muling's pendant");
+  if(c<2)return shot(atlas,"ledger",["baikan"],"借阅记录","Borrowing record");
   return shot(library,"fracture",["player","muling"],"月镜书库 · 信任的裂痕","Moonmirror Library · Trust fractured");
  }
- if(c<3)return shot(atlas,"routes",["moye","baikan"],"两条路径 · 中央汇集与邻地共鸣","Two routes · Inward convergence and neighboring resonance");
+ if(c<3)return shot(atlas,"routes",["moye","baikan"],"桌上的两种办法","Two plans on the table");
  if(c<7)return shot(library,"present",["player","muling"],"不能替别人作出选择","No one can choose for everyone");
  return shot(starfall,"departure",["muling"],"暮铃离开书库，前往星坠原","Muling leaves the library for Starfall Expanse");
 }

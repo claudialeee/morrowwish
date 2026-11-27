@@ -343,3 +343,9 @@
 #stage .res-host.res-emotional-art .res-dialogue{position:relative;z-index:1;grid-template-columns:1fr!important;width:min(930px,100%);max-height:48%;overflow:auto}
 #stage .res-host.res-emotional-art .res-portrait{display:none!important}
 @media(orientation:portrait) and (max-width:700px){#stage .res-host.res-emotional-art .res-emotional-painting{height:66%;top:4%}#stage .res-host.res-emotional-art .res-dialogue{max-height:48%}}
+
+/* A pause is part of the performance, not a new click gate. */
+#stage .res-host .res-dialogue[data-story-mood="quiet"] .res-body{border-color:#9e91af;box-shadow:0 10px 32px #1b142955;transition:box-shadow .35s,border-color .35s}
+#stage .res-host .res-dialogue[data-story-mood="warm"] .res-body{border-color:#d8b784}
+#stage .res-host .res-dialogue[data-story-mood="bright"] .res-body{border-color:#e0c68d}
+@media(prefers-reduced-motion:reduce){#stage .res-host .res-body{transition:none!important}}

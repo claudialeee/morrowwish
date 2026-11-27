@@ -16,7 +16,7 @@ export function mountSkyLookout(context,{player,muling,language,onReady}){
  const sit=make("button"),walk=make("button");for(const btn of [sit,walk]){btn.type="button";btn.style.cssText="min-height:44px;padding:4px 12px;border-radius:10px;border:1px solid #d7bd8b;background:#fff2dc;color:#4d4053;font:inherit;cursor:pointer";}
  stage.append(seated);
  actions.append(sit,walk);context.replaceChildren(stage,actions,caption);
- let pose="",choice="",disposed=false;
+ let pose="sit",choice="",disposed=false;
  function render(k,selected){
   if(disposed)return;choice=selected||"";const zh=k==="zh";
   sit.textContent=zh?"坐到暮铃身边":"Sit beside Muling";walk.textContent=zh?"沿观景台走走":"Walk around the lookout";
