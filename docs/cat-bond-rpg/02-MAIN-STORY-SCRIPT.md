@@ -133,17 +133,18 @@
 - 檐灯：这就怪了。老曲子没几只猫会唱。 / That's odd. Hardly anyone knows the old tune.
 - 暮铃：檐灯，你守住那盏灯。它要过来了！ / Alder, keep that lamp steady. Here it comes!
 
-### harbor:H-04 · 两只猫，一场漂亮的胜利 / Two cats, one good fight
+### harbor:H-04 · 铃房终于安静了 / The bell house falls quiet
 
-**实机事件与推进：** 一次真实双猫战斗。铃舌兽有清楚的横扫预警和短暂硬直，檐灯的真铃照出安全位置。暮铃用既有暗系控制技能制造窗口，玩家利用普通攻击或技能，双猫合击只在实际触发后演出。不要把本章机制变成一串按钮。获胜后玩家先看见暮铃被灰尘呛得咳嗽，伸爪拉她；两声铃互报平安。她在实际合作后邀约结伴。主线一次战斗足够，不追加第二场。
+**实机事件与推进：** 一次真实守卫战斗，允许单猫或双猫出战。铃舌兽有横扫预警和短暂反击窗口，地区支援可以取消一次攻击。双猫合击只在实际触发后演出。战后对白不预设暮铃实际参战或发生特定技能、摇铃互动；她关心主角并邀约结伴。
 
 **关键对白（ZH / EN）：**
 
-- 暮铃：我按住它了！快！ / I've pinned it! Now!
-- 主角：你没事吧？ / Are you all right?
+- 暮铃：它散开了！铃房终于安静下来了。你还好吗？ / It's gone! The bell house is finally quiet. Are you all right?
+- 主角：我没事。你呢？ / I'm all right. How about you?
 - 暮铃：没事。……就是这下得洗毛了。 / Fine. …I'll need a bath, though.
-- 主角：嘿嘿，咱俩还挺厉害。 / Heh. We make a pretty good team.
-- 暮铃：那就接着搭个伴？我也想去看看别的古铃。 / Shall we stick together, then? I want to see the other bells too.
+- 主角：嘿嘿，看来我们能帮上忙。 / Heh. Looks like we can make a difference.
+- 暮铃：那就接着搭个伴？先陪檐灯修好古铃，让阿婆认得回家的路。我也想看看别的古铃。 / Shall we stick together? Let's help Alder restore the bell so Gran can find her way home. I'd like to see the other bells, too.
+
 
 ### harbor:H-05 · 一首我忘记的歌 / A song I forgot
 
@@ -239,13 +240,14 @@
 
 ### forge:E-03 · 最大的影子猫 / The biggest shadow cat
 
-**实机事件与推进：** 本章主战斗：重复影戏聚成剪影兽，移动时有可读剪影预警，玩家把敌人引入灯光范围才露出真身；小栗维持灯，烬婆给一处安全亮区，玩家通过真实走位/技能打出窗口。没有温压控制、不做第二道灯光谜；可通过普通技能取胜，不强迫火或光猫。战后小栗主动修好自己造成的乱子（演出未照顾观众但不是回响起因），先问旁边猫想看什么，再重开影戏。
+**实机事件与推进：** 本章主战斗：重复影戏聚成剪影兽，移动时有可读剪影预警，玩家把敌人引入灯光范围才露出真身；小栗维持灯，烬婆给一处安全亮区，玩家通过真实走位/技能打出窗口。没有温压控制、不做第二道灯光谜；可通过普通技能取胜，不强迫火或光猫。战后确认灯影恢复正常，接续古铃修复。
 
 **关键对白（ZH / EN）：**
 
-- 小栗：糟了！它钻进灯影里了！ / Oh no! It's slipped into the shadows!
-- 暮铃：引它过来。等它站到灯底下再打。 / Draw it over here. Strike when it's under the light.
-- 烬婆：灯有我呢！ / I'll keep the light on!
+- 小栗：它散开啦！你看，灯光下的影子终于不再乱跑了！ / It's gone! Look, the shadows under the lanterns have finally stopped wandering!
+- 暮铃：多亏小栗一直守着灯。现在我们能安心让古铃重新响起来了。 / Thanks for keeping the lamp steady, Pip. Now we can get the old bell ringing again.
+- 烬婆：好啦，这回轮到我们点灯。小栗，把那盏歪耳灯也挂上吧。 / Now let’s light up the festival. Pip, hang up your crooked-ear lantern too.
+
 
 ### forge:E-04 · 把星星挂回夜空 / Hang the stars back up
 
@@ -374,19 +376,18 @@
 
 ### library:M-04 · 那串不该响起的铃声 / The bell that should have stayed silent
 
-**实机事件与推进：** 白羽在借阅记录认出暮铃铃坠的印记，找出她借走的中央旧图和日期；墨页出示公开星铃观测记录，显示封印松开当天失忆重新出现。玩家在借阅桌并排查看借阅印、观测日期与公开旧图。只能证实暮铃借过图、失忆与封印松开同日；尚不能推出她亲手开锁。玩家选择先问为何借图，还是那天发生了什么；两条追问以不同顺序进入同一坦白，不做拖线配对或正确答案亮灯。直接找暮铃时白羽简短说清两件事实。秘密调铃由主角回想旅途中亲眼见过的操作后追问，暮铃自认；旧图不是行为监控记录。不是回放未见事件。证据仅证明借图、日期与路径，暮铃亲口确认是她松开封印并秘密调向中央。不要用万能镜子看到从未记录的私密动作。
+**实机事件与推进：** 白羽在借阅记录认出暮铃铃坠的印记，找出她借走的中央旧图和日期；墨页出示公开星铃观测记录，显示封印松开当天失忆重新出现。玩家在借阅桌并排查看借阅印、观测日期与公开旧图。只能证实暮铃借过图、失忆与封印松开同日；尚不能推出她亲手开锁。白羽先说明证据，暮铃亲口坦白；玩家随后选择自己的态度并获得独立回应，不做拖线配对或正确答案亮灯。直接找暮铃时白羽简短说清两件事实。秘密调铃由主角回想旅途中亲眼见过的操作后追问，暮铃自认；旧图不是行为监控记录。不是回放未见事件。证据仅证明借图、日期与路径，暮铃亲口确认是她松开封印并秘密调向中央。不要用万能镜子看到从未记录的私密动作。
 
 **关键对白（ZH / EN）：**
 
-- 白羽：借图的印记……暮铃，这不是你那只铃坠么？ / The mark on the borrowing record… Luna, isn't that your pendant?
-- 主角：等一下。那天封印松了，失忆就又开始了？ / Wait. The forgetting started again the day the seal was loosened?
+- 白羽：借图的记录写着：封印松动与失忆复发是同一天。这个印记……暮铃，是你铃坠上的纹样吧？ / The borrowing record dates the loosened seal and renewed forgetting to the same day. And this mark… Luna, isn't it the pattern on your pendant?
+- 主角：等一下。那天封印松了，失忆就又开始了？暮铃，我想听你自己说。 / Wait. The forgetting started again the day the seal was loosened? Luna, I want to hear it from you.
 - 暮铃：……是我。我松开了封印，才让你醒过来。那时我知道别的猫也可能开始忘事。 / …It was me. I loosened the seal so you'd wake up. I knew the other cats might start forgetting again.
 - 主角：风铃镇那只连家都找不到的猫……你那时候就知道为什么？ / That cat at Windchime Town who couldn't find home… you knew why, even then?
 - 暮铃：……知道。我一个人唱不响那些铃。只有你能唱出开头。我怕告诉你，你就不肯跟我走了。 / …I knew. I couldn't wake those bells alone. Only you knew their first notes. I was afraid you'd refuse to come with me if I told you.
-- 主角：那些铃也是你故意调过去的？ / And you turned those bells toward the center on purpose?
-- 暮铃：嗯。万一接不起来，我想留一个办法。 / Yes. I wanted another way if we couldn't reconnect them.
-- 主角：你明明可以告诉我，让我自己选。 / You could have told me and let me choose.
-- 暮铃：……对不起。那时候，我只想着怎么把你带回来。 / …I'm sorry. All I could think about was bringing you back.
+- 主角：你也故意把那些古铃的回应引向中央星铃？ / And you deliberately routed the old bells' replies toward the central Star Bell?
+- 暮铃：嗯。万一六座铃接不起来，我就想把记忆集中到星铃里，好让你记起从前。……对不起。那时候，我只想着怎么把你带回来。 / Yes. If the six bells couldn't reconnect, I planned to gather the memories in the Star Bell so you could remember. …I'm sorry. All I could think about was bringing you back.
+- 主角：你明明可以告诉我，让我自己选。你也不能替其他猫决定。 / You could have told me and let me choose. You had no right to decide for the other cats either.
 
 
 **M-04 选择后的回应（运行时已接入）：** 愤怒路线明确其他猫的权利；距离路线不讨论原谅，转向墨页与替代方案；理解路线明确理解不等于原谅。暮铃分别回应，不要求主角当场和解。
@@ -443,8 +444,8 @@
 **关键对白（ZH / EN）：**
 
 - 暮铃：我每天都泡两杯茶。每次有座铃响了，我都以为这回你该回来了。可另一座又没声了…… / I made two cups of tea every day. Every time a bell rang, I thought this would be the time you'd come home. Then another went silent…
-- 主角：你是说……连你自己也会把我忘了？ / You mean… even you'd forget me?
-- 暮铃：我以为再失败，谁的过去都留不住。至少……你还能记得。 / I thought if we failed again, nobody would keep their past. At least… you could remember.
+- 主角：你等了这么久……难道你也开始忘记以前的事了？ / You waited all that time… Have you started forgetting things too?
+- 暮铃：有时候我连花园里的约定都差点想不起来。我害怕再失败，谁的过去都留不住。所以我想，至少……你还能记得。 / Sometimes I could barely remember our promise in the garden. I was afraid that if we failed again, nobody would keep their past. So I thought… at least you could remember.
 - 主角：那栖蓝呢？她的地图才画了一条路。芽禾还等着看月叶。小栗连影戏都约好了。 / What about Skye? She's only drawn one trail. Fern's waiting to see the moonleaf grow. Pip's already promised us a show.
 - 主角：我不想回到一个谁都不认识我的家。 / I don't want to go home to a world where nobody knows me.
 - 主角：咱们先听听大家怎么说，好不好？ / Let's hear what our friends have to say first, all right?
