@@ -1,4 +1,4 @@
-name: Cancel obsolete Starbell chapter run 45932747089
+name: Cancel obsolete Starbell chapter run 46043782354
 on:
   push:
     branches: [ops/cancel-obsolete-starbell-45932747089]
@@ -18,11 +18,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          run=45932747089
+          run=46043782354
           info=$(gh api "repos/$GH_REPO/actions/runs/$run")
-          jq -e '.head_branch=="review/starbell-canon13-player-experience" and .head_sha=="4ba40ca2fba1fa9ef74fff0983428bb3a18d0356" and .name=="Canon 2.2 chapter browser acceptance" and .event=="push"' <<<"$info"
+          jq -e '.head_branch=="review/starbell-canon13-player-experience" and .head_sha=="63ca10ac5ec0e889c9e484fe2894e846f79cef6b" and .name=="Canon 2.2 chapter browser acceptance" and .event=="push"' <<<"$info"
           current=$(gh api "repos/$GH_REPO/git/ref/heads/review/starbell-canon13-player-experience" --jq .object.sha)
-          test "$current" != "4ba40ca2fba1fa9ef74fff0983428bb3a18d0356"
+          test "$current" != "63ca10ac5ec0e889c9e484fe2894e846f79cef6b"
           if [[ $(jq -r .status <<<"$info") == completed ]]; then echo "Old run already completed"; exit 0; fi
           gh api --method POST "repos/$GH_REPO/actions/runs/$run/cancel"
           echo "Cancel request accepted for $run"
