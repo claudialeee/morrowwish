@@ -2191,3 +2191,30 @@ Rationale: cron rule strict — `local-numeric` only auto-fix. Of the 2 P0s, bot
 
 ### Workflow health
 - critiqueCount 33, **26 subagent retries capped** during Adversary + Voice phases (higher failure rate than wlpm2aca8's 15). Core synth intact; headline + fixes consistent with persona voices.
+
+## Playtest cycle w62cwoq5u — 2026-11-26
+
+**Headline**: Combat engine is now over-tuned for ESCALATION but under-tuned for LEGIBILITY — personas keep churning on silent clocks, discarded inputs, and invisible variance; ship the feedback/affordance layer before adding another knob.
+
+**funMean 4.67** (+0.34 vs wcjnqt9aa's 4.33) — 3rd rise in a row:
+- 探索型 7 (unchanged, top) / 狂按型 6 / 懒人型 6 (+1) / 谨慎 3 (+1 from locked 2) / 手忙 3 / 没耐心 3
+
+**Shape**: 1 P0 local-numeric **AUTO-FIXED** → `314b449d`. 1 P0 additive-flag findings-only. 18 P1 (4 local-numeric, 14 additive-flag). 13 P2.
+
+### Auto-fixed P0 (1)
+
+- **P0-1 basic-time-scalar** `314b449d`: BASIC_POWER_MULT 0.85 fixed through 45s, ramps to 1.10 by 75s via new `basicTimeScalar()` helper. Player-only, 2 call sites (basic-slot skill + toy basic). Symmetric to enemy `_closing`. ALL 5 gates PASS.
+
+### P0 findings-only (1)
+
+- **85s backstop visible countdown + "伤害不足" chip** (battle.js draw loop + 2 i18n keys). additive-flag — new HUD surface, deferred.
+
+### Top P1 findings
+
+- Deterministic first enemy special (drop 3 rng rolls on cast#1) — ~5s variance from ~15s. **local-numeric**
+- Basic-attack dmg floor `0.012 × maxhp` — kiter poke always pokes. **local-numeric**
+- Press-buffer coyote window ~220ms for Q/E/Space/R/F — stop eating panicky mash intent. **additive-flag**
+- Context-aware defense-verb prompt (Shift/Space) above player during enemy telegraph — reuse `_coachHighlight` field. **additive-flag**
+
+### Workflow health
+critiqueCount 31, 23 subagent retries capped (worst-rate so far). Core synth + headline intact.
