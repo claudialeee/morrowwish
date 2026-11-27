@@ -45,6 +45,13 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Install audio verification prerequisites if absent
+        run: |
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends ffmpeg
+          fi
+          ffprobe -version | head -n 1
       - name: Build preview with existing audio and local-only saves
         run: |
           set -euo pipefail
