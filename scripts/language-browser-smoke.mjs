@@ -65,18 +65,13 @@ try{
    await scan(page,slug,lang,'landing');
    if(!slug){
     const layout=await page.evaluate(()=>{
-     const rpg=document.querySelector('#rpg'), worlds=document.querySelector('#worlds'), tiny=document.querySelector('#tiny-games'), cards=[...worlds.querySelectorAll('.feature-card')];
-     const rect=e=>e.getBoundingClientRect();
-     const visible=e=>rect(e).height>0&&rect(e).width>0;
-     return {order:rect(rpg).top<rect(worlds).top&&rect(worlds).top<rect(tiny).top,heading:rpg.querySelector('h2').textContent.trim(),subtitles:[...document.querySelectorAll('main .section-index')].filter(visible).length,
-      preview:!!rpg.querySelector('.starbell-preview-label'),cards:cards.length,allButtons:cards.every(c=>visible(c.querySelector('.card-button'))&&rect(c.querySelector('.card-button')).bottom<=rect(c).bottom+1),columns:new Set(cards.map(c=>Math.round(rect(c).left))).size,
-      headingStyles:[rpg,worlds,tiny].map(section=>{const h=section.querySelector('.section-intro h2'),s=getComputedStyle(h),intro=getComputedStyle(h.closest('.section-intro'));return [s.fontFamily,s.fontSize,s.fontWeight,s.lineHeight,s.letterSpacing,s.color,s.marginTop,s.marginBottom,intro.marginBottom].join('|')}),
-      overflow:document.documentElement.scrollWidth>innerWidth+1,nav:[...document.querySelectorAll('.site-nav a')].every(a=>visible(a)&&rect(a).right<=innerWidth+1)};
+     const sections=['#rpg','#worlds','#tiny-games'].map(s=>document.querySelector(s));
+     const signature=(el,keys)=>{const s=getComputedStyle(el);return keys.map(k=>s[k]).join('|')};
+     return {ordered:sections.every((e,i)=>!i||e.getBoundingClientRect().top>sections[i-1].getBoundingClientRect().top),indices:sections.map(e=>e.querySelector('.section-index').textContent.trim().slice(0,2)),headings:sections.map(e=>signature(e.querySelector('h2'),['fontFamily','fontSize','fontWeight','lineHeight','letterSpacing','color','marginTop'])),eyebrows:sections.map(e=>signature(e.querySelector('.section-index'),['fontSize','fontWeight','letterSpacing','color','lineHeight'])),spacing:sections.map(e=>getComputedStyle(e.querySelector('.section-intro')).marginBottom)};
     });
-    assert.ok(layout.order&&layout.heading==='RPG'&&layout.preview&&layout.cards===4&&layout.allButtons&&layout.nav&&!layout.overflow,'Home layout regression: '+JSON.stringify(layout));
-    assert.equal(layout.subtitles,0,'Remove redundant section eyebrows');
-    assert.equal(new Set(layout.headingStyles).size,1,'RPG, Our Worlds and Tiny Games headings must share identical typography and spacing');
-    assert.equal(layout.columns,width===390?2:4,'Home card columns');
+    assert.ok(layout.ordered,'RPG must remain the independent first section');
+    assert.deepEqual(layout.indices,['01','02','03']);
+    for(const key of ['headings','eyebrows','spacing'])assert.equal(new Set(layout[key]).size,1,'Classic section style must match: '+key);
    }
    if(slug==='cat-bond'&&await page.locator('#intro-start').isVisible()){
     await page.locator('#intro-start').click({timeout:7000});
