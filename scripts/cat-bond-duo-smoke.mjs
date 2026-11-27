@@ -52,6 +52,8 @@ try{
   }
   assert.equal(await page.locator('#battle-help').isVisible(),false,
    'last tutorial step resumes playable fight');
+  await page.evaluate(()=>{const b=window.__game.battle;window.CatBondPremiumCinematics.preparePortrait(b.duo.elementPair,b.duo.tier);});
+  await page.waitForFunction(()=>{const b=window.__game.battle;return window.CatBondPremiumCinematics.portraitReady(b.duo.elementPair,b.duo.tier);});
   const result=await page.evaluate(()=>{
    const g=window.__game,State=window.State;
    const [a,b]=State.S.cats;
@@ -88,6 +90,7 @@ try{
    const card=document.getElementById('battle-coach-card');
    return {guard,courage,feint,focus,ambush,cast,cutin,tier:first.duoCinematic?.tier,
       originalPainting:first.duoCinematic?.originalArt===true,
+      layout:window.CatBondPremiumCinematics.lastLayout,
       selectedBreeds:first.duoCinematic?.catUids?.map(uid=>
         first.team.find(f=>f.cat.uid===uid)?.cat?.species),
       variant:first.duoCinematic?.variant,cardPresent:!!card,hero:typeof window.CatBondDuoHero.draw};
@@ -103,6 +106,8 @@ try{
     'Real duo must retain the actual player cats in UID order');
   assert.ok(result.cutin>=1,'game must draw new moving kitten art');
   assert.equal(result.tier,3,'90+ trust yields tier-3 art');
+  assert.equal(result.layout?.source,profile.mobile?'63-native-portrait-painted-storyboards':'63-original-painted-storyboards','Live battle must use the correct orientation art');
+  if(profile.mobile){assert.equal(result.layout.actorLayerCount,0);assert.equal(result.layout.extendedPainting,false);}
   assert.equal(result.variant,'finale','high trust must unlock finishing claw variant');
   assert.equal(result.cardPresent,true);
   // A complete real cast must release a visible, element-matched impact

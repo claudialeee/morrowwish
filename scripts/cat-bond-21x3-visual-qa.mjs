@@ -44,10 +44,16 @@ try{
  assert.equal(await page.locator('#mode-breeds').count(),0);assert.equal(await page.locator('#pick-cat-a').count(),0);
  assert.equal(await page.locator('script[src*="duo-breed-actors"]').count(),0);
  await page.locator('#duo-player').screenshot({path:dir+'/desktop-original-16x9.png'});
+ await page.evaluate(()=>window.CatBondPremiumCinematics.preparePortrait('fire+light',3));
+ await page.waitForFunction(()=>window.CatBondPremiumCinematics.portraitReady('fire+light',3));
  const layouts=[];
  for(const v of [{name:'phone-portrait',width:390,height:844},{name:'phone-landscape',width:844,height:390},{name:'desktop',width:1280,height:720},{name:'small-phone',width:320,height:568}]){
   const l=await page.evaluate(({width,height})=>{const cv=document.createElement('canvas');cv.width=width;cv.height=height;window.CatBondPremiumCinematics.draw(cv.getContext('2d'),width,height,{elements:'fire+light',max:2.75,t:1.4,tier:3,hideCaptions:true});return window.CatBondPremiumCinematics.lastLayout;},v);
-  assert.ok(Math.abs(l.artAspect-16/9)<.00001,v.name);assert.equal(l.actorFallback,false);assert.ok(l.art.width<=v.width+1&&l.art.height<=v.height+1);
+  const portrait=v.height>v.width;
+  assert.equal(l.source,portrait?'63-native-portrait-painted-storyboards':'63-original-painted-storyboards',v.name);
+  assert.ok(Math.abs(l.artAspect-(portrait?9/16:16/9))<(portrait?.025:.00001),v.name);
+  assert.equal(l.actorFallback,false);assert.ok(l.art.width<=v.width+1&&l.art.height<=v.height+1);
+  if(portrait){assert.deepEqual(l.art,{x:0,y:0,width:v.width,height:v.height});assert.equal(l.extendedPainting,false);}
   layouts.push({name:v.name,art:l.art,aspect:l.artAspect});await page.setViewportSize({width:v.width,height:v.height});await page.screenshot({path:dir+'/'+v.name+'.png',fullPage:true});
  }
  assert.deepEqual(errors,[]);console.log('CAT BOND ORIGINAL ART QA PASS '+JSON.stringify({frames:audit.count,unique:audit.unique,layouts}));
