@@ -244,6 +244,7 @@ async function run(chapter){
   await ceremony.waitFor({state:"visible",timeout:35000});
   assert.equal(await page.locator(".rw-puzzle-controls:visible").count(),0,"Ceremony must not have a second control board");
   assert.equal(await page.locator(".rw-fit-rail:visible").count(),0,"Ceremony must not show a quest drawer");
+  await page.locator(".rw-ceremony-caption").waitFor({state:"visible",timeout:3000});
   assert.ok(await page.locator(".rw-ceremony-caption").isVisible(),"The story response must be visible");
   await shot(region+"-ceremony");
   await op(repair);await op(melody);await ceremony.waitFor({state:"hidden"});
