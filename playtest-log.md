@@ -2258,3 +2258,32 @@ Rationale: all 3 adversary-confirmed P0s are `additive-flag` (new fields + consu
 
 ### Workflow health
 critiqueCount 29, 34 subagent retries capped (worst rate of 5 cycles). Core synth + fixes intact.
+
+## Playtest cycle wupz2ckhy — 2026-11-27
+
+**Headline**: Combat feels mostly stable in the mid-fight band but still fails at the edges — auto-persona telemetry is lying, panicky yarn balls never connect, and the cautious kiter's existing walls stay invisible.
+
+**funMean 4.50 (+0.33 vs wm8tsdl5o 4.17)** — regression confirmed as noise, rebound:
+- 探索型 7 (+1) / 狂按型 6 / 懒人型 5 / 手忙脚乱 4 (+1) / 没耐心 3 / 谨慎型 **2** (still locked)
+
+### Auto-fixed P0 (1)
+
+- **P0-1 Fix 懒人 telemetry lie** `e5d6c137`: `scripts/playtest-sim.mjs` wrapped b.skillQ/skillE/ultimate/dodge like origCastWard — count CAST SUCCESS not key taps. Masher 'ult=0 at 2700 basics' was a telemetry lie driving fabricated P0s. **Harness-only, not game code**. ALL 5 gates PASS.
+
+### P0 findings-only (1)
+
+- **Late-life micro-homing on player basic yarn balls** — `public/cat-bond/js/battle.js` projectile update. Panicky's yarn balls never connect because aim is manual-mouse. Micro-homing (~22° cone, lerp 0.08/frame, cap 160u range, only for p.isBasic+p.owner==='me'+p.life<0.35*lifeMax). **additive-flag** on gameplay path — findings-only per cron rule.
+
+### Top P1 findings (27 — all findings-only)
+
+- Rolling 1-second non-ult chip ceiling on player (`NON_ULT_CHIP_CAP_PER_SEC = 0.25`) — resolveHit
+- Align basicTimeScalar onset 45→25s to match `_closing` anchor — battle.js:1980 **local-numeric**
+- Wire `_timeCapLoss` into result screen (timeout ≠ flee) — battle.js:7050 + ui.js
+- Lift `autoMode` early-return in `tickUltReminder` — battle.js:4248
+- `playerDmgTotal` HUD chip + milestone crescendo at 25/50/100% pack HP
+- (Matches last cycle's lance/dodges-counter P0, still findings-only)
+
+### Auto-fixes this cycle: 1 (telemetry-only, not game code)
+
+### Workflow health
+critiqueCount 38, 19 subagent retries capped. Core synth intact; P0 count dropped 3→2 vs wm8tsdl5o (reasonable given telemetry fix will clean up future-cycle fabricated P0s).
