@@ -51,7 +51,16 @@ try{
       e.x=b.me().x+160+i*44;e.y=b.me().y+i*34;
       e.maxhp=5000;e.hp=5000;e.inv=0;e.flash=0;
     }
+    const beforeHP=b.enemies.map(e=>e.hp);
     const cast=b.ultimate();
+    if(skillId==='sunbloom'){
+      if(!b._solarUlt||b.me()._castRoot<=0||b.enemies.some((e,i)=>e.hp!==beforeHP[i]))
+        throw Error('Solar ultimate must charge before dealing damage');
+      // Advance the actual battle simulation, not a fabricated stroke or direct payload.
+      for(let i=0;i<240&&b._solarUlt;i++)b.update(1/60);
+      if(b._solarUlt||b.me()._castRoot>0)throw Error('Solar ultimate never released');
+      if(!b.enemies.some((e,i)=>e.hp<beforeHP[i]))throw Error('Solar beam did not hit aligned target');
+    }
     const stroke=b.skillStrokes.findLast(v=>v.kind==='ultimate'&&v.skillId===skillId);
     if(!stroke)throw Error('No element-specific stroke '+element);
     stroke.life=stroke.max*.53;

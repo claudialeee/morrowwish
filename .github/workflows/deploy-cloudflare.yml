@@ -166,6 +166,8 @@ jobs:
           node scripts/cat-bond-interaction-language-qa.mjs
           # Actual mouse/touch on ten official CrazyGames viewport sizes.
           node scripts/cat-bond-crazygames-real-input.mjs
+          # Native portrait duo: all 63 paintings, three phone sizes, original landscape.
+          node scripts/test-cat-bond-native-duo-renderer.mjs
           # Actual end-user DOM, not only the aggregator or source-string tests.
           node scripts/test-dashboard-history-browser.mjs
       - name: Verify changed homepage and dashboard in real Chromium

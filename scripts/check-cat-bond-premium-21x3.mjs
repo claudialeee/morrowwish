@@ -18,3 +18,12 @@ for(const page of ['index.html','duo-preview.html','duo-showcase.html']){
 for(const path of ['js/duo-breed-actors.js','assets/duo-watercolor-32-actors-v1.webp','assets/duo-stage-clean-21x3-v2.webp'])
  assert.equal(fs.existsSync('public/cat-bond/'+path),false,'retired convergence asset must remain deleted');
 console.log('CAT BOND ORIGINAL-ONLY RELEASE GATE PASS');
+
+// Native portrait pack must cover every unordered elemental pair and tier.
+const elements=['dark','elec','fire','grass','light','water'];
+const expected=elements.flatMap((a,i)=>elements.slice(i).flatMap(b=>[1,2,3].map(t=>`${a}-${b}-tier-${t}.webp`))).sort();
+const dir='public/cat-bond/assets/mobile-portrait/duo/';
+assert.deepEqual(fs.readdirSync(dir).filter(x=>x.endsWith('.webp')).sort(),expected);
+for(const name of expected){const bytes=fs.readFileSync(dir+name);assert.ok(bytes.length>10000&&bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WEBP',name);}
+assert.match(premium,/if\(H>W\)return drawNativePortrait/);
+console.log('CAT BOND NATIVE PORTRAIT 63/63 FILE GATE PASS');
