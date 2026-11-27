@@ -335,7 +335,7 @@ if(JSON.stringify(featuredIds)!==JSON.stringify(['cat-bond','pawsibly-innocent',
 const zhCard=featured.match(/<article class="feature-card cat-feature-card">([\s\S]*?)<\/article>/)?.[1]||'';
 if(!zhCard.includes('猫猫绝对无辜！')||zhCard.includes('cat-original'))throw Error('Chinese homepage card must not display the English Pawsibly subtitle');
 if(!homepage.includes('Three fish to steal. One human to fool.'))throw Error('Cat game marketing hook is missing');
-if(!displayOrder.startsWith("'cat-bond','pawsibly-innocent','tiny-town','elsewhere'"))throw Error('Studio dashboard game order must follow the homepage');
+if(!displayOrder.startsWith("'starbell-preview','cat-bond','pawsibly-innocent','tiny-town','elsewhere'")||featuredOrder[0]!=='starbell-preview')throw Error('Starbell must be the independent first homepage and dashboard game');
 if(minis.includes('href="/pawsibly-innocent/"')||minis.includes('href="/cat-bond/"'))throw Error('Cat worlds must not be in mini-games');
 for(const marker of ['function throwYarn','const EXTRAS=[','ROOM_REWARDS','souvenirs','function vacuumDraw','function roomDecor']){
  if(!catGame.includes(marker))throw Error('Cat expansion missing: '+marker);

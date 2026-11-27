@@ -170,10 +170,10 @@ try{
    const cards=await page.locator('#focus-grid .focus-card h3 a').evaluateAll(
     nodes=>nodes.map(n=>n.getAttribute('href')));
    assert.deepEqual(cards,[
-    '/cat-bond/','/pawsibly-innocent/','/tiny-town/','/elsewhere/',
-    'https://cat-bond-preview.morrowwish.pages.dev/cat-bond/','/flip-dash/','/parcel-panic/','/pocket-aquarium/'
+    'https://cat-bond-preview.morrowwish.pages.dev/cat-bond/','/cat-bond/','/pawsibly-innocent/','/tiny-town/','/elsewhere/',
+    '/flip-dash/','/parcel-panic/','/pocket-aquarium/'
    ],'Real browser must render all seven game worlds and the independent RPG preview');
-   const card=page.locator('#focus-grid .focus-card').first();
+   const card=page.locator('#focus-grid .focus-card').filter({has:page.locator('a[href="/cat-bond/"]')});
    const lines=(await card.locator('.focus-line').allTextContents())
     .map(s=>s.trim().replace(/\s+/g,' '));
    for(const [label,value] of oldCount[language]){

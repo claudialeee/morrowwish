@@ -32,7 +32,7 @@ for(const locale of ['zh','en']){
   locale+' homepage views must immediately follow total pageviews');
 }
 console.log('Overall pageviews first, homepage views second; both zh/en KPI values and seven-game table preserved.');
-assert.ok(html.includes("const displayOrder=['cat-bond'"),'Game table must start with Cat Bond');
+assert.ok(html.includes("const displayOrder=['starbell-preview'"),'Game table must start with Starbell preview');
 assert.ok(!html.includes('id="games-total"')&&!html.includes('gamesTrackedTotal')&&
  !html.includes('gamesTotalNote')&&!html.includes('total-row'),
  'Game performance table must not render an aggregate row');
