@@ -1,23 +1,30 @@
 {
   "slug": "starbell",
-  "video": "/promo/starbell/story-trailer-en-20261126.mp4",
-  "poster": "/promo/starbell/story-trailer-en-20261126.jpg",
+  "video": "/promo/starbell/story-trailer-en-v3-45961868814.mp4",
+  "poster": "/promo/starbell/story-trailer-en-v3-45961868814.jpg",
   "duration": 36,
-  "createdAt": "2026-11-27T07:43:48.146Z",
+  "version": "V3",
+  "createdAt": "2026-11-27T08:00:01.681Z",
+  "updatedAt": "2026-11-27T08:00:01.681Z",
   "source": {
-    "sha": "dcad5f737dac653d1a5a89c474281d38636bc608",
-    "qaTier": "preview-smoke",
-    "qaScope": "full",
-    "fullReleaseAccepted": false,
-    "scope": "Prologue through Finale",
-    "storage": "local-only",
+    "sha": "4d09ad3c8468cb3a4a5bdc4b6d26cf400d7765ab",
+    "scope": "isolated portrait engineering preview",
     "productionApis": false,
-    "previewTelemetry": "starbell-preview",
-    "sources": [
-      "review/starbell-canon13-player-experience dcad5f737dac653d1a5a89c474281d38636bc608"
-    ]
+    "telemetry": false,
+    "storage": "local-only",
+    "fullReleaseAccepted": false,
+    "targetedLayoutGate": true,
+    "fullCampaignRevalidated": false
   },
-  "renderRun": 45960007297,
+  "music": {
+    "title": "Soar",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "source": "https://www.scottbuckley.com.au/library/soar/",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "edited": true
+  },
+  "renderRun": 45961868814,
   "approved": false,
   "published": false,
   "shots": [
@@ -27,11 +34,11 @@
     },
     {
       "scene": "garden",
-      "seconds": 2
+      "seconds": 3
     },
     {
       "scene": "sky",
-      "seconds": 2
+      "seconds": 1
     },
     {
       "scene": "melody",
@@ -42,7 +49,7 @@
       "seconds": 3
     },
     {
-      "scene": "chase",
+      "scene": "forest",
       "seconds": 3
     },
     {
@@ -51,11 +58,7 @@
     },
     {
       "scene": "battle",
-      "seconds": 4
-    },
-    {
-      "scene": "duo",
-      "seconds": 2
+      "seconds": 6
     },
     {
       "scene": "secret",

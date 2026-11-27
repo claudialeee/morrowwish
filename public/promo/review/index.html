@@ -75,7 +75,7 @@ async function refresh(){
    const article=document.createElement('article'),heading=document.createElement('h2'),
      video=document.createElement('video'),nav=document.createElement('div'),a=document.createElement('a'),note=document.createElement('small');
    heading.textContent=names[entry.slug]+(entry.paused?' · 暂停制作（保留上一版）':'');video.controls=true;video.playsInline=true;video.preload='metadata';
-   const cacheToken=encodeURIComponent(data.createdAt||data.latestVersion||'latest');
+   const cacheToken=encodeURIComponent(entry.createdAt||data.createdAt||data.latestVersion||'latest');
    video.src=entry.video+'?revision='+cacheToken;
    if(entry.poster&&entry.poster.startsWith('/promo/'))video.poster=entry.poster+'?revision='+cacheToken;
    const times={};let offset=0;
@@ -88,12 +88,14 @@ async function refresh(){
      nav.appendChild(button);
    }
    a.className='video-link';a.href=video.src;a.target='_blank';a.rel='noopener';a.textContent='单独打开 MP4';
-   note.textContent=Number(entry.duration||0).toFixed(1)+' 秒 · '+(entry.paused?'该游戏宣传片暂停制作，保留上一审核版 · ':'')+'未批准发布';
+   note.textContent=(entry.version ? entry.version+' · '+formatDate(entry.updatedAt||entry.createdAt)+' 更新 · ' : '')+Number(entry.duration||0).toFixed(1)+' 秒 · '+(entry.paused?'该游戏宣传片暂停制作，保留上一审核版 · ':'')+'未批准发布';
+   if(entry.music){const music=document.createElement('small');music.textContent='Music credit: '+entry.music.title+' — '+entry.music.artist+' · '+entry.music.license+' (edited)';const link=document.createElement('a');link.href=entry.music.source;link.textContent=' Source';link.target='_blank';link.rel='noopener';music.append(link);article.append(music);}
    video.addEventListener('play',()=>box.querySelectorAll('video').forEach(other=>{if(other!==video)other.pause()}));
    video.addEventListener('error',()=>{note.textContent='播放器载入失败，请点「单独打开 MP4」重试';note.style.color='#ffd4da'});
    article.append(heading,video,nav,a,note);box.append(article);
   }
-  $('version').textContent=(data.latestVersion||data.version||'最新版本')+(data.createdAt?' · '+formatDate(data.createdAt)+' 更新':'')+' · '+box.children.length+' 条';
+  const newest=[data.createdAt,star?.updatedAt||star?.createdAt].filter(Boolean).sort().at(-1);
+  $('version').textContent=(data.latestVersion||data.version||'最新版本')+(star?.version?' · 星铃回响 '+star.version:'')+(newest?' · '+formatDate(newest)+' 更新（PT）':'')+' · '+box.children.length+' 条';
  }catch(error){$('version').textContent='暂时无法读取最新审核视频';$('error').textContent=error.message}
 }
 $('reload').addEventListener('click',refresh);
