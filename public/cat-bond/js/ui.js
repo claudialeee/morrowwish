@@ -457,7 +457,7 @@ const UI = {
         +this.battleCatStatsMarkup(c)+'</span></button>').join('')
       +'</div>';
   },
-  bindSquadPicker(selected){
+  bindSquadPicker(selected,onRefresh){
     const en=window.MorrowwishI18n?.get?.()!=='zh',cats=State.S.cats||[];
     const host=document.querySelector('#panel .map-squad-roster');if(!host)return;
     const buttons=[...host.querySelectorAll('.map-squad-choice')];
@@ -472,7 +472,9 @@ const UI = {
       const count=document.querySelector('#panel .map-squad-count');
       if(count)count.textContent=(en?'Selected ':'已选 ')+selected.length+' / 5'+(en?'':' 只');
       this.refreshSquadOrder(selected,refresh);
-      this.refreshBattlePrepSkills(selected.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean),en);
+      const roster=selected.map(uid=>cats.find(c=>c.uid===uid)).filter(Boolean);
+      this.refreshBattlePrepSkills(roster,en);
+      onRefresh?.(roster);
     };
     buttons.forEach(btn=>{
       const cat=cats.find(c=>c.uid===btn.dataset.uid);
@@ -2836,7 +2838,8 @@ const UI = {
       <p class="sub" style="font-weight:750;color:#765e85">
         ${opts.bossElement?((en?'Guardian battle · Element: ':'守卫战 · 属性：')+bossLabel):`${opts.storyTitle?(en?'Story encounter':'剧情战斗'):(en?'Wild cat':'野生猫咪')} · Lv.${encounterLvl} · <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>`}
       </p>
-      ${this.matchupWarning(selected.slice(0,2).map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en,opts.bossElement)}
+      <div id="bp-matchup">${this.matchupWarning(selected.slice(0,2).map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en,opts.bossElement)}</div>
+      ${opts.bossClue?`<p class="sub" data-guardian-clue="true" style="line-height:1.45">${this.battlePrepEsc(opts.bossClue[en?1:0])}</p>`:""}
       <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
       ${squadMarkup}
       <div class="prebattle-quick-select"><button id="bp-best-team" type="button" class="btn ghost">${en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button>
@@ -2878,11 +2881,12 @@ const UI = {
       <div class="btn-row prebattle-actions"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
       <button class="btn ghost" id="bp-cancel">${en?'Not now':'暂不出战'}</button></div>`);
     this.setupPrebattleDialog();
-    this.bindSquadPicker(selected);
+    const refreshMatchup=roster=>{const hint=document.getElementById('bp-matchup');if(hint)hint.innerHTML=this.matchupWarning(roster.slice(0,2),wildSp,en,opts.bossElement);};
+    this.bindSquadPicker(selected,refreshMatchup);
     this.refreshBattlePrepSkills(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en);
     document.getElementById('bp-best-team').onclick=()=>{
       selected.splice(0,selected.length,...this.getStrongestBattleTeam().map(cat=>cat.uid));
-      this.bindSquadPicker(selected);
+      this.bindSquadPicker(selected,refreshMatchup);
     };
     const duoPick=document.getElementById('bp-chosen-duo');
     if(duoPick)duoPick.onclick=()=>{
@@ -2892,7 +2896,7 @@ const UI = {
       if(!pair.every(id=>eligible.has(id)))return;
       const next=[...new Set([...pair,...selected,...this.getStrongestBattleTeam().map(c=>c.uid)])].filter(id=>eligible.has(id)).slice(0,5);
       selected.splice(0,selected.length,...next);
-      this.bindSquadPicker(selected);
+      this.bindSquadPicker(selected,refreshMatchup);
     };
     const options=[...document.querySelectorAll('#panel .capture-mode-option[data-battle-auto]')];
     for(const button of options){

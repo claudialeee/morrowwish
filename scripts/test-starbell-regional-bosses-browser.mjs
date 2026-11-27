@@ -66,6 +66,7 @@ try{
      await press(b);
     }else await press(page.locator('[data-next-scene="'+c.scene+'"]'));
     await page.locator('#bp-go').waitFor({state:'visible'});
+    const clue=page.locator('[data-guardian-clue]');await clue.waitFor({state:'visible'});assert.ok((await clue.textContent()).trim().length>10,'guardian tactic is visible before battle');
    };
    await open();
    if(c.id==='harbor'){
@@ -88,6 +89,14 @@ try{
    const combat=await page.evaluate(()=>{const b=__game.battle;return {species:b.enemies[0].sp.id,element:b.enemies[0].element,isBoss:b.enemies[0].isBoss,portrait:b.H>b.W,health:b.enemies[0].hp,auto:b.autoMode};});
    assert.equal(combat.species,bossTemplates[c.id]);assert.equal(combat.isBoss,true);assert.equal(combat.auto,true);assert.ok(combat.health>0);assert.equal(combat.portrait,portrait);
    const hud=page.locator('#cb-region-combat');await hud.waitFor({state:'visible'});
+   if(c.id==='forest'){
+    await page.evaluate(()=>{const b=__game.battle;for(let i=0;i<800&&!b.regionalCombat.cast&&!b.done;i++)b.update(1/60);});
+    await page.waitForFunction(()=>!!__game.battle?.regionalCombat?.cast);
+    const support=hud.locator('button');assert.equal(await support.isEnabled(),true);await press(support);
+    assert.equal(await page.evaluate(()=>__game.battle.regionalCombat.supportUsed),true);
+    assert.equal(await page.evaluate(()=>__game.battle.regionalCombat.cast===null),true);
+    assert.equal(await support.isDisabled(),true);
+   }
    // Run the real update loop faster than wall time, never call finish(true).
    const result=await page.evaluate(()=>{const g=__game,b=g.battle;for(let i=0;i<10000&&!b.done;i++)b.update(1/60);const out={result:b.result,done:b.done,t:b.t};if(b.done&&g.battle===b)g.endBattle();return out;});
    assert.equal(result.done,true);assert.equal(result.result,'win',JSON.stringify(result));

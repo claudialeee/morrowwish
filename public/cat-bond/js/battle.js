@@ -62,7 +62,7 @@ class CaptureBattle {
     // raw stats, wins. Under-leveled: the stronger wild cat genuinely hits harder
     // and shrugs off more of your damage — fighting up a level should be dangerous.
     {
-      const cats0 = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
+      const cats0 = Array.isArray(teamOrCat) ? (opts?.storyEncounter==="regional-boss"?teamOrCat.slice(0,2):teamOrCat) : [teamOrCat];
       const avgLv = cats0.length ? cats0.reduce((s, c) => s + (c.level || 1), 0) / cats0.length : 1;
       const gap = avgLv - this.wildLevel;                  // + = you out-level; − = wild out-levels you
       this._levelGap = gap;                                // stored so makeEnemy can taper rare-HP by gap
@@ -6055,7 +6055,7 @@ class CaptureBattle {
     // spikes — a 1.5 reaction on a 2x-effective hit is 2.5x, not 3.0x. Reductions
     // (combo<1 "steam/douse", elem<1 resist) subtract their shortfall the same way.
     const combo = Skills.checkCombo ? Skills.checkCombo(e.tags, skill) : null;
-    const elem = this.elemMult(skill.element, e.sp.id);
+    const elem = skill.element&&this.libraryEncounter&&e.regionalEnemy&&e.element?Skills.effectiveness(skill.element,e.element):this.elemMult(skill.element,e.sp.id);
     let bonus = 0;                                   // sum of (factor-1) contributions
     if (combo) bonus += (combo.bonusMult || 1) - 1;
     bonus += elem - 1;
@@ -6707,7 +6707,7 @@ class CaptureBattle {
     const playerHits = dir === 'me→enemy';                         // attacker is YOUR cat
     const el = skill && skill.element;
     const defSpecies = target?.sp?.id || target?.cat?.species;
-    const elem = (el && defSpecies && window.Skills) ? window.Skills.effectiveness(el, window.Skills.elementOf(defSpecies)) : 1;
+    const elem = (el && defSpecies && window.Skills) ? window.Skills.effectiveness(el, (this.libraryEncounter&&target?.regionalEnemy&&target.element)||window.Skills.elementOf(defSpecies)) : 1;
     const nameOf = f => (f?.cat && window.State?.catName?.(f.cat)) || f?.sp?.name || f?.sp?.id || f?.cat?.species || '?';
     // Resolve the actual ATTACKER so each row names BOTH sides with an unambiguous 🟢(yours)/🔴(wild)
     // tag — the old log showed only the target's bare cat-name, so a 露露-vs-露露-ish fight was

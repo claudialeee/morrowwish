@@ -1,4 +1,4 @@
-import {REGIONAL_BOSSES,bossKey,optionalBossAvailable,atBoss,bossReward,bossTemplates,regionalBossLevel} from "./regional-bosses.mjs";
+import {REGIONAL_BOSSES,bossKey,optionalBossAvailable,atBoss,bossReward,bossTemplates,regionalBossLevel,guardianProfile} from "./regional-bosses.mjs";
 import {activateCompanionTalents} from "./companion-talents.mjs";
 import {canonArt,visibleBounds} from "./canon22-art.mjs";
 import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud} from "./battle-hud.mjs";
@@ -158,8 +158,8 @@ function install(){
  }
  function paintHud(b){
   const panel=document.getElementById("cb-region-combat");if(!panel||!b.regionalCombat)return;
-  const r=b.regionalCombat,kit=r.kit,button=panel.querySelector("button");
-  panel.querySelector("span").textContent=r.shadowLight?tr(["引剪影兽进入灯光再攻击","Draw the shadow beast into the light"]):b.libraryEncounter?.bossId&&REGIONAL_BOSSES[b.libraryEncounter.bossId]?tr(REGIONAL_BOSSES[b.libraryEncounter.bossId].name):tr(kit.name)+" · "+tr(kit.enemy);
+  const r=b.regionalCombat,kit=r.kit,button=panel.querySelector("button"),phase=b.libraryEncounter&&["starfall","mastery"].includes(b.libraryEncounter.bossId)?(b.liveEnemies()[0]?.element==="dark"?tr([" · 暗属性"," · Dark"]):tr([" · 光属性"," · Light"])):"";
+  panel.querySelector("span").textContent=r.shadowLight?tr(["引剪影兽进入灯光再攻击","Draw the shadow beast into the light"]):b.libraryEncounter?.bossId&&REGIONAL_BOSSES[b.libraryEncounter.bossId]?tr(REGIONAL_BOSSES[b.libraryEncounter.bossId].name)+phase:tr(kit.name)+" · "+tr(kit.enemy);
   button.hidden=!r.supportAvailable;button.disabled=r.supportUsed||!r.cast;
   button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?.bossId==="library"?tr(["打断镜影","Break the reflection"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Finn · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Wren · Escort flight"]):tr(kit.support);
  }
@@ -180,7 +180,7 @@ function install(){
  function resolve(b,r,cast){
   for(const f of living(b)){
    if(!cast.patterns.some(p=>inPattern(p,f)))continue;
-   const hit=b.resolveHit(f,"wild",{element:r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element,kind:"aoe",isBasic:false},Math.max(8,f.maxhp*(r.kit.kind==="embers"?.14:.10)),f.x,f.y);
+   const hit=b.resolveHit(f,"wild",{element:cast.element||(r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element),kind:"aoe",isBasic:false},Math.max(8,f.maxhp*(r.balance?.hazard??(r.kit.kind==="embers"?.14:.10))),f.x,f.y);
    if(hit?.dealt>0){
     if(r.kit.kind==="roots")f.rootT=Math.max(f.rootT||0,1.5);
     if(r.kit.kind==="gale"){const dir=f.x<b.W/2?-1:1;f.x=clamp(f.x+dir*38,32,b.W-32);}
@@ -196,13 +196,13 @@ function install(){
   if(r.cast){
     if(r.kit.kind==="gale"){const direction=r.cycle%2?1:-1;for(const f of living(b)){if((f.inv||0)>0)continue;f.x=clamp(f.x+direction*22*Math.min(.05,dt),32,b.W-32);}}
     r.cast.remaining-=dt;
-    if(r.cast.remaining<=0){resolve(b,r,r.cast);r.cast=null;r.next=r.kit.period*(b.libraryEncounter?.bossId==="mastery"?.65:1);paintHud(b);}
+    if(r.cast.remaining<=0){resolve(b,r,r.cast);r.cast=null;r.next=r.balance?.period??r.kit.period;paintHud(b);}
     return;
   }
   r.next-=dt;
   if(r.next<=0){
    const t=target(b);if(!t)return;
-   r.cast={remaining:1.45,max:1.45,patterns:buildPattern(r.kit.kind,b.W,b.H,b.topMargin,b.bottomMargin,t,r.cycle++)};
+   r.cast={remaining:1.45,max:1.45,element:r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element,patterns:buildPattern(r.kit.kind,b.W,b.H,b.topMargin,b.bottomMargin,t,r.cycle++)};
    const line=b.libraryEncounter?.bossId==="library"?["镜影即将反击，躲开标记！","Mirror counter incoming: dodge the marked areas!"]:labels[r.kit.kind];notice(b,line[0],line[1]);paintHud(b);
   }
  }
@@ -245,13 +245,17 @@ function install(){
  };
  const shadowLight=b=>({x:b.W*.50,y:b.topMargin+(b.H-b.topMargin-b.bottomMargin)*.50,r:Math.min(118,b.W*.22,(b.H-b.topMargin-b.bottomMargin)*.28)});
  const inLight=(b,e)=>{const l=shadowLight(b);return Math.hypot(e.x-l.x,e.y-l.y)<=l.r;};
+ function shiftGuardian(b,e){
+  if(!["starfall","mastery"].includes(b.libraryEncounter?.bossId)||!e?.regionalEnemy||e._darkPhase||!e.alive||e.hp<=0||e.hp>e.maxhp*.5)return;
+  e._darkPhase=true;e.element="dark";notice(b,"星辰守卫切换为暗属性！","The guardian shifts to dark!");paintHud(b);
+ }
  const hurt=BP.hurtEnemy;
- BP.hurtEnemy=function(e,dmg,...args){if(this.regionalCombat?.shadowLight&&!inLight(this,e))return 0;return hurt.call(this,e,dmg,...args);};
+ BP.hurtEnemy=function(e,dmg,...args){if(this.regionalCombat?.shadowLight&&!inLight(this,e))return 0;const result=hurt.call(this,e,dmg,...args);shiftGuardian(this,e);return result;};
  window.CatBondShadowCombat={steer(b,f){if(!b.regionalCombat?.shadowLight||!b.autoMode||!f.alive)return null;const l=shadowLight(b),dx=l.x-f.x,dy=l.y-f.y,d=Math.hypot(dx,dy);return d>18?{x:dx/d,y:dy/d}:{x:0,y:0};}};
  const capture=BP.startCaptureSeq;
  BP.startCaptureSeq=function(){if(this.libraryEncounter){if(this.done||this.liveEnemies().length)return;this.libraryEncounter.cleared=true;this.projectiles=[];this.enemyProjectiles=[];this.finish(true);return;}if(this.regionalCombat&&this.enemies.some(e=>e.regionalEnemy))this._lastDropped=this.enemies[0];return capture.call(this);};
  const update=BP.update;
- BP.update=function(dt){const result=update.call(this,dt);if(this.regionalCombat){tick(this,Math.min(.06,Math.max(0,dt*(this.tempoScale??.64))));activateCompanionTalents(this);}if(this.libraryEncounter&&!this.done&&this.t>100){this._timeCapLoss=true;this.finish(false);}return result;};
+ BP.update=function(dt){const result=update.call(this,dt);if(this.regionalCombat){tick(this,Math.min(.06,Math.max(0,this.libraryEncounter?(this._lastDt??dt*(this.tempoScale??.64)):dt*(this.tempoScale??.64))));activateCompanionTalents(this);}if(this.libraryEncounter&&!this.done&&this.t>100){this._timeCapLoss=true;this.finish(false);}return result;};
  const playerProjectile=BP.spawnProj;
  BP.spawnProj=function(x,y,ang,spd,dmg,owner,color,r,kind,skill,life){if(this.libraryEncounter?.bossId==="library"&&owner==="me"&&skill&&!skill.isBasic){this.libraryEncounter.lastSkill={element:skill.element,color,spd,kind,homing:skill.homing,grow:skill.grow};}return playerProjectile.call(this,x,y,ang,spd,dmg,owner,color,r,kind,skill,life);};
  const enemyAI=BP.updateEnemyAI;
@@ -262,19 +266,19 @@ function install(){
   const baseSpeed=e.speed,baseRole=e.role;
   if(r.kit.kind==="gale")e.speed*=1.28;
   if(r.kit.kind==="roots")e.speed*=.84;
-  if(r.kit.kind==="orbit"){e.role=e.regionalCycle%2?"sharpshooter":"ambusher";if(["starfall","mastery"].includes(bossId(this))&&!e._darkPhase&&e.hp<e.maxhp*.5){e._darkPhase=true;e.element="dark";notice(this,"星辰守卫切换为暗属性！","The guardian shifts to dark!");}}
+  if(r.kit.kind==="orbit"){e.role=e.regionalCycle%2?"sharpshooter":"ambusher";shiftGuardian(this,e); }
   e.rotation=[];e.ultSkill=null;e.specialMeter=-10000;e.fireCd=99999;e.wardCd=99999;
   try{enemyAI.call(this,dt,e,me);}finally{e.speed=baseSpeed;e.role=baseRole;}
   e.fireCd=99999;
   if(!me?.alive)return;e.regionalCd-=dt;if(e.regionalCd>0)return;
-  e.regionalCycle++;e.regionalCd=r.kit.kind==="gale"?2.7:3.5;
+  e.regionalCycle++;e.regionalCd=r.balance?.shot??(r.kit.kind==="gale"?2.7:3.5);
   const a=Math.atan2(me.y-e.y,me.x-e.x),skill={element:r.kit.kind==="orbit"?e.element:r.kit.element,isBasic:true},fire=(angle,speed,mult,kind="ball")=>this.spawnProj(e.x,e.y,angle,speed,e.dmg*mult,"wild",r.kit.color,7,kind,skill);
   switch(r.kit.kind){
    case "surge":for(let i=-2;i<=2;i++)fire(a+i*.20,168,.47);break;
    case "roots":for(let i=-1;i<=1;i++)this.spawnProj(e.x,e.y,a+i*.22,138,e.dmg*.55,"wild",r.kit.color,8,"leaf",{element:"grass",isBasic:false,appliesTag:"bind"});break;
    case "embers":for(let i=-1;i<=1;i++)fire(a+i*.28,220,.62,"forge-slag");break;
    case "gale":fire(a-.11,325,.66);fire(a+.11,325,.66);break;
-   case "mirror":{const copied=this.libraryEncounter?.lastSkill;if(copied){const k={element:copied.element||"dark",isBasic:false,homing:copied.homing,grow:copied.grow};for(let i=-1;i<=1;i++)this.spawnProj(e.x,e.y,a+i*.18,clamp(copied.spd||200,120,320),e.dmg*.54,"wild",copied.color||r.kit.color,8,"ball",k); }else fire(a,200,.78);e.reflectT=Math.max(e.reflectT||0,.65);break;}
+   case "mirror":{const copied=this.libraryEncounter?.lastSkill;if(copied){const k={element:copied.element||"dark",isBasic:false,homing:copied.homing?clamp(copied.homing,.1,4.2):undefined,grow:copied.grow?clamp(copied.grow,1,2):undefined};const kind=["ball","orb","fireball","lightningOrb","leaf","hex"].includes(copied.kind)?copied.kind:"ball";for(let i=-1;i<=1;i++)this.spawnProj(e.x,e.y,a+i*.18,clamp(copied.spd||200,120,320),e.dmg*.54,"wild",copied.color||r.kit.color,8,kind,k); }else fire(a,200,.78);e.reflectT=Math.max(e.reflectT||0,.65);break;}
    case "orbit":for(let i=0;i<7;i++)fire(a+i*Math.PI*2/7,165,.42);break;
   }
   this.vfx.ring(e.x,e.y,{r0:10,vr:160,life:.45,color:r.kit.color,width:3});
@@ -283,7 +287,7 @@ function install(){
  BP.draw=function(ctx){const result=drawBattle.call(this,ctx);if(this.regionalCombat){const active=cinematicActive(this),panel=document.getElementById("cb-region-combat");syncCinematicHud(panel,this);if(active)return result;if(this.regionalCombat.shadowLight){const l=shadowLight(this),g=ctx.createRadialGradient(l.x,l.y,4,l.x,l.y,l.r);g.addColorStop(0,"#ffe3a055");g.addColorStop(.75,"#ffe3a033");g.addColorStop(1,"#ffe3a000");ctx.save();ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);ctx.strokeStyle="#f7d48c";ctx.lineWidth=2;ctx.setLineDash([5,6]);ctx.beginPath();ctx.arc(l.x,l.y,l.r,0,Math.PI*2);ctx.stroke();ctx.restore();}draw(this,ctx);}if(this.libraryEncounter&&!this.duoCinematic&&!this.ultCinematic){ctx.save();for(const e of this.liveEnemies()){ctx.strokeStyle="#c5b9ff";ctx.globalAlpha=.45+.2*Math.sin(this.t*4);ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(e.x,e.y,Math.max(24,(e.r||24)*1.3),11,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}return result;};
  const bossId=b=>b.libraryEncounter?.bossId;
  const libraryOp="battle:mirror-guardian",libraryScene="library:M-02";
- const storyEcho={forge:{scene:"forge:E-03",op:"battle:shadow-beast",point:[.74,.40],title:["灯影剧场 · 剪影兽","Shadow theater · Shadow beast"],name:["剪影兽","Shadow beast"]},harbor:{scene:"harbor:H-04",op:"battle:chime-beast",point:[.195,.50],title:["铃房 · 铃舌兽","Bell house · Belltongue Beast"],name:["铃舌兽","Belltongue Beast"]},library:{...REGIONAL_BOSSES.library,title:REGIONAL_BOSSES.library.name},starfall:{...REGIONAL_BOSSES.starfall,title:REGIONAL_BOSSES.starfall.name}};
+ const storyEcho={forge:{scene:"forge:E-03",op:"battle:shadow-beast",point:[.74,.40],title:["灯影剧场 · 剪影兽","Shadow theater · Shadow beast"],name:["剪影兽","Shadow beast"],clue:["剪影兽在灯光外免疫伤害。引它到发光的圆形舞台内再攻击。","The shadow beast is immune outside the light. Lure it into the glowing circle before attacking."]},harbor:{scene:"harbor:H-04",op:"battle:chime-beast",point:[.195,.50],title:["铃房 · 铃舌兽","Bell house · Belltongue Beast"],name:["铃舌兽","Belltongue Beast"],clue:["避开铃声预警光带，再接近攻击；预警期间可以请地区伙伴支援一次。","Leave the marked chime lanes before closing in. Local allies can cancel one telegraphed attack."]},library:{...REGIONAL_BOSSES.library,title:REGIONAL_BOSSES.library.name},starfall:{...REGIONAL_BOSSES.starfall,title:REGIONAL_BOSSES.starfall.name}};
  function libraryAvailable(game,id="library",optional=false){
   const d=optional?REGIONAL_BOSSES[id]:storyEcho[id],v=window.CatBondResonance?.view(),root=window.State.S,region=d?.region||id,w=root.resonanceExploration,p=w?.positions?.[region],q=d?.point;
   return !!(d&&game?.scene==="map"&&!game.battle&&w?.location===region&&p&&Math.hypot(p.x-q[0],p.y-q[1])<.072&&(optional?optionalBossAvailable(id,v,w):v?.current?.id===d.scene&&v.objective[0]===d.op));
@@ -292,15 +296,16 @@ function install(){
   if(!libraryAvailable(game,id,optional))return false;
   const d=optional?REGIONAL_BOSSES[id]:storyEcho[id],region=d.region||id,root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam();
   if(!team.length)return false;const sp=window.GameData.speciesById(bossTemplates[id]);if(!sp)return false;const creature=region==="forge"?canonArt("shadow-beast"):art[region]?.enemy;if(!creature?.complete||!creature.naturalWidth){game.toast?.({zh:"守卫原画尚未加载，请稍后再次挑战。",en:"Guardian artwork is not ready. Please try again."});return false;}host.close?.();
-  window.UI.openBattleModePrompt(team,sp,{origin:"map",storyTitle:d.title||d.name,bossElement:REGION_KITS[region].element,onStart:fighters=>{
+  window.UI.openBattleModePrompt(team,sp,{origin:"map",storyTitle:d.title||d.name,bossElement:REGION_KITS[region].element,bossClue:d.clue,onStart:fighters=>{
    if(root!==window.State.S||!libraryAvailable(game,id,optional)||!fighters.length)return;
    const token=host.captureAction(),base={...sp,encounterLevel:regionalBossLevel(id,fighters)};
    game._returnScene="map";game._battleTheme={region,sky1:"#20253f",sky2:"#697ca8",ground:"#464967",ground2:"#232843",accent:REGION_KITS[region].color};
    game.startBattle(fighters,base,{storyEncounter:"regional-boss",pack:[base]});const b=game.battle;if(!b)return;
    b.storyEncounter=true;b.captureReady=false;b.libraryEncounter={root,token,cleared:false,region,scene:d.scene,op:d.op,optional,bossId:id,reward:bossReward(id,root.resonanceExploration)};
-   b.regionalCombat={region,kit:REGION_KITS[region],next:2.9,cast:null,cycle:0,supportAvailable:true,supportUsed:false};
+   const balance=guardianProfile(id,b.team,window.State.difficulty());
+   b.regionalCombat={region,kit:REGION_KITS[region],balance,next:balance.first,cast:null,cycle:0,supportAvailable:true,supportUsed:false};
    if(region==="forge")b.regionalCombat.shadowLight=true;
-   const echo=b.enemies[0];if(echo){echo.regionalEnemy=region;echo.isBoss=true;echo.combatName=d.name;echo.element=REGION_KITS[region].element;echo.role=region==="forge"?"brawler":"sharpshooter";echo.regionalCd=2.2;echo.regionalCycle=0;echo.rotation=[];echo.ultSkill=null;echo.maxhp=Math.max(65,Math.round(living(b).reduce((n,f)=>n+f.maxhp,0)*(d.hp||.85)*(window.State.difficulty()==="hardcore"?1.12:1)));if(id==="mastery")echo.dmg*=1.16;echo.hp=echo.maxhp;echo.poiseMax=Math.round(echo.maxhp*.6);echo.poise=echo.poiseMax;}
+   const echo=b.enemies[0];if(echo){echo.regionalEnemy=region;echo.isBoss=true;echo.combatName=d.name;echo.element=REGION_KITS[region].element;echo.role=region==="forge"?"brawler":"sharpshooter";echo.regionalCd=balance.first;echo.regionalCycle=0;echo.rotation=[];echo.ultSkill=null;echo.maxhp=balance.hp;echo.dmg*=balance.attack;echo.hp=echo.maxhp;echo.poiseMax=Math.round(echo.maxhp*.6);echo.poise=echo.poiseMax;}
    mount(game,b);game.updateBattleUI?.();if(d.clue)notice(b,...d.clue);
   }});return true;
  }

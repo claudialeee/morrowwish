@@ -5,6 +5,7 @@ on:
     paths:
       - 'public/cat-bond/**'
       - 'scripts/test-starbell-regional-bosses*.mjs'
+      - 'scripts/test-starbell-guardian-balance.mjs'
       - '.github/workflows/starbell-regional-bosses-focused.yml'
 permissions:
   contents: read
@@ -28,6 +29,7 @@ jobs:
         if: matrix.profile == 'wide'
         run: |
           node scripts/test-starbell-regional-bosses.mjs
+          node scripts/test-starbell-guardian-balance.mjs
           node scripts/test-cat-bond-canon22-combat-migration.mjs
           node --check public/cat-bond/js/resonance/regional-combat.mjs
       - name: Install browser without uploading cache or artifacts
