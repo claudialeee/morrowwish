@@ -2218,3 +2218,11 @@ Rationale: cron rule strict — `local-numeric` only auto-fix. Of the 2 P0s, bot
 
 ### Workflow health
 critiqueCount 31, 23 subagent retries capped (worst-rate so far). Core synth + headline intact.
+
+## RSI 2026-11-27T02:50:17Z
+
+Archive 3 → **2 cells** (regression — prior pulse-engage elite at `1,2,3,3` lost, no new agent proposal landed there). Winner: `agent:retreat-floor` 0.699 displacing `linear-hp-drift` at cell `1,3,3,3`. Control `stand-at-max-range` migrated up to 0.435 (was 0.408) at cell `2,2,3,3`. Balance: cv=0.106, gap=0.144, worst=grass(0.38) best=dark(0.52).
+
+**Winning bandBody**: `(f)=>({min:90,max:140,rush:95,role:'ranged',hp:f.hp/(f.maxhp||1)})` — a pure fixed 90-140 retreat-floor ranged band with ZERO reactivity. Beat 4 richer HP/CD-reactive proposals + the engine baseline.
+
+Findings-only. The pulse-engage loss (was 0.707) + the stripped-down retreat-floor winning suggests either (a) the HELD-OUT seed [13,202,999] rotation this cycle favors passive/stable bands, or (b) reactive bands' exploit depends on specific seed luck. Worth a seed-salt pass next cycle.
