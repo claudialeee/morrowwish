@@ -824,8 +824,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "你瞧，那个小家伙都在学它歪耳朵了。下回去我家演吧！",
-            "en": "Look, that kitten's trying to bend its ears just like yours. Come put on a show at my place!"
+            "zh": "你瞧，大家都在看你的灯呢。下回去我家演吧！",
+            "en": "Look, everyone is watching your lantern. Come put on a show at my place!"
           }
         }
       ],

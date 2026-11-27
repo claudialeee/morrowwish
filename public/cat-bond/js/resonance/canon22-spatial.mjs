@@ -82,7 +82,9 @@ export function spatialInput(p,a){
  else if(a.type==="target"&&p.kind==="chase"&&!p.direct&&Number.isFinite(a.x)&&Number.isFinite(a.y)&&a.x>=.12&&a.x<=.88&&a.y>=.20&&a.y<=.80){routeChase(p,a.x,a.y);a={...a,frame:p.frame};}
  else if(a.type==="jump"&&p.kind==="chase"){routeChase(p,.8,.27,true);a={...a,frame:p.frame};}
  else return false;
- p.trace.push({...a});return p.solved;
+ // Long optional lantern drags should never exceed the proof replay limit.
+ if(p.operation==="puzzle:lantern-show"&&a.type==="aim"&&p.trace.at(-1)?.type==="aim")p.trace[p.trace.length-1]={...a};
+ else p.trace.push({...a});return p.solved;
 }
 export function spatialProof(p){return p?.solved?{operation:p.operation,trace:p.trace.map(x=>({...x})),frames:p.frame,route:p.route,discoveries:[...p.discoveries],...(p.operation==="puzzle:lantern-show"?{shape:p.shape,angle:p.angle}: {})}:null;}
 export function validSpatialProof(op,proof){

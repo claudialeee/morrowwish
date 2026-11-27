@@ -316,3 +316,7 @@
  #stage .rw-world .rw-festival-card{width:min(60%,540px);left:auto;right:8px;transform:none;bottom:8px;padding:7px 10px}
  #stage .rw-world .rw-festival-hint{margin:2px 0}
 }
+
+/* Reachable bridge landings are obvious; wrong choices remain harmless and explain why. */
+#stage .rw-world .rw-puzzle-controls button[data-path-available=true]{background:#e7f1d8!important;border:2px solid #759467!important;color:#365b36!important;font-weight:800!important}
+#stage .rw-world .rw-puzzle-controls button[data-path-available=false]{opacity:.54!important}
