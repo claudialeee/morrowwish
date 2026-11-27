@@ -1,0 +1,269 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "sourceBlobMatches": 129,
+  "primaryFiles": [
+    {
+      "file": "crazygames/cover-landscape.png",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "bytes": 2912677,
+      "sha256": "165e658b175fca8e1e0f4a65b92a3520b76af7d1e6699c19e68c50be97b89b66",
+      "pass": true
+    },
+    {
+      "file": "crazygames/cover-portrait.png",
+      "dimensions": [
+        800,
+        1200
+      ],
+      "bytes": 1876454,
+      "sha256": "85134e683d110486d2f18c5699ccc18bfbfd2090441f56507f52356e61418f19",
+      "pass": true
+    },
+    {
+      "file": "crazygames/cover-square.png",
+      "dimensions": [
+        800,
+        800
+      ],
+      "bytes": 1260133,
+      "sha256": "37e100ea1cc429f72ae1b41385d2ac4f69139faed884689a2a6f0699cb1b49e2",
+      "pass": true
+    },
+    {
+      "file": "y8/standard.jpg",
+      "dimensions": [
+        760,
+        570
+      ],
+      "bytes": 108231,
+      "sha256": "16acc5062999edf534c1e40a63834a8818301506c5674066184d3633f539bf81",
+      "pass": true
+    },
+    {
+      "file": "y8/game-card.jpg",
+      "dimensions": [
+        760,
+        570
+      ],
+      "bytes": 63147,
+      "sha256": "7d5e05aa82c8d9096d5cdc79066ffdeed6d7455891d96707768cd3df301f0501",
+      "pass": true
+    },
+    {
+      "file": "y8/widescreen.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 139860,
+      "sha256": "e39e76436184f17fbc595dca0e04b78ebab73c5579942f85bce77d094c631a14",
+      "pass": true
+    },
+    {
+      "file": "y8/landscape-promo.jpg",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "bytes": 297199,
+      "sha256": "38075443b4f77d8b8a11dbd99656a748dfe1925df5b849133d3de9f911109a48",
+      "pass": true
+    },
+    {
+      "file": "y8/portrait-promo.jpg",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "bytes": 189077,
+      "sha256": "a761f0a301d64eeb7e69f369bb6bfb8458986681edf1c1a8b1b784ace2d3f0d1",
+      "pass": true
+    },
+    {
+      "file": "gamepix/landscape.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 182722,
+      "sha256": "30569f1c9a6458711872bb6e9391da6b71aab7518c61990209eee1a6e0ebe04a",
+      "pass": true
+    },
+    {
+      "file": "gamepix/portrait.jpg",
+      "dimensions": [
+        720,
+        1280
+      ],
+      "bytes": 123525,
+      "sha256": "9fa226bfec71d1b8f0ba14d284870487d47ece14961982914a91d45d5f44731c",
+      "pass": true
+    },
+    {
+      "file": "gamepix/icon.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "bytes": 552818,
+      "sha256": "0c0b916293898d667836144616593d192a3f1cd9378fa3c239b423cd5fbf7392",
+      "pass": true
+    },
+    {
+      "file": "gamedistribution/square.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "bytes": 552818,
+      "sha256": "0c0b916293898d667836144616593d192a3f1cd9378fa3c239b423cd5fbf7392",
+      "pass": true
+    },
+    {
+      "file": "gamedistribution/card.png",
+      "dimensions": [
+        512,
+        384
+      ],
+      "bytes": 416634,
+      "sha256": "cb9675201acf370901b8e165b5af09e03fbc5512f48b1cf3d73dc192263dc7fb",
+      "pass": true
+    },
+    {
+      "file": "gamedistribution/small.png",
+      "dimensions": [
+        200,
+        120
+      ],
+      "bytes": 54461,
+      "sha256": "91c7d5c4ac08692635db45f43f86272ac7dfa022578ab056e9ea1288f28cba0a",
+      "pass": true
+    },
+    {
+      "file": "crazygames/real-gameplay-landscape.mp4",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "seconds": 19.16,
+      "bytes": 1624008,
+      "sha256": "e2aadae48e0c963eb34eb5498bbc805bc681914c8cde012b888d4d8d57da7ee1",
+      "hasAudio": false,
+      "pass": true
+    },
+    {
+      "file": "crazygames/real-gameplay-portrait.mp4",
+      "dimensions": [
+        1080,
+        1620
+      ],
+      "seconds": 19.04,
+      "bytes": 1390035,
+      "sha256": "0dd90a31ab76fec9b1f3d0e0d153e47233bf443ecdc0e5612452c50ee183eba0",
+      "hasAudio": false,
+      "pass": true
+    },
+    {
+      "file": "y8/continuous.mp4",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "seconds": 46.44,
+      "bytes": 3922460,
+      "sha256": "5b4fbcc28945d771f4fb56bdc6b814245dbf0dbc872a9a77da25fdf186439436",
+      "hasAudio": false,
+      "pass": true
+    },
+    {
+      "file": "itch/gameplay-preview.mp4",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "seconds": 19.16,
+      "bytes": 1624008,
+      "sha256": "e2aadae48e0c963eb34eb5498bbc805bc681914c8cde012b888d4d8d57da7ee1",
+      "hasAudio": false,
+      "pass": true
+    }
+  ],
+  "zips": [
+    {
+      "file": "gamedistribution/cat-bond-gamedistribution-awaiting-sdk-id.zip",
+      "files": 128,
+      "bytes": 36930602,
+      "sha256": "c69ceef0370e6cc78585cd8c59b8e3a2ebcdae712d090401ed5105edaa1936e9",
+      "portraitArtExact": 63,
+      "crcPass": true,
+      "pass": true,
+      "awaitingSdkId": true
+    },
+    {
+      "file": "gamepix/cat-bond-gamepix-candidate.zip",
+      "files": 127,
+      "bytes": 36929818,
+      "sha256": "b7ca3f093f74091df2fee3626473e91665687aaff281e0470658d811995befd9",
+      "portraitArtExact": 63,
+      "crcPass": true,
+      "pass": true,
+      "awaitingSdkId": false
+    },
+    {
+      "file": "itch/internal-standalone-backup.zip",
+      "files": 127,
+      "bytes": 36929818,
+      "sha256": "b5469baa05313dcf699a28887bfb9f5897b4d8526b2c951e7e3999b21c8ef78c",
+      "portraitArtExact": 63,
+      "crcPass": true,
+      "pass": true,
+      "awaitingSdkId": false
+    },
+    {
+      "file": "y8/cat-bond-y8-awaiting-sdk-id.zip",
+      "files": 128,
+      "bytes": 36930453,
+      "sha256": "05768334f53f50ce2cf97582193ce141c5eae6135a9749ee01068fbaa247d363",
+      "portraitArtExact": 63,
+      "crcPass": true,
+      "pass": true,
+      "awaitingSdkId": true
+    }
+  ],
+  "captureScenes": {
+    "landscape": [
+      "two-cat-garden",
+      "capture",
+      "teaser",
+      "duo",
+      "real-exploration",
+      "active-battle"
+    ],
+    "portrait": [
+      "two-cat-garden",
+      "capture",
+      "teaser",
+      "duo",
+      "cat-care",
+      "active-battle"
+    ]
+  },
+  "technicalErrors": [],
+  "technicalPass": true,
+  "standaloneVerified": true,
+  "publicParity": {
+    "crazygames-canonical": true,
+    "itch-public": true
+  },
+  "visualReviewPending": true,
+  "sdkGate": {
+    "y8": "actual App ID unavailable",
+    "gamedistribution": "actual game ID unavailable"
+  },
+  "portalSaved": false,
+  "reviewSubmitted": false,
+  "knownVisualIssue": "Native portrait region exploration has a blank lower area; omitted from public portrait preview. Landscape exploration remains genuine."
+}
