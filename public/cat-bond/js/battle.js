@@ -1528,6 +1528,17 @@ class CaptureBattle {
       if(sk.kind==='projectile')return dist<=Math.max(this.basicAttackRange(f,tgt),sk.reach||0)+12;
       return dist<460;                                              // unknown kinds: unchanged
     };
+    // Adversary P0 w61dao149 fix 4 (auto-fix, unreviewed, not pushed): auto-planner
+    // starved heavy E verbs because Q check always ran first and its CD is shorter.
+    // Shunt E ahead of Q when E is a heavy kind (leap/pounce/dash/aoe/beam) or
+    // when eSkill.power >= qSkill.power*1.15. Same offensive() range gate.
+    const _eKind = f.eSkill && f.eSkill.kind;
+    const _eHeavy = _eKind && ['leap','pounce','dash','aoe','beam'].includes(_eKind);
+    const _ePowerful = (f.eSkill?.power || 0) >= (f.qSkill?.power || 0) * 1.15;
+    const _ePriority = (_eHeavy || _ePowerful) && f.cd.e <= 0 && offensive(f.eSkill, 'e');
+    if (_ePriority) {
+      if(this.skillE(f,aimFor(f.eSkill))!==false){this.markAutoAction(f,'技能：'+(f.eSkill?.name||'疾扑'));return;}
+    }
     if(f.cd.q<=0&&offensive(f.qSkill,'q')){
       if(this.skillQ(f,aimFor(f.qSkill))!==false){this.markAutoAction(f,'技能：'+(f.qSkill?.name||'毛球散射'));return;}
     }
