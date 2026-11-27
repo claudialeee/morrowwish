@@ -126,7 +126,7 @@ jobs:
           const file=root+'/cat-bond/index.html';
           let html=fs.readFileSync(file,'utf8');
           // Keep the real telemetry script; QA visits are disabled by its query guard.
-          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><style>html[lang^="zh"] #cb-preview-note [lang="en"],html:not([lang^="zh"]) #cb-preview-note [lang="zh"]{display:none!important}</style><script>window.ARCADE_GAME_ID="starbell-preview";window.ARCADE_COLLECTOR=(new URLSearchParams(location.search).has("qa")||location.hostname!=="cat-bond-preview.morrowwish.pages.dev")?"/api/preview-disabled":"https://morrowwish.pages.dev/api/starbell-preview-session";window.arcadeMetric=()=>{};</script></head>');
+          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_GAME_ID="starbell-preview";window.ARCADE_COLLECTOR=(new URLSearchParams(location.search).has("qa")||location.hostname!=="cat-bond-preview.morrowwish.pages.dev")?"/api/preview-disabled":"https://morrowwish.pages.dev/api/starbell-preview-session";window.arcadeMetric=()=>{};</script></head>');
           const sha=process.env.SOURCE_SHA;
           // Release identity is machine-readable, not a permanent overlay on the game.
           html=html.replace(/<body([^>]*)>/i,'<body$1 data-source-sha="'+sha+'">');
@@ -183,7 +183,8 @@ jobs:
                   if(!local&&attempt<5)await new Promise(resolve=>setTimeout(resolve,2500));
                 }
                 if(!loaded)throw Error('Preview HTML did not converge to pinned source '+sourceSha+' for '+prefix);
-                if(await page.locator('#cb-preview-note').getAttribute('data-source-sha')!==sourceSha)throw Error('Pinned preview note missing from DOM');
+                if(await page.locator('body').getAttribute('data-source-sha')!==sourceSha)throw Error('Pinned preview identity missing from DOM');
+                if(await page.locator('#cb-preview-note').count())throw Error('Release watermark must not appear in game');
                 await page.locator('#intro-continue').waitFor({state:'visible',timeout:30000});
                 await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook&&window.CatBondChapterCinematics);
                 await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady()||CatBondChapterCinematics.starfallReleaseReady());
@@ -234,9 +235,8 @@ jobs:
                   await page.waitForFunction(locale=>document.documentElement.lang.startsWith(locale)&&document.getElementById('cb-title-name')?.textContent===(locale==='zh'?'星铃回响':'Echoes of the Starbell')&&document.title===(locale==='zh'?'星铃回响 | Morrow Wish':'Echoes of the Starbell | Morrow Wish'),locale);
                   const title=await page.locator('.cb-intro-titleblock').innerText();
                   const buttons=await page.locator('.cb-intro-actions').innerText();
-                  const previewNote=await page.locator('#cb-preview-note').innerText();
-                  if(locale==='en'&&/[\u4e00-\u9fff]/.test(title+buttons+previewNote))throw Error('Chinese leaked into English title or preview note');
-                  if(locale==='zh'&&(/[A-Za-z]/.test(title+buttons)||/Preview|Local saves|Prologue/.test(previewNote)))throw Error('English leaked into Chinese title or preview note');
+                  if(locale==='en'&&/[\u4e00-\u9fff]/.test(title+buttons))throw Error('Chinese leaked into English title');
+                  if(locale==='zh'&&(/[A-Za-z]/.test(title+buttons)))throw Error('English leaked into Chinese title');
                   if(await page.locator('#cb-title-subtitle').count())throw Error('Duplicate language title');
                   if(locale==='zh')await page.screenshot({path:'preview-'+prefix+'-title-zh.png'});
                 }
