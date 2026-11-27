@@ -51,7 +51,7 @@ export function mountHomeConversation(id,api){
  const stage=document.getElementById("stage");if(!stage||!copy||window.__game?.scene!=="yard")return false;
  const owner=window.State.S;api.close?.();document.querySelector(".res-home-conversation")?.dispatchEvent(new Event("cat-bond-close"));
  const root=document.createElement("div");root.className="cb-story-overlay is-visible res-host res-home-conversation";
- const panel=document.createElement("section");panel.className="res-dialogue";panel.setAttribute("role","dialog");panel.setAttribute("aria-modal","true");
+ const panel=document.createElement("section");panel.className="res-dialogue";panel.dataset.speaker=id;panel.setAttribute("role","dialog");panel.setAttribute("aria-modal","true");
  const art=document.createElement("img");art.className="res-portrait";art.alt="";art.src=new URL(id==="muling"?"../../assets/core-art-remaster/leads/muling.webp":"../../assets/npc/"+id+"-painted.webp",import.meta.url).href;
  const body=document.createElement("div");body.className="res-body";const title=document.createElement("h2"),line=document.createElement("p"),controls=document.createElement("div"),close=document.createElement("button");
  title.className="res-speaker";line.className="res-line";controls.className="res-controls";close.type="button";

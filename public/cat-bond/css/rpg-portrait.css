@@ -261,3 +261,27 @@
  #stage #cb-player-first-intro p{font-size:clamp(13px,3.8vw,16px)!important;line-height:1.5!important}
  #stage .res-ending-title>img{inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important}
 }
+
+/* Shared title, quest drawer and dialogue presentation: both orientations. */
+#stage #intro .cb-intro-actions{box-sizing:border-box!important;min-width:0!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+@media (orientation:portrait) and (max-width:700px){
+ #stage #intro .cb-intro-actions{left:max(12px,env(safe-area-inset-left,0px))!important;right:max(12px,env(safe-area-inset-right,0px))!important;width:auto!important;max-width:none!important;bottom:max(16px,env(safe-area-inset-bottom,0px))!important;transform:none!important;margin:0!important}
+}
+#stage .rw-world:not([hidden])>.rw-head>.rw-quest-toggle{display:block!important;position:static!important;inset:auto!important;transform:none!important;pointer-events:auto!important;margin:5px 0 0!important;min-height:44px!important;max-width:100%!important;background:#fff1d2!important;color:#654923!important;border:1px solid #b18b4d!important;border-radius:10px!important;font-weight:750!important}
+#stage .rw-world:not([hidden])>.rw-head>.rw-quest-toggle[aria-expanded=true]{background:#e8cf98!important}
+#stage .rw-world:is(.rw-atlas-mode,.rw-region-compact)>.rw-fit-rail[hidden]{display:none!important}
+#stage .rw-world:is(.rw-atlas-mode,.rw-region-compact)>.rw-fit-rail:not([hidden]){overflow:auto!important;overscroll-behavior:contain;box-sizing:border-box!important;touch-action:pan-y}
+#stage .rw-world .rw-atlas-menu>summary{display:none!important}
+#stage .rw-world .rw-fit-rail button[data-next-scene]{display:block!important;width:100%!important;max-width:100%!important;white-space:normal!important}
+#stage .rw-world .rw-fit-summary{display:none!important}
+@media (orientation:portrait) and (max-width:700px){
+ #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact):not([hidden])>.rw-fit-rail:not([hidden]){top:auto!important;bottom:max(8px,env(safe-area-inset-bottom,0px))!important;max-height:60%!important}
+}
+/* Dialogue is a separate presentation layer, not another window onto the map. */
+#stage:has(.res-host .res-dialogue:not([hidden])) .rw-world>.rw-head,#stage:has(.res-host .res-dialogue:not([hidden])) .rw-world>.rw-fit-rail,#stage:has(.res-host .res-dialogue:not([hidden])) .rw-world>.rw-region-toggle{visibility:hidden!important;pointer-events:none!important}
+#stage .res-host:is([data-scene="harbor:H-04"],[data-scene="harbor:H-05"]){background:#f2e3c9!important;isolation:isolate;overflow:hidden!important}
+#stage .res-host:is([data-scene="harbor:H-04"],[data-scene="harbor:H-05"])::before{inset:0!important;background-size:contain!important;background-position:center!important;filter:none!important;animation:none!important;transform:none!important;opacity:1!important}
+#stage .res-host:is([data-scene="harbor:H-04"],[data-scene="harbor:H-05"])::after{background:linear-gradient(0deg,#35281b66,transparent 33%)!important}
+#stage:has(.res-host:is([data-scene="harbor:H-04"],[data-scene="harbor:H-05"])) .rw-world{visibility:hidden!important;pointer-events:none!important}
+#stage .res-host[data-scene="harbor:H-05"] .res-dialogue{grid-template-columns:minmax(0,1fr)!important}
+#stage .res-host[data-scene="harbor:H-05"] .res-portrait{display:none!important}

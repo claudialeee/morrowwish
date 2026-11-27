@@ -113,7 +113,7 @@ function install(){
   host.style.setProperty("--rw-rail-limit",limit+"px");
   if(mode==="map"||host.classList.contains("rw-region-compact")){
    const portrait=portraitLayout(),menu=rail.querySelector(".rw-atlas-menu"),camera=rail.querySelector(".rw-menu-camera"),toggle=host.querySelector(".rw-region-toggle");
-   if(menu)menu.open=atlasMenuOpen;
+   if(menu){menu.open=atlasMenuOpen;rail.hidden=!atlasMenuOpen;host.querySelector(".rw-quest-toggle")?.setAttribute("aria-expanded",String(atlasMenuOpen));}
    if(camera)camera.hidden=!portrait;
    if(mode==="region"){rail.hidden=!regionMenuOpen;toggle?.setAttribute("aria-expanded",String(!rail.hidden));}
    host.dataset.fitPages="1";host.dataset.fitPage="0";return;
@@ -216,12 +216,15 @@ function install(){
   if(mode==="map"){
    const menu=E("details","rw-atlas-menu");
    menu.open=atlasMenuOpen;
-   menu.append(E("summary","",tr("旅程与地区","Journey and regions")));
+   menu.append(E("summary","",tr("主线任务","Main quest")));
    for(const item of items){
     if(item.matches(".rw-notice"))continue;
     menu.append(item);
    }
-   menu.addEventListener("toggle",()=>{if(menu.isConnected)atlasMenuOpen=menu.open;});
+   const direct=head.querySelector("[data-next-scene]");if(direct)menu.insertBefore(direct,menu.children[2]||null);
+   rail.id="rw-atlas-actions";rail.hidden=!atlasMenuOpen;
+   const toggle=B(tr("主线任务","Main quest"),()=>{atlasMenuOpen=!atlasMenuOpen;fitRail();});toggle.classList.add("rw-quest-toggle","rw-region-toggle");toggle.setAttribute("aria-controls",rail.id);toggle.setAttribute("aria-expanded",String(atlasMenuOpen));head.append(toggle);
+   menu.addEventListener("toggle",()=>{if(menu.isConnected){atlasMenuOpen=menu.open;rail.hidden=!menu.open;toggle.setAttribute("aria-expanded",String(menu.open));}});
    rail.append(menu);
    host.append(rail);
    fitRail();
@@ -240,13 +243,14 @@ function install(){
    }
    const hint=host.querySelector(".rw-next");
    if(hint&&brand){const summary=brand.querySelector(".rw-fit-summary");if(summary){summary.textContent=hint.textContent;summary.title=hint.textContent;}}
-   const toggle=B(tr("探索操作","Explore actions"),()=>{
+   const direct=head.querySelector("[data-next-scene]");if(direct){const objectiveIndex=items.findIndex(el=>el.matches(".rw-objective"));items.splice(Math.max(0,objectiveIndex+1),0,direct);}
+   const toggle=B(tr("主线任务","Main quest"),()=>{
     regionMenuOpen=!regionMenuOpen;
     rail.hidden=!regionMenuOpen;
     toggle.setAttribute("aria-expanded",String(regionMenuOpen));
     if(regionMenuOpen)fitRail();
    });
-   toggle.classList.add("rw-region-toggle");
+   toggle.classList.add("rw-region-toggle","rw-quest-toggle");
    toggle.setAttribute("aria-controls","rw-region-actions");
    toggle.setAttribute("aria-expanded",String(regionMenuOpen));
    rail.id="rw-region-actions";
@@ -255,7 +259,7 @@ function install(){
    const camera=items.find(el=>el.matches(".rw-camera-controls"));
    if(camera){camera.classList.add("rw-menu-camera");camera.hidden=!portraitLayout();}
    if(message){items.splice(items.indexOf(message),1);message.classList.add("rw-floating-notice");}
-   host.append(toggle);
+   head.append(toggle);
   }
   for(const el of items)rail.append(el);
   const pager=E("nav","rw-fit-pages"),prev=B(tr("上一组","Previous"),()=>prev.fitNavigate?.()),next=B(tr("下一组操作","More actions"),()=>next.fitNavigate?.()),counter=E("output","","");
@@ -283,8 +287,8 @@ function install(){
    current();host.replaceChildren();host.hidden=true;canvas=ctx=null;
    if(game.scene==="map")render();
   });}
- function enterMap(){current();clearRewardPopup();stopDemo();host?.classList.remove("rw-region-compact");atlasMenuOpen=portraitLayout();regionMenuOpen=false;optionalOpen=cargoOpen=null;ceremony=null;mode="map";explorer=null;pending=null;notice="";selectedRoute=null;zoom=1;pan=[0,0];followCamera=false;render();return true;}
- function enterRegion(id){const b=current();clearRewardPopup();stopDemo();regionMenuOpen=portraitLayout();waterHintPuzzle=null;waterHint=null;ceremony=null;const r=b.enter(id);if(!r.ok){notice=tr("暂时无法前往","Cannot travel yet")+" · "+reason(r.reason);render();return false;}mode="region";explorer=createExplorer(b,id,{deferForestMelody:true,deferSkyMelody:true,deferForgeMelody:true,deferHarborMelody:true,deferLibraryMelody:true,deferStarfallMelody:true,adventureActions:true});pending=null;notice="";zoom=1;pan=[0,0];followCamera=false;if(wildRegion!==id){optionalOpen=cargoOpen=null;wildRegion=id;spawnDelay=0;wild=null;}if(!wild&&spawnDelay<=0)spawnWild(id);render();return true;}
+ function enterMap(){current();clearRewardPopup();stopDemo();host?.classList.remove("rw-region-compact");atlasMenuOpen=false;regionMenuOpen=false;optionalOpen=cargoOpen=null;ceremony=null;mode="map";explorer=null;pending=null;notice="";selectedRoute=null;zoom=1;pan=[0,0];followCamera=false;render();return true;}
+ function enterRegion(id){const b=current();clearRewardPopup();stopDemo();regionMenuOpen=false;waterHintPuzzle=null;waterHint=null;ceremony=null;const r=b.enter(id);if(!r.ok){notice=tr("暂时无法前往","Cannot travel yet")+" · "+reason(r.reason);render();return false;}mode="region";explorer=createExplorer(b,id,{deferForestMelody:true,deferSkyMelody:true,deferForgeMelody:true,deferHarborMelody:true,deferLibraryMelody:true,deferStarfallMelody:true,adventureActions:true});pending=null;notice="";zoom=1;pan=[0,0];followCamera=false;if(wildRegion!==id){optionalOpen=cargoOpen=null;wildRegion=id;spawnDelay=0;wild=null;}if(!wild&&spawnDelay<=0)spawnWild(id);render();return true;}
  function spawnWild(id){
   const p=explorer.layout.paths;
   // Harbor is the RPG's introductory hunting region. Before the first
@@ -428,7 +432,7 @@ function install(){
  function followPlayer(){if(pointers.size||!followCamera||!cameraEnabled()||mode!=="region")return;const p=project(explorer.position),goal=cameraCenter().map((n,i)=>n-p[i]*zoom);pan=pan.map((n,i)=>n+(goal[i]-n)*.15);contain();}
  function beginWalk(){followCamera=true;}
  function scale(f,x,y){if(!cameraEnabled())return;followCamera=false;const a=[(x-pan[0])/zoom,(y-pan[1])/zoom];zoom=Math.max(1,Math.min(3.5,zoom*f));pan=[x-a[0]*zoom,y-a[1]*zoom];contain();draw();}
- function down(e){if(!portraitLayout()&&mode==="map"&&atlasMenuOpen){const menu=host.querySelector(".rw-atlas-menu");if(menu)menu.open=false;atlasMenuOpen=false;}if(!portraitLayout()&&mode==="region"&&regionMenuOpen&&!explorer?.puzzle&&!ceremony){regionMenuOpen=false;const rail=host.querySelector("#rw-region-actions"),toggle=host.querySelector(".rw-region-toggle");if(rail)rail.hidden=true;toggle?.setAttribute("aria-expanded","false");}let p=point(e);if(explorer?.puzzle?.type==="skyFlight"){canvas.focus();canvas.setPointerCapture?.(e.pointerId);pointers.set(e.pointerId,p);explorer.flightSteer(p[1]);e.preventDefault();return;}pointers.set(e.pointerId,p);canvas.setPointerCapture?.(e.pointerId);if(cameraEnabled())canvas.style.cursor="grabbing";if(pointers.size===1){drag=p;dragged=false;}if(pointers.size===2){const a=[...pointers.values()];pinch=distance(a[0],a[1]);dragged=true;}e.preventDefault();}
+ function down(e){if(mode==="map"&&atlasMenuOpen){atlasMenuOpen=false;fitRail();}if(mode==="region"&&regionMenuOpen&&!explorer?.puzzle&&!ceremony){regionMenuOpen=false;const rail=host.querySelector("#rw-region-actions"),toggle=host.querySelector(".rw-region-toggle");if(rail)rail.hidden=true;toggle?.setAttribute("aria-expanded","false");}let p=point(e);if(explorer?.puzzle?.type==="skyFlight"){canvas.focus();canvas.setPointerCapture?.(e.pointerId);pointers.set(e.pointerId,p);explorer.flightSteer(p[1]);e.preventDefault();return;}pointers.set(e.pointerId,p);canvas.setPointerCapture?.(e.pointerId);if(cameraEnabled())canvas.style.cursor="grabbing";if(pointers.size===1){drag=p;dragged=false;}if(pointers.size===2){const a=[...pointers.values()];pinch=distance(a[0],a[1]);dragged=true;}e.preventDefault();}
  function move(e){if(!pointers.has(e.pointerId))return;const prev=pointers.get(e.pointerId),p=point(e);pointers.set(e.pointerId,p);if(explorer?.puzzle?.type==="skyFlight"){explorer.flightSteer(p[1]);return;}if(explorer?.puzzle?.spatial?.kind==="light"&&p[1]<.79){dragged=true;explorer.spatialAct({type:"aim",x:Math.max(0,Math.min(1,p[0]))});draw();return;}if(!cameraEnabled())return;if(pointers.size===2){const a=[...pointers.values()],n=distance(a[0],a[1]);if(pinch>0){const oldMid=[(a[0][0]+a[1][0]-p[0]+prev[0])/2,(a[0][1]+a[1][1]-p[1]+prev[1])/2],mid=[(a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2];scale(n/pinch,oldMid[0],oldMid[1]);pan=pan.map((v,i)=>v+mid[i]-oldMid[i]);contain();draw();}pinch=n;dragged=true;}else if(drag&&(dragged||distance(drag,p)>.012)){dragged=true;followCamera=false;pan=[pan[0]+p[0]-prev[0],pan[1]+p[1]-prev[1]];contain();draw();}}
  function up(e){const p=point(e),had=pointers.has(e.pointerId);pointers.delete(e.pointerId);if(had&&explorer?.puzzle?.type==="libraryRoutes"){if(drag&&!pointers.size){const action=routeGesture(drag,p);if(action>=0)operate(action);}drag=null;return;}if(!pointers.size&&cameraEnabled())canvas.style.cursor="grab";if(explorer?.puzzle?.type==="skyFlight")return;if(explorer?.puzzle?.spatial?.kind==="light"&&dragged){render();return;}if(had&&!dragged&&!pointers.size)tap(...p);}
  function chaseInput(action){if(explorer?.puzzle?.spatial?.kind!=="chase")return;const r=explorer.spatialAct(action);if(r?.ok&&!r.pending){report(r,["成功 · 继续探索","Success · Continue exploring"]);render();}}

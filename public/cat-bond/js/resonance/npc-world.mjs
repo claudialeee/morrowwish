@@ -13,6 +13,8 @@ function residentImage(id){
  return residentImages.get(id);
 }
 function drawResident(ctx,id,{x,y,scale=1,time=0}){
+ // The dialogue portrait owns the speaking actor while the modal is visible.
+ const dialogue=document.querySelector(".res-host .res-dialogue:not([hidden])");if(dialogue?.dataset.speaker===id&&dialogue.querySelector(".res-portrait:not([hidden])"))return false;
  if(id==='muling'){if(!mulingGarden.complete||!mulingGarden.naturalWidth)return false;const fit=Math.min(118*scale/mulingGarden.naturalWidth,108*scale/mulingGarden.naturalHeight),w=mulingGarden.naturalWidth*fit,h=mulingGarden.naturalHeight*fit;ctx.save();ctx.translate(x,y);ctx.save();ctx.scale(1,.22);const shadow=ctx.createRadialGradient(0,0,0,0,0,Math.max(1,w*.46));shadow.addColorStop(0,"#20272b44");shadow.addColorStop(1,"#20272b00");ctx.fillStyle=shadow;ctx.fillRect(-w/2,-w/2,w,w);ctx.restore();ctx.drawImage(mulingGarden,-w/2,-h,w,h);ctx.restore();return true;}
  const image=residentImage(id);
  if(!image?.complete||!image.naturalWidth)return false;
@@ -24,7 +26,7 @@ function openingEncounter(api){
  const owner=window.State.S,token=api.captureAction(),stage=document.getElementById("stage");if(!stage||api.view().current?.id!=="prologue:P-05"||api.view().openingMet||window.__game?.scene!=="yard")return false;
  if(document.getElementById("cb-traveler-encounter"))return true;
  const root=document.createElement("div");root.id="cb-traveler-encounter";root.className="cb-story-overlay is-visible res-host res-home-conversation";
- const panel=document.createElement("section");panel.className="res-dialogue";panel.setAttribute("role","dialog");panel.setAttribute("aria-modal","true");const art=document.createElement("img");art.className="res-portrait";art.alt="";art.src=mulingGarden.src;
+ const panel=document.createElement("section");panel.className="res-dialogue";panel.dataset.speaker="muling";panel.setAttribute("role","dialog");panel.setAttribute("aria-modal","true");const art=document.createElement("img");art.className="res-portrait";art.alt="";art.src=mulingGarden.src;
  const body=document.createElement("div"),name=document.createElement("h2"),copy=document.createElement("p"),controls=document.createElement("div"),next=document.createElement("button"),close=document.createElement("button");body.className="res-body";name.className="res-speaker";copy.className="res-line";controls.className="res-controls cb-encounter-controls";
  for(const b of [next,close])b.type="button";next.className="cb-encounter-next";close.className="cb-encounter-leave";copy.setAttribute("aria-live","polite");
  controls.append(next,close);body.append(name,copy,controls);panel.append(art,body);root.append(panel);let step=0;
