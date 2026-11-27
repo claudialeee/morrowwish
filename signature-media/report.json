@@ -1,0 +1,139 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "viewportFix": "c0c9eef798870ac84ffd2442dc68ca085cf407cd",
+  "orientations": [
+    {
+      "orientation": "landscape",
+      "complete": true,
+      "duo": {
+        "uses": 1,
+        "elementPair": "fire+grass",
+        "tier": 1,
+        "cinematic": {
+          "remaining": 2.700100000000002,
+          "max": 3.2
+        },
+        "layout": {
+          "source": "63-original-painted-storyboards",
+          "originalArt": true,
+          "actorFallback": false,
+          "viewport": {
+            "width": 1920,
+            "height": 1080
+          },
+          "art": {
+            "x": 0,
+            "y": 0,
+            "width": 1920,
+            "height": 1080
+          },
+          "artAspect": 1.7777777777777777,
+          "fullScreenAtmosphere": true,
+          "animatedEffects": true,
+          "paintingDrawCount": 1,
+          "actorLayerCount": 0,
+          "camera": {
+            "zoom": 1.0055556925065805,
+            "panX": 3.19242435961036,
+            "panY": 1.2524181768680773,
+            "rotationRadians": 0.0007196141584173815
+          },
+          "effectPhase": 0.15621874999999938,
+          "effectTier": 1
+        },
+        "onset": 3.623,
+        "frameTime": 5.448,
+        "screenshot": "duo-real.png"
+      },
+      "ssr": {
+        "species": "xingchen",
+        "rarity": "SSR",
+        "combatTime": 53.304,
+        "resultTime": 88.416,
+        "before": 2,
+        "after": 3,
+        "owned": {
+          "species": "xingchen",
+          "level": 1,
+          "rarity": "SSR"
+        },
+        "screenshot": "ssr-earned.png"
+      },
+      "video": {
+        "width": 1920,
+        "height": 1080,
+        "codec": "h264",
+        "duration": 17.68,
+        "audio": false,
+        "sha256": "cf5a3a604e143a00fc2561138160e35f103c5112335f074d34b3cab31168d579",
+        "bytes": 2456942
+      },
+      "scenes": [
+        "actual duo cut-in",
+        "garden",
+        "workshop",
+        "region",
+        "SSR battle",
+        "SSR earned result"
+      ]
+    },
+    {
+      "orientation": "portrait",
+      "complete": false,
+      "duo": {
+        "uses": 1,
+        "elementPair": "fire+grass",
+        "tier": 1,
+        "cinematic": {
+          "remaining": 2.7500000000000018,
+          "max": 3.2
+        },
+        "layout": {
+          "source": "63-native-portrait-painted-storyboards",
+          "asset": "http://127.0.0.1:18963/cat-bond/assets/mobile-portrait/duo/fire-grass-tier-1.webp?v=portrait-duo-20261127",
+          "originalArt": true,
+          "actorFallback": false,
+          "viewport": {
+            "width": 1080,
+            "height": 1620
+          },
+          "art": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1620
+          },
+          "sourceArt": {
+            "x": -0.3483929443359557,
+            "y": -150.6193652343751,
+            "width": 1080.696785888672,
+            "height": 1921.2387304687502
+          },
+          "artAspect": 0.5625,
+          "fullScreenAtmosphere": false,
+          "animatedEffects": true,
+          "paintingDrawCount": 1,
+          "actorLayerCount": 0,
+          "transition": "full-scene-crossfade",
+          "extendedPainting": false,
+          "opacity": 0.7034118331347404,
+          "camera": {
+            "zoom": 1.0006451721191407,
+            "panX": 0,
+            "panY": 0,
+            "rotationRadians": 0
+          },
+          "effectPhase": 0.1406249999999995,
+          "effectTier": 1
+        },
+        "onset": 6.565,
+        "frameTime": 7.489,
+        "screenshot": "duo-real.png"
+      },
+      "ssr": null,
+      "error": "No actual earned SSR result"
+    }
+  ],
+  "readyForVisualReview": false,
+  "portalSaved": false
+}
