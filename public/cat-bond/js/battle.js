@@ -1083,6 +1083,20 @@ class CaptureBattle {
   // HARD CONSTRAINT: the retreat floor (min) is clamped ≤ basicAttackRange so the basic always
   // connects — the exact "ranged cat can't basic-attack" regression we must not reintroduce.
   kitRangeBand(f) {
+    // Owner 2026-11-27 — RSI winner `agent:allied-hp-peeler` (score 0.706 vs baseline 0.692, +2.05%).
+    // Spec §1a role theory peel/body-block: when an ally is low-HP, this cat shifts tight (60-100
+    // band, role='tank') to draw aggro off the hurt ally. Judge rewards multi-pack survival at
+    // 0.6× weighting on the 0.26 survival term — protecting the carry wins the multi scenario.
+    // Pre-empts the full build-based logic below so peel reads cleanly as a role identity.
+    // HP-gated: self must be at ≥50% HP so a dying cat isn't told to tank, and skill must exist.
+    const _selfHp = f.hp / (f.maxhp || 1);
+    const _peelCandidate = _selfHp >= 0.5 && (this.team || []).some(m =>
+      m !== f && m.alive && m.maxhp && (m.hp / m.maxhp) < 0.5
+    );
+    if (_peelCandidate) {
+      const min = 60, max = 100;
+      return { min, max, rush: min + 5, role: 'tank', hp: _selfHp };
+    }
     const skills=[f.qSkill,f.eSkill].filter(Boolean);
     const isMelee=sk=>sk&&(sk.kind==='melee'||sk.kind==='dash'||sk.kind==='leap'||sk.kind==='pounce');
     const isOffensive=sk=>sk&&['melee','projectile','beam','chain','dash','pounce','leap','aoe'].includes(sk.kind);
