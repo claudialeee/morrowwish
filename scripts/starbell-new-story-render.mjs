@@ -10,12 +10,13 @@ const ff=args=>execFileSync('ffmpeg',['-hide_banner','-loglevel','error','-y',..
 const shots=[
 {id:'hook',d:4.5,src:portrait+'/skyspine-isles.webp',caption:'You thought this was\na new journey.',motion:true},
 {id:'secret',d:5,src:portrait+'/story-broken-bell.webp',caption:'But your story began\nlong before you woke up.',motion:true},
-{id:'explore',d:4,game:'explore'},
-{id:'friends',d:3,src:portrait+'/story-cloud-tea.webp',motion:true},
+{id:'explore',d:4,game:'explore',caption:'A world you’ve never seen.'},
+{id:'melody',d:3.5,src:portrait+'/windchime-town-tall.webp',caption:'A melody you’ve\nnever learned.',motion:true},
+{id:'friends',d:4.5,src:portrait+'/story-cloud-tea.webp',caption:'Friends you’ll never\nwant to forget.',motion:true},
 {id:'battle',d:6,game:'battle',offset:Math.max(0,Math.min(24,(clips.get('battle').observations.find(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards')?.t||2)-1.6))},
 {id:'end',d:4.5,src:portrait+'/title-bell-sanctuary.webp',title:true,motion:true}
 ];
-const overlap=.5;const total=shots.reduce((a,s)=>a+s.d,0)-overlap*(shots.length-1);if(total!==24.5)throw Error('Timeline '+total);
+const overlap=.5;const total=shots.reduce((a,s)=>a+s.d,0)-overlap*(shots.length-1);if(total!==29)throw Error('Timeline '+total);
 const secondHookAt=shots[0].d-overlap;if(secondHookAt>4)throw Error('Late story hook');
 for(const [i,s] of shots.entries()){if(!s.caption)continue;const words=s.caption.trim().split(/\s+/).length,clear=s.d-(i>0?overlap:0)-(i<shots.length-1?overlap:0);if(clear<Math.max(2,words/2.5))throw Error('Insufficient reading time: '+s.id+' '+clear);console.log('READING',s.id,words,'words',clear,'seconds unobscured');}
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -94,10 +95,10 @@ try{
  fs.writeFileSync(out+'/timeline.txt',seq.map(s=>"file '"+path.basename(s)+"'").join('\n')+'\n');
  const file=out+'/Echoes-of-the-Starbell-Official-Trailer-EN.mp4';
  ff(['-f','concat','-safe','0','-i',out+'/timeline.txt','-i',out+'/score.wav','-t',String(total),'-map','0:v:0','-map','1:a:0','-c:v','libx264','-preset','veryfast','-crf','18','-pix_fmt','yuv420p','-r','30','-g','60','-threads','4','-c:a','aac','-b:a','192k','-movflags','+faststart',file]);
- ff(['-i',file,'-vf','fps=1/2,scale=270:480,tile=7x2','-frames:v','1',out+'/contact-en.jpg']);
+ ff(['-i',file,'-vf','fps=1/2,scale=270:480,tile=8x2','-frames:v','1',out+'/contact-en.jpg']);
  ff(['-i',file,'-frames:v','1',out+'/first-frame.png']);
  ff(['-i',file,'-f','null','-']);
  const info=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-show_format','-of','json',file],{encoding:'utf8'}));
  if(+info.streams[0].nb_frames!==Math.round(total*30)||Math.abs(+info.format.duration-total)>.1||info.streams[0].width!==1080||info.streams[0].height!==1920||!info.streams.some(s=>s.codec_type==='audio'))throw Error('Invalid output');
- fs.writeFileSync(out+'/proof-en.json',JSON.stringify({version:'V8',live:{...proof,sourceByClip:Object.fromEntries(proof.clips.map(c=>[c.id,proof.source.sha]))},shots:frames,firstCaption:shots[0].caption,captionPlacement:'lower-third-safe',endingTransition:'0.5s frame-exact crossfades; single CFR encode',secondHookAt,secondHookClearAt:secondHookAt+overlap,framing:'native portrait full-bleed; no inset maps or mixed aspect ratios',audioEnvelope:JSON.parse(fs.readFileSync(out+'/score-proof.json','utf8')),duration:total,readingWpm:150,transitionCount:shots.length-1,music:{title:'Soar',artist:'Scott Buckley',license:'CC BY 4.0',source:'https://www.scottbuckley.com.au/library/soar/',licenseUrl:'https://creativecommons.org/licenses/by/4.0/',edited:true},format:info.format},null,2));console.log('TRAILER COMPLETE',file);
+ fs.writeFileSync(out+'/proof-en.json',JSON.stringify({version:'V9',live:{...proof,sourceByClip:Object.fromEntries(proof.clips.map(c=>[c.id,proof.source.sha]))},shots:frames,firstCaption:shots[0].caption,captionPlacement:'lower-third-safe',endingTransition:'0.5s frame-exact crossfades; single CFR encode',secondHookAt,secondHookClearAt:secondHookAt+overlap,framing:'native portrait full-bleed; no inset maps or mixed aspect ratios',audioEnvelope:JSON.parse(fs.readFileSync(out+'/score-proof.json','utf8')),duration:total,readingWpm:150,transitionCount:shots.length-1,music:{title:'Soar',artist:'Scott Buckley',license:'CC BY 4.0',source:'https://www.scottbuckley.com.au/library/soar/',licenseUrl:'https://creativecommons.org/licenses/by/4.0/',edited:true},format:info.format},null,2));console.log('TRAILER COMPLETE',file);
 }finally{await browser.close();}
