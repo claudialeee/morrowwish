@@ -283,3 +283,8 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .sg-opening-quest>.sg-quest-detail{box-sizing:border-box;display:grid;gap:8px;width:min(300px,calc(100vw - 24px));max-width:100%;max-height:calc(100dvh - 120px);overflow:auto;padding:12px;background:#fff9ed;border:1px solid #cdb49d;border-radius:10px;box-shadow:0 4px 12px #493e2b33;color:#493948}
 #stage .sg-opening-quest>.sg-quest-detail[hidden]{display:none!important}
 #stage .sg-opening-quest .sg-quest-detail>div{display:flex;flex-wrap:wrap;gap:6px}
+
+#stage .sg-npc-talk-marker .sg-quest-exclamation{display:none}
+#stage .sg-npc-talk-marker[data-quest-primary="true"] svg{display:none}
+#stage .sg-npc-talk-marker[data-quest-primary="true"] .sg-quest-exclamation{display:grid;place-items:center;width:22px;height:26px;flex:none;font:900 25px/1 var(--cb-font-body);font-style:normal;color:#9c5d0b;text-shadow:0 1px #fff8d6}
+#stage .sg-npc-talk-marker[data-quest-primary="true"]::before{content:none!important}

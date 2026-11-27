@@ -505,7 +505,7 @@ function install(){
  function regSkyLaunch(op,region){return region==="sky"?skyLaunch[op]:null;}
  function mark(x,y,k,t,col="#e9ca8e",labelDy=0,activate=null,discovery=null,optional=false){
   const target=[x,y];
-  if(mode==="region"&&!explorer?.puzzle&&!ceremony&&(optional||k==="npc"||k==="chest"||k==="discovery")&&!nearbyExploration(target,k==="npc"?.24:.18))return;
+  if(mode==="region"&&!explorer?.puzzle&&!ceremony&&(optional||k==="chest"||k==="discovery")&&!nearbyExploration(target,k==="npc"?.24:.18))return;
   if(k==="npc")y=Math.max(.045,y-.06);
   mapMarks.push({x:x*W,y:y*H,k,t,col,labelDy,target,activate,discovery,optional});
  }
@@ -542,8 +542,8 @@ function install(){
    ctx.beginPath();ctx.moveTo(cx-5*u,y+h-.5*u);ctx.lineTo(cx,y+h+5*u);ctx.lineTo(cx+5*u,y+h-.5*u);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(cx-5*u,y+h-.5*u);ctx.lineTo(cx,y+h+5*u);ctx.lineTo(cx+5*u,y+h-.5*u);ctx.stroke();
    const fs=m.bubbleFont,g=(m.main?17:12)*u;ctx.font=(m.main?"800 ":"600 ")+fs+"px "+family;
    const labelWidth=Math.min(ctx.measureText(m.t).width,Math.max(1,w-(m.main?36:23)*u)),left=cx-(g+5*u+labelWidth)/2;
-   ctx.save();ctx.translate(left,cy-g/2);ctx.scale(g/24,g/24);ctx.strokeStyle="#654923";ctx.lineWidth=1.7;ctx.lineJoin="round";
-   ctx.beginPath();ctx.moveTo(4,4);ctx.lineTo(20,4);ctx.lineTo(20,16);ctx.lineTo(9,16);ctx.lineTo(4,20);ctx.closePath();ctx.stroke();ctx.lineWidth=2.5;ctx.lineCap="round";for(const dx of [8,12,16]){ctx.beginPath();ctx.moveTo(dx,10);ctx.lineTo(dx+.1,10);ctx.stroke();}ctx.restore();
+   if(m.main){ctx.save();ctx.font="900 "+Math.max(15*u,g*1.3)+"px "+family;ctx.fillStyle="#9c5d0b";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("!",left+g/2,cy);ctx.restore();}else{ctx.save();ctx.translate(left,cy-g/2);ctx.scale(g/24,g/24);ctx.strokeStyle="#654923";ctx.lineWidth=1.7;ctx.lineJoin="round";
+   ctx.beginPath();ctx.moveTo(4,4);ctx.lineTo(20,4);ctx.lineTo(20,16);ctx.lineTo(9,16);ctx.lineTo(4,20);ctx.closePath();ctx.stroke();ctx.lineWidth=2.5;ctx.lineCap="round";for(const dx of [8,12,16]){ctx.beginPath();ctx.moveTo(dx,10);ctx.lineTo(dx+.1,10);ctx.stroke();}ctx.restore();}
    ctx.fillStyle=m.main?"#654923":"#716858";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(m.t,left+g+5*u,cy,labelWidth);ctx.restore();
   }
  }
