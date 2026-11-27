@@ -40,7 +40,7 @@ async function scan(page,slug,lang,phase){
  checks++;console.log('PASS '+(slug||'home')+' '+lang+' '+phase);
 }
 try{
- for(const width of [390,1280])for(const lang of ['en','zh'])for(const slug of slugs){
+ for(const width of [390,1280])for(const lang of ['en','zh'])for(const slug of (process.env.LANGUAGE_QA_HOME_ONLY==='1'?['']:slugs)){
   const ctx=await browser.newContext({viewport:{width,height:844}});
   const page=await ctx.newPage(),key=(slug||'home')+' '+lang+' '+width;
   // Capture the final text that actually reaches Canvas after game i18n hooks.

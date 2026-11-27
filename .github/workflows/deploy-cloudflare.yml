@@ -53,6 +53,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   issues: write
 
 concurrency:
@@ -74,6 +75,25 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Select release QA scope
+        id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          scope=full
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            base=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deploy-cloudflare.yml/runs?branch=main&status=success&per_page=1" --jq '.workflow_runs[0].head_sha // empty' || true)
+            if [ -n "$base" ] && git merge-base --is-ancestor "$base" "$GITHUB_SHA"; then
+              git diff --name-only "$base" "$GITHUB_SHA" > /tmp/mw-release-paths
+              cat /tmp/mw-release-paths
+              if [ -s /tmp/mw-release-paths ] && ! grep -Ev '^(public/(index\.html|hub\.css|zh-site\.js|telemetry\.js|studio-insights/.*)|src/analytics\.js|scripts/(check-source|test-analytics-integrity|test-dashboard-sorting|test-dashboard-history-browser|language-browser-smoke|build-pages)\.mjs|\.github/workflows/deploy-cloudflare\.yml)$' /tmp/mw-release-paths; then
+                scope=site
+              fi
+            fi
+          fi
+          echo "scope=$scope" >> "$GITHUB_OUTPUT"
+          echo "Release QA scope: $scope"
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -131,6 +151,7 @@ jobs:
           console.log('Existing Morrow Wish Pages project and production D1 binding verified.');
           NODE
       - name: Verify every game in English and Chinese in real Chromium
+        if: steps.scope.outputs.scope == 'full'
         run: |
           npm install --no-save --no-package-lock playwright sharp@0.34.5
           npx playwright install --with-deps chromium
@@ -146,8 +167,17 @@ jobs:
           node scripts/cat-bond-crazygames-real-input.mjs
           # Actual end-user DOM, not only the aggregator or source-string tests.
           node scripts/test-dashboard-history-browser.mjs
+      - name: Verify changed homepage and dashboard in real Chromium
+        if: steps.scope.outputs.scope == 'site'
+        run: |
+          npm install --no-save --no-package-lock playwright sharp@0.34.5
+          npx playwright install --with-deps chromium
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/mw-language-server.log 2>&1 &
+          sleep 2
+          LANGUAGE_QA_HOME_ONLY=1 node scripts/language-browser-smoke.mjs
+          node scripts/test-dashboard-history-browser.mjs
       - name: Save CrazyGames yard menu layout screenshots
-        if: always()
+        if: always() && steps.scope.outputs.scope == 'full'
         uses: actions/upload-artifact@v4
         with:
           name: cat-bond-crazygames-yard-dock
@@ -155,7 +185,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Save Cat Bond post-click localization report
-        if: always()
+        if: always() && steps.scope.outputs.scope == 'full'
         uses: actions/upload-artifact@v4
         with:
           name: cat-bond-interaction-language
@@ -163,7 +193,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Save Cat Bond bilingual whole-game screenshots and audit
-        if: always()
+        if: always() && steps.scope.outputs.scope == 'full'
         uses: actions/upload-artifact@v4
         with:
           name: cat-bond-language-audit
@@ -171,6 +201,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Verify discovery and launch automation
+        if: steps.scope.outputs.scope == 'full'
         run: |
           node --check scripts/discovery.mjs
           node --check scripts/submit-indexnow.mjs
@@ -194,6 +225,7 @@ jobs:
           fi
           npm run deploy
       - name: Verify Cloudflare site and analytics API
+        if: steps.scope.outputs.scope == 'full'
         run: |
           set -eu
           # A successful Pages command alone does not prove the public alias
@@ -294,6 +326,7 @@ jobs:
           done
           echo 'All seven real-gameplay media assets are public and use correct content types.'
       - name: Verify public Morrow Wish game URLs via Vercel proxy
+        if: steps.scope.outputs.scope == 'full'
         run: |
           set -eu
           # Vercel is a reverse proxy to Cloudflare. Edge caches can briefly serve
@@ -371,6 +404,7 @@ jobs:
           echo 'Official Vercel Cat Bond URL checked: guided intro and all updated JS/CSS bytes match production.'
           echo 'Public homepage slogan, cat link, and playable game markup verified.'
       - name: Verify live platform tracking links on both domains
+        if: steps.scope.outputs.scope == 'full'
         run: |
           set -eu
           for origin in https://morrowwish.pages.dev https://morrowwish.vercel.app; do
@@ -396,6 +430,7 @@ jobs:
             esac
           done
       - name: Verify production dashboard shows launched channels only
+        if: steps.scope.outputs.scope == 'full'
         run: |
           set -eu
           for origin in https://morrowwish.pages.dev https://morrowwish.vercel.app; do
@@ -420,6 +455,7 @@ jobs:
             echo "Verified live dashboard on $origin: per-game metrics, whole-dashboard date filter, two traffic KPIs, five launched channels"
           done
       - name: Verify live D1 telemetry ingestion for six games without adding player stats
+        if: steps.scope.outputs.scope == 'full'
         run: |
           set -eu
           check_probe() {
@@ -461,7 +497,36 @@ jobs:
             check_probe https://morrowwish.pages.dev "$game"
           done
           check_probe https://morrowwish.vercel.app flip-dash
+      - name: Verify exact website release and preview collector
+        run: |
+          set -eu
+          for origin in https://morrowwish.pages.dev https://morrowwish.vercel.app; do
+            for route in index.html hub.css zh-site.js telemetry.js studio-insights/index.html release-version.json; do
+              live=0
+              for attempt in 1 2 3 4 5 6 7 8; do
+                if curl -fsSL --max-time 15 "$origin/$route?release=$GITHUB_SHA&attempt=$attempt" -o /tmp/mw-exact-release && cmp -s "cloudflare-pages/public/$route" /tmp/mw-exact-release; then live=1; break; fi
+                sleep 3
+              done
+              test "$live" = 1 || { echo "::error::Stale release asset: $origin/$route"; exit 1; }
+            done
+            test "$(curl -sSL --max-time 15 -o /dev/null -w '%{http_code}' "$origin/api/summary?days=7")" = 401
+          done
+          origin=https://morrowwish.pages.dev
+          preview_origin=https://cat-bond-preview.morrowwish.pages.dev
+          probe="mw-qa-$(node -e "process.stdout.write(require('node:crypto').randomUUID())")"
+          for kind in visit session; do
+            body=$(printf '{"kind":"%s","game":"starbell-preview","viewId":"%s","visitor":"ci-smoke","smokeProbe":"mw-qa-v1","starts":1,"ends":1}' "$kind" "$probe")
+            code=$(curl -sS --max-time 18 -D /tmp/mw-preview-headers -o /tmp/mw-preview-write -w '%{http_code}' -H "Origin: $preview_origin" -H 'Content-Type: text/plain' --data "$body" "$origin/api/starbell-preview-session")
+            test "$code" = 202
+            grep -qi "^access-control-allow-origin: $preview_origin" /tmp/mw-preview-headers
+          done
+          check=$(curl -fsS --max-time 18 "$origin/api/diagnostic-check?probe=$probe")
+          for key in recorded sessionRecorded startRecorded endRecorded removed; do
+            printf '%s' "$check" | grep -Fq "\"$key\":true"
+          done
+          echo "Exact release and independent preview diagnostic ingestion verified: $GITHUB_SHA"
       - name: Publish automatic game promotion kit for each release
+        if: steps.scope.outputs.scope == 'full'
         uses: actions/upload-artifact@v4
         with:
           name: morrowwish-game-promotion-kit
@@ -475,7 +540,7 @@ jobs:
           MORROW_BLUESKY_APP_PASSWORD: ${{ secrets.MORROW_BLUESKY_APP_PASSWORD }}
         run: node scripts/publish-bluesky.mjs
       - name: Queue Reddit launch submissions for new games (never auto-post)
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && steps.scope.outputs.scope == 'full'
         uses: actions/github-script@v7
         with:
           script: |
@@ -509,5 +574,6 @@ jobs:
               core.info('Queued new Reddit launch draft ' + issue.data.html_url);
             }
       - name: Notify Bing and other IndexNow search engines
+        if: steps.scope.outputs.scope == 'full'
         continue-on-error: true
         run: node scripts/submit-indexnow.mjs

@@ -394,7 +394,7 @@ export async function api(req,env){
   const now=Date.now(),day=new Date(now).toISOString().slice(0,10),game=category==="elsewhere"?"elsewhere":tidy(data.game||"hub",40),visitor=tidy(data.visitor,80),viewId=tidy(data.viewId,90)||tidy(data.session,90)||crypto.randomUUID(),runId=tidy(data.runId,90);
   // Real gameplay and isolated deployment probes share the same D1 INSERT.
   // Probe rows live outside the arcade and story reporting categories.
-  const qaGames=new Set(["pawsibly-innocent","tiny-town","elsewhere","flip-dash","parcel-panic","pocket-aquarium","cat-bond"]);
+  const qaGames=new Set(["pawsibly-innocent","tiny-town","elsewhere","flip-dash","parcel-panic","pocket-aquarium","cat-bond","starbell-preview"]);
   const smoke=category==="arcade"&&(data.kind==="visit"||data.kind==="session")&&data.smokeProbe==="mw-qa-v1"&&/^mw-qa-[0-9a-f-]{36}$/.test(viewId)&&qaGames.has(game);
   const storageCategory=smoke?"diagnostic":category;
   await env.DB.prepare("INSERT INTO events(category,day,ts,game,visitor,view_id,run_id,event_name,kind,payload) VALUES(?,?,?,?,?,?,?,?,?,?)").bind(storageCategory,day,now,game,visitor,viewId,runId,tidy(data.event,48),tidy(data.kind,48),JSON.stringify(data)).run();

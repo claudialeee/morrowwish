@@ -100,3 +100,4 @@ console.log('Built Cloudflare Pages assets from canonical public/ and src/.');
 
 await generateSocialCards(out);
 generateDiscovery(out);
+fs.writeFileSync(path.join(out,'release-version.json'),JSON.stringify({sha:process.env.GITHUB_SHA||'local-build'})+'\n');
