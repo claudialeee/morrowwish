@@ -6,6 +6,10 @@ source_sha=${SOURCE_SHA:-$GITHUB_SHA}
 # and previous deployed gameplay gates only when all non-infrastructure inputs match.
 if bash scripts/starbell-garden-release-scope.sh "$source_sha"; then
   test "$(git rev-parse HEAD)" = "$source_sha"
+  if ! git diff --quiet 347e13fde5cc94979568292aa5888e42ca12bc92 "$source_sha" -- public/telemetry.js; then
+    node --check public/telemetry.js
+    node scripts/test-starbell-telemetry.mjs
+  fi
   gh api "repos/$GITHUB_REPOSITORY/actions/runs/46067169958" | jq -e '.head_sha=="347e13fde5cc94979568292aa5888e42ca12bc92" and .status=="completed" and .conclusion=="success"' >/dev/null
   for id in 46065569395 46065573693 46065269370; do
     gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id" | jq -e '.head_sha=="c457f85d219a4282e2a1bd7216fdcb31e31dac93" and .status=="completed" and .conclusion=="success"' >/dev/null
