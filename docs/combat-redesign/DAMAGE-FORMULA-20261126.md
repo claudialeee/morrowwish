@@ -93,3 +93,69 @@ final = f.dmg × skill.power × outgoingBuffMult × _dmgOutMult     // 攻击端
   needs guard: Q/E hit poise test depends on something in that branch)
 - Should trait flags that haven't landed (`_dmgOutMult`) wire BEFORE or AFTER this refactor?
 - Cap values — pick A +0.50 / B +0.80 / Agent-A merged (+1.0 via `clamp(0.25, 1+Σ, 2.0)`)?
+
+---
+
+## Round 2 — adversarial / TTK / legibility
+
+### Agent D — adversarial break
+3 failure modes identified in the merged Round-1 plan:
+- **FAIL-1**: 4 independent caps don't talk. Worst stack `identity 1.5 × elem 2 × levelSup 1.2 × soft 1.5 × crit 1.5 × vuln 1.3 × hurt 1.8 = 18.9× raw` — exceeds "no-one-shot" line by ~30%.
+- **FAIL-2**: `steam 0.6 × shield 0.55 × resist 0.5 = 0.165×` (-3 on a 20 basic). Three popups, no attribution.
+- **REGRESSION**: `consumes:true` steam/douse (`bonusMult<1`) flipped multiplicative → double-penalty vs counter-element (soak+fire on fire-weak grass: old 1.6× → new 1.2× = -25%).
+
+6 amendments proposed:
+1. Post-identity ceiling `clamp(soft × crit × vuln × hurt) ≤ 3.5`
+2. Keep steam/douse (bonusMult<1) in additive softBucket regardless of consumes
+3. Merge vulnerableFlat 1.3 into hurtBucket as +0.30 (dedup)
+4. Floor total output at 0.25 × identity × elem
+5. Fold `basicTagMul` into softBucket (owner said 完全删 — skipped)
+6. Cap `critComboMult` at one factor per hit (checkCombo already returns first match)
+
+**Implementation status** (as of commit `86e2fec5`):
+- #1 implemented (3.5× earned ceiling in hurtEnemy)
+- #2 implemented (`comboIsCrit` requires `bonusMult >= 1`)
+- #3 implemented (vulnerableT merged into vulnBonus +0.30, bucket cap 0.50 → 0.80)
+- #4 implemented (softMul `Math.max(0.25, ...)` floor preserved)
+- #5 deferred per owner ("完全删" — no fold, drop)
+- #6 preserved (Skills.checkCombo returns first match already)
+
+### Agent E — numerical TTK sim
+Hand-math vs current, 3 scenarios, Lv50 fire cat on Lv53 target:
+
+| Case | Current | Proposed | Δ% |
+|---|---|---|---|
+| A — clean hit 90% HP | 197.91 | 197.91 | **0%** |
+| B — burn-primed bloom, 55% HP | 247.4 | 247.4 | **0%** |
+| C — oil-primed explode + stagger + close + <28%HP | 513 | 555 | **+8.2%** |
+
+Worst-case Case C (hurtBucket maxed at +0.80): ~+11.4%. All within ±15% tolerance.
+
+### Agent F — legibility audit
+Current formula 4/10. Per-multiplier cues:
+
+| multiplier | has cue? | file:line |
+|---|---|---|
+| `outgoingBuffMult × _dmgOutMult` | **NO** | missing |
+| `elemMult` | yes | battle.js:6180-6188 (↑↓ + label) |
+| `levelSuppression` | **NO** | silent at battle.js:6347 |
+| `softBucket` | partial | ring+✦ (now combo.name, 066b0f82) |
+| `critComboMult` | partial | ring+✦ + shatter crit flash |
+| `shieldMul` | yes | resolveHit BLOCK handling |
+| `vulnerableFlat 1.3` | indirect | stagger VFX, no +30% label |
+| `hurtBucket` | **NO** per source | now EXECUTE/CLOSING shipped (066b0f82) |
+
+**Top-2 pre-formula legibility** (both shipped `066b0f82`):
+1. Float `combo.name` instead of generic ✦ — 36 authored reaction names were dead text
+2. "处决!" + "收网!" one-shot banners for executeBonus + closeBonus
+
+## Status — all 3 formula commits landed
+
+- Commit 1 `066b0f82` (pushed): legibility — combo.name + EXECUTE/CLOSING
+- Commit 2 `84e731d1` (local): elemMult out of additive; consumes split; soft cap +0.50
+- Commit 3 `86e2fec5` (local): vuln merge; cap 0.80; earned ceiling 3.5×
+- Starter Q P1 shipped `7334a8cd`: power 0.8 → 1.35 (was weaker than basic)
+
+Deferred (clean no-op refactor, owner-approved to postpone):
+- Identity merge: fold `outgoingBuffMult + _dmgOutMult` to a single call site
+- Round 3 legibility: `outgoingBuffMult`, `levelSuppression`, `vulnerableFlat` cues
