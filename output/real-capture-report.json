@@ -1,0 +1,65 @@
+{
+  "source": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "captures": [
+    {
+      "name": "landscape",
+      "width": 1920,
+      "height": 1080,
+      "marks": [
+        {
+          "name": "garden",
+          "at": 2.529,
+          "scene": "yard",
+          "cats": 1
+        },
+        {
+          "name": "battle",
+          "at": 6.092,
+          "scene": "battle",
+          "cats": 1
+        },
+        {
+          "name": "capture-result",
+          "at": 21.811,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "two-cat-garden",
+          "at": 24.959,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "catdex",
+          "at": 28.497,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "workshop",
+          "at": 32.066,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "companions",
+          "at": 35.694,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "exploration",
+          "at": 38.682,
+          "scene": "map",
+          "cats": 2
+        }
+      ],
+      "errors": [],
+      "completed": true,
+      "raw": "raw/landscape/continuous.webm"
+    }
+  ],
+  "visualApproval": false,
+  "portalSaved": false
+}
