@@ -12,12 +12,12 @@ const fps=30,W=1080,H=1920;
 // All paintings are the new native portrait game assets from the checked-out
 // current Starbell art integration. No previous promotional video is an input.
 const shots=[
- {id:'hook',d:4,src:portrait+'/windchime-town-tall.webp',en:'“Hardly anyone knows\nthat old tune.”',zh:'“老曲子没几只猫会唱。”'},
- {id:'wake',d:3,src:portrait+'/prologue-garden.webp',en:'“But I’ve never learned it.”',zh:'“我可没学过呀。”'},
+ {id:'hook',d:4,src:assets+'/cinematics/prologue/garden-at-dawn.webp',heroCrop:true,en:'“How do you know\nthat old tune?”',zh:'“这首老曲子，你怎么会唱？”'},
+ {id:'wake',d:3,src:portrait+'/windchime-town-tall.webp',en:'“I don’t even remember\nmy own name.”',zh:'“我连自己的名字都不记得。”'},
  {id:'journey',d:3,src:portrait+'/rootsleep-forest.webp',en:'You thought this was\na brand-new journey.',zh:'你以为，这是一段全新的旅程。'},
  {id:'wonder',d:3,src:portrait+'/skyspine-isles.webp'},
  {id:'glide',d:4,game:true},
- {id:'friends',d:4,src:portrait+'/story-cloud-tea.webp'},
+ {id:'friends',d:4,src:portrait+'/story-cloud-tea.webp',en:'“Ring twice. I’ll hear you.”',zh:'“转角看不见就摇两下。\n我听得见。”'},
  {id:'chase',d:3,game:true},
  {id:'battle',d:4,game:true},
  {id:'duo',d:3,src:portrait+'/duo/dark-light-tier-3.webp'},
@@ -34,7 +34,8 @@ for(const s of shots){
  }else{
   if(!fs.existsSync(s.src))throw Error('Missing new artwork: '+s.src);
   const n=s.d*fps;
-  const filter=s.map?
+  const filter=s.heroCrop?
+   "scale=iw*2:ih*2:flags=lanczos,crop=ih*9/16:ih:iw*0.45:0,scale=1440:2560:flags=lanczos,zoompan=z='1.01+0.045*on/"+n+"':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d="+n+":s=1080x1920:fps=30,setsar=1":s.map?
    "scale=1600:1600:force_original_aspect_ratio=decrease:flags=lanczos,pad=1600:2844:(ow-iw)/2:(oh-ih)/2:color=0x182a32,zoompan=z='1.0+0.035*on/"+n+"':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d="+n+":s=1080x1920:fps=30,setsar=1":
    "scale=1440:2560:force_original_aspect_ratio=increase:flags=lanczos,crop=1440:2560,zoompan=z='1.015+0.055*on/"+n+"':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d="+n+":s=1080x1920:fps=30,setsar=1";
   ff(['-i',s.src,'-vf',filter,'-t',String(s.d),...enc,file]);
@@ -44,7 +45,7 @@ fs.writeFileSync(out+'/timeline.txt',shots.map(s=>"file '"+s.id+"-clean.mp4'").j
 const clean=out+'/clean.mp4';
 ff(['-f','concat','-safe','0','-i',out+'/timeline.txt','-c:v','copy',clean]);
 const cue=(lang,name,text)=>{const p=out+'/'+lang+'-'+name+'.txt';fs.writeFileSync(p,text);return p;};
-const draw=(txt,fontPath,size,y,st,et,color='0xfff6df')=>"drawtext=fontfile="+fontPath+":textfile="+txt+":fontsize="+size+":fontcolor="+color+":x=(w-tw)/2:y="+y+":line_spacing=20:shadowcolor=0x07151d@0.9:shadowx=2:shadowy=4:enable='between(t,"+st+","+et+")'";
+const draw=(txt,fontPath,size,y,st,et,color='0xfff6df')=>"drawtext=fontfile="+fontPath+":textfile="+txt+":fontsize="+size+":fontcolor="+color+":x=(w-tw)/2:y="+y+":line_spacing=20:borderw=1.5:bordercolor=0x12232a@0.8:shadowcolor=0x07151d@0.85:shadowx=2:shadowy=4:enable='between(t,"+st+","+et+")'";
 for(const lang of ['en','zh']){
  let pos=0;const filters=[];
  for(const s of shots){
@@ -53,8 +54,8 @@ for(const lang of ['en','zh']){
    filters.push(draw(txt,font,lang==='zh'?50:55,s.map?1380:1465,pos+.16,pos+s.d-.12));
   }
   if(s.title){
-   const lines=lang==='en'?[['ECHOES OF THE',43,365],['STARBELL',100,440],['A story-rich fantasy RPG',37,1410],['PLAY THE FREE DEMO',44,1510],['morrowwish.vercel.app',30,1600]]:[['星铃回响',100,405],['ECHOES OF THE STARBELL',37,550],['一场值得亲自经历的奇幻冒险',42,1410],['免费试玩现已开放',45,1510],['morrowwish.vercel.app',30,1600]];
-   for(let i=0;i<lines.length;i++){const [t,size,y]=lines[i];filters.push(draw(cue(lang,'title'+i,t),i<2?font:sans,size,y,pos+.10,total-.06));}
+   const lines=lang==='en'?[['ECHOES OF THE',45,142],['STARBELL',100,215],['A story-rich fantasy RPG',37,1375],['PLAY THE FREE DEMO',44,1460],['morrowwish.vercel.app',30,1535]]:[['星铃回响',100,135],['ECHOES OF THE STARBELL',37,265],['一场值得亲自经历的奇幻冒险',42,1375],['免费试玩现已开放',45,1460],['morrowwish.vercel.app',30,1535]];
+   for(let i=0;i<lines.length;i++){const [t,size,y]=lines[i];filters.push(draw(cue(lang,'title'+i,t),i<2?font:sans,size,y,pos+.10,total-.06,i<2?'0x563821':'0xfff6df').replace(i<2?':borderw=1.5:bordercolor=0x12232a@0.8:shadowcolor=0x07151d@0.85:shadowx=2:shadowy=4':':__NO_REPLACE__',i<2?'':':__NO_REPLACE__'));}
   }
   pos+=s.d;
  }
