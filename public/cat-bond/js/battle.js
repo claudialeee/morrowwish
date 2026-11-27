@@ -2025,6 +2025,11 @@ class CaptureBattle {
   // call site (player basic only); ult echoes, skill procs, and enemy basics stay
   // flat at BASIC_POWER_MULT = 0.85.
   basicTimeScalar() { return BASIC_POWER_MULT + 0.25 * Math.max(0, Math.min(1, (this.t - 25) / 30)); }
+  // Adversary P0 wb3r7ejxm→wmbjeusi4 fix 0: symmetric enemy threat ramp mirroring
+  // basicTimeScalar — 0.9× grace (0-6s), ramp to 1.35× by 18s, hold. Only applies to
+  // enemy basic/projectile hits in resolveHit (NOT ults — _ultCastUid short-circuits
+  // above). Impatient/explorer dmgTaken%=2% on 18s fight gets a visible threat tell.
+  enemyThreatScalar() { const t=this.t; if(t<=6)return 0.9; if(t>=18)return 1.35; return 0.9 + 0.45 * ((t-6)/12); }
   kneadMult(f){ return 1 + 0.12 * (f && f.kneadStacks || 0); }
   castSupportSkill(f,sk,aim){
     if(!sk)return false;
@@ -6251,6 +6256,10 @@ class CaptureBattle {
       dmg = Math.min(dmg, cap - prior);
       target._ultCastHit[uid] = prior + Math.max(0, dmg);
     }
+    // Adversary P0 wb3r7ejxm→wmbjeusi4 fix 0: enemyThreatScalar on non-ult enemy hits.
+    // _ultCastUid branch above already returned if dmg capped, so ults never reach this
+    // line; this multiplies basic/projectile/aoe damage from enemy only.
+    if (side === 'wild' && !(skill && skill._ultCastUid) && dmg > 0) dmg *= this.enemyThreatScalar();
     const col = this.elemColor(skill && skill.element);
     // 1) PROTECT (守护): fully blocks the next hit of any kind for its window.
     if ((target.protectT || 0) > 0) {
