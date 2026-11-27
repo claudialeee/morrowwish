@@ -358,3 +358,6 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 }
 
 
+
+/* Story ceremonies are independent of the preceding puzzle rail. */
+#stage .rw-world.rw-story-ceremony:not([hidden])>.rw-ceremony-caption{display:block!important;visibility:visible!important;opacity:1!important;position:absolute!important;z-index:9!important;left:50%!important;bottom:max(12px,env(safe-area-inset-bottom,0px))!important;top:auto!important;transform:translateX(-50%)!important;max-width:90%!important;color:#fff3d7!important;background:#30251ded!important}
