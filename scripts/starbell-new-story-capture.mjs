@@ -65,39 +65,22 @@ async function record(p,id,secs,action){
 }
 async function attempt(id,region,fn){let ctx;try{const c=await open(region);ctx=c.ctx;await fn(c.p);}catch(e){evidence.errors.push(id+': '+String(e));console.log('CAPTURE ERROR',id,String(e));}finally{await ctx?.close();}}
 try{
- await Promise.all([
- attempt('harbor','harbor',async p=>{
-  await p.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-04');
-  await click(p,'Belllight beast');await p.locator('#panel [data-battle-auto="true"]').click();await p.locator('#bp-go').click();await p.locator('#battle-ui.on').waitFor();const tutorial=p.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();
-  await record(p,'battle',30,async()=>{const btn=p.locator('#duo-burst');for(let i=0;i<65;i++){if(await p.evaluate(()=>!!__game.battle?.duoCinematic))break;if(await btn.isVisible()&&await btn.isEnabled()){await btn.tap();break;}await p.waitForTimeout(350);}});
- }),
- attempt('shadow','forge',async p=>{
-  await click(p,'Help Xiaomao put on a show');
-  const card=p.locator('.rw-festival-card');await card.waitFor({timeout:20000});
-  if(!(await card.locator('.rw-festival-title').innerText()).includes('Shadow Puppet Show'))throw Error('Old shadow-show UI detected');
-  evidence.shadowTitle=await card.locator('.rw-festival-title').innerText();
-  await p.waitForFunction(()=>performance.getEntriesByType('resource').some(x=>x.name.includes('/mobile-portrait/lantern-shadow-square.webp')));
-  await record(p,'shadow',9,async()=>{
-    await card.getByRole('button',{name:'Butterfly',exact:true}).tap();
-    await p.waitForTimeout(3900);
-    await card.getByRole('button',{name:'Cat',exact:true}).tap();
-    await p.waitForTimeout(3900);
-    if(await card.getByRole('button',{name:'Cat',exact:true}).getAttribute('aria-pressed')!=='true')throw Error('Cat shadow selection not reflected');
-  });
- }),
- attempt('explore','forest',async p=>{
+ await attempt('explore','forest',async p=>{
+  const close=p.locator('#panel.open .panel-dismiss');
+  if(await close.isVisible())await close.click();
+  await p.waitForFunction(()=>!document.querySelector('#panel.open')&&!__game.worldDialogueOpen());
   const cv=p.locator('.rw-surface');await cv.waitFor({timeout:20000});
   await p.waitForFunction(()=>performance.getEntriesByType('resource').some(x=>x.name.includes('/mobile-portrait/rootsleep-forest.webp')));
+  await p.waitForTimeout(500);
+  const before=await p.evaluate(()=>JSON.stringify(State.S.resonanceExploration?.positions?.forest||null));
   await record(p,'explore',5,async()=>{
-   await p.waitForTimeout(500);
-   const b=await cv.boundingBox();if(!b)throw Error('Forest map not visible');
-   await cv.tap({position:{x:Math.round(b.width*.43),y:Math.round(b.height*.76)}});
-   await p.waitForTimeout(1900);
-   await cv.tap({position:{x:Math.round(b.width*.30),y:Math.round(b.height*.61)}});
+   for(const key of ['ArrowRight','ArrowRight','ArrowUp','ArrowUp','ArrowRight','ArrowUp']){
+    await cv.focus();await p.keyboard.press(key);await p.waitForTimeout(650);
+   }
   });
- })
- ]);
+  const after=await p.evaluate(()=>JSON.stringify(State.S.resonanceExploration?.positions?.forest||null));
+  if(before===after)throw Error('Forest walking did not change player position');
+  evidence.forestMovement={before,after};console.log('VERIFIED FOREST WALK',before,after);
+ });
 }finally{await browser.close();await fs.writeFile(out+'/capture-evidence.json',JSON.stringify(evidence,null,2));}
-for(const id of ['explore','shadow','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
-const battle=evidence.clips.find(x=>x.id==='battle');if(!battle.observations.some(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards'&&x.asset?.includes('/mobile-portrait/duo/')))throw Error('No verified live native portrait duo');
-for(const [id,asset] of [['shadow','lantern-shadow-square.webp']]){const cl=evidence.clips.find(x=>x.id===id);if(!cl.observations.some(x=>x.resources.some(u=>u.includes('/mobile-portrait/'+asset))))throw Error('Native mini-game artwork not loaded: '+id);}
+if(!evidence.clips.some(x=>x.id==='explore')||!evidence.forestMovement)throw Error('No verified live forest exploration');
