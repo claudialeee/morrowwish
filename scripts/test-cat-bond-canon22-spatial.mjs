@@ -3,7 +3,7 @@ import {newSpatial,spatialInput,spatialProof,validSpatialProof,tickSpatial,chase
 const step=i=>({type:'step',i}),leaf={type:'leaf'},aim=x=>({type:'aim',x}),cross={type:'cross'};
 for(const [op,paths] of [
  ['puzzle:moonleaf-crossing',[[step(1),step(3),leaf,step(3),step(4)],[step(1),step(2),step(4)]]],
- ['puzzle:moonleaf-loop',[[step(1),step(2),leaf,step(2),step(4)],[step(1),step(3),step(4)]]],
+ ['puzzle:moonleaf-loop',[[step(2),leaf,step(2),step(4)],[step(3),step(4)]]],
  ['puzzle:star-steps',[[step(7),step(1),step(3),step(5),step(7)],[step(2),step(4),step(6),step(7)]]],
  ['puzzle:shadow-bridge',[[cross,aim(.2),cross,aim(.72),cross]]],
  ['puzzle:lantern-show',[[{type:'shape',i:2},aim(.2),aim(.72),cross],[cross]]]

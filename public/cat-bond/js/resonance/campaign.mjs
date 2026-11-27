@@ -417,18 +417,20 @@ export const campaign = {
           "text": {
             "zh": "好，两下。",
             "en": "Got it. Twice."
-          }
+          },
+          "afterOperations": [
+            "puzzle:chime-chase"
+          ]
         }
       ],
       "requires": [
         "puzzle:chime-chase"
       ],
       "choices": [],
-      "lineGate": [
-        "puzzle:chime-chase"
-      ],
+      "lineGate": [],
       "choiceTiming": "afterDialogue",
-      "orderedRequires": true
+      "orderedRequires": true,
+      "beforeActionLines": 2
     },
     {
       "id": "harbor:H-03",
@@ -714,18 +716,20 @@ export const campaign = {
           "text": {
             "zh": "这边这边！桥长过来了！",
             "en": "Over here! The bridge is growing toward us!"
-          }
+          },
+          "afterOperations": [
+            "puzzle:moonleaf-loop"
+          ]
         }
       ],
       "requires": [
         "puzzle:moonleaf-loop"
       ],
       "choices": [],
-      "lineGate": [
-        "puzzle:moonleaf-loop"
-      ],
+      "lineGate": [],
       "choiceTiming": "afterDialogue",
-      "orderedRequires": true
+      "orderedRequires": true,
+      "beforeActionLines": 2
     },
     {
       "id": "forest:R-04",
@@ -876,11 +880,10 @@ export const campaign = {
         "puzzle:shadow-bridge"
       ],
       "choices": [],
-      "lineGate": [
-        "puzzle:shadow-bridge"
-      ],
+      "lineGate": [],
       "choiceTiming": "afterDialogue",
-      "orderedRequires": true
+      "orderedRequires": true,
+      "beforeActionLines": 3
     },
     {
       "id": "forge:E-03",
@@ -1006,8 +1009,8 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "瞧那朵云，像不像条大鱼？走，咱们从鱼嘴里钻过去！",
-            "en": "See that cloud? Looks like a giant fish! Come on, let's fly through its mouth!"
+            "zh": "飞得不错！刚才那朵云像条大鱼，下次咱们从鱼嘴里钻过去！",
+            "en": "Nice flying! That cloud looked like a big fish. Next time let's fly through its mouth!"
           }
         },
         {
@@ -1020,8 +1023,8 @@ export const campaign = {
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "借风升高，再找块平坦的地方落脚。",
-            "en": "Catch the updraft, then find a safe place to land."
+            "zh": "记住刚才那个落脚的办法，前面可就没有这么平坦了。",
+            "en": "Remember how you landed. The next stretch won't be as gentle."
           }
         },
         {
@@ -1124,14 +1127,20 @@ export const campaign = {
           "text": {
             "zh": "暮铃，快到了！",
             "en": "Muling, we're almost there!"
-          }
+          },
+          "afterOperations": [
+            "puzzle:joint-flight"
+          ]
         },
         {
           "speaker": "muling",
           "text": {
             "zh": "我还没到呢，围巾倒先飞过去了！",
             "en": "My scarf made it before I did!"
-          }
+          },
+          "afterOperations": [
+            "puzzle:joint-flight"
+          ]
         },
         {
           "speaker": "lingyu",
@@ -1140,7 +1149,8 @@ export const campaign = {
             "en": "Look, the moon gate is just ahead. Either route leads here."
           },
           "afterOperations": [
-            "melody:sky"
+            "melody:sky",
+            "puzzle:joint-flight"
           ]
         },
         {
@@ -1150,7 +1160,8 @@ export const campaign = {
             "en": "Hey, little golden cat up in the clouds! Don't drop that lantern!"
           },
           "afterOperations": [
-            "melody:sky"
+            "melody:sky",
+            "puzzle:joint-flight"
           ]
         },
         {
@@ -1160,7 +1171,8 @@ export const campaign = {
             "en": "I hear you! Next time I'll show you some clouds!"
           },
           "afterOperations": [
-            "melody:sky"
+            "melody:sky",
+            "puzzle:joint-flight"
           ]
         }
       ],
@@ -1170,11 +1182,10 @@ export const campaign = {
         "melody:sky"
       ],
       "choices": [],
-      "lineGate": [
-        "puzzle:joint-flight"
-      ],
+      "lineGate": [],
       "choiceTiming": "afterDialogue",
-      "orderedRequires": true
+      "orderedRequires": true,
+      "beforeActionLines": 1
     },
     {
       "id": "sky:S-04",
@@ -1704,35 +1715,50 @@ export const campaign = {
           "text": {
             "zh": "所以就算我想起来了，风铃镇那只猫也会忘记家？",
             "en": "So even if I remember everything, the cat in Windchime Town would forget home?"
-          }
+          },
+          "afterOperations": [
+            "puzzle:two-route-model"
+          ]
         },
         {
           "speaker": "muling",
           "text": {
             "zh": "我把铃修过好多次，可没有你，它们唱不起来。要是再失败，大家还是会慢慢忘掉一切。",
             "en": "I repaired those bells so many times, but without you they wouldn't sing. If we fail again, everyone will slowly forget everything."
-          }
+          },
+          "afterOperations": [
+            "puzzle:two-route-model"
+          ]
         },
         {
           "speaker": "baikan",
           "text": {
             "zh": "风铃镇的家铃、森林的月叶、千灯城的影戏、云海上的风铃……大家已经在互相报平安了。",
             "en": "The house bells, the moonleaves, the lantern show, the wind chimes above the clouds… our friends are already answering each other."
-          }
+          },
+          "afterOperations": [
+            "puzzle:two-route-model"
+          ]
         },
         {
           "speaker": "muling",
           "text": {
             "zh": "我想，至少得有一只猫能把从前留下来……中央那边撑不了多久了。我先去稳住它。",
             "en": "I thought at least one cat should get to keep the past… The center won't hold much longer. I'll go try to steady it."
-          }
+          },
+          "afterOperations": [
+            "puzzle:two-route-model"
+          ]
         },
         {
           "speaker": "player",
           "text": {
             "zh": "我想知道以前的事，可我也不想忘了今天。咱们在灯火节玩得多开心啊。不能拿他们的过去换我的。走吧，白栞，最后一座铃还没响呢。",
             "en": "I want to know my past, but I don't want to forget today either. We had such a good time at the lantern festival. We can't trade their past for mine. Come on, Baikan. There's one bell left to wake."
-          }
+          },
+          "afterOperations": [
+            "puzzle:two-route-model"
+          ]
         }
       ],
       "requires": [
@@ -1741,11 +1767,11 @@ export const campaign = {
       ],
       "choices": [],
       "lineGate": [
-        "npc:two-routes",
-        "puzzle:two-route-model"
+        "npc:two-routes"
       ],
       "choiceTiming": "afterDialogue",
-      "orderedRequires": true
+      "orderedRequires": true,
+      "beforeActionLines": 2
     },
     {
       "id": "starfall:F-01",

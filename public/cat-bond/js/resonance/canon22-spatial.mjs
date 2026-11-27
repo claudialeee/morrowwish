@@ -10,7 +10,7 @@ const starEdges=[[1,2],[0,3],[0,4],[1,5],[2,6],[3,7],[4,7],[5,6]];
 export const spatialNodes=p=>p.kind==="bridge"?bridgeNodes:p.kind==="stars"?starNodes:[];
 export function newSpatial(op){
  const kind=spatialKind(op);if(!kind)return null;
- return {operation:op,kind,node:0,branch:0,angle:.5,shape:0,moves:0,route:null,trace:[],solved:false,warning:"",visited:[0],player:[.16,.74],target:[.16,.74],frame:0,acc:0,waypoints:[],chaseRoute:null,jumping:false,wallCrossed:false,discoveries:[],audience:0,walk:null};
+ return {operation:op,kind,node:op==="puzzle:moonleaf-loop"?1:0,branch:0,angle:.5,shape:0,moves:0,route:null,trace:[],solved:false,warning:"",visited:[op==="puzzle:moonleaf-loop"?1:0],player:[.16,.74],target:[.16,.74],frame:0,acc:0,waypoints:[],chaseRoute:null,jumping:false,wallCrossed:false,discoveries:[],audience:0,walk:null};
 }
 // Animation delays the actual node transition. Invalid edges never start motion;
 // the underlying replay stays independent of frame rate.

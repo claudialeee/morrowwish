@@ -320,3 +320,7 @@
 /* Reachable bridge landings are obvious; wrong choices remain harmless and explain why. */
 #stage .rw-world .rw-puzzle-controls button[data-path-available=true]{background:#e7f1d8!important;border:2px solid #759467!important;color:#365b36!important;font-weight:800!important}
 #stage .rw-world .rw-puzzle-controls button[data-path-available=false]{opacity:.54!important}
+
+#stage .rw-world .rw-next-reason{display:block;font-size:clamp(11px,1.4vw,14px);font-weight:500;line-height:1.25;margin-bottom:3px;color:#705a40}
+#stage .rw-world .rw-scene-motive{font-size:12px;line-height:1.3;color:#735537;margin:3px 0}
+@media (orientation:landscape) and (max-height:480px){#stage .rw-world .rw-scene-motive{font-size:11px;margin:2px 0}#stage .rw-world .rw-next-cue{max-width:65%}}

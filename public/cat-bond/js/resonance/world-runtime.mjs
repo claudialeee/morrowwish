@@ -1,4 +1,5 @@
 import { campaign } from "./campaign.mjs";
+import {sceneIntent,beforeActionDialogue} from "./player-first-intent.mjs";
 import {spatialControls,spatialTap,paintSpatial,chasePoint,bridgeReachable} from "./canon22-spatial.mjs";
 import {chaseArt,drawPortraitChase,portraitChaseTap} from "./portrait-chase.mjs";
 import {portraitAsset,projectPortrait,unprojectPortrait} from "./portrait-map.mjs";
@@ -6,7 +7,7 @@ import {hasPendingDialogue} from "./dialogue-ui.mjs";
 import { openFinaleLatch } from "./finale-latch.mjs";
 import { createWorldBridge } from "./world-bridge.mjs";
 import {availableSideEvents} from "./side-adventures.mjs";
-import {mountSideAdventure} from "./adventure-play.mjs";
+import {mountSideAdventure,mountTalentTrial} from "./adventure-play.mjs";
 import {availableDiscoveries,layoutDiscoveries,paintDiscovery} from "./regional-discoveries.mjs";
 import {markerMetrics,layoutMarkerLabels,pickMarker,discoveryNames} from "./map-affordances.mjs?v=npc-talk-bubble-1";
 import { createExplorer,layouts,exchangeOptions,distance } from "./world-exploration.mjs";
@@ -69,7 +70,7 @@ function install(){
  function addMelodyControls(row,p){
   if(demoPuzzle!==p.operation){stopDemo();demoPuzzle=p.operation;}
   row.classList.add("rw-quality-puzzle");const phrase=E("div","rw-quality-phrase");phrase.setAttribute("role","status");
-  if(p.residentLead){const instructions={forge:["居民已点亮两盏节灯，点亮最后一盏。","The residents lit two festival lamps. Light the final lamp."],sky:["居民已经回铃，送出最后一道风讯。","The residents have answered. Send the final wind signal."],library:["两位馆员已经回铃，为记忆补上最后一音。","The archivists have answered. Add the final note to the memory."],starfall:["邻地已准备就绪，敲响最后一音，聆听六地回应。","The neighboring regions are ready. Ring the final note and hear all six reply."]};const target=p.goal[2];phrase.textContent=tr(...instructions[p.operation.split(":")[1]]);const button=B(melodyShapes[target]+" "+tr(...melodyNames[target]),()=>operate(target),!!ceremony);button.setAttribute("aria-label",tr(...melodyNames[target])+" · "+tr(...[["低音","Low"],["中音","Middle"],["高音","High"]][target]));button.dataset.note=String(target);row.append(phrase,button);return;}
+  if(p.residentLead){const instructions={forest:["芽禾和榆川已回铃。敲最后一音，让古树听见邻地。","Yahe and Yuchuan have answered. Ring the final note so the tree hears its neighbors."],forge:["居民已点亮两盏节灯，点亮最后一盏。","The residents lit two festival lamps. Light the final lamp."],sky:["居民已经回铃，送出最后一道风讯。","The residents have answered. Send the final wind signal."],library:["两位馆员已经回铃，为记忆补上最后一音。","The archivists have answered. Add the final note to the memory."],starfall:["邻地已准备就绪，敲响最后一音，聆听六地回应。","The neighboring regions are ready. Ring the final note and hear all six reply."]};const target=p.goal[2];phrase.textContent=tr(...instructions[p.operation.split(":")[1]]);const button=B(melodyShapes[target]+" "+tr(...melodyNames[target]),()=>operate(target),!!ceremony);button.setAttribute("aria-label",tr(...melodyNames[target])+" · "+tr(...[["低音","Low"],["中音","Middle"],["高音","High"]][target]));button.dataset.note=String(target);row.append(phrase,button);return;}
   const updatePhrase=()=>{row.dataset.demoState=demoActive?"playing":demoShown?"complete":"ready";phrase.replaceChildren(E("span","",demoActive?tr("聆听示范","Listen to the example"):p.mistakes?tr("试试当前这一格","Try the current step"):tr("播放示范，按顺序跟奏","Play the example, then echo it")));
    p.goal.forEach((n,j)=>{const done=j<p.values.length,visible=done||demoShown||j===demoIndex||(p.mistakes>0&&j===p.values.length);const step=E("span","rw-quality-step",(j+1)+" "+(visible?melodyShapes[n]:"·")+(done?" ✓":""));step.dataset.current=String(j===(demoActive?demoIndex:p.values.length));phrase.append(step);});};
   const keys=p.goal.map((_,i)=>{const b=B(melodyShapes[i]+" "+tr(...melodyNames[i]),()=>operate(i),!!ceremony||demoActive);b.setAttribute("aria-label",tr(...melodyNames[i])+" · "+tr(...[["低音","Low"],["中音","Middle"],["高音","High"]][i]));b.dataset.note=String(i);return b;});
@@ -207,7 +208,7 @@ function install(){
     else if(p.type==="canonSpatial"&&p.spatial.kind==="light"&&p.operation!=="puzzle:lantern-show")progress.textContent=Math.abs(p.spatial.angle-.72)<=.14&&p.spatial.moves>0?tr("桥已照亮！点「走过石桥」。","The bridge is lit! Choose Cross the bridge."):tr("桥在右侧的黑影下。把灯往右拖，或点「向右」。","The bridge is under the shadow on the right. Drag the light right or choose Aim right.");
     else if(p.type==="canonSpatial"||p.type==="skyFlight"||p.type==="pairedWater"||p.type==="libraryCompanion"||p.type==="libraryLedger")progress.textContent="";
     else if(p.goal?.length)progress.textContent=tr("进度 ","Progress ")+p.values.length+"/"+p.goal.length+(p.mistakes?tr(" · 刚才的操作未成功，请参照提示重试"," · That action did not work; follow the hint and retry"):"");
-    const goal=E("div","rw-minigame-goal");goal.append(title,hint);if(progress.textContent)goal.append(progress);
+    const goal=E("div","rw-minigame-goal");const motive=sceneIntent[current().view().current?.id];goal.append(title);if(motive)goal.append(E("p","rw-scene-motive",tr(...motive)));goal.append(hint);if(progress.textContent)goal.append(progress);
     const buttons=[...row.querySelectorAll("button")];const leave=buttons.pop();if(leave){leave.classList.add("rw-minigame-leave");goal.append(leave);}const message=host.querySelector(".rw-notice");if(message){message.setAttribute("role","status");goal.append(message);}
     for(const n of [...host.children])if(n!==head&&n!==shell&&n!==row)n.remove();
     rail.append(goal,row);host.append(rail);
@@ -414,6 +415,7 @@ function install(){
   if(v.objective.length&&v.objective.every(op=>op.startsWith("cinematic:")))actions.append(primary(B(v.current?.id==="starfall:F-02"?tr("回想当年的抉择","Remember the choice"):tr("观看剧情","Watch the story scene"),()=>go(explorer.layout.paths.at(-1),()=>window.CatBondChapterCinematics.play(v.current.id)))));
  }
  for(const memory of availableMemories(w.location))actions.append(B(memory.name,()=>visitDuoMemory(memory)));
+ for(const id of ({harbor:["qilan"],forest:["yahe"],forge:["xiaomao"]}[w.location]||[])){if(State.S.cats.some(c=>c.storyActor===id)){const n=campaign.cast[id].name;actions.append(B(tr("可选练习 · ","Optional practice · ")+n[lang()],()=>mountTalentTrial(id)));}}
  // Optional clue, not a main quest or a global map marker. The same walk/proof
  // path as the proximity marker is used, including the real saved position.
  for(const s of availableSideEvents(w.location,w,v)){const clue=B(tr(...s.clue),()=>{regionMenuOpen=false;const rail=host.querySelector("#rw-region-actions");if(rail)rail.hidden=true;host.querySelector(".rw-region-toggle")?.setAttribute("aria-expanded","false");visitDiscovery(s);});clue.dataset.sideClue=w.location;actions.append(clue);}
@@ -422,7 +424,7 @@ function install(){
  // Keep the single next action visible without reopening the full quest drawer.
  if(!explorer?.puzzle&&!ceremony&&!v.ending){
   const next=host.querySelector("button[data-next-scene]");
-  if(next){const cue=B(tr("下一步：","Next: ")+next.textContent.replace(/^(主线 · |Main quest · )/,""),()=>next.click());cue.classList.add("rw-next-cue");shell.append(cue);}
+  if(next){const cue=B(tr("下一步：","Next: ")+next.textContent.replace(/^(主线 · |Main quest · )/,""),()=>next.click());cue.classList.add("rw-next-cue");const intent=sceneIntent[v.current?.id];if(intent){const reason=E("span","rw-next-reason",tr(...intent));cue.prepend(reason);}shell.append(cue);}
  }
  draw();}
  // Navigate to the next authored scene, never grant completion evidence.
@@ -436,7 +438,8 @@ function install(){
    action=()=>enterRegion(destination);label=tr("主线 · 前往","Main quest · Travel to ")+tr(...layouts[destination].name);
   }else if(mode==="region"&&w.location===destination){
    const primary=[...host.querySelectorAll('button[data-quest-primary="true"]')].find(b=>!b.disabled);
-   if(primary){action=()=>{if(primary.isConnected&&!primary.disabled)primary.click()};label=tr("主线 · ","Main quest · ")+primary.textContent.trim();const next=host.querySelector(".rw-next");if(next&&!pendingInvites(v).length)next.textContent=primary.textContent.trim();}
+   if(beforeActionDialogue(v)){action=()=>window.CatBondResonance?.showCurrent?.();label=tr("继续剧情","Continue story");}
+   else if(primary){action=()=>{if(primary.isConnected&&!primary.disabled)primary.click()};label=tr("主线 · ","Main quest · ")+primary.textContent.trim();const next=host.querySelector(".rw-next");if(next&&!pendingInvites(v).length)next.textContent=primary.textContent.trim();}
    else if(storyNpcs().some(n=>isMainNpc(n,v))){const n=storyNpcs().find(n=>isMainNpc(n,v));action=()=>visitNpc(n);label=tr("主线 · 与"+n.name[lang()]+"交谈","Main quest · Talk to "+n.name[lang()]);}
    else if(hasPendingDialogue(v)&&!v.objective.some(o=>o.startsWith("npc:")||o.startsWith("cinematic:"))){
     action=()=>window.CatBondResonance?.showCurrent?.();label=tr("继续剧情","Continue story");
@@ -519,7 +522,7 @@ function install(){
  function visitCache(cache){if(!cache)return;go(cache.point,()=>{reportPickup(explorer.pickup(cache.id),["发现信使补给","Courier cache discovered"]);render()});}
  function visitSurvey(s){go(s.from,()=>{report(explorer.startSurvey());render()});}
  function pendingInvites(v=current().view()){const region=current().world().location;return explorer&&v.objective.includes("melody:"+region)&&!v.objective.includes("repair:"+region)?explorer.localNpcs().filter(n=>!explorer.invited.includes(n.id)):[];}
- function visitFeature(op,p){if(op.startsWith("melody:")&&pendingInvites().length){regionMenuOpen=true;notice="";render();return;}regionMenuOpen=false;go(current().world().location==="sky"&&skyLaunch[op]||p,()=>{if(op.startsWith("battle:")){requestBattle(op,current().world().location);return;}const result=explorer.interact(op);if(result.ceremony){ceremony={owner:State.S,explorer,region:op.split(":")[1],elapsed:0,notes:0};if(ceremony.region==="harbor")image("harbor-ceremony");render();return;}report(result,result.ok&&!result.puzzle?starfallClues[op]||[ "已完成 · 继续冒险","Completed · Continue your adventure"]:"");render()});}
+ function visitFeature(op,p){if(beforeActionDialogue(current().view())){window.CatBondResonance?.showCurrent?.();return;}if(op.startsWith("melody:")&&pendingInvites().length){regionMenuOpen=true;notice="";render();return;}regionMenuOpen=false;go(current().world().location==="sky"&&skyLaunch[op]||p,()=>{if(op.startsWith("battle:")){requestBattle(op,current().world().location);return;}const result=explorer.interact(op);if(result.ceremony){ceremony={owner:State.S,explorer,region:op.split(":")[1],elapsed:0,notes:0};if(ceremony.region==="harbor")image("harbor-ceremony");render();return;}report(result,result.ok&&!result.puzzle?starfallClues[op]||[ "已完成 · 继续冒险","Completed · Continue your adventure"]:"");render()});}
  function storyNpcs(){const region=current().world().location,v=current().view(),hidden=(v.current?.id==="forest:R-01"?"yuchuan":v.current?.id==="forge:E-01"&&v.objective.includes("puzzle:festival-lantern")?"jinpo":v.current?.id==="sky:S-01"&&v.objective.includes("puzzle:sky-pouch")?"lingyu":null),locals=explorer.localNpcs().filter(n=>n.id!==hidden),residents=(window.CatBondResonance?.residents?.(region)||[]).filter(n=>n.id!==hidden);return [...locals,...residents.filter(n=>!locals.some(l=>l.id===n.id)).map((n,i)=>({...n,point:n.id==="muling"?(region==="harbor"?[.34,.478]:region==="sky"?[.74,.36]:region==="starfall"?(v.current?.id==="starfall:F-03"?[.92,.30]:[.86,.36]):explorer.layout.paths.at(-2)):explorer.layout.paths[Math.max(1,Math.min(explorer.layout.paths.length-2,Math.round((i+1)*explorer.layout.paths.length/(residents.length+1))))]}))];}
  function isMainNpc(npc,v,missing=pendingInvites(v)){
   const invite=missing.some(n=>n.id===npc.id),chooseFirst=v.current?.choiceTiming==="beforeAction"&&v.current.choices?.length&&!v.choice;
