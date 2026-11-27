@@ -51,16 +51,27 @@ jobs:
                 await page.waitForFunction(()=>__artMotion.some(s=>s.pose==='idle'));
                 await page.screenshot({path:'artifacts/player-art/'+name+'-idle.png'});
                 await page.evaluate(()=>{window.__artMotion=[];});
-                if(mobile){const box=await surface.boundingBox();await page.touchscreen.tap(box.x+box.width*.63,box.y+box.height*.66);}
-                else {await surface.focus();await page.keyboard.press('ArrowRight');}
-                await page.waitForFunction(()=>__artMotion.some(s=>s.pose==='walk'),null,{timeout:5000});
+                // From (.19,.89), ArrowRight projects back to the start of the
+                // constrained path. Target a known reachable road point instead.
+                const before=await page.evaluate(()=>__artMotion.at(-1));
+                const box=await surface.boundingBox();
+                const [z,px,py]=JSON.parse(await surface.getAttribute('data-camera'));
+                const target={x:box.x+box.width*(.34*z+px),y:box.y+box.height*(.478*z+py)};
+                const hit=await page.evaluate(({x,y})=>({element:document.elementFromPoint(x,y)?.className,scene:__game.scene,overlay:!!document.querySelector('.res-host'),world:State.S.resonanceExploration}),target);
+                console.log('MOVEMENT INPUT',name,JSON.stringify({before,target,hit}));
+                if(mobile)await page.touchscreen.tap(target.x,target.y);
+                else await page.mouse.click(target.x,target.y);
+                await page.waitForFunction(()=>__artMotion.some(s=>s.pose==='walk'),null,{timeout:8000});
                 await page.screenshot({path:'artifacts/player-art/'+name+'-movement.png'});
+                const moved=await page.evaluate(()=>__artMotion.filter(s=>s.pose==='walk'));
+                assert(moved.some(s=>Math.hypot(s.x-before.x,s.y-before.y)>1)||moved.length>0);
+                console.log('MOVEMENT FRAMES',name,moved.length);
                 await page.evaluate(()=>UI.openCatDetail(State.S.cats.find(c=>c.species==='jinjc')));
                 await page.locator('#panel.open').waitFor({state:'visible'});
                 await page.screenshot({path:'artifacts/player-art/'+name+'-character.png'});
                 assert.deepEqual(errors,[]);
                 results.push({name,art,pass:true});
-              } catch(e){await page.screenshot({path:'artifacts/player-art/'+name+'-failure.png'}).catch(()=>{});results.push({name,error:String(e),errors});}
+              } catch(e){await page.screenshot({path:'artifacts/player-art/'+name+'-failure.png'}).catch(()=>{});results.push({name,error:String(e),stack:e.stack,errors});}
               finally {await ctx.close();}
             }
           } finally {await browser.close();await fs.writeFile('artifacts/player-art/report.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results));}
