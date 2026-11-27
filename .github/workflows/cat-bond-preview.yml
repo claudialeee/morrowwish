@@ -400,6 +400,7 @@ jobs:
           for i in $(seq 1 15); do curl -fsS http://127.0.0.1:8766/cat-bond/ >/dev/null && break; sleep 1; done
           node .cat-bond-preview-smoke.mjs
           if [[ "$CAT_BOND_QA_SCOPE" == full ]]; then
+            node scripts/test-starbell-developer-browser.mjs
             node scripts/test-cat-bond-adventure-browser.mjs
             node scripts/cat-bond-title-audio-qa.mjs
             node scripts/cat-bond-layout-acceptance.mjs

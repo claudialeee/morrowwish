@@ -3,7 +3,7 @@ import {campaign} from './campaign.mjs';
 import {makeEngine} from './engine.mjs';
 import {storyPartyPatch} from './story-party.mjs';
 if(window.__STARBELL_DEVELOPER__){
- const areas=[['garden','阳光花园','Sunlit Garden','prologue:P-04'],['harbor','风铃镇','Windchime Town','harbor:H-01'],['forest','眠根林','Rootsleep Forest','forest:R-01'],['forge','千灯城','Lantern City','forge:E-01'],['sky','云海','Skyspine','sky:S-01'],['library','月镜书库','Moonmirror Library','library:M-01'],['starfall','星坠原','Starfall','starfall:F-01'],['finale','终章','Finale','finale:B-01']];
+ const areas=[['garden','阳光花园','Sunlit Garden','prologue:P-05'],['harbor','风铃镇','Windchime Town','harbor:H-01'],['forest','眠根林','Rootsleep Forest','forest:R-01'],['forge','千灯城','Lantern City','forge:E-01'],['sky','云海','Skyspine','sky:S-01'],['library','月镜书库','Moonmirror Library','library:M-01'],['starfall','星坠原','Starfall','starfall:F-01'],['finale','终章','Finale','finale:B-01']];
  const params=new URLSearchParams(location.search);
  const selected=()=>areas.find(a=>a[0]===params.get('region'))||areas[1];
  function checkpoint(target){
@@ -11,6 +11,7 @@ if(window.__STARBELL_DEVELOPER__){
   const late=new Set(['mechanism:muling-unlock','npc:public-accountability','npc:second-garden-key']);
   for(const scene of campaign.scenes){
    if(scene.id===target)break;
+   if(scene.id==='prologue:P-05'&&!e.view().openingMet)ok(e.meetTraveler());
    if(scene.choiceTiming==='beforeAction'&&scene.choices.length)ok(e.choose(scene.choices[0].id));
    if(scene.id==='finale:B-03')for(let j=0;j<campaign.regions.length;j++)ok(e.supportAction(campaign.regions[j],campaign.support[j]));
    for(const op of scene.requires.filter(op=>!late.has(op)))ok(e.record(scene.id,op));
@@ -31,7 +32,7 @@ if(window.__STARBELL_DEVELOPER__){
   const a=selected();
   if(!State.S.cats?.length||State.S.developerCheckpoint!==a[3]||params.has('reset'))prepare();
   game.rebuildYard();game.refreshHUD();window.CatBondOpeningCover?.hide();
-  if(a[0]==='garden'){game.scene='yard';game.showYardChrome();window.SunlitGarden?.enter?.();}
+  if(a[0]==='garden'){game.scene='yard';game.showYardChrome();window.dispatchEvent(new Event('cat-bond-garden-entered'));}
   else{game.openWorldMap();window.WorldMap?.enterRegion?.(a[0]==='finale'?'starfall':a[0]);}
   const panel=document.createElement('details');panel.id='starbell-developer-menu';panel.style.cssText='position:fixed;top:58px;left:10px;z-index:10000;max-width:min(240px,75vw);background:#fff1d2;color:#654923;border:1px solid #aa844c;border-radius:10px;padding:8px;font:700 14px system-ui;';
   const summary=document.createElement('summary');summary.style.cssText='cursor:pointer;min-height:30px';panel.append(summary);
