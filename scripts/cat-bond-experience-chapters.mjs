@@ -43,6 +43,7 @@ async function run(chapter){
   }
   steps.push({scene:(await view()).current?.id,action:label});await b.click();
  }
+ async function trial(id,actions){const modal=page.locator("[data-adventure=trial-"+id+"]");await modal.waitFor({state:"visible",timeout:15000});for(const a of actions)await modal.locator("[data-play-action="+a+"]").click();await modal.locator("[data-adventure]").count();assert.equal(await modal.getAttribute("data-complete"),"true");await shot("trial-"+id);await modal.getByRole("button",{name:"Return",exact:true}).click();await modal.waitFor({state:"detached"});}
  const op=async(id)=>page.waitForFunction(op=>!CatBondResonance.view().objective.includes(op),id,{timeout:35000});
  async function talk(npc){
   const before=await view();
@@ -255,9 +256,9 @@ async function run(chapter){
    await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();if(continuous){await page.keyboard.down('ArrowUp');await page.waitForTimeout(920);await page.keyboard.up('ArrowUp');await page.keyboard.down('ArrowRight');await chase.waitFor({state:'hidden',timeout:15000});await page.keyboard.up('ArrowRight');}else{const surface=page.locator('.rw-surface');const bounds=await surface.boundingBox();await surface.click({position:{x:bounds.width*.8,y:bounds.height*.35}});await chase.waitFor({state:'hidden',timeout:30000});}await dialogue('harbor:H-02');await scene('harbor:H-03');
    await talk('Yandeng');await dialogue('harbor:H-03');await scene('harbor:H-04');
    await battle('Belllight beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
-   await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');
+   await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');await trial('qilan',['deploy','cast']);
   }else if(chapter==='forest'){
-   await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');
+   await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');await trial('yahe',['deploy','escort']);
    await puzzle('Moonleaf bridge',['Fork','Roots','Turn moonleaf','Roots','Free the trapped kitten','Far bank']);await dialogue('forest:R-02');await scene('forest:R-03');
    await puzzle('Break the forest loop',['Fork','Canopy','Turn moonleaf','Canopy','Far bank']);await dialogue('forest:R-03');await scene('forest:R-04');
    await restore('Ancient-root sanctuary',['Upstream','Branch','Roots'],['Yahe','Yuchuan'],'Living Roots',[mid,low,high]);await dialogue('forest:R-04');
@@ -265,7 +266,7 @@ async function run(chapter){
    await puzzle('Lantern festival · Shadow show',['Cat','Aim left','Aim right','Continue festival']);await talk('Xiaomao');await dialogue('forge:E-01');await scene('forge:E-02');
    await puzzle('Light the stone bridge',['Cross the bridge','Aim left','Aim right','Cross the bridge']);await dialogue('forge:E-02');await scene('forge:E-03');
    await battle('Shadow beast','battle:shadow-beast');await dialogue('forge:E-03');await scene('forge:E-04');
-   await restore('Lantern sanctuary',['Turn left light','Turn center light','Turn right light'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');
+   await restore('Lantern sanctuary',['Turn left light','Turn center light','Turn right light'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');await trial('xiaomao',['deploy','warn','impact']);
   }else if(chapter==='sky'){
    await flyWaterfall('Catch the wind · Practice gliding');await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
    await click('Find the moon gate · Cloud route');await op('explore:flight-recorder');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');

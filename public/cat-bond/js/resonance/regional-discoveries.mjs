@@ -1,3 +1,4 @@
+import {sideKeepsakes} from "./side-adventures.mjs";
 // Region-specific optional environmental discoveries; no narrative proof or economy changes.
 const raw={
   "harbor": {
@@ -527,7 +528,7 @@ export function layoutDiscoveries(items,obstacles,W=960,H=540){
  });
 }
 export function earnedKeepsakes(interactions={}){
- return Object.entries(discoveries).flatMap(([region,d])=>{const p=progress(region,interactions);return [...(p.complete?[{region,name:d.souvenir}]:[]),...(p.returned?[{region,name:d.returnSouvenir}]:[])];});
+ return [...Object.entries(discoveries).flatMap(([region,d])=>{const p=progress(region,interactions);return [...(p.complete?[{region,name:d.souvenir}]:[]),...(p.returned?[{region,name:d.returnSouvenir}]:[])];}),...sideKeepsakes(interactions)];
 }
 export function paintDiscovery(ctx,s,W,H,t){
  const bob=["feather","crab"].includes(s.kind)?Math.sin(t*4)*2:Math.sin(t*2)*.6;

@@ -1,4 +1,5 @@
 // Post-ending conversations use the canonical slot and choice outcomes. No second quest state.
+import {sideMemory} from "./side-adventures.mjs";
 import {campaign} from "./campaign.mjs";
 const lines={
  jiedeng:{normal:["今晚小猫们帮我挂好了风铃。我带了集市上的糖果。","The kittens helped hang the chimes tonight. I brought sweets from the market."],method:"precise-beacon",alternate:["那天古铃响起后，大家又听得出自家门前的铃了。","Ever since the town bell rang again, everyone can recognize the chime at their own door."]},
@@ -46,7 +47,7 @@ const visits={
  xiaomao:{action:["点亮歪耳猫灯","Light the crooked-ear lantern"],done:["歪耳猫的影子跳上墙，小铆笑着把灯挂好。纪念物：歪耳灯。","The crooked-eared cat’s shadow jumps onto the wall. Xiaomao hangs the lantern with a grin. Keepsake: Crooked-ear lantern."]}
 };
 export function mountHomeConversation(id,api){
- const view=api.view(),actor=campaign.cast[id],copy=homeConversation(id,view,api.supportProfile(actor?.region),api.snapshot());
+ const view=api.view(),actor=campaign.cast[id],baseCopy=homeConversation(id,view,api.supportProfile(actor?.region),api.snapshot()),memories=sideMemory(id,window.State.S),copy=baseCopy&&[0,1].map(i=>[baseCopy[i],...memories.map(m=>m[i])].join(i?" ":""));
  const stage=document.getElementById("stage");if(!stage||!copy||window.__game?.scene!=="yard")return false;
  const owner=window.State.S;api.close?.();document.querySelector(".res-home-conversation")?.dispatchEvent(new Event("cat-bond-close"));
  const root=document.createElement("div");root.className="cb-story-overlay is-visible res-host res-home-conversation";
@@ -55,7 +56,7 @@ export function mountHomeConversation(id,api){
  const body=document.createElement("div");body.className="res-body";const title=document.createElement("h2"),line=document.createElement("p"),controls=document.createElement("div"),close=document.createElement("button");
  title.className="res-speaker";line.className="res-line";controls.className="res-controls";close.type="button";
  const visit=view.ending&&view.returned?.includes(id)?visits[id]:null,action=document.createElement("button");action.type="button";action.dataset.homeRevisit=id;let finished=!!window.GardenExploration?.read(owner).keepsakes.includes("revisit-"+id);if(visit)controls.append(action);controls.append(close);body.append(title,line,controls);panel.append(art,body);root.append(panel);
- function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh";title.textContent=actor.name[zh?"zh":"en"];line.textContent=visit&&finished?visit.done[zh?0:1]:copy[zh?0:1];if(visit){action.hidden=finished;action.textContent=visit.action[zh?0:1];}close.textContent=zh?"关闭":"Close";panel.setAttribute("aria-label",title.textContent);}
+ function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh";title.textContent=actor.name[zh?"zh":"en"];line.textContent=visit&&finished?[visit.done[zh?0:1],...memories.map(m=>m[zh?0:1])].join(zh?"":" "):copy[zh?0:1];if(visit){action.hidden=finished;action.textContent=visit.action[zh?0:1];}close.textContent=zh?"关闭":"Close";panel.setAttribute("aria-label",title.textContent);}
  function dispose(){root.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("pagehide",dispose);}
  action.onclick=()=>{if(owner!==window.State.S||window.__game?.scene!=="yard"||!visit||finished)return;if(window.GardenExploration?.completeRevisit(id)){finished=true;window.MorrowwishAudio?.effect?.("discover");window.__game?.toast?.({zh:visit.done[0],en:visit.done[1]});render();close.focus();}};close.onclick=dispose;root.addEventListener("cat-bond-close",dispose);root.addEventListener("keydown",e=>{if(e.key==="Escape")dispose();});
  if(owner!==window.State.S)return false;stage.append(root);window.addEventListener("morrowwish-language-change",render);window.addEventListener("cat-bond-active-save-changed",dispose);window.addEventListener("pagehide",dispose,{once:true});render();close.focus();return true;
