@@ -1,0 +1,71 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "tests": [
+    {
+      "name": "desktop",
+      "width": 1280,
+      "height": 720,
+      "errors": [],
+      "failedRequests": [
+        "404 http://127.0.0.1:18964/cat-bond/assets/watercolor-cats-v2.webp",
+        "404 http://127.0.0.1:18964/cat-bond/assets/jiafei-watercolor-v2.webp?v=approved-flat-face-watercolor-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/gold-coin.svg?v=gold-currency-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/gold-coin.svg?v=gold-currency-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/jiafei-watercolor-v2.webp?v=approved-flat-face-watercolor-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/watercolor-cats-v2.webp",
+        "404 http://127.0.0.1:18964/cat-bond/assets/gold-coin.svg?v=gold-currency-20261122"
+      ],
+      "external": [],
+      "pass": false,
+      "captureEarned": true,
+      "debugHidden": true,
+      "language": "en",
+      "overflow": false,
+      "error": "TimeoutError: page.waitForFunction: Timeout 30000ms exceeded."
+    },
+    {
+      "name": "y8-standard",
+      "width": 760,
+      "height": 570,
+      "errors": [],
+      "failedRequests": [
+        "404 http://127.0.0.1:18964/cat-bond/assets/watercolor-cats-v2.webp",
+        "404 http://127.0.0.1:18964/cat-bond/assets/jiafei-watercolor-v2.webp?v=approved-flat-face-watercolor-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/gold-coin.svg?v=gold-currency-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/gold-coin.svg?v=gold-currency-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/watercolor-cats-v2.webp",
+        "404 http://127.0.0.1:18964/cat-bond/assets/jiafei-watercolor-v2.webp?v=approved-flat-face-watercolor-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/gold-coin.svg?v=gold-currency-20261122"
+      ],
+      "external": [],
+      "pass": false,
+      "debugHidden": true,
+      "language": "en",
+      "overflow": false,
+      "error": "TimeoutError: page.waitForFunction: Timeout 30000ms exceeded."
+    },
+    {
+      "name": "gamepix-portrait",
+      "width": 720,
+      "height": 1280,
+      "errors": [],
+      "failedRequests": [
+        "404 http://127.0.0.1:18964/cat-bond/assets/watercolor-cats-v2.webp",
+        "404 http://127.0.0.1:18964/cat-bond/assets/jiafei-watercolor-v2.webp?v=approved-flat-face-watercolor-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/gold-coin.svg?v=gold-currency-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/gold-coin.svg?v=gold-currency-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/watercolor-cats-v2.webp",
+        "404 http://127.0.0.1:18964/cat-bond/assets/jiafei-watercolor-v2.webp?v=approved-flat-face-watercolor-20261122",
+        "404 http://127.0.0.1:18964/cat-bond/assets/gold-coin.svg?v=gold-currency-20261122"
+      ],
+      "external": [],
+      "pass": false,
+      "debugHidden": true,
+      "language": "en",
+      "overflow": false,
+      "error": "TimeoutError: page.waitForFunction: Timeout 30000ms exceeded."
+    }
+  ],
+  "portalVerified": false,
+  "pass": false
+}

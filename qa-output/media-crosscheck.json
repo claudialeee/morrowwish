@@ -1,0 +1,150 @@
+{
+  "assets": [
+    {
+      "file": "qa-output/platform-media/crazygames/cover-landscape.png",
+      "source": "approved-covers/cover-landscape.jpg",
+      "size": [
+        1920,
+        1080
+      ],
+      "bytes": 2919976,
+      "sha256": "77ba3fd3f48da4b64274ea23d787b5724467fddefcb483483937f13501570e6c",
+      "visualApproval": false,
+      "cropped": false
+    },
+    {
+      "file": "qa-output/platform-media/crazygames/cover-portrait.png",
+      "source": "approved-covers/cover-portrait.jpg",
+      "size": [
+        800,
+        1200
+      ],
+      "bytes": 1517983,
+      "sha256": "ffee174aa64220d391097a92e2a93b4454107f51244a399d95e0c557109616c4",
+      "visualApproval": false,
+      "cropped": false
+    },
+    {
+      "file": "qa-output/platform-media/crazygames/cover-square.png",
+      "source": "approved-covers/cover-square.jpg",
+      "size": [
+        800,
+        800
+      ],
+      "bytes": 1146713,
+      "sha256": "fcc58abd4a3114d4c1b1a6cb1b8eeb2a8613d871bfd145b8837da0c4b880c728",
+      "visualApproval": false,
+      "cropped": false
+    },
+    {
+      "file": "qa-output/platform-media/gamedistribution/square.png",
+      "source": "approved-covers/cover-square.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 522141,
+      "sha256": "0ae2b9e54e958ce79a692609c87aee3aaf7dd17839d1d467e4e858da268b7bed",
+      "visualApproval": false,
+      "cropped": false
+    },
+    {
+      "file": "qa-output/platform-media/gamedistribution/card.png",
+      "source": "approved-covers/cover-landscape.jpg",
+      "size": [
+        512,
+        384
+      ],
+      "bytes": 378206,
+      "sha256": "3bae637ce7809138d870541e24496a9034a0489ad76388b94665195139cb9346",
+      "visualApproval": false,
+      "cropped": true
+    },
+    {
+      "file": "qa-output/platform-media/gamedistribution/small.png",
+      "source": "approved-covers/cover-landscape.jpg",
+      "size": [
+        200,
+        120
+      ],
+      "bytes": 54141,
+      "sha256": "adfdde97842c1cfd78eeced900362505ad821cde41078901110bb17c1ee13910",
+      "visualApproval": false,
+      "cropped": true
+    },
+    {
+      "file": "qa-output/platform-media/gamepix/icon.png",
+      "source": "approved-covers/cover-square.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 522141,
+      "sha256": "0ae2b9e54e958ce79a692609c87aee3aaf7dd17839d1d467e4e858da268b7bed",
+      "visualApproval": false,
+      "cropped": false
+    },
+    {
+      "file": "qa-output/platform-media/gamepix/landscape.jpg",
+      "source": "qa-output/desktop-garden.png",
+      "size": [
+        1280,
+        720
+      ],
+      "bytes": 187146,
+      "sha256": "d83d212418e112ea2d98520ae082feb429b6d9e30e045b557aa22832f33c3183",
+      "visualApproval": false,
+      "cropped": false
+    },
+    {
+      "file": "qa-output/platform-media/gamepix/portrait.jpg",
+      "source": "qa-output/gamepix-portrait-garden.png",
+      "size": [
+        720,
+        1280
+      ],
+      "bytes": 126938,
+      "sha256": "d4ece6a38d8582050ef357143ba04636a4868c0097f4fc224a19ff0eedd90139",
+      "visualApproval": false,
+      "cropped": false
+    },
+    {
+      "file": "qa-output/platform-media/y8/standard.jpg",
+      "source": "qa-output/y8-standard-garden.png",
+      "size": [
+        760,
+        570
+      ],
+      "bytes": 108994,
+      "sha256": "3f7cc83106c4ddb8017170460697c40415c0dd4e04697ac3569e4b46cd749794",
+      "visualApproval": false,
+      "cropped": false
+    },
+    {
+      "file": "qa-output/platform-media/y8/game-card.jpg",
+      "source": "qa-output/y8-standard-companions.png",
+      "size": [
+        760,
+        570
+      ],
+      "bytes": 63919,
+      "sha256": "76902ffc2c05575f76e4e5febb5d3fa40c7a2f91b2c65ff4fc86e01d3cb8d8c3",
+      "visualApproval": false,
+      "cropped": false
+    },
+    {
+      "file": "qa-output/platform-media/y8/widescreen.jpg",
+      "source": "qa-output/desktop-garden.png",
+      "size": [
+        1280,
+        720
+      ],
+      "bytes": 187146,
+      "sha256": "d83d212418e112ea2d98520ae082feb429b6d9e30e045b557aa22832f33c3183",
+      "visualApproval": false,
+      "cropped": false
+    }
+  ],
+  "visualApproval": false,
+  "note": "GD card/small original art crops require visual composition verification; no AI redrawing or gameplay misrepresentation."
+}

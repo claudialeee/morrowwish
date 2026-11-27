@@ -1,0 +1,16 @@
+{
+  "url": "https://morrowwishgames.itch.io/cat-bond",
+  "checkedAt": "2026-11-27T20:43:27.329Z",
+  "pass": false,
+  "expected": {
+    "js/data.js": "5bffba4e40c65dc7585c99158c1789bb3b87f930daf362d923d8a18a4b0833a9",
+    "js/battle.js": "d29431b7d929e7f28bb84ea8f158a8216aa1e69b150ebe0bc49d5002929dcadb",
+    "js/duo-premium.js": "71438aa7af8a2f7c63a4023e7262fbce613abc3b8f728ac27e18810bfdc5ed55",
+    "js/duo-bond.js": "59ed06873667d956014dffd3aec77e7e092cc05852a38bf54f0cd120dbf516b0",
+    "assets/mobile-portrait/duo/fire-light-tier-3.webp": "cd0e76edc57414a52096a8908ea88aced871f6d070344152ba61faab50edb77a"
+  },
+  "frames": [
+    "https://morrowwishgames.itch.io/cat-bond"
+  ],
+  "error": "Actual Cat Bond game frame not found after public Run game"
+}
