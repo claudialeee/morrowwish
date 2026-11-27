@@ -401,7 +401,7 @@ async function run(chapter){
     await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'告别',exact:true}).click();
     await encounter.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);await shot('prologue-garden');
    }
-   await page.locator('.sg-prologue-guide .sg-quest-toggle').click();await page.locator('.sg-prologue-guide').getByRole('button',{name:locale==='zh'?/下一场景/:/Next scene/}).click();await scene(start);
+   await page.locator('.sg-prologue-guide .sg-quest-toggle').click();await page.locator('.sg-prologue-guide').getByRole('button',{name:locale==='zh'?/下一场景/:/^Skip this encounter$/}).click();await scene(start);
   }else{await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene(start);}
   assert.ok(start==='epilogue:E-01'||!(await view()).completed.includes(start),'Chapter start is not already completed');
   await page.waitForFunction(()=>['map','yard'].includes(__game.scene));
