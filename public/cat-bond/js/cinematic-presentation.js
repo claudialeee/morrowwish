@@ -97,10 +97,18 @@
 .cbcp-stage::before{display:none!important}
 .cbcp-stage .cbcp-art-stack{inset:0!important}
 .cbcp-stage .cbcp-art{object-fit:cover!important;background:transparent!important}
-/* Preserve both actors on narrow phones; blurred backplate fills unused space. */
-@media (orientation:portrait) and (max-width:680px){
- .cbcp-stage:has(.cbcp-art[data-keep-actors="true"])::before{display:block!important}
- .cbcp-stage .cbcp-art[data-keep-actors="true"]{object-fit:contain!important;object-position:center!important;transform:none!important}
+/* Mobile story composition: sharp complete authored frames, no enlarged
+   duplicate blurred painting. Dialogue and footer have their own space. */
+@media (orientation:portrait) and (max-width:700px){
+ .cbcp-root,.cbcp-shell,.cbcp-stage{background:#242d30!important}
+ .cbcp-stage::before{display:none!important}
+ .cbcp-stage .cbcp-art-stack{inset:max(70px,12%) 0 30%!important}
+ .cbcp-stage[data-subtitle="false"] .cbcp-art-stack{inset:max(70px,12%) 0 12%!important}
+ .cbcp-stage .cbcp-art{object-fit:contain!important;object-position:center!important;transform:none!important}
+ .cbcp-stage .cbcp-layer{object-fit:contain!important;object-position:center!important}
+ .cbcp-stage .cbcp-vignette{background:linear-gradient(0deg,#242d30 4%,transparent 32%,transparent 88%,#242d3050)!important}
+ .cbcp-stage .cbcp-subtitle-wrap{bottom:max(66px,calc(env(safe-area-inset-bottom,0px) + 58px))!important;max-height:24%;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+ .cbcp-footer .cbcp-action,.cbcp-tools .cbcp-tool,.cbcp-footer .cbcp-back{min-height:44px!important}
 }
 .cbcp-stage .cbcp-layer{background:transparent!important}
 .cbcp-vignette{background:linear-gradient(0deg,#392c2060,transparent 28%,transparent 82%,#392c2038)!important}

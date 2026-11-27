@@ -5,6 +5,7 @@ on:
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-layout-acceptance.mjs'
+      - 'scripts/cat-bond-experience-chapters.mjs'
       - '.github/workflows/starbell-mobile-portrait.yml'
   workflow_dispatch:
 permissions:
@@ -44,4 +45,40 @@ jobs:
           path: |
             artifacts/cat-bond-layout/
             /tmp/starbell-portrait-server.log
+          retention-days: 14
+
+  fresh-portrait:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        locale: [zh, en]
+    env:
+      CAT_BOND_CONTINUOUS: '1'
+      CAT_BOND_EXPERIENCE: '1'
+      CAT_BOND_PORTRAIT: '1'
+      CAT_BOND_CHAPTER_LOCALE: ${{ matrix.locale }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Fresh portrait campaign through the ending
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-portrait-campaign.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-chapters.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-portrait-fresh-${{ matrix.locale }}
+          path: |
+            artifacts/cat-bond-experience/
+            /tmp/starbell-portrait-campaign.log
           retention-days: 14

@@ -99,3 +99,56 @@
  #stage .res-host .res-dialogue .res-line{font-size:16px!important;line-height:1.55!important}
  #stage .res-host .res-dialogue .res-choices button{min-height:44px!important;white-space:normal;overflow-wrap:anywhere}
 }
+
+/* Portrait title and combat: keep the actual painting sharp, provide a stable
+   bottom skill dock and reserve the same clearance in the combat simulation. */
+@media (orientation:portrait) and (max-width:700px){
+ #stage #intro.cb-rpg-intro:not(.hide){
+  background:#24242b!important;
+ }
+ #stage #intro .cb-title-landscape{
+  background-image:linear-gradient(0deg,#24242b,transparent 36%),url('../assets/garden/title-bell-sanctuary.webp')!important;
+  background-size:100% 100%,contain!important;
+  background-position:center,center top!important;
+  background-repeat:no-repeat!important;
+  bottom:36%!important;
+ }
+ #stage #intro .cb-title-content{
+  width:min(100%,420px)!important;padding:12px!important;box-sizing:border-box!important;
+  max-height:58%!important;overflow:auto;overscroll-behavior:contain;
+ }
+ #stage #battle-ui.on .move-bar{
+  left:8px!important;right:8px!important;bottom:max(8px,env(safe-area-inset-bottom,0px))!important;
+  transform:none!important;width:auto!important;max-width:none!important;
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:5px!important;justify-content:stretch!important;align-items:stretch!important;
+  box-sizing:border-box!important;
+ }
+ #stage #battle-ui.on .move-bar .move{
+  width:100%!important;min-width:0!important;max-width:none!important;
+  height:54px!important;min-height:48px!important;
+  padding:3px 4px!important;box-sizing:border-box!important;
+  overflow:hidden;touch-action:manipulation;
+ }
+ #stage #battle-ui.on .move-bar .mv-name{
+  font-size:11px!important;white-space:normal!important;line-height:1.15!important;
+  overflow-wrap:anywhere;max-width:100%;text-align:center;
+ }
+ #stage #battle-ui.on .move-bar .mv-icon{font-size:19px!important}
+ #stage #battle-ui.on .move-bar .mv-k{font-size:9px!important;line-height:1!important}
+ #stage #battle-ui.on .battle-tools .tiny-btn{min-height:44px!important;min-width:44px!important}
+ #stage #battle-ui.on #duo-burst{
+  top:calc(env(safe-area-inset-top,0px) + 148px)!important;
+  min-height:44px!important;
+ }
+ #stage #battle-ui.on #battle-squad-rail #bench-slots.is-open{
+  max-height:100px;overflow:auto;overscroll-behavior:contain;
+ }
+ #stage #battle-ui.on #battle-squad-rail .team-slot{min-height:44px;min-width:44px}
+ #stage #battle-ui.on #battle-squad-rail #bench-slots button{min-height:44px}
+ #stage #battle-ui.on .battle-hint{max-width:calc(100% - 16px)!important;white-space:normal!important}
+ #stage #battle-ui.on .cb-region-combat{max-width:calc(100% - 20px)!important}
+ #stage #battle-ui.on .cb-region-combat button{min-height:44px!important}
+}
+
+#stage{--cb-portrait-safe-top:env(safe-area-inset-top,0px);--cb-portrait-safe-bottom:env(safe-area-inset-bottom,0px)}

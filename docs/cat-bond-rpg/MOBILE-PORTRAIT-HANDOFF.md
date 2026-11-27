@@ -13,3 +13,9 @@ This is a deliberate engineering baseline, not the finished mobile aesthetic. In
 - Prioritize emotionally compelling story moments, the garden, town and six regional vistas; only commission a new painting where the real portrait frame fails. A separate mobile art layer must preserve navigation and landscape assets. No speculative whole-game rework.
 - Verify full-body cats and expressions, story readability and visual hierarchy on real 9:16 screens. Deliver asset paths and approved portrait compositions in an art branch. Chat owns integration, tests and deployment.
 - Record real vertical gameplay footage only from the verified build. The story and cats are the hook, not a minigame montage.
+
+## Second engineering pass
+- Portrait battle opens with enemy/player separated vertically, uses a 3x2 skill dock and matching simulation clearance; no combat stat or cooldown edits.
+- Title painting stays contained above its content. Cinematic frames use contain with an independent subtitle band and no duplicate blurred backplate. Existing garden portrait art retained, not remade.
+- Portrait campaign mode uses 390x844 mobile touch context throughout, native taps for shared actions, touch gestures for chase, open flight, mirror route and chain hold, and verifies skill dock size and clearance. The remaining legacy browser locators and automatic combat are explicitly automation rather than proof of full manual touch skill use.
+- Initial layout run 45937901939 succeeded for f53e1fa; this second pass requires new evidence. No Work handoff acceptance until the current SHA passes and visual evidence is inspected.
