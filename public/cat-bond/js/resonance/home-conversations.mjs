@@ -6,9 +6,9 @@ const lines={
  qilan:{normal:["新地图放在这里啦！下回想去风铃镇，咱们一起抄近路。","I left the new map here! Next time we visit Windchime Town, let's take the shortcut."],method:"rapid-rescue",alternate:["我们一起画的第一条路，我还留着呢。下次我来带路！","I still have the first trail we drew together. Next time I'll lead!"]},
  yahe:{normal:["月叶长出新芽了！等它再大一点，就能搭出一座小桥。","The moonleaf has sprouted! When it grows a little more, we can make a tiny bridge."],method:"herbal-supplies",alternate:["你当初帮我们恢复药草园，现在地下水道也重新通了。两边都不需要再猜测对方的意思。","You helped restore our herb gardens first, and now the underground channels are open too. Neither side has to guess anymore."]},
  yuchuan:{normal:["地下的发光菌又长出来了。下回带你去看看！","The glowing fungi are back underground. I'll take you to see them next time!"],method:"root-stability",alternate:["多亏你稳住了根系！新水量表挂好了，欢迎随时来看看。","Thanks for stabilizing the roots! The new water chart is up. Come check it anytime."]},
- jinpo:{normal:["小铆把我的老灯做成了歪耳猫。小家伙，还真挺好看。","Xiaomao turned my old lantern into a crooked-eared cat. It's rather charming, actually."],method:"shared-repair",alternate:["你让我先亲自向工人说明事故。以后我不会再把责任藏进图纸里。","You let me explain the accident to the workers myself. I won't hide responsibility inside a blueprint again."]},
+ jinpo:{normal:["小栗把我的老灯做成了歪耳猫。小家伙，还真挺好看。","Pip turned my old lantern into a crooked-eared cat. It's rather charming, actually."],method:"shared-repair",alternate:["你让我先亲自向工人说明事故。以后我不会再把责任藏进图纸里。","You let me explain the accident to the workers myself. I won't hide responsibility inside a blueprint again."]},
  xiaomao:{normal:["我想在花园办场影子戏！师傅答应来帮我挂灯。","I want to put on a shadow show in the garden! Master promised to help hang the lanterns."],method:"worker-transparency",alternate:["你支持公开事故记录。现在工坊每次试验都会把安全记录贴出来。","You supported releasing the accident record. The workshop now posts the safety log for every test."]},
- lingyu:{normal:["远帆今天独自飞过了群岛！我在码头给他准备了热茶。","Yuanfan flew across the islands on his own today! I have hot tea ready for him at the dock."],method:"escort-flight",alternate:["那次一起训练真有意思！现在我们有各自的航线，也常常约好一起飞。","That training was wonderful! We have our own routes now, and often arrange to fly together."]},
+ lingyu:{normal:["远帆今天独自飞过了群岛！我在码头给他准备了热茶。","Finn flew across the islands on his own today! I have hot tea ready for him at the dock."],method:"escort-flight",alternate:["那次一起训练真有意思！现在我们有各自的航线，也常常约好一起飞。","That training was wonderful! We have our own routes now, and often arrange to fly together."]},
  yuanfan:{normal:["今天的信送到了。我还给花园带了一根从云脊吹来的羽毛。","Today's letters are delivered. I brought the garden a feather carried by the Skyspine winds."],method:"fast-courier",alternate:["你那时让我自己领航。现在我每周都飞一趟花园的航线。","You let me take the lead back then. Now I fly the garden route every week."]},
  moye:{normal:["档案里留下了真实的记录，也留下了每位当事人决定公开什么的权利。","The archives preserve the truth, and each person's right to decide what private memories to share."],method:"verified-records",alternate:["让家属先核对私人记录，确实让我们找到了一些遗漏。真相和体谅并不冲突。","Letting families review their records first helped us find omissions. Truth and consideration need not conflict."]},
  baikan:{normal:["六地的新故事越写越多啦！我得给书架再加一层。","New stories are arriving from all six regions! I'll need another shelf."],method:"full-records",alternate:["你支持公开完整记录。现在我们把改动逐项标记，让每个人都能查证。","You supported opening the records. We now label every revision so anyone can verify it."]},
@@ -24,7 +24,7 @@ const muling={
 
 export function skyChapterVisitors(view){return view&&!view.ending&&view.completed?.includes("sky:S-05")?["lingyu","yuanfan"]:[];}
  const skyVisit={
-  lingyu:{normal:["今天我让远帆独自送信，我留在码头等他回来。观风台的数据可以帮花园的猫咪。","Today Yuanfan delivers letters on his own. I wait at the dock for his return. The lookout data can help the garden cats."],alternate:["一起训练时，他告诉我什么时候需要帮助。现在我学会了先问，再伸手。","During our training he told me when he needed help. Now I ask before lending a paw."]},
+  lingyu:{normal:["今天我让远帆独自送信，我留在码头等他回来。观风台的数据可以帮花园的猫咪。","Today Finn delivers letters on his own. I wait at the dock for his return. The lookout data can help the garden cats."],alternate:["一起训练时，他告诉我什么时候需要帮助。现在我学会了先问，再伸手。","During our training he told me when he needed help. Now I ask before lending a paw."]},
   yuanfan:{normal:["我把新航路的图带来啦！下次我们去远风岛看看，那边还藏着信使的补给。","I brought our new route chart! Let's visit Farwind Isle sometime. The old couriers left supplies there."],alternate:["谢谢你让我领飞。今天的信，我是自己送过来的。姐姐在码头等我。","Thank you for letting me lead. I delivered today's letters myself. My sister is waiting at the dock."]}
  };
 export function homeConversation(id,view,profile,snapshot){
@@ -42,9 +42,9 @@ export function homeConversation(id,view,profile,snapshot){
  return q.alternate&&profile?.methods?.includes(q.method)?q.alternate:q.normal;
 }
 const visits={
- qilan:{action:["一起标出回家的航线","Mark the route home together"],done:["你们在新航图上标出花园。以后每次迷路，都能顺着这条线回家。纪念物：栖蓝的新航图。","Together you mark the garden on the new chart. Whenever you lose your way, this route will lead home. Keepsake: Qilan’s new route chart."]},
- yahe:{action:["一起给月叶浇水","Water the moonleaf together"],done:["新芽在水珠下舒展开来。芽禾把第一片新叶留给花园。纪念物：月叶新芽。","A new shoot unfurls beneath the droplets. Yahe leaves the first new leaf in the garden. Keepsake: Moonleaf sprout."]},
- xiaomao:{action:["点亮歪耳猫灯","Light the crooked-ear lantern"],done:["歪耳猫的影子跳上墙，小铆笑着把灯挂好。纪念物：歪耳灯。","The crooked-eared cat’s shadow jumps onto the wall. Xiaomao hangs the lantern with a grin. Keepsake: Crooked-ear lantern."]}
+ qilan:{action:["一起标出回家的航线","Mark the route home together"],done:["你们在新航图上标出花园。以后每次迷路，都能顺着这条线回家。纪念物：栖蓝的新航图。","Together you mark the garden on the new chart. Whenever you lose your way, this route will lead home. Keepsake: Skye’s new route chart."]},
+ yahe:{action:["一起给月叶浇水","Water the moonleaf together"],done:["新芽在水珠下舒展开来。芽禾把第一片新叶留给花园。纪念物：月叶新芽。","A new shoot unfurls beneath the droplets. Fern leaves the first new leaf in the garden. Keepsake: Moonleaf sprout."]},
+ xiaomao:{action:["点亮歪耳猫灯","Light the crooked-ear lantern"],done:["歪耳猫的影子跳上墙，小栗笑着把灯挂好。纪念物：歪耳灯。","The crooked-eared cat’s shadow jumps onto the wall. Pip hangs the lantern with a grin. Keepsake: Crooked-ear lantern."]}
 };
 export function mountHomeConversation(id,api){
  const view=api.view(),actor=campaign.cast[id],baseCopy=homeConversation(id,view,api.supportProfile(actor?.region),api.snapshot()),memories=sideMemory(id,window.State.S),copy=baseCopy&&[0,1].map(i=>[baseCopy[i],...memories.map(m=>m[i])].join(i?" ":""));

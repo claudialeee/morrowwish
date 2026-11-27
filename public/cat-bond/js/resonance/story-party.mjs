@@ -24,7 +24,7 @@ export function storyPartyPatch(root,previous,next,makeCat,decorate=()=>{}){
  const player=cats.find(c=>c.species==="jinjc")||cats[0];
  const seed=(a,b)=>{if(!a||!b||a.uid===b.uid)return;const k=[a.uid,b.uid].sort().join(":");const p=duo.pairs[k]||(duo.pairs[k]={value:0,lastPlay:0});p.value=Math.max(20,p.value||0);};
  for(const scene of [...finished,...reunions]){
-  // Leave before recruiting Baikan so the vacated active slot can be filled.
+  // Leave before recruiting Ivy so the vacated active slot can be filled.
   if(scene==="library:M-05"){
    const cat=cats.find(c=>c.storyActor==="muling");
    if(cat){away.muling=cat;cats=cats.filter(c=>c.uid!==cat.uid);team=team.filter(u=>u!==cat.uid);if(duo.active.includes(cat.uid))duo.active=[];left.push("muling");}

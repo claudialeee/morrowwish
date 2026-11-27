@@ -76,7 +76,7 @@ export const campaign = {
       "id": "muling",
       "name": {
         "zh": "暮铃",
-        "en": "Muling"
+        "en": "Luna"
       },
       "region": "garden",
       "artDirection": {
@@ -91,7 +91,7 @@ export const campaign = {
       "id": "jiedeng",
       "name": {
         "zh": "檐灯",
-        "en": "Yandeng"
+        "en": "Alder"
       },
       "region": "harbor",
       "artDirection": {
@@ -106,7 +106,7 @@ export const campaign = {
       "id": "qilan",
       "name": {
         "zh": "栖蓝",
-        "en": "Qilan"
+        "en": "Skye"
       },
       "region": "harbor",
       "artDirection": {
@@ -121,7 +121,7 @@ export const campaign = {
       "id": "yahe",
       "name": {
         "zh": "芽禾",
-        "en": "Yahe"
+        "en": "Fern"
       },
       "region": "forest",
       "artDirection": {
@@ -136,7 +136,7 @@ export const campaign = {
       "id": "yuchuan",
       "name": {
         "zh": "榆川",
-        "en": "Yuchuan"
+        "en": "Rowan"
       },
       "region": "forest",
       "artDirection": {
@@ -151,7 +151,7 @@ export const campaign = {
       "id": "jinpo",
       "name": {
         "zh": "烬婆",
-        "en": "Jinpo"
+        "en": "Ember"
       },
       "region": "forge",
       "artDirection": {
@@ -165,8 +165,8 @@ export const campaign = {
     "xiaomao": {
       "id": "xiaomao",
       "name": {
-        "zh": "小铆",
-        "en": "Xiaomao"
+        "zh": "小栗",
+        "en": "Pip"
       },
       "region": "forge",
       "artDirection": {
@@ -181,7 +181,7 @@ export const campaign = {
       "id": "lingyu",
       "name": {
         "zh": "翎羽",
-        "en": "Lingyu"
+        "en": "Wren"
       },
       "region": "sky",
       "artDirection": {
@@ -196,7 +196,7 @@ export const campaign = {
       "id": "yuanfan",
       "name": {
         "zh": "远帆",
-        "en": "Yuanfan"
+        "en": "Finn"
       },
       "region": "sky",
       "artDirection": {
@@ -211,7 +211,7 @@ export const campaign = {
       "id": "moye",
       "name": {
         "zh": "墨页",
-        "en": "Moye"
+        "en": "Quill"
       },
       "region": "library",
       "artDirection": {
@@ -225,8 +225,8 @@ export const campaign = {
     "baikan": {
       "id": "baikan",
       "name": {
-        "zh": "白栞",
-        "en": "Baikan"
+        "zh": "白羽",
+        "en": "Ivy"
       },
       "region": "library",
       "artDirection": {
@@ -241,7 +241,7 @@ export const campaign = {
       "id": "xingya",
       "name": {
         "zh": "星芽",
-        "en": "Xingya"
+        "en": "Nova"
       },
       "region": "starfall",
       "artDirection": {
@@ -256,7 +256,7 @@ export const campaign = {
       "id": "lichuan",
       "name": {
         "zh": "砾川",
-        "en": "Lichuan"
+        "en": "Flint"
       },
       "region": "starfall",
       "artDirection": {
@@ -361,7 +361,7 @@ export const campaign = {
           "speaker": "muling",
           "text": {
             "zh": "我叫暮铃。以前星铃碎过一次，那时也是这样，到处有猫忘事。",
-            "en": "I'm Muling. The Star Bell broke once before. Cats all over started forgetting, just like this."
+            "en": "I'm Luna. The Star Bell broke once before. Cats all over started forgetting, just like this."
           }
         },
         {
@@ -375,7 +375,7 @@ export const campaign = {
           "speaker": "qilan",
           "text": {
             "zh": "它会绕回来！你从鱼摊那边截住它，我照看阿婆。暮铃，走散了就摇两下铃！",
-            "en": "It'll circle back! Cut it off by the fish stall; I'll look after Gran. Muling, ring twice if you get separated!"
+            "en": "It'll circle back! Cut it off by the fish stall; I'll look after Gran. Luna, ring twice if you get separated!"
           }
         }
       ],
@@ -409,7 +409,7 @@ export const campaign = {
           "speaker": "muling",
           "text": {
             "zh": "听见你那两声铃啦，我在这儿。檐灯就在旧铃房守着，咱们去问他那团光是怎么回事。",
-            "en": "I heard your two chimes. I'm here! Yandeng tends the old bell house. Let's ask him about that glow."
+            "en": "I heard your two chimes. I'm here! Alder tends the old bell house. Let's ask him about that glow."
           }
         },
         {
@@ -512,7 +512,7 @@ export const campaign = {
           "speaker": "muling",
           "text": {
             "zh": "那就接着搭个伴？先陪檐灯修好古铃，让阿婆认得回家的路。我也想看看别的古铃。",
-            "en": "Shall we stick together? Let's help Yandeng restore the bell so Gran can find her way home. I'd like to see the other bells, too."
+            "en": "Shall we stick together? Let's help Alder restore the bell so Gran can find her way home. I'd like to see the other bells, too."
           }
         }
       ],
@@ -617,7 +617,7 @@ export const campaign = {
           "speaker": "yahe",
           "text": {
             "zh": "月叶能让根桥换方向，先把它拨向对岸。过去找榆川，他认得老路上的标记。",
-            "en": "The moonleaf turns the root bridge. Bend it toward the far bank first, then find Yuchuan; he knows the old trail marks."
+            "en": "The moonleaf turns the root bridge. Bend it toward the far bank first, then find Rowan; he knows the old trail marks."
           }
         },
         {
@@ -740,14 +740,14 @@ export const campaign = {
           "speaker": "yuchuan",
           "text": {
             "zh": "这是旧路上的画。千灯城灯匠的火纹还在，去问烬婆吧，她认得这种老东西。",
-            "en": "That's the old trail map. The lantern makers' mark is still here. Ask Jinpo in Lantern City; she knows old things like this."
+            "en": "That's the old trail map. The lantern makers' mark is still here. Ask Ember in Lantern City; she knows old things like this."
           }
         },
         {
           "speaker": "qilan",
           "text": {
             "zh": "檐灯！听见没有？我们到啦！",
-            "en": "Yandeng! Can you hear us? We made it!"
+            "en": "Alder! Can you hear us? We made it!"
           }
         },
         {
@@ -901,15 +901,15 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "多亏你扶稳了灯，小铆。不然它早就溜回暗处了。",
-            "en": "Good thing you held that light steady, Xiaomao. It would’ve slipped back into the dark."
+            "zh": "多亏你扶稳了灯，小栗。不然它早就溜回暗处了。",
+            "en": "Good thing you held that light steady, Pip. It would’ve slipped back into the dark."
           }
         },
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "好啦，这回轮到我们点灯。小铆，把那盏歪耳灯也挂上吧。",
-            "en": "Now let’s light up the festival. Xiaomao, hang up your crooked-ear lantern too."
+            "zh": "好啦，这回轮到我们点灯。小栗，把那盏歪耳灯也挂上吧。",
+            "en": "Now let’s light up the festival. Pip, hang up your crooked-ear lantern too."
           }
         }
       ],
@@ -1083,7 +1083,7 @@ export const campaign = {
           "id": "lead",
           "label": {
             "zh": "让远帆领飞",
-            "en": "Let Yuanfan lead"
+            "en": "Let Finn lead"
           },
           "npc": "yuanfan",
           "method": "fast-courier"
@@ -1123,7 +1123,7 @@ export const campaign = {
           "speaker": "player",
           "text": {
             "zh": "暮铃，你也到了！",
-            "en": "Muling, you made it!"
+            "en": "Luna, you made it!"
           }
         },
         {
@@ -1378,8 +1378,8 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "刚才白栞说，有猫查过旧封印。说不定这里能找到线索。",
-            "en": "Baikan said someone looked into the old seal. Maybe we'll find a clue here."
+            "zh": "刚才白羽说，有猫查过旧封印。说不定这里能找到线索。",
+            "en": "Ivy said someone looked into the old seal. Maybe we'll find a clue here."
           }
         },
         {
@@ -1405,7 +1405,7 @@ export const campaign = {
       "chapter": "library",
       "title": {
         "zh": "假的暮铃",
-        "en": "The other Muling"
+        "en": "The other Luna"
       },
       "previous": "library:M-01",
       "lines": [
@@ -1413,7 +1413,7 @@ export const campaign = {
           "speaker": "player",
           "text": {
             "zh": "暮铃，刚才有两只猫同时摇了铃。",
-            "en": "Muling, two cats just rang their bells at once."
+            "en": "Luna, two cats just rang their bells at once."
           }
         },
         {
@@ -1586,14 +1586,14 @@ export const campaign = {
           "speaker": "baikan",
           "text": {
             "zh": "借图的印记……暮铃，这不是你那只铃坠么？",
-            "en": "The mark on the borrowing record… Muling, isn't that your pendant?"
+            "en": "The mark on the borrowing record… Luna, isn't that your pendant?"
           }
         },
         {
           "speaker": "player",
           "text": {
             "zh": "等一下。那天封印松了，失忆就又开始了？暮铃，我想听你自己说。",
-            "en": "Wait. The forgetting started again the day the seal was loosened? Muling, I want to hear it from you."
+            "en": "Wait. The forgetting started again the day the seal was loosened? Luna, I want to hear it from you."
           }
         },
         {
@@ -1688,8 +1688,8 @@ export const campaign = {
         {
           "speaker": "moye",
           "text": {
-            "zh": "你们刚才试过模型里的两条路线了。它们会带来完全不同的结果。白栞，你带上记录。",
-            "en": "You've just tested both routes in the model. They have very different consequences. Baikan, take the records."
+            "zh": "你们刚才试过模型里的两条路线了。它们会带来完全不同的结果。白羽，你带上记录。",
+            "en": "You've just tested both routes in the model. They have very different consequences. Ivy, take the records."
           }
         },
         {
@@ -1730,8 +1730,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "我想知道以前的事，可我也不想忘了今天。咱们在灯火节玩得多开心啊。不能拿他们的过去换我的。走吧，白栞，最后一座铃还没响呢。",
-            "en": "I want to know my past, but I don't want to forget today either. We had such a good time at the lantern festival. We can't trade their past for mine. Come on, Baikan. There's one bell left to wake."
+            "zh": "我想知道以前的事，可我也不想忘了今天。咱们在灯火节玩得多开心啊。不能拿他们的过去换我的。走吧，白羽，最后一座铃还没响呢。",
+            "en": "I want to know my past, but I don't want to forget today either. We had such a good time at the lantern festival. We can't trade their past for mine. Come on, Ivy. There's one bell left to wake."
           }
         }
       ],
@@ -1888,8 +1888,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "那栖蓝呢？她的地图才画了一条路。芽禾还等着看月叶。小铆连影戏都约好了。",
-            "en": "What about Qilan? She's only drawn one trail. Yahe's waiting to see the moonleaf grow. Xiaomao's already promised us a show."
+            "zh": "那栖蓝呢？她的地图才画了一条路。芽禾还等着看月叶。小栗连影戏都约好了。",
+            "en": "What about Skye? She's only drawn one trail. Fern's waiting to see the moonleaf grow. Pip's already promised us a show."
           }
         },
         {
@@ -1937,7 +1937,7 @@ export const campaign = {
           "speaker": "jiedeng",
           "text": {
             "zh": "听见啦！这就摇回去！",
-            "en": "Yandeng (Windchime Town): We hear you! Ringing back now!"
+            "en": "Alder (Windchime Town): We hear you! Ringing back now!"
           }
         },
         {
@@ -2004,7 +2004,7 @@ export const campaign = {
           "speaker": "player",
           "text": {
             "zh": "等等，你看！砾川那边又亮了。还没完呢！我们一起守住它们的声音。",
-            "en": "Wait, look! Lichuan's light is back. It's not over yet! Let's protect their voices together."
+            "en": "Wait, look! Flint's light is back. It's not over yet! Let's protect their voices together."
           }
         }
       ],
@@ -2144,7 +2144,7 @@ export const campaign = {
           "speaker": "player",
           "text": {
             "zh": "听见了吗？是他们自己的声音。暮铃，开吧。",
-            "en": "Hear that? Those are their own voices. Muling, open it."
+            "en": "Hear that? Those are their own voices. Luna, open it."
           }
         },
         {
@@ -2512,7 +2512,7 @@ export const campaign = {
       "operation": "ambient:inspect-water",
       "text": {
         "zh": "今天的水量已经记下来了。芽禾也看过。",
-        "en": "Today's water levels are recorded. Yahe has checked them too."
+        "en": "Today's water levels are recorded. Fern has checked them too."
       },
       "action": "inspect-water"
     },
@@ -2523,8 +2523,8 @@ export const campaign = {
       "after": "forge:E-04",
       "operation": "ambient:test-safety",
       "text": {
-        "zh": "图纸给小铆看过了。谁发现问题，谁就先说。",
-        "en": "Xiaomao has checked the diagram. Whoever sees a problem speaks first."
+        "zh": "图纸给小栗看过了。谁发现问题，谁就先说。",
+        "en": "Pip has checked the diagram. Whoever sees a problem speaks first."
       },
       "action": "test-safety"
     },
@@ -2548,7 +2548,7 @@ export const campaign = {
       "operation": "ambient:prepare-flight",
       "text": {
         "zh": "远帆选路线，我负责检查风向。",
-        "en": "Yuanfan chooses the route. I'll check the wind."
+        "en": "Finn chooses the route. I'll check the wind."
       },
       "action": "prepare-flight"
     },
