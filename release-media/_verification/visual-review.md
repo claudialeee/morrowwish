@@ -1,9 +1,5 @@
-# Final visual review — Cat Bond
-Inspected final cover, platform screenshot, landscape and portrait frame contact sheets against the genuine capture reports. Covers show both cats and title-only CrazyGames artwork, with no text in GD thumbnail. The previews show actual garden, earned cat, teaser, unlocked duo, exploration/care and combat. Accepted for draft preparation, not a submission or signed-in portal preview approval.
+# Portrait correction visual re-review
 
-- GamePix exact ZIP portrait screenshot shows genuine top/bottom page margins; not cropped, stretched or presented as full-bleed.
-- Portrait exploration has excess blank lower area and is omitted from portrait preview. Landscape exploration has a thin blank edge from actual game layout.
-- Only earned common-cat captures shown; no SSR capture claimed or simulated.
-- Gameplay previews contain genuine UI panels rather than full-cinematic duo animation; do not present cover artwork as live gameplay.
+Reviewed all four regenerated contact sheets. GamePix portrait no longer has the top/bottom webpage margins; corrected portrait exploration fills its viewport; landscape also covers the old thin edge. Genuine capture includes garden, ordinary battle, earned cat, care, duo menu, workshop and region exploration. Y8 now uses the complete continuous take including first battle. No actual SSR or full cinematic duo burst was recorded; no claim of either. All 6 viewport tests and 3 standalone capture/save tests passed, plus primary media and archive hashes, and additional image decoding.
 
-Technical validation passed: 18 primary media files, 4 ZIPs, 129 exact source Git blobs, 63 portrait paintings in each ZIP, exact tested GamePix ZIP and public CrazyGames/itch asset parity. Y8 and GD ZIP templates still require the actual SDK identifiers and live portal SDK checks. No portal draft saves performed. Keep the existing itch live wrapper.
+No signed-in portal preview or draft save, no actual SDK IDs, no production deployment. Previous public parity predates this patch. Browser testing is not physical-device or exhaustive all-region testing.

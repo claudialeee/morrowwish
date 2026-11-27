@@ -172,9 +172,9 @@
         1920,
         1080
       ],
-      "seconds": 45.72,
-      "bytes": 4181397,
-      "sha256": "7b36a6d93a4e87848a1054bbe9163ecf7599aa0a1d97251b53faff16ad3b953b",
+      "seconds": 67.48,
+      "bytes": 5928998,
+      "sha256": "8094a0d45f04439052fc5d8ceb0b74285b92c74a37894821ba1b2372b13ef19f",
       "hasAudio": false,
       "pass": true
     },
@@ -258,7 +258,7 @@
     "crazygames-canonical": true,
     "itch-public": true
   },
-  "visualReviewPending": true,
+  "visualReviewPending": false,
   "sdkGate": {
     "y8": "actual App ID unavailable",
     "gamedistribution": "actual game ID unavailable"
@@ -268,5 +268,157 @@
   "portraitViewportFix": "c0c9eef798870ac84ffd2442dc68ca085cf407cd",
   "portraitGeometryQA": true,
   "publicParityNote": "Prior parity evidence predates this unreleased web patch; verify again after approved production deployment.",
-  "knownVisualIssue": null
+  "knownVisualIssue": null,
+  "additionalImages": [
+    {
+      "file": "itch/screenshots/active-battle.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 143412,
+      "sha256": "2ae28eb39ac55fe92f790b9dd120c2dd1f4849b130f8acb6eeabdfceb9c4180b"
+    },
+    {
+      "file": "itch/screenshots/capture.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 125032,
+      "sha256": "f15234da371c7c774d9a02478842a262b96e37df516640a15837e6912dd14991"
+    },
+    {
+      "file": "itch/screenshots/catdex.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 105995,
+      "sha256": "362f50846540aa4d583589b2e567385aadb8e665f26a7f409c38c76fa552cac5"
+    },
+    {
+      "file": "itch/screenshots/duo.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 139654,
+      "sha256": "9eb531e606b7fba0dd3e828133824166b31a4073a0584f4958575591e1e51e23"
+    },
+    {
+      "file": "itch/screenshots/real-exploration.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 144747,
+      "sha256": "132b353a2b89c357d7cb19bc01b65d56a7a731f75aafb3103c8acf60a876da0f"
+    },
+    {
+      "file": "itch/screenshots/teaser.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 95089,
+      "sha256": "0c573bfb9f10928066ec0ecd399038effba11d9c356a991773d20ecc004efd36"
+    },
+    {
+      "file": "itch/screenshots/two-cat-garden.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 175644,
+      "sha256": "67baa8b89b8f85bd3fabd3cbc651a6a39da0d756fff6d77d74d5a5f86711c3a5"
+    },
+    {
+      "file": "itch/screenshots/workshop.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 133133,
+      "sha256": "eaae9bb5bb5757d1e2e1b8e0ebac076d70b22fb95ad4d794e082fbd9389ef0b8"
+    },
+    {
+      "file": "y8/alternates/landscape-promo-capture.jpg",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "bytes": 221743,
+      "sha256": "66a85d6ad6cd918e7c22137581ff169879151b5e41fc6c7793e0a90fb5cc0aaf"
+    },
+    {
+      "file": "y8/alternates/landscape-promo-real-exploration.jpg",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "bytes": 241802,
+      "sha256": "9479249782f1e2168a0152fe69d6356f5ee41696181a459532b1356a3ff75a0d"
+    },
+    {
+      "file": "y8/alternates/portrait-promo-capture-result.jpg",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "bytes": 188138,
+      "sha256": "c4ad13bfa66d6179cca9a3c10bf2ae17d61521970cd6739f757d9d12ea767229"
+    },
+    {
+      "file": "y8/alternates/portrait-promo-companions.jpg",
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "bytes": 134573,
+      "sha256": "bfa774d6ec48b96c5940c42d240ff3f462629dbf340989b35206e79f0279d6f3"
+    },
+    {
+      "file": "y8/alternates/widescreen-capture.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 125032,
+      "sha256": "f15234da371c7c774d9a02478842a262b96e37df516640a15837e6912dd14991"
+    },
+    {
+      "file": "y8/alternates/widescreen-catdex.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 105995,
+      "sha256": "362f50846540aa4d583589b2e567385aadb8e665f26a7f409c38c76fa552cac5"
+    },
+    {
+      "file": "y8/alternates/widescreen-workshop.jpg",
+      "dimensions": [
+        1280,
+        720
+      ],
+      "bytes": 133133,
+      "sha256": "eaae9bb5bb5757d1e2e1b8e0ebac076d70b22fb95ad4d794e082fbd9389ef0b8"
+    }
+  ],
+  "visualReview": {
+    "decision": "Viewport defect closed for local release candidate; four contact sheets reviewed.",
+    "reviewed": [
+      "final-cover-review.jpg",
+      "final-platform-screens.jpg",
+      "final-landscape-frames.jpg",
+      "final-portrait-frames.jpg"
+    ],
+    "scope": "Observed full-bleed GamePix and corrected portrait exploration; original unmodified cover art. The screenshots show real interface panels, not actual duo burst cinematic or SSR capture.",
+    "remaining": [
+      "Signed-in portal preview, SDK IDs, draft save and public website rollout/parity are not validated.",
+      "Browser QA samples canvas coverage and checks real input target/camera transforms, not a physical-device matrix or every region."
+    ]
+  },
+  "productionParityAfterFix": false
 }
