@@ -170,8 +170,8 @@ function install(){
   if(festival){
    const row=host.querySelector(".rw-puzzle-controls"),p=activePuzzle.spatial;
    if(row){
-    const card=E("section","rw-festival-card");card.setAttribute("aria-label",tr("灯火节剧情互动","Lantern festival story"));
-    const title=E("strong","rw-festival-title",tr("小铆的第一场影戏","Xiaomao's first shadow show"));
+    const card=E("section","rw-festival-card");card.setAttribute("aria-label",tr("皮影戏","Shadow puppet show"));
+    const title=E("strong","rw-festival-title",tr("小铆的第一场皮影戏","The First Shadow Puppet Show"));
     const line=E("p","rw-festival-line",p.audience?tr(["小铆：快看，他们喜欢这条鱼！","小铆：蝴蝶飞起来了！大家都在看呢。","小铆：原来歪耳朵也能这么可爱！"][p.shape],["Xiaomao: Look, they love the fish!","Xiaomao: The butterfly is flying! Everyone is watching.","Xiaomao: Even a crooked ear can be cute!"][p.shape]):tr("小铆：我的歪耳灯没人来看……你愿意陪我演一场吗？","Xiaomao: Nobody came to see my crooked-ear lantern. Will you put on a show with me?"));
     line.setAttribute("aria-live","polite");
     const hint=E("p","rw-festival-hint",tr("选一个影子就好。也可以左右拖动灯光，不用得分。","Choose any shadow. Drag the light if you like; there is no score."));
