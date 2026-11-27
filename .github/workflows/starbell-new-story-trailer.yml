@@ -41,6 +41,7 @@ jobs:
           path: |
             artifacts/starbell-story-trailer/Echoes-of-the-Starbell-Story-Trailer-*.mp4
             artifacts/starbell-story-trailer/contact-*.jpg
+            artifacts/starbell-story-trailer/*-frame.png
             artifacts/starbell-story-trailer/*-proof.png
             artifacts/starbell-story-trailer/capture-evidence.json
             artifacts/starbell-story-trailer/proof-*.json

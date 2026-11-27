@@ -5,7 +5,7 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disab
 const origin=process.env.TRAILER_ORIGIN||'http://127.0.0.1:8765';
 const evidence={origin,source:process.env.GITHUB_SHA,clips:[],errors:[]};
 async function open(region){
- const ctx=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+ const ctx=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:2,isMobile:true,hasTouch:true,reducedMotion:'reduce'});
  const p=await ctx.newPage();p.setDefaultTimeout(15000);
  p.on('pageerror',e=>evidence.errors.push(region+': '+e.message));
  await p.goto(origin+'/cat-bond/?developer=1&qa=trailer&reset=1&region='+region+'&lang=en',{waitUntil:'domcontentloaded',timeout:45000});
@@ -50,6 +50,7 @@ async function record(p,id,secs,action){
  if(frames.length<12)throw Error('Insufficient changing frames: '+id+' '+frames.length);
  for(let i=0;i<frames.length;i++)await fs.writeFile(dir+'/'+String(i).padStart(5,'0')+'.jpg',Buffer.from(frames[i].data,'base64'));
  const times=frames.map(f=>f.at);let list='';
+ let index=0;for(let k=0;k<Math.round(secs*30);k++){const t=k/30;while(index+1<frames.length&&times[index+1]<=t)index++;await fs.link(dir+'/'+String(index).padStart(5,'0')+'.jpg',dir+'/sample-'+String(k).padStart(5,'0')+'.jpg');}
  for(let i=0;i<frames.length;i++){list+="file '"+String(i).padStart(5,'0')+".jpg'\n";list+='duration '+Math.max(.015,(i+1<times.length?times[i+1]:secs)-times[i]).toFixed(4)+'\n';}
  list+="file '"+String(frames.length-1).padStart(5,'0')+".jpg'\n";await fs.writeFile(dir+'/frames.txt',list);
  await p.screenshot({path:out+'/'+id+'-proof.png'});
