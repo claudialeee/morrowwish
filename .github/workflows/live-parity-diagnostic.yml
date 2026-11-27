@@ -1,0 +1,27 @@
+name: Read-only Cat Bond public game and embed parity
+on:
+  push:
+    branches: [review/cat-bond-platform-qa-20261127]
+    paths: ['live-parity-diagnostic.mjs','.github/workflows/live-parity-diagnostic.yml']
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Inspect actual public iframe and canonical game, no analytics or writes
+        run: node live-parity-diagnostic.mjs
+      - name: Save measured evidence
+        if: always()
+        run: |
+          git config user.name 'Morrow Wish release QA'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f qa-output/live-check
+          git diff --cached --quiet || git commit -m 'Save read-only public game parity evidence [skip ci]'
+          git push origin HEAD:review/cat-bond-platform-qa-20261127
