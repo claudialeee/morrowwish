@@ -2683,7 +2683,26 @@ class CaptureBattle {
   // geometry: projectile=flying fan, melee=arc, aoe=slow placed lob, dash=lunge,
   // chain=jump. Support kinds (heal/buff) are handled by the callers before this.
   castOffensiveSkill(f, aim, sk, pow, col, _nowind) {
-    if (this._debug) this._dbgFiringCat = f;   // debug-log: who is actually firing this skill
+    if (this._debug) {
+      this._dbgFiringCat = f;   // debug-log: who is actually firing this skill
+      this._dbgCasterBreakdown = {
+        casterDmg: f?.dmg || 0,
+        casterPow: f?.cat?.stats?.pow || 0,
+        casterAgi: f?.cat?.stats?.agi || 0,
+        casterVit: f?.cat?.stats?.vit || 0,
+        casterLv: f?.cat?.level || 0,
+        skillPower: sk?.power || 0,
+        powEffective: pow, // sk.power × outgoingBuffMult × (BASIC_SKILL_DMG_MULT × BASIC_POWER_MULT if basic)
+        outgoingBuff: this.outgoingBuffMult(f),
+        damageBoostT: f?.damageBoostT || 0,
+        kneadStacks: f?.kneadStacks || 0,
+        weakened: !!f?.weakened,
+        bondDmgMul: f?.bond?.dmgMult || 1,
+        dmgOutMult: f?._dmgOutMult || 1,
+        affinity: f?.cat?.affinity || 0,
+        isBasic: !!sk?.isBasic, kind: sk?.kind, element: sk?.element,
+      };
+    }
     this._lastSkillT = this.t;                 // stall-detector: player engaged a skill
     // Owner 2026-11-26 "陨石/所有 aoe 技能落点应该在按按钮的时候就选定": snapshot the
     // desktop cursor at CAST moment. lobAoe + the meteor-windup telegraph both read
@@ -2712,7 +2731,13 @@ class CaptureBattle {
         skill: (sk.id || sk.name || '?') + '[attempt]',
         kind: sk.kind || '-', element: sk.element || '-',
         raw: '-', dealt: '-', final: '-', elemMult: '-', reactMult: '-', postMult: '-', total: '-',
-        tier: '-', trait: '-', lvlSuppress: '-', combo: '-',
+        tier: '-', atkLv:'-', atkDmg:'-', atkStats:'-', skPow:'-', powEff:'-', outBuff:'-',
+        boostT:'-', knead:'-', weak:'-', bond:'-', trait: '-', aff:'-',
+        comboBonus:'-', comboEffect:'-', conductive:'-', basicTagMul:'-', basicNTags:'-',
+        tgtTags:'-', tgtStatus:'-',
+        hadShield:'-', shieldRed:'-', hadProtect:'-', hadReflect:'-', vulnFlat:'-',
+        lvlSup:'-', lvlSuppress: '-', vulnB:'-', comboB:'-', execB:'-', closeB:'-',
+        staggerT:'-', hpFrac:'-', sumBonus:'-', combo: '-',
         tgtHp: nearest ? ('dist='+Math.round(dist)+' facing_aim='+aim.toFixed(2)) : 'no-target',
       });
     }
@@ -2956,7 +2981,13 @@ class CaptureBattle {
         attacker:'(burst)', target:'(burst)', skill:(b.skill.id||b.skill.name||'?')+'[burst]',
         kind: b.skill.kind || '-', element: b.skill.element || '-',
         raw: Math.round(b.dmg), dealt: '-', final: '-', elemMult: '-', reactMult: '-', postMult: '-', total: '-',
-        tier: '-', trait: '-', lvlSuppress: '-', combo: '-',
+        tier: '-', atkLv:'-', atkDmg:'-', atkStats:'-', skPow:'-', powEff:'-', outBuff:'-',
+        boostT:'-', knead:'-', weak:'-', bond:'-', trait: '-', aff:'-',
+        comboBonus:'-', comboEffect:'-', conductive:'-', basicTagMul:'-', basicNTags:'-',
+        tgtTags:'-', tgtStatus:'-',
+        hadShield:'-', shieldRed:'-', hadProtect:'-', hadReflect:'-', vulnFlat:'-',
+        lvlSup:'-', lvlSuppress: '-', vulnB:'-', comboB:'-', execB:'-', closeB:'-',
+        staggerT:'-', hpFrac:'-', sumBonus:'-', combo: '-',
         tgtHp: 'r='+b.r+' victims='+victims,
       });
     }
@@ -6090,13 +6121,21 @@ class CaptureBattle {
     if (combo) bonus += (combo.bonusMult || 1) - 1;
     bonus += elem - 1;
     // CONDUCTIVE (水是电的 setup): a SOAKED (湿身) target conducts — ELECTRIC hits deal +20%.
-    // This is water's identity as an ENABLER: water doesn't burst, it wets the field so ELEC
-    // follows up harder. Deliberately ONLY the elec element benefits (a water attacker's own
-    // hit on a wet target gets nothing — water sets up, it doesn't cash in). Persistent (does
-    // NOT consume soak), additive in the shared bucket, separate from the one-shot soak|elec
-    // chain reaction. +0.20 is modest so it stacks fairly atop the 2× elec→water matchup.
-    if (skill.element === 'elec' && (e.status.soak || 0) > 0) bonus += 0.20;
-    dmg *= Math.max(0.25, 1 + bonus);                // floor so stacked reductions never zero out
+    const conductive = (skill.element === 'elec' && (e.status.soak || 0) > 0) ? 0.20 : 0;
+    bonus += conductive;
+    const reactMulFloor = Math.max(0.25, 1 + bonus);
+    dmg *= reactMulFloor;
+    if (this._debug) {
+      this._dbgApplyBreakdown = {
+        comboBonus: combo ? ((combo.bonusMult||1)-1) : 0,
+        comboEffect: combo?.effect || null, comboConsumes: !!combo?.consumes,
+        elemMul: elem,
+        conductive, bonusSum: bonus,
+        reactMulFloor,
+        tags: (e.tags||[]).slice(),
+        statusActive: Object.keys(e.status||{}).filter(k=>e.status[k]>0),
+      };
+    }
     if (combo) {
       if(combo.effect==='shatter')
         this.vfx.impactType?.(e.x,e.y,'crit',{color:'#dceeff'});
@@ -6121,8 +6160,12 @@ class CaptureBattle {
     // and lands softer on an un-marked target — so Q/E priming carries the fight.
     if (skill.isBasic) {
       const nTags = e.tags.filter(t => t !== 'rust' && e.status[t] > 0).length;
-      if (nTags > 0) dmg *= 1 + Math.min(0.30, 0.10 * nTags);
-      else dmg *= 0.7;
+      const basicTagMul = (nTags > 0) ? (1 + Math.min(0.30, 0.10 * nTags)) : 0.7;
+      dmg *= basicTagMul;
+      if (this._debug && this._dbgApplyBreakdown) {
+        this._dbgApplyBreakdown.basicTagMul = basicTagMul;
+        this._dbgApplyBreakdown.basicNTags = nTags;
+      }
     }
     // apply status tag(s) with their TTL → real ongoing effects (see tickStatus)
     if (skill.appliesTag) {
@@ -6310,7 +6353,19 @@ class CaptureBattle {
     // backstop. Bosses excluded; only applies under the capture line so it can't trivialize a
     // healthy over-levelled enemy.
     const closeBonus = (boss || isDot || frac0 >= 0.28) ? 0 : 0.25 * (this._closing || 0);
-    dmg *= 1 + vulnBonus + comboBonus + executeBonus + closeBonus;
+    const sumBonus = 1 + vulnBonus + comboBonus + executeBonus + closeBonus;
+    dmg *= sumBonus;
+    if (this._debug) {
+      this._dbgHurtBreakdown = {
+        levelSup: this.levelSuppression || 1,
+        globalMul: 1.0,
+        vulnBonus, comboBonus, executeBonus, closeBonus,
+        sumBonus, vulnFlat: (e.vulnerableT||0)>0 ? 1.3 : 1,
+        staggerT: e.staggerT || 0,
+        hpFracBefore: frac0,
+        hitTier, isDot: !!isDot, fromDuo: !!fromDuo,
+      };
+    }
     let scaled = dmg;
     if (fromDuo && this.duoField) {
       // Apply cap AFTER level scaling and vulnerability multipliers; otherwise
@@ -6498,6 +6553,16 @@ class CaptureBattle {
   resolveHit(target, side, skill, dmg, x, y, proj) {
     if (!target || !target.alive) return { blocked: false, reflected: false, dealt: 0 };
     if ((target.inv || 0) > 0 || (target.flash || 0) > 0) return { blocked: false, reflected: false, dealt: 0 };
+    if (this._debug) {
+      this._dbgResolveBreakdown = {
+        incoming: dmg,
+        hadProtect: (target.protectT||0) > 0,
+        hadReflect: (target.reflectT||0) > 0,
+        hadShield:  (target.shieldT ||0) > 0,
+        shieldRed: null, vulnFlatMul: 1,
+        wardAbsorbed: 0,
+      };
+    }
     // Playtest w9bg40pg8 P0-1 (auto-fix, unreviewed, not pushed): per-target
     // per-enemyUlt-cast cumulative damage cap. Tagged pellets share a
     // _ultCastUid; once accumulated damage on THIS target from THIS cast
@@ -6546,8 +6611,10 @@ class CaptureBattle {
     //    hurts; the real answer is to leave the telegraphed disc / dodge for i-frames.
     if ((target.shieldT || 0) > 0) {
       const raw=dmg;
-      dmg *= (skill && skill.unblockable)
+      const shieldMul = (skill && skill.unblockable)
         ? 0.85 : 1-Math.max(0,Math.min(.8,target._wardReduction??.45));
+      dmg *= shieldMul;
+      if (this._debug && this._dbgResolveBreakdown) this._dbgResolveBreakdown.shieldRed = shieldMul;
       if(side==='wild'&&target.cat?.species==='dundun'){
         if(!(target._traitWardHP>0))target._traitWardHP=target.maxhp*.28;
         const absorbed=Math.min(raw-dmg,target._traitWardHP);dmg=raw-absorbed;target._traitWardHP-=absorbed;
@@ -6572,7 +6639,7 @@ class CaptureBattle {
       }
     }
     // VULNERABLE after a Protect drops (后遗症): takes extra damage briefly.
-    if ((target.vulnerableT || 0) > 0) dmg *= 1.3;
+    if ((target.vulnerableT || 0) > 0) { dmg *= 1.3; if (this._debug && this._dbgResolveBreakdown) this._dbgResolveBreakdown.vulnFlatMul = 1.3; }
     // land it
     if (side === 'me') {
       // An authored skill drains poise only after its hit successfully lands;
@@ -6775,22 +6842,64 @@ class CaptureBattle {
     const total = rawDmg > 0 && finalN > 0 ? (finalN / rawDmg) : 1;
     const hitTier = extra?.hitTier || '-';
     const traitM = extra?.traitMult || 1;
+    // Drain ALL stashed breakdowns from this hit — attacker side, applyHitEffects,
+    // resolveHit shield/vuln, hurtEnemy vuln/combo/execute/closing/levelSup — then
+    // clear them so the next hit starts fresh. Any site that forgets to stash leaves
+    // its field undefined (not stale from a prior hit).
+    const C = this._dbgCasterBreakdown  || {};
+    const A = this._dbgApplyBreakdown   || {};
+    const R = this._dbgResolveBreakdown || {};
+    const H = this._dbgHurtBreakdown    || {};
+    this._dbgCasterBreakdown = this._dbgApplyBreakdown = this._dbgResolveBreakdown = this._dbgHurtBreakdown = null;
     this._dbgLog.push({
       t: +this.t.toFixed(2),
-      who: atkName + ' → ' + tgtName,                              // e.g. 我方·蓝莓 → 敌方·露露
+      who: atkName + ' → ' + tgtName,
       attacker: atkName, target: tgtName,
       skill: (skill && (skill.id || skill.name)) || (skill && skill.isBasic ? 'basic' : 'toy'),
       kind: skill && skill.kind || (skill && skill.isBasic ? 'basic' : '-'),
       element: el || '-',
-      raw: Math.round(rawDmg), dealt: Math.round(dealt),
-      final: Math.round(finalN),
+      raw: Math.round(rawDmg), dealt: Math.round(dealt), final: Math.round(finalN),
       elemMult: +elem.toFixed(2),
       reactMult: +reactMult.toFixed(2),
       postMult: +postMult.toFixed(2),
       total: +total.toFixed(2),
       tier: hitTier,
-      trait: +traitM.toFixed(2),
-      lvlSuppress: +((playerHits ? this.levelSuppression : this.enemyLevelMult) || 1).toFixed(2),
+      // ---- ATTACKER SIDE ----
+      atkLv: C.casterLv ?? '-',
+      atkDmg: C.casterDmg != null ? Math.round(C.casterDmg) : '-',
+      atkStats: (C.casterPow!=null?('p'+C.casterPow+'/a'+C.casterAgi+'/v'+C.casterVit):'-'),
+      skPow: C.skillPower ?? '-',
+      powEff: C.powEffective != null ? +C.powEffective.toFixed(2) : '-',
+      outBuff: C.outgoingBuff != null ? +C.outgoingBuff.toFixed(2) : '-',
+      boostT: C.damageBoostT != null ? +C.damageBoostT.toFixed(2) : '-',
+      knead: C.kneadStacks ?? '-',
+      weak: C.weakened ? 'Y' : '-',
+      bond: C.bondDmgMul != null ? +C.bondDmgMul.toFixed(2) : '-',
+      trait: +(C.dmgOutMult ?? traitM).toFixed(2),
+      aff: C.affinity ?? '-',
+      // ---- APPLY HIT (reaction/elem/basic-tag) ----
+      comboBonus: A.comboBonus != null ? +A.comboBonus.toFixed(2) : '-',
+      comboEffect: A.comboEffect || '-',
+      conductive: A.conductive != null ? +A.conductive.toFixed(2) : '-',
+      basicTagMul: A.basicTagMul != null ? +A.basicTagMul.toFixed(2) : '-',
+      basicNTags: A.basicNTags ?? '-',
+      tgtTags: (A.tags||[]).join('|') || '-',
+      tgtStatus: (A.statusActive||[]).join('|') || '-',
+      // ---- RESOLVE (shield / protect / vuln-flat) ----
+      hadShield: R.hadShield ? 'Y' : '-',
+      shieldRed: R.shieldRed != null ? +R.shieldRed.toFixed(2) : '-',
+      hadProtect: R.hadProtect ? 'Y' : '-',
+      hadReflect: R.hadReflect ? 'Y' : '-',
+      vulnFlat: R.vulnFlatMul != null ? +R.vulnFlatMul.toFixed(2) : '-',
+      // ---- HURT (vuln/combo/execute/closing/lvlSup) ----
+      lvlSup: H.levelSup != null ? +H.levelSup.toFixed(2) : +((playerHits ? this.levelSuppression : this.enemyLevelMult) || 1).toFixed(2),
+      vulnB: H.vulnBonus != null ? +H.vulnBonus.toFixed(2) : '-',
+      comboB: H.comboBonus != null ? +H.comboBonus.toFixed(2) : '-',
+      execB: H.executeBonus != null ? +H.executeBonus.toFixed(2) : '-',
+      closeB: H.closeBonus != null ? +H.closeBonus.toFixed(2) : '-',
+      staggerT: H.staggerT != null ? +H.staggerT.toFixed(2) : '-',
+      hpFrac: H.hpFracBefore != null ? +H.hpFracBefore.toFixed(2) : '-',
+      sumBonus: H.sumBonus != null ? +H.sumBonus.toFixed(2) : '-',
       combo: this.combo || 0,
       tgtHp: Math.round(target?.hp ?? 0) + '/' + Math.round(target?.maxhp ?? 0),
     });
@@ -6805,8 +6914,8 @@ class CaptureBattle {
   copyDebugLog() {
     const rows = (this._dbgLog && this._dbgLog.length) ? this._dbgLog : (window.CatBondDebugLast || []);
     if (!rows.length) return false;
-    const header = 't\twho\tskill\tkind\telem\traw\tdealt\tfinal\telemMult\treactM\tpostM\ttotal\ttier\ttrait\tlvlSup\tcombo\ttgtHp';
-    const body = rows.map(r => [r.t, r.who, r.skill, r.kind, r.element, r.raw, r.dealt, r.final, r.elemMult, r.reactMult, r.postMult, r.total, r.tier, r.trait, r.lvlSuppress, r.combo, r.tgtHp].join('\t')).join('\n');
+    const header = 't\twho\tskill\tkind\telem\traw\tdealt\tfinal\telemM\treactM\tpostM\ttotal\ttier\tatkLv\tatkDmg\tatkStats\tskPow\tpowEff\toutBuff\tboostT\tknead\tweak\tbond\ttrait\taff\tcomboBns\tcomboEff\tconduct\tbasicMul\tbasicN\ttgtTags\ttgtStatus\thadShld\tshldRed\thadProt\thadRefl\tvulnFlat\tlvlSup\tvulnB\tcomboB\texecB\tcloseB\tstaggerT\thpFrac\tsumBonus\tcombo\ttgtHp';
+    const body = rows.map(r => [r.t, r.who, r.skill, r.kind, r.element, r.raw, r.dealt, r.final, r.elemMult, r.reactMult, r.postMult, r.total, r.tier, r.atkLv, r.atkDmg, r.atkStats, r.skPow, r.powEff, r.outBuff, r.boostT, r.knead, r.weak, r.bond, r.trait, r.aff, r.comboBonus, r.comboEffect, r.conductive, r.basicTagMul, r.basicNTags, r.tgtTags, r.tgtStatus, r.hadShield, r.shieldRed, r.hadProtect, r.hadReflect, r.vulnFlat, r.lvlSup ?? r.lvlSuppress, r.vulnB, r.comboB, r.execB, r.closeB, r.staggerT, r.hpFrac, r.sumBonus, r.combo, r.tgtHp].join('\t')).join('\n');
     const text = header + '\n' + body;
     try { navigator.clipboard?.writeText(text); } catch (_) {}
     console.log(text);
@@ -6827,8 +6936,8 @@ class CaptureBattle {
       // AUTO-COPY to clipboard the instant a recorded fight ends — the battle UI (and the 🐛 button)
       // vanish on the auto-return to the yard, so there was no chance to click "export" (owner:
       // "打完就直接退出了"). Now the log is already in your clipboard; a toast confirms it.
-      const header = 't\twho\tskill\tkind\telem\traw\tdealt\tfinal\telemMult\treactM\tpostM\ttotal\ttier\ttrait\tlvlSup\tcombo\ttgtHp';
-      const text = header + '\n' + rows.map(r => [r.t, r.who, r.skill, r.kind, r.element, r.raw, r.dealt, r.final, r.elemMult, r.reactMult, r.postMult, r.total, r.tier, r.trait, r.lvlSuppress, r.combo, r.tgtHp].join('\t')).join('\n');
+      const header = 't\twho\tskill\tkind\telem\traw\tdealt\tfinal\telemM\treactM\tpostM\ttotal\ttier\tatkLv\tatkDmg\tatkStats\tskPow\tpowEff\toutBuff\tboostT\tknead\tweak\tbond\ttrait\taff\tcomboBns\tcomboEff\tconduct\tbasicMul\tbasicN\ttgtTags\ttgtStatus\thadShld\tshldRed\thadProt\thadRefl\tvulnFlat\tlvlSup\tvulnB\tcomboB\texecB\tcloseB\tstaggerT\thpFrac\tsumBonus\tcombo\ttgtHp';
+      const text = header + '\n' + rows.map(r => [r.t, r.who, r.skill, r.kind, r.element, r.raw, r.dealt, r.final, r.elemMult, r.reactMult, r.postMult, r.total, r.tier, r.atkLv, r.atkDmg, r.atkStats, r.skPow, r.powEff, r.outBuff, r.boostT, r.knead, r.weak, r.bond, r.trait, r.aff, r.comboBonus, r.comboEffect, r.conductive, r.basicTagMul, r.basicNTags, r.tgtTags, r.tgtStatus, r.hadShield, r.shieldRed, r.hadProtect, r.hadReflect, r.vulnFlat, r.lvlSup ?? r.lvlSuppress, r.vulnB, r.comboB, r.execB, r.closeB, r.staggerT, r.hpFrac, r.sumBonus, r.combo, r.tgtHp].join('\t')).join('\n');
       window.CatBondDebugText = text;               // plain-text form, also grabbable via copy(CatBondDebugText)
       try { navigator.clipboard?.writeText(text); } catch (_) {}
       this.game?.toast?.(window.MorrowwishI18n?.get?.()==='zh'?'🐛 战斗日志已复制到剪贴板':'🐛 Fight log copied to clipboard');
