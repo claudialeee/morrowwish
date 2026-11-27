@@ -12,21 +12,19 @@ export const layouts={
    [.887,.538],[.837,.61],[.80,.682],[.802,.742],[.87,.748]],
   castPoints:{jiedeng:[.195,.50],qilan:[.16,.60]},
   features:{
-   "explore:tide-logbook":[.87,.748,"潮洞日志","Tide cave logbook"],
    "puzzle:chime-chase":[.16,.60,"穿过风铃巷","Chase the runaway chime"],
    "battle:chime-beast":[.195,.50,"铃光兽","Belllight beast"],
-   "puzzle:beam-mirrors":[.153,.44,"灯塔反射镜","Lighthouse mirrors"],
-   "rescue:storm-boat":[.19,.89,"遇险小船","Storm boat"],
    "repair:harbor":[.131,.341,"古铃圣所","Town bell sanctuary"],
    "melody:harbor":[.131,.341,"归家调","Coming Home"]
   }
  },
- forest:{name:["眠根林","Rootsleep Forest"],paths:[[.095,.90],[.20,.84],[.31,.73],[.35,.64],[.31,.58],[.265,.53],[.25,.49],[.30,.43],[.27,.35],[.29,.31],[.36,.31],[.42,.28],[.44,.36],[.39,.40],[.53,.40],[.56,.47],[.64,.53],[.69,.53],[.77,.44],[.83,.37],[.81,.32],[.83,.27],[.88,.24],[.89,.20]],castPoints:{yahe:[.30,.43],yuchuan:[.64,.53]},features:{"puzzle:moonleaf-crossing":[.30,.43,"拨动月叶 · 根桥","Moonleaf bridge"],"puzzle:moonleaf-loop":[.64,.53,"打破森林回环","Break the forest loop"],"explore:scent-trail":[.69,.53,"气味踪迹","Scent trail"],"rescue:steady-channel":[.53,.40,"与芽禾会合 · 稳住水道","Meet Yahe · Stabilize the channel"],"explore:water-marks":[.56,.47,"调查湿润水痕","Inspect the wet water marks"],"battle:root-echo":[.69,.53,"击退模仿声音的空响","Dispel the mimicking echo"],"rescue:trapped-cats":[.77,.44,"解开根须 · 救出伙伴","Free the roots · Rescue the cats"],"repair:forest":[.89,.20,"古根圣所","Ancient-root sanctuary"],"melody:forest":[.89,.20,"相枝调","Living Roots"]}},
- forge:{name:["千灯城","Lantern City"],castPoints:{jinpo:[.35,.65],xiaomao:[.53,.50]},paths:[[.1,.86],[.35,.76],[.35,.50],[.63,.50],[.74,.40],[.88,.30]],features:{"puzzle:lantern-show":[.35,.76,"帮小铆演一场灯影","Help Xiaomao put on a show"],"puzzle:shadow-bridge":[.35,.50,"照亮石桥","Light the stone bridge"],"puzzle:festival-lantern":[.35,.76,"工坊 · 试制安全提灯","Workshop · Build a safe lantern"],"puzzle:safety-blueprint":[.35,.50,"安全图纸","Safety blueprint"],"puzzle:heat-pressure":[.63,.50,"灯火节 · 星灯阵","Lantern festival · Star lanterns"],"repair:forge":[.88,.30,"千灯圣所","Lantern sanctuary"],"melody:forge":[.88,.30,"承火调","Song of Ember"],"battle:shadow-beast":[.74,.40,"剪影兽","Shadow beast"],"battle:forge-guardian":[.74,.40,"守炉者","Forge guardian"]}},
- sky:{name:["云脊群岛","Skyspine Isles"],castPoints:{lingyu:[.10,.70],yuanfan:[.18,.55]},paths:[[.10,.80],[.10,.70],[.16,.61],[.18,.55],[.41,.51],[.58,.55],[.67,.50],[.72,.43],[.74,.36],[.84,.30],[.89,.24]],features:{"puzzle:sky-pouch":[.10,.70,"借风起飞 · 练习滑翔","Catch the wind · Practice gliding"],"explore:letter-recipient":[.67,.50,"孤岛收信站 · 交付信袋","Isolated mail station · Deliver the pouch"],"explore:flight-recorder":[.41,.51,"寻找月门 · 云间航线","Find the moon gate · Cloud route"],"puzzle:joint-flight":[.58,.55,"双猫滑翔台","Joint gliding platform"],"repair:sky":[.89,.24,"风翼圣所","Windwing sanctuary"],"melody:sky":[.89,.24,"逐风调","Open Sky"]}},
+ forest:{name:["眠根林","Rootsleep Forest"],paths:[[.095,.90],[.20,.84],[.31,.73],[.35,.64],[.31,.58],[.265,.53],[.25,.49],[.30,.43],[.27,.35],[.29,.31],[.36,.31],[.42,.28],[.44,.36],[.39,.40],[.53,.40],[.56,.47],[.64,.53],[.69,.53],[.77,.44],[.83,.37],[.81,.32],[.83,.27],[.88,.24],[.89,.20]],castPoints:{yahe:[.30,.43],yuchuan:[.64,.53]},features:{"puzzle:moonleaf-crossing":[.30,.43,"拨动月叶 · 根桥","Moonleaf bridge"],"puzzle:moonleaf-loop":[.64,.53,"打破森林回环","Break the forest loop"],"repair:forest":[.89,.20,"古根圣所","Ancient-root sanctuary"],"melody:forest":[.89,.20,"相枝调","Living Roots"]}},
+ forge:{name:["千灯城","Lantern City"],castPoints:{jinpo:[.35,.65],xiaomao:[.53,.50]},paths:[[.1,.86],[.35,.76],[.35,.50],[.63,.50],[.74,.40],[.88,.30]],features:{"puzzle:lantern-show":[.35,.76,"帮小铆演一场灯影","Help Xiaomao put on a show"],"puzzle:shadow-bridge":[.35,.50,"照亮石桥","Light the stone bridge"],"repair:forge":[.88,.30,"千灯圣所","Lantern sanctuary"],"melody:forge":[.88,.30,"承火调","Song of Ember"],"battle:shadow-beast":[.74,.40,"剪影兽","Shadow beast"],"battle:forge-guardian":[.74,.40,"守炉者","Forge guardian"]}},
+ sky:{name:["云脊群岛","Skyspine Isles"],castPoints:{lingyu:[.10,.70],yuanfan:[.18,.55]},paths:[[.10,.80],[.10,.70],[.16,.61],[.18,.55],[.41,.51],[.58,.55],[.67,.50],[.72,.43],[.74,.36],[.84,.30],[.89,.24]],features:{"puzzle:sky-pouch":[.10,.70,"借风起飞 · 练习滑翔","Catch the wind · Practice gliding"],"explore:flight-recorder":[.41,.51,"寻找月门 · 云间航线","Find the moon gate · Cloud route"],"puzzle:joint-flight":[.58,.55,"双猫滑翔台","Joint gliding platform"],"repair:sky":[.89,.24,"风翼圣所","Windwing sanctuary"],"melody:sky":[.89,.24,"逐风调","Open Sky"]}},
  library:{name:["月镜书库","Moonmirror Library"],paths:[[.10,.83],[.17,.73],[.22,.60],[.29,.60],[.46,.58],[.51,.48],[.50,.42],[.67,.40],[.76,.40],[.82,.36],[.89,.29]],castPoints:libraryInvitations,features:libraryPoints},
- starfall:{name:["星坠原","Starfall Expanse"],castPoints:{xingya:[.51,.58],lichuan:[.78,.48]},paths:[[.10,.90],[.23,.78],[.34,.68],[.41,.58],[.42,.52],[.51,.58],[.68,.55],[.78,.48],[.78,.40],[.84,.33],[.92,.30]],features:{"puzzle:star-steps":[.34,.68,"踩着星光走","Walk on starlight"],"puzzle:caravan-route":[.34,.68,"辨认真星 · 引导商队","Verify the stars · Guide the caravan"],"explore:crater-fragment":[.23,.78,"陨坑 · 冲击碎片","Crater · Impact fragment"],"puzzle:echo-navigation":[.34,.68,"空响幻象","Hollow Echo illusions"],"puzzle:star-map":[.42,.52,"星图仪","Star chart"],"explore:ruin-fragment":[.68,.55,"古迹 · 破损圣所记录","Ruins · Sanctuary record"],"explore:catastrophe-record":[.78,.40,"天文台 · 完整灾变记录","Observatory · Complete record"],"battle:observatory-echo":[.78,.40,"观星台守卫 · 空响星轨","Observatory guardian · Echo orbit"],"puzzle:distributed-routing":[.84,.33,"邻铃试音","Test the neighboring bells"],"repair:starfall":[.92,.30,"星原圣所","Starfall sanctuary"],"melody:starfall":[.92,.30,"续星调","Beyond Stars"]}}
+ starfall:{name:["星坠原","Starfall Expanse"],castPoints:{xingya:[.51,.58],lichuan:[.78,.48]},paths:[[.10,.90],[.23,.78],[.34,.68],[.41,.58],[.42,.52],[.51,.58],[.68,.55],[.78,.48],[.78,.40],[.84,.33],[.92,.30]],features:{"puzzle:star-steps":[.34,.68,"踩着星光走","Walk on starlight"],"explore:catastrophe-record":[.78,.40,"天文台 · 完整灾变记录","Observatory · Complete record"],"puzzle:distributed-routing":[.84,.33,"邻铃试音","Test the neighboring bells"],"repair:starfall":[.92,.30,"星原圣所","Starfall sanctuary"],"melody:starfall":[.92,.30,"续星调","Beyond Stars"]}}
 };
+export const retiredWorldOperations=new Set(["explore:tide-logbook","puzzle:beam-mirrors","rescue:storm-boat","explore:scent-trail","puzzle:paired-water-gates","rescue:steady-channel","explore:water-marks","battle:root-echo","rescue:trapped-cats","puzzle:festival-lantern","puzzle:safety-blueprint","puzzle:heat-pressure","battle:forge-guardian","explore:letter-recipient","explore:sealed-archive","puzzle:mirror-records","puzzle:caravan-route","battle:observatory-echo","puzzle:library-reflections","battle:library-echo","puzzle:echo-navigation","puzzle:star-map","explore:crater-fragment","explore:ruin-fragment"]);
 export const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const segment=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy)));return {p:[a[0]+t*dx,a[1]+t*dy],t};};
 const closest=(path,p)=>path.slice(1).map((b,i)=>({i,...segment(p,path[i],b)})).sort((a,b)=>distance(a.p,p)-distance(b.p,p))[0];
@@ -34,17 +32,7 @@ const stages=["sendA","receiveB","sendB","receiveA"];
 // Canon 2.2: the actual regional challenge precedes restoration; never reopen retired dial puzzles on the required path.
 export const canonRestorationPrerequisites=Object.freeze({"repair:harbor":"harbor:H-04","repair:forest":"forest:R-03","repair:forge":"forge:E-03","repair:starfall":"starfall:F-03"});
 export const puzzleSpecs={
- "explore:tide-logbook":{type:"tide",initial:[],goal:[2,0,1]},
- "puzzle:beam-mirrors":{type:"mirrors",initial:[0,1,0],goal:[2,3,1],mod:4},
- "puzzle:festival-lantern":{type:"lantern",initial:[],goal:[0,1,2]},
- "puzzle:caravan-route":{type:"echo",initial:[],goal:[2,0,1]},
- "puzzle:safety-blueprint":{type:"blueprint",initial:[],goal:[2,0,1]},
- "puzzle:heat-pressure":{type:"lanternFocus",initial:[0,2,1],goal:[1,0,2],mod:3},
- "puzzle:mirror-records":{type:"memory",initial:[],goal:[1,2,0]},
- "puzzle:echo-navigation":{type:"echo",initial:[],goal:[1,2,0]},
- "puzzle:star-map":{type:"stars",initial:[0,0,0],goal:[3,1,2],mod:4},
  "puzzle:distributed-routing":{type:"routing",initial:[0,0,0],goal:[1,1,1],mod:2},
- "rescue:storm-boat":{type:"rescue",initial:[],goal:[0,2,1]},
  "repair:harbor":{type:"mirrors",initial:[0,0,2],goal:[1,2,3],mod:4},
  "repair:forest":{type:"water",initial:[0,1,0],goal:[1,0,1],mod:2},
  "repair:forge":{type:"lanternFocus",initial:[0,2,1],goal:[1,0,2],mod:3},
@@ -54,6 +42,7 @@ export const puzzleSpecs={
 const melodyGoals={harbor:[0,2,1],forest:[1,0,2],forge:[2,1,0],sky:[1,2,0],library:[2,0,1],starfall:[0,1,2]};
 function harborAssist(p,v){if(!p)return;const methods=v.support?.find(x=>x.region==="harbor")?.methods||[];if(p.operation==="rescue:storm-boat"){p.goal=v.choice==="calibrate"?[0,2,1,1,2]:[0,0,2,1,1,2];if(methods.includes("navigator-trust"))p.assist="qilan";}if(p.operation==="puzzle:beam-mirrors"&&methods.includes("keeper-trust"))p.assist="jiedeng";}
 export function createPuzzle(op,choice=null,record=null){
+ if(retiredWorldOperations.has(op))return null;
  const spatial=newSpatial(op);if(spatial)return {type:"canonSpatial",operation:op,spatial,values:[],goal:[],solved:false};
  const library=libraryPuzzle(op,record);if(library)return library;
  const flight=newSkyFlight(op,choice);if(flight)return {type:"skyFlight",operation:op,flight,solved:false};
@@ -105,6 +94,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
  function startSurvey(){const s=survey();if(!s||puzzle||!near(s.from))return {ok:false,reason:"walk-to-survey"};if(!s.remote&&cargo)return {ok:false,reason:"cargo-busy"};active={survey:s.operation,token:bridge.capture(),adventureAction:false};puzzle=createPuzzle(s.operation);return {ok:true,puzzle:true};}
  function readyResidents(){const method={harbor:'harborInvited',forest:'forestInvited',forge:'forgeInvited',sky:'skyInvited',library:'libraryInvited',starfall:'starfallInvited'}[region];return [...new Set([...invited,...(bridge[method]?.()||[])])];}
  function interact(op){
+  if(retiredWorldOperations.has(op))return {ok:false,reason:"retired-operation"};
   if(survey()?.remote)return {ok:false,reason:"return-from-survey"};
   if(op==="explore:scent-trail"){const step=bridge.scentStep();return step?traceScent(step.index):{ok:false,reason:"walk-to-scent"};}
   const v=bridge.view(),f=layout.features[op];if(!f||v.current?.chapter!==region||!v.objective.includes(op)||!near(region==="sky"&&skyLaunch[op]||f))return {ok:false,reason:"walk-to-objective"};

@@ -170,7 +170,7 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
    if(p.shape===2)c.scale(1+.06*Math.sin(phase*1.5),.94+.10*Math.abs(Math.sin(phase*.75))); // crouch and pounce
    paintArt(c,["shadow-fish","shadow-butterfly","shadow-cat"][p.shape],0,0,size*1.35,size*(p.shape===1?.68:.85),.5,.5,Math.sin(phase)*(p.shape===2?.08:p.shape===0?.12:.045)+(angle-.5)*.22);
    c.restore();
-   paintArt(c,"garden-lantern",lx,ly,unit*.14,unit*.16);
+   // The original theater painting owns the cat faces and lanterns. Only the movable light glow is composited; no solid prop can obscure the artwork.
    // Gentle audience acknowledgment in the illustrated foreground, not fake
    // animated actors. The story response is delivered in the readable caption.
    if(p.audience){for(const [i,ax] of [.14,.87].entries()){const k=.5+.5*Math.sin(phase+i),ay=.68-k*.025;c.save();c.globalAlpha=.35+.45*k;dot([ax,ay],unit*.008,"#fff0b3");dot([ax+(i?-.035:.035),ay-.035],unit*.005,"#ffe0a2");c.restore();}}

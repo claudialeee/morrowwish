@@ -5,7 +5,7 @@ import {spatialKind,validSpatialProof} from "./canon22-spatial.mjs";
 import {validNeighborTrial} from "./canon22-neighbor-trial.mjs";
 import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyCache} from "./sky-flight.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
-import {layouts,puzzleSpecs,canonRestorationPrerequisites} from "./world-exploration.mjs";
+import {layouts,puzzleSpecs,canonRestorationPrerequisites,retiredWorldOperations} from "./world-exploration.mjs";
 import {applySideEvent} from "./side-adventures.mjs";
 import {applyDiscovery} from "./regional-discoveries.mjs";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord} from "./library-mechanisms.mjs";
@@ -140,6 +140,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  function forgeInvited(){const v=view(),w=world();return (v.current?.id==="forge:E-04"||v.completed.includes("forge:E-04"))?["jinpo","xiaomao"].filter(id=>(w.interactions["forge:E-04:invite:"+id]||autoReady("forge",id,v))):[];}
  function inviteForge(id,point,token){const api=resolveNarrative(),v=view(),w=world(),p={jinpo:[.35,.65],xiaomao:[.53,.50]}[id];if(!p||point[0]!==p[0]||point[1]!==p[1]||w.location!=="forge"||v.current?.id!=="forge:E-04"||!v.objective.includes("melody:forge")||!token||!api.isCurrentAction(token)||!forgeNear(w,p))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["forge:E-04:invite:"+id]:true}}));}
  function recordWorld(sceneId,op,proof){
+  if(retiredWorldOperations.has(op))return fail("retired-operation");
   const api=resolveNarrative(),v=view(),region=v.current?.chapter,w=world();
   if(v.current?.id!==sceneId||w.location!==region||!campaign.regions.includes(region)||!v.objective.includes(op)||proof?.sceneId!==sceneId||proof.operation!==op||proof.region!==region||proof.verified!==true)return fail("invalid-world-evidence");
   if(!/^(explore|puzzle|rescue|repair|melody):/.test(op))return fail("owned-by-other-module");
