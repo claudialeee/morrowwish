@@ -15,7 +15,7 @@ for(const seed of ['a','b',undefined]){
  assert.equal(validMirrorProof(seed,{trace:[correct],choice:m.trueSide}),false);assert.equal(validMirrorProof(seed,{...proof,choice:1-m.trueSide}),false);
 }
 const scene=campaign.scenes.find(x=>x.id==='library:M-02');
-assert.deepEqual(scene.requires,['puzzle:library-echo','repair:library','melody:library']);assert.deepEqual(campaign.scenes.find(s=>s.id==='library:M-01').choices,[]);assert.ok(!campaign.scenes.find(s=>s.id==='library:M-05').requires.includes('melody:library'));
+assert.deepEqual(scene.requires,['puzzle:library-echo','battle:mirror-guardian','repair:library','melody:library']);assert.deepEqual(campaign.scenes.find(s=>s.id==='library:M-01').choices,[]);assert.ok(!campaign.scenes.find(s=>s.id==='library:M-05').requires.includes('melody:library'));
 const index=campaign.scenes.indexOf(scene),story=makeEngine(campaign).snapshot();
 story.scene=scene.id;story.completed=campaign.scenes.slice(0,index).map(x=>x.id);
 const root={resonance:story,cats:[],dex:{},coins:0,fish:0,resonanceExploration:{location:'library',positions:{},interactions:{},pickups:{}}};
@@ -29,9 +29,18 @@ assert.ok(explorer.near(point));assert.ok(explorer.interact(op).puzzle);
 assert.equal(explorer.puzzle.type,'libraryCompanion');assert.equal(explorer.operate(0).pending,true);
 assert.ok(bridge.view().objective.includes(op));assert.equal(bridge.recordWorld(scene.id,op,{sceneId:scene.id,operation:op,region:'library',verified:true,adventureAction:true,token:rt.capture()}).ok,false);
 assert.ok(explorer.operate(1).pending);const m=explorer.puzzle.mirror,correct=m.faces[0]===m.position?0:2;
-assert.ok(explorer.operate(correct).ok);assert.ok(!explorer.puzzle);assert.deepEqual(bridge.view().objective,['repair:library','melody:library']);
+assert.ok(explorer.operate(correct).ok);assert.ok(!explorer.puzzle);assert.deepEqual(bridge.view().objective,['battle:mirror-guardian','repair:library','melody:library']);
 assert.ok(root.resonanceExploration.interactions[scene.id+':'+op].trace.length>=2);
-assert.deepEqual(getSlotRuntime(State).view().objective,['repair:library','melody:library']);
+assert.deepEqual(getSlotRuntime(State).view().objective,['battle:mirror-guardian','repair:library','melody:library']);
+// The new canonical guardian is mandatory; keep the mirror proof and battle gates independent.
+const boss='battle:mirror-guardian',bossPoint=layouts.library.features[boss];
+const evidence=outcome=>rt.evidence({sceneId:scene.id,operation:boss,region:'library',verified:true,outcome,token:rt.capture()});
+assert.equal(explorer.interact('repair:library').ok,false,'repair cannot bypass the guardian');
+assert.equal(evidence('win').ok,false,'guardian requires physical arrival');
+assert.ok(explorer.walk(...bossPoint));for(let i=0;i<1000&&explorer.moving;i++)explorer.tick(.05);
+assert.ok(explorer.near(bossPoint));assert.equal(evidence('loss').ok,false,'loss cannot clear guardian');
+// Unit-level battle outcome fixture, not real-browser combat evidence.
+assert.ok(evidence('win').ok);assert.deepEqual(bridge.view().objective,['repair:library','melody:library']);
 const q=layouts.library.features['repair:library'];assert.ok(explorer.walk(...q));for(let i=0;i<1000&&explorer.moving;i++)explorer.tick(.05);
 assert.ok(explorer.near(q));const fakeRoot=structuredClone(root);delete fakeRoot.resonanceExploration.interactions[scene.id+':'+op];
 const fakeState={S:fakeRoot,activeSlot:()=>'forged-mirror',save:()=>({ok:true})};
