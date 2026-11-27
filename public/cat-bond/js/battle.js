@@ -2648,7 +2648,7 @@ class CaptureBattle {
     }
     f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
     const col = this.elemColor(sk ? sk.element : f.element);
-    const pow = (sk ? sk.power : 0.8)*this.outgoingBuffMult(f);
+    const pow = (sk ? sk.power : 1.35)*this.outgoingBuffMult(f);
     // The starter Q fan is an actual damaging skill even before a named Q unlock.
     // Give it an ID so a successful hit participates in skill-driven poise break.
     const attack=sk||{id:'starterQFan',kind:'projectile',element:f.element,power:1.35,ultCost:0};
@@ -6183,6 +6183,11 @@ class CaptureBattle {
     // amendment #4). The elem matchup multiplies OUTSIDE the bucket.
     const softMul = Math.max(0.25, 1 + Math.min(0.50, Math.max(-0.75, softBucket)));
     dmg *= elem * softMul * critComboMult;
+    // Owner 2026-11-26 + supervisor punch list #2: stash the earned react combo
+    // (softMul × critComboMult) onto the target so hurtEnemy's post-identity
+    // ceiling sees the full stack across apply→hurt. Cleared the same frame — one
+    // hit only.
+    e._earnedReactStack = softMul * critComboMult;
     if (this._debug) {
       this._dbgApplyBreakdown = {
         comboBonus: combo ? (comboBonusMult - 1) : 0,
@@ -6432,19 +6437,18 @@ class CaptureBattle {
       this.vfx.text(e.x, e.y - 64, closeLabel, '#ff9a4d', 15);
     }
     const sumBonus = 1 + vulnBonus + comboBonus + executeBonus + closeBonus;
-    dmg *= sumBonus;
-    // Owner 2026-11-26 formula refactor — adversary FAIL-1 amendment: the 4 earned
-    // buckets (soft × crit × vulnFlat × hurt) can compound to 18.9× raw in extreme
-    // stacks. Cap the AGGREGATE "earned" multiplier excluding identity/elem/levelSup
-    // (which are universal rules, not stacking bonuses). Approximation: we only see
-    // sumBonus (post-vuln-merge includes vulnerableT+stagger+rust, comboBonus from
-    // combo-chain, executeBonus, closeBonus) and the applyHitEffects soft/crit mul is
-    // already baked into `dmg` here. Hard cap scaled damage at 3.5× pre-sumBonus dmg
-    // (which already carries soft × crit × elem). This saturates only in the top-1%
-    // extreme stacks, invisible to typical fights.
-    const preCap = dmg / sumBonus;
-    const maxEarned = preCap * 3.5;
-    if (dmg > maxEarned) dmg = maxEarned;
+    // Owner 2026-11-26 adversary FAIL-1 + supervisor punch list #2: cap the AGGREGATE
+    // earned multiplier (softMul × critComboMult × sumBonus) ≤ 3.5. The prior "cap"
+    // only compared sumBonus against 3.5, which was always < 2.80 — dead code. Read
+    // the stashed e._earnedReactStack from applyHitEffects to see the full cross-call
+    // earned product. Excludes identity + elem + levelSup (universal rules, not stacking
+    // bonuses). Applies to direct hits only (DoT ticks fall under the same vulnBonus
+    // but skip the sumBonus ramp above, so earnedStack ≈ 1.0 on DoT, cap inactive).
+    const earnedReact = (e && Number.isFinite(e._earnedReactStack)) ? e._earnedReactStack : 1;
+    e._earnedReactStack = 1;   // one-hit consume; next hit re-stashes from applyHitEffects
+    const earnedTotal = earnedReact * sumBonus;
+    const earnedCapped = Math.min(earnedTotal, 3.5);
+    dmg *= earnedCapped / earnedReact;    // equivalent to dmg *= sumBonus but clipped
     if (this._debug) {
       this._dbgHurtBreakdown = {
         levelSup: this.levelSuppression || 1,
