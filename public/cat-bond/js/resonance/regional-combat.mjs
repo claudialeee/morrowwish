@@ -9,7 +9,7 @@ import {libraryBlocked,libraryPoints,catdexRecord} from "./library-mechanisms.mj
 export const REGION_KITS=Object.freeze({
  harbor:{name:["风铃镇","Windchime Town"],enemy:["铃舌兽","Belltongue Beast"],npcs:["jiedeng","qilan"],element:"water",color:"#e7c775",kind:"surge",period:6.2,support:["真铃支援","True chime support"]},
  forest:{name:["眠根林","Rootsleep Forest"],enemy:["根须围猎","Root ambush"],npcs:["yahe","yuchuan"],element:"grass",color:"#97ba76",kind:"roots",period:6.8,support:["疏通根脉","Clear the roots"]},
- forge:{name:["千灯城","Lantern City"],enemy:["高温巡猎","Furnace hunt"],npcs:["jinpo","xiaomao"],element:"fire",color:"#e9a16b",kind:"embers",period:6.5,support:["照亮舞台","Light the stage"]},
+ forge:{name:["千灯城","Lantern City"],enemy:["灯影围猎","Lantern shadow hunt"],npcs:["jinpo","xiaomao"],element:"fire",color:"#e9a16b",kind:"embers",period:6.5,support:["照亮舞台","Light the stage"]},
  sky:{name:["云脊群岛","Skyspine Isles"],enemy:["风切追逐","Gale chase"],npcs:["lingyu","yuanfan"],element:"elec",color:"#c6dce9",kind:"gale",period:6.1,support:["稳定气流","Stabilize the wind"]},
  library:{name:["月镜书库","Moonmirror Library"],enemy:["镜影反击","Mirror counter"],npcs:["moye","baikan"],element:"dark",color:"#b6a7dd",kind:"mirror",period:7.2,support:["辨认真迹","Reveal the original"]},
  starfall:{name:["星坠原","Starfall Expanse"],enemy:["星轨围猎","Orbital hunt"],npcs:["xingya","lichuan"],element:"light",color:"#e6c68b",kind:"orbit",period:7.0,support:["校准星图","Align the star chart"]}
@@ -182,7 +182,7 @@ function install(){
   }
  };
  function notice(b,zh,en){b.game.toast({zh,en});}
- const labels={surge:["铃光横扫，避开预警光带！","Belllight sweep: leave the marked lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["熔渣即将落下！","Molten fragments are about to fall!"],gale:["风切线即将贯穿战场，注意侧风推移！","Gale shear incoming. Counter the crosswind drift!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨即将落下，离开标记圆圈！","Orbital strike incoming. Leave the marked circles!"]};
+ const labels={surge:["铃光横扫，避开预警光带！","Belllight sweep: leave the marked lanes!"],roots:["根须正在锁定你的位置！","Roots are locking onto your position!"],embers:["影火即将落下，避开预警区域！","Shadow sparks incoming. Leave the marked areas!"],gale:["风切线即将贯穿战场，注意侧风推移！","Gale shear incoming. Counter the crosswind drift!"],mirror:["镜影将复制你的落点！","Mirror echoes will strike both marked positions!"],orbit:["星轨即将落下，离开标记圆圈！","Orbital strike incoming. Leave the marked circles!"]};
  function mount(game,b){
   document.getElementById("cb-region-combat")?.remove();
   const host=document.getElementById("battle-ui");if(!host)return;
@@ -359,7 +359,7 @@ function install(){
   sky:["风切散去，岛屿之间又能平稳通行。","The shearing wind fades. The passage between the islands is calm again."],
   library:["镜影凝成微光，照出了真迹所在。","The reflection settles into a faint light, revealing the original."],
   starfall:["光与暗归于平衡，观星台重新安静下来。","Light and shadow return to balance. The observatory falls quiet."],
-  mastery:["光暗交替的星轨已平息，你的队伍通过了终局试炼。","The shifting orbits settle. Your party has passed the postgame trial."]
+  mastery:["光暗星轨已平息，你的队伍通过了终局试炼。","The light and dark orbits settle. Your party has passed the postgame trial."]
  };
  const storyEcho={forge:{scene:"forge:E-03",op:"battle:shadow-beast",point:[.74,.40],title:["灯影剧场 · 剪影兽","Shadow theater · Shadow beast"],name:["剪影兽","Shadow beast"],clue:["剪影兽在灯光外免疫伤害。引它到发光的圆形舞台内再攻击。","The shadow beast is immune outside the light. Lure it into the glowing circle before attacking."]},harbor:{scene:"harbor:H-04",op:"battle:chime-beast",point:[.195,.50],title:["铃房 · 铃舌兽","Bell house · Belltongue Beast"],name:["铃舌兽","Belltongue Beast"],clue:["避开铃声预警光带，再接近攻击；预警期间可以请地区伙伴支援一次。","Leave the marked chime lanes before closing in. Local allies can cancel one telegraphed attack."]},library:{...REGIONAL_BOSSES.library,title:REGIONAL_BOSSES.library.name},starfall:{...REGIONAL_BOSSES.starfall,title:REGIONAL_BOSSES.starfall.name}};
  function libraryAvailable(game,id="library",optional=false){
