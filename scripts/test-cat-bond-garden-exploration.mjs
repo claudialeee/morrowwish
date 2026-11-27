@@ -4,7 +4,7 @@ const win={};new Function('window',fs.readFileSync(new URL('../public/cat-bond/j
 const {read,reduce}=win.GardenExploration;
 let s=read({});const apply=(event,door=false)=>{const next=reduce(s,event,door);assert.ok(next,event);s=next;};
 assert.equal(reduce(s,'chart-0'),null);
-apply('chart-start');apply('chart-1');assert.equal(reduce(s,'chart-1'),null);apply('chart-0');assert.equal(s.parts.length,2);
+apply('chart-start');apply('chart-1');assert.equal(reduce(s,'chart-1'),null);apply('chart-0');assert.equal(s.parts.length,2);assert.ok(s.keepsakes.includes('windblown-chart'));apply('chart-echo');assert.equal(s.chartEcho,true);assert.equal(reduce(s,'chart-echo'),null);
 for(let i=0;i<3;i++)apply('butterfly');assert.equal(reduce(s,'butterfly'),null);assert.ok(s.keepsakes.includes('ear-flower'));
 apply('seed');assert.equal(reduce(s,'seed'),null);
 apply('snack-keep');assert.equal(reduce(s,'snack-eat'),null);

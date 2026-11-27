@@ -1,14 +1,15 @@
 // V3 opening discoveries: real map targets, optional, slot-local and independent of story proof.
 (function(){
 'use strict';
-const fresh=()=>({chartStarted:false,parts:[],butterfly:0,seed:false,snack:null,door:false,nameplate:false,nameplateHome:false,moonleafTouched:false, keepsakes:[]});
+const fresh=()=>({chartStarted:false,parts:[],chartEcho:false,butterfly:0,seed:false,snack:null,door:false,nameplate:false,nameplateHome:false,moonleafTouched:false, keepsakes:[]});
 function read(root){const saved=root?.sunlitGarden?.exploration||{};return {...fresh(),...saved,parts:[...new Set((saved.parts||[]).filter(i=>i===0||i===1))],keepsakes:[...new Set(saved.keepsakes||[])]};}
 function reduce(before,event,canOpenDoor=false){
  const next={...before,parts:[...before.parts],keepsakes:[...before.keepsakes]};
  const remember=id=>{if(!next.keepsakes.includes(id))next.keepsakes.push(id);};
  switch(event){
  case 'chart-start':if(next.chartStarted)return null;next.chartStarted=true;break;
- case 'chart-0':case 'chart-1':{const i=Number(event.at(-1));if(!next.chartStarted||next.parts.includes(i))return null;next.parts.push(i);break;}
+ case 'chart-0':case 'chart-1':{const i=Number(event.at(-1));if(!next.chartStarted||next.parts.includes(i))return null;next.parts.push(i);if(i===1)remember('windblown-chart');break;}
+ case 'chart-echo':if(!next.parts.includes(0)||next.chartEcho)return null;next.chartEcho=true;break;
  case 'butterfly':if(next.butterfly>=3)return null;next.butterfly++;if(next.butterfly===3)remember('ear-flower');break;
  case 'seed':if(next.seed)return null;next.seed=true;remember('golden-seed');break;
  case 'snack-keep':case 'snack-eat':if(next.snack)return null;next.snack=event.slice(6);if(next.snack==='keep')remember('fish-cake');break;
@@ -41,8 +42,9 @@ const targets={
  moonleaf:{labels:['和暮铃一起碰月叶','Touch the moonleaf with Muling'],type:'seed',points:[[.76,.70]]},
  nameplate:{labels:['翻看木名牌','Turn the wooden nameplate'],type:'nameplate',points:[[.25,.40]]},
  door:{labels:['旧屋的秘密','Old house mystery'],type:'door',points:[[.18,.37]]},
- 'chart-0':{labels:['飞走的航图 · 1','Windblown chart · 1'],type:'chart',points:[[.75,.36]]},
- 'chart-1':{labels:['飞走的航图 · 2','Windblown chart · 2'],type:'chart',points:[[.40,.59]]}
+ 'chart-echo':{labels:['旧铃的回应','Investigate the answering bell'],type:'door',points:[[.58,.36]]},
+ 'chart-0':{labels:['飞走的航图','Windblown chart'],type:'chart',points:[[.75,.36]]},
+ 'chart-1':{labels:['另一片航图 · 可选','Another chart piece · optional'],type:'chart',points:[[.40,.59]]}
 };
 let layer=null,buttons=new Map(),owner=null,popup=null,pending=null,projection=null;
 function closePopup(){popup?.remove();popup=null;}
@@ -70,7 +72,9 @@ function interact(id){if(owner!==rootState()||!eligible()||covered())return fals
 
  if(id==='seed')toast('找到一粒浅金色种子，收进小包。','You found a little golden seed and tucked it away.');
  if(id==='door')toast('旧屋里藏着一张花园的旧明信片。把它带回家吧。','An old garden postcard was hidden inside. Take it home.');
- if(id.startsWith('chart-'))toast(s.parts.length===1?'两片航图都找到了！回去和陌生猫说话。':'找到了一片航图 · 1/2',s.parts.length===1?'Both chart pieces found! Return to the traveler.':'One chart piece found · 1/2');
+ if(id==='chart-0'){window.MorrowwishAudio?.note?.(392,.4,.15);const slot=owner;setTimeout(()=>{if(rootState()===slot&&window.__game?.scene==='yard')window.MorrowwishAudio?.note?.(523.25,.55,.15)},260);toast('航图落入爪中，旧铃突然回出你刚哼的两个音！去看看那口铃。','The old bell answers with the two notes you hummed! Investigate the bell.');}
+ if(id==='chart-echo'){window.MorrowwishAudio?.note?.(523.25,.5,.18);toast('铃绳没有动，却回了同样的音。告诉那只陌生猫！','The cord never moved, yet the bell answered. Tell the traveler!');}
+ if(id==='chart-1')toast('航图背面画着一座小花园。纪念物：风中的航图。','A little garden is drawn on the back. Keepsake: Windblown chart.');
  return true;
 }
 // Ending keepsakes are projections of earned scene evidence, not new checklist gates.
@@ -111,7 +115,7 @@ function draw(parent,ctx,w,h,npcRects=[]){
  const placed=[...parent.querySelectorAll('.sg-prologue-guide:not([hidden]),.sg-npc-talk-marker:not([hidden])')].map(el=>relative(el.getBoundingClientRect())).concat(npcRects);
  // Required chart pieces take precedence over optional discoveries.
  const ordered=[...buttons].sort(([a],[b])=>Number(b.startsWith('chart-'))-Number(a.startsWith('chart-')));
- for(const [id,b] of ordered){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?!s.door:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):id==='moonleaf'?!!v?.ending&&!!journeyKeepsakes(owner,v)?.moonleaf&&!s.moonleafTouched:s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(Number(id.at(-1)));
+ for(const [id,b] of ordered){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?!s.door:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):id==='moonleaf'?!!v?.ending&&!!journeyKeepsakes(owner,v)?.moonleaf&&!s.moonleafTouched:id==='chart-echo'?s.chartStarted&&s.parts.includes(0)&&!s.chartEcho&&!v?.openingMet&&v?.current?.id==='prologue:P-05':id==='chart-1'?s.chartStarted&&s.parts.includes(0)&&!s.parts.includes(1):s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(0);
   b.hidden=!show;if(!show)continue;
   const p=def.points[id==='butterfly'?Math.min(2,s.butterfly):0];
   const preferredX=rect.left+(left+(right-left)*p[0])/w*rect.width-r.left,preferredY=rect.top+(top+(bottom-top)*p[1])/h*rect.height-r.top;
@@ -127,5 +131,5 @@ function draw(parent,ctx,w,h,npcRects=[]){
  else if(arrived)finishChase();else if(now-pending.started>10000){cancelChase();toast('蝴蝶停下来了，再试一次吧。','The butterfly is waiting. Try again.');}}
 }
 function reset(){cancelChase();projection=null;if(layer)layer.hidden=true;closePopup();}
-window.GardenExploration=Object.freeze({draw,reset,read,reduce,journeyKeepsakes,moonleafPose,companionPose,placeMarker,beginChart:()=>read(rootState()).chartStarted||commit('chart-start'),chartReady:()=>read(rootState()).parts.length===2});
+window.GardenExploration=Object.freeze({draw,reset,read,reduce,journeyKeepsakes,moonleafPose,companionPose,placeMarker,beginChart:()=>read(rootState()).chartStarted||commit('chart-start'),chartReady:()=>{const s=read(rootState());return s.parts.length===2||s.parts.includes(0)&&s.chartEcho;}});
 })();

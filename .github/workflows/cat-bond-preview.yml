@@ -201,13 +201,15 @@ jobs:
                 await encounter.waitFor({state:'detached'});
                 await discover('chart-0').click();
                 if(await page.evaluate(()=>CatBondResonance.view().openingMet))throw Error('One piece cannot complete the encounter');
-                await discover('chart-1').click();
+                await discover('chart-echo').click();
                 await marker.click();
                 await encounter.getByRole('button',{name:'Continue',exact:true}).click();
                 await encounter.getByRole('button',{name:'Say goodbye',exact:true}).click();
                 await encounter.waitFor({state:'detached'});
                 await page.waitForFunction(()=>CatBondResonance.view().openingMet===true);
                 await marker.waitFor({state:'hidden'});
+                if(await page.evaluate(()=>GardenExploration.read(State.S).parts.length)!==1)throw Error('Second chart must be optional');
+                if(prefix.includes('desktop')){await discover('chart-1').click();if(!await page.evaluate(()=>GardenExploration.read(State.S).keepsakes.includes('windblown-chart')))throw Error('Optional chart keepsake missing');}
                 if(await page.locator('#toasts .toast:visible').count()>1)throw Error('Exploration notices stack over cats and navigation');
                 await page.screenshot({path:'preview-'+prefix+'-garden-discovery.png'});
                 if(await guide.locator('button:visible').count()!==1)throw Error('Opening guide expanded after dialogue');
