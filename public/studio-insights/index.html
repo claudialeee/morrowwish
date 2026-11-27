@@ -316,7 +316,7 @@ function renderSignals(gameRows){
 function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)?j.byGame:[],days=Array.isArray(j.byDay)?j.byDay:[];const hasData=Number(r.pageviews)>0;
 const homePageviews=games.find(x=>x.game==="hub")?.pageviews;
 const homeKnown=homePageviews!=null&&Number.isFinite(Number(homePageviews))&&Number(homePageviews)>0;
-const displayOrder=['cat-bond','starbell-preview','pawsibly-innocent','tiny-town','elsewhere','flip-dash','parcel-panic','pocket-aquarium'];
+const displayOrder=['cat-bond','pawsibly-innocent','tiny-town','elsewhere','starbell-preview','flip-dash','parcel-panic','pocket-aquarium'];
 const count=n=>n!=null&&Number.isFinite(Number(n))&&Number(n)>=0?format(n):"";
 $("stats").innerHTML=[
  metricCard(t("statPv"),hasData?count(r.pageviews):"",t("statPvNote")),

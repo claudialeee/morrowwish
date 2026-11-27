@@ -307,7 +307,8 @@ for(const [index,id] of featuredOrder.entries()){
 }
 const homeStyles=fs.readFileSync('public/hub.css','utf8');
 if(!homeStyles.includes(".elsewhere-card h3{font-family:'Nunito'"))throw Error('Elsewhere heading must match other featured headings');
-if((homepage.match(/class="card-hit"/g)||[]).length!==4)throw Error('All featured cards must have full-card pointer targets');
+if((homepage.match(/class="card-hit"/g)||[]).length!==5)throw Error('Four original cards and the independent playtest must have full-card pointer targets');
+if(!homepage.includes('data-id="starbell-preview"')||!homepage.includes('https://cat-bond-preview.morrowwish.pages.dev/cat-bond/')||!displayOrder.includes("'starbell-preview'"))throw Error('Independent Starbell preview entry is missing');
 if(!homeStyles.includes('html[lang="zh-CN"] .hero .hero-zh-copy{display:block;white-space:nowrap;'))
   throw Error('Homepage Chinese hero no-wrap style is missing');
 if(!homeStyles.includes('@media(max-width:700px)')||!homeStyles.includes('html[lang="zh-CN"] .hero>p.hero-copy{white-space:normal;overflow:visible;max-width:100%}')||!homeStyles.includes('html[lang="zh-CN"] .hero .hero-zh-copy{white-space:normal;overflow-wrap:break-word;'))
