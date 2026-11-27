@@ -1,0 +1,35 @@
+name: Targeted authentic Cat Bond media quality polish
+on:
+  push:
+    branches: [review/cat-bond-release-bundle-20261127]
+    paths: ['capture-polish.mjs','review-polish.py','.github/workflows/polish-capture.yml']
+permissions:
+  contents: write
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install free tools
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python3 -m pip install --break-system-packages pillow
+      - name: Capture real cat care, duo and exploration
+        run: node capture-polish.mjs
+        continue-on-error: true
+      - name: Review sheets from genuine screenshots and approved hero artwork
+        run: python3 review-polish.py
+        if: always()
+      - name: Commit results without triggering deploy or another capture
+        if: always()
+        run: |
+          git config user.name 'Morrow Wish release QA'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          find output/refined -name '*.webm' -size +90M -delete
+          git add -f output/refined
+          git diff --cached --quiet || git commit -m 'Save authentic interaction and exploration media for visual inspection [skip ci]'
+          git push origin HEAD:review/cat-bond-release-bundle-20261127
