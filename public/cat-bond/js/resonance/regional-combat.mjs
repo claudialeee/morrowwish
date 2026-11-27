@@ -71,7 +71,8 @@ const artFiles={
  starfall:["starfall-arena.webp","orbit-sentinel-watercolor.webp"],
 };
 const portraitFocalPoints={harbor:.50,forest:.20,forge:.50,sky:.68,library:.50,starfall:.65};
-const art={};
+const art={},nativePortrait=new Map();
+function nativeArena(region){if(!nativePortrait.has(region)){const im=new Image();im.decoding='async';im.src=new URL('../../assets/mobile-portrait/battle-'+(region==='forge'?'lantern':region)+'.webp',import.meta.url).href;nativePortrait.set(region,im);}return nativePortrait.get(region);}
 function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
  pair.background.src=new URL("../../assets/combat/"+background,import.meta.url).href;if(enemy)pair.enemy.src=new URL("../../assets/combat/"+enemy,import.meta.url).href;
@@ -80,6 +81,8 @@ function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)
 function drawScene(ctx,W,H,region){
  const pair=art[region],ready=image=>image?.complete&&image.naturalWidth>0;
  const img=region==="forge"&&window.__game?.battle?.regionalCombat?.shadowLight?(canonArt("lantern-theater")||pair?.background):pair?.background;
+ const tall=H>W&&region!=="harbor"?nativeArena(region):null;
+ if(ready(tall)){const k=Math.max(W/tall.naturalWidth,H/tall.naturalHeight);ctx.drawImage(tall,(W-tall.naturalWidth*k)/2,(H-tall.naturalHeight*k)/2,tall.naturalWidth*k,tall.naturalHeight*k);return true;}
  if(!ready(img))return false;
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
  window.CatBondSceneFit.draw(ctx,img,W,H,{top:"#e7dceb",bottom:"#d9c0aa",portraitFocus:portraitFocalPoints[region]??.5});

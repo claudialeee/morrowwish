@@ -35,6 +35,7 @@ class CaptureBattle {
     this.W = game.W; this.H = game.H;
     this.topMargin = this.H<540&&this.W>this.H ? Math.max(58,Math.min(105,this.H*.26)) : Math.max(85,Math.min(238,this.H*.40));
     this.bottomMargin = this.H<540&&this.W>this.H ? Math.max(38,Math.min(64,this.H*.15)) : Math.max(54,Math.min(112,this.H*.16));
+    this.applyPortraitMargins();
     this.wild = wildSpecies;
     this.rar = GameData.RARITY[wildSpecies.rarity];
     this.rarIdx = ['N', 'R', 'SR', 'SSR'].indexOf(wildSpecies.rarity);
@@ -144,13 +145,16 @@ class CaptureBattle {
     // a favorite pair anywhere in the five-cat roster could silently be used
     // even while one favorite was on the bench, disabling the Duo button.
     this.duo=window.CatRelations?.active(this.team.map(f=>f.cat))||null;
+    if(this.duo)window.CatBondPremiumCinematics?.preparePortrait?.(this.duo.elementPair,this.duo.tier);
     this.duoCharge=this.duo?12:0;this.duoCd=0;this.duoUses=0;   // bond support starts low + fills slow (bigger payoff than the ult)
 
     // --- player runtime state: spread the team on the LEFT, INSIDE the playable band
     // [topMargin, H-bottomMargin] so cats are never hidden under the bottom control
     // cluster on tall phones ---
     this.team.forEach((f,i)=>{const top=this.topMargin,bot=this.H-this.bottomMargin;
-      f.x=this.W*(.18+(i%2)*.1);f.y=top+(bot-top)*(0.45+i*0.12);});
+      if(this.isPortraitArena()){f.x=this.W*(this.team.length===1?.5:.32+(i%2)*.36);f.y=top+(bot-top)*(.76+Math.floor(i/2)*.12);}
+      else{f.x=this.W*(.18+(i%2)*.1);f.y=top+(bot-top)*(0.45+i*0.12);}
+    });
     const f = this.me();
     this.aim = 0;                         // radians toward mouse
     this.ult = 0;                         // 0..100 ultimate meter
@@ -356,9 +360,11 @@ class CaptureBattle {
     const next=window.CatRelations?.active(this.team.filter(f=>f.alive&&!f._reinforcement).map(f=>f.cat))||null;
     const old=this.duo;if(next?.a?.uid!==old?.a?.uid||next?.b?.uid!==old?.b?.uid)this.duoCharge=0;
     this.duo=next;
+    if(next)window.CatBondPremiumCinematics?.preparePortrait?.(next.elementPair,next.tier);
   }
   duoReady(){
     return !!(this.duo&&this.duoCharge>=100&&this.duoCd<=0&&
+      (!this.isPortraitArena()||window.CatBondPremiumCinematics?.portraitReady?.(this.duo.elementPair,this.duo.tier))&&
       [this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)));
   }
   castDuo(){
@@ -652,12 +658,25 @@ class CaptureBattle {
     ctx.restore();
   }
 
+  isPortraitArena(){return this.W<=700&&this.H>this.W;}
+  applyPortraitMargins(){
+    if(!this.isPortraitArena())return;
+    // Match the portrait two-row dock, and keep the opening fighters below
+    // the upper HUD. The safe-area inset is measured from the live layout.
+    const safe=typeof document!=='undefined'&&typeof getComputedStyle==='function'&&document.getElementById('stage');
+    const insets=safe?getComputedStyle(safe):null;
+    const topInset=parseFloat(insets?.getPropertyValue('--cb-portrait-safe-top'))||0;
+    const bottomInset=parseFloat(insets?.getPropertyValue('--cb-portrait-safe-bottom'))||0;
+    this.bottomMargin=128+bottomInset;
+    this.topMargin=Math.min(244+topInset,Math.max(100,this.H-this.bottomMargin-180));
+  }
   // Keep the combat field available when a phone is rotated mid-encounter.
   onResize(W,H){
     const oldW=this.W||W,oldH=this.H||H;this.W=W;this.H=H;
     const shortLandscape=H<540&&W>H;
     this.topMargin=shortLandscape?Math.max(58,Math.min(105,H*.26)):Math.max(85,Math.min(238,H*.40));
     this.bottomMargin=shortLandscape?Math.max(38,Math.min(64,H*.15)):Math.max(54,Math.min(112,H*.16));
+    this.applyPortraitMargins();
     if(this.topMargin+this.bottomMargin>H-96)this.topMargin=Math.max(36,H-this.bottomMargin-96);
     const minX=Math.min(BATTLE_MARGIN.side,W*.15),maxX=Math.max(minX,W-minX);
     for(const f of [...this.team,...this.enemies]){
@@ -766,7 +785,7 @@ class CaptureBattle {
       phase:0,challenge,
       maxhp, hp: maxhp,
       // place enemies inside the PLAYABLE band (above the control cluster), upper-right
-      x: this.W * col, y: (()=>{const top=this.topMargin,bot=this.H-this.bottomMargin;return top+(bot-top)*(0.30+(i%2)*0.22);})(), vx: 0, vy: 0,
+      x: this.W * (this.isPortraitArena()?(total===1?.5:.25+(i%3)*.25):col), y: (()=>{const top=this.topMargin,bot=this.H-this.bottomMargin;return top+(bot-top)*(this.isPortraitArena()?(.22+Math.floor(i/3)*.14):(0.30+(i%2)*0.22));})(), vx: 0, vy: 0,
       face: -1, t: this.rng() * 3, pose: "idle",
       shieldT:0,protectT:0,reflectT:0,rootT:0,vulnerableT:0,wardCd:3+this.rng()*3,swipeCd:1,
       // SPECIAL ENERGY (敌我同一套): every enemy charges a special meter from 0 — like the player's

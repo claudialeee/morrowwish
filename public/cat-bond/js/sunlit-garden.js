@@ -67,14 +67,14 @@
   function refreshGuide(){
     if(!guide)return;
     const v=window.CatBondResonance?.view?.(),scene=v?.current?.id;
-    const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden]),#cb-player-first-intro,#cb-system-menu:not([hidden])');
+    const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden]),#cb-player-first-intro');
     const show=active&&game?.scene==='yard'&&state()?.cats?.length>0&&!covered&&(scene==='prologue:P-04'||scene==='prologue:P-05'||scene==='epilogue:E-02'||scene==='epilogue:E-03'||v?.ending);
     guide.hidden=!show;if(!show){guideKey='';openingQuestOpen=false;return}
     if(scene==='prologue:P-05'){refreshOpeningQuest(v);return;}
     guide.classList.remove('sg-opening-quest');
     const en=isEnglish(),ending=!!v.ending,epilogue=['epilogue:E-02','epilogue:E-03'].includes(scene),talk=!ending&&(epilogue||v.cursor<v.current.lines.length),departure=scene==='prologue:P-05'&&!talk;
     const seen=state()?.sunlitGarden?.bookGuide||[],next=guideTabs.find(t=>!seen.includes(t[0])),guests=ending?syncGuestPage(v):{ids:[],pages:1};
-    const key=scene+'|'+talk+'|'+en+'|'+v.openingMet+'|'+seen.join(',')+'|'+(ending?guestRosterKey+'|'+guestPage+'|'+v.postgame.length:'');if(key===guideKey)return;guideKey=key;
+    const echo=scene==='prologue:P-05'&&!!state()?.sunlitGarden?.exploration?.chartEcho;const key=scene+'|'+talk+'|'+en+'|'+v.openingMet+'|'+echo+'|'+seen.join(',')+'|'+(ending?guestRosterKey+'|'+guestPage+'|'+v.postgame.length:'');if(key===guideKey)return;guideKey=key;
     guide.replaceChildren();guide.classList.remove('sg-minimal-opening');guide.classList.toggle('sg-postgame-guide',ending);
     const title=document.createElement('strong');
     title.textContent=ending?(en?'The world answers again':'六地再次回应'):epilogue?(scene==='epilogue:E-02'?(en?'A promise to repair':'承担责任'):(en?'The second garden key':'第二把花园钥匙')):departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
@@ -93,6 +93,7 @@
       guide.classList.add('sg-minimal-opening');
       add('下一场景 · 风铃镇','Next scene · Windchime Town',()=>{game.openWorldMap();if(game.scene==='map')window.WorldMap?.enterRegion?.('harbor')});
       row.firstElementChild.classList.add('sg-main-continue');
+      if(echo){title.textContent=en?'The bell answered you':'古铃回应了你';hint.textContent=en?'The rope never moved. Yet the old bell answered the two notes you hummed. Why? Follow the clue to Windchime Town.':'铃绳没有动，古铃却回应了你哼出的两声。为什么？去风铃镇追寻这条线索。';}
 
 
     }
@@ -130,9 +131,7 @@
     if(!active||game?.scene!=='yard'||game.worldDialogueOpen?.())return false;
     const hit=lastNpcHits.find(n=>n.id===id);
     const talk=()=>{if(active&&state()===visitedState&&narrativeAdapter?.getHomeNpcs?.().some(n=>n.id===id))narrativeAdapter.interactHomeNpc(id);};
-    if(hit&&game.yardExploreEnabled?.()&&!game.yardNear?.(hit.x,hit.groundY,.12)){
-      return game.yardWalkTo?.(hit.x,hit.groundY,talk)||false;
-    }
+    if(hit&&game.yardExploreEnabled?.()&&!game.yardNear?.(hit.x,hit.groundY,.12)&&!window.CatBondResonance?.view?.()?.ending)return game.yardWalkTo?.(hit.x,hit.groundY,talk)||false;
     talk();return true;
   }
   function getTalkMarker(npc){
@@ -146,7 +145,7 @@
   function syncTalkMarker(ctx,width,height,npc,x,y,scale,avoid,cell=null){
     const covered=!!document.querySelector('#panel.open,.res-host,.cbcp-root:not([hidden]),#cb-player-first-intro,#cb-system-menu:not([hidden])');
     if(covered||game?.yard?.placement)return;
-    const canvasRect=game.yardViewportRect?.()||ctx.canvas.getBoundingClientRect(),r=root.getBoundingClientRect();
+    const canvasRect=(game.yardViewportRect?.()||ctx.canvas.getBoundingClientRect()),r=root.getBoundingClientRect();
     if(!width||!height||!r.width||!r.height)return;
     const b=getTalkMarker(npc),en=isEnglish(),raw=npc.name,profileName=typeof raw==='string'?raw:raw?.[en?'en':'zh'];
     const label=npc.id==='muling'&&window.CatBondResonance?.view?.().current?.id==='prologue:P-05'?(en?'Stranger':'陌生猫'):(profileName||npc.id);
@@ -196,7 +195,7 @@
     root?.classList.add('is-active');document.getElementById('stage')?.classList.add('cb-sunlit-garden');renderLabels();refreshGuide();
     if(arriving)window.dispatchEvent(new Event('cat-bond-garden-entered'));
   }
-  function leave(){window.GardenProjects?.resetSlot?.();active=false;guideKey='';openingQuestOpen=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;hideTalkMarkers();window.GardenExploration?.reset?.();}
+  function leave(){window.GardenProjects?.resetSlot?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;hideTalkMarkers();window.GardenExploration?.reset?.();}
   function registerNarrativeAdapter(adapter){
     if(!adapter||typeof adapter.getHomeNpcs!=='function'||typeof adapter.drawHomeNpc!=='function'||
        typeof adapter.interactHomeNpc!=='function')return false;
@@ -216,7 +215,7 @@
     if(!Array.isArray(npcs))return;hitState=state();
     const v=window.CatBondResonance?.view?.(),ending=!!v?.ending;
     if(ending){const {ids}=syncGuestPage(v),shown=new Set(ids.slice(guestPage*GUESTS_PER_PAGE,(guestPage+1)*GUESTS_PER_PAGE));npcs=npcs.filter(n=>n.id==='muling'||shown.has(n.id));npcs.sort((a,b)=>Number(b.id==='muling')-Number(a.id==='muling'));}
-    const talkPositions=[],npcRects=[],r=root.getBoundingClientRect(),canvasRect=game.yardViewportRect?.()||ctx.canvas.getBoundingClientRect();
+    const talkPositions=[],npcRects=[],r=root.getBoundingClientRect(),canvasRect=(game.yardViewportRect?.()||ctx.canvas.getBoundingClientRect());
     const occupied=[];
     if(ending){for(const el of [guide,...document.querySelectorAll('#map-menu,#cb-system-toggle,.sg-hotspot,#tabbar')]){if(!el||el.hidden||!el.getClientRects().length||getComputedStyle(el).visibility==='hidden')continue;const b=el.getBoundingClientRect();if(b.width&&b.height)occupied.push({left:b.left-r.left,top:b.top-r.top,right:b.right-r.left,bottom:b.bottom-r.top});}}
     const toRect=(x,y,scale)=>{const cx=canvasRect.left-r.left+x/width*canvasRect.width,cy=canvasRect.top-r.top+y/height*canvasRect.height,sx=canvasRect.width/width,sy=canvasRect.height/height;return {left:cx-40*scale*sx,right:cx+40*scale*sx,top:cy-98*scale*sy,bottom:cy+5*scale*sy};};

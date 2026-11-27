@@ -88,12 +88,12 @@ function install(){
  const tr=(zh,en)=>window.MorrowwishI18n?.get?.()==="zh"?zh:en;
  const arenaArt=new Map();
  function arenaPainting(W,H,id){
-  const portraitStage={"finale:B-01":"battle-finale-lock","finale:B-02":"battle-finale","finale:B-03":"battle-finale-chorus"}[id];
-  const frame=H>W&&portraitStage?portraitStage:H>W?"portrait":"wide";
+  const native=H>W&&({"finale:B-01":"battle-finale-lock","finale:B-02":"battle-finale","finale:B-03":"battle-finale-chorus"}[id]);
+  const frame=native|| (H>W?"portrait":"wide");
   if(!arenaArt.has(frame)){
    const image=new Image();
    image.decoding="async";
-   image.src=new URL(frame.startsWith("battle-finale")?"../../assets/mobile-portrait/"+frame+".webp":"../../assets/combat/star-bell-arena-"+frame+".webp",import.meta.url).href;
+   image.src=new URL(native?"../../assets/mobile-portrait/"+native+".webp":"../../assets/combat/star-bell-arena-"+frame+".webp",import.meta.url).href;
    arenaArt.set(frame,image);
   }
   return arenaArt.get(frame);
@@ -145,7 +145,7 @@ function install(){
   }});return true;
  }
  function mount(b){
-  document.getElementById("cb-finale-hud")?.remove();
+  document.getElementById("cb-finale-hud")?.remove();document.getElementById("cb-finale-compact")?.remove();
   const el=document.createElement("section");el.id="cb-finale-hud";el.className="cb-finale-hud";
   el.innerHTML='<strong data-finale-title></strong><p data-finale-objective></p><div data-finale-count></div><div data-finale-regions hidden></div><p data-finale-warning hidden role="status"></p><button type="button" data-finale-clue aria-expanded="false"></button><p data-finale-record hidden></p><div data-finale-focus hidden></div>';
   el.querySelector("button").onclick=()=>{
@@ -153,7 +153,17 @@ function install(){
    f.clueOpen=!f.clueOpen;
    paint(b);
   };
-  document.getElementById("battle-ui")?.append(el);watchObjectiveHud(el);
+  // On a phone the full meter panel is an intentional detail view, not a permanent
+  // occluder of the enemies. The current goal and progress remain visible.
+  const compact=document.createElement("button");compact.id="cb-finale-compact";compact.className="cb-finale-compact";compact.type="button";
+  compact.setAttribute("aria-controls",el.id);compact.setAttribute("aria-expanded","false");
+  const text=document.createElement("span"),count=document.createElement("span"),chevron=document.createElement("span");
+  text.dataset.compactGoal="";count.dataset.compactCount="";chevron.className="cb-finale-chevron";chevron.setAttribute("aria-hidden","true");chevron.textContent="▾";
+  compact.append(text,count,chevron);
+  function toggle(open){el.classList.toggle("cb-finale-details-open",open);compact.setAttribute("aria-expanded",String(open));chevron.textContent=open?"▴":"▾";if(open)requestAnimationFrame(()=>positionObjectiveHud(el));}
+  compact.onclick=()=>toggle(compact.getAttribute("aria-expanded")!=="true");
+  el.addEventListener("click",event=>{if(event.target.closest?.("[data-echo]")&&matchMedia("(orientation:portrait) and (max-width:700px)").matches)toggle(false);});
+  document.getElementById("battle-ui")?.append(el,compact);watchObjectiveHud(el);
  }
  // A measured mismatch gives one resonance gain per distinct reply group.
  // Both manual and auto identification use this path. Repeated taps, opening
@@ -199,6 +209,18 @@ function install(){
   }
   warning.hidden=second||!f.cast;
   if(!warning.hidden){const n=f.nodes[f.cast.node];warning.textContent=n?tr("铃声来袭：守护 ","Incoming pulse: protect ")+tr(...REGION_KITS[n.region].name):tr("中央回响：离开预警范围","Central echo: leave the marked area");}
+  const compact=document.getElementById("cb-finale-compact");
+  if(compact){
+   const goal=!warning.hidden&&f.cast?.node>=0?tr("守护："+tr(...REGION_KITS[f.nodes[f.cast.node].region].name),"Protect "+tr(...REGION_KITS[f.nodes[f.cast.node].region].name)):
+    first?tr("击破防护节点","Break protection nodes"):
+    second?(f.probeChanged?tr("攻击错误回响","Strike false replies"):tr("移动并比较回应","Move · compare replies")):
+    next?(next.reply?.cleared?tr("守住铃光","Hold the bell light"):tr("击破复制声源","Break copied source")):tr("攻击中央回响","Strike central echo");
+   const label=compact.querySelector("[data-compact-goal]"),count=compact.querySelector("[data-compact-count]"),progress=el.querySelector("[data-finale-count]").textContent;
+   if(label.textContent!==goal)label.textContent=goal;if(count.textContent!==progress)count.textContent=progress;
+   const detail=el.querySelector("[data-finale-objective]").textContent;
+   const accessible=tr("终章目标 · ","Finale objective · ")+detail+" · "+progress+" · "+tr("展开或收起详情","Show or hide details");
+   if(compact.getAttribute("aria-label")!==accessible)compact.setAttribute("aria-label",accessible);
+  }
   const clue=el.querySelector("[data-finale-clue]");
   clue.hidden=true;
   clue.textContent=f.clueOpen?tr("收起图鉴","Close Catdex"):tr("查看图鉴记录","Check Catdex record");
@@ -390,7 +412,7 @@ function install(){
  const background=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){
   if(this.resonanceFinale){
-   const requested=arenaPainting(W,H,this.resonanceFinale.id),original=arenaPainting(W,H);
+   const requested=arenaPainting(W,H,this.resonanceFinale?.id),original=arenaPainting(W,H);
    const painting=requested.complete&&requested.naturalWidth?requested:original;
    if(painting.complete&&painting.naturalWidth){
     window.CatBondSceneFit.draw(ctx,painting,W,H,{top:"#e8deec",bottom:"#d9c4b7"});
@@ -407,7 +429,7 @@ function install(){
  BP.draw=function(ctx){
   const f=this.resonanceFinale;if(!f)return draw.call(this,ctx);
   const seq=this.captureSeq;this.captureSeq=null;try{draw.call(this,ctx);}finally{this.captureSeq=seq;}
-  syncCinematicHud(document.getElementById("cb-finale-hud"),this);
+  syncCinematicHud(document.getElementById("cb-finale-hud"),this);syncCinematicHud(document.getElementById("cb-finale-compact"),this);
   if(cinematicActive(this))return;
   ctx.save();ctx.lineWidth=2;
   if(f.id==="finale:B-02"&&f.probeChanged){const me=this.me();if(me?.alive)for(const e of this.liveEnemies().filter(e=>!e.impostor)){ctx.strokeStyle="#f7dd9b";ctx.globalAlpha=.65;ctx.setLineDash([5,8]);ctx.beginPath();ctx.moveTo(e.x,e.y);ctx.lineTo(me.x,me.y);ctx.stroke();}ctx.setLineDash([]);ctx.globalAlpha=1;}
@@ -461,7 +483,7 @@ function install(){
    committed=!!r?.ok;
   }
   if(same&&valid&&(!win||!committed)){if(!win){const result=window.State.save();if(!result?.ok)restoreHealth();}else restoreHealth();}
-  document.getElementById("cb-finale-hud")?.remove();document.getElementById("battle-ui")?.classList.remove("on");
+  document.getElementById("cb-finale-hud")?.remove();document.getElementById("cb-finale-compact")?.remove();document.getElementById("battle-ui")?.classList.remove("on");
   const duo=document.getElementById("duo-burst");if(duo)duo.hidden=true;
   this.battle=null;this._returnScene=null;this.scene="map";document.body.classList.add("cb-exploring");this.setBattleHelpVisible?.(false);this.refreshHUD?.();window.WorldMap?.resumeRegion?.(false);
   this.toast(committed?{zh:"本阶段目标已达成。",en:"The objective is complete."}:win?{zh:"剧情保存失败，请重新挑战。",en:"Story save failed. Retry the encounter."}:b._voluntaryFlee&&!f.failedProtection?{zh:"队伍撤离，休整后再挑战。",en:"Withdrawn. Rest and retry the encounter."}:{zh:"先休整一下，准备好再来挑战！",en:"Rest up, then give it another try!"});

@@ -1,0 +1,87 @@
+name: Starbell portrait source gate
+on:
+  push:
+    branches: [review/starbell-mobile-portrait, review/starbell-portrait-art-integration]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/test-cat-bond-canon22-*.mjs'
+      - 'scripts/cat-bond-canon22-migration-audit.mjs'
+      - 'docs/cat-bond-rpg/02-MAIN-STORY-SCRIPT.md'
+      - 'scripts/test-cat-bond-canon12-campaign.mjs'
+      - 'scripts/test-cat-bond-resonance*.mjs'
+      - 'scripts/test-cat-bond-garden-exploration.mjs'
+      - 'scripts/check-cat-bond-resonance-world.mjs'
+      - 'scripts/check-starbell-portrait-source.mjs'
+      - '.github/workflows/starbell-portrait-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: starbell-portrait-source-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Portrait asset and original-only rendering gate
+        run: node scripts/check-starbell-portrait-source.mjs
+      - name: Design-runtime migration report (not gameplay acceptance)
+        run: node scripts/cat-bond-canon22-migration-audit.mjs
+      - name: Verify changed runtime syntax
+        run: |
+          node --check public/cat-bond/js/resonance/canon22-glide.mjs
+          node --check public/cat-bond/js/resonance/canon22-spatial.mjs
+          node --check public/cat-bond/js/resonance/canon22-finale-replies.mjs
+          node --check public/cat-bond/js/resonance/finale-combat.mjs
+          node --check public/cat-bond/js/resonance/finale-latch.mjs
+          node --check public/cat-bond/js/resonance/regional-combat.mjs
+          node --check public/cat-bond/js/battle.js
+          node --check public/cat-bond/js/resonance/story-party.mjs
+          node --check public/cat-bond/js/resonance/canon22-mirror.mjs
+          node --check public/cat-bond/js/resonance/library-mechanisms.mjs
+          node --check public/cat-bond/js/resonance/world-exploration.mjs
+          node --check public/cat-bond/js/resonance/world-bridge.mjs
+          node --check public/cat-bond/js/resonance/sky-flight.mjs
+          node --check public/cat-bond/js/resonance/world-runtime.mjs
+          node scripts/test-starbell-exploration-depth.mjs
+          node --check public/cat-bond/js/resonance/campaign.mjs
+          node --check public/cat-bond/js/resonance/engine.mjs
+          node --check public/cat-bond/js/resonance/narrative-host.mjs
+          node --check public/cat-bond/js/resonance/title-entry.mjs
+          node --check public/cat-bond/js/resonance/chapter-cinematics.mjs
+          node --check public/cat-bond/js/resonance/slot-runtime.mjs
+      - name: Verify implemented flight and scene contract
+        run: |
+          node scripts/test-cat-bond-canon22-final-art.mjs
+          node --check public/cat-bond/js/resonance/canon22-art.mjs
+          node --check public/cat-bond/js/resonance/dialogue-ui.mjs
+          node --check public/cat-bond/js/garden-exploration.js
+          node --check public/cat-bond/js/resonance-cinematic.mjs
+          node scripts/test-cat-bond-canon22-glide.mjs
+          node scripts/test-cat-bond-canon22-mirror.mjs
+          node scripts/test-cat-bond-canon22-ledger.mjs
+          node scripts/test-cat-bond-canon22-route-model.mjs
+          node scripts/test-cat-bond-canon22-neighbor-trial.mjs
+          node scripts/test-cat-bond-canon22-epilogue.mjs
+          node scripts/test-cat-bond-canon22-spatial.mjs
+          node scripts/test-cat-bond-canon22-finale.mjs
+          node scripts/test-cat-bond-player-first.mjs
+          node scripts/test-cat-bond-story-party.mjs
+      - name: Run campaign integration regressions
+        run: |
+          failures=0
+          for test in test-cat-bond-canon12-campaign test-cat-bond-resonance test-cat-bond-resonance-slot check-cat-bond-resonance-world test-cat-bond-garden-exploration test-cat-bond-regional-discoveries; do
+            if node "scripts/$test.mjs"; then echo "PASS $test"; else echo "::error::FAIL $test"; failures=$((failures+1)); fi
+          done
+          test "$failures" -eq 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-portrait-canon22-report
+          path: artifacts/canon22
+          retention-days: 30

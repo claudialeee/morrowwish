@@ -97,10 +97,18 @@
 .cbcp-stage::before{display:none!important}
 .cbcp-stage .cbcp-art-stack{inset:0!important}
 .cbcp-stage .cbcp-art{object-fit:cover!important;background:transparent!important}
-/* Preserve both actors on narrow phones; blurred backplate fills unused space. */
-@media (orientation:portrait) and (max-width:680px){
- .cbcp-stage:has(.cbcp-art[data-keep-actors="true"])::before{display:block!important}
- .cbcp-stage .cbcp-art[data-keep-actors="true"]{object-fit:contain!important;object-position:center!important;transform:none!important}
+/* Mobile story composition: sharp complete authored frames, no enlarged
+   duplicate blurred painting. Dialogue and footer have their own space. */
+@media (orientation:portrait) and (max-width:700px){
+ .cbcp-root,.cbcp-shell,.cbcp-stage{background:#242d30!important}
+ .cbcp-stage::before{display:none!important}
+ .cbcp-stage .cbcp-art-stack{inset:max(70px,12%) 0 30%!important}
+ .cbcp-stage[data-subtitle="false"] .cbcp-art-stack{inset:max(70px,12%) 0 12%!important}
+ .cbcp-stage .cbcp-art{object-fit:contain!important;object-position:center!important;transform:none!important}
+ .cbcp-stage .cbcp-layer{object-fit:contain!important;object-position:center!important}
+ .cbcp-stage .cbcp-vignette{background:linear-gradient(0deg,#242d30 4%,transparent 32%,transparent 88%,#242d3050)!important}
+ .cbcp-stage .cbcp-subtitle-wrap{bottom:max(66px,calc(env(safe-area-inset-bottom,0px) + 58px))!important;max-height:24%;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+ .cbcp-footer .cbcp-action,.cbcp-tools .cbcp-tool,.cbcp-footer .cbcp-back{min-height:44px!important}
 }
 .cbcp-stage .cbcp-layer{background:transparent!important}
 .cbcp-vignette{background:linear-gradient(0deg,#392c2060,transparent 28%,transparent 82%,#392c2038)!important}
@@ -295,7 +303,10 @@
         this.options.onCheckpoint?.(this.snapshot());
       };
       // A subtitle change on the same authored shot must not restart zoom or fade.
-      if (this.activeImage === frame.image && this.nodes.stack.querySelector('.cbcp-art')) { ready(); return; }
+      const portraitShot=window.matchMedia('(orientation:portrait) and (max-width:700px)').matches&&/\/(f02-history|b04-reunion)\.webp(?:[?#]|$)/.exec(frame.image);
+      const presentedImage=portraitShot?'assets/mobile-portrait/story-'+portraitShot[1]+'.webp':frame.image;
+      this.nodes.stage.dataset.nativePortrait=String(!!portraitShot);
+      if (this.activeImage === presentedImage && this.nodes.stack.querySelector('.cbcp-art')) { ready(); return; }
       const previous = Array.from(this.nodes.stack.children);
       const image = document.createElement('img');
       image.className = 'cbcp-art';
@@ -309,9 +320,9 @@
       image.addEventListener('load', async () => {
         try { await image.decode?.(); } catch (_) { fail(); return; }
         if (token !== this.renderToken || !this.scene) { image.remove(); return; }
-        this.activeImage = frame.image;
-        this.nodes.stage.style.setProperty('--cbcp-backplate',`url("${frame.image}")`);
-        this.applyCamera(image, frame.camera, 1, frame.shotDurationMs||frame.durationMs, frame.transitionMs, (frame.shotOffsetMs||0)+this.frameElapsedMs);
+        this.activeImage = presentedImage;
+        this.nodes.stage.style.setProperty('--cbcp-backplate',`url("${presentedImage}")`);
+        if(!portraitShot)this.applyCamera(image, frame.camera, 1, frame.shotDurationMs||frame.durationMs, frame.transitionMs, (frame.shotOffsetMs||0)+this.frameElapsedMs);
         requestAnimationFrame(() => {
           if (token !== this.renderToken) return;
           // Never spend the first painted shot (or a restored paused shot) behind a blank fade.
@@ -349,7 +360,7 @@
         ready();
       }, {once:true});
       this.nodes.stack.appendChild(image);
-      image.src = frame.image;
+      image.src = presentedImage;
     }
 
     applyCamera(node, camera, depth = 1, durationMs = 5600, transitionMs = 520, offset=0) {

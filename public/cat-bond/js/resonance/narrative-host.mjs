@@ -28,13 +28,13 @@ function install(){
   // Cinematic-only scenes have a physical entrance and an approved shot sequence.
   // Reading their dialogue in the journal must never consume the cinematic cursor.
   if(v.current.chapter!=="prologue"&&v.current.requires.some(op=>op.startsWith("cinematic:"))&&v.objective.some(op=>op.startsWith("cinematic:"))){
-   game?.toast?.({zh:"前往星坠原中央星铃，选择观看剧情。",en:"Visit the central Star Bell in Starfall and choose Watch the story scene."});return false;
+   game?.toast?.(v.current.chapter==="finale"?{zh:"前往中央星铃，选择观看剧情。",en:"Visit the Star Bell and choose Watch the story scene."}:{zh:"前往星坠原遗迹，选择观看剧情。",en:"Visit the ruins in Starfall and choose Watch the story scene."});return false;
   }
   if(v.current.chapter==="epilogue"&&game?.scene!=="yard"){
    game?.toast?.({zh:"回到阳光花园，与暮铃交谈。",en:"Return to Sunlit Garden and speak with Muling."});return false;
   }
   if(v.current.chapter==="finale"&&(window.WorldMap?.currentRegion!=="finale"||window.WorldMap?.mode!=="region")){game?.toast?.({zh:"请前往中央星铃继续终章。",en:"Travel to the Star Bell to continue the finale."});return false;}
-   if(v.current.chapter==="starfall"&&(window.WorldMap?.currentRegion!=="starfall"||window.WorldMap?.mode!=="region")){game?.toast?.({zh:"请前往星坠原继续剧情。",en:"Travel to Starfall to continue the story."});return false;}
+  if(v.current.chapter==="starfall"&&(window.WorldMap?.currentRegion!=="starfall"||window.WorldMap?.mode!=="region")){game?.toast?.({zh:"请前往星坠原继续剧情。",en:"Travel to Starfall to continue the story."});return false;}
   if(awaitingGameplay(v)){if(root)close();return false;}
   if(slot===State.S&&openedScene===v.current.id&&(dialogue||keyExchange)){(dialogue||keyExchange).render();return true}
   close();slot=State.S;openedScene=v.current.id;
@@ -57,7 +57,7 @@ function install(){
   const ending=document.createElement("section");ending.className="cb-story-overlay is-visible res-ending-title";
   ending.setAttribute("role","dialog");ending.setAttribute("aria-modal","true");
   Object.assign(ending.style,{position:"absolute",inset:"0",zIndex:"40",display:"grid",placeItems:"center",overflow:"hidden",background:"#f6e9dc",alignContent:"end",padding:"clamp(12px,4vh,38px)"});
-  const art=document.createElement("img");art.src=new URL("../../assets/core-art-remaster/story/e03-garden.webp",import.meta.url).href;
+  const art=document.createElement("img");art.src=new URL(window.matchMedia("(orientation:portrait) and (max-width:700px)").matches?"../../assets/mobile-portrait/story-e03-garden.webp":"../../assets/core-art-remaster/story/e03-garden.webp",import.meta.url).href;
   art.alt="";Object.assign(art.style,{position:"absolute",inset:"0 0 20% 0",width:"100%",height:"80%",objectFit:"contain",objectPosition:"center"});
   const card=document.createElement("div");Object.assign(card.style,{position:"relative",textAlign:"center",padding:"10px 22px",color:"#50415d",borderRadius:"18px",background:"#fff5e9ef",maxWidth:"95%"});
   const title=document.createElement("h2");title.textContent="THE BELL RINGS AGAIN";title.style.font="700 clamp(24px,5vw,54px) Georgia,serif";title.style.letterSpacing=".10em";

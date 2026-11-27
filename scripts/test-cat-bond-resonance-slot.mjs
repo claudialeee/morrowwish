@@ -55,14 +55,15 @@ function endingFixture(target){let e=makeEngine(campaign);for(const sc of campai
 active={resonance:endingFixture("epilogue:E-02")};assert.ok(shared.residents("garden").some(n=>n.id==="jiedeng"));assert.ok(!shared.residents("garden").some(n=>n.id==="qilan"));let ep=shared.capture();assert.ok(shared.recordNPC({sceneId:"epilogue:E-02",npcId:"muling",region:"garden",token:ep}).dialogueOnly);assert.equal(shared.completeNPCScene({sceneId:"epilogue:E-02",operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:ep}).ok,false);for(const l of shared.view().current.lines)assert.ok(shared.nextLine(ep).ok);assert.equal(shared.completeNPCScene({sceneId:"epilogue:E-02",operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:ep}).ok,false);assert.ok(shared.choose("listen",ep).ok);assert.ok(shared.completeNPCScene({sceneId:"epilogue:E-02",operation:"npc:public-accountability",npcId:"muling",region:"garden",verified:true,token:ep}).ok);assert.ok(shared.finish(ep).ok);ep=shared.capture();assert.ok(shared.recordNPC({sceneId:"epilogue:E-03",npcId:"muling",region:"garden",token:ep}).dialogueOnly);for(const l of shared.view().current.lines)assert.ok(shared.nextLine(ep).ok);assert.equal(shared.finish(ep).ok,false);const proofKey={sceneId:"epilogue:E-03",operation:"npc:second-garden-key",npcId:"muling",region:"garden",verified:true,token:ep};failSave=true;assert.equal(shared.completeNPCScene(proofKey).ok,false);assert.equal(shared.view().ending,false);failSave=false;assert.ok(shared.completeNPCScene(proofKey).ok);assert.ok(shared.finish(ep).ok);assert.ok(shared.view().ending);console.log("Epilogue: public accountability and second key must follow dialogue; failed key save cannot finish");
 
 // All six regional replies and the B-03 victory are one local commit.
-active={resonance:endingFixture("finale:B-03"),resonanceExploration:{location:"starfall"}};
+active={resonance:endingFixture("finale:B-03"),resonanceExploration:{location:"finale"}};
 const replies=campaign.regions.map((region,i)=>({region,action:campaign.support[i]}));
 const live=campaign.regions.map((region,i)=>({region,next:campaign.regions[(i+1)%6],clearAt:i*5,firstAt:i*5+1,secondAt:i*5+2,interference:0,interruptedAt:null}));
-const victory={sceneId:"finale:B-03",operation:"battle:central-echo",region:"starfall",participants:replies,replies:live,stableAt:30,verified:true,outcome:"win",token:shared.capture()};
+const victory={sceneId:"finale:B-03",operation:"battle:central-echo",region:"finale",participants:replies,replies:live,stableAt:30,verified:true,outcome:"win",token:shared.capture()};
 assert.equal(shared.commitFinaleVictory({...victory,replies:[]}).ok,false);
 const beforeVictory=JSON.stringify(active),beforeEvents=events;
 assert.equal(shared.commitFinaleVictory({...victory,region:"garden"}).ok,false);
-active.resonanceExploration.location="harbor";assert.equal(shared.commitFinaleVictory(victory).ok,false);active.resonanceExploration.location="starfall";
+assert.equal(shared.commitFinaleVictory({...victory,region:"starfall"}).ok,false);
+active.resonanceExploration.location="harbor";assert.equal(shared.commitFinaleVictory(victory).ok,false);active.resonanceExploration.location="finale";
 const badReplies=replies.map((reply,i)=>i===5?{...reply,action:"invalid"}:reply);
 assert.equal(shared.commitFinaleVictory({...victory,participants:badReplies}).ok,false);
 assert.equal(JSON.stringify(active),beforeVictory);

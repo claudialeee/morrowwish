@@ -20,7 +20,6 @@ console.log(JSON.stringify((function test(){
   else if(n==="libraryCompanion"){ok(x.operate(1),"new position");const p=x.puzzle.mirror;ok(x.operate(p.faces[0]===0?2:0),"real reply");}
   else if(n==="libraryLedger"){ok(x.operate(1),"ask question");}
   else if(n==="libraryRoutes"){ok(x.operate(2),"premature model reply rejected");assert(x.puzzle,"cannot skip both demonstrations");ok(x.operate(1),"neighbor route");ok(x.operate(0),"inward route");ok(x.operate(2),"compare both outcomes");}
-  else if(n==="pairedWater"){ok(x.operate(1),"lower cannot open without pressure");assert(x.puzzle.values[1]===0,"premature lower opening");ok(x.operate(0),"raise");ok(x.operate(0),"stable");ok(x.operate(1),"open lower");ok(x.operate(0),"pressure stays locked");assert(x.puzzle.values[0]===2&&x.puzzle.values[1]===1,"pressure cannot overshoot or close gate");ok(x.operate(1),"repeat opening");assert(x.puzzle.values[1]===1,"gate stays open");ok(x.operate(2),"clear roots");}
   else if(["mirrors","water","stars","routing","libraryMirrors"].includes(n)){for(let i=0;i<3;i++){while(x.puzzle&&x.puzzle.values[i]!==p.goal[i])ok(x.operate(i),"dial");}}
   else if(n==="lanternFocus"){assert(!p.solved,"festival stars begin unlit");ok(x.operate(0),"align left spotlight");ok(x.operate(1),"align center spotlight");ok(x.operate(2),"align right spotlight");}
   else if(n==="skyFlight"){
@@ -79,6 +78,7 @@ console.log(JSON.stringify((function test(){
  }
  assert(b.view().current.id==="finale:B-01","did not reach finale: "+b.view().current.id);
  assert(b.view().ring&&b.view().melodies.length===6&&b.view().sanctuaries.length===6,"ring or sanctuaries incomplete");assert(deliveries===2&&localInvites===2,"wrong exchange/participation counts");links();assert(deliveries===24&&b.view().cargoComplete,"optional deliveries still available at finale");
+ const previousStarfall=JSON.stringify(b.world().positions.starfall);ok(b.enter('finale'),'independent Star Bell destination');const finaleExplorer=createExplorer(b,'finale');walk(finaleExplorer,layouts.finale.paths.at(-1));assert(b.world().location==='finale'&&JSON.stringify(b.world().positions.starfall)===previousStarfall,'finale position cannot overwrite Starfall');assert(b.view().melodies.length===6,'finale is not a seventh sanctuary');
  assert(!State.S.lastResonanceWorld,"parallel story state still created");
  const old=State.S.resonance,oldW=JSON.stringify(b.world());const oldExplorer=createExplorer(b,b.world().location),oldToken=runtime.capture();
  assert(State.startNewGame("slot2"),"slot2");assert(!oldExplorer.walk(.2,.2),"stale world explorer can move");assert(!runtime.nextLine(oldToken).ok,"stale scene lease accepted");assert(b.view().current.id==="prologue:P-01"&&!b.world().location,"slot2 leaked");

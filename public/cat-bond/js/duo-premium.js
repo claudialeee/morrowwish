@@ -135,13 +135,69 @@ function drawOriginalArtEffects(g,x,y,w,h,p,key,tier){
  }
  g.restore();
 }
+
+// The portrait art is a separate 21 x 3 collection, never an optical
+// enlargement of the landscape sheet. Only the active elemental pair is loaded.
+const portraitImages=new Map();
+function portraitFile(key,tier){
+ if(!Object.hasOwn(regions,key)||![1,2,3].includes(tier))return null;
+ return (window.CatBondDuoAssetBase||'assets/')+'mobile-portrait/duo/'+key.replace('+','-')+'-tier-'+tier+'.webp';
+}
+function preparePortrait(key,tier){
+ const src=portraitFile(key,tier);if(!src)return null;
+ if(!portraitImages.has(src)){
+  const im=new Image();im.decoding='async';
+  const rec={im,status:'loading'};portraitImages.set(src,rec);
+  im.onload=()=>{const ratio=im.naturalWidth/im.naturalHeight;rec.status=im.naturalWidth>=720&&im.naturalHeight>=1280&&Math.abs(ratio-9/16)<.025?'ready':'error';};
+  im.onerror=()=>{rec.status='error';};
+  im.src=src;
+ }
+ return portraitImages.get(src);
+}
+function portraitReady(key,tier){return preparePortrait(key,tier)?.status==='ready';}
+function drawNativePortrait(ctx,W,H,seq,key,index,tier,p,alpha){
+ const rec=preparePortrait(key,tier);
+ // An incomplete/corrupt art pack is a release blocker, never a permission to
+ // draw the old horizontal sheet or actor layers on a portrait screen.
+ if(rec?.status!=='ready')return true;
+ const im=rec.im,dpr=Math.min(2,window.devicePixelRatio||1),cw=Math.max(1,Math.round(W*dpr)),ch=Math.max(1,Math.round(H*dpr));
+ if(stage.width!==cw||stage.height!==ch){stage.width=cw;stage.height=ch;}
+ stageCtx.setTransform(dpr,0,0,dpr,0,0);stageCtx.clearRect(0,0,W,H);
+ stageCtx.imageSmoothingEnabled=true;stageCtx.imageSmoothingQuality='high';
+ const k=Math.max(W/im.naturalWidth,H/im.naturalHeight),dw=im.naturalWidth*k,dh=im.naturalHeight*k;
+ const still=seq.thumbnail===true,gallery=seq.galleryPreview===true;
+ // Keep a stable, centered cover crop. No blur, feathering, stretching or
+ // background replication. The illustrator's safe center is the only image.
+ const zoom=still?1:1+.012*smooth(p),artW=dw*zoom,artH=dh*zoom,artX=(W-artW)/2,artY=(H-artH)/2;
+ stageCtx.drawImage(im,artX,artY,artW,artH);
+ if(!still){
+  stageCtx.save();stageCtx.globalCompositeOperation='screen';
+  const colors=palettes[index]||palettes[16],tau=Math.PI*2;
+  // Restrained edge motes support the authored painting without covering faces.
+  for(let i=0;i<12;i++){
+   const a=i*tau/12+p*tau*.4,x=W*.5+Math.cos(a)*W*.46,y=H*.5+Math.sin(a)*H*.45;
+   const pulse=.5+.5*Math.sin(p*tau*2+i);
+   stageCtx.globalAlpha=.15+.19*pulse;stageCtx.fillStyle=colors[i%4];
+   stageCtx.beginPath();stageCtx.arc(x,y,Math.max(1,W*.004*(1+pulse)),0,tau);stageCtx.fill();
+  }
+  stageCtx.restore();
+ }
+ if(!seq.hideCaptions){
+  const title=seq.name||window.CatBondDuoSignatures?.get?.(key)?.label||(window.MorrowwishI18n?.get?.()==='zh'?'双猫合击':'Duo Special');
+  stageCtx.save();stageCtx.textAlign='center';stageCtx.textBaseline='alphabetic';stageCtx.fillStyle='#fffbed';stageCtx.strokeStyle='#352a49b8';stageCtx.lineWidth=3;stageCtx.lineJoin='round';stageCtx.font='900 '+Math.round(clamp(W*.046,15,28))+'px system-ui,sans-serif';stageCtx.strokeText(title,W*.5,H*.91,W*.88);stageCtx.fillText(title,W*.5,H*.91,W*.88);stageCtx.restore();
+ }
+ lastLayout={source:'63-native-portrait-painted-storyboards',asset:im.src,originalArt:true,actorFallback:false,viewport:{width:W,height:H},art:{x:0,y:0,width:W,height:H},sourceArt:{x:artX,y:artY,width:artW,height:artH},artAspect:im.naturalWidth/im.naturalHeight,fullScreenAtmosphere:false,animatedEffects:!still,paintingDrawCount:1,actorLayerCount:0,transition:!still&&!gallery?'full-scene-crossfade':'gallery',extendedPainting:false,opacity:alpha,camera:{zoom,panX:0,panY:0,rotationRadians:0},effectPhase:p,effectTier:tier};
+ ctx.save();ctx.globalAlpha*=alpha;ctx.drawImage(stage,0,0,W,H);ctx.restore();return true;
+}
+
 function draw(ctx,W,H,seq){
- if(!seq||seq.t<=0)return false;if(!ready)return true;
+ if(!seq||seq.t<=0)return false;if(!ready&&W>=H)return true;
  const key=Object.hasOwn(regions,seq.elements)?seq.elements:'grass+light',index=regions[key],tier=clamp(Math.round(Number(seq.tier)||1),1,3);
  const still=seq.thumbnail===true,gallery=seq.galleryPreview===true,p=clamp((seq.max-seq.t)/(seq.max||2.75));
  // Gallery previews stay fully visible, but unlike thumbnails they still play
  // the original painting's camera drift, energy trails and elemental effects.
  const alpha=still||gallery?1:smooth(p/.15)*(1-smooth((p-.78)/.20));if(alpha<=0)return true;
+ if(H>W)return drawNativePortrait(ctx,W,H,seq,key,index,tier,p,alpha);
  const dpr=Math.min(2,window.devicePixelRatio||1),cw=Math.max(1,Math.round(W*dpr)),ch=Math.max(1,Math.round(H*dpr));
  if(stage.width!==cw||stage.height!==ch){stage.width=cw;stage.height=ch;}
  const artW=Math.min(W,H*ASPECT),artH=artW/ASPECT,artX=(W-artW)/2,artY=(H-artH)/2;
@@ -174,9 +230,9 @@ function draw(ctx,W,H,seq){
   animatedEffects:!still,paintingDrawCount:1,actorLayerCount:0,transition:live?'full-scene-crossfade':'gallery',extendedPainting:extend,opacity:alpha,camera:{zoom,panX:driftX,panY:driftY,rotationRadians:rotation},effectPhase:p,effectTier:tier};
  ctx.save();ctx.globalAlpha*=alpha;ctx.drawImage(stage,0,0,W,H);ctx.restore();return true;
 }
-window.CatBondPremiumCinematics={draw,keys,regionFor:k=>regions[k],get ready(){return ready},get failed(){return failed},
+window.CatBondPremiumCinematics={draw,keys,portraitFile,preparePortrait,portraitReady,regionFor:k=>regions[k],get ready(){return ready},get failed(){return failed},
  wholeSceneCount:21,paintedFrameCount:63,skillVariants:21,tierVariants:3,get source(){return img.src},get originalPaintingSource(){return img.src},
  get originalPaintingDefault(){return true},get restoredOriginalFrameCount(){return 63},get fullBleedResponsive(){return true},
- get portraitComposition(){return 'complete-16x9-original-centered-with-extended-painting-backdrop'},
+ get portraitComposition(){return 'native-portrait-art-only-no-extended-painting'},
  get actorFallbackEnabled(){return false},get lastLayout(){return lastLayout}};
 })();

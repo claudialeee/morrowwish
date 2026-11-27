@@ -202,6 +202,7 @@ function read(){
  if(dialogue&&id==='sky:S-04')return{id:'muling',amb:region||''};
  if(dialogue&&id==='library:M-03')return{id:'identity',amb:region||''};
  if(dialogue&&(id==='library:M-04'||id==='starfall:F-03'))return{id:'betrayal',amb:region||''};
+ if(game?.scene==='map'&&region==='finale')return{id:id==='finale:B-04'?'ending':({'finale:B-01':'finale1','finale:B-02':'finale2','finale:B-03':'finale3'})[id]||'finale1',amb:''};
  if(game?.scene==='map')return{id:regions.includes(region)?region:'atlas',amb:regions.includes(region)?region:''};
  return{id:story?.completed?.includes('epilogue:E-03')?'postgarden':'garden',amb:'garden'};
 }

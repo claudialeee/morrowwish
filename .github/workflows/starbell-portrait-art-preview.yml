@@ -1,0 +1,208 @@
+name: Starbell native art gated preview
+on:
+  push:
+    branches: [review/starbell-portrait-art-integration]
+    paths: ['public/cat-bond/**', 'scripts/cat-bond-layout-acceptance.mjs', 'scripts/cat-bond-experience-chapters.mjs', 'scripts/check-starbell-portrait-art-integration.mjs', '.github/workflows/starbell-portrait-art-preview.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: starbell-portrait-preview
+  cancel-in-progress: true
+jobs:
+  preview:
+    if: github.ref == 'refs/heads/review/starbell-portrait-art-integration'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      SOURCE_SHA: ${{ github.sha }}
+      PREVIEW_URL: https://starbell-portrait-preview.morrowwish.pages.dev
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Hold preview deployment at owner request
+        run: |
+          echo 'Preview deployment is paused until explicitly authorized.'
+          exit 1
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reuse proven identical-runtime gates; require current scoped browser gate
+        run: |
+          set -euo pipefail
+          VERIFIED_RUNTIME=$SOURCE_SHA
+          if git diff --quiet 6c7e690a6276d3b51431143523ec4652aaaea0d5 "$SOURCE_SHA" -- public package.json package-lock.json; then
+            VERIFIED_RUNTIME=6c7e690a6276d3b51431143523ec4652aaaea0d5
+          fi
+          CAMPAIGN_RUNTIME=$SOURCE_SHA
+          # CI-only changes must not wait for path-filtered workflows that will
+          # not start. Reuse the exact candidate only when all runtime and test
+          # inputs are byte-identical; never reuse a failed gate.
+          if git diff --quiet 23f7a2bff082ab667e1167f3b02eeac84bfa9fb2 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/workflows/starbell-portrait-source.yml .github/actions; then
+            CAMPAIGN_RUNTIME=23f7a2bff082ab667e1167f3b02eeac84bfa9fb2
+            VERIFIED_RUNTIME=$CAMPAIGN_RUNTIME
+          fi
+          # Only the layout test changed after the successful foreground source gate.
+          # Reuse source proof only with identical runtime, source tests and docs.
+          if git diff --quiet df8458b00bc4a39d2c2b1923ae9f9175b142ba27 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-portrait-source.yml .github/actions ':!scripts/cat-bond-layout-acceptance.mjs'; then
+            VERIFIED_RUNTIME=df8458b00bc4a39d2c2b1923ae9f9175b142ba27
+          fi
+          if git diff --quiet bb533a095e5922aca303a2e3b4855c80ec9df5a9 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/actions; then
+            CAMPAIGN_RUNTIME=bb533a095e5922aca303a2e3b4855c80ec9df5a9
+          fi
+          # The developer live QA is executed below; it is not a source or campaign test input.
+          if git diff --quiet 2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/workflows/starbell-portrait-source.yml .github/actions ':!scripts/test-starbell-developer-browser.mjs'; then
+            CAMPAIGN_RUNTIME=2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5
+            VERIFIED_RUNTIME=$CAMPAIGN_RUNTIME
+          fi
+          # Browser-only corrections do not invalidate a successful identical source gate.
+          if git diff --quiet 2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-portrait-source.yml .github/actions ':!scripts/test-starbell-developer-browser.mjs' ':!scripts/cat-bond-experience-chapters.mjs'; then
+            VERIFIED_RUNTIME=2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5
+          fi
+          # A preview workflow-only fix must use the already running corrected campaign gate.
+          if git diff --quiet 95cf9689f5f28b4f2b9352abaffdfedc7bb191e5 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/actions; then
+            CAMPAIGN_RUNTIME=95cf9689f5f28b4f2b9352abaffdfedc7bb191e5
+          fi
+          DUO_RUNTIME=$SOURCE_SHA
+          # The native-duo workflow is path-filtered. Reuse its accepted SHA only
+          # when its entire trigger/input set is unchanged; source and gameplay
+          # gates still validate the current exploration runtime.
+          if git diff --quiet 6c7e690a6276d3b51431143523ec4652aaaea0d5 "$SOURCE_SHA" -- public/cat-bond/js/duo-premium.js public/cat-bond/js/battle.js public/cat-bond/assets/mobile-portrait/duo scripts/test-starbell-native-duo-renderer.mjs scripts/check-starbell-portrait-duo.mjs .github/workflows/starbell-duo-portrait-samples.yml package.json package-lock.json; then
+            DUO_RUNTIME=6c7e690a6276d3b51431143523ec4652aaaea0d5
+          fi
+          echo "Verified runtime source: $VERIFIED_RUNTIME; duo source: $DUO_RUNTIME"
+          for attempt in $(seq 1 350); do
+            a=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-mobile-portrait.yml/runs?head_sha=$CAMPAIGN_RUNTIME" | jq -c '.workflow_runs[0] // {}')
+            b=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-portrait-source.yml/runs?head_sha=$VERIFIED_RUNTIME" | jq -c '.workflow_runs[0] // {}')
+            d=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-duo-portrait-samples.yml/runs?head_sha=$DUO_RUNTIME" | jq -c '.workflow_runs[0] // {}')
+            if [[ $(jq -r .head_sha <<<"$a") == "$CAMPAIGN_RUNTIME" && $(jq -r .head_sha <<<"$b") == "$VERIFIED_RUNTIME" && $(jq -r .head_sha <<<"$d") == "$DUO_RUNTIME" ]]; then
+              if [[ $(jq -r .status <<<"$a") == completed && $(jq -r .conclusion <<<"$a") != success ]] || [[ $(jq -r .status <<<"$b") == completed && $(jq -r .conclusion <<<"$b") != success ]]; then echo 'Candidate failed acceptance; do not deploy' >&2; exit 1; fi
+              if [[ $(jq -r .status <<<"$d") == completed && $(jq -r .conclusion <<<"$d") != success ]]; then echo "Duo renderer gate failed"; exit 1; fi
+              if [[ $(jq -r .conclusion <<<"$a") == success && $(jq -r .conclusion <<<"$b") == success && $(jq -r .conclusion <<<"$d") == success ]]; then
+                echo "DUO_GATE=$(jq -r .id <<<"$d")" >> "$GITHUB_ENV"
+                echo "CAMPAIGN_GATE=$(jq -r .id <<<"$a")" >> "$GITHUB_ENV"
+                echo "SOURCE_GATE=$(jq -r .id <<<"$b")" >> "$GITHUB_ENV"
+                echo "Identical runtime source/duo and current scoped campaign passed"; exit 0
+              fi
+            fi
+            sleep 10
+          done
+          echo 'Acceptance incomplete; do not deploy' >&2; exit 1
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install audio verification prerequisites if absent
+        run: |
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends ffmpeg
+          fi
+          ffprobe -version | head -n 1
+      - name: Build preview with existing audio and local-only saves
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          node scripts/import-cat-bond-windchime-music.mjs
+          node scripts/check-cat-bond-audio-assets.mjs
+          mkdir -p /tmp/starbell-portrait/site
+          cp -a public/cat-bond /tmp/starbell-portrait/site/
+          for dir in audio art icons pawsibly-innocent; do cp -a "public/$dir" /tmp/starbell-portrait/site/; done
+          find public -maxdepth 1 -type f \( -name '*.js' -o -name '*.css' \) -exec cp {} /tmp/starbell-portrait/site/ \;
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const root='/tmp/starbell-portrait/site',file=root+'/cat-bond/index.html',sha=process.env.SOURCE_SHA;
+          let html=fs.readFileSync(file,'utf8');
+          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_GAME_ID="starbell-portrait-preview";window.ARCADE_COLLECTOR="/api/preview-disabled";window.arcadeMetric=()=>{};</script></head>');
+          html=html.replace(/<body([^>]*)>/i,'<body$1 data-source-sha="'+sha+'">');
+          fs.writeFileSync(file,html);
+          fs.writeFileSync(root+'/index.html','<!doctype html><html><head><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="0;url=/cat-bond/"></head><body><a href="/cat-bond/">Echoes of the Starbell</a></body></html>');
+          fs.writeFileSync(root+'/robots.txt','User-agent: *\nDisallow: /\n');
+          fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\'; form-action \'self\'\n');
+          // An explicit 404 page disables Pages' SPA fallback for unavailable APIs.
+          // No Worker or recursive redirect is needed: all API requests remain local.
+          fs.writeFileSync(root+'/404.html','<!doctype html><html><head><meta name="robots" content="noindex,nofollow"></head><body>Preview APIs disabled; local saves only.</body></html>');
+          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,scope:'isolated portrait engineering preview',productionApis:false,telemetry:false,storage:'local-only',fullReleaseAccepted:false,sourceGate:Number(process.env.SOURCE_GATE),campaignGate:Number(process.env.CAMPAIGN_GATE),duoGate:Number(process.env.DUO_GATE)}));
+          NODE
+          python3 - <<'PY'
+          import pathlib
+          files=[p for p in pathlib.Path('/tmp/starbell-portrait/site').rglob('*') if p.is_file()]
+          assert len(files)<=20000
+          assert max(p.stat().st_size for p in files)<=25*1024*1024
+          print('Free static Pages asset limits verified:', len(files), 'files')
+          PY
+      - name: Publish separate non-production Pages alias only
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          git fetch --depth=1 origin review/starbell-portrait-art-integration
+          git diff --quiet "$SOURCE_SHA" FETCH_HEAD -- public package.json package-lock.json || { echo 'Runtime changed after acceptance; refuse stale preview'; exit 1; }
+          # Direct upload to existing project, no new plan, project, paid service or Worker.
+          ./node_modules/.bin/wrangler pages deploy /tmp/starbell-portrait/site --project-name morrowwish --branch starbell-portrait-preview --commit-hash "$SOURCE_SHA"
+      - name: Verify deployed version and no production APIs
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 15); do
+            if curl -fsS "$PREVIEW_URL/preview-version.json?qa=$SOURCE_SHA" | jq -e --arg sha "$SOURCE_SHA" '.sha==$sha and .productionApis==false and .storage=="local-only"' >/dev/null && curl -fsS "$PREVIEW_URL/cat-bond/?qa=$SOURCE_SHA" | grep -F "data-source-sha=\"$SOURCE_SHA\"" >/dev/null; then
+              for endpoint in preview-disabled session cat-bond-cloud-save; do
+                test "$(curl -sS -o /dev/null -w '%{http_code}' "$PREVIEW_URL/api/$endpoint")" = 404
+              done
+              echo "Verified isolated preview: $PREVIEW_URL/cat-bond/"; exit 0
+            fi
+            sleep 4
+          done
+          exit 1
+      - uses: ./.github/actions/starbell-browser-setup
+        with:
+          npm-ci: 'false'
+      - name: Verify live portrait title and new slot
+        run: |
+          node --input-type=module <<'NODE'
+          import {chromium} from 'playwright';
+          import assert from 'node:assert/strict';
+          const browser=await chromium.launch({headless:true});
+          try {
+            const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
+            const page=await ctx.newPage(),errors=[];
+            page.on('pageerror',e=>errors.push(e.message));
+            await page.goto(process.env.PREVIEW_URL+'/cat-bond/?lang=zh&qa=portrait-handoff');
+            assert.equal(await page.locator('body').getAttribute('data-source-sha'),process.env.SOURCE_SHA);
+            const image=page.locator('.cb-title-cover-art');
+            await image.waitFor({state:'visible'});
+            await image.evaluate(i=>i.decode());
+            assert.ok(await image.evaluate(i=>i.naturalWidth>0&&i.currentSrc.endsWith('/mobile-portrait/title-bell-sanctuary.webp')));
+            await page.screenshot({path:'portrait-live-title.png'});
+            await page.locator('#intro-start').tap();
+            await page.locator('#intro-slot-list [data-slot="slot1"]').tap();
+            await page.locator('#cb-player-first-intro').getByRole('button',{name:'开始探索',exact:true}).tap();
+            await page.waitForFunction(()=>window.__game?.scene==='yard'&&window.State?.S?.cats?.length===1);
+            await page.screenshot({path:'portrait-live-yard.png'});
+            assert.deepEqual(errors,[]);
+            await page.waitForFunction(()=>typeof CatBondPremiumCinematics?.portraitReady==="function");
+            await page.evaluate(()=>CatBondPremiumCinematics.preparePortrait("dark+light",1));
+            await page.waitForFunction(()=>CatBondPremiumCinematics.portraitReady("dark+light",1));
+            console.log('LIVE PORTRAIT PASS',process.env.PREVIEW_URL);
+          }finally{await browser.close()}
+          NODE
+      - name: Verify live portrait developer map jump and isolated saves
+        env:
+          CAT_BOND_SMOKE_ORIGIN: https://starbell-portrait-preview.morrowwish.pages.dev
+          STARBELL_DEVELOPER_PORTRAIT: '1'
+        run: node scripts/test-starbell-developer-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: portrait-live-proof
+          path: |
+            portrait-live-*.png
+            artifacts/cat-bond-layout/developer-*.png
+          if-no-files-found: ignore
+          retention-days: 14

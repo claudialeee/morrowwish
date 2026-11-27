@@ -1,0 +1,115 @@
+name: Starbell portrait engineering acceptance
+on:
+  push:
+    branches: [review/starbell-mobile-portrait, review/starbell-portrait-art-integration]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/cat-bond-layout-acceptance.mjs'
+      - 'scripts/cat-bond-experience-chapters.mjs'
+      - '.github/workflows/starbell-mobile-portrait.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: starbell-portrait-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  scope:
+    runs-on: ubuntu-24.04
+    outputs:
+      focused: ${{ steps.diff.outputs.focused }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compare with last complete bilingual accepted runtime
+        id: diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=7e2a88d26acd3f0c6d0d9de17365287f49ce505e
+          focused=true
+          while IFS= read -r path; do
+            case "$path" in
+              public/cat-bond/js/duo-premium.js|public/cat-bond/js/battle.js|public/cat-bond/index.html|public/cat-bond/assets/mobile-portrait/duo/*|scripts/*|.github/workflows/*) ;;
+              *) focused=false ;;
+            esac
+          done < <(git diff --name-only "$base" HEAD)
+          # Reuse broad acceptance only for the exact previously checked duo delta.
+          # Any further runtime change automatically restores full coverage.
+          if ! git diff --quiet 6c7e690a6276d3b51431143523ec4652aaaea0d5 HEAD -- public package.json package-lock.json; then focused=false; fi
+          echo "focused=$focused" >> "$GITHUB_OUTPUT"
+          echo "Duo-only accepted delta: $focused"
+  layout:
+    needs: scope
+    if: needs.scope.outputs.focused != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      CAT_BOND_SMOKE_ORIGIN: http://127.0.0.1:8765
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Syntax gate
+        run: |
+          node --check public/cat-bond/js/resonance/world-runtime.mjs
+          node --check scripts/cat-bond-layout-acceptance.mjs
+      - name: Real browser layout and touch regression
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-portrait-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-layout-acceptance.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-portrait-layout
+          path: |
+            artifacts/cat-bond-layout/
+            /tmp/starbell-portrait-server.log
+          retention-days: 14
+
+  fresh-portrait:
+    needs: scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        locale: [zh, en]
+    env:
+      CAT_BOND_CONTINUOUS: '1'
+      CAT_BOND_EXPERIENCE: '1'
+      CAT_BOND_PORTRAIT: '1'
+      CAT_BOND_CHAPTER_LOCALE: ${{ matrix.locale }}
+      CAT_BOND_FOCUSED_DUO: ${{ needs.scope.outputs.focused == 'true' && '1' || '0' }}
+      CAT_BOND_CHAPTERS: ${{ needs.scope.outputs.focused == 'true' && 'harbor' || 'harbor,forest,forge,sky,library,starfall,finale,epilogue' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Fresh scoped battle or full campaign acceptance
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-portrait-campaign.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-chapters.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-portrait-fresh-${{ matrix.locale }}
+          path: |
+            artifacts/cat-bond-experience/
+            /tmp/starbell-portrait-campaign.log
+          retention-days: 14

@@ -20,6 +20,7 @@ const labels=Object.freeze({
   "Storm boat": "遇险小船",
   "Lighthouse mirrors": "灯塔反射镜",
   "Chase the runaway chime": "穿过风铃巷",
+  "Take shortcut": "抄近路",
   "Belllight beast": "铃光兽",
   "Town bell sanctuary": "古铃圣所",
   "Coming Home": "归家调",
@@ -127,16 +128,25 @@ const labels=Object.freeze({
   "Invite Xingya": "邀请 星芽"
 });
 const local=label=>{if(locale==='en')return label;if(!Object.hasOwn(labels,label))throw Error('Missing Chinese test selector: '+label);return labels[label];};
-const continuous=process.env.CAT_BOND_CONTINUOUS==='1';let earnedSave=null;
-if(continuous)assert.deepEqual(requested,order,'Fresh campaign must cover every chapter in sequence');
+const continuous=process.env.CAT_BOND_CONTINUOUS==='1',portrait=process.env.CAT_BOND_PORTRAIT==='1';let earnedSave=null;
+const focusedDuo=process.env.CAT_BOND_FOCUSED_DUO==='1';
+if(continuous)assert.deepEqual(requested,focusedDuo?['harbor']:order,'Fresh campaign must cover the declared acceptance scope');
 async function run(chapter){
  const expected=campaign.scenes.filter(s=>s.chapter===chapter),start=expected[0].id;
  const next=campaign.scenes[campaign.scenes.findIndex(s=>s.id===expected.at(-1).id)+1]?.id||null;
  const fixture=continuous?null:JSON.parse(await fs.readFile(root+'/synthetic-checkpoints/'+start.replace(':','-')+'.json','utf8'));
  if(fixture)assert.equal(fixture.provenance,'synthetic engine-model browser-restored');
- const context=await browser.newContext({...(continuous?(earnedSave?{storageState:earnedSave}:{}):{storageState:fixture.storageState}),viewport:{width:1440,height:900}});
+ const context=await browser.newContext({...(continuous?(earnedSave?{storageState:earnedSave}:{}):{storageState:fixture.storageState}),...(portrait?{viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2}:{viewport:{width:1440,height:900}})});
  await context.route('**/*',r=>{const u=new URL(r.request().url());return u.origin===origin||['data:','blob:'].includes(u.protocol)?r.continue():r.abort();});
  const page=await context.newPage(),errors=[],readLines=[],steps=[],battleMeasurements=[],localeIssues=[];
+ const cdp=portrait?await context.newCDPSession(page):null;
+ const tapAt=async(x,y)=>portrait?page.touchscreen.tap(x,y):page.mouse.click(x,y);
+ const touch=async(type,p)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:p?[p]:[]});
+ async function gesture(a,b,hold=0){
+  if(portrait){await touch('touchStart',a);try{if(b)for(let i=1;i<=8;i++)await touch('touchMove',{x:a.x+(b.x-a.x)*i/8,y:a.y+(b.y-a.y)*i/8});if(hold)await page.waitForTimeout(hold);}finally{await touch('touchEnd');}}
+  else{await page.mouse.move(a.x,a.y);await page.mouse.down();try{if(b)await page.mouse.move(b.x,b.y,{steps:8});if(hold)await page.waitForTimeout(hold);}finally{await page.mouse.up();}}
+ }
+ const activate=async locator=>portrait?locator.tap():locator.click();
  await installLocaleProbe(page);
  page.setDefaultTimeout(18000);page.on('pageerror',e=>errors.push(e.message));
  await attachExperienceRecorder(context,page,{id:(continuous?'fresh-':'chapter-')+chapter,root:out,synthetic:!continuous,chapterEntry:continuous?null:start});
@@ -150,7 +160,7 @@ async function run(chapter){
    const hidden=page.getByRole('button',{name:label,exact:true,includeHidden:true}).or(page.locator('button').and(page.getByText(label,{exact:true})));
    await hidden.first().waitFor({state:'attached'});
    if(!await b.isVisible()&&await page.locator('.rw-region-toggle[aria-expanded="false"],.rw-atlas-menu:not([open]) > summary').count()){
-    await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();
+    const t=page.locator('.rw-region-toggle[aria-expanded="false"]:visible,.rw-atlas-menu:not([open]) > summary:visible').first();if(await t.count())await t.click();else{await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();}
    }
    const optional=page.locator('.rw-optional-actions:not([open]) > summary:visible');
    if(!await b.isVisible()&&await optional.count())await optional.first().click();
@@ -160,7 +170,7 @@ async function run(chapter){
   }
   await b.waitFor({state:'visible'});
   if(locale==='zh')localeIssues.push(...await inspectLocale(page,locale,chapter+':action:'+label));
-  steps.push({scene:(await view()).current?.id,action:label});await b.click();
+  steps.push({scene:(await view()).current?.id,action:label});await activate(b);
  }
  async function trial(id,actions){const modal=page.locator("[data-adventure=trial-"+id+"]");await modal.waitFor({state:"visible",timeout:15000});for(const a of actions)await modal.locator("[data-play-action="+a+"]").click();assert.equal(await modal.getAttribute("data-complete"),"true");await shot("trial-"+id);await modal.getByRole("button",{name:local("Return"),exact:true}).click();await modal.waitFor({state:"detached"});}
  const op=async(id)=>page.waitForFunction(op=>!CatBondResonance.view().objective.includes(op),id,{timeout:35000});
@@ -217,7 +227,8 @@ async function run(chapter){
    assert.ok(a.x>=-1&&a.y>=-1&&a.x+a.width<=page.viewportSize().width+1&&a.y+a.height<=page.viewportSize().height+1,'Controls remain on screen');
   };
   await measure();
-  if(!checkedPuzzleLayout){checkedPuzzleLayout=true;const original=page.viewportSize();try{for(const viewport of [{width:390,height:844},{width:844,height:390}]){await page.setViewportSize(viewport);await measure();}}finally{await page.setViewportSize(original);}await measure();}
+  if(portrait){const original=page.viewportSize();try{for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){await page.setViewportSize(viewport);await measure();await page.waitForFunction(()=>{const w=document.querySelector('.rw-world'),r=w?.querySelector('.rw-dedicated-rail'),s=w?.querySelector('.rw-shell'),c=s?.querySelector('.rw-surface');if(!w||!r||!s||!c)return false;const a=r.getBoundingClientRect(),b=s.getBoundingClientRect(),d=w.getBoundingClientRect(),f=c.getBoundingClientRect();return a.height<=d.height*.44&&b.height>=d.height*.43&&b.width>=d.width-2&&a.top>=b.bottom-1&&f.height>=b.height-2&&f.width>=b.width-2;},null,{timeout:5000});await shot('portrait-minigame-'+(await view()).current.id.replace(':','-')+'-'+viewport.width);}}finally{await page.setViewportSize(original);}}
+  if(!checkedPuzzleLayout){checkedPuzzleLayout=true;const original=page.viewportSize();if(!portrait){try{for(const viewport of [{width:390,height:844},{width:844,height:390}]){await page.setViewportSize(viewport);await measure();}}finally{await page.setViewportSize(original);}}await measure();}
  }
  async function puzzle(label,inputs){
   const directHarbor={'Tide cave logbook':'explore:tide-logbook','Storm boat':'rescue:storm-boat','Lighthouse mirrors':'puzzle:beam-mirrors','Town bell sanctuary':'repair:harbor','Coming Home':'melody:harbor'};
@@ -244,11 +255,11 @@ async function run(chapter){
  async function flyWaterfall(label){
   await click(label);const status=page.locator('[data-sky-flight-status][data-route="open"]');await status.waitFor();await checkPuzzleLayout();
   const box=await page.locator('.rw-surface').boundingBox();assert.ok(box,"flight surface");
-  await page.mouse.click(box.x+box.width*.35,box.y+box.height*.30);
+  await tapAt(box.x+box.width*.35,box.y+box.height*.30);
   // Route is continuous, not a three-gate sequence. Read only visual progress via
   // the canvas status; the underlying flight completion must come from real pointer input.
   await page.waitForFunction(()=>Number(document.querySelector('[data-sky-flight-status]')?.dataset.progress)>=.74,{timeout:20000});
-  await page.mouse.click(box.x+box.width*.35,box.y+box.height*.50);
+  await tapAt(box.x+box.width*.35,box.y+box.height*.50);
   await status.waitFor({state:'hidden',timeout:20000});
 }
  async function fly(label,heights){
@@ -259,12 +270,30 @@ async function run(chapter){
   await status.waitFor({state:'hidden',timeout:30000});
  }
  async function battle(label,operation,type='regional'){
-  await click(label);await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();
+  await click(label);const manualDuo=focusedDuo&&locale==='zh'&&operation==='battle:chime-beast';await page.locator('#panel [data-battle-auto="'+(!manualDuo)+'"]').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();
   const tutorial=page.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();
+  if(portrait){
+   const fit=await page.evaluate(()=>{const stage=document.querySelector('#stage').getBoundingClientRect(),dock=document.querySelector('#battle-ui .move-bar').getBoundingClientRect(),buttons=[...document.querySelectorAll('#battle-ui .move-bar .move')].filter(e=>e.getBoundingClientRect().width&&getComputedStyle(e).display!=='none').map(e=>{const r=e.getBoundingClientRect();return {id:e.id,w:r.width,h:r.height,left:r.left,top:r.top,right:r.right,bottom:r.bottom};});return {stage:{left:stage.left,top:stage.top,right:stage.right,bottom:stage.bottom},dock:{top:dock.top,bottom:dock.bottom},buttons,fieldBottom:stage.top+__game.H-__game.battle.bottomMargin};});
+   assert.ok(fit.buttons.length>=5&&fit.buttons.every(r=>r.w>=44&&r.h>=44&&r.left>=fit.stage.left-1&&r.right<=fit.stage.right+1&&r.bottom<=fit.stage.bottom+1),'portrait skill targets '+JSON.stringify(fit));
+   assert.ok(fit.fieldBottom<=fit.dock.top+2,'combat field reserved above skill dock '+JSON.stringify(fit));
+   if(type==='finale'){
+    const goal=page.locator('#cb-finale-compact'),details=page.locator('#cb-finale-hud');
+    await goal.waitFor({state:'visible'});await page.waitForFunction(()=>document.querySelector('#cb-finale-compact [data-compact-goal]')?.textContent&&document.querySelector('#cb-finale-compact [data-compact-count]')?.textContent);
+    assert.equal(await details.isVisible(),false,'Finale details must not cover the field by default');
+    const original=page.viewportSize();
+    for(const viewport of operation==='battle:inward-gates'?[{width:320,height:568},original,{width:430,height:932}]:[original]){
+     await page.setViewportSize(viewport);
+     await page.waitForFunction(()=>{const g=document.querySelector('#cb-finale-compact'),bar=document.querySelector('#battle-ui .battle-topbar'),menu=document.querySelector('#cb-system-toggle'),r=g.getBoundingClientRect(),b=bar.getBoundingClientRect(),m=menu?.getBoundingClientRect();return r.height>=44&&r.width>=44&&r.bottom<=b.top+1&&(!m||r.right<=m.left+1)&&g.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2));});
+     await shot(operation+'-goal-'+viewport.width);
+    }
+    await page.setViewportSize(original);await goal.tap();await details.waitFor({state:'visible'});
+    assert.equal(await goal.getAttribute('aria-expanded'),'true');await goal.tap();await details.waitFor({state:'hidden'});assert.equal(await goal.getAttribute('aria-expanded'),'false');
+   }
+  }
   await shot(operation+'-battle');
   const before=await page.evaluate(()=>__game.battle?.team?.map(f=>({actor:f.cat?.storyActor||f.cat?.species,level:f.cat?.level,hp:f.hp,maxhp:f.maxhp})));
   const t=Date.now();
-  const measurement={scene:(await view()).current?.id,operation,type,mode:'auto',initialTeam:before,status:'started',samples:[]};
+  const measurement={scene:(await view()).current?.id,operation,type,mode:manualDuo?'manual duo then auto battle':'auto',initialTeam:before,status:'started',samples:[]};
   battleMeasurements.push(measurement);
   // Read-only observation of the actual game. Keep the last live battle state
   // even when the battle object is destroyed before the result panel appears.
@@ -274,8 +303,10 @@ async function run(chapter){
    const sample=()=>{
     const b=window.__game?.battle;
     if(!b||trace.samples.length>=1800)return;
+    const duo=b.duoCinematic,art=window.CatBondPremiumCinematics?.lastLayout;
+    const nativeDuo=duo?.t>0&&art?.source==="63-native-portrait-painted-storyboards"&&art.opacity>.65?{key:duo.elements,tier:duo.tier,asset:art.asset,extended:art.extendedPainting,layers:art.actorLayerCount,viewport:art.viewport,art:art.art}:null;
     const finale=b.resonanceFinale;
-     trace.samples.push({t:b.t,duoUses:b.duoUses??null,result:b.result??null,
+     trace.samples.push({t:b.t,duoUses:b.duoUses??null,nativeDuo,result:b.result??null,
       finale:finale?{elapsed:finale.elapsed,phase:finale.id,nodes:finale.nodes.map(n=>({region:n.region,done:n.done,integrity:n.integrity,progress:n.progress,cleared:n.reply?.cleared??null,interference:n.reply?.interference??null}))}:null,
      team:(b.team||[]).map(f=>({actor:f.cat?.storyActor||f.cat?.species||null,level:f.cat?.level??null,hp:f.hp,maxhp:f.maxhp,alive:f.alive})),
      enemies:(b.enemies||[]).map(f=>({hp:f.hp,maxhp:f.maxhp,alive:f.alive}))});
@@ -303,10 +334,20 @@ async function run(chapter){
     }else await result.waitFor({timeout:240000});
     await shot(operation+'-result');assert.equal(await result.getAttribute('data-finale-outcome'),'saved');await page.locator('[data-finale-return]').click();
   }else{
+   if(manualDuo){
+    await page.waitForFunction(()=>{const b=window.__game?.battle;return b&&!b.autoMode&&b.duoReady?.();},null,{timeout:20000});
+    const duo=page.locator('#duo-burst');await duo.waitFor({state:'visible'});await duo.tap();
+   }
+   if(portrait&&operation==="battle:chime-beast"&&await page.evaluate(()=>typeof CatBondPremiumCinematics?.portraitReady==="function")){
+    await page.waitForFunction(()=>{const b=window.__game?.battle,l=window.CatBondPremiumCinematics?.lastLayout;return b?.duoCinematic?.t>0&&l?.source==="63-native-portrait-painted-storyboards"&&l.opacity>.8&&l.asset?.includes("dark-light-tier-");},null,{timeout:60000});
+    await shot("first-live-native-duo");
+    if(manualDuo){await page.waitForFunction(()=>!window.__game?.battle?.duoCinematic,null,{timeout:15000});if(await page.locator("#btn-auto").isVisible())await page.locator("#btn-auto").tap();}
+   }
    await page.waitForFunction(()=>__game.scene==='map',null,{timeout:180000});
    await page.locator('#library-battle-ok').waitFor();await shot(operation+'-result');await page.locator('#library-battle-ok').click();
   }
   await op(operation);if(operation==='battle:central-echo')assert.equal(await page.evaluate(()=>CatBondResonance.snapshot().support.length),6,'All six regions must have answered');
+  if(portrait){await page.waitForFunction(()=>{const stage=document.querySelector('#stage')?.getBoundingClientRect(),world=document.querySelector('.rw-world:not([hidden])')?.getBoundingClientRect(),dialog=document.querySelector('.res-host.is-visible'),r=dialog?.getBoundingClientRect()||world;if(!stage||!r||stage.height<=stage.width||r.height<=r.width)return false;const scene=dialog?.dataset.scene;if(dialog&&!dialog.classList.contains('res-library-reveal')&&!dialog.classList.contains('res-emotional-art')&&scene&&!getComputedStyle(dialog,'::before').backgroundImage.includes('/mobile-portrait/'))return false;return r.width>=stage.width*.95&&r.height>=stage.height*.95;},null,{timeout:15000});await shot(operation+'-portrait-return');}
   measurement.status='verified win';
   }finally{
    measurement.wallSeconds=(Date.now()-t)/1000;
@@ -320,12 +361,17 @@ async function run(chapter){
    await fs.writeFile(out+'/'+chapter+'-combat.json',JSON.stringify({provenance:'synthetic chapter start, actual browser battles',chapter,battles:battleMeasurements},null,2));
   }
   assert.ok(measurement.samples.length,'Actual combat telemetry is required: '+operation);
+  if(portrait&&operation==='battle:chime-beast'&&await page.evaluate(()=>typeof CatBondPremiumCinematics?.portraitReady==='function')){
+   const shown=measurement.samples.find(s=>s.nativeDuo?.key==='dark+light'&&s.nativeDuo?.asset?.includes('dark-light-tier-')&&s.nativeDuo.extended===false&&s.nativeDuo.layers===0);
+   assert.ok(shown,'Real first battle must render the matching native portrait duo');
+   assert.ok(measurement.samples.some(s=>s.duoUses>0),'Duo must actually execute in battle');
+  }
   steps.push({battle:operation,wallSeconds:measurement.wallSeconds,team:before,result:measurement.status,gameSeconds:measurement.last?.t,duoUses:measurement.last?.duoUses});
  }
  async function artProfiles(label,art,action=null){
   const original=page.viewportSize();
   try{
-   for(const [device,viewport] of [['desktop',original],['portrait',{width:390,height:844}],['landscape',{width:844,height:390}]]){
+   for(const [device,viewport] of (portrait?[['portrait',original]]:[['desktop',original],['portrait',{width:390,height:844}],['landscape',{width:844,height:390}]])){
     await page.setViewportSize(viewport);
     await art.waitFor({state:'visible'});
     const bounds=await art.boundingBox();
@@ -365,18 +411,18 @@ async function run(chapter){
     await shot('prologue-intro');
     await page.locator('[data-npc-talk="muling"]').click();const encounter=page.locator('#cb-traveler-encounter');
     await encounter.getByRole('button',{name:'寻找航图',exact:true}).click();await encounter.waitFor({state:'detached'});
-    for(const id of ['chart-0','chart-echo','chart-1']){await page.locator('[data-garden-explore="'+id+'"]').click();await shot('prologue-'+id);}
+    for(const id of ['chart-0','chart-echo','chart-1']){await page.locator('[data-garden-explore="'+id+'"]').click();await page.waitForFunction(id=>{const s=GardenExploration.read(State.S);return id==='chart-echo'?s.chartEcho:s.parts.includes(Number(id.at(-1)));},id);await shot('prologue-'+id);}
     await page.locator('[data-npc-talk="muling"]').click();await shot('prologue-encounter');
     await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'回答',exact:true}).click();assert.match(await encounter.locator('.res-line').innerText(),/我也不知道/);await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'告别',exact:true}).click();
     await encounter.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);await shot('prologue-garden');
    }
-   await page.locator('.sg-prologue-guide').getByRole('button',{name:locale==='zh'?/下一场景/:/Next scene/}).click();await scene(start);
+   await page.locator('.sg-prologue-guide .sg-quest-toggle').click();await page.locator('.sg-prologue-guide').getByRole('button',{name:locale==='zh'?/下一场景/:/^Skip this encounter$/}).click();await scene(start);
   }else{await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene(start);}
   assert.ok(start==='epilogue:E-01'||!(await view()).completed.includes(start),'Chapter start is not already completed');
   await page.waitForFunction(()=>['map','yard'].includes(__game.scene));
   // Continue can restore to the atlas rather than directly to its region.
   // Navigate via the actual visible next-scene control; never set WorldMap state.
-  if(await page.evaluate(region=>__game.scene==='map'&&(WorldMap.mode!=='region'||(region!=='epilogue'&&WorldMap.currentRegion!==region)),chapter==='finale'?'starfall':chapter)){
+  if(await page.evaluate(region=>__game.scene==='map'&&(WorldMap.mode!=='region'||(region!=='epilogue'&&WorldMap.currentRegion!==region)),chapter)){
    await page.locator('[data-next-scene="'+start+'"]:visible').click();
   }
   await page.waitForFunction(()=>WorldMap.mode==='region'||__game.scene==='yard');
@@ -391,12 +437,12 @@ async function run(chapter){
   if(await page.evaluate(()=>__game.scene==='map'&&WorldMap.mode==='region')){
    await page.waitForFunction(()=>JSON.parse(document.querySelector('.rw-surface')?.dataset.affordances||'[]').length>0);
    const markers=await page.locator('.rw-surface').evaluate(el=>JSON.parse(el.dataset.affordances||'[]'));
-   for(const m of markers){assert.ok(m.x>=0&&m.x<=960&&m.y>=0&&m.y<=540,'Marker inside world: '+m.t);if(m.rect)assert.ok(m.rect.x>=0&&m.rect.y>=0&&m.rect.x+m.rect.w<=960&&m.rect.y+m.rect.h<=540,'Label inside world: '+m.t);}
+   const geometry=await page.locator('.rw-surface').evaluate(e=>[Number(e.dataset.logicalWidth||960),Number(e.dataset.logicalHeight||540)]);for(const m of markers){assert.ok(m.x>=0&&m.x<=geometry[0]&&m.y>=0&&m.y<=geometry[1],'Marker inside world: '+m.t);if(m.rect)assert.ok(m.rect.x>=0&&m.rect.y>=0&&m.rect.x+m.rect.w<=geometry[0]&&m.rect.y+m.rect.h<=geometry[1],'Label inside world: '+m.t);}
    await shot('interaction-markers');
   }
   if(chapter==='harbor'){
    await talk('Qilan');await dialogue('harbor:H-01');await scene('harbor:H-02');
-   await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();if(continuous){await page.keyboard.down('ArrowUp');await page.waitForTimeout(920);await page.keyboard.up('ArrowUp');await page.keyboard.down('ArrowRight');await chase.waitFor({state:'hidden',timeout:15000});await page.keyboard.up('ArrowRight');}else{const surface=page.locator('.rw-surface');const bounds=await surface.boundingBox();await surface.click({position:{x:bounds.width*.8,y:bounds.height*.35}});await chase.waitFor({state:'hidden',timeout:30000});}await dialogue('harbor:H-02');await scene('harbor:H-03');
+   await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();if(portrait){const surface=page.locator('.rw-surface');await page.waitForFunction(()=>document.querySelector('.rw-world')?.dataset.artReady==='true');const b=await surface.boundingBox();assert.ok(b.height>b.width,'native portrait chase');for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){await page.setViewportSize(viewport);await page.waitForFunction(()=>{const e=document.querySelector('.rw-chase-mode .rw-surface'),r=e?.getBoundingClientRect(),s=e?.parentElement?.getBoundingClientRect();return !!r&&!!s&&r.height>=s.height-2&&r.width>=s.width-2&&r.height>r.width;});await page.screenshot({path:out+'/portrait-chase-'+viewport.width+'.png'});}await page.setViewportSize({width:390,height:844});await click('Take shortcut');await chase.waitFor({state:'hidden',timeout:30000});}else if(continuous){await page.keyboard.down('ArrowUp');await page.waitForTimeout(920);await page.keyboard.up('ArrowUp');await page.keyboard.down('ArrowRight');await chase.waitFor({state:'hidden',timeout:15000});await page.keyboard.up('ArrowRight');}else{const surface=page.locator('.rw-surface');const bounds=await surface.boundingBox();await surface.click({position:{x:bounds.width*.8,y:bounds.height*.35}});await chase.waitFor({state:'hidden',timeout:30000});}await dialogue('harbor:H-02');await scene('harbor:H-03');
    await talk('Yandeng');await dialogue('harbor:H-03');await scene('harbor:H-04');
    await battle('Belllight beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
    await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');await trial('qilan',['deploy','cast']);
@@ -420,17 +466,17 @@ async function run(chapter){
    await talk('Baikan');await dialogue('library:M-01');await scene('library:M-02');
    await libraryEcho();await dialogue('library:M-02');await restore('Moonmirror sanctuary');await dialogue('library:M-02');await scene('library:M-03');assert.ok((await view()).melodies.includes('library'),'Library must answer before the identity reveal');
    await talk('Muling');await dialogue('library:M-03','I feel hurt');await scene('library:M-04');await puzzle('Public records · Investigation',['Ask about the borrowed map']);await dialogue('library:M-04','I need some distance');await scene('library:M-05');
-   await talk('Moye');await click('Six-region model · Compare the two routes');const routes=page.locator('.rw-puzzle-controls');await routes.waitFor();await checkPuzzleLayout();const surface=page.locator('.rw-surface'),box=await surface.boundingBox();assert.ok(box);const dragBell=async(a,b)=>{await page.mouse.move(box.x+box.width*a[0],box.y+box.height*a[1]);await page.mouse.down();await page.mouse.move(box.x+box.width*b[0],box.y+box.height*b[1],{steps:8});await page.mouse.up();};await dragBell([.5,.40],[.5,.54]);await page.getByText(local('Routes explored 1/2'),{exact:true}).waitFor();await page.evaluate(async()=>{const img=new Image();img.src='assets/story-art/library-shared-memories.jpg';await img.decode();});await shot('route-inward');await dragBell([.5,.40],[.5+.22*Math.sqrt(3)/2,.47]);await page.getByText(local('Routes explored 2/2'),{exact:true}).waitFor();await artProfiles('route-neighbors',surface,page.getByRole('button',{name:local('Finish demonstration')}));await click('Finish demonstration',routes);await dialogue('library:M-05');
+   await talk('Moye');await click('Six-region model · Compare the two routes');const routes=page.locator('.rw-puzzle-controls');await routes.waitFor();await checkPuzzleLayout();const surface=page.locator('.rw-surface'),box=await surface.boundingBox();assert.ok(box);const dragBell=async(a,b)=>gesture({x:box.x+box.width*a[0],y:box.y+box.height*a[1]},{x:box.x+box.width*b[0],y:box.y+box.height*b[1]});await dragBell([.5,.40],[.5,.54]);await page.getByText(local('Routes explored 1/2'),{exact:true}).waitFor();await page.evaluate(async()=>{const img=new Image();img.src='assets/story-art/library-shared-memories.jpg';await img.decode();});await shot('route-inward');await dragBell([.5,.40],[.5+.22*Math.sqrt(3)/2,.47]);await page.getByText(local('Routes explored 2/2'),{exact:true}).waitFor();await artProfiles('route-neighbors',surface,page.getByRole('button',{name:local('Finish demonstration')}));await click('Finish demonstration',routes);await dialogue('library:M-05');
   }else if(chapter==='starfall'){
    await talk('Lichuan');await talk('Xingya');await puzzle('Walk on starlight',['Jump to stone 2','Jump to stone 4','Jump to stone 6','Jump to stone 8']);await dialogue('starfall:F-01');await scene('starfall:F-02');
    assert.deepEqual((await view()).objective,['explore:catastrophe-record','cinematic:starfall-memory']);await click('Observatory · Complete record');await op('explore:catastrophe-record');await cinema('starfall:F-02','Remember the choice');
    await talk('Muling');await dialogue('starfall:F-03');await scene('starfall:F-04');
    await puzzle('Test the neighboring bells',['Ring the local bell']);await restore('Starfall sanctuary',['Outer ring','Middle ring','Middle ring','Middle ring','Inner ring'],['Xingya','Lichuan'],'Beyond Stars',[low,mid,high]);await dialogue('starfall:F-04');await cinema('starfall:F-05','Watch the story scene');
   }else if(chapter==='finale'){
-   await battle('Approach the Star Bell','battle:inward-gates','finale');await dialogue('finale:B-01');await scene('finale:B-02');
+   assert.equal(await page.evaluate(()=>WorldMap.currentRegion),'finale');await battle('Approach the Star Bell','battle:inward-gates','finale');assert.equal(await page.evaluate(()=>WorldMap.currentRegion),'finale');await dialogue('finale:B-01');await scene('finale:B-02');
    await battle('Approach the Star Bell','battle:identify-echo','finale');await dialogue('finale:B-02');await scene('finale:B-03');
    await battle('Approach the Star Bell','battle:central-echo','finale');await dialogue('finale:B-03');
-   await click('Help Muling release the last lock');const latch=page.getByRole('button',{name:local('Hold the bell chain'),exact:true});await latch.waitFor();await latch.focus();await page.keyboard.down('Space');try{await page.waitForTimeout(1800);}finally{await page.keyboard.up('Space');}
+   await click('Help Muling release the last lock');const latch=page.getByRole('button',{name:local('Hold the bell chain'),exact:true});await latch.waitFor();if(portrait){const r=await latch.boundingBox();await gesture({x:r.x+r.width/2,y:r.y+r.height/2},null,1800);}else{await latch.focus();await page.keyboard.down('Space');try{await page.waitForTimeout(1800);}finally{await page.keyboard.up('Space');}}
    await scene('finale:B-04');await cinema('finale:B-04','Watch the story scene');
   }else if(chapter==='epilogue'){
    if(await page.evaluate(()=>__game.scene!=='yard'))await page.locator('[data-next-scene="epilogue:E-01"]:visible').click();await page.waitForFunction(()=>__game.scene==='yard');assert.equal(await page.locator('#first-quest').isVisible(),false,'The legacy catch tutorial must stay hidden during homecoming');await scene('epilogue:E-02');if(!await page.locator('.res-host[data-scene="epilogue:E-02"]').isVisible())await talk('Muling');await dialogue('epilogue:E-02','Give everyone some time');await scene('epilogue:E-03');await talk('Muling');await dialogue('epilogue:E-03');
@@ -461,7 +507,7 @@ try{
  for(const chapter of requested){
   let result;try{result=await run(chapter);}catch(e){result={chapter,status:'failed',error:String(e)};}
   results.push(result);
-  await fs.writeFile(out+'/index.json',JSON.stringify({locale,provenance:continuous?'fresh slot; real inputs throughout campaign; real save reload at chapter boundaries':'synthetic chapter starts; real inputs throughout each chapter',results},null,2));
+  await fs.writeFile(out+'/index.json',JSON.stringify({locale,profile:portrait?'portrait-touch':'desktop',provenance:continuous?'fresh slot; real inputs throughout campaign; real save reload at chapter boundaries':'synthetic chapter starts; real inputs throughout each chapter',results},null,2));
   console.log('CHAPTER ACCEPTANCE',JSON.stringify({chapter,locale,status:result.status,scene:result.observedScene,remaining:result.remaining,completed:result.scenes||result.completed,lastActions:result.lastActions,stack:result.stack?.split('\n').slice(-4).join('\n'),error:result.error}));
   if(continuous&&result.status!=='passed')break;
  }
