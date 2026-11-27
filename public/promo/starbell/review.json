@@ -1,11 +1,11 @@
 {
   "slug": "starbell",
-  "video": "/promo/starbell/story-trailer-en-v5-45966047185.mp4",
-  "poster": "/promo/starbell/story-trailer-en-v5-45966047185.jpg",
+  "video": "/promo/starbell/story-trailer-en-v6-46048714109.mp4",
+  "poster": "/promo/starbell/story-trailer-en-v6-46048714109.jpg",
   "duration": 42,
-  "version": "V5",
-  "createdAt": "2026-11-27T08:34:44.933Z",
-  "updatedAt": "2026-11-27T08:34:44.933Z",
+  "version": "V6",
+  "createdAt": "2026-11-27T18:23:50.688Z",
+  "updatedAt": "2026-11-27T18:23:50.688Z",
   "source": {
     "sha": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
     "scope": "isolated portrait engineering preview",
@@ -16,6 +16,11 @@
     "targetedLayoutGate": true,
     "fullCampaignRevalidated": false
   },
+  "sourceByClip": {
+    "shadow": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
+    "battle": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
+    "explore": "be928fe708a0d0974b158bb153cd0a5d25a80e1d"
+  },
   "music": {
     "title": "Soar",
     "artist": "Scott Buckley",
@@ -24,7 +29,7 @@
     "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
     "edited": true
   },
-  "renderRun": 45966047185,
+  "renderRun": 46048714109,
   "approved": false,
   "published": false,
   "shots": [
@@ -35,7 +40,7 @@
       "transitionOut": 0.5
     },
     {
-      "scene": "garden",
+      "scene": "explore",
       "seconds": 4,
       "clearSeconds": 3,
       "transitionOut": 0.5
