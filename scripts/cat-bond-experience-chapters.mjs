@@ -157,6 +157,8 @@ async function run(chapter){
    for(let i=0;i<20&&!await b.isVisible()&&await prev.count()&&await prev.isEnabled();i++)await prev.click();
    for(let i=0;i<20&&!await b.isVisible()&&await next.count()&&await next.isEnabled();i++)await next.click();
   }
+  await b.waitFor({state:'visible'});
+  if(locale==='zh')localeIssues.push(...await inspectLocale(page,locale,chapter+':action:'+label));
   steps.push({scene:(await view()).current?.id,action:label});await b.click();
  }
  async function trial(id,actions){const modal=page.locator("[data-adventure=trial-"+id+"]");await modal.waitFor({state:"visible",timeout:15000});for(const a of actions)await modal.locator("[data-play-action="+a+"]").click();assert.equal(await modal.getAttribute("data-complete"),"true");await shot("trial-"+id);await modal.getByRole("button",{name:local("Return"),exact:true}).click();await modal.waitFor({state:"detached"});}
@@ -164,7 +166,7 @@ async function run(chapter){
  async function talk(npc){
   const before=await view();
   const pending=before.objective.find(o=>o.startsWith('npc:'));
-  await click('Talk to '+npc);
+  if(locale==='zh'&&await page.evaluate(()=>__game.scene==='yard'))await click('与'+({Muling:'暮铃'})[npc]+'对话',page,true);else await click('Talk to '+npc);
   if(pending&&!['npc:public-accountability','npc:second-garden-key'].includes(pending))await op(pending);
   else if(before.current?.lines.length)await page.locator('.res-host[data-scene="'+before.current.id+'"]').waitFor();
  }
@@ -195,6 +197,7 @@ async function run(chapter){
     if(v.cursor===0||v.cursor===v.current.lines.length-1)await page.waitForFunction(()=>{const stage=document.querySelector('.library-reveal-stage');const img=stage?.querySelector('.library-reveal-painting.is-current');return stage?.dataset.ready==='true'&&img&&Number(getComputedStyle(img).opacity)>=.95;});
    }
    if(v.cursor===0||v.cursor===v.current.lines.length-1)await shot(id+'-'+v.cursor);
+   else if(locale==='zh')localeIssues.push(...await inspectLocale(page,locale,chapter+':dialogue:'+id+':'+v.cursor));
    await page.waitForFunction(()=>!document.querySelector('.res-host .res-skip-top')?.disabled);
    await dlg.locator('.res-line').click();
    await page.waitForFunction(({id,cursor})=>{const v=CatBondResonance.view();return v.current?.id!==id||v.cursor>cursor;},{id,cursor:v.cursor});
@@ -219,7 +222,7 @@ async function run(chapter){
   const directHarbor={'Tide cave logbook':'explore:tide-logbook','Storm boat':'rescue:storm-boat','Lighthouse mirrors':'puzzle:beam-mirrors','Town bell sanctuary':'repair:harbor','Coming Home':'melody:harbor'};
   if(chapter==='harbor'&&directHarbor[label]){const operation=directHarbor[label];assert.ok((await view()).objective.includes(operation),'Expected required harbor action '+operation);await click(label);await op(operation);await shot(operation);return;}
   await click(label);const controls=page.locator('.rw-puzzle-controls');await controls.waitFor();await checkPuzzleLayout();
-  for(const input of inputs)await click(input,controls);
+  for(const input of inputs){if(locale==='zh'&&input==='Roots'&&['Moonleaf bridge','Break the forest loop'].includes(label))await click('地下',controls,true);else await click(input,controls);}
   await controls.waitFor({state:'hidden',timeout:35000});
  }
  async function invite(npc){await click('Invite '+npc);await page.getByRole('button',{name:local('Invite '+npc),exact:true,includeHidden:true}).waitFor({state:'detached'});}
@@ -322,7 +325,7 @@ async function run(chapter){
  async function cinema(id,label){
   await scene(id);await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady(),null,{timeout:15000});await click(label);
   await page.locator('.cbcp-art').first().waitFor();await shot(id+'-cinematic');
-  if(id==='finale:B-04'){const reply=page.getByRole('button',{name:locale==='zh'?/^(?:回铃|摇铃|敲铃|回应|轻摇|摇响).*两下|^两下.*(?:回铃|回应)$/: 'Ring twice in reply',exact:true});await reply.waitFor();await shot(id+'-ring-reply');await reply.click();}
+  if(id==='finale:B-04'){const reply=page.getByRole('button',{name:locale==='zh'?'摇两下铃回应':'Ring twice in reply',exact:true});await reply.waitFor();await shot(id+'-ring-reply');await reply.click();}
   if(id==='starfall:F-02'&&!continuous){await page.waitForFunction(()=>{const root=document.querySelector('.cbcp-root');if(root?.dataset.frameId!=='starfall:F-02-last-patrol')return false;const art=root.querySelector('.cbcp-art[src$="lantern-entrustment.jpg"]');return art&&art.complete&&art.naturalWidth>0&&Number(getComputedStyle(art).opacity)>=.95;},{},{timeout:45000});await shot(id+'-lamp-handoff');await page.locator('.cbcp-skip').click();const summary=page.locator('[data-canon-acknowledgement="starfall:F-02"]');await summary.waitFor();assert.match(await summary.innerText(),locale==='zh'?/答应过暮铃/:/promised Muling/);assert.equal((await view()).current.id,id);await shot(id+'-skip-summary');await click('Continue',summary);}
   await page.waitForFunction(id=>CatBondResonance.view().current?.id!==id,id,{timeout:180000});
  }
@@ -345,6 +348,15 @@ async function run(chapter){
    assert.equal(chapter,'harbor');await page.locator('#intro-start').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene('prologue:P-05');
    await page.locator('#cb-player-first-intro').getByRole('button',{name:local('Start exploring'),exact:true}).click();
    // Start from a new slot, no fixture or direct state mutation.
+   if(locale==='zh'){
+    await shot('prologue-intro');
+    await page.locator('[data-npc-talk="muling"]').click();const encounter=page.locator('#cb-traveler-encounter');
+    await encounter.getByRole('button',{name:'寻找航图',exact:true}).click();await encounter.waitFor({state:'detached'});
+    for(const id of ['chart-0','chart-echo','chart-1']){await page.locator('[data-garden-explore="'+id+'"]').click();await shot('prologue-'+id);}
+    await page.locator('[data-npc-talk="muling"]').click();await shot('prologue-encounter');
+    await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'告别',exact:true}).click();
+    await encounter.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);await shot('prologue-garden');
+   }
    await page.locator('.sg-prologue-guide').getByRole('button',{name:locale==='zh'?/下一场景/:/Next scene/}).click();await scene(start);
   }else{await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene(start);}
   assert.ok(start==='epilogue:E-01'||!(await view()).completed.includes(start),'Chapter start is not already completed');
@@ -427,7 +439,7 @@ async function run(chapter){
   }
   return {chapter,locale,status:'passed',start,next,scenes:expected.map(s=>s.id),readLines,steps,battleMeasurements:battleMeasurements.map(({samples,...m})=>({...m,sampleCount:samples.length})),stagingArt:chapter==='starfall'||chapter==='finale'||chapter==='epilogue'};
  }catch(e){
-  await shot('FAIL').catch(()=>{});const observed=await view().catch(()=>null);
+  await shot('FAIL').catch(()=>{});await fs.writeFile(out+'/'+chapter+'-locale.json',JSON.stringify(localeIssues,null,2)).catch(()=>{});const observed=await view().catch(()=>null);
   return {chapter,locale,status:'failed',start,next,error:String(e).slice(0,2500),stack:String(e.stack||'').slice(0,3000),lastActions:steps.slice(-5),observedScene:observed?.current?.id,remaining:observed?.objective,completed:expected.filter(s=>observed?.completed.includes(s.id)).map(s=>s.id),readLines,steps,battleMeasurements:battleMeasurements.map(({samples,...m})=>({...m,sampleCount:samples.length})),pageErrors:errors};
  }finally{await context.close();}
 }

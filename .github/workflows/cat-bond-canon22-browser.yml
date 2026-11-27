@@ -43,7 +43,7 @@ jobs:
             git fetch --no-tags --depth=1 origin "$BEFORE" || true
           fi
           node scripts/cat-bond-experience-qa-scope.mjs --self-test
-          matrix=$(node scripts/cat-bond-experience-qa-scope.mjs | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>console.log(JSON.stringify({include:JSON.parse(s).include.flatMap(c=>["en","zh"].map(locale=>({...c,locale})))}))))')
+          matrix=$(node scripts/cat-bond-experience-qa-scope.mjs | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const m=JSON.parse(s);m.include=m.include.flatMap(c=>["en","zh"].map(locale=>({...c,locale})));console.log(JSON.stringify(m))})')
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
   chapter:
     needs: select

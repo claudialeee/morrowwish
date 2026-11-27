@@ -19,14 +19,7 @@ jobs:
       cancel-in-progress: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[replace-obsolete-qa]') }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - scope: opening
-            locale: en
-          - scope: campaign
-            locale: en
-          - scope: campaign
-            locale: zh
+      matrix: ${{ fromJSON(github.event_name == 'push' && contains(github.event.head_commit.message, '[qa-zh-campaign]') && '{"include":[{"scope":"campaign","locale":"zh"}]}' || '{"include":[{"scope":"opening","locale":"en"},{"scope":"campaign","locale":"en"},{"scope":"campaign","locale":"zh"}]}') }}
     env:
       CAT_BOND_CONTINUOUS: '1'
       CAT_BOND_EXPERIENCE: '1'
@@ -39,7 +32,7 @@ jobs:
           cache: npm
       - uses: ./.github/actions/starbell-browser-setup
       - name: Verify both real opening routes and title on all profiles
-        if: matrix.scope == 'opening' && !contains(github.event.head_commit.message, '[qa-zh-campaign]')
+        if: matrix.scope == 'opening'
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-opening.log 2>&1 &
           server=$!
@@ -52,7 +45,7 @@ jobs:
           done
           test "$failures" -eq 0
       - name: Fresh slot campaign through ending (real save reload between chapters)
-        if: matrix.scope == 'campaign' && (matrix.locale == 'zh' || !contains(github.event.head_commit.message, '[qa-zh-campaign]'))
+        if: matrix.scope == 'campaign'
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-fresh.log 2>&1 &
           server=$!
