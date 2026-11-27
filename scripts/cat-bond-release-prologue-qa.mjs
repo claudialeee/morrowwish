@@ -39,7 +39,8 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  assert.equal(await page.evaluate(()=>CatBondResonance.view().muling),'unmet');
  assert.equal(await page.evaluate(()=>Object.values(State.S.resonance.evidence).flat().some(o=>o.startsWith('cinematic:'))),false);
  await screenshot('context');await press(intro.getByRole('button',{name:meet?tr('开始探索','Start exploring'):tr('跳过介绍','Skip introduction'),exact:true}));
- const guide=page.locator('.sg-prologue-guide');
+ const guide=page.locator('.sg-prologue-guide');await guide.waitFor({state:'visible'});
+ const toggle=guide.getByRole('button',{name:tr('主线任务','Main quest'),exact:true});assert.equal(await toggle.getAttribute('aria-expanded'),'false');assert.equal(await guide.locator('button:visible').count(),1);await press(toggle);assert.ok(await guide.getByRole('button',{name:tr('与陌生猫交谈','Talk to the stranger'),exact:true}).isVisible());assert.equal(await guide.getByRole('button',{name:tr('下一场景 · 风铃镇','Next scene · Windchime Town'),exact:true}).count(),0);await press(toggle);
  if(meet){await press(page.locator('[data-npc-talk="muling"]'));const encounter=page.locator('#cb-traveler-encounter');
  assert.equal(await page.locator('.res-garden-bell').count(),0);
  await press(encounter.getByRole('button',{name:tr('寻找航图','Find the chart pieces'),exact:true}));
@@ -53,13 +54,13 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  assert.equal(await page.evaluate(()=>GardenExploration.read(State.S).butterfly),3);
  assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);assert.equal(await page.evaluate(()=>CatBondResonance.residents('garden').some(n=>n.id==='muling')),false);}
  else assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),false);
- await screenshot('garden');await press(guide.getByRole('button',{name:tr('下一场景 · 风铃镇','Next scene · Windchime Town'),exact:true}));await waitScene('harbor:H-01');
+ await screenshot('garden');await press(guide.getByRole('button',{name:tr('主线任务','Main quest'),exact:true}));await press(guide.getByRole('button',{name:meet?tr('下一场景 · 风铃镇','Next scene · Windchime Town'):tr('跳过此次相遇','Skip this encounter'),exact:true}));await waitScene('harbor:H-01');
  assert.equal(await page.evaluate(()=>WorldMap.currentRegion),'harbor');assert.equal(await page.evaluate(()=>WorldMap.mode),'region');
  const next=page.locator('[data-next-scene="harbor:H-01"]');await next.waitFor({state:'attached'});await screenshot('harbor');
  // Main story affordance must be visible without menu navigation.
- await next.waitFor({state:'visible'});
+ const cue=page.locator('.rw-next-cue');await cue.waitFor({state:'visible'});
  assert.equal(await page.evaluate(()=>CatBondResonance.view().objective.includes('npc:harbor-arrival')),true,'navigation must not complete NPC proof by itself');
- await press(next);await page.waitForFunction(()=>!CatBondResonance.view().objective.includes('npc:harbor-arrival'));await page.locator('.res-host[data-scene="harbor:H-01"]').waitFor();assert.equal(await page.evaluate(()=>CatBondResonance.view().muling),'unmet');
+ await press(cue);await page.waitForFunction(()=>!CatBondResonance.view().objective.includes('npc:harbor-arrival'));await page.locator('.res-host[data-scene="harbor:H-01"]').waitFor();assert.equal(await page.evaluate(()=>CatBondResonance.view().muling),'unmet');
  await screenshot('first-conversation');
  await page.reload();await page.waitForFunction(()=>window.__CAT_BOND_READY__);await press(page.locator('#intro-continue'));await press(page.locator('#intro-slot-list [data-slot="slot1"]'));await waitScene('harbor:H-01');assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),meet);assert.equal(await page.locator('#cb-player-first-intro').count(),0);
  assert.equal(await page.evaluate(()=>State.getSaveSlot('slot2')),null);assert.equal(await page.evaluate(()=>State.getSaveSlot('slot3')),null);assert.deepEqual(errors,[]);

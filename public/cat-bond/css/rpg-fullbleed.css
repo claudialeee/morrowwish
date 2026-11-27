@@ -276,3 +276,10 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .sg-discovery[data-quest-primary="true"]{z-index:4}
 #stage .sg-prologue-guide .sg-main-continue{background:#e7ca91!important;color:#5c3a16!important;font-weight:800!important;font-size:16px!important;min-height:44px;order:-1}
 #stage .sg-prologue-guide .sg-main-continue~button{font-size:12px!important}
+
+/* The opening uses a collapsed top-left quest entry, not a persistent scene card. */
+#stage .sg-prologue-guide.sg-opening-quest{top:12px!important;left:10px!important;bottom:auto!important;right:auto!important;width:max-content!important;max-width:calc(100% - 20px)!important;padding:0!important;gap:6px;background:transparent!important;border:0!important;box-shadow:none!important;z-index:6;justify-items:start}
+#stage .sg-opening-quest>.sg-quest-toggle{width:auto;min-height:44px!important;font-weight:750!important;white-space:nowrap}
+#stage .sg-opening-quest>.sg-quest-detail{box-sizing:border-box;display:grid;gap:8px;width:min(300px,calc(100vw - 24px));max-width:100%;max-height:calc(100dvh - 120px);overflow:auto;padding:12px;background:#fff9ed;border:1px solid #cdb49d;border-radius:10px;box-shadow:0 4px 12px #493e2b33;color:#493948}
+#stage .sg-opening-quest>.sg-quest-detail[hidden]{display:none!important}
+#stage .sg-opening-quest .sg-quest-detail>div{display:flex;flex-wrap:wrap;gap:6px}

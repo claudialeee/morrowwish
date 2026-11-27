@@ -262,7 +262,13 @@ jobs:
                 // Actual encounter input on all three deployed profiles; no state mutation or forced click.
                 const guide=page.locator('.sg-prologue-guide');
                 await guide.waitFor({state:'visible'});
-                if(await guide.locator('button:visible').count()!==1)throw Error('Opening guide must expose only the primary navigation button');
+                if(await guide.locator('button:visible').count()!==1)throw Error('Opening quest must be collapsed');
+                const questToggle=guide.getByRole('button',{name:'Main quest',exact:true});
+                if(await questToggle.getAttribute('aria-expanded')!=='false')throw Error('Opening quest is not collapsed');
+                await questToggle.click();
+                if(!await guide.getByRole('button',{name:'Talk to the stranger',exact:true}).isVisible())throw Error('Opening quest does not prioritize encounter');
+                if(await guide.getByRole('button',{name:'Next scene · Windchime Town',exact:true}).count())throw Error('Premature departure prompt');
+                await questToggle.click();
                 const marker=page.locator('[data-npc-talk="muling"]');
                 if(await page.locator('.res-garden-bell').count())throw Error('Detached garden bell must be removed');
                 const discover=id=>page.locator('[data-garden-explore="'+id+'"]');
@@ -331,6 +337,7 @@ jobs:
                 await page.waitForFunction(uid=>State.S.cats.length===1&&State.S.cats[0].species==='jinjc'&&State.S.cats[0].uid===uid&&CatBondResonance.view().current?.id==='prologue:P-05',uid);
                 if(!await page.evaluate(()=>CatBondResonance.view().openingMet))throw Error('Encounter completion lost on reload');
                 await page.screenshot({path:'preview-'+prefix+'-reloaded.png'});
+                await page.locator('.sg-prologue-guide').getByRole('button',{name:'Main quest',exact:true}).click();
                 await page.locator('.sg-prologue-guide').getByRole('button',{name:'Next scene · Windchime Town',exact:true}).click();
                 await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01'&&WorldMap.currentRegion==='harbor');
                 await page.waitForFunction(()=>{const s=window.MorrowwishMusic?.status();return s?.scene==='harbor'&&s.track==='harbor'&&s.source==='premium-mp3:morning'&&s.playing&&s.loop&&s.duration>150&&s.duration<157;},{},{timeout:45000});
