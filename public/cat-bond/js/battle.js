@@ -6169,7 +6169,10 @@ class CaptureBattle {
       if(combo.effect==='shatter')
         this.vfx.impactType?.(e.x,e.y,'crit',{color:'#dceeff'});
       this.vfx.ring(e.x, e.y, { r0: 8, vr: 460, life: 0.45, color: this.elemColor(skill.element), width: 6 });
-      this.vfx.text(e.x, e.y - 50, '✦', '#ffd36b', 12);
+      // Owner 2026-11-26 legibility pass: the 36 authored reaction names in skills.js:493
+      // (COMBO) were never floated — players only saw a generic ✦ sparkle. Surface the real
+      // name ("野火蔓延!", "导电连锁!", "浸油爆燃!", etc.) so the damage spike has a readable cause.
+      this.vfx.text(e.x, e.y - 50, combo.name || '✦', combo.effect==='steam' ? '#9aa8ba' : '#ffd36b', 14);
       if (combo.consumes && e.tags.includes(combo.tag)) { e.tags = e.tags.filter(t => t !== combo.tag); delete e.status[combo.tag]; }
     }
     // Readable effectiveness call-out (效果拔群! / 效果不佳…) so a mis-/super-matched hit tells
@@ -6382,6 +6385,21 @@ class CaptureBattle {
     // backstop. Bosses excluded; only applies under the capture line so it can't trivialize a
     // healthy over-levelled enemy.
     const closeBonus = (boss || isDot || frac0 >= 0.28) ? 0 : 0.25 * (this._closing || 0);
+    // Owner 2026-11-26 legibility pass: executeBonus and closeBonus silently added up
+    // to +0.55 damage under the 28% capture line with ZERO on-screen cue. Float a
+    // one-shot banner per enemy the first time each fires so the late-fight damage
+    // spike reads as "处决" / "收网", not randomness.
+    if (!isDot && executeBonus > 0 && !e._execFloaterShown) {
+      e._execFloaterShown = true;
+      const execLabel = window.MorrowwishI18n?.get?.()==='zh' ? '处决!' : 'EXECUTE!';
+      this.vfx.text(e.x, e.y - 58, execLabel, '#ffd36b', 16);
+      this.vfx.ring(e.x, e.y, { r0: 10, vr: 320, life: 0.4, color: '#ffd36b', width: 4 });
+    }
+    if (!isDot && closeBonus > 0 && !this._closeFloaterShown) {
+      this._closeFloaterShown = true;
+      const closeLabel = window.MorrowwishI18n?.get?.()==='zh' ? '收网!' : 'CLOSING!';
+      this.vfx.text(e.x, e.y - 64, closeLabel, '#ff9a4d', 15);
+    }
     const sumBonus = 1 + vulnBonus + comboBonus + executeBonus + closeBonus;
     dmg *= sumBonus;
     if (this._debug) {

@@ -2084,6 +2084,8 @@
   "野猫韧性：": "Wild cat poise: ",
   "韧性": "Resilience",
   "破防": "Guard Broken",
+  "处决!": "EXECUTE!",
+  "收网!": "CLOSING!",
   "恢复中": "Recovering",
   "野猫韧性": "Wild cat poise",
   "水枪": "Water Lance",
