@@ -28,9 +28,11 @@ export function spatialTravelPose(p,lag=0){
 }
 export function advanceBridgeWalk(p,dt){if(!p?.walk||!Number.isFinite(dt)||dt<=0)return false;const w=p.walk;w.elapsed=Math.min(w.duration,w.elapsed+Math.min(.1,dt));if(w.elapsed<w.duration)return false;p.walk=null;spatialInput(p,w.action);return true;}
 const kittenPoint=[.70,.76];
+const hiddenShadows=[[.19,.48],[.51,.37],[.82,.60]];
+const shadowId=i=>"found-shadow-"+i;
 function starStep(p,i){
  if(!starEdges[p.node].includes(i)){p.warning="fall";return;}
- p.node=i;p.visited.push(i);p.route=p.route||(i===1?"upper":"lower");p.solved=i===7;
+ p.node=i;p.visited.push(i);p.route=p.route||(i===1?"upper":"lower");if((i===3||i===6)&&!p.discoveries.includes("starlight-"+i))p.discoveries.push("starlight-"+i);p.solved=i===7;
 }
 export function bridgeReachable(p){const active=p.operation==="puzzle:moonleaf-loop"?1-p.branch:p.branch;return ([[1],[0,2,3],[1,4],[1,4],[2,3]])[p.node]||[];}
 function bridgeStep(p,i){
@@ -84,11 +86,11 @@ export function spatialInput(p,a){
   else return false;
  }else if(a.type==="rescue"&&p.operation==="puzzle:moonleaf-crossing"){if(p.node!==3||p.discoveries.includes("rescued-kitten"))return false;p.discoveries.push("rescued-kitten");}
  else if(a.type==="leaf"&&p.kind==="bridge"){if(p.node!==1&&p.node!==4){p.warning="leaf";return false;}p.branch=1-p.branch;}
- else if(a.type==="aim"&&p.kind==="light"&&Number.isFinite(a.x)&&a.x>=0&&a.x<=1){if(Math.abs(p.angle-a.x)>.025){p.moves++;p.audience++;}p.angle=a.x;}
+ else if(a.type==="aim"&&p.kind==="light"&&Number.isFinite(a.x)&&a.x>=0&&a.x<=1){if(Math.abs(p.angle-a.x)>.025){p.moves++;p.audience++;}p.angle=a.x;if(p.operation==="puzzle:shadow-bridge"){hiddenShadows.forEach(([x],i)=>{if(Math.abs(x-a.x)<.085&&!p.discoveries.includes(shadowId(i)))p.discoveries.push(shadowId(i));});}}
  else if(a.type==="shape"&&p.operation==="puzzle:lantern-show"&&Number.isInteger(a.i)&&a.i>=0&&a.i<3){p.shape=a.i;p.audience++;}
  else if(a.type==="cross"&&p.kind==="light"){
   if(p.operation==="puzzle:lantern-show"){p.solved=true;}
-  else if(Math.abs(p.angle-.72)<=.14&&p.moves>0){p.solved=true;}else p.warning="dark";
+  else if(hiddenShadows.every((_,i)=>p.discoveries.includes(shadowId(i)))){p.solved=true;}else p.warning="dark";
  }else if(p.kind==="chase"&&a.type==="target"&&Number.isFinite(a.x)&&Number.isFinite(a.y)&&a.x>=.12&&a.x<=.88&&a.y>=.20&&a.y<=.80){if(dist([a.x,a.y],chasePoint(p))>.18||!routeChase(p))return false;a={...a,frame:p.frame};}
  else if(p.kind==="chase"&&a.type==="jump"){if(!routeChase(p,true))return false;a={...a,frame:p.frame};}
  else if(p.kind==="chase"&&a.type==="direction"&&[-1,0,1].includes(a.dx)&&[-1,0,1].includes(a.dy)&&Math.abs(a.dx)+Math.abs(a.dy)===1){if(!routeChase(p))return false;a={...a,frame:p.frame};}
@@ -121,7 +123,7 @@ export function spatialControls(p){
  if(p.kind==="bridge")return [...bridgeNodes.map((_,i)=>({label:[["起点","岔路","树冠","地下","对岸"][i],["Start","Fork","Canopy","Roots","Far bank"][i]],action:{type:"step",i},available:bridgeReachable(p).includes(i)})).filter(e=>e.available),...(p.operation==="puzzle:moonleaf-crossing"&&p.node===3&&!p.discoveries.includes("rescued-kitten")?[{label:["帮小猫离开根丛","Free the trapped kitten"],action:{type:"rescue"}}]:[])];
  if(p.kind==="stars")return starEdges[p.node].filter(i=>!p.visited.includes(i)||starEdges[p.node].every(j=>p.visited.includes(j))).map(i=>({label:["跳向星石 "+(i+1),"Jump to stone "+(i+1)],action:{type:"step",i}}));
  if(p.operation==="puzzle:lantern-show")return [...["鱼","蝴蝶","猫"].map((x,i)=>({label:[x,["Fish","Butterfly","Cat"][i]],action:{type:"shape",i}})),{label:["演完啦，去找小栗","Finish the show and meet Pip"],action:{type:"cross"}}];
- if(p.kind==="light")return [...[],...[[.2,"向左","Aim left"],[.5,"居中","Aim center"],[.72,"向右","Aim right"]].map(([x,zh,en])=>({label:[zh,en],action:{type:"aim",x}})),{label:p.operation==="puzzle:lantern-show"?["继续庆典","Continue festival"]:["走过石桥","Cross the bridge"],action:{type:"cross"}}];
+ if(p.kind==="light")return [...[[.19,"照向左边","Light left"],[.51,"照向中间","Light center"],[.82,"照向右边","Light right"]].map(([x,zh,en])=>({label:[zh,en],action:{type:"aim",x}})),{label:["追上逃走的影子","Follow the escaping shadows"],action:{type:"cross"},available:hiddenShadows.every((_,i)=>p.discoveries.includes(shadowId(i)))}];
  const [x,y]=chasePoint(p);
  return [{label:["追上铃光","Chase the light"],action:{type:"target",x,y},available:!p.chaseActive},...(p.phase===1?[{label:["翻过低墙","Jump the low wall"],action:{type:"jump"},available:!p.chaseActive}]:[])];
 }
@@ -158,6 +160,7 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
    if(lit){const g=c.createRadialGradient(x,y,1,x,y,radius);g.addColorStop(0,visited?"#fff0bdc0":"#d8e4ee80");g.addColorStop(1,"#f4df8c00");c.fillStyle=g;c.fillRect(x-radius,y-radius,radius*2,radius*2);}
    c.save();c.fillStyle=visited?"#f6dca0":lit?"#bdcedb":"#596877";c.strokeStyle=lit?"#f6ebcf":"#8494a0";c.lineWidth=1.5;c.beginPath();c.moveTo(x-unit*.023,y);c.lineTo(x-unit*.009,y-unit*.014);c.lineTo(x+unit*.015,y-unit*.012);c.lineTo(x+unit*.025,y+unit*.006);c.lineTo(x+unit*.007,y+unit*.016);c.lineTo(x-unit*.018,y+unit*.012);c.closePath();c.fill();c.stroke();c.restore();
   }
+  for(const i of [3,6]){const q=starNodes[i],collected=p.discoveries.includes("starlight-"+i);dot([q[0],q[1]-.055],unit*(collected?.008:.012),collected?"#f9e7a4":"#ffefb9");}
   const [gx,gy]=pt(pose.ground);c.save();c.fillStyle="rgba(24,27,52,"+(.25-pose.lift*1.5)+")";c.beginPath();c.ellipse(gx,gy+unit*.015,unit*.032,unit*.008,0,0,Math.PI*2);c.fill();c.restore();
   drawCat?.(pose.point[0],pose.point[1],pose.moving,null,.86,pose.face);
   label(tr("踩过的星石连成了星座","Your footsteps connect a constellation"),[.5,.08],20);
@@ -183,9 +186,16 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
    // animated actors. The story response is delivered in the readable caption.
    if(p.audience){for(const [i,ax] of [.14,.87].entries()){const k=.5+.5*Math.sin(phase+i),ay=.68-k*.025;c.save();c.globalAlpha=.35+.45*k;dot([ax,ay],unit*.008,"#fff0b3");dot([ax+(i?-.035:.035),ay-.035],unit*.005,"#ffe0a2");c.restore();}}
   }else{
-   const lamp=[angle,.24];if(!paintArt(c,"garden-lantern",angle*W,.24*H,62,76))dot(lamp,18,"#ffe5a7");
-   const [lx,ly]=pt(lamp),g=c.createRadialGradient(lx,ly,5,lx,ly,W*.58);g.addColorStop(0,"#ffdc9c88");g.addColorStop(1,"#ffdc9c00");c.fillStyle=g;c.fillRect(0,0,W,H);
-   const lit=Math.abs(angle-.72)<=.14;c.save();if(!lit)c.filter="brightness(.32) saturate(.55)";if(!paintBridge(c,"lantern-stone-crossing",[.22,.64],[.82,.64],W,H,83))line([.22,.64],[.82,.64],lit?"#dbcba7":"#25323c",40);c.restore();if(Math.abs(angle-.2)<.15)label(tr("壁龛：第一盏歪耳灯","Alcove: the first crooked-ear lantern"),[.28,.43]);drawCat?.(.19,.64);label(tr("照亮石桥，再走过去","Light the stone bridge before crossing"),[.5,.08],22);label(tr("拖动灯光","Drag the light"),[angle,.34]);}
+   const unit=Math.min(W,H),lamp=[angle,.25],[lx,ly]=pt(lamp);
+   const glow=c.createRadialGradient(lx,ly,0,lx,ly,unit*.52);glow.addColorStop(0,"#ffdc9caa");glow.addColorStop(1,"#ffdc9c00");c.fillStyle=glow;c.fillRect(0,0,W,H);
+   for(const [i,[x,y]] of hiddenShadows.entries()){
+    const found=p.discoveries.includes(shadowId(i)),pulse=.5+.5*Math.sin(time*4+i);
+    if(found){c.save();c.globalAlpha=.85;const bounce=Math.abs(Math.sin(time*4+i))*.025;paintArt(c,"shadow-cat",x*W,(y-bounce)*H,unit*.18,unit*.14,.5,.5);c.restore();dot([x,y+.05],unit*.012,"#ffdf8d");}
+    else{dot([x-.013,y],unit*.006,"#ffe6a2"+Math.round(120+pulse*100).toString(16));dot([x+.013,y],unit*.006,"#ffe6a2");}
+   }
+   drawCat?.(.19,.72);label(tr("找到三只躲起来的影子猫","Find the three hidden shadow cats"),[.5,.08],20);
+   label(tr("已找到 ","Found ")+p.discoveries.filter(x=>x.startsWith("found-shadow-")).length+"/3",[.5,.90],18);
+  }
  }else{
   const project=([x,y])=>[x,chaseVisualY(y)];
   const trail=chaseTrail(p).map(project);for(let i=1;i<trail.length;i++)line(trail[i-1],trail[i],"#ffe5a17a",4);
@@ -196,5 +206,5 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
   label(tr("街巷追逐 ","Street chase ")+(p.phase+1)+"/3",[.5,.09],20);
 
  }
- if(p.warning)label(tr("这条路不通，换个办法","That route is blocked. Try another."),[.5,.94],16);c.restore();
+ if(p.warning)label(p.warning==="dark"?tr("还有影子没找到","More shadows are hiding"):tr("这条路不通，换个办法","That route is blocked. Try another."),[.5,.94],16);c.restore();
 }
