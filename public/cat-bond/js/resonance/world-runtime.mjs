@@ -366,7 +366,7 @@ function install(){
  // Optional clue, not a main quest or a global map marker. The same walk/proof
  // path as the proximity marker is used, including the real saved position.
  for(const s of availableSideEvents(w.location,w,v)){const clue=B(tr(...s.clue),()=>{regionMenuOpen=false;const rail=host.querySelector("#rw-region-actions");if(rail)rail.hidden=true;host.querySelector(".rw-region-toggle")?.setAttribute("aria-expanded","false");visitDiscovery(s);});clue.dataset.sideClue=w.location;actions.append(clue);}
- if(wild?.species){const sighting=B(wildClue(wild.species),()=>visitWild(w.location));sighting.dataset.wildRarity=wild.species.rarity;actions.append(sighting);if(State.S.catchCount>0&&State.S.luckLure>0&&wild.species.rarity==="N"&&!explorer.cargo)actions.append(B(tr("使用幸运诱饵 · 1","Use lucky lure · 1"),()=>lureWild(w.location)));}if(actions.children.length){const all=[...actions.children],main=all.filter(el=>el.dataset.questPrimary==="true"),other=all.filter(el=>el.dataset.questPrimary!=="true");actions.replaceChildren();if(main.length)actions.append(E("strong","rw-action-heading",tr("主线行动","Main quest actions")),...main);if(other.length){const details=E("details","rw-optional-actions");details.open=optionalOpen??!v.current;details.addEventListener("toggle",()=>{if(details.isConnected){optionalOpen=details.open;scheduleFit();}});details.append(E("summary","",tr("可选探索与支线","Optional exploration & side quests")));const grid=E("div","rw-optional-grid");grid.append(...other);details.append(grid);actions.append(details);}host.append(actions);}const opts=exchangeOptions(b,w.location,campaign.links);if(opts.length||explorer.cargo){const c=E("details","rw-cargo");c.open=!!explorer.cargo||cargoOpen===true;c.addEventListener("toggle",()=>{if(c.isConnected){cargoOpen=c.open;scheduleFit();}});c.append(E("summary","",tr("可选 · 邻地物资交流","Optional · Neighbor exchange")));if(explorer.cargo&&explorer.cargo.actor!==w.location)c.append(B(tr("返回物资所在地","Return to cargo location"),()=>enterRegion(explorer.cargo.actor)));for(const o of explorer.cargo?(explorer.cargo.actor===w.location?[explorer.cargo]:[]):opts){const carrying=!!explorer.cargo;c.append(B((carrying?tr("交付 ","Deliver "):tr("领取 ","Collect "))+cargoName(o.action),()=>visitCargo(o,carrying)));}host.append(c);}}}addNextSceneControl(head,v,w);
+ if(wild?.species){const sighting=B(wildClue(wild.species),()=>visitWild(w.location));sighting.dataset.wildRarity=wild.species.rarity;actions.append(sighting);if(State.S.catchCount>0&&State.S.luckLure>0&&wild.species.rarity==="N"&&!explorer.cargo)actions.append(B(tr("使用幸运诱饵 · 1","Use lucky lure · 1"),()=>lureWild(w.location)));}if(actions.children.length){const all=[...actions.children],main=all.filter(el=>el.dataset.questPrimary==="true"),other=all.filter(el=>el.dataset.questPrimary!=="true");actions.replaceChildren();if(main.length)actions.append(E("strong","rw-action-heading",tr("主线行动","Main quest actions")),...main);if(other.length){const details=E("details","rw-optional-actions");details.open=optionalOpen??true;details.addEventListener("toggle",()=>{if(details.isConnected){optionalOpen=details.open;scheduleFit();}});details.append(E("summary","",tr("探索与支线列表","Exploration & side quest list")));const grid=E("div","rw-optional-grid");grid.append(...other);details.append(grid);actions.append(details);}host.append(actions);}const opts=exchangeOptions(b,w.location,campaign.links);if(opts.length||explorer.cargo){const c=E("details","rw-cargo");c.open=!!explorer.cargo||cargoOpen===true;c.addEventListener("toggle",()=>{if(c.isConnected){cargoOpen=c.open;scheduleFit();}});c.append(E("summary","",tr("可选 · 邻地物资交流","Optional · Neighbor exchange")));if(explorer.cargo&&explorer.cargo.actor!==w.location)c.append(B(tr("返回物资所在地","Return to cargo location"),()=>enterRegion(explorer.cargo.actor)));for(const o of explorer.cargo?(explorer.cargo.actor===w.location?[explorer.cargo]:[]):opts){const carrying=!!explorer.cargo;c.append(B((carrying?tr("交付 ","Deliver "):tr("领取 ","Collect "))+cargoName(o.action),()=>visitCargo(o,carrying)));}host.append(c);}}}addNextSceneControl(head,v,w);
  makeFitRail(head,shell);
  draw();}
  // Navigate to the next authored scene, never grant completion evidence.
@@ -375,9 +375,9 @@ function install(){
   const id=v.current.id,chapter=v.current.chapter,owner=State.S;
   const destination=chapter==="prologue"?"harbor":chapter==="finale"?"starfall":chapter==="epilogue"?"garden":chapter;
   let action,label;
-  if(destination==="garden"){action=exitToYard;label=tr("下一场景 · 阳光花园","Next scene · Sunlit Garden");}
+  if(destination==="garden"){action=exitToYard;label=tr("主线 · 返回阳光花园","Main quest · Return to Sunlit Garden");}
   else if(v.regions.includes(destination)&&(mode==="map"||w.location!==destination)){
-   action=()=>enterRegion(destination);label=tr("下一场景 · ","Next scene · ")+tr(...layouts[destination].name);
+   action=()=>enterRegion(destination);label=tr("主线 · 前往","Main quest · Travel to ")+tr(...layouts[destination].name);
   }else if(mode==="region"&&w.location===destination){
    const primary=[...host.querySelectorAll('button[data-quest-primary="true"]')].find(b=>!b.disabled);
    if(primary){action=()=>{if(primary.isConnected&&!primary.disabled)primary.click()};label=tr("主线 · ","Main quest · ")+primary.textContent.trim();const next=host.querySelector(".rw-next");if(next&&!pendingInvites(v).length)next.textContent=primary.textContent.trim();}
@@ -387,7 +387,7 @@ function install(){
   }
   if(!action)return;
   const button=B(label,()=>{if(State.S!==owner||current().view().current?.id!==id||game.scene!=="map"||explorer?.puzzle||ceremony||current().world().cargo)return;action();});
-  button.dataset.nextScene=id;button.style.cssText="grid-column:1/-1;align-self:center;min-height:36px;padding:8px 13px;border-radius:10px;background:#fff1d2;color:#654923;border:2px solid #aa844c;font-weight:800;box-shadow:0 3px 8px #3a2b2533;";
+  button.dataset.nextScene=id;button.style.cssText="grid-column:1/-1;align-self:center;min-height:44px;padding:10px 15px;border-radius:10px;background:#fff1d2;color:#654923;border:2px solid #aa844c;font-weight:800;box-shadow:0 3px 8px #3a2b2533;";
   container.append(button);
  }
  function point(e){const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height];}
@@ -456,7 +456,7 @@ function install(){
   const reserved=[...Object.entries(explorer.layout.features).filter(([op])=>v.objective.includes(op)).map(([,p])=>p),...explorer.rewardPoints().filter(p=>!w.pickups[region+":"+p.id]).map(p=>p.point),...storyNpcs().flatMap(n=>{const p=npcPosition(n);return [p,[p[0],Math.max(.035,p[1]-.1)],[p[0],p[1]-.045]]}),...availableMemories(region).map(m=>m.point),...explorer.cargoPoints(),wild?.point];
   for(const q of [explorer.scentStep(),explorer.tideStep(),explorer.forgeStep(),explorer.pairedGate(),explorer.homeQuest()])if(q?.point)reserved.push(q.point);
   const survey=explorer.survey();if(survey?.from)reserved.push(survey.from);
-  return layoutDiscoveries(items,reserved,W,H).filter(s=>distance(explorer.position,s.at)<.29);
+  return layoutDiscoveries(items,reserved,W,H);
  }
  function visitDiscovery(s){const owner=State.S,source=explorer,region=current().world().location;go(s.at,()=>{if(owner!==State.S||explorer!==source||game.scene!=="map"||explorer.puzzle||ceremony||explorer.cargo||explorer.survey()?.remote)return;if(s.sideEvent){mountSideAdventure(region,{guard:()=>owner===State.S&&explorer===source&&game.scene==="map"&&current().world().location===region&&!explorer.puzzle&&!ceremony&&!explorer.cargo,commit:trace=>{const r=current().finishSideEvent(region,trace);if(r.ok){notice=r.message;render();}return r;}});return;}const result=current().discover(region,s.id);if(result.ok){const msg=result.message;if(!result.decoy)window.MorrowwishAudio?.effect?.("discover");const label=result.souvenir?[msg[0]+" · 纪念物："+result.souvenir[0],msg[1]+" · Keepsake: "+result.souvenir[1]]:msg;notice=label;game.toast?.({zh:label[0],en:label[1]});}else report(result);render();});}
  function visitCache(cache){if(!cache)return;go(cache.point,()=>{reportPickup(explorer.pickup(cache.id),["发现信使补给","Courier cache discovered"]);render()});}
@@ -475,7 +475,7 @@ function install(){
  if(!explorer)return;if(ceremony)return;[x,y]=cameraPoint([x,y]);if(explorer.puzzle){if(explorer.puzzle.type==="canonSpatial"){const spatial=explorer.puzzle.spatial,action=spatialTap(spatial,x,y);if(spatial.kind==="chase"){if(action)chaseInput(action);}else spatialAct(action);return;}if(["pairedWater","melody","skyFlight","libraryRoutes"].includes(explorer.puzzle.type))return;const type=explorer.puzzle.type;let i=puzzleHit(x,y);if(type==="lanternFocus")i=y>=.58&&y<=.78?[.30,.50,.70].findIndex(cx=>Math.abs(x-cx)<.095):-1;if(type==="routing")i=Math.hypot(x-.5,y-.53)<.14?0:-1;if(type==="libraryCompanion")i=y>=.32&&y<=.68?(Math.abs(x-.30)<.13?0:Math.abs(x-.70)<.13?2:-1):-1;if(type==="libraryLedger")i=y>=.34&&y<=.67?[.23,.50,.77].findIndex(cx=>Math.abs(x-cx)<.12):-1;if(i>=0)operate(i);return;}const selected=pickMarker(markerHits,x*W,y*H);if(selected?.activate){selected.activate();return;}if(selected)[x,y]=selected.target;const b=current(),v=b.view(),reg=b.world().location,t=[x,y],hit=p=>distance(t,p)<((reg==="forest"||reg==="sky")&&canvas.clientWidth<600?.052:.038),cargo=explorer.cargo,depots=explorer.cargoPoints();
  const survey=explorer.survey();if(survey?.remote){const cache=explorer.rewardPoints().find(p=>survey.cache&&explorer.near(p.point)&&hit(p.point));if(cache){visitCache(cache);return;}if(hit(survey.from)){visitSurvey(survey);return;}pending=null;beginWalk();explorer.walk(x,y);return;}
  if(survey&&!cargo&&hit(survey.from)){visitSurvey(survey);return;}
- const discovery=discoveryTargets(reg,b.world(),v).filter(s=>!v.current||v.ending||optionalOpen===true||distance(explorer.position,s.point)<.13).map(s=>({s,d:Math.hypot((x-s.point[0])*W,(y-s.point[1])*H)})).filter(o=>o.d<Math.max(20,Math.min(32,20*W/Math.max(1,canvas.clientWidth)/zoom))).sort((a,b)=>a.d-b.d)[0];if(discovery){visitDiscovery(discovery.s);return;}
+ const discovery=discoveryTargets(reg,b.world(),v).map(s=>({s,d:Math.hypot((x-s.point[0])*W,(y-s.point[1])*H)})).filter(o=>o.d<Math.max(20,Math.min(32,20*W/Math.max(1,canvas.clientWidth)/zoom))).sort((a,b)=>a.d-b.d)[0];if(discovery){visitDiscovery(discovery.s);return;}
  if(cargo&&hit(depots[cargo.to])){visitCargo(cargo,true);return;}
  const opt=exchangeOptions(b,reg,campaign.links).find(o=>!cargo&&hit(depots[o.from]));if(opt){visitCargo(opt,false);return;}
  if(v.ending&&reg==="starfall"&&hit(ruinsPoint)){visitRuins();return;}
@@ -507,14 +507,14 @@ function install(){
   if(!mapMarks.length){if(canvas.dataset.affordances!=="[]")canvas.dataset.affordances="[]";return;}
   const metrics=markerMetrics(canvas.clientWidth,cameraEnabled()?zoom:1,W),{r,font}=metrics;
   const family="Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";
-  const focused=mode==="region"&&!!current().view().current&&!current().view().ending&&!explorer?.survey()?.remote;const quiet=focused&&optionalOpen!==true;const marks=focused?[...mapMarks].sort((a,b)=>Number(a.optional)-Number(b.optional)).filter(m=>!quiet||!m.optional||distance(explorer.position,m.target)<.13):mapMarks;
+  const focused=mode==="region"&&!!current().view().current&&!current().view().ending&&!explorer?.survey()?.remote;const quiet=false;const marks=(focused?[...mapMarks].sort((a,b)=>Number(a.optional)-Number(b.optional)):mapMarks).map(m=>({...m,main:focused&&!m.optional,secondary:focused&&m.optional}));
   const placed=layoutMarkerLabels(marks,metrics,(t,fs)=>{ctx.font="700 "+fs+"px "+family;return ctx.measureText(t).width;},W,H,actorAvoid);
-  for(const m of placed){m.main=focused&&!m.optional;if(quiet&&m.optional&&!m.bubble){m.rect=null;m.r=Math.max(8,r*.52);m.hit=Math.max(m.r,metrics.hit*.72);}}
+  
   markerHits.splice(0,markerHits.length,...placed);
   const metadata=JSON.stringify(placed.map(({x,y,r,hit,rect,t,k,target,main,optional})=>({x,y,r,hit,rect,t,k,target,main,optional})));if(canvas.dataset.affordances!==metadata)canvas.dataset.affordances=metadata;
   for(const m of placed){
    if(m.bubble)continue;
-   ctx.save();if(m.origin&&(m.origin[0]!==m.x||m.origin[1]!==m.y)){ctx.beginPath();ctx.moveTo(...m.origin);ctx.lineTo(m.x,m.y);ctx.strokeStyle="#775632b5";ctx.lineWidth=1.5;ctx.stroke();}ctx.beginPath();ctx.globalAlpha=quiet&&m.optional ? .65 : 1;ctx.arc(m.x,m.y,m.r,0,Math.PI*2);ctx.fillStyle=m.main?"#fff5d5":"#fff2dcf5";ctx.shadowColor=m.main?"#b58d4c88":"#37281955";ctx.shadowBlur=m.main?10:3;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=m.main?"#aa844c":"#835f34";ctx.lineWidth=m.main?3.5:1.5;ctx.stroke();
+   ctx.save();if(m.origin&&(m.origin[0]!==m.x||m.origin[1]!==m.y)){ctx.beginPath();ctx.moveTo(...m.origin);ctx.lineTo(m.x,m.y);ctx.strokeStyle="#775632b5";ctx.lineWidth=1.5;ctx.stroke();}ctx.beginPath();ctx.globalAlpha=1;ctx.arc(m.x,m.y,m.r,0,Math.PI*2);ctx.fillStyle=m.main?"#fff5d5":"#fff2dcf5";ctx.shadowColor=m.main?"#b58d4c88":"#37281955";ctx.shadowBlur=m.main?10:3;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=m.main?"#aa844c":"#835f34";ctx.lineWidth=m.main?3.5:1.5;ctx.stroke();
    if(m.discovery){ctx.translate(m.x,m.y);ctx.scale(m.r/21,m.r/21);ctx.translate(-m.x,-m.y);paintDiscovery(ctx,{...m.discovery,point:[m.x/W,m.y/H]},W,H,frame/60);}
    else symbol(ctx,m.k,m.x,m.y,m.r/24,m.col);
    ctx.restore();
@@ -522,15 +522,15 @@ function install(){
   for(const m of placed){if(!m.rect||m.bubble)continue;const {x,y,w,h}=m.rect;
    ctx.save();ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(Math.max(x,Math.min(x+w,m.x)),Math.max(y,Math.min(y+h,m.y)));ctx.strokeStyle="#775632b5";ctx.lineWidth=1.6;ctx.stroke();
    ctx.beginPath();ctx.roundRect(x,y,w,h,6);ctx.fillStyle=m.main?"#fff1d2":"#fff3dff5";ctx.fill();ctx.strokeStyle=m.main?"#aa844c":"#a17d49";ctx.lineWidth=m.main?2.5:1.5;ctx.stroke();
-   ctx.font="700 "+font+"px "+family;ctx.fillStyle=m.main?"#654923":"#493322";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(m.t,x+w/2,y+h/2,w-8);ctx.restore();
+   ctx.font=(m.main?"800 ":"650 ")+(m.labelFont||font)+"px "+family;ctx.fillStyle=m.main?"#654923":"#493322";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(m.t,x+w/2,y+h/2,w-8);ctx.restore();
   }
   // Canvas equivalent of .sg-npc-talk-marker in rpg-fullbleed.css:
   // same cream fill, gold outline, rounded body, speech glyph and tail.
   for(const m of placed){if(!m.bubble)continue;
    const {x,y,w,h}=m.bubble,u=1/metrics.scale,cx=x+w/2,cy=y+h/2;
-   ctx.save();ctx.globalAlpha=quiet&&m.optional ? .72 : 1;ctx.fillStyle="#fff1d2";ctx.strokeStyle="#aa844c";ctx.lineWidth=u;ctx.shadowColor="#3a2b2533";ctx.shadowBlur=8*u;ctx.shadowOffsetY=3*u;
+   ctx.save();ctx.globalAlpha=1;ctx.fillStyle="#fff1d2";ctx.strokeStyle="#aa844c";ctx.lineWidth=u;ctx.shadowColor="#3a2b2533";ctx.shadowBlur=8*u;ctx.shadowOffsetY=3*u;
    ctx.beginPath();ctx.roundRect(x,y,w,h,12*u);ctx.fill();ctx.shadowColor="transparent";ctx.stroke();
-   if(m.main){ctx.save();ctx.strokeStyle="#d6ac64";ctx.lineWidth=1.5*u;ctx.beginPath();ctx.roundRect(x-3*u,y-3*u,w+6*u,h+6*u,15*u);ctx.stroke();ctx.restore();}
+   if(m.main){ctx.save();ctx.strokeStyle="#c7943e";ctx.lineWidth=2*u;ctx.beginPath();ctx.roundRect(x-3*u,y-3*u,w+6*u,h+6*u,15*u);ctx.stroke();ctx.translate(cx,y-12*u);ctx.rotate(Math.PI/4);ctx.fillStyle="#e9b955";ctx.strokeStyle="#875e27";ctx.lineWidth=1.2*u;ctx.fillRect(-6*u,-6*u,12*u,12*u);ctx.strokeRect(-6*u,-6*u,12*u,12*u);ctx.restore();}
    ctx.beginPath();ctx.moveTo(cx-5*u,y+h-.5*u);ctx.lineTo(cx,y+h+5*u);ctx.lineTo(cx+5*u,y+h-.5*u);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(cx-5*u,y+h-.5*u);ctx.lineTo(cx,y+h+5*u);ctx.lineTo(cx+5*u,y+h-.5*u);ctx.stroke();
    const fs=m.bubbleFont,g=17*u;ctx.font="700 "+fs+"px "+family;
    const labelWidth=Math.min(ctx.measureText(m.t).width,Math.max(1,w-36*u)),left=cx-(g+5*u+labelWidth)/2;

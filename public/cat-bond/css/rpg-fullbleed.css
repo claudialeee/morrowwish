@@ -251,3 +251,11 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 /* Explicit dimensions prevent size-contained absolute boxes from shrink-wrapping to zero. */
 #stage .rw-world.rw-dedicated-puzzle:not([hidden])>.rw-shell{box-sizing:border-box!important;width:calc(100% - var(--rw-game-controls) - 3 * var(--rw-game-gap))!important;height:calc(100% - var(--rw-game-top) - var(--rw-game-gap))!important;margin:0!important;justify-self:stretch!important;align-self:stretch!important}
 @media(orientation:portrait){#stage .rw-world.rw-dedicated-puzzle:not([hidden])>.rw-shell{width:calc(100% - 2 * var(--rw-game-gap))!important;height:calc(100% - var(--rw-game-top) - var(--rw-game-controls) - 2 * var(--rw-game-gap))!important}}
+
+/* Regional main quest tracker: always readable, independent of exploration visibility. */
+#stage .rw-world>.rw-head>button[data-next-scene]{font-size:clamp(17px,2.1vw,23px)!important;line-height:1.35!important;min-height:44px!important;max-width:min(66vw,470px)!important;text-align:left!important;font-weight:800!important}
+#stage .rw-world .rw-fit-summary{font-size:clamp(15px,1.7vw,19px)!important;line-height:1.35!important;font-weight:700!important;overflow-wrap:anywhere}
+#stage .rw-world .rw-fit-rail .rw-current strong{font-size:clamp(20px,2.3vw,26px)!important}
+#stage .rw-world .rw-fit-rail .rw-next{font-size:clamp(17px,1.9vw,21px)!important;font-weight:750!important}
+#stage .rw-world .rw-fit-rail .rw-world-actions [data-quest-primary]{font-size:17px!important;min-height:44px!important}
+@media(max-width:480px),(max-height:420px){#stage .rw-world>.rw-head>button[data-next-scene]{font-size:16px!important;max-width:min(68vw,440px)!important}#stage .rw-world .rw-fit-summary{font-size:14px!important}}
