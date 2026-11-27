@@ -2528,3 +2528,26 @@ Mid-turn supervisor retroactive flag caught that the `fixes[]` array had 3 P0-ti
 ### Carryovers from wb3r7ejxm not yet addressed
 - Fix 0 (combo tier): findings-only (cross-cutting)
 - Fix 1 (ult button state): findings-only (i18n structure)
+
+## Playtest cycle wyirqg3vx — 2026-11-27 (ran pre-83f00177, baseline)
+
+**Headline**: Combat is winnable but illegible — the biggest wins are harness honesty (MAXT=60 lie), surfacing the Q/E/R verbs that players can't see, and converting sustained dominance into discrete kill moments instead of stretched silent timers.
+
+**funMean 4.67** (session arc: 4.33→4.5→5.0→4.33→4.17→4.67):
+- 狂按 7 / 探索 6 / 懒人 6 / 谨慎 3 / 手忙脚乱 3 / 没耐心 3
+
+### Auto-fixes this cycle: 0 (3 fixes-array P0s, all findings-only)
+
+34 critiques. 22 P1 (6 local-numeric + 16 additive-flag). 12 P2 (3 local-numeric + 9 additive-flag). 3 fixes-array P0:
+- **Fix 0 (name E in banner + first-CD toast)**: FINDINGS-ONLY — i18n structure + banner string change excluded by cron.
+- **Fix 1 (MAXT=60 harness lie)**: FINDINGS-ONLY — risk flag "band-fitness gate needs re-baselining" = prospective test rebase, excluded.
+- **Fix 2 (9s ult auto-cast reset on input)**: FINDINGS-ONLY — behavior change, collides with pending P1 passive brief.
+
+### Known-state note
+This cycle ran against HEAD pre-83f00177 / pre-d4ca902d / pre-5fc451d7 (pre-defense-rebalance). Numbers reflect older defense formula (uniform cap 15 or pre-cap). Next cycle will measure post-symmetric-defense combat shape.
+
+### Harness
+28/76 agent calls hit StructuredOutput retry cap. 48 succeeded.
+
+### Session arc
+w06q78tip 4.33 → w892jymfa 4.5 → wowed850p 5.0 → wb3r7ejxm 4.33 → wmbjeusi4 4.17 → wyirqg3vx 4.67.
