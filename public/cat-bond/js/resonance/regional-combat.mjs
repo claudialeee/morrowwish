@@ -1,3 +1,4 @@
+import {activateCompanionTalents} from "./companion-talents.mjs";
 import {canonArt,visibleBounds} from "./canon22-art.mjs";
 import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud} from "./battle-hud.mjs";
 // Regional combat extensions: attach to actual CaptureBattle instances, never to campaign state.
@@ -246,7 +247,7 @@ function install(){
  const capture=BP.startCaptureSeq;
  BP.startCaptureSeq=function(){if(this.libraryEncounter){this.libraryEncounter.cleared=true;this.projectiles=[];this.enemyProjectiles=[];this.finish(true);return;}if(this.regionalCombat&&this.enemies.some(e=>e.regionalEnemy))this._lastDropped=this.enemies[0];return capture.call(this);};
  const update=BP.update;
- BP.update=function(dt){const result=update.call(this,dt);if(this.regionalCombat)tick(this,Math.min(.06,Math.max(0,dt*(this.tempoScale??.64))));if(this.libraryEncounter&&!this.done&&this.t>100){this._timeCapLoss=true;this.finish(false);}return result;};
+ BP.update=function(dt){const result=update.call(this,dt);if(this.regionalCombat){tick(this,Math.min(.06,Math.max(0,dt*(this.tempoScale??.64))));activateCompanionTalents(this);}if(this.libraryEncounter&&!this.done&&this.t>100){this._timeCapLoss=true;this.finish(false);}return result;};
  const enemyAI=BP.updateEnemyAI;
  BP.updateEnemyAI=function(dt,e,me){
   const r=this.regionalCombat;

@@ -1,3 +1,4 @@
+import {companionTalents} from "./companion-talents.mjs";
 import {earnedKeepsakes} from "./regional-discoveries.mjs";
 // One presentation layer over the existing UI, State, Raising and CatRelations.
 // No cloned cats, separate inventory, storage, or narrative progress.
@@ -105,7 +106,7 @@ function inventory(focusCraft=false){
   const buttons=node("div","rb-recovery-actions");buttons.append(heal,gear);details.append(buttons);card.append(art,details);team.append(card);
   requestAnimationFrame(()=>{if(alive()&&art.isConnected)window.CatArt.renderCatThumb(art,window.GameData.speciesById(cat.species),cat)});
  }
- recovery.append(team);host.append(recovery,node("h3","",tr("制作配方","Crafting recipes")));
+ recovery.append(team);const talents=(s.cats||[]).filter(c=>companionTalents[c.storyActor]);if(talents.length){recovery.append(node("h3","",tr("伙伴专长","Companion talents")),node("p","rb-rule",tr("首发或换入战场后自动触发，每场地区战斗一次。","Triggers on the active field once per regional battle.")));for(const cat of talents){const t=companionTalents[cat.storyActor];recovery.append(node("p","rb-rule",window.State.catName(cat)+" · "+tr(...t.name)+" — "+tr(...t.description)));}}host.append(recovery,node("h3","",tr("制作配方","Crafting recipes")));
  const list=node("div","rb-recipes");list.id="rb-recipes";
  for(const recipe of recipes){const unlocked=!recipe.region||s.resonance?.sanctuaries?.includes(recipe.region);
  const card=node("article","rb-recipe");card.append(node("strong","",tr(...recipe.name)),node("p","",tr("消耗 ","Costs ")+recipe.coins+tr(" 金币 · "," coins · ")+recipe.fish+tr(" 小鱼干"," fish")),node("p","",tr("获得 ","Creates ")+recipe.count+" × "+tr(...recipe.item)));

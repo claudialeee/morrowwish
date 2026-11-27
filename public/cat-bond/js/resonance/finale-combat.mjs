@@ -368,7 +368,7 @@ function install(){
    // Stage the verified physical action in this fight; a retreat cannot grant narrative evidence.
    next.done=true;if(f.cast?.node===f.nodes.indexOf(next)){f.cast=null;f.cooldown=Math.max(f.cooldown,2.0);}b.vfx.ring(next.x,next.y,{r0:15,vr:240,life:.8,color:next.color,width:5});
    for(const cat of alive(b))cat.hp=Math.min(cat.maxhp,cat.hp+Math.ceil(cat.maxhp*(next.region==="forest"?.09:.035)));
-   const central=b.liveEnemies().find(e=>e.finaleActor==="central");if(central){central.dmg*=next.region==="forge"?.86:.94;if(next.region==="starfall")central.hp=Math.max(1,central.hp-central.maxhp*.20);}
+   const central=b.liveEnemies().find(e=>e.finaleActor==="central");if(central){central.dmg*=next.region==="forge"?.86:.94;if(next.region==="starfall")central.hp=Math.max(1,Math.min(central.hp,Math.ceil(central.maxhp*.12)));}
    if(next.region==="harbor")for(const n of f.nodes)if(!n.done)n.integrity=Math.min(100,n.integrity+12);
    if(next.region==="sky")f.cooldown=Math.max(f.cooldown,4.6);
    if(next.region==="library")b.projectiles=b.projectiles.filter(p=>p.owner!=="wild");

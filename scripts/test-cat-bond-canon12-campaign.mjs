@@ -50,7 +50,7 @@ run("forge:E-02","forge","puzzle:shadow-bridge");
 run("sky:S-01","sky","puzzle:sky-pouch");
 const waterfall=run("sky:S-03","sky","puzzle:joint-flight");assert.deepEqual(waterfall.b.view().objective,["repair:sky","melody:sky"],"only real bell response remains after flight");
 walk(waterfall.x,layouts.sky.features["repair:sky"]);ok(waterfall.x.interact("repair:sky"),"physical bell repair uses earned flight proof");assert.ok(!waterfall.x.puzzle,"no repeat flight");assert.deepEqual(waterfall.b.view().objective,["melody:sky"]);
-assert.equal(waterfall.x.interact("melody:sky").ok,false,"melody requires locals");
+walk(waterfall.x,layouts.sky.features["melody:sky"]);assert.ok(waterfall.x.invited.length>=2,"locals attend after repair");ok(waterfall.x.interact("melody:sky"),"resident-led melody");assert.equal(waterfall.x.puzzle.values.length,2);ok(waterfall.x.operate(waterfall.x.puzzle.goal[2]),"player completes final note");
 const lib=run("library:M-05","library","puzzle:two-route-model",null,o=>recordNpc(o,"moye","library"));assert.ok(!lib.b.view().ring,"model must not credit real links");
 run("starfall:F-01","starfall","puzzle:star-steps",null,o=>{recordNpc(o,"lichuan","starfall");recordNpc(o,"xingya","starfall")});
 const star=setup("starfall:F-04","starfall");assert.deepEqual(star.b.view().objective,["puzzle:distributed-routing","repair:starfall","melody:starfall"]);assert.equal(star.rt.evidence({sceneId:"starfall:F-04",operation:"battle:observatory-echo",region:"starfall",verified:true,outcome:"win",token:star.rt.capture()}).ok,false);
