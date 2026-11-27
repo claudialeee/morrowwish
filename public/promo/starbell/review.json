@@ -1,0 +1,69 @@
+{
+  "slug": "starbell",
+  "video": "/promo/starbell/story-trailer-en-20261126.mp4",
+  "poster": "/promo/starbell/story-trailer-en-20261126.jpg",
+  "duration": 36,
+  "createdAt": "2026-11-27T07:43:48.146Z",
+  "source": {
+    "sha": "dcad5f737dac653d1a5a89c474281d38636bc608",
+    "qaTier": "preview-smoke",
+    "qaScope": "full",
+    "fullReleaseAccepted": false,
+    "scope": "Prologue through Finale",
+    "storage": "local-only",
+    "productionApis": false,
+    "previewTelemetry": "starbell-preview",
+    "sources": [
+      "review/starbell-canon13-player-experience dcad5f737dac653d1a5a89c474281d38636bc608"
+    ]
+  },
+  "renderRun": 45960007297,
+  "approved": false,
+  "published": false,
+  "shots": [
+    {
+      "scene": "hook",
+      "seconds": 3
+    },
+    {
+      "scene": "garden",
+      "seconds": 2
+    },
+    {
+      "scene": "sky",
+      "seconds": 2
+    },
+    {
+      "scene": "melody",
+      "seconds": 4
+    },
+    {
+      "scene": "friends",
+      "seconds": 3
+    },
+    {
+      "scene": "chase",
+      "seconds": 3
+    },
+    {
+      "scene": "glide",
+      "seconds": 5
+    },
+    {
+      "scene": "battle",
+      "seconds": 4
+    },
+    {
+      "scene": "duo",
+      "seconds": 2
+    },
+    {
+      "scene": "secret",
+      "seconds": 4
+    },
+    {
+      "scene": "end",
+      "seconds": 4
+    }
+  ]
+}

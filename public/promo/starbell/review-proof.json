@@ -1,0 +1,178 @@
+{
+  "live": {
+    "origin": "https://cat-bond-preview.morrowwish.pages.dev",
+    "source": {
+      "sha": "dcad5f737dac653d1a5a89c474281d38636bc608",
+      "qaTier": "preview-smoke",
+      "qaScope": "full",
+      "fullReleaseAccepted": false,
+      "scope": "Prologue through Finale",
+      "storage": "local-only",
+      "productionApis": false,
+      "previewTelemetry": "starbell-preview",
+      "sources": [
+        "review/starbell-canon13-player-experience dcad5f737dac653d1a5a89c474281d38636bc608"
+      ]
+    },
+    "script": "b26d9efb5893043420d31d34f9606b52d6108ce3",
+    "clips": [
+      {
+        "id": "garden",
+        "seconds": 5,
+        "frames": 136,
+        "rect": null,
+        "scene": {
+          "scene": "yard",
+          "region": "garden",
+          "story": "prologue:P-05"
+        }
+      },
+      {
+        "id": "glide",
+        "seconds": 7,
+        "frames": 194,
+        "rect": {
+          "x": 8,
+          "y": 130.015625,
+          "width": 524,
+          "height": 294.75,
+          "vw": 540,
+          "vh": 960
+        },
+        "scene": {
+          "scene": "map",
+          "region": "sky",
+          "story": "sky:S-01"
+        }
+      },
+      {
+        "id": "chase",
+        "seconds": 5,
+        "frames": 243,
+        "rect": {
+          "x": 8,
+          "y": 340.625,
+          "width": 524,
+          "height": 294.75,
+          "vw": 540,
+          "vh": 960
+        },
+        "scene": {
+          "scene": "map",
+          "region": "harbor",
+          "story": "harbor:H-02"
+        }
+      },
+      {
+        "id": "melody",
+        "seconds": 5,
+        "frames": 272,
+        "rect": null,
+        "scene": {
+          "scene": "map",
+          "region": "harbor",
+          "story": "harbor:H-04"
+        }
+      },
+      {
+        "id": "battle",
+        "seconds": 9,
+        "frames": 258,
+        "rect": null,
+        "scene": {
+          "scene": "battle",
+          "region": "harbor",
+          "story": "harbor:H-04"
+        }
+      }
+    ],
+    "errors": []
+  },
+  "shots": [
+    {
+      "id": "hook",
+      "seconds": 3,
+      "live": false,
+      "caption": "You thought this was\na new journey."
+    },
+    {
+      "id": "garden",
+      "seconds": 2,
+      "live": true,
+      "caption": "A world you’ve never seen."
+    },
+    {
+      "id": "sky",
+      "seconds": 2,
+      "live": false,
+      "caption": "A world you’ve never seen."
+    },
+    {
+      "id": "melody",
+      "seconds": 4,
+      "live": true,
+      "caption": "A melody you’ve\nnever learned."
+    },
+    {
+      "id": "friends",
+      "seconds": 3,
+      "live": false,
+      "caption": "Friends you’ll never\nwant to forget."
+    },
+    {
+      "id": "chase",
+      "seconds": 3,
+      "live": true,
+      "caption": null
+    },
+    {
+      "id": "glide",
+      "seconds": 5,
+      "live": true,
+      "caption": null
+    },
+    {
+      "id": "battle",
+      "seconds": 4,
+      "live": true,
+      "caption": null
+    },
+    {
+      "id": "duo",
+      "seconds": 2,
+      "live": false,
+      "caption": null
+    },
+    {
+      "id": "secret",
+      "seconds": 4,
+      "live": false,
+      "caption": "But your story began\nlong before you woke up."
+    },
+    {
+      "id": "end",
+      "seconds": 4,
+      "live": false,
+      "caption": null
+    }
+  ],
+  "firstCaption": "You thought this was\na new journey.",
+  "format": {
+    "filename": "artifacts/starbell-story-trailer/Echoes-of-the-Starbell-Official-Trailer-EN.mp4",
+    "nb_streams": 2,
+    "nb_programs": 0,
+    "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+    "format_long_name": "QuickTime / MOV",
+    "start_time": "0.000000",
+    "duration": "36.000000",
+    "size": "11699788",
+    "bit_rate": "2599952",
+    "probe_score": 100,
+    "tags": {
+      "major_brand": "isom",
+      "minor_version": "512",
+      "compatible_brands": "isomiso2avc1mp41",
+      "encoder": "Lavf60.16.100"
+    }
+  }
+}
