@@ -901,7 +901,7 @@
     var count=Math.min(6,fragments.length),chapter=zh?chapterNamesZh[count]:chapterNamesEn[count];
     var objective=nextStoryRegion
       ?(zh?({home:'前往阳光花园，找到纸鸢，追查那本没有名字的 Catdex。',sakura:'前往樱花林，找出被改写的旧约。',creek:'前往溪谷，弄清你为何主动交出自己的名字。',volcano:'前往火山口，找出烬禾隐瞒的灾变真相。',ruins:'前往月影遗迹，查明六段旋律真正的用途。'}[nextStoryRegion.id]):({home:'Find Kite in Sunlit Garden and ask why the Catdex kept a blank page.',sakura:'Uncover who rewrote the old promise in Sakura Woods.',creek:'Learn why you willingly gave your name to the river.',volcano:'Discover what Jinhe concealed about the Star Bell catastrophe.',ruins:'Find out what the six melodies are really meant to do.'}[nextStoryRegion.id]))
-      :(zh?(fragments.includes('last-page')?'返回月影遗迹，面对暮铃，阻止逆响仪式。':'在月影遗迹寻找隐藏的星光匣，揭开最后一页。'):(fragments.includes('last-page')?'Return to Moonshadow Ruins and stop Muling’s reversed-bell ritual.':'Find the hidden star box in Moonshadow Ruins and reveal the last page.'));
+      :(zh?(fragments.includes('last-page')?'返回月影遗迹，面对暮铃，阻止逆响仪式。':'在月影遗迹寻找隐藏的星光匣，揭开最后一页。'):(fragments.includes('last-page')?'Return to Moonshadow Ruins and stop Luna’s reversed-bell ritual.':'Find the hidden star box in Moonshadow Ruins and reveal the last page.'));
     ctx.save();ctx.textAlign='center';ctx.textBaseline='top';
     var headW=Math.min(W-28,W<650?460:620),headX=(W-headW)/2,headY=W<650?62:38;
     ctx.fillStyle='rgba(13,13,29,.76)';roundRect(ctx,headX,headY,headW,62,14);ctx.fill();

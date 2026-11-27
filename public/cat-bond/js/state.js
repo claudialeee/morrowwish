@@ -372,7 +372,7 @@ function normalizeLoadedState(data) {
       migrateOwnedStats(c);
     }
   }
-  // Muling may be temporarily outside the roster during the library chapter.
+  // Luna may be temporarily outside the roster during the library chapter.
   for(const c of Object.values(next.storyAway||{}))if(c?.species)migrateOwnedStats(c);
   return next;
 }

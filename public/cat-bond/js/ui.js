@@ -1318,7 +1318,7 @@ const UI = {
       sun:[en?'Earn coins':'晒太阳赚金币',en?'Spend coins on feeding, buildings and upgrades':'金币用于喂猫、建造、升级工坊'],
       fishing:[en?'Catch fish':'钓小鱼',en?'Fish feed cats, train levels and buy rare-cat lures':'小鱼用于喂猫、练级、买稀有诱饵'],
       yarn:[en?'Earn coins':'织物赚金币',en?'More coins for upgrades and stat training':'金币用于升级与属性特训'],
-      forge:[en?'Emberforge smithy':'赤炉锻造台',en?'Forge tools using Xiaomao’s safe design. Reinforced tools increase this station’s production by 25%.':'依照小铆的新安全设计锻造工具。强化工具提升此工位产出 25%。'],
+      forge:[en?'Emberforge smithy':'赤炉锻造台',en?'Forge tools using Pip’s safe design. Reinforced tools increase this station’s production by 25%.':'依照小栗的新安全设计锻造工具。强化工具提升此工位产出 25%。'],
       watch:[en?'Collect luck':'瞭望好运',en?'Boost the next rare-cat sighting':'好运用于提高下一次野猫的稀有机会'],
     };
     const cards=stations.map(st=>{
@@ -2345,7 +2345,7 @@ const UI = {
     const canonical=State.S.resonance;
     const flightRecord=canonical?.evidence?.["sky:S-02"]?.includes("explore:flight-recorder")||canonical?.completed?.includes("sky:S-02");
     const pendantRecord=canonical?.completed?.includes("sky:S-04");
-    const skyRecords=(flightRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Skyspine flight record":"云脊飞行记录"}</strong><small>${en?"Yuanfan cut the cargo line after Lingyu misread the wind, saving both couriers.":"翎羽误判风向后，远帆切断货索，救下两位信使。"}</small></span><b>${en?"Verified":"已核实"}</b></section>`:"")+(pendantRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Muling · familiar habit":"暮铃 · 熟悉的习惯"}</strong><small>${en?"When she is uneasy, she taps her old bell pendant twice.":"心神不宁时，她会轻敲旧铃坠两次。"}</small></span><b>${en?"Observed":"已观察"}</b></section>`:"");
+    const skyRecords=(flightRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Skyspine flight record":"云脊飞行记录"}</strong><small>${en?"Finn cut the cargo line after Wren misread the wind, saving both couriers.":"翎羽误判风向后，远帆切断货索，救下两位信使。"}</small></span><b>${en?"Verified":"已核实"}</b></section>`:"")+(pendantRecord?`<section class="cb-dex-story-record"><span class="cb-dex-story-mark">✦</span><span><strong>${en?"Luna · familiar habit":"暮铃 · 熟悉的习惯"}</strong><small>${en?"When she is uneasy, she taps her old bell pendant twice.":"心神不宁时，她会轻敲旧铃坠两次。"}</small></span><b>${en?"Observed":"已观察"}</b></section>`:"");
     const forgeRecord=State.S.resonance?.completed?.includes("forge:E-03")
       ?`<section class="cb-dex-forge-record" data-dex-record="forge"><img src="assets/combat/forge-guardian-painted.webp" alt=""><div><small>${en?'REGIONAL FIELD RECORD':'地区见闻'}</small><strong>${en?'Furnace Guardian':'熔炉机械守卫'}</strong><p>${en?'The safety mechanism has been stabilized. Its three heat and pressure stages are recorded here; it is a machine, not a collectible breed.':'安全机关已稳定，三阶段炉温与压力记录已收录。机械守卫不是可收集猫咪品种。'}</p><span>${en?'Encounter complete · Emberforge City':'挑战完成 · 赤炉环城'}</span></div></section>`:'';
     const resonance=State.S.resonance,canonicalMemory=resonance?.schema===1?[

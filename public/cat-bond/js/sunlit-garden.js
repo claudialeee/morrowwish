@@ -77,14 +77,14 @@
     const echo=scene==='prologue:P-05'&&!!state()?.sunlitGarden?.exploration?.chartEcho;const key=scene+'|'+talk+'|'+en+'|'+v.openingMet+'|'+echo+'|'+seen.join(',')+'|'+(ending?guestRosterKey+'|'+guestPage+'|'+v.postgame.length:'');if(key===guideKey)return;guideKey=key;
     guide.replaceChildren();guide.classList.remove('sg-minimal-opening');guide.classList.toggle('sg-postgame-guide',ending);
     const title=document.createElement('strong');
-    title.textContent=ending?(en?'The world answers again':'六地再次回应'):epilogue?(scene==='epilogue:E-02'?(en?'A promise to repair':'承担责任'):(en?'The second garden key':'第二把花园钥匙')):departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
-    const hint=document.createElement('span');hint.textContent=ending?(en?guests.ids.length+' visiting friends':'来访伙伴 '+guests.ids.length+' 位'):epilogue?(en?'Speak with Muling and finish the story in Sunlit Garden.':'与暮铃交谈，在阳光花园完成故事。'):departure?(en?'Prepare your companions before heading to Windchime Town.':'整理伙伴，准备前往风铃镇。'):talk?(en?'Open Resonance Book to explore your cats, party, workshop and Catdex, then speak to Muling.':'可打开星月之书查看猫咪、队伍、工坊和 Catdex，再与暮铃交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
+    title.textContent=ending?(en?'The world answers again':'六地再次回应'):epilogue?(scene==='epilogue:E-02'?(en?'A promise to repair':'承担责任'):(en?'The second garden key':'第二把花园钥匙')):departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Luna':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
+    const hint=document.createElement('span');hint.textContent=ending?(en?guests.ids.length+' visiting friends':'来访伙伴 '+guests.ids.length+' 位'):epilogue?(en?'Speak with Luna and finish the story in Sunlit Garden.':'与暮铃交谈，在阳光花园完成故事。'):departure?(en?'Prepare your companions before heading to Windchime Town.':'整理伙伴，准备前往风铃镇。'):talk?(en?'Open Resonance Book to explore your cats, party, workshop and Catdex, then speak to Luna.':'可打开星月之书查看猫咪、队伍、工坊和 Catdex，再与暮铃交谈。'):(en?'Pull the bell cord to hear its response.':'拉动铃绳，听听它的回应。');
     guide.append(title,hint);
     const row=document.createElement('div');guide.append(row);
     const add=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};row.append(b)};
-    if(talk){add('与暮铃交谈','Talk to Muling',()=>approachHomeNpc('muling'));row.lastElementChild.classList.add('sg-main-continue');}
+    if(talk){add('与暮铃交谈','Talk to Luna',()=>approachHomeNpc('muling'));row.lastElementChild.classList.add('sg-main-continue');}
     if(!epilogue&&!ending&&next&&talk&&!departure){
-      hint.textContent=en?'Talk to Muling to continue the story. Optional: explore '+next[2]+'.':'与暮铃交谈推进主线。也可以查看'+next[1]+'（可选）。';
+      hint.textContent=en?'Talk to Luna to continue the story. Optional: explore '+next[2]+'.':'与暮铃交谈推进主线。也可以查看'+next[1]+'（可选）。';
       add('查看'+next[1],'Explore '+next[2],()=>window.ResonanceBook?.open(next[0]));
     }
     if(ending){add('花园复兴','Garden Restoration',()=>window.GardenProjects?.open?.());add('继续探索','Continue exploring',()=>game.openWorldMap());if(guests.pages>1){add('下一批访客 '+(guestPage+1)+'/'+guests.pages,'Next visitors '+(guestPage+1)+'/'+guests.pages,()=>{guestPage=(guestPage+1)%guests.pages;guideKey='';refreshGuide()});row.lastElementChild.dataset.guestPage=String(guestPage);}}
@@ -113,7 +113,7 @@
       chart:['找回飞走的航图','Find the windblown chart','寻找被风吹走的航图片段。','Look for the chart piece carried off by the wind.'],
       bell:['看看旧铃','Investigate the old bell','旧铃突然响了，去看看发生了什么。','The old bell suddenly rang. Go see what happened.'],
       return:['回去找陌生猫','Return to the stranger','把旧铃的奇怪回应告诉那只猫，听它把话说完。','Tell the stranger how the bell answered and hear them out.'],
-      depart:['寻找自己的名字','Find your name','暮铃说风铃镇也许有线索。准备好再出发，也可以继续在花园探索。','Muling says there may be a clue in Windchime Town. Leave when ready, or keep exploring the garden.']
+      depart:['寻找自己的名字','Find your name','暮铃说风铃镇也许有线索。准备好再出发，也可以继续在花园探索。','Luna says there may be a clue in Windchime Town. Leave when ready, or keep exploring the garden.']
     }[phase];
     title.textContent=copy[en?1:0];hint.textContent=copy[en?3:2];
     const close=()=>{openingQuestOpen=false;detail.hidden=true;toggle.setAttribute('aria-expanded','false');};

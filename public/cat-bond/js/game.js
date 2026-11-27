@@ -1412,7 +1412,7 @@ class Game {
       if(title)title.textContent=en?'Your first battle · '+(step+1)+'/'+stages.length
         :'第一次战斗 · '+(step+1)+'/'+stages.length;
       let [heading,desc,phone,computer]=stages[step];
-      if(this.battle?.forgeState&&step===0){heading=en?'Furnace guardian · protect the team':'熔炉守卫 · 保护队伍';desc=en?'This is a story boss, not a cat to capture. Watch core heat and pressure; use Jinpo and Xiaomao’s vent support to expose the core for six seconds. Dodge the marked attacks in all three phases.':'这是剧情守卫战，不是猫咪捕捉战。观察炉心温度和压力，使用烬婆与小铆的泄压支援使炉心暴露六秒，躲避三个阶段的攻击预警。';}
+      if(this.battle?.forgeState&&step===0){heading=en?'Furnace guardian · protect the team':'熔炉守卫 · 保护队伍';desc=en?'This is a story boss, not a cat to capture. Watch core heat and pressure; use Ember and Pip’s vent support to expose the core for six seconds. Dodge the marked attacks in all three phases.':'这是剧情守卫战，不是猫咪捕捉战。观察炉心温度和压力，使用烬婆与小栗的泄压支援使炉心暴露六秒，躲避三个阶段的攻击预警。';}
       const deviceInfo=phone?'<div class="battle-device-guide">'+
         '<div class="battle-device-item '+(this.isTouch?'preferred':'')+'"><strong>'+(en?'Phone / touch':'手机 / 触屏')+'</strong><p>'+phone+'</p></div>'+
         '<div class="battle-device-item '+(!this.isTouch?'preferred':'')+'"><strong>'+(en?'Computer / keyboard':'电脑 / 键鼠')+'</strong><p>'+computer+'</p></div></div>':'';
@@ -1779,7 +1779,7 @@ class Game {
       return;
     }
     // The final story encounter uses the existing real-time battle engine, but
-    // defeating Muling is a story resolution, never a cat capture or dex entry.
+    // defeating Luna is a story resolution, never a cat capture or dex entry.
     if(b.storyBoss){
       this.battle=null;
       if(win){

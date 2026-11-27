@@ -40,7 +40,7 @@ const targets={
  butterfly:{labels:['追蝴蝶','Chase butterfly'],type:'butterfly',points:[[.36,.46],[.79,.55],[.48,.68]]},
  seed:{labels:['花丛里的亮光','Glint among flowers'],type:'seed',points:[[.87,.70]]},
  snack:{labels:['鱼饼','Fish cake'],type:'snack',points:[[.15,.56]]},
- moonleaf:{labels:['和暮铃一起碰月叶','Touch the moonleaf with Muling'],type:'seed',points:[[.76,.70]]},
+ moonleaf:{labels:['和暮铃一起碰月叶','Touch the moonleaf with Luna'],type:'seed',points:[[.76,.70]]},
  nameplate:{labels:['翻看木名牌','Turn the wooden nameplate'],type:'nameplate',points:[[.25,.40]]},
  door:{labels:['旧屋的秘密','Old house mystery'],type:'door',points:[[.18,.37]]},
  'chart-echo':{labels:['旧铃的回应','Investigate the answering bell'],type:'door',points:[[.58,.36]]},
