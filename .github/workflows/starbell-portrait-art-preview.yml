@@ -30,12 +30,19 @@ jobs:
           if git diff --quiet 6c7e690a6276d3b51431143523ec4652aaaea0d5 "$SOURCE_SHA" -- public package.json package-lock.json; then
             VERIFIED_RUNTIME=6c7e690a6276d3b51431143523ec4652aaaea0d5
           fi
-          echo "Verified runtime source: $VERIFIED_RUNTIME"
+          DUO_RUNTIME=$SOURCE_SHA
+          # The native-duo workflow is path-filtered. Reuse its accepted SHA only
+          # when its entire trigger/input set is unchanged; source and gameplay
+          # gates still validate the current exploration runtime.
+          if git diff --quiet 6c7e690a6276d3b51431143523ec4652aaaea0d5 "$SOURCE_SHA" -- public/cat-bond/js/duo-premium.js public/cat-bond/js/battle.js public/cat-bond/assets/mobile-portrait/duo scripts/test-starbell-native-duo-renderer.mjs scripts/check-starbell-portrait-duo.mjs .github/workflows/starbell-duo-portrait-samples.yml package.json package-lock.json; then
+            DUO_RUNTIME=6c7e690a6276d3b51431143523ec4652aaaea0d5
+          fi
+          echo "Verified runtime source: $VERIFIED_RUNTIME; duo source: $DUO_RUNTIME"
           for attempt in $(seq 1 350); do
             a=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-mobile-portrait.yml/runs?head_sha=$SOURCE_SHA" | jq -c '.workflow_runs[0] // {}')
             b=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-portrait-source.yml/runs?head_sha=$VERIFIED_RUNTIME" | jq -c '.workflow_runs[0] // {}')
-            d=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-duo-portrait-samples.yml/runs?head_sha=$VERIFIED_RUNTIME" | jq -c '.workflow_runs[0] // {}')
-            if [[ $(jq -r .head_sha <<<"$a") == "$SOURCE_SHA" && $(jq -r .head_sha <<<"$b") == "$VERIFIED_RUNTIME" && $(jq -r .head_sha <<<"$d") == "$VERIFIED_RUNTIME" ]]; then
+            d=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-duo-portrait-samples.yml/runs?head_sha=$DUO_RUNTIME" | jq -c '.workflow_runs[0] // {}')
+            if [[ $(jq -r .head_sha <<<"$a") == "$SOURCE_SHA" && $(jq -r .head_sha <<<"$b") == "$VERIFIED_RUNTIME" && $(jq -r .head_sha <<<"$d") == "$DUO_RUNTIME" ]]; then
               if [[ $(jq -r .status <<<"$a") == completed && $(jq -r .conclusion <<<"$a") != success ]] || [[ $(jq -r .status <<<"$b") == completed && $(jq -r .conclusion <<<"$b") != success ]]; then echo 'Candidate failed acceptance; do not deploy' >&2; exit 1; fi
               if [[ $(jq -r .status <<<"$d") == completed && $(jq -r .conclusion <<<"$d") != success ]]; then echo "Duo renderer gate failed"; exit 1; fi
               if [[ $(jq -r .conclusion <<<"$a") == success && $(jq -r .conclusion <<<"$b") == success && $(jq -r .conclusion <<<"$d") == success ]]; then
