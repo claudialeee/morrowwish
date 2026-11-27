@@ -292,6 +292,9 @@ jobs:
                 await gardenDiscovery(page,'chart-echo',{touch:device.hasTouch});
                 await marker.click();
                 await encounter.getByRole('button',{name:'Continue',exact:true}).click();
+                await encounter.getByRole('button',{name:'Answer',exact:true}).click();
+                if(!/I don.t know/.test(await encounter.locator('.res-line').innerText()))throw Error('Player must answer Muling before departure');
+                await encounter.getByRole('button',{name:'Continue',exact:true}).click();
                 await encounter.getByRole('button',{name:'Say goodbye',exact:true}).click();
                 await encounter.waitFor({state:'detached'});
                 await page.waitForFunction(()=>CatBondResonance.view().openingMet===true);

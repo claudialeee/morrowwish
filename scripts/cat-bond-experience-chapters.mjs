@@ -354,7 +354,7 @@ async function run(chapter){
     await encounter.getByRole('button',{name:'寻找航图',exact:true}).click();await encounter.waitFor({state:'detached'});
     for(const id of ['chart-0','chart-echo','chart-1']){await page.locator('[data-garden-explore="'+id+'"]').click();await shot('prologue-'+id);}
     await page.locator('[data-npc-talk="muling"]').click();await shot('prologue-encounter');
-    await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'告别',exact:true}).click();
+    await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'回答',exact:true}).click();assert.match(await encounter.locator('.res-line').innerText(),/我也不知道/);await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'告别',exact:true}).click();
     await encounter.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);await shot('prologue-garden');
    }
    await page.locator('.sg-prologue-guide').getByRole('button',{name:locale==='zh'?/下一场景/:/Next scene/}).click();await scene(start);
