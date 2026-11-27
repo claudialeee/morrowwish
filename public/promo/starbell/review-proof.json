@@ -1,27 +1,497 @@
 {
+  "version": "V7",
   "live": {
-    "origin": "https://starbell-portrait-preview.morrowwish.pages.dev",
+    "origin": "http://127.0.0.1:8765",
     "captureOrigin": "http://127.0.0.1:8765",
     "source": {
-      "sha": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
-      "scope": "isolated portrait engineering preview",
+      "sha": "3106a71570bcb2d4c22c255ed4ed9501702024f5",
+      "scope": "unified development candidate; isolated real browser capture",
       "productionApis": false,
       "telemetry": false,
-      "storage": "local-only",
-      "fullReleaseAccepted": false,
-      "targetedLayoutGate": true,
-      "fullCampaignRevalidated": false
+      "storage": "local-only"
     },
-    "script": "7f6942feeba8265376df33718d880e8c1b23bc2b",
+    "script": "391ab0683c8930c2bc26e39abcd1f06f5ed1d42f",
     "clips": [
       {
-        "id": "shadow",
-        "seconds": 9,
-        "frames": 181,
+        "id": "explore",
+        "seconds": 5,
+        "frames": 110,
         "rect": null,
         "observations": [
           {
-            "t": 0.16,
+            "t": 0.202,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 0.23,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 0.342,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 0.407,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 0.533,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 0.634,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 0.725,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 0.825,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 0.95,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 1.054,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 1.107,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 1.228,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 1.342,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 1.427,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 1.521,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 1.628,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 1.73,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 1.851,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 1.93,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 2.059,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 2.151,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 2.234,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 2.361,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 2.413,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 2.577,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 2.634,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 2.734,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 2.855,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 2.935,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 3.038,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 3.125,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 3.248,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 3.36,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 3.433,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 3.562,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 3.626,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 3.749,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 3.909,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 3.937,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 4.06,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 4.198,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 4.288,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 4.384,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 4.554,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 4.558,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 4.667,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 4.825,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 4.892,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 5.021,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 5.072,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          },
+          {
+            "t": 5.151,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp"
+            ]
+          }
+        ],
+        "scene": {
+          "scene": "map",
+          "region": "forest",
+          "story": "forest:R-01"
+        }
+      },
+      {
+        "id": "shadow",
+        "seconds": 9,
+        "frames": 284,
+        "rect": null,
+        "observations": [
+          {
+            "t": 0.151,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -31,7 +501,7 @@
             ]
           },
           {
-            "t": 0.27,
+            "t": 0.245,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -41,7 +511,7 @@
             ]
           },
           {
-            "t": 0.365,
+            "t": 0.351,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -51,7 +521,7 @@
             ]
           },
           {
-            "t": 0.474,
+            "t": 0.499,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -61,7 +531,7 @@
             ]
           },
           {
-            "t": 0.543,
+            "t": 0.533,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -71,7 +541,7 @@
             ]
           },
           {
-            "t": 0.621,
+            "t": 0.632,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -81,7 +551,7 @@
             ]
           },
           {
-            "t": 0.712,
+            "t": 0.71,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -91,7 +561,7 @@
             ]
           },
           {
-            "t": 0.839,
+            "t": 0.815,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -101,7 +571,7 @@
             ]
           },
           {
-            "t": 0.925,
+            "t": 0.926,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -111,7 +581,7 @@
             ]
           },
           {
-            "t": 1.062,
+            "t": 1.058,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -121,7 +591,7 @@
             ]
           },
           {
-            "t": 1.205,
+            "t": 1.177,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -131,7 +601,7 @@
             ]
           },
           {
-            "t": 1.223,
+            "t": 1.219,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -141,7 +611,7 @@
             ]
           },
           {
-            "t": 1.36,
+            "t": 1.358,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -151,7 +621,7 @@
             ]
           },
           {
-            "t": 1.408,
+            "t": 1.446,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -171,7 +641,7 @@
             ]
           },
           {
-            "t": 1.608,
+            "t": 1.633,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -181,7 +651,7 @@
             ]
           },
           {
-            "t": 1.708,
+            "t": 1.757,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -191,7 +661,7 @@
             ]
           },
           {
-            "t": 1.813,
+            "t": 1.845,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -201,7 +671,7 @@
             ]
           },
           {
-            "t": 1.909,
+            "t": 1.94,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -211,7 +681,7 @@
             ]
           },
           {
-            "t": 2.103,
+            "t": 2.041,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -221,7 +691,7 @@
             ]
           },
           {
-            "t": 2.219,
+            "t": 2.195,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -231,7 +701,7 @@
             ]
           },
           {
-            "t": 2.362,
+            "t": 2.264,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -241,7 +711,7 @@
             ]
           },
           {
-            "t": 2.446,
+            "t": 2.352,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -251,7 +721,7 @@
             ]
           },
           {
-            "t": 2.53,
+            "t": 2.458,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -261,7 +731,7 @@
             ]
           },
           {
-            "t": 2.59,
+            "t": 2.532,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -271,7 +741,7 @@
             ]
           },
           {
-            "t": 2.671,
+            "t": 2.652,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -281,7 +751,7 @@
             ]
           },
           {
-            "t": 2.816,
+            "t": 2.769,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -291,7 +761,7 @@
             ]
           },
           {
-            "t": 2.863,
+            "t": 2.878,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -301,7 +771,7 @@
             ]
           },
           {
-            "t": 2.965,
+            "t": 2.997,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -311,7 +781,7 @@
             ]
           },
           {
-            "t": 3.051,
+            "t": 3.055,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -321,7 +791,7 @@
             ]
           },
           {
-            "t": 3.141,
+            "t": 3.135,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -331,7 +801,7 @@
             ]
           },
           {
-            "t": 3.298,
+            "t": 3.313,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -341,7 +811,7 @@
             ]
           },
           {
-            "t": 3.388,
+            "t": 3.381,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -361,7 +831,7 @@
             ]
           },
           {
-            "t": 4.594,
+            "t": 3.583,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -371,7 +841,7 @@
             ]
           },
           {
-            "t": 4.598,
+            "t": 3.645,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -381,7 +851,7 @@
             ]
           },
           {
-            "t": 4.598,
+            "t": 3.76,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -391,7 +861,7 @@
             ]
           },
           {
-            "t": 4.598,
+            "t": 3.864,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -401,7 +871,7 @@
             ]
           },
           {
-            "t": 4.598,
+            "t": 3.971,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -411,7 +881,7 @@
             ]
           },
           {
-            "t": 4.598,
+            "t": 4.036,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -421,7 +891,7 @@
             ]
           },
           {
-            "t": 4.598,
+            "t": 4.147,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -431,7 +901,7 @@
             ]
           },
           {
-            "t": 4.598,
+            "t": 4.918,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -441,7 +911,7 @@
             ]
           },
           {
-            "t": 4.598,
+            "t": 4.918,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -451,7 +921,7 @@
             ]
           },
           {
-            "t": 4.598,
+            "t": 4.925,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -461,7 +931,7 @@
             ]
           },
           {
-            "t": 4.599,
+            "t": 4.926,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -471,7 +941,7 @@
             ]
           },
           {
-            "t": 4.723,
+            "t": 4.926,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -481,7 +951,7 @@
             ]
           },
           {
-            "t": 4.757,
+            "t": 4.926,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -491,7 +961,7 @@
             ]
           },
           {
-            "t": 4.849,
+            "t": 4.926,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -501,7 +971,7 @@
             ]
           },
           {
-            "t": 4.973,
+            "t": 4.984,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -511,7 +981,7 @@
             ]
           },
           {
-            "t": 5.112,
+            "t": 5.063,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -521,7 +991,7 @@
             ]
           },
           {
-            "t": 5.194,
+            "t": 5.155,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -531,7 +1001,7 @@
             ]
           },
           {
-            "t": 5.278,
+            "t": 5.259,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -541,7 +1011,7 @@
             ]
           },
           {
-            "t": 5.357,
+            "t": 5.356,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -551,7 +1021,7 @@
             ]
           },
           {
-            "t": 5.438,
+            "t": 5.462,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -561,7 +1031,7 @@
             ]
           },
           {
-            "t": 5.587,
+            "t": 5.568,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -571,7 +1041,7 @@
             ]
           },
           {
-            "t": 5.687,
+            "t": 5.674,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -581,7 +1051,7 @@
             ]
           },
           {
-            "t": 5.756,
+            "t": 5.757,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -591,7 +1061,7 @@
             ]
           },
           {
-            "t": 5.87,
+            "t": 5.869,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -601,7 +1071,7 @@
             ]
           },
           {
-            "t": 5.953,
+            "t": 5.973,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -611,7 +1081,7 @@
             ]
           },
           {
-            "t": 6.054,
+            "t": 6.046,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -621,7 +1091,7 @@
             ]
           },
           {
-            "t": 6.18,
+            "t": 6.179,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -631,7 +1101,7 @@
             ]
           },
           {
-            "t": 6.252,
+            "t": 6.269,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -641,7 +1111,7 @@
             ]
           },
           {
-            "t": 6.363,
+            "t": 6.364,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -651,7 +1121,7 @@
             ]
           },
           {
-            "t": 6.469,
+            "t": 6.473,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -661,7 +1131,7 @@
             ]
           },
           {
-            "t": 6.564,
+            "t": 6.556,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -671,7 +1141,7 @@
             ]
           },
           {
-            "t": 6.67,
+            "t": 6.65,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -681,7 +1151,7 @@
             ]
           },
           {
-            "t": 6.768,
+            "t": 6.748,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -691,7 +1161,7 @@
             ]
           },
           {
-            "t": 6.883,
+            "t": 6.873,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -701,7 +1171,7 @@
             ]
           },
           {
-            "t": 6.958,
+            "t": 6.966,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -711,7 +1181,7 @@
             ]
           },
           {
-            "t": 7.063,
+            "t": 7.062,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -721,7 +1191,7 @@
             ]
           },
           {
-            "t": 7.171,
+            "t": 7.179,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -731,7 +1201,7 @@
             ]
           },
           {
-            "t": 7.269,
+            "t": 7.255,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -741,7 +1211,7 @@
             ]
           },
           {
-            "t": 7.375,
+            "t": 7.354,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -751,7 +1221,7 @@
             ]
           },
           {
-            "t": 7.474,
+            "t": 7.466,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -761,7 +1231,7 @@
             ]
           },
           {
-            "t": 7.564,
+            "t": 7.569,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -771,7 +1241,7 @@
             ]
           },
           {
-            "t": 7.682,
+            "t": 7.693,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -781,7 +1251,7 @@
             ]
           },
           {
-            "t": 7.783,
+            "t": 7.782,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -791,7 +1261,7 @@
             ]
           },
           {
-            "t": 7.878,
+            "t": 7.877,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -801,7 +1271,7 @@
             ]
           },
           {
-            "t": 7.967,
+            "t": 7.974,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -811,7 +1281,7 @@
             ]
           },
           {
-            "t": 8.097,
+            "t": 8.082,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -821,7 +1291,7 @@
             ]
           },
           {
-            "t": 8.192,
+            "t": 8.183,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -831,7 +1301,7 @@
             ]
           },
           {
-            "t": 8.265,
+            "t": 8.284,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -841,7 +1311,7 @@
             ]
           },
           {
-            "t": 8.382,
+            "t": 8.365,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -851,7 +1321,7 @@
             ]
           },
           {
-            "t": 8.475,
+            "t": 8.473,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -861,7 +1331,7 @@
             ]
           },
           {
-            "t": 8.568,
+            "t": 8.576,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -871,7 +1341,7 @@
             ]
           },
           {
-            "t": 8.677,
+            "t": 8.691,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -881,7 +1351,7 @@
             ]
           },
           {
-            "t": 8.783,
+            "t": 8.778,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -891,7 +1361,7 @@
             ]
           },
           {
-            "t": 8.86,
+            "t": 8.89,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -901,7 +1371,27 @@
             ]
           },
           {
-            "t": 8.984,
+            "t": 8.978,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/lantern-city.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/lantern-shadow-square.webp"
+            ]
+          },
+          {
+            "t": 9.089,
+            "duo": false,
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/lantern-city.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/lantern-shadow-square.webp"
+            ]
+          },
+          {
+            "t": 9.178,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -920,11 +1410,11 @@
       {
         "id": "battle",
         "seconds": 30,
-        "frames": 182,
+        "frames": 269,
         "rect": null,
         "observations": [
           {
-            "t": 0.103,
+            "t": 0.137,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -934,7 +1424,7 @@
             ]
           },
           {
-            "t": 0.203,
+            "t": 0.212,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -944,7 +1434,7 @@
             ]
           },
           {
-            "t": 0.331,
+            "t": 0.34,
             "duo": false,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
@@ -954,8 +1444,8 @@
             ]
           },
           {
-            "t": 0.455,
-            "duo": false,
+            "t": 0.432,
+            "duo": true,
             "resources": [
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
               "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
@@ -964,77 +1454,7 @@
             ]
           },
           {
-            "t": 0.599,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
-            ]
-          },
-          {
-            "t": 0.729,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
-            ]
-          },
-          {
-            "t": 0.799,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
-            ]
-          },
-          {
-            "t": 0.939,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
-            ]
-          },
-          {
-            "t": 1.009,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
-            ]
-          },
-          {
-            "t": 1.064,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
-            ]
-          },
-          {
-            "t": 1.174,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
-            ]
-          },
-          {
-            "t": 1.439,
+            "t": 0.555,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1046,7 +1466,7 @@
             ]
           },
           {
-            "t": 1.439,
+            "t": 0.636,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1058,7 +1478,7 @@
             ]
           },
           {
-            "t": 1.439,
+            "t": 0.743,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1070,7 +1490,7 @@
             ]
           },
           {
-            "t": 1.585,
+            "t": 0.83,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1082,7 +1502,7 @@
             ]
           },
           {
-            "t": 1.662,
+            "t": 0.956,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1094,7 +1514,7 @@
             ]
           },
           {
-            "t": 1.794,
+            "t": 1.045,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1106,7 +1526,7 @@
             ]
           },
           {
-            "t": 1.835,
+            "t": 1.111,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1118,7 +1538,7 @@
             ]
           },
           {
-            "t": 1.997,
+            "t": 1.273,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1130,7 +1550,7 @@
             ]
           },
           {
-            "t": 2.09,
+            "t": 1.314,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1142,7 +1562,7 @@
             ]
           },
           {
-            "t": 3.127,
+            "t": 1.433,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1154,7 +1574,7 @@
             ]
           },
           {
-            "t": 3.127,
+            "t": 1.541,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1166,7 +1586,7 @@
             ]
           },
           {
-            "t": 3.127,
+            "t": 1.648,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1178,7 +1598,7 @@
             ]
           },
           {
-            "t": 3.127,
+            "t": 1.759,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1190,7 +1610,7 @@
             ]
           },
           {
-            "t": 3.127,
+            "t": 1.837,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1202,7 +1622,7 @@
             ]
           },
           {
-            "t": 3.127,
+            "t": 1.98,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1214,7 +1634,7 @@
             ]
           },
           {
-            "t": 3.127,
+            "t": 2.04,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1226,7 +1646,7 @@
             ]
           },
           {
-            "t": 3.127,
+            "t": 2.137,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1238,7 +1658,7 @@
             ]
           },
           {
-            "t": 3.127,
+            "t": 2.219,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1250,7 +1670,7 @@
             ]
           },
           {
-            "t": 3.127,
+            "t": 2.381,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1262,7 +1682,7 @@
             ]
           },
           {
-            "t": 3.159,
+            "t": 2.51,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1274,7 +1694,7 @@
             ]
           },
           {
-            "t": 3.253,
+            "t": 2.548,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1286,7 +1706,7 @@
             ]
           },
           {
-            "t": 3.364,
+            "t": 2.667,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1298,7 +1718,7 @@
             ]
           },
           {
-            "t": 3.46,
+            "t": 2.77,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1310,7 +1730,7 @@
             ]
           },
           {
-            "t": 3.554,
+            "t": 2.817,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1322,7 +1742,7 @@
             ]
           },
           {
-            "t": 3.625,
+            "t": 2.986,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1334,7 +1754,7 @@
             ]
           },
           {
-            "t": 3.774,
+            "t": 3.039,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1346,7 +1766,7 @@
             ]
           },
           {
-            "t": 3.888,
+            "t": 3.15,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1358,7 +1778,7 @@
             ]
           },
           {
-            "t": 3.987,
+            "t": 3.227,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1370,7 +1790,7 @@
             ]
           },
           {
-            "t": 4.053,
+            "t": 4.203,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1382,7 +1802,7 @@
             ]
           },
           {
-            "t": 4.163,
+            "t": 4.205,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1394,7 +1814,7 @@
             ]
           },
           {
-            "t": 4.269,
+            "t": 4.205,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1406,7 +1826,7 @@
             ]
           },
           {
-            "t": 4.358,
+            "t": 4.205,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1418,7 +1838,7 @@
             ]
           },
           {
-            "t": 4.449,
+            "t": 4.205,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1430,7 +1850,7 @@
             ]
           },
           {
-            "t": 4.569,
+            "t": 4.205,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1442,7 +1862,7 @@
             ]
           },
           {
-            "t": 4.695,
+            "t": 4.205,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1454,7 +1874,7 @@
             ]
           },
           {
-            "t": 4.753,
+            "t": 4.205,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1466,7 +1886,7 @@
             ]
           },
           {
-            "t": 4.859,
+            "t": 4.205,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1478,7 +1898,7 @@
             ]
           },
           {
-            "t": 5.538,
+            "t": 4.643,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1490,7 +1910,7 @@
             ]
           },
           {
-            "t": 5.538,
+            "t": 4.643,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1502,7 +1922,7 @@
             ]
           },
           {
-            "t": 5.538,
+            "t": 4.643,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1514,7 +1934,7 @@
             ]
           },
           {
-            "t": 5.538,
+            "t": 4.643,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1526,7 +1946,7 @@
             ]
           },
           {
-            "t": 5.538,
+            "t": 4.643,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1538,7 +1958,7 @@
             ]
           },
           {
-            "t": 5.538,
+            "t": 5.032,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1550,7 +1970,7 @@
             ]
           },
           {
-            "t": 6.143,
+            "t": 5.033,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1562,7 +1982,7 @@
             ]
           },
           {
-            "t": 6.143,
+            "t": 5.033,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1574,7 +1994,7 @@
             ]
           },
           {
-            "t": 6.143,
+            "t": 5.033,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1586,7 +2006,7 @@
             ]
           },
           {
-            "t": 6.143,
+            "t": 5.414,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1598,7 +2018,7 @@
             ]
           },
           {
-            "t": 6.143,
+            "t": 5.414,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1610,7 +2030,7 @@
             ]
           },
           {
-            "t": 6.144,
+            "t": 5.414,
             "duo": true,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1622,8 +2042,92 @@
             ]
           },
           {
-            "t": 6.736,
-            "duo": true,
+            "t": 5.796,
+            "duo": false,
+            "layout": "63-native-portrait-painted-storyboards",
+            "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
+            ]
+          },
+          {
+            "t": 5.796,
+            "duo": false,
+            "layout": "63-native-portrait-painted-storyboards",
+            "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
+            ]
+          },
+          {
+            "t": 5.797,
+            "duo": false,
+            "layout": "63-native-portrait-painted-storyboards",
+            "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
+            ]
+          },
+          {
+            "t": 5.797,
+            "duo": false,
+            "layout": "63-native-portrait-painted-storyboards",
+            "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
+            ]
+          },
+          {
+            "t": 6.168,
+            "duo": false,
+            "layout": "63-native-portrait-painted-storyboards",
+            "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
+            ]
+          },
+          {
+            "t": 6.168,
+            "duo": false,
+            "layout": "63-native-portrait-painted-storyboards",
+            "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
+            ]
+          },
+          {
+            "t": 6.168,
+            "duo": false,
+            "layout": "63-native-portrait-painted-storyboards",
+            "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
+            "resources": [
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/windchime-town-tall.webp",
+              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp"
+            ]
+          },
+          {
+            "t": 6.168,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1634,8 +2138,8 @@
             ]
           },
           {
-            "t": 6.738,
-            "duo": true,
+            "t": 6.589,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1646,8 +2150,8 @@
             ]
           },
           {
-            "t": 6.738,
-            "duo": true,
+            "t": 6.589,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1658,8 +2162,8 @@
             ]
           },
           {
-            "t": 6.738,
-            "duo": true,
+            "t": 6.589,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1670,8 +2174,8 @@
             ]
           },
           {
-            "t": 6.738,
-            "duo": true,
+            "t": 6.589,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1682,8 +2186,8 @@
             ]
           },
           {
-            "t": 6.738,
-            "duo": true,
+            "t": 6.939,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1694,8 +2198,8 @@
             ]
           },
           {
-            "t": 6.751,
-            "duo": true,
+            "t": 6.939,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1706,8 +2210,8 @@
             ]
           },
           {
-            "t": 7.321,
-            "duo": true,
+            "t": 6.939,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1718,8 +2222,8 @@
             ]
           },
           {
-            "t": 7.322,
-            "duo": true,
+            "t": 7.289,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1730,8 +2234,8 @@
             ]
           },
           {
-            "t": 7.322,
-            "duo": true,
+            "t": 7.289,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1742,8 +2246,8 @@
             ]
           },
           {
-            "t": 7.322,
-            "duo": true,
+            "t": 7.29,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1754,8 +2258,8 @@
             ]
           },
           {
-            "t": 7.322,
-            "duo": true,
+            "t": 7.29,
+            "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
             "resources": [
@@ -1766,7 +2270,7 @@
             ]
           },
           {
-            "t": 7.917,
+            "t": 7.642,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1778,7 +2282,7 @@
             ]
           },
           {
-            "t": 7.919,
+            "t": 7.644,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1790,7 +2294,7 @@
             ]
           },
           {
-            "t": 7.919,
+            "t": 7.644,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1802,7 +2306,7 @@
             ]
           },
           {
-            "t": 7.919,
+            "t": 7.644,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1814,7 +2318,7 @@
             ]
           },
           {
-            "t": 7.921,
+            "t": 7.981,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1826,7 +2330,7 @@
             ]
           },
           {
-            "t": 7.924,
+            "t": 7.981,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1838,7 +2342,7 @@
             ]
           },
           {
-            "t": 8.75,
+            "t": 7.987,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1850,7 +2354,7 @@
             ]
           },
           {
-            "t": 8.881,
+            "t": 8.334,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1862,7 +2366,7 @@
             ]
           },
           {
-            "t": 8.882,
+            "t": 8.335,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1874,7 +2378,7 @@
             ]
           },
           {
-            "t": 8.882,
+            "t": 8.335,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1886,7 +2390,7 @@
             ]
           },
           {
-            "t": 8.882,
+            "t": 9.202,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1898,7 +2402,7 @@
             ]
           },
           {
-            "t": 8.882,
+            "t": 9.202,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1910,7 +2414,7 @@
             ]
           },
           {
-            "t": 8.882,
+            "t": 9.202,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1922,7 +2426,7 @@
             ]
           },
           {
-            "t": 8.882,
+            "t": 9.416,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1934,7 +2438,7 @@
             ]
           },
           {
-            "t": 8.882,
+            "t": 9.416,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1946,7 +2450,7 @@
             ]
           },
           {
-            "t": 8.882,
+            "t": 9.417,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1958,7 +2462,7 @@
             ]
           },
           {
-            "t": 9.233,
+            "t": 9.418,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1970,7 +2474,7 @@
             ]
           },
           {
-            "t": 9.234,
+            "t": 9.418,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1982,7 +2486,7 @@
             ]
           },
           {
-            "t": 9.234,
+            "t": 9.418,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -1994,7 +2498,7 @@
             ]
           },
           {
-            "t": 9.563,
+            "t": 9.418,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2006,7 +2510,7 @@
             ]
           },
           {
-            "t": 9.563,
+            "t": 9.418,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2018,7 +2522,7 @@
             ]
           },
           {
-            "t": 9.563,
+            "t": 9.653,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2030,7 +2534,7 @@
             ]
           },
           {
-            "t": 9.887,
+            "t": 9.654,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2042,7 +2546,7 @@
             ]
           },
           {
-            "t": 9.887,
+            "t": 9.654,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2054,7 +2558,7 @@
             ]
           },
           {
-            "t": 9.887,
+            "t": 9.878,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2066,7 +2570,7 @@
             ]
           },
           {
-            "t": 9.887,
+            "t": 9.878,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2078,7 +2582,7 @@
             ]
           },
           {
-            "t": 10.227,
+            "t": 10.103,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2090,7 +2594,7 @@
             ]
           },
           {
-            "t": 10.227,
+            "t": 10.103,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2102,7 +2606,7 @@
             ]
           },
           {
-            "t": 10.227,
+            "t": 10.331,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2114,7 +2618,7 @@
             ]
           },
           {
-            "t": 10.544,
+            "t": 10.331,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2126,7 +2630,7 @@
             ]
           },
           {
-            "t": 10.545,
+            "t": 10.559,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2138,7 +2642,7 @@
             ]
           },
           {
-            "t": 10.545,
+            "t": 10.559,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2150,7 +2654,7 @@
             ]
           },
           {
-            "t": 10.854,
+            "t": 10.559,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2162,7 +2666,7 @@
             ]
           },
           {
-            "t": 10.854,
+            "t": 10.782,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2174,7 +2678,7 @@
             ]
           },
           {
-            "t": 10.855,
+            "t": 10.782,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2186,7 +2690,7 @@
             ]
           },
           {
-            "t": 11.165,
+            "t": 10.912,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2198,7 +2702,7 @@
             ]
           },
           {
-            "t": 11.165,
+            "t": 11.039,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2210,7 +2714,7 @@
             ]
           },
           {
-            "t": 11.165,
+            "t": 11.166,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2222,7 +2726,7 @@
             ]
           },
           {
-            "t": 11.478,
+            "t": 11.166,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2234,7 +2738,7 @@
             ]
           },
           {
-            "t": 11.478,
+            "t": 11.294,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2246,7 +2750,7 @@
             ]
           },
           {
-            "t": 11.478,
+            "t": 11.422,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2258,7 +2762,7 @@
             ]
           },
           {
-            "t": 11.478,
+            "t": 11.551,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2270,7 +2774,7 @@
             ]
           },
           {
-            "t": 11.785,
+            "t": 11.551,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2282,7 +2786,7 @@
             ]
           },
           {
-            "t": 11.786,
+            "t": 11.681,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2294,7 +2798,7 @@
             ]
           },
           {
-            "t": 11.786,
+            "t": 11.81,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2306,7 +2810,7 @@
             ]
           },
           {
-            "t": 12.092,
+            "t": 11.939,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2318,7 +2822,7 @@
             ]
           },
           {
-            "t": 12.093,
+            "t": 12.069,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2330,7 +2834,7 @@
             ]
           },
           {
-            "t": 12.093,
+            "t": 12.07,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2342,7 +2846,7 @@
             ]
           },
           {
-            "t": 12.402,
+            "t": 12.202,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2354,7 +2858,7 @@
             ]
           },
           {
-            "t": 12.402,
+            "t": 12.332,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2366,7 +2870,7 @@
             ]
           },
           {
-            "t": 12.402,
+            "t": 12.462,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2378,7 +2882,7 @@
             ]
           },
           {
-            "t": 12.709,
+            "t": 12.462,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2390,7 +2894,7 @@
             ]
           },
           {
-            "t": 12.709,
+            "t": 12.59,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2402,7 +2906,7 @@
             ]
           },
           {
-            "t": 12.709,
+            "t": 12.718,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2414,7 +2918,7 @@
             ]
           },
           {
-            "t": 13.018,
+            "t": 12.847,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2426,7 +2930,7 @@
             ]
           },
           {
-            "t": 13.018,
+            "t": 12.847,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2438,7 +2942,7 @@
             ]
           },
           {
-            "t": 13.018,
+            "t": 12.978,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2450,7 +2954,7 @@
             ]
           },
           {
-            "t": 13.331,
+            "t": 13.104,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2462,7 +2966,7 @@
             ]
           },
           {
-            "t": 13.331,
+            "t": 13.239,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2474,7 +2978,7 @@
             ]
           },
           {
-            "t": 13.332,
+            "t": 13.371,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2486,7 +2990,7 @@
             ]
           },
           {
-            "t": 13.51,
+            "t": 13.371,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2498,7 +3002,7 @@
             ]
           },
           {
-            "t": 13.51,
+            "t": 13.499,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2510,7 +3014,7 @@
             ]
           },
           {
-            "t": 13.685,
+            "t": 13.632,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2522,7 +3026,7 @@
             ]
           },
           {
-            "t": 13.686,
+            "t": 13.761,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2534,7 +3038,7 @@
             ]
           },
           {
-            "t": 13.867,
+            "t": 13.761,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2546,7 +3050,7 @@
             ]
           },
           {
-            "t": 14.049,
+            "t": 13.89,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2558,7 +3062,7 @@
             ]
           },
           {
-            "t": 14.049,
+            "t": 14.021,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2570,7 +3074,7 @@
             ]
           },
           {
-            "t": 14.234,
+            "t": 14.151,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2582,7 +3086,7 @@
             ]
           },
           {
-            "t": 14.234,
+            "t": 14.151,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2594,7 +3098,7 @@
             ]
           },
           {
-            "t": 14.416,
+            "t": 14.283,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2606,7 +3110,7 @@
             ]
           },
           {
-            "t": 14.417,
+            "t": 14.42,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2618,7 +3122,7 @@
             ]
           },
           {
-            "t": 14.595,
+            "t": 14.549,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2630,7 +3134,7 @@
             ]
           },
           {
-            "t": 14.595,
+            "t": 14.549,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2642,7 +3146,7 @@
             ]
           },
           {
-            "t": 14.775,
+            "t": 14.678,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2654,7 +3158,7 @@
             ]
           },
           {
-            "t": 14.775,
+            "t": 14.805,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2666,7 +3170,7 @@
             ]
           },
           {
-            "t": 14.958,
+            "t": 14.932,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2678,7 +3182,7 @@
             ]
           },
           {
-            "t": 15.137,
+            "t": 15.063,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2690,7 +3194,7 @@
             ]
           },
           {
-            "t": 15.137,
+            "t": 15.063,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2702,7 +3206,7 @@
             ]
           },
           {
-            "t": 15.323,
+            "t": 15.189,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2714,7 +3218,7 @@
             ]
           },
           {
-            "t": 15.324,
+            "t": 15.32,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2726,7 +3230,7 @@
             ]
           },
           {
-            "t": 15.501,
+            "t": 15.448,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2738,7 +3242,7 @@
             ]
           },
           {
-            "t": 15.501,
+            "t": 15.449,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2750,7 +3254,7 @@
             ]
           },
           {
-            "t": 15.681,
+            "t": 15.581,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2762,7 +3266,7 @@
             ]
           },
           {
-            "t": 15.681,
+            "t": 15.711,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2774,7 +3278,7 @@
             ]
           },
           {
-            "t": 15.863,
+            "t": 15.839,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2786,7 +3290,7 @@
             ]
           },
           {
-            "t": 16.047,
+            "t": 15.967,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2798,7 +3302,7 @@
             ]
           },
           {
-            "t": 16.047,
+            "t": 15.967,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2810,7 +3314,7 @@
             ]
           },
           {
-            "t": 16.23,
+            "t": 16.099,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2822,7 +3326,7 @@
             ]
           },
           {
-            "t": 16.231,
+            "t": 16.229,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2834,7 +3338,7 @@
             ]
           },
           {
-            "t": 16.409,
+            "t": 16.361,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2846,7 +3350,7 @@
             ]
           },
           {
-            "t": 16.409,
+            "t": 16.361,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2858,7 +3362,7 @@
             ]
           },
           {
-            "t": 16.588,
+            "t": 16.491,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2870,7 +3374,7 @@
             ]
           },
           {
-            "t": 16.588,
+            "t": 16.62,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2882,7 +3386,7 @@
             ]
           },
           {
-            "t": 16.766,
+            "t": 16.751,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2894,7 +3398,7 @@
             ]
           },
           {
-            "t": 16.944,
+            "t": 16.751,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2906,7 +3410,7 @@
             ]
           },
           {
-            "t": 16.944,
+            "t": 16.881,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2918,7 +3422,7 @@
             ]
           },
           {
-            "t": 17.124,
+            "t": 17.011,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2930,7 +3434,7 @@
             ]
           },
           {
-            "t": 17.124,
+            "t": 17.14,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2942,7 +3446,7 @@
             ]
           },
           {
-            "t": 17.301,
+            "t": 17.27,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2954,7 +3458,7 @@
             ]
           },
           {
-            "t": 17.301,
+            "t": 17.27,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2966,7 +3470,7 @@
             ]
           },
           {
-            "t": 17.477,
+            "t": 17.4,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2978,7 +3482,7 @@
             ]
           },
           {
-            "t": 17.477,
+            "t": 17.532,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -2990,7 +3494,7 @@
             ]
           },
           {
-            "t": 17.655,
+            "t": 17.663,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3002,7 +3506,7 @@
             ]
           },
           {
-            "t": 17.832,
+            "t": 17.663,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3014,7 +3518,7 @@
             ]
           },
           {
-            "t": 17.832,
+            "t": 17.793,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3026,7 +3530,7 @@
             ]
           },
           {
-            "t": 18.011,
+            "t": 17.922,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3038,7 +3542,7 @@
             ]
           },
           {
-            "t": 18.011,
+            "t": 18.052,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3050,7 +3554,7 @@
             ]
           },
           {
-            "t": 18.194,
+            "t": 18.052,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3062,7 +3566,7 @@
             ]
           },
           {
-            "t": 18.194,
+            "t": 18.181,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3074,7 +3578,7 @@
             ]
           },
           {
-            "t": 18.371,
+            "t": 18.315,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3086,7 +3590,7 @@
             ]
           },
           {
-            "t": 18.554,
+            "t": 18.443,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3098,7 +3602,7 @@
             ]
           },
           {
-            "t": 18.555,
+            "t": 18.573,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3110,7 +3614,7 @@
             ]
           },
           {
-            "t": 18.738,
+            "t": 18.573,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3122,7 +3626,7 @@
             ]
           },
           {
-            "t": 18.738,
+            "t": 18.703,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3134,7 +3638,7 @@
             ]
           },
           {
-            "t": 18.92,
+            "t": 18.832,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3146,7 +3650,7 @@
             ]
           },
           {
-            "t": 18.92,
+            "t": 18.962,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3158,7 +3662,7 @@
             ]
           },
           {
-            "t": 19.105,
+            "t": 18.962,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3170,7 +3674,7 @@
             ]
           },
           {
-            "t": 19.105,
+            "t": 19.092,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3182,7 +3686,7 @@
             ]
           },
           {
-            "t": 19.287,
+            "t": 19.22,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3194,7 +3698,7 @@
             ]
           },
           {
-            "t": 19.287,
+            "t": 19.359,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3206,7 +3710,7 @@
             ]
           },
           {
-            "t": 19.47,
+            "t": 19.359,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3218,7 +3722,7 @@
             ]
           },
           {
-            "t": 19.653,
+            "t": 19.495,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3230,7 +3734,7 @@
             ]
           },
           {
-            "t": 19.653,
+            "t": 19.629,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3242,7 +3746,7 @@
             ]
           },
           {
-            "t": 19.833,
+            "t": 19.757,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3254,7 +3758,7 @@
             ]
           },
           {
-            "t": 19.833,
+            "t": 19.757,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3266,7 +3770,7 @@
             ]
           },
           {
-            "t": 20.012,
+            "t": 19.893,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3278,7 +3782,7 @@
             ]
           },
           {
-            "t": 20.012,
+            "t": 20.025,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3290,7 +3794,7 @@
             ]
           },
           {
-            "t": 20.192,
+            "t": 20.156,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3302,7 +3806,7 @@
             ]
           },
           {
-            "t": 20.192,
+            "t": 20.156,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3314,7 +3818,7 @@
             ]
           },
           {
-            "t": 20.374,
+            "t": 20.288,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3326,7 +3830,7 @@
             ]
           },
           {
-            "t": 20.557,
+            "t": 20.416,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3338,7 +3842,7 @@
             ]
           },
           {
-            "t": 20.558,
+            "t": 20.544,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3350,7 +3854,7 @@
             ]
           },
           {
-            "t": 20.736,
+            "t": 20.67,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3362,7 +3866,7 @@
             ]
           },
           {
-            "t": 20.736,
+            "t": 20.671,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3374,7 +3878,7 @@
             ]
           },
           {
-            "t": 20.923,
+            "t": 20.799,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3386,7 +3890,7 @@
             ]
           },
           {
-            "t": 20.923,
+            "t": 20.928,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3398,7 +3902,7 @@
             ]
           },
           {
-            "t": 21.107,
+            "t": 21.055,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3410,7 +3914,7 @@
             ]
           },
           {
-            "t": 21.107,
+            "t": 21.055,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3422,7 +3926,7 @@
             ]
           },
           {
-            "t": 21.293,
+            "t": 21.183,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3434,7 +3938,7 @@
             ]
           },
           {
-            "t": 21.293,
+            "t": 21.315,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3446,7 +3950,7 @@
             ]
           },
           {
-            "t": 21.479,
+            "t": 21.444,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3458,7 +3962,7 @@
             ]
           },
           {
-            "t": 21.662,
+            "t": 21.574,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3470,7 +3974,7 @@
             ]
           },
           {
-            "t": 21.662,
+            "t": 21.574,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3482,7 +3986,7 @@
             ]
           },
           {
-            "t": 21.85,
+            "t": 21.705,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3494,7 +3998,7 @@
             ]
           },
           {
-            "t": 21.85,
+            "t": 21.84,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3506,7 +4010,7 @@
             ]
           },
           {
-            "t": 22.037,
+            "t": 21.972,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3518,7 +4022,7 @@
             ]
           },
           {
-            "t": 22.037,
+            "t": 21.972,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3530,7 +4034,7 @@
             ]
           },
           {
-            "t": 22.22,
+            "t": 22.103,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3542,7 +4046,7 @@
             ]
           },
           {
-            "t": 22.22,
+            "t": 22.233,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3554,7 +4058,7 @@
             ]
           },
           {
-            "t": 22.406,
+            "t": 22.367,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3566,7 +4070,7 @@
             ]
           },
           {
-            "t": 22.407,
+            "t": 22.367,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3578,7 +4082,7 @@
             ]
           },
           {
-            "t": 22.586,
+            "t": 22.496,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3590,7 +4094,7 @@
             ]
           },
           {
-            "t": 22.586,
+            "t": 22.626,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3602,7 +4106,7 @@
             ]
           },
           {
-            "t": 22.765,
+            "t": 22.756,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3614,7 +4118,7 @@
             ]
           },
           {
-            "t": 22.949,
+            "t": 22.756,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3626,7 +4130,7 @@
             ]
           },
           {
-            "t": 22.949,
+            "t": 22.886,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3638,7 +4142,7 @@
             ]
           },
           {
-            "t": 23.126,
+            "t": 23.018,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3650,7 +4154,7 @@
             ]
           },
           {
-            "t": 23.126,
+            "t": 23.149,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3662,7 +4166,7 @@
             ]
           },
           {
-            "t": 23.31,
+            "t": 23.149,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3674,7 +4178,7 @@
             ]
           },
           {
-            "t": 23.311,
+            "t": 23.283,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3686,7 +4190,7 @@
             ]
           },
           {
-            "t": 23.491,
+            "t": 23.412,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3698,7 +4202,7 @@
             ]
           },
           {
-            "t": 23.492,
+            "t": 23.539,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3710,7 +4214,7 @@
             ]
           },
           {
-            "t": 23.674,
+            "t": 23.671,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3722,7 +4226,7 @@
             ]
           },
           {
-            "t": 23.859,
+            "t": 23.671,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3734,7 +4238,7 @@
             ]
           },
           {
-            "t": 23.859,
+            "t": 23.801,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3746,7 +4250,7 @@
             ]
           },
           {
-            "t": 24.042,
+            "t": 23.932,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3758,7 +4262,7 @@
             ]
           },
           {
-            "t": 24.042,
+            "t": 24.066,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3770,7 +4274,7 @@
             ]
           },
           {
-            "t": 24.225,
+            "t": 24.066,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3782,7 +4286,7 @@
             ]
           },
           {
-            "t": 24.225,
+            "t": 24.203,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3794,7 +4298,7 @@
             ]
           },
           {
-            "t": 24.406,
+            "t": 24.344,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3806,7 +4310,7 @@
             ]
           },
           {
-            "t": 24.406,
+            "t": 24.483,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3818,7 +4322,7 @@
             ]
           },
           {
-            "t": 24.586,
+            "t": 24.483,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3830,7 +4334,7 @@
             ]
           },
           {
-            "t": 24.586,
+            "t": 24.612,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3842,7 +4346,7 @@
             ]
           },
           {
-            "t": 24.764,
+            "t": 24.741,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3854,7 +4358,7 @@
             ]
           },
           {
-            "t": 24.946,
+            "t": 24.874,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3866,7 +4370,7 @@
             ]
           },
           {
-            "t": 24.946,
+            "t": 24.875,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3878,7 +4382,7 @@
             ]
           },
           {
-            "t": 25.126,
+            "t": 25.003,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3890,7 +4394,7 @@
             ]
           },
           {
-            "t": 25.126,
+            "t": 25.13,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3902,7 +4406,7 @@
             ]
           },
           {
-            "t": 25.31,
+            "t": 25.257,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3914,7 +4418,7 @@
             ]
           },
           {
-            "t": 25.31,
+            "t": 25.257,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3926,7 +4430,7 @@
             ]
           },
           {
-            "t": 25.488,
+            "t": 25.389,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3938,7 +4442,7 @@
             ]
           },
           {
-            "t": 25.488,
+            "t": 25.515,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3950,7 +4454,7 @@
             ]
           },
           {
-            "t": 25.67,
+            "t": 25.641,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3962,7 +4466,7 @@
             ]
           },
           {
-            "t": 25.853,
+            "t": 25.771,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3974,7 +4478,7 @@
             ]
           },
           {
-            "t": 25.853,
+            "t": 25.771,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3986,7 +4490,7 @@
             ]
           },
           {
-            "t": 26.036,
+            "t": 25.896,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -3998,7 +4502,7 @@
             ]
           },
           {
-            "t": 26.036,
+            "t": 26.022,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4010,7 +4514,7 @@
             ]
           },
           {
-            "t": 26.219,
+            "t": 26.149,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4022,7 +4526,7 @@
             ]
           },
           {
-            "t": 26.219,
+            "t": 26.28,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4034,7 +4538,7 @@
             ]
           },
           {
-            "t": 26.403,
+            "t": 26.28,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4046,7 +4550,7 @@
             ]
           },
           {
-            "t": 26.403,
+            "t": 26.42,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4058,7 +4562,7 @@
             ]
           },
           {
-            "t": 26.589,
+            "t": 26.566,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4070,7 +4574,7 @@
             ]
           },
           {
-            "t": 26.589,
+            "t": 26.566,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4082,7 +4586,7 @@
             ]
           },
           {
-            "t": 26.767,
+            "t": 26.701,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4094,7 +4598,7 @@
             ]
           },
           {
-            "t": 26.945,
+            "t": 26.833,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4106,7 +4610,7 @@
             ]
           },
           {
-            "t": 26.945,
+            "t": 26.964,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4118,7 +4622,7 @@
             ]
           },
           {
-            "t": 27.127,
+            "t": 26.964,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4130,7 +4634,7 @@
             ]
           },
           {
-            "t": 27.127,
+            "t": 27.096,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4142,7 +4646,7 @@
             ]
           },
           {
-            "t": 27.337,
+            "t": 27.228,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4154,7 +4658,7 @@
             ]
           },
           {
-            "t": 27.337,
+            "t": 27.365,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4166,7 +4670,7 @@
             ]
           },
           {
-            "t": 27.542,
+            "t": 27.365,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4178,7 +4682,7 @@
             ]
           },
           {
-            "t": 27.542,
+            "t": 27.497,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4190,7 +4694,7 @@
             ]
           },
           {
-            "t": 27.727,
+            "t": 27.629,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4202,7 +4706,7 @@
             ]
           },
           {
-            "t": 27.727,
+            "t": 27.762,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4214,7 +4718,7 @@
             ]
           },
           {
-            "t": 27.908,
+            "t": 27.763,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4226,7 +4730,7 @@
             ]
           },
           {
-            "t": 27.908,
+            "t": 27.892,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4238,7 +4742,7 @@
             ]
           },
           {
-            "t": 28.093,
+            "t": 28.02,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4250,7 +4754,7 @@
             ]
           },
           {
-            "t": 28.093,
+            "t": 28.153,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4262,7 +4766,7 @@
             ]
           },
           {
-            "t": 28.269,
+            "t": 28.154,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4274,7 +4778,7 @@
             ]
           },
           {
-            "t": 28.451,
+            "t": 28.328,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4286,7 +4790,7 @@
             ]
           },
           {
-            "t": 28.451,
+            "t": 28.46,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4298,7 +4802,7 @@
             ]
           },
           {
-            "t": 28.634,
+            "t": 28.46,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4310,7 +4814,7 @@
             ]
           },
           {
-            "t": 28.634,
+            "t": 28.597,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4322,7 +4826,7 @@
             ]
           },
           {
-            "t": 28.826,
+            "t": 28.729,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4334,7 +4838,7 @@
             ]
           },
           {
-            "t": 28.826,
+            "t": 28.884,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4346,7 +4850,7 @@
             ]
           },
           {
-            "t": 29.01,
+            "t": 28.884,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4358,7 +4862,7 @@
             ]
           },
           {
-            "t": 29.01,
+            "t": 29.043,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4370,7 +4874,7 @@
             ]
           },
           {
-            "t": 29.197,
+            "t": 29.178,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4382,7 +4886,7 @@
             ]
           },
           {
-            "t": 29.197,
+            "t": 29.178,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4394,7 +4898,7 @@
             ]
           },
           {
-            "t": 29.383,
+            "t": 29.307,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4406,7 +4910,7 @@
             ]
           },
           {
-            "t": 29.565,
+            "t": 29.44,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4418,7 +4922,7 @@
             ]
           },
           {
-            "t": 29.566,
+            "t": 29.568,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4430,7 +4934,7 @@
             ]
           },
           {
-            "t": 29.744,
+            "t": 29.568,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4442,7 +4946,7 @@
             ]
           },
           {
-            "t": 29.744,
+            "t": 29.702,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4454,7 +4958,7 @@
             ]
           },
           {
-            "t": 29.921,
+            "t": 29.829,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4466,7 +4970,7 @@
             ]
           },
           {
-            "t": 29.921,
+            "t": 29.96,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4478,7 +4982,7 @@
             ]
           },
           {
-            "t": 30.1,
+            "t": 29.96,
             "duo": false,
             "layout": "63-native-portrait-painted-storyboards",
             "asset": "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/duo/dark-light-tier-1.webp",
@@ -4495,481 +4999,18 @@
           "region": "harbor",
           "story": "harbor:H-04"
         }
-      },
-      {
-        "id": "explore",
-        "seconds": 5,
-        "frames": 167,
-        "rect": null,
-        "observations": [
-          {
-            "t": 0.13,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 0.248,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 0.317,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 0.417,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 0.527,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 0.612,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 0.73,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 0.816,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 0.907,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 1.052,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 1.109,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 1.222,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 1.34,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 1.424,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 1.533,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 1.619,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 1.731,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 1.878,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 1.932,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 2.027,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 2.128,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 2.234,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 2.31,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 2.419,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 2.525,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 2.687,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 2.75,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 2.836,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 2.927,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 3.038,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 3.123,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 3.244,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 3.327,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 3.487,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 3.541,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 3.627,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 3.748,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 3.844,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 3.953,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 4.043,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 4.142,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 4.229,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 4.358,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 4.455,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 4.546,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 4.644,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 4.754,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 4.856,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 4.945,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          },
-          {
-            "t": 5.043,
-            "duo": false,
-            "resources": [
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/title-bell-sanctuary.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/atlas.webp",
-              "http://127.0.0.1:8765/cat-bond/assets/mobile-portrait/rootsleep-forest.webp"
-            ]
-          }
-        ],
-        "scene": {
-          "scene": "map",
-          "region": "forest",
-          "story": "forest:R-01"
-        }
       }
     ],
     "errors": [],
     "shadowTitle": "The First Shadow Puppet Show",
-    "sourceByClip": {
-      "shadow": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
-      "battle": "8afce0ad0d9ac81d348897e509f3c329df76bc0f",
-      "explore": "be928fe708a0d0974b158bb153cd0a5d25a80e1d"
-    },
     "forestMovement": {
       "before": "null",
       "after": "{\"x\":0.26865384615384624,\"y\":0.7713461538461538}"
+    },
+    "sourceByClip": {
+      "explore": "3106a71570bcb2d4c22c255ed4ed9501702024f5",
+      "shadow": "3106a71570bcb2d4c22c255ed4ed9501702024f5",
+      "battle": "3106a71570bcb2d4c22c255ed4ed9501702024f5"
     }
   },
   "shots": [
@@ -4989,11 +5030,10 @@
       "caption": "A world you’ve never seen.",
       "clearSeconds": 3,
       "transitionOut": 0.5,
-      "words": 5,
-      "source": "be928fe708a0d0974b158bb153cd0a5d25a80e1d"
+      "words": 5
     },
     {
-      "id": "sky",
+      "id": "library",
       "seconds": 2.5,
       "live": false,
       "caption": null,
@@ -5020,7 +5060,7 @@
       "words": 6
     },
     {
-      "id": "forest",
+      "id": "starfall",
       "seconds": 3,
       "live": false,
       "caption": "Discover a world of wonder.",
@@ -5087,8 +5127,8 @@
     "format_long_name": "QuickTime / MOV",
     "start_time": "0.000000",
     "duration": "42.000000",
-    "size": "24666859",
-    "bit_rate": "4698449",
+    "size": "27507603",
+    "bit_rate": "5239543",
     "probe_score": 100,
     "tags": {
       "major_brand": "isom",
@@ -5096,7 +5136,5 @@
       "compatible_brands": "isomiso2avc1mp41",
       "encoder": "Lavf60.16.100"
     }
-  },
-  "edit": "Only courtyard shot replaced; preserved V5 approved shadow, battle, score and reading schedule",
-  "priorRender": 45966047185
+  }
 }

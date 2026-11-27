@@ -75,7 +75,7 @@ async function refresh(){
    const article=document.createElement('article'),heading=document.createElement('h2'),
      video=document.createElement('video'),nav=document.createElement('div'),a=document.createElement('a'),note=document.createElement('small');
    heading.textContent=names[entry.slug]+(entry.paused?' · 暂停制作（保留上一版）':'');video.controls=true;video.playsInline=true;video.preload='metadata';
-   const cacheToken=encodeURIComponent(entry.createdAt||entry.createdAt||entry.createdAt||entry.createdAt||data.createdAt||data.latestVersion||'latest');
+   const cacheToken=encodeURIComponent(entry.createdAt||entry.createdAt||entry.createdAt||entry.createdAt||entry.createdAt||data.createdAt||data.latestVersion||'latest');
    video.src=entry.video+'?revision='+cacheToken;
    if(entry.poster&&entry.poster.startsWith('/promo/'))video.poster=entry.poster+'?revision='+cacheToken;
    const times={};let offset=0;
