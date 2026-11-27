@@ -665,8 +665,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "我认得老路标，可前面那段桥又在往回绕。刚才的月叶办法能不能再试一次？",
-            "en": "I recognize those old trail marks, but the next bridge is looping back. Could we use the moonleaf again?"
+            "zh": "这边的月叶把路接好了。沿着发光的桥，就能到古树那边。",
+            "en": "The moonleaf has joined the paths. Follow the glowing bridge to the ancient tree."
           }
         },
         {
@@ -699,8 +699,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "终于过来了！刚才那座桥绕回去好多次，幸好月叶还能改变方向。",
-            "en": "We made it! That bridge kept looping back. Good thing the moonleaf could redirect it."
+            "zh": "终于过来了！月叶真的让森林长出了一条新路。",
+            "en": "We made it! The moonleaf really grew a new path through the forest."
           }
         },
         {
@@ -718,13 +718,9 @@ export const campaign = {
           }
         }
       ],
-      "requires": [
-        "puzzle:moonleaf-loop"
-      ],
+      "requires": [],
       "choices": [],
-      "lineGate": [
-        "puzzle:moonleaf-loop"
-      ],
+      "lineGate": [],
       "choiceTiming": "afterDialogue",
       "orderedRequires": true
     },
@@ -797,8 +793,8 @@ export const campaign = {
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "你刚才选的影戏真好看！瞧，我这只猫的耳朵都能动。",
-            "en": "Your shadow show was lovely! Look, my cat's ears can move."
+            "zh": "来看看我的影戏！瞧，这只猫的耳朵还能动。",
+            "en": "Come see my shadow show! Look, this cat's ears can move."
           }
         },
         {
@@ -811,8 +807,8 @@ export const campaign = {
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "旧戏散不掉，影子都堆到藏灯室那座桥上了。你们图上的火纹是我家的；里面有守铃人留下的灯匣，先照亮桥才能过去。",
-            "en": "The old show won't fade, and its shadows have covered the bridge to the lantern vault. The flame mark on your map is my family's. A bellkeeper left a case inside; light the bridge to reach it."
+            "zh": "旧戏散不掉，三只影子躲到了藏灯室附近。你们图上的火纹是我家的；找到影子就能过去。",
+            "en": "The old shadows won't fade. Three are hiding near the lantern vault. The flame mark on your map is my family's. Find the shadows to reach it."
           }
         },
         {
@@ -831,12 +827,10 @@ export const campaign = {
         }
       ],
       "requires": [
-        "puzzle:lantern-show",
         "npc:forge-dispute"
       ],
       "choices": [],
       "lineGate": [
-        "puzzle:lantern-show",
         "npc:forge-dispute"
       ],
       "choiceTiming": "afterDialogue",
@@ -854,8 +848,8 @@ export const campaign = {
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "你们照亮桥面走过来了。那就是守铃人留下的灯匣！",
-            "en": "You lit the bridge and made it across. That's the case the bellkeeper left!"
+            "zh": "三只影子都被你找出来啦！那就是守铃人留下的灯匣。",
+            "en": "You found all three hiding shadows! That's the case the bellkeeper left."
           }
         },
         {
@@ -1007,8 +1001,8 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "刚才那趟试飞不错！那朵像大鱼的云就在前面，月门应该藏在云后。",
-            "en": "Nice practice flight! That fish-shaped cloud is ahead, and the moon gate should be behind it."
+            "zh": "看，那朵像大鱼的云就在前面，月门应该藏在云后。",
+            "en": "Look, that fish-shaped cloud is ahead. The moon gate should be behind it."
           }
         },
         {
@@ -1021,25 +1015,23 @@ export const campaign = {
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "你们已经学会借风落脚了。沿云路去找航线记录，先弄清月门的位置。",
-            "en": "You've learned to ride the wind and land safely. Follow the cloud route to the flight record so we can find the moon gate."
+            "zh": "飞起来以后，拖动就能控制高度。先沿云路去找航线记录，弄清月门的位置。",
+            "en": "Once you're airborne, drag to steer your height. First find the flight record on the cloud trail."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "试飞都过来了。接下来你们飞慢一点就好。",
-            "en": "I made it through the practice flight. Just take it a little slower on the next one."
+            "zh": "真的要飞的话，你们飞慢一点就好。",
+            "en": "If we're really flying, just take it a little slowly."
           }
         }
       ],
       "requires": [
-        "puzzle:sky-pouch",
         "npc:sky-dispute"
       ],
       "choices": [],
       "lineGate": [
-        "puzzle:sky-pouch",
         "npc:sky-dispute"
       ],
       "choiceTiming": "afterDialogue",
@@ -1064,8 +1056,8 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "咱们刚飞过的云层后面，露出了个亮闪闪的尖儿。看见了吗？",
-            "en": "Something’s glinting behind the clouds we just flew past. Can you see the tip of it?"
+            "zh": "那片云后面露出了个亮闪闪的尖儿。看见了吗？",
+            "en": "Something is glinting behind that cloud. Can you see the tip of it?"
           }
         },
         {
@@ -1092,8 +1084,8 @@ export const campaign = {
         {
           "id": "train",
           "label": {
-            "zh": "先共同训练航线",
-            "en": "Train on a joint route first"
+            "zh": "让翎羽陪同飞行",
+            "en": "Glide with Wren"
           },
           "npc": "lingyu",
           "method": "escort-flight"
