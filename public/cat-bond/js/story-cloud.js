@@ -37,7 +37,7 @@ const REGION_PAGES={
   title: "被河水带走的名字",
   titleEn: "The Name the River Carried",
   text: "【渡川】河水没有偷走你的名字。是你把它放进水里。\n【你】为什么？\n【渡川】因为星铃需要一个锚。你不肯让它落在那只小猫身上。\n\n倒影里，暮铃抓住你的爪子。\n【暮铃】答应我，你会回来。\n【你】我会尽力。\n【暮铃】我不要尽力。我要你答应。",
-  textEn: "[Duchuan] The river did not steal your name. You placed it in the current.\n[You] Why would I do that?\n[Duchuan] The Bell needed an anchor. You would not let it be that kitten.\n\nIn the reflection, Muling catches your paw.\n[Muling] Promise you will come back.\n[You] I will try.\n[Muling] I do not want “try.” I want a promise.",
+  textEn: "[Duchuan] The river did not steal your name. You placed it in the current.\n[You] Why would I do that?\n[Duchuan] The Bell needed an anchor. You would not let it be that kitten.\n\nIn the reflection, Luna catches your paw.\n[Luna] Promise you will come back.\n[You] I will try.\n[Luna] I do not want “try.” I want a promise.",
   region: "creek",
   chapter: "第三章 · 失去的名字",
   chapterEn: "CHAPTER III · THE LOST NAME"
@@ -47,7 +47,7 @@ const REGION_PAGES={
   title: "星铃灾变",
   titleEn: "The Star Bell Catastrophe",
   text: "【烬禾】我亲眼看见你回头。出口就在身后，你却走进了钟里。\n【你】暮铃呢？\n【烬禾】它只看见门关上。没人告诉它，你是留下来，不是逃走。\n\n火山深处，六道记忆丝线正从各地汇入星铃。每亮起一道，钟内的影子就更像你一分。",
-  textEn: "[Jinhe] I saw you turn back. The exit was behind you. You walked into the Bell.\n[You] What happened to Muling?\n[Jinhe] They only saw the door close. No one told them you stayed. They thought you ran.\n\nDeep in the volcano, six threads of memory flow toward the Star Bell. With every thread, the silhouette inside looks more like you.",
+  textEn: "[Jinhe] I saw you turn back. The exit was behind you. You walked into the Bell.\n[You] What happened to Luna?\n[Jinhe] They only saw the door close. No one told them you stayed. They thought you ran.\n\nDeep in the volcano, six threads of memory flow toward the Star Bell. With every thread, the silhouette inside looks more like you.",
   region: "volcano",
   chapter: "第四章 · 最后的守铃者",
   chapterEn: "CHAPTER IV · THE LAST BELLKEEPER"
@@ -57,16 +57,16 @@ const REGION_PAGES={
   title: "倒着响的钟",
   titleEn: "The Bell That Rings Backward",
   text: "【星簿】这些旋律不是钥匙。它们是你们共同经历过的六段记忆。\n【你】那为什么它们会启动星铃？\n【星簿】暮铃在用它们拼出一个“你”。可记忆能拼出回声，拼不回一个人。\n\n星盘转向你。最后一页浮现出熟悉的字迹：如果世界不肯把你还给我，我就让世界只剩下你。",
-  textEn: "[Star Scribe] These melodies are not keys. They are six memories you once shared.\n[You] Then why are they starting the Bell?\n[Star Scribe] Muling is using them to assemble an “you.” Memories can make an echo. They cannot restore a person.\n\nThe astrolabe turns toward you. The final page bears familiar handwriting: If the world will not give you back, I will make a world with only you left in it.",
+  textEn: "[Star Scribe] These melodies are not keys. They are six memories you once shared.\n[You] Then why are they starting the Bell?\n[Star Scribe] Luna is using them to assemble an “you.” Memories can make an echo. They cannot restore a person.\n\nThe astrolabe turns toward you. The final page bears familiar handwriting: If the world will not give you back, I will make a world with only you left in it.",
   region: "ruins",
   chapter: "第五章 · 逆响",
   chapterEn: "CHAPTER V · THE REVERSED BELL"
  }
 };
 const LAST_PAGE={
- id:'last-page',title:'最后一页：暮铃',titleEn:'The Last Page: Muling',
+ id:'last-page',title:'最后一页：暮铃',titleEn:'The Last Page: Luna',
  text:'呼唤你的声音来自暮铃——你曾经最重要的伙伴。封印灾变时，你牺牲名字与记忆；暮铃却只看见你消失，以为自己被抛弃。它成为“逆响之主”，吸收其他猫咪的记忆，只为把你带回来。你找回的六段旋律，正是它复活你的仪式。',
- textEn:'The voice belongs to Muling, once your closest companion. You sacrificed your name and memories to seal the catastrophe; Muling only saw you disappear and believed you had abandoned them. Now the Lord of the Reversed Bell absorbs other cats’ memories to bring you back. The six melodies you recovered are the ritual that will revive you.',
+ textEn:'The voice belongs to Luna, once your closest companion. You sacrificed your name and memories to seal the catastrophe; Luna only saw you disappear and believed you had abandoned them. Now the Lord of the Reversed Bell absorbs other cats’ memories to bring you back. The six melodies you recovered are the ritual that will revive you.',
  region:'ruins',chapter:'终章 · 最后一页',chapterEn:'FINAL CHAPTER · THE LAST PAGE'
 };
 const PROLOGUE=[
@@ -113,7 +113,7 @@ const PROLOGUE=[
   title: "先找到那些还记得自己的人。",
   titleEn: "Find those who still remember themselves.",
   text: "你可以从庭院出发，沿着地图寻找失去记忆的猫咪。每一段回声都属于一个真实的人，也可能属于你不愿想起的过去。\n\n纸鸢把一枚旧铃扣交给你。它背面刻着两个字：暮铃。",
-  textEn: "Leave the sanctuary and follow the world map to find cats losing their memories. Every echo belongs to a real person—and may belong to a past you are not ready to face.\n\nKite gives you an old bell clasp. Two words are engraved on its back: Muling."
+  textEn: "Leave the sanctuary and follow the world map to find cats losing their memories. Every echo belongs to a real person—and may belong to a past you are not ready to face.\n\nKite gives you an old bell clasp. Two words are engraved on its back: Luna."
  }
 ];
 const ENDING=[
@@ -124,7 +124,7 @@ const ENDING=[
   title: "“你终于回来了。”",
   titleEn: "“You finally came back.”",
   text: "暮铃站在星铃中央。它身边浮着无数被夺走的记忆，像一片没有星星的夜空。\n\n【暮铃】我把每一段都记得很清楚。你喜欢晒太阳，讨厌下雨，害怕我一个人睡着。只要拼得足够完整，你就会回来。\n【你】那不是我。那只是你记得的我。",
-  textEn: "Muling stands at the heart of the Star Bell. Stolen memories drift around them like a night without stars.\n\n[Muling] I remember everything. You loved sunbeams, hated rain, and worried I would fall asleep alone. If I make the picture complete enough, you will come back.\n[You] That would not be me. It would only be the version you remember."
+  textEn: "Luna stands at the heart of the Star Bell. Stolen memories drift around them like a night without stars.\n\n[Luna] I remember everything. You loved sunbeams, hated rain, and worried I would fall asleep alone. If I make the picture complete enough, you will come back.\n[You] That would not be me. It would only be the version you remember."
  },
  {
   region: "volcano",
@@ -133,7 +133,7 @@ const ENDING=[
   title: "你没有离开它。",
   titleEn: "You did not leave them.",
   text: "最后一道封印松开。暮铃终于看见那一天：你把它推向出口，自己转身走进星铃。你喊了它的名字，可封印吞掉了声音。\n\n【暮铃】我等了这么久……\n【你】我知道。可你让别人替我们承受了这份等待。",
-  textEn: "The final seal breaks. Muling finally sees that day: you pushed them toward the exit and turned back into the Star Bell. You called their name, but the seal swallowed your voice.\n\n[Muling] I waited so long…\n[You] I know. But you made everyone else pay for that waiting."
+  textEn: "The final seal breaks. Luna finally sees that day: you pushed them toward the exit and turned back into the Star Bell. You called their name, but the seal swallowed your voice.\n\n[Luna] I waited so long…\n[You] I know. But you made everyone else pay for that waiting."
  },
  {
   region: "creek",
@@ -142,7 +142,7 @@ const ENDING=[
   title: "“我不能答应永远不离开。”",
   titleEn: "“I cannot promise never to leave.”",
   text: "你没有替暮铃抹去罪责，也没有把它留在黑暗里。你要求它亲手归还每一段记忆，向每一只被伤害的猫道歉。\n\n【暮铃】如果我再听见铃声，你会来吗？\n【你】我会尽力回来。现在，这句话终于足够了。",
-  textEn: "You do not erase Muling’s wrongdoing, and you do not leave them in the dark. You ask them to return every memory and face every cat they hurt.\n\n[Muling] If I hear the bell again, will you come?\n[You] I will try to come back. This time, that is enough."
+  textEn: "You do not erase Luna’s wrongdoing, and you do not leave them in the dark. You ask them to return every memory and face every cat they hurt.\n\n[Luna] If I hear the bell again, will you come?\n[You] I will try to come back. This time, that is enough."
  },
  {
   region: "ruins",
@@ -160,7 +160,7 @@ const ENDING=[
   title: "这一次，铃声没有倒流。",
   titleEn: "This time, the bell rings forward.",
   text: "庭院门口，阳光落在两只猫之间。暮铃把旧铃绳放在地上，没有系住任何人的爪子。\n\n远处传来伙伴们的笑声。Catdex 翻开新的一页。故事没有回到过去——它终于可以继续向前。",
-  textEn: "At the garden gate, sunlight falls between two cats. Muling lays the old bell cord on the ground; it is tied around no one’s paw.\n\nYour companions laugh in the distance. The Catdex opens a new page. The story does not return to the past. At last, it can move forward."
+  textEn: "At the garden gate, sunlight falls between two cats. Luna lays the old bell cord on the ground; it is tied around no one’s paw.\n\nYour companions laugh in the distance. The Catdex opens a new page. The story does not return to the past. At last, it can move forward."
  }
 ];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -347,7 +347,7 @@ function showSequence(kind,pages,done,options={}){
   overlay.querySelector('.cb-story-title').textContent=en?(page.titleEn||page.title):(page.title||page.titleEn);
   overlay.querySelector('.cb-story-copy').textContent=en?(page.textEn||page.text):(page.text||page.textEn);
   const mulingCaption=overlay.querySelector('.cb-story-portraits figure:last-child figcaption');
-  if(mulingCaption)mulingCaption.textContent=t('暮铃','Muling');
+  if(mulingCaption)mulingCaption.textContent=t('暮铃','Luna');
   const progress=overlay.querySelector('.cb-story-progress');
   progress.innerHTML=pages.map((_,i)=>'<span class="'+(i<=index?'is-lit':'')+'"></span>').join('');
   const portraits=overlay.querySelector('.cb-story-portraits');
@@ -461,7 +461,7 @@ function updateTracker(){
   ?(isZh()?'探索'+regionLabels[nextRegion][0]+'，寻找记忆回声。':'Explore '+regionLabels[nextRegion][1]+' for its memory echo.')
   :!s.fragments.includes(LAST_PAGE.id)
     ?t('在月影遗迹找到隐藏的星光匣，揭开最后一页。','Find the hidden star box in Moonshadow Ruins to reveal the last page.')
-    :s.bossDefeated?t('暮铃已被唤回。打开故事手册重温结局。','Muling has returned. Open the journal to revisit the ending.')
+    :s.bossDefeated?t('暮铃已被唤回。打开故事手册重温结局。','Luna has returned. Open the journal to revisit the ending.')
     :t('前往月影遗迹，面对逆响之主。','Return to Moonshadow Ruins and face the Lord of the Reversed Bell.');
  host.querySelector('.cb-story-tracker-count').textContent=count+'/6';
  host.querySelector('.cb-story-tracker-next').textContent=next;
@@ -519,7 +519,7 @@ function showBossReveal(){
   region:'ruins',kicker:'最后一页 · 逆响仪式',kickerEn:'THE LAST PAGE · THE REVERSED RITUAL',
   title:'你找回的每段记忆，都在替它敲响星铃。',titleEn:'Every memory you recovered has been ringing the Bell for them.',
   text:'星盘中央浮现出那只熟悉的猫。它没有咆哮，只是伸出爪子，像从前在樱花树下那样等你牵住。\n\n【暮铃】我知道你会找到这里。你总会回来。\n【你】你拿走了他们的记忆。\n【暮铃】我只想把你带回家。\n\n六段旋律同时亮起。你终于明白：这一路的线索既在帮你找回过去，也在替暮铃完成仪式。',
-  textEn:'A familiar cat appears at the center of the astrolabe. They do not roar. They simply hold out a paw, waiting as they once did beneath the cherry blossoms.\n\n[Muling] I knew you would find me. You always come back.\n[You] You took their memories.\n[Muling] I only wanted to bring you home.\n\nAll six melodies flare. You understand at last: the clues that restored your past have also been completing Muling’s ritual.'
+  textEn:'A familiar cat appears at the center of the astrolabe. They do not roar. They simply hold out a paw, waiting as they once did beneath the cherry blossoms.\n\n[Luna] I knew you would find me. You always come back.\n[You] You took their memories.\n[Luna] I only wanted to bring you home.\n\nAll six melodies flare. You understand at last: the clues that restored your past have also been completing Luna’s ritual.'
  }],()=>showMulingQuestions(()=>showBossGate()),{canSkip:false});
 }
 function showMulingQuestions(done){
@@ -548,7 +548,7 @@ function showMulingQuestions(done){
   actions.innerHTML='';
   if(step>=questions.length){
    title.textContent=en?'The Bell is waiting.':'星铃正在等待。';
-   line.textContent=en?'You have heard what Muling could not say plainly. The truth does not decide what happens next; your choices do.':'你已经听见暮铃无法直说的话。真相不能替你决定接下来发生什么，你的选择才可以。';
+   line.textContent=en?'You have heard what Luna could not say plainly. The truth does not decide what happens next; your choices do.':'你已经听见暮铃无法直说的话。真相不能替你决定接下来发生什么，你的选择才可以。';
    const b=document.createElement('button');b.type='button';b.className='cb-cloud-primary';b.textContent=en?'Face the Reversed Bell':'面对逆响之钟';b.onclick=()=>{close();done?.();};actions.append(b);return;
   }
   const q=questions[step],answer=root.mulingAnswers[q.id];
@@ -569,7 +569,7 @@ function bossSpecies(){
  if(!base)return null;
  const team=window.UI?.getPreferredBattleTeam?.()||state()?.cats||[];
  const avg=team.length?team.reduce((n,c)=>n+(c.level||1),0)/team.length:1;
- return {...base,id:'xingchen',name:'暮铃·逆响之主',nameEn:'Muling, Lord of the Reversed Bell',
+ return {...base,id:'xingchen',name:'暮铃·逆响之主',nameEn:'Luna, Lord of the Reversed Bell',
   palette:'black',pattern:'spotted',eyeColor:'#e5b6ff',point:'#79648f',fluffy:true,ears:'tufted',
   desc:'被逆向星铃吞噬记忆后显现的暮铃。',encounterLevel:Math.max(10,Math.round(avg+3)),
   base:{pow:26,agi:23,vit:30,cha:26},__storyBoss:true};
@@ -577,8 +577,8 @@ function bossSpecies(){
 function showBossGate(){
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-boss-overlay';
  overlay.innerHTML='<section class="cb-cloud-card cb-boss-card"><p class="cb-cloud-eyebrow">'+t('终章 · 逆响之钟','FINAL CHAPTER · THE REVERSED BELL')+'</p>'+
-  '<h2>'+t('暮铃 · 逆响之主','Muling · Lord of the Reversed Bell')+'</h2>'+
-  '<p class="cb-cloud-lead">'+t('它不是为了毁灭世界而战。它只是想让你回来——哪怕代价是夺走所有人的记忆。','Muling does not fight to destroy the world. It only wants you back—even if every other memory must be taken.')+'</p>'+
+  '<h2>'+t('暮铃 · 逆响之主','Luna · Lord of the Reversed Bell')+'</h2>'+
+  '<p class="cb-cloud-lead">'+t('它不是为了毁灭世界而战。它只是想让你回来——哪怕代价是夺走所有人的记忆。','Luna does not fight to destroy the world. It only wants you back—even if every other memory must be taken.')+'</p>'+
   '<div class="cb-boss-emblem">✧</div><p>'+t('带上你最信任的伙伴，结束逆响仪式。','Bring your trusted companions and end the reversed-bell ritual.')+'</p>'+
   '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-boss-start>'+t('开始最终战','Begin final battle')+'</button>'+
   '<button class="cb-cloud-secondary" data-boss-later>'+t('稍后再战','Not yet')+'</button></div></section>';
@@ -590,9 +590,9 @@ function showBossGate(){
  overlay.querySelector('[data-boss-start]').onclick=()=>{close();startBoss();};
 }
 const MULING_COMBAT_CHOICES=[
- {id:'truth',label:'我想回来，但我做不到。你确实受了伤。',labelEn:'I wanted to come back. I could not. And you were hurt.',reply:'暮铃的爪子慢慢垂下。它第一次没有把你的回答改写成自己想听的样子。',replyEn:'Muling slowly lowers a paw. For the first time, they do not reshape your answer into the one they wanted.'},
- {id:'return',label:'先把他们的记忆还回去。我们再谈我们。',labelEn:'Return their memories first. Then we can talk about us.',reply:'暮铃看向那些被困住的名字。星铃的光第一次不再向它聚拢。',replyEn:'Muling looks at the names trapped in the Bell. For the first time, its light stops gathering around them.'},
- {id:'now',label:'我不会成为你记忆里的那个人。你必须认识现在的我。',labelEn:'I will not become the person in your memories. You must meet who I am now.',reply:'暮铃没有回答。它只是松开了铃绳，像终于明白那不是一条牵引你的线。',replyEn:'Muling does not answer. They loosen their grip on the bell cord, as if finally understanding it was never a leash.'}
+ {id:'truth',label:'我想回来，但我做不到。你确实受了伤。',labelEn:'I wanted to come back. I could not. And you were hurt.',reply:'暮铃的爪子慢慢垂下。它第一次没有把你的回答改写成自己想听的样子。',replyEn:'Luna slowly lowers a paw. For the first time, they do not reshape your answer into the one they wanted.'},
+ {id:'return',label:'先把他们的记忆还回去。我们再谈我们。',labelEn:'Return their memories first. Then we can talk about us.',reply:'暮铃看向那些被困住的名字。星铃的光第一次不再向它聚拢。',replyEn:'Luna looks at the names trapped in the Bell. For the first time, its light stops gathering around them.'},
+ {id:'now',label:'我不会成为你记忆里的那个人。你必须认识现在的我。',labelEn:'I will not become the person in your memories. You must meet who I am now.',reply:'暮铃没有回答。它只是松开了铃绳，像终于明白那不是一条牵引你的线。',replyEn:'Luna does not answer. They loosen their grip on the bell cord, as if finally understanding it was never a leash.'}
 ];
 function showMulingCombatChoice(done){
  const root=npcRoot();if(!root)return done?.();
@@ -602,10 +602,10 @@ function showMulingCombatChoice(done){
  const close=()=>{window.removeEventListener('morrowwish-language-change',render);overlay.remove();};
  function render(){
   const en=!isZh(),line=overlay.querySelector('.cb-npc-dialog-line'),actions=overlay.querySelector('.cb-cloud-actions'),title=overlay.querySelector('h2');
-  actions.innerHTML='';title.textContent=en?'Muling asks you to stay.':'暮铃请求你留下。';
+  actions.innerHTML='';title.textContent=en?'Luna asks you to stay.':'暮铃请求你留下。';
   const chosen=MULING_COMBAT_CHOICES.find(x=>x.id===root.mulingCombatChoice);
   line.textContent=en
-   ?'The Star Bell trembles. Muling stops attacking. “If I let go, will you disappear again?”'
+   ?'The Star Bell trembles. Luna stops attacking. “If I let go, will you disappear again?”'
    :'星铃开始震颤。暮铃停止攻击：“如果我放手，你是不是又会消失？”';
   if(chosen){
    line.textContent+='\\n\\n'+(en?chosen.replyEn:chosen.reply);
@@ -624,7 +624,7 @@ function onBossPhase(phase,done){
   showSequence('memory',[{
    region:'ruins',kicker:'第一阶段 · 回声',kickerEn:'PHASE I · THE ECHO',
    title:'你认出了那一招。',titleEn:'You recognize that move.',
-   text:'暮铃使出你们从前在庭院里玩闹时创造的双猫合击。它记得你总把最后一步留给它，也记得那时你们笑得喘不过气。\\n\\n它收集的不是力量，而是你们共同经历过的日子。',textEn:'Muling uses a duo technique you invented together while playing in the garden. They remember how you always saved the final move for them, and how you both laughed until you could hardly breathe.\\n\\nThey have not been collecting power. They have been collecting the days you shared.'
+   text:'暮铃使出你们从前在庭院里玩闹时创造的双猫合击。它记得你总把最后一步留给它，也记得那时你们笑得喘不过气。\\n\\n它收集的不是力量，而是你们共同经历过的日子。',textEn:'Luna uses a duo technique you invented together while playing in the garden. They remember how you always saved the final move for them, and how you both laughed until you could hardly breathe.\\n\\nThey have not been collecting power. They have been collecting the days you shared.'
   }],()=>done?.(),{canSkip:false});
   return;
  }
@@ -632,7 +632,7 @@ function onBossPhase(phase,done){
   showSequence('memory',[{
    region:'ruins',kicker:'第二阶段 · 借来的名字',kickerEn:'PHASE II · THE BORROWED NAMES',
    title:'伙伴们叫出了记忆主人的名字。',titleEn:'Your companions call the memories by their owners’ names.',
-   text:'无数被夺走的记忆从星铃周围浮现。你的伙伴没有向暮铃攻击，而是逐个叫出那些猫咪的名字。每叫出一个名字，缠在星铃上的光线就松开一分。\\n\\n暮铃终于停下了动作。它问你：“我还能不能把你留下？”',textEn:'Stolen memories rise around the Star Bell. Your companions do not attack Muling. They call each memory by its owner’s name. With every name, one thread loosens.\\n\\nMuling finally stops. “Can I still make you stay?”'
+   text:'无数被夺走的记忆从星铃周围浮现。你的伙伴没有向暮铃攻击，而是逐个叫出那些猫咪的名字。每叫出一个名字，缠在星铃上的光线就松开一分。\\n\\n暮铃终于停下了动作。它问你：“我还能不能把你留下？”',textEn:'Stolen memories rise around the Star Bell. Your companions do not attack Luna. They call each memory by its owner’s name. With every name, one thread loosens.\\n\\nMuling finally stops. “Can I still make you stay?”'
   }],()=>showMulingCombatChoice(done),{canSkip:false});
  }
 }
@@ -649,7 +649,7 @@ function showBossRetry(){
  const overlay=document.createElement('div');overlay.className='cb-cloud-overlay cb-boss-overlay';
  overlay.innerHTML='<section class="cb-cloud-card cb-boss-card"><p class="cb-cloud-eyebrow">'+t('逆响仍在继续','THE BELL IS STILL RINGING')+'</p>'+
   '<h2>'+t('逆响仍未停止','The reversed bell still rings')+'</h2>'+
-  '<p class="cb-cloud-lead">'+t('暮铃的记忆还被困在星铃里。调整队伍、恢复状态，再试一次。','Muling’s memories are still trapped in the Star Bell. Adjust your team, recover, and try again.')+'</p>'+
+  '<p class="cb-cloud-lead">'+t('暮铃的记忆还被困在星铃里。调整队伍、恢复状态，再试一次。','Luna’s memories are still trapped in the Star Bell. Adjust your team, recover, and try again.')+'</p>'+
   '<div class="cb-cloud-actions"><button class="cb-cloud-primary" data-retry>'+t('再次挑战','Try again')+'</button>'+
   '<button class="cb-cloud-secondary" data-journal>'+t('查看故事手册','Open journal')+'</button></div></section>';
  document.body.append(overlay);
@@ -670,8 +670,8 @@ function playEnding(replay=false){
  const relationships=npcRoot()?.relationships||{},bondScore=Object.values(relationships).reduce((sum,value)=>sum+(Number(value)||0),0);
  const arc=npcRoot()||{},flags=arc.flags||{},answers=arc.mulingAnswers||{};
  if(flags.person_not_memory){endingPages[2].text=endingPages[2].text.replace('那不是我。那只是你记得的我。','记忆不是一个人。那不是我，只是你记得的我。');endingPages[2].textEn=endingPages[2].textEn.replace('That would not be me. It would only be the version you remember.','A memory is not a person. That would not be me; it would only be the version you remember.');}
- if(answers.stop==='return_memories'||arc.mulingCombatChoice==='return'){endingPages[2].text+='\n\n【暮铃】我会先把他们的名字还回去。即使他们不再愿意听我解释。';endingPages[2].textEn+='\n\n[Muling] I will return their names first, even if they never want to hear my explanation.';}
- else if(answers.stop==='meet_now'||arc.mulingCombatChoice==='now'){endingPages[2].text+='\n\n【暮铃】我不知道怎样重新认识你。但我愿意从今天开始。';endingPages[2].textEn+='\n\n[Muling] I do not know how to meet you again. But I am willing to begin today.';}
+ if(answers.stop==='return_memories'||arc.mulingCombatChoice==='return'){endingPages[2].text+='\n\n【暮铃】我会先把他们的名字还回去。即使他们不再愿意听我解释。';endingPages[2].textEn+='\n\n[Luna] I will return their names first, even if they never want to hear my explanation.';}
+ else if(answers.stop==='meet_now'||arc.mulingCombatChoice==='now'){endingPages[2].text+='\n\n【暮铃】我不知道怎样重新认识你。但我愿意从今天开始。';endingPages[2].textEn+='\n\n[Luna] I do not know how to meet you again. But I am willing to begin today.';}
  if(flags.accountability){endingPages[2].text+='\n\n【烬禾】这次我不会替任何人决定该不该原谅。我会陪他们听完每一句道歉。';endingPages[2].textEn+='\n\n[Jinhe] This time I will not decide who deserves forgiveness. I will stay and hear every apology.';}
  if(flags.truth_now){endingPages[3].text+='\n\n绯枝把被删掉的碑文重新刻回去，让后来的人知道牺牲从来不是命运。';endingPages[3].textEn+='\n\nFeizhi restores the erased words to the shrine so no one can call sacrifice destiny again.';}
  endingPages[endingPages.length-1].text+='\\n\\n'+(bondScore>=4?'纸鸢、绯枝、渡川、烬禾与星簿都记得你一路上的回答。你们不再只靠过去的约定维系彼此。':'伙伴们记得你曾经的迟疑与坚持。新的羁绊不需要每个人都给出相同的答案。');
@@ -1096,7 +1096,7 @@ const NPC_CAST=[
   intro:['你醒来时，铃声已经停了。','“醒来”和“被叫回来”不是一回事。','这本 Catdex 替你留着一页空白。我一直不确定，那究竟是等待，还是警告。'],
   introEn:['The bell had already stopped when you woke.','Waking up and being called back are not the same thing.','This Catdex kept a blank page for you. I have never known whether it was an invitation or a warning.'],
   reveal:['我藏了被撕下的那一页。它记录着你和暮铃最后一次争执。','你说：“别替我决定我能承受什么。”','我害怕你看见真相后会转身离开，所以替你决定了该看见什么。现在我知道，这和当年的沉默没有区别。'],
-  revealEn:['I hid the page that was torn out. It records your last argument with Muling.','You said, “Do not decide what I can bear for me.”','I feared the truth would make you turn away, so I decided what you were allowed to see. I understand now that this is another kind of silence.'],
+  revealEn:['I hid the page that was torn out. It records your last argument with Luna.','You said, “Do not decide what I can bear for me.”','I feared the truth would make you turn away, so I decided what you were allowed to see. I understand now that this is another kind of silence.'],
   after:['我把残页放回 Catdex 了。它没有替你写下答案。','这次，最后一页留给你自己。'],
   afterEn:['I have returned the torn page to the Catdex. It does not answer the question for you.','This time, the last page belongs to you.'],
   epilogue:['我终于学会了记录一件事，而不替它决定意义。','你写下的新名字，我会好好保管。'],
@@ -1114,7 +1114,7 @@ const NPC_CAST=[
   intro:['河水会带走东西，也会把东西还回来。','名字很轻。把它交出去的人，通常知道自己在做什么。','你一直看着水面，像是在等谁先开口。'],
   introEn:['The river carries things away. Sometimes it brings them back.','A name is light. Those who give one away usually know what they are doing.','You keep watching the water, as if waiting for someone else to speak first.'],
   reveal:['河没有偷走你的名字。是你亲手把它放进水里。','你不想让星铃把暮铃变成封印的锚，所以把自己的名字交给了河。','你知道这样一来，暮铃也许再也找不到你。你还是做了。'],
-  revealEn:['The river did not steal your name. You placed it in the current yourself.','You would not let the Star Bell use Muling as the seal’s anchor, so you gave the river your name instead.','You knew Muling might never find you again. You chose it anyway.'],
+  revealEn:['The river did not steal your name. You placed it in the current yourself.','You would not let the Star Bell use Luna as the seal’s anchor, so you gave the river your name instead.','You knew Luna might never find you again. You chose it anyway.'],
   after:['河水没有替你保管一个旧答案。它只是让你有机会重新决定，什么值得带走。'],
   afterEn:['The river did not keep an old answer for you. It gave you the chance to decide what is worth carrying forward.'],
   epilogue:['渡船仍会经过这里。','只是这次，我会把灯留给所有想回家的人。'],
@@ -1123,18 +1123,18 @@ const NPC_CAST=[
   intro:['别把安静当成安全。星铃还在发热。','我记得封印合上的声音。比火山喷发的声音更清楚。','如果你想问那一天发生了什么，先听完，再决定要不要恨我。'],
   introEn:['Do not mistake quiet for safety. The Star Bell is still hot.','I remember the sound of the seal closing more clearly than the eruption.','If you want to ask what happened that day, hear me out before deciding whether to hate me.'],
   reveal:['我看见你转身走回星铃。你让我先带其他猫离开。','我关上了外面的门。暮铃只看见门合上，以为你选择了离开。','我本可以喊出真相。我没有。我把沉默称作守约，其实也有一部分是懦弱。'],
-  revealEn:['I saw you turn back toward the Star Bell. You told me to get the other cats out first.','I closed the outer gate. Muling saw only the door shut and believed you had chosen to leave.','I could have shouted the truth. I did not. I called my silence loyalty. Part of it was cowardice.'],
+  revealEn:['I saw you turn back toward the Star Bell. You told me to get the other cats out first.','I closed the outer gate. Luna saw only the door shut and believed you had chosen to leave.','I could have shouted the truth. I did not. I called my silence loyalty. Part of it was cowardice.'],
   after:['如果你见到暮铃，不必替我求情。','我会留下来，亲自向那些被伤害的猫解释，也承担修复的责任。'],
-  afterEn:['If you see Muling, do not ask them to forgive me.','I will stay and answer to the cats who were hurt. I will help repair what I helped seal away.'],
+  afterEn:['If you see Luna, do not ask them to forgive me.','I will stay and answer to the cats who were hurt. I will help repair what I helped seal away.'],
   epilogue:['我没有请求所有人原谅我。','我只答应每天把门打开，直到他们愿意相信这里安全为止。'],
   epilogueEn:['I did not ask everyone to forgive me.','I promised to open the gate every day until they believe this place is safe again.']},
  {id:'xingce',region:'ruins',name:'星簿',en:'Star Scribe',role:'遗迹解读者',roleEn:'Ruins Archivist',species:'yuelian',x:520,y:650,accent:'#b8a5df',
   intro:['星铃不回答问题。它只会重复你最放不下的那一句。','我读过最后一段乐谱。','我知道它会走向哪里，却一直没有告诉任何人。'],
   introEn:['The Star Bell does not answer questions. It repeats the words you cannot let go.','I have read the final movement of the score.','I know where it leads. I have not told anyone.'],
   reveal:['我知道逆响不能复原你。它只能制造一个足够像你的回声。','我以为你会在仪式完成前阻止暮铃，所以把真相留到最后。','我把怯懦伪装成研究，把别人的希望当成自己的筹码。这不是旁观，是共谋。'],
-  revealEn:['I knew the Reversed Bell could not restore you. It could only make an echo convincing enough to resemble you.','I thought you would stop Muling before the ritual was complete, so I kept the truth until the end.','I disguised fear as research and used other people’s hope as leverage. That was not observation. It was complicity.'],
+  revealEn:['I knew the Reversed Bell could not restore you. It could only make an echo convincing enough to resemble you.','I thought you would stop Luna before the ritual was complete, so I kept the truth until the end.','I disguised fear as research and used other people’s hope as leverage. That was not observation. It was complicity.'],
   after:['六段旋律原本是纪念，不是钥匙。','暮铃改写了最后一个音。我看见了，却没有阻止。'],
-  afterEn:['The six melodies were written as a memorial, not a key.','Muling changed the final note. I saw it happen, and did nothing.'],
+  afterEn:['The six melodies were written as a memorial, not a key.','Luna changed the final note. I saw it happen, and did nothing.'],
   epilogue:['我会把乐谱公开，也会把自己的沉默写进去。','历史不该只留下听起来体面的部分。'],
   epilogueEn:['I will publish the score, including the part where I stayed silent.','History should not preserve only the parts that sound respectable.']}
 ];
@@ -1157,8 +1157,8 @@ const NPC_CHOICES={
    {id:'compassion',flag:'compassion',bond:1,label:'我会听完理由，但不会假装没有伤害。',labelEn:'I will hear the reason, but I will not pretend no one was hurt.',reply:'烬禾低下头：“这已经比我当年给自己的宽容多了。”',replyEn:'Jinhe lowers her head. “That is more grace than I gave myself.”'}]},
  xingce:{prompt:'星簿问：如果一段回忆能完美复刻一个人，你会把它叫作复活吗？',promptEn:'Star Scribe asks: If a memory could perfectly recreate someone, would you call that resurrection?',
   options:[
-   {id:'person',flag:'person_not_memory',bond:2,label:'不会。记忆不是一个人。',labelEn:'No. A memory is not a person.',reply:'星簿终于抬起眼睛：“暮铃需要亲耳听见这句话。”',replyEn:'Star Scribe finally looks up. “Muling needs to hear that from you.”'},
-   {id:'echo',flag:'echo_can_matter',bond:1,label:'回声仍然重要，但不能代替活着的人。',labelEn:'An echo matters, but it cannot replace someone living.',reply:'星簿合上星盘：“那么我们必须让它听见区别。”',replyEn:'Star Scribe closes the astrolabe. “Then we must make Muling hear the difference.”'}]}
+   {id:'person',flag:'person_not_memory',bond:2,label:'不会。记忆不是一个人。',labelEn:'No. A memory is not a person.',reply:'星簿终于抬起眼睛：“暮铃需要亲耳听见这句话。”',replyEn:'Star Scribe finally looks up. “Luna needs to hear that from you.”'},
+   {id:'echo',flag:'echo_can_matter',bond:1,label:'回声仍然重要，但不能代替活着的人。',labelEn:'An echo matters, but it cannot replace someone living.',reply:'星簿合上星盘：“那么我们必须让它听见区别。”',replyEn:'Star Scribe closes the astrolabe. “Then we must make Luna hear the difference.”'}]}
 };
 function npcRoot(){
  if(window.__CAT_BOND_CANONICAL_ACTIVE__)return null;
@@ -1180,7 +1180,7 @@ function showCreekRescueChoice(){
  document.body.append(overlay);
  overlay.querySelector('h2').textContent=en?'Two memories are slipping beneath the current.':'两段记忆正在被河水带走。';
  overlay.querySelector('.cb-npc-dialog-line').textContent=en
-  ?'A frightened kitten remembers the way home. Duchuan remembers the promise that kept Muling from becoming the seal. You can stabilize only one before the current changes.'
+  ?'A frightened kitten remembers the way home. Duchuan remembers the promise that kept Luna from becoming the seal. You can stabilize only one before the current changes.'
   :'一只受惊的小猫还记得回家的路。渡川记得那句让暮铃没有成为封印代价的约定。水流正在改变，你只能先稳住其中一段。';
  const close=()=>{overlay.remove();};
  const choose=(id)=>{

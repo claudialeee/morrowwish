@@ -174,8 +174,10 @@ function install(){
    const row=host.querySelector(".rw-puzzle-controls"),p=activePuzzle.spatial;
    if(row){
     const card=E("section","rw-festival-card");card.setAttribute("aria-label",tr("皮影戏","Shadow puppet show"));
-    const title=E("strong","rw-festival-title",tr("小栗的第一场皮影戏","The First Shadow Puppet Show"));
-    const line=E("p","rw-festival-line",p.audience?tr(["小栗：快看，他们喜欢这条鱼！","小栗：蝴蝶飞起来了！大家都在看呢。","小栗：原来歪耳朵也能这么可爱！"][p.shape],["Pip: Look, they love the fish!","Pip: The butterfly is flying! Everyone is watching.","Pip: Even a crooked ear can be cute!"][p.shape]):tr("小栗：我的歪耳灯没人来看……你愿意陪我演一场吗？","Pip: Nobody came to see my crooked-ear lantern. Will you put on a show with me?"));
+    const actor=campaign.cast.xiaomao.name;
+    const title=E("strong","rw-festival-title",tr(`${actor.zh}的第一场皮影戏`,`${actor.en}’s First Shadow Puppet Show`));
+    const dialogue=p.audience?tr(["快看，他们喜欢这条鱼！","蝴蝶飞起来了！大家都在看呢。","原来歪耳朵也能这么可爱！"][p.shape],["Look, they love the fish!","The butterfly is flying! Everyone is watching.","Even a crooked ear can be cute!"][p.shape]):tr("我的歪耳灯没人来看……你愿意陪我演一场吗？","Nobody came to see my crooked-ear lantern. Will you put on a show with me?");
+    const line=E("p","rw-festival-line",tr(`${actor.zh}：`,`${actor.en}: `)+dialogue);
     line.setAttribute("aria-live","polite");
     const hint=E("p","rw-festival-hint",tr("选一个影子就好。也可以左右拖动灯光，不用得分。","Choose any shadow. Drag the light if you like; there is no score."));
     const buttons=[...row.querySelectorAll("button")];const leave=buttons.pop();if(leave)leave.remove();

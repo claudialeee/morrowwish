@@ -34,7 +34,7 @@ import {bossTemplates,regionalBossLevel} from '../public/cat-bond/js/resonance/r
 import {createSlotRuntime} from '../public/cat-bond/js/resonance/slot-runtime.mjs';
 import {layouts} from '../public/cat-bond/js/resonance/world-exploration.mjs';
 import {projectPortrait,unprojectPortrait} from '../public/cat-bond/js/resonance/portrait-map.mjs';
-import {readFileSync} from 'node:fs';
+import {readFileSync,readdirSync} from 'node:fs';
 const w={};w.window=w;new Function('window',readFileSync(new URL('../public/cat-bond/js/data.js',import.meta.url),'utf8'))(w);
 const expected={muling:['暮铃','Luna'],jiedeng:['檐灯','Alder'],qilan:['栖蓝','Skye'],yahe:['芽禾','Fern'],yuchuan:['榆川','Rowan'],jinpo:['烬婆','Ember'],xiaomao:['小栗','Pip'],lingyu:['翎羽','Wren'],yuanfan:['远帆','Finn'],moye:['墨页','Quill'],baikan:['白羽','Ivy'],xingya:['星芽','Nova'],lichuan:['砾川','Flint']};
 const wild={biscuit:['麦饼','Biscuit'],inkspot:['墨点','Inky'],puff:['绒蒲','Puff'],shell:['贝扣','Shell'],cinder:['炭栗','Cinder'],clover:['芽扣','Clover'],fizz:['啪嗒','Fizz'],button:['夜扣','Button'],sunlace:['晴纱','Sunny'],ripplet:['漪舟','Ripple'],mossbell:['苔盏','Moss'],zest:['柚弧','Zest'],nightloom:['织夜','Midnight'],tidemark:['潮刻','Tide'],emberwing:['烬羽','Blaze'],aurora:['曦瓷','Aurora']};
@@ -90,3 +90,24 @@ for(const id of ['library','starfall']){
  const newer={...root,resonance:previous};root=newer;assert.equal(runtime.evidence(proof).ok,false,'stale slot token');
 }
 console.log('29 approved localized names, seven stable templates, portrait coordinates, old slot migration, rejected defeat/stale/duplicate proof, rollback PASS');
+
+ // Scan executable text and preview pages, not stable lowercase IDs or binary art.
+ const root=new URL('../public/cat-bond/',import.meta.url);
+ const obsolete=/小铆|白栞|岬灯|\b(?:Muling|Mulings|Yandeng|Jiedeng|Qilan|Yahe|Yuchuan|Jinpo|Xiaomao|Lingyu|Yuanfan|Moye|Baikan|Xingya|Lichuan|Inkspot|Sunlace|Ripplet|Mossbell|Nightloom|Tidemark|Emberwing)\b|\b(?:muling|xiaomao|baikan)['’‘]s\b/;
+ const scanDirs=['js/','js/resonance/','css/',''];
+ let checked=0;
+ for(const d of scanDirs){
+   const dir=new URL(d,root);
+   for(const entry of readdirSync(dir,{withFileTypes:true})){
+    if(!entry.isFile()||! /\.(?:m?js|html|css|json)$/.test(entry.name))continue;
+    const source=readFileSync(new URL(entry.name,dir),'utf8');
+    const match=source.match(obsolete);
+    assert.ok(!match,d+entry.name+': obsolete display name '+match?.[0]);
+    checked++;
+   }
+ }
+ const festivalSource=readFileSync(new URL('js/resonance/world-runtime.mjs',root),'utf8');
+ assert.ok(festivalSource.includes('const actor=campaign.cast.xiaomao.name;'));
+ assert.ok(festivalSource.includes('actor.en}’s First Shadow Puppet Show'));
+ assert.ok(festivalSource.includes('actor.zh}的第一场皮影戏'));
+ console.log('Runtime display-name audit PASS: '+checked+' source/preview files, festival labels use the canonical cast');

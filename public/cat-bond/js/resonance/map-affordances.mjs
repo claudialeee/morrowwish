@@ -16,7 +16,7 @@ export function layoutMarkerLabels(items,metrics,measure,W=960,H=540,avoid=[]){
  const positioned=items.map(m=>{
   const {r}=size(m);
   if(m.k==="npc"){
-   // Match the opening Muling speech marker: one 44 CSS-pixel cream bubble,
+   // Match the opening Luna speech marker: one 44 CSS-pixel cream bubble,
    // not a separate icon and label. Reserve the full pill plus its tail.
    const compact=scale<.5,unit=1/scale,bh=(m.main?45:m.secondary?28:36)*unit,fs=(m.main?18:m.secondary?11.5:14)*unit;
    const bw=Math.min(W-8,Math.max((m.main?84:m.secondary?46:64)*unit,measure(m.t,fs)+(m.main?42:m.secondary?26:36)*unit));
