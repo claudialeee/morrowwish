@@ -331,3 +331,19 @@ assert.equal(separate.byGame.find(g=>g.game==='starbell-preview').conversion.sta
 assert.equal(separate.byGame.find(g=>g.game==='cat-bond').pageviews,1);
 assert.equal(separate.byGame.find(g=>g.game==='cat-bond').conversion.startedViews,0);
 console.log('Starbell isolated collector and Cat Bond game-row separation verified.');
+
+// New engagement metrics are based on versioned real visits; no historical backfill.
+rows.splice(0,rows.length);
+const origin='https://starbell-portrait-preview.morrowwish.pages.dev';
+const metricReq=(id,extra)=>previewReq(origin,'starbell-preview',{viewId:id,metricsVersion:1,...extra});
+assert.equal((await api(metricReq('new-metric-view',{kind:'visit'}),env)).status,202);
+assert.equal((await api(metricReq('new-metric-view',{kind:'session',seq:0,starts:1,activeSeconds:300,signals:{bond_enter:1,rpg_new:1,rpg_enter_prologue:1,rpg_done_prologue:1,rpg_pstart_chase:1,rpg_pdone_chase:1}}),env)).status,202);
+const metric=(await (await api(cachedReq(),env)).json()).byGame.find(g=>g.game==='starbell-preview').engagement;
+assert.equal(metric.trackedViews,1);
+assert.equal(metric.playedViews,1);
+assert.equal(metric.fiveMinuteViews,1);
+assert.equal(metric.avgActiveSeconds,300);
+assert.equal(metric.signalViews.rpg_done_prologue,1);
+assert.equal(metric.signalCounts.rpg_pdone_chase,1);
+assert.equal(metric.mode.portrait.played,1);
+console.log('Versioned engagement and RPG progress verified.');

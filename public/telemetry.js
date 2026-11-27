@@ -46,6 +46,10 @@ firstSeen=localStorage.getItem("arcade-visitor-day-v2")||"";
 if(!/^[0-9a-f-]{20,64}$/i.test(visitor)){visitor=globalThis.crypto?.randomUUID?.()||"";firstSeen=day;localStorage.setItem("arcade-visitor-v2",visitor);localStorage.setItem("arcade-visitor-day-v2",firstSeen);}
 persistent=!!visitor;
 }}catch{}
+let activeSince=performance.now(),lastActivity=-Infinity,activePending=0,playing=false;
+function activeTick(now=performance.now()){if(playing&&document.visibilityState==="visible")activePending+=Math.max(0,Math.min(now,lastActivity+60000)-activeSince);activeSince=now;}
+function markActivity(){activeTick();lastActivity=performance.now();}
+for(const name of ["pointerdown","keydown","touchstart"])window.addEventListener(name,markActivity,{passive:true});
 const eventCounts={starts:0,ends:0,abandons:0,retries:0,shares:0,clicks:0,completion:0};
 const lastSent={starts:0,ends:0,abandons:0,retries:0,shares:0,clicks:0,completion:0};
 const signalCounts=Object.create(null),lastSignals=Object.create(null);
@@ -61,6 +65,7 @@ const beginsRun=game==="cat-bond"?(n==="bond_entered"||n==="game_start"):
  n==="run_start"||n==="game_start";
 const finishesRun=["run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose"].includes(n);
 if(beginsRun){
+ activeTick();playing=true;lastActivity=performance.now();
  if(!firstRunStarted){firstRunStarted=true;signal("funnel_first_run");}
  else if(firstRunFinished&&!firstReplaySeen){firstReplaySeen=true;signal("funnel_replay_after_finish");}
 }
@@ -182,13 +187,14 @@ document.addEventListener("click",e=>{
  event("game_open");
  if(game!=="hub")return;
  const dest=String(link.dataset?.id||"");
+ if(dest==="starbell-preview"){try{const url=new URL(link.href);if(["cat-bond-preview.morrowwish.pages.dev","starbell-portrait-preview.morrowwish.pages.dev"].includes(url.hostname)){const channel=utmSource||(source==="external"?referrer:source==="direct"?"direct":"");if(channel&&!url.searchParams.has("utm_source"))url.searchParams.set("utm_source",channel);if(utmMedium&&!url.searchParams.has("utm_medium"))url.searchParams.set("utm_medium",utmMedium);if(utmCampaign&&!url.searchParams.has("utm_campaign"))url.searchParams.set("utm_campaign",utmCampaign);link.href=url.href;}}catch{}}
  if(!allowed.has(dest)||!link.closest(".feature-card,.mini-game"))return;
  signal("hub_card_"+dest.replaceAll("-","_"));
  flush(true);
 },true);
 // New Cat Bond acquisition cohort, without modifying past visit rows.
 const shared={game,site,viewId,visitor,firstSeen,source,referrer,utmSource,utmMedium,utmCampaign,
- trackingVersion:game==="cat-bond"?11:undefined};
+ metricsVersion:1,trackingVersion:game==="cat-bond"?11:undefined};
 function send(data){if(disabled)return;try{
  const body=JSON.stringify({...shared,...data}),blob=new Blob([body],{type:"text/plain;charset=UTF-8"});
  // Foreground events should be requested immediately. sendBeacon is most
@@ -200,15 +206,15 @@ function send(data){if(disabled)return;try{
  });
 }catch{}}
 send({kind:"visit",hubClickVersion:game==="hub"?1:undefined});
-function flush(force=false){if(closed)return;const now=performance.now(),deltaSec=Math.max(0,Math.round((now-lastClock)/1000)),dif={};
-let changed=deltaSec>0;for(const k of Object.keys(eventCounts)){dif[k]=eventCounts[k]-lastSent[k];if(dif[k])changed=true;}
+function flush(force=false){if(closed)return;const now=performance.now();activeTick(now);const activeSeconds=Math.floor(activePending/1000);const deltaSec=Math.max(0,Math.round((now-lastClock)/1000)),dif={};
+let changed=deltaSec>0||activeSeconds>0;for(const k of Object.keys(eventCounts)){dif[k]=eventCounts[k]-lastSent[k];if(dif[k])changed=true;}
 const signals={};for(const [k,v] of Object.entries(signalCounts)){const delta=v-(lastSignals[k]||0);if(delta>0){signals[k]=delta;changed=true;}}
 if(!changed&&!force)return;
 const hasAction=firstMs>=0&&!firstMsSent;
-send({kind:"session",seq:flushSeq++,seconds:deltaSec,firstMs:hasAction?firstMs:-1,...dif,signals,levels:level,score});
-for(const k of Object.keys(eventCounts))lastSent[k]=eventCounts[k];for(const k of Object.keys(signals))lastSignals[k]=signalCounts[k];if(hasAction)firstMsSent=true;lastClock=now;
+send({kind:"session",seq:flushSeq++,seconds:deltaSec,activeSeconds,firstMs:hasAction?firstMs:-1,...dif,signals,levels:level,score});
+for(const k of Object.keys(eventCounts))lastSent[k]=eventCounts[k];for(const k of Object.keys(signals))lastSignals[k]=signalCounts[k];if(hasAction)firstMsSent=true;lastClock=now;activePending-=activeSeconds*1000;
 }
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flush();else lastClock=performance.now();});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flush();else{lastClock=performance.now();activeSince=lastClock;lastActivity=-Infinity;}});
 window.addEventListener("pagehide",()=>{
  // The mini games are endless; leaving before game-over is abandonment, not a clear.
  if((game==="flip-dash"||game==="parcel-panic")&&window.__MWMiniActive){window.__MWMiniActive=false;event("run_abandoned",{reason:"exit"});}

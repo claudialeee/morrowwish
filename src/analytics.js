@@ -119,9 +119,10 @@ function mainStats(x){
     if(!browserDays.has(v.visitor))browserDays.set(v.visitor,new Set());
     browserDays.get(v.visitor).add(index);
   }
-  let d1Eligible=0,d1Returned=0;
+  let d1Eligible=0,d1Returned=0,d7Eligible=0,d7Returned=0;
   for(const daysOf of browserDays.values()){
     const first=Math.min(...daysOf);
+    if(first+7<dates.length&&dates[first+7]<localDay(x.snapshotAt||Date.now())){d7Eligible++;if(daysOf.has(first+7))d7Returned++;}
     if(first+1>=dates.length||dates[first+1]>=localDay(x.snapshotAt||Date.now()))continue;
     d1Eligible++;
     if(daysOf.has(first+1))d1Returned++;
@@ -134,7 +135,7 @@ function mainStats(x){
     avgSessionSeconds:measuredSessionCount?Math.round(sum(measuredSessions,"seconds")/measuredSessionCount):null,
     measuredSessionCount,
     shareClicks:sessions.some(v=>v.data.shares!=null&&Number.isFinite(Number(v.data.shares))&&Number(v.data.shares)>=0)?sum(sessions,"shares"):null,
-    d1Eligible,d1Returned
+    d1Eligible,d1Returned,d7Eligible,d7Returned
   };
   };
   const score=(part)=>{
@@ -181,7 +182,19 @@ function mainStats(x){
     return {pageviews,headlineMetrics:scopedMetrics(visitsOf,sessionsOf),visitors:visitors(visitsOf),sessions:uniq([...visitsOf,...sessionsOf].map(r=>r.view_id)),startedViews:startedIds.size,startRate:funnelAvailable?pct(startedIds.size,distinctPageVisits):null,visitFunnel,starts:sum(sessionsOf,"starts"),ends:sum(sessionsOf,"ends"),abandons:sum(sessionsOf,"abandons"),retries:sum(sessionsOf,"retries"),shares:sum(sessionsOf,"shares"),clicks:sum(sessionsOf,"clicks"),completion:sum(sessionsOf,"completion"),avgSeconds:sessionsOf.length?Math.round(times/Math.max(1,uniq(sessionsOf.map(r=>r.view_id)))):0,signals,conversion,historicalVisitFunnel};
   };
   const breakdown=(key)=>{let m=new Map();for(let r of visits){let v=tidy(r.data[key],100);if(!v)v=key==="referrer"&&r.data.source==="direct"?"direct_no_referrer":"unknown";m.set(v,(m.get(v)||0)+1)}return [...m].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,16)};
-  const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}const previewModes=game==="starbell-preview"?Object.fromEntries(["portrait","landscape","unknown"].map(mode=>[mode,g.filter(r=>r.kind==="visit"&&(r.data.previewMode||"unknown")===mode).length])):undefined;return {game,...z,sources,...(previewModes?{previewModes}:{})}}).sort((a,b)=>b.pageviews-a.pageviews);
+  const engagement=(g)=>{
+    const v=g.filter(r=>r.kind==="visit"&&Number(r.data.metricsVersion)>=1&&r.view_id),ids=new Map(v.map(r=>[r.view_id,r]));
+    if(!ids.size)return null;
+    const events=new Map();for(const r of g)if(r.kind==="session"&&ids.has(r.view_id)){if(!events.has(r.view_id))events.set(r.view_id,[]);events.get(r.view_id).push(r.data);}
+    const played=new Set(),active=new Map(),knownBrowsers=new Set(),effectiveBrowsers=new Set(),reached=new Map(),counts=new Map();
+    for(const [id,es] of events){const bond=["cat-bond","starbell-preview"].includes(ids.get(id).game);if(es.some(e=>bond?Number(e.signals?.bond_enter)>0:Number(e.signals?.funnel_first_run)>0||Number(e.starts)>0))played.add(id);active.set(id,es.reduce((n,e)=>n+Math.max(0,Math.min(3600,Number(e.activeSeconds)||0)),0));for(const e of es)for(const [k,n] of Object.entries(e.signals||{})){if(!/^rpg_[a-z0-9_-]{1,35}$/.test(k)||!(Number(n)>0))continue;if(!reached.has(k))reached.set(k,new Set());reached.get(k).add(id);counts.set(k,(counts.get(k)||0)+Math.min(10000,Number(n)));}}
+    for(const id of played){const visitor=ids.get(id).visitor;if(visitor){knownBrowsers.add(visitor);if(active.get(id)>=300)effectiveBrowsers.add(visitor);}}
+    const mature=[...played].filter(id=>Number(ids.get(id).ts)<=Number(x.snapshotAt||Date.now())-300000||active.get(id)>=300),five=mature.filter(id=>active.get(id)>=300).length;
+    const mode={};for(const name of ["portrait","landscape","unknown"]){const cohort=[...ids].filter(([,r])=>(r.data.previewMode||"unknown")===name);mode[name]={views:cohort.length,played:cohort.filter(([id])=>played.has(id)).length,effective:cohort.filter(([id])=>active.get(id)>=300).length};}
+    const signalViews=Object.fromEntries([...reached].map(([k,set])=>[k,set.size]));
+    return {trackedViews:ids.size,playedViews:played.size,playedBrowsers:knownBrowsers.size,effectiveBrowsers:effectiveBrowsers.size,fiveMinuteEligible:mature.length,fiveMinuteViews:five,avgActiveSeconds:played.size?Math.round([...played].reduce((n,id)=>n+(active.get(id)||0),0)/played.size):null,mode,signalViews,signalCounts:Object.fromEntries(counts)};
+  };
+  const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}const previewModes=game==="starbell-preview"?Object.fromEntries(["portrait","landscape","unknown"].map(mode=>[mode,g.filter(r=>r.kind==="visit"&&(r.data.previewMode||"unknown")===mode).length])):undefined;return {game,...z,sources,engagement:engagement(g),...(previewModes?{previewModes}:{})}}).sort((a,b)=>b.pageviews-a.pageviews);
   const byDay=dates.map(day=>{let r=rows.filter(x=>localDay(Number(x.ts)||Date.parse(x.day+"T00:00:00Z"))===day),v=r.filter(x=>x.kind==="visit"),s=r.filter(x=>x.kind==="session");return {day,pageviews:v.length,visitors:visitors(v),starts:sum(s,"starts"),retries:sum(s,"retries"),shares:sum(s,"shares")}});
   // Acquisition view: one compact channel row across all visible games.
   // Only real game-page visits count towards start rate; homepage and internal hops
