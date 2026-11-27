@@ -1978,6 +1978,18 @@ class CaptureBattle {
   // read. identityMul(f) returns ONE product consumed at every cast entry; the
   // resolveHit traitMult site is gone (now covered here, no double-dip).
   identityMul(f){ return this.outgoingBuffMult(f) * (f?._dmgOutMult || 1); }
+  // Owner 2026-11-27 对称 defense: shared vit/lv flat+pct mitigation for BOTH
+  // hurtMe (player-side incoming) AND hurtEnemy (enemy-side incoming). One source
+  // of truth so both sides mirror. hardcore flat cap 8 / casual 15.
+  applyAttributeDefense(dmg, target) {
+    const t = target.cat || target;
+    const vit = (t.stats && t.stats.vit) || target.vit || t.vit || 6;
+    const lv = t.level || target.level || 1;
+    const hardcore = this.difficultyMode === 'hardcore';
+    const flat = Math.min(hardcore ? 8 : 15, 2 + vit * 0.15 + lv * 0.1);
+    const pct = Math.min(0.35, 0.08 + vit * 0.006 + lv * 0.002);
+    return Math.max(1, (Math.max(0, dmg - flat)) * (1 - pct));
+  }
   // Owner 2026-11-27 refactor Phase 2.0: single-source cast-context snapshot.
   // Stamps sk._cast = {aim, caster, side, mouse, target, ray240, t} at the top of
   // castOffensiveSkill. All landing-point-resolving handlers read from this
@@ -6055,6 +6067,9 @@ class CaptureBattle {
       if (scaled <= 0.00001) return; // no fake zero-damage pop/ult charge
       field.damageByEnemy?.set(e.i,used+scaled);
     }
+    // Owner 2026-11-27 对称 defense: hurtEnemy mirrors hurtMe via applyAttributeDefense.
+    // DoT and duo skip — duo has its own duoDamageMult budget; DoT ticks meant to chip.
+    if (!isDot && !fromDuo && e.maxhp) scaled = this.applyAttributeDefense(scaled, e);
     // Let the player finish movement/attack/skill/dodge practice before
     // an allied AI cat can accidentally end the only guided encounter.
     const lessonPending=this.coach&&this.coach.steps[this.coach.i]?.key!=='finish';
@@ -6171,22 +6186,10 @@ class CaptureBattle {
       dmg*=f._dmgTakenMult||1;
       if((f._cleanseGuardUntil||0)>this.t)dmg*=.8;
       const armor=Math.min(dmg,f._traitArmor||0); f._traitArmor=Math.max(0,(f._traitArmor||0)-armor);dmg-=armor;
-      // DEFENSE (owner 2026-11-26, playtest-driven): mix of flat absorb + % reduction,
-      // both scale with vit + level, so high-level cats both brush off chip damage AND
-      // soften big hits. Flat goes first (chip-immunity), then pct. Capped so the enemy
-      // can always land ≥1 point of damage.
-      const _f = f.cat || f;
-      const _vit = (_f.stats && _f.stats.vit) || 6;
-      const _lv = _f.level || 1;
-      // Owner 2026-11-27 pick (d)+(a): shrink flat+pct lv/vit coefficients AND cap flat.
-      // Softer curve: flat coeffs vit*0.15+lv*0.1 (half), pct coeffs vit*0.006+lv*0.002 (half).
-      // Owner follow-up: hardcore flat cap TIGHTER (8) so enemies hit harder — hardcore
-      // is meant to be challenging and chip-immunity contradicts that. Casual stays 15
-      // to prevent late-game casual chip-immunity on near-maxed tanks.
-      const _hardcore = this.difficultyMode === 'hardcore';
-      const flat = Math.min(_hardcore ? 8 : 15, 2 + _vit * 0.15 + _lv * 0.1);
-      const pct = Math.min(0.35, 0.08 + _vit * 0.006 + _lv * 0.002);
-      dmg = Math.max(1, (Math.max(0, dmg - flat)) * (1 - pct));
+      // Owner 2026-11-27 对称 defense: shared applyAttributeDefense helper reads
+      // defender's vit/lv (flat+pct, hardcore cap 8/casual 15). Same function also
+      // called by hurtEnemy so both sides mirror. Flat first (chip-immunity), then pct.
+      dmg = this.applyAttributeDefense(dmg, f);
       if(dmg>0){for(const ally of this.team||[]){if(!ally.alive||ally===f)continue;const ev={battle:this,cat:ally,target:f,dmg};window.CatTraits?.emit('onBeforeDamage',ev);dmg=ev.dmg;if(dmg<=0)break;}}
     }
     const beforeHP=f.hp;
