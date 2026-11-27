@@ -145,6 +145,7 @@ class CaptureBattle {
     // a favorite pair anywhere in the five-cat roster could silently be used
     // even while one favorite was on the bench, disabling the Duo button.
     this.duo=window.CatRelations?.active(this.team.map(f=>f.cat))||null;
+    if(this.duo)window.CatBondPremiumCinematics?.preparePortrait?.(this.duo.elementPair,this.duo.tier);
     this.duoCharge=this.duo?12:0;this.duoCd=0;this.duoUses=0;   // bond support starts low + fills slow (bigger payoff than the ult)
 
     // --- player runtime state: spread the team on the LEFT, INSIDE the playable band
@@ -359,9 +360,11 @@ class CaptureBattle {
     const next=window.CatRelations?.active(this.team.filter(f=>f.alive&&!f._reinforcement).map(f=>f.cat))||null;
     const old=this.duo;if(next?.a?.uid!==old?.a?.uid||next?.b?.uid!==old?.b?.uid)this.duoCharge=0;
     this.duo=next;
+    if(next)window.CatBondPremiumCinematics?.preparePortrait?.(next.elementPair,next.tier);
   }
   duoReady(){
     return !!(this.duo&&this.duoCharge>=100&&this.duoCd<=0&&
+      (!this.isPortraitArena()||window.CatBondPremiumCinematics?.portraitReady?.(this.duo.elementPair,this.duo.tier))&&
       [this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)));
   }
   castDuo(){
