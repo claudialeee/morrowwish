@@ -2829,13 +2829,14 @@ const UI = {
     const encounterLvl=wildSp.encounterLevel||
       window.Battle?.CaptureBattle?.previewWildLevel?.(
         wildSp,opts.origin==='map'?(window.WorldMap?.currentRegion||'home'):'yard',team)||1;
+    const bossLabels={water:['水','Water'],grass:['草','Grass'],fire:['火','Fire'],wind:['风','Wind'],dark:['暗','Dark'],light:['光','Light']};
+    const bossLabel=bossLabels[opts.bossElement]?.[en?1:0]||opts.bossElement;
     this.panel(`<span class="card-close">×</span>
       <h2>${label}</h2>
       <p class="sub" style="font-weight:750;color:#765e85">
-        ${opts.storyTitle?(en?'Story encounter':'剧情战斗'):(en?'Wild cat':'野生猫咪')} · Lv.${encounterLvl} ·
-        <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>
+        ${opts.bossElement?((en?'Guardian battle · Element: ':'守卫战 · 属性：')+bossLabel):((opts.storyTitle?(en?'Story encounter':'剧情战斗'):(en?'Wild cat':'野生猫咪'))+' · Lv.'+encounterLvl+' · '+wildSp.rarity)}
       </p>
-      ${this.matchupWarning(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en)}
+      ${opts.bossElement?'':this.matchupWarning(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en)}
       <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
       ${squadMarkup}
       <div class="prebattle-quick-select"><button id="bp-best-team" type="button" class="btn ghost">${en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button>
