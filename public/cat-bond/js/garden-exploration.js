@@ -118,6 +118,7 @@ function draw(parent,ctx,w,h,npcRects=[]){
  const ordered=[...buttons].sort(([a],[b])=>Number(b.startsWith('chart-'))-Number(a.startsWith('chart-')));
  for(const [id,b] of ordered){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?!s.door:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):id==='moonleaf'?!!v?.ending&&!!journeyKeepsakes(owner,v)?.moonleaf&&!s.moonleafTouched:id==='chart-echo'?s.chartStarted&&s.parts.includes(0)&&!s.chartEcho&&!v?.openingMet&&v?.current?.id==='prologue:P-05':id==='chart-1'?s.chartStarted&&s.parts.includes(0)&&!s.parts.includes(1):s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(0);
   b.hidden=!show;if(!show)continue;
+  b.dataset.questPrimary=String(isChart&&id!=='chart-1'&&v?.current?.id==='prologue:P-05'&&!v?.openingMet);
   const p=def.points[id==='butterfly'?Math.min(2,s.butterfly):0];
   const preferredX=rect.left+(left+(right-left)*p[0])/w*rect.width-r.left,preferredY=rect.top+(top+(bottom-top)*p[1])/h*rect.height-r.top;
   const bw=b.offsetWidth||84,bh=b.offsetHeight||70;

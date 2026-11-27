@@ -79,11 +79,11 @@
     guide.append(title,hint);
     const row=document.createElement('div');guide.append(row);
     const add=(zh,enText,action)=>{const b=document.createElement('button');b.type='button';b.textContent=en?enText:zh;b.onclick=()=>{if(active&&state()===visitedState)action()};row.append(b)};
+    if(talk){add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));row.lastElementChild.classList.add('sg-main-continue');}
     if(!epilogue&&!ending&&next&&talk&&!departure){
-      hint.textContent=en?'Optional companion guide · '+seen.length+'/4. Next: '+next[2]+'. You may continue the story at any time.':'可选养成引导 · '+seen.length+'/4。下一步：'+next[1]+'。随时可以继续剧情。';
+      hint.textContent=en?'Talk to Muling to continue the story. Optional: explore '+next[2]+'.':'与暮铃交谈推进主线。也可以查看'+next[1]+'（可选）。';
       add('查看'+next[1],'Explore '+next[2],()=>window.ResonanceBook?.open(next[0]));
     }
-    if(talk)add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));
     if(ending){add('花园复兴','Garden Restoration',()=>window.GardenProjects?.open?.());add('继续探索','Continue exploring',()=>game.openWorldMap());if(guests.pages>1){add('下一批访客 '+(guestPage+1)+'/'+guests.pages,'Next visitors '+(guestPage+1)+'/'+guests.pages,()=>{guestPage=(guestPage+1)%guests.pages;guideKey='';refreshGuide()});row.lastElementChild.dataset.guestPage=String(guestPage);}}
     if(departure){
       title.textContent=en?'Find your name':'寻找自己的名字';hint.textContent=en?'Look for clues in the garden, or follow the trail to Windchime Town.':'在花园找找线索，或去风铃镇打听。';
@@ -109,7 +109,7 @@
     if(!width||!height||!r.width||!r.height)return;
     const b=getTalkMarker(npc),en=isEnglish(),raw=npc.name,profileName=typeof raw==='string'?raw:raw?.[en?'en':'zh'];
     const label=npc.id==='muling'&&window.CatBondResonance?.view?.().current?.id==='prologue:P-05'?(en?'Stranger':'陌生猫'):(profileName||npc.id);
-    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);b.hidden=false;
+    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length;b.dataset.questPrimary=String(main);b.hidden=false;
     if(cell){b.style.left=cell.x+'px';b.style.top=cell.box.bottom+'px';return;}
     const px=canvasRect.left-r.left+x/width*canvasRect.width,py=canvasRect.top-r.top+(y-112*scale)/height*canvasRect.height;
     const bw=b.offsetWidth||72,bh=b.offsetHeight||44;
