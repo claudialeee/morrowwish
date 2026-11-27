@@ -2824,7 +2824,7 @@ const UI = {
       '<summary><strong>'+(en?'Battle team · edit':'出战队伍 · 点击调整')+'</strong>'+
       '<span id="battle-team-summary">'+this.battlePrepEsc(
         this.battleTeamSummary(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en))+'</span></summary>'+
-      '<p class="sub">'+(en?'2 cats start; up to 3 reserves. Tap cats to change the team or reorder below.':'2 只首发，最多 3 只替补。点击猫咪更换队伍，也可调整顺序。')+'</p>'+
+      '<p class="sub">'+(opts.regionalGuardian?(en?'The first two cats enter this guardian fight. Put your chosen pair first.':'前两只猫咪挑战守卫。请把搭档排在队伍前两位。'):(en?'2 cats start; up to 3 reserves. Tap cats to change the team or reorder below.':'2 只首发，最多 3 只替补。点击猫咪更换队伍，也可调整顺序。'))+'</p>'+
       this.squadPickerMarkup(selected)+'</details>';
     const label=opts.storyTitle?(opts.storyTitle[en?1:0]):opts.mastery?(en?'Golden Paw rematch':'金爪评级挑战')
       :(en?'Wild cat encounter':'发现野生猫咪');
@@ -2833,12 +2833,16 @@ const UI = {
         wildSp,opts.origin==='map'?(window.WorldMap?.currentRegion||'home'):'yard',team)||1;
     const bossLabels={water:['水','Water'],grass:['草','Grass'],fire:['火','Fire'],wind:['风','Wind'],elec:['电','Lightning'],dark:['暗','Dark'],light:['光','Light']};
     const bossLabel=bossLabels[opts.bossElement]?.[en?1:0]||opts.bossElement;
+    const phaseLabel=opts.bossSecondElement
+      ? (en?' → ':'转为')+bossLabels[opts.bossSecondElement][en?1:0]
+      : '';
     this.panel(`<span class="card-close">×</span>
       <h2>${label}</h2>
       <p class="sub" style="font-weight:750;color:#765e85">
-        ${opts.bossElement?((en?'Guardian battle · Element: ':'守卫战 · 属性：')+bossLabel):`${opts.storyTitle?(en?'Story encounter':'剧情战斗'):(en?'Wild cat':'野生猫咪')} · Lv.${encounterLvl} · <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>`}
+        ${opts.bossElement?((en?'Guardian battle · Element: ':'守卫战 · 属性：')+bossLabel+phaseLabel):`${opts.storyTitle?(en?'Story encounter':'剧情战斗'):(en?'Wild cat':'野生猫咪')} · Lv.${encounterLvl} · <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>`}
       </p>
       <div id="bp-matchup">${this.matchupWarning(selected.slice(0,2).map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en,opts.bossElement)}</div>
+      ${opts.bossSecondElement?`<p class="sub">${en?'Dark attacks counter its opening phase. Bring a light attacker for the second phase.':'开场用暗系攻击克制守卫，转为暗相后再用光系攻击。'}</p>`:""}
       ${opts.bossClue?`<p class="sub" data-guardian-clue="true" style="line-height:1.45">${this.battlePrepEsc(opts.bossClue[en?1:0])}</p>`:""}
       <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
       ${squadMarkup}

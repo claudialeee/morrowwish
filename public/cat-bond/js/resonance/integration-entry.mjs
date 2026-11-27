@@ -6,7 +6,7 @@ import "./title-entry.mjs?v=map-talk-1";
 // The prologue uses living discoveries instead of a standalone bell prop.
 import "./chapter-cinematics.mjs?v=regional-bosses-names-v2-20261127";
 import "./forge-combat-runtime.mjs?v=regional-bosses-names-v2-20261127";
-import "./regional-combat.mjs?v=guardian-balance-v3-20261127";
+import "./regional-combat.mjs?v=guardian-art-20261127";
 import "./finale-combat.mjs?v=regional-bosses-names-v2-20261127";
 import "./resonance-book.mjs?v=regional-bosses-names-v2-20261127";
 

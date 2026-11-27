@@ -9,3 +9,8 @@
 
 /* Authored Duo and ultimate artwork must not be obscured by regional attack controls. */
 #battle-ui .cb-region-combat[data-cinematic="true"],#battle-ui .cb-region-combat[data-cinematic="true"] button{visibility:hidden;pointer-events:none}
+
+#stage #battle-ui:has(.cb-region-combat[data-guardian="true"][data-cinematic="true"]) :is(.move-bar,#battle-skill-info-toggle,#battle-skill-tooltip){
+ visibility:hidden!important;
+ pointer-events:none!important;
+}

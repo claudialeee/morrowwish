@@ -1299,6 +1299,12 @@ body.cb-exploring #scene{cursor:grab}
  display:none!important;visibility:hidden!important;pointer-events:none!important;
 }
 
+#panel.open:not([data-mandatory="true"])>.card.cb-guardian-result{
+ align-self:center;
+ height:auto;
+ width:min(100%,480px);
+}
+
 /* The utility toolbar sits over the game on BOTH landscape phones and desktop.
    Keep optional panel close controls below it, regardless of screen width. */
 #panel.open:not([data-mandatory="true"]){
