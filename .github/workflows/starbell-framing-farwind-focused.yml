@@ -13,6 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/starbell-browser-setup
+      - name: Install audio tools when absent
+        run: |
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends ffmpeg
+          fi
       - name: Verify only affected files and fixed finale framing
         run: |
           set -euo pipefail
