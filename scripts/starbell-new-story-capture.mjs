@@ -85,11 +85,19 @@ try{
     if(await card.getByRole('button',{name:'Cat',exact:true}).getAttribute('aria-pressed')!=='true')throw Error('Cat shadow selection not reflected');
   });
  }),
- attempt('garden','garden',async p=>{
-  await record(p,'garden',5,async()=>{await p.waitForTimeout(900);const cv=p.locator('canvas:visible').first();if(await cv.count()){const b=await cv.boundingBox();if(b)await cv.tap({position:{x:b.width*.65,y:b.height*.55}});}});
+ attempt('explore','forest',async p=>{
+  const cv=p.locator('.rw-surface');await cv.waitFor({timeout:20000});
+  await p.waitForFunction(()=>performance.getEntriesByType('resource').some(x=>x.name.includes('/mobile-portrait/rootsleep-forest.webp')));
+  await record(p,'explore',5,async()=>{
+   await p.waitForTimeout(500);
+   const b=await cv.boundingBox();if(!b)throw Error('Forest map not visible');
+   await cv.tap({position:{x:Math.round(b.width*.43),y:Math.round(b.height*.76)}});
+   await p.waitForTimeout(1900);
+   await cv.tap({position:{x:Math.round(b.width*.30),y:Math.round(b.height*.61)}});
+  });
  })
  ]);
 }finally{await browser.close();await fs.writeFile(out+'/capture-evidence.json',JSON.stringify(evidence,null,2));}
-for(const id of ['garden','shadow','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
+for(const id of ['explore','shadow','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
 const battle=evidence.clips.find(x=>x.id==='battle');if(!battle.observations.some(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards'&&x.asset?.includes('/mobile-portrait/duo/')))throw Error('No verified live native portrait duo');
 for(const [id,asset] of [['shadow','lantern-shadow-square.webp']]){const cl=evidence.clips.find(x=>x.id===id);if(!cl.observations.some(x=>x.resources.some(u=>u.includes('/mobile-portrait/'+asset))))throw Error('Native mini-game artwork not loaded: '+id);}
