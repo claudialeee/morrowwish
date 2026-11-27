@@ -1,0 +1,24 @@
+name: Cat Bond cover compliance from owned game artwork
+on:
+  push:
+    branches: [review/cat-bond-platform-qa-20261127]
+    paths: ['make-clean-cover-options.py','.github/workflows/clean-cover-options.yml']
+permissions:
+  contents: write
+jobs:
+  covers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create clean native-size cover candidates
+        run: |
+          python3 -m pip install --break-system-packages pillow
+          python3 make-clean-cover-options.py
+      - name: Preserve visual candidates without changing approved original files
+        run: |
+          git config user.name 'Morrow Wish release QA'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f qa-output/clean-cover-options
+          git commit -m 'Save clean title-only and no-logo cover options [skip ci]'
+          git push origin HEAD:review/cat-bond-platform-qa-20261127
