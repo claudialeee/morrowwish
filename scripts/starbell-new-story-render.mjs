@@ -15,8 +15,7 @@ const shots=[
 {id:'friends',d:3,src:assets+'/story-art/cloud-lookout.jpg',pos:'50% center',caption:'Friends you’ll never\nwant to forget.',motion:true},
 {id:'chase',d:3,game:'chase',offset:.25},
 {id:'glide',d:5,game:'glide',offset:.5},
-{id:'battle',d:4,game:'battle',offset:1.5},
-{id:'duo',d:2,src:portrait+'/duo/dark-light-tier-3.webp',motion:true},
+{id:'battle',d:6,game:'battle',offset:Math.max(0,Math.min(6,(clips.get('battle').observations.find(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards')?.t||2)-1.6))},
 {id:'secret',d:4,src:portrait+'/prologue-garden.webp',map:assets+'/canon22-final-art/garden-route-map.webp',caption:'But your story began\nlong before you woke up.',motion:true},
 {id:'end',d:4,src:portrait+'/title-bell-sanctuary.webp',title:true,motion:true}
 ];
@@ -33,15 +32,15 @@ await page.route('https://trailer.local/**',async route=>{
 await page.goto('https://trailer.local/');
 await page.addStyleTag({url:'https://trailer.local/css/rpg-storybook-type.css'});
 await page.addStyleTag({content:
-'html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}body{position:relative;color:#fff8e9;font-family:"Cat Bond Fraunces",Georgia,serif;}'+
+'html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:transparent;}body{position:relative;color:#fff8e9;font-family:"EB Garamond",Georgia,serif;}'+
 '.art{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;}'+
 '.shade{position:absolute;top:0;left:0;right:0;height:630px;background:linear-gradient(#16292edb 0%,#16292e8c 47%,#16292e00 100%);}'+
-'.caption{position:absolute;top:186px;left:94px;right:125px;text-align:center;font-size:76px;font-weight:550;line-height:1.13;letter-spacing:-.025em;white-space:pre-line;text-shadow:0 3px 16px #13252a88;}'+
+'.caption{position:absolute;top:155px;left:95px;right:110px;text-align:center;font-size:84px;font-weight:500;line-height:1.08;letter-spacing:.008em;white-space:pre-line;text-shadow:0 3px 16px #13252a88;}'+
 '.map{position:absolute;left:115px;top:650px;width:850px;filter:drop-shadow(0 20px 38px #20303288);}'+
 '.secretshade{position:absolute;inset:0;background:#263e3b44;}'+
 '.brand{position:absolute;top:86px;left:0;right:0;text-align:center;color:#785b3c;font-family:"Cat Bond Nunito",sans-serif;font-size:27px;letter-spacing:.28em;font-weight:700;}'+
-'.title{position:absolute;top:146px;left:90px;right:90px;text-align:center;font-size:118px;font-weight:650;line-height:.98;color:#67462e;letter-spacing:-.035em;}'+
-'.small{font-size:55px;font-weight:450;letter-spacing:.01em;line-height:1.15;margin-bottom:7px;}'+
+'.title{position:absolute;top:146px;left:90px;right:90px;text-align:center;font-size:112px;font-weight:600;line-height:1.02;color:#67462e;letter-spacing:.018em;}'+
+'.small{font-size:53px;font-weight:400;letter-spacing:.05em;line-height:1.15;margin-bottom:7px;}'+
 '.bottomshade{position:absolute;bottom:0;left:0;right:0;height:640px;background:linear-gradient(transparent,#1a2d2d99 50%,#1a2d2ddd); }'+
 '.cta{position:absolute;bottom:270px;left:95px;right:125px;text-align:center;font-family:"Cat Bond Nunito",sans-serif;font-size:59px;line-height:1.15;font-weight:750;color:#fff6dc;}'+
 '.site{font-size:37px;margin-top:23px;font-weight:600;letter-spacing:.015em;}'
@@ -59,9 +58,9 @@ try{
    if(!s.game){const a=el('art');a.style.backgroundImage='url("'+src+'")';a.style.backgroundPosition=s.pos||'center';}
    if(s.map){el('secretshade');const m=document.createElement('img');m.className='map';m.src=map;document.body.append(m);}
    if(s.caption){el('shade');const caption=el('caption',s.caption);if(caption.scrollWidth>caption.clientWidth)throw Error('Caption overflow');}
-   if(s.title){el('brand','MORROW WISH');const title=el('title');el('small','Echoes of the',title);el('','Starbell',title);el('bottomshade');const c=el('cta','Play the free demo');el('site','morrowwish.vercel.app',c);}
+   if(s.title){el('brand','MORROW WISH');const title=el('title');el('small','Echoes of the',title);el('','STARBELL',title);el('bottomshade');const c=el('cta','Play the free demo');el('site','morrowwish.vercel.app',c);const credit=el('credit','Music: Soar — Scott Buckley · CC BY 4.0');credit.style.cssText='position:absolute;bottom:180px;left:0;right:0;text-align:center;font:24px Cat Bond Nunito,sans-serif;color:#fff4dc';}
   },{s,src:s.src?rel(s.src):null,map:s.map?rel(s.map):null});
-  await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(i=>i.decode()));const a=document.querySelector('.art');if(a){const url=getComputedStyle(a).backgroundImage.match(/url\("(.*)"\)/)?.[1];if(url){const im=new Image();im.src=url;await im.decode();}}});
+  await page.evaluate(async()=>{await document.fonts.load('500 84px "EB Garamond"');await document.fonts.ready;await Promise.all([...document.images].map(i=>i.decode()));const a=document.querySelector('.art');if(a){const url=getComputedStyle(a).backgroundImage.match(/url\("(.*)"\)/)?.[1];if(url){const im=new Image();im.src=url;await im.decode();}}});
   await page.screenshot({path:overlay,omitBackground:true,animations:'disabled'});
   if(s.game){
     const clip=clips.get(s.game),crop=clip.rect;
@@ -87,5 +86,5 @@ try{
  ff(['-i',file,'-f','null','-']);
  const info=JSON.parse(execFileSync('ffprobe',['-v','error','-show_streams','-show_format','-of','json',file],{encoding:'utf8'}));
  if(Math.abs(+info.format.duration-36)>.1||info.streams[0].width!==1080||info.streams[0].height!==1920||!info.streams.some(s=>s.codec_type==='audio'))throw Error('Invalid output');
- fs.writeFileSync(out+'/proof-en.json',JSON.stringify({live:proof,shots:frames,firstCaption:shots[0].caption,format:info.format},null,2));console.log('TRAILER COMPLETE',file);
+ fs.writeFileSync(out+'/proof-en.json',JSON.stringify({live:proof,shots:frames,firstCaption:shots[0].caption,music:{title:'Soar',artist:'Scott Buckley',license:'CC BY 4.0',source:'https://www.scottbuckley.com.au/library/soar/',licenseUrl:'https://creativecommons.org/licenses/by/4.0/',edited:true},format:info.format},null,2));console.log('TRAILER COMPLETE',file);
 }finally{await browser.close();}

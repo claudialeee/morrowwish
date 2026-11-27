@@ -2,8 +2,9 @@ import fs from 'node:fs/promises';
 import {chromium} from 'playwright';
 const out='artifacts/starbell-story-trailer';await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
-const origin=process.env.TRAILER_ORIGIN||'https://cat-bond-preview.morrowwish.pages.dev';
+const origin=process.env.TRAILER_ORIGIN||'https://starbell-portrait-preview.morrowwish.pages.dev';
 const version=await (await fetch(origin+'/preview-version.json?trailer='+Date.now())).json();
+if(!version.sha)throw Error('Preview source not identified');
 const evidence={origin,source:version,script:process.env.GITHUB_SHA,clips:[],errors:[]};console.log('LIVE SOURCE',JSON.stringify(version));
 async function open(region){
  const ctx=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:2,isMobile:true,hasTouch:true,reducedMotion:'reduce'});
@@ -44,10 +45,11 @@ async function record(p,id,secs,action){
  const rect=await p.evaluate(id=>{const el=['glide','chase'].includes(id)?document.querySelector('.rw-surface'):null;const r=el?.getBoundingClientRect();return r?{x:r.x,y:r.y,width:r.width,height:r.height,vw:innerWidth,vh:innerHeight}:null},id);
  const session=await p.context().newCDPSession(p);
  const frames=[];let active=true;const begin=Date.now();
+ const observations=[];const monitor=setInterval(async()=>{try{const v=await p.evaluate(()=>({duo:!!__game?.battle?.duoCinematic,layout:window.CatBondPremiumCinematics?.lastLayout?.source,asset:window.CatBondPremiumCinematics?.lastLayout?.asset,resources:performance.getEntriesByType('resource').map(x=>x.name).filter(x=>x.includes('/mobile-portrait/'))}));observations.push({t:(Date.now()-begin)/1000,...v});}catch{}},100);
  session.on('Page.screencastFrame',e=>{const at=(Date.now()-begin)/1000;session.send('Page.screencastFrameAck',{sessionId:e.sessionId}).catch(()=>{});if(active&&at<=secs+0.2)frames.push({at,data:e.data});});
  await session.send('Page.startScreencast',{format:'jpeg',quality:95,maxWidth:1080,maxHeight:1920,everyNthFrame:1});
  const err=await Promise.allSettled([action(),p.waitForTimeout(secs*1000)]);
- active=false;await session.send('Page.stopScreencast');await session.detach();
+ clearInterval(monitor);active=false;await session.send('Page.stopScreencast');await session.detach();
  if(err[0].status==='rejected')throw err[0].reason;
  if(frames.length<12)throw Error('Insufficient changing frames: '+id+' '+frames.length);
  for(let i=0;i<frames.length;i++)await fs.writeFile(dir+'/'+String(i).padStart(5,'0')+'.jpg',Buffer.from(frames[i].data,'base64'));
@@ -56,7 +58,7 @@ async function record(p,id,secs,action){
  for(let i=0;i<frames.length;i++){list+="file '"+String(i).padStart(5,'0')+".jpg'\n";list+='duration '+Math.max(.015,(i+1<times.length?times[i+1]:secs)-times[i]).toFixed(4)+'\n';}
  list+="file '"+String(frames.length-1).padStart(5,'0')+".jpg'\n";await fs.writeFile(dir+'/frames.txt',list);
  await p.screenshot({path:out+'/'+id+'-proof.png'});
- evidence.clips.push({id,seconds:secs,frames:frames.length,rect,scene:await p.evaluate(()=>({scene:__game.scene,region:WorldMap.currentRegion,story:CatBondResonance.view().current?.id}))});
+ evidence.clips.push({id,seconds:secs,frames:frames.length,rect,observations,scene:await p.evaluate(()=>({scene:__game.scene,region:WorldMap.currentRegion,story:CatBondResonance.view().current?.id}))});
  console.log('CAPTURED',id,frames.length);
 }
 async function attempt(id,region,fn){let ctx;try{const c=await open(region);ctx=c.ctx;await fn(c.p);}catch(e){evidence.errors.push(id+': '+String(e));console.log('CAPTURE ERROR',id,String(e));}finally{await ctx?.close();}}
@@ -69,7 +71,7 @@ try{
   const b=await p.locator('.rw-surface').boundingBox();
   await record(p,'chase',5,async()=>{await p.waitForTimeout(450);await p.locator('.rw-surface').tap({position:{x:b.width*.8,y:b.height*.35}});});
   await chase.waitFor({state:'hidden',timeout:18000});await dialogue(p,'harbor:H-02');await click(p,'Talk to Yandeng');await record(p,'melody',5,async()=>{await p.waitForTimeout(1000);await dialogue(p,'harbor:H-03');});await click(p,'Belllight beast');await p.locator('#panel [data-battle-auto="true"]').click();await p.locator('#bp-go').click();await p.locator('#battle-ui.on').waitFor();const tutorial=p.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();
-  await record(p,'battle',9,async()=>{await p.waitForTimeout(3500);const btn=p.locator('button').filter({hasText:/Duo/i}).first();if(await btn.isVisible()&&await btn.isEnabled())await btn.tap();});
+  await record(p,'battle',12,async()=>{await p.waitForTimeout(1500);const btn=p.locator('button').filter({hasText:/Duo/i}).first();for(let i=0;i<12;i++){if(await p.evaluate(()=>!!__game.battle?.duoCinematic))break;if(await btn.isVisible()&&await btn.isEnabled()){await btn.tap();break;}await p.waitForTimeout(350);}});
  }),
  attempt('sky','sky',async p=>{
   await click(p,'Catch the wind · Practice gliding');await p.locator('[data-sky-flight-status][data-route="open"]').waitFor();const b=await p.locator('.rw-surface').boundingBox();
@@ -80,4 +82,6 @@ try{
  })
  ]);
 }finally{await browser.close();await fs.writeFile(out+'/capture-evidence.json',JSON.stringify(evidence,null,2));}
-for(const id of ['chase','glide','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
+for(const id of ['garden','chase','glide','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
+const battle=evidence.clips.find(x=>x.id==='battle');if(!battle.observations.some(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards'&&x.asset?.includes('/mobile-portrait/duo/')))throw Error('No verified live native portrait duo');
+for(const [id,asset] of [['chase','harbor-chase.webp'],['glide','sky-glide.webp']]){const cl=evidence.clips.find(x=>x.id===id);if(!cl.observations.some(x=>x.resources.some(u=>u.includes('/mobile-portrait/'+asset))))throw Error('Native mini-game artwork not loaded: '+id);}

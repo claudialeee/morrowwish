@@ -21,13 +21,14 @@ jobs:
       - name: Install encoder and CJK fonts
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg fluidsynth fluid-soundfont-gm python3-pil
+          sudo apt-get install -y -qq ffmpeg fonts-ebgaramond python3-pil
       - name: Capture latest published preview gameplay
         run: node scripts/starbell-new-story-capture.mjs
       - name: Score and cinematic composition
         run: |
-          python3 scripts/starbell-new-story-audio.py
-          fluidsynth -ni -g 0.8 -r 44100 -F artifacts/starbell-story-trailer/score.wav /usr/share/sounds/sf2/FluidR3_GM.sf2 artifacts/starbell-story-trailer/score.mid
+          curl -fL --retry 3 'https://www.scottbuckley.com.au/library/wp-content/uploads/2019/12/sb_soar.mp3' -o artifacts/starbell-story-trailer/soar.mp3
+          ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 artifacts/starbell-story-trailer/soar.mp3 | grep -qx audio
+          python3 scripts/starbell-new-story-score-edit.py
           python3 scripts/starbell-new-story-particles.py
           node scripts/starbell-new-story-render.mjs
       - uses: actions/upload-artifact@v4
