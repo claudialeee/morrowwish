@@ -51,8 +51,8 @@ export function advanceLibrary(p,i){
  p.solved=p.values.length===p.goal.length&&p.values.every((n,k)=>n===p.goal[k]);return p.solved;
 }
 const words={
- libraryCompanion:[["镜中的两只暮铃","Two Lunas in the mirror"],["它们都摇了两下铃。换个位置再摇铃，看看谁会转向你。","Both rang twice. Move and ring again; see who turns toward you."],[["选左边的猫","Choose the left cat"],["换位置，摇铃","Move and ring"],["选右边的猫","Choose the right cat"]]],
- libraryRoutes:[["六地模型 · 两条回家的路","Six-region model · Two ways home"],["把彩色铃拖向中央，或拖向相邻的铃。比较两种结果；这只是模型。","Drag a colored bell to the center or to its neighbor. Compare both outcomes; this is only a model."],[["中央汇集","Converge inward"],["接通邻路","Connect neighbors"],["结束演示","Finish demonstration"]]],
+ libraryCompanion:[["镜中的两只暮铃","Two Lunas in the mirror"],["用你们约好的两声铃作暗号。换个位置再摇铃，观察谁会转身回应。","Use your shared two-chime signal. Move and ring again; watch who turns to answer."],[["选左边的猫","Choose the left cat"],["换位置，摇铃","Move and ring"],["选右边的猫","Choose the right cat"]]],
+ libraryRoutes:[["六地模型 · 两条回家的路","Six-region model · Two ways home"],["观看两种方案会让猫咪们经历怎样不同的未来。","Watch how these two possible futures affect the cats."],[["中央汇集","Converge inward"],["接通邻路","Connect neighbors"],["结束演示","Finish demonstration"]]],
  librarySeal:[["一面走得进去的镜子","A mirror you can walk through"],["随意查看三面公共记忆镜，看看它们留下了什么景象。","Explore the three public memory mirrors in any order."],[["旧巡铃路","Old bell trail"],["书库旧画","Library mural"],["风铃镇旧景","Windchime Town in the past"]]],
  libraryMirrors:[["镜光回廊","Reflection gallery"],["旋转三面镜子，使光从左侧月窗折向隐藏的门。","Rotate the three mirrors to carry moonlight into the hidden doorway."],[["西镜","West mirror"],["中镜","Middle mirror"],["东镜","East mirror"]]],
  libraryMural:[["封存壁画","The sealed mural"],["按历史先后接合碎片：坠星、断裂的铃舌、应急锚室。","Reassemble the fragments in historical order: fallen star, broken tongue, emergency anchor."],[["断裂的铃舌","Broken tongue"],["应急锚室","Emergency anchor"],["坠落的星","Fallen star"]]],
