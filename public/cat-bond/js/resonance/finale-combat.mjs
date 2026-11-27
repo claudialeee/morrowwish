@@ -1,3 +1,4 @@
+import {finaleBattleAsset} from "./finale-art.mjs?v=phase-paired-20261127";
 import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud} from "./battle-hud.mjs";
 // Real-time finale adapter for the existing CaptureBattle; narrative state remains in the active slot.
 import {campaign} from "./campaign.mjs";
@@ -88,12 +89,11 @@ function install(){
  const tr=(zh,en)=>window.MorrowwishI18n?.get?.()==="zh"?zh:en;
  const arenaArt=new Map();
  function arenaPainting(W,H,id){
-  const native=H>W&&({"finale:B-01":"battle-finale-lock","finale:B-02":"battle-finale","finale:B-03":"battle-finale-chorus"}[id]);
-  const frame=native|| (H>W?"portrait":"wide");
+  const frame=finaleBattleAsset(id,H>W);
   if(!arenaArt.has(frame)){
    const image=new Image();
    image.decoding="async";
-   image.src=new URL(native?"../../assets/mobile-portrait/"+native+".webp":"../../assets/combat/star-bell-arena-"+frame+".webp",import.meta.url).href;
+   image.src=new URL("../../assets/"+frame,import.meta.url).href;
    arenaArt.set(frame,image);
   }
   return arenaArt.get(frame);
@@ -412,8 +412,7 @@ function install(){
  const background=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){
   if(this.resonanceFinale){
-   const requested=arenaPainting(W,H,this.resonanceFinale?.id),original=arenaPainting(W,H);
-   const painting=requested.complete&&requested.naturalWidth?requested:original;
+   const painting=arenaPainting(W,H,this.resonanceFinale?.id);
    if(painting.complete&&painting.naturalWidth){
     window.CatBondSceneFit.draw(ctx,painting,W,H,{top:"#e8deec",bottom:"#d9c4b7"});
     const light=ctx.createLinearGradient(0,0,0,H);

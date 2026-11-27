@@ -1,3 +1,4 @@
+import {finaleBattleAsset} from "./finale-art.mjs?v=phase-paired-20261127";
 import { campaign } from "./campaign.mjs";
 import {withForeground,depthScale} from "./exploration-depth.mjs";
 import {spatialControls,spatialTap,paintSpatial,chasePoint} from "./canon22-spatial.mjs";
@@ -60,7 +61,7 @@ function install(){
  const project=p=>portraitMap()?projectPortrait(portraitId(),p,portraitRemote()):wideRemoteMap()?projectFarwindLandscape(p):p;
  const unproject=p=>portraitMap()?unprojectPortrait(portraitId(),p,portraitRemote()):wideRemoteMap()?unprojectFarwindLandscape(p):p;
  function setMapGeometry(){const p=portraitMap();const native=nativePuzzleFile()||nativeCeremonyFile(),shell=canvas?.parentElement?.getBoundingClientRect();W=p?(portraitId()==='library'?574:540):native?640:960;H=p?960:native&&shell?.width>0?Math.max(400,Math.round(W*shell.height/shell.width)):540;if(canvas){canvas.dataset.logicalWidth=String(W);canvas.dataset.logicalHeight=String(H);canvas.style.setProperty('--rw-map-ratio',W+'/'+H);canvas.style.setProperty('--rw-map-width-ratio',String(W/H));}return p;}
- function sceneArt(id){if(id==="sky"&&wideRemoteMap())return image("sky-farwind-wide");const file=portraitMap()?(id==='harbor'&&current().view().melodies.includes('harbor')?'harbor-ceremony-matched.webp':portraitAsset(id,portraitRemote())):null;if(!file)return image(id);return nativeImage(file);}
+ function sceneArt(id){if(id==="finale"){const file=finaleBattleAsset(current().view().current?.id,portraitMap());return image("finale:"+file);}if(id==="sky"&&wideRemoteMap())return image("sky-farwind-wide");const file=portraitMap()?(id==='harbor'&&current().view().melodies.includes('harbor')?'harbor-ceremony-matched.webp':portraitAsset(id,portraitRemote())):null;if(!file)return image(id);return nativeImage(file);}
  function drawMapPlate(img){if(portraitMap())ctx.drawImage(img,0,0,W,H);else if(nativePuzzleFile())nativePlate(img);else window.CatBondSceneFit.draw(ctx,img,W,H);}
 
  let fitPage=0,fitKey="",fitNotice="",fitObserver=null,fitFrame=0;
@@ -361,7 +362,7 @@ function install(){
   art[id]=img;
   img.onload=()=>{if(canvas)draw();};
   img.onerror=()=>{notice=tr("场景原画加载失败","Environment artwork failed to load");};
-  img.src=new URL(id==="finale"?"../../assets/combat/star-bell-arena-wide.webp":id==="harbor-ceremony"?"../../assets/resonance-world-v2/harbor.webp":"../../assets/resonance-world-v2/"+(id==="harbor"?"harbor-mist":id)+".webp",import.meta.url).href;
+  img.src=new URL(id.startsWith("finale:")?"../../assets/"+id.slice(7):id==="finale"?"../../assets/combat/star-bell-arena-wide.webp":id==="harbor-ceremony"?"../../assets/resonance-world-v2/harbor.webp":"../../assets/resonance-world-v2/"+(id==="harbor"?"harbor-mist":id)+".webp",import.meta.url).href;
   return img;
  }
  function render(){if(!host)return;lastPortrait=portraitLayout();if(!window.CatBondResonance?.view){host.replaceChildren(E("p","rw-notice",tr("正式剧情正在初始化","Initializing the canonical story")));host.hidden=game.scene!=="map";return;}const b=current(),v=b.view(),w=b.world();revision=sync();if(explorer?.puzzle?.type!=="melody"&&demoPuzzle!==null)stopDemo();if(demoActive){demoGeneration++;demoActive=false;demoIndex=-1;window.MorrowwishMusic?.stopQuality?.();}host.replaceChildren();host.hidden=game.scene!=="map";if(ceremony)host.dataset.ceremony=ceremony.region;else delete host.dataset.ceremony;const forestRegion=mode==="region"&&w.location==="forest",forgeRegion=mode==="region"&&w.location==="forge",regionStep=mode+"/"+w.location+"/"+(v.current?.id||"")+"/"+(explorer?.puzzle?.operation||"explore");if(fitKey!==regionStep){fitKey=regionStep;fitPage=0;fitNotice="";optionalOpen=null;}host.dataset.regionStep=regionStep;host.classList.toggle("rw-interaction-fit",!!explorer?.puzzle||!!ceremony);host.classList.toggle("rw-atlas-mode",mode==="map");if(mode==="map")host.classList.remove("rw-region-compact");host.classList.toggle("rw-forest-region",forestRegion);host.classList.toggle("rw-forge-region",forgeRegion);host.classList.toggle("rw-library-region",mode==="region"&&w.location==="library");host.classList.toggle("rw-sky-region",mode==="region"&&w.location==="sky");
