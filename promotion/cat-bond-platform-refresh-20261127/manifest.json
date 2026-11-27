@@ -152,14 +152,15 @@
           null
         ]
       ],
-      "notes": "Historical video min 15 sec/max 50 MB; confirm actual portal; real native screenshots not reillustrated. No duplicate game."
+      "notes": "Historical video min 15 sec/max 50 MB; confirm actual portal; real native screenshots not reillustrated. No duplicate game.",
+      "recordVerification": "Historical record link; confirm signed-in portal"
     },
     {
       "name": "GamePix",
       "priority": 3,
       "action": "update-existing-draft",
       "url": "https://my.gamepix.com/games/cat-bond",
-      "build": "platform-specific standalone build, SDK as required by existing portal",
+      "build": "standalone build; SDK-free permitted by official guidelines; integrate permitted GamePix SDK if targeting monetization, verify actual portal",
       "images": [
         [
           "landscape",
@@ -177,7 +178,8 @@
           512
         ]
       ],
-      "notes": "Verify existing record, build status and actual image slots. Official https://partners.gamepix.com/guidelines/submission and https://partners.gamepix.com/sdk/doc/javascript; relative paths, no third-party external links, pause audio/gameplay during ads and resume correctly. No timer-triggered ads."
+      "notes": "Verify existing record, build status and actual image slots. Official https://partners.gamepix.com/guidelines/submission and https://partners.gamepix.com/sdk/doc/javascript; relative paths, no third-party external links, pause audio/gameplay during ads and resume correctly. No timer-triggered ads.",
+      "imageSpecStatus": "historical draft sizes, not verified current portal requirements"
     },
     {
       "name": "GameDistribution",
@@ -257,5 +259,10 @@
     "Current Chat container has no DNS/network access to GitHub or game hosts; full repository and latest media cannot be fetched for local recording.",
     "GitHub connector can read/write files but exposes no workflow dispatch or billing/remaining Actions quota endpoint. No new paid run authorized.",
     "Browser connector only reads existing tabs; no authenticated portal write or upload. TinyFish prohibited."
-  ]
+  ],
+  "tools": {
+    "mediaValidator": "verify-media.py",
+    "itchLiveParity": "verify-itch-live.mjs",
+    "status": "source committed; execution not yet possible against real media/live game"
+  }
 }
