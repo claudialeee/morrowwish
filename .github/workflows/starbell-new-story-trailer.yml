@@ -5,7 +5,6 @@ on:
     paths: ['.github/workflows/starbell-new-story-trailer.yml','scripts/starbell-new-story-*.mjs','scripts/starbell-new-story-*.py']
 permissions:
   contents: read
-  actions: read
 concurrency:
   group: starbell-new-story-trailer
   cancel-in-progress: true
@@ -23,15 +22,15 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg fonts-ebgaramond python3-pil
-      - name: Pin and stage exact live portrait source for isolated developer capture
+      - name: Pin exact unified candidate for isolated developer capture
         run: |
           set -euo pipefail
-          sha=$(curl -fsS 'https://starbell-portrait-preview.morrowwish.pages.dev/preview-version.json?trailer=1' | jq -er .sha)
+          sha=3106a71570bcb2d4c22c255ed4ed9501702024f5
           git fetch --depth=1 origin "$sha"
           test "$(git rev-parse FETCH_HEAD)" = "$sha"
           git restore --source="$sha" -- public/cat-bond
           echo "TRAILER_GAME_SHA=$sha" >> "$GITHUB_ENV"
-      - name: Capture exact live source in isolated local developer mode
+      - name: Capture exact candidate with real local developer inputs
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-trailer-server.log 2>&1 &
           server=$!
@@ -41,11 +40,17 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: starbell-new-story-trailer-review
-          run-id: 45966047185
+          run-id: 46048714109
           github-token: ${{ github.token }}
-          path: /tmp/approved-v5
-      - name: Replace only courtyard shot, preserving V5 music and other footage
-        run: node scripts/starbell-new-story-render.mjs
+          path: /tmp/approved-v6
+      - name: Preserve the approved score and render the new V7 timeline
+        run: |
+          set -euo pipefail
+          file=$(find /tmp/approved-v6 -name Echoes-of-the-Starbell-Official-Trailer-EN.mp4 -type f -print -quit)
+          test -s "$file"
+          cp "$file" /tmp/approved-v6.mp4
+          python3 scripts/starbell-new-story-particles.py
+          node scripts/starbell-new-story-render.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

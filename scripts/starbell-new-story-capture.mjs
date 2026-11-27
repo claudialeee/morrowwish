@@ -4,9 +4,11 @@ const out='artifacts/starbell-story-trailer';await fs.mkdir(out,{recursive:true}
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
 const liveOrigin='https://starbell-portrait-preview.morrowwish.pages.dev';
 const origin='http://127.0.0.1:8765';
-const version=await (await fetch(liveOrigin+'/preview-version.json?trailer='+Date.now())).json();
-if(version.sha!==process.env.TRAILER_GAME_SHA||version.sha==='b7195bb31d43450c33e2a1a985c40c8f121c6ffd')throw Error('Live portrait source changed; refusing mismatched capture');
-const evidence={origin:liveOrigin,captureOrigin:origin,source:version,script:process.env.GITHUB_SHA,clips:[],errors:[]};console.log('LIVE SOURCE',JSON.stringify(version));
+const version={sha:process.env.TRAILER_GAME_SHA,scope:'unified development candidate; isolated real browser capture',productionApis:false,telemetry:false,storage:'local-only'};
+if(version.sha!=='3106a71570bcb2d4c22c255ed4ed9501702024f5')throw Error('Unexpected candidate source');
+const runtime=await fs.readFile('public/cat-bond/js/resonance/world-runtime.mjs','utf8');
+if(!runtime.includes('Normal exploration renders only the chosen protagonist')||runtime.includes('forest-waterworks.webp'))throw Error('Candidate lacks final single-cat or retired-game correction');
+const evidence={origin:origin,captureOrigin:origin,source:version,script:process.env.GITHUB_SHA,clips:[],errors:[]};console.log('LIVE SOURCE',JSON.stringify(version));
 async function open(region){
  const ctx=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:2,isMobile:true,hasTouch:true,reducedMotion:'reduce'});
  const p=await ctx.newPage();p.setDefaultTimeout(15000);
@@ -65,7 +67,27 @@ async function record(p,id,secs,action){
 }
 async function attempt(id,region,fn){let ctx;try{const c=await open(region);ctx=c.ctx;await fn(c.p);}catch(e){evidence.errors.push(id+': '+String(e));console.log('CAPTURE ERROR',id,String(e));}finally{await ctx?.close();}}
 try{
- await attempt('explore','forest',async p=>{
+ await Promise.all([
+ attempt('harbor','harbor',async p=>{
+  await p.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-04');
+  await click(p,'Belllight beast');await p.locator('#panel [data-battle-auto="true"]').click();await p.locator('#bp-go').click();await p.locator('#battle-ui.on').waitFor();const tutorial=p.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();
+  await record(p,'battle',30,async()=>{const btn=p.locator('#duo-burst');for(let i=0;i<65;i++){if(await p.evaluate(()=>!!__game.battle?.duoCinematic))break;if(await btn.isVisible()&&await btn.isEnabled()){await btn.tap();break;}await p.waitForTimeout(350);}});
+ }),
+ attempt('shadow','forge',async p=>{
+  await click(p,'Help Xiaomao put on a show');
+  const card=p.locator('.rw-festival-card');await card.waitFor({timeout:20000});
+  if(!(await card.locator('.rw-festival-title').innerText()).includes('Shadow Puppet Show'))throw Error('Old shadow-show UI detected');
+  evidence.shadowTitle=await card.locator('.rw-festival-title').innerText();
+  await p.waitForFunction(()=>performance.getEntriesByType('resource').some(x=>x.name.includes('/mobile-portrait/lantern-shadow-square.webp')));
+  await record(p,'shadow',9,async()=>{
+    await card.getByRole('button',{name:'Butterfly',exact:true}).tap();
+    await p.waitForTimeout(3900);
+    await card.getByRole('button',{name:'Cat',exact:true}).tap();
+    await p.waitForTimeout(3900);
+    if(await card.getByRole('button',{name:'Cat',exact:true}).getAttribute('aria-pressed')!=='true')throw Error('Cat shadow selection not reflected');
+  });
+ }),
+ attempt('explore','forest',async p=>{
   const close=p.locator('#panel.open .panel-dismiss');
   if(await close.isVisible())await close.click();
   await p.waitForFunction(()=>!document.querySelector('#panel.open')&&!__game.worldDialogueOpen());
@@ -81,6 +103,10 @@ try{
   const after=await p.evaluate(()=>JSON.stringify(State.S.resonanceExploration?.positions?.forest||null));
   if(before===after)throw Error('Forest walking did not change player position');
   evidence.forestMovement={before,after};console.log('VERIFIED FOREST WALK',before,after);
- });
+ })
+ ]);
 }finally{await browser.close();await fs.writeFile(out+'/capture-evidence.json',JSON.stringify(evidence,null,2));}
-if(!evidence.clips.some(x=>x.id==='explore')||!evidence.forestMovement)throw Error('No verified live forest exploration');
+if(!evidence.forestMovement)throw Error('Forest movement proof missing');
+for(const id of ['explore','shadow','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
+const battle=evidence.clips.find(x=>x.id==='battle');if(!battle.observations.some(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards'&&x.asset?.includes('/mobile-portrait/duo/')))throw Error('No verified live native portrait duo');
+for(const [id,asset] of [['shadow','lantern-shadow-square.webp']]){const cl=evidence.clips.find(x=>x.id===id);if(!cl.observations.some(x=>x.resources.some(u=>u.includes('/mobile-portrait/'+asset))))throw Error('Native mini-game artwork not loaded: '+id);}
