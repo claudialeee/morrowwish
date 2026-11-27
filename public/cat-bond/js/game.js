@@ -140,6 +140,7 @@ class Game {
     const story=window.CatBondResonance?.view?.(),id=story?.current?.id;
     if(window.__CAT_BOND_CANONICAL_ACTIVE__&&story?.current?.chapter==='prologue'&&id!=='prologue:P-05'){this.toast({zh:'请先进入花园。',en:'Enter the garden first.'});return false;}
     window.SunlitGarden?.leave?.();
+    this._yardCamera=null;this._yardMouseDrag=null;this._yardTouchGesture=null;
     // Clear messages from the garden encounter tutorial before navigating.
     // The global toast queue otherwise covers the exploration map and cats
     // for two seconds, despite the garden UI correctly being hidden.
@@ -589,12 +590,19 @@ class Game {
     else if(a&&!covered&&Math.hypot(player.x-a.target.x,player.y-a.target.y)<7){
       this._yardArrival=null;delete player._gardenManualTarget;a.callback();
     }
-    const W=this.W,H=this.H,z=window.CatBondResonance?.view?.()?.ending?1:(H>W*1.12?1.38:1.65);
-    const tx=Math.max(W*(1-z),Math.min(0,W*.5-player.x*z));
-    const ty=Math.max(H*(1-z),Math.min(0,H*.65-player.y*z));
-    const c=this._yardCamera;
-    if(!c||c.W!==W||c.H!==H||c.owner!==State.S)this._yardCamera={z,tx,ty,W,H,owner:State.S};
-    else{const f=1-Math.exp(-7*Math.max(0,dt));c.z=z;c.tx+=(tx-c.tx)*f;c.ty+=(ty-c.ty)*f;}
+    const W=this.W,H=this.H,initialZoom=window.CatBondResonance?.view?.()?.ending?1:(H>W*1.12?1.38:1.65);
+    let c=this._yardCamera;
+    if(!c||c.owner!==State.S)this._yardCamera=c={z:initialZoom,tx:W*.5-player.x*initialZoom,ty:H*.65-player.y*initialZoom,W,H,owner:State.S,follow:true,manual:false};
+    else if(c.W!==W||c.H!==H){c.tx*=W/c.W;c.ty*=H/c.H;c.W=W;c.H=H;if(!c.manual)c.z=initialZoom;}
+    if(c.follow){const f=1-Math.exp(-7*Math.max(0,dt));const tx=Math.max(W*(1-c.z),Math.min(0,W*.5-player.x*c.z)),ty=Math.max(H*(1-c.z),Math.min(0,H*.65-player.y*c.z));c.tx+=(tx-c.tx)*f;c.ty+=(ty-c.ty)*f;}
+    this.clampYardCamera();
+  }
+  clampYardCamera(){const c=this._yardCamera;if(!c)return;c.tx=Math.max(this.W*(1-c.z),Math.min(0,c.tx));c.ty=Math.max(this.H*(1-c.z),Math.min(0,c.ty));}
+  yardCameraAvailable(){return this.scene==='yard'&&this.yardExploreEnabled()&&!!this._yardCamera&&!this.worldDialogueOpen();}
+  yardCameraZoom(f,x=this.W/2,y=this.H/2){if(!this.yardCameraAvailable())return false;const c=this._yardCamera,old=c.z,z=Math.max(1,Math.min(3.5,old*f));c.tx=x-(x-c.tx)*z/old;c.ty=y-(y-c.ty)*z/old;c.z=z;c.follow=false;c.manual=true;this.clampYardCamera();return true;}
+  yardCameraPan(dx,dy){if(!this.yardCameraAvailable())return false;const c=this._yardCamera;c.follow=false;c.manual=true;c.tx+=dx;c.ty+=dy;this.clampYardCamera();return true;}
+  yardCameraOverview(){if(!this.yardCameraAvailable())return false;Object.assign(this._yardCamera,{z:1,tx:0,ty:0,follow:false,manual:true});return true;}
+  yardCameraFollow(){if(!this.yardCameraAvailable())return false;const c=this._yardCamera,p=this.yardPlayer();c.z=Math.max(c.z,this.H>this.W*1.12?1.38:1.65);c.follow=true;c.manual=true;c.tx=this.W*.5-p.x*c.z;c.ty=this.H*.65-p.y*c.z;this.clampYardCamera();return true;
   }
   yardViewportRect() {
     const r=this.canvas.getBoundingClientRect(),c=this.yardExploreEnabled()?this._yardCamera:null;
@@ -725,7 +733,7 @@ class Game {
     const down = e => {
       const { x, y } = pos(e);
       this.mouse.x = x; this.mouse.y = y;
-      if (this.scene === 'yard' && e.button === 0) this.yardTap(x, y);
+      if (this.scene === 'yard' && e.button === 0) {if(this.yardCameraAvailable()){this._yardMouseDrag={x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false};e.preventDefault();}else this.yardTap(x,y);}
       else if(this.scene==='map'&&window.WorldMap){
         if(WorldMap.mode==='region'){
           this._mapMouseDrag={x,y,lastX:x,lastY:y,moved:false};
@@ -739,6 +747,11 @@ class Game {
       }
     };
     const move = e => {
+      const drag=this._yardMouseDrag;
+      if(drag&&this.yardCameraAvailable()){
+        if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>7)drag.moved=true;
+        if(drag.moved){this.yardCameraPan(e.clientX-drag.lastX,e.clientY-drag.lastY);drag.lastX=e.clientX;drag.lastY=e.clientY;e.preventDefault();return;}
+      }
       const { x, y } = pos(e);
       // always track the cursor (yard reactions + battle aim)
       this.mouse.x = x; this.mouse.y = y; this.mouse.active = true; this.mouse.idle = 0;
@@ -759,6 +772,7 @@ class Game {
     };
     const up = e => {
       this.mouse.down=false;
+      if(this._yardMouseDrag){const drag=this._yardMouseDrag;this._yardMouseDrag=null;if(this.yardCameraAvailable()&&!drag.moved&&e?.type==='mouseup'&&e.target===c){const p=pos(e);this.yardTap(p.x,p.y);}}
       if(this._mapMouseDrag){
         const drag=this._mapMouseDrag;this._mapMouseDrag=null;
         if(this.scene==='map'&&window.WorldMap?.mode==='region'&&!drag.moved&&e?.type==='mouseup'){
@@ -771,12 +785,17 @@ class Game {
     c.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);
     c.addEventListener('dragstart',e=>e.preventDefault());
+    c.addEventListener('wheel',e=>{if(!this.yardCameraAvailable())return;const r=c.getBoundingClientRect();this.yardCameraZoom(Math.exp(-Math.max(-500,Math.min(500,e.deltaY))*.0015),e.clientX-r.left,e.clientY-r.top);e.preventDefault();},{passive:false});
+    // Yard touch coordinates remain in screen pixels until a true tap is released.
+    const yardTouchPoint=t=>{const r=c.getBoundingClientRect();return {x:t.clientX-r.left,y:t.clientY-r.top};};
+    const yardTouchSample=touches=>{const a=yardTouchPoint(touches[0]);if(touches.length<2)return {...a,d:0};const b=yardTouchPoint(touches[1]);return {x:(a.x+b.x)/2,y:(a.y+b.y)/2,d:Math.hypot(a.x-b.x,a.y-b.y)};};
 
     // ---- touch: multi-touch aware. In battle, LEFT half = virtual joystick (move),
     //      RIGHT half = hold-to-fire (auto-aims nearest enemy). Elsewhere = tap. ----
     const touchPos = t => { const r = c.getBoundingClientRect(); return this.yardInputPoint(t.clientX-r.left,t.clientY-r.top); };
     c.addEventListener('touchstart', e => {
       e.preventDefault();
+      if(this.yardCameraAvailable()&&e.touches.length){const sample=yardTouchSample(e.touches),old=this._yardTouchGesture;this._yardTouchGesture={start:old?.start||sample,last:sample,moved:!!old?.moved||e.touches.length>1};return;}
       for (const t of e.changedTouches) {
         const p = touchPos(t);
         if (this.scene === 'battle') {
@@ -818,6 +837,7 @@ class Game {
     }, { passive: false });
     c.addEventListener('touchmove', e => {
       e.preventDefault();
+      if(this._yardTouchGesture){const t=this._yardTouchGesture;if(this.yardCameraAvailable()&&e.touches.length){const p=yardTouchSample(e.touches),last=t.last;if(p.d>0&&last.d>0){t.moved=true;this.yardCameraZoom(p.d/last.d,last.x,last.y);this.yardCameraPan(p.x-last.x,p.y-last.y);}else if(!p.d&&!last.d){if(Math.hypot(p.x-t.start.x,p.y-t.start.y)>9)t.moved=true;if(t.moved)this.yardCameraPan(p.x-last.x,p.y-last.y);}t.last=p;}return;}
       for (const t of e.changedTouches) {
         const p = touchPos(t);
         if(this.scene==='yard'&&this.yard?.placement&&this._yardPlacementTouchId===t.identifier){
@@ -848,6 +868,7 @@ class Game {
       }
     }, { passive: false });
     const endTouch = e => {
+      if(this._yardTouchGesture){const t=this._yardTouchGesture;if(e.touches.length){t.moved=true;t.last=yardTouchSample(e.touches);return;}this._yardTouchGesture=null;if(e.type==='touchend'&&!t.moved&&this.yardCameraAvailable()&&e.changedTouches.length===1){const p=touchPos(e.changedTouches[0]);this.yardTap(p.x,p.y);}return;}
       for (const t of e.changedTouches) {
         if(t.identifier===this._yardPlacementTouchId){
           this._yardPlacementTouchId=null;
@@ -881,6 +902,7 @@ class Game {
     const keyName = e => (e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase());
     window.addEventListener('keydown', e => {
       if(this.scene==='yard'&&this.worldDialogueOpen())return;
+      if(this.yardCameraAvailable()&&!document.querySelector('#panel.open,.cb-story-overlay,#cb-system-menu:not([hidden])')&&['+','=','-'].includes(e.key)){this.yardCameraZoom(e.key==='-'?.8:1.25);e.preventDefault();return;}
       this.keys[keyName(e)] = true;
       if(this.yardExploreEnabled()&&['arrowup','arrowdown','arrowleft','arrowright'].includes(keyName(e))&&!document.querySelector('#panel.open,.cb-story-overlay,#cb-system-menu:not([hidden])'))e.preventDefault();
       if (this.scene === 'battle' && ['w', 'a', 's', 'd', ' ', 'tab', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(keyName(e))) e.preventDefault();

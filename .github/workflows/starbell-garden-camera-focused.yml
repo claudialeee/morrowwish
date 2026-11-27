@@ -1,0 +1,24 @@
+name: Starbell garden camera focused acceptance
+on:
+  push:
+    branches: [fix/starbell-garden-camera-20261127]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  focused:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Test camera and garden discovery in both orientations
+        run: |
+          set -euo pipefail
+          node --check public/cat-bond/js/game.js
+          node --check public/cat-bond/js/main.js
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/garden-camera.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          node scripts/test-starbell-garden-camera.mjs
