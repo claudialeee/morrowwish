@@ -375,8 +375,8 @@ export const campaign = {
         {
           "speaker": "qilan",
           "text": {
-            "zh": "它会绕回来！你从鱼摊那边截住它，我照看阿婆。暮铃，走散了就摇两下铃！",
-            "en": "It'll circle back! Cut it off by the fish stall; I'll look after Gran. Luna, ring twice if you get separated!"
+            "zh": "它会绕回来！你从鱼摊那边截住它，我照看阿婆。暮铃，你跟上去吧！",
+            "en": "It'll circle back! Cut it off by the fish stall; I'll look after Gran. Luna, go with them!"
           }
         }
       ],
@@ -402,15 +402,15 @@ export const campaign = {
         {
           "speaker": "qilan",
           "text": {
-            "zh": "你截住它了！可它一闪就钻进旧铃房，那里的铃全响起来了。",
-            "en": "You cut it off! But it flashed into the old bell house, and all the bells inside started ringing."
+            "zh": "我在鱼摊这边看见它钻进旧铃房啦！那里的铃全响起来了。",
+            "en": "I saw it dart into the old bell house from the fish stall! All the bells inside started ringing."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "听见你那两声铃啦，我在这儿。檐灯就在旧铃房守着，咱们去问他那团光是怎么回事。",
-            "en": "I heard your two chimes. I'm here! Alder tends the old bell house. Let's ask him about that glow."
+            "zh": "下次走散了，咱俩就摇两下铃报平安吧。檐灯在旧铃房守着，去问问他那团光是怎么回事。",
+            "en": "If we get separated again, let's ring twice to check in. Alder tends the old bell house. Let's ask him about that glow."
           }
         },
         {
@@ -665,8 +665,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "这边的月叶把路接好了。沿着发光的桥，就能到古树那边。",
-            "en": "The moonleaf has joined the paths. Follow the glowing bridge to the ancient tree."
+            "zh": "多亏你选对了月叶桥，我们才能走到这儿。古树就在前面。",
+            "en": "Good thing you found a way across the moonleaf bridge. The ancient tree is just ahead."
           }
         },
         {
@@ -699,15 +699,15 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "终于过来了！月叶真的让森林长出了一条新路。",
-            "en": "We made it! The moonleaf really grew a new path through the forest."
+            "zh": "原来月叶真的能让森林长出新的路。",
+            "en": "So moonleaves really can grow new paths through the forest."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "这回你带对了路。下一次我跟紧你。",
-            "en": "You found the right way this time. I'll stick close next time."
+            "zh": "以后再遇到会变的路，我就跟紧你。",
+            "en": "Next time the paths move, I'll stick close to you."
           }
         },
         {
@@ -1741,8 +1741,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "我想知道以前的事，可我也不想忘了今天。咱们在灯火节玩得多开心啊。不能拿他们的过去换我的。走吧，白羽，最后一座铃还没响呢。",
-            "en": "I want to know my past, but I don't want to forget today either. We had such a good time at the lantern festival. We can't trade their past for mine. Come on, Ivy. There's one bell left to wake."
+            "zh": "我想知道以前的事，可我也不想忘了今天。小栗送我的歪耳灯，我还带着呢。不能拿他们的过去换我的。走吧，白羽，最后一座铃还没响呢。",
+            "en": "I want to know my past, but I don't want to forget today either. I still have the crooked-eared lantern Pip gave me. We can't trade their past for mine. Come on, Ivy. There's one bell left to wake."
           }
         }
       ],
@@ -2009,8 +2009,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "千灯城呀！咱俩一起做的！……那一声，跟当年一模一样。",
-            "en": "Lantern City! We made it together! …That sound was exactly like last time."
+            "zh": "千灯城呀！是小栗送给你的！……那一声，跟当年一模一样。",
+            "en": "Lantern City! Pip gave it to you! …That sound was exactly like last time."
           }
         },
         {
@@ -2536,8 +2536,8 @@ export const campaign = {
       "after": "forge:E-04",
       "operation": "ambient:test-safety",
       "text": {
-        "zh": "图纸给小栗看过了。谁发现问题，谁就先说。",
-        "en": "Pip has checked the diagram. Whoever sees a problem speaks first."
+        "zh": "新灯架的图样给小栗看过了。还想让影子转个圈呢。",
+        "en": "Pip has seen the new lantern-frame design and wants to make the shadow spin, too."
       },
       "action": "test-safety"
     },
@@ -2548,8 +2548,8 @@ export const campaign = {
       "after": "forge:E-04",
       "operation": "ambient:assemble-part",
       "text": {
-        "zh": "师傅没抢走我的扳手。你看，新的阀门能用了！",
-        "en": "Master didn't take my wrench away. Look, the new valve works!"
+        "zh": "烬婆让我自己试了新灯架。你看，歪耳猫的影子能跳舞啦！",
+        "en": "Ember let me try my new lantern frame. Look, the crooked-eared cat can dance!"
       },
       "action": "assemble-part"
     },
