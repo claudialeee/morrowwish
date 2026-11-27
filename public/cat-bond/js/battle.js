@@ -1977,7 +1977,7 @@ class CaptureBattle {
   // committed basic-stream closes a drawn-out fight BEFORE the 85s guillotine. One
   // call site (player basic only); ult echoes, skill procs, and enemy basics stay
   // flat at BASIC_POWER_MULT = 0.85.
-  basicTimeScalar() { return BASIC_POWER_MULT + 0.25 * Math.max(0, Math.min(1, (this.t - 45) / 30)); }
+  basicTimeScalar() { return BASIC_POWER_MULT + 0.25 * Math.max(0, Math.min(1, (this.t - 25) / 30)); }
   kneadMult(f){ return 1 + 0.12 * (f && f.kneadStacks || 0); }
   castSupportSkill(f,sk,aim){
     if(!sk)return false;
