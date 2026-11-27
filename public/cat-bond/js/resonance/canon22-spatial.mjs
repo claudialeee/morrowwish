@@ -7,10 +7,13 @@ export const spatialKind=op=>ops[op]||null;
 const bridgeNodes=[[.16,.52],[.36,.52],[.62,.32],[.62,.72],[.84,.52]];
 const starNodes=[[.12,.54],[.27,.32],[.27,.70],[.49,.27],[.49,.75],[.70,.35],[.70,.65],[.87,.50]];
 const starEdges=[[1,2],[0,3],[0,4],[1,5],[2,6],[3,7],[4,7],[5,6]];
-export const spatialNodes=p=>p.kind==="bridge"?bridgeNodes:p.kind==="stars"?starNodes:[];
+const starPosition=(p,i)=>p.starLocks?.[i]||((p.walk?.action?.i===i)?p.walk.to:([3,6].includes(i)?[starNodes[i][0],starNodes[i][1]+Math.sin((p.visualClock||0)*2+i)*.034]:starNodes[i]));
+export const spatialNodes=p=>p.kind==="bridge"?bridgeNodes:p.kind==="stars"?starNodes.map((_,i)=>starPosition(p,i)):[];
+export function animateStarPlatforms(p,dt){if(p?.kind==="stars"&&!p.solved&&Number.isFinite(dt)&&dt>0)p.visualClock=(p.visualClock||0)+Math.min(.1,dt);}
+
 export function newSpatial(op){
  const kind=spatialKind(op);if(!kind)return null;
- return {operation:op,kind,node:op==="puzzle:moonleaf-loop"?1:0,branch:0,angle:.5,shape:0,moves:0,route:null,trace:[],solved:false,warning:"",visited:[op==="puzzle:moonleaf-loop"?1:0],player:[.2,.73],target:[.2,.73],chime:[.30,.73],phase:0,chaseActive:false,readyPounce:false,pouncing:false,chimeWaypoints:[],frame:0,acc:0,waypoints:[],chaseRoute:null,jumping:false,wallCrossed:false,discoveries:[],audience:0,walk:null};
+ return {operation:op,kind,node:op==="puzzle:moonleaf-loop"?1:0,branch:0,angle:.5,shape:0,moves:0,route:null,trace:[],solved:false,warning:"",visited:[op==="puzzle:moonleaf-loop"?1:0],player:[.2,.73],target:[.2,.73],chime:[.30,.73],phase:0,chaseActive:false,readyPounce:false,pouncing:false,chimeWaypoints:[],frame:0,acc:0,waypoints:[],chaseRoute:null,jumping:false,wallCrossed:false,discoveries:[],audience:0,walk:null,visualClock:0,starLocks:{}};
 }
 // Animation delays the actual node transition. Invalid edges never start motion;
 // the underlying replay stays independent of frame rate.
@@ -18,7 +21,7 @@ export function startBridgeWalk(p,action){
  if(!["bridge","stars"].includes(p?.kind)||p.solved||p.walk||action?.type!=="step")return false;
  const copy=JSON.parse(JSON.stringify(p));spatialInput(copy,action);
  if(copy.node===p.node){spatialInput(p,action);return false;}
- const nodes=spatialNodes(p),from=nodes[p.node],to=nodes[copy.node];p.warning="";p.walk={from:[...from],to:[...to],elapsed:0,duration:p.kind==="stars"?Math.max(.38,dist(from,to)/.9):Math.max(.36,dist(from,to)/.72),action:{...action}};return true;
+ const nodes=spatialNodes(p),from=nodes[p.node],to=nodes[copy.node];if(p.kind==="bridge"&&(copy.node===2||copy.node===3))p.branch=copy.node===2?0:1;p.warning="";p.walk={from:[...from],to:[...to],elapsed:0,duration:p.kind==="stars"?Math.max(.38,dist(from,to)/.9):Math.max(.36,dist(from,to)/.72),action:{...action}};return true;
 }
 export function bridgeWalkPosition(p){const w=p.walk;if(!w)return [...spatialNodes(p)[p.node]];const t=clamp(w.elapsed/w.duration,0,1);return w.from.map((v,i)=>v+(w.to[i]-v)*t);}
 export function spatialTravelPose(p,lag=0){
@@ -26,7 +29,7 @@ export function spatialTravelPose(p,lag=0){
  const t=clamp((w.elapsed-lag)/w.duration,0,1),ground=w.from.map((v,i)=>v+(w.to[i]-v)*t),lift=p.kind==="stars"?Math.sin(Math.PI*t)*.085:0;
  return {ground,point:[ground[0],ground[1]-lift],lift,moving:true,face:w.to[0]>=w.from[0]?1:-1};
 }
-export function advanceBridgeWalk(p,dt){if(!p?.walk||!Number.isFinite(dt)||dt<=0)return false;const w=p.walk;w.elapsed=Math.min(w.duration,w.elapsed+Math.min(.1,dt));if(w.elapsed<w.duration)return false;p.walk=null;spatialInput(p,w.action);return true;}
+export function advanceBridgeWalk(p,dt){if(!p?.walk||!Number.isFinite(dt)||dt<=0)return false;const w=p.walk;w.elapsed=Math.min(w.duration,w.elapsed+Math.min(.1,dt));if(w.elapsed<w.duration)return false;if(p.kind==="stars")p.starLocks[w.action.i]=[...w.to];p.walk=null;spatialInput(p,w.action);return true;}
 const kittenPoint=[.70,.76];
 const hiddenShadows=[[.19,.48],[.51,.37],[.82,.60]];
 const shadowId=i=>"found-shadow-"+i;
@@ -157,12 +160,12 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
   // The trail remembers where the player actually jumped; two routes create
   // different constellations. Unvisited edges are never presented as earned.
   c.save();c.lineWidth=Math.max(1.5,unit*.004);c.strokeStyle="#f7e9baae";c.shadowColor="#efd7a9";c.shadowBlur=8;
-  c.beginPath();p.visited.forEach((i,j)=>{const q=pt(starNodes[i]);j?c.lineTo(...q):c.moveTo(...q);});if(p.walk)c.lineTo(...pt(pose.ground));c.stroke();c.restore();
-  for(let i=0;i<starNodes.length;i++){const q=starNodes[i],visited=p.visited.includes(i),lit=visited||starEdges[p.node].includes(i);const [x,y]=pt(q),radius=unit*(visited?.055:lit?.042:.024);
+  c.beginPath();p.visited.forEach((i,j)=>{const q=pt(starPosition(p,i));j?c.lineTo(...q):c.moveTo(...q);});if(p.walk)c.lineTo(...pt(pose.ground));c.stroke();c.restore();
+  for(let i=0;i<starNodes.length;i++){const q=starPosition(p,i),visited=p.visited.includes(i),lit=visited||starEdges[p.node].includes(i);const [x,y]=pt(q),radius=unit*(visited?.055:lit?.042:.024);
    if(lit){const g=c.createRadialGradient(x,y,1,x,y,radius);g.addColorStop(0,visited?"#fff0bdc0":"#d8e4ee80");g.addColorStop(1,"#f4df8c00");c.fillStyle=g;c.fillRect(x-radius,y-radius,radius*2,radius*2);}
    c.save();c.fillStyle=visited?"#f6dca0":lit?"#bdcedb":"#596877";c.strokeStyle=lit?"#f6ebcf":"#8494a0";c.lineWidth=1.5;c.beginPath();c.moveTo(x-unit*.023,y);c.lineTo(x-unit*.009,y-unit*.014);c.lineTo(x+unit*.015,y-unit*.012);c.lineTo(x+unit*.025,y+unit*.006);c.lineTo(x+unit*.007,y+unit*.016);c.lineTo(x-unit*.018,y+unit*.012);c.closePath();c.fill();c.stroke();c.restore();
   }
-  for(const i of [3,6]){const q=starNodes[i],collected=p.discoveries.includes("starlight-"+i);dot([q[0],q[1]-.055],unit*(collected?.008:.012),collected?"#f9e7a4":"#ffefb9");}
+  for(const i of [3,6]){const q=starPosition(p,i),collected=p.discoveries.includes("starlight-"+i);dot([q[0],q[1]-.055],unit*(collected?.008:.012),collected?"#f9e7a4":"#ffefb9");}
   const [gx,gy]=pt(pose.ground);c.save();c.fillStyle="rgba(24,27,52,"+(.25-pose.lift*1.5)+")";c.beginPath();c.ellipse(gx,gy+unit*.015,unit*.032,unit*.008,0,0,Math.PI*2);c.fill();c.restore();
   drawCat?.(pose.point[0],pose.point[1],pose.moving,null,.86,pose.face);
   label(tr("踩过的星石连成了星座","Your footsteps connect a constellation"),[.5,.08],20);
@@ -203,7 +206,7 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
   const trail=chaseTrail(p).map(project);for(let i=1;i<trail.length;i++)line(trail[i-1],trail[i],"#ffe5a17a",4);
   const q=project(chasePoint(p)),pulse=18+Math.sin(time*5)*5;
   dot(q,pulse,"#f3d68588");if(!paintArt(c,"windchime-wisp",q[0]*W,q[1]*H,52,52,.5,.5))dot(q,10,"#fff3b3");
-  const player=project(p.player);drawCat?.(player[0],player[1]-(p.jumping||p.pouncing?.045:0),!!p.moving||p.jumping||p.pouncing);
+  const player=project(p.player);drawCat?.(player[0],player[1]-((p.jumping||p.pouncing)?.045:0),!!p.moving||p.jumping||p.pouncing);
   if(!p.chaseActive)label(p.readyPounce?tr("扑住铃光！","Pounce now!"):tr("点铃光追上去","Tap the light to chase"),[q[0],Math.max(.12,q[1]-.10)],18);
   label(tr("街巷追逐 ","Street chase ")+(p.phase+1)+"/3",[.5,.09],20);
 
