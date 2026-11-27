@@ -10,7 +10,7 @@ export const libraryPoints=Object.freeze({
  "repair:library":[.89,.29,"月镜圣所","Moonmirror sanctuary"],
  "melody:library":[.89,.29,"照影调","Reflections"]
 });
-export const libraryOrder=["puzzle:library-echo"];
+export const libraryOrder=["puzzle:library-echo","battle:mirror-guardian","repair:library","melody:library"];
 export const libraryInvitations={moye:[.22,.60],baikan:[.46,.58]};
 export function libraryBlocked(op,objective,view){if(op==="explore:sealed-archive"&&objective.includes("npc:archive-dispute"))return true;if(op==="puzzle:two-route-model"&&objective.includes("npc:two-routes"))return true;if(["repair:library","melody:library"].includes(op)&&(objective.includes("puzzle:library-echo")||(op==="melody:library"&&objective.includes("repair:library"))))return true;const i=libraryOrder.indexOf(op);return i>0&&libraryOrder.slice(0,i).some(k=>objective.includes(k))}
 export function catdexRecord(root){

@@ -1,4 +1,4 @@
-import {REGIONAL_BOSSES,bossKey,optionalBossAvailable,atBoss,bossReward} from "./regional-bosses.mjs";
+import {REGIONAL_BOSSES,bossKey,optionalBossAvailable,atBoss,bossReward,bossTemplates,regionalBossLevel} from "./regional-bosses.mjs";
 import {activateCompanionTalents} from "./companion-talents.mjs";
 import {canonArt,visibleBounds} from "./canon22-art.mjs";
 import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud} from "./battle-hud.mjs";
@@ -73,16 +73,16 @@ const artFiles={
 };
 const portraitFocalPoints={harbor:.50,forest:.20,forge:.50,sky:.68,library:.50,starfall:.65};
 const art={},nativePortrait=new Map();
-function nativeArena(region){if(!nativePortrait.has(region)){const im=new Image();im.decoding='async';im.src=new URL('../../assets/mobile-portrait/battle-'+(region==='forge'?'lantern':region)+'.webp',import.meta.url).href;nativePortrait.set(region,im);}return nativePortrait.get(region);}
-function loadArt(){for(const [id,[background,enemy]] of Object.entries(artFiles)){
+function nativeArena(region){if(!nativePortrait.has(region)){const im=new Image();im.decoding='async';im.src=new URL('../../assets/mobile-portrait/battle-'+(region==='forge'?'lantern':region==='harbor'?'windchime':region)+'.webp',import.meta.url).href;nativePortrait.set(region,im);}return nativePortrait.get(region);}
+function loadArt(){canonArt("shadow-beast");canonArt("lantern-theater");for(const [id,[background,enemy]] of Object.entries(artFiles)){
  const pair={background:new Image(),enemy:new Image()};pair.background.decoding=pair.enemy.decoding="async";
  pair.background.src=new URL("../../assets/combat/"+background,import.meta.url).href;if(enemy)pair.enemy.src=new URL("../../assets/combat/"+enemy,import.meta.url).href;
- art[id]=pair;
+ art[id]=pair;nativeArena(id);
 }}
 function drawScene(ctx,W,H,region){
  const pair=art[region],ready=image=>image?.complete&&image.naturalWidth>0;
  const img=region==="forge"&&window.__game?.battle?.regionalCombat?.shadowLight?(canonArt("lantern-theater")||pair?.background):pair?.background;
- const tall=H>W&&region!=="harbor"?nativeArena(region):null;
+ const tall=H>W?nativeArena(region):null;
  if(ready(tall)){const k=Math.max(W/tall.naturalWidth,H/tall.naturalHeight);ctx.drawImage(tall,(W-tall.naturalWidth*k)/2,(H-tall.naturalHeight*k)/2,tall.naturalWidth*k,tall.naturalHeight*k);return true;}
  if(!ready(img))return false;
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
@@ -249,7 +249,7 @@ function install(){
  BP.hurtEnemy=function(e,dmg,...args){if(this.regionalCombat?.shadowLight&&!inLight(this,e))return 0;return hurt.call(this,e,dmg,...args);};
  window.CatBondShadowCombat={steer(b,f){if(!b.regionalCombat?.shadowLight||!b.autoMode||!f.alive)return null;const l=shadowLight(b),dx=l.x-f.x,dy=l.y-f.y,d=Math.hypot(dx,dy);return d>18?{x:dx/d,y:dy/d}:{x:0,y:0};}};
  const capture=BP.startCaptureSeq;
- BP.startCaptureSeq=function(){if(this.libraryEncounter){this.libraryEncounter.cleared=true;this.projectiles=[];this.enemyProjectiles=[];this.finish(true);return;}if(this.regionalCombat&&this.enemies.some(e=>e.regionalEnemy))this._lastDropped=this.enemies[0];return capture.call(this);};
+ BP.startCaptureSeq=function(){if(this.libraryEncounter){if(this.done||this.liveEnemies().length)return;this.libraryEncounter.cleared=true;this.projectiles=[];this.enemyProjectiles=[];this.finish(true);return;}if(this.regionalCombat&&this.enemies.some(e=>e.regionalEnemy))this._lastDropped=this.enemies[0];return capture.call(this);};
  const update=BP.update;
  BP.update=function(dt){const result=update.call(this,dt);if(this.regionalCombat){tick(this,Math.min(.06,Math.max(0,dt*(this.tempoScale??.64))));activateCompanionTalents(this);}if(this.libraryEncounter&&!this.done&&this.t>100){this._timeCapLoss=true;this.finish(false);}return result;};
  const playerProjectile=BP.spawnProj;
@@ -291,16 +291,16 @@ function install(){
  function prepareLibrary(game,id="library",optional=false){
   if(!libraryAvailable(game,id,optional))return false;
   const d=optional?REGIONAL_BOSSES[id]:storyEcho[id],region=d.region||id,root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam();
-  if(!team.length)return false;const sp=window.GameData.speciesById(team[0].species);if(!sp)return false;host.close?.();
+  if(!team.length)return false;const sp=window.GameData.speciesById(bossTemplates[id]);if(!sp)return false;const creature=region==="forge"?canonArt("shadow-beast"):art[region]?.enemy;if(!creature?.complete||!creature.naturalWidth){game.toast?.({zh:"守卫原画尚未加载，请稍后再次挑战。",en:"Guardian artwork is not ready. Please try again."});return false;}host.close?.();
   window.UI.openBattleModePrompt(team,sp,{origin:"map",storyTitle:d.title||d.name,bossElement:REGION_KITS[region].element,onStart:fighters=>{
    if(root!==window.State.S||!libraryAvailable(game,id,optional)||!fighters.length)return;
-   const token=host.captureAction(),base=window.GameData.speciesById(fighters[0].species);if(!base)return;
+   const token=host.captureAction(),base={...sp,encounterLevel:regionalBossLevel(id,fighters)};
    game._returnScene="map";game._battleTheme={region,sky1:"#20253f",sky2:"#697ca8",ground:"#464967",ground2:"#232843",accent:REGION_KITS[region].color};
    game.startBattle(fighters,base,{storyEncounter:"regional-boss",pack:[base]});const b=game.battle;if(!b)return;
    b.storyEncounter=true;b.captureReady=false;b.libraryEncounter={root,token,cleared:false,region,scene:d.scene,op:d.op,optional,bossId:id,reward:bossReward(id,root.resonanceExploration)};
    b.regionalCombat={region,kit:REGION_KITS[region],next:2.9,cast:null,cycle:0,supportAvailable:true,supportUsed:false};
    if(region==="forge")b.regionalCombat.shadowLight=true;
-   const echo=b.enemies[0];if(echo){echo.regionalEnemy=region;echo.combatName=d.name;echo.element=REGION_KITS[region].element;echo.role=region==="forge"?"brawler":"sharpshooter";echo.regionalCd=2.2;echo.regionalCycle=0;echo.rotation=[];echo.ultSkill=null;echo.maxhp=Math.max(65,Math.round(living(b).reduce((n,f)=>n+f.maxhp,0)*(d.hp||.85)*(window.State.difficulty()==="hardcore"?1.12:1)));echo.hp=echo.maxhp;echo.poiseMax=Math.round(echo.maxhp*.6);echo.poise=echo.poiseMax;}
+   const echo=b.enemies[0];if(echo){echo.regionalEnemy=region;echo.isBoss=true;echo.combatName=d.name;echo.element=REGION_KITS[region].element;echo.role=region==="forge"?"brawler":"sharpshooter";echo.regionalCd=2.2;echo.regionalCycle=0;echo.rotation=[];echo.ultSkill=null;echo.maxhp=Math.max(65,Math.round(living(b).reduce((n,f)=>n+f.maxhp,0)*(d.hp||.85)*(window.State.difficulty()==="hardcore"?1.12:1)));if(id==="mastery")echo.dmg*=1.16;echo.hp=echo.maxhp;echo.poiseMax=Math.round(echo.maxhp*.6);echo.poise=echo.poiseMax;}
    mount(game,b);game.updateBattleUI?.();if(d.clue)notice(b,...d.clue);
   }});return true;
  }
@@ -316,10 +316,10 @@ function install(){
  GP.endBattle=function(){
   const b=this.battle,ruins=b?.postgameRuins,host=window.CatBondResonance;
   if(b?.libraryEncounter){
-   const f=b.libraryEncounter,root=window.State.S,valid=f.root===root&&host?.isCurrentAction?.(f.token),win=b.result==="win"&&f.cleared,recovery={mode:window.State.difficulty(),fromMap:true,team:[]};let saved=false;
+   const f=b.libraryEncounter,root=window.State.S,valid=f.root===root&&host?.isCurrentAction?.(f.token),win=b.done&&b.result==="win"&&f.cleared,recovery={mode:window.State.difficulty(),fromMap:true,team:[]};let saved=false;
    if(valid){const oldCoins=root.coins,oldFish=root.fish,oldCats=(root.cats||[]).map(c=>[c,JSON.parse(JSON.stringify(c))]),oldShowcase=root.firstDuoShowcasePending,oldWorld=root.resonanceExploration;
     try{const seen=new Set();for(const fighter of [...(b.team||[]),...(b._benchFighters?.values?.()||[])]){if(!fighter.cat||fighter._reinforcement||seen.has(fighter.cat.uid))continue;seen.add(fighter.cat.uid);const before=fighter.alive?Math.max(.15,Math.min(1,fighter.hp/fighter.maxhp)):.15,after=recovery.mode==="hardcore"?window.State.setBattleHealth(fighter.cat,before):1;if(after===1){delete fighter.cat._hpFrac;delete fighter.cat._hpAt;}recovery.team.push({name:window.State.catName(fighter.cat),before:Math.round(before*100),after:Math.round(after*100)});}if(window.State.difficulty()!=="hardcore")for(const cat of root.cats||[]){delete cat._hpFrac;delete cat._hpAt;}if(b._firstDuoShowcase&&b.duoUses>0)root.firstDuoShowcasePending=false;
-     if(win){const [coins,fish,xp]=f.reward||[38,2,28];root.coins=(root.coins||0)+coins;root.fish=(root.fish||0)+fish;const participants=new Map([...(b.team||[]),...(b._benchFighters?.values?.()||[])].filter(f=>f.cat&&!f._reinforcement).map(f=>[f.cat.uid,f.cat]));for(const c of participants.values()){window.State.addXp?.(c,xp);c.battlesWon=(c.battlesWon||0)+1;}if(f.optional){if(!optionalBossAvailable(f.bossId,host.view(),root.resonanceExploration)||!atBoss(f.bossId,root.resonanceExploration))throw Error("Boss position changed");root.resonanceExploration={...root.resonanceExploration,interactions:{...root.resonanceExploration.interactions,[bossKey(f.bossId)]:true}};saved=!!window.State.save()?.ok;}else saved=!!host.recordEvidence({sceneId:f.scene,operation:f.op,region:f.region,verified:true,outcome:"win",token:f.token})?.ok;}else saved=!!window.State.save()?.ok;
+     if(win){const [coins,fish,xp]=f.reward||[38,2,28];root.coins=(root.coins||0)+coins;root.fish=(root.fish||0)+fish;const participants=new Map([...(b.team||[]),...(b._benchFighters?.values?.()||[])].filter(f=>f.cat&&!f._reinforcement).map(f=>[f.cat.uid,f.cat]));for(const c of participants.values()){if(xp>0){window.State.addXp?.(c,xp);c.battlesWon=(c.battlesWon||0)+1;}}if(f.optional){if(!optionalBossAvailable(f.bossId,host.view(),root.resonanceExploration)||!atBoss(f.bossId,root.resonanceExploration))throw Error("Boss position changed");root.resonanceExploration={...root.resonanceExploration,interactions:{...root.resonanceExploration.interactions,[bossKey(f.bossId)]:true}};saved=!!window.State.save()?.ok;}else saved=!!host.recordEvidence({sceneId:f.scene,operation:f.op,region:f.region,verified:true,outcome:"win",token:f.token})?.ok;}else saved=!!window.State.save()?.ok;
      if(!saved)throw Error("Library outcome save rejected");
     }catch(err){root.coins=oldCoins;root.fish=oldFish;root.firstDuoShowcasePending=oldShowcase;root.resonanceExploration=oldWorld;for(const [c,old] of oldCats){for(const k of Object.keys(c))if(!(k in old))delete c[k];Object.assign(c,old);}console.error(err);}
    }

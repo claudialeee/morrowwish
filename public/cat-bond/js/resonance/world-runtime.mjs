@@ -500,7 +500,7 @@ function install(){
  }
  function retrySkyEncounter(expectedSpecies,owner){const b=current();if(State.S!==owner||game.scene!=="map"||game.battle||mode!=="region"||b.world().location!=="sky"||wildRegion!=="sky"||explorer?.puzzle||explorer?.survey()?.remote||wild?.species?.id!==expectedSpecies)return false;visitWild("sky");return true;}
  function visitWild(region){if(wild?.species)go(wild.point,()=>encounter?.(wild.species,region));}
- function visitOptionalBoss(id){const boss=REGIONAL_BOSSES[id];if(!boss||!explorer||explorer.puzzle||ceremony||explorer.survey()?.remote||!optionalBossAvailable(id,current().view(),current().world()))return;go(boss.point,()=>window.CatBondRegionalArt?.prepareOptionalBoss?.(game,id));}
+ function visitOptionalBoss(id){const boss=REGIONAL_BOSSES[id];if(!boss||!explorer||explorer.puzzle||ceremony||explorer.survey()?.remote||!optionalBossAvailable(id,current().view(),current().world()))return;regionMenuOpen=false;go(boss.point,()=>{if(!window.CatBondRegionalArt?.prepareOptionalBoss?.(game,id))game.toast?.({zh:"暂时无法开始挑战，请检查队伍或稍后再试。",en:"Challenge unavailable. Check your party or try again."});});}
  function visitRuins(mode="legendary"){go(ruinsPoint,()=>{window.CatBondRegionalArt?.prepareRuins?.(game,mode);});}
  function visitHomeRepair(home){go(home.point,()=>{report(explorer.startHomeRepair());render()});}
  function visitFalseForestTrail(){go([.39,.40],()=>{notice=tr("这里没有水痕，声音却在重复。不是求救猫咪的位置。","There are no water marks here, but the voice repeats. This is not where the cats are trapped.");render()});}

@@ -6,6 +6,9 @@ export const REGIONAL_BOSSES=Object.freeze({
  starfall:{region:"starfall",point:[.68,.55],scene:"starfall:F-04",op:"battle:star-guardian",name:["星辰守卫","Star Guardian"],clue:["它会在光与暗之间切换属性。留意星轨，灵活搭配猫咪。","It shifts between light and dark. Watch the orbits and adapt your party."],reward:[80,5,55],hp:1.16},
  mastery:{region:"starfall",point:[.41,.58],optional:true,ending:true,name:["星轨大师试炼","Orbital Master Trial"],clue:["通关后的高难度试炼：星轨更快，守卫更强。","A postgame challenge: faster orbits and a stronger guardian."],reward:[150,8,90],hp:1.65}
 });
+// Stable encounter archetypes, not additional collectible cats.
+export const bossTemplates=Object.freeze({harbor:"shell",forest:"clover",forge:"cinder",sky:"fizz",library:"button",starfall:"sunlace",mastery:"aurora"});
+export function regionalBossLevel(id,fighters){const active=fighters.slice(0,2);const mean=active.reduce((sum,c)=>sum+(Number(c.level)||1),0)/Math.max(1,active.length);const floor={harbor:1,forest:3,forge:3,sky:4,library:5,starfall:6,mastery:10}[id]||1;return id==="mastery"?Math.max(floor,Math.round(mean)+2):Math.max(floor,Math.round(mean*.75+floor*.25));}
 export const bossKey=id=>"regional-boss:"+id;
 export function optionalBossAvailable(id,view,world){
  const d=REGIONAL_BOSSES[id];return !!(d?.optional&&view?.melodies?.includes(d.region)&&(!d.ending||view.ending)&&world?.location===d.region&&!world.cargo);

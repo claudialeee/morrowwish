@@ -60,9 +60,9 @@ function appendArchive(card){
  const s=state(),p=s.resonance,completed=new Set(p?.completed||[]);
  const entries=[
   ["library:M-02",["镜厅记录","Mirror room records"],["已辨认镜面中的记录；真实记忆与影像必须交叉验证。","Mirror records examined. Memories and images must be cross-checked."]],
-  ["library:M-03",["身份揭晓","Identity revealed"],["暮铃确认曾认识旅行者；旅行者曾将自己留在星铃中。","Muling confirmed knowing the traveler, who once left themself inside the Star Bell."]],
+  ["library:M-03",["身份揭晓","Identity revealed"],["暮铃确认曾认识旅行者；旅行者曾将自己留在星铃中。","Luna confirmed knowing the traveler, who once left themself inside the Star Bell."]],
   ["starfall:F-02",["星坠记录","Starfall records"],["已调查星图与灾变记录。","Star map and catastrophe records investigated."]],
-  ["starfall:F-03",["中央星铃计划","The central bell plan"],["暮铃想借众猫的记忆让旅行者归来。","Muling intended to use every cat's memories to bring the traveler back."]],
+  ["starfall:F-03",["中央星铃计划","The central bell plan"],["暮铃想借众猫的记忆让旅行者归来。","Luna intended to use every cat's memories to bring the traveler back."]],
   ["finale:B-02",["空白回响","Hollow Echo"],["已通过回应节拍辨别回响。","The echoes have been distinguished using their reply rhythms."]],
   ["epilogue:E-03",["最后一页","The last page"],["六地再次回应，新的家园旅程开始。","The six regions answer again. A new journey at home begins."]]
  ].filter(([id])=>completed.has(id));
@@ -180,7 +180,7 @@ function records(){
  const rows=node("div","rb-inventory"),discovered=Object.values(s.dex||{}).filter(n=>n>0).length;
  for(const [zh,en,v] of [["发现品种","Breeds discovered",discovered+"/"+window.GameData.SPECIES.length],["金爪徽章","Golden Paw medals",Object.values(s.masteryBadges||{}).filter(Boolean).length],["捕捉次数","Captures",s.catchCount||0],["猫咪互动","Cat interactions",s.petCount||0],["恢复圣所","Restored sanctuaries",(s.resonance?.sanctuaries?.length||0)+"/6"],["旋律","Melodies",(s.resonance?.melodies?.length||0)+"/6"]])rows.append(stat(tr(zh,en),v));
  host.append(rows,node("p","",tr("品种与战斗评级奖励仍可在图鉴查看和领取。","Collection and battle-grade rewards remain available in Catdex.")),button(tr("查看图鉴","Open Catdex"),()=>select("dex")));
- const keeps=earnedKeepsakes(s.resonanceExploration?.interactions),gardenNames={"ear-flower":["耳尖的小花","Little flower"],"golden-seed":["浅金色种子","Golden seed"],"fish-cake":["鱼饼","Fish cake"],"old-garden-postcard":["旧花园明信片","Old garden postcard"],"windblown-chart":["风中的航图","Windblown chart"],"revisit-qilan":["栖蓝的新航图","Qilan’s new route chart"],"revisit-yahe":["芽禾的月叶新芽","Yahe’s moonleaf sprout"],"revisit-xiaomao":["小铆的歪耳灯","Xiaomao’s crooked-ear lantern"]};
+ const keeps=earnedKeepsakes(s.resonanceExploration?.interactions),gardenNames={"ear-flower":["耳尖的小花","Little flower"],"golden-seed":["浅金色种子","Golden seed"],"fish-cake":["鱼饼","Fish cake"],"old-garden-postcard":["旧花园明信片","Old garden postcard"],"windblown-chart":["风中的航图","Windblown chart"],"revisit-qilan":["栖蓝的新航图","Skye’s new route chart"],"revisit-yahe":["芽禾的月叶新芽","Fern’s moonleaf sprout"],"revisit-xiaomao":["小栗的歪耳灯","Pip’s crooked-ear lantern"]};
  const garden=(s.sunlitGarden?.exploration?.keepsakes||[]).map(id=>gardenNames[id]).filter(Boolean);
  const names=[...garden,...keeps.map(k=>k.name)];
  host.append(node("h3","",tr("旅途纪念物","Travel keepsakes")));

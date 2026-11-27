@@ -2765,9 +2765,9 @@ const UI = {
   // no gameplay effect — so a 逆风 (bad-matchup) fight is VISIBLE before the player commits, and a
   // player who OWNS a counter (just hasn't fielded it) is told to swap it in. Addresses owner:
   // "玩家可能不能获得对应属性克制的猫咪来打 ssr/sr，比如露露很难打" + the playtest "danger is invisible".
-  matchupWarning(selectedCats, wildSp, en){
+  matchupWarning(selectedCats, wildSp, en, elementOverride){
     const S=window.Skills; if(!S||!S.effectiveness||!S.elementOf) return '';
-    const wildEl=S.elementOf(wildSp.id);
+    const wildEl=elementOverride||S.elementOf(wildSp.id);
     const elName={fire:en?'Fire':'火',water:en?'Water':'水',grass:en?'Grass':'草',elec:en?'Elec':'电',dark:en?'Dark':'暗',light:en?'Light':'光'};
     const icon=el=>this.game.elemIcon?this.game.elemIcon(el):'';
     // does a given cat counter / get countered by the wild? effectiveness() returns ~1.5 (advantage)
@@ -2829,14 +2829,14 @@ const UI = {
     const encounterLvl=wildSp.encounterLevel||
       window.Battle?.CaptureBattle?.previewWildLevel?.(
         wildSp,opts.origin==='map'?(window.WorldMap?.currentRegion||'home'):'yard',team)||1;
-    const bossLabels={water:['水','Water'],grass:['草','Grass'],fire:['火','Fire'],wind:['风','Wind'],dark:['暗','Dark'],light:['光','Light']};
+    const bossLabels={water:['水','Water'],grass:['草','Grass'],fire:['火','Fire'],wind:['风','Wind'],elec:['电','Lightning'],dark:['暗','Dark'],light:['光','Light']};
     const bossLabel=bossLabels[opts.bossElement]?.[en?1:0]||opts.bossElement;
     this.panel(`<span class="card-close">×</span>
       <h2>${label}</h2>
       <p class="sub" style="font-weight:750;color:#765e85">
         ${opts.bossElement?((en?'Guardian battle · Element: ':'守卫战 · 属性：')+bossLabel):`${opts.storyTitle?(en?'Story encounter':'剧情战斗'):(en?'Wild cat':'野生猫咪')} · Lv.${encounterLvl} · <span class="rarity-${wildSp.rarity}">${wildSp.rarity} · ${en?({N:'Common',R:'Rare',SR:'Epic',SSR:'Legendary'}[wildSp.rarity]):GameData.RARITY[wildSp.rarity].name}</span>`}
       </p>
-      ${opts.bossElement?'':this.matchupWarning(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en)}
+      ${this.matchupWarning(selected.slice(0,2).map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),wildSp,en,opts.bossElement)}
       <p class="sub">${en?'Pick a control mode, then start.':'选好战斗方式就能开战。'}</p>
       ${squadMarkup}
       <div class="prebattle-quick-select"><button id="bp-best-team" type="button" class="btn ghost">${en?'⚡ Auto-pick strongest':'⚡ 一键最强上阵'}</button>
