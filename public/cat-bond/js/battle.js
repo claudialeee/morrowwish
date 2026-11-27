@@ -2717,6 +2717,22 @@ class CaptureBattle {
     } else if (sk) {
       sk._castMouse = null;
     }
+    // Owner 2026-11-26 "陨石术的锁定落点应该是发动时候就锁定的，之后不会变的":
+    // Snapshot the landing POINT at cast time for auto-mode, mobile, and ally casts —
+    // not just the desktop cursor. During a 1.5s meteor windup the live enemy drifts;
+    // without this snapshot the ground telegraph + impact both follow the moving target.
+    // Freezing _castTarget at cast resolves to a committed dodgeable disc.
+    if (sk && (sk.kind === 'aoe' || sk.id === 'meteor')) {
+      let txy = null;
+      if (sk._castMouse && Number.isFinite(sk._castMouse.x)) {
+        txy = { x: sk._castMouse.x, y: sk._castMouse.y };
+      } else {
+        const tgt = this.lockedEnemy?.() || this.nearestEnemy?.(f.x, f.y);
+        if (tgt) txy = { x: tgt.x, y: tgt.y };
+        else txy = { x: f.x + Math.cos(aim) * 240, y: f.y + Math.sin(aim) * 240 };
+      }
+      sk._castTarget = txy;
+    }
     // Owner 2026-11-26 "为什么寒冰爪没打到" — log every ATTEMPT so you can tell cast-never-fired
     // from cast-missed. Enemy also routes through castOffensive at times, so tag by firing side.
     if (this._debug && this._dbgLog && sk) {
@@ -2878,15 +2894,18 @@ class CaptureBattle {
     const R = 86;                                   // burst radius
     // destination point
     let tx, ty;
-    if (f === this.me() && !this.game.isTouch && !this.autoMode) {
-      // Owner: landing point was decided when Q/E was pressed — use the snapshot from
-      // castOffensiveSkill, NOT live cursor (which drifts during meteor's 1.5s windup).
-      // In auto-mode the player isn't aiming; fall through to the enemy-targeting branch.
+    // Owner 2026-11-26: AOE landing point is LOCKED at cast time, not live. castOffensiveSkill
+    // snapshots sk._castTarget for ALL casters (player/ally/auto/mobile) so the ground
+    // telegraph and the actual impact share the same frozen point.
+    const snapTgt = sk?._castTarget;
+    if (snapTgt && Number.isFinite(snapTgt.x) && Number.isFinite(snapTgt.y)) {
+      tx = snapTgt.x; ty = snapTgt.y;
+    } else if (f === this.me() && !this.game.isTouch && !this.autoMode) {
       const snap = sk?._castMouse;
       if (snap && Number.isFinite(snap.x) && Number.isFinite(snap.y)) { tx = snap.x; ty = snap.y; }
       else { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
     } else {
-      const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);   // mobile/AI/ally: target
+      const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);
       if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
     }
     const ang = Math.atan2(ty - f.y, tx - f.x), dist = Math.hypot(tx - f.x, ty - f.y);
@@ -3312,7 +3331,12 @@ class CaptureBattle {
       // frame using the same locked/nearest-enemy rule as lobAoe, so a moving target is tracked.
       if (c.sk && c.sk.id === 'meteor') {
         let tx, ty;
-        if (f === this.me() && !this.game.isTouch && !this.autoMode) {
+        // Owner 2026-11-26: meteor landing is LOCKED at cast time. Honor the snapshot
+        // taken in castOffensiveSkill before falling through to live cursor / enemy tracking.
+        const snapTgt = c.sk?._castTarget;
+        if (snapTgt && Number.isFinite(snapTgt.x) && Number.isFinite(snapTgt.y)) {
+          tx = snapTgt.x; ty = snapTgt.y;
+        } else if (f === this.me() && !this.game.isTouch && !this.autoMode) {
           // Owner 2026-11-26: during the 1.5s windup the telegraph must stay locked at
           // the cursor position AT CAST TIME, not drift with live mouse movement.
           // castOffensiveSkill snapshots sk._castMouse — honor it here. In auto-mode the
@@ -3326,10 +3350,14 @@ class CaptureBattle {
           if (tgt) { tx = tgt.x; ty = tgt.y; }
           else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
         }
-        // ALLY (not active me()) still tracks live target per earlier design.
-        const owner = f.owner === 'wild' ? 'wild' : 'me';
-        const tgt = owner === 'me' && f !== this.me() ? (this.lockedEnemy() || this.nearestEnemy(f.x, f.y)) : null;
-        if (tgt) { tx = tgt.x; ty = tgt.y; }
+        // Owner 2026-11-26: with _castTarget set, DO NOT re-track live enemy — the
+        // landing is committed at cast time for ALL casters, so telegraph + impact
+        // share the same frozen point (otherwise ally casts drift and re-aim).
+        if (!snapTgt) {
+          const owner = f.owner === 'wild' ? 'wild' : 'me';
+          const tgt = owner === 'me' && f !== this.me() ? (this.lockedEnemy() || this.nearestEnemy(f.x, f.y)) : null;
+          if (tgt) { tx = tgt.x; ty = tgt.y; }
+        }
         const R = 86;                                        // match the lobAoe burst radius
         const pulse = 0.5 + 0.5 * Math.sin(this.t * 10);
         // Pulsing red reticle that intensifies as impact approaches. Short-lived per frame so
