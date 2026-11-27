@@ -285,3 +285,7 @@
 #stage:has(.res-host:is([data-scene="harbor:H-04"],[data-scene="harbor:H-05"])) .rw-world{visibility:hidden!important;pointer-events:none!important}
 #stage .res-host[data-scene="harbor:H-05"] .res-dialogue{grid-template-columns:minmax(0,1fr)!important}
 #stage .res-host[data-scene="harbor:H-05"] .res-portrait{display:none!important}
+
+@media (orientation:landscape){
+ #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact):not([hidden])>.rw-fit-rail:not([hidden]){top:116px!important;max-height:calc(100% - 128px)!important;bottom:auto!important}
+}

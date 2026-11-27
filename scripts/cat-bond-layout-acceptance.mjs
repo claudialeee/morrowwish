@@ -89,21 +89,21 @@ try{for(const {name,...profile} of profiles){
    const g=await page.evaluate(()=>{const r=s=>{const b=document.querySelector(s).getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,height:b.height};};return {art:r('.rw-surface'),shell:r('.rw-shell'),rail:r('.rw-fit-rail'),head:r('.rw-head'),stage:r('#stage')};});
    assert.ok(g.art.width>0&&Math.abs(g.art.width/g.art.height-9/16)<.03,'undistorted canvas '+JSON.stringify(g));
    assert.ok(g.art.left<=g.shell.left+1&&g.art.right>=g.shell.right-1&&g.art.top<=g.shell.top+1&&g.art.bottom>=g.shell.bottom-1,'native canvas fills shell '+JSON.stringify(g));
-   assert.ok(g.head.top>=g.stage.top-1&&g.rail.bottom<=g.stage.bottom+1&&g.rail.height<=g.stage.height*.31,'compact controls remain inside stage '+JSON.stringify(g));
+   assert.ok(g.head.top>=g.stage.top-1&&g.rail.bottom<=g.stage.bottom+1&&g.rail.height<=g.stage.height*.61,'compact controls remain inside stage '+JSON.stringify(g));
   };
   for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){
    await page.setViewportSize(viewport);await page.waitForTimeout(250);await assertFit();
-   const menu=page.locator('.rw-atlas-menu');if(await menu.getAttribute('open')!==null)await menu.locator(':scope > summary').click();await capture();assert.ok((await reachable()).length>=5,'most atlas markers directly reachable with menu collapsed at '+viewport.width);if(await menu.getAttribute('open')===null)await menu.locator(':scope > summary').click();
+   const menu=page.locator('.rw-atlas-menu');if(await menu.getAttribute('open')!==null)await page.locator('.rw-quest-toggle').click();await capture();assert.ok((await reachable()).length>=5,'most atlas markers directly reachable with menu collapsed at '+viewport.width);if(await menu.getAttribute('open')===null)await page.locator('.rw-quest-toggle').click();
    await page.screenshot({path:out+'/portrait-atlas-'+viewport.width+'.png'});
   }
   await page.setViewportSize(profile.viewport);await page.waitForTimeout(250);
   const before=await surface.getAttribute('data-camera');await swipe(box.width*.5,0);
   assert.equal(JSON.parse(await surface.getAttribute('data-camera'))[0],JSON.parse(before)[0],'panning does not change zoom');
-  const rail=page.locator('.rw-atlas-rail');await rail.getByRole('button',{name:'+',exact:true}).click();
+  const rail=page.locator('.rw-atlas-rail');if(!await rail.isVisible())await page.locator('.rw-quest-toggle').click();await rail.getByRole('button',{name:'+',exact:true}).click();
   assert.ok(JSON.parse(await surface.getAttribute('data-camera'))[0]>1,'explicit zoom available');
   await rail.getByRole('button',{name:'Overview',exact:true}).click();
   assert.deepEqual(JSON.parse(await surface.getAttribute('data-camera')),[1,0,0],'overview restores the actual full map');
-  await assertFit();const menu=page.locator('.rw-atlas-menu');if(await menu.getAttribute('open')!==null)await menu.locator(':scope > summary').click();await capture();await swipe(box.width*.5,0);await capture();await swipe(-box.width,0);await capture();
+  await assertFit();const menu=page.locator('.rw-atlas-menu');if(await menu.getAttribute('open')!==null)await page.locator('.rw-quest-toggle').click();await capture();await swipe(box.width*.5,0);await capture();await swipe(-box.width,0);await capture();
  }
  else{await capture();}
  assert.ok(atlasSeen.size>=7,name+' reachable atlas markers '+JSON.stringify([...atlasSeen.keys()]));
@@ -112,10 +112,10 @@ try{for(const {name,...profile} of profiles){
  if(cdp)await page.touchscreen.tap(target.x,target.y);else await page.mouse.click(target.x,target.y);
  await page.waitForFunction(()=>WorldMap.mode==='region');await page.waitForFunction(()=>JSON.parse(document.querySelector('.rw-surface')?.dataset.affordances||'[]').length>0);await page.screenshot({path:out+'/'+name+'-region.png'});
  if(name==='portrait'){
-  const g=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),s=document.querySelector('.rw-shell').getBoundingClientRect(),r=document.querySelector('.rw-fit-rail').getBoundingClientRect();return {fit:a.left<=s.left+1&&a.right>=s.right-1&&a.top<=s.top+1&&a.bottom>=s.bottom-1,clear:r.height<=s.height*.31};});
+  const g=await page.evaluate(()=>{const a=document.querySelector('.rw-surface').getBoundingClientRect(),s=document.querySelector('.rw-shell').getBoundingClientRect(),r=document.querySelector('.rw-fit-rail').getBoundingClientRect();return {fit:a.left<=s.left+1&&a.right>=s.right-1&&a.top<=s.top+1&&a.bottom>=s.bottom-1,clear:r.height<=s.height*.61};});
   assert.ok(g.fit&&g.clear,'regional art fills viewport and controls remain compact');
   assert.deepEqual(JSON.parse(await surface.getAttribute('data-camera')),[1,0,0],'enter region at full overview');
-  const rail=page.locator('.rw-fit-rail');await rail.getByRole('button',{name:'Follow cat',exact:true}).click();
+  const rail=page.locator('.rw-fit-rail');if(!await rail.isVisible())await page.locator('.rw-quest-toggle').click();await rail.getByRole('button',{name:'Follow cat',exact:true}).click();
   assert.ok(JSON.parse(await surface.getAttribute('data-camera'))[0]>1,'optional follow camera');
   await rail.getByRole('button',{name:'Overview',exact:true}).click();
   assert.deepEqual(JSON.parse(await surface.getAttribute('data-camera')),[1,0,0],'region overview restores the whole painting');

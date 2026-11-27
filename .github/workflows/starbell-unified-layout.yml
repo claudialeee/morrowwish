@@ -1,0 +1,42 @@
+name: Starbell unified layout targeted QA
+on:
+  push:
+    branches: [review/starbell-unified-layout-fix]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: starbell-unified-layout-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  layout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      CAT_BOND_SMOKE_ORIGIN: http://127.0.0.1:8765
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Syntax and focused browser acceptance
+        run: |
+          node --check public/cat-bond/js/resonance/world-runtime.mjs
+          node --check public/cat-bond/js/resonance/npc-world.mjs
+          node --check scripts/starbell-unified-layout-regression.mjs
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-layout-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/starbell-unified-layout-regression.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-unified-layout-proof
+          path: |
+            artifacts/starbell-unified-layout/
+            /tmp/starbell-layout-server.log
+          if-no-files-found: ignore

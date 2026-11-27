@@ -391,14 +391,14 @@ async function run(chapter){
   // Continue can restore to the atlas rather than directly to its region.
   // Navigate via the actual visible next-scene control; never set WorldMap state.
   if(await page.evaluate(region=>__game.scene==='map'&&(WorldMap.mode!=='region'||(region!=='epilogue'&&WorldMap.currentRegion!==region)),chapter==='finale'?'starfall':chapter)){
-   await page.locator('[data-next-scene="'+start+'"]:visible').click();
+   if(!await page.locator('[data-next-scene="'+start+'"]').isVisible())await page.locator('.rw-quest-toggle[aria-expanded="false"]').click();await page.locator('[data-next-scene="'+start+'"]:visible').click();
   }
   await page.waitForFunction(()=>WorldMap.mode==='region'||__game.scene==='yard');
   if(chapter==='finale'&&await page.evaluate(()=>__game.scene==='yard')){
    const travel=page.getByRole('button',{name:local('Explore'),exact:true});
    if(await travel.isVisible())await travel.click();
    else {await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();}
-   await page.locator('[data-next-scene="'+start+'"]:visible').click();
+   if(!await page.locator('[data-next-scene="'+start+'"]').isVisible())await page.locator('.rw-quest-toggle[aria-expanded="false"]').click();await page.locator('[data-next-scene="'+start+'"]:visible').click();
    await page.waitForFunction(()=>WorldMap.mode==='region');
   }
   // Verify the actual canvas affordances rather than only the menu buttons.
@@ -447,7 +447,7 @@ async function run(chapter){
    await click('Help Muling release the last lock');const latch=page.getByRole('button',{name:local('Hold the bell chain'),exact:true});await latch.waitFor();if(portrait){const r=await latch.boundingBox();await gesture({x:r.x+r.width/2,y:r.y+r.height/2},null,1800);}else{await latch.focus();await page.keyboard.down('Space');try{await page.waitForTimeout(1800);}finally{await page.keyboard.up('Space');}}
    await scene('finale:B-04');await cinema('finale:B-04','Watch the story scene');
   }else if(chapter==='epilogue'){
-   if(await page.evaluate(()=>__game.scene!=='yard'))await page.locator('[data-next-scene="epilogue:E-01"]:visible').click();await page.waitForFunction(()=>__game.scene==='yard');assert.equal(await page.locator('#first-quest').isVisible(),false,'The legacy catch tutorial must stay hidden during homecoming');await scene('epilogue:E-02');if(!await page.locator('.res-host[data-scene="epilogue:E-02"]').isVisible())await talk('Muling');await dialogue('epilogue:E-02','Give everyone some time');await scene('epilogue:E-03');await talk('Muling');await dialogue('epilogue:E-03');
+   if(await page.evaluate(()=>__game.scene!=='yard')){if(!await page.locator('[data-next-scene="epilogue:E-01"]').isVisible())await page.locator('.rw-quest-toggle[aria-expanded="false"]').click();await page.locator('[data-next-scene="epilogue:E-01"]:visible').click();}await page.waitForFunction(()=>__game.scene==='yard');assert.equal(await page.locator('#first-quest').isVisible(),false,'The legacy catch tutorial must stay hidden during homecoming');await scene('epilogue:E-02');if(!await page.locator('.res-host[data-scene="epilogue:E-02"]').isVisible())await talk('Muling');await dialogue('epilogue:E-02','Give everyone some time');await scene('epilogue:E-03');await talk('Muling');await dialogue('epilogue:E-03');
    await click('Give Muling the key');await page.getByRole('heading',{name:local('THE BELL RINGS AGAIN')}).waitFor();await page.locator('.res-ending-title img').evaluate(img=>img.decode());await artProfiles('ending',page.locator('.res-ending-title img'),page.getByRole('button',{name:local('Return to Sunlit Garden')}));assert.equal((await view()).ending,true);await captureExperienceMilestone(page,'ending');
   }
   if(next)await scene(next);
