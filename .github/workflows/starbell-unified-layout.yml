@@ -62,6 +62,8 @@ jobs:
       CAT_BOND_CHAPTER_LOCALE: zh
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - name: Detect relevant gameplay changes
         id: relevant
         run: |
