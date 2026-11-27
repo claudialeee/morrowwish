@@ -2,6 +2,8 @@ name: Starbell integrated guardian and minigame acceptance
 on:
   push:
     branches: [review/starbell-integrated-guardians-20261127]
+  pull_request:
+    branches: [review/starbell-canon13-player-experience]
 permissions:
   contents: read
 concurrency:
@@ -9,6 +11,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   integrated:
+    if: github.event_name == 'push' || github.head_ref == 'fix/starbell-quality-dialogue-20261127'
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     strategy:
@@ -59,7 +62,7 @@ jobs:
           node scripts/test-starbell-finale-framing-farwind.mjs
           node scripts/cat-bond-experience-chapters.mjs
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && github.event_name == 'push'
         with:
           name: starbell-quality-${{ matrix.profile }}
           path: |
