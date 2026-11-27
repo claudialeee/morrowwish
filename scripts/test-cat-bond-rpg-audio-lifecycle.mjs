@@ -34,8 +34,24 @@ assert.equal(music.skipCeremony('forest'),false,'cannot skip another region');
 assert.equal(music.skipCeremony('starfall'),true);await settle();
 visual='';state.resonance.melodies.push('starfall');state.resonance.revision++;music.sync();await settle();
 assert.equal(music.status().track,'starfall');assert.equal(requests.filter(x=>x==='song-starfall').length,1,'no replay after explicit skip');
-// Regression: title never uses the rejected fallback; every re-entry has a deliberately gentle gain envelope.
+// Regression: title never uses the rejected fallback; every re-entry has a quick, gentle gain envelope.
 window.__CAT_BOND_STARTED__=false;window.__game.scene='yard';gainEvents.length=0;music.sync();await settle();
-assert.equal(music.status().track,'title');assert.ok(gainEvents.some(([k,v,t])=>k==='ramp'&&v===.12&&t===1.2));assert.ok(gainEvents.some(([k,v,t])=>k==='ramp'&&v===.52&&t===4));assert.ok(!gainEvents.some(([k,v])=>k==='ramp'&&v===1));assert.ok(!requests.includes('title'));
-music.setEnabled(false);await settle();gainEvents.length=0;music.setEnabled(true);await settle();assert.equal(music.status().track,'title');assert.ok(gainEvents.some(([k,v,t])=>k==='ramp'&&v===.52&&t===4));
+assert.equal(music.status().track,'title');assert.ok(gainEvents.some(([k,v,t])=>k==='ramp'&&v===.52&&t===.5));assert.ok(!gainEvents.some(([k,v])=>k==='ramp'&&v===1));assert.ok(!requests.includes('title'));
+music.setEnabled(false);await settle();gainEvents.length=0;music.setEnabled(true);await settle();assert.equal(music.status().track,'title');assert.ok(gainEvents.some(([k,v,t])=>k==='ramp'&&v===.52&&t===.5));
 console.log('Audio lifecycle and gentle title onset regression PASS');
+
+// Initial title starts automatically only if permitted; otherwise the preloaded
+// buffer is reused on the first trusted gesture. Explicit mute is respected.
+for(const mode of ['allowed','blocked','muted']){
+ let permitted=mode==='allowed',decodeCount=0,resumes=0;const listeners=new Map();
+ class InitialContext extends Context{resume(){resumes++;if(!permitted)return new Promise(()=>{});return super.resume();}}
+ const doc={...document,addEventListener(type,fn){listeners.set(type,fn);}};
+ const win={...window,__CAT_BOND_STARTED__:false,AudioContext:InitialContext,CatBondOriginalScore:{regions,render:async()=>{decodeCount++;return {length:24000,numberOfChannels:2,duration:1};}}};
+ vm.runInNewContext(code,{window:win,document:doc,URL,localStorage:{getItem(k){return mode==='muted'&&k==='cat-bond-rpg-audio-v1'?JSON.stringify({enabled:false}):null;},setItem(){}},fetch:async()=>({ok:false}),setInterval(){},Math,Date});
+ const m=win.MorrowwishMusic;await settle();
+ if(mode==='muted'){assert.equal(resumes,0);assert.equal(decodeCount,0);listeners.get('click')({type:'click'});await settle();assert.equal(m.status().playing,false);continue;}
+ assert.equal(decodeCount,1,'title predecoded before interaction');assert.ok(resumes>=1,'attempt autoplay');
+ if(mode==='blocked'){assert.equal(m.status().playing,false);assert.equal(m.status().blocked,true);permitted=true;listeners.get('pointerup')({type:'pointerup'});await settle();}
+ assert.equal(m.status().track,'title');assert.equal(m.status().playing,true);assert.equal(decodeCount,1,'reuse preloaded title');
+}
+console.log('Title autoplay, blocked first-touch recovery and persisted mute PASS');

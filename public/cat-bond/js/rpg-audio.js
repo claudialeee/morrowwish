@@ -108,7 +108,7 @@ function select(id){
   if(token!==serial||desired!==id||!prefs.enabled||hidden||paused)return;
   pending=null;const old=active;
   const source=ctx.createBufferSource(),gain=ctx.createGain(),switchTime=now(),t=switchTime;
-  source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);if(id==='title'){gain.gain.linearRampToValueAtTime(.12,t+1.2);gain.gain.linearRampToValueAtTime(.52,t+4);}else gain.gain.linearRampToValueAtTime(1,t+.65);const filters=connectMusic(source,gain,id);
+  source.buffer=buffer;source.loop=!id.startsWith('song-');gain.gain.setValueAtTime(0,t);if(id==='title'){gain.gain.linearRampToValueAtTime(.52,t+.5);}else gain.gain.linearRampToValueAtTime(1,t+.65);const filters=connectMusic(source,gain,id);
   const next={id,source,gain,buffer,filters,started:t,stopping:false};active=next;
   musicSources.add(next);source.onended=()=>{musicSources.delete(next);if(retiring===next)retiring=null;source.disconnect();gain.disconnect();for(const filter of filters)filter.disconnect();if(active===next){active=null;if(ceremony?.id===id){if(ceremony.visual&&ceremony.root===root)performedVisual.add(ceremony.region);ceremony=null;}tick();}trimCache(desired);};
   if(retiring&&retiring!==old){try{retiring.gain.gain.setValueAtTime(0,now());retiring.source.stop(now());}catch{}}retiring=old;dispose(old,id==='title'?1.4:.65,switchTime);source.start(t);blocked=false;unavailable=false;
@@ -247,6 +247,7 @@ function tick(){
 function start(){
  if(!ensure())return false;
  started=true;stopped=false;if(hidden||paused)return true;
+ blocked=ctx.state!=='running';
  try{const p=ctx.resume();p.then(()=>{unlocked=ctx.state==='running';blocked=!unlocked;tick();}).catch(()=>{blocked=true;});}catch{blocked=true;}
  return true;
 }
@@ -256,10 +257,13 @@ function setVolume(v){prefs.music=clamp(v);save();mix();return prefs.music;}
 function setEffectsVolume(v){prefs.fx=clamp(v);save();tick();return prefs.fx;}
 function sync(){tick();}
 function visibility(){hidden=document.hidden;if(hidden){stopQuality();++serial;pending=null;ctx?.suspend().catch(()=>{});}else if(started&&!paused)start();tick();}
-function gesture(e){if(e.type==='keydown'&&['Tab','Shift','Control','Alt','Meta','Escape'].includes(e.key))return;if(!paused&&!hidden&&(!unlocked||ctx?.state!=='running'))start();}
-document.addEventListener('pointerdown',gesture,{capture:true,passive:true});document.addEventListener('keydown',gesture,true);
+function gesture(e){if(e.type==='keydown'&&['Tab','Shift','Control','Alt','Meta','Escape'].includes(e.key))return;if(!paused&&!hidden&&prefs.enabled&&(!unlocked||ctx?.state!=='running'))start();}
+document.addEventListener('pointerdown',gesture,{capture:true,passive:true});document.addEventListener('pointerup',gesture,{capture:true,passive:true});document.addEventListener('click',gesture,{capture:true,passive:true});document.addEventListener('keydown',gesture,true);
 document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',()=>{hidden=true;stopQuality();++serial;pending=null;ctx?.suspend().catch(()=>{});});window.addEventListener('pageshow',visibility);
 window.addEventListener('cat-bond-resonance-changed',tick);window.addEventListener('cat-bond-active-save-changed',()=>{clear();root=null;ceremony=null;tick();});
 setInterval(tick,250);
 window.MorrowwishMusic=Object.freeze({start,stop:()=>{stopped=true;stopVoices();clear();},toggle:()=>setEnabled(!prefs.enabled),setEnabled,setVolume,setEffectsVolume,sync,cue,qualityCue,stopQuality,skipCeremony,cancelCinematicSounds,switchScene:tick,duckFor:(ms=2200)=>{duckUntil=Math.max(duckUntil,now()+Math.min(6,Math.max(.3,ms/1000)));mix();},status:()=>({game:'cat-bond',enabled:prefs.enabled,volume:prefs.music,effectsVolume:prefs.fx,scene:desired,track:active?.id||null,source:active?(premiumIds.has(active.id)?'premium-mp3:'+premiumIds.get(active.id):(recordedIds.has(active.id)?'recorded-mp3:':'original-score:')+active.id):null,playing:!!active&&ctx?.state==='running'&&prefs.enabled,blocked,unavailable,loop:!!active?.source.loop,currentTime:active?now()-active.started:0,duration:active?.buffer?.duration||0,audioState:ctx?.state||'not-created',cache:cache.size,decodedCacheBytes:[...cacheBytes.values()].reduce((n,b)=>n+b,0),activeMusicSources:musicSources.size,pending:pending?.id||null,ambient:ambId,ceremony:ceremony?.region||null,regionalResponses:[...supportSeen],responseVoices:voiceNodes.size,qualitySamplesReady:qualityNames.filter(id=>!!qualityBuffers.get(id)).length,qualityVoices:qualityNodes.size})});
+// Decode the title in parallel with page loading, even when autoplay is blocked.
+// resume() may remain pending until a real gesture; pointerup/click also cover touch browsers.
+if(prefs.enabled&&!window.__CAT_BOND_STARTED__){getBuffer('title').catch(()=>{});if(!hidden)start();else started=true;}
 })();

@@ -16,7 +16,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: canon22-browser-${{ github.ref }}-${{ github.event_name == 'push' && (contains(github.event.head_commit.message, '[qa-toolchain]') && 'toolchain' || contains(github.event.head_commit.message, '[qa-full]') && 'final-full' || contains(github.event.head_commit.message, '[fresh-campaign]') && 'final-full' || contains(github.event.head_commit.message, '[qa-tail]') && 'tail' || 'incremental') || inputs.scope }}
+  group: canon22-browser-${{ github.ref }}-${{ github.event_name == 'push' && (contains(github.event.head_commit.message, '[qa-title-audio]') && 'audio-only' || contains(github.event.head_commit.message, '[qa-toolchain]') && 'toolchain' || contains(github.event.head_commit.message, '[qa-full]') && 'final-full' || contains(github.event.head_commit.message, '[fresh-campaign]') && 'final-full' || contains(github.event.head_commit.message, '[qa-tail]') && 'tail' || 'incremental') || inputs.scope }}
   cancel-in-progress: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[replace-obsolete-qa]') }}
 jobs:
   select:
@@ -47,6 +47,7 @@ jobs:
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
   chapter:
     needs: select
+    if: needs.select.outputs.matrix != '{"include":[]}'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:

@@ -54,6 +54,7 @@ jobs:
       - name: Verify player-first opening and named party logic
         run: |
           for test in scripts/test-cat-bond-canon22-*.mjs; do node "$test"; done
+          node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
           node scripts/test-cat-bond-player-first.mjs
           node scripts/test-cat-bond-story-party.mjs
           node scripts/test-cat-bond-garden-exploration.mjs
@@ -288,6 +289,8 @@ jobs:
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in $(seq 1 15); do curl -fsS http://127.0.0.1:8766/cat-bond/ >/dev/null && break; sleep 1; done
           node .cat-bond-preview-smoke.mjs
+          node scripts/cat-bond-title-audio-qa.mjs
+          # Shared layout remains covered by the existing preview gate.
           node scripts/cat-bond-layout-acceptance.mjs
       - name: Publish only preview branch
         env:
