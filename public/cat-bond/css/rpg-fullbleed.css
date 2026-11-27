@@ -288,3 +288,10 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 #stage .sg-npc-talk-marker[data-quest-primary="true"] svg{display:none}
 #stage .sg-npc-talk-marker[data-quest-primary="true"] .sg-quest-exclamation{display:grid;place-items:center;width:22px;height:26px;flex:none;font:900 25px/1 var(--cb-font-body);font-style:normal;color:#9c5d0b;text-shadow:0 1px #fff8d6}
 #stage .sg-npc-talk-marker[data-quest-primary="true"]::before{content:none!important}
+
+/* Keep the optional guardian list reachable in full-bleed landscape exploration.
+ * The main-story action stays in its existing position; the secondary menu stays closed until requested. */
+@media (orientation:landscape){
+ #stage .rw-world.rw-region-compact:has([data-regional-boss])>.rw-region-toggle{display:block!important;position:absolute!important;left:auto!important;right:14px!important;top:auto!important;bottom:14px!important;z-index:7!important;min-height:40px!important;padding:8px 13px!important;background:#fff4dbea!important;color:#53432e!important;border:1px solid #c8ae80!important;border-radius:9px!important;box-shadow:0 2px 8px #513a2026!important;}
+ #stage .rw-world.rw-region-compact:has([data-regional-boss])>.rw-fit-rail:not([hidden]){max-height:calc(100% - 130px)!important;}
+}

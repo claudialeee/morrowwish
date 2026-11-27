@@ -259,7 +259,8 @@ function install(){
    }
    const hint=host.querySelector(".rw-next");
    if(hint&&brand){const summary=brand.querySelector(".rw-fit-summary");if(summary){summary.textContent=hint.textContent;summary.title=hint.textContent;}}
-   const toggle=B(tr("探索操作","Explore actions"),()=>{
+   const guardians=items.some(item=>item.querySelector("[data-regional-boss]"));
+   const toggle=B(guardians?tr("探索与挑战","Explore & challenges"):tr("探索操作","Explore actions"),()=>{
     regionMenuOpen=!regionMenuOpen;
     rail.hidden=!regionMenuOpen;
     toggle.setAttribute("aria-expanded",String(regionMenuOpen));

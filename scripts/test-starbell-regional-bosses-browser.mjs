@@ -62,7 +62,7 @@ try{
    const open=async()=>{
     if(c.optional){
      const b=page.locator('[data-regional-boss="'+c.id+'"]');
-     if(!await b.isVisible()){const toggle=page.locator('.rw-region-toggle');if(await toggle.isVisible()&&await toggle.getAttribute('aria-expanded')!=='true')await press(toggle);const summary=page.locator('.rw-optional-actions>summary');if(await summary.isVisible()&&!await b.isVisible())await press(summary);}
+     if(!await b.isVisible()){const toggle=page.locator('.rw-region-toggle');if(await toggle.isVisible()&&await toggle.getAttribute('aria-expanded')!=='true')await press(toggle);const summary=page.locator('.rw-optional-actions>summary');if(!await b.isVisible()){await summary.waitFor({state:'visible'});await press(summary);}}
      await press(b);
     }else await press(page.locator('[data-next-scene="'+c.scene+'"]'));
     await page.locator('#bp-go').waitFor({state:'visible'});
