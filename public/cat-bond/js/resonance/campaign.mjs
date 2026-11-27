@@ -2,6 +2,7 @@
 export const campaign = {
   "canon": "The Last Resonance",
   "version": 1,
+  "regionalBossRevision": 1,
   "sourceSha": "e76fb300981187f2db7a799588425dbe4ad7323f",
   "regions": [
     "harbor",
@@ -457,7 +458,7 @@ export const campaign = {
           "speaker": "jiedeng",
           "text": {
             "zh": "我记得下一句。可我的铃声一接上，那团光就聚成了铃舌兽！它堵住古铃了，先把它赶走，我们才能让家铃各自响起来。",
-            "en": "I remember the next line. But when my bell answers, the glow gathers into a belllight beast! It's blocking the old bell. Drive it away so we can restore the house bells."
+            "en": "I remember the next line. But when my bell answers, the glow gathers into a Belltongue Beast! It's blocking the old bell. Drive it away so we can restore the house bells."
           }
         }
       ],

@@ -36,6 +36,11 @@ export function makeEngine(data,initial){
   }
   delete s.choices["library:M-01"];s.eventTimingRevision=1;
  }
+ if(data.regionalBossRevision===1&&s.regionalBossRevision!==1){
+  const op={"library:M-02":"battle:mirror-guardian","starfall:F-04":"battle:star-guardian"}[s.scene];
+  if(op&&!s.completed.includes(s.scene)&&!s.evidence[s.scene]?.includes(op))s.cursor=0;
+  s.regionalBossRevision=1;
+ }
  if(s.scene==="sky:S-04"&&!s.choices[s.scene]&&s.cursor>byId[s.scene].choiceAt)s.cursor=byId[s.scene].choiceAt;
  if(typeof s.openingMet!=="boolean")s.openingMet=false;if(!s.ambientDone)s.ambientDone=[];if(!s.ruins)s.ruins={clears:s.postgame.includes("postgame:ruins")?1:0,duoClears:0,attempts:[]};
  const fail=reason=>({ok:false,reason}), commit=()=>({ok:true,state:copy({...s,revision:++s.revision})});

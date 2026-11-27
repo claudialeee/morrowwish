@@ -6,7 +6,7 @@ import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud}
 // Wild cats remain collectible; scripted Forge/Finale encounters use separate adapters.
 import {libraryBlocked,libraryPoints,catdexRecord} from "./library-mechanisms.mjs";
 export const REGION_KITS=Object.freeze({
- harbor:{name:["风铃镇","Windchime Town"],enemy:["铃光兽","Belllight beast"],npcs:["jiedeng","qilan"],element:"water",color:"#e7c775",kind:"surge",period:6.2,support:["真铃支援","True chime support"]},
+ harbor:{name:["风铃镇","Windchime Town"],enemy:["铃舌兽","Belltongue Beast"],npcs:["jiedeng","qilan"],element:"water",color:"#e7c775",kind:"surge",period:6.2,support:["真铃支援","True chime support"]},
  forest:{name:["眠根林","Rootsleep Forest"],enemy:["根须围猎","Root ambush"],npcs:["yahe","yuchuan"],element:"grass",color:"#97ba76",kind:"roots",period:6.8,support:["疏通根脉","Clear the roots"]},
  forge:{name:["千灯城","Lantern City"],enemy:["高温巡猎","Furnace hunt"],npcs:["jinpo","xiaomao"],element:"fire",color:"#e9a16b",kind:"embers",period:6.5,support:["照亮舞台","Light the stage"]},
  sky:{name:["云脊群岛","Skyspine Isles"],enemy:["风切追逐","Gale chase"],npcs:["lingyu","yuanfan"],element:"elec",color:"#c6dce9",kind:"gale",period:6.1,support:["稳定气流","Stabilize the wind"]},
@@ -180,7 +180,7 @@ function install(){
  function resolve(b,r,cast){
   for(const f of living(b)){
    if(!cast.patterns.some(p=>inPattern(p,f)))continue;
-   const hit=b.resolveHit(f,"wild",{element:r.kit.element,kind:"aoe",isBasic:false},Math.max(8,f.maxhp*(r.kit.kind==="embers"?.14:.10)),f.x,f.y);
+   const hit=b.resolveHit(f,"wild",{element:r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element,kind:"aoe",isBasic:false},Math.max(8,f.maxhp*(r.kit.kind==="embers"?.14:.10)),f.x,f.y);
    if(hit?.dealt>0){
     if(r.kit.kind==="roots")f.rootT=Math.max(f.rootT||0,1.5);
     if(r.kit.kind==="gale"){const dir=f.x<b.W/2?-1:1;f.x=clamp(f.x+dir*38,32,b.W-32);}
@@ -268,7 +268,7 @@ function install(){
   e.fireCd=99999;
   if(!me?.alive)return;e.regionalCd-=dt;if(e.regionalCd>0)return;
   e.regionalCycle++;e.regionalCd=r.kit.kind==="gale"?2.7:3.5;
-  const a=Math.atan2(me.y-e.y,me.x-e.x),skill={element:r.kit.element,isBasic:true},fire=(angle,speed,mult,kind="ball")=>this.spawnProj(e.x,e.y,angle,speed,e.dmg*mult,"wild",r.kit.color,7,kind,skill);
+  const a=Math.atan2(me.y-e.y,me.x-e.x),skill={element:r.kit.kind==="orbit"?e.element:r.kit.element,isBasic:true},fire=(angle,speed,mult,kind="ball")=>this.spawnProj(e.x,e.y,angle,speed,e.dmg*mult,"wild",r.kit.color,7,kind,skill);
   switch(r.kit.kind){
    case "surge":for(let i=-2;i<=2;i++)fire(a+i*.20,168,.47);break;
    case "roots":for(let i=-1;i<=1;i++)this.spawnProj(e.x,e.y,a+i*.22,138,e.dmg*.55,"wild",r.kit.color,8,"leaf",{element:"grass",isBasic:false,appliesTag:"bind"});break;
@@ -292,7 +292,7 @@ function install(){
   if(!libraryAvailable(game,id,optional))return false;
   const d=optional?REGIONAL_BOSSES[id]:storyEcho[id],region=d.region||id,root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam();
   if(!team.length)return false;const sp=window.GameData.speciesById(team[0].species);if(!sp)return false;host.close?.();
-  window.UI.openBattleModePrompt(team,sp,{origin:"map",storyTitle:d.title||d.name,onStart:fighters=>{
+  window.UI.openBattleModePrompt(team,sp,{origin:"map",storyTitle:d.title||d.name,bossElement:REGION_KITS[region].element,onStart:fighters=>{
    if(root!==window.State.S||!libraryAvailable(game,id,optional)||!fighters.length)return;
    const token=host.captureAction(),base=window.GameData.speciesById(fighters[0].species);if(!base)return;
    game._returnScene="map";game._battleTheme={region,sky1:"#20253f",sky2:"#697ca8",ground:"#464967",ground2:"#232843",accent:REGION_KITS[region].color};
@@ -307,7 +307,7 @@ function install(){
  window.addEventListener("cat-bond-resonance-battle-request",event=>{const x=event.detail,d=storyEcho[x?.region];if(d&&x.sceneId===d.scene&&x.operation===d.op&&!prepareLibrary(window.__game,x.region))window.__game?.toast?.({zh:"请前往守卫所在的位置。",en:"Approach the guardian first."});});
  function showLibraryResult(game,owner,recovery,outcome,region="library",encounter={}){
   const ui=window.UI;if(!ui?.panel||window.State.S!==owner)return;
-  const win=outcome==="win",retry=!win,title=REGIONAL_BOSSES[encounter.bossId]?(win?[REGIONAL_BOSSES[encounter.bossId].name[0]+"已击败",REGIONAL_BOSSES[encounter.bossId].name[1]+" defeated"]:[outcome==="save-failed"?"战斗记录未保存":"挑战未完成",outcome==="save-failed"?"Battle result not saved":"Challenge incomplete"]):region==="forge"?(win?["剪影兽已消散","Shadow beast defeated"]:["灯影挑战未完成","Shadow challenge incomplete"]):region==="harbor"?(win?["铃光兽已消散","Belllight beast defeated"]:["铃房仍不安全","Bell house still unsafe"]):region==="forest"?(win?["空响已消散","Hollow echo dispelled"]:["救援尚未完成","Rescue incomplete"]):region==="starfall"?(win?["星轨守卫已消散","Orbital guardian defeated"]:["星轨挑战未完成","Orbital challenge incomplete"]):win?["守档幻象已消散","Archive echo defeated"]:outcome==="retreat"?["已从镜影战斗撤退","Retreated from the archive echo"]:outcome==="save-failed"?["战斗记录未保存","Battle result not saved"]:["队伍在镜影战斗中落败","Squad defeated by the archive echo"];
+  const win=outcome==="win",retry=!win,title=REGIONAL_BOSSES[encounter.bossId]?(win?[REGIONAL_BOSSES[encounter.bossId].name[0]+"已击败",REGIONAL_BOSSES[encounter.bossId].name[1]+" defeated"]:[outcome==="save-failed"?"战斗记录未保存":"挑战未完成",outcome==="save-failed"?"Battle result not saved":"Challenge incomplete"]):region==="forge"?(win?["剪影兽已消散","Shadow beast defeated"]:["灯影挑战未完成","Shadow challenge incomplete"]):region==="harbor"?(win?["铃舌兽已消散","Belltongue Beast defeated"]:["铃房仍不安全","Bell house still unsafe"]):region==="forest"?(win?["空响已消散","Hollow echo dispelled"]:["救援尚未完成","Rescue incomplete"]):region==="starfall"?(win?["星轨守卫已消散","Orbital guardian defeated"]:["星轨挑战未完成","Orbital challenge incomplete"]):win?["守档幻象已消散","Archive echo defeated"]:outcome==="retreat"?["已从镜影战斗撤退","Retreated from the archive echo"]:outcome==="save-failed"?["战斗记录未保存","Battle result not saved"]:["队伍在镜影战斗中落败","Squad defeated by the archive echo"];
   const detail=REGIONAL_BOSSES[encounter.bossId]?(win?(encounter.optional?["挑战完成，可以继续探索。","Challenge cleared. Continue exploring."]:["道路已安全，可以继续主线。","The path is safe. Continue your journey."]):["保留任务进度。休整或更换队伍后再试。","Quest progress is preserved. Rest or change your party and retry."]):region==="forge"?(win?["影戏重新清晰了。去找烬婆。","The shadows are clear again. Find Ember."]:["将剪影兽引到灯光下，休整后再试。","Lure the beast into the light and try again."]):region==="harbor"?(win?["铃房安静下来了。去找暮铃。","The bell house is quiet. Find Luna."]:["休整后再试。","Rest and try again."]):region==="forest"?(win?["根须松动了。沿水道找到被困的猫咪。","The roots loosened. Follow the channel to the trapped cats."]:["芽禾仍稳住水道，已调查的水痕不会丢失。休整后再试。","Fern is holding the channel; the trail remains verified. Rest and retry."]):region==="starfall"?(win?["观星台已安全。现在可以验证六地的分布式航线。","The observatory is safe. Verify the six regions’ distributed routes."]:["休整或更换队伍后再试。","Rest or change your team and try again."]):win?["真实记忆已核实。壁画中的身份线索可以继续调查。","The original memory is verified. Continue investigating the identity shown in the mural."]:["猫咪和档案进度已保留。休整或更换上阵猫咪后可以再次挑战。","Your cats and archive progress are preserved. Rest or change your team before trying again."];
   ui.panel('<span class="card-close">×</span><h2 class="center">'+tr(title)+'</h2><p class="sub">'+tr(detail)+'</p>'+(win&&encounter.reward?.some(Boolean)?'<p class="center">+'+encounter.reward[0]+' '+tr(["金币","coins"])+' · +'+encounter.reward[1]+' '+tr(["小鱼干","fish"])+' · '+encounter.reward[2]+' XP</p>':'')+(ui.battleRecoveryMarkup?.(recovery)||'')+'<div class="btn-row" style="justify-content:center">'+(retry?'<button type="button" class="btn gold" id="library-retry-encounter">'+tr(["再次挑战","Retry encounter"])+'</button>':'')+'<button type="button" class="btn '+(retry?'ghost':'gold')+'" id="library-battle-ok">'+tr(["继续探索","Continue exploring"])+'</button></div>');
   const ok=document.getElementById("library-battle-ok"),again=document.getElementById("library-retry-encounter");if(ok)ok.onclick=()=>ui.closeAll();if(again)again.onclick=()=>{ui.closeAll();if(owner!==window.State.S||!prepareLibrary(game,encounter.bossId||region,encounter.optional))game.toast({zh:"请重新前往守卫所在的位置。",en:"Return to the guardian's location to retry."});};

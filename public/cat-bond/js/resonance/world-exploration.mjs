@@ -14,7 +14,7 @@ export const layouts={
   castPoints:{jiedeng:[.195,.50],qilan:[.16,.60]},
   features:{
    "puzzle:chime-chase":[.16,.60,"穿过风铃巷","Chase the runaway chime"],
-   "battle:chime-beast":[.195,.50,"铃光兽","Belllight beast"],
+   "battle:chime-beast":[.195,.50,"铃舌兽","Belltongue Beast"],
    "repair:harbor":[.131,.341,"古铃圣所","Town bell sanctuary"],
    "melody:harbor":[.131,.341,"归家调","Coming Home"]
   }
@@ -23,7 +23,7 @@ export const layouts={
  forge:{name:["千灯城","Lantern City"],castPoints:{jinpo:[.35,.65],xiaomao:[.53,.50]},paths:[[.1,.86],[.35,.76],[.35,.50],[.63,.50],[.74,.40],[.88,.30]],features:{"puzzle:lantern-show":[.35,.76,"帮小栗演一场灯影","Help Pip put on a show"],"puzzle:shadow-bridge":[.35,.50,"照亮石桥","Light the stone bridge"],"repair:forge":[.88,.30,"千灯圣所","Lantern sanctuary"],"melody:forge":[.88,.30,"承火调","Song of Ember"],"battle:shadow-beast":[.74,.40,"剪影兽","Shadow beast"]}},
  sky:{name:["云脊群岛","Skyspine Isles"],castPoints:{lingyu:[.10,.70],yuanfan:[.18,.55]},paths:[[.10,.80],[.10,.70],[.16,.61],[.18,.55],[.41,.51],[.58,.55],[.67,.50],[.72,.43],[.74,.36],[.84,.30],[.89,.24]],features:{"puzzle:sky-pouch":[.10,.70,"借风起飞 · 练习滑翔","Catch the wind · Practice gliding"],"explore:flight-recorder":[.41,.51,"寻找月门 · 云间航线","Find the moon gate · Cloud route"],"puzzle:joint-flight":[.58,.55,"双猫滑翔台","Joint gliding platform"],"repair:sky":[.89,.24,"风翼圣所","Windwing sanctuary"],"melody:sky":[.89,.24,"逐风调","Open Sky"]}},
  library:{name:["月镜书库","Moonmirror Library"],paths:[[.10,.83],[.17,.73],[.22,.60],[.29,.60],[.46,.58],[.51,.48],[.50,.42],[.67,.40],[.76,.40],[.82,.36],[.89,.29]],castPoints:libraryInvitations,features:libraryPoints},
- starfall:{name:["星坠原","Starfall Expanse"],castPoints:{xingya:[.51,.58],lichuan:[.78,.48]},paths:[[.10,.90],[.23,.78],[.34,.68],[.41,.58],[.42,.52],[.51,.58],[.68,.55],[.78,.48],[.78,.40],[.84,.33],[.92,.30]],features:{"puzzle:star-steps":[.34,.68,"踩着星光走","Walk on starlight"],"explore:catastrophe-record":[.78,.40,"天文台 · 完整灾变记录","Observatory · Complete record"],"battle:star-guardian":[.78,.48,"星辰守卫","Star Guardian"],"puzzle:distributed-routing":[.84,.33,"邻铃试音","Test the neighboring bells"],"repair:starfall":[.92,.30,"星原圣所","Starfall sanctuary"],"melody:starfall":[.92,.30,"续星调","Beyond Stars"]}}
+ starfall:{name:["星坠原","Starfall Expanse"],castPoints:{xingya:[.51,.58],lichuan:[.78,.48]},paths:[[.10,.90],[.23,.78],[.34,.68],[.41,.58],[.42,.52],[.51,.58],[.68,.55],[.78,.48],[.78,.40],[.84,.33],[.92,.30]],features:{"puzzle:star-steps":[.34,.68,"踩着星光走","Walk on starlight"],"explore:catastrophe-record":[.78,.40,"天文台 · 完整灾变记录","Observatory · Complete record"],"battle:star-guardian":[.68,.55,"星辰守卫","Star Guardian"],"puzzle:distributed-routing":[.84,.33,"邻铃试音","Test the neighboring bells"],"repair:starfall":[.92,.30,"星原圣所","Starfall sanctuary"],"melody:starfall":[.92,.30,"续星调","Beyond Stars"]}}
 };
 export const retiredWorldOperations=new Set(["explore:tide-logbook","puzzle:beam-mirrors","rescue:storm-boat","explore:scent-trail","puzzle:paired-water-gates","rescue:steady-channel","explore:water-marks","battle:root-echo","rescue:trapped-cats","puzzle:festival-lantern","puzzle:safety-blueprint","puzzle:heat-pressure","battle:forge-guardian","explore:letter-recipient","explore:sealed-archive","puzzle:mirror-records","puzzle:caravan-route","battle:observatory-echo","puzzle:library-reflections","battle:library-echo","puzzle:echo-navigation","puzzle:star-map","explore:crater-fragment","explore:ruin-fragment"]);
 export const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
