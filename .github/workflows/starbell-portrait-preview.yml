@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 25
     env:
       SOURCE_SHA: 0ef3eff2c67f310fbd76e39d1acca5ed5e603020
-      TELEMETRY_SHA: 1806d4e57b46be628918b3d67b8573ae88d36100
+      TELEMETRY_SHA: 343270e35b7517ef27616d1f9c0db996c08b95bd
       PREVIEW_URL: https://starbell-portrait-preview.morrowwish.pages.dev
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -66,6 +66,8 @@ jobs:
           git fetch --no-tags --depth=1 origin "$TELEMETRY_SHA"
           git show "$TELEMETRY_SHA:public/telemetry.js" > /tmp/starbell-portrait/site/telemetry.js
           node --check /tmp/starbell-portrait/site/telemetry.js
+          git show "$TELEMETRY_SHA:scripts/test-starbell-telemetry.mjs" > /tmp/test-starbell-telemetry.mjs
+          node /tmp/test-starbell-telemetry.mjs /tmp/starbell-portrait/site/telemetry.js
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const root='/tmp/starbell-portrait/site',file=root+'/cat-bond/index.html',sha=process.env.SOURCE_SHA;
@@ -124,14 +126,15 @@ jobs:
           const browser=await chromium.launch({headless:true});
           try {
             const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
-            const page=await ctx.newPage(),errors=[];
+            let page=await ctx.newPage();const errors=[];
             page.on('pageerror',e=>errors.push(e.message));
             const collector='https://morrowwish.pages.dev/api/starbell-preview-session';
             const observed=[];
-            await page.route(collector,async route=>{
+            const capture=async route=>{
               observed.push(JSON.parse(route.request().postData()));
               await route.fulfill({status:202,headers:{'Access-Control-Allow-Origin':process.env.PREVIEW_URL},body:'{"ok":true}'});
-            });
+            };
+            await page.route(collector,capture);
             await page.goto(process.env.PREVIEW_URL+'/cat-bond/?lang=zh');
             await page.waitForFunction(()=>window.ARCADE_GAME_ID==='starbell-preview'&&window.ARCADE_COLLECTOR==='https://morrowwish.pages.dev/api/starbell-preview-session');
             await page.waitForTimeout(300);
@@ -144,9 +147,13 @@ jobs:
             await page.locator('#intro-slot-list [data-slot="slot1"]').tap();
             await entered;
             assert.ok(observed.some(e=>e.metricsVersion===1));
-            await page.evaluate(()=>localStorage.clear());
-            await page.goto(process.env.PREVIEW_URL+'/cat-bond/?lang=zh&qa=portrait-handoff');
+            await ctx.close();
+            const qaCtx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
+            page=await qaCtx.newPage();
+            page.on('pageerror',e=>errors.push(e.message));
+            await page.route(collector,capture);
             const beforeQa=observed.length;
+            await page.goto(process.env.PREVIEW_URL+'/cat-bond/?lang=zh&qa=portrait-handoff');
             assert.equal(await page.locator('body').getAttribute('data-source-sha'),process.env.SOURCE_SHA);
             const image=page.locator('.cb-title-cover-art');
             await image.waitFor({state:'visible'});
