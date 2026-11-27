@@ -68,19 +68,28 @@ try{
  await Promise.all([
  attempt('harbor','harbor',async p=>{
   await p.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-04');
-  await record(p,'melody',5,async()=>{await p.waitForTimeout(1500);});
   await click(p,'Belllight beast');await p.locator('#panel [data-battle-auto="true"]').click();await p.locator('#bp-go').click();await p.locator('#battle-ui.on').waitFor();const tutorial=p.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();
   await record(p,'battle',30,async()=>{const btn=p.locator('#duo-burst');for(let i=0;i<65;i++){if(await p.evaluate(()=>!!__game.battle?.duoCinematic))break;if(await btn.isVisible()&&await btn.isEnabled()){await btn.tap();break;}await p.waitForTimeout(350);}});
  }),
- attempt('sky','sky',async p=>{
-  await click(p,'Catch the wind · Practice gliding');await p.locator('[data-sky-flight-status][data-route="open"]').waitFor();const b=await p.locator('.rw-surface').boundingBox();
-  await record(p,'glide',7,async()=>{await p.locator('.rw-surface').tap({position:{x:b.width*.35,y:b.height*.30}});await p.waitForTimeout(2500);await p.locator('.rw-surface').tap({position:{x:b.width*.35,y:b.height*.50}});});
+ attempt('shadow','forge',async p=>{
+  await click(p,'Help Xiaomao put on a show');
+  const card=p.locator('.rw-festival-card');await card.waitFor({timeout:20000});
+  await p.waitForFunction(()=>performance.getEntriesByType('resource').some(x=>x.name.includes('/mobile-portrait/lantern-shadow-square.webp')));
+  await record(p,'shadow',6,async()=>{
+    await card.getByRole('button',{name:'Fish',exact:true}).tap();
+    await p.waitForTimeout(1500);
+    await card.getByRole('button',{name:'Butterfly',exact:true}).tap();
+    await p.waitForTimeout(1700);
+    await card.getByRole('button',{name:'Cat',exact:true}).tap();
+    await p.waitForTimeout(1000);
+    if(await card.getByRole('button',{name:'Cat',exact:true}).getAttribute('aria-pressed')!=='true')throw Error('Cat shadow selection not reflected');
+  });
  }),
  attempt('garden','garden',async p=>{
   await record(p,'garden',5,async()=>{await p.waitForTimeout(900);const cv=p.locator('canvas:visible').first();if(await cv.count()){const b=await cv.boundingBox();if(b)await cv.tap({position:{x:b.width*.65,y:b.height*.55}});}});
  })
  ]);
 }finally{await browser.close();await fs.writeFile(out+'/capture-evidence.json',JSON.stringify(evidence,null,2));}
-for(const id of ['garden','glide','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
+for(const id of ['garden','shadow','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
 const battle=evidence.clips.find(x=>x.id==='battle');if(!battle.observations.some(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards'&&x.asset?.includes('/mobile-portrait/duo/')))throw Error('No verified live native portrait duo');
-for(const [id,asset] of [['glide','sky-glide.webp']]){const cl=evidence.clips.find(x=>x.id===id);if(!cl.observations.some(x=>x.resources.some(u=>u.includes('/mobile-portrait/'+asset))))throw Error('Native mini-game artwork not loaded: '+id);}
+for(const [id,asset] of [['shadow','lantern-shadow-square.webp']]){const cl=evidence.clips.find(x=>x.id===id);if(!cl.observations.some(x=>x.resources.some(u=>u.includes('/mobile-portrait/'+asset))))throw Error('Native mini-game artwork not loaded: '+id);}
