@@ -2086,6 +2086,7 @@
   "破防": "Guard Broken",
   "处决!": "EXECUTE!",
   "收网!": "CLOSING!",
+  "队伍平均等级 ≥ ": "Team avg level ≥ ",
   "恢复中": "Recovering",
   "野猫韧性": "Wild cat poise",
   "水枪": "Water Lance",

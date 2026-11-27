@@ -278,8 +278,10 @@ assert.equal(regions[0].name,'阳光花园','first exploration region must be na
 assert.equal(regions[0].sub,'Sunlit Garden','first exploration region must be named Sunlit Garden in English');
 assert.equal(regions[0].difficulty,1,'courtyard is the beginner exploration zone');
 assert.equal(regions[0].unlock,null,'courtyard unlocks immediately');
+// Owner 2026-11-27: region gate migrated from explore-% → team-avg-level + own-key-species.
+// sakura: team avg lv 3 + own tangyuan (guaranteed from home starter pool).
 assert.deepEqual(JSON.parse(JSON.stringify(regions[1].unlock)),
-  {after:'home',explore:.4},'sakura unlocks at 40% courtyard exploration');
+  {after:'home',level:3,own:'tangyuan'},'sakura unlocks at team-avg level 3 + owning 汤圆');
 assert.ok(worldMapSource.includes('wm.unlocked.home = true')&&
   !worldMapSource.includes('wm.unlocked.sakura = true'),
   'new games must not automatically unlock Sakura before the courtyard');

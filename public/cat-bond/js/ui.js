@@ -672,9 +672,13 @@ const UI = {
       const pct=Math.round(100*(State.S.worldmap?.regions?.[r.id]?.explored||0));
       const prev=WorldMap.REGIONS.find(x=>x.id===r.unlock?.after);
       const own=r.unlock?.own?GameData.speciesById(r.unlock.own):null;
+      const progReq = r.unlock && r.unlock.level!=null
+        ? (en?'Team avg level ≥ '+r.unlock.level:'队伍平均等级 ≥ '+r.unlock.level)
+        : r.unlock
+          ? (en?'Explore '+prev.sub+' '+Math.round(r.unlock.explore*100)+'%':'探索「'+prev.name+'」'+Math.round(r.unlock.explore*100)+'%')
+          : '';
       const requirement=!r.unlock?(en?'Ready to explore':'开局即可探索')
-        :en?'Explore '+prev.sub+' '+Math.round(r.unlock.explore*100)+'%'+(own?' · Befriend '+own.name:'')
-        :'探索「'+prev.name+'」'+Math.round(r.unlock.explore*100)+'%'+(own?' · 拥有「'+own.name+'」':'');
+        :progReq+(own?(en?' · Befriend '+own.name:' · 拥有「'+own.name+'」'):'');
       const icon=({home:'🏡',sakura:'🌸',creek:'💧',volcano:'🔥',ruins:'🌙'})[r.id]||'🐾';
       return `<button type="button" class="map-destination ${open?'available':'locked'}" data-region="${r.id}" ${open?'':'disabled'}>
         <span class="map-destination-icon">${icon}</span>

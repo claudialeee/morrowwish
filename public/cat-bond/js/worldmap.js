@@ -99,7 +99,7 @@
       node: { x: 0.37, y: 0.52 }, difficulty: 2,
       theme: { region:'sakura',sky1: '#2e1a30', sky2: '#4a2a44', ground: '#7a4a66', ground2: '#b06a90', accent: PINK },
       speciesPool: ['nainai', 'moqiu', 'sanhua', 'jiafei', 'yunduo', 'yinghua'],
-      unlock: { after: 'home', explore: 0.4 },
+      unlock: { after: 'home', level: 3, own: 'tangyuan' },
       desc: '粉樱纷飞的林间，稀有猫猫出没。',
     },
     {
@@ -107,7 +107,7 @@
       node: { x: 0.58, y: 0.68 }, difficulty: 3,
       theme: { region:'creek',sky1: '#122436', sky2: '#1e3c54', ground: '#2f5a6a', ground2: '#4d879a', accent: '#8fd3ff' },
       speciesPool: ['lanbao', 'dundun', 'lixiao', 'zherdd', 'youling'],
-      unlock: { after: 'sakura', explore: 0.5 },
+      unlock: { after: 'sakura', level: 6 },
       desc: '清凉溪水穿谷而过，史诗猫猫在此栖息。',
     },
     {
@@ -115,7 +115,7 @@
       node: { x: 0.74, y: 0.36 }, difficulty: 4,
       theme: { region:'volcano',sky1: '#2a1410', sky2: '#4a1e14', ground: '#5a241a', ground2: '#9a3a1f', accent: '#ff6a1f' },
       speciesPool: ['senlin', 'xianluo', 'jinwu'],
-      unlock: { after: 'creek', explore: 0.6, own: 'youling' },
+      unlock: { after: 'creek', level: 9, own: 'youling' },
       desc: '灼热的火山口，传说之火焰猫金乌沉睡于此。',
     },
     {
@@ -123,7 +123,7 @@
       node: { x: 0.9, y: 0.6 }, difficulty: 5,
       theme: { region:'ruins',sky1: '#17102e', sky2: '#2f2650', ground: '#3a2f66', ground2: '#5a4a9a', accent: PURPLE },
       speciesPool: ['youling', 'yuelian', 'xingchen'],
-      unlock: { after: 'volcano', explore: 0.7, own: 'jinwu' },
+      unlock: { after: 'volcano', level: 12, own: 'jinwu' },
       desc: '月光笼罩的古老遗迹，最稀有的传说猫沉眠在星河之中。',
     },
   ];
@@ -187,15 +187,31 @@
     return false;
   }
 
+  // Owner 2026-11-27: region gate uses TEAM-AVG LEVEL (not explore %) — level is
+  // the natural progression signal, and computeWildLevel already keys off team
+  // avg. If `unlock.level` is set, use it; else fall back to legacy `unlock.explore`.
+  function teamAvgLevel() {
+    var S = window.State && window.State.S;
+    var cats = (S && S.cats) || [];
+    if (!cats.length) return 1;
+    var sum = 0, n = 0;
+    for (var i = 0; i < cats.length; i++) { sum += (cats[i].level || 1); n++; }
+    return n ? sum / n : 1;
+  }
   function isUnlocked(id) {
     var wm = ensureSave();
     if (wm.unlocked[id]) return true;
     var r = regionById(id);
     if (!r || !r.unlock) return !!(r && !r.unlock);
-    var prev = wm.regions[r.unlock.after];
-    var okExplore = prev && prev.explored >= r.unlock.explore;
+    var okProgress;
+    if (r.unlock.level != null) {
+      okProgress = teamAvgLevel() >= r.unlock.level;
+    } else {
+      var prev = wm.regions[r.unlock.after];
+      okProgress = prev && prev.explored >= r.unlock.explore;
+    }
     var okOwn = !r.unlock.own || owns(r.unlock.own);
-    return !!(okExplore && okOwn);
+    return !!(okProgress && okOwn);
   }
 
   // Promote newly-satisfied unlocks into the save and toast once.
@@ -215,7 +231,12 @@
   function unlockHint(r) {
     if (!r.unlock) return '';
     var prev = regionById(r.unlock.after);
-    var parts = ['探索「' + (prev ? prev.name : '') + '」至 ' + Math.round(r.unlock.explore * 100) + '%'];
+    var parts;
+    if (r.unlock.level != null) {
+      parts = ['队伍平均等级 ≥ ' + r.unlock.level];
+    } else {
+      parts = ['探索「' + (prev ? prev.name : '') + '」至 ' + Math.round(r.unlock.explore * 100) + '%'];
+    }
     if (r.unlock.own) {
       var sp = window.GameData.speciesById(r.unlock.own);
       parts.push('并拥有「' + (sp ? window.GameData.speciesName(sp) : r.unlock.own) + '」');
