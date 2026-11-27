@@ -6,6 +6,7 @@ const out=path.resolve('output'),raw=path.join(out,'raw'),media=path.join(out,'m
 fs.mkdirSync(raw,{recursive:true});fs.mkdirSync(media,{recursive:true});
 const server=spawn('python3',['-m','http.server','18963','--bind','127.0.0.1','--directory','source/public'],{stdio:'ignore'});
 const base='http://127.0.0.1:18963',sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const prior=fs.existsSync(path.join(out,'real-capture-report.json'))?JSON.parse(fs.readFileSync(path.join(out,'real-capture-report.json'),'utf8')):null;
 const report={source:'7637c688dc6efee7145bf6fe46e25f704d57e6fc',captures:[],visualApproval:false,portalSaved:false};
 let browser;
 try{
@@ -13,9 +14,11 @@ try{
  browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  for(const [name,width,height,touch] of [['landscape',1920,1080,false],['portrait',1080,1620,true],['vertical',1080,1920,true]]){
  const dir=path.join(raw,name);fs.mkdirSync(dir,{recursive:true});
- const ctx=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,hasTouch:touch,recordVideo:{dir,size:{width,height}}});
- const page=await ctx.newPage(),errors=[],marks=[],start=Date.now();const video=page.video();
- const record={name,width,height,marks,errors,completed:false};report.captures.push(record);
+ const reused=prior?.captures?.find(r=>r.name===name&&r.completed&&!r.errors.length&&fs.existsSync(path.join(dir,'continuous.webm')));
+ const ctx=reused?null:await browser.newContext({viewport:{width,height},deviceScaleFactor:1,hasTouch:touch,recordVideo:{dir,size:{width,height}}});
+ const page=ctx?await ctx.newPage():null,errors=reused?reused.errors:[],marks=reused?reused.marks:[],start=Date.now();const video=page?.video();
+ const record=reused?{...reused,reused:true}:{name,width,height,marks,errors,completed:false};report.captures.push(record);
+ if(!reused){
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',r=>{let u=new URL(r.request().url());return u.origin!==base||/telemetry/.test(u.pathname)?r.abort():r.continue()});
  const tap=async selector=>{let l=page.locator(selector).first();await l.waitFor({state:'visible',timeout:15000});if(touch)await l.tap();else await l.click()};
@@ -42,6 +45,7 @@ try{
  record.completed=true;
  }catch(e){record.error=String(e);await page.screenshot({path:path.join(dir,'failure.png')}).catch(()=>{})}
  finally{await ctx.close();let file=await video.path();fs.renameSync(file,path.join(dir,'continuous.webm'));record.raw=path.relative(out,path.join(dir,'continuous.webm'))}
+ }
  if(record.completed&&!errors.length){
  let mark=Object.fromEntries(marks.map(x=>[x.name,x.at]));
  // Actual uninterrupted recording; trim only opening before yard.

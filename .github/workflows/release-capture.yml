@@ -15,8 +15,11 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version | head -1
       - name: Build candidate ZIP
-        run: python3 export-platform.py gamepix
+        run: test -s output/cat-bond-gamepix-candidate.zip && test -s output/gamepix-build-report.json || python3 export-platform.py gamepix
       - name: Record normal speed real-input gameplay
         id: record
         continue-on-error: true
