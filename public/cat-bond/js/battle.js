@@ -1971,6 +1971,46 @@ class CaptureBattle {
   // read. identityMul(f) returns ONE product consumed at every cast entry; the
   // resolveHit traitMult site is gone (now covered here, no double-dip).
   identityMul(f){ return this.outgoingBuffMult(f) * (f?._dmgOutMult || 1); }
+  // Owner 2026-11-27 refactor Phase 2.0: single-source cast-context snapshot.
+  // Stamps sk._cast = {aim, caster, side, mouse, target, ray240, t} at the top of
+  // castOffensiveSkill. All landing-point-resolving handlers read from this
+  // instead of re-deriving from this.game.mouse / this.me() / lockedEnemy live.
+  // Also writes legacy aliases sk._castMouse + sk._castTarget for one release so
+  // downstream greps (scripts/check-cat-bond-skill-targets.mjs, debug log) keep
+  // working while callers migrate.
+  //
+  // First-cast wins: if sk._cast already exists (windup resume: tickPendingCasts
+  // re-enters castOffensiveSkill after the windup clock expires), skip re-snapshot
+  // so the frozen context is preserved.
+  snapshotCast(f, sk, aim) {
+    if (!sk) return;
+    if (sk._cast) return; // first-cast wins (windup re-entry preserves frozen state)
+    const isPlayer = f === this.me?.();
+    const desktopManual = isPlayer && !this.game?.isTouch && !this.autoMode;
+    // mouse: only when the player is physically aiming (desktop, manual mode).
+    let mouse = null;
+    if (desktopManual) {
+      const m = this.game?.mouse;
+      if (m && Number.isFinite(m.x) && Number.isFinite(m.y)) mouse = { x: m.x, y: m.y };
+    }
+    // target: lockedEnemy / nearestEnemy at the moment of press. AOE uses this,
+    // but every landing-point consumer can fall back to it.
+    let target = null;
+    if (mouse) target = { x: mouse.x, y: mouse.y };
+    else {
+      const tgt = this.lockedEnemy?.() || this.nearestEnemy?.(f.x, f.y);
+      if (tgt) target = { x: tgt.x, y: tgt.y };
+    }
+    // ray240 — deterministic fallback for everything else (consumers decide).
+    const ray240 = { x: f.x + Math.cos(aim) * 240, y: f.y + Math.sin(aim) * 240 };
+    sk._cast = {
+      aim, caster: f, side: (this.team && this.team.includes(f)) ? 'me' : 'wild',
+      mouse, target, ray240, t: this.t,
+    };
+    // Legacy aliases — consumers migrating off read sk._cast directly.
+    sk._castMouse = mouse;
+    if (sk.kind === 'aoe' || sk.id === 'meteor') sk._castTarget = target || ray240;
+  }
   // Owner 2026-11-26 playtest cycle w62cwoq5u P0-1 (local-numeric auto-fix):
   // reward an ENGAGED masher past the skill-use window. BASIC_POWER_MULT 0.85 is a
   // deliberate pre-45s nerf to force skill use; after 45s, ramp to 1.10 by 75s so a
@@ -2717,35 +2757,13 @@ class CaptureBattle {
       };
     }
     this._lastSkillT = this.t;                 // stall-detector: player engaged a skill
-    // Owner 2026-11-26 "陨石/所有 aoe 技能落点应该在按按钮的时候就选定": snapshot the
-    // desktop cursor at CAST moment. lobAoe + the meteor-windup telegraph both read
-    // sk._castMouse first; live this.game.mouse is only a fallback. This freezes the
-    // landing point at the instant Q/E was pressed — mouse drift during the 1.5s meteor
-    // windup (or any lob flight) no longer drags the impact ring.
-    if (sk && f === this.me() && !this.game?.isTouch && !this.autoMode) {
-      const m = this.game?.mouse;
-      if (m && Number.isFinite(m.x) && Number.isFinite(m.y)) {
-        sk._castMouse = { x: m.x, y: m.y };
-      }
-    } else if (sk) {
-      sk._castMouse = null;
-    }
-    // Owner 2026-11-26 "陨石术的锁定落点应该是发动时候就锁定的，之后不会变的":
-    // Snapshot the landing POINT at cast time for auto-mode, mobile, and ally casts —
-    // not just the desktop cursor. During a 1.5s meteor windup the live enemy drifts;
-    // without this snapshot the ground telegraph + impact both follow the moving target.
-    // Freezing _castTarget at cast resolves to a committed dodgeable disc.
-    if (sk && (sk.kind === 'aoe' || sk.id === 'meteor')) {
-      let txy = null;
-      if (sk._castMouse && Number.isFinite(sk._castMouse.x)) {
-        txy = { x: sk._castMouse.x, y: sk._castMouse.y };
-      } else {
-        const tgt = this.lockedEnemy?.() || this.nearestEnemy?.(f.x, f.y);
-        if (tgt) txy = { x: tgt.x, y: tgt.y };
-        else txy = { x: f.x + Math.cos(aim) * 240, y: f.y + Math.sin(aim) * 240 };
-      }
-      sk._castTarget = txy;
-    }
+    // Owner 2026-11-27 refactor Phase 2.0: generalized CastContext snapshot. Prior
+    // code had two ad-hoc stashes (sk._castMouse for desktop-manual, sk._castTarget
+    // for AOE). All kind-handlers (lobAoe, leapSlam, castUmbralBarrage, meteor
+    // telegraph in tickPendingCasts) that need to freeze a landing point now read
+    // sk._cast.{target,mouse,ray240,aim} uniformly. Legacy sk._castMouse +
+    // sk._castTarget remain as aliases this release (test harness greps for them).
+    if (sk) this.snapshotCast(f, sk, aim);
     // Owner 2026-11-26 "为什么寒冰爪没打到" — log every ATTEMPT so you can tell cast-never-fired
     // from cast-missed. Enemy also routes through castOffensive at times, so tag by firing side.
     if (this._debug && this._dbgLog && sk) {
@@ -2905,22 +2923,12 @@ class CaptureBattle {
   // ring that travels with it, so it stays dodgeable (leave the circle).
   lobAoe(f, aim, sk, dmg, col) {
     const R = 86;                                   // burst radius
-    // destination point
-    let tx, ty;
-    // Owner 2026-11-26: AOE landing point is LOCKED at cast time, not live. castOffensiveSkill
-    // snapshots sk._castTarget for ALL casters (player/ally/auto/mobile) so the ground
-    // telegraph and the actual impact share the same frozen point.
-    const snapTgt = sk?._castTarget;
-    if (snapTgt && Number.isFinite(snapTgt.x) && Number.isFinite(snapTgt.y)) {
-      tx = snapTgt.x; ty = snapTgt.y;
-    } else if (f === this.me() && !this.game.isTouch && !this.autoMode) {
-      const snap = sk?._castMouse;
-      if (snap && Number.isFinite(snap.x) && Number.isFinite(snap.y)) { tx = snap.x; ty = snap.y; }
-      else { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
-    } else {
-      const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);
-      if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
-    }
+    // Owner 2026-11-27 Phase 2.1: landing point is sk._cast.{target|mouse|ray240}.
+    // snapshotCast froze it at press time; no live reads of this.game.mouse or
+    // lockedEnemy here anymore. First non-null wins.
+    const c = sk?._cast || {};
+    const pt = c.target || c.mouse || c.ray240 || { x: f.x + Math.cos(aim) * 240, y: f.y + Math.sin(aim) * 240 };
+    const tx = pt.x, ty = pt.y;
     const ang = Math.atan2(ty - f.y, tx - f.x), dist = Math.hypot(tx - f.x, ty - f.y);
     const speed = 300;                              // deliberately slow → readable/dodgeable
     this.spawnProj(f.x, f.y, ang, speed, dmg, 'me', col, 9, 'orb', sk, dist / speed + 0.02);
@@ -2937,11 +2945,14 @@ class CaptureBattle {
   // Ground-locked artillery: each ball has its own launch/flight/impact clock.
   // No projectile steering, interception, contact collision or target re-aim.
   castUmbralBarrage(f,aim,sk,dmg,col,side='me',target=null){
-    const reach=sk.reach||340,mouse=this.game?.mouse;
+    const reach=sk.reach||340;
+    // Owner 2026-11-27 Phase 2.3: honor sk._cast snapshot when available so a
+    // windup/pending umbral barrage freezes its landing cluster at press time.
+    // Still allow explicit `target` override (enemy castEnemySkill passes it).
     let tgt=target;
     if(!tgt&&side==='me'){
-      if(f===this.me()&&!this.game?.isTouch&&Number.isFinite(mouse?.x)&&Number.isFinite(mouse?.y))tgt=mouse;
-      else tgt=this.lockedEnemy?.()||this.nearestEnemy(f.x,f.y);
+      const c=sk?._cast;
+      tgt = (c && (c.target || c.mouse)) || this.lockedEnemy?.() || this.nearestEnemy(f.x,f.y);
     }
     let dx=(tgt?.x??(f.x+Math.cos(aim)*reach))-f.x,dy=(tgt?.y??(f.y+Math.sin(aim)*reach))-f.y;
     const dist=Math.hypot(dx,dy)||1,scale=Math.min(1,reach/dist);dx*=scale;dy*=scale;
@@ -3162,9 +3173,11 @@ class CaptureBattle {
   // staggers everyone caught under it. A committed, readable mid-range gap-closer:
   // the arc telegraphs where it lands, so it rewards good spacing, not spam.
   leapSlam(f, aim, sk, dmg, col) {
-    let tx, ty;
-    if (f === this.me() && !this.game.isTouch && !this.autoMode) { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
-    else { const t = this.lockedEnemy() || this.nearestEnemy(f.x, f.y); if (t) { tx = t.x; ty = t.y; } else { tx = f.x + Math.cos(aim) * 190; ty = f.y + Math.sin(aim) * 190; } }
+    // Owner 2026-11-27 Phase 2.3: leap landing reads sk._cast — target|mouse|aim-ray.
+    // No more live this.game.mouse reads during auto-mode or windup resume.
+    const c = sk?._cast || {};
+    const pt = c.target || c.mouse || { x: f.x + Math.cos(aim) * 190, y: f.y + Math.sin(aim) * 190 };
+    let tx = pt.x, ty = pt.y;
     // cap leap range so it stays a reach, not a teleport — but long enough to reach a ranged
     // kiter's ~200px standoff (泰山压顶 is a committed mid-range gap-closer, not a short hop).
     const d = Math.hypot(tx - f.x, ty - f.y), max = 215;
@@ -3343,34 +3356,11 @@ class CaptureBattle {
       // danger. Owner: "陨石施法时应该在预计的范围里先画个红圈". We re-pick the landing point every
       // frame using the same locked/nearest-enemy rule as lobAoe, so a moving target is tracked.
       if (c.sk && c.sk.id === 'meteor') {
-        let tx, ty;
-        // Owner 2026-11-26: meteor landing is LOCKED at cast time. Honor the snapshot
-        // taken in castOffensiveSkill before falling through to live cursor / enemy tracking.
-        const snapTgt = c.sk?._castTarget;
-        if (snapTgt && Number.isFinite(snapTgt.x) && Number.isFinite(snapTgt.y)) {
-          tx = snapTgt.x; ty = snapTgt.y;
-        } else if (f === this.me() && !this.game.isTouch && !this.autoMode) {
-          // Owner 2026-11-26: during the 1.5s windup the telegraph must stay locked at
-          // the cursor position AT CAST TIME, not drift with live mouse movement.
-          // castOffensiveSkill snapshots sk._castMouse — honor it here. In auto-mode the
-          // player isn't aiming; fall through to the enemy-targeting branch below so the
-          // red ring lands on the actual target, not the idle cursor.
-          const snap = c.sk?._castMouse;
-          if (snap && Number.isFinite(snap.x) && Number.isFinite(snap.y)) { tx = snap.x; ty = snap.y; }
-          else { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
-        } else {
-          const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);
-          if (tgt) { tx = tgt.x; ty = tgt.y; }
-          else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
-        }
-        // Owner 2026-11-26: with _castTarget set, DO NOT re-track live enemy — the
-        // landing is committed at cast time for ALL casters, so telegraph + impact
-        // share the same frozen point (otherwise ally casts drift and re-aim).
-        if (!snapTgt) {
-          const owner = f.owner === 'wild' ? 'wild' : 'me';
-          const tgt = owner === 'me' && f !== this.me() ? (this.lockedEnemy() || this.nearestEnemy(f.x, f.y)) : null;
-          if (tgt) { tx = tgt.x; ty = tgt.y; }
-        }
+        // Owner 2026-11-27 Phase 2.2: meteor windup telegraph reads sk._cast directly.
+        // Same priority order as lobAoe: target → mouse → ray240. Frozen at press time.
+        const cc = c.sk?._cast || {};
+        const pt = cc.target || cc.mouse || cc.ray240 || { x: f.x + Math.cos(aim) * 240, y: f.y + Math.sin(aim) * 240 };
+        const tx = pt.x, ty = pt.y;
         const R = 86;                                        // match the lobAoe burst radius
         const pulse = 0.5 + 0.5 * Math.sin(this.t * 10);
         // Pulsing red reticle that intensifies as impact approaches. Short-lived per frame so
