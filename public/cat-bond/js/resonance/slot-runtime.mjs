@@ -16,7 +16,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
  function capture(){const token=Object.freeze({});leases.set(token,{root:State.S,slot:State.activeSlot?.(),scene:read().view().current?.id??null});return token}
  function check(token){if(!token)return true;const lease=leases.get(token);return !!lease&&lease.root===State.S&&lease.slot===State.activeSlot?.()&&lease.scene===(read().view().current?.id??null)}
  function subscribe(fn){listeners.add(fn);return ()=>listeners.delete(fn)}
- function view(){const e=read(),v=e.view(),s=e.snapshot();return {...v,completed:s.completed,trust:s.trust,links:s.links,sanctuaries:s.sanctuaries,melodies:s.melodies,returned:s.returned,postgame:s.postgame,ruins:s.ruins,ambientDone:s.ambientDone,revision:s.revision}}
+ function view(){const e=read(),v=e.view(),s=e.snapshot();return {...v,...(globalThis.window?.__STARBELL_DEVELOPER__?{regions:[...campaign.regions]}:{}),completed:s.completed,trust:s.trust,links:s.links,sanctuaries:s.sanctuaries,melodies:s.melodies,returned:s.returned,postgame:s.postgame,ruins:s.ruins,ambientDone:s.ambientDone,revision:s.revision}}
  // The optional physical side effect is part of the same local save as story
  // evidence. World ownership remains with the caller; only these fields may
  // be patched here. A cloud backup error does not undo a successful local save.

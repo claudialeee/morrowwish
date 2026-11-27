@@ -65,7 +65,8 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  }
  function enter(region){
   const story=view();
-  if(!story.regions.includes(region))return fail("region-locked");
+  if(!campaign.regions.includes(region)||!story.regions.includes(region))return fail("region-locked");
+  if(globalThis.window?.__STARBELL_DEVELOPER__&&story.current?.id==="prologue:P-05")return physical(w=>({...w,location:region}));
   const departure=region==="harbor"&&story.current?.id==="prologue:P-05"&&story.objective.includes("travel:harbor");
   if(!departure)return physical(w=>({...w,location:region}));
   if(story.cursor<story.current.lines.length)return fail("departure-dialogue-pending");

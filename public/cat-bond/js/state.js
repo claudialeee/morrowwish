@@ -1,8 +1,12 @@
 // state.js — persistent game state, save/load, and raising/economy logic.
 
-const SAVE_KEY = 'catbond_save_v1';
-const SAVE_SLOTS_KEY = 'catbond_save_slots_v1';
-const ACTIVE_SLOT_KEY = 'catbond_active_slot_v1';
+// Only the isolated preview (or local QA) may enter the separate developer sandbox.
+const STARBELL_DEV = /^(cat-bond-preview\.morrowwish\.pages\.dev|localhost|127\.0\.0\.1)$/.test(location.hostname)&&new URLSearchParams(location.search).get('developer')==='1';
+window.__STARBELL_DEVELOPER__=STARBELL_DEV;
+const devKey=key=>STARBELL_DEV?'starbell_developer_'+key:key;
+const SAVE_KEY = devKey('catbond_save_v1');
+const SAVE_SLOTS_KEY = devKey('catbond_save_slots_v1');
+const ACTIVE_SLOT_KEY = devKey('catbond_active_slot_v1');
 const SAVE_SLOT_IDS = ['slot1','slot2','slot3'];
 let suppressSave = false;
 
@@ -180,7 +184,7 @@ function bondTier(cat) {
 
 // --- versioned three-slot Save Manager ---
 const SAVE_BOOK_VERSION = 2;
-const SAVE_BACKUP_KEY = 'catbond_save_slots_backup_v2';
+const SAVE_BACKUP_KEY = devKey('catbond_save_slots_backup_v2');
 function isSaveObject(value) {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }

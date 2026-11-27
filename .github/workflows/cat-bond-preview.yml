@@ -126,7 +126,7 @@ jobs:
           const file=root+'/cat-bond/index.html';
           let html=fs.readFileSync(file,'utf8');
           // Keep the real telemetry script; QA visits are disabled by its query guard.
-          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_GAME_ID="starbell-preview";window.ARCADE_COLLECTOR=(new URLSearchParams(location.search).has("qa")||location.hostname!=="cat-bond-preview.morrowwish.pages.dev")?"/api/preview-disabled":"https://morrowwish.pages.dev/api/starbell-preview-session";window.arcadeMetric=()=>{};</script></head>');
+          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_GAME_ID="starbell-preview";window.ARCADE_COLLECTOR=(new URLSearchParams(location.search).has("qa")||new URLSearchParams(location.search).has("developer")||location.hostname!=="cat-bond-preview.morrowwish.pages.dev")?"/api/preview-disabled":"https://morrowwish.pages.dev/api/starbell-preview-session";window.arcadeMetric=()=>{};</script></head>');
           const sha=process.env.SOURCE_SHA;
           // Release identity is machine-readable, not a permanent overlay on the game.
           html=html.replace(/<body([^>]*)>/i,'<body$1 data-source-sha="'+sha+'">');

@@ -15,3 +15,5 @@ window.__CAT_BOND_CANONICAL_RELEASE__ = true;
 // release list, never the integration-only candidate art bypass.
 window.__CAT_BOND_INTEGRATION_ART__ = false;
 window.WorldMap = window.CatBondCanonicalWorld;
+
+import "./developer-preview.mjs";

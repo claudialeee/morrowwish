@@ -133,7 +133,8 @@ window.addEventListener('DOMContentLoaded', () => {
         if(!State.startNewGame(slotId,{overwriteConfirmed}))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'无法创建存档，请检查存储空间或覆盖确认。':'Could not create the save. Check storage space or overwrite confirmation.');
       }else if(!State.loadSlot(slotId))throw new Error(window.MorrowwishI18n?.get?.()==='zh'?'存档为空或已损坏，无法读取。':'The selected save is empty or damaged');
       window.__CAT_BOND_CANONICAL_ACTIVE__=!!window.CatBondTitlePrologue?.available?.();
-      if(window.__CAT_BOND_CANONICAL_ACTIVE__)window.CatBondOpeningCover.show();
+      if(window.__CAT_BOND_CANONICAL_ACTIVE__&&!window.__STARBELL_DEVELOPER__)window.CatBondOpeningCover.show();
+      if(window.__STARBELL_DEVELOPER__&&mode==='new')window.StarbellDeveloper.prepare();
       game.start();
       closeSlots();
       document.getElementById('intro').classList.add('hide');
@@ -147,6 +148,7 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if(window.Raising)Raising.init();
+    if(window.__STARBELL_DEVELOPER__){window.StarbellDeveloper.launch(game);return;}
     if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(mode==='new'||State.S.cats.length===0)){
       enterAdventure(()=>{State.save();game.openWorldMap();});
     }else if(mode==='new'||State.S.cats.length===0){
@@ -189,6 +191,7 @@ window.addEventListener('DOMContentLoaded', () => {
   };
   renderIntroLocale();
   window.addEventListener('morrowwish-language-change',renderIntroLocale);
+  if(window.__STARBELL_DEVELOPER__){const open=()=>{if(window.StarbellDeveloper&&window.CatBondResonance&&window.CatBondCanonicalWorld){beginGame(State.listSaveSlots().some(s=>s.id==='slot1'&&s.readable)?'continue':'new','slot1');}else setTimeout(open,50);};setTimeout(open,50);}
   document.getElementById('intro-start')?.addEventListener('click',()=>openSlots('new'));
   document.getElementById('intro-continue')?.addEventListener('click',()=>openSlots('continue'));
   document.getElementById('intro-slot-close')?.addEventListener('click',closeSlots);
@@ -200,7 +203,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if(event.key==='Escape'&&slotPanel?.classList.contains('is-open')){event.preventDefault();closeSlots();}
   });
   // In-game Load Game returns to the selected slot after a clean page restart.
-  const resumeKey='catbond_resume_slot_v1';
+  const resumeKey=window.__STARBELL_DEVELOPER__?'starbell_developer_resume_slot':'catbond_resume_slot_v1';
   let resumeSlot=null;
   try{resumeSlot=sessionStorage.getItem(resumeKey);sessionStorage.removeItem(resumeKey);}catch(e){}
   if(State.SAVE_SLOT_IDS.includes(resumeSlot))setTimeout(()=>beginGame('continue',resumeSlot),0);

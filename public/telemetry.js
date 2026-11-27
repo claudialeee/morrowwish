@@ -5,7 +5,7 @@ const game=window.ARCADE_GAME_ID||(allowed.has(route)?route:"hub");
 const isBond=game==="cat-bond"||game==="starbell-preview";
 // Synthetic yard fixtures must not inflate real player conversions.
 const bondQa=route==='cat-bond'&&new URLSearchParams(location.search).has('autodev');
-const previewQa=game==="starbell-preview"&&(new URLSearchParams(location.search).has("qa")||new URLSearchParams(location.search).has("rpgDev")||location.hostname!=="cat-bond-preview.morrowwish.pages.dev");
+const previewQa=game==="starbell-preview"&&(new URLSearchParams(location.search).has("qa")||new URLSearchParams(location.search).has("rpgDev")||new URLSearchParams(location.search).has("developer")||location.hostname!=="cat-bond-preview.morrowwish.pages.dev");
 const disabled=!!(route&&!allowed.has(route)) || bondQa || previewQa || (game==="starbell-preview"&&(navigator.globalPrivacyControl===true||navigator.doNotTrack==="1")) ||
   (route==='cat-bond' && window.CatBondPlatform?.firstPartyAnalytics===false);
 const site=game==="starbell-preview"?"starbell-preview":window.ARCADE_GAME_ID?"legacy":"arcade";
