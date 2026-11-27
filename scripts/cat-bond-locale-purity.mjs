@@ -4,7 +4,7 @@ export function localeLeak(value, locale, languageControl=false) {
   if(!text)return false;
   if(languageControl&&/^(?:中文|EN|English|切换到 English|当前中文，切换到 English|Switch to Chinese|Language: English\. Switch to Chinese|切换到英文)$/.test(text))return false;
   if(locale==='en')return /[\u3400-\u9fff]/u.test(text);
-  const remaining=text.replace(/\b(?:Morrow Wish|MORROW WISH|CrazyGames|itch\.io|Y8)\b/g,'')
+  const remaining=text.replace(/\b(?:Morrow Wish|MORROW WISH|MORROW·WISH|CrazyGames|itch\.io|Y8)\b/g,'')
     .replace(/\b(?:SSR|SR|WASD|Space|Enter|Esc|Shift|Tab|Ctrl|Alt|FPS|BGM|SFX|ID|OK)\b/g,'');
   return /[A-Za-z]{2,}/.test(remaining);
 }

@@ -186,7 +186,7 @@ function install(){
   if(enemyName)enemyName.textContent=first?tr("防护节点","Protection nodes"):tr("空白回响","Hollow Echo");
   const next=f.nodes.find(node=>!node.done);
   const effect=next&&f.id==="finale:B-03"?regionalEffects(b,next.region):null;
-  const bonus=effect?" · "+tr("协作 "+effect.required.toFixed(1)+"秒 / 失守伤害 "+effect.pulseDamage,"Hold "+effect.required.toFixed(1)+"s / unguarded damage "+effect.pulseDamage)+(effect.gardenLevel?tr(" · 家园 Lv."," · Garden Lv.")+effect.gardenLevel:""):"";
+  const bonus=effect?" · "+tr("协作 "+effect.required.toFixed(1)+"秒 / 失守伤害 "+effect.pulseDamage,"Hold "+effect.required.toFixed(1)+"s / unguarded damage "+effect.pulseDamage)+(effect.gardenLevel?tr(" · 家园等级 "," · Garden Lv.")+effect.gardenLevel:""):"";
   const reply=next?tr(...REPLY_OBJECTIVES[next.region])+bonus:tr("六地的回铃击弱了中央回响。趁现在攻击！","All six replies weakened the central echo. Strike now!");
   set("[data-finale-objective]",first?tr("击破三个防护节点，不要攻击暮铃。","Break the three protection nodes; do not attack Muling."):second?(f.probeChanged?tr("暮铃已停止抽取。击破不回应新位置的复制影像！","Muling stopped the extraction. Strike the copies that ignore your new position!"):tr("改变位置，观察谁真正回应你。","Move to a new position and watch which replies are genuine.")):next?(next.reply?.cleared?tr("守住铃光，等两地分别回铃。","Stay in the bell light while both lands reply."):tr("击破亮区里的复制声源，再守住铃光。","Break the copied source in the light, then hold the light.")):tr("六条邻路都已回应，等待稳定后攻击中央。","All six edges replied; wait for stability, then strike the center."));
   set("[data-finale-count]",first?f.nodes.filter(n=>n.done).length+"/"+f.nodes.length:second?f.confirmed.size+"/"+f.echoGroups:f.nodes.filter(n=>n.done).length+"/6"+(next?" · "+Math.floor(100*next.progress/(next.required||4))+"%":""));

@@ -381,7 +381,7 @@ function install(){
   }else if(mode==="region"&&w.location===destination){
    const primary=[...host.querySelectorAll('button[data-quest-primary="true"]')].find(b=>!b.disabled);
    if(primary){action=()=>{if(primary.isConnected&&!primary.disabled)primary.click()};label=tr("主线 · ","Main quest · ")+primary.textContent.trim();const next=host.querySelector(".rw-next");if(next&&!pendingInvites(v).length)next.textContent=primary.textContent.trim();}
-   else if(storyNpcs().some(n=>isMainNpc(n,v))){const n=storyNpcs().find(n=>isMainNpc(n,v));action=()=>visitNpc(n);label=tr("主线 · 与","Main quest · Talk to ")+n.name[lang()]+tr("交谈","");}
+   else if(storyNpcs().some(n=>isMainNpc(n,v))){const n=storyNpcs().find(n=>isMainNpc(n,v));action=()=>visitNpc(n);label=tr("主线 · 与"+n.name[lang()]+"交谈","Main quest · Talk to "+n.name[lang()]);}
    else if(hasPendingDialogue(v)&&!v.objective.some(o=>o.startsWith("npc:")||o.startsWith("cinematic:"))){
     action=()=>window.CatBondResonance?.showCurrent?.();label=tr("继续剧情","Continue story");
    }

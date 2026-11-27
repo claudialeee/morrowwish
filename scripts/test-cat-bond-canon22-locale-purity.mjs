@@ -23,11 +23,12 @@ const dir='public/cat-bond/js/resonance/';
 let files=0;
 for(const entry of fs.readdirSync(dir).filter(n=>n.endsWith('.mjs'))){
  const content=fs.readFileSync(dir+entry,'utf8');files++;
- const pattern=/\btr\(\s*(?:\[\s*)?(["'])((?:\\.|(?!\1)[^\\\n])*)\1\s*,\s*(["'])((?:\\.|(?!\3)[^\\\n])*)\3/g;
+ // Require a complete literal pair, not two adjacent entries in an indexed array.
+ const pattern=/\btr\(\s*(\[)?\s*(["'])((?:\\.|(?!\2)[^\\\n])*)\2\s*,\s*(["'])((?:\\.|(?!\4)[^\\\n])*)\4\s*(\])?\s*\)/g;
  for(const m of content.matchAll(pattern)){
-   if(!/[\u3400-\u9fff]/.test(m[2]))continue;
-   check(m[2],'zh',entry+':'+content.slice(0,m.index).split('\n').length);
-   check(m[4],'en',entry+':'+content.slice(0,m.index).split('\n').length);
+   if(Boolean(m[1])!==Boolean(m[6])||!/[\u3400-\u9fff]/.test(m[3]))continue;
+   check(m[3],'zh',entry+':'+content.slice(0,m.index).split('\n').length);
+   check(m[5],'en',entry+':'+content.slice(0,m.index).split('\n').length);
  }
 }
 const context=vm.createContext({window:{addEventListener(){}},document:{readyState:'loading',addEventListener(){},documentElement:{lang:'en'}}});

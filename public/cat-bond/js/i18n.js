@@ -379,6 +379,7 @@
     '小鱼不够啦': 'Not enough fish',
     '开战前设置': 'Battle setup',
     '关闭面板 / Close panel': 'Close panel',
+    '关闭面板': 'Close panel',
     '关闭 / Close': 'Close',
     '页面导航': 'Page navigation',
     '← 返回上一页': '← Back',

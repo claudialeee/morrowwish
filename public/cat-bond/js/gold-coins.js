@@ -6,7 +6,7 @@
   const SKIP='script,style,noscript,textarea,code,pre,svg';
   function icon(){
     const el=document.createElement('img');el.className='cb-gold-coin';
-    el.src=SRC;el.alt='coin';el.draggable=false;return el;
+    el.src=SRC;el.alt='';el.draggable=false;return el;
   }
   function replace(node){
     if(node?.nodeType!==3||!node.nodeValue?.includes('🪙'))return false;

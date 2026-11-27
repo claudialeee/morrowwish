@@ -1232,7 +1232,7 @@ const UI = {
       .map(list=>list.scrollTop):[];
     const expandedSkillGroups=preserveScroll?[...(before?.querySelectorAll('details.skill-extra-options')||[])]
       .map(group=>group.open):[];
-    p.innerHTML = `<div class="card">${html}</div><button type="button" class="panel-dismiss" aria-label="关闭面板 / Close panel" title="关闭 / Close">×</button>`;
+    p.innerHTML = `<div class="card">${html}</div><button type="button" class="panel-dismiss" aria-label="关闭面板" title="关闭">×</button>`;
     if(preserveScroll){
       const after=p.querySelector(':scope > .card');
       // Keep an expanded "more unlocked skills" group open after equipping a
