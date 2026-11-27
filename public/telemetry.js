@@ -5,7 +5,7 @@ const game=window.ARCADE_GAME_ID||(allowed.has(route)?route:"hub");
 const isBond=game==="cat-bond"||game==="starbell-preview";
 // Synthetic yard fixtures must not inflate real player conversions.
 const bondQa=route==='cat-bond'&&new URLSearchParams(location.search).has('autodev');
-const previewQa=game==="starbell-preview"&&(new URLSearchParams(location.search).has("qa")||new URLSearchParams(location.search).has("rpgDev")||new URLSearchParams(location.search).has("developer")||location.hostname!=="cat-bond-preview.morrowwish.pages.dev");
+const previewQa=game==="starbell-preview"&&(new URLSearchParams(location.search).has("qa")||new URLSearchParams(location.search).has("rpgDev")||new URLSearchParams(location.search).has("developer")||!["cat-bond-preview.morrowwish.pages.dev","starbell-portrait-preview.morrowwish.pages.dev"].includes(location.hostname));
 const disabled=!!(route&&!allowed.has(route)) || bondQa || previewQa || (game==="starbell-preview"&&(navigator.globalPrivacyControl===true||navigator.doNotTrack==="1")) ||
   (route==='cat-bond' && window.CatBondPlatform?.firstPartyAnalytics===false);
 const site=game==="starbell-preview"?"starbell-preview":window.ARCADE_GAME_ID?"legacy":"arcade";
@@ -48,6 +48,54 @@ firstSeen=localStorage.getItem("arcade-visitor-day-v2")||"";
 if(!/^[0-9a-f-]{20,64}$/i.test(visitor)){visitor=globalThis.crypto?.randomUUID?.()||"";firstSeen=day;localStorage.setItem("arcade-visitor-v2",visitor);localStorage.setItem("arcade-visitor-day-v2",firstSeen);}
 persistent=!!visitor;
 }}catch{}
+const isRpg=game==="starbell-preview";
+let activeSince=performance.now(),lastActivity=-Infinity,activePending=0,playing=false,visible=document.visibilityState==="visible";
+let story=null,chapter="",puzzle=null,puzzleHost=null,hostObserver=null,stageObserver=null;
+const chapterMs=Object.create(null),chapters=new Set(["prologue","harbor","forest","forge","sky","library","starfall","finale","epilogue"]);
+const slug=op=>String(op||"").split(":").slice(1).join("_").toLowerCase().replace(/[^a-z0-9_-]/g,"_").slice(0,27);
+const chapterOf=id=>{const c=String(id||"").split(":")[0];return chapters.has(c)?c:"";};
+function activeTick(now=performance.now()){if(playing&&visible){const ms=Math.max(0,Math.min(now,lastActivity+60000)-activeSince);activePending+=ms;if(isRpg&&chapter)chapterMs[chapter]=(chapterMs[chapter]||0)+ms;}activeSince=now;}
+function markActivity(){activeTick();lastActivity=performance.now();}
+for(const name of ["pointerdown","keydown","touchstart"])window.addEventListener(name,markActivity,{passive:true});
+function readStory(){const x=window.State?.S?.resonance;if(!x)return null;return {root:window.State.S,scene:x.scene,completed:new Set(x.completed||[]),evidence:new Set(Object.entries(x.evidence||{}).flatMap(([id,ops])=>(Array.isArray(ops)?ops:[]).map(op=>id+"/"+op)))};}
+function syncStory(initial=false){
+ if(!isRpg||disabled||!playing)return;
+ const next=readStory();if(!next)return;
+ const old=story;const nextChapter=chapterOf(next.scene);
+ if(initial||!old||old.root!==next.root){story=next;activeTick();chapter=nextChapter;if(chapter)signal("rpg_enter_"+chapter);return;}
+ let changed=false;
+ for(const id of next.completed)if(!old.completed.has(id)){
+  const c=chapterOf(id);
+  if(c&&c!==nextChapter){signal("rpg_done_"+c);changed=true;}
+  if(id==="prologue:P-04"){signal("rpg_opening");changed=true;}
+  if(id==="epilogue:E-03"){signal("rpg_done_epilogue");signal("rpg_ending");changed=true;}
+ }
+ if(nextChapter!==chapter){activeTick();chapter=nextChapter;if(chapter)signal("rpg_enter_"+chapter);changed=true;}
+ for(const item of next.evidence)if(!old.evidence.has(item)){
+  const op=item.split("/").at(-1),key=slug(op);
+  if(key&&(/^(puzzle|melody|mechanism):/.test(op)||puzzle?.op===op)){signal("rpg_pdone_"+key);changed=true;}
+  if(puzzle?.op===op)puzzle.done=true;
+ }
+ story=next;if(changed)flush(true);
+}
+function inspectPuzzle(){
+ if(!isRpg||disabled||!playing||!puzzleHost)return;
+ syncStory();
+ const op=puzzleHost.hidden?"":String(puzzleHost.dataset.regionStep||"").split("/").at(-1);
+ const key=op&&op!=="explore"&&op.includes(":")?slug(op):"";
+ if(puzzle?.op===op)return;
+ if(puzzle&&!puzzle.done)signal("rpg_pleave_"+puzzle.key);
+ const previous=puzzle;puzzle=key?{op,key,done:false}:null;
+ if(puzzle)signal("rpg_pstart_"+key);
+ if(previous||puzzle)flush(true);
+}
+function observePuzzle(){
+ if(!isRpg||disabled||hostObserver)return;
+ const stage=document.getElementById("stage");if(!stage)return;
+ const attach=()=>{const host=stage.querySelector(".rw-world");if(!host)return;stageObserver?.disconnect();puzzleHost=host;hostObserver=new MutationObserver(inspectPuzzle);hostObserver.observe(host,{attributes:true,attributeFilter:["data-region-step","hidden"]});inspectPuzzle();};
+ attach();if(!hostObserver){stageObserver=new MutationObserver(attach);stageObserver.observe(stage,{childList:true});}
+}
+if(isRpg)window.addEventListener("cat-bond-resonance-changed",()=>syncStory());
 const eventCounts={starts:0,ends:0,abandons:0,retries:0,shares:0,clicks:0,completion:0};
 const lastSent={starts:0,ends:0,abandons:0,retries:0,shares:0,clicks:0,completion:0};
 const signalCounts=Object.create(null),lastSignals=Object.create(null);
@@ -63,6 +111,7 @@ const beginsRun=isBond?(n==="bond_entered"||n==="game_start"):
  n==="run_start"||n==="game_start";
 const finishesRun=["run_end","game_complete","game_over","level_complete","town_completed-win","town_completed-lose"].includes(n);
 if(beginsRun){
+ activeTick();playing=true;lastActivity=performance.now();
  if(!firstRunStarted){firstRunStarted=true;signal("funnel_first_run");}
  else if(firstRunFinished&&!firstReplaySeen){firstReplaySeen=true;signal("funnel_replay_after_finish");}
 }
@@ -72,6 +121,7 @@ if(finishesRun&&firstRunStarted&&!firstRunFinished){firstRunFinished=true;signal
 // combat/building milestone. Battle attempts and fresh-town replays are still
 // counted as further runs, without counting the first battle twice.
 if(isBond&&n==="bond_entered"){
+ if(isRpg){signal(p?.mode==="new"?"rpg_new":"rpg_continue");syncStory(true);observePuzzle();}
  eventCounts.starts++;
  bondEntryAwaitingFirstBattle=true;
 }
@@ -190,7 +240,7 @@ document.addEventListener("click",e=>{
 },true);
 // New Cat Bond acquisition cohort, without modifying past visit rows.
 const shared={game,site,viewId,visitor,firstSeen,source,referrer,utmSource,utmMedium,utmCampaign,
- trackingVersion:isBond?11:undefined};
+ metricsVersion:1,trackingVersion:isBond?11:undefined};
 function send(data){if(disabled)return;try{
  const body=JSON.stringify({...shared,...data}),blob=new Blob([body],{type:"text/plain;charset=UTF-8"});
  // Foreground events should be requested immediately. sendBeacon is most
@@ -202,21 +252,22 @@ function send(data){if(disabled)return;try{
  });
 }catch{}}
 send({kind:"visit",hubClickVersion:game==="hub"?1:undefined});
-function flush(force=false){if(closed)return;const now=performance.now(),deltaSec=Math.max(0,Math.round((now-lastClock)/1000)),dif={};
-let changed=deltaSec>0;for(const k of Object.keys(eventCounts)){dif[k]=eventCounts[k]-lastSent[k];if(dif[k])changed=true;}
+function flush(force=false){if(closed)return;const now=performance.now();activeTick(now);const activeSeconds=Math.floor(activePending/1000);for(const [c,ms] of Object.entries(chapterMs)){const seconds=Math.floor(ms/1000);if(seconds>0){signalCounts["rpg_time_"+c]=(signalCounts["rpg_time_"+c]||0)+seconds;chapterMs[c]-=seconds*1000;}}const deltaSec=Math.max(0,Math.round((now-lastClock)/1000)),dif={};
+let changed=deltaSec>0||activeSeconds>0;for(const k of Object.keys(eventCounts)){dif[k]=eventCounts[k]-lastSent[k];if(dif[k])changed=true;}
 const signals={};for(const [k,v] of Object.entries(signalCounts)){const delta=v-(lastSignals[k]||0);if(delta>0){signals[k]=delta;changed=true;}}
 if(!changed&&!force)return;
 const hasAction=firstMs>=0&&!firstMsSent;
-send({kind:"session",seq:flushSeq++,seconds:deltaSec,firstMs:hasAction?firstMs:-1,...dif,signals,levels:level,score});
-for(const k of Object.keys(eventCounts))lastSent[k]=eventCounts[k];for(const k of Object.keys(signals))lastSignals[k]=signalCounts[k];if(hasAction)firstMsSent=true;lastClock=now;
+send({kind:"session",seq:flushSeq++,seconds:deltaSec,activeSeconds,firstMs:hasAction?firstMs:-1,...dif,signals,levels:level,score});
+for(const k of Object.keys(eventCounts))lastSent[k]=eventCounts[k];for(const k of Object.keys(signals))lastSignals[k]=signalCounts[k];if(hasAction)firstMsSent=true;lastClock=now;activePending-=activeSeconds*1000;
 }
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flush();else lastClock=performance.now();});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){flush();visible=false;}else{visible=true;lastClock=performance.now();activeSince=lastClock;lastActivity=-Infinity;}});
 window.addEventListener("pagehide",()=>{
+ if(isRpg&&playing){syncStory();if(puzzle&&!puzzle.done){signal("rpg_pleave_"+puzzle.key);puzzle=null;}}
  // The mini games are endless; leaving before game-over is abandonment, not a clear.
  if((game==="flip-dash"||game==="parcel-panic")&&window.__MWMiniActive){window.__MWMiniActive=false;event("run_abandoned",{reason:"exit"});}
  flush(true);closed=true;
 });
-window.addEventListener("pageshow",e=>{if(e.persisted){closed=false;lastClock=performance.now();}});
+window.addEventListener("pageshow",e=>{if(e.persisted){closed=false;lastClock=performance.now();activeSince=lastClock;visible=document.visibilityState==="visible";lastActivity=-Infinity;}});
  // Keep engaged sessions visible during long mobile play without per-click writes.
  setInterval(()=>{if(!closed&&document.visibilityState==="visible")flush()},60000);
 })();
