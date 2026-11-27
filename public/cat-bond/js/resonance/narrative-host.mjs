@@ -53,16 +53,16 @@ function install(){
  function showEndingTitle(){
   const ending=document.createElement("section");ending.className="cb-story-overlay is-visible res-ending-title";
   ending.setAttribute("role","dialog");ending.setAttribute("aria-modal","true");
-  Object.assign(ending.style,{position:"absolute",inset:"0",zIndex:"40",display:"grid",placeItems:"center",overflow:"hidden",background:"#152237"});
+  Object.assign(ending.style,{position:"absolute",inset:"0",zIndex:"40",display:"grid",placeItems:"center",overflow:"hidden",background:"#f6e9dc",alignContent:"end",padding:"clamp(12px,4vh,38px)"});
   const art=document.createElement("img");art.src=new URL("../../assets/core-art-remaster/story/e03-garden.webp",import.meta.url).href;
-  art.alt="";Object.assign(art.style,{position:"absolute",inset:"0",width:"100%",height:"100%",objectFit:"contain",opacity:".80"});
-  const card=document.createElement("div");Object.assign(card.style,{position:"relative",textAlign:"center",padding:"24px",color:"#fff5dc",textShadow:"0 3px 20px #142239",background:"linear-gradient(90deg,transparent,#152237aa,transparent)",maxWidth:"95%"});
+  art.alt="";Object.assign(art.style,{position:"absolute",inset:"0 0 20% 0",width:"100%",height:"80%",objectFit:"contain",objectPosition:"center"});
+  const card=document.createElement("div");Object.assign(card.style,{position:"relative",textAlign:"center",padding:"10px 22px",color:"#50415d",borderRadius:"18px",background:"#fff5e9ef",maxWidth:"95%"});
   const title=document.createElement("h2");title.textContent="THE BELL RINGS AGAIN";title.style.font="700 clamp(24px,5vw,54px) Georgia,serif";title.style.letterSpacing=".10em";
   const sub=document.createElement("p"),button=document.createElement("button");button.type="button";card.append(title,sub,button);ending.append(art,card);stage.append(ending);
   function render(){title.textContent=lang()==="zh"?"星铃再次响起":"THE BELL RINGS AGAIN";sub.textContent=lang()==="zh"?"世界再次回应":"The world answers again";button.textContent=lang()==="zh"?"回到阳光花园":"Return to Sunlit Garden";}
   function dismiss(){ending.remove();window.removeEventListener("cat-bond-active-save-changed",dismiss);window.removeEventListener("morrowwish-language-change",render);}
   button.onclick=dismiss;window.addEventListener("cat-bond-active-save-changed",dismiss);window.addEventListener("morrowwish-language-change",render);render();button.focus();
-  if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){art.animate([{transform:"scale(1)"},{transform:"scale(1)"}],{duration:6500,fill:"forwards"});card.animate([{opacity:0,transform:"translateY(12px)"},{opacity:1,transform:"translateY(0)"}],{duration:1100,fill:"forwards"});}
+  if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){art.animate([{opacity:.65},{opacity:1}],{duration:1100,fill:"forwards"});card.animate([{opacity:0,transform:"translateY(12px)"},{opacity:1,transform:"translateY(0)"}],{duration:1100,fill:"forwards"});}
   window.MorrowwishAudio?.note?.(523.25,.8,.15);
  }
  function scheduleFinish(){

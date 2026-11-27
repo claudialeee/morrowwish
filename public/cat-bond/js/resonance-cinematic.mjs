@@ -68,10 +68,9 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   // Lantern City workshop, its actual resident and an existing painted lantern prop.
   if(scene.id==='starfall:F-02'){
     const beforeChoice=frames.findIndex(f=>f.id.includes('-line-0'));
-    const patrol={id:'starfall:F-02-last-patrol',image:'assets/canon22-final-art/lantern-vault.webp',
+    const patrol={id:'starfall:F-02-last-patrol',image:'assets/story-art/lantern-entrustment.jpg',
       alt:{zh:'最后一次巡访：守铃人把旧灯匣托付给烬婆',en:'The last patrol: the Bellkeeper entrusts the old lamp case to Jinpo'},
       durationMs:6500,transitionMs:650,subtitle:{zh:{speaker:'过去的守铃人',text:'要是连回家的路都忘了，就让找到它的猫去书库。'},en:{speaker:'The Bellkeeper, long ago',text:'If I ever forget the way home, let whoever finds this look in the library.'}},
-      layers:[{image:'assets/core-art-remaster/leads/player.webp',kind:'actor',x:31,y:76,width:24,travel:3},{image:'assets/npc/jinpo-painted.webp',kind:'actor',x:69,y:76,width:24,travel:-2},{image:'assets/canon22-final-art/garden-lantern.webp',kind:'actor',x:51,y:76,width:12,travel:6}],
       camera:{from:{x:0,y:0,scale:1},to:{x:0,y:0,scale:1}}};
     frames.splice(Math.max(0,beforeChoice),0,patrol);
   }
@@ -111,7 +110,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   if(scene.id==='finale:B-04'){
     frames.unshift({id:'finale:B-04-memory-bell',image:'assets/resonance-world-v2/starfall.webp',
       alt:{zh:'记忆回到守铃者身边',en:'The Bellkeeper’s memories return'},durationMs:3400,transitionMs:800,
-      camera:{from:{x:0,y:0,scale:1.03},to:{x:0,y:0,scale:1.09}},effect:'sanctuary',note:392,requireReply:true,subtitle:{zh:{speaker:'暮铃',text:'星铃重新响了。暮铃走到你身边，轻轻摇了两下铃。'},en:{speaker:'Muling',text:'The Star Bell rings again. Muling comes to your side and rings twice.'}}});
+      layers:[{image:'assets/core-art-remaster/leads/player.webp',kind:'actor',x:42,y:68,width:18,travel:2},{image:'assets/core-art-remaster/leads/muling.webp',kind:'actor',x:58,y:68,width:18,travel:-2}],camera:{from:{x:0,y:0,scale:1},to:{x:0,y:0,scale:1.04}},effect:'sanctuary',note:392,requireReply:true,subtitle:{zh:{speaker:'暮铃',text:'星铃重新响了。暮铃走到你身边，轻轻摇了两下铃。'},en:{speaker:'Muling',text:'The Star Bell rings again. Muling comes to your side and rings twice.'}}});
   }
   return {ok:true,scene:{id:scene.id,sourceSceneId:scene.id.split(':')[1],title:scene.id==='prologue:P-02'?{zh:'抉择',en:'The Choice'}:scene.title,chapter:{zh:'星铃回响',en:'Echoes of the Starbell'},mode:'auto',allowSkip:scene.id!=='finale:B-04',frames}};
 }

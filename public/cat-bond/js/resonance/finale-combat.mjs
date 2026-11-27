@@ -392,6 +392,9 @@ function install(){
    const painting=arenaPainting(W,H);
    if(painting.complete&&painting.naturalWidth){
     window.CatBondSceneFit.draw(ctx,painting,W,H,{top:"#e8deec",bottom:"#d9c4b7"});
+    const light=ctx.createLinearGradient(0,0,0,H);
+    light.addColorStop(0,"#533f6636");light.addColorStop(.46,"#a997b118");light.addColorStop(1,"#5e486327");
+    ctx.save();ctx.fillStyle=light;ctx.fillRect(0,0,W,H);ctx.restore();
     return;
    }
    if(window.CatBondRegionalArt?.drawScene(ctx,W,H,"starfall"))return;

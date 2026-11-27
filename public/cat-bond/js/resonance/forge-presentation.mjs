@@ -63,6 +63,10 @@ function paintFestivalStars(c,p,l){
    const glow=c.createRadialGradient(target,228,4,target,228,50);glow.addColorStop(0,color+"bb");glow.addColorStop(1,color+"00");c.fillStyle=glow;c.fillRect(target-50,178,100,100);
   }
   forgeText(c,lit?"✦":"✧",target,228,43,lit?color:"#f2e5ec");
+  if(lit){
+   for(const [dx,dy,sz] of [[-27,-21,12],[24,-30,15],[26,21,10]])forgeText(c,"✧",target+dx,228+dy,sz,color);
+   forgeText(c,"✓",x,408,17,color);
+  }
   forgePlate(c,x-63,319,126,74,"#594563",color);
   forgeText(c,["↙","↑","↗"][p.values[i]],x,339,25,color);
   forgeText(c,[local(l,"左灯","Left light"),local(l,"中灯","Center light"),local(l,"右灯","Right light")][i],x,371,16);
