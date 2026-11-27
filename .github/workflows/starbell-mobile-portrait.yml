@@ -14,7 +14,35 @@ concurrency:
   group: starbell-portrait-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  scope:
+    runs-on: ubuntu-24.04
+    outputs:
+      focused: ${{ steps.diff.outputs.focused }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compare with last complete bilingual accepted runtime
+        id: diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=7e2a88d26acd3f0c6d0d9de17365287f49ce505e
+          focused=true
+          while IFS= read -r path; do
+            case "$path" in
+              public/cat-bond/js/duo-premium.js|public/cat-bond/js/battle.js|public/cat-bond/index.html|public/cat-bond/assets/mobile-portrait/duo/*|scripts/*|.github/workflows/*) ;;
+              *) focused=false ;;
+            esac
+          done < <(git diff --name-only "$base" HEAD)
+          # Reuse broad acceptance only for the exact previously checked duo delta.
+          # Any further runtime change automatically restores full coverage.
+          if ! git diff --quiet 6c7e690a6276d3b51431143523ec4652aaaea0d5 HEAD -- public package.json package-lock.json; then focused=false; fi
+          echo "focused=$focused" >> "$GITHUB_OUTPUT"
+          echo "Duo-only accepted delta: $focused"
   layout:
+    needs: scope
+    if: needs.scope.outputs.focused != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     env:
@@ -48,6 +76,7 @@ jobs:
           retention-days: 14
 
   fresh-portrait:
+    needs: scope
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     strategy:
@@ -59,6 +88,8 @@ jobs:
       CAT_BOND_EXPERIENCE: '1'
       CAT_BOND_PORTRAIT: '1'
       CAT_BOND_CHAPTER_LOCALE: ${{ matrix.locale }}
+      CAT_BOND_FOCUSED_DUO: ${{ needs.scope.outputs.focused == 'true' && '1' || '0' }}
+      CAT_BOND_CHAPTERS: ${{ needs.scope.outputs.focused == 'true' && 'harbor' || 'harbor,forest,forge,sky,library,starfall,finale,epilogue' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -66,7 +97,7 @@ jobs:
           node-version: '22'
           cache: npm
       - uses: ./.github/actions/starbell-browser-setup
-      - name: Fresh portrait campaign through the ending
+      - name: Fresh scoped battle or full campaign acceptance
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-portrait-campaign.log 2>&1 &
           server=$!

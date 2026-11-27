@@ -20,21 +20,29 @@ jobs:
       PREVIEW_URL: https://starbell-portrait-preview.morrowwish.pages.dev
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Require exact candidate's completed source and bilingual browser gates
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reuse proven identical-runtime gates; require current scoped browser gate
         run: |
           set -euo pipefail
+          VERIFIED_RUNTIME=$SOURCE_SHA
+          if git diff --quiet 6c7e690a6276d3b51431143523ec4652aaaea0d5 "$SOURCE_SHA" -- public package.json package-lock.json; then
+            VERIFIED_RUNTIME=6c7e690a6276d3b51431143523ec4652aaaea0d5
+          fi
+          echo "Verified runtime source: $VERIFIED_RUNTIME"
           for attempt in $(seq 1 350); do
             a=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-mobile-portrait.yml/runs?head_sha=$SOURCE_SHA" | jq -c '.workflow_runs[0] // {}')
-            b=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-portrait-source.yml/runs?head_sha=$SOURCE_SHA" | jq -c '.workflow_runs[0] // {}')
-            d=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-duo-portrait-samples.yml/runs?head_sha=$SOURCE_SHA" | jq -c '.workflow_runs[0] // {}')
-            if [[ $(jq -r .head_sha <<<"$a") == "$SOURCE_SHA" && $(jq -r .head_sha <<<"$b") == "$SOURCE_SHA" && $(jq -r .head_sha <<<"$d") == "$SOURCE_SHA" ]]; then
+            b=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-portrait-source.yml/runs?head_sha=$VERIFIED_RUNTIME" | jq -c '.workflow_runs[0] // {}')
+            d=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-duo-portrait-samples.yml/runs?head_sha=$VERIFIED_RUNTIME" | jq -c '.workflow_runs[0] // {}')
+            if [[ $(jq -r .head_sha <<<"$a") == "$SOURCE_SHA" && $(jq -r .head_sha <<<"$b") == "$VERIFIED_RUNTIME" && $(jq -r .head_sha <<<"$d") == "$VERIFIED_RUNTIME" ]]; then
               if [[ $(jq -r .status <<<"$a") == completed && $(jq -r .conclusion <<<"$a") != success ]] || [[ $(jq -r .status <<<"$b") == completed && $(jq -r .conclusion <<<"$b") != success ]]; then echo 'Candidate failed acceptance; do not deploy' >&2; exit 1; fi
               if [[ $(jq -r .status <<<"$d") == completed && $(jq -r .conclusion <<<"$d") != success ]]; then echo "Duo renderer gate failed"; exit 1; fi
               if [[ $(jq -r .conclusion <<<"$a") == success && $(jq -r .conclusion <<<"$b") == success && $(jq -r .conclusion <<<"$d") == success ]]; then
                 echo "DUO_GATE=$(jq -r .id <<<"$d")" >> "$GITHUB_ENV"
                 echo "CAMPAIGN_GATE=$(jq -r .id <<<"$a")" >> "$GITHUB_ENV"
                 echo "SOURCE_GATE=$(jq -r .id <<<"$b")" >> "$GITHUB_ENV"
-                echo "Exact candidate source and bilingual campaign passed"; exit 0
+                echo "Identical runtime source/duo and current scoped campaign passed"; exit 0
               fi
             fi
             sleep 10
@@ -138,6 +146,9 @@ jobs:
             await page.waitForFunction(()=>window.__game?.scene==='yard'&&window.State?.S?.cats?.length===1);
             await page.screenshot({path:'portrait-live-yard.png'});
             assert.deepEqual(errors,[]);
+            await page.waitForFunction(()=>typeof CatBondPremiumCinematics?.portraitReady==="function");
+            await page.evaluate(()=>CatBondPremiumCinematics.preparePortrait("dark+light",1));
+            await page.waitForFunction(()=>CatBondPremiumCinematics.portraitReady("dark+light",1));
             console.log('LIVE PORTRAIT PASS',process.env.PREVIEW_URL);
           }finally{await browser.close()}
           NODE

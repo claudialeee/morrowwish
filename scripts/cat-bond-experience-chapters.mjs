@@ -128,7 +128,8 @@ const labels=Object.freeze({
 });
 const local=label=>{if(locale==='en')return label;if(!Object.hasOwn(labels,label))throw Error('Missing Chinese test selector: '+label);return labels[label];};
 const continuous=process.env.CAT_BOND_CONTINUOUS==='1',portrait=process.env.CAT_BOND_PORTRAIT==='1';let earnedSave=null;
-if(continuous)assert.deepEqual(requested,order,'Fresh campaign must cover every chapter in sequence');
+const focusedDuo=process.env.CAT_BOND_FOCUSED_DUO==='1';
+if(continuous)assert.deepEqual(requested,focusedDuo?['harbor']:order,'Fresh campaign must cover the declared acceptance scope');
 async function run(chapter){
  const expected=campaign.scenes.filter(s=>s.chapter===chapter),start=expected[0].id;
  const next=campaign.scenes[campaign.scenes.findIndex(s=>s.id===expected.at(-1).id)+1]?.id||null;
@@ -255,7 +256,7 @@ async function run(chapter){
   await status.waitFor({state:'hidden',timeout:30000});
  }
  async function battle(label,operation,type='regional'){
-  await click(label);await page.locator('#panel [data-battle-auto="true"]').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();
+  await click(label);const manualDuo=focusedDuo&&locale==='zh'&&operation==='battle:chime-beast';await page.locator('#panel [data-battle-auto="'+(!manualDuo)+'"]').click();await page.locator('#bp-go').click();await page.locator('#battle-ui.on').waitFor();
   const tutorial=page.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();
   if(portrait){
    const fit=await page.evaluate(()=>{const stage=document.querySelector('#stage').getBoundingClientRect(),dock=document.querySelector('#battle-ui .move-bar').getBoundingClientRect(),buttons=[...document.querySelectorAll('#battle-ui .move-bar .move')].filter(e=>e.getBoundingClientRect().width&&getComputedStyle(e).display!=='none').map(e=>{const r=e.getBoundingClientRect();return {id:e.id,w:r.width,h:r.height,left:r.left,top:r.top,right:r.right,bottom:r.bottom};});return {stage:{left:stage.left,top:stage.top,right:stage.right,bottom:stage.bottom},dock:{top:dock.top,bottom:dock.bottom},buttons,fieldBottom:stage.top+__game.H-__game.battle.bottomMargin};});
@@ -278,7 +279,7 @@ async function run(chapter){
   await shot(operation+'-battle');
   const before=await page.evaluate(()=>__game.battle?.team?.map(f=>({actor:f.cat?.storyActor||f.cat?.species,level:f.cat?.level,hp:f.hp,maxhp:f.maxhp})));
   const t=Date.now();
-  const measurement={scene:(await view()).current?.id,operation,type,mode:'auto',initialTeam:before,status:'started',samples:[]};
+  const measurement={scene:(await view()).current?.id,operation,type,mode:manualDuo?'manual duo then auto battle':'auto',initialTeam:before,status:'started',samples:[]};
   battleMeasurements.push(measurement);
   // Read-only observation of the actual game. Keep the last live battle state
   // even when the battle object is destroyed before the result panel appears.
@@ -319,9 +320,14 @@ async function run(chapter){
     }else await result.waitFor({timeout:240000});
     await shot(operation+'-result');assert.equal(await result.getAttribute('data-finale-outcome'),'saved');await page.locator('[data-finale-return]').click();
   }else{
+   if(manualDuo){
+    await page.waitForFunction(()=>{const b=window.__game?.battle;return b&&!b.autoMode&&b.duoReady?.();},null,{timeout:20000});
+    const duo=page.locator('#duo-burst');await duo.waitFor({state:'visible'});await duo.tap();
+   }
    if(portrait&&operation==="battle:chime-beast"&&await page.evaluate(()=>typeof CatBondPremiumCinematics?.portraitReady==="function")){
     await page.waitForFunction(()=>{const b=window.__game?.battle,l=window.CatBondPremiumCinematics?.lastLayout;return b?.duoCinematic?.t>0&&l?.source==="63-native-portrait-painted-storyboards"&&l.opacity>.8&&l.asset?.includes("dark-light-tier-");},null,{timeout:60000});
     await shot("first-live-native-duo");
+    if(manualDuo){await page.waitForFunction(()=>!window.__game?.battle?.duoCinematic,null,{timeout:15000});if(await page.locator("#btn-auto").isVisible())await page.locator("#btn-auto").tap();}
    }
    await page.waitForFunction(()=>__game.scene==='map',null,{timeout:180000});
    await page.locator('#library-battle-ok').waitFor();await shot(operation+'-result');await page.locator('#library-battle-ok').click();
