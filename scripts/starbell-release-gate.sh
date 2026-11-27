@@ -10,9 +10,19 @@ if [[ -f .github/workflows/starbell-integrated-guardians.yml ]]; then
   git diff --quiet c457f85d219a4282e2a1bd7216fdcb31e31dac93 "$source_sha" -- public/cat-bond/assets/audio public/cat-bond/assets/quality-audio public/cat-bond/js/rpg-audio.js public/cat-bond/js/rpg-audio-score.js scripts/import-starbell-region-music.mjs scripts/import-cat-bond-windchime-music.mjs
   gh api "repos/$GITHUB_REPOSITORY/actions/runs/46065269370" | jq -e '.head_sha=="c457f85d219a4282e2a1bd7216fdcb31e31dac93" and .status=="completed" and .conclusion=="success"' >/dev/null
   gh api "repos/$GITHUB_REPOSITORY/actions/runs/46065269370/artifacts" | jq -e 'any(.artifacts[]; .name=="starbell-approved-audio" and .expired==false)' >/dev/null
+  # Reuse browser evidence only when ALL game/assets/dependencies and the tested
+  # browser scripts are byte-identical; allow only explicitly listed QA/pipeline files.
+  accepted=9307ef94578ebfd50a74b359242a9826ab40f4e0
+  gate_sha="$source_sha"
+  git fetch --no-tags --depth=1 origin "$accepted"
+  if git diff --quiet "$accepted" "$source_sha" -- . ':!scripts/test-cat-bond-canon22-mirror.mjs' ':!scripts/test-cat-bond-player-first.mjs' ':!scripts/starbell-release-gate.sh' ':!.github/workflows/cat-bond-preview.yml' ':!.github/workflows/cat-bond-canon22-checkpoint.yml'; then
+    gate_sha="$accepted"
+    node scripts/test-cat-bond-canon22-mirror.mjs
+    node scripts/test-cat-bond-player-first.mjs
+  fi
   for attempt in $(seq 1 120); do
-    run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-integrated-guardians.yml/runs?head_sha=$source_sha&branch=review%2Fstarbell-integrated-guardians-20261127" | jq -c '.workflow_runs[0] // {}')
-    if [[ $(jq -r .head_sha <<<"$run") == "$source_sha" && $(jq -r .status <<<"$run") == completed ]]; then
+    run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-integrated-guardians.yml/runs?head_sha=$gate_sha&branch=review%2Fstarbell-integrated-guardians-20261127" | jq -c '.workflow_runs[0] // {}')
+    if [[ $(jq -r .head_sha <<<"$run") == "$gate_sha" && $(jq -r .status <<<"$run") == completed ]]; then
       test "$(jq -r .conclusion <<<"$run")" = success
       id=$(jq -r .id <<<"$run")
       gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id/jobs?per_page=100" | jq -e '([.jobs[]|select((.name=="integrated (wide)" or .name=="integrated (portrait)") and .conclusion=="success")]|length)==2' >/dev/null

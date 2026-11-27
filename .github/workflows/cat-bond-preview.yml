@@ -147,7 +147,7 @@ jobs:
           const file=root+'/cat-bond/index.html';
           let html=fs.readFileSync(file,'utf8');
           // Keep the real telemetry script; QA visits are disabled by its query guard.
-          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_GAME_ID="starbell-preview";window.ARCADE_COLLECTOR=(new URLSearchParams(location.search).has("qa")||new URLSearchParams(location.search).has("developer")||location.hostname!=="cat-bond-preview.morrowwish.pages.dev")?"/api/preview-disabled":"https://morrowwish.pages.dev/api/starbell-preview-session";window.arcadeMetric=()=>{};</script></head>');
+          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_GAME_ID="starbell-preview";window.ARCADE_COLLECTOR=(new URLSearchParams(location.search).has("qa")||new URLSearchParams(location.search).has("rpgDev")||new URLSearchParams(location.search).has("developer")||!["cat-bond-preview.morrowwish.pages.dev","starbell-portrait-preview.morrowwish.pages.dev"].includes(location.hostname))?"/api/preview-disabled":"https://morrowwish.pages.dev/api/starbell-preview-session";window.arcadeMetric=()=>{};</script></head>');
           const sha=process.env.SOURCE_SHA;
           // Release identity is machine-readable, not a permanent overlay on the game.
           html=html.replace(/<body([^>]*)>/i,'<body$1 data-source-sha="'+sha+'">');
@@ -455,10 +455,14 @@ jobs:
           WRANGLER="$PWD/node_modules/.bin/wrangler"
           cd /tmp/cat-bond-preview
           "$WRANGLER" pages deploy site --project-name morrowwish --branch cat-bond-preview --commit-hash "$SOURCE_SHA"
+          # The exact same responsive build serves both existing public preview aliases.
+          git fetch --depth=1 origin review/starbell-canon13-player-experience
+          test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_SHA"
+          "$WRANGLER" pages deploy site --project-name morrowwish --branch starbell-portrait-preview --commit-hash "$SOURCE_SHA"
       - name: Verify stable preview alias and API isolation
         run: |
           set -eu
-          URL=https://cat-bond-preview.morrowwish.pages.dev
+          for URL in https://cat-bond-preview.morrowwish.pages.dev https://starbell-portrait-preview.morrowwish.pages.dev; do
           for attempt in $(seq 1 15); do
             if curl -fsS "$URL/preview-version.json?sha=$SOURCE_SHA&qa=version-$attempt" -o /tmp/live-preview-version.json && python3 -c 'import json,os; assert json.load(open("/tmp/live-preview-version.json"))["sha"] == os.environ["SOURCE_SHA"]'; then break; fi
             sleep 4
@@ -485,6 +489,7 @@ jobs:
           for endpoint in session cat-bond-cloud-save; do
             test "$(curl -sS -o /dev/null -w '%{http_code}' "$URL/api/$endpoint")" = 403
           done
+          done
       - name: Smoke-test published preview with selected QA scope
         env:
           CAT_BOND_SMOKE_STAGE: live
@@ -492,6 +497,7 @@ jobs:
           if [[ "$CAT_BOND_QA_SCOPE" == integrated ]]; then
             export CAT_BOND_SMOKE_ORIGIN=https://cat-bond-preview.morrowwish.pages.dev
             for profile in wide portrait; do
+              if [[ "$profile" == portrait ]]; then export CAT_BOND_SMOKE_ORIGIN=https://starbell-portrait-preview.morrowwish.pages.dev; else export CAT_BOND_SMOKE_ORIGIN=https://cat-bond-preview.morrowwish.pages.dev; fi
               STARBELL_BOSS_PROFILE="$profile" node scripts/test-starbell-regional-bosses-browser.mjs
               STARBELL_MINIGAME_PROFILE="$profile" node scripts/test-starbell-player-first-browser.mjs
             done

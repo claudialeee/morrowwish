@@ -5,6 +5,8 @@ on:
     paths:
       - 'public/cat-bond/**'
       - 'scripts/test-cat-bond-canon22-*.mjs'
+      - 'scripts/test-cat-bond-player-first.mjs'
+      - 'scripts/test-cat-bond-story-party.mjs'
       - 'scripts/cat-bond-canon22-migration-audit.mjs'
       - 'docs/cat-bond-rpg/02-MAIN-STORY-SCRIPT.md'
       - 'scripts/test-cat-bond-canon12-campaign.mjs'
