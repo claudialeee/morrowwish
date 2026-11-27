@@ -65,10 +65,9 @@ jobs:
           fs.writeFileSync(root+'/index.html','<!doctype html><html><head><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="0;url=/cat-bond/"></head><body><a href="/cat-bond/">Echoes of the Starbell</a></body></html>');
           fs.writeFileSync(root+'/robots.txt','User-agent: *\nDisallow: /\n');
           fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\'; form-action \'self\'\n');
-          // Static redirect serves a local error page instead of a Worker or production API.
-          fs.mkdirSync(root+'/api',{recursive:true});
-          fs.writeFileSync(root+'/api/preview-disabled','{"error":"Preview APIs disabled; local saves only"}');
-          fs.writeFileSync(root+'/_redirects','/api/* /api/preview-disabled 302\n');
+          // An explicit 404 page disables Pages' SPA fallback for unavailable APIs.
+          // No Worker or recursive redirect is needed: all API requests remain local.
+          fs.writeFileSync(root+'/404.html','<!doctype html><html><head><meta name="robots" content="noindex,nofollow"></head><body>Preview APIs disabled; local saves only.</body></html>');
           fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,scope:'isolated portrait engineering preview',productionApis:false,telemetry:false,storage:'local-only',fullReleaseAccepted:false,sourceGate:45941020775,campaignGate:45941020787}));
           NODE
           python3 - <<'PY'
@@ -94,6 +93,9 @@ jobs:
           set -euo pipefail
           for i in $(seq 1 15); do
             if curl -fsS "$PREVIEW_URL/preview-version.json?qa=$SOURCE_SHA" | jq -e --arg sha "$SOURCE_SHA" '.sha==$sha and .productionApis==false and .storage=="local-only"' >/dev/null && curl -fsS "$PREVIEW_URL/cat-bond/?qa=$SOURCE_SHA" | grep -F "data-source-sha=\"$SOURCE_SHA\"" >/dev/null; then
+              for endpoint in preview-disabled session cat-bond-cloud-save; do
+                test "$(curl -sS -o /dev/null -w '%{http_code}' "$PREVIEW_URL/api/$endpoint")" = 404
+              done
               echo "Verified isolated preview: $PREVIEW_URL/cat-bond/"; exit 0
             fi
             sleep 4
