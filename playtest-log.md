@@ -2424,3 +2424,34 @@ tank body-block (c078cb38) 没救 kiter — kiter persona 根本不打，没触�
 - 谨慎 still 2 — confirms tank body-block (c078cb38) + tank+wall gate don't help kiter persona (kiter doesn't engage ⇒ never triggers gate)
 - 狂按 7 (+1) and 懒人 6 (+1) — telemetry noise but trending up
 - 没耐心 and 手忙脚乱 both 3 — persistent low ceiling
+
+RSI cycle 2026-11-27T08:57:20Z: no agent proposal beat the MOBA judge; archive coverage 2/256.
+RSI cycle 2026-11-27T09:06:50Z: no agent proposal beat the MOBA judge; archive coverage 2/256.
+
+## Playtest cycle wowed850p — 2026-11-27 (post origin starbell merge, 10 ahead)
+
+**Headline**: Combat is mechanically patched but perceptually deaf — rejected presses vanish, variance tails still delete, and a kiter who dominates still 'loses': ship diegetic feedback, a second win verb (rout), a clutch floor, and a weakness telegraph before stacking more ramps.
+
+**funMean 5.0** (↑0.5 vs w892jymfa, new session high):
+- 探索 7 / 懒人 7 / 狂按 6 / 手忙脚乱 4 / 谨慎 **3** (+1) / 没耐心 3
+
+### Auto-fixes this cycle: 0 (no adversary-confirmed P0)
+
+37 critiques. 26 P1 (3 local-numeric + 22 additive-flag + 1 architectural). 11 P2 (2 local-numeric + 8 additive-flag + 1 architectural).
+
+### Harness
+24 of 75 agent calls hit StructuredOutput retry cap. 51 succeeded — adversary stage partial. Still: 0 P0 confirmed on majority view.
+
+### Top P1 themes (findings-only)
+1. **Diegetic input feedback** — ultimate() reject toast gated behind !autoMode and 2.5s throttle; rapid mashing eats presses silently. Masher plays with eyes on arena, not reading text. Proposed: remove gate + shorten throttle 2.5→0.8s + optional per-button flash.
+2. **Clutch floor** — variance tails still delete (546 vs 232 spike pattern). No "close-call" primitive. Hades god-mode / HK shade gap. Propose: once-per-battle-per-cat `_clutchUsed` at `hp<=0 && hp/maxhp>0.18` → hp=1 + 0.8s iframe + 死线! toast.
+3. **Second win verb (rout)** — kiter dominates then "loses" on timeout at 92% HP. `finish()` buckets flee-dominant but `game.js:1598` only treats `result==='win'` as win. Cosmetic lie persists.
+4. **Basic-verb internal rhythm** — 3600 presses = 3600 identical outcomes. Propose: basicStreak cd penalty 0.9s+0.08×min(streak,5) floor; reset on Q/E/dodge. Turns Q into basic-throughput lever.
+5. **Enemy encounter variance** — 3-pack always identical. Propose wild-affix roll (swift/armored/bleed/glass) on spawn.
+6. **Panicky input rejects still silent** (recurring from w892jymfa).
+7. **Cautious kiter 3** (+1 from last cycle) — tank body-block + wall gate helping marginally.
+
+### Compared to w892jymfa (funMean 4.5)
+- All non-cautious personas held or improved
+- 谨慎 2→3 (+1): marginal win. Still ceiling.
+- 探索 6→7 and 懒人 6→7: adversary says explorer "wins at 95% HP 8/8" — a success-feeling signal but masks difficulty-curve gap.
