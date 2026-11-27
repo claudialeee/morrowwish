@@ -1,6 +1,6 @@
 # Element × Role × Skill Review — 2026-11-26
 
-Snapshot after `28dccc02` (arcanePulse opens to dark dps+control).
+Snapshot after `b72b0be8` (arcanePulse reverted to dark dps-only per test gate + i18n key).
 
 ## 元素 × 角色 分布（33 猫）
 
@@ -83,7 +83,7 @@ Snapshot after `28dccc02` (arcanePulse opens to dark dps+control).
 - shadeLeap 飞扑 (pounce 1.7) — close
 - batAround 戏弄爪 (melee 0.8) — close
 - hex 猫咒 (projectile 0.9) — ranged-weak
-- **arcanePulse 暗星轰击 (aoe 0.78) — ranged-weak · role=dps,control + autoLearn** ← 2026-11-26 opened
+- **arcanePulse 暗星轰击 (aoe 0.78) — ranged-weak · role=dps + autoLearn** ← 2026-11-27 reverted to DPS-only (b72b0be8)
 - **shadowTendrils 暗影触手 (beam 0.65) — ranged-weak · role=control + autoLearn**
 - apexPounce 绝顶扑 (pounce 2.3) — close
 - veteranStrike 百战斩 (melee 2.3) — close
