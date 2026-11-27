@@ -14,7 +14,7 @@ export function revealShot(id,c,choice=null){
  }
  if(c<3)return shot(atlas,"routes",["moye","baikan"],"两条路径 · 中央汇集与邻地共鸣","Two routes · Inward convergence and neighboring resonance");
  if(c<7)return shot(library,"present",["player","muling"],"不能替别人作出选择","No one can choose for everyone");
- return shot(starfall,"departure",["muling"],"暮铃离开书库，前往星坠原","Muling leaves the library for Starfall Expanse");
+ return shot(starfall,"departure",["muling"],"暮铃离开书库，前往星坠原","Luna leaves the library for Starfall Expanse");
 }
 
 export function mountLibraryReveal(root,portrait,onSettled=()=>{}){

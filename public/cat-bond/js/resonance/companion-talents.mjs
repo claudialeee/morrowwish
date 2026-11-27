@@ -1,8 +1,8 @@
 // Regional battle talents use live combat state and existing combat effects.
 export const companionTalents=Object.freeze({
- qilan:{name:["顺风领航","Tailwind"],description:["战斗开始后获得12点大招能量","Gain 12 ultimate charge shortly after battle starts"],notice:["栖蓝 · 顺风领航，大招能量 +12","Qilan · Tailwind, ultimate charge +12"],color:"#8bd4ee"},
- yahe:{name:["月叶急救","Moonleaf remedy"],description:["队友生命降至75%时，治疗最虚弱的队友20%最大生命","When an ally falls to 75% HP, heal the weakest ally for 20% max HP"],notice:["芽禾 · 月叶急救，治疗队友","Yahe · Moonleaf remedy, ally healed"],color:"#9adca0"},
- xiaomao:{name:["暖光护盾","Lantern ward"],description:["地区敌人预警攻击时，为全队提供3.5秒护盾","When a regional attack is telegraphed, shield active allies for 3.5 seconds"],notice:["小铆 · 暖光护盾，保护全队","Xiaomao · Lantern ward, party shielded"],color:"#f5cf85"}
+ qilan:{name:["顺风领航","Tailwind"],description:["战斗开始后获得12点大招能量","Gain 12 ultimate charge shortly after battle starts"],notice:["栖蓝 · 顺风领航，大招能量 +12","Skye · Tailwind, ultimate charge +12"],color:"#8bd4ee"},
+ yahe:{name:["月叶急救","Moonleaf remedy"],description:["队友生命降至75%时，治疗最虚弱的队友20%最大生命","When an ally falls to 75% HP, heal the weakest ally for 20% max HP"],notice:["芽禾 · 月叶急救，治疗队友","Fern · Moonleaf remedy, ally healed"],color:"#9adca0"},
+ xiaomao:{name:["暖光护盾","Lantern ward"],description:["地区敌人预警攻击时，为全队提供3.5秒护盾","When a regional attack is telegraphed, shield active allies for 3.5 seconds"],notice:["小栗 · 暖光护盾，保护全队","Pip · Lantern ward, party shielded"],color:"#f5cf85"}
 });
 export function activateCompanionTalents(b){
  if(!b.regionalCombat||b.done||b.captureSeq||b.duoCinematic||b.ultCinematic)return [];

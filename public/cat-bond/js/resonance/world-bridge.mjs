@@ -12,9 +12,9 @@ import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexReco
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
 const scentTrail=Object.freeze([
- {point:[.31,.58],name:["林地 · 散落的药叶","Forest floor · Scattered herbs"],clue:["芽禾：就是港口送来的药材！湿苔上还有药箱拖过的痕迹，顺着香味往树冠走。","Yahe: These are the herbs from Harbor! The crate left a trail on the moss; follow the scent toward the canopy."]},
- {point:[.42,.28],name:["树冠 · 会动的树根","Canopy · Moving roots"],clue:["树根缓缓移动，挂着药箱的布条。芽禾辨认出药香来自地下洞口，而不是药草园。","Roots slowly move with a strip of cloth from the medicine crate. Yahe recognizes the scent coming from a cavern below, not the garden."]},
- {point:[.69,.53],name:["地下根洞 · 药箱与病根","Root cavern · Medicine and sick roots"],clue:["找到了药箱、病根和被堵塞的分水口。隐藏水渠通往药草园；先听榆川解释，再决定救援顺序。","Found the crate, sick roots and blocked junction. A hidden channel leads to the garden; hear Yuchuan before choosing the rescue order."]}
+ {point:[.31,.58],name:["林地 · 散落的药叶","Forest floor · Scattered herbs"],clue:["芽禾：就是港口送来的药材！湿苔上还有药箱拖过的痕迹，顺着香味往树冠走。","Fern: These are the herbs from Harbor! The crate left a trail on the moss; follow the scent toward the canopy."]},
+ {point:[.42,.28],name:["树冠 · 会动的树根","Canopy · Moving roots"],clue:["树根缓缓移动，挂着药箱的布条。芽禾辨认出药香来自地下洞口，而不是药草园。","Roots slowly move with a strip of cloth from the medicine crate. Fern recognizes the scent coming from a cavern below, not the garden."]},
+ {point:[.69,.53],name:["地下根洞 · 药箱与病根","Root cavern · Medicine and sick roots"],clue:["找到了药箱、病根和被堵塞的分水口。隐藏水渠通往药草园；先听榆川解释，再决定救援顺序。","Found the crate, sick roots and blocked junction. A hidden channel leads to the garden; hear Rowan before choosing the rescue order."]}
 ]);
 const tideTrail=[
  {point:[.82,.45],name:["查看退潮刻痕","Inspect the ebb marks"],clue:["退潮刻痕指向码头尽头。沿东岸石径寻找露出的台阶。","The ebb marks point toward the end of the pier. Follow the eastern stone path to the exposed steps."]},
@@ -23,7 +23,7 @@ const tideTrail=[
 const forgeParts=[
  {point:[.30,.78],name:["拾取旧灯架","Recover the old frame"],clue:["灯架刻着第一届灯火节的日期。","The frame bears the first lantern festival’s date."]},
  {point:[.35,.58],name:["拾取绢灯罩","Recover the silk shade"],clue:["绢面上还留着一对小猫的剪影。","Two kitten silhouettes still show on the silk."]},
- {point:[.44,.50],name:["找回星光灯芯","Recover the starlight wick"],clue:["小铆留下的灯芯，把一点光投成满墙星星。","Xiaomao’s wick turns a spark into a wall of stars."]}
+ {point:[.44,.50],name:["找回星光灯芯","Recover the starlight wick"],clue:["小栗留下的灯芯，把一点光投成满墙星星。","Pip’s wick turns a spark into a wall of stars."]}
 ];
 const forgeKey=i=>"forge:E-02:part:"+i;
 const forgeNear=(w,p)=>{const q=w.positions.forge;return !!q&&Math.hypot(q.x-p[0],q.y-p[1])<.072;};
@@ -32,14 +32,14 @@ const tideNear=(w,p)=>{const q=w.positions.harbor;return !!q&&Math.hypot(q.x-p[0
 const scentKey=i=>"forest:R-02:scent:"+i;
 const scentAt=(w,i)=>{const p=w.positions.forest,q=scentTrail[i]?.point;return !!p&&!!q&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
 const atForest=(w,q)=>{const p=w.positions.forest;return !!p&&Math.hypot(p.x-q[0],p.y-q[1])<.072};
-// Muling's six letters are optional post-ending scenes. They do not reopen the seal or reverse the ending.
+// Luna's six letters are optional post-ending scenes. They do not reopen the seal or reverse the ending.
 const homeLetters={
- harbor:{point:[.131,.341],letter:["岬灯、栖蓝：我曾把回家的愿望放在你们的安全之前。我会重新检查灯塔的回声路径，这次由你们决定何时开灯。","Jiedeng, Qilan: I once put my wish to return home before your safety. I will check the lighthouse's echo paths again. This time, you decide when to light it."],reply:[["岬灯：先把备用灯路接好吧。信任不能靠一盏灯恢复。","Jiedeng: Let's reconnect the spare light first. Trust isn't restored by a single lamp."],["栖蓝：新航线已经试过了。下次我带大家去花园。","Qilan: I've tested the new route. Next time I'll bring everyone to the garden."]]},
- forest:{point:[.89,.20],letter:["芽禾、榆川：我以为我能替大家承担后果。现在我愿意一起记录水量，让两边都能决定水往哪里流。","Yahe, Yuchuan: I thought I could carry the consequences for everyone. Now I'll help record the water flow, so both communities can decide where it goes."],reply:[["芽禾：下次来花园，我带些药草。别再一个人做决定。","Yahe: I'll bring herbs to the garden next time. No more deciding alone."],["榆川：水路已经恢复，我会带上每月的水量记录。","Yuchuan: The channel is working. I'll bring the monthly flow records."]]},
- forge:{point:[.88,.30],letter:["烬婆、小铆：我隐瞒了自己动过的机关。我愿意把每个改动写进维修记录，请你们亲自核对。","Jinpo, Xiaomao: I concealed the mechanisms I altered. I'll record every change and let you check the work yourselves."],reply:[["烬婆：先按新的安全流程验收。我们都得对自己的决定负责。","Jinpo: We'll inspect it under the new safety rules. We all answer for our decisions."],["小铆：我给花园做了一套新工具。等我测试完就带过去。","Xiaomao: I made new tools for the garden. I'll bring them when testing is done."]]},
- sky:{point:[.89,.24],letter:["翎羽、远帆：我曾擅自决定别人该走的路。这次我只修复航标，飞向哪里，由你们选择。","Lingyu, Yuanfan: I used to decide which paths others should take. This time I'll repair the markers; where you fly is your choice."],reply:[["翎羽：我会陪着他，但不会再替他选路线。","Lingyu: I'll fly beside him, but I won't choose his route."],["远帆：花园会是我下一次独立送信的目的地。","Yuanfan: The garden will be my next solo delivery."]]},
- library:{point:[.89,.29],letter:["墨页、白栞：请把我改变星铃路由的记录保存下来。我不会要求你们删掉它。","Moye, Baikan: Please preserve the record of how I altered the Star Bell's routes. I won't ask you to erase it."],reply:[["墨页：记录会保存。我们也会保护当事人的私人记忆。","Moye: The record stays. We'll also protect the private memories of those affected."],["白栞：我会把核对后的档案副本带到花园。","Baikan: I'll bring verified copies of the archive to the garden."]]},
- starfall:{point:[.92,.30],letter:["星芽、砾川：我曾只相信中央星铃。现在我愿意帮助校准六地的航路，让每个地方都能发出自己的回应。","Xingya, Lichuan: I once trusted only the Star Bell. Now I'll help align the six routes so every region can send its own reply."],reply:[["星芽：每一处的校准记录都要公开给邻地。","Xingya: Every calibration record must be shared with the neighboring regions."],["砾川：我会带商队经过花园。到时见。","Lichuan: I'll bring the caravan through the garden. See you there."]]}
+ harbor:{point:[.131,.341],letter:["檐灯、栖蓝：我曾把回家的愿望放在你们的安全之前。我会重新检查灯塔的回声路径，这次由你们决定何时开灯。","Alder, Skye: I once put my wish to return home before your safety. I will check the lighthouse's echo paths again. This time, you decide when to light it."],reply:[["檐灯：先把备用灯路接好吧。信任不能靠一盏灯恢复。","Alder: Let's reconnect the spare light first. Trust isn't restored by a single lamp."],["栖蓝：新航线已经试过了。下次我带大家去花园。","Skye: I've tested the new route. Next time I'll bring everyone to the garden."]]},
+ forest:{point:[.89,.20],letter:["芽禾、榆川：我以为我能替大家承担后果。现在我愿意一起记录水量，让两边都能决定水往哪里流。","Fern, Rowan: I thought I could carry the consequences for everyone. Now I'll help record the water flow, so both communities can decide where it goes."],reply:[["芽禾：下次来花园，我带些药草。别再一个人做决定。","Fern: I'll bring herbs to the garden next time. No more deciding alone."],["榆川：水路已经恢复，我会带上每月的水量记录。","Rowan: The channel is working. I'll bring the monthly flow records."]]},
+ forge:{point:[.88,.30],letter:["烬婆、小栗：我隐瞒了自己动过的机关。我愿意把每个改动写进维修记录，请你们亲自核对。","Ember, Pip: I concealed the mechanisms I altered. I'll record every change and let you check the work yourselves."],reply:[["烬婆：先按新的安全流程验收。我们都得对自己的决定负责。","Ember: We'll inspect it under the new safety rules. We all answer for our decisions."],["小栗：我给花园做了一套新工具。等我测试完就带过去。","Pip: I made new tools for the garden. I'll bring them when testing is done."]]},
+ sky:{point:[.89,.24],letter:["翎羽、远帆：我曾擅自决定别人该走的路。这次我只修复航标，飞向哪里，由你们选择。","Wren, Finn: I used to decide which paths others should take. This time I'll repair the markers; where you fly is your choice."],reply:[["翎羽：我会陪着他，但不会再替他选路线。","Wren: I'll fly beside him, but I won't choose his route."],["远帆：花园会是我下一次独立送信的目的地。","Finn: The garden will be my next solo delivery."]]},
+ library:{point:[.89,.29],letter:["墨页、白羽：请把我改变星铃路由的记录保存下来。我不会要求你们删掉它。","Quill, Ivy: Please preserve the record of how I altered the Star Bell's routes. I won't ask you to erase it."],reply:[["墨页：记录会保存。我们也会保护当事人的私人记忆。","Quill: The record stays. We'll also protect the private memories of those affected."],["白羽：我会把核对后的档案副本带到花园。","Ivy: I'll bring verified copies of the archive to the garden."]]},
+ starfall:{point:[.92,.30],letter:["星芽、砾川：我曾只相信中央星铃。现在我愿意帮助校准六地的航路，让每个地方都能发出自己的回应。","Nova, Flint: I once trusted only the Star Bell. Now I'll help align the six routes so every region can send its own reply."],reply:[["星芽：每一处的校准记录都要公开给邻地。","Nova: Every calibration record must be shared with the neighboring regions."],["砾川：我会带商队经过花园。到时见。","Flint: I'll bring the caravan through the garden. See you there."]]}
 };
 const homeVisitKey=(region,id)=>"postgame:visit:"+region+":"+id;
 export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(State)}={}){

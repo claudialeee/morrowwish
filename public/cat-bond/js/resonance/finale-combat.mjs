@@ -15,8 +15,8 @@ const ALLIES=Object.fromEntries(REGIONS.map(region=>[
  region,Object.values(campaign.cast).filter(actor=>actor.region===region)
 ]));
 const REPLY_OBJECTIVES={
- harbor:["守住风铃镇的铃光，让檐灯和栖蓝接唱。","Hold Windchime's bell light so Yandeng and Qilan can answer."],
- forest:["守住眠根林的铃光，等芽禾与榆川回应。","Hold Rootsleep's bell light while Yahe and Yuchuan answer."],
+ harbor:["守住风铃镇的铃光，让檐灯和栖蓝接唱。","Hold Windchime's bell light so Alder and Skye can answer."],
+ forest:["守住眠根林的铃光，等芽禾与榆川回应。","Hold Rootsleep's bell light while Fern and Rowan answer."],
  forge:["靠近千灯城照亮的安全位置。","Stay in the safe light from Lantern City."],
  sky:["借云岛的风，守住真正的铃声。","Ride the sky winds and protect the genuine chime."],
  library:["守住月镜书库的回应，不让复制声夺走它。","Protect Moonmirror's answer from the copied sound."],
@@ -26,12 +26,12 @@ const REPLY_TONES=[392,523.25,329.63,659.25,440,587.33];
 export function memoryReply(region,actors=[]){
  const has=id=>actors.includes(id);
  return ({
- harbor:["檐灯：小金猫，听见啦！","Yandeng: Little golden cat, we hear you!"],
- forest:["芽禾：月叶又长过来了！这次不会断！","Yahe: The moonleaf is growing toward us! It won't break this time!"],
- forge:has("xiaomao")?["小铆：歪耳灯在这儿！往亮处来！","Xiaomao: The crooked-ear lantern is here! Come into the light!"]:["烬婆：歪耳灯还亮着呢！往这边来！","Jinpo: The crooked-ear lantern is still lit! Come this way!"],
- sky:has("yuanfan")?["远帆：还记得云瀑吗？借风！","Yuanfan: Remember the waterfall? Ride the wind!"]:["翎羽：云瀑那股风来了！稳住！","Lingyu: Here comes the waterfall's wind! Hold steady!"],
- library:["墨页：这是我们的声音，不是旧记录！","Moye: These are our voices, not old records!"],
- starfall:["星芽：最后一个地方也答上了！","Xingya: The last neighbor has answered!"]
+ harbor:["檐灯：小金猫，听见啦！","Alder: Little golden cat, we hear you!"],
+ forest:["芽禾：月叶又长过来了！这次不会断！","Fern: The moonleaf is growing toward us! It won't break this time!"],
+ forge:has("xiaomao")?["小栗：歪耳灯在这儿！往亮处来！","Pip: The crooked-ear lantern is here! Come into the light!"]:["烬婆：歪耳灯还亮着呢！往这边来！","Ember: The crooked-ear lantern is still lit! Come this way!"],
+ sky:has("yuanfan")?["远帆：还记得云瀑吗？借风！","Finn: Remember the waterfall? Ride the wind!"]:["翎羽：云瀑那股风来了！稳住！","Wren: Here comes the waterfall's wind! Hold steady!"],
+ library:["墨页：这是我们的声音，不是旧记录！","Quill: These are our voices, not old records!"],
+ starfall:["星芽：最后一个地方也答上了！","Nova: The last neighbor has answered!"]
  })[region]||["听见了！","We hear you!"];
 }
 const ACTIONS=["lighthouse-signal","paired-root-channel","sound-gate-repair","aerial-melody","authentic-melody-order","star-map-alignment"];
@@ -135,9 +135,9 @@ function install(){
      const teamMaxHp=alive(b).reduce((n,x)=>n+x.maxhp,0);
      e.maxhp=id==="finale:B-03"?centralEchoHealth(teamMaxHp,i===0):Math.max(55,Math.round(teamMaxHp*(id==="finale:B-01"?(i===0?1:.20):.25)));e.hp=e.maxhp;
      e.poiseMax=e.maxhp;e.poise=e.poiseMax;
-     if(id==="finale:B-01"){e.finaleActor=i===0?"muling":"gate";e.gateIndex=i-1;e.combatName=i===0?["暮铃","Muling"]:["逆响锁","Inward lock"];}
+     if(id==="finale:B-01"){e.finaleActor=i===0?"muling":"gate";e.gateIndex=i-1;e.combatName=i===0?["暮铃","Luna"]:["逆响锁","Inward lock"];}
      else if(id==="finale:B-02"){e.finaleActor="echo";e.echoGroup=Math.floor(i/2);e.impostor=(i%2)===((f.revision+e.echoGroup)%2);e.echoObserved=0;e.echoFirstBeat=null;e.echoGap=null;
-      e.echoCat=e.echoGroup===2?null:fighters[e.echoGroup]||fighters[0];e.echoHabit=e.echoGroup===2?1.40:echoHabit(e.echoCat);e.dexVerified=false;e.combatName=e.echoGroup===2?["暮铃的回应","Muling’s reply"]:[window.State.catName(e.echoCat),window.State.catName(e.echoCat)];}
+      e.echoCat=e.echoGroup===2?null:fighters[e.echoGroup]||fighters[0];e.echoHabit=e.echoGroup===2?1.40:echoHabit(e.echoCat);e.dexVerified=false;e.combatName=e.echoGroup===2?["暮铃的回应","Luna’s reply"]:[window.State.catName(e.echoCat),window.State.catName(e.echoCat)];}
      else{e.finaleActor=i===0?"central":"reply-source";e.gateIndex=i-1;e.combatName=i===0?["空白回响","Hollow Echo"]:["复制声源","Copied source"];}
    });
    if(id==="finale:B-03"){for(const n of f.nodes){n.done=false;n.progress=0;}}
@@ -199,7 +199,7 @@ function install(){
   const effect=next&&f.id==="finale:B-03"?regionalEffects(b,next.region):null;
   const bonus=effect?" · "+tr("协作 "+effect.required.toFixed(1)+"秒 / 失守伤害 "+effect.pulseDamage,"Hold "+effect.required.toFixed(1)+"s / unguarded damage "+effect.pulseDamage)+(effect.gardenLevel?tr(" · 家园等级 "," · Garden Lv.")+effect.gardenLevel:""):"";
   const reply=next?tr(...REPLY_OBJECTIVES[next.region])+bonus:tr("六地的回铃击弱了中央回响。趁现在攻击！","All six replies weakened the central echo. Strike now!");
-  set("[data-finale-objective]",first?tr("击破三个防护节点，不要攻击暮铃。","Break the three protection nodes; do not attack Muling."):second?(f.probeChanged?tr("暮铃已停止抽取。击破不回应新位置的复制影像！","Muling stopped the extraction. Strike the copies that ignore your new position!"):tr("改变位置，观察谁真正回应你。","Move to a new position and watch which replies are genuine.")):next?(next.reply?.cleared?tr("守住铃光，等两地分别回铃。","Stay in the bell light while both lands reply."):tr("击破亮区里的复制声源，再守住铃光。","Break the copied source in the light, then hold the light.")):tr("六条邻路都已回应，等待稳定后攻击中央。","All six edges replied; wait for stability, then strike the center."));
+  set("[data-finale-objective]",first?tr("击破三个防护节点，不要攻击暮铃。","Break the three protection nodes; do not attack Luna."):second?(f.probeChanged?tr("暮铃已停止抽取。击破不回应新位置的复制影像！","Luna stopped the extraction. Strike the copies that ignore your new position!"):tr("改变位置，观察谁真正回应你。","Move to a new position and watch which replies are genuine.")):next?(next.reply?.cleared?tr("守住铃光，等两地分别回铃。","Stay in the bell light while both lands reply."):tr("击破亮区里的复制声源，再守住铃光。","Break the copied source in the light, then hold the light.")):tr("六条邻路都已回应，等待稳定后攻击中央。","All six edges replied; wait for stability, then strike the center."));
   set("[data-finale-count]",first?f.nodes.filter(n=>n.done).length+"/"+f.nodes.length:second?f.confirmed.size+"/"+f.echoGroups:f.nodes.filter(n=>n.done).length+"/6"+(next?" · "+Math.floor(100*next.progress/(next.required||4))+"%":""));
   const regionStatus=el.querySelector("[data-finale-regions]"),warning=el.querySelector("[data-finale-warning]");
   regionStatus.hidden=second;
@@ -236,7 +236,7 @@ function install(){
     const echoes=b.enemies.filter(e=>e.echoGroup===group);
     const cat=echoes[0]?.echoCat;
     const area=group===0?tr("上方","Upper pair"):group===1?tr("中间","Middle pair"):tr("下方","Lower pair");
-    if(group===2){const beats=echoes.map(e=>e.echoGap===null?"…":e.echoGap.toFixed(2)+(e.dexVerified?" ×":""));return area+" · "+tr("暮铃：第二次铃坠轻响应间隔 1.40 秒","Muling: the second pendant tap follows after 1.40s")+" · "+beats.join(" / ")+"s";}
+    if(group===2){const beats=echoes.map(e=>e.echoGap===null?"…":e.echoGap.toFixed(2)+(e.dexVerified?" ×":""));return area+" · "+tr("暮铃：第二次铃坠轻响应间隔 1.40 秒","Luna: the second pendant tap follows after 1.40s")+" · "+beats.join(" / ")+"s";}
     if(!cat||!(window.State.S.dex?.[cat.species]>0))return area+" · "+tr("图鉴暂无记录","No Catdex record");
     const intervals=echoes.map(e=>e.echoGap===null?"…":e.echoGap.toFixed(2)+(e.dexVerified?" ×":""));
     return area+" · "+window.State.catName(cat)+" · "+tr("习惯 ","Habit ")+echoHabit(cat).toFixed(2)+"s · "+intervals.join(" / ")+"s";
@@ -287,7 +287,7 @@ function install(){
   if(e.finaleActor==="gate"&&!e.alive){
     const n=f.nodes[e.gateIndex];n.done=true;n.integrity=Math.max(1,n.integrity);
     const broken=f.nodes.filter(n=>n.done).length;
-    if(broken===2)notice(this,"防护节点正在松动，最后的锁仍在暮铃手里。","The protection nodes are loosening. Muling still holds the final lock.");
+    if(broken===2)notice(this,"防护节点正在松动，最后的锁仍在暮铃手里。","The protection nodes are loosening. Luna still holds the final lock.");
     if(f.cast?.node===e.gateIndex)f.cast=null;
     this.vfx.ring(n.x,n.y,{r0:18,vr:200,life:.55,color:n.color,width:5});paint(this);
     if(f.nodes.every(n=>n.done)){const muling=this.enemies.find(x=>x.finaleActor==="muling");muling.alive=false;muling.hp=0;}
@@ -368,7 +368,7 @@ function install(){
    if(!f.probeChanged&&Math.hypot(me.x-f.probe.x,me.y-f.probe.y)>=48){
     f.probeChanged=true;f.extractionStopped=true;
     for(const e of b.liveEnemies()){e.echoObserved=1;e.echoGap=0;e.replyAt={x:me.x,y:me.y};if(!e.impostor)b.vfx.ring(e.x,e.y,{r0:10,vr:150,life:.6,color:"#f6dfa1",width:4});}
-    notice(b,"暮铃：是我压住了他们的声音。我把它停了！小心！","Muling: I drowned out their voices. I've stopped it! Watch out!");
+    notice(b,"暮铃：是我压住了他们的声音。我把它停了！小心！","Luna: I drowned out their voices. I've stopped it! Watch out!");
     paint(b);
    }
    if(f.probeChanged&&f.elapsed>=f.cooldown){f.cooldown=f.elapsed+3.5;for(const e of b.liveEnemies().filter(e=>e.impostor)){const angle=Math.atan2(me.y-e.y,me.x-e.x);b.spawnProj(e.x,e.y,angle,185,e.dmg*.45,"wild","#ccbbeb",7,"ball",{element:e.element,isBasic:true});}paint(b);}
