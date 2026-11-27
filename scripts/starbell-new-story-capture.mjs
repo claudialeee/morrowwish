@@ -2,10 +2,11 @@ import fs from 'node:fs/promises';
 import {chromium} from 'playwright';
 const out='artifacts/starbell-story-trailer';await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
-const origin=process.env.TRAILER_ORIGIN||'https://starbell-portrait-preview.morrowwish.pages.dev';
-const version=await (await fetch(origin+'/preview-version.json?trailer='+Date.now())).json();
-if(!version.sha)throw Error('Preview source not identified');
-const evidence={origin,source:version,script:process.env.GITHUB_SHA,clips:[],errors:[]};console.log('LIVE SOURCE',JSON.stringify(version));
+const liveOrigin='https://starbell-portrait-preview.morrowwish.pages.dev';
+const origin='http://127.0.0.1:8765';
+const version=await (await fetch(liveOrigin+'/preview-version.json?trailer='+Date.now())).json();
+if(version.sha!==process.env.TRAILER_GAME_SHA)throw Error('Live portrait source changed; refusing mismatched capture');
+const evidence={origin:liveOrigin,captureOrigin:origin,source:version,script:process.env.GITHUB_SHA,clips:[],errors:[]};console.log('LIVE SOURCE',JSON.stringify(version));
 async function open(region){
  const ctx=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:2,isMobile:true,hasTouch:true,reducedMotion:'reduce'});
  const p=await ctx.newPage();p.setDefaultTimeout(15000);

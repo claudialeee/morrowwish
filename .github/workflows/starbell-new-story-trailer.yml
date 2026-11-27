@@ -22,8 +22,21 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg fonts-ebgaramond python3-pil
-      - name: Capture latest published preview gameplay
-        run: node scripts/starbell-new-story-capture.mjs
+      - name: Pin and stage exact live portrait source for isolated developer capture
+        run: |
+          set -euo pipefail
+          sha=$(curl -fsS 'https://starbell-portrait-preview.morrowwish.pages.dev/preview-version.json?trailer=1' | jq -er .sha)
+          git fetch --depth=1 origin "$sha"
+          test "$(git rev-parse FETCH_HEAD)" = "$sha"
+          git restore --source="$sha" -- public/cat-bond
+          echo "TRAILER_GAME_SHA=$sha" >> "$GITHUB_ENV"
+      - name: Capture exact live source in isolated local developer mode
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-trailer-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          node scripts/starbell-new-story-capture.mjs
       - name: Score and cinematic composition
         run: |
           curl -fL --retry 3 'https://www.scottbuckley.com.au/library/wp-content/uploads/2019/12/sb_soar.mp3' -o artifacts/starbell-story-trailer/soar.mp3
