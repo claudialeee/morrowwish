@@ -1,0 +1,39 @@
+name: Starbell native duo renderer samples
+on:
+  push:
+    branches: [review/starbell-duo-portrait-runtime]
+    paths: ['public/cat-bond/js/duo-premium.js','public/cat-bond/js/battle.js','public/cat-bond/assets/mobile-portrait/duo/**','scripts/test-starbell-native-duo-renderer.mjs','scripts/check-starbell-portrait-duo.mjs','.github/workflows/starbell-duo-portrait-samples.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: starbell-native-duo-samples-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  renderer-samples:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Syntax and existing original-art gate
+        run: |
+          node --check public/cat-bond/js/duo-premium.js
+          node --check public/cat-bond/js/battle.js
+          node scripts/check-starbell-portrait-source.mjs
+      - name: Native art real browser sample screenshots
+        run: node scripts/test-starbell-native-duo-renderer.mjs
+      - name: Check whether full release is eligible
+        run: |
+          count=$(find public/cat-bond/assets/mobile-portrait/duo -maxdepth 1 -name '*.webp' | wc -l)
+          if [ "$count" -eq 63 ]; then node scripts/check-starbell-portrait-duo.mjs; else echo "::warning::Incomplete art pack ($count/63); sample test is not a release pass"; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-duo-renderer-samples
+          path: artifacts/starbell-duo-portrait/
+          retention-days: 7
