@@ -2157,3 +2157,37 @@ Rationale: the cron rule auto-fixes P0 only when LOW-RISK = "a local numeric tun
 
 ### Workflow health
 - critiqueCount 45, 15 subagent retries capped during Adversary phase (StructuredOutput validation failures). Core synth + persona voices intact.
+
+## Playtest cycle wcjnqt9aa — 2026-11-26
+
+**Headline**: Combat mechanics are landing — but the engine's pressure, payoff, and verb-ownership signals are invisible, so every persona is debugging a game they can't see.
+
+**funMean 4.33** (6 personas, same as wlpm2aca8):
+- 探索型 7 / 狂按型 6 / 懒人型 5 / 谨慎型 2 / 手忙脚乱 3 / 没耐心 3
+- 狂按型 +1 vs last cycle (5→6). 谨慎型 locked at 2 — kiter still gets no feedback loop.
+
+**Shape**: 0 P0 local-numeric; 2 P0 additive-flag (findings-only — adds new field+consumer, not one-line tune). 18 P1 (7 local-numeric, 11 additive-flag, 1 architectural). 14 P2.
+
+### P0 findings (findings-only — NOT auto-fixed)
+
+1. **`_closing` as enemy-side threat chip + decouple ENDGAME floater from execute HP gate** — `battle.js` render loop. `_closing` is 0-1 already computed; only visible via sub-28% HP execute floater. 谨慎 kiter at 97.6% HP never sees it. Add `drawClosingChip` under wild enemy HP bar: amber 0.15-0.5, pulse 0.5-0.85, red ≥0.85. Reason findings-only: new HUD element + persistent render state.
+2. **Split `flee` terminal label + fix adaptive-difficulty mis-training** — `battle.js:6994` collapses 94%-HP dominant timeout and 10%-HP cornered death into same `'flee'` token; `battle.js:2546` double-weights both as losses, nudging skill estimate DOWN on actual dominance. Split into `flee-dominant` / `flee-cornered` / `flee-stalemate` + branch banner + per-sub-tag adaptive-difficulty weight. Reason findings-only: changes terminal state enum consumed by multiple sites (save-safe but cross-system).
+
+### Top P1 findings (findings-only)
+
+- Inter-fight ult carry-over (50% kept across fights) — battle.js init + teardown. **additive-flag**
+- Ult meter ring anchored to active cat's feet + drop failsafe 9s→4s manual-mode only — battle.js:7646 / 4243. **additive-flag + local-numeric**
+- 4s rolling verb-mix bonus (distinct verb count → +0.10/+0.20/+0.30) — battle.js ~285. **additive-flag**
+- Combo-driven auto-E at hits 12 / 24 — battle.js addCombo. **additive-flag**
+- Distance-scaled player basic multiplier (1 + 0.4 × range frac) — battle.js basic resolve. **local-numeric**
+- **starterQFan power 0.8 → 1.35** (starter Q is currently WEAKER than basic 0.85) — battle.js:2647. **local-numeric** ← cleanest single-constant tune
+- Shield-absorb floating `-NN 盾` to match PROTECT/REFLECT hierarchy — resolveHit ~6659. **additive-flag**
+- Per-encounter affix roll (heavy/warded/punisher/sniper/swarm) — buildPack ~747. **additive-flag**
+- Basic-streak 5th-hit visual beat (hitstop +, shake +, color pop) — ~6565 / ~1933. **additive-flag**
+
+### Auto-fixes this cycle: 0
+
+Rationale: cron rule strict — `local-numeric` only auto-fix. Of the 2 P0s, both are `additive-flag`. The ONE one-constant tune available (starterQFan power 0.8 → 1.35) is a P1, not P0, so stays findings-only.
+
+### Workflow health
+- critiqueCount 33, **26 subagent retries capped** during Adversary + Voice phases (higher failure rate than wlpm2aca8's 15). Core synth intact; headline + fixes consistent with persona voices.
