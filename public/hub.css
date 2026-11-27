@@ -640,3 +640,13 @@ html[lang="zh-CN"] :is(#rpg,#worlds,#tiny-games,#about) .section-intro h2,html[l
   #social .social-details strong{font-size:13px}
   #social .social-details small{font-size:10px}
 }
+
+/* One flagship, two real playtest destinations. Portrait is always first. */
+#rpg .starbell-preview-options{position:relative;z-index:3;display:flex;align-items:stretch;flex-wrap:wrap;gap:9px;margin-top:13px;max-width:100%}
+#rpg .starbell-preview-options .card-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin:0;min-height:44px;padding:9px 13px;font-size:13px;white-space:nowrap;line-height:1.3}
+#rpg .starbell-landscape-button{background:#fff9ec;color:#725d3b;border:1px solid #bcae91;box-shadow:none}
+#rpg .starbell-device{display:inline-block;flex:0 0 auto;border:1.6px solid currentColor;border-radius:3px;box-sizing:border-box}
+#rpg .starbell-device-portrait{width:11px;height:17px}
+#rpg .starbell-device-landscape{width:17px;height:11px}
+@media(max-width:700px){#rpg .starbell-preview-options{margin-top:12px;gap:8px}#rpg .starbell-preview-options .card-button{flex:1 1 auto;padding:10px 11px;min-width:0;font-size:13px}}
+@media(max-width:360px){#rpg .starbell-preview-options .card-button{flex-basis:100%}}

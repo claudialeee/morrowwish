@@ -8,3 +8,11 @@ Object.assign(window.MORROW_ZH_STORIES,{"FEATURED GAME · PREVIEW":"主推游戏
 Object.assign(window.MORROW_ZH_STORIES,{"01 / ROLE-PLAYING GAMES":"01 / 角色扮演游戏"});
 
 Object.assign(window.MORROW_ZH_STORIES,{"01 / A WORLD OF ADVENTURE":"01 / 角色扮演游戏","02 / FOUR WORLDS TO GET LOST IN":"02 / 四个值得沉浸的世界","03 / THREE QUICK ESCAPES":"03 / 三场短暂的逃逸"});
+
+Object.assign(window.MORROW_ZH_STORIES,{"Portrait preview":"竖屏试玩版","Landscape preview":"横屏试玩版"});
+// Preview hosts use separate browser storage; carry the visible language across.
+(function(){
+ function syncStarbellLinks(){const lang=document.documentElement.lang.startsWith("zh")?"zh":"en";for(const link of document.querySelectorAll("#rpg a[data-starbell-mode]")){const url=new URL(link.href);url.searchParams.set("lang",lang);link.href=url.href;}}
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",syncStarbellLinks);else syncStarbellLinks();
+ window.addEventListener("morrowwish-language-change",syncStarbellLinks);
+})();

@@ -71,6 +71,17 @@ try{
      return {ordered:sections.every((e,i)=>!i||e.getBoundingClientRect().top>sections[i-1].getBoundingClientRect().top),indices:sections.map(e=>heading(e).querySelector('.section-index').textContent.trim().slice(0,2)),headings:sections.map(e=>signature(heading(e).querySelector('h2'),['fontFamily','fontSize','fontWeight','lineHeight','letterSpacing','color','marginTop'])),eyebrows:sections.map(e=>signature(heading(e).querySelector('.section-index'),['fontSize','fontWeight','letterSpacing','color','lineHeight'])),spacing:sections.map(e=>parseFloat(getComputedStyle(heading(e)).marginBottom)+(e.id==='about'?parseFloat(getComputedStyle(e).rowGap):0))};
     });
     assert.ok(layout.ordered,'RPG must remain the independent first section');
+    const previews=await page.evaluate(()=>[...document.querySelectorAll('#rpg .starbell-preview-options a')].map(a=>{const r=a.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return{mode:a.dataset.starbellMode,id:a.dataset.id,href:a.href,text:a.innerText.trim(),width:r.width,height:r.height,left:r.left,right:r.right,top:r.top,tappable:a.contains(hit)}}));
+    // Scroll the flagship into view before verifying hit testing.
+    await page.locator('#rpg .starbell-preview-options').scrollIntoViewIfNeeded();
+    const hits=await page.evaluate(()=>[...document.querySelectorAll('#rpg .starbell-preview-options a')].map(a=>{const r=a.getBoundingClientRect();return a.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2))}));
+    assert.deepEqual(previews.map(p=>p.mode),['portrait','landscape']);
+    assert.deepEqual(previews.map(p=>new URL(p.href).hostname),['starbell-portrait-preview.morrowwish.pages.dev','cat-bond-preview.morrowwish.pages.dev']);
+    assert.ok(previews.every(p=>new URL(p.href).pathname==='/cat-bond/'&&new URL(p.href).searchParams.get('lang')===lang&&p.id==='starbell-preview'&&p.width>=44&&p.height>=44&&p.left>=-1&&p.right<=width+1));
+    assert.ok(previews[0].top<previews[1].top||previews[0].left<previews[1].left,'portrait is visually first');
+    assert.deepEqual(hits,[true,true],'both real destinations reachable, not intercepted by card hit target');
+    assert.ok(previews[0].text.includes(lang==='zh'?'竖屏试玩版':'Portrait preview')&&previews[1].text.includes(lang==='zh'?'横屏试玩版':'Landscape preview'));
+
     assert.deepEqual(layout.indices,['01','02','03','04','05']);
     for(const key of ['headings','eyebrows','spacing'])assert.equal(new Set(layout[key]).size,1,'Classic section style must match: '+key);
    }
