@@ -1,0 +1,33 @@
+name: Assemble and independently inspect Cat Bond platform media
+on:
+  push:
+    branches: [review/cat-bond-release-bundle-20261127]
+    paths: ['assemble-release.py','.github/workflows/assemble-release.yml']
+permissions:
+  contents: write
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install free media validators
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python3 -m pip install --break-system-packages pillow
+      - name: Import independent QA evidence if available
+        run: |
+          mkdir -p qa-input
+          git fetch --depth=1 origin review/cat-bond-platform-qa-20261127
+          if git cat-file -e FETCH_HEAD:qa-output 2>/dev/null; then git archive FETCH_HEAD qa-output | tar -x --strip-components=1 -C qa-input; fi
+      - name: Assemble and decode every video, validate source and ZIPs, generate visual QA sheets
+        run: python3 assemble-release.py
+      - name: Save actual release files and measured crosscheck
+        if: always()
+        run: |
+          git config user.name 'Morrow Wish release QA'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f release-media
+          git diff --cached --quiet || git commit -m 'Save assembled platform media and independent visual QA sheets [skip ci]'
+          git push origin HEAD:review/cat-bond-release-bundle-20261127
