@@ -585,3 +585,55 @@ html[lang="zh-CN"] :is(#rpg,#worlds,#tiny-games,#about) .section-intro h2,html[l
 #about .about-heading.section-intro{margin:0;display:block}
 #about{row-gap:14px}
 @media(max-width:700px){:is(#rpg,#worlds,#tiny-games,#about) .section-intro,#social .social-title-row{margin-bottom:12px;display:block}#about .about-heading.section-intro{margin:0}#about{row-gap:12px}#social .social-title-row p{margin-top:8px}}
+
+/* Balanced homepage sections: no progressively shrinking section hierarchy. */
+#rpg,#worlds,#tiny-games,#about,#social{--section-space:clamp(30px,3.5vw,48px)}
+#rpg{margin-bottom:0;padding-bottom:var(--section-space)}
+#worlds{padding-bottom:var(--section-space)}
+#tiny-games,#about,#social{padding-top:var(--section-space);padding-bottom:var(--section-space)}
+:is(#rpg,#worlds,#tiny-games,#about) .section-intro,#social .social-title-row{margin-bottom:20px}
+#about .about-heading.section-intro{margin:0}
+#about{row-gap:20px}
+#social .social-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+#social .social-link{min-height:100px;padding:20px;gap:14px;border:1px solid var(--line);border-radius:18px;background:var(--paper);box-shadow:0 7px 24px #8b6e6010}
+#social .social-icon{width:48px;height:48px;border-radius:14px;font-size:24px}
+#social .social-details strong{font-size:16px}
+#social .social-details small{font-size:12px}
+@media(min-width:901px){
+  #rpg .starbell-preview-card{height:clamp(320px,33vw,400px)}
+  #worlds .feature-card{height:250px}
+  #tiny-games .mini-game{height:350px;border-radius:18px}
+  #tiny-games .mini-game>img{height:205px;flex-basis:205px}
+  #tiny-games .mini-copy{flex:1;padding:15px 19px;gap:5px}
+  #tiny-games .mini-copy strong{font-size:24px}
+  #tiny-games .mini-descr{font-size:13px;line-height:1.5}
+  #tiny-games .mini-cta{margin-top:auto;font-size:13px}
+  #about{grid-template-columns:minmax(0,300px) minmax(0,1fr)}
+  #about .about-ceo-photo{height:350px}
+  #about .about-copy p{font-size:15px}
+  #about .ceo-profile .ceo-description{font-size:15px}
+  #social .social-link{min-height:130px}
+}
+@media(min-width:701px) and (max-width:900px){
+  #tiny-games .mini-game{height:290px}
+  #tiny-games .mini-game>img{height:160px;flex-basis:160px}
+  #tiny-games .mini-copy{flex:1;padding:12px 14px}
+  #social .social-link{padding:14px;gap:9px}
+  #social .social-icon{width:36px;height:36px;font-size:20px}
+  #social .social-details strong{font-size:14px}
+  #social .social-details small{font-size:11px}
+}
+@media(max-width:700px){
+  #rpg,#worlds,#tiny-games,#about,#social{--section-space:30px}
+  :is(#rpg,#worlds,#tiny-games,#about) .section-intro,#social .social-title-row{margin-bottom:16px}
+  #about .about-heading.section-intro{margin:0}
+  #about{row-gap:16px}
+  #tiny-games .mini-game{height:auto;min-height:150px}
+  #tiny-games .mini-game>img{height:auto;min-height:150px;align-self:stretch}
+  #tiny-games .mini-copy{padding:15px 13px;flex:1}
+  #social .social-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #social .social-link{min-height:78px;padding:11px 9px;gap:8px;border-radius:13px}
+  #social .social-icon{width:32px;height:32px;border-radius:9px;font-size:17px}
+  #social .social-details strong{font-size:13px}
+  #social .social-details small{font-size:10px}
+}
