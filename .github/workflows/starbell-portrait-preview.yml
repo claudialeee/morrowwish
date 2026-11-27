@@ -66,16 +66,22 @@ jobs:
           import fs from 'node:fs';
           const root='/tmp/starbell-portrait/site',file=root+'/cat-bond/index.html',sha=process.env.SOURCE_SHA;
           let html=fs.readFileSync(file,'utf8');
-          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_GAME_ID="starbell-portrait-preview";window.ARCADE_COLLECTOR="/api/preview-disabled";window.arcadeMetric=()=>{};</script></head>');
+          html=html.replace(/<\/head>/i,'<meta name="robots" content="noindex,nofollow"><script>window.ARCADE_GAME_ID="starbell-preview";window.ARCADE_COLLECTOR=(new URLSearchParams(location.search).has("qa")||new URLSearchParams(location.search).has("rpgDev")||new URLSearchParams(location.search).has("developer")||location.hostname!=="starbell-portrait-preview.morrowwish.pages.dev")?"/api/preview-disabled":"https://morrowwish.pages.dev/api/starbell-preview-session";window.arcadeMetric=()=>{};</script></head>');
           html=html.replace(/<body([^>]*)>/i,'<body$1 data-source-sha="'+sha+'">');
           fs.writeFileSync(file,html);
+          const telemetryFile=root+'/telemetry.js';
+          let telemetry=fs.readFileSync(telemetryFile,'utf8');
+          const oldGuard='location.hostname!=="cat-bond-preview.morrowwish.pages.dev"';
+          if(!telemetry.includes(oldGuard))throw Error('Expected preview telemetry guard not found');
+          telemetry=telemetry.replace(oldGuard,'!["cat-bond-preview.morrowwish.pages.dev","starbell-portrait-preview.morrowwish.pages.dev"].includes(location.hostname)');
+          fs.writeFileSync(telemetryFile,telemetry);
           fs.writeFileSync(root+'/index.html','<!doctype html><html><head><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="0;url=/cat-bond/"></head><body><a href="/cat-bond/">Echoes of the Starbell</a></body></html>');
           fs.writeFileSync(root+'/robots.txt','User-agent: *\nDisallow: /\n');
-          fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\'; form-action \'self\'\n');
+          fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\' https://morrowwish.pages.dev/api/starbell-preview-session; form-action \'self\'\n');
           // An explicit 404 page disables Pages' SPA fallback for unavailable APIs.
           // No Worker or recursive redirect is needed: all API requests remain local.
           fs.writeFileSync(root+'/404.html','<!doctype html><html><head><meta name="robots" content="noindex,nofollow"></head><body>Preview APIs disabled; local saves only.</body></html>');
-          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,scope:'isolated portrait engineering preview',productionApis:false,telemetry:false,storage:'local-only',fullReleaseAccepted:false,sourceGate:45941020775,campaignGate:45941020787}));
+          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,scope:'isolated portrait engineering preview',productionApis:false,telemetry:'starbell-preview',storage:'local-only',fullReleaseAccepted:false,sourceGate:45941020775,campaignGate:45941020787}));
           NODE
           python3 - <<'PY'
           import pathlib
@@ -121,7 +127,21 @@ jobs:
             const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
             const page=await ctx.newPage(),errors=[];
             page.on('pageerror',e=>errors.push(e.message));
+            const collector='https://morrowwish.pages.dev/api/starbell-preview-session';
+            const observed=[];
+            await page.route(collector,async route=>{
+              observed.push(JSON.parse(route.request().postData()));
+              await route.fulfill({status:202,headers:{'Access-Control-Allow-Origin':process.env.PREVIEW_URL},body:'{"ok":true}'});
+            });
+            await page.goto(process.env.PREVIEW_URL+'/cat-bond/?lang=zh');
+            await page.waitForFunction(()=>window.ARCADE_GAME_ID==='starbell-preview'&&window.ARCADE_COLLECTOR==='https://morrowwish.pages.dev/api/starbell-preview-session');
+            await page.waitForTimeout(300);
+            assert.ok(observed.some(e=>e.kind==='visit'&&e.game==='starbell-preview'));
+            await page.reload();
+            await page.waitForTimeout(300);
+            assert.equal(new Set(observed.filter(e=>e.kind==='visit').map(e=>e.viewId)).size,2);
             await page.goto(process.env.PREVIEW_URL+'/cat-bond/?lang=zh&qa=portrait-handoff');
+            const beforeQa=observed.length;
             assert.equal(await page.locator('body').getAttribute('data-source-sha'),process.env.SOURCE_SHA);
             const image=page.locator('.cb-title-cover-art');
             await image.waitFor({state:'visible'});
@@ -133,6 +153,7 @@ jobs:
             await page.locator('#cb-player-first-intro').getByRole('button',{name:'开始探索',exact:true}).tap();
             await page.waitForFunction(()=>window.__game?.scene==='yard'&&window.State?.S?.cats?.length===1);
             await page.screenshot({path:'portrait-live-yard.png'});
+            assert.equal(observed.length,beforeQa,'QA must not send any real metrics');
             assert.deepEqual(errors,[]);
             console.log('LIVE PORTRAIT PASS',process.env.PREVIEW_URL);
           }finally{await browser.close()}
