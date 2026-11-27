@@ -1,0 +1,32 @@
+name: Starbell teaser production (review only)
+on:
+  push:
+    branches: ['promo/starbell-preview-trailer-20261126']
+    paths: ['.github/workflows/starbell-teaser-review.yml']
+permissions:
+  contents: read
+jobs:
+  teaser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Capture real preview gameplay
+        run: node scripts/starbell-teaser-capture.mjs
+      - name: Render trailer with original art and music
+        run: node scripts/starbell-teaser-render.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-teaser-review
+          path: |
+            artifacts/starbell-trailer/Echoes-of-the-Starbell-Teaser.mp4
+            artifacts/starbell-trailer/contact-sheet.jpg
+            artifacts/starbell-trailer/*-proof.png
+            artifacts/starbell-trailer/capture-evidence.json
+            artifacts/starbell-trailer/render-proof.json
+          retention-days: 14
