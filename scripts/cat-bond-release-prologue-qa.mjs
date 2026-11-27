@@ -1,3 +1,4 @@
+import {gardenDiscovery} from './starbell-garden-qa.mjs';
 import {attachExperienceRecorder} from './cat-bond-experience-recorder.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -16,7 +17,9 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  const waitScene=id=>page.waitForFunction(id=>window.CatBondResonance?.view()?.current?.id===id,id,{timeout:45000});
  const press=async locator=>{await locator.waitFor({state:'visible'});if(options.hasTouch)await locator.tap();else await locator.click();};
  try{
- await page.goto('http://127.0.0.1:8765/cat-bond/?lang='+locale);
+ const origin=process.env.CAT_BOND_SMOKE_ORIGIN||'http://127.0.0.1:8765';
+ await page.goto(origin+'/cat-bond/?lang='+locale+'&qa=opening-'+name+'-'+(meet?'meet':'skip'));
+ if(process.env.SOURCE_SHA)assert.equal(await page.locator('body').getAttribute('data-source-sha'),process.env.SOURCE_SHA,'Exact packaged source');
  await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
  const nameExpected=tr('星铃回响','Echoes of the Starbell');
  await page.waitForFunction(name=>document.querySelector('#cb-title-name')?.textContent===name,nameExpected);
@@ -44,19 +47,25 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  assert.equal(await page.locator('.res-garden-bell').count(),0);
  await press(encounter.getByRole('button',{name:tr('寻找航图','Find the chart pieces'),exact:true}));
  await encounter.waitFor({state:'detached'});
- for(const id of ['chart-0','chart-echo','chart-1'])await press(page.locator('[data-garden-explore="'+id+'"]'));
+ for(const id of ['chart-0','chart-echo','chart-1'])await gardenDiscovery(page,id,{touch:options.hasTouch});
  await press(page.locator('[data-npc-talk="muling"]'));
  await press(encounter.getByRole('button',{name:tr('继续','Continue'),exact:true}));
  await press(encounter.getByRole('button',{name:tr('回答','Answer'),exact:true}));
  assert.match(await encounter.locator('.res-line').innerText(),locale==='zh'?/我也不知道/:/I don.t know/);
  for(const label of [tr('继续','Continue'),tr('告别','Say goodbye')])await press(encounter.getByRole('button',{name:label,exact:true}));
  for(let i=0;i<3;i++){await press(page.locator('[data-garden-explore="butterfly"]'));await page.waitForFunction(n=>GardenExploration.read(State.S).butterfly===n,i+1);}
- await press(page.locator('[data-garden-explore="seed"]'));
- await press(page.locator('[data-garden-explore="snack"]'));await press(page.getByRole('button',{name:tr('带在身上','Keep for later'),exact:true}));
+ await gardenDiscovery(page,'seed',{touch:options.hasTouch});
+ await gardenDiscovery(page,'snack',{touch:options.hasTouch});await press(page.getByRole('button',{name:tr('带在身上','Keep for later'),exact:true}));
  assert.equal(await page.evaluate(()=>GardenExploration.read(State.S).butterfly),3);
+ assert.equal(await page.evaluate(()=>GardenExploration.read(State.S).seed),true);
+ assert.equal(await page.evaluate(()=>GardenExploration.read(State.S).snack),'keep');
  assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);assert.equal(await page.evaluate(()=>CatBondResonance.residents('garden').some(n=>n.id==='muling')),false);}
  else assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),false);
- await screenshot('garden');await press(guide.getByRole('button',{name:tr('下一场景 · 风铃镇','Next scene · Windchime Town'),exact:true}));await waitScene('harbor:H-01');
+ await screenshot('garden');
+ const toggle=guide.getByRole('button',{name:tr('主线任务','Main quest'),exact:true});
+ assert.equal(await toggle.getAttribute('aria-expanded'),'false','Main quest starts collapsed');
+ await press(toggle);
+ await press(guide.getByRole('button',{name:meet?tr('下一场景 · 风铃镇','Next scene · Windchime Town'):tr('跳过此次相遇','Skip this encounter'),exact:true}));await waitScene('harbor:H-01');
  assert.equal(await page.evaluate(()=>WorldMap.currentRegion),'harbor');assert.equal(await page.evaluate(()=>WorldMap.mode),'region');
  const next=page.locator('[data-next-scene="harbor:H-01"]');await next.waitFor({state:'attached'});await screenshot('harbor');
  // Main story affordance must be visible without menu navigation.

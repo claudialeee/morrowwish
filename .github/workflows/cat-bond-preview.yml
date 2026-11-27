@@ -19,6 +19,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: cat-bond-isolated-preview
   cancel-in-progress: true
@@ -27,12 +28,8 @@ jobs:
     # Preview only; never deploy main or touch production APIs.
     if: github.ref == 'refs/heads/review/starbell-canon13-player-experience'
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
-      - name: Hold preview deployment at owner request
-        run: |
-          echo 'Preview deployment is paused until explicitly authorized.'
-          exit 1
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
@@ -53,6 +50,10 @@ jobs:
           grep -Fq 'resonance-book.mjs' public/cat-bond/js/resonance/integration-entry.mjs
           grep -Fq 'rpg-visual-polish.css' public/cat-bond/index.html
           node --check public/cat-bond/js/main.js
+      - name: Require all exact-runtime and corrected opening acceptance gates
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/starbell-release-gate.sh
       - name: Select QA scope against the actual deployed preview
         id: qa
         shell: bash
@@ -81,6 +82,7 @@ jobs:
           fi
           # Manual dispatch keeps the full validation path available.
           if [[ "$GITHUB_EVENT_NAME" != push ]]; then mode=full; fi
+          if [[ -n "${ACCEPTED_RUNTIME:-}" && -n "${OPENING_GATE:-}" ]]; then mode=accepted; fi
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "CAT_BOND_QA_SCOPE=$mode" >> "$GITHUB_ENV"
           echo "Preview QA: $mode (deployed base: ${live_sha:-unknown})"
@@ -151,7 +153,7 @@ jobs:
         run: |
           cat > .cat-bond-preview-smoke.mjs <<'NODE'
           import {chromium} from 'playwright';
-          import {gardenDiscovery} from './scripts/cat-bond-test-start.mjs';
+          import {gardenDiscovery} from './scripts/starbell-garden-qa.mjs';
           const browser=await chromium.launch({headless:true});
           try {
             const origin=process.env.CAT_BOND_SMOKE_ORIGIN || 'https://cat-bond-preview.morrowwish.pages.dev';
@@ -414,7 +416,11 @@ jobs:
           server=$!
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in $(seq 1 15); do curl -fsS http://127.0.0.1:8766/cat-bond/ >/dev/null && break; sleep 1; done
-          node .cat-bond-preview-smoke.mjs
+          if [[ "$CAT_BOND_QA_SCOPE" == accepted ]]; then
+            PROLOGUE_LANG=en PROLOGUE_PROFILE=desktop node scripts/cat-bond-release-prologue-qa.mjs
+          else
+            node .cat-bond-preview-smoke.mjs
+          fi
           if [[ "$CAT_BOND_QA_SCOPE" == full ]]; then
             node scripts/test-starbell-developer-browser.mjs
             node scripts/test-cat-bond-adventure-browser.mjs
@@ -463,13 +469,25 @@ jobs:
       - name: Smoke-test published preview with selected QA scope
         env:
           CAT_BOND_SMOKE_STAGE: live
-        run: node .cat-bond-preview-smoke.mjs
+        run: |
+          if [[ "$CAT_BOND_QA_SCOPE" == accepted ]]; then
+            export CAT_BOND_SMOKE_ORIGIN=https://cat-bond-preview.morrowwish.pages.dev
+            PROLOGUE_LANG=en PROLOGUE_PROFILE=desktop node scripts/cat-bond-release-prologue-qa.mjs &
+            en=$!
+            PROLOGUE_LANG=zh PROLOGUE_PROFILE=portrait node scripts/cat-bond-release-prologue-qa.mjs &
+            zh=$!
+            wait "$en"; wait "$zh"
+            node scripts/test-starbell-developer-browser.mjs
+          else
+            node .cat-bond-preview-smoke.mjs
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: preview-title
           path: |
             preview-*.png
+            artifacts/cat-bond-release-prologue/
             artifacts/cat-bond-layout/
           if-no-files-found: ignore
           retention-days: 3

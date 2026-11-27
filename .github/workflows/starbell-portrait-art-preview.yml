@@ -20,74 +20,11 @@ jobs:
       PREVIEW_URL: https://starbell-portrait-preview.morrowwish.pages.dev
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Hold preview deployment at owner request
-        run: |
-          echo 'Preview deployment is paused until explicitly authorized.'
-          exit 1
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Reuse proven identical-runtime gates; require current scoped browser gate
-        run: |
-          set -euo pipefail
-          VERIFIED_RUNTIME=$SOURCE_SHA
-          if git diff --quiet 6c7e690a6276d3b51431143523ec4652aaaea0d5 "$SOURCE_SHA" -- public package.json package-lock.json; then
-            VERIFIED_RUNTIME=6c7e690a6276d3b51431143523ec4652aaaea0d5
-          fi
-          CAMPAIGN_RUNTIME=$SOURCE_SHA
-          # CI-only changes must not wait for path-filtered workflows that will
-          # not start. Reuse the exact candidate only when all runtime and test
-          # inputs are byte-identical; never reuse a failed gate.
-          if git diff --quiet 23f7a2bff082ab667e1167f3b02eeac84bfa9fb2 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/workflows/starbell-portrait-source.yml .github/actions; then
-            CAMPAIGN_RUNTIME=23f7a2bff082ab667e1167f3b02eeac84bfa9fb2
-            VERIFIED_RUNTIME=$CAMPAIGN_RUNTIME
-          fi
-          # Only the layout test changed after the successful foreground source gate.
-          # Reuse source proof only with identical runtime, source tests and docs.
-          if git diff --quiet df8458b00bc4a39d2c2b1923ae9f9175b142ba27 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-portrait-source.yml .github/actions ':!scripts/cat-bond-layout-acceptance.mjs'; then
-            VERIFIED_RUNTIME=df8458b00bc4a39d2c2b1923ae9f9175b142ba27
-          fi
-          if git diff --quiet bb533a095e5922aca303a2e3b4855c80ec9df5a9 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/actions; then
-            CAMPAIGN_RUNTIME=bb533a095e5922aca303a2e3b4855c80ec9df5a9
-          fi
-          # The developer live QA is executed below; it is not a source or campaign test input.
-          if git diff --quiet 2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/workflows/starbell-portrait-source.yml .github/actions ':!scripts/test-starbell-developer-browser.mjs'; then
-            CAMPAIGN_RUNTIME=2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5
-            VERIFIED_RUNTIME=$CAMPAIGN_RUNTIME
-          fi
-          # Browser-only corrections do not invalidate a successful identical source gate.
-          if git diff --quiet 2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-portrait-source.yml .github/actions ':!scripts/test-starbell-developer-browser.mjs' ':!scripts/cat-bond-experience-chapters.mjs'; then
-            VERIFIED_RUNTIME=2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5
-          fi
-          # A preview workflow-only fix must use the already running corrected campaign gate.
-          if git diff --quiet 95cf9689f5f28b4f2b9352abaffdfedc7bb191e5 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/actions; then
-            CAMPAIGN_RUNTIME=95cf9689f5f28b4f2b9352abaffdfedc7bb191e5
-          fi
-          DUO_RUNTIME=$SOURCE_SHA
-          # The native-duo workflow is path-filtered. Reuse its accepted SHA only
-          # when its entire trigger/input set is unchanged; source and gameplay
-          # gates still validate the current exploration runtime.
-          if git diff --quiet 6c7e690a6276d3b51431143523ec4652aaaea0d5 "$SOURCE_SHA" -- public/cat-bond/js/duo-premium.js public/cat-bond/js/battle.js public/cat-bond/assets/mobile-portrait/duo scripts/test-starbell-native-duo-renderer.mjs scripts/check-starbell-portrait-duo.mjs .github/workflows/starbell-duo-portrait-samples.yml package.json package-lock.json; then
-            DUO_RUNTIME=6c7e690a6276d3b51431143523ec4652aaaea0d5
-          fi
-          echo "Verified runtime source: $VERIFIED_RUNTIME; duo source: $DUO_RUNTIME"
-          for attempt in $(seq 1 350); do
-            a=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-mobile-portrait.yml/runs?head_sha=$CAMPAIGN_RUNTIME" | jq -c '.workflow_runs[0] // {}')
-            b=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-portrait-source.yml/runs?head_sha=$VERIFIED_RUNTIME" | jq -c '.workflow_runs[0] // {}')
-            d=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-duo-portrait-samples.yml/runs?head_sha=$DUO_RUNTIME" | jq -c '.workflow_runs[0] // {}')
-            if [[ $(jq -r .head_sha <<<"$a") == "$CAMPAIGN_RUNTIME" && $(jq -r .head_sha <<<"$b") == "$VERIFIED_RUNTIME" && $(jq -r .head_sha <<<"$d") == "$DUO_RUNTIME" ]]; then
-              if [[ $(jq -r .status <<<"$a") == completed && $(jq -r .conclusion <<<"$a") != success ]] || [[ $(jq -r .status <<<"$b") == completed && $(jq -r .conclusion <<<"$b") != success ]]; then echo 'Candidate failed acceptance; do not deploy' >&2; exit 1; fi
-              if [[ $(jq -r .status <<<"$d") == completed && $(jq -r .conclusion <<<"$d") != success ]]; then echo "Duo renderer gate failed"; exit 1; fi
-              if [[ $(jq -r .conclusion <<<"$a") == success && $(jq -r .conclusion <<<"$b") == success && $(jq -r .conclusion <<<"$d") == success ]]; then
-                echo "DUO_GATE=$(jq -r .id <<<"$d")" >> "$GITHUB_ENV"
-                echo "CAMPAIGN_GATE=$(jq -r .id <<<"$a")" >> "$GITHUB_ENV"
-                echo "SOURCE_GATE=$(jq -r .id <<<"$b")" >> "$GITHUB_ENV"
-                echo "Identical runtime source/duo and current scoped campaign passed"; exit 0
-              fi
-            fi
-            sleep 10
-          done
-          echo 'Acceptance incomplete; do not deploy' >&2; exit 1
+      - name: Require all exact-runtime and corrected opening acceptance gates
+        run: bash scripts/starbell-release-gate.sh
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.SOURCE_SHA }}

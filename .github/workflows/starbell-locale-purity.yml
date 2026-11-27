@@ -8,6 +8,8 @@ on:
       - 'public/game-settings.js'
       - 'scripts/cat-bond-*language*.mjs'
       - 'scripts/cat-bond-locale-purity.mjs'
+      - 'scripts/cat-bond-release-prologue-qa.mjs'
+      - 'scripts/starbell-garden-qa.mjs'
       - 'scripts/test-cat-bond-canon22-locale-purity.mjs'
       - '.github/workflows/starbell-locale-purity.yml'
   workflow_dispatch:
@@ -17,7 +19,32 @@ concurrency:
   group: starbell-locale-purity-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  scope:
+    runs-on: ubuntu-24.04
+    outputs:
+      opening_only: ${{ steps.scope.outputs.opening_only }}
+      matrix: ${{ steps.scope.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: scope
+        run: |
+          set -euo pipefail
+          base=35ef1c1979513bd7d98b07bb804d842dc47bfcfd
+          opening_only=false
+          if git diff --quiet "$base" HEAD -- . ':!scripts/cat-bond-release-prologue-qa.mjs' ':!scripts/starbell-garden-qa.mjs' ':!.github/workflows/starbell-locale-purity.yml' ':!.github/workflows/cat-bond-preview.yml' ':!.github/workflows/starbell-portrait-art-preview.yml' ':!scripts/starbell-release-gate.sh'; then
+            opening_only=true
+          fi
+          echo "opening_only=$opening_only" >> "$GITHUB_OUTPUT"
+          if [[ "$opening_only" == true ]]; then
+            echo 'matrix=["opening-en","opening-zh"]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'matrix=["panels","interactions","opening-en","opening-zh"]' >> "$GITHUB_OUTPUT"
+          fi
   source:
+    needs: scope
+    if: needs.scope.outputs.opening_only != 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -26,12 +53,13 @@ jobs:
           node-version: '22'
       - run: node scripts/test-cat-bond-canon22-locale-purity.mjs
   browser:
+    needs: scope
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
-        scope: [panels, interactions, opening-en, opening-zh]
+        scope: ${{ fromJSON(needs.scope.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
