@@ -4900,7 +4900,15 @@ class CaptureBattle {
         const kd = Math.exp(-6 * dt); f.kbx *= kd; f.kby *= kd;
         if (Math.abs(f.kbx) < 4 && Math.abs(f.kby) < 4) { f.kbx = 0; f.kby = 0; }
       }
-      for (const k in f.cd) if (f.cd[k] > 0) f.cd[k] -= dt/((f._baomaoChainUntil||0)>this.t?Math.max(.5,f._cdMult||1):1);
+      // Owner 2026-11-27 Phase 3: _cdMult trait flag was consumed ONLY under the
+      // baomao-chain window branch (f._baomaoChainUntil active). Other traits like
+      // 露露 thunderYowl that set _cdMult=0.70 never got the speedup even though
+      // the semantics are identical (smaller mult → faster cd tick via dt/mul).
+      // Apply unconditionally when set. Floor at 0.5 (max 2× speed) to cap runaway.
+      // The baomao-chain window remains readable via f._baomaoChainUntil for other
+      // traits that want to key off it; the cd math no longer branches on it.
+      const cdMul = f._cdMult ? Math.max(.5, f._cdMult) : 1;
+      for (const k in f.cd) if (f.cd[k] > 0) f.cd[k] -= dt / cdMul;
       if (f.inv > 0) f.inv -= dt;
       if (f.dashT > 0) f.dashT -= dt;
       else if(f.pounce){
@@ -5751,8 +5759,13 @@ class CaptureBattle {
       const pressureBoost = 1 + 0.30 * (this._pressure || 0);
       const closingFireBoost = 1 + 0.25 * (this._closing || 0);
       e._lastAttackT=this.t;
+      // Owner 2026-11-27 Phase 3: _fireRateMult (trait flag set by e.g. 夜夜 mengmai-silence
+      // on hit targets, traits.js:799) had NO consumer. Wire here — a <1 multiplier scales
+      // cd UP (slower fire), a >1 would scale cd DOWN. Applied after rawCd compute and
+      // BEFORE the 0.95 floor so the floor remains the real minimum.
+      const fireRateMul = e._fireRateMult || 1;
       const rawCd = e.fireRate * (1 - e.aggro * 0.35) * (e.slowed ? 1.8 : 1) * manualEase
-        / (pressureBoost * closingFireBoost) / (e.status?.suppress>0?.6:1);
+        / (pressureBoost * closingFireBoost) / (e.status?.suppress>0?.6:1) / fireRateMul;
       e.fireCd = Math.max(0.95, rawCd);   // HARD floor last; 感电降攻速
       // Lead at the ACTUAL projectile speed so the intercept solution matches flight.
       const shotSpeed = 200 + e.rIdx * 34;
