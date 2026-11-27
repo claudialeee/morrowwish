@@ -21,6 +21,7 @@ const openingPlaytestFiles=new Set([
 ]);
 const festivalPlaytestFiles=new Set(["public/cat-bond/js/resonance/world-exploration.mjs","public/cat-bond/js/resonance/world-runtime.mjs","public/cat-bond/js/resonance/world-mechanisms.mjs","public/cat-bond/js/resonance/forge-presentation.mjs","public/cat-bond/js/resonance/world-bridge.mjs","public/cat-bond/js/resonance/regional-combat.mjs","scripts/cat-bond-experience-chapters.mjs","scripts/check-cat-bond-resonance-world.mjs","scripts/cat-bond-experience-qa-scope.mjs"]);
 const latePlaytestFiles=new Set(["public/cat-bond/js/resonance/campaign.mjs","public/cat-bond/js/resonance/sky-lookout.mjs","public/cat-bond/js/resonance/world-runtime.mjs","scripts/cat-bond-experience-qa-scope.mjs"]);
+const homecomingFiles=new Set(["public/cat-bond/js/sunlit-garden.js","public/cat-bond/js/game.js","public/cat-bond/js/resonance/finale-combat.mjs","scripts/cat-bond-experience-chapters.mjs","scripts/cat-bond-experience-qa-scope.mjs"]);
 const qaFiles=new Set([".github/actions/starbell-browser-setup/action.yml",".github/workflows/cat-bond-canon22-browser.yml",".github/workflows/cat-bond-canon22-fresh.yml",".github/workflows/cat-bond-preview.yml",".github/workflows/starbell-canon22-playtest.yml","docs/cat-bond-rpg/QA-OPTIMIZATION.md","scripts/cat-bond-experience-qa-scope.mjs"]);
 function impact(files) {
   if (!files.length || files.some(f=>!Object.hasOwn(local,f))) return all;
@@ -34,6 +35,7 @@ function choose({manual='',message='',files=[],review=false}={}) {
   if(!manual&&message.includes('[qa-windchime-playtest]')&&files.length&&files.every(f=>openingPlaytestFiles.has(f)))return ['harbor'];
   if(!manual&&message.includes('[qa-late-playtest]')&&files.length&&files.every(f=>latePlaytestFiles.has(f)))return ['forge','sky','starfall'];
   if(!manual&&message.includes('[qa-festival-playtest]')&&files.length&&files.every(f=>festivalPlaytestFiles.has(f)))return ['forest','forge'];
+  if(!manual&&message.includes('[qa-homecoming-playtest]')&&files.length&&files.every(f=>homecomingFiles.has(f)))return ['finale','epilogue'];
   if(!manual&&message.includes('[qa-title-audio]')&&files.length&&files.every(f=>audioOnly.has(f)))return [];
   if(!manual&&message.includes('[qa-fidelity-visual]')&&files.length&&files.every(f=>visualFidelityFiles.has(f)))return ['sky','library','starfall','finale','epilogue'];
   if(!manual&&message.includes('[qa-fidelity-3]')&&files.length&&files.every(f=>fidelityFiles.has(f)))return ['sky','library','starfall'];

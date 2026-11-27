@@ -140,7 +140,8 @@
     if(!game||game.scene!=='yard')return;
     ensureRoot();
     const slotState=state();
-    if(!active||visitedState!==slotState){
+    const arriving=!active||visitedState!==slotState;
+    if(arriving){
       lastNpcHits=[];hitState=null;guestPage=0;guestRosterKey='';if(visitedState!==slotState)window.GardenProjects?.resetSlot?.();
       active=true;visitedState=slotState;const s=slotState;
       if(s){
@@ -152,6 +153,7 @@
     }
     if(root)root.inert=false;
     root?.classList.add('is-active');document.getElementById('stage')?.classList.add('cb-sunlit-garden');renderLabels();refreshGuide();
+    if(arriving)window.dispatchEvent(new Event('cat-bond-garden-entered'));
   }
   function leave(){window.GardenProjects?.resetSlot?.();active=false;if(root)root.inert=true;root?.classList.remove('is-active');document.getElementById('stage')?.classList.remove('cb-sunlit-garden');lastNpcHits=[];hitState=null;hideTalkMarkers();window.GardenExploration?.reset?.();}
   function registerNarrativeAdapter(adapter){
