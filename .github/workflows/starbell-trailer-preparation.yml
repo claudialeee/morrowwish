@@ -25,7 +25,6 @@ jobs:
         run: |
           node --check scripts/capture-starbell-trailer.mjs
           python3 -m py_compile scripts/render-starbell-trailer-draft.py
-          ffmpeg -version
           test -s public/cat-bond/assets/audio/garden.mp3
       - name: Generate local fixtures and record real actions
         env:
@@ -40,8 +39,13 @@ jobs:
           node scripts/cat-bond-experience-knowledge.mjs
           node scripts/cat-bond-experience-targets.mjs
           node scripts/capture-starbell-trailer.mjs
+      - name: Install FFmpeg for rough cut only
+        if: always() && hashFiles('artifacts/starbell-trailer/capture-index.json') != ''
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update && sudo apt-get install -y ffmpeg; fi
+          ffmpeg -version
       - name: Attempt internal rough cut (not release quality)
-        if: always()
+        if: always() && hashFiles('artifacts/starbell-trailer/capture-index.json') != ''
         run: python3 scripts/render-starbell-trailer-draft.py
       - uses: actions/upload-artifact@v4
         if: always()

@@ -2,21 +2,21 @@
   "schema": 1,
   "project": "Echoes of the Starbell",
   "duration": 30,
-  "aspect": "16:9",
+  "aspect": "9:16",
   "fps": 30,
   "language": "en",
-  "output": "1920x1080 H.264/AAC",
+  "output": "1080x1920 H.264/AAC",
   "shots": [
     {
       "id": "garden",
       "seconds": 3.5,
-      "text": "You forgot your name.",
+      "text": "You forgot\nyour name.",
       "focus": "Visible golden lead, real butterfly interaction"
     },
     {
       "id": "meet",
       "seconds": 4,
-      "text": "But someone remembers you.",
+      "text": "But someone\nremembers you.",
       "focus": "Real silver lead encounter; no fake romance animation"
     },
     {
@@ -58,17 +58,19 @@
     {
       "id": "mystery",
       "seconds": 2.5,
-      "text": "Why do you know that song?",
+      "text": "Why do you know\nthat song?",
       "focus": "Old tune clue; no reveal"
     },
     {
       "id": "title",
       "seconds": 3.5,
-      "text": "Play Free Now",
-      "focus": "Official title, clear CTA, no Chinese text"
+      "text": "Play free\nin your browser",
+      "focus": "Official title and clear CTA within central safe area; platform profile or post supplies real URL"
     }
   ],
   "sourcePolicy": "Real gameplay clips only; in-game narrative art permissible as narrative, no external images, no unimplemented scenes",
   "previewMusic": "public/cat-bond/assets/audio/garden.mp3",
-  "previewUrl": "https://cat-bond-preview.morrowwish.pages.dev/cat-bond/"
+  "previewUrl": "https://cat-bond-preview.morrowwish.pages.dev/cat-bond/",
+  "platform": "Short-form social: TikTok, Reels, YouTube Shorts",
+  "safeArea": "Working editorial safe area (not a platform guarantee): left 8%, right 20%, top 13%, bottom 23%; check current platform overlay before posting. Center cat faces and action; no stretched or cropped gameplay."
 }

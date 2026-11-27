@@ -23,10 +23,10 @@ with tempfile.TemporaryDirectory() as tmp:
         src=ROOT/clip["file"]
         start=float(overrides.get(s["id"],clip["marks"][0]["approxSeconds"]))
         if duration(src)+0.04<start+s["seconds"]: raise RuntimeError("Review trim: "+s["id"])
-        vf="scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30"
+        vf="scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30"
         if s["text"]:
             t=tmp/f"text{n}.txt";t.write_text(s["text"])
-            vf+=f",drawtext=fontfile={font}:textfile={t}:fontsize=64:fontcolor=white:shadowcolor=black@0.8:shadowx=2:shadowy=3:x=(w-tw)/2:y=h*0.77"
+            vf+=f",drawtext=fontfile={font}:textfile={t}:fontsize=60:line_spacing=10:fontcolor=white:shadowcolor=black@0.8:shadowx=2:shadowy=3:x=(w*0.88-tw)/2:y=h*0.65"
         dst=tmp/f"{n:02}.mp4"
         call("ffmpeg","-hide_banner","-loglevel","error","-y","-ss",str(start),"-i",str(src),"-t",str(s["seconds"]),"-an","-vf",vf,"-c:v","libx264","-preset","fast","-crf","18","-pix_fmt","yuv420p",str(dst))
         parts.append(dst)

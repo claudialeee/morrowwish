@@ -8,8 +8,8 @@ import {execFileSync} from 'node:child_process';
 const origin='http://127.0.0.1:8765';
 const root=process.argv[2]||'artifacts/starbell-trailer';
 const fixtureRoot=process.env.STARBELL_FIXTURES||'artifacts/cat-bond-experience/synthetic-checkpoints';
-const width=Number(process.env.TRAILER_WIDTH||1440),height=width*9/16;
-assert.ok(Number.isInteger(height)&&width>=1280,'Use a native 16:9 viewport (1440 or 1920)');
+const width=Number(process.env.TRAILER_WIDTH||540),height=width*16/9;
+assert.ok(Number.isInteger(height)&&width>=360,'Use a native 9:16 viewport (540, 720 or 1080)');
 await fs.mkdir(root,{recursive:true});
 const revision=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 const browser=await chromium.launch({headless:process.env.TRAILER_HEADFUL!=='1'});
@@ -23,7 +23,7 @@ const clips={
  battle:{scene:'harbor:H-04',seconds:8,run:async h=>{await h.click('Belllight beast');await h.page.locator('#panel [data-battle-auto="true"]').click();await h.page.locator('#bp-go').click();await h.page.locator('#battle-ui.on').waitFor();const tutorial=h.page.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();await h.mark('real battle; verify duo separately');await h.page.waitForTimeout(12000);h.extra.duoUses=await h.page.evaluate(()=>window.__game?.battle?.duoUses??null);}},
  lookout:{scene:'sky:S-04',seconds:5,run:async h=>{await h.click('Talk to Muling');const view=h.page.locator('.sky-lookout-view');await view.waitFor();await h.click('Walk around the lookout');await h.click('Sit beside Muling');assert.equal(await view.getAttribute('data-pose'),'sit');await h.page.locator('.sky-lookout-painting').evaluate(img=>img.decode());await h.mark('sit together');await h.page.waitForTimeout(5000);}},
  mystery:{scene:'harbor:H-03',seconds:4,run:async h=>{await h.click('Talk to Yandeng');const dlg=h.page.locator('.res-host[data-scene="harbor:H-03"]');await dlg.waitFor();await h.mark('old tune clue');for(let i=0;i<3;i++){if(!await dlg.isVisible())break;await h.page.waitForTimeout(1500);if(await dlg.isVisible())await dlg.locator('.res-line').click();}}},
- title:{scene:null,seconds:4,run:async h=>{await h.page.waitForFunction(()=>document.querySelector('#cb-title-name')?.textContent==='Echoes of the Starbell');await h.mark('official title');await h.page.waitForTimeout(4000);}}
+ title:{scene:null,seconds:4,run:async h=>{await h.page.waitForFunction(()=>document.querySelector('#cb-title-name')?.textContent==='Echoes of the Starbell');await h.mark('official title');await h.page.waitForTimeout(5000);}}
 };
 const selected=(process.env.TRAILER_CLIPS||Object.keys(clips).join(',')).split(',');
 assert.ok(selected.every(id=>clips[id]),'Unknown trailer clip');
@@ -35,7 +35,7 @@ try{
   try{
    const fixture=def.scene?JSON.parse(await fs.readFile(path.join(fixtureRoot,def.scene.replace(':','-')+'.json'),'utf8')):null;
    if(fixture){assert.equal(fixture.provenance,'synthetic engine-model browser-restored');assert.equal(fixture.revision,revision,'Regenerate checkpoint for checked-out commit');}
-   context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,locale:'en-US',recordVideo:{dir:path.join(root,'raw'),size:{width,height}},...(fixture?{storageState:fixture.storageState}:{})});
+   context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,isMobile:true,hasTouch:true,locale:'en-US',recordVideo:{dir:path.join(root,'raw'),size:{width,height}},...(fixture?{storageState:fixture.storageState}:{})});
    await context.route('**/*',r=>{const u=new URL(r.request().url());return u.origin===origin||['data:','blob:'].includes(u.protocol)?r.continue():r.abort();});
    const started=Date.now();
    page=await context.newPage();video=page.video();page.setDefaultTimeout(18000);
