@@ -13,7 +13,7 @@ const forestSave=makeEngine(campaign).snapshot();forestSave.scene="forest:R-01";
 const forest=makeEngine(campaign,forestSave);const drain=()=>{while(forest.view().cursor<forest.view().current.lines.length)ok(forest.nextLine());};
 ok(forest.record("forest:R-01","npc:forest-dispute"));drain();ok(forest.finish());
 assert.equal(forest.nextLine().ok,false);assert.equal(forest.record("forest:R-02","explore:scent-trail").ok,false);ok(forest.record("forest:R-02","puzzle:moonleaf-crossing"));drain();ok(forest.finish());
-assert.equal(forest.record("forest:R-03","battle:root-echo").ok,false);ok(forest.record("forest:R-03","puzzle:moonleaf-loop"));drain();ok(forest.finish());
+assert.deepEqual(forest.view().objective,[],"The repeat forest loop is retired from the main story");assert.equal(forest.record("forest:R-03","battle:root-echo").ok,false);assert.equal(forest.record("forest:R-03","puzzle:moonleaf-loop").ok,false,"Retired activity cannot grant story evidence");drain();ok(forest.finish());
 assert.equal(forest.record("forest:R-04","melody:forest").ok,false);ok(forest.record("forest:R-04","repair:forest"));const song=createPuzzle("melody:forest");song.participants=["yahe","yuchuan"];assert.equal(movePuzzle(song,1),false);assert.equal(movePuzzle(song,2),false);assert.deepEqual(song.values,[1]);assert.equal(movePuzzle(song,0),false);assert.equal(movePuzzle(song,2),true);ok(forest.record("forest:R-04","melody:forest"));drain();ok(forest.finish());assert.equal(forest.view().current.id,"forge:E-01");console.log("Moonleaf routes and forest melody passed");
 
 
