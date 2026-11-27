@@ -43,7 +43,7 @@ jobs:
             git fetch --no-tags --depth=1 origin "$BEFORE" || true
           fi
           node scripts/cat-bond-experience-qa-scope.mjs --self-test
-          matrix=$(node scripts/cat-bond-experience-qa-scope.mjs)
+          matrix=$(node scripts/cat-bond-experience-qa-scope.mjs | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>console.log(JSON.stringify({include:JSON.parse(s).include.flatMap(c=>["en","zh"].map(locale=>({...c,locale})))}))))')
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
   chapter:
     needs: select
@@ -57,6 +57,7 @@ jobs:
       CAT_BOND_EXPERIENCE: '1'
       CAT_BOND_TARGET_SCENES: ${{ matrix.entry }}
       CAT_BOND_CHAPTERS: ${{ matrix.chapter }}
+      CAT_BOND_CHAPTER_LOCALE: ${{ matrix.locale }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -76,6 +77,7 @@ jobs:
           node scripts/cat-bond-experience-targets.mjs
           node scripts/cat-bond-experience-chapters.mjs
       - name: Reload actual chapter-derived saves across languages and screen profiles
+        if: matrix.locale == 'en'
         run: |
           root=artifacts/cat-bond-experience/chapter-acceptance/checkpoints/chapter-$CAT_BOND_CHAPTERS
           test -d "$root"
@@ -90,7 +92,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: canon22-browser-${{ matrix.chapter }}
+          name: canon22-browser-${{ matrix.chapter }}-${{ matrix.locale }}
           path: |
             artifacts/cat-bond-experience/
             /tmp/canon22-browser.log

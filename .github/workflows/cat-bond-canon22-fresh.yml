@@ -11,19 +11,26 @@ permissions:
   contents: read
 jobs:
   fresh-campaign:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[fresh-campaign]'))
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (contains(github.event.head_commit.message, '[fresh-campaign]') || contains(github.event.head_commit.message, '[qa-zh-campaign]')))
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     concurrency:
-      group: canon22-fresh-${{ github.ref }}-${{ matrix.scope }}
+      group: canon22-fresh-${{ github.ref }}-${{ matrix.scope }}-${{ matrix.locale }}
       cancel-in-progress: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[replace-obsolete-qa]') }}
     strategy:
       fail-fast: false
       matrix:
-        scope: [opening, campaign]
+        include:
+          - scope: opening
+            locale: en
+          - scope: campaign
+            locale: en
+          - scope: campaign
+            locale: zh
     env:
       CAT_BOND_CONTINUOUS: '1'
       CAT_BOND_EXPERIENCE: '1'
+      CAT_BOND_CHAPTER_LOCALE: ${{ matrix.locale }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,7 +39,7 @@ jobs:
           cache: npm
       - uses: ./.github/actions/starbell-browser-setup
       - name: Verify both real opening routes and title on all profiles
-        if: matrix.scope == 'opening'
+        if: matrix.scope == 'opening' && !contains(github.event.head_commit.message, '[qa-zh-campaign]')
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-opening.log 2>&1 &
           server=$!
@@ -45,7 +52,7 @@ jobs:
           done
           test "$failures" -eq 0
       - name: Fresh slot campaign through ending (real save reload between chapters)
-        if: matrix.scope == 'campaign'
+        if: matrix.scope == 'campaign' && (matrix.locale == 'zh' || !contains(github.event.head_commit.message, '[qa-zh-campaign]'))
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-fresh.log 2>&1 &
           server=$!
@@ -56,7 +63,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: canon22-fresh-${{ matrix.scope }}
+          name: canon22-fresh-${{ matrix.scope }}-${{ matrix.locale }}
           path: |
             artifacts/cat-bond-experience/
             /tmp/canon22-fresh.log

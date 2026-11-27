@@ -13,6 +13,119 @@ const requested=process.env.CAT_BOND_CHAPTERS?.split(',')||order;
 assert.ok(requested.every(c=>order.includes(c)));
 const browser=await chromium.launch({headless:true});
 const results=[];
+const locale=process.env.CAT_BOND_CHAPTER_LOCALE||'en';
+assert.ok(['en','zh'].includes(locale),'Chapter locale must be en or zh');
+const labels=Object.freeze({
+  "Tide cave logbook": "潮洞日志",
+  "Storm boat": "遇险小船",
+  "Lighthouse mirrors": "灯塔反射镜",
+  "Chase the runaway chime": "穿过风铃巷",
+  "Belllight beast": "铃光兽",
+  "Town bell sanctuary": "古铃圣所",
+  "Coming Home": "归家调",
+  "Moonleaf bridge": "拨动月叶 · 根桥",
+  "Break the forest loop": "打破森林回环",
+  "Ancient-root sanctuary": "古根圣所",
+  "Living Roots": "相枝调",
+  "Lantern festival · Shadow show": "灯火节 · 影子戏",
+  "Light the stone bridge": "照亮石桥",
+  "Shadow beast": "剪影兽",
+  "Lantern sanctuary": "千灯圣所",
+  "Song of Ember": "承火调",
+  "Catch the wind · Practice gliding": "借风起飞 · 练习滑翔",
+  "Find the moon gate · Cloud route": "寻找月门 · 云间航线",
+  "Joint gliding platform": "双猫滑翔台",
+  "Windwing sanctuary": "风翼圣所",
+  "Open Sky": "逐风调",
+  "Walk around the lookout": "沿观景台走走",
+  "Sit beside Muling": "坐到暮铃身边",
+  "Moonmirror sanctuary": "月镜圣所",
+  "Reflections": "照影调",
+  "Public records · Investigation": "公开记录 · 调查",
+  "Ask about the borrowed map": "问借图的事",
+  "Six-region model · Compare the two routes": "六地桌上模型 · 验证两条路线",
+  "Routes explored 1/2": "已体验路线 1/2",
+  "Routes explored 2/2": "已体验路线 2/2",
+  "Finish demonstration": "结束演示",
+  "Walk on starlight": "踩着星光走",
+  "Observatory · Complete record": "天文台 · 完整灾变记录",
+  "Remember the choice": "回想当年的抉择",
+  "Test the neighboring bells": "邻铃试音",
+  "Starfall sanctuary": "星原圣所",
+  "Beyond Stars": "续星调",
+  "Watch the story scene": "观看剧情",
+  "Approach the Star Bell": "前往中央星铃",
+  "Help Muling release the last lock": "协助暮铃打开最后一道锁",
+  "Hold the bell chain": "按住铃链",
+  "Give Muling the key": "交给暮铃",
+  "THE BELL RINGS AGAIN": "星铃再次响起",
+  "Return to Sunlit Garden": "回到阳光花园",
+  "Choose the left cat": "选左边的猫",
+  "Move and ring": "换位置，摇铃",
+  "Choose the right cat": "选右边的猫",
+  "Two Mulings in the mirror": "镜中的两只暮铃",
+  "Dew · Low": "露珠 · 低音",
+  "Starlight · Middle": "星光 · 中音",
+  "Flower bell · High": "花铃 · 高音",
+  "FURNACE STABILIZED": "熔炉试验完成",
+  "Turn left light": "转动左灯",
+  "Turn center light": "转动中灯",
+  "Turn right light": "转动右灯",
+  "Outer ring": "外环",
+  "Middle ring": "中环",
+  "Inner ring": "内环",
+  "Ring the local bell": "摇响古铃",
+  "Free the trapped kitten": "帮小猫离开根丛",
+  "Far bank": "对岸",
+  "Continue festival": "继续庆典",
+  "Cross the bridge": "走过石桥",
+  "Aim left": "向左",
+  "Aim right": "向右",
+  "Turn moonleaf": "拨动月叶",
+  "Left mirror": "左镜",
+  "Center mirror": "中镜",
+  "Right mirror": "右镜",
+  "Upstream": "上游",
+  "Branch": "支流",
+  "Roots": "根系",
+  "Fork": "岔路",
+  "Canopy": "树冠",
+  "Cat": "猫",
+  "Return": "返回",
+  "Continue": "继续",
+  "Continue story": "继续剧情",
+  "Explore": "探索",
+  "Start exploring": "开始探索",
+  "Jump to stone 2": "跳向星石 2",
+  "Jump to stone 4": "跳向星石 4",
+  "Jump to stone 6": "跳向星石 6",
+  "Jump to stone 8": "跳向星石 8",
+  "Talk to Muling": "交谈 暮铃",
+  "Invite Muling": "邀请 暮铃",
+  "Talk to Qilan": "交谈 栖蓝",
+  "Invite Qilan": "邀请 栖蓝",
+  "Talk to Yandeng": "交谈 檐灯",
+  "Invite Yandeng": "邀请 檐灯",
+  "Talk to Yahe": "交谈 芽禾",
+  "Invite Yahe": "邀请 芽禾",
+  "Talk to Yuchuan": "交谈 榆川",
+  "Invite Yuchuan": "邀请 榆川",
+  "Talk to Jinpo": "交谈 烬婆",
+  "Invite Jinpo": "邀请 烬婆",
+  "Talk to Xiaomao": "交谈 小铆",
+  "Invite Xiaomao": "邀请 小铆",
+  "Talk to Yuanfan": "交谈 远帆",
+  "Invite Yuanfan": "邀请 远帆",
+  "Talk to Baikan": "交谈 白栞",
+  "Invite Baikan": "邀请 白栞",
+  "Talk to Moye": "交谈 墨页",
+  "Invite Moye": "邀请 墨页",
+  "Talk to Lichuan": "交谈 砾川",
+  "Invite Lichuan": "邀请 砾川",
+  "Talk to Xingya": "交谈 星芽",
+  "Invite Xingya": "邀请 星芽"
+});
+const local=label=>{if(locale==='en')return label;if(!Object.hasOwn(labels,label))throw Error('Missing Chinese test selector: '+label);return labels[label];};
 const continuous=process.env.CAT_BOND_CONTINUOUS==='1';let earnedSave=null;
 if(continuous)assert.deepEqual(requested,order,'Fresh campaign must cover every chapter in sequence');
 async function run(chapter){
@@ -28,8 +141,9 @@ async function run(chapter){
  await attachExperienceRecorder(context,page,{id:(continuous?'fresh-':'chapter-')+chapter,root:out,synthetic:!continuous,chapterEntry:continuous?null:start});
  const view=()=>page.evaluate(()=>CatBondResonance.view());
  const scene=id=>page.waitForFunction(id=>{const v=CatBondResonance.view();return v.current?.id===id||(id==='epilogue:E-01'&&v.current?.id==='epilogue:E-02'&&v.completed.includes(id));},id,{timeout:35000});
- const shot=async id=>{if(id!=='FAIL')localeIssues.push(...await inspectLocale(page,'en',chapter+':'+id));return page.screenshot({path:out+'/'+chapter+'-'+id.replace(':','-')+'.png'});};
- async function click(label,scope=page){
+ const shot=async id=>{if(id!=='FAIL')localeIssues.push(...await inspectLocale(page,locale,chapter+':'+id));return page.screenshot({path:out+'/'+chapter+'-'+id.replace(':','-')+'.png'});};
+ async function click(label,scope=page,alreadyLocalized=false){
+  label=alreadyLocalized?label:local(label);
   const b=scope.getByRole('button',{name:label,exact:true}).first();
   if(scope===page&&!await b.isVisible()){
    const hidden=page.getByRole('button',{name:label,exact:true,includeHidden:true}).or(page.locator('button').and(page.getByText(label,{exact:true})));
@@ -45,7 +159,7 @@ async function run(chapter){
   }
   steps.push({scene:(await view()).current?.id,action:label});await b.click();
  }
- async function trial(id,actions){const modal=page.locator("[data-adventure=trial-"+id+"]");await modal.waitFor({state:"visible",timeout:15000});for(const a of actions)await modal.locator("[data-play-action="+a+"]").click();assert.equal(await modal.getAttribute("data-complete"),"true");await shot("trial-"+id);await modal.getByRole("button",{name:"Return",exact:true}).click();await modal.waitFor({state:"detached"});}
+ async function trial(id,actions){const modal=page.locator("[data-adventure=trial-"+id+"]");await modal.waitFor({state:"visible",timeout:15000});for(const a of actions)await modal.locator("[data-play-action="+a+"]").click();assert.equal(await modal.getAttribute("data-complete"),"true");await shot("trial-"+id);await modal.getByRole("button",{name:local("Return"),exact:true}).click();await modal.waitFor({state:"detached"});}
  const op=async(id)=>page.waitForFunction(op=>!CatBondResonance.view().objective.includes(op),id,{timeout:35000});
  async function talk(npc){
   const before=await view();
@@ -70,10 +184,10 @@ async function run(chapter){
     }
     await dlg.waitFor();
    }
-   if(canChoose){const selected=v.current.choices.find(c=>c.label.en===choice)||v.current.choices[0];await click(selected.label.en,dlg);await page.waitForFunction(({id,choice})=>CatBondResonance.view().current?.id!==id||CatBondResonance.view().choice===choice,{id,choice:selected.id});continue;}
+   if(canChoose){const selected=v.current.choices.find(c=>c.label.en===choice)||v.current.choices[0];await click(selected.label[locale],dlg,true);await page.waitForFunction(({id,choice})=>CatBondResonance.view().current?.id!==id||CatBondResonance.view().choice===choice,{id,choice:selected.id});continue;}
    const line=v.current.lines[v.cursor];
-   await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text.en);
-   readLines.push({scene:id,cursor:v.cursor,speaker:line.speaker,text:line.text.en});
+   await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text[locale]);
+   readLines.push({scene:id,cursor:v.cursor,speaker:line.speaker,text:line.text[locale]});
    if(/^library:M-0[345]$/.test(id)){
     const body=dlg.locator('.res-body'),panel=dlg.locator('.res-dialogue');
     const [b,p]=await Promise.all([body.boundingBox(),panel.boundingBox()]);
@@ -108,7 +222,7 @@ async function run(chapter){
   for(const input of inputs)await click(input,controls);
   await controls.waitFor({state:'hidden',timeout:35000});
  }
- async function invite(npc){await click('Invite '+npc);await page.getByRole('button',{name:'Invite '+npc,exact:true,includeHidden:true}).waitFor({state:'detached'});}
+ async function invite(npc){await click('Invite '+npc);await page.getByRole('button',{name:local('Invite '+npc),exact:true,includeHidden:true}).waitFor({state:'detached'});}
  async function restore(label,inputs,people,melody,notes){await puzzle(label,inputs);if(chapter==='harbor')for(const npc of people)await invite(npc);await puzzle(melody,['forge','sky','library','starfall'].includes(chapter)?notes.slice(-1):notes);}
  const low='Dew · Low',mid='Starlight · Middle',high='Flower bell · High';
  async function flyWaterfall(label){
@@ -155,7 +269,7 @@ async function run(chapter){
   try{
   if(type==='forge'){
    for(let i=0;i<240;i++){if(await page.locator('#cb-forge-result').isVisible())break;const support=page.locator('[data-forge-support-button]');if(await support.isVisible()&&await support.isEnabled())await support.click();await page.waitForTimeout(750);}
-   await page.locator('#cb-forge-result').waitFor({timeout:180000});await shot(operation+'-result');assert.equal(await page.locator('#cb-forge-result h2').innerText(),'FURNACE STABILIZED');await page.locator('[data-forge-return]').click();
+   await page.locator('#cb-forge-result').waitFor({timeout:180000});await shot(operation+'-result');assert.equal(await page.locator('#cb-forge-result h2').innerText(),local('FURNACE STABILIZED'));await page.locator('[data-forge-return]').click();
   }else if(type==='finale'){
    if(operation==='battle:identify-echo'){await page.waitForFunction(()=>__game.battle?.resonanceFinale?.probeChanged===true||!!document.getElementById('cb-finale-result'),null,{timeout:30000});await shot(operation+'-live-reply');}
    const result=page.locator('#cb-finale-result');
@@ -208,8 +322,8 @@ async function run(chapter){
  async function cinema(id,label){
   await scene(id);await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady(),null,{timeout:15000});await click(label);
   await page.locator('.cbcp-art').first().waitFor();await shot(id+'-cinematic');
-  if(id==='finale:B-04'){const reply=page.getByRole('button',{name:'Ring twice in reply',exact:true});await reply.waitFor();await shot(id+'-ring-reply');await reply.click();}
-  if(id==='starfall:F-02'&&!continuous){await page.waitForFunction(()=>{const root=document.querySelector('.cbcp-root');if(root?.dataset.frameId!=='starfall:F-02-last-patrol')return false;const art=root.querySelector('.cbcp-art[src$="lantern-entrustment.jpg"]');return art&&art.complete&&art.naturalWidth>0&&Number(getComputedStyle(art).opacity)>=.95;},{},{timeout:45000});await shot(id+'-lamp-handoff');await page.locator('.cbcp-skip').click();const summary=page.locator('[data-canon-acknowledgement="starfall:F-02"]');await summary.waitFor();assert.match(await summary.innerText(),/promised Muling/);assert.equal((await view()).current.id,id);await shot(id+'-skip-summary');await click('Continue',summary);}
+  if(id==='finale:B-04'){const reply=page.getByRole('button',{name:locale==='zh'?/^(?:回铃|摇铃|敲铃|回应|轻摇|摇响).*两下|^两下.*(?:回铃|回应)$/: 'Ring twice in reply',exact:true});await reply.waitFor();await shot(id+'-ring-reply');await reply.click();}
+  if(id==='starfall:F-02'&&!continuous){await page.waitForFunction(()=>{const root=document.querySelector('.cbcp-root');if(root?.dataset.frameId!=='starfall:F-02-last-patrol')return false;const art=root.querySelector('.cbcp-art[src$="lantern-entrustment.jpg"]');return art&&art.complete&&art.naturalWidth>0&&Number(getComputedStyle(art).opacity)>=.95;},{},{timeout:45000});await shot(id+'-lamp-handoff');await page.locator('.cbcp-skip').click();const summary=page.locator('[data-canon-acknowledgement="starfall:F-02"]');await summary.waitFor();assert.match(await summary.innerText(),locale==='zh'?/答应过暮铃/:/promised Muling/);assert.equal((await view()).current.id,id);await shot(id+'-skip-summary');await click('Continue',summary);}
   await page.waitForFunction(id=>CatBondResonance.view().current?.id!==id,id,{timeout:180000});
  }
  async function libraryEcho(){
@@ -223,13 +337,15 @@ async function run(chapter){
   await controls.waitFor({state:'hidden'});
  }
  try{
-  await page.goto(origin+'/cat-bond/?lang=en&rpgDev=1');
+  await page.goto(origin+'/cat-bond/?lang='+locale+'&rpgDev=1');
   await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
+  await page.evaluate(l=>MorrowwishI18n.set(l),locale);
+  await page.waitForFunction(l=>document.documentElement.lang.startsWith(l),locale);
   if(continuous&&!earnedSave){
    assert.equal(chapter,'harbor');await page.locator('#intro-start').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene('prologue:P-05');
-   await page.locator('#cb-player-first-intro').getByRole('button',{name:'Start exploring',exact:true}).click();
+   await page.locator('#cb-player-first-intro').getByRole('button',{name:local('Start exploring'),exact:true}).click();
    // Start from a new slot, no fixture or direct state mutation.
-   await page.locator('.sg-prologue-guide').getByRole('button',{name:/Next scene/}).click();await scene(start);
+   await page.locator('.sg-prologue-guide').getByRole('button',{name:locale==='zh'?/下一场景/:/Next scene/}).click();await scene(start);
   }else{await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene(start);}
   assert.ok(start==='epilogue:E-01'||!(await view()).completed.includes(start),'Chapter start is not already completed');
   await page.waitForFunction(()=>['map','yard'].includes(__game.scene));
@@ -240,7 +356,7 @@ async function run(chapter){
   }
   await page.waitForFunction(()=>WorldMap.mode==='region'||__game.scene==='yard');
   if(chapter==='finale'&&await page.evaluate(()=>__game.scene==='yard')){
-   const travel=page.getByRole('button',{name:'Explore',exact:true});
+   const travel=page.getByRole('button',{name:local('Explore'),exact:true});
    if(await travel.isVisible())await travel.click();
    else {await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-explore"]').click();}
    await page.locator('[data-next-scene="'+start+'"]:visible').click();
@@ -273,13 +389,13 @@ async function run(chapter){
    await flyWaterfall('Catch the wind · Practice gliding');await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
    await click('Find the moon gate · Cloud route');await op('explore:flight-recorder');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
    await flyWaterfall('Joint gliding platform');await dialogue('sky:S-03');await click('Windwing sanctuary');await op('repair:sky');await puzzle('Open Sky',[low]);await dialogue('sky:S-03');await scene('sky:S-04');assert.ok((await view()).melodies.includes('sky'),'Sky must answer before the tea scene');
-   await talk('Muling');const lookout=page.locator('.sky-lookout-view');await lookout.waitFor();await click('Walk around the lookout');assert.equal(await lookout.getAttribute('data-pose'),'walk');await click('Sit beside Muling');assert.equal(await lookout.getAttribute('data-pose'),'sit');await page.locator('.sky-lookout-painting').evaluate(img=>img.decode());await artProfiles('sky-lookout-sit',page.locator('.sky-lookout-painting'),page.getByRole('button',{name:'Walk around the lookout'}));await dialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
+   await talk('Muling');const lookout=page.locator('.sky-lookout-view');await lookout.waitFor();await click('Walk around the lookout');assert.equal(await lookout.getAttribute('data-pose'),'walk');await click('Sit beside Muling');assert.equal(await lookout.getAttribute('data-pose'),'sit');await page.locator('.sky-lookout-painting').evaluate(img=>img.decode());await artProfiles('sky-lookout-sit',page.locator('.sky-lookout-painting'),page.getByRole('button',{name:local('Walk around the lookout')}));await dialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
    await dialogue('sky:S-05');
   }else if(chapter==='library'){
    await talk('Baikan');await dialogue('library:M-01');await scene('library:M-02');
    await libraryEcho();await dialogue('library:M-02');await click('Moonmirror sanctuary');await op('repair:library');await puzzle('Reflections',[mid]);await dialogue('library:M-02');await scene('library:M-03');assert.ok((await view()).melodies.includes('library'),'Library must answer before the identity reveal');
    await talk('Muling');await dialogue('library:M-03','I feel hurt');await scene('library:M-04');await puzzle('Public records · Investigation',['Ask about the borrowed map']);await dialogue('library:M-04','I need some distance');await scene('library:M-05');
-   await talk('Moye');await click('Six-region model · Compare the two routes');const routes=page.locator('.rw-puzzle-controls');await routes.waitFor();await checkPuzzleLayout();const surface=page.locator('.rw-surface'),box=await surface.boundingBox();assert.ok(box);const dragBell=async(a,b)=>{await page.mouse.move(box.x+box.width*a[0],box.y+box.height*a[1]);await page.mouse.down();await page.mouse.move(box.x+box.width*b[0],box.y+box.height*b[1],{steps:8});await page.mouse.up();};await dragBell([.5,.40],[.5,.54]);await page.getByText('Routes explored 1/2',{exact:true}).waitFor();await page.evaluate(async()=>{const img=new Image();img.src='assets/story-art/library-shared-memories.jpg';await img.decode();});await shot('route-inward');await dragBell([.5,.40],[.5+.22*Math.sqrt(3)/2,.47]);await page.getByText('Routes explored 2/2',{exact:true}).waitFor();await artProfiles('route-neighbors',surface,page.getByRole('button',{name:'Finish demonstration'}));await click('Finish demonstration',routes);await dialogue('library:M-05');
+   await talk('Moye');await click('Six-region model · Compare the two routes');const routes=page.locator('.rw-puzzle-controls');await routes.waitFor();await checkPuzzleLayout();const surface=page.locator('.rw-surface'),box=await surface.boundingBox();assert.ok(box);const dragBell=async(a,b)=>{await page.mouse.move(box.x+box.width*a[0],box.y+box.height*a[1]);await page.mouse.down();await page.mouse.move(box.x+box.width*b[0],box.y+box.height*b[1],{steps:8});await page.mouse.up();};await dragBell([.5,.40],[.5,.54]);await page.getByText(local('Routes explored 1/2'),{exact:true}).waitFor();await page.evaluate(async()=>{const img=new Image();img.src='assets/story-art/library-shared-memories.jpg';await img.decode();});await shot('route-inward');await dragBell([.5,.40],[.5+.22*Math.sqrt(3)/2,.47]);await page.getByText(local('Routes explored 2/2'),{exact:true}).waitFor();await artProfiles('route-neighbors',surface,page.getByRole('button',{name:local('Finish demonstration')}));await click('Finish demonstration',routes);await dialogue('library:M-05');
   }else if(chapter==='starfall'){
    await talk('Lichuan');await talk('Xingya');await puzzle('Walk on starlight',['Jump to stone 2','Jump to stone 4','Jump to stone 6','Jump to stone 8']);await dialogue('starfall:F-01');await scene('starfall:F-02');
    assert.deepEqual((await view()).objective,['explore:catastrophe-record','cinematic:starfall-memory']);await click('Observatory · Complete record');await op('explore:catastrophe-record');await cinema('starfall:F-02','Remember the choice');
@@ -289,11 +405,11 @@ async function run(chapter){
    await battle('Approach the Star Bell','battle:inward-gates','finale');await dialogue('finale:B-01');await scene('finale:B-02');
    await battle('Approach the Star Bell','battle:identify-echo','finale');await dialogue('finale:B-02');await scene('finale:B-03');
    await battle('Approach the Star Bell','battle:central-echo','finale');await dialogue('finale:B-03');
-   await click('Help Muling release the last lock');const latch=page.getByRole('button',{name:'Hold the bell chain',exact:true});await latch.waitFor();await latch.focus();await page.keyboard.down('Space');try{await page.waitForTimeout(1800);}finally{await page.keyboard.up('Space');}
+   await click('Help Muling release the last lock');const latch=page.getByRole('button',{name:local('Hold the bell chain'),exact:true});await latch.waitFor();await latch.focus();await page.keyboard.down('Space');try{await page.waitForTimeout(1800);}finally{await page.keyboard.up('Space');}
    await scene('finale:B-04');await cinema('finale:B-04','Watch the story scene');
   }else if(chapter==='epilogue'){
    if(await page.evaluate(()=>__game.scene!=='yard'))await page.locator('[data-next-scene="epilogue:E-01"]:visible').click();await page.waitForFunction(()=>__game.scene==='yard');assert.equal(await page.locator('#first-quest').isVisible(),false,'The legacy catch tutorial must stay hidden during homecoming');await scene('epilogue:E-02');if(!await page.locator('.res-host[data-scene="epilogue:E-02"]').isVisible())await talk('Muling');await dialogue('epilogue:E-02','Give everyone some time');await scene('epilogue:E-03');await talk('Muling');await dialogue('epilogue:E-03');
-   await click('Give Muling the key');await page.getByRole('heading',{name:'THE BELL RINGS AGAIN'}).waitFor();await page.locator('.res-ending-title img').evaluate(img=>img.decode());await artProfiles('ending',page.locator('.res-ending-title img'),page.getByRole('button',{name:'Return to Sunlit Garden'}));assert.equal((await view()).ending,true);await captureExperienceMilestone(page,'ending');
+   await click('Give Muling the key');await page.getByRole('heading',{name:local('THE BELL RINGS AGAIN')}).waitFor();await page.locator('.res-ending-title img').evaluate(img=>img.decode());await artProfiles('ending',page.locator('.res-ending-title img'),page.getByRole('button',{name:local('Return to Sunlit Garden')}));assert.equal((await view()).ending,true);await captureExperienceMilestone(page,'ending');
   }
   if(next)await scene(next);
   const final=await page.evaluate(()=>({view:CatBondResonance.view(),snapshot:CatBondResonance.snapshot()}));
@@ -304,15 +420,15 @@ async function run(chapter){
   assert.deepEqual(requiredBattles.filter(op=>!battleMeasurements.some(b=>b.operation===op&&b.status==='verified win'&&b.samples.length)),[],'Every required battle needs real outcome and telemetry');
   assert.deepEqual(errors,[]);
   await fs.writeFile(out+'/'+chapter+'-locale.json',JSON.stringify(localeIssues,null,2));
-  assert.deepEqual(localeIssues,[],'English chapter UI/Canvas purity');
+  assert.deepEqual(localeIssues,[],locale+' chapter UI/Canvas purity');
   if(continuous){
    const expectedCount=campaign.scenes.indexOf(expected.at(-1))+1+(next==='epilogue:E-01'&&final.snapshot.completed.includes(next)?1:0);assert.equal(final.snapshot.completed.length,expectedCount,'Fresh route must preserve all previous chapter history');
    earnedSave=await context.storageState();await fs.writeFile(out+'/fresh-earned-save-'+chapter+'.json',JSON.stringify({provenance:'fresh real inputs, chapter boundary reload',storageState:earnedSave,completed:expectedCount},null,2));
   }
-  return {chapter,status:'passed',start,next,scenes:expected.map(s=>s.id),readLines,steps,battleMeasurements:battleMeasurements.map(({samples,...m})=>({...m,sampleCount:samples.length})),stagingArt:chapter==='starfall'||chapter==='finale'||chapter==='epilogue'};
+  return {chapter,locale,status:'passed',start,next,scenes:expected.map(s=>s.id),readLines,steps,battleMeasurements:battleMeasurements.map(({samples,...m})=>({...m,sampleCount:samples.length})),stagingArt:chapter==='starfall'||chapter==='finale'||chapter==='epilogue'};
  }catch(e){
   await shot('FAIL').catch(()=>{});const observed=await view().catch(()=>null);
-  return {chapter,status:'failed',start,next,error:String(e).slice(0,2500),stack:String(e.stack||'').slice(0,3000),lastActions:steps.slice(-5),observedScene:observed?.current?.id,remaining:observed?.objective,completed:expected.filter(s=>observed?.completed.includes(s.id)).map(s=>s.id),readLines,steps,battleMeasurements:battleMeasurements.map(({samples,...m})=>({...m,sampleCount:samples.length})),pageErrors:errors};
+  return {chapter,locale,status:'failed',start,next,error:String(e).slice(0,2500),stack:String(e.stack||'').slice(0,3000),lastActions:steps.slice(-5),observedScene:observed?.current?.id,remaining:observed?.objective,completed:expected.filter(s=>observed?.completed.includes(s.id)).map(s=>s.id),readLines,steps,battleMeasurements:battleMeasurements.map(({samples,...m})=>({...m,sampleCount:samples.length})),pageErrors:errors};
  }finally{await context.close();}
 }
 try{
@@ -320,8 +436,8 @@ try{
  for(const chapter of requested){
   let result;try{result=await run(chapter);}catch(e){result={chapter,status:'failed',error:String(e)};}
   results.push(result);
-  await fs.writeFile(out+'/index.json',JSON.stringify({provenance:continuous?'fresh slot; real inputs throughout campaign; real save reload at chapter boundaries':'synthetic chapter starts; real inputs throughout each chapter',results},null,2));
-  console.log('CHAPTER ACCEPTANCE',JSON.stringify({chapter,status:result.status,scene:result.observedScene,remaining:result.remaining,completed:result.scenes||result.completed,lastActions:result.lastActions,stack:result.stack?.split('\n').slice(-4).join('\n'),error:result.error}));
+  await fs.writeFile(out+'/index.json',JSON.stringify({locale,provenance:continuous?'fresh slot; real inputs throughout campaign; real save reload at chapter boundaries':'synthetic chapter starts; real inputs throughout each chapter',results},null,2));
+  console.log('CHAPTER ACCEPTANCE',JSON.stringify({chapter,locale,status:result.status,scene:result.observedScene,remaining:result.remaining,completed:result.scenes||result.completed,lastActions:result.lastActions,stack:result.stack?.split('\n').slice(-4).join('\n'),error:result.error}));
   if(continuous&&result.status!=='passed')break;
  }
 }finally{await browser.close();}
