@@ -6148,9 +6148,10 @@ class CaptureBattle {
     let bonus = 0;                                   // sum of (factor-1) contributions
     if (combo) bonus += (combo.bonusMult || 1) - 1;
     bonus += elem - 1;
-    // CONDUCTIVE (水是电的 setup): a SOAKED (湿身) target conducts — ELECTRIC hits deal +20%.
-    const conductive = (skill.element === 'elec' && (e.status.soak || 0) > 0) ? 0.20 : 0;
-    bonus += conductive;
+    // Owner 2026-11-26: remove the hidden conductive (+0.20 for elec on soak) —
+    // it duplicated the soak|elec combo table entry (chainAll ×1.5) and added a
+    // non-consuming layer that wasn't in the combo language. Soak+elec interaction
+    // is now expressed EXCLUSIVELY through the combo table.
     const reactMulFloor = Math.max(0.25, 1 + bonus);
     dmg *= reactMulFloor;
     if (this._debug) {
@@ -6158,7 +6159,7 @@ class CaptureBattle {
         comboBonus: combo ? ((combo.bonusMult||1)-1) : 0,
         comboEffect: combo?.effect || null, comboConsumes: !!combo?.consumes,
         elemMul: elem,
-        conductive, bonusSum: bonus,
+        conductive: 0, bonusSum: bonus,
         reactMulFloor,
         tags: (e.tags||[]).slice(),
         statusActive: Object.keys(e.status||{}).filter(k=>e.status[k]>0),
