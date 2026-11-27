@@ -48,6 +48,7 @@ jobs:
           node --check public/cat-bond/js/resonance/world-bridge.mjs
           node --check public/cat-bond/js/resonance/sky-flight.mjs
           node --check public/cat-bond/js/resonance/world-runtime.mjs
+          node scripts/test-starbell-exploration-depth.mjs
           node --check public/cat-bond/js/resonance/campaign.mjs
           node --check public/cat-bond/js/resonance/engine.mjs
           node --check public/cat-bond/js/resonance/narrative-host.mjs
