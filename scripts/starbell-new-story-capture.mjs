@@ -10,6 +10,7 @@ const evidence={origin:liveOrigin,captureOrigin:origin,source:version,script:pro
 async function open(region){
  const ctx=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:2,isMobile:true,hasTouch:true,reducedMotion:'reduce'});
  const p=await ctx.newPage();p.setDefaultTimeout(15000);
+ if(region==='harbor')await p.route('**/developer-preview.mjs*',async route=>{const response=await route.fetch();const body=await response.text();const staged=body.replace("'Windchime Town','harbor:H-01'","'Windchime Town','harbor:H-04'");if(staged===body)throw Error('Cannot set isolated canonical battle checkpoint');await route.fulfill({response,body:staged});});
  p.on('pageerror',e=>evidence.errors.push(region+': '+e.message));
  await p.goto(origin+'/cat-bond/?developer=1&qa=trailer&reset=1&region='+region+'&lang=en',{waitUntil:'domcontentloaded',timeout:45000});
  await p.locator('#starbell-developer-menu').waitFor({timeout:45000});
@@ -66,13 +67,10 @@ async function attempt(id,region,fn){let ctx;try{const c=await open(region);ctx=
 try{
  await Promise.all([
  attempt('harbor','harbor',async p=>{
-  await click(p,'Talk to Qilan');await dialogue(p,'harbor:H-01');
-  await p.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-02');
-  await click(p,'Chase the runaway chime');const chase=p.locator('[data-spatial="chase"]');await chase.waitFor();
-  const b=await p.locator('.rw-surface').boundingBox();
-  await record(p,'chase',5,async()=>{await p.waitForTimeout(450);await p.locator('.rw-surface').tap({position:{x:b.width*.8,y:b.height*.35}});});
-  await chase.waitFor({state:'hidden',timeout:18000});await dialogue(p,'harbor:H-02');await click(p,'Talk to Yandeng');await record(p,'melody',5,async()=>{await p.waitForTimeout(1000);await dialogue(p,'harbor:H-03');});await click(p,'Belllight beast');await p.locator('#panel [data-battle-auto="true"]').click();await p.locator('#bp-go').click();await p.locator('#battle-ui.on').waitFor();const tutorial=p.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();
-  await record(p,'battle',12,async()=>{await p.waitForTimeout(1500);const btn=p.locator('button').filter({hasText:/Duo/i}).first();for(let i=0;i<12;i++){if(await p.evaluate(()=>!!__game.battle?.duoCinematic))break;if(await btn.isVisible()&&await btn.isEnabled()){await btn.tap();break;}await p.waitForTimeout(350);}});
+  await p.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-04');
+  await record(p,'melody',5,async()=>{await p.waitForTimeout(1500);});
+  await click(p,'Belllight beast');await p.locator('#panel [data-battle-auto="true"]').click();await p.locator('#bp-go').click();await p.locator('#battle-ui.on').waitFor();const tutorial=p.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();
+  await record(p,'battle',30,async()=>{const btn=p.locator('#duo-burst');for(let i=0;i<65;i++){if(await p.evaluate(()=>!!__game.battle?.duoCinematic))break;if(await btn.isVisible()&&await btn.isEnabled()){await btn.tap();break;}await p.waitForTimeout(350);}});
  }),
  attempt('sky','sky',async p=>{
   await click(p,'Catch the wind · Practice gliding');await p.locator('[data-sky-flight-status][data-route="open"]').waitFor();const b=await p.locator('.rw-surface').boundingBox();
@@ -83,6 +81,6 @@ try{
  })
  ]);
 }finally{await browser.close();await fs.writeFile(out+'/capture-evidence.json',JSON.stringify(evidence,null,2));}
-for(const id of ['garden','chase','glide','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
+for(const id of ['garden','glide','battle']) if(!evidence.clips.some(x=>x.id===id)) throw Error('Missing required fresh gameplay: '+id);
 const battle=evidence.clips.find(x=>x.id==='battle');if(!battle.observations.some(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards'&&x.asset?.includes('/mobile-portrait/duo/')))throw Error('No verified live native portrait duo');
-for(const [id,asset] of [['chase','harbor-chase.webp'],['glide','sky-glide.webp']]){const cl=evidence.clips.find(x=>x.id===id);if(!cl.observations.some(x=>x.resources.some(u=>u.includes('/mobile-portrait/'+asset))))throw Error('Native mini-game artwork not loaded: '+id);}
+for(const [id,asset] of [['glide','sky-glide.webp']]){const cl=evidence.clips.find(x=>x.id===id);if(!cl.observations.some(x=>x.resources.some(u=>u.includes('/mobile-portrait/'+asset))))throw Error('Native mini-game artwork not loaded: '+id);}

@@ -5,17 +5,17 @@ import {execFileSync} from 'node:child_process';
 const out='artifacts/starbell-story-trailer',assets='public/cat-bond/assets',portrait=assets+'/mobile-portrait';
 const proof=JSON.parse(fs.readFileSync(out+'/capture-evidence.json','utf8'));
 const clips=new Map(proof.clips.map(x=>[x.id,x]));
-for(const id of ['garden','chase','glide','battle'])if(!clips.has(id))throw Error('Missing live gameplay '+id);
+for(const id of ['garden','glide','battle'])if(!clips.has(id))throw Error('Missing live gameplay '+id);
 const ff=args=>execFileSync('ffmpeg',['-hide_banner','-loglevel','error','-y',...args],{stdio:'inherit'});
 const shots=[
 {id:'hook',d:3,src:assets+'/cinematics/prologue/garden-at-dawn.webp',pos:'70% center',caption:'You thought this was\na new journey.',motion:true},
-{id:'garden',d:2,game:'garden',caption:'A world you’ve never seen.'},
-{id:'sky',d:2,src:portrait+'/skyspine-isles.webp',caption:'A world you’ve never seen.',motion:true},
-{id:'melody',d:4,game:clips.has('melody')?'melody':null,src:portrait+'/windchime-town-tall.webp',caption:'A melody you’ve\nnever learned.',motion:true},
+{id:'garden',d:3,game:'garden',caption:'A world you’ve never seen.'},
+{id:'sky',d:1,src:portrait+'/skyspine-isles.webp',caption:'A world you’ve never seen.',motion:true},
+{id:'melody',d:4,src:portrait+'/windchime-town-tall.webp',caption:'A melody you’ve\nnever learned.',motion:true},
 {id:'friends',d:3,src:assets+'/story-art/cloud-lookout.jpg',pos:'50% center',caption:'Friends you’ll never\nwant to forget.',motion:true},
-{id:'chase',d:3,game:'chase',offset:.25},
+{id:'forest',d:3,src:portrait+'/rootsleep-forest.webp',caption:'Discover a world of wonder.',motion:true},
 {id:'glide',d:5,game:'glide',offset:.5},
-{id:'battle',d:6,game:'battle',offset:Math.max(0,Math.min(6,(clips.get('battle').observations.find(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards')?.t||2)-1.6))},
+{id:'battle',d:6,game:'battle',offset:Math.max(0,Math.min(24,(clips.get('battle').observations.find(x=>x.duo&&x.layout==='63-native-portrait-painted-storyboards')?.t||2)-1.6))},
 {id:'secret',d:4,src:portrait+'/prologue-garden.webp',map:assets+'/canon22-final-art/garden-route-map.webp',caption:'But your story began\nlong before you woke up.',motion:true},
 {id:'end',d:4,src:portrait+'/title-bell-sanctuary.webp',title:true,motion:true}
 ];
