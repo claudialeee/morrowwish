@@ -5,11 +5,11 @@ export const isLibraryReveal=id=>["library:M-03","library:M-04","library:M-05"].
 export function revealShot(id,c,choice=null){
  const shot=(path,mode,actors,zh,en)=>({path,mode,actors,caption:[zh,en]});
  if(id==="library:M-03"){
-  if(c<4)return shot(bell,"mural",[],"已核实壁画 · 星铃旁的两只猫","Verified mural · Two cats beside the Star Bell");
+  if(c<4)return shot(bell,"mural",[],"壁画里的两只猫","Two cats in the mural");
   return shot(library,"present",["player","muling"],"月镜书库 · 现实","Moonmirror Library · Present");
  }
  if(id==="library:M-04"){
-  if(c<2)return shot(atlas,"ledger",["baikan"],"公开线索 · 尚不能证明责任","Public clues · Responsibility not yet established");
+  if(c<2)return shot(atlas,"ledger",["baikan"],"借阅记录 · 与暮铃铃坠相同的印记","Borrowing record · A mark matching Muling's pendant");
   return shot(library,"fracture",["player","muling"],"月镜书库 · 信任的裂痕","Moonmirror Library · Trust fractured");
  }
  if(c<3)return shot(atlas,"routes",["moye","baikan"],"两条路径 · 中央汇集与邻地共鸣","Two routes · Inward convergence and neighboring resonance");

@@ -200,6 +200,7 @@ async function run(chapter){
    const line=v.current.lines[v.cursor];
    await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text[locale]);
    readLines.push({scene:id,cursor:v.cursor,speaker:line.speaker,text:line.text[locale]});
+   if(line.beat){const moment=dlg.locator(".res-emotional-beat");assert.equal(await moment.innerText(),line.beat[locale]);assert.ok(await moment.isVisible());if(line.beat.key==="lantern"){const art=dlg.locator(".res-emotional-painting");await art.evaluate(img=>img.decode());assert.ok(await art.isVisible());assert.equal(await dlg.locator(".res-portrait:visible").count(),0,"Never duplicate the illustrated cats with another portrait");}await shot(id+"-beat-"+line.beat.key+"-"+v.cursor);}
    if(/^library:M-0[345]$/.test(id)){
     const body=dlg.locator('.res-body'),panel=dlg.locator('.res-dialogue');
     const [b,p]=await Promise.all([body.boundingBox(),panel.boundingBox()]);

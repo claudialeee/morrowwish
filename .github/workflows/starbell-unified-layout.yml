@@ -55,7 +55,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        chapter: [harbor, forest, forge, sky, library, starfall]
+        chapter: [harbor, forest, forge, sky, library, starfall, finale, epilogue]
     env:
       CAT_BOND_EXPERIENCE: '1'
       CAT_BOND_CHAPTERS: ${{ matrix.chapter }}
@@ -83,7 +83,7 @@ jobs:
           node --check public/cat-bond/js/resonance/world-bridge.mjs
           node scripts/cat-bond-canon22-migration-audit.mjs
           node scripts/test-cat-bond-player-first.mjs
-          case "$CAT_BOND_CHAPTERS" in harbor) export CAT_BOND_TARGET_SCENES=harbor:H-01 ;; sky) export CAT_BOND_TARGET_SCENES=sky:S-01 ;; library) export CAT_BOND_TARGET_SCENES=library:M-01 ;; forest) export CAT_BOND_TARGET_SCENES=forest:R-01 ;; forge) export CAT_BOND_TARGET_SCENES=forge:E-01 ;; starfall) export CAT_BOND_TARGET_SCENES=starfall:F-01 ;; esac
+          case "$CAT_BOND_CHAPTERS" in finale) export CAT_BOND_TARGET_SCENES=finale:B-01 ;; epilogue) export CAT_BOND_TARGET_SCENES=epilogue:E-01 ;; harbor) export CAT_BOND_TARGET_SCENES=harbor:H-01 ;; sky) export CAT_BOND_TARGET_SCENES=sky:S-01 ;; library) export CAT_BOND_TARGET_SCENES=library:M-01 ;; forest) export CAT_BOND_TARGET_SCENES=forest:R-01 ;; forge) export CAT_BOND_TARGET_SCENES=forge:E-01 ;; starfall) export CAT_BOND_TARGET_SCENES=starfall:F-01 ;; esac
           node scripts/cat-bond-experience-knowledge.mjs
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon-restoration.log 2>&1 &
           server=$!

@@ -11,11 +11,11 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  const el=(tag,cls)=>{const e=document.createElement(tag);if(cls)e.className=cls;return e};
  const panel=el("section","res-dialogue"),art=el("img","res-portrait"),body=el("div","res-body"),name=el("h2","res-speaker"),line=el("p","res-line"),choices=el("div","res-choices"),tools=el("div","res-controls"),history=el("div","res-history");
  const context=el('div','res-prologue-context');let lookout=null;context.style.cssText='font-size:clamp(11px,1.5vw,14px);line-height:1.4;color:#e3c68f;margin:0 0 8px';
- panel.setAttribute("role","region");line.setAttribute("aria-live","polite");art.alt="";history.hidden=true;body.append(context,name,line,choices,tools,history);panel.append(art,body);root.append(panel);
+ const beat=el("p","res-emotional-beat"),painting=el("img","res-emotional-painting");painting.alt="";painting.hidden=true;beat.hidden=true;root.prepend(painting);panel.setAttribute("role","region");line.setAttribute("aria-live","polite");art.alt="";history.hidden=true;body.append(context,beat,name,line,choices,tools,history);panel.append(art,body);root.append(panel);
  // The same line can re-render on a narrative revision or language toggle.
  // Do not cancel an in-flight portrait decode by assigning its unchanged URL.
  function setPortrait(url){if(!url){art.hidden=true;if(art.hasAttribute("src"))art.removeAttribute("src");return;}if(art.getAttribute("src")!==url)art.setAttribute("src",url);art.hidden=false;}
- const buttons={};let timer=0,automatic=window.__cbDialoguePrefs?.auto??false,showHistory=false,disposed=false,lastScene=null,sessionHistory=[],speed=window.__cbDialoguePrefs?.speed??1;
+ const buttons={};let beatKey="",beatTimer=0,timer=0,automatic=window.__cbDialoguePrefs?.auto??false,showHistory=false,disposed=false,lastScene=null,sessionHistory=[],speed=window.__cbDialoguePrefs?.speed??1;
  const words={zh:{next:"继续",auto:"自动",stop:"停止自动",skip:"跳过对白",history:"对白记录",close:"关闭",wait:"继续探索以推进剧情",speed:"播放速度",scene:"剧情对话"},en:{next:"Continue",auto:"Auto",stop:"Stop auto",skip:"Skip dialogue",history:"History",close:"Close",wait:"Continue exploring to advance the story",speed:"Playback speed",scene:"Story dialogue"}};
  const lang=()=>language()==="zh"?"zh":"en";
  const displayName=(id,s,k)=>id==='player'&&campaign.scenes.findIndex(x=>x.id===s.id)<campaign.scenes.findIndex(x=>x.id==='library:M-03')?(k==='zh'?'你':'You'):campaign.cast[id].name[k];
@@ -37,9 +37,15 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  context.classList.remove("res-harbor-context");
  if(s.id==="sky:S-04"){context.hidden=false;context.style.textAlign="center";if(!lookout)lookout=mountSkyLookout(context,{player:resolvePortrait("player",s.id,v.cursor),muling:resolvePortrait("muling",s.id,v.cursor),language:lang,onReady:render});lookout.render(k,v.choice);} else context.style.textAlign="";
  panel.dataset.speaker=l?.speaker||"";
+ const moment=l?.beat, key=moment?s.id+":"+v.cursor:"";
+ beat.hidden=!moment;beat.textContent=moment?.[k]||"";panel.dataset.emotionalBeat=moment?.key||"";
+ const painted=moment?.key==="lantern"&&s.id==="forge:E-04";
+ root.classList.toggle("res-emotional-art",painted);painting.hidden=!painted;
+ if(painted&&!painting.hasAttribute("src"))painting.src=new URL("../../assets/story-art/lantern-entrustment.jpg",import.meta.url).href;
+ if(key!==beatKey){clearTimeout(beatTimer);beatKey=key;if(moment?.key==="signal"){window.MorrowwishAudio?.note?.(392,.22,.11);beatTimer=setTimeout(()=>{if(!disposed&&beatKey===key)window.MorrowwishAudio?.note?.(523.25,.25,.12);},260);}}
  const choiceVisible=hasDialogueChoice(v);
  if(choiceVisible)for(const c of s.choices){const b=el("button");b.type="button";b.textContent=c.label[k];b.addEventListener("click",()=>{if(persist(engine.choose(c.id)))render()});choices.append(b)}
- if(l){const actor=campaign.cast[l.speaker],url=l.narration?null:resolvePortrait(l.speaker,s.id,v.cursor);if(!url){panel.hidden=false;setPortrait(null);name.textContent=l.narration?s.title[k]:displayName(l.speaker,s,k);line.textContent=l.text[k];if(l.narration)delete panel.dataset.missingPortrait;else panel.dataset.missingPortrait=l.speaker}else{panel.hidden=false;setPortrait(url);delete panel.dataset.missingPortrait;name.textContent=displayName(l.speaker,s,k);line.textContent=l.text[k]}}
+ if(l){const actor=campaign.cast[l.speaker],url=l.narration?null:resolvePortrait(l.speaker,s.id,v.cursor);if(painted){panel.hidden=false;setPortrait(null);delete panel.dataset.missingPortrait;name.textContent=displayName(l.speaker,s,k);line.textContent=l.text[k]}else if(!url){panel.hidden=false;setPortrait(null);name.textContent=l.narration?s.title[k]:displayName(l.speaker,s,k);line.textContent=l.text[k];if(l.narration)delete panel.dataset.missingPortrait;else panel.dataset.missingPortrait=l.speaker}else{panel.hidden=false;setPortrait(url);delete panel.dataset.missingPortrait;name.textContent=displayName(l.speaker,s,k);line.textContent=l.text[k]}}
  else{panel.hidden=false;const last=choiceVisible?s.lines[Math.max(0,v.cursor-1)]:null,url=last?resolvePortrait(last.speaker,s.id,Math.max(0,v.cursor-1)):null;setPortrait(url);delete panel.dataset.missingPortrait;name.textContent=choiceVisible?(k==="zh"?"你的选择":"Your choice"):s.title[k];line.textContent=choiceVisible?s.title[k]:""}
  for(const id of ["next","skip","auto"])buttons[id].hidden=!!choiceVisible;speedSelect.hidden=!!choiceVisible;
  buttons.next.disabled=!l||!!choiceVisible||lookoutPending(v);buttons.skip.disabled=!l||!!choiceVisible||lookoutPending(v);buttons.auto.disabled=!l||!!choiceVisible||lookoutPending(v);buttons.history.setAttribute("aria-pressed",String(showHistory));
@@ -49,6 +55,6 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  if(!l&&!choiceVisible)onAwaitAction?.({reason:"gameplay-or-scene-transition",scene:s.id,objective:v.objective});
  }
  function keyboard(ev){if(disposed||panel.hidden||ev.target?.closest?.("button,select,input,textarea"))return;if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();next()}else if(ev.key==="Escape"){ev.preventDefault();window.CatBondSystemMenu?.open?.()}}
- function dispose(){if(disposed)return;disposed=true;lookout?.dispose();stop();window.removeEventListener("morrowwish-language-change",render);panel.removeEventListener("keydown",keyboard);root.removeEventListener("click",clickAdvance);skipButton.remove();if(window.CatBondDialogueSettings===preferences)delete window.CatBondDialogueSettings;panel.remove()}
+ function dispose(){if(disposed)return;disposed=true;lookout?.dispose();clearTimeout(beatTimer);painting.remove();root.classList.remove("res-emotional-art");stop();window.removeEventListener("morrowwish-language-change",render);panel.removeEventListener("keydown",keyboard);root.removeEventListener("click",clickAdvance);skipButton.remove();if(window.CatBondDialogueSettings===preferences)delete window.CatBondDialogueSettings;panel.remove()}
  panel.tabIndex=0;panel.addEventListener("keydown",keyboard);window.addEventListener("morrowwish-language-change",render);render();if(!disposed&&!panel.hidden)panel.focus();return {render,dispose};
 }

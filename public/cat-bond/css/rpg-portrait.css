@@ -334,3 +334,12 @@
 #stage .rw-world .rw-ceremony-caption strong{font-size:clamp(15px,2vw,20px)}
 #stage .rw-world .rw-ceremony-caption span{font-size:clamp(12px,1.5vw,15px)}
 @media(orientation:portrait) and (max-width:700px){#stage .rw-world.rw-story-ceremony[data-ceremony="harbor"]>.rw-shell>.rw-surface{inset:0!important;transform:none!important;width:100%!important;height:100%!important;aspect-ratio:auto!important}}
+
+/* Story beats use a single painting layer, not a second copy of either actor. */
+#stage .res-host .res-emotional-beat{font-size:clamp(11px,1.25vw,14px);line-height:1.35;color:#d7bc86;margin:0 0 7px}
+#stage .res-host.res-emotional-art{isolation:isolate;overflow:hidden;background:#382e36!important}
+#stage .res-host.res-emotional-art::before,#stage .res-host.res-emotional-art::after{display:none!important}
+#stage .res-host .res-emotional-painting{position:absolute;inset:0;width:100%;height:calc(100% - 100px);object-fit:contain;object-position:center;z-index:-1;pointer-events:none}
+#stage .res-host.res-emotional-art .res-dialogue{position:relative;z-index:1;grid-template-columns:1fr!important;width:min(930px,100%);max-height:48%;overflow:auto}
+#stage .res-host.res-emotional-art .res-portrait{display:none!important}
+@media(orientation:portrait) and (max-width:700px){#stage .res-host.res-emotional-art .res-emotional-painting{height:66%;top:4%}#stage .res-host.res-emotional-art .res-dialogue{max-height:48%}}
