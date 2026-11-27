@@ -69,6 +69,18 @@ function runGuardianMatrix(src,emit){
    e.tags=[];e.status={};const dark=b.applyHitEffects(e,{element:"light",isBasic:true},100,e.x,e.y);
    assert(Math.abs(light-100*S.effectiveness("light","light"))<.001&&Math.abs(dark-100*S.effectiveness("light","dark"))<.001&&dark!==light,"dynamic defensive element not applied");
   }
+  // Real update-loop evasion and counter opportunity, not a fabricated victory.
+  const counter=start(fixture),unit=counter.me(),guardian=counter.enemies[0],cr=counter.regionalCombat;
+  counter.autoMode=false;
+  cr.cast={remaining:.001,max:1.45,patterns:[{shape:"circle",x:-1000,y:-1000,r:10}]};
+  counter.update(1/60);
+  assert(cr.successfulDodges===1&&cr.recoveryUntil>counter.t,"missing counter window "+fixture[0]);
+  if(fixture[0]!=="forge"){
+   guardian.hp=guardian.maxhp;guardian.inv=0;guardian.reflectT=0;guardian.shieldT=0;guardian.protectT=0;
+   const old=guardian.hp;counter.hurtEnemy(guardian,20,guardian.x,guardian.y,false);const bonus=old-guardian.hp;
+   guardian.hp=old;guardian.inv=0;cr.recoveryUntil=0;counter.hurtEnemy(guardian,20,guardian.x,guardian.y,false);
+   assert(bonus>old-guardian.hp,"counter window did not improve damage "+fixture[0]);
+  }
   mechanism.push({id:fixture[0],hazardDamage:Math.round(before-f.hp),root:f.rootT||0,displacement:Math.round(f.x-x),phase:e.element});
  }
  emit({mechanism});

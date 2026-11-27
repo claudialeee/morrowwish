@@ -195,14 +195,14 @@ function install(){
  function paintHud(b){
   const panel=document.getElementById("cb-region-combat");if(!panel||!b.regionalCombat)return;
   const r=b.regionalCombat,kit=r.kit,button=panel.querySelector("button"),phase=b.libraryEncounter&&["starfall","mastery"].includes(b.libraryEncounter.bossId)?(b.liveEnemies()[0]?.element==="dark"?tr([" · 暗属性"," · Dark"]):tr([" · 光属性"," · Light"])):"";
-  panel.querySelector("span").textContent=r.shadowLight?tr(["引剪影兽进入灯光再攻击","Draw the shadow beast into the light"]):b.libraryEncounter?.bossId&&REGIONAL_BOSSES[b.libraryEncounter.bossId]?tr(REGIONAL_BOSSES[b.libraryEncounter.bossId].name)+phase:tr(kit.name)+" · "+tr(kit.enemy);
+  panel.querySelector("span").textContent=r.recoveryUntil>b.t?tr(["破绽出现 · 立即反击","Opening · counterattack now"]):r.shadowLight?tr(["引剪影兽进入灯光再攻击","Draw the shadow beast into the light"]):b.libraryEncounter?.bossId&&REGIONAL_BOSSES[b.libraryEncounter.bossId]?tr(REGIONAL_BOSSES[b.libraryEncounter.bossId].name)+phase:tr(kit.name)+" · "+tr(kit.enemy);
   button.hidden=!r.supportAvailable;button.disabled=r.supportUsed||!r.cast;
   button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?.bossId==="library"?tr(["打断镜影","Break the reflection"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Finn · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Wren · Escort flight"]):tr(kit.support);
  }
  function useSupport(b){
   const r=b.regionalCombat;if(!r||!r.supportAvailable||r.supportUsed||!r.cast||b.done||cinematicActive(b))return false;
   if(b.libraryEncounter?.op==="battle:library-echo"&&(!catdexRecord(window.State.S)||!window.State.S.resonanceExploration?.interactions?.["library:M-02:puzzle:library-echo"]))return false;
-  r.supportUsed=true;r.cast=null;r.next=Math.max(r.next,4);
+  r.supportUsed=true;r.cast=null;r.next=Math.max(r.next,4);if(r.balance)r.recoveryUntil=b.t+1.8;
   const cats=living(b);
   if(r.kit.kind==="roots")for(const f of cats){f.rootT=0;f.rooted=false;if(f.status)delete f.status.bind;}
   else if(r.kit.kind==="mirror"){for(const e of b.liveEnemies())e.reflectT=0;}
@@ -215,6 +215,8 @@ function install(){
  }
  function resolve(b,r,cast){
   if(r.balance)r.impact={cast,at:b.t};
+  const controlled=target(b),avoided=controlled&&!cast.patterns.some(p=>inPattern(p,controlled));
+  if(r.balance&&avoided){r.recoveryUntil=b.t+1.8;r.successfulDodges=(r.successfulDodges||0)+1;notice(b,"成功避开攻击！趁破绽反击。","Attack evaded! Counter while the guardian is open.");}
   const impactColor=r.balance?guardianColors(r.kit.kind,cast.element)[1]:r.kit.color;
   for(const f of living(b)){
    if(!cast.patterns.some(p=>inPattern(p,f)))continue;
@@ -231,10 +233,11 @@ function install(){
  function tick(b,dt){
   const r=b.regionalCombat;if(!r||b.done||b.captureSeq||b.coachHoldsEnemies?.()||b.game.battleHelpOpen||b.duoRun||b.duoCinematic||b.ultCinematic)return;
   if((r.hazardEnabled===false&&!b.postgameRuins)||!living(b).length||!b.liveEnemies().length)return;
+  if(r.recoveryUntil&&b.t>=r.recoveryUntil){r.recoveryUntil=0;paintHud(b);}
   if(r.cast){
     if(r.kit.kind==="gale"){const direction=r.cycle%2?1:-1;for(const f of living(b)){if((f.inv||0)>0)continue;f.x=clamp(f.x+direction*22*Math.min(.05,dt),32,b.W-32);}}
     r.cast.remaining-=dt;
-    if(r.cast.remaining<=0){resolve(b,r,r.cast);r.cast=null;r.next=r.balance?.period??r.kit.period;paintHud(b);}
+    if(r.cast.remaining<=0){resolve(b,r,r.cast);r.cast=null;r.next=(r.balance?.period??r.kit.period)*(b.libraryEncounter?.bossId==="mastery"&&b.liveEnemies()[0]?.element==="dark"?.82:1);paintHud(b);}
     return;
   }
   r.next-=dt;
@@ -298,7 +301,7 @@ function install(){
   notice(b,"暗相降临，光系攻击可克制。","Dark phase. Light attacks have the advantage.");paintHud(b);
  }
  const hurt=BP.hurtEnemy;
- BP.hurtEnemy=function(e,dmg,...args){if(this.regionalCombat?.shadowLight&&!inLight(this,e))return 0;const result=hurt.call(this,e,dmg,...args);shiftGuardian(this,e);return result;};
+ BP.hurtEnemy=function(e,dmg,...args){if(this.regionalCombat?.shadowLight&&!inLight(this,e))return 0;const r=this.regionalCombat;const tactical=r?.balance&&e.regionalEnemy;if(tactical){if(r.recoveryUntil>this.t)dmg*=this.libraryEncounter?.bossId==="harbor"?1.15:1.25;else if(r.cast&&!r.shadowLight&&this.libraryEncounter?.bossId!=="harbor")dmg*=.85;}const result=hurt.call(this,e,dmg,...args);shiftGuardian(this,e);return result;};
  window.CatBondShadowCombat={steer(b,f){if(!b.regionalCombat?.shadowLight||!b.autoMode||!f.alive)return null;const l=shadowLight(b),dx=l.x-f.x,dy=l.y-f.y,d=Math.hypot(dx,dy);return d>18?{x:dx/d,y:dy/d}:{x:0,y:0};}};
  const capture=BP.startCaptureSeq;
  BP.startCaptureSeq=function(){if(this.libraryEncounter){if(this.done||this.liveEnemies().length)return;this.libraryEncounter.cleared=true;this.projectiles=[];this.enemyProjectiles=[];this.finish(true);return;}if(this.regionalCombat&&this.enemies.some(e=>e.regionalEnemy))this._lastDropped=this.enemies[0];return capture.call(this);};
@@ -319,7 +322,7 @@ function install(){
   try{enemyAI.call(this,dt,e,me);}finally{e.speed=baseSpeed;e.role=baseRole;}
   e.fireCd=99999;
   if(!me?.alive)return;e.regionalCd-=dt;if(e.regionalCd>0)return;
-  e.regionalCycle++;e.regionalCd=r.balance?.shot??(r.kit.kind==="gale"?2.7:3.5);
+  e.regionalCycle++;e.regionalCd=(r.balance?.shot??(r.kit.kind==="gale"?2.7:3.5))*(this.libraryEncounter?.bossId==="mastery"&&e._darkPhase?.80:1);
   const color=r.balance?guardianColors(r.kit.kind,e.element)[1]:r.kit.color;
   const a=Math.atan2(me.y-e.y,me.x-e.x),skill={element:r.kit.kind==="orbit"?e.element:r.kit.element,isBasic:true},fire=(angle,speed,mult,kind="ball")=>this.spawnProj(e.x,e.y,angle,speed,e.dmg*mult,"wild",color,7,kind,skill);
   switch(r.kit.kind){
@@ -328,7 +331,7 @@ function install(){
    case "embers":for(let i=-1;i<=1;i++)fire(a+i*.28,220,.62,"forge-slag");break;
    case "gale":fire(a-.11,325,.66);fire(a+.11,325,.66);break;
    case "mirror":{const copied=this.libraryEncounter?.lastSkill;if(copied){const k={element:copied.element||"dark",isBasic:false,homing:copied.homing?clamp(copied.homing,.1,4.2):undefined,grow:copied.grow?clamp(copied.grow,1,2):undefined};const kind=["ball","orb","fireball","lightningOrb","leaf","hex"].includes(copied.kind)?copied.kind:"ball";for(let i=-1;i<=1;i++)this.spawnProj(e.x,e.y,a+i*.18,clamp(copied.spd||200,120,320),e.dmg*.54,"wild",copied.color||r.kit.color,8,kind,k); }else fire(a,200,.78);e.reflectT=Math.max(e.reflectT||0,.65);break;}
-   case "orbit":for(let i=0;i<7;i++)fire(a+i*Math.PI*2/7,165,.42);break;
+   case "orbit":{const master=this.libraryEncounter?.bossId==="mastery",dark=master&&e._darkPhase,n=dark?9:7;for(let i=0;i<n;i++)fire(a+i*Math.PI*2/n,dark?195:165,master?.49:.42);break;}
   }
   this.vfx.ring(e.x,e.y,{r0:10,vr:160,life:.45,color,width:3});
  };
@@ -368,7 +371,7 @@ function install(){
   const d=optional?REGIONAL_BOSSES[id]:storyEcho[id],region=d.region||id,root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam();
   if(!team.length)return false;const sp=window.GameData.speciesById(bossTemplates[id]);if(!sp)return false;const creature=region==="forge"?canonArt("shadow-beast"):art[region]?.enemy;if(!imageReady(creature)||(region==="starfall"&&!imageReady(orbitalArt[id==="mastery"?"mastery":"dark"]))){game.toast?.({zh:"守卫原画尚未加载，请稍后再次挑战。",en:"Guardian artwork is not ready. Please try again."});return false;}host.close?.();
   window.UI.openBattleModePrompt(team,sp,{origin:"map",storyTitle:d.title||d.name,bossElement:REGION_KITS[region].element,regionalGuardian:true,
-   bossSecondElement:region==="starfall"?"dark":null,bossClue:d.clue,onStart:fighters=>{
+   bossSecondElement:region==="starfall"?"dark":null,bossClue:[d.clue[0]+" 避开预警攻击后抓住短暂破绽反击。",d.clue[1]+" Evade the marked attack, then counter during the brief opening."],onStart:fighters=>{
    if(root!==window.State.S||!libraryAvailable(game,id,optional)||!fighters.length)return;
    const token=host.captureAction(),base={...sp,encounterLevel:regionalBossLevel(id,fighters)};
    game._returnScene="map";game._battleTheme={region,sky1:"#20253f",sky2:"#697ca8",ground:"#464967",ground2:"#232843",accent:REGION_KITS[region].color};

@@ -16,7 +16,7 @@ export const GUARDIAN_BALANCE=Object.freeze({
  sky:{hp:2.20,attack:1,first:1.6,period:5.5,shot:2.7,hazard:.12},
  library:{hp:2.25,attack:1,first:1.6,period:6.2,shot:3.3,hazard:.13},
  starfall:{hp:2.65,attack:1.08,first:1.6,period:5.8,shot:3.1,hazard:.14},
- mastery:{hp:3.15,attack:1.30,first:1.4,period:4.1,shot:2.3,hazard:.20}
+ mastery:{hp:3.15,attack:1.50,first:1.4,period:3.8,shot:2.1,hazard:.23}
 });
 export function guardianProfile(id,field,difficulty){
  const p=GUARDIAN_BALANCE[id];if(!p||!field.length)return null;
