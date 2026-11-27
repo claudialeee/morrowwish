@@ -10,7 +10,7 @@ concurrency:
 jobs:
   integrated:
     runs-on: ubuntu-24.04
-    timeout-minutes: 18
+    timeout-minutes: 55
     strategy:
       fail-fast: false
       matrix:
@@ -24,6 +24,9 @@ jobs:
         if: matrix.profile == 'wide'
         run: |
           set -euo pipefail
+          node scripts/starbell-dialogue-choices-quality.mjs
+          node scripts/test-starbell-quality-orbits.mjs
+          node scripts/test-cat-bond-canon22-locale-purity.mjs
           node scripts/test-starbell-regional-bosses.mjs
           node scripts/test-starbell-guardian-balance.mjs
           node scripts/test-cat-bond-canon22-combat-migration.mjs
@@ -39,6 +42,10 @@ jobs:
           STARBELL_BOSS_PROFILE: ${{ matrix.profile }}
           STARBELL_MINIGAME_PROFILE: ${{ matrix.profile }}
           STARBELL_FOCUS_PROFILE: ${{ matrix.profile }}
+          CAT_BOND_CHAPTER_LOCALE: ${{ matrix.profile == 'portrait' && 'zh' || 'en' }}
+          CAT_BOND_PORTRAIT: ${{ matrix.profile == 'portrait' && '1' || '0' }}
+          CAT_BOND_EXPERIENCE: '1'
+          CAT_BOND_CONTINUOUS: '1'
         run: |
           set -euo pipefail
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-integration.log 2>&1 &
@@ -50,3 +57,13 @@ jobs:
           node scripts/test-starbell-player-first-browser.mjs
           node scripts/test-starbell-garden-camera.mjs
           node scripts/test-starbell-finale-framing-farwind.mjs
+          node scripts/cat-bond-experience-chapters.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-quality-${{ matrix.profile }}
+          path: |
+            artifacts/cat-bond-experience/
+            /tmp/starbell-integration.log
+          if-no-files-found: warn
+          retention-days: 14
