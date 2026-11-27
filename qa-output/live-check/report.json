@@ -1,0 +1,169 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "checkedAt": "2026-11-27T20:48:12.337Z",
+  "expected": {
+    "js/data.js": "5bffba4e40c65dc7585c99158c1789bb3b87f930daf362d923d8a18a4b0833a9",
+    "js/battle.js": "d29431b7d929e7f28bb84ea8f158a8216aa1e69b150ebe0bc49d5002929dcadb",
+    "js/duo-premium.js": "71438aa7af8a2f7c63a4023e7262fbce613abc3b8f728ac27e18810bfdc5ed55",
+    "js/duo-bond.js": "59ed06873667d956014dffd3aec77e7e092cc05852a38bf54f0cd120dbf516b0",
+    "assets/mobile-portrait/duo/fire-light-tier-3.webp": "cd0e76edc57414a52096a8908ea88aced871f6d070344152ba61faab50edb77a"
+  },
+  "targets": [
+    {
+      "name": "crazygames-canonical",
+      "url": "https://morrowwish.vercel.app/cat-bond/?platform=crazygames&lang=en",
+      "frames": [
+        "https://morrowwish.vercel.app/cat-bond/?platform=crazygames&lang=en"
+      ],
+      "requestsFailed": [
+        {
+          "url": "https://morrowwish.vercel.app/telemetry.js?v=bond-funnel-v11-20261122",
+          "error": "net::ERR_FAILED"
+        }
+      ],
+      "consoleErrors": [],
+      "pass": true,
+      "status": 200,
+      "title": "Cat Bond — Raise cats, capture wild ones | Morrow Wish",
+      "finalUrl": "https://morrowwish.vercel.app/cat-bond/?platform=crazygames&lang=en",
+      "iframes": [],
+      "actualFrame": "https://morrowwish.vercel.app/cat-bond/?platform=crazygames&lang=en",
+      "assets": [
+        {
+          "file": "js/data.js",
+          "status": 200,
+          "url": "https://morrowwish.vercel.app/cat-bond/js/data.js?v=jiafei-sr-20261122-v2",
+          "match": true,
+          "actual": "5bffba4e40c65dc7585c99158c1789bb3b87f930daf362d923d8a18a4b0833a9",
+          "expected": "5bffba4e40c65dc7585c99158c1789bb3b87f930daf362d923d8a18a4b0833a9"
+        },
+        {
+          "file": "js/battle.js",
+          "status": 200,
+          "url": "https://morrowwish.vercel.app/cat-bond/js/battle.js?v=ternary-timeout-outcome-20261127",
+          "match": true,
+          "actual": "d29431b7d929e7f28bb84ea8f158a8216aa1e69b150ebe0bc49d5002929dcadb",
+          "expected": "d29431b7d929e7f28bb84ea8f158a8216aa1e69b150ebe0bc49d5002929dcadb"
+        },
+        {
+          "file": "js/duo-premium.js",
+          "status": 200,
+          "url": "https://morrowwish.vercel.app/cat-bond/js/duo-premium.js?v=native-portrait-20261127",
+          "match": true,
+          "actual": "71438aa7af8a2f7c63a4023e7262fbce613abc3b8f728ac27e18810bfdc5ed55",
+          "expected": "71438aa7af8a2f7c63a4023e7262fbce613abc3b8f728ac27e18810bfdc5ed55"
+        },
+        {
+          "file": "js/duo-bond.js",
+          "status": 200,
+          "url": "https://morrowwish.vercel.app/cat-bond/js/duo-bond.js?v=native-portrait-20261127",
+          "match": true,
+          "actual": "59ed06873667d956014dffd3aec77e7e092cc05852a38bf54f0cd120dbf516b0",
+          "expected": "59ed06873667d956014dffd3aec77e7e092cc05852a38bf54f0cd120dbf516b0"
+        },
+        {
+          "file": "assets/mobile-portrait/duo/fire-light-tier-3.webp",
+          "status": 200,
+          "url": "https://morrowwish.vercel.app/cat-bond/assets/mobile-portrait/duo/fire-light-tier-3.webp",
+          "match": true,
+          "actual": "cd0e76edc57414a52096a8908ea88aced871f6d070344152ba61faab50edb77a",
+          "expected": "cd0e76edc57414a52096a8908ea88aced871f6d070344152ba61faab50edb77a"
+        }
+      ]
+    },
+    {
+      "name": "itch-public",
+      "url": "https://morrowwishgames.itch.io/cat-bond",
+      "frames": [
+        "https://morrowwishgames.itch.io/cat-bond",
+        "https://html-classic.itch.zone/html/20681743/index.html?v=1795161640",
+        "https://morrowwish.vercel.app/cat-bond/?utm_source=itchio&utm_medium=portal"
+      ],
+      "requestsFailed": [
+        {
+          "url": "https://morrowwish.vercel.app/telemetry.js?v=bond-funnel-v11-20261122",
+          "error": "net::ERR_FAILED"
+        }
+      ],
+      "consoleErrors": [],
+      "pass": true,
+      "status": 200,
+      "title": "Cat Bond by Morrow Wish",
+      "finalUrl": "https://morrowwishgames.itch.io/cat-bond",
+      "buttons": [
+        {
+          "tag": "DIV",
+          "id": "html_embed_4137833",
+          "classes": "html_embed_widget base_widget embed_wrapper",
+          "text": "Run game",
+          "visible": true
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "classes": "game_frame game_pending",
+          "text": "Run game",
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "button load_iframe_btn",
+          "text": "Run game",
+          "visible": true
+        }
+      ],
+      "listingText": "View all by Morrow Wish\nFollow Morrow Wish\nAdd To Collection\nRelated games\nRun game\n\nTurn a quiet yard into a home for your cats. Pet, feed, and play with them to build trust, then search the grass for wild companions.\n\nChoose your squad before entering the map. Learn the arena controls in your first manual battle, or let your cats fight automatically. Discover new skills, earn Golden Paw medals, and raise and evolve your cats.\n\nFree to play in your browser in English or Chinese.\n\nMore information\nLeave a comment\n\nLog in with itch.io to leave a comment.\n\nitch.io\n·\nView all by Morrow Wish\n·\nReport\n·\nEmbed\n·\nUpdated 6 days ago\nGames › Simulation › Free",
+      "clicked": ".game_frame .button",
+      "iframes": [
+        {
+          "src": "https://html-classic.itch.zone/html/20681743/index.html?v=1795161640",
+          "visible": true
+        }
+      ],
+      "actualFrame": "https://morrowwish.vercel.app/cat-bond/?utm_source=itchio&utm_medium=portal",
+      "assets": [
+        {
+          "file": "js/data.js",
+          "status": 200,
+          "url": "https://morrowwish.vercel.app/cat-bond/js/data.js?v=jiafei-sr-20261122-v2",
+          "match": true,
+          "actual": "5bffba4e40c65dc7585c99158c1789bb3b87f930daf362d923d8a18a4b0833a9",
+          "expected": "5bffba4e40c65dc7585c99158c1789bb3b87f930daf362d923d8a18a4b0833a9"
+        },
+        {
+          "file": "js/battle.js",
+          "status": 200,
+          "url": "https://morrowwish.vercel.app/cat-bond/js/battle.js?v=ternary-timeout-outcome-20261127",
+          "match": true,
+          "actual": "d29431b7d929e7f28bb84ea8f158a8216aa1e69b150ebe0bc49d5002929dcadb",
+          "expected": "d29431b7d929e7f28bb84ea8f158a8216aa1e69b150ebe0bc49d5002929dcadb"
+        },
+        {
+          "file": "js/duo-premium.js",
+          "status": 200,
+          "url": "https://morrowwish.vercel.app/cat-bond/js/duo-premium.js?v=native-portrait-20261127",
+          "match": true,
+          "actual": "71438aa7af8a2f7c63a4023e7262fbce613abc3b8f728ac27e18810bfdc5ed55",
+          "expected": "71438aa7af8a2f7c63a4023e7262fbce613abc3b8f728ac27e18810bfdc5ed55"
+        },
+        {
+          "file": "js/duo-bond.js",
+          "status": 200,
+          "url": "https://morrowwish.vercel.app/cat-bond/js/duo-bond.js?v=native-portrait-20261127",
+          "match": true,
+          "actual": "59ed06873667d956014dffd3aec77e7e092cc05852a38bf54f0cd120dbf516b0",
+          "expected": "59ed06873667d956014dffd3aec77e7e092cc05852a38bf54f0cd120dbf516b0"
+        },
+        {
+          "file": "assets/mobile-portrait/duo/fire-light-tier-3.webp",
+          "status": 200,
+          "url": "https://morrowwish.vercel.app/cat-bond/assets/mobile-portrait/duo/fire-light-tier-3.webp",
+          "match": true,
+          "actual": "cd0e76edc57414a52096a8908ea88aced871f6d070344152ba61faab50edb77a",
+          "expected": "cd0e76edc57414a52096a8908ea88aced871f6d070344152ba61faab50edb77a"
+        }
+      ]
+    }
+  ]
+}
