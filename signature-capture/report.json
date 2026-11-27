@@ -1,0 +1,1105 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "viewportFix": "c0c9eef798870ac84ffd2442dc68ca085cf407cd",
+  "method": "Real input only. Resumed previously earned saves. Natural rarity rolls, no seeded randomness or state injection.",
+  "captures": [
+    {
+      "name": "landscape",
+      "width": 1920,
+      "height": 1080,
+      "errors": [],
+      "failedRequests": [],
+      "duo": null,
+      "ssr": null,
+      "rolls": [],
+      "battles": [],
+      "complete": false,
+      "initial": {
+        "scene": "yard",
+        "catchCount": 1,
+        "cats": [
+          {
+            "species": "tangyuan",
+            "level": 2,
+            "rarity": "N"
+          },
+          {
+            "species": "meidu",
+            "level": 1,
+            "rarity": "N"
+          }
+        ],
+        "pending": true,
+        "duo": 0
+      },
+      "error": "TimeoutError: page.waitForFunction: Timeout 10000ms exceeded."
+    },
+    {
+      "name": "portrait",
+      "width": 1080,
+      "height": 1620,
+      "errors": [],
+      "failedRequests": [],
+      "duo": {
+        "uses": 1,
+        "elementPair": "fire+grass",
+        "tier": 1,
+        "cinematic": {
+          "remaining": 2.7500000000000018,
+          "max": 3.2
+        },
+        "layout": {
+          "source": "63-native-portrait-painted-storyboards",
+          "asset": "http://127.0.0.1:18963/cat-bond/assets/mobile-portrait/duo/fire-grass-tier-1.webp?v=portrait-duo-20261127",
+          "originalArt": true,
+          "actorFallback": false,
+          "viewport": {
+            "width": 1080,
+            "height": 1620
+          },
+          "art": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1620
+          },
+          "sourceArt": {
+            "x": -0.3483929443359557,
+            "y": -150.6193652343751,
+            "width": 1080.696785888672,
+            "height": 1921.2387304687502
+          },
+          "artAspect": 0.5625,
+          "fullScreenAtmosphere": false,
+          "animatedEffects": true,
+          "paintingDrawCount": 1,
+          "actorLayerCount": 0,
+          "transition": "full-scene-crossfade",
+          "extendedPainting": false,
+          "opacity": 0.7034118331347404,
+          "camera": {
+            "zoom": 1.0006451721191407,
+            "panX": 0,
+            "panY": 0,
+            "rotationRadians": 0
+          },
+          "effectPhase": 0.1406249999999995,
+          "effectTier": 1
+        },
+        "onset": 6.565,
+        "frameTime": 7.489,
+        "screenshot": "duo-real.png"
+      },
+      "ssr": null,
+      "rolls": [
+        {
+          "species": "youling",
+          "rarity": "SR",
+          "level": 3
+        },
+        {
+          "species": "dundun",
+          "rarity": "R",
+          "level": 3
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 3
+        },
+        {
+          "species": "lanbao",
+          "rarity": "R",
+          "level": 3
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 3
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 3
+        },
+        {
+          "species": "doudou",
+          "rarity": "N",
+          "level": 3
+        },
+        {
+          "species": "dundun",
+          "rarity": "R",
+          "level": 3
+        },
+        {
+          "species": "nainai",
+          "rarity": "N",
+          "level": 3
+        },
+        {
+          "species": "mengmai",
+          "rarity": "R",
+          "level": 3
+        },
+        {
+          "species": "mengmai",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "nietu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "moqiu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "xiaohui",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "fanmao",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "nietu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "zherdd",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "duanduan",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "lixiao",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "mengmai",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "xiaohui",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "jinjc",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "dundun",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "youling",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "dundun",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "moqiu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "mengmai",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "yunduo",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "zherdd",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "tangyuan",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "dundun",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "xiaohui",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "youling",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "fanmao",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "xiaohui",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nainai",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "duanduan",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "bosi",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "baomao",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "doudou",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "jinjc",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "lanbao",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "jinjc",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "jiafei",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "sanhua",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "tangyuan",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nietu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nietu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "moqiu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nietu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "doudou",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "zherdd",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "youling",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "doudou",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "sanhua",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "xiaohui",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "tangyuan",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "sanhua",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "jinjc",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "moqiu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "sanhua",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "lixiao",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "mengmai",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "mengmai",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "tangyuan",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "sanhua",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "xiaohui",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "zherdd",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "youling",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "tangyuan",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nuowei",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "lixiao",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "doudou",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "jinjc",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "sanhua",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "nainai",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "doudou",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nietu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "lixiao",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "bosi",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "zherdd",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "tangyuan",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "doudou",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "yunduo",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "xuewa",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "nietu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nainai",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nietu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nietu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "xiaohui",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "duanduan",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "tangyuan",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "xuewa",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "fanmao",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "tangyuan",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nietu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "lanbao",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "xiaohui",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "lixiao",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "dundun",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "xiaohui",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "xuewa",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "doudou",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "duanduan",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "mengmai",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "moqiu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "moqiu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "duanduan",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "yunduo",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "abi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "bosi",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "nietu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nainai",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nainai",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nainai",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "niuniu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "lixiao",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "xiaohui",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "nuowei",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "nuowei",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "qisi",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "tangyuan",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "dundun",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "zherdd",
+          "rarity": "R",
+          "level": 2
+        },
+        {
+          "species": "moqiu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "xianluo",
+          "rarity": "SR",
+          "level": 2
+        },
+        {
+          "species": "meidu",
+          "rarity": "N",
+          "level": 2
+        },
+        {
+          "species": "lixiao",
+          "rarity": "R",
+          "level": 2
+        }
+      ],
+      "battles": [
+        {
+          "species": "fanmao",
+          "rarity": "R",
+          "started": 5.508,
+          "before": 1,
+          "after": 2,
+          "earned": true,
+          "resultTime": 60.15,
+          "cats": [
+            {
+              "species": "tangyuan",
+              "level": 3,
+              "rarity": "N"
+            },
+            {
+              "species": "meidu",
+              "level": 2,
+              "rarity": "N"
+            },
+            {
+              "species": "fanmao",
+              "level": 1,
+              "rarity": "R"
+            }
+          ]
+        },
+        {
+          "species": "mengmai",
+          "rarity": "R",
+          "started": 76.811,
+          "before": 2,
+          "after": 3,
+          "earned": true,
+          "resultTime": 121.917,
+          "cats": [
+            {
+              "species": "tangyuan",
+              "level": 3,
+              "rarity": "N"
+            },
+            {
+              "species": "meidu",
+              "level": 2,
+              "rarity": "N"
+            },
+            {
+              "species": "fanmao",
+              "level": 1,
+              "rarity": "R"
+            },
+            {
+              "species": "mengmai",
+              "level": 1,
+              "rarity": "R"
+            }
+          ]
+        },
+        {
+          "species": "zherdd",
+          "rarity": "R",
+          "started": 136.508,
+          "before": 3,
+          "after": 4,
+          "earned": true,
+          "resultTime": 161.058,
+          "cats": [
+            {
+              "species": "tangyuan",
+              "level": 3,
+              "rarity": "N"
+            },
+            {
+              "species": "meidu",
+              "level": 3,
+              "rarity": "N"
+            },
+            {
+              "species": "fanmao",
+              "level": 1,
+              "rarity": "R"
+            },
+            {
+              "species": "mengmai",
+              "level": 1,
+              "rarity": "R"
+            },
+            {
+              "species": "zherdd",
+              "level": 1,
+              "rarity": "R"
+            }
+          ]
+        },
+        {
+          "species": "dundun",
+          "rarity": "R",
+          "started": 175.271,
+          "before": 4,
+          "after": 5,
+          "earned": true,
+          "resultTime": 232.73,
+          "cats": [
+            {
+              "species": "tangyuan",
+              "level": 4,
+              "rarity": "N"
+            },
+            {
+              "species": "meidu",
+              "level": 3,
+              "rarity": "N"
+            },
+            {
+              "species": "fanmao",
+              "level": 1,
+              "rarity": "R"
+            },
+            {
+              "species": "mengmai",
+              "level": 1,
+              "rarity": "R"
+            },
+            {
+              "species": "zherdd",
+              "level": 1,
+              "rarity": "R"
+            },
+            {
+              "species": "dundun",
+              "level": 1,
+              "rarity": "R"
+            }
+          ]
+        }
+      ],
+      "complete": false,
+      "initial": {
+        "scene": "yard",
+        "catchCount": 1,
+        "cats": [
+          {
+            "species": "tangyuan",
+            "level": 2,
+            "rarity": "N"
+          },
+          {
+            "species": "meidu",
+            "level": 1,
+            "rarity": "N"
+          }
+        ],
+        "pending": true,
+        "duo": 0
+      }
+    }
+  ],
+  "pass": false,
+  "executionErrors": []
+}

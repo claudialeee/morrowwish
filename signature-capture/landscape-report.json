@@ -1,0 +1,31 @@
+{
+  "name": "landscape",
+  "width": 1920,
+  "height": 1080,
+  "errors": [],
+  "failedRequests": [],
+  "duo": null,
+  "ssr": null,
+  "rolls": [],
+  "battles": [],
+  "complete": false,
+  "initial": {
+    "scene": "yard",
+    "catchCount": 1,
+    "cats": [
+      {
+        "species": "tangyuan",
+        "level": 2,
+        "rarity": "N"
+      },
+      {
+        "species": "meidu",
+        "level": 1,
+        "rarity": "N"
+      }
+    ],
+    "pending": true,
+    "duo": 0
+  },
+  "error": "TimeoutError: page.waitForFunction: Timeout 10000ms exceeded."
+}
