@@ -175,8 +175,8 @@ function install(){
    if(row){
     const card=E("section","rw-festival-card");card.setAttribute("aria-label",tr("皮影戏","Shadow puppet show"));
     const actor=campaign.cast.xiaomao.name;
-    const title=E("strong","rw-festival-title",tr(`${actor.zh}的第一场皮影戏`,`${actor.en}’s First Shadow Puppet Show`));
-    const dialogue=p.audience?tr(["快看，他们喜欢这条鱼！","蝴蝶飞起来了！大家都在看呢。","原来歪耳朵也能这么可爱！"][p.shape],["Look, they love the fish!","The butterfly is flying! Everyone is watching.","Even a crooked ear can be cute!"][p.shape]):tr("我的歪耳灯没人来看……你愿意陪我演一场吗？","Nobody came to see my crooked-ear lantern. Will you put on a show with me?");
+    const title=E("strong","rw-festival-title",tr(`${actor.zh}的皮影小剧场`,`${actor.en}’s Shadow Puppet Theater`));
+    const dialogue=p.audience?tr(["快看，他们喜欢这条鱼！","蝴蝶飞起来了！大家都在看呢。","原来歪耳朵也能这么可爱！"][p.shape],["Look, they love the fish!","The butterfly is flying! Everyone is watching.","Even a crooked ear can be cute!"][p.shape]):tr("欢迎回来！今天想演什么影子？","Welcome back! What shadow shall we play with today?");
     const line=E("p","rw-festival-line",tr(`${actor.zh}：`,`${actor.en}: `)+dialogue);
     line.setAttribute("aria-live","polite");
     const hint=E("p","rw-festival-hint",tr("选一个影子就好。也可以左右拖动灯光，不用得分。","Choose any shadow. Drag the light if you like; there is no score."));
