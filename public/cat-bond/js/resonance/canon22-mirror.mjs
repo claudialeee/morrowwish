@@ -7,3 +7,11 @@ function mirrorProof(m){return m?.solved?{trace:[...m.trace],choice:m.choice}:nu
 
 function validMirrorProof(seed,p){if(!p||!Array.isArray(p.trace)||p.trace.length<2||p.trace.length>33||!p.trace.slice(0,-1).every(x=>x===1)||![0,2].includes(p.trace.at(-1)))return false;const m=newMirror(seed);for(const x of p.trace)advanceMirror(m,x);return m.solved&&m.choice===p.choice;}
 export {newMirror,advanceMirror,mirrorProof,validMirrorProof};
+
+// Read-only staging. The animation cannot grant evidence or change the answer.
+export function mirrorStagePose(m,previous,elapsed){
+ const clamp=n=>Math.max(0,Math.min(1,n)),ease=n=>n*n*(3-2*n);
+ const t=ease(clamp(elapsed/.34)),turn=ease(clamp((elapsed-.32)/.28)),from=previous?.position??m.position;
+ const player=.5+.32*(from+(m.position-from)*t);
+ return {player,faces:m.faces.map((face,i)=>({face:turn<.5?(previous?.faces?.[i]||0):face,width:face!==(previous?.faces?.[i]||0)?1-.25*Math.sin(Math.PI*turn):1,reply:!!m.position&&face===m.position&&elapsed>.32&&elapsed<1.2})),signal:elapsed>=.22&&elapsed<1.1?clamp((elapsed-.22)/.88):null};
+}

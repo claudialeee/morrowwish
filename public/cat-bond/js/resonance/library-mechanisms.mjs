@@ -1,6 +1,7 @@
 // Moonmirror Library: three physical archive stations, verified Catdex records,
 // and independent reconstruction of the hidden inward-route ledger.
-import {newMirror,advanceMirror} from "./canon22-mirror.mjs";
+import {newMirror,advanceMirror,mirrorStagePose} from "./canon22-mirror.mjs";
+import {visibleBounds} from "./canon22-art.mjs";
 export const libraryPoints=Object.freeze({
  "explore:sealed-archive":[.17,.73,"公共记忆镜廊","Public memory gallery"],
  "puzzle:library-reflections":[.29,.60,"一层 · 镜光回廊","Ground floor · Reflection gallery"],
@@ -69,14 +70,36 @@ const images=new Map();
 const image=path=>{if(typeof Image==="undefined")return null;if(!images.has(path)){const i=new Image();i.src=new URL(path,artRoot).href;images.set(path,i)}return images.get(path)};
 const ready=i=>i?.complete&&i.naturalWidth;
 function cover(c,i,x,y,w,h){if(!ready(i))return;let k=Math.max(w/i.naturalWidth,h/i.naturalHeight),dw=i.naturalWidth*k,dh=i.naturalHeight*k;c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.drawImage(i,x+(w-dw)/2,y+(h-dh)/2,dw,dh);c.restore()}
-export function paintLibraryPuzzle(c,p,lang,W,H){
+export function paintLibraryPuzzle(c,p,lang,W,H,visual={}){
  const w=libraryWords(p);if(!w)return false;const l=lang==="zh"?0:1,s=W/960,X=n=>n*W,Y=n=>n*H;
  const t=(str,x,y,size=20,col="#4d3b52")=>{c.font="600 "+size*s+"px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";c.fillStyle=col;c.textAlign="center";c.textBaseline="middle";c.fillText(str,X(x),Y(y),W*.88)};
  const frame=(x,y,width,height)=>{c.beginPath();c.roundRect(X(x),Y(y),X(width),Y(height),12*s);c.fillStyle="#fff5e9ee";c.fill();c.strokeStyle="#b6a3cf";c.lineWidth=1.5*s;c.stroke()};
- c.save();cover(c,image("resonance-world-v2/library.webp"),0,0,W,H);c.fillStyle="#99759033";c.fillRect(0,0,W,H);frame(.08,.08,.84,.83);
- if(p.type!=="libraryRoutes"){t(w[0][l],.5,.15,27,"#543b55");t(w[1][l],.5,.23,16);}
+ c.save();cover(c,image("resonance-world-v2/library.webp"),0,0,W,H);c.fillStyle="#99759033";c.fillRect(0,0,W,H);if(p.type!=="libraryCompanion")frame(.08,.08,.84,.83);
+ if(!["libraryRoutes","libraryCompanion"].includes(p.type)){t(w[0][l],.5,.15,27,"#543b55");t(w[1][l],.5,.23,16);}
  const xs=[.3,.5,.7],Yc=Y(.53);
- if(p.type==="libraryCompanion"){const m=p.mirror;const art=image("core-art-remaster/leads/muling.webp");[.30,.70].forEach((x,i)=>{frame(x-.13,.32,.26,.36);if(ready(art)){c.save();c.translate(X(x),Y(.49));if(m.faces[i]<0)c.scale(-1,1);let k=Math.min(W*.16/art.naturalWidth,H*.29/art.naturalHeight);c.drawImage(art,-art.naturalWidth*k/2,-art.naturalHeight*k/2,art.naturalWidth*k,art.naturalHeight*k);c.restore();}t(m.faces[i]===0?(l?"Facing the old spot":"朝着原来的位置"):m.faces[i]===1?(l?"Turns right · replies":"转向右侧 · 摇铃"):(l?"Turns left · replies":"转向左侧 · 摇铃"),x,.64,15);});const px=.5+m.position*.32;t(l?"You":"你",px,.75,18,"#27685b");c.fillStyle="#d3a360";c.beginPath();c.arc(X(px),Y(.70),8*s,0,2*Math.PI);c.fill();t(m.mistakes?(l?"Try a new signal before choosing":"先换位置，再观察回应"):(l?"The two look identical. Watch their actions.":"外表一样，注意它们的动作。"),.5,.81,16);c.restore();return true;}
+ if(p.type==="libraryCompanion"){
+ const m=p.mirror,art=image("core-art-remaster/leads/muling.webp"),player=image("core-art-remaster/leads/player.webp");
+ const elapsed=visual.mirror?Math.max(0,visual.mirror.elapsed):2,pose=mirrorStagePose(m,visual.mirror?.previous,elapsed);
+ const unit=Math.min(W,H),glow=(x,y,r,col)=>{const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,"transparent");c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);};
+ const actor=(im,x,y,maxW,maxH,facing=1,squeeze=1)=>{if(!ready(im))return;const b=visibleBounds(im),k=Math.min(maxW/b[2],maxH/b[3]),w=b[2]*k,h=b[3]*k;c.save();c.translate(x,y);c.scale(facing<0?-squeeze:squeeze,1);c.drawImage(im,...b,-w/2,-h,w,h);c.restore();};
+ // Full-stage arched mirrors, rather than a card board with written answers.
+ c.fillStyle="#18263d70";c.fillRect(0,0,W,H);
+ for(const [i,x] of [.30,.70].entries()){
+  const cx=X(x),left=X(x-.145),right=X(x+.145),top=Y(.20),bottom=Y(.68),arch=Y(.33),r=X(.145);
+  const path=()=>{c.beginPath();c.moveTo(left,bottom);c.lineTo(left,arch);c.bezierCurveTo(left,top,right,top,right,arch);c.lineTo(right,bottom);c.closePath();};
+  c.save();path();c.clip();const glass=c.createLinearGradient(left,top,right,bottom);glass.addColorStop(0,"#688ba9e8");glass.addColorStop(.52,"#41536ce8");glass.addColorStop(1,"#8c8baaee");c.fillStyle=glass;c.fillRect(left,top,right-left,bottom-top);
+  glow(cx,Y(.43),r,"#b2d9e744");c.strokeStyle="#deeff62e";c.lineWidth=unit*.009;c.beginPath();c.moveTo(left,Y(.55));c.lineTo(right,Y(.28));c.stroke();
+  const a=pose.faces[i];actor(art,cx,Y(.65),W*.225,H*.37,a.face||1,a.width);
+  if(a.reply){const q=Math.max(0,(elapsed-.32)/.88);c.strokeStyle="rgba(255,226,157,"+(.84*(1-q))+")";c.lineWidth=2;c.beginPath();c.ellipse(cx,Y(.43),unit*(.035+.085*q),unit*(.025+.055*q),0,0,Math.PI*2);c.stroke();}
+  c.restore();path();c.strokeStyle="#c6b3a1";c.lineWidth=Math.max(2,unit*.008);c.stroke();c.save();c.translate(0,-unit*.008);path();c.strokeStyle="#e5d3b67a";c.lineWidth=1;c.stroke();c.restore();
+ }
+ const px=X(pose.player),py=Y(.89);glow(px,py,unit*.09,"#f7dca14a");c.fillStyle="#151a2a66";c.beginPath();c.ellipse(px,py,unit*.043,unit*.012,0,0,Math.PI*2);c.fill();
+ actor(player,px,py,W*.13,H*.21,m.position<0?-1:1);
+ if(pose.signal!==null){const q=pose.signal;c.strokeStyle="rgba(255,228,166,"+(.75*(1-q))+")";c.lineWidth=2;c.beginPath();c.ellipse(px,py-H*.14,unit*(.018+.14*q),unit*(.012+.09*q),0,0,Math.PI*2);c.stroke();}
+ t(l?"Two cats, one familiar signal":"两只猫，同一个暗号",.5,.09,25,"#fff2d1");
+ t(m.mistakes?(l?"Try a new signal before choosing":"先换位置，再观察回应"):(l?"Watch who turns when you ring.":"摇铃时，看看谁会转过来。"),.5,.15,17,"#eee6dc");
+ c.restore();return true;
+ }
 
  if(p.type==="libraryLedger"){
  const cards=[["借阅簿","Borrowing ledger","借阅印与暮铃铃坠相同","Borrowing mark matches Muling’s pendant"],["公开日志","Public log","失忆复发与封印松动同日","Memory loss and seal breach: same day"],["线路图","Route map","旧图标有通往中央的路线","The old map shows routes to the center"]];

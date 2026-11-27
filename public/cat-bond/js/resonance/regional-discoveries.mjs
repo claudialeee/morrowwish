@@ -1,4 +1,5 @@
 import {sideKeepsakes} from "./side-adventures.mjs";
+import {paintArt} from "./canon22-art.mjs";
 // Region-specific optional environmental discoveries; no narrative proof or economy changes.
 const raw={
   "harbor": {
@@ -545,4 +546,24 @@ export function paintDiscovery(ctx,s,W,H,t){
  else if(s.kind==="flag"){fill("#d3a06f",()=>{ctx.moveTo(-8,-12);ctx.lineTo(11,-7);ctx.lineTo(-8,1);ctx.closePath()});ctx.beginPath();ctx.moveTo(-8,-12);ctx.lineTo(-8,13);ctx.stroke();}
  else{fill("#b0b2ba",()=>{ctx.moveTo(-12,5);ctx.lineTo(-9,-7);ctx.lineTo(3,-11);ctx.lineTo(12,-2);ctx.lineTo(8,9);ctx.lineTo(-3,11);ctx.closePath()});ctx.strokeStyle="#ffe2a4";ctx.beginPath();if(s.kind==="star"){ctx.moveTo(0,-8);ctx.lineTo(3,-2);ctx.lineTo(9,0);ctx.lineTo(3,2);ctx.lineTo(0,8);ctx.lineTo(-3,2);ctx.lineTo(-9,0);ctx.lineTo(-3,-2);}else{ctx.moveTo(0,-6);ctx.lineTo(5,4);ctx.lineTo(-5,4);}ctx.closePath();ctx.stroke();}
  ctx.shadowBlur=0;ctx.strokeStyle="#fff2c9";ctx.globalAlpha=.5+.35*Math.sin(t*3);ctx.beginPath();ctx.moveTo(15,-13);ctx.lineTo(15,-5);ctx.moveTo(11,-9);ctx.lineTo(19,-9);ctx.stroke();ctx.restore();
+}
+
+// Optional discoveries get a short in-world payoff at the real encounter point.
+// No new objective, input, reward, or state is introduced.
+const moments=Object.freeze({
+ harbor:{shell:"wisp",crab:"wisp"},forest:{herb:"moonleaf",sprout:"moonleaf"},forge:{lantern:"lantern",glow:"lantern"},sky:{feather3:"feather",view:"feather"},library:{match:"bookmark",card:"bookmark"},starfall:{match:"constellation",badge:"constellation"}
+});
+export function discoveryMoment(region,id){const kind=moments[region]?.[id];return kind?{kind,duration:2.8}:null;}
+export function paintDiscoveryMoment(c,m,point,W,H,elapsed){
+ const t=Math.max(0,Math.min(1,elapsed/m.duration)),unit=Math.min(W,H),x=point[0]*W,y=point[1]*H,alpha=Math.min(1,t*8,(1-t)*5),rise=Math.sin(Math.PI*t)*unit*.13;
+ if(alpha<=0)return;
+ const reduce=typeof matchMedia==="function"&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+ c.save();c.globalAlpha=alpha;c.translate(x,y);
+ const art=(name,dx,dy,size,angle=0)=>paintArt(c,name,dx,dy,size,size,.5,.5,angle);
+ if(m.kind==="wisp"){const a=reduce?0:t*Math.PI*2,dx=Math.sin(a)*unit*.072,dy=-unit*.075-(reduce?0:rise);art("windchime-wisp",dx,dy,unit*.10);}
+ else if(m.kind==="moonleaf"){const dy=-unit*.06-(reduce?0:rise*.7);art("garden-moonleaf",0,dy,unit*.115,reduce?0:Math.sin(t*5)*.2);}
+ else if(m.kind==="lantern"){const dy=-unit*.055-(reduce?0:rise*.6),r=unit*.14,g=c.createRadialGradient(0,dy,0,0,dy,r);g.addColorStop(0,"#ffe2a778");g.addColorStop(1,"#ffe2a700");c.fillStyle=g;c.fillRect(-r,dy-r,2*r,2*r);art("garden-lantern",0,dy,unit*.13);}
+ else if(m.kind==="feather"||m.kind==="bookmark"){c.save();c.translate(reduce?0:Math.sin(t*5)*unit*.035,-unit*.06-(reduce?0:rise));c.scale(unit/300,unit/300);paintDiscovery(c,{kind:m.kind==="feather"?"feather":"book",point:[0,0]},1,1,reduce?0:elapsed);c.restore();}
+ else if(m.kind==="constellation"){const pts=[[-.07,-.04],[-.02,-.13],[.07,-.09],[.045,-.018]].map(([a,b])=>[a*unit,b*unit]);const n=reduce?pts.length:Math.max(1,Math.ceil(t*6));c.strokeStyle="#ffe5a7";c.lineWidth=1.6;c.beginPath();pts.slice(0,n).forEach((q,i)=>i?c.lineTo(...q):c.moveTo(...q));c.stroke();for(const q of pts.slice(0,n)){c.fillStyle="#fff3c6";c.beginPath();c.arc(...q,unit*.005,0,Math.PI*2);c.fill();}}
+ c.restore();
 }
