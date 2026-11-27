@@ -1,7 +1,7 @@
 // state.js — persistent game state, save/load, and raising/economy logic.
 
 // Only the isolated preview (or local QA) may enter the separate developer sandbox.
-const STARBELL_DEV = /^(cat-bond-preview\.morrowwish\.pages\.dev|localhost|127\.0\.0\.1)$/.test(globalThis.location?.hostname||'')&&new URLSearchParams(globalThis.location?.search||'').get('developer')==='1';
+const STARBELL_DEV = /^((?:cat-bond-preview|starbell-portrait-preview)\.morrowwish\.pages\.dev|localhost|127\.0\.0\.1)$/.test(globalThis.location?.hostname||'')&&new URLSearchParams(globalThis.location?.search||'').get('developer')==='1';
 window.__STARBELL_DEVELOPER__=STARBELL_DEV;
 const devKey=key=>STARBELL_DEV?'starbell_developer_'+key:key;
 const SAVE_KEY = devKey('catbond_save_v1');
