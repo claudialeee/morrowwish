@@ -20,6 +20,19 @@ for(const [id,r] of Object.entries(regionAnchors)){
  maps[id]=build(r.route,{...r.npc,...r.feature,...r.discoveries,...r.cache,...(r.ruins?{ruins:r.ruins}:{})},r.paintedIntermediateWaypointsAfterVertex);
  if(r.remoteSurvey)maps[id+"-remote"]=build(r.remoteSurvey.route);
 }
+const farwindWide=build([
+ {landscape:[.27,.235],portrait:[.308,.915]},
+ {landscape:[.30,.22],portrait:[.445,.733]},
+ {landscape:[.34,.218],portrait:[.710,.632]},
+ {landscape:[.39,.20],portrait:[.944,.450]}
+],{},{
+ 0:[[.350,.830],[.399,.778]],
+ 1:[[.525,.668],[.618,.641]],
+ 2:[[.777,.587],[.817,.522],[.864,.493],[.895,.454],[.921,.432]]
+});
+maps["sky-wide-remote"]=farwindWide;
+export const projectFarwindLandscape=p=>projectPortrait("sky-wide",p,true);
+export const unprojectFarwindLandscape=p=>unprojectPortrait("sky-wide",p,true);
 export function portraitAsset(id,remote=false){return id==="atlas"?"atlas.webp":id==="finale"?"battle-finale.webp":remote?regionAnchors[id]?.remoteSurvey?.portrait:regionAnchors[id]?.portrait;}
 export function projectPortrait(id,p,remote=false){
  const m=id==="atlas"?atlasMapper:maps[id+(remote?"-remote":"")];if(!m)return p;
