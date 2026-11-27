@@ -894,22 +894,22 @@ export const campaign = {
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "糟了！它钻进灯影里了！",
-            "en": "Oh no! It's slipped into the shadows!"
+            "zh": "它散开啦！你看，幕布上的影子又跟得上我们了！",
+            "en": "It’s gone! Look, the shadows on the screen are following us again!"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "引它过来。等它站到灯底下再打。",
-            "en": "Draw it over here. Strike when it's under the light."
+            "zh": "多亏你扶稳了灯，小铆。不然它早就溜回暗处了。",
+            "en": "Good thing you held that light steady, Xiaomao. It would’ve slipped back into the dark."
           }
         },
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "灯有我呢！",
-            "en": "I'll keep the light on!"
+            "zh": "好啦，这回轮到我们点灯。小铆，把那盏歪耳灯也挂上吧。",
+            "en": "Now let’s light up the festival. Xiaomao, hang up your crooked-ear lantern too."
           }
         }
       ],
@@ -1063,8 +1063,8 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "从高处绕一圈就能看见啦！跟我来！",
-            "en": "Circle above them and you'll see it! Follow me!"
+            "zh": "咱们刚飞过的云层后面，露出了个亮闪闪的尖儿。看见了吗？",
+            "en": "Something’s glinting behind the clouds we just flew past. Can you see the tip of it?"
           }
         },
         {
@@ -1759,8 +1759,8 @@ export const campaign = {
         {
           "speaker": "lichuan",
           "text": {
-            "zh": "站稳。等旁边两块石头亮了，再挑一块跳。",
-            "en": "Steady. Wait for the two stones beside you to light up, then pick one to jump to."
+            "zh": "两条星路都能过来。记住亮过的石头，回去时还有路可走。",
+            "en": "Both star paths lead here. Remember which stones lit up, and you’ll have a way back."
           }
         },
         {

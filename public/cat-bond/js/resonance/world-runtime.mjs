@@ -150,6 +150,7 @@ function install(){
     const progress=E("p","rw-minigame-progress");progress.setAttribute("role","status");
     if(p.type==="lanternFocus")progress.textContent=tr("已点亮星灯 ","Star lanterns lit ")+p.values.filter((v,i)=>v===p.goal[i]).length+"/"+p.goal.length;
     else if(["mirrors","stars","water","libraryMirrors"].includes(p.type))progress.textContent=tr("已对准 ","Aligned ")+p.values.filter((v,i)=>v===p.goal[i]).length+"/"+p.goal.length;
+    else if(p.operation==="puzzle:distributed-routing")progress.textContent=tr("摇铃后，留意哪几处先亮起来。","Ring and watch which places light up first.");
     else if(p.type==="libraryRoutes")progress.textContent=tr("已体验路线 ","Routes explored ")+(p.routeSeen?.length||0)+"/2";
     else if(p.type==="librarySeal")progress.textContent=tr("已查看记忆 ","Memories viewed ")+(p.seen?.length||0)+"/3";
     else if(p.type==="canonSpatial"&&p.spatial.kind==="bridge")progress.textContent=p.spatial.warning?tr("这条路不通，试着拨动月叶或选择相连落脚点。","That path is blocked. Turn the moonleaf or choose a connected landing."):tr("沿相连的桥面前进","Follow the connected bridge");
