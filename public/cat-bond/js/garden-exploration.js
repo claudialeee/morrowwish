@@ -61,9 +61,11 @@ function moonleafPose(now,start,home,target,arrived=null){const t=Math.max(0,Mat
 function companionPose(x,y){if(pending?.id!=='moonleaf'||pending.owner!==rootState())return null;const now=performance.now();return moonleafPose(now,pending.started,{x,y},{x:pending.x+38,y:pending.y+3},pending.arrived??null);}
 function cancelChase(){if(!pending)return;delete pending.cat._gardenExploreTarget;const id=pending.id;pending=null;const b=buttons.get(id);if(b)b.disabled=false;}
 function startChase(id='butterfly'){if(pending||!projection)return false;const cat=window.__game?.yard?.entities?.find(e=>e.cat.species==='jinjc'),b=buttons.get(id);if(!cat||!b||cat._gardenRest||cat._playBuildT>0){toast('小猫正在忙，等一下再追蝴蝶。','Your cat is busy. Try the butterfly again in a moment.');return false;}
- const {rect,r,w,h}=projection,ground=window.World?.gardenGround?.(w,h);if(!ground)return false;const bound=(n,a,b)=>Math.max(a,Math.min(b,n));const x=bound((r.left+parseFloat(b.style.left)-rect.left)/rect.width*w,ground.left,ground.right),y=bound((r.top+parseFloat(b.style.top)-rect.top)/rect.height*h+18,ground.top,ground.bottom);pending={cat,x,y,id,owner,started:performance.now(),arrived:null};cat._gardenExploreTarget={x,y};b.disabled=true;return true;}
+ const {rect,r,w,h}=projection,ground=window.World?.gardenGround?.(w,h);if(!ground)return false;const bound=(n,a,b)=>Math.max(a,Math.min(b,n));const pt=b._gardenWorldPoint;const x=bound(pt?.x??(r.left+parseFloat(b.style.left)-rect.left)/rect.width*w,ground.left,ground.right),y=bound(pt?.y??((r.top+parseFloat(b.style.top)-rect.top)/rect.height*h+18),ground.top,ground.bottom);pending={cat,x,y,id,owner,started:performance.now(),arrived:null};cat._gardenExploreTarget={x,y};b.disabled=true;return true;}
 function finishChase(){if(!pending)return;const {cat,id}=pending,s=read(owner);cancelChase();if(id==='moonleaf'){if(!view()?.ending||!commit('moonleaf-touch'))return;pulse(id);toast('两片新叶舒展开来。','Two new leaves unfold.');return;}if(!commit('butterfly'))return;cat.pounceT=.8;cat.setPose?.('play',.8);pulse('butterfly');toast(s.butterfly===2?'蝴蝶飞走了，一片小花落在耳尖。纪念：落在耳尖的花':'蝴蝶又飞到了另一处！ '+(s.butterfly+1)+'/3',s.butterfly===2?'The butterfly flies free. A flower lands on your ear. Keepsake: a little flower.':'The butterfly flutters away! '+(s.butterfly+1)+'/3');}
-function interact(id){if(owner!==rootState()||!eligible()||covered())return false;const b=buttons.get(id);if(!b||b.hidden)return false;
+function interact(id,arrived=false){if(owner!==rootState()||!eligible()||covered())return false;const b=buttons.get(id);if(!b||b.hidden)return false;
+ const game=window.__game,pt=b._gardenWorldPoint;
+ if(!arrived&&id!=='butterfly'&&id!=='moonleaf'&&pt&&game?.yardExploreEnabled?.()&&!game.yardNear(pt.x,pt.y,.10))return game.yardWalkTo(pt.x,pt.y,()=>interact(id,true));
  const s=read(owner);
  if(id==='butterfly'||id==='moonleaf'){closePopup();return startChase(id);}cancelChase();
  if(id==='snack'){snackChoice();return true;}closePopup();
@@ -107,7 +109,7 @@ function draw(parent,ctx,w,h,npcRects=[]){
  init(parent);const layerLabel=tr('花园探索','Garden discoveries');if(layer.getAttribute('aria-label')!==layerLabel)layer.setAttribute('aria-label',layerLabel);if(owner!==rootState()){cancelChase();owner=rootState();closePopup();}
  const valid=eligible()&&!covered(),s=read(owner),v=view();
  if(!valid){cancelChase();closePopup();layer.hidden=true;return;}layer.hidden=false;
- const rect=ctx.canvas.getBoundingClientRect(),r=parent.getBoundingClientRect(),art=window.World?.gardenArtworkRect?.(w,h)||{x:0,y:0,width:w,height:h};
+ const game=window.__game,rect=game?.yardViewportRect?.()||ctx.canvas.getBoundingClientRect(),r=parent.getBoundingClientRect(),art=window.World?.gardenArtworkRect?.(w,h)||{x:0,y:0,width:w,height:h};
  if(!w||!h||!rect.width||!rect.height)return;
  if(pending&&(projection?.w!==w||projection?.h!==h||!window.__game?.yard?.entities?.includes(pending.cat)))cancelChase();
  projection={rect,r,w,h};drawJourney(ctx,w,h,art,owner,v);
@@ -120,10 +122,13 @@ function draw(parent,ctx,w,h,npcRects=[]){
   b.hidden=!show;if(!show)continue;
   b.dataset.questPrimary=String(isChart&&id!=='chart-1'&&v?.current?.id==='prologue:P-05'&&!v?.openingMet);
   const p=def.points[id==='butterfly'?Math.min(2,s.butterfly):0];
-  const preferredX=rect.left+(left+(right-left)*p[0])/w*rect.width-r.left,preferredY=rect.top+(top+(bottom-top)*p[1])/h*rect.height-r.top;
+  const wx=left+(right-left)*p[0],wy=top+(bottom-top)*p[1],ground=window.World?.gardenGround?.(w,h);
+  b._gardenWorldPoint=ground?{x:Math.max(ground.left,Math.min(ground.right,wx)),y:Math.max(ground.top,Math.min(ground.bottom,wy+18))}:{x:wx,y:wy};
+  const pt=b._gardenWorldPoint;if(b.dataset.questPrimary!=='true'&&pending?.id!==id&&game?.yardExploreEnabled?.()&&!game.yardNear(pt.x,pt.y,.28)){b.hidden=true;continue;}
+  const preferredX=rect.left+wx/w*rect.width-r.left,preferredY=rect.top+wy/h*rect.height-r.top;
   const bw=b.offsetWidth||84,bh=b.offsetHeight||70;
   // A running butterfly/moonleaf action owns its target until it finishes.
-  const fixed=pending?.id===id&&Number.isFinite(parseFloat(b.style.left))&&Number.isFinite(parseFloat(b.style.top));
+  const fixed=!game?.yardExploreEnabled?.()&&pending?.id===id&&Number.isFinite(parseFloat(b.style.left))&&Number.isFinite(parseFloat(b.style.top));
   const p0=fixed?{x:parseFloat(b.style.left),y:parseFloat(b.style.top)}:placeMarker(preferredX,preferredY,bw,bh,r.width,r.height,placed);
   const {x,y}=p0;placed.push(p0.box||{left:x-bw/2,top:y-bh/2,right:x+bw/2,bottom:y+bh/2});b.style.left=x+'px';b.style.top=y+'px';
   const label=tr(...def.labels);if(b.getAttribute('aria-label')!==label){b.setAttribute('aria-label',label);b.title=label;b.querySelector('.sg-discovery-label').textContent=label;}
