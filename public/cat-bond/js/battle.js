@@ -1910,7 +1910,7 @@ class CaptureBattle {
       // A skill fired from the BASIC slot hits for notably LESS than the same skill in a
       // Q/E slot: it's a short-cooldown, spammable left-click, so per-hit power is scaled
       // down (BASIC_SKILL_DMG_MULT). The identical skill in Q/E still pays full power.
-      const pow = (sk.power || 1) * BASIC_SKILL_DMG_MULT * this.basicTimeScalar() * this.outgoingBuffMult(f);
+      const pow = (sk.power || 1) * BASIC_SKILL_DMG_MULT * this.basicTimeScalar() * this.identityMul(f);
       this.castOffensiveSkill(f, aim, { ...sk, isBasic: true }, pow, col, true);   // _nowind: no wind-up on a basic
       if (f === this.me() && (this.t - (this._lastPawSfx || -3) > .45)) {
         window.MorrowwishAudio?.effect?.('combat_swing'); this._lastPawSfx = this.t;
@@ -1930,7 +1930,7 @@ class CaptureBattle {
     // ones, pushing Q/E priming. (Playtest P1: basic was a self-sufficient win cond.)
     f._basicTick = (f._basicTick || 0) + 1;
     const toy = 'yarn';
-    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*this.basicTimeScalar()*this.outgoingBuffMult(f), 'me', col, 7, toy, { element: f.element, isBasic: true, _traitCaster:f }, 0.5);
+    this.spawnProj(mx, my, aim, f.projSpeed, f.dmg*this.basicTimeScalar()*this.identityMul(f), 'me', col, 7, toy, { element: f.element, isBasic: true, _traitCaster:f }, 0.5);
     this.vfx.muzzle(mx, my, aim, col);
     this.regularSkillAccent(f,f.element,aim,true);
     if(f===this.me()&&(this.t-(this._lastPawSfx||-3)>.45)){
@@ -1965,6 +1965,12 @@ class CaptureBattle {
   }
   // Positive outgoing buffs share one additive bucket; weakness is a penalty.
   outgoingBuffMult(f){ return (1 + (f.damageBoostT > 0 ? 0.25 : 0) + 0.12 * (f.kneadStacks || 0)) * (f.weakened ? 0.5 : 1); }
+  // Owner 2026-11-26 formula refactor Commit 3b — identity layer merge. Prior
+  // outgoingBuffMult (buff/debuff timers) + _dmgOutMult (per-cat trait flag) applied
+  // at two different call sites, making the effective attacker multiplier hard to
+  // read. identityMul(f) returns ONE product consumed at every cast entry; the
+  // resolveHit traitMult site is gone (now covered here, no double-dip).
+  identityMul(f){ return this.outgoingBuffMult(f) * (f?._dmgOutMult || 1); }
   // Owner 2026-11-26 playtest cycle w62cwoq5u P0-1 (local-numeric auto-fix):
   // reward an ENGAGED masher past the skill-use window. BASIC_POWER_MULT 0.85 is a
   // deliberate pre-45s nerf to force skill use; after 45s, ramp to 1.10 by 75s so a
@@ -2648,7 +2654,7 @@ class CaptureBattle {
     }
     f.cd.q = (sk ? sk.cd : this.moves[1].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
     const col = this.elemColor(sk ? sk.element : f.element);
-    const pow = (sk ? sk.power : 1.35)*this.outgoingBuffMult(f);
+    const pow = (sk ? sk.power : 1.35)*this.identityMul(f);
     // The starter Q fan is an actual damaging skill even before a named Q unlock.
     // Give it an ID so a successful hit participates in skill-driven poise break.
     const attack=sk||{id:'starterQFan',kind:'projectile',element:f.element,power:1.35,ultCost:0};
@@ -3224,7 +3230,7 @@ class CaptureBattle {
       let tgt = null, td = 1e9;
       for (const o of foes) { if (!o || !o.alive) continue; const d = Math.hypot(o.x - f.x, o.y - f.y); if (d < td) { td = d; tgt = o; } }
       if (tgt && (tgt.flash || 0) <= 0 && (tgt.inv || 0) <= 0 && td < (f.r || 18) + ((tgt.r || 18) * .6)) {
-        let dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * (side === 'me' ? this.outgoingBuffMult(f) : 1);
+        let dmg = (f._pounceDmg != null) ? f._pounceDmg : f.dmg * 1.6 * (side === 'me' ? this.identityMul(f) : 1);
         const contact = f._pounceSkill;
         if (contact?.backstab) {
           const facing = Math.atan2((tgt._vy || 0), (tgt._vx || 0));
@@ -3560,7 +3566,7 @@ class CaptureBattle {
     }
     f.cd.e = (sk ? sk.cd : this.moves[2].cd) * (f.bond.cdReduction || 1) * SKILL_CD_MULT;
     const col = this.elemColor(sk ? sk.element : f.element);
-    const pow = (sk ? sk.power : 1) * this.outgoingBuffMult(f);
+    const pow = (sk ? sk.power : 1) * this.identityMul(f);
     if (sk) {
       this.castOffensiveSkill(f, aim, sk, pow, col);
     } else {
@@ -6221,15 +6227,10 @@ class CaptureBattle {
       e._effLabelAt = this.t;
       this.vfx.text(e.x, e.y - 64, effLabel, elem >= 1.5 ? '#ff9f6b' : '#9aa8ba', 14);
     }
-    if (skill.isBasic) {
-      // Owner 2026-11-26 '完全删': basic-tag tension dropped (was ×0.7 unmarked / +0.10/tag
-      // cap +0.30). The ×0.7 'no-tag tax' silently punished mashers and the +0.30 reward
-      // duplicated combo-table logic. Basic resolves at 1.0× here now.
-      if (this._debug && this._dbgApplyBreakdown) {
-        this._dbgApplyBreakdown.basicTagMul = 1;
-        this._dbgApplyBreakdown.basicNTags = e.tags.filter(t => t !== 'rust' && e.status[t] > 0).length;
-      }
-    }
+    // Owner 2026-11-26 '完全删' + supervisor punch list #4 cleanup: basic-tag tension
+    // branch fully removed (was ×1+0.10/tag cap +0.30, OR ×0.7 unmarked). Debug stash
+    // dropped — the _dbgApplyBreakdown.basicTagMul column will be undefined for basic
+    // hits going forward (downstream TSV dump accepts undefined → '-').
     // apply status tag(s) with their TTL → real ongoing effects (see tickStatus)
     if (skill.appliesTag) {
       const tags = Array.isArray(skill.appliesTag) ? skill.appliesTag : [skill.appliesTag];
@@ -6749,9 +6750,12 @@ class CaptureBattle {
       // 纸箱埋伏 Box Ambush: the primed cat's next non-basic skill forces stagger.
       const amb = proj?._traitCaster || skill?._traitCaster || null; if (amb && amb._ambush && !isBasic) { amb._ambush = false; this.triggerStagger(target); }
       // Stagger (+30%) joins the incoming vulnerability bucket in hurtEnemy().
+      // Owner 2026-11-26 formula refactor Commit 3b: _dmgOutMult is NOW consumed at
+      // the cast entry via identityMul(f) — no longer applied again here (was prior
+      // double-dip site). actor still passed through for trait emit downstream.
       const actor=proj?._traitCaster||skill?._traitCaster||null;
-      const traitMult = actor?._dmgOutMult || 1;
-      const dealt = this.applyHitEffects(target, skill || { element: null }, dmg*traitMult, x, y);
+      const traitMult = 1;  // kept for debug log column compatibility
+      const dealt = this.applyHitEffects(target, skill || { element: null }, dmg, x, y);
       const continuous=!!skill?.isChanneledTick;
       const heavyMove=!!skill?.heavy||['melee','dash','pounce','leap'].includes(skill?.kind);
       const hitTier=continuous?null:alreadyStaggered?'crit':heavyMove?'heavy':'light';
