@@ -6,3 +6,5 @@ Object.assign(window.MORROW_ZH_STORIES,{"PUBLIC PLAYTEST · PREVIEW":"公开试�
 Object.assign(window.MORROW_ZH_STORIES,{"FEATURED GAME · PREVIEW":"主推游戏 · 试玩版","Story-driven fantasy RPG":"幻想剧情 RPG","Explore six regions":"探索六大地区","MORE WORLDS TO GET LOST IN":"更多值得沉浸的世界"});
 
 Object.assign(window.MORROW_ZH_STORIES,{"01 / ROLE-PLAYING GAMES":"01 / 角色扮演游戏"});
+
+Object.assign(window.MORROW_ZH_STORIES,{"Preview":"试玩版","Collect & raise":"收集与养成","Stealth & mischief":"潜行与捣蛋","Town strategy":"小镇策略","Interactive stories":"互动故事","9 playful rooms":"九个趣味关卡"});

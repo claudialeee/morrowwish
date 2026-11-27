@@ -63,6 +63,19 @@ try{
    await page.goto(root+(slug?'/'+slug+'/':'/')+'?lang='+lang,{waitUntil:'domcontentloaded',timeout:30000});
    await page.waitForTimeout(slug==='cat-bond'?850:550);
    await scan(page,slug,lang,'landing');
+   if(!slug){
+    const layout=await page.evaluate(()=>{
+     const rpg=document.querySelector('#rpg'), worlds=document.querySelector('#worlds'), tiny=document.querySelector('#tiny-games'), cards=[...worlds.querySelectorAll('.feature-card')];
+     const rect=e=>e.getBoundingClientRect();
+     const visible=e=>rect(e).height>0&&rect(e).width>0;
+     return {order:rect(rpg).top<rect(worlds).top&&rect(worlds).top<rect(tiny).top,heading:rpg.querySelector('h2').textContent.trim(),subtitles:[...document.querySelectorAll('main .section-index')].filter(visible).length,
+      preview:!!rpg.querySelector('.starbell-preview-label'),cards:cards.length,allButtons:cards.every(c=>visible(c.querySelector('.card-button'))&&rect(c.querySelector('.card-button')).bottom<=rect(c).bottom+1),columns:new Set(cards.map(c=>Math.round(rect(c).left))).size,
+      overflow:document.documentElement.scrollWidth>innerWidth+1,nav:[...document.querySelectorAll('.site-nav a')].every(a=>visible(a)&&rect(a).right<=innerWidth+1)};
+    });
+    assert.ok(layout.order&&layout.heading==='RPG'&&layout.preview&&layout.cards===4&&layout.allButtons&&layout.nav&&!layout.overflow,'Home layout regression: '+JSON.stringify(layout));
+    assert.equal(layout.subtitles,0,'Remove redundant section eyebrows');
+    assert.equal(layout.columns,width===390?2:4,'Home card columns');
+   }
    if(slug==='cat-bond'&&await page.locator('#intro-start').isVisible()){
     await page.locator('#intro-start').click({timeout:7000});
     await scan(page,slug,lang,'starter');

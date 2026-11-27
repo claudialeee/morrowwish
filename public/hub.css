@@ -575,3 +575,47 @@ html[lang="en"] .about-section .about-copy h3{display:none}
 
 /* RPG gets its own navigation destination and section heading. */
 #rpg{scroll-margin-top:90px}#rpg .rpg-section-intro{margin-bottom:14px}#rpg .rpg-section-intro h2{margin:4px 0 0}#rpg .rpg-section-intro .section-index{color:#8b6125}@media(max-width:600px){#rpg .rpg-section-intro{margin-bottom:10px}.site-nav{gap:10px;flex-wrap:wrap}}
+
+/* Studio home v2: one editorial hierarchy, no decorative section numbering. */
+body:has(#rpg) .shell{width:min(1200px,calc(100% - 44px))}
+body:has(#rpg) .nav-row{min-height:64px;gap:22px}
+body:has(#rpg) .site-nav{margin-left:auto;gap:24px;flex-wrap:nowrap;font-size:13px}
+body:has(#rpg) .hero{padding:19px 0 19px}
+body:has(#rpg) .hero h1{font-size:clamp(32px,3.5vw,46px);margin:0 auto 8px;line-height:1.15}
+body:has(#rpg) .hero h1 em:after{display:none}
+body:has(#rpg) .hero-promise{margin-top:9px;gap:18px}
+body:has(#rpg) .section-intro h2,body:has(#rpg) .social-title-row h2{font-family:'Nunito','DM Sans',system-ui,sans-serif;font-size:clamp(21px,2.1vw,28px);line-height:1.2;letter-spacing:-.035em;font-weight:850;margin:0}
+body:has(#rpg) .section-intro{margin-bottom:12px}
+#rpg .rpg-section-intro{margin-bottom:10px}
+.starbell-playtest-section{margin-bottom:24px}
+#rpg .starbell-preview-card{height:clamp(224px,23vw,284px);min-height:0;grid-template-columns:minmax(0,45%) minmax(0,55%);border-radius:20px;background:linear-gradient(115deg,#fff8ed,#f1e4cf);border-color:#e5d8c1}
+#rpg .starbell-preview-card .feature-content{padding:19px clamp(20px,2.5vw,35px);justify-content:center}
+#rpg .starbell-preview-card h3{font-size:clamp(30px,3.7vw,49px);color:#483b32;line-height:1.06;margin:9px 0}
+#rpg .starbell-preview-label{display:inline-flex;align-items:center;border:1px solid #d5bf94;border-radius:6px;padding:3px 8px;background:#fff8e8;color:#735426;font-size:11px;font-weight:800;letter-spacing:.025em;text-transform:none}
+#rpg .starbell-preview-card .feature-content>p{font-size:clamp(12px,1.15vw,15px);line-height:1.48;color:#5c5045}
+#rpg .starbell-preview-card .card-button{margin-top:12px;background:#765a36;min-height:40px;font-size:14px}
+#rpg .starbell-preview-card .feature-art{grid-column:2;grid-row:1;height:100%}
+#worlds{padding-bottom:20px}
+#worlds .feature-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;max-width:none;margin:0}
+#worlds .feature-card{height:auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:clamp(95px,9.4vw,126px) 1fr;border-radius:15px;background:#fffaf3;border:1px solid #eadfd6;box-shadow:0 4px 13px #6043350c}
+#worlds .feature-card .feature-art{grid-column:1;grid-row:1;width:100%;height:100%;inset:auto;position:relative}
+#worlds .feature-card .feature-art img{object-fit:cover;object-position:center}
+#worlds .feature-card .feature-content{grid-column:1;grid-row:2;padding:10px 13px 12px;min-width:0}
+#worlds .feature-card .card-eyebrow{font-size:10.5px;line-height:1.3;letter-spacing:0;text-transform:none;color:#8a776c}
+#worlds .feature-card h3{font-size:clamp(17px,1.8vw,24px);letter-spacing:-.035em;line-height:1.15;margin:5px 0 7px;min-height:0;color:#4c3d3b;text-shadow:none}
+#worlds .feature-card h3 em{color:inherit;font:inherit}
+#worlds .feature-card .feature-content>p{font-size:11.5px;line-height:1.45;-webkit-line-clamp:2;margin:0 0 9px;color:#6c5d57}
+#worlds .feature-chips{display:none}
+#worlds .card-button{min-height:32px;max-width:100%;font-size:11.5px;padding:6px 9px;margin-top:auto}
+#tiny-games{padding:20px 0 24px;background:transparent}
+#tiny-games .section-intro>p{display:none}
+#tiny-games .mini-game{height:auto;min-height:116px;flex-direction:row;align-items:stretch;background:#fffaf3;border:1px solid #eadfd6;box-shadow:none}
+#tiny-games .mini-game>img{width:34%;height:auto;min-height:116px;flex:0 0 34%;object-fit:cover}
+#tiny-games .mini-copy{min-width:0;padding:10px 11px}
+#tiny-games .mini-type{letter-spacing:0;text-transform:none;color:#8a776c;font-size:10px}
+#tiny-games .mini-copy strong{font-size:17px}
+#tiny-games .mini-descr{font-size:11px;line-height:1.4}
+#about{padding-top:23px;border-top:1px solid #ecdfd4}
+@media(max-width:850px){#worlds .feature-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}#worlds .feature-card{grid-template-rows:120px 1fr}#worlds .feature-card h3{font-size:21px}#tiny-games .mini-grid{grid-template-columns:1fr}#tiny-games .mini-game>img{width:28%;flex-basis:28%}}
+@media(max-width:600px){body:has(#rpg) .shell{width:calc(100% - 28px)}body:has(#rpg) .nav-row{display:grid;grid-template-columns:1fr auto;gap:7px 12px;padding:9px 0}body:has(#rpg) .wordmark{grid-column:1;grid-row:1}body:has(#rpg) #mw-language{grid-column:2;grid-row:1;justify-self:end}body:has(#rpg) .site-nav{grid-column:1/-1;grid-row:2;justify-content:space-between;gap:8px;margin:0;font-size:11px;flex-wrap:nowrap}body:has(#rpg) .site-nav a:last-child{display:block}body:has(#rpg) .hero{padding:15px 0}body:has(#rpg) .hero h1{font-size:clamp(26px,7vw,36px)}body:has(#rpg) .hero-promise{gap:12px}#rpg .starbell-preview-card{height:auto;grid-template-columns:1fr;grid-template-rows:clamp(155px,46vw,240px) auto}#rpg .starbell-preview-card .feature-art{grid-column:1;grid-row:1;height:100%}#rpg .starbell-preview-card .feature-content{grid-column:1;grid-row:2;padding:15px 18px 18px}#rpg .starbell-preview-card h3{font-size:30px}#rpg .starbell-preview-card .feature-content>p{display:block;font-size:13px}#rpg .starbell-preview-card .feature-art:after{display:none}#worlds .feature-card{grid-template-rows:clamp(82px,27vw,120px) 1fr}#worlds .feature-card .feature-content{padding:9px 10px 11px}#worlds .feature-card h3{font-size:18px}#worlds .feature-card .card-button{font-size:11px;min-height:34px;white-space:normal}#worlds .feature-card .feature-content>p{font-size:11px}#tiny-games .mini-game>img{width:32%;flex-basis:32%}}
+@media(prefers-reduced-motion:reduce){body:has(#rpg) .feature-card{transition:none}}
