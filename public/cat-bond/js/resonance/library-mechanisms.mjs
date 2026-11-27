@@ -89,9 +89,9 @@ export function paintLibraryPuzzle(c,p,lang,W,H,visual={}){
   const path=()=>{c.beginPath();c.moveTo(left,bottom);c.lineTo(left,arch);c.bezierCurveTo(left,top,right,top,right,arch);c.lineTo(right,bottom);c.closePath();};
   c.save();path();c.clip();const glass=c.createLinearGradient(left,top,right,bottom);glass.addColorStop(0,"#688ba9e8");glass.addColorStop(.52,"#41536ce8");glass.addColorStop(1,"#8c8baaee");c.fillStyle=glass;c.fillRect(left,top,right-left,bottom-top);
   glow(cx,Y(.43),r,"#b2d9e744");c.strokeStyle="#deeff62e";c.lineWidth=unit*.009;c.beginPath();c.moveTo(left,Y(.55));c.lineTo(right,Y(.28));c.stroke();
-  const a=pose.faces[i];actor(art,cx,Y(.65),W*.225,H*.37,a.face||1,a.width);
+  const a=pose.faces[i];actor(art,cx+(a.answered?m.position*unit*.018:0),Y(.65),W*.225,H*.37,a.face||1,a.width);
   if(a.reply){const q=Math.max(0,(elapsed-.32)/.88);c.strokeStyle="rgba(255,226,157,"+(.84*(1-q))+")";c.lineWidth=2;c.beginPath();c.ellipse(cx,Y(.43),unit*(.035+.085*q),unit*(.025+.055*q),0,0,Math.PI*2);c.stroke();}
-  c.restore();path();c.strokeStyle="#c6b3a1";c.lineWidth=Math.max(2,unit*.008);c.stroke();c.save();c.translate(0,-unit*.008);path();c.strokeStyle="#e5d3b67a";c.lineWidth=1;c.stroke();c.restore();
+  if(a.answered){const bx=cx+unit*.075,by=Y(.35),r=unit*.010;c.fillStyle="#f7dca0";c.beginPath();c.moveTo(bx,by-r);c.quadraticCurveTo(bx-r,by-r*.4,bx-r,by+r*.65);c.lineTo(bx+r,by+r*.65);c.quadraticCurveTo(bx+r,by-r*.4,bx,by-r);c.fill();c.beginPath();c.arc(bx,by+r,r*.25,0,Math.PI*2);c.fill();}c.restore();path();c.strokeStyle="#c6b3a1";c.lineWidth=Math.max(2,unit*.008);c.stroke();c.save();c.translate(0,-unit*.008);path();c.strokeStyle="#e5d3b67a";c.lineWidth=1;c.stroke();c.restore();
  }
  const px=X(pose.player),py=Y(.89);glow(px,py,unit*.09,"#f7dca14a");c.fillStyle="#151a2a66";c.beginPath();c.ellipse(px,py,unit*.043,unit*.012,0,0,Math.PI*2);c.fill();
  actor(player,px,py,W*.13,H*.21,m.position<0?-1:1);

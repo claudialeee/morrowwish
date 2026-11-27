@@ -13,5 +13,5 @@ export function mirrorStagePose(m,previous,elapsed){
  const clamp=n=>Math.max(0,Math.min(1,n)),ease=n=>n*n*(3-2*n);
  const t=ease(clamp(elapsed/.34)),turn=ease(clamp((elapsed-.32)/.28)),from=previous?.position??m.position;
  const player=.5+.32*(from+(m.position-from)*t);
- return {player,faces:m.faces.map((face,i)=>({face:turn<.5?(previous?.faces?.[i]||0):face,width:face!==(previous?.faces?.[i]||0)?1-.25*Math.sin(Math.PI*turn):1,reply:!!m.position&&face===m.position&&elapsed>.32&&elapsed<1.2})),signal:elapsed>=.22&&elapsed<1.1?clamp((elapsed-.22)/.88):null};
+ return {player,faces:m.faces.map((face,i)=>({face:turn<.5?(previous?.faces?.[i]||0):face,width:face!==(previous?.faces?.[i]||0)?1-.25*Math.sin(Math.PI*turn):1,reply:!!m.position&&face===m.position&&elapsed>.32&&elapsed<1.2,answered:!!m.position&&face===m.position&&elapsed>.55})),signal:elapsed>=.22&&elapsed<1.1?clamp((elapsed-.22)/.88):null};
 }
