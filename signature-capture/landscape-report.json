@@ -1,0 +1,147 @@
+{
+  "name": "landscape",
+  "width": 1920,
+  "height": 1080,
+  "errors": [],
+  "failedRequests": [],
+  "duo": {
+    "uses": 1,
+    "elementPair": "fire+grass",
+    "tier": 1,
+    "cinematic": {
+      "remaining": 2.700100000000002,
+      "max": 3.2
+    },
+    "layout": {
+      "source": "63-original-painted-storyboards",
+      "originalArt": true,
+      "actorFallback": false,
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "art": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080
+      },
+      "artAspect": 1.7777777777777777,
+      "fullScreenAtmosphere": true,
+      "animatedEffects": true,
+      "paintingDrawCount": 1,
+      "actorLayerCount": 0,
+      "camera": {
+        "zoom": 1.0055556925065805,
+        "panX": 3.19242435961036,
+        "panY": 1.2524181768680773,
+        "rotationRadians": 0.0007196141584173815
+      },
+      "effectPhase": 0.15621874999999938,
+      "effectTier": 1
+    },
+    "onset": 3.623,
+    "frameTime": 5.448,
+    "screenshot": "duo-real.png"
+  },
+  "ssr": {
+    "species": "xingchen",
+    "rarity": "SSR",
+    "combatTime": 53.304,
+    "resultTime": 88.416,
+    "before": 2,
+    "after": 3,
+    "owned": {
+      "species": "xingchen",
+      "level": 1,
+      "rarity": "SSR"
+    },
+    "screenshot": "ssr-earned.png"
+  },
+  "rolls": [
+    {
+      "species": "xingchen",
+      "rarity": "SSR",
+      "level": 3
+    }
+  ],
+  "battles": [
+    {
+      "species": "senlin",
+      "rarity": "SR",
+      "started": 2.638,
+      "before": 1,
+      "after": 2,
+      "earned": true,
+      "resultTime": 49.449,
+      "cats": [
+        {
+          "species": "tangyuan",
+          "level": 3,
+          "rarity": "N"
+        },
+        {
+          "species": "meidu",
+          "level": 2,
+          "rarity": "N"
+        },
+        {
+          "species": "senlin",
+          "level": 1,
+          "rarity": "SR"
+        }
+      ]
+    },
+    {
+      "species": "xingchen",
+      "rarity": "SSR",
+      "started": 52.304,
+      "before": 2,
+      "combatTime": 53.304,
+      "after": 3,
+      "earned": true,
+      "resultTime": 88.416,
+      "cats": [
+        {
+          "species": "tangyuan",
+          "level": 3,
+          "rarity": "N"
+        },
+        {
+          "species": "meidu",
+          "level": 2,
+          "rarity": "N"
+        },
+        {
+          "species": "senlin",
+          "level": 2,
+          "rarity": "SR"
+        },
+        {
+          "species": "xingchen",
+          "level": 1,
+          "rarity": "SSR"
+        }
+      ]
+    }
+  ],
+  "complete": true,
+  "initial": {
+    "scene": "yard",
+    "catchCount": 1,
+    "cats": [
+      {
+        "species": "tangyuan",
+        "level": 2,
+        "rarity": "N"
+      },
+      {
+        "species": "meidu",
+        "level": 1,
+        "rarity": "N"
+      }
+    ],
+    "pending": true,
+    "duo": 0
+  }
+}
