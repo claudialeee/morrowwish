@@ -44,7 +44,7 @@ try{
   }
   await page.evaluate(()=>WorldMap.enterMap());
   const atlas=page.locator('.rw-atlas-rail'),toggle=page.locator('.rw-head .rw-quest-toggle');await toggle.waitFor();
-  assert.equal(await atlas.isVisible(),false);await toggle.tap();await atlas.waitFor();assert.equal(await atlas.locator('.rw-objective').count(),1);await toggle.tap();await atlas.waitFor({state:'hidden'});
+  assert.equal(await atlas.isVisible(),false,JSON.stringify(await atlas.evaluate(e=>({hidden:e.hidden,display:getComputedStyle(e).display,open:e.querySelector('details')?.open}))));await toggle.tap();await atlas.waitFor();assert.equal(await atlas.locator('.rw-objective').count(),1);await toggle.tap();await atlas.waitFor({state:'hidden'});
   // Isolated CSS presentation fixture, not evidence of campaign progression to H-05.
   await page.evaluate(()=>{const r=document.createElement('div');r.className='cb-story-overlay is-visible res-host';r.dataset.scene='harbor:H-05';r.innerHTML='<section class="res-dialogue"><img class="res-portrait" alt=""><div class="res-body"><h2>你</h2><p>这不是我醒来的花园吗？</p></div></section>';document.getElementById('stage').append(r);});
   const layers=await page.evaluate(()=>{const r=document.querySelector('.res-host[data-scene="harbor:H-05"]');return {map:getComputedStyle(document.querySelector('.rw-world')).visibility,background:getComputedStyle(r).backgroundColor,art:getComputedStyle(r,'::before').backgroundImage,portrait:getComputedStyle(r.querySelector('.res-portrait')).display};});
