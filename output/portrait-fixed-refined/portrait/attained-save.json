@@ -1,0 +1,18 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://127.0.0.1:18963",
+      "localStorage": [
+        {
+          "name": "morrowwish.language",
+          "value": "en"
+        },
+        {
+          "name": "catbond_save_v1",
+          "value": "{\"coins\":112,\"medkits\":2,\"fish\":4,\"luckLure\":0,\"cats\":[{\"uid\":\"c1_3948\",\"species\":\"tangyuan\",\"nickname\":\"\",\"level\":2,\"xp\":22,\"affinity\":35,\"stats\":{\"pow\":8,\"agi\":5,\"vit\":9,\"cha\":6},\"hunger\":99.99845932222107,\"joy\":90.9962671583313,\"caughtAt\":1795813696035,\"learned\":[],\"battlesWon\":1,\"stage\":0,\"awaken\":null,\"personality\":\"clever\",\"trait\":\"none\",\"bond\":0,\"bondXp\":0,\"shiny\":false,\"traitRevealed\":false,\"loadout\":[null,\"emberClaw\",\"gen_fire_dash\",null],\"autoSkillLoadout\":[null,\"emberClaw\",\"gen_fire_dash\",null],\"_gacc\":{\"pow\":-0.4616216019608732,\"agi\":-0.25697330997963586,\"vit\":-0.007384272338049946,\"cha\":0.11535049554237231},\"skillAwakened\":true,\"awakenedSkill\":\"gen_fire_dash\",\"unseenSkills\":[\"gen_fire_dash\"]},{\"uid\":\"c2_2125\",\"species\":\"meidu\",\"nickname\":\"\",\"level\":1,\"xp\":8,\"affinity\":23,\"stats\":{\"pow\":8,\"agi\":7,\"vit\":10,\"cha\":8},\"hunger\":99.99915262722294,\"joy\":89.99892757333585,\"caughtAt\":1795813718755,\"learned\":[],\"battlesWon\":0,\"stage\":0,\"awaken\":null,\"personality\":\"lazy\",\"trait\":\"none\",\"bond\":0,\"bondXp\":0,\"shiny\":false,\"traitRevealed\":false}],\"dex\":{\"tangyuan\":1,\"meidu\":1},\"lastSeen\":1795813759105,\"lastDaily\":0,\"streak\":0,\"tutorialDone\":false,\"catchCount\":1,\"petCount\":0,\"yardBuildings\":[],\"bondingRewards\":[],\"collectionMilestones\":[],\"repeatSightings\":0,\"battlePrefs\":{\"autoBattle\":true,\"modeChosen\":true,\"teamUids\":[\"c1_3948\",\"c2_2125\"],\"skillsIntroSeen\":true,\"tutorialSeen\":true},\"difficulty\":\"casual\",\"bestGrades\":{\"meidu\":\"S\"},\"masteryBadges\":{\"meidu\":true},\"aiProfile\":{\"v\":1,\"battles\":1,\"dodgeDir\":0,\"favRange\":0.4372034749055844,\"evasive\":0.45333333333333337,\"aggression\":0.46956521739130436,\"elemLead\":{\"fire\":1},\"skill\":0.625,\"adapt\":true,\"stompStreak\":0,\"lossStreak\":0},\"duoRelations\":{\"pairs\":{\"c1_3948:c2_2125\":{\"value\":43,\"lastPlay\":1795813738459,\"sulkyUntil\":0,\"sulkyPending\":false,\"memories\":[\"play-together\"]}},\"active\":[\"c1_3948\",\"c2_2125\"]},\"worldmap\":{\"current\":\"home\",\"unlocked\":{\"home\":true},\"regions\":{\"home\":{\"explored\":0.014285714285714285,\"nodes\":[],\"cleared\":false},\"sakura\":{\"explored\":0,\"nodes\":[],\"cleared\":false},\"creek\":{\"explored\":0,\"nodes\":[],\"cleared\":false},\"volcano\":{\"explored\":0,\"nodes\":[],\"cleared\":false},\"ruins\":{\"explored\":0,\"nodes\":[],\"cleared\":false}}},\"raising\":{\"ver\":1,\"starShards\":0,\"offlineCapH\":8,\"stations\":[{\"id\":\"st_fish\",\"type\":\"fishing\",\"level\":1,\"stored\":0,\"assignedUid\":null},{\"id\":\"st_yarn\",\"type\":\"yarn\",\"level\":1,\"stored\":0,\"assignedUid\":null},{\"id\":\"st_sun\",\"type\":\"sun\",\"level\":1,\"stored\":0,\"assignedUid\":null},{\"id\":\"st_watch\",\"type\":\"watch\",\"level\":1,\"stored\":0,\"assignedUid\":null},{\"id\":\"st_nursery\",\"type\":\"nursery\",\"level\":1,\"stored\":0,\"assignedUid\":null}],\"pity\":{\"count\":0},\"breeding\":null,\"butterfly\":{\"active\":false,\"spawnAt\":0},\"mementos\":{},\"firstSunPay\":false,\"firstSunCollected\":false},\"firstDuoShowcasePending\":true,\"firstAdventureTour\":{\"step\":0,\"done\":false,\"skipped\":false}}"
+        }
+      ]
+    }
+  ]
+}

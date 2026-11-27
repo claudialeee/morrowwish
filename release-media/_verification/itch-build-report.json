@@ -1,8 +1,11 @@
 {
+  "portraitViewportFix": "20261127-uniform-world-camera-and-portal-stage",
+  "worldmapSha256": "474da350be479f0bbeb1868fcba55e9c83fd33f8f2246156b549a125534e0027",
+  "cssSha256": "25b52ca538a9f5c449b91c30addd346cb020ee6a47642bd30a4fdda83a8e5126",
   "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
   "platform": "itch",
-  "bytes": 36929818,
-  "sha256": "b5469baa05313dcf699a28887bfb9f5897b4d8526b2c951e7e3999b21c8ef78c",
+  "bytes": 36930422,
+  "sha256": "eb1f9db4da55407059bea09ed4dcaea54742751cb5f25ac192ddf4573d2f777c",
   "fileCount": 127,
   "sdkConfigurationPresent": false,
   "awaitingSdkId": false,

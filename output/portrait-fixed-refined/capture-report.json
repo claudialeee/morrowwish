@@ -1,0 +1,218 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "fix": "c0c9eef798870ac84ffd2442dc68ca085cf407cd",
+  "method": "trusted real player input, no seeded state or fabricated result",
+  "captures": [
+    {
+      "name": "landscape",
+      "width": 1920,
+      "height": 1080,
+      "marks": [
+        {
+          "name": "garden",
+          "at": 2.266,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 1
+        },
+        {
+          "name": "active-battle",
+          "at": 8.578,
+          "scene": "battle",
+          "mode": "map",
+          "cats": 1
+        },
+        {
+          "name": "capture",
+          "at": 23.923,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "two-cat-garden",
+          "at": 27.537,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "teaser",
+          "at": 33.395,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "feed-result",
+          "at": 38.761,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "duo",
+          "at": 42.693,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "cat-care",
+          "at": 48.606,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "catdex",
+          "at": 53.77,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "workshop",
+          "at": 57.399,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "real-exploration",
+          "at": 61.273,
+          "scene": "map",
+          "mode": "region",
+          "cats": 2
+        },
+        {
+          "name": "explore-motion",
+          "at": 65.842,
+          "scene": "map",
+          "mode": "region",
+          "cats": 2
+        }
+      ],
+      "errors": [],
+      "failedActions": [],
+      "complete": true,
+      "teaserScore": "2",
+      "fed": true,
+      "duoPlay": true,
+      "montageScenes": [
+        "two-cat-garden",
+        "teaser",
+        "cat-care",
+        "duo",
+        "real-exploration",
+        "active-battle"
+      ]
+    },
+    {
+      "name": "portrait",
+      "width": 1080,
+      "height": 1620,
+      "marks": [
+        {
+          "name": "garden",
+          "at": 2.245,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 1
+        },
+        {
+          "name": "active-battle",
+          "at": 8.73,
+          "scene": "battle",
+          "mode": "map",
+          "cats": 1
+        },
+        {
+          "name": "capture",
+          "at": 25.201,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "two-cat-garden",
+          "at": 28.691,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "teaser",
+          "at": 34.606,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "feed-result",
+          "at": 40.328,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "duo",
+          "at": 44.814,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "cat-care",
+          "at": 51.27,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "catdex",
+          "at": 56.396,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "workshop",
+          "at": 60.145,
+          "scene": "yard",
+          "mode": "map",
+          "cats": 2
+        },
+        {
+          "name": "real-exploration",
+          "at": 64.432,
+          "scene": "map",
+          "mode": "region",
+          "cats": 2
+        },
+        {
+          "name": "explore-motion",
+          "at": 69.11,
+          "scene": "map",
+          "mode": "region",
+          "cats": 2
+        }
+      ],
+      "errors": [],
+      "failedActions": [],
+      "complete": true,
+      "teaserScore": "2",
+      "fed": true,
+      "duoPlay": true,
+      "montageScenes": [
+        "two-cat-garden",
+        "teaser",
+        "cat-care",
+        "duo",
+        "real-exploration",
+        "active-battle"
+      ]
+    }
+  ],
+  "visualApproved": false
+}

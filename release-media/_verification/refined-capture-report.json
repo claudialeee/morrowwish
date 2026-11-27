@@ -1,5 +1,6 @@
 {
   "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "fix": "c0c9eef798870ac84ffd2442dc68ca085cf407cd",
   "method": "trusted real player input, no seeded state or fabricated result",
   "captures": [
     {
@@ -9,84 +10,84 @@
       "marks": [
         {
           "name": "garden",
-          "at": 2.391,
+          "at": 2.266,
           "scene": "yard",
           "mode": "map",
           "cats": 1
         },
         {
           "name": "active-battle",
-          "at": 8.862,
+          "at": 8.578,
           "scene": "battle",
           "mode": "map",
           "cats": 1
         },
         {
           "name": "capture",
-          "at": 24.866,
+          "at": 23.923,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "two-cat-garden",
-          "at": 28.387,
+          "at": 27.537,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "teaser",
-          "at": 34.652,
+          "at": 33.395,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "feed-result",
-          "at": 40.25,
+          "at": 38.761,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "duo",
-          "at": 44.622,
+          "at": 42.693,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "cat-care",
-          "at": 50.835,
+          "at": 48.606,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "catdex",
-          "at": 55.968,
+          "at": 53.77,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "workshop",
-          "at": 59.846,
+          "at": 57.399,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "real-exploration",
-          "at": 63.669,
+          "at": 61.273,
           "scene": "map",
           "mode": "region",
           "cats": 2
         },
         {
           "name": "explore-motion",
-          "at": 67.709,
+          "at": 65.842,
           "scene": "map",
           "mode": "region",
           "cats": 2
@@ -114,84 +115,84 @@
       "marks": [
         {
           "name": "garden",
-          "at": 2.12,
+          "at": 2.245,
           "scene": "yard",
           "mode": "map",
           "cats": 1
         },
         {
           "name": "active-battle",
-          "at": 8.609,
+          "at": 8.73,
           "scene": "battle",
           "mode": "map",
           "cats": 1
         },
         {
           "name": "capture",
-          "at": 22.693,
+          "at": 25.201,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "two-cat-garden",
-          "at": 26.288,
+          "at": 28.691,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "teaser",
-          "at": 32.364,
+          "at": 34.606,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "feed-result",
-          "at": 37.678,
+          "at": 40.328,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "duo",
-          "at": 41.91,
+          "at": 44.814,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "cat-care",
-          "at": 48.277,
+          "at": 51.27,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "catdex",
-          "at": 53.39,
+          "at": 56.396,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "workshop",
-          "at": 56.989,
+          "at": 60.145,
           "scene": "yard",
           "mode": "map",
           "cats": 2
         },
         {
           "name": "real-exploration",
-          "at": 60.91,
+          "at": 64.432,
           "scene": "map",
           "mode": "region",
           "cats": 2
         },
         {
           "name": "explore-motion",
-          "at": 64.749,
+          "at": 69.11,
           "scene": "map",
           "mode": "region",
           "cats": 2

@@ -1,0 +1,457 @@
+{
+  "baseSource": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "fix": "c0c9eef798870ac84ffd2442dc68ca085cf407cd",
+  "tests": [
+    {
+      "name": "phone",
+      "width": 390,
+      "height": 844,
+      "errors": [],
+      "failures": [],
+      "pass": true,
+      "geometry": {
+        "stage": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "viewport": {
+          "w": 390,
+          "h": 844
+        }
+      },
+      "initial": {
+        "sampleCount": 1026,
+        "transparentSamples": 0,
+        "width": 390,
+        "height": 844
+      },
+      "view": {
+        "camX": 20.4951373335823,
+        "camY": 222.51863390746496,
+        "px": 216,
+        "py": 650,
+        "panMode": false,
+        "target": false,
+        "targetWorld": null,
+        "scale": 1,
+        "width": 390,
+        "height": 844
+      },
+      "drag": {
+        "before": 20.95527428530139,
+        "after": 130.17065462794773,
+        "expected": 130.15527428530137,
+        "panMode": true
+      },
+      "afterDrag": {
+        "sampleCount": 1026,
+        "transparentSamples": 0,
+        "width": 390,
+        "height": 844
+      },
+      "tap": {
+        "expected": {
+          "x": 383.6706546279477,
+          "y": 750.9612605699501
+        },
+        "actual": {
+          "x": 383.6706546279477,
+          "y": 750.9612898668252
+        },
+        "panMode": false
+      },
+      "afterTap": {
+        "sampleCount": 1026,
+        "transparentSamples": 0,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "name": "gamepix-portrait",
+      "width": 720,
+      "height": 1280,
+      "errors": [],
+      "failures": [],
+      "pass": true,
+      "geometry": {
+        "stage": {
+          "x": 0,
+          "y": 0,
+          "w": 720,
+          "h": 1280
+        },
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "w": 720,
+          "h": 1280
+        },
+        "viewport": {
+          "w": 720,
+          "h": 1280
+        }
+      },
+      "initial": {
+        "sampleCount": 880,
+        "transparentSamples": 0,
+        "width": 720,
+        "height": 1280
+      },
+      "view": {
+        "camX": 0,
+        "camY": 9.783678367979691,
+        "px": 216,
+        "py": 650,
+        "panMode": false,
+        "target": false,
+        "targetWorld": null,
+        "scale": 1,
+        "width": 720,
+        "height": 1280
+      },
+      "drag": {
+        "before": 0,
+        "after": 201.5999755859375,
+        "expected": 201.60000000000002,
+        "panMode": true
+      },
+      "afterDrag": {
+        "sampleCount": 880,
+        "transparentSamples": 0,
+        "width": 720,
+        "height": 1280
+      },
+      "tap": {
+        "expected": {
+          "x": 669.5999755859375,
+          "y": 803.5917432320934
+        },
+        "actual": {
+          "x": 669.5999755859375,
+          "y": 803.5917188180309
+        },
+        "panMode": false
+      },
+      "afterTap": {
+        "sampleCount": 880,
+        "transparentSamples": 0,
+        "width": 720,
+        "height": 1280
+      }
+    },
+    {
+      "name": "tall",
+      "width": 1080,
+      "height": 1620,
+      "errors": [],
+      "failures": [],
+      "pass": true,
+      "geometry": {
+        "stage": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1620
+        },
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1620
+        },
+        "viewport": {
+          "w": 1080,
+          "h": 1620
+        }
+      },
+      "initial": {
+        "sampleCount": 912,
+        "transparentSamples": 0,
+        "width": 1080,
+        "height": 1620
+      },
+      "view": {
+        "camX": 0,
+        "camY": 0,
+        "px": 216,
+        "py": 650,
+        "panMode": false,
+        "target": false,
+        "targetWorld": null,
+        "scale": 1.2461538461538462,
+        "width": 866.6666666666666,
+        "height": 1300
+      },
+      "drag": {
+        "before": 0,
+        "after": 242.6666862581983,
+        "expected": 242.66666666666666,
+        "panMode": true
+      },
+      "afterDrag": {
+        "sampleCount": 912,
+        "transparentSamples": 0,
+        "width": 1080,
+        "height": 1620
+      },
+      "tap": {
+        "expected": {
+          "x": 806.0000195915317,
+          "y": 806
+        },
+        "actual": {
+          "x": 806.0000195915317,
+          "y": 806.0000195915317
+        },
+        "panMode": false
+      },
+      "afterTap": {
+        "sampleCount": 912,
+        "transparentSamples": 0,
+        "width": 1080,
+        "height": 1620
+      },
+      "rotated": {
+        "sampleCount": 903,
+        "transparentSamples": 0,
+        "width": 1620,
+        "height": 1080
+      },
+      "rotatedBack": {
+        "sampleCount": 912,
+        "transparentSamples": 0,
+        "width": 1080,
+        "height": 1620
+      }
+    },
+    {
+      "name": "vertical",
+      "width": 1080,
+      "height": 1920,
+      "errors": [],
+      "failures": [],
+      "pass": true,
+      "geometry": {
+        "stage": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1920
+        },
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1920
+        },
+        "viewport": {
+          "w": 1080,
+          "h": 1920
+        }
+      },
+      "initial": {
+        "sampleCount": 908,
+        "transparentSamples": 0,
+        "width": 1080,
+        "height": 1920
+      },
+      "view": {
+        "camX": 0,
+        "camY": 0,
+        "px": 216,
+        "py": 650,
+        "panMode": false,
+        "target": false,
+        "targetWorld": null,
+        "scale": 1.476923076923077,
+        "width": 731.25,
+        "height": 1300
+      },
+      "drag": {
+        "before": 0,
+        "after": 204.7500165303548,
+        "expected": 204.74999999999997,
+        "panMode": true
+      },
+      "afterDrag": {
+        "sampleCount": 908,
+        "transparentSamples": 0,
+        "width": 1080,
+        "height": 1920
+      },
+      "tap": {
+        "expected": {
+          "x": 680.0625165303547,
+          "y": 806
+        },
+        "actual": {
+          "x": 680.0625165303547,
+          "y": 806.0000165303547
+        },
+        "panMode": false
+      },
+      "afterTap": {
+        "sampleCount": 908,
+        "transparentSamples": 0,
+        "width": 1080,
+        "height": 1920
+      }
+    },
+    {
+      "name": "desktop",
+      "width": 1920,
+      "height": 1080,
+      "errors": [],
+      "failures": [],
+      "pass": true,
+      "geometry": {
+        "stage": {
+          "x": 0,
+          "y": 0,
+          "w": 1920,
+          "h": 1080
+        },
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "w": 1920,
+          "h": 1080
+        },
+        "viewport": {
+          "w": 1920,
+          "h": 1080
+        }
+      },
+      "initial": {
+        "sampleCount": 896,
+        "transparentSamples": 0,
+        "width": 1920,
+        "height": 1080
+      },
+      "view": {
+        "camX": 0,
+        "camY": 141.07633652017168,
+        "px": 216,
+        "py": 650,
+        "panMode": false,
+        "target": false,
+        "targetWorld": null,
+        "scale": 1.0666666666666667,
+        "width": 1800,
+        "height": 1012.5
+      },
+      "drag": {
+        "before": 0,
+        "after": 0,
+        "expected": 0,
+        "panMode": true
+      },
+      "afterDrag": {
+        "sampleCount": 896,
+        "transparentSamples": 0,
+        "width": 1920,
+        "height": 1080
+      },
+      "tap": {
+        "expected": {
+          "x": 1170,
+          "y": 771.4988621855875
+        },
+        "actual": {
+          "x": 1170,
+          "y": 770.9363621855875
+        },
+        "panMode": false
+      },
+      "afterTap": {
+        "sampleCount": 896,
+        "transparentSamples": 0,
+        "width": 1920,
+        "height": 1080
+      }
+    },
+    {
+      "name": "y8-standard",
+      "width": 760,
+      "height": 570,
+      "errors": [],
+      "failures": [],
+      "pass": true,
+      "geometry": {
+        "stage": {
+          "x": 0,
+          "y": 0,
+          "w": 760,
+          "h": 570
+        },
+        "canvas": {
+          "x": 0,
+          "y": 0,
+          "w": 760,
+          "h": 570
+        },
+        "viewport": {
+          "w": 760,
+          "h": 570
+        }
+      },
+      "initial": {
+        "sampleCount": 923,
+        "transparentSamples": 0,
+        "width": 760,
+        "height": 570
+      },
+      "view": {
+        "camX": 0,
+        "camY": 360.8010909424145,
+        "px": 216,
+        "py": 650,
+        "panMode": false,
+        "target": false,
+        "targetWorld": null,
+        "scale": 1,
+        "width": 760,
+        "height": 570
+      },
+      "drag": {
+        "before": 0,
+        "after": 212,
+        "expected": 212.80000000000007,
+        "panMode": true
+      },
+      "afterDrag": {
+        "sampleCount": 923,
+        "transparentSamples": 0,
+        "width": 760,
+        "height": 570
+      },
+      "tap": {
+        "expected": {
+          "x": 706,
+          "y": 718.0277713429873
+        },
+        "actual": {
+          "x": 706,
+          "y": 717.6277713429872
+        },
+        "panMode": false
+      },
+      "afterTap": {
+        "sampleCount": 923,
+        "transparentSamples": 0,
+        "width": 760,
+        "height": 570
+      }
+    }
+  ],
+  "pass": true
+}
