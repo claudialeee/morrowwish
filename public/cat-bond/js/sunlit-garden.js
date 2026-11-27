@@ -86,7 +86,7 @@
     if(talk)add('与暮铃交谈','Talk to Muling',()=>narrativeAdapter?.interactHomeNpc('muling'));
     if(ending){add('花园复兴','Garden Restoration',()=>window.GardenProjects?.open?.());add('继续探索','Continue exploring',()=>game.openWorldMap());if(guests.pages>1){add('下一批访客 '+(guestPage+1)+'/'+guests.pages,'Next visitors '+(guestPage+1)+'/'+guests.pages,()=>{guestPage=(guestPage+1)%guests.pages;guideKey='';refreshGuide()});row.lastElementChild.dataset.guestPage=String(guestPage);}}
     if(departure){
-      title.textContent=en?'Find your name':'寻找自己的名字';hint.textContent=en?'Tap things in the garden to discover small surprises, or head to Windchime Town.':'点击花园里的小事物探索惊喜，也可以随时前往风铃镇。';
+      title.textContent=en?'Find your name':'寻找自己的名字';hint.textContent=en?'Look for clues in the garden, or follow the trail to Windchime Town.':'在花园找找线索，或去风铃镇打听。';
       guide.classList.add('sg-minimal-opening');
       add('下一场景 · 风铃镇','Next scene · Windchime Town',()=>{game.openWorldMap();if(game.scene==='map')window.WorldMap?.enterRegion?.('harbor')});
       row.firstElementChild.classList.add('sg-main-continue');
@@ -108,7 +108,7 @@
     const canvasRect=ctx.canvas.getBoundingClientRect(),r=root.getBoundingClientRect();
     if(!width||!height||!r.width||!r.height)return;
     const b=getTalkMarker(npc),en=isEnglish(),raw=npc.name,profileName=typeof raw==='string'?raw:raw?.[en?'en':'zh'];
-    const label=npc.id==='muling'&&window.CatBondResonance?.view?.().current?.id==='prologue:P-05'?(en?'Talk':'对话'):(profileName||npc.id);
+    const label=npc.id==='muling'&&window.CatBondResonance?.view?.().current?.id==='prologue:P-05'?(en?'Stranger':'陌生猫'):(profileName||npc.id);
     b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);b.hidden=false;
     if(cell){b.style.left=cell.x+'px';b.style.top=cell.box.bottom+'px';return;}
     const px=canvasRect.left-r.left+x/width*canvasRect.width,py=canvasRect.top-r.top+(y-112*scale)/height*canvasRect.height;

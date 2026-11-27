@@ -10,6 +10,15 @@ const local=Object.freeze({
   'public/cat-bond/js/resonance/harbor-presentation.mjs':['harbor'],
   'public/cat-bond/js/resonance/forge-presentation.mjs':['forge']
 });
+const openingPlaytestFiles=new Set([
+  "scripts/test-cat-bond-canon22-spatial.mjs",
+  "scripts/cat-bond-experience-chapters.mjs",
+  "public/cat-bond/js/sunlit-garden.js",
+  "public/cat-bond/js/resonance/npc-world.mjs",
+  "public/cat-bond/js/resonance/canon22-spatial.mjs",
+  "public/cat-bond/js/resonance/world-runtime.mjs",
+  "scripts/cat-bond-experience-qa-scope.mjs"
+]);
 const qaFiles=new Set([".github/actions/starbell-browser-setup/action.yml",".github/workflows/cat-bond-canon22-browser.yml",".github/workflows/cat-bond-canon22-fresh.yml",".github/workflows/cat-bond-preview.yml",".github/workflows/starbell-canon22-playtest.yml","docs/cat-bond-rpg/QA-OPTIMIZATION.md","scripts/cat-bond-experience-qa-scope.mjs"]);
 function impact(files) {
   if (!files.length || files.some(f=>!Object.hasOwn(local,f))) return all;
@@ -20,6 +29,7 @@ const visualFidelityFiles=new Set(["public/cat-bond/js/resonance/library-mechani
 const fidelityFiles=new Set(["public/cat-bond/js/resonance-cinematic.mjs","public/cat-bond/js/resonance/dialogue-ui.mjs","public/cat-bond/js/resonance/library-mechanisms.mjs","scripts/cat-bond-experience-chapters.mjs","scripts/cat-bond-experience-qa-scope.mjs","public/cat-bond/js/resonance/sky-lookout.mjs","docs/cat-bond-rpg/PLAYTEST-WORK-HANDOFF.md"]);
 const audioOnly=new Set(["public/cat-bond/js/rpg-audio.js","scripts/test-cat-bond-rpg-audio-lifecycle.mjs","scripts/cat-bond-title-audio-qa.mjs","scripts/cat-bond-experience-qa-scope.mjs",".github/workflows/cat-bond-canon22-browser.yml",".github/workflows/cat-bond-preview.yml"]);
 function choose({manual='',message='',files=[],review=false}={}) {
+  if(!manual&&message.includes('[qa-windchime-playtest]')&&files.length&&files.every(f=>openingPlaytestFiles.has(f)))return ['harbor'];
   if(!manual&&message.includes('[qa-title-audio]')&&files.length&&files.every(f=>audioOnly.has(f)))return [];
   if(!manual&&message.includes('[qa-fidelity-visual]')&&files.length&&files.every(f=>visualFidelityFiles.has(f)))return ['sky','library','starfall','finale','epilogue'];
   if(!manual&&message.includes('[qa-fidelity-3]')&&files.length&&files.every(f=>fidelityFiles.has(f)))return ['sky','library','starfall'];
@@ -53,7 +63,9 @@ assert.deepEqual(choose({files:[...fidelityFiles,'public/cat-bond/js/resonance/e
 assert.deepEqual(choose({files:[...visualFidelityFiles],message:'[qa-fidelity-visual]'}),['sky','library','starfall','finale','epilogue']);
 assert.deepEqual(choose({files:[...audioOnly],message:'[qa-title-audio]'}),[]);
 assert.deepEqual(choose({files:[...audioOnly,'public/cat-bond/js/resonance/engine.mjs'],message:'[qa-title-audio]'}),all);
-if (process.argv.includes('--self-test')) { console.log('QA scope: 13 assertions passed'); process.exit(0); }
+assert.deepEqual(choose({files:[...openingPlaytestFiles],message:'[qa-windchime-playtest]'}),['harbor']);
+assert.deepEqual(choose({files:[...openingPlaytestFiles,'public/cat-bond/js/resonance/engine.mjs'],message:'[qa-windchime-playtest]'}),all);
+if (process.argv.includes('--self-test')) { console.log('QA scope: 15 assertions passed'); process.exit(0); }
 const {BEFORE='',HEAD='',MANUAL_SCOPE='',COMMIT_MESSAGE='',TOOLCHAIN_ONLY='false'}=process.env;
 let files=[];
 if (/^[0-9a-f]{40}$/.test(BEFORE)&&/^[0-9a-f]{40}$/.test(HEAD)&&!/^0+$/.test(BEFORE)) {

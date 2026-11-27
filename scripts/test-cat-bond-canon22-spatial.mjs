@@ -36,3 +36,11 @@ spatialInput(shortcut,{type:'direction',dx:0,dy:0});const stop=[...shortcut.play
 spatialInput(shortcut,{type:'jump'});for(let i=0;i<40&&!shortcut.solved;i++)tickSpatial(shortcut,.02);assert.ok(shortcut.wallCrossed||shortcut.solved);
 
 const guidedBridge=newSpatial('puzzle:moonleaf-crossing');assert.deepEqual(bridgeReachable(guidedBridge),[1]);assert.deepEqual(spatialControls(guidedBridge).filter(x=>x.available).map(x=>x.action.i),[1]);spatialInput(guidedBridge,{type:'step',i:1});assert.ok(bridgeReachable(guidedBridge).includes(2));spatialInput(guidedBridge,{type:'leaf'});assert.ok(bridgeReachable(guidedBridge).includes(3));assert.equal(spatialTap(newSpatial('puzzle:shadow-bridge'),.5,.9),null,'Unrelated bottom-area tap must not cross the bridge');
+
+const tapChase=newSpatial('puzzle:chime-chase');
+assert.equal(spatialTap(tapChase,.5,.5),null,'Tapping the wall should not run anywhere');
+const intercept=spatialTap(tapChase,.8,.35);
+assert.deepEqual(intercept,{type:'target',x:.8,y:.27});
+spatialInput(tapChase,intercept);
+for(let i=0;i<2500&&!tapChase.solved;i++)tickSpatial(tapChase,.02);
+assert.ok(tapChase.solved&&validSpatialProof(tapChase.operation,spatialProof(tapChase)));

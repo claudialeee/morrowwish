@@ -239,7 +239,7 @@ async function run(chapter){
   }
   if(chapter==='harbor'){
    await talk('Qilan');await dialogue('harbor:H-01');await scene('harbor:H-02');
-   await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();await page.keyboard.down('ArrowUp');await page.waitForTimeout(920);await page.keyboard.up('ArrowUp');await page.keyboard.down('ArrowRight');await chase.waitFor({state:'hidden',timeout:15000});await page.keyboard.up('ArrowRight');await chase.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');
+   await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();if(continuous){await page.keyboard.down('ArrowUp');await page.waitForTimeout(920);await page.keyboard.up('ArrowUp');await page.keyboard.down('ArrowRight');await chase.waitFor({state:'hidden',timeout:15000});await page.keyboard.up('ArrowRight');}else{const surface=page.locator('.rw-surface');const bounds=await surface.boundingBox();await surface.click({position:{x:bounds.width*.8,y:bounds.height*.35}});await chase.waitFor({state:'hidden',timeout:30000});}await dialogue('harbor:H-02');await scene('harbor:H-03');
    await talk('Yandeng');await dialogue('harbor:H-03');await scene('harbor:H-04');
    await battle('Belllight beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
    await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');
