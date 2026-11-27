@@ -258,6 +258,13 @@ jobs:
                 await page.screenshot({path:'preview-'+prefix+'-harbor.png'});
                 // Actual player-driven discovery on the shipped map, not a synthetic slot.
                 const surface=page.locator('.rw-surface');
+                await page.waitForFunction(()=>{const s=document.querySelector('.rw-surface');return s?.dataset.camera&&JSON.parse(s.dataset.affordances||'[]').length>0;});
+                // The new event is intentionally hidden outside its discovery radius.
+                // Walk along the first harbor path segment using the real map controls.
+                if(!await surface.evaluate(el=>JSON.parse(el.dataset.affordances||'[]').some(m=>m.t==='The tidepool shell'))){
+                  const pathPoint=await surface.evaluate(el=>{const [zoom,x,y]=JSON.parse(el.dataset.camera);return {x:el.clientWidth*(x+zoom*.12),y:el.clientHeight*(y+zoom*.80)}});
+                  await surface.click({position:pathPoint});
+                }
                 await page.waitForFunction(()=>JSON.parse(document.querySelector('.rw-surface')?.dataset.affordances||'[]').some(m=>m.t==='The tidepool shell'));
                 const target=await surface.evaluate(el=>{const m=JSON.parse(el.dataset.affordances).find(m=>m.t==='The tidepool shell'),[zoom,x,y]=JSON.parse(el.dataset.camera);return {x:el.clientWidth*(x+zoom*m.x/960),y:el.clientHeight*(y+zoom*m.y/540)}});
                 await surface.click({position:target});
