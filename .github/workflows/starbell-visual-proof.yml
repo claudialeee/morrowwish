@@ -1,0 +1,51 @@
+name: Starbell deployed Boss visual proof
+on:
+  push:
+    branches: [qa/starbell-final-acceptance-20261127]
+    paths: ['.github/workflows/starbell-visual-proof.yml']
+permissions:
+  contents: read
+jobs:
+  art:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 36c44d2cfe39ade6d38b2ed0258dc4b98b137fb3
+          sparse-checkout: public/cat-bond/assets
+      - name: Verify exact published Boss assets and prepare review image
+        run: |
+          set -eu
+          base=https://cat-bond-preview.morrowwish.pages.dev/cat-bond/assets
+          for file in combat/tide-shell-watercolor.webp combat/rootbound-watercolor.webp canon22-final-art/shadow-beast.webp combat/gale-wing-watercolor.webp combat/mirror-sentinel-watercolor.webp combat/orbit-sentinel-watercolor.webp combat/orbit-dark-watercolor.webp combat/orbit-mastery-watercolor.webp; do
+            curl -fsS --max-time 20 "$base/$file" -o /tmp/boss-live.webp
+            cmp "public/cat-bond/assets/$file" /tmp/boss-live.webp
+          done
+          python3 - <<'PY'
+          from PIL import Image,ImageOps,ImageDraw
+          import base64,io
+          names=[
+           ('Harbor','combat/tide-shell-watercolor.webp'),
+           ('Forest','combat/rootbound-watercolor.webp'),
+           ('Forge','canon22-final-art/shadow-beast.webp'),
+           ('Sky','combat/gale-wing-watercolor.webp'),
+           ('Library','combat/mirror-sentinel-watercolor.webp'),
+           ('Starfall / light','combat/orbit-sentinel-watercolor.webp'),
+           ('Starfall / dark','combat/orbit-dark-watercolor.webp'),
+           ('Mastery','combat/orbit-mastery-watercolor.webp')]
+          w,h=224,216
+          board=Image.new('RGB',(4*w,2*h),'#e8e4d9')
+          d=ImageDraw.Draw(board)
+          for i,(name,path) in enumerate(names):
+           im=Image.open('public/cat-bond/assets/'+path).convert('RGBA')
+           print('EXACT BOSS ASSET',name,im.size)
+           im.thumbnail((w-16,h-28),Image.Resampling.LANCZOS)
+           x=i%4*w+(w-im.width)//2;y=i//4*h+(h-22-im.height)//2
+           board.paste(im,(x,y),im)
+           d.text((i%4*w+8,(i//4+1)*h-20),name,fill='#2d2e33')
+          f=io.BytesIO();board.save(f,'JPEG',quality=76,optimize=True)
+          # These are public game assets, not private data. Split into short lines.
+          data=base64.b64encode(f.getvalue()).decode()
+          for i in range(0,len(data),3000):print('BOSS_CONTACT_SHEET '+data[i:i+3000])
+          PY
