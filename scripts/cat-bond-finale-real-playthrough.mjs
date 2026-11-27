@@ -46,7 +46,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
   assert.ok(await page.evaluate(()=>{const p=CatRelations.chosen();return p.length===2&&CatRelations.memoryList(...p).includes('sakura')&&CatRelations.pair(...p).value>=20;}),'Actual forest duo promise');
   await travel(returnRegion);
  }
- const regions={harbor:'Misttide Harbor',forest:'Rootsleep Forest',forge:'Emberforge City',sky:'Skyspine Isles',library:'Moonmirror Library',starfall:'Starfall Expanse'};
+ const regions={harbor:'Misttide Harbor',forest:'Rootsleep Forest',forge:'Emberforge City',sky:'Skyspine Isles',library:'Moonmirror Library',starfall:'Starfall Expanse',finale:'Star Bell'};
  async function gotoRegion(region){if(await page.evaluate(()=>WorldMap.mode==='region'&&WorldMap.currentRegion)===region)return;if(await page.evaluate(()=>WorldMap.mode==='map'))await button(regions[region]).click();else await travel(regions[region]);await page.waitForFunction(r=>WorldMap.currentRegion===r&&WorldMap.mode==='region',region);}
  if(!startAtFinale){
  await ensureDuo();
@@ -94,6 +94,8 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  // It does not call ensureDuo() above. Earn the actual optional forest
  // promise in the same save before attempting its finale-only effect.
  if(startAtFinale){await gotoRegion('starfall');await ensureDuo('Starfall Expanse');}
+ await gotoRegion('finale');
+ assert.equal(await page.evaluate(()=>State.S.resonanceExploration.location),'finale','Independent finale location');
  assert.ok(await page.evaluate(()=>{const p=CatRelations.chosen();return p.length===2&&CatRelations.memoryList(...p).includes('sakura');}),'Earned forest promise before finale');
  // Earlier chapters may have saved the strongest roster rather than the
  // pledged pair. Put the two actual cats on the field through the Book's
@@ -119,6 +121,7 @@ export async function continueToFinale({page,context,options,name,button,scene,s
  assert.ok(await page.evaluate(()=>{const p=CatRelations.chosen();return p.every(c=>UI.getPreferredBattleTeam().slice(0,2).some(t=>t.uid===c.uid));}),'Both pledged cats must be on the actual starting team');
  const before=await page.evaluate(()=>JSON.stringify(State.S.resonance));await beginBattle('Approach the Star Bell');
  await shot('B-01-retreat');assert.equal(await page.locator('[data-finale-regions] meter').count(),6);await page.locator('#btn-flee').click();assert.equal(await finishBattle(),'withdrawal','Actual retreat result');
+ assert.equal(await page.evaluate(()=>WorldMap.currentRegion),'finale','Retreat returns to the Star Bell, not Starfall');
  assert.equal(await page.evaluate(()=>JSON.stringify(State.S.resonance)),before,'Retreat must not award any story progress');
  await beginBattle('Approach the Star Bell');await shot('B-01-inward-locks');assert.equal(await finishBattle(),'saved','B-01 victory must save');await check('battle:inward-gates');await dialogue('finale:B-01');await scene('finale:B-02');
  await beginBattle('Approach the Star Bell',false);

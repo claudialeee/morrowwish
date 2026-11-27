@@ -87,12 +87,13 @@ function install(){
  if(!GP||!BP||window.CatBondFinaleCombat)return;
  const tr=(zh,en)=>window.MorrowwishI18n?.get?.()==="zh"?zh:en;
  const arenaArt=new Map();
- function arenaPainting(W,H){
-  const frame=H>W?"portrait":"wide";
+ function arenaPainting(W,H,id){
+  const portraitStage={"finale:B-01":"battle-finale-lock","finale:B-02":"battle-finale","finale:B-03":"battle-finale-chorus"}[id];
+  const frame=H>W&&portraitStage?portraitStage:H>W?"portrait":"wide";
   if(!arenaArt.has(frame)){
    const image=new Image();
    image.decoding="async";
-   image.src=new URL("../../assets/combat/star-bell-arena-"+frame+".webp",import.meta.url).href;
+   image.src=new URL(frame.startsWith("battle-finale")?"../../assets/mobile-portrait/"+frame+".webp":"../../assets/combat/star-bell-arena-"+frame+".webp",import.meta.url).href;
    arenaArt.set(frame,image);
   }
   return arenaArt.get(frame);
@@ -116,7 +117,7 @@ function install(){
   const team=window.UI.getPreferredBattleTeam();if(!team.length)return false;
   const root=window.State.S,base=window.GameData.speciesById(team[0].species);
   if(!base)return false;
-  arenaPainting(game.W,game.H);
+  arenaPainting(game.W,game.H,id);
   host().close?.();
   window.UI.openBattleModePrompt(team,base,{origin:"map",storyTitle:sceneTitle[id],onStart:fighters=>{
    if(root!==window.State.S||!available(game,id))return;
@@ -389,7 +390,8 @@ function install(){
  const background=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){
   if(this.resonanceFinale){
-   const painting=arenaPainting(W,H);
+   const requested=arenaPainting(W,H,this.resonanceFinale.id),original=arenaPainting(W,H);
+   const painting=requested.complete&&requested.naturalWidth?requested:original;
    if(painting.complete&&painting.naturalWidth){
     window.CatBondSceneFit.draw(ctx,painting,W,H,{top:"#e8deec",bottom:"#d9c4b7"});
     const light=ctx.createLinearGradient(0,0,0,H);
@@ -397,7 +399,7 @@ function install(){
     ctx.save();ctx.fillStyle=light;ctx.fillRect(0,0,W,H);ctx.restore();
     return;
    }
-   if(window.CatBondRegionalArt?.drawScene(ctx,W,H,"starfall"))return;
+   ctx.fillStyle="#393747";ctx.fillRect(0,0,W,H);return;
   }
   return background.call(this,ctx,W,H);
  };
