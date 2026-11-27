@@ -1,0 +1,53 @@
+name: Starbell trailer preparation (isolated)
+on:
+  push:
+    branches: [review/starbell-trailer-handoff]
+    paths:
+      - 'scripts/capture-starbell-trailer.mjs'
+      - 'scripts/render-starbell-trailer-draft.py'
+      - 'docs/cat-bond-rpg/STAR-BELL-TRAILER-TIMELINE.json'
+      - '.github/workflows/starbell-trailer-preparation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Syntax and asset preflight
+        run: |
+          node --check scripts/capture-starbell-trailer.mjs
+          python3 -m py_compile scripts/render-starbell-trailer-draft.py
+          ffmpeg -version
+          test -s public/cat-bond/assets/audio/garden.mp3
+      - name: Generate local fixtures and record real actions
+        env:
+          CAT_BOND_TARGET_SCENES: 'harbor:H-02,harbor:H-03,harbor:H-04,forest:R-02,forge:E-01,sky:S-01,sky:S-04'
+        run: |
+          set -euo pipefail
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-trailer-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-knowledge.mjs
+          node scripts/cat-bond-experience-targets.mjs
+          node scripts/capture-starbell-trailer.mjs
+      - name: Attempt internal rough cut (not release quality)
+        if: always()
+        run: python3 scripts/render-starbell-trailer-draft.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-trailer-internal-footage
+          path: |
+            artifacts/starbell-trailer/
+            /tmp/starbell-trailer-server.log
+          retention-days: 14

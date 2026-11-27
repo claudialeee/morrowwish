@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "project": "Echoes of the Starbell",
+  "duration": 30,
+  "aspect": "16:9",
+  "fps": 30,
+  "language": "en",
+  "output": "1920x1080 H.264/AAC",
+  "shots": [
+    {
+      "id": "garden",
+      "seconds": 3.5,
+      "text": "You forgot your name.",
+      "focus": "Visible golden lead, real butterfly interaction"
+    },
+    {
+      "id": "meet",
+      "seconds": 4,
+      "text": "But someone remembers you.",
+      "focus": "Real silver lead encounter; no fake romance animation"
+    },
+    {
+      "id": "chase",
+      "seconds": 2.5,
+      "text": "",
+      "focus": "Wisp moving and player following"
+    },
+    {
+      "id": "forest",
+      "seconds": 2.5,
+      "text": "",
+      "focus": "Moonleaf changes route"
+    },
+    {
+      "id": "shadow",
+      "seconds": 2.5,
+      "text": "",
+      "focus": "Cat shadow play reacts to player"
+    },
+    {
+      "id": "glide",
+      "seconds": 3,
+      "text": "",
+      "focus": "Controllable gliding above clouds"
+    },
+    {
+      "id": "battle",
+      "seconds": 2,
+      "text": "",
+      "focus": "Actual impact; duo only if observed"
+    },
+    {
+      "id": "lookout",
+      "seconds": 4,
+      "text": "",
+      "focus": "Muling and player sitting by cloud sea; warm pause"
+    },
+    {
+      "id": "mystery",
+      "seconds": 2.5,
+      "text": "Why do you know that song?",
+      "focus": "Old tune clue; no reveal"
+    },
+    {
+      "id": "title",
+      "seconds": 3.5,
+      "text": "Play Free Now",
+      "focus": "Official title, clear CTA, no Chinese text"
+    }
+  ],
+  "sourcePolicy": "Real gameplay clips only; in-game narrative art permissible as narrative, no external images, no unimplemented scenes",
+  "previewMusic": "public/cat-bond/assets/audio/garden.mp3",
+  "previewUrl": "https://cat-bond-preview.morrowwish.pages.dev/cat-bond/"
+}
