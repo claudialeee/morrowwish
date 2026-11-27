@@ -7,12 +7,13 @@ for(const route of [2,3]){
  for(const i of [1,route,4]){
   assert.ok(startBridgeWalk(p,step(i)));assert.equal(spatialInput(p,step(4)),false);
   advanceBridgeWalk(p,.1);assert.ok(bridgeWalkPosition(p).every(Number.isFinite));while(p.walk)advanceBridgeWalk(p,.02);
-  if(i===1){assert.deepEqual(bridgeReachable(p),[0,2,3]);assert.ok(spatialControls(p).some(x=>x.action.i===3));}
+  if(i===1){assert.deepEqual(bridgeReachable(p),[2,3]);assert.ok(spatialControls(p).some(x=>x.action.i===3));}
   if(i===3)spatialInput(p,{type:'rescue'});
  }
  const proof=verify(p);assert.ok(proof.discoveries.includes(route===2?'garden-view':'rescued-kitten'));assert.equal(validSpatialProof(p.operation,{...proof,discoveries:[]}),false);
 }
 const badRescue=newSpatial('puzzle:moonleaf-crossing');spatialInput(badRescue,{type:'rescue'});assert.equal(badRescue.trace.length,0);
+const durations=[];
 for(const shortcut of [false,true]){
  const p=newSpatial('puzzle:chime-chase'),first=chasePoint(p);for(let i=0;i<100;i++)tickSpatial(p,.02);assert.deepEqual(chasePoint(p),first);
  assert.equal(spatialTap(p,.5,.5),null);assert.equal(spatialInput(p,{type:'jump'}),false);
@@ -22,9 +23,10 @@ for(const shortcut of [false,true]){
   for(let j=0;j<1500&&p.chaseActive;j++)tickSpatial(p,.02);
   assert.equal(p.chaseActive,false);if(leg===2)assert.ok(p.readyPounce&&!p.solved);
  }
- const proof=verify(p);assert.equal(p.route,shortcut?'shortcut':'lane');assert.equal(validSpatialProof(p.operation,{...proof,frames:proof.frames-1}),false);
+ const proof=verify(p);durations.push(p.frame*.02);assert.equal(validSpatialProof(p.operation,{...proof,trace:proof.trace.slice(0,1)}),false);assert.equal(validSpatialProof(p.operation,{...proof,trace:proof.trace.map((a,i)=>i===1?{...a,frame:a.frame+5}:a)}),false);assert.equal(p.route,shortcut?'shortcut':'lane');assert.equal(validSpatialProof(p.operation,{...proof,frames:proof.frames-1}),false);
  assert.equal(validSpatialProof(p.operation,{...proof,route:shortcut?'lane':'shortcut'}),false);
 }
+assert.ok(durations[1]<durations[0],'Shortcut must actually save time');
 for(const y of [.2,.27,.35,.49,.5,.73,.8])assert.ok(Math.abs(chaseLogicalY(chaseVisualY(y))-y)<1e-9);
 const shadow=newSpatial('puzzle:shadow-bridge');spatialInput(shadow,cross);assert.equal(shadow.solved,false);
 assert.equal(spatialTap(shadow,.5,.9),null);for(let i=0;i<1000;i++)spatialInput(shadow,aim(.19+Math.sin(i)*.03));spatialInput(shadow,aim(.51));spatialInput(shadow,cross);assert.equal(shadow.solved,false);spatialInput(shadow,aim(.82));spatialInput(shadow,cross);assert.equal(shadow.discoveries.length,3);verify(shadow);assert.ok(shadow.trace.length<10);
