@@ -349,3 +349,16 @@
 #stage .res-host .res-dialogue[data-story-mood="warm"] .res-body{border-color:#d8b784}
 #stage .res-host .res-dialogue[data-story-mood="bright"] .res-body{border-color:#e0c68d}
 @media(prefers-reduced-motion:reduce){#stage .res-host .res-body{transition:none!important}}
+
+/* The native portrait painting is the containing block, not the old grid row. */
+@media (orientation:portrait) and (max-width:700px){
+ #stage #intro.cb-rpg-intro:not(.hide){position:absolute!important;inset:0!important;width:100%!important;height:100%!important;box-sizing:border-box!important;overflow:hidden!important;display:block!important;padding:0!important}
+ #stage #intro.cb-rpg-intro:not(.hide)>.cb-title-content{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;max-width:none!important;margin:0!important;padding:0!important;transform:none!important;display:block!important;box-sizing:border-box!important}
+ #stage #intro.cb-rpg-intro:not(.hide)>.cb-title-content>.cb-intro-brand{position:absolute!important;inset:max(3%,env(safe-area-inset-top,0px)) 0 auto!important;margin:0!important;transform:none!important}
+ #stage #intro.cb-rpg-intro:not(.hide)>.cb-title-content>.cb-intro-titleblock{position:absolute!important;inset:max(8%,calc(env(safe-area-inset-top,0px) + 24px)) 6% auto!important;width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;transform:none!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:6px!important;text-align:center!important}
+ #stage #intro.cb-rpg-intro:not(.hide) .cb-intro-titleblock>#cb-title-name,#stage #intro.cb-rpg-intro:not(.hide) .cb-intro-titleblock>.cb-intro-tagline{position:static!important;inset:auto!important;transform:none!important;margin:0!important;max-width:100%!important;width:auto!important;height:auto!important;text-align:center!important}
+ #stage #intro.cb-rpg-intro:not(.hide) .cb-intro-titleblock>#cb-title-name{font-size:clamp(26px,8.3vw,44px)!important;line-height:1.1!important;white-space:normal!important;text-wrap:balance}
+ #stage #intro.cb-rpg-intro:not(.hide)>.cb-title-content>.cb-intro-actions{position:absolute!important;inset:auto 6% max(3%,calc(env(safe-area-inset-bottom,0px) + 12px))!important;transform:none!important;margin:0!important;width:auto!important;max-width:none!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+ #stage #intro.cb-rpg-intro:not(.hide)>.cb-title-content>.cb-intro-actions>button{width:100%!important;max-width:none!important;margin:0!important;min-height:48px!important}
+ #stage #intro.cb-rpg-intro:not(.hide)>.cb-title-content>.cb-intro-actions>button[hidden]{display:none!important}
+}

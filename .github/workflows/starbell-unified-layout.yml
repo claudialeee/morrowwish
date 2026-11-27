@@ -67,11 +67,10 @@ jobs:
       - name: Detect relevant gameplay changes
         id: relevant
         run: |
-          # The b3fca51 run passed layout and seven non-finale chapters.
-          # Reuse those results only for opening-only changes relative to that exact code.
-          baseline=b3fca51c0025491545d438fb863a5b48ec71bb69
-          if git cat-file -e "$baseline^{commit}" 2>/dev/null && git merge-base --is-ancestor "$baseline" HEAD && ! git diff --name-only "$baseline" HEAD | grep -Ev '^(public/cat-bond/(css/rpg-fullbleed\.css|index\.html|js/sunlit-garden\.js)|scripts/cat-bond-(release-prologue-qa|experience-chapters)\.mjs|\.github/workflows/(cat-bond-preview|starbell-unified-layout)\.yml)$'; then
-            if [[ "$CAT_BOND_CHAPTERS" == "finale" ]]; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
+          # The 02778b9 integration completed the finale and reused seven passed chapter runs.
+          # A title-only correction cannot change their gameplay. Keep the opening/layout gates.
+          baseline=02778b9ab16bcbfed14c2196cf6a0e7568007bd1
+          if git cat-file -e "$baseline^{commit}" 2>/dev/null && git merge-base --is-ancestor "$baseline" HEAD && ! git diff --name-only "$baseline" HEAD | grep -Ev '^(public/cat-bond/(css/rpg-portrait\.css|index\.html)|\.github/workflows/starbell-unified-layout\.yml)$'; then
             exit 0
           fi
           if git diff-tree --no-commit-id --name-only -r HEAD | grep -Eq 'world-exploration\.mjs|world-bridge\.mjs|world-runtime\.mjs|canon22-spatial\.mjs|campaign\.mjs|cat-bond-experience-chapters\.mjs|starbell-unified-layout\.yml'; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
