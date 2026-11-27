@@ -6187,16 +6187,13 @@ class CaptureBattle {
       e._effLabelAt = this.t;
       this.vfx.text(e.x, e.y - 64, effLabel, elem >= 1.5 ? '#ff9f6b' : '#9aa8ba', 14);
     }
-    // BASIC-ATTACK TENSION: the basic poke rewards SKILL SETUP. It applies no tags
-    // itself, but roars on a target already afflicted (+45% per active status tag)
-    // and lands softer on an un-marked target — so Q/E priming carries the fight.
     if (skill.isBasic) {
-      const nTags = e.tags.filter(t => t !== 'rust' && e.status[t] > 0).length;
-      const basicTagMul = (nTags > 0) ? (1 + Math.min(0.30, 0.10 * nTags)) : 0.7;
-      dmg *= basicTagMul;
+      // Owner 2026-11-26 '完全删': basic-tag tension dropped (was ×0.7 unmarked / +0.10/tag
+      // cap +0.30). The ×0.7 'no-tag tax' silently punished mashers and the +0.30 reward
+      // duplicated combo-table logic. Basic resolves at 1.0× here now.
       if (this._debug && this._dbgApplyBreakdown) {
-        this._dbgApplyBreakdown.basicTagMul = basicTagMul;
-        this._dbgApplyBreakdown.basicNTags = nTags;
+        this._dbgApplyBreakdown.basicTagMul = 1;
+        this._dbgApplyBreakdown.basicNTags = e.tags.filter(t => t !== 'rust' && e.status[t] > 0).length;
       }
     }
     // apply status tag(s) with their TTL → real ongoing effects (see tickStatus)

@@ -575,8 +575,13 @@ poiseEnemy.inv=0;poiseEnemy.flash=0;poiseBattle.t+=2;
 poiseBattle.resolveHit(poiseEnemy,'me',{element:'fire',isBasic:true},10,poiseEnemy.x,poiseEnemy.y);
 assert.equal(poiseEnemy.poiseComboHits,1,'idle resets per-enemy combo');
 // a SKILL hit drains poise (visible depletion) and applies the 10s armor-break mark
+// Owner 2026-11-26 "完全删" basic-tag tension: without the ×0.7 no-tag tax on basics,
+// the three preceding basic hits cumulatively deal ~70 dmg off doudou's 83 HP, which
+// used to sit at ~68 dmg (within survivable). Reset HP here so the poise gauge test
+// isn't killed by the enemy dying before the Q/E hit lands.
 poiseEnemy.inv=0;poiseEnemy.flash=0;poiseEnemy.poise=poiseEnemy.poiseMax;poiseEnemy.staggerT=0;
 poiseEnemy.poiseComboHits=0;poiseEnemy.poiseLastHitAt=-99;
+poiseEnemy.hp=poiseEnemy.maxhp;poiseEnemy.alive=true;
 poiseBattle.resolveHit(poiseEnemy,'me',
   {id:'emberClaw',kind:'melee',element:'fire',power:1.3},10,
   poiseEnemy.x,poiseEnemy.y);
