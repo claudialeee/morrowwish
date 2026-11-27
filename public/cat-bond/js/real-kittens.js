@@ -82,8 +82,8 @@
   };
   const breedCache=Object.create(null);
   const framedBreedCache=Object.create(null);
-  const starterFrames=new Map(),starterImages=new Map();
-  for(const id of ['jinjc','yunduo']){const image=new Image();starterImages.set(id,image);image.onload=()=>{delete breedCache[id];for(const key of Object.keys(animatedRigCache))if(key.includes(':'+id+':'))delete animatedRigCache[key];replayPortraits();};image.src=id==='jinjc'?'/cat-bond/assets/core-art-remaster/leads/player.webp':'/cat-bond/assets/starter-portraits/'+id+'.webp';}
+  const starterFrames=new Map(),starterImages=new Map(),playerPortraits=new Map();
+  for(const id of ['jinjc','yunduo']){const image=new Image();starterImages.set(id,image);image.onload=()=>{delete breedCache[id];for(const key of Object.keys(animatedRigCache))if(key.includes(':'+id+':'))delete animatedRigCache[key];replayPortraits();if(id==='jinjc'){for(const [canvas,species] of playerPortraits){if(canvas.isConnected!==false)thumbnail(canvas,species);}playerPortraits.clear();}};if(id==='jinjc')image.onerror=()=>playerPortraits.clear();image.src=id==='jinjc'?'/cat-bond/assets/core-art-remaster/leads/player.webp':'/cat-bond/assets/starter-portraits/'+id+'.webp';}
   function starterFrame(id){const im=starterImages.get(id);if(!im?.complete||!im.naturalWidth)return null;if(starterFrames.has(id))return starterFrames.get(id);const c=document.createElement('canvas');c.width=breedFrameSize.w;c.height=breedFrameSize.h;const ctx=c.getContext('2d'),s=Math.min(c.width/im.naturalWidth,c.height/im.naturalHeight);ctx.drawImage(im,(c.width-im.naturalWidth*s)/2,c.height-im.naturalHeight*s,im.naturalWidth*s,im.naturalHeight*s);starterFrames.set(id,c);return c;}
   const animatedRigCache=Object.create(null);
   // Never mirror a half-cat. Every source contains a whole face, paws and tail.
@@ -458,6 +458,7 @@
     });
     if(species?.storyArt&&!storyImage(species).naturalWidth)storyPortraits.set(canvas,species);
     if(species?.id==='jiafei'&&!jiafeiLoaded)jiafeiPortraits.set(canvas,species);
+    if(species?.id==='jinjc'&&!starterFrame('jinjc'))playerPortraits.set(canvas,species);
     if(!breedLoaded)pendingPortraits.set(canvas,species);
   }
   drawing.drawCat=render;

@@ -7030,8 +7030,8 @@ class CaptureBattle {
     return canvas;
   }
   drawCatCutin(ctx,W,H){
-    let c=this.ultCinematic,duo=false;
-    if(!c&&this.duoCinematic?.t>0){c=this.duoCinematic;duo=true;}
+    if(this.duoCinematic?.t>0){window.CatBondDuoHero?.draw?.(ctx,W,H,this.duoCinematic);return;}
+    let c=this.ultCinematic;
     if(!c&&this.spotlightCinematic&&Date.now()<this.spotlightCinematic.endsAt)
       c={...this.spotlightCinematic,t:(this.spotlightCinematic.endsAt-Date.now())/1000};
     if(!c)return;
@@ -7040,7 +7040,7 @@ class CaptureBattle {
     if(opacity<=.02)return;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const bandY=Math.max(this.topMargin*.65,H*.18),bandH=Math.min(H*.55,290);
-    const artSize=Math.min(duo?W*.32:W*.43,bandH*.83,duo?188:236);
+    const artSize=Math.min(W*.43,bandH*.83,236);
     ctx.save();ctx.globalAlpha=opacity;
     // Soft stage lighting instead of the legacy hard-edged rectangular card.
     // The portrait and skill title can still read over the live battlefield.
@@ -7065,17 +7065,7 @@ class CaptureBattle {
       ctx.drawImage(art,-artSize*.5,-artSize*.48,artSize,artSize*.9);
       ctx.restore();
     };
-    if(duo){
-      drawPortrait(c.catUids?.[0],W*.27);
-      drawPortrait(c.catUids?.[1],W*.73,true);
-      // Two cats crouch, cross their paths, then pounce together.
-      const leap=Math.max(0,Math.min(1,progress*2.5));
-      ctx.strokeStyle=c.second||'#e7bafb';ctx.lineWidth=4;ctx.lineCap='round';
-      ctx.beginPath();ctx.moveTo(W*.39,bandY+bandH*.53);
-      ctx.quadraticCurveTo(W*.5,bandY+bandH*(.12+.1*leap),W*.61,bandY+bandH*.53);ctx.stroke();
-      ctx.fillStyle='#fce9c6';ctx.font='900 '+Math.round(Math.min(32,W*.08))+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
-      ctx.textAlign='center';ctx.fillText('×',W*.5,bandY+bandH*.49);
-    }else{
+    {
       drawPortrait(c.uid,W*.32);
       const target=this.liveEnemies().find(e=>e.i===c.targetUid);
       const tx=W*.73,ty=bandY+bandH*.43,rad=Math.min(29,W*.08);
@@ -7088,12 +7078,11 @@ class CaptureBattle {
       if(target){ctx.font='800 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff2d4';
         ctx.fillText(en?'TARGET LOCK':'目标锁定',tx,ty+rad+22);}
     }
-    const label=duo?(en?'DUO BOND · DOUBLE POUNCE':'双猫默契 · 合力飞扑')
-      :(en?'ULTIMATE · PAW POWER':'必杀 · 猫爪出击');
+    const label=en?'ULTIMATE · PAW POWER':'必杀 · 猫爪出击';
     const title=c.name||label;
     ctx.textAlign='center';ctx.shadowColor=c.color||c.first||'#f9dba8';
     ctx.shadowBlur=12;ctx.fillStyle='#fff9ef';
-    ctx.font='900 '+Math.round(Math.min(duo?22:28,W*.055))+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
+    ctx.font='900 '+Math.round(Math.min(28,W*.055))+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
     ctx.fillText(title,W*.5,bandY+bandH*.89,W*.82);
     ctx.shadowBlur=0;ctx.fillStyle='#edd6a5';
     ctx.font='800 '+Math.round(Math.min(13,W*.033))+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
