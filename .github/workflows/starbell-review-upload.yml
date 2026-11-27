@@ -15,8 +15,8 @@ jobs:
     timeout-minutes: 18
     env:
       GH_TOKEN: ${{ github.token }}
-      RENDER_RUN: '45960007297'
-      RENDER_SHA: b26d9efb5893043420d31d34f9606b52d6108ce3
+      RENDER_RUN: '45961152955'
+      RENDER_SHA: dc59e69ca77162efa9cd68d2002e94774a73d6af
     steps:
       - name: Await exact new English render, reject incomplete artifacts
         run: |
@@ -36,7 +36,7 @@ jobs:
         with:
           name: starbell-new-story-trailer-review
           path: /tmp/rendered
-          run-id: 45960007297
+          run-id: 45961152955
           github-token: ${{ github.token }}
       - uses: actions/checkout@v4
         with:
@@ -55,24 +55,24 @@ jobs:
           file=$(find /tmp/rendered -name Echoes-of-the-Starbell-Official-Trailer-EN.mp4 -type f -print -quit)
           proof=$(find /tmp/rendered -name proof-en.json -type f -print -quit)
           test -s "$file" && test -s "$proof"
-          jq -e '.firstCaption=="You thought this was\na new journey." and ([.shots[].live]|map(select(.==true))|length)>=4' "$proof"
+          jq -e '.firstCaption=="You thought this was\na new journey." and .live.origin=="https://starbell-portrait-preview.morrowwish.pages.dev" and .music.title=="Soar" and ([.shots[].live]|map(select(.==true))|length)>=4 and ([.shots[]|select(.id=="duo")]|length)==0' "$proof"
           test "$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x "$file")" = "1080x1920"
           ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$file" | grep -qx audio
           ffmpeg -v error -i "$file" -f null -
           mkdir -p public/promo/starbell
-          target=public/promo/starbell/story-trailer-en-20261126.mp4
+          target=public/promo/starbell/story-trailer-en-cinematic-v2.mp4
           cp "$file" "$target"
           # Cloudflare Pages enforces a 25 MiB file cap.
           if [ "$(stat -c%s "$target")" -ge 25000000 ]; then
             ffmpeg -v error -y -i "$file" -c:v libx264 -preset medium -b:v 4000k -maxrate 4800k -bufsize 8000k -c:a aac -b:a 192k -movflags +faststart "$target"
           fi
           test "$(stat -c%s "$target")" -lt 25000000
-          ffmpeg -v error -y -i "$target" -frames:v 1 -q:v 2 public/promo/starbell/story-trailer-en-20261126.jpg
+          ffmpeg -v error -y -i "$target" -frames:v 1 -q:v 2 public/promo/starbell/story-trailer-en-cinematic-v2.jpg
           cp "$proof" public/promo/starbell/review-proof.json
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const proof=JSON.parse(fs.readFileSync('public/promo/starbell/review-proof.json','utf8'));
-          fs.writeFileSync('public/promo/starbell/review.json',JSON.stringify({slug:'starbell',video:'/promo/starbell/story-trailer-en-20261126.mp4',poster:'/promo/starbell/story-trailer-en-20261126.jpg',duration:36,createdAt:new Date().toISOString(),source:proof.live.source,renderRun:45960007297,approved:false,published:false,shots:proof.shots.map(s=>({scene:s.id,seconds:s.seconds}))},null,2)+'\n');
+          fs.writeFileSync('public/promo/starbell/review.json',JSON.stringify({slug:'starbell',video:'/promo/starbell/story-trailer-en-cinematic-v2.mp4',poster:'/promo/starbell/story-trailer-en-cinematic-v2.jpg',duration:36,createdAt:new Date().toISOString(),source:proof.live.source,music:proof.music,renderRun:45961152955,approved:false,published:false,shots:proof.shots.map(s=>({scene:s.id,seconds:s.seconds}))},null,2)+'\n');
           const p='public/promo/review/index.html';
           let h=fs.readFileSync(p,'utf8');
           if(!h.includes("'/promo/starbell/review.json")){
@@ -82,6 +82,8 @@ jobs:
             h=h.replace("const box=$('videos');box.replaceChildren();","const star=await fetch('/promo/starbell/review.json?check='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);\n  if(star&&star.slug==='starbell'&&star.video&&star.poster){data.trailers.unshift(star);}\n  const box=$('videos');box.replaceChildren();");
           }
           if(!h.includes("星铃回响 · 英文剧情预告")||!h.includes("data.trailers.unshift(star)"))throw Error('Review integration patch failed');
+          h=h.replace("data.createdAt||data.latestVersion||'latest'","entry.createdAt||data.createdAt||data.latestVersion||'latest'");
+          if(!h.includes('Music credit: '))h=h.replace("video.addEventListener('play',", "if(entry.music){const music=document.createElement('small');music.textContent='Music credit: '+entry.music.title+' — '+entry.music.artist+' · '+entry.music.license+' (edited)';const link=document.createElement('a');link.href=entry.music.source;link.textContent=' Source';link.target='_blank';link.rel='noopener';music.append(link);article.append(music);}\n   video.addEventListener('play',");
           fs.writeFileSync(p,h);
           NODE
       - name: Commit review assets only, never publish to social networks
@@ -89,6 +91,7 @@ jobs:
           set -euo pipefail
           git config user.name morrowwish-promo-bot
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm --ignore-unmatch public/promo/starbell/story-trailer-en-20261126.mp4 public/promo/starbell/story-trailer-en-20261126.jpg
           git add public/promo/starbell public/promo/review/index.html
           git commit -m 'review(promo): add independent English Starbell story trailer'
           for i in 1 2 3; do
@@ -116,12 +119,12 @@ jobs:
       - name: Build existing website with review-only media changes
         run: |
           set -euo pipefail
-          test -s public/promo/starbell/story-trailer-en-20261126.mp4
+          test -s public/promo/starbell/story-trailer-en-cinematic-v2.mp4
           npm ci
           npm install --no-save --no-package-lock sharp@0.34.5
           bash scripts/fetch-cat-music.sh
           GITHUB_SHA="$(git rev-parse HEAD)" npm run build:pages
-          test -s cloudflare-pages/public/promo/starbell/story-trailer-en-20261126.mp4
+          test -s cloudflare-pages/public/promo/starbell/story-trailer-en-cinematic-v2.mp4
           test "$(jq '.trailers|length' cloudflare-pages/public/promo/latest-review.json)" = 7
           grep -q 'data.trailers.unshift(star)' cloudflare-pages/public/promo/review/index.html
       - name: Upload to the existing Cloudflare Pages project
@@ -134,9 +137,9 @@ jobs:
         run: |
           set -euo pipefail
           for i in {1..12}; do
-            if curl -fsS 'https://morrowwish.vercel.app/promo/review/?qa=starbell-45960007297' | grep -q 'data.trailers.unshift(star)' &&
-               curl -fsS 'https://morrowwish.vercel.app/promo/starbell/review.json?qa=45960007297' | jq -e '.renderRun==45960007297 and .approved==false' >/dev/null &&
-               curl -fsS -r 0-4095 'https://morrowwish.vercel.app/promo/starbell/story-trailer-en-20261126.mp4?qa=45960007297' -o /tmp/starbell-range.mp4 &&
+            if curl -fsS 'https://morrowwish.vercel.app/promo/review/?qa=starbell-45961152955' | grep -q 'data.trailers.unshift(star)' &&
+               curl -fsS 'https://morrowwish.vercel.app/promo/starbell/review.json?qa=45961152955' | jq -e '.renderRun==45961152955 and .approved==false' >/dev/null &&
+               curl -fsS -r 0-4095 'https://morrowwish.vercel.app/promo/starbell/story-trailer-en-cinematic-v2.mp4?qa=45961152955' -o /tmp/starbell-range.mp4 &&
                test -s /tmp/starbell-range.mp4; then
               echo 'VERIFIED https://morrowwish.vercel.app/promo/review/'
               exit 0
