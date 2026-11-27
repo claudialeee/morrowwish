@@ -38,6 +38,14 @@ jobs:
             CAMPAIGN_RUNTIME=23f7a2bff082ab667e1167f3b02eeac84bfa9fb2
             VERIFIED_RUNTIME=$CAMPAIGN_RUNTIME
           fi
+          # Only the layout test changed after the successful foreground source gate.
+          # Reuse source proof only with identical runtime, source tests and docs.
+          if git diff --quiet df8458b00bc4a39d2c2b1923ae9f9175b142ba27 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-portrait-source.yml .github/actions ':!scripts/cat-bond-layout-acceptance.mjs'; then
+            VERIFIED_RUNTIME=df8458b00bc4a39d2c2b1923ae9f9175b142ba27
+          fi
+          if git diff --quiet bb533a095e5922aca303a2e3b4855c80ec9df5a9 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/actions; then
+            CAMPAIGN_RUNTIME=bb533a095e5922aca303a2e3b4855c80ec9df5a9
+          fi
           DUO_RUNTIME=$SOURCE_SHA
           # The native-duo workflow is path-filtered. Reuse its accepted SHA only
           # when its entire trigger/input set is unchanged; source and gameplay
