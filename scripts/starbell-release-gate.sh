@@ -10,6 +10,26 @@ if [[ -f .github/workflows/starbell-integrated-guardians.yml ]]; then
   git diff --quiet c457f85d219a4282e2a1bd7216fdcb31e31dac93 "$source_sha" -- public/cat-bond/assets/audio public/cat-bond/assets/quality-audio public/cat-bond/js/rpg-audio.js public/cat-bond/js/rpg-audio-score.js scripts/import-starbell-region-music.mjs scripts/import-cat-bond-windchime-music.mjs
   gh api "repos/$GITHUB_REPOSITORY/actions/runs/46065269370" | jq -e '.head_sha=="c457f85d219a4282e2a1bd7216fdcb31e31dac93" and .status=="completed" and .conclusion=="success"' >/dev/null
   gh api "repos/$GITHUB_REPOSITORY/actions/runs/46065269370/artifacts" | jq -e 'any(.artifacts[]; .name=="starbell-approved-audio" and .expired==false)' >/dev/null
+  # Quality PR #129 was tested before advancing either public preview alias.
+  # Only the release-gate script may differ from the tested candidate. The PR
+  # base was an ancestor of the head, so its synthetic merge has the head tree.
+  quality_sha=9a8832cb0a5bc4988c87f9bebc552020b7a12d53
+  quality_base=36c44d2cfe39ade6d38b2ed0258dc4b98b137fb3
+  quality_run=46084362427
+  git fetch --no-tags --depth=1 origin "$quality_sha"
+  if git diff --quiet "$quality_sha" "$source_sha" -- . ':!scripts/starbell-release-gate.sh'; then
+    run=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$quality_run")
+    jq -e --arg sha "$quality_sha" --arg base "$quality_base" '
+      .workflow_id==433221144 and .event=="pull_request" and
+      .head_sha==$sha and .head_branch=="fix/starbell-quality-dialogue-20261127" and
+      .status=="completed" and .conclusion=="success" and
+      any(.pull_requests[]; .number==129 and .head.sha==$sha and .base.sha==$base)
+    ' <<<"$run" >/dev/null
+    gh api "repos/$GITHUB_REPOSITORY/actions/runs/$quality_run/jobs?per_page=100" | jq -e '([.jobs[]|select((.name=="integrated (wide)" or .name=="integrated (portrait)") and .conclusion=="success")]|length)==2' >/dev/null
+    { echo "INTEGRATED_GATE=$quality_run"; echo "FOCUSED_GATE=46065269370"; echo "AUDIO_SOURCE_SHA=c457f85d219a4282e2a1bd7216fdcb31e31dac93"; } >> "$GITHUB_ENV"
+    echo "Exact quality PR source and both complete browser acceptance jobs passed"
+    exit 0
+  fi
   # Reuse browser evidence only when ALL game/assets/dependencies and the tested
   # browser scripts are byte-identical; allow only explicitly listed QA/pipeline files.
   accepted=9307ef94578ebfd50a74b359242a9826ab40f4e0
