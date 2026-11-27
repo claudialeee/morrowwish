@@ -46,6 +46,11 @@ jobs:
           if git diff --quiet bb533a095e5922aca303a2e3b4855c80ec9df5a9 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/actions; then
             CAMPAIGN_RUNTIME=bb533a095e5922aca303a2e3b4855c80ec9df5a9
           fi
+          # The developer live QA is executed below; it is not a source or campaign test input.
+          if git diff --quiet 2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/workflows/starbell-portrait-source.yml .github/actions ':!scripts/test-starbell-developer-browser.mjs'; then
+            CAMPAIGN_RUNTIME=2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5
+            VERIFIED_RUNTIME=$CAMPAIGN_RUNTIME
+          fi
           DUO_RUNTIME=$SOURCE_SHA
           # The native-duo workflow is path-filtered. Reuse its accepted SHA only
           # when its entire trigger/input set is unchanged; source and gameplay
