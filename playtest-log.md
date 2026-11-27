@@ -2325,3 +2325,25 @@ Archive 2/256 unchanged. **New best**: `agent:qready-dive-else-mid` **0.716** di
 **Winning bandBody**: `(f)=>{const qReady=((f.cd&&f.cd.q)||0)<=0.1; const hp=f.hp/(f.maxhp||1); if(qReady) return {min:25,max:55,rush:28,role:'melee',hp}; return {min:100,max:140,rush:105,role:'ranged',hp};}` — Q-ready dive 25-55, else mid-range 100-140.
 
 Pattern across 3 cycles: all elites keep landing in `*,*,3,3` (high durability + high efficiency). Other 254 cells still empty. Either (a) descriptor binning collapses the space, (b) only dive-and-retreat patterns score, or (c) MapElites scoring favors a narrow strategy region. Findings-only. **Known harness bug persists**: winner label `agent:agent:qready-dive-else-mid` double `agent:` prefix (3 cycles unflagged).
+
+## Playtest cycle wpt9x2xs6 — 2026-11-27
+
+**Headline**: Combat is mathematically fed but perceptually mute — the recent P0 scalar stack tuned the arc and left it invisible, so personas who most need legibility bail on a game already working for them.
+
+**funMean 4.50 (+0.33 vs woxkxnyqr 4.17)** — rebound, matches wupz2ckhy:
+- 探索 7 / 狂按 6 / 懒人 5 / 谨慎 3 / 手忙 3 / 没耐心 3
+
+### Auto-fixes this cycle: 0
+
+**No adversary-confirmed P0** in this cycle. All 40 critiques are P1 (32) or P2 (8). Synth-level "P0" titles in the fix list (ternary timeout, Q/E input buffer, coach step 6) are headline-elevated recommendations, not individual-persona P0-priority critiques, so cron rule doesn't auto-fix them.
+
+### Top P1 findings-only (32)
+
+- Enemy-ult-windup basic damage gate ×0.25 (teach interrupt by hurting during telegraph, not just damage) — **local-numeric**
+- Finisher ticker + execute window — HUD countdown of `_closing` + 1.5s "EXECUTE WINDOW" at crossing — **additive-flag**
+- tickUltReminder keep flash in autoMode + rewrite banner to lead with "按 R" — **additive-flag**
+- TIMEOUT_GRAZE outcome when hpDealt≥50% + hpFracLeft≥50% — distinct end-screen — **additive-flag**
+- autoDefensiveE on HP<0.5 once per fight (utility-E only, not offensive) — **additive-flag**
+
+### Workflow health
+critiqueCount 40, 24 subagent retries capped. Core synth intact. No P0s means telemetry-lie-fixes (e5d6c137 + 564729e7) may finally be filtering the adversary's fabricated P0 noise — real issues getting P1-tier labels.
