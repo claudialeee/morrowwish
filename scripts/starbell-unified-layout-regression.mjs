@@ -48,7 +48,7 @@ try{
   // Isolated CSS presentation fixture, not evidence of campaign progression to H-05.
   await page.evaluate(()=>{const r=document.createElement('div');r.className='cb-story-overlay is-visible res-host';r.dataset.scene='harbor:H-05';r.innerHTML='<section class="res-dialogue"><img class="res-portrait" alt=""><div class="res-body"><h2>你</h2><p>这不是我醒来的花园吗？</p></div></section>';document.getElementById('stage').append(r);});
   const layers=await page.evaluate(()=>{const r=document.querySelector('.res-host[data-scene="harbor:H-05"]');return {map:getComputedStyle(document.querySelector('.rw-world')).visibility,background:getComputedStyle(r).backgroundColor,art:getComputedStyle(r,'::before').backgroundImage,portrait:getComputedStyle(r.querySelector('.res-portrait')).display};});
-  assert.equal(layers.map,'hidden');assert.notEqual(layers.background,'rgba(0, 0, 0, 0)');assert.match(layers.art,/harbor-at-twilight/);assert.equal(layers.portrait,'none');await shot('single-story-layer');
+  assert.equal(layers.map,'hidden');assert.notEqual(layers.background,'rgba(0, 0, 0, 0)');assert.match(layers.art,name==='portrait'?/mobile-portrait\/harbor-ceremony-matched/:/harbor-at-twilight/);assert.equal(layers.portrait,'none');await shot('single-story-layer');
   assert.deepEqual(errors,[]);await context.close();
  }
  console.log('UNIFIED LAYOUT PASS: title, opening encounter, six regions, atlas and isolated CG layer');
