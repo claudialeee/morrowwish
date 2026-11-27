@@ -5,7 +5,7 @@ import {spatialKind,validSpatialProof} from "./canon22-spatial.mjs";
 import {validNeighborTrial} from "./canon22-neighbor-trial.mjs";
 import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyCache} from "./sky-flight.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
-import {layouts,puzzleSpecs} from "./world-exploration.mjs";
+import {layouts,puzzleSpecs,canonRestorationPrerequisites} from "./world-exploration.mjs";
 import {applySideEvent} from "./side-adventures.mjs";
 import {applyDiscovery} from "./regional-discoveries.mjs";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord} from "./library-mechanisms.mjs";
@@ -145,7 +145,8 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(!/^(explore|puzzle|rescue|repair|melody):/.test(op))return fail("owned-by-other-module");
   if(w.interactions[sceneId+":"+op])return fail("already-completed");
   // New RPG interaction: physical arrival + explicit interaction, not synthetic puzzle answers.
-  const direct=proof.adventureAction===true;if(v.current.orderedRequires&&v.objective[0]!==op)return fail("story-operation-order");if(["puzzle:festival-lantern","puzzle:caravan-route","puzzle:heat-pressure","puzzle:safety-blueprint","repair:forge","repair:forest"].includes(op)&&(direct||proof.starfallSequence?.join(",")!==puzzleSpecs[op].goal.join(",")))return fail("mechanism-incomplete");if(["puzzle:sky-pouch","puzzle:joint-flight","puzzle:two-route-model"].includes(op)&&direct)return fail("mechanism-incomplete");const point=region==="sky"&&skyLaunch[op]||layouts[region]?.features[op],position=w.positions[region];if(direct&&(!point||!position||Math.hypot(position.x-point[0],position.y-point[1])>=.072||!api?.isCurrentAction(proof.token)))return fail("walk-to-objective");
+  const direct=proof.adventureAction===true;if(v.current.orderedRequires&&v.objective[0]!==op)return fail("story-operation-order");if(["puzzle:festival-lantern","puzzle:caravan-route","puzzle:heat-pressure","puzzle:safety-blueprint"].includes(op)&&(direct||proof.starfallSequence?.join(",")!==puzzleSpecs[op].goal.join(",")))return fail("mechanism-incomplete");if(["puzzle:sky-pouch","puzzle:joint-flight","puzzle:two-route-model"].includes(op)&&direct)return fail("mechanism-incomplete");const point=region==="sky"&&skyLaunch[op]||layouts[region]?.features[op],position=w.positions[region];if(direct&&(!point||!position||Math.hypot(position.x-point[0],position.y-point[1])>=.072||!api?.isCurrentAction(proof.token)))return fail("walk-to-objective");
+  if(canonRestorationPrerequisites[op]&&(!direct||!v.completed.includes(canonRestorationPrerequisites[op])||(op==="repair:starfall"&&!w.interactions["starfall:F-04:puzzle:distributed-routing"])))return fail("mechanism-incomplete");
   if(op==="explore:flight-recorder"&&direct&&(sceneId!=="sky:S-02"||!v.completed.includes("sky:S-01")||!w.interactions["sky:S-01:puzzle:sky-pouch"]))return fail("incomplete-flight");
   if(op==="repair:sky"&&(sceneId!=="sky:S-03"||!direct||!validSkyFlightProof("puzzle:joint-flight",v.choice??null,w.interactions["sky:S-03:puzzle:joint-flight"])))return fail("incomplete-flight");
   if(op==="repair:library"&&(sceneId!=="library:M-02"||!direct||!validMirrorProof(catdexRecord(State.S)?.uid,w.interactions["library:M-02:puzzle:library-echo"])))return fail("library-record-unverified");

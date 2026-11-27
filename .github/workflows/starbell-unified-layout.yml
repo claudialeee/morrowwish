@@ -49,8 +49,57 @@ jobs:
             artifacts/starbell-unified-layout/
             /tmp/starbell-layout-server.log
           if-no-files-found: ignore
+  canon-restoration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        chapter: [forest, forge, starfall]
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      CAT_BOND_CHAPTERS: ${{ matrix.chapter }}
+      CAT_BOND_CHAPTER_LOCALE: zh
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect relevant gameplay changes
+        id: relevant
+        run: |
+          if git diff-tree --no-commit-id --name-only -r HEAD | grep -Eq 'world-exploration\.mjs|world-bridge\.mjs|cat-bond-experience-chapters\.mjs|starbell-unified-layout\.yml'; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/setup-node@v4
+        if: steps.relevant.outputs.run == 'true'
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+        if: steps.relevant.outputs.run == 'true'
+      - name: Canon restoration actual chapter input
+        if: steps.relevant.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          node --check public/cat-bond/js/resonance/world-exploration.mjs
+          node --check public/cat-bond/js/resonance/world-bridge.mjs
+          node scripts/cat-bond-canon22-migration-audit.mjs
+          case "$CAT_BOND_CHAPTERS" in forest) export CAT_BOND_TARGET_SCENES=forest:R-01 ;; forge) export CAT_BOND_TARGET_SCENES=forge:E-01 ;; starfall) export CAT_BOND_TARGET_SCENES=starfall:F-01 ;; esac
+          node scripts/cat-bond-experience-knowledge.mjs
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon-restoration.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-targets.mjs
+          node scripts/cat-bond-experience-chapters.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canon-restoration-${{ matrix.chapter }}
+          path: |
+            artifacts/cat-bond-experience/
+            artifacts/canon22/
+            /tmp/canon-restoration.log
+          if-no-files-found: ignore
   preview:
-    needs: layout
+    needs: [layout, canon-restoration]
     if: github.ref == 'refs/heads/review/starbell-unified-layout-fix'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
