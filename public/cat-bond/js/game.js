@@ -589,7 +589,7 @@ class Game {
     else if(a&&!covered&&Math.hypot(player.x-a.target.x,player.y-a.target.y)<7){
       this._yardArrival=null;delete player._gardenManualTarget;a.callback();
     }
-    const W=this.W,H=this.H,z=H>W*1.12?1.38:1.65;
+    const W=this.W,H=this.H,z=window.CatBondResonance?.view?.()?.ending?1:(H>W*1.12?1.38:1.65);
     const tx=Math.max(W*(1-z),Math.min(0,W*.5-player.x*z));
     const ty=Math.max(H*(1-z),Math.min(0,H*.65-player.y*z));
     const c=this._yardCamera;

@@ -918,7 +918,13 @@ class YardScene {
     for (const d of drawables) {
       if (d.kind === 'bush') this.drawBush(ctx, d.ref);
       else if (d.kind === 'building') this.drawBuilding(ctx, d.ref);
-      else if (d.kind === 'cat') d.ref.draw(ctx);
+      else if (d.kind === 'cat') {
+        const e=d.ref,depth=window.StarbellExplorationDepth;
+        if(window.__CAT_BOND_CANONICAL_ACTIVE__&&depth){
+          const im=portraitGarden?YARD_BG_PORTRAIT:YARD_BG;
+          depth.withForeground(ctx,im.src,gardenArtworkRect(W,H),e.x,e.y,(e._renderedYardVisualScale||1),()=>e.draw(ctx));
+        }else e.draw(ctx);
+      }
       else if (d.kind === 'hide') this.drawHide(ctx, d.ref);
     }
 

@@ -150,7 +150,7 @@
     if(!width||!height||!r.width||!r.height)return;
     const b=getTalkMarker(npc),en=isEnglish(),raw=npc.name,profileName=typeof raw==='string'?raw:raw?.[en?'en':'zh'];
     const label=npc.id==='muling'&&window.CatBondResonance?.view?.().current?.id==='prologue:P-05'?(en?'Stranger':'陌生猫'):(profileName||npc.id);
-    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.id==='prologue:P-05'?!v.openingMet:(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length);b.dataset.questPrimary=String(main);if(!main&&!game.yardNear?.(x,y,.25)){b.hidden=true;return;}b.hidden=false;
+    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.id==='prologue:P-05'?!v.openingMet:(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length);b.dataset.questPrimary=String(main);if(!main&&!v?.ending&&npc.id!=='muling'&&!game.yardNear?.(x,y,.25)){b.hidden=true;return;}b.hidden=false;
     if(cell){b.style.left=cell.x+'px';b.style.top=cell.box.bottom+'px';return;}
     const px=canvasRect.left-r.left+x/width*canvasRect.width,py=canvasRect.top-r.top+(y-112*scale)/height*canvasRect.height;
     const bw=Math.max(44,b.offsetWidth||72),bh=Math.max(44,b.offsetHeight||44);
@@ -229,7 +229,9 @@
         if(ending&&!shared&&r.width&&r.height&&canvasRect.width&&canvasRect.height){const sx=canvasRect.width/width,sy=canvasRect.height/height;const bodyHeight=Math.max(45,Math.min(80,r.height*.15));scale=Math.min(scale,bodyHeight/(108*sy),92/(118*sx));const bx=canvasRect.left-r.left+x*sx,by=canvasRect.top-r.top+y*sy;
           cell=window.GardenExploration?.placeMarker?.(bx,by-bodyHeight/2+22,Math.min(118,r.width-8),bodyHeight+48,r.width,r.height,occupied);
           if(cell){occupied.push(cell.box);x=(cell.x+r.left-canvasRect.left)/sx;y=(cell.box.top+bodyHeight+r.top-canvasRect.top)/sy;}}
-        const visible=narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale,time});
+        const depth=window.StarbellExplorationDepth,asset=height>width*1.12?'sunlit-garden-portrait':'sunlit-garden-landscape';
+        const paint=()=>narrativeAdapter.drawHomeNpc(ctx,npc,{x,y,scale,time});
+        const visible=depth&&window.__CAT_BOND_CANONICAL_ACTIVE__?depth.withForeground(ctx,asset,f,x,y,scale,paint):paint();
         if(visible===false)continue;
         npcRects.push(toRect(x,y,scale));if(!shared)talkPositions.push({npc,x,y,scale,cell});
         if(npc.id==='muling'&&!ending&&game.yardNear?.(x,y,.28)){ctx.save();ctx.font='600 12px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const stranger=window.CatBondResonance?.view?.().current?.id==='prologue:P-05';const label=window.MorrowwishI18n?.get?.()==='zh'?(stranger?'陌生猫':'暮铃'):(stranger?'Stranger':'Muling');const w=ctx.measureText(label).width+16;ctx.fillStyle='#fff2d9e8';ctx.beginPath();ctx.roundRect(x-w/2,y+5,w,21,10);ctx.fill();ctx.fillStyle='#594431';ctx.fillText(label,x,y+15.5);ctx.restore();}

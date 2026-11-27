@@ -104,6 +104,7 @@ jobs:
           node scripts/test-cat-bond-player-first.mjs
           node scripts/test-cat-bond-story-party.mjs
           node scripts/test-cat-bond-garden-exploration.mjs
+          node scripts/test-starbell-exploration-depth.mjs
           node scripts/test-cat-bond-companion-talents.mjs
           node scripts/test-cat-bond-side-adventures.mjs
           node scripts/test-cat-bond-regional-discoveries.mjs
