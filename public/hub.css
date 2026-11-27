@@ -576,9 +576,12 @@ html[lang="en"] .about-section .about-copy h3{display:none}
 /* RPG gets its own navigation destination and section heading. */
 #rpg{scroll-margin-top:90px}@media(max-width:600px){.site-nav{gap:10px;flex-wrap:wrap}}
 
-/* Classic studio headings: same pink index, expressive title and rhythm for every game section. */
-#rpg .section-intro,#worlds .section-intro,#tiny-games .section-intro{display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;gap:20px}
-#rpg .section-index,#worlds .section-index,#tiny-games .section-index{display:block;font-size:10px;line-height:1.55;font-weight:900;letter-spacing:.16em;color:#d57d76;margin:0}
-#rpg .section-intro h2,#worlds .section-intro h2,#tiny-games .section-intro h2{font-family:'Nunito','DM Sans',system-ui,sans-serif;font-size:clamp(23px,2.3vw,30px);font-weight:900;letter-spacing:-.052em;line-height:1.2;margin:3px 0 0;color:var(--ink)}
-html[lang="zh-CN"] #rpg .section-intro h2,html[lang="zh-CN"] #worlds .section-intro h2,html[lang="zh-CN"] #tiny-games .section-intro h2{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:-.025em}
-@media(max-width:700px){#rpg .section-intro,#worlds .section-intro,#tiny-games .section-intro{margin-bottom:12px;display:block}}
+/* One classic heading system for all five homepage sections. */
+:is(#rpg,#worlds,#tiny-games,#about) .section-intro,#social .social-title-row{display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;gap:20px}
+:is(#rpg,#worlds,#tiny-games,#about,#social) .section-index{display:block;font-size:10px;line-height:1.55;font-weight:900;letter-spacing:.16em;color:#d57d76;margin:0}
+:is(#rpg,#worlds,#tiny-games,#about) .section-intro h2,#social .social-title-row h2{font-family:'Nunito','DM Sans',system-ui,sans-serif;font-size:clamp(23px,2.3vw,30px);font-weight:900;letter-spacing:-.052em;line-height:1.2;margin:3px 0 0;color:var(--ink)}
+:is(#rpg,#worlds,#tiny-games,#about) .section-intro h2 em,#social .social-title-row h2 em{font-family:Georgia,serif;font-weight:normal;font-style:normal;color:#e88984}
+html[lang="zh-CN"] :is(#rpg,#worlds,#tiny-games,#about) .section-intro h2,html[lang="zh-CN"] #social .social-title-row h2{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:-.025em}
+#about .about-heading.section-intro{margin:0;display:block}
+#about{row-gap:14px}
+@media(max-width:700px){:is(#rpg,#worlds,#tiny-games,#about) .section-intro,#social .social-title-row{margin-bottom:12px;display:block}#about .about-heading.section-intro{margin:0}#about{row-gap:12px}#social .social-title-row p{margin-top:8px}}

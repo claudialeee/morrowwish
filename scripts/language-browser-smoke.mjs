@@ -65,12 +65,13 @@ try{
    await scan(page,slug,lang,'landing');
    if(!slug){
     const layout=await page.evaluate(()=>{
-     const sections=['#rpg','#worlds','#tiny-games'].map(s=>document.querySelector(s));
+     const sections=['#rpg','#worlds','#tiny-games','#about','#social'].map(s=>document.querySelector(s));
+     const heading=e=>e.querySelector('.section-intro,.social-title-row');
      const signature=(el,keys)=>{const s=getComputedStyle(el);return keys.map(k=>s[k]).join('|')};
-     return {ordered:sections.every((e,i)=>!i||e.getBoundingClientRect().top>sections[i-1].getBoundingClientRect().top),indices:sections.map(e=>e.querySelector('.section-index').textContent.trim().slice(0,2)),headings:sections.map(e=>signature(e.querySelector('h2'),['fontFamily','fontSize','fontWeight','lineHeight','letterSpacing','color','marginTop'])),eyebrows:sections.map(e=>signature(e.querySelector('.section-index'),['fontSize','fontWeight','letterSpacing','color','lineHeight'])),spacing:sections.map(e=>getComputedStyle(e.querySelector('.section-intro')).marginBottom)};
+     return {ordered:sections.every((e,i)=>!i||e.getBoundingClientRect().top>sections[i-1].getBoundingClientRect().top),indices:sections.map(e=>heading(e).querySelector('.section-index').textContent.trim().slice(0,2)),headings:sections.map(e=>signature(heading(e).querySelector('h2'),['fontFamily','fontSize','fontWeight','lineHeight','letterSpacing','color','marginTop'])),eyebrows:sections.map(e=>signature(heading(e).querySelector('.section-index'),['fontSize','fontWeight','letterSpacing','color','lineHeight'])),spacing:sections.map(e=>parseFloat(getComputedStyle(heading(e)).marginBottom)+(e.id==='about'?parseFloat(getComputedStyle(e).rowGap):0))};
     });
     assert.ok(layout.ordered,'RPG must remain the independent first section');
-    assert.deepEqual(layout.indices,['01','02','03']);
+    assert.deepEqual(layout.indices,['01','02','03','04','05']);
     for(const key of ['headings','eyebrows','spacing'])assert.equal(new Set(layout[key]).size,1,'Classic section style must match: '+key);
    }
    if(slug==='cat-bond'&&await page.locator('#intro-start').isVisible()){
