@@ -447,8 +447,9 @@ class Game {
     this.refreshYardSurprise();
     const hint=document.getElementById('first-quest');
     if(!hint)return;
-    const story=window.CatBondResonance?.view?.();
-    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&(story?.ending||['prologue','epilogue'].includes(story?.current?.chapter))){hint.hidden=true;const help=document.getElementById('guide-help');if(help)help.hidden=true;this._tourTarget?.classList.remove('cb-guide-target');this._tourTarget=null;return;}
+    // Starbell has its own canonical quest guidance in every chapter and save slot.
+    // The legacy Cat Bond capture/tutorial overlay must never compete with it.
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__){hint.hidden=true;hint.textContent='';const help=document.getElementById('guide-help');if(help)help.hidden=true;this._tourTarget?.classList.remove('cb-guide-target');this._tourTarget=null;return;}
     const english=window.MorrowwishI18n?.get?.()!=='zh';
     const count=State.S.catchCount||0;
     const firstCapture=(State.S.cats?.length||0)>0&&count===0;

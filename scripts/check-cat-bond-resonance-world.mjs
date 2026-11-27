@@ -123,3 +123,16 @@ console.log(JSON.stringify((function test(){
  assert(!runtime.commitRuinsVictory({...proof,attemptId:"audit-duo",token:runtime.capture()}).ok,"duplicate ruins after reload");
  return {physical,puzzles,walkingTicks:walking,deliveries,localInvites,rewards,fixtureTransitions:fixture,slots:3,sharedRuntimeNotifications:notified,letters,reunions,canonicalEnding:b.view().ending};
 })()));
+
+// Global quest marker hierarchy must survive mobile fit, desktop and zoom.
+{
+ const {markerMetrics,layoutMarkerLabels}=await import('../public/cat-bond/js/resonance/map-affordances.mjs');
+ for(const width of [390,768,1280])for(const zoom of [1,1.45,2.5]){
+  const metrics=markerMetrics(width,zoom),measure=(s,f)=>s.length*f*.8;
+  const items=[{x:450,y:250,k:'npc',t:'主线角色',main:true},{x:180,y:180,k:'discovery',t:'探索宝箱',secondary:true,optional:true},{x:700,y:350,k:'star',t:'主线行动',main:true},{x:740,y:140,k:'npc',t:'普通居民',secondary:true,optional:true}];
+  const marks=layoutMarkerLabels(items,metrics,measure),main=marks.filter(m=>m.main),side=marks.filter(m=>m.optional);
+  for(const m of main)for(const n of side){if((m.bubbleFont||m.labelFont)*metrics.scale<17.9||(n.bubbleFont||n.labelFont)*metrics.scale>12||m.r<=n.r)throw Error('Quest marker hierarchy lost at '+width+'/'+zoom);}
+  if(marks.length!==items.length||side.some(m=>!m.rect))throw Error('Optional map markers must stay visible at '+width+'/'+zoom);
+ }
+ console.log('Quest marker global CSS-pixel hierarchy verified on phone, desktop and zoom.');
+}

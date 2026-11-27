@@ -2,13 +2,14 @@
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(Math.max(lo,hi),v));
 export function markerMetrics(width,zoom=1,W=960){
  const scale=Math.max(.1,width/W*zoom);
- const r=clamp(19/scale,17,34),hit=clamp(22/scale,r,58),font=clamp(14/scale,16,32);
+ const r=19/scale,hit=22/scale,font=15/scale;
  return {r,hit,font,h:font+12,scale};
 }
 const overlaps=(a,b,p=3)=>a.x<b.x+b.w+p&&a.x+a.w+p>b.x&&a.y<b.y+b.h+p&&a.y+a.h+p>b.y;
 export function layoutMarkerLabels(items,metrics,measure,W=960,H=540,avoid=[]){
  const {r:baseR,font:baseFont,scale}=metrics,icons=[],placed=[];
- const size=m=>({r:m.main?baseR*1.18:m.secondary?baseR*.75:baseR,font:m.main?baseFont*1.18:m.secondary?baseFont*.86:baseFont});
+ const unit=1/scale;
+ const size=m=>({r:(m.main?20:m.secondary?11:15)*unit,font:(m.main?18:m.secondary?11.5:14)*unit});
  const iconRect=(x,y,r)=>({x:x-r,y:y-r,w:2*r,h:2*r});
  // Keep interactive art off painted faces. A moved marker retains its true
  // interaction target and a short visual tether to the original location.
@@ -17,8 +18,8 @@ export function layoutMarkerLabels(items,metrics,measure,W=960,H=540,avoid=[]){
   if(m.k==="npc"){
    // Match the opening Muling speech marker: one 44 CSS-pixel cream bubble,
    // not a separate icon and label. Reserve the full pill plus its tail.
-   const compact=scale<.5,unit=1/scale,bh=(m.main?48:m.secondary?36:44)*unit,fs=(m.main?(compact?15:17):m.secondary?(compact?11:12):(compact?12:14))*unit;
-   const bw=Math.min(W-8,Math.max((compact?64:72)*unit,measure(m.t,fs)+(compact?38:46)*unit));
+   const compact=scale<.5,unit=1/scale,bh=(m.main?45:m.secondary?28:36)*unit,fs=(m.main?18:m.secondary?11.5:14)*unit;
+   const bw=Math.min(W-8,Math.max((m.main?84:m.secondary?46:64)*unit,measure(m.t,fs)+(m.main?42:m.secondary?26:36)*unit));
    const tail=5*unit, step=bh+tail+6*unit;
    const rectAt=(x,y)=>({x:clamp(x-bw/2,4,W-bw-4),y:clamp(y-bh/2,4,H-bh-tail-4),w:bw,h:bh});
    const candidates=[];
@@ -36,11 +37,15 @@ export function layoutMarkerLabels(items,metrics,measure,W=960,H=540,avoid=[]){
   return {...m,x:p[0],y:p[1],origin:[m.x,m.y]};
  });
  return positioned.map(m=>{
-  const {r,font}=size(m),h=font+12;
+  const {r,font}=size(m),h=font+(m.main?12:7)*unit;
   if(m.bubble)return {...m,rect:m.bubble,r:Math.min(r,m.bubble.h/2),hit:metrics.hit};
-  const w=Math.min(330,Math.max(46,measure(m.t,font)+16)),cx=clamp(m.x-w/2,4,W-w-4),c=[];
+  const w=Math.min(W-8, (m.main?300:175)*unit,Math.max((m.main?64:36)*unit,measure(m.t,font)+(m.main?20:10)*unit)),cx=clamp(m.x-w/2,4,W-w-4),c=[];
   for(let i=0;i<5;i++){const d=r+7+i*(h+5);c.push([cx,m.y-d-h],[cx,m.y+d+(m.labelDy||0)],[clamp(m.x+r+8+i*18,4,W-w-4),m.y-h/2+i*(h+4)],[clamp(m.x-r-8-w-i*18,4,W-w-4),m.y-h/2-i*(h+4)]);}
-  const rect=c.map(([x,y])=>({x,y,w,h})).find(q=>q.y>=4&&q.y+h<=H-4&&![...icons,...avoid,...placed].some(b=>overlaps(q,b)));
+  const candidates=c.map(([x,y])=>({x,y,w,h}));
+  // Reserve space for the primary objective before secondary labels. If the
+  // local slots are busy, try the wider map rather than hiding a discovery.
+  for(let y=4;y+h<=H-4;y+=h+4*unit)for(let x=4;x+w<=W-4;x+=w+4*unit)candidates.push({x,y,w,h});
+  const rect=candidates.find(q=>q.y>=4&&q.y+h<=H-4&&![...icons,...avoid,...placed].some(b=>overlaps(q,b)));
   if(rect)placed.push(rect);
   return {...m,rect:rect||null,r,hit:Math.max(r,metrics.hit),labelFont:font};
  });
