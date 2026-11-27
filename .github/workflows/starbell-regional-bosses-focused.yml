@@ -1,0 +1,47 @@
+name: Starbell names and guardian focused QA
+on:
+  push:
+    branches: [review/starbell-names-regional-bosses-20261127]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/test-starbell-regional-bosses*.mjs'
+      - '.github/workflows/starbell-regional-bosses-focused.yml'
+permissions:
+  contents: read
+concurrency:
+  group: starbell-guardian-focused-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  focused:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [wide, portrait]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source and slot regression
+        if: matrix.profile == 'wide'
+        run: |
+          node scripts/test-starbell-regional-bosses.mjs
+          node scripts/test-cat-bond-canon22-combat-migration.mjs
+          node --check public/cat-bond/js/resonance/regional-combat.mjs
+      - name: Install browser without uploading cache or artifacts
+        run: |
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install chromium
+      - name: Actual isolated browser guardian challenges
+        env:
+          STARBELL_BOSS_PROFILE: ${{ matrix.profile }}
+        run: |
+          set -euo pipefail
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-guardians.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/test-starbell-regional-bosses-browser.mjs
