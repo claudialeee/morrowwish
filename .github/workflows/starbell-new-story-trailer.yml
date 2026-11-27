@@ -1,0 +1,48 @@
+name: Starbell new story trailer (portrait review)
+on:
+  push:
+    branches: ['promo/starbell-story-trailer-new-20261126']
+    paths: ['.github/workflows/starbell-new-story-trailer.yml','scripts/starbell-new-story-*.mjs','scripts/starbell-new-story-*.py']
+permissions:
+  contents: read
+concurrency:
+  group: starbell-new-story-trailer
+  cancel-in-progress: true
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Install encoder and CJK fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
+      - name: Capture fresh gameplay from checked-out portrait runtime
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-trailer-server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/starbell-new-story-capture.mjs
+      - name: Compose original bell signature and render
+        run: |
+          python3 scripts/starbell-new-story-audio.py
+          node scripts/starbell-new-story-render.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-new-story-trailer-review
+          path: |
+            artifacts/starbell-story-trailer/Echoes-of-the-Starbell-Story-Trailer-*.mp4
+            artifacts/starbell-story-trailer/contact-*.jpg
+            artifacts/starbell-story-trailer/*-proof.png
+            artifacts/starbell-story-trailer/capture-evidence.json
+            artifacts/starbell-story-trailer/proof-*.json
+            /tmp/starbell-trailer-server.log
+          retention-days: 14
