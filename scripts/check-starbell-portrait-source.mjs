@@ -20,3 +20,5 @@ for(const p of ['js/duo-breed-actors.js','assets/duo-watercolor-32-actors-v1.web
 assert.ok(bond.includes('this.duoCinematic.originalArt=true')&&!bond.includes('this.duoCinematic.originalArt=false')&&battle.includes('originalArt:true'));
 assert.ok(bond.includes('window.CatBondDuoReleaseVFX=')&&bond.includes("duoSignature?.(release.elements,release.tier,'release')"));
 console.log('STAR BELL PORTRAIT SOURCE PASS: real WebP cover and garden, original painted cinematic only, no actor fallback');
+
+if(fs.existsSync(root+'js/resonance/portrait-map.mjs'))await import('./check-starbell-portrait-art-integration.mjs');

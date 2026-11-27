@@ -1,7 +1,7 @@
 name: Starbell portrait engineering acceptance
 on:
   push:
-    branches: [review/starbell-mobile-portrait]
+    branches: [review/starbell-mobile-portrait, review/starbell-portrait-art-integration]
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-layout-acceptance.mjs'

@@ -72,7 +72,7 @@
     guide.hidden=!show;if(!show){guideKey='';return}
     const en=isEnglish(),ending=!!v.ending,epilogue=['epilogue:E-02','epilogue:E-03'].includes(scene),talk=!ending&&(epilogue||v.cursor<v.current.lines.length),departure=scene==='prologue:P-05'&&!talk;
     const seen=state()?.sunlitGarden?.bookGuide||[],next=guideTabs.find(t=>!seen.includes(t[0])),guests=ending?syncGuestPage(v):{ids:[],pages:1};
-    const echo=scene==='prologue:P-05'&&!!state()?.sunlitGarden?.chartEcho;const key=scene+'|'+talk+'|'+en+'|'+v.openingMet+'|'+echo+'|'+seen.join(',')+'|'+(ending?guestRosterKey+'|'+guestPage+'|'+v.postgame.length:'');if(key===guideKey)return;guideKey=key;
+    const echo=scene==='prologue:P-05'&&!!state()?.sunlitGarden?.exploration?.chartEcho;const key=scene+'|'+talk+'|'+en+'|'+v.openingMet+'|'+echo+'|'+seen.join(',')+'|'+(ending?guestRosterKey+'|'+guestPage+'|'+v.postgame.length:'');if(key===guideKey)return;guideKey=key;
     guide.replaceChildren();guide.classList.remove('sg-minimal-opening');guide.classList.toggle('sg-postgame-guide',ending);
     const title=document.createElement('strong');
     title.textContent=ending?(en?'The world answers again':'六地再次回应'):epilogue?(scene==='epilogue:E-02'?(en?'A promise to repair':'承担责任'):(en?'The second garden key':'第二把花园钥匙')):departure?(en?'Ready for the journey':'准备出发'):talk?(en?'Find Muling':'与暮铃交谈'):(en?'The old garden bell':'花园里的旧铃');
