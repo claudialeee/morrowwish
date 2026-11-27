@@ -2656,3 +2656,33 @@ w06q78tip 4.33 → w892jymfa 4.5 → wowed850p 5.0 → wb3r7ejxm 4.33 → wmbjeu
 
 ### Harness
 21/75 agent calls hit StructuredOutput retry cap. 54 succeeded.
+
+## Playtest cycle wnghvvbag — 2026-11-27 (post 55606430 peel + 2nd cycle)
+
+**Headline**: Combat shipped the offensive half of engagement feedback (basicTimeScalar, _closing, execute) but left the DEFENSIVE and PER-ENCOUNTER halves empty — mashers can't convert aggression into mitigation, kiters face a flat noise-floor with one mis-gated smash, and auto-battlers watch a deterministic histogram; the honest wins are legibility (telegraph beat, combo meter, per-enemy HP ring, honest terminal states) not another invisible scalar.
+
+**funMean 4.33** (↑0.16 vs wx45jkdra 4.17):
+- 探索 7 / 懒人 5 / 狂按 **4** (↓1 from wx45jkdra) / 手忙脚乱 4 / 谨慎 **3** (↑1 from wx45jkdra) / 没耐心 3
+
+### Auto-fixes this cycle: 1 (of 3 fix-P0 candidates)
+
+- **Fix 0 (telegraph beat + enrage)**: FINDINGS-ONLY — multi-site telegraph system + burst mult + telemetry gate. Not local.
+- **Fix 1 (smash-disc range 300→520 on forcedFloor)**: **AUTO-FIXED in 2c2f7937**. One line, self-balancing per adversary assessment. Gate green.
+- **Fix 2 (basic-combo meter + 3rd-hit crunch)**: FINDINGS-ONLY — new UI visible element + Task #52 Phase A basic-nerf collision.
+
+### Peel-branch cycle 2 observations (n=2 cycles total)
+- Masher 5→4 (wx45jkdra→wnghvvbag) — bounced back down. Previous cycle's 4→5 was within noise band.
+- 谨慎 kiter 2→3 — this cycle's one-point move. Could be peel helping OR noise.
+- 探索 steady at 7 across 3 cycles.
+- Verdict: n=2, high harness noise (31% retry drop), cannot distinguish peel effect from variance.
+
+### Critiques: 36 total
+- 25 P1 (2 local-numeric + 22 additive-flag + 1 architectural)
+- 11 P2 (3 local-numeric + 5 additive-flag + 3 architectural)
+- 0 critique-tier P0
+
+### Harness
+23/73 agent calls hit StructuredOutput retry cap. 50 succeeded.
+
+### Session trend (10 cycles)
+4.33 → 4.5 → 5.0 → 4.33 → 4.17 → 4.67 → 4.33 → 4.0 → 4.17 → **4.33**
