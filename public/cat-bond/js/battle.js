@@ -5260,7 +5260,11 @@ class CaptureBattle {
       // CHARGED ULT first: meter full → the enemy commits its signature ult (telegraphed +
       // interruptible, reduced power). Highest priority so a full meter always resolves.
       if (e.ultSkill && !e.ultFired && e.ultMeter >= 100 && dist < 360) kind = 'enemyUlt';
-      else if (pastTutorial && (dominating || forcedFloor) && dist < 300 && (e.smashCd || 0) <= 0) kind = 'smash';
+      // Adversary P0 wnghvvbag fix 1: forcedFloor smash reach extended to 520 so disciplined
+      // kiters (320-480u standoff) actually get hit by their own forcing function. Dominating
+      // path keeps 300 reach unchanged. If kiter walks out of the disc, _obs.dodges increments
+      // and forcedFloor auto-deactivates (self-balancing). (auto-fix, unreviewed, not pushed)
+      else if (pastTutorial && (e.smashCd || 0) <= 0 && ((dominating && dist < 300) || (forcedFloor && dist < 520))) kind = 'smash';
       else if (dist < 150 && (me.rootT > 0 || me.frozen || e.aggro > 0.4)) kind = 'nova';     // close + punish window
       else if (dist < 220 && e.role === 'ambusher' && (e.challenge || 0) > 0) kind = 'pounce';  // ambusher leap
       // Big-AOE lob is now rarer (30%, SR+ only) and on its own cooldown so the
