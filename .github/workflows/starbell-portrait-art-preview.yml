@@ -35,6 +35,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Install audio verification prerequisites if absent
+        if: env.GARDEN_GATE == ''
         run: |
           if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
             sudo apt-get update -qq
@@ -48,7 +49,7 @@ jobs:
           if [[ -n "${FOCUSED_GATE:-}" ]]; then
             mkdir -p /tmp/starbell-tested-audio
             GH_TOKEN="${GH_TOKEN:-${{ github.token }}}" gh run download "$FOCUSED_GATE" --name starbell-approved-audio --dir /tmp/starbell-tested-audio
-            test "$(cat /tmp/starbell-tested-audio/source-sha.txt)" = "$SOURCE_SHA"
+            test "$(cat /tmp/starbell-tested-audio/source-sha.txt)" = "${AUDIO_SOURCE_SHA:-$SOURCE_SHA}"
             cp /tmp/starbell-tested-audio/{premium-amberlight.mp3,premium-a-kind-of-hope.mp3,premium-morning.mp3,premium-manifest.json,music-credits.html} public/cat-bond/assets/quality-audio/
           else
             node scripts/import-cat-bond-windchime-music.mjs
@@ -149,8 +150,12 @@ jobs:
           CAT_BOND_SMOKE_ORIGIN: https://starbell-portrait-preview.morrowwish.pages.dev
           STARBELL_FOCUS_PROFILE: portrait
         run: |
-          node scripts/test-starbell-finale-framing-farwind.mjs
-          node scripts/test-starbell-approved-region-music.mjs
+          if [[ -n "${GARDEN_GATE:-}" ]]; then
+            node scripts/test-starbell-garden-camera.mjs
+          else
+            node scripts/test-starbell-finale-framing-farwind.mjs
+            node scripts/test-starbell-approved-region-music.mjs
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

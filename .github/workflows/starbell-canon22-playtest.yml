@@ -25,7 +25,22 @@ concurrency:
   group: canon22-stable-systems-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[replace-obsolete-qa]') }}
 jobs:
+  scope:
+    runs-on: ubuntu-24.04
+    outputs:
+      garden: ${{ steps.scope.outputs.garden }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: scope
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == push ]] && bash scripts/starbell-garden-release-scope.sh HEAD; then
+            echo "garden=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "garden=false" >> "$GITHUB_OUTPUT"
+          fi
   stable-systems:
+    needs: scope
+    if: needs.scope.outputs.garden != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     strategy:
