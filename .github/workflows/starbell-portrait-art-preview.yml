@@ -51,6 +51,14 @@ jobs:
             CAMPAIGN_RUNTIME=2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5
             VERIFIED_RUNTIME=$CAMPAIGN_RUNTIME
           fi
+          # Browser-only corrections do not invalidate a successful identical source gate.
+          if git diff --quiet 2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-portrait-source.yml .github/actions ':!scripts/test-starbell-developer-browser.mjs' ':!scripts/cat-bond-experience-chapters.mjs'; then
+            VERIFIED_RUNTIME=2b65fd8b8520a0691f9a1c7154fc6ea7de6060a5
+          fi
+          # A preview workflow-only fix must use the already running corrected campaign gate.
+          if git diff --quiet 95cf9689f5f28b4f2b9352abaffdfedc7bb191e5 "$SOURCE_SHA" -- public scripts docs package.json package-lock.json .github/workflows/starbell-mobile-portrait.yml .github/actions; then
+            CAMPAIGN_RUNTIME=95cf9689f5f28b4f2b9352abaffdfedc7bb191e5
+          fi
           DUO_RUNTIME=$SOURCE_SHA
           # The native-duo workflow is path-filtered. Reuse its accepted SHA only
           # when its entire trigger/input set is unchanged; source and gameplay
