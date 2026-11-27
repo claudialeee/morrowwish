@@ -209,6 +209,8 @@ class CaptureBattle {
     this.beams = [];                     // channeled beam skills (水枪/flamethrower): continuous line damage
     this.fields = [];                    // lingering elemental ground zones (Terraformer): apply tags, can be detonated
     this.skillStrokes=[]; // Short-lived authored 2D spell shapes (not recolored bullets)
+    this._umbralLobs=[];
+    this._skillClock=0;
     this.duoField=null; // Elemental field lasting through several combat seconds
     this.particles = [];
     this.floaters = [];                  // damage numbers
@@ -1004,7 +1006,7 @@ class CaptureBattle {
   // fire-gate, and skillEngageReach ALL derive from this so the engagement band can never
   // drift past the distance a claw actually connects (the "前排站远挨打" bug). Keyed to the
   // target body radius so a fat enemy is reachable at its edge; ~50px for a standard r=18.
-  meleeReach(target=null){ const r=(target&&target.r)||18; return 60+r*0.45; }  // band ANCHOR ~68px; the swing connects out to ~87 (meleeStrike RANGE 75 + r) so the fighter holds a spot where its claw actually lands (owner: 近战范围提高到 75)
+  meleeReach(target=null){ const r=(target&&target.r)||18; return 42+r*0.45; }
 
   // BASIC attacks are independent of the Q/E planner. An equipped melee basic
   // must close into claw contact; the fallback toy projectile expires after 0.5s.
@@ -1052,7 +1054,12 @@ class CaptureBattle {
   skillEngageReach(sk,basicRange){
     if(!sk)return 0;
     switch(sk.kind){
-      case 'melee':return this.meleeReach();   // claw contact (single source of truth)
+      // Owner 2026-11-26 bug: "近战猫不怎么用近战技能". meleeReach() returns ~50 (anchor
+      // preference) but meleeStrike actually CONNECTS out to 64 + r*0.65 ≈ 76. The fire gate
+      // was using the anchor, so a cat that got pushed to 55-70px from target was reported
+      // as "too far to swing" even though the swing would have landed. Match the real hit
+      // geometry (same +4 margin as basicAttackRange's melee branch at L1034).
+      case 'melee':return 72;   // claw CONTACT range, matches meleeStrike + basicAttackRange
       case 'dash':return 175;    // matches dashLunge _dashReach (closes a ranged kiter's standoff)
       case 'leap':return 215;    // matches leapSlam max
       case 'pounce':return 240;  // flyingPounce reaches 210; AI may commit from a touch farther
@@ -1987,6 +1994,10 @@ class CaptureBattle {
   // Support skills can target a FRIEND, not just the caster. If the player is
   // aiming at an ally (or an ally needs it far more), the heal/buff lands on them.
   supportBeneficiary(f, sk, aim){
+    // SELF-only heals (坦克's 舔伤口) ALWAYS lock the caster — never auto-route to a worse-off
+    // ally. That's what distinguishes a tank's self-sustain from a support's team-patch
+    // (grooming area-heal). Owner call 2026-11-25.
+    if (sk && sk.kind === 'heal' && sk.healMode === 'self') return f;
     // explicit aim at an ally (manual intent) wins
     if (aim != null && f === this.me() && !this.game.isTouch) {
       const ax = f.x + Math.cos(aim), ay = f.y + Math.sin(aim);
@@ -2136,23 +2147,62 @@ class CaptureBattle {
     if(!sk)return false;
     const id=sk.id,ex=f.x+Math.cos(aim)*23,ey=f.y+Math.sin(aim)*23;
     const enemies=this.liveEnemies();
-    if(id==='waterLash'||id==='frostLance'||id==='prismBeam'){
-      const water=id==='waterLash',frost=id==='frostLance',range=water?430:frost?480:525,width=water?38:frost?19:21;
-      const endX=ex+Math.cos(aim)*range,endY=ey+Math.sin(aim)*range;
-      this.skillStrokes.push({kind:water?'water':frost?'ice':'prism',x:ex,y:ey,x2:endX,y2:endY,
-        color:col,life:.45,max:.45});
-      for(let i=0;i<(water?5:4);i++){
-        const r=60+i*(water?75:125);
-        this.vfx.ring(ex+Math.cos(aim)*r,ey+Math.sin(aim)*r,
-          {r0:4,vr:80,life:.26,color:frost?'#b8eaff':water?'#a5edfc':'#fefcbb',width:2});
+    if(id==='waterLash'){
+      // Owner 2026-11-26 '水鞭是不是太宽了？vfx也不好看'. Previously shared geometry with
+      // frostLance/prismBeam at width 38 (vs frost 19) — swept a sprawling 76px band,
+      // damaging anything roughly in a cone. Narrowed to 20 (single-target line) and
+      // given its own serpentine whip VFX with flick-burst endpoints and pillar hit.
+      const range=430, width=20;
+      const endX=ex+Math.cos(aim)*range, endY=ey+Math.sin(aim)*range;
+      // Serpentine body: 2 S-curves phase-offset so the line reads as a moving whip
+      // rather than a static line. Stored as a single skillStroke of a new kind the
+      // renderer uses; fallback-render in canvas below.
+      this.skillStrokes.push({kind:'water',x:ex,y:ey,x2:endX,y2:endY,
+        color:col,life:.42,max:.42});
+      // Tail flick: a spray-burst at the end of the whip to sell the crack.
+      if(!window.CatBondContactFX)this.vfx.burst(endX,endY,{count:14,color:'#bff2ff',angle:aim,spread:.9,speed:220,life:.38,r:2.6});
+      if(!window.CatBondContactFX)this.vfx.ring(endX,endY,{r0:6,vr:160,life:.3,color:'#9fe1fc',width:2.5});
+      // Three droplet puffs along the whip body to give the line water weight.
+      if(!window.CatBondContactFX)for(let i=0;i<3;i++){
+        const r=120+i*120;
+        this.vfx.burst(ex+Math.cos(aim)*r, ey+Math.sin(aim)*r,
+          {count:3,color:'#c8f0ff',speed:50,life:.32,r:2});
       }
       let hits=0;
       for(const e of enemies){
         const dx=e.x-ex,dy=e.y-ey,along=dx*Math.cos(aim)+dy*Math.sin(aim);
         const side=Math.abs(-dx*Math.sin(aim)+dy*Math.cos(aim));
         if(along<0||along>range||side>width+e.r*.5)continue;
-        const hit=this.resolveHit(e,'me',sk,baseDmg*(water?.9:frost?1.12:1.18),e.x,e.y);
-        if(hit.dealt>0){this.vfx.impact(e.x,e.y,col);hits++;}
+        const hit=this.resolveHit(e,'me',sk,baseDmg*.9,e.x,e.y);
+        if(hit.dealt>0){
+          // Water PILLAR on hit — a rising ring + vertical splash, distinct from
+          // the generic vfx.impact dart.
+          if(!window.CatBondContactFX){this.vfx.ring(e.x,e.y,{r0:10,vr:260,life:.38,color:'#8cdef7',width:4});
+          this.vfx.burst(e.x,e.y-8,{count:10,color:'#aeeaff',angle:-Math.PI/2,spread:.5,speed:170,life:.42,r:3});
+          this.vfx.burst(e.x,e.y,{count:6,color:'#5cb8d8',speed:90,life:.28,r:2});}
+          hits++;
+        }
+      }
+      if(hits)this.shakeT=Math.max(this.shakeT,.14);
+      return true;
+    }
+    if(id==='frostLance'||id==='prismBeam'){
+      const frost=id==='frostLance',range=frost?480:525,width=frost?19:21;
+      const endX=ex+Math.cos(aim)*range,endY=ey+Math.sin(aim)*range;
+      this.skillStrokes.push({kind:frost?'ice':'prism',x:ex,y:ey,x2:endX,y2:endY,
+        color:col,life:.45,max:.45});
+      if(!window.CatBondContactFX)for(let i=0;i<4;i++){
+        const r=60+i*125;
+        this.vfx.ring(ex+Math.cos(aim)*r,ey+Math.sin(aim)*r,
+          {r0:4,vr:80,life:.26,color:frost?'#b8eaff':'#fefcbb',width:2});
+      }
+      let hits=0;
+      for(const e of enemies){
+        const dx=e.x-ex,dy=e.y-ey,along=dx*Math.cos(aim)+dy*Math.sin(aim);
+        const side=Math.abs(-dx*Math.sin(aim)+dy*Math.cos(aim));
+        if(along<0||along>range||side>width+e.r*.5)continue;
+        const hit=this.resolveHit(e,'me',sk,baseDmg*(frost?1.12:1.18),e.x,e.y);
+        if(hit.dealt>0){if(!window.CatBondContactFX)this.vfx.impact(e.x,e.y,col);hits++;}
       }
       if(hits)this.shakeT=Math.max(this.shakeT,.13);
       return true;
@@ -2186,15 +2236,20 @@ class CaptureBattle {
       return true;
     }
     if(id==='lightningOrb'){
-      // Slow, turning ball lightning — NOT instant chain lightning.
-      this.spawnProj(ex,ey,aim,108,baseDmg,'me','#ffe5a0',
-        13,'lightningOrb',sk,3.3);
+      // Ball lightning (owner spec 2026-11-25): drifts SLOW (108px/s), SWELLS from
+      // r=13 → r=20 over ~5s of flight, and if it hasn't hit anything after 1.0s /
+      // 180px it DISCHARGES into 3 smaller homing orblets (33% dmg each) — miss
+      // insurance, not an upgrade (3×.33 ≈ single hit so direct aim still wins).
+      const p=this.spawnProj(ex,ey,aim,108,baseDmg,'me','#ffe5a0',
+        13,'lightningOrb',sk,6.5);
+      if(p){p._lioBorn=this.t;p._lioR0=13;p._lioRMax=20;
+            p._lioStartX=ex;p._lioStartY=ey;p._lioSplit=false;}
       this.vfx.burst(ex,ey,{count:7,color:'#e1f3ff',
         speed:70,life:.25,r:2});
       return true;
     }
     if(id==='fireballMeow'){
-      this.spawnProj(ex,ey,aim,f.projSpeed*.75,baseDmg*1.5,'me','#ff9752',15,'fireball',sk,1.8);
+      this.spawnProj(ex,ey,aim,420,baseDmg,'me','#ff9752',15,'fireball',sk,.76);
       this.vfx.burst(ex,ey,{count:16,color:'#ffdb84',angle:aim,spread:.65,speed:175,life:.38});
       return true;
     }
@@ -2202,7 +2257,195 @@ class CaptureBattle {
       this.spawnProj(ex,ey,aim,f.projSpeed*.68,baseDmg*1.25,'me','#bca4ec',13,'hex',sk,1.85);
       this.vfx.orb(ex,ey,'#b397ec',7);return true;
     }
+    // SALVO / PULSE skills — a single cast schedules N independent projectiles spaced
+    // sk.pulseGap seconds apart. Each pulse re-aims at the nearest living enemy at
+    // RELEASE time, so the player watches wave 1 land and waves 2/3 can still retarget.
+    // First shot fires NOW (instant feedback); the rest are queued on this._pulseQueue
+    // for the update loop to release. Projectiles fly with light homing (sk.pulseHoming).
+    // SPECIAL: crescentFan 月华连弧 — owner-driven redesign 2026-11-26:
+    //   • 2.5s CHARGE: five moon-arcs spawn in a FAN AIMED AT THE TARGET (not random
+    //     ring). Owner: "方向应该指向目标位置 … 蓄力时就该看见朝向".
+    //   • Caster CANNOT MOVE while charging. Owner: "发动时猫不能动".
+    //     Implemented via _moonChargeLock flag consumed by moveMul().
+    //   • RELEASE: 0.3s apart (owner: "发射间隔改成0.3s"). Each pulse re-locks the
+    //     NEAREST living enemy at its release and SKIPS if none exists (owner:
+    //     "触手有时候在效果范围外就发射了" → require a live target at release).
+    //   • FLIGHT: slow start, continuous accel, no speed cap, infinite range.
+    //   • VFX: authored moon-fx crescent sprite (p.kind='crescent').
+    if(sk.id === 'crescentFan'){
+      const n = sk.pulseCount || 5;
+      const chargeT = sk.chargeT || 2.5;
+      const gap = sk.pulseGap || 0.55;
+      // Owner 2026-11-26 feedback: previous (startSpd 0.35× + accel 820) made each
+      // blade crawl → pulses stacked on top of each other near the cat. Bump initial
+      // velocity and acceleration so each wave actually clears the caster before the
+      // next lands, AND still reads as "slow-start → fast rip" visually.
+      const startSpd = f.projSpeed * 1.0;
+      const projR = 22;   // owner 2026-11-26: widen the moon arc (14 → 22, +57%)
+      this._pulseQueue = this._pulseQueue || [];
+      this.skillStrokes = this.skillStrokes || [];
+      // Target direction at cast time: snapshot now so the fan reads as "pointed at
+      // the enemy" throughout the charge. Falls back to the manual aim if no enemy.
+      const tgt0 = this.nearestEnemy(f.x, f.y);
+      const castAng = tgt0 ? Math.atan2(tgt0.y - f.y, tgt0.x - f.x) : aim;
+      // CHARGE-LOCK: moveMul reads this and returns 0 while active. Owner
+      // 2026-11-26: "发动时猫不能动" AND "月弧发射完前猫都能移动" — lock the caster
+      // for the FULL salvo window (charge + all pulse gaps + small tail), not
+      // just the charge. For n=3 shots at 0.45s gap + 2.5s charge, that's
+      // 2.5 + 2*0.45 + 0.15 = 3.55s total commitment.
+      if(sk.chargeLock){
+        f._moonChargeLock = true;
+        f._moonChargeLockUntil = (this._skillClock??this.t) + chargeT + Math.max(0, n - 1) * gap + 0.15;
+      }
+      // Owner 2026-11-26 final: "就在猫咪的头顶生成算了 … 就生成一个 … 发射的起始
+      // 点也一样". One hover arc at a time, hovering just above 月月's head, and
+      // the pulse LAUNCH POINT is the same spot — spawns there, flies toward the
+      // target. Next wave (0.55s later) pops at the same overhead spot.
+      // overheadOff carries both the hover visual AND the pulse spawn position.
+      const overheadOff = -48;     // px above the caster
+      for(let i=0;i<n;i++){
+        const strokeId = (this._moonHoverUid = (this._moonHoverUid||0) + 1);
+        // Hover appears only during its own slot: from (releaseAt - preview) until release.
+        const releaseAt = (this._skillClock??this.t) + chargeT + i * gap;
+        const preview = (i === 0) ? chargeT : gap;   // first wave previewed for full charge; next waves pop in 0.55s before release
+        const spawnT = releaseAt - preview;
+        this.skillStrokes.push({
+          kind: 'moonHover', strokeId,
+          caster: f,                        // follows caster — position computed from caster.x/y - 48 in draw
+          overheadOff,                       // vertical offset relative to caster each frame
+          castAng,                          // orient the blade along the firing direction
+          wobble: 0,
+          spawnT,
+          life: preview + 0.04, max: preview + 0.04,
+          color: col,
+        });
+        this._pulseQueue.push({
+          caster:f, casterIdx: this.team.indexOf(f),
+          releaseAt,
+          skillId: sk.id, element: sk.element, baseDmg,
+          projKind: 'crescent', projR,
+          spd: startSpd, life: 30, homing: false, col,
+          lockedAim: null, relockOnRelease: true,
+          requireLiveTarget: true,
+          accelProfile: { startSpd, accel: 1600 },
+          // Launch position = overhead spot (same as hover).
+          overheadOff,
+          strokeId,
+        });
+      }
+      this.vfx.text?.(f.x, f.y - 34, window.MorrowwishI18n?.get?.()==='zh'?'月华·蓄势':'Crescent charge', col, 14);
+      return true;
+    }
+    if(sk.pulseCount && sk.pulseCount > 1){
+      this._pulseQueue = this._pulseQueue || [];
+      const projKind = sk.element==='water' ? 'orb' : sk.element==='dark' ? 'hex' : 'orb';
+      const projR = sk.element==='dark' ? 12 : 11;
+      const spd = f.projSpeed*0.86, life = 1.9;
+      // POLYGON-SPAWN pulses: each wave exits from a vertex of a regular N-gon
+      // around the caster. Non-homing pulses fly STRAIGHT along the cast aim.
+      const straight = !sk.pulseHoming;
+      const n = sk.pulseCount, polyR = 32;
+      const vertexAng = (idx) => aim + (idx - (n - 1) / 2) * (Math.PI * 2 / n);
+      const v0 = vertexAng(0);
+      const sx0 = f.x + Math.cos(v0) * polyR, sy0 = f.y + Math.sin(v0) * polyR;
+      this.spawnProj(sx0,sy0,aim,spd,baseDmg,'me',col,projR,projKind,
+        { ...sk, homing: sk.pulseHoming, isDerived:true },life);
+      this.vfx.burst(sx0,sy0,{count:9,color:col,angle:aim,spread:.5,speed:150,life:.30,r:2.4});
+      for(let i=1;i<sk.pulseCount;i++){
+        this._pulseQueue.push({
+          caster:f,casterIdx:this.team.indexOf(f),
+          releaseAt:(this._skillClock??this.t) + i*(sk.pulseGap||0.3),
+          skillId:sk.id,element:sk.element,baseDmg,projKind,projR,
+          spd,life,homing:sk.pulseHoming,col,
+          lockedAim: straight ? aim : null,
+          vertexAng: vertexAng(i), polyR});
+      }
+      return true;
+    }
     return false;
+  }
+  // Pulse scheduler: release any queued salvo projectiles whose releaseAt has come up.
+  // Each pulse re-reads the caster's current position and auto-aims at the NEAREST
+  // living enemy at release time (so waves 2/3 track if the original target died).
+  // Caster leaving the team (faint / swap) silently drops the remaining pulses.
+  updatePulseQueue(){
+    if(!this._pulseQueue||!this._pulseQueue.length)return;
+    const q=this._pulseQueue, keep=[];
+    for(const p of q){
+      if((this._skillClock??this.t) < p.releaseAt){keep.push(p);continue;}
+      const caster=p.caster||this.team[p.casterIdx];
+      if(!caster||!caster.alive||!this.team.includes(caster))continue;
+      // Spawn position FIRST — angle must be computed from the spawn point, not
+      // from the caster body center. Owner bug 2026-11-26 "月弧都偏高打不准":
+      // crescentFan spawns at head (caster.y - 48) but angle was from caster.y →
+      // every blade flew in a line parallel-shifted 48px up from the true sight
+      // line, so it consistently missed OVER the target. Fix: resolve ex/ey first,
+      // then atan2 from (ex, ey) to (tgt.x, tgt.y).
+      let ex, ey;
+      if(p.overheadOff != null){
+        ex = caster.x;
+        ey = caster.y + p.overheadOff;
+      }else if(p.offAng != null){
+        ex = caster.x + Math.cos(p.offAng) * (p.offRad || 48);
+        ey = caster.y + Math.sin(p.offAng) * (p.offRad || 48);
+      }else if(p.vertexAng != null){
+        const r = p.polyR || 32;
+        ex = caster.x + Math.cos(p.vertexAng) * r;
+        ey = caster.y + Math.sin(p.vertexAng) * r;
+      }else{
+        // default: 23px ahead of caster — compute AFTER we know ang below.
+        ex = null; ey = null;
+      }
+      // Flight direction: angle is computed from the SPAWN POINT (ex, ey) to the
+      // target, NOT from caster body. This is the fix for '月弧都偏高打不准' — when
+      // spawn is 48px above the caster but ang was from the caster y, the blade's
+      // flight line sat 48px above the sight line and missed over every target.
+      let ang;
+      const spawnX = (ex != null) ? ex : caster.x;
+      const spawnY = (ey != null) ? ey : caster.y;
+      if(p.relockOnRelease){
+        const tgt = this.nearestEnemy(spawnX, spawnY);
+        if(!tgt){
+          // Owner: for pulses that need a live target, DROP the pulse (and its
+          // paired hover-arc VFX) instead of stalling. Legacy non-crescent pulses
+          // keep stall-and-retry.
+          if(p.requireLiveTarget){
+            if(p.strokeId != null && this.skillStrokes){
+              for(const s of this.skillStrokes){ if(s.strokeId === p.strokeId){ s.life = 0; break; } }
+            }
+            continue;
+          }
+          keep.push(p); continue;
+        }
+        ang = Math.atan2(tgt.y - spawnY, tgt.x - spawnX);
+      }else if(p.lockedAim != null){
+        ang = p.lockedAim;
+      }else{
+        const tgt = this.nearestEnemy(spawnX, spawnY);
+        if(!tgt) continue;
+        ang = Math.atan2(tgt.y - spawnY, tgt.x - spawnX);
+      }
+      // Default-spawn (no overheadOff/offAng/vertexAng): 23px ahead along ang.
+      if(ex == null){
+        ex = caster.x + Math.cos(ang) * 23;
+        ey = caster.y + Math.sin(ang) * 23;
+      }
+      const fakeSk={...(window.Skills?.skillById(p.skillId)||{}),id:p.skillId,element:p.element,homing:p.homing,isDerived:true,_traitCaster:caster,appliesTag:p.skillId==='tidalPulse'?'soak':'blind'};
+      const proj = this.spawnProj(ex,ey,ang,p.spd,p.baseDmg,'me',p.col,p.projR,p.projKind,fakeSk,p.life);
+      if(proj && p.accelProfile){
+        proj.spd = p.accelProfile.startSpd;
+        proj._accel = p.accelProfile.accel || 0;      // px/s^2 — continuous, no cap
+        proj._accelAng = ang;                         // lock flight direction
+      }
+      // Kill the paired hover-arc VFX at release.
+      if(p.strokeId != null && this.skillStrokes){
+        for(const s of this.skillStrokes){
+          if(s.strokeId === p.strokeId){ s.life = 0; break; }
+        }
+      }
+      this.vfx.burst(ex,ey,{count:7,color:p.col,angle:ang,spread:.5,speed:130,life:.26,r:2.1});
+    }
+    this._pulseQueue=keep;
   }
   // ---- the three shield verbs (players AND enemies) ----
   // Each sets a short-lived field resolveHit() consults, with its own limit and
@@ -2503,6 +2746,17 @@ class CaptureBattle {
   castOffensiveSkill(f, aim, sk, pow, col, _nowind) {
     if (this._debug) this._dbgFiringCat = f;   // debug-log: who is actually firing this skill
     this._lastSkillT = this.t;                 // stall-detector: player engaged a skill
+    if(sk&&!_nowind){
+      sk={...sk};
+      if(sk.kind==='aoe'){
+        const cursor=f===this.me()&&!this.game.isTouch&&!this.autoMode?this.game.mouse:null;
+        const target=Number.isFinite(cursor?.x)&&Number.isFinite(cursor?.y)?cursor:(this.lockedEnemy()||this.nearestEnemy(f.x,f.y));
+        const reach=sk.reach||Math.hypot(this.W,this.H);
+        let dx=(target?.x??(f.x+Math.cos(aim)*240))-f.x,dy=(target?.y??(f.y+Math.sin(aim)*240))-f.y;
+        const q=Math.min(1,reach/(Math.hypot(dx,dy)||1));
+        sk._castTarget={x:clamp(f.x+dx*q,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side),y:clamp(f.y+dy*q,this.topMargin,this.H-this.bottomMargin)};
+      }
+    }
     // WIND-UP (前摇): heavy skills charge for sk.windup seconds before firing — a
     // brief commit that roots the caster and shows a growing charge ring, so big
     // moves have weight and can be read/punished (mirrors enemy telegraph).
@@ -2518,7 +2772,7 @@ class CaptureBattle {
     const kind = sk ? sk.kind : 'projectile';
     // Close-range claws have a single painted brush: do not add a second
     // rotating circular elemental cast badge over the kitten's head.
-    if((sk?.ultCost||0)===0&&kind!=='melee')
+    if((sk?.ultCost||0)===0&&kind!=='melee'&&!['waterJet','magneticField','shadowTendrils','arcanePulse'].includes(sk.id))
       this.regularSkillAccent(f,sk?.element||f.element,aim,!!sk?.isBasic);
     // Skill IDs select 39 different local silhouettes; generic element accents
     // remain as a subtle baseline and projectile mechanics are untouched.
@@ -2535,7 +2789,18 @@ class CaptureBattle {
       ['beam','chain'].includes(kind)?'combat_beam':'combat_magic'
     );
     if (kind === 'melee') {
+      // Owner: 近战技能伤害有点低. Compared to its peers melee had the WORST tradeoff — same gap-close
+      // cost as dash/leap but weaker payoff (×1.4 vs dash ×1.5, leap ×1.7, pounce ×1.5), AND no
+      // built-in mobility/i-frame to earn the risk. Raise to ×1.6 so standing-still melee pays
+      // the same as a dash (which still gets its gap-close + iframe) but stays below leap/pounce
+      // which also pack range. Per-skill `power` already compensates heavy claws (veteranStrike
+      // 2.3, cometClaw 2.25) so this bumps standard claws (emberClaw 1.3, thornCoil 1.1,
+      // shadowSwipe 1.35) by a modest ~14% without trivializing anything.
       this.meleeStrike(f, aim, sk, f.dmg * pow * 1.4, col);
+    } else if(sk.id==='magneticField'){
+      this.castMagneticField(f,aim,sk,f.dmg*pow,col,'me');
+    } else if(sk.id==='arcanePulse'){
+      this.castUmbralBarrage(f,aim,sk,f.dmg*pow,col,'me');
     } else if (kind === 'aoe') {
       this.lobAoe(f, aim, sk, f.dmg * pow, col);
     } else if (kind === 'dash') {
@@ -2580,13 +2845,32 @@ class CaptureBattle {
     const spread = sk.spread || 0.24;
     const spd = (f.projSpeed || 300) * (sk.homing ? 0.5 : 0.92);
     const life = sk.maxProjLife || (sk.homing ? 2.4 : 1.1);
-    const kindSprite = sk.homing ? (sk.element==='elec'?'lightningOrb':'orb') : 'ball';
+    // PER-SKILL PROJECTILE SPRITE (owner 2026-11-26 — "敌人的攻击效果怎么还是箭头"):
+    // Pick the sprite kind from the skill's identity so each cat's volley reads as its
+    // authored move instead of a generic 'ball'. Player-side skills already use explicit
+    // spawnProj sprite kinds (fireball/hex/leaf/lightningOrb). This mirrors that for
+    // volley casts (used by both player barrages AND enemy castEnemySkill).
+    let kindSprite;
+    if (sk.homing) {
+      kindSprite = sk.element === 'elec' ? 'lightningOrb' : 'orb';
+    } else if (sk.id === 'fireballMeow' || sk.id === 'meteor') kindSprite = 'fireball';
+    else if (sk.id === 'hex' || sk.id === 'voidMaw') kindSprite = 'hex';
+    else if (sk.id === 'leafDart' || sk.id === 'homingSeed') kindSprite = 'leaf';
+    else if (sk.id === 'lightningOrb' || sk.id === 'boltArc' || sk.id === 'thunderYowl' ||
+             sk.id === 'thunderStream') kindSprite = 'lightningOrb';
+    else if (sk.element === 'fire') kindSprite = 'fireball';
+    else if (sk.element === 'elec') kindSprite = 'lightningOrb';
+    else if (sk.element === 'grass') kindSprite = 'leaf';
+    else if (sk.element === 'dark') kindSprite = 'hex';
+    else kindSprite = 'ball';
     // Single-target budget: a straight fan may land up to 2 pellets on one enemy (so against a lone
     // wild it isn't strictly worse than a plain bolt — the old 1-hit cap made 弹幕 a trap), while a
     // homing swarm lets EVERY pellet connect (its low per-pellet power is the balance lever, not a
     // hit cap — all pellets chase the same target so a 1-cap made it ~4× worse than a bolt). Spread
     // across multiple enemies is unchanged (each enemy tracked separately).
-    const perEnemyCap = sk.homing ? (sk.shots || 4) : 2;
+    // Owner 2026-11-26: non-homing straight volley compressed to 1 hit/target —
+    // a 5-pellet fan should spread damage across enemies, not flatten one cat.
+    const perEnemyCap = sk.homing ? (sk.shots || 4) : 1;
     const volley = { hitsByEnemy: new Map(), maxHitsPerEnemy: perEnemyCap };
     const ex = f.x + Math.cos(aim)*20, ey = f.y + Math.sin(aim)*20;
     for (let i = 0; i < n; i++) {
@@ -2606,49 +2890,98 @@ class CaptureBattle {
     const R = 86;                                   // burst radius
     // destination point
     let tx, ty;
-    if (f === this.me() && !this.game.isTouch) {
-      const m = this.game.mouse || {}; tx = m.x; ty = m.y;             // desktop: cursor
+    // Owner 2026-11-26: AOE landing point is LOCKED at cast time, not live. castOffensiveSkill
+    // snapshots sk._castTarget for ALL casters (player/ally/auto/mobile) so the ground
+    // telegraph and the actual impact share the same frozen point.
+    const snapTgt = sk?._castTarget;
+    if (snapTgt && Number.isFinite(snapTgt.x) && Number.isFinite(snapTgt.y)) {
+      tx = snapTgt.x; ty = snapTgt.y;
+    } else if (f === this.me() && !this.game.isTouch && !this.autoMode) {
+      const snap = sk?._castMouse;
+      if (snap && Number.isFinite(snap.x) && Number.isFinite(snap.y)) { tx = snap.x; ty = snap.y; }
+      else { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
     } else {
-      const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);   // mobile/AI/ally: target
-      if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
-    }
-    // METEOR (陨石术): a sky-drop that HOMES onto the enemy, not a free-aimed lob — the flaming
-    // rock FALLS diagonally from above and lands on the target cat (owner: 斜斜地从上面掉下来砸中).
-    const sky = sk && (sk.id === 'meteor' || (sk.field && sk.element === 'fire' && sk.kind === 'aoe'));
-    if (sky) {
-      // Lock the landing point onto the locked/nearest enemy regardless of cursor. The meteor
-      // must hit a cat; aiming it at the empty cursor (which rests by the top UI) made it land
-      // "全在右上角" and never connect. Fall back to the free-aimed point only if no enemy exists.
       const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);
-      if (tgt) { tx = tgt.x; ty = tgt.y; }
-      // DIAGONAL sky-fall: originate high up and to one roomier side of the landing point so the
-      // rock streaks in at ~35-60° instead of dropping straight down.
-      const dropX = 300, dropY = 440;                              // diagonal offset of the spawn point
-      const side = (tx > this.W * 0.5) ? -1 : 1;                   // come in from the roomier side
-      const sx = clamp(tx - side * dropX, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
-      const sy = Math.max(this.topMargin - 60, ty - dropY);
-      const ang = Math.atan2(ty - sy, tx - sx), dist = Math.hypot(tx - sx, ty - sy);
-      const speed = 640;                                           // fast incoming
-      const p = this.spawnProj(sx, sy, ang, speed, dmg, 'me', col, 15, 'meteor', sk, dist / speed + 0.02);
-      // Home the burst onto the target: if it's still alive on impact, re-read its live position
-      // so a moving cat still gets hit; otherwise detonate at the telegraphed ground point.
-      p.burst = { r: R, dmg, skill: sk, col, tx, ty, homeTo: tgt || null };
-      p._meteor = true;                                            // heavy fiery comet trail (added in update loop)
-      // landing telegraph: a shrinking reticle on the ground where the rock will hit
-      this.vfx.ring(tx, ty, { r0: R, vr: -R * 1.4, life: dist / speed + 0.02, color: col, width: 3 });
-      this.vfx.text(tx, ty - 8, window.MorrowwishI18n?.get?.()!=='zh' ? 'METEOR!' : '陨石来袭!', col, 13);
-      return;
+      if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
     }
     const ang = Math.atan2(ty - f.y, tx - f.x), dist = Math.hypot(tx - f.x, ty - f.y);
     const speed = 300;                              // deliberately slow → readable/dodgeable
     this.spawnProj(f.x, f.y, ang, speed, dmg, 'me', col, 9, 'orb', sk, dist / speed + 0.02);
     const p = this.projectiles[this.projectiles.length - 1];
     p.burst = { r: R, dmg, skill: sk, col, tx, ty };  // consumed by burstAt() on expiry
+    // Meteor's visual descent must remain readable even when cast point-blank.
+    // Keep one damage event at the original target/radius; use at least .72s of flight.
+    if(sk?.id==='meteor'){
+      p.life=p.maxLife=Math.max(.72,p.life);p.x=tx;p.y=ty;p.vx=0;p.vy=0;
+    }
     this.vfx.muzzle(f.x, f.y, ang, col);
   }
+
+  // Ground-locked artillery: each ball has its own launch/flight/impact clock.
+  // No projectile steering, interception, contact collision or target re-aim.
+  castUmbralBarrage(f,aim,sk,dmg,col,side='me',target=null){
+    const reach=sk.reach||340,mouse=this.game?.mouse;
+    let tgt=target||sk._castTarget;
+    if(!tgt&&side==='me'){
+      if(f===this.me()&&!this.game?.isTouch&&Number.isFinite(mouse?.x)&&Number.isFinite(mouse?.y))tgt=mouse;
+      else tgt=this.lockedEnemy?.()||this.nearestEnemy(f.x,f.y);
+    }
+    let dx=(tgt?.x??(f.x+Math.cos(aim)*reach))-f.x,dy=(tgt?.y??(f.y+Math.sin(aim)*reach))-f.y;
+    const dist=Math.hypot(dx,dy)||1,scale=Math.min(1,reach/dist);dx*=scale;dy*=scale;
+    const nx=dist>1?-dy/(Math.hypot(dx,dy)||1):-Math.sin(aim),ny=dist>1?dx/(Math.hypot(dx,dy)||1):Math.cos(aim);
+    const shots=sk.lobCount||3,gap=sk.lobGap||.42,flight=sk.lobFlight||.76;
+    this._umbralLobs??=[];
+    for(let i=0;i<shots;i++){
+      const offset=i===0?0:(i%2?1:-1)*(sk.lobSpread||24)*Math.ceil(i/2);
+      let ox=dx+nx*offset,oy=dy+ny*offset;
+      const l=Math.hypot(ox,oy)||1,k=Math.min(1,reach/l);ox*=k;oy*=k;
+      const tx=clamp(f.x+ox,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);
+      const ty=clamp(f.y+oy,this.topMargin,this.H-this.bottomMargin);
+      const b={caster:f,owner:side,skill:{...sk,_traitCaster:side==='me'?f:null},dmg,col,tx,ty,r:sk.lobRadius||46,
+        wait:i*gap,flight,age:0,launched:false,index:i};
+      if(i===0)this.launchUmbralLob(b);
+      this._umbralLobs.push(b);
+    }
+  }
+  launchUmbralLob(b){
+    const f=b.caster,angle=Math.atan2(b.ty-f.y,b.tx-f.x);
+    b.sx=f.x+Math.cos(angle)*16;b.sy=f.y+Math.sin(angle)*16;
+    b.height=66+Math.min(42,Math.hypot(b.tx-b.sx,b.ty-b.sy)*.13);
+    b.launched=true;
+    this.vfx.muzzle?.(b.sx,b.sy,angle,b.col);
+  }
+  tickUmbralLobs(dt){
+    if(!this._umbralLobs?.length||!(dt>0))return;
+    const keep=[];
+    for(const b of this._umbralLobs){
+      let step=dt;
+      if(!b.launched){
+        if(!b.caster?.alive)continue;
+        if(b.wait>step){b.wait-=step;keep.push(b);continue;}
+        step-=b.wait;b.wait=0;this.launchUmbralLob(b);
+      }
+      b.age+=step;
+      if(b.age+1e-8<b.flight){keep.push(b);continue;}
+      this.impactUmbralLob(b);
+    }
+    this._umbralLobs=keep;
+  }
+  impactUmbralLob(b){
+    // The displayed ground circle IS the damage circle; no homing or extra invisible splash.
+    this.skillStrokes.push({kind:'signatureHit',skillId:'arcanePulse',umbralGround:true,x:b.tx,y:b.ty,r:b.r,index:b.index,life:.62,max:.62});
+    const targets=b.owner==='me'?this.liveEnemies():this.team.filter(f=>f.alive);
+    for(const target of targets){
+      if(Math.hypot(target.x-b.tx,target.y-b.ty)<=b.r)
+        this.resolveHit(target,b.owner,b.skill,b.dmg,b.tx,b.ty);
+    }
+    this.shakeT=Math.max(this.shakeT||0,this.game?.isTouch?.045:.075);
+    window.MorrowwishAudio?.effect?.('combat_magic');
+  }
+
   // Detonate a lobbed AOE at its landing point: everyone inside R takes the hit.
   burstAt(p) {
     const b = p.burst; if (!b) return;
+    if(b.skill?.id==='meteor')window.CatBondSkillFX?.meteorImpact(this,b);
     const side = p.owner === 'wild' ? 'wild' : 'me';
     // Homing lob (meteor): if its target is still alive, detonate on the cat's LIVE position so a
     // moving enemy is still struck squarely rather than at the stale telegraph point.
@@ -2676,17 +3009,51 @@ class CaptureBattle {
       element: spec.element || sk?.element,      // what this field IS (fire/water/elec…)
       tag: spec.tag,                             // status it drips to units standing inside
       dps: spec.dps || 0,                        // optional small ground damage
-      t: spec.life || 5, max: spec.life || 5, _drip: 0, skill: sk || null,
+      t: spec.life || 5, max: spec.life || 5, _drip: 0, skill: sk || null,_traitCaster:sk?._traitCaster||null,
     });
   }
   // Tick fields: drip tags/damage to units inside; check for a reacting projectile
   // passing through to DETONATE (field element + reactor element → combo over all inside).
+
+  // Magnetic polarity: two fixed poles define the same narrow capsule for
+  // damage, pull and rendering. No invisible circular hit area.
+  castMagneticField(f,aim,sk,dmg,col,side){
+    const reach=sk.reach||220,half=66;
+    const cx=f.x+Math.cos(aim)*reach,cy=f.y+Math.sin(aim)*reach;
+    const edge=(x,y)=>({x:clamp(x,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side),y:clamp(y,this.topMargin,this.H-this.bottomMargin)});
+    const a=edge(cx-Math.sin(aim)*half,cy+Math.cos(aim)*half);
+    const b=edge(cx+Math.sin(aim)*half,cy-Math.cos(aim)*half);
+    if(Math.hypot(a.x-b.x,a.y-b.y)<24)return;
+    this.fields.push({kind:'magneticField',x:(a.x+b.x)/2,y:(a.y+b.y)/2,a,b,r:22,
+      side,col,element:'elec',t:4,max:4,_drip:0,skill:sk,
+      _traitCaster:side==='me'?f:null,damage:dmg});
+  }
+  tickMagneticField(fld,targets,dt){
+    const a=fld.a,b=fld.b,dx=b.x-a.x,dy=b.y-a.y,L2=dx*dx+dy*dy||1;
+    const live=targets.filter(u=>u.alive);
+    for(const u of live){
+      const t=Math.max(0,Math.min(1,((u.x-a.x)*dx+(u.y-a.y)*dy)/L2));
+      const px=a.x+dx*t,py=a.y+dy*t,dist=Math.hypot(u.x-px,u.y-py);
+      if(dist>fld.r+(u.r||18)*.5||(u.inv||0)>0||(u.dashT||0)>0||(u._leapT||0)>0)continue;
+      const d=Math.min(dist,38*dt);
+      if(dist>.1){u.x+=(px-u.x)/dist*d;u.y+=(py-u.y)/dist*d;}
+    }
+    while(fld._drip>=.5){
+      fld._drip-=.5;
+      for(const u of live){
+        if(!u.alive||this.pointToSeg(u.x,u.y,a.x,a.y,b.x,b.y)>fld.r+(u.r||18)*.5)continue;
+        this.resolveHit(u,fld.side,{...fld.skill,isChanneledTick:true,_poiseSource:fld,_traitCaster:fld._traitCaster},fld.damage*.5,u.x,u.y);
+      }
+    }
+  }
   tickFields(dt) {
     if (!this.fields.length) return;
     const REACT = { water: 'elec', elec: 'water', fire: 'grass', grass: 'fire', dark: 'light', light: 'dark' };
     for (const fld of this.fields) {
-      fld.t -= dt; fld._drip += dt;
+      const fieldDt=Math.max(0,Math.min(dt,fld.t));
+      fld.t -= dt; fld._drip += fld.kind==='magneticField'?fieldDt:dt;
       const targets = fld.side === 'me' ? this.liveEnemies() : this.team.filter(t => t.alive);
+      if(fld.kind==='magneticField'){this.tickMagneticField(fld,targets,fieldDt);continue;}
       // drip the field's status + tiny damage ~3x/sec to anyone standing inside
       if (fld._drip >= 0.33) {
         fld._drip = 0;
@@ -2825,8 +3192,9 @@ class CaptureBattle {
       f.x = clamp(f.x + Math.cos(aim) * step, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
       f.y = clamp(f.y + Math.sin(aim) * step, this.topMargin, this.H - this.bottomMargin);
       f._dashTravel = (f._dashTravel || 0) + Math.hypot(f.x - x0, f.y - y0);
+      if(side==='me'&&Math.hypot(f.x-x0,f.y-y0)>.1){this._travelFX ||= [];const prev=this._travelFX.at(-1);if(prev&&prev.actor===f&&this.t-prev.start<.035&&Math.hypot(prev.x2-x0,prev.y2-y0)<2){prev.x2=f.x;prev.y2=f.y;prev.start=this.t;}else this._travelFX.push({actor:f,x:x0,y:y0,x2:f.x,y2:f.y,start:this.t,element:f._pounceSkill?.element||f.element,aim});if(this._travelFX.length>90)this._travelFX.shift();}
       if (f._dashReach != null && f._dashTravel >= f._dashReach - .01) f.dashT = 0;
-      if (f._pounceSkill?.element === 'elec') this.vfx.trail(f.x, f.y, '#ffe6a1', 3);
+      if (f._pounceSkill?.element === 'elec'&&!window.CatBondSkillFX?.drawTravel) this.vfx.trail(f.x, f.y, '#ffe6a1', 3);
     }
     // contact on the nearest foe (resolves ONCE, then ends the pounce)
     if (f.pounce) {
@@ -2859,16 +3227,11 @@ class CaptureBattle {
     f.x = clamp(tx, BATTLE_MARGIN.side, this.W - BATTLE_MARGIN.side);
     f.y = clamp(ty, this.topMargin, this.H - this.bottomMargin);
     f._hop = 0;
-    this.vfx.shockwave(tx, ty, col);
-    this.vfx.ring(tx, ty, { r0: 8, vr: R * 7, life: 0.34, color: col, width: 6 });
-    this.vfx.burst(tx, ty, { count: this.game.isTouch ? 10 : 16, color: col, speed: 230, life: 0.42, r: 4, grav: 260 });
+    if(window.CatBondContactFX)this.vfx.impactType(tx,ty,'heavy',{skill:f._leapSkill,scale:1.08});
+    else{this.vfx.shockwave(tx,ty,col);this.vfx.ring(tx,ty,{r0:8,vr:R*7,life:.34,color:col,width:6});}
     this.shakeT = Math.max(this.shakeT, 0.2); this.hitstop = Math.max(this.hitstop, 0.05);
     for (const e of this.liveEnemies()) {
-      // Forgive the leap's airtime: an enemy that drifted during the ~0.44s hang
-      // is still caught if the shockwave touches its body (R + its radius), so a
-      // committed 泰山压顶/居高临下 lands on a moving target instead of whiffing
-      // on the spot it left (owner: leap 老打不中).
-      if (Math.hypot(e.x - tx, e.y - ty) > R + (e.r || 18)) continue;
+      if (Math.hypot(e.x - tx, e.y - ty) > R) continue;
       const result=this.resolveHit(e, 'me', f._leapSkill || { element: f.element }, f._leapDmg, e.x, e.y);
       // Only 泰山压顶 has the dedicated stagger trait. Other leap skills
       // apply armor break through resolveHit and cannot skip the poise rules.
@@ -2914,12 +3277,13 @@ class CaptureBattle {
   // Channeled BEAM (水枪 / flamethrower): a sustained line from the caster that
   // ticks continuous damage to everything along it for a short channel. The caster
   // is anchored (can't move) while channeling, so it's a commit. One beam per caster.
-  castBeam(f, aim, sk, dmgPerSec, col) {
-    if (this.beams.some(b => b.uid === f.cat.uid)) return;      // already channeling
+  castBeam(f, aim, sk, dmgPerSec, col, owner='me') {
+    const uid=owner==='me'?f.cat.uid:'wild:'+f.i;
+    if (this.beams.some(b => b.uid === uid)) return;      // already channeling
     const dur = sk?.channel || 1.1, len = sk?.reach || 300, width = sk?.width || 26;
     f._beamRoot = dur;                                          // anchors movement (see readInput/autoDrive)
     this.beams.push({
-      uid: f.cat.uid, owner: 'me', f, sk, col,
+      uid, owner, f, sk, col,
       aim,baseAim:aim,len,width,
       // Longer repeated flame swings must NOT multiply total damage.
       dps:Math.max(1,dmgPerSec)*Math.min(1,(sk?.damageChannel||dur)/dur),
@@ -2945,6 +3309,52 @@ class CaptureBattle {
       // growing charge ring at the caster
       const k = 1 - Math.max(0, c.t) / c.max;
       this.vfx.ring(f.x, f.y, { r0: 34 * (1 - k) + 6, vr: 0, life: 0.06, color: c.col, width: 3 });
+      // 陨石术 landing telegraph: during the 1.5s windup paint a RED target ring on the ground
+      // where the rock will drop, so both the player (and any enemy standing in it) can read the
+      // danger. Owner: "陨石施法时应该在预计的范围里先画个红圈". We re-pick the landing point every
+      // frame using the same locked/nearest-enemy rule as lobAoe, so a moving target is tracked.
+      if (c.sk && c.sk.id === 'meteor') {
+        let tx, ty;
+        // Owner 2026-11-26: meteor landing is LOCKED at cast time. Honor the snapshot
+        // taken in castOffensiveSkill before falling through to live cursor / enemy tracking.
+        const snapTgt = c.sk?._castTarget;
+        if (snapTgt && Number.isFinite(snapTgt.x) && Number.isFinite(snapTgt.y)) {
+          tx = snapTgt.x; ty = snapTgt.y;
+        } else if (f === this.me() && !this.game.isTouch && !this.autoMode) {
+          // Owner 2026-11-26: during the 1.5s windup the telegraph must stay locked at
+          // the cursor position AT CAST TIME, not drift with live mouse movement.
+          // castOffensiveSkill snapshots sk._castMouse — honor it here. In auto-mode the
+          // player isn't aiming; fall through to the enemy-targeting branch below so the
+          // red ring lands on the actual target, not the idle cursor.
+          const snap = c.sk?._castMouse;
+          if (snap && Number.isFinite(snap.x) && Number.isFinite(snap.y)) { tx = snap.x; ty = snap.y; }
+          else { const m = this.game.mouse || {}; tx = m.x; ty = m.y; }
+        } else {
+          const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y);
+          if (tgt) { tx = tgt.x; ty = tgt.y; }
+          else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; }
+        }
+        // Owner 2026-11-26: with _castTarget set, DO NOT re-track live enemy — the
+        // landing is committed at cast time for ALL casters, so telegraph + impact
+        // share the same frozen point (otherwise ally casts drift and re-aim).
+        if (!snapTgt) {
+          const owner = f.owner === 'wild' ? 'wild' : 'me';
+          const tgt = owner === 'me' && f !== this.me() ? (this.lockedEnemy() || this.nearestEnemy(f.x, f.y)) : null;
+          if (tgt) { tx = tgt.x; ty = tgt.y; }
+        }
+        const R = 86;                                        // match the lobAoe burst radius
+        const pulse = 0.5 + 0.5 * Math.sin(this.t * 10);
+        // Pulsing red reticle that intensifies as impact approaches. Short-lived per frame so
+        // it tracks the moving target each tick instead of leaving a stale ring behind.
+        this.vfx.ring(tx, ty, { r0: R, vr: 0, life: 0.08, color: '#ff3a2c', width: 3 + 2 * pulse + 3 * k });
+        this.vfx.ring(tx, ty, { r0: R * (0.4 + 0.55 * k), vr: 0, life: 0.08, color: '#ffb46b', width: 2 });
+        // crosshair tick marks on the N/E/S/W of the ring for a 'targeting' feel
+        for (let a = 0; a < 4; a++) {
+          const ang2 = a * Math.PI / 2;
+          const x0 = tx + Math.cos(ang2) * R, y0 = ty + Math.sin(ang2) * R;
+          this.vfx.ring(x0, y0, { r0: 3, vr: 0, life: 0.08, color: '#ff6a3c', width: 2 });
+        }
+      }
       if (c.t <= 0) { f._castRoot = 0; this.castOffensiveSkill(f, aim, c.sk, c.pow, c.col, true); }
     }
     // Drop finished/aborted casts AND always clear the caster's root flag as they leave,
@@ -2966,6 +3376,7 @@ class CaptureBattle {
   tickBeams(dt) {
     if (!this.beams.length) return;
     for (const b of this.beams) {
+      const beamDt=Math.max(0,Math.min(dt,b.t));
       b.t -= dt;
       const f = b.f;
       if (!f || !f.alive) { b.t = 0; continue; }
@@ -2976,6 +3387,8 @@ class CaptureBattle {
         const passes=Math.max(1,Math.round(b.sk.sweepPasses||2));
         // 3 half-cycles: left → right → left → right.
         b.aim=b.baseAim-Math.cos(progress*Math.PI*passes)*b.sk.sweep;
+      }else if(b.owner==='wild'){
+        // Enemy channels use a fixed, dodgeable release direction.
       }else if(f===this.me()){
         // PLAYER beam: mouse aims, but a gentle SOFT-LOCK nudges the stream toward the nearest
         // enemy so a stationary channel (you can't move while spraying) doesn't trivially slip
@@ -3014,34 +3427,43 @@ class CaptureBattle {
       const ox = f.x + Math.cos(b.aim) * 22, oy = f.y + Math.sin(b.aim) * 22;
       const ex = ox + Math.cos(b.aim) * b.len, ey = oy + Math.sin(b.aim) * b.len;
       b._ox = ox; b._oy = oy; b._ex = ex; b._ey = ey;
-      b.tickAcc += dt;
+      b.tickAcc += beamDt;
       const STEP = 1 / 8;                                        // 8 damage ticks/sec
       while (b.tickAcc >= STEP) {
         b.tickAcc -= STEP;
         const hitDmg = b.dps * STEP;
         const list = b.owner === 'me' ? this.liveEnemies() : this.team.filter(t => t.alive);
-        for (const e of list) {
-          if (this.pointToSeg(e.x, e.y, ox, oy, ex, ey) <= b.width + (e.r || 18) * 0.5) {
-            // A sustained stream makes small damage ticks, not four huge
-            // hit-stops/shakes per second. Contact feedback remains localized.
-            const flame=b.sk?.id==='flameSweep',passes=Math.max(1,Math.round(b.sk?.sweepPasses||1));
-            const elapsed=Math.max(0,Math.min(b.max,b.max-b.t));
-            const pass=Math.min(passes-1,Math.floor(elapsed/b.max*passes));
-            if(flame){
-              b._flameHits??=new WeakMap();
-              if(b._flameHits.get(e)===pass)continue;
-            }
-            // Total three-pass power stays near the OLD fire channel budget.
-            // Other sustained beams retain their damage-over-time tick rate.
-            const damage=flame?b.dps*b.max/passes:hitDmg;
-            const contact=this.resolveHit(e,b.owner,
-              {...(b.sk||{element:b.element}),isChanneledTick:true,
-                _poiseSource:b,_poisePass:flame?pass:undefined},
-              damage,e.x,e.y);
-            if(contact?.dealt>0){
-              if(flame)b._flameHits.set(e,pass);
-              this.beamHitFeedback(b,e);
-            }
+        // Water lance and sweeping fire penetrate; other beams stop at first contact.
+        const flame = b.sk?.id === 'flameSweep', pierce=['waterJet','shadowTendrils'].includes(b.sk?.id);
+        let candidates = list.filter(e =>
+          this.pointToSeg(e.x, e.y, ox, oy, ex, ey) <= b.width + (e.r || 18) * 0.5);
+        if(pierce){const ux=Math.cos(b.aim),uy=Math.sin(b.aim);candidates=candidates.filter(e=>{const p=(e.x-ox)*ux+(e.y-oy)*uy;return p>=0&&p<=b.len;});}
+        if (!flame && !pierce && candidates.length > 1) {
+          // Keep ONLY the first enemy along the beam axis (nearest projection to caster).
+          const vx = ex - ox, vy = ey - oy, L = Math.hypot(vx, vy) || 1;
+          const ux = vx / L, uy = vy / L;
+          candidates.sort((a, c) =>
+            ((a.x - ox) * ux + (a.y - oy) * uy) - ((c.x - ox) * ux + (c.y - oy) * uy));
+          candidates = [candidates[0]];
+        }
+        for (const e of candidates) {
+          // A sustained stream makes small damage ticks, not four huge
+          // hit-stops/shakes per second. Contact feedback remains localized.
+          const passes = Math.max(1, Math.round(b.sk?.sweepPasses || 1));
+          const elapsed = Math.max(0, Math.min(b.max, b.max - b.t));
+          const pass = Math.min(passes - 1, Math.floor(elapsed / b.max * passes));
+          if (flame) {
+            b._flameHits ??= new WeakMap();
+            if (b._flameHits.get(e) === pass) continue;
+          }
+          const damage = flame ? b.dps * b.max / passes : hitDmg;
+          const contact = this.resolveHit(e, b.owner,
+            { ...(b.sk || { element: b.element }), isChanneledTick: true,
+              _poiseSource: b, _poisePass: flame ? pass : undefined },
+            damage, e.x, e.y);
+          if (contact?.dealt > 0) {
+            if (flame) b._flameHits.set(e, pass);
+            this.beamHitFeedback(b, e);
           }
         }
         // sparks along the beam so it reads as a continuous stream
@@ -3071,11 +3493,17 @@ class CaptureBattle {
     // Draw-only micro recoil: the target never leaves the beam's collision area.
     target._recoilX=(target._recoilX||0)+Math.cos(b.aim)*(first?3:1.4);
     target._recoilY=(target._recoilY||0)+Math.sin(b.aim)*(first?3:1.4);
-    this.vfx.impactType?.(target.x,target.y,'light',{color,angle:b.aim});
-    this.vfx.ring(target.x,target.y,{r0:first?9:5,
+    if(b.sk?.id==='shadowTendrils'){
+      this.skillStrokes.push({kind:'shadowBindHit',skillId:'shadowTendrils',x:target.x,y:target.y,radius:target.r||18,angle:b.aim,life:.30,max:.30});
+    }else if(b.sk?.id==='waterJet'){
+      this.skillStrokes.push({kind:'waterPierce',skillId:'waterJet',x:target.x,y:target.y,radius:target.r||18,angle:b.aim,life:.23,max:.23});
+    }else{
+    this.vfx.impactType?.(target.x,target.y,'light',{color,angle:b.aim,skill:b.sk});
+    if(!window.CatBondContactFX)this.vfx.ring(target.x,target.y,{r0:first?9:5,
       vr:first?105:74,life:first?.26:.19,color,width:first?2.8:1.8});
-    if(first)this.vfx.burst(target.x,target.y,
+    if(first&&!window.CatBondContactFX)this.vfx.burst(target.x,target.y,
       {count:this.game?.isTouch?4:6,color:'#fff5dc',speed:80,life:.2,r:2});
+    }
     // Gate camera and sound across all simultaneous beam targets.
     if(elapsed-(b._lastPulseAt??-99)>.33){
       b._lastPulseAt=elapsed;
@@ -3239,6 +3667,10 @@ class CaptureBattle {
     return 1;
   }
   moveMul(f){
+    // 月华连弧 CHARGE-LOCK (owner 2026-11-26: "发动时猫不能动"). Hard zero while
+    // crescentFan is still charging — caster commits visibly to the 2.5s wind-up.
+    if (f._moonChargeLock && (f._moonChargeLockUntil||0) > (this._skillClock??this.t)) return 0;
+    if (f._moonChargeLock) { f._moonChargeLock = false; }
     let m = f.slowed ? 0.55 : 1;
     // 淋湿 (soak): water's signature debuff is a MILD slow (×0.8) — lighter than hard soft-CC
     // (chill/bind 0.55) since soak is applied broadly and also primes elemental reactions.
@@ -3249,7 +3681,9 @@ class CaptureBattle {
     if ((f.hasteT || 0) > 0) m *= 1.25;  // 静电舔毛 haste: brief move speed-up (elec heal tweak)
     return m;
   }
-  canUltimate(){ return this.ult>=100 && this.ultCd<=0 && !this.ultCinematic; }
+  canUltimate(){ return this.ult>=100 && this.ultCd<=0 && !this.ultCinematic && !this._solarUlt; }
+  solarGeometry(f,aim){return {x:f.x,y:f.y,aim,reach:Math.hypot(this.W,this.H)*.64,width:36};}
+  solarHits(e,g){const dx=e.x-g.x,dy=e.y-g.y,along=dx*Math.cos(g.aim)+dy*Math.sin(g.aim),cross=Math.abs(-dx*Math.sin(g.aim)+dy*Math.cos(g.aim));return along>=0&&along<=g.reach&&cross<=g.width+(e.r||18)*.5;}
   // Would the ult actually HIT something if cast now? Mirrors each archetype's real
   // geometry (fire = forward cone so the target must be roughly ahead; everything
   // else = a radius around the caster). Used to gate AUTO-cast so the AI doesn't
@@ -3265,6 +3699,7 @@ class CaptureBattle {
       return mx>0 && hp/mx < 0.72;
     }
     const live=this.liveEnemies(); if(!live.length) return false;
+    if(skill?.id==='sunbloom'){const g=this.solarGeometry(f,(f===this.me())?this.aim:(f._aim||0));return live.some(e=>this.solarHits(e,g));}
     if(el==='fire'&&skill.id!=='purrNova'){
       const aim=(f===this.me())?this.aim:(f._aim||0), half=0.6, reach=diag*0.5;
       return live.some(e=>{
@@ -3277,7 +3712,7 @@ class CaptureBattle {
     return live.some(e=>Math.hypot(e.x-f.x,e.y-f.y)<=R);
   }
   ultimate(){
-    if(this.ultCd>0||this.ultCinematic){
+    if(this.ultCd>0||this.ultCinematic||this._solarUlt){
       if(!this.autoMode&&this.ultCd>0&&this.t-(this._ultWarnAt??-999)>2.5){
         const en=window.MorrowwishI18n?.get?.()!=='zh';
         this.game.toast(en?'Ultimate cooldown: '+Math.ceil(this.ultCd)+'s':'必杀冷却中：'+Math.ceil(this.ultCd)+'秒');
@@ -3313,6 +3748,11 @@ class CaptureBattle {
     this._ultCastTargets=(locked?[locked,...ordered.filter(e=>e!==locked)]:ordered)
       .slice(0,7).map(e=>({x:e.x,y:e.y}));
     this.addShake?.(.55,this.aim);
+    if(skill?.id==='sunbloom'){
+      // Real commitment: charge locally, keep original direction, resolve only at release.
+      this._solarUlt={f,skill:{...skill,_solarAim:this.aim},t:.85,max:.85};f._castRoot=.85;
+      return true;
+    }
     this._pendingUlt = { f, skill };
     this.fireUltimatePayload();                    // detonate immediately, in place
     return true;
@@ -3380,6 +3820,9 @@ class CaptureBattle {
       for (const e of this.liveEnemies().slice()) { this.vfx.beam(f.x, f.y, e.x, e.y, color); strike(e, 1.1); }
       this.vfx.ring(f.x, f.y, { r0: 14, vr: diag * 1.4, life: 0.4, color, width: 6 });
       this.shakeT = Math.max(this.shakeT, 0.5);
+    } else if (skill.id==='sunbloom') {
+      const g=this.solarGeometry(f,skill._solarAim??aim);
+      for(const e of this.liveEnemies().slice())if(this.solarHits(e,g))strike(e,1.15);
     } else if (el === 'grass') {
       // 万木丛生: a huge lingering OVERGROWTH field — hits now + leaves a bind zone.
       const R = diag * 0.4;
@@ -3448,12 +3891,13 @@ class CaptureBattle {
       const dmg=f.dmg*skill.power*.42;                    // shared per-target base
       const {total,kos,hits}=this.ultArchetype(f,skill,color,dmg);
       this._ultConsequence(f,skill,color,total,kos,hits);
-      const duration=skill.id==='sunbloom'?1.9:skill.id==='voidMaw'?1.65:
+      const duration=skill.id==='sunbloom'?1.1:skill.id==='voidMaw'?1.65:
         skill.id==='tsunamiPaw'?1.5:1.36;
       this.skillStrokes.push({kind:'ultimate',skillId:skill.id,
         x:f.x,y:f.y,element:skill.element,color,
-        angle:f===this.me()?this.aim:(f._aim||0),targets:this._ultCastTargets||[],
-        life:duration,max:duration});
+        angle:skill._solarAim??(f===this.me()?this.aim:(f._aim||0)),targets:this._ultCastTargets||[],
+        reach:skill.id==='sunbloom'?this.solarGeometry(f,skill._solarAim??0).reach:undefined,
+        width:skill.id==='sunbloom'?36:undefined,life:duration,max:duration});
       this.vfx.text(f.x,f.y-48,this.elemSymbol(skill.element),color,11);
       this.game.toast(this.elemSymbol(skill.element)+' '+(window.MorrowwishI18n?.get?.()==='zh'?'必杀 · ':'Ultimate · ')+(window.CatBondI18n?.translate?.(skill.name)||skill.name)+(window.MorrowwishI18n?.get?.()==='zh'?'！':'!'));
       this.lastUltimate={skill:skill.id,element:skill.element,hits};
@@ -3906,7 +4350,63 @@ class CaptureBattle {
   // the player can see where a reaction can be set up and detonated.
   drawFields(ctx){
     for(const fld of this.fields){
+      if(fld.kind==='magneticField'&&window.CatBondMagneticFX){window.CatBondMagneticFX.draw(ctx,fld.a,fld.b,this.t,Math.min(1,fld.t/.25,(fld.max-fld.t)/.2),fld.r);continue;}
+      if(window.CatBondSkillFX?.drawMaterialField(ctx,fld,this.t))continue;
       const k=Math.max(0,fld.t/fld.max), pulse=0.5+0.5*Math.sin(this.t*4);
+      // FIRE fields (陨石灼烧 / etc.) get a proper burning-ground look: a dark scorch base,
+      // flickering ember halo, and rising additive embers — not the generic dashed ellipse.
+      // Non-fire fields keep the readable dashed ellipse so soak/bind/blind stay distinct.
+      if (fld.element === 'fire') {
+        ctx.save();
+        // 1) dark scorch base — a charred patch under the flame; fades with k but stays visible
+        ctx.globalAlpha = 0.42 * k;
+        ctx.fillStyle = '#2a140a';
+        ctx.beginPath(); ctx.ellipse(fld.x, fld.y+8, fld.r*0.98, fld.r*0.48, 0, 0, Math.PI*2); ctx.fill();
+        // 2) warm orange glow — additive so it pops against the scorch
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = (0.30 + 0.10*pulse) * k;
+        const g = ctx.createRadialGradient(fld.x, fld.y+6, fld.r*0.15, fld.x, fld.y+6, fld.r);
+        g.addColorStop(0, '#ffdc78');
+        g.addColorStop(0.45, '#ff7a2a');
+        g.addColorStop(1, 'rgba(120,32,10,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.ellipse(fld.x, fld.y+6, fld.r, fld.r*0.5, 0, 0, Math.PI*2); ctx.fill();
+        // 3) flickering tongues around the rim — short vertical flame slivers
+        const n = Math.max(10, Math.round(fld.r/9));
+        for (let i = 0; i < n; i++) {
+          const a = (i / n) * Math.PI * 2 + this.t * 0.4;
+          const rx = fld.x + Math.cos(a) * fld.r * (0.84 + 0.1*Math.sin(this.t*7 + i));
+          const ry = fld.y + 6 + Math.sin(a) * fld.r * 0.5 * (0.84 + 0.1*Math.cos(this.t*8 + i));
+          const flick = 6 + 10 * (0.5 + 0.5 * Math.sin(this.t*12 + i*1.7));
+          ctx.globalAlpha = (0.55 + 0.4*pulse) * k;
+          const g2 = ctx.createLinearGradient(rx, ry, rx, ry - flick);
+          g2.addColorStop(0, '#ff9a2a');
+          g2.addColorStop(0.5, '#ffd766');
+          g2.addColorStop(1, 'rgba(255,255,220,0)');
+          ctx.fillStyle = g2;
+          ctx.beginPath();
+          ctx.moveTo(rx - 2.4, ry);
+          ctx.quadraticCurveTo(rx, ry - flick*0.5, rx, ry - flick);
+          ctx.quadraticCurveTo(rx, ry - flick*0.5, rx + 2.4, ry);
+          ctx.closePath();
+          ctx.fill();
+        }
+        // 4) rising ember sparks — tiny bright dots drifting up (time-seeded, deterministic)
+        const m = Math.max(5, Math.round(fld.r/14));
+        for (let i = 0; i < m; i++) {
+          const seed = i * 1.31 + fld.x * 0.0017 + fld.y * 0.0023;
+          const life = ((this.t * 0.7 + seed) % 1);                      // 0..1 per ember
+          const ax = (Math.sin(seed * 13.7) + Math.cos(seed * 7.3)) * fld.r * 0.55;
+          const ex = fld.x + ax;
+          const ey = fld.y + 6 - life * 36;
+          const er = 1.2 + 1.4 * Math.abs(Math.sin(seed * 5.1));
+          ctx.globalAlpha = (1 - life) * 0.9 * k;
+          ctx.fillStyle = life < 0.45 ? '#ffd27a' : '#ff6a2a';
+          ctx.beginPath(); ctx.arc(ex, ey, er, 0, Math.PI*2); ctx.fill();
+        }
+        ctx.restore();
+        continue;
+      }
       ctx.save();
       ctx.globalAlpha=0.16*k+0.06*pulse*k;
       ctx.fillStyle=fld.col;
@@ -3923,6 +4423,7 @@ class CaptureBattle {
   // full reach past it. Damage/tick geometry is untouched (still uses b._ex/_ey) — this only
   // shortens how far the stream is painted. Returns {ex,ey} (full reach if nothing is hit).
   beamVisualEnd(b){
+    if(['waterJet','shadowTendrils','flameSweep'].includes(b.sk?.id))return {ex:b._ex,ey:b._ey};
     const ox=b._ox, oy=b._oy, fx=b._ex, fy=b._ey;
     const dx=fx-ox, dy=fy-oy, full=Math.hypot(dx,dy)||1, ux=dx/full, uy=dy/full;
     const list = b.owner==='me' ? this.liveEnemies() : this.team.filter(t=>t.alive);
@@ -3941,51 +4442,37 @@ class CaptureBattle {
       if(b._ox==null)continue;
       // paint only up to the first enemy the stream hits (visual; damage uses b._ex/_ey)
       const _vend=this.beamVisualEnd(b), _ex0=b._ex, _ey0=b._ey;
+      // Water lance and sweeping fire use full reach; other beams stop at contact. No damage mutation.
+      if(window.CatBondSkillFX?.drawCombatBeam(ctx,b,this.t,
+        ['flameSweep','waterJet','shadowTendrils'].includes(b.sk?.id)?_ex0:_vend.ex,['flameSweep','waterJet','shadowTendrils'].includes(b.sk?.id)?_ey0:_vend.ey))continue;
       b._ex=_vend.ex; b._ey=_vend.ey;
       const k=Math.max(0,b.t/b.max);
       if(b.sk?.id==='thunderStream'){
-        // 雷流喷射 = a THICK lightning BOLT that locks the target (like 水枪). It must READ as lightning,
-        // not a smooth laser rod: build ONE jagged zigzag spine (random per-segment lateral kinks that
-        // re-roll each frame), stroke it at descending widths (wide glow → core → white-hot) so the WHOLE
-        // column is jagged, then peel a few branching forks off it. b.width (34) sets the trunk thickness.
-        const W0=b.width||34;
-        const dx=b._ex-b._ox,dy=b._ey-b._oy,L=Math.hypot(dx,dy)||1;
-        const ux=dx/L,uy=dy/L,px=-uy,py=ux;                       // along + perpendicular unit vectors
-        // Big zigzag: the kink amplitude must EXCEED the stroke widths or a fat glow stroke paints
-        // over the jaggedness and it reads as a smooth rod (the "不像闪电束" bug). Amplitude ≈ ±1.4×W0
-        // (wide, sharp zigzag), SEG shorter so each leg is a crisp diagonal, strokes kept THIN relative
-        // to the amplitude so the bolt shape stays visible.
-        const SEG=Math.max(7,Math.round(L/34));
-        const amp=W0*1.4;
-        const seed=Math.floor(this.t*30);                        // re-roll the kinks ~30×/s for live crackle
-        const rand=(j)=>{const s=Math.sin((j*127.1+seed*8.17))*43758.5;return (s-Math.floor(s))*2-1;};
-        const pts=[];
-        for(let j=0;j<=SEG;j++){
-          const u=j/SEG;
-          const taper=Math.sin(u*Math.PI);                       // root at caster, stab the target
-          const off=(j===0||j===SEG)?0:rand(j)*amp*taper;
-          pts.push([b._ox+dx*u+px*off, b._oy+dy*u+py*off]);
-        }
-        const spine=()=>{ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let j=1;j<pts.length;j++)ctx.lineTo(pts[j][0],pts[j][1]);ctx.stroke();};
-        ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.globalCompositeOperation='lighter';
-        // outer haze is a soft WIDE stroke on the SAME jagged path (a diffuse aura, not a filled rod),
-        // then progressively thinner bright cores so the sharp zigzag silhouette dominates.
-        for(const [w,color,a] of [[W0*0.7,'#4a59b8',.18],[W0*0.3,'#8fb0ff',.5],[6,'#cfe2ff',.8],[2.5,'#ffffff',.98]]){
-          ctx.lineWidth=w;ctx.strokeStyle=color;ctx.globalAlpha=a*k;spine();
-        }
-        // branching forks that peel off the trunk and fade — the signature lightning tell
-        ctx.lineWidth=Math.max(1.2,W0*0.12);ctx.strokeStyle='#dcebff';ctx.globalAlpha=.7*k;
-        for(let j=2;j<pts.length-1;j+=3){
-          const sign=rand(j*5)>0?1:-1, blen=W0*(0.6+0.5*Math.abs(rand(j*3)));
-          const bx=pts[j][0],by=pts[j][1];
-          ctx.beginPath();ctx.moveTo(bx,by);
-          ctx.lineTo(bx+px*sign*blen*0.6+ux*blen*0.3, by+py*sign*blen*0.6+uy*blen*0.3);
-          ctx.lineTo(bx+px*sign*blen+ux*blen*0.7, by+py*sign*blen+uy*blen*0.7);
+        ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+        for(const [w,color,a] of [[12,'#4756ae',.37],[5,'#aecbff',.86],[2,'#fff1b4',.97]]){
+          ctx.lineWidth=w;ctx.strokeStyle=color;ctx.globalAlpha=a*k;ctx.beginPath();
+          ctx.moveTo(b._ox,b._oy);
+          const nx=b._ey-b._oy,ny=-(b._ex-b._ox),len=Math.hypot(nx,ny)||1;
+          for(let j=1;j<=13;j++){
+            const u=j/13,off=(Math.sin(j*31.7+Math.floor(this.t*24)*7.1))*9*(1-u*.4);
+            ctx.lineTo(b._ox+(b._ex-b._ox)*u+nx/len*off,
+              b._oy+(b._ey-b._oy)*u+ny/len*off);
+          }
           ctx.stroke();
         }
-        // muzzle flare at the caster
-        ctx.fillStyle='#eaf4ff';ctx.globalAlpha=.8*k;
-        ctx.beginPath();ctx.arc(b._ox,b._oy,W0*0.5,0,Math.PI*2);ctx.fill();
+        // Small forks peel away from the main electrical trunk; they remain
+        // subordinate to the actual attack line and never cover the screen.
+        const vx=b._ex-b._ox,vy=b._ey-b._oy,mag=Math.hypot(vx,vy)||1;
+        const px=-vy/mag,py=vx/mag;
+        ctx.strokeStyle='#fff4c2';ctx.lineWidth=1.5;ctx.globalAlpha=.66*k;
+        for(let j=2;j<=9;j+=3){
+          const u=j/12,sign=j%2?1:-1,
+            tx=b._ox+vx*u,ty=b._oy+vy*u;
+          ctx.beginPath();ctx.moveTo(tx,ty);
+          ctx.lineTo(tx+px*sign*12+vx/mag*5,ty+py*sign*12+vy/mag*5);
+          ctx.lineTo(tx+px*sign*21+vx/mag*10,ty+py*sign*21+vy/mag*10);
+          ctx.stroke();
+        }
         b._ex=_ex0; b._ey=_ey0;                      // restore full-reach for damage tick
         ctx.restore();continue;
       }
@@ -4127,10 +4614,15 @@ class CaptureBattle {
 
   drawSkillStrokes(ctx){
     for(const v of this.skillStrokes){
+      if(window.CatBondSkillFX?.drawInstantLine(ctx,v,this.t))continue;
       const k=Math.max(0,v.life/v.max),p=1-k;
       ctx.save();ctx.globalAlpha=Math.min(1,k*.95);
       ctx.lineCap='round';ctx.lineJoin='round';
-      if(v.kind==='signatureCast'||v.kind==='signatureHit'){
+      if(v.kind==='moonImpact'){
+        window.CatBondMoonFX?.drawImpact(ctx,v,this.t);
+      }else if(v.kind==='moonHover'){
+        if((this._skillClock??this.t)>=(v.spawnT??0))window.CatBondMoonFX?.drawHover?.(ctx,v,this._skillClock??this.t);
+      }else if(v.kind==='signatureCast'||v.kind==='signatureHit'){
         window.CatBondSkillFX?.draw(ctx,v,this.t);
       }else if(v.kind==='regularAccent'){
         this.drawRegularSkillAccent(ctx,v,k,p);
@@ -4334,14 +4826,19 @@ class CaptureBattle {
     }
     // Capture beat: freeze the sim (realDt timer) so the warm "收服" moment reads.
     if (this.captureSeq) { this.tickCaptureSeq(realDt); dt = 0; }
+    // Spell clocks pause during the complete original-painted duo and capture cut-ins.
+    if(dt>0){this._skillClock=(this._skillClock??0)+dt;this.updatePulseQueue();
+    if(this._solarUlt){const q=this._solarUlt;q.t-=dt;if(!q.f.alive||q.t<=0){q.f._castRoot=0;this._solarUlt=null;if(q.f.alive){this._pendingUlt={f:q.f,skill:q.skill};this.fireUltimatePayload();}}else q.f._castRoot=q.t;}
+    }
     this.tickDuoField(dt);
     this.tickDeathRay(dt);
     if(this.duoRun){
       this.duoRun.age+=dt;
       if(this.duoRun.age>=this.duoRun.duration)this.duoRun=null;
     }
-    for(const v of this.skillStrokes)v.life-=dt;
+    for(const v of this.skillStrokes)if(v.kind!=='moonHover'||(this._skillClock??this.t)>=(v.spawnT??0))v.life-=dt;
     this.skillStrokes=this.skillStrokes.filter(v=>v.life>0);
+    if(this._travelFX)this._travelFX=this._travelFX.filter(v=>this.t-v.start<.32);
     if(this.duo){
       this.duoCd=Math.max(0,this.duoCd-dt);
       if([this.duo.a.uid,this.duo.b.uid].every(uid=>this.team.some(f=>f.alive&&f.cat.uid===uid)))
@@ -4394,7 +4891,7 @@ class CaptureBattle {
       if (f._castSlow > 0) f._castSlow=Math.max(0,f._castSlow-dt);   // 后遗症 recovery
       // SAFETY: a root flag with no live cast/beam backing it would freeze the cat
       // forever (the "卡在原地没动" auto-battle bug). Self-heal any orphaned root.
-      if (f._castRoot > 0 && !(this.pendingCasts||[]).some(c=>c.f===f)) f._castRoot = 0;
+      if (f._castRoot > 0 && this._solarUlt?.f!==f && !(this.pendingCasts||[]).some(c=>c.f===f)) f._castRoot = 0;
       if (f._beamRoot > 0 && !(this.beams||[]).some(b=>b.f===f)) f._beamRoot = 0;
       this.tickWards(f, dt);
       this.storyPassiveEvent(f,'guard');
@@ -4567,7 +5064,7 @@ class CaptureBattle {
       // cd), routed through resolveHit so dodge i-frames and shields fully negate.
       // Makes melee range genuinely dangerous — you can't just stand in the pack.
       if (e.swipeCd > 0) e.swipeCd -= dt;
-      if (!coachHold && e.swipeCd <= 0) {
+      if (!coachHold && !(e._beamRoot>0) && e.swipeCd <= 0) {
         for (const tf of this.team) {
           if (!tf.alive || tf.inv > 0) continue;
           if (Math.hypot(tf.x - e.x, tf.y - e.y) < (e.r || 20) + (tf.r || 20) + 8) {
@@ -4597,6 +5094,7 @@ class CaptureBattle {
     }
 
     // ---- 对波: opposing projectiles clash mid-field (signature 羁绊之旅 feel) ----
+    this.tickUmbralLobs(dt);
     this.tickProjectileClash(dt);
     // ---- projectiles ----
     for (const p of this.projectiles) {
@@ -4617,6 +5115,15 @@ class CaptureBattle {
           p.ang += turn; p.vx = Math.cos(p.ang) * p.spd; p.vy = Math.sin(p.ang) * p.spd;
         }
       }
+      // CONTINUOUS ACCEL (crescentFan): speed ramps up every frame with distance/time
+      // travelled, no cap. Flight direction is locked at release (p._accelAng). Range
+      // is effectively unlimited — the projectile only expires via life timeout or
+      // off-screen cull further down.
+      if(p._accel && p._accelAng != null){
+        p.spd = (p.spd || 0) + p._accel * dt;
+        p.vx = Math.cos(p._accelAng) * p.spd;
+        p.vy = Math.sin(p._accelAng) * p.spd;
+      }
       const previousX=p.x,previousY=p.y;
       p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
       // GROW: radius swells over flight for a widening hitbox / bigger area coverage.
@@ -4630,14 +5137,11 @@ class CaptureBattle {
         const maxPts = 9;
         if (p._hist.length > maxPts * 2) p._hist.splice(0, p._hist.length - maxPts * 2);
       }
-      // METEOR: a falling-rock skill still gets a heavy fiery comet trail each frame
-      // even though it's a burst projectile (which otherwise skips the ribbon above).
-      if (p._meteor) { this.vfx.trail(p.x, p.y, p.color, 13); this.vfx.trail(p.x, p.y, '#ffdb84', 7); }
       // A lobbed AOE flies OVER enemies to its landing point, then bursts (it does
       // not collide on contact). Show its target ring; detonate on arrival/expiry.
       if (p.burst) {
         this.vfx.ring(p.burst.tx, p.burst.ty, { r0: p.burst.r, vr: 0, life: 0.08, color: p.burst.col, width: 2 });
-        if (p.life <= 0 || Math.hypot(p.x - p.burst.tx, p.y - p.burst.ty) < 16) { this.burstAt(p); p.life = 0; }
+        if (p.life <= 0 || (p.burst.skill?.id!=='meteor' && Math.hypot(p.x - p.burst.tx, p.y - p.burst.ty) < 16)) { this.burstAt(p); p.life = 0; }
         continue;
       }
       // Intercept at the physical wall plane BEFORE the projectile reaches a
@@ -4653,6 +5157,7 @@ class CaptureBattle {
             }
             const r = this.resolveHit(e, 'me', p.skill || { element: p.element }, p.dmg, p.x, p.y, p);
             if (r.reflected) break;            // bounced back — projectile lives, now enemy-owned
+            if(p.kind==='crescent'&&r.dealt>0)this.skillStrokes.push({kind:'moonImpact',x:e.x,y:e.y,angle:Math.atan2(p.vy,p.vx),radius:32,life:.38,max:.38});
             if(p.kind==='lightningOrb'&&r.dealt>0){
               this.vfx.impact(p.x,p.y,'#ffe1a1');
               this.vfx.burst(p.x,p.y,{count:15,color:'#b6d5ff',
@@ -4662,15 +5167,9 @@ class CaptureBattle {
               // orbit once then re-strike it. Guard p._split so a split-orb doesn't split again.
               if(!p._split)this.splitLightningOrb(p,e);
             }
-            // fireball keeps its owner-authored area splash (routed through resolveHit)
+            // Direct, single-target fireball. The compact contact burst is not an AOE.
             if (p.kind === 'fireball' && r.dealt > 0) {
-              this.vfx.shockwave(p.x, p.y, '#ffc16e');
-              this.vfx.burst(p.x, p.y, { count: 32, color: '#ffbf71', speed: 240, life: .55, r: 5 });
-              this.skillStrokes.push({ kind: 'fireBurst', x: p.x, y: p.y, color: '#ffbd76', life: .45, max: .45 });
-              for (const other of this.liveEnemies().slice()) {
-                if (other === e || Math.hypot(other.x - p.x, other.y - p.y) > 105) continue;
-                this.resolveHit(other, 'me', p.skill || { element: p.element }, p.dmg * .36, other.x, other.y);
-              }
+              this.vfx.burst(p.x,p.y,{count:12,color:'#ffd18b',speed:120,life:.25,r:2.5});
             }
             p.life = 0;                         // landed or blocked: consume it
             break;
@@ -4903,6 +5402,7 @@ class CaptureBattle {
     e.face = dx < 0 ? -1 : 1;
     if (e.inv > 0) e.inv -= dt;
     if (e.dodgeCd > 0) e.dodgeCd -= dt;
+    if(e._beamRoot>0){e.pose='idle';return;} // fixed-aim wild channel: no movement or overlapping AI casts
     e.aggro = 1 - e.hp / e.maxhp;
     const hpFrac=e.hp/e.maxhp;
     // Elites visibly change behavior at half HP; SSR have a second last stand.
@@ -5378,6 +5878,8 @@ class CaptureBattle {
     const dmg = e.dmg * (sk.power || 1) * (e.status && e.status.weaken ? 0.5 : 1);
     const k = sk.kind;
     this.vfx.muzzle(e.x, e.y, aim, col);
+    if(sk.id==='arcanePulse'){this.castUmbralBarrage(e,aim,sk,dmg,col,'wild',me);return;}
+    if(sk.id==='magneticField'){this.castMagneticField(e,aim,sk,dmg,col,'wild');return;}
     if (k === 'aoe') { this.enemyLobAoe(e, me, col); e.inv = Math.max(e.inv || 0, 0.12); return; }
     if (k === 'dash' || k === 'leap' || k === 'pounce') {
       // GAP-CLOSER: set up a POUNCE that the SHARED advanceLunge animates over frames (same code the
@@ -5406,11 +5908,41 @@ class CaptureBattle {
       e.inv = Math.max(e.inv || 0, 0.12);
       return;
     }
-    // beam → a tight 3-dart fast burst; projectile/chain/multi-shot → the shared budget-safe volley
-    const volleySk = (k === 'beam')
-      ? { ...sk, shots: 3, spread: 0.06, homing: false }
-      : (sk.shots > 1 ? sk : { ...sk, shots: 3, spread: 0.12 });
-    this.castVolley(e, aim, volleySk, dmg, col, 'wild');
+    // Owner 2026-11-26: '敌人还在 barrage'. The previous `{...sk, shots:3}` forced EVERY
+    // single-shot projectile (fireballMeow/hex/lightningOrb/等) into a 3-shot fan, which
+    // made every enemy look like a barrage no matter the authored kit. Only ACTUALLY
+    // multi-shot skills (sk.shots > 1) now go through castVolley; a single-shot projectile
+    // is fired as ONE authored projectile with its own sprite kind — matching how the
+    // player's castDistinctProjectile delivers the same skills.
+    if (k === 'beam') {
+      // Wild and allied cats now share authored beam silhouettes and hit geometry.
+      this.castBeam(e,aim,sk,dmg,col,'wild');
+      return;
+    }
+    if (sk.shots > 1) {
+      // Real authored multi-shot (barrage/volley 技能) — go volley.
+      this.castVolley(e, aim, sk, dmg, col, 'wild');
+      return;
+    }
+    // Single-shot projectile — pick the authored sprite kind by id/element so a fireballMeow
+    // looks like a fireball, hex looks like a sigil, etc. Same mapping as castVolley.
+    let kindSprite;
+    const sid = sk.id;
+    if (sid === 'fireballMeow' || sid === 'meteor') kindSprite = 'fireball';
+    else if (sid === 'hex' || sid === 'voidMaw') kindSprite = 'hex';
+    else if (sid === 'leafDart' || sid === 'homingSeed') kindSprite = 'leaf';
+    else if (sid === 'lightningOrb' || sid === 'boltArc' || sid === 'thunderYowl') kindSprite = 'lightningOrb';
+    else if (sk.element === 'fire') kindSprite = 'fireball';
+    else if (sk.element === 'elec') kindSprite = 'lightningOrb';
+    else if (sk.element === 'grass') kindSprite = 'leaf';
+    else if (sk.element === 'dark') kindSprite = 'hex';
+    else kindSprite = 'ball';
+    // Speed / radius / life tuned similar to player's castDistinctProjectile authored cases.
+    const spd = sid === 'fireballMeow' ? 225 : sid === 'hex' ? 204 : (e.projSpeed || 300) * 0.92;
+    const r = sid === 'fireballMeow' ? 15 : sid === 'hex' ? 13 : sid === 'lightningOrb' ? 13 : 9;
+    const life = sid === 'lightningOrb' ? 3.3 : sid === 'hex' ? 1.85 : sid === 'fireballMeow' ? 1.8 : 1.2;
+    this.spawnProj(e.x + Math.cos(aim) * 20, e.y + Math.sin(aim) * 20,
+      aim, spd, dmg, 'wild', col, r, kindSprite, sk, life);
   }
   // nearest alive team cat to an enemy (release-time retarget helper)
   nearestEnemyTeamCat(e) {
@@ -6379,13 +6911,20 @@ class CaptureBattle {
     for(const wall of this.barrierWalls||[])
       window.CatBondWardArt?.drawFlatWall?.(ctx,wall,this.t);
     // vfx under-layer (trails, rings, muzzle)
-    this.vfx.draw(ctx);
+    this.vfx.draw(ctx,'back');
+    window.CatBondSkillFX?.drawTravel(ctx,this._travelFX||[],this.t);
     this.drawSkillStrokes(ctx);
     this.drawBeams(ctx);
+    if(!this.duoCinematic?.t&&!this.ultCinematic){this.drawAimPreview(ctx);if(this._solarUlt){const q=this._solarUlt;window.CatBondUltVFX?.drawSolarCharge?.(ctx,this.solarGeometry(q.f,q.skill._solarAim),1-q.t/q.max,this.t);}}
     this.drawDeathRay(ctx);                        // 破坏死光 sweeping beam (additive + scorch)
 
+    // Artillery ground telegraphs and elevated lob silhouettes are shared by both sides.
+    for(const b of this._umbralLobs||[])if(b.launched)window.CatBondSkillFX?.drawUmbralLob(ctx,b,this.t);
     // projectiles with glow
     for (const p of this.projectiles) {
+      if(window.CatBondSkillFX?.drawMeteorFlight(ctx,p,this.t))continue;
+      if(window.CatBondMoonFX?.drawProjectile(ctx,p,this.t))continue;
+      if(window.CatBondSkillFX?.drawIdentityProjectile(ctx,p,this.t))continue;
       // ADDITIVE TAPERED RIBBON trail from the position history (bright/wide head →
       // transparent tail), drawn under the body. Round caps hide the segment seams.
       const h = p._hist;
@@ -6456,30 +6995,6 @@ class CaptureBattle {
           ctx.beginPath();ctx.moveTo(Math.cos(a)*p.r*.67,Math.sin(a)*p.r*.67);
           ctx.lineTo(Math.cos(a+.35)*(p.r+6),Math.sin(a+.35)*(p.r+6));ctx.stroke();
         }
-      }else if(p.kind==='meteor'){
-        // 陨石: a dark rocky core wrapped in a streaking flame tail, oriented along flight.
-        ctx.rotate(p.ang);
-        const fl=Math.sin(this.t*30);
-        // flame tail trailing BEHIND the rock (negative x = backward along travel)
-        ctx.fillStyle='#ff8a3c';ctx.beginPath();ctx.moveTo(10,0);
-        ctx.quadraticCurveTo(-18,-12-fl*3,-46,-4+fl*2);
-        ctx.quadraticCurveTo(-20,0,-46,6-fl*2);
-        ctx.quadraticCurveTo(-18,12+fl*3,10,0);ctx.fill();
-        ctx.fillStyle='#ffd27a';ctx.beginPath();ctx.moveTo(8,0);
-        ctx.quadraticCurveTo(-12,-6,-32,-2+fl);
-        ctx.quadraticCurveTo(-14,0,-32,4-fl);
-        ctx.quadraticCurveTo(-12,6,8,0);ctx.fill();
-        // rocky core: a jagged dark polygon with a hot rim
-        ctx.rotate(this.t*4);
-        const R=p.r||15, pts=7;
-        ctx.beginPath();
-        for(let i=0;i<pts;i++){const a=i/pts*Math.PI*2;const rr=R*(i%2?0.72:1);ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}
-        ctx.closePath();
-        ctx.fillStyle='#3a2318';ctx.fill();
-        ctx.lineWidth=2.5;ctx.strokeStyle='#ff7a33';ctx.stroke();
-        // molten cracks
-        ctx.strokeStyle='#ffb867';ctx.lineWidth=1.3;
-        ctx.beginPath();ctx.moveTo(-R*.4,-R*.3);ctx.lineTo(R*.2,R*.1);ctx.lineTo(-R*.1,R*.5);ctx.stroke();
       }else if(p.kind==='fireball'){
         ctx.rotate(p.ang);
         const flicker=Math.sin(this.t*26)*3;
@@ -6845,6 +7360,8 @@ class CaptureBattle {
       }
     }
 
+    for(const v of this.skillStrokes)if(v.kind==='waterPierce'||v.kind==='shadowBindHit')window.CatBondSkillFX?.draw(ctx,v,this.t);
+    this.vfx.draw(ctx,'contact');
     // Distinct ULT glints above combatants, below damage floaters and HUD.
     for(const v of this.skillStrokes){
       if(v.kind==='ultimate')window.CatBondUltVFX?.draw(ctx,v,W,H,this.t,'front');
@@ -7029,6 +7546,54 @@ class CaptureBattle {
     this._cinematicPortraits.set(uid,canvas);
     return canvas;
   }
+  drawAimPreview(ctx) {
+    if (this.autoMode || this.ultCinematic || this.duoCinematic?.t>0 || this.game.isTouch) return;
+    const f = this.me(); if (!f || !f.alive) return;
+    const aim = this.aim || 0;
+    // which off-cooldown offensive skill is the player most likely about to fire?
+    const q = f.qSkill, e = f.eSkill;
+    const readyLob = (sk, cd) => sk && sk.kind === 'aoe' && cd <= 0;
+    const readyDir = (sk, cd) => sk && (sk.kind === 'projectile' || sk.kind === 'chain') && cd <= 0;
+    // landing-zone preview for a lob AOE (prefer Q, then E)
+    const lob = readyLob(q, f.cd.q) ? q : readyLob(e, f.cd.e) ? e : null;
+    if (lob) {
+      const col = this.elemColor(lob.element);
+      let tx, ty;
+      if (!this.game.isTouch) { const mo = this.game.mouse || {}; tx = mo.x; ty = mo.y; }
+      else { const tgt = this.lockedEnemy() || this.nearestEnemy(f.x, f.y); if (tgt) { tx = tgt.x; ty = tgt.y; } else { tx = f.x + Math.cos(aim) * 240; ty = f.y + Math.sin(aim) * 240; } }
+      if(!Number.isFinite(tx)||!Number.isFinite(ty))return;
+      const reach=lob.reach||Math.hypot(this.W,this.H),dx=tx-f.x,dy=ty-f.y,k=Math.min(1,reach/(Math.hypot(dx,dy)||1));tx=clamp(f.x+dx*k,BATTLE_MARGIN.side,this.W-BATTLE_MARGIN.side);ty=clamp(f.y+dy*k,this.topMargin,this.H-this.bottomMargin);
+      const radius=lob.lobRadius||86;
+      ctx.save();
+      // dashed arc from caster to landing point
+      ctx.strokeStyle = withAlpha(col, 0.5); ctx.lineWidth = 2; ctx.setLineDash([4, 6]);
+      ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
+      // impact zone (radius 86 matches lobAoe R)
+      const pulse = 0.35 + 0.2 * Math.abs(Math.sin(this.t * 4));
+      ctx.globalAlpha = pulse; ctx.fillStyle = withAlpha(col, 0.18); ctx.beginPath(); ctx.arc(tx, ty, radius, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.8; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+      ctx.beginPath(); ctx.arc(tx, ty, radius, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+      ctx.restore();
+      return;
+    }
+    // trajectory line for a directional projectile/chain skill
+    const dir = readyDir(q, f.cd.q) ? q : readyDir(e, f.cd.e) ? e : null;
+    if (dir) {
+      const col = this.elemColor(dir.element);
+      const len = 300;
+      ctx.save();
+      ctx.strokeStyle = withAlpha(col, 0.45); ctx.lineWidth = 2.5; ctx.setLineDash([10, 8]);
+      ctx.beginPath(); ctx.moveTo(f.x, f.y);
+      ctx.lineTo(f.x + Math.cos(aim) * len, f.y + Math.sin(aim) * len); ctx.stroke();
+      ctx.setLineDash([]);
+      // arrowhead
+      const ex = f.x + Math.cos(aim) * len, ey = f.y + Math.sin(aim) * len;
+      ctx.fillStyle = withAlpha(col, 0.8); ctx.translate(ex, ey); ctx.rotate(aim);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-12, -6); ctx.lineTo(-12, 6); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+  }
+
   drawCatCutin(ctx,W,H){
     if(this.duoCinematic?.t>0){window.CatBondDuoHero?.draw?.(ctx,W,H,this.duoCinematic);return;}
     let c=this.ultCinematic;

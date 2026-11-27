@@ -227,7 +227,7 @@
   const SKILLS = [
     // ---- 火 fire ----
     { id: 'emberClaw',  name: '炽爪',     element: 'fire',  kind: 'melee',      power: 1.3, cd: 2.2, ultCost: 0,  tags: ['burn'],          appliesTag: 'burn',  vfx: 'muzzle',    desc: '燃烧的猫爪撕击，附加灼烧。' },
-    { id: 'fireballMeow', name: '咳毛球', element: 'fire',  kind: 'projectile', power: 1.35, cd: 3.0, ultCost: 0, windup: 0.4, castSlow: 0.6, precise: true, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '猫咪蓄力咳出滚烫毛球（短暂前摇）——正中威力暴涨并持续灼烧，擦边只是烫一下；施放后短暂迟缓。' },
+    { id: 'fireballMeow', name: '火球术', element: 'fire',  kind: 'projectile', power: 1.35, cd: 2.5, ultCost: 0, windup: 0.18, precise: true, tags: ['burn','ranged'], appliesTag: 'burn',  vfx: 'impact',    desc: '短暂蓄力后射出高速火球，命中第一个敌人并灼烧，无范围伤害。' },
     { id: 'puffHiss',   name: '弓背炸毛', element: 'fire',  kind: 'buff',       power: 0,   cd: 8.0, ultCost: 0,  tags: ['buff','threat'], appliesTag: null, vfx: 'ring',      desc: '弓背炸毛虚张声势：自身伤害提升，并把靠得太近的敌人吓退一步。' },
     { id: 'flameSweep', name: '横扫喷焰', element: 'fire', kind: 'beam', channel: 2.7, damageChannel: 1.35, reach: 156, width: 22, sweep: .72, sweepPasses: 3, power: 1.4, cd: 6.3, ultCost: 0, windup: .18, tags: ['burn','channel'], appliesTag: 'burn', vfx: 'flame', desc: '左右横扫三趟；每趟扫中造成一次适中伤害，不重复跳伤。', unlock: { level: 6, element: 'fire' } },
     { id: 'sunflare',   name: '金乌焱',   element: 'fire',  kind: 'aoe',        power: 2.4, cd: 0,   ultCost: 70, tags: ['burn','ult'],    appliesTag: 'burn',  vfx: 'shockwave', desc: '【必杀】背负烈日炸裂全场，重灼。' },
@@ -241,7 +241,8 @@
     { id: 'waterLash',  name: '水鞭',     element: 'water', kind: 'projectile', power: 1.2, cd: 2.0, ultCost: 0,  tags: ['soak','ranged'], appliesTag: 'soak',  vfx: 'impact',    desc: '高压水流抽击，使目标淋湿——淋湿会减速移动，并为元素反应铺垫。' },
     { id: 'knockOff',   name: '拨下桌',   element: 'water', kind: 'pounce',     power: 1.3, cd: 3.5, ultCost: 0,  heavy: true, tags: ['soak','dash','launch'], appliesTag: 'soak', vfx: 'beam', desc: '一掌把目标拨向场地边缘——重重击退并淋湿。侧后方突袭更狠。' },
     { id: 'grooming',   name: '舔毛理顺', element: 'water', kind: 'heal', healMode: 'area', power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal'], appliesTag: null, vfx: 'orb', desc: '舔毛安抚周围的伙伴，展开一片持续回复的水雾领域。仅坦克 / 辅助能领悟。', unlock: { element: 'water', role: ['tank','support'] } },
-    { id: 'waterJet',   name: '水枪',     element: 'water', kind: 'beam', channel: 1.2, reach: 300, width: 26, power: 1.3, cd: 5.0, ultCost: 0, castSlow: 0.5, tags: ['soak','channel','ranged'], appliesTag: 'soak', vfx: 'beam', desc: '持续喷射高压水柱，沿直线不断造成伤害；喷射时原地不动，收枪后短暂迟缓（后遗症）。' },
+    { id: 'waterJet',   name: '水枪',     element: 'water', kind: 'beam', channel: 1.2, reach: 300, width: 12, power: 1.3, cd: 5.0, ultCost: 0, castSlow: 0.5, tags: ['soak','channel','ranged'], appliesTag: 'soak', vfx: 'beam', desc: '水枪沿细直线贯穿敌人并持续造成伤害。' },
+    { id: 'tidalPulse', name: '潮波三叠', element: 'water', kind: 'projectile', power: 0.62, cd: 5.2, ultCost: 0, pulseCount: 3, pulseGap: 0.30, pulseHoming: 1.8, tags: ['soak','ranged','pulse'], appliesTag: 'soak', vfx: 'orb', desc: '连续发射三发追踪水弹，命中施加淋湿。', allowRoles:['fighter','dps','control'], autoLearn:true, unlock: { level: 5, element:'water', role:['fighter','dps','control'] } },
     { id: 'bubbleVeil', name: '泡泡幕',   element: 'water', kind: 'buff', shieldType: 'barrier', power: 0, cd: 5.0, ultCost: 0, wardDuration: 5.2, tags: ['shield','soak'], appliesTag: null, vfx: 'ring', desc: '展开泡泡护盾，减伤 45%，持续约 5 秒——前排的持续减伤罩。' },
     { id: 'tidePool',   name: '潮汐池',   element: 'water', kind: 'aoe', power: 0.6, cd: 4.0, ultCost: 0, field: { element: 'water', tag: 'soak', life: 6 }, tags: ['soak','field'], appliesTag: 'soak', vfx: 'ring', desc: '抛出一片潮汐水域：站在其中持续淋湿；用⚡电系技能打入水域可引爆「元素反应」，范围内全体过载！' },
     // GRASS mirror of 潮汐池: a lingering aoe FIELD that BINDS (束缚) enemies standing in it, instead of
@@ -252,7 +253,7 @@
     // meteor for big area damage + leaves a burning field (burn tag). High power (1.6 → ranged-strong =
     // a dps nuke), long windup so it's a readable, interruptible commit like vineMire. Same aoe/field
     // delivery path (lobAoe reads sk.field → spawnField), cd floored higher for the payoff.
-    { id: 'meteor',     name: '陨石术',   element: 'fire',  kind: 'aoe', power: 1.6, cd: 7.0, ultCost: 0, windup: 1.5, castSlow: 0.9, field: { element: 'fire', tag: 'burn', life: 5 }, tags: ['burn','field'], appliesTag: 'burn', vfx: 'shockwave', desc: '长时间吟唱后召唤一颗燃烧陨石砸向目标：巨额范围爆发伤害，并在落点留下灼烧火场；吟唱期间可被打断。' },
+    { id: 'meteor',     name: '陨石术',   element: 'fire',  kind: 'aoe', power: 1.6, cd: 7.0, ultCost: 0, windup: 1.5, castSlow: 0.9, field: { element: 'fire', tag: 'burn', life: 5 }, tags: ['burn','field'], appliesTag: 'burn', vfx: 'shockwave', desc: '锁定地面后召唤陨石，造成范围伤害并留下火场。' },
     // LIGHT field mirror (owner: light had NO regular aoe-blind — only ult moonlitHalo/moonfang). A long
     // -channel aoe that leaves a dazzling light zone: enemies inside are continually BLINDED (miss/stray
     // their shots). Symmetric to 潮汐池 soak / 藤蔓沼泽 bind / 陨石 burn — same aoe+windup+field delivery;
@@ -260,6 +261,7 @@
     { id: 'glareField', name: '炫目光域', element: 'light', kind: 'aoe', power: 0.6, cd: 4.5, ultCost: 0, windup: 1.4, castSlow: 0.8, field: { element: 'light', tag: 'blind', life: 5 }, tags: ['blind','field'], appliesTag: 'blind', vfx: 'ring', desc: '长时间吟唱后在目标区域炸开刺目光幕：站在其中的敌人被持续致盲、攻击频频失准；吟唱期间可被打断，是光系的控制领域技。' },
     { id: 'guardStance', name: '守护',   element: 'light', kind: 'buff', shieldType: 'protect', power: 0, cd: 9.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', desc: '极短时间完全格挡下一次攻击；结束后短暂易伤。' },
     { id: 'mirrorWall',  name: '炸毛墙', element: 'neutral',  kind: 'buff', shieldType: 'reflect', power: 0, cd: 10.0, ultCost: 0, tags: ['shield'], appliesTag: null, vfx: 'ring', unlock: { build: 'tank' }, desc: '坦克专属：在身前架起长形镜面护墙，为身后队友阻挡或反弹远程弹体。持墙期间移速减半，转向缓慢。' },
+    { id: 'lickWound',  name: '舔伤口', element: 'neutral', kind: 'heal', healMode: 'self', healPct: 0.30, power: 0, cd: 8.0, ultCost: 0, castSlow: 0.5, tags: ['heal'], appliesTag: null, vfx: 'orb', allowRoles:['tank'], autoLearn:true, unlock: { level: 4, role: ['tank'] }, desc: '坦克专属：回复自身30%斗志，短暂减速。' },
     { id: 'tsunamiPaw', name: '潮汐掌',   element: 'water', kind: 'aoe',        power: 2.2, cd: 0,   ultCost: 65, tags: ['soak','ult'],    appliesTag: 'soak',  vfx: 'shockwave', desc: '【必杀】掀起巨浪，全体淋湿。' },
     // ---- 草 grass ----
     { id: 'leafDart',   name: '叶刃',     element: 'grass', kind: 'projectile', power: 1.0, cd: 1.6, ultCost: 0,  tags: ['ranged'],        appliesTag: null,    vfx: 'muzzle',    desc: '锋利草叶高速飞射。' },
@@ -270,16 +272,19 @@
     { id: 'quakeStomp', name: '泰山压顶', element: 'grass', kind: 'leap',       power: 1.4, cd: 5.0, ultCost: 0,  heavy: true, tags: ['melee','stagger'], appliesTag: null, vfx: 'impact', desc: '腾空跃起，泰山压顶般砸向目标点，落地小范围震荡并击虚周围敌人。' },
     { id: 'photosynth', name: '光合',     element: 'grass', kind: 'heal', healMode: 'cleanse', power: 0,   cd: 8.0, ultCost: 0,  tags: ['heal','cleanse'], appliesTag: null, vfx: 'orb', desc: '吸收日光回复斗志，并洗去一种异常状态或挣脱束缚——草木的再生之力。' },
     { id: 'knead',      name: '踩奶',     element: 'grass', kind: 'buff',       power: 0,   cd: 2.4, ultCost: 0,  tags: ['buff','knead'],  appliesTag: null,    vfx: 'orb',       desc: '原地踩奶进入状态：每次叠一层（最多4层），层层提升伤害并回一点斗志；猫味十足的节奏型蓄能。' },
-    { id: 'sunbloom', name: '阳光烈焰', element: 'grass', kind: 'aoe', power: 2.2, cd: 0, ultCost: 70, tags: ['bind','ult'], appliesTag: 'bind', vfx: 'shockwave', desc: '【必杀】日光唤醒藤蔓花海，束缚敌人并留下持续生长的领域。' },
+    { id: 'sunbloom', name: '阳光烈焰', element: 'grass', kind: 'aoe', power: 2.2, cd: 0, ultCost: 70, tags: ['ult'], vfx: 'beam', desc: '【必杀】蓄力0.85秒后释放直线日光束。' },
     // ---- 电 elec ----
     { id: 'staticPounce', name: '疯跑冲刺', element: 'elec', kind: 'dash',      power: 1.4, cd: 4.0, ultCost: 0,  heavy: true, tags: ['shock','dash'],  appliesTag: 'shock', vfx: 'beam',  desc: '半夜疯跑般的带电冲刺，撞中麻痹目标。侧后方突袭更狠。' },
     { id: 'boltArc',    name: '电弧',     element: 'elec',  kind: 'chain',      power: 1.1, cd: 2.2, ultCost: 0,  tags: ['shock','ranged'],appliesTag: 'shock', vfx: 'beam',      desc: '跳跃的电弧，在敌群间连锁跳跃，附加感电。' },
     { id: 'lightningOrb',name: '球状闪电', element: 'elec', kind: 'projectile', power: 1.05, cd: 4.8, ultCost: 0, homing: 3.4, tags: ['shock','ranged'], appliesTag: 'shock', vfx: 'orb', desc: '缓慢浮游的电球转向敌人，命中放出感电火花。', unlock: { level: 5, element: 'elec' } },
-    { id: 'thunderStream',name: '雷流喷射', element: 'elec', kind: 'beam', channel: 1.7, damageChannel: 1.3, reach: 270, width: 34, power: 1.3, cd: 5.5, ultCost: 0, windup: .7, tags: ['shock','channel','ranged'], appliesTag: 'shock', vfx: 'lightning', desc: '猫咪先蓄力聚电，再喷出一道粗壮的雷电光柱，持续锁定敌人，扫中持续感电。', unlock: { level: 4, element: 'elec' } },
+    { id: 'thunderStream',name: '雷流喷射', element: 'elec', kind: 'beam', channel: 1.22, reach: 270, width: 13, power: 1.3, cd: 5.5, ultCost: 0, tags: ['shock','channel','ranged'], appliesTag: 'shock', vfx: 'lightning', desc: '持续释放可转向的折线雷电。', unlock: { level: 4, element: 'elec' } },
+    { id:'magneticField',name:'雷极磁场',element:'elec',kind:'aoe',power:.38,cd:9,ultCost:0,reach:180,tags:['shock','control','field'],appliesTag:'shock',vfx:'lightning',desc: '星芽专属：双雷核形成电场，牵引并电击敌人。',allowRoles:['dps'],autoLearn:true,unlock:{level:8,element:'elec',species:['story_xingya'],role:['dps']} },
     { id: 'thunderYowl',name: '雷鸣啸',   element: 'elec',  kind: 'aoe',        power: 2.3, cd: 0,   ultCost: 70, tags: ['shock','ult'],   appliesTag: 'shock', vfx: 'beam',      desc: '【必杀】一声炸雷贯穿全场。' },
     // ---- 暗 dark ----
     { id: 'shadowSwipe',name: '影袭',     element: 'dark',  kind: 'melee',      power: 1.35,cd: 2.4, ultCost: 0,  tags: ['bleed'],         appliesTag: 'bleed', vfx: 'muzzle',    desc: '自暗影中突袭，造成撕裂伤。' },
     { id: 'shadeLeap',  name: '飞扑',     element: 'dark',  kind: 'pounce',     power: 1.3, cd: 4.0, ultCost: 0,  tags: ['melee','dash'],  appliesTag: null,    vfx: 'beam',      desc: '猛地飞扑而出，撞上的第一个敌人受到重击并被击退。' },
+    { id:'arcanePulse', name:'暗星轰击', element:'dark', kind:'aoe', power:.60, cd:6.5, ultCost:0, reach:340, lobCount:3, lobGap:.42, lobFlight:.76, lobRadius:46, lobSpread:24, tags:['ranged','lob','salvo'], appliesTag:null, vfx:'umbralLob', allowRoles:['dps','control'], autoLearn:true, unlock:{level:5,element:'dark',role:['dps','control']}, desc: '向锁定位置连续抛射三颗暗星，落地爆裂；落点固定。' },
+    { id:'shadowTendrils', name:'暗影触手', element:'dark', kind:'beam', power:.65, cd:8, ultCost:0, channel:1.6, windup:.22, castSlow:.4, reach:240, width:30, statusDuration:.65, tags:['control','bind','channel','ranged'], appliesTag:'bind', vfx:'tendrils', allowRoles:['control'], autoLearn:true, unlock:{level:6,element:'dark',role:['control']}, desc: '持续释放暗影触手，贯穿敌人并短暂束缚。' },
     { id: 'batAround',  name: '戏弄爪',   element: 'dark',  kind: 'melee',      power: 0.8, cd: 2.0, ultCost: 0,  tags: ['dizzy'],         appliesTag: 'dizzy', vfx: 'muzzle',    desc: '像拍打玩具一样戏弄目标：伤害不高，却打得它眩晕又后仰。' },
     { id: 'hex',        name: '猫咒',     element: 'dark',  kind: 'projectile', power: 0.9, cd: 3.0, ultCost: 0,  precise: true, tags: ['expose','curse'], appliesTag: 'expose', vfx: 'orb',       desc: '诅咒之球直取破绽——正中命中威力更强，使目标受到的伤害提高40%。' },
     { id: 'voidMaw',    name: '虚吞',     element: 'dark',  kind: 'aoe',        power: 2.5, cd: 0,   ultCost: 80, tags: ['curse','ult','rewind'],   appliesTag: ['dizzy','rewind'], vfx: 'shockwave', desc: '【必杀】深渊巨口吞噬，时间回溯——将目标斗志拉回数秒前！' },
@@ -301,7 +306,8 @@
     { id: 'tidalBite',  name: '潮汐咬',   element: 'water', kind: 'melee',      power: 1.5, cd: 2.8, ultCost: 0, tags: ['soak','heavy'],   appliesTag: 'soak',  vfx: 'impact',    desc: '用小鱼干向训练师换来的近身咬击，淋湿并重创。', unlock: { cost: { fish: 6 } } },
     { id: 'thornLash',  name: '荆棘鞭',   element: 'grass', kind: 'melee',      power: 1.5, cd: 3.0, ultCost: 0, upgradeOf: 'thornCoil', tags: ['bind','bleed'],   appliesTag: 'bleed', vfx: 'impact',    desc: '用金币换来的缠斗技，撕裂并束缚目标。', unlock: { cost: { coins: 120 } } },
     // ---- 等级 / 亲密 / 组合门槛 ----
-    { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 1.6,cd: 2.2, ultCost: 0, precise: true, upgradeOf: 'waterLash', tags: ['soak','ranged','precise'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标，冷却更短。达到等级方可领悟。', unlock: { level: 10 } },
+    { id: 'frostLance', name: '霜锥',     element: 'water', kind: 'projectile', power: 1.6,cd: 2.2, ultCost: 0, precise: true, upgradeOf: 'waterLash', tags: ['soak','ranged','precise','heavy'], appliesTag: 'chill', vfx: 'impact', desc: '精准的寒冰锥，正中可冻住目标，冷却更短。达到等级方可领悟。', unlock: { level: 10 } },
+    { id: 'crescentFan', name: '月华连弧', element: 'light', kind: 'projectile', power: 0.6, cd: 6.5, ultCost: 0, pulseCount: 3, pulseGap: 0.45, chargeT: 2.5, chargeLock: true, tags: ['ranged','blind','moon','pulse','channel'], appliesTag: 'blind', vfx: 'crescent', desc: '白栞专属：蓄力后连续发射三道锁敌月弧。', allowRoles:['support'], autoLearn:true, unlock: { species: ['story_baikan'], element:'light', role:['support'], level: 10 } },
     { id: 'voltRush',   name: '雷遁突袭', element: 'elec',  kind: 'dash',       power: 1.85, cd: 4.2, ultCost: 0, heavy: true, upgradeOf: 'staticPounce', tags: ['shock','dash','heavy'], appliesTag: 'shock', vfx: 'beam', desc: '高亲密才能驾驭的闪电冲刺，撞中强麻痹。', unlock: { affinity: 60 } },
     // ---- 多发追踪弹幕 (homing VOLLEY — the multi-shot cousin of 球状闪电/追踪草种) ----
     // Fires `shots` tracking projectiles in a spread; each turns toward the target (homing) and
@@ -760,7 +766,7 @@
   function skillCategory(sk) {
     if (sk.ultCost > 0) return 'ult';
     const k = sk.kind;
-    if (k === 'heal') return sk.healMode === 'single' ? 'heal-self' : 'heal-group';
+    if (k === 'heal') return ['single','self'].includes(sk.healMode) ? 'heal-self' : 'heal-group';
     if (k === 'buff') return 'shield';
     if (k === 'melee' || k === 'dash' || k === 'leap' || k === 'pounce') return 'close';
     if (k === 'projectile' || k === 'beam' || k === 'aoe') return (sk.power >= 1.3) ? 'ranged-strong' : 'ranged-weak';
@@ -815,7 +821,7 @@
     // (e.g. 舔毛理顺 team-heal is a Tank/Fighter skill — 收割 assassins can't learn it).
     if (u.role) {
       const roles = Array.isArray(u.role) ? u.role : [u.role];
-      if (roles.indexOf(buildTypeForBreed(cat)) < 0) return false;
+      if (roles.indexOf(skill.autoLearn===true?(cat.buildType||buildTypeForBreed(cat)):buildTypeForBreed(cat)) < 0) return false;
     }
     return true;
   }
@@ -834,7 +840,7 @@
   // Do not delete pre-existing learned skills from older save games.
   function isAutoLearn(skill) {
     const u = skill && skill.unlock;
-    return !!u && !u.cost && !!u.quest;
+    return !!u && !u.cost && (!!u.quest || skill.autoLearn===true);
   }
   // Auto-grant any pure-gate skills the cat now qualifies for. Returns the list of
   // skills freshly learned (so the UI can toast / metric them). ensureLoadout and
@@ -869,6 +875,8 @@
       // "condition met but still locked" entry. The real blocker (role) isn't a level/pay gate,
       // so hiding it mirrors the build-exclusive skip above. Switching build re-reveals it.
       if(!roleAllowsSkill(cat.buildType||buildTypeForBreed(cat), s)) continue;
+      if(s.autoLearn&&s.unlock?.species&&!s.unlock.species.includes(cat.species))continue;
+      if(s.autoLearn&&s.unlock?.element&&s.unlock.element!==elementOf(cat.species))continue;
       (gateMet(cat, s) ? ready : locked).push(s);
     }
     return { ready, locked };
@@ -896,7 +904,7 @@
       if (isGated(s)) {
         // A remembered skill is NOT automatically legal after changing builds.
         // For mirrorWall the role gate is active at equip/battle time as well.
-        if (hasLearned(cat, s.id)&&gatedElementEligible(cat,s)&&
+        if (hasLearned(cat, s.id)&&gatedElementEligible(cat,s)&&(!s.autoLearn||gateMet(cat,s))&&
             (!s.unlock?.build||
              (cat.buildType||buildTypeForBreed(cat))===s.unlock.build))out.push(s);
         continue;
@@ -1042,7 +1050,9 @@
     const role=cat.buildType||buildTypeForBreed(cat);
     const backline=role==='dps'||role==='control'||role==='support';
     const rangedKind=sk=>['projectile','beam','chain','aoe'].includes(sk.kind);
-    const q=(backline?(own.find(rangedKind)||pool.find(rangedKind)):null)
+    const signature=own.find(sk=>sk.autoLearn&&sk.unlock?.species?.includes(cat.species)&&rangedKind(sk));
+    const newAttack=own.find(sk=>sk.autoLearn&&sk.allowRoles?.includes(role)&&rangedKind(sk));
+    const q=signature||newAttack||(backline?(own.find(rangedKind)||pool.find(rangedKind)):null)
       ||own.find(sk=>attackKinds.includes(sk.kind))
       ||pool.find(sk=>attackKinds.includes(sk.kind))||null;
     // E is the DEFENSIVE / utility slot so the shield + heal verbs are actually
@@ -1055,6 +1065,7 @@
       ||own.find(sk=>sk!==basic&&sk!==q)
       // A true dual breed MAY slot a side skill; it never displaces an
       // available primary move in the default recommendations.
+      ||pool.find(sk=>sk.id==='lickWound'&&role==='tank')
       ||splash.find(sk=>sk.kind==='buff'||sk.kind==='heal')
       ||splash.find(sk=>sk!==q&&sk!==basic)||null;
     const starterE=(cat.level||1)<3&&!cat.skillAwakened&&
