@@ -1,13 +1,13 @@
 {
   "slug": "starbell",
-  "video": "/promo/starbell/story-trailer-en-v3-45961868814.mp4",
-  "poster": "/promo/starbell/story-trailer-en-v3-45961868814.jpg",
+  "video": "/promo/starbell/story-trailer-en-v4-45963748496.mp4",
+  "poster": "/promo/starbell/story-trailer-en-v4-45963748496.jpg",
   "duration": 36,
-  "version": "V3",
-  "createdAt": "2026-11-27T08:00:01.681Z",
-  "updatedAt": "2026-11-27T08:00:01.681Z",
+  "version": "V4",
+  "createdAt": "2026-11-27T08:14:36.402Z",
+  "updatedAt": "2026-11-27T08:14:36.402Z",
   "source": {
-    "sha": "4d09ad3c8468cb3a4a5bdc4b6d26cf400d7765ab",
+    "sha": "b7195bb31d43450c33e2a1a985c40c8f121c6ffd",
     "scope": "isolated portrait engineering preview",
     "productionApis": false,
     "telemetry": false,
@@ -24,7 +24,7 @@
     "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
     "edited": true
   },
-  "renderRun": 45961868814,
+  "renderRun": 45963748496,
   "approved": false,
   "published": false,
   "shots": [
@@ -53,7 +53,7 @@
       "seconds": 3
     },
     {
-      "scene": "glide",
+      "scene": "shadow",
       "seconds": 5
     },
     {
@@ -62,11 +62,11 @@
     },
     {
       "scene": "secret",
-      "seconds": 4
+      "seconds": 3
     },
     {
       "scene": "end",
-      "seconds": 4
+      "seconds": 5
     }
   ]
 }
