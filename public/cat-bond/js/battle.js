@@ -2644,7 +2644,7 @@ class CaptureBattle {
     const pow = (sk ? sk.power : 0.8)*this.outgoingBuffMult(f);
     // The starter Q fan is an actual damaging skill even before a named Q unlock.
     // Give it an ID so a successful hit participates in skill-driven poise break.
-    const attack=sk||{id:'starterQFan',kind:'projectile',element:f.element,power:.8,ultCost:0};
+    const attack=sk||{id:'starterQFan',kind:'projectile',element:f.element,power:1.35,ultCost:0};
     this.castOffensiveSkill(f, aim, attack, pow, col);
     this.gainUlt(8);
     this.markMoveSeen(f,sk);
