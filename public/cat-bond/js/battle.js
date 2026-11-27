@@ -3588,6 +3588,13 @@ class CaptureBattle {
     f = f || this.me(); if (f.dodgeCd > 0) return false;
     if(f===this.me())window.MorrowwishAudio?.effect?.('combat_dodge');
     if (f === this.me()) this._coachDodged = true;         // coach: step 4
+    // Owner 2026-11-27: _obs.dodges was READ at battle.js:5642 (forcedFloor
+    // smash-teach gate: hp>=0.85 && noDodges) but NEVER incremented, so the
+    // gate permanently thought the player had not dodged — breaking the entire
+    // dodge-teaching subsystem. Increment it here on the player's successful
+    // dodge (post-cd-gate). Only player-side dodges count (enemy dodges are
+    // separate telemetry).
+    if (f === this.me() && this._obs) this._obs.dodges = (this._obs.dodges || 0) + 1;
     // A real escape tool now: a LONG i-frame dash that travels AWAY from danger,
     // plus a short bullet-time on every use so it actually buys breathing room.
     f.dodgeCd = 1.2; f.dashT = 0.32; f.inv = 0.5;
