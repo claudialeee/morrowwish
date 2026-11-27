@@ -303,3 +303,24 @@ assert.deepEqual((await missingResponse.json()).rollup.headlineMetrics,{
 },'No observations must not be misrepresented as zero');
 console.log('Seven-game D1 analytics contract: visit, start, end, referral, auth and diagnostic write/read/delete all passed.');
 await import('./test-cat-bond-analytics-funnel.mjs');
+
+// Preview collector must never accept legacy game IDs or arbitrary origins.
+rows.splice(0,rows.length);
+const previewOrigin='https://cat-bond-preview.morrowwish.pages.dev';
+const previewReq=(origin,game,extra={})=>new Request('https://morrowwish.pages.dev/api/starbell-preview-session',{method:'POST',headers:{'Content-Type':'text/plain','Origin':origin},body:JSON.stringify({game,kind:'visit',viewId:'starbell-test-view',visitor:'starbell-test-visitor',trackingVersion:11,...extra})});
+assert.equal((await api(previewReq('https://other.example','starbell-preview'),env)).status,403);
+assert.equal((await api(previewReq(previewOrigin,'cat-bond'),env)).status,400);
+assert.equal((await api(req('/api/session',{kind:'visit',game:'starbell-preview'}),env)).status,400);
+const previewAccepted=await api(previewReq(previewOrigin,'starbell-preview'),env);
+assert.equal(previewAccepted.status,202);
+assert.equal(previewAccepted.headers.get('Access-Control-Allow-Origin'),previewOrigin);
+assert.equal((await api(previewReq(previewOrigin,'starbell-preview',{kind:'session',starts:1,ends:1,seconds:23,seq:0,signals:{bond_enter:1,bond_battle_end_v2:1,bond_duo_used:1,funnel_first_run:1,funnel_first_finish:1}}),env)).status,202);
+assert.equal((await api(req('/api/session',{kind:'visit',game:'cat-bond',viewId:'old-bond-test-view',trackingVersion:11}),env)).status,202);
+assert.equal(rows.filter(r=>r.game==='starbell-preview').length,2);
+assert.equal(rows.filter(r=>r.game==='cat-bond').length,1);
+const separate=await (await api(cachedReq(),env)).json();
+assert.equal(separate.byGame.find(g=>g.game==='starbell-preview').pageviews,1);
+assert.equal(separate.byGame.find(g=>g.game==='starbell-preview').conversion.startedViews,1);
+assert.equal(separate.byGame.find(g=>g.game==='cat-bond').pageviews,1);
+assert.equal(separate.byGame.find(g=>g.game==='cat-bond').conversion.startedViews,0);
+console.log('Starbell isolated collector and Cat Bond game-row separation verified.');

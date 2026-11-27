@@ -266,6 +266,7 @@ function renderSignals(gameRows){
  {id:'pawsibly-innocent',priority:1,subtitle:W.heist,items:[['escaped','cat_escape'],['near','cat_close_call'],['yarn','cat_yarn_distracted']]},
  {id:'tiny-town',priority:0,subtitle:W.town,items:[['combo','town_combo_discovered'],['legend','town_legendary_unlocked'],['townWin','town_win']]},
  {id:'elsewhere',priority:0,subtitle:W.story,items:[['storyYes','elsewhere_return_yes'],['storyMaybe','elsewhere_return_maybe']]},
+ {id:'starbell-preview',priority:0,subtitle:lang==='zh'?'剧情冒险、战斗与合击（试玩独立统计）':'Story adventure, battles and duo attacks (preview only)',items:[['caught','bond_capture'],['rare','bond_rare_capture'],['duo','bond_duo_used']]},
  {id:'flip-dash',priority:0,subtitle:lang==='zh'?'每局存活与挑战时长':'Runs and survival time',items:[['flipRuns','flip_finished'],['flip10','flip_10s'],['flip30','flip_30s']]},
  {id:'parcel-panic',priority:0,subtitle:lang==='zh'?'正确分拣与漏接情况':'Correct sorting and missed parcels',items:[['parcelSorted','parcel_sorted'],['parcelMissed','parcel_missed'],['parcel10','parcel_ten_sorted']]},
  {id:'pocket-aquarium',priority:0,subtitle:lang==='zh'?'投喂和水族箱结算':'Feeding and aquarium results',items:[['fishFed','feed_success'],['fishFinished','aquarium_completed'],['fishGood','aquarium_grade_s']]}
@@ -293,6 +294,7 @@ function renderSignals(gameRows){
   }
   const title=gameNames[g.id]?.[lang]||g.id;
   const feedback=g.id==='pawsibly-innocent'&&Number(signals.play_feedback_fun)>0?'<p class="focus-subtitle">'+escapeHTML(t('feelPrefix'))+' · '+format(signals.play_feedback_fun)+'</p>':'';
+  if(g.id==='starbell-preview'&&valid){for(const [label,key] of [[lang==='zh'?'战斗开始':'Battles started','bond_battle_start_v2'],[lang==='zh'?'战斗结算':'Battles finished','bond_battle_end_v2'],[lang==='zh'?'战斗胜利':'Battles won','bond_battle_win_v2']]){const value=count(key);if(value!=='')rows.push(line(label,value));}}
   const legacy='';
    const newMetrics=bond&&active?'<details class="studio-advanced"><summary>'+
    escapeHTML(lang==='zh'?'新版漏斗 · 更新后访问':'New funnel · post-update visits')+
@@ -310,7 +312,7 @@ function renderSignals(gameRows){
     return line(W.regionLabels[id],start>0&&end<=start?
       format(end)+' / '+format(start)+' · '+format(pct(end,start))+'%':'');
    }).join('')+'</details>':'';
-  return '<article class="focus-card'+(g.priority?' priority':'')+'"><h3><a href="/'+encodeURIComponent(g.id)+'/">'+escapeHTML(title)+'</a></h3><p class="focus-subtitle">'+escapeHTML(g.subtitle)+'</p>'+rows.join('')+newMetrics+regions+legacy+feedback+'</article>';
+  return '<article class="focus-card'+(g.priority?' priority':'')+'"><h3><a href="'+(g.id==='starbell-preview'?'https://cat-bond-preview.morrowwish.pages.dev/cat-bond/':'/'+encodeURIComponent(g.id)+'/')+'">'+escapeHTML(title)+'</a></h3><p class="focus-subtitle">'+escapeHTML(g.subtitle)+'</p>'+rows.join('')+newMetrics+regions+legacy+feedback+'</article>';
  }).join('');
 }
 function render(j){lastData=j;const r=j.rollup||{},games=Array.isArray(j.byGame)?j.byGame:[],days=Array.isArray(j.byDay)?j.byDay:[];const hasData=Number(r.pageviews)>0;
