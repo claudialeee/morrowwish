@@ -141,40 +141,42 @@ function draw(ctx,W,H,seq){
  const still=seq.thumbnail===true,gallery=seq.galleryPreview===true,p=clamp((seq.max-seq.t)/(seq.max||2.75));
  // Gallery previews stay fully visible, but unlike thumbnails they still play
  // the original painting's camera drift, energy trails and elemental effects.
- const alpha=still?1:(gallery?1:smooth(p/.22)*(1-smooth((p-.71)/.275)));if(alpha<=0)return true;
+ const alpha=still||gallery?1:smooth(p/.15)*(1-smooth((p-.78)/.20));if(alpha<=0)return true;
  const dpr=Math.min(2,window.devicePixelRatio||1),cw=Math.max(1,Math.round(W*dpr)),ch=Math.max(1,Math.round(H*dpr));
  if(stage.width!==cw||stage.height!==ch){stage.width=cw;stage.height=ch;}
  const artW=Math.min(W,H*ASPECT),artH=artW/ASPECT,artX=(W-artW)/2,artY=(H-artH)/2;
+ const live=!still&&!gallery,extend=live&&(Math.abs(W-artW)>1||Math.abs(H-artH)>1),frame=cellRect(index,tier);
  const pw=Math.max(1,Math.round(artW*dpr)),ph=Math.max(1,Math.round(artH*dpr));
  if(painting.width!==pw||painting.height!==ph){painting.width=pw;painting.height=ph;}
  stageCtx.setTransform(dpr,0,0,dpr,0,0);stageCtx.clearRect(0,0,W,H);
- // In live combat the illustrated arena must remain visible around the
- // painting. Gallery previews retain their authored full-coverage backdrop.
- if(!still){stageCtx.save();stageCtx.globalAlpha=gallery?1:.22;atmosphere(stageCtx,W,H,index);stageCtx.restore();}
+ // A cinematic is a complete scene, not a translucent rectangle over combat.
+ // Preserve both painted cats on every aspect ratio. Extend the same painting
+ // into spare space with a soft optical backdrop; no unrelated palette panel.
+ if(!still){atmosphere(stageCtx,W,H,index);if(extend){const cover=Math.max(W/frame.w,H/frame.h)*1.20,bw=frame.w*cover,bh=frame.h*cover;stageCtx.save();stageCtx.filter="blur("+Math.max(8,Math.round(Math.min(W,H)*.055))+"px)";stageCtx.drawImage(img,frame.x,frame.y,frame.w,frame.h,(W-bw)/2,(H-bh)/2,bw,bh);stageCtx.restore();}}
  const cameraPhase=p*Math.PI*2;
- const zoom=still?1:1.003+.004*(.5+.5*Math.sin(cameraPhase-.7));
+ const zoom=still?1:live?1.005+.025*smooth(p):1.003+.004*(.5+.5*Math.sin(cameraPhase-.7));
  const driftX=still?0:Math.sin(cameraPhase)*artW*.002;
  const driftY=still?0:Math.cos(cameraPhase*.7)*artH*.0015;
  const rotation=still?0:Math.sin(cameraPhase*.55)*.0014;
  paintingCtx.setTransform(dpr,0,0,dpr,0,0);paintingCtx.clearRect(0,0,artW,artH);
  paintingCtx.imageSmoothingEnabled=true;paintingCtx.imageSmoothingQuality='high';
- const frame=cellRect(index,tier);
  paintingCtx.save();paintingCtx.translate(artW*.5,artH*.5);paintingCtx.rotate(rotation);
  paintingCtx.scale(zoom,zoom);paintingCtx.translate(-artW*.5+driftX,-artH*.5+driftY);
  paintingCtx.drawImage(img,frame.x,frame.y,frame.w,frame.h,0,0,artW,artH);paintingCtx.restore();
- if(!still&&!gallery)feather(paintingCtx,artW,artH);
+ // Feather only the junction to the extended painting, never the battle itself.
+ if(extend)feather(paintingCtx,artW,artH);
  stageCtx.drawImage(painting,artX,artY,artW,artH);
  if(!still)drawOriginalArtEffects(stageCtx,artX,artY,artW,artH,p,key,tier);
  if(!seq.hideCaptions){const title=seq.name||window.CatBondDuoSignatures?.get?.(key)?.label||(window.MorrowwishI18n?.get?.()==='zh'?'双猫合击':'Duo Special');
   stageCtx.save();stageCtx.textAlign='center';stageCtx.textBaseline='alphabetic';stageCtx.shadowColor='#302747';stageCtx.shadowBlur=9;stageCtx.fillStyle='#fffbed';
   stageCtx.font='900 '+Math.round(clamp(artW*.043,15,34))+'px system-ui,sans-serif';stageCtx.fillText(title,artX+artW*.5,artY+artH*.93,artW*.88);stageCtx.restore();}
  lastLayout={source:'63-original-painted-storyboards',originalArt:true,actorFallback:false,viewport:{width:W,height:H},art:{x:artX,y:artY,width:artW,height:artH},artAspect:artW/artH,fullScreenAtmosphere:!still,
-  animatedEffects:!still,paintingDrawCount:1,actorLayerCount:0,camera:{zoom,panX:driftX,panY:driftY,rotationRadians:rotation},effectPhase:p,effectTier:tier};
+  animatedEffects:!still,paintingDrawCount:1,actorLayerCount:0,transition:live?'full-scene-crossfade':'gallery',extendedPainting:extend,opacity:alpha,camera:{zoom,panX:driftX,panY:driftY,rotationRadians:rotation},effectPhase:p,effectTier:tier};
  ctx.save();ctx.globalAlpha*=alpha;ctx.drawImage(stage,0,0,W,H);ctx.restore();return true;
 }
 window.CatBondPremiumCinematics={draw,keys,regionFor:k=>regions[k],get ready(){return ready},get failed(){return failed},
  wholeSceneCount:21,paintedFrameCount:63,skillVariants:21,tierVariants:3,get source(){return img.src},get originalPaintingSource(){return img.src},
  get originalPaintingDefault(){return true},get restoredOriginalFrameCount(){return 63},get fullBleedResponsive(){return true},
- get portraitComposition(){return 'complete-16x9-original-centered-with-fullscreen-palette-atmosphere'},
+ get portraitComposition(){return 'complete-16x9-original-centered-with-extended-painting-backdrop'},
  get actorFallbackEnabled(){return false},get lastLayout(){return lastLayout}};
 })();
