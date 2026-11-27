@@ -444,7 +444,7 @@ export const campaign = {
           "speaker": "jiedeng",
           "text": {
             "zh": "那团光在重复你的曲子，墙上的家铃都乱了。慢着……你刚才哼的，是这里失传的归家调？",
-            "en": "That glow is repeating your tune and scrambling the house bells. Wait… were you humming our lost homecoming song?"
+            "en": "That glow is repeating your tune, and it's scrambled the house bells. Wait… were you humming our lost homecoming tune?"
           }
         },
         {
@@ -457,8 +457,8 @@ export const campaign = {
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "我记得下一句。可我的铃声一接上，那团光就聚成了铃舌兽！它堵住古铃了，先把它赶走，我们才能让家铃各自响起来。",
-            "en": "I remember the next line. But when my bell answers, the glow gathers into a Belltongue Beast! It's blocking the old bell. Drive it away so we can restore the house bells."
+            "zh": "我记得下一句。你听——糟了！铃光叠成了铃舌兽，堵在古铃前。先把它赶开，才能让家铃各自响起来。",
+            "en": "I remember the next line. Listen—oh no! The echoes have gathered into a Belltongue Beast, blocking the old bell. We'll have to drive it off before the house bells can ring on their own."
           }
         }
       ],
@@ -651,8 +651,8 @@ export const campaign = {
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "图上少了一截。你怎么知道该往这边画？",
-            "en": "A piece of the map is missing. How did you know the line goes this way?"
+            "zh": "你们从月叶桥过来了！旧图缺的正是这一段，怎么知道往这里走？",
+            "en": "You made it across the moonleaf bridge! This is the missing stretch on the old map. How did you know to come here?"
           }
         },
         {
@@ -665,8 +665,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "多亏你选对了月叶桥，我们才能走到这儿。古树就在前面。",
-            "en": "Good thing you found a way across the moonleaf bridge. The ancient tree is just ahead."
+            "zh": "多亏你找到了能走的桥。古树就在前面。",
+            "en": "Good thing you found a way across. The ancient tree is just ahead."
           }
         },
         {
@@ -840,8 +840,8 @@ export const campaign = {
       "id": "forge:E-02",
       "chapter": "forge",
       "title": {
-        "zh": "影子底下的桥",
-        "en": "The bridge beneath the shadows"
+        "zh": "藏灯室的三只影子",
+        "en": "Three shadows in the lantern vault"
       },
       "previous": "forge:E-01",
       "lines": [
@@ -855,8 +855,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "守铃人？说不定它知道那张旧图是谁画的……咦，影子怎么聚到一起了？",
-            "en": "A bellkeeper? Maybe they know who drew the old map… Wait, why are the shadows gathering?"
+            "zh": "守铃人？这匣子里会不会有旧图的线索……咦，影子怎么聚到一起了？",
+            "en": "A bellkeeper? Could that case hold a clue about the old map? Wait… why are the shadows gathering?"
           }
         },
         {
@@ -896,8 +896,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "多亏你扶稳了灯，小栗。不然它早就溜回暗处了。",
-            "en": "Good thing you held that light steady, Pip. It would’ve slipped back into the dark."
+            "zh": "多亏小栗一直守着灯。现在我们能安心让古铃重新响起来了。",
+            "en": "Thanks for keeping the lamp steady, Pip. Now we can get the old bell ringing again."
           }
         },
         {
@@ -1545,6 +1545,20 @@ export const campaign = {
             "zh": "我怕你知道之后，又会做一样的选择。",
             "en": "I was afraid that once you knew, you'd make the same choice again."
           }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "我想知道当年到底发生了什么。还有没有别的记录？",
+            "en": "I want to know what really happened. Are there any other records?"
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "书库应该还有当年的记录。我们去找吧。这次你想知道什么，我都会听。",
+            "en": "The library should have records from those days. Let's find them. This time, I'll listen to whatever you want to ask."
+          }
         }
       ],
       "requires": [
@@ -1582,7 +1596,58 @@ export const campaign = {
       "lineGate": [
         "npc:identity-confrontation"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "choiceAt": 8,
+      "choiceResponses": {
+        "details": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "我想知道当年到底发生了什么。还有没有别的记录？",
+              "en": "I want to know what really happened. Are there any other records?"
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "书库应该还有当年的记录。我们去找吧。这次你想知道什么，我都会听。",
+              "en": "The library should have records from those days. Let's find them. This time, I'll listen to whatever you want to ask."
+            }
+          }
+        ],
+        "hurt": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "我以为我们是一起认识这个世界的。原来你一直知道我是谁。",
+              "en": "I thought we were discovering this world together. You knew who I was the whole time."
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "……对不起。我该早点告诉你。你不必现在就原谅我。",
+              "en": "…I'm sorry. I should have told you sooner. You don't have to forgive me now."
+            }
+          }
+        ],
+        "space": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "先让我自己想一想，好吗？",
+              "en": "Can I have a moment to think on my own?"
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "好。我在这里等。你想问的时候，我就在。",
+              "en": "Of course. I'll wait here. Whenever you're ready to ask, I'll be here."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "library:M-04",
@@ -1596,8 +1661,8 @@ export const campaign = {
         {
           "speaker": "baikan",
           "text": {
-            "zh": "借图的印记……暮铃，这不是你那只铃坠么？",
-            "en": "The mark on the borrowing record… Luna, isn't that your pendant?"
+            "zh": "借图的记录写着：封印松动与失忆复发是同一天。这个印记……暮铃，是你铃坠上的纹样吧？",
+            "en": "The borrowing record dates the loosened seal and renewed forgetting to the same day. And this mark… Luna, isn't it the pattern on your pendant?"
           }
         },
         {
@@ -1648,6 +1713,20 @@ export const campaign = {
             "zh": "你明明可以告诉我，让我自己选。你也不能替其他猫决定。",
             "en": "You could have told me and let me choose. You had no right to decide for the other cats either."
           }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "我很生气。那些猫也有自己的家，你不能拿他们的记忆冒险。",
+            "en": "I'm angry. Those cats have homes and families too. You can't gamble with their memories."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "你说得对。我不能只因为害怕失去你，就替他们作决定。",
+            "en": "You're right. Being afraid of losing you didn't give me the right to decide for them."
+          }
         }
       ],
       "requires": [
@@ -1685,7 +1764,58 @@ export const campaign = {
       "lineGate": [
         "explore:routing-record"
       ],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "choiceAt": 8,
+      "choiceResponses": {
+        "anger": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "我很生气。那些猫也有自己的家，你不能拿他们的记忆冒险。",
+              "en": "I'm angry. Those cats have homes and families too. You can't gamble with their memories."
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "你说得对。我不能只因为害怕失去你，就替他们作决定。",
+              "en": "You're right. Being afraid of losing you didn't give me the right to decide for them."
+            }
+          }
+        ],
+        "distance": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "我现在不想谈原谅。先让我看看还有什么办法。",
+              "en": "I can't talk about forgiveness right now. First I need to see what other options we have."
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "好。我不会逼你。去找墨页吧，书库也许留着另一条路。",
+              "en": "All right. I won't press you. Ask Quill; the library might show us another way."
+            }
+          }
+        ],
+        "understand": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "我知道你等了很久，可我不能当作这一切没有发生。",
+              "en": "I know you've waited a long time, but I can't pretend none of this happened."
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "我明白。你愿意听我说，不代表你欠我原谅。",
+              "en": "I understand. Hearing me out doesn't mean you owe me forgiveness."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "library:M-05",
@@ -2081,29 +2211,29 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "可我换了个问题，它就答不上来了。",
-            "en": "But when I changed the question, it couldn't answer."
+            "zh": "可我换了个位置，它还是照着原来的动作做。真正的你却跟了过来。",
+            "en": "But when I moved, it kept repeating the old movement. The real you responded to where I was."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "对，它只会重复刚才那句。真正的回应不是这样。",
-            "en": "Right. It only repeats the last line. A real answer isn't like that."
+            "zh": "对。它学得了我的声音，却不知道你刚刚做了什么。",
+            "en": "Exactly. It can copy my voice, but it doesn't know what you just did."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "是我把他们的声音压下去了。刚才我亲手停掉了那条旧路线。",
-            "en": "I'm the one who drowned out their voices. I've just shut down that old route myself."
+            "zh": "刚才听见风铃镇的声音被盖住，我才明白：我差点亲手夺走你想留下的生活。",
+            "en": "When Windchime Town's voices were drowned out, I finally understood. I nearly took away the life you wanted to keep."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我把它停了。小心，剩下的回响全过来了！",
-            "en": "I've stopped it. Watch out—the echoes are all coming this way!"
+            "zh": "抽取已经停了，但回响还在。咱们一起守住那些声音！",
+            "en": "The extraction has stopped, but the echoes are still here. Let's protect those voices together!"
           }
         }
       ],
@@ -2197,8 +2327,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "记得。我想起了我的名字，还有以前的事。以前说好了回家喝茶。风铃镇那场架、森林里那条绕来绕去的路……后来这些，我也都记得。",
-            "en": "I do. I remember my name and my life before. We promised to have tea back home. And that fight in Windchime Town, the winding forest path… I remember everything we've done since, too."
+            "zh": "记得。我想起了我的名字，还有以前的事。以前说好了回家喝茶。风铃镇那场架、森林里会长出新路的月叶……这一路的事，我也都记得。",
+            "en": "I do. I remember my name and my life before. We promised to have tea back home. That fight in Windchime Town, the moonleaves that grew new paths… I remember our whole journey, too."
           }
         },
         {
@@ -2273,6 +2403,20 @@ export const campaign = {
             "zh": "嗯。要是还有哪家需要帮忙，告诉我一声。",
             "en": "Okay. Let me know if any other families need help."
           }
+        },
+        {
+          "speaker": "player",
+          "text": {
+            "zh": "我在这里。你们慢慢说。",
+            "en": "I'm here. Take your time."
+          }
+        },
+        {
+          "speaker": "muling",
+          "text": {
+            "zh": "谢谢。檐灯，先告诉我哪一家最需要帮忙。",
+            "en": "Thank you. Alder, tell me which family needs help first."
+          }
         }
       ],
       "requires": [
@@ -2308,7 +2452,58 @@ export const campaign = {
         }
       ],
       "lineGate": [],
-      "choiceTiming": "afterDialogue"
+      "choiceTiming": "afterDialogue",
+      "choiceAt": 4,
+      "choiceResponses": {
+        "listen": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "我在这里。你们慢慢说。",
+              "en": "I'm here. Take your time."
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "谢谢。檐灯，先告诉我哪一家最需要帮忙。",
+              "en": "Thank you. Alder, tell me which family needs help first."
+            }
+          }
+        ],
+        "help": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "你修铃的时候，我可以在旁边搭把手。",
+              "en": "When you mend the bells, I can lend a paw."
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "好。但该道的歉、该修的铃，我会自己去做。",
+              "en": "I'd like that. But the apologies and the work I owe them are mine to do."
+            }
+          }
+        ],
+        "space": [
+          {
+            "speaker": "player",
+            "text": {
+              "zh": "让大家慢慢来吧。不用今天就把事情都说完。",
+              "en": "Let's give everyone time. We don't have to settle everything today."
+            }
+          },
+          {
+            "speaker": "muling",
+            "text": {
+              "zh": "嗯。我会先问大家愿不愿意让我帮忙，不急着求原谅。",
+              "en": "Right. I'll ask whether they'd like my help, without rushing them to forgive me."
+            }
+          }
+        ]
+      }
     },
     {
       "id": "epilogue:E-03",
