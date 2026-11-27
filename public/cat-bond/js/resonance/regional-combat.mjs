@@ -57,6 +57,19 @@ export function buildPattern(kind,W,H,top,bottom,point,cycle){
   default:return [];
  }
 }
+// The trial has a moving safe corridor rather than the normal guardian's circles.
+// Both layouts use the same line hitboxes and guardian telegraph renderer.
+export function buildMasteryPattern(W,H,top,bottom,cycle,element){
+ const vertical=element!=="dark",span=vertical?W:H-top-bottom;
+ const start=vertical?0:top,end=start+span;
+ const center=start+span*(cycle%2===0?.35:.65),half=span*.21;
+ const bands=[[start,center-half],[center+half,end]];
+ return bands.filter(([a,z])=>z>a).map(([a,z])=>{
+  const mid=(a+z)/2,w=z-a;
+  return vertical?{shape:"line",x1:mid,y1:top-w,y2:H-bottom+w,x2:mid,w}:
+   {shape:"line",x1:-w,y1:mid,x2:W+w,y2:mid,w};
+ });
+}
 export function inPattern(p,f){
  if(p.shape==="circle")return Math.hypot(f.x-p.x,f.y-p.y)<=p.r;
  const dx=p.x2-p.x1,dy=p.y2-p.y1,k=clamp(((f.x-p.x1)*dx+(f.y-p.y1)*dy)/(dx*dx+dy*dy||1),0,1);
@@ -216,7 +229,7 @@ function install(){
  function resolve(b,r,cast){
   if(r.balance)r.impact={cast,at:b.t};
   const controlled=target(b),avoided=controlled&&!cast.patterns.some(p=>inPattern(p,controlled));
-  if(r.balance&&avoided){r.recoveryUntil=b.t+1.8;r.successfulDodges=(r.successfulDodges||0)+1;notice(b,"成功避开攻击！趁破绽反击。","Attack evaded! Counter while the guardian is open.");}
+  if(r.balance&&avoided){const master=b.libraryEncounter?.bossId==="mastery";r.recoveryUntil=b.t+(master?2.6:1.8);r.successfulDodges=(r.successfulDodges||0)+1;notice(b,...(master?["星轨已破解！守卫暂时失去防御。","Orbit broken! The guardian is briefly exposed."]:["成功避开攻击！趁破绽反击。","Attack evaded! Counter while the guardian is open."]));}
   const impactColor=r.balance?guardianColors(r.kit.kind,cast.element)[1]:r.kit.color;
   for(const f of living(b)){
    if(!cast.patterns.some(p=>inPattern(p,f)))continue;
@@ -243,8 +256,9 @@ function install(){
   r.next-=dt;
   if(r.next<=0){
    const t=target(b);if(!t)return;
-   r.cast={remaining:1.45,max:1.45,element:r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element,patterns:buildPattern(r.kit.kind,b.W,b.H,b.topMargin,b.bottomMargin,t,r.cycle++)};
-   const line=b.libraryEncounter?.bossId==="library"?["镜影即将反击，躲开标记！","Mirror counter incoming: dodge the marked areas!"]:labels[r.kit.kind];notice(b,line[0],line[1]);paintHud(b);
+   const master=b.libraryEncounter?.bossId==="mastery",element=r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element,cycle=r.cycle++,warning=master?2.15:1.45;
+   r.cast={remaining:warning,max:warning,element,patterns:master?buildMasteryPattern(b.W,b.H,b.topMargin,b.bottomMargin,cycle,element):buildPattern(r.kit.kind,b.W,b.H,b.topMargin,b.bottomMargin,t,cycle)};
+   const line=master?(element==="dark"?["暗相横向封锁！进入未标记的安全带。","Dark horizontal seal! Move into the unmarked lane."]:["光相纵向封锁！进入未标记的安全带。","Light vertical seal! Move into the unmarked lane."]):b.libraryEncounter?.bossId==="library"?["镜影即将反击，躲开标记！","Mirror counter incoming: dodge the marked areas!"]:labels[r.kit.kind];notice(b,line[0],line[1]);paintHud(b);
   }
  }
  function draw(b,ctx){
@@ -298,10 +312,10 @@ function install(){
   e._darkPhase=true;e.darkPhaseAt=b.t;e.element="dark";
   const color=guardianColors("orbit","dark")[1];
   b.vfx.ring(e.x,e.y,{r0:18,vr:145,life:.55,color,width:3});
-  notice(b,"暗相降临，光系攻击可克制。","Dark phase. Light attacks have the advantage.");paintHud(b);
+  notice(b,...(b.libraryEncounter?.bossId==="mastery"?["暗相降临！下一次星轨转为横向封锁，光系攻击可克制。","Dark phase! The next seal turns horizontal; light attacks have the advantage."]:["暗相降临，光系攻击可克制。","Dark phase. Light attacks have the advantage."]));paintHud(b);
  }
  const hurt=BP.hurtEnemy;
- BP.hurtEnemy=function(e,dmg,...args){if(this.regionalCombat?.shadowLight&&!inLight(this,e))return 0;const r=this.regionalCombat;const tactical=r?.balance&&e.regionalEnemy;if(tactical){if(r.recoveryUntil>this.t)dmg*=this.libraryEncounter?.bossId==="harbor"?1.15:1.25;else if(r.cast&&!r.shadowLight&&this.libraryEncounter?.bossId!=="harbor")dmg*=.85;}const result=hurt.call(this,e,dmg,...args);shiftGuardian(this,e);return result;};
+ BP.hurtEnemy=function(e,dmg,...args){if(this.regionalCombat?.shadowLight&&!inLight(this,e))return 0;const r=this.regionalCombat;const tactical=r?.balance&&e.regionalEnemy;if(tactical){if(r.recoveryUntil>this.t)dmg*=this.libraryEncounter?.bossId==="mastery"?1.4:this.libraryEncounter?.bossId==="harbor"?1.15:1.25;else if(r.cast&&!r.shadowLight&&this.libraryEncounter?.bossId!=="harbor")dmg*=.85;}const result=hurt.call(this,e,dmg,...args);shiftGuardian(this,e);return result;};
  window.CatBondShadowCombat={steer(b,f){if(!b.regionalCombat?.shadowLight||!b.autoMode||!f.alive)return null;const l=shadowLight(b),dx=l.x-f.x,dy=l.y-f.y,d=Math.hypot(dx,dy);return d>18?{x:dx/d,y:dy/d}:{x:0,y:0};}};
  const capture=BP.startCaptureSeq;
  BP.startCaptureSeq=function(){if(this.libraryEncounter){if(this.done||this.liveEnemies().length)return;this.libraryEncounter.cleared=true;this.projectiles=[];this.enemyProjectiles=[];this.finish(true);return;}if(this.regionalCombat&&this.enemies.some(e=>e.regionalEnemy))this._lastDropped=this.enemies[0];return capture.call(this);};
@@ -387,9 +401,9 @@ function install(){
  window.addEventListener("cat-bond-resonance-battle-request",event=>{const x=event.detail,d=storyEcho[x?.region];if(d&&x.sceneId===d.scene&&x.operation===d.op&&!prepareLibrary(window.__game,x.region))window.__game?.toast?.({zh:"请前往守卫所在的位置。",en:"Approach the guardian first."});});
  function showLibraryResult(game,owner,recovery,outcome,region="library",encounter={}){
   const ui=window.UI;if(!ui?.panel||window.State.S!==owner)return;
-  const win=outcome==="win",retry=!win,title=REGIONAL_BOSSES[encounter.bossId]?(win?[REGIONAL_BOSSES[encounter.bossId].name[0]+"已击败",REGIONAL_BOSSES[encounter.bossId].name[1]+" defeated"]:[outcome==="save-failed"?"战斗记录未保存":"挑战未完成",outcome==="save-failed"?"Battle result not saved":"Challenge incomplete"]):region==="forge"?(win?["剪影兽已消散","Shadow beast defeated"]:["灯影挑战未完成","Shadow challenge incomplete"]):region==="harbor"?(win?["铃舌兽已消散","Belltongue Beast defeated"]:["铃房仍不安全","Bell house still unsafe"]):region==="forest"?(win?["空响已消散","Hollow echo dispelled"]:["救援尚未完成","Rescue incomplete"]):region==="starfall"?(win?["星轨守卫已消散","Orbital guardian defeated"]:["星轨挑战未完成","Orbital challenge incomplete"]):win?["守档幻象已消散","Archive echo defeated"]:outcome==="retreat"?["已从镜影战斗撤退","Retreated from the archive echo"]:outcome==="save-failed"?["战斗记录未保存","Battle result not saved"]:["队伍在镜影战斗中落败","Squad defeated by the archive echo"];
+  const win=outcome==="win",retry=!win,title=REGIONAL_BOSSES[encounter.bossId]?(win?(encounter.bossId==="mastery"?["星轨大师试炼通过","Orbital Master Trial cleared"]:[REGIONAL_BOSSES[encounter.bossId].name[0]+"已击败",REGIONAL_BOSSES[encounter.bossId].name[1]+" defeated"]):[outcome==="save-failed"?"战斗记录未保存":"挑战未完成",outcome==="save-failed"?"Battle result not saved":"Challenge incomplete"]):region==="forge"?(win?["剪影兽已消散","Shadow beast defeated"]:["灯影挑战未完成","Shadow challenge incomplete"]):region==="harbor"?(win?["铃舌兽已消散","Belltongue Beast defeated"]:["铃房仍不安全","Bell house still unsafe"]):region==="forest"?(win?["空响已消散","Hollow echo dispelled"]:["救援尚未完成","Rescue incomplete"]):region==="starfall"?(win?["星轨守卫已消散","Orbital guardian defeated"]:["星轨挑战未完成","Orbital challenge incomplete"]):win?["守档幻象已消散","Archive echo defeated"]:outcome==="retreat"?["已从镜影战斗撤退","Retreated from the archive echo"]:outcome==="save-failed"?["战斗记录未保存","Battle result not saved"]:["队伍在镜影战斗中落败","Squad defeated by the archive echo"];
   const detail=REGIONAL_BOSSES[encounter.bossId]?(win?(encounter.optional?["挑战完成，可以继续探索。","Challenge cleared. Continue exploring."]:["道路已安全，可以继续主线。","The path is safe. Continue your journey."]):["保留任务进度。休整或更换队伍后再试。","Quest progress is preserved. Rest or change your party and retry."]):region==="forge"?(win?["影戏重新清晰了。去找烬婆。","The shadows are clear again. Find Ember."]:["将剪影兽引到灯光下，休整后再试。","Lure the beast into the light and try again."]):region==="harbor"?(win?["铃房安静下来了。去找暮铃。","The bell house is quiet. Find Luna."]:["休整后再试。","Rest and try again."]):region==="forest"?(win?["根须松动了。沿水道找到被困的猫咪。","The roots loosened. Follow the channel to the trapped cats."]:["芽禾仍稳住水道，已调查的水痕不会丢失。休整后再试。","Fern is holding the channel; the trail remains verified. Rest and retry."]):region==="starfall"?(win?["观星台已安全。现在可以验证六地的分布式航线。","The observatory is safe. Verify the six regions’ distributed routes."]:["休整或更换队伍后再试。","Rest or change your team and try again."]):win?["真实记忆已核实。壁画中的身份线索可以继续调查。","The original memory is verified. Continue investigating the identity shown in the mural."]:["猫咪和档案进度已保留。休整或更换上阵猫咪后可以再次挑战。","Your cats and archive progress are preserved. Rest or change your team before trying again."];
-  ui.panel('<span class="card-close">×</span><h2 class="center">'+tr(title)+'</h2><p class="sub">'+tr(win&&victoryNotes[encounter.bossId]?victoryNotes[encounter.bossId]:detail)+'</p>'+(win&&encounter.reward?.some(Boolean)?'<p class="center">+'+encounter.reward[0]+' '+tr(["金币","coins"])+' · +'+encounter.reward[1]+' '+tr(["小鱼干","fish"])+' · '+encounter.reward[2]+tr([' 参战猫咪经验',' XP per participating cat'])+'</p>':'')+(ui.battleRecoveryMarkup?.(recovery)||'')+'<div class="btn-row" style="justify-content:center">'+(retry?'<button type="button" class="btn gold" id="library-retry-encounter">'+tr(["再次挑战","Retry encounter"])+'</button>':'')+'<button type="button" class="btn '+(retry?'ghost':'gold')+'" id="library-battle-ok">'+tr(["继续探索","Continue exploring"])+'</button></div>');
+  ui.panel('<span class="card-close">×</span><h2 class="center">'+tr(title)+'</h2><p class="sub">'+tr(win&&victoryNotes[encounter.bossId]?victoryNotes[encounter.bossId]:detail)+'</p>'+(win&&encounter.optional?'<p class="center sub">'+tr(encounter.reward?.some(Boolean)?["首次挑战完成 · 胜利已记录","First clear · Victory recorded"]:["再次挑战成功 · 首次奖励已领取","Rematch cleared · First-clear reward already claimed"])+'</p>':'')+(win&&encounter.reward?.some(Boolean)?'<p class="center">+'+encounter.reward[0]+' '+tr(["金币","coins"])+' · +'+encounter.reward[1]+' '+tr(["小鱼干","fish"])+' · '+encounter.reward[2]+tr([' 参战猫咪经验',' XP per participating cat'])+'</p>':'')+(ui.battleRecoveryMarkup?.(recovery)||'')+'<div class="btn-row" style="justify-content:center">'+(retry?'<button type="button" class="btn gold" id="library-retry-encounter">'+tr(["再次挑战","Retry encounter"])+'</button>':'')+'<button type="button" class="btn '+(retry?'ghost':'gold')+'" id="library-battle-ok">'+tr(["继续探索","Continue exploring"])+'</button></div>');
   const ok=document.getElementById("library-battle-ok"),again=document.getElementById("library-retry-encounter");if(ok){
    ok.closest(".card")?.classList.add("cb-guardian-result");
    ok.onclick=()=>ui.closeAll();
