@@ -43,7 +43,7 @@ async function run(chapter){
   }
   steps.push({scene:(await view()).current?.id,action:label});await b.click();
  }
- async function trial(id,actions){const modal=page.locator("[data-adventure=trial-"+id+"]");await modal.waitFor({state:"visible",timeout:15000});for(const a of actions)await modal.locator("[data-play-action="+a+"]").click();await modal.locator("[data-adventure]").count();assert.equal(await modal.getAttribute("data-complete"),"true");await shot("trial-"+id);await modal.getByRole("button",{name:"Return",exact:true}).click();await modal.waitFor({state:"detached"});}
+ async function trial(id,actions){const modal=page.locator("[data-adventure=trial-"+id+"]");await modal.waitFor({state:"visible",timeout:15000});for(const a of actions)await modal.locator("[data-play-action="+a+"]").click();assert.equal(await modal.getAttribute("data-complete"),"true");await shot("trial-"+id);await modal.getByRole("button",{name:"Return",exact:true}).click();await modal.waitFor({state:"detached"});}
  const op=async(id)=>page.waitForFunction(op=>!CatBondResonance.view().objective.includes(op),id,{timeout:35000});
  async function talk(npc){
   const before=await view();

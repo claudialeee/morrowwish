@@ -256,6 +256,19 @@ jobs:
                 await page.locator('.sg-prologue-guide').getByRole('button',{name:'Next scene · Windchime Town',exact:true}).click();
                 await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01'&&WorldMap.currentRegion==='harbor');
                 await page.screenshot({path:'preview-'+prefix+'-harbor.png'});
+                // Actual player-driven discovery on the shipped map, not a synthetic slot.
+                const surface=page.locator('.rw-surface');
+                await page.waitForFunction(()=>JSON.parse(document.querySelector('.rw-surface')?.dataset.affordances||'[]').some(m=>m.t==='The tidepool shell'));
+                const target=await surface.evaluate(el=>{const m=JSON.parse(el.dataset.affordances).find(m=>m.t==='The tidepool shell'),[zoom,x,y]=JSON.parse(el.dataset.camera);return {x:el.clientWidth*(x+zoom*m.x/960),y:el.clientHeight*(y+zoom*m.y/540)}});
+                await surface.click({position:target});
+                const side=page.locator('[data-adventure=side-harbor]');
+                await side.waitFor({state:'visible',timeout:15000});
+                for(const action of ['step-0-0','step-1-1','step-2-2'])await side.locator('[data-play-action="'+action+'"]').click();
+                if(await side.getAttribute('data-complete')!=='true')throw Error('Tidepool reward did not complete');
+                await page.waitForFunction(()=>State.S.resonanceExploration.interactions['side-adventure:harbor']===true);
+                await page.screenshot({path:'preview-'+prefix+'-tidepool-complete.png'});
+                await side.getByRole('button',{name:'Return',exact:true}).click();
+                await side.waitFor({state:'detached'});
                 if(external.length||errors.length)throw Error('Unexpected external requests / page errors: '+JSON.stringify({external,errors}));
                 console.log('PREVIEW NEW SLOT AND RELOAD VERIFIED: '+prefix+' '+page.url());
               }catch(error){
@@ -294,6 +307,7 @@ jobs:
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in $(seq 1 15); do curl -fsS http://127.0.0.1:8766/cat-bond/ >/dev/null && break; sleep 1; done
           node .cat-bond-preview-smoke.mjs
+          node scripts/test-cat-bond-adventure-browser.mjs
           node scripts/cat-bond-title-audio-qa.mjs
           # Shared layout remains covered by the existing preview gate.
           node scripts/cat-bond-layout-acceptance.mjs
