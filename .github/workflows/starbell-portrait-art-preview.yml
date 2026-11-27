@@ -20,6 +20,10 @@ jobs:
       PREVIEW_URL: https://starbell-portrait-preview.morrowwish.pages.dev
       GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Hold preview deployment at owner request
+        run: |
+          echo 'Preview deployment is paused until explicitly authorized.'
+          exit 1
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
