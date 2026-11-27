@@ -2,8 +2,9 @@ import fs from 'node:fs/promises';
 import {chromium} from 'playwright';
 const out='artifacts/starbell-story-trailer';await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
-const origin=process.env.TRAILER_ORIGIN||'http://127.0.0.1:8765';
-const evidence={origin,source:process.env.GITHUB_SHA,clips:[],errors:[]};
+const origin=process.env.TRAILER_ORIGIN||'https://cat-bond-preview.morrowwish.pages.dev';
+const version=await (await fetch(origin+'/preview-version.json?trailer='+Date.now())).json();
+const evidence={origin,source:version,script:process.env.GITHUB_SHA,clips:[],errors:[]};console.log('LIVE SOURCE',JSON.stringify(version));
 async function open(region){
  const ctx=await browser.newContext({viewport:{width:540,height:960},deviceScaleFactor:2,isMobile:true,hasTouch:true,reducedMotion:'reduce'});
  const p=await ctx.newPage();p.setDefaultTimeout(15000);
@@ -40,6 +41,7 @@ async function dialogue(p,id){
 }
 async function record(p,id,secs,action){
  const dir=out+'/'+id;await fs.mkdir(dir,{recursive:true});
+ const rect=await p.evaluate(id=>{const el=['glide','chase'].includes(id)?document.querySelector('.rw-surface'):null;const r=el?.getBoundingClientRect();return r?{x:r.x,y:r.y,width:r.width,height:r.height,vw:innerWidth,vh:innerHeight}:null},id);
  const session=await p.context().newCDPSession(p);
  const frames=[];let active=true;const begin=Date.now();
  session.on('Page.screencastFrame',e=>{const at=(Date.now()-begin)/1000;session.send('Page.screencastFrameAck',{sessionId:e.sessionId}).catch(()=>{});if(active&&at<=secs+0.2)frames.push({at,data:e.data});});
@@ -54,7 +56,7 @@ async function record(p,id,secs,action){
  for(let i=0;i<frames.length;i++){list+="file '"+String(i).padStart(5,'0')+".jpg'\n";list+='duration '+Math.max(.015,(i+1<times.length?times[i+1]:secs)-times[i]).toFixed(4)+'\n';}
  list+="file '"+String(frames.length-1).padStart(5,'0')+".jpg'\n";await fs.writeFile(dir+'/frames.txt',list);
  await p.screenshot({path:out+'/'+id+'-proof.png'});
- evidence.clips.push({id,seconds:secs,frames:frames.length,scene:await p.evaluate(()=>({scene:__game.scene,region:WorldMap.currentRegion,story:CatBondResonance.view().current?.id}))});
+ evidence.clips.push({id,seconds:secs,frames:frames.length,rect,scene:await p.evaluate(()=>({scene:__game.scene,region:WorldMap.currentRegion,story:CatBondResonance.view().current?.id}))});
  console.log('CAPTURED',id,frames.length);
 }
 async function attempt(id,region,fn){let ctx;try{const c=await open(region);ctx=c.ctx;await fn(c.p);}catch(e){evidence.errors.push(id+': '+String(e));console.log('CAPTURE ERROR',id,String(e));}finally{await ctx?.close();}}
@@ -66,15 +68,15 @@ try{
   await click(p,'Chase the runaway chime');const chase=p.locator('[data-spatial="chase"]');await chase.waitFor();
   const b=await p.locator('.rw-surface').boundingBox();
   await record(p,'chase',5,async()=>{await p.waitForTimeout(450);await p.locator('.rw-surface').tap({position:{x:b.width*.8,y:b.height*.35}});});
-  await chase.waitFor({state:'hidden',timeout:18000});await dialogue(p,'harbor:H-02');await click(p,'Talk to Yandeng');await dialogue(p,'harbor:H-03');await click(p,'Belllight beast');await p.locator('#panel [data-battle-auto="true"]').click();await p.locator('#bp-go').click();await p.locator('#battle-ui.on').waitFor();const tutorial=p.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();
-  await record(p,'battle',6,async()=>{await p.waitForTimeout(3500);const btn=p.locator('button').filter({hasText:/Duo/i}).first();if(await btn.isVisible()&&await btn.isEnabled())await btn.tap();});
+  await chase.waitFor({state:'hidden',timeout:18000});await dialogue(p,'harbor:H-02');await click(p,'Talk to Yandeng');await record(p,'melody',5,async()=>{await p.waitForTimeout(1000);await dialogue(p,'harbor:H-03');});await click(p,'Belllight beast');await p.locator('#panel [data-battle-auto="true"]').click();await p.locator('#bp-go').click();await p.locator('#battle-ui.on').waitFor();const tutorial=p.locator('#battle-tutorial-skip');if(await tutorial.isVisible())await tutorial.click();
+  await record(p,'battle',9,async()=>{await p.waitForTimeout(3500);const btn=p.locator('button').filter({hasText:/Duo/i}).first();if(await btn.isVisible()&&await btn.isEnabled())await btn.tap();});
  }),
  attempt('sky','sky',async p=>{
   await click(p,'Catch the wind · Practice gliding');await p.locator('[data-sky-flight-status][data-route="open"]').waitFor();const b=await p.locator('.rw-surface').boundingBox();
-  await record(p,'glide',5,async()=>{await p.locator('.rw-surface').tap({position:{x:b.width*.35,y:b.height*.30}});await p.waitForTimeout(2500);await p.locator('.rw-surface').tap({position:{x:b.width*.35,y:b.height*.50}});});
+  await record(p,'glide',7,async()=>{await p.locator('.rw-surface').tap({position:{x:b.width*.35,y:b.height*.30}});await p.waitForTimeout(2500);await p.locator('.rw-surface').tap({position:{x:b.width*.35,y:b.height*.50}});});
  }),
  attempt('garden','garden',async p=>{
-  await record(p,'garden',4,async()=>{await p.waitForTimeout(900);const cv=p.locator('canvas:visible').first();if(await cv.count()){const b=await cv.boundingBox();if(b)await cv.tap({position:{x:b.width*.65,y:b.height*.55}});}});
+  await record(p,'garden',5,async()=>{await p.waitForTimeout(900);const cv=p.locator('canvas:visible').first();if(await cv.count()){const b=await cv.boundingBox();if(b)await cv.tap({position:{x:b.width*.65,y:b.height*.55}});}});
  })
  ]);
 }finally{await browser.close();await fs.writeFile(out+'/capture-evidence.json',JSON.stringify(evidence,null,2));}

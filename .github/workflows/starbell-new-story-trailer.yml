@@ -21,25 +21,21 @@ jobs:
       - name: Install encoder and CJK fonts
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
-      - name: Capture fresh gameplay from checked-out portrait runtime
-        run: |
-          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-trailer-server.log 2>&1 &
-          server=$!
-          trap 'kill "$server" 2>/dev/null || true' EXIT
-          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
-          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
-          node scripts/starbell-new-story-capture.mjs
-      - name: Compose original bell signature and render
+          sudo apt-get install -y -qq ffmpeg fluidsynth fluid-soundfont-gm python3-pil
+      - name: Capture latest published preview gameplay
+        run: node scripts/starbell-new-story-capture.mjs
+      - name: Score and cinematic composition
         run: |
           python3 scripts/starbell-new-story-audio.py
+          fluidsynth -ni -g 0.8 -r 44100 -F artifacts/starbell-story-trailer/score.wav /usr/share/sounds/sf2/FluidR3_GM.sf2 artifacts/starbell-story-trailer/score.mid
+          python3 scripts/starbell-new-story-particles.py
           node scripts/starbell-new-story-render.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: starbell-new-story-trailer-review
           path: |
-            artifacts/starbell-story-trailer/Echoes-of-the-Starbell-Story-Trailer-*.mp4
+            artifacts/starbell-story-trailer/Echoes-of-the-Starbell-Official-Trailer-EN.mp4
             artifacts/starbell-story-trailer/contact-*.jpg
             artifacts/starbell-story-trailer/*-frame.png
             artifacts/starbell-story-trailer/*-proof.png
