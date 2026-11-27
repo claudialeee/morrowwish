@@ -1,7 +1,7 @@
 // Headless real-engine balance regression. Synthetic level/party fixtures; no browser rendering or scripted wins.
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
-const names=["data","state","skills","cat-relationships","contact-fx","vfx","moon-fx","magnetic-fx","skill-fx","ult-vfx","battle"],mods=["regional-bosses","regional-combat","companion-talents"];
+const names=["data","state","skills","cat-relationships","contact-fx","vfx","moon-fx","magnetic-fx","skill-fx","ult-vfx","battle"],mods=["regional-bosses","regional-combat","companion-talents","guardian-effects"];
 const src=Object.fromEntries([...names.map(n=>[n,readFileSync(new URL('../public/cat-bond/js/'+n+'.js',import.meta.url),'utf8')]),...mods.map(n=>[n,readFileSync(new URL('../public/cat-bond/js/resonance/'+n+'.mjs',import.meta.url),'utf8')])]);
 
 function runGuardianMatrix(src,emit){
@@ -14,6 +14,7 @@ function runGuardianMatrix(src,emit){
  for(const n of names)new Function("window","with(window){"+src[n]+"\n}")(w);
  Object.assign(w,new Function(strip(src["regional-bosses"])+"\nreturn {REGIONAL_BOSSES,bossKey,optionalBossAvailable,atBoss,bossReward,bossTemplates,regionalBossLevel,guardianProfile}")());
  Object.assign(w,new Function(strip(src["companion-talents"])+"\nreturn {activateCompanionTalents}")());
+ Object.assign(w,new Function(strip(src["guardian-effects"])+"\nreturn {drawGuardianCast,guardianColors}")());
  w.canonArt=()=>new ImageMock();w.visibleBounds=()=>[0,0,400,400];w.cinematicActive=()=>false;w.syncCinematicHud=nop;w.watchObjectiveHud=nop;w.positionObjectiveHud=nop;
  let seed=42;
  w.Game=class{constructor(W,H){Object.assign(this,{W,H,scene:"map",isTouch:H>W,keys:{},mouse:{x:W*.7,y:H*.6},toast:nop,ui:{},onBattleEnd:nop});} startBattle(team,wild,opts){this.battle=new w.Battle.CaptureBattle(this,team,wild,{...opts,seed});this.battle.coach=null;this.battle.autoMode=true;this.scene="battle";} endBattle(){this.battle=null;}};
