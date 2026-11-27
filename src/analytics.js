@@ -192,6 +192,12 @@ function mainStats(x){
     const mature=[...played].filter(id=>Number(ids.get(id).ts)<=Number(x.snapshotAt||Date.now())-300000||active.get(id)>=300),five=mature.filter(id=>active.get(id)>=300).length;
     const mode={};for(const name of ["portrait","landscape","unknown"]){const cohort=[...ids].filter(([,r])=>(r.data.previewMode||"unknown")===name);mode[name]={views:cohort.length,played:cohort.filter(([id])=>played.has(id)).length,effective:cohort.filter(([id])=>active.get(id)>=300).length};}
     const signalViews=Object.fromEntries([...reached].map(([k,set])=>[k,set.size]));
+    const identities=k=>new Set([...(reached.get(k)||[])].map(id=>ids.get(id)?.visitor).filter(Boolean));
+    const chapterProgress={};
+    for(const key of ["prologue","harbor","forest","forge","sky","library","starfall","finale","epilogue"]){
+      const entered=identities("rpg_enter_"+key),finished=identities("rpg_done_"+key);
+      chapterProgress[key]={entered:entered.size,finished:finished.size,finishedFromEntered:[...finished].filter(id=>entered.has(id)).length};
+    }
     const bySource=new Map(),daily=new Map(),firstEffective=new Map();
     for(const [id,r] of ids){
       const d=r.data,s=String(d.utmSource||(d.source==="external"?d.referrer:d.source==="internal"?"internal":"direct")||"unknown").toLowerCase().slice(0,60);
@@ -206,7 +212,7 @@ function mainStats(x){
     }
     const dailyEffective=dates.map(day=>({day,effective:daily.get(day)?.size||0,firstObserved:[...firstEffective.values()].filter(x=>x===day).length}));
     const sourceMetrics=[...bySource.values()].sort((a,b)=>b.views-a.views);
-    return {trackedViews:ids.size,playedViews:played.size,playedBrowsers:knownBrowsers.size,effectiveBrowsers:effectiveBrowsers.size,fiveMinuteEligible:mature.length,fiveMinuteViews:five,avgActiveSeconds:played.size?Math.round([...played].reduce((n,id)=>n+(active.get(id)||0),0)/played.size):null,mode,sourceMetrics,dailyEffective,signalViews,signalCounts:Object.fromEntries(counts)};
+    return {trackedViews:ids.size,playedViews:played.size,playedBrowsers:knownBrowsers.size,effectiveBrowsers:effectiveBrowsers.size,fiveMinuteEligible:mature.length,fiveMinuteViews:five,avgActiveSeconds:played.size?Math.round([...played].reduce((n,id)=>n+(active.get(id)||0),0)/played.size):null,mode,sourceMetrics,dailyEffective,chapterProgress,signalViews,signalCounts:Object.fromEntries(counts)};
   };
   const byGame=[...new Set(rows.map(r=>r.game).filter(Boolean))].map(game=>{let g=rows.filter(r=>r.game===game);let z=score(g);const sources={direct:0,internal:0,external:0};for(let r of g.filter(r=>r.kind==="visit")){if(r.data.source in sources)sources[r.data.source]++}const previewModes=game==="starbell-preview"?Object.fromEntries(["portrait","landscape","unknown"].map(mode=>[mode,g.filter(r=>r.kind==="visit"&&(r.data.previewMode||"unknown")===mode).length])):undefined;return {game,...z,sources,engagement:engagement(g),...(previewModes?{previewModes}:{})}}).sort((a,b)=>b.pageviews-a.pageviews);
   const byDay=dates.map(day=>{let r=rows.filter(x=>localDay(Number(x.ts)||Date.parse(x.day+"T00:00:00Z"))===day),v=r.filter(x=>x.kind==="visit"),s=r.filter(x=>x.kind==="session");return {day,pageviews:v.length,visitors:visitors(v),starts:sum(s,"starts"),retries:sum(s,"retries"),shares:sum(s,"shares")}});

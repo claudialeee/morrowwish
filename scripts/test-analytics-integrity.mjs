@@ -303,7 +303,7 @@ rows.splice(0,rows.length);
 const missingResponse=await api(cachedReq(),env);
 assert.deepEqual((await missingResponse.json()).rollup.headlineMetrics,{
  uniqueBrowsers:null,untrackedBrowserVisits:0,avgSessionSeconds:null,measuredSessionCount:0,
- shareClicks:null,d1Eligible:0,d1Returned:0
+ shareClicks:null,d1Eligible:0,d1Returned:0,d7Eligible:0,d7Returned:0
 },'No observations must not be misrepresented as zero');
 console.log('Seven-game D1 analytics contract: visit, start, end, referral, auth and diagnostic write/read/delete all passed.');
 await import('./test-cat-bond-analytics-funnel.mjs');
@@ -349,5 +349,20 @@ assert.equal(metric.fiveMinuteViews,1);
 assert.equal(metric.avgActiveSeconds,300);
 assert.equal(metric.signalViews.rpg_done_prologue,1);
 assert.equal(metric.signalCounts.rpg_pdone_chase,1);
+assert.equal(metric.chapterProgress.prologue.entered,1);
+assert.equal(metric.chapterProgress.prologue.finishedFromEntered,1);
+assert.equal(metric.sourceMetrics[0].effective,1);
+assert.equal(metric.dailyEffective.reduce((n,x)=>n+x.firstObserved,0),1);
 assert.equal(metric.mode.portrait.played,1);
 console.log('Versioned engagement and RPG progress verified.');
+
+// Explicit D7 maturity and return using a deterministic test clock.
+const realNow=Date.now;
+try{
+ Date.now=()=>Date.parse('2026-12-01T18:00:00Z');
+ rows.splice(0,rows.length);
+ seed('returning','2026-11-22','return-day0');seed('returning','2026-11-29','return-day7');
+ seed('not-returning','2026-11-22','no-return');seed('immature','2026-11-26','immature-day0');
+ const ret=(await (await api(cachedReq(),env)).json()).byGame.find(g=>g.game==='tiny-town').headlineMetrics;
+ assert.equal(ret.d7Eligible,2);assert.equal(ret.d7Returned,1);
+}finally{Date.now=realNow;}
