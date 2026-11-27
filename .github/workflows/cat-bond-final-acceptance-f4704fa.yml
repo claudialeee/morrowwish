@@ -1,0 +1,121 @@
+name: Canon 2.2 frozen candidate complementary acceptance
+on:
+  push:
+    branches: [ops/final-acceptance-f4704fa]
+    paths: ['.github/workflows/cat-bond-final-acceptance-f4704fa.yml']
+permissions:
+  contents: read
+# Complement the five scoped chapter jobs in 45914414955; exact same game SHA.
+jobs:
+  chapter:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {chapter: harbor, entry: 'harbor:H-01'}
+          - {chapter: forest, entry: 'forest:R-01'}
+          - {chapter: forge, entry: 'forge:E-01'}
+    env:
+      CAT_BOND_EXPERIENCE: '1'
+      CAT_BOND_TARGET_SCENES: ${{ matrix.entry }}
+      CAT_BOND_CHAPTERS: ${{ matrix.chapter }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f4704fa0672ffcdca6ddd4bbdc95baaee3186cf2
+      - name: Verify frozen source
+        run: test "$(git rev-parse HEAD)" = "f4704fa0672ffcdca6ddd4bbdc95baaee3186cf2"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Produce synthetic starting snapshot, not playthrough evidence
+        run: node scripts/cat-bond-experience-knowledge.mjs
+      - name: Complete the chapter through real browser input
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-browser.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-targets.mjs
+          node scripts/cat-bond-experience-chapters.mjs
+      - name: Reload actual chapter-derived saves across languages and screen profiles
+        run: |
+          root=artifacts/cat-bond-experience/chapter-acceptance/checkpoints/chapter-$CAT_BOND_CHAPTERS
+          test -d "$root"
+          mapfile -d '' fixtures < <(find "$root" -maxdepth 1 -name '*.json' -print0)
+          test "${#fixtures[@]}" -gt 0
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-replay.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-replay.mjs --batch --chapter-derived "${fixtures[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canon22-browser-${{ matrix.chapter }}
+          path: |
+            artifacts/cat-bond-experience/
+            /tmp/canon22-browser.log
+            /tmp/canon22-replay.log
+          if-no-files-found: warn
+          retention-days: 14
+  fresh-campaign:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [opening, campaign]
+    env:
+      CAT_BOND_CONTINUOUS: '1'
+      CAT_BOND_EXPERIENCE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: f4704fa0672ffcdca6ddd4bbdc95baaee3186cf2
+      - name: Verify frozen source
+        run: test "$(git rev-parse HEAD)" = "f4704fa0672ffcdca6ddd4bbdc95baaee3186cf2"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Verify both real opening routes and title on all profiles
+        if: matrix.scope == 'opening'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-opening.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          failures=0
+          for locale in zh en; do
+            if ! PROLOGUE_LANG="$locale" node scripts/cat-bond-release-prologue-qa.mjs; then failures=$((failures+1)); fi
+          done
+          test "$failures" -eq 0
+      - name: Fresh slot campaign through ending (real save reload between chapters)
+        if: matrix.scope == 'campaign'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-fresh.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-chapters.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canon22-fresh-${{ matrix.scope }}
+          path: |
+            artifacts/cat-bond-experience/
+            /tmp/canon22-fresh.log
+            /tmp/canon22-opening.log
+            artifacts/cat-bond-release-prologue/
+          retention-days: 14
+
