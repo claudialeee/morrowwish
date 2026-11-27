@@ -1,0 +1,1 @@
+Candidates derived from real in-game original paintings and the approved cover art. No new generated artwork. CrazyGames title-only alternatives; GameDistribution small thumbnails have no text or logos. Select only after inspecting actual composition. Original user-approved three covers are preserved.
