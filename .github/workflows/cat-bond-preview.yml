@@ -13,6 +13,8 @@ on:
       - 'scripts/test-cat-bond-*.mjs'
       - 'scripts/check-cat-bond-resonance-world.mjs'
       - 'scripts/cat-bond-test-start.mjs'
+      - 'scripts/import-cat-bond-windchime-music.mjs'
+      - 'scripts/check-cat-bond-audio-assets.mjs'
       - '.github/workflows/cat-bond-preview.yml'
   workflow_dispatch:
 permissions:
@@ -47,6 +49,37 @@ jobs:
           grep -Fq 'resonance-book.mjs' public/cat-bond/js/resonance/integration-entry.mjs
           grep -Fq 'rpg-visual-polish.css' public/cat-bond/index.html
           node --check public/cat-bond/js/main.js
+      - name: Select QA scope against the actual deployed preview
+        id: qa
+        shell: bash
+        run: |
+          set -euo pipefail
+          mode=full
+          live_sha=$(curl -fsS --connect-timeout 5 --max-time 12 "https://cat-bond-preview.morrowwish.pages.dev/preview-version.json?qa=$SOURCE_SHA" | python3 -c 'import json,sys; print(json.load(sys.stdin)["sha"])' || true)
+          if [[ "$live_sha" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags --depth=1 origin "$live_sha"; then
+            if git diff --name-only --no-renames -z "$live_sha" "$SOURCE_SHA" > /tmp/cb-preview-changes; then
+              mode=$(python3 - <<'PY'
+          import pathlib, re
+          paths = [p.decode() for p in pathlib.Path('/tmp/cb-preview-changes').read_bytes().split(b'\0') if p]
+          def audio(p):
+              return bool(re.fullmatch(r'public/cat-bond/assets/(?:audio|quality-audio)/[^/]+\.(?:mp3|ogg|wav|json|html|txt)', p)) or p in {
+                  'scripts/import-cat-bond-windchime-music.mjs',
+                  'scripts/check-cat-bond-audio-assets.mjs',
+                  'scripts/test-cat-bond-rpg-audio-lifecycle.mjs',
+              }
+          # CI-only edits may accompany an audio change; shared JS, gameplay, layout,
+          # package changes and any unknown paths always retain the full gate.
+          substantive = [p for p in paths if p != '.github/workflows/cat-bond-preview.yml']
+          print('audio' if substantive and all(audio(p) for p in substantive) else 'full')
+          PY
+              )
+            fi
+          fi
+          # Manual dispatch keeps the full validation path available.
+          if [[ "$GITHUB_EVENT_NAME" != push ]]; then mode=full; fi
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "CAT_BOND_QA_SCOPE=$mode" >> "$GITHUB_ENV"
+          echo "Preview QA: $mode (deployed base: ${live_sha:-unknown})"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -62,10 +95,12 @@ jobs:
         run: |
           node scripts/import-cat-bond-windchime-music.mjs
           node scripts/check-cat-bond-audio-assets.mjs
+      - name: Verify audio lifecycle for every preview
+        run: node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
       - name: Verify player-first opening and named party logic
+        if: steps.qa.outputs.mode == 'full'
         run: |
           for test in scripts/test-cat-bond-canon22-*.mjs; do node "$test"; done
-          node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
           node scripts/test-cat-bond-player-first.mjs
           node scripts/test-cat-bond-story-party.mjs
           node scripts/test-cat-bond-garden-exploration.mjs
@@ -100,7 +135,7 @@ jobs:
           fs.writeFileSync(root+'/_headers','/*\n  X-Robots-Tag: noindex, nofollow\n  Cache-Control: no-store\n  Content-Security-Policy: connect-src \'self\'; form-action \'self\'\n');
           fs.writeFileSync(root+'/telemetry.js','window.arcadeMetric=()=>{};');
           fs.writeFileSync(root+'/_worker.js','export default {fetch(request,env){const u=new URL(request.url);if(u.pathname.startsWith("/api/")||u.pathname==="/api")return Response.json({error:"Preview: production APIs disabled; use local saves."},{status:403});return env.ASSETS.fetch(request)}};');
-          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,qaTier:'preview-smoke',fullReleaseAccepted:false,scope:'Prologue through Finale',storage:'local-only',productionApis:false,sources:fs.readFileSync('/tmp/cat-bond-preview-sources.txt','utf8').trim().split('\n')}));
+          fs.writeFileSync(root+'/preview-version.json',JSON.stringify({sha,qaTier:'preview-smoke',qaScope:process.env.CAT_BOND_QA_SCOPE,fullReleaseAccepted:false,scope:'Prologue through Finale',storage:'local-only',productionApis:false,sources:fs.readFileSync('/tmp/cat-bond-preview-sources.txt','utf8').trim().split('\n')}));
           NODE
       - name: Install pinned Chromium test runtime once
         uses: ./.github/actions/starbell-browser-setup
@@ -113,7 +148,9 @@ jobs:
           const browser=await chromium.launch({headless:true});
           try {
             const origin=process.env.CAT_BOND_SMOKE_ORIGIN || 'https://cat-bond-preview.morrowwish.pages.dev';
-            const results=await Promise.allSettled([{name:'desktop',viewport:{width:1280,height:800}},{name:'portrait',viewport:{width:390,height:844},hasTouch:true},{name:'landscape',viewport:{width:844,height:390},hasTouch:true}].map(async profile=>{
+            const audioOnly=process.env.CAT_BOND_QA_SCOPE==='audio';
+            const profiles=[{name:'desktop',viewport:{width:1280,height:800}},{name:'portrait',viewport:{width:390,height:844},hasTouch:true},{name:'landscape',viewport:{width:844,height:390},hasTouch:true}];
+            const results=await Promise.allSettled((audioOnly?profiles.slice(0,1):profiles).map(async profile=>{
               const {name,...device}=profile; if(device.hasTouch)device.isMobile=true;
               const prefix=(process.env.CAT_BOND_SMOKE_STAGE || 'live')+'-'+name;
               const context=await browser.newContext(device);
@@ -150,7 +187,7 @@ jobs:
                 await page.waitForFunction(()=>window.CatBondCanonicalWorld&&window.CatBondTitlePrologue&&window.ResonanceBook&&window.CatBondChapterCinematics);
                 await page.waitForFunction(()=>CatBondChapterCinematics.developmentReady()||CatBondChapterCinematics.starfallReleaseReady());
                 // All final artwork must decode from the exact deployed build, not the source checkout.
-                if(name==='desktop'){
+                if(!audioOnly&&name==='desktop'){
                   const art=await page.evaluate(async()=>{
                     const names='forest-fork forest-landing forest-root-bridge forest-moonleaf-control lantern-theater garden-lantern shadow-fish shadow-butterfly shadow-cat lantern-vault lantern-stone-crossing shadow-beast sky-cloudfall sky-safety-island sky-glider history-impact garden-moonleaf-touch garden-moonleaf garden-teacup garden-route-map windchime-chase windchime-wisp'.split(' ');
                     const paths=names.map(name=>'canon22-final-art/'+name+'.webp').concat(['resonance-world-v2/atlas.webp','resonance-world-v2/harbor.webp','resonance-world-v2/harbor-mist.webp','resonance-world-v2/forge.webp','combat/harbor-arena.webp','combat/tide-shell-watercolor.webp','story-art/cloud-lookout.jpg','story-art/lantern-entrustment.jpg','story-art/library-shared-memories.jpg']);
@@ -160,6 +197,33 @@ jobs:
                   console.log('FINAL WATERcolors DECODED',JSON.stringify(art));
                 }
                 if(!await page.evaluate(()=>window.ARCADE_COLLECTOR==='/api/preview-disabled'&&window.__CAT_BOND_INTEGRATION_ART__===false))throw Error('Preview isolation / art approval marker mismatch');
+                if(audioOnly){
+                  // Audio-only: no campaign, layout, art or slot regression. Use the
+                  // real audio director and real decoded local/online recordings.
+                  // Scene selection is isolated in this disposable browser context.
+                  await page.locator('#cb-title-name').click();
+                  await page.waitForFunction(()=>window.MorrowwishMusic?.status().playing);
+                  await page.evaluate(()=>{
+                    window.__CAT_BOND_STARTED__=true;
+                    window.__game.scene='map';
+                    window.WorldMap.mode='region';
+                    window.WorldMap.currentRegion='harbor';
+                    MorrowwishMusic.switchScene();
+                  });
+                  const town=()=>page.waitForFunction(()=>{const s=window.MorrowwishMusic.status();return s.scene==='harbor'&&s.track==='harbor'&&s.source==='premium-mp3:morning'&&s.playing&&s.loop&&s.duration>150&&s.duration<157;},null,{timeout:45000});
+                  await town();
+                  const before=await page.evaluate(()=>MorrowwishMusic.status().currentTime);
+                  await page.waitForFunction(t=>MorrowwishMusic.status().currentTime>t+.1,before);
+                  await page.evaluate(()=>MorrowwishMusic.setEnabled(false));
+                  await page.waitForFunction(()=>!MorrowwishMusic.status().playing);
+                  await page.evaluate(()=>MorrowwishMusic.setEnabled(true));
+                  await town();
+                  await page.evaluate(()=>{WorldMap.currentRegion='forest';MorrowwishMusic.switchScene();});
+                  await page.waitForFunction(()=>{const s=MorrowwishMusic.status();return s.track==='forest'&&s.playing&&s.source!=='premium-mp3:morning';},null,{timeout:45000});
+                  if(external.length||errors.length)throw Error('Audio-only smoke errors: '+JSON.stringify({external,errors}));
+                  console.log('AUDIO-ONLY SMOKE PASS',prefix);
+                  return;
+                }
                 // Exercise the real page and both translation observers, including round-trip switching.
                 for(const locale of ['en','zh','en']){
                   await page.evaluate(locale=>window.MorrowwishI18n.set(locale),locale);
@@ -331,10 +395,11 @@ jobs:
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in $(seq 1 15); do curl -fsS http://127.0.0.1:8766/cat-bond/ >/dev/null && break; sleep 1; done
           node .cat-bond-preview-smoke.mjs
-          node scripts/test-cat-bond-adventure-browser.mjs
-          node scripts/cat-bond-title-audio-qa.mjs
-          # Shared layout remains covered by the existing preview gate.
-          node scripts/cat-bond-layout-acceptance.mjs
+          if [[ "$CAT_BOND_QA_SCOPE" == full ]]; then
+            node scripts/test-cat-bond-adventure-browser.mjs
+            node scripts/cat-bond-title-audio-qa.mjs
+            node scripts/cat-bond-layout-acceptance.mjs
+          fi
       - name: Publish only preview branch
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -360,6 +425,7 @@ jobs:
           version = json.load(open('/tmp/live-preview-version.json'))
           assert version['sha'] == os.environ['SOURCE_SHA']
           assert version['qaTier'] == 'preview-smoke' and version['fullReleaseAccepted'] is False
+          assert version['qaScope'] == os.environ['CAT_BOND_QA_SCOPE']
           assert version['scope'] == 'Prologue through Finale'
           assert version['storage'] == 'local-only' and version['productionApis'] is False
           print(version)
@@ -373,7 +439,7 @@ jobs:
           for endpoint in session cat-bond-cloud-save; do
             test "$(curl -sS -o /dev/null -w '%{http_code}' "$URL/api/$endpoint")" = 403
           done
-      - name: Smoke-test published preview with the same three profiles
+      - name: Smoke-test published preview with selected QA scope
         env:
           CAT_BOND_SMOKE_STAGE: live
         run: node .cat-bond-preview-smoke.mjs
