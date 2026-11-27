@@ -40,7 +40,7 @@ export async function continueSavedAdventure(page,{slot='slot1',scene='map'}={})
 export async function finishCanonicalOpening(page,{onStage=async()=>{}}={}){
  await page.waitForFunction(()=>document.querySelector("#cb-player-first-intro")||document.querySelector(".cbcp-art")?.naturalWidth>0);
  const playerFirst=await page.evaluate(()=>CatBondResonance.view().current?.id==="prologue:P-05");
- if(playerFirst){const intro=page.locator("#cb-player-first-intro");await intro.waitFor({state:"visible"});await intro.getByRole("button",{name:/^(Start exploring|开始探索)$/}).click();await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==="jinjc"&&__game.scene==="yard");await onStage("fixed protagonist");await page.locator(".sg-prologue-guide").getByRole("button",{name:/Next scene.*(?:Windchime Town|Misttide Harbor)|下一场景.*(?:风铃镇|霁潮港)/}).click();await page.waitForFunction(()=>CatBondResonance.view().current?.id==="harbor:H-01"&&__game.scene==="map");await page.locator("#map-menu").click();await page.locator("#cb-system-menu [data-system=\"world-atlas\"]").click();await page.waitForFunction(()=>WorldMap.mode==="map");await onStage("world map");return;}
+ if(playerFirst){const intro=page.locator("#cb-player-first-intro");await intro.waitFor({state:"visible"});await intro.getByRole("button",{name:/^(Start exploring|开始探索)$/}).click();await page.waitForFunction(()=>State.S.cats.length===1&&State.S.cats[0].species==="jinjc"&&__game.scene==="yard");await onStage("fixed protagonist");const guide=page.locator(".sg-prologue-guide");await guide.getByRole("button",{name:/^(Main quest|主线任务)$/}).click();await guide.getByRole("button",{name:/^(Skip this encounter|跳过此次相遇)$/}).click();await page.waitForFunction(()=>CatBondResonance.view().current?.id==="harbor:H-01"&&__game.scene==="map");await page.locator("#map-menu").click();await page.locator("#cb-system-menu [data-system=\"world-atlas\"]").click();await page.waitForFunction(()=>WorldMap.mode==="map");await onStage("world map");return;}
 
  await page.waitForFunction(()=>window.CatBondResonance?.view()?.current?.id==='prologue:P-01'&&document.querySelector('.cbcp-art')?.naturalWidth>0);
  const skip=page.locator('.cbcp-skip');await skip.waitFor();await onStage('prologue P-01');await skip.click();
@@ -62,4 +62,20 @@ export async function finishCanonicalOpening(page,{onStage=async()=>{}}={}){
  await page.locator('#map-menu').click();await page.locator('#cb-system-menu [data-system="world-atlas"]').click();
  await page.waitForFunction(()=>window.__game?.scene==='map'&&WorldMap.mode==='map');
  await onStage('world map');
+}
+
+// Discover through actual directional input, not a hidden DOM click or save mutation.
+export async function gardenDiscovery(page,id,{touch=false}={}){
+ const marker=page.locator('[data-garden-explore="'+id+'"]');
+ for(let i=0;i<45&&!await marker.isVisible();i++){
+  const d=await marker.evaluate(b=>{const g=window.__game,p=g?.yardPlayer?.(),t=b._gardenWorldPoint;return p&&t?{dx:(t.x-p.x)/g.W,dy:(t.y-p.y)/g.H}:null});
+  if(!d)throw Error('Missing discovery route: '+id);
+  const key=Math.abs(d.dx)>Math.abs(d.dy)?(d.dx>0?'ArrowRight':'ArrowLeft'):(d.dy>0?'ArrowDown':'ArrowUp');
+  await page.keyboard.down(key);try{await page.waitForTimeout(180);}finally{await page.keyboard.up(key);}
+ }
+ await marker.waitFor({state:'visible',timeout:5000});
+ if(touch)await marker.tap();else await marker.click();
+ const predicates={'chart-0':s=>s.parts.includes(0),'chart-1':s=>s.parts.includes(1),'chart-echo':s=>s.chartEcho,seed:s=>s.seed};
+ if(predicates[id])await page.waitForFunction(id=>{const s=GardenExploration.read(State.S);return id==='seed'?s.seed:id==='chart-echo'?s.chartEcho:s.parts.includes(Number(id.at(-1)));},id,{timeout:15000});
+ if(id==='door')await page.waitForFunction(()=>!__game._yardArrival,null,{timeout:15000});
 }

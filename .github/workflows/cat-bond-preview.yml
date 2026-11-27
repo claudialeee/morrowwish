@@ -147,6 +147,7 @@ jobs:
         run: |
           cat > .cat-bond-preview-smoke.mjs <<'NODE'
           import {chromium} from 'playwright';
+          import {gardenDiscovery} from './scripts/cat-bond-test-start.mjs';
           const browser=await chromium.launch({headless:true});
           try {
             const origin=process.env.CAT_BOND_SMOKE_ORIGIN || 'https://cat-bond-preview.morrowwish.pages.dev';
@@ -275,10 +276,10 @@ jobs:
                 const discover=id=>page.locator('[data-garden-explore="'+id+'"]');
                 for(let i=0;i<3;i++){await discover('butterfly').click();await page.waitForFunction(n=>GardenExploration.read(State.S).butterfly===n,i+1);}
                 await discover('butterfly').waitFor({state:'hidden'});
-                await discover('seed').click();
-                await discover('snack').click();
+                await gardenDiscovery(page,'seed',{touch:device.hasTouch});
+                await gardenDiscovery(page,'snack',{touch:device.hasTouch});
                 await page.getByRole('button',{name:'Keep for later',exact:true}).click();
-                await discover('door').click();
+                await gardenDiscovery(page,'door',{touch:device.hasTouch});
                 await marker.waitFor({state:'visible'});await marker.click();
                 const encounter=page.locator('#cb-traveler-encounter');
                 if(await encounter.getByRole('button',{name:/^(English|中文|EN)$/}).count())throw Error('Language toggle must not appear in dialogue');
@@ -286,9 +287,9 @@ jobs:
                 await encounter.waitFor({state:'detached'});await marker.click();
                 await encounter.getByRole('button',{name:'Find the chart pieces',exact:true}).click();
                 await encounter.waitFor({state:'detached'});
-                await discover('chart-0').click();
+                await gardenDiscovery(page,'chart-0',{touch:device.hasTouch});
                 if(await page.evaluate(()=>CatBondResonance.view().openingMet))throw Error('One piece cannot complete the encounter');
-                await discover('chart-echo').click();
+                await gardenDiscovery(page,'chart-echo',{touch:device.hasTouch});
                 await marker.click();
                 await encounter.getByRole('button',{name:'Continue',exact:true}).click();
                 await encounter.getByRole('button',{name:'Say goodbye',exact:true}).click();
@@ -296,7 +297,7 @@ jobs:
                 await page.waitForFunction(()=>CatBondResonance.view().openingMet===true);
                 await marker.waitFor({state:'hidden'});
                 if(await page.evaluate(()=>GardenExploration.read(State.S).parts.length)!==1)throw Error('Second chart must be optional');
-                if(prefix.includes('desktop')){await discover('chart-1').click();if(!await page.evaluate(()=>GardenExploration.read(State.S).keepsakes.includes('windblown-chart')))throw Error('Optional chart keepsake missing');}
+                if(prefix.includes('desktop')){await gardenDiscovery(page,'chart-1',{touch:device.hasTouch});if(!await page.evaluate(()=>GardenExploration.read(State.S).keepsakes.includes('windblown-chart')))throw Error('Optional chart keepsake missing');}
                 if(await page.locator('#toasts .toast:visible').count()>1)throw Error('Exploration notices stack over cats and navigation');
                 await page.screenshot({path:'preview-'+prefix+'-garden-discovery.png'});
                 if(await guide.locator('button:visible').count()!==1)throw Error('Opening guide expanded after dialogue');
