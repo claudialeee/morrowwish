@@ -2317,3 +2317,11 @@ critiqueCount 38, 19 subagent retries capped. Core synth intact; P0 count droppe
 
 ### Workflow health
 critiqueCount 36, 23 subagent retries capped. Core synth intact. Explicit headline this cycle: "half the P0s are telemetry lies" — my own 2 cycles ago fix was over-tightened; relax landed this cycle.
+
+## RSI 2026-11-27T05:46:55Z
+
+Archive 2/256 unchanged. **New best**: `agent:qready-dive-else-mid` **0.716** displacing prior `agent:retreat-floor` 0.699 in same cell `1,3,3,3` (+0.017). Control `stand-at-max-range` 0.435 at `2,2,3,3`.
+
+**Winning bandBody**: `(f)=>{const qReady=((f.cd&&f.cd.q)||0)<=0.1; const hp=f.hp/(f.maxhp||1); if(qReady) return {min:25,max:55,rush:28,role:'melee',hp}; return {min:100,max:140,rush:105,role:'ranged',hp};}` — Q-ready dive 25-55, else mid-range 100-140.
+
+Pattern across 3 cycles: all elites keep landing in `*,*,3,3` (high durability + high efficiency). Other 254 cells still empty. Either (a) descriptor binning collapses the space, (b) only dive-and-retreat patterns score, or (c) MapElites scoring favors a narrow strategy region. Findings-only. **Known harness bug persists**: winner label `agent:agent:qready-dive-else-mid` double `agent:` prefix (3 cycles unflagged).
