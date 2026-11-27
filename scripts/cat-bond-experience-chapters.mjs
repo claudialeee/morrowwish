@@ -227,6 +227,7 @@ async function run(chapter){
    assert.ok(a.x>=-1&&a.y>=-1&&a.x+a.width<=page.viewportSize().width+1&&a.y+a.height<=page.viewportSize().height+1,'Controls remain on screen');
   };
   await measure();
+  if(portrait){const original=page.viewportSize();for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){await page.setViewportSize(viewport);await measure();await page.waitForFunction(()=>{const w=document.querySelector('.rw-world'),r=w?.querySelector('.rw-dedicated-rail'),s=w?.querySelector('.rw-shell');if(!w||!r||!s)return false;const a=r.getBoundingClientRect(),b=s.getBoundingClientRect(),c=w.getBoundingClientRect();return a.height<=c.height*.44&&b.height>=c.height*.43&&b.width>=c.width-2&&a.top>=b.bottom-1;});await shot('compact-'+(await view()).current.id.replace(':','-')+'-'+viewport.width);}await page.setViewportSize(original);}
   if(!checkedPuzzleLayout){checkedPuzzleLayout=true;const original=page.viewportSize();if(!portrait){try{for(const viewport of [{width:390,height:844},{width:844,height:390}]){await page.setViewportSize(viewport);await measure();}}finally{await page.setViewportSize(original);}}await measure();}
  }
  async function puzzle(label,inputs){
