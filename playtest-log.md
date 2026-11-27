@@ -2122,3 +2122,38 @@ Archive expanded 2 → **3 cells** / 256. Two agent proposals replaced existing 
 - Control `stand-at-max-range` 0.408 at cell `2,2,3,3` (new cell, below baseline — gate PASSED ✓)
 
 5 niches still mostly empty (3/256 coverage). Findings-only, no battle.js apply.
+
+## Playtest cycle wlpm2aca8 — 2026-11-26
+
+**Headline**: Combat is numerically healthy but ceremonially mute — every persona timeouts not from unfair math but from invisible signal: `_closing`/`pressure`/`stomp`/`pack-HP` all fire silently, and the 85s backstop is a guillotine with no overtime verb.
+
+**funMean 4.33** (6 personas):
+- 探索型 7 / 狂按型 5 / 懒人型 5 / 手忙脚乱 4 / 没耐心 3 / **谨慎型 2**
+
+**Shape**: 0 P0 confirmed local-numeric; 3 P0 additive-flag (findings-only — not auto-fixed because they add new runtime fields + HUD consumers, outside the cron's strict low-risk tune policy). 27 P1 (17 additive-flag, 10 local-numeric), 18 P2.
+
+### P0 findings (findings-only — NOT auto-fixed)
+
+1. **Overtime gate before the 85s guillotine** — battle.js:5059. Add `_overtime` (12s default) + `_overtimeArmed` gated on (cumulative enemy HP dealt ≥ 0.5) AND (player damage event in last 5s). Rising "决胜 / Last Push" banner, +30% player outgoing dmg, halved enemy staggerT decay during OT. Reason findings-only: adds persistent runtime state + new banner + bilingual string — beyond "one constant" scope.
+2. **Expose `_closing` as visible threat signal (vignette + ribbon + enemy burn)** — battle.js:~7930 + render pass ~7380. `_closing`/`_pressure` already drive execute dmg but no HUD; add thin secondary morale-bar fill, crimson enemy outline keyed to `_pressure`. Reason findings-only: UI/VFX surface additive.
+3. **Pack-progress ribbon with milestone beats** — battle.js:5043 lift alive/init pack HP into `this._packFrac`; draw 220×6 ribbon under status row ~7566; priority center floaters + hitstop at 75% / 50% / 25% crossings. Reason findings-only: new HUD element + new audio chord.
+
+### Top P1 findings (findings-only)
+
+- Mash-streak taper (basic ×1.0→0.8 after 4.5s of pure mashing, dodge resets) — battle.js basic resolve. **local-numeric**
+- Force smash telegraph at HP ≥ 0.55 (down from 0.85) — battle.js:5600. **local-numeric**
+- Runt enemy (hpMul 0.55) in 3+ wild packs guarantees sub-10s first kill — battle.js wild spawn. **additive-flag**
+- Basic-streak drains Q cooldown — battle.js. **additive-flag**
+- Verb-variety combo bonus on `comboMult()` (+0.04 per unique verb, +0.12 cap) — battle.js:4255. **additive-flag**
+- Kite-aware ult meter gain (×1.6 when active cat moves away from nearest enemy within 380u) — battle.js:4868. **local-numeric**
+- Cross-slot Q↔E chain window (×1.25 pow within 1.2s) — battle.js:2648/3558. **additive-flag**
+- Unmarked basic tax scaled by `_autoAssist` (lossStreak≥4 floors basicTagMul at 0.90) — battle.js:6191. **local-numeric**
+- Shield-absorb legibility in `resolveHit` (missing shield-break floater like PROTECT has) — battle.js:~6635. **additive-flag**
+- Roll back auto-mode mercy as `_stomp` climbs — battle.js:191,222. **local-numeric**
+
+### Auto-fixes this cycle: 0
+
+Rationale: the cron rule auto-fixes P0 only when LOW-RISK = "a local numeric tune". All 3 adversary-confirmed P0s this cycle are `additive-flag` with new runtime fields + HUD consumers, which crosses the conservative boundary. Findings-only, routed to owner review.
+
+### Workflow health
+- critiqueCount 45, 15 subagent retries capped during Adversary phase (StructuredOutput validation failures). Core synth + persona voices intact.
