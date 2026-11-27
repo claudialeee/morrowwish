@@ -151,6 +151,20 @@ function drawManifestation(ctx,e,b){
 }
 
 
+// Keep automatic commands responsive to the same visible safe corridor as a player.
+export function guardianSteer(b,f){
+ const r=b.regionalCombat,cast=r?.cast;
+ if(!b.autoMode||b.libraryEncounter?.bossId!=="mastery"||!cast||!f.alive||cast.patterns.length!==2||cast.patterns.some(p=>p.shape!=="line"))return null;
+ const vertical=cast.element!=="dark",axis=vertical?"x":"y",start=vertical?"x1":"y1";
+ const [lo,hi]=[...cast.patterns].sort((a,z)=>a[start]-z[start]);
+ const a=lo[start]+lo.w/2,z=hi[start]-hi.w/2;
+ if(z<=a)return null;
+ const margin=Math.min(12,(z-a)*.18),v=f[axis];
+ if(v>=a+margin&&v<=z-margin)return null;
+ const d=Math.sign((a+z)/2-v);
+ return vertical?{x:d,y:0}:{x:0,y:d};
+}
+
 function install(){
  const BP=window.Battle?.CaptureBattle?.prototype,GP=window.Game?.prototype;
  if(!BP||!GP||window.CatBondRegionalArt)return;
@@ -184,7 +198,7 @@ function install(){
   }});
   return true;
  }
- window.CatBondRegionalArt=Object.freeze({drawScene,drawManifestation,prepareRuins,prepareOptionalBoss:(game,id)=>prepareLibrary(game,id,true)});
+ window.CatBondRegionalArt=Object.freeze({drawScene,drawManifestation,prepareRuins,guardianSteer,prepareOptionalBoss:(game,id)=>prepareLibrary(game,id,true)});
  const bg=BP.drawArenaBackground;
  BP.drawArenaBackground=function(ctx,W,H){
   const regional=this.regionalCombat;
