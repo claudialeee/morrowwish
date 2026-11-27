@@ -93,7 +93,7 @@ try{for(const {name,...profile} of profiles){
   };
   for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){
    await page.setViewportSize(viewport);await page.waitForTimeout(250);await assertFit();
-   const menu=page.locator('.rw-atlas-menu');if(await menu.getAttribute('open')!==null)await menu.locator('summary').click();await capture();assert.ok((await reachable()).length>=5,'most atlas markers directly reachable with menu collapsed at '+viewport.width);if(await menu.getAttribute('open')===null)await menu.locator('summary').click();
+   const menu=page.locator('.rw-atlas-menu');if(await menu.getAttribute('open')!==null)await menu.locator(':scope > summary').click();await capture();assert.ok((await reachable()).length>=5,'most atlas markers directly reachable with menu collapsed at '+viewport.width);if(await menu.getAttribute('open')===null)await menu.locator(':scope > summary').click();
    await page.screenshot({path:out+'/portrait-atlas-'+viewport.width+'.png'});
   }
   await page.setViewportSize(profile.viewport);await page.waitForTimeout(250);
@@ -103,7 +103,7 @@ try{for(const {name,...profile} of profiles){
   assert.ok(JSON.parse(await surface.getAttribute('data-camera'))[0]>1,'explicit zoom available');
   await rail.getByRole('button',{name:'Overview',exact:true}).click();
   assert.deepEqual(JSON.parse(await surface.getAttribute('data-camera')),[1,0,0],'overview restores the actual full map');
-  await assertFit();const menu=page.locator('.rw-atlas-menu');if(await menu.getAttribute('open')!==null)await menu.locator('summary').click();await capture();await swipe(box.width*.5,0);await capture();await swipe(-box.width,0);await capture();
+  await assertFit();const menu=page.locator('.rw-atlas-menu');if(await menu.getAttribute('open')!==null)await menu.locator(':scope > summary').click();await capture();await swipe(box.width*.5,0);await capture();await swipe(-box.width,0);await capture();
  }
  else{await capture();}
  assert.ok(atlasSeen.size>=7,name+' reachable atlas markers '+JSON.stringify([...atlasSeen.keys()]));
