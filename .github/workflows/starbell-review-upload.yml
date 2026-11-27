@@ -15,8 +15,8 @@ jobs:
     timeout-minutes: 18
     env:
       GH_TOKEN: ${{ github.token }}
-      RENDER_RUN: '45966047185'
-      RENDER_SHA: 7f6942feeba8265376df33718d880e8c1b23bc2b
+      RENDER_RUN: '46048150686'
+      RENDER_SHA: 7f93654deaaea3534329445c677348ccb5c637ff
     steps:
       - name: Await exact new English render, reject incomplete artifacts
         run: |
@@ -36,7 +36,7 @@ jobs:
         with:
           name: starbell-new-story-trailer-review
           path: /tmp/rendered
-          run-id: 45966047185
+          run-id: 46048150686
           github-token: ${{ github.token }}
       - uses: actions/checkout@v4
         with:
@@ -55,19 +55,19 @@ jobs:
           file=$(find /tmp/rendered -name Echoes-of-the-Starbell-Official-Trailer-EN.mp4 -type f -print -quit)
           proof=$(find /tmp/rendered -name proof-en.json -type f -print -quit)
           test -s "$file" && test -s "$proof"
-          jq -e '.firstCaption=="You thought this was\na new journey." and .live.origin=="https://starbell-portrait-preview.morrowwish.pages.dev" and .music.title=="Soar" and ([.shots[].live]|map(select(.==true))|length)>=3 and ([.shots[]|select(.id=="duo" or .id=="chase" or .id=="glide")]|length)==0 and ([.shots[]|select(.id=="shadow" and .live==true)]|length)==1 and .captionPlacement=="lower-third-safe" and .duration==42 and .transitionCount==9 and .live.shadowTitle=="The First Shadow Puppet Show" and ([.shots[]|select(.words>0 and .clearSeconds<([2,(.words/2.5)]|max))]|length)==0' "$proof"
+          jq -e '.firstCaption=="You thought this was\na new journey." and .live.origin=="https://starbell-portrait-preview.morrowwish.pages.dev" and .music.title=="Soar" and ([.shots[].live]|map(select(.==true))|length)>=3 and ([.shots[]|select(.id=="duo" or .id=="chase" or .id=="glide")]|length)==0 and ([.shots[]|select(.id=="shadow" and .live==true)]|length)==1 and .captionPlacement=="lower-third-safe" and .duration==42 and .transitionCount==9 and ([.shots[]|select(.id=="garden")]|length)==0 and ([.shots[]|select(.id=="explore" and .live==true)]|length)==1 and .live.shadowTitle=="The First Shadow Puppet Show" and ([.shots[]|select(.words>0 and .clearSeconds<([2,(.words/2.5)]|max))]|length)==0' "$proof"
           test "$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x "$file")" = "1080x1920"
           ffprobe -v error -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "$file" | grep -qx audio
           ffmpeg -v error -i "$file" -f null -
           mkdir -p public/promo/starbell
-          target=public/promo/starbell/story-trailer-en-v5-45966047185.mp4
+          target=public/promo/starbell/story-trailer-en-v6-46048150686.mp4
           cp "$file" "$target"
           # Cloudflare Pages enforces a 25 MiB file cap.
           if [ "$(stat -c%s "$target")" -ge 25000000 ]; then
             ffmpeg -v error -y -i "$file" -c:v libx264 -preset medium -b:v 4000k -maxrate 4800k -bufsize 8000k -c:a aac -b:a 192k -movflags +faststart "$target"
           fi
           test "$(stat -c%s "$target")" -lt 25000000
-          ffmpeg -v error -y -i "$target" -frames:v 1 -q:v 2 public/promo/starbell/story-trailer-en-v5-45966047185.jpg
+          ffmpeg -v error -y -i "$target" -frames:v 1 -q:v 2 public/promo/starbell/story-trailer-en-v6-46048150686.jpg
           cp "$proof" public/promo/starbell/review-proof.json
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -75,8 +75,8 @@ jobs:
           const updatedAt=new Date().toISOString();
           const priorPath='public/promo/starbell/review.json';
           const prior=fs.existsSync(priorPath)?JSON.parse(fs.readFileSync(priorPath,'utf8')):{};
-          const revision=prior.renderRun===45966047185&&prior.version?prior.version:'V'+Math.max(3,(Number(String(prior.version||'V2').replace(/^V/,''))||2)+1);
-          fs.writeFileSync('public/promo/starbell/review.json',JSON.stringify({slug:'starbell',video:'/promo/starbell/story-trailer-en-v5-45966047185.mp4',poster:'/promo/starbell/story-trailer-en-v5-45966047185.jpg',duration:proof.duration,version:revision,createdAt:updatedAt,updatedAt,source:proof.live.source,music:proof.music,renderRun:45966047185,approved:false,published:false,shots:proof.shots.map(s=>({scene:s.id,seconds:s.seconds,clearSeconds:s.clearSeconds,transitionOut:s.transitionOut})),readingWpm:proof.readingWpm,transitionCount:proof.transitionCount},null,2)+'\n');
+          const revision=prior.renderRun===46048150686&&prior.version?prior.version:'V'+Math.max(3,(Number(String(prior.version||'V2').replace(/^V/,''))||2)+1);
+          fs.writeFileSync('public/promo/starbell/review.json',JSON.stringify({slug:'starbell',video:'/promo/starbell/story-trailer-en-v6-46048150686.mp4',poster:'/promo/starbell/story-trailer-en-v6-46048150686.jpg',duration:proof.duration,version:revision,createdAt:updatedAt,updatedAt,source:proof.live.source,music:proof.music,renderRun:46048150686,approved:false,published:false,shots:proof.shots.map(s=>({scene:s.id,seconds:s.seconds,clearSeconds:s.clearSeconds,transitionOut:s.transitionOut})),readingWpm:proof.readingWpm,transitionCount:proof.transitionCount},null,2)+'\n');
           const p='public/promo/review/index.html';
           let h=fs.readFileSync(p,'utf8');
           if(!h.includes("'/promo/starbell/review.json")){
@@ -126,12 +126,12 @@ jobs:
       - name: Build existing website with review-only media changes
         run: |
           set -euo pipefail
-          test -s public/promo/starbell/story-trailer-en-v5-45966047185.mp4
+          test -s public/promo/starbell/story-trailer-en-v6-46048150686.mp4
           npm ci
           npm install --no-save --no-package-lock sharp@0.34.5
           bash scripts/fetch-cat-music.sh
           GITHUB_SHA="$(git rev-parse HEAD)" npm run build:pages
-          test -s cloudflare-pages/public/promo/starbell/story-trailer-en-v5-45966047185.mp4
+          test -s cloudflare-pages/public/promo/starbell/story-trailer-en-v6-46048150686.mp4
           test "$(jq '.trailers|length' cloudflare-pages/public/promo/latest-review.json)" = 7
           grep -q 'data.trailers.unshift(star)' cloudflare-pages/public/promo/review/index.html
       - name: Upload to the existing Cloudflare Pages project
@@ -144,9 +144,9 @@ jobs:
         run: |
           set -euo pipefail
           for i in {1..12}; do
-            if curl -fsS 'https://morrowwish.vercel.app/promo/review/?qa=starbell-45966047185' | grep -q 'data.trailers.unshift(star)' &&
-               curl -fsS 'https://morrowwish.vercel.app/promo/starbell/review.json?qa=45966047185' | jq -e '.renderRun==45966047185 and .approved==false and (.version|test("^V[0-9]+$")) and (.updatedAt|type=="string")' >/dev/null &&
-               curl -fsS -r 0-4095 'https://morrowwish.vercel.app/promo/starbell/story-trailer-en-v5-45966047185.mp4?qa=45966047185' -o /tmp/starbell-range.mp4 &&
+            if curl -fsS 'https://morrowwish.vercel.app/promo/review/?qa=starbell-46048150686' | grep -q 'data.trailers.unshift(star)' &&
+               curl -fsS 'https://morrowwish.vercel.app/promo/starbell/review.json?qa=46048150686' | jq -e '.renderRun==46048150686 and .approved==false and (.version|test("^V[0-9]+$")) and (.updatedAt|type=="string")' >/dev/null &&
+               curl -fsS -r 0-4095 'https://morrowwish.vercel.app/promo/starbell/story-trailer-en-v6-46048150686.mp4?qa=46048150686' -o /tmp/starbell-range.mp4 &&
                test -s /tmp/starbell-range.mp4; then
               echo 'VERIFIED https://morrowwish.vercel.app/promo/review/'
               exit 0
