@@ -29,8 +29,8 @@ export function drawPortraitChase(c,p,w,h,lang,drawCat){
  c.save();c.strokeStyle="#ffe5a1ba";c.lineWidth=3;c.setLineDash([5,8]);c.beginPath();chaseTrail(p).forEach((q,i)=>{const a=at(q);i?c.lineTo(...a):c.moveTo(...a);});c.stroke();c.setLineDash([]);
  const dot=(q,r,fill,stroke)=>{c.beginPath();c.arc(...q,r,0,Math.PI*2);c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=2;c.stroke();}};
  const bell=at(chasePoint(p));dot(bell,20,"#cceaff88");if(!paintArt(c,"windchime-wisp",bell[0],bell[1],36,36,.5,.5)){dot(bell,10,"#4696da","#f0faff");dot([bell[0]-3,bell[1]-3],3,"#ffffff");}
- if(!p.chaseActive){c.font="700 15px sans-serif";c.textAlign="center";c.fillStyle="#fff7df";c.strokeStyle="#674e2c";c.lineWidth=3;const s=lang==="zh"?"点铃光追上去":"Tap the light to chase";c.strokeText(s,bell[0],bell[1]-34);c.fillText(s,bell[0],bell[1]-34);}
- const pos=at(p.player);drawCat(pos[0],pos[1]-(p.jumping?18:0),!!p.moving||!!p.waypoints.length||p.jumping);
+ if(!p.chaseActive){c.font="700 15px sans-serif";c.textAlign="center";c.fillStyle="#fff7df";c.strokeStyle="#674e2c";c.lineWidth=3;const s=p.readyPounce?(lang==="zh"?"扑住铃光！":"Pounce now!"):(lang==="zh"?"点铃光追上去":"Tap the light to chase");c.strokeText(s,bell[0],bell[1]-34);c.fillText(s,bell[0],bell[1]-34);}
+ const pos=at(p.player);drawCat(pos[0],pos[1]-((p.jumping||p.pouncing)?18:0),!!p.moving||!!p.waypoints.length||p.jumping||p.pouncing);
  if(p.jumping){c.font="700 15px sans-serif";c.textAlign="center";c.fillStyle="#fff7df";c.strokeStyle="#674e2c";c.lineWidth=3;c.strokeText(lang==="zh"?"跳！":"Jump!",pos[0],pos[1]-56);c.fillText(lang==="zh"?"跳！":"Jump!",pos[0],pos[1]-56);}
  c.restore();
 }
