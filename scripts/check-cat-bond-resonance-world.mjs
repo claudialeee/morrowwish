@@ -38,7 +38,7 @@ console.log(JSON.stringify((function test(){
   let v=b.view(),s=v.current;if(!s||s.id==="finale:B-01")break;
   if(s.choices.length&&s.choiceTiming==="beforeAction")host(e=>e.choose(s.choices[0].id));
   if(s.id==="sky:S-01"){ok(b.enter("sky"),"enter before cargo");const x=createExplorer(b,"sky");walk(x,skyLaunch["puzzle:sky-pouch"]);assert(x.interact("puzzle:sky-pouch").ok,"flight available without optional cargo");transfer("forge","sky",0);transfer("forge","sky",1);assert(!b.cargoSpec("forge","sky"),"cannot send flight data before route restoration");}
-  if(s.id==="library:M-02"){State.S.cats.push({uid:"library-fixture",species:"nainai",personality:"gentle",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});State.S.dex.nainai=1;ok(b.enter("library"),"enter library");const x=createExplorer(b,"library");walk(x,x.layout.features["puzzle:mirror-records"]);assert(!x.interact("puzzle:mirror-records").ok,"retired mural sorting cannot advance the live mirror scene");}
+  if(s.id==="library:M-02"){State.S.cats.push({uid:"library-fixture",species:"nainai",personality:"gentle",level:1,stats:{pow:1,agi:1,vit:1,cha:1}});State.S.dex.nainai=1;ok(b.enter("library"),"enter library");const x=createExplorer(b,"library");assert(!Object.hasOwn(x.layout.features,"puzzle:mirror-records"),"retired mural sorting is removed from the map");assert(!x.interact("puzzle:mirror-records").ok,"retired mural sorting cannot advance the live mirror scene");}
   const ops=s.requires;
   for(const op of ops){if(layouts[s.chapter]?.features[op]&&!op.startsWith("battle:")){
    ok(b.enter(s.chapter),"enter "+s.chapter);const x=createExplorer(b,s.chapter),p=x.layout.features[op];
