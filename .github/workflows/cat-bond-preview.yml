@@ -13,6 +13,7 @@ on:
       - 'scripts/test-cat-bond-*.mjs'
       - 'scripts/check-cat-bond-resonance-world.mjs'
       - 'scripts/cat-bond-test-start.mjs'
+      - '.github/workflows/cat-bond-preview.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -140,7 +141,7 @@ jobs:
                 if(name==='desktop'){
                   const art=await page.evaluate(async()=>{
                     const names='forest-fork forest-landing forest-root-bridge forest-moonleaf-control lantern-theater garden-lantern shadow-fish shadow-butterfly shadow-cat lantern-vault lantern-stone-crossing shadow-beast sky-cloudfall sky-safety-island sky-glider history-impact garden-moonleaf-touch garden-moonleaf garden-teacup garden-route-map windchime-chase windchime-wisp'.split(' ');
-                    const paths=names.map(name=>'canon22-final-art/'+name+'.webp').concat(['resonance-world-v2/atlas.webp','resonance-world-v2/harbor.webp','resonance-world-v2/harbor-mist.webp','resonance-world-v2/forge.webp','combat/harbor-arena.webp','combat/tide-shell-watercolor.webp']);
+                    const paths=names.map(name=>'canon22-final-art/'+name+'.webp').concat(['resonance-world-v2/atlas.webp','resonance-world-v2/harbor.webp','resonance-world-v2/harbor-mist.webp','resonance-world-v2/forge.webp','combat/harbor-arena.webp','combat/tide-shell-watercolor.webp','story-art/cloud-lookout.jpg','story-art/lantern-entrustment.jpg','story-art/library-shared-memories.jpg']);
                     return Promise.all(paths.map(async name=>{const im=new Image();im.src='assets/'+name;await im.decode();if(!im.naturalWidth||!im.naturalHeight)throw Error('Empty art '+name);return {name,w:im.naturalWidth,h:im.naturalHeight};}));
                   });
                   if(art.length!==28)throw Error('Missing final watercolor assets');

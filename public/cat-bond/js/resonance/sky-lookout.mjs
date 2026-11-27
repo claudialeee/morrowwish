@@ -4,7 +4,7 @@ export function mountSkyLookout(context,{player,muling,language,onReady}){
  const doc=context.ownerDocument,make=(tag,cls)=>{const n=doc.createElement(tag);n.className=cls;return n;};
  const stage=make("div","sky-lookout-view"),actions=make("div","sky-lookout-actions"),caption=make("span","sky-lookout-caption");
  stage.style.cssText="position:relative;overflow:hidden;border-radius:12px;height:clamp(100px,21vh,192px);background:center 43% / cover url("+asset("resonance-world-v2/sky.webp")+");isolation:isolate";
- const seated=make("img","sky-lookout-painting");seated.src=asset("story-art/cloud-lookout.jpg");seated.alt="";seated.hidden=true;
+ const seated=make("img","sky-lookout-painting");seated.src=asset("story-art/cloud-lookout.jpg");seated.alt="";seated.decoding="async";seated.hidden=true;
  seated.style.cssText="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#c6cdee;z-index:2;pointer-events:none";
  actions.style.cssText="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:4px 0";
  const actor=(url,x)=>{const i=make("img","sky-lookout-cat");i.src=url;i.alt="";i.style.cssText="position:absolute;bottom:6%;height:78%;width:30%;object-fit:contain;left:"+x+"%;transform:translateX(-50%);transition:left .65s ease,transform .65s ease;filter:drop-shadow(0 3px 3px #25344966);pointer-events:none";stage.append(i);return i;};
