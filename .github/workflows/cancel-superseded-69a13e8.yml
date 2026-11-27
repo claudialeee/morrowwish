@@ -1,0 +1,24 @@
+name: Release final-candidate test queue
+on:
+  push:
+    branches: [ops/final-acceptance-f4704fa]
+    paths: ['.github/workflows/cancel-superseded-69a13e8.yml']
+permissions:
+  actions: write
+  contents: read
+jobs:
+  cancel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Cancel only superseded chapter run with seven completed jobs
+        run: |
+          set -euo pipefail
+          id=45913909420
+          old=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id")
+          jq -e '.head_sha == "69a13e8447a06cd96f8f2c96f0daf50e957440a6" and .head_branch == "review/starbell-canon13-player-experience" and .name == "Canon 2.2 chapter browser acceptance"' <<< "$old"
+          if [[ $(jq -r .status <<< "$old") != completed ]]; then
+            gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$id/cancel" || [[ $(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id" --jq .status) == completed ]]
+          fi
