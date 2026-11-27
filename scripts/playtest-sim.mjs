@@ -178,14 +178,35 @@ function runBattle(env, persona, rng){
   const startHp=b.team.reduce((s,f)=>s+f.maxhp,0);
   let lastHp=b.team.reduce((s,f)=>s+Math.max(0,f.hp),0);
   const origCastWard=b.castWard.bind(b); b.castWard=(f,t)=>{const r=origCastWard(f,t);if(r&&f===b.me())m.shieldFired++;return r;};
+  // Playtest cycle wupz2ckhy P0-1 (auto-fix): instrument CAST successes, not key taps.
+  // The key-tap count at line ~187 increments whenever the persona HELDS a key, even if
+  // the skill's cd gates the cast — so masher's "ult=0 at 2700 basics" was a telemetry
+  // lie, driving adversary P0s that didn't match reality. Wrap b.skillQ / b.skillE /
+  // b.ultimate / b.dodge the same way origCastWard is wrapped; count only successful returns.
+  // Keep the key-tap count as skillsAttempted (tracked separately) for future delta analysis.
+  m.skillsAttempted = m.skillsAttempted || {basic:0,q:0,e:0,ult:0,dodge:0};
+  const wrapCast = (name, slot) => {
+    if (typeof b[name] !== 'function') return;
+    const orig = b[name].bind(b);
+    b[name] = (...args) => {
+      const r = orig(...args);
+      if (r !== false && args[0] === b.me()) m.skillsUsed[slot]++;
+      return r;
+    };
+  };
+  wrapCast('skillQ', 'q');
+  wrapCast('skillE', 'e');
+  wrapCast('ultimate', 'ult');
+  wrapCast('dodge', 'dodge');
   const dt=1/60; let tick=0; const MAXT=60; // sim up to 60s game-time
   while(!b.done && tick<MAXT/dt){
     obs.i=tick;
     persona.tick(b,game,obs);
-    // count intentions (held key this tick that was not held last tick = a press)
+    // count INTENTIONS (presses) — may or may not become casts (cd gates can discard).
+    // Actual successful casts are tracked in m.skillsUsed via the wrapCast wrappers above.
     const K=game.keys||{};
-    for(const [key,slot] of [['q','q'],['e','e'],['r','ult'],[' ','dodge']]) if(K[key]&&!obs._prev[key])m.skillsUsed[slot]++;
-    if(game.mouse&&game.mouse.down)m.skillsUsed.basic++;
+    for(const [key,slot] of [['q','q'],['e','e'],['r','ult'],[' ','dodge']]) if(K[key]&&!obs._prev[key])m.skillsAttempted[slot]++;
+    if(game.mouse&&game.mouse.down){m.skillsAttempted.basic++;m.skillsUsed.basic++;}
     if(K['p']&&!obs._prev['p'])m.usedAuto=true;
     obs._prev=Object.assign({},K);
     // impatient flee
@@ -211,6 +232,7 @@ function runBattle(env, persona, rng){
     usedAuto: m.usedAuto,
     shieldFired: m.shieldFired,
     skillsUsed: m.skillsUsed,
+    skillsAttempted: m.skillsAttempted,
     idlePct: Math.round(m.idleTicks/Math.max(1,tick)*100),
   };
 }
