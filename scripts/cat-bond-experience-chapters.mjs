@@ -28,7 +28,8 @@ const labels=Object.freeze({
   "Break the forest loop": "打破森林回环",
   "Ancient-root sanctuary": "古根圣所",
   "Living Roots": "相枝调",
-  "Lantern festival · Shadow show": "灯火节 · 影子戏",
+  "Help Xiaomao put on a show": "帮小铆演一场灯影",
+  "Finish the show and meet Xiaomao": "演完啦，去找小铆",
   "Light the stone bridge": "照亮石桥",
   "Shadow beast": "剪影兽",
   "Lantern sanctuary": "千灯圣所",
@@ -236,7 +237,18 @@ async function run(chapter){
   await controls.waitFor({state:'hidden',timeout:35000});
  }
  async function invite(npc){await click('Invite '+npc);await page.getByRole('button',{name:local('Invite '+npc),exact:true,includeHidden:true}).waitFor({state:'detached'});}
- async function restore(label,inputs,people,melody,notes){await puzzle(label,inputs);if(chapter==='harbor')for(const npc of people)await invite(npc);await puzzle(melody,['forge','sky','library','starfall'].includes(chapter)?notes.slice(-1):notes);}
+ async function restore(label){
+  const region=chapter,repair="repair:"+region,melody="melody:"+region;
+  assert.ok((await view()).objective.includes(repair),"Expected repair "+region);
+  await click(label);const ceremony=page.locator('.rw-world[data-ceremony="'+region+'"]');
+  await ceremony.waitFor({state:"visible",timeout:35000});
+  assert.equal(await page.locator(".rw-puzzle-controls:visible").count(),0,"Ceremony must not have a second control board");
+  assert.equal(await page.locator(".rw-fit-rail:visible").count(),0,"Ceremony must not show a quest drawer");
+  assert.ok(await page.locator(".rw-ceremony-caption").isVisible(),"The story response must be visible");
+  await shot(region+"-ceremony");
+  await op(repair);await op(melody);await ceremony.waitFor({state:"hidden"});
+  assert.ok((await view()).melodies.includes(region),"The actual response was recorded");
+ }
  const low='Dew · Low',mid='Starlight · Middle',high='Flower bell · High';
  async function flyWaterfall(label){
   await click(label);const status=page.locator('[data-sky-flight-status][data-route="open"]');await status.waitFor();await checkPuzzleLayout();
@@ -437,19 +449,19 @@ async function run(chapter){
    await puzzle('Break the forest loop',['Fork','Canopy','Turn moonleaf','Canopy','Far bank']);await dialogue('forest:R-03');await scene('forest:R-04');
    await restore('Ancient-root sanctuary',['Upstream','Branch','Roots'],['Yahe','Yuchuan'],'Living Roots',[mid,low,high]);await dialogue('forest:R-04');
   }else if(chapter==='forge'){
-   await puzzle('Lantern festival · Shadow show',['Cat','Aim left','Aim right','Continue festival']);await talk('Xiaomao');await dialogue('forge:E-01');await scene('forge:E-02');
+   await click('Help Xiaomao put on a show');const festival=page.locator('.rw-festival-card');await festival.waitFor();assert.equal(await page.locator('.rw-dedicated-rail:visible').count(),0,'Festival must be a story scene, not a control rail');assert.equal(await festival.locator('button').count(),4);await click('Cat',festival);assert.equal(await festival.getByRole('button',{name:local('Cat'),exact:true}).getAttribute('aria-pressed'),'true');await shot('festival-story');const originalFestivalViewport=page.viewportSize();for(const viewport of [{width:390,height:844},{width:844,height:390},originalFestivalViewport]){await page.setViewportSize(viewport);await festival.waitFor();const fit=await festival.evaluate(el=>{const r=el.getBoundingClientRect(),s=document.querySelector('#stage').getBoundingClientRect();return {inside:r.left>=s.left-1&&r.right<=s.right+1&&r.top>=s.top-1&&r.bottom<=s.bottom+1,buttons:[...el.querySelectorAll('button')].map(b=>{const q=b.getBoundingClientRect();return q.height>=44&&q.width>=44&&q.left>=s.left-1&&q.right<=s.right+1&&q.bottom<=s.bottom+1;})}});assert.ok(fit.inside&&fit.buttons.every(Boolean),'Festival story controls must fit '+JSON.stringify(viewport));await shot('festival-'+viewport.width);}await click('Finish the show and meet Xiaomao',festival);await op('puzzle:lantern-show');await festival.waitFor({state:'hidden'});await talk('Xiaomao');await dialogue('forge:E-01');await scene('forge:E-02');
    await puzzle('Light the stone bridge',['Cross the bridge','Aim left','Aim right','Cross the bridge']);await dialogue('forge:E-02');await scene('forge:E-03');
    await battle('Shadow beast','battle:shadow-beast');await dialogue('forge:E-03');await scene('forge:E-04');
    await restore('Lantern sanctuary',['Turn left light','Turn center light','Turn right light'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');await trial('xiaomao',['deploy','warn','impact']);
   }else if(chapter==='sky'){
    await flyWaterfall('Catch the wind · Practice gliding');await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
    await click('Find the moon gate · Cloud route');await op('explore:flight-recorder');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
-   await flyWaterfall('Joint gliding platform');await dialogue('sky:S-03');await click('Windwing sanctuary');await op('repair:sky');await puzzle('Open Sky',[low]);await dialogue('sky:S-03');await scene('sky:S-04');assert.ok((await view()).melodies.includes('sky'),'Sky must answer before the tea scene');
+   await flyWaterfall('Joint gliding platform');await dialogue('sky:S-03');await restore('Windwing sanctuary');await dialogue('sky:S-03');await scene('sky:S-04');assert.ok((await view()).melodies.includes('sky'),'Sky must answer before the tea scene');
    await talk('Muling');const lookout=page.locator('.sky-lookout-view');await lookout.waitFor();await click('Walk around the lookout');assert.equal(await lookout.getAttribute('data-pose'),'walk');await click('Sit beside Muling');assert.equal(await lookout.getAttribute('data-pose'),'sit');await page.locator('.sky-lookout-painting').evaluate(img=>img.decode());await artProfiles('sky-lookout-sit',page.locator('.sky-lookout-painting'),page.getByRole('button',{name:local('Walk around the lookout')}));await dialogue('sky:S-04','Sit with her for a while');await scene('sky:S-05');
    await dialogue('sky:S-05');
   }else if(chapter==='library'){
    await talk('Baikan');await dialogue('library:M-01');await scene('library:M-02');
-   await libraryEcho();await dialogue('library:M-02');await click('Moonmirror sanctuary');await op('repair:library');await puzzle('Reflections',[mid]);await dialogue('library:M-02');await scene('library:M-03');assert.ok((await view()).melodies.includes('library'),'Library must answer before the identity reveal');
+   await libraryEcho();await dialogue('library:M-02');await restore('Moonmirror sanctuary');await dialogue('library:M-02');await scene('library:M-03');assert.ok((await view()).melodies.includes('library'),'Library must answer before the identity reveal');
    await talk('Muling');await dialogue('library:M-03','I feel hurt');await scene('library:M-04');await puzzle('Public records · Investigation',['Ask about the borrowed map']);await dialogue('library:M-04','I need some distance');await scene('library:M-05');
    await talk('Moye');await click('Six-region model · Compare the two routes');const routes=page.locator('.rw-puzzle-controls');await routes.waitFor();await checkPuzzleLayout();const surface=page.locator('.rw-surface'),box=await surface.boundingBox();assert.ok(box);const dragBell=async(a,b)=>gesture({x:box.x+box.width*a[0],y:box.y+box.height*a[1]},{x:box.x+box.width*b[0],y:box.y+box.height*b[1]});await dragBell([.5,.40],[.5,.54]);await page.getByText(local('Routes explored 1/2'),{exact:true}).waitFor();await page.evaluate(async()=>{const img=new Image();img.src='assets/story-art/library-shared-memories.jpg';await img.decode();});await shot('route-inward');await dragBell([.5,.40],[.5+.22*Math.sqrt(3)/2,.47]);await page.getByText(local('Routes explored 2/2'),{exact:true}).waitFor();await artProfiles('route-neighbors',surface,page.getByRole('button',{name:local('Finish demonstration')}));await click('Finish demonstration',routes);await dialogue('library:M-05');
   }else if(chapter==='starfall'){

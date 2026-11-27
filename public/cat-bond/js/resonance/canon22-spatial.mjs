@@ -10,17 +10,22 @@ const starEdges=[[1,2],[0,3],[0,4],[1,5],[2,6],[3,7],[4,7],[5,6]];
 export const spatialNodes=p=>p.kind==="bridge"?bridgeNodes:p.kind==="stars"?starNodes:[];
 export function newSpatial(op){
  const kind=spatialKind(op);if(!kind)return null;
- return {operation:op,kind,node:0,branch:0,angle:.5,shape:0,moves:0,route:null,trace:[],solved:false,warning:"",visited:[0],player:[.16,.74],target:[.16,.74],frame:0,acc:0,waypoints:[],chaseRoute:null,jumping:false,wallCrossed:false,discoveries:[],audience:0,walk:null};
+ return {operation:op,kind,node:op==="puzzle:moonleaf-loop"?1:0,branch:0,angle:.5,shape:0,moves:0,route:null,trace:[],solved:false,warning:"",visited:[op==="puzzle:moonleaf-loop"?1:0],player:[.16,.74],target:[.16,.74],frame:0,acc:0,waypoints:[],chaseRoute:null,jumping:false,wallCrossed:false,discoveries:[],audience:0,walk:null};
 }
 // Animation delays the actual node transition. Invalid edges never start motion;
 // the underlying replay stays independent of frame rate.
 export function startBridgeWalk(p,action){
- if(p?.kind!=="bridge"||p.solved||p.walk||action?.type!=="step")return false;
+ if(!["bridge","stars"].includes(p?.kind)||p.solved||p.walk||action?.type!=="step")return false;
  const copy=JSON.parse(JSON.stringify(p));spatialInput(copy,action);
  if(copy.node===p.node){spatialInput(p,action);return false;}
- const from=bridgeNodes[p.node],to=bridgeNodes[copy.node];p.warning="";p.walk={from:[...from],to:[...to],elapsed:0,duration:Math.max(.36,dist(from,to)/.72),action:{...action}};return true;
+ const nodes=spatialNodes(p),from=nodes[p.node],to=nodes[copy.node];p.warning="";p.walk={from:[...from],to:[...to],elapsed:0,duration:p.kind==="stars"?Math.max(.38,dist(from,to)/.9):Math.max(.36,dist(from,to)/.72),action:{...action}};return true;
 }
-export function bridgeWalkPosition(p){const w=p.walk;if(!w)return [...bridgeNodes[p.node]];const t=clamp(w.elapsed/w.duration,0,1);return w.from.map((v,i)=>v+(w.to[i]-v)*t);}
+export function bridgeWalkPosition(p){const w=p.walk;if(!w)return [...spatialNodes(p)[p.node]];const t=clamp(w.elapsed/w.duration,0,1);return w.from.map((v,i)=>v+(w.to[i]-v)*t);}
+export function spatialTravelPose(p,lag=0){
+ const w=p.walk;if(!w)return {point:[...spatialNodes(p)[p.node]],ground:[...spatialNodes(p)[p.node]],lift:0,moving:false,face:1};
+ const t=clamp((w.elapsed-lag)/w.duration,0,1),ground=w.from.map((v,i)=>v+(w.to[i]-v)*t),lift=p.kind==="stars"?Math.sin(Math.PI*t)*.085:0;
+ return {ground,point:[ground[0],ground[1]-lift],lift,moving:true,face:w.to[0]>=w.from[0]?1:-1};
+}
 export function advanceBridgeWalk(p,dt){if(!p?.walk||!Number.isFinite(dt)||dt<=0)return false;const w=p.walk;w.elapsed=Math.min(w.duration,w.elapsed+Math.min(.1,dt));if(w.elapsed<w.duration)return false;p.walk=null;spatialInput(p,w.action);return true;}
 const kittenPoint=[.70,.76];
 function starStep(p,i){
@@ -82,7 +87,9 @@ export function spatialInput(p,a){
  else if(a.type==="target"&&p.kind==="chase"&&!p.direct&&Number.isFinite(a.x)&&Number.isFinite(a.y)&&a.x>=.12&&a.x<=.88&&a.y>=.20&&a.y<=.80){routeChase(p,a.x,a.y);a={...a,frame:p.frame};}
  else if(a.type==="jump"&&p.kind==="chase"){routeChase(p,.8,.27,true);a={...a,frame:p.frame};}
  else return false;
- p.trace.push({...a});return p.solved;
+ // Long optional lantern drags should never exceed the proof replay limit.
+ if(p.operation==="puzzle:lantern-show"&&a.type==="aim"&&p.trace.at(-1)?.type==="aim")p.trace[p.trace.length-1]={...a};
+ else p.trace.push({...a});return p.solved;
 }
 export function spatialProof(p){return p?.solved?{operation:p.operation,trace:p.trace.map(x=>({...x})),frames:p.frame,route:p.route,discoveries:[...p.discoveries],...(p.operation==="puzzle:lantern-show"?{shape:p.shape,angle:p.angle}: {})}:null;}
 export function validSpatialProof(op,proof){
@@ -106,19 +113,71 @@ export function spatialTap(p,x,y){
 export function spatialControls(p){
  if(p.kind==="bridge")return [{label:["拨动月叶","Turn moonleaf"],action:{type:"leaf"}},...bridgeNodes.map((_,i)=>({label:[["起点","岔路","树冠","地下","对岸"][i],["Start","Fork","Canopy","Roots","Far bank"][i]],action:{type:"step",i},available:bridgeReachable(p).includes(i)})),...(p.operation==="puzzle:moonleaf-crossing"&&p.node===3&&!p.discoveries.includes("rescued-kitten")?[{label:["帮小猫离开根丛","Free the trapped kitten"],action:{type:"rescue"}}]:[])];
  if(p.kind==="stars")return starEdges[p.node].map(i=>({label:["跳向星石 "+(i+1),"Jump to stone "+(i+1)],action:{type:"step",i}}));
- if(p.kind==="light")return [...(p.operation==="puzzle:lantern-show"?["鱼","蝴蝶","猫"].map((x,i)=>({label:[x,["Fish","Butterfly","Cat"][i]],action:{type:"shape",i}})):[]),...[[.2,"向左","Aim left"],[.5,"居中","Aim center"],[.72,"向右","Aim right"]].map(([x,zh,en])=>({label:[zh,en],action:{type:"aim",x}})),{label:p.operation==="puzzle:lantern-show"?["继续庆典","Continue festival"]:["走过石桥","Cross the bridge"],action:{type:"cross"}}];
+ if(p.operation==="puzzle:lantern-show")return [...["鱼","蝴蝶","猫"].map((x,i)=>({label:[x,["Fish","Butterfly","Cat"][i]],action:{type:"shape",i}})),{label:["演完啦，去找小铆","Finish the show and meet Xiaomao"],action:{type:"cross"}}];
+ if(p.kind==="light")return [...[],...[[.2,"向左","Aim left"],[.5,"居中","Aim center"],[.72,"向右","Aim right"]].map(([x,zh,en])=>({label:[zh,en],action:{type:"aim",x}})),{label:p.operation==="puzzle:lantern-show"?["继续庆典","Continue festival"]:["走过石桥","Cross the bridge"],action:{type:"cross"}}];
  return [...chaseLoop.map(([x,y],i)=>({label:["跑向街角 "+(i+1),"Run to corner "+(i+1)],action:{type:"target",x,y}})),{label:["跳过低墙 · 抄近路","Jump the low wall · Shortcut"],action:{type:"jump"}}];
 }
 export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackground=false){
- const tr=(a,b)=>lang==="zh"?a:b,pt=q=>[q[0]*W,q[1]*H],dot=(q,r,col)=>{c.fillStyle=col;c.beginPath();c.arc(...pt(q),r,0,Math.PI*2);c.fill()},line=(a,b,col,w)=>{c.strokeStyle=col;c.lineWidth=w;c.lineCap="round";c.beginPath();c.moveTo(...pt(a));c.lineTo(...pt(b));c.stroke()},label=(s,q,size=18)=>{c.font="600 "+size+"px sans-serif";c.textAlign="center";c.fillStyle="#fff5db";c.fillText(s,...pt(q),W*.92)};
- c.save();const painted=nativeBackground|| (p.kind==="bridge"?paintPlate(c,"forest-fork",W,H):p.kind==="light"?paintPlate(c,p.operation==="puzzle:lantern-show"?"lantern-theater":"lantern-vault",W,H):p.kind==="chase"?paintPlate(c,"windchime-chase",W,H):false);c.fillStyle=painted?"#182a3426":"#182a34b8";c.fillRect(0,0,W,H);
+ const tr=(a,b)=>lang==="zh"?a:b,pt=q=>[q[0]*W,q[1]*H],dot=(q,r,col)=>{c.fillStyle=col;c.beginPath();c.arc(...pt(q),r,0,Math.PI*2);c.fill()},line=(a,b,col,w)=>{c.strokeStyle=col;c.lineWidth=w;c.lineCap="round";c.beginPath();c.moveTo(...pt(a));c.lineTo(...pt(b));c.stroke()},label=(s,q,size=18)=>{c.font="600 "+size+"px sans-serif";c.textAlign="center";c.fillStyle="#fff5db";if(nativeBackground){c.strokeStyle="#263c43";c.lineWidth=3;c.strokeText(s,...pt(q),W*.92);}c.fillText(s,...pt(q),W*.92)};
+ c.save();const painted=nativeBackground|| (p.kind==="bridge"?paintPlate(c,"forest-fork",W,H):p.kind==="light"?paintPlate(c,p.operation==="puzzle:lantern-show"?"lantern-theater":"lantern-vault",W,H):p.kind==="chase"?paintPlate(c,"windchime-chase",W,H):false);if(!nativeBackground){c.fillStyle=painted?"#182a3426":"#182a34b8";c.fillRect(0,0,W,H);}
  if(p.kind==="bridge"){
-  const a=p.operation==="puzzle:moonleaf-loop"?1-p.branch:p.branch;const nodes=bridgeNodes;line(nodes[0],nodes[1],"#9b9b74",22);line(nodes[2],nodes[4],"#9b9b74",22);line(nodes[3],nodes[4],"#9b9b74",22);if(!paintBridge(c,"forest-root-bridge",nodes[1],nodes[a===0?2:3],W,H,62))line(nodes[1],nodes[a===0?2:3],"#b9df9c",24);line(nodes[1],nodes[a===0?3:2],"#5b786b55",5);for(const i of [2,3,4]){const [x,y]=pt(nodes[i]);c.save();if(i===3)c.filter="brightness(.76) saturate(.85)";paintArt(c,"forest-landing",x,y,138,64,.5,.12);c.restore();}nodes.forEach((q,i)=>{const reachable=bridgeReachable(p).includes(i);dot(q,painted?reachable?10:7:reachable?20:14,i===p.node?"#f6d98c":reachable?"#d3f0c6":"#819e80");});if(!paintArt(c,"forest-moonleaf-control",W*.36,H*.25,74,74,.5,.55,Math.sin(time*2)*.09))dot([.36,.25],27,"#94cc7d");label(tr("月叶","Moonleaf"),[.36,.18]);label(tr("树冠日光台","Sunlit canopy"),[.62,.23]);label(tr("反光菌群","Glowing fungi"),[.62,.83]);for(let i=0;i<6;i++)dot([.55+i*.025,.77+Math.sin(i)*.02],3+i%3,"#b9e4db");if(p.node===2){const [x,y]=pt([.62,.38]);c.fillStyle="#f4e7b2";c.beginPath();c.arc(x,y-36,16,0,Math.PI*2);c.fill();c.fillStyle="#9cc6a3";c.beginPath();c.moveTo(x-65,y);c.lineTo(x-24,y-26);c.lineTo(x+12,y);c.lineTo(x+44,y-17);c.lineTo(x+75,y);c.fill();label(tr("从这里能看见花园山谷！","You can see the garden valley!"),[.62,.43],16);}else if(p.node===3){for(let j=0;j<9;j++)dot([.48+j*.032,.73+Math.sin(time*2+j)*.012],5+j%3,"#b4ffe3");drawNpc?.("muling",.54,.66,.52);label(tr("地下的菌群会回应你的脚步","The fungi glow with your footsteps"),[.62,.89],15);}const pos=bridgeWalkPosition(p);drawCat?.(pos[0],pos[1],!!p.walk);if(p.operation==="puzzle:moonleaf-crossing"){if(p.discoveries.includes("rescued-kitten")){drawCat?.(Math.max(.10,pos[0]-.056),Math.min(.91,pos[1]+.045),!!p.walk,"clover",.46);if(!p.walk&&p.node===3)label(tr("小猫跟上来啦！","The kitten is following!"),[.72,.60],16);}else if(p.node===3&&!p.walk){drawCat?.(...kittenPoint,false,"clover",.45);for(let i=0;i<3;i++){const x=.67+i*.025;line([x,.80],[x+.01,.70],"#9c7957",6);}label(tr("根丛里的小猫","A kitten caught in the roots"),[.73,.66],15);}}label(tr("拨月叶改变桥的落点，再走过去","Turn the moonleaf, then cross"),[.5,.08],22);
+  const a=p.operation==="puzzle:moonleaf-loop"?1-p.branch:p.branch;const nodes=bridgeNodes;line(nodes[0],nodes[1],"#9b9b74",22);line(nodes[2],nodes[4],"#9b9b74",22);line(nodes[3],nodes[4],"#9b9b74",22);if(!paintBridge(c,"forest-root-bridge",nodes[1],nodes[a===0?2:3],W,H,62))line(nodes[1],nodes[a===0?2:3],"#b9df9c",24);line(nodes[1],nodes[a===0?3:2],"#5b786b55",5);for(const i of [2,3,4]){const [x,y]=pt(nodes[i]);c.save();if(i===3)c.filter="brightness(.76) saturate(.85)";paintArt(c,"forest-landing",x,y,138,64,.5,.12);c.restore();}nodes.forEach((q,i)=>{const reachable=bridgeReachable(p).includes(i);dot(q,painted?reachable?10:7:reachable?20:14,i===p.node?"#f6d98c":reachable?"#d3f0c6":"#819e80");});if(!paintArt(c,"forest-moonleaf-control",W*.36,H*.25,74,74,.5,.55,Math.sin(time*2)*.09))dot([.36,.25],27,"#94cc7d");label(tr("月叶","Moonleaf"),[.36,.18]);label(tr("树冠日光台","Sunlit canopy"),[.62,.23]);label(tr("反光菌群","Glowing fungi"),[.62,.83]);for(let i=0;i<6;i++)dot([.55+i*.025,.77+Math.sin(i)*.02],3+i%3,"#b9e4db");const pos=bridgeWalkPosition(p),unit=Math.min(W,H);
+  // Two actual environments react to the route and footsteps, rather than
+  // a tiny schematic pretending to be a panoramic view.
+  if(p.node===2||p.walk?.to[1]===nodes[2][1]){
+   const bloom=p.walk?Math.min(1,p.walk.elapsed/p.walk.duration):1;
+   c.save();c.globalAlpha=.35*bloom;const sun=c.createLinearGradient(W*.55,0,W*.78,H*.58);sun.addColorStop(0,"#fff3ba88");sun.addColorStop(1,"#fff3ba00");c.fillStyle=sun;c.beginPath();c.moveTo(W*.46,0);c.lineTo(W*.62,0);c.lineTo(W*.88,H*.59);c.lineTo(W*.67,H*.59);c.fill();c.restore();
+   for(let j=0;j<7;j++){const a=time*.7+j*2.399,q=[.54+j*.035,.23+Math.sin(a)*.04];c.save();c.globalAlpha=.28+.24*Math.sin(a)**2;paintArt(c,"garden-moonleaf",q[0]*W,q[1]*H,unit*.042,unit*.042,.5,.5,a*.3);c.restore();}
+   if(!p.walk)label(tr("从这里能看见花园山谷！","You can see the garden valley!"),[.62,.43],16);
+  }
+  if(p.node===3||p.walk?.to[1]===nodes[3][1]||p.walk?.from[1]===nodes[3][1]){
+   // Each cluster lights only when a cat comes near, with fading ripples.
+   for(let j=0;j<12;j++){const q=[.46+(j%6)*.063,.72+Math.floor(j/6)*.055+Math.sin(j*2)*.011],d=dist(q,pos),lit=Math.max(0,1-d/.18),[x,y]=pt(q),rad=unit*(.022+lit*.03);
+    const g=c.createRadialGradient(x,y,0,x,y,rad);g.addColorStop(0,"rgba(171,250,211,"+(.10+lit*.58)+")");g.addColorStop(1,"rgba(171,250,211,0)");c.fillStyle=g;c.fillRect(x-rad,y-rad,rad*2,rad*2);
+    c.save();c.globalAlpha=.36+lit*.64;c.fillStyle="#baf0cf";c.beginPath();c.ellipse(x,y,unit*.009,unit*.004,0,0,Math.PI*2);c.fill();c.strokeStyle="#9ccfb7";c.lineWidth=1.5;c.beginPath();c.moveTo(x,y+1);c.lineTo(x,y+unit*.012);c.stroke();c.restore();
+   }
+   if(!p.walk)label(tr("脚边的蘑菇亮起来了！","The mushrooms light up by your paws!"),[.62,.89],15);
+  }
+  const follower=spatialTravelPose(p,.16);const fp=follower.point;drawNpc?.("muling",clamp(fp[0]-.065,.05,.95),clamp(fp[1]+.038,.06,.94),.66,!!p.walk,follower.face);
+  drawCat?.(pos[0],pos[1],!!p.walk);if(p.operation==="puzzle:moonleaf-crossing"){if(p.discoveries.includes("rescued-kitten")){drawCat?.(Math.max(.10,pos[0]-.056),Math.min(.91,pos[1]+.045),!!p.walk,"clover",.46);if(!p.walk&&p.node===3)label(tr("小猫跟上来啦！","The kitten is following!"),[.72,.60],16);}else if(p.node===3&&!p.walk){drawCat?.(...kittenPoint,false,"clover",.45);for(let i=0;i<3;i++){const x=.67+i*.025;line([x,.80],[x+.01,.70],"#9c7957",6);}label(tr("根丛里的小猫","A kitten caught in the roots"),[.73,.66],15);}}label(tr("拨月叶改变桥的落点，再走过去","Turn the moonleaf, then cross"),[.5,.08],22);
  }else if(p.kind==="stars"){
-  for(let i=0;i<starNodes.length;i++){const q=starNodes[i],lit=i===p.node||starEdges[p.node].includes(i);if(lit){const [x,y]=pt(q),g=c.createRadialGradient(x,y,1,x,y,46);g.addColorStop(0,"#f4df8c88");g.addColorStop(1,"#f4df8c00");c.fillStyle=g;c.fillRect(x-46,y-46,92,92);}dot(q,18,lit?"#e7d59e":"#51616a");}drawCat?.(...starNodes[p.node]);label(tr("只有相邻星石被照亮","Only neighboring stones light up"),[.5,.08],22);
+  const pose=spatialTravelPose(p),unit=Math.min(W,H);
+  // The trail remembers where the player actually jumped; two routes create
+  // different constellations. Unvisited edges are never presented as earned.
+  c.save();c.lineWidth=Math.max(1.5,unit*.004);c.strokeStyle="#f7e9baae";c.shadowColor="#efd7a9";c.shadowBlur=8;
+  c.beginPath();p.visited.forEach((i,j)=>{const q=pt(starNodes[i]);j?c.lineTo(...q):c.moveTo(...q);});if(p.walk)c.lineTo(...pt(pose.ground));c.stroke();c.restore();
+  for(let i=0;i<starNodes.length;i++){const q=starNodes[i],visited=p.visited.includes(i),lit=visited||starEdges[p.node].includes(i);const [x,y]=pt(q),radius=unit*(visited?.055:lit?.042:.024);
+   if(lit){const g=c.createRadialGradient(x,y,1,x,y,radius);g.addColorStop(0,visited?"#fff0bdc0":"#d8e4ee80");g.addColorStop(1,"#f4df8c00");c.fillStyle=g;c.fillRect(x-radius,y-radius,radius*2,radius*2);}
+   c.save();c.fillStyle=visited?"#f6dca0":lit?"#bdcedb":"#596877";c.strokeStyle=lit?"#f6ebcf":"#8494a0";c.lineWidth=1.5;c.beginPath();c.moveTo(x-unit*.023,y);c.lineTo(x-unit*.009,y-unit*.014);c.lineTo(x+unit*.015,y-unit*.012);c.lineTo(x+unit*.025,y+unit*.006);c.lineTo(x+unit*.007,y+unit*.016);c.lineTo(x-unit*.018,y+unit*.012);c.closePath();c.fill();c.stroke();c.restore();
+  }
+  const [gx,gy]=pt(pose.ground);c.save();c.fillStyle="rgba(24,27,52,"+(.25-pose.lift*1.5)+")";c.beginPath();c.ellipse(gx,gy+unit*.015,unit*.032,unit*.008,0,0,Math.PI*2);c.fill();c.restore();
+  drawCat?.(pose.point[0],pose.point[1],pose.moving,null,.86,pose.face);
+  label(tr("踩过的星石连成了星座","Your footsteps connect a constellation"),[.5,.08],20);
  }else if(p.kind==="light"){
-  const angle=p.angle,show=p.operation==="puzzle:lantern-show",size=24+Math.abs(angle-.5)*110;const lamp=[angle,.24],shadow=[.30+(1-angle)*.40,.48];if(!paintArt(c,"garden-lantern",angle*W,.24*H,62,76))dot(lamp,18,"#ffe5a7");const [lx,ly]=pt(lamp);const g=c.createRadialGradient(lx,ly,5,lx,ly,W*.58);g.addColorStop(0,"#ffdc9c88");g.addColorStop(1,"#ffdc9c00");c.fillStyle=g;c.fillRect(0,0,W,H);if(show){const [x,y]=pt(shadow);c.save();c.beginPath();c.rect(W*.23,H*.29,W*.54,H*.36);c.clip();if(!paintArt(c,["shadow-fish","shadow-butterfly","shadow-cat"][p.shape],x,y,size*2.8,size*1.8,.5,.5,angle-.5)){c.fillStyle="#17212d";c.beginPath();c.ellipse(x,y,size,size*.6,angle-.5,0,Math.PI*2);c.fill();if(p.shape===0){c.beginPath();c.moveTo(x-size,y);c.lineTo(x-size*1.6,y-size*.6);c.lineTo(x-size*1.6,y+size*.6);c.fill();}else if(p.shape===1){dot([shadow[0]-.045,.53],size*.65,"#17212d");dot([shadow[0]+.045,.53],size*.65,"#17212d");}else{for(const d of [-1,1]){c.beginPath();c.moveTo(x+d*size*.55,y-size*.25);c.lineTo(x+d*size*.9,y-size);c.lineTo(x+d*size*.15,y-size*.4);c.fill();}}}c.restore();// Three animated audience silhouettes respond to the chosen shape.
-const phase=time*3;for(let i=0;i<3;i++){const ax=.23+i*.25+Math.sin(phase+i)*.025,ay=.72+(p.shape===0?Math.sin(phase+i)*.018:p.shape===1?-Math.abs(Math.sin(phase*1.5+i))*.065:Math.sin(phase+i)*.012);const [cx,cy]=pt([ax,ay]);c.save();c.translate(cx,cy);c.rotate(p.shape===2?Math.sin(phase+i)*.20:0);c.translate(-cx,-cy);drawCat?.(ax,ay,p.shape!==0,["biscuit","puff","clover"][i],.45);c.restore();}dot([shadow[0]+.075,.48],5,"#ffe8a3");drawNpc?.("xiaomao",.89,.77,.65);label(tr(["小猫在学鱼游泳","小猫在扑蝴蝶","小猫在追尾巴"][p.shape],["The kittens mimic swimming fish","The kittens chase butterflies","The kittens chase their tails"][p.shape]),[.5,.88],15);label(tr("移动灯笼，看看影子怎么变","Move the lantern and watch the shadow"),[.5,.08],22);}else{const lit=Math.abs(angle-.72)<=.14;c.save();if(!lit)c.filter="brightness(.32) saturate(.55)";if(!paintBridge(c,"lantern-stone-crossing",[.22,.64],[.82,.64],W,H,83))line([.22,.64],[.82,.64],lit?"#dbcba7":"#25323c",40);c.restore();if(Math.abs(angle-.2)<.15)label(tr("壁龛：第一盏歪耳灯","Alcove: the first crooked-ear lantern"),[.28,.43]);drawCat?.(.19,.64);label(tr("照亮石桥，再走过去","Light the stone bridge before crossing"),[.5,.08],22);}label(tr("拖动灯光","Drag the light"),[angle,.34]);
+  const angle=p.angle,show=p.operation==="puzzle:lantern-show";
+  if(show){
+   // The painted audience is already part of the theater. Do not scatter tiny
+   // unrelated cat sprites over it. Animate the actual chosen shadow instead.
+   const unit=Math.min(W,H),lightX=.24+.52*angle,shadowX=.5+(.5-angle)*.30;
+   const phase=time*2,shadowY=.45+(p.shape===0?Math.sin(phase*.9)*.023:p.shape===1?Math.sin(phase*1.8)*.036:-Math.abs(Math.sin(phase*.75))*.034);
+   const size=unit*(.27+Math.abs(angle-.5)*.28),lx=lightX*W,ly=.24*H;
+   const glow=c.createRadialGradient(lx,ly,0,lx,ly,unit*.38);
+   glow.addColorStop(0,"#ffdc9c77");glow.addColorStop(1,"#ffdc9c00");c.fillStyle=glow;c.fillRect(0,0,W,H);
+   c.save();c.beginPath();c.rect(W*.23,H*.29,W*.54,H*.35);c.clip();
+   const x=(shadowX+(p.shape===0?Math.sin(phase*.85)*.035:p.shape===2?Math.sin(phase*.75)*.022:Math.cos(phase*.9)*.018))*W,y=shadowY*H;
+   c.globalAlpha=.86;c.translate(x,y);
+   if(p.shape===1)c.scale(.62+.38*Math.abs(Math.sin(phase*3)),1); // butterfly opens and closes wings
+   if(p.shape===2)c.scale(1+.06*Math.sin(phase*1.5),.94+.10*Math.abs(Math.sin(phase*.75))); // crouch and pounce
+   paintArt(c,["shadow-fish","shadow-butterfly","shadow-cat"][p.shape],0,0,size*1.35,size*(p.shape===1?.68:.85),.5,.5,Math.sin(phase)*(p.shape===2?.08:p.shape===0?.12:.045)+(angle-.5)*.22);
+   c.restore();
+   paintArt(c,"garden-lantern",lx,ly,unit*.14,unit*.16);
+   // Gentle audience acknowledgment in the illustrated foreground, not fake
+   // animated actors. The story response is delivered in the readable caption.
+   if(p.audience){for(const [i,ax] of [.14,.87].entries()){const k=.5+.5*Math.sin(phase+i),ay=.68-k*.025;c.save();c.globalAlpha=.35+.45*k;dot([ax,ay],unit*.008,"#fff0b3");dot([ax+(i?-.035:.035),ay-.035],unit*.005,"#ffe0a2");c.restore();}}
+  }else{
+   const lamp=[angle,.24];if(!paintArt(c,"garden-lantern",angle*W,.24*H,62,76))dot(lamp,18,"#ffe5a7");
+   const [lx,ly]=pt(lamp),g=c.createRadialGradient(lx,ly,5,lx,ly,W*.58);g.addColorStop(0,"#ffdc9c88");g.addColorStop(1,"#ffdc9c00");c.fillStyle=g;c.fillRect(0,0,W,H);
+   const lit=Math.abs(angle-.72)<=.14;c.save();if(!lit)c.filter="brightness(.32) saturate(.55)";if(!paintBridge(c,"lantern-stone-crossing",[.22,.64],[.82,.64],W,H,83))line([.22,.64],[.82,.64],lit?"#dbcba7":"#25323c",40);c.restore();if(Math.abs(angle-.2)<.15)label(tr("壁龛：第一盏歪耳灯","Alcove: the first crooked-ear lantern"),[.28,.43]);drawCat?.(.19,.64);label(tr("照亮石桥，再走过去","Light the stone bridge before crossing"),[.5,.08],22);label(tr("拖动灯光","Drag the light"),[angle,.34]);}
  }else{
   const project=([x,y])=>[x,chaseVisualY(y)];for(let i=0;i<4;i++){const corner=project(chaseLoop[i]);line(corner,project(chaseLoop[(i+1)%4]),"#fff2c250",painted?2:10);if(!p.direct){dot(corner,14,"#453426cc");dot(corner,8,"#ffe5a1");}}if(!painted)line([.29,.5],[.71,.5],"#c7a875",16);line(project([.5,.73]),project([.5,.27]),"#f1d7a488",5);label(tr("低墙","Low wall"),[.5,.46],15);const q=project(chasePoint(p));dot(q,30,"#f3d68588");if(!paintArt(c,"windchime-wisp",q[0]*W,q[1]*H,52,52,.5,.5))dot(q,10,"#fff3b3");const player=project(p.player);drawCat?.(player[0],player[1]-(p.jumping?.045:0),!!p.moving||!!p.waypoints.length||p.jumping);if(p.jumping)label(tr("跳！","Jump!"),[player[0],player[1]-.085],16);
  }
