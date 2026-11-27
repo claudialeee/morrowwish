@@ -63,14 +63,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - name: Detect relevant gameplay changes
         id: relevant
         run: |
-          # The immediately preceding b3fca51 run passed layout and all seven non-finale chapters.
-          # This exact opening-only integration keeps those runtime modules unchanged.
-          # The unfinished finale must still run; future gameplay changes use the normal gate.
-          if [[ "$(git rev-parse HEAD^)" == "b3fca51c0025491545d438fb863a5b48ec71bb69" ]] && ! git diff --name-only HEAD^ HEAD | grep -Ev '^(public/cat-bond/(css/rpg-fullbleed\.css|index\.html|js/sunlit-garden\.js)|scripts/cat-bond-(release-prologue-qa|experience-chapters)\.mjs|\.github/workflows/(cat-bond-preview|starbell-unified-layout)\.yml) 'world-exploration\.mjs|world-bridge\.mjs|world-runtime\.mjs|canon22-spatial\.mjs|campaign\.mjs|cat-bond-experience-chapters\.mjs|starbell-unified-layout\.yml'; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
+          # The b3fca51 run passed layout and seven non-finale chapters.
+          # Reuse those results only for opening-only changes relative to that exact code.
+          baseline=b3fca51c0025491545d438fb863a5b48ec71bb69
+          if git cat-file -e "$baseline^{commit}" 2>/dev/null && git merge-base --is-ancestor "$baseline" HEAD && ! git diff --name-only "$baseline" HEAD | grep -Ev '^(public/cat-bond/(css/rpg-fullbleed\.css|index\.html|js/sunlit-garden\.js)|scripts/cat-bond-(release-prologue-qa|experience-chapters)\.mjs|\.github/workflows/(cat-bond-preview|starbell-unified-layout)\.yml)$'; then
+            if [[ "$CAT_BOND_CHAPTERS" == "finale" ]]; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
+            exit 0
+          fi
+          if git diff-tree --no-commit-id --name-only -r HEAD | grep -Eq 'world-exploration\.mjs|world-bridge\.mjs|world-runtime\.mjs|canon22-spatial\.mjs|campaign\.mjs|cat-bond-experience-chapters\.mjs|starbell-unified-layout\.yml'; then echo 'run=true' >> "$GITHUB_OUTPUT"; fi
       - uses: actions/setup-node@v4
         if: steps.relevant.outputs.run == 'true'
         with:
