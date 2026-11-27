@@ -256,18 +256,23 @@ jobs:
                 await page.locator('.sg-prologue-guide').getByRole('button',{name:'Next scene · Windchime Town',exact:true}).click();
                 await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01'&&WorldMap.currentRegion==='harbor');
                 await page.screenshot({path:'preview-'+prefix+'-harbor.png'});
-                // Actual player-driven discovery on the shipped map, not a synthetic slot.
-                const surface=page.locator('.rw-surface');
-                await page.waitForFunction(()=>{const s=document.querySelector('.rw-surface');return s?.dataset.camera&&JSON.parse(s.dataset.affordances||'[]').length>0;});
-                // The new event is intentionally hidden outside its discovery radius.
-                // Walk along the first harbor path segment using the real map controls.
-                if(!await surface.evaluate(el=>JSON.parse(el.dataset.affordances||'[]').some(m=>m.t==='The tidepool shell'))){
-                  const pathPoint=await surface.evaluate(el=>{const [zoom,x,y]=JSON.parse(el.dataset.camera);return {x:el.clientWidth*(x+zoom*.12),y:el.clientHeight*(y+zoom*.80)}});
-                  await surface.click({position:pathPoint});
+                // Actual player-driven discovery from the accessible optional clue:
+                // the game walks the cat to the landmark and validates its saved position.
+                const clue=page.locator('[data-side-clue=harbor]');
+                await clue.waitFor({state:'attached'});
+                if(!await clue.isVisible()){
+                  await page.locator('#map-menu').click();
+                  await page.locator('#cb-system-menu [data-system="world-explore"]').click();
                 }
-                await page.waitForFunction(()=>JSON.parse(document.querySelector('.rw-surface')?.dataset.affordances||'[]').some(m=>m.t==='The tidepool shell'));
-                const target=await surface.evaluate(el=>{const m=JSON.parse(el.dataset.affordances).find(m=>m.t==='The tidepool shell'),[zoom,x,y]=JSON.parse(el.dataset.camera);return {x:el.clientWidth*(x+zoom*m.x/960),y:el.clientHeight*(y+zoom*m.y/540)}});
-                await surface.click({position:target});
+                const details=page.locator('.rw-optional-actions:not([open]) > summary:visible');
+                if(!await clue.isVisible()&&await details.count())await details.first().click();
+                const prev=page.locator('[data-fit-prev]:visible'),next=page.locator('[data-fit-next]:visible');
+                for(let i=0;i<20&&!await clue.isVisible()&&await prev.count()&&await prev.isEnabled();i++)await prev.click();
+                for(let i=0;i<20&&!await clue.isVisible()&&await next.count()&&await next.isEnabled();i++){
+                  if(await details.count())await details.first().click();
+                  if(!await clue.isVisible())await next.click();
+                }
+                await clue.click();
                 const side=page.locator('[data-adventure=side-harbor]');
                 await side.waitFor({state:'visible',timeout:15000});
                 for(const action of ['step-0-0','step-1-1','step-2-2'])await side.locator('[data-play-action="'+action+'"]').click();
