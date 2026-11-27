@@ -1,0 +1,99 @@
+name: Starbell final acceptance of deployed build
+on:
+  push:
+    branches: [qa/starbell-final-acceptance-20261127]
+    paths: ['.github/workflows/starbell-final-acceptance.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fresh-campaign:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    concurrency:
+      group: canon22-fresh-${{ github.ref }}-${{ matrix.scope }}-${{ matrix.locale }}
+      cancel-in-progress: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[replace-obsolete-qa]') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {scope: campaign, locale: en}
+          - {scope: campaign, locale: zh}
+    env:
+      CAT_BOND_CONTINUOUS: '1'
+      CAT_BOND_EXPERIENCE: '1'
+      CAT_BOND_CHAPTER_LOCALE: ${{ matrix.locale }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 36c44d2cfe39ade6d38b2ed0258dc4b98b137fb3
+      - name: Confirm deployed source (no new deploy)
+        run: |
+          set -eu
+          test "$(git rev-parse HEAD)" = '36c44d2cfe39ade6d38b2ed0258dc4b98b137fb3'
+          for url in https://cat-bond-preview.morrowwish.pages.dev https://starbell-portrait-preview.morrowwish.pages.dev; do
+            curl -fsS --max-time 20 "$url/preview-version.json?qa=final-acceptance" | jq -e '.sha=="36c44d2cfe39ade6d38b2ed0258dc4b98b137fb3"' >/dev/null
+          done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: ./.github/actions/starbell-browser-setup
+      - name: Fresh slot campaign through ending (real save reload between chapters)
+        if: matrix.scope == 'campaign'
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/canon22-fresh.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-experience-chapters.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canon22-fresh-${{ matrix.scope }}-${{ matrix.locale }}
+          path: |
+            artifacts/cat-bond-experience/
+            /tmp/canon22-fresh.log
+            /tmp/canon22-opening.log
+            artifacts/cat-bond-release-prologue/
+          retention-days: 14
+
+  telemetry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - name: Verify both live collector origins with isolated diagnostic probes
+        run: |
+          set -eu
+          endpoint=https://morrowwish.pages.dev
+          for origin in https://cat-bond-preview.morrowwish.pages.dev https://starbell-portrait-preview.morrowwish.pages.dev; do
+            probe="mw-qa-$(node -e "process.stdout.write(require('node:crypto').randomUUID())")"
+            for kind in visit session; do
+              body=$(printf '{"kind":"%s","game":"starbell-preview","viewId":"%s","visitor":"ci-smoke","smokeProbe":"mw-qa-v1","metricsVersion":1,"starts":1,"ends":1,"signals":{"rpg_new":1,"rpg_enter_prologue":1}}' "$kind" "$probe")
+              code=$(curl -sS --max-time 18 -D /tmp/headers -o /tmp/response -w '%{http_code}' -H "Origin: $origin" -H 'Content-Type: text/plain' --data "$body" "$endpoint/api/starbell-preview-session")
+              test "$code" = 202
+              grep -qi "^access-control-allow-origin: $origin" /tmp/headers
+            done
+            curl -fsS --max-time 18 "$endpoint/api/diagnostic-check?probe=$probe" | jq -e '.recorded and .sessionRecorded and .startRecorded and .endRecorded and .removed' >/dev/null
+            echo "LIVE COLLECTOR AND D1 READBACK PASS: $origin"
+          done
+          test "$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' "$endpoint/api/summary?days=7")" = 401
+      - name: Read-only check for actual RPG visit records (no private counts or identifiers in public logs)
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_D1_RECOVERY_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          assert.ok(process.env.TOKEN,'Read-only audit credential unavailable');
+          const url='https://api.cloudflare.com/client/v4/accounts/ad5c7e2459db758ac4a41973f4f6028b/d1/database/fbd62f69-1811-4538-a17f-ecc5be8ad7cc/query';
+          const sql="SELECT COUNT(*) AS n FROM (SELECT 1 FROM events WHERE category='arcade' AND ts>=? AND game='starbell-preview' AND kind=? AND json_extract(payload,'$.previewMode')=? LIMIT 1)";
+          for(const mode of ['landscape','portrait'])for(const kind of ['visit','session']){
+            const params=[Date.parse('2026-11-22T08:00:00Z'),kind,mode];
+            const r=await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+process.env.TOKEN,'Content-Type':'application/json'},body:JSON.stringify({sql,params}),signal:AbortSignal.timeout(20000)});
+            const j=await r.json();assert.ok(r.ok&&j.success&&j.result?.[0]?.success!==false,'D1 read-only query rejected');
+            assert.equal(j.result[0].meta?.rows_written??0,0);
+            // Do not expose private traffic counts, identities, or event payloads.
+            console.log('REAL RPG RECORD PRESENCE',mode,kind,Number(j.result[0].results[0].n)>0?'present':'not yet present');
+          }
+          NODE
