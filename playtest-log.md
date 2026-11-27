@@ -2487,3 +2487,10 @@ RSI cycle 2026-11-27T09:06:50Z: no agent proposal beat the MOBA judge; archive c
 - wb3r7ejxm: 4.33 (regression)
 
 Regression suggests wowed850p high was high-variance of the harness, not a durable improvement — no combat-code change between the two cycles (modulo the 修 fixes which only touched tests + arcanePulse allowRoles, not perceptual channels).
+
+### Auto-fix application for wb3r7ejxm (after retroactive adversary-fixes-array audit)
+
+Mid-turn supervisor retroactive flag caught that the `fixes[]` array had 3 P0-tier entries (distinct from critiques[].priority which was 0 P0). Re-evaluated under cron rule:
+- **Fix 0 (combo-tier)**: FINDINGS-ONLY — cross-cutting shake/hitstop system, not local.
+- **Fix 1 (ult button state)**: FINDINGS-ONLY — touches bilingual strings = i18n structure (cron excludes).
+- **Fix 2 (stompStreak ratchet + auto-assist gate)**: AUTO-FIXED in `cd623f76`. Two numeric lines, battle.js cache-buster bumped. Full 4-script gate + `npm run check` green pre-commit.
