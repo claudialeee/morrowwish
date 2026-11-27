@@ -2626,3 +2626,33 @@ Downtrend ominous. HEAD now has `5fc451d7` (symmetric defense) + `e5def513` (E-p
 
 ### RSI parallel: first agent winner surfaced
 RSI cycle 2026-11-27T21:29:01Z (separately in session): `agent:allied-hp-peeler` beat baseline +2.05% (0.706 vs 0.692). Awaits owner approval to port peel branch into kitRangeBand.
+
+## Playtest cycle wx45jkdra — 2026-11-27 (post 55606430 peel branch)
+
+**Headline**: Combat is landing honestly but failing legibly — the recent ramp-and-cap wave fixed numbers while leaving silent rejects, invisible failsafes, flat first-10s, and zero encounter variance; the highest-ROI fixes are feedback and labels, not more tuning.
+
+**funMean 4.17** (↑0.17 vs wj9ntrtir 4.0, masher 4→5 recovered):
+- 探索 7 / 狂按 **5** (↑1) / 懒人 5 / 谨慎 **2** / 手忙脚乱 3 / 没耐心 3
+
+### Auto-fixes this cycle: 0 (1 critique-P0 + 2 fix-P0, all findings-only)
+
+- **Critique P0 (panicky: "73% HP but I lost" — flee-dominant dead code)**: FINDINGS-ONLY — spans battle.js + game.js:1598 win predicate + save/XP enum. Scoring economy change excluded by cron.
+- **Fix 0 (promote 73% HP timeout to soft-win)**: same issue as critique P0 — FINDINGS-ONLY (save-compat enum).
+- **Fix 1 (gate 9s ult failsafe + visible pre-fire countdown)**: FINDINGS-ONLY — adds new UI element (banner countdown), exceeds "additive feedback cue" rule.
+
+### Critiques: 40 total
+- 1 critique-tier P0 (panicky: silent clock-loss)
+- 31 P1 (8 local-numeric + 22 additive-flag + 1 architectural)
+- 8 P2 (2 local-numeric + 5 additive-flag + 1 architectural)
+
+### Session trend (9 cycles)
+w06q78tip 4.33 → w892jymfa 4.5 → wowed850p 5.0 → wb3r7ejxm 4.33 → wmbjeusi4 4.17 → wyirqg3vx 4.67 → w61dao149 4.33 → wj9ntrtir 4.0 → wx45jkdra **4.17** (recovered from low)
+
+### RSI peel branch (55606430) impact observations
+- Masher regression 4→5 (first partial recovery in 3 cycles)
+- 谨慎 kiter still 2 (peel doesn't help kiter: they don't engage, no ally gets hurt)
+- Other personas stable
+- Verdict: peel branch shows modest positive signal on offensive personas, no regression anywhere.
+
+### Harness
+21/75 agent calls hit StructuredOutput retry cap. 54 succeeded.
