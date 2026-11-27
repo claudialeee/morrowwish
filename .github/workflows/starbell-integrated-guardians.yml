@@ -1,0 +1,51 @@
+name: Starbell integrated guardian and minigame acceptance
+on:
+  push:
+    branches: [review/starbell-integrated-guardians-20261127]
+permissions:
+  contents: read
+concurrency:
+  group: starbell-integrated-guardians-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  integrated:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [wide, portrait]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source, balance, save, activity and telemetry regression
+        if: matrix.profile == 'wide'
+        run: |
+          set -euo pipefail
+          node scripts/test-starbell-regional-bosses.mjs
+          node scripts/test-starbell-guardian-balance.mjs
+          node scripts/test-cat-bond-canon22-combat-migration.mjs
+          node scripts/test-cat-bond-canon22-spatial.mjs
+          node scripts/test-cat-bond-canon22-glide.mjs
+          node scripts/test-starbell-telemetry.mjs
+      - name: Install Chromium once
+        run: |
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install chromium
+      - name: Integrated real-browser guardian, minigame and garden regression
+        env:
+          STARBELL_BOSS_PROFILE: ${{ matrix.profile }}
+          STARBELL_MINIGAME_PROFILE: ${{ matrix.profile }}
+          STARBELL_FOCUS_PROFILE: ${{ matrix.profile }}
+        run: |
+          set -euo pipefail
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-integration.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/test-starbell-regional-bosses-browser.mjs
+          node scripts/test-starbell-player-first-browser.mjs
+          node scripts/test-starbell-garden-camera.mjs

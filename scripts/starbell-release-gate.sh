@@ -2,6 +2,23 @@
 set -euo pipefail
 base=35ef1c1979513bd7d98b07bb804d842dc47bfcfd
 source_sha=${SOURCE_SHA:-$GITHUB_SHA}
+# Exact garden camera runtime accepted on both devices. Reuse unchanged audio bytes
+# and previous deployed gameplay gates only when all non-infrastructure inputs match.
+if bash scripts/starbell-garden-release-scope.sh "$source_sha"; then
+  test "$(git rev-parse HEAD)" = "$source_sha"
+  if ! git diff --quiet 347e13fde5cc94979568292aa5888e42ca12bc92 "$source_sha" -- public/telemetry.js; then
+    node --check public/telemetry.js
+    node scripts/test-starbell-telemetry.mjs
+  fi
+  gh api "repos/$GITHUB_REPOSITORY/actions/runs/46067169958" | jq -e '.head_sha=="347e13fde5cc94979568292aa5888e42ca12bc92" and .status=="completed" and .conclusion=="success"' >/dev/null
+  for id in 46065569395 46065573693 46065269370; do
+    gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id" | jq -e '.head_sha=="c457f85d219a4282e2a1bd7216fdcb31e31dac93" and .status=="completed" and .conclusion=="success"' >/dev/null
+  done
+  gh api "repos/$GITHUB_REPOSITORY/actions/runs/46065269370/artifacts" | jq -e 'any(.artifacts[]; .name=="starbell-approved-audio" and .expired==false)' >/dev/null
+  { echo "GARDEN_GATE=46067169958"; echo "FOCUSED_GATE=46065269370"; echo "AUDIO_SOURCE_SHA=c457f85d219a4282e2a1bd7216fdcb31e31dac93"; echo "DUO_GATE=45950550328"; echo "CAMPAIGN_GATE=46055930919"; echo "SOURCE_GATE=46055930995"; echo "ACCEPTED_RUNTIME=c457f85d219a4282e2a1bd7216fdcb31e31dac93"; } >> "$GITHUB_ENV"
+  echo "Exact garden camera acceptance and previous deployed art/audio accepted"
+  exit 0
+fi
 # Only the explicit scoped art/recording change may reuse the previously accepted gameplay.
 focused_base=0cf0e75dcc6386bb7b6b93094ba0a91900323208
 git fetch --no-tags --depth=1 origin "$focused_base"
