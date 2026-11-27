@@ -57,7 +57,124 @@
       ],
       "errors": [],
       "completed": true,
-      "raw": "raw/landscape/continuous.webm"
+      "raw": "raw/landscape/continuous.webm",
+      "reused": true
+    },
+    {
+      "name": "portrait",
+      "width": 1080,
+      "height": 1620,
+      "marks": [
+        {
+          "name": "garden",
+          "at": 2.656,
+          "scene": "yard",
+          "cats": 1
+        },
+        {
+          "name": "battle",
+          "at": 6.339,
+          "scene": "battle",
+          "cats": 1
+        },
+        {
+          "name": "capture-result",
+          "at": 22.395,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "two-cat-garden",
+          "at": 25.383,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "catdex",
+          "at": 28.771,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "workshop",
+          "at": 32.022,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "companions",
+          "at": 35.288,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "exploration",
+          "at": 38.188,
+          "scene": "map",
+          "cats": 2
+        }
+      ],
+      "errors": [],
+      "completed": true,
+      "raw": "raw/portrait/continuous.webm"
+    },
+    {
+      "name": "vertical",
+      "width": 1080,
+      "height": 1920,
+      "marks": [
+        {
+          "name": "garden",
+          "at": 2.444,
+          "scene": "yard",
+          "cats": 1
+        },
+        {
+          "name": "battle",
+          "at": 6.466,
+          "scene": "battle",
+          "cats": 1
+        },
+        {
+          "name": "capture-result",
+          "at": 25.85,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "two-cat-garden",
+          "at": 29.015,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "catdex",
+          "at": 32.606,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "workshop",
+          "at": 36.126,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "companions",
+          "at": 39.734,
+          "scene": "yard",
+          "cats": 2
+        },
+        {
+          "name": "exploration",
+          "at": 42.881,
+          "scene": "map",
+          "cats": 2
+        }
+      ],
+      "errors": [],
+      "completed": true,
+      "raw": "raw/vertical/continuous.webm"
     }
   ],
   "visualApproval": false,
