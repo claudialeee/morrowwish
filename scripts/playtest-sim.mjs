@@ -89,8 +89,8 @@ const PROFILE = {
 // Call `queueDelay(o, b, () => o.tap(g, 'q'))` to execute a persona reaction with human lag.
 function queueDelay(o, b, action) {
   if (!o.delayQ) o.delayQ = [];
-  const delay = ((o.profile?.reactionMs) || 250) / 1000;
-  const jitter = (o.rng() - 0.5) * 0.08;   // ±40ms human variance
+  const delay = effectiveReactionMs(o) / 1000;    // Step B: tilt-inflated
+  const jitter = (o.rng() - 0.5) * 0.08;
   o.delayQ.push({ atT: b.t + delay + jitter, action });
 }
 function flushDelays(o, b) {
@@ -122,10 +122,36 @@ function visible(o, b, target) {
 }
 
 // Aim jitter: a persona's rendered mouse x/y around a target is noisy. Apply in ticks that set mouse.x/y.
+// Owner 2026-11-27 Step B: jitter is amplified by current tilt (0-1). Low HP + hits received push tilt up;
+// stable play decays it. So a tilted panicky misses even wider; a calm balanced stays precise.
 function jitterAim(o, x, y) {
-  const j = (o.profile?.aimJitter) || 0;
-  if (j <= 0) return { x, y };
+  const base = (o.profile?.aimJitter) || 0;
+  if (base <= 0) return { x, y };
+  const tiltMul = 1 + (o.tilt || 0) * 1.5;        // tilt 1.0 → 2.5× aim noise
+  const j = base * tiltMul;
   return { x: x + (o.rng() - 0.5) * 2 * j, y: y + (o.rng() - 0.5) * 2 * j };
+}
+
+// Step B: tilt decays over time, climbs on damage taken and skill whiffs. Call from runBattle each frame.
+// Low HP (< 30%) pushes tilt even if no hit this frame — "oh shit I'm about to die" effect.
+function updateTilt(o, b, dt) {
+  const me = b.me(); if (!me) return;
+  const hpFrac = me.hp / Math.max(1, me.maxhp);
+  o.tilt = o.tilt || 0;
+  // Decay baseline (recovering composure)
+  o.tilt = Math.max(0, o.tilt - 0.02 * dt);
+  // Low HP anxiety
+  if (hpFrac < 0.3) o.tilt = Math.min(1, o.tilt + 0.15 * dt);
+  // Damage taken pulse (set by runBattle on dmgTaken detection)
+  if (o._tookDmg) { o.tilt = Math.min(1, o.tilt + 0.08); o._tookDmg = false; }
+}
+
+// Step B: reaction time also inflates with tilt — a panicked player hesitates longer.
+// Replace the constant in queueDelay by this function at use time.
+function effectiveReactionMs(o) {
+  const base = (o.profile?.reactionMs) || 250;
+  const tiltBoost = (o.tilt || 0) * 200;          // tilt 1.0 → +200ms reaction
+  return base + tiltBoost;
 }
 
 // ---------- personas: each returns an input policy for a battle ----------
@@ -298,6 +324,7 @@ function runBattle(env, persona, rng){
   const dt=1/60; let tick=0; const MAXT=60; // sim up to 60s game-time
   while(!b.done && tick<MAXT/dt){
     obs.i=tick;
+    updateTilt(obs, b, dt);                       // 2026-11-27 Step B: tilt/fatigue state changes BEFORE persona decides
     persona.tick(b,game,obs);
     flushDelays(obs, b);                          // 2026-11-27 Step A: fire queued reactions AFTER persona.tick so g.keys clear doesn't wipe them
     // count INTENTIONS (presses) — may or may not become casts (cd gates can discard).
@@ -314,7 +341,7 @@ function runBattle(env, persona, rng){
     b.update(dt);
     if(b.autoMode)m.usedAuto=true;
     const hp=b.team.reduce((s,f)=>s+Math.max(0,f.hp),0);
-    if(hp<lastHp)m.dmgTaken+=lastHp-hp;
+    if(hp<lastHp){m.dmgTaken+=lastHp-hp; obs._tookDmg=true;}  // 2026-11-27 Step B: signal tilt pulse
     lastHp=hp;
     m.faints=b.team.filter(f=>!f.alive).length;
     tick++;
