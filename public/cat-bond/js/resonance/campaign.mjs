@@ -546,8 +546,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "这就是我以前走的路线？上面标着六座古铃……还有阳光花园。",
-            "en": "So this is the route I used to take? Six local bells marked here… and Sunlit Garden."
+            "zh": "这是我以前巡铃用的图？六座古铃都标在上面，阳光花园旁边还写着‘家’。",
+            "en": "This is my old inspection map? All six bells are marked, and Sunlit Garden is labeled 'home.'"
           }
         },
         {
@@ -743,8 +743,8 @@ export const campaign = {
         {
           "speaker": "qilan",
           "text": {
-            "zh": "听见没？风铃镇的铃！相邻的古铃还能隔着断路传声呢！",
-            "en": "Did you hear that? Windchime's bell! Neighboring bells can still carry sound across the broken route!"
+            "zh": "咦，风铃镇的铃！两地的铃修好，就又能听见对方了！",
+            "en": "Hey, Windchime's bell! Now both bells are working, they can hear each other again!"
           }
         },
         {
@@ -1328,8 +1328,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "那把锁不是不能乱动吗？谁会想打开它？",
-            "en": "Isn't that lock supposed to stay shut? Who would want to open it?"
+            "zh": "为什么要松开那把锁？",
+            "en": "Why would anyone want to loosen that lock?"
           }
         },
         {
@@ -1493,8 +1493,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "这幅画……是我和你？怎么跟咱们现在长得一模一样？",
-            "en": "This picture… is it you and me? We look exactly the same."
+            "zh": "这幅画里是我和你！咦，画里的星铃还没碎呢。",
+            "en": "That's us in the picture! Look, the Star Bell is still whole."
           }
         },
         {
@@ -1507,8 +1507,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "可画里的星铃是完整的。我不是普通的巡铃猫吗？",
-            "en": "But the Star Bell in the picture is whole. I thought I just inspected local bells."
+            "zh": "我那时候就已经在巡铃了吗？",
+            "en": "Was I a bellkeeper even back then?"
           }
         },
         {
@@ -1521,15 +1521,15 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "原来如此。那后来到底发生了什么？",
-            "en": "I see. So what happened after that?"
+            "zh": "可是我怎么会什么都不记得？",
+            "en": "But why can't I remember any of it?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "一颗落星砸碎了星铃。它一直夺走大家的记忆。你为了让它停下来，把自己的记忆留在了里面。",
-            "en": "A falling star shattered it. It kept stealing everyone's memories. To stop it, you left your own memories inside."
+            "zh": "落星把星铃砸碎了。你为了让它不再夺走大家的记忆，把自己的记忆留在里面。从那以后，你就一直没醒过来。",
+            "en": "A falling star shattered the Star Bell. You left your memories inside to stop it taking everyone else's. After that, you never woke up."
           }
         },
         {
@@ -1542,8 +1542,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "……小曦，我有件事一直没敢告诉你。你看过借阅记录就会明白。",
-            "en": "…Sunny, there's something I haven't had the courage to tell you. The borrowing record will explain it."
+            "zh": "……小曦，我有件事瞒着你。我们去看看借阅记录吧。那天的事，我得跟你说清楚。",
+            "en": "…Sunny, I've been keeping something from you. Let's look at the borrowing record. I owe you the truth about that day."
           }
         },
         {
@@ -1966,8 +1966,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "先用我的记忆让星铃停下来，再把锁关上。等六座铃都修好，才能安全打开。",
-            "en": "Use my memories to quiet the Star Bell, then shut the lock. Don't open it until all six local bells are repaired."
+            "zh": "先用我的记忆让星铃停下来，再把锁关上。等六座古铃真的连上了，才能重新打开。",
+            "en": "Use my memories to quiet the Star Bell, then shut the lock. Don't open it again until all six local bells are connected."
           }
         },
         {
@@ -2341,8 +2341,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "记得。我们先去看阿婆，好吗？答应过的事得一件一件做好。",
-            "en": "I do. Let's visit Gran first, okay? We've got promises to keep, one at a time."
+            "zh": "记得。我们先去看阿婆，好吗？回家再泡茶，还是老样子，给我留一杯。",
+            "en": "I do. Let's visit Gran first, okay? We'll make tea at home. Just like before, save me a cup."
           }
         }
       ],
