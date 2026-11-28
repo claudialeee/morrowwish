@@ -77,3 +77,8 @@ html[data-pawsibly-portal] body .single-screen-game #stage .in-game-actions butt
  html[data-pawsibly-portal] body .single-screen-game #stage.stage{grid-template-rows:auto auto auto auto!important;align-content:center!important;gap:8px!important;--p-board:min(calc(100vw - 16px),calc((100dvh - 250px)*10/7))}
  html[data-pawsibly-portal] body .single-screen-game #stage .in-game-actions button{min-height:42px!important}
 }
+
+/* Keep long localized bonus labels inside the two-column control grid. */
+html[data-pawsibly-portal] body .single-screen-game #stage #bonusQuick{min-width:0!important;max-width:100%!important;width:100%!important;overflow-wrap:anywhere!important}
+html[data-pawsibly-portal] body .single-screen-game #stage #bonusQuickText{min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important}
+html[data-pawsibly-portal] body .single-screen-game #stage .in-game-actions{min-width:0!important;max-width:100%!important}

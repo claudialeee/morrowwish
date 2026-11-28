@@ -68,7 +68,7 @@ async function qa(w,h){
 }
 try{
  // All jobs use actual final standalone files. Capture only the failed visual/media gate.
- for(const [w,h] of [[907,510],[800,450],[640,480],[390,844],[844,390],[1280,720],[760,570],[320,568],[720,1080]]){console.log('Geometry QA',w,h);await qa(w,h);}
+ const failures=[];for(const [w,h] of [[760,570],[320,568],[720,1080],[907,510],[800,450],[640,480],[390,844],[844,390],[1280,720]]){console.log('Geometry QA',w,h);try{await qa(w,h)}catch(e){failures.push(String(e));console.error(e)}};fs.writeFileSync(out+'/geometry-proof.json',JSON.stringify({proof,failures},null,2));if(failures.length)throw Error(failures.join('\n'));
  for(const [w,h,tag] of [[1280,720,'wide'],[760,570,'standard']])for(const room of [1,2,3,5,8]){console.log('Capture',tag,room);await screenshot(w,h,room,tag);}
  for(const args of [[1280,720,'y8-continuous'],[1920,1080,'cg-landscape-preview'],[720,1080,'cg-portrait-preview']]){console.log('Record',args);await clip(...args);}
  fs.writeFileSync(out+'/visual-proof.json',JSON.stringify({source:process.env.SOURCE_SHA,proof,realInputs:true},null,2));
