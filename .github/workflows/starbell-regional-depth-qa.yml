@@ -1,0 +1,27 @@
+name: Starbell regional depth isolated QA
+on:
+  push:
+    branches: [qa/starbell-regional-depth-20261127]
+    paths: ['.github/workflows/starbell-regional-depth-qa.yml']
+permissions:
+  contents: read
+concurrency:
+  group: starbell-regional-depth-only
+  cancel-in-progress: true
+jobs:
+  focused:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node scripts/starbell-regional-depth-20261127.mjs
+          node scripts/starbell-player-regression-20261127.mjs
+          node --check scripts/test-starbell-regional-depth-browser.mjs
+      - run: |
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install chromium
+          node scripts/test-starbell-regional-depth-browser.mjs
