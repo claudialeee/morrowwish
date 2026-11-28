@@ -66,14 +66,21 @@ const ENEMIES = [
   { species: 'doudou', hp: 2400, dmg: 280 },   // hard — dmg high enough that standing still loses survival/win
 ];
 
-// Owner 2026-11-27 Step E: evaluate candidates across HUMAN PERSONAS, not just engine autoDrive.
-// A rule that wins only for one archetype (e.g. perfect-info speedrun) loses to variance when
-// shipped to real players. The cohort score is the MIN across personas (worst-persona bound) so
-// winners must help every archetype, not average over them. null = autoDrive baseline (back-compat).
-// Only 3 personas in the sweep to keep eval cost sane: slow (lazy), fast (explorer), noisy (panicky).
-// Adding more is linear cost — a single candidate currently runs 2 enemies × 4 (3 personas + null)
-// × 3 scenarios × 3 seeds = 72 scenarios. Expand carefully.
+// Owner 2026-11-27 Step E / 2026-11-28 panicky-exclusion:
+// PERSONAS_SWEEP evaluates candidates on multiple archetypes so RSI doesn't overfit to
+// one playstyle. Each run produces a per-persona score; the COHORT score is the MIN
+// across a SUBSET of SCORING personas (defined by PERSONAS_SCORING below) so one bad
+// persona can't crush every candidate's score.
+//
+// Why exclude panicky from scoring: diagnostic (cycle 2026-11-28T02:18:13Z) shows
+// panicky solo-live win=0.00 output=0.46 on baseline too — panicky's wild random-taps
+// + 80px aim jitter + 55° vision cone fundamentally can't aim at a solo enemy. It's
+// an archetype that SHOULD lose; using it as a score floor means no candidate ever
+// passes. Panicky still runs in the sweep so we see IF a candidate specifically
+// helps panicky; it just doesn't define the cohort min.
 const PERSONAS_SWEEP = [null, 'lazy', 'explorer', 'panicky'];
+const PERSONAS_SCORING = [null, 'lazy', 'explorer', 'panicky']; // median experiment: include panicky
+const COHORT_AGGREGATE = 'median';                              // 'min' | 'median'
 const CAT = {
   build: 'fighter', stats: { pow: 90, agi: 80, vit: 130, cha: 60 },
   loadout: { q: { kind: 'melee', power: 1.4, cd: 1.1 }, e: { kind: 'projectile', power: 1.1, cd: 1.0 } },
@@ -290,14 +297,59 @@ try {
     // this.aiP, this.pack*, etc. for pack-aware positioning decisions.
     // Signature: function(f){ return {min,max,rush,role,hp}; } — callable as
     // b.kitRangeBand(f) so `this === b`. The wrapper forwards both.
+    // Pit-digger finding (2026-11-28): the original wrapper called candidate with
+    // `this === battleInstance` via `.call(this, f)`, letting a malicious/buggy bandBody
+    // mutate enemies, zero out HP, etc. Fix: at runtime, build a read-only frozen snapshot
+    // of the battle instance exposing only positioning-relevant fields and invoke the raw
+    // candidate function with that snapshot as `this`. Writes throw (frozen); reads to
+    // unknown fields return `undefined`.
+    let rawFn;
     try {
-      band = new Function('f', `"use strict"; return (${c.bandBody}).call(this, f);`);
+      rawFn = new Function(`"use strict"; return (${c.bandBody});`)();
+      if (typeof rawFn !== 'function') continue;
     } catch (_) { continue; }
-    // validate: call on a dummy fighter + dummy `this`, require a finite, ordered band
+    band = function (f) {
+      const b = this;
+      const es = Array.isArray(b?.enemies) ? b.enemies.map(e => Object.freeze({
+        alive: !!e?.alive, hp: +e?.hp || 0, maxhp: +e?.maxhp || 1, role: e?.role, species: e?.species,
+      })) : [];
+      const tm = Array.isArray(b?.team) ? b.team.map(m => Object.freeze({
+        alive: !!m?.alive, hp: +m?.hp || 0, maxhp: +m?.maxhp || 1,
+      })) : [];
+      const safeThis = Object.freeze({
+        enemies: Object.freeze(es),
+        team: Object.freeze(tm),
+        t: +b?.t || 0,
+        _stomp: +b?._stomp || 0,
+        _closing: +b?._closing || 0,
+        aiP: Object.freeze({ ...(b?.aiP || {}) }),
+      });
+      return rawFn.call(safeThis, f);
+    };
+    // validate across multiple cd/HP states (pit-digger: prior probe only tested cd:0,0 bothReady
+    // branch; a bandBody returning NaN in bothCool would pass validation and NaN at runtime).
     try {
-      const dummyThis = { enemies: [], team: [], t: 0, aiP: {}, _stomp: 0, _closing: 0 };
-      const probe = band.call(dummyThis, { hp: 60, maxhp: 100, cd: { q: 0, e: 0 } });
-      if (!probe || !Number.isFinite(probe.min) || !Number.isFinite(probe.max) || probe.max < probe.min) continue;
+      const probePoints = [
+        { hp: 60,  maxhp: 100, cd: { q: 0,   e: 0   } },  // bothReady
+        { hp: 60,  maxhp: 100, cd: { q: 3,   e: 3   } },  // bothCool
+        { hp: 60,  maxhp: 100, cd: { q: 0,   e: 3   } },  // mixed
+        { hp: 20,  maxhp: 100, cd: { q: 1.5, e: 1.5 } },  // low HP, mid cd
+        { hp: 95,  maxhp: 100, cd: { q: 0.1, e: 0.1 } },  // high HP, almost-ready
+      ];
+      const probeThisList = [
+        { enemies: [], team: [], t: 0, aiP: {}, _stomp: 0, _closing: 0 },
+        { enemies: [{alive:true,hp:500,maxhp:1000,role:'bruiser'}], team: [{alive:true,hp:50,maxhp:100}], t: 5, aiP: {}, _stomp: 0.2, _closing: 0.3 },
+        { enemies: [{alive:true,hp:100,maxhp:1000},{alive:true,hp:900,maxhp:1000},{alive:true,hp:500,maxhp:1000}], team: [], t: 20, aiP: {}, _stomp: 0.5, _closing: 0.5 },
+      ];
+      let ok = true;
+      for (const probeThis of probeThisList) {
+        for (const pf of probePoints) {
+          const probe = band.call(probeThis, pf);
+          if (!probe || !Number.isFinite(probe.min) || !Number.isFinite(probe.max) || probe.max < probe.min) { ok = false; break; }
+        }
+        if (!ok) break;
+      }
+      if (!ok) continue;
     } catch (_) { continue; }
     CANDIDATES.push({ id: 'agent:' + c.id, label: c.label || c.id, kind: 'agent', rationale: c.rationale || '(agent-proposed)', band });
   }
@@ -345,13 +397,21 @@ function runCandidate(candidate) {
       perPoint.push({ enemy, persona, result, scoreJudge, scoreBaseline });
     }
   }
-  // Cohort score = min across personas (worst-persona bound) per enemy, then mean across enemies.
-  // Candidates that help one archetype but hurt another (or regress baseline-autoDrive) are flagged
-  // because MIN sees the bad arm, not AVG hiding it.
+  // Cohort score = min across SCORING personas per enemy, then mean across enemies. Panicky is
+  // in PERSONAS_SWEEP for diagnostic (we see IF a candidate helps it) but NOT in PERSONAS_SCORING
+  // (its baseline solo-live win is already 0.00 regardless of rule, so including it crushes the floor).
   const perEnemy = ENEMIES.map(e => {
-    const subset = perPoint.filter(p => p.enemy === e);
-    const minJudge = Math.min(...subset.map(p => p.scoreJudge));
-    const minBaseline = Math.min(...subset.map(p => p.scoreBaseline));
+    const subset = perPoint.filter(p => p.enemy === e && PERSONAS_SCORING.includes(p.persona));
+    const agg = (arr) => {
+      if (COHORT_AGGREGATE === 'median') {
+        const s = [...arr].sort((a,b)=>a-b);
+        const n = s.length;
+        return n % 2 ? s[(n-1)/2] : (s[n/2-1] + s[n/2]) / 2;
+      }
+      return Math.min(...arr);
+    };
+    const minJudge = agg(subset.map(p => p.scoreJudge));
+    const minBaseline = agg(subset.map(p => p.scoreBaseline));
     return { enemy: e, minJudge, minBaseline };
   });
   const scoreJudge = perEnemy.reduce((s, p) => s + p.minJudge, 0) / perEnemy.length;

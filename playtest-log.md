@@ -2869,3 +2869,9 @@ Must extend evaluator before any further RSI winner is applied to game code:
 - [ ] **Scenario diversity**: opening engagement / team-crisis (one cat <30% HP) / execute window / boss phase-shift
 
 Until this extension lands, `.claude/supervisor-prompt.md` §9/§10 (added this turn) must block any new RSI apply without a build gate + honest scope caveat.
+
+## Self-fuck audit history (daily cron, owner 2026-11-28)
+
+| date | subagents | CRITICAL | HIGH | MEDIUM | LOW | commits-ahead | notes |
+|---|---|---|---|---|---|---|---|
+| 2026-11-28 | 5 | 6 | 15 | 18 | 3 | 21 | first run; 2 CRITICAL already patched (archive.mjs caveat re-emit; propose.mjs bandBody frozen sandbox); 4 remaining CRITICAL: evaluator seed-variance vs margin, team=single-cat makes peel-rule evaluation a ghost, timeout-stall exploit still open, allied-hp-peeler just gated (34d4ea7b). roadmap items 1/3 remain prerequisites for next RSI apply. |

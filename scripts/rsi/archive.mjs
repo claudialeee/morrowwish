@@ -20,6 +20,21 @@
 // cell. 4D × 4 bins = 256 cells; more room for diverse elites.
 
 const BINS = 4;                                   // 4⁴ = 256 cells — still legible, much more room
+
+// SCOPE CAVEAT (owner 2026-11-28 — re-emitted every archive write so rsi-loop.mjs cannot silently
+// strip it by overwriting the file). Independent reviewer + pit-digger subagents both found the
+// manually-inserted top-level key was wiped by propose.mjs writeFileSync on the next cycle; the
+// fix is to make summary() emit it authoritatively.
+const SCOPE_CAVEAT = (
+  'ALL ELITES BELOW ARE SCOPED TO: build=fighter, species=tangyuan(role-overridden), stats={pow:90,agi:80,vit:130,cha:60}, ' +
+  'loadout={q:melee×1.4, e:projectile×1.1}, element=fire-only, level=16, affinity=60, enemies=doudou-1100/130 & doudou-2400/280, ' +
+  '1v1/1vN only (NO teammates ever — evaluator.mjs:220 builds single-cat team), target picked by engine default, ' +
+  'persona-scoring subset={null,lazy,explorer,panicky} (masher/cautious/impatient/balanced NOT scored). ' +
+  'Winners DO NOT generalize to tank/dps/assassin/control/support build, to non-melee-plus-projectile kits, to team fights, ' +
+  'to target-selection decisions, to peel/focus-fire/heal-aim quality, or to other enemy types. ' +
+  'DO NOT apply any elite to battle.js without a build-gate + a kit-kind gate + re-verification once the evaluator extension ' +
+  'roadmap (playtest-log.md ## RSI roadmap) lands.'
+);
 const clamp01 = x => (x < 0 ? 0 : x > 1 ? 1 : x);
 const bin = x => Math.min(BINS - 1, Math.max(0, Math.floor(clamp01(x) * BINS)));
 
@@ -59,6 +74,7 @@ export function makeArchive() {
     summary() {
       const elites = [...cells.values()].sort((a, b) => b.score - a.score);
       return {
+        _scope_caveat: SCOPE_CAVEAT,
         coverage: cells.size, grid: `${BINS}x${BINS}x${BINS}x${BINS}`, maxCells: BINS ** 4,
         best: elites[0] || null,
         elites: elites.map(e => ({ cell: e.key, score: +e.score.toFixed(4), label: e.label, descriptor: {
