@@ -18,7 +18,7 @@ export function mountDialogue({root,engine,campaign,language,resolvePortrait,onP
  const buttons={};let timer=0,automatic=window.__cbDialoguePrefs?.auto??false,showHistory=false,disposed=false,lastScene=null,sessionHistory=[],speed=window.__cbDialoguePrefs?.speed??1;
  const words={zh:{next:"继续",auto:"自动",stop:"停止自动",skip:"跳过对白",history:"对白记录",close:"关闭",wait:"继续探索以推进剧情",speed:"播放速度",scene:"剧情对话"},en:{next:"Continue",auto:"Auto",stop:"Stop auto",skip:"Skip dialogue",history:"History",close:"Close",wait:"Continue exploring to advance the story",speed:"Playback speed",scene:"Story dialogue"}};
  const lang=()=>language()==="zh"?"zh":"en";
- const displayName=(id,s,k)=>id==='player'&&campaign.scenes.findIndex(x=>x.id===s.id)<=campaign.scenes.findIndex(x=>x.id==='library:M-03')?(k==='zh'?'你':'You'):campaign.cast[id].name[k];
+ const displayName=(id,s,k)=>id==='player'?(k==='zh'?'你':'You'):campaign.cast[id].name[k];
  const persist=r=>{if(!r.ok){panel.dataset.error=r.reason||"save-failed";line.setAttribute("aria-label",lang()==="zh"?"保存或推进失败，请重试":"Unable to save or advance. Retry.");return false}delete panel.dataset.error;line.removeAttribute("aria-label");onPersist(r.state);return true};
  function stop(){clearTimeout(timer);timer=0}
  const lookoutPending=v=>v.current?.id==="sky:S-04"&&v.cursor===0&&!lookout?.pose;
