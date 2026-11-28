@@ -1,7 +1,7 @@
 import "./narrative-host.mjs?v=work-closure-20261127-r3";
 import "./npc-world.mjs?v=starbell-work-regression-20261127";
 import "./ambient-play.mjs";
-import "./world-runtime.mjs?v=work-closure-20261127-r3";
+import "./world-runtime.mjs?v=work-closure-20261127-r5";
 import "./title-entry.mjs?v=work-closure-20261127-r3";
 // The prologue uses living discoveries instead of a standalone bell prop.
 import "./chapter-cinematics.mjs?v=work-closure-20261127-r3";

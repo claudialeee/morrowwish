@@ -165,7 +165,7 @@ class CatEntity {
     if(this._gardenPlayerControlled&&!this._gardenTask&&!this._buildTarget){
       const target=this._gardenExploreTarget||this._gardenManualTarget;
       const bounds=gardenGround(this.W,this.H),dx=target?target.x-this.x:0,dy=target?target.y-this.y:0,dist=Math.hypot(dx,dy);
-      const step=Math.max(0,Math.min(dt,.05)),speed=112/Math.max(1,this._gardenWalkZoom||1),travel=Math.min(dist,speed*step);
+      const step=Math.max(0,Math.min(dt,.05)),speed=(this._gardenExploreTarget?220:112)/Math.max(1,this._gardenWalkZoom||1),travel=Math.min(dist,speed*step);
       if(dist>3){
         this.pose='walk';this.walkVX=dx/dist*speed;this.walkVY=dy/dist*speed;
         this.x=Math.max(bounds.left,Math.min(bounds.right,this.x+dx/dist*travel));

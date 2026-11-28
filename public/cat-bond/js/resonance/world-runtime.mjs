@@ -450,7 +450,7 @@ function install(){
   }
   if(!action)return;
   const button=B(label,()=>{if(State.S!==owner||current().view().current?.id!==id||game.scene!=="map"||explorer?.puzzle||ceremony||current().world().cargo||pending)return;action();});
-  button.dataset.nextScene=id;button.dataset.questKind="main";
+  button.dataset.nextScene=id;button.dataset.questKind="main";if(pending){button.dataset.walking="true";button.disabled=true;button.textContent=tr("正在前往…","Walking…");}
   button.setAttribute('aria-label',label);button.title=tr('点击后沿道路前往主线目标','Walk along the path to the story objective');container.append(button);
  }
  function point(e){const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height];}

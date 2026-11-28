@@ -58,7 +58,7 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  }
  await press(encounter.getByRole('button',{name:i===5?tr('告别','Say goodbye'):tr('继续','Continue'),exact:true}));
  }await encounter.waitFor({state:'detached'});assert.doesNotMatch(seen.join(' '),locale==='zh'?/巡铃图|封印|小曦|那封信/:/patrol map|seal|Sunny|letter/i);
- for(let i=0;i<3;i++){await press(page.locator('[data-garden-explore="butterfly"]'));await page.waitForFunction(n=>GardenExploration.read(State.S).butterfly===n,i+1);}
+ for(let i=0;i<3;i++){const butterfly=page.locator('[data-garden-explore="butterfly"]');await press(butterfly);await page.waitForFunction(n=>GardenExploration.read(State.S).butterfly===n,i+1,{timeout:45000});}
  await gardenDiscovery(page,'seed',{touch:options.hasTouch});
  await gardenDiscovery(page,'snack',{touch:options.hasTouch});await press(page.getByRole('button',{name:tr('带在身上','Keep for later'),exact:true}));
  assert.equal(await page.evaluate(()=>GardenExploration.read(State.S).butterfly),3);

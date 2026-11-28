@@ -57,7 +57,7 @@ try{
     const result=await page.evaluate(()=>{const g=__game,b=g.battle;if(!b)return null;for(let i=0;i<16000&&!b.done;i++)b.update(1/60);const r={done:b.done,result:b.result,t:b.t};if(b.done&&g.battle===b)g.endBattle();return r;});
     assert.ok(result?.done&&result.result==='win',id+' real battle: '+JSON.stringify(result));won.push(id);console.log('REAL BATTLE WIN',lang,id,JSON.stringify(result));continue;
    }
-   const next=page.locator('[data-next-scene="'+id+'"]:visible');if(await next.count()&&await next.isEnabled()){await press(next);await page.waitForTimeout(180);continue;}
+   const next=page.locator('[data-next-scene="'+id+'"]:visible');if(await next.count()&&await next.isEnabled()){try{if(portrait)await next.tap({timeout:2500});else await next.click({timeout:2500});}catch(e){if(e.name!=="TimeoutError")throw e;/* The map may have been replaced by a cinematic, result, or walking state between frames. Re-read the real UI; the ending assertions remain mandatory. */}await page.waitForTimeout(180);continue;}
    if(mode==='yard'&&id.startsWith('epilogue:')){const talk=page.locator('.sg-prologue-guide .sg-main-continue:visible');if(await talk.count()){await press(talk);await page.waitForTimeout(180);continue;}}
    if(await page.locator('.res-chapter-cinematic:visible').count()){await page.waitForTimeout(500);continue;}
    await page.waitForTimeout(250);

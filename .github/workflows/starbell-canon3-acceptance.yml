@@ -63,19 +63,23 @@ jobs:
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
-          # Run independent browser suites concurrently so a failed one never hides the others.
-          (node scripts/cat-bond-release-prologue-qa.mjs && if [[ "$PROLOGUE_PROFILE" == desktop ]]; then PROLOGUE_PROFILE=landscape node scripts/cat-bond-release-prologue-qa.mjs; fi) > /tmp/canon3-opening.log 2>&1 & opening=$!
-          node scripts/test-starbell-regional-bosses-browser.mjs > /tmp/canon3-guardians.log 2>&1 & guardians=$!
-          node scripts/test-starbell-player-first-browser.mjs > /tmp/canon3-minigames.log 2>&1 & minigames=$!
-          node scripts/test-starbell-dialogue-camera.mjs > /tmp/canon3-dialogue-camera.log 2>&1 & camera=$!
-          (node scripts/test-starbell-garden-camera.mjs && node scripts/test-starbell-finale-framing-farwind.mjs && node scripts/test-starbell-talent-practice-browser.mjs) > /tmp/canon3-continuity.log 2>&1 & continuity=$!
-          STARBELL_WORK_PROFILE="$STARBELL_FOCUS_PROFILE" node scripts/test-starbell-work-closure-browser.mjs > /tmp/canon3-work-closure.log 2>&1 & closure=$!
+          # Bound browser concurrency on the small public runner; animation-sensitive suites run without five other renderers competing for frames.
           failed=0
-          for pair in "$opening:opening" "$guardians:guardians" "$minigames:minigames" "$camera:dialogue-camera" "$continuity:continuity" "$closure:work-closure"; do
-            pid=${pair%%:*}; name=${pair#*:}
-            wait "$pid" || failed=1
-            cat "/tmp/canon3-$name.log"
-          done
+          run_group() {
+            local label="$1"; shift
+            "$@" > "/tmp/canon3-$label.log" 2>&1 || return 1
+          }
+          run_group opening bash -c 'node scripts/cat-bond-release-prologue-qa.mjs && if [[ "$PROLOGUE_PROFILE" == desktop ]]; then PROLOGUE_PROFILE=landscape node scripts/cat-bond-release-prologue-qa.mjs; fi' || failed=1
+          run_group work-closure env STARBELL_WORK_PROFILE="$STARBELL_FOCUS_PROFILE" node scripts/test-starbell-work-closure-browser.mjs || failed=1
+          run_group guardians node scripts/test-starbell-regional-bosses-browser.mjs & guardians=$!
+          run_group minigames node scripts/test-starbell-player-first-browser.mjs & minigames=$!
+          wait "$guardians" || failed=1
+          wait "$minigames" || failed=1
+          run_group dialogue-camera node scripts/test-starbell-dialogue-camera.mjs & camera=$!
+          run_group continuity bash -c 'node scripts/test-starbell-garden-camera.mjs && node scripts/test-starbell-finale-framing-farwind.mjs && node scripts/test-starbell-talent-practice-browser.mjs' & continuity=$!
+          wait "$camera" || failed=1
+          wait "$continuity" || failed=1
+          for log in /tmp/canon3-*.log; do cat "$log"; done
           exit "$failed"
       - uses: actions/upload-artifact@v4
         if: always()
