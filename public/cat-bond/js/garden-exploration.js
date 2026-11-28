@@ -57,7 +57,7 @@ function signView(ending){
  if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice sg-sign-view';popup.setAttribute('role','dialog');popup.setAttribute('aria-label',tr('旧门牌','Old door sign'));
  Object.assign(popup.style,{width:'min(360px,88vw)',maxHeight:'75vh',overflowY:'auto',boxSizing:'border-box',padding:'16px',display:'flex',flexDirection:'column',gap:'12px',background:'#fff6e2',color:'#59432f'});
  const board=document.createElement('div');Object.assign(board.style,{background:'linear-gradient(150deg,#d8b080,#b78957)',border:'3px solid #865e3f',borderRadius:'12px',padding:'18px 14px',textAlign:'center',color:'#4c311f',boxShadow:'inset 0 0 0 3px #e4c39a'});board.textContent=ending?tr('阳光花园 · 小曦和暮铃的家','Sunlit Garden · Sunny & Luna’s home'):tr('阳光花园','Sunlit Garden');
- const clue=document.createElement('p');clue.style.margin='0';clue.textContent=ending?tr('你和暮铃终于有了共同的家。','You and Luna are home at last.'):tr('翻过来，背面刻着工匠的名字：风铃镇 · 檐灯。也许他记得这里住过谁。','On the back is the maker’s mark: Alder, Windchime Town. Maybe he remembers who lived here.');
+ const clue=document.createElement('p');clue.style.margin='0';clue.textContent=ending?tr('你和暮铃终于有了共同的家。','You and Luna are home at last.'):tr('翻过来，背面刻着工匠的名字：风铃镇 · 檐灯。也许这位工匠知道你是怎么来到这里的。','On the back is the maker’s mark: Alder, Windchime Town. Maybe the carpenter knows how you ended up here.');
  const close=document.createElement('button');close.type='button';close.textContent=tr('放回门牌','Put the sign back');close.onclick=closePopup;popup.append(board,clue,close);layer.append(popup);close.focus();
 }
 function postcardView(){
