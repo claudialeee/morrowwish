@@ -11,19 +11,24 @@ if [[ -f .github/workflows/starbell-integrated-guardians.yml ]]; then
   gh api "repos/$GITHUB_REPOSITORY/actions/runs/46065269370" | jq -e '.head_sha=="c457f85d219a4282e2a1bd7216fdcb31e31dac93" and .status=="completed" and .conclusion=="success"' >/dev/null
   gh api "repos/$GITHUB_REPOSITORY/actions/runs/46065269370/artifacts" | jq -e 'any(.artifacts[]; .name=="starbell-approved-audio" and .expired==false)' >/dev/null
   # Quality PR #129 was tested before advancing either public preview alias.
-  # Only the release-gate script may differ from the tested candidate. The PR
-  # base was an ancestor of the head, so its synthetic merge has the head tree.
+  # Only release infrastructure and the separately rerun slot fixture may differ.
+  # Both acceptance jobs checked out the pinned synthetic merge; verify its tree
+  # directly rather than relying on the run's mutable pull_requests association.
   quality_sha=9a8832cb0a5bc4988c87f9bebc552020b7a12d53
   quality_base=36c44d2cfe39ade6d38b2ed0258dc4b98b137fb3
+  quality_merge=d2a9244229aeb457ea21ed13af63f85b77276e3e
+  quality_tree=4416be6b9fca79a1e447628cb528c828d876b313
   quality_run=46084362427
   git fetch --no-tags --depth=1 origin "$quality_sha"
-  if git diff --quiet "$quality_sha" "$source_sha" -- . ':!scripts/starbell-release-gate.sh'; then
+  if git diff --quiet "$quality_sha" "$source_sha" -- . ':!scripts/starbell-release-gate.sh' ':!scripts/test-cat-bond-resonance-slot.mjs'; then
+    test "$(git rev-parse "$quality_sha^{tree}")" = "$quality_tree"
+    gh api "repos/$GITHUB_REPOSITORY/git/commits/$quality_merge" | jq -e --arg tree "$quality_tree" --arg base "$quality_base" --arg sha "$quality_sha" '.tree.sha==$tree and [.parents[].sha]==[$base,$sha]' >/dev/null
+    node scripts/test-cat-bond-resonance-slot.mjs
     run=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$quality_run")
     jq -e --arg sha "$quality_sha" --arg base "$quality_base" '
       .workflow_id==433221144 and .event=="pull_request" and
       .head_sha==$sha and .head_branch=="fix/starbell-quality-dialogue-20261127" and
-      .status=="completed" and .conclusion=="success" and
-      any(.pull_requests[]; .number==129 and .head.sha==$sha and .base.sha==$base)
+      .status=="completed" and .conclusion=="success"
     ' <<<"$run" >/dev/null
     gh api "repos/$GITHUB_REPOSITORY/actions/runs/$quality_run/jobs?per_page=100" | jq -e '([.jobs[]|select((.name=="integrated (wide)" or .name=="integrated (portrait)") and .conclusion=="success")]|length)==2' >/dev/null
     { echo "INTEGRATED_GATE=$quality_run"; echo "FOCUSED_GATE=46065269370"; echo "AUDIO_SOURCE_SHA=c457f85d219a4282e2a1bd7216fdcb31e31dac93"; } >> "$GITHUB_ENV"
