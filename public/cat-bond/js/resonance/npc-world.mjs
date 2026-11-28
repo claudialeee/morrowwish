@@ -33,11 +33,11 @@ function openingEncounter(api){
  const lines=[
  ["陌生猫","Stranger","咦，你醒啦！睡得好香，耳朵还一抖一抖的。","Oh, you're awake! You were sleeping so soundly, even your ears were twitching.","继续","Continue"],
  ["你","You","你认识我吗？我想不起来自己叫什么了。","Do you know me? I can't remember my name.","继续","Continue"],
- ["暮铃","Luna","……我叫暮铃。你先别急。门口那两块旧木牌磨得看不清字了，不过背面还有风铃镇的印记。","…I'm Luna. Don't worry. The two old nameplates by the door are worn blank, but they still have Windchime Town's mark on the back.","继续","Continue"],
- ["你","You","这里以前住过两只猫？会不会有一只就是我？","Two cats used to live here? Could one of them have been me?","继续","Continue"],
- ["暮铃","Luna","也许吧。镇上的檐灯以前做木牌，他说不定记得是谁订的。去问问他吧。","Maybe. Alder in town used to make nameplates. He might remember who ordered them. Let's ask him.","继续","Continue"],
+ ["暮铃","Luna","……我叫暮铃。你先别急。你是在这座花园醒来的？门口有块旧木牌，上面刻着风铃镇的名字。","…I'm Luna. Don't worry. You woke up in this garden? There's an old wooden sign by the door with Windchime Town carved on it.","继续","Continue"],
+ ["你","You","我怎么会在这里？那块木牌是谁做的，你知道吗？","How did I get here? Do you know who made the sign?","继续","Continue"],
+ ["暮铃","Luna","是镇上的檐灯做的。他以前常来修屋子，也许知道这里住过谁。去问问他吧。","Alder in town made it. He used to fix up the house, too. Maybe he remembers who lived here. Let's ask him.","继续","Continue"],
  ["你","You","好！哪怕找到一点点线索也行。你愿意和我一起去吗？","Yes! Even a little clue would help. Will you come with me?","继续","Continue"],
- ["暮铃","Luna","当然。路上饿了就停下来吃鱼饼，可别饿着肚子找名字。镇上见！","Of course. If you get hungry, stop for a fish cake. No name-hunting on an empty belly. See you in town!","告别","Say goodbye"]
+ ["暮铃","Luna","当然！我先去镇上打听，你想在花园多玩会儿也行。路上饿了就吃鱼饼，别饿着肚子找名字。","Of course! I'll go ask around in town. Stay and explore if you like. Grab a fish cake if you're hungry. No name-hunting on an empty belly!","告别","Say goodbye"]
  ];
 
  function dispose(){root.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("pagehide",dispose);}
