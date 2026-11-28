@@ -69,7 +69,7 @@ function interact(id,arrived=false){if(owner!==rootState()||!eligible()||covered
  const s=read(owner);
  if(id==='butterfly'||id==='moonleaf'){closePopup();return startChase(id);}cancelChase();
  if(id==='snack'){snackChoice();return true;}closePopup();
- if(id==='nameplate'){const ended=!!view()?.ending,event=ended?'nameplate-home':'nameplate';if(!commit(event))return false;pulse(id);toast(ended?'旧名牌旁添上两道新的爪印。这里是我们的家。':'旧木牌背面只剩一笔磨掉的刻字，旁边有两道爪痕。',''+(ended?'Two new paw marks beside the old nameplate. This is our home.':'One worn stroke remains on the back of the wooden nameplate, beside two paw marks.'));return true;}
+ if(id==='nameplate'){const ended=!!view()?.ending,event=ended?'nameplate-home':'nameplate';if(!commit(event))return false;pulse(id);toast(ended?'旧名牌旁添上两道新的爪印。这里是我们的家。':'门口的两块木名牌都磨得看不清了，背面却有风铃镇的印记。',''+(ended?'Two new paw marks beside the old nameplate. This is our home.':'Both old nameplates are worn blank, but their backs bear Windchime Town's mark.'));return true;}
  if(id==='door'&&!view()?.completed?.includes('harbor:H-05')){toast('旧屋的门关着。门缝里似乎夹着一张褪色的画。也许旅行回来后再看看。','The old house is closed. A faded picture peeks through the door. Try again after your journey.');return true;}
  if(!commit(id))return false;pulse(id);
 
@@ -119,8 +119,8 @@ function draw(parent,ctx,w,h,npcRects=[]){
  // Required chart pieces take precedence over optional discoveries.
  const ordered=[...buttons].sort(([a],[b])=>Number(b.startsWith('chart-'))-Number(a.startsWith('chart-')));
  for(const [id,b] of ordered){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?!s.door:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):id==='moonleaf'?!!v?.ending&&!!journeyKeepsakes(owner,v)?.moonleaf&&!s.moonleafTouched:id==='chart-echo'?s.chartStarted&&s.parts.includes(0)&&!s.chartEcho&&!v?.openingMet&&v?.current?.id==='prologue:P-05':id==='chart-1'?s.chartStarted&&s.parts.includes(0)&&!s.parts.includes(1):s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(0);
-  b.hidden=!show;if(!show)continue;
-  b.dataset.questPrimary=String(isChart&&id!=='chart-1'&&v?.current?.id==='prologue:P-05'&&!v?.openingMet);
+  b.hidden=!show||isChart;if(b.hidden)continue;
+  b.dataset.questPrimary=String(id==='nameplate'&&v?.current?.id==='prologue:P-05'&&!v?.openingMet);
   const p=def.points[id==='butterfly'?Math.min(2,s.butterfly):0];
   const wx=left+(right-left)*p[0],wy=top+(bottom-top)*p[1],ground=window.World?.gardenGround?.(w,h);
   b._gardenWorldPoint=ground?{x:Math.max(ground.left,Math.min(ground.right,wx)),y:Math.max(ground.top,Math.min(ground.bottom,wy+18))}:{x:wx,y:wy};
