@@ -60,10 +60,11 @@ try{
     if(!WorldMap.enterRegion(c.region))throw Error('Region entry failed');
    },{c,snapshot:checkpoint(c.scene),paths:assets[c.region]});
    await page.waitForFunction(()=>document.querySelector('.rw-world')?.dataset.artReady==='true');
+   assert.equal(await page.locator('.rw-region-toggle').count(),0,'No floating exploration button in '+c.region);
    const open=async()=>{
     if(c.optional){
      const b=page.locator('[data-regional-boss="'+c.id+'"]');
-     if(!await b.isVisible()){const toggle=page.locator('.rw-region-toggle');if(await toggle.isVisible()&&await toggle.getAttribute('aria-expanded')!=='true')await press(toggle);const summary=page.locator('.rw-optional-actions>summary');if(!await b.isVisible()){await summary.waitFor({state:'visible'});await press(summary);}}
+     if(!await b.isVisible()){await press(page.locator('#cb-system-toggle'));await press(page.locator('[data-system="world-explore"]'));const summary=page.locator('.rw-optional-actions>summary');if(!await b.isVisible()){await summary.waitFor({state:'visible'});await press(summary);}}
      await press(b);
     }else await press(page.locator('[data-next-scene="'+c.scene+'"]'));
     await page.locator('#bp-go').waitFor({state:'visible'});
