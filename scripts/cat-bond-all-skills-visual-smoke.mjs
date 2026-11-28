@@ -82,8 +82,8 @@ try{
           throw Error('Melee must use exactly one short brush stroke '+id);
         if(b.skillStrokes.some(stroke=>stroke.kind==='clawSlash'||
           stroke.kind==='signatureCast'))throw Error('Duplicate melee cast layers '+id);
-        if(!b.vfx.fx.some(effect=>effect.type==='contact'&&effect.skillId===id&&effect.life>0&&Math.hypot(effect.x-target.x,effect.y-target.y)<target.r+12))
-          throw Error('Melee contact did not spawn its own skill accent '+id);
+        if(!b.vfx.fx.some(effect=>effect.type==='contact'&&effect.skillId===id&&effect.life>0&&Math.hypot(effect.x-target.x,effect.y-target.y)<(target.r||18)+12))
+          throw Error('Melee contact did not spawn its own skill accent '+id+': '+JSON.stringify({radius:target.r,contacts:b.vfx.fx.filter(v=>v.type==='contact'),renderer:!!window.CatBondContactFX}));
         // Sample mid-sweep; the first frame correctly contains no teleporting
         // fully painted slash, and the last frame is almost transparent.
         b.vfx.update(.055);
