@@ -546,15 +546,15 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "这画的不是我醒来的花园吗？旁边还有一片叶子……",
-            "en": "That's the garden where I woke up! And there's a leaf beside it…"
+            "zh": "咦？图上这座花园，不就是我醒来的地方吗？",
+            "en": "Wait, isn't this the garden where I woke up?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "画图的猫来过我的花园！下一站是眠根林。说不定还有猫记得它。",
-            "en": "Whoever drew this visited my garden! Rootsleep Forest is next. Someone there might remember them."
+            "zh": "下一站是眠根林。说不定那儿还有猫记得画图的人！",
+            "en": "Rootsleep Forest is next. Someone there might remember who drew this!"
           }
         },
         {
@@ -699,8 +699,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "又绕回来了！这样怎么去老树那儿？",
-            "en": "We're back where we started! How do we reach the old tree?"
+            "zh": "老树明明就在前面，可路怎么一直绕弯？",
+            "en": "The old tree's right there. Why does the path keep bending away?"
           }
         },
         {
@@ -1314,8 +1314,8 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "月门到了！走，终于能查那只巡铃猫是谁了。",
-            "en": "There's the moon gate! Now we can find out who that bellkeeper was."
+            "zh": "终于到月门啦！我能跟你们一起进去吗？我也想知道那张图是谁画的。",
+            "en": "We made it to the moon gate! Can I come in with you? I want to know who drew that map too."
           }
         },
         {
@@ -1528,15 +1528,15 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "你是第一位守铃人。星铃碎了以后，你把自己的名字和记忆留在铃里，才救了大家。",
-            "en": "You were the first Bellkeeper. When the bell broke, you gave up your name and memories to save everyone."
+            "zh": "你是第一位守铃人。地图和灯匣是你留下的。星铃碎了以后，你用自己的名字和记忆救了大家。",
+            "en": "You were the first Bellkeeper. The map and the case were yours. When the Star Bell broke, you gave up your name and memories to save everyone."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "所以那张地图、那只灯匣，都是我留下的？那你为什么不告诉我？",
-            "en": "So the map and the lantern case were mine? Why didn't you tell me?"
+            "zh": "那你为什么不早点告诉我？",
+            "en": "Then why didn't you tell me sooner?"
           }
         },
         {
