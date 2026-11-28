@@ -1083,6 +1083,22 @@ class CaptureBattle {
   // HARD CONSTRAINT: the retreat floor (min) is clamped ≤ basicAttackRange so the basic always
   // connects — the exact "ranged cat can't basic-attack" regression we must not reintroduce.
   kitRangeBand(f) {
+    // Owner 2026-11-28 — RSI winner `agent:alternating-oscillator` (score 0.712 vs prior best
+    // 0.703 pack-robust-peel-fused, +1.3%; fills new MAP-Elites niche 1,2,3,3). OPT-IN only via
+    // `this.useOscillatorBand === true` so default shipped behavior is unchanged; evaluator or a
+    // future owner-toggled difficulty flag can enable it for A/B. Three-state CD-combo oscillator:
+    // both Q+E ready → tight 50-85 assassin burst / both cooling → wide 200-280 ranged patient /
+    // mixed → mid 110-160 bruiser. Pre-empts the full build logic below when the flag is set.
+    if (this.useOscillatorBand) {
+      const _oHp = f.hp / (f.maxhp || 1);
+      const _q = (f.cd && f.cd.q) || 0;
+      const _e = (f.cd && f.cd.e) || 0;
+      const _bothReady  = _q <= 0.15 && _e <= 0.15;
+      const _bothCool   = _q >= 2.5  && _e >= 2.5;
+      if (_bothReady) return { min: 50,  max: 85,  rush: 50,  role: 'assassin', hp: _oHp };
+      if (_bothCool)  return { min: 200, max: 280, rush: 280, role: 'ranged',   hp: _oHp };
+      return             { min: 110, max: 160, rush: 120, role: 'bruiser',  hp: _oHp };
+    }
     // Owner 2026-11-27 — RSI winner `agent:allied-hp-peeler` (score 0.706 vs baseline 0.692, +2.05%).
     // Spec §1a role theory peel/body-block: when an ally is low-HP, this cat shifts tight (60-100
     // band, role='tank') to draw aggro off the hurt ally. Judge rewards multi-pack survival at
