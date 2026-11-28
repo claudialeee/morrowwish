@@ -1,4 +1,4 @@
-import {sideKeepsakes} from "./side-adventures.mjs?v=regional-depth-20261127";
+import {sideKeepsakes,sideKey} from "./side-adventures.mjs?v=regional-depth-20261127";
 // Region-specific optional environmental discoveries; no narrative proof or economy changes.
 const raw={
   "harbor": {
@@ -24,8 +24,8 @@ const raw={
           -0.025
         ],
         [
-          "旧风铃旁闪过一粒金色铃光。",
-          "A golden chime spark flickers beside the old bell."
+          "阿婆记得家门口挂着铜风铃，却记不清走哪条路。找找海边的旧风铃路标。",
+          "Gran remembers a brass chime at her door, but not the way home. Look for the old chime landmark."
         ]
       ],
       [
@@ -40,8 +40,8 @@ const raw={
           0.095
         ],
         [
-          "铃光钻进石缝，留下一枚小铜风铃。",
-          "The spark slips between the stones, leaving a little brass chime."
+          "路标上的铜风铃和阿婆说的一样。栖蓝记下了这条回家的路。",
+          "The brass chime matches Gran’s description. Skye notes the way home."
         ],
         [
           "shell"
@@ -59,8 +59,8 @@ const raw={
           -0.09
         ],
         [
-          "古铃恢复后，集市挂起了新的小旗。",
-          "With the old bell restored, a new pennant hangs in the market."
+          "阿婆认出了孙子，也认得回家的路了。她托栖蓝送来一面集市小旗。",
+          "Gran remembers her grandson and the way home. She sends a market pennant through Skye."
         ],
         [],
         "return"
@@ -126,8 +126,8 @@ const raw={
           -0.09
         ],
         [
-          "香味对上了！一粒种子落进你的爪子。",
-          "The scent matches! A seed lands in your paws."
+          "找到芽禾想要的香草。带一粒种子回花园，为来访的猫准备香草茶。",
+          "You find Fern’s herb. Take a seed to the garden for tea."
         ],
         [
           "leaf"
@@ -228,8 +228,8 @@ const raw={
           0.095
         ],
         [
-          "炉城重新亮了，小灯也映着暖光。",
-          "The city lights are back; the little lantern catches their glow."
+          "灯火节恢复了，小栗用你找到的彩纸和灯芯照亮歪耳猫的影子。",
+          "The festival is back; Pip lights the crooked-eared cat shadow with your paper and wick."
         ],
         [],
         "return"
@@ -313,8 +313,8 @@ const raw={
           -0.075
         ],
         [
-          "远处的信使穿过云层。你把景色画成明信片。",
-          "Couriers cross the clouds. You sketch the view onto a postcard."
+          "信使恢复了航路。远帆请你把云海明信片带回花园。",
+          "The courier route is open. Finn asks you to bring a cloud postcard back to the garden."
         ],
         [],
         "return"
@@ -344,8 +344,8 @@ const raw={
           -0.055
         ],
         [
-          "公开植物册印着三片叶子。找相同图案的书签。",
-          "A public plant guide bears three leaves. Find the matching bookmark."
+          "白羽整理失忆期间散落的公共资料。植物册的三叶印能帮你找回书签。",
+          "Ivy is restoring scattered public records. The plant guide’s three-leaf seal identifies its bookmark."
         ]
       ],
       [
@@ -485,8 +485,8 @@ const raw={
           0.085
         ],
         [
-          "商队重新出发，留下一枚旅行徽章。",
-          "The caravan sets off again, leaving a travel badge."
+          "灾难结束后，商队重新出发。星芽说这些旧刻痕连起来像小猫座。",
+          "After the disaster, the caravan sets off. Nova sees a kitten constellation in the old markings."
         ],
         [],
         "return"
@@ -504,6 +504,7 @@ export function progress(region,interactions={}){
 export function availableDiscoveries(region,w,v){
  const d=discoveries[region];if(!d||w.location!==region||w.cargo||!v.regions?.includes(region)||region==="sky"&&w.interactions?.["sky:survey-island"])return [];
  const p=progress(region,w.interactions);
+ if((region==="library"&&v.completed.includes("library:M-03")||region==="starfall")&&!v.completed.includes("epilogue:E-03"))return [];
  return d.steps.filter(s=>!p.done.includes(s.id)&&(s.mode!=="decoy"||!p.complete)&&s.requires.every(id=>p.done.includes(id))&&(s.mode!=="return"||p.complete&&v.completed.includes(d.after)));
 }
 export function applyDiscovery(region,id,w,v){
@@ -512,7 +513,8 @@ export function applyDiscovery(region,id,w,v){
  if(s.mode==="decoy")return {ok:true,decoy:true,message:s.message};
  const next={...w,interactions:{...w.interactions,[key(region,id)]:true}};
  const before=progress(region,w.interactions),after=progress(region,next.interactions),d=discoveries[region];
- return {ok:true,next,message:s.message,souvenir:!before.complete&&after.complete?d.souvenir:!before.returned&&after.returned?d.returnSouvenir:null};
+ const perk=!before.returned&&after.returned&&!next.interactions[sideKey(region)];if(perk)next.interactions[sideKey(region)]=true;
+ return {ok:true,next,message:s.message,souvenir:!before.complete&&after.complete?d.souvenir:!before.returned&&after.returned?d.returnSouvenir:null,reward:perk?{coins:25,fish:2}:null,perk};
 }
 // Keep the props separated from interactive story anchors. Both the painter
 // and hit-testing consume the identical projected points.
