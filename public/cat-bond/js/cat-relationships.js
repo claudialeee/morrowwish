@@ -71,14 +71,15 @@ function memoryInfo(a,b,id){
    title:en?entry.en:entry.zh,story:names?names+' — '+story:story,
    hint:en?(entry.enHint||'Explore together'):(entry.zhHint||'双猫探索地图')};
 }
-function remember(a,b,memoryId){
+function remember(a,b,memoryId,options={}){
   if(!a||!b||!MEMORY_IDS.has(memoryId))return {ok:false,reason:'unknown-memory'};
   const p=pair(a,b);
   if(!Array.isArray(p.memories))p.memories=[];
   if(p.memories.includes(memoryId))return {ok:false,reason:'already-found'};
   p.memories.push(memoryId);
   // Special moments are small bonuses; 5 original map memories keep +12.
-  const grown=grow(a,b,MEMORY_CATALOG.find(m=>m.id===memoryId)?.kind==='moment'||memoryId.endsWith('-moment')?4:12);
+  const amount=memoryId.startsWith('yard-life-')?Math.max(0,Math.min(2,options.trust??0)):(MEMORY_CATALOG.find(m=>m.id===memoryId)?.kind==='moment'||memoryId.endsWith('-moment')?4:12);
+  const grown=amount?grow(a,b,amount):{value:p.trust};
   State.save();
   window.arcadeMetric?.('bond_duo_memory',{region:memoryId,trust:grown.value,total:p.memories.length});
   return {ok:true,id:memoryId,trust:grown.value,total:p.memories.length};

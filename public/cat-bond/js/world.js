@@ -1016,7 +1016,8 @@ class YardScene {
     const now=new Date(),day=[now.getFullYear(),now.getMonth()+1,now.getDate()].join('-');
     if(!State.S.yardLife||typeof State.S.yardLife!=='object'||Array.isArray(State.S.yardLife))State.S.yardLife={day:'',history:[]};
     const life=State.S.yardLife;
-    if(life.day===day)return;
+    const today=(Array.isArray(life.history)?life.history:[]).filter(h=>h.day===day);
+    if(today.length>=3||this.game.t<(this._nextLifeEvent||0))return;
     const builds=State.S.yardBuildings||[];
     const idle=cats.filter(e=>!e._buildTarget&&!(e._playBuildT>0)&&!(e._lifeUntil>this.game.t)&&!(e.pettedGlow>0));
     if(idle.length<2)return;
@@ -1034,6 +1035,7 @@ class YardScene {
       if(nearby)kinds.push('catnip');
       for(const kind of kinds){
         const id='yard-life-'+kind;
+        if(today.some(h=>h.id===id&&h.cats?.includes(a.cat.uid)&&h.cats?.includes(b.cat.uid)))continue;
         const seen=history.filter(h=>h.id===id&&h.cats?.includes(a.cat.uid)&&h.cats?.includes(b.cat.uid)).length;
         const recent=history.slice(-3).filter(h=>h.id===id).length;
         candidates.push({a,b,kind,id,score:seen*10+recent*4+distance/110-(kind==='catnip'?2:0)});
@@ -1042,6 +1044,7 @@ class YardScene {
     candidates.sort((a,b)=>a.score-b.score);
     if(!candidates.length)return;
     const {a,b,kind,id}=candidates[0];
+    this._nextLifeEvent=this.game.t+90;
     this._nextDuoEmote=Math.max(this._nextDuoEmote||0,this.game.t+5);
     a._lifeUntil=b._lifeUntil=this.game.t+4;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
@@ -1052,7 +1055,7 @@ class YardScene {
     a.emote(kind==='nap'?'💤':'💞',3);b.emote(kind==='play'?'🐾':'💞',3);
     life.day=day;
     life.history=[...(Array.isArray(life.history)?life.history:[]),{day,id,cats:[a.cat.uid,b.cat.uid]}].slice(-30);
-    window.CatRelations?.remember(a.cat,b.cat,id);
+    window.CatRelations?.remember(a.cat,b.cat,id,{trust:today.length===0?2:0});
     State.save();
     this.game.toast(names+(en?({nap:' found a quiet spot to nap together.',play:' started a little game together.',friend:' are enjoying a quiet moment together.',catnip:' rolled around together beside the catnip.'}[kind]):({nap:' 找了个安静的角落一起午睡。',play:' 玩起了只有它们懂的小游戏。',friend:' 正挨在一起享受庭院时光。',catnip:' 在猫薄荷花坛旁开心地打滚。'}[kind])));
     window.arcadeMetric?.('bond_yard_daily_life',{kind});
@@ -1091,7 +1094,7 @@ class YardScene {
     if (this._buildScan > 0) return;
     this._buildScan = 4 + Math.random() * 4;   // next look ~4-8s; don't thrash pathing
     // pick an idle, not-already-busy cat and a free-ish structure to visit
-    const idle = this.entities.filter(e => !(e._playBuildT > 0) && !e._buildTarget &&
+    const idle = this.entities.filter(e => !(e._playBuildT > 0) && !(e._lifeUntil>this.game.t) && !e._buildTarget &&
       ['idle', 'sit', 'walk', 'loaf'].includes(e.pose));
     if (!idle.length) return;
     // Prefer the nearest idle cat and the newest available structure so a
