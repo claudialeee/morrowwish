@@ -86,7 +86,7 @@ async function play(sceneId){
    onLanguageChange:next=>window.MorrowwishI18n?.set?.(next),
    onError:error,
    onCheckpoint:persist,
-   beforeResolve:({sceneId,skipped})=>sceneId==="starfall:F-02"&&skipped?acknowledge({zh:"星芽",en:"Nova"},{zh:"当年落星击碎星铃，六地接不起来，是你自愿留下记忆才救了大家。你还答应过暮铃要找到回家的办法；如今已经有五座古铃恢复了。",en:"When the fallen star broke the Star Bell and the six lands could not answer, you chose to leave your memories to save everyone. You promised Luna you would find a way home; today five local bells are working again."},{zh:"继续",en:"Continue"}):true,
+   beforeResolve:({sceneId,skipped})=>sceneId==="starfall:F-02"&&skipped?acknowledge({zh:"星芽",en:"Nova"},{zh:"当年落星击坏星铃，回响四处蔓延。你还不能唤醒古铃，只能用自己的记忆封住回响。如今五座古铃已经恢复了。",en:"When the fallen star broke the Star Bell, the echoes spread. You could not awaken the bells then, so you sealed the echoes with your own memories. Today five local bells are ringing again."},{zh:"继续",en:"Continue"}):true,
    onResolved:()=>{
     if(!current())return;
     const result=runtime.finish(token);

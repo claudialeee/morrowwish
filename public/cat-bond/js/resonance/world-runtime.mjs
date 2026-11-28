@@ -415,7 +415,7 @@ function install(){
  }
  if(w.location==="finale"){
   const battle=v.current?.chapter==="finale"&&v.objective.find(op=>op.startsWith("battle:"));
-  if(battle)actions.append(primary(B(tr("前往中央星铃","Approach the Star Bell"),()=>go(explorer.layout.paths.at(-1),()=>requestBattle(battle,"finale")))));
+  if(battle&&!hasPendingDialogue(v))actions.append(primary(B(tr("前往中央星铃","Approach the Star Bell"),()=>go(explorer.layout.paths.at(-1),()=>requestBattle(battle,"finale")))));
   if(v.current?.id==="finale:B-03"&&v.cursor===v.current.lines.length&&v.objective.includes("mechanism:muling-unlock"))actions.append(primary(B(tr("协助暮铃打开最后一道锁","Help Luna release the last lock"),()=>go(explorer.layout.paths.at(-1),openFinaleLatch))));
  }
  if(w.location==="starfall"||w.location==="finale"){
@@ -485,7 +485,7 @@ function install(){
  if(p?.type==="melody"&&r.ok){if(correctNote)melodyNote(p,i);else window.MorrowwishMusic?.cue?.("error");}
  if(r.ceremony){ceremony={owner:State.S,explorer,region:before.operation.split(":")[1],elapsed:0,notes:0};if(ceremony.region==="harbor")image("harbor-ceremony");render();return;}const result=op==="explore:tide-logbook"?["找到救援日志","Rescue log recovered"]:op==="rescue:storm-boat"?["救援船已安全入港","Rescue boat safely in harbor"]:op==="melody:harbor"?["家铃又响起来了","The house bells are ringing again"]:["机关已完成","Mechanism restored"];report(r,r.ok&&!r.pending?result:"");render();}
  function requestNpc(npcId,region){const sceneId=current().view().current?.id;if(sceneId)window.dispatchEvent(new CustomEvent("cat-bond-resonance-npc-request",{detail:{sceneId,npcId,region}}));}
- function requestBattle(op,region){const v=current().view();if(!v.current||!v.objective.includes(op)||v.current.orderedRequires&&v.objective[0]!==op)return;if(v.current.chapter==="finale"&&(region!=="finale"||current().world().location!=="finale"||!explorer||!explorer.near(layouts.finale.paths.at(-1))))return;window.dispatchEvent(new CustomEvent("cat-bond-resonance-battle-request",{detail:{sceneId:v.current.id,operation:op,region}}));}
+ function requestBattle(op,region){const v=current().view();if(!v.current||!v.objective.includes(op)||v.current.orderedRequires&&v.objective[0]!==op)return;if(v.current.chapter==="finale"&&hasPendingDialogue(v))return;if(v.current.chapter==="finale"&&(region!=="finale"||current().world().location!=="finale"||!explorer||!explorer.near(layouts.finale.paths.at(-1))))return;if(campaign.regions.includes(region)){window.MorrowwishAudio?.note?.(392,.35,.12);game.toast?.({zh:"古铃响了一声，空白回响现身！",en:"The ancient bell rings, revealing a Hollow Echo!"});}window.dispatchEvent(new CustomEvent("cat-bond-resonance-battle-request",{detail:{sceneId:v.current.id,operation:op,region}}));}
  function availableMemories(region){
   const base=duoMemories[region],relations=window.CatRelations,pair=relations?.chosen?.();
   if(!base||pair?.length!==2||relations.pair(...pair).value<20)return [];

@@ -107,7 +107,7 @@ function install(){
  const alive=b=>b.team.filter(f=>f.alive);
  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
  const notice=(b,zh,en)=>b.game.toast({zh,en});
- const sceneTitle={"finale:B-01":["逆响守铃者","The Reverse Bellkeeper"],"finale:B-02":["空白回响","The Hollow Echo"],"finale:B-03":["六音归环","Six Notes Return"]};
+ const sceneTitle={"finale:B-01":["阻止记忆交换","Stop the memory exchange"],"finale:B-02":["空白回响","The Hollow Echo"],"finale:B-03":["最后的空白回响","The final Hollow Echo"]};
  function available(game,id){
   const h=host(),v=h?.view?.(),root=window.State.S;
   return typeof h?.captureAction==="function"&&typeof h?.isCurrentAction==="function"&&game?.scene==="map"&&!game.battle&&v?.current?.id===id&&v.ring===true&&v.objective.includes(PHASES[id])&&v.melodies?.length===6&&v.support?.length===6&&v.support.every(profile=>profile.ready===true)&&root.resonanceExploration?.location==="finale";
@@ -199,7 +199,7 @@ function install(){
   const effect=next&&f.id==="finale:B-03"?regionalEffects(b,next.region):null;
   const bonus=effect?" · "+tr("协作 "+effect.required.toFixed(1)+"秒 / 失守伤害 "+effect.pulseDamage,"Hold "+effect.required.toFixed(1)+"s / unguarded damage "+effect.pulseDamage)+(effect.gardenLevel?tr(" · 家园等级 "," · Garden Lv.")+effect.gardenLevel:""):"";
   const reply=next?tr(...REPLY_OBJECTIVES[next.region])+bonus:tr("六地的回铃击弱了中央回响。趁现在攻击！","All six replies weakened the central echo. Strike now!");
-  set("[data-finale-objective]",first?tr("击破三个防护节点，不要攻击暮铃。","Break the three protection nodes; do not attack Luna."):second?(f.probeChanged?tr("暮铃已停止抽取。击破不回应新位置的复制影像！","Luna stopped the extraction. Strike the copies that ignore your new position!"):tr("改变位置，观察谁真正回应你。","Move to a new position and watch which replies are genuine.")):next?(next.reply?.cleared?tr("守住铃光，等两地分别回铃。","Stay in the bell light while both lands reply."):tr("击破亮区里的复制声源，再守住铃光。","Break the copied source in the light, then hold the light.")):tr("六条邻路都已回应，等待稳定后攻击中央。","All six edges replied; wait for stability, then strike the center."));
+  set("[data-finale-objective]",first?tr("击破三个防护节点，不要攻击暮铃。","Break the three protection nodes; do not attack Luna."):second?(f.probeChanged?tr("暮铃已停止抽取。击破不回应新位置的复制影像！","Luna stopped the extraction. Strike the copies that ignore your new position!"):tr("改变位置，观察谁真正回应你。","Move to a new position and watch which replies are genuine.")):next?(next.reply?.cleared?tr("守住铃光，让古铃继续压制回响。","Stay in the bell light to hold the echo back."):tr("击破亮区里的复制声源，再守住铃光。","Break the copied source in the light, then hold the light.")):tr("六座古铃正在压制回响，攻击中央的核心！","All six bells are holding back the echo. Strike its exposed core!"));
   set("[data-finale-count]",first?f.nodes.filter(n=>n.done).length+"/"+f.nodes.length:second?f.confirmed.size+"/"+f.echoGroups:f.nodes.filter(n=>n.done).length+"/6"+(next?" · "+Math.floor(100*next.progress/(next.required||4))+"%":""));
   const regionStatus=el.querySelector("[data-finale-regions]"),warning=el.querySelector("[data-finale-warning]");
   regionStatus.hidden=second;

@@ -63,17 +63,7 @@ export function buildCanonicalScene({view,campaign,manifest,staging=false,openin
   if(covered.length!==scene.lines.length||covered.some((v,i)=>v!==i))return bad('incomplete-or-reordered-dialogue');
   if(!frames.length)return bad('nothing-to-play');
   if(scene.id==='starfall:F-02'&&useStaging){const impact=assets.get('canon22-history-impact');if(impact?.sceneKey===scene.id&&impact.status==='candidate'&&impact.stagingAllowed===true&&impact.runtimeAllowed===false&&raster.test(impact.path)){const alt={zh:'陨星击裂古老的星铃',en:'A fallen star cracks the ancient Star Bell'};frames.unshift({id:'starfall:F-02-impact',image:impact.path,alt,durationMs:3400,transitionMs:680,camera:{from:{x:0,y:0,scale:1.02},to:{x:0,y:0,scale:1.08}}});}}
-  if(scene.id==='starfall:F-02'){const historical=frames.find(f=>f.effect==='history-collapse');if(historical){const text={zh:'当年六座铃来不及接通，你用自己的记忆救了大家。现在已经修好了五座。',en:'The six lands could not answer one another then; you offered your memories to save them. Today five bells are ringing again.'};frames.push({...historical,id:'starfall:F-02-present-five',effect:'history-present',durationMs:4700,shotDurationMs:4700,shotOffsetMs:0,subtitle:{zh:{speaker:'星芽',text:text.zh},en:{speaker:'Nova',text:text.en}},alt:text});}}
-  // Last patrol is a separate historical shot before the central choice. Reuse the painted
-  // Lantern City workshop, its actual resident and an existing painted lantern prop.
-  if(scene.id==='starfall:F-02'){
-    const beforeChoice=frames.findIndex(f=>f.id.includes('-line-0'));
-    const patrol={id:'starfall:F-02-last-patrol',image:'assets/story-art/lantern-entrustment.jpg',
-      alt:{zh:'最后一次巡访：守铃人把旧灯匣托付给烬婆',en:'The last patrol: the Bellkeeper entrusts the old lamp case to Ember'},
-      durationMs:6500,transitionMs:650,subtitle:{zh:{speaker:'过去的守铃人',text:'烬婆，劳烦你收好这张去书库的航图。要是以后我忘了路，还得来找你。'},en:{speaker:'The Bellkeeper, long ago',text:'Ember, please keep this chart to the library safe. If I ever forget the way, I will need your help.'}},
-      camera:{from:{x:0,y:0,scale:1},to:{x:0,y:0,scale:1}}};
-    frames.splice(Math.max(0,beforeChoice),0,patrol);
-  }
+  if(scene.id==='starfall:F-02'){const historical=frames.find(f=>f.effect==='history-collapse');if(historical){const text={zh:'当年你还不能唤醒古铃，只能用自己的记忆封住回响。如今五座古铃已经恢复了。',en:'Back then you could not awaken the bells, so you sealed the echoes with your own memories. Today five bells are ringing again.'};frames.push({...historical,id:'starfall:F-02-present-five',effect:'history-present',durationMs:4700,shotDurationMs:4700,shotOffsetMs:0,subtitle:{zh:{speaker:'星芽',text:text.zh},en:{speaker:'Nova',text:text.en}},alt:text});}}
   // The six existing painted world plates establish the six sanctuaries before
   // the original Star Bell image. They are not substitutes for any of the six
   // owner-selected opening paintings, nor a general staging-art bypass.

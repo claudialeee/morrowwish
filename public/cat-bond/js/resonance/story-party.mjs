@@ -14,7 +14,8 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 export function storyPartyPatch(root,previous,next,makeCat,decorate=()=>{}){
  const finished=next.completed.filter(id=>!previous.completed.includes(id));
  const reunions=(next.postgame||[]).filter(id=>!(previous.postgame||[]).includes(id)&&optionalRecruitment[id]);
- if(!finished.some(id=>recruitment[id]||["finale:B-02","epilogue:E-03"].includes(id))&&!reunions.length)return null;
+ const restoreLuna=!!root.storyAway?.muling&&next.completed.includes("finale:B-02");
+ if(!finished.some(id=>recruitment[id]||["finale:B-02","epilogue:E-03"].includes(id))&&!reunions.length&&!restoreLuna)return null;
  if(!Array.isArray(root.cats)||typeof makeCat!=="function")return null;
  let cats=[...root.cats],away={...(root.storyAway||{})};
  const duo=copy(root.duoRelations||{pairs:{},active:[]});duo.pairs||={};duo.active||=[];
@@ -23,7 +24,7 @@ export function storyPartyPatch(root,previous,next,makeCat,decorate=()=>{}){
  const joined=[],left=[];let showcase=root.firstDuoShowcasePending;
  const player=cats.find(c=>c.species==="jinjc")||cats[0];
  const seed=(a,b)=>{if(!a||!b||a.uid===b.uid)return;const k=[a.uid,b.uid].sort().join(":");const p=duo.pairs[k]||(duo.pairs[k]={value:0,lastPlay:0});p.value=Math.max(20,p.value||0);};
- for(const scene of [...finished,...reunions]){
+ for(const scene of [...finished,...reunions,...(restoreLuna&&!finished.includes("finale:B-02")?["finale:B-02"]:[])]){
   // Leave before recruiting Ivy so the vacated active slot can be filled.
   if(scene==="library:M-05"){
    const cat=cats.find(c=>c.storyActor==="muling");

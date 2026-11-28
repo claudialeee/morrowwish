@@ -785,13 +785,14 @@
       {
         "assetId": "remaster-f05-atlas",
         "alt": {
-          "zh": "六地航路",
-          "en": "The six regions' routes"
+          "zh": "六座古铃受到中央回响冲击",
+          "en": "The six bells shake under the central echo"
         },
         "durationMs": 4000,
         "transitionMs": 680,
         "lines": [
-          2
+          2,
+          3
         ],
         "camera": {
           "from": {

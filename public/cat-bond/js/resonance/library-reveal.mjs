@@ -12,8 +12,8 @@ export function revealShot(id,c,choice=null){
   if(c<2)return shot(atlas,"ledger",["baikan"],"公开线索 · 尚不能证明责任","Public clues · Responsibility not yet established");
   return shot(library,"fracture",["player","muling"],"月镜书库 · 信任的裂痕","Moonmirror Library · Trust fractured");
  }
- if(c<3)return shot(atlas,"routes",["moye","baikan"],"两条路径 · 中央汇集与邻地共鸣","Two routes · Inward convergence and neighboring resonance");
- if(c<7)return shot(library,"present",["player","muling"],"不能替别人作出选择","No one can choose for everyone");
+ if(c<3)return shot(atlas,"routes",["moye","baikan"],"六座古铃 · 共同压制回响","Six bells · Holding back the echoes");
+ if(c<5)return shot(library,"present",["player","muling"],"不能替别人作出选择","No one can choose for everyone");
  return shot(starfall,"departure",["muling"],"暮铃离开书库，前往星坠原","Luna leaves the library for Starfall Expanse");
 }
 

@@ -2077,7 +2077,9 @@ export const campaign = {
           }
         }
       ],
-      "requires": [],
+      "requires": [
+        "cinematic:inward-call"
+      ],
       "choices": [],
       "lineGate": [],
       "choiceTiming": "afterDialogue",
