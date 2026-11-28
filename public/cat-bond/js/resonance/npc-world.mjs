@@ -31,18 +31,19 @@ function openingEncounter(api){
  for(const b of [next,close])b.type="button";next.className="cb-encounter-next";close.className="cb-encounter-leave";copy.setAttribute("aria-live","polite");
  controls.append(next,close);body.append(name,copy,controls);panel.append(art,body);root.append(panel);let step=0;
  const lines=[
- ["陌生猫","Stranger","你可算醒啦！","You're awake at last!","继续","Continue"],
- ["你","You","你在等我？这张纸是你放在我身边的吗？","Were you waiting for me? Did you leave this letter here?","继续","Continue"],
- ["陌生猫","Stranger","嗯……我在屋里找到的。看你在这儿睡觉，就拿过来了。","Well… I found it in the house. I brought it out when I saw you asleep.","继续","Continue"],
- ["你","You","你看，写信的猫怕自己失忆。可我刚好什么都不记得了！它是谁呀？","Look, whoever wrote this was afraid of losing their memory. And I can't remember a thing! Who wrote it?","继续","Continue"],
- ["暮铃","Luna","……我是暮铃。这儿叫阳光花园。信上说的檐灯爷爷就住在风铃镇，他应该还收着那张地图。","…I'm Luna. This is Sunlit Garden. Alder, the cat in the letter, lives in Windchime Town. He should still have that map.","继续","Continue"],
- ["你","You","我得去看看！说不定写信的猫知道我为什么会在这儿。","I've got to see it! Maybe the cat who wrote this knows why I'm here.","继续","Continue"],
- ["暮铃","Luna","好，我去镇上等你。哦，草地上的鱼饼可以吃。别光顾着找名字，把肚子饿坏了。","All right, I'll meet you in town. Oh, that fish cake in the grass is for you. Don't go hungry looking for your name.","告别","Say goodbye"]
+ ["陌生猫","Stranger","小曦！你终于醒啦！","Sunny! You're awake at last!","继续","Continue"],
+ ["你","You","小曦？你认识我？……我怎么连这个名字都想不起来了？","Sunny? You know me? …Why can't I even remember that name?","继续","Continue"],
+ ["暮铃","Luna","我是暮铃。咱们以前一起巡铃。你爪子底下那封信，是你自己留下的。","I'm Luna. We used to look after the bells together. That note under your paw? You wrote it.","继续","Continue"],
+ ["你","You","我写的？那上面为什么说不能开锁？","I wrote this? Why does it say not to open the lock?","继续","Continue"],
+ ["暮铃","Luna","以前星铃坏了，大家就开始忘事。你留下的巡铃图在檐灯爷爷那儿。找到那张图，就知道六座古铃在哪儿了。","When the Star Bell broke, cats started forgetting things. Alder has your old patrol map. It'll show us where the six local bells are.","继续","Continue"],
+ ["你","You","好！我去找檐灯爷爷。也许他知道我以前发生了什么。","Okay! I'll find Alder. Maybe he knows what happened to me.","继续","Continue"],
+ ["暮铃","Luna","我先去镇上找他。你也别急，草地上的鱼饼可以吃。……你以前可不舍得把鱼饼放凉。","I'll go find him in town. No rush. That fish cake in the grass is yours. …You never used to let one go cold.","告别","Say goodbye"]
  ];
+
  const letter=document.createElement("blockquote");letter.className="cb-opening-letter-inline";Object.assign(letter.style,{margin:"4px 0",padding:"8px 10px",background:"#fff3d9",color:"#563d29",border:"1px solid #c9a974",borderRadius:"5px",fontSize:"clamp(13px,2vmin,17px)",lineHeight:"1.45"});body.insertBefore(letter,controls);
 
  function dispose(){root.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("pagehide",dispose);}
- function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh",i=zh?0:1,l=lines[step];const player=l[0]==="你";panel.dataset.speaker=player?"player":"muling";const url=player?new URL("../../assets/core-art-remaster/leads/player.webp",import.meta.url).href:mulingGarden.src;if(art.src!==url)art.src=url;name.textContent=l[i];copy.textContent=l[2+i];letter.hidden=step!==1&&step!==3;letter.textContent=zh?"如果有一天，我连自己的名字都忘了，就去风铃镇找檐灯。地图托他收着了。":"If I ever forget even my own name, find Alder in Windchime Town. He's keeping my map.";next.textContent=l[4+i];close.textContent=zh?"返回花园":"Back to garden";}
+ function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh",i=zh?0:1,l=lines[step];const player=l[0]==="你";panel.dataset.speaker=player?"player":"muling";const url=player?new URL("../../assets/core-art-remaster/leads/player.webp",import.meta.url).href:mulingGarden.src;if(art.src!==url)art.src=url;name.textContent=l[i];copy.textContent=l[2+i];letter.hidden=step!==1&&step!==3;letter.textContent=zh?"如果我醒来后什么都不记得了，就去风铃镇找檐灯，拿回巡铃图。六座古铃没修好以前，千万别打开中央星铃的锁。":"If I wake up with no memories, find Alder in Windchime Town and get my bellkeeper's map. Don't open the Star Bell's lock until all six local bells are repaired.";next.textContent=l[4+i];close.textContent=zh?"返回花园":"Back to garden";}
  function advance(){if(owner!==window.State.S||window.__game?.scene!=="yard"||api.view().current?.id!=="prologue:P-05"){dispose();return}if(step<lines.length-1){step++;render();return}const r=api.meetTraveler(token);if(r.ok||api.view().openingMet)dispose();else copy.textContent=window.MorrowwishI18n?.get?.()==="zh"?"无法保存，请重试。也可以暂时离开。":"Unable to save. Retry or leave for now.";}
  next.onclick=advance;body.addEventListener("click",e=>{if(!e.target.closest("button,select,a,input"))advance()});close.onclick=dispose;root.onkeydown=e=>{if(e.key==="Escape"){e.preventDefault();dispose()}else if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button,select,a,input")){e.preventDefault();advance()}};stage.append(root);window.addEventListener("morrowwish-language-change",render);window.addEventListener("cat-bond-active-save-changed",dispose);window.addEventListener("pagehide",dispose,{once:true});render();next.focus();return true;
 }
