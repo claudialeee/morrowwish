@@ -1,5 +1,5 @@
-// Verify the first region is actually winnable, not merely capped at Lv.3.
-// The automated beginner duo fights through real AI / projectiles / cooldowns.
+// Verify the actual first exploration region, Sunlit Garden, with the current
+// casual +/-2 level contract. Exercise real AI / projectiles / cooldowns.
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
@@ -11,15 +11,17 @@ try{
  await page.waitForFunction(()=>window.__game&&window.Battle?.CaptureBattle);
  const result=await page.evaluate(()=>{
   const g=window.__game,S=State.S;
-  S.tutorialDone=true;S.catchCount=0;
+  S.tutorialDone=true;S.catchCount=0;State.setDifficulty('casual');
   S.aiProfile={v:1,battles:0,adapt:false};
   S.battlePrefs={autoBattle:true,manualTutorialSeen:true,tutorialSeen:true,modeChosen:true};
   const entries=[];
   for(let trial=0;trial<3;trial++){
    const cats=['tangyuan','xiaohui','doudou','nainai','moqiu'].map(id=>State.makeCat(id));
-   cats.forEach(c=>{c.affinity=40;c._hpFrac=1});
-   g.scene='map';g._battleTheme={region:'sakura'};
-   const b=new Battle.CaptureBattle(g,cats,GameData.speciesById('doudou'));
+   cats.forEach(c=>{c.level=1;c.affinity=40;c._hpFrac=1});
+   S.cats=cats;S.battlePrefs.teamUids=cats.map(c=>c.uid);
+   if(!WorldMap.isUnlocked('home')||WorldMap.isUnlocked('sakura'))throw Error('Beginner region fixture violates current unlock gates');
+   g.scene='map';g._battleTheme={region:'home'};
+   const b=new Battle.CaptureBattle(g,cats,GameData.speciesById('doudou'),{seed:20261127+trial});
    b.coach=null;b.autoMode=true;
    let ticks=0;
    for(;ticks<4800&&!b.done;ticks++)b.update(1/30);
@@ -30,7 +32,7 @@ try{
   }
   return entries;
  });
- assert.ok(result.every(x=>x.wildLevel<=2),'first map new team must not meet Lv.3+ untrained enemies');
+ assert.ok(result.every(x=>x.wildLevel>=2&&x.wildLevel<=3),'Lv.1 casual team in home must meet Lv.2–3, per current floor and +2 ceiling: '+JSON.stringify(result));
  assert.ok(result.filter(x=>x.result==='win').length>=2,
    'Most beginner 5-cat runs must win a normal encounter: '+JSON.stringify(result));
  assert.deepEqual(errors,[]);

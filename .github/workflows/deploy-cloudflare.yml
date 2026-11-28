@@ -12,6 +12,7 @@ on:
       - 'scripts/build-pages.mjs'
       - 'scripts/scoped-game-release.mjs'
       - 'scripts/cat-bond-crazygames-smoke.mjs'
+      - 'scripts/cat-bond-autofight-smoke.mjs'
       - 'scripts/browser-test-pawsibly.mjs'
       - 'scripts/check-pawsibly.mjs'
       - 'scripts/check-source.mjs' # Fixing a release gate must retrigger deployment.
