@@ -14,7 +14,7 @@ function residentImage(id){
 }
 function drawResident(ctx,id,{x,y,scale=1,time=0}){
  // The dialogue portrait owns the speaking actor while the modal is visible.
- const dialogue=document.querySelector(".res-host .res-dialogue:not([hidden])");if(dialogue?.dataset.speaker===id&&dialogue.querySelector(".res-portrait:not([hidden])"))return false;
+ const dialogue=document.querySelector(".res-host .res-dialogue:not([hidden])"),portrait=dialogue?.querySelector(".res-portrait:not([hidden])");if(dialogue?.dataset.speaker===id&&portrait?.complete&&portrait.naturalWidth&&portrait.getClientRects().length&&getComputedStyle(portrait).visibility!=="hidden")return false;
  if(id==='muling'){if(!mulingGarden.complete||!mulingGarden.naturalWidth)return false;const fit=Math.min(118*scale/mulingGarden.naturalWidth,108*scale/mulingGarden.naturalHeight),w=mulingGarden.naturalWidth*fit,h=mulingGarden.naturalHeight*fit;ctx.save();ctx.translate(x,y);ctx.save();ctx.scale(1,.22);const shadow=ctx.createRadialGradient(0,0,0,0,0,Math.max(1,w*.46));shadow.addColorStop(0,"#20272b44");shadow.addColorStop(1,"#20272b00");ctx.fillStyle=shadow;ctx.fillRect(-w/2,-w/2,w,w);ctx.restore();ctx.drawImage(mulingGarden,-w/2,-h,w,h);ctx.restore();return true;}
  const image=residentImage(id);
  if(!image?.complete||!image.naturalWidth)return false;
@@ -36,13 +36,13 @@ function openingEncounter(api){
  ["暮铃","Luna","……我叫暮铃。附近有个小镇，我们去问问吧。","…I'm Luna. There is a town nearby. Let’s ask around.","继续","Continue"],
  ["暮铃","Luna","风铃镇就在山谷另一边。说不定有人认识你。","Windchime Town is just across the valley. Maybe someone knows you.","继续","Continue"],
  ["你","You","好，总比待在这里什么都不知道强。","Okay. Better than staying here without any answers.","继续","Continue"],
- ["暮铃","Luna","好。草地上有块鱼饼，吃点东西再出发吧。我在镇上等你。","All right. There’s a fish cake in the grass. Have a bite before you go. I’ll meet you in town.","告别","Say goodbye"]
+ ["暮铃","Luna","花园里有块鱼饼，出发前可以带上。我在镇上等你。","There’s a fish cake in the garden. Take it for the road if you like. I’ll meet you in town.","告别","Say goodbye"]
  ];
 
  const letter=document.createElement("blockquote");letter.className="cb-opening-letter-inline";Object.assign(letter.style,{margin:"4px 0",padding:"8px 10px",background:"#fff3d9",color:"#563d29",border:"1px solid #c9a974",borderRadius:"5px",fontSize:"clamp(13px,2vmin,17px)",lineHeight:"1.45"});body.insertBefore(letter,controls);
 
  function dispose(){root.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("pagehide",dispose);}
- function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh",i=zh?0:1,l=lines[step];const player=l[0]==="你";panel.dataset.speaker=player?"player":"muling";const url=player?new URL("../../assets/core-art-remaster/leads/player.webp",import.meta.url).href:mulingGarden.src;if(art.src!==url)art.src=url;name.textContent=l[i];copy.textContent=l[2+i];letter.hidden=true;letter.textContent="";next.textContent=l[4+i];close.textContent=zh?"返回花园":"Back to garden";}
+ function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh",i=zh?0:1,l=lines[step];const player=l[0]==="你";panel.dataset.speaker=player?"player":"muling";const url=player?new URL("../../assets/core-art-remaster/leads/player.webp",import.meta.url).href:mulingGarden.src;if(art.src!==url)art.src=url;name.textContent=l[i];copy.textContent=step===lines.length-1&&window.GardenExploration?.read?.(owner)?.snack?(zh?"好，路上小心。我在镇上等你。":"All right. Take care on the road. I’ll meet you in town."):l[2+i];letter.hidden=true;letter.textContent="";next.textContent=l[4+i];close.textContent=zh?"返回花园":"Back to garden";}
  function advance(){if(owner!==window.State.S||window.__game?.scene!=="yard"||api.view().current?.id!=="prologue:P-05"){dispose();return}if(step<lines.length-1){step++;render();return}const r=api.meetTraveler(token);if(r.ok||api.view().openingMet)dispose();else copy.textContent=window.MorrowwishI18n?.get?.()==="zh"?"无法保存，请重试。也可以暂时离开。":"Unable to save. Retry or leave for now.";}
  next.onclick=advance;body.addEventListener("click",e=>{if(!e.target.closest("button,select,a,input"))advance()});close.onclick=dispose;root.onkeydown=e=>{if(e.key==="Escape"){e.preventDefault();dispose()}else if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button,select,a,input")){e.preventDefault();advance()}};stage.append(root);window.addEventListener("morrowwish-language-change",render);window.addEventListener("cat-bond-active-save-changed",dispose);window.addEventListener("pagehide",dispose,{once:true});render();next.focus();return true;
 }
