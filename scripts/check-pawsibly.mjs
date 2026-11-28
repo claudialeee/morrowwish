@@ -263,7 +263,7 @@ assert.ok(reviewStyle.includes('id="stageHome"')&&reviewStyle.includes('class="s
 assert.ok(reviewStyle.includes('id="achievementsGrid"')&&reviewStyle.includes('id="relicGallery"')&&reviewStyle.includes('id="guardIntent"'),
  'The game must show collectible names, earned badges and the owner state');
 assert.ok(!reviewStyle.includes('id="collectionPreview"')&&!reviewStyle.includes('class="collection-count"'),'Album summary and recent-item preview must stay removed');
-assert.ok(reviewStyle.indexOf('id="restart"')>reviewStyle.indexOf('id="tool"')&&reviewStyle.indexOf('id="restart"')<reviewStyle.indexOf('id="board"'),'Replay button must be directly accessible above the board');
+assert.ok(reviewStyle.indexOf('id="restart"')>reviewStyle.indexOf('id="gameMenu"'),'Replay must live inside the game menu');
 assert.ok(!reviewStyle.includes('<section class="explainer"'),
  'The duplicate how-to-play section must not reappear below the game');
 // Final-room regression: the eighth escape deserves a visible, skippable
@@ -443,7 +443,7 @@ assert.equal(pausedGuardFar.exposure,0,
  saved['another-game-preference']='keep';
  const html=fs.readFileSync('public/pawsibly-innocent/index.html','utf8');
  const style=fs.readFileSync('public/pawsibly-innocent/single-screen.css','utf8');
- assert.ok(html.includes('id="restart"'),'A compact replay trigger must remain above the board');
+ assert.ok(html.includes('id="restart"'),'Replay trigger must remain in the game menu');
  assert.ok(html.includes('data-tab-panel="replay"'),'The two replay choices must live in the existing menu');
  assert.ok(html.includes('id="retryRoomAction"')&&html.includes('id="resetGameQuick"'),'Both replay choices must be clear and accessible');
  assert.ok(style.includes('#restart.replay-menu-trigger')&&style.includes('.replay-choice-list'),'Both the small trigger and the replay choices need responsive styling');

@@ -23,6 +23,7 @@ async function check(game,width,mobile){
       else await page.locator('[data-random-world]').first().click();
       await page.waitForFunction(()=>!document.getElementById('play-view')?.classList.contains('hidden'));
     }
+    if(game==='pawsibly-innocent')await page.locator('#menuButton').click();
     const button=page.locator(mini?'#mw-mini-fullscreen':'#mw-fullscreen-toggle');
     await button.waitFor({state:'visible',timeout:15000});
     const surface=page.locator(mini?(game==='pocket-aquarium'?'.mw-mini-aquarium-frame':'.mw-mini-arcade-frame'):'.mw-immersive-target');
@@ -71,6 +72,7 @@ async function check(game,width,mobile){
         assert.ok(await page.locator('#play-view').isVisible(),'Story choices must remain playable');
       }
     }
+    if(game==='pawsibly-innocent')await page.locator('#menuButton').click();
     if(mobile)await button.tap();else await button.click();
     await page.waitForFunction(()=>!document.documentElement.classList.contains('mw-fs-active')&&!document.documentElement.classList.contains('mw-mini-fullscreen-on'));
     assert.equal(await button.getAttribute('aria-pressed'),'false','Exit must restore windowed play');

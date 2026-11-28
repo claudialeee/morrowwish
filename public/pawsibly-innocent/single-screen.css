@@ -1406,3 +1406,52 @@ html[data-mw-settings-game="pawsibly-innocent"] #stageControls #mw-fullscreen-to
  html:not(.cg-play) .single-screen-game #stage .in-game-actions #bonusQuickText{font-size:10px!important;line-height:1.1!important;flex:1 1 auto!important;min-width:0!important}
  html:not(.cg-play) .single-screen-game #stage .in-game-actions #bonusQuickProgress{flex:0 0 auto!important}
 }
+
+/* Compact game HUD / teach by doing, scoped to Pawsibly only. */
+html .single-screen-game #stage.stage .in-game-head-row{display:grid!important;grid-template-columns:minmax(0,1fr) max-content 44px!important;grid-template-areas:"room status tools"!important;align-items:center!important;gap:5px!important;padding:4px 5px!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
+html .single-screen-game #stage.stage .in-game-head-row .stage-left{grid-area:room!important;width:100%!important;min-width:0!important;max-width:none!important;gap:4px!important;align-items:center!important;align-self:center!important}
+html .single-screen-game #stage.stage .stage-left .sticker{flex:1 1 auto!important;width:auto!important;min-width:0!important;max-width:none!important;padding:3px 4px!important}
+html .single-screen-game #stage.stage #roomNum{font-size:11px!important;white-space:nowrap!important;line-height:1.15!important}
+html .single-screen-game #stage.stage #roomTag{font-size:13px!important;line-height:1.15!important;white-space:normal!important;overflow-wrap:normal!important;text-overflow:clip!important}
+html .single-screen-game #stage.stage #stageHome{box-sizing:border-box!important;width:34px!important;min-width:34px!important;max-width:34px!important;height:44px!important;min-height:44px!important;padding:0!important}
+html .single-screen-game #stage.stage #stageHomeLabel,html .single-screen-game #stage.stage #quickHelp,html .single-screen-game #stage.stage #menuButtonLabel{display:none!important}
+html .single-screen-game #stage.stage .in-game-head-row #heistStatus{grid-area:status!important;position:static!important;inset:auto!important;justify-self:center!important;align-self:center!important;max-width:none!important;width:auto!important;margin:0!important;padding:7px 6px!important;font:900 15px/1.2 system-ui,sans-serif!important;white-space:nowrap!important;letter-spacing:0!important;color:#fff!important;background:#594565!important}
+html .single-screen-game #stage.stage .in-game-head-row #stageControls{grid-area:tools!important;display:flex!important;align-self:center!important;justify-content:center!important;width:44px!important;min-width:44px!important;max-width:44px!important;gap:0!important;padding:0!important;margin:0!important}
+html .single-screen-game #stage.stage #stageControls #menuButton{box-sizing:border-box!important;width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;flex:0 0 44px!important;font-size:23px!important;padding:0!important}
+html .single-screen-game #stage.stage .in-game-guidance{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:3px!important;padding:3px 5px!important;align-items:stretch!important}
+html .single-screen-game #stage.stage .stealth-help{min-width:0!important;gap:2px!important}
+html .single-screen-game #stage.stage .guide-help{box-sizing:border-box!important;min-height:34px!important;height:auto!important;max-height:none!important;padding:4px 6px!important;background:#fff8e8!important;border:1px solid #d6a79b!important;border-left:4px solid #b76178!important;border-radius:8px!important}
+html .single-screen-game #stage.stage #visionTip{font-size:13px!important;line-height:1.3!important;font-weight:850!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-height:none!important;color:#63394f!important}
+html .single-screen-game #stage.stage #guardStatus{font-size:11px!important;min-height:0!important;line-height:1.2!important;margin:0!important}
+html .single-screen-game #stage.stage .in-game-actions{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr)!important;gap:4px!important;width:100%!important;max-width:none!important;margin:0!important;align-items:stretch!important}
+html .single-screen-game #stage.stage .in-game-actions #tool,html .single-screen-game #stage.stage .in-game-actions #wait,html .single-screen-game #stage.stage .in-game-actions #bonusQuick{box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:none!important;height:auto!important;min-height:44px!important;max-height:none!important;margin:0!important;padding:4px 6px!important;gap:4px!important;font-size:12px!important;line-height:1.2!important;white-space:normal!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;overflow:visible!important}
+html .single-screen-game #stage.stage .in-game-actions #tool{order:0!important}
+html .single-screen-game #stage.stage .in-game-actions #wait{order:1!important}
+html .single-screen-game #stage.stage .in-game-actions #waitLabel{display:inline!important;font-size:12px!important;white-space:normal!important}
+html .single-screen-game #stage.stage .in-game-actions #wait .wait-symbol{font-size:16px!important}
+html .single-screen-game #stage.stage .in-game-actions #bonusQuick{order:2!important;text-align:left!important;justify-content:space-between!important}
+html .single-screen-game #stage.stage #bonusQuickText{flex:1 1 auto!important;min-width:0!important;font-size:12px!important;white-space:normal!important;overflow:visible!important;overflow-wrap:anywhere!important;text-overflow:clip!important;max-height:none!important;line-height:1.2!important}
+html .single-screen-game #stage.stage #bonusQuickProgress{display:inline-flex!important;flex:0 0 auto!important;font-size:11px!important}
+html .single-screen-game #stage.stage .menu-utilities{display:flex!important;align-items:center!important;justify-content:center!important;flex-wrap:wrap!important;gap:5px!important;padding:4px!important;border-bottom:1px solid #ead9dc!important;flex:0 0 auto!important}
+html .single-screen-game #stage.stage #menuSettings #mw-game-settings{display:inline-flex!important;flex:0 0 auto!important;gap:4px!important;margin:0!important;z-index:auto!important}
+html .single-screen-game #stage.stage #menuSettings button{box-sizing:border-box!important;width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;padding:3px!important;border-radius:9px!important}
+html .single-screen-game #stage.stage #menuSettings #restart{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:3px!important;width:auto!important;min-width:72px!important;font-weight:800!important;color:#694568!important;background:#fff6f8!important;border:1px solid #d2b8d0!important}
+html .single-screen-game #stage.stage #menuSettings #restartLabel{display:inline!important;font-size:12px!important}
+html .single-screen-game #stage.stage #menuSettings #mw-fullscreen-toggle{font-size:0!important}
+html.cg-play .single-screen-game #stage.stage #menuSettings #mw-fullscreen-toggle,html.cg-play .single-screen-game #stage.stage #menuSettings .mw-settings-share{display:none!important}
+html .single-screen-game #stage.stage #wait.teach-wait{outline:2px solid #b078bd!important;outline-offset:1px;box-shadow:0 0 0 3px #d8bee7!important}
+html .single-screen-game #stage.stage .coach-spot{width:9%!important;box-shadow:0 0 0 2px #fff8c4,0 0 12px #c486b8!important;border:2px solid #b278ab!important}
+@media(max-width:620px) and (orientation:portrait){
+ html .single-screen-game #stage.stage .in-game-head-row #heistStatus{font-size:15px!important;padding:6px 4px!important}
+ html .single-screen-game #stage.stage .in-game-actions{grid-template-columns:1fr 1fr!important}
+ html .single-screen-game #stage.stage .in-game-actions #bonusQuick{grid-column:1/-1!important;min-height:34px!important}
+ html .single-screen-game #stage.stage .in-game-actions #tool,html .single-screen-game #stage.stage .in-game-actions #wait{min-height:44px!important}
+}
+@media(orientation:landscape) and (min-width:500px) and (max-height:500px){
+ html .single-screen-game #stage.stage .in-game-head-row{grid-template-columns:minmax(0,1fr) 44px!important;grid-template-areas:"room tools" "status status"!important;gap:2px!important;padding:2px!important}
+ html .single-screen-game #stage.stage .in-game-head-row #heistStatus{justify-self:start!important;font-size:15px!important;padding:4px 6px!important}
+ html .single-screen-game #stage.stage .in-game-actions{grid-template-columns:1fr 1fr!important;gap:3px!important}
+ html .single-screen-game #stage.stage .in-game-actions #bonusQuick{grid-column:1/-1!important}
+ html .single-screen-game #stage.stage .in-game-guidance{padding:3px!important;gap:2px!important}
+ html .single-screen-game #stage.stage #visionTip{font-size:12px!important;line-height:1.2!important}
+}

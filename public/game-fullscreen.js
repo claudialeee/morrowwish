@@ -5,7 +5,7 @@
   'use strict';
   const route=location.pathname.split('/').filter(Boolean)[0];
   const config={
-    'pawsibly-innocent':['#stage','#stageControls'],
+    'pawsibly-innocent':['#stage','#menuSettings'],
     'elsewhere':['#play-view','.play-utilities'],
     'tiny-town':['.app','.top-actions'],
     'cat-bond':['#stage','#stage'],
