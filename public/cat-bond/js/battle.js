@@ -7494,7 +7494,7 @@ class CaptureBattle {
 
     // ---- virtual joystick (touch) ----
     const joy = this.game.joystick;
-    if (joy && joy.active) {
+    if (joy && joy.active && !document.getElementById('battle-ui')?.classList.contains('touch-manual')) {
       ctx.save();
       ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(joy.ox, joy.oy, 46, 0, Math.PI * 2); ctx.stroke();

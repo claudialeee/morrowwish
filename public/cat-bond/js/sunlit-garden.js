@@ -89,7 +89,7 @@
     }
     if(ending){add('花园复兴','Garden Restoration',()=>window.GardenProjects?.open?.());add('继续探索','Continue exploring',()=>game.openWorldMap());if(guests.pages>1){add('下一批访客 '+(guestPage+1)+'/'+guests.pages,'Next visitors '+(guestPage+1)+'/'+guests.pages,()=>{guestPage=(guestPage+1)%guests.pages;guideKey='';refreshGuide()});row.lastElementChild.dataset.guestPage=String(guestPage);}}
     if(departure){
-      title.textContent=en?'Find your name':'寻找自己的名字';hint.textContent=en?'Look for clues in the garden, or follow the trail to Windchime Town.':'在花园找找线索，或去风铃镇打听。';
+      title.textContent=en?'Find out why you lost your memory':'弄清自己为什么失忆';hint.textContent=en?'Look for clues in the garden, or follow the trail to Windchime Town.':'在花园找找线索，或去风铃镇打听。';
       guide.classList.add('sg-minimal-opening');
       add('下一场景 · 风铃镇','Next scene · Windchime Town',()=>{game.openWorldMap();if(game.scene==='map')window.WorldMap?.enterRegion?.('harbor')});
       row.firstElementChild.classList.add('sg-main-continue');
@@ -100,20 +100,20 @@
   }
   function refreshOpeningQuest(v){
     const en=isEnglish(),p=window.GardenExploration?.read?.(state()),met=!!v.openingMet;
-    const phase=met?'depart':!p?.chartStarted?'meet':!p.parts.includes(0)?'chart':!p.chartEcho?'bell':'return';
+    const phase=met?'depart':'meet';
     const key='opening|'+phase+'|'+en;
     if(key===guideKey)return;guideKey=key;openingQuestOpen=false;
     guide.classList.remove('sg-minimal-opening','sg-postgame-guide');guide.classList.add('sg-opening-quest');
     guide.replaceChildren();
-    const toggle=document.createElement('button');toggle.type='button';toggle.className='sg-quest-toggle';toggle.textContent=en?'Main quest':'主线任务';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','sg-opening-quest-detail');
+    const toggle=document.createElement('button');toggle.type='button';toggle.className='sg-quest-toggle';toggle.textContent=met?(en?'Find Alder in Windchime Town':'去风铃镇找檐灯'):(en?'Find out why you lost your memory':'弄清自己为什么失忆');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','sg-opening-quest-detail');
     const detail=document.createElement('div');detail.id='sg-opening-quest-detail';detail.className='sg-quest-detail';detail.hidden=true;
     const title=document.createElement('strong'),hint=document.createElement('span'),row=document.createElement('div');detail.append(title,hint,row);
     const copy={
-      meet:['和陌生猫聊聊','Talk to the stranger','花园里有一只陌生猫，去看看它想说什么。','A stranger is in the garden. See what they have to say.'],
+      meet:['弄清自己为什么失忆','Find out why you lost your memory','问问花园里的猫，再去风铃镇找檐灯。','Talk to the cat in the garden, then find Alder in Windchime Town.'],
       chart:['找回飞走的航图','Find the windblown chart','寻找被风吹走的航图片段。','Look for the chart piece carried off by the wind.'],
       bell:['看看旧铃','Investigate the old bell','旧铃突然响了，去看看发生了什么。','The old bell suddenly rang. Go see what happened.'],
       return:['回去找陌生猫','Return to the stranger','把旧铃的奇怪回应告诉那只猫，听它把话说完。','Tell the stranger how the bell answered and hear them out.'],
-      depart:['寻找自己的名字','Find your name','暮铃说风铃镇也许有线索。准备好再出发，也可以继续在花园探索。','Luna says there may be a clue in Windchime Town. Leave when ready, or keep exploring the garden.']
+      depart:['弄清自己为什么失忆','Find out why you lost your memory','檐灯收着巡铃图。去风铃镇找他。','Alder has your patrol map. Find him in Windchime Town.']
     }[phase];
     title.textContent=copy[en?1:0];hint.textContent=copy[en?3:2];
     const close=()=>{openingQuestOpen=false;detail.hidden=true;toggle.setAttribute('aria-expanded','false');};
@@ -149,7 +149,7 @@
     if(!width||!height||!r.width||!r.height)return;
     const b=getTalkMarker(npc),en=isEnglish(),raw=npc.name,profileName=typeof raw==='string'?raw:raw?.[en?'en':'zh'];
     const label=npc.id==='muling'&&window.CatBondResonance?.view?.().current?.id==='prologue:P-05'?(en?'Stranger':'陌生猫'):(profileName||npc.id);
-    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const progress=window.GardenExploration?.read?.(state()),main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.id==='prologue:P-05'?(!v.openingMet&&(!progress?.chartStarted||!!progress?.chartEcho)):(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length);b.dataset.questPrimary=String(main);b.title=main?(en?'Main quest':'主线任务'):'';if(!main&&!v?.ending&&npc.id!=='muling'&&!game.yardNear?.(x,y,.25)){b.hidden=true;return;}b.hidden=false;
+    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const progress=window.GardenExploration?.read?.(state()),main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.id==='prologue:P-05'?(!v.openingMet):(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length);b.dataset.questPrimary=String(main);b.title=main?(en?'Main quest':'主线任务'):'';if(!main&&!v?.ending&&npc.id!=='muling'&&!game.yardNear?.(x,y,.25)){b.hidden=true;return;}b.hidden=false;
     if(cell){b.style.left=cell.x+'px';b.style.top=cell.box.bottom+'px';return;}
     const px=canvasRect.left-r.left+x/width*canvasRect.width,py=canvasRect.top-r.top+(y-112*scale)/height*canvasRect.height;
     const bw=Math.max(44,b.offsetWidth||72),bh=Math.max(44,b.offsetHeight||44);

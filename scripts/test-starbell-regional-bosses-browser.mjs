@@ -77,7 +77,43 @@ try{
     if(await page.locator('#battle-help-start').isVisible())await press(page.locator('#battle-help-start'));
     // A real manual input followed by real retreat; no manufactured victory.
     const canvas=page.locator('#scene'),r=await canvas.boundingBox();
-    if(portrait){const session=await context.newCDPSession(page);const x=r.x+r.width*.40,y=r.y+r.height*.55;await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+35,y:y+20}]});await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}
+    if(portrait){
+     const session=await context.newCDPSession(page);
+     for(const viewport of [{width:390,height:844},{width:844,height:390}]){
+      await page.setViewportSize(viewport);await page.waitForTimeout(200);
+      const pad=page.locator('#battle-touch-joystick'),bar=page.locator('.move-bar'),p=await pad.boundingBox(),a=await bar.boundingBox(),stage=await page.locator('#stage').boundingBox();
+      assert.ok(p&&a&&stage,'Both thumb controls visible');
+      assert.ok(p.x+p.width<a.x&&p.x<stage.x+stage.width*.30,'Left joystick does not intersect right skills');
+      assert.ok(a.x>stage.x+stage.width*.40&&a.x+a.width<=stage.x+stage.width+1,'Right actions remain within safe area');
+      for(const id of ['mv-basic','mv-q','mv-e','mv-lock','mv-dodge','ult-btn']){const b=await page.locator('#'+id).boundingBox();assert.ok(b&&b.width>=43&&b.height>=43,id+' has thumb-sized target');}
+      const x=p.x+p.width/2,y=p.y+p.height/2;
+      await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:0}]});
+      await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+35,y:y-12,id:0}]});
+      assert.ok(await page.evaluate(()=>__game.joystick.active&&__game.joystick.dx>.2),'Joystick moves while active');
+      const basic=await page.locator('#mv-basic').boundingBox(),bx=basic.x+basic.width/2,by=basic.y+basic.height/2;
+      const before=await page.evaluate(()=>({auto:__game.touchAutoFire,id:__game.joystick.id,dx:__game.joystick.dx}));
+      await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:bx,y:by,id:1}]});
+      await page.waitForFunction(auto=>__game.touchAutoFire!==auto,before.auto,{timeout:3000});
+      assert.ok(await page.evaluate(b=>__game.joystick.active&&__game.joystick.id===b.id&&__game.joystick.dx>.2,before),'Right action actually fires while left thumb remains held');
+      // Chromium's legacy CDP dispatch uses the RELEASED touch id here, not the
+      // remaining active id. Releasing id 0 would explicitly lift the left thumb.
+      await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[{x:bx,y:by,id:1}]});
+      assert.ok(await page.evaluate(b=>__game.joystick.active&&__game.joystick.id===b.id&&__game.joystick.dx>.2,before),'Right thumb release must not cancel left movement');
+      await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+39,y:y-15,id:0}]});
+      assert.ok(await page.evaluate(()=>__game.joystick.active&&__game.joystick.dx>.2),'Left thumb continues to move after right release');
+      if(viewport.width===390){
+       await page.waitForFunction(()=>__game.battle.me().cd.q<=0);
+       const q=await page.locator('#mv-q').boundingBox(),qx=q.x+q.width/2,qy=q.y+q.height/2;
+       await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:qx,y:qy,id:2}]});
+       await page.waitForFunction(()=>__game.battle.me().cd.q>0,undefined,{timeout:3000});
+       await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[{x:qx,y:qy,id:2}]});
+       assert.ok(await page.evaluate(()=>__game.joystick.active&&__game.joystick.dx>.2),'Q skill casts and enters cooldown without cancelling left thumb');
+      }
+      await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+      assert.equal(await page.evaluate(()=>__game.joystick.active),false,'Release stops movement');
+     }
+     await page.setViewportSize({width:390,height:844});
+    }
     else{await page.keyboard.down('d');await page.waitForTimeout(150);await page.keyboard.up('d');}
     await press(page.locator('#btn-flee'));await page.waitForFunction(()=>__game.scene==='map');
     assert.equal(await page.evaluate(()=>State.S.coins),500);
@@ -102,7 +138,7 @@ try{
    assert.equal(result.done,true);assert.equal(result.result,'win',JSON.stringify(result));
    await page.waitForFunction(()=>__game.scene==='map');
    const after=await page.evaluate(({c,key})=>({coins:State.S.coins,fish:State.S.fish,recorded:c.optional?!!State.S.resonanceExploration.interactions[key]:State.S.resonance.evidence[c.scene]?.includes(c.op),region:WorldMap.currentRegion,publicKeys:['catbond_save_v1','catbond_save_slots_v1','catbond_active_slot_v1'].map(k=>localStorage.getItem(k)),mapSize:(()=>{const r=document.querySelector('.rw-surface')?.getBoundingClientRect();return r&&{w:r.width,h:r.height}})()}),{c,key:bossKey(c.id)});
-   const reward=bossReward(c.id,{interactions:{}});assert.equal(after.coins,500+reward[0]);assert.equal(after.fish,20+reward[1]);assert.equal(after.recorded,true);assert.equal(after.region,c.region);assert.ok(after.publicKeys.every(x=>x===null));assert.ok(after.mapSize?.w>0&&after.mapSize?.h>0);
+   const reward=bossReward(c.id,{interactions:{}});assert.equal(after.coins,500+reward[0]);assert.equal(after.fish,20+reward[1]);assert.equal(after.recorded,true);assert.equal(after.region,c.region);assert.ok(after.publicKeys.every(x=>x===null));assert.ok(after.mapSize?.w>0&&after.mapSize?.h>0);assert.equal(after.mapSize.h>after.mapSize.w,portrait,'Battle exit preserves selected layout');
    if(c.id==='forest'){
     await page.evaluate(()=>{CatBondResonance.close();UI.closeAll();});await open();await press(page.locator('[data-battle-auto="true"]'));await press(page.locator('#bp-go'));
     await page.waitForFunction(()=>__game.battle?.libraryEncounter?.bossId==='forest');

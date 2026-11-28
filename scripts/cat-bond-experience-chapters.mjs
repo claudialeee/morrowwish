@@ -19,7 +19,7 @@ const labels=Object.freeze({
   "Tide cave logbook": "潮洞日志",
   "Storm boat": "遇险小船",
   "Lighthouse mirrors": "灯塔反射镜",
-  "Chase the runaway chime": "穿过风铃巷",
+  "Repair the road signs": "修好路标",
   "Take shortcut": "抄近路",
   "Belltongue Beast": "铃舌兽",
   "Town bell sanctuary": "古铃圣所",
@@ -174,7 +174,7 @@ async function run(chapter){
   if(locale==='zh')localeIssues.push(...await inspectLocale(page,locale,chapter+':action:'+label));
   steps.push({scene:(await view()).current?.id,action:label});await activate(b);
  }
- async function trial(id,actions){const modal=page.locator("[data-adventure=trial-"+id+"]");await modal.waitFor({state:"visible",timeout:15000});for(const a of actions)await modal.locator("[data-play-action="+a+"]").click();assert.equal(await modal.getAttribute("data-complete"),"true");await shot("trial-"+id);await modal.getByRole("button",{name:local("Return"),exact:true}).click();await modal.waitFor({state:"detached"});}
+ async function noForcedTrial(id){await page.waitForTimeout(350);assert.equal(await page.locator('[data-adventure="trial-'+id+'"]').count(),0,'Recruitment must not interrupt the adventure with practice');assert.ok(await page.evaluate(id=>State.S.cats.some(c=>c.storyActor===id)&&!!window.CatBondTalentPractice?.talents?.[id],id),'Recruited companion retains the battle talent');}
  const op=async(id)=>page.waitForFunction(op=>!CatBondResonance.view().objective.includes(op),id,{timeout:35000});
  async function talk(npc){
   const before=await view();
@@ -184,7 +184,7 @@ async function run(chapter){
   else if(before.current?.lines.length)await page.locator('.res-host[data-scene="'+before.current.id+'"]').waitFor();
  }
  async function dialogue(id,choice){
-  const dlg=page.locator('.res-host[data-scene="'+id+'"]');
+  const dlg=page.locator('.res-host[data-scene="'+id+'"]');let dialogueCamera=null;
   for(let i=0;i<50;i++){
    const v=await view();if(v.current?.id!==id)return;
    const canChoose=!v.choice&&v.current.choices.length>0&&(v.current.choiceTiming==='beforeAction'||v.cursor===(v.current.choiceAt??v.current.lines.length));
@@ -199,6 +199,9 @@ async function run(chapter){
     }
     await dlg.waitFor();
    }
+   const camera=await page.evaluate(()=>{const c=document.querySelector('.rw-world:not([hidden]) .rw-surface');return c&&WorldMap.mode==='region'?{region:WorldMap.currentRegion,transform:c.dataset.camera}:null;});
+   if(camera?.transform&&JSON.parse(camera.transform)[0]>1){if(dialogueCamera?.region===camera.region)assert.equal(camera.transform,dialogueCamera.transform,'NPC dialogue must not reset the exploration camera');else dialogueCamera=camera;}
+   if(dialogueCamera&&camera?.region===dialogueCamera.region)assert.equal(camera.transform,dialogueCamera.transform,'Dialogue cannot jump to overview');
    if(canChoose){const selected=v.current.choices.find(c=>c.label.en===choice)||v.current.choices[0];await click(selected.label[locale],dlg,true);await page.waitForFunction(({id,choice})=>CatBondResonance.view().current?.id!==id||CatBondResonance.view().choice===choice,{id,choice:selected.id});continue;}
    const line=v.current.lines[v.cursor];
    await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text[locale]);
@@ -407,18 +410,17 @@ async function run(chapter){
   await page.waitForFunction(l=>document.documentElement.lang.startsWith(l),locale);
   if(continuous&&!earnedSave){
    assert.equal(chapter,'harbor');await page.locator('#intro-start').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene('prologue:P-05');
+   const letter=page.locator('#cb-opening-letter');await letter.waitFor({state:'visible'});assert.match(await letter.innerText(),locale==='zh'?/六座古铃没修好/:/until all six local bells are repaired/);
    await page.locator('#cb-player-first-intro').getByRole('button',{name:local('Start exploring'),exact:true}).click();
    // Start from a new slot, no fixture or direct state mutation.
-   if(locale==='zh'){
-    await shot('prologue-intro');
-    await page.locator('[data-npc-talk="muling"]').click();const encounter=page.locator('#cb-traveler-encounter');
-    await encounter.getByRole('button',{name:'寻找航图',exact:true}).click();await encounter.waitFor({state:'detached'});
-    for(const id of ['chart-0','chart-echo','chart-1']){await page.locator('[data-garden-explore="'+id+'"]').click();await page.waitForFunction(id=>{const s=GardenExploration.read(State.S);return id==='chart-echo'?s.chartEcho:s.parts.includes(Number(id.at(-1)));},id);await shot('prologue-'+id);}
-    await page.locator('[data-npc-talk="muling"]').click();await shot('prologue-encounter');
-    await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'回答',exact:true}).click();assert.match(await encounter.locator('.res-line').innerText(),/我也不知道/);await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'告别',exact:true}).click();
-    await encounter.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);await shot('prologue-garden');
-   }
-   await page.locator('.sg-prologue-guide .sg-quest-toggle').click();await page.locator('.sg-prologue-guide').getByRole('button',{name:locale==='zh'?/下一场景/:/^Skip this encounter$/}).click();await scene(start);
+   await shot('prologue-intro');
+   assert.equal(await page.locator('[data-garden-explore^="chart-"]:visible').count(),0,'No compulsory chart or singing-bell hunt');
+   await page.locator('[data-npc-talk="muling"]').click();const encounter=page.locator('#cb-traveler-encounter');await encounter.waitFor();
+   await shot('prologue-encounter');
+   for(let i=0;i<6;i++)await encounter.getByRole('button',{name:local('Continue'),exact:true}).click();
+   await encounter.getByRole('button',{name:locale==='zh'?'告别':'Say goodbye',exact:true}).click();
+   await encounter.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);await shot('prologue-garden');
+   await page.locator('.sg-prologue-guide .sg-quest-toggle').click();await page.locator('.sg-prologue-guide').getByRole('button',{name:locale==='zh'?/下一场景/:/Next scene/}).click();await scene(start);
   }else{await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene(start);}
   assert.ok(start==='epilogue:E-01'||!(await view()).completed.includes(start),'Chapter start is not already completed');
   await page.waitForFunction(()=>['map','yard'].includes(__game.scene));
@@ -444,14 +446,15 @@ async function run(chapter){
   }
   if(chapter==='harbor'){
    await talk('Qilan');await dialogue('harbor:H-01');await scene('harbor:H-02');
-   await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();if(portrait){await page.waitForFunction(()=>document.querySelector('.rw-world')?.dataset.artReady==='true');for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){await page.setViewportSize(viewport);await page.waitForFunction(()=>{const e=document.querySelector('.rw-chase-mode .rw-surface'),r=e?.getBoundingClientRect(),s=e?.parentElement?.getBoundingClientRect();return !!r&&!!s&&r.height>=s.height-2&&r.width>=s.width-2&&r.height>r.width;});await page.screenshot({path:out+'/portrait-chase-'+viewport.width+'.png'});}await page.setViewportSize({width:390,height:844});}
-   const follow=page.locator('[data-chase-follow]'),shortcut=page.locator('[data-chase-shortcut]');await activate(follow);await page.waitForFunction(()=>!document.querySelector('[data-chase-follow]')?.disabled);if(portrait)await activate(shortcut);else await activate(follow);await page.waitForFunction(()=>!document.querySelector('[data-chase-follow]')?.disabled);await activate(follow);await page.waitForFunction(()=>{const el=document.querySelector('[data-chase-follow]');return el&&!el.disabled&&/Pounce|扑住/.test(el.textContent);});await activate(follow);await chase.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');
+   await click('Repair the road signs');const bells=page.locator('[data-spatial="bellPattern"]');await bells.waitFor();
+   for(const glyph of ['☾','☀','✦'])await activate(bells.getByRole('button',{name:new RegExp(glyph)}));
+   await bells.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');
    await talk('Yandeng');await dialogue('harbor:H-03');await scene('harbor:H-04');
    await battle('Belltongue Beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
-   await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');await trial('qilan',['deploy','cast']);
+   await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');await noForcedTrial('qilan');
   }else if(chapter==='forest'){
-   await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');await trial('yahe',['deploy','escort']);
-   await puzzle('Moonleaf bridge',['Fork','Roots','Free the trapped kitten','Far bank']);await dialogue('forest:R-02');await scene('forest:R-03');
+   await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');await noForcedTrial('yahe');
+   await puzzle('Moonleaf bridge',['Fork','Turn moonleaf','Roots','Free the trapped kitten','Far bank']);await dialogue('forest:R-02');await scene('forest:R-03');
    await dialogue('forest:R-03');await scene('forest:R-04');
    await restore('Ancient-root sanctuary',['Upstream','Branch','Roots'],['Yahe','Yuchuan'],'Living Roots',[mid,low,high]);await dialogue('forest:R-04');
   }else if(chapter==='forge'){
@@ -459,7 +462,7 @@ async function run(chapter){
    await click('Play the shadow theater');const festival=page.locator('.rw-festival-card');await festival.waitFor();assert.equal(await page.locator('.rw-dedicated-rail:visible').count(),0,'Festival must be a story scene, not a control rail');assert.equal(await festival.locator('button').count(),4);await click('Cat',festival);assert.equal(await festival.getByRole('button',{name:local('Cat'),exact:true}).getAttribute('aria-pressed'),'true');await shot('festival-story');const originalFestivalViewport=page.viewportSize();for(const viewport of [{width:390,height:844},{width:844,height:390},originalFestivalViewport]){await page.setViewportSize(viewport);await festival.waitFor();const fit=await festival.evaluate(el=>{const r=el.getBoundingClientRect(),s=document.querySelector('#stage').getBoundingClientRect();return {inside:r.left>=s.left-1&&r.right<=s.right+1&&r.top>=s.top-1&&r.bottom<=s.bottom+1,buttons:[...el.querySelectorAll('button')].map(b=>{const q=b.getBoundingClientRect();return q.height>=44&&q.width>=44&&q.left>=s.left-1&&q.right<=s.right+1&&q.bottom<=s.bottom+1;})}});assert.ok(fit.inside&&fit.buttons.every(Boolean),'Festival story controls must fit '+JSON.stringify(viewport));await shot('festival-'+viewport.width);}await click('Finish the show',festival);await festival.waitFor({state:'hidden'});assert.ok(!(await view()).objective.includes('puzzle:lantern-show'),'Theater is optional, not campaign evidence');
    await puzzle('Find three hiding shadow cats',['Light left','Light center','Light right','Follow the escaping shadows']);await dialogue('forge:E-02');await scene('forge:E-03');
    await battle('Shadow beast','battle:shadow-beast');await dialogue('forge:E-03');await scene('forge:E-04');
-   await restore('Lantern sanctuary',['Turn left light','Turn center light','Turn right light'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');await trial('xiaomao',['deploy','warn','impact']);
+   await restore('Lantern sanctuary',['Turn left light','Turn center light','Turn right light'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');await noForcedTrial('xiaomao');
   }else if(chapter==='sky'){
    await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
    await click('Find the moon gate · Cloud route');await op('explore:flight-recorder');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
@@ -469,7 +472,7 @@ async function run(chapter){
   }else if(chapter==='library'){
    await talk('Baikan');await dialogue('library:M-01');await scene('library:M-02');
    await libraryEcho();await dialogue('library:M-02');await battle('Mirror Guardian','battle:mirror-guardian');await dialogue('library:M-02');await restore('Moonmirror sanctuary');await dialogue('library:M-02');await scene('library:M-03');assert.ok((await view()).melodies.includes('library'),'Library must answer before the identity reveal');
-   await talk('Muling');await dialogue('library:M-03','I feel hurt');await scene('library:M-04');await puzzle('Public records · Investigation',['Ask about the borrowed map']);await dialogue('library:M-04','I need some distance');await scene('library:M-05');
+   await talk('Muling');await dialogue('library:M-03',"You've been keeping this from me");await scene('library:M-04');await puzzle('Public records · Investigation',['Ask about the borrowed map']);await dialogue('library:M-04','I need some space');await scene('library:M-05');
    await talk('Moye');await click('Six-region model · Compare the two routes');const routes=page.locator('.rw-puzzle-controls');await routes.waitFor();await checkPuzzleLayout();const surface=page.locator('.rw-surface'),box=await surface.boundingBox();assert.ok(box);await click('Watch two possible futures',routes);await page.getByText(local('Routes explored 1/2'),{exact:true}).waitFor();await page.evaluate(async()=>{const img=new Image();img.src='assets/story-art/library-shared-memories.jpg';await img.decode();});await shot('route-inward');await page.getByText(local('Routes explored 2/2'),{exact:true}).waitFor();await artProfiles('route-neighbors',surface,page.getByRole('button',{name:local('Continue story')}));await click('Continue story',routes);await dialogue('library:M-05');
   }else if(chapter==='starfall'){
    await talk('Lichuan');await talk('Xingya');await puzzle('Walk on starlight',['Jump to stone 2','Jump to stone 4','Jump to stone 6','Jump to stone 8']);await dialogue('starfall:F-01');await scene('starfall:F-02');

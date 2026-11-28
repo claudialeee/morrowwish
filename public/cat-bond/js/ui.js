@@ -97,16 +97,16 @@ const UI = {
     // standalone info control displays descriptions without casting.
     document.querySelectorAll('.move-bar .move').forEach(btn=>{
       const slot=btn.dataset.move==='ult'?'ult':btn.dataset.move;
-      btn.addEventListener('mouseenter',()=>this.game.showBattleSkillTooltip(slot));
+      btn.addEventListener('mouseenter',()=>{if(!this.game.isTouch)this.game.showBattleSkillTooltip(slot);});
       btn.addEventListener('mouseleave',()=>this.game.hideBattleSkillTooltip(slot));
-      btn.addEventListener('focus',()=>this.game.showBattleSkillTooltip(slot));
+      btn.addEventListener('focus',()=>{if(!this.game.isTouch)this.game.showBattleSkillTooltip(slot);});
       btn.addEventListener('blur',()=>this.game.hideBattleSkillTooltip(slot));
     });
     document.getElementById('battle-skill-info-toggle')?.addEventListener('click',()=>this.game.toggleBattleSkillGuide());
     document.getElementById('battle-skill-guide-close')?.addEventListener('click',()=>this.game.toggleBattleSkillGuide(false));
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
-      btn.addEventListener('click', () => {
+      const activate = () => {
         const b = this.game.battle; if (!b || this.game.battleHelpOpen) return;
         const m = btn.dataset.move;
         if(m==='lock'){
@@ -120,7 +120,16 @@ const UI = {
           return;
         }
         if (m === 'dodge') b.dodge(); else b.castMove(m);
-      });
+      };
+      // A second finger may not generate a compatibility click while the movement
+      // finger is held. Execute the touch action on its own touchstart, without
+      // cancelling the canvas touch; keyboard/mouse retain native click behavior.
+      let lastTouch=-Infinity;
+      btn.addEventListener('touchstart', e => {
+        if(this.game.scene!=='battle'||!this.game.isTouch||!e.changedTouches.length)return;
+        e.preventDefault();e.stopPropagation();lastTouch=performance.now();activate();
+      },{passive:false});
+      btn.addEventListener('click',e=>{if(e.detail!==0&&performance.now()-lastTouch<700)return;activate();});
     });
     if(!document.getElementById('battle-touch-joystick')){
       const pad=document.createElement('div');
@@ -1752,6 +1761,7 @@ const UI = {
         :en?(traitNamesEn[cat.trait]||'Unknown')
         :(window.Raising?.TRAITS?.[cat.trait]?.name||'未知'))
       :null;
+    const talent=window.CatBondTalentPractice?.talents?.[cat.storyActor||sp.storyActor];
     const facts=this.battleCatFacts(cat);
     const primary=window.Skills?.elementOf?.(cat.species)||'light';
     const secondary=window.Skills?.secondaryOf?.(cat)||null;
@@ -1772,6 +1782,7 @@ const UI = {
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${facts.rarity}">◆${facts.rarityLabel}</span> ${sp.storyActor?'<span class="tiny">'+(en?'Story companion':'剧情伙伴')+'</span>':''} <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
+      ${talent?`<section class="cat-skill-roadmap" data-companion-talent><strong>${en?"Battle talent":"战斗专长"} · ${talent.name[en?1:0]}</strong><p>${talent.description[en?1:0]}</p><small>${en?"Triggers automatically in regional battles when this companion is in the active party.":"伙伴上阵时，在地区战斗中自动触发。"}</small><button type="button" id="cd-talent-practice" class="btn ghost">${en?"Optional practice":"可选专长练习"}</button></section>`:""}
       ${window.Skills?.breedPassive?.(sp.id)?(()=>{const p=Skills.breedPassive(sp.id),k=window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";return `<p class="cat-skill-roadmap" data-breed-passive="${sp.id}"><strong>${k==="zh"?"专属被动":"Breed passive"} · ${p.name[k]}</strong> · ${p.desc[k]}</p>`;})():""}
       ${window.Skills?'<p class="cat-skill-roadmap">✨ '+Skills.progressionHint(cat)+'</p>':''}
       ${State.S.masteryBadges?.[sp.id]
@@ -1850,6 +1861,7 @@ const UI = {
         </details>
       </div>
       <button type="button" class="cb-grow-skills" id="cd-skills">📖 查看与搭配技能 <span aria-hidden="true">›</span></button>`;
+    const practice=document.getElementById("cd-talent-practice");if(practice)practice.onclick=()=>{const id=cat.storyActor||sp.storyActor;this.closeAll();window.CatBondTalentPractice?.open(id);};
     // animated preview
     const cv = document.getElementById('cd-canvas');
     const cx = cv.getContext('2d');

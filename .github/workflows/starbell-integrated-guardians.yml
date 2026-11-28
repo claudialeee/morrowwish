@@ -4,14 +4,140 @@ on:
     branches: [review/starbell-integrated-guardians-20261127]
   pull_request:
     branches: [review/starbell-canon13-player-experience]
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Acceptance scope
+        type: choice
+        options: [focused, release, talent]
+        default: focused
 permissions:
   contents: read
 concurrency:
   group: starbell-integrated-guardians-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  scope:
+    if: github.event_name != 'pull_request' || github.head_ref == 'fix/starbell-quality-dialogue-20261127' || github.head_ref == 'fix/starbell-bell-pattern-camera-20261127'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      mode: ${{ steps.scope.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: scope
+        env:
+          EVENT: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
+          LABEL: ${{ github.event.label.name }}
+          REQUESTED: ${{ inputs.scope }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          mode=source
+          if [[ "$EVENT" == push || "$REQUESTED" == release || "$LABEL" == starbell-release-acceptance ]]; then
+            mode=release
+          elif [[ "$REQUESTED" == talent || "$LABEL" == starbell-talent-qa ]]; then
+            mode=talent
+          elif [[ "$REQUESTED" == focused || "$LABEL" == starbell-focused-qa || "$ACTION" == opened || "$ACTION" == reopened ]]; then
+            mode=focused
+          elif [[ "$ACTION" == synchronize && -n "$BEFORE" && -n "$AFTER" ]]; then
+            if ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then git fetch --no-tags --depth=1 origin "$BEFORE"; fi
+            if ! git diff --quiet "$BEFORE" "$AFTER" -- .github/workflows/starbell-integrated-guardians.yml; then
+              mode=talent
+            fi
+          fi
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "Acceptance scope: $mode"
+  source:
+    needs: scope
+    if: needs.scope.outputs.mode != 'release'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Quick source and dialogue validation
+        run: |
+          set -euo pipefail
+          for file in public/cat-bond/js/resonance/*.mjs; do node --check "$file"; done
+          node scripts/starbell-dialogue-choices-quality.mjs
+          node scripts/test-cat-bond-canon22-locale-purity.mjs
+      - name: Functional source regression
+        if: needs.scope.outputs.mode == 'focused'
+        run: |
+          set -euo pipefail
+          node scripts/starbell-dialogue-choices-quality.mjs
+          node scripts/test-starbell-quality-orbits.mjs
+          node scripts/test-cat-bond-canon22-locale-purity.mjs
+          node scripts/test-starbell-regional-bosses.mjs
+          node scripts/test-starbell-guardian-balance.mjs
+          node scripts/test-cat-bond-canon22-combat-migration.mjs
+          node scripts/test-cat-bond-canon22-spatial.mjs
+          node scripts/test-cat-bond-canon22-glide.mjs
+          node scripts/test-starbell-telemetry.mjs
+  focused:
+    needs: [scope, source]
+    if: (needs.scope.outputs.mode == 'focused' || needs.scope.outputs.mode == 'talent') && needs.source.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [wide, portrait]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium once
+        run: |
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install chromium
+      - name: Focused browser regression (no continuous campaign)
+        env:
+          ACCEPTANCE_MODE: ${{ needs.scope.outputs.mode }}
+          STARBELL_BOSS_PROFILE: ${{ matrix.profile }}
+          STARBELL_MINIGAME_PROFILE: ${{ matrix.profile }}
+          STARBELL_FOCUS_PROFILE: ${{ matrix.profile }}
+          CAT_BOND_CHAPTER_LOCALE: ${{ matrix.profile == 'portrait' && 'zh' || 'en' }}
+          CAT_BOND_PORTRAIT: ${{ matrix.profile == 'portrait' && '1' || '0' }}
+          CAT_BOND_EXPERIENCE: '1'
+          CAT_BOND_CONTINUOUS: '0'
+        run: |
+          set -euo pipefail
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-integration.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          failed=0
+          tests='test-starbell-regional-bosses-browser test-starbell-player-first-browser test-starbell-garden-camera test-starbell-finale-framing-farwind test-starbell-talent-practice-browser'
+          if [[ "$ACCEPTANCE_MODE" == talent ]]; then tests='test-starbell-talent-practice-browser'; fi
+          for test in $tests; do
+            echo "::group::$test"
+            timeout 180s node "scripts/$test.mjs" || failed=1
+            echo "::endgroup::"
+          done
+          exit "$failed"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-focused-${{ matrix.profile }}
+          path: |
+            artifacts/cat-bond-experience/
+            /tmp/starbell-integration.log
+          if-no-files-found: warn
+          retention-days: 7
   integrated:
-    if: github.event_name == 'push' || github.head_ref == 'fix/starbell-quality-dialogue-20261127'
+    needs: scope
+    if: needs.scope.outputs.mode == 'release'
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     strategy:
@@ -60,6 +186,7 @@ jobs:
           node scripts/test-starbell-player-first-browser.mjs
           node scripts/test-starbell-garden-camera.mjs
           node scripts/test-starbell-finale-framing-farwind.mjs
+          node scripts/test-starbell-talent-practice-browser.mjs
           node scripts/cat-bond-experience-chapters.mjs
       - uses: actions/upload-artifact@v4
         if: always() && github.event_name == 'push'
@@ -70,3 +197,4 @@ jobs:
             /tmp/starbell-integration.log
           if-no-files-found: warn
           retention-days: 14
+

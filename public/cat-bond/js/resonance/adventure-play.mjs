@@ -20,7 +20,7 @@ export function trialAction(s,a){
  return false;
 }
 let active=null;
-function css(){if(document.getElementById("cb-adventure-play-css"))return;const l=el("link");l.id="cb-adventure-play-css";l.rel="stylesheet";l.href=new URL("../../css/adventure-play.css",import.meta.url).href;document.head.append(l);}
+function css(){if(document.getElementById("cb-adventure-play-css"))return;const l=el("link");l.id="cb-adventure-play-css";l.rel="stylesheet";l.href=new URL("../../css/adventure-play.css?v=talent-effects-20261127",import.meta.url).href;document.head.append(l);}
 function stage(){return document.getElementById("stage");}
 function mount({id,region,title,help,draw,reset,commit,guard,portrait,kind}){
  if(active||!stage())return false;css();
@@ -36,34 +36,59 @@ function mount({id,region,title,help,draw,reset,commit,guard,portrait,kind}){
  function dispose(){if(active!==root)return;active=null;root.remove();locked.forEach(x=>x.inert=false);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("pagehide",dispose);clearInterval(timer);if(previous?.isConnected)previous.focus({preventScroll:true});}
  function finish(){done=true;if(!committed){const r=commit?.();if(r===false||r?.ok===false){fail=true;render();return;}committed=true;window.MorrowwishAudio?.effect?.("discover");}render();}
  const button=(text,action,opts={})=>{const b=el("button",opts.className||"",tr(text));b.type="button";if(opts.id)b.dataset.playAction=opts.id;b.disabled=!!opts.disabled;b.onclick=()=>{if(!live()){dispose();return;}if(action()===true)finish();else render();};return b;};
- function render(){if(!live()){dispose();return;}h.textContent=tr(title);root.setAttribute("aria-label",h.textContent);close.textContent=tr(done&&committed?pair("返回","Return"):pair("暂时离开","Leave for now"));hint.textContent=tr(help);retry.textContent=tr(fail?pair("重试保存","Retry save"):pair("重新开始","Restart"));retry.hidden=done&&committed&&kind==="exploration";status.textContent=fail?tr(pair("保存失败，奖励未领取。请重试。","Save failed. Reward not claimed; please retry.")):"";body.replaceChildren();draw({body,status,button,done,committed});if(done&&committed)root.dataset.complete="true";else delete root.dataset.complete;}
+ function render(){if(!live()){dispose();return;}h.textContent=tr(title);root.setAttribute("aria-label",h.textContent);close.textContent=tr(kind==="trial"?pair("结束练习","Exit practice"):done&&committed?pair("返回探索","Return to exploration"):pair("返回地图","Return to map"));hint.textContent=tr(help);retry.textContent=tr(fail?pair("重试保存","Retry save"):pair("重置本次小游戏","Reset this activity"));retry.hidden=kind==="trial"||(done&&committed&&kind==="exploration");status.textContent=fail?tr(pair("保存失败，奖励未领取。请重试。","Save failed. Reward not claimed; please retry.")):"";body.replaceChildren();draw({body,status,button,done,committed});if(done&&committed)root.dataset.complete="true";else delete root.dataset.complete;}
  close.onclick=dispose;retry.onclick=()=>{if(!live()){dispose();return;}if(fail){fail=false;finish();return;}done=committed=false;reset();render();};
  root.onkeydown=e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();e.stopPropagation();dispose();}else if(e.key==="Tab"){const a=[...root.querySelectorAll("button:not(:disabled):not([hidden]),input")];if(!a.length)return;if(e.shiftKey&&document.activeElement===a[0]){e.preventDefault();a.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===a.at(-1)){e.preventDefault();a[0].focus();}}};
  active=root;stage().append(root);window.addEventListener("cat-bond-active-save-changed",dispose);window.addEventListener("morrowwish-language-change",render);window.addEventListener("pagehide",dispose,{once:true});const timer=setInterval(()=>{if(!live())dispose()},200);render();root.focus();return true;
 }
 function row(body){const r=el("div","cb-adventure-actions");body.append(r);return r;}
 function bar(body,label,n,max=100){const box=el("div","cb-adventure-meter"),p=el("progress");p.max=max;p.value=n;p.setAttribute("aria-label",tr(label));box.append(el("strong","",tr(label)+" · "+n+"/"+max),p);body.append(box);}
+// The preview calls the same passive-talent function as regional combat. It
+// never pretends to cast an unrelated ultimate or changes the player's save.
+function talentArena(body,s,t,feedback){
+ const arena=el("div","cb-talent-arena");arena.dataset.talentEffect=feedback||"ready";arena.style.setProperty("--talent-color",t.color);
+ const cat=(id,cls,label)=>{const unit=el("div","cb-talent-unit "+cls),img=el("img");img.alt="";img.src=new URL("../../assets/"+(id==="player"?"core-art-remaster/leads/player.webp":"npc/"+id+"-painted.webp"),import.meta.url).href;unit.append(img,el("span","cb-talent-name",tr(label)));arena.append(unit);return unit;};
+ cat(s.id,"cb-talent-caster",titleNames[s.id]);cat("player","cb-talent-target",pair("练习伙伴","Practice ally"));
+ const shield=s.id==="xiaomao"&&s.ally.shieldT>0;
+ if(shield){for(const cls of ["cb-talent-caster","cb-talent-target"]){const unit=arena.querySelector("."+cls);unit.append(el("span","cb-talent-shield"));}}
+ if(feedback&&feedback!=="ready"){
+  const effect=el("div","cb-talent-effect");effect.setAttribute("aria-hidden","true");const ray=el("span","cb-talent-ray");effect.append(ray);
+  const result=feedback==="charge"?"+12":feedback==="heal"?"+20 HP":feedback==="ward"?tr(pair("护盾","WARD")):tr(pair("−22 生命","−22 HP"));
+  effect.append(el("strong","cb-talent-float",result));arena.append(effect);
+ }
+ body.append(arena);
+}
 export function mountTalentTrial(id){
  if(!companionTalents[id]||!window.State?.S?.cats?.some(c=>c.storyActor===id)||!["yard","map"].includes(window.__game?.scene))return false;
- let s=newTrial(id);const t=companionTalents[id];
- return mount({id:"trial-"+id,kind:"trial",region:regions[id],portrait:id,title:[titleNames[id][0]+" · "+t.name[0],titleNames[id][1]+" · "+t.name[1]],help:trialHelp[id],reset:()=>{s=newTrial(id)},guard:()=>window.State.S.cats.some(c=>c.storyActor===id),draw:({body,status,button,done})=>{
+ let s=newTrial(id),feedback="ready";const t=companionTalents[id];
+ const help={qilan:pair("点击试用，看看栖蓝怎样为大招补充能量。","Try Tailwind to see how Skye adds ultimate charge."),yahe:pair("练习伙伴只有55点生命，点击试用，看芽禾为它治疗。","The practice ally has 55 HP. Try Fern's healing talent."),xiaomao:pair("点击试用，模拟地区敌人发起攻击预警，再测试护盾效果。","Try Pip's talent during a simulated enemy warning, then test the ward.")};
+ const reset=()=>{s=newTrial(id);feedback="ready";};
+ return mount({id:"trial-"+id,kind:"trial",region:regions[id],portrait:id,title:[titleNames[id][0]+" · "+t.name[0],titleNames[id][1]+" · "+t.name[1]],help:[help[id][0]+"（独立模拟，不消耗资源。）",help[id][1]+" (Isolated simulation; no resources spent.)"],reset,guard:()=>window.State.S.cats.some(c=>c.storyActor===id),draw:({body,status,button})=>{
+  talentArena(body,s,t,feedback);
   body.append(el("p","cb-adventure-explain",tr(t.description)));
   if(id==="qilan")bar(body,pair("大招能量","Ultimate charge"),s.b.ult);
   else bar(body,pair("练习伙伴生命","Practice ally HP"),s.ally.hp);
-  if(id==="xiaomao")bar(body,pair("护盾持续时间","Shield duration"),s.ally.shieldT||0,3.5);
-  const r=row(body),act=(a)=>()=>{trialAction(s,a);return s.done;};
-  if(!s.phase)r.append(button(pair("让伙伴上阵","Deploy companion"),act("deploy"),{id:"deploy"}));
-  else if(!done&&id==="qilan")r.append(button(pair("释放大招","Cast ultimate"),act("cast"),{id:"cast"}));
-  else if(!done&&id==="yahe")r.append(button(pair("护送小猫回家","Escort kitten home"),act("escort"),{id:"escort"}));
-  else if(!done&&id==="xiaomao")r.append(s.phase===1?button(pair("触发攻击预警","Trigger attack warning"),act("warn"),{id:"warn"}):button(pair("承受练习冲击","Test the incoming hit"),act("impact"),{id:"impact"}));
-  if(done)status.textContent=tr(id==="qilan"?pair("练习铃响了！专长提供的12点能量让大招提前释放。","The practice bell rings! Tailwind supplied the 12 charge needed to cast."):id==="yahe"?pair("小猫安全到家！芽禾恢复了20点生命。","The kitten is home! Fern restored 20 HP."):pair("护盾生效！40点练习伤害只造成22点损伤。","The ward worked! The 40-point practice hit dealt only 22 damage."));
-  else if(s.phase)status.textContent=tr(id==="xiaomao"&&s.phase===1?pair("小栗已就位，触发一次攻击预警。","Pip is ready. Trigger an attack warning."):t.notice);
+  if(id==="xiaomao")bar(body,pair("护盾持续时间（秒）","Ward duration (s)"),s.ally.shieldT||0,3.5);
+  const r=row(body);
+  if(feedback==="ready"){
+   r.append(button(pair("试用专长","Try talent"),()=>{
+    if(!trialAction(s,"deploy"))return false;
+    if(id==="xiaomao"){if(!trialAction(s,"warn"))return false;feedback="ward";}
+    else if(id==="qilan"&&s.b.ult===100)feedback="charge";
+    else if(id==="yahe"&&s.ally.hp===75)feedback="heal";
+    if(feedback!=="ready")window.MorrowwishMusic?.cue?.(id==="xiaomao"?"seal":id==="yahe"?"reward":"bell");
+    return false;
+   },{id:"deploy"}));
+  }else if(feedback==="ward"){
+   r.append(button(pair("测试敌人攻击","Test incoming hit"),()=>{if(trialAction(s,"impact")){feedback="impact";window.MorrowwishMusic?.cue?.("impact");}return false;},{id:"impact"}));
+  }
+  if(feedback!=="ready")r.append(button(pair("再试一次","Try again"),()=>{reset();return false;},{id:"repeat"}));
+  const results={charge:pair("顺风领航已触发：88 → 100，大招已充满。正式战斗中可以接着释放大招。","Tailwind triggered: 88 → 100. Your ultimate is now ready in a real battle."),heal:pair("月叶急救已触发：55 → 75，练习伙伴恢复20点生命。","Moonleaf remedy triggered: 55 → 75. The ally recovered 20 HP."),ward:pair("暖光护盾已触发：两只猫均受到保护，持续3.5秒。","Lantern ward triggered: both cats are protected for 3.5 seconds."),impact:pair("护盾挡住18点伤害：40点攻击只扣22点生命。","The ward blocked 18 damage: a 40-point hit dealt 22 HP.")};
+  status.textContent=feedback==="ready"?tr(pair("地区战斗中满足条件时自动触发，每场一次。","Triggers automatically when its condition is met, once per regional battle.")):tr(results[feedback]);
  }});
 }
-let queue=[],watch=null;
-export function queueTalentTrials(ids,owner){for(const id of ids)if(companionTalents[id]&&!queue.some(q=>q.id===id&&q.owner===owner))queue.push({id,owner});if(!queue.length||watch)return;
- watch=setInterval(()=>{queue=queue.filter(q=>q.owner===window.State?.S);if(!queue.length){clearInterval(watch);watch=null;return;}if(active||!["yard","map"].includes(window.__game?.scene)||document.querySelector(".res-host,.cbcp-root:not([hidden]),#panel.open,#cb-system-menu:not([hidden]),.rw-world[data-ceremony],.rw-puzzle-controls,.res-ending-title"))return;const q=queue.shift();if(!mountTalentTrial(q.id)&&q.owner===window.State?.S)queue.unshift(q);},250);
-}
+// Practice is a player-initiated action from the companion detail panel.
+if(typeof window!=="undefined")window.CatBondTalentPractice=Object.freeze({talents:companionTalents,open:mountTalentTrial});
 function diagram(body){const e=svg("svg",{viewBox:"0 0 340 145",class:"cb-adventure-diagram","aria-hidden":"true"});body.append(e);return e;}
 export function mountSideAdventure(region,{guard,commit}={}){
  const d=sideAdventures[region];if(!d)return false;let s=newSideState(region);

@@ -69,9 +69,10 @@ class Game {
     if(oldW>0&&oldH>0&&(Math.abs(oldW-this.W)>2||Math.abs(oldH-this.H)>2)){
       this.yard?.onResize?.(oldW,oldH,this.W,this.H);
       this.battle?.onResize?.(this.W,this.H);
-      this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};
+      // An incidental visualViewport/layout resize must not cancel a held thumb.
+      // Keep its displacement in CSS pixels and move its origin with the stage.
+      if(this.scene==='battle'&&this.joystick.active){const j=this.joystick,ratioX=this.W/oldW,ratioY=this.H/oldH;j.ox*=ratioX;j.oy*=ratioY;}else{this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._worldTapCandidate=null;}
       this.syncTouchBattleUI();
-      this._worldTapCandidate=null;
       this._worldTouch=null;
     }
   }
@@ -805,13 +806,25 @@ class Game {
             this.battle.commandFocusAt?.(p.x,p.y);
             continue;
           }
-          if(this.battle&&!this.battle.autoMode&&this.battle.lockAt?.(p.x,p.y)){
+          // Lower-left is a dedicated movement zone, even if a foe stands beneath it.
+          const moveZone=p.x<this.W*.5&&p.y>this.H*.52;
+          if(moveZone){
+            if(!this.joystick.active){
+              this.joystick={active:true,ox:p.x,oy:p.y,dx:0,dy:0,id:t.identifier};
+              this.syncTouchBattleUI();
+            }
+            continue;
+          }
+          if(this.battle?.lockAt?.(p.x,p.y)){
             this.syncTouchBattleUI();
             continue;
           }
-          if (p.x < this.W * 0.5 && !this.joystick.active) {
-            this.joystick = { active: true, ox: p.x, oy: p.y, dx: 0, dy: 0, id: t.identifier };
-            this.syncTouchBattleUI(p.x,p.y);
+          if(p.x<this.W*.5){
+            if(!this.joystick.active){
+              this.joystick={active:true,ox:p.x,oy:p.y,dx:0,dy:0,id:t.identifier};
+              this.syncTouchBattleUI();
+            }
+            continue;
           } else {
             this.mouse.x = p.x; this.mouse.y = p.y; this.mouse.active = true;
             this.mouse.down = true; this._fireTouchId = t.identifier;
@@ -898,6 +911,8 @@ class Game {
     };
     c.addEventListener('touchend', endTouch);
     c.addEventListener('touchcancel', endTouch);
+    const resetBattleTouches=()=>{if(this.scene!=='battle')return;this.joystick={active:false,ox:0,oy:0,dx:0,dy:0,id:null};this._fireTouchId=null;this.mouse.down=false;this.keys={};this.syncTouchBattleUI();};
+    window.addEventListener('blur',resetBattleTouches);window.addEventListener('pagehide',resetBattleTouches);document.addEventListener('visibilitychange',()=>{if(document.hidden)resetBattleTouches();});
 
     // real-time key polling for the action battle (held keys stay down)
     const keyName = e => (e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase());
@@ -1350,10 +1365,8 @@ class Game {
       const label=pad.querySelector('.battle-touch-label');
       if(label)label.textContent=window.MorrowwishI18n?.get?.()==='zh'?'移动':'Move';
       pad.classList.toggle('active',manual&&this.joystick.active);
-      if(this.joystick.active&&x!==null&&y!==null){
-        pad.style.left=Math.max(45,Math.min(this.W*.49-45,x))+'px';
-        pad.style.top=Math.max(72,Math.min(this.H-82,y))+'px';
-      }else if(!this.joystick.active){pad.style.left='';pad.style.top='';}
+      // Keep the base fixed so the thumb never has to hunt for the control.
+      pad.style.left='';pad.style.top='';
       const nub=pad.querySelector('.battle-touch-nub');
       if(nub)nub.style.transform='translate('+(this.joystick.dx*33)+'px,'+(this.joystick.dy*33)+'px)';
     }
