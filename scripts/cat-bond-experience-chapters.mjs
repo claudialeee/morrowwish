@@ -174,7 +174,7 @@ async function run(chapter){
   if(locale==='zh')localeIssues.push(...await inspectLocale(page,locale,chapter+':action:'+label));
   steps.push({scene:(await view()).current?.id,action:label});await activate(b);
  }
- async function trial(id,actions){const modal=page.locator("[data-adventure=trial-"+id+"]");await modal.waitFor({state:"visible",timeout:15000});for(const a of actions)await modal.locator("[data-play-action="+a+"]").click();assert.equal(await modal.getAttribute("data-complete"),"true");await shot("trial-"+id);await modal.getByRole("button",{name:local("Return"),exact:true}).click();await modal.waitFor({state:"detached"});}
+ async function noForcedTrial(id){await page.waitForTimeout(350);assert.equal(await page.locator('[data-adventure="trial-'+id+'"]').count(),0,'Recruitment must not interrupt the adventure with practice');assert.ok(await page.evaluate(id=>State.S.cats.some(c=>c.storyActor===id)&&!!window.CatBondTalentPractice?.talents?.[id],id),'Recruited companion retains the battle talent');}
  const op=async(id)=>page.waitForFunction(op=>!CatBondResonance.view().objective.includes(op),id,{timeout:35000});
  async function talk(npc){
   const before=await view();
@@ -452,9 +452,9 @@ async function run(chapter){
    await bells.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');
    await talk('Yandeng');await dialogue('harbor:H-03');await scene('harbor:H-04');
    await battle('Belltongue Beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
-   await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');await trial('qilan',['deploy','cast']);
+   await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');await noForcedTrial('qilan');
   }else if(chapter==='forest'){
-   await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');await trial('yahe',['deploy','escort']);
+   await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');await noForcedTrial('yahe');
    await puzzle('Moonleaf bridge',['Fork','Roots','Free the trapped kitten','Far bank']);await dialogue('forest:R-02');await scene('forest:R-03');
    await dialogue('forest:R-03');await scene('forest:R-04');
    await restore('Ancient-root sanctuary',['Upstream','Branch','Roots'],['Yahe','Yuchuan'],'Living Roots',[mid,low,high]);await dialogue('forest:R-04');
@@ -463,7 +463,7 @@ async function run(chapter){
    await click('Play the shadow theater');const festival=page.locator('.rw-festival-card');await festival.waitFor();assert.equal(await page.locator('.rw-dedicated-rail:visible').count(),0,'Festival must be a story scene, not a control rail');assert.equal(await festival.locator('button').count(),4);await click('Cat',festival);assert.equal(await festival.getByRole('button',{name:local('Cat'),exact:true}).getAttribute('aria-pressed'),'true');await shot('festival-story');const originalFestivalViewport=page.viewportSize();for(const viewport of [{width:390,height:844},{width:844,height:390},originalFestivalViewport]){await page.setViewportSize(viewport);await festival.waitFor();const fit=await festival.evaluate(el=>{const r=el.getBoundingClientRect(),s=document.querySelector('#stage').getBoundingClientRect();return {inside:r.left>=s.left-1&&r.right<=s.right+1&&r.top>=s.top-1&&r.bottom<=s.bottom+1,buttons:[...el.querySelectorAll('button')].map(b=>{const q=b.getBoundingClientRect();return q.height>=44&&q.width>=44&&q.left>=s.left-1&&q.right<=s.right+1&&q.bottom<=s.bottom+1;})}});assert.ok(fit.inside&&fit.buttons.every(Boolean),'Festival story controls must fit '+JSON.stringify(viewport));await shot('festival-'+viewport.width);}await click('Finish the show',festival);await festival.waitFor({state:'hidden'});assert.ok(!(await view()).objective.includes('puzzle:lantern-show'),'Theater is optional, not campaign evidence');
    await puzzle('Find three hiding shadow cats',['Light left','Light center','Light right','Follow the escaping shadows']);await dialogue('forge:E-02');await scene('forge:E-03');
    await battle('Shadow beast','battle:shadow-beast');await dialogue('forge:E-03');await scene('forge:E-04');
-   await restore('Lantern sanctuary',['Turn left light','Turn center light','Turn right light'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');await trial('xiaomao',['deploy','warn','impact']);
+   await restore('Lantern sanctuary',['Turn left light','Turn center light','Turn right light'],['Jinpo','Xiaomao'],'Song of Ember',[high,mid,low]);await dialogue('forge:E-04');await noForcedTrial('xiaomao');
   }else if(chapter==='sky'){
    await talk('Yuanfan');await dialogue('sky:S-01');await scene('sky:S-02');
    await click('Find the moon gate · Cloud route');await op('explore:flight-recorder');await dialogue('sky:S-02','Let Yuanfan lead');await scene('sky:S-03');
