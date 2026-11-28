@@ -1,0 +1,27 @@
+# Starbell — high-value illustrated minigame art handoff
+
+Base branch: review/starbell-canon13-player-experience (use current head; do not deploy). Chat has implemented gameplay and interaction, compact quest navigation, dual-hand battle changes, side-event proof and rewards, and art slots. Do not redo these systems. This is an ART + real visual QA assignment, not an invitation to rewrite the campaign or produce concept art only.
+
+## Preserve existing high-quality assets and story
+- Watercolor, warm, bright, hand-painted fantasy storybook style. Use the existing portrait and landscape environment assets as references. Keep protagonist and NPC designs; no generic cat sprites, no UI text baked into art.
+- Preserve the cloud tea scene (two cups), mirror corridor two-bell puzzle, and Luna identity revelation. Do not replace 63 approved duo illustrations or existing good main-story minigame art. No old generic animation fallback.
+- Existing code: public/cat-bond/js/resonance/adventure-play.mjs and public/cat-bond/css/adventure-play.css. Main-story puzzle renderer: world-runtime.mjs, canon22-spatial.mjs, sky-flight.mjs. Inspect actual UI before drawing. Main quest operations and evidence must remain unchanged.
+
+## Required side activities — exact in-game slots already marked data-art-slot
+Store new files under public/cat-bond/assets/minigames/; use optimized WebP, transparent where specified; integrate through CSS or SVG image in existing controls; don't bake hit targets, state or answers into images. Dimensions are suggested source dimensions, not CSS sizing.
+
+| Region / activity | New asset(s) | Integration contract |
+|---|---|---|
+| Harbor / Tidepool shell | tidepool.webp (1200×800), dry-stone.webp, water-stone.webp (256×192 transparent), hermit-crab.webp (256×256 transparent), shell-reward.webp | [data-art-slot=tidepool], dry-stone, water-stone. Real stepping stones with tide and crab position responding to state; preserve 3×3 grid and dryLanes; animated successful step, not text-only |
+| Forest / Herbal tea | herb-pointed.webp, herb-round.webp, herb-fern.webp (256×256 transparent), tea-basket.webp, tea-reward.webp | slots round, round3, fern. Distinguishable leaf silhouettes; no visual answer labels beyond accessibility; show collected herbs in basket and steam after brewing |
+| Forge / Crooked-ear paper lantern | lantern-stage.webp (1200×800), crooked-cat-cutout.webp (512×512 transparent), lantern-reward.webp | lantern-stage, rotating-cat. Rotate actual illustrated cutout with s.rotation; warm projected shadow, light-up effect; retain proof and correct orientation |
+| Sky / Cloud mail | mail-dock.webp (1200×800), mail-mast.webp, mail-beam.webp, mail-pouch.webp, mail-weight.webp (transparent), mail-launch.webp, envelope-reward.webp | mail-dock, mail-mast, mail-beam, mail-pouch, mail-weight. Keep the real weights, separate pouches, total numbers, tilt, explicit placement and 5/5 balance. Clear animation of mailbag taking flight; no schematic triangles |
+| Library / Scattered pages | page-morning.webp, page-afternoon.webp, page-night.webp (480×640 each), bound-book.webp | page-morning, page-afternoon, page-night. Each card tells the scene with pictures; existing text stays localized and live. Show binding success |
+| Starfall / Kitten constellation | star-chart.webp (1200×800), star-node.webp (128×128 transparent), kitten-constellation.webp | star-chart, star-node. Retain existing coordinates/links, luminous connected lines; reveal a recognizable watercolor kitten silhouette only on completion |
+
+Use matching original art for completion rewards; avoid adding nonfunctional decorative controls. Prefer a reusable prop/illustration pipeline across six side activities. Existing main-story minigames: visually review chase, root bridge, shadow search, puppet theater, cloud glide, mirror/two bells, and star steps; only create missing high-value art where truly needed. Keep existing good artwork. Inspect both orientations and use native portrait compositions where the scene would otherwise crop badly. Do not reuse a landscape crop if a new portrait painting is necessary.
+
+## Acceptance and cost control
+- Real normal-mode interactions on phone portrait (390×844), phone landscape (844×390), desktop (1280×720), CN/EN. Verify text and active touch targets unobscured, no black borders, no empty oversized panels, meaningful completion feedback, reset/exit, preserved save proof, rewards once only.
+- No developer-mode bypass, no fake completion screenshot. Show actual screenshots for the six side activities, initial and completed state, at least one portrait and one landscape per activity. Record asset path, dimensions and screenshot evidence in this handoff. Reuse existing assets where possible. No video production, site promotion, full unrelated campaign rewrite or repeat of code checks already done by Chat.
+- Commit art and integration to a separate review branch based on current RPG head; provide exact SHA and evidence. Chat handles merge, regression, and deployment only when user explicitly requests deployment. Do not trigger deployment. Final 85/100 is independent real-player acceptance, not an art self-score.

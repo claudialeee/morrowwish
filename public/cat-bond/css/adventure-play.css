@@ -35,3 +35,26 @@
 .cb-adventure-overlay .cb-mail-launch:disabled{background:#e5dfd0;color:#756b58}
 @media(orientation:landscape) and (max-height:490px){.cb-adventure-overlay[data-kind=exploration] .cb-adventure-card{max-height:96%;width:min(96%,760px);padding:8px 12px;gap:5px}.cb-adventure-overlay[data-kind=exploration] .cb-adventure-portrait{height:36px;width:35px}.cb-mail-board{grid-template-columns:1fr 1fr;align-items:center;gap:5px 10px}.cb-mail-scene{grid-column:1;grid-row:1/5;min-height:132px;height:100%}.cb-mail-state,.cb-mail-tray,.cb-mail-instruction,.cb-mail-launch,.cb-mail-remove{grid-column:2}.cb-adventure-overlay .cb-mail-pouch{min-height:74px}.cb-adventure-overlay .cb-mail-weight{min-height:44px;font-size:18px}}
 @media(prefers-reduced-motion:reduce){.cb-mail-beam,.cb-mail-baskets,.cb-mail-pouch{transition:none!important}}
+
+/* Shared interaction grammar: selected / actionable / complete; unique regional playfields. */
+.cb-adventure-overlay[data-kind=exploration] .cb-adventure-card{max-height:min(90%,690px)}
+.cb-adventure-overlay[data-kind=exploration] .cb-adventure-header h2{font-size:clamp(16px,3.1vmin,24px)}
+.cb-adventure-overlay[data-kind=exploration] .cb-adventure-hint{line-height:1.5}
+.cb-adventure-overlay .cb-tide-grid{gap:8px;padding:8px;border-radius:14px;background:linear-gradient(155deg,#9fc9ce,#5b99a5)}
+.cb-adventure-overlay .cb-tide-grid button{min-height:56px;border-radius:45% 48% 38% 34%;font-size:12px;box-shadow:0 2px 4px #354f4f3a}
+.cb-adventure-overlay .cb-tide-grid .cb-dry{background:radial-gradient(ellipse at 30% 18%,#f5e1b7,#b59d78);border-color:#9a835e}
+.cb-adventure-overlay .cb-tide-grid .cb-water{background:linear-gradient(150deg,#b0dee1,#7eafb7);border:1px solid #d0e8e8}
+.cb-adventure-overlay .cb-tide-grid [data-current=true]{outline:2px solid #ffe8b6;outline-offset:2px}
+.cb-adventure-overlay .cb-tide-grid .cb-crossed{background:#d5e4bc;opacity:1}
+.cb-herb-board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cb-adventure-overlay .cb-herb-board button{min-height:78px;background:#f1f0d6;border:1px solid #a9b184}
+.cb-adventure-overlay .cb-herb-board button.cb-picked{outline:2px solid #63885f;background:#d8e7c7}
+.cb-story-pages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.cb-adventure-overlay .cb-story-page{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;text-align:left;font-size:12px;background:#fff3d7}
+.cb-page-picture{display:grid;place-items:center;width:100%;min-height:42px;font-size:26px;color:#93713f;border-radius:7px;background:#eedfbd}
+.cb-story-page[data-art-slot=page-night] .cb-page-picture{background:#71839b;color:#fff1b9}
+.cb-story-page[data-art-slot=page-morning] .cb-page-picture{background:#f6de9a}
+.cb-story-page[data-art-slot=page-afternoon] .cb-page-picture{background:#bddbd0}
+.cb-adventure-overlay .cb-adventure-continue{display:block;width:100%;margin-top:12px;background:#55765b;color:#fff8e6;font-weight:750}
+.cb-adventure-overlay .cb-adventure-reward{padding:16px 12px}
+@media(orientation:landscape) and (max-height:490px){.cb-adventure-overlay[data-kind=exploration] .cb-adventure-card{max-height:96%;max-width:95%}.cb-adventure-overlay .cb-tide-grid button{min-height:44px}.cb-herb-board{grid-template-columns:repeat(4,minmax(0,1fr))}.cb-adventure-overlay .cb-herb-board button{min-height:54px}}
