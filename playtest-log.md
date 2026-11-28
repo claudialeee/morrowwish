@@ -2843,3 +2843,8 @@ P0 auto-fix outcomes:
 P1/P2: all findings-only per cron rule. Top P1 themes: ult-agency teach loop (3 of top 4), tell-swing first-wild dodge/shield tutorial, HP ribbon progress UI, pressure legibility (aggrMul render), dodge-input buffer 160ms, coach E-step. P2: basic-streak scalar, weakmark one pack member, slot-feedback blips, wall-pin grace.
 
 Workflow: 22 of 76 agents hit StructuredOutput retry cap (29% harness attrition, below the 38% peak at w32qn0r7h).
+
+### Supervisor FAIL correction (wjwzq0own cycle)
+- Commit af9c93cf math-claim overstated: ramp crosses 1.0× at **t≈22.8s** (not ~19s). Floor 0.85 at t≤12; at t=19 scalar=0.947; at t=22.8 scalar=1.00; at t=30 scalar=1.10 (peak). Still inside kiter 38s/panicky 34s cliffs; misses impatient 18s cliff by ~5s (not ~1s as commit body implied).
+- Cache-buster bumped: `index.html` battle.js `?v=smash-reach-520-forcedfloor-20261127` → `basic-ramp-12-30-20261128`.
+- Gate re-check: npm run check + 4 combat scripts all PASS (identical tail to pre-edit run).
