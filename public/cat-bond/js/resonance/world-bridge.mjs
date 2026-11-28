@@ -7,7 +7,7 @@ import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurv
 import {getSlotRuntime} from "./slot-runtime.mjs";
 import {layouts,puzzleSpecs,canonRestorationPrerequisites,retiredWorldOperations} from "./world-exploration.mjs?v=starbell-release-quality-r2-20261127";
 import {applySideEvent} from "./side-adventures.mjs?v=regional-depth-20261127";
-import {applyDiscovery} from "./regional-discoveries.mjs";
+import {applyDiscovery} from "./regional-discoveries.mjs?v=regional-depth-20261127";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord} from "./library-mechanisms.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
