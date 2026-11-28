@@ -455,7 +455,7 @@ async function run(chapter){
    await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');await noForcedTrial('qilan');
   }else if(chapter==='forest'){
    await talk('Yahe');await dialogue('forest:R-01');await scene('forest:R-02');await noForcedTrial('yahe');
-   await puzzle('Moonleaf bridge',['Fork','Roots','Free the trapped kitten','Far bank']);await dialogue('forest:R-02');await scene('forest:R-03');
+   await puzzle('Moonleaf bridge',['Fork','Turn moonleaf','Roots','Free the trapped kitten','Far bank']);await dialogue('forest:R-02');await scene('forest:R-03');
    await dialogue('forest:R-03');await scene('forest:R-04');
    await restore('Ancient-root sanctuary',['Upstream','Branch','Roots'],['Yahe','Yuchuan'],'Living Roots',[mid,low,high]);await dialogue('forest:R-04');
   }else if(chapter==='forge'){
