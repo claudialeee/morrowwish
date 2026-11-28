@@ -1,0 +1,39 @@
+name: Cat Bond Work playtest focused regression
+on:
+  pull_request:
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/cat-bond-work-playtest-smoke.mjs'
+      - '.github/workflows/cat-bond-work-playtest.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cat-bond-work-playtest-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and existing core checks
+        run: |
+          node --check public/cat-bond/js/game.js
+          node --check public/cat-bond/js/battle.js
+          node --check public/cat-bond/js/ui.js
+          node --check public/cat-bond/js/worldmap.js
+          node scripts/check-cat-bond.mjs
+      - name: Install Chromium
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Test phone and desktop first-duo and map gates
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public > /tmp/cat-bond-server.log 2>&1 &
+          sleep 2
+          node scripts/cat-bond-work-playtest-smoke.mjs
