@@ -32,16 +32,17 @@ function openingEncounter(api){
  controls.append(next,close);body.append(name,copy,controls);panel.append(art,body);root.append(panel);let step=0;
  const lines=[
  ["陌生猫","Stranger","你可算醒啦！","You're awake at last!","继续","Continue"],
- ["你","You","咦？你在等我吗？","Huh? Were you waiting for me?","继续","Continue"],
- ["陌生猫","Stranger","我路过的时候看你睡在这儿。怎么，找不到回家的路啦？","I found you asleep here. Lost your way home?","继续","Continue"],
- ["你","You","我……连自己叫什么都想不起来了。你认识我吗？","I… can't even remember my name. Do you know me?","继续","Continue"],
- ["暮铃","Luna","不认识。我叫暮铃，这儿是阳光花园。风铃镇的檐灯爷爷常来修屋子，没准儿见过你呢。","No. I'm Luna, and this is Sunlit Garden. Alder in Windchime Town used to fix up the house. He might have seen you before.","继续","Continue"],
- ["你","You","那我去找他！不过……风铃镇怎么走呀？","I'll go ask him! Um… which way is Windchime Town?","继续","Continue"],
- ["暮铃","Luna","别急，我先去镇上等你。对啦，草地上有块鱼饼，饿了就吃。","No rush. I'll meet you in town. Oh, there's a fish cake in the garden if you're hungry.","告别","Say goodbye"]
+ ["你","You","你在等我？这张纸是你放在我身边的吗？","Were you waiting for me? Did you leave this letter here?","继续","Continue"],
+ ["陌生猫","Stranger","嗯……我在屋里找到的。看你在这儿睡觉，就拿过来了。","Well… I found it in the house. I brought it out when I saw you asleep.","继续","Continue"],
+ ["你","You","你看，写信的猫怕自己失忆。可我刚好什么都不记得了！它是谁呀？","Look, whoever wrote this was afraid of losing their memory. And I can't remember a thing! Who wrote it?","继续","Continue"],
+ ["暮铃","Luna","……我是暮铃。这儿叫阳光花园。信上说的檐灯爷爷就住在风铃镇，他应该还收着那张地图。","…I'm Luna. This is Sunlit Garden. Alder, the cat in the letter, lives in Windchime Town. He should still have that map.","继续","Continue"],
+ ["你","You","我得去看看！说不定写信的猫知道我为什么会在这儿。","I've got to see it! Maybe the cat who wrote this knows why I'm here.","继续","Continue"],
+ ["暮铃","Luna","好，我去镇上等你。哦，草地上的鱼饼可以吃。别光顾着找名字，把肚子饿坏了。","All right, I'll meet you in town. Oh, that fish cake in the grass is for you. Don't go hungry looking for your name.","告别","Say goodbye"]
  ];
+ const letter=document.createElement("blockquote");letter.className="cb-opening-letter-inline";Object.assign(letter.style,{margin:"4px 0",padding:"8px 10px",background:"#fff3d9",color:"#563d29",border:"1px solid #c9a974",borderRadius:"5px",fontSize:"clamp(13px,2vmin,17px)",lineHeight:"1.45"});body.insertBefore(letter,controls);
 
  function dispose(){root.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("pagehide",dispose);}
- function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh",i=zh?0:1,l=lines[step];const player=l[0]==="你";panel.dataset.speaker=player?"player":"muling";const url=player?new URL("../../assets/core-art-remaster/leads/player.webp",import.meta.url).href:mulingGarden.src;if(art.src!==url)art.src=url;name.textContent=l[i];copy.textContent=l[2+i];next.textContent=l[4+i];close.textContent=zh?"返回花园":"Back to garden";}
+ function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh",i=zh?0:1,l=lines[step];const player=l[0]==="你";panel.dataset.speaker=player?"player":"muling";const url=player?new URL("../../assets/core-art-remaster/leads/player.webp",import.meta.url).href:mulingGarden.src;if(art.src!==url)art.src=url;name.textContent=l[i];copy.textContent=l[2+i];letter.hidden=step!==1&&step!==3;letter.textContent=zh?"如果有一天，我连自己的名字都忘了，就去风铃镇找檐灯。地图托他收着了。":"If I ever forget even my own name, find Alder in Windchime Town. He's keeping my map.";next.textContent=l[4+i];close.textContent=zh?"返回花园":"Back to garden";}
  function advance(){if(owner!==window.State.S||window.__game?.scene!=="yard"||api.view().current?.id!=="prologue:P-05"){dispose();return}if(step<lines.length-1){step++;render();return}const r=api.meetTraveler(token);if(r.ok||api.view().openingMet)dispose();else copy.textContent=window.MorrowwishI18n?.get?.()==="zh"?"无法保存，请重试。也可以暂时离开。":"Unable to save. Retry or leave for now.";}
  next.onclick=advance;body.addEventListener("click",e=>{if(!e.target.closest("button,select,a,input"))advance()});close.onclick=dispose;root.onkeydown=e=>{if(e.key==="Escape"){e.preventDefault();dispose()}else if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button,select,a,input")){e.preventDefault();advance()}};stage.append(root);window.addEventListener("morrowwish-language-change",render);window.addEventListener("cat-bond-active-save-changed",dispose);window.addEventListener("pagehide",dispose,{once:true});render();next.focus();return true;
 }
