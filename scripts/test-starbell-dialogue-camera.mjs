@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import fs from 'node:fs/promises';
+import {developerCheckpoint} from '../public/cat-bond/js/resonance/developer-preview.mjs';
 const origin=process.env.CAT_BOND_SMOKE_ORIGIN||'http://127.0.0.1:8765';
 const portrait=process.env.STARBELL_FOCUS_PROFILE==='portrait';
 const profiles=portrait?[{name:'portrait',viewport:{width:390,height:844},isMobile:true,hasTouch:true}]:[{name:'wide',viewport:{width:1280,height:800}},{name:'landscape-touch',viewport:{width:844,height:390},isMobile:true,hasTouch:true}];
-const cases=[['harbor','harbor:H-01'],['forest','forest:R-01'],['forge','forge:E-01'],['sky','sky:S-01'],['library','library:M-01'],['starfall','starfall:F-01']];
+const cases=[['harbor','harbor:H-01'],['forest','forest:R-01'],['forge','forge:E-01'],['sky','sky:S-01'],['library','library:M-01'],['starfall','starfall:F-03']];
 const browser=await chromium.launch({headless:true});
 const out='artifacts/starbell-dialogue-camera';await fs.mkdir(out,{recursive:true});let failed=false;
 try{for(const {name,...device} of profiles)for(const [region,scene] of cases){
@@ -12,6 +13,15 @@ try{for(const {name,...device} of profiles)for(const [region,scene] of cases){
  try{
  await page.goto(origin+'/cat-bond/?developer=1&qa=dialogue-camera&region='+region+'&reset=1&lang='+ (portrait?'zh':'en'));
  await page.locator('#starbell-developer-menu').waitFor();
+ // F-01 intentionally requires two NPCs and the star-path puzzle before any
+ // dialogue. Use the isolated F-03 checkpoint to test a genuine NPC encounter
+ // on the zoomed Starfall exploration map, not a minigame canvas.
+ if(region==='starfall')await page.evaluate(story=>{
+  CatBondResonance.close();UI.closeAll();State.S.resonance=story;
+  State.S.resonanceExploration={location:'starfall',positions:{},interactions:{},pickups:{},cargo:null};
+  if(!State.save().ok)throw Error('Starfall fixture save failed');
+  if(!WorldMap.enterRegion('starfall'))throw Error('Starfall fixture region failed');
+ },developerCheckpoint(scene).story);
  if(process.env.SOURCE_SHA)assert.equal(await page.locator('body').getAttribute('data-source-sha'),process.env.SOURCE_SHA);
  await page.waitForFunction(({region,scene})=>WorldMap.currentRegion===region&&WorldMap.mode==='region'&&CatBondResonance.view().current?.id===scene&&document.querySelector('.rw-world')?.dataset.artReady==='true'&&JSON.parse(document.querySelector('.rw-surface')?.dataset.camera||'[0]')[0]>1,{region,scene});
  // Deliberately zoom beyond the default, proving the real camera, not a static plate.
