@@ -2,7 +2,7 @@ name: Pawsibly release visual correction
 on:
   push:
     branches: ['release/pawsibly-five-portals-20261127']
-    paths: ['.github/workflows/pawsibly-portal-visual-final.yml']
+    paths: ['.github/workflows/pawsibly-portal-visual-final.yml','scripts/pawsibly-portable-layout.css','scripts/capture-pawsibly-portable-final.mjs']
 permissions:
   contents: read
   actions: read

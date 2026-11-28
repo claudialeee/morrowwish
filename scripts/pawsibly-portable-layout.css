@@ -59,3 +59,21 @@ html[data-pawsibly-portal] body .single-screen-game #stage .game-menu{inset:0!im
  html[data-pawsibly-portal] body .single-screen-game #stage #bonusQuickText:after{content:"Bonus";font-size:11px}
  html[data-pawsibly-portal][lang^=zh] body .single-screen-game #stage #bonusQuickText:after{content:"额外"}
 }
+
+/* Compact landscape embeds, including 4:3: keep controls beside the board. */
+@media (orientation:landscape) and (min-width:600px) and (max-aspect-ratio:3/2){
+ html[data-pawsibly-portal] body .single-screen-game #stage.stage{--p-hud:clamp(195px,29vw,300px);--p-board:min(calc(100vw - var(--p-hud) - 26px),calc((100dvh - 20px)*10/7));grid-template-columns:var(--p-hud) minmax(0,var(--p-board))!important;grid-template-rows:minmax(0,1fr)!important;gap:8px!important}
+ html[data-pawsibly-portal] body .single-screen-game #stage.stage>.in-game-top{display:flex!important;grid-column:1!important;grid-row:1!important}
+ html[data-pawsibly-portal] body .single-screen-game #stage.stage>.playfield{grid-column:2!important;grid-row:1!important}
+ html[data-pawsibly-portal] body .single-screen-game #stage .in-game-guidance{display:flex!important}
+ html[data-pawsibly-portal] body .single-screen-game #stage .in-game-head-row{grid-template-columns:minmax(0,1fr) max-content!important;grid-template-areas:"room status" "tools tools"!important}
+ html[data-pawsibly-portal] body .single-screen-game #stage .in-game-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px!important}
+ html[data-pawsibly-portal] body .single-screen-game #stage #bonusQuickText{font-size:11px!important}
+ html[data-pawsibly-portal] body .single-screen-game #stage #bonusQuickText:after{content:none!important}
+}
+html[data-pawsibly-portal] body .single-screen-game #stage .in-game-actions{position:static!important}
+html[data-pawsibly-portal] body .single-screen-game #stage .in-game-actions button{position:relative!important;inset:auto!important}
+@media (orientation:portrait) and (max-width:450px){
+ html[data-pawsibly-portal] body .single-screen-game #stage.stage{grid-template-rows:auto auto auto auto!important;align-content:center!important;gap:8px!important;--p-board:min(calc(100vw - 16px),calc((100dvh - 250px)*10/7))}
+ html[data-pawsibly-portal] body .single-screen-game #stage .in-game-actions button{min-height:42px!important}
+}

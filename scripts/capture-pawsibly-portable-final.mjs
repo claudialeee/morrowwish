@@ -53,14 +53,14 @@ async function clip(w,h,name){
 async function qa(w,h){
  const {ctx,page,errors,external}=await open(w,h);try{
   let g=await geometry(page,w,h);
-  await page.locator('#portalLang').click();await geometry(page,w,h);await page.locator('#portalLang').click();
+  await page.locator('#portalLang').click();await geometry(page,w,h);await page.locator('#portalLang').click();g=await geometry(page,w,h);
   if(w<h){await page.touchscreen.tap(g.board.x+g.board.w*.25,g.board.y+g.board.h*.5);}
   else await page.locator('#board').click({position:{x:g.board.w*.25,y:g.board.h*.5}});
   await page.waitForTimeout(250);
   assert.match((await read(page)).fish,/1\s*\/\s*3/);
-  const steps=await page.locator('#moveCount').count()?await page.locator('#moveCount').textContent():null;
+  const steps=await page.locator('#moves').textContent();
   await page.evaluate(()=>window.MorrowwishPortalPause(true));await act(page,'R',200);
-  if(steps!==null)assert.equal(await page.locator('#moveCount').textContent(),steps);
+  assert.equal(await page.locator('#moves').textContent(),steps);
   await page.evaluate(()=>window.MorrowwishPortalPause(false));await page.waitForFunction(()=>document.querySelector('#achievementToast').hidden,{},{timeout:6000});
   await page.screenshot({path:media+'/qa-'+w+'x'+h+'.png'});
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);proof.push({kind:'qa',w,h,g});
@@ -68,8 +68,8 @@ async function qa(w,h){
 }
 try{
  // All jobs use actual final standalone files. Capture only the failed visual/media gate.
- for(const [w,h] of [[907,510],[800,450],[640,480],[390,844],[844,390],[1280,720]])await qa(w,h);
- for(const [w,h,tag] of [[1280,720,'wide'],[760,570,'standard']])for(const room of [1,2,3,5,8])await screenshot(w,h,room,tag);
- for(const args of [[1280,720,'y8-continuous'],[960,720,'y8-4x3'],[1920,1080,'cg-landscape-preview'],[720,1080,'cg-portrait-preview']])await clip(...args);
+ for(const [w,h] of [[907,510],[800,450],[640,480],[390,844],[844,390],[1280,720],[760,570],[320,568],[720,1080]]){console.log('Geometry QA',w,h);await qa(w,h);}
+ for(const [w,h,tag] of [[1280,720,'wide'],[760,570,'standard']])for(const room of [1,2,3,5,8]){console.log('Capture',tag,room);await screenshot(w,h,room,tag);}
+ for(const args of [[1280,720,'y8-continuous'],[1920,1080,'cg-landscape-preview'],[720,1080,'cg-portrait-preview']]){console.log('Record',args);await clip(...args);}
  fs.writeFileSync(out+'/visual-proof.json',JSON.stringify({source:process.env.SOURCE_SHA,proof,realInputs:true},null,2));
 }finally{await browser.close()}
