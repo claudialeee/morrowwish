@@ -19,7 +19,7 @@ const labels=Object.freeze({
   "Tide cave logbook": "潮洞日志",
   "Storm boat": "遇险小船",
   "Lighthouse mirrors": "灯塔反射镜",
-  "Chase the runaway chime": "穿过风铃巷",
+  "Restore the bell patterns": "寻回铃纹",
   "Take shortcut": "抄近路",
   "Belltongue Beast": "铃舌兽",
   "Town bell sanctuary": "古铃圣所",
@@ -444,8 +444,9 @@ async function run(chapter){
   }
   if(chapter==='harbor'){
    await talk('Qilan');await dialogue('harbor:H-01');await scene('harbor:H-02');
-   await click('Chase the runaway chime');const chase=page.locator('[data-spatial="chase"]');await chase.waitFor();if(portrait){await page.waitForFunction(()=>document.querySelector('.rw-world')?.dataset.artReady==='true');for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932}]){await page.setViewportSize(viewport);await page.waitForFunction(()=>{const e=document.querySelector('.rw-chase-mode .rw-surface'),r=e?.getBoundingClientRect(),s=e?.parentElement?.getBoundingClientRect();return !!r&&!!s&&r.height>=s.height-2&&r.width>=s.width-2&&r.height>r.width;});await page.screenshot({path:out+'/portrait-chase-'+viewport.width+'.png'});}await page.setViewportSize({width:390,height:844});}
-   const follow=page.locator('[data-chase-follow]'),shortcut=page.locator('[data-chase-shortcut]');await activate(follow);await page.waitForFunction(()=>!document.querySelector('[data-chase-follow]')?.disabled);if(portrait)await activate(shortcut);else await activate(follow);await page.waitForFunction(()=>!document.querySelector('[data-chase-follow]')?.disabled);await activate(follow);await page.waitForFunction(()=>{const el=document.querySelector('[data-chase-follow]');return el&&!el.disabled&&/Pounce|扑住/.test(el.textContent);});await activate(follow);await chase.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');
+   await click('Restore the bell patterns');const bells=page.locator('[data-spatial="bellPattern"]');await bells.waitFor();
+   for(const glyph of ['☾','☀','✦'])await activate(bells.getByRole('button',{name:new RegExp(glyph)}));
+   await bells.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');
    await talk('Yandeng');await dialogue('harbor:H-03');await scene('harbor:H-04');
    await battle('Belltongue Beast','battle:chime-beast');await dialogue('harbor:H-04');await scene('harbor:H-05');
    await restore('Town bell sanctuary',['Left mirror','Center mirror','Center mirror','Right mirror'],['Qilan','Yandeng'],'Coming Home',[low,high,mid]);await dialogue('harbor:H-05');await trial('qilan',['deploy','cast']);
