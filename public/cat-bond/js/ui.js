@@ -1752,6 +1752,7 @@ const UI = {
         :en?(traitNamesEn[cat.trait]||'Unknown')
         :(window.Raising?.TRAITS?.[cat.trait]?.name||'未知'))
       :null;
+    const talent=window.CatBondTalentPractice?.talents?.[cat.storyActor||sp.storyActor];
     const facts=this.battleCatFacts(cat);
     const primary=window.Skills?.elementOf?.(cat.species)||'light';
     const secondary=window.Skills?.secondaryOf?.(cat)||null;
@@ -1772,6 +1773,7 @@ const UI = {
     host.innerHTML = `
       <h2>${dispName}${sub} <span class="rarity-${facts.rarity}">◆${facts.rarityLabel}</span> ${sp.storyActor?'<span class="tiny">'+(en?'Story companion':'剧情伙伴')+'</span>':''} <span id="cd-rename" style="cursor:pointer;font-size:0.9rem" title="起名">✏️</span></h2>
       <p class="sub">${sp.desc}</p>
+      ${talent?`<section class="cat-skill-roadmap" data-companion-talent><strong>${en?"Battle talent":"战斗专长"} · ${talent.name[en?1:0]}</strong><p>${talent.description[en?1:0]}</p><small>${en?"Triggers automatically in regional battles when this companion is in the active party.":"伙伴上阵时，在地区战斗中自动触发。"}</small><button type="button" id="cd-talent-practice" class="btn ghost">${en?"Optional practice":"可选专长练习"}</button></section>`:""}
       ${window.Skills?.breedPassive?.(sp.id)?(()=>{const p=Skills.breedPassive(sp.id),k=window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";return `<p class="cat-skill-roadmap" data-breed-passive="${sp.id}"><strong>${k==="zh"?"专属被动":"Breed passive"} · ${p.name[k]}</strong> · ${p.desc[k]}</p>`;})():""}
       ${window.Skills?'<p class="cat-skill-roadmap">✨ '+Skills.progressionHint(cat)+'</p>':''}
       ${State.S.masteryBadges?.[sp.id]
@@ -1850,6 +1852,7 @@ const UI = {
         </details>
       </div>
       <button type="button" class="cb-grow-skills" id="cd-skills">📖 查看与搭配技能 <span aria-hidden="true">›</span></button>`;
+    const practice=document.getElementById("cd-talent-practice");if(practice)practice.onclick=()=>{const id=cat.storyActor||sp.storyActor;this.closeAll();window.CatBondTalentPractice?.open(id);};
     // animated preview
     const cv = document.getElementById('cd-canvas');
     const cx = cv.getContext('2d');
