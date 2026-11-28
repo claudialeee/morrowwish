@@ -655,32 +655,28 @@ class CaptureBattle {
 
   // Wild level tracks player strength so fights stay meaningful, never trivial.
   computeWildLevel(teamOrCat) {
-    const cats = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
+    // Owner 2026-11-28: avg over the FULL 出击 roster (bring-5 model, field + reserve),
+    // not just the 2 field cats, so bench picks matter for difficulty scaling.
+    // Casual: lvl = round(avg) + rand(-2..+2). Hardcore: lvl = round(avg) + rand(+1..+3).
+    // Regional floor/cap still apply as intro-gate (lifts once team clears cap+3).
+    const field = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
+    const reserve = (this.reserve && Array.isArray(this.reserve)) ? this.reserve : [];
+    const roster = field.concat(reserve).filter(c => c && c.level != null);
+    const cats = roster.length ? roster : field;
     const avg = cats.length ? cats.reduce((s, c) => s + (c.level || 1), 0) / cats.length : 1;
-    // OWNER 2026-11-26 "敌人等级动态匹配到我们的等级" — enemy level now tracks the
-    // team's average level directly (no progress/rarity/noise drift). "硬核难度会
-    // +1到3级" — hardcore adds a random 1-3 on top. Regional floor/cap still
-    // apply so a brand-new save never sees Lv4 in 樱花/庭院 and so late maps keep
-    // their advertised tier wall.
-    // Owner 2026-11-26 "我队伍都50级了" — the old flat per-region cap (ruins:12)
-    // clipped late-game teams: a Lv50 team in 遗迹 saw Lv12 enemies. Caps now mean
-    // "intro gate" — enforced only until a team comfortably clears them (team avg
-    // reaches cap+3). Beyond that threshold, the cap no longer applies and enemy
-    // level scales with team avg so late-game zones stay meaningful.
     const introCaps = { sakura:3, yard:3, home:5, creek:7, volcano:9, ruins:12 };
     const floors = { sakura:1, yard:1, home:2, creek:3, volcano:4, ruins:5 };
     const region = this.encounterRegion;
     const introCap = introCaps[region] ?? Math.max(3, Math.ceil(avg) + 2);
-    // Once team avg clears the intro cap by ≥3, the cap lifts to track team avg.
     const cap = (avg >= introCap + 3) ? Math.ceil(avg) + 2 : introCap;
     const minLv = floors[region] ?? 1;
-    // Base = clamped team avg (round, NOT floor — a Lv1 team shouldn't face Lv0).
-    let lvl = Math.round(avg);
-    // Hardcore bump: rng in [0,1) → integer bonus in [1,3].
     const diffName = (window.State && State.difficulty) ? State.difficulty() : 'casual';
+    const r = (this.rng ? this.rng() : Math.random());
+    let lvl = Math.round(avg);
     if (diffName === 'hardcore') {
-      const r = (this.rng ? this.rng() : Math.random());
       lvl += 1 + Math.floor(r * 3);              // +1, +2, or +3
+    } else {
+      lvl += -2 + Math.floor(r * 5);             // -2..+2 (5 outcomes)
     }
     return Math.max(minLv, Math.min(cap, lvl));
   }
@@ -1084,6 +1080,47 @@ class CaptureBattle {
   // HARD CONSTRAINT: the retreat floor (min) is clamped ≤ basicAttackRange so the basic always
   // connects — the exact "ranged cat can't basic-attack" regression we must not reintroduce.
   kitRangeBand(f) {
+    // Owner 2026-11-28 — RSI winner `agent:alternating-oscillator` (score 0.712 on a
+    // SINGLE fighter build with Q=melee + E=projectile; evaluator did NOT test dps/control/
+    // support/tank and did NOT test teams, target-picking, peel, or heal-aim). OPT-IN only via
+    // `this.useOscillatorBand === true`, AND **frontline-only** (tank/fighter/assassin). Backliners
+    // (dps/control/support) skip this branch to avoid being pulled out of their skill-reach standoff.
+    // SCOPE: narrow proxy — do NOT infer anything about backliners from this winner.
+    if (this.useOscillatorBand) {
+      const _oscBuild = f.cat?.buildType || window.Skills?.buildTypeForBreed?.(f.cat);
+      const _oscFrontline = _oscBuild === 'tank' || _oscBuild === 'fighter' || _oscBuild === 'assassin';
+      if (_oscFrontline) {
+        const _oHp = f.hp / (f.maxhp || 1);
+        const _q = (f.cd && f.cd.q) || 0;
+        const _e = (f.cd && f.cd.e) || 0;
+        const _bothReady  = _q <= 0.15 && _e <= 0.15;
+        const _bothCool   = _q >= 2.5  && _e >= 2.5;
+        if (_bothReady) return { min: 50,  max: 85,  rush: 50,  role: 'assassin', hp: _oHp };
+        if (_bothCool)  return { min: 200, max: 280, rush: 280, role: 'ranged',   hp: _oHp };
+        return             { min: 110, max: 160, rush: 120, role: 'bruiser',  hp: _oHp };
+      }
+      // backliner: fall through to baseline build-aware logic below
+    }
+    // Owner 2026-11-27 — RSI winner `agent:allied-hp-peeler` (score 0.706 vs baseline 0.692,
+    // +2.05%). HONESTY CORRECTION 2026-11-28: the +2.05% "win" was produced in an evaluator
+    // that has NO teammates (evaluator.mjs:220 builds a single-cat team), so the peel branch
+    // NEVER FIRED during scoring. The gain is seed/noise within harness variance, not a
+    // validated peel strategy. Keeping the branch as a role-theory intent, but gating to
+    // frontline builds (tank/fighter/assassin) so dps/control/support cats are NOT pulled
+    // to 60-100 tank range the moment an ally drops below 50% HP. Same bug class as the
+    // oscillator incident — the 2a9fc7bb §9/§10 supervisor rules would FAIL this branch
+    // if re-reviewed today. Will revisit once evaluator has real team scenarios (roadmap
+    // items 1 + 3). HP-gated: self must be at ≥50% HP so a dying cat isn't told to tank.
+    const _selfHp = f.hp / (f.maxhp || 1);
+    const _peelBuild = f.cat?.buildType || window.Skills?.buildTypeForBreed?.(f.cat);
+    const _peelFrontline = _peelBuild === 'tank' || _peelBuild === 'fighter' || _peelBuild === 'assassin';
+    const _peelCandidate = _peelFrontline && _selfHp >= 0.5 && (this.team || []).some(m =>
+      m !== f && m.alive && m.maxhp && (m.hp / m.maxhp) < 0.5
+    );
+    if (_peelCandidate) {
+      const min = 60, max = 100;
+      return { min, max, rush: min + 5, role: 'tank', hp: _selfHp };
+    }
     const skills=[f.qSkill,f.eSkill].filter(Boolean);
     const isMelee=sk=>sk&&(sk.kind==='melee'||sk.kind==='dash'||sk.kind==='leap'||sk.kind==='pounce');
     const isOffensive=sk=>sk&&['melee','projectile','beam','chain','dash','pounce','leap','aoe'].includes(sk.kind);
@@ -2048,7 +2085,7 @@ class CaptureBattle {
   // committed basic-stream closes a drawn-out fight BEFORE the 85s guillotine. One
   // call site (player basic only); ult echoes, skill procs, and enemy basics stay
   // flat at BASIC_POWER_MULT = 0.85.
-  basicTimeScalar() { return BASIC_POWER_MULT + 0.25 * Math.max(0, Math.min(1, (this.t - 25) / 30)); }
+  basicTimeScalar() { return BASIC_POWER_MULT + 0.25 * Math.max(0, Math.min(1, (this.t - 12) / 18)); }
   // Adversary P0 wb3r7ejxm→wmbjeusi4 fix 0: symmetric enemy threat ramp mirroring
   // basicTimeScalar — 0.9× grace (0-6s), ramp to 1.35× by 18s, hold. Only applies to
   // enemy basic/projectile hits in resolveHit (NOT ults — _ultCastUid short-circuits
@@ -5247,7 +5284,11 @@ class CaptureBattle {
       // CHARGED ULT first: meter full → the enemy commits its signature ult (telegraphed +
       // interruptible, reduced power). Highest priority so a full meter always resolves.
       if (e.ultSkill && !e.ultFired && e.ultMeter >= 100 && dist < 360) kind = 'enemyUlt';
-      else if (pastTutorial && (dominating || forcedFloor) && dist < 300 && (e.smashCd || 0) <= 0) kind = 'smash';
+      // Adversary P0 wnghvvbag fix 1: forcedFloor smash reach extended to 520 so disciplined
+      // kiters (320-480u standoff) actually get hit by their own forcing function. Dominating
+      // path keeps 300 reach unchanged. If kiter walks out of the disc, _obs.dodges increments
+      // and forcedFloor auto-deactivates (self-balancing). (auto-fix, unreviewed, not pushed)
+      else if (pastTutorial && (e.smashCd || 0) <= 0 && ((dominating && dist < 300) || (forcedFloor && dist < 520))) kind = 'smash';
       else if (dist < 150 && (me.rootT > 0 || me.frozen || e.aggro > 0.4)) kind = 'nova';     // close + punish window
       else if (dist < 220 && e.role === 'ambusher' && (e.challenge || 0) > 0) kind = 'pounce';  // ambusher leap
       // Big-AOE lob is now rarer (30%, SR+ only) and on its own cooldown so the

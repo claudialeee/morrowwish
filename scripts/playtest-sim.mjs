@@ -71,54 +71,196 @@ function buildEnv(rng){
   return {sandbox,game,events,listeners};
 }
 
+// ---------- persona profile defaults (owner 2026-11-27 Step A: human reaction) ----------
+// Each persona has a profile of HUMAN LIMITS: reaction delay (sec), aim jitter (px),
+// vision cone (rad) — what a real player can/can't do under this archetype.
+// Ticks read the profile via `o.profile` to gate perception + delay decisions.
+const PROFILE = {
+  masher:    { reactionMs: 400, aimJitter: 15,  visionDeg: 70,  dodgeChance: 0.0 },
+  cautious:  { reactionMs: 250, aimJitter: 8,   visionDeg: 140, dodgeChance: 0.4 },
+  explorer:  { reactionMs: 200, aimJitter: 10,  visionDeg: 110, dodgeChance: 0.7 },
+  panicky:   { reactionMs: 500, aimJitter: 80,  visionDeg: 55,  dodgeChance: 0.3 },
+  lazy:      { reactionMs: 600, aimJitter: 40,  visionDeg: 60,  dodgeChance: 0.0 },
+  impatient: { reactionMs: 220, aimJitter: 25,  visionDeg: 90,  dodgeChance: 0.5 },
+  balanced:  { reactionMs: 230, aimJitter: 8,   visionDeg: 120, dodgeChance: 0.85 },
+};
+
+// Delay helper: queue an action to fire after `reactionMs`. obs.delayQ keeps timed actions.
+// Call `queueDelay(o, b, () => o.tap(g, 'q'))` to execute a persona reaction with human lag.
+function queueDelay(o, b, action) {
+  if (!o.delayQ) o.delayQ = [];
+  const delay = effectiveReactionMs(o) / 1000;    // Step B: tilt-inflated
+  const jitter = (o.rng() - 0.5) * 0.08;
+  o.delayQ.push({ atT: b.t + delay + jitter, action });
+}
+function flushDelays(o, b) {
+  if (!o.delayQ || !o.delayQ.length) return;
+  o.delayQ = o.delayQ.filter(e => {
+    if (e.atT <= b.t) { try { e.action(); } catch (_) {} return false; }
+    return true;
+  });
+}
+
+// Vision cone: is `target` within persona's visual attention cone relative to their current aim?
+// Returns false (invisible) for threats outside the cone — persona can't react to what they can't see.
+function visible(o, b, target) {
+  if (!target) return false;
+  const me = b.me(); if (!me) return false;
+  const coneDeg = (o.profile?.visionDeg) || 180;
+  const half = (coneDeg * Math.PI / 180) / 2;
+  // Attention direction: last mouse position relative to me. Fallback to facing if mouse fresh.
+  const g = o._game || null;
+  let facing;
+  if (g && g.mouse && (g.mouse.x !== me.x || g.mouse.y !== me.y)) {
+    facing = Math.atan2(g.mouse.y - me.y, g.mouse.x - me.x);
+  } else {
+    facing = b.aim || 0;
+  }
+  const toTarget = Math.atan2(target.y - me.y, target.x - me.x);
+  let diff = Math.atan2(Math.sin(toTarget - facing), Math.cos(toTarget - facing));
+  return Math.abs(diff) <= half;
+}
+
+// Aim jitter: a persona's rendered mouse x/y around a target is noisy. Apply in ticks that set mouse.x/y.
+// Owner 2026-11-27 Step B: jitter is amplified by current tilt (0-1). Low HP + hits received push tilt up;
+// stable play decays it. So a tilted panicky misses even wider; a calm balanced stays precise.
+function jitterAim(o, x, y) {
+  const base = (o.profile?.aimJitter) || 0;
+  if (base <= 0) return { x, y };
+  const tiltMul = 1 + (o.tilt || 0) * 1.5;        // tilt 1.0 → 2.5× aim noise
+  const j = base * tiltMul;
+  return { x: x + (o.rng() - 0.5) * 2 * j, y: y + (o.rng() - 0.5) * 2 * j };
+}
+
+// Step B: tilt decays over time, climbs on damage taken and skill whiffs. Call from runBattle each frame.
+// Low HP (< 30%) pushes tilt even if no hit this frame — "oh shit I'm about to die" effect.
+function updateTilt(o, b, dt) {
+  const me = b.me(); if (!me) return;
+  const hpFrac = me.hp / Math.max(1, me.maxhp);
+  o.tilt = o.tilt || 0;
+  // Decay baseline (recovering composure)
+  o.tilt = Math.max(0, o.tilt - 0.02 * dt);
+  // Low HP anxiety
+  if (hpFrac < 0.3) o.tilt = Math.min(1, o.tilt + 0.15 * dt);
+  // Damage taken pulse (set by runBattle on dmgTaken detection)
+  if (o._tookDmg) { o.tilt = Math.min(1, o.tilt + 0.08); o._tookDmg = false; }
+}
+
+// Step B: reaction time also inflates with tilt — a panicked player hesitates longer.
+// Replace the constant in queueDelay by this function at use time.
+function effectiveReactionMs(o) {
+  const base = (o.profile?.reactionMs) || 250;
+  const tiltBoost = (o.tilt || 0) * 200;          // tilt 1.0 → +200ms reaction
+  return base + tiltBoost;
+}
+
+// Fog-of-mind view: owner 2026-11-27 Step C — persona can only observe side-public state,
+// NOT enemy CDs / next-cast-intent / target-lock / team-coord-fields. Returns a projection
+// of `b` that a real player could reasonably perceive on-screen.
+//
+// Observable (within vision cone + rendered on screen):
+//   - enemy.x/y (sprite position)
+//   - enemy.hp/maxhp (if HP bar visible — always for wild)
+//   - enemy.telegraph / telegraphKind — ONLY when > 0 (the red ring / windup flash)
+//   - projectiles mid-flight (within cone)
+//   - self team state (fully visible — you control your cats)
+//
+// Hidden:
+//   - enemy.cd.* (no readout of their skill cooldowns)
+//   - enemy.ultMeter until the actual charge-ring VFX appears
+//   - enemy.aggro / _pressure / _closing / aiP.* (internal AI state)
+//   - enemy.nextCast / castInterruptible (the AI's intent, not yet telegraphed)
+//   - pack-level coordination fields (packState, _packHeavyLock internals)
+//
+// Persona ticks can call b.incomingThreat(me) etc BUT with a wrap that filters
+// off-cone threats. The wrapper is applied by setting `b._fogView = fogView(b,me,o)`
+// in persona.tick BEFORE calling engine helpers that read enemy state.
+function fogView(b, me, o) {
+  const cone = (o.profile?.visionDeg) || 180;
+  return {
+    enemies: (b.enemies || []).filter(e => e.alive && visible(o, b, e)).map(e => ({
+      x: e.x, y: e.y, hp: e.hp, maxhp: e.maxhp, alive: e.alive,
+      telegraph: e.telegraph > 0 ? e.telegraph : 0,       // only when visible wind-up
+      telegraphKind: e.telegraph > 0 ? e.telegraphKind : null,
+      // explicitly NOT exposing: e.cd, e.aggro, e.ultMeter<100, e.nextCast, e.aiP, e._pressure, e._closing
+    })),
+    projectiles: (b.projectiles || []).filter(p => p.owner === 'wild' && visible(o, b, p)),
+    // team state is fully visible to persona (you see your own cats)
+    team: b.team,
+    t: b.t,
+    ult: b.ult,
+  };
+}
+
 // ---------- personas: each returns an input policy for a battle ----------
 // A policy(fn) is called every tick with (battle, game, obs) and sets
 // game.keys / game.mouse to emulate a specific kind of human.
 // obs carries per-battle memory (press edges, timers, mood).
+// 2026-11-27 Step A: ticks now call flushDelays / queueDelay / visible / jitterAim
+// to model reaction time, vision cone, and aim noise. Persona-specific profile in PROFILE.
 const PERSONAS = {
   // Button masher: holds attack, never dodges, barely moves, ignores skills.
+  // Step A: aim is jittery (15px); 70° narrow visual cone (eyes on cursor); 400ms reaction;
+  // dodge skipped entirely (dodgeChance=0). Occasional Q queued through reaction buffer.
   masher: {
     label: '狂按型 (button masher)', desc: 'Holds attack, never dodges, ignores skills/shields.',
     tick(b,g,o){ const me=b.me(); const e=b.nearestEnemy(me.x,me.y);
-      g.mouse.down=true; g.keys={}; // left-click attack held
-      if(e){ g.mouse.x=e.x; g.mouse.y=e.y; }
-      // occasionally mash Q when off cooldown, but mostly just basic
-      if(me.cd.q<=0 && o.rng()<0.08) o.tap(g,'q');
+      g.mouse.down=true; g.keys={};
+      if(e){ const aim=jitterAim(o,e.x,e.y); g.mouse.x=aim.x; g.mouse.y=aim.y; }
+      // occasional Q, delayed by reaction time
+      if(me.cd.q<=0 && o.rng()<0.08 && !o._qQueued) {
+        o._qQueued = true;
+        queueDelay(o, b, () => { o.tap(g,'q'); o._qQueued = false; });
+      }
     }},
   // Cautious kiter: keeps distance, rarely commits, uses ranged pokes only.
+  // Step A: 250ms reaction (watchful), small 8px aim jitter, 140° wide cone (threat-aware).
+  // Only dodges threats visible in cone (dodgeChance 0.4).
   cautious: {
     label: '谨慎型 (cautious kiter)', desc: 'Runs away, pokes rarely, long boring fights.',
     tick(b,g,o){ const me=b.me(); const e=b.nearestEnemy(me.x,me.y); g.keys={};
-      if(e){ g.mouse.x=e.x; g.mouse.y=e.y;
+      if(e){ const aim=jitterAim(o,e.x,e.y); g.mouse.x=aim.x; g.mouse.y=aim.y;
         const d=Math.hypot(e.x-me.x,e.y-me.y);
-        // flee if enemy within 260px
         if(d<260){ if(e.x>me.x)g.keys['a']=true;else g.keys['d']=true; if(e.y>me.y)g.keys['w']=true;else g.keys['s']=true; }
-        g.mouse.down = d<320 && o.rng()<0.3; // timid, intermittent fire
-        if(me.cd.q<=0 && d<300 && o.rng()<0.05) o.tap(g,'q');
+        g.mouse.down = d<320 && o.rng()<0.3;
+        if(me.cd.q<=0 && d<300 && o.rng()<0.05 && !o._qQueued) {
+          o._qQueued = true;
+          queueDelay(o, b, () => { o.tap(g,'q'); o._qQueued = false; });
+        }
+        if(me.dodgeCd<=0 && b.incomingThreat && b.incomingThreat(me) && visible(o,b,e) && o.rng()<o.profile.dodgeChance && !o._dodgeQueued) {
+          o._dodgeQueued = true;
+          queueDelay(o, b, () => { o.tap(g,' '); o._dodgeQueued = false; });
+        }
       }
     }},
   // Explorer: tries every button — Q, E, dodge, ult — fairly competently.
+  // Step A: 200ms reaction (quick), 10px small aim jitter, 110° cone, dodgeChance 0.7.
   explorer: {
     label: '探索型 (tries everything)', desc: 'Uses Q/E/dodge/ult, moves around, engaged.',
     tick(b,g,o){ const me=b.me(); const e=b.nearestEnemy(me.x,me.y); g.keys={};
-      if(e){ g.mouse.x=e.x; g.mouse.y=e.y; const d=Math.hypot(e.x-me.x,e.y-me.y);
-        // keep mid-range
+      if(e){ const aim=jitterAim(o,e.x,e.y); g.mouse.x=aim.x; g.mouse.y=aim.y;
+        const d=Math.hypot(e.x-me.x,e.y-me.y);
         if(d>170){ if(e.x>me.x)g.keys['d']=true;else g.keys['a']=true; if(e.y>me.y)g.keys['s']=true;else g.keys['w']=true; }
         else if(d<90){ if(e.x>me.x)g.keys['a']=true;else g.keys['d']=true; }
         g.mouse.down = d<180;
-        if(me.cd.q<=0) o.tap(g,'q');
-        if(me.cd.e<=0 && o.rng()<0.6) o.tap(g,'e');       // tries the E (shield/defensive) slot
-        if(b.ult>=100 && o.rng()<0.5) o.tap(g,'r');
-        // dodge when a shot is near
-        if(me.dodgeCd<=0 && b.incomingThreat && b.incomingThreat(me) && o.rng()<0.7) o.tap(g,' ');
+        if(me.cd.q<=0 && !o._qQueued) { o._qQueued=true; queueDelay(o,b,()=>{o.tap(g,'q');o._qQueued=false;}); }
+        if(me.cd.e<=0 && o.rng()<0.6 && !o._eQueued) { o._eQueued=true; queueDelay(o,b,()=>{o.tap(g,'e');o._eQueued=false;}); }
+        if(b.ult>=100 && o.rng()<0.5 && !o._rQueued) { o._rQueued=true; queueDelay(o,b,()=>{o.tap(g,'r');o._rQueued=false;}); }
+        if(me.dodgeCd<=0 && b.incomingThreat && b.incomingThreat(me) && visible(o,b,e) && o.rng()<o.profile.dodgeChance && !o._dodgeQueued) {
+          o._dodgeQueued = true;
+          queueDelay(o, b, () => { o.tap(g,' '); o._dodgeQueued = false; });
+        }
       }
     }},
   // Panicky: erratic movement, random taps, poor aim, often takes hits.
+  // Step A: 500ms reaction (slow), 80px massive aim jitter (flailing), 55° narrow cone
+  // (tunnel vision), dodgeChance 0.3. Taps still random/undelayed to model button-mashing panic.
   panicky: {
     label: '手忙脚乱型 (panicky)', desc: 'Erratic WASD, random skill taps, bad aim, gets hit.',
     tick(b,g,o){ const me=b.me(); g.keys={};
       const dirs=['w','a','s','d']; if(o.rng()<0.6)g.keys[dirs[(o.rng()*4)|0]]=true;
-      g.mouse.x=me.x+(o.rng()*400-200); g.mouse.y=me.y+(o.rng()*400-200); // flailing aim
+      const aim=jitterAim(o, me.x+(o.rng()*400-200), me.y+(o.rng()*400-200));
+      g.mouse.x=aim.x; g.mouse.y=aim.y;
       g.mouse.down=o.rng()<0.5;
       if(o.rng()<0.1)o.tap(g,'q'); if(o.rng()<0.08)o.tap(g,'e'); if(o.rng()<0.12)o.tap(g,' ');
     }},
@@ -130,27 +272,39 @@ const PERSONAS = {
       const e=b.nearestEnemy(b.me().x,b.me().y); if(e&&o.rng()<0.02){g.mouse.x=e.x;g.mouse.y=e.y;g.mouse.down=true;}else g.mouse.down=false;
     }},
   // Impatient: plays a bit, then flees (quits) if the fight drags past ~18s.
+  // Step A: 220ms reaction (quick but careless), 25px aim jitter, 90° cone, dodgeChance 0.5.
   impatient: {
     label: '没耐心型 (impatient)', desc: 'Engages, but FLEES/quits if the fight drags on.',
     tick(b,g,o){ const me=b.me(); const e=b.nearestEnemy(me.x,me.y); g.keys={};
-      if(e){ g.mouse.x=e.x; g.mouse.y=e.y; const d=Math.hypot(e.x-me.x,e.y-me.y);
+      if(e){ const aim=jitterAim(o,e.x,e.y); g.mouse.x=aim.x; g.mouse.y=aim.y;
+        const d=Math.hypot(e.x-me.x,e.y-me.y);
         if(d>160){ if(e.x>me.x)g.keys['d']=true;else g.keys['a']=true; }
-        g.mouse.down=d<190; if(me.cd.q<=0&&o.rng()<0.4)o.tap(g,'q');
+        g.mouse.down=d<190;
+        if(me.cd.q<=0&&o.rng()<0.4 && !o._qQueued){ o._qQueued=true; queueDelay(o,b,()=>{o.tap(g,'q');o._qQueued=false;}); }
+        if(me.dodgeCd<=0 && b.incomingThreat && b.incomingThreat(me) && visible(o,b,e) && o.rng()<o.profile.dodgeChance && !o._dodgeQueued) {
+          o._dodgeQueued = true;
+          queueDelay(o, b, () => { o.tap(g,' '); o._dodgeQueued = false; });
+        }
       }
-      if(b.t>18 && !o.fled){ o.fled=true; o.wantFlee=true; }   // boredom → bail
+      if(b.t>18 && !o.fled){ o.fled=true; o.wantFlee=true; }
     }},
   // Balanced: a reasonably skilled player as a control baseline.
+  // Step A: 230ms reaction, 8px low jitter (skilled aim), 120° cone, dodgeChance 0.85.
   balanced: {
     label: '熟练型 (balanced control)', desc: 'Competent baseline player.',
     tick(b,g,o){ const me=b.me(); const e=b.nearestEnemy(me.x,me.y); g.keys={};
-      if(e){ g.mouse.x=e.x; g.mouse.y=e.y; const d=Math.hypot(e.x-me.x,e.y-me.y);
+      if(e){ const aim=jitterAim(o,e.x,e.y); g.mouse.x=aim.x; g.mouse.y=aim.y;
+        const d=Math.hypot(e.x-me.x,e.y-me.y);
         if(d>150){ if(e.x>me.x)g.keys['d']=true;else g.keys['a']=true; if(e.y>me.y)g.keys['s']=true;else g.keys['w']=true; }
         else if(d<80){ if(e.x>me.x)g.keys['a']=true;else g.keys['d']=true; }
         g.mouse.down=d<175;
-        if(me.cd.q<=0)o.tap(g,'q');
-        if(me.cd.e<=0&&o.rng()<0.4)o.tap(g,'e');
-        if(b.ult>=100)o.tap(g,'r');
-        if(me.dodgeCd<=0&&b.incomingThreat&&b.incomingThreat(me)&&o.rng()<0.85)o.tap(g,' ');
+        if(me.cd.q<=0 && !o._qQueued){ o._qQueued=true; queueDelay(o,b,()=>{o.tap(g,'q');o._qQueued=false;}); }
+        if(me.cd.e<=0&&o.rng()<0.4 && !o._eQueued){ o._eQueued=true; queueDelay(o,b,()=>{o.tap(g,'e');o._eQueued=false;}); }
+        if(b.ult>=100 && !o._rQueued){ o._rQueued=true; queueDelay(o,b,()=>{o.tap(g,'r');o._rQueued=false;}); }
+        if(me.dodgeCd<=0 && b.incomingThreat && b.incomingThreat(me) && visible(o,b,e) && o.rng()<o.profile.dodgeChance && !o._dodgeQueued) {
+          o._dodgeQueued = true;
+          queueDelay(o, b, () => { o.tap(g,' '); o._dodgeQueued = false; });
+        }
       }
     }},
 };
@@ -171,7 +325,10 @@ function runBattle(env, persona, rng){
   events.length=0;
   game.startBattle([starter],wild);
   const b=game.battle;
+  const personaKey = Object.keys(PERSONAS).find(k => PERSONAS[k] === persona) || 'balanced';
   const obs={i:0,rng,fled:false,wantFlee:false,_prev:{},
+    profile: PROFILE[personaKey] || PROFILE.balanced,
+    _game: game,                                  // let vision/jitter helpers reach the mouse
     tap(g,k){ g.keys[k]=true; } }; // held for this tick → readInput sees a fresh press vs its own _prevKeys
   const m={skillsUsed:{basic:0,q:0,e:0,ult:0,dodge:0},shieldFired:0,dmgTaken:0,faints:0,idleTicks:0,usedAuto:false,fled:false};
   // instrument: count shield activations + dmg taken via wrapping
@@ -205,7 +362,9 @@ function runBattle(env, persona, rng){
   const dt=1/60; let tick=0; const MAXT=60; // sim up to 60s game-time
   while(!b.done && tick<MAXT/dt){
     obs.i=tick;
+    updateTilt(obs, b, dt);                       // 2026-11-27 Step B: tilt/fatigue state changes BEFORE persona decides
     persona.tick(b,game,obs);
+    flushDelays(obs, b);                          // 2026-11-27 Step A: fire queued reactions AFTER persona.tick so g.keys clear doesn't wipe them
     // count INTENTIONS (presses) — may or may not become casts (cd gates can discard).
     // Actual successful casts are tracked in m.skillsUsed via the wrapCast wrappers above.
     const K=game.keys||{};
@@ -220,7 +379,7 @@ function runBattle(env, persona, rng){
     b.update(dt);
     if(b.autoMode)m.usedAuto=true;
     const hp=b.team.reduce((s,f)=>s+Math.max(0,f.hp),0);
-    if(hp<lastHp)m.dmgTaken+=lastHp-hp;
+    if(hp<lastHp){m.dmgTaken+=lastHp-hp; obs._tookDmg=true;}  // 2026-11-27 Step B: signal tilt pulse
     lastHp=hp;
     m.faints=b.team.filter(f=>!f.alive).length;
     tick++;
@@ -241,7 +400,12 @@ function runBattle(env, persona, rng){
   };
 }
 
-// ---------- main ----------
+// ---------- main (CLI only — skipped when imported as a module) ----------
+// Owner 2026-11-27 Step C: RSI evaluator imports { PERSONAS, PROFILE, ... } below.
+// Script-mode CLI should only run when invoked directly (process.argv[1] ends in
+// playtest-sim.mjs). Guards the script against auto-running when imported.
+const _isCli = process.argv[1] && process.argv[1].endsWith('playtest-sim.mjs');
+if (_isCli) {
 const arg=process.argv.slice(2);
 if(arg[0]==='--list'){ console.log(JSON.stringify(Object.fromEntries(Object.entries(PERSONAS).map(([k,v])=>[k,v.label+' — '+v.desc])),null,2)); process.exit(0); }
 const personaKey=arg[0]||'balanced';
@@ -272,3 +436,9 @@ const summary={
   usedAutoAny:results.some(r=>r.usedAuto),
 };
 console.log(JSON.stringify({persona:personaKey,label:persona.label,desc:persona.desc,summary,battles:results},null,2));
+} // _isCli
+
+// Owner 2026-11-27 Step C: export persona machinery so RSI evaluator can drive
+// candidate evaluation against HUMAN players (not just engine autoDrive). The
+// helpers are pure; the PERSONAS table carries each persona's tick + profile.
+export { PERSONAS, PROFILE, queueDelay, flushDelays, visible, jitterAim, updateTilt, effectiveReactionMs, fogView };

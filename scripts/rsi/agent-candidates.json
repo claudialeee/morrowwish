@@ -1,28 +1,34 @@
 {
   "candidates": [
     {
-      "id": "aggro-bruiser-hug",
-      "label": "Aggressive bruiser: hug the inner edge, close hard",
-      "rationale": "Targets the HIGH-ENGAGE / LOWER-DURABILITY niche (e>=2) the archive lacks — both current elites sit at engage 0-1. Trades standoff safety for a tight hug band so a frontliner maximizes output + positioning (the two heavily-rewarded judge terms), accepting more incoming. Pure fn of f.hp/maxhp + cd readiness.",
-      "bandBody": "const hp=f.hp/(f.maxhp||1); const ready=((f.cd&&f.cd.q)||0)<=0||((f.cd&&f.cd.e)||0)<=0; const base=ready?46:72; const min=Math.max(30,base-10); const max=min+ (hp<0.4?60:40); return {min,max,rush:min,role:'bruiser',hp};"
+      "id": "hp-triage-retreat",
+      "label": "HP-triage retreat: low HP → very wide 280-360 ranged kite (targets low-durability cell)",
+      "rationale": "All 3 current elites sit in durability bin 3 (high HP preserved). This candidate intentionally targets durability bin 0-1 by retreating to extreme range when wounded, trading durability for survival-at-extreme-standoff. Should produce a descriptor in {engage:0, durability:0-1} that is currently empty.",
+      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);if(hp<0.4){const min=280,max=360;return {min,max,rush:max,role:'ranged',hp};}const min=110,max=160;return {min,max,rush:min+10,role:'bruiser',hp};}"
     },
     {
-      "id": "mid-tempo-pulse",
-      "label": "Mid-tempo pulse: commit on CD, drift out between",
-      "rationale": "Targets the MID-TEMPO niche (t=1-2) — both elites are high-tempo (0.76-0.84). Hit-and-run: a tight band when a skill is ready (commit), a wider standoff while recharging (drift), producing a slower pulsing cadence rather than constant pressure. Output comes in bursts, safety recovered between.",
-      "bandBody": "const hp=f.hp/(f.maxhp||1); const q=((f.cd&&f.cd.q)||0), e=((f.cd&&f.cd.e)||0); const ready=q<=0||e<=0; const min=ready?44:150; const max=ready?96:230; return {min,max,rush:ready?min:160,role:ready?'bruiser':'ranged',hp};"
+      "id": "aggressive-execute-rush",
+      "label": "Aggressive execute rush: always tight 30-70 (targets high-engage, low-efficiency cell)",
+      "rationale": "All elites in engage bin 1-2. This commits to engage bin 0 (very close). Short range stacks hits but eats enemy burst — expected to drop efficiency into bin 1-2 (whiffs more under pressure) while maximizing engage. Should fill engage=0 column.",
+      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const min=30,max=70;return {min,max,rush:min,role:'assassin',hp};}"
     },
     {
-      "id": "desperate-dive",
-      "label": "Desperation dive: the lower the HP, the harder it commits",
-      "rationale": "Targets the LOW-DURABILITY niche (d=0-1) — both elites are near-full-HP survivors (0.97-0.98). Inverts the usual HP-gated retreat: a hurt cat dives INWARD to end the fight fast (speed+output rewarded) instead of kiting, a MOBA 'all-in when behind' policy. Recombines baseline's healthy band with an inverted hurt branch.",
-      "bandBody": "const hp=f.hp/(f.maxhp||1); if(hp<0.35){const min=32,max=78;return {min,max,rush:min,role:'assassin',hp};} const min=Math.round(60+hp*40); const max=min+70; return {min,max,rush:min,role:'bruiser',hp};"
+      "id": "patience-mid-poke",
+      "label": "Patience mid-poke: Q cooling → wait at 180-240 (targets low-tempo cell)",
+      "rationale": "All elites in tempo bin 2-3 (fast-acting). This candidate stalls at mid range when Q is cooling — intentionally slow tempo. Should land in tempo bin 0-1 with durability still high. Fills low-tempo axis.",
+      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const q=(f.cd&&f.cd.q||0);if(q>=1.5){const min=180,max=240;return {min,max,rush:max,role:'ranged',hp};}const min=70,max=120;return {min,max,rush:min+10,role:'bruiser',hp};}"
     },
     {
-      "id": "elite-mutation-tighter",
-      "label": "Mutation of stand-at-max elite: pull the standoff 25% inward",
-      "rationale": "Island-evolution mutation of the current #2 elite (stand-at-max-range 0.75): keeps its ranged-standoff shape but pulls min/max ~25% inward so it still kites but actually contributes output + stays in positioning range — testing whether a less-passive version of the runner-up beats baseline while landing in a nearby-but-distinct engage cell.",
-      "bandBody": "const hp=f.hp/(f.maxhp||1); const min=150, max=235; return {min,max,rush:170,role:'ranged',hp};"
+      "id": "stomp-dodge-wave",
+      "label": "Stomp-aware dodge wave: stomp>0.3 → very wide 260-340 + lower role; else tight (targets low-efficiency)",
+      "rationale": "Oscillates between extreme ranges based on _stomp engine signal. Reactive wide-retreat when enemy sharpens should increase negated/dodged% → push efficiency down into bin 1-2. Expected descriptor: engage moderate, tempo high, efficiency LOW — new cell.",
+      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const stomp=this._stomp||0;if(stomp>0.3){const min=260,max=340;return {min,max,rush:max,role:'ranged',hp};}const min=40,max=85;return {min,max,rush:min,role:'assassin',hp};}"
+    },
+    {
+      "id": "closing-reverse-split",
+      "label": "Closing-phase REVERSE split: when closing>0.3 go wide (not tight) — anti-execute (targets low-engage)",
+      "rationale": "Inverted intuition from pack-count-robust/alternating-oscillator. When the engine says we're winning (_closing high), pull back to 220-290 instead of pressing — trades execute-tempo for survival. Should land in engage bin 0-1, tempo bin 1-2, durability bin 3. Explores whether patience-in-winning is a valid policy class.",
+      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const closing=this._closing||0;if(closing>0.3){const min=220,max=290;return {min,max,rush:max,role:'ranged',hp};}const min=80,max=130;return {min,max,rush:min+10,role:'bruiser',hp};}"
     }
   ]
 }

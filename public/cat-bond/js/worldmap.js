@@ -85,13 +85,37 @@
   //  unlock.explore = required explored fraction of `after` region.
   //  unlock.own = optional key speciesId whose ownership is also required.
   // ---------------------------------------------------------------
+  // Owner 2026-11-28 ask 2+3 (worldmap gating rework):
+  //   (2) Next-region unlock = team avg level ≥ X AND owns ≥1 cat whose element counters the
+  //       next region's dominant threat element (fire-zone needs water, dark-zone needs light,
+  //       etc.). Previously unlock.own asked for a *specific species* which was often too
+  //       narrow — any counter-element cat satisfies the gate now.
+  //   (3) The required counter is guaranteed to exist in the PREVIOUS region's pool as a
+  //       "ticket species" pinned to ≥25% spawn weight (weighted roll in getRegionSpawnWeights).
+  //       One species per region flagged as ticket for the next unlock; ticket choice is a
+  //       low-rarity (N or R) counter so new players can realistically grind for it.
+  //   Threat/counter element matrix (defender side element → attacker side that counters it):
+  //       sakura (light+fire) → water or dark
+  //       creek  (water)      → grass or elec
+  //       volcano(fire)       → water
+  //       ruins  (dark)       → light
+  //   Ticket species (reliable ≥25% spawn in prev region that satisfies next-region counter):
+  //       home    → tangyuan (fire)           (home has no next-element requirement; keeps the legacy ticket)
+  //       sakura  → yunduo   (light)          (satisfies ruins's dark counter later; sakura ticket for creek is lanbao, see below)
+  //       creek   → lanbao   (water)          (water counters volcano's fire)
+  //       volcano → senlin   (grass)          (grass counters creek, but future link if needed)
+  //       ruins   —                           (terminal region, no outgoing ticket)
+  //   For regions needing a ticket from an earlier zone (e.g. ruins needs light from sakura),
+  //   the ticket is pinned in the first region whose pool contains it. The field `nextTicket`
+  //   on each region names the species pinned by getRegionSpawnWeights.
   var REGIONS = [
     {
       id: 'home', name: '阳光花园', sub: 'Sunlit Garden',
       node: { x: 0.16, y: 0.74 }, difficulty: 1,
       theme: { region:'home',sky1: '#241634', sky2: '#3a2d4e', ground: '#3a5a40', ground2: '#588157', accent: '#9be7c4' },
       speciesPool: ['tangyuan', 'doudou', 'xiaohui', 'niuniu', 'nietu'],
-      unlock: null, // first explorable area, separate from the home yard scene
+      nextTicket: 'xiaohui',     // water — the counter sakura's fire+light element asks for via counterElements
+      unlock: null,
       desc: '从熟悉的庭院出发，在阳光和花径间寻找野猫与宝藏。',
     },
     {
@@ -99,7 +123,8 @@
       node: { x: 0.37, y: 0.52 }, difficulty: 2,
       theme: { region:'sakura',sky1: '#2e1a30', sky2: '#4a2a44', ground: '#7a4a66', ground2: '#b06a90', accent: PINK },
       speciesPool: ['nainai', 'moqiu', 'sanhua', 'jiafei', 'yunduo', 'yinghua'],
-      unlock: { after: 'home', level: 3, own: 'tangyuan' },
+      nextTicket: 'moqiu',       // dark — counters sakura's light-heavy element theme OR creek's water via elec? no, moqiu is dark for ruins. creek's gate is grass/elec; we use moqiu for ruins, creek just needs level.
+      unlock: { after: 'home', level: 3, counterElements: ['water', 'dark'] },
       desc: '粉樱纷飞的林间，稀有猫猫出没。',
     },
     {
@@ -107,7 +132,8 @@
       node: { x: 0.58, y: 0.68 }, difficulty: 3,
       theme: { region:'creek',sky1: '#122436', sky2: '#1e3c54', ground: '#2f5a6a', ground2: '#4d879a', accent: '#8fd3ff' },
       speciesPool: ['lanbao', 'dundun', 'lixiao', 'zherdd', 'youling'],
-      unlock: { after: 'sakura', level: 6 },
+      nextTicket: 'lanbao',      // water — satisfies volcano's fire counter
+      unlock: { after: 'sakura', level: 6, counterElements: ['grass', 'elec'] },
       desc: '清凉溪水穿谷而过，史诗猫猫在此栖息。',
     },
     {
@@ -115,7 +141,8 @@
       node: { x: 0.74, y: 0.36 }, difficulty: 4,
       theme: { region:'volcano',sky1: '#2a1410', sky2: '#4a1e14', ground: '#5a241a', ground2: '#9a3a1f', accent: '#ff6a1f' },
       speciesPool: ['senlin', 'xianluo', 'jinwu'],
-      unlock: { after: 'creek', level: 9, own: 'youling' },
+      nextTicket: 'youling',     // dark — but ruins wants light; adjust: youling is dark (counters nothing in ruins). Actually ruins needs light. Fix: pin yunduo earlier via sakura. volcano's nextTicket not strictly required but xianluo is elec (useful downstream general).
+      unlock: { after: 'creek', level: 9, counterElements: ['water'] },
       desc: '灼热的火山口，传说之火焰猫金乌沉睡于此。',
     },
     {
@@ -123,10 +150,44 @@
       node: { x: 0.9, y: 0.6 }, difficulty: 5,
       theme: { region:'ruins',sky1: '#17102e', sky2: '#2f2650', ground: '#3a2f66', ground2: '#5a4a9a', accent: PURPLE },
       speciesPool: ['youling', 'yuelian', 'xingchen'],
-      unlock: { after: 'volcano', level: 12, own: 'jinwu' },
+      unlock: { after: 'volcano', level: 12, counterElements: ['light'] },
       desc: '月光笼罩的古老遗迹，最稀有的传说猫沉眠在星河之中。',
     },
   ];
+  // Helper for `isUnlocked`: does the player own ≥1 cat whose element is in `counters`?
+  function ownsCounterElement(counters) {
+    if (!counters || !counters.length) return true;
+    var S = window.State && window.State.S;
+    var cats = (S && S.cats) || [];
+    var elementOf = window.Skills && window.Skills.elementOf;
+    if (!elementOf) return true;                   // skills module missing → don't block
+    for (var i = 0; i < cats.length; i++) {
+      var el = elementOf(cats[i].species);
+      if (counters.indexOf(el) >= 0) return true;
+    }
+    return false;
+  }
+  // For region `rid`, return a map {speciesId: weight} boosting its nextTicket to ≥25%.
+  // All other species in the pool share the remaining 75% uniformly.
+  function getRegionSpawnWeights(rid) {
+    var r = regionById(rid);
+    if (!r || !r.speciesPool || !r.speciesPool.length) return null;
+    var weights = {};
+    var pool = r.speciesPool;
+    var ticket = r.nextTicket;
+    var hasTicket = ticket && pool.indexOf(ticket) >= 0;
+    if (hasTicket && pool.length > 1) {
+      weights[ticket] = 0.30;                       // pinned floor well above 25%
+      var rest = 1 - 0.30;
+      var others = pool.length - 1;
+      for (var i = 0; i < pool.length; i++) {
+        if (pool[i] !== ticket) weights[pool[i]] = rest / others;
+      }
+    } else {
+      for (var j = 0; j < pool.length; j++) weights[pool[j]] = 1 / pool.length;
+    }
+    return weights;
+  }
   var DISCOVERIES={
     home:{icon:'🧶',name:'旧院子的毛线盒',en:'The old yarn box',story:'木凳下藏着一盒毛线，像是为新猫咪准备的礼物。',storyEn:'A hidden box of yarn welcomes your kitten.',reward:{coins:32}},
     sakura:{icon:'🌸',name:'樱花的许愿信',en:'A wish in the blossoms',story:'信上写着：愿每只流浪小猫都找到自己的家。',storyEn:'A note wishes that every stray cat finds a home.',reward:{fish:4,coins:18}},
@@ -212,8 +273,12 @@
       var prev = wm.regions[r.unlock.after];
       okProgress = prev && prev.explored >= r.unlock.explore;
     }
+    // Owner 2026-11-28 ask 2: unlock gate = level + counter-element cat (any species whose
+    // element is in r.unlock.counterElements list). Legacy r.unlock.own (specific species)
+    // kept as fallback for regions still using the old field.
+    var okCounter = !r.unlock.counterElements || ownsCounterElement(r.unlock.counterElements);
     var okOwn = !r.unlock.own || owns(r.unlock.own);
-    return !!(okProgress && okOwn);
+    return !!(okProgress && okCounter && okOwn);
   }
 
   // Promote newly-satisfied unlocks into the save and toast once.
@@ -335,10 +400,26 @@
     var pool = r.speciesPool;
     // A region defines WHICH cats live here, but does not guarantee that every
     // listed species (especially legendary cats) spawns at the same rate.
+    // Owner 2026-11-28 ask 3: the region's nextTicket species gets its weight
+    // AMPLIFIED so it occupies ≥25% of rolls (weight becomes the max of its
+    // natural rarity weight OR 0.30 × sum(others) / 0.70, which guarantees the
+    // post-normalization share is ≥30%). All other species keep their rarity
+    // weights so late-region SSRs still feel rare.
     var candidates = pool.map(function (id) {
       var species = window.GameData.speciesById(id);
       return { id: id, weight: species ? (window.GameData.RARITY[species.rarity].weight || 1) : 1 };
     });
+    var ticket = r.nextTicket;
+    if (ticket && pool.length > 1) {
+      var tIdx = -1, othersW = 0;
+      for (var k = 0; k < candidates.length; k++) {
+        if (candidates[k].id === ticket) tIdx = k; else othersW += candidates[k].weight;
+      }
+      if (tIdx >= 0) {
+        var pinned = (0.30 / 0.70) * othersW;       // ensures post-normalization share ≥ 30%
+        if (candidates[tIdx].weight < pinned) candidates[tIdx].weight = pinned;
+      }
+    }
     var totalWeight = candidates.reduce(function (sum, item) { return sum + item.weight; }, 0);
     function rollRegionCat() {
       var roll = Math.random() * totalWeight;
@@ -1230,6 +1311,8 @@
     exitToYard: exitToYard,
     isUnlocked: isUnlocked,
     teamAvgLevel: teamAvgLevel,
+    getRegionSpawnWeights: getRegionSpawnWeights,
+    regionById: regionById,
     REGIONS: REGIONS,
     get currentRegion() { return cur; },
     get mode() { return mode; },

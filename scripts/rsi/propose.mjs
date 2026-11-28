@@ -43,7 +43,7 @@
  *   scored only by the evaluator (ground truth), never by assertion; edits nothing outside
  *   scripts/rsi/. Not wired into `npm run check`.
  */
-import { evaluate, scoreConfig, DEFAULT_WEIGHTS } from './evaluator.mjs';
+import { evaluate, scoreConfig, DEFAULT_WEIGHTS, updatePairPosterior } from './evaluator.mjs';
 import { makeArchive } from './archive.mjs';
 import { writeFileSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -61,15 +61,48 @@ const ARCHIVE = makeArchive();
 // cannot game the sweep; the deliberately-bad "stand at max range" control falls out of the top on
 // the harder point because it can't actually win the fight once the enemy hits harder.
 // ============================================================================================
+// Owner 2026-11-28 pit D (adversarial self-reflect): prior ENEMIES = [doudou,doudou] made every
+// winner overfit doudou's林间伏击 passive timing. Now sweep across species × role × element ×
+// passive-category × difficulty so no single trait timing can carry a candidate. All historical
+// archive scores from before this expansion become apples-to-oranges and will be re-earned.
+// Picked (covers 7 of 9 passive categories, 5 roles, 5 elements):
+//  - doudou  (tabby,   fire-ish N,   fighter, ambush-backstab)         — moderate
+//  - lanbao  (blue,    water R,      fighter, hit-chill-stacks)        — moderate-hard, applies frost
+//  - senlin  (maine,   grass SR,     tank,    persistent-plant-body)   — tanky, slow but durable
+//  - baomao  (bengal,  normal SR,    assassin, crit/pounce)             — high burst, fragile
+//  - yunduo  (ragdoll, light R,      support, heal-link → spreads heal) — healer enemy, drags fights long
+//  - duanduan(apricot, elec R,       assassin, dash-echo lightning)     — kiter, hit-and-run
+//  - xingchen(mystic,  mystic SSR,   control, astral-chill + silence)   — hard endgame boss
 const ENEMIES = [
-  { species: 'doudou', hp: 1100, dmg: 130 },   // moderate (original pin — kept so history numbers stay comparable)
-  { species: 'doudou', hp: 2400, dmg: 280 },   // hard — dmg high enough that standing still loses survival/win
+  { species: 'doudou',   hp: 1100, dmg: 130 },   // moderate ambush fighter
+  { species: 'lanbao',   hp: 1400, dmg: 160 },   // chill-stack water fighter
+  { species: 'senlin',   hp: 2600, dmg: 140 },   // grass tank, lives long
+  { species: 'baomao',   hp:  900, dmg: 220 },   // bengal crit burst, glass cannon
+  { species: 'yunduo',   hp: 1600, dmg: 110 },   // heal-link support — forces timeout fights
+  { species: 'duanduan', hp: 1100, dmg: 180 },   // dash-echo kiter
+  { species: 'xingchen', hp: 3200, dmg: 260 },   // SSR control boss
 ];
+
+// Owner 2026-11-27 Step E / 2026-11-28 panicky-exclusion:
+// PERSONAS_SWEEP evaluates candidates on multiple archetypes so RSI doesn't overfit to
+// one playstyle. Each run produces a per-persona score; the COHORT score is the MIN
+// across a SUBSET of SCORING personas (defined by PERSONAS_SCORING below) so one bad
+// persona can't crush every candidate's score.
+//
+// Why exclude panicky from scoring: diagnostic (cycle 2026-11-28T02:18:13Z) shows
+// panicky solo-live win=0.00 output=0.46 on baseline too — panicky's wild random-taps
+// + 80px aim jitter + 55° vision cone fundamentally can't aim at a solo enemy. It's
+// an archetype that SHOULD lose; using it as a score floor means no candidate ever
+// passes. Panicky still runs in the sweep so we see IF a candidate specifically
+// helps panicky; it just doesn't define the cohort min.
+const PERSONAS_SWEEP = [null, 'lazy', 'explorer', 'panicky'];
+const PERSONAS_SCORING = [null, 'lazy', 'explorer', 'panicky']; // median experiment: include panicky
+const COHORT_AGGREGATE = 'median';                              // 'min' | 'median'
 const CAT = {
   build: 'fighter', stats: { pow: 90, agi: 80, vit: 130, cha: 60 },
   loadout: { q: { kind: 'melee', power: 1.4, cd: 1.1 }, e: { kind: 'projectile', power: 1.1, cd: 1.0 } },
 };
-const EVAL_OPTS = { seeds: [7, 42, 101], frames: 1800, scenarios: ['solo-pinned', 'solo-live', 'multi'] };
+const EVAL_OPTS = { seeds: [7, 42, 101], frames: 1800, scenarios: ['solo-pinned', 'solo-live', 'multi', 'team-2-live', 'team-2-multi'] };
 
 // ============================================================================================
 // CANDIDATE (PROPOSAL) SCHEMA — the clean contract an LLM proposer (or a human) emits. Every
@@ -276,11 +309,64 @@ try {
   for (const c of list) {
     if (!c || !c.bandBody || !c.id) continue;
     let band;
-    try { band = new Function('f', `"use strict"; return (${c.bandBody})(f);`); } catch (_) { continue; }
-    // validate: call on a dummy fighter, require a finite, ordered band
+    // Owner 2026-11-27: bandBody now has access to `this` (the battle instance)
+    // in addition to `f`. Candidates can read this.enemies, this.team, this.t,
+    // this.aiP, this.pack*, etc. for pack-aware positioning decisions.
+    // Signature: function(f){ return {min,max,rush,role,hp}; } — callable as
+    // b.kitRangeBand(f) so `this === b`. The wrapper forwards both.
+    // Pit-digger finding (2026-11-28): the original wrapper called candidate with
+    // `this === battleInstance` via `.call(this, f)`, letting a malicious/buggy bandBody
+    // mutate enemies, zero out HP, etc. Fix: at runtime, build a read-only frozen snapshot
+    // of the battle instance exposing only positioning-relevant fields and invoke the raw
+    // candidate function with that snapshot as `this`. Writes throw (frozen); reads to
+    // unknown fields return `undefined`.
+    let rawFn;
     try {
-      const probe = band({ hp: 60, maxhp: 100, cd: { q: 0, e: 0 } });
-      if (!probe || !Number.isFinite(probe.min) || !Number.isFinite(probe.max) || probe.max < probe.min) continue;
+      rawFn = new Function(`"use strict"; return (${c.bandBody});`)();
+      if (typeof rawFn !== 'function') continue;
+    } catch (_) { continue; }
+    band = function (f) {
+      const b = this;
+      const es = Array.isArray(b?.enemies) ? b.enemies.map(e => Object.freeze({
+        alive: !!e?.alive, hp: +e?.hp || 0, maxhp: +e?.maxhp || 1, role: e?.role, species: e?.species,
+      })) : [];
+      const tm = Array.isArray(b?.team) ? b.team.map(m => Object.freeze({
+        alive: !!m?.alive, hp: +m?.hp || 0, maxhp: +m?.maxhp || 1,
+      })) : [];
+      const safeThis = Object.freeze({
+        enemies: Object.freeze(es),
+        team: Object.freeze(tm),
+        t: +b?.t || 0,
+        _stomp: +b?._stomp || 0,
+        _closing: +b?._closing || 0,
+        aiP: Object.freeze({ ...(b?.aiP || {}) }),
+      });
+      return rawFn.call(safeThis, f);
+    };
+    // validate across multiple cd/HP states (pit-digger: prior probe only tested cd:0,0 bothReady
+    // branch; a bandBody returning NaN in bothCool would pass validation and NaN at runtime).
+    try {
+      const probePoints = [
+        { hp: 60,  maxhp: 100, cd: { q: 0,   e: 0   } },  // bothReady
+        { hp: 60,  maxhp: 100, cd: { q: 3,   e: 3   } },  // bothCool
+        { hp: 60,  maxhp: 100, cd: { q: 0,   e: 3   } },  // mixed
+        { hp: 20,  maxhp: 100, cd: { q: 1.5, e: 1.5 } },  // low HP, mid cd
+        { hp: 95,  maxhp: 100, cd: { q: 0.1, e: 0.1 } },  // high HP, almost-ready
+      ];
+      const probeThisList = [
+        { enemies: [], team: [], t: 0, aiP: {}, _stomp: 0, _closing: 0 },
+        { enemies: [{alive:true,hp:500,maxhp:1000,role:'bruiser'}], team: [{alive:true,hp:50,maxhp:100}], t: 5, aiP: {}, _stomp: 0.2, _closing: 0.3 },
+        { enemies: [{alive:true,hp:100,maxhp:1000},{alive:true,hp:900,maxhp:1000},{alive:true,hp:500,maxhp:1000}], team: [], t: 20, aiP: {}, _stomp: 0.5, _closing: 0.5 },
+      ];
+      let ok = true;
+      for (const probeThis of probeThisList) {
+        for (const pf of probePoints) {
+          const probe = band.call(probeThis, pf);
+          if (!probe || !Number.isFinite(probe.min) || !Number.isFinite(probe.max) || probe.max < probe.min) { ok = false; break; }
+        }
+        if (!ok) break;
+      }
+      if (!ok) continue;
     } catch (_) { continue; }
     CANDIDATES.push({ id: 'agent:' + c.id, label: c.label || c.id, kind: 'agent', rationale: c.rationale || '(agent-proposed)', band });
   }
@@ -314,23 +400,48 @@ const REWARD_CANDIDATE = {
 // the judge score per candidate, so a candidate cannot win by over-fitting a single pin.
 // ============================================================================================
 function runCandidate(candidate) {
-  const perPoint = ENEMIES.map(enemy => {
-    const config = toConfig(candidate, enemy);
-    const result = evaluate(config, EVAL_OPTS);
-    const scoreJudge = scoreConfig(result, JUDGE);
-    const scoreBaseline = scoreConfig(result);
-    return { enemy, result, scoreJudge, scoreBaseline };
+  // Owner 2026-11-27 Step E: cross-product sweep of persona × enemy. A winner must
+  // beat baseline in the WEAKEST persona (min-score rule), not just on average —
+  // so masher doesn't lose to a rule optimized for explorer.
+  const perPoint = [];
+  for (const enemy of ENEMIES) {
+    for (const persona of PERSONAS_SWEEP) {
+      const config = toConfig(candidate, enemy);
+      config.persona = persona;                    // Step D plumbed to evaluate() / runScenarioInner
+      const result = evaluate(config, EVAL_OPTS);
+      const scoreJudge = scoreConfig(result, JUDGE);
+      const scoreBaseline = scoreConfig(result);
+      perPoint.push({ enemy, persona, result, scoreJudge, scoreBaseline });
+    }
+  }
+  // Cohort score = min across SCORING personas per enemy, then mean across enemies. Panicky is
+  // in PERSONAS_SWEEP for diagnostic (we see IF a candidate helps it) but NOT in PERSONAS_SCORING
+  // (its baseline solo-live win is already 0.00 regardless of rule, so including it crushes the floor).
+  const perEnemy = ENEMIES.map(e => {
+    const subset = perPoint.filter(p => p.enemy === e && PERSONAS_SCORING.includes(p.persona));
+    const agg = (arr) => {
+      if (COHORT_AGGREGATE === 'median') {
+        const s = [...arr].sort((a,b)=>a-b);
+        const n = s.length;
+        return n % 2 ? s[(n-1)/2] : (s[n/2-1] + s[n/2]) / 2;
+      }
+      return Math.min(...arr);
+    };
+    const minJudge = agg(subset.map(p => p.scoreJudge));
+    const minBaseline = agg(subset.map(p => p.scoreBaseline));
+    return { enemy: e, minJudge, minBaseline };
   });
-  const scoreJudge = perPoint.reduce((s, p) => s + p.scoreJudge, 0) / perPoint.length;
-  const scoreBaseline = perPoint.reduce((s, p) => s + p.scoreBaseline, 0) / perPoint.length;
-  // Feed the archive using the moderate operating point's result — descriptors should reflect
-  // a consistent fight, not an average of two. Using the first (moderate) point keeps the
-  // behavior-space meaning stable across cycles.
-  ARCHIVE.add(perPoint[0].result, scoreJudge, candidate, candidate.id || candidate.label);
+  const scoreJudge = perEnemy.reduce((s, p) => s + p.minJudge, 0) / perEnemy.length;
+  const scoreBaseline = perEnemy.reduce((s, p) => s + p.minBaseline, 0) / perEnemy.length;
+  // MAP-Elites fed with the AUTO-DRIVE baseline-persona result on the moderate enemy so cell
+  // descriptors (engage/tempo/durability/efficiency) stay comparable across cycles and personas.
+  const archivePoint = perPoint.find(p => p.persona === null && p.enemy === ENEMIES[0]) || perPoint[0];
+  ARCHIVE.add(archivePoint.result, scoreJudge, candidate, candidate.id || candidate.label);
   return {
     candidate,
-    result: perPoint[0].result,       // the moderate-enemy result is kept for the per-scenario detail print
+    result: archivePoint.result,       // auto-drive moderate-enemy result for per-scenario detail print
     perPoint,
+    perEnemy,
     scoreBaseline,
     scoreJudge,
   };
@@ -452,6 +563,42 @@ function main() {
     console.log(`  MAP-Elites archive: ${summary.coverage}/${summary.maxCells} behavior niches filled (${summary.grid}); ` +
       `best '${summary.best?.label}' ${summary.best ? summary.best.score.toFixed(3) : '?'} → rsi-archive.json`);
   } catch (e) { console.error('  (archive dump skipped: ' + e.message + ')'); }
+
+  // Owner 2026-11-28 reviewer FIX: wire `updatePairPosterior` so the B half of the A+B pair
+  // sampler actually learns. Walk per-candidate results, collect (pairKey, candidateScore)
+  // for team-2 scenarios, and call the posterior update with baseline for delta signal.
+  try {
+    const perPair = new Map();                         // pairKey → { scoresByCandidate, baselineScore }
+    for (const row of rows) {                           // rows = ranked candidates from runCandidate
+      const cid = row.candidate.id || row.candidate.label;
+      for (const p of (row.perPoint || [])) {
+        const scn = p.result && p.result.perScenario;
+        if (!scn) continue;
+        for (const sname of Object.keys(scn)) {
+          if (sname !== 'team-2-live' && sname !== 'team-2-multi') continue;
+          const pk = scn[sname]._pairKey;
+          if (!pk) continue;
+          if (!perPair.has(pk)) perPair.set(pk, { pairKey: pk, scoresByCandidate: {}, baselineScore: Number.NEGATIVE_INFINITY });
+          const entry = perPair.get(pk);
+          entry.scoresByCandidate[cid] = p.scoreJudge;
+          if (row.candidate.kind === 'baseline' || cid === 'baseline') {
+            if (Number.isFinite(p.scoreJudge) && p.scoreJudge > entry.baselineScore) entry.baselineScore = p.scoreJudge;
+          }
+        }
+      }
+    }
+    // baselineScore fallback: median across all candidates on that pair, if no explicit baseline row
+    for (const e of perPair.values()) {
+      if (!Number.isFinite(e.baselineScore)) {
+        const vals = Object.values(e.scoresByCandidate).filter(Number.isFinite).sort((a, b) => a - b);
+        e.baselineScore = vals.length ? vals[Math.floor(vals.length / 2)] : 0;
+      }
+    }
+    if (perPair.size) {
+      updatePairPosterior([...perPair.values()]);
+      console.log(`  pair-posterior: updated ${perPair.size} team-pair entries → pair-posterior.json`);
+    }
+  } catch (e) { console.error('  (pair-posterior update skipped: ' + e.message + ')'); }
   console.log('scripts/rsi/propose.mjs — pipeline OK (deterministic; control ranked last; scores finite).');
 }
 
