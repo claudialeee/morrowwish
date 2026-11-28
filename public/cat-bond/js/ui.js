@@ -106,7 +106,7 @@ const UI = {
     document.getElementById('battle-skill-guide-close')?.addEventListener('click',()=>this.game.toggleBattleSkillGuide(false));
     // move-bar buttons (also usable by touch / clicking)
     document.querySelectorAll('.move-bar .move').forEach(btn => {
-      btn.addEventListener('click', () => {
+      const activate = () => {
         const b = this.game.battle; if (!b || this.game.battleHelpOpen) return;
         const m = btn.dataset.move;
         if(m==='lock'){
@@ -120,7 +120,16 @@ const UI = {
           return;
         }
         if (m === 'dodge') b.dodge(); else b.castMove(m);
-      });
+      };
+      // A second finger may not generate a compatibility click while the movement
+      // finger is held. Execute the touch action on its own touchstart, without
+      // cancelling the canvas touch; keyboard/mouse retain native click behavior.
+      let lastTouch=-Infinity;
+      btn.addEventListener('touchstart', e => {
+        if(this.game.scene!=='battle'||!this.game.isTouch||!e.changedTouches.length)return;
+        e.preventDefault();e.stopPropagation();lastTouch=performance.now();activate();
+      },{passive:false});
+      btn.addEventListener('click',e=>{if(e.detail!==0&&performance.now()-lastTouch<700)return;activate();});
     });
     if(!document.getElementById('battle-touch-joystick')){
       const pad=document.createElement('div');
