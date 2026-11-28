@@ -27,6 +27,7 @@ const UI = {
     });
     document.getElementById('fab-feed').addEventListener('click', () => this.openFeed());
     document.getElementById('fab-play').addEventListener('click', () => this.openTease());
+    document.getElementById('fab-life')?.addEventListener('click',()=>{if(this.game.scene==='yard')this.openYardLife();});
     document.getElementById('fab-build')?.addEventListener('click', () => { if (this.game.scene === 'yard') this.openBuild(); });
     // DEBUG unlock-all (?debug=1 only): grants every species, max-level, all skills learned,
     // full affinity + unlocked worldmap regions. For gauging high-level combat feel.
@@ -1124,6 +1125,29 @@ const UI = {
     // navigation-stack entry. Its visible “Back to adventure” control must
     // return to that guide, not silently jump to the unrelated solo cat hub.
     document.getElementById('duo-return').onclick=()=>this._navStack.length?this.navigateBack():this.openJourney();
+  },
+
+  openYardLife(){
+    const zh=window.MorrowwishI18n?.get?.()==='zh';
+    this.panel('<span class="card-close">×</span><h2 class="center"></h2><div id="yard-life-history"></div>');
+    const host=document.getElementById('yard-life-history');
+    host.previousElementSibling.textContent=zh?'庭院手账':'Garden journal';
+    const history=State.S.yardLife?.history;
+    const entries=Array.isArray(history)?history.slice(-30).reverse():[];
+    if(!entries.length){
+      host.textContent=zh?'让两只猫在庭院相处一会儿，看看它们会做什么。':'Spend a little time with two cats in the garden and see what they do.';
+      return;
+    }
+    for(const event of entries){
+      const cats=(event.cats||[]).map(uid=>State.S.cats.find(c=>c.uid===uid));
+      const info=window.CatRelations?.memoryInfo(cats[0],cats[1],event.id);
+      if(!info)continue;
+      const row=document.createElement('p');
+      const title=document.createElement('b');
+      title.textContent=event.day+' · '+info.icon+' '+info.title;
+      row.append(title,document.createElement('br'),document.createTextNode(info.story));
+      host.append(row);
+    }
   },
 
   // ---- 欢迎回来 (offline raising report) ----

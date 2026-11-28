@@ -1014,9 +1014,10 @@ class YardScene {
     this._nextLifeCheck=this.game.t+3;
     if(document.getElementById('panel')?.classList.contains('open'))return;
     const now=new Date(),day=[now.getFullYear(),now.getMonth()+1,now.getDate()].join('-');
-    const life=State.S.yardLife||(State.S.yardLife={day:'',history:[]});
+    if(!State.S.yardLife||typeof State.S.yardLife!=='object'||Array.isArray(State.S.yardLife))State.S.yardLife={day:'',history:[]};
+    const life=State.S.yardLife;
     if(life.day===day)return;
-    const idle=cats.filter(e=>!e._buildTarget&&!(e._playBuildT>0));
+    const idle=cats.filter(e=>!e._buildTarget&&!(e._playBuildT>0)&&!(e._lifeUntil>this.game.t)&&!(e.pettedGlow>0));
     if(idle.length<2)return;
     const history=Array.isArray(life.history)?life.history:[];
     const candidates=[];
