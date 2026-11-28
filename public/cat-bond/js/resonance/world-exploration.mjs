@@ -13,7 +13,7 @@ export const layouts={
    [.887,.538],[.837,.61],[.80,.682],[.802,.742],[.87,.748]],
   castPoints:{jiedeng:[.195,.50],qilan:[.16,.60]},
   features:{
-   "puzzle:chime-chase":[.16,.60,"穿过风铃巷","Chase the runaway chime"],
+   "puzzle:chime-chase":[.16,.60,"寻回铃纹","Restore the bell patterns"],
    "battle:chime-beast":[.195,.50,"铃舌兽","Belltongue Beast"],
    "repair:harbor":[.131,.341,"古铃圣所","Town bell sanctuary"],
    "melody:harbor":[.131,.341,"归家调","Coming Home"]
