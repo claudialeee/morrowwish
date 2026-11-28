@@ -67,7 +67,7 @@ function install(){
   button.onclick=dismiss;window.addEventListener("cat-bond-active-save-changed",dismiss);window.addEventListener("morrowwish-language-change",render);render();button.focus();
   const mobile=()=>window.matchMedia("(orientation:portrait) and (max-width:700px)").matches;
   const shots=[
-   {wide:"../../assets/resonance-world-v2/starfall.webp",tall:"../../assets/mobile-portrait/battle-finale.webp",zh:"六座古铃再次回应，失去的记忆回来了。",en:"The six bells answer again, and lost memories return."},
+   {wide:"../../assets/combat/star-bell-arena-chorus-wide.webp",tall:"../../assets/mobile-portrait/battle-finale-chorus.webp",zh:"六座古铃再次回应，失去的记忆回来了。",en:"The six bells answer again, and lost memories return."},
    {wide:"../../assets/core-art-remaster/story/b04-reunion.webp",tall:"../../assets/mobile-portrait/story-b04-reunion.webp",zh:"这一次，他们一起回家。",en:"This time, they go home together."},
    {wide:"../../assets/core-art-remaster/story/e03-garden.webp",tall:"../../assets/mobile-portrait/story-e03-garden.webp",zh:"朋友们快到了。多准备几杯茶吧。",en:"Their friends are coming. Put on a few more cups of tea."}
   ];let shot=0,timer=0,disposed=false;const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;

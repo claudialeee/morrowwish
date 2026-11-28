@@ -48,7 +48,7 @@ async function play(sceneId){
   return new Promise(resolve=>{
    root.hidden=false;
    const panel=document.createElement("section");panel.dataset.canonAcknowledgement=sceneId;
-   panel.style.cssText="position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:rgba(42,32,56,.76);overflow:auto";
+   panel.style.cssText="position:absolute;inset:0;z-index:20;display:grid;place-items:end center;padding:16px;background:linear-gradient(0deg,#221c30a0,transparent 65%);overflow:auto";
    const card=document.createElement("div");card.style.cssText="width:min(100%,520px);box-sizing:border-box;background:#fff5e9;color:#493852;border-radius:18px;padding:22px;text-align:center;box-shadow:0 8px 30px #30223b66";
    const h=document.createElement("h2"),p=document.createElement("p"),button=document.createElement("button");
    const localize=()=>{const l=language();h.textContent=title[l];p.textContent=body[l];button.textContent=label[l];};
@@ -74,6 +74,9 @@ async function play(sceneId){
   if(!["starfall:F-02","starfall:F-05","finale:B-04"].includes(sceneId)||s?.choices?.length||runtime.view().objective.some(op=>!op.startsWith("cinematic:"))){close();game.toast({zh:"演出暂未就绪，请重试。",en:"The cinematic could not play. Try again."});return;}
   fallbackActive=true;player?.dispose();player=null;root?.remove();
   root=document.createElement("div");root.className="res-chapter-cinematic cb-story-overlay is-visible";
+  const portrait=window.matchMedia("(orientation:portrait) and (max-width:700px)").matches;
+  const painting=sceneId==="starfall:F-02"?(portrait?"mobile-portrait/story-f02-history.webp":"core-art-remaster/story/f02-history.webp"):sceneId==="finale:B-04"?(portrait?"mobile-portrait/story-b04-reunion.webp":"core-art-remaster/story/b04-reunion.webp"):(portrait?"mobile-portrait/battle-finale-lock.webp":"resonance-world-v2/starfall.webp");
+  const background=document.createElement("img");background.alt="";background.src=new URL("../../assets/"+painting,import.meta.url).href;Object.assign(background.style,{position:"absolute",inset:"0",width:"100%",height:"100%",objectFit:"contain",background:"#322e3b"});root.append(background);background.addEventListener("load",()=>{if(root.isConnected&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches)background.animate([{opacity:0},{opacity:1}],{duration:600,fill:"forwards"});},{once:true});
   document.getElementById("stage").append(root);
   (async()=>{
    try{

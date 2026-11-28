@@ -3,9 +3,9 @@ import {campaign} from "./campaign.mjs";
 import {validMirrorProof} from "./canon22-mirror.mjs";
 import {spatialKind,validSpatialProof} from "./canon22-spatial.mjs";
 import {validNeighborTrial} from "./canon22-neighbor-trial.mjs";
-import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyCache} from "./sky-flight.mjs";
+import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyCache} from "./sky-flight.mjs?v=starbell-release-quality-r2-20261127";
 import {getSlotRuntime} from "./slot-runtime.mjs";
-import {layouts,puzzleSpecs,canonRestorationPrerequisites,retiredWorldOperations} from "./world-exploration.mjs";
+import {layouts,puzzleSpecs,canonRestorationPrerequisites,retiredWorldOperations} from "./world-exploration.mjs?v=starbell-release-quality-r2-20261127";
 import {applySideEvent} from "./side-adventures.mjs";
 import {applyDiscovery} from "./regional-discoveries.mjs";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord} from "./library-mechanisms.mjs";
@@ -177,7 +177,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(op==="melody:forest"&&!["yahe","yuchuan"].every(id=>(w.interactions["forest:R-04:invite:"+id]||autoReady("forest",id,v))))return fail("local-response-required");
   if(op==="melody:sky"&&!["lingyu","yuanfan"].every(id=>(w.interactions["sky:S-03:invite:"+id]||autoReady("sky",id,v))))return fail("local-response-required");
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||(!direct&&(proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))))return fail("local-response-required");}
-  const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};
+  const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};if(op==="puzzle:joint-flight"&&proof.flightProof?.flightVersion===2){const n=Math.min(4,new Set(proof.flightProof.feathers||[]).size);reward.coins+=n*3;reward.fish+=Number(n>=3);}
   if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
   const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]&&!(direct&&op==="explore:flight-recorder")?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:spatialKind(op)?proof.spatialProof:op==="puzzle:library-echo"?{trace:[...proof.mirrorProof.trace],choice:proof.mirrorProof.choice}:op==="explore:routing-record"?{question:proof.libraryQuestion}:op==="melody:starfall"?proof.shortRing:region==="sky"&&proof.flightProof?proof.flightProof:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }

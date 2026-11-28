@@ -1,6 +1,6 @@
 import {paintArt,paintPlate} from "./canon22-art.mjs";
 // Skyspine flight simulation. Ephemeral controls; only canonical world evidence is saved.
-import {newGlide,steerGlide,tickGlide,glideProof,validGlideProof,landableGlide,holdGlide,flightFeathers} from "./canon22-glide.mjs";
+import {newGlide,steerGlide,tickGlide,glideProof,validGlideProof,landableGlide,holdGlide,flightFeathers} from "./canon22-glide.mjs?v=starbell-release-quality-r2-20261127";
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const routes={
  "puzzle:sky-pouch":[.65,.34,.64],
@@ -130,7 +130,7 @@ export function paintSkyFlight(ctx,f,img,W,H,lang,drawCat,drawNpc,nativeBackgrou
   drawGlider(ctx,img,partnerX,partnerY,W,H,f.velocity*.8);drawNpc("muling",partnerX,partnerY,.64);
  }
  drawGlider(ctx,img,x,y,W,H,f.velocity);drawCat(x,y);if(!nativeBackground)cloudLayers(ctx,img,f.elapsed,W,H,true);
- if(f.operation==="puzzle:joint-flight"){ctx.font="700 16px sans-serif";ctx.fillStyle="#fff5cf";ctx.textAlign="center";ctx.shadowColor="#203b48";ctx.shadowBlur=4;ctx.fillText(t("羽毛 ","Feathers ")+(f.feathers?.length||0)+"/"+flightFeathers.length+" · "+(f.notice==="cloud"?t("云雾减速","Cloud slows you"):f.notice==="approach"?t("即将降落","Landing soon"):t("拖动控制高度","Drag to steer")),W/2,H*.94,W*.92);ctx.shadowBlur=0;ctx.restore();return;}
+ if(f.operation==="puzzle:joint-flight"){ctx.font="700 16px sans-serif";ctx.fillStyle="#fff5cf";ctx.textAlign="center";ctx.shadowColor="#203b48";ctx.shadowBlur=4;ctx.fillText(t("羽毛 ","Feathers ")+(f.feathers?.length||0)+"/"+flightFeathers.length+" · "+(f.notice==="cloud"?t("云雾减速 · 可能掉落羽毛","Cloud slows you · may lose a feather"):f.notice==="approach"?t("即将降落","Landing soon"):t("拖动控制高度","Drag to steer")),W/2,H*.94,W*.92);ctx.shadowBlur=0;ctx.restore();return;}
  if(nativeBackground){ctx.font="700 17px sans-serif";ctx.textAlign="center";ctx.fillStyle="#fff8e6";ctx.shadowColor="#203b48";ctx.shadowBlur=5;ctx.shadowOffsetY=1;ctx.fillText(t("风向 ","Wind ")+(wind>0?"↓":"↑")+" "+Math.round(Math.abs(wind)*100),W/2,24);ctx.shadowBlur=0;ctx.shadowOffsetY=0;if(f.operation==="explore:flight-recorder"&&f.gate>0&&f.notice==="flying"){const lines=zh?["旧风标：事故前，翎羽误判侧风。","断裂货索：远帆主动切断货物绳索。","记录仪：两只猫因此幸存。"]:["Old wind gauge: Wren misread the crosswind.","Severed cargo line: Finn cut it deliberately.","Recorder: both siblings survived because of it."];ctx.font="600 16px sans-serif";ctx.shadowColor="#203b48";ctx.shadowBlur=5;ctx.fillText(lines[f.gate-1],W/2,H-22,W-24);}ctx.restore();return;}
  ctx.font="600 22px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";ctx.textAlign="center";ctx.fillStyle="#fff2d1";ctx.fillText(f.practice?t("第一次滑翔 · 借风再落地","First glide · catch the wind and land"):f.openGlide?t("借风越过云瀑，选择自己的路线","Ride the wind around the waterfall"):t("穿过风圈，抵达安全降落区","Cross the wind gates and land safely"),W/2,34);
  ctx.font="600 17px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif";ctx.fillText(t("风向仪 ","Wind gauge ")+(wind>0?"↓":"↑")+" "+Math.round(Math.abs(wind)*100)+"   "+(f.x>.42&&f.x<.57?t("上升气流 · ","Updraft · "):"")+(f.practice?t("安全落地","Land safely"):f.openGlide?(f.routeUsed==="upper"?t("云瀑捷径","Shortcut"):f.routeUsed==="lower"?t("外侧风路","Outer route"):t("选择高处或低处","Choose high or low")):t("航标 ","Gates ")+f.gate+"/3"),W/2,62);

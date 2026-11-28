@@ -3,7 +3,7 @@ import {newNeighborTrial,advanceNeighborTrial,neighborTrialProof} from "./canon2
 import {mirrorProof} from "./canon22-mirror.mjs";
 import {newSpatial,spatialInput,spatialProof,tickSpatial,spatialKind,startBridgeWalk,advanceBridgeWalk,animateStarPlatforms} from "./canon22-spatial.mjs?v=story-causality-20261127";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary} from "./library-mechanisms.mjs";
-import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache,landSkyFlight} from "./sky-flight.mjs";
+import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache,landSkyFlight} from "./sky-flight.mjs?v=starbell-release-quality-r2-20261127";
 // Actual walkable region mechanics. Story progression is never stored here.
 export const layouts={
  finale:{name:["中央星铃","Star Bell"],paths:[[.5,.88],[.5,.78],[.5,.68],[.5,.58],[.5,.48]],castPoints:{},features:{}},

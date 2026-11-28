@@ -518,3 +518,9 @@
 #stage:has(.res-dialogue[aria-modal=true]) .rw-primary-guide,#stage:has(.rw-region-compact>.rw-fit-rail:not([hidden])) .rw-primary-guide{visibility:hidden!important;pointer-events:none!important}
 #stage .res-ending-film [hidden]{display:none!important}#stage .res-ending-film .res-ending-skip{position:absolute;right:12px;top:12px;z-index:4;min-height:44px;padding:8px 14px;border:1px solid #b7986b;background:#fff5e9ed;color:#604a37;border-radius:10px}#stage .res-ending-film .res-ending-caption{position:absolute;bottom:max(18px,env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:max-content;max-width:88%;padding:10px 18px;border-radius:12px;color:#fff9e9;background:#332b28db;text-align:center;font-size:clamp(16px,2.8vmin,23px);z-index:3}
 #stage #battle-ui.on.touch-battle .move-bar .move{touch-action:none!important}#stage #battle-ui.on.touch-battle .move-bar .mv-k{font-size:10px!important}#stage #battle-ui.on.touch-battle #duo-burst{touch-action:none!important}#stage #battle-ui.on.touch-battle .cb-region-combat button{touch-action:none!important}#stage .cb-save-picker [data-slot-language],#stage .cb-save-picker .cb-picker-language{display:none!important}
+
+/* New-region overview fits the entire interactive map inside the viewport. */
+#stage .rw-world.rw-region-compact:not([hidden]){background:var(--rw-region-art,none) center/cover no-repeat!important}
+#stage .rw-world.rw-region-compact:not([hidden])>.rw-shell{background:transparent!important}
+#stage .rw-world.rw-region-compact:not([hidden])>.rw-shell>.rw-surface{width:min(100cqw,calc(100cqh * var(--rw-map-width-ratio,1.77777778)))!important;height:auto!important;aspect-ratio:var(--rw-map-ratio,16/9)!important;max-height:100%!important}
+@media(orientation:portrait) and (max-width:700px){#stage .rw-world.rw-region-compact:has(>.rw-primary-guide):not([hidden])>.rw-shell{inset:58px 0 76px!important;height:auto!important;width:100%!important}}
