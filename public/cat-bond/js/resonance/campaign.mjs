@@ -539,8 +539,8 @@ export const campaign = {
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "阿婆刚才还认出我了！对了，小家伙，那只金猫走之前把地图落在我这儿了。你瞧，它在阳光花园旁写了个‘家’字。",
-            "en": "Gran recognized me again! Oh, little one, that golden cat left this map with me before they went away. See? Sunlit Garden is marked 'home.'"
+            "zh": "阿婆刚才还认出我了！对了，那只金猫临走前托我收着这张图。你瞧，它在阳光花园旁写了个‘家’字。",
+            "en": "Gran recognized me again! Oh, that golden cat asked me to keep this map before they left. See? Sunlit Garden is marked 'home.'"
           }
         },
         {
@@ -603,8 +603,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "咦？底下是不是有只小猫在叫？",
-            "en": "Wait… is that a kitten crying down there?"
+            "zh": "我想找一只金猫……等等，底下是不是有小猫在叫？",
+            "en": "I'm looking for a golden cat… Wait, is that a kitten crying down there?"
           }
         },
         {
@@ -757,8 +757,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "这只金猫到底想修什么？咱们去问问烬婆。",
-            "en": "What was that cat trying to fix? Let's ask Ember."
+            "zh": "那只金猫怎么也在修铃？走，烬婆肯定知道些什么。",
+            "en": "Why was that golden cat fixing bells too? Come on, Ember must know something."
           }
         },
         {
@@ -793,8 +793,8 @@ export const campaign = {
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "快看快看！我做的猫影子会扑蝴蝶！",
-            "en": "Look, look! My shadow cat can pounce on butterflies!"
+            "zh": "快看快看！我做的猫影子，耳朵还是歪的呢！",
+            "en": "Look, look! I made a shadow cat with a crooked ear!"
           }
         },
         {
@@ -1535,8 +1535,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "暮铃……在花园的时候，你就知道是我？",
-            "en": "Luna… you knew it was me back in the garden?"
+            "zh": "那你第一次见到我时，就知道我是谁了？",
+            "en": "So when we first met, you already knew who I was?"
           }
         },
         {
@@ -2531,8 +2531,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "知道啦。那我去找檐灯做把钥匙！……坐垫能分我一半吗？",
-            "en": "I know, I know. I'll ask Alder for a key! …Can I have half the cushion?"
+            "zh": "知道啦。那我也能有一把花园的钥匙吗？……坐垫能分我一半吗？",
+            "en": "I know, I know. Can I have a garden key of my own? …And half the cushion?"
           }
         }
       ],
