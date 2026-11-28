@@ -694,8 +694,8 @@ class YardScene {
       // walking toward or playing at. Regular petting still works normally.
       e.update(dt,(e._buildTarget||e._playBuildT>0)?null:mouse);
     }
-    this.updateBuildingPlay(dt);
     this.updateDailyLife();
+    this.updateBuildingPlay(dt);
     const duo=window.CatRelations?.chosen?.()||[];
     if(duo.length===2){
       const a=this.entities.find(e=>e.cat.uid===duo[0].uid);
@@ -1017,6 +1017,7 @@ class YardScene {
     if(!State.S.yardLife||typeof State.S.yardLife!=='object'||Array.isArray(State.S.yardLife))State.S.yardLife={day:'',history:[]};
     const life=State.S.yardLife;
     if(life.day===day)return;
+    const builds=State.S.yardBuildings||[];
     const idle=cats.filter(e=>!e._buildTarget&&!(e._playBuildT>0)&&!(e._lifeUntil>this.game.t)&&!(e.pettedGlow>0));
     if(idle.length<2)return;
     const history=Array.isArray(life.history)?life.history:[];
@@ -1029,11 +1030,13 @@ class YardScene {
       const kinds=['friend'];
       if([a,b].some(e=>e.cat.personality==='lazy'))kinds.push('nap');
       if([a,b].some(e=>e.cat.personality==='mischievous'))kinds.push('play');
+      const nearby=builds.find(s=>s.type==='catnip'&&Math.hypot(a.x-s.x,a.y-s.y)<65&&Math.hypot(b.x-s.x,b.y-s.y)<65);
+      if(nearby)kinds.push('catnip');
       for(const kind of kinds){
         const id='yard-life-'+kind;
         const seen=history.filter(h=>h.id===id&&h.cats?.includes(a.cat.uid)&&h.cats?.includes(b.cat.uid)).length;
         const recent=history.slice(-3).filter(h=>h.id===id).length;
-        candidates.push({a,b,kind,id,score:seen*10+recent*4+distance/110});
+        candidates.push({a,b,kind,id,score:seen*10+recent*4+distance/110-(kind==='catnip'?2:0)});
       }
     }
     candidates.sort((a,b)=>a.score-b.score);
@@ -1044,14 +1047,14 @@ class YardScene {
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const names=State.catName(a.cat)+(en?' & ':' 和 ')+State.catName(b.cat);
     a.vx=a.vy=b.vx=b.vy=0;
-    a.setPose(kind==='nap'?'sleep':'sit',4);
-    b.setPose(kind==='nap'?'sleep':kind==='play'?'play':'sit',4);
+    a.setPose(kind==='nap'?'sleep':kind==='catnip'?'belly':'sit',4);
+    b.setPose(kind==='nap'?'sleep':kind==='play'?'play':kind==='catnip'?'belly':'sit',4);
     a.emote(kind==='nap'?'💤':'💞',3);b.emote(kind==='play'?'🐾':'💞',3);
     life.day=day;
     life.history=[...(Array.isArray(life.history)?life.history:[]),{day,id,cats:[a.cat.uid,b.cat.uid]}].slice(-30);
     window.CatRelations?.remember(a.cat,b.cat,id);
     State.save();
-    this.game.toast(names+(en?({nap:' found a quiet spot to nap together.',play:' started a little game together.',friend:' are enjoying a quiet moment together.'}[kind]):({nap:' 找了个安静的角落一起午睡。',play:' 玩起了只有它们懂的小游戏。',friend:' 正挨在一起享受庭院时光。'}[kind])));
+    this.game.toast(names+(en?({nap:' found a quiet spot to nap together.',play:' started a little game together.',friend:' are enjoying a quiet moment together.',catnip:' rolled around together beside the catnip.'}[kind]):({nap:' 找了个安静的角落一起午睡。',play:' 玩起了只有它们懂的小游戏。',friend:' 正挨在一起享受庭院时光。',catnip:' 在猫薄荷花坛旁开心地打滚。'}[kind])));
     window.arcadeMetric?.('bond_yard_daily_life',{kind});
   }
   // Invite an actual visible kitten to a specific facility immediately.
