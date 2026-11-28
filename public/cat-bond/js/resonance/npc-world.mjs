@@ -33,9 +33,9 @@ function openingEncounter(api){
  const lines=[
  ["陌生猫","Stranger","咦，你醒啦！睡得好香，耳朵还一抖一抖的。","Oh, you're awake! You were sleeping so soundly, even your ears were twitching.","继续","Continue"],
  ["你","You","你认识我吗？我想不起来自己叫什么了。","Do you know me? I can't remember my name.","继续","Continue"],
- ["暮铃","Luna","……我叫暮铃。你先别急。你是在这座花园醒来的？门口有块旧木牌，上面刻着风铃镇的名字。","…I'm Luna. Don't worry. You woke up in this garden? There's an old wooden sign by the door with Windchime Town carved on it.","继续","Continue"],
- ["你","You","我怎么会在这里？那块木牌是谁做的，你知道吗？","How did I get here? Do you know who made the sign?","继续","Continue"],
- ["暮铃","Luna","是镇上的檐灯做的。他以前常来修屋子，也许知道这里住过谁。去问问他吧。","Alder in town made it. He used to fix up the house, too. Maybe he remembers who lived here. Let's ask him.","继续","Continue"],
+ ["暮铃","Luna","……我叫暮铃。我刚才看见你在草地上睡觉。你不记得怎么来这里了吗？","…I'm Luna. I saw you sleeping on the grass. You don't remember how you got here?","继续","Continue"],
+ ["你","You","不记得。这里是什么地方？有没有猫知道我是谁？","No. Where are we? Does anyone know who I am?","继续","Continue"],
+ ["暮铃","Luna","这里叫阳光花园。风铃镇的檐灯以前常来修屋子，也许见过你。我们去问问他吧。","This is Sunlit Garden. Alder in Windchime Town used to repair the house. Maybe he's seen you before. Let's ask him.","继续","Continue"],
  ["你","You","好！哪怕找到一点点线索也行。你愿意和我一起去吗？","Yes! Even a little clue would help. Will you come with me?","继续","Continue"],
  ["暮铃","Luna","当然！我先去镇上打听，你想在花园多玩会儿也行。路上饿了就吃鱼饼，别饿着肚子找名字。","Of course! I'll go ask around in town. Stay and explore if you like. Grab a fish cake if you're hungry. No name-hunting on an empty belly!","告别","Say goodbye"]
  ];
