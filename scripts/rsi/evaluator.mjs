@@ -283,7 +283,11 @@ function runScenarioInner(config, seed, scenario, { frames = 900, dt = 0.016, kn
   const persona = personaKey ? PERSONAS[personaKey] : null;
   let personaObs = null;
   if (persona) {
-    b.autoMode = false;                                     // engine's autoDrive stops firing
+    // Owner 2026-11-28 fix: lazy persona's literal definition is "turn on auto-battle and
+    // let the game play"; its tick() just toggles autoMode. Step D blanket-disabled autoMode
+    // for all personas → lazy never acted → cohort min collapsed to ~0.023. Keep autoMode on
+    // for lazy only; other personas drive manually.
+    b.autoMode = (personaKey === 'lazy');                   // engine's autoDrive stops firing for non-lazy
     // make sure game.keys / game.mouse exist (engine readInput reads them with fallbacks)
     if (!b.game.keys) b.game.keys = {};
     if (!b.game.mouse) b.game.mouse = { x: b.W / 2, y: b.H / 2, down: false };
