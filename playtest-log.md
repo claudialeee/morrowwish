@@ -2686,3 +2686,35 @@ w06q78tip 4.33 → w892jymfa 4.5 → wowed850p 5.0 → wb3r7ejxm 4.33 → wmbjeu
 
 ### Session trend (10 cycles)
 4.33 → 4.5 → 5.0 → 4.33 → 4.17 → 4.67 → 4.33 → 4.0 → 4.17 → **4.33**
+RSI cycle 2026-11-27T23:46:47Z: `agent:peel-tighter` scored 0.7060 — EXACTLY matches prior winner `allied-hp-peeler` to 15 decimals. Band difference (40-80 vs 60-100) produced no measurable effect; peel branch likely fires rarely in sim scenarios OR engine jitter smooths out 20px delta. Archive 2/256 (same elite cell, label replaced on tie). No new niche filled.
+
+## Playtest cycle w32qn0r7h — 2026-11-27 (post 2c2f7937 smash reach)
+
+**Headline**: Combat is mechanically fairer post-P0 but experientially one-note — the shipped ramps tuned averages while leaving ownership (ult, E, dodge-reject) silent, enemy variety flat, and defensive verbs unrewarded; the biggest wins are feedback honesty (pack heavy-lock + consumed-vs-rejected HUD) and asking a new question (role archetypes, pack archetypes, riposte).
+
+**funMean 4.0** (↓0.33 vs wnghvvbag 4.33, session low repeat):
+- 探索 7 / 懒人 5 / 狂按 4 / 手忙脚乱 3 / 没耐心 3 / 谨慎 **2**
+
+**Peel+smash-reach cycle 3 observations (n=3 cycles since 55606430)**:
+- Masher 4 / 5 / 4 across wx45jkdra→wnghvvbag→w32qn0r7h — bouncing in 1-point band
+- 谨慎 2 / 3 / 2 — same oscillation
+- Cannot distinguish any of 55606430 peel or 2c2f7937 smash-reach from variance
+
+### Auto-fixes this cycle: 0 (of 4 fix-P0 candidates)
+
+- **Fix 0 (pack heavy-cast arbitration lock)**: FINDINGS-ONLY — new `_packHeavyLock` field + 3+ detonation sites + gate in castEnemySpecial. Multi-site compound.
+- **Fix 1 (2s masher arming window before 9s ult failsafe)**: FINDINGS-ONLY — new UI banner + i18n strings + input interception. Compound + new strings.
+- **Fix 2 (consumed vs rejected split)**: FINDINGS-ONLY — HUD feedback split + buffer window. UI compound.
+- **Fix 3 (coach step for E)**: ATTEMPTED + **REVERTED on gate fail** — i18n language-check script rejects inline zh strings without dict entries. Cron rule says "revert on ANY fail" → reverted.
+
+### Critiques: 36 total
+- 27 P1 (8 local-numeric + 18 additive-flag + 1 architectural)
+- 8 P2 (3 local-numeric + 5 additive-flag)
+- 1 P3
+- 0 critique-tier P0
+
+### Harness
+31/81 agent calls hit StructuredOutput retry cap. 50 succeeded. **Highest retry rate of session**.
+
+### Session trend (11 cycles)
+4.33 → 4.5 → 5.0 → 4.33 → 4.17 → 4.67 → 4.33 → 4.0 → 4.17 → 4.33 → **4.0**
