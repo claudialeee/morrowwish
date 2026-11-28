@@ -160,9 +160,9 @@
         1080,
         1620
       ],
-      "seconds": 19,
-      "bytes": 1475372,
-      "sha256": "fcb18ef5f8281aaba9ce9244d4ba46861d1a627c11883e18b461cc9d06970b46",
+      "seconds": 17.76,
+      "bytes": 3209615,
+      "sha256": "4c814c914ed7f5bbec7944304e88344bc8e8e37dd8182b79516c474f067afcad",
       "hasAudio": false,
       "pass": true
     },
@@ -414,7 +414,7 @@
       "final-landscape-frames.jpg",
       "final-portrait-frames.jpg"
     ],
-    "scope": "Observed full-bleed GamePix and corrected portrait exploration; original unmodified cover art. The screenshots show real interface panels, not actual duo burst cinematic or SSR capture.",
+    "scope": "Both new previews reviewed through exported frame sheets. Actual fire+grass duo original art and earned SSR, full viewport, garden, workshop and exploration. Prior six-viewport and three save tests apply to the frozen corrected build.",
     "remaining": [
       "Signed-in portal preview, SDK IDs, draft save and public website rollout/parity are not validated.",
       "Browser QA samples canvas coverage and checks real input target/camera transforms, not a physical-device matrix or every region."
@@ -423,7 +423,7 @@
   "productionParityAfterFix": false,
   "signatureUpdate": {
     "landscape": "actual duo and earned SSR; frame sheets reviewed",
-    "portrait": "actual duo verified; SSR pending",
+    "portrait": "actual native portrait duo and earned SSR; exported frame sheet visually reviewed",
     "landscapeEvidence": {
       "orientation": "landscape",
       "complete": true,
@@ -499,6 +499,104 @@
         "SSR earned result"
       ]
     },
-    "complete": false
+    "complete": true,
+    "portraitEvidence": {
+      "orientation": "portrait",
+      "complete": true,
+      "duo": {
+        "uses": 1,
+        "elementPair": "fire+grass",
+        "tier": 1,
+        "cinematic": {
+          "remaining": 2.7500000000000018,
+          "max": 3.2
+        },
+        "layout": {
+          "source": "63-native-portrait-painted-storyboards",
+          "asset": "http://127.0.0.1:18963/cat-bond/assets/mobile-portrait/duo/fire-grass-tier-1.webp?v=portrait-duo-20261127",
+          "originalArt": true,
+          "actorFallback": false,
+          "viewport": {
+            "width": 1080,
+            "height": 1620
+          },
+          "art": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1620
+          },
+          "sourceArt": {
+            "x": -0.3483929443359557,
+            "y": -150.6193652343751,
+            "width": 1080.696785888672,
+            "height": 1921.2387304687502
+          },
+          "artAspect": 0.5625,
+          "fullScreenAtmosphere": false,
+          "animatedEffects": true,
+          "paintingDrawCount": 1,
+          "actorLayerCount": 0,
+          "transition": "full-scene-crossfade",
+          "extendedPainting": false,
+          "opacity": 0.7034118331347404,
+          "camera": {
+            "zoom": 1.0006451721191407,
+            "panX": 0,
+            "panY": 0,
+            "rotationRadians": 0
+          },
+          "effectPhase": 0.1406249999999995,
+          "effectTier": 1
+        },
+        "onset": 6.565,
+        "frameTime": 7.489,
+        "screenshot": "duo-real.png"
+      },
+      "ssr": {
+        "species": "jinwu",
+        "rarity": "SSR",
+        "combatTime": 292.221,
+        "resultTime": 374.507,
+        "before": 9,
+        "after": 10,
+        "owned": {
+          "species": "jinwu",
+          "level": 1,
+          "rarity": "SSR"
+        },
+        "screenshot": "ssr-earned.png"
+      },
+      "video": {
+        "width": 1080,
+        "height": 1620,
+        "codec": "h264",
+        "duration": 17.76,
+        "audio": false,
+        "sha256": "4c814c914ed7f5bbec7944304e88344bc8e8e37dd8182b79516c474f067afcad",
+        "bytes": 3209615
+      },
+      "scenes": [
+        "actual duo cut-in",
+        "garden",
+        "workshop",
+        "region",
+        "SSR battle",
+        "SSR earned result"
+      ]
+    }
+  },
+  "latestSourceCheck": {
+    "checkedCommit": "e5def5138d0e5bcf53370955b70759579aea87be",
+    "frozenSource": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+    "matches": false,
+    "changed": [
+      "index.html",
+      "js/battle-draw.js",
+      "js/battle.js",
+      "js/skills.js"
+    ],
+    "artAssetsUnchanged": true,
+    "required": "Refresh ZIP candidates and targeted battle QA against latest code before claiming current-source readiness. Existing footage accurately shows unchanged artwork and actual available features on frozen build."
   }
 }

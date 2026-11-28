@@ -1,3 +1,2 @@
-# Portrait correction — local QA passed; portal gates remain
-
-Only the newly verified release-media files should be used. Old output directories are historical evidence, not upload material. The website patch is in source-overlay/public/cat-bond and is not deployed. CrazyGames and itch public parity must be reverified after explicit rollout approval. Y8 and GameDistribution await actual SDK IDs and platform SDK verification. No existing draft has been saved.
+# Media complete; version and portal gates
+Both updated authentic previews are now in release-media. Frozen corrected packages passed six-viewport and three capture/save tests; the subsequent Cat Bond source e5def513 changes index, battle, battle-draw and skills. Rebuild the latest-source platform ZIPs before upload. Actual SDK IDs, signed-in portal preview and draft saves remain open. The website is untouched. No review submission. Do not re-record unchanged art merely because combat code changed.
