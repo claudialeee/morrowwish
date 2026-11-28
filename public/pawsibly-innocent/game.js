@@ -1176,7 +1176,7 @@ $("gameMenu").addEventListener("pointerdown",e=>{if(e.target===$("gameMenu"))clo
 document.querySelectorAll("[data-game-tab]").forEach(el=>el.onclick=()=>setMenuTab(el.getAttribute("data-game-tab")));
 $("wait").onclick=waitTurn;
 $("restart").onclick=()=>openMenu("replay");
-document.addEventListener("click",e=>{if(e.target?.id==="mw-fullscreen-toggle"&&menuOpen)closeMenu()});
+window.addEventListener("click",e=>{if(e.target?.id==="mw-fullscreen-toggle"&&menuOpen)closeMenu()});
 $("retryRoomAction").onclick=()=>{metric("game_retry");init(stage,daily)};
 $("retryResult").onclick=()=>{metric("game_retry");init(stage,daily)};
 $("nextResult").onclick=()=>{if(!s.winning)metric("game_retry");init(s.winning&&!daily?Math.min(7,stage+1):stage,daily)};

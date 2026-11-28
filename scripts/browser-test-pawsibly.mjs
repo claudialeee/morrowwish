@@ -169,11 +169,12 @@ try{
  try{const phone=await touch.newPage();await phone.route('**/api/session',r=>r.fulfill({status:204,body:''}));await phone.goto(url,{waitUntil:'load'});await phone.evaluate(()=>window.MorrowwishI18n.set('zh'));
  await phone.screenshot({path:'test-results/pawsibly-onboarding-mobile-zh.png'});
  assert.match(await phone.locator('#visionTip').textContent(),/偷够3条鱼.*猫门/);
+ assert.equal(await phone.locator('#restart').isVisible(),false,'Replay belongs in menu');assert.equal(await phone.locator('#mw-game-settings').isVisible(),false,'Settings belong in menu');assert.equal(await phone.locator('#mw-fullscreen-toggle').isVisible(),false,'Fullscreen belongs in menu');
  const orders=await phone.locator('.in-game-actions').evaluate(el=>Array.from(el.querySelectorAll('button')).map(b=>[b.id,Number(getComputedStyle(b).order)]));assert.deepEqual(orders,[['tool',0],['wait',1],['bonusQuick',2]],'Primary turn controls come before optional challenges in visual and keyboard order');
  const b=await phone.locator('#board').boundingBox();await phone.touchscreen.tap(b.x+b.width*.25,b.y+b.height*.5);
  await phone.waitForFunction(()=>window.__PAWSIBLY_TEST__.getState().got===1);
  assert.match(await phone.locator('#visionTip').textContent(),/到手1条/);
- await phone.locator('#guideHelp').tap();assert.ok(await phone.locator('[data-tab-panel="help"]').isVisible());await phone.locator('#menuClose').tap();
+ await phone.locator('#guideHelp').tap();assert.ok(await phone.locator('[data-tab-panel="help"]').isVisible());assert.ok(await phone.locator('#restart').isVisible()&&await phone.locator('#mw-game-settings').isVisible()&&await phone.locator('#mw-fullscreen-toggle').isVisible(),'All utilities reachable in menu');await phone.locator('#menuClose').tap();
  await phone.evaluate(()=>window.MorrowwishI18n.set('en'));assert.match(await phone.locator('#visionTip').textContent(),/One fish/);
  }finally{await touch.close()}
  const run=await browser.newPage({viewport:{width:1250,height:900}});try{await run.route('**/api/session',r=>r.fulfill({status:204,body:''}));await run.goto(url,{waitUntil:'load'});await run.evaluate(()=>window.MorrowwishI18n.set('en'));await run.screenshot({path:'test-results/pawsibly-onboarding-desktop-en.png'});
