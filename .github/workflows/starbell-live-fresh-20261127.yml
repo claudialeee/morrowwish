@@ -18,6 +18,7 @@ jobs:
     env:
       SOURCE_SHA: e8a7054cc95e9ee41ee9d6a877ff6cb3b758f449
       STARBELL_WORK_PROFILE: ${{ matrix.profile }}
+      STARBELL_MODE: ${{ startsWith(github.event.head_commit.message, 'QA cinema audit:') && 'cinema-audit' || 'live' }}
       CAT_BOND_SMOKE_ORIGIN: ${{ matrix.profile == 'portrait' && 'https://starbell-portrait-preview.morrowwish.pages.dev' || 'https://cat-bond-preview.morrowwish.pages.dev' }}
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +31,7 @@ jobs:
         run: |
           curl -fsS "$CAT_BOND_SMOKE_ORIGIN/preview-version.json?qa=live-fresh" | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const v=JSON.parse(s);if(v.sha!==process.env.SOURCE_SHA)throw Error("Live SHA changed: "+v.sha);console.log(JSON.stringify(v))})'
       - name: Restore latest earned checkpoint for same build and device
+        if: env.STARBELL_MODE != 'cinema-audit'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -60,7 +62,7 @@ jobs:
           node --check scripts/test-starbell-fresh-shared.mjs
           node scripts/test-starbell-fresh-shared.mjs
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && env.STARBELL_MODE != 'cinema-audit'
         with:
           name: starbell-earned-${{ env.SOURCE_SHA }}-${{ matrix.profile }}
           path: artifacts/earned/checkpoint.json
@@ -69,7 +71,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: starbell-live-fresh-${{ matrix.profile }}
+          name: starbell-${{ env.STARBELL_MODE }}-fresh-${{ matrix.profile }}
           path: artifacts/live-fresh/
           if-no-files-found: warn
           retention-days: 3
