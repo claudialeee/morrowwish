@@ -253,7 +253,9 @@
   // avg. If `unlock.level` is set, use it; else fall back to legacy `unlock.explore`.
   function teamAvgLevel() {
     var S = window.State && window.State.S;
-    var cats = (S && S.cats) || [];
+    var collection = (S && S.cats) || [];
+    // Use the expedition roster, including reserves, rather than all collected cats.
+    var cats = window.UI?.getPreferredBattleTeam?.(collection) || collection;
     if (!cats.length) return 1;
     var sum = 0, n = 0;
     for (var i = 0; i < cats.length; i++) { sum += (cats[i].level || 1); n++; }
@@ -293,20 +295,26 @@
     }
   }
 
-  function unlockHint(r) {
+  function unlockHint(r, compact=false) {
     if (!r.unlock) return '';
+    var en=window.MorrowwishI18n?.get?.()!=='zh';
     var prev = regionById(r.unlock.after);
     var parts;
     if (r.unlock.level != null) {
-      parts = ['队伍平均等级 ≥ ' + r.unlock.level];
+      var now=teamAvgLevel().toFixed(1), target=r.unlock.level;
+      parts = [compact
+        ?(en?'Avg Lv. '+now+'/'+target:'均级 '+now+'/'+target)
+        :(en?'Battle team avg Lv. ≥ '+target+' (now '+now+')':'出战队伍平均等级 ≥ '+target+'（当前 '+now+'）')];
     } else {
-      parts = ['探索「' + (prev ? prev.name : '') + '」至 ' + Math.round(r.unlock.explore * 100) + '%'];
+      var pct=Math.round(r.unlock.explore*100)+'%';
+      parts = [en?'Explore '+(prev?prev.sub:'')+' '+pct:'探索「'+(prev?prev.name:'')+'」至 '+pct];
     }
     if (r.unlock.own) {
       var sp = window.GameData.speciesById(r.unlock.own);
-      parts.push('并拥有「' + (sp ? window.GameData.speciesName(sp) : r.unlock.own) + '」');
+      var name=sp ? window.GameData.speciesName(sp) : r.unlock.own;
+      parts.push(en?'Befriend '+name:'拥有「'+name+'」');
     }
-    return '需 ' + parts.join(' ');
+    return (compact?'':en?'Requires ':'需 ')+parts.join(' · ');
   }
 
   // ================================================================
@@ -929,7 +937,7 @@
       if (!open) {
         ctx.font = '11px system-ui, sans-serif';
         ctx.fillStyle = PURPLE;
-        ctx.fillText(unlockHint(reg2), mn.px, mn.py + mn.r + 24);
+        ctx.fillText(unlockHint(reg2,true), mn.px, mn.py + mn.r + 24, Math.max(100,Math.min(230,W*.72)));
       }
     }
 
@@ -1302,6 +1310,7 @@
     onExit: onExit,
     exitToYard: exitToYard,
     isUnlocked: isUnlocked,
+    teamAvgLevel: teamAvgLevel,
     getRegionSpawnWeights: getRegionSpawnWeights,
     regionById: regionById,
     REGIONS: REGIONS,

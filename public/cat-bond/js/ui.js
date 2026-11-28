@@ -673,7 +673,7 @@ const UI = {
       const prev=WorldMap.REGIONS.find(x=>x.id===r.unlock?.after);
       const own=r.unlock?.own?GameData.speciesById(r.unlock.own):null;
       const progReq = r.unlock && r.unlock.level!=null
-        ? (en?'Team avg level ≥ '+r.unlock.level:'队伍平均等级 ≥ '+r.unlock.level)
+        ? (en?'Battle team avg Lv. ≥ '+r.unlock.level+' (now '+WorldMap.teamAvgLevel().toFixed(1)+')':'出战队伍平均等级 ≥ '+r.unlock.level+'（当前 '+WorldMap.teamAvgLevel().toFixed(1)+'）')
         : r.unlock
           ? (en?'Explore '+prev.sub+' '+Math.round(r.unlock.explore*100)+'%':'探索「'+prev.name+'」'+Math.round(r.unlock.explore*100)+'%')
           : '';
@@ -689,8 +689,8 @@ const UI = {
     }).join('');
     this.panel(`<span class="card-close">×</span><div class="map-chooser">
       <h2>${en?'🗺️ Explore five regions':'🗺️ 探索五个地区'}</h2>
-      <p>${en?'Each region has its own scenery, wild cats and treasures. Unlock the next by exploring.'
-        :'每个地区都有独立场景、野猫与宝藏。提高探索度，逐步解锁新地图。'}</p>
+      <p>${en?'Each region has its own scenery, wild cats and treasures. Level up your battle team and befriend the required cats to unlock regions.'
+        :'每个地区都有独立场景、野猫与宝藏。提升出战队伍平均等级、收服指定猫咪，逐步解锁新地图。'}</p>
       <div class="map-destination-list">${rows}</div>
       <p class="map-instructions">${en
         ?'PC: click to walk or mouse-drag to pan; WASD also works. Phone: tap to walk, drag to look around. Approach cats and treasure.'

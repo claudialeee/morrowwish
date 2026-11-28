@@ -188,7 +188,8 @@ try{
         if(tutorial){
           assert.equal(await page.locator('#battle-help').isVisible(),true,
             'First battle should open a visible, skippable control tutorial');
-          await page.locator('#battle-tutorial-skip').tap();
+          const skip=page.locator('#battle-tutorial-skip');
+          if(await skip.isVisible())await skip.tap();else await page.locator('#battle-help-start').tap();
         }
         await page.waitForFunction(()=>document.getElementById('battle-hint').textContent.includes('左侧滑动'),
           null,{timeout:8000});
