@@ -655,32 +655,28 @@ class CaptureBattle {
 
   // Wild level tracks player strength so fights stay meaningful, never trivial.
   computeWildLevel(teamOrCat) {
-    const cats = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
+    // Owner 2026-11-28: avg over the FULL 出击 roster (bring-5 model, field + reserve),
+    // not just the 2 field cats, so bench picks matter for difficulty scaling.
+    // Casual: lvl = round(avg) + rand(-2..+2). Hardcore: lvl = round(avg) + rand(+1..+3).
+    // Regional floor/cap still apply as intro-gate (lifts once team clears cap+3).
+    const field = Array.isArray(teamOrCat) ? teamOrCat : [teamOrCat];
+    const reserve = (this.reserve && Array.isArray(this.reserve)) ? this.reserve : [];
+    const roster = field.concat(reserve).filter(c => c && c.level != null);
+    const cats = roster.length ? roster : field;
     const avg = cats.length ? cats.reduce((s, c) => s + (c.level || 1), 0) / cats.length : 1;
-    // OWNER 2026-11-26 "敌人等级动态匹配到我们的等级" — enemy level now tracks the
-    // team's average level directly (no progress/rarity/noise drift). "硬核难度会
-    // +1到3级" — hardcore adds a random 1-3 on top. Regional floor/cap still
-    // apply so a brand-new save never sees Lv4 in 樱花/庭院 and so late maps keep
-    // their advertised tier wall.
-    // Owner 2026-11-26 "我队伍都50级了" — the old flat per-region cap (ruins:12)
-    // clipped late-game teams: a Lv50 team in 遗迹 saw Lv12 enemies. Caps now mean
-    // "intro gate" — enforced only until a team comfortably clears them (team avg
-    // reaches cap+3). Beyond that threshold, the cap no longer applies and enemy
-    // level scales with team avg so late-game zones stay meaningful.
     const introCaps = { sakura:3, yard:3, home:5, creek:7, volcano:9, ruins:12 };
     const floors = { sakura:1, yard:1, home:2, creek:3, volcano:4, ruins:5 };
     const region = this.encounterRegion;
     const introCap = introCaps[region] ?? Math.max(3, Math.ceil(avg) + 2);
-    // Once team avg clears the intro cap by ≥3, the cap lifts to track team avg.
     const cap = (avg >= introCap + 3) ? Math.ceil(avg) + 2 : introCap;
     const minLv = floors[region] ?? 1;
-    // Base = clamped team avg (round, NOT floor — a Lv1 team shouldn't face Lv0).
-    let lvl = Math.round(avg);
-    // Hardcore bump: rng in [0,1) → integer bonus in [1,3].
     const diffName = (window.State && State.difficulty) ? State.difficulty() : 'casual';
+    const r = (this.rng ? this.rng() : Math.random());
+    let lvl = Math.round(avg);
     if (diffName === 'hardcore') {
-      const r = (this.rng ? this.rng() : Math.random());
       lvl += 1 + Math.floor(r * 3);              // +1, +2, or +3
+    } else {
+      lvl += -2 + Math.floor(r * 5);             // -2..+2 (5 outcomes)
     }
     return Math.max(minLv, Math.min(cap, lvl));
   }
