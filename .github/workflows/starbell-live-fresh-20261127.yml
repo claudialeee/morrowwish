@@ -38,8 +38,6 @@ jobs:
           import assert from 'node:assert/strict';
           import {chromium} from 'playwright';
           import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
-          import {makeEngine} from '../public/cat-bond/js/resonance/engine.mjs';
-          import {developerCheckpoint} from '../public/cat-bond/js/resonance/developer-preview.mjs';
           import {mkdir} from 'node:fs/promises';
           const origin=process.env.CAT_BOND_SMOKE_ORIGIN||'http://127.0.0.1:8765';
           const portrait=process.env.STARBELL_WORK_PROFILE==='portrait',lang='zh';
@@ -50,7 +48,7 @@ jobs:
           const press=async l=>portrait?l.tap({timeout:12000}):l.click({timeout:12000});
           const url=origin+'/cat-bond/?qa=live-fresh-20261127&lang='+lang;
           const read=()=>page.evaluate(()=>({v:CatBondResonance.view(),s:CatBondResonance.snapshot(),mode:__game.scene,region:WorldMap.currentRegion}));
-          const show=async()=>{await mkdir('artifacts/live-fresh',{recursive:true});await page.screenshot({path:'artifacts/work-closure/'+lang+'-final.png'});};
+          const show=async()=>{await mkdir('artifacts/live-fresh',{recursive:true});await page.screenshot({path:'artifacts/live-fresh/'+(portrait?'portrait':'wide')+'-final.png'});};
           try{
            await page.goto(url);
            assert.equal(await page.locator('body').getAttribute('data-source-sha'),process.env.SOURCE_SHA,'Exact live build');
@@ -92,7 +90,7 @@ jobs:
              const row=page.locator('.rw-puzzle-controls:visible'),surface=page.locator('.rw-surface:visible');
              if(await row.count()){
              if(!(await read()).v.objective.some(x=>x.startsWith('puzzle:')||x==='explore:routing-record')&&!(await row.getByRole('button',{name:/☾/}).count())){await page.waitForTimeout(350);continue;}
-              const op=v.objective.find(x=>x.startsWith('puzzle:')||x==='explore:routing-record');
+              const op=(await read()).v.objective.find(x=>x.startsWith('puzzle:')||x==='explore:routing-record');
               const button=name=>row.getByRole('button',{name,exact:true});
               const click=async name=>press(button(name));
              const settled=async()=>{if(op)await page.waitForFunction(({id,op})=>CatBondResonance.snapshot().evidence[id]?.includes(op),{id,op},{timeout:45000});await row.waitFor({state:'hidden',timeout:45000});};
@@ -100,7 +98,7 @@ jobs:
               if(await row.locator('[data-spatial="bellPattern"]').count()||await row.getByRole('button',{name:/☾/}).count()){for(const glyph of ['☾','☀','✦'])await press(row.getByRole('button',{name:new RegExp(glyph)}));continue;}
               if(op==='puzzle:moonleaf-crossing'){for(const n of ['岔路','拨动月叶','地下','帮小猫离开根丛','对岸'])await click(n);await settled();continue;}
               if(op==='puzzle:shadow-bridge'){for(const x of [.19,.51,.68,.82,.18])await tapAt(x,.45);await click('追上逃走的影子');await settled();continue;}
-              if(op==='explore:routing-record'){for(const n of ['查公开日志','查线路图','查借阅簿','向暮铃求证'])await click(n);continue;}
+              if(op==='explore:routing-record'){for(const n of ['查公开日志','查线路图','查借阅簿','向暮铃求证'])await click(n);await settled();continue;}
               if(op==='puzzle:joint-flight'){await tapAt(.35,.28);await row.waitFor({state:'hidden',timeout:60000});continue;}
               if(op==='puzzle:library-echo'){await click('换位置，摇铃');const left=await row.locator('[data-mirror-response]').evaluate(e=>e.dataset.leftFacing===e.dataset.position);await click(left?'选左边的猫':'选右边的猫');await settled();continue;}
               if(op==='puzzle:star-steps'){for(const n of [2,4,8])await click('跳向星石 '+n);await settled();continue;}
@@ -114,7 +112,7 @@ jobs:
              await page.waitForTimeout(250);
            }
            const final=await read();assert.ok(final.v.ending,'Continuation failed: '+JSON.stringify({id:final.v.current?.id,objective:final.v.objective,mode:final.mode,region:final.region,won,films}));
-           for(const id of ['harbor:H-04','forest:R-04','forge:E-03','sky:S-03','library:M-02','starfall:F-04','finale:B-01','finale:B-03'])assert.ok(won.includes(id),'Missing actual battle '+id);assert.ok(films.includes('starfall:F-02')&&films.includes('finale:B-04'),'Normal-mode art fallback verified');
+           for(const id of ['harbor:H-04','forest:R-04','forge:E-03','sky:S-03','library:M-02','starfall:F-04','finale:B-01','finale:B-03'])assert.ok(won.includes(id),'Missing actual battle '+id);assert.ok(final.s.evidence['starfall:F-02']?.includes('cinematic:starfall-memory')&&final.s.evidence['finale:B-04']?.includes('cinematic:final-note'),'Both required cinematics must complete in the fresh slot');
            assert.equal(await page.evaluate(()=>State.listSaveSlots().find(s=>s.id==='slot1').regionLabelEn),'Sunlit Garden');
            assert.deepEqual(errors,[]);console.log('LIVE FRESH SLOT TO ENDING PASS',lang,JSON.stringify({won,films}));
           }catch(e){await show().catch(()=>{});console.error('NORMAL CONTINUATION FAIL',lang,String(e),JSON.stringify(await read().catch(()=>null)).slice(0,2500),errors);throw e;}finally{await browser.close();}
