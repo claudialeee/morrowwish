@@ -443,8 +443,8 @@ export const campaign = {
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "阳光花园？我当然记得！以前有只金灿灿的小猫常来找我。它到哪儿都带着一张地图。",
-            "en": "Sunlit Garden? Of course I remember! A little golden cat used to come by all the time, always carrying a map."
+            "zh": "阳光花园？我当然记得！以前有只金灿灿的小猫常来找我。临走前，它还托我收着一张地图。",
+            "en": "Sunlit Garden? Of course! A little golden cat used to visit me. Before leaving, they asked me to keep a map."
           }
         },
         {
@@ -546,15 +546,15 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "它住在那儿？那它说不定知道我是怎么到花园的！",
-            "en": "They lived there? Then maybe they know how I ended up in the garden!"
+            "zh": "就是这张图！信上说的果然是真的。可写信的猫去哪儿了？",
+            "en": "That's the map! The letter was right. But where did the cat who wrote it go?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "第一站是眠根林。暮铃，陪我去看看吧？",
-            "en": "Rootsleep Forest is the first stop. Luna, will you come with me?"
+            "zh": "它在眠根林画了第一个记号。暮铃，陪我去看看吧？",
+            "en": "The first mark is in Rootsleep Forest. Luna, will you come with me?"
           }
         },
         {
@@ -944,15 +944,15 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "它连这都交代过？那它现在在哪儿？",
-            "en": "They planned all this? Where are they now?"
+            "zh": "怪了……信让我去找檐灯，地图又带我找到你。它是特意把这些东西留下来的！",
+            "en": "The letter sent me to Alder, and his map led me to you. That cat left all of this on purpose!"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "不知道它后来怎么样了……我想找到它。",
-            "en": "I wonder what happened to them. I really want to find out."
+            "zh": "它为什么知道自己可能会失忆？我越来越想见见它了。",
+            "en": "Why did they think they'd lose their memory? I really want to meet them."
           }
         },
         {
@@ -1521,8 +1521,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "那你明明认识我！为什么我什么都不记得？",
-            "en": "Then you knew me all along! Why can't I remember any of it?"
+            "zh": "那封信也是我写的？我怎么会什么都不记得？",
+            "en": "I wrote that letter? Why can't I remember any of this?"
           }
         },
         {
@@ -1542,8 +1542,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "知道。我怕告诉你以后，你又要像当年那样。我想等铃修好了再说……对不起。",
-            "en": "I did. I was afraid you'd do the same thing all over again. I wanted to fix the bells first… I'm sorry."
+            "zh": "知道。那封信是你留下的。我把它放在你身边，想让你按自己的办法找回来……又怕你知道真相后，再做当年那样的事。对不起。",
+            "en": "I did. You left that letter. I put it beside you, hoping you'd find your way back as you'd planned… but I was afraid you'd do what you did before. I'm sorry."
           }
         },
         {
@@ -1973,8 +1973,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "那你得答应我，一定想办法回来。",
-            "en": "Then promise me you'll find a way back."
+            "zh": "那封信我会放回花园。你答应我，哪怕什么都不记得了，也要想办法回来。",
+            "en": "I'll leave your letter in the garden. Promise me you'll find your way back, even if you can't remember anything."
           }
         },
         {
@@ -2327,8 +2327,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "暮铃。……我想起来啦！我叫小曦。那壶茶，那座花园……还有小栗的歪耳灯，我全都记得！",
-            "en": "Luna. …I remember! I'm Sunny. Our tea, our garden… and Pip's crooked-ear lantern. I remember it all!"
+            "zh": "暮铃。……我想起来啦！我叫小曦。那封信是我写的，那座花园……还有小栗的歪耳灯，我全都记得！",
+            "en": "Luna… I remember! I'm Sunny. I wrote that letter. Our garden… Pip's crooked-ear lantern. I remember it all!"
           }
         },
         {
