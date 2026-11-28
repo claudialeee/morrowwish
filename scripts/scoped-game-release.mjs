@@ -117,14 +117,15 @@ async function publishOne(game,approvedBase){
     // here as well, after the canonical build and before the atomic publish.
     fs.writeFileSync(path.join(out,'release-version.json'),JSON.stringify(next)+'\n');
     const config=JSON.parse(fs.readFileSync(path.join(work,'cloudflare-pages','wrangler.jsonc'),'utf8'));
-    if(config.name!=='morrowwish'||config.d1_databases?.find(x=>x.binding==='DB')?.database_name!=='morrowwish-analytics')throw Error('Wrong existing Pages project or database');
+    if(config.name!=='morrowwish'||(config.d1_databases?.find(x=>x.binding==='DB')?.database_name!=='morrowwish-analytics'||config.d1_databases?.find(x=>x.binding==='DB')?.database_id!=='fbd62f69-1811-4538-a17f-ecc5be8ad7cc'))throw Error('Wrong existing Pages project or database');
     if(!process.env.CLOUDFLARE_API_TOKEN)throw Error('Missing existing Cloudflare credential');
     run('npx',['wrangler','pages','deploy','public','--project-name','morrowwish','--branch','main'],{cwd:path.join(work,'cloudflare-pages'),stdio:'inherit'});
     await assertLive(next);
     const changed=run('git',['diff','--name-only','--diff-filter=ACMRT','-z',approvedBase,candidate,'--','public/'+game]).split('\0').filter(Boolean).map(p=>p.slice(7));
     const core=game==='cat-bond'?['index.html','js/game.js','js/battle.js','css/style.css']:['index.html','game.js','single-screen.css'];
     const sibling=games.find(g=>g!==game);
-    for(const rel of new Set([...changed,...core.map(p=>game+'/'+p),sibling+'/index.html']))await verifyBytes(origin,out,rel);
+    const siblingCore=sibling==='cat-bond'?['index.html','js/game.js','js/battle.js','css/style.css']:['index.html','game.js','single-screen.css'];
+    for(const rel of new Set([...changed,...core.map(p=>game+'/'+p),...siblingCore.map(p=>sibling+'/'+p)]))await verifyBytes(origin,out,rel);
     // Minimize Vercel proxy requests; the direct Pages check covers every changed file.
     for(const rel of [game+'/index.html',game+'/'+(game==='cat-bond'?'js/game.js':'game.js'),sibling+'/index.html'])await verifyBytes(proxy,out,rel);
     console.log('SCOPED PRODUCTION VERIFIED '+game+' '+candidate+'; preserved '+sibling+' '+next.gameShas[sibling]);
