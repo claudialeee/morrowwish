@@ -1,7 +1,7 @@
 import { campaign } from "./campaign.mjs";
 import {newNeighborTrial,advanceNeighborTrial,neighborTrialProof} from "./canon22-neighbor-trial.mjs";
 import {mirrorProof} from "./canon22-mirror.mjs";
-import {newSpatial,spatialInput,spatialProof,tickSpatial,spatialKind,startBridgeWalk,advanceBridgeWalk,animateStarPlatforms} from "./canon22-spatial.mjs";
+import {newSpatial,spatialInput,spatialProof,tickSpatial,spatialKind,startBridgeWalk,advanceBridgeWalk,animateStarPlatforms} from "./canon22-spatial.mjs?v=moonleaf-walk-20261127";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary} from "./library-mechanisms.mjs";
 import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache,landSkyFlight} from "./sky-flight.mjs";
 // Actual walkable region mechanics. Story progression is never stored here.
@@ -82,7 +82,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   travel=[];if(target.i>start.i){for(let i=start.i+1;i<=target.i;i++)travel.push(path[i]);}else if(target.i<start.i){for(let i=start.i;i>target.i;i--)travel.push(path[i]);}travel.push(target.p);dest=travel.shift();return true;
  }
  function tick(dt){
-  if(!live()){dest=null;travel=[];return;}if(!dest)return;let remaining=Math.max(0,Math.min(.1,dt))*.48;
+  if(!live()){dest=null;travel=[];return;}if(!dest)return;let remaining=Math.max(0,Math.min(.1,dt))*.25;
   while(dest&&remaining>0){const d=distance(pos,dest);if(d<=remaining){pos=[...dest];remaining-=d;dest=travel.shift()||null;if(!dest){const r=bridge.position(region,...pos);error=r.ok?"":r.reason;}}else{pos=[pos[0]+(dest[0]-pos[0])*remaining/d,pos[1]+(dest[1]-pos[1])*remaining/d];remaining=0;}}
  }
  function near(p){return live()&&!dest&&distance(pos,p)<.072;}
