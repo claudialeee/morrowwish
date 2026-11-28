@@ -61,7 +61,7 @@ export function mountTalentTrial(id){
  }});
 }
 // Practice is a player-initiated action from the companion detail panel.
-window.CatBondTalentPractice=Object.freeze({talents:companionTalents,open:mountTalentTrial});
+if(typeof window!=="undefined")window.CatBondTalentPractice=Object.freeze({talents:companionTalents,open:mountTalentTrial});
 function diagram(body){const e=svg("svg",{viewBox:"0 0 340 145",class:"cb-adventure-diagram","aria-hidden":"true"});body.append(e);return e;}
 export function mountSideAdventure(region,{guard,commit}={}){
  const d=sideAdventures[region];if(!d)return false;let s=newSideState(region);
