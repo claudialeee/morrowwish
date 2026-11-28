@@ -288,8 +288,8 @@ export const campaign = {
       "id": "prologue:P-02",
       "chapter": "prologue",
       "title": {
-        "zh": "没有名字的猫",
-        "en": "A cat without a name"
+        "zh": "醒来的小猫",
+        "en": "The waking cat"
       },
       "previous": "prologue:P-01",
       "lines": [],
@@ -302,8 +302,8 @@ export const campaign = {
       "id": "prologue:P-03",
       "chapter": "prologue",
       "title": {
-        "zh": "门口的旧名牌",
-        "en": "The old nameplate"
+        "zh": "没有署名的信",
+        "en": "The unsigned note"
       },
       "previous": "prologue:P-02",
       "lines": [],
@@ -354,29 +354,29 @@ export const campaign = {
         {
           "speaker": "qilan",
           "text": {
-            "zh": "檐灯爷爷？顺着这条路走就是。哎，阿婆！您怎么又在敲别人家的门啦？",
-            "en": "Grandpa Alder? Just down this road. Oh, Gran! That's someone else's door again!"
+            "zh": "找檐灯爷爷？在旧铃房呢。哎，阿婆！您家在这边，怎么又往别处走呀？",
+            "en": "Looking for Alder? He's at the old bell house. Oh, Gran! Your house is over here, not down that lane!"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "糟了……镇上的铃也不响了。上次星铃坏掉的时候，大家就这样忘东忘西的。",
-            "en": "Oh no… the town bell's gone quiet too. Last time the Star Bell broke, everyone started forgetting things."
+            "zh": "不好，连风铃镇的古铃都停了。这里以前也发生过这种事。古铃一坏，大家就会忘事。",
+            "en": "Oh no. Even the town bell has stopped. This happened once before. When the bell fails, cats start forgetting things."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "她跟我一样，也忘了以前的事？咱们得帮帮她。",
-            "en": "She's forgotten things too? Just like me. We have to help her."
+            "zh": "阿婆也不记得自己的家了？爷爷就在附近吧？咱们去找他帮忙。",
+            "en": "Gran's forgotten where she lives? Alder's nearby, right? Let's ask him for help."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "好！我陪阿婆。你们去找檐灯爷爷。路上有三块坏掉的路标，帮忙拼好，免得其他猫也走丢。",
-            "en": "I'll stay with Gran. You find Alder. Three signs along the road are broken. Put them back together so no one else gets lost."
+            "zh": "我陪阿婆。通往铃房的三块路标坏了，你们顺手拼好吧，别再让别的猫走丢了。",
+            "en": "I'll stay with Gran. The three signs on the way to the bell house are broken. Could you fix them so no one else gets lost?"
           }
         }
       ],
@@ -402,22 +402,22 @@ export const campaign = {
         {
           "speaker": "qilan",
           "text": {
-            "zh": "这下好啦！阿婆，您抓着我的尾巴，咱们慢慢走。",
-            "en": "That's better! Gran, hold my tail. We'll take it slow."
+            "zh": "好啦，认得路了！阿婆，咱们慢慢走。",
+            "en": "There we go! We know where we're going now. Come along, Gran, nice and slow."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "走吧，檐灯就在前面。",
-            "en": "Come on. Alder's just ahead."
+            "zh": "铃房就在前面。檐灯不在的时候，连我都不敢乱碰他那些宝贝铃铛。",
+            "en": "The bell house is just ahead. Even I don't dare touch Alder's precious bells when he's out."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "希望他还记得我。",
-            "en": "I hope he remembers me."
+            "zh": "走吧。得先弄清楚镇上出了什么事。",
+            "en": "Come on. We need to find out what's happened to the town."
           }
         }
       ],
@@ -435,30 +435,30 @@ export const campaign = {
       "id": "harbor:H-03",
       "chapter": "harbor",
       "title": {
-        "zh": "老猫与旧地图",
-        "en": "The old cat and the map"
+        "zh": "檐灯记得你",
+        "en": "Alder remembers you"
       },
       "previous": "harbor:H-02",
       "lines": [
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "阳光花园？我当然记得！以前有只金灿灿的小猫常来找我。临走前，它还托我收着一张地图。",
-            "en": "Sunlit Garden? Of course! A little golden cat used to visit me. Before leaving, they asked me to keep a map."
+            "zh": "小曦？……不对，你怎么会在这儿？我这脑子，连昨天吃的什么都记不清了。",
+            "en": "Sunny? …No, wait. How can you be here? Oh, my head. I can't even remember what I had for supper."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "金色的？跟我一样？爷爷，您还记得它叫什么吗？",
-            "en": "Golden? Like me? Do you remember their name?"
+            "zh": "您认识我？爷爷，您能不能告诉我，我以前都做过些什么？",
+            "en": "You know me? Can you tell me what I used to do?"
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "叫什么来着……哎哟！又是那只撞门的铃舌兽！快把阿婆带远点！",
-            "en": "What was it again… Oh, whiskers! That beast is at the door again! Get Gran somewhere safe!"
+            "zh": "让我想想……哎哟，那只怪兽又撞门了！先把它赶走，别让它伤着阿婆！",
+            "en": "Let me think… Oh, whiskers, that beast is battering the door again! Get it away from Gran!"
           }
         }
       ],
@@ -484,36 +484,36 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "呼……还好。你没受伤吧？",
-            "en": "Phew… you're not hurt, are you?"
+            "zh": "没事吧？刚才它差点扑到你身上！",
+            "en": "Are you okay? It nearly got you!"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "没有。你的尾巴怎么这么大啦？",
-            "en": "No. Why's your tail so huge?"
+            "zh": "没事。倒是你……尾巴怎么变得这么大啦？",
+            "en": "I'm fine. But you… what happened to your tail?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "哪有！这是我冬天的毛。",
-            "en": "It's not! Just my winter fluff."
+            "zh": "我毛多。",
+            "en": "I'm fluffy."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "可现在又不是冬天。",
-            "en": "But it's not winter."
+            "zh": "刚才还没这么多呢。",
+            "en": "Not that fluffy a minute ago."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "咳……快去帮爷爷修铃啦。阿婆还等着回家呢。",
-            "en": "Ahem. Let's help Alder fix the bell. Gran's still waiting to go home."
+            "zh": "……好啦！怪兽赶跑了，快帮爷爷把古铃修好。",
+            "en": "…All right, all right! The beast is gone. Let's help Alder get that bell working."
           }
         }
       ],
@@ -531,44 +531,44 @@ export const campaign = {
       "id": "harbor:H-05",
       "chapter": "harbor",
       "title": {
-        "zh": "地图上的家",
-        "en": "Home on the map"
+        "zh": "巡铃图",
+        "en": "The bellkeeper's map"
       },
       "previous": "harbor:H-04",
       "lines": [
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "阿婆刚才还认出我了！对了，那只金猫临走前托我收着这张图。你瞧，它在阳光花园旁写了个‘家’字。",
-            "en": "Gran recognized me again! Oh, that golden cat asked me to keep this map before they left. See? Sunlit Garden is marked 'home.'"
+            "zh": "小曦！这下想起来了。你以前是巡铃的，常来帮我修铃。喏，你临走前托我收好的巡铃图。",
+            "en": "Sunny! Now I remember. You were a bellkeeper. You used to help me with repairs. Here, the inspection map you asked me to keep."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "就是这张图！信上说的果然是真的。可写信的猫去哪儿了？",
-            "en": "That's the map! The letter was right. But where did the cat who wrote it go?"
+            "zh": "这就是我以前走的路线？上面标着六座古铃……还有阳光花园。",
+            "en": "So this is the route I used to take? Six local bells marked here… and Sunlit Garden."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "它在眠根林画了第一个记号。暮铃，陪我去看看吧？",
-            "en": "The first mark is in Rootsleep Forest. Luna, will you come with me?"
+            "zh": "您看，镇上的铃修好了，阿婆就认得家了。要是别的地方也有猫失忆……咱们先去最近的眠根林看看！",
+            "en": "Gran remembered her home when we fixed this bell. What if cats elsewhere are forgetting too? Let's check the next stop, Rootsleep Forest!"
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "哎哎，算我一个！地图这事我最拿手。",
-            "en": "Hey, count me in! Maps are my thing."
+            "zh": "算我一个！你那张图都旧成这样了，我来补上现在还能走的路。",
+            "en": "Count me in! That map's ancient. I'll mark the routes we can actually use today."
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "下次去花园，记得把旧屋的门闩往上提。别傻乎乎地一直推门啊。路上小心！",
-            "en": "Next time you're at the garden, lift the old house latch. Don't spend all day pushing on the door! Safe travels!"
+            "zh": "慢着，花园旧屋的门闩要往上提！你以前就老忘。得空回来吃鱼啊。",
+            "en": "Wait! Lift the latch on the garden house, don't push it. You always forgot that one. Come back for fish when you can!"
           }
         }
       ],
@@ -596,36 +596,36 @@ export const campaign = {
         {
           "speaker": "yahe",
           "text": {
-            "zh": "小心！别踩！这桥刚才还在另一边呢。",
-            "en": "Careful! Don't step there! The bridge was on the other side a moment ago."
+            "zh": "别踩别踩！桥刚转过去，你会掉下去的！",
+            "en": "Don't step there! The bridge just turned. You'll fall!"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "我想找一只金猫……等等，底下是不是有小猫在叫？",
-            "en": "I'm looking for a golden cat… Wait, is that a kitten crying down there?"
+            "zh": "底下怎么有小猫在叫？",
+            "en": "Is that a kitten crying down there?"
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "是呀！它掉进树根里了，我够不着。",
-            "en": "Yes! It's stuck in the roots, and I can't reach it."
+            "zh": "它追着叶子跑，一下子掉进树根里啦！我够不着它。",
+            "en": "It chased a leaf and tumbled into the roots! I can't reach it."
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "看见岔路那片月叶没？拨一下就能把桥转到下面。",
-            "en": "See that moonleaf at the fork? Turn it to swing the bridge down."
+            "zh": "岔路上那片月叶能转动根桥。把桥转到下面，就能过去。",
+            "en": "The moonleaf at the fork turns the root bridge. Swing it down and we can reach the kitten."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "别怕啊，小家伙。我们来啦！",
-            "en": "Hang on, little one! We're coming!"
+            "zh": "小家伙，别乱动！我们这就来。",
+            "en": "Stay put, little one! We're coming."
           }
         }
       ],
@@ -651,29 +651,29 @@ export const campaign = {
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "多亏你们！你说的是一只金猫？我还真见过。那会儿它天天往老树那边跑。",
-            "en": "Thank you! A golden cat, you say? I did meet one. They used to go to the old tree every day."
+            "zh": "出来了就好。小曦？好些年没见了，你还是老样子，看见小猫有事就往前冲。",
+            "en": "Glad the little one's safe. Sunny? It's been years! Still rushing in whenever a kitten needs help, I see."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "它在那儿干什么呀？",
-            "en": "What were they doing there?"
+            "zh": "您还记得我？我以前来这儿做什么呀？",
+            "en": "You remember me? What brought me here before?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "过去看看不就知道了？不过这路……怎么堵成这样。",
-            "en": "Shall we go take a look? Though… look at all those roots in the way."
+            "zh": "你来看过老树上的铃。现在桥乱转，恐怕也是那座铃的问题。",
+            "en": "You used to check the bell on the old tree. With the bridges moving like this, I suspect the bell's failing again."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "等我画张新图。这地方一天一个样，我可不想迷路。",
-            "en": "Let me draw a new map first. This place changes every day. I'm not getting lost here."
+            "zh": "那就去看看。我把刚才救小猫的路线标下来。",
+            "en": "Let's go have a look. I'll mark the route we used to rescue the kitten."
           }
         }
       ],
@@ -699,22 +699,22 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "老树就在前面，可这根树根比我还粗！",
-            "en": "The old tree's right there, but this root is bigger than I am!"
+            "zh": "总算到了！原来这些根桥平时是给大家过河的呀。",
+            "en": "We made it! So these root bridges are how everyone normally gets across."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "又动了！看来这里的古铃也坏了。",
-            "en": "It moved again! Looks like the local bell's broken too."
+            "zh": "是啊。以前一摇铃，桥就会乖乖转回去。现在它连自己该在哪儿都记不住了。",
+            "en": "That's right. A ring of the bell used to bring them back into place. Now even the bridges seem to have forgotten where they belong."
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "铃就在树上。等它恢复正常，咱们就不用跟树根赛跑啦。",
-            "en": "The bell's up in the tree. Once it's working, no more racing against roots!"
+            "zh": "铃就在树上。咱们把它修好，免得再有猫掉下去。",
+            "en": "The bell's up in the tree. Let's fix it before another cat falls."
           }
         }
       ],
@@ -728,44 +728,44 @@ export const campaign = {
       "id": "forest:R-04",
       "chapter": "forest",
       "title": {
-        "zh": "金猫走过的路",
-        "en": "The golden cat's trail"
+        "zh": "断掉的旧路",
+        "en": "The broken route"
       },
       "previous": "forest:R-03",
       "lines": [
         {
           "speaker": "yuchuan",
           "text": {
-            "zh": "我想起来啦！那只金猫是来修铃的。它后来去了千灯城，说要找烬婆做个灯匣。",
-            "en": "I remember now! The golden cat came to fix the bell. Then they went to Lantern City to ask Ember for a lantern case."
+            "zh": "看，桥稳了！我想起一件事，你上回来，说要把风铃镇和这里的铃连起来。可那条旧路后来断了。",
+            "en": "Look, the bridge is steady! I remember something. Last time you came, you wanted to link our bell with Windchime's. But the old route broke."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "喂——檐灯爷爷！听得见不？我们到森林啦！",
-            "en": "Hello-o-o, Grandpa Alder! Can you hear me? We made it to the forest!"
+            "zh": "听见没？风铃镇的铃！相邻的古铃还能隔着断路传声呢！",
+            "en": "Did you hear that? Windchime's bell! Neighboring bells can still carry sound across the broken route!"
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "来，送你颗种子。用水浇，千万别用鱼汤啊。",
-            "en": "Here, a seed for you. Water it, okay? Not fish soup."
+            "zh": "给你颗月叶种子。用水浇，别浇鱼汤哦。",
+            "en": "Here, a moonleaf seed. Give it water, not fish soup!"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那只金猫怎么也在修铃？走，烬婆肯定知道些什么。",
-            "en": "Why was that golden cat fixing bells too? Come on, Ember must know something."
+            "zh": "我以前想把铃连起来？那我得弄清楚为什么。图上下一站是千灯城，去问问烬婆。",
+            "en": "I was trying to connect the bells? I need to find out why. Lantern City's next on my map. Let's ask Ember."
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "好呀。下回回来给我看看它长多高了！",
-            "en": "Okay! Show me how tall it grows next time!"
+            "zh": "嗯！下回见，记得给我讲讲你们路上的事。",
+            "en": "Deal! Tell me all about your travels next time."
           }
         }
       ],
@@ -793,36 +793,36 @@ export const campaign = {
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "快看快看！我做的猫影子，耳朵还是歪的呢！",
-            "en": "Look, look! I made a shadow cat with a crooked ear!"
+            "zh": "快看！我做了只歪耳朵猫，它还会摇尾巴呢！",
+            "en": "Look! I made a crooked-eared cat. It can wag its tail!"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "好可爱！哎？你没动灯，它怎么自己跑起来了？",
-            "en": "It's adorable! Huh? The lamp isn't moving. Why is the shadow running on its own?"
+            "zh": "咦？灯都不动了，它怎么还在跑？",
+            "en": "Huh? The lamp's stopped moving. Why's the shadow still running?"
           }
         },
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "金猫留下的灯匣还在藏灯室呢。这几只影子钻进去，把门口堵了。劳烦你们帮我看看。",
-            "en": "The golden cat's lantern case is still in the vault. Those shadows ran inside and blocked the entrance. Could you help me out?"
+            "zh": "又来了！那些旧影子把藏灯室都堵了。小曦，你来得正好，里面还有你托我保管的灯匣。",
+            "en": "Not again! Those old shadows have blocked up the vault. Sunny, good timing. The case you left with me is still inside."
           }
         },
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "我的歪耳猫是不是也闯祸啦？",
-            "en": "Did my crooked-ear cat get into trouble too?"
+            "zh": "我的歪耳猫也跑进去啦！它可不是坏猫。",
+            "en": "My crooked-ear cat ran in there too! It's not a bad cat."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "才没有呢。等找回它，咱们接着看你的戏！",
-            "en": "Of course not. Let's get it back so you can finish your show!"
+            "zh": "放心，咱们一起把它找出来。",
+            "en": "Don't worry. We'll find it together."
           }
         }
       ],
@@ -848,22 +848,22 @@ export const campaign = {
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "找齐了！瞧，那就是灯匣。",
-            "en": "Found them all! There, that's the lantern case."
+            "zh": "三只都找齐了。好，灯匣就在里面。",
+            "en": "That's all three. Good. The case is inside."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "等等……墙上那个影子怎么越来越大？",
-            "en": "Wait… why's that shadow on the wall getting bigger?"
+            "zh": "等等，墙上怎么又多了这么大一只影子？",
+            "en": "Wait! Where did that enormous shadow come from?"
           }
         },
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "不好！它变成大怪猫啦！我照住它，你们快上！",
-            "en": "Oh no! It's turned into a giant monster cat! I'll keep it in the light. Go get it!"
+            "zh": "哎呀！它朝我们扑过来了！我用灯照着它，你们小心！",
+            "en": "Oh no! It's coming right at us! I'll keep the light on it. Watch out!"
           }
         }
       ],
@@ -889,22 +889,22 @@ export const campaign = {
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "赢啦！我的歪耳猫也回来啦！",
-            "en": "We won! My crooked-ear cat is back!"
+            "zh": "嘿嘿，这下歪耳猫总算听话啦！",
+            "en": "Hee-hee! My crooked-ear cat's behaving again!"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "小栗真厉害。刚才那盏灯照得可准了。",
-            "en": "Nice work, Pip. You aimed that lamp perfectly."
+            "zh": "小栗，刚才多亏你没松开灯。",
+            "en": "Good thing you held on to that lamp, Pip."
           }
         },
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "唉，灯匣倒是找着了。我怎么也想不起那只金猫临走前交代过什么。看来得先修好古铃。",
-            "en": "Well, we have the case. But I can't for the life of me remember what the golden cat asked me to do. Better fix our bell first."
+            "zh": "先把古铃修了吧。这些影子没了铃的管束，还会再跑出来。灯匣在这儿，跑不了。",
+            "en": "Let's fix the bell first. Without it, the shadows will be running loose again. The case isn't going anywhere."
           }
         }
       ],
@@ -922,58 +922,58 @@ export const campaign = {
       "id": "forge:E-04",
       "chapter": "forge",
       "title": {
-        "zh": "把星星挂回夜空",
-        "en": "Hang the stars back up"
+        "zh": "通往书库的航图",
+        "en": "A chart to the library"
       },
       "previous": "forge:E-03",
       "lines": [
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "瞧，匣子里是张图。月牙画在这两座高岛中间，是去书库的路。",
-            "en": "Look, there's a map inside. The crescent between those two islands marks the way to the library."
+            "zh": "拿去吧。你当年托我保管的不是宝贝，是去月镜书库的旧航图。以前巡铃走的云路，现在只有这张图认得全。",
+            "en": "Here you go. What you left with me wasn't treasure, but an old flight chart to Moonmirror Library. It's the only complete record of the old bellkeeper route through the clouds."
           }
         },
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "啊！我想起来了！它说，哪天有猫拿着檐灯的地图来，就把这个匣子交给它。",
-            "en": "Ah! Now I remember! They said to give the case to whoever came here with Alder's map."
+            "zh": "你说，书库里存着星铃的旧图纸。你怕哪天记不住路，就让我把航图收好。",
+            "en": "You told me the library kept the Star Bell's original plans. You wanted me to keep this chart in case you forgot the way."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "怪了……信让我去找檐灯，地图又带我找到你。它是特意把这些东西留下来的！",
-            "en": "The letter sent me to Alder, and his map led me to you. That cat left all of this on purpose!"
+            "zh": "原来我早就知道自己可能会失忆……",
+            "en": "So I knew there was a chance I'd lose my memories…"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "它为什么知道自己可能会失忆？我越来越想见见它了。",
-            "en": "Why did they think they'd lose their memory? I really want to meet them."
+            "zh": "书库里有星铃的图纸，说不定还有我以前修铃的记录。得去看看。",
+            "en": "If the library has those plans, it might have records of my work too. I need to see them."
           }
         },
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "书库里有巡铃人的画像。去瞧瞧，没准儿就认出来啦。",
-            "en": "The library has portraits of the bellkeepers. Take a look. You might recognize someone."
+            "zh": "去吧。云路的入口在那两座高岛中间。别跟着假影子乱跑。",
+            "en": "Go on. The cloud route enters between those two high islands. Don't chase any stray shadows."
           }
         },
         {
           "speaker": "xiaomao",
           "text": {
-            "zh": "带上我的歪耳灯！这样路上就不怕黑啦。",
-            "en": "Take my crooked-ear lantern! Then you won't be scared of the dark."
+            "zh": "这盏歪耳灯给你！以后晚上走路就不怕黑啦。",
+            "en": "Take my crooked-ear lantern! Now you won't be scared walking in the dark."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "等等，书库在天上？……咱们不能走过去吗？",
-            "en": "Wait, the library's in the sky? …Can't we walk there?"
+            "zh": "……高岛？咱们非得飞过去吗？",
+            "en": "…High islands? Do we really have to fly?"
           }
         }
       ],
@@ -1001,29 +1001,29 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "月门就在那两座高岛中间，不过得飞过去。",
-            "en": "The Moon Gate is between those high islands. We'll have to fly."
+            "zh": "月门在两座高岛中间。航图是老的，风向可每天都在变。",
+            "en": "The Moon Gate is between those two islands. Your chart's old, though, and the wind changes every day."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "飞……就飞嘛。我又不是怕高。",
-            "en": "Fly… fine. I'm not afraid of heights."
+            "zh": "我可以飞。就是……不太想往下看。",
+            "en": "I can fly. I just… don't particularly want to look down."
           }
         },
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "别慌。先试着滑翔，拖动就能升降。咱们顺着云路找航线记录。",
-            "en": "No rush. Practice gliding first. Drag to go up or down, and follow the clouds to find the flight log."
+            "zh": "先跟着云路练习吧，拖动就能升降。找到最新的航线记录，再挑条安全的路。",
+            "en": "Practice along the cloud trail. Drag to climb or descend. Find the latest flight record before we choose a safe route."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "那个……能飞慢一点吗？",
-            "en": "Um… can we go a little slower?"
+            "zh": "好。飞慢一点，等等我。",
+            "en": "Okay. Slow down a little and wait for me."
           }
         }
       ],
@@ -1049,22 +1049,22 @@ export const campaign = {
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "找到了！记录里画着两座山，月门就在中间。",
-            "en": "Found it! Two peaks in the flight log. The moon gate's between them."
+            "zh": "找到今天的航线了。月牙岩那边的风比较稳。",
+            "en": "Found today's route. The wind around Crescent Rock is steadier."
           }
         },
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "看见没？云后面有个月牙尖儿。",
-            "en": "See that little crescent poking out of the clouds?"
+            "zh": "看！月门就在后面。可那团云挡得严严实实的。",
+            "en": "Look! The Moon Gate's behind it. That cloud's completely in the way, though."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "先飞到月牙岩。那儿的古铃修好了，云路才会打开。你想跟谁飞？",
-            "en": "First, Crescent Rock. We need its bell working before the cloud route opens. Who do you want to fly with?"
+            "zh": "先飞到月牙岩，把那儿的铃修好，风就能把云吹开。你想让谁带路？",
+            "en": "Let's reach Crescent Rock and fix its bell. Then the wind can clear the clouds. Who do you want to guide us?"
           }
         }
       ],
@@ -1108,29 +1108,29 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "到啦！这就是月牙岩。",
-            "en": "We made it! Crescent Rock."
+            "zh": "到啦！月牙岩。",
+            "en": "Made it! Crescent Rock."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "暮铃！你还好吧？",
-            "en": "Luna! You okay?"
+            "zh": "暮铃？你还敢睁眼吗？",
+            "en": "Luna? Are your eyes open yet?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "还好！我的毛都吹到另一边去了。快去修铃吧，月门还等着咱们。",
-            "en": "Fine! All my fur's pointing the wrong way. Come on, let's fix the bell and open that gate."
+            "zh": "早睁啦！……就是腿还有点软。咱们快修铃吧。",
+            "en": "Of course they are! …My legs are just a bit wobbly. Let's fix that bell."
           }
         },
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "月门开了！就在前面那片云后。",
-            "en": "The moon gate's open! Just past that cloud."
+            "zh": "云散了！月门就在前面。",
+            "en": "The clouds have cleared! The Moon Gate's ahead."
           },
           "afterOperations": [
             "melody:sky"
@@ -1139,8 +1139,8 @@ export const campaign = {
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "云上那只小金猫！听得见吗？别把小栗的灯摔了！",
-            "en": "Little golden cat up there! Can you hear me? Don't drop Pip's lantern!"
+            "zh": "小曦！听得到吗？小栗叫我问你，他那盏灯好不好用！",
+            "en": "Sunny! Can you hear me? Pip wanted to know how his lantern's holding up!"
           },
           "afterOperations": [
             "melody:sky"
@@ -1149,8 +1149,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "听见啦！灯好好的呢！",
-            "en": "Loud and clear! The lantern's safe!"
+            "zh": "好用！告诉小栗，灯没摔坏，我也没摔坏！",
+            "en": "It's great! Tell Pip the lantern's in one piece, and so am I!"
           },
           "afterOperations": [
             "melody:sky"
@@ -1181,36 +1181,36 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "以前有只猫可喜欢喝茶了。每次还没喝呢，下巴就搁到杯沿上了。它说等忙完，就回花园陪我喝。",
-            "en": "A friend of mine loved tea. Before the first sip, their chin was already on the rim. They promised we'd have tea in the garden when the work was done."
+            "zh": "你以前喝茶，总喜欢把下巴搁在杯沿上。说过忙完这趟就回花园陪我喝。",
+            "en": "You used to rest your chin on the rim of your teacup. You promised we'd have tea in the garden when the trip was over."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "花园？你说的是阳光花园吗？",
-            "en": "The garden? You mean Sunlit Garden?"
+            "zh": "我和你……以前就这么熟啊？",
+            "en": "Were we really that close before?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "嗯。后来它没回来。我倒是一直改不了泡两杯茶的习惯。",
-            "en": "Yes. They never came back. And I never quite stopped making two cups."
+            "zh": "嗯。你没回来的那些日子，我还是每天泡两杯。后来就习惯了。",
+            "en": "Yes. All those days you were gone, I kept making two cups. It became a habit."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那这杯给我吧。等找到那只金猫，我也陪你去找你的朋友。",
-            "en": "Then I'll have this one. Once I find the golden cat, I'll help you look for your friend too."
+            "zh": "那这杯就给我吧。以前的事虽然想不起来，可今天我在这儿呀。",
+            "en": "Then I'll have this one. I can't remember those days, but I'm here today."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "……好呀。慢点喝，烫呢。",
-            "en": "…I'd like that. Sip slowly. It's hot."
+            "zh": "……好。小心烫。",
+            "en": "…Okay. Careful, it's hot."
           }
         }
       ],
@@ -1241,8 +1241,8 @@ export const campaign = {
           "npc": "muling",
           "method": "tea-search",
           "label": {
-            "zh": "陪她找那位朋友",
-            "en": "Offer to help find her friend"
+            "zh": "约好回花园喝茶",
+            "en": "Promise tea in the garden"
           }
         }
       ],
@@ -1256,15 +1256,15 @@ export const campaign = {
           {
             "speaker": "player",
             "text": {
-              "zh": "那今天我负责把两杯都喝光！",
-              "en": "Then I'll drink both cups today!"
+              "zh": "那我把两杯都喝掉，你明天就可以少泡一杯啦！",
+              "en": "Then I'll drink both, and tomorrow you can make one less!"
             }
           },
           {
             "speaker": "muling",
             "text": {
-              "zh": "噗……慢点，你的胡须都沾上茶了。",
-              "en": "Heh… slow down. You've got tea on your whiskers."
+              "zh": "噗……还是给我留一杯吧。",
+              "en": "Pfft… leave me one, would you?"
             }
           }
         ],
@@ -1272,15 +1272,15 @@ export const campaign = {
           {
             "speaker": "player",
             "text": {
-              "zh": "那这杯给我吧。等找到那只金猫，我也陪你去找你的朋友。",
-              "en": "Then I'll have this one. Once I find the golden cat, I'll help you look for your friend too."
+              "zh": "那这杯就给我吧。以前的事虽然想不起来，可今天我在这儿呀。",
+              "en": "Then I'll have this one. I can't remember those days, but I'm here today."
             }
           },
           {
             "speaker": "muling",
             "text": {
-              "zh": "……好呀。慢点喝，烫呢。",
-              "en": "…I'd like that. Sip slowly. It's hot."
+              "zh": "……好。小心烫。",
+              "en": "…Okay. Careful, it's hot."
             }
           }
         ],
@@ -1288,15 +1288,15 @@ export const campaign = {
           {
             "speaker": "player",
             "text": {
-              "zh": "等忙完我的事，我陪你找它，好不好？",
-              "en": "When we're done here, I'll help you look for your friend."
+              "zh": "等我想起来了，咱们回花园再喝一次，好不好？",
+              "en": "When I remember, let's have tea in the garden again, okay?"
             }
           },
           {
             "speaker": "muling",
             "text": {
-              "zh": "……好，说定了。",
-              "en": "…Okay. It's a deal."
+              "zh": "……好。说定了。",
+              "en": "…Okay. It's a promise."
             }
           }
         ]
@@ -1314,29 +1314,29 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "终于到啦！我能跟你们进去吗？我也想看看那只金猫长什么样。",
-            "en": "We made it! Can I come in too? I want to see what that golden cat looked like."
+            "zh": "终于到了！我也想看看那些古地图，能跟你们进去吗？",
+            "en": "We're here! I'd love to see those old maps too. Can I come in?"
           }
         },
         {
           "speaker": "baikan",
           "text": {
-            "zh": "找巡铃人的画像？行呀。最近还真热闹，前些天有只猫来借星铃的图，非要问那把锁怎么开。",
-            "en": "Looking for bellkeeper portraits? Sure. We've been busy lately. A cat borrowed the Star Bell map the other day and kept asking how to open its lock."
+            "zh": "找星铃的图纸？巧了，前些天有猫来借过，还问我中央那把锁怎么松开。",
+            "en": "The Star Bell plans? Funny, a cat borrowed them recently and asked how to loosen the central lock."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "锁？为什么要把星铃锁起来？",
-            "en": "A lock? Why was the Star Bell locked up?"
+            "zh": "那把锁不是不能乱动吗？谁会想打开它？",
+            "en": "Isn't that lock supposed to stay shut? Who would want to open it?"
           }
         },
         {
           "speaker": "baikan",
           "text": {
-            "zh": "它坏了，会偷走大家的记忆呀。前些天好像又有人动过它。来，画像在里面。",
-            "en": "Because it was broken and stealing everyone's memories. I think someone's been tampering with it again. Come on, the portraits are inside."
+            "zh": "是啊。星铃坏的时候会吞掉记忆，那把锁就是为了拦住它。借阅记录在里面，进来查查吧。",
+            "en": "Exactly. A broken Star Bell takes memories. The lock was there to hold it back. The borrowing records are inside. Let's have a look."
           }
         }
       ],
@@ -1357,29 +1357,29 @@ export const campaign = {
         {
           "speaker": "baikan",
           "text": {
-            "zh": "欢迎欢迎！先把爪子擦干净，别把云上的泥带进书库哦。",
-            "en": "Welcome! Wipe your paws first. No cloud mud in the library, please."
+            "zh": "欢迎！先擦擦爪子，别把云上的泥带进书库哦。",
+            "en": "Welcome! Wipe your paws first. No cloud mud in the library!"
           }
         },
         {
           "speaker": "moye",
           "text": {
-            "zh": "墙上的画随便看。柜子里的信可别乱翻，那是别的猫的私事。",
-            "en": "Feel free to look at the pictures. But no rummaging through the letters in the cabinets. They're private."
+            "zh": "巡铃的记录在里面。公用的图随便看，别的猫留下的私人信件可不能乱翻。",
+            "en": "The bellkeeper records are inside. Public charts are for everyone, but don't rummage through anyone's private letters."
           }
         },
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "咱们先看画像吧！等了这么久，我可太想知道那只金猫是谁了。",
-            "en": "Let's see the portraits first! I really want to know who that golden cat is."
+            "zh": "先找小曦以前的记录吧。我想知道这几张图是怎么画出来的。",
+            "en": "Let's find Sunny's old records. I want to know how those maps were made."
           }
         },
         {
           "speaker": "baikan",
           "text": {
-            "zh": "就在镜廊那边。最近镜子有点不对劲，你们跟紧我。",
-            "en": "They're in the mirror hall. The mirrors have been acting up lately. Stay close."
+            "zh": "沿镜廊往里走。最近镜子老是照出不该有的东西，跟紧我。",
+            "en": "Through the mirror hall. The mirrors have been showing things they shouldn't lately. Stay close."
           }
         }
       ],
@@ -1405,43 +1405,43 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "两只暮铃！刚才我都不知道该往哪边跑。",
-            "en": "Two Lunas! I didn't know which way to run."
+            "zh": "两只暮铃！刚才我差点跟错了。",
+            "en": "Two Lunas! I nearly followed the wrong one."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "假的只会学我刚摇过的声音。",
-            "en": "The fake could only repeat my last chime."
+            "zh": "假的只会学已经听过的铃声。我换个节奏，它就跟不上了。",
+            "en": "The copy could only repeat the sounds it had heard. Change the rhythm and it couldn't keep up."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "所以我一换节奏，它就露馅了。总算找到你啦！",
-            "en": "So when I changed the rhythm, it gave itself away. There you are!"
+            "zh": "怪不得。真的你还会等我。",
+            "en": "That explains it. The real you waited for me."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "这扇门是真的。古铃就在里面，修好了应该就能看清旧画。",
-            "en": "This is the real door. Once the bell inside is fixed, the murals should be clear again."
+            "zh": "这里才是入口。修好里面的古铃，镜子就不会乱照了。",
+            "en": "This is the real entrance. Fix the bell inside and the mirrors will settle down."
           }
         },
         {
           "speaker": "moye",
           "text": {
-            "zh": "小心！镜影在学你们的招式。先打败它，才能靠近古铃！",
-            "en": "Watch out! That mirror guardian is copying your attacks. Defeat it before you approach the bell."
+            "zh": "当心！还有一只镜影挡着古铃，它在学你们的招式。",
+            "en": "Watch out! Another reflection is guarding the bell, copying your moves."
           }
         },
         {
           "speaker": "baikan",
           "text": {
-            "zh": "安全了！古铃就在那边，去修好它吧。",
-            "en": "It's safe now! The bell's over there. Let's fix it."
+            "zh": "好了，路通了。修铃吧。",
+            "en": "There. The way is clear. Let's fix the bell."
           },
           "afterOperations": [
             "battle:mirror-guardian"
@@ -1450,8 +1450,8 @@ export const campaign = {
         {
           "speaker": "lingyu",
           "text": {
-            "zh": "喂，书库！云海这边听得到你们的铃声啦！",
-            "en": "Hello, Moonmirror! We can hear your bell up in the clouds!"
+            "zh": "书库？听得到吗？我们在云海！",
+            "en": "Library, can you hear us? We're out in the clouds!"
           },
           "afterOperations": [
             "melody:library"
@@ -1460,8 +1460,8 @@ export const campaign = {
         {
           "speaker": "moye",
           "text": {
-            "zh": "听见了！一路平安。",
-            "en": "Loud and clear! Safe travels."
+            "zh": "听到了。奇怪，两边的铃已经能传声了……去看看旧图纸。",
+            "en": "We hear you. Interesting… the two bells can carry sound between them again. Let's see those old plans."
           },
           "afterOperations": [
             "melody:library"
@@ -1485,79 +1485,79 @@ export const campaign = {
       "id": "library:M-03",
       "chapter": "library",
       "title": {
-        "zh": "原来你认识我",
-        "en": "You knew me"
+        "zh": "第一位守铃人",
+        "en": "The first Bellkeeper"
       },
       "previous": "library:M-02",
       "lines": [
         {
           "speaker": "player",
           "text": {
-            "zh": "等一下……这只猫，怎么长得跟我一模一样？",
-            "en": "Wait… why does that cat look exactly like me?"
+            "zh": "这幅画……是我和你？怎么跟咱们现在长得一模一样？",
+            "en": "This picture… is it you and me? We look exactly the same."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "……那是你。",
-            "en": "…That's you."
+            "zh": "嗯。那时候我们还一起照看星铃。",
+            "en": "Yes. Back when we looked after the Star Bell together."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "你说什么？你看，旁边这只……是你吧？",
-            "en": "What? And the cat beside me… that's you, isn't it?"
+            "zh": "可画里的星铃是完整的。我不是普通的巡铃猫吗？",
+            "en": "But the Star Bell in the picture is whole. I thought I just inspected local bells."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "嗯。以前咱们就住在阳光花园。每天一起吃饭、晒太阳，还一起照看星铃。",
-            "en": "Yes. We lived in Sunlit Garden. We'd eat together, nap in the sun, and look after the Star Bell."
+            "zh": "你是最早的守铃人。六座地方的古铃，都由你和大家一起照看。",
+            "en": "You were the first Bellkeeper. You and the others looked after all six local bells."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那封信也是我写的？我怎么会什么都不记得？",
-            "en": "I wrote that letter? Why can't I remember any of this?"
+            "zh": "原来如此。那后来到底发生了什么？",
+            "en": "I see. So what happened after that?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "那年星铃碎了，到处都有猫失忆。你把自己的记忆交给了星铃，它才停下来。你是最早的守铃人。",
-            "en": "When the Star Bell broke, cats everywhere started forgetting things. You gave it your memories to make it stop. You were the first Bellkeeper."
+            "zh": "一颗落星砸碎了星铃。它一直夺走大家的记忆。你为了让它停下来，把自己的记忆留在了里面。",
+            "en": "A falling star shattered it. It kept stealing everyone's memories. To stop it, you left your own memories inside."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那你第一次见到我时，就知道我是谁了？",
-            "en": "So when we first met, you already knew who I was?"
+            "zh": "可我明明留下了信，说那把锁不能开。我现在却醒了……怎么回事？",
+            "en": "But I left a note saying the lock had to stay shut. And now I'm awake… how did that happen?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "知道。那封信是你留下的。我把它放在你身边，想让你按自己的办法找回来……又怕你知道真相后，再做当年那样的事。对不起。",
-            "en": "I did. You left that letter. I put it beside you, hoping you'd find your way back as you'd planned… but I was afraid you'd do what you did before. I'm sorry."
+            "zh": "……小曦，我有件事一直没敢告诉你。你看过借阅记录就会明白。",
+            "en": "…Sunny, there's something I haven't had the courage to tell you. The borrowing record will explain it."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "我想知道当年到底发生了什么。",
-            "en": "I want to know what really happened back then."
+            "zh": "那就去看看。",
+            "en": "Then let's look."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "好，我带你去。",
-            "en": "Okay. I'll show you."
+            "zh": "嗯。",
+            "en": "Okay."
           }
         }
       ],
@@ -1579,8 +1579,8 @@ export const campaign = {
           "npc": "muling",
           "method": "identity-hurt",
           "label": {
-            "zh": "我没想到你一直瞒着我",
-            "en": "You've been keeping this from me"
+            "zh": "追问还有什么没说",
+            "en": "Ask what else is hidden"
           }
         },
         {
@@ -1603,15 +1603,15 @@ export const campaign = {
           {
             "speaker": "player",
             "text": {
-              "zh": "我想知道当年到底发生了什么。",
-              "en": "I want to know what really happened back then."
+              "zh": "那就去看看。",
+              "en": "Then let's look."
             }
           },
           {
             "speaker": "muling",
             "text": {
-              "zh": "好，我带你去。",
-              "en": "Okay. I'll show you."
+              "zh": "嗯。",
+              "en": "Okay."
             }
           }
         ],
@@ -1619,15 +1619,15 @@ export const campaign = {
           {
             "speaker": "player",
             "text": {
-              "zh": "我一直以为你和我一样，什么都不知道。",
-              "en": "I thought you were discovering all of this with me."
+              "zh": "暮铃，还有什么是我不知道的？",
+              "en": "Luna, what else haven't you told me?"
             }
           },
           {
             "speaker": "muling",
             "text": {
-              "zh": "对不起。我早就该告诉你。",
-              "en": "I'm sorry. I should've told you long ago."
+              "zh": "我会说清楚的。对不起。",
+              "en": "I'll tell you. I'm sorry."
             }
           }
         ],
@@ -1635,15 +1635,15 @@ export const campaign = {
           {
             "speaker": "player",
             "text": {
-              "zh": "让我先一个人待一会儿吧。",
-              "en": "I need a minute on my own."
+              "zh": "让我自己待一会儿。等会儿再去看记录。",
+              "en": "I need a moment alone. I'll look at the record in a bit."
             }
           },
           {
             "speaker": "muling",
             "text": {
-              "zh": "好。我就在附近。",
-              "en": "Okay. I'll be nearby."
+              "zh": "好，我在附近等你。",
+              "en": "Okay. I'll wait nearby."
             }
           }
         ]
@@ -1661,71 +1661,71 @@ export const campaign = {
         {
           "speaker": "baikan",
           "text": {
-            "zh": "咦，暮铃？借图的这枚印记和你的铃坠一模一样。那天……星铃的锁也被打开了。",
-            "en": "Luna? This mark on the borrowing record matches your pendant. That was also the day the Star Bell's lock opened."
+            "zh": "暮铃，这不是你铃坠上的印记吗？借图那天，正好是各地又开始失忆的日子。",
+            "en": "Luna, isn't this the mark on your pendant? The day these plans were borrowed was the day the forgetting started again."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "暮铃……是你打开的封印？",
-            "en": "Luna… did you open the seal?"
+            "zh": "暮铃……是你动了星铃的锁？",
+            "en": "Luna… you loosened the Star Bell's lock?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "是我。我想让你回来。我知道那把锁一开，大家可能又会失忆。",
-            "en": "It was me. I wanted you back. I knew opening the lock might make other cats forget again."
+            "zh": "是我。我想让你醒过来。我知道松开锁会有回响跑出去，可我以为来得及把铃修好。",
+            "en": "I did. I wanted you to wake up. I knew loosening it would let echoes escape, but I thought I'd have time to fix the bells."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那阿婆找不到家……也是因为你？",
-            "en": "Then Gran getting lost… that was because of you?"
+            "zh": "那风铃镇的阿婆，还有被困在树根里的小猫……都是因为这件事？",
+            "en": "Then Gran getting lost, and the kitten trapped in the roots… was all of that because of what you did?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "……嗯。我以为来得及修好古铃，没想到会这么快。我一直不敢说。",
-            "en": "…Yes. I thought I'd have time to fix the bells. I didn't think it would happen so fast. I was too scared to tell you."
+            "zh": "……嗯。你醒过来的时候，我很高兴。看到阿婆以后，我才知道自己闯了多大的祸。可我不敢告诉你。",
+            "en": "…Yes. I was so happy when you woke. Then I saw Gran and realized how much harm I'd done. I was too scared to tell you."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "如果修不好呢？你本来打算怎么办？",
-            "en": "What if we couldn't fix them? What were you going to do?"
+            "zh": "要是古铃修不好呢？你为什么还借了这张图？",
+            "en": "What if we couldn't fix the bells? Why did you need these plans?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我想过……用别的猫的记忆，换你的回来。",
-            "en": "I thought about… trading other cats' memories for yours."
+            "zh": "图上还有个办法……把大家的记忆送给星铃，换回一个人的。我当时想，至少能让你想起来。",
+            "en": "There's another route on the plans… feed everyone's memories to the Star Bell to restore one cat's past. I thought at least I could bring yours back."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那阿婆呢？小栗呢？他们会连自己的名字都忘了啊！",
-            "en": "What about Gran? Pip? They could forget their own names!"
+            "zh": "你想过阿婆会怎么样吗？她连自己家的门都认不出来了！",
+            "en": "Did you think about what would happen to Gran? She couldn't even recognize her own door!"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "我真的很生气。阿婆差点连自己的家都忘了。",
-            "en": "I'm angry. Gran nearly lost her home because of this."
+            "zh": "暮铃，我不能接受你替大家做这个决定。",
+            "en": "Luna, you can't make that choice for everyone."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "对不起。我当时只想着你。",
-            "en": "I'm sorry. All I could think about was you."
+            "zh": "对不起。我没有资格这么做。",
+            "en": "I'm sorry. It wasn't my choice to make."
           }
         }
       ],
@@ -1736,8 +1736,8 @@ export const campaign = {
         {
           "id": "anger",
           "label": {
-            "zh": "我真的很生气",
-            "en": "I'm angry"
+            "zh": "不能替大家决定",
+            "en": "No one can decide for everyone"
           },
           "npc": "muling",
           "method": "anger"
@@ -1754,8 +1754,8 @@ export const campaign = {
         {
           "id": "understand",
           "label": {
-            "zh": "我知道你想让我回来，可是……",
-            "en": "I understand why, but…"
+            "zh": "别人也有想念的人",
+            "en": "Other cats have loved ones too"
           },
           "npc": "muling",
           "method": "understand"
@@ -1771,15 +1771,15 @@ export const campaign = {
           {
             "speaker": "player",
             "text": {
-              "zh": "我真的很生气。阿婆差点连自己的家都忘了。",
-              "en": "I'm angry. Gran nearly lost her home because of this."
+              "zh": "暮铃，我不能接受你替大家做这个决定。",
+              "en": "Luna, you can't make that choice for everyone."
             }
           },
           {
             "speaker": "muling",
             "text": {
-              "zh": "对不起。我当时只想着你。",
-              "en": "I'm sorry. All I could think about was you."
+              "zh": "对不起。我没有资格这么做。",
+              "en": "I'm sorry. It wasn't my choice to make."
             }
           }
         ],
@@ -1787,15 +1787,15 @@ export const campaign = {
           {
             "speaker": "player",
             "text": {
-              "zh": "我现在不想说这些。先看看有没有别的办法。",
-              "en": "I don't want to talk about this right now. Let's find another way."
+              "zh": "我现在不想谈这个。先找办法救大家。",
+              "en": "I don't want to talk about this right now. Let's find a way to help everyone."
             }
           },
           {
             "speaker": "muling",
             "text": {
-              "zh": "好。墨页知道旧铃是怎么连起来的。",
-              "en": "Okay. Quill knows how the old bells were linked."
+              "zh": "好。墨页刚才说有另一种接法。",
+              "en": "Okay. Quill mentioned another way to connect the bells."
             }
           }
         ],
@@ -1803,15 +1803,15 @@ export const campaign = {
           {
             "speaker": "player",
             "text": {
-              "zh": "我知道你很想我回来。可阿婆怎么办？",
-              "en": "I know you wanted me back. But what about Gran?"
+              "zh": "我知道你很想我回来，但别的猫也有想念的人啊。",
+              "en": "I know you wanted me back. But other cats have loved ones too."
             }
           },
           {
             "speaker": "muling",
             "text": {
-              "zh": "是我没想清楚。对不起。",
-              "en": "I didn't think it through. I'm sorry."
+              "zh": "……我知道。对不起。",
+              "en": "…I know. I'm sorry."
             }
           }
         ]
@@ -1821,58 +1821,58 @@ export const campaign = {
       "id": "library:M-05",
       "chapter": "library",
       "title": {
-        "zh": "如果铃声只能属于一个人",
-        "en": "If the song belonged to only one cat"
+        "zh": "不必忘掉谁",
+        "en": "No one has to forget"
       },
       "previous": "library:M-04",
       "lines": [
         {
           "speaker": "moye",
           "text": {
-            "zh": "别急着下决定。你们刚才看见了，两种办法差别很大。",
-            "en": "Don't decide just yet. You've seen how different the two ways are."
+            "zh": "先看刚才的模型。把六座铃的记忆都送往中央，最后就只有一个人的记忆留下。",
+            "en": "Look at the model we just used. Send all six bells' memories inward, and only one cat gets theirs back."
           }
         },
         {
           "speaker": "baikan",
           "text": {
-            "zh": "只要六座古铃都接通，星铃夺走的记忆就能回到原来的猫身上。不用拿谁的记忆去换。",
-            "en": "Connect all six local bells, and the memories the Star Bell took can return to their owners. No one has to trade theirs away."
+            "zh": "可如果六座铃彼此接通，就能让记忆回到原来的主人。谁也不用替谁失忆。",
+            "en": "But connect the six bells to each other, and memories can return to their owners. No one has to forget for someone else's sake."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "那我也能想起来？不用让其他猫失忆？",
-            "en": "Then I could remember too? Without making anyone else forget?"
+            "zh": "所以，森林和风铃镇能互相听见，云海也能听见千灯城……我们已经做对了一部分？",
+            "en": "So when the forest heard Windchime, and the clouds heard Lantern City… we'd already made part of that work?"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "有希望。可中央还有把锁，得等六地都连好，才能打开。",
-            "en": "There's a chance. But the central lock must stay shut until all six are connected."
+            "zh": "是。可还差最后一座铃，中央的锁也得等六地连好才能彻底打开。",
+            "en": "Yes. One bell is still missing, and the central lock mustn't open fully until all six are connected."
           }
         },
         {
           "speaker": "baikan",
           "text": {
-            "zh": "咱们已经修好五座了。就差星坠原那一座！",
-            "en": "Five are working already. Only Starfall's bell is left!"
+            "zh": "星坠原！最后一座在那里。以前的巡铃记录也存在那里。",
+            "en": "Starfall! That's where the last bell is. The old inspection records are there too."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我先去看看那把锁。我等你来，不会自己动手。",
-            "en": "I'll go check the lock. I'll wait for you. I won't touch it alone."
+            "zh": "我先去守着中央的锁，不让回响再跑出来。你不到，我绝不会再碰它。",
+            "en": "I'll go watch the central lock so no more echoes get out. I won't touch it again until you're there."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "好，咱们去星坠原。阿婆好不容易才认得家门，我不想再让她忘掉。",
-            "en": "All right. To Starfall. Gran finally knows her way home again. I'm not letting her forget it."
+            "zh": "我去星坠原。先把大家的记忆保住，再想我的事。",
+            "en": "I'll head to Starfall. Everyone's memories come first. Mine can wait."
           }
         }
       ],
@@ -1900,22 +1900,22 @@ export const campaign = {
         {
           "speaker": "lichuan",
           "text": {
-            "zh": "多亏你们找到了星石，商队终于过来了。",
-            "en": "Thanks for finding the star stones. The caravan's finally across."
+            "zh": "多亏你们找对了星石，商队总算过来了。",
+            "en": "Thanks for finding the right star stones. The caravan's finally through."
           }
         },
         {
           "speaker": "xingya",
           "text": {
-            "zh": "刚才有只银色的猫往遗迹那边去了。你们认识她？",
-            "en": "A silver cat just headed toward the ruins. Do you know her?"
+            "zh": "有只银色猫刚往中央遗迹去了。你们是一路的吗？",
+            "en": "A silver cat just went toward the central ruins. Is she with you?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "认识。先去观星台吧，我想看看当年到底发生了什么。为什么非得有一只猫忘掉自己？",
-            "en": "I do. Take me to the observatory first. I want to know what really happened. Why did someone have to forget who they were?"
+            "zh": "是。我们得修好这里的铃。对了，我想看看观星台当年留下的记录。",
+            "en": "Yes. We need to fix this bell. And I'd like to see the old records at the observatory."
           }
         }
       ],
@@ -1945,43 +1945,43 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "（当年的暮铃）再等等！一定还有别的办法！",
-            "en": "(Luna, years ago) Wait! There must be another way!"
+            "zh": "再等等！也许还能把几座铃接起来！",
+            "en": "Wait! Maybe we can still connect some of the bells!"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "（当年的你）六座铃全坏了，大家连家人都认不出来。来不及修了。",
-            "en": "(You, years ago) All six bells are broken. Cats can't even recognize their families. There's no time to repair them."
+            "zh": "六座铃全断了。大家已经连家人都不认识了。咱们来不及了。",
+            "en": "All six bells are disconnected. Cats can't even recognize their families anymore. We're out of time."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "那我陪你去。",
-            "en": "Then I'm coming with you."
+            "zh": "那怎么办？你别一个人进去！",
+            "en": "Then what do we do? Don't go in alone!"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "先用我的记忆让星铃停下来，再把它锁上。等六座古铃修好了，我们也许还能找到办法。",
-            "en": "Use my memories to stop the Star Bell, then lock it. When all six bells are fixed, maybe we'll find a way to undo this."
+            "zh": "先用我的记忆让星铃停下来，再把锁关上。等六座铃都修好，才能安全打开。",
+            "en": "Use my memories to quiet the Star Bell, then shut the lock. Don't open it until all six local bells are repaired."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "那封信我会放回花园。你答应我，哪怕什么都不记得了，也要想办法回来。",
-            "en": "I'll leave your letter in the garden. Promise me you'll find your way back, even if you can't remember anything."
+            "zh": "信我会放在花园。你答应我，就算忘了自己，也要想办法回来。",
+            "en": "I'll keep your letter in the garden. Promise me you'll find a way back, even if you forget who you are."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "我答应你。",
-            "en": "I promise."
+            "zh": "好。到时候，记得给我留杯茶。",
+            "en": "I promise. And when I do, save me a cup of tea."
           }
         }
       ],
@@ -2008,50 +2008,50 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "那时候我每天都泡两杯茶。听见门口有点动静就跑出去……总以为是你回来了。",
-            "en": "I used to make two cups of tea every day. Any sound at the door and I'd run outside… thinking you'd come home."
+            "zh": "你来啦……我没碰那把锁。",
+            "en": "You're here… I haven't touched the lock."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "一直等到现在？",
-            "en": "You've been waiting all this time?"
+            "zh": "我看见当年的记录了。原来那时真的没别的办法。",
+            "en": "I saw what happened back then. There really wasn't time for another way."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "嗯。有一天我泡了两杯，却想不起来另一杯是给谁的。我好害怕……再等下去，连你都忘了。",
-            "en": "Yes. One day I made two cups and couldn't remember who the second one was for. I was terrified I'd forget you altogether."
+            "zh": "有一天，我泡了两杯茶，却想不起另一杯给谁。我害怕再等下去，就连你都忘了……但这不是我伤害大家的理由。",
+            "en": "One day I made two cups of tea and couldn't remember who the other was for. I was afraid I'd forget you too… but that doesn't excuse what I did."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "暮铃，我也想记起以前的事。可是栖蓝、芽禾、小栗……我也不想忘了他们。",
-            "en": "Luna, I want my old memories back too. But Skye, Fern, Pip… I don't want to forget them either."
+            "zh": "我很想记起以前的事。可是栖蓝、芽禾、小栗……现在认识的朋友，我也不想忘。",
+            "en": "I want my old memories back. But Skye, Fern, Pip… I don't want to lose the friends I know now either."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "要是大家都忘了彼此，咱们回来又有什么用呢？",
-            "en": "If we all forget each other, what kind of home would we come back to?"
+            "zh": "我不想再让谁回不了家。",
+            "en": "I don't want anyone else to lose their way home."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "再试一次吧。这次咱们先修好最后一座铃。",
-            "en": "Let's try once more. This time we'll fix the last bell first."
+            "zh": "最后一座铃就在这里。咱们一起修，等大家都接上再开锁。",
+            "en": "The last bell's here. Let's fix it together, then wait until everyone's connected before opening the lock."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "……好。这次我听你的。",
-            "en": "…Okay. This time, we'll do it your way."
+            "zh": "好。这次咱们一起决定。",
+            "en": "Okay. This time we decide together."
           }
         }
       ],
@@ -2077,29 +2077,29 @@ export const campaign = {
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "听见啦！风铃镇这边好好的！",
-            "en": "We hear you! All's well in Windchime!"
+            "zh": "星坠原？听得见！风铃镇的铃也好好的！",
+            "en": "Starfall? We hear you! Windchime's bell is fine too!"
           }
         },
         {
           "speaker": "yahe",
           "text": {
-            "zh": "眠根林也听见了！",
-            "en": "Rootsleep hears you too!"
+            "zh": "森林这边也能听见！",
+            "en": "We hear you in the forest too!"
           }
         },
         {
           "speaker": "xingya",
           "text": {
-            "zh": "六座都响了！现在就差中央星铃那把锁了。",
-            "en": "All six are ringing! Now there's just the lock on the Star Bell."
+            "zh": "六座都接上了！等中央那把锁打开，记忆就能沿这些路回去。",
+            "en": "All six are connected! Once the central lock opens, memories can travel back along those routes."
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "小金猫，忙完了记得回来吃饭！",
-            "en": "Little golden cat, come back for dinner when you're done!"
+            "zh": "小曦，忙完这趟回来吃饭啊！",
+            "en": "Sunny, come back for supper when you're done!"
           }
         }
       ],
@@ -2123,31 +2123,31 @@ export const campaign = {
       "id": "starfall:F-05",
       "chapter": "starfall",
       "title": {
-        "zh": "最后一声错误的铃",
-        "en": "The last wrong chime"
+        "zh": "封印再次松动",
+        "en": "The seal slips"
       },
       "previous": "starfall:F-04",
       "lines": [
         {
           "speaker": "player",
           "text": {
-            "zh": "六座铃不是都修好了吗？……咦，我手里的灯是谁送的？",
-            "en": "Weren't all six bells fixed? …Wait. Who gave me this lantern?"
+            "zh": "六座铃都接好了……咦？这盏灯是谁送我的？",
+            "en": "All six bells are connected… Wait. Who gave me this lantern?"
           },
           "narration": false
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "是小栗！糟了，封印在裂开，星铃又开始夺走记忆了。",
-            "en": "Pip did! Oh no, the seal's cracking. The Star Bell's taking memories again."
+            "zh": "是小栗！不好，中央的锁又松动了。回响在抢记忆！",
+            "en": "Pip! Oh no, the central lock's slipping again. The echoes are stealing memories!"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "快去中央星铃！它还在夺走大家的记忆，必须先让它停下来。",
-            "en": "To the Star Bell, quickly! It's still taking memories. We have to stop it first."
+            "zh": "先去中央！不能让它把刚接好的路也弄断。",
+            "en": "To the Star Bell! We can't let it break the connections we just made."
           }
         }
       ],
@@ -2170,15 +2170,15 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "门口的回响退了。别碰那把锁！你刚才差点连小栗的灯都忘了。",
-            "en": "The echoes at the gate are gone. Don't touch that lock! You nearly forgot Pip's lantern."
+            "zh": "门口的回响退了。先别碰锁，刚才那一声差点让你忘了小栗。",
+            "en": "The echoes at the entrance have retreated. Don't touch the lock yet. That last chime nearly made you forget Pip."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "前面还有假的铃声，连你的声音都在学。咱们一起过去。",
-            "en": "There are more echoes ahead. They're even copying your voice. Let's go together."
+            "zh": "前面还有假的铃声。咱们跟紧点，别被它骗了。",
+            "en": "There are more false chimes ahead. Let's stick together so they can't fool us."
           }
         }
       ],
@@ -2204,36 +2204,36 @@ export const campaign = {
           "speaker": "muling",
           "narration": true,
           "text": {
-            "zh": "刚才那只假的我，只会说同一句话：我会在这里等你。",
-            "en": "That fake Luna kept saying the same thing: I'll wait for you here."
+            "zh": "刚才那个假的我，来来回回只会说‘我会在这里等你’。",
+            "en": "That false version of me kept saying the same thing: 'I'll be waiting here.'"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "我往旁边走，它一点反应也没有。只有你跟了过来。",
-            "en": "I moved away and it didn't react. You followed me."
+            "zh": "可我一走，你就跟上来了。它连看都没看我。",
+            "en": "But when I moved, you followed. It didn't even look at me."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "它能学以前的我，却不知道咱们现在在做什么。",
-            "en": "It knows what I used to say, not what's happening now."
+            "zh": "它只会重复以前的事，根本不知道我们现在想做什么。",
+            "en": "It only repeats the past. It has no idea what we're doing now."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "刚才那团回响一直想把你引到锁前。它要是再夺走记忆，连我们这次认识的朋友都会忘掉。",
-            "en": "That echo kept trying to lure you to the lock. If it takes more memories, even the friends we've made on this trip will forget."
+            "zh": "那团最大的回响还挡着星铃。再让它这么响下去，大家又会失忆。",
+            "en": "The biggest echo is still blocking the Star Bell. If it keeps ringing like that, cats will start forgetting again."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "六地的铃还在响。先赶走最后那团回响，才能安全打开锁，让记忆回到大家身上。",
-            "en": "All six local bells are still ringing. Let's drive off the last echo, then open the lock safely and return everyone's memories."
+            "zh": "六地还连着。咱们先把它赶走，再一起打开锁。",
+            "en": "All six local bells are still connected. Let's drive it away, then open the lock together."
           }
         }
       ],
@@ -2258,43 +2258,43 @@ export const campaign = {
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "听见你啦！",
-            "en": "We hear you!"
+            "zh": "风铃镇听见啦！",
+            "en": "Windchime hears you!"
           }
         },
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "灯还亮着呢！",
-            "en": "The lights are still on!"
+            "zh": "千灯城的灯还亮着呢！",
+            "en": "Lantern City's lights are still on!"
           }
         },
         {
           "speaker": "xingya",
           "text": {
-            "zh": "六座铃都连上了！这次没断！",
-            "en": "All six bells are linked! They're holding!"
+            "zh": "六座铃都接着，没断！",
+            "en": "All six bells are still connected!"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "大家都没忘……真的成功了。",
-            "en": "Nobody's forgotten… It actually worked."
+            "zh": "大家都好好的……这回真的做到了。",
+            "en": "Everyone's okay… We really did it this time."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "暮铃，打开锁吧。这次不用拿谁的记忆来换了。",
-            "en": "Luna, open the lock. Nobody has to give up their memories this time."
+            "zh": "暮铃，可以开锁了。让大家的记忆回去吧。",
+            "en": "Luna, it's safe to open the lock now. Let everyone's memories go home."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "嗯。咱们回家。",
-            "en": "Yeah. Let's go home."
+            "zh": "嗯。一起。",
+            "en": "Yes. Together."
           }
         }
       ],
@@ -2312,37 +2312,37 @@ export const campaign = {
       "id": "finale:B-04",
       "chapter": "finale",
       "title": {
-        "zh": "星铃重新响了",
-        "en": "The bell rings again"
+        "zh": "记忆回来了",
+        "en": "Memories return"
       },
       "previous": "finale:B-03",
       "lines": [
         {
           "speaker": "muling",
           "text": {
-            "zh": "你……认得我吗？",
-            "en": "Do you… remember me?"
+            "zh": "小曦……你还认得我吗？",
+            "en": "Sunny… do you still know me?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "暮铃。……我想起来啦！我叫小曦。那封信是我写的，那座花园……还有小栗的歪耳灯，我全都记得！",
-            "en": "Luna… I remember! I'm Sunny. I wrote that letter. Our garden… Pip's crooked-ear lantern. I remember it all!"
+            "zh": "暮铃！我想起来了。以前那棵树、窗边的茶……还有阿婆和小栗，我一个都没忘！",
+            "en": "Luna! I remember now. The old tree, our tea by the window… and Gran and Pip. I haven't forgotten anyone!"
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "小曦……那我做的那些事，你也记得吗？",
-            "en": "Sunny… do you remember what I did, too?"
+            "zh": "那我后来做的那些事……你也记得？",
+            "en": "And what I did afterwards… you remember that too?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "记得。咱们先去看看阿婆，好吗？回去以后……茶可要泡两杯哦。",
-            "en": "I do. Let's visit Gran first, okay? And when we get home… make two cups of tea."
+            "zh": "记得。我们先去看阿婆，好吗？答应过的事得一件一件做好。",
+            "en": "I do. Let's visit Gran first, okay? We've got promises to keep, one at a time."
           }
         }
       ],
@@ -2379,43 +2379,43 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "是我打开了封印。害得阿婆连回家的路都忘了。对不起。",
-            "en": "I opened the seal, and Gran forgot how to get home because of me. I'm sorry."
+            "zh": "檐灯爷爷，我得跟您说件事。是我松开了星铃的锁，害阿婆忘了回家的路。对不起。",
+            "en": "Alder, I need to tell you something. I loosened the Star Bell's lock. That's why Gran forgot her way home. I'm sorry."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "我能先帮她修好门铃吗？",
-            "en": "Can I start by fixing her doorbell?"
+            "zh": "她家门铃还坏着。我能去帮她修吗？",
+            "en": "Her doorbell's still broken. May I go fix it?"
           }
         },
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "去问问阿婆吧。她愿意的话，就从她家开始。",
-            "en": "Ask Gran. If she's happy with that, start at her house."
+            "zh": "你自己去跟她说吧。她愿意，你就帮她。别替她拿主意。",
+            "en": "Go tell her yourself. Help if she wants you to. Don't decide for her."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "好。修完了我再去问问其他几家。",
-            "en": "Okay. Then I'll ask the other families."
+            "zh": "嗯。我会跟她说清楚，也会去问问其他受影响的猫。",
+            "en": "I will. I'll tell her what happened, and speak with the other cats who were hurt too."
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "你们慢慢说。我在这儿等。",
-            "en": "Take your time. I'll wait here."
+            "zh": "我在这儿等你。",
+            "en": "I'll wait here."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "谢谢。我先去阿婆家。",
-            "en": "Thanks. I'll go see Gran first."
+            "zh": "谢谢。我去找阿婆。",
+            "en": "Thank you. I'll go find Gran."
           }
         }
       ],
@@ -2459,15 +2459,15 @@ export const campaign = {
           {
             "speaker": "player",
             "text": {
-              "zh": "你们慢慢说。我在这儿等。",
-              "en": "Take your time. I'll wait here."
+              "zh": "我在这儿等你。",
+              "en": "I'll wait here."
             }
           },
           {
             "speaker": "muling",
             "text": {
-              "zh": "谢谢。我先去阿婆家。",
-              "en": "Thanks. I'll go see Gran first."
+              "zh": "谢谢。我去找阿婆。",
+              "en": "Thank you. I'll go find Gran."
             }
           }
         ],
@@ -2517,22 +2517,22 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "小曦……花园里还有我的位置吗？",
-            "en": "Sunny… is there still a place for me in the garden?"
+            "zh": "小曦……我还能回花园吗？",
+            "en": "Sunny… may I come back to the garden?"
           }
         },
         {
           "speaker": "player",
           "text": {
-            "zh": "有呀。以后有事可别瞒着我。还有，我那块坐垫得还给我！",
-            "en": "There is. No more keeping things from me, though. And I want my cushion back!"
+            "zh": "可以呀。以后有什么事，咱们都商量着来。还有，那杯茶可别忘了。",
+            "en": "Yes. From now on, we'll talk things through together. And don't forget that cup of tea."
           }
         },
         {
           "speaker": "muling",
           "text": {
-            "zh": "知道啦。那我也能有一把花园的钥匙吗？……坐垫能分我一半吗？",
-            "en": "I know, I know. Can I have a garden key of my own? …And half the cushion?"
+            "zh": "不会啦。我去找檐灯配把钥匙……你要鱼饼还是蜂蜜饼？",
+            "en": "I won't. I'll ask Alder for a key… fish cakes or honey biscuits?"
           }
         }
       ],
