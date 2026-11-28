@@ -2819,3 +2819,27 @@ Needs investigation. 探索 7→5 is unusual — explorer was previously the "he
 
 ### Step D fix retro (2 RSI runs post-21c89012)
 Lazy fix was necessary but **not sufficient**. Masher/explorer/panicky each fail on 1+ scenario dimensions enough to crush cohort min bound. Min rule too aggressive given persona noise. Design tweak queued: `MIN` → median or weighted average.
+
+RSI cycle 2026-11-28T03:22:31Z: agent:pack-count-robust passed control-CHECK, best 0.703 (vs 0.023 baseline); archive 2/256; panicky excluded from scoring MIN (propose.mjs PERSONAS_SCORING, uncommitted per cron step 5).
+
+RSI cycle 2026-11-28T03:41:06Z: winners agent:pack-robust-peel-fused (0.703, cell 1,3,3,3 — recombined champion peel+pack-robust) and agent:multi-rush-solo-kite (0.641, overtook stand-at-max-range 0.434 in cell 2,2,3,3). Archive coverage 2/256 unchanged; no NEW niche filled but 1 niche strengthened. Caveat: PERSONAS_SCORING in propose.mjs still excludes panicky from cohort MIN (uncommitted harness edit from prior cycle); re-checking panicky-exclusion semantics is a pending design question.
+
+RSI median experiment 2026-11-28T04:13:38Z: cohort rule MIN→median, panicky INCLUDED in scoring. Winner agent:pack-robust-peel-fused still best 0.703 (robustness-under-scrutiny confirmed; win does NOT depend on panicky-exclusion). Measured baseline panicky solo-live: win=0.0 surv=0.917 out=804 score=0.527 (not ~0 as prior status reply claimed; correction logged in session file).
+
+## Playtest cycle wjwzq0own — 2026-11-28T04:37Z
+
+funMean 3.83 (slight recovery from wn9ln8tbz 3.67 low; still sub-4).
+Headline (adversary synthesis): "Combat math is now largely tuned, but every low-fun persona score traces to feedback + agency gaps the engine already has state for. Stop pumping damage knobs; make shipped mechanics legible, honor player presses over paternalistic auto-casts, give the fight a visible finish line before the 18-25s patience cliff."
+
+Per-persona fun: 狂按4 · 谨慎2 · 探索5 · 手忙脚乱4 · 懒人5 · 没耐心3.
+
+40 critiques: 0 critique-tier P0, 26 P1, 14 P2. Fixes array has 3 P0, 7 P1, 4 P2.
+
+P0 auto-fix outcomes:
+- P0 fix 1 (basicTimeScalar ramp window 25-55s → 12-30s) — LOW-RISK local-numeric, 1 helper constant pair. AUTO-FIXED in af9c93cf. Full gate (npm run check + 4 combat scripts) green.
+- P0 fix 0 (auto-ult 1.6s agency window + telemetry) — findings-only. Multi-site, adds _combatInactivityT/_ultReadyGraceUntil fields + new VFX tiers + 2 i18n keys + telemetry channel. Not clearly low-risk.
+- P0 fix 2 (Wild-Pack HP ribbon + bloodied toast) — findings-only. Touches battle.js + battle-draw.js + 2 i18n keys. Not single-site.
+
+P1/P2: all findings-only per cron rule. Top P1 themes: ult-agency teach loop (3 of top 4), tell-swing first-wild dodge/shield tutorial, HP ribbon progress UI, pressure legibility (aggrMul render), dodge-input buffer 160ms, coach E-step. P2: basic-streak scalar, weakmark one pack member, slot-feedback blips, wall-pin grace.
+
+Workflow: 22 of 76 agents hit StructuredOutput retry cap (29% harness attrition, below the 38% peak at w32qn0r7h).
