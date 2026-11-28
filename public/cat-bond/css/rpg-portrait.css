@@ -76,8 +76,8 @@
  #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact)>.rw-fit-rail .rw-action-heading,
  #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact)>.rw-fit-rail .rw-optional-actions{grid-column:1/-1;}
  #stage .rw-world:is(.rw-atlas-mode,.rw-region-compact)>.rw-floating-notice{
-  position:absolute!important;left:8px!important;right:8px!important;top:auto!important;
-  bottom:max(8px,env(safe-area-inset-bottom,0px))!important;max-width:calc(100% - 16px)!important;
+  position:absolute!important;left:50%!important;right:auto!important;top:var(--rw-notice-top,100px)!important;
+  bottom:auto!important;max-width:calc(100% - 24px)!important;
   z-index:6;pointer-events:none;
  }
  /* Chapter art is preserved as a whole; no slow zoom that clips the painting. */

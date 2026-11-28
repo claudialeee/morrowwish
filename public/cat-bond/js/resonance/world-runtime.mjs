@@ -267,7 +267,7 @@ function install(){
    rail.hidden=!regionMenuOpen;
    const camera=items.find(el=>el.matches(".rw-camera-controls"));
    if(camera){camera.classList.add("rw-menu-camera");camera.hidden=!portraitLayout();}
-   if(message){items.splice(items.indexOf(message),1);message.classList.add("rw-floating-notice");}
+   if(message){items.splice(items.indexOf(message),1);message.classList.add("rw-floating-notice");requestAnimationFrame(()=>{if(message.isConnected){const r=host.getBoundingClientRect(),h=head.getBoundingClientRect();message.style.setProperty("--rw-notice-top",Math.min(Math.max(56,h.bottom-r.top+10),Math.max(56,r.height*.43))+"px");}});}
   }
   for(const el of items)rail.append(el);
   const pager=E("nav","rw-fit-pages"),prev=B(tr("上一组","Previous"),()=>prev.fitNavigate?.()),next=B(tr("下一组操作","More actions"),()=>next.fitNavigate?.()),counter=E("output","","");
@@ -338,20 +338,35 @@ function install(){
  function reason(k,asPair=false){const m={"walk-to-discovery":["先走到发现地点，或继续探索其他地方。","Approach the discovery, or explore somewhere else."],"story-operation-order":["请先完成当前调查或行动","Complete the current investigation or action first"],"mechanism-incomplete":["机关尚未完成","Complete the mechanism first"],"starfall-routing-order":["先接通相邻古铃，再修复圣所","Connect the neighboring bells, then restore the sanctuary"],"starfall-record-order":["请按调查顺序前往地点","Follow the investigation stations in order"],"walk-to-cargo":["请先抵达物资领取地点","Reach the cargo pickup point"],"walk-to-recipient":["请先抵达接收地点","Reach the recipient"],"library-previous-station":["请先核验前一份档案","Verify the previous archive station first"],"library-catdex-required":["需要已收录图鉴记录的猫咪","A cat with a Catdex record is required"],"library-repair-first":["先修复月镜圣所","Restore the Moonmirror sanctuary first"],"library-record-unverified":["档案证据尚未核实","Archive evidence is not verified"],"harbor-repair-first":["请先修复古铃圣所","Restore the town bell sanctuary first"],"npc-not-available":["该居民暂时无法响应，请先修复圣所","The resident cannot respond yet. Restore the sanctuary first."],"local-response-required":["需要两位居民共同回应旋律","Both residents must answer the melody"],"slot-changed":["存档已切换，请重新操作","The active save has changed. Try again."],"incomplete-forge-parts":["先在旧工坊收集三件零件","Collect all three old workshop parts first"],"two-cat-required":["需要至少一只已收集的猫咪","At least one collected cat is needed"],"paired-flow-incomplete":["双猫尚未完成协作","Both cats must complete the flow"],"region-locked":["尚未开放","Region locked"],"rescue-first":["先救援遇险小船","Rescue the boat first"],"beacon-first":["先校准灯塔","Align the lighthouse first"],"departure-dialogue-pending":["先与暮铃交谈","Speak with Luna before departing"],"invite-local-cats":["先邀请两位当地居民","Invite both local residents"],"choice-pending":["请先作出剧情选择","Make the story choice first"],"save-failed":["存档失败，请重试","Save failed; retry"],"not_started":["请先开始或读取存档","Start or load a save"],"local-crisis-unresolved":["先完成当地危机","Resolve the local crisis first"],"cargo-busy":["先交付当前物资","Deliver the current cargo first"],"canonical-exchange-unavailable":["正式交流接口暂不可用","Canonical exchange unavailable"],"canonical-host-unavailable":["正式剧情接口暂不可用","Canonical story unavailable"],"walk-to-objective":["请先抵达地点","Walk to the location"],"walk-to-tide":["沿退潮刻痕抵达正确地点","Follow the ebb marks to the correct location"],"incomplete-tide-trail":["先调查退潮刻痕与石阶","Inspect the ebb marks and dry steps first"],"walk-to-scent":["先沿气味抵达正确地点","Follow the scent to the correct location"],"incomplete-scent-trail":["尚未找到全部踪迹","The scent trail is incomplete"],"postgame-repair-unavailable":["请先抵达待修复圣所","Reach the sanctuary needing repair"],"postgame-visit-unavailable":["请先修复圣所并前往居民处","Repair the sanctuary and visit the resident first"]};const pair=m[k]||["操作失败，请重试。","Action failed. Please try again."];if(!m[k]&&k)console.warn("World action:",k);return asPair?pair:tr(...pair);}
  let rewardPopup=null,rewardPopupTimer=0;
  function clearRewardPopup(){clearTimeout(rewardPopupTimer);rewardPopupTimer=0;rewardPopup?.remove();rewardPopup=null;}
+ function placeRewardPopup(popup){
+  if(!popup?.isConnected||!host)return;
+  const stage=host.parentElement,head=host.querySelector(".rw-head"),r=stage.getBoundingClientRect(),h=head?.getBoundingClientRect();
+  const top=Math.max(56,(h?.bottom||r.top+48)-r.top+10);
+  popup.style.top=Math.min(top,Math.max(56,r.height*.43))+"px";
+ }
+ function showRewardPopup(labels,details){
+  clearRewardPopup();
+  const popup=E("div","rw-reward-popup");popup.setAttribute("role","status");popup.setAttribute("aria-live","polite");
+  const heading=E("strong","rw-reward-title",Array.isArray(labels)?tr(...labels):labels);
+  const body=E("div","rw-reward-amounts",Array.isArray(details)?tr(...details):details);
+  popup.append(heading);if(body.textContent)popup.append(body);
+  host.parentElement.append(popup);rewardPopup=popup;placeRewardPopup(popup);
+  requestAnimationFrame(()=>{if(rewardPopup===popup)placeRewardPopup(popup);});
+  if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches)popup.animate?.([{opacity:0,transform:"translate(-50%,-6px)"},{opacity:1,transform:"translate(-50%,0)",offset:.06},{opacity:1,transform:"translate(-50%,0)",offset:.92},{opacity:0,transform:"translate(-50%,-4px)"}],{duration:4200,fill:"forwards",easing:"ease"});
+  rewardPopupTimer=setTimeout(clearRewardPopup,4200);return true;
+ }
+ function rewardAmounts(reward={}){return [[reward.coins,tr("金币","coins")],[reward.fish,tr("小鱼干","fish")]].filter(([n])=>n>0).map(([n,label])=>"+"+n+" "+label).join(" · ");}
  function reportPickup(r,labels){
   if(!r?.ok)return report(r);
-  notice="";fitNotice="";game.refreshHUD?.();clearRewardPopup();
-  const reward=r.reward||{},coins=reward.coins||0,fish=reward.fish||0;
-  const popup=E("div","rw-reward-popup");popup.setAttribute("role","status");popup.setAttribute("aria-live","polite");
-  Object.assign(popup.style,{position:"absolute",zIndex:"19",top:"clamp(56px,18%,140px)",left:"50%",transform:"translateX(-50%)",boxSizing:"border-box",width:"max-content",maxWidth:"calc(100% - 32px)",padding:"10px 20px",border:"1px solid #b99a61",borderRadius:"12px",background:"#fff6e9f5",color:"#493e2b",boxShadow:"0 4px 18px #47321d38",textAlign:"center",pointerEvents:"none",fontFamily:"var(--cb-font-body)",lineHeight:"1.35"});
-  const heading=E("strong","rw-reward-title",tr(...labels));Object.assign(heading.style,{display:"block",fontFamily:"var(--cb-font-display)",fontSize:"clamp(16px,2.1vw,22px)",fontWeight:"700"});
-  const details=E("div","rw-reward-amounts",[[coins,tr("金币","coins")],[fish,tr("小鱼干","fish")]].filter(([n])=>n>0).map(([n,label])=>"+"+n+" "+label).join(" · "));
-  Object.assign(details.style,{fontSize:"clamp(14px,1.8vw,18px)",marginTop:"4px"});popup.append(heading);if(details.textContent)popup.append(details);
-  host.parentElement.append(popup);rewardPopup=popup;
-  if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches)popup.animate?.([{opacity:0,transform:"translate(-50%,-6px)"},{opacity:1,transform:"translate(-50%,0)",offset:.09},{opacity:1,transform:"translate(-50%,0)",offset:.84},{opacity:0,transform:"translate(-50%,-4px)"}],{duration:2500,fill:"forwards",easing:"ease"});
-  rewardPopupTimer=setTimeout(clearRewardPopup,2500);return true;
+  notice="";fitNotice="";game.refreshHUD?.();
+  return showRewardPopup(labels,rewardAmounts(r.reward));
  }
- function report(r,t=""){if(!r?.ok){notice=reason(r?.reason,true);return false;}notice=t;if(r.reward){game.refreshHUD?.();const suffix=[`+${r.reward.coins} 金币 · +${r.reward.fish} 小鱼干`,`+${r.reward.coins} coins · +${r.reward.fish} fish`];notice=Array.isArray(t)?t.map((s,i)=>(s?s+" · ":"")+suffix[i]):t?(t+" · "+tr(...suffix)):suffix;}return true;}
+ function report(r,t=""){
+  if(!r?.ok){notice=reason(r?.reason,true);return false;}
+  notice=t;
+  if(r.reward){game.refreshHUD?.();const amount=rewardAmounts(r.reward);if(amount){notice="";fitNotice="";showRewardPopup(t||["获得奖励","Reward received"],amount);}}
+  return true;
+ }
  function image(id){
   if(art[id])return art[id];
    const img=new Image();
@@ -513,7 +528,7 @@ function install(){
   const survey=explorer.survey();if(survey?.from)reserved.push(survey.from);
   return layoutDiscoveries(items,reserved,W,H);
  }
- function visitDiscovery(s){const owner=State.S,source=explorer,region=current().world().location;go(s.at,()=>{if(owner!==State.S||explorer!==source||game.scene!=="map"||explorer.puzzle||ceremony||explorer.cargo||explorer.survey()?.remote)return;if(s.sideEvent){mountSideAdventure(region,{guard:()=>owner===State.S&&explorer===source&&game.scene==="map"&&current().world().location===region&&!explorer.puzzle&&!ceremony&&!explorer.cargo,commit:trace=>{const r=current().finishSideEvent(region,trace);if(r.ok){notice=r.message;render();}return r;}});return;}const result=current().discover(region,s.id);if(result.ok){const msg=result.message;if(!result.decoy)window.MorrowwishAudio?.effect?.("discover");const label=result.souvenir?[msg[0]+" · 纪念物："+result.souvenir[0],msg[1]+" · Keepsake: "+result.souvenir[1]]:msg;notice=label;game.toast?.({zh:label[0],en:label[1]});}else report(result);render();});}
+ function visitDiscovery(s){const owner=State.S,source=explorer,region=current().world().location;go(s.at,()=>{if(owner!==State.S||explorer!==source||game.scene!=="map"||explorer.puzzle||ceremony||explorer.cargo||explorer.survey()?.remote)return;if(s.sideEvent){mountSideAdventure(region,{guard:()=>owner===State.S&&explorer===source&&game.scene==="map"&&current().world().location===region&&!explorer.puzzle&&!ceremony&&!explorer.cargo,commit:trace=>{const r=current().finishSideEvent(region,trace);if(r.ok){notice="";fitNotice="";showRewardPopup(r.souvenir?["获得纪念物","Keepsake received"]:["探索完成","Discovery complete"],r.souvenir||r.message);render();}return r;}});return;}const result=current().discover(region,s.id);if(result.ok){const msg=result.message;if(!result.decoy)window.MorrowwishAudio?.effect?.("discover");notice="";fitNotice="";showRewardPopup(result.souvenir?["获得纪念物","Keepsake received"]:["探索发现","Discovery"],result.souvenir||msg);}else report(result);render();});}
  function visitCache(cache){if(!cache)return;go(cache.point,()=>{reportPickup(explorer.pickup(cache.id),["发现信使补给","Courier cache discovered"]);render()});}
  function visitSurvey(s){go(s.from,()=>{report(explorer.startSurvey());render()});}
  function pendingInvites(v=current().view()){const region=current().world().location;return explorer&&v.objective.includes("melody:"+region)&&!v.objective.includes("repair:"+region)?explorer.localNpcs().filter(n=>!explorer.invited.includes(n.id)):[];}

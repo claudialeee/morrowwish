@@ -21,7 +21,12 @@ html body #stage #cb-header #cb-yard-return{display:none!important}
 #stage .rw-world .rw-atlas-menu[open]{position:static!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important}
 #stage .rw-world .rw-atlas-menu[open]>summary{display:list-item!important;position:sticky!important;top:0!important;background:#f3e5ca!important}
 #stage .rw-world .rw-fit-rail:has(.rw-puzzle-controls){top:auto!important;bottom:12px!important;max-height:65%!important;right:12px!important;width:min(450px,calc(100% - 24px))!important}
-#stage .rw-world .rw-floating-notice{position:absolute!important;left:14px;bottom:14px;max-width:min(320px,70%);z-index:4;margin:0!important}
+#stage .rw-world .rw-floating-notice{position:absolute!important;top:var(--rw-notice-top,100px)!important;bottom:auto!important;left:50%!important;right:auto!important;transform:translateX(-50%);width:max-content;max-width:min(440px,calc(100% - 24px));z-index:6;margin:0!important;pointer-events:none;background:#fff6e9f5;color:#493e2b;border:1px solid #b99a61;border-radius:10px;padding:9px 14px;text-align:center;box-shadow:0 4px 18px #47321d38}
+#stage .rw-reward-popup{position:absolute;top:100px;left:50%;transform:translateX(-50%);z-index:24;box-sizing:border-box;width:max-content;max-width:min(420px,calc(100% - 24px));padding:10px 20px;background:linear-gradient(155deg,#fff8e5,#f4e5c4);color:#49371d;border:1px solid #b99a61;border-radius:12px;box-shadow:0 5px 20px #47321d55;text-align:center;pointer-events:none;font-family:var(--cb-font-body);line-height:1.4;overflow-wrap:anywhere}
+#stage .rw-reward-title{display:block;font:700 clamp(16px,2.1vw,22px)/1.3 var(--cb-font-display)}
+#stage .rw-reward-amounts{font-size:clamp(14px,1.8vw,18px);font-weight:700;margin-top:4px;color:#61471e}
+#stage:not(:has(#battle-ui.on)) #toasts{top:max(64px,calc(env(safe-area-inset-top,0px) + 48px));max-width:calc(100% - 24px);width:max-content}
+#stage:not(:has(#battle-ui.on)) #toasts .toast{max-width:min(420px,calc(100vw - 24px));box-sizing:border-box;overflow-wrap:anywhere;font-size:clamp(14px,1.7vw,18px);font-weight:700}
 #stage #battle-ui .battle-topbar,#stage #battle-ui .battle-tools,#stage #battle-ui .team-slot,#stage #battle-ui .move,#stage #battle-ui .cb-region-combat,#stage #battle-ui #ult-wrap{background:#f6e9cde8!important;border:0!important;box-shadow:0 2px 8px #4f351c24!important;border-radius:10px!important;color:#493e2b!important}
 #stage #battle-ui .team-slot.active{outline:2px solid #b18b4d!important;outline-offset:-2px!important}
 #stage #battle-ui .move-bar{background:transparent!important;border:0!important;box-shadow:none!important}

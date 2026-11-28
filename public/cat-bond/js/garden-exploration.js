@@ -71,14 +71,14 @@ function postcardView(){
 }
 function snackChoice(){if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice';popup.setAttribute('role','dialog');popup.setAttribute('aria-label',tr('鱼饼','Fish cake'));
  const p=document.createElement('p');p.textContent=tr('一小块香喷喷的鱼饼。','A delicious little fish cake.');popup.append(p);
- for(const [id,a,b] of [['snack-keep','带在身上','Keep for later'],['snack-eat','现在吃掉','Eat now'],['close','暂时不拿','Leave it']]){const button=document.createElement('button');button.type='button';button.textContent=tr(a,b);button.onclick=()=>{if(owner!==rootState()||!eligible()){closePopup();return}if(id==='close'){closePopup();return}if(commit(id)){closePopup();pulse('snack');toast(id==='snack-keep'?'把鱼饼放进小包，留给旅途。':'香香脆脆的，适合出门前吃。',id==='snack-keep'?'You tuck the fish cake away for the road.':'A crisp little breakfast.');}};popup.append(button);}layer.append(popup);
+ for(const [id,a,b] of [['snack-keep','带在身上','Keep for later'],['snack-eat','现在吃掉','Eat now'],['close','暂时不拿','Leave it']]){const button=document.createElement('button');button.type='button';button.textContent=tr(a,b);button.onclick=()=>{if(owner!==rootState()||!eligible()){closePopup();return}if(id==='close'){closePopup();return}if(commit(id)){closePopup();pulse('snack');toast(id==='snack-keep'?'获得：鱼饼 ×1':'香香脆脆的，适合出门前吃。',id==='snack-keep'?'Received: Fish cake ×1':'A crisp little breakfast.');}};popup.append(button);}layer.append(popup);
 }
 function moonleafPose(now,start,home,target,arrived=null){const t=Math.max(0,Math.min(1,(now-start)/1200)),u=t*t*(3-2*t),back=arrived===null?0:Math.max(0,Math.min(1,(now-arrived-750)/950)),b=back*back*(3-2*back),mix=u*(1-b);return {x:home.x+(target.x-home.x)*mix,y:home.y+(target.y-home.y)*mix,touching:arrived!==null&&now-arrived<750,done:arrived!==null&&back>=1};}
 function companionPose(x,y){if(pending?.id!=='moonleaf'||pending.owner!==rootState())return null;const now=performance.now();return moonleafPose(now,pending.started,{x,y},{x:pending.x+38,y:pending.y+3},pending.arrived??null);}
 function cancelChase(){if(!pending)return;delete pending.cat._gardenExploreTarget;const id=pending.id;pending=null;const b=buttons.get(id);if(b)b.disabled=false;}
 function startChase(id='butterfly'){if(pending||!projection)return false;const cat=window.__game?.yard?.entities?.find(e=>e.cat.species==='jinjc'),b=buttons.get(id);if(!cat||!b||cat._gardenRest||cat._playBuildT>0){toast('小猫正在忙，等一下再追蝴蝶。','Your cat is busy. Try the butterfly again in a moment.');return false;}
  const {rect,r,w,h}=projection,ground=window.World?.gardenGround?.(w,h);if(!ground)return false;const bound=(n,a,b)=>Math.max(a,Math.min(b,n));const pt=b._gardenWorldPoint;const x=bound(pt?.x??(r.left+parseFloat(b.style.left)-rect.left)/rect.width*w,ground.left,ground.right),y=bound(pt?.y??((r.top+parseFloat(b.style.top)-rect.top)/rect.height*h+18),ground.top,ground.bottom);pending={cat,x,y,id,owner,started:performance.now(),arrived:null};cat._gardenExploreTarget={x,y};b.disabled=true;return true;}
-function finishChase(){if(!pending)return;const {cat,id}=pending,s=read(owner);cancelChase();if(id==='moonleaf'){if(!view()?.ending||!commit('moonleaf-touch'))return;pulse(id);toast('两片新叶舒展开来。','Two new leaves unfold.');return;}if(!commit('butterfly'))return;cat.pounceT=.8;cat.setPose?.('play',.8);pulse('butterfly');toast(s.butterfly===2?'蝴蝶飞走了，一片小花落在耳尖。纪念：落在耳尖的花':'蝴蝶又飞到了另一处！ '+(s.butterfly+1)+'/3',s.butterfly===2?'The butterfly flies free. A flower lands on your ear. Keepsake: a little flower.':'The butterfly flutters away! '+(s.butterfly+1)+'/3');}
+function finishChase(){if(!pending)return;const {cat,id}=pending,s=read(owner);cancelChase();if(id==='moonleaf'){if(!view()?.ending||!commit('moonleaf-touch'))return;pulse(id);toast('两片新叶舒展开来。','Two new leaves unfold.');return;}if(!commit('butterfly'))return;cat.pounceT=.8;cat.setPose?.('play',.8);pulse('butterfly');toast(s.butterfly===2?'获得纪念物：落在耳尖的花':'蝴蝶又飞到了另一处！ '+(s.butterfly+1)+'/3',s.butterfly===2?'Keepsake received: A little flower':'The butterfly flutters away! '+(s.butterfly+1)+'/3');}
 function interact(id,arrived=false){if(owner!==rootState()||!eligible()||covered())return false;const b=buttons.get(id);if(!b||b.hidden)return false;
  const game=window.__game,pt=b._gardenWorldPoint;
  if(!arrived&&id!=='butterfly'&&id!=='moonleaf'&&pt&&game?.yardExploreEnabled?.()&&!game.yardNear(pt.x,pt.y,.10))return game.yardWalkTo(pt.x,pt.y,()=>interact(id,true));
@@ -89,11 +89,11 @@ function interact(id,arrived=false){if(owner!==rootState()||!eligible()||covered
  if(id==='door'){if(!view()?.completed?.includes('harbor:H-05')){toast('门闩卡住啦。先去附近的小镇打听一下吧。','The latch is stuck. Try asking around the nearby town first.');return true;}if(!s.door){if(!commit('door'))return false;pulse(id);}postcardView();return true;}
  if(!commit(id))return false;pulse(id);
 
- if(id==='seed')toast('找到一粒浅金色种子，收进小包。','You found a little golden seed and tucked it away.');
+ if(id==='seed')toast('获得：浅金色种子 ×1','Received: Golden seed ×1');
 
- if(id==='chart-0'){window.MorrowwishAudio?.note?.(392,.4,.15);const slot=owner;setTimeout(()=>{if(rootState()===slot&&window.__game?.scene==='yard')window.MorrowwishAudio?.note?.(523.25,.55,.15)},260);toast('航图落入爪中，旧铃突然回出你刚哼的两个音！去看看那口铃。','The old bell answers with the two notes you hummed! Investigate the bell.');}
+ if(id==='chart-0'){window.MorrowwishAudio?.note?.(392,.4,.15);const slot=owner;setTimeout(()=>{if(rootState()===slot&&window.__game?.scene==='yard')window.MorrowwishAudio?.note?.(523.25,.55,.15)},260);toast('获得：航图碎片 · 旧铃回应了你的旋律！去看看那口铃。','Received: Chart fragment · The old bell answers your tune! Investigate the bell.');}
  if(id==='chart-echo'){window.MorrowwishAudio?.note?.(523.25,.5,.18);toast('铃绳没有动，却回了同样的音。告诉那只陌生猫！','The cord never moved, yet the bell answered. Tell the traveler!');}
- if(id==='chart-1')toast('航图背面画着一座小花园。纪念物：风中的航图。','A little garden is drawn on the back. Keepsake: Windblown chart.');
+ if(id==='chart-1')toast('获得纪念物：风中的航图','Keepsake received: Windblown chart');
  return true;
 }
 // Ending keepsakes are projections of earned scene evidence, not new checklist gates.

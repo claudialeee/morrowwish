@@ -37,6 +37,11 @@ try{
   await menu('in');assert.ok((await snapshot()).z>1);
   await menu('follow');assert.equal((await snapshot()).follow,true);
   await gardenDiscovery(page,'seed',{touch:name==='portrait'});
+  const receipt=page.locator('#toasts .toast').filter({hasText:lang==='zh'?'获得：浅金色种子':'Received: Golden seed'});
+  await receipt.waitFor({state:'visible'});
+  const bounds=await receipt.boundingBox(),stage=await page.locator('#stage').boundingBox();
+  assert.ok(bounds.y>=stage.y&&bounds.y+bounds.height<stage.y+stage.height*.5,'Reward receipt must be in upper half of stage');
+  assert.ok(bounds.x>=stage.x&&bounds.x+bounds.width<=stage.x+stage.width,'Reward receipt must fit stage');
   assert.ok((await snapshot()).z>1,'discovery at zoomed view');
   await menu('overview');assert.equal((await snapshot()).z,1);
   assert.ok(await page.evaluate(()=>GardenExploration.read(State.S).seed),'discovery remains reachable');
