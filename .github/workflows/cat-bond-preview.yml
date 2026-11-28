@@ -1,7 +1,7 @@
 name: Cat Bond isolated Cloudflare Pages preview
 on:
   push:
-    branches: [review/starbell-canon13-player-experience]
+    branches: [starbell-echoes]
     paths:
       - 'public/cat-bond/**'
       - 'public/audio/**'
@@ -28,11 +28,11 @@ permissions:
   actions: read
 concurrency:
   group: cat-bond-isolated-preview
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   preview:
     # Preview only; never deploy main or touch production APIs.
-    if: github.ref == 'refs/heads/review/starbell-canon13-player-experience'
+    if: github.ref == 'refs/heads/starbell-echoes'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -45,10 +45,10 @@ jobs:
           SOURCE_SHA="$GITHUB_SHA"
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          git fetch --depth=1 origin review/starbell-canon13-player-experience
+          git fetch --depth=1 origin starbell-echoes
           test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_SHA"
           echo "SOURCE_SHA=$SOURCE_SHA" >> "$GITHUB_ENV"
-          printf '%s %s\n' review/starbell-canon13-player-experience "$SOURCE_SHA" > /tmp/cat-bond-preview-sources.txt
+          printf '%s %s\n' starbell-echoes "$SOURCE_SHA" > /tmp/cat-bond-preview-sources.txt
           test -s public/cat-bond/js/rpg-audio.js
           test -s public/cat-bond/js/resonance/resonance-book.mjs
           test -s public/cat-bond/css/rpg-visual-polish.css
@@ -451,14 +451,14 @@ jobs:
         run: |
           set -eu
           test -n "$CLOUDFLARE_API_TOKEN"
-          git fetch --depth=1 origin review/starbell-canon13-player-experience
+          git fetch --depth=1 origin starbell-echoes
           test "$(git rev-parse FETCH_HEAD)" = "$SOURCE_SHA" # never publish a superseded commit
           REPO="$PWD"
           WRANGLER="$REPO/node_modules/.bin/wrangler"
           cd /tmp/cat-bond-preview
           "$WRANGLER" pages deploy site --project-name morrowwish --branch cat-bond-preview --commit-hash "$SOURCE_SHA"
           # The exact same responsive build serves both existing public preview aliases.
-          git -C "$REPO" fetch --depth=1 origin review/starbell-canon13-player-experience
+          git -C "$REPO" fetch --depth=1 origin starbell-echoes
           test "$(git -C "$REPO" rev-parse FETCH_HEAD)" = "$SOURCE_SHA"
           "$WRANGLER" pages deploy site --project-name morrowwish --branch starbell-portrait-preview --commit-hash "$SOURCE_SHA"
       - name: Verify stable preview alias and API isolation
