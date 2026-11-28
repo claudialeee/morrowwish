@@ -1465,3 +1465,9 @@ html .single-screen-game #stage.stage #menuSettings #restart:focus-visible{outli
  html .single-screen-game #stage.stage #roomNum{font-size:10px!important;letter-spacing:0!important}
  html .single-screen-game #stage.stage .in-game-head-row #heistStatus{font-size:14px!important;padding:5px 3px!important}
 }
+
+/* Reserve the real HUD and page margins instead of allowing document overflow. */
+@media(min-width:701px) and (min-height:501px){
+ html:not(.cg-play):not(.mw-fs-active) .single-screen-game #stage.stage{width:min(1040px,calc(100vw - 28px),calc((100dvh - 205px) * 10 / 7))!important;}
+ html:not(.cg-play):not(.mw-fs-active) .single-screen-game{padding-bottom:2px!important;}
+}
