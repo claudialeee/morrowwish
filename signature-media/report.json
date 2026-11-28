@@ -1,0 +1,93 @@
+{
+  "sourceCommit": "7637c688dc6efee7145bf6fe46e25f704d57e6fc",
+  "viewportFix": "c0c9eef798870ac84ffd2442dc68ca085cf407cd",
+  "orientations": [
+    {
+      "orientation": "portrait",
+      "complete": true,
+      "duo": {
+        "uses": 1,
+        "elementPair": "fire+grass",
+        "tier": 1,
+        "cinematic": {
+          "remaining": 2.7500000000000018,
+          "max": 3.2
+        },
+        "layout": {
+          "source": "63-native-portrait-painted-storyboards",
+          "asset": "http://127.0.0.1:18963/cat-bond/assets/mobile-portrait/duo/fire-grass-tier-1.webp?v=portrait-duo-20261127",
+          "originalArt": true,
+          "actorFallback": false,
+          "viewport": {
+            "width": 1080,
+            "height": 1620
+          },
+          "art": {
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1620
+          },
+          "sourceArt": {
+            "x": -0.3483929443359557,
+            "y": -150.6193652343751,
+            "width": 1080.696785888672,
+            "height": 1921.2387304687502
+          },
+          "artAspect": 0.5625,
+          "fullScreenAtmosphere": false,
+          "animatedEffects": true,
+          "paintingDrawCount": 1,
+          "actorLayerCount": 0,
+          "transition": "full-scene-crossfade",
+          "extendedPainting": false,
+          "opacity": 0.7034118331347404,
+          "camera": {
+            "zoom": 1.0006451721191407,
+            "panX": 0,
+            "panY": 0,
+            "rotationRadians": 0
+          },
+          "effectPhase": 0.1406249999999995,
+          "effectTier": 1
+        },
+        "onset": 6.565,
+        "frameTime": 7.489,
+        "screenshot": "duo-real.png"
+      },
+      "ssr": {
+        "species": "jinwu",
+        "rarity": "SSR",
+        "combatTime": 292.221,
+        "resultTime": 374.507,
+        "before": 9,
+        "after": 10,
+        "owned": {
+          "species": "jinwu",
+          "level": 1,
+          "rarity": "SSR"
+        },
+        "screenshot": "ssr-earned.png"
+      },
+      "video": {
+        "width": 1080,
+        "height": 1620,
+        "codec": "h264",
+        "duration": 17.76,
+        "audio": false,
+        "sha256": "4c814c914ed7f5bbec7944304e88344bc8e8e37dd8182b79516c474f067afcad",
+        "bytes": 3209615
+      },
+      "scenes": [
+        "actual duo cut-in",
+        "garden",
+        "workshop",
+        "region",
+        "SSR battle",
+        "SSR earned result"
+      ]
+    }
+  ],
+  "readyForVisualReview": true,
+  "portalSaved": false
+}
