@@ -1,4 +1,4 @@
-import {paintArt,paintPlate,paintBridge} from "./canon22-art.mjs";
+import {canonArt,paintArt,paintPlate,paintBridge} from "./canon22-art.mjs";
 // Canon 2.2 spatial interactions. Each action is replayed before story evidence is granted.
 const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -157,7 +157,23 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
   bellOptions.forEach(([x,y],i)=>tile(x,y,bellGlyphs[i],true));
   c.font="600 "+Math.max(14,u*.032)+"px sans-serif";c.fillStyle="#75502c";c.fillText(tr("已修复 ","Restored ")+p.patternRound+"/3",W*.5,H*.77);
  }else if(p.kind==="bridge"){
-  const a=p.operation==="puzzle:moonleaf-loop"?1-p.branch:p.branch;const nodes=bridgeNodes;line(nodes[0],nodes[1],"#9b9b74",22);line(nodes[2],nodes[4],p.operation==="puzzle:moonleaf-crossing"?"#5b786b22":"#9b9b74",p.operation==="puzzle:moonleaf-crossing"?2:22);line(nodes[3],nodes[4],"#9b9b74",22);if(!paintBridge(c,"forest-root-bridge",nodes[1],nodes[a===0?2:3],W,H,62))line(nodes[1],nodes[a===0?2:3],"#b9df9c",24);line(nodes[1],nodes[a===0?3:2],"#5b786b55",5);for(const i of [2,3,4]){const [x,y]=pt(nodes[i]);c.save();if(i===3)c.filter="brightness(.76) saturate(.85)";paintArt(c,"forest-landing",x,y,138,64,.5,.12);c.restore();}nodes.forEach((q,i)=>{const reachable=bridgeReachable(p).includes(i);dot(q,painted?reachable?10:7:reachable?20:14,i===p.node?"#f6d98c":reachable?"#d3f0c6":"#819e80");});if(!paintArt(c,"forest-moonleaf-control",W*.36,H*.25,74,74,.5,.55,Math.sin(time*2)*.09))dot([.36,.25],27,"#94cc7d");label(tr("月叶","Moonleaf"),[.36,.18]);label(p.operation==="puzzle:moonleaf-crossing"?tr("树冠观景台 · 无出口","Canopy overlook · dead end"):tr("树冠日光台","Sunlit canopy"),[.62,.23],16);label(tr("反光菌群","Glowing fungi"),[.62,.83]);for(let i=0;i<6;i++)dot([.55+i*.025,.77+Math.sin(i)*.02],3+i%3,"#b9e4db");const pos=bridgeWalkPosition(p),unit=Math.min(W,H);
+  const a=p.operation==="puzzle:moonleaf-loop"?1-p.branch:p.branch,nodes=bridgeNodes,unit=Math.min(W,H),height=unit*.13;
+  // All traversable spans use the painted root-bridge asset, not diagram strokes.
+  // No line-art fallback: wait for the actual artwork rather than show a green bar.
+  const rootArt=canonArt("forest-root-bridge"),landingArt=canonArt("forest-landing"),leafArt=canonArt("forest-moonleaf-control");
+  const routeSegments=[[0,1],[1,a===0?2:3],[3,4]];
+  if(p.operation!=="puzzle:moonleaf-crossing")routeSegments.push([2,4]);
+  if(rootArt){
+   for(const [i,j] of routeSegments){c.save();c.shadowColor="#243c3566";c.shadowBlur=unit*.012;c.shadowOffsetY=unit*.009;paintBridge(c,"forest-root-bridge",nodes[i],nodes[j],W,H,height);c.restore();}
+  }
+  if(landingArt)for(const i of [0,1,2,3,4]){const [x,y]=pt(nodes[i]);c.save();if(i===3)c.filter="brightness(.82) saturate(.85)";paintArt(c,"forest-landing",x,y,unit*.24,unit*.13,.5,.20);c.restore();}
+  nodes.forEach((q,i)=>{if(!bridgeReachable(p).includes(i)&&i!==p.node)return;const [x,y]=pt(q),r=unit*.021,g=c.createRadialGradient(x,y,0,x,y,r*2.5);g.addColorStop(0,"#fff4c4b0");g.addColorStop(1,"#fff4c400");c.fillStyle=g;c.fillRect(x-r*2.5,y-r*2.5,r*5,r*5);c.strokeStyle=i===p.node?"#f5d28c":"#f5efc4";c.lineWidth=Math.max(1.5,unit*.003);c.beginPath();c.ellipse(x,y,r,r*.42,0,0,Math.PI*2);c.stroke();});
+  if(leafArt)paintArt(c,"forest-moonleaf-control",W*.36,H*.25,unit*.145,unit*.145,.5,.55,Math.sin(time*2)*.09);
+  if(p.node===1)label(tr("拨动月叶","Turn moonleaf"),[.36,.18],16);
+  label(p.operation==="puzzle:moonleaf-crossing"?tr("树冠观景台 · 无出口","Canopy overlook · dead end"):tr("树冠日光台","Sunlit canopy"),[.62,.23],16);
+  label(tr("反光菌群","Glowing fungi"),[.62,.83],16);
+  if(!rootArt||!landingArt||!leafArt)label(tr("正在载入森林原画…","Loading forest artwork…"),[.5,.94],15);
+  const pos=bridgeWalkPosition(p);
   // Two actual environments react to the route and footsteps, rather than
   // a tiny schematic pretending to be a panoramic view.
   if(p.node===2||p.walk?.to[1]===nodes[2][1]){
