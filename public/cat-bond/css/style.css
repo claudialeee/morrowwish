@@ -4944,3 +4944,12 @@ body.cb-exploring #stage #yard-actions{
 
 /* Debug-only controls must not occupy a player-facing garden action slot. */
 #stage #yard-actions #fab-debug-unlock[hidden],html.cb-cg #cg-yard-dock #yard-actions #fab-debug-unlock[hidden]{display:none!important}
+
+/* Work playtest: hidden developer tools must not participate in flex layout;
+   keep just one live coaching message, away from the Duo button. */
+#stage #battle-ui #btn-debug[hidden]{display:none!important}
+#stage #battle-ui .battle-hint.coach-hint{display:none!important}
+#stage #battle-ui #battle-coach-card{box-sizing:border-box;left:max(8px,env(safe-area-inset-left,0px));right:auto;max-width:min(44%,300px);overflow-wrap:anywhere;pointer-events:none}
+@media(max-width:520px) and (orientation:portrait){
+ #stage #battle-ui #battle-coach-card{bottom:max(175px,calc(env(safe-area-inset-bottom,0px) + 160px));max-width:44%;font-size:11px}
+}

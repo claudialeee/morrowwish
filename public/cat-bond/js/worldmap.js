@@ -192,7 +192,9 @@
   // avg. If `unlock.level` is set, use it; else fall back to legacy `unlock.explore`.
   function teamAvgLevel() {
     var S = window.State && window.State.S;
-    var cats = (S && S.cats) || [];
+    var collection = (S && S.cats) || [];
+    // Use the expedition roster, including reserves, rather than all collected cats.
+    var cats = window.UI?.getPreferredBattleTeam?.(collection) || collection;
     if (!cats.length) return 1;
     var sum = 0, n = 0;
     for (var i = 0; i < cats.length; i++) { sum += (cats[i].level || 1); n++; }
@@ -233,7 +235,7 @@
     var prev = regionById(r.unlock.after);
     var parts;
     if (r.unlock.level != null) {
-      parts = ['队伍平均等级 ≥ ' + r.unlock.level];
+      parts = ['出战队伍平均等级 ≥ ' + r.unlock.level + '（当前 ' + teamAvgLevel().toFixed(1) + '）'];
     } else {
       parts = ['探索「' + (prev ? prev.name : '') + '」至 ' + Math.round(r.unlock.explore * 100) + '%'];
     }
@@ -1221,6 +1223,7 @@
     onExit: onExit,
     exitToYard: exitToYard,
     isUnlocked: isUnlocked,
+    teamAvgLevel: teamAvgLevel,
     REGIONS: REGIONS,
     get currentRegion() { return cur; },
     get mode() { return mode; },

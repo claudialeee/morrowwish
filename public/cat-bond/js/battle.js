@@ -322,7 +322,7 @@ class CaptureBattle {
   initCoach() {
     const S = window.State && State.S;
     if (!S) return null;
-    if (S.battlePrefs?.manualTutorialSeen || this.autoMode) return null; // first manual battle, even after auto battles
+    if (S.battlePrefs?.manualTutorialSeen || this.autoMode || this._firstDuoShowcase) return null; // first manual battle, even after auto battles
     const touch = !!this.game.isTouch;
     // Each step: {key, zh, en, done(battle)} — advances when done() is true.
     const steps = [
@@ -895,7 +895,8 @@ class CaptureBattle {
     this._autoLastAction=null;
     this.commandTarget=null;
     if(!this.autoMode&&!State.S.battlePrefs?.manualTutorialSeen){
-      this.coach=this.initCoach();this.game.touchAutoFire=false;this.game.showFirstManualTutorial();
+      this.coach=this.initCoach();this.game.touchAutoFire=!!this.game.isTouch&&!this.coach;
+      if(this.coach)this.game.showFirstManualTutorial();
     }else if(this.autoMode){this.coach=null;this._coachHighlight=null;}
     else if(this.game.isTouch)this.game.touchAutoFire=true;
     const en=window.MorrowwishI18n?.get?.()!=='zh';

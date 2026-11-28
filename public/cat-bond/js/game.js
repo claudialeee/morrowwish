@@ -947,6 +947,9 @@ class Game {
     if(!opts.masteryChallenge&&State.S.firstDuoShowcasePending&&this.battle.duo){
       this.battle.duoCharge=100;
       this.battle._firstDuoShowcase=true;
+      // Deliver the promised real duo fight before any optional manual practice.
+      this.battle.coach=null;
+      this.battle._coachHighlight=null;
     }
     this.battle.theme = this._battleTheme || null;   // region palette for the arena bg
     this._battleTheme = null;
@@ -979,11 +982,6 @@ class Game {
     document.getElementById('wild-name').textContent =
       `野生 ${GameData.speciesName(wildSpecies)} · Lv.${this.battle.wildLevel} · ${wildSpecies.rarity}`;
     this.buildTeamSlots();
-    if(this.battle._firstDuoShowcase){
-      this.toast(window.MorrowwishI18n?.get?.()==='zh'
-        ?'💞 双猫合击已就绪！按 F 或点击双猫合击，释放首次搭档绝招！'
-        :'💞 Duo is ready! Press F or tap Duo for your first team move!');
-    }
     this._battleHoveredSkill=null;
     this.hideBattleSkillTooltip();
     this.toggleBattleSkillGuide(false);
@@ -1263,7 +1261,7 @@ class Game {
   }
 
   showFirstManualTutorial(){
-    if(!this.battle||this.battle.autoMode||!this.battle.coach||State.S.battlePrefs?.manualTutorialSeen)return;
+    if(!this.battle||this.battle.autoMode||this.battle._firstDuoShowcase||!this.battle.coach||State.S.battlePrefs?.manualTutorialSeen)return;
     this.battleTutorial={step:0,auto:false};this.setBattleHelpVisible(true);
   }
   renderBattleHelp(){
@@ -1540,10 +1538,15 @@ class Game {
     const coachCard=document.getElementById('battle-coach-card');
     if(coachCard){
       const coach=b.coach,step=coach?.steps?.[coach.i];
-      coachCard.hidden=!step||this.battleHelpOpen;
-      if(step){
+      const showcase=!!b._firstDuoShowcase&&!b.duoUses&&b.duoReady();
+      coachCard.hidden=(!step&&!showcase)||this.battleHelpOpen;
+      if(step||showcase){
         const chinese=window.MorrowwishI18n?.get?.()==='zh';
-        coachCard.textContent=(chinese?'操作练习 ':'Practice ')+(coach.i+1)+'/'+coach.steps.length+' · '+(chinese?step.zh:step.en);
+        const message=showcase
+          ?(chinese?(b.autoMode?'💞 合击已就绪！小猫即将释放，也可点击合击。':this.isTouch?'💞 合击已就绪！点右侧合击按钮。':'💞 合击已就绪！按 F 或点击合击。')
+            :(b.autoMode?'💞 Duo ready! Your cats will cast, or tap Duo.':this.isTouch?'💞 Duo ready! Tap Duo on the right.':'💞 Duo ready! Press F or click Duo.'))
+          :(chinese?'操作练习 ':'Practice ')+(coach.i+1)+'/'+coach.steps.length+' · '+(chinese?step.zh:step.en);
+        if(coachCard.textContent!==message)coachCard.textContent=message;
       }
     }
     // team slots: hp + active highlight
