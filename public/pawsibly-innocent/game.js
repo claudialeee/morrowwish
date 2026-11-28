@@ -821,13 +821,13 @@ function renderResultBreakdown(){
  }
 }
 function resultDescription(){
- if(s.winning&&daily)return lang==="zh"?"再挑战每日关":"Replay daily challenge";
  return s.winning&&!daily&&s.index===7
   ?(lang==="zh"?"八间房被闹得鸡飞狗跳，主人还在后面喊，小猫已经叼着鱼跑远了。"
     :"Eight rooms in chaos. The human is still grumbling; the cat is long gone with the fish.")
   :(s.winning?(daily?tr("win"):ROOM_REWARDS[lang][s.index]):tr("lose"));
 }
 function nextResultLabel(){
+ if(s.winning&&daily)return lang==="zh"?"再挑战每日关":"Replay daily challenge";
  return s.winning&&!daily&&s.index===7
   ?(lang==="zh"?"再挑战最终关":"Replay the finale")
   :tr(s.winning?"nextRoom":"tryAgain");
