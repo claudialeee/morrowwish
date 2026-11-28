@@ -1008,8 +1008,8 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
   throw new Error('Cat tutorial, bonus and yarn control must be grouped in one upper HUD before the map');
  if(stage.includes('class="stealth-actionbar"'))throw new Error('Standalone bottom yarn strip must not return');
   const retry=stage.indexOf('id="restart"');
-  if(retry<tool||retry>board||stage.includes('class="collection-count"')||stage.includes('id="collectionPreview"'))
-    throw new Error('Retry belongs above the board, and album preview cards stay removed');
+  if(retry<menu||stage.indexOf('id="menuSettings"')<menu||stage.indexOf('id="menuSettings"')>retry||stage.includes('class="collection-count"')||stage.includes('id="collectionPreview"'))
+    throw new Error('Retry belongs inside the settings menu, and album preview cards stay removed');
  for(const id of ['menuButton','menuButtonLabel','menuClose','quickHelp','stageControls','tool','visionTip','guardIntent','bonusQuick','bonusQuickText','bonusQuickProgress',
                  'levels','wardrobe','skinHint','score','moves','starTotal','hearts','fishCount',
                  'relicGallery','achievementsGrid','badgeHighlights','howTitle',
@@ -1018,17 +1018,17 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  }
  if(stage.includes('id="menuLanguage"')||stage.includes('id="menuAudio"')||stage.includes('id="settingsTitle"'))
   throw new Error('Cat Help must not duplicate header language or sound controls');
- const audioDock=fs.readFileSync('public/audio-dock.js','utf8');
+ const settingsDock=fs.readFileSync('public/game-settings.js','utf8');
  if(!html.includes('class="cat-sound-controls"')||!html.includes('id="music"')||!html.includes('id="sound"')||
-    !audioDock.includes("route==='pawsibly-innocent'?document.querySelector('#stageControls')"))
-  throw new Error('Cat music and sound controls must live in the visible game header');
+    !settingsDock.includes("route==='pawsibly-innocent'?['#menuSettings']"))
+  throw new Error('Cat music, sound, language and share controls must live inside the game menu');
  if(!stage.includes('data-game-tab="rooms"')||!stage.includes('data-game-tab="album"')||
     !stage.includes('data-game-tab="badges"')||!stage.includes('data-game-tab="help"'))
   throw new Error('Game menu tabs missing');
  if(html.includes('<section class="explainer"')||html.includes('<aside class="panel" aria-label="Game progress and controls">'))
   throw new Error('Obsolete persistent cat sidebar or duplicated rules remain');
  if(!css.includes('playfield')||!css.includes('game-menu')||
-    !fullscreen.includes("'pawsibly-innocent':['#stage','#stageControls']"))
+    !fullscreen.includes("'pawsibly-innocent':['#stage','#menuSettings']"))
   throw new Error('One-screen game layout or stage-only fullscreen not wired');
  const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);
  if(ids.some((id,i)=>ids.indexOf(id)!==i))throw new Error('Duplicate cat-game DOM ID');
@@ -1162,9 +1162,9 @@ if(!cat.includes('score=Math.max(0,Math.floor(Number(s?.score)||0))')||
  if(!miniJs.includes("route==='flip-dash'||route==='parcel-panic'")||
     !miniJs.includes("classList.toggle('mw-mini-screen-portrait'"))
   throw Error('Portrait mini-games must keep all interactive content in view');
- if(!settings.includes("['#stageControls','.in-game-controls']")||
+ if(!settings.includes("route==='pawsibly-innocent'?['#menuSettings']")||
     !settings.includes("['.mw-mini-frame-hud'")||!settings.includes("['.top-actions','.header']"))
-  throw Error('Language/music/SFX controls must live inside the original toolbar');
+  throw Error('Language/music/SFX controls must live inside the intended menu or original toolbar');
  // Cat Bond: regressions in intro art overlap and duo animation access.
  const bondIntro=fs.readFileSync('public/cat-bond/index.html','utf8');
  const bondViewer=fs.readFileSync('public/cat-bond/duo-preview.html','utf8');

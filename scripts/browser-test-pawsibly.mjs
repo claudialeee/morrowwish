@@ -87,7 +87,7 @@ try{
   const phone=await landscape.newPage();
   await phone.route('**/api/session',r=>r.fulfill({status:204,body:''}));
   await phone.goto(url,{waitUntil:'load'});
-  await phone.waitForSelector('#mw-game-settings');
+  await phone.waitForSelector('#mw-game-settings',{state:'attached'});
   assert.ok(await phone.evaluate(()=>document.querySelector('.in-game-top').getBoundingClientRect().right<=document.querySelector('#board').getBoundingClientRect().left+1),'Direct landscape entry must use side-by-side layout');
   await phone.setViewportSize({width:390,height:844});
   for(const lang of ['zh','en']){
@@ -98,7 +98,7 @@ try{
     const fit=await phone.evaluate(()=>{
      const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}};
      const stage=rect(document.querySelector('#stage')),board=rect(document.querySelector('#board')),hud=rect(document.querySelector('.in-game-top'));
-     const ids=['stageHome','heistStatus','guideHelp','guardStatus','menuButton','mw-fullscreen-toggle','tool','wait','restart','bonusQuick'];
+     const ids=['stageHome','heistStatus','guideHelp','guardStatus','menuButton','tool','wait','bonusQuick'];
      const elements=[...ids.map(id=>document.getElementById(id)),...document.querySelectorAll('#mw-game-settings button')].filter(e=>e&&e.getClientRects().length);
      return {stage,board,hud,controls:elements.map(e=>{const r=rect(e),target=e.matches('button,a'),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return {id:e.id||e.className,...r,target,clickable:!target||e.disabled||e.contains(hit)};}),vw:innerWidth,vh:innerHeight,scrollHeight:document.scrollingElement.scrollHeight};
     });
@@ -130,7 +130,7 @@ try{
   await phone.waitForFunction(()=>window.__PAWSIBLY_TEST__.getState().got===1);
   // Safari-like fullscreen fallback must remain playable when entered in landscape.
   await phone.locator('#stage').evaluate(e=>Object.defineProperty(e,'requestFullscreen',{value:undefined,configurable:true}));
-  await phone.locator('#mw-fullscreen-toggle').tap();
+  await phone.locator('#menuButton').tap();await phone.locator('#mw-fullscreen-toggle').tap();
   await phone.waitForFunction(()=>document.documentElement.classList.contains('mw-fs-active'));
   await phone.waitForTimeout(100);
   const immersive=await phone.evaluate(()=>{
@@ -142,7 +142,7 @@ try{
   assert.ok(immersive.board.bottom<=immersive.vh+1&&immersive.board.right<=immersive.vw+1,'Landscape fullscreen board fits: '+JSON.stringify(immersive));
   assert.ok(Math.abs(immersive.board.width/immersive.board.height-10/7)<.02,'Fullscreen map aspect remains intact');
   await phone.screenshot({path:'test-results/pawsibly-landscape-fullscreen.png'});
-  await phone.locator('#mw-fullscreen-toggle').tap();
+  await phone.locator('#menuButton').tap();await phone.locator('#mw-fullscreen-toggle').tap();
   await phone.waitForFunction(()=>!document.documentElement.classList.contains('mw-fs-active'));
   await phone.setViewportSize({width:390,height:844});
   await phone.waitForTimeout(100);
@@ -169,11 +169,12 @@ try{
  try{const phone=await touch.newPage();await phone.route('**/api/session',r=>r.fulfill({status:204,body:''}));await phone.goto(url,{waitUntil:'load'});await phone.evaluate(()=>window.MorrowwishI18n.set('zh'));
  await phone.screenshot({path:'test-results/pawsibly-onboarding-mobile-zh.png'});
  assert.match(await phone.locator('#visionTip').textContent(),/偷够3条鱼.*猫门/);
- const orders=await phone.locator('.in-game-actions').evaluate(el=>Array.from(el.querySelectorAll('button')).map(b=>[b.id,Number(getComputedStyle(b).order)]));assert.deepEqual(orders,[['tool',0],['wait',1],['restart',2],['bonusQuick',3]],'Primary turn controls come before optional challenges in visual and keyboard order');
+ assert.equal(await phone.locator('#restart').isVisible(),false,'Replay belongs in menu');assert.equal(await phone.locator('#mw-game-settings').isVisible(),false,'Settings belong in menu');assert.equal(await phone.locator('#mw-fullscreen-toggle').isVisible(),false,'Fullscreen belongs in menu');
+ const orders=await phone.locator('.in-game-actions').evaluate(el=>Array.from(el.querySelectorAll('button')).map(b=>[b.id,Number(getComputedStyle(b).order)]));assert.deepEqual(orders,[['tool',0],['wait',1],['bonusQuick',2]],'Primary turn controls come before optional challenges in visual and keyboard order');
  const b=await phone.locator('#board').boundingBox();await phone.touchscreen.tap(b.x+b.width*.25,b.y+b.height*.5);
  await phone.waitForFunction(()=>window.__PAWSIBLY_TEST__.getState().got===1);
  assert.match(await phone.locator('#visionTip').textContent(),/到手1条/);
- await phone.locator('#guideHelp').tap();assert.ok(await phone.locator('[data-tab-panel="help"]').isVisible());await phone.locator('#menuClose').tap();
+ await phone.locator('#guideHelp').tap();assert.ok(await phone.locator('[data-tab-panel="help"]').isVisible());assert.ok(await phone.locator('#restart').isVisible()&&await phone.locator('#mw-game-settings').isVisible()&&await phone.locator('#mw-fullscreen-toggle').isVisible(),'All utilities reachable in menu');await phone.locator('#menuClose').tap();
  await phone.evaluate(()=>window.MorrowwishI18n.set('en'));assert.match(await phone.locator('#visionTip').textContent(),/One fish/);
  }finally{await touch.close()}
  const run=await browser.newPage({viewport:{width:1250,height:900}});try{await run.route('**/api/session',r=>r.fulfill({status:204,body:''}));await run.goto(url,{waitUntil:'load'});await run.evaluate(()=>window.MorrowwishI18n.set('en'));await run.screenshot({path:'test-results/pawsibly-onboarding-desktop-en.png'});
@@ -350,8 +351,8 @@ try{
  const compactLayout=await page.evaluate(()=>{
   const rect=s=>document.querySelector(s)?.getBoundingClientRect();
   const copy=document.querySelector('.hero .hero-zh-copy');
-  const first=rect('.feature-card'),art=rect('.feature-card .feature-art'),content=rect('.feature-card .feature-content');
-  return {heroHeight:Math.round(rect('.hero')?.height||0),firstCardTop:Math.round(first?.top||0),
+  const rpg=rect('#rpg .starbell-preview-card'),first=rect('#worlds .feature-card'),art=rect('#worlds .feature-card .feature-art'),content=rect('#worlds .feature-card .feature-content');
+  return {heroHeight:Math.round(rect('.hero')?.height||0),firstCardTop:Math.round(first?.top||0),rpgTop:Math.round(rpg?.top||0),rpgHeight:Math.round(rpg?.height||0),
     firstCardHeight:Math.round(first?.height||0),featureColumns:getComputedStyle(document.querySelector('.feature-grid')).gridTemplateColumns.split(' ').length,
     heroWhiteSpace:getComputedStyle(copy).whiteSpace,doodles:getComputedStyle(document.querySelector('.hero-doodles')).display,
     imageSeparate:!!art&&!!content&&content.right<=art.left+2};
@@ -360,9 +361,10 @@ try{
  assert.equal(compactLayout.heroWhiteSpace,'nowrap','Chinese four-world sentence must stay on a single line');
  assert.equal(compactLayout.doodles,'none','Decorations must not collide with the single-line hero');
  assert.ok(compactLayout.heroHeight>=190&&compactLayout.heroHeight<315,'Hero needs visual breathing room while showing games on first screen');
- assert.ok(compactLayout.firstCardTop<505,'First flagship game card must remain visible on first screen');
+ assert.ok(compactLayout.rpgTop<505&&compactLayout.rpgHeight>=275&&compactLayout.rpgHeight<=315,'Dedicated RPG preview must remain compact and visible on first screen');
+ assert.ok(compactLayout.firstCardTop<900,'First four-world card must begin within the initial desktop viewport');
  assert.equal(compactLayout.featureColumns,2,'Desktop flagship games should stay in two columns');
- assert.ok(compactLayout.firstCardHeight>=260&&compactLayout.firstCardHeight<=285,'Flagship cards should be smaller than the previous 318px layout');
+ assert.ok(compactLayout.firstCardHeight>=235&&compactLayout.firstCardHeight<=255,'Four-world cards must match the current compact 244px homepage layout');
  assert.ok(compactLayout.imageSeparate,'Card illustrations should not cover card descriptions');
  const featuredChecks=await page.evaluate(()=>({
   titles:[...document.querySelectorAll('.feature-grid>article h3')].map(x=>({font:getComputedStyle(x).fontFamily,weight:getComputedStyle(x).fontWeight})),
@@ -484,10 +486,9 @@ try{
  await page.locator('#menuButton').click();
  await page.locator('[data-game-tab="help"]').click();
  assert.equal(await page.locator('#gameMenu #music, #gameMenu #sound, #gameMenu [data-set-lang]').count(),0,'Help must not duplicate header sound or language controls');
- const musicButton=page.locator('#stageControls #mw-game-settings .mw-settings-music');
- const audioButton=page.locator('#stageControls #mw-game-settings .mw-settings-sfx');
+ const musicButton=page.locator('#menuSettings #mw-game-settings .mw-settings-music');
+ const audioButton=page.locator('#menuSettings #mw-game-settings .mw-settings-sfx');
  assert.ok(await musicButton.isVisible()&&await audioButton.isVisible(),'Actual unified music and sound controls must remain visible in the game HUD');
- await page.locator('#menuClose').click();
  await audioButton.click();
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),false,'Mute button must actually silence the score');
  await audioButton.click();
@@ -512,6 +513,7 @@ try{
  assert.equal(await page.evaluate(()=>window.MorrowwishAudio.status().enabled),true,'Music toggle must not mute effects');
  await musicButton.click();
  await page.waitForFunction(()=>window.MorrowwishCatMusic.status().playing===true);
+ await page.locator('#menuClose').click();
  console.log('Real CC0 piano soundtrack and separate music/SFX controls:',JSON.stringify(playing));
 
  // Simulate a browser rejecting unprompted autoplay: the player must get a
@@ -638,7 +640,7 @@ try{
    assert.ok(v.menuHidden&&v.menuButton,'CrazyGames game must be one playfield with an optional in-game menu');
    assert.equal(v.fullscreen==='none'||v.fullscreen==='absent',true,'CrazyGames provides native fullscreen');
    assert.ok(v.hud?.includes('0/3')&&v.fishOnBoard===4&&v.owner,'CrazyGames must show the three-fish goal, fourth bonus fish and owner behavior inside iframe');
-    if(w===800)assert.ok(v.bonusText==='BONUS'&&v.bonusTextFits&&v.bonusWidth>=70,'800px portal must show the complete compact BONUS label: '+JSON.stringify(v));
+    if(w===800)assert.ok(/Knock over a vase|打翻一个花瓶/.test(v.bonusText)&&v.bonusTextFits&&v.bonusWidth>=70,'800px portal must show the complete compact BONUS label: '+JSON.stringify(v));
    assert.ok(v.stage.left>=-1&&v.stage.right<=w+1&&v.stage.bottom<=h+1,
      'Playable canvas must fit CrazyGames '+w+'x'+h+': '+JSON.stringify(v));
    assert.ok(v.canvas.width>=440&&v.canvas.height>=305,
@@ -665,7 +667,7 @@ try{
    await waitPage.setViewportSize({width,height:844});
    const layout=await waitPage.evaluate(()=>{
     const root=document.querySelector('.in-game-actions').getBoundingClientRect();
-    const controls=['bonusQuick','tool','wait','restart'].map(id=>document.getElementById(id).getBoundingClientRect());
+    const controls=['bonusQuick','tool','wait'].map(id=>document.getElementById(id).getBoundingClientRect());
     const within=controls.every(r=>r.left>=root.left-1&&r.right<=root.right+1&&r.top>=root.top-1&&r.bottom<=root.bottom+1);
     const overlap=controls.some((a,i)=>controls.some((b,j)=>j>i&&a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1));
     return{within,overlap,waitWidth:controls[2].width,waitHeight:controls[2].height,bonusWidth:controls[0].width,waitLabelVisible:getComputedStyle(document.getElementById('waitLabel')).display!=='none',
@@ -686,8 +688,8 @@ try{
    assert.ok(layout.waitWidth>=43&&layout.waitHeight>=39&&layout.waitLabelVisible,'Wait needs a visible text label and touch target at '+width+'px');
    assert.ok(layout.roomNumWidth>=70&&layout.roomNumHeight<=16&&layout.roomNameVisible,
      'Room label must be horizontal and name visible at '+width+'px: '+JSON.stringify(layout));
-   assert.equal(layout.headDisplay,'flex','Computed mobile header must use the intended flex layout at '+width+'px');
-   assert.ok(layout.topControlRects.every(b=>b.left>=-1&&b.right<=width+1&&b.width>=29)&&layout.roomStatusSeparate&&layout.controlsBelowRoom,
+   assert.equal(layout.headDisplay,'grid','Computed mobile header must use the intended flex layout at '+width+'px');
+   assert.ok(layout.topControlRects.every(b=>b.left>=-1&&b.right<=width+1&&b.width>=29)&&layout.roomStatusSeparate&&layout.topControlRects.length===1,
      'All top mobile controls must fit and not overlap room/progress at '+width+'px: '+JSON.stringify(layout));
    if(width===320)assert.ok(layout.bonusWidth>200,'At 320px the optional quest needs a readable full-width row');
   }

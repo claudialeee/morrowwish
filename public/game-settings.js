@@ -235,7 +235,7 @@ function correctHost(){
  if(!dock)return;
  const full=document.fullscreenElement;
  const root=full||document;
- const candidates=route==='pawsibly-innocent'?['#stageControls','.in-game-controls']:
+ const candidates=route==='pawsibly-innocent'?['#menuSettings']:
  route==='cat-bond'?['#cb-header-actions','#hud']:
  route==='elsewhere'?['.game-top .game-tools','.top-right','.game-top']:
  route==='tiny-town'?['.top-actions','.header']:
