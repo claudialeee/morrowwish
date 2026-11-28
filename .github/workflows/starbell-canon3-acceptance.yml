@@ -5,6 +5,11 @@ on:
     paths:
       - 'public/cat-bond/**'
       - 'scripts/test-starbell-canon3.mjs'
+      - 'scripts/test-starbell-dialogue-camera.mjs'
+      - 'scripts/test-starbell-talent-practice-browser.mjs'
+      - 'scripts/test-starbell-garden-camera.mjs'
+      - 'scripts/test-starbell-finale-framing-farwind.mjs'
+      - 'scripts/test-cat-bond-rpg-audio-lifecycle.mjs'
       - 'scripts/test-starbell-regional-bosses-browser.mjs'
       - 'scripts/test-starbell-player-first-browser.mjs'
       - 'scripts/cat-bond-release-prologue-qa.mjs'
@@ -25,6 +30,7 @@ jobs:
       matrix:
         profile: [wide, portrait]
     env:
+      STARBELL_FOCUS_PROFILE: ${{ matrix.profile }}
       STARBELL_BOSS_PROFILE: ${{ matrix.profile }}
       STARBELL_MINIGAME_PROFILE: ${{ matrix.profile }}
       PROLOGUE_LANG: ${{ matrix.profile == 'portrait' && 'zh' || 'en' }}
@@ -38,6 +44,7 @@ jobs:
         run: |
           for f in public/cat-bond/js/resonance/*.mjs; do node --check "$f"; done
           node scripts/test-starbell-canon3.mjs
+          node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
       - name: Install Chromium once
         run: |
           npm install --no-save --no-package-lock playwright@1.57.0
@@ -54,8 +61,10 @@ jobs:
           (node scripts/cat-bond-release-prologue-qa.mjs && if [[ "$PROLOGUE_PROFILE" == desktop ]]; then PROLOGUE_PROFILE=landscape node scripts/cat-bond-release-prologue-qa.mjs; fi) > /tmp/canon3-opening.log 2>&1 & opening=$!
           node scripts/test-starbell-regional-bosses-browser.mjs > /tmp/canon3-guardians.log 2>&1 & guardians=$!
           node scripts/test-starbell-player-first-browser.mjs > /tmp/canon3-minigames.log 2>&1 & minigames=$!
+          node scripts/test-starbell-dialogue-camera.mjs > /tmp/canon3-dialogue-camera.log 2>&1 & camera=$!
+          (node scripts/test-starbell-garden-camera.mjs && node scripts/test-starbell-finale-framing-farwind.mjs && node scripts/test-starbell-talent-practice-browser.mjs) > /tmp/canon3-continuity.log 2>&1 & continuity=$!
           failed=0
-          for pair in "$opening:opening" "$guardians:guardians" "$minigames:minigames"; do
+          for pair in "$opening:opening" "$guardians:guardians" "$minigames:minigames" "$camera:dialogue-camera" "$continuity:continuity"; do
             pid=${pair%%:*}; name=${pair#*:}
             wait "$pid" || failed=1
             cat "/tmp/canon3-$name.log"
@@ -67,6 +76,7 @@ jobs:
           name: canon3-${{ matrix.profile }}
           path: |
             artifacts/cat-bond-release-prologue/
+            artifacts/starbell-dialogue-camera/
             /tmp/starbell-canon3.log
             /tmp/canon3-*.log
           if-no-files-found: warn
