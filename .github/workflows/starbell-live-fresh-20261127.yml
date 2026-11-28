@@ -5,6 +5,7 @@ on:
     paths: ['.github/workflows/starbell-live-fresh-20261127.yml']
 permissions:
   contents: read
+  actions: read
 jobs:
   fresh:
     runs-on: ubuntu-24.04
@@ -27,6 +28,20 @@ jobs:
       - name: Verify live deployment SHA
         run: |
           curl -fsS "$CAT_BOND_SMOKE_ORIGIN/preview-version.json?qa=live-fresh" | node -e 'let s="";process.stdin.on("data",x=>s+=x);process.stdin.on("end",()=>{const v=JSON.parse(s);if(v.sha!==process.env.SOURCE_SHA)throw Error("Live SHA changed: "+v.sha);console.log(JSON.stringify(v))})'
+      - name: Restore latest earned checkpoint for same build and device
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p resume
+          artifact="starbell-earned-$SOURCE_SHA-$STARBELL_WORK_PROFILE"
+          for run in $(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/runs" -f branch="$GITHUB_REF_NAME" -f status=completed -f per_page=30 --jq '.workflow_runs[] | select(.name == "Starbell live fresh-slot continuity (read-only QA)") | .id'); do
+            if gh run download "$run" -n "$artifact" -D resume; then
+              test -s resume/checkpoint.json
+              echo "Resume artifact from run $run"
+              break
+            fi
+          done
       - name: Install isolated browser
         run: |
           npm install --no-save --no-package-lock playwright@1.57.0
@@ -38,11 +53,16 @@ jobs:
           import assert from 'node:assert/strict';
           import {chromium} from 'playwright';
           import {campaign} from '../public/cat-bond/js/resonance/campaign.mjs';
-          import {mkdir} from 'node:fs/promises';
+          import {mkdir,readFile,writeFile,rename} from 'node:fs/promises';
+          import {createHash} from 'node:crypto';
           const origin=process.env.CAT_BOND_SMOKE_ORIGIN||'http://127.0.0.1:8765';
           const portrait=process.env.STARBELL_WORK_PROFILE==='portrait',lang='zh';
+          const profile=portrait?'portrait':'wide';
+          const hash=o=>createHash('sha256').update(JSON.stringify(o)).digest('hex');
+          const unpack=async()=>{let raw;try{raw=await readFile('resume/checkpoint.json','utf8');}catch(e){if(e.code==='ENOENT')return null;throw e;}const {digest,...p}=JSON.parse(raw);assert.equal(hash(p),digest,'Checkpoint checksum');assert.equal(p.sha,process.env.SOURCE_SHA);assert.equal(p.origin,origin);assert.equal(p.profile,profile);assert.equal(p.lang,lang);assert.equal(p.slot,'slot1');assert.ok(p.storageState.origins.some(o=>o.origin===origin));assert.ok(p.completed.length>=5);assert.deepEqual(p.completed,campaign.scenes.slice(0,p.completed.length).map(s=>s.id));return p;};
+          const resume=await unpack();
           const browser=await chromium.launch({headless:true});
-          const context=await browser.newContext(portrait?{viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'}:{viewport:{width:1280,height:800},reducedMotion:'reduce'});
+          const context=await browser.newContext({... (portrait?{viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'}:{viewport:{width:1280,height:800},reducedMotion:'reduce'}),...(resume?{storageState:resume.storageState}:{})});
           const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
           await context.route('**/*',r=>{const u=new URL(r.request().url());return u.origin===origin||['data:','blob:'].includes(u.protocol)?r.continue():r.abort()});
           const press=async l=>portrait?l.tap({timeout:12000}):l.click({timeout:12000});
@@ -54,6 +74,34 @@ jobs:
            assert.equal(await page.locator('body').getAttribute('data-source-sha'),process.env.SOURCE_SHA,'Exact live build');
            await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
            assert.equal(await page.evaluate(()=>Boolean(window.__STARBELL_DEVELOPER__)),false);
+           const won=resume?.won.slice()||[],films=resume?.films.slice()||[];
+           let last='',savedCount=resume?.completed.length||0;
+           const checkpoint=async ({v,s,mode},force=false)=>{
+            if(mode==='battle'||!s.completed.length||(!force&&s.completed.length<=savedCount))return;
+            const persisted=await page.evaluate(()=>{const entry=State.getSaveSlot('slot1');return entry?.data?.state?.resonance||entry?.data?.resonance||null;});
+            // Wait for the normal game autosave; never alter the slot or inject progression.
+            if(!persisted||JSON.stringify(persisted.completed)!==JSON.stringify(s.completed)||JSON.stringify(persisted.evidence)!==JSON.stringify(s.evidence)||persisted.scene!==s.scene)return;
+            assert.deepEqual(s.completed,campaign.scenes.slice(0,s.completed.length).map(x=>x.id));
+            for(const scene of campaign.scenes.filter(x=>s.completed.includes(x.id)))for(const op of scene.requires){assert.ok(s.evidence[scene.id]?.includes(op),'Missing earned '+scene.id+'/'+op);if(op.startsWith('battle:'))assert.ok(won.includes(scene.id),'Missing recorded real win '+scene.id);}
+            const payload={sha:process.env.SOURCE_SHA,origin,profile,lang,slot:'slot1',scene:s.scene,completed:s.completed,evidence:s.evidence,won:won.slice(),films:films.slice(),storageState:await context.storageState(),sourceRun:process.env.GITHUB_RUN_ID,previousRun:resume?.sourceRun||null};
+            await mkdir('artifacts/earned',{recursive:true});
+            await writeFile('artifacts/earned/checkpoint.tmp',JSON.stringify({...payload,digest:hash(payload)}));
+            await rename('artifacts/earned/checkpoint.tmp','artifacts/earned/checkpoint.json');
+            savedCount=s.completed.length;
+            console.log('EARNED CHECKPOINT',profile,savedCount,s.scene);
+           };
+           if(resume){
+            await press(page.locator('#intro-continue'));await press(page.locator('#intro-slot-list [data-slot="slot1"]'));
+            await page.waitForFunction(()=>['map','yard'].includes(__game.scene));
+            const restored=await read();
+            assert.deepEqual(restored.s.completed,resume.completed,'Resume preserves all earned scenes');
+            assert.deepEqual(restored.s.evidence,resume.evidence,'Resume preserves all earned operations');
+            assert.equal(restored.s.scene,resume.scene);
+            assert.equal(await page.evaluate(()=>State.activeSlot()),'slot1');
+            await checkpoint(restored,true);
+            console.log('RESUMED EARNED SLOT',profile,resume.completed.length,resume.scene,resume.sourceRun);
+           }else{
+           assert.equal(await page.evaluate(()=>State.getSaveSlot('slot1')),null,'No preexisting slot on initial run');
            await press(page.locator('#intro-start'));await press(page.locator('#intro-slot-list [data-slot="slot1"]'));
            await page.waitForFunction(()=>CatBondResonance.view().current?.id==='prologue:P-05');
            assert.equal(await page.evaluate(()=>State.S.cats.length),1);
@@ -69,10 +117,12 @@ jobs:
            await press(guide.getByRole('button',{name:'下一场景 · 风铃镇',exact:true}));
            await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01');
            console.log('FRESH SLOT OPENING PASS',lang,portrait?'portrait':'wide');
-           const won=[],films=[],completed=new Set();let last='';
+           }
+           await checkpoint(await read());
            const deadline=Date.now()+16*60*1000;
            for(let step=0;step<2200&&Date.now()<deadline;step++){
              const {v,s,mode,region}=await read();const id=v.current?.id||'ended';if(id!==last){console.log('NORMAL CONTINUATION',lang,id,mode,region);last=id;}
+             await checkpoint({v,s,mode});
              if(v.ending){assert.equal(s.completed.length,campaign.scenes.length);assert.equal(s.melodies.length,6);assert.equal(s.support.length,6);assert.ok(s.evidence['finale:B-03'].includes('battle:central-echo'));assert.ok(s.evidence['epilogue:E-03'].includes('npc:second-garden-key'));await page.locator('.res-ending-title').waitFor({timeout:12000});await show();break;}
              const ack=page.locator('[data-canon-acknowledgement]:visible button');if(await ack.count()&&await ack.isVisible()){if(!films.includes(id))films.push(id);await press(ack);await page.waitForTimeout(60);continue;}
              const key=page.locator('.res-key-panel:visible button');if(await key.count()&&await key.isVisible()){await press(key);await page.waitForTimeout(100);continue;}
@@ -126,6 +176,13 @@ jobs:
           STAR_BELL_JS
           node --check scripts/test-starbell-live-fresh-temp.mjs
           node scripts/test-starbell-live-fresh-temp.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: starbell-earned-${{ env.SOURCE_SHA }}-${{ matrix.profile }}
+          path: artifacts/earned/checkpoint.json
+          if-no-files-found: warn
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         if: always()
         with:
