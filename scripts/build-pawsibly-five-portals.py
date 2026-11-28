@@ -12,6 +12,8 @@ shutil.copy2(src/'audio/cat-happy-clappy.ogg',game/'audio/cat-happy-clappy.ogg')
 for file in game.glob('*.js'):
     s=file.read_text()
     s=s.replace("location.pathname.split('/').filter(Boolean)[0]","'pawsibly-innocent'")
+    if file.name=='cat-music.js':
+        s=s.replace('if(!wanted||document.hidden)return false;','if(!wanted||document.hidden||window.__MW_PORTAL_PAUSED__)return false;')
     if file.name=='studio-audio.js':
         s=s.replace('window.MorrowwishAudio={start,toggle','window.MorrowwishAudio={start,stop,toggle')
     if file.name=='game.js':
@@ -22,14 +24,16 @@ for file in game.glob('*.js'):
         at='window.addEventListener("resize",fitCanvasPixels);'
         assert at in s
         s=s.replace(at,'''window.addEventListener("resize",fitCanvasPixels);
-let portalSuspended=false;
+let portalSuspended=false,portalPlatformPaused=false,portalWindowPaused=false,portalYarnWasRunning=false;
 function portalFocus(paused){
- if(portalSuspended===paused)return;portalSuspended=paused;
- if(paused){route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null}stopYarnChase();window.MorrowwishAudio?.stop?.();window.MorrowwishCatMusic?.stop?.();}
- else {if(window.MorrowwishAudio?.isEnabled?.())window.MorrowwishAudio?.start?.();if(window.MorrowwishCatMusic?.status?.().enabled)window.MorrowwishCatMusic?.start?.();}
+ if(portalSuspended===paused)return;portalSuspended=paused;window.__MW_PORTAL_PAUSED__=paused;
+ if(paused){route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null}if(yarnChaseTimer!==null){clearInterval(yarnChaseTimer);yarnChaseTimer=null;portalYarnWasRunning=true}window.MorrowwishAudio?.stop?.();window.MorrowwishCatMusic?.stop?.();}
+ else {if(portalYarnWasRunning&&s?.yarnAnimating&&!menuOpen){yarnChaseTimer=setInterval(advanceYarnChase,470)}portalYarnWasRunning=false;if(window.MorrowwishAudio?.isEnabled?.())window.MorrowwishAudio?.start?.();if(window.MorrowwishCatMusic?.status?.().enabled)window.MorrowwishCatMusic?.start?.();}
 }
-window.addEventListener("blur",()=>portalFocus(true));window.addEventListener("focus",()=>portalFocus(document.hidden));document.addEventListener("visibilitychange",()=>portalFocus(document.hidden||!document.hasFocus()));''')
-        for token in ('function single(dx,dy){','function onClick(e){','function waitTurn(){'):
+function syncPortalPause(){portalFocus(portalPlatformPaused||portalWindowPaused||document.hidden)}
+window.MorrowwishPortalPause=paused=>{portalPlatformPaused=Boolean(paused);syncPortalPause()};
+window.addEventListener("blur",()=>{portalWindowPaused=true;syncPortalPause()});window.addEventListener("focus",()=>{portalWindowPaused=false;syncPortalPause()});document.addEventListener("visibilitychange",syncPortalPause);''')
+        for token in ('function single(dx,dy){','function onClick(e){','function waitTurn(){','function throwYarn(){','function command(x,y){','function advanceCatRoute(){','function advanceYarnChase(){'):
             assert token in s
             s=s.replace(token,token+'if(portalSuspended)return;')
     file.write_text(s)

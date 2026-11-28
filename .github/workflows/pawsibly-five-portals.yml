@@ -31,13 +31,21 @@ jobs:
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
           if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; fi
-          ffmpeg -version | head -1
+          ffmpeg -version
       - name: Prepare licensed audio and core regression
         run: |
           bash scripts/fetch-cat-music.sh
           node scripts/check-pawsibly.mjs
       - name: Build independent portal candidates
         run: python3 scripts/build-pawsibly-five-portals.py
+      - name: Create GamePix SDK candidate and record standalone browser checks
+        continue-on-error: true
+        run: |
+          python3 scripts/pawsibly-bind-platform.py release-kit/pawsibly/pawsibly-standalone-candidate.zip gamepix
+          mkdir -p release-kit/pawsibly/media
+          python3 -m http.server 8766 --bind 127.0.0.1 --directory release-kit/pawsibly >/tmp/pawsibly-standalone.log 2>&1 &
+          sleep 1
+          node scripts/qa-pawsibly-standalone.mjs
       - name: Real-input media generation
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/pawsibly.log 2>&1 &
