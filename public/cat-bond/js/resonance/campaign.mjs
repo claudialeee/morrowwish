@@ -1120,8 +1120,8 @@ export const campaign = {
         {
           "speaker": "yuanfan",
           "text": {
-            "zh": "云瀑散开了！月门就在前面。",
-            "en": "The cloudfall cleared! The moon gate is ahead."
+            "zh": "我们安全降落了！沿前面的石路往月门走。古铃旁还有一团回响挡着路。",
+            "en": "We landed safely! Follow the stone path toward the moon gate. An echo is blocking the bell."
           }
         },
         {
@@ -1134,12 +1134,13 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "当然！就是腿还有点软。",
-            "en": "Of course! My legs are just a little shaky."
+            "zh": "当然！就是腿还有点软。走吧，先把挡路的回响打散。",
+            "en": "Of course! My legs are a little shaky. Let’s clear the echo from the path."
           }
         },
         {
           "speaker": "lingyu",
+          "afterOperations": ["battle:gale-guardian","repair:sky","melody:sky"],
           "text": {
             "zh": "古铃已经恢复，风路安全了。先去观景台歇会儿吧。",
             "en": "The bell is restored and the wind route is safe. Rest at the lookout first."
@@ -1153,12 +1154,7 @@ export const campaign = {
         "melody:sky"
       ],
       "choices": [],
-      "lineGate": [
-        "puzzle:joint-flight",
-        "battle:gale-guardian",
-        "repair:sky",
-        "melody:sky"
-      ],
+      "lineGate": ["puzzle:joint-flight"],
       "choiceTiming": "afterDialogue",
       "orderedRequires": true
     },

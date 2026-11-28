@@ -330,7 +330,7 @@ function install(){
   notice(b,...(b.libraryEncounter?.bossId==="mastery"?["暗相降临！下一次星轨转为横向封锁，光系攻击可克制。","Dark phase! The next seal turns horizontal; light attacks have the advantage."]:["暗相降临，光系攻击可克制。","Dark phase. Light attacks have the advantage."]));paintHud(b);
  }
  const hurt=BP.hurtEnemy;
- BP.hurtEnemy=function(e,dmg,...args){if(this.regionalCombat?.shadowLight&&!inLight(this,e))return 0;const r=this.regionalCombat;const tactical=r?.balance&&e.regionalEnemy;if(tactical){if(r.recoveryUntil>this.t)dmg*=this.libraryEncounter?.bossId==="mastery"?1.4:this.libraryEncounter?.bossId==="harbor"?1.15:1.25;else if(r.cast&&!r.shadowLight&&this.libraryEncounter?.bossId!=="harbor")dmg*=.85;}const result=hurt.call(this,e,dmg,...args);shiftGuardian(this,e);return result;};
+ BP.hurtEnemy=function(e,dmg,...args){if(this.regionalCombat?.shadowLight&&!inLight(this,e))return 0;const r=this.regionalCombat;const tactical=r?.balance&&e.regionalEnemy;if(tactical){if(r.recoveryUntil>this.t)dmg*=this.libraryEncounter?.bossId==="mastery"?1.4:this.libraryEncounter?.bossId==="harbor"?1.25:1.4;else if(r.cast&&!r.shadowLight&&this.libraryEncounter?.bossId!=="harbor")dmg*=.85;}const result=hurt.call(this,e,dmg,...args);shiftGuardian(this,e);return result;};
  window.CatBondShadowCombat={steer(b,f){if(!b.regionalCombat?.shadowLight||!b.autoMode||!f.alive)return null;const l=shadowLight(b),dx=l.x-f.x,dy=l.y-f.y,d=Math.hypot(dx,dy);return d>18?{x:dx/d,y:dy/d}:{x:0,y:0};}};
  const capture=BP.startCaptureSeq;
  BP.startCaptureSeq=function(){if(this.libraryEncounter){if(this.done||this.liveEnemies().length)return;this.libraryEncounter.cleared=true;this.projectiles=[];this.enemyProjectiles=[];this.finish(true);return;}if(this.regionalCombat&&this.enemies.some(e=>e.regionalEnemy))this._lastDropped=this.enemies[0];return capture.call(this);};
@@ -407,7 +407,8 @@ function install(){
    game.startBattle(fighters,base,{storyEncounter:"regional-boss",pack:[base]});const b=game.battle;if(!b)return;
    b.storyEncounter=true;b.captureReady=false;b.libraryEncounter={root,token,cleared:false,region,scene:d.scene,op:d.op,optional,bossId:id,reward:bossReward(id,root.resonanceExploration)};
    const balance=guardianProfile(id,b.team,window.State.difficulty());
-   b.regionalCombat={region,kit:REGION_KITS[region],balance,next:balance.first,cast:null,cycle:0,supportAvailable:true,supportUsed:false};
+   const methods=host.supportProfile?.(region)?.methods||[],skyMethod=methods.includes("fast-courier")?"fast-courier":methods.includes("escort-flight")?"escort-flight":null;
+   b.regionalCombat={region,kit:REGION_KITS[region],balance,next:balance.first,cast:null,cycle:0,supportAvailable:true,supportUsed:false,skyMethod};
    if(region==="forge")b.regionalCombat.shadowLight=true;
    const echo=b.enemies[0];if(echo){echo.regionalEnemy=region;echo.isBoss=true;echo.combatName=d.name;echo.element=REGION_KITS[region].element;echo.role=region==="forge"?"brawler":"sharpshooter";echo.regionalCd=balance.first;echo.regionalCycle=0;echo.rotation=[];echo.ultSkill=null;echo.maxhp=balance.hp;echo.dmg*=balance.attack;echo.hp=echo.maxhp;echo.poiseMax=Math.round(echo.maxhp*.6);echo.poise=echo.poiseMax;}
    mount(game,b);game.updateBattleUI?.();if(d.clue)notice(b,...d.clue);
