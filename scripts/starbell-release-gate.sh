@@ -10,6 +10,24 @@ if [[ -f .github/workflows/starbell-integrated-guardians.yml ]]; then
   git diff --quiet c457f85d219a4282e2a1bd7216fdcb31e31dac93 "$source_sha" -- public/cat-bond/assets/audio public/cat-bond/assets/quality-audio public/cat-bond/js/rpg-audio.js public/cat-bond/js/rpg-audio-score.js scripts/import-starbell-region-music.mjs scripts/import-cat-bond-windchime-music.mjs
   gh api "repos/$GITHUB_REPOSITORY/actions/runs/46065269370" | jq -e '.head_sha=="c457f85d219a4282e2a1bd7216fdcb31e31dac93" and .status=="completed" and .conclusion=="success"' >/dev/null
   gh api "repos/$GITHUB_REPOSITORY/actions/runs/46065269370/artifacts" | jq -e 'any(.artifacts[]; .name=="starbell-approved-audio" and .expired==false)' >/dev/null
+  # Canon 3 changes narrative gates, so only a successful exact-source two-device
+  # Canon 3 acceptance may authorize this new preview. No old gameplay pass reused.
+  if grep -Fq '"storyRevision": 3' public/cat-bond/js/resonance/campaign.mjs; then
+    for attempt in $(seq 1 180); do
+      run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-canon3-acceptance.yml/runs?head_sha=$source_sha&branch=review%2Fstarbell-canon13-player-experience" | jq -c '.workflow_runs[0] // {}')
+      if [[ $(jq -r .head_sha <<<"$run") == "$source_sha" && $(jq -r .status <<<"$run") == completed ]]; then
+        test "$(jq -r .conclusion <<<"$run")" = success
+        id=$(jq -r .id <<<"$run")
+        gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id/jobs?per_page=100" | jq -e '([.jobs[]|select((.name=="browser (wide)" or .name=="browser (portrait)") and .conclusion=="success")]|length)==2' >/dev/null
+        { echo "INTEGRATED_GATE=$id"; echo "CANON3_GATE=$id"; echo "FOCUSED_GATE=46065269370"; echo "AUDIO_SOURCE_SHA=c457f85d219a4282e2a1bd7216fdcb31e31dac93"; } >> "$GITHUB_ENV"
+        echo "Exact Canon 3 wide and portrait acceptance passed"
+        exit 0
+      fi
+      sleep 5
+    done
+    echo "Canon 3 acceptance incomplete; refusing preview deploy" >&2
+    exit 1
+  fi
   # Quality PR #129 was tested before advancing either public preview alias.
   # Only release infrastructure and the separately rerun slot fixture may differ.
   # Both acceptance jobs checked out the pinned synthetic merge; verify its tree

@@ -1,0 +1,64 @@
+name: Starbell Canon 3 narrative acceptance
+on:
+  push:
+    branches: [review/starbell-canon13-player-experience]
+    paths:
+      - 'public/cat-bond/**'
+      - 'scripts/test-starbell-canon3.mjs'
+      - 'scripts/test-starbell-regional-bosses-browser.mjs'
+      - 'scripts/test-starbell-player-first-browser.mjs'
+      - 'scripts/cat-bond-release-prologue-qa.mjs'
+      - '.github/workflows/starbell-canon3-acceptance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: starbell-canon3-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  browser:
+    if: github.ref == 'refs/heads/review/starbell-canon13-player-experience'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [wide, portrait]
+    env:
+      STARBELL_BOSS_PROFILE: ${{ matrix.profile }}
+      STARBELL_MINIGAME_PROFILE: ${{ matrix.profile }}
+      PROLOGUE_LANG: ${{ matrix.profile == 'portrait' && 'zh' || 'en' }}
+      PROLOGUE_PROFILE: ${{ matrix.profile == 'portrait' && 'portrait' || 'desktop' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Exact source and new story contract
+        run: |
+          for f in public/cat-bond/js/resonance/*.mjs; do node --check "$f"; done
+          node scripts/test-starbell-canon3.mjs
+      - name: Install Chromium once
+        run: |
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install chromium
+      - name: Real opening, six guardian victories and retained minigames
+        run: |
+          set -euo pipefail
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-canon3.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/cat-bond-release-prologue-qa.mjs
+          node scripts/test-starbell-regional-bosses-browser.mjs
+          node scripts/test-starbell-player-first-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canon3-${{ matrix.profile }}
+          path: |
+            artifacts/cat-bond-release-prologue/
+            /tmp/starbell-canon3.log
+          if-no-files-found: warn
+          retention-days: 7

@@ -12,7 +12,7 @@ let active=null,releaseManifest=null;
 // This never changes the independent production approval result or save schema.
 const developmentPreview=()=>{
  const local=['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).get('rpgDev')==='1';
- const isolated=location.origin==='https://cat-bond-preview.morrowwish.pages.dev'&&window.ARCADE_COLLECTOR==='/api/preview-disabled';
+ const isolated=['https://cat-bond-preview.morrowwish.pages.dev','https://starbell-portrait-preview.morrowwish.pages.dev'].includes(location.origin)&&window.ARCADE_COLLECTOR==='/api/preview-disabled';
  return local||isolated;
 };
 const developmentReady=()=>developmentPreview()&&['starfall:F-02','starfall:F-05','finale:B-04'].every(id=>{const current=campaign.scenes.find(s=>s.id===id);return !!current&&buildCanonicalScene({campaign,manifest:releaseManifest,view:{current,choice:null,objective:current.requires.filter(o=>o.startsWith('cinematic:')),cursor:0,lineReady:true},staging:true}).ok;});

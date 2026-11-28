@@ -493,7 +493,17 @@ jobs:
         env:
           CAT_BOND_SMOKE_STAGE: live
         run: |
-          if [[ "$CAT_BOND_QA_SCOPE" == integrated ]]; then
+          if [[ -n "${CANON3_GATE:-}" ]]; then
+            for URL in https://cat-bond-preview.morrowwish.pages.dev https://starbell-portrait-preview.morrowwish.pages.dev; do
+              curl -fsS "$URL/cat-bond/js/resonance/campaign.mjs?sha=$SOURCE_SHA" -o /tmp/canon3-live.mjs
+              cmp public/cat-bond/js/resonance/campaign.mjs /tmp/canon3-live.mjs
+            done
+            CAT_BOND_SMOKE_ORIGIN=https://cat-bond-preview.morrowwish.pages.dev PROLOGUE_LANG=en PROLOGUE_PROFILE=desktop node scripts/cat-bond-release-prologue-qa.mjs &
+            en=$!
+            CAT_BOND_SMOKE_ORIGIN=https://starbell-portrait-preview.morrowwish.pages.dev PROLOGUE_LANG=zh PROLOGUE_PROFILE=portrait node scripts/cat-bond-release-prologue-qa.mjs &
+            zh=$!
+            wait "$en"; wait "$zh"
+          elif [[ "$CAT_BOND_QA_SCOPE" == integrated ]]; then
             export CAT_BOND_SMOKE_ORIGIN=https://cat-bond-preview.morrowwish.pages.dev
             for profile in wide portrait; do
               if [[ "$profile" == portrait ]]; then export CAT_BOND_SMOKE_ORIGIN=https://starbell-portrait-preview.morrowwish.pages.dev; else export CAT_BOND_SMOKE_ORIGIN=https://cat-bond-preview.morrowwish.pages.dev; fi

@@ -37,7 +37,7 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  for(const rect of [title.title,title.button])assert.ok(rect.left>=-1&&rect.top>=-1&&rect.right<=title.width+1&&rect.bottom<=title.height+1,'Title and start button fit viewport: '+JSON.stringify(title));
  await fs.writeFile(output+'/'+name+'-'+(meet?'meet':'skip')+'-title.json',JSON.stringify(title,null,2));
  await press(page.locator('#intro-start'));await press(page.locator('#intro-slot-list [data-slot="slot1"]'));await waitScene('prologue:P-05');
- const intro=page.locator('#cb-player-first-intro');await intro.waitFor();assert.match(await intro.innerText(),locale==='zh'?/星铃.*记忆/s:/Star Bell.*memories/s);
+ const intro=page.locator('#cb-player-first-intro');await intro.waitFor();assert.match(await intro.innerText(),locale==='zh'?/陌生的花园/:/unfamiliar garden/i);assert.doesNotMatch(await intro.innerText(),locale==='zh'?/星铃|巡铃图|署名的信/:/Star Bell|patrol map|unsigned letter/i);
  assert.equal(await page.locator('.cbcp-root:not([hidden])').count(),0);assert.deepEqual(await page.evaluate(()=>State.S.cats.map(c=>c.species)),['jinjc']);
  assert.equal(await page.evaluate(()=>CatBondResonance.view().muling),'unmet');
  assert.equal(await page.evaluate(()=>Object.values(State.S.resonance.evidence).flat().some(o=>o.startsWith('cinematic:'))),false);
@@ -45,14 +45,7 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  const guide=page.locator('.sg-prologue-guide');
  if(meet){await press(page.locator('[data-npc-talk="muling"]'));const encounter=page.locator('#cb-traveler-encounter');
  assert.equal(await page.locator('.res-garden-bell').count(),0);
- await press(encounter.getByRole('button',{name:tr('寻找航图','Find the chart pieces'),exact:true}));
- await encounter.waitFor({state:'detached'});
- for(const id of ['chart-0','chart-echo','chart-1'])await gardenDiscovery(page,id,{touch:options.hasTouch});
- await press(page.locator('[data-npc-talk="muling"]'));
- await press(encounter.getByRole('button',{name:tr('继续','Continue'),exact:true}));
- await press(encounter.getByRole('button',{name:tr('回答','Answer'),exact:true}));
- assert.match(await encounter.locator('.res-line').innerText(),locale==='zh'?/我也不知道/:/I don.t know/);
- for(const label of [tr('继续','Continue'),tr('告别','Say goodbye')])await press(encounter.getByRole('button',{name:label,exact:true}));
+ await encounter.waitFor();const seen=[];for(let i=0;i<6;i++){seen.push(await encounter.locator('.res-line').innerText());await press(encounter.getByRole('button',{name:i===5?tr('告别','Say goodbye'):tr('继续','Continue'),exact:true}));}await encounter.waitFor({state:'detached'});assert.doesNotMatch(seen.join(' '),locale==='zh'?/巡铃图|封印|小曦|那封信/:/patrol map|seal|Sunny|letter/i);
  for(let i=0;i<3;i++){await press(page.locator('[data-garden-explore="butterfly"]'));await page.waitForFunction(n=>GardenExploration.read(State.S).butterfly===n,i+1);}
  await gardenDiscovery(page,'seed',{touch:options.hasTouch});
  await gardenDiscovery(page,'snack',{touch:options.hasTouch});await press(page.getByRole('button',{name:tr('带在身上','Keep for later'),exact:true}));
@@ -62,7 +55,7 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);assert.equal(await page.evaluate(()=>CatBondResonance.residents('garden').some(n=>n.id==='muling')),false);}
  else assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),false);
  await screenshot('garden');
- const toggle=guide.getByRole('button',{name:tr('主线任务','Main quest'),exact:true});
+ const toggle=guide.locator('.sg-quest-toggle');
  assert.equal(await toggle.getAttribute('aria-expanded'),'false','Main quest starts collapsed');
  await press(toggle);
  await press(guide.getByRole('button',{name:meet?tr('下一场景 · 风铃镇','Next scene · Windchime Town'):tr('跳过此次相遇','Skip this encounter'),exact:true}));await waitScene('harbor:H-01');

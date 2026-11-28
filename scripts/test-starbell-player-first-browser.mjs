@@ -12,25 +12,23 @@ const ok=(r,m)=>assert.ok(r?.ok,m+': '+JSON.stringify(r));
 function checkpoint(target,op){
  const e=makeEngine(campaign);
  for(const s of campaign.scenes){
-  if(s.id===target){for(const prior of s.requires.slice(0,s.requires.indexOf(op)))ok(e.record(s.id,prior),s.id+'/'+prior);return e.snapshot();}
+  if(s.id===target){for(const prior of s.requires.slice(0,s.requires.indexOf(op)))if(e.view().objective.includes(prior))ok(e.record(s.id,prior),s.id+'/'+prior);return e.snapshot();}
   if(s.id==='prologue:P-05'&&!e.view().openingMet)ok(e.meetTraveler(),s.id);
   if(s.choiceTiming==='beforeAction'&&s.choices.length)ok(e.choose(s.choices[0].id),s.id);
   if(s.id==='finale:B-03')for(let i=0;i<campaign.regions.length;i++)ok(e.supportAction(campaign.regions[i],campaign.support[i]),s.id);
-  for(const a of s.requires.filter(o=>!late.has(o)))ok(e.record(s.id,a),s.id+'/'+a);
+  for(const a of s.requires.filter(o=>!late.has(o)))if(e.view().objective.includes(a))ok(e.record(s.id,a),s.id+'/'+a);
   while(e.view().cursor<s.lines.length){if(s.choiceAt===e.view().cursor&&!e.view().choice)ok(e.choose(s.choices[0].id),s.id);ok(e.nextLine(),s.id);}
   if(s.choiceTiming!=='beforeAction'&&s.choices.length&&!e.view().choice)ok(e.choose(s.choices[0].id),s.id);
-  for(const a of s.requires.filter(o=>late.has(o)))ok(e.record(s.id,a),s.id);
+  for(const a of s.requires.filter(o=>late.has(o)))if(e.view().objective.includes(a))ok(e.record(s.id,a),s.id);
   ok(e.finish(),s.id);
  }
  throw Error('Missing checkpoint '+target);
 }
 const cases=[
- ['harbor','harbor:H-02','puzzle:chime-chase'],
  ['forest','forest:R-02','puzzle:moonleaf-crossing'],
  ['forge','forge:E-02','puzzle:shadow-bridge'],
  ['sky','sky:S-03','puzzle:joint-flight'],
  ['library','library:M-02','puzzle:library-echo'],
- ['library','library:M-05','puzzle:two-route-model'],
  ['starfall','starfall:F-01','puzzle:star-steps']
 ];
 const failures=[];

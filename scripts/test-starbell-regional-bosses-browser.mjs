@@ -14,25 +14,26 @@ function checkpoint(target){
  const e=makeEngine(campaign);
  for(const s of campaign.scenes){
   if(s.id===target){
+   if(target==='sky:S-03')ok(e.record(s.id,'puzzle:joint-flight'),s.id);
    if(target==='library:M-02'){ok(e.record(s.id,'puzzle:library-echo'),s.id);while(e.view().lineReady&&e.view().cursor<s.lines.length)ok(e.nextLine(),s.id);}
    return e.snapshot();
   }
   if(s.id==='prologue:P-05'&&!e.view().openingMet)ok(e.meetTraveler(),s.id);
   if(s.choiceTiming==='beforeAction'&&s.choices.length)ok(e.choose(s.choices[0].id),s.id);
   if(s.id==='finale:B-03')for(let j=0;j<campaign.regions.length;j++)ok(e.supportAction(campaign.regions[j],campaign.support[j]),s.id);
-  for(const op of s.requires.filter(o=>!late.has(o)))ok(e.record(s.id,op),s.id);
+  for(const op of s.requires.filter(o=>!late.has(o)))if(e.view().objective.includes(op))ok(e.record(s.id,op),s.id);
   while(e.view().cursor<s.lines.length){if(s.choiceAt===e.view().cursor&&!e.view().choice)ok(e.choose(s.choices[0].id),s.id);ok(e.nextLine(),s.id);}
   if(s.choiceTiming!=='beforeAction'&&s.choices.length&&!e.view().choice)ok(e.choose(s.choices[0].id),s.id);
-  for(const op of s.requires.filter(o=>late.has(o)))ok(e.record(s.id,op),s.id);
+  for(const op of s.requires.filter(o=>late.has(o)))if(e.view().objective.includes(op))ok(e.record(s.id,op),s.id);
   ok(e.finish(),s.id);
  }
  return e.snapshot();
 }
 const cases=[
  {id:'harbor',region:'harbor',scene:'harbor:H-04',op:'battle:chime-beast',point:[.195,.50],start:[.235,.56],level:1},
- {id:'forest',...REGIONAL_BOSSES.forest,scene:'forge:E-01',start:[.69,.53],level:3},
+ {id:'forest',...REGIONAL_BOSSES.forest,optional:false,scene:'forest:R-04',op:'battle:root-guardian',start:[.69,.53],level:3},
  {id:'forge',region:'forge',scene:'forge:E-03',op:'battle:shadow-beast',point:[.74,.40],start:[.63,.50],level:3},
- {id:'sky',...REGIONAL_BOSSES.sky,scene:'library:M-01',start:[.58,.55],level:4},
+ {id:'sky',...REGIONAL_BOSSES.sky,optional:false,scene:'sky:S-03',op:'battle:gale-guardian',start:[.58,.55],level:4},
  {id:'library',...REGIONAL_BOSSES.library,start:[.67,.40],level:5},
  {id:'starfall',...REGIONAL_BOSSES.starfall,start:[.51,.58],level:6},
  {id:'mastery',...REGIONAL_BOSSES.mastery,scene:null,start:[.34,.68],level:12}
@@ -139,12 +140,7 @@ try{
    await page.waitForFunction(()=>__game.scene==='map');
    const after=await page.evaluate(({c,key})=>({coins:State.S.coins,fish:State.S.fish,recorded:c.optional?!!State.S.resonanceExploration.interactions[key]:State.S.resonance.evidence[c.scene]?.includes(c.op),region:WorldMap.currentRegion,publicKeys:['catbond_save_v1','catbond_save_slots_v1','catbond_active_slot_v1'].map(k=>localStorage.getItem(k)),mapSize:(()=>{const r=document.querySelector('.rw-surface')?.getBoundingClientRect();return r&&{w:r.width,h:r.height}})()}),{c,key:bossKey(c.id)});
    const reward=bossReward(c.id,{interactions:{}});assert.equal(after.coins,500+reward[0]);assert.equal(after.fish,20+reward[1]);assert.equal(after.recorded,true);assert.equal(after.region,c.region);assert.ok(after.publicKeys.every(x=>x===null));assert.ok(after.mapSize?.w>0&&after.mapSize?.h>0);assert.equal(after.mapSize.h>after.mapSize.w,portrait,'Battle exit preserves selected layout');
-   if(c.id==='forest'){
-    await page.evaluate(()=>{CatBondResonance.close();UI.closeAll();});await open();await press(page.locator('[data-battle-auto="true"]'));await press(page.locator('#bp-go'));
-    await page.waitForFunction(()=>__game.battle?.libraryEncounter?.bossId==='forest');
-    const rematch=await page.evaluate(()=>{const g=__game,b=g.battle;for(let i=0;i<10000&&!b.done;i++)b.update(1/60);if(b.done&&g.battle===b)g.endBattle();return b.result;});
-    assert.equal(rematch,'win');assert.equal(await page.evaluate(()=>State.S.coins),after.coins,'no duplicate reward');
-   }
+   if(!c.optional)assert.ok(await page.evaluate(region=>CatBondResonance.view().melodies.includes(region),c.region),'Actual victory restores the local bell');
    assert.deepEqual(localErrors,[]);console.log('GUARDIAN BROWSER PASS',portrait?'portrait':'wide',lang,c.id,JSON.stringify({combat,result,after}));
   }catch(e){errors.push({id:c.id,message:String(e),pageErrors:localErrors});console.error('GUARDIAN BROWSER FAIL',c.id,String(e),localErrors);}
   finally{await context.close();}

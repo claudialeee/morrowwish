@@ -67,7 +67,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(npcId==="muling"&&s.id==="library:M-05"&&v.cursor>=s.lines.length&&v.objective.length===0)return fail("companion-unavailable");
   const requiredActor=s.id==="starfall:F-01"?(v.objective[0]==="npc:central-dispute-lichuan"?"lichuan":v.objective[0]==="npc:central-dispute"?"xingya":null):{"harbor:H-01":"qilan","harbor:H-03":"jiedeng","forest:R-01":"yahe","forge:E-01":"xiaomao","sky:S-01":"yuanfan","library:M-01":"baikan","library:M-05":"moye","sky:S-04":"muling","library:M-03":"muling","starfall:F-03":"muling","epilogue:E-02":"muling"}[s.id];
   if(requiredActor&&v.objective.some(o=>o.startsWith("npc:"))&&npcId!==requiredActor)return fail("wrong-npc");
-  if(s.lines.length&&!s.lines.some(l=>l.speaker===npcId)&&!s.choices.some(c=>c.npc===npcId))return fail("wrong-npc");
+  if(s.lines.length&&requiredActor!==npcId&&!s.lines.some(l=>l.speaker===npcId)&&!s.choices.some(c=>c.npc===npcId))return fail("wrong-npc");
   const location=State.S.resonanceExploration?.location;if(campaign.regions.includes(region)&&location&&location!==region)return fail("wrong-map-location");
   const pending=v.objective.find(x=>x.startsWith("npc:"));if(pending&&s.orderedRequires&&v.objective[0]!==pending)return fail("story-operation-order");
   if(pending&&["starfall:F-01","starfall:F-03"].includes(s.id)){const p=State.S.resonanceExploration?.positions?.starfall,point={xingya:[.51,.58],lichuan:[.78,.48],muling:[.92,.30]}[npcId];if(!token||location!=="starfall"||!p||!point||Math.hypot(p.x-point[0],p.y-point[1])>=.072)return fail("walk-to-story-npc");}
