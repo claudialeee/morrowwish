@@ -1,23 +1,29 @@
-# Starbell — revised minigame design gate / ART HOLD
-**Status: NOT READY FOR ART PRODUCTION.** Supersedes the previous six-side-activity asset order and any ART + integration + playthrough instruction. Do not spend Work quota on the current optional puzzle set. Chat owns all design, implementation, integration, tests, and deployment. Work may only create final original artwork after Chat freezes and tests a playable design and publishes exact missing-asset specifications.
+# Starbell — finalized narrow art handoff, 2026-11-27
+Supersedes all earlier six-board, art-integration, or playthrough briefs. Chat owns design, implementation, engineering integration, tests, merge and deployment. Work is commissioned for finished artwork only.
 
-## Review basis
-Reviewed the current regional-depth branch at 1fccb7f8bc7e59d413519c1dc564221c4f2e1f76: campaign.mjs, side-adventures.mjs, canon22-spatial.mjs, canon22-glide.mjs, canon22-mirror.mjs and library-mechanisms.mjs. This is source-level design analysis, not a completed playthrough or visual QA. Existing canon22-final-art forest bridge/landing/moonleaf, lantern theater/vault, sky glider and mobile-portrait forest/lantern/sky/library assets must be reused unless actual visual review demonstrates a gap.
+## Implemented design baseline
+Code: a4f42c91680df567281cb794f173c619ecafc2ab. Six standalone side boards are removed from the live map. Their legacy proof and save data remain compatible; new environmental discovery trails award each regional perk once and preserve prior rewards.
+- Harbor: guide Gran by the brass-chime landmark and remember her recovered memory later; no independent board.
+- Forest: moonleaf bridge, rescue, optional canopy discovery with real reward.
+- Forge: three escaped shadow cats with distinct hide, run and opposite-side mimic rules; five verified interaction phases; optional theater remains the festival payoff.
+- Sky: real upper/lower gliding routes, optional feather and safe-island stops with rewards; preserve two cups of tea.
+- Library: move and identify real Luna by two-chime signal; inspect three evidence items before asking Luna; no generic order quiz.
+- Starfall: short upper pursuit and longer lower route with historical marker; defer unrelated discoveries until after the epilogue.
+No change to approved duo illustration collection or independent finale artwork.
 
-## Main story: design decisions before artwork
-| Region | Keep and improve | Reject / defer |
-|---|---|---|
-| Harbor | Gran forgetting her way home is the emotional hook; use a brief optional in-world route guidance and revisit her after the bell recovery, using existing landmarks. Preserve the first bell recognizing the player and the real guardian battle. | Do not reinstate the old chime chase or its simple pattern worksheet as a main gate. No new tide-grid art. |
-| Forest | Moonleaf root crossing and kitten rescue are causally necessary. Make branches readable, optional canopy discovery useful, and rescue/rejoining the path meaningful. Use existing painted bridge, landing and moonleaf. | No standalone recipe-identification tea board; tea can be a quiet character interaction using existing props. |
-| Forge | Search for Pip's three escaped shadow cats; make each have a distinct readable behavior and light interaction, with the guardian teaching/reusing the light rule. Preserve the approved puppet theater as the festival payoff, not a second required puzzle. | No separate rotate/flip paper cutout art pack. Fold into the existing theater or character reward. |
-| Sky | Joint flight is the main kinetic set piece; distinguish upper/lower routes, cloud avoidance, feathers and island stops with meaningful optional outcomes, retain forgiving arrival. Preserve the two cups of tea in full. | Remove the weight arithmetic board as a new artwork target; optional cloud mail should use the existing flight/island route only when it fits, never interrupt the tea scene. |
-| Library | The shared two-chime signal and false Luna are a signature narrative interaction. Strengthen observation and feedback without turning the story into a memory test. Make the record investigation convey actual evidence of the seal and consequences rather than a click-through quiz. | Generic three-page ordering is not worth bespoke art. Do not make characters' memories collectible as puzzle filler. |
-| Starfall | Prioritize pursuit, traversal, catastrophe record and the consequences of Luna's decision; avoid redundant path grids. Star stones should support the route toward the sanctuary and allow optional exploration without stalling urgency. | No separate mandatory kitten constellation puzzle or new chart pack. A quiet constellation reveal can be an optional epilogue/garden reward using existing art. |
+## Verification / release gate
+GitHub Actions: https://github.com/claudialeee/morrowwish/actions/runs/46112901387
+The rules job and portrait (Chinese) and landscape (English) browser jobs have passed, covering moonleaf crossing, shadow hunt, joint flight, mirror, ledger and star steps. Desktop English job was still running when this brief was recorded. Confirm its successful conclusion before starting the art commission. Browser checkpoint fixtures verify actual game controls, not a full fresh-save playthrough; no commercial quality or production release claim is made.
 
-## Implementation and art gates
-- These are design decisions/recommendations, not claims that the runtime already implements them. The currently implemented side events, save proofs and perks remain in code until Chat explicitly refactors them. Preserve existing saves/rewards via migration and avoid mandatory grind or missable main-story progression.
-- Prioritize the three stronger set pieces: forest rescue, forge shadow search and cloud glide, plus the short signature mirror scene and finale. Windchime Town's hook and Starfall's urgency do not need additional full-screen games.
-- Preserve the cloud tea (two cups), shared two-bell signal, Luna identity and seal revelations, 63 approved duo illustrations, already approved shadow theater, and existing cinematic art. No rough procedural replacement of approved originals.
-- Chat must implement and validate the actual player goals, interactions, narrative cause and effect, failure/retry, input and orientation before commissioning artwork. Existing assets first; identify missing assets from real rendered scenes. No blanket redraw quota.
-- Only then issue a narrow Work brief: exact asset filenames, dimensions, transparency, layers, compositions and approved references. Work produces original finished assets ONLY, commits them to the target branch, and lists files. No code changes, integration, browser QA, full playthrough, CI, deployment, or unrelated redraw.
-- Chat integrates, validates and fixes the result. Independent full-player evaluation is a separate later task after engineering integration, never part of the art commission.
+## Existing artwork reviewed and reused
+Source images inspected: canon22-final-art/shadow-cat.webp (existing running cat, keep), forest-landing.webp, lantern-vault.webp, sky-safety-island.webp, sky-cloudfall.webp; mobile-portrait/lantern-vault.webp and starfall-expanse.webp; resonance-world-v2/starfall.webp. Reuse the existing forest bridge/moonleaf, glider, theater, environment paintings, mirror characters and narrative art. No new background, full-screen minigame panel, scene repaint, or decorative board.
+
+## Work: exactly three final transparent WebP assets
+Destination directory: public/cat-bond/assets/canon22-final-art/
+1. shadow-cat-crouch.webp — 640×640 transparent canvas, hiding/crouching silhouette, tucked paws and low tail. Existing shadow-cat.webp is the sole style/character reference; same muted indigo pigment, paper texture, soft watercolor edge, clear silhouette.
+2. shadow-cat-listen.webp — 640×640 transparent canvas, attentive upright pose, ears raised, readable profile and complete silhouette; same palette and style. Chat will mirror the sprite programmatically for the opposite-side response. Do not bake a second cat, light cone, eyes glow or effects into either sprite.
+3. star-step-stone.webp — 640×400 transparent canvas, one reusable floating stepping stone, horizontal walkable top seen in slight three-quarter perspective, pale warm stone and subtle golden inlaid star, slate/rose side surfaces. Match mobile-portrait/starfall-expanse.webp; no background, text, other stones, baked active glow or beams. Chat controls placement, hit testing, path, highlights, transitions and variants.
+
+All files: final original painted game assets, true alpha (not a checkerboard image), no clipping, no artificial 3D look, no logos, no text, no extra files. Maintain full silhouette and consistent style; do not overwrite existing originals. Keep file sizes practical for mobile.
+
+Work must commit only those three assets to review/starbell-regional-depth-20261127 and report exact SHA, paths, dimensions, transparency and byte sizes. No code modifications, integration, CI, playthrough, deployment, unrelated drawing or redesign. Chat handles all of those separately. Do not start until the desktop verification gate is green.
