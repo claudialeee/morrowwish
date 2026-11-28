@@ -62,8 +62,8 @@ export const campaign = {
     "player": {
       "id": "player",
       "name": {
-        "zh": "无名守铃者",
-        "en": "Bellkeeper"
+        "zh": "你",
+        "en": "You"
       },
       "region": "garden",
       "artDirection": {
@@ -2327,8 +2327,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "认得。我想起自己的名字了，也想起我们一起住过的花园。阿婆、小栗、芽禾……新朋友也一个没忘。",
-            "en": "I do. I remember my name and the garden we shared. Gran, Pip, Fern… I haven't forgotten any of our new friends either."
+            "zh": "认得。我的名字叫小曦！我想起了我们的花园。阿婆、小栗、芽禾……新朋友也一个没忘。",
+            "en": "I do. My name is Sunny! I remember our garden. Gran, Pip, Fern… I haven't forgotten a single new friend either."
           }
         },
         {
