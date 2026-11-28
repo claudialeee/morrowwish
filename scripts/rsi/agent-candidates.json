@@ -1,34 +1,34 @@
 {
   "candidates": [
     {
-      "id": "hp-gradient-tight",
-      "label": "HP-gradient 4-band tight: push aggressively at high HP, kite deep at low HP",
-      "rationale": "Pure durability axis sweep — 4 HP bands each targeting a different durability bucket in MAP-Elites. Should populate cells outside the currently-occupied high-durability corner. Monotonic, easy to debug.",
-      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);if(hp>=0.75){const min=50,max=90;return {min,max,rush:min,role:'assassin',hp};}if(hp>=0.5){const min=90,max=140;return {min,max,rush:min+10,role:'bruiser',hp};}if(hp>=0.25){const min=160,max=220;return {min,max,rush:max-5,role:'ranged',hp};}const min=250,max=330;return {min,max,rush:max,role:'ranged',hp};}"
+      "id": "hp-triage-retreat",
+      "label": "HP-triage retreat: low HP → very wide 280-360 ranged kite (targets low-durability cell)",
+      "rationale": "All 3 current elites sit in durability bin 3 (high HP preserved). This candidate intentionally targets durability bin 0-1 by retreating to extreme range when wounded, trading durability for survival-at-extreme-standoff. Should produce a descriptor in {engage:0, durability:0-1} that is currently empty.",
+      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);if(hp<0.4){const min=280,max=360;return {min,max,rush:max,role:'ranged',hp};}const min=110,max=160;return {min,max,rush:min+10,role:'bruiser',hp};}"
     },
     {
-      "id": "qready-burst-else-wide",
-      "label": "Q-ready → tight 55-95 burst; else wide 180-260 patient (high tempo variance)",
-      "rationale": "Pure CD-axis read on f.cd.q — a signal the archive hasn't exploited. Tight on Q ready, wide when cooling. Should produce HIGH tempo variance (burst-wait oscillation) distinct from pack-robust-peel-fused's steady-state bands.",
-      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const qReady=(f.cd&&f.cd.q||0)<=0.15;if(qReady){const min=55,max=95;return {min,max,rush:min,role:'assassin',hp};}const min=180,max=260;return {min,max,rush:max,role:'ranged',hp};}"
+      "id": "aggressive-execute-rush",
+      "label": "Aggressive execute rush: always tight 30-70 (targets high-engage, low-efficiency cell)",
+      "rationale": "All elites in engage bin 1-2. This commits to engage bin 0 (very close). Short range stacks hits but eats enemy burst — expected to drop efficiency into bin 1-2 (whiffs more under pressure) while maximizing engage. Should fill engage=0 column.",
+      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const min=30,max=70;return {min,max,rush:min,role:'assassin',hp};}"
     },
     {
-      "id": "stomp-defensive-wide",
-      "label": "Stomp-aware defensive: stomp≥0.25 → very wide 220-320; else mid 100-150",
-      "rationale": "Reads this._stomp (engine's 'enemy-sharpening' signal). When stomp high, enemy aim/jitter sharpens; shifting player wider should protect lazy/panicky personas. Targets low-engage × high-durability cell distinct from current 1,3,3,3.",
-      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const stomp=this._stomp||0;if(stomp>=0.25){const min=220,max=320;return {min,max,rush:max,role:'ranged',hp};}const min=100,max=150;return {min,max,rush:min+10,role:'bruiser',hp};}"
+      "id": "patience-mid-poke",
+      "label": "Patience mid-poke: Q cooling → wait at 180-240 (targets low-tempo cell)",
+      "rationale": "All elites in tempo bin 2-3 (fast-acting). This candidate stalls at mid range when Q is cooling — intentionally slow tempo. Should land in tempo bin 0-1 with durability still high. Fills low-tempo axis.",
+      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const q=(f.cd&&f.cd.q||0);if(q>=1.5){const min=180,max=240;return {min,max,rush:max,role:'ranged',hp};}const min=70,max=120;return {min,max,rush:min+10,role:'bruiser',hp};}"
     },
     {
-      "id": "support-triage",
-      "label": "Support-triage: dying ally (<0.3hp) → very close 45-80 tank; else balanced 95-140",
-      "rationale": "Escalates peel from 0.5-threshold to a true 0.3-emergency-triage. Tank role rushes right onto ally. Should fill a HIGH-durability-sacrifice cell (max output for team, less self-survival).",
-      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const team=this.team||[];const dying=team.some(m=>m!==f&&m.alive&&m.maxhp&&(m.hp/m.maxhp)<0.3);if(dying){const min=45,max=80;return {min,max,rush:min,role:'tank',hp};}const min=95,max=140;return {min,max,rush:min+10,role:'bruiser',hp};}"
+      "id": "stomp-dodge-wave",
+      "label": "Stomp-aware dodge wave: stomp>0.3 → very wide 260-340 + lower role; else tight (targets low-efficiency)",
+      "rationale": "Oscillates between extreme ranges based on _stomp engine signal. Reactive wide-retreat when enemy sharpens should increase negated/dodged% → push efficiency down into bin 1-2. Expected descriptor: engage moderate, tempo high, efficiency LOW — new cell.",
+      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const stomp=this._stomp||0;if(stomp>0.3){const min=260,max=340;return {min,max,rush:max,role:'ranged',hp};}const min=40,max=85;return {min,max,rush:min,role:'assassin',hp};}"
     },
     {
-      "id": "alternating-oscillator",
-      "label": "Oscillator: both CDs cooling → wide, both ready → tight, mixed → mid (pure cd-combo)",
-      "rationale": "Reads BOTH f.cd.q and f.cd.e. Creates a 3-state deterministic oscillation: (both cool) → patient, (mixed) → bruiser, (both ready) → burst. Forces tempo diversity; should NOT land in same cell as single-CD rule.",
-      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const q=(f.cd&&f.cd.q||0);const e=(f.cd&&f.cd.e||0);const bothReady=q<=0.15&&e<=0.15;const bothCool=q>=2.5&&e>=2.5;if(bothReady){const min=50,max=85;return {min,max,rush:min,role:'assassin',hp};}if(bothCool){const min=200,max=280;return {min,max,rush:max,role:'ranged',hp};}const min=110,max=160;return {min,max,rush:min+10,role:'bruiser',hp};}"
+      "id": "closing-reverse-split",
+      "label": "Closing-phase REVERSE split: when closing>0.3 go wide (not tight) — anti-execute (targets low-engage)",
+      "rationale": "Inverted intuition from pack-count-robust/alternating-oscillator. When the engine says we're winning (_closing high), pull back to 220-290 instead of pressing — trades execute-tempo for survival. Should land in engage bin 0-1, tempo bin 1-2, durability bin 3. Explores whether patience-in-winning is a valid policy class.",
+      "bandBody": "function(f){const hp=f.hp/(f.maxhp||1);const closing=this._closing||0;if(closing>0.3){const min=220,max=290;return {min,max,rush:max,role:'ranged',hp};}const min=80,max=130;return {min,max,rush:min+10,role:'bruiser',hp};}"
     }
   ]
 }

@@ -2875,3 +2875,6 @@ Until this extension lands, `.claude/supervisor-prompt.md` §9/§10 (added this 
 | date | subagents | CRITICAL | HIGH | MEDIUM | LOW | commits-ahead | notes |
 |---|---|---|---|---|---|---|---|
 | 2026-11-28 | 5 | 6 | 15 | 18 | 3 | 21 | first run; 2 CRITICAL already patched (archive.mjs caveat re-emit; propose.mjs bandBody frozen sandbox); 4 remaining CRITICAL: evaluator seed-variance vs margin, team=single-cat makes peel-rule evaluation a ghost, timeout-stall exploit still open, allied-hp-peeler just gated (34d4ea7b). roadmap items 1/3 remain prerequisites for next RSI apply. |
+
+## RSI
+RSI cycle 2026-11-28T05:45:37Z: `ready-aware-hitrun` best 0.526 (hand-authored baseline-proof overtook archive). `agent:closing-reverse-split` 0.511 displaced `stand-at-max-range` 0.305 in cell 2,2,3,3 — inverted-intuition rule (winning-phase → retreat 220-290) actually scored higher than a constant-max-range control. Archive: 3/256 → 2/256 (one empty cell re-opened as elite got swapped). Honest read: under new 7-enemy + team-2 regime, all scores compressed to 0.5x range because the harness is no longer dominated by doudou-passive overfit. Findings-only; no apply/commit/push per RSI step 5.

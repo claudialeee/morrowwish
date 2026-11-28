@@ -223,37 +223,50 @@ const SCN_IS_TEAM = (s) => s === 'team-2-live' || s === 'team-2-multi';
 // A candidate `bandBody` is tested against a seeded sample pair (self, ally). Sample size
 // (N_TEAM_PAIRS) controls how many pairs each candidate sees per team scenario. Keep small
 // (3-4) so cycle time stays reasonable; the cohort already gets 4 personas × 7 enemies × 3 seeds.
+// Each entry carries a `deploymentWeight` ∈ [0,1] representing how often a RATIONAL player
+// (or an optimal-adversary meta model) would pick this build/kit. Higher = more common in real
+// deployment. Weights roughly reflect: popular meta picks (fighter/dps/support) > niche
+// (assassin/control) > experimental tails. Owner directive 2026-11-28: sampler must weight by
+// optimal-selection probability, not by uniform/info-gain — the RSI goal is MAX reward under
+// the realistic adversary distribution, not uniform coverage.
 const BUILD_KIT_POOL = [
-  { build: 'tank',     stats: { pow: 70,  agi: 60,  vit: 160, cha: 80  }, loadout: { q: { kind: 'melee',      power: 1.2, cd: 1.0 }, e: { kind: 'aoe',       power: 1.0, cd: 2.2 } } },
-  { build: 'tank',     stats: { pow: 65,  agi: 60,  vit: 170, cha: 85  }, loadout: { q: { kind: 'melee',      power: 1.1, cd: 1.0 }, e: { kind: 'buff',      power: 1.0, cd: 2.5 } } },
-  { build: 'fighter',  stats: { pow: 90,  agi: 80,  vit: 130, cha: 60  }, loadout: { q: { kind: 'melee',      power: 1.4, cd: 1.1 }, e: { kind: 'projectile',power: 1.1, cd: 1.0 } } },
-  { build: 'fighter',  stats: { pow: 95,  agi: 75,  vit: 125, cha: 60  }, loadout: { q: { kind: 'dash',       power: 1.3, cd: 1.3 }, e: { kind: 'melee',     power: 1.4, cd: 1.5 } } },
-  { build: 'assassin', stats: { pow: 100, agi: 120, vit: 90,  cha: 70  }, loadout: { q: { kind: 'leap',       power: 1.5, cd: 1.4 }, e: { kind: 'melee',     power: 1.6, cd: 1.6 } } },
-  { build: 'assassin', stats: { pow: 110, agi: 115, vit: 85,  cha: 65  }, loadout: { q: { kind: 'pounce',     power: 1.5, cd: 1.5 }, e: { kind: 'dash',      power: 1.3, cd: 1.2 } } },
-  { build: 'dps',      stats: { pow: 110, agi: 90,  vit: 85,  cha: 80  }, loadout: { q: { kind: 'projectile', power: 1.2, cd: 0.9 }, e: { kind: 'beam',      power: 1.3, cd: 2.0 } } },
-  { build: 'dps',      stats: { pow: 115, agi: 85,  vit: 80,  cha: 80  }, loadout: { q: { kind: 'chain',      power: 1.2, cd: 1.1 }, e: { kind: 'aoe',       power: 1.3, cd: 2.0 } } },
-  { build: 'control',  stats: { pow: 75,  agi: 85,  vit: 100, cha: 110 }, loadout: { q: { kind: 'projectile', power: 0.9, cd: 1.0, debuff: 'slow' }, e: { kind: 'aoe', power: 0.8, cd: 2.2, debuff: 'root' } } },
-  { build: 'control',  stats: { pow: 70,  agi: 90,  vit: 95,  cha: 115 }, loadout: { q: { kind: 'beam',       power: 0.9, cd: 1.1, debuff: 'freeze' }, e: { kind: 'projectile', power: 0.9, cd: 1.3, debuff: 'silence' } } },
-  { build: 'support',  stats: { pow: 60,  agi: 70,  vit: 110, cha: 130 }, loadout: { q: { kind: 'projectile', power: 0.9, cd: 1.2 }, e: { kind: 'heal',      power: 1.2, cd: 2.5 } } },
-  { build: 'support',  stats: { pow: 65,  agi: 75,  vit: 105, cha: 125 }, loadout: { q: { kind: 'buff',       power: 1.0, cd: 1.5 }, e: { kind: 'heal',      power: 1.1, cd: 2.2 } } },
+  { build: 'tank',     deploymentWeight: 0.18, stats: { pow: 70,  agi: 60,  vit: 160, cha: 80  }, loadout: { q: { kind: 'melee',      power: 1.2, cd: 1.0 }, e: { kind: 'aoe',       power: 1.0, cd: 2.2 } } },
+  { build: 'tank',     deploymentWeight: 0.08, stats: { pow: 65,  agi: 60,  vit: 170, cha: 85  }, loadout: { q: { kind: 'melee',      power: 1.1, cd: 1.0 }, e: { kind: 'buff',      power: 1.0, cd: 2.5 } } },
+  { build: 'fighter',  deploymentWeight: 0.25, stats: { pow: 90,  agi: 80,  vit: 130, cha: 60  }, loadout: { q: { kind: 'melee',      power: 1.4, cd: 1.1 }, e: { kind: 'projectile',power: 1.1, cd: 1.0 } } },
+  { build: 'fighter',  deploymentWeight: 0.14, stats: { pow: 95,  agi: 75,  vit: 125, cha: 60  }, loadout: { q: { kind: 'dash',       power: 1.3, cd: 1.3 }, e: { kind: 'melee',     power: 1.4, cd: 1.5 } } },
+  { build: 'assassin', deploymentWeight: 0.10, stats: { pow: 100, agi: 120, vit: 90,  cha: 70  }, loadout: { q: { kind: 'leap',       power: 1.5, cd: 1.4 }, e: { kind: 'melee',     power: 1.6, cd: 1.6 } } },
+  { build: 'assassin', deploymentWeight: 0.05, stats: { pow: 110, agi: 115, vit: 85,  cha: 65  }, loadout: { q: { kind: 'pounce',     power: 1.5, cd: 1.5 }, e: { kind: 'dash',      power: 1.3, cd: 1.2 } } },
+  { build: 'dps',      deploymentWeight: 0.22, stats: { pow: 110, agi: 90,  vit: 85,  cha: 80  }, loadout: { q: { kind: 'projectile', power: 1.2, cd: 0.9 }, e: { kind: 'beam',      power: 1.3, cd: 2.0 } } },
+  { build: 'dps',      deploymentWeight: 0.12, stats: { pow: 115, agi: 85,  vit: 80,  cha: 80  }, loadout: { q: { kind: 'chain',      power: 1.2, cd: 1.1 }, e: { kind: 'aoe',       power: 1.3, cd: 2.0 } } },
+  { build: 'control',  deploymentWeight: 0.08, stats: { pow: 75,  agi: 85,  vit: 100, cha: 110 }, loadout: { q: { kind: 'projectile', power: 0.9, cd: 1.0, debuff: 'slow' }, e: { kind: 'aoe', power: 0.8, cd: 2.2, debuff: 'root' } } },
+  { build: 'control',  deploymentWeight: 0.04, stats: { pow: 70,  agi: 90,  vit: 95,  cha: 115 }, loadout: { q: { kind: 'beam',       power: 0.9, cd: 1.1, debuff: 'freeze' }, e: { kind: 'projectile', power: 0.9, cd: 1.3, debuff: 'silence' } } },
+  { build: 'support',  deploymentWeight: 0.20, stats: { pow: 60,  agi: 70,  vit: 110, cha: 130 }, loadout: { q: { kind: 'projectile', power: 0.9, cd: 1.2 }, e: { kind: 'heal',      power: 1.2, cd: 2.5 } } },
+  { build: 'support',  deploymentWeight: 0.09, stats: { pow: 65,  agi: 75,  vit: 105, cha: 125 }, loadout: { q: { kind: 'buff',       power: 1.0, cd: 1.5 }, e: { kind: 'heal',      power: 1.1, cd: 2.2 } } },
 ];
 
-// ---- Pair sampler: mixture of META-PRIOR (exploit common/meaningful duos) + THOMPSON-STYLE
-// (explore informative pairs that currently discriminate candidates) + UNIFORM TAIL (never zero
-// out weird pairs so no over-fit).
+// ---- Pair sampler: A+B HYBRID (owner 2026-11-28, final iteration).
 //
-// Posterior state lives at scripts/rsi/pair-posterior.json. Each pair key is "selfIdx:allyIdx"
-// with Beta(α,β) over the event "candidate band beat baseline on this pair in prior cycles".
-// META_PAIRS get α₀=3,β₀=1 prior (strongly informative). All other pairs Jeffreys Beta(0.5,0.5).
+// A — SYNERGY PRIOR: hand-authored joint distribution p(self_build, ally_build) that encodes
+//     "optimal team-pair selection" — fighter+support > fighter+fighter, assassin+support >
+//     assassin+assassin, etc. Replaces the wrong naive w(self)×w(ally) independence assumption.
+//     Writes the synergy for each BUILD pair; per-kit entries within a build share the synergy
+//     weight and individual kit weights multiplicatively tune.
 //
-// Sampling per cycle:
-//   - 50% META draws (Thompson over META pairs only, so we always revisit the meta-game)
-//   - 40% THOMPSON draws (Thompson over ALL pairs — surfaces informative tail pairs)
-//   - 10% UNIFORM draws (pure random over 144 pairs — prevents the posterior from collapsing
-//          to a local minimum and keeps all pairs eventually exposed)
+// B — LEARNED POSTERIOR: after each cycle, update p_learned(pair) using observed signal. A pair
+//     where the RSI winner delivers HIGH reward but baseline delivers LOW (big delta) means that
+//     pair is still "unsolved by baseline" → an optimal adversary would still pick it → up-weight.
+//     A pair where both winner and baseline solve it easily → the pair is "resolved, uninformative
+//     for adversary" → down-weight gently. EMA update keeps the learned side responsive.
 //
-// After each cycle the primary should call updatePairPosterior(pairKey, winnerBeatBaseline).
-// Posterior file is gracefully optional: cold start = everything Jeffreys.
+// FINAL SAMPLING WEIGHT: p(pair) = (1-α) × SYNERGY_PRIOR(pair) + α × LEARNED(pair)
+//   with α = min(0.6, totalObs / 50) — cold start pure prior, saturates at 60% learned by
+//   ~50 cycles so the prior never fully dies (anti-collapse).
+//
+// Per cycle: 70% weighted draws + 20% META force + 10% UCB exploration (unchanged structure).
+//
+// State: scripts/rsi/pair-posterior.json
+//   { "selfIdx:allyIdx": { scores: { cid: [...] }, nObs: N, learnedWeight: w } }
+// learnedWeight starts at 1.0 and is EMA-updated by updatePairPosterior.
 
 import { readFileSync as _readFile, writeFileSync as _writeFile, existsSync as _exists } from 'node:fs';
 import { fileURLToPath as _fileURLToPath } from 'node:url';
@@ -287,11 +300,7 @@ function _loadPosterior() {
     return JSON.parse(_readFile(_POSTERIOR_PATH, 'utf8'));
   } catch (_) { return {}; }
 }
-function _pairPrior(key) {
-  if (META_PAIR_KEYS.includes(key)) return { alpha: 3, beta: 1 };
-  return { alpha: 0.5, beta: 0.5 };                 // Jeffreys
-}
-// mulberry32 → uniform in [0,1).
+// mulberry32 → uniform in [0,1). Deterministic per rng state.
 function _rng01(state) {
   let a = state >>> 0;
   a = (a + 0x6D2B79F5) >>> 0;
@@ -299,92 +308,205 @@ function _rng01(state) {
   t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
   return { r: ((t ^ (t >>> 14)) >>> 0) / 4294967296, next: a };
 }
-// Marsaglia-and-Tsang gamma for α≥1; shape-small branch fallback to Johnk. Enough for Beta(α,β).
-function _gammaSample(alpha, rngStateRef) {
-  if (alpha < 1) {
-    // Boost: Gamma(α) = Gamma(α+1) * U^(1/α)
-    const g = _gammaSample(alpha + 1, rngStateRef);
-    const u = _rng01(rngStateRef.s); rngStateRef.s = u.next;
-    return g * Math.pow(u.r || 1e-12, 1 / alpha);
+
+// A — Synergy matrix: hand-authored joint build-pair weight capturing "optimal team-pick"
+// intuition (not independence). Directional: self → ally. Symmetric pairs listed both ways.
+// Un-listed combinations get FALLBACK (0.02) — rare but non-zero so tail is never cut off.
+const _SYNERGY = new Map([
+  // Canonical frontline+support
+  ['fighter:support', 0.25], ['support:fighter', 0.22],
+  // Tank + DPS carry
+  ['tank:dps',        0.22], ['dps:tank',        0.20],
+  // Tank + support (classic hold-the-line)
+  ['tank:support',    0.15], ['support:tank',    0.14],
+  // Assassin + support (burst + sustain)
+  ['assassin:support',0.12], ['support:assassin',0.10],
+  // DPS + control lockdown
+  ['dps:control',     0.10], ['control:dps',     0.10],
+  // Fighter + control (bruiser cc)
+  ['fighter:control', 0.08], ['control:fighter', 0.08],
+  // DPS + fighter (double threat)
+  ['dps:fighter',     0.07], ['fighter:dps',     0.07],
+  // Tank + control (pin + zone)
+  ['tank:control',    0.06], ['control:tank',    0.06],
+  // Assassin + fighter (dive)
+  ['assassin:fighter',0.05], ['fighter:assassin',0.05],
+  // Double-support rare but exists in sustain comps
+  ['support:support', 0.03],
+  // Double-tank very rare
+  ['tank:tank',       0.01],
+  // Double anything else: left to fallback
+]);
+function _synergyWeight(selfBuild, allyBuild) {
+  if (selfBuild === allyBuild) {
+    const same = _SYNERGY.get(`${selfBuild}:${allyBuild}`);
+    return same != null ? same : 0.02;
   }
-  const d = alpha - 1 / 3, c = 1 / Math.sqrt(9 * d);
-  while (true) {
-    let x, v;
-    // Box-Muller normal from two uniforms.
-    const u1 = _rng01(rngStateRef.s); rngStateRef.s = u1.next;
-    const u2 = _rng01(rngStateRef.s); rngStateRef.s = u2.next;
-    x = Math.sqrt(-2 * Math.log(u1.r || 1e-12)) * Math.cos(2 * Math.PI * u2.r);
-    v = 1 + c * x;
-    if (v <= 0) continue;
-    v = v * v * v;
-    const u3 = _rng01(rngStateRef.s); rngStateRef.s = u3.next;
-    if (u3.r < 1 - 0.0331 * x * x * x * x) return d * v;
-    if (Math.log(u3.r) < 0.5 * x * x + d * (1 - v + Math.log(v))) return d * v;
-  }
-}
-function _betaSample(alpha, beta, rngStateRef) {
-  const x = _gammaSample(alpha, rngStateRef);
-  const y = _gammaSample(beta, rngStateRef);
-  return x / (x + y);
+  const w = _SYNERGY.get(`${selfBuild}:${allyBuild}`);
+  return w != null ? w : 0.02;
 }
 
-// Public: Thompson-pick top-N pair keys, excluding same-index duplicates.
-function _thompsonPickPairs(pool, posterior, nWanted, rngStateRef) {
+// B — Learned posterior EMA weight per pair; defaults to 1.0 (neutral). Updated by
+// updatePairPosterior when a cycle finishes: pairs where the winner beats baseline by a large
+// margin (unsolved by baseline → "adversary would still pick") get learnedWeight up; pairs
+// where both solve easily get learnedWeight down.
+function _learnedWeight(key, posterior) {
+  const e = posterior[key];
+  if (!e || !Number.isFinite(e.learnedWeight)) return 1.0;
+  return e.learnedWeight;
+}
+
+// Blend coefficient: cold start = 0 (pure prior), saturates at 0.6 by ~50 observations.
+function _alphaFromTotalObs(totalObs) {
+  return Math.min(0.6, totalObs / 50);
+}
+
+// All ordered (i,j) pairs with their FINAL blended weight. i ≠ j.
+//   w(pair) ∝ [ (1-α) · synergy(self.build, ally.build) · kitFactor(self) · kitFactor(ally) ]
+//           + [ α · learnedWeight(pair) · synergy(self.build, ally.build) · kitFactor(...) ]
+// kitFactor smooths across the 2 kits per build so high-weight meta kits inside a build
+// contribute more than tail kits. Normalised to a probability distribution.
+function _allPairsWithWeight(posterior) {
+  const totalObs = Object.values(posterior || {}).reduce((s, e) => s + ((e && e.nObs) || 0), 0);
+  const alpha = _alphaFromTotalObs(totalObs);
+  const pairs = [];
+  let totalW = 0;
+  for (let i = 0; i < BUILD_KIT_POOL.length; i++) {
+    for (let j = 0; j < BUILD_KIT_POOL.length; j++) {
+      if (i === j) continue;
+      const self = BUILD_KIT_POOL[i], ally = BUILD_KIT_POOL[j];
+      const synergy = _synergyWeight(self.build, ally.build);
+      const kitF = (self.deploymentWeight || 0.05) * (ally.deploymentWeight || 0.05);
+      const prior = synergy * kitF;
+      const key = `${i}:${j}`;
+      const learned = _learnedWeight(key, posterior);
+      // α blends — note learned multiplies the same base so learning *modulates* the prior
+      // rather than replacing it (anti-collapse on noisy posterior).
+      const w = (1 - alpha) * prior + alpha * (prior * learned);
+      pairs.push({ key, w });
+      totalW += w;
+    }
+  }
+  if (totalW > 0) for (const p of pairs) p.w /= totalW;
+  return pairs;
+}
+
+// Weighted sampling without replacement. rngRef is { s: state } so caller can thread rng.
+function _weightedSampleUnique(pairs, nWanted, excludeSet, rngRef) {
+  const picked = [];
+  const pool = pairs.filter(p => !excludeSet.has(p.key)).map(p => ({ ...p }));
+  for (let k = 0; k < nWanted && pool.length; k++) {
+    const total = pool.reduce((s, p) => s + p.w, 0);
+    if (total <= 0) break;
+    const u = _rng01(rngRef.s); rngRef.s = u.next;
+    let r = u.r * total;
+    let idx = 0;
+    for (; idx < pool.length; idx++) {
+      r -= pool[idx].w;
+      if (r <= 0) break;
+    }
+    if (idx >= pool.length) idx = pool.length - 1;
+    picked.push(pool[idx].key);
+    pool.splice(idx, 1);
+  }
+  return picked;
+}
+
+// UCB-exploration bonus: pairs with few observations get a priority bump so the sampler never
+// locks into only top-weight pairs. Returns top-N by UCB score, excluding already-picked.
+function _ucbPickPairs(posterior, nWanted, excludeSet) {
+  const totalObs = Object.values(posterior).reduce((s, e) => s + ((e && e.nObs) || 0), 0);
   const scored = [];
   for (let i = 0; i < BUILD_KIT_POOL.length; i++) {
     for (let j = 0; j < BUILD_KIT_POOL.length; j++) {
       if (i === j) continue;
       const key = `${i}:${j}`;
-      if (pool && !pool.includes(key)) continue;
-      const p = posterior[key] || _pairPrior(key);
-      const theta = _betaSample(p.alpha, p.beta, rngStateRef);
-      scored.push({ key, theta });
+      if (excludeSet.has(key)) continue;
+      const nObs = (posterior[key] && posterior[key].nObs) || 0;
+      const ucb = Math.sqrt(2 * Math.log(totalObs + 2) / (nObs + 1));
+      scored.push({ key, ucb });
     }
   }
-  scored.sort((a, b) => b.theta - a.theta);
+  scored.sort((a, b) => b.ucb - a.ucb);
+  return scored.slice(0, nWanted).map(s => s.key);
+}
+
+// Top-N META pairs by synergy weight (deterministic, no RNG).
+function _topMetaByWeight(nWanted, excludeSet) {
+  const scored = [];
+  for (const key of META_PAIR_KEYS) {
+    if (excludeSet.has(key)) continue;
+    const [i, j] = key.split(':').map(Number);
+    const self = BUILD_KIT_POOL[i], ally = BUILD_KIT_POOL[j];
+    const w = _synergyWeight(self.build, ally.build) * (self.deploymentWeight || 0.05) * (ally.deploymentWeight || 0.05);
+    scored.push({ key, w });
+  }
+  scored.sort((a, b) => b.w - a.w);
   return scored.slice(0, nWanted).map(s => s.key);
 }
 
 // Deterministic pair sampler. Returns N pairs of {self, ally} pool items, seed-reproducible.
+// Mix: 70% synergy+learned-weighted draws + 20% top-synergy META guaranteed + 10% UCB exploration.
 export function sampleTeamPairs(seed, scenario, N = 3) {
   const base = ((seed >>> 0) ^ (scenario === 'team-2-multi' ? 0xa5a5a5a5 : 0x5a5a5a5a)) >>> 0;
-  const rngStateRef = { s: base };
+  const rngRef = { s: base };
   const posterior = _loadPosterior();
-  const nMeta = Math.max(1, Math.round(N * 0.5));
-  const nThompson = Math.max(1, Math.round(N * 0.4));
-  const nUniform = Math.max(0, N - nMeta - nThompson);
-  const metaKeys = _thompsonPickPairs(META_PAIR_KEYS, posterior, nMeta, rngStateRef);
-  const thompsonKeys = _thompsonPickPairs(null, posterior, nThompson + metaKeys.length, rngStateRef)
-    .filter(k => !metaKeys.includes(k)).slice(0, nThompson);
-  const uniformKeys = [];
-  while (uniformKeys.length < nUniform) {
-    const u1 = _rng01(rngStateRef.s); rngStateRef.s = u1.next;
-    const u2 = _rng01(rngStateRef.s); rngStateRef.s = u2.next;
-    const i = Math.floor(u1.r * BUILD_KIT_POOL.length);
-    const j = Math.floor(u2.r * BUILD_KIT_POOL.length);
-    if (i === j) continue;
-    const key = `${i}:${j}`;
-    if (metaKeys.includes(key) || thompsonKeys.includes(key) || uniformKeys.includes(key)) continue;
-    uniformKeys.push(key);
+  const nMeta = Math.max(1, Math.round(N * 0.2));
+  const nUCB = Math.max(0, Math.round(N * 0.1));
+  const nWeighted = Math.max(1, N - nMeta - nUCB);
+
+  const chosen = new Set();
+  const metaKeys = _topMetaByWeight(nMeta, chosen);
+  metaKeys.forEach(k => chosen.add(k));
+  const weightedKeys = _weightedSampleUnique(_allPairsWithWeight(posterior), nWeighted, chosen, rngRef);
+  weightedKeys.forEach(k => chosen.add(k));
+  const ucbKeys = _ucbPickPairs(posterior, nUCB, chosen);
+  ucbKeys.forEach(k => chosen.add(k));
+
+  const all = [...metaKeys, ...weightedKeys, ...ucbKeys];
+  if (all.length < N) {
+    const rest = _topMetaByWeight(BUILD_KIT_POOL.length * BUILD_KIT_POOL.length, chosen);
+    while (all.length < N && rest.length) { const k = rest.shift(); if (!chosen.has(k)) { all.push(k); chosen.add(k); } }
   }
-  const all = [...metaKeys, ...thompsonKeys, ...uniformKeys];
-  return all.map(k => {
+  return all.slice(0, N).map(k => {
     const [i, j] = k.split(':').map(Number);
     return { key: k, self: BUILD_KIT_POOL[i], ally: BUILD_KIT_POOL[j] };
   });
 }
 
-// Back-compat single-pair API for existing call sites.
 function sampleTeamPair(seed, scenario) { return sampleTeamPairs(seed, scenario, 1)[0]; }
 
-// Posterior update hook called by rsi-loop after each cycle. winBool = did the candidate's
-// score beat the baseline on this pair? Caller passes an array of {pairKey, won}.
+// Posterior update hook. rsi-loop calls this with per-candidate scores + baseline on each pair.
+// Shape: [{ pairKey, scoresByCandidate: { candidateId: score }, baselineScore: s }].
+//
+// B — EMA update of learnedWeight: an "unsolved" pair (big winner-vs-baseline delta) means the
+// adversary could STILL pick that pair to challenge the winner → up-weight it. A pair where
+// everyone scores similarly to baseline is "solved" → down-weight (not to zero; we still want
+// coverage). EMA rate η = 0.25 so a single noisy cycle can't yank weights too far.
 export function updatePairPosterior(pairResults) {
   const posterior = _loadPosterior();
-  for (const { pairKey, won } of pairResults) {
-    const cur = posterior[pairKey] || _pairPrior(pairKey);
-    if (won) cur.alpha = (cur.alpha || 0) + 1;
-    else cur.beta = (cur.beta || 0) + 1;
+  const ETA = 0.25;
+  for (const { pairKey, scoresByCandidate, baselineScore } of pairResults) {
+    const cur = posterior[pairKey] || { scores: {}, nObs: 0, learnedWeight: 1.0 };
+    cur.scores = cur.scores || {};
+    const scoreList = [];
+    for (const [cid, score] of Object.entries(scoresByCandidate || {})) {
+      if (!Number.isFinite(score)) continue;
+      cur.scores[cid] = cur.scores[cid] || [];
+      cur.scores[cid].push(score);
+      if (cur.scores[cid].length > 16) cur.scores[cid] = cur.scores[cid].slice(-16);
+      scoreList.push(score);
+    }
+    // learnedWeight EMA update
+    if (Number.isFinite(baselineScore) && scoreList.length) {
+      const bestScore = Math.max(...scoreList);
+      const delta = Math.max(0, bestScore - baselineScore);                   // ≥ 0
+      // Map delta in [0, 0.3] to weight signal in [0.5, 1.5]; clamp.
+      const signal = Math.max(0.5, Math.min(1.5, 0.5 + 5 * delta));
+      const prev = Number.isFinite(cur.learnedWeight) ? cur.learnedWeight : 1.0;
+      cur.learnedWeight = (1 - ETA) * prev + ETA * signal;
+    }
+    cur.nObs = (cur.nObs || 0) + 1;
     posterior[pairKey] = cur;
   }
   _writeFile(_POSTERIOR_PATH, JSON.stringify(posterior, null, 2));

@@ -1,75 +1,58 @@
 {
   "_scope_caveat": "ALL ELITES BELOW ARE SCOPED TO: build=fighter, species=tangyuan(role-overridden), stats={pow:90,agi:80,vit:130,cha:60}, loadout={q:melee×1.4, e:projectile×1.1}, element=fire-only, level=16, affinity=60, enemies=doudou-1100/130 & doudou-2400/280, 1v1/1vN only (NO teammates ever — evaluator.mjs:220 builds single-cat team), target picked by engine default, persona-scoring subset={null,lazy,explorer,panicky} (masher/cautious/impatient/balanced NOT scored). Winners DO NOT generalize to tank/dps/assassin/control/support build, to non-melee-plus-projectile kits, to team fights, to target-selection decisions, to peel/focus-fire/heal-aim quality, or to other enemy types. DO NOT apply any elite to battle.js without a build-gate + a kit-kind gate + re-verification once the evaluator extension roadmap (playtest-log.md ## RSI roadmap) lands.",
-  "coverage": 3,
+  "coverage": 2,
   "grid": "4x4x4x4",
   "maxCells": 256,
   "best": {
     "key": "1,3,3,3",
     "descriptor": {
-      "engage": 0.34296296296296297,
-      "tempo": 0.7891053037037061,
+      "engage": 0.31296296296296294,
+      "tempo": 0.8096848592592609,
       "durability": 1,
-      "efficiency": 0.9696969696969697
+      "efficiency": 1
     },
-    "score": 0.5267802597599623,
+    "score": 0.5264552433814201,
     "candidate": {
-      "id": "agent:alternating-oscillator",
-      "label": "Oscillator: both CDs cooling → wide, both ready → tight, mixed → mid (pure cd-combo)",
-      "kind": "agent",
-      "rationale": "Reads BOTH f.cd.q and f.cd.e. Creates a 3-state deterministic oscillation: (both cool) → patient, (mixed) → bruiser, (both ready) → burst. Forces tempo diversity; should NOT land in same cell as single-CD rule."
+      "id": "ready-aware-hitrun",
+      "label": "Ready-aware hit-and-run (hug when melee up, pull to mid on CD, retreat <40% HP)",
+      "kind": "rule",
+      "rationale": "A positioning RULE a numeric sweep cannot express: it BRANCHES on cooldown state. When the melee special is ready, commit to contact range (34–72px) for max burst; while it recharges, pull out to 58–104px so we are not eating free hits for nothing; below 40% HP push the whole band outward to disengage. Hypothesis: better survival + faster pack clears in multi than the flat default, without sacrificing single-target output."
     },
-    "label": "agent:alternating-oscillator"
+    "label": "ready-aware-hitrun"
   },
   "elites": [
     {
       "cell": "1,3,3,3",
-      "score": 0.5268,
-      "label": "agent:alternating-oscillator",
+      "score": 0.5265,
+      "label": "ready-aware-hitrun",
       "descriptor": {
-        "engage": 0.34,
-        "tempo": 0.79,
+        "engage": 0.31,
+        "tempo": 0.81,
         "durability": 1,
-        "efficiency": 0.97
+        "efficiency": 1
       },
       "candidate": {
-        "id": "agent:alternating-oscillator",
-        "label": "Oscillator: both CDs cooling → wide, both ready → tight, mixed → mid (pure cd-combo)",
-        "kind": "agent",
-        "rationale": "Reads BOTH f.cd.q and f.cd.e. Creates a 3-state deterministic oscillation: (both cool) → patient, (mixed) → bruiser, (both ready) → burst. Forces tempo diversity; should NOT land in same cell as single-CD rule."
-      }
-    },
-    {
-      "cell": "1,2,3,3",
-      "score": 0.5207,
-      "label": "agent:qready-burst-else-wide",
-      "descriptor": {
-        "engage": 0.43,
-        "tempo": 0.73,
-        "durability": 0.97,
-        "efficiency": 0.94
-      },
-      "candidate": {
-        "id": "agent:qready-burst-else-wide",
-        "label": "Q-ready → tight 55-95 burst; else wide 180-260 patient (high tempo variance)",
-        "kind": "agent",
-        "rationale": "Pure CD-axis read on f.cd.q — a signal the archive hasn't exploited. Tight on Q ready, wide when cooling. Should produce HIGH tempo variance (burst-wait oscillation) distinct from pack-robust-peel-fused's steady-state bands."
+        "id": "ready-aware-hitrun",
+        "label": "Ready-aware hit-and-run (hug when melee up, pull to mid on CD, retreat <40% HP)",
+        "kind": "rule",
+        "rationale": "A positioning RULE a numeric sweep cannot express: it BRANCHES on cooldown state. When the melee special is ready, commit to contact range (34–72px) for max burst; while it recharges, pull out to 58–104px so we are not eating free hits for nothing; below 40% HP push the whole band outward to disengage. Hypothesis: better survival + faster pack clears in multi than the flat default, without sacrificing single-target output."
       }
     },
     {
       "cell": "2,2,3,3",
-      "score": 0.3053,
-      "label": "stand-at-max-range",
+      "score": 0.5107,
+      "label": "agent:closing-reverse-split",
       "descriptor": {
-        "engage": 0.57,
-        "tempo": 0.64,
+        "engage": 0.64,
+        "tempo": 0.61,
         "durability": 1,
         "efficiency": 0.97
       },
       "candidate": {
-        "id": "stand-at-max-range",
-        "label": "CONTROL: always stand at max range (passive kiter)",
-        "kind": "control",
-        "rationale": "Deliberately-BAD structural proposal. Parks the cat at 300–340px and never closes — a melee fighter that refuses to fight. MUST rank BELOW baseline: it cannot clear the 3-pack and stalls output. Proves the harness punishes a plausible-looking-but-wrong rule."
+        "id": "agent:closing-reverse-split",
+        "label": "Closing-phase REVERSE split: when closing>0.3 go wide (not tight) — anti-execute (targets low-engage)",
+        "kind": "agent",
+        "rationale": "Inverted intuition from pack-count-robust/alternating-oscillator. When the engine says we're winning (_closing high), pull back to 220-290 instead of pressing — trades execute-tempo for survival. Should land in engage bin 0-1, tempo bin 1-2, durability bin 3. Explores whether patience-in-winning is a valid policy class."
       }
     }
   ]
