@@ -115,7 +115,7 @@ jobs:
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
           failed=0
-          for test in test-starbell-regional-bosses-browser test-starbell-player-first-browser test-starbell-garden-camera test-starbell-finale-framing-farwind; do
+          for test in test-starbell-regional-bosses-browser test-starbell-player-first-browser test-starbell-garden-camera test-starbell-finale-framing-farwind test-starbell-talent-practice-browser; do
             echo "::group::$test"
             timeout 180s node "scripts/$test.mjs" || failed=1
             echo "::endgroup::"
@@ -181,6 +181,7 @@ jobs:
           node scripts/test-starbell-player-first-browser.mjs
           node scripts/test-starbell-garden-camera.mjs
           node scripts/test-starbell-finale-framing-farwind.mjs
+          node scripts/test-starbell-talent-practice-browser.mjs
           node scripts/cat-bond-experience-chapters.mjs
       - uses: actions/upload-artifact@v4
         if: always() && github.event_name == 'push'
