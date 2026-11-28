@@ -82,8 +82,8 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   travel=[];if(target.i>start.i){for(let i=start.i+1;i<=target.i;i++)travel.push(path[i]);}else if(target.i<start.i){for(let i=start.i;i>target.i;i--)travel.push(path[i]);}travel.push(target.p);dest=travel.shift();return true;
  }
  function tick(dt,viewZoom=1,screenMetric=null){
-  if(!live()){dest=null;travel=[];return;}if(!dest)return;const metric=screenMetric&&screenMetric.x>0&&screenMetric.y>0;let remaining=Math.max(0,Math.min(.1,dt))*(metric?112/Math.max(1,viewZoom):Math.min(.18,.29/Math.max(1,viewZoom)));
-  while(dest&&remaining>0){const d=metric?Math.hypot((dest[0]-pos[0])*screenMetric.x,(dest[1]-pos[1])*screenMetric.y):distance(pos,dest);if(Math.abs(dest[0]-pos[0])>.0001)facing=dest[0]>pos[0]?1:-1;if(d<=remaining){pos=[...dest];remaining-=d;dest=travel.shift()||null;if(!dest){const r=bridge.position(region,...pos);error=r.ok?"":r.reason;}}else{pos=[pos[0]+(dest[0]-pos[0])*remaining/d,pos[1]+(dest[1]-pos[1])*remaining/d];remaining=0;}}
+  if(!live()){dest=null;travel=[];return;}if(!dest)return;const metric=typeof screenMetric==='function';let remaining=Math.max(0,Math.min(.1,dt))*(metric?112/Math.max(1,viewZoom):Math.min(.18,.29/Math.max(1,viewZoom)));
+  while(dest&&remaining>0){const raw=distance(pos,dest),probe=raw>0?Math.min(1,.004/raw):1,d=metric&&raw>0?screenMetric(pos,[pos[0]+(dest[0]-pos[0])*probe,pos[1]+(dest[1]-pos[1])*probe])/probe:raw;if(Math.abs(dest[0]-pos[0])>.0001)facing=dest[0]>pos[0]?1:-1;if(d<=remaining){pos=[...dest];remaining-=d;dest=travel.shift()||null;if(!dest){const r=bridge.position(region,...pos);error=r.ok?"":r.reason;}}else{pos=[pos[0]+(dest[0]-pos[0])*remaining/d,pos[1]+(dest[1]-pos[1])*remaining/d];remaining=0;}}
  }
  function near(p){return live()&&!dest&&distance(pos,p)<.072;}
  function survey(){return region==="sky"?bridge.surveyStatus():null;}

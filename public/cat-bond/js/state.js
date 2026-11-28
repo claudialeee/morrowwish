@@ -492,9 +492,10 @@ function listSaveSlots() {
   const book = migrateLegacySave();
   const regionNames = {
     garden: ['阳光花园', 'Sunlit Garden'],
-    harbor: ['霁潮港', 'Misttide Harbor'],
+    harbor: ['风铃镇', 'Windchime Town'],
     forest: ['眠根林', 'Rootsleep Forest'],
-    forge: ['赤炉环城', 'Emberforge City'],
+    forge: ['千灯城', 'Lantern City'],
+    finale: ['中央星铃', 'Star Bell'],
     sky: ['云脊群岛', 'Skyspine Isles'],
     library: ['月镜书库', 'Moonmirror Library'],
     starfall: ['星坠原', 'Starfall Expanse'],

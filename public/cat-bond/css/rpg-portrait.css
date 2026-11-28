@@ -502,3 +502,12 @@
 #stage #battle-ui.on.touch-battle #duo-burst:not([hidden]){top:auto!important;left:auto!important;right:8px!important;bottom:calc(clamp(44px,14vw,58px)*2 + 24px + env(safe-area-inset-bottom,0px))!important;transform:none!important;max-width:56%!important}
 #stage #battle-ui #btn-debug[hidden]{display:none!important}
 @media(orientation:landscape) and (max-height:500px){#stage #battle-ui.on.touch-battle .move-bar{grid-template-columns:repeat(3,48px)!important;grid-template-rows:repeat(2,48px)!important}#stage #battle-ui.on.touch-battle #duo-burst:not([hidden]){bottom:calc(120px + env(safe-area-inset-bottom,0px))!important}}
+
+/* Landscape shadow theater: the stage is not underneath a giant dialogue card. */
+@media(orientation:landscape){
+ #stage .rw-world.rw-festival-story:not([hidden]){--rw-story-panel:clamp(220px,26%,320px);background:#f7ecdd!important}
+ #stage .rw-world.rw-festival-story:not([hidden])>.rw-shell{inset:52px calc(var(--rw-story-panel) + 16px) 8px 8px!important;width:auto!important;height:auto!important;border-radius:14px!important;background:var(--rw-puzzle-art,none) center/cover no-repeat!important;overflow:hidden!important}
+ #stage .rw-world.rw-festival-story:not([hidden])>.rw-shell>.rw-surface{inset:auto!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;width:min(100cqw,calc(100cqh * var(--rw-map-width-ratio,1.77777778)))!important;height:auto!important;aspect-ratio:var(--rw-map-ratio,16/9)!important}
+ #stage .rw-world.rw-festival-story:not([hidden])>.rw-festival-card{top:52px!important;bottom:auto!important;right:8px!important;left:auto!important;transform:none!important;width:var(--rw-story-panel)!important;max-height:calc(100% - 60px);overflow:auto;text-align:left;box-shadow:none!important}
+ #stage .rw-world.rw-festival-story .rw-festival-card>.rw-puzzle-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}

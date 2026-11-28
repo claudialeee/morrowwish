@@ -1,12 +1,12 @@
 import "./narrative-host.mjs?v=talent-effects-20261127";
 import "./npc-world.mjs?v=starbell-work-regression-20261127";
 import "./ambient-play.mjs";
-import "./world-runtime.mjs?v=starbell-work-regression-20261127";
-import "./title-entry.mjs?v=story-rebuild-20261127";
+import "./world-runtime.mjs?v=starbell-work-regression-v2-20261127";
+import "./title-entry.mjs?v=starbell-work-regression-v2-20261127";
 // The prologue uses living discoveries instead of a standalone bell prop.
 import "./chapter-cinematics.mjs?v=starbell-work-regression-20261127";
 import "./forge-combat-runtime.mjs?v=regional-bosses-names-v2-20261127";
-import "./regional-combat.mjs?v=guardian-art-20261127";
+import "./regional-combat.mjs?v=starbell-work-regression-v2-20261127";
 import "./finale-combat.mjs?v=regional-bosses-names-v2-20261127";
 import "./resonance-book.mjs?v=talent-effects-20261127";
 

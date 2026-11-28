@@ -2,6 +2,8 @@
 import {getSlotRuntime} from "./slot-runtime.mjs";
 const lang=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const tr=(zh,en)=>lang()==="zh"?zh:en;
+function syncHomeLink(){const a=document.getElementById('cb-home');if(!a)return;const label=tr('返回 Morrow Wish','Back to Morrow Wish');a.textContent=tr('← Morrow Wish 首页','← Morrow Wish');a.setAttribute('aria-label',label);}
+if(typeof window!=='undefined'){window.addEventListener('morrowwish-language-change',syncHomeLink);document.addEventListener('DOMContentLoaded',syncHomeLink,{once:true});syncHomeLink();}
 const introIds=new Set(["prologue:P-01","prologue:P-02","prologue:P-03","prologue:P-04"]);
 export function classifyPrologue(view){const id=view?.current?.id;if(introIds.has(id)||view?.ending||["epilogue:E-01","epilogue:E-02","epilogue:E-03"].includes(id))return "garden";if(id==="prologue:P-05")return view.objective?.includes("travel:harbor")?"garden":"world";return "world";}
 export function finishCinematicScene(){return {ok:false,reason:"opening-animation-retired"};}

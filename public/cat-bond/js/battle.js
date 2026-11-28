@@ -667,7 +667,7 @@ class CaptureBattle {
     const insets=safe?getComputedStyle(safe):null;
     const topInset=parseFloat(insets?.getPropertyValue('--cb-portrait-safe-top'))||0;
     const bottomInset=parseFloat(insets?.getPropertyValue('--cb-portrait-safe-bottom'))||0;
-    this.bottomMargin=Math.min(170,Math.max(128,this.H*.23))+bottomInset;
+    this.bottomMargin=Math.min(196,Math.max(154,this.H*.27))+bottomInset;
     this.topMargin=Math.min(244+topInset,Math.max(100,this.H-this.bottomMargin-180));
   }
   // Keep the combat field available when a phone is rotated mid-encounter.
@@ -5268,7 +5268,7 @@ class CaptureBattle {
             :(english?'Slide left to move · Hold right to attack · Tap Dodge'
               :'左侧滑动移动 · 右侧按住攻击 · 点击闪避'))
         :(this.captureReady?'野猫斗志快耗尽了，收服它！'
-          :(this.ult>=100?'必杀能量已满！按 R 释放'
+          :(this.ult>=100?(window.__game?.isTouch?'必杀能量已满！点按释放':'必杀能量已满！按 R 释放')
             :(packN>1?`野猫群 ${live.length}/${packN} 只 · 鼠标瞄准 · Q/E 技能`
               :'鼠标瞄准 · 左键猫爪 · Q/E 技能 · 空格闪避')));
 
@@ -7455,7 +7455,7 @@ class CaptureBattle {
       ctx.save(); ctx.globalAlpha=Math.min(1,k*1.4); ctx.textAlign='center';
       ctx.font='900 '+(this.game.isTouch?22:30)+'px Cat Bond Nunito, Cat Bond WenKai GB, Yuanti SC, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif';
       ctx.fillStyle='#9d7bff'; ctx.shadowColor='#c3a6ff'; ctx.shadowBlur=16;
-      ctx.fillText(en?'⚡ ULTIMATE READY — press R':'⚡ 必杀就绪 — 按 R 释放',W/2,this.topMargin+44);
+      ctx.fillText(this.game?.isTouch||window.__game?.isTouch?(en?'⚡ Ultimate ready · tap':'⚡ 必杀就绪 · 点按释放'):(en?'⚡ ULTIMATE READY — press R':'⚡ 必杀就绪 — 按 R 释放'),W/2,this.topMargin+44);
       ctx.restore();
     }
     // Ultimate RESULT banner — scaled to what the ult actually did (total dmg + KOs).

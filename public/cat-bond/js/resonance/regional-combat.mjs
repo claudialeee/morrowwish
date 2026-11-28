@@ -276,14 +276,15 @@ function install(){
   }
  }
  function draw(b,ctx){
-  const r=b.regionalCombat,cast=r?.cast;
+  const r=b.regionalCombat,cast=r?.cast;if(!r)return;
+  ctx.save();ctx.beginPath();ctx.rect(0,b.topMargin,b.W,Math.max(0,b.H-b.topMargin-b.bottomMargin));ctx.clip();
   if(r.balance){
    const impact=r.impact;
    if(impact&&b.t-impact.at<.38)drawGuardianCast(ctx,r.kit.kind,impact.cast,b.t-impact.at);
    if(cast)drawGuardianCast(ctx,r.kit.kind,cast);
-   return;
+   ctx.restore();return;
   }
-  if(!cast)return;
+  if(!cast){ctx.restore();return;}
   ctx.save();ctx.fillStyle="#cc6d58";ctx.strokeStyle="#cc6d58";ctx.lineCap="round";
   for(const p of cast.patterns){
     ctx.globalAlpha=.12;ctx.beginPath();
@@ -294,7 +295,7 @@ function install(){
     else{const dx=p.x2-p.x1,dy=p.y2-p.y1,len=Math.hypot(dx,dy)||1,nx=-dy/len*p.w/2,ny=dx/len*p.w/2;ctx.moveTo(p.x1+nx,p.y1+ny);ctx.lineTo(p.x2+nx,p.y2+ny);ctx.moveTo(p.x1-nx,p.y1-ny);ctx.lineTo(p.x2-nx,p.y2-ny);ctx.stroke();}
     ctx.setLineDash([]);
   }
-  ctx.restore();
+  ctx.restore();ctx.restore();
  }
  const start=GP.startBattle;
  GP.startBattle=function(team,wild,opts={}){

@@ -572,6 +572,7 @@ class Game {
     const b=World.gardenGround(this.W,this.H);
     const target={x:Math.max(b.left,Math.min(b.right,x)),y:Math.max(b.top,Math.min(b.bottom,y))};
     e._gardenManualTarget=target;
+    if(onArrival)this.toast?.({zh:'正在前往目标…',en:'Heading to your destination…'});
     this._yardArrival=onArrival?{owner:State.S,entity:e,target,callback:onArrival}:null;
     return true;
   }
@@ -598,6 +599,7 @@ class Game {
     if(!c.manual)c.z=initialZoom;
     if(c.follow){const f=1-Math.exp(-7*Math.max(0,dt));const tx=Math.max(W*(1-c.z),Math.min(0,W*.5-player.x*c.z)),ty=Math.max(H*(1-c.z),Math.min(0,H*.65-player.y*c.z));c.tx+=(tx-c.tx)*f;c.ty+=(ty-c.ty)*f;}
     this.clampYardCamera();
+    player._gardenWalkZoom=c.z;
   }
   clampYardCamera(){const c=this._yardCamera;if(!c)return;c.tx=Math.max(this.W*(1-c.z),Math.min(0,c.tx));c.ty=Math.max(this.H*(1-c.z),Math.min(0,c.ty));}
   yardCameraAvailable(){return this.scene==='yard'&&this.yardExploreEnabled()&&!!this._yardCamera&&!this.worldDialogueOpen();}
@@ -1159,14 +1161,14 @@ class Game {
         extra:en?'Basic attack · short cooldown':'普通攻击 · 短冷却'},
       q: {skill:fighter?.qSkill,icon:'🧶',fallback:en?'Skill 1':'技能一',
         desc:en?'Equip a skill in Cats → Skills to use this slot.':'前往猫咪 → 技能搭配装备技能。',
-        key:'Q',extra:en?'Skill 1':'技能一'},
+        key:tap?(en?'Tap':'点按'):'Q',extra:en?'Skill 1':'技能一'},
       e: {skill:fighter?.eSkill,icon:'💨',fallback:en?'Skill 2':'技能二',
         desc:en?'Equip a skill in Cats → Skills to use this slot.':'前往猫咪 → 技能搭配装备技能。',
-        key:'E',extra:en?'Skill 2':'技能二'},
+        key:tap?(en?'Tap':'点按'):'E',extra:en?'Skill 2':'技能二'},
       ult: {skill:fighter?.ultSkill,icon:'🌪️',fallback:en?'Ultimate':'必杀技',
         desc:en?'Build ultimate energy by attacking, then unleash a powerful move.':
           '通过攻击积攒必杀能量，满能量后释放强力技能。',
-        key:'R',extra:en?'Ultimate · full meter':'必杀技 · 能量满后释放'},
+        key:tap?(en?'Tap':'点按'):'R',extra:en?'Ultimate · full meter':'必杀技 · 能量满后释放'},
       dodge:{icon:'🌀',fallback:en?'Dodge':'闪避',
         desc:en?'Quickly evade an attack and briefly become invulnerable.':
           '快速闪避攻击，短时间无敌。',
