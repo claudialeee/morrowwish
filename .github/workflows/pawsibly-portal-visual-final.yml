@@ -1,0 +1,52 @@
+name: Pawsibly release visual correction
+on:
+  push:
+    branches: ['release/pawsibly-five-portals-20261127']
+    paths: ['.github/workflows/pawsibly-portal-visual-final.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  final:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SOURCE_SHA: 63a1ddd2d4d07b1bbb4c24818fa3fe07a09b5545
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reuse accepted portable ZIP artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pawsibly-verified-portable-zips
+          run-id: 46112210148
+          github-token: ${{ github.token }}
+          path: release-kit/pawsibly
+      - name: Install browser and encoder
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; fi
+      - name: Apply actual responsive layout correction
+        run: |
+          python3 scripts/patch-pawsibly-portal-layout.py
+          rm -rf release-kit/pawsibly/media
+          mkdir -p release-kit/pawsibly/media
+          python3 -m http.server 8766 --bind 127.0.0.1 --directory release-kit/pawsibly >/tmp/pawsibly-final.log 2>&1 &
+          sleep 1
+          node scripts/capture-pawsibly-portable-final.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pawsibly-final-visual-corrected
+          path: |
+            release-kit/pawsibly/*.zip
+            release-kit/pawsibly/build-manifest.json
+            release-kit/pawsibly/visual-proof.json
+            release-kit/pawsibly/media/
+          retention-days: 7
+          if-no-files-found: error
