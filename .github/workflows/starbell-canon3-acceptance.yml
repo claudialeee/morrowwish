@@ -20,6 +20,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  statuses: write
 concurrency:
   group: starbell-canon3-${{ github.ref }}
   cancel-in-progress: true
@@ -84,3 +85,22 @@ jobs:
             /tmp/canon3-*.log
           if-no-files-found: warn
           retention-days: 7
+
+  report-exact-candidate:
+    if: always() && github.ref == 'refs/heads/review/starbell-canon13-player-experience'
+    needs: [browser]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BROWSER_RESULT: ${{ needs.browser.result }}
+    steps:
+      - name: Publish exact SHA acceptance status and run link
+        run: |
+          state=failure
+          if [[ "$BROWSER_RESULT" == success ]]; then state=success; fi
+          gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -f state="$state" \
+            -f context="starbell/exact-candidate-browser" \
+            -f description="Canon 3 browser matrix: $BROWSER_RESULT" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
