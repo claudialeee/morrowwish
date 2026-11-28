@@ -32,8 +32,8 @@ export function homeConversation(id,view,profile,snapshot){
  if(id==="muling"){
   const c=snapshot?.choices||{},base=muling[c["library:M-04"]]||q.normal;
   const responses={
-   "sky:S-04":{joke:["云朵茶会的约定，我还记得。","I still remember our promise of a tea party in the clouds."],company:["谢谢你那天安静地陪我坐着。","Thank you for sitting quietly beside me that day."],search:["那天你说要陪我找朋友。其实呀，你就在我旁边。","You offered to help me find my friend that day. You were right beside me all along."]},
-   "library:M-03":{details:["你问过的事实，我都会如实告诉你。","I'll tell you the truth about everything you asked."],hurt:["那天我瞒了你那么久。以后不会了。","I kept that from you for far too long. I won't do it again."],space:["我会给你需要的时间。","I'll give you the time you need."]},
+   "sky:S-04":{joke:["那天你还想把两杯茶都喝掉呢。","I haven't forgotten what you said about drinking both cups!"],company:["谢谢你那天安静地陪我坐着。","Thank you for sitting quietly beside me that day."],search:["那天在云海，你说等记起来了就回花园喝茶。今天终于等到了。","In the clouds, you promised we'd have tea in the garden when you remembered. Today's finally the day."]},
+   "library:M-03":{details:["你问过的事实，我都会如实告诉你。","I'll tell you the truth about everything you asked."],hurt:["那天你问我还有什么没说。以后我不会再瞒着你了。","You asked what else I was keeping from you. I won't hide things from you again."],space:["我会给你需要的时间。","I'll give you the time you need."]},
    "finale:B-01":{stop:["谢谢你让我停下来听见大家。","Thank you for asking me to stop and listen."],challenge:["你提醒我不能替任何人决定。","You reminded me not to decide for anyone else."]},
    "epilogue:E-02":{listen:["阿婆说门铃还有点歪，我明天再去看看。","Gran says her doorbell's a bit crooked. I'll check it tomorrow."],help:["谢谢你陪我完成第一次修复。","Thank you for joining my first repair."],space:["等阿婆愿意见我了，我再过去。","I'll visit Gran when she's ready to see me."]}
   };
