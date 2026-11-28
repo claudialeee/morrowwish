@@ -1,7 +1,7 @@
 import { campaign } from "./campaign.mjs";
 import {newNeighborTrial,advanceNeighborTrial,neighborTrialProof} from "./canon22-neighbor-trial.mjs";
 import {mirrorProof} from "./canon22-mirror.mjs";
-import {newSpatial,spatialInput,spatialProof,tickSpatial,spatialKind,startBridgeWalk,advanceBridgeWalk,animateStarPlatforms} from "./canon22-spatial.mjs?v=bridge-art-audio-20261127";
+import {newSpatial,spatialInput,spatialProof,tickSpatial,spatialKind,startBridgeWalk,advanceBridgeWalk,animateStarPlatforms} from "./canon22-spatial.mjs?v=story-causality-20261127";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary} from "./library-mechanisms.mjs";
 import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache,landSkyFlight} from "./sky-flight.mjs";
 // Actual walkable region mechanics. Story progression is never stored here.
@@ -13,7 +13,7 @@ export const layouts={
    [.887,.538],[.837,.61],[.80,.682],[.802,.742],[.87,.748]],
   castPoints:{jiedeng:[.195,.50],qilan:[.16,.60]},
   features:{
-   "puzzle:chime-chase":[.16,.60,"寻回铃纹","Restore the bell patterns"],
+   "puzzle:chime-chase":[.16,.60,"修好路标","Repair the road signs"],
    "battle:chime-beast":[.195,.50,"铃舌兽","Belltongue Beast"],
    "repair:harbor":[.131,.341,"古铃圣所","Town bell sanctuary"],
    "melody:harbor":[.131,.341,"归家调","Coming Home"]
