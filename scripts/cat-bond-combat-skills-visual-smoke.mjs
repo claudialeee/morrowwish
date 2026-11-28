@@ -119,8 +119,8 @@ try{
           throw Error('Blueberry Frost Claw must be Water and single-element');
         if(b.vfx.fx.filter(v=>v.type==='slash').length!==2)
           throw Error('Frost Claw must paint precisely one short swipe per contact');
-        if(!b.vfx.fx.some(v=>v.type==='contact'&&v.style==='ice'&&v.skillId===id&&v.life>0&&Math.hypot(v.x-target.x,v.y-target.y)<target.r+12))
-          throw Error('Frost Claw must paint real icy crystals on confirmed contact');
+        if(!b.vfx.fx.some(v=>v.type==='contact'&&v.style==='ice'&&v.skillId===id&&v.life>0&&Math.hypot(v.x-target.x,v.y-target.y)<(target.r||18)+12))
+          throw Error('Frost Claw must paint real icy crystals on confirmed contact: '+JSON.stringify({radius:target.r,contacts:b.vfx.fx.filter(v=>v.type==='contact'),skill:sk.id,renderer:!!window.CatBondContactFX}));
       }
       mode='close-contact';
     }
