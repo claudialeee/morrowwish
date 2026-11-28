@@ -25,6 +25,16 @@ export const layouts={
  library:{name:["月镜书库","Moonmirror Library"],paths:[[.10,.83],[.17,.73],[.22,.60],[.29,.60],[.46,.58],[.51,.48],[.50,.42],[.67,.40],[.76,.40],[.82,.36],[.89,.29]],castPoints:libraryInvitations,features:libraryPoints},
  starfall:{name:["星坠原","Starfall Expanse"],castPoints:{xingya:[.51,.58],lichuan:[.78,.48]},paths:[[.10,.90],[.23,.78],[.34,.68],[.41,.58],[.42,.52],[.51,.58],[.68,.55],[.78,.48],[.78,.40],[.84,.33],[.92,.30]],features:{"puzzle:star-steps":[.34,.68,"踩着星光走","Walk on starlight"],"explore:catastrophe-record":[.78,.40,"天文台 · 完整灾变记录","Observatory · Complete record"],"battle:star-guardian":[.68,.55,"星辰守卫","Star Guardian"],"puzzle:distributed-routing":[.84,.33,"邻铃试音","Test the neighboring bells"],"repair:starfall":[.92,.30,"星原圣所","Starfall sanctuary"],"melody:starfall":[.92,.30,"续星调","Beyond Stars"]}}
 };
+// First contacts wait near the entrance; later invitation and restoration anchors are unchanged.
+export const arrivalNpcPoints=Object.freeze({
+ "harbor:H-01":{qilan:[.115,.70]},"harbor:H-02":{qilan:[.115,.70]},
+ "forest:R-01":{yahe:[.20,.84]},
+ "forge:E-01":{xiaomao:[.225,.81],jinpo:[.35,.76]},
+ "sky:S-01":{yuanfan:[.10,.70],lingyu:[.16,.61]},
+ "library:M-01":{baikan:[.17,.73]},
+ "starfall:F-01":{lichuan:[.23,.78],xingya:[.34,.68]}
+});
+export function storyNpcPoint(scene,id,fallback){return [...(arrivalNpcPoints[scene]?.[id]||fallback)];}
 export const retiredWorldOperations=new Set(["explore:tide-logbook","puzzle:beam-mirrors","rescue:storm-boat","explore:scent-trail","puzzle:paired-water-gates","rescue:steady-channel","explore:water-marks","battle:root-echo","rescue:trapped-cats","puzzle:festival-lantern","puzzle:safety-blueprint","puzzle:heat-pressure","battle:forge-guardian","explore:letter-recipient","explore:sealed-archive","puzzle:mirror-records","puzzle:caravan-route","battle:observatory-echo","puzzle:library-reflections","battle:library-echo","puzzle:echo-navigation","puzzle:star-map","explore:crater-fragment","explore:ruin-fragment"]);
 export const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const segment=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy)));return {p:[a[0]+t*dx,a[1]+t*dy],t};};
@@ -155,7 +165,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   const result=bridge.exchange(cargo.a,cargo.b,{region,stage:cargo.stage,action:cargo.action,verified:true,token:bridge.capture()});
   if(result.ok)cargo=null;return result;
  }
- function localNpcs(){const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];return Object.values(campaign.cast).filter(n=>n.region===region&&!(region==="harbor"&&bridge.view().current?.id==="harbor:H-01"&&n.id==="jiedeng")).map((n,i)=>({...n,point:layout.castPoints?.[n.id]||(i===0?lerp(path[1],path[2],.44):lerp(path[3],path[4],.46))}));}
+ function localNpcs(){const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];return Object.values(campaign.cast).filter(n=>n.region===region&&!(region==="harbor"&&bridge.view().current?.id==="harbor:H-01"&&n.id==="jiedeng")).map((n,i)=>({...n,point:storyNpcPoint(bridge.view().current?.id,n.id,layout.castPoints?.[n.id]||(i===0?lerp(path[1],path[2],.44):lerp(path[3],path[4],.46)))}));}
  function inviteNpc(id){const n=localNpcs().find(n=>n.id===id),v=bridge.view();if(!n||!near(n.point)||!v.objective.includes("melody:"+region))return {ok:false,reason:"npc-not-available"};const method={harbor:"inviteHarbor",forest:"inviteForest",forge:"inviteForge",sky:"inviteSky",library:"inviteLibrary",starfall:"inviteStarfall"}[region];if(method){const result=bridge[method](id,n.point,bridge.capture());if(!result.ok)return result;}invited.add(id);return {ok:true};}
  function rewardPoints(){if(region==="finale")return [];if(region==="forge")return [{id:"cache-1",point:[.225,.81]},{id:"cache-2",point:[.35,.705]}];if(survey()?.remote)return [{id:"survey-cache",point:[...skySurveyCache]}];return [...(region==="starfall"&&bridge.view().completed.includes("starfall:F-02")?[{id:"starfall-hidden-record",point:[.41,.58]}]:[]),{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}

@@ -1,6 +1,6 @@
 import {campaign} from "./campaign.mjs";
 import {makeEngine} from "./engine.mjs";
-import {layouts} from "./world-exploration.mjs";
+import {layouts,storyNpcPoint} from "./world-exploration.mjs?v=local-exploration-20261127";
 import {storyPartyPatch} from "./story-party.mjs";
 import {validReplyProof} from "./canon22-finale-replies.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
@@ -70,7 +70,7 @@ export function createSlotRuntime(State,{notify=()=>{}}={}){
   if(s.lines.length&&requiredActor!==npcId&&!s.lines.some(l=>l.speaker===npcId)&&!s.choices.some(c=>c.npc===npcId))return fail("wrong-npc");
   const location=State.S.resonanceExploration?.location;if(campaign.regions.includes(region)&&location&&location!==region)return fail("wrong-map-location");
   const pending=v.objective.find(x=>x.startsWith("npc:"));if(pending&&s.orderedRequires&&v.objective[0]!==pending)return fail("story-operation-order");
-  if(pending&&["starfall:F-01","starfall:F-03"].includes(s.id)){const p=State.S.resonanceExploration?.positions?.starfall,point={xingya:[.51,.58],lichuan:[.78,.48],muling:[.92,.30]}[npcId];if(!token||location!=="starfall"||!p||!point||Math.hypot(p.x-point[0],p.y-point[1])>=.072)return fail("walk-to-story-npc");}
+  if(pending&&["starfall:F-01","starfall:F-03"].includes(s.id)){const p=State.S.resonanceExploration?.positions?.starfall,base={xingya:[.51,.58],lichuan:[.78,.48],muling:[.92,.30]}[npcId],point=base&&storyNpcPoint(s.id,npcId,base);if(!token||location!=="starfall"||!p||!point||Math.hypot(p.x-point[0],p.y-point[1])>=.072)return fail("walk-to-story-npc");}
   if(!pending||["npc:public-accountability","npc:second-garden-key"].includes(pending))return {ok:true,dialogueOnly:true};
   return op(sceneId,pending,{token});
  }
