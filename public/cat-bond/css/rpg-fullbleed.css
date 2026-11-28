@@ -308,3 +308,10 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
  #stage .rw-world.rw-dedicated-puzzle:not([hidden])>.rw-shell>.rw-surface{width:min(100cqw,calc(100cqh * var(--rw-map-width-ratio,1.77777778)))!important;height:auto!important;aspect-ratio:var(--rw-map-ratio,16/9)!important;max-height:100%!important;object-fit:contain!important}
 }
 @media(orientation:landscape) and (max-height:500px){#stage .rw-world.rw-dedicated-puzzle:not([hidden]){--rw-game-controls:clamp(180px,32%,255px);--rw-game-gap:6px}}
+
+/* One small gold quest button, no duplicated objective or bottom overlay. */
+#stage .rw-world>.rw-head>button[data-next-scene]{display:block!important;box-sizing:border-box!important;width:max-content!important;max-width:min(68vw,340px)!important;min-height:44px!important;max-height:58px!important;overflow:hidden!important;margin:4px 0 0!important;padding:7px 11px!important;border:1px solid #8a6633!important;border-left:4px solid #b78335!important;border-radius:9px!important;background:#fff0cdeF!important;color:#64421e!important;font-size:clamp(14px,1.85vmin,17px)!important;line-height:1.25!important;font-weight:750!important;box-shadow:0 2px 8px #392a2040!important;pointer-events:auto!important;text-align:left!important}
+#stage .rw-world>.rw-head:has(>button[data-next-scene]) .rw-fit-summary{display:none!important}
+#stage .rw-world>.rw-head:has(>button[data-next-scene]) .rw-brand{width:max-content!important;max-width:min(60vw,300px)!important;padding:4px 8px!important}
+#stage .rw-world>.rw-head>button[data-next-scene][data-walking=true]{opacity:.83!important}
+@media(orientation:landscape) and (max-height:500px){#stage .rw-world>.rw-head>button[data-next-scene]{max-width:min(48vw,320px)!important;min-height:44px!important;font-size:14px!important}}

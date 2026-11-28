@@ -2898,11 +2898,11 @@ const UI = {
       <div class="btn-row prebattle-actions"><button class="btn gold" id="bp-go">${en?'Start battle':'开始战斗'}</button>
       <button class="btn ghost" id="bp-cancel">${en?'Not now':'暂不出战'}</button></div>`);
     this.setupPrebattleDialog();
-    const refreshMatchup=roster=>{const hint=document.getElementById('bp-matchup');if(hint)hint.innerHTML=this.matchupWarning(roster.slice(0,2),wildSp,en,opts.bossElement);};
+    const refreshMatchup=roster=>{const hint=document.getElementById("bp-matchup");if(!hint)return;const field=roster.slice(0,2);hint.innerHTML=this.matchupWarning(field,wildSp,en,opts.bossElement);if(opts.regionalGuardian){const t=window.CatBondTalentPractice?.talents||{};for(const cat of field){const talent=t[cat.storyActor];if(!talent)continue;const row=document.createElement("p");row.className="tiny";row.textContent=State.catName(cat)+" · "+talent.name[en?1:0]+" · "+(en?"Rank ":"阶级 ")+(window.CatBondTalentPractice.rank(cat)||1);hint.append(row);}const pair=window.CatRelations?.chosen?.()||[];if(pair.length===2&&pair.every(c=>field.some(f=>f.uid===c.uid))){const row=document.createElement("p");row.className="tiny";row.textContent=en?"Chosen duo starts together: resonance can trigger once charged and unlocked.":"选定搭档同时首发：解锁且能量充满后可释放合击。";hint.append(row);}}};
     this.bindSquadPicker(selected,refreshMatchup);
     this.refreshBattlePrepSkills(selected.map(uid=>State.S.cats.find(c=>c.uid===uid)).filter(Boolean),en);
     document.getElementById('bp-best-team').onclick=()=>{
-      selected.splice(0,selected.length,...this.getStrongestBattleTeam().map(cat=>cat.uid));
+      const strongest=this.getStrongestBattleTeam();const pool=State.S.cats||[];if(opts.regionalGuardian&&opts.bossElement&&window.Skills?.effectiveness){const score=cat=>{const el=window.Skills.elementOf(cat.species),first=window.Skills.effectiveness(el,opts.bossElement),second=opts.bossSecondElement?window.Skills.effectiveness(el,opts.bossSecondElement):first,rank=window.CatBondTalentPractice?.talents?.[cat.storyActor]?1.10:1;return State.catPower(cat)*(.7+.3*(first+second)/2)*rank;};const best=[...pool].sort((a,b)=>score(b)-score(a)).slice(0,2);selected.splice(0,selected.length,...new Set([...best,...strongest].map(cat=>cat.uid)));selected.splice(5);}else selected.splice(0,selected.length,...strongest.map(cat=>cat.uid));
       this.bindSquadPicker(selected,refreshMatchup);
     };
     const matchup=document.getElementById('bp-matchup');

@@ -437,7 +437,8 @@ class CaptureBattle {
       for(const e of this.liveEnemies().slice()){
         const raw=Math.min(e.maxhp*(.18+(d.tier-1)*.035),
           (fs[0].dmg+fs[1].dmg)*(1.2+.2*d.tier));
-        const damage=raw*Math.max(.8,Math.min(1.2,art.mult||1));
+        const match=this.libraryEncounter&&e.regionalEnemy&&e.element&&window.Skills?.effectiveness?Math.max(.85,Math.min(1.25,(Skills.effectiveness(fs[0].element,e.element)+Skills.effectiveness(fs[1].element,e.element))/2)):1;
+        const damage=raw*Math.max(.8,Math.min(1.2,art.mult||1))*match;
         this.hurtEnemy(e,damage,e.x,e.y,true,true);
         this.vfx.impact(e.x,e.y,hits%2?firstColor:secondColor);hits++;
         e.status=e.status||{};e.tags=e.tags||[];
@@ -1529,7 +1530,7 @@ class CaptureBattle {
     if(shield&&(frontline||hp<.70||dist<145)){
       if(this.castSlot(f,shield,aim)!==false){this.markAutoAction(f,'展开护盾');return;}
     }
-    if(f===this.me()&&this.canUltimate()&&this.ultWillConnect(f)){
+    if(f===this.me()&&this.canUltimate()&&this.ultWillConnect(f)&&!this.regionalCombat?.cast){
       if(this.ultimate()!==false){this.markAutoAction(f,'释放必杀技');return;}
     }
     const rangedKind=k=>k==='projectile'||k==='beam';   // reflectable shots
@@ -1898,7 +1899,7 @@ class CaptureBattle {
     if (K['s'] || K['arrowdown']) my += 1;
     if (K['a'] || K['arrowleft']) mx -= 1;
     if (K['d'] || K['arrowright']) mx += 1;
-    if (joy && joy.active && (Math.abs(joy.dx) > 0.15 || Math.abs(joy.dy) > 0.15)) { mx += joy.dx; my += joy.dy; }
+    if (joy && joy.active && Math.hypot(joy.dx,joy.dy) > 0.10) { mx += joy.dx; my += joy.dy; }
     if (f.rootT > 0 || (f._beamRoot > 0) || (f._castRoot > 0) ||
         (f.dashT > 0 && f.pounce)) { mx = 0; my = 0; }
     // Dash is moved in tick by its locked direction; manual movement must not
@@ -1908,7 +1909,8 @@ class CaptureBattle {
       const l = Math.hypot(mx, my);
       f._moveFacing = Math.atan2(my, mx);
       if(f.reflectT>0)f._wallDesiredAngle=this.aim;
-      const spd = (f.dashT > 0 ? f.speed * 3 : f.speed) * this.moveMul(f);   // 冰冻/束缚/感电 减速
+      const analog=(this.game.isTouch&&joy?.active&&!K["w"]&&!K["a"]&&!K["s"]&&!K["d"]&&!K["arrowup"]&&!K["arrowdown"]&&!K["arrowleft"]&&!K["arrowright"]&&f.dashT<=0)?Math.min(1,l):1;
+      const spd = (f.dashT > 0 ? f.speed * 3 : f.speed) * this.moveMul(f)*analog;   // 冰冻/束缚/感电 减速
       f.x += (mx / l) * spd * dt;
       f.y += (my / l) * spd * dt;
       f.face = mx < 0 ? -1 : (mx > 0 ? 1 : f.face);
@@ -3575,8 +3577,8 @@ class CaptureBattle {
     // The dash animation is the feedback: no blocking combat toast.
     return true;
   }
-  dodge(f) {
-    f = f || this.me(); if (f.dodgeCd > 0) return false;
+  dodge(f,preferredDirection) {
+    f = f || this.me(); if (!f?.alive||f.dodgeCd > 0||f._castRoot>0||f._beamRoot>0) return false;
     if(f===this.me())window.MorrowwishAudio?.effect?.('combat_dodge');
     if (f === this.me()) this._coachDodged = true;         // coach: step 4
     // A real escape tool now: a LONG i-frame dash that travels AWAY from danger,
@@ -3613,6 +3615,7 @@ class CaptureBattle {
         dir = Math.atan2(Math.sin(perp) * 0.7 + Math.sin(away) * 0.3, Math.cos(perp) * 0.7 + Math.cos(away) * 0.3);
       }
     }
+    if (Number.isFinite(preferredDirection)) dir=preferredDirection;
     if (dir != null) f._dashAim = dir;
     // LEARN the player's habits: which way they strafe when dodging, and whether a
     // threat was actually present (dodge-vs-panic). Only observe the active cat.
@@ -4874,7 +4877,7 @@ class CaptureBattle {
     // frame 1 of the follow-up fight, yanking both cats onto the enemy before anything happened (owner:
     // "第一场收伙伴，第二场一开战就发合体技，被聚到敌方猫身上"). Hold the auto-cast until the fight is a few
     // seconds in AND the duo pair has closed to a sensible range, so it reads as a real mid-fight beat.
-    if(this.autoMode&&this.duoReady()&&this.t>=2.4){
+    if(this.autoMode&&this.duoReady()&&this.t>=2.4&&!this.regionalCombat?.cast){
       const near=this.liveEnemies().some(e=>this.team.some(f=>f.alive&&
         [this.duo.a.uid,this.duo.b.uid].includes(f.cat.uid)&&Math.hypot(e.x-f.x,e.y-f.y)<360));
       if(near)this.castDuo();

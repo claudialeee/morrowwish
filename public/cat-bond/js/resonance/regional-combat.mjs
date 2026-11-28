@@ -222,7 +222,7 @@ function install(){
  function paintHud(b){
   const panel=document.getElementById("cb-region-combat");if(!panel||!b.regionalCombat)return;
   const r=b.regionalCombat,kit=r.kit,button=panel.querySelector("button"),phase=b.libraryEncounter&&["starfall","mastery"].includes(b.libraryEncounter.bossId)?(b.liveEnemies()[0]?.element==="dark"?tr([" · 暗属性"," · Dark"]):tr([" · 光属性"," · Light"])):"";
-  panel.querySelector("span").textContent=r.recoveryUntil>b.t?tr(["破绽出现 · 立即反击","Opening · counterattack now"]):r.shadowLight?tr(["引剪影兽进入灯光再攻击","Draw the shadow beast into the light"]):b.libraryEncounter?.bossId&&REGIONAL_BOSSES[b.libraryEncounter.bossId]?tr(REGIONAL_BOSSES[b.libraryEncounter.bossId].name)+phase:tr(kit.name)+" · "+tr(kit.enemy);
+  const warning=r.cast?Math.max(0,Math.ceil(r.cast.remaining)):0;panel.dataset.phase=r.cast?"warning":r.recoveryUntil>b.t?"opening":"normal";panel.querySelector("span").textContent=r.recoveryUntil>b.t?tr(["破绽 · 伤害提升","Opening · damage bonus"]):r.cast?tr(["危险预警 · "+warning+"秒","Incoming attack · "+warning+"s"]):r.shadowLight?tr(["引剪影兽进入灯光再攻击","Draw the shadow beast into the light"]):b.libraryEncounter?.bossId&&REGIONAL_BOSSES[b.libraryEncounter.bossId]?tr(REGIONAL_BOSSES[b.libraryEncounter.bossId].name)+phase:tr(kit.name)+" · "+tr(kit.enemy);
   button.hidden=!r.supportAvailable;button.disabled=r.supportUsed||!r.cast;button.setAttribute('aria-label',r.supportUsed?tr(['支援已使用','Support used']):r.cast?tr(['点击支援，解除本次攻击','Tap support to cancel this attack']):tr(['等待敌方预警后使用支援','Support becomes available during an enemy warning']));
   button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?.bossId==="library"?tr(["打断镜影","Break the reflection"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Finn · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Wren · Escort flight"]):tr(kit.support);
  }
@@ -264,6 +264,8 @@ function install(){
   if(r.cast){
     if(r.kit.kind==="gale"){const direction=r.cycle%2?1:-1;for(const f of living(b)){if((f.inv||0)>0)continue;f.x=clamp(f.x+direction*22*Math.min(.05,dt),32,b.W-32);}}
     r.cast.remaining-=dt;
+    if(b.autoMode&&r.cast.remaining>0&&r.cast.remaining<=.42){const danger=living(b).filter(f=>r.cast.patterns.some(p=>inPattern(p,f))&&!(f.inv>0));if(danger.length&&(danger.length>=2||danger.some(f=>f.hp/f.maxhp<.40))&&r.supportAvailable&&!r.supportUsed&&useSupport(b))return;for(const f of danger){if(f.dodgeCd>0||f._castRoot>0||f._beamRoot>0)continue;const reach=Math.max(35,f.speed*3*.28),angles=Array.from({length:12},(_,i)=>i*Math.PI/6);const safe=angles.find(a=>{const q={x:clamp(f.x+Math.cos(a)*reach,32,b.W-32),y:clamp(f.y+Math.sin(a)*reach,b.topMargin,b.H-b.bottomMargin)};return !r.cast.patterns.some(p=>inPattern(p,q));});if(safe!==undefined)b.dodge(f,safe);}}
+    const second=Math.ceil(r.cast.remaining);if(r.hudSecond!==second){r.hudSecond=second;paintHud(b);}
     if(r.cast.remaining<=0){resolve(b,r,r.cast);r.cast=null;r.next=(r.balance?.period??r.kit.period)*(b.libraryEncounter?.bossId==="mastery"&&b.liveEnemies()[0]?.element==="dark"?.82:1);paintHud(b);}
     return;
   }
@@ -271,7 +273,7 @@ function install(){
   if(r.next<=0){
    const t=target(b);if(!t)return;
    const master=b.libraryEncounter?.bossId==="mastery",element=r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element,cycle=r.cycle++,warning=master?2.15:b.game?.isTouch?2.15:1.8;
-   r.cast={remaining:warning,max:warning,element,patterns:master?buildMasteryPattern(b.W,b.H,b.topMargin,b.bottomMargin,cycle,element):buildPattern(r.kit.kind,b.W,b.H,b.topMargin,b.bottomMargin,t,cycle)};
+   r.hudSecond=null;r.cast={remaining:warning,max:warning,element,patterns:master?buildMasteryPattern(b.W,b.H,b.topMargin,b.bottomMargin,cycle,element):buildPattern(r.kit.kind,b.W,b.H,b.topMargin,b.bottomMargin,t,cycle)};
    const line=master?(element==="dark"?["暗相横向封锁！进入未标记的安全带。","Dark horizontal seal! Move into the unmarked lane."]:["光相纵向封锁！进入未标记的安全带。","Light vertical seal! Move into the unmarked lane."]):b.libraryEncounter?.bossId==="library"?["镜影即将反击，躲开标记！","Mirror counter incoming: dodge the marked areas!"]:labels[r.kit.kind];notice(b,line[0],line[1]);paintHud(b);
   }
  }

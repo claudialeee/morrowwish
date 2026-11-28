@@ -535,8 +535,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "太好了！可我为什么还是什么都不记得？",
-            "en": "That's wonderful! But why can't I remember anything?"
+            "zh": "她终于记起回家的路了。古铃刚才也认出了我，可我为什么还是什么都不记得？",
+            "en": "She remembers the way home at last. The bell recognized me too, but why can't I remember anything?"
           }
         },
         {
@@ -739,8 +739,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "果然！打败那团回响，古铃就恢复了。",
-            "en": "Just like in town! Defeating the echo restored the bell."
+            "zh": "根桥不再绕回原地了。刚才救出的小猫，现在可以自己沿着这条路回家。",
+            "en": "The root bridge no longer loops back. The kitten we rescued can follow this path home."
           }
         },
         {
@@ -942,8 +942,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "我们在三个地方都遇到了这种怪物。它们到底从哪儿来的？",
-            "en": "We've seen these creatures in three places. Where are they coming from?"
+            "zh": "灯火节又能开始了。刚才小栗的三只影子猫，终于能在大家面前演出了。",
+            "en": "The lantern festival can begin again. Pip's three shadow kittens can finally perform for everyone."
           }
         },
         {
@@ -2016,8 +2016,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "我们做到了。现在可以去中央星铃了。",
-            "en": "We did it. Now we can face the Star Bell."
+            "zh": "六地的铃声已经汇在一起。现在不是再修一座铃，而是去阻止中央星铃吞掉所有人的记忆。",
+            "en": "The six bells are answering each other. Now we must stop the Star Bell from swallowing everyone's memories."
           }
         }
       ],
