@@ -75,7 +75,7 @@ try{
  for(let step=0;step<2200&&Date.now()<deadline;step++){
    const {v,s,mode,region}=await read();const id=v.current?.id||'ended';if(id!==last){console.log('NORMAL CONTINUATION',lang,id,mode,region);last=id;}
    await checkpoint({v,s,mode});
-   const keyNow=JSON.stringify([id,v.cursor,v.choice,v.objective,mode,s.revision,await page.locator('.rw-puzzle-controls:visible').innerText({timeout:500}).catch(()=>null),await page.locator('.sky-lookout-view:visible').getAttribute('data-pose',{timeout:500}).catch(()=>null)]);
+   const keyNow=JSON.stringify([id,v.cursor,v.choice,v.objective,mode,s.revision,await page.evaluate(()=>[document.querySelector('.rw-puzzle-controls')?.innerText||null,document.querySelector('.sky-lookout-view')?.dataset.pose||null])]);
    if(keyNow!==progressKey){progressKey=keyNow;progressAt=Date.now();}else if(Date.now()-progressAt>90000)throw Error('No story/UI progress for 90s '+id+' '+JSON.stringify({objective:v.objective,cursor:v.cursor,mode,visible:await page.locator('button:visible').allTextContents()}));
    if(v.ending){assert.equal(s.completed.length,campaign.scenes.length);assert.equal(s.melodies.length,6);assert.equal(s.support.length,6);assert.ok(s.evidence['finale:B-03'].includes('battle:central-echo'));assert.ok(s.evidence['epilogue:E-03'].includes('npc:second-garden-key'));await page.locator('.res-ending-title').waitFor({timeout:12000});await show();break;}
    const ack=page.locator('[data-canon-acknowledgement]:visible button');if(await ack.count()&&await ack.isVisible()){if(!films.includes(id))films.push(id);await press(ack);await page.waitForTimeout(60);continue;}
