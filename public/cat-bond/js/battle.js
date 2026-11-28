@@ -2061,7 +2061,7 @@ class CaptureBattle {
   // committed basic-stream closes a drawn-out fight BEFORE the 85s guillotine. One
   // call site (player basic only); ult echoes, skill procs, and enemy basics stay
   // flat at BASIC_POWER_MULT = 0.85.
-  basicTimeScalar() { return BASIC_POWER_MULT + 0.25 * Math.max(0, Math.min(1, (this.t - 25) / 30)); }
+  basicTimeScalar() { return BASIC_POWER_MULT + 0.25 * Math.max(0, Math.min(1, (this.t - 12) / 18)); }
   // Adversary P0 wb3r7ejxm→wmbjeusi4 fix 0: symmetric enemy threat ramp mirroring
   // basicTimeScalar — 0.9× grace (0-6s), ramp to 1.35× by 18s, hold. Only applies to
   // enemy basic/projectile hits in resolveHit (NOT ults — _ultCastUid short-circuits
