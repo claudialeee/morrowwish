@@ -63,7 +63,7 @@ try{for(const [region,scene,op] of cases){
    for(const glyph of ['☾','☀','✦'])await press(choose(glyph));
   }else{
    await row.waitFor();const click=(zh,en)=>press(button(zh,en,row));
-   if(op==='puzzle:moonleaf-crossing'){await click('岔路','Fork');await click(portrait?'地下':'树冠',portrait?'Roots':'Canopy');if(portrait)await click('帮小猫离开根丛','Free the trapped kitten');await click('对岸','Far bank');}
+   if(op==='puzzle:moonleaf-crossing'){await click('岔路','Fork');if(!portrait){await click('树冠','Canopy');await click('岔路','Fork');}await click('拨动月叶','Turn moonleaf');await click('地下','Roots');await click('帮小猫离开根丛','Free the trapped kitten');await click('对岸','Far bank');}
    if(op==='puzzle:shadow-bridge'){const finish=button('追上逃走的影子','Follow the escaping shadows',row);assert.ok(await finish.isDisabled());await click('照向左边','Light left');await click('照向中间','Light center');assert.ok(await finish.isDisabled());await click('照向右边','Light right');await press(finish);}
    if(op==='puzzle:joint-flight'){const b=await surface.boundingBox(),x=b.x+b.width*.35,y=b.y+b.height*(portrait?.72:.28);if(portrait)await page.touchscreen.tap(x,y);else await page.mouse.click(x,y);}
    if(op==='puzzle:library-echo'){const left=button('选左边的猫','Choose the left cat',row),right=button('选右边的猫','Choose the right cat',row);assert.ok(await left.isDisabled()&&await right.isDisabled());await click('换位置，摇铃','Move and ring');const response=page.locator('[data-mirror-response]');const side=await response.evaluate(e=>e.dataset.leftFacing===e.dataset.position?'left':'right');await press(side==='left'?left:right);}
