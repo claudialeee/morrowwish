@@ -1,8 +1,8 @@
-import "./narrative-host.mjs?v=optional-talent-practice-20261127";
-import "./npc-world.mjs?v=regional-bosses-names-v2-20261127";
+import "./narrative-host.mjs?v=story-motive-20261127";
+import "./npc-world.mjs?v=story-motive-20261127";
 import "./ambient-play.mjs";
-import "./world-runtime.mjs?v=bridge-art-audio-20261127";
-import "./title-entry.mjs?v=map-talk-1";
+import "./world-runtime.mjs?v=story-motive-20261127";
+import "./title-entry.mjs?v=story-motive-20261127";
 // The prologue uses living discoveries instead of a standalone bell prop.
 import "./chapter-cinematics.mjs?v=regional-bosses-names-v2-20261127";
 import "./forge-combat-runtime.mjs?v=regional-bosses-names-v2-20261127";
