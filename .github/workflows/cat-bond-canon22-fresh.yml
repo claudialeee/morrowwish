@@ -1,7 +1,7 @@
 name: Canon 2.2 fresh-slot acceptance
 on:
   push:
-    branches: [review/starbell-canon13-player-experience]
+    branches: [starbell-echoes]
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-experience-*.mjs'
