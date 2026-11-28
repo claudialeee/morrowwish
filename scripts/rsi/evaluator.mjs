@@ -52,6 +52,11 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
+// Owner 2026-11-27 Step D: import persona driver from playtest-sim. Lets RSI
+// evaluator run candidates against HUMAN-LIMITED players instead of engine autoDrive.
+// config.persona = 'masher'|'cautious'|'explorer'|'panicky'|'lazy'|'impatient'|'balanced'
+// triggers the persona-driven loop; absent/null keeps the existing autoDrive path.
+import { PERSONAS, PROFILE, flushDelays, updateTilt } from '../playtest-sim.mjs';
 
 const DIR = 'public/cat-bond/';
 const ORDER = ['vfx','catart','data','running-cats','skills','growth','state','raising','painted-regions','world','worldmap','traits','battle','battle-draw','ui','game','main'];
@@ -270,6 +275,36 @@ function runScenarioInner(config, seed, scenario, { frames = 900, dt = 0.016, kn
   const { b, f } = buildBattle(config, seed, scenario);
   const pinned = scenario === 'solo-pinned';
 
+  // Owner 2026-11-27 Step D: persona-driven player loop. If config.persona names a known
+  // persona, disable engine autoDrive for the player's input stream and let persona.tick
+  // write b.game.keys / b.game.mouse each frame. Engine's readInput() then consumes those
+  // exactly like a real player's keyboard/mouse.
+  const personaKey = config.persona;
+  const persona = personaKey ? PERSONAS[personaKey] : null;
+  let personaObs = null;
+  if (persona) {
+    b.autoMode = false;                                     // engine's autoDrive stops firing
+    // make sure game.keys / game.mouse exist (engine readInput reads them with fallbacks)
+    if (!b.game.keys) b.game.keys = {};
+    if (!b.game.mouse) b.game.mouse = { x: b.W / 2, y: b.H / 2, down: false };
+    // seed a deterministic rng per persona-scenario — different stream than world rng so
+    // persona reaction/jitter noise doesn't double-count with engine's seeded combat rng
+    const personaSeed = (seed >>> 0) ^ 0xcafe ^ (personaKey.charCodeAt(0) * 7919);
+    let a = personaSeed >>> 0;
+    const personaRng = () => {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = Math.imul(a ^ (a >>> 15), a | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    personaObs = {
+      i: 0, rng: personaRng, fled: false, wantFlee: false, _prev: {},
+      profile: PROFILE[personaKey] || PROFILE.balanced,
+      _game: b.game, tilt: 0,
+      tap(g, k) { g.keys[k] = true; },
+    };
+  }
+
   // knob-usage probe hook: lets a diagnostic script force-pin specific battle fields to 0 (or
   // override behavior) so we can measure how much each knob contributes to the score. Called
   // AFTER construction so per-tick fields exist; the probe is responsible for re-pinning any
@@ -310,9 +345,23 @@ function runScenarioInner(config, seed, scenario, { frames = 900, dt = 0.016, kn
   const sustainFrame = Math.min(frames, Math.round(20.0 / dt));
   let hpMinBurst = teamInitHp;
   let hpAtSustain = teamInitHp;
+  let _lastTeamHp = b.team.reduce((n, t) => n + Math.max(0, t.hp || 0), 0);
   for (let i = 0; i < frames; i++) {
     const beforeEnemyHp = b.enemies.reduce((n, e) => n + Math.max(0, e.alive ? e.hp : 0), 0);
+    // Owner 2026-11-27 Step D: persona drives player input BEFORE engine update.
+    if (persona && personaObs) {
+      personaObs.i = i;
+      updateTilt(personaObs, b, dt);
+      persona.tick(b, b.game, personaObs);
+      flushDelays(personaObs, b);
+    }
     b.update(dt);
+    // Step D: persona tilt pulse on damage taken (post-update HP sampling)
+    if (persona && personaObs) {
+      const hpNow = b.team.reduce((n, t) => n + Math.max(0, t.hp || 0), 0);
+      if (hpNow < _lastTeamHp) personaObs._tookDmg = true;
+      _lastTeamHp = hpNow;
+    }
     if (pinned) { e0.x = ex; e0.y = ey; if (e0.vx != null) e0.vx = 0; if (e0.vy != null) e0.vy = 0; }
 
     const me = b.me();
@@ -413,6 +462,9 @@ export function evaluate(config = {}, opts = {}) {
            loadout: (config.cat && 'loadout' in config.cat) ? config.cat.loadout : DEFAULT_CONFIG.cat.loadout },
     enemy: { ...DEFAULT_CONFIG.enemy, ...(config.enemy || {}) },
     ai: { ...(config.ai || {}) },
+    // Owner 2026-11-27 Step D: pass persona through to runScenarioInner so human-limited players
+    // can drive the sim (vs the engine's own autoDrive). Null/undefined keeps autoDrive path.
+    persona: config.persona || null,
   };
   const scenarios = opts.scenarios ?? SCENARIOS;
   const seeds = opts.seeds ?? [7, 42, 101];
