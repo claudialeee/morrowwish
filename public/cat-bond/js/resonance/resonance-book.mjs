@@ -1,7 +1,7 @@
 import {mountTalentTrial} from "./adventure-play.mjs?v=regional-depth-20261127";
-import {regionalKeepsakes,hasRegionalKeepsake} from "./regional-keepsake-talents.mjs?v=narrative-play-20261127-r1";
+import {regionalKeepsakes,hasRegionalKeepsake} from "./regional-keepsake-talents.mjs?v=narrative-play-20261127-r2";
 import {companionTalents} from "./companion-talents.mjs";
-import {earnedKeepsakes} from "./regional-discoveries.mjs?v=narrative-play-20261127-r1";
+import {earnedKeepsakes} from "./regional-discoveries.mjs?v=narrative-play-20261127-r2";
 // One presentation layer over the existing UI, State, Raising and CatRelations.
 // No cloned cats, separate inventory, storage, or narrative progress.
 import {recipes,craftSupply} from "./book-recipes.mjs";

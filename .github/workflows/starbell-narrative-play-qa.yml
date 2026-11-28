@@ -40,6 +40,7 @@ jobs:
       - name: Actual game interactions at chapter checkpoints
         env:
           STARBELL_MINIGAME_PROFILE: ${{ matrix.profile }}
+          STARBELL_ART_ONLY: '1'
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-narrative.log 2>&1 &
           server=$!

@@ -204,7 +204,7 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
   c.beginPath();p.visited.forEach((i,j)=>{const q=pt(starPosition(p,i));j?c.lineTo(...q):c.moveTo(...q);});if(p.walk)c.lineTo(...pt(pose.ground));c.stroke();c.restore();
   for(let i=0;i<starNodes.length;i++){const q=starPosition(p,i),visited=p.visited.includes(i),reachable=starEdges[p.node].includes(i),lit=i===p.node||reachable;const [x,y]=pt(q),radius=unit*(i===p.node?.055:reachable?.042:.024);
    if(lit){const g=c.createRadialGradient(x,y,1,x,y,radius);g.addColorStop(0,visited?"#fff0bdc0":"#d8e4ee80");g.addColorStop(1,"#f4df8c00");c.fillStyle=g;c.fillRect(x-radius,y-radius,radius*2,radius*2);}
-   c.save();c.fillStyle=lit?(visited?"#f6dca0":"#bdcedb"):visited?"#917e68":"#596877";c.strokeStyle=lit?"#f6ebcf":"#8494a0";c.lineWidth=1.5;c.beginPath();c.moveTo(x-unit*.023,y);c.lineTo(x-unit*.009,y-unit*.014);c.lineTo(x+unit*.015,y-unit*.012);c.lineTo(x+unit*.025,y+unit*.006);c.lineTo(x+unit*.007,y+unit*.016);c.lineTo(x-unit*.018,y+unit*.012);c.closePath();c.fill();c.stroke();c.restore();
+   c.save();c.globalAlpha=lit?1:visited?.77:.48;paintArt(c,"star-step-stone",x,y,unit*.115,unit*.079,.5,.34);c.restore();
   }
   for(const i of [3,6]){const q=starPosition(p,i),collected=p.discoveries.includes("starlight-"+i);dot([q[0],q[1]-.055],unit*(collected?.008:.012),collected?"#f9e7a4":"#ffefb9");}
   const [gx,gy]=pt(pose.ground);c.save();c.fillStyle="rgba(24,27,52,"+(.25-pose.lift*1.5)+")";c.beginPath();c.ellipse(gx,gy+unit*.015,unit*.032,unit*.008,0,0,Math.PI*2);c.fill();c.restore();
@@ -236,10 +236,10 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
    const glow=c.createRadialGradient(lx,ly,0,lx,ly,unit*.52);glow.addColorStop(0,"#ffdc9caa");glow.addColorStop(1,"#ffdc9c00");c.fillStyle=glow;c.fillRect(0,0,W,H);
    for(const [i,[x,y]] of hiddenShadows.entries()){
     const found=p.discoveries.includes(shadowId(i)),pulse=.5+.5*Math.sin(time*4+i);
-    if(found){c.save();c.globalAlpha=.85;const bounce=Math.abs(Math.sin(time*4+i))*.025;paintArt(c,"shadow-cat",x*W,(y-bounce)*H,unit*.18,unit*.14,.5,.5);c.restore();dot([x,y+.05],unit*.012,"#ffdf8d");}
+    if(found){const nearActive=p.shadowRevision===2&&p.shadowPhase<5&&Math.abs(shadowTargets[p.shadowPhase]-x)<.10;if(!nearActive){c.save();c.globalAlpha=.72;paintArt(c,"shadow-cat-listen",x*W,y*H,unit*.14,unit*.13,.5,.65);c.restore();}dot([x,y+.05],unit*.009,"#ffdf8d");}
     else if(p.shadowRevision!==2){dot([x-.013,y],unit*.006,"#ffe6a2"+Math.round(120+pulse*100).toString(16));dot([x+.013,y],unit*.006,"#ffe6a2");}
    }
-   if(p.shadowRevision===2&&p.shadowPhase<5){const phase=p.shadowPhase,x=shadowTargets[phase],y=[.48,.37,.39,.60,.56][phase];c.save();c.globalAlpha=.64+.3*Math.sin(time*4)**2;if(phase===2||phase===4){paintArt(c,"shadow-cat",x*W,(y-Math.abs(Math.sin(time*4))*.018)*H,unit*.17,unit*.14,.5,.5,Math.sin(time*3)*.06);}else{dot([x-.012,y],unit*.007,"#ffe6a2");dot([x+.012,y],unit*.007,"#ffe6a2");}c.restore();}drawCat?.(.19,.72);label(p.shadowRevision===2?shadowHint(p)[lang==="zh"?0:1]:tr("找到三只躲起来的影子猫","Find the three hidden shadow cats"),[.5,.08],Math.max(13,Math.min(20,unit*.035)));
+   if(p.shadowRevision===2&&p.shadowPhase<5){const phase=p.shadowPhase,x=shadowTargets[phase],y=[.48,.37,.39,.60,.56][phase];c.save();c.globalAlpha=.64+.3*Math.sin(time*4)**2;const name=phase===0?"shadow-cat-crouch":phase<3?"shadow-cat":"shadow-cat-listen",running=phase===1||phase===2;const bob=running?Math.abs(Math.sin(time*4))*.018:0;c.translate(x*W,(y-bob)*H);if(phase===2||phase===4)c.scale(-1,1);if(!paintArt(c,name,0,0,unit*.21,unit*.17,.5,.5,running?Math.sin(time*3)*.06:0)){c.fillStyle="#ffe6a2";for(const dx of [-1,1]){c.beginPath();c.arc(dx*unit*.012,0,unit*.006,0,Math.PI*2);c.fill();}}c.restore();}drawCat?.(.19,.72);label(p.shadowRevision===2?shadowHint(p)[lang==="zh"?0:1]:tr("找到三只躲起来的影子猫","Find the three hidden shadow cats"),[.5,.08],Math.max(13,Math.min(20,unit*.035)));
    label(tr("已找到 ","Found ")+p.discoveries.filter(x=>x.startsWith("found-shadow-")).length+"/3",[.5,.90],18);
   }
  }else{

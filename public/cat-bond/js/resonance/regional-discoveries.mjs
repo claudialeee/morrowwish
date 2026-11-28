@@ -1,4 +1,4 @@
-import {sideKeepsakes,sideKey,trailPerkKey} from "./side-adventures.mjs?v=narrative-play-20261127-r1";
+import {sideKeepsakes,sideKey,trailPerkKey} from "./side-adventures.mjs?v=narrative-play-20261127-r2";
 // Region-specific optional environmental discoveries; no narrative proof or economy changes.
 const raw={
   "harbor": {
