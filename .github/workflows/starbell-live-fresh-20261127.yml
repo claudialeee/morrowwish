@@ -91,17 +91,19 @@ jobs:
              }
              const row=page.locator('.rw-puzzle-controls:visible'),surface=page.locator('.rw-surface:visible');
              if(await row.count()){
+             if(!(await read()).v.objective.some(x=>x.startsWith('puzzle:')||x==='explore:routing-record')&&!(await row.getByRole('button',{name:/☾/}).count())){await page.waitForTimeout(350);continue;}
               const op=v.objective.find(x=>x.startsWith('puzzle:')||x==='explore:routing-record');
               const button=name=>row.getByRole('button',{name,exact:true});
               const click=async name=>press(button(name));
+             const settled=async()=>{if(op)await page.waitForFunction(({id,op})=>CatBondResonance.snapshot().evidence[id]?.includes(op),{id,op},{timeout:45000});await row.waitFor({state:'hidden',timeout:45000});};
               const tapAt=async(x,y)=>{const b=await surface.boundingBox();assert.ok(b);if(portrait)await page.touchscreen.tap(b.x+x*b.width,b.y+y*b.height);else await page.mouse.click(b.x+x*b.width,b.y+y*b.height);};
               if(await row.locator('[data-spatial="bellPattern"]').count()||await row.getByRole('button',{name:/☾/}).count()){for(const glyph of ['☾','☀','✦'])await press(row.getByRole('button',{name:new RegExp(glyph)}));continue;}
-              if(op==='puzzle:moonleaf-crossing'){for(const n of ['岔路','拨动月叶','地下','帮小猫离开根丛','对岸'])await click(n);continue;}
-              if(op==='puzzle:shadow-bridge'){for(const x of [.19,.51,.68,.82,.18])await tapAt(x,.45);await click('追上逃走的影子');continue;}
+              if(op==='puzzle:moonleaf-crossing'){for(const n of ['岔路','拨动月叶','地下','帮小猫离开根丛','对岸'])await click(n);await settled();continue;}
+              if(op==='puzzle:shadow-bridge'){for(const x of [.19,.51,.68,.82,.18])await tapAt(x,.45);await click('追上逃走的影子');await settled();continue;}
               if(op==='explore:routing-record'){for(const n of ['查公开日志','查线路图','查借阅簿','向暮铃求证'])await click(n);continue;}
               if(op==='puzzle:joint-flight'){await tapAt(.35,.28);await row.waitFor({state:'hidden',timeout:60000});continue;}
-              if(op==='puzzle:library-echo'){await click('换位置，摇铃');const left=await row.locator('[data-mirror-response]').evaluate(e=>e.dataset.leftFacing===e.dataset.position);await click(left?'选左边的猫':'选右边的猫');continue;}
-              if(op==='puzzle:star-steps'){for(const n of [2,4,8])await click('跳向星石 '+n);continue;}
+              if(op==='puzzle:library-echo'){await click('换位置，摇铃');const left=await row.locator('[data-mirror-response]').evaluate(e=>e.dataset.leftFacing===e.dataset.position);await click(left?'选左边的猫':'选右边的猫');await settled();continue;}
+              if(op==='puzzle:star-steps'){for(const n of [2,4,8])await click('跳向星石 '+n);await settled();continue;}
               const enabled=await row.locator('button:visible:enabled').all();
               if(enabled.length===1){await press(enabled[0]);continue;}
               throw Error('Unhandled puzzle '+op+' '+await row.innerText());
