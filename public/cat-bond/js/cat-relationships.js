@@ -9,6 +9,9 @@ function choose(a,b){if(!pair(a,b))return false;db().active=[a.uid,b.uid];State.
 // memories retain their stable IDs so every previous save remains intact.
 // Three new memories are earned through DIFFERENT real activities.
 const MEMORY_CATALOG=[
+ {id:'yard-life-nap',kind:'moment',icon:'💤',zh:'庭院午睡',en:'Garden Nap',zhHint:'在庭院观察猫咪生活',enHint:'Watch your cats in the garden',zhStory:'它们找了个安静的角落，挨在一起睡着了。',enStory:'They found a quiet corner and fell asleep side by side.'},
+ {id:'yard-life-play',kind:'moment',icon:'🐾',zh:'庭院小游戏',en:'Garden Games',zhHint:'在庭院观察猫咪生活',enHint:'Watch your cats in the garden',zhStory:'一只猫发出玩耍邀请，另一只立刻加入。',enStory:'One cat invited the other to play, and its friend joined in.'},
+ {id:'yard-life-friend',kind:'moment',icon:'💞',zh:'静静陪伴',en:'Quiet Company',zhHint:'在庭院观察猫咪生活',enHint:'Watch your cats in the garden',zhStory:'什么也不用做，只要待在彼此身边就很好。',enStory:'Nothing needed doing; being together was enough.'},
  {id:'home',kind:'map',icon:'☀️',zh:'暖阳里的好朋友',en:'Sunbeam Friends',
   zhStory:'两只小猫挤进同一缕阳光，谁都不愿先离开。',
   enStory:'Two kittens squeeze into one sunbeam, and neither wants to leave.'},

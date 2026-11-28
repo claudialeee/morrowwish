@@ -694,6 +694,7 @@ class YardScene {
       e.update(dt,(e._buildTarget||e._playBuildT>0)?null:mouse);
     }
     this.updateBuildingPlay(dt);
+    this.updateDailyLife();
     const duo=window.CatRelations?.chosen?.()||[];
     if(duo.length===2){
       const a=this.entities.find(e=>e.cat.uid===duo[0].uid);
@@ -1003,6 +1004,38 @@ class YardScene {
       species:hide.species,scale:peeking?.78:.55,face,t:this.game.t,
       pose:peeking?'walk':'idle',motion:peeking?.75:0,mood:'alert'
     });
+  }
+  // One witnessed, personality-driven moment per local day. No currency or streak.
+  updateDailyLife(){
+    const cats=this.entities||[];
+    if(!cats.length||this.placement||this.hide||this.game.t<8)return;
+    if(this.game.t<(this._nextLifeCheck||0))return;
+    this._nextLifeCheck=this.game.t+3;
+    if(document.getElementById('panel')?.classList.contains('open'))return;
+    const now=new Date(),day=[now.getFullYear(),now.getMonth()+1,now.getDate()].join('-');
+    const life=State.S.yardLife||(State.S.yardLife={day:'',history:[]});
+    if(life.day===day)return;
+    const idle=cats.filter(e=>!e._buildTarget&&!(e._playBuildT>0));
+    if(idle.length<2)return;
+    const chosen=window.CatRelations?.chosen?.()||[];
+    const a=idle.find(e=>e.cat.uid===chosen[0]?.uid)||idle.find(e=>e.cat.personality==='gentle')||idle[0];
+    const b=idle.find(e=>e!==a&&e.cat.uid===chosen[1]?.uid)||idle.find(e=>e!==a);
+    if(!b||Math.hypot(a.x-b.x,a.y-b.y)>110)return;
+    if(window.CatRelations?.mood(a.cat,b.cat)==='sulky')return;
+    const kind=a.cat.personality==='lazy'||b.cat.personality==='lazy'?'nap':a.cat.personality==='mischievous'||b.cat.personality==='mischievous'?'play':'friend';
+    const id='yard-life-'+kind;
+    const en=window.MorrowwishI18n?.get?.()!=='zh';
+    const names=State.catName(a.cat)+(en?' & ':' 和 ')+State.catName(b.cat);
+    a.vx=a.vy=b.vx=b.vy=0;
+    a.setPose(kind==='nap'?'sleep':'sit',4);
+    b.setPose(kind==='nap'?'sleep':kind==='play'?'play':'sit',4);
+    a.emote(kind==='nap'?'💤':'💞',3);b.emote(kind==='play'?'🐾':'💞',3);
+    life.day=day;
+    life.history=[...(Array.isArray(life.history)?life.history:[]),{day,id,cats:[a.cat.uid,b.cat.uid]}].slice(-30);
+    window.CatRelations?.remember(a.cat,b.cat,id);
+    State.save();
+    this.game.toast(names+(en?({nap:' found a quiet spot to nap together.',play:' started a little game together.',friend:' are enjoying a quiet moment together.'}[kind]):({nap:' 找了个安静的角落一起午睡。',play:' 玩起了只有它们懂的小游戏。',friend:' 正挨在一起享受庭院时光。'}[kind])));
+    window.arcadeMetric?.('bond_yard_daily_life',{kind});
   }
   // Invite an actual visible kitten to a specific facility immediately.
   inviteCatToBuilding(b){
