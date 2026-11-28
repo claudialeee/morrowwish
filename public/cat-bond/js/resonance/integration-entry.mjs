@@ -1,4 +1,4 @@
-import "./narrative-host.mjs?v=regional-bosses-names-v2-20261127";
+import "./narrative-host.mjs?v=optional-talent-practice-20261127";
 import "./npc-world.mjs?v=regional-bosses-names-v2-20261127";
 import "./ambient-play.mjs";
 import "./world-runtime.mjs?v=bell-pattern-camera-20261127";
