@@ -741,6 +741,7 @@ function runScenarioInner(config, seed, scenario, { frames = 900, dt = 0.016, kn
     negatedPct: atk > 0 ? 100 * atkNeg / atk : 0,
     _enemyInitHp: pinned ? 100000 : enemyInitHp,
     _frames: frames, _dt: dt,
+    _pairKey: b._rsiPairKey || null,              // propagate team-pair key for posterior update
   };
 }
 

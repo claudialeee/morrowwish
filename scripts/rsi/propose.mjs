@@ -43,7 +43,7 @@
  *   scored only by the evaluator (ground truth), never by assertion; edits nothing outside
  *   scripts/rsi/. Not wired into `npm run check`.
  */
-import { evaluate, scoreConfig, DEFAULT_WEIGHTS } from './evaluator.mjs';
+import { evaluate, scoreConfig, DEFAULT_WEIGHTS, updatePairPosterior } from './evaluator.mjs';
 import { makeArchive } from './archive.mjs';
 import { writeFileSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -102,7 +102,7 @@ const CAT = {
   build: 'fighter', stats: { pow: 90, agi: 80, vit: 130, cha: 60 },
   loadout: { q: { kind: 'melee', power: 1.4, cd: 1.1 }, e: { kind: 'projectile', power: 1.1, cd: 1.0 } },
 };
-const EVAL_OPTS = { seeds: [7, 42, 101], frames: 1800, scenarios: ['solo-pinned', 'solo-live', 'multi'] };
+const EVAL_OPTS = { seeds: [7, 42, 101], frames: 1800, scenarios: ['solo-pinned', 'solo-live', 'multi', 'team-2-live', 'team-2-multi'] };
 
 // ============================================================================================
 // CANDIDATE (PROPOSAL) SCHEMA — the clean contract an LLM proposer (or a human) emits. Every
@@ -563,6 +563,42 @@ function main() {
     console.log(`  MAP-Elites archive: ${summary.coverage}/${summary.maxCells} behavior niches filled (${summary.grid}); ` +
       `best '${summary.best?.label}' ${summary.best ? summary.best.score.toFixed(3) : '?'} → rsi-archive.json`);
   } catch (e) { console.error('  (archive dump skipped: ' + e.message + ')'); }
+
+  // Owner 2026-11-28 reviewer FIX: wire `updatePairPosterior` so the B half of the A+B pair
+  // sampler actually learns. Walk per-candidate results, collect (pairKey, candidateScore)
+  // for team-2 scenarios, and call the posterior update with baseline for delta signal.
+  try {
+    const perPair = new Map();                         // pairKey → { scoresByCandidate, baselineScore }
+    for (const row of rows) {                           // rows = ranked candidates from runCandidate
+      const cid = row.candidate.id || row.candidate.label;
+      for (const p of (row.perPoint || [])) {
+        const scn = p.result && p.result.perScenario;
+        if (!scn) continue;
+        for (const sname of Object.keys(scn)) {
+          if (sname !== 'team-2-live' && sname !== 'team-2-multi') continue;
+          const pk = scn[sname]._pairKey;
+          if (!pk) continue;
+          if (!perPair.has(pk)) perPair.set(pk, { pairKey: pk, scoresByCandidate: {}, baselineScore: Number.NEGATIVE_INFINITY });
+          const entry = perPair.get(pk);
+          entry.scoresByCandidate[cid] = p.scoreJudge;
+          if (row.candidate.kind === 'baseline' || cid === 'baseline') {
+            if (Number.isFinite(p.scoreJudge) && p.scoreJudge > entry.baselineScore) entry.baselineScore = p.scoreJudge;
+          }
+        }
+      }
+    }
+    // baselineScore fallback: median across all candidates on that pair, if no explicit baseline row
+    for (const e of perPair.values()) {
+      if (!Number.isFinite(e.baselineScore)) {
+        const vals = Object.values(e.scoresByCandidate).filter(Number.isFinite).sort((a, b) => a - b);
+        e.baselineScore = vals.length ? vals[Math.floor(vals.length / 2)] : 0;
+      }
+    }
+    if (perPair.size) {
+      updatePairPosterior([...perPair.values()]);
+      console.log(`  pair-posterior: updated ${perPair.size} team-pair entries → pair-posterior.json`);
+    }
+  } catch (e) { console.error('  (pair-posterior update skipped: ' + e.message + ')'); }
   console.log('scripts/rsi/propose.mjs — pipeline OK (deterministic; control ranked last; scores finite).');
 }
 
