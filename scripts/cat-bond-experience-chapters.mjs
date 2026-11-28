@@ -184,7 +184,7 @@ async function run(chapter){
   else if(before.current?.lines.length)await page.locator('.res-host[data-scene="'+before.current.id+'"]').waitFor();
  }
  async function dialogue(id,choice){
-  const dlg=page.locator('.res-host[data-scene="'+id+'"]');
+  const dlg=page.locator('.res-host[data-scene="'+id+'"]');let dialogueCamera=null;
   for(let i=0;i<50;i++){
    const v=await view();if(v.current?.id!==id)return;
    const canChoose=!v.choice&&v.current.choices.length>0&&(v.current.choiceTiming==='beforeAction'||v.cursor===(v.current.choiceAt??v.current.lines.length));
@@ -199,6 +199,9 @@ async function run(chapter){
     }
     await dlg.waitFor();
    }
+   const camera=await page.evaluate(()=>{const c=document.querySelector('.rw-world:not([hidden]) .rw-surface');return c&&WorldMap.mode==='region'?{region:WorldMap.currentRegion,transform:c.dataset.camera}:null;});
+   if(camera?.transform&&JSON.parse(camera.transform)[0]>1){if(dialogueCamera?.region===camera.region)assert.equal(camera.transform,dialogueCamera.transform,'NPC dialogue must not reset the exploration camera');else dialogueCamera=camera;}
+   if(dialogueCamera&&camera?.region===dialogueCamera.region)assert.equal(camera.transform,dialogueCamera.transform,'Dialogue cannot jump to overview');
    if(canChoose){const selected=v.current.choices.find(c=>c.label.en===choice)||v.current.choices[0];await click(selected.label[locale],dlg,true);await page.waitForFunction(({id,choice})=>CatBondResonance.view().current?.id!==id||CatBondResonance.view().choice===choice,{id,choice:selected.id});continue;}
    const line=v.current.lines[v.cursor];
    await page.waitForFunction(t=>document.querySelector('.res-host .res-line')?.textContent===t,line.text[locale]);
