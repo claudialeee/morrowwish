@@ -1,0 +1,41 @@
+name: Complete remaining authentic portrait SSR footage
+on:
+  push:
+    branches: [review/cat-bond-release-bundle-20261127]
+    paths: ['capture-ssr-retry.mjs','.github/workflows/capture-ssr-retry.yml']
+permissions:
+  contents: write
+jobs:
+  remaining:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install free recording tools
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          python3 -c 'import PIL' || python3 -m pip install --break-system-packages pillow
+      - name: Resume the naturally progressed save
+        run: |
+          mkdir -p output/portrait-fixed-web
+          cp -a source/public output/portrait-fixed-web/
+          cp -a source-overlay/public/. output/portrait-fixed-web/public/
+          node capture-ssr-retry.mjs
+        continue-on-error: true
+      - name: Assemble only missing portrait candidate
+        run: |
+          mkdir -p signature-input/portrait
+          cp -a signature-retry/portrait signature-input/portrait/
+          cp signature-retry/portrait-report.json signature-input/portrait/
+          python3 assemble-portrait-signature.py
+      - name: Save genuine evidence and candidate for visual review
+        if: always()
+        run: |
+          git config user.name 'Morrow Wish release QA'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          find signature-retry -name '*.webm' -size +90M -delete || true
+          git add -f signature-retry signature-media || true
+          git diff --cached --quiet || git commit -m 'Save remaining portrait SSR evidence and native preview candidate [skip ci]'
+          git push origin HEAD:review/cat-bond-release-bundle-20261127

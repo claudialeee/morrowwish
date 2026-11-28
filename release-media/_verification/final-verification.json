@@ -148,9 +148,9 @@
         1920,
         1080
       ],
-      "seconds": 19.04,
-      "bytes": 1622926,
-      "sha256": "21ab23b7ebbb87eedb5215b8a7f550478fef2750ff90a2a596d4b9bbdb4f1496",
+      "seconds": 17.68,
+      "bytes": 2456942,
+      "sha256": "cf5a3a604e143a00fc2561138160e35f103c5112335f074d34b3cab31168d579",
       "hasAudio": false,
       "pass": true
     },
@@ -160,7 +160,7 @@
         1080,
         1620
       ],
-      "seconds": 19.0,
+      "seconds": 19,
       "bytes": 1475372,
       "sha256": "fcb18ef5f8281aaba9ce9244d4ba46861d1a627c11883e18b461cc9d06970b46",
       "hasAudio": false,
@@ -184,9 +184,9 @@
         1920,
         1080
       ],
-      "seconds": 19.04,
-      "bytes": 1622926,
-      "sha256": "21ab23b7ebbb87eedb5215b8a7f550478fef2750ff90a2a596d4b9bbdb4f1496",
+      "seconds": 17.68,
+      "bytes": 2456942,
+      "sha256": "cf5a3a604e143a00fc2561138160e35f103c5112335f074d34b3cab31168d579",
       "hasAudio": false,
       "pass": true
     }
@@ -420,5 +420,85 @@
       "Browser QA samples canvas coverage and checks real input target/camera transforms, not a physical-device matrix or every region."
     ]
   },
-  "productionParityAfterFix": false
+  "productionParityAfterFix": false,
+  "signatureUpdate": {
+    "landscape": "actual duo and earned SSR; frame sheets reviewed",
+    "portrait": "actual duo verified; SSR pending",
+    "landscapeEvidence": {
+      "orientation": "landscape",
+      "complete": true,
+      "duo": {
+        "uses": 1,
+        "elementPair": "fire+grass",
+        "tier": 1,
+        "cinematic": {
+          "remaining": 2.700100000000002,
+          "max": 3.2
+        },
+        "layout": {
+          "source": "63-original-painted-storyboards",
+          "originalArt": true,
+          "actorFallback": false,
+          "viewport": {
+            "width": 1920,
+            "height": 1080
+          },
+          "art": {
+            "x": 0,
+            "y": 0,
+            "width": 1920,
+            "height": 1080
+          },
+          "artAspect": 1.7777777777777777,
+          "fullScreenAtmosphere": true,
+          "animatedEffects": true,
+          "paintingDrawCount": 1,
+          "actorLayerCount": 0,
+          "camera": {
+            "zoom": 1.0055556925065805,
+            "panX": 3.19242435961036,
+            "panY": 1.2524181768680773,
+            "rotationRadians": 0.0007196141584173815
+          },
+          "effectPhase": 0.15621874999999938,
+          "effectTier": 1
+        },
+        "onset": 3.623,
+        "frameTime": 5.448,
+        "screenshot": "duo-real.png"
+      },
+      "ssr": {
+        "species": "xingchen",
+        "rarity": "SSR",
+        "combatTime": 53.304,
+        "resultTime": 88.416,
+        "before": 2,
+        "after": 3,
+        "owned": {
+          "species": "xingchen",
+          "level": 1,
+          "rarity": "SSR"
+        },
+        "screenshot": "ssr-earned.png"
+      },
+      "video": {
+        "width": 1920,
+        "height": 1080,
+        "codec": "h264",
+        "duration": 17.68,
+        "audio": false,
+        "sha256": "cf5a3a604e143a00fc2561138160e35f103c5112335f074d34b3cab31168d579",
+        "bytes": 2456942
+      },
+      "scenes": [
+        "actual duo cut-in",
+        "garden",
+        "workshop",
+        "region",
+        "SSR battle",
+        "SSR earned result"
+      ]
+    },
+    "complete": false
+  }
 }
