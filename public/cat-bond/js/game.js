@@ -1270,41 +1270,38 @@ class Game {
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     if(this.battleTutorial){
       const flow=this.battleTutorial;
-      const stages=flow.auto
-        ?(en?[
-          ['Auto battle','The cats move, aim, attack, use skills, and dodge for you.'],
-          ['You can still command','Tap a cat portrait to switch; tap Auto at the top to take manual control.']
-        ]:[
-          ['自动战斗','小猫会自动移动、瞄准、攻击、释放技能并闪避。'],
-          ['随时可以接管','点猫咪头像切换操控对象；点顶部的「自动战斗」可切换手动。']
-        ])
-        :(en?[
-          ['1 · Meet your team','Two cats fight together. Empty the wild cats’ spirit bars to befriend them. Set the starting pair and reserve order before battle.',
-            'Tap a cat portrait to control it; tap a reserve to swap in (6s cooldown).',
-            'Click a cat portrait or press 1 / 2 to switch. Reserves can be tapped too.'],
-          ['2 · Move and aim','You directly control one cat; the partner helps with attacks.',
-            'Drag on the LEFT side to move. Tap a wild cat to lock on, or press Lock to cycle targets.',
-            'Move with WASD / arrow keys. Aim with your mouse; Tab locks the next target.'],
-          ['3 · Attack, skill, dodge','Every action below is available immediately in manual combat.',
-            'Hold the RIGHT half to attack. The paw button toggles continuous claws. Tap Skill 1 / 2, Dodge and Ultimate on the right.',
-            'Hold left mouse / J to attack; Q / E use skills; Space dodges; R casts Ultimate.'],
-          ['4 · Unleash your duo','At 20 trust your pair unlocks a duo move. 60 brings crossed claws, and 90 unlocks a finishing frenzy.',
-            'When the Duo button lights up, tap it. Auto mode can be toggled at the top anytime.',
-            'Press F for Duo when ready, P to toggle auto, 1 / 2 to switch active cats.']
-        ]:[
-          ['1 · 认识双猫队伍','两只猫并肩出战，把野猫的斗志打空即可收服；开战前可以指定首发与替补顺序。',
-            '点击猫咪头像切换操控对象；点替补头像换猫（冷却 6 秒）。',
-            '点击猫咪头像或按 1 / 2 换猫，也可点替补头像换上场。'],
-          ['2 · 移动和锁定','你亲自操控一只猫，另一只会协助战斗。',
-            '在画面左侧按住拖动移动；点野猫即可锁定目标，或按「锁定」切换。',
-            'WASD / 方向键移动；鼠标瞄准；Tab 切换锁定目标。'],
-          ['3 · 普攻、技能与闪避','所有操作都在同一个战斗界面中，不需要切换页面。',
-            '按住右半边攻击；点猫爪按钮可开启/暂停持续攻击。点右侧技能一、技能二、闪避和必杀。',
-            '按住鼠标左键或 J 攻击；Q / E 放技能；空格闪避；R 放必杀。'],
-          ['4 · 双猫合击','默契达到 20 解锁合击，60 解锁交叉挥爪，90 解锁终结连斩。',
-            '合击按钮亮起后点击释放；顶部可随时切换自动战斗。',
-            '合击蓄满后按 F；P 切换自动模式；1 / 2 换操控猫咪。']
-        ]);
+      // Manual onboarding is one short, device-aware screen. Direct play is
+      // the primary action; the five-step coached drill is explicitly optional.
+      if(!flow.auto){
+        const title=document.getElementById('battle-help-title');
+        if(title)title.textContent=en?'Ready to fight?':'准备开战';
+        const phone=en?'Drag on the left to move. Hold the right side to attack. Tap skills and Dodge. Tap Duo when ready.'
+          :'左侧滑动移动，右侧长按攻击。点击技能与闪避，合击亮起即可释放。';
+        const desktop=en?'WASD to move, mouse / J to attack, Q / E for skills, Space to dodge, R for Ultimate, F for Duo.'
+          :'WASD 移动，鼠标或 J 攻击，Q / E 技能，空格闪避，R 必杀，F 合击。';
+        const item=(label,body,preferred)=>'<section class="battle-device-item '+(preferred?'preferred':'')+'"><strong>'+label+'</strong><p>'+body+'</p></section>';
+        const phoneItem=item(en?'Phone / touch':'手机 / 触屏',phone,this.isTouch);
+        const desktopItem=item(en?'Computer / keyboard':'电脑 / 键鼠',desktop,!this.isTouch);
+        host.innerHTML='<section class="battle-help-section preferred battle-tutorial-step"><b>'+
+          (en?'Befriend the wild cat':'收服野猫')+'</b><p>'+
+          (en?'Empty its spirit meter to befriend it. You can switch to Auto anytime.':'打空野猫的斗志即可收服，随时可以切换自动战斗。')+
+          '</p></section><div class="battle-device-guide">'+(this.isTouch?phoneItem+desktopItem:desktopItem+phoneItem)+'</div>'+
+          '<button id="battle-tutorial-practice" type="button" class="battle-tutorial-skip">'+
+          (en?'Optional: practice controls first':'可选：先跟随操作练习')+'</button>';
+        host.querySelector('#battle-tutorial-practice').onclick=()=>this.completeBattleTutorial(false);
+        const button=document.getElementById('battle-help-start');
+        if(button)button.textContent=en?'Start battle':'直接开战';
+        const close=document.getElementById('battle-help-close');
+        if(close)close.setAttribute('aria-label',en?'Skip and fight':'跳过说明，直接开战');
+        return;
+      }
+      const stages=en?[
+        ['Auto battle','The cats move, aim, attack, use skills, and dodge for you.'],
+        ['You can still command','Tap a cat portrait to switch; tap Auto at the top to take manual control.']
+      ]:[
+        ['自动战斗','小猫会自动移动、瞄准、攻击、释放技能并闪避。'],
+        ['随时可以接管','点猫咪头像切换操控对象；点顶部的「自动战斗」可切换手动。']
+      ];
       const step=Math.min(flow.step,stages.length-1);
       const title=document.getElementById('battle-help-title');
       if(title)title.textContent=en?'Your first battle · '+(step+1)+'/'+stages.length
@@ -1376,7 +1373,8 @@ class Game {
   }
   advanceBattleTutorial(){
     if(!this.battleTutorial){this.setBattleHelpVisible(false);return;}
-    const count=this.battleTutorial.auto?2:4;
+    if(!this.battleTutorial.auto){this.completeBattleTutorial(true);return;}
+    const count=2;
     if(this.battleTutorial.step+1>=count){this.completeBattleTutorial();return;}
     this.battleTutorial.step++;
     this.renderBattleHelp();

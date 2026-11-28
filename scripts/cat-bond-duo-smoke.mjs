@@ -1,5 +1,5 @@
 // Real browser regression for duo personalities, kinetic claw art and
-// four-step pre-battle manual controls on both phone and desktop.
+// single-screen optional manual controls on both phone and desktop.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
@@ -41,17 +41,15 @@ try{
   assert.equal(entry.manual,true,'must enter manual battle');
   assert.equal(entry.paused,true,'manual tutorial must pause the arena before first input');
   assert.equal(entry.coach,true,'guided action practice must exist');
-  for(let step=0;step<4;step++){
-   const content=await page.locator('#battle-help-body').innerText();
-   assert.match(content,/手机|触屏|Phone/,'tutorial must explain touch controls');
-   assert.match(content,/电脑|键鼠|Computer/,'tutorial must explain desktop controls');
-   if(step===1)assert.match(content,/WASD|方向键/);
-   if(step===2)assert.match(content,/Space|空格/);
-   if(step===3)assert.match(content,/20|60|90/);
-   await page.locator('#battle-help-start').click();
-  }
-  assert.equal(await page.locator('#battle-help').isVisible(),false,
-   'last tutorial step resumes playable fight');
+  const content=await page.locator('#battle-help-body').innerText();
+  assert.match(content,/手机|触屏|Phone/,'tutorial explains touch controls');
+  assert.match(content,/电脑|键鼠|Computer/,'tutorial explains desktop controls');
+  assert.match(content,/WASD|方向键/);
+  assert.match(content,/Space|空格/);
+  assert.match(await page.locator('#battle-help-start').innerText(),/直接开战|Start battle/);
+  await page.locator('#battle-tutorial-practice').click();
+  assert.equal(await page.locator('#battle-help').isVisible(),false,'One-screen help resumes playable practice');
+  assert.equal(await page.evaluate(()=>!!window.__game.battle.coach),true,'Explicit practice keeps live coach');
   await page.evaluate(()=>{const b=window.__game.battle;window.CatBondPremiumCinematics.preparePortrait(b.duo.elementPair,b.duo.tier);});
   await page.waitForFunction(()=>{const b=window.__game.battle;return window.CatBondPremiumCinematics.portraitReady(b.duo.elementPair,b.duo.tier);});
   const result=await page.evaluate(()=>{

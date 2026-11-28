@@ -50,6 +50,20 @@ try {
     return {first,open,below,locked,mixed,mixedOpen};
   });
   assert.deepEqual(gate,{first:3,open:true,below:2.8,locked:true,mixed:3,mixedOpen:true});
+  // A later first manual encounter must offer optional practice, not another
+  // mandatory four-page lesson. Normal play starts with one button press.
+  const lesson=await page.evaluate(()=>{
+    const State=window.State,g=window.__game;
+    const [a,b]=State.S.cats;State.S.firstDuoShowcasePending=false;
+    State.S.battlePrefs.manualTutorialSeen=false;State.S.battlePrefs.autoBattle=false;
+    g.startBattle([a,b],window.GameData.speciesById('jinwu'));
+    return {paused:g.battleHelpOpen,coach:!!g.battle.coach};
+  });
+  assert.deepEqual(lesson,{paused:true,coach:true});
+  assert.equal(await page.locator('#battle-tutorial-practice').isVisible(),true);
+  await page.locator('#battle-help-start').click();
+  assert.equal(await page.locator('#battle-help').isVisible(),false);
+  assert.equal(await page.evaluate(()=>!!window.__game.battle.coach),false);
   assert.deepEqual(errors,[],'Unexpected runtime error');
   console.log('PASS '+width+'x'+height+' '+lang+': ready duo, mode toggle, no debug, no overlap, real button cast, roster average');
   await context.close();
