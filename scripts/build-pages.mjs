@@ -100,4 +100,7 @@ console.log('Built Cloudflare Pages assets from canonical public/ and src/.');
 
 await generateSocialCards(out);
 generateDiscovery(out);
-fs.writeFileSync(path.join(out,'release-version.json'),JSON.stringify({sha:process.env.GITHUB_SHA||'local-build'})+'\n');
+const siteSha=process.env.GITHUB_SHA||'local-build';
+const gameShas=process.env.MW_GAME_SHAS?JSON.parse(process.env.MW_GAME_SHAS):{'cat-bond':siteSha,'pawsibly-innocent':siteSha};
+if(process.env.MW_GAME_SHAS&&['cat-bond','pawsibly-innocent'].some(g=>!(/^[0-9a-f]{40}$/).test(gameShas[g]||'')))throw Error('Invalid independent game source pins');
+fs.writeFileSync(path.join(out,'release-version.json'),JSON.stringify({sha:siteSha,gameShas})+'\n');

@@ -1,7 +1,7 @@
 name: Cat Bond mobile playable test
 on:
-  push:
-    branches: [main]
+  # The main release pipeline runs the complete game-only gate on push.
+  pull_request:
     paths:
       - 'public/cat-bond/**'
       - 'public/game-fullscreen.js'

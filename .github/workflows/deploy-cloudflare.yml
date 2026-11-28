@@ -10,6 +10,10 @@ on:
       # Only scripts that affect the deployed site or release automation.
       # Browser-only test edits must not trigger another production deploy.
       - 'scripts/build-pages.mjs'
+      - 'scripts/scoped-game-release.mjs'
+      - 'scripts/cat-bond-crazygames-smoke.mjs'
+      - 'scripts/browser-test-pawsibly.mjs'
+      - 'scripts/check-pawsibly.mjs'
       - 'scripts/check-source.mjs' # Fixing a release gate must retrigger deployment.
       - 'scripts/test-attribution-links.mjs' # Worker import changes must rerun social redirect tests.
       - 'scripts/check-cat-bond-premium-21x3.mjs' # Keep the complete duo-art release gate deployable.
@@ -39,6 +43,11 @@ on:
       - '.github/workflows/deploy-cloudflare.yml'
   workflow_dispatch:
     inputs:
+      release_target:
+        description: 'Release independently; preserve all other live game versions'
+        type: choice
+        options: [auto, cat-bond, pawsibly-innocent, both-games, site]
+        default: auto
       generate_promos:
         description: 'Also regenerate all promo source footage and clips'
         type: boolean
@@ -64,18 +73,135 @@ concurrency:
   group: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'success' && 'morrowwish-cloudflare-pages-skipped-review' || 'morrowwish-cloudflare-pages-production' }}
   # The newest candidate supersedes older predeployment runs. Verification is
   # repeated against the last successful release, including skipped commits.
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  deploy:
-    # Never deploy assets from a failed or incomplete video review render.
+  plan:
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      site_sha: ${{ steps.scope.outputs.site_sha }}
+      cat_sha: ${{ steps.scope.outputs.cat_sha }}
+      paw_sha: ${{ steps.scope.outputs.paw_sha }}
+      cat: ${{ steps.scope.outputs.cat }}
+      paw: ${{ steps.scope.outputs.paw }}
+      site: ${{ steps.scope.outputs.site }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - id: scope
+        env:
+          RELEASE_TARGET: ${{ inputs.release_target || 'auto' }}
+          GENERATE_PROMOS: ${{ inputs.generate_promos || false }}
+        run: node scripts/scoped-game-release.mjs plan
+
+  qa-cat-bond:
+    needs: plan
+    if: needs.plan.outputs.cat == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Stage exact candidate over live shared assets
+        env:
+          SITE_SHA: ${{ needs.plan.outputs.site_sha }}
+        run: node scripts/scoped-game-release.mjs stage-qa cat-bond
+      - name: Cat Bond core and original art gates
+        run: |
+          node scripts/check-cat-bond.mjs
+          node scripts/check-cat-bond-premium-21x3.mjs
+      - name: Install Chromium
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright sharp@0.34.5
+          npx playwright install --with-deps chromium
+      - name: Cat Bond desktop, portrait, battle, art and language acceptance
+        run: |
+          set -e
+          bash scripts/fetch-cat-music.sh
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/cb-scoped.log 2>&1 &
+          sleep 2
+          for test in topbar adult ult-visual duo single-painting lazy-memory yard-placement audio balance progression autofight squad touch panel-scroll crazygames scale work-playtest; do
+            node "scripts/cat-bond-$test-smoke.mjs"
+          done
+          node scripts/cat-bond-locked-duo-review.mjs
+          node scripts/cat-bond-language-audit.mjs
+          node scripts/cat-bond-interaction-language-qa.mjs
+          node scripts/cat-bond-crazygames-real-input.mjs
+          node scripts/test-cat-bond-native-duo-renderer.mjs
+
+  qa-pawsibly:
+    needs: plan
+    if: needs.plan.outputs.paw == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Stage exact candidate over live shared assets
+        env:
+          SITE_SHA: ${{ needs.plan.outputs.site_sha }}
+        run: node scripts/scoped-game-release.mjs stage-qa pawsibly-innocent
+      - name: Install Chromium and run only Pawsibly gates
+        run: |
+          npm ci
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          bash scripts/fetch-cat-music.sh
+          node scripts/check-pawsibly.mjs
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory public >/tmp/pawsibly-scoped.log 2>&1 &
+          sleep 2
+          node scripts/browser-test-pawsibly.mjs
+          GAME_TEST_SCOPE=pawsibly-innocent node scripts/mobile-playtest.mjs
+          GAME_TEST_SCOPE=pawsibly-innocent node scripts/fullscreen-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pawsibly-scoped-browser
+          path: test-results/pawsibly-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+  publish-games:
+    needs: [plan, qa-cat-bond, qa-pawsibly]
+    if: ${{ always() && needs.plan.result == 'success' && (needs.qa-cat-bond.result == 'success' || needs.qa-pawsibly.result == 'success') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Publish each passing game independently on the existing Pages project
+        env:
+          SITE_SHA: ${{ needs.plan.outputs.site_sha }}
+          CAT_SHA: ${{ needs.plan.outputs.cat_sha }}
+          PAW_SHA: ${{ needs.plan.outputs.paw_sha }}
+          CAT_APPROVED: ${{ needs.qa-cat-bond.result == 'success' }}
+          PAW_APPROVED: ${{ needs.qa-pawsibly.result == 'success' }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
+        run: node scripts/scoped-game-release.mjs publish
+
+  deploy:
+    needs: [plan, publish-games]
+    # Never deploy assets from a failed or incomplete video review render.
+    if: ${{ always() && needs.plan.result == 'success' && needs.plan.outputs.site == 'true' && (needs.publish-games.result == 'success' || needs.publish-games.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Preserve independently published game versions
+        run: node scripts/scoped-game-release.mjs stage-site
       - name: Select release QA scope
         id: scope
         env:
@@ -84,9 +210,9 @@ jobs:
           set -eu
           scope=full
           if [ "$GITHUB_EVENT_NAME" = push ]; then
-            base=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deploy-cloudflare.yml/runs?branch=main&status=success&per_page=1" --jq '.workflow_runs[0].head_sha // empty' || true)
+            base="$MW_SITE_BASE_SHA"
             if [ -n "$base" ] && git merge-base --is-ancestor "$base" "$GITHUB_SHA"; then
-              git diff --name-only "$base" "$GITHUB_SHA" > /tmp/mw-release-paths
+              git diff --name-only "$base" "$GITHUB_SHA" | grep -vE '^public/(cat-bond|pawsibly-innocent)/' > /tmp/mw-release-paths || true
               cat /tmp/mw-release-paths
               if [ -s /tmp/mw-release-paths ] && ! grep -Ev '^(public/(index\.html|hub\.css|zh-site\.js|telemetry\.js|studio-insights/.*)|src/analytics\.js|scripts/(check-source|test-analytics-integrity|test-dashboard-sorting|test-dashboard-history-browser|language-browser-smoke|build-pages)\.mjs|\.github/workflows/deploy-cloudflare\.yml)$' /tmp/mw-release-paths; then
                 scope=site

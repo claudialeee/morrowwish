@@ -235,7 +235,10 @@ try{
       assert.equal(await page.locator('#battle-skill-guide').isVisible(),false,
         'Detached skill reference panel obstructs CrazyGames battle');
       const tutorial=page.locator('#battle-tutorial-skip');
-      if(await tutorial.isVisible().catch(()=>false))await tutorial.click();
+      if(await page.locator('#battle-help').isVisible()){
+        if(await tutorial.isVisible())await tutorial.click();else await page.locator('#battle-help-start').click();
+        assert.equal(await page.locator('#battle-help').isVisible(),false,'Onboarding closes through the actual primary action');
+      }
       const battleHUD=await page.evaluate(()=>{
         const rect=s=>{const el=document.querySelector(s);if(!el)return null;
           const css=getComputedStyle(el),r=el.getBoundingClientRect();

@@ -1,18 +1,6 @@
 name: Real-browser cat adventure smoke test
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'public/pawsibly-innocent/**'
-      - 'public/studio-audio.js'
-      - 'public/audio-dock.js'
-      - 'public/game-fullscreen.js'
-      - 'public/lang.js'
-      - 'scripts/browser-test-pawsibly.mjs'
-      - 'scripts/check-pawsibly.mjs'
-      - 'scripts/mobile-playtest.mjs'
-      - 'scripts/fullscreen-smoke.mjs'
-      - '.github/workflows/browser-test-pawsibly.yml'
+  # Production pushes are gated by the independent Pages release workflow.
   pull_request:
     paths:
       - 'public/pawsibly-innocent/**'
@@ -54,8 +42,6 @@ jobs:
           GAME_TEST_SCOPE=pawsibly-innocent node scripts/mobile-playtest.mjs
           GAME_TEST_SCOPE=pawsibly-innocent node scripts/fullscreen-smoke.mjs
 
-      - name: Run full repository source gate (includes other games)
-        run: npm run check
       - name: Archive Pawsibly Chromium screenshots
         if: always()
         uses: actions/upload-artifact@v4

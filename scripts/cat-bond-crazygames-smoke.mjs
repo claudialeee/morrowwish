@@ -171,8 +171,10 @@ try{
         'Player must be able to select manual before battle');
       await page.locator('#cp-go').click();
       await page.waitForFunction(()=>window.__game.scene==='battle',{timeout:8000});
-      if(await page.locator('#battle-tutorial-skip').count()){
-        await page.locator('#battle-tutorial-skip').click();
+      if(await page.locator('#battle-help').isVisible()){
+        const skip=page.locator('#battle-tutorial-skip');
+        if(await skip.isVisible())await skip.click();else await page.locator('#battle-help-start').click();
+        assert.equal(await page.locator('#battle-help').isVisible(),false,'Player can dismiss onboarding before operating battle controls');
       }
       const movingBattle=await page.evaluate(()=>{
         const renderer=window.CatMotion,old=renderer.draw;let draws=0;
