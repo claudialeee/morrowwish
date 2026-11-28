@@ -1,4 +1,4 @@
-import {sideKeepsakes} from "./side-adventures.mjs";
+import {sideKeepsakes} from "./side-adventures.mjs?v=regional-depth-20261127";
 // Region-specific optional environmental discoveries; no narrative proof or economy changes.
 const raw={
   "harbor": {
