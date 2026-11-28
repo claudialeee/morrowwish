@@ -20,7 +20,7 @@ const test=window.__PAWSIBLY_TEST__;
 assert.equal(test.rooms.length,8);
 assert.match(nodes.get('visionTip').textContent,/Steal 3 fish.*cat flap/,'First screen explains the goal before any input');
 test.move(1,0);assert.equal(test.getState().got,1);assert.match(nodes.get('visionTip').textContent,/One fish.*pink sight/,'First pickup advances contextual coaching');
-const beforeWait={...test.getState().cat};nodes.get('wait').onclick();assert.equal(test.getState().waitTurns,1);assert.deepEqual({...test.getState().cat},beforeWait);assert.match(nodes.get('visionTip').textContent,/The owner moved.*Toss yarn/);nodes.get('guideHelp').onclick();assert.equal(nodes.get('gameMenu').hidden,false);nodes.get('menuClose').onclick();assert.equal(nodes.get('gameMenu').hidden,true);
+const beforeWait={...test.getState().cat};nodes.get('wait').onclick();assert.equal(test.getState().waitTurns,1);assert.deepEqual({...test.getState().cat},beforeWait);assert.match(nodes.get('visionTip').textContent,/The owner moved.*Yarn/);nodes.get('guideHelp').onclick();assert.equal(nodes.get('gameMenu').hidden,false);nodes.get('menuClose').onclick();assert.equal(nodes.get('gameMenu').hidden,true);
 test.choose(0,false);
 const key=p=>p.x+','+p.y;
 const pass=(s,p)=>p.x>=0&&p.x<10&&p.y>=0&&p.y<7&&!['#','S'].includes(s.grid[p.y][p.x]);
@@ -266,6 +266,19 @@ assert.ok(!reviewStyle.includes('id="collectionPreview"')&&!reviewStyle.includes
 assert.ok(reviewStyle.indexOf('id="restart"')>reviewStyle.indexOf('id="gameMenu"'),'Replay must live inside the game menu');
 assert.ok(!reviewStyle.includes('<section class="explainer"'),
  'The duplicate how-to-play section must not reappear below the game');
+// Actual differentiated room mechanics and unique bonuses.
+test.choose(5,false);
+let garden=test.getState();
+assert.ok(garden.grid[3][5]==="#"&&garden.grid[4][4]==="#","Garden has a real central obstruction and route choice");
+for(const d of [[0,1],[0,1],[0,1],[1,0]])test.move(...d);
+assert.equal(garden.gardenRustles.size,1,"Garden leaf piles trigger a distinct noise action");
+assert.ok(events.some(e=>e.name==="cat_garden_rustle"),"Garden leaf diversion is tracked");
+assert.match(nodes.get("bonusQuickProgress").textContent,/\+150/,"Garden bonus completes through a leaf pile");
+test.choose(6,false);
+let moon=test.getState();
+for(const d of [[1,0],[1,0],[-1,0],[-1,0],[0,1]])test.move(...d);
+assert.ok(moon.shadowVisits.size>=2,"Two distinct moon shadows have actual progression");
+assert.match(nodes.get("bonusQuickProgress").textContent,/\+150/,"Midnight bonus no longer repeats the fourth-fish goal");
 // Final-room regression: the eighth escape deserves a visible, skippable
 // illustrated chase BEFORE the ordinary result card, with only one win event.
 test.choose(7,false);
@@ -292,9 +305,12 @@ const earlyWin=test.getState();earlyWin.cat={x:8,y:6};earlyWin.catFrom={...early
 test.move(1,0);
 assert.equal(earlyWin.outro,null,'Earlier rooms should keep their simple results');
 assert.equal(nodes.get('overlay').hidden,false,'Non-final room results remain immediate');
+assert.equal(nodes.get('nextResult').hidden,false,'Victory exposes the next room action');
+assert.equal(nodes.get('retryResult').hidden,false,'A win permits optional replay');
 
 // Closing the score card leaves the completed board visible, with room navigation available.
 assert.ok(reviewStyle.includes('id="closeResult"'),'Result card needs an accessible close button');
+assert.ok(reviewStyle.includes('class="result-body"')&&reviewStyle.includes('class="buttons result-actions"'),'Result footer must be outside the scrolling body');
 nodes.get('closeResult').onclick();
 assert.equal(nodes.get('overlay').hidden,true,'Closing results should reveal the board');
 nodes.get('menuButton').onclick();
@@ -314,7 +330,7 @@ assert.ok(source.includes('s.index>=3?1:0')&&source.includes('s.searchTurns=s.in
 // Real step-by-step solutions through the post-balance guard AI (no shortcuts,
 // no debug teleports, no special-cat abilities and no yarn). Protect against
 // future difficulty changes accidentally making any of the 8 rooms unwinnable.
-const solvableRoutes=["RDDRDRRRRURRD","RDDRRRDRRRDRUD","DDDRRDDLRRUDRRRRR","RRURDDDDRRRDRRD","RURRRRRDDDLLDDRDRRR","RUDDDDDRRRRRDRR","RRURLDDDDDRRDRRRR","RRULDDRDDLRRRRRDRRD"];
+const solvableRoutes=["RDDRDRRRRURRD","RDDRRRDRRRDRUD","DDDRRDDLRRUDRRRRR","RRURDDDDRRRDRRD","RURRRRRDDDLLDDRDRRR","RUDDDLDDRRRRRRDRR","RRURLDDDDDRRDRRRR","RRULDDRDDLRRRRRDRRD"];
 const stepDelta={R:[1,0],L:[-1,0],U:[0,-1],D:[0,1]};
 for(let room=0;room<solvableRoutes.length;room++){
  test.choose(room,false);
@@ -360,7 +376,7 @@ assert.equal(nodes.get('stars').textContent,'★★☆','All fish without bonus 
 // A perfect 3-star result must remain ACHIEVABLE in ALL eight rooms.
 // Paths are deterministic under the real heightened guard AI. Room 4 spends
 // one real yarn throw before following its perfect 4-fish escape path.
-const perfectRoutes=["RRUUURRRRDDDDDLLLLDRRRLRRRR","RDDRRRDUURUDLDDRLUUURRRRDDDD","DDDRRRLLRDDRURRUUUURRUDLLLDRDRRRDDD","RRUDLURRRRRRRDDDLDLLLLUUUDDDRRDRRRD","RURRRRRDDDRDDLLLLLRRRDRRR","DDDRDUUUUURDRRDRRDDLRDDRR","RDRUDUURRRRRDLDDDLLLLDDRRRLRRRR","RDDDRUDUUUURRRRRDDDDLDDRR"];
+const perfectRoutes=["RRUUURRRRDDDDDLLLLDRRRLRRRR","RDDRRRDUURUDLDDRLUUURRRRDDDD","DDDRRRLLRDDRURRUUUURRUDLLLDRDRRRDDD","RRUDLURRRRRRRDDDLDLLLLUUUDDDRRDRRRD","RURRRRRDDDRDDLLLLLRRRDRRR","RUDDDDDWUUUURRRDRRDDDDRR","DRRUWWURRRRRDDLDDLLLDLDRRRRRR","RDDDRUDUUUURRRRRDDDDLDDRR"];
 for(let i=0;i<perfectRoutes.length;i++){
  test.choose(i,false);
  if(i===3){
@@ -373,7 +389,7 @@ for(let i=0;i<perfectRoutes.length;i++){
  const state=test.getState();
  for(const step of perfectRoutes[i]){
   assert.equal(state.done,false,'Room '+(i+1)+' perfect route exited too soon');
-  test.move(...stepDelta[step]);
+  if(step==="W")nodes.get("wait").onclick();else test.move(...stepDelta[step]);
  }
  assert.equal(state.winning,true,'Room '+(i+1)+' perfect escape must succeed');
  assert.equal(state.got,4,'Room '+(i+1)+' perfect escape must steal all four fish');
@@ -487,4 +503,9 @@ assert.equal(pausedGuardFar.exposure,0,
  assert.ok(nodes.get('menuButton').classList,'Badge animation shares the existing menu control');
  assert.ok(events.some(e=>e.name==='cat_progress_reset'),'Full reset must be tracked once');
  
+test.choose(1,false);const failed=test.getState();failed.cat={x:0,y:0};failed.catFrom={...failed.cat};failed.human={x:2,y:0};failed.lives=1;failed.caughtCount=2;failed.exposure=1;nodes.get('wait').onclick();
+assert.equal(failed.winning,false,'Failed run must not count as a victory');
+assert.equal(failed.done,true,'Third capture must finish the run');
+assert.equal(nodes.get('retryResult').hidden,true,'Failure has no duplicate retry button');
+assert.equal(nodes.get('nextResult').hidden,false,'Failure has one primary retry button');
 console.log('Pawsibly Innocent: QA PASS (eight real no-hit wins, eight full-fish 3-star perfect routes, strict ratings, capture consequences and lure-risk regression).');
