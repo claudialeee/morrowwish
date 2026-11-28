@@ -225,7 +225,7 @@ class CaptureBattle {
     // so live players never see it). Recording is OFF by default EACH battle; the button toggles it,
     // so you only capture the fights you care about (not every fight). When on, every resolved hit is
     // logged with its damage-factor breakdown and dumped/stashed at battle end for export.
-    try { this._debugAvailable = new URLSearchParams(location.search).get('debug') === '1'; } catch (_) { this._debugAvailable = false; }
+    try { this._debugAvailable = window.__STARBELL_DEVELOPER__===true && new URLSearchParams(location.search).get('debug') === '1'; } catch (_) { this._debugAvailable = false; }
     this._debug = false;              // live recording flag (button-toggled)
     this._dbgLog = [];                // always allocated so the recorder guard is simple; stays empty unless recording
     this.shakeT = 0; this.flash = 0;
