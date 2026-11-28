@@ -14,6 +14,9 @@ on:
       - 'scripts/test-starbell-player-first-browser.mjs'
       - 'scripts/cat-bond-release-prologue-qa.mjs'
       - '.github/workflows/starbell-canon3-acceptance.yml'
+      - '.github/workflows/cat-bond-preview.yml'
+      - 'scripts/starbell-release-gate.sh'
+      - 'scripts/cat-bond-experience-chapters.mjs'
   workflow_dispatch:
 permissions:
   contents: read
