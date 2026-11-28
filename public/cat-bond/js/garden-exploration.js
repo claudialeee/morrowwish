@@ -57,7 +57,7 @@ function signView(ending){
  if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice sg-sign-view';popup.setAttribute('role','dialog');popup.setAttribute('aria-label',tr('旧门牌','Old door sign'));
  Object.assign(popup.style,{width:'min(360px,88vw)',maxHeight:'75vh',overflowY:'auto',boxSizing:'border-box',padding:'16px',display:'flex',flexDirection:'column',gap:'12px',background:'#fff6e2',color:'#59432f'});
  const board=document.createElement('div');Object.assign(board.style,{background:'linear-gradient(150deg,#d8b080,#b78957)',border:'3px solid #865e3f',borderRadius:'12px',padding:'18px 14px',textAlign:'center',color:'#4c311f',boxShadow:'inset 0 0 0 3px #e4c39a'});board.textContent=ending?tr('阳光花园 · 小曦和暮铃的家','Sunlit Garden · Sunny & Luna’s home'):tr('阳光花园','Sunlit Garden');
- const clue=document.createElement('p');clue.style.margin='0';clue.textContent=ending?tr('你和暮铃终于有了共同的家。','You and Luna are home at last.'):tr('翻过来，背面刻着工匠的名字：风铃镇 · 檐灯。也许这位工匠知道你是怎么来到这里的。','On the back is the maker’s mark: Alder, Windchime Town. Maybe the carpenter knows how you ended up here.');
+ const clue=document.createElement('p');clue.style.margin='0';clue.textContent=ending?tr('你和暮铃终于有了共同的家。','You and Luna are home at last.'):tr('翻过来，背面刻着工匠的名字：风铃镇 · 檐灯。原来檐灯爷爷做过这块门牌。','On the back is the maker’s mark: Alder, Windchime Town. Alder made this door sign.');
  const close=document.createElement('button');close.type='button';close.textContent=tr('放回门牌','Put the sign back');close.onclick=closePopup;popup.append(board,clue,close);layer.append(popup);close.focus();
 }
 function postcardView(){
@@ -66,7 +66,7 @@ function postcardView(){
  const title=document.createElement('strong');title.textContent=tr('窗边的旧明信片','A postcard by the window');
  const photo=document.createElement('img');photo.src='assets/garden/sunlit-garden-landscape.webp';photo.alt=tr('画着阳光花园的旧明信片','An old picture of Sunlit Garden');Object.assign(photo.style,{width:'100%',maxHeight:'min(29vh,180px)',objectFit:'contain',filter:'sepia(.24) saturate(.8)',border:'5px solid #fff8e9',boxSizing:'border-box',borderRadius:'5px'});
  const note=document.createElement('p');note.textContent=tr('背面写着：“修完铃就回家。茶叶在窗边，记得多拿一只杯子。”','On the back: “Home when the bells are fixed. Tea by the window. Don’t forget the extra cup.”');note.style.margin='0';
- const thought=document.createElement('p');thought.textContent=view()?.ending?tr('原来这就是我们当年约好的那杯茶。','So this was the tea we promised to share.'):tr('多拿一只杯子？以前住在这里的猫，好像在等谁回来。','An extra cup? Whoever lived here seems to have been waiting for someone.');thought.style.margin='0';thought.style.fontWeight='600';
+ const thought=document.createElement('p');thought.textContent=view()?.ending?tr('原来这就是我们当年约好的那杯茶。','So this was the tea we promised to share.'):tr('多拿一只杯子？以前的我，还和谁一起喝茶呢？','An extra cup? Who did I used to share tea with?');thought.style.margin='0';thought.style.fontWeight='600';
  const close=document.createElement('button');close.type='button';close.textContent=tr('收好明信片','Put the postcard away');close.onclick=closePopup;popup.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();closePopup();}};popup.append(title,photo,note,thought,close);layer.append(popup);close.focus();
 }
 function snackChoice(){if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice';popup.setAttribute('role','dialog');popup.setAttribute('aria-label',tr('鱼饼','Fish cake'));
