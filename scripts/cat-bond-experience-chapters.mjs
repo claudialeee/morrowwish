@@ -410,6 +410,7 @@ async function run(chapter){
   await page.waitForFunction(l=>document.documentElement.lang.startsWith(l),locale);
   if(continuous&&!earnedSave){
    assert.equal(chapter,'harbor');await page.locator('#intro-start').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene('prologue:P-05');
+   const letter=page.locator('#cb-opening-letter');await letter.waitFor({state:'visible'});assert.match(await letter.innerText(),locale==='zh'?/名字都忘了/:/forget even my own name/);
    await page.locator('#cb-player-first-intro').getByRole('button',{name:local('Start exploring'),exact:true}).click();
    // Start from a new slot, no fixture or direct state mutation.
    await shot('prologue-intro');
