@@ -21,7 +21,7 @@ if [[ -f .github/workflows/starbell-integrated-guardians.yml ]]; then
   if grep -Fq '"storyRevision": 3' public/cat-bond/js/resonance/campaign.mjs; then
     canon3_sha="$source_sha"
     for attempt in $(seq 1 180); do
-      run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-canon3-acceptance.yml/runs?head_sha=$canon3_sha&branch=review%2Fstarbell-canon13-player-experience" | jq -c '.workflow_runs[0] // {}')
+      run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-canon3-acceptance.yml/runs?head_sha=$canon3_sha&branch=starbell-echoes" | jq -c '.workflow_runs[0] // {}')
       if [[ $(jq -r .head_sha <<<"$run") == "$canon3_sha" && $(jq -r .status <<<"$run") == completed ]]; then
         test "$(jq -r .conclusion <<<"$run")" = success
         id=$(jq -r .id <<<"$run")
@@ -131,7 +131,7 @@ git fetch --no-tags --depth=1 origin "$duo"
 git diff --quiet "$duo" "$source_sha" -- public/cat-bond/js/duo-premium.js public/cat-bond/js/battle.js public/cat-bond/assets/mobile-portrait/duo scripts/test-starbell-native-duo-renderer.mjs scripts/check-starbell-portrait-duo.mjs .github/workflows/starbell-duo-portrait-samples.yml package.json package-lock.json
 gh api "repos/$GITHUB_REPOSITORY/actions/runs/45950550328" | jq -e --arg sha "$duo" '.head_sha==$sha and .status=="completed" and .conclusion=="success"' >/dev/null
 for attempt in $(seq 1 120); do
-  run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-locale-purity.yml/runs?head_sha=$source_sha&branch=review%2Fstarbell-canon13-player-experience" | jq -c '.workflow_runs[0] // {}')
+  run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-locale-purity.yml/runs?head_sha=$source_sha&branch=starbell-echoes" | jq -c '.workflow_runs[0] // {}')
   if [[ $(jq -r .head_sha <<<"$run") == "$source_sha" && $(jq -r .status <<<"$run") == completed ]]; then
     test "$(jq -r .conclusion <<<"$run")" = success
     id=$(jq -r .id <<<"$run")
