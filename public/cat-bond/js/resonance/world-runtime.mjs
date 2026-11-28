@@ -9,7 +9,7 @@ import {hasPendingDialogue} from "./dialogue-ui.mjs";
 import { openFinaleLatch } from "./finale-latch.mjs";
 import { createWorldBridge } from "./world-bridge.mjs";
 import {availableSideEvents} from "./side-adventures.mjs";
-import {mountSideAdventure} from "./adventure-play.mjs";
+import {mountSideAdventure} from "./adventure-play.mjs?v=talent-effects-20261127";
 import {availableDiscoveries,layoutDiscoveries,paintDiscovery} from "./regional-discoveries.mjs";
 import {markerMetrics,layoutMarkerLabels,pickMarker,discoveryNames} from "./map-affordances.mjs?v=npc-talk-bubble-1";
 import { createExplorer,layouts,exchangeOptions,distance } from "./world-exploration.mjs?v=story-causality-20261127";
