@@ -154,6 +154,44 @@ function effectiveReactionMs(o) {
   return base + tiltBoost;
 }
 
+// Fog-of-mind view: owner 2026-11-27 Step C — persona can only observe side-public state,
+// NOT enemy CDs / next-cast-intent / target-lock / team-coord-fields. Returns a projection
+// of `b` that a real player could reasonably perceive on-screen.
+//
+// Observable (within vision cone + rendered on screen):
+//   - enemy.x/y (sprite position)
+//   - enemy.hp/maxhp (if HP bar visible — always for wild)
+//   - enemy.telegraph / telegraphKind — ONLY when > 0 (the red ring / windup flash)
+//   - projectiles mid-flight (within cone)
+//   - self team state (fully visible — you control your cats)
+//
+// Hidden:
+//   - enemy.cd.* (no readout of their skill cooldowns)
+//   - enemy.ultMeter until the actual charge-ring VFX appears
+//   - enemy.aggro / _pressure / _closing / aiP.* (internal AI state)
+//   - enemy.nextCast / castInterruptible (the AI's intent, not yet telegraphed)
+//   - pack-level coordination fields (packState, _packHeavyLock internals)
+//
+// Persona ticks can call b.incomingThreat(me) etc BUT with a wrap that filters
+// off-cone threats. The wrapper is applied by setting `b._fogView = fogView(b,me,o)`
+// in persona.tick BEFORE calling engine helpers that read enemy state.
+function fogView(b, me, o) {
+  const cone = (o.profile?.visionDeg) || 180;
+  return {
+    enemies: (b.enemies || []).filter(e => e.alive && visible(o, b, e)).map(e => ({
+      x: e.x, y: e.y, hp: e.hp, maxhp: e.maxhp, alive: e.alive,
+      telegraph: e.telegraph > 0 ? e.telegraph : 0,       // only when visible wind-up
+      telegraphKind: e.telegraph > 0 ? e.telegraphKind : null,
+      // explicitly NOT exposing: e.cd, e.aggro, e.ultMeter<100, e.nextCast, e.aiP, e._pressure, e._closing
+    })),
+    projectiles: (b.projectiles || []).filter(p => p.owner === 'wild' && visible(o, b, p)),
+    // team state is fully visible to persona (you see your own cats)
+    team: b.team,
+    t: b.t,
+    ult: b.ult,
+  };
+}
+
 // ---------- personas: each returns an input policy for a battle ----------
 // A policy(fn) is called every tick with (battle, game, obs) and sets
 // game.keys / game.mouse to emulate a specific kind of human.
@@ -362,7 +400,12 @@ function runBattle(env, persona, rng){
   };
 }
 
-// ---------- main ----------
+// ---------- main (CLI only — skipped when imported as a module) ----------
+// Owner 2026-11-27 Step C: RSI evaluator imports { PERSONAS, PROFILE, ... } below.
+// Script-mode CLI should only run when invoked directly (process.argv[1] ends in
+// playtest-sim.mjs). Guards the script against auto-running when imported.
+const _isCli = process.argv[1] && process.argv[1].endsWith('playtest-sim.mjs');
+if (_isCli) {
 const arg=process.argv.slice(2);
 if(arg[0]==='--list'){ console.log(JSON.stringify(Object.fromEntries(Object.entries(PERSONAS).map(([k,v])=>[k,v.label+' — '+v.desc])),null,2)); process.exit(0); }
 const personaKey=arg[0]||'balanced';
@@ -393,3 +436,9 @@ const summary={
   usedAutoAny:results.some(r=>r.usedAuto),
 };
 console.log(JSON.stringify({persona:personaKey,label:persona.label,desc:persona.desc,summary,battles:results},null,2));
+} // _isCli
+
+// Owner 2026-11-27 Step C: export persona machinery so RSI evaluator can drive
+// candidate evaluation against HUMAN players (not just engine autoDrive). The
+// helpers are pure; the PERSONAS table carries each persona's tick + profile.
+export { PERSONAS, PROFILE, queueDelay, flushDelays, visible, jitterAim, updateTilt, effectiveReactionMs, fogView };
