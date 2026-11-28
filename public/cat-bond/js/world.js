@@ -911,7 +911,13 @@ class YardScene {
     // While visibly using a structure, render the kitten in front of its object
     // (scratching/rolling/lounging) — EXCEPT a 'behind' use (tucked inside the cave),
     // where it must render behind the dome so only its front half peeks out.
+    // The full-body dialogue portrait replaces the speaking protagonist, not the other cats.
+    // This render path is shared by desktop and mobile garden layouts.
+    const speakingPortrait=window.__CAT_BOND_CANONICAL_ACTIVE__&&document.querySelector('.res-host .res-dialogue[data-speaker="player"]:not([hidden]) .res-portrait:not([hidden])');
+    const portraitOwnsPlayer=!!(speakingPortrait?.complete&&speakingPortrait.naturalWidth&&speakingPortrait.getClientRects().length&&getComputedStyle(speakingPortrait).visibility!=='hidden');
+    const speakingPlayer=portraitOwnsPlayer?this.game.yardPlayer?.():null;
     for(const e of this.entities){
+      if(e===speakingPlayer)continue;
       const using=e._playBuilding&&e._playBuildT>0;
       const behind=using&&e._buildUse?.behind;
       drawables.push({ y:e.y+(using?(behind?-24:20):0), kind:'cat', ref:e });
