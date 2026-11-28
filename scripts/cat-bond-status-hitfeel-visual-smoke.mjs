@@ -68,7 +68,7 @@ try{
           const blocked=b.resolveHit(me,'wild',
             {id:'wildStrike',kind:'melee',element:'grass'},10,me.x,me.y);
           if(!blocked.blocked||me.protectT!==0||me.hp!==hp||
-             !b.vfx.fx.some(x=>x.type==='guardShards'))
+             !b.vfx.fx.some(x=>x.type==='contact'&&x.style==='shieldBreak'&&x.life>0&&Math.hypot(x.x-me.x,x.y-me.y)<me.r+12))
             throw Error('Real guard did not consume one hit and create shards');
         }else if(tag==='grooming'){
           // Water's current heal identity is a persistent area regeneration
