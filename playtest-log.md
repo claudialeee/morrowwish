@@ -2780,3 +2780,42 @@ Arena-wall infinite-stiffness clamp (battle.js:1440/1772/1880) creates stationar
 
 ### Step A-E RSI follow-up
 In-parallel RSI cycle 2026-11-28T01:53:02Z: 5 candidates all scored ~0.023 under new cohort min-rule. Observed failure mode: lazy persona's `tick` depends on autoMode toggle (`b.autoMode = !b.autoMode`), but Step D force-disables autoMode to let persona drive — so lazy never acts, driving cohort min to ~0. Fix queued: scope autoMode gating per-persona (lazy=keep, others=persona).
+
+## Playtest cycle wn9ln8tbz — 2026-11-28 (post 21c89012 Step D lazy fix)
+
+**Headline**: Combat is mechanically rich but the game keeps robbing players of credit — near-wins score as losses, silent input rejections eat 95% of button presses, and auto-mode decisions vanish into a single overwritten string; every persona needs honest feedback more than they need another rubber-band.
+
+**funMean 3.67 — SESSION ALL-TIME LOW** (↓0.33 vs 4.0 plateau, 15 cycles):
+- 探索 5 (↓1) / 懒人 5 / 狂按 4 / 手忙脚乱 3 / 没耐心 3 / 谨慎 **2**
+
+### Auto-fixes this cycle: 0 (3 fix-P0 all excluded)
+
+- **Fix 0 (endgame execute + moral-victory win-check)**: FINDINGS-ONLY — rewrites timeout result → new win outcome. Save format implication.
+- **Fix 1 (input-rejection feedback ult/Q/E/dodge)**: FINDINGS-ONLY — 4-site compound HUD feedback.
+- **Fix 2 (tutorial step 5 for E)**: FINDINGS-ONLY — same i18n-gate issue that reverted `w32qn0r7h` fix 3. Inline zh/en in new coach step fails language-audit.
+
+### Critiques: 42 total
+- 29 P1 (7 local-numeric + 22 additive-flag)
+- 13 P2 (1 local-numeric + 12 additive-flag)
+- 0 critique-tier P0
+
+### Session trend (15 cycles) — NEW SESSION LOW
+4.33 → 4.5 → 5.0 → 4.33 → 4.17 → 4.67 → 4.33 → 4.0 → 4.17 → 4.33 → 4.0 → 4.33 → 4.33 → 4.0 → **3.67**
+
+**Combat has broken below the plateau.** Possible causes:
+1. Step D persona driver exposed previously-masked player-side inefficiencies
+2. Harness variance (persona tests ran newer code)
+3. True regression from a merge or recent commit
+
+Needs investigation. 探索 7→5 is unusual — explorer was previously the "healthy" persona.
+
+### Top findings (owner-reviewable)
+- **Near-win robbery** (2% HP survival scored as LOSS): fix 0's moral-victory win-check is the honest fix but needs save-format discussion
+- **Input-rejection silence**: 95% of button presses give no feedback
+- **E-slot coach step**: still blocked by language-audit gate — needs i18n plumbing to ship
+
+### Harness
+24/80 agent calls hit StructuredOutput retry cap (30%). 56 succeeded.
+
+### Step D fix retro (2 RSI runs post-21c89012)
+Lazy fix was necessary but **not sufficient**. Masher/explorer/panicky each fail on 1+ scenario dimensions enough to crush cohort min bound. Min rule too aggressive given persona noise. Design tweak queued: `MIN` → median or weighted average.
