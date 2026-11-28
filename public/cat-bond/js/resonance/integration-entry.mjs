@@ -1,4 +1,4 @@
-import "./narrative-host.mjs?v=illustrated-activities-20261127";
+import "./narrative-host.mjs?v=regional-depth-20261127";
 import "./npc-world.mjs?v=starbell-work-regression-20261127";
 import "./ambient-play.mjs";
 import "./world-runtime.mjs?v=regional-depth-20261127";
