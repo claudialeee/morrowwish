@@ -13,7 +13,7 @@ export function animateStarPlatforms(p,dt){if(p?.kind==="stars"&&!p.solved&&Numb
 
 export function newSpatial(op){
  const kind=spatialKind(op);if(!kind)return null;
- return {operation:op,kind,node:op==="puzzle:moonleaf-loop"?1:0,branch:0,angle:.5,shape:0,moves:0,route:null,trace:[],solved:false,warning:"",visited:[op==="puzzle:moonleaf-loop"?1:0],player:[.2,.73],target:[.2,.73],chime:[.30,.73],phase:0,chaseActive:false,readyPounce:false,pouncing:false,chimeWaypoints:[],frame:0,acc:0,waypoints:[],chaseRoute:null,jumping:false,wallCrossed:false,discoveries:[],audience:0,walk:null,visualClock:0,starLocks:{},patternRound:0};
+ return {operation:op,kind,node:op==="puzzle:moonleaf-loop"?1:0,branch:0,angle:.5,shape:0,moves:0,route:null,trace:[],solved:false,warning:"",visited:[op==="puzzle:moonleaf-loop"?1:0],player:[.2,.73],target:[.2,.73],chime:[.30,.73],phase:0,chaseActive:false,readyPounce:false,pouncing:false,chimeWaypoints:[],frame:0,acc:0,waypoints:[],chaseRoute:null,jumping:false,wallCrossed:false,discoveries:[],audience:0,walk:null,visualClock:0,starLocks:{},patternRound:0,shadowRevision:op==="puzzle:shadow-bridge"?2:0,shadowPhase:0};
 }
 // Animation delays the actual node transition. Invalid edges never start motion;
 // the underlying replay stays independent of frame rate.
@@ -33,6 +33,10 @@ export function advanceBridgeWalk(p,dt){if(!p?.walk||!Number.isFinite(dt)||dt<=0
 const kittenPoint=[.70,.76];
 const hiddenShadows=[[.19,.48],[.51,.37],[.82,.60]];
 const shadowId=i=>"found-shadow-"+i;
+const shadowTargets=[.19,.51,.68,.82,.18];
+const shadowHints=[["左边传来窸窣声，照亮藏身处。","A rustle on the left. Light up its hiding place."],["第二只影子露出尾巴，跟上它！","A second tail appears. Follow it!"],["它跑向右边了，追上新的位置。","It darts right. Follow its new position."],["最后一只学着灯光移动，先照到它身上。","The last cat mimics the light. Shine on it first."],["它躲到灯光的反方向，试着照向对面。","It moves opposite the light. Shine across to the other side."],["三只影子都找到了，跟它们去古铃。","All three shadows found. Follow them to the bell."]];
+export const shadowHint=p=>shadowHints[Math.min(5,p.shadowPhase||0)];
+function advanceShadow(p,x){const phase=p.shadowPhase;if(phase>=5||Math.abs(shadowTargets[phase]-x)>=.065)return false;p.shadowPhase++;if(phase===0)p.discoveries.push(shadowId(0));if(phase===2)p.discoveries.push(shadowId(1));if(phase===4)p.discoveries.push(shadowId(2));return true;}
 function starStep(p,i){
  if(!starEdges[p.node].includes(i)){p.warning="fall";return;}
  p.node=i;p.visited.push(i);p.route=p.route||(i===1?"upper":"lower");if((i===3||i===6)&&!p.discoveries.includes("starlight-"+i))p.discoveries.push("starlight-"+i);p.solved=i===7;
@@ -101,7 +105,7 @@ export function spatialInput(p,a){
   else return false;
  }else if(a.type==="rescue"&&p.operation==="puzzle:moonleaf-crossing"){if(p.node!==3||p.discoveries.includes("rescued-kitten"))return false;p.discoveries.push("rescued-kitten");}
  else if(a.type==="leaf"&&p.kind==="bridge"){if(p.node!==1&&p.node!==4){p.warning="leaf";return false;}p.branch=1-p.branch;}
- else if(a.type==="aim"&&p.kind==="light"&&Number.isFinite(a.x)&&a.x>=0&&a.x<=1){if(Math.abs(p.angle-a.x)>.025){p.moves++;p.audience++;}p.angle=a.x;if(p.operation==="puzzle:shadow-bridge"){const before=p.discoveries.length;hiddenShadows.forEach(([x],i)=>{if(Math.abs(x-a.x)<.085&&!p.discoveries.includes(shadowId(i)))p.discoveries.push(shadowId(i));});if(p.discoveries.length===before)return false;}}
+ else if(a.type==="aim"&&p.kind==="light"&&Number.isFinite(a.x)&&a.x>=0&&a.x<=1){if(Math.abs(p.angle-a.x)>.025){p.moves++;p.audience++;}p.angle=a.x;if(p.operation==="puzzle:shadow-bridge"){if(p.shadowRevision===2){if(!advanceShadow(p,a.x))return false;}else{const before=p.discoveries.length;hiddenShadows.forEach(([x],i)=>{if(Math.abs(x-a.x)<.085&&!p.discoveries.includes(shadowId(i)))p.discoveries.push(shadowId(i));});if(p.discoveries.length===before)return false;}}}
  else if(a.type==="shape"&&p.operation==="puzzle:lantern-show"&&Number.isInteger(a.i)&&a.i>=0&&a.i<3){p.shape=a.i;p.audience++;}
  else if(a.type==="cross"&&p.kind==="light"){
   if(p.operation==="puzzle:lantern-show"){p.solved=true;}
@@ -115,9 +119,9 @@ export function spatialInput(p,a){
  if(p.operation==="puzzle:lantern-show"&&a.type==="aim"&&p.trace.at(-1)?.type==="aim")p.trace[p.trace.length-1]={...a};
  else p.trace.push({...a});return p.solved;
 }
-export function spatialProof(p){return p?.solved?{operation:p.operation,trace:p.trace.map(x=>({...x})),frames:p.frame,route:p.route,discoveries:[...p.discoveries],...(p.operation==="puzzle:lantern-show"?{shape:p.shape,angle:p.angle}: {})}:null;}
+export function spatialProof(p){return p?.solved?{operation:p.operation,trace:p.trace.map(x=>({...x})),frames:p.frame,route:p.route,discoveries:[...p.discoveries],...(p.operation==="puzzle:lantern-show"?{shape:p.shape,angle:p.angle}: {}),...(p.shadowRevision===2?{shadowRevision:2}:{})}:null;}
 export function validSpatialProof(op,proof){
- const p=newSpatial(op);if(!p||proof?.operation!==op||!Array.isArray(proof.trace)||proof.trace.length<1||proof.trace.length>500||!Number.isInteger(proof.frames)||proof.frames<0||proof.frames>6000)return false;
+ const p=newSpatial(op);if(p?.shadowRevision===2){if(proof?.shadowRevision===undefined)p.shadowRevision=0;else if(proof.shadowRevision!==2)return false;}if(!p||proof?.operation!==op||!Array.isArray(proof.trace)||proof.trace.length<1||proof.trace.length>500||!Number.isInteger(proof.frames)||proof.frames<0||proof.frames>6000)return false;
  for(const a of proof.trace){if(p.solved)return false;if(p.kind==="chase"){if(!Number.isInteger(a.frame)||a.frame<p.frame||a.frame>=proof.frames)return false;while(p.frame<a.frame&&!p.solved&&p.chaseActive)chaseStep(p);if(p.solved||p.frame!==a.frame)return false;}const n=p.trace.length;spatialInput(p,a);if(p.trace.length!==n+1)return false;}
  if(p.kind==="chase")while(p.frame<proof.frames&&!p.solved&&p.chaseActive)chaseStep(p);
  return p.solved&&p.frame===proof.frames&&p.route===proof.route&&JSON.stringify(p.discoveries)===JSON.stringify(proof.discoveries||[])&&(op!=="puzzle:lantern-show"||p.shape===proof.shape&&p.angle===proof.angle);
@@ -233,9 +237,9 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
    for(const [i,[x,y]] of hiddenShadows.entries()){
     const found=p.discoveries.includes(shadowId(i)),pulse=.5+.5*Math.sin(time*4+i);
     if(found){c.save();c.globalAlpha=.85;const bounce=Math.abs(Math.sin(time*4+i))*.025;paintArt(c,"shadow-cat",x*W,(y-bounce)*H,unit*.18,unit*.14,.5,.5);c.restore();dot([x,y+.05],unit*.012,"#ffdf8d");}
-    else{dot([x-.013,y],unit*.006,"#ffe6a2"+Math.round(120+pulse*100).toString(16));dot([x+.013,y],unit*.006,"#ffe6a2");}
+    else if(p.shadowRevision!==2){dot([x-.013,y],unit*.006,"#ffe6a2"+Math.round(120+pulse*100).toString(16));dot([x+.013,y],unit*.006,"#ffe6a2");}
    }
-   drawCat?.(.19,.72);label(tr("找到三只躲起来的影子猫","Find the three hidden shadow cats"),[.5,.08],20);
+   if(p.shadowRevision===2&&p.shadowPhase<5){const phase=p.shadowPhase,x=shadowTargets[phase],y=[.48,.37,.39,.60,.56][phase];c.save();c.globalAlpha=.64+.3*Math.sin(time*4)**2;if(phase===2||phase===4){paintArt(c,"shadow-cat",x*W,(y-Math.abs(Math.sin(time*4))*.018)*H,unit*.17,unit*.14,.5,.5,Math.sin(time*3)*.06);}else{dot([x-.012,y],unit*.007,"#ffe6a2");dot([x+.012,y],unit*.007,"#ffe6a2");}c.restore();}drawCat?.(.19,.72);label(p.shadowRevision===2?shadowHint(p)[lang==="zh"?0:1]:tr("找到三只躲起来的影子猫","Find the three hidden shadow cats"),[.5,.08],Math.max(13,Math.min(20,unit*.035)));
    label(tr("已找到 ","Found ")+p.discoveries.filter(x=>x.startsWith("found-shadow-")).length+"/3",[.5,.90],18);
   }
  }else{

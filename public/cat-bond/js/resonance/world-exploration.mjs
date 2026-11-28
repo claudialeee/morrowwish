@@ -60,7 +60,7 @@ export function createPuzzle(op,choice=null,record=null){
  return spec&&{...spec,operation:op,values:[...spec.initial],response:[],mistakes:0,solved:false};
 }
 export function movePuzzle(p,i){
- if(!p||p.solved||!Number.isInteger(i)||i<0||i>2)return false;
+ if(!p||p.solved||!Number.isInteger(i)||i<0||i>(p.type==="libraryLedger"?3:2))return false;
  if(p.type.startsWith("library"))return advanceLibrary(p,i);
  if(p.type==="routing"&&p.operation==="puzzle:distributed-routing"){p.values=[...p.goal];}
  else if(["mirrors","stars","water","routing","lanternFocus"].includes(p.type)){p.values[i]=(p.values[i]+1)%p.mod;}
@@ -143,7 +143,7 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   }
   if(!active)return {ok:false,reason:"no-interaction"};const f=layout.features[active.operation];
   if(!near(region==="sky"&&skyLaunch[active.operation]||f)||(puzzle&&!puzzle.solved))return {ok:false,reason:"incomplete-physical-action"};
-  const result=bridge.recordWorld(active.sceneId,active.operation,{...active,shortRing:neighborTrialProof(active.shortRing),verified:true,participants:active.adventureAction?active.participants:puzzle?.participants,responses:puzzle?.response,flightProof:skyFlightProof(puzzle?.flight),libraryValues:puzzle?.type.startsWith("library")?puzzle.values:undefined,libraryQuestion:puzzle?.question,mirrorProof:mirrorProof(puzzle?.mirror),spatialProof:spatialProof(puzzle?.spatial),libraryRecord:active.adventureAction?bridge.libraryRecord():puzzle?.record,starfallSequence:puzzle?.values});
+  const result=bridge.recordWorld(active.sceneId,active.operation,{...active,shortRing:neighborTrialProof(active.shortRing),verified:true,participants:active.adventureAction?active.participants:puzzle?.participants,responses:puzzle?.response,flightProof:skyFlightProof(puzzle?.flight),libraryValues:puzzle?.type.startsWith("library")?puzzle.values:undefined,libraryQuestion:puzzle?.question,librarySeen:puzzle?.seen,mirrorProof:mirrorProof(puzzle?.mirror),spatialProof:spatialProof(puzzle?.spatial),libraryRecord:active.adventureAction?bridge.libraryRecord():puzzle?.record,starfallSequence:puzzle?.values});
   if(result.ok){if((active.adventureAction||puzzle?.type==="skyFlight")&&skyLanding[active.operation]&&!(active.adventureAction&&active.operation==="explore:flight-recorder"))pos=[...skyLanding[active.operation]];active=null;puzzle=null;}return result;
  }
  function operate(i){if(!puzzle)return {ok:false,reason:"no-puzzle"};if(puzzle.solved)return complete();if(puzzle.type==="skyFlight"){steerSkyFlight(puzzle.flight,[.30,.50,.70][i]);return {ok:true,pending:true};}if(!movePuzzle(puzzle,i))return {ok:true,pending:true};if(puzzle.operation==="melody:starfall"){active.shortRing=newNeighborTrial(campaign.regions);if(!deferStarfallMelody){while(!active.shortRing.done)advanceNeighborTrial(active.shortRing,.02);}}if(deferHarborMelody&&puzzle.operation==="melody:harbor"||deferForestMelody&&puzzle.operation==="melody:forest"||deferSkyMelody&&puzzle.operation==="melody:sky"||deferForgeMelody&&puzzle.operation==="melody:forge"||deferLibraryMelody&&puzzle.operation==="melody:library"||deferStarfallMelody&&puzzle.operation==="melody:starfall")return {ok:true,pending:true,ceremony:true};return complete();}

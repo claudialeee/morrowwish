@@ -513,7 +513,7 @@ export function applyDiscovery(region,id,w,v){
  if(s.mode==="decoy")return {ok:true,decoy:true,message:s.message};
  const next={...w,interactions:{...w.interactions,[key(region,id)]:true}};
  const before=progress(region,w.interactions),after=progress(region,next.interactions),d=discoveries[region];
- const perk=!before.returned&&after.returned&&!next.interactions[sideKey(region)];if(perk)next.interactions[sideKey(region)]=true;
+ const perk=after.complete&&(!before.complete||!before.returned&&after.returned)&&!next.interactions[sideKey(region)];if(perk)next.interactions[sideKey(region)]=true;
  return {ok:true,next,message:s.message,souvenir:!before.complete&&after.complete?d.souvenir:!before.returned&&after.returned?d.returnSouvenir:null,reward:perk?{coins:25,fish:2}:null,perk};
 }
 // Keep the props separated from interactive story anchors. Both the painter
