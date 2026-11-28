@@ -2,11 +2,13 @@ name: Starbell fresh normal campaign QA
 on:
   push:
     branches: [qa/starbell-fresh-canon3-20261127]
+    paths: ['scripts/test-starbell-fresh-canon3-browser.mjs']
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
   group: starbell-fresh-canon3
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   fresh:
     runs-on: ubuntu-24.04
@@ -17,6 +19,15 @@ jobs:
         profile: [wide, portrait]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: e8a7054cc95e9ee41ee9d6a877ff6cb3b758f449
+      - name: Checkout common campaign driver
+        uses: actions/checkout@v4
+        with:
+          ref: qa/starbell-live-fresh-20261127
+          path: qa-driver
+          sparse-checkout: scripts/test-starbell-fresh-shared.mjs
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -26,16 +37,23 @@ jobs:
       - name: Continuous fresh slot campaign through ending
         env:
           STARBELL_WORK_PROFILE: ${{ matrix.profile }}
+          STARBELL_MODE: local
+          STARBELL_LANG: ${{ matrix.profile == 'portrait' && 'zh' || 'en' }}
+          SOURCE_SHA: e8a7054cc95e9ee41ee9d6a877ff6cb3b758f449
         run: |
           node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-fresh.log 2>&1 &
           server=$!
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
-          node scripts/test-starbell-fresh-canon3-browser.mjs
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          git -C qa-driver rev-parse HEAD
+          cp qa-driver/scripts/test-starbell-fresh-shared.mjs scripts/test-starbell-fresh-shared.mjs
+          node --check scripts/test-starbell-fresh-shared.mjs
+          node scripts/test-starbell-fresh-shared.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: fresh-${{ matrix.profile }}
-          path: artifacts/work-closure/
+          path: artifacts/live-fresh/
           retention-days: 7
