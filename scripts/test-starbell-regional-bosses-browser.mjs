@@ -91,9 +91,16 @@ try{
       await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+35,y:y-12,id:0}]});
       assert.ok(await page.evaluate(()=>__game.joystick.active&&__game.joystick.dx>.2),'Joystick moves while active');
       const basic=await page.locator('#mv-basic').boundingBox(),bx=basic.x+basic.width/2,by=basic.y+basic.height/2;
-      await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:x+35,y:y-12,id:0},{x:bx,y:by,id:1}]});
-      await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[{x:x+35,y:y-12,id:0}]});
-      assert.ok(await page.evaluate(()=>__game.joystick.active),'Right thumb action must not cancel left movement');
+      const before=await page.evaluate(()=>({auto:__game.touchAutoFire,id:__game.joystick.id,dx:__game.joystick.dx}));
+      await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:bx,y:by,id:1}]});
+      await page.waitForFunction(auto=>__game.touchAutoFire!==auto,before.auto,{timeout:3000});
+      assert.ok(await page.evaluate(b=>__game.joystick.active&&__game.joystick.id===b.id&&__game.joystick.dx>.2,before),'Right action actually fires while left thumb remains held');
+      // Chromium's legacy CDP dispatch uses the RELEASED touch id here, not the
+      // remaining active id. Releasing id 0 would explicitly lift the left thumb.
+      await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[{x:bx,y:by,id:1}]});
+      assert.ok(await page.evaluate(b=>__game.joystick.active&&__game.joystick.id===b.id&&__game.joystick.dx>.2,before),'Right thumb release must not cancel left movement');
+      await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+39,y:y-15,id:0}]});
+      assert.ok(await page.evaluate(()=>__game.joystick.active&&__game.joystick.dx>.2),'Left thumb continues to move after right release');
       await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
       assert.equal(await page.evaluate(()=>__game.joystick.active),false,'Release stops movement');
      }
@@ -123,7 +130,7 @@ try{
    assert.equal(result.done,true);assert.equal(result.result,'win',JSON.stringify(result));
    await page.waitForFunction(()=>__game.scene==='map');
    const after=await page.evaluate(({c,key})=>({coins:State.S.coins,fish:State.S.fish,recorded:c.optional?!!State.S.resonanceExploration.interactions[key]:State.S.resonance.evidence[c.scene]?.includes(c.op),region:WorldMap.currentRegion,publicKeys:['catbond_save_v1','catbond_save_slots_v1','catbond_active_slot_v1'].map(k=>localStorage.getItem(k)),mapSize:(()=>{const r=document.querySelector('.rw-surface')?.getBoundingClientRect();return r&&{w:r.width,h:r.height}})()}),{c,key:bossKey(c.id)});
-   const reward=bossReward(c.id,{interactions:{}});assert.equal(after.coins,500+reward[0]);assert.equal(after.fish,20+reward[1]);assert.equal(after.recorded,true);assert.equal(after.region,c.region);assert.ok(after.publicKeys.every(x=>x===null));assert.ok(after.mapSize?.w>0&&after.mapSize?.h>0);
+   const reward=bossReward(c.id,{interactions:{}});assert.equal(after.coins,500+reward[0]);assert.equal(after.fish,20+reward[1]);assert.equal(after.recorded,true);assert.equal(after.region,c.region);assert.ok(after.publicKeys.every(x=>x===null));assert.ok(after.mapSize?.w>0&&after.mapSize?.h>0);assert.equal(after.mapSize.h>after.mapSize.w,portrait,'Battle exit preserves selected layout');
    if(c.id==='forest'){
     await page.evaluate(()=>{CatBondResonance.close();UI.closeAll();});await open();await press(page.locator('[data-battle-auto="true"]'));await press(page.locator('#bp-go'));
     await page.waitForFunction(()=>__game.battle?.libraryEncounter?.bossId==='forest');
