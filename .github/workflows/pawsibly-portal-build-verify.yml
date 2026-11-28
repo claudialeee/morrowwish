@@ -1,0 +1,42 @@
+name: Pawsibly isolated portal ZIP verification
+on:
+  push:
+    branches: ['release/pawsibly-five-portals-20261127']
+    paths: ['.github/workflows/pawsibly-portal-build-verify.yml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      SOURCE_SHA: 63a1ddd2d4d07b1bbb4c24818fa3fe07a09b5545
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Build portable ZIPs and optional SDK package
+        run: |
+          bash scripts/fetch-cat-music.sh
+          python3 scripts/build-pawsibly-portable-final.py
+          python3 scripts/bind-pawsibly-portable-final.py release-kit/pawsibly/pawsibly-standalone-candidate.zip gamepix
+          mkdir -p release-kit/pawsibly/media
+          python3 -m http.server 8766 --bind 127.0.0.1 --directory release-kit/pawsibly >/tmp/pawsibly-standalone.log 2>&1 &
+          sleep 1
+          node scripts/qa-pawsibly-portable-final.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pawsibly-verified-portable-zips
+          path: |
+            release-kit/pawsibly/*.zip
+            release-kit/pawsibly/*.json
+            release-kit/pawsibly/media/
+          retention-days: 7
+          if-no-files-found: error
