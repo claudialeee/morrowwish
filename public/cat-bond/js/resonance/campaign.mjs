@@ -546,8 +546,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "我也是金色的，又在那里醒过来……可金猫不止我一只。",
-            "en": "I'm golden too, and I woke up there… But I'm not the only golden cat in the world."
+            "zh": "那只金猫住过我醒来的花园？也许它认识我。去找它问问，说不定能知道我是怎么到那里的。",
+            "en": "That golden cat lived in the garden where I woke up? Maybe they know me. If I find them, I might learn how I got there."
           }
         },
         {
@@ -567,8 +567,8 @@ export const campaign = {
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "对了，花园旧屋的门闩要往上提才打得开。下次回家试试！路上小心啊。",
-            "en": "Oh, the old garden house has a tricky latch. Lift it up next time you're home! Safe travels, little one."
+            "zh": "对了，花园旧屋的门闩要往上提。要是再去那儿，可以试试。路上小心啊。",
+            "en": "Oh, lift the latch on that old garden house to open it. Try it if you go back there. Safe travels!"
           }
         }
       ],
@@ -603,8 +603,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "我想找画这张旧地图的猫。你认得这片叶子吗？",
-            "en": "I'm looking for the cat who drew this old map. Do you recognize that leaf?"
+            "zh": "我在找一只以前来过这里的金猫。你见过它吗？",
+            "en": "I'm looking for a golden cat who came here years ago. Have you seen them?"
           }
         },
         {
@@ -821,8 +821,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "才不歪呢，是特别好认！下次来我家演吧，我给你留最好的坐垫。",
-            "en": "Crooked? It's what makes it special! Bring your show to my garden. I'll save you the best cushion."
+            "zh": "才不歪呢，一眼就能认出来！有机会再演给我看呀，我给你留最好的坐垫。",
+            "en": "That ear makes it easy to recognize! Show me another performance sometime. I'll save you the best cushion."
           }
         }
       ],
@@ -951,8 +951,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "地图、灯匣，还有我醒来的花园……会不会是过去的我安排的？",
-            "en": "The map, the case, the garden where I woke up… Could I have left all this for myself?"
+            "zh": "那只金猫为什么留下这么多线索？书库的画像也许能告诉我它是谁。",
+            "en": "Why did that golden cat leave so many clues? Maybe the portraits at the library will show me who they were."
           }
         },
         {
@@ -1188,8 +1188,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "你也住过阳光花园吗？",
-            "en": "Did you live in Sunlit Garden too?"
+            "zh": "你说的花园……是我醒来的那座吗？",
+            "en": "That garden… is it the one where I woke up?"
           }
         },
         {
