@@ -20,14 +20,6 @@ if [[ -f .github/workflows/starbell-integrated-guardians.yml ]]; then
   # Canon 3 acceptance may authorize this new preview. No old gameplay pass reused.
   if grep -Fq '"storyRevision": 3' public/cat-bond/js/resonance/campaign.mjs; then
     canon3_sha="$source_sha"
-    # Preserve the already-running acceptance when the only changed file is
-    # this deployment gate itself. Gameplay, tests, assets and dependencies
-    # must be identical to the accepted candidate.
-    canon3_candidate=570e7fb819f5ba22016c8ffda086bccc4bf4547b
-    git fetch --no-tags --depth=1 origin "$canon3_candidate"
-    if git diff --quiet "$canon3_candidate" "$source_sha" -- . ':!scripts/starbell-release-gate.sh'; then
-      canon3_sha="$canon3_candidate"
-    fi
     for attempt in $(seq 1 180); do
       run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/starbell-canon3-acceptance.yml/runs?head_sha=$canon3_sha&branch=review%2Fstarbell-canon13-player-experience" | jq -c '.workflow_runs[0] // {}')
       if [[ $(jq -r .head_sha <<<"$run") == "$canon3_sha" && $(jq -r .status <<<"$run") == completed ]]; then

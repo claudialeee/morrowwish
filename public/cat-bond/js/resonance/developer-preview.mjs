@@ -2,11 +2,7 @@
 import {campaign} from './campaign.mjs';
 import {makeEngine} from './engine.mjs';
 import {storyPartyPatch} from './story-party.mjs';
-if(window.__STARBELL_DEVELOPER__){
- const areas=[['garden','阳光花园','Sunlit Garden','prologue:P-05'],['harbor','风铃镇','Windchime Town','harbor:H-01'],['forest','眠根林','Rootsleep Forest','forest:R-01'],['forge','千灯城','Lantern City','forge:E-01'],['sky','云海','Skyspine','sky:S-01'],['library','月镜书库','Moonmirror Library','library:M-01'],['starfall','星坠原','Starfall','starfall:F-01'],['finale','终章','Finale','finale:B-01']];
- const params=new URLSearchParams(location.search);
- const selected=()=>areas.find(a=>a[0]===params.get('region'))||areas[1];
- function checkpoint(target){
+export function developerCheckpoint(target){
   const e=makeEngine(campaign),initial=e.snapshot(),ok=x=>{if(!x?.ok)throw Error(x?.reason||'Developer checkpoint failed')};
   const late=new Set(['mechanism:muling-unlock','npc:public-accountability','npc:second-garden-key']);
   for(const scene of campaign.scenes){
@@ -14,16 +10,21 @@ if(window.__STARBELL_DEVELOPER__){
    if(scene.id==='prologue:P-05'&&!e.view().openingMet)ok(e.meetTraveler());
    if(scene.choiceTiming==='beforeAction'&&scene.choices.length)ok(e.choose(scene.choices[0].id));
    if(scene.id==='finale:B-03')for(let j=0;j<campaign.regions.length;j++)ok(e.supportAction(campaign.regions[j],campaign.support[j]));
-   for(const op of scene.requires.filter(op=>!late.has(op)))ok(e.record(scene.id,op));
+   for(const op of scene.requires.filter(op=>!late.has(op)))if(e.view().objective.includes(op))ok(e.record(scene.id,op));
    while(e.view().cursor<scene.lines.length){if(scene.choiceAt===e.view().cursor&&!e.view().choice)ok(e.choose(scene.choices[0].id));ok(e.nextLine());}
    if(scene.choiceTiming!=='beforeAction'&&scene.choices.length&&!e.view().choice)ok(e.choose(scene.choices[0].id));
-   for(const op of scene.requires.filter(op=>late.has(op)))ok(e.record(scene.id,op));ok(e.finish());
+   for(const op of scene.requires.filter(op=>late.has(op)))if(e.view().objective.includes(op))ok(e.record(scene.id,op));ok(e.finish());
   }
   if(e.view().current?.id!==target)throw Error('Unknown developer scene '+target);
   return {initial,story:e.snapshot()};
  }
+if(typeof window!=='undefined'&&window.__STARBELL_DEVELOPER__){
+ const areas=[['garden','阳光花园','Sunlit Garden','prologue:P-05'],['harbor','风铃镇','Windchime Town','harbor:H-01'],['forest','眠根林','Rootsleep Forest','forest:R-01'],['forge','千灯城','Lantern City','forge:E-01'],['sky','云海','Skyspine','sky:S-01'],['library','月镜书库','Moonmirror Library','library:M-01'],['starfall','星坠原','Starfall','starfall:F-01'],['finale','终章','Finale','finale:B-01']];
+ const params=new URLSearchParams(location.search);
+ const selected=()=>areas.find(a=>a[0]===params.get('region'))||areas[1];
+
  function prepare(){
-  const a=selected(),root=State.S,{initial,story}=checkpoint(a[3]);const hero=State.makeCat('jinjc',{affinity:35,protagonist:true});
+  const a=selected(),root=State.S,{initial,story}=developerCheckpoint(a[3]);const hero=State.makeCat('jinjc',{affinity:35,protagonist:true});
   root.cats=[hero];root.dex={jinjc:1};root.resonance=story;
   const party=storyPartyPatch(root,initial,story,State.makeCat.bind(State),cat=>window.Raising?.decorateNewCat?.(cat,{shinyOdds:0}));if(party)Object.assign(root,party.fields);
   root.coins=1000;root.fish=100;root.tutorialDone=true;root.resonanceExploration={location:a[0],positions:{},interactions:{},pickups:{},cargo:null};root.developerCheckpoint=a[3];if(!State.save()?.ok)throw Error('Developer save failed');

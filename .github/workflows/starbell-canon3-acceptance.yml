@@ -50,9 +50,17 @@ jobs:
           trap 'kill "$server" 2>/dev/null || true' EXIT
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
-          node scripts/cat-bond-release-prologue-qa.mjs
-          node scripts/test-starbell-regional-bosses-browser.mjs
-          node scripts/test-starbell-player-first-browser.mjs
+          # Run independent browser suites concurrently so a failed one never hides the others.
+          node scripts/cat-bond-release-prologue-qa.mjs > /tmp/canon3-opening.log 2>&1 & opening=$!
+          node scripts/test-starbell-regional-bosses-browser.mjs > /tmp/canon3-guardians.log 2>&1 & guardians=$!
+          node scripts/test-starbell-player-first-browser.mjs > /tmp/canon3-minigames.log 2>&1 & minigames=$!
+          failed=0
+          for pair in "$opening:opening" "$guardians:guardians" "$minigames:minigames"; do
+            pid=${pair%%:*}; name=${pair#*:}
+            wait "$pid" || failed=1
+            cat "/tmp/canon3-$name.log"
+          done
+          exit "$failed"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -60,5 +68,6 @@ jobs:
           path: |
             artifacts/cat-bond-release-prologue/
             /tmp/starbell-canon3.log
+            /tmp/canon3-*.log
           if-no-files-found: warn
           retention-days: 7
