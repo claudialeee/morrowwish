@@ -35,7 +35,7 @@ function openingEncounter(api){
  ["你","You","小曦？你认识我？……我怎么连这个名字都想不起来了？","Sunny? You know me? …Why can't I even remember that name?","继续","Continue"],
  ["暮铃","Luna","我是暮铃。咱们以前一起巡铃。你爪子底下那封信，是你自己留下的。","I'm Luna. We used to look after the bells together. That note under your paw? You wrote it.","继续","Continue"],
  ["你","You","我写的？那上面为什么说不能开锁？","I wrote this? Why does it say not to open the lock?","继续","Continue"],
- ["暮铃","Luna","以前星铃坏了，大家就开始忘事。你留下的巡铃图在檐灯爷爷那儿。找到那张图，就知道六座古铃在哪儿了。","When the Star Bell broke, cats started forgetting things. Alder has your old patrol map. It'll show us where the six local bells are.","继续","Continue"],
+ ["暮铃","Luna","星铃坏了，会夺走记忆。那把锁就是为了挡住它。你是在那次灾难里失忆的。檐灯爷爷收着你的巡铃图，上面有六座古铃的位置。","A broken Star Bell takes memories. The lock was there to hold it back. You lost your memory in that disaster. Alder has your old patrol map, with all six local bells marked.","继续","Continue"],
  ["你","You","好！我去找檐灯爷爷。也许他知道我以前发生了什么。","Okay! I'll find Alder. Maybe he knows what happened to me.","继续","Continue"],
  ["暮铃","Luna","我先去镇上找他。你也别急，草地上的鱼饼可以吃。……你以前可不舍得把鱼饼放凉。","I'll go find him in town. No rush. That fish cake in the grass is yours. …You never used to let one go cold.","告别","Say goodbye"]
  ];
