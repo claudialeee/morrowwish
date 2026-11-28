@@ -2718,3 +2718,33 @@ RSI cycle 2026-11-27T23:46:47Z: `agent:peel-tighter` scored 0.7060 — EXACTLY m
 
 ### Session trend (11 cycles)
 4.33 → 4.5 → 5.0 → 4.33 → 4.17 → 4.67 → 4.33 → 4.0 → 4.17 → 4.33 → **4.0**
+
+## Playtest cycle w2krk5fic — 2026-11-27 (post Step A-E + 2c2f7937)
+
+**Headline**: Combat right now is a one-verb, one-arc smear: offense-only fixes have papered over defense, legibility, and per-fight identity — ship a defensive verb for mashers, make the invisible _closing ramp visible, and lock 重击 as the passive-system shared trigger before any P1 cat lands.
+
+**funMean 4.33** (same as prior wnghvvbag):
+- 探索 7 / 狂按 5 / 懒人 5 / 手忙脚乱 4 / 没耐心 3 / 谨慎 **2**
+
+### Auto-fixes this cycle: 0 (4 fix-P0 candidates, all compound/architectural)
+
+- **Fix 0 (DR + graze defensive verb)**: FINDINGS-ONLY — new `_aggroDRUntil` state + new rate-limited floater + new VFX. Compound.
+- **Fix 1 (ult toast + CD + player-side cap)**: FINDINGS-ONLY — multi-site balance + new string + new cap. Compound.
+- **Fix 2 (重击 N-th-basic streak)**: FINDINGS-ONLY — architectural, cross-system pattern pin for future passive layer.
+- **Fix 3 (_closing render surface)**: FINDINGS-ONLY — multi-site rendering juice package.
+
+### Critiques: 35 total
+- 25 P1 (8 local-numeric + 17 additive-flag)
+- 10 P2 (3 local-numeric + 7 additive-flag)
+- 0 critique-tier P0
+
+### Harness
+31/80 agent calls hit StructuredOutput retry cap (session high rate 38.75%). 49 succeeded.
+
+### Session trend (13 cycles)
+4.33 → 4.5 → 5.0 → 4.33 → 4.17 → 4.67 → 4.33 → 4.0 → 4.17 → 4.33 → 4.0 → 4.33 → **4.33**
+
+Last 4 cycles clustered 4.0-4.33 — combat has a hard ceiling that further scalar fixes can't break. Owner-scope refactor (Step A-E persona-aware RSI just shipped) is the lever.
+
+### RSI Step A-E update
+5 commits landed in parallel while this cycle ran: ccf989ed Step A (reaction/aim/vision), e470a953 Step B (tilt), 476363d5 Step C (fog-of-mind export), b4bb2fc3 Step D (evaluator persona driver), 92126c2e Step E (persona cohort + min-score rule). Next RSI cycle will produce the first candidates evaluated under human-limited persona cohort.
