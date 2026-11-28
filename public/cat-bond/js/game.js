@@ -1132,7 +1132,7 @@ class Game {
     // DEBUG 🐛 button: reveal + reset only when ?debug=1 (battle._debugAvailable). Hidden otherwise,
     // and reset to its un-pressed state each new battle so recording is opt-in per fight.
     const dbgBtn=document.getElementById('btn-debug');
-    if(dbgBtn){ dbgBtn.hidden=!this.battle._debugAvailable; dbgBtn.setAttribute('aria-pressed','false'); dbgBtn.classList.remove('is-active'); }
+    if(dbgBtn){ dbgBtn.hidden=!(window.__STARBELL_DEVELOPER__&&this.battle._debugAvailable); dbgBtn.setAttribute('aria-pressed','false'); dbgBtn.classList.remove('is-active'); }
     this.syncBattleModeUI();
     this.syncBattleControlHelp();
     // The first-ever encounter begins paused with a short guided tour.
@@ -1338,6 +1338,7 @@ class Game {
     if(!root)return;
     const manual=this.scene==='battle'&&!this.battle?.autoMode;
     root.classList.toggle('touch-manual',manual);
+    root.classList.add('touch-battle');
     const attack=document.getElementById('mv-basic');
     if(attack){
       attack.classList.toggle('auto-firing',manual&&this.touchAutoFire);
@@ -1571,6 +1572,9 @@ class Game {
   updateBattleUI() {
     const b = this.battle; if (!b) return;
     this.syncBattleModeUI();
+    const named=(b.enemies||[]).find(e=>e.alive&&e.combatName)||(b.enemies||[]).find(e=>e.combatName),wildName=document.getElementById('wild-name');
+    if(named&&wildName){const en=window.MorrowwishI18n?.get?.()!=='zh',label=named.combatName[en?1:0];if(wildName.textContent!==label)wildName.textContent=label;}
+    const debug=document.getElementById('btn-debug');if(debug&&!window.__STARBELL_DEVELOPER__)debug.hidden=true;
     // wild HP + player active HP shown on canvas; here we update the control bar
     // Always-visible, compact ENEMY health bar. Canvas world HP floats with
     // enemy position; on phones it can disappear behind the camera/controls.

@@ -64,10 +64,36 @@ async function play(sceneId){
  }
 
  controller.dispose=close;
+ let fallbackActive=false;
+ // A failed art/manifest must not strand an otherwise valid normal-mode save.
+ // Present the actual canonical dialogue, then require explicit acknowledgement;
+ // never approve candidate art or record any non-cinematic gameplay evidence.
  const error=()=>{
-  if(!current())return;
-  close();
-  game.toast({zh:"演出暂未就绪，请重试。",en:"The cinematic could not play. Try again."});
+  if(!current()||fallbackActive)return;
+  const s=runtime.view().current;
+  if(!["starfall:F-02","starfall:F-05","finale:B-04"].includes(sceneId)||s?.choices?.length||runtime.view().objective.some(op=>!op.startsWith("cinematic:"))){close();game.toast({zh:"演出暂未就绪，请重试。",en:"The cinematic could not play. Try again."});return;}
+  fallbackActive=true;player?.dispose();player=null;root?.remove();
+  root=document.createElement("div");root.className="res-chapter-cinematic cb-story-overlay is-visible";
+  document.getElementById("stage").append(root);
+  (async()=>{
+   try{
+    while(current()&&runtime.view().cursor<s.lines.length){
+     const v=runtime.view(),line=s.lines[v.cursor],actor=campaign.cast[line.speaker];
+     if(!v.lineReady)throw Error("dialogue-awaits-gameplay");
+     const name={zh:line.speaker==="player"?"你":actor?.name?.zh||s.title.zh,en:line.speaker==="player"?"You":actor?.name?.en||s.title.en};
+     if(!await acknowledge(name,line.text,{zh:"继续",en:"Continue"}))return;
+     if(!current())return;
+     if(!runtime.nextLine(token).ok)throw Error("dialogue-save-failed");
+    }
+    if(!current())return;
+    if(!await acknowledge(s.title,sceneId==="starfall:F-02"?{zh:"原来当年是你用自己的记忆封住回响。五座古铃已经恢复，现在去找暮铃。",en:"You sealed the echoes with your own memories. Five ancient bells now ring again. Find Luna."}:sceneId==="starfall:F-05"?{zh:"暮铃奔向了中央星铃。追上她，阻止回响夺走更多记忆。",en:"Luna has run toward the Star Bell. Follow her before the echoes steal more memories."}:{zh:"记忆终于回来了。现在一起回家。",en:"The memories have returned. It is time to go home."},{zh:"继续旅程",en:"Continue journey"}))return;
+    if(!current())return;
+    for(const op of runtime.view().objective.filter(op=>op.startsWith("cinematic:"))){if(!runtime.evidence({sceneId,operation:op,region:s.chapter,verified:true,token}).ok)throw Error("cinematic-evidence-failed");}
+    if(!runtime.finish(token).ok)throw Error("scene-finish-failed");
+    writeCheckpoint(undefined);close();
+    if(runtime.view().current?.id==="epilogue:E-02")window.WorldMap.exitToYard();
+   }catch(e){close();game.toast({zh:"剧情未保存，请重试。",en:"Story progress could not be saved. Please retry."});}
+  })();
  };
  try{
   const response=await fetch(manifestURL);
@@ -103,10 +129,10 @@ async function play(sceneId){
   const result=await player.playCurrent(resume);
   // A changed shot list may invalidate an old checkpoint. Clear only that slot's checkpoint; never advance story.
   if(!result.ok&&resume&&window.State.S===slot&&window.State.activeSlot()===slotId)writeCheckpoint(undefined);
-  return result.ok;
+  return result.ok||fallbackActive;
  }catch{
   error();
-  return false;
+  return fallbackActive;
  }
 }
 window.CatBondChapterCinematics=Object.freeze({play,starfallReleaseReady:()=>starfallReleaseReady(campaign,releaseManifest),developmentReady});

@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const HOME_ANCHORS = Object.freeze({
-    muling:{x:.60,y:.70,scale:1.30,radius:72},
+    muling:{x:.60,y:.70,scale:.94,radius:46},
     jiedeng:{x:.15,y:.54,scale:.92,radius:46}, qilan:{x:.25,y:.59,scale:.86,radius:44},
     yahe:{x:.34,y:.56,scale:.90,radius:45}, yuchuan:{x:.42,y:.58,scale:.98,radius:48},
     jinpo:{x:.86,y:.50,scale:.98,radius:48}, xiaomao:{x:.91,y:.58,scale:.82,radius:42},
@@ -210,7 +210,7 @@
     if(!residents)return;
     hideTalkMarkers();
     if(!narrativeAdapter&&window.CatBondResonanceNPC?.gardenAdapter)registerNarrativeAdapter(window.CatBondResonanceNPC.gardenAdapter);
-    lastNpcHits=[];hitState=null;if(!narrativeAdapter)return;
+    lastNpcHits=[];hitState=null;if(!narrativeAdapter||game.worldDialogueOpen?.())return;
     let npcs;try{npcs=narrativeAdapter.getHomeNpcs()||[]}catch(error){console.warn('Garden NPC availability failed',error);return}
     if(!Array.isArray(npcs))return;hitState=state();
     const v=window.CatBondResonance?.view?.(),ending=!!v?.ending;
@@ -224,7 +224,7 @@
       const f=window.World?.gardenArtworkRect?.(width,height)||{x:0,y:0,width,height};
       let x=Math.max(42,Math.min(width-42,f.x+f.width*a.x)),y=Math.max(90,Math.min(height-28,f.y+f.height*a.y));const shared=npc.id==='muling'?window.GardenExploration?.companionPose?.(x,y):null;if(shared){x=Math.max(42,Math.min(width-42,shared.x));y=Math.max(90,Math.min(height-28,shared.y));if(shared.touching)y-=3*Math.sin(time*8);}
       // No generic sprite or emoji fallback: Chat 4 must supply approved character art.
-      try{let scale=a.scale*(npc.id==='muling'?.95:.68)*Math.max(.72,Math.min(1.1,height/460)),cell=null;
+      try{let scale=a.scale*.68*Math.max(.72,Math.min(1.1,height/460)),cell=null;
         if(ending&&!shared&&r.width&&r.height&&canvasRect.width&&canvasRect.height){const sx=canvasRect.width/width,sy=canvasRect.height/height;const bodyHeight=Math.max(45,Math.min(80,r.height*.15));scale=Math.min(scale,bodyHeight/(108*sy),92/(118*sx));const bx=canvasRect.left-r.left+x*sx,by=canvasRect.top-r.top+y*sy;
           cell=window.GardenExploration?.placeMarker?.(bx,by-bodyHeight/2+22,Math.min(118,r.width-8),bodyHeight+48,r.width,r.height,occupied);
           if(cell){occupied.push(cell.box);x=(cell.x+r.left-canvasRect.left)/sx;y=(cell.box.top+bodyHeight+r.top-canvasRect.top)/sy;}}

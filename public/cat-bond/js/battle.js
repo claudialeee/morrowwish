@@ -667,7 +667,7 @@ class CaptureBattle {
     const insets=safe?getComputedStyle(safe):null;
     const topInset=parseFloat(insets?.getPropertyValue('--cb-portrait-safe-top'))||0;
     const bottomInset=parseFloat(insets?.getPropertyValue('--cb-portrait-safe-bottom'))||0;
-    this.bottomMargin=128+bottomInset;
+    this.bottomMargin=Math.min(170,Math.max(128,this.H*.23))+bottomInset;
     this.topMargin=Math.min(244+topInset,Math.max(100,this.H-this.bottomMargin-180));
   }
   // Keep the combat field available when a phone is rotated mid-encounter.

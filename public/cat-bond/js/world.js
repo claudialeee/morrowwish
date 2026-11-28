@@ -165,11 +165,11 @@ class CatEntity {
     if(this._gardenPlayerControlled&&!this._gardenTask&&!this._buildTarget){
       const target=this._gardenExploreTarget||this._gardenManualTarget;
       const bounds=gardenGround(this.W,this.H),dx=target?target.x-this.x:0,dy=target?target.y-this.y:0,dist=Math.hypot(dx,dy);
-      const step=Math.min(dt,.05),speed=Math.min(220,Math.max(0,dist*6));
+      const step=Math.max(0,Math.min(dt,.05)),speed=112/Math.max(1,this.game?._yardCamera?.z||1),travel=Math.min(dist,speed*step);
       if(dist>3){
         this.pose='walk';this.walkVX=dx/dist*speed;this.walkVY=dy/dist*speed;
-        this.x=Math.max(bounds.left,Math.min(bounds.right,this.x+this.walkVX*step));
-        this.y=Math.max(bounds.top,Math.min(bounds.bottom,this.y+this.walkVY*step));
+        this.x=Math.max(bounds.left,Math.min(bounds.right,this.x+dx/dist*travel));
+        this.y=Math.max(bounds.top,Math.min(bounds.bottom,this.y+dy/dist*travel));
         if(Math.abs(dx)>3)this.face=dx<0?-1:1;
         this.motion=Math.min(1,speed/38);this.stride+=step*(2.6+speed*.11);
       }else{
@@ -915,7 +915,7 @@ class YardScene {
     // This render path is shared by desktop and mobile garden layouts.
     const speakingPortrait=window.__CAT_BOND_CANONICAL_ACTIVE__&&document.querySelector('.res-host .res-dialogue[data-speaker="player"]:not([hidden]) .res-portrait:not([hidden])');
     const portraitOwnsPlayer=!!(speakingPortrait?.complete&&speakingPortrait.naturalWidth&&speakingPortrait.getClientRects().length&&getComputedStyle(speakingPortrait).visibility!=='hidden');
-    const speakingPlayer=portraitOwnsPlayer?this.game.yardPlayer?.():null;
+    const speakingPlayer=(portraitOwnsPlayer||this.game.worldDialogueOpen?.())?this.game.yardPlayer?.():null;
     for(const e of this.entities){
       if(e===speakingPlayer)continue;
       const using=e._playBuilding&&e._playBuildT>0;

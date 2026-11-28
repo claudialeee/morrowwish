@@ -299,3 +299,12 @@ html body #stage #cb-system-menu .cb-system-card{width:min(340px,calc(100vw - 24
 @media (orientation:landscape){
  #stage .rw-world.rw-region-compact:has([data-regional-boss])>.rw-fit-rail:not([hidden]){max-height:calc(100% - 130px)!important;}
 }
+
+/* Fit illustration to the playfield, not a dark 16:9 box inside a second box. */
+@media(orientation:landscape){
+ #stage .rw-world.rw-dedicated-puzzle:not([hidden]){--rw-game-controls:clamp(220px,25%,300px);--rw-game-gap:8px;background:#f7ecdd!important}
+ #stage .rw-world.rw-dedicated-puzzle:not([hidden])>.rw-shell{background:linear-gradient(#f7ecdd44,#f7ecdd44),var(--rw-puzzle-art,none) center/cover no-repeat!important;border:1px solid #cbb79a;border-radius:14px!important}
+ #stage .rw-world.rw-dedicated-puzzle:not([hidden])>.rw-fit-rail.rw-dedicated-rail{height:auto!important;bottom:auto!important;max-height:calc(100% - var(--rw-game-top) - 2 * var(--rw-game-gap))!important;align-content:start;justify-content:flex-start!important;border:1px solid #cbb79a;border-radius:14px!important;background:#fff9ee!important}
+ #stage .rw-world.rw-dedicated-puzzle:not([hidden])>.rw-shell>.rw-surface{width:min(100cqw,calc(100cqh * var(--rw-map-width-ratio,1.77777778)))!important;height:auto!important;aspect-ratio:var(--rw-map-ratio,16/9)!important;max-height:100%!important;object-fit:contain!important}
+}
+@media(orientation:landscape) and (max-height:500px){#stage .rw-world.rw-dedicated-puzzle:not([hidden]){--rw-game-controls:clamp(180px,32%,255px);--rw-game-gap:6px}}
