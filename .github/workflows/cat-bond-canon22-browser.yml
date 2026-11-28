@@ -1,7 +1,7 @@
 name: Canon 2.2 chapter browser acceptance
 on:
   push:
-    branches: [review/starbell-canon13-player-experience, review/starbell-qa-optimization]
+    branches: [starbell-echoes, review/starbell-qa-optimization]
     paths:
       - 'public/cat-bond/**'
       - 'scripts/cat-bond-experience-*.mjs'
