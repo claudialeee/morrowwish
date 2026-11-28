@@ -1,4 +1,4 @@
-import {mountTalentTrial} from "./adventure-play.mjs";
+import {mountTalentTrial} from "./adventure-play.mjs?v=talent-effects-20261127";
 import {companionTalents} from "./companion-talents.mjs";
 import {earnedKeepsakes} from "./regional-discoveries.mjs";
 // One presentation layer over the existing UI, State, Raising and CatRelations.
