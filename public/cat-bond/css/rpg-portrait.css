@@ -350,8 +350,6 @@
 /* Native portrait story plates: keep post-combat/ceremony dialogue full bleed without altering desktop compositions. */
 @media (orientation:portrait) and (max-width:700px){
  #stage .res-host:is([data-scene="harbor:H-04"],[data-scene="harbor:H-05"])::before{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
- #stage .res-host[data-scene="harbor:H-04"]::before{background-image:url("../assets/mobile-portrait/windchime-town-tall.webp")!important}
- #stage .res-host[data-scene="harbor:H-05"]::before{background-image:url("../assets/mobile-portrait/harbor-ceremony-matched.webp")!important}
  #stage .res-host .res-skip-top{right:max(12px,env(safe-area-inset-right,0px))!important}
 }
 
@@ -419,15 +417,8 @@
 
 /* Native mobile story and sanctuary compositions: never reuse a 16:9 plate after combat. */
 @media (orientation:portrait) and (max-width:700px){
- #stage .res-host:is([data-scene^="harbor:"],[data-scene^="forest:"],[data-scene^="forge:"],[data-scene^="sky:"],[data-scene^="library:"],[data-scene^="starfall:"],[data-scene^="finale:"],[data-scene^="epilogue:"]):not(.res-library-reveal):not(.res-emotional-art){isolation:isolate;background:#192e36;inset:0!important;width:100%!important;height:100%!important;box-sizing:border-box}
- #stage .res-host:is([data-scene^="harbor:"],[data-scene^="forest:"],[data-scene^="forge:"],[data-scene^="sky:"],[data-scene^="library:"],[data-scene^="starfall:"],[data-scene^="finale:"],[data-scene^="epilogue:"]):not(.res-library-reveal):not(.res-emotional-art)::before{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
- #stage .res-host[data-scene^="harbor:"]::before{background-image:url("../assets/mobile-portrait/windchime-town-tall.webp")!important}
- #stage .res-host[data-scene="harbor:H-05"]::before{background-image:url("../assets/mobile-portrait/harbor-ceremony-matched.webp")!important}
- #stage .res-host[data-scene^="forest:"]::before{background-image:url("../assets/mobile-portrait/rootsleep-forest.webp")!important}
- #stage .res-host[data-scene^="forge:"]::before{background-image:url("../assets/mobile-portrait/lantern-city.webp")!important}
- #stage .res-host[data-scene^="sky:"]::before{background-image:url("../assets/mobile-portrait/skyspine-isles.webp")!important}
- #stage .res-host[data-scene^="library:"]:not(.res-library-reveal)::before{background-image:url("../assets/mobile-portrait/moonmirror-library-tall.webp")!important}
- #stage .res-host[data-scene^="starfall:"]::before{background-image:url("../assets/mobile-portrait/starfall-expanse.webp")!important}
+ #stage .res-host:is([data-scene^="finale:"],[data-scene^="epilogue:"]):not(.res-library-reveal):not(.res-emotional-art){isolation:isolate;background:#192e36;inset:0!important;width:100%!important;height:100%!important;box-sizing:border-box}
+ #stage .res-host:is([data-scene^="finale:"],[data-scene^="epilogue:"]):not(.res-library-reveal):not(.res-emotional-art)::before{content:"";position:absolute;inset:0;z-index:-2;pointer-events:none;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
  #stage .res-host[data-scene^="finale:"]::before{background-image:url("../assets/mobile-portrait/battle-finale.webp")!important}
  #stage .res-host[data-scene="finale:B-04"]::before{background-image:url("../assets/mobile-portrait/story-b04-reunion.webp")!important}
  #stage .res-host[data-scene^="epilogue:"]::before{background-image:url("../assets/mobile-portrait/story-e03-garden.webp")!important}
@@ -497,3 +488,8 @@
  #stage #battle-ui.on.touch-manual #battle-touch-joystick{width:88px!important;height:88px!important}
  #stage #battle-ui.on.touch-manual #duo-burst:not([hidden]){bottom:calc(120px + env(safe-area-inset-bottom,0px))!important}
 }
+
+/* Regional dialogue shares the actual exploration camera at every aspect ratio.
+   Dedicated library/illustrated story scenes and finale/ending art stay separate. */
+#stage .res-host:is([data-scene^="harbor:"],[data-scene^="forest:"],[data-scene^="forge:"],[data-scene^="sky:"],[data-scene^="library:"],[data-scene^="starfall:"]):not(.res-library-reveal):not(.res-emotional-art){background:linear-gradient(0deg,#49362220,transparent 42%)!important;backdrop-filter:none!important;}
+#stage .res-host:is([data-scene^="harbor:"],[data-scene^="forest:"],[data-scene^="forge:"],[data-scene^="sky:"],[data-scene^="library:"],[data-scene^="starfall:"]):not(.res-library-reveal):not(.res-emotional-art)::before,#stage .res-host:is([data-scene^="harbor:"],[data-scene^="forest:"],[data-scene^="forge:"],[data-scene^="sky:"],[data-scene^="library:"],[data-scene^="starfall:"]):not(.res-library-reveal):not(.res-emotional-art)::after{content:none!important;display:none!important;background:none!important;animation:none!important;}
