@@ -31,13 +31,13 @@ function openingEncounter(api){
  for(const b of [next,close])b.type="button";next.className="cb-encounter-next";close.className="cb-encounter-leave";copy.setAttribute("aria-live","polite");
  controls.append(next,close);body.append(name,copy,controls);panel.append(art,body);root.append(panel);let step=0;
  const lines=[
- ["陌生猫","Stranger","咦，你醒啦！睡得好香，耳朵还一抖一抖的。","Oh, you're awake! You were sleeping so soundly, even your ears were twitching.","继续","Continue"],
- ["你","You","你认识我吗？我想不起来自己叫什么了。","Do you know me? I can't remember my name.","继续","Continue"],
- ["暮铃","Luna","……我叫暮铃。我刚才看见你在草地上睡觉。你不记得怎么来这里了吗？","…I'm Luna. I saw you sleeping on the grass. You don't remember how you got here?","继续","Continue"],
- ["你","You","不记得。这里是什么地方？有没有猫知道我是谁？","No. Where are we? Does anyone know who I am?","继续","Continue"],
- ["暮铃","Luna","这里叫阳光花园。风铃镇的檐灯以前常来修屋子，也许见过你。我们去问问他吧。","This is Sunlit Garden. Alder in Windchime Town used to repair the house. Maybe he's seen you before. Let's ask him.","继续","Continue"],
- ["你","You","好！哪怕找到一点点线索也行。你愿意和我一起去吗？","Yes! Even a little clue would help. Will you come with me?","继续","Continue"],
- ["暮铃","Luna","当然！我先去镇上打听，你想在花园多玩会儿也行。路上饿了就吃鱼饼，别饿着肚子找名字。","Of course! I'll go ask around in town. Stay and explore if you like. Grab a fish cake if you're hungry. No name-hunting on an empty belly!","告别","Say goodbye"]
+ ["陌生猫","Stranger","你可算醒啦！","You're awake at last!","继续","Continue"],
+ ["你","You","咦？你在等我吗？","Huh? Were you waiting for me?","继续","Continue"],
+ ["陌生猫","Stranger","我路过的时候看你睡在这儿。怎么，找不到回家的路啦？","I found you asleep here. Lost your way home?","继续","Continue"],
+ ["你","You","我……连自己叫什么都想不起来了。你认识我吗？","I… can't even remember my name. Do you know me?","继续","Continue"],
+ ["暮铃","Luna","不认识。我叫暮铃，这儿是阳光花园。风铃镇的檐灯爷爷常来修屋子，没准儿见过你呢。","No. I'm Luna, and this is Sunlit Garden. Alder in Windchime Town used to fix up the house. He might have seen you before.","继续","Continue"],
+ ["你","You","那我去找他！不过……风铃镇怎么走呀？","I'll go ask him! Um… which way is Windchime Town?","继续","Continue"],
+ ["暮铃","Luna","别急，我先去镇上等你。对啦，草地上有块鱼饼，饿了就吃。","No rush. I'll meet you in town. Oh, there's a fish cake in the garden if you're hungry.","告别","Say goodbye"]
  ];
 
  function dispose(){root.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("pagehide",dispose);}
