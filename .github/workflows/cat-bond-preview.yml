@@ -17,7 +17,10 @@ on:
       - 'scripts/check-cat-bond-audio-assets.mjs'
       - 'scripts/starbell-release-gate.sh'
       - 'scripts/starbell-garden-release-scope.sh'
-      - 'scripts/test-starbell-telemetry.mjs'
+      - 'scripts/test-starbell-*.mjs'
+      - 'scripts/cat-bond-release-prologue-qa.mjs'
+      - 'scripts/cat-bond-experience-chapters.mjs'
+      - '.github/workflows/starbell-canon3-acceptance.yml'
       - '.github/workflows/cat-bond-preview.yml'
   workflow_dispatch:
 permissions:
