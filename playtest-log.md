@@ -2748,3 +2748,35 @@ Last 4 cycles clustered 4.0-4.33 — combat has a hard ceiling that further scal
 
 ### RSI Step A-E update
 5 commits landed in parallel while this cycle ran: ccf989ed Step A (reaction/aim/vision), e470a953 Step B (tilt), 476363d5 Step C (fog-of-mind export), b4bb2fc3 Step D (evaluator persona driver), 92126c2e Step E (persona cohort + min-score rule). Next RSI cycle will produce the first candidates evaluated under human-limited persona cohort.
+
+## Playtest cycle w548586ig — 2026-11-28 (post Step A-E RSI refactor)
+
+**Headline**: Combat tempo is healthier than the fun scores read — the three sharpest wounds are the arena-wall clamp cornering mashers, timeout judging 100%-HP survival as defeat, and the voluntary-flee mercy loop actively training players to bail; patch those and most of the 3–5/10 persona scores lift without touching sim math.
+
+**funMean 4.0** (plateau held, tied session low):
+- 探索 6 (↓1) / 懒人 5 / 狂按 4 / 谨慎 3 / 手忙脚乱 3 / 没耐心 3
+
+### Auto-fixes this cycle: 0 (3 fix-P0 candidates, all excluded by cron rules)
+
+- **Fix 0 (soft wall bumper)**: FINDINGS-ONLY — new helper + 3 call sites + 2 new constants. Compound (3+ sites).
+- **Fix 1 (HP-lead tiebreaker at timeout)**: FINDINGS-ONLY — new save enum class (`flee-voluntary` / lead variant), analytics allowlist shift. Save format excluded.
+- **Fix 2 (stop rewarding voluntary flee with mercy)**: FINDINGS-ONLY — same new save enum `flee-voluntary` + analytics allowlist concern. Save format excluded.
+
+### Critiques: 43 total
+- 26 P1 (10 local-numeric + 16 additive-flag)
+- 17 P2 (3 local-numeric + 14 additive-flag)
+- 0 critique-tier P0
+
+### Session trend (14 cycles)
+4.33 → 4.5 → 5.0 → 4.33 → 4.17 → 4.67 → 4.33 → 4.0 → 4.17 → 4.33 → 4.0 → 4.33 → 4.33 → **4.0**
+
+**Plateau firmly 4.0-4.33 across last 5 cycles. Scalar tunes exhausted.**
+
+### Top P1 insight (adversary-flagged, most-cited root cause)
+Arena-wall infinite-stiffness clamp (battle.js:1440/1772/1880) creates stationary-death corners — once masher backs against edge, enemy keeps closing, every subsequent shot is free. 546 identical dmg across 3/8 cornered deaths is the mechanic's signature. All 3 shipped P0 fixes bought more player offense; none touched this geometry. Future owner-approved: the wall bumper (fix 0) is architecturally simple but exceeds cron's single-site auto-fix rule.
+
+### Harness
+20/77 agent calls hit StructuredOutput retry cap (26% drop). 57 succeeded.
+
+### Step A-E RSI follow-up
+In-parallel RSI cycle 2026-11-28T01:53:02Z: 5 candidates all scored ~0.023 under new cohort min-rule. Observed failure mode: lazy persona's `tick` depends on autoMode toggle (`b.autoMode = !b.autoMode`), but Step D force-disables autoMode to let persona drive — so lazy never acts, driving cohort min to ~0. Fix queued: scope autoMode gating per-persona (lazy=keep, others=persona).
