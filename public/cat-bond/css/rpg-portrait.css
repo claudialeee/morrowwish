@@ -457,3 +457,43 @@
   max-height:40dvh!important;margin:4px 6px 6px!important;overflow:auto!important;
  }
 }
+
+/* Starbell manual combat: stable left thumb movement, independent right thumb actions.
+   The full-width portrait grid remains available in automatic mode only. */
+#stage #battle-ui.on.touch-manual .move-bar{
+ position:absolute!important;left:auto!important;right:max(8px,env(safe-area-inset-right,0px))!important;
+ bottom:max(12px,env(safe-area-inset-bottom,0px))!important;top:auto!important;transform:none!important;
+ width:auto!important;max-width:58%!important;display:grid!important;
+ grid-template-columns:repeat(3,clamp(44px,14vw,58px))!important;
+ grid-template-rows:repeat(2,clamp(44px,14vw,58px))!important;
+ gap:5px!important;justify-content:end!important;align-items:stretch!important;padding:0!important;
+ pointer-events:auto!important;z-index:24;
+}
+#stage #battle-ui.on.touch-manual .move-bar .move{
+ width:100%!important;height:100%!important;min-width:0!important;min-height:44px!important;
+ padding:3px!important;box-sizing:border-box!important;touch-action:manipulation;
+ border-radius:16px!important;overflow:hidden;
+}
+#stage #battle-ui.on.touch-manual #mv-q{grid-area:1/1}
+#stage #battle-ui.on.touch-manual #mv-e{grid-area:1/2}
+#stage #battle-ui.on.touch-manual #mv-basic{grid-area:1/3}
+#stage #battle-ui.on.touch-manual #mv-lock{grid-area:2/1}
+#stage #battle-ui.on.touch-manual #mv-dodge{grid-area:2/2}
+#stage #battle-ui.on.touch-manual #ult-btn{grid-area:2/3}
+#stage #battle-ui.on.touch-manual #battle-touch-joystick{
+ position:absolute!important;display:grid!important;place-items:center!important;
+ left:max(12px,env(safe-area-inset-left,0px))!important;right:auto!important;top:auto!important;
+ bottom:max(22px,calc(env(safe-area-inset-bottom,0px) + 12px))!important;
+ width:clamp(82px,27vw,114px)!important;height:clamp(82px,27vw,114px)!important;
+ transform:none!important;pointer-events:none!important;z-index:23;
+}
+#stage #battle-ui.on.touch-manual #duo-burst:not([hidden]){
+ top:auto!important;left:auto!important;right:max(8px,env(safe-area-inset-right,0px))!important;
+ bottom:calc(clamp(44px,14vw,58px)*2 + 24px + env(safe-area-inset-bottom,0px))!important;
+ transform:none!important;max-width:56%!important;min-height:44px!important;
+}
+@media(orientation:landscape) and (max-height:500px){
+ #stage #battle-ui.on.touch-manual .move-bar{grid-template-columns:repeat(3,48px)!important;grid-template-rows:repeat(2,48px)!important}
+ #stage #battle-ui.on.touch-manual #battle-touch-joystick{width:88px!important;height:88px!important}
+ #stage #battle-ui.on.touch-manual #duo-burst:not([hidden]){bottom:calc(120px + env(safe-area-inset-bottom,0px))!important}
+}
