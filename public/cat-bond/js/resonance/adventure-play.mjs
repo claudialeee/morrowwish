@@ -7,18 +7,19 @@ const svgNS="http://www.w3.org/2000/svg",svg=(tag,attrs={})=>{const e=document.c
 const titleNames={qilan:["栖蓝","Skye"],yahe:["芽禾","Fern"],xiaomao:["小栗","Pip"]};
 const regions={qilan:"harbor",yahe:"forest",xiaomao:"forge"};
 const trialHelp={qilan:["把能量充到100，再释放大招击响练习铃。","Build charge to 100, then cast an ultimate to ring the practice bell."],yahe:["小猫只有55%生命。让芽禾上场，治疗它，再护送它回家。","The kitten has 55% HP. Bring Fern onto the field, heal it, then escort it home."],xiaomao:["让小栗上场，等到预警出现后测试护盾。","Bring Pip onto the field, then test the shield when the attack warning appears."]};
-export function newTrial(id){
- const actor={cat:{storyActor:id},hp:100,maxhp:100,alive:true},ally={cat:{storyActor:"practice"},hp:id==="yahe"?55:100,maxhp:100,alive:true,shieldT:0};
- const b={regionalCombat:{cast:null},t:0,ult:id==="qilan"?88:0,team:[ally],gainUlt(n){this.ult=Math.min(100,this.ult+n)},healUnit(f,n){f.hp=Math.min(f.maxhp,f.hp+n)}};
- return {id,actor,ally,b,phase:0,done:false};
+export function newTrial(id,level=1){
+ const actor={cat:{storyActor:id,level},hp:100,maxhp:100,alive:true},ally={cat:{storyActor:"practice"},hp:id==="yahe"?55:100,maxhp:100,alive:true,shieldT:0};
+ const rank=talentRank(actor.cat),charge=12+4*(rank-1),heal=20+4*(rank-1),ward=3.5+.75*(rank-1);
+ const b={regionalCombat:{cast:null},t:0,ult:id==="qilan"?100-charge:0,team:[ally],gainUlt(n){this.ult=Math.min(100,this.ult+n)},healUnit(f,n){f.hp=Math.min(f.maxhp,f.hp+n)}};
+ return {id,actor,ally,b,rank,charge,heal,ward,phase:0,done:false};
 }
 export function trialAction(s,a){
  if(!s||s.done||!companionTalents[s.id])return false;
  if(a==="deploy"&&s.phase===0){s.b.team.push(s.actor);s.b.t=2;activateCompanionTalents(s.b);s.phase=1;return true;}
  if(s.id==="qilan"&&a==="cast"&&s.phase===1&&s.b.ult===100){s.b.ult=0;s.done=true;return true;}
- if(s.id==="yahe"&&a==="escort"&&s.phase===1&&s.ally.hp>=75){s.done=true;return true;}
+ if(s.id==="yahe"&&a==="escort"&&s.phase===1&&s.ally.hp>=55+s.heal){s.done=true;return true;}
  if(s.id==="xiaomao"&&a==="warn"&&s.phase===1){s.b.regionalCombat.cast={};activateCompanionTalents(s.b);s.phase=2;return true;}
- if(s.id==="xiaomao"&&a==="impact"&&s.phase===2&&s.ally.shieldT>=3.5){s.ally.hp-=40*.55;s.done=true;return true;}
+ if(s.id==="xiaomao"&&a==="impact"&&s.phase===2&&s.ally.shieldT>=s.ward){s.ally.hp-=40*.55;s.done=true;return true;}
  return false;
 }
 let active=null;
@@ -55,29 +56,29 @@ function talentArena(body,s,t,feedback){
  if(shield){for(const cls of ["cb-talent-caster","cb-talent-target"]){const unit=arena.querySelector("."+cls);unit.append(el("span","cb-talent-shield"));}}
  if(feedback&&feedback!=="ready"){
   const effect=el("div","cb-talent-effect");effect.setAttribute("aria-hidden","true");const ray=el("span","cb-talent-ray");effect.append(ray);
-  const result=feedback==="charge"?"+12":feedback==="heal"?"+20 HP":feedback==="ward"?tr(pair("护盾","WARD")):tr(pair("−22 生命","−22 HP"));
+  const result=feedback==="charge"?"+"+s.charge:feedback==="heal"?"+"+s.heal+" HP":feedback==="ward"?tr(pair("护盾","WARD")):tr(pair("−22 生命","−22 HP"));
   effect.append(el("strong","cb-talent-float",result));arena.append(effect);
  }
  body.append(arena);
 }
 export function mountTalentTrial(id){
  if(!companionTalents[id]||!window.State?.S?.cats?.some(c=>c.storyActor===id)||!["yard","map"].includes(window.__game?.scene))return false;
- let s=newTrial(id),feedback="ready";const t=companionTalents[id];
+ const level=window.State.S.cats.find(c=>c.storyActor===id)?.level||1;let s=newTrial(id,level),feedback="ready";const t=companionTalents[id];
  const help={qilan:pair("点击试用，看看栖蓝怎样为大招补充能量。","Try Tailwind to see how Skye adds ultimate charge."),yahe:pair("练习伙伴只有55点生命，点击试用，看芽禾为它治疗。","The practice ally has 55 HP. Try Fern's healing talent."),xiaomao:pair("点击试用，模拟地区敌人发起攻击预警，再测试护盾效果。","Try Pip's talent during a simulated enemy warning, then test the ward.")};
- const reset=()=>{s=newTrial(id);feedback="ready";};
+ const reset=()=>{s=newTrial(id,level);feedback="ready";};
  return mount({id:"trial-"+id,kind:"trial",region:regions[id],portrait:id,title:[titleNames[id][0]+" · "+t.name[0],titleNames[id][1]+" · "+t.name[1]],help:[help[id][0]+"（独立模拟，不消耗资源。）",help[id][1]+" (Isolated simulation; no resources spent.)"],reset,guard:()=>window.State.S.cats.some(c=>c.storyActor===id),draw:({body,status,button})=>{
   talentArena(body,s,t,feedback);
-  body.append(el("p","cb-adventure-explain",tr(t.description)));
+  body.append(el("p","cb-adventure-explain",tr(pair("专长 "+s.rank+" 阶 · 等级 "+level,"Talent rank "+s.rank+" · Level "+level))));
   if(id==="qilan")bar(body,pair("大招能量","Ultimate charge"),s.b.ult);
   else bar(body,pair("练习伙伴生命","Practice ally HP"),s.ally.hp);
-  if(id==="xiaomao")bar(body,pair("护盾持续时间（秒）","Ward duration (s)"),s.ally.shieldT||0,3.5);
+  if(id==="xiaomao")bar(body,pair("护盾持续时间（秒）","Ward duration (s)"),s.ally.shieldT||0,s.ward);
   const r=row(body);
   if(feedback==="ready"){
    r.append(button(pair("试用专长","Try talent"),()=>{
     if(!trialAction(s,"deploy"))return false;
     if(id==="xiaomao"){if(!trialAction(s,"warn"))return false;feedback="ward";}
     else if(id==="qilan"&&s.b.ult===100)feedback="charge";
-    else if(id==="yahe"&&s.ally.hp===75)feedback="heal";
+    else if(id==="yahe"&&s.ally.hp===55+s.heal)feedback="heal";
     if(feedback!=="ready")window.MorrowwishMusic?.cue?.(id==="xiaomao"?"seal":id==="yahe"?"reward":"bell");
     return false;
    },{id:"deploy"}));
@@ -85,7 +86,7 @@ export function mountTalentTrial(id){
    r.append(button(pair("测试敌人攻击","Test incoming hit"),()=>{if(trialAction(s,"impact")){feedback="impact";window.MorrowwishMusic?.cue?.("impact");}return false;},{id:"impact"}));
   }
   if(feedback!=="ready")r.append(button(pair("再试一次","Try again"),()=>{reset();return false;},{id:"repeat"}));
-  const results={charge:pair("顺风领航已触发：88 → 100，大招已充满。正式战斗中可以接着释放大招。","Tailwind triggered: 88 → 100. Your ultimate is now ready in a real battle."),heal:pair("月叶急救已触发：55 → 75，练习伙伴恢复20点生命。","Moonleaf remedy triggered: 55 → 75. The ally recovered 20 HP."),ward:pair("暖光护盾已触发：两只猫均受到保护，持续3.5秒。","Lantern ward triggered: both cats are protected for 3.5 seconds."),impact:pair("护盾挡住18点伤害：40点攻击只扣22点生命。","The ward blocked 18 damage: a 40-point hit dealt 22 HP.")};
+  const results={charge:pair("顺风领航已触发："+(100-s.charge)+" → 100，大招已充满。","Tailwind triggered: "+(100-s.charge)+" → 100. Ultimate ready."),heal:pair("月叶急救已触发：55 → "+(55+s.heal)+"，恢复"+s.heal+"点生命。","Moonleaf remedy triggered: 55 → "+(55+s.heal)+". Recovered "+s.heal+" HP."),ward:pair("暖光护盾已触发：两只猫均受到保护，持续"+s.ward+"秒。","Lantern ward triggered: both cats protected for "+s.ward+" seconds."),impact:pair("护盾挡住18点伤害：40点攻击只扣22点生命。","The ward blocked 18 damage: a 40-point hit dealt 22 HP.")};
   status.textContent=feedback==="ready"?tr(pair("地区战斗中满足条件时自动触发，每场一次。","Triggers automatically when its condition is met, once per regional battle.")):tr(results[feedback]);
  }});
 }
