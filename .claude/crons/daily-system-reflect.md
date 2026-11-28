@@ -1,6 +1,6 @@
-# Daily "self-fuck" adversarial audit cron
+# Daily system-reflect adversarial audit cron
 
-**Cadence**: once every 24h. Owner mandate 2026-11-28: "这个 self fuck 的 process 每天重复一次". Born from the oscillator incident where the primary shipped an RSI winner with no build gate and no sim to prove it — supervisor passed, playtest didn't catch it, only the owner caught it after live inspection.
+**Cadence**: once every 24h. Owner mandate 2026-11-28 (originally named "system-reflect", renamed by owner same day to "daily-system-reflect"): spawn a fleet of adversarial subagents to audit every subsystem the primary builds. Born from the oscillator incident where the primary shipped an RSI winner with no build gate and no sim to prove it — supervisor passed, playtest didn't catch it, only the owner caught it after live inspection.
 
 The point: this agent is biased toward looking competent. The only reliable way to find its bugs is to spawn a fleet of adversarial subagents whose job description IS finding bugs, each with a different mandate. Run them in parallel (no prompt-chaining, so no cross-contamination), then synthesize.
 
@@ -40,10 +40,10 @@ Spawn **5 subagents in parallel** (one Agent tool call with 5 blocks in a single
 
 Primary:
 1. Reads all 5 reports. Does NOT self-filter.
-2. Writes a merged ranked list to `.claude/session/self-fuck-<yyyy-mm-dd>.md` (not to playtest-log — keep this file as the audit trail separate from gameplay-balance logs).
+2. Writes a merged ranked list to `.claude/session/system-reflect-<yyyy-mm-dd>.md` (not to playtest-log — keep this file as the audit trail separate from gameplay-balance logs).
 3. For each CRITICAL finding: fix it this session OR open a numbered task + commit explaining why the fix is deferred. Never silently drop a CRITICAL.
 4. For each HIGH finding: open a task entry. Do not ship if any HIGH touches live game code.
-5. For MEDIUM/LOW: log in the self-fuck file; batch them into a weekly cleanup.
+5. For MEDIUM/LOW: log in the system-reflect file; batch them into a weekly cleanup.
 6. Append a one-line summary to `playtest-log.md`'s "## Self-fuck audit history" section: `date | subagent count | CRITICAL N / HIGH N / MEDIUM N / LOW N | commits-ahead-of-origin`.
 7. Spawn a supervisor subagent to verify the merged list is honestly ranked (supervisor also reads all 5 subagent outputs — not the primary's filtered merge).
 
@@ -51,11 +51,11 @@ Primary:
 
 - **Never apply** subagent-suggested patches without owner review unless the patch is pure local-numeric (same class as playtest auto-fix). Everything else is findings-only.
 - **Never push** — all fixes land as commits, no push without "push main" verbatim.
-- **Preserve all 5 raw outputs** in `.claude/session/self-fuck-<date>-raw/` so a future reviewer can audit whether the primary cherry-picked.
+- **Preserve all 5 raw outputs** in `.claude/session/system-reflect-<date>-raw/` so a future reviewer can audit whether the primary cherry-picked.
 - If the primary catches itself writing "all 5 agents confirmed X" — STOP. That's how model-family shared blind spots hide. Flag it in the merged list as "needs out-of-family red team" (owner's call).
 
 ## When the cron fires
-Every 24h on Cat Bond work days. Can be triggered manually by the owner saying "self fuck" or by any explicit cron-dispatch message. If the primary has already run a self-fuck audit in the last 20h, note "recent audit, deferring 4h" rather than re-running.
+Every 24h on Cat Bond work days. Can be triggered manually by the owner saying "system-reflect" (or legacy "self fuck") or by any explicit cron-dispatch message. If the primary has already run a system-reflect audit in the last 20h, note "recent audit, deferring 4h" rather than re-running.
 
 ## What the primary MUST NOT do
 
@@ -64,4 +64,4 @@ Every 24h on Cat Bond work days. Can be triggered manually by the owner saying "
 - Mark a CRITICAL as resolved without a commit + supervisor pass.
 - Skip the supervisor step at the end.
 
-Owner's standing words: "truly done, truly honest, or keep poking." The self-fuck cron IS the poking.
+Owner's standing words: "truly done, truly honest, or keep poking." The system-reflect cron IS the poking.

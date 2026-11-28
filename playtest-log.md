@@ -2870,7 +2870,7 @@ Must extend evaluator before any further RSI winner is applied to game code:
 
 Until this extension lands, `.claude/supervisor-prompt.md` §9/§10 (added this turn) must block any new RSI apply without a build gate + honest scope caveat.
 
-## Self-fuck audit history (daily cron, owner 2026-11-28)
+## System-reflect audit history (daily cron, owner 2026-11-28 — renamed from "self-fuck")
 
 | date | subagents | CRITICAL | HIGH | MEDIUM | LOW | commits-ahead | notes |
 |---|---|---|---|---|---|---|---|
