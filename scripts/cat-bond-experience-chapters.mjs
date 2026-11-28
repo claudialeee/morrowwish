@@ -19,7 +19,7 @@ const labels=Object.freeze({
   "Tide cave logbook": "潮洞日志",
   "Storm boat": "遇险小船",
   "Lighthouse mirrors": "灯塔反射镜",
-  "Restore the bell patterns": "寻回铃纹",
+  "Repair the road signs": "修好路标",
   "Take shortcut": "抄近路",
   "Belltongue Beast": "铃舌兽",
   "Town bell sanctuary": "古铃圣所",
@@ -445,7 +445,7 @@ async function run(chapter){
   }
   if(chapter==='harbor'){
    await talk('Qilan');await dialogue('harbor:H-01');await scene('harbor:H-02');
-   await click('Restore the bell patterns');const bells=page.locator('[data-spatial="bellPattern"]');await bells.waitFor();
+   await click('Repair the road signs');const bells=page.locator('[data-spatial="bellPattern"]');await bells.waitFor();
    for(const glyph of ['☾','☀','✦'])await activate(bells.getByRole('button',{name:new RegExp(glyph)}));
    await bells.waitFor({state:'hidden',timeout:30000});await dialogue('harbor:H-02');await scene('harbor:H-03');
    await talk('Yandeng');await dialogue('harbor:H-03');await scene('harbor:H-04');
