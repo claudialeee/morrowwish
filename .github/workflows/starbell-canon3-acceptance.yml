@@ -1,7 +1,7 @@
 name: Starbell Canon 3 narrative acceptance
 on:
   push:
-    branches: [review/starbell-canon13-player-experience]
+    branches: [starbell-echoes]
     paths:
       - 'public/cat-bond/**'
       - 'scripts/test-starbell-canon3.mjs'
@@ -27,7 +27,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   browser:
-    if: github.ref == 'refs/heads/review/starbell-canon13-player-experience'
+    if: github.ref == 'refs/heads/starbell-echoes'
     runs-on: ubuntu-24.04
     timeout-minutes: 18
     strategy:
@@ -95,7 +95,7 @@ jobs:
           retention-days: 7
 
   report-exact-candidate:
-    if: always() && github.ref == 'refs/heads/review/starbell-canon13-player-experience'
+    if: always() && github.ref == 'refs/heads/starbell-echoes'
     needs: [browser]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
