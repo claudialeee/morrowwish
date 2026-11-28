@@ -20,7 +20,7 @@ const test=window.__PAWSIBLY_TEST__;
 assert.equal(test.rooms.length,8);
 assert.match(nodes.get('visionTip').textContent,/Steal 3 fish.*cat flap/,'First screen explains the goal before any input');
 test.move(1,0);assert.equal(test.getState().got,1);assert.match(nodes.get('visionTip').textContent,/One fish.*pink sight/,'First pickup advances contextual coaching');
-const beforeWait={...test.getState().cat};nodes.get('wait').onclick();assert.equal(test.getState().waitTurns,1);assert.deepEqual(test.getState().cat,beforeWait);assert.match(nodes.get('visionTip').textContent,/The owner moved.*Toss yarn/);nodes.get('guideHelp').onclick();assert.equal(nodes.get('gameMenu').hidden,false);nodes.get('menuClose').onclick();assert.equal(nodes.get('gameMenu').hidden,true);
+const beforeWait={...test.getState().cat};nodes.get('wait').onclick();assert.equal(test.getState().waitTurns,1);assert.deepEqual({...test.getState().cat},beforeWait);assert.match(nodes.get('visionTip').textContent,/The owner moved.*Toss yarn/);nodes.get('guideHelp').onclick();assert.equal(nodes.get('gameMenu').hidden,false);nodes.get('menuClose').onclick();assert.equal(nodes.get('gameMenu').hidden,true);
 test.choose(0,false);
 const key=p=>p.x+','+p.y;
 const pass=(s,p)=>p.x>=0&&p.x<10&&p.y>=0&&p.y<7&&!['#','S'].includes(s.grid[p.y][p.x]);
