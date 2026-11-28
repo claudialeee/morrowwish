@@ -431,8 +431,8 @@ export const campaign = {
       "id": "harbor:H-03",
       "chapter": "harbor",
       "title": {
-        "zh": "檐灯记得你",
-        "en": "Alder remembers you"
+        "zh": "古铃的异常反应",
+        "en": "The bell responds"
       },
       "previous": "harbor:H-02",
       "lines": [
@@ -2005,8 +2005,8 @@ export const campaign = {
       "id": "starfall:F-04",
       "chapter": "starfall",
       "title": {
-        "zh": "六座铃重新连上了",
-        "en": "Six bells connected"
+        "zh": "最后一座古铃",
+        "en": "The last ancient bell"
       },
       "previous": "starfall:F-03",
       "lines": [

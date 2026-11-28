@@ -34,10 +34,9 @@ function openingEncounter(api){
  ["陌生猫","Stranger","你还好吗？","Are you all right?","继续","Continue"],
  ["你","You","我连自己的名字都想不起来了。你认识我吗？","I cannot even remember my name. Do you know me?","继续","Continue"],
  ["暮铃","Luna","……我叫暮铃。附近有个小镇，我们去问问吧。","…I'm Luna. There is a town nearby. Let’s ask around.","继续","Continue"],
- ["你","You","我写的？那上面为什么说不能开锁？","I wrote this? Why does it say not to open the lock?","继续","Continue"],
  ["暮铃","Luna","风铃镇就在山谷另一边。说不定有人认识你。","Windchime Town is just across the valley. Maybe someone knows you.","继续","Continue"],
  ["你","You","好，总比待在这里什么都不知道强。","Okay. Better than staying here without any answers.","继续","Continue"],
- ["暮铃","Luna","我先去镇上找他。你也别急，草地上的鱼饼可以吃。……你以前可不舍得把鱼饼放凉。","I'll go find him in town. No rush. That fish cake in the grass is yours. …You never used to let one go cold.","告别","Say goodbye"]
+ ["暮铃","Luna","好。草地上有块鱼饼，吃点东西再出发吧。我在镇上等你。","All right. There’s a fish cake in the grass. Have a bite before you go. I’ll meet you in town.","告别","Say goodbye"]
  ];
 
  const letter=document.createElement("blockquote");letter.className="cb-opening-letter-inline";Object.assign(letter.style,{margin:"4px 0",padding:"8px 10px",background:"#fff3d9",color:"#563d29",border:"1px solid #c9a974",borderRadius:"5px",fontSize:"clamp(13px,2vmin,17px)",lineHeight:"1.45"});body.insertBefore(letter,controls);
