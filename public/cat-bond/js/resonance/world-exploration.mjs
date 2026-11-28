@@ -1,7 +1,7 @@
 import { campaign } from "./campaign.mjs";
 import {newNeighborTrial,advanceNeighborTrial,neighborTrialProof} from "./canon22-neighbor-trial.mjs";
 import {mirrorProof} from "./canon22-mirror.mjs";
-import {newSpatial,spatialInput,spatialProof,tickSpatial,spatialKind,startBridgeWalk,advanceBridgeWalk,animateStarPlatforms} from "./canon22-spatial.mjs?v=moonleaf-walk-20261127";
+import {newSpatial,spatialInput,spatialProof,tickSpatial,spatialKind,startBridgeWalk,advanceBridgeWalk,animateStarPlatforms} from "./canon22-spatial.mjs?v=bridge-art-audio-20261127";
 import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,advanceLibrary} from "./library-mechanisms.mjs";
 import {newSkyFlight,steerSkyFlight,tickSkyFlight,skyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyPath,skySurveyCache,landSkyFlight} from "./sky-flight.mjs";
 // Actual walkable region mechanics. Story progression is never stored here.
@@ -73,7 +73,7 @@ export function exchangeOptions(bridge,region,links){
 }
 export function createExplorer(bridge,region,{deferForestMelody=false,deferHarborMelody=false,deferSkyMelody=false,deferForgeMelody=false,deferLibraryMelody=false,deferStarfallMelody=false,adventureActions=false}={}){
  const layout=layouts[region];if(!layout)throw Error("Unknown region");
- const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],mainPath=layout.paths;let path=region==="sky"&&bridge.surveyStatus()?.remote?skySurveyPath:mainPath;let pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set(region==="harbor"?bridge.harborInvited():region==="forest"?bridge.forestInvited():region==="sky"?bridge.skyInvited():region==="forge"?bridge.forgeInvited():region==="library"?bridge.libraryInvited():region==="starfall"?bridge.starfallInvited():[]);
+ const owner=bridge.slotIdentity(),live=()=>bridge.isSlot(owner)&&bridge.world().location===region;const saved=bridge.world().positions[region],mainPath=layout.paths;let path=region==="sky"&&bridge.surveyStatus()?.remote?skySurveyPath:mainPath;let facing=1,pos=saved?[saved.x,saved.y]:[...path[0]],dest=null,puzzle=null,active=null,travel=[],error="",cargo=bridge.world().cargo?.actor===region?bridge.world().cargo:null,invited=new Set(region==="harbor"?bridge.harborInvited():region==="forest"?bridge.forestInvited():region==="sky"?bridge.skyInvited():region==="forge"?bridge.forgeInvited():region==="library"?bridge.libraryInvited():region==="starfall"?bridge.starfallInvited():[]);
  pos=closest(path,pos).p;
  function walk(x,y){
   if(!Number.isFinite(x)||!Number.isFinite(y)||puzzle||!live())return false;
@@ -81,9 +81,9 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
   const target=closest(path,[x,y]),start=closest(path,pos);
   travel=[];if(target.i>start.i){for(let i=start.i+1;i<=target.i;i++)travel.push(path[i]);}else if(target.i<start.i){for(let i=start.i;i>target.i;i--)travel.push(path[i]);}travel.push(target.p);dest=travel.shift();return true;
  }
- function tick(dt){
-  if(!live()){dest=null;travel=[];return;}if(!dest)return;let remaining=Math.max(0,Math.min(.1,dt))*.25;
-  while(dest&&remaining>0){const d=distance(pos,dest);if(d<=remaining){pos=[...dest];remaining-=d;dest=travel.shift()||null;if(!dest){const r=bridge.position(region,...pos);error=r.ok?"":r.reason;}}else{pos=[pos[0]+(dest[0]-pos[0])*remaining/d,pos[1]+(dest[1]-pos[1])*remaining/d];remaining=0;}}
+ function tick(dt,viewZoom=1){
+  if(!live()){dest=null;travel=[];return;}if(!dest)return;let remaining=Math.max(0,Math.min(.1,dt))*Math.min(.18,.29/Math.max(1,viewZoom));
+  while(dest&&remaining>0){const d=distance(pos,dest);if(Math.abs(dest[0]-pos[0])>.0001)facing=dest[0]>pos[0]?1:-1;if(d<=remaining){pos=[...dest];remaining-=d;dest=travel.shift()||null;if(!dest){const r=bridge.position(region,...pos);error=r.ok?"":r.reason;}}else{pos=[pos[0]+(dest[0]-pos[0])*remaining/d,pos[1]+(dest[1]-pos[1])*remaining/d];remaining=0;}}
  }
  function near(p){return live()&&!dest&&distance(pos,p)<.072;}
  function survey(){return region==="sky"?bridge.surveyStatus():null;}
@@ -160,5 +160,5 @@ export function createExplorer(bridge,region,{deferForestMelody=false,deferHarbo
  function rewardPoints(){if(region==="finale")return [];if(region==="forge")return [{id:"cache-1",point:[.225,.81]},{id:"cache-2",point:[.35,.705]}];if(survey()?.remote)return [{id:"survey-cache",point:[...skySurveyCache]}];return [...(region==="starfall"&&bridge.view().completed.includes("starfall:F-02")?[{id:"starfall-hidden-record",point:[.41,.58]}]:[]),{id:"cache-1",point:[(path[0][0]+path[1][0])/2,(path[0][1]+path[1][1])/2]},{id:"cache-2",point:[(path[path.length-3][0]+path[path.length-2][0])/2,(path[path.length-3][1]+path[path.length-2][1])/2]}];}
  function pickup(id){const p=rewardPoints().find(x=>x.id===id);if(!p||!near(p.point))return {ok:false,reason:"walk-to-cache"};return bridge.pickupReward(region,id);}
  function cancel(){puzzle=null;active=null;}
- return {walk,tick,interact,operate,openOptionalTheater,advanceShortRing,spatialAct,spatialTick,forgeStep:()=>bridge.forgeStep(),collectForgePart:index=>{const step=bridge.forgeStep();if(!step||step.index!==index||!near(step.point)||puzzle)return {ok:false,reason:"walk-to-objective"};return bridge.collectForgePart(index,bridge.capture());},flightSteer,flightLand,flightTick,survey,startSurvey,cancel,complete,traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return readyResidents()},get position(){return [...pos]},get moving(){return !!dest},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
+ return {walk,tick,interact,operate,openOptionalTheater,advanceShortRing,spatialAct,spatialTick,forgeStep:()=>bridge.forgeStep(),collectForgePart:index=>{const step=bridge.forgeStep();if(!step||step.index!==index||!near(step.point)||puzzle)return {ok:false,reason:"walk-to-objective"};return bridge.collectForgePart(index,bridge.capture());},flightSteer,flightLand,flightTick,survey,startSurvey,cancel,complete,traceTide,tideStep:()=>bridge.tideStep(),traceScent,scentStep:()=>bridge.scentStep(),homeQuest:()=>bridge.homeQuest(region),startHomeRepair,meetHomeResident,startCargo,deliverCargo,cargoPoints,near,localNpcs,inviteNpc,rewardPoints,pickup,layout,get invited(){return readyResidents()},get position(){return [...pos]},get moving(){return !!dest},get facing(){return facing},get puzzle(){return puzzle?JSON.parse(JSON.stringify(puzzle)):null},get active(){return active?{...active}:null},get cargo(){return cargo?{...cargo}:null},get error(){return error}};
 }
