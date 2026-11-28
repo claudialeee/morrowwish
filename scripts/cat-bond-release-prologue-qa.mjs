@@ -43,9 +43,21 @@ for(const profile of [{name:'desktop',viewport:{width:1440,height:900},hasTouch:
  assert.equal(await page.evaluate(()=>Object.values(State.S.resonance.evidence).flat().some(o=>o.startsWith('cinematic:'))),false);
  await screenshot('context');await press(intro.getByRole('button',{name:meet?tr('开始探索','Start exploring'):tr('跳过介绍','Skip introduction'),exact:true}));
  const guide=page.locator('.sg-prologue-guide');
+ // The fish cake must be discoverable before approaching it or hearing the travel dialogue.
+ const snack=page.locator('[data-garden-explore="snack"]');await snack.waitFor({state:'visible'});
+ assert.equal(await snack.getAttribute('aria-label'),tr('鱼饼','Fish cake'));
  if(meet){await press(page.locator('[data-npc-talk="muling"]'));const encounter=page.locator('#cb-traveler-encounter');
  assert.equal(await page.locator('.res-garden-bell').count(),0);
- await encounter.waitFor();const seen=[];for(let i=0;i<6;i++){seen.push(await encounter.locator('.res-line').innerText());await press(encounter.getByRole('button',{name:i===5?tr('告别','Say goodbye'):tr('继续','Continue'),exact:true}));}await encounter.waitFor({state:'detached'});assert.doesNotMatch(seen.join(' '),locale==='zh'?/巡铃图|封印|小曦|那封信/:/patrol map|seal|Sunny|letter/i);
+ await encounter.waitFor();const seen=[];for(let i=0;i<6;i++){
+ seen.push(await encounter.locator('.res-line').innerText());
+ await page.waitForFunction(()=>{const p=document.querySelector('#cb-traveler-encounter .res-portrait');return !!(p?.complete&&p.naturalWidth&&p.getClientRects().length)});
+ if(i===1||i===2){
+  const paints=await page.evaluate(async()=>{const e=__game.yardPlayer(),original=e.draw;let calls=0;e.draw=function(...args){calls++;return original.apply(this,args)};try{await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));return calls;}finally{e.draw=original;}});
+  if(i===1)assert.equal(paints,0,'Speaking protagonist must not be painted behind its portrait');else assert.ok(paints>0,'Non-speaking protagonist must return to the garden canvas');
+  await screenshot(i===1?'player-dialogue-no-duplicate':'luna-dialogue-player-restored');
+ }
+ await press(encounter.getByRole('button',{name:i===5?tr('告别','Say goodbye'):tr('继续','Continue'),exact:true}));
+ }await encounter.waitFor({state:'detached'});assert.doesNotMatch(seen.join(' '),locale==='zh'?/巡铃图|封印|小曦|那封信/:/patrol map|seal|Sunny|letter/i);
  for(let i=0;i<3;i++){await press(page.locator('[data-garden-explore="butterfly"]'));await page.waitForFunction(n=>GardenExploration.read(State.S).butterfly===n,i+1);}
  await gardenDiscovery(page,'seed',{touch:options.hasTouch});
  await gardenDiscovery(page,'snack',{touch:options.hasTouch});await press(page.getByRole('button',{name:tr('带在身上','Keep for later'),exact:true}));
