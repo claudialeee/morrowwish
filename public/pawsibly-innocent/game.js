@@ -756,7 +756,7 @@ if(!s.done&&s.vacuum&&equal(s.cat,s.vacuum)){popup("robot");s.vacuumDir*=-1;}
 // A second consecutive exposed turn catches the cat in every room.
 // Boxes or breaking line-of-sight lower exposure; direct overlap always catches.
 syncUI();}
-function syncResultActions(){const retry=$("retryResult"),next=$("nextResult"),share=$("shareResult"),body=$("resultBody"),goal=$("resultNextGoal");retry.hidden=!s.winning;share.hidden=!s.winning;next.textContent=nextResultLabel();if(body)body.scrollTop=0;if(goal){const remaining=fur.findIndex((f,i)=>i>0&&allStars()<f[3]);goal.textContent=s.winning&&remaining>=0?(lang==="zh"?"再得 "+(fur[remaining][3]-allStars())+" 星解锁「"+TX.zh.skinNames[remaining]+"」":(fur[remaining][3]-allStars())+" more stars unlock "+TX.en.skinNames[remaining]):"";}}
+function syncResultActions(){const retry=$("retryResult"),next=$("nextResult"),share=$("shareResult"),body=$("resultBody"),goal=$("resultNextGoal");retry.hidden=!s.winning;next.hidden=false;share.hidden=!s.winning;next.textContent=nextResultLabel();if(body)body.scrollTop=0;if(goal){const remaining=fur.findIndex((f,i)=>i>0&&allStars()<f[3]);goal.textContent=s.winning&&remaining>=0?(lang==="zh"?"再得 "+(fur[remaining][3]-allStars())+" 星解锁「"+TX.zh.skinNames[remaining]+"」":(fur[remaining][3]-allStars())+" more stars unlock "+TX.en.skinNames[remaining]):"";}}
 function revealResults(){const el=$("overlay");el.hidden=false;syncResultActions();$("nextResult")?.focus?.({preventScroll:true});}
 function finish(win){if(s.done)return;stopYarnChase();s.done=true;s.winning=win;route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null;}
 const bonus=win&&dareDone();
@@ -821,6 +821,7 @@ function renderResultBreakdown(){
  }
 }
 function resultDescription(){
+ if(s.winning&&daily)return lang==="zh"?"再挑战每日关":"Replay daily challenge";
  return s.winning&&!daily&&s.index===7
   ?(lang==="zh"?"八间房被闹得鸡飞狗跳，主人还在后面喊，小猫已经叼着鱼跑远了。"
     :"Eight rooms in chaos. The human is still grumbling; the cat is long gone with the fish.")
@@ -913,12 +914,12 @@ function command(x,y){
  s.routePause=null;s.routeStop=null;
  if(x===s.cat.x&&y===s.cat.y){if(route.length)stopWalking();return}
  const target={x,y};s.routeTarget={...target};
- if(equal(target,s.human)){s.blockedTarget={...target};popup(s.fish.some(f=>equal(f,target)&&!s.taken.has(key(f)))?"guardedFish":"blocked");syncUI();return}
- if(s.vacuum&&equal(target,s.vacuum)){s.blockedTarget={...target};popup(s.fish.some(f=>equal(f,target)&&!s.taken.has(key(f)))?"vacuumFish":"robot");syncUI();return}
- if(!pass(target)){popup("blocked");return}
+ if(equal(target,s.human)){stopWalking();s.routePause="blocked";s.routeStop={...s.cat};s.blockedTarget={...target};popup(s.fish.some(f=>equal(f,target)&&!s.taken.has(key(f)))?"guardedFish":"blocked");syncUI();return}
+ if(s.vacuum&&equal(target,s.vacuum)){stopWalking();s.routePause="blocked";s.routeStop={...s.cat};s.blockedTarget={...target};popup(s.fish.some(f=>equal(f,target)&&!s.taken.has(key(f)))?"vacuumFish":"robot");syncUI();return}
+ if(!pass(target)){stopWalking();s.routePause="blocked";s.routeStop={...s.cat};popup("blocked");syncUI();return}
  if(movingTimer&&equal(route[route.length-1],target))return;
  route=catPathTo(s.cat,target);
- if(!route.length){stopWalking();popup("blocked");return}
+ if(!route.length){stopWalking();s.routePause="blocked";s.routeStop={...s.cat};popup("blocked");syncUI();return}
  if(movingTimer===null){advanceCatRoute();if(route.length)movingTimer=setInterval(advanceCatRoute,300)}
 }
 function single(dx,dy){if(!s||s.done||menuOpen)return;s.routePause=null;s.routeStop=null;s.routeTarget=null;route=[];if(movingTimer){clearInterval(movingTimer);movingTimer=null}const p={x:s.cat.x+dx,y:s.cat.y+dy};if(s.vacuum&&equal(p,s.vacuum)){popup("robot");return}if(!pass(p)){popup("blocked");return}moveTo(p)}
