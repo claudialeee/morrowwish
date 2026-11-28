@@ -1,6 +1,7 @@
-import {mountTalentTrial} from "./adventure-play.mjs?v=talent-effects-20261127";
+import {mountTalentTrial} from "./adventure-play.mjs?v=regional-depth-20261127";
+import {regionalKeepsakes,hasRegionalKeepsake} from "./regional-keepsake-talents.mjs?v=narrative-play-20261127-r2";
 import {companionTalents} from "./companion-talents.mjs";
-import {earnedKeepsakes} from "./regional-discoveries.mjs";
+import {earnedKeepsakes} from "./regional-discoveries.mjs?v=narrative-play-20261127-r2";
 // One presentation layer over the existing UI, State, Raising and CatRelations.
 // No cloned cats, separate inventory, storage, or narrative progress.
 import {recipes,craftSupply} from "./book-recipes.mjs";
@@ -196,6 +197,7 @@ function records(){
  const names=[...garden,...keeps.map(k=>k.name)];
  host.append(node("h3","",tr("旅途纪念物","Travel keepsakes")));
  if(names.length){const list=node("div","rb-inventory");for(const [zh,en] of names)list.append(stat(tr(zh,en),"✓"));host.append(list);}else host.append(node("p","",tr("散步时留意地图中的小惊喜。","Look for little surprises as you explore.")));
+ const tactical=Object.entries(regionalKeepsakes).filter(([region])=>hasRegionalKeepsake(s,region));if(tactical.length){host.append(node("h3","",tr("地区纪念物专长","Regional keepsake talents")));for(const [,info] of tactical){const row=node("section","rb-dex-entry");row.append(node("strong","",tr(...info.label)),node("p","",tr(...info.description)));host.append(row);}}
  const reset=node("button","rb-reset",tr("安全重启游戏","Safe restart"));reset.type="button";reset.id="cb-menu-reset";host.append(reset);window.CatBondBindResetButton?.(reset);
 }
 function select(id,focusCraft=false){

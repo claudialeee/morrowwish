@@ -1,27 +1,32 @@
-# Starbell — high-value illustrated minigame art handoff
+# Starbell — finalized narrow art handoff, 2026-11-27
+Supersedes all earlier six-board, art-integration, or playthrough briefs. Chat owns design, implementation, engineering integration, tests, merge and deployment. Work is commissioned for finished artwork only.
 
-Base branch: review/starbell-canon13-player-experience (use current head; do not deploy). Chat has implemented gameplay and interaction, compact quest navigation, dual-hand battle changes, side-event proof and rewards, and art slots. Do not redo these systems. This is an ART + real visual QA assignment, not an invitation to rewrite the campaign or produce concept art only.
+## Implemented design baseline
+Code: a4f42c91680df567281cb794f173c619ecafc2ab. Six standalone side boards are removed from the live map. Their legacy proof and save data remain compatible; new environmental discovery trails award each regional perk once and preserve prior rewards.
+- Harbor: guide Gran by the brass-chime landmark and remember her recovered memory later; no independent board.
+- Forest: moonleaf bridge, rescue, optional canopy discovery with real reward.
+- Forge: three escaped shadow cats with distinct hide, run and opposite-side mimic rules; five verified interaction phases; optional theater remains the festival payoff.
+- Sky: real upper/lower gliding routes, optional feather and safe-island stops with rewards; preserve two cups of tea.
+- Library: move and identify real Luna by two-chime signal; inspect three evidence items before asking Luna; no generic order quiz.
+- Starfall: short upper pursuit and longer lower route with historical marker; defer unrelated discoveries until after the epilogue.
+No change to approved duo illustration collection or independent finale artwork.
 
-## Preserve existing high-quality assets and story
-- Watercolor, warm, bright, hand-painted fantasy storybook style. Use the existing portrait and landscape environment assets as references. Keep protagonist and NPC designs; no generic cat sprites, no UI text baked into art.
-- Preserve the cloud tea scene (two cups), mirror corridor two-bell puzzle, and Luna identity revelation. Do not replace 63 approved duo illustrations or existing good main-story minigame art. No old generic animation fallback.
-- Existing code: public/cat-bond/js/resonance/adventure-play.mjs and public/cat-bond/css/adventure-play.css. Main-story puzzle renderer: world-runtime.mjs, canon22-spatial.mjs, sky-flight.mjs. Inspect actual UI before drawing. Main quest operations and evidence must remain unchanged.
+## Verification / release gate
+GitHub Actions: https://github.com/claudialeee/morrowwish/actions/runs/46112901387
+The rules job and portrait (Chinese) and landscape (English) browser jobs have passed, covering moonleaf crossing, shadow hunt, joint flight, mirror, ledger and star steps. Desktop English job was still running when this brief was recorded. Confirm its successful conclusion before starting the art commission. Browser checkpoint fixtures verify actual game controls, not a full fresh-save playthrough; no commercial quality or production release claim is made.
 
-## Required side activities — exact in-game slots already marked data-art-slot
-Store new files under public/cat-bond/assets/minigames/; use optimized WebP, transparent where specified; integrate through CSS or SVG image in existing controls; don't bake hit targets, state or answers into images. Dimensions are suggested source dimensions, not CSS sizing.
+## Existing artwork reviewed and reused
+Source images inspected: canon22-final-art/shadow-cat.webp (existing running cat, keep), forest-landing.webp, lantern-vault.webp, sky-safety-island.webp, sky-cloudfall.webp; mobile-portrait/lantern-vault.webp and starfall-expanse.webp; resonance-world-v2/starfall.webp. Reuse the existing forest bridge/moonleaf, glider, theater, environment paintings, mirror characters and narrative art. No new background, full-screen minigame panel, scene repaint, or decorative board.
 
-| Region / activity | New asset(s) | Integration contract |
-|---|---|---|
-| Harbor / Tidepool shell | tidepool.webp (1200×800), dry-stone.webp, water-stone.webp (256×192 transparent), hermit-crab.webp (256×256 transparent), shell-reward.webp | [data-art-slot=tidepool], dry-stone, water-stone. Real stepping stones with tide and crab position responding to state; preserve 3×3 grid and dryLanes; animated successful step, not text-only |
-| Forest / Herbal tea | herb-pointed.webp, herb-round.webp, herb-fern.webp (256×256 transparent), tea-basket.webp, tea-reward.webp | slots round, round3, fern. Distinguishable leaf silhouettes; no visual answer labels beyond accessibility; show collected herbs in basket and steam after brewing |
-| Forge / Crooked-ear paper lantern | lantern-stage.webp (1200×800), crooked-cat-cutout.webp (512×512 transparent), lantern-reward.webp | lantern-stage, rotating-cat. Rotate actual illustrated cutout with s.rotation; warm projected shadow, light-up effect; retain proof and correct orientation |
-| Sky / Cloud mail | mail-dock.webp (1200×800), mail-mast.webp, mail-beam.webp, mail-pouch.webp, mail-weight.webp (transparent), mail-launch.webp, envelope-reward.webp | mail-dock, mail-mast, mail-beam, mail-pouch, mail-weight. Keep the real weights, separate pouches, total numbers, tilt, explicit placement and 5/5 balance. Clear animation of mailbag taking flight; no schematic triangles |
-| Library / Scattered pages | page-morning.webp, page-afternoon.webp, page-night.webp (480×640 each), bound-book.webp | page-morning, page-afternoon, page-night. Each card tells the scene with pictures; existing text stays localized and live. Show binding success |
-| Starfall / Kitten constellation | star-chart.webp (1200×800), star-node.webp (128×128 transparent), kitten-constellation.webp | star-chart, star-node. Retain existing coordinates/links, luminous connected lines; reveal a recognizable watercolor kitten silhouette only on completion |
+## Work: exactly three final transparent WebP assets
+Destination directory: public/cat-bond/assets/canon22-final-art/
+1. shadow-cat-crouch.webp — 640×640 transparent canvas, hiding/crouching silhouette, tucked paws and low tail. Existing shadow-cat.webp is the sole style/character reference; same muted indigo pigment, paper texture, soft watercolor edge, clear silhouette.
+2. shadow-cat-listen.webp — 640×640 transparent canvas, attentive upright pose, ears raised, readable profile and complete silhouette; same palette and style. Chat will mirror the sprite programmatically for the opposite-side response. Do not bake a second cat, light cone, eyes glow or effects into either sprite.
+3. star-step-stone.webp — 640×400 transparent canvas, one reusable floating stepping stone, horizontal walkable top seen in slight three-quarter perspective, pale warm stone and subtle golden inlaid star, slate/rose side surfaces. Match mobile-portrait/starfall-expanse.webp; no background, text, other stones, baked active glow or beams. Chat controls placement, hit testing, path, highlights, transitions and variants.
 
-Use matching original art for completion rewards; avoid adding nonfunctional decorative controls. Prefer a reusable prop/illustration pipeline across six side activities. Existing main-story minigames: visually review chase, root bridge, shadow search, puppet theater, cloud glide, mirror/two bells, and star steps; only create missing high-value art where truly needed. Keep existing good artwork. Inspect both orientations and use native portrait compositions where the scene would otherwise crop badly. Do not reuse a landscape crop if a new portrait painting is necessary.
+All files: final original painted game assets, true alpha (not a checkerboard image), no clipping, no artificial 3D look, no logos, no text, no extra files. Maintain full silhouette and consistent style; do not overwrite existing originals. Keep file sizes practical for mobile.
 
-## Acceptance and cost control
-- Real normal-mode interactions on phone portrait (390×844), phone landscape (844×390), desktop (1280×720), CN/EN. Verify text and active touch targets unobscured, no black borders, no empty oversized panels, meaningful completion feedback, reset/exit, preserved save proof, rewards once only.
-- No developer-mode bypass, no fake completion screenshot. Show actual screenshots for the six side activities, initial and completed state, at least one portrait and one landscape per activity. Record asset path, dimensions and screenshot evidence in this handoff. Reuse existing assets where possible. No video production, site promotion, full unrelated campaign rewrite or repeat of code checks already done by Chat.
-- Commit art and integration to a separate review branch based on current RPG head; provide exact SHA and evidence. Chat handles merge, regression, and deployment only when user explicitly requests deployment. Do not trigger deployment. Final 85/100 is independent real-player acceptance, not an art self-score.
+Work must commit only those three assets to review/starbell-regional-depth-20261127 and report exact SHA, paths, dimensions, transparency and byte sizes. No code modifications, integration, CI, playthrough, deployment, unrelated drawing or redesign. Chat handles all of those separately. Do not start until the desktop verification gate is green.
+
+## Integration acceptance (completed)
+Original art commit: 9a71de78e41b6fb54b046fa85fc152f27b9097ff (three WebP files only). Integration source: 05f38a442000089a13e935c7435eecc85fe694f8. Prior complete gameplay gate: https://github.com/claudialeee/morrowwish/actions/runs/46113504351. New rule and targeted actual browser render/interaction gate: https://github.com/claudialeee/morrowwish/actions/runs/46114136724 — all four jobs succeeded. Art-specific browser test decodes PNG-compatible canvas RGBA pixels from WebP, checks dimensions and alpha, observes actual main game canvas drawing all three files, and finishes shadow hunt and star steps on desktop, mobile landscape and mobile portrait. Rendering only; no change to underlying path nodes, proof or rewards. Production publication is a separate gate. No additional Work task.

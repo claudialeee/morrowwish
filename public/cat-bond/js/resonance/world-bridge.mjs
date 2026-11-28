@@ -1,14 +1,14 @@
 // Chat 3 physical-world adapter. Chat 4 owns the sole narrative mutation path.
 import {campaign} from "./campaign.mjs";
 import {validMirrorProof} from "./canon22-mirror.mjs";
-import {spatialKind,validSpatialProof} from "./canon22-spatial.mjs";
+import {spatialKind,validSpatialProof} from "./canon22-spatial.mjs?v=narrative-play-20261127-r2";
 import {validNeighborTrial} from "./canon22-neighbor-trial.mjs";
 import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyCache} from "./sky-flight.mjs?v=starbell-release-quality-r2-20261127";
-import {getSlotRuntime} from "./slot-runtime.mjs";
-import {layouts,puzzleSpecs,canonRestorationPrerequisites,retiredWorldOperations} from "./world-exploration.mjs?v=starbell-release-quality-r2-20261127";
-import {applySideEvent} from "./side-adventures.mjs?v=exploration-craft-20261127";
-import {applyDiscovery} from "./regional-discoveries.mjs";
-import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord} from "./library-mechanisms.mjs";
+import {getSlotRuntime} from "./slot-runtime.mjs?v=narrative-play-20261127-r2";
+import {layouts,puzzleSpecs,canonRestorationPrerequisites,retiredWorldOperations} from "./world-exploration.mjs?v=narrative-play-20261127-r2";
+import {applySideEvent} from "./side-adventures.mjs?v=narrative-play-20261127-r2";
+import {applyDiscovery} from "./regional-discoveries.mjs?v=narrative-play-20261127-r2";
+import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord} from "./library-mechanisms.mjs?v=narrative-play-20261127-r2";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
 const scentTrail=Object.freeze([
@@ -166,7 +166,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
    if(!point||!pos||Math.hypot(pos.x-point[0],pos.y-point[1])>=.072)return fail("walk-to-objective");
    const record=catdexRecord(State.S),p=libraryPuzzle(op,record);
    if(op==="puzzle:library-echo"){if(direct||!validMirrorProof(record?.uid,proof.mirrorProof))return fail("library-record-unverified");}
-   else if(op==="explore:routing-record"){if(direct||!Number.isInteger(proof.libraryQuestion)||proof.libraryQuestion<0||proof.libraryQuestion>2)return fail("library-record-unverified");}
+   else if(op==="explore:routing-record"){if(direct||proof.libraryQuestion!==3||!Array.isArray(proof.librarySeen)||proof.librarySeen.length!==3||![0,1,2].every(i=>proof.librarySeen.includes(i)))return fail("library-record-unverified");}
    else if(!direct&&p&&(!proof.libraryValues||proof.libraryValues.join(",")!==p.goal.join(",")))return fail("library-record-unverified");
    if(op==="melody:library"&&(!["moye","baikan"].every(id=>(w.interactions["library:M-02:invite:"+id]||autoReady("library",id,v)))||v.objective.includes("repair:library")))return fail("local-response-required");
   }
@@ -177,9 +177,11 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
   if(op==="melody:forest"&&!["yahe","yuchuan"].every(id=>(w.interactions["forest:R-04:invite:"+id]||autoReady("forest",id,v))))return fail("local-response-required");
   if(op==="melody:sky"&&!["lingyu","yuanfan"].every(id=>(w.interactions["sky:S-03:invite:"+id]||autoReady("sky",id,v))))return fail("local-response-required");
   if(op.startsWith("melody:")){const ids=Object.values(campaign.cast).filter(n=>n.region===region).map(n=>n.id);if(!ids.every(id=>proof.participants?.includes(id))||(!direct&&(proof.responses?.length!==3||!ids.every(id=>proof.responses.some(r=>r.actor===id)))))return fail("local-response-required");}
-  const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};if(op==="puzzle:joint-flight"&&proof.flightProof?.flightVersion===2){const n=Math.min(4,new Set(proof.flightProof.feathers||[]).size);reward.coins+=n*3;reward.fish+=Number(n>=3);}
-  if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
-  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]&&!(direct&&op==="explore:flight-recorder")?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:spatialKind(op)?proof.spatialProof:op==="puzzle:library-echo"?{trace:[...proof.mirrorProof.trace],choice:proof.mirrorProof.choice}:op==="explore:routing-record"?{question:proof.libraryQuestion}:op==="melody:starfall"?proof.shortRing:region==="sky"&&proof.flightProof?proof.flightProof:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
+  const reward=op.startsWith("melody:")?{coins:35,fish:3}:op.startsWith("repair:")?{coins:25,fish:1}:op.startsWith("explore:")?{coins:8,fish:1}:{coins:12,fish:1};if(op==="puzzle:joint-flight"&&proof.flightProof?.flightVersion===2){const n=Math.min(4,new Set(proof.flightProof.feathers||[]).size);const stops=Math.min(2,proof.flightProof.stops?.length||0);reward.coins+=n*3+stops*6;reward.fish+=Number(n>=3)+stops;}
+  if(op==="puzzle:moonleaf-crossing"&&proof.spatialProof?.discoveries?.includes("garden-view")){reward.coins+=8;reward.fish+=1;}
+ if(op==="puzzle:star-steps"&&proof.spatialProof?.discoveries?.includes("starlight-6")){reward.coins+=6;reward.fish+=1;}
+ if(typeof api?.evidence!=="function"||!proof.token)return fail("canonical-host-unavailable");
+  const r=api.evidence({sceneId,operation:op,region,verified:true,token:proof.token},patch(x=>({...x,positions:region==="sky"&&skyLanding[op]&&!(direct&&op==="explore:flight-recorder")?{...x.positions,sky:{x:skyLanding[op][0],y:skyLanding[op][1]}}:x.positions,interactions:{...x.interactions,[sceneId+":"+op]:spatialKind(op)?proof.spatialProof:op==="puzzle:library-echo"?{trace:[...proof.mirrorProof.trace],choice:proof.mirrorProof.choice}:op==="explore:routing-record"?{question:proof.libraryQuestion,seen:[...proof.librarySeen]}:op==="melody:starfall"?proof.shortRing:region==="sky"&&proof.flightProof?proof.flightProof:true}}),reward));cachedRoot=null;return r.ok?{...r,reward}:r;
  }
  function harborInvited(){const v=view(),w=world();return v.current?.id==="harbor:H-05"?["qilan","jiedeng"].filter(id=>w.interactions["harbor:H-05:invite:"+id]||autoReady("harbor",id,v)):[];}
  function inviteHarbor(id,point,token){const api=resolveNarrative(),v=view(),w=world(),expected={qilan:[.16,.60],jiedeng:[.195,.50]}[id];if(!expected||point[0]!==expected[0]||point[1]!==expected[1]||w.location!=="harbor"||v.current?.id!=="harbor:H-05"||v.objective.includes("repair:harbor")||!v.objective.includes("melody:harbor")||!token||!api.isCurrentAction(token)||!tideNear(w,expected))return fail("npc-not-available");return physical(x=>({...x,interactions:{...x.interactions,["harbor:H-05:invite:"+id]:true}}));}
@@ -201,7 +203,7 @@ export function createWorldBridge(State,{resolveNarrative=()=>getSlotRuntime(Sta
  function surveyStatus(){const v=view(),w=world();if(w.location!=="sky"||!v.completed.includes("sky:S-05"))return null;const remote=!!w.interactions["sky:survey-island"],operation=remote?"survey:return":"survey:outbound";return {remote,operation,...clone(skySurvey[operation]),cache:!w.pickups["sky:survey-cache"]};}
  function finishSurvey(operation,proof,token){const s=surveyStatus(),w=world(),p=w.positions.sky,api=resolveNarrative();if(!s||s.operation!==operation||!token||!api.isCurrentAction(token)||!p||Math.hypot(p.x-s.from[0],p.y-s.from[1])>=.072||(!proof?.adventureAction&&!validSkyFlightProof(operation,null,proof))||!s.remote&&w.cargo?.actor==="sky")return fail("incomplete-flight");return physical(x=>({...x,positions:{...x.positions,sky:{x:s.to[0],y:s.to[1]}},interactions:{...x.interactions,["sky:survey-island"]:!s.remote}}));}
  function finishSideEvent(region,trace){const result=applySideEvent(region,world(),view(),trace);if(!result.ok)return result;const reward={coins:25,fish:2},saved=physical(()=>result.next,reward);return saved.ok?{ok:true,message:result.message,souvenir:result.souvenir,reward}:saved;}
- function discover(region,id){const result=applyDiscovery(region,id,world(),view());if(!result.ok||result.decoy)return result;const saved=physical(()=>result.next);return saved.ok?{ok:true,message:result.message,souvenir:result.souvenir}:saved;}
+ function discover(region,id){const result=applyDiscovery(region,id,world(),view());if(!result.ok||result.decoy)return result;const saved=physical(()=>result.next,result.reward||undefined);return saved.ok?{ok:true,message:result.message,souvenir:result.souvenir,reward:result.reward,perk:result.perk}:saved;}
  function pickupReward(region,id){const w=world();if(region==="sky"&&id==="survey-cache"){const s=surveyStatus(),p=w.positions.sky;if(!s?.remote||!s.cache||!p||Math.hypot(p.x-skySurveyCache[0],p.y-skySurveyCache[1])>=.072)return fail("walk-to-cache");return physical(x=>({...x,pickups:{...x.pickups,"sky:survey-cache":true}}),{coins:45,fish:4});}if(w.location!==region||w.pickups[region+":"+id])return fail("already-collected");const secret=region==="starfall"&&id==="starfall-hidden-record";if(secret){const p=w.positions.starfall;if(!view().completed.includes("starfall:F-02")||!p||Math.hypot(p.x-.41,p.y-.58)>=.072)return fail("walk-to-cache");}else {if(!/^cache-[12]$/.test(id))return fail("invalid-cache");const path=layouts[region]?.paths,p=w.positions[region],pair=region==="forge"?(id==="cache-1"?[[.225,.81],[.225,.81]]:[[.35,.705],[.35,.705]]):id==="cache-1"?path?.slice(0,2):path?.slice(-3,-1);if(!p||!pair||pair.length!==2||Math.hypot(p.x-(pair[0][0]+pair[1][0])/2,p.y-(pair[0][1]+pair[1][1])/2)>=.072)return fail("walk-to-cache");}return physical(x=>({...x,pickups:{...x.pickups,[region+":"+id]:true}}),secret?{coins:30,fish:2}:id==="cache-1"?{coins:14,fish:1}:{coins:22,fish:2});}
  return Object.freeze({view,world,enter,position,discover,finishSideEvent,recordWorld,surveyStatus,finishSurvey,exchange,pickupCargo,pickupReward,cargoSpec,harborInvited,inviteHarbor,forestInvited,inviteForest,forgeStep,collectForgePart,forgeInvited,inviteForge,skyInvited,inviteSky,libraryInvited,inviteLibrary,starfallInvited,inviteStarfall,libraryRecord:()=>catdexRecord(State.S),tideStep,traceTide,scentStep,traceScent,homeQuest,finishHomeRepair,meetHomeResident,capture:()=>resolveNarrative().capture(),slotIdentity:()=>State.S,isSlot:owner=>State.S===owner});
 }

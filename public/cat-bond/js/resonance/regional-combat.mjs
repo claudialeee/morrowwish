@@ -1,11 +1,12 @@
 import {drawGuardianCast,guardianColors} from "./guardian-effects.mjs?v=guardian-art-20261127";
 import {REGIONAL_BOSSES,bossKey,optionalBossAvailable,atBoss,bossReward,bossTemplates,regionalBossLevel,guardianProfile} from "./regional-bosses.mjs";
 import {activateCompanionTalents} from "./companion-talents.mjs";
+import {applyRegionalKeepsake,forgeLightScale,hasRegionalKeepsake,regionalKeepsakes} from "./regional-keepsake-talents.mjs?v=narrative-play-20261127-r2";
 import {canonArt,visibleBounds} from "./canon22-art.mjs";
 import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud} from "./battle-hud.mjs";
 // Regional combat extensions: attach to actual CaptureBattle instances, never to campaign state.
 // Wild cats remain collectible; scripted Forge/Finale encounters use separate adapters.
-import {libraryBlocked,libraryPoints,catdexRecord} from "./library-mechanisms.mjs";
+import {libraryBlocked,libraryPoints,catdexRecord} from "./library-mechanisms.mjs?v=narrative-play-20261127-r2";
 export const REGION_KITS=Object.freeze({
  harbor:{name:["风铃镇","Windchime Town"],enemy:["铃舌兽","Belltongue Beast"],npcs:["jiedeng","qilan"],element:"water",color:"#e7c775",kind:"surge",period:6.2,support:["真铃支援","True chime support"]},
  forest:{name:["眠根林","Rootsleep Forest"],enemy:["根须围猎","Root ambush"],npcs:["yahe","yuchuan"],element:"grass",color:"#97ba76",kind:"roots",period:6.8,support:["疏通根脉","Clear the roots"]},
@@ -244,13 +245,14 @@ function install(){
   if(r.balance)r.impact={cast,at:b.t};
   const controlled=target(b),avoided=controlled&&((controlled.inv||0)>0||!cast.patterns.some(p=>inPattern(p,controlled)));
   if(r.balance&&avoided){const master=b.libraryEncounter?.bossId==="mastery";r.recoveryUntil=b.t+(master?2.6:2.8);r.successfulDodges=(r.successfulDodges||0)+1;notice(b,...(master?["星轨已破解！守卫暂时失去防御。","Orbit broken! The guardian is briefly exposed."]:["成功避开攻击！趁破绽反击。","Attack evaded! Counter while the guardian is open."]));}
+  if(avoided)applyRegionalKeepsake(b,window.State.S,"evade");
   const impactColor=r.balance?guardianColors(r.kit.kind,cast.element)[1]:r.kit.color;
   for(const f of living(b)){
    if(!cast.patterns.some(p=>inPattern(p,f)))continue;
    const hit=b.resolveHit(f,"wild",{element:cast.element||(r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element),kind:"aoe",isBasic:false},Math.max(8,f.maxhp*(r.balance?.hazard??(r.kit.kind==="embers"?.14:.10))),f.x,f.y);
    if(hit?.dealt>0){
     if(r.kit.kind==="roots")f.rootT=Math.max(f.rootT||0,1.5);
-    if(r.kit.kind==="gale"){const dir=f.x<b.W/2?-1:1;f.x=clamp(f.x+dir*38,32,b.W-32);}
+    if(r.kit.kind==="gale"&&r.keepsakeGaleCast!==cast){const dir=f.x<b.W/2?-1:1;f.x=clamp(f.x+dir*38,32,b.W-32);}
     if(r.kit.kind==="mirror")f.vulnerableT=Math.max(f.vulnerableT||0,1.1);
    }
    b.vfx.ring(f.x,f.y,{r0:8,vr:220,life:.35,color:impactColor,width:3});
@@ -262,7 +264,7 @@ function install(){
   if((r.hazardEnabled===false&&!b.postgameRuins)||!living(b).length||!b.liveEnemies().length)return;
   if(r.recoveryUntil&&b.t>=r.recoveryUntil){r.recoveryUntil=0;paintHud(b);}
   if(r.cast){
-    if(r.kit.kind==="gale"){const direction=r.cycle%2?1:-1;for(const f of living(b)){if((f.inv||0)>0)continue;f.x=clamp(f.x+direction*22*Math.min(.05,dt),32,b.W-32);}}
+    if(r.kit.kind==="gale"&&r.keepsakeGaleCast!==r.cast){const direction=r.cycle%2?1:-1;for(const f of living(b)){if((f.inv||0)>0)continue;f.x=clamp(f.x+direction*22*Math.min(.05,dt),32,b.W-32);}}
     r.cast.remaining-=dt;
     if(b.autoMode&&r.cast.remaining>0&&r.cast.remaining<=.42){const danger=living(b).filter(f=>r.cast.patterns.some(p=>inPattern(p,f))&&!(f.inv>0));if(danger.length&&(danger.length>=2||danger.some(f=>f.hp/f.maxhp<.40))&&r.supportAvailable&&!r.supportUsed&&useSupport(b))return;for(const f of danger){if(f.dodgeCd>0||f._castRoot>0||f._beamRoot>0)continue;const reach=Math.max(35,f.speed*3*.28),angles=Array.from({length:12},(_,i)=>i*Math.PI/6);const safe=angles.find(a=>{const q={x:clamp(f.x+Math.cos(a)*reach,32,b.W-32),y:clamp(f.y+Math.sin(a)*reach,b.topMargin,b.H-b.bottomMargin)};return !r.cast.patterns.some(p=>inPattern(p,q));});if(safe!==undefined)b.dodge(f,safe);}}
     const second=Math.ceil(r.cast.remaining);if(r.hudSecond!==second){r.hudSecond=second;paintHud(b);}
@@ -274,6 +276,7 @@ function install(){
    const t=target(b);if(!t)return;
    const master=b.libraryEncounter?.bossId==="mastery",element=r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element,cycle=r.cycle++,warning=master?2.15:b.game?.isTouch?2.15:1.8;
    r.hudSecond=null;r.cast={remaining:warning,max:warning,element,patterns:master?buildMasteryPattern(b.W,b.H,b.topMargin,b.bottomMargin,cycle,element):buildPattern(r.kit.kind,b.W,b.H,b.topMargin,b.bottomMargin,t,cycle)};
+   applyRegionalKeepsake(b,window.State.S,"warning");
    const line=master?(element==="dark"?["暗相横向封锁！进入未标记的安全带。","Dark horizontal seal! Move into the unmarked lane."]:["光相纵向封锁！进入未标记的安全带。","Light vertical seal! Move into the unmarked lane."]):b.libraryEncounter?.bossId==="library"?["镜影即将反击，躲开标记！","Mirror counter incoming: dodge the marked areas!"]:labels[r.kit.kind];notice(b,line[0],line[1]);paintHud(b);
   }
  }
@@ -322,7 +325,7 @@ function install(){
   }
   return result;
  };
- const shadowLight=b=>({x:b.W*.50,y:b.topMargin+(b.H-b.topMargin-b.bottomMargin)*.50,r:Math.min(118,b.W*.22,(b.H-b.topMargin-b.bottomMargin)*.28)});
+ const shadowLight=b=>({x:b.W*.50,y:b.topMargin+(b.H-b.topMargin-b.bottomMargin)*.50,r:Math.min(118,b.W*.22,(b.H-b.topMargin-b.bottomMargin)*.28)*forgeLightScale(b,window.State.S)});
  const inLight=(b,e)=>{const l=shadowLight(b);return Math.hypot(e.x-l.x,e.y-l.y)<=l.r;};
  function shiftGuardian(b,e){
   if(!["starfall","mastery"].includes(b.libraryEncounter?.bossId)||!e?.regionalEnemy||e._darkPhase||!e.alive||e.hp<=0||e.hp>e.maxhp*.5)return;
@@ -337,7 +340,7 @@ function install(){
  const capture=BP.startCaptureSeq;
  BP.startCaptureSeq=function(){if(this.libraryEncounter){if(this.done||this.liveEnemies().length)return;this.libraryEncounter.cleared=true;this.projectiles=[];this.enemyProjectiles=[];this.finish(true);return;}if(this.regionalCombat&&this.enemies.some(e=>e.regionalEnemy))this._lastDropped=this.enemies[0];return capture.call(this);};
  const update=BP.update;
- BP.update=function(dt){const result=update.call(this,dt);if(this.regionalCombat){tick(this,Math.min(.06,Math.max(0,this.libraryEncounter?(this._lastDt??dt*(this.tempoScale??.64)):dt*(this.tempoScale??.64))));activateCompanionTalents(this);}if(this.libraryEncounter&&!this.done&&this.t>100){this._timeCapLoss=true;this.finish(false);}return result;};
+ BP.update=function(dt){const result=update.call(this,dt);if(this.regionalCombat){tick(this,Math.min(.06,Math.max(0,this.libraryEncounter?(this._lastDt??dt*(this.tempoScale??.64)):dt*(this.tempoScale??.64))));activateCompanionTalents(this);if(!this.duoCinematic&&!this.ultCinematic&&!this.duoRun&&!this.game.battleHelpOpen)applyRegionalKeepsake(this,window.State.S,"tick");}if(this.libraryEncounter&&!this.done&&this.t>100){this._timeCapLoss=true;this.finish(false);}return result;};
  const playerProjectile=BP.spawnProj;
  BP.spawnProj=function(x,y,ang,spd,dmg,owner,color,r,kind,skill,life){if(this.libraryEncounter?.bossId==="library"&&owner==="me"&&skill&&!skill.isBasic){this.libraryEncounter.lastSkill={element:skill.element,color,spd,kind,homing:skill.homing,grow:skill.grow};}return playerProjectile.call(this,x,y,ang,spd,dmg,owner,color,r,kind,skill,life);};
  const enemyAI=BP.updateEnemyAI;
@@ -361,7 +364,7 @@ function install(){
    case "roots":for(let i=-1;i<=1;i++)this.spawnProj(e.x,e.y,a+i*.22,138,e.dmg*.55,"wild",r.kit.color,8,"leaf",{element:"grass",isBasic:false,appliesTag:"bind"});break;
    case "embers":for(let i=-1;i<=1;i++)fire(a+i*.28,220,.62,"forge-slag");break;
    case "gale":fire(a-.11,325,.66);fire(a+.11,325,.66);break;
-   case "mirror":{const copied=this.libraryEncounter?.lastSkill;if(copied){const k={element:copied.element||"dark",isBasic:false,homing:copied.homing?clamp(copied.homing,.1,4.2):undefined,grow:copied.grow?clamp(copied.grow,1,2):undefined};const kind=["ball","orb","fireball","lightningOrb","leaf","hex"].includes(copied.kind)?copied.kind:"ball";for(let i=-1;i<=1;i++)this.spawnProj(e.x,e.y,a+i*.18,clamp(copied.spd||200,120,320),e.dmg*.54,"wild",copied.color||r.kit.color,8,kind,k); }else fire(a,200,.78);e.reflectT=Math.max(e.reflectT||0,.65);break;}
+   case "mirror":{const original=applyRegionalKeepsake(this,window.State.S,"mirror-counter"),copied=original?null:this.libraryEncounter?.lastSkill;if(copied){const k={element:copied.element||"dark",isBasic:false,homing:copied.homing?clamp(copied.homing,.1,4.2):undefined,grow:copied.grow?clamp(copied.grow,1,2):undefined};const kind=["ball","orb","fireball","lightningOrb","leaf","hex"].includes(copied.kind)?copied.kind:"ball";for(let i=-1;i<=1;i++)this.spawnProj(e.x,e.y,a+i*.18,clamp(copied.spd||200,120,320),e.dmg*.54,"wild",copied.color||r.kit.color,8,kind,k); }else fire(a,200,.78);if(!original)e.reflectT=Math.max(e.reflectT||0,.65);break;}
    case "orbit":{const master=this.libraryEncounter?.bossId==="mastery",dark=master&&e._darkPhase,n=dark?9:7;for(let i=0;i<n;i++)fire(a+i*Math.PI*2/n,dark?195:165,master?.49:.42);break;}
   }
   this.vfx.ring(e.x,e.y,{r0:10,vr:160,life:.45,color,width:3});
@@ -402,7 +405,7 @@ function install(){
   const d=optional?REGIONAL_BOSSES[id]:storyEcho[id],region=d.region||id,root=window.State.S,host=window.CatBondResonance,team=window.UI.getPreferredBattleTeam();
   if(!team.length)return false;const sp=window.GameData.speciesById(bossTemplates[id]);if(!sp)return false;const creature=region==="forge"?canonArt("shadow-beast"):art[region]?.enemy;if(!imageReady(creature)||(region==="starfall"&&!imageReady(orbitalArt[id==="mastery"?"mastery":"dark"]))){game.toast?.({zh:"守卫原画尚未加载，请稍后再次挑战。",en:"Guardian artwork is not ready. Please try again."});return false;}host.close?.();
   window.UI.openBattleModePrompt(team,sp,{origin:"map",storyTitle:d.title||d.name,bossElement:REGION_KITS[region].element,regionalGuardian:true,
-   bossSecondElement:region==="starfall"?"dark":null,bossClue:[d.clue[0]+" 避开预警攻击后抓住短暂破绽反击。",d.clue[1]+" Evade the marked attack, then counter during the brief opening."],onStart:fighters=>{
+   bossSecondElement:region==="starfall"?"dark":null,bossClue:[d.clue[0]+" 避开预警攻击后抓住短暂破绽反击。"+(id!=="mastery"&&hasRegionalKeepsake(root,region)?" "+regionalKeepsakes[region].description[0]:""),d.clue[1]+" Evade the marked attack, then counter during the brief opening."+(id!=="mastery"&&hasRegionalKeepsake(root,region)?" "+regionalKeepsakes[region].description[1]:"")],onStart:fighters=>{
    if(root!==window.State.S||!libraryAvailable(game,id,optional)||!fighters.length)return;
    const token=host.captureAction(),base={...sp,encounterLevel:regionalBossLevel(id,fighters)};
    game._returnScene="map";game._battleTheme={region,sky1:"#20253f",sky2:"#697ca8",ground:"#464967",ground2:"#232843",accent:REGION_KITS[region].color};

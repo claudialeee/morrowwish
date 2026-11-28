@@ -58,3 +58,6 @@
 .cb-adventure-overlay .cb-adventure-continue{display:block;width:100%;margin-top:12px;background:#55765b;color:#fff8e6;font-weight:750}
 .cb-adventure-overlay .cb-adventure-reward{padding:16px 12px}
 @media(orientation:landscape) and (max-height:490px){.cb-adventure-overlay[data-kind=exploration] .cb-adventure-card{max-height:96%;max-width:95%}.cb-adventure-overlay .cb-tide-grid button{min-height:44px}.cb-herb-board{grid-template-columns:repeat(4,minmax(0,1fr))}.cb-adventure-overlay .cb-herb-board button{min-height:54px}}
+
+/* Regional depth: state remains legible even before final illustrated art. */
+.cb-region-rule{margin:0;text-align:center;color:#486754;font-weight:700;font-size:clamp(12px,2vmin,15px);line-height:1.35}.cb-adventure-overlay .cb-tide-grid [data-crab=true]{background:#f7dfa1;border:2px solid #8e6747}.cb-adventure-overlay .cb-tide-grid [data-unreachable=true]{outline:0;opacity:.65}.cb-adventure-overlay .cb-mail-weight[data-sealed=true]{border:2px solid #ac654f;box-shadow:inset 0 0 0 2px #f8e0ac}.cb-adventure-overlay .cb-star[data-home=true]{border:2px solid #f1b94e;background:#fff1cc}.cb-adventure-overlay .cb-star[data-start=true]{border:2px solid #f8d36b}.cb-adventure-overlay .cb-star[data-home=true].cb-picked{background:#f8c85f}

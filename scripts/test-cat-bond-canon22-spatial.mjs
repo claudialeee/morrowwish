@@ -21,7 +21,7 @@ for(const i of [1,0,2]){const action=spatialTap(bell,[.23,.5,.77][i],.68);assert
 const bp=verify(bell);assert.equal(bp.route,'restored-pattern');assert.equal(bp.frames,0);assert.equal(validSpatialProof(bell.operation,{...bp,trace:[{type:'bell-tile',i:0},...bp.trace.slice(1)]}),false);
 assert.equal(validSpatialProof(bell.operation,{...bp,trace:bp.trace.slice(0,2)}),false);
 const shadow=newSpatial('puzzle:shadow-bridge');spatialInput(shadow,cross);assert.equal(shadow.solved,false);
-assert.equal(spatialTap(shadow,.5,.9),null);for(let i=0;i<1000;i++)spatialInput(shadow,aim(.19+Math.sin(i)*.03));spatialInput(shadow,aim(.51));spatialInput(shadow,cross);assert.equal(shadow.solved,false);spatialInput(shadow,aim(.82));spatialInput(shadow,cross);assert.equal(shadow.discoveries.length,3);verify(shadow);assert.ok(shadow.trace.length<10);
+assert.equal(spatialTap(shadow,.5,.9),null);for(let i=0;i<1000;i++)spatialInput(shadow,aim(.19+Math.sin(i)*.03));spatialInput(shadow,aim(.51));spatialInput(shadow,cross);assert.equal(shadow.solved,false);spatialInput(shadow,aim(.68));spatialInput(shadow,aim(.82));spatialInput(shadow,cross);assert.equal(shadow.solved,false);spatialInput(shadow,aim(.18));spatialInput(shadow,cross);assert.equal(shadow.discoveries.length,3);verify(shadow);assert.ok(shadow.trace.length<10);
 const lantern=newSpatial('puzzle:lantern-show');spatialInput(lantern,{type:'shape',i:1});spatialInput(lantern,aim(.2));spatialInput(lantern,cross);const show=verify(lantern);assert.equal(show.shape,1);assert.equal(validSpatialProof(lantern.operation,{...show,shape:2}),false);
 for(const route of [[1,3,5,7],[2,4,6,7]]){
  const p=newSpatial('puzzle:star-steps');assert.equal(startBridgeWalk(p,step(7)),false);assert.equal(p.node,0);

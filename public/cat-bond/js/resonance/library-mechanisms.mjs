@@ -40,10 +40,10 @@ export function routeGesture(start,end){
 }
 
 export function advanceLibrary(p,i){
- if(!p||!p.type?.startsWith("library")||p.solved||!Number.isInteger(i)||i<0||i>2)return false;
+ if(!p||!p.type?.startsWith("library")||p.solved||!Number.isInteger(i)||i<0||i>(p.type==="libraryLedger"?3:2))return false;
  if(p.type==="libraryCompanion"){p.solved=advanceMirror(p.mirror,i);p.mistakes=p.mirror.mistakes;return p.solved;}
  if(p.type==="librarySeal"){p.seen||=[];if(!p.seen.includes(i))p.seen.push(i);p.values=p.goal.filter(n=>p.seen.includes(n));p.solved=p.values.length===p.goal.length;return p.solved;}
- if(p.type==="libraryLedger"){p.question=i;p.values=[0];p.solved=true;return true;}
+ if(p.type==="libraryLedger"){p.seen||=[];if(i<3){if(!p.seen.includes(i))p.seen.push(i);return false;}if(p.seen.length!==3)return false;p.question=3;p.values=[0];p.solved=true;return true;}
  if(p.type==="libraryRoutes"){p.routeSeen||=[];if(i<2){if(!p.routeSeen.includes(i))p.routeSeen.push(i);p.routeMode=i;p.values=p.routeSeen.includes(0)?[0]:[];if(p.routeSeen.length===2)p.values=[0,1];return false;}if(p.routeSeen.length!==2){p.mistakes++;return false;}p.values=[0,1,2];p.routeMode=2;p.solved=true;return true;}
  if(p.type==="libraryMirrors")p.values[i]=(p.values[i]+1)%4;
  else if(i===p.goal[p.values.length])p.values.push(i);
@@ -57,7 +57,7 @@ const words={
  libraryMirrors:[["镜光回廊","Reflection gallery"],["旋转三面镜子，使光从左侧月窗折向隐藏的门。","Rotate the three mirrors to carry moonlight into the hidden doorway."],[["西镜","West mirror"],["中镜","Middle mirror"],["东镜","East mirror"]]],
  libraryMural:[["封存壁画","The sealed mural"],["按历史先后接合碎片：坠星、断裂的铃舌、应急锚室。","Reassemble the fragments in historical order: fallen star, broken tongue, emergency anchor."],[["断裂的铃舌","Broken tongue"],["应急锚室","Emergency anchor"],["坠落的星","Fallen star"]]],
  libraryEcho:[["识别复制记忆","Recognize the copied memory"],["打开图鉴核对个体记忆记录，再选出匹配的回响。","Inspect the individual memory record in Catdex, then match its echo."],[["回响甲","Echo A"],["回响乙","Echo B"],["回响丙","Echo C"]]],
- libraryLedger:[["公开记录 · 调查","Public records · Investigation"],["这三份记录提供线索，不证明是谁修改了线路。","These records are clues, not proof of who redirected the routes."],[["问借图的事","Ask about the borrowed map"],["问失忆的事","Ask about the memory loss"],["直接问暮铃","Ask Luna directly"]]],
+ libraryLedger:[["公开记录 · 调查","Public records · Investigation"],["查阅借阅印记、失忆日志与封印线路。把线索联系起来，再向暮铃求证。","Inspect the borrowing mark, memory-loss log and seal route. Connect the evidence, then ask Luna."],[["查借阅簿","Inspect ledger"],["查公开日志","Inspect public log"],["查线路图","Inspect route map"],["向暮铃求证","Ask Luna"]]],
  libraryRestore:[["圣所 · 邻地回应","Sanctuary · Neighboring replies"],["先对准月窗，再接通邻地镜桥，最后让两地共同回应。","Align the moon window, reconnect the neighboring mirror bridge, then let both regions answer."],[["邻地镜桥","Neighbor bridge"],["月窗","Moon window"],["相互回应","Reciprocal reply"]]]
 };
 export function libraryWords(p){const w=words[p.type];if(!w)return null;if(p.type!=="libraryEcho")return w;return [w[0],w[1],w[2].map((v,i)=>v.map(t=>t+" · "+echoInterval(p,i).toFixed(2)+"s"))]}
@@ -100,7 +100,7 @@ export function paintLibraryPuzzle(c,p,lang,W,H,visual={}){
 
  if(p.type==="libraryLedger"){
  const cards=[["借阅簿","Borrowing ledger","借阅印与暮铃铃坠相同","Borrowing mark matches Luna’s pendant"],["公开日志","Public log","失忆复发与封印松动同日","Memory loss and seal breach: same day"],["线路图","Route map","旧图标有通往中央的路线","The old map shows routes to the center"]];
- [.23,.50,.77].forEach((x,i)=>{frame(x-.12,.34,.24,.33);const q=cards[i];t(q[l],x,.41,18,"#543b55");t(q[2+l],x,.53,12,"#356b68");});t(l?"Ask a question. There is no correct order.":"任选一个问题，不需要排序。",.5,.74,18);c.restore();return true;
+ [.23,.50,.77].forEach((x,i)=>{frame(x-.12,.34,.24,.33);const q=cards[i];t(q[l],x,.41,18,"#543b55");const seen=p.seen?.includes(i);t(seen?q[2+l]:(l?"Tap to inspect":"点击查看"),x,.53,12,seen?"#356b68":"#8d7a78");});t((l?"Evidence inspected: ":"已查证线索：")+(p.seen?.length||0)+"/3",.5,.74,18);c.restore();return true;
  }
  if(p.type==="libraryRoutes"){
   const n=p.routeMode===0?1:p.routeMode===1?2:p.routeMode===2?3:0,colors=["#57a0b8","#6baf83","#d69464","#c3a2de","#8f92bd","#d6bc6b"],names=l?["Windchime","Forest","Lantern","Sky","Library","Starfall"]:["风铃镇","森林","千灯城","云岛","书库","星原"],pts=names.map((_,i)=>[.5+.22*Math.cos(i*Math.PI/3-Math.PI/2),.54+.14*Math.sin(i*Math.PI/3-Math.PI/2)]);c.lineWidth=3*s;for(let i=0;i<6;i++){const a=pts[i],b=n===1?[.5,.54]:pts[(i+1)%6];c.strokeStyle=n===1?"#b18192":n>=2?colors[i]:"#b2a7b8";c.setLineDash(n===0?[5*s,6*s]:[]);c.beginPath();c.moveTo(X(a[0]),Y(a[1]));c.lineTo(X(b[0]),Y(b[1]));c.stroke();}c.setLineDash([]);pts.forEach((q,i)=>{c.fillStyle=n===1?"#b18192":colors[i];c.beginPath();c.arc(X(q[0]),Y(q[1]),18*s,0,2*Math.PI);c.fill();t(names[i],q[0],q[1]+.052,13);});c.fillStyle="#dac4ab";c.beginPath();c.arc(X(.5),Y(.54),24*s,0,2*Math.PI);c.fill();t(n===1?(l?"Home":"旧花园"):(l?"Bell":"星铃"),.5,.54,13);const memories=[{keep:["阿婆认出了小猫","Gran remembers the kitten"],lose:["阿婆认不出小猫","Gran forgets the kitten"]},{keep:["小栗记得歪耳灯","Pip remembers the lantern"],lose:["小栗忘了歪耳灯","Pip forgets the lantern"]},{bg:"core-art-remaster/story/e03-garden.webp",keep:["你从前的家","Your old home"]}];for(const [i,m] of memories.entries()){const x=.20+i*.30,y=.21,fade=n===1&&i<2;c.save();c.globalAlpha=fade?.22:1;const bx=X(x-.125),by=Y(y-.10),bw=X(.25),bh=Y(.20);if(i===2)cover(c,image(m.bg),bx,by,bw,bh);else{const im=image("story-art/library-shared-memories.jpg");if(ready(im)){const sw=im.naturalWidth/2,sh=im.naturalHeight,k=Math.min(bw/sw,bh/sh),dw=sw*k,dh=sh*k;c.fillStyle="#eadccb";c.fillRect(bx,by,bw,bh);c.drawImage(im,i*sw,0,sw,sh,bx+(bw-dw)/2,by+(bh-dh)/2,dw,dh);}}if(i===2&&(n===1||n===2||n===3)){c.fillStyle="#ffe3a633";c.fillRect(bx,by,bw,bh);}c.restore();t((fade?m.lose:m.keep)[l],x,y+.125,15,fade?"#785d6c":"#356b68");}t((l?["Watch two possible futures","Gran forgets the kitten; Pip forgets the lantern","Each neighbor keeps their memories","Both models tested · now try the real route"]:["准备观看两种未来","阿婆认不出小猫，小栗忘记歪耳灯","各地的记忆都还在","两种模型均已演示，还要实际去试"])[n],.5,.79,18);c.restore();return true;
