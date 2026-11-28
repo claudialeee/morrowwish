@@ -10,7 +10,7 @@ on:
       scope:
         description: Acceptance scope
         type: choice
-        options: [focused, release]
+        options: [focused, release, talent]
         default: focused
 permissions:
   contents: read
@@ -41,12 +41,14 @@ jobs:
           mode=source
           if [[ "$EVENT" == push || "$REQUESTED" == release || "$LABEL" == starbell-release-acceptance ]]; then
             mode=release
+          elif [[ "$REQUESTED" == talent || "$LABEL" == starbell-talent-qa ]]; then
+            mode=talent
           elif [[ "$REQUESTED" == focused || "$LABEL" == starbell-focused-qa || "$ACTION" == opened || "$ACTION" == reopened ]]; then
             mode=focused
           elif [[ "$ACTION" == synchronize && -n "$BEFORE" && -n "$AFTER" ]]; then
             if ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then git fetch --no-tags --depth=1 origin "$BEFORE"; fi
             if ! git diff --quiet "$BEFORE" "$AFTER" -- .github/workflows/starbell-integrated-guardians.yml; then
-              mode=focused
+              mode=talent
             fi
           fi
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
@@ -82,7 +84,7 @@ jobs:
           node scripts/test-starbell-telemetry.mjs
   focused:
     needs: [scope, source]
-    if: needs.scope.outputs.mode == 'focused' && needs.source.result == 'success'
+    if: (needs.scope.outputs.mode == 'focused' || needs.scope.outputs.mode == 'talent') && needs.source.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 18
     strategy:
@@ -100,6 +102,7 @@ jobs:
           npx playwright install chromium
       - name: Focused browser regression (no continuous campaign)
         env:
+          ACCEPTANCE_MODE: ${{ needs.scope.outputs.mode }}
           STARBELL_BOSS_PROFILE: ${{ matrix.profile }}
           STARBELL_MINIGAME_PROFILE: ${{ matrix.profile }}
           STARBELL_FOCUS_PROFILE: ${{ matrix.profile }}
@@ -115,7 +118,9 @@ jobs:
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
           failed=0
-          for test in test-starbell-regional-bosses-browser test-starbell-player-first-browser test-starbell-garden-camera test-starbell-finale-framing-farwind test-starbell-talent-practice-browser; do
+          tests='test-starbell-regional-bosses-browser test-starbell-player-first-browser test-starbell-garden-camera test-starbell-finale-framing-farwind test-starbell-talent-practice-browser'
+          if [[ "$ACCEPTANCE_MODE" == talent ]]; then tests='test-starbell-talent-practice-browser'; fi
+          for test in $tests; do
             echo "::group::$test"
             timeout 180s node "scripts/$test.mjs" || failed=1
             echo "::endgroup::"
