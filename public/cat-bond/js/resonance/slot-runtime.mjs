@@ -1,11 +1,13 @@
 import {campaign} from "./campaign.mjs";
 import {makeEngine} from "./engine.mjs";
-import {layouts,storyNpcPoint} from "./world-exploration.mjs?v=narrative-play-20261127-r2";
+import {layouts,storyNpcPoint} from "./world-exploration.mjs?v=work-closure-20261127-r3";
 import {storyPartyPatch} from "./story-party.mjs";
 import {validReplyProof} from "./canon22-finale-replies.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason});
-const runtimes=new WeakMap();
+// Cache-busted module URLs must still use one slot authority and one lease registry.
+const runtimeKey=Symbol.for('morrowwish.starbell.slot-runtimes');
+const runtimes=globalThis[runtimeKey]??=(new WeakMap());
 // Every adapter using the same State object shares one transaction implementation.
 export function getSlotRuntime(State){if(!runtimes.has(State))runtimes.set(State,createSlotRuntime(State));return runtimes.get(State)}
 // One authority: always read the live slot, never cache an engine or mirror progression.

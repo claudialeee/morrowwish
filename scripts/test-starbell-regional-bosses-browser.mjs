@@ -54,7 +54,7 @@ try{
     if(!window.__STARBELL_DEVELOPER__)throw Error('Isolated developer slot required');
     await Promise.all(paths.map(async p=>{const im=new Image();im.src='assets/'+p;await im.decode();if(!im.naturalWidth)throw Error(p+' missing');}));
     CatBondResonance.close();UI.closeAll();
-    const cats=['jinjc','story_muling'].map(species=>{const cat=State.makeCat(species,{affinity:35,protagonist:species==='jinjc'});while(cat.level<c.level)State.addXp(cat,State.xpToNext(cat.level));Skills.autoLearn(cat);return cat;});
+    const cats=['jinjc','story_muling',...(c.id==='sky'?['story_yahe']:[])].map(species=>{const cat=State.makeCat(species,{affinity:35,protagonist:species==='jinjc'});while(cat.level<c.level)State.addXp(cat,State.xpToNext(cat.level));Skills.autoLearn(cat);return cat;});
     Object.assign(State.S,{cats,gameStarted:true,coins:500,fish:20,difficulty:'casual',catchCount:2,firstDuoShowcasePending:false,battleTutorialDone:true,battlePrefs:{autoBattle:true,modeChosen:true,tutorialSeen:true,manualTutorialSeen:true,teamUids:cats.map(x=>x.uid)},resonance:snapshot,resonanceExploration:{location:c.region,positions:{[c.region]:{x:c.start[0],y:c.start[1]}},interactions:{},pickups:{},cargo:null}});
     if(!State.save().ok)throw Error('Checkpoint save failed');
     if(!WorldMap.enterRegion(c.region))throw Error('Region entry failed');
@@ -71,6 +71,7 @@ try{
     const clue=page.locator('[data-guardian-clue]');await clue.waitFor({state:'visible'});assert.ok((await clue.textContent()).trim().length>10,'guardian tactic is visible before battle');
    };
    await open();
+   if(c.id==='sky'){const rec=page.locator('[data-counter-uid]');await rec.waitFor({state:'visible'});await press(rec);}
    if(c.id==='harbor'){
     await press(page.locator('[data-battle-auto="false"]'));
     await press(page.locator('#bp-go'));
@@ -127,7 +128,9 @@ try{
    const combat=await page.evaluate(()=>{const b=__game.battle;return {species:b.enemies[0].sp.id,element:b.enemies[0].element,isBoss:b.enemies[0].isBoss,portrait:b.H>b.W,health:b.enemies[0].hp,auto:b.autoMode};});
    assert.equal(combat.species,bossTemplates[c.id]);assert.equal(combat.isBoss,true);assert.equal(combat.auto,true);assert.ok(combat.health>0);assert.equal(combat.portrait,portrait);
    const hud=page.locator('#cb-region-combat');await hud.waitFor({state:'visible'});
-   if(c.id==='forest'){
+   await page.waitForFunction(()=>{const b=__game.battle,e=b.enemies.find(e=>e.alive&&e.combatName);return e&&document.querySelector('#wild-name')?.textContent===e.combatName[MorrowwishI18n.get()==='zh'?0:1]&&document.querySelector('.battle-enemy-track')?.getAttribute('aria-label')?.includes(e.combatName[MorrowwishI18n.get()==='zh'?0:1])&&document.querySelector('#battle-enemy-poise-label')?.textContent?.includes(e.combatName[MorrowwishI18n.get()==='zh'?0:1]);});
+   assert.equal(await page.locator('#btn-debug').isVisible(),false);if(c.id==='sky'){assert.ok(await page.evaluate(()=>Skills.effectiveness(Skills.elementOf(__game.battle.team[0].cat.species),__game.battle.enemies[0].element)>1),'One-click counter actually starts');}
+   if(c.id==='forest'||c.id==='harbor'){
     await page.evaluate(()=>{const b=__game.battle;for(let i=0;i<800&&!b.regionalCombat.cast&&!b.done;i++)b.update(1/60);});
     await page.waitForFunction(()=>!!__game.battle?.regionalCombat?.cast);
     const support=hud.locator('button');assert.equal(await support.isEnabled(),true);await press(support);
@@ -140,7 +143,7 @@ try{
    assert.equal(result.done,true);assert.equal(result.result,'win',JSON.stringify(result));
    await page.waitForFunction(()=>__game.scene==='map');
    const after=await page.evaluate(({c,key})=>({coins:State.S.coins,fish:State.S.fish,recorded:c.optional?!!State.S.resonanceExploration.interactions[key]:State.S.resonance.evidence[c.scene]?.includes(c.op),region:WorldMap.currentRegion,publicKeys:['catbond_save_v1','catbond_save_slots_v1','catbond_active_slot_v1'].map(k=>localStorage.getItem(k)),mapSize:(()=>{const r=document.querySelector('.rw-surface')?.getBoundingClientRect();return r&&{w:r.width,h:r.height}})()}),{c,key:bossKey(c.id)});
-   const reward=bossReward(c.id,{interactions:{}});assert.equal(after.coins,500+reward[0]);assert.equal(after.fish,20+reward[1]);assert.equal(after.recorded,true);assert.equal(after.region,c.region);assert.ok(after.publicKeys.every(x=>x===null));assert.ok(after.mapSize?.w>0&&after.mapSize?.h>0);assert.equal(after.mapSize.h>after.mapSize.w,portrait,'Battle exit preserves selected layout');
+   const reward=bossReward(c.id,{interactions:{}});assert.equal(after.coins,500+reward[0]);assert.equal(after.fish,20+reward[1]);assert.equal(after.recorded,true);assert.equal(after.region,c.region);assert.equal(await page.evaluate(()=>State.listSaveSlots().find(s=>s.id===State.activeSlot()).regionId),c.region);assert.ok(after.publicKeys.every(x=>x===null));assert.ok(after.mapSize?.w>0&&after.mapSize?.h>0);assert.equal(after.mapSize.h>after.mapSize.w,portrait,'Battle exit preserves selected layout');
    if(!c.optional)assert.ok(await page.evaluate(region=>CatBondResonance.view().melodies.includes(region),c.region),'Actual victory restores the local bell');
    assert.deepEqual(localErrors,[]);console.log('GUARDIAN BROWSER PASS',portrait?'portrait':'wide',lang,c.id,JSON.stringify({combat,result,after}));
   }catch(e){errors.push({id:c.id,message:String(e),pageErrors:localErrors});console.error('GUARDIAN BROWSER FAIL',c.id,String(e),localErrors);}

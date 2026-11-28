@@ -1,14 +1,14 @@
 // Chat 3 physical-world adapter. Chat 4 owns the sole narrative mutation path.
 import {campaign} from "./campaign.mjs";
 import {validMirrorProof} from "./canon22-mirror.mjs";
-import {spatialKind,validSpatialProof} from "./canon22-spatial.mjs?v=narrative-play-20261127-r2";
+import {spatialKind,validSpatialProof} from "./canon22-spatial.mjs?v=work-closure-20261127-r3";
 import {validNeighborTrial} from "./canon22-neighbor-trial.mjs";
 import {validSkyFlightProof,skyLaunch,skyLanding,skyPartsReady,skySurvey,skySurveyCache} from "./sky-flight.mjs?v=starbell-release-quality-r2-20261127";
-import {getSlotRuntime} from "./slot-runtime.mjs?v=narrative-play-20261127-r2";
-import {layouts,puzzleSpecs,canonRestorationPrerequisites,retiredWorldOperations} from "./world-exploration.mjs?v=narrative-play-20261127-r2";
-import {applySideEvent} from "./side-adventures.mjs?v=narrative-play-20261127-r2";
-import {applyDiscovery} from "./regional-discoveries.mjs?v=narrative-play-20261127-r2";
-import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord} from "./library-mechanisms.mjs?v=narrative-play-20261127-r2";
+import {getSlotRuntime} from "./slot-runtime.mjs?v=work-closure-20261127-r3";
+import {layouts,puzzleSpecs,canonRestorationPrerequisites,retiredWorldOperations} from "./world-exploration.mjs?v=work-closure-20261127-r3";
+import {applySideEvent} from "./side-adventures.mjs?v=work-closure-20261127-r3";
+import {applyDiscovery} from "./regional-discoveries.mjs?v=work-closure-20261127-r3";
+import {libraryPoints,libraryInvitations,libraryBlocked,libraryPuzzle,catdexRecord} from "./library-mechanisms.mjs?v=work-closure-20261127-r3";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 const fail=reason=>({ok:false,reason}),stages=["sendA","receiveB","sendB","receiveA"];
 const scentTrail=Object.freeze([

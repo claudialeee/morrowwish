@@ -2909,7 +2909,7 @@ const UI = {
     if(opts.regionalGuardian&&matchup&&opts.bossElement){
       const eligible=(State.S.cats||[]).filter(c=>window.Skills?.effectiveness?.(window.Skills.elementOf(c.species),opts.bossElement)>1);
       const best=eligible.sort((a,b)=>State.catPower(b)-State.catPower(a))[0];
-      if(best){const recommend=document.createElement('button');recommend.type='button';recommend.className='btn ghost';recommend.textContent=(en?'Field counter: ':'克制首发：')+State.catName(best);recommend.onclick=()=>{const next=[best.uid,...selected.filter(uid=>uid!==best.uid)].slice(0,5);selected.splice(0,selected.length,...next);this.bindSquadPicker(selected,refreshMatchup);};matchup.after(recommend);}
+      if(best){const recommend=document.createElement('button');recommend.type='button';recommend.className='btn ghost';recommend.dataset.counterUid=best.uid;recommend.textContent=(en?'Field counter: ':'克制首发：')+State.catName(best);recommend.onclick=()=>{const next=[best.uid,...selected.filter(uid=>uid!==best.uid)].slice(0,5);selected.splice(0,selected.length,...next);this.bindSquadPicker(selected,refreshMatchup);};matchup.after(recommend);}
     }
     const duoPick=document.getElementById('bp-chosen-duo');
     if(duoPick)duoPick.onclick=()=>{

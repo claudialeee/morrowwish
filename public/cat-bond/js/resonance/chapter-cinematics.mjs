@@ -1,5 +1,5 @@
 import {campaign} from "./campaign.mjs";
-import {getSlotRuntime} from "./slot-runtime.mjs";
+import {getSlotRuntime} from "./slot-runtime.mjs?v=work-closure-20261127-r3";
 import {mountResonanceCinematics,starfallReleaseReady,buildCanonicalScene} from "../resonance-cinematic.mjs";
 
 const language=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
@@ -132,6 +132,7 @@ async function play(sceneId){
   const result=await player.playCurrent(resume);
   // A changed shot list may invalidate an old checkpoint. Clear only that slot's checkpoint; never advance story.
   if(!result.ok&&resume&&window.State.S===slot&&window.State.activeSlot()===slotId)writeCheckpoint(undefined);
+  if(!result.ok&&!fallbackActive&&current())error();
   return result.ok||fallbackActive;
  }catch{
   error();

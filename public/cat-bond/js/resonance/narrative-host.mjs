@@ -1,7 +1,7 @@
 import "./adventure-play.mjs?v=regional-depth-20261127";
 import {companionTalents} from "./companion-talents.mjs";
 import {campaign} from "./campaign.mjs";
-import {getSlotRuntime} from "./slot-runtime.mjs?v=narrative-play-20261127-r2";
+import {getSlotRuntime} from "./slot-runtime.mjs?v=work-closure-20261127-r3";
 import {mountDialogue,awaitingGameplay} from "./dialogue-ui.mjs";
 import {mountKeyExchange} from "./key-exchange.mjs";
 import {isLibraryReveal,mountLibraryReveal} from "./library-reveal.mjs";

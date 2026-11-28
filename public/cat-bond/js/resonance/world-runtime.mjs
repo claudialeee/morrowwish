@@ -2,15 +2,15 @@ import {REGIONAL_BOSSES,bossKey,optionalBossAvailable} from "./regional-bosses.m
 import {finaleBattleAsset} from "./finale-art.mjs?v=phase-paired-20261127";
 import { campaign } from "./campaign.mjs";
 import {withForeground,depthScale} from "./exploration-depth.mjs";
-import {spatialControls,spatialTap,paintSpatial,chasePoint,shadowHint} from "./canon22-spatial.mjs?v=narrative-play-20261127-r2";
+import {spatialControls,spatialTap,paintSpatial,chasePoint,shadowHint} from "./canon22-spatial.mjs?v=work-closure-20261127-r3";
 import {chaseArt,drawPortraitChase,portraitChaseTap} from "./portrait-chase.mjs";
 import {portraitAsset,projectPortrait,unprojectPortrait,projectFarwindLandscape,unprojectFarwindLandscape} from "./portrait-map.mjs";
 import {hasPendingDialogue} from "./dialogue-ui.mjs";
 import { openFinaleLatch } from "./finale-latch.mjs";
-import { createWorldBridge } from "./world-bridge.mjs?v=narrative-play-20261127-r2";
-import {availableDiscoveries,layoutDiscoveries,paintDiscovery} from "./regional-discoveries.mjs?v=narrative-play-20261127-r2";
+import { createWorldBridge } from "./world-bridge.mjs?v=work-closure-20261127-r3";
+import {availableDiscoveries,layoutDiscoveries,paintDiscovery} from "./regional-discoveries.mjs?v=work-closure-20261127-r3";
 import {markerMetrics,layoutMarkerLabels,pickMarker,discoveryNames} from "./map-affordances.mjs?v=npc-talk-bubble-1";
-import { createExplorer,layouts,exchangeOptions,distance } from "./world-exploration.mjs?v=narrative-play-20261127-r2";
+import { createExplorer,layouts,exchangeOptions,distance } from "./world-exploration.mjs?v=work-closure-20261127-r3";
 import {paintHarborEnvironment,paintHarborPuzzle,harborObjective,harborPuzzleHint,paintHarborCeremony,paintHarborPortraitCeremony} from "./harbor-presentation.mjs";
 import {paintForgeEnvironment,paintForgeCeremony,forgeObjective,paintForgePuzzle} from "./forge-presentation.mjs";
 import { echoBeaconOptions,symbol,featureIcon,puzzleWords,puzzleHit,paintPuzzle } from "./world-mechanisms.mjs";
@@ -31,7 +31,7 @@ const ruinsPoint=[.23,.78];
 const duoMemories={harbor:"creek",forest:"sakura",forge:"volcano",starfall:"ruins"};
 const cargoNames={"beacon-supply-vessel":["灯塔引航物资","Beacon-guided supplies"],"herbs-waterway-map":["药材与水路图","Herbs and waterway map"],"cooling-plans-herbs":["冷却水与药材","Cooling water and herbs"],"pumps-tools":["水泵与工具","Pumps and tools"],"wind-vanes-flight-parts":["风向仪与飞行部件","Wind vanes and flight parts"],"wind-data-airship-route":["风况与飞艇航路","Wind data and airship route"],"courier-route":["信使航线","Courier route"],"archived-flight-maps":["旧航图与档案","Archived flight maps"],"star-chart-coordinates":["星图及坐标","Star chart and coordinates"],"astronomical-observations":["天文观测记录","Astronomical observations"],"navigation-bell-compass":["导航铃与星罗盘","Navigation bell and star compass"],"beacon-response":["港口航行回报","Harbor navigation response"]};
 const cargoName=id=>cargoNames[id]?tr(...cargoNames[id]):id;
-import {libraryWords,libraryBlocked,paintLibraryEnvironment,routeGesture} from "./library-mechanisms.mjs?v=narrative-play-20261127-r2";
+import {libraryWords,libraryBlocked,paintLibraryEnvironment,routeGesture} from "./library-mechanisms.mjs?v=work-closure-20261127-r3";
 import {paintSkyFlight,paintSkyWeather,skyLaunch,skyPartsReady,canLandSkyFlight} from "./sky-flight.mjs?v=starbell-release-quality-r2-20261127";
 
 
@@ -330,7 +330,7 @@ function install(){
   if(b.view().current?.chapter==="finale"&&id==="starfall")return enterRegion("finale");
   if(id==="finale"&&b.view().current?.chapter!=="finale")return enterMap();
   if(won&&wildRegion===id){wild=null;spawnDelay=7;}
-  return id?enterRegion(id):enterMap();
+  return id&&id!=='garden'?enterRegion(id):enterMap();
  }
  function exitToYard(){clearRewardPopup();stopDemo();ceremony=null;host.hidden=true;pending=null;exit?.();}
  function reason(k,asPair=false){const m={"walk-to-discovery":["先走到发现地点，或继续探索其他地方。","Approach the discovery, or explore somewhere else."],"story-operation-order":["请先完成当前调查或行动","Complete the current investigation or action first"],"mechanism-incomplete":["机关尚未完成","Complete the mechanism first"],"starfall-routing-order":["先接通相邻古铃，再修复圣所","Connect the neighboring bells, then restore the sanctuary"],"starfall-record-order":["请按调查顺序前往地点","Follow the investigation stations in order"],"walk-to-cargo":["请先抵达物资领取地点","Reach the cargo pickup point"],"walk-to-recipient":["请先抵达接收地点","Reach the recipient"],"library-previous-station":["请先核验前一份档案","Verify the previous archive station first"],"library-catdex-required":["需要已收录图鉴记录的猫咪","A cat with a Catdex record is required"],"library-repair-first":["先修复月镜圣所","Restore the Moonmirror sanctuary first"],"library-record-unverified":["档案证据尚未核实","Archive evidence is not verified"],"harbor-repair-first":["请先修复古铃圣所","Restore the town bell sanctuary first"],"npc-not-available":["该居民暂时无法响应，请先修复圣所","The resident cannot respond yet. Restore the sanctuary first."],"local-response-required":["需要两位居民共同回应旋律","Both residents must answer the melody"],"slot-changed":["存档已切换，请重新操作","The active save has changed. Try again."],"incomplete-forge-parts":["先在旧工坊收集三件零件","Collect all three old workshop parts first"],"two-cat-required":["需要至少一只已收集的猫咪","At least one collected cat is needed"],"paired-flow-incomplete":["双猫尚未完成协作","Both cats must complete the flow"],"region-locked":["尚未开放","Region locked"],"rescue-first":["先救援遇险小船","Rescue the boat first"],"beacon-first":["先校准灯塔","Align the lighthouse first"],"departure-dialogue-pending":["先与暮铃交谈","Speak with Luna before departing"],"invite-local-cats":["先邀请两位当地居民","Invite both local residents"],"choice-pending":["请先作出剧情选择","Make the story choice first"],"save-failed":["存档失败，请重试","Save failed; retry"],"not_started":["请先开始或读取存档","Start or load a save"],"local-crisis-unresolved":["先完成当地危机","Resolve the local crisis first"],"cargo-busy":["先交付当前物资","Deliver the current cargo first"],"canonical-exchange-unavailable":["正式交流接口暂不可用","Canonical exchange unavailable"],"canonical-host-unavailable":["正式剧情接口暂不可用","Canonical story unavailable"],"walk-to-objective":["请先抵达地点","Walk to the location"],"walk-to-tide":["沿退潮刻痕抵达正确地点","Follow the ebb marks to the correct location"],"incomplete-tide-trail":["先调查退潮刻痕与石阶","Inspect the ebb marks and dry steps first"],"walk-to-scent":["先沿气味抵达正确地点","Follow the scent to the correct location"],"incomplete-scent-trail":["尚未找到全部踪迹","The scent trail is incomplete"],"postgame-repair-unavailable":["请先抵达待修复圣所","Reach the sanctuary needing repair"],"postgame-visit-unavailable":["请先修复圣所并前往居民处","Repair the sanctuary and visit the resident first"]};const pair=m[k]||["操作失败，请重试。","Action failed. Please try again."];if(!m[k]&&k)console.warn("World action:",k);return asPair?pair:tr(...pair);}

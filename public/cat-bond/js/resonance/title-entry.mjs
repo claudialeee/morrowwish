@@ -1,5 +1,5 @@
 // Spoiler-free title handoff. Opening history assets are never played here.
-import {getSlotRuntime} from "./slot-runtime.mjs";
+import {getSlotRuntime} from "./slot-runtime.mjs?v=work-closure-20261127-r3";
 const lang=()=>window.MorrowwishI18n?.get?.()==="zh"?"zh":"en";
 const tr=(zh,en)=>lang()==="zh"?zh:en;
 function syncHomeLink(){const a=document.getElementById('cb-home');if(!a)return;const label=tr('返回 Morrow Wish','Back to Morrow Wish');a.textContent=tr('← Morrow Wish 首页','← Morrow Wish');a.setAttribute('aria-label',label);}
@@ -43,7 +43,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   // Retired entries carry no mandatory operations. Do not manufacture cinematic or gameplay evidence.
   while(introIds.has(rt.view().current?.id)){const v=rt.view();if(v.objective.length||v.current.lines.length)return fail("old-opening-data");const result=rt.finish(rt.capture());if(!result.ok)return fail(result.reason);if(!live())return fail("slot-changed");}
   if(owner.openingPresentation){const prev=owner.openingPresentation;delete owner.openingPresentation;try{if(!State.save()?.ok)owner.openingPresentation=prev}catch{owner.openingPresentation=prev}}
-  const v=rt.view(),mode=classifyPrologue(v);
+  const v=rt.view(),mode=owner.resonanceExploration?.location==='garden'?'garden':classifyPrologue(v);
   if(mode==="garden"){game.scene="yard";game.battle=null;game.rebuildYard?.();game.showYardChrome?.();game.refreshHUD?.();window.dispatchEvent(new Event("cat-bond-garden-entered"));window.CatBondOpeningCover?.hide();if(showContext)openContext(owner);}
   else{onWorld?.();if(v.current?.chapter===owner.resonanceExploration?.location)window.WorldMap?.resumeRegion?.();window.CatBondOpeningCover?.hide();}
   return {ok:true,mode};

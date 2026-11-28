@@ -160,6 +160,10 @@ class Game {
   }
   showYardChrome() {
     if(this.scene!=='yard')return;
+    if(window.__CAT_BOND_CANONICAL_ACTIVE__&&State.S.resonance&&State.S.resonanceExploration?.location!=='garden'){
+      const prior=State.S.resonanceExploration;State.S.resonanceExploration={...prior,location:'garden'};
+      if(!State.save()?.ok){if(prior===undefined)delete State.S.resonanceExploration;else State.S.resonanceExploration=prior;}
+    }
     // Resting at home instantly heals all expedition wounds, including bench cats.
     State.healAllCats?.();
     document.body.classList.remove('cb-exploring');
@@ -1591,7 +1595,7 @@ class Game {
       const pct=max?Math.max(0,Math.min(100,100*total/max)):0;
       fill.style.width=pct.toFixed(1)+'%';
       const en=window.MorrowwishI18n?.get?.()!=='zh';
-      hpbar.setAttribute('aria-label',en?'Enemy health':'野猫血量');
+      hpbar.setAttribute('aria-label',named?(named.combatName[en?1:0]+(en?' · Health':' · 生命')):(en?'Enemy health':'野猫血量'));
       hpbar.setAttribute('aria-valuenow',String(Math.round(pct)));
     }
     // Live POISE HUD uses a separate, visibly thicker meter. Display only:
@@ -1621,7 +1625,7 @@ class Game {
         :(en?'POISE':'韧性');
       const label=(enemyName?enemyName+' · ':'')+status;
       poiseFill.style.width=percentage.toFixed(1)+'%';
-      poiseTrack.setAttribute('aria-label',(en?'Enemy poise: ':'野猫韧性：')+enemyName);
+      poiseTrack.setAttribute('aria-label',(en?'Poise: ':'韧性：')+enemyName);
       poiseTrack.setAttribute('aria-valuenow',String(Math.round(percentage)));
       poiseTrack.classList.toggle('is-staggered',!!(enemy?.staggerT>0));
       if(poiseLabel.textContent!==label)poiseLabel.textContent=label;

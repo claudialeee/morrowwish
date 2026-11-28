@@ -526,7 +526,7 @@ function listSaveSlots() {
       Number.isInteger(chapterNumber)&&chapterNumber>0?'Chapter '+chapterNumber:
       data?.cats?.length?'Adventure in progress':'Not started';
     const chapter=chapterLabelZh;
-    const sceneRegion=['harbor','forest','forge','sky','library','starfall'].includes(chapterKey)?chapterKey:'garden';
+    const sceneRegion=['harbor','forest','forge','sky','library','starfall','finale'].includes(chapterKey)?chapterKey:'garden';
     const regionId = data?.resonance ? (data.resonanceExploration?.location || sceneRegion) : (data?.worldmap?.current || 'home');
     const region = typeof WorldMap !== 'undefined' ? WorldMap.REGIONS?.find(item => item.id === regionId) : null;
     const names = regionNames[regionId] || [region?.name || regionId, region?.sub || region?.nameEn || regionId];
