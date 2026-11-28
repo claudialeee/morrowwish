@@ -182,6 +182,15 @@ try{
  const keys=['ArrowRight','ArrowRight','ArrowUp','ArrowLeft','ArrowDown','ArrowDown','ArrowDown','ArrowDown','ArrowRight','ArrowRight','ArrowRight','ArrowRight','ArrowRight','ArrowUp','ArrowDown','ArrowRight','ArrowRight'];let sawExit=false;
  for(const key of keys){await run.keyboard.press(key);const state=await run.evaluate(()=>({got:window.__PAWSIBLY_TEST__.getState().got,done:window.__PAWSIBLY_TEST__.getState().done}));if(state.got===3&&!state.done){const hint=await run.locator('#visionTip').textContent();if(/Exit open.*green cat flap/.test(hint))sawExit=true;}if(state.done)break;}
  assert.ok(sawExit,'The live guide must explain how to escape after the third fish');assert.ok(await run.evaluate(()=>window.__PAWSIBLY_TEST__.getState().winning),'New visitor completes first room using real keyboard controls');assert.ok(await run.locator('#overlay').isVisible());
+ for(const viewport of [{width:907,height:510},{width:390,height:844},{width:320,height:568},{width:844,height:390}]){
+  await run.setViewportSize(viewport);await run.waitForTimeout(150);
+  const bounds=await run.evaluate(()=>{const rect=id=>{const e=document.getElementById(id),r=e.getBoundingClientRect();return {id,x:r.x,y:r.y,right:r.right,bottom:r.bottom,w:r.width,h:r.height,hit:e.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))}};return {width:innerWidth,height:innerHeight,title:rect('resultTitle'),close:rect('closeResult'),next:rect('nextResult'),body:rect('resultBody')}});
+  for(const r of [bounds.title,bounds.close,bounds.next])assert.ok(r.x>=-1&&r.y>=-1&&r.right<=bounds.width+1&&r.bottom<=bounds.height+1&&r.w>0&&r.h>0,'Result element must fit: '+JSON.stringify(bounds));
+  assert.ok(bounds.next.hit&&bounds.close.hit,'Primary result action and close must be tappable: '+JSON.stringify(bounds));
+  await run.screenshot({path:'test-results/pawsibly-results-'+viewport.width+'x'+viewport.height+'.png'});
+ }
+ await run.locator('#nextResult').click();assert.equal(await run.evaluate(()=>window.__PAWSIBLY_TEST__.getState().index),1,'Result primary action advances to room two');
+
  }finally{await run.close()}
  assert.equal(errors.length,0,'No uncaught exception after clicking');
  await page.locator('#menuButton').click();
