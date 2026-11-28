@@ -1104,14 +1104,20 @@ class CaptureBattle {
       }
       // backliner: fall through to baseline build-aware logic below
     }
-    // Owner 2026-11-27 — RSI winner `agent:allied-hp-peeler` (score 0.706 vs baseline 0.692, +2.05%).
-    // Spec §1a role theory peel/body-block: when an ally is low-HP, this cat shifts tight (60-100
-    // band, role='tank') to draw aggro off the hurt ally. Judge rewards multi-pack survival at
-    // 0.6× weighting on the 0.26 survival term — protecting the carry wins the multi scenario.
-    // Pre-empts the full build-based logic below so peel reads cleanly as a role identity.
-    // HP-gated: self must be at ≥50% HP so a dying cat isn't told to tank, and skill must exist.
+    // Owner 2026-11-27 — RSI winner `agent:allied-hp-peeler` (score 0.706 vs baseline 0.692,
+    // +2.05%). HONESTY CORRECTION 2026-11-28: the +2.05% "win" was produced in an evaluator
+    // that has NO teammates (evaluator.mjs:220 builds a single-cat team), so the peel branch
+    // NEVER FIRED during scoring. The gain is seed/noise within harness variance, not a
+    // validated peel strategy. Keeping the branch as a role-theory intent, but gating to
+    // frontline builds (tank/fighter/assassin) so dps/control/support cats are NOT pulled
+    // to 60-100 tank range the moment an ally drops below 50% HP. Same bug class as the
+    // oscillator incident — the 2a9fc7bb §9/§10 supervisor rules would FAIL this branch
+    // if re-reviewed today. Will revisit once evaluator has real team scenarios (roadmap
+    // items 1 + 3). HP-gated: self must be at ≥50% HP so a dying cat isn't told to tank.
     const _selfHp = f.hp / (f.maxhp || 1);
-    const _peelCandidate = _selfHp >= 0.5 && (this.team || []).some(m =>
+    const _peelBuild = f.cat?.buildType || window.Skills?.buildTypeForBreed?.(f.cat);
+    const _peelFrontline = _peelBuild === 'tank' || _peelBuild === 'fighter' || _peelBuild === 'assassin';
+    const _peelCandidate = _peelFrontline && _selfHp >= 0.5 && (this.team || []).some(m =>
       m !== f && m.alive && m.maxhp && (m.hp / m.maxhp) < 0.5
     );
     if (_peelCandidate) {
