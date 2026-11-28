@@ -64,7 +64,7 @@ try{
    const open=async()=>{
     if(c.optional){
      const b=page.locator('[data-regional-boss="'+c.id+'"]');
-     if(!await b.isVisible()){await press(page.locator('#cb-system-toggle'));await press(page.locator('[data-system="world-explore"]'));const summary=page.locator('.rw-optional-actions>summary');if(!await b.isVisible()){await summary.waitFor({state:'visible'});await press(summary);}}
+     if(!await b.isVisible()){await press(page.locator('#map-menu'));await press(page.locator('[data-system="world-explore"]'));const summary=page.locator('.rw-optional-actions>summary');if(!await b.isVisible()){await summary.waitFor({state:'visible'});await press(summary);}}
      await press(b);
     }else await press(page.locator('[data-next-scene="'+c.scene+'"]'));
     await page.locator('#bp-go').waitFor({state:'visible'});
