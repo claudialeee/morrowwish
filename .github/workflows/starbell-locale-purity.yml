@@ -1,7 +1,7 @@
 name: Starbell P1 locale purity
 on:
   push:
-    branches: [review/starbell-canon13-player-experience]
+    branches: [starbell-echoes]
     paths:
       - 'public/cat-bond/**'
       - 'public/lang.js'
