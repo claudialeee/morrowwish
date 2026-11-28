@@ -1,7 +1,7 @@
-import "./narrative-host.mjs?v=starbell-release-quality-r2-20261127";
+import "./narrative-host.mjs?v=exploration-craft-20261127";
 import "./npc-world.mjs?v=starbell-work-regression-20261127";
 import "./ambient-play.mjs";
-import "./world-runtime.mjs?v=local-exploration-20261127";
+import "./world-runtime.mjs?v=exploration-craft-20261127";
 import "./title-entry.mjs?v=starbell-release-quality-20261127";
 // The prologue uses living discoveries instead of a standalone bell prop.
 import "./chapter-cinematics.mjs?v=starbell-release-quality-r2-20261127";

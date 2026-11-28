@@ -7,9 +7,9 @@ import {chaseArt,drawPortraitChase,portraitChaseTap} from "./portrait-chase.mjs"
 import {portraitAsset,projectPortrait,unprojectPortrait,projectFarwindLandscape,unprojectFarwindLandscape} from "./portrait-map.mjs";
 import {hasPendingDialogue} from "./dialogue-ui.mjs";
 import { openFinaleLatch } from "./finale-latch.mjs";
-import { createWorldBridge } from "./world-bridge.mjs?v=starbell-release-quality-r2-20261127";
-import {availableSideEvents} from "./side-adventures.mjs";
-import {mountSideAdventure} from "./adventure-play.mjs?v=talent-effects-20261127";
+import { createWorldBridge } from "./world-bridge.mjs?v=exploration-craft-20261127";
+import {availableSideEvents} from "./side-adventures.mjs?v=exploration-craft-20261127";
+import {mountSideAdventure} from "./adventure-play.mjs?v=exploration-craft-20261127";
 import {availableDiscoveries,layoutDiscoveries,paintDiscovery} from "./regional-discoveries.mjs";
 import {markerMetrics,layoutMarkerLabels,pickMarker,discoveryNames} from "./map-affordances.mjs?v=npc-talk-bubble-1";
 import { createExplorer,layouts,exchangeOptions,distance } from "./world-exploration.mjs?v=local-exploration-20261127";

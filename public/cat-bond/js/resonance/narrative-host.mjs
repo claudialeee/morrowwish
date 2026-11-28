@@ -1,4 +1,4 @@
-import "./adventure-play.mjs?v=talent-effects-20261127";
+import "./adventure-play.mjs?v=exploration-craft-20261127";
 import {companionTalents} from "./companion-talents.mjs";
 import {campaign} from "./campaign.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";

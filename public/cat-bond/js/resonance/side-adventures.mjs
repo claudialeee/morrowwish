@@ -1,9 +1,9 @@
-// Independent optional activities; no story cursor, currency, combat reward, or RNG changes.
+// Optional discoveries have replayable proofs and no mandatory story gates.
 export const sideAdventures=Object.freeze({
  harbor:{at:[.235,.56],kind:"shell",title:["退潮的贝壳","The tidepool shell"],clue:["小寄居蟹要回家。逐排选择没有被海水淹没的石头。","Help the hermit crab reach home. In each row choose a dry stepping stone."],reward:["潮汐贝壳","Tidepool shell"],actor:"qilan",after:"harbor:H-05",later:["栖蓝把贝壳挂在航图旁。每逢退潮，它会唱一小段海浪的歌。","Skye hangs the shell beside the chart. At low tide it sings a little song of the sea."],win:["寄居蟹钻进新家，把旧贝壳留给你。","The crab slips into its new home and leaves its old shell for you."]},
  forest:{at:[.39,.4],kind:"leaf",title:["芽禾的香草茶","Fern's herbal tea"],clue:["挑出带三片圆叶的香草，放入茶篮。选满两株后冲泡。","Pick two herbs with three rounded leaves, then brew the tea."],reward:["香草茶袋","Herbal tea pouch"],actor:"yahe",after:"forest:R-04",later:["芽禾把你配的香草茶留在花园，来访的小猫都能喝到。","Fern keeps your herbal blend in the garden for visiting kittens."],win:["清甜香气升起，芽禾把剩下的香草装成小茶袋。","A sweet scent rises. Fern packs the remaining herbs into a little tea pouch."]},
  forge:{at:[.63,.5],kind:"lantern",title:["歪耳猫的纸灯","The crooked-ear paper lantern"],clue:["转动镂空灯片，使猫耳朝上、歪耳在右边，再点亮灯。","Rotate the cutout until the ears point up and the crooked ear is on the right, then light it."],reward:["歪耳纸灯","Crooked-ear paper lantern"],actor:"xiaomao",after:"forge:E-04",later:["小栗把你制作的纸灯挂进影子戏，墙上多了一只歪耳小猫。","Pip hangs your paper lantern in the shadow show; a crooked-ear kitten appears on the wall."],win:["暖光透过灯片，墙上出现一只歪耳猫。","Warm light shines through the cutout, casting a crooked-ear cat on the wall."]},
- sky:{at:[.72,.43],kind:"feather",title:["给云端的一封信","A letter for the clouds"],clue:["信袋两侧必须一样重。把四块砝码移到左右篮中，使重量平衡，再放飞。","Balance the mailbag: place all four weights in the left or right basket, with equal totals, then launch."],reward:["云邮信封","Cloud-post envelope"],actor:"yuanfan",after:"sky:S-05",later:["远帆把这封信送回花园。信角画着你们第一次安全放飞的风筝。","Finn brings the letter back to the garden, with a drawing of your first safely launched kite."],win:["信袋平稳升空，一封盖着云朵邮戳的信留在你手里。","The mailbag lifts steadily into the sky. You keep a cloud-stamped envelope."]},
+ sky:{at:[.72,.43],kind:"feather",title:["给云端的一封信","A letter for the clouds"],clue:["远帆的信要送过云海。先点一块配重，再点左袋或右袋。四块都装好、左右等重时才能安全起飞。","Finn has a letter to send across the clouds. Choose a weight, then a left or right pouch. Fill both evenly before launch."],reward:["云邮信封","Cloud-post envelope"],actor:"yuanfan",after:"sky:S-05",later:["远帆把这封信送回花园。信角画着你们第一次安全放飞的风筝。","Finn brings the letter back to the garden, with a drawing of your first safely launched kite."],win:["信袋平稳升空，一封盖着云朵邮戳的信留在你手里。","The mailbag lifts steadily into the sky. You keep a cloud-stamped envelope."]},
  library:{at:[.29,.6],kind:"book",title:["三页失散的故事","Three scattered pages"],clue:["把三页故事按早晨、午后、夜晚的顺序排好，装订成册。","Arrange the three story pages in order: morning, afternoon, night. Then bind the book."],reward:["晨昏故事页","Daybreak story page"],actor:"baikan",after:"library:M-05",later:["白羽把你装订的故事抄进新书。花园访客可以读到那个小小的完整故事。","Ivy copies the story you bound into a new book for garden visitors to read."],win:["故事重新连起来了，书页边缘留下温暖的金色印记。","The story is whole again, with a warm golden mark along the page."]},
  starfall:{at:[.51,.58],kind:"star",title:["小猫座","The kitten constellation"],clue:["从金色起点出发，沿虚线依次连接相邻星星。不要走回头路，直到所有星星亮起。","Start at the golden star. Follow the dotted links to neighboring stars without revisiting one, until all shine."],reward:["小猫座星带","Kitten constellation ribbon"],actor:"xingya",after:"starfall:F-04",later:["星芽把小猫座刻进新星图。以后花园夜空里也能找到你连成的小猫座。","Nova adds your kitten constellation to the new star chart. You can find it in the garden's night sky."],win:["最后一颗星点亮，小猫座在天幕上出现。","The last star lights up, revealing a kitten constellation in the sky."]}
 });
@@ -25,6 +25,7 @@ export function sideAction(s,action){
  else if(s.region==="forge"&&type==="rotate"){s.rotation=(s.rotation+1)%4;say(s,"灯片转动了。","The cutout turns.");}
  else if(s.region==="forge"&&type==="light"){if(s.rotation===0)s.done=true;else say(s,"影子还歪着，继续转动灯片。","The shadow is sideways. Rotate the cutout again.");}
  else if(s.region==="sky"&&type==="weight"&&n>=0&&n<4){s.baskets[n]=(s.baskets[n]+1)%3;}
+ else if(s.region==="sky"&&type==="place"&&n>=0&&n<4&&[0,1,2].includes(action.side)){s.baskets[n]=action.side;s.message=null;}
  else if(s.region==="sky"&&type==="launch"){const [l,r]=basketTotals(s);if(s.baskets.every(Boolean)&&l===r)s.done=true;else say(s,"还没平衡，两边重量相同才可以放飞。","Not balanced yet. Both baskets need equal weight.");}
  else if(s.region==="library"&&type==="page"&&n>=0&&n<3&&!s.pages.includes(n)){s.pages.push(n);}
  else if(s.region==="library"&&type==="unbind"){s.pages=[];}
@@ -32,7 +33,7 @@ export function sideAction(s,action){
  else if(s.region==="starfall"&&type==="star"&&n>=0&&n<5&&!s.stars.includes(n)){const last=s.stars.at(-1);if(starLinks.some(([a,b])=>a===last&&b===n||a===n&&b===last)){s.stars.push(n);if(s.stars.length===5)s.done=true;else say(s,"又一颗星亮了。","Another star lights up.");}else say(s,"这两颗星之间没有连线。","There is no link between those stars.");}
  else if(s.region==="starfall"&&type==="reset"){s.stars=[0];}
  else accepted=false;
- if(accepted)s.trace.push({type,...(n>=0?{i:n}:{})});return accepted;
+ if(accepted)s.trace.push({type,...(n>=0?{i:n}:{}),...(type==="place"?{side:action.side}:{})});return accepted;
 }
 export function basketTotals(s){return [1,2].map(side=>weights.reduce((sum,w,i)=>sum+(s.baskets[i]===side?w:0),0));}
 export function verifySideProof(region,trace){if(!Array.isArray(trace)||trace.length<1||trace.length>80)return false;const s=newSideState(region);for(const a of trace)if(!sideAction(s,a))return false;return s.done;}
