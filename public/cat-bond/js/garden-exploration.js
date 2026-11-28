@@ -42,7 +42,7 @@ const targets={
  snack:{labels:['鱼饼','Fish cake'],type:'snack',points:[[.15,.56]]},
  moonleaf:{labels:['和暮铃一起碰月叶','Touch the moonleaf with Luna'],type:'seed',points:[[.76,.70]]},
  nameplate:{labels:['翻看木名牌','Turn the wooden nameplate'],type:'nameplate',points:[[.25,.40]]},
- door:{labels:['旧屋的秘密','Old house mystery'],type:'door',points:[[.18,.37]]},
+ door:{labels:['打不开的旧屋','Locked old house'],type:'door',points:[[.18,.37]]},
  'chart-echo':{labels:['旧铃的回应','Investigate the answering bell'],type:'door',points:[[.58,.36]]},
  'chart-0':{labels:['飞走的航图','Windblown chart'],type:'chart',points:[[.75,.36]]},
  'chart-1':{labels:['另一片航图 · 可选','Another chart piece · optional'],type:'chart',points:[[.40,.59]]}
@@ -53,6 +53,15 @@ function init(parent){if(layer)return;layer=document.createElement('div');layer.
  for(const [id,target] of Object.entries(targets)){const b=document.createElement('button');b.type='button';b.className='sg-discovery sg-discovery-'+target.type;b.dataset.gardenExplore=id;b.hidden=true;b.innerHTML='<svg viewBox="-24 -24 48 48" aria-hidden="true">'+shapes[target.type]+'</svg><span class="sg-discovery-label"></span>';b.onclick=()=>interact(id);layer.append(b);buttons.set(id,b);}
 }
 function pulse(id){const b=buttons.get(id);if(!b)return;const cat=window.__game?.yard?.entities?.find(e=>e.cat.uid===owner?.cats?.[0]?.uid)||window.__game?.yard?.entities?.find(e=>e.cat.species==='jinjc');if(cat&&id==='butterfly'){cat.pounceT=.8;cat.setPose?.('play',.8);}window.MorrowwishAudio?.effect?.('discover');}
+function postcardView(){
+ if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice sg-postcard-view';popup.setAttribute('role','dialog');popup.setAttribute('aria-modal','true');popup.setAttribute('aria-label',tr('旧花园明信片','Old garden postcard'));
+ Object.assign(popup.style,{width:'min(390px,88vw)',maxHeight:'80vh',overflowY:'auto',boxSizing:'border-box',padding:'14px',display:'flex',flexDirection:'column',gap:'8px',background:'#f8eed9',color:'#59432f',border:'1px solid #c7ad88',borderRadius:'14px',boxShadow:'0 8px 32px #30221755'});
+ const title=document.createElement('strong');title.textContent=tr('窗边的旧明信片','A postcard by the window');
+ const photo=document.createElement('img');photo.src='assets/garden/sunlit-garden-landscape.webp';photo.alt=tr('画着阳光花园的旧明信片','An old picture of Sunlit Garden');Object.assign(photo.style,{width:'100%',maxHeight:'min(29vh,180px)',objectFit:'contain',filter:'sepia(.24) saturate(.8)',border:'5px solid #fff8e9',boxSizing:'border-box',borderRadius:'5px'});
+ const note=document.createElement('p');note.textContent=tr('背面写着：“修完铃就回家。茶叶在窗边，记得多拿一只杯子。”','On the back: “Home when the bells are fixed. Tea by the window. Don’t forget the extra cup.”');note.style.margin='0';
+ const thought=document.createElement('p');thought.textContent=view()?.ending?tr('原来这就是我们当年约好的那杯茶。','So this was the tea we promised to share.'):tr('两只杯子……以前住在这里的，真的是两只猫。','Two cups… Two cats really did live here.');thought.style.margin='0';thought.style.fontWeight='600';
+ const close=document.createElement('button');close.type='button';close.textContent=tr('收好明信片','Put the postcard away');close.onclick=closePopup;popup.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();closePopup();}};popup.append(title,photo,note,thought,close);layer.append(popup);close.focus();
+}
 function snackChoice(){if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice';popup.setAttribute('role','dialog');popup.setAttribute('aria-label',tr('鱼饼','Fish cake'));
  const p=document.createElement('p');p.textContent=tr('一小块香喷喷的鱼饼。','A delicious little fish cake.');popup.append(p);
  for(const [id,a,b] of [['snack-keep','带在身上','Keep for later'],['snack-eat','现在吃掉','Eat now'],['close','暂时不拿','Leave it']]){const button=document.createElement('button');button.type='button';button.textContent=tr(a,b);button.onclick=()=>{if(owner!==rootState()||!eligible()){closePopup();return}if(id==='close'){closePopup();return}if(commit(id)){closePopup();pulse('snack');toast(id==='snack-keep'?'把鱼饼放进小包，留给旅途。':'香香脆脆的，适合出门前吃。',id==='snack-keep'?'You tuck the fish cake away for the road.':'A crisp little breakfast.');}};popup.append(button);}layer.append(popup);
@@ -69,12 +78,12 @@ function interact(id,arrived=false){if(owner!==rootState()||!eligible()||covered
  const s=read(owner);
  if(id==='butterfly'||id==='moonleaf'){closePopup();return startChase(id);}cancelChase();
  if(id==='snack'){snackChoice();return true;}closePopup();
- if(id==='nameplate'){const ended=!!view()?.ending,event=ended?'nameplate-home':'nameplate';if(!commit(event))return false;pulse(id);toast(ended?'旧名牌旁添上两道新的爪印。这里是我们的家。':'门口的两块木名牌都磨得看不清了，背面却有风铃镇的印记。',''+(ended?'Two new paw marks beside the old nameplate. This is our home.':'Both old nameplates are worn blank, but their backs bear Windchime Town's mark.'));return true;}
- if(id==='door'&&!view()?.completed?.includes('harbor:H-05')){toast('旧屋的门关着。门缝里似乎夹着一张褪色的画。也许旅行回来后再看看。','The old house is closed. A faded picture peeks through the door. Try again after your journey.');return true;}
+ if(id==='nameplate'){const ended=!!view()?.ending,event=ended?'nameplate-home':'nameplate';if(!commit(event))return false;pulse(id);toast(ended?'旧名牌旁添上两道新的爪印。这里是我们的家。':'门口的两块木名牌都磨得看不清了，背面却有风铃镇的印记。',''+(ended?'Two new paw marks beside the old nameplate. This is our home.':'Both old nameplates are worn blank, but their backs bear the mark of Windchime Town.'));return true;}
+ if(id==='door'){if(!view()?.completed?.includes('harbor:H-05')){toast('门闩卡住啦。檐灯以前来修过这座屋子，去风铃镇问问他吧。','The latch is stuck. Alder used to repair this house. Ask him in Windchime Town.');return true;}if(!s.door){if(!commit('door'))return false;pulse(id);}postcardView();return true;}
  if(!commit(id))return false;pulse(id);
 
  if(id==='seed')toast('找到一粒浅金色种子，收进小包。','You found a little golden seed and tucked it away.');
- if(id==='door')toast('旧屋里藏着一张花园的旧明信片。把它带回家吧。','An old garden postcard was hidden inside. Take it home.');
+
  if(id==='chart-0'){window.MorrowwishAudio?.note?.(392,.4,.15);const slot=owner;setTimeout(()=>{if(rootState()===slot&&window.__game?.scene==='yard')window.MorrowwishAudio?.note?.(523.25,.55,.15)},260);toast('航图落入爪中，旧铃突然回出你刚哼的两个音！去看看那口铃。','The old bell answers with the two notes you hummed! Investigate the bell.');}
  if(id==='chart-echo'){window.MorrowwishAudio?.note?.(523.25,.5,.18);toast('铃绳没有动，却回了同样的音。告诉那只陌生猫！','The cord never moved, yet the bell answered. Tell the traveler!');}
  if(id==='chart-1')toast('航图背面画着一座小花园。纪念物：风中的航图。','A little garden is drawn on the back. Keepsake: Windblown chart.');
@@ -118,20 +127,20 @@ function draw(parent,ctx,w,h,npcRects=[]){
  const placed=[...parent.querySelectorAll('.sg-prologue-guide:not([hidden]),.sg-npc-talk-marker:not([hidden])')].map(el=>relative(el.getBoundingClientRect())).concat(npcRects);
  // Required chart pieces take precedence over optional discoveries.
  const ordered=[...buttons].sort(([a],[b])=>Number(b.startsWith('chart-'))-Number(a.startsWith('chart-')));
- for(const [id,b] of ordered){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?!s.door:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):id==='moonleaf'?!!v?.ending&&!!journeyKeepsakes(owner,v)?.moonleaf&&!s.moonleafTouched:id==='chart-echo'?s.chartStarted&&s.parts.includes(0)&&!s.chartEcho&&!v?.openingMet&&v?.current?.id==='prologue:P-05':id==='chart-1'?s.chartStarted&&s.parts.includes(0)&&!s.parts.includes(1):s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(0);
+ for(const [id,b] of ordered){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?true:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):id==='moonleaf'?!!v?.ending&&!!journeyKeepsakes(owner,v)?.moonleaf&&!s.moonleafTouched:id==='chart-echo'?s.chartStarted&&s.parts.includes(0)&&!s.chartEcho&&!v?.openingMet&&v?.current?.id==='prologue:P-05':id==='chart-1'?s.chartStarted&&s.parts.includes(0)&&!s.parts.includes(1):s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(0);
   b.hidden=!show||isChart;if(b.hidden)continue;
   b.dataset.questPrimary=String(id==='nameplate'&&v?.current?.id==='prologue:P-05'&&!v?.openingMet);
   const p=def.points[id==='butterfly'?Math.min(2,s.butterfly):0];
   const wx=left+(right-left)*p[0],wy=top+(bottom-top)*p[1],ground=window.World?.gardenGround?.(w,h);
   b._gardenWorldPoint=ground?{x:Math.max(ground.left,Math.min(ground.right,wx)),y:Math.max(ground.top,Math.min(ground.bottom,wy+18))}:{x:wx,y:wy};
-  const pt=b._gardenWorldPoint;if(b.dataset.questPrimary!=='true'&&!isChart&&id!=='butterfly'&&pending?.id!==id&&game?.yardExploreEnabled?.()&&!game.yardNear(pt.x,pt.y,.28)){b.hidden=true;continue;}
+  const pt=b._gardenWorldPoint;if(b.dataset.questPrimary!=='true'&&!isChart&&id!=='door'&&id!=='butterfly'&&pending?.id!==id&&game?.yardExploreEnabled?.()&&!game.yardNear(pt.x,pt.y,.28)){b.hidden=true;continue;}
   const preferredX=rect.left+wx/w*rect.width-r.left,preferredY=rect.top+wy/h*rect.height-r.top;
   const bw=b.offsetWidth||84,bh=b.offsetHeight||70;
   // A running butterfly/moonleaf action owns its target until it finishes.
   const fixed=!game?.yardExploreEnabled?.()&&pending?.id===id&&Number.isFinite(parseFloat(b.style.left))&&Number.isFinite(parseFloat(b.style.top));
   const p0=fixed?{x:parseFloat(b.style.left),y:parseFloat(b.style.top)}:placeMarker(preferredX,preferredY,bw,bh,r.width,r.height,placed);
   const {x,y}=p0;placed.push(p0.box||{left:x-bw/2,top:y-bh/2,right:x+bw/2,bottom:y+bh/2});b.style.left=x+'px';b.style.top=y+'px';
-  const label=tr(...def.labels);if(b.getAttribute('aria-label')!==label){b.setAttribute('aria-label',label);b.title=label;b.querySelector('.sg-discovery-label').textContent=label;}
+  const label=id==='door'&&v?.completed?.includes('harbor:H-05')?(s.door?tr('重看旧明信片','Read the old postcard'):tr('打开旧屋','Open the old house')):tr(...def.labels);if(b.getAttribute('aria-label')!==label){b.setAttribute('aria-label',label);b.title=label;b.querySelector('.sg-discovery-label').textContent=label;}
  }
  if(pending){const now=performance.now(),arrived=Math.hypot(pending.cat.x-pending.x,pending.cat.y-pending.y)<12;
  if(pending.id==='moonleaf'){if(pending.arrived===null&&arrived&&now-pending.started>=1200){pending.arrived=now;pending.cat.setPose?.('play',.8);window.MorrowwishAudio?.effect?.('discover');}if(pending.arrived!==null){const t=now-pending.arrived;if(t<750){ctx.save();ctx.globalAlpha=Math.sin(Math.PI*t/750);finalArt(ctx,'garden-moonleaf-touch',w*.5,h*.31,Math.min(w*.45,360),h*.46);ctx.strokeStyle='#f4e5a2';ctx.lineWidth=2;for(let i=0;i<6;i++){const a=i*Math.PI/3+t*.003,r=18+t*.035;ctx.beginPath();ctx.arc(pending.x+Math.cos(a)*r,pending.y-18+Math.sin(a)*r*.6,3,0,Math.PI*2);ctx.stroke();}ctx.restore();}if(t>=1700)finishChase();}else if(now-pending.started>10000){cancelChase();toast('走近月叶再试一次。','Walk closer to the moonleaf and try again.');}}
