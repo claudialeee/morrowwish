@@ -53,6 +53,13 @@ function init(parent){if(layer)return;layer=document.createElement('div');layer.
  for(const [id,target] of Object.entries(targets)){const b=document.createElement('button');b.type='button';b.className='sg-discovery sg-discovery-'+target.type;b.dataset.gardenExplore=id;b.hidden=true;b.innerHTML='<svg viewBox="-24 -24 48 48" aria-hidden="true">'+shapes[target.type]+'</svg><span class="sg-discovery-label"></span>';b.onclick=()=>interact(id);layer.append(b);buttons.set(id,b);}
 }
 function pulse(id){const b=buttons.get(id);if(!b)return;const cat=window.__game?.yard?.entities?.find(e=>e.cat.uid===owner?.cats?.[0]?.uid)||window.__game?.yard?.entities?.find(e=>e.cat.species==='jinjc');if(cat&&id==='butterfly'){cat.pounceT=.8;cat.setPose?.('play',.8);}window.MorrowwishAudio?.effect?.('discover');}
+function signView(ending){
+ if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice sg-sign-view';popup.setAttribute('role','dialog');popup.setAttribute('aria-label',tr('旧门牌','Old door sign'));
+ Object.assign(popup.style,{width:'min(360px,88vw)',maxHeight:'75vh',overflowY:'auto',boxSizing:'border-box',padding:'16px',display:'flex',flexDirection:'column',gap:'12px',background:'#fff6e2',color:'#59432f'});
+ const board=document.createElement('div');Object.assign(board.style,{background:'linear-gradient(150deg,#d8b080,#b78957)',border:'3px solid #865e3f',borderRadius:'12px',padding:'18px 14px',textAlign:'center',color:'#4c311f',boxShadow:'inset 0 0 0 3px #e4c39a'});board.textContent=ending?tr('阳光花园 · 小曦和暮铃的家','Sunlit Garden · Sunny & Luna’s home'):tr('阳光花园','Sunlit Garden');
+ const clue=document.createElement('p');clue.style.margin='0';clue.textContent=ending?tr('你和暮铃终于有了共同的家。','You and Luna are home at last.'):tr('翻过来，背面刻着工匠的名字：风铃镇 · 檐灯。也许他记得这里住过谁。','On the back is the maker’s mark: Alder, Windchime Town. Maybe he remembers who lived here.');
+ const close=document.createElement('button');close.type='button';close.textContent=tr('放回门牌','Put the sign back');close.onclick=closePopup;popup.append(board,clue,close);layer.append(popup);close.focus();
+}
 function postcardView(){
  if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice sg-postcard-view';popup.setAttribute('role','dialog');popup.setAttribute('aria-modal','true');popup.setAttribute('aria-label',tr('旧花园明信片','Old garden postcard'));
  Object.assign(popup.style,{width:'min(390px,88vw)',maxHeight:'80vh',overflowY:'auto',boxSizing:'border-box',padding:'14px',display:'flex',flexDirection:'column',gap:'8px',background:'#f8eed9',color:'#59432f',border:'1px solid #c7ad88',borderRadius:'14px',boxShadow:'0 8px 32px #30221755'});
@@ -78,7 +85,7 @@ function interact(id,arrived=false){if(owner!==rootState()||!eligible()||covered
  const s=read(owner);
  if(id==='butterfly'||id==='moonleaf'){closePopup();return startChase(id);}cancelChase();
  if(id==='snack'){snackChoice();return true;}closePopup();
- if(id==='nameplate'){const ended=!!view()?.ending,event=ended?'nameplate-home':'nameplate';if(!commit(event))return false;pulse(id);toast(ended?'给旧门牌添上两道新的爪印。这里是我们的家。':'木牌正面写着“阳光花园”，背面刻着“风铃镇 · 檐灯”。原来檐灯做过这块牌子。',''+(ended?'Two new paw marks beside the old nameplate. This is our home.':'The front reads Sunlit Garden. The back reads Alder, Windchime Town. Alder made this sign.'));return true;}
+ if(id==='nameplate'){const ended=!!view()?.ending,event=ended?'nameplate-home':'nameplate';if(!(ended?s.nameplateHome:s.nameplate)){if(!commit(event))return false;pulse(id);}signView(ended);return true;}
  if(id==='door'){if(!view()?.completed?.includes('harbor:H-05')){toast('门闩卡住啦。檐灯以前来修过这座屋子，去风铃镇问问他吧。','The latch is stuck. Alder used to repair this house. Ask him in Windchime Town.');return true;}if(!s.door){if(!commit('door'))return false;pulse(id);}postcardView();return true;}
  if(!commit(id))return false;pulse(id);
 
@@ -127,13 +134,13 @@ function draw(parent,ctx,w,h,npcRects=[]){
  const placed=[...parent.querySelectorAll('.sg-prologue-guide:not([hidden]),.sg-npc-talk-marker:not([hidden])')].map(el=>relative(el.getBoundingClientRect())).concat(npcRects);
  // Required chart pieces take precedence over optional discoveries.
  const ordered=[...buttons].sort(([a],[b])=>Number(b.startsWith('chart-'))-Number(a.startsWith('chart-')));
- for(const [id,b] of ordered){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?true:id==='nameplate'?(v?.ending?!s.nameplateHome:!s.nameplate):id==='moonleaf'?!!v?.ending&&!!journeyKeepsakes(owner,v)?.moonleaf&&!s.moonleafTouched:id==='chart-echo'?s.chartStarted&&s.parts.includes(0)&&!s.chartEcho&&!v?.openingMet&&v?.current?.id==='prologue:P-05':id==='chart-1'?s.chartStarted&&s.parts.includes(0)&&!s.parts.includes(1):s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(0);
+ for(const [id,b] of ordered){const def=targets[id],isChart=id.startsWith('chart-'),show=id==='butterfly'?s.butterfly<3:id==='seed'?!s.seed:id==='snack'?!s.snack:id==='door'?true:id==='nameplate'?true:id==='moonleaf'?!!v?.ending&&!!journeyKeepsakes(owner,v)?.moonleaf&&!s.moonleafTouched:id==='chart-echo'?s.chartStarted&&s.parts.includes(0)&&!s.chartEcho&&!v?.openingMet&&v?.current?.id==='prologue:P-05':id==='chart-1'?s.chartStarted&&s.parts.includes(0)&&!s.parts.includes(1):s.chartStarted&&!v?.openingMet&&v?.current?.id==='prologue:P-05'&&!s.parts.includes(0);
   b.hidden=!show||isChart;if(b.hidden)continue;
   b.dataset.questPrimary=String(id==='nameplate'&&v?.current?.id==='prologue:P-05'&&!v?.openingMet);
   const p=def.points[id==='butterfly'?Math.min(2,s.butterfly):0];
   const wx=left+(right-left)*p[0],wy=top+(bottom-top)*p[1],ground=window.World?.gardenGround?.(w,h);
   b._gardenWorldPoint=ground?{x:Math.max(ground.left,Math.min(ground.right,wx)),y:Math.max(ground.top,Math.min(ground.bottom,wy+18))}:{x:wx,y:wy};
-  const pt=b._gardenWorldPoint;if(b.dataset.questPrimary!=='true'&&!isChart&&id!=='door'&&id!=='butterfly'&&pending?.id!==id&&game?.yardExploreEnabled?.()&&!game.yardNear(pt.x,pt.y,.28)){b.hidden=true;continue;}
+  const pt=b._gardenWorldPoint;if(b.dataset.questPrimary!=='true'&&!isChart&&id!=='door'&&id!=='nameplate'&&id!=='butterfly'&&pending?.id!==id&&game?.yardExploreEnabled?.()&&!game.yardNear(pt.x,pt.y,.28)){b.hidden=true;continue;}
   const preferredX=rect.left+wx/w*rect.width-r.left,preferredY=rect.top+wy/h*rect.height-r.top;
   const bw=b.offsetWidth||84,bh=b.offsetHeight||70;
   // A running butterfly/moonleaf action owns its target until it finishes.
