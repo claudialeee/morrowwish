@@ -2090,6 +2090,8 @@
   "（当前 ": " (now ",
   "均级 ": "Avg Lv. ",
   "每个地区都有独立场景、野猫与宝藏。提升出战队伍平均等级、收服指定猫咪，逐步解锁新地图。": "Each region has its own scenery, wild cats and treasures. Level up your battle team and befriend the required cats to unlock regions.",
+  "收服野猫": "Befriend the wild cat",
+  "拥有「": "Befriend \"",
   "准备开战": "Ready to fight?",
   "左侧滑动移动，右侧长按攻击。点击技能与闪避，合击亮起即可释放。": "Drag on the left to move, hold on the right to attack. Tap skills and dodge; use Duo when it lights up.",
   "WASD 移动，鼠标或 J 攻击，Q / E 技能，空格闪避，R 必杀，F 合击。": "WASD to move, mouse or J to attack, Q / E skills, Space to dodge, R ultimate, F Duo.",
