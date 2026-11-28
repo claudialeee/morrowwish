@@ -1,4 +1,4 @@
-import "./narrative-host.mjs?v=story-rebuild-20261127";
+import "./narrative-host.mjs?v=talent-effects-20261127";
 import "./npc-world.mjs?v=story-rebuild-20261127";
 import "./ambient-play.mjs";
 import "./world-runtime.mjs?v=story-rebuild-20261127";
@@ -8,7 +8,7 @@ import "./chapter-cinematics.mjs?v=story-rebuild-20261127";
 import "./forge-combat-runtime.mjs?v=regional-bosses-names-v2-20261127";
 import "./regional-combat.mjs?v=guardian-art-20261127";
 import "./finale-combat.mjs?v=regional-bosses-names-v2-20261127";
-import "./resonance-book.mjs?v=story-rebuild-20261127";
+import "./resonance-book.mjs?v=talent-effects-20261127";
 
 window.__CAT_BOND_CANONICAL_RELEASE__ = true;
 // Production entry may use approved shots or the explicitly authorized opening
