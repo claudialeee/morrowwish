@@ -71,8 +71,8 @@ concurrency:
   # actual pending push deployment: GitHub retains only one pending run per group.
   # Successful renders and real push/dispatch deployments retain one safe queue.
   group: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'success' && 'morrowwish-cloudflare-pages-skipped-review' || 'morrowwish-cloudflare-pages-production' }}
-  # The newest candidate supersedes older predeployment runs. Verification is
-  # repeated against the last successful release, including skipped commits.
+  # Never interrupt a production publication. Each new run plans against the
+  # actual live manifest, including any superseded queued candidates.
   cancel-in-progress: false
 
 jobs:
@@ -169,31 +169,62 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  publish-games:
-    needs: [plan, qa-cat-bond, qa-pawsibly]
-    if: ${{ always() && needs.plan.result == 'success' && (needs.qa-cat-bond.result == 'success' || needs.qa-pawsibly.result == 'success') }}
+  publish-cat-bond:
+    needs: [plan, qa-cat-bond]
+    if: ${{ needs.plan.result == 'success' && needs.qa-cat-bond.result == 'success' }}
+    # Both independent jobs may become ready at different times. Serialize only
+    # atomic Pages publication; never wait for the other game's test result.
+    concurrency:
+      group: mw-game-publish-${{ github.run_id }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Publish each passing game independently on the existing Pages project
+      - name: Publish and verify only Cat Bond
         env:
           SITE_SHA: ${{ needs.plan.outputs.site_sha }}
           CAT_SHA: ${{ needs.plan.outputs.cat_sha }}
           PAW_SHA: ${{ needs.plan.outputs.paw_sha }}
-          CAT_APPROVED: ${{ needs.qa-cat-bond.result == 'success' }}
-          PAW_APPROVED: ${{ needs.qa-pawsibly.result == 'success' }}
+          CAT_APPROVED: 'true'
+          PAW_APPROVED: 'false'
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
+        run: node scripts/scoped-game-release.mjs publish
+
+  publish-pawsibly:
+    needs: [plan, qa-pawsibly]
+    if: ${{ needs.plan.result == 'success' && needs.qa-pawsibly.result == 'success' }}
+    # Both independent jobs may become ready at different times. Serialize only
+    # atomic Pages publication; never wait for the other game's test result.
+    concurrency:
+      group: mw-game-publish-${{ github.run_id }}
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Publish and verify only Pawsibly Innocent
+        env:
+          SITE_SHA: ${{ needs.plan.outputs.site_sha }}
+          CAT_SHA: ${{ needs.plan.outputs.cat_sha }}
+          PAW_SHA: ${{ needs.plan.outputs.paw_sha }}
+          CAT_APPROVED: 'false'
+          PAW_APPROVED: 'true'
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ad5c7e2459db758ac4a41973f4f6028b
         run: node scripts/scoped-game-release.mjs publish
 
   deploy:
-    needs: [plan, publish-games]
+    needs: [plan, publish-cat-bond, publish-pawsibly]
     # Never deploy assets from a failed or incomplete video review render.
-    if: ${{ always() && needs.plan.result == 'success' && needs.plan.outputs.site == 'true' && (needs.publish-games.result == 'success' || needs.publish-games.result == 'skipped') }}
+    if: ${{ always() && needs.plan.result == 'success' && needs.plan.outputs.site == 'true' && (needs.publish-cat-bond.result == 'success' || needs.publish-cat-bond.result == 'skipped') && (needs.publish-pawsibly.result == 'success' || needs.publish-pawsibly.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
