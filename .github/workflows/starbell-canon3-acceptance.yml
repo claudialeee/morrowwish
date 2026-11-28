@@ -51,7 +51,7 @@ jobs:
           for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
           # Run independent browser suites concurrently so a failed one never hides the others.
-          node scripts/cat-bond-release-prologue-qa.mjs > /tmp/canon3-opening.log 2>&1 & opening=$!
+          (node scripts/cat-bond-release-prologue-qa.mjs && if [[ "$PROLOGUE_PROFILE" == desktop ]]; then PROLOGUE_PROFILE=landscape node scripts/cat-bond-release-prologue-qa.mjs; fi) > /tmp/canon3-opening.log 2>&1 & opening=$!
           node scripts/test-starbell-regional-bosses-browser.mjs > /tmp/canon3-guardians.log 2>&1 & guardians=$!
           node scripts/test-starbell-player-first-browser.mjs > /tmp/canon3-minigames.log 2>&1 & minigames=$!
           failed=0
