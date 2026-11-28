@@ -65,6 +65,15 @@ const ENEMIES = [
   { species: 'doudou', hp: 1100, dmg: 130 },   // moderate (original pin — kept so history numbers stay comparable)
   { species: 'doudou', hp: 2400, dmg: 280 },   // hard — dmg high enough that standing still loses survival/win
 ];
+
+// Owner 2026-11-27 Step E: evaluate candidates across HUMAN PERSONAS, not just engine autoDrive.
+// A rule that wins only for one archetype (e.g. perfect-info speedrun) loses to variance when
+// shipped to real players. The cohort score is the MIN across personas (worst-persona bound) so
+// winners must help every archetype, not average over them. null = autoDrive baseline (back-compat).
+// Only 3 personas in the sweep to keep eval cost sane: slow (lazy), fast (explorer), noisy (panicky).
+// Adding more is linear cost — a single candidate currently runs 2 enemies × 4 (3 personas + null)
+// × 3 scenarios × 3 seeds = 72 scenarios. Expand carefully.
+const PERSONAS_SWEEP = [null, 'lazy', 'explorer', 'panicky'];
 const CAT = {
   build: 'fighter', stats: { pow: 90, agi: 80, vit: 130, cha: 60 },
   loadout: { q: { kind: 'melee', power: 1.4, cd: 1.1 }, e: { kind: 'projectile', power: 1.1, cd: 1.0 } },
@@ -276,10 +285,18 @@ try {
   for (const c of list) {
     if (!c || !c.bandBody || !c.id) continue;
     let band;
-    try { band = new Function('f', `"use strict"; return (${c.bandBody})(f);`); } catch (_) { continue; }
-    // validate: call on a dummy fighter, require a finite, ordered band
+    // Owner 2026-11-27: bandBody now has access to `this` (the battle instance)
+    // in addition to `f`. Candidates can read this.enemies, this.team, this.t,
+    // this.aiP, this.pack*, etc. for pack-aware positioning decisions.
+    // Signature: function(f){ return {min,max,rush,role,hp}; } — callable as
+    // b.kitRangeBand(f) so `this === b`. The wrapper forwards both.
     try {
-      const probe = band({ hp: 60, maxhp: 100, cd: { q: 0, e: 0 } });
+      band = new Function('f', `"use strict"; return (${c.bandBody}).call(this, f);`);
+    } catch (_) { continue; }
+    // validate: call on a dummy fighter + dummy `this`, require a finite, ordered band
+    try {
+      const dummyThis = { enemies: [], team: [], t: 0, aiP: {}, _stomp: 0, _closing: 0 };
+      const probe = band.call(dummyThis, { hp: 60, maxhp: 100, cd: { q: 0, e: 0 } });
       if (!probe || !Number.isFinite(probe.min) || !Number.isFinite(probe.max) || probe.max < probe.min) continue;
     } catch (_) { continue; }
     CANDIDATES.push({ id: 'agent:' + c.id, label: c.label || c.id, kind: 'agent', rationale: c.rationale || '(agent-proposed)', band });
@@ -314,23 +331,40 @@ const REWARD_CANDIDATE = {
 // the judge score per candidate, so a candidate cannot win by over-fitting a single pin.
 // ============================================================================================
 function runCandidate(candidate) {
-  const perPoint = ENEMIES.map(enemy => {
-    const config = toConfig(candidate, enemy);
-    const result = evaluate(config, EVAL_OPTS);
-    const scoreJudge = scoreConfig(result, JUDGE);
-    const scoreBaseline = scoreConfig(result);
-    return { enemy, result, scoreJudge, scoreBaseline };
+  // Owner 2026-11-27 Step E: cross-product sweep of persona × enemy. A winner must
+  // beat baseline in the WEAKEST persona (min-score rule), not just on average —
+  // so masher doesn't lose to a rule optimized for explorer.
+  const perPoint = [];
+  for (const enemy of ENEMIES) {
+    for (const persona of PERSONAS_SWEEP) {
+      const config = toConfig(candidate, enemy);
+      config.persona = persona;                    // Step D plumbed to evaluate() / runScenarioInner
+      const result = evaluate(config, EVAL_OPTS);
+      const scoreJudge = scoreConfig(result, JUDGE);
+      const scoreBaseline = scoreConfig(result);
+      perPoint.push({ enemy, persona, result, scoreJudge, scoreBaseline });
+    }
+  }
+  // Cohort score = min across personas (worst-persona bound) per enemy, then mean across enemies.
+  // Candidates that help one archetype but hurt another (or regress baseline-autoDrive) are flagged
+  // because MIN sees the bad arm, not AVG hiding it.
+  const perEnemy = ENEMIES.map(e => {
+    const subset = perPoint.filter(p => p.enemy === e);
+    const minJudge = Math.min(...subset.map(p => p.scoreJudge));
+    const minBaseline = Math.min(...subset.map(p => p.scoreBaseline));
+    return { enemy: e, minJudge, minBaseline };
   });
-  const scoreJudge = perPoint.reduce((s, p) => s + p.scoreJudge, 0) / perPoint.length;
-  const scoreBaseline = perPoint.reduce((s, p) => s + p.scoreBaseline, 0) / perPoint.length;
-  // Feed the archive using the moderate operating point's result — descriptors should reflect
-  // a consistent fight, not an average of two. Using the first (moderate) point keeps the
-  // behavior-space meaning stable across cycles.
-  ARCHIVE.add(perPoint[0].result, scoreJudge, candidate, candidate.id || candidate.label);
+  const scoreJudge = perEnemy.reduce((s, p) => s + p.minJudge, 0) / perEnemy.length;
+  const scoreBaseline = perEnemy.reduce((s, p) => s + p.minBaseline, 0) / perEnemy.length;
+  // MAP-Elites fed with the AUTO-DRIVE baseline-persona result on the moderate enemy so cell
+  // descriptors (engage/tempo/durability/efficiency) stay comparable across cycles and personas.
+  const archivePoint = perPoint.find(p => p.persona === null && p.enemy === ENEMIES[0]) || perPoint[0];
+  ARCHIVE.add(archivePoint.result, scoreJudge, candidate, candidate.id || candidate.label);
   return {
     candidate,
-    result: perPoint[0].result,       // the moderate-enemy result is kept for the per-scenario detail print
+    result: archivePoint.result,       // auto-drive moderate-enemy result for per-scenario detail print
     perPoint,
+    perEnemy,
     scoreBaseline,
     scoreJudge,
   };
