@@ -1,4 +1,4 @@
-name: Starbell native art gated preview
+name: Retired independent portrait deployment
 on:
   push:
     branches: [review/starbell-portrait-art-integration]
@@ -12,7 +12,11 @@ concurrency:
   cancel-in-progress: true
 jobs:
   preview:
-    if: github.ref == 'refs/heads/review/starbell-portrait-art-integration'
+    # Public portrait and landscape aliases are now deployed together by
+    # cat-bond-preview.yml on review/starbell-canon13-player-experience.
+    # The art branch remains available for review, but must never overwrite the
+    # shared public portrait alias with older gameplay or dialogue.
+    if: ${{ false }}
     runs-on: ubuntu-24.04
     timeout-minutes: 75
     env:
