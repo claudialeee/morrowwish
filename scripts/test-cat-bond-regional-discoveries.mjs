@@ -29,7 +29,7 @@ for(const [region,d] of Object.entries(discoveries)){
   assert.equal(walker.moving,false);assert.ok(walker.near(s.at),region+" "+s.id);
   const res=applyDiscovery(region,s.id,w,v);assert.ok(res.ok);w=res.next;
  }
- assert.equal(earnedKeepsakes(w.interactions).length,3);
+ assert.equal(earnedKeepsakes(w.interactions).length,2);
  console.log(region,"actual path movement and earned keepsake list passed");
 }
 

@@ -1,12 +1,12 @@
 import {drawGuardianCast,guardianColors} from "./guardian-effects.mjs?v=guardian-art-20261127";
 import {REGIONAL_BOSSES,bossKey,optionalBossAvailable,atBoss,bossReward,bossTemplates,regionalBossLevel,guardianProfile} from "./regional-bosses.mjs";
 import {activateCompanionTalents} from "./companion-talents.mjs";
-import {applyRegionalKeepsake,forgeLightScale,hasRegionalKeepsake,regionalKeepsakes} from "./regional-keepsake-talents.mjs";
+import {applyRegionalKeepsake,forgeLightScale,hasRegionalKeepsake,regionalKeepsakes} from "./regional-keepsake-talents.mjs?v=narrative-play-20261127-r1";
 import {canonArt,visibleBounds} from "./canon22-art.mjs";
 import {positionObjectiveHud,watchObjectiveHud,cinematicActive,syncCinematicHud} from "./battle-hud.mjs";
 // Regional combat extensions: attach to actual CaptureBattle instances, never to campaign state.
 // Wild cats remain collectible; scripted Forge/Finale encounters use separate adapters.
-import {libraryBlocked,libraryPoints,catdexRecord} from "./library-mechanisms.mjs";
+import {libraryBlocked,libraryPoints,catdexRecord} from "./library-mechanisms.mjs?v=narrative-play-20261127-r1";
 export const REGION_KITS=Object.freeze({
  harbor:{name:["风铃镇","Windchime Town"],enemy:["铃舌兽","Belltongue Beast"],npcs:["jiedeng","qilan"],element:"water",color:"#e7c775",kind:"surge",period:6.2,support:["真铃支援","True chime support"]},
  forest:{name:["眠根林","Rootsleep Forest"],enemy:["根须围猎","Root ambush"],npcs:["yahe","yuchuan"],element:"grass",color:"#97ba76",kind:"roots",period:6.8,support:["疏通根脉","Clear the roots"]},

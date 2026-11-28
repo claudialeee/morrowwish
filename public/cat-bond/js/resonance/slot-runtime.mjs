@@ -1,6 +1,6 @@
 import {campaign} from "./campaign.mjs";
 import {makeEngine} from "./engine.mjs";
-import {layouts,storyNpcPoint} from "./world-exploration.mjs?v=local-exploration-20261127";
+import {layouts,storyNpcPoint} from "./world-exploration.mjs?v=narrative-play-20261127-r1";
 import {storyPartyPatch} from "./story-party.mjs";
 import {validReplyProof} from "./canon22-finale-replies.mjs";
 const clone=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));

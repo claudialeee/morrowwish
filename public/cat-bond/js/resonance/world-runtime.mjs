@@ -2,15 +2,15 @@ import {REGIONAL_BOSSES,bossKey,optionalBossAvailable} from "./regional-bosses.m
 import {finaleBattleAsset} from "./finale-art.mjs?v=phase-paired-20261127";
 import { campaign } from "./campaign.mjs";
 import {withForeground,depthScale} from "./exploration-depth.mjs";
-import {spatialControls,spatialTap,paintSpatial,chasePoint,shadowHint} from "./canon22-spatial.mjs?v=starbell-work-regression-v2-20261127";
+import {spatialControls,spatialTap,paintSpatial,chasePoint,shadowHint} from "./canon22-spatial.mjs?v=narrative-play-20261127-r1";
 import {chaseArt,drawPortraitChase,portraitChaseTap} from "./portrait-chase.mjs";
 import {portraitAsset,projectPortrait,unprojectPortrait,projectFarwindLandscape,unprojectFarwindLandscape} from "./portrait-map.mjs";
 import {hasPendingDialogue} from "./dialogue-ui.mjs";
 import { openFinaleLatch } from "./finale-latch.mjs";
-import { createWorldBridge } from "./world-bridge.mjs?v=regional-depth-20261127";
-import {availableDiscoveries,layoutDiscoveries,paintDiscovery} from "./regional-discoveries.mjs?v=regional-depth-20261127";
+import { createWorldBridge } from "./world-bridge.mjs?v=narrative-play-20261127-r1";
+import {availableDiscoveries,layoutDiscoveries,paintDiscovery} from "./regional-discoveries.mjs?v=narrative-play-20261127-r1";
 import {markerMetrics,layoutMarkerLabels,pickMarker,discoveryNames} from "./map-affordances.mjs?v=npc-talk-bubble-1";
-import { createExplorer,layouts,exchangeOptions,distance } from "./world-exploration.mjs?v=local-exploration-20261127";
+import { createExplorer,layouts,exchangeOptions,distance } from "./world-exploration.mjs?v=narrative-play-20261127-r1";
 import {paintHarborEnvironment,paintHarborPuzzle,harborObjective,harborPuzzleHint,paintHarborCeremony,paintHarborPortraitCeremony} from "./harbor-presentation.mjs";
 import {paintForgeEnvironment,paintForgeCeremony,forgeObjective,paintForgePuzzle} from "./forge-presentation.mjs";
 import { echoBeaconOptions,symbol,featureIcon,puzzleWords,puzzleHit,paintPuzzle } from "./world-mechanisms.mjs";
@@ -31,7 +31,7 @@ const ruinsPoint=[.23,.78];
 const duoMemories={harbor:"creek",forest:"sakura",forge:"volcano",starfall:"ruins"};
 const cargoNames={"beacon-supply-vessel":["灯塔引航物资","Beacon-guided supplies"],"herbs-waterway-map":["药材与水路图","Herbs and waterway map"],"cooling-plans-herbs":["冷却水与药材","Cooling water and herbs"],"pumps-tools":["水泵与工具","Pumps and tools"],"wind-vanes-flight-parts":["风向仪与飞行部件","Wind vanes and flight parts"],"wind-data-airship-route":["风况与飞艇航路","Wind data and airship route"],"courier-route":["信使航线","Courier route"],"archived-flight-maps":["旧航图与档案","Archived flight maps"],"star-chart-coordinates":["星图及坐标","Star chart and coordinates"],"astronomical-observations":["天文观测记录","Astronomical observations"],"navigation-bell-compass":["导航铃与星罗盘","Navigation bell and star compass"],"beacon-response":["港口航行回报","Harbor navigation response"]};
 const cargoName=id=>cargoNames[id]?tr(...cargoNames[id]):id;
-import {libraryWords,libraryBlocked,paintLibraryEnvironment,routeGesture} from "./library-mechanisms.mjs";
+import {libraryWords,libraryBlocked,paintLibraryEnvironment,routeGesture} from "./library-mechanisms.mjs?v=narrative-play-20261127-r1";
 import {paintSkyFlight,paintSkyWeather,skyLaunch,skyPartsReady,canLandSkyFlight} from "./sky-flight.mjs?v=starbell-release-quality-r2-20261127";
 
 

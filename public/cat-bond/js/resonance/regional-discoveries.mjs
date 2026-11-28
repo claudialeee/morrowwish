@@ -1,4 +1,4 @@
-import {sideKeepsakes,sideKey} from "./side-adventures.mjs?v=regional-depth-20261127";
+import {sideKeepsakes,sideKey,trailPerkKey} from "./side-adventures.mjs?v=narrative-play-20261127-r1";
 // Region-specific optional environmental discoveries; no narrative proof or economy changes.
 const raw={
   "harbor": {
@@ -504,9 +504,9 @@ export function progress(region,interactions={}){
 export function availableDiscoveries(region,w,v){
  const d=discoveries[region];if(!d||w.location!==region||w.cargo||!v.regions?.includes(region)||region==="sky"&&w.interactions?.["sky:survey-island"])return [];
  const p=progress(region,w.interactions);
- const introduced={harbor:"harbor:H-01",forest:"forest:R-01",forge:"forge:E-01",sky:"sky:S-01",library:"library:M-01"}[region];if(introduced&&!v.completed.includes(introduced)&&!v.completed.includes(d.after))return [];
- if((region==="library"&&v.completed.includes("library:M-03")||region==="starfall")&&!v.completed.includes("epilogue:E-03"))return [];
- return d.steps.filter(s=>!p.done.includes(s.id)&&(s.mode!=="decoy"||!p.complete)&&s.requires.every(id=>p.done.includes(id))&&(s.mode!=="return"||p.complete&&v.completed.includes(d.after)));
+ const introduced={harbor:"harbor:H-01",forest:"forest:R-01",forge:"forge:E-01",sky:"sky:S-01",library:"library:M-01"}[region];if(introduced&&!(v.completed||[]).includes(introduced)&&!(v.completed||[]).includes(d.after))return [];
+ if((region==="library"&&(v.completed||[]).includes("library:M-03")||region==="starfall")&&!(v.completed||[]).includes("epilogue:E-03"))return [];
+ return d.steps.filter(s=>!p.done.includes(s.id)&&(s.mode!=="decoy"||!p.complete)&&s.requires.every(id=>p.done.includes(id))&&(s.mode!=="return"||p.complete&&(v.completed||[]).includes(d.after)));
 }
 export function applyDiscovery(region,id,w,v){
  const s=availableDiscoveries(region,w,v).find(x=>x.id===id),p=w.positions?.[region];
@@ -514,7 +514,7 @@ export function applyDiscovery(region,id,w,v){
  if(s.mode==="decoy")return {ok:true,decoy:true,message:s.message};
  const next={...w,interactions:{...w.interactions,[key(region,id)]:true}};
  const before=progress(region,w.interactions),after=progress(region,next.interactions),d=discoveries[region];
- const perk=after.complete&&(!before.complete||!before.returned&&after.returned)&&!next.interactions[sideKey(region)];if(perk)next.interactions[sideKey(region)]=true;
+ const perk=after.complete&&(!before.complete||!before.returned&&after.returned)&&!next.interactions[sideKey(region)];if(perk){next.interactions[sideKey(region)]=true;next.interactions[trailPerkKey(region)]=true;}
  return {ok:true,next,message:s.message,souvenir:!before.complete&&after.complete?d.souvenir:!before.returned&&after.returned?d.returnSouvenir:null,reward:perk?{coins:25,fish:2}:null,perk};
 }
 // Keep the props separated from interactive story anchors. Both the painter

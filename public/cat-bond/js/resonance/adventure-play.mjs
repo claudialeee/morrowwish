@@ -1,7 +1,7 @@
 import {portraitAsset} from "./portrait-map.mjs";
-import {regionalKeepsakes} from "./regional-keepsake-talents.mjs";
+import {regionalKeepsakes} from "./regional-keepsake-talents.mjs?v=narrative-play-20261127-r1";
 import {companionTalents,activateCompanionTalents,talentRank} from "./companion-talents.mjs";
-import {sideAdventures,newSideState,sideAction,lanesFor,herbs,weights,basketTotals,starPoints,starLinks} from "./side-adventures.mjs?v=regional-depth-20261127";
+import {sideAdventures,newSideState,sideAction,lanesFor,herbs,weights,basketTotals,starPoints,starLinks} from "./side-adventures.mjs?v=narrative-play-20261127-r1";
 const zh=()=>window.MorrowwishI18n?.get?.()==="zh",tr=p=>p[zh()?0:1],pair=(a,b)=>[a,b],el=(tag,cls,text)=>{const x=document.createElement(tag);if(cls)x.className=cls;if(text!==undefined)x.textContent=text;return x;};
 const svgNS="http://www.w3.org/2000/svg",svg=(tag,attrs={})=>{const e=document.createElementNS(svgNS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));return e;};
 const titleNames={qilan:["栖蓝","Skye"],yahe:["芽禾","Fern"],xiaomao:["小栗","Pip"]};
