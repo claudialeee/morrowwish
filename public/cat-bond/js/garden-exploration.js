@@ -41,7 +41,7 @@ const targets={
  seed:{labels:['花丛里的亮光','Glint among flowers'],type:'seed',points:[[.87,.70]]},
  snack:{labels:['鱼饼','Fish cake'],type:'snack',points:[[.15,.56]]},
  moonleaf:{labels:['和暮铃一起碰月叶','Touch the moonleaf with Luna'],type:'seed',points:[[.76,.70]]},
- nameplate:{labels:['翻看木名牌','Turn the wooden nameplate'],type:'nameplate',points:[[.25,.40]]},
+ nameplate:{labels:['查看旧门牌','Inspect the old door sign'],type:'nameplate',points:[[.25,.40]]},
  door:{labels:['打不开的旧屋','Locked old house'],type:'door',points:[[.18,.37]]},
  'chart-echo':{labels:['旧铃的回应','Investigate the answering bell'],type:'door',points:[[.58,.36]]},
  'chart-0':{labels:['飞走的航图','Windblown chart'],type:'chart',points:[[.75,.36]]},
@@ -59,7 +59,7 @@ function postcardView(){
  const title=document.createElement('strong');title.textContent=tr('窗边的旧明信片','A postcard by the window');
  const photo=document.createElement('img');photo.src='assets/garden/sunlit-garden-landscape.webp';photo.alt=tr('画着阳光花园的旧明信片','An old picture of Sunlit Garden');Object.assign(photo.style,{width:'100%',maxHeight:'min(29vh,180px)',objectFit:'contain',filter:'sepia(.24) saturate(.8)',border:'5px solid #fff8e9',boxSizing:'border-box',borderRadius:'5px'});
  const note=document.createElement('p');note.textContent=tr('背面写着：“修完铃就回家。茶叶在窗边，记得多拿一只杯子。”','On the back: “Home when the bells are fixed. Tea by the window. Don’t forget the extra cup.”');note.style.margin='0';
- const thought=document.createElement('p');thought.textContent=view()?.ending?tr('原来这就是我们当年约好的那杯茶。','So this was the tea we promised to share.'):tr('两只杯子……以前住在这里的，真的是两只猫。','Two cups… Two cats really did live here.');thought.style.margin='0';thought.style.fontWeight='600';
+ const thought=document.createElement('p');thought.textContent=view()?.ending?tr('原来这就是我们当年约好的那杯茶。','So this was the tea we promised to share.'):tr('多拿一只杯子？以前住在这里的猫，好像在等谁回来。','An extra cup? Whoever lived here seems to have been waiting for someone.');thought.style.margin='0';thought.style.fontWeight='600';
  const close=document.createElement('button');close.type='button';close.textContent=tr('收好明信片','Put the postcard away');close.onclick=closePopup;popup.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();closePopup();}};popup.append(title,photo,note,thought,close);layer.append(popup);close.focus();
 }
 function snackChoice(){if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice';popup.setAttribute('role','dialog');popup.setAttribute('aria-label',tr('鱼饼','Fish cake'));
@@ -78,7 +78,7 @@ function interact(id,arrived=false){if(owner!==rootState()||!eligible()||covered
  const s=read(owner);
  if(id==='butterfly'||id==='moonleaf'){closePopup();return startChase(id);}cancelChase();
  if(id==='snack'){snackChoice();return true;}closePopup();
- if(id==='nameplate'){const ended=!!view()?.ending,event=ended?'nameplate-home':'nameplate';if(!commit(event))return false;pulse(id);toast(ended?'旧名牌旁添上两道新的爪印。这里是我们的家。':'门口的两块木名牌都磨得看不清了，背面却有风铃镇的印记。',''+(ended?'Two new paw marks beside the old nameplate. This is our home.':'Both old nameplates are worn blank, but their backs bear the mark of Windchime Town.'));return true;}
+ if(id==='nameplate'){const ended=!!view()?.ending,event=ended?'nameplate-home':'nameplate';if(!commit(event))return false;pulse(id);toast(ended?'给旧门牌添上两道新的爪印。这里是我们的家。':'木牌正面写着“阳光花园”，背面刻着“风铃镇 · 檐灯”。原来檐灯做过这块牌子。',''+(ended?'Two new paw marks beside the old nameplate. This is our home.':'The front reads Sunlit Garden. The back reads Alder, Windchime Town. Alder made this sign.'));return true;}
  if(id==='door'){if(!view()?.completed?.includes('harbor:H-05')){toast('门闩卡住啦。檐灯以前来修过这座屋子，去风铃镇问问他吧。','The latch is stuck. Alder used to repair this house. Ask him in Windchime Town.');return true;}if(!s.door){if(!commit('door'))return false;pulse(id);}postcardView();return true;}
  if(!commit(id))return false;pulse(id);
 
