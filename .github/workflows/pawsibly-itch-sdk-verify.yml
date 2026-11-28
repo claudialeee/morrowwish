@@ -1,0 +1,43 @@
+name: Pawsibly live itch and SDK verification
+on:
+  push:
+    branches: ['release/pawsibly-five-portals-20261127']
+    paths: ['.github/workflows/pawsibly-itch-sdk-verify.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      SOURCE_SHA: 63a1ddd2d4d07b1bbb4c24818fa3fe07a09b5545
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: pawsibly-verified-portable-zips
+          run-id: 46112210148
+          github-token: ${{ github.token }}
+          path: release-kit/pawsibly
+      - name: Validate SDK binding without real ad traffic
+        run: python3 scripts/check-pawsibly-portal-sdk.py
+      - name: Verify existing public itch game
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          node scripts/verify-pawsibly-itch-exact.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pawsibly-itch-live-evidence
+          path: |
+            release-kit/pawsibly/itch-live.json
+            release-kit/pawsibly/itch-live.png
+          retention-days: 7
+          if-no-files-found: warn
