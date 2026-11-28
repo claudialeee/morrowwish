@@ -1,0 +1,41 @@
+name: Starbell fresh normal campaign QA
+on:
+  push:
+    branches: [qa/starbell-fresh-canon3-20261127]
+permissions:
+  contents: read
+concurrency:
+  group: starbell-fresh-canon3
+  cancel-in-progress: true
+jobs:
+  fresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [wide, portrait]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install chromium
+      - name: Continuous fresh slot campaign through ending
+        env:
+          STARBELL_WORK_PROFILE: ${{ matrix.profile }}
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-fresh.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/test-starbell-fresh-canon3-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fresh-${{ matrix.profile }}
+          path: artifacts/work-closure/
+          retention-days: 7
