@@ -2848,3 +2848,24 @@ Workflow: 22 of 76 agents hit StructuredOutput retry cap (29% harness attrition,
 - Commit af9c93cf math-claim overstated: ramp crosses 1.0× at **t≈22.8s** (not ~19s). Floor 0.85 at t≤12; at t=19 scalar=0.947; at t=22.8 scalar=1.00; at t=30 scalar=1.10 (peak). Still inside kiter 38s/panicky 34s cliffs; misses impatient 18s cliff by ~5s (not ~1s as commit body implied).
 - Cache-buster bumped: `index.html` battle.js `?v=smash-reach-520-forcedfloor-20261127` → `basic-ramp-12-30-20261128`.
 - Gate re-check: npm run check + 4 combat scripts all PASS (identical tail to pre-edit run).
+
+RSI cycle 2026-11-28T04:44:17Z: **new best 0.712** and **new niche filled**. Winners: agent:alternating-oscillator 0.712 (replaces prior pack-robust-peel-fused 0.703 in cell 1,3,3,3); agent:qready-burst-else-wide 0.700 (NEW cell 1,2,3,3, previously empty). Archive coverage 2/256 → 3/256 (+50%). Both winners read CD signals (f.cd.q, f.cd.e) — a dimension prior cycles didn't exploit. alternating-oscillator bandBody: both ready→tight 50-85 assassin, both cooling→wide 200-280 ranged, mixed→mid 110-160 bruiser. Cohort rule: median across null/lazy/explorer/panicky (panicky INCLUDED; uncommitted harness state). Findings-only; no apply/commit/push per RSI step 5.
+
+## RSI roadmap (added 2026-11-28 after oscillator role/target gap exposed by owner)
+
+Current evaluator scope is narrow and most RSI claims to date over-generalize. The archive is **fighter × melee+projectile × doudou × solo/vs-N × engine-default-targeting** ONLY. Winners DO NOT translate to backliners, teams, target decisions, or focus-fire/peel/heal-aim quality.
+
+Must extend evaluator before any further RSI winner is applied to game code:
+
+- [ ] **Build matrix**: tank / fighter / dps / assassin / control / support — each with ≥2 typical kits (e.g. dps=all-ranged vs dps=beam-plus-aoe)
+- [ ] **Kit kind coverage**: melee / projectile / beam / aoe / heal / control / buff / dash / channel — RSI winner must be valid across the kit kind the cat actually has
+- [ ] **Team scenarios**: 3-cat teams (dps+tank+support, dps+dps+control, support+support+dps, etc.) — any team-reading rule (peel, support-triage, pack-robust-peel-fused) MUST be re-scored in a team scenario
+- [ ] **Target-picking policy as a candidate lever**: let proposer emit `pickTarget(f, enemies)` not just `bandBody` — RSI should optimize "打谁" not only "离多远"
+- [ ] **Focus-fire metric**: time-to-kill a single enemy vs team-average kill-time divergence
+- [ ] **Peel metric**: % of damage taken by lowest-HP teammate (lower is better peel)
+- [ ] **Heal-aim metric**: fraction of heal potency delivered to lowest-HP teammate at heal-cast moment
+- [ ] **Skill-aim metric**: AOE skills — did they hit ≥2 enemies? buff — did they hit teammates?
+- [ ] **Enemy diversity**: pack compositions beyond doudou — trash+elite / AOE-dealer / kiter / boss-phase / mixed-element
+- [ ] **Scenario diversity**: opening engagement / team-crisis (one cat <30% HP) / execute window / boss phase-shift
+
+Until this extension lands, `.claude/supervisor-prompt.md` §9/§10 (added this turn) must block any new RSI apply without a build gate + honest scope caveat.

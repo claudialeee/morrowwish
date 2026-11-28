@@ -1,54 +1,75 @@
 {
-  "coverage": 2,
-  "grid": "4x4x4",
-  "maxCells": 64,
+  "_scope_caveat": "ALL ELITES BELOW ARE SCOPED TO: build=fighter, stats={pow:90,agi:80,vit:130,cha:60}, loadout={q:melee×1.4, e:projectile×1.1}, enemies=doudou-1100/130 & doudou-2400/280, 1v1/1vN only (no teammates), target picked by engine default. Winners DO NOT generalize to tank/dps/assassin/control/support build, to non-melee-plus-projectile kits, to team fights, to target-selection decisions, to peel/focus-fire/heal-aim quality, or to other enemy types. DO NOT apply any elite to battle.js without a build-gate and without re-verification once evaluator is extended (see playtest-log.md ## RSI roadmap).",
+  "coverage": 3,
+  "grid": "4x4x4x4",
+  "maxCells": 256,
   "best": {
-    "key": "0,3,3",
+    "key": "1,3,3,3",
     "descriptor": {
-      "engage": 0.22185185185185186,
-      "tempo": 0.8397807407407405,
-      "durability": 0.9670479791336155
+      "engage": 0.34296296296296297,
+      "tempo": 0.7891053037037061,
+      "durability": 1,
+      "efficiency": 0.9696969696969697
     },
-    "score": 0.7697715780535999,
+    "score": 0.7118826182628326,
     "candidate": {
-      "id": "baseline",
-      "label": "Engine default kitRangeBand",
-      "kind": "baseline",
-      "rationale": "The shipping, hand-tuned positioning policy. The bar every structural proposal must clear."
+      "id": "agent:alternating-oscillator",
+      "label": "Oscillator: both CDs cooling → wide, both ready → tight, mixed → mid (pure cd-combo)",
+      "kind": "agent",
+      "rationale": "Reads BOTH f.cd.q and f.cd.e. Creates a 3-state deterministic oscillation: (both cool) → patient, (mixed) → bruiser, (both ready) → burst. Forces tempo diversity; should NOT land in same cell as single-CD rule."
     },
-    "label": "baseline"
+    "label": "agent:alternating-oscillator"
   },
   "elites": [
     {
-      "cell": "0,3,3",
-      "score": 0.7698,
-      "label": "baseline",
+      "cell": "1,3,3,3",
+      "score": 0.7119,
+      "label": "agent:alternating-oscillator",
       "descriptor": {
-        "engage": 0.22,
-        "tempo": 0.84,
-        "durability": 0.97
+        "engage": 0.34,
+        "tempo": 0.79,
+        "durability": 1,
+        "efficiency": 0.97
       },
       "candidate": {
-        "id": "baseline",
-        "label": "Engine default kitRangeBand",
-        "kind": "baseline",
-        "rationale": "The shipping, hand-tuned positioning policy. The bar every structural proposal must clear."
+        "id": "agent:alternating-oscillator",
+        "label": "Oscillator: both CDs cooling → wide, both ready → tight, mixed → mid (pure cd-combo)",
+        "kind": "agent",
+        "rationale": "Reads BOTH f.cd.q and f.cd.e. Creates a 3-state deterministic oscillation: (both cool) → patient, (mixed) → bruiser, (both ready) → burst. Forces tempo diversity; should NOT land in same cell as single-CD rule."
       }
     },
     {
-      "cell": "1,3,3",
-      "score": 0.7549,
+      "cell": "1,2,3,3",
+      "score": 0.7004,
+      "label": "agent:qready-burst-else-wide",
+      "descriptor": {
+        "engage": 0.43,
+        "tempo": 0.73,
+        "durability": 0.97,
+        "efficiency": 0.94
+      },
+      "candidate": {
+        "id": "agent:qready-burst-else-wide",
+        "label": "Q-ready → tight 55-95 burst; else wide 180-260 patient (high tempo variance)",
+        "kind": "agent",
+        "rationale": "Pure CD-axis read on f.cd.q — a signal the archive hasn't exploited. Tight on Q ready, wide when cooling. Should produce HIGH tempo variance (burst-wait oscillation) distinct from pack-robust-peel-fused's steady-state bands."
+      }
+    },
+    {
+      "cell": "2,2,3,3",
+      "score": 0.4343,
       "label": "stand-at-max-range",
       "descriptor": {
-        "engage": 0.3,
-        "tempo": 0.76,
-        "durability": 0.98
+        "engage": 0.57,
+        "tempo": 0.64,
+        "durability": 1,
+        "efficiency": 0.97
       },
       "candidate": {
         "id": "stand-at-max-range",
         "label": "CONTROL: always stand at max range (passive kiter)",
         "kind": "control",
-        "rationale": "Deliberately-BAD structural proposal. Parks the cat at 300–340px and never closes — a melee fighter that refuses to fight. MUST rank LAST: it cannot clear the 3-pack and stalls output. Proves the harness punishes a plausible-looking-but-wrong rule, not just a crash."
+        "rationale": "Deliberately-BAD structural proposal. Parks the cat at 300–340px and never closes — a melee fighter that refuses to fight. MUST rank BELOW baseline: it cannot clear the 3-pack and stalls output. Proves the harness punishes a plausible-looking-but-wrong rule."
       }
     }
   ]
