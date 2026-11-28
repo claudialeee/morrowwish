@@ -1,7 +1,7 @@
 name: Starbell Canon 2.2 stable system regression
 on:
   push:
-    branches: [review/starbell-canon13-player-experience]
+    branches: [starbell-echoes]
     paths:
       - 'public/cat-bond/js/main.js'
       - 'public/cat-bond/js/battle.js'
