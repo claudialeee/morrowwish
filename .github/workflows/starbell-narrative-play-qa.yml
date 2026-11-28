@@ -1,0 +1,49 @@
+name: Starbell narrative gameplay focused QA
+on:
+  push:
+    branches: [qa/starbell-narrative-play-20261127]
+permissions:
+  contents: read
+concurrency:
+  group: starbell-narrative-play
+  cancel-in-progress: true
+jobs:
+  rules:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node scripts/test-starbell-narrative-play-20261127.mjs
+          node scripts/test-cat-bond-canon22-spatial.mjs
+          node scripts/test-cat-bond-canon22-ledger.mjs
+          node scripts/test-cat-bond-regional-discoveries.mjs
+  interaction:
+    needs: rules
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [wide, portrait, landscape]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm install --no-save --no-package-lock playwright@1.57.0
+          npx playwright install chromium
+      - name: Actual game interactions at chapter checkpoints
+        env:
+          STARBELL_MINIGAME_PROFILE: ${{ matrix.profile }}
+        run: |
+          node scripts/cat-bond-local-cloud-server.mjs >/tmp/starbell-narrative.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/cat-bond/ >/dev/null
+          node scripts/test-starbell-player-first-browser.mjs
