@@ -109,11 +109,11 @@
     const detail=document.createElement('div');detail.id='sg-opening-quest-detail';detail.className='sg-quest-detail';detail.hidden=true;
     const title=document.createElement('strong'),hint=document.createElement('span'),row=document.createElement('div');detail.append(title,hint,row);
     const copy={
-      meet:['寻找自己的名字','Find your name','看看门口的旧木牌，或和花园里的陌生猫聊聊。','Inspect the old nameplates or talk to the cat in the garden.'],
+      meet:['寻找自己的名字','Find your name','看看门口的木牌，或和花园里的陌生猫聊聊。','Inspect the wooden sign or talk to the cat in the garden.'],
       chart:['找回飞走的航图','Find the windblown chart','寻找被风吹走的航图片段。','Look for the chart piece carried off by the wind.'],
       bell:['看看旧铃','Investigate the old bell','旧铃突然响了，去看看发生了什么。','The old bell suddenly rang. Go see what happened.'],
       return:['回去找陌生猫','Return to the stranger','把旧铃的奇怪回应告诉那只猫，听它把话说完。','Tell the stranger how the bell answered and hear them out.'],
-      depart:['寻找自己的名字','Find your name','风铃镇的檐灯做过花园的名牌，去问问他还记不记得订牌的猫。','Alder made the garden nameplates. Ask him who ordered them.']
+      depart:['寻找自己的名字','Find your name','风铃镇的檐灯做过花园的门牌，去问问他还记不记得这里住过谁。','Alder made the garden sign. Ask if he remembers who lived here.']
     }[phase];
     title.textContent=copy[en?1:0];hint.textContent=copy[en?3:2];
     const close=()=>{openingQuestOpen=false;detail.hidden=true;toggle.setAttribute('aria-expanded','false');};
