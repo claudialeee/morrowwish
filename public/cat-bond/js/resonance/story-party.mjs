@@ -14,7 +14,7 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 export function storyPartyPatch(root,previous,next,makeCat,decorate=()=>{}){
  const finished=next.completed.filter(id=>!previous.completed.includes(id));
  const reunions=(next.postgame||[]).filter(id=>!(previous.postgame||[]).includes(id)&&optionalRecruitment[id]);
- if(!finished.some(id=>recruitment[id]||id==="epilogue:E-03")&&!reunions.length)return null;
+ if(!finished.some(id=>recruitment[id]||["finale:B-02","epilogue:E-03"].includes(id))&&!reunions.length)return null;
  if(!Array.isArray(root.cats)||typeof makeCat!=="function")return null;
  let cats=[...root.cats],away={...(root.storyAway||{})};
  const duo=copy(root.duoRelations||{pairs:{},active:[]});duo.pairs||={};duo.active||=[];
@@ -37,8 +37,8 @@ export function storyPartyPatch(root,previous,next,makeCat,decorate=()=>{}){
    if(actor==="muling"&&player){team=[player.uid,cat.uid,...team.filter(u=>u!==player.uid&&u!==cat.uid)].slice(0,5);duo.active=[player.uid,cat.uid];showcase=true;}
    else if(companionRoles[actor]==="core"&&team.length<5)team.push(cat.uid);
   }
-  if(scene==="epilogue:E-03"&&away.muling){
-   const cat=away.muling;delete away.muling;if(!cats.some(c=>c.uid===cat.uid)){for(const other of cats)if(other===player||other.storyActor)seed(other,cat);cats.push(cat);if(team.length<5)team.push(cat.uid);joined.push("muling");}
+  if(["finale:B-02","epilogue:E-03"].includes(scene)&&away.muling){
+   const cat=away.muling;delete away.muling;if(!cats.some(c=>c.uid===cat.uid)){for(const other of cats)if(other===player||other.storyActor)seed(other,cat);cats.push(cat);if(player){team=[player.uid,cat.uid,...team.filter(u=>u!==player.uid&&u!==cat.uid)].slice(0,5);duo.active=[player.uid,cat.uid];}else if(team.length<5)team.push(cat.uid);joined.push("muling");}
   }
  }
  const available=new Set(cats.map(c=>c.uid));team=[...new Set(team)].filter(u=>available.has(u)).slice(0,5);

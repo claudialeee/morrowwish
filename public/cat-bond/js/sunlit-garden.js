@@ -105,15 +105,15 @@
     if(key===guideKey)return;guideKey=key;openingQuestOpen=false;
     guide.classList.remove('sg-minimal-opening','sg-postgame-guide');guide.classList.add('sg-opening-quest');
     guide.replaceChildren();
-    const toggle=document.createElement('button');toggle.type='button';toggle.className='sg-quest-toggle';toggle.textContent=met?(en?'Find Alder in Windchime Town':'去风铃镇找檐灯'):(en?'Find out why you lost your memory':'弄清自己为什么失忆');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','sg-opening-quest-detail');
+    const toggle=document.createElement('button');toggle.type='button';toggle.className='sg-quest-toggle';toggle.textContent=met?(en?'Ask around Windchime Town':'去风铃镇打听身世'):(en?'Find out why you lost your memory':'弄清自己为什么失忆');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','sg-opening-quest-detail');
     const detail=document.createElement('div');detail.id='sg-opening-quest-detail';detail.className='sg-quest-detail';detail.hidden=true;
     const title=document.createElement('strong'),hint=document.createElement('span'),row=document.createElement('div');detail.append(title,hint,row);
     const copy={
-      meet:['弄清自己为什么失忆','Find out why you lost your memory','问问花园里的猫，再去风铃镇找檐灯。','Talk to the cat in the garden, then find Alder in Windchime Town.'],
+      meet:['弄清自己为什么失忆','Find out why you lost your memory','问问花园里的猫，再去风铃镇打听有没有人认识你。','Talk to the cat in the garden, then ask around Windchime Town.'],
       chart:['找回飞走的航图','Find the windblown chart','寻找被风吹走的航图片段。','Look for the chart piece carried off by the wind.'],
       bell:['看看旧铃','Investigate the old bell','旧铃突然响了，去看看发生了什么。','The old bell suddenly rang. Go see what happened.'],
       return:['回去找陌生猫','Return to the stranger','把旧铃的奇怪回应告诉那只猫，听它把话说完。','Tell the stranger how the bell answered and hear them out.'],
-      depart:['弄清自己为什么失忆','Find out why you lost your memory','檐灯收着巡铃图。去风铃镇找他。','Alder has your patrol map. Find him in Windchime Town.']
+      depart:['弄清自己为什么失忆','Find out why you lost your memory','去风铃镇问问有没有猫认识你。','Ask around Windchime Town to see whether anyone knows you.']
     }[phase];
     title.textContent=copy[en?1:0];hint.textContent=copy[en?3:2];
     const close=()=>{openingQuestOpen=false;detail.hidden=true;toggle.setAttribute('aria-expanded','false');};

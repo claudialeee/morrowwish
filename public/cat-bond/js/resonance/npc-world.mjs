@@ -31,19 +31,19 @@ function openingEncounter(api){
  for(const b of [next,close])b.type="button";next.className="cb-encounter-next";close.className="cb-encounter-leave";copy.setAttribute("aria-live","polite");
  controls.append(next,close);body.append(name,copy,controls);panel.append(art,body);root.append(panel);let step=0;
  const lines=[
- ["陌生猫","Stranger","小曦！你终于醒啦！","Sunny! You're awake at last!","继续","Continue"],
- ["你","You","小曦？你认识我？……我怎么连这个名字都想不起来了？","Sunny? You know me? …Why can't I even remember that name?","继续","Continue"],
- ["暮铃","Luna","我是暮铃。咱们以前一起巡铃。你爪子底下那封信，是你自己留下的。","I'm Luna. We used to look after the bells together. That note under your paw? You wrote it.","继续","Continue"],
+ ["陌生猫","Stranger","你还好吗？","Are you all right?","继续","Continue"],
+ ["你","You","我连自己的名字都想不起来了。你认识我吗？","I cannot even remember my name. Do you know me?","继续","Continue"],
+ ["暮铃","Luna","……我叫暮铃。附近有个小镇，我们去问问吧。","…I'm Luna. There is a town nearby. Let’s ask around.","继续","Continue"],
  ["你","You","我写的？那上面为什么说不能开锁？","I wrote this? Why does it say not to open the lock?","继续","Continue"],
- ["暮铃","Luna","星铃坏了，会夺走记忆。那把锁就是为了挡住它。你是在那次灾难里失忆的。檐灯爷爷收着你的巡铃图，上面有六座古铃的位置。","A broken Star Bell takes memories. The lock was there to hold it back. You lost your memory in that disaster. Alder has your old patrol map, with all six local bells marked.","继续","Continue"],
- ["你","You","好！我去找檐灯爷爷。也许他知道我以前发生了什么。","Okay! I'll find Alder. Maybe he knows what happened to me.","继续","Continue"],
+ ["暮铃","Luna","风铃镇就在山谷另一边。说不定有人认识你。","Windchime Town is just across the valley. Maybe someone knows you.","继续","Continue"],
+ ["你","You","好，总比待在这里什么都不知道强。","Okay. Better than staying here without any answers.","继续","Continue"],
  ["暮铃","Luna","我先去镇上找他。你也别急，草地上的鱼饼可以吃。……你以前可不舍得把鱼饼放凉。","I'll go find him in town. No rush. That fish cake in the grass is yours. …You never used to let one go cold.","告别","Say goodbye"]
  ];
 
  const letter=document.createElement("blockquote");letter.className="cb-opening-letter-inline";Object.assign(letter.style,{margin:"4px 0",padding:"8px 10px",background:"#fff3d9",color:"#563d29",border:"1px solid #c9a974",borderRadius:"5px",fontSize:"clamp(13px,2vmin,17px)",lineHeight:"1.45"});body.insertBefore(letter,controls);
 
  function dispose(){root.remove();window.removeEventListener("morrowwish-language-change",render);window.removeEventListener("cat-bond-active-save-changed",dispose);window.removeEventListener("pagehide",dispose);}
- function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh",i=zh?0:1,l=lines[step];const player=l[0]==="你";panel.dataset.speaker=player?"player":"muling";const url=player?new URL("../../assets/core-art-remaster/leads/player.webp",import.meta.url).href:mulingGarden.src;if(art.src!==url)art.src=url;name.textContent=l[i];copy.textContent=l[2+i];letter.hidden=step!==1&&step!==3;letter.textContent=zh?"如果我醒来后什么都不记得了，就去风铃镇找檐灯，拿回巡铃图。六座古铃没修好以前，千万别打开中央星铃的锁。":"If I wake up with no memories, find Alder in Windchime Town and get my bellkeeper's map. Don't open the Star Bell's lock until all six local bells are repaired.";next.textContent=l[4+i];close.textContent=zh?"返回花园":"Back to garden";}
+ function render(){if(owner!==window.State.S||window.__game?.scene!=="yard"){dispose();return}const zh=window.MorrowwishI18n?.get?.()==="zh",i=zh?0:1,l=lines[step];const player=l[0]==="你";panel.dataset.speaker=player?"player":"muling";const url=player?new URL("../../assets/core-art-remaster/leads/player.webp",import.meta.url).href:mulingGarden.src;if(art.src!==url)art.src=url;name.textContent=l[i];copy.textContent=l[2+i];letter.hidden=true;letter.textContent="";next.textContent=l[4+i];close.textContent=zh?"返回花园":"Back to garden";}
  function advance(){if(owner!==window.State.S||window.__game?.scene!=="yard"||api.view().current?.id!=="prologue:P-05"){dispose();return}if(step<lines.length-1){step++;render();return}const r=api.meetTraveler(token);if(r.ok||api.view().openingMet)dispose();else copy.textContent=window.MorrowwishI18n?.get?.()==="zh"?"无法保存，请重试。也可以暂时离开。":"Unable to save. Retry or leave for now.";}
  next.onclick=advance;body.addEventListener("click",e=>{if(!e.target.closest("button,select,a,input"))advance()});close.onclick=dispose;root.onkeydown=e=>{if(e.key==="Escape"){e.preventDefault();dispose()}else if((e.key==="Enter"||e.key===" ")&&!e.target.closest("button,select,a,input")){e.preventDefault();advance()}};stage.append(root);window.addEventListener("morrowwish-language-change",render);window.addEventListener("cat-bond-active-save-changed",dispose);window.addEventListener("pagehide",dispose,{once:true});render();next.focus();return true;
 }

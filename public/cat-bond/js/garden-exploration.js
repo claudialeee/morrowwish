@@ -57,7 +57,7 @@ function signView(ending){
  if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice sg-sign-view';popup.setAttribute('role','dialog');popup.setAttribute('aria-label',tr('旧门牌','Old door sign'));
  Object.assign(popup.style,{width:'min(360px,88vw)',maxHeight:'75vh',overflowY:'auto',boxSizing:'border-box',padding:'16px',display:'flex',flexDirection:'column',gap:'12px',background:'#fff6e2',color:'#59432f'});
  const board=document.createElement('div');Object.assign(board.style,{background:'linear-gradient(150deg,#d8b080,#b78957)',border:'3px solid #865e3f',borderRadius:'12px',padding:'18px 14px',textAlign:'center',color:'#4c311f',boxShadow:'inset 0 0 0 3px #e4c39a'});board.textContent=ending?tr('阳光花园 · 小曦和暮铃的家','Sunlit Garden · Sunny & Luna’s home'):tr('阳光花园','Sunlit Garden');
- const clue=document.createElement('p');clue.style.margin='0';clue.textContent=ending?tr('你和暮铃终于有了共同的家。','You and Luna are home at last.'):tr('翻过来，背面刻着工匠的名字：风铃镇 · 檐灯。原来檐灯爷爷做过这块门牌。','On the back is the maker’s mark: Alder, Windchime Town. Alder made this door sign.');
+ const clue=document.createElement('p');clue.style.margin='0';clue.textContent=ending?tr('你和暮铃终于有了共同的家。','You and Luna are home at last.'):tr('背面只有磨损的爪印。这座花园以前也有猫住过吧？','Only worn paw marks remain on the back. Cats must have lived here before.');
  const close=document.createElement('button');close.type='button';close.textContent=tr('放回门牌','Put the sign back');close.onclick=closePopup;popup.append(board,clue,close);layer.append(popup);close.focus();
 }
 function postcardView(){
@@ -86,7 +86,7 @@ function interact(id,arrived=false){if(owner!==rootState()||!eligible()||covered
  if(id==='butterfly'||id==='moonleaf'){closePopup();return startChase(id);}cancelChase();
  if(id==='snack'){snackChoice();return true;}closePopup();
  if(id==='nameplate'){const ended=!!view()?.ending,event=ended?'nameplate-home':'nameplate';if(!(ended?s.nameplateHome:s.nameplate)){if(!commit(event))return false;pulse(id);}signView(ended);return true;}
- if(id==='door'){if(!view()?.completed?.includes('harbor:H-05')){toast('门闩卡住啦。檐灯以前来修过这座屋子，去风铃镇问问他吧。','The latch is stuck. Alder used to repair this house. Ask him in Windchime Town.');return true;}if(!s.door){if(!commit('door'))return false;pulse(id);}postcardView();return true;}
+ if(id==='door'){if(!view()?.completed?.includes('harbor:H-05')){toast('门闩卡住啦。先去附近的小镇打听一下吧。','The latch is stuck. Try asking around the nearby town first.');return true;}if(!s.door){if(!commit('door'))return false;pulse(id);}postcardView();return true;}
  if(!commit(id))return false;pulse(id);
 
  if(id==='seed')toast('找到一粒浅金色种子，收进小包。','You found a little golden seed and tucked it away.');
