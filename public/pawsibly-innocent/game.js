@@ -1182,6 +1182,12 @@ if(cgEmbed&&document.head){
  // Progress and warning now live in the existing board HUD.
 }
 
+// Result controls require a fresh pointer gesture inside the result panel.
+// A winning canvas tap can reveal the panel during pointerup, before Chromium
+// dispatches the compatibility click. Never let that tap activate a result action.
+let resultGesture=false;
+window.addEventListener("pointerdown",e=>{resultGesture=$("overlay").contains(e.target)&&!$("overlay").hidden;},true);
+$("overlay").addEventListener("click",e=>{if(e.detail>0&&!resultGesture){e.preventDefault();e.stopImmediatePropagation();}},true);
 // A tap is one action; dragging a finger over the board is not a tap.
 let fingerTap=null;
 c.addEventListener("pointerdown",e=>{
