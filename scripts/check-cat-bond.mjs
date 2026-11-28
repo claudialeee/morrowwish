@@ -449,6 +449,9 @@ damageBalance.coach=null;
 damageBalance.levelSuppression=1;
 damageBalance.combo=0;
 const balanceEnemy=damageBalance.enemies[0];
+// Pin the defense inputs independently of starter/encounter-level selection.
+balanceEnemy.vit=6;balanceEnemy.level=1;
+assert.ok(Math.abs(damageBalance.applyAttributeDefense(100,balanceEnemy)-85.554)<.001,'fixed defense fixture: flat 3 and mitigation 11.8%');
 balanceEnemy.maxhp=10000;balanceEnemy.hp=10000;balanceEnemy.alive=true;
 balanceEnemy.status={expose:4,rust:4};
 damageBalance.hurtEnemy(balanceEnemy,100,balanceEnemy.x,balanceEnemy.y,true);
