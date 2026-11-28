@@ -140,7 +140,7 @@ function draw(parent,ctx,w,h,npcRects=[]){
   const p=def.points[id==='butterfly'?Math.min(2,s.butterfly):0];
   const wx=left+(right-left)*p[0],wy=top+(bottom-top)*p[1],ground=window.World?.gardenGround?.(w,h);
   b._gardenWorldPoint=ground?{x:Math.max(ground.left,Math.min(ground.right,wx)),y:Math.max(ground.top,Math.min(ground.bottom,wy+18))}:{x:wx,y:wy};
-  const pt=b._gardenWorldPoint;if(b.dataset.questPrimary!=='true'&&!isChart&&id!=='door'&&id!=='nameplate'&&id!=='butterfly'&&pending?.id!==id&&game?.yardExploreEnabled?.()&&!game.yardNear(pt.x,pt.y,.28)){b.hidden=true;continue;}
+  const pt=b._gardenWorldPoint;if(b.dataset.questPrimary!=='true'&&!isChart&&id!=='door'&&id!=='nameplate'&&id!=='butterfly'&&id!=='snack'&&pending?.id!==id&&game?.yardExploreEnabled?.()&&!game.yardNear(pt.x,pt.y,.28)){b.hidden=true;continue;}
   const preferredX=rect.left+wx/w*rect.width-r.left,preferredY=rect.top+wy/h*rect.height-r.top;
   const bw=b.offsetWidth||84,bh=b.offsetHeight||70;
   // A running butterfly/moonleaf action owns its target until it finishes.
