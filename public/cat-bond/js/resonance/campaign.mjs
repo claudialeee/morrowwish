@@ -699,8 +699,8 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "怎么又回到这里了？明明一直往前走的。",
-            "en": "Back here again? We were walking straight ahead!"
+            "zh": "老树就在前面，可这些树根把路都挡住了。",
+            "en": "The old tree is right ahead, but these roots are blocking the path."
           }
         },
         {
@@ -903,8 +903,8 @@ export const campaign = {
         {
           "speaker": "jinpo",
           "text": {
-            "zh": "多亏你们。可我实在想不起灯匣是谁留下的。古铃修好后，也许我就能记起来。",
-            "en": "Thanks, little ones. I just can't remember who left the case. Maybe it'll come back to me once our bell is fixed."
+            "zh": "多亏你们。可我想不起那只金猫当时交代了什么。修好古铃，也许就能记起来。",
+            "en": "Thanks, little ones. I can't remember what the golden cat asked me to do. Maybe it'll come back once the bell is fixed."
           }
         }
       ],
