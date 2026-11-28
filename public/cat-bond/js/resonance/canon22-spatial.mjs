@@ -152,7 +152,7 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
   const panel=(x,y,w,h,r,fill,stroke)=>{c.beginPath();c.roundRect(x,y,w,h,r);c.fillStyle=fill;c.fill();c.strokeStyle=stroke;c.lineWidth=2;c.stroke();};
   panel(W*.07,H*.18,W*.86,H*.64,u*.035,"#fff2dbea","#b39059");
   const tile=(x,y,g,active)=>{const size=Math.min(W*.17,H*.18),r=size*.15;panel(x*W-size/2,y*H-size/2,size,size,r,active?"#ffe2a2":"#fff9e9",active?"#a77531":"#cbb387");c.fillStyle="#75502c";c.font="700 "+glyphSize+"px sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText(g,x*W,y*H);};
-  c.fillStyle="#60482f";c.font="700 "+Math.max(18,u*.042)+"px sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText(tr("补全铃纹","Complete the pattern"),W*.5,H*.27);
+  c.fillStyle="#60482f";c.font="700 "+Math.max(18,u*.042)+"px sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText(tr("补全路标图案","Complete the pattern"),W*.5,H*.27);
   pattern.slice(0,3).forEach((i,n)=>tile(.19+n*.205,.43,bellGlyphs[i],false));tile(.805,.43,"?",true);
   bellOptions.forEach(([x,y],i)=>tile(x,y,bellGlyphs[i],true));
   c.font="600 "+Math.max(14,u*.032)+"px sans-serif";c.fillStyle="#75502c";c.fillText(tr("已修复 ","Restored ")+p.patternRound+"/3",W*.5,H*.77);
