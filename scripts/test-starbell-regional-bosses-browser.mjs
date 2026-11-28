@@ -101,6 +101,14 @@ try{
       assert.ok(await page.evaluate(b=>__game.joystick.active&&__game.joystick.id===b.id&&__game.joystick.dx>.2,before),'Right thumb release must not cancel left movement');
       await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+39,y:y-15,id:0}]});
       assert.ok(await page.evaluate(()=>__game.joystick.active&&__game.joystick.dx>.2),'Left thumb continues to move after right release');
+      if(viewport.width===390){
+       await page.waitForFunction(()=>__game.battle.me().cd.q<=0);
+       const q=await page.locator('#mv-q').boundingBox(),qx=q.x+q.width/2,qy=q.y+q.height/2;
+       await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:qx,y:qy,id:2}]});
+       await page.waitForFunction(()=>__game.battle.me().cd.q>0,undefined,{timeout:3000});
+       await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[{x:qx,y:qy,id:2}]});
+       assert.ok(await page.evaluate(()=>__game.joystick.active&&__game.joystick.dx>.2),'Q skill casts and enters cooldown without cancelling left thumb');
+      }
       await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
       assert.equal(await page.evaluate(()=>__game.joystick.active),false,'Release stops movement');
      }
