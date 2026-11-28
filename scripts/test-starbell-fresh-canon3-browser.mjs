@@ -18,11 +18,14 @@ try{
  await page.goto(url);await page.waitForFunction(()=>window.__CAT_BOND_READY__&&window.CatBondResonance);
  await press(page.locator('#intro-start'));await press(page.locator('#intro-slot-list [data-slot="slot1"]'));
  await page.locator('#cb-player-first-intro').waitFor();
- await press(page.locator('#cb-player-first-intro').getByRole('button',{name:portrait?'跳过介绍':'Skip introduction',exact:true}));
+ await press(page.locator('#cb-player-first-intro').getByRole('button',{name:portrait?'开始探索':'Start exploring',exact:true}));
+ await press(page.locator('[data-npc-talk="muling"]'));const encounter=page.locator('#cb-traveler-encounter');await encounter.waitFor();
+ for(let i=0;i<6;i++)await press(encounter.getByRole('button',{name:i===5?(portrait?'告别':'Say goodbye'):(portrait?'继续':'Continue'),exact:true}));
+ await encounter.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);
  assert.equal(await page.evaluate(()=>window.__STARBELL_DEVELOPER__),false);
  assert.equal(await page.evaluate(()=>State.S.cats.length),1);
  await press(page.locator('.sg-prologue-guide .sg-quest-toggle'));
- await press(page.locator('.sg-prologue-guide').getByRole('button',{name:portrait?'跳过此次相遇':'Skip this encounter',exact:true}));
+ await press(page.locator('.sg-prologue-guide').getByRole('button',{name:portrait?'下一场景 · 风铃镇':'Next scene · Windchime Town',exact:true}));
  await page.waitForFunction(()=>CatBondResonance.view().current?.id==='harbor:H-01');
  const row=page.locator('.rw-puzzle-controls:visible'),surface=page.locator('.rw-surface');
  const button=(zh,en,within=page)=>within.getByRole('button',{name:portrait?zh:en,exact:true});
@@ -40,7 +43,7 @@ try{
  const puzzles=new Set();
  const won=[],films=[],completed=new Set();let last='';
  const deadline=Date.now()+15*60*1000;
- for(let step=0;step<1000&&Date.now()<deadline;step++){
+ for(let step=0;step<3000&&Date.now()<deadline;step++){
    const {v,s,mode,region}=await read();const id=v.current?.id||'ended';if(id!==last){console.log('NORMAL CONTINUATION',lang,id,mode,region);last=id;}
    if(v.ending){assert.equal(s.completed.length,campaign.scenes.length);assert.equal(s.melodies.length,6);assert.equal(s.support.length,6);assert.ok(s.evidence['finale:B-03'].includes('battle:central-echo'));assert.ok(s.evidence['epilogue:E-03'].includes('npc:second-garden-key'));await page.locator('.res-ending-title').waitFor({timeout:12000});await show();break;}
    const ack=page.locator('[data-canon-acknowledgement]:visible button');if(await ack.count()&&await ack.isVisible()){if(!films.includes(id))films.push(id);await press(ack);await page.waitForTimeout(60);continue;}
@@ -50,10 +53,10 @@ try{
    const lookout=page.locator('.sky-lookout-view[data-pose="arrival"]:visible');if(await lookout.count()){await press(button('坐到暮铃身边','Sit beside Luna'));continue;}
    const choices=page.locator('.res-host:visible .res-choices button:visible');if(await choices.count()){await press(choices.first());continue;}
    const line=page.locator('.res-host:visible .res-line:visible');if(await line.count()&&v.lineReady&&v.cursor<v.current.lines.length){await press(line);await page.waitForTimeout(50);continue;}
-   if(await row.count()&&await row.isVisible()){const op=v.objective[0];if(!puzzles.has(id+':'+op)){await solve(op);puzzles.add(id+':'+op);}await page.waitForTimeout(250);continue;}
+   if(await row.count()&&await row.isVisible()){const op=(await read()).v.objective.find(x=>x.startsWith('puzzle:')||x==='explore:routing-record');if(op&&!puzzles.has(id+':'+op)){await solve(op);await page.waitForFunction(({id,op})=>CatBondResonance.snapshot().evidence[id]?.includes(op),{id,op},{timeout:60000});puzzles.add(id+':'+op);}await page.waitForTimeout(250);continue;}
    const prep=page.locator('#bp-go:visible');if(await prep.count()){const best=page.locator('#bp-best-team:visible');if(await best.count())await press(best);const duo=page.locator('#bp-chosen-duo:visible');if(await duo.count())await press(duo);const mode=page.locator('[data-battle-auto="true"]:visible');await press(mode);await press(prep);continue;}
    if(mode==='battle'){
-    if(await page.locator('#duo-burst:not([hidden])').isVisible()){await page.waitForTimeout(400);continue;}
+    // A visible duo button is not a modal; do not stall the real simulation.
     const help=page.locator('#battle-help-start:visible');if(await help.count()){await press(help);continue;}
     const tutorial=page.locator('#battle-tutorial-skip:visible');if(await tutorial.count()){await press(tutorial);continue;}
     const result=await page.evaluate(()=>{const g=__game,b=g.battle;if(!b)return null;for(let i=0;i<16000&&!b.done;i++)b.update(1/60);const r={done:b.done,result:b.result,t:b.t};if(b.done&&g.battle===b)g.endBattle();return r;});
@@ -65,7 +68,7 @@ try{
    await page.waitForTimeout(250);
  }
  const final=await read();assert.ok(final.v.ending,'Continuation failed: '+JSON.stringify({id:final.v.current?.id,objective:final.v.objective,mode:final.mode,region:final.region,won,films}));
- for(const id of ['harbor:H-04','forest:R-04','forge:E-03','sky:S-03','library:M-02','starfall:F-04','finale:B-01','finale:B-03'])assert.ok(won.includes(id),'Actual victory missing: '+id);assert.ok(films.includes('starfall:F-02')&&films.includes('finale:B-04'),'Normal-mode art fallback verified');
+ for(const id of ['harbor:H-04','forest:R-04','forge:E-03','sky:S-03','library:M-02','starfall:F-04','finale:B-01','finale:B-03'])assert.ok(won.includes(id),'Actual victory missing: '+id);assert.ok(final.s.evidence['starfall:F-02']?.includes('cinematic:starfall-memory')&&final.s.evidence['finale:B-04']?.includes('cinematic:final-note'),'Actual cinematic completion evidence required');
  assert.equal(await page.evaluate(()=>State.listSaveSlots().find(s=>s.id==='slot1').regionLabelEn),'Sunlit Garden');
  assert.deepEqual(errors,[]);console.log('FRESH NORMAL CAMPAIGN TO ENDING PASS',lang,JSON.stringify({won,films}));
 }catch(e){await show().catch(()=>{});console.error('NORMAL CONTINUATION FAIL',lang,String(e),JSON.stringify(await read().catch(()=>null)).slice(0,2500),errors);throw e;}finally{await browser.close();}
