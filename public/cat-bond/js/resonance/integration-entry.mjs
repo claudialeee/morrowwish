@@ -1,7 +1,7 @@
 import "./narrative-host.mjs?v=regional-bosses-names-v2-20261127";
 import "./npc-world.mjs?v=regional-bosses-names-v2-20261127";
 import "./ambient-play.mjs";
-import "./world-runtime.mjs?v=integrated-20261127";
+import "./world-runtime.mjs?v=bell-pattern-camera-20261127";
 import "./title-entry.mjs?v=map-talk-1";
 // The prologue uses living discoveries instead of a standalone bell prop.
 import "./chapter-cinematics.mjs?v=regional-bosses-names-v2-20261127";
