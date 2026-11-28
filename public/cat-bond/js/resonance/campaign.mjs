@@ -567,8 +567,8 @@ export const campaign = {
         {
           "speaker": "jiedeng",
           "text": {
-            "zh": "路上小心。到地方记得报个平安，老头子还等着你们回来吃鱼呢。",
-            "en": "Take care. Let me know when you get there. I'll be waiting with fish for you."
+            "zh": "对了，花园旧屋的门闩要往上提才打得开。下次回家试试！路上小心啊。",
+            "en": "Oh, the old garden house has a tricky latch. Lift it up next time you're home! Safe travels, little one."
           }
         }
       ],
@@ -2531,8 +2531,8 @@ export const campaign = {
         {
           "speaker": "muling",
           "text": {
-            "zh": "那我去找檐灯做块新的！这回把字刻深一点。",
-            "en": "Then I'll ask Alder for a new one! This time we'll carve the letters nice and deep."
+            "zh": "那我能有一把自己的钥匙吗？咱们也去找檐灯做两块新名牌吧。",
+            "en": "Then can I have my own key? Let's ask Alder to make us two new nameplates, too."
           }
         }
       ],
