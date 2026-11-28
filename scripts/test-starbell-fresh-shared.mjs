@@ -72,13 +72,36 @@ try{
  await checkpoint(await read());
  const deadline=Date.now()+16*60*1000;
  let progressKey='',progressAt=Date.now();
+ const cinematicFrames=new Map();
  for(let step=0;step<2200&&Date.now()<deadline;step++){
    const {v,s,mode,region}=await read();const id=v.current?.id||'ended';if(id!==last){console.log('NORMAL CONTINUATION',lang,id,mode,region);last=id;}
    await checkpoint({v,s,mode});
-   const keyNow=JSON.stringify([id,v.cursor,v.choice,v.objective,mode,s.revision,await page.evaluate(()=>[document.querySelector('.rw-puzzle-controls')?.innerText||null,document.querySelector('.sky-lookout-view')?.dataset.pose||null])]);
+   const keyNow=JSON.stringify([id,v.cursor,v.choice,v.objective,mode,s.revision,await page.evaluate(()=>[document.querySelector('.rw-puzzle-controls')?.innerText||null,document.querySelector('.sky-lookout-view')?.dataset.pose||null,Array.from(document.querySelectorAll('.cbcp-progress-dot')).findIndex(e=>e.classList.contains('is-active'))])]);
    if(keyNow!==progressKey){progressKey=keyNow;progressAt=Date.now();}else if(Date.now()-progressAt>90000)throw Error('No story/UI progress for 90s '+id+' '+JSON.stringify({objective:v.objective,cursor:v.cursor,mode,visible:await page.locator('button:visible').allTextContents()}));
    if(v.ending){assert.equal(s.completed.length,campaign.scenes.length);assert.equal(s.melodies.length,6);assert.equal(s.support.length,6);assert.ok(s.evidence['finale:B-03'].includes('battle:central-echo'));assert.ok(s.evidence['epilogue:E-03'].includes('npc:second-garden-key'));await page.locator('.res-ending-title').waitFor({timeout:12000});await show();break;}
-   const ack=page.locator('[data-canon-acknowledgement]:visible button');if(await ack.count()&&await ack.isVisible()){if(!films.includes(id))films.push(id);await press(ack);await page.waitForTimeout(60);continue;}
+   // Live previews play the authored sequence, unlike the normal local fallback.
+   // B-04 requires an explicit player bell reply; never skip or force completion.
+   const cinematic=page.locator('.res-chapter-cinematic.cbcp-root:visible');
+   if(await cinematic.count()){
+    const frame=await cinematic.evaluate(root=>({index:Array.from(root.querySelectorAll('.cbcp-progress-dot')).findIndex(n=>n.classList.contains('is-active')),total:root.querySelectorAll('.cbcp-progress-dot').length,paused:root.dataset.paused,images:Array.from(root.querySelectorAll('img.cbcp-art')).filter(n=>n.complete&&n.naturalWidth>0).map(n=>({src:n.currentSrc||n.src,width:n.naturalWidth,height:n.naturalHeight})),reply:root.querySelector('.cbcp-continue')?.textContent,ready:!root.querySelector('.cbcp-continue')?.disabled})).catch(()=>null);
+    if(frame?.ready&&frame.index>=0&&frame.images.length){
+     const k=id+':'+frame.index;
+     if(!cinematicFrames.has(k)){
+      cinematicFrames.set(k,frame);
+      if(!films.includes(id))films.push(id);
+      await mkdir('artifacts/live-fresh',{recursive:true});
+      await page.screenshot({path:'artifacts/live-fresh/'+profile+'-'+id.replace(':','-')+'-frame-'+frame.index+'.png'});
+      console.log('AUTHORED CINEMATIC FRAME',profile,id,JSON.stringify(frame));
+     }
+     if(frame.paused==='true'){await press(cinematic.locator('.cbcp-pause:visible:enabled'));continue;}
+     if(frame.reply===tr('摇两下铃回应','Ring twice in reply')){
+      console.log('LIVE BELL REPLY INPUT',profile,id);
+      await press(cinematic.locator('.cbcp-continue:visible:enabled'));continue;
+     }
+    }
+    await page.waitForTimeout(250);continue;
+   }
+   const ack=page.locator('[data-canon-acknowledgement]:visible button');if(await ack.count()&&await ack.isVisible()){if(!films.includes(id))films.push(id);console.log('CINEMATIC FALLBACK ACK',profile,id);await press(ack);await page.waitForTimeout(60);continue;}
    const key=page.locator('.res-key-panel:visible button');if(await key.count()&&await key.isVisible()){await press(key);await page.waitForTimeout(100);continue;}
    const finalResult=page.locator('#cb-finale-result:visible');if(await finalResult.count()){assert.equal(await finalResult.getAttribute('data-finale-outcome'),'saved');await press(finalResult.locator('[data-finale-return]'));continue;}
    const reward=page.locator('#library-battle-ok:visible');if(await reward.count()){await press(reward);continue;}
@@ -126,5 +149,5 @@ try{
  const final=await read();assert.ok(final.v.ending,'Continuation failed: '+JSON.stringify({id:final.v.current?.id,objective:final.v.objective,mode:final.mode,region:final.region,won,films}));
  for(const id of ['harbor:H-04','forest:R-04','forge:E-03','sky:S-03','library:M-02','starfall:F-04','finale:B-01','finale:B-03'])assert.ok(won.includes(id),'Missing actual battle '+id);assert.ok(final.s.evidence['starfall:F-02']?.includes('cinematic:starfall-memory')&&final.s.evidence['finale:B-04']?.includes('cinematic:final-note'),'Both required cinematics must complete in the fresh slot');
  assert.equal(await page.evaluate(()=>State.listSaveSlots().find(s=>s.id==='slot1').regionLabelEn),'Sunlit Garden');
- assert.deepEqual(errors,[]);console.log(local?'FRESH NORMAL CAMPAIGN TO ENDING PASS':'LIVE FRESH SLOT TO ENDING PASS',lang,JSON.stringify({won,films,resumed:!!resume,sourceRun:resume?.sourceRun||null,sha:process.env.SOURCE_SHA}));
+ assert.deepEqual(errors,[]);if(!local){const frames=[...cinematicFrames.entries()].filter(([k])=>k.startsWith('finale:B-04:'));assert.ok(frames.length>=2,'No authored finale frame sequence observed');assert.ok(frames.some(([,f])=>f.index===f.total-1),'Final authored frame not observed');}console.log(local?'FRESH NORMAL CAMPAIGN TO ENDING PASS':'LIVE FRESH SLOT TO ENDING PASS',lang,JSON.stringify({won,films,resumed:!!resume,sourceRun:resume?.sourceRun||null,sha:process.env.SOURCE_SHA}));
 }catch(e){await show().catch(()=>{});console.error('NORMAL CONTINUATION FAIL',lang,String(e),JSON.stringify(await read().catch(()=>null)).slice(0,2500),errors);throw e;}finally{await browser.close();}
