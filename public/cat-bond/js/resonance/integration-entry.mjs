@@ -16,4 +16,4 @@ window.__CAT_BOND_CANONICAL_RELEASE__ = true;
 window.__CAT_BOND_INTEGRATION_ART__ = false;
 window.WorldMap = window.CatBondCanonicalWorld;
 
-import "./developer-preview.mjs?v=regional-bosses-names-v2-20261127";
+import "./developer-preview.mjs?v=landscape-menu-20261127";

@@ -42,6 +42,11 @@ if(typeof window!=='undefined'&&window.__STARBELL_DEVELOPER__){
   function locale(){const zh=window.MorrowwishI18n?.get?.()==='zh';summary.textContent=zh?'开发者 · 地图跳转':'Developer · Map jump';select.replaceChildren(...areas.map(a=>{const o=document.createElement('option');o.value=a[0];o.textContent=a[zh?1:2];return o}));select.value=selected()[0];reset.textContent=zh?'重置当前章节':'Reset this chapter';}
   function jump(region){const url=new URL(location.href);url.searchParams.set('region',region);url.searchParams.set('reset','1');location.assign(url.href);}
   select.onchange=()=>jump(select.value);reset.onclick=()=>jump(select.value);locale();window.addEventListener('morrowwish-language-change',locale);document.body.append(panel);
+  // The fixed developer menu must never cover the top-left main quest on a
+  // short landscape viewport. Keep the actual jump controls accessible.
+  const shortLandscape=window.matchMedia('(orientation: landscape) and (max-height: 500px)');
+  function positionDeveloperMenu(){panel.style.top=shortLandscape.matches?'auto':'58px';panel.style.bottom=shortLandscape.matches?'max(8px, env(safe-area-inset-bottom, 0px))':'auto';}
+  positionDeveloperMenu();shortLandscape.addEventListener('change',positionDeveloperMenu);
   if(params.has('reset')){const url=new URL(location.href);url.searchParams.delete('reset');history.replaceState(null,'',url);}
  }
  window.StarbellDeveloper=Object.freeze({prepare,launch});
