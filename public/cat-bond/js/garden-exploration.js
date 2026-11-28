@@ -66,7 +66,7 @@ function postcardView(){
  const title=document.createElement('strong');title.textContent=tr('窗边的旧明信片','A postcard by the window');
  const photo=document.createElement('img');photo.src='assets/garden/sunlit-garden-landscape.webp';photo.alt=tr('画着阳光花园的旧明信片','An old picture of Sunlit Garden');Object.assign(photo.style,{width:'100%',maxHeight:'min(29vh,180px)',objectFit:'contain',filter:'sepia(.24) saturate(.8)',border:'5px solid #fff8e9',boxSizing:'border-box',borderRadius:'5px'});
  const note=document.createElement('p');note.textContent=tr('背面写着：“修完铃就回家。茶叶在窗边，记得多拿一只杯子。”','On the back: “Home when the bells are fixed. Tea by the window. Don’t forget the extra cup.”');note.style.margin='0';
- const thought=document.createElement('p');thought.textContent=view()?.ending?tr('原来这就是我们当年约好的那杯茶。','So this was the tea we promised to share.'):tr('多拿一只杯子？以前的我，还和谁一起喝茶呢？','An extra cup? Who did I used to share tea with?');thought.style.margin='0';thought.style.fontWeight='600';
+ const thought=document.createElement('p');thought.textContent=view()?.ending?tr('原来这就是我们当年约好的那杯茶。','So this was the tea we promised to share.'):tr('多拿一只杯子？不知道以前是谁在这儿一起喝茶。','An extra cup? I wonder who used to share tea here.');thought.style.margin='0';thought.style.fontWeight='600';
  const close=document.createElement('button');close.type='button';close.textContent=tr('收好明信片','Put the postcard away');close.onclick=closePopup;popup.onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();closePopup();}};popup.append(title,photo,note,thought,close);layer.append(popup);close.focus();
 }
 function snackChoice(){if(popup)return;popup=document.createElement('section');popup.className='sg-discovery-choice';popup.setAttribute('role','dialog');popup.setAttribute('aria-label',tr('鱼饼','Fish cake'));
