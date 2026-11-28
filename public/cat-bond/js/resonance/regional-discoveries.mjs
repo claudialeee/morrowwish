@@ -24,8 +24,8 @@ const raw={
           -0.025
         ],
         [
-          "阿婆记得家门口挂着铜风铃，却记不清走哪条路。找找海边的旧风铃路标。",
-          "Gran remembers a brass chime at her door, but not the way home. Look for the old chime landmark."
+          "阿婆说她家门口挂着铜风铃。找找海边的旧风铃路标，记下回家的路。",
+          "Gran mentioned a brass chime at her door. Look for the old chime landmark and note the way home."
         ]
       ],
       [
@@ -504,6 +504,7 @@ export function progress(region,interactions={}){
 export function availableDiscoveries(region,w,v){
  const d=discoveries[region];if(!d||w.location!==region||w.cargo||!v.regions?.includes(region)||region==="sky"&&w.interactions?.["sky:survey-island"])return [];
  const p=progress(region,w.interactions);
+ const introduced={harbor:"harbor:H-01",forest:"forest:R-01",forge:"forge:E-01",sky:"sky:S-01",library:"library:M-01"}[region];if(introduced&&!v.completed.includes(introduced)&&!v.completed.includes(d.after))return [];
  if((region==="library"&&v.completed.includes("library:M-03")||region==="starfall")&&!v.completed.includes("epilogue:E-03"))return [];
  return d.steps.filter(s=>!p.done.includes(s.id)&&(s.mode!=="decoy"||!p.complete)&&s.requires.every(id=>p.done.includes(id))&&(s.mode!=="return"||p.complete&&v.completed.includes(d.after)));
 }

@@ -6,7 +6,7 @@ const ops={"puzzle:moonleaf-crossing":"bridge","puzzle:moonleaf-loop":"bridge","
 export const spatialKind=op=>ops[op]||null;
 const bridgeNodes=[[.16,.52],[.36,.52],[.62,.32],[.62,.72],[.84,.52]];
 const starNodes=[[.12,.54],[.27,.32],[.27,.70],[.49,.27],[.49,.75],[.70,.35],[.70,.65],[.87,.50]];
-const starEdges=[[1,2],[0,3],[0,4],[1,5],[2,6],[3,7],[4,7],[5,6]];
+const starEdges=[[1,2],[0,3],[0,4],[1,5,7],[2,6],[3,7],[4,7],[5,6,3]];
 const starPosition=(p,i)=>p.starLocks?.[i]||((p.walk?.action?.i===i)?p.walk.to:([3,6].includes(i)?[starNodes[i][0],starNodes[i][1]+Math.sin((p.visualClock||0)*2+i)*.034]:starNodes[i]));
 export const spatialNodes=p=>p.kind==="bridge"?bridgeNodes:p.kind==="stars"?starNodes.map((_,i)=>starPosition(p,i)):[];
 export function animateStarPlatforms(p,dt){if(p?.kind==="stars"&&!p.solved&&Number.isFinite(dt)&&dt>0)p.visualClock=(p.visualClock||0)+Math.min(.1,dt);}
@@ -209,7 +209,7 @@ export function paintSpatial(c,p,W,H,lang,drawCat,drawNpc,time=0,nativeBackgroun
   for(const i of [3,6]){const q=starPosition(p,i),collected=p.discoveries.includes("starlight-"+i);dot([q[0],q[1]-.055],unit*(collected?.008:.012),collected?"#f9e7a4":"#ffefb9");}
   const [gx,gy]=pt(pose.ground);c.save();c.fillStyle="rgba(24,27,52,"+(.25-pose.lift*1.5)+")";c.beginPath();c.ellipse(gx,gy+unit*.015,unit*.032,unit*.008,0,0,Math.PI*2);c.fill();c.restore();
   drawCat?.(pose.point[0],pose.point[1],pose.moving,null,.86,pose.face);
-  label(tr("踩过的星石连成了星座","Your footsteps connect a constellation"),[.5,.08],20);
+  label(p.node===0?tr("高路更短 · 下方留有古代路标","High route is shorter · Old markers lie below"):p.node===3?tr("看见圣所了！高处星石直通对岸","The sanctuary is in sight! Leap straight across"):p.node===6?tr("旧路标指向中央圣所，留下星纹拓片","An old marker points to the sanctuary; take a rubbing"):tr("沿相连的星石追上暮铃","Follow the connected stones toward Luna"),[.5,.08],Math.max(13,Math.min(19,unit*.035)));
  }else if(p.kind==="light"){
   const angle=p.angle,show=p.operation==="puzzle:lantern-show";
   if(show){
