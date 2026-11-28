@@ -71,9 +71,9 @@
         }
       },
       "proposedParams": {
-        "min": 45,
-        "max": 278,
-        "dodge": 0.42
+        "min": 20,
+        "max": 232,
+        "dodge": 0.43
       },
       "defaultBand": {
         "min": 90,
@@ -82,20 +82,20 @@
       },
       "scores": {
         "engineNativeDefault": {
-          "train": 0.5440556305528059,
-          "held": 0.5639412169737217
+          "train": 0.542008544051557,
+          "held": 0.5836973762455059
         },
         "defaultBand": {
-          "train": 0.55387,
-          "held": 0.56179
+          "train": 0.5526,
+          "held": 0.57857
         },
         "optimizedBand": {
-          "train": 0.56338,
-          "held": 0.55081
+          "train": 0.57999,
+          "held": 0.57597
         }
       },
-      "trainGain": 0.00951,
-      "heldoutGain": -0.01098,
+      "trainGain": 0.02739,
+      "heldoutGain": -0.0026,
       "generalizes": false,
       "verdict": "OVERFIT (held-out gain ~0 or negative — NOT a real win)",
       "searchEvals": 19
@@ -131,8 +131,8 @@
       },
       "proposedParams": {
         "min": 20,
-        "max": 207,
-        "dodge": 1
+        "max": 113,
+        "dodge": 0.99
       },
       "defaultBand": {
         "min": 90,
@@ -141,22 +141,22 @@
       },
       "scores": {
         "engineNativeDefault": {
-          "train": 0.5548183928809751,
-          "held": 0.5627281110712858
+          "train": 0.5525043437485411,
+          "held": 0.581627630896864
         },
         "defaultBand": {
-          "train": 0.41986,
-          "held": 0.52255
+          "train": 0.49267,
+          "held": 0.55399
         },
         "optimizedBand": {
-          "train": 0.5622,
-          "held": 0.51592
+          "train": 0.58247,
+          "held": 0.56786
         }
       },
-      "trainGain": 0.14234,
-      "heldoutGain": -0.00662,
+      "trainGain": 0.08979,
+      "heldoutGain": 0.01387,
       "generalizes": false,
-      "verdict": "OVERFIT (held-out gain ~0 or negative — NOT a real win)",
+      "verdict": "WEAK (held-out gain << training gain — treat with caution)",
       "searchEvals": 19
     },
     "dps/projectile": {
@@ -200,16 +200,16 @@
       },
       "scores": {
         "engineNativeDefault": {
-          "train": 0.6037127406086239,
-          "held": 0.6008736775302311
+          "train": 0.5858981936882671,
+          "held": 0.6073845370335886
         },
         "defaultBand": {
-          "train": 0.66319,
-          "held": 0.59409
+          "train": 0.62274,
+          "held": 0.60013
         },
         "optimizedBand": {
-          "train": 0.66319,
-          "held": 0.59409
+          "train": 0.62274,
+          "held": 0.60013
         }
       },
       "trainGain": 0,
@@ -220,7 +220,7 @@
     }
   },
   "summary": {
-    "cellsImprovedHeldOut": 0,
+    "cellsImprovedHeldOut": 1,
     "cellsGeneralized": 0,
     "cellsTotal": 3,
     "honest": "No cell generalized to held-out seeds → the engine-native/default band is hard to beat with a constant band here; reported as such (no fake win)."

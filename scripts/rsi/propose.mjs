@@ -61,9 +61,26 @@ const ARCHIVE = makeArchive();
 // cannot game the sweep; the deliberately-bad "stand at max range" control falls out of the top on
 // the harder point because it can't actually win the fight once the enemy hits harder.
 // ============================================================================================
+// Owner 2026-11-28 pit D (adversarial self-reflect): prior ENEMIES = [doudou,doudou] made every
+// winner overfit doudou's林间伏击 passive timing. Now sweep across species × role × element ×
+// passive-category × difficulty so no single trait timing can carry a candidate. All historical
+// archive scores from before this expansion become apples-to-oranges and will be re-earned.
+// Picked (covers 7 of 9 passive categories, 5 roles, 5 elements):
+//  - doudou  (tabby,   fire-ish N,   fighter, ambush-backstab)         — moderate
+//  - lanbao  (blue,    water R,      fighter, hit-chill-stacks)        — moderate-hard, applies frost
+//  - senlin  (maine,   grass SR,     tank,    persistent-plant-body)   — tanky, slow but durable
+//  - baomao  (bengal,  normal SR,    assassin, crit/pounce)             — high burst, fragile
+//  - yunduo  (ragdoll, light R,      support, heal-link → spreads heal) — healer enemy, drags fights long
+//  - duanduan(apricot, elec R,       assassin, dash-echo lightning)     — kiter, hit-and-run
+//  - xingchen(mystic,  mystic SSR,   control, astral-chill + silence)   — hard endgame boss
 const ENEMIES = [
-  { species: 'doudou', hp: 1100, dmg: 130 },   // moderate (original pin — kept so history numbers stay comparable)
-  { species: 'doudou', hp: 2400, dmg: 280 },   // hard — dmg high enough that standing still loses survival/win
+  { species: 'doudou',   hp: 1100, dmg: 130 },   // moderate ambush fighter
+  { species: 'lanbao',   hp: 1400, dmg: 160 },   // chill-stack water fighter
+  { species: 'senlin',   hp: 2600, dmg: 140 },   // grass tank, lives long
+  { species: 'baomao',   hp:  900, dmg: 220 },   // bengal crit burst, glass cannon
+  { species: 'yunduo',   hp: 1600, dmg: 110 },   // heal-link support — forces timeout fights
+  { species: 'duanduan', hp: 1100, dmg: 180 },   // dash-echo kiter
+  { species: 'xingchen', hp: 3200, dmg: 260 },   // SSR control boss
 ];
 
 // Owner 2026-11-27 Step E / 2026-11-28 panicky-exclusion:

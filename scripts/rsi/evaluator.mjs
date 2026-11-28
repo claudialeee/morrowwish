@@ -209,32 +209,240 @@ const DEFAULT_CONFIG = {
 };
 
 // scenario → enemy count. solo-pinned/solo-live are 1; multi is 3.
-const SCENARIOS = ['solo-pinned', 'solo-live', 'multi'];
-const SCN_ENEMIES = { 'solo-pinned': 1, 'solo-live': 1, 'multi': 3 };
+// Owner 2026-11-28 pit B (adversarial self-reflect): engine ships 2 cats on field (FIELD_CAP=2)
+// but evaluator ran a 1-cat team, so peel / support-triage / allied-hp rules could NEVER fire.
+// Owner follow-up: both self + ally must be RANDOM-SAMPLED from a pool (not fixed fighter+support,
+// not enumerated — that just overfits to two builds). Each pair is deterministically seeded by
+// (seed, scenario) so replays are identical but the sample distribution covers the build × kit
+// space. RSI winner must beat baseline on EVERY sampled pair, not just one preferred pair.
+const SCENARIOS = ['solo-pinned', 'solo-live', 'multi', 'team-2-live', 'team-2-multi'];
+const SCN_ENEMIES = { 'solo-pinned': 1, 'solo-live': 1, 'multi': 3, 'team-2-live': 1, 'team-2-multi': 3 };
+const SCN_IS_TEAM = (s) => s === 'team-2-live' || s === 'team-2-multi';
+
+// Self-cat pool: 6 builds × 2 kit shapes = 12. Ally pool: same 12 but drawn independently.
+// A candidate `bandBody` is tested against a seeded sample pair (self, ally). Sample size
+// (N_TEAM_PAIRS) controls how many pairs each candidate sees per team scenario. Keep small
+// (3-4) so cycle time stays reasonable; the cohort already gets 4 personas × 7 enemies × 3 seeds.
+const BUILD_KIT_POOL = [
+  { build: 'tank',     stats: { pow: 70,  agi: 60,  vit: 160, cha: 80  }, loadout: { q: { kind: 'melee',      power: 1.2, cd: 1.0 }, e: { kind: 'aoe',       power: 1.0, cd: 2.2 } } },
+  { build: 'tank',     stats: { pow: 65,  agi: 60,  vit: 170, cha: 85  }, loadout: { q: { kind: 'melee',      power: 1.1, cd: 1.0 }, e: { kind: 'buff',      power: 1.0, cd: 2.5 } } },
+  { build: 'fighter',  stats: { pow: 90,  agi: 80,  vit: 130, cha: 60  }, loadout: { q: { kind: 'melee',      power: 1.4, cd: 1.1 }, e: { kind: 'projectile',power: 1.1, cd: 1.0 } } },
+  { build: 'fighter',  stats: { pow: 95,  agi: 75,  vit: 125, cha: 60  }, loadout: { q: { kind: 'dash',       power: 1.3, cd: 1.3 }, e: { kind: 'melee',     power: 1.4, cd: 1.5 } } },
+  { build: 'assassin', stats: { pow: 100, agi: 120, vit: 90,  cha: 70  }, loadout: { q: { kind: 'leap',       power: 1.5, cd: 1.4 }, e: { kind: 'melee',     power: 1.6, cd: 1.6 } } },
+  { build: 'assassin', stats: { pow: 110, agi: 115, vit: 85,  cha: 65  }, loadout: { q: { kind: 'pounce',     power: 1.5, cd: 1.5 }, e: { kind: 'dash',      power: 1.3, cd: 1.2 } } },
+  { build: 'dps',      stats: { pow: 110, agi: 90,  vit: 85,  cha: 80  }, loadout: { q: { kind: 'projectile', power: 1.2, cd: 0.9 }, e: { kind: 'beam',      power: 1.3, cd: 2.0 } } },
+  { build: 'dps',      stats: { pow: 115, agi: 85,  vit: 80,  cha: 80  }, loadout: { q: { kind: 'chain',      power: 1.2, cd: 1.1 }, e: { kind: 'aoe',       power: 1.3, cd: 2.0 } } },
+  { build: 'control',  stats: { pow: 75,  agi: 85,  vit: 100, cha: 110 }, loadout: { q: { kind: 'projectile', power: 0.9, cd: 1.0, debuff: 'slow' }, e: { kind: 'aoe', power: 0.8, cd: 2.2, debuff: 'root' } } },
+  { build: 'control',  stats: { pow: 70,  agi: 90,  vit: 95,  cha: 115 }, loadout: { q: { kind: 'beam',       power: 0.9, cd: 1.1, debuff: 'freeze' }, e: { kind: 'projectile', power: 0.9, cd: 1.3, debuff: 'silence' } } },
+  { build: 'support',  stats: { pow: 60,  agi: 70,  vit: 110, cha: 130 }, loadout: { q: { kind: 'projectile', power: 0.9, cd: 1.2 }, e: { kind: 'heal',      power: 1.2, cd: 2.5 } } },
+  { build: 'support',  stats: { pow: 65,  agi: 75,  vit: 105, cha: 125 }, loadout: { q: { kind: 'buff',       power: 1.0, cd: 1.5 }, e: { kind: 'heal',      power: 1.1, cd: 2.2 } } },
+];
+
+// ---- Pair sampler: mixture of META-PRIOR (exploit common/meaningful duos) + THOMPSON-STYLE
+// (explore informative pairs that currently discriminate candidates) + UNIFORM TAIL (never zero
+// out weird pairs so no over-fit).
+//
+// Posterior state lives at scripts/rsi/pair-posterior.json. Each pair key is "selfIdx:allyIdx"
+// with Beta(α,β) over the event "candidate band beat baseline on this pair in prior cycles".
+// META_PAIRS get α₀=3,β₀=1 prior (strongly informative). All other pairs Jeffreys Beta(0.5,0.5).
+//
+// Sampling per cycle:
+//   - 50% META draws (Thompson over META pairs only, so we always revisit the meta-game)
+//   - 40% THOMPSON draws (Thompson over ALL pairs — surfaces informative tail pairs)
+//   - 10% UNIFORM draws (pure random over 144 pairs — prevents the posterior from collapsing
+//          to a local minimum and keeps all pairs eventually exposed)
+//
+// After each cycle the primary should call updatePairPosterior(pairKey, winnerBeatBaseline).
+// Posterior file is gracefully optional: cold start = everything Jeffreys.
+
+import { readFileSync as _readFile, writeFileSync as _writeFile, existsSync as _exists } from 'node:fs';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import pathMod from 'node:path';
+
+const _POSTERIOR_PATH = pathMod.join(pathMod.dirname(_fileURLToPath(import.meta.url)), 'pair-posterior.json');
+
+// Build index → build-name quick labels for readable keys.
+const _idxOf = (b) => BUILD_KIT_POOL.findIndex(p => p === b);
+
+// META pairs: common meta duos in team games. Each (selfBuild → allyBuild) direction.
+// Populated as pool-index pairs computed from first occurrence of each build.
+function _firstIdxOfBuild(buildName) { return BUILD_KIT_POOL.findIndex(p => p.build === buildName); }
+const _META_BUILD_PAIRS = [
+  ['fighter', 'support'],  // bread-and-butter frontline+healer
+  ['tank',    'dps'],      // peeler + carry
+  ['tank',    'support'],  // tank + healer
+  ['assassin','support'],  // burst + sustain
+  ['dps',     'control'],  // dps + lockdown
+  ['fighter', 'control'],  // bruiser + cc
+  ['dps',     'tank'],     // carry behind peel
+  ['support', 'dps'],      // healer POV of dps carry
+];
+const META_PAIR_KEYS = _META_BUILD_PAIRS
+  .map(([a, b]) => `${_firstIdxOfBuild(a)}:${_firstIdxOfBuild(b)}`)
+  .filter(k => !k.startsWith('-1') && !k.endsWith(':-1'));
+
+function _loadPosterior() {
+  try {
+    if (!_exists(_POSTERIOR_PATH)) return {};
+    return JSON.parse(_readFile(_POSTERIOR_PATH, 'utf8'));
+  } catch (_) { return {}; }
+}
+function _pairPrior(key) {
+  if (META_PAIR_KEYS.includes(key)) return { alpha: 3, beta: 1 };
+  return { alpha: 0.5, beta: 0.5 };                 // Jeffreys
+}
+// mulberry32 → uniform in [0,1).
+function _rng01(state) {
+  let a = state >>> 0;
+  a = (a + 0x6D2B79F5) >>> 0;
+  let t = Math.imul(a ^ (a >>> 15), a | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return { r: ((t ^ (t >>> 14)) >>> 0) / 4294967296, next: a };
+}
+// Marsaglia-and-Tsang gamma for α≥1; shape-small branch fallback to Johnk. Enough for Beta(α,β).
+function _gammaSample(alpha, rngStateRef) {
+  if (alpha < 1) {
+    // Boost: Gamma(α) = Gamma(α+1) * U^(1/α)
+    const g = _gammaSample(alpha + 1, rngStateRef);
+    const u = _rng01(rngStateRef.s); rngStateRef.s = u.next;
+    return g * Math.pow(u.r || 1e-12, 1 / alpha);
+  }
+  const d = alpha - 1 / 3, c = 1 / Math.sqrt(9 * d);
+  while (true) {
+    let x, v;
+    // Box-Muller normal from two uniforms.
+    const u1 = _rng01(rngStateRef.s); rngStateRef.s = u1.next;
+    const u2 = _rng01(rngStateRef.s); rngStateRef.s = u2.next;
+    x = Math.sqrt(-2 * Math.log(u1.r || 1e-12)) * Math.cos(2 * Math.PI * u2.r);
+    v = 1 + c * x;
+    if (v <= 0) continue;
+    v = v * v * v;
+    const u3 = _rng01(rngStateRef.s); rngStateRef.s = u3.next;
+    if (u3.r < 1 - 0.0331 * x * x * x * x) return d * v;
+    if (Math.log(u3.r) < 0.5 * x * x + d * (1 - v + Math.log(v))) return d * v;
+  }
+}
+function _betaSample(alpha, beta, rngStateRef) {
+  const x = _gammaSample(alpha, rngStateRef);
+  const y = _gammaSample(beta, rngStateRef);
+  return x / (x + y);
+}
+
+// Public: Thompson-pick top-N pair keys, excluding same-index duplicates.
+function _thompsonPickPairs(pool, posterior, nWanted, rngStateRef) {
+  const scored = [];
+  for (let i = 0; i < BUILD_KIT_POOL.length; i++) {
+    for (let j = 0; j < BUILD_KIT_POOL.length; j++) {
+      if (i === j) continue;
+      const key = `${i}:${j}`;
+      if (pool && !pool.includes(key)) continue;
+      const p = posterior[key] || _pairPrior(key);
+      const theta = _betaSample(p.alpha, p.beta, rngStateRef);
+      scored.push({ key, theta });
+    }
+  }
+  scored.sort((a, b) => b.theta - a.theta);
+  return scored.slice(0, nWanted).map(s => s.key);
+}
+
+// Deterministic pair sampler. Returns N pairs of {self, ally} pool items, seed-reproducible.
+export function sampleTeamPairs(seed, scenario, N = 3) {
+  const base = ((seed >>> 0) ^ (scenario === 'team-2-multi' ? 0xa5a5a5a5 : 0x5a5a5a5a)) >>> 0;
+  const rngStateRef = { s: base };
+  const posterior = _loadPosterior();
+  const nMeta = Math.max(1, Math.round(N * 0.5));
+  const nThompson = Math.max(1, Math.round(N * 0.4));
+  const nUniform = Math.max(0, N - nMeta - nThompson);
+  const metaKeys = _thompsonPickPairs(META_PAIR_KEYS, posterior, nMeta, rngStateRef);
+  const thompsonKeys = _thompsonPickPairs(null, posterior, nThompson + metaKeys.length, rngStateRef)
+    .filter(k => !metaKeys.includes(k)).slice(0, nThompson);
+  const uniformKeys = [];
+  while (uniformKeys.length < nUniform) {
+    const u1 = _rng01(rngStateRef.s); rngStateRef.s = u1.next;
+    const u2 = _rng01(rngStateRef.s); rngStateRef.s = u2.next;
+    const i = Math.floor(u1.r * BUILD_KIT_POOL.length);
+    const j = Math.floor(u2.r * BUILD_KIT_POOL.length);
+    if (i === j) continue;
+    const key = `${i}:${j}`;
+    if (metaKeys.includes(key) || thompsonKeys.includes(key) || uniformKeys.includes(key)) continue;
+    uniformKeys.push(key);
+  }
+  const all = [...metaKeys, ...thompsonKeys, ...uniformKeys];
+  return all.map(k => {
+    const [i, j] = k.split(':').map(Number);
+    return { key: k, self: BUILD_KIT_POOL[i], ally: BUILD_KIT_POOL[j] };
+  });
+}
+
+// Back-compat single-pair API for existing call sites.
+function sampleTeamPair(seed, scenario) { return sampleTeamPairs(seed, scenario, 1)[0]; }
+
+// Posterior update hook called by rsi-loop after each cycle. winBool = did the candidate's
+// score beat the baseline on this pair? Caller passes an array of {pairKey, won}.
+export function updatePairPosterior(pairResults) {
+  const posterior = _loadPosterior();
+  for (const { pairKey, won } of pairResults) {
+    const cur = posterior[pairKey] || _pairPrior(pairKey);
+    if (won) cur.alpha = (cur.alpha || 0) + 1;
+    else cur.beta = (cur.beta || 0) + 1;
+    posterior[pairKey] = cur;
+  }
+  _writeFile(_POSTERIOR_PATH, JSON.stringify(posterior, null, 2));
+}
 
 // ---- build a battle for (config,seed,scenario). Mirrors the matrix's makeCell boot, then rebuilds
 // the enemy pack to the scenario's fixed count so results are comparable + deterministic. ----
 function buildBattle(config, seed, scenario) {
   const { State, GameData, Battle, game } = ENV;
-  const c = config.cat;
+  // In team-2-* scenarios, sample a (self, ally) pair from the Thompson-prior pool so
+  // (a) peel / heal-aim rules get real signal, (b) winners can't overfit one fixed pair.
+  // Non-team scenarios still honor config.cat exactly as before.
+  let selfSpec, allySpec, pairKey = null;
+  if (SCN_IS_TEAM(scenario) && !config._pairOverride) {
+    const sampled = sampleTeamPair(seed, scenario);
+    pairKey = sampled.key;
+    selfSpec = { ...config.cat, build: sampled.self.build, stats: { ...sampled.self.stats }, loadout: { ...sampled.self.loadout } };
+    allySpec = { species: 'nainai', ...sampled.ally };  // nainai is a neutral visible species; real build/kit override above
+  } else if (SCN_IS_TEAM(scenario) && config._pairOverride) {
+    selfSpec = { ...config.cat, ...config._pairOverride.self };
+    allySpec = { species: 'nainai', ...config._pairOverride.ally };
+    pairKey = config._pairOverride.key || null;
+  } else {
+    selfSpec = config.cat;
+  }
+  const c = selfSpec;
   const starter = Object.assign(State.makeCat(c.species, { affinity: c.affinity ?? 60 }), {
     level: c.level ?? 16, buildType: c.build ?? 'fighter', stats: { ...(c.stats ?? DEFAULT_CONFIG.cat.stats) },
   });
+  const cats = [starter];
+  if (SCN_IS_TEAM(scenario)) {
+    const c2 = allySpec;
+    const mate = Object.assign(State.makeCat(c2.species || 'nainai', { affinity: c2.affinity ?? 60 }), {
+      level: c2.level ?? 16, buildType: c2.build ?? 'support', stats: { ...(c2.stats ?? DEFAULT_CONFIG.cat.stats) },
+    });
+    cats.push(mate);
+  }
   const leadSp = GameData.speciesById(config.enemy?.species ?? 'doudou');
-  const b = new Battle.CaptureBattle(game, [starter], leadSp, { seed });
+  const b = new Battle.CaptureBattle(game, cats, leadSp, { seed });
+  b._rsiPairKey = pairKey;                        // expose for posterior updater
   b.coach = null; b.autoMode = true;              // deterministic seeded auto-battle, no tutorial hold
-  b.reserve = [];                                 // single field cat → clean hp/faint accounting, no subs
+  b.reserve = [];                                 // no bench — team is fully on field
 
-  // inject the candidate loadout onto the player fighter.
-  // c.useNativeKit:true SKIPS the override so Skills.ensureLoadout()'s species-native q/e
-  // stay intact — used by balance-probe.mjs to measure PER-ELEMENT kit power honestly
-  // (overriding every cat with a synthetic fire-element loadout would erase element identity).
+  // inject the candidate loadout onto team[0] and optional team[1].
   const f = b.me(), lo = c.loadout ?? {};
   if (!c.useNativeKit) {
     f.qSkill = lo.q ? { id: 'rsiq', name: 'q', element: 'fire', ...lo.q } : null;
     f.eSkill = lo.e ? { id: 'rsie', name: 'e', element: 'fire', ...lo.e } : null;
     if (lo.basic) f.basicSkill = { id: 'rsibasic', name: 'basic', element: 'fire', ...lo.basic };
     if (lo.ult) f.ultSkill = { id: 'rsiult', name: 'ult', element: 'fire', ...lo.ult };
+  }
+  if (SCN_IS_TEAM(scenario) && b.team && b.team[1]) {
+    const mateF = b.team[1];
+    const lo2 = (allySpec && allySpec.loadout) || {};
+    if (!allySpec?.useNativeKit) {
+      mateF.qSkill = lo2.q ? { id: 'rsimq', name: 'q', element: 'light', ...lo2.q } : null;
+      mateF.eSkill = lo2.e ? { id: 'rsime', name: 'e', element: 'light', ...lo2.e } : null;
+    }
   }
 
   // rebuild the enemy pack to the scenario's fixed count (deterministic: makeEnemy keeps using the
