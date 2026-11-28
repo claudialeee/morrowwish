@@ -368,15 +368,15 @@ export const campaign = {
         {
           "speaker": "player",
           "text": {
-            "zh": "等一下……它重复的调子我好像会。刚才我一哼，它就往旧铃房那边跑了！我想追上去看看。",
-            "en": "Wait… I think I know the tune it's repeating. It headed toward the old bell house when I hummed! I want to find out why."
+            "zh": "等一下……它重复的调子我好像会。刚才我一哼，旧铃房方向的铃纹就亮了！我想看看那些图案。",
+            "en": "Wait… I think I know the tune it's repeating. The bell patterns lit up toward the old bell house when I hummed! I want to see what they mean."
           }
         },
         {
           "speaker": "qilan",
           "text": {
-            "zh": "它会绕回来！你从鱼摊那边截住它，我照看阿婆。暮铃，你跟上去吧！",
-            "en": "It'll circle back! Cut it off by the fish stall; I'll look after Gran. Luna, go with them!"
+            "zh": "鱼摊旁有三组散乱的旧铃纹。补全它们，也许就知道那团光去了哪里。我照看阿婆，暮铃，你陪它去吧！",
+            "en": "Three old bell patterns by the fish stall are incomplete. Restore them and they may show where the light went. I'll look after Gran. Luna, go with them!"
           }
         }
       ],
@@ -394,16 +394,16 @@ export const campaign = {
       "id": "harbor:H-02",
       "chapter": "harbor",
       "title": {
-        "zh": "穿过风铃巷",
-        "en": "Through Chime Lane"
+        "zh": "寻回铃纹",
+        "en": "Restore the bell patterns"
       },
       "previous": "harbor:H-01",
       "lines": [
         {
           "speaker": "qilan",
           "text": {
-            "zh": "我在鱼摊这边看见它钻进旧铃房啦！那里的铃全响起来了。",
-            "en": "I saw it dart into the old bell house from the fish stall! All the bells inside started ringing."
+            "zh": "铃纹都亮了，指向旧铃房！我刚才看见那团光钻了进去，那里的铃全响起来了。",
+            "en": "The restored patterns point to the old bell house! I saw the light dart inside, and all the bells began ringing."
           }
         },
         {
