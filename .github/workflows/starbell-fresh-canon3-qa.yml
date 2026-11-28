@@ -2,8 +2,14 @@ name: Starbell fresh normal campaign QA
 on:
   push:
     branches: [qa/starbell-fresh-canon3-20261127]
-    paths: ['scripts/test-starbell-fresh-canon3-browser.mjs']
+    paths: ['scripts/test-starbell-fresh-canon3-browser.mjs', '.github/workflows/starbell-fresh-canon3-qa.yml']
   workflow_dispatch:
+    inputs:
+      profile:
+        description: Device coverage
+        type: choice
+        options: [both, wide, portrait]
+        default: both
 permissions:
   contents: read
 concurrency:
@@ -16,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        profile: [wide, portrait]
+        profile: ${{ fromJSON((inputs.profile == 'portrait' || startsWith(github.event.head_commit.message, 'QA portrait retry:')) && '["portrait"]' || inputs.profile == 'wide' && '["wide"]' || '["wide","portrait"]') }}
     steps:
       - uses: actions/checkout@v4
         with:
