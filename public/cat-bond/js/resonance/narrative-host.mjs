@@ -1,4 +1,4 @@
-import "./adventure-play.mjs?v=illustrated-activities-20261127";
+import "./adventure-play.mjs?v=regional-depth-20261127";
 import {companionTalents} from "./companion-talents.mjs";
 import {campaign} from "./campaign.mjs";
 import {getSlotRuntime} from "./slot-runtime.mjs";
