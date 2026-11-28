@@ -869,7 +869,8 @@ class Game {
           this.mouse.x=p.x;this.mouse.y=p.y;this.mouse.active=true;
         }else if (this.joystick.active && t.identifier === this.joystick.id) {
           let dx = p.x - this.joystick.ox, dy = p.y - this.joystick.oy;
-          const len = Math.hypot(dx, dy), max = 46;
+          const len = Math.hypot(dx, dy), max = 36;
+          if(len<5){dx=0;dy=0;}
           if (len > max) { dx = dx / len * max; dy = dy / len * max; }
           this.joystick.dx = dx / max; this.joystick.dy = dy / max;   // -1..1
           this.syncTouchBattleUI();

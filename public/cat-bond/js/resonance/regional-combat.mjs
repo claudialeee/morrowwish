@@ -217,13 +217,13 @@ function install(){
   if(b.libraryEncounter?.bossId)panel.dataset.guardian="true";
   const label=document.createElement("span"),button=document.createElement("button");button.type="button";
   panel.append(label,button);button.addEventListener("click",()=>useSupport(b));
-  host.append(panel);paintHud(b);watchObjectiveHud(panel);
+  let lastTouch=-Infinity;button.addEventListener('touchstart',e=>{if(!b.game?.isTouch||button.disabled)return;e.preventDefault();e.stopPropagation();lastTouch=performance.now();useSupport(b);},{passive:false});button.addEventListener('click',e=>{if(e.detail!==0&&performance.now()-lastTouch<700)e.stopImmediatePropagation();},{capture:true});host.append(panel);paintHud(b);watchObjectiveHud(panel);
  }
  function paintHud(b){
   const panel=document.getElementById("cb-region-combat");if(!panel||!b.regionalCombat)return;
   const r=b.regionalCombat,kit=r.kit,button=panel.querySelector("button"),phase=b.libraryEncounter&&["starfall","mastery"].includes(b.libraryEncounter.bossId)?(b.liveEnemies()[0]?.element==="dark"?tr([" · 暗属性"," · Dark"]):tr([" · 光属性"," · Light"])):"";
   panel.querySelector("span").textContent=r.recoveryUntil>b.t?tr(["破绽出现 · 立即反击","Opening · counterattack now"]):r.shadowLight?tr(["引剪影兽进入灯光再攻击","Draw the shadow beast into the light"]):b.libraryEncounter?.bossId&&REGIONAL_BOSSES[b.libraryEncounter.bossId]?tr(REGIONAL_BOSSES[b.libraryEncounter.bossId].name)+phase:tr(kit.name)+" · "+tr(kit.enemy);
-  button.hidden=!r.supportAvailable;button.disabled=r.supportUsed||!r.cast;
+  button.hidden=!r.supportAvailable;button.disabled=r.supportUsed||!r.cast;button.setAttribute('aria-label',r.supportUsed?tr(['支援已使用','Support used']):r.cast?tr(['点击支援，解除本次攻击','Tap support to cancel this attack']):tr(['等待敌方预警后使用支援','Support becomes available during an enemy warning']));
   button.textContent=r.supportUsed?tr(["已支援","Support used"]):b.libraryEncounter?.bossId==="library"?tr(["打断镜影","Break the reflection"]):r.skyMethod==="fast-courier"?tr(["远帆 · 快速引航","Finn · Fast guidance"]):r.skyMethod==="escort-flight"?tr(["翎羽 · 并肩护航","Wren · Escort flight"]):tr(kit.support);
  }
  function useSupport(b){
@@ -242,8 +242,8 @@ function install(){
  }
  function resolve(b,r,cast){
   if(r.balance)r.impact={cast,at:b.t};
-  const controlled=target(b),avoided=controlled&&!cast.patterns.some(p=>inPattern(p,controlled));
-  if(r.balance&&avoided){const master=b.libraryEncounter?.bossId==="mastery";r.recoveryUntil=b.t+(master?2.6:1.8);r.successfulDodges=(r.successfulDodges||0)+1;notice(b,...(master?["星轨已破解！守卫暂时失去防御。","Orbit broken! The guardian is briefly exposed."]:["成功避开攻击！趁破绽反击。","Attack evaded! Counter while the guardian is open."]));}
+  const controlled=target(b),avoided=controlled&&((controlled.inv||0)>0||!cast.patterns.some(p=>inPattern(p,controlled)));
+  if(r.balance&&avoided){const master=b.libraryEncounter?.bossId==="mastery";r.recoveryUntil=b.t+(master?2.6:2.8);r.successfulDodges=(r.successfulDodges||0)+1;notice(b,...(master?["星轨已破解！守卫暂时失去防御。","Orbit broken! The guardian is briefly exposed."]:["成功避开攻击！趁破绽反击。","Attack evaded! Counter while the guardian is open."]));}
   const impactColor=r.balance?guardianColors(r.kit.kind,cast.element)[1]:r.kit.color;
   for(const f of living(b)){
    if(!cast.patterns.some(p=>inPattern(p,f)))continue;
@@ -270,7 +270,7 @@ function install(){
   r.next-=dt;
   if(r.next<=0){
    const t=target(b);if(!t)return;
-   const master=b.libraryEncounter?.bossId==="mastery",element=r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element,cycle=r.cycle++,warning=master?2.15:1.45;
+   const master=b.libraryEncounter?.bossId==="mastery",element=r.kit.kind==="orbit"?(b.liveEnemies()[0]?.element||r.kit.element):r.kit.element,cycle=r.cycle++,warning=master?2.15:b.game?.isTouch?2.15:1.8;
    r.cast={remaining:warning,max:warning,element,patterns:master?buildMasteryPattern(b.W,b.H,b.topMargin,b.bottomMargin,cycle,element):buildPattern(r.kit.kind,b.W,b.H,b.topMargin,b.bottomMargin,t,cycle)};
    const line=master?(element==="dark"?["暗相横向封锁！进入未标记的安全带。","Dark horizontal seal! Move into the unmarked lane."]:["光相纵向封锁！进入未标记的安全带。","Light vertical seal! Move into the unmarked lane."]):b.libraryEncounter?.bossId==="library"?["镜影即将反击，躲开标记！","Mirror counter incoming: dodge the marked areas!"]:labels[r.kit.kind];notice(b,line[0],line[1]);paintHud(b);
   }

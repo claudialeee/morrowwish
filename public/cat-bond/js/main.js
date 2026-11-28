@@ -95,8 +95,6 @@ window.addEventListener('DOMContentLoaded', () => {
         '<div class="cb-save-slot-actions"><button type="button" data-slot="'+slot.id+'" '+(disabled?'disabled':'')+'>'+action+'</button>'+(slot.exists?'<button class="cb-title-delete" type="button" data-title-delete="'+slot.id+'">'+(en?'Delete':'删除')+'</button>':'')+'</div></article>';
     }).join('');
     slotPanel.classList.add('is-open');slotPanel.setAttribute('aria-hidden','false');
-    const language=slotPanel.querySelector('[data-slot-language]');
-    if(language){language.textContent=en?'中文':'English';language.setAttribute('aria-label',en?'Switch to Chinese':'切换到英文');}
     slotList.querySelectorAll('[data-title-delete]').forEach(button=>button.onclick=async()=>{
       const id=button.dataset.titleDelete;
       const selected=State.listSaveSlots().find(s=>s.id===id);
@@ -195,10 +193,6 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('intro-start')?.addEventListener('click',()=>openSlots('new'));
   document.getElementById('intro-continue')?.addEventListener('click',()=>openSlots('continue'));
   document.getElementById('intro-slot-close')?.addEventListener('click',closeSlots);
-  slotPanel?.querySelector('[data-slot-language]')?.addEventListener('click',()=>{
-    const i18n=window.MorrowwishI18n;
-    i18n?.set?.(i18n.get?.()==='zh'?'en':'zh');
-  });
   window.addEventListener('keydown',event=>{
     if(event.key==='Escape'&&slotPanel?.classList.contains('is-open')){event.preventDefault();closeSlots();}
   });

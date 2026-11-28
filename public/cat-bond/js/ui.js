@@ -92,7 +92,7 @@ const UI = {
     document.getElementById('map-index')?.addEventListener('click',()=>this.openMapChooser());
     document.getElementById('map-squad')?.addEventListener('click',()=>this.openMapSquad());
     document.getElementById('map-menu')?.addEventListener('click',()=>this.openExploreMenu());
-    document.getElementById('duo-burst')?.addEventListener('click',()=>this.game.battle?.castDuo());
+    const duoButton=document.getElementById('duo-burst');if(duoButton){let last=-Infinity;const cast=()=>{if(!duoButton.disabled&&!this.game.battleHelpOpen)this.game.battle?.castDuo();};duoButton.addEventListener('touchstart',e=>{if(!this.game.isTouch)return;e.preventDefault();e.stopPropagation();last=performance.now();cast();},{passive:false});duoButton.addEventListener('click',e=>{if(e.detail!==0&&performance.now()-last<700)return;cast();});}
     // Hover/focus explains the exact active cat's move. On touch, the
     // standalone info control displays descriptions without casting.
     document.querySelectorAll('.move-bar .move').forEach(btn=>{
@@ -115,6 +115,7 @@ const UI = {
           return;
         }
         if(m==='basic'&&this.game.isTouch&&!b.autoMode){
+          if(!this.game.touchAutoFire)b.castMove('basic');
           this.game.touchAutoFire=!this.game.touchAutoFire;
           this.game.syncTouchBattleUI();
           return;

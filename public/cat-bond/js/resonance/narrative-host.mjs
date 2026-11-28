@@ -65,8 +65,21 @@ function install(){
   function render(){title.textContent=lang()==="zh"?"星铃再次响起":"THE BELL RINGS AGAIN";sub.textContent=lang()==="zh"?"世界再次回应":"The world answers again";button.textContent=lang()==="zh"?"回到阳光花园":"Return to Sunlit Garden";}
   function dismiss(){ending.remove();window.removeEventListener("cat-bond-active-save-changed",dismiss);window.removeEventListener("morrowwish-language-change",render);}
   button.onclick=dismiss;window.addEventListener("cat-bond-active-save-changed",dismiss);window.addEventListener("morrowwish-language-change",render);render();button.focus();
-  if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){art.animate([{opacity:.65},{opacity:1}],{duration:1100,fill:"forwards"});card.animate([{opacity:0,transform:"translateY(12px)"},{opacity:1,transform:"translateY(0)"}],{duration:1100,fill:"forwards"});}
-  window.MorrowwishAudio?.note?.(523.25,.8,.15);
+  const mobile=()=>window.matchMedia("(orientation:portrait) and (max-width:700px)").matches;
+  const shots=[
+   {wide:"../../assets/resonance-world-v2/starfall.webp",tall:"../../assets/mobile-portrait/battle-finale.webp",zh:"六座古铃再次回应，失去的记忆回来了。",en:"The six bells answer again, and lost memories return."},
+   {wide:"../../assets/core-art-remaster/story/b04-reunion.webp",tall:"../../assets/mobile-portrait/story-b04-reunion.webp",zh:"这一次，他们一起回家。",en:"This time, they go home together."},
+   {wide:"../../assets/core-art-remaster/story/e03-garden.webp",tall:"../../assets/mobile-portrait/story-e03-garden.webp",zh:"朋友们快到了。多准备几杯茶吧。",en:"Their friends are coming. Put on a few more cups of tea."}
+  ];let shot=0,timer=0,disposed=false;const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const skip=document.createElement("button");skip.type="button";skip.className="res-ending-skip";ending.append(skip);
+  const caption=document.createElement("p");caption.className="res-ending-caption";ending.append(caption);
+  ending.classList.add("res-ending-film");button.hidden=true;card.hidden=true;art.style.inset="0";art.style.height="100%";
+  function localizeFilm(){skip.textContent=lang()==="zh"?"跳过演出":"Skip scene";caption.textContent=shots[Math.min(shot,shots.length-1)][lang()];}
+  function finishFilm(){clearTimeout(timer);if(disposed||!ending.isConnected)return;shot=shots.length-1;art.getAnimations?.().forEach(a=>a.cancel());art.src=new URL(mobile()?shots[shot].tall:shots[shot].wide,import.meta.url).href;card.hidden=false;button.hidden=false;caption.hidden=true;skip.hidden=true;art.style.inset="0 0 20% 0";art.style.height="80%";if(!reduced)card.animate([{opacity:0,transform:"translateY(12px)"},{opacity:1,transform:"translateY(0)"}],{duration:800,fill:"forwards"});window.MorrowwishAudio?.note?.(523.25,.8,.15);button.focus();}
+  function showShot(){if(disposed||!ending.isConnected)return;if(shot>=shots.length){finishFilm();return;}const s=shots[shot],img=new Image(),url=new URL(mobile()?s.tall:s.wide,import.meta.url).href;let done=false;const next=()=>{if(done||disposed||skip.hidden)return;done=true;clearTimeout(timer);shot++;showShot();};timer=setTimeout(next,6500);img.onload=()=>{if(done||disposed||!ending.isConnected||skip.hidden)return;clearTimeout(timer);art.getAnimations?.().forEach(a=>a.cancel());art.src=url;localizeFilm();if(!reduced)art.animate([{opacity:0,transform:"scale(1)"},{opacity:1,transform:"scale(1.035)"}],{duration:3200,fill:"forwards",easing:"ease-out"});window.MorrowwishAudio?.note?.([392,493.88,587.33][shot],.5,.10);timer=setTimeout(next,3400);};img.onerror=next;img.src=url;}
+  skip.onclick=finishFilm;ending.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();finishFilm();}});
+  const cleanupFilm=()=>{disposed=true;clearTimeout(timer);window.removeEventListener("morrowwish-language-change",localizeFilm);window.removeEventListener("cat-bond-active-save-changed",cleanupFilm);};
+  button.addEventListener("click",cleanupFilm,{once:true});window.addEventListener("cat-bond-active-save-changed",cleanupFilm,{once:true});window.addEventListener("morrowwish-language-change",localizeFilm);localizeFilm();if(reduced)finishFilm();else{skip.focus();showShot();}
  }
  function scheduleFinish(){
   if(scheduled)return;scheduled=true;const scheduledRoot=State.S;queueMicrotask(()=>{scheduled=false;
