@@ -1610,7 +1610,7 @@ class Game {
       const recent=alive.find(e=>e.i===b._lastPoiseHitEnemy &&
         b.t-(b._lastPoiseHitAt??-99)<3.5);
       const active=b.me?.();
-      const enemy=recent||b.lockedEnemy?.()||
+      const enemy=(b.libraryEncounter?.bossId&&named?.alive?named:null)||recent||b.lockedEnemy?.()||
         (active&&b.nearestEnemy?.(active.x,active.y))||alive[0]||null;
       const maximum=enemy?.poiseMax||0;
       const current=Math.max(0,Math.min(maximum,enemy?.poise||0));

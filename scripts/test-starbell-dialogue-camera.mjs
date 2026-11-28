@@ -18,7 +18,7 @@ try{for(const {name,...device} of profiles)for(const [region,scene] of cases){
  // on the zoomed Starfall exploration map, not a minigame canvas.
  if(region==='starfall')await page.evaluate(story=>{
   CatBondResonance.close();UI.closeAll();State.S.resonance=story;
-  State.S.resonanceExploration={location:'starfall',positions:{},interactions:{},pickups:{},cargo:null};
+  State.S.resonanceExploration={location:'starfall',positions:{starfall:{x:.84,y:.33}},interactions:{},pickups:{},cargo:null};
   if(!State.save().ok)throw Error('Starfall fixture save failed');
   if(!WorldMap.enterRegion('starfall'))throw Error('Starfall fixture region failed');
  },developerCheckpoint(scene).story);

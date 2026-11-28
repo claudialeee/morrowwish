@@ -915,7 +915,7 @@ class YardScene {
     // This render path is shared by desktop and mobile garden layouts.
     const speakingPortrait=window.__CAT_BOND_CANONICAL_ACTIVE__&&document.querySelector('.res-host .res-dialogue[data-speaker="player"]:not([hidden]) .res-portrait:not([hidden])');
     const portraitOwnsPlayer=!!(speakingPortrait?.complete&&speakingPortrait.naturalWidth&&speakingPortrait.getClientRects().length&&getComputedStyle(speakingPortrait).visibility!=='hidden');
-    const speakingPlayer=(portraitOwnsPlayer||this.game.worldDialogueOpen?.())?this.game.yardPlayer?.():null;
+    const speakingPlayer=portraitOwnsPlayer?this.game.yardPlayer?.():null;
     for(const e of this.entities){
       if(e===speakingPlayer)continue;
       const using=e._playBuilding&&e._playBuildT>0;
