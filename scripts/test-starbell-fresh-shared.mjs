@@ -6,14 +6,14 @@ import {mkdir,readFile,writeFile,rename} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 const origin=process.env.CAT_BOND_SMOKE_ORIGIN||'http://127.0.0.1:8765';
 const portrait=process.env.STARBELL_WORK_PROFILE==='portrait',lang=process.env.STARBELL_LANG||'zh';
-const local=process.env.STARBELL_MODE==='local',tr=(zh,en)=>lang==='zh'?zh:en;
+const audit=process.env.STARBELL_MODE==='cinema-audit',local=process.env.STARBELL_MODE==='local',tr=(zh,en)=>lang==='zh'?zh:en;
 assert.ok(['zh','en'].includes(lang));
 const profile=portrait?'portrait':'wide';
 const hash=o=>createHash('sha256').update(JSON.stringify(o)).digest('hex');
 const unpack=async()=>{let raw;try{raw=await readFile('resume/checkpoint.json','utf8');}catch(e){if(e.code==='ENOENT')return null;throw e;}const {digest,...p}=JSON.parse(raw);assert.equal(hash(p),digest,'Checkpoint checksum');assert.equal(p.sha,process.env.SOURCE_SHA);assert.equal(p.origin,origin);assert.equal(p.profile,profile);assert.equal(p.lang,lang);assert.equal(p.slot,'slot1');assert.ok(p.storageState.origins.some(o=>o.origin===origin));assert.ok(p.completed.length>=5);assert.deepEqual(p.completed,campaign.scenes.slice(0,p.completed.length).map(s=>s.id));return p;};
-const resume=local?null:await unpack();
+const resume=local||audit?null:await unpack();
 const browser=await chromium.launch({headless:true});
-const context=await browser.newContext({... (portrait?{viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'}:{viewport:{width:1280,height:800},reducedMotion:'reduce'}),...(resume?{storageState:resume.storageState}:{})});
+const context=await browser.newContext({... (portrait?{viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:audit?'no-preference':'reduce'}:{viewport:{width:1280,height:800},reducedMotion:audit?'no-preference':'reduce'}),...(resume?{storageState:resume.storageState}:{})});
 const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
 await context.route('**/*',r=>{const u=new URL(r.request().url());return u.origin===origin||['data:','blob:'].includes(u.protocol)?r.continue():r.abort()});
 const press=async l=>portrait?l.tap({timeout:12000}):l.click({timeout:12000});
@@ -28,7 +28,7 @@ try{
  const won=resume?.won.slice()||[],films=resume?.films.slice()||[];
  let last='',savedCount=resume?.completed.length||0;
  const checkpoint=async ({v,s,mode},force=false)=>{
-  if(local||mode==='battle'||!s.completed.length||(!force&&s.completed.length<=savedCount))return;
+  if(local||audit||mode==='battle'||!s.completed.length||(!force&&s.completed.length<=savedCount))return;
   const persisted=await page.evaluate(()=>{const entry=State.getSaveSlot('slot1');return entry?.data?.state?.resonance||entry?.data?.resonance||null;});
   // Wait for the normal game autosave; never alter the slot or inject progression.
   if(!persisted||JSON.stringify(persisted.completed)!==JSON.stringify(s.completed)||JSON.stringify(persisted.evidence)!==JSON.stringify(s.evidence)||persisted.scene!==s.scene)return;
@@ -41,7 +41,27 @@ try{
   savedCount=s.completed.length;
   console.log('EARNED CHECKPOINT',profile,savedCount,s.scene);
  };
- if(resume){
+ if(audit){
+  // A reconstructed pre-F-02 fixture is used ONLY for targeted cinematic coverage.
+  // It must never be counted as an earned campaign checkpoint or a fresh-slot pass.
+  const {makeEngine}=await import('../public/cat-bond/js/resonance/engine.mjs');
+  const {developerCheckpoint}=await import('../public/cat-bond/js/resonance/developer-preview.mjs');
+  const {initial,story}=developerCheckpoint('starfall:F-02'),engine=makeEngine(campaign,story);
+  assert.ok(engine.record('starfall:F-02','explore:catastrophe-record').ok);
+  const blocked=engine.snapshot();assert.equal(blocked.melodies.length,5);
+  await page.evaluate(async({initial,blocked})=>{
+   const {storyPartyPatch}=await import('/cat-bond/js/resonance/story-party.mjs');
+   const hero=State.makeCat('jinjc',{affinity:35,protagonist:true});
+   const root={...structuredClone(State.S),cats:[hero],dex:{jinjc:1},gameStarted:true,coins:500,fish:25,difficulty:'casual',tutorialDone:true,battleTutorialDone:true,catchCount:8,firstDuoShowcasePending:false,resonance:blocked,resonanceExploration:{location:'starfall',positions:{starfall:{x:.92,y:.30}},interactions:{},pickups:{},cargo:null},battlePrefs:{autoBattle:true,modeChosen:true,tutorialSeen:true,manualTutorialSeen:true}};
+   const party=storyPartyPatch(root,initial,blocked,State.makeCat.bind(State));if(party)Object.assign(root,party.fields);
+   for(const cat of [...root.cats,...Object.values(root.storyAway||{})]){while(cat.level<7)State.addXp(cat,State.xpToNext(cat.level));Skills.autoLearn(cat);}
+   root.firstDuoShowcasePending=false;
+   if(!State.importSaveSlot('slot1',root).ok)throw Error('Cinema audit fixture import failed');
+  },{initial,blocked});
+  await page.reload();await press(page.locator('#intro-continue'));await press(page.locator('#intro-slot-list [data-slot="slot1"]'));
+  await page.waitForFunction(()=>__game.scene==='map'&&WorldMap.currentRegion==='starfall'&&CatBondResonance.view().current?.id==='starfall:F-02');
+  console.log('TARGETED CINEMA FIXTURE',profile,'starfall:F-02');
+ }else if(resume){
   await press(page.locator('#intro-continue'));await press(page.locator('#intro-slot-list [data-slot="slot1"]'));
   await page.waitForFunction(()=>['map','yard'].includes(__game.scene));
   const restored=await read();
@@ -78,6 +98,7 @@ try{
    await checkpoint({v,s,mode});
    const keyNow=JSON.stringify([id,v.cursor,v.choice,v.objective,mode,s.revision,await page.evaluate(()=>[document.querySelector('.rw-puzzle-controls')?.innerText||null,document.querySelector('.sky-lookout-view')?.dataset.pose||null,Array.from(document.querySelectorAll('.cbcp-progress-dot')).findIndex(e=>e.classList.contains('is-active'))])]);
    if(keyNow!==progressKey){progressKey=keyNow;progressAt=Date.now();}else if(Date.now()-progressAt>90000)throw Error('No story/UI progress for 90s '+id+' '+JSON.stringify({objective:v.objective,cursor:v.cursor,mode,visible:await page.locator('button:visible').allTextContents()}));
+   if(audit&&id==='finale:B-01')break;
    if(v.ending){assert.equal(s.completed.length,campaign.scenes.length);assert.equal(s.melodies.length,6);assert.equal(s.support.length,6);assert.ok(s.evidence['finale:B-03'].includes('battle:central-echo'));assert.ok(s.evidence['epilogue:E-03'].includes('npc:second-garden-key'));await page.locator('.res-ending-title').waitFor({timeout:12000});await show();break;}
    // Live previews play the authored sequence, unlike the normal local fallback.
    // B-04 requires an explicit player bell reply; never skip or force completion.
@@ -101,7 +122,7 @@ try{
     }
     await page.waitForTimeout(250);continue;
    }
-   const ack=page.locator('[data-canon-acknowledgement]:visible button');if(await ack.count()&&await ack.isVisible()){if(!films.includes(id))films.push(id);console.log('CINEMATIC FALLBACK ACK',profile,id);await press(ack);await page.waitForTimeout(60);continue;}
+   const ack=page.locator('[data-canon-acknowledgement]:visible button');if(await ack.count()&&await ack.isVisible()){if(audit)throw Error('Unexpected cinematic fallback '+id);if(!films.includes(id))films.push(id);console.log('CINEMATIC FALLBACK ACK',profile,id);await press(ack);await page.waitForTimeout(60);continue;}
    const key=page.locator('.res-key-panel:visible button');if(await key.count()&&await key.isVisible()){await press(key);await page.waitForTimeout(100);continue;}
    const finalResult=page.locator('#cb-finale-result:visible');if(await finalResult.count()){assert.equal(await finalResult.getAttribute('data-finale-outcome'),'saved');await press(finalResult.locator('[data-finale-return]'));continue;}
    const reward=page.locator('#library-battle-ok:visible');if(await reward.count()){await press(reward);continue;}
@@ -146,8 +167,23 @@ try{
    if(await page.locator('.res-chapter-cinematic:visible').count()){await page.waitForTimeout(500);continue;}
    await page.waitForTimeout(250);
  }
- const final=await read();assert.ok(final.v.ending,'Continuation failed: '+JSON.stringify({id:final.v.current?.id,objective:final.v.objective,mode:final.mode,region:final.region,won,films}));
+ const final=await read();
+ if(audit){
+  assert.equal(final.v.current?.id,'finale:B-01');
+  for(const [id,op] of [['starfall:F-02','cinematic:starfall-memory'],['starfall:F-05',campaign.scenes.find(s=>s.id==='starfall:F-05').requires.find(o=>o.startsWith('cinematic:'))]]){
+   assert.ok(final.s.evidence[id]?.includes(op),'Missing naturally completed cinematic '+id);
+   const frames=[...cinematicFrames.entries()].filter(([k])=>k.startsWith(id+':')).map(([,v])=>v);
+   assert.ok(frames.length>=2,'No authored sequence '+id);
+   assert.equal(new Set(frames.map(f=>f.index)).size,frames[0].total,'Every authored frame must be observed '+id);
+   assert.ok(frames.every(f=>f.images.length&&f.paused==='false'),'Decoded frame evidence '+id);
+   console.log('TARGETED AUTHORED CINEMATIC PASS',profile,id,frames.length);
+  }
+  assert.deepEqual(errors,[]);
+  console.log('TARGETED CINEMA AUDIT PASS',profile,process.env.SOURCE_SHA);
+ }else{
+ assert.ok(final.v.ending,'Continuation failed: '+JSON.stringify({id:final.v.current?.id,objective:final.v.objective,mode:final.mode,region:final.region,won,films}));
  for(const id of ['harbor:H-04','forest:R-04','forge:E-03','sky:S-03','library:M-02','starfall:F-04','finale:B-01','finale:B-03'])assert.ok(won.includes(id),'Missing actual battle '+id);assert.ok(final.s.evidence['starfall:F-02']?.includes('cinematic:starfall-memory')&&final.s.evidence['finale:B-04']?.includes('cinematic:final-note'),'Both required cinematics must complete in the fresh slot');
  assert.equal(await page.evaluate(()=>State.listSaveSlots().find(s=>s.id==='slot1').regionLabelEn),'Sunlit Garden');
  assert.deepEqual(errors,[]);if(!local){const frames=[...cinematicFrames.entries()].filter(([k])=>k.startsWith('finale:B-04:'));assert.ok(frames.length>=2,'No authored finale frame sequence observed');assert.ok(frames.some(([,f])=>f.index===f.total-1),'Final authored frame not observed');}console.log(local?'FRESH NORMAL CAMPAIGN TO ENDING PASS':'LIVE FRESH SLOT TO ENDING PASS',lang,JSON.stringify({won,films,resumed:!!resume,sourceRun:resume?.sourceRun||null,sha:process.env.SOURCE_SHA}));
+ }
 }catch(e){await show().catch(()=>{});console.error('NORMAL CONTINUATION FAIL',lang,String(e),JSON.stringify(await read().catch(()=>null)).slice(0,2500),errors);throw e;}finally{await browser.close();}
