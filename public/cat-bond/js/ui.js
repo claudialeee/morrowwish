@@ -97,9 +97,9 @@ const UI = {
     // standalone info control displays descriptions without casting.
     document.querySelectorAll('.move-bar .move').forEach(btn=>{
       const slot=btn.dataset.move==='ult'?'ult':btn.dataset.move;
-      btn.addEventListener('mouseenter',()=>this.game.showBattleSkillTooltip(slot));
+      btn.addEventListener('mouseenter',()=>{if(!this.game.isTouch)this.game.showBattleSkillTooltip(slot);});
       btn.addEventListener('mouseleave',()=>this.game.hideBattleSkillTooltip(slot));
-      btn.addEventListener('focus',()=>this.game.showBattleSkillTooltip(slot));
+      btn.addEventListener('focus',()=>{if(!this.game.isTouch)this.game.showBattleSkillTooltip(slot);});
       btn.addEventListener('blur',()=>this.game.hideBattleSkillTooltip(slot));
     });
     document.getElementById('battle-skill-info-toggle')?.addEventListener('click',()=>this.game.toggleBattleSkillGuide());
