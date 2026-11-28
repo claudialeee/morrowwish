@@ -45,7 +45,7 @@ export async function startCanonicalOpening(game,{onWorld}={}){
   if(owner.openingPresentation){const prev=owner.openingPresentation;delete owner.openingPresentation;try{if(!State.save()?.ok)owner.openingPresentation=prev}catch{owner.openingPresentation=prev}}
   const v=rt.view(),mode=owner.resonanceExploration?.location==='garden'?'garden':classifyPrologue(v);
   if(mode==="garden"){game.scene="yard";game.battle=null;game.rebuildYard?.();game.showYardChrome?.();game.refreshHUD?.();window.dispatchEvent(new Event("cat-bond-garden-entered"));window.CatBondOpeningCover?.hide();if(showContext)openContext(owner);}
-  else{onWorld?.();if(v.current?.chapter===owner.resonanceExploration?.location)window.WorldMap?.resumeRegion?.();window.CatBondOpeningCover?.hide();}
+  else{onWorld?.();const savedRegion=owner.resonanceExploration?.location;if(v.regions.includes(savedRegion)||savedRegion==="finale"&&v.current?.chapter==="finale")window.WorldMap?.resumeRegion?.();window.CatBondOpeningCover?.hide();}
   return {ok:true,mode};
  }catch(e){return fail(e.message||"canonical-opening-failed");}
 }

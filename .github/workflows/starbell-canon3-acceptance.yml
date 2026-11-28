@@ -12,6 +12,7 @@ on:
       - 'scripts/test-cat-bond-rpg-audio-lifecycle.mjs'
       - 'scripts/test-starbell-regional-bosses-browser.mjs'
       - 'scripts/test-starbell-player-first-browser.mjs'
+      - 'scripts/test-starbell-work-closure-browser.mjs'
       - 'scripts/cat-bond-release-prologue-qa.mjs'
       - '.github/workflows/starbell-canon3-acceptance.yml'
       - '.github/workflows/cat-bond-preview.yml'
@@ -48,6 +49,7 @@ jobs:
         run: |
           for f in public/cat-bond/js/resonance/*.mjs; do node --check "$f"; done
           node scripts/test-starbell-canon3.mjs
+          node scripts/test-starbell-narrative-play-20261127.mjs
           node scripts/test-cat-bond-rpg-audio-lifecycle.mjs
       - name: Install Chromium once
         run: |
@@ -67,8 +69,9 @@ jobs:
           node scripts/test-starbell-player-first-browser.mjs > /tmp/canon3-minigames.log 2>&1 & minigames=$!
           node scripts/test-starbell-dialogue-camera.mjs > /tmp/canon3-dialogue-camera.log 2>&1 & camera=$!
           (node scripts/test-starbell-garden-camera.mjs && node scripts/test-starbell-finale-framing-farwind.mjs && node scripts/test-starbell-talent-practice-browser.mjs) > /tmp/canon3-continuity.log 2>&1 & continuity=$!
+          STARBELL_WORK_PROFILE="$STARBELL_FOCUS_PROFILE" node scripts/test-starbell-work-closure-browser.mjs > /tmp/canon3-work-closure.log 2>&1 & closure=$!
           failed=0
-          for pair in "$opening:opening" "$guardians:guardians" "$minigames:minigames" "$camera:dialogue-camera" "$continuity:continuity"; do
+          for pair in "$opening:opening" "$guardians:guardians" "$minigames:minigames" "$camera:dialogue-camera" "$continuity:continuity" "$closure:work-closure"; do
             pid=${pair%%:*}; name=${pair#*:}
             wait "$pid" || failed=1
             cat "/tmp/canon3-$name.log"
@@ -83,6 +86,7 @@ jobs:
             artifacts/starbell-dialogue-camera/
             /tmp/starbell-canon3.log
             /tmp/canon3-*.log
+            artifacts/work-closure/
           if-no-files-found: warn
           retention-days: 7
 
