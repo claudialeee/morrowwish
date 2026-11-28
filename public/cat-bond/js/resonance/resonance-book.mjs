@@ -182,7 +182,7 @@ function records(){
  host.append(rows,node("p","",tr("品种与战斗评级奖励仍可在图鉴查看和领取。","Collection and battle-grade rewards remain available in Catdex.")),button(tr("查看图鉴","Open Catdex"),()=>select("dex")));
  const completed=new Set(s.resonance?.completed||[]),clues=[
  ["harbor:H-03","金色的巡铃人","A golden bellkeeper","檐灯记得金猫订过阳光花园的门牌。毛色相同还不足以认定身份。","Alder remembers a golden cat ordering the garden sign. Matching fur alone does not prove who you are."],
- ["harbor:H-05","旧地图","The old map","金猫把阳光花园标为家，第一站是眠根林。","The golden cat marked Sunlit Garden as home. Their first stop was Rootsleep."],
+ ["harbor:H-05","旧地图","The old map","金猫把阳光花园标为家，第一站是眠根林。你曾在那里醒来，但还不知道自己与金猫有什么关系。","The golden cat marked Sunlit Garden as home. Their first stop was Rootsleep. You woke there, but your connection to this cat remains unknown."],
  ["forest:R-04","没完成的旅程","An unfinished journey","榆川说金猫要修好六地古铃，并去千灯城找烬婆制作灯匣。","Rowan remembers the golden cat trying to fix all six bells and visiting Ember for a case."],
  ["forge:E-04","留给自己的线索？","A trail for yourself?","烬婆受托把灯匣交给带来旧地图的猫。书库保管巡铃人的画像。","Ember was asked to give the case to whoever brought the old map. The library holds bellkeeper portraits."],
  ["sky:S-04","多出来的杯子","The extra cup","暮铃曾住在阳光花园，一直等一位没回来的朋友。","Luna once lived in Sunlit Garden and has been waiting for a friend."],
