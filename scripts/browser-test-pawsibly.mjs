@@ -351,8 +351,8 @@ try{
  const compactLayout=await page.evaluate(()=>{
   const rect=s=>document.querySelector(s)?.getBoundingClientRect();
   const copy=document.querySelector('.hero .hero-zh-copy');
-  const first=rect('.feature-card'),art=rect('.feature-card .feature-art'),content=rect('.feature-card .feature-content');
-  return {heroHeight:Math.round(rect('.hero')?.height||0),firstCardTop:Math.round(first?.top||0),
+  const rpg=rect('#rpg .starbell-preview-card'),first=rect('#worlds .feature-card'),art=rect('#worlds .feature-card .feature-art'),content=rect('#worlds .feature-card .feature-content');
+  return {heroHeight:Math.round(rect('.hero')?.height||0),firstCardTop:Math.round(first?.top||0),rpgTop:Math.round(rpg?.top||0),rpgHeight:Math.round(rpg?.height||0),
     firstCardHeight:Math.round(first?.height||0),featureColumns:getComputedStyle(document.querySelector('.feature-grid')).gridTemplateColumns.split(' ').length,
     heroWhiteSpace:getComputedStyle(copy).whiteSpace,doodles:getComputedStyle(document.querySelector('.hero-doodles')).display,
     imageSeparate:!!art&&!!content&&content.right<=art.left+2};
@@ -361,9 +361,10 @@ try{
  assert.equal(compactLayout.heroWhiteSpace,'nowrap','Chinese four-world sentence must stay on a single line');
  assert.equal(compactLayout.doodles,'none','Decorations must not collide with the single-line hero');
  assert.ok(compactLayout.heroHeight>=190&&compactLayout.heroHeight<315,'Hero needs visual breathing room while showing games on first screen');
- assert.ok(compactLayout.firstCardTop<505,'First flagship game card must remain visible on first screen');
+ assert.ok(compactLayout.rpgTop<505&&compactLayout.rpgHeight>=275&&compactLayout.rpgHeight<=315,'Dedicated RPG preview must remain compact and visible on first screen');
+ assert.ok(compactLayout.firstCardTop<900,'First four-world card must begin within the initial desktop viewport');
  assert.equal(compactLayout.featureColumns,2,'Desktop flagship games should stay in two columns');
- assert.ok(compactLayout.firstCardHeight>=260&&compactLayout.firstCardHeight<=285,'Flagship cards should be smaller than the previous 318px layout');
+ assert.ok(compactLayout.firstCardHeight>=235&&compactLayout.firstCardHeight<=255,'Four-world cards must match the current compact 244px homepage layout');
  assert.ok(compactLayout.imageSeparate,'Card illustrations should not cover card descriptions');
  const featuredChecks=await page.evaluate(()=>({
   titles:[...document.querySelectorAll('.feature-grid>article h3')].map(x=>({font:getComputedStyle(x).fontFamily,weight:getComputedStyle(x).fontWeight})),
