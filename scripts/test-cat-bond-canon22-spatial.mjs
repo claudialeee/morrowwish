@@ -2,15 +2,15 @@ import assert from 'node:assert/strict';
 import {newSpatial,spatialInput,spatialProof,validSpatialProof,tickSpatial,chasePoint,startBridgeWalk,advanceBridgeWalk,bridgeWalkPosition,bridgeReachable,spatialControls,spatialTap,spatialTravelPose,spatialNodes,animateStarPlatforms,chaseVisualY,chaseLogicalY} from '../public/cat-bond/js/resonance/canon22-spatial.mjs';
 const step=i=>({type:'step',i}),aim=x=>({type:'aim',x}),cross={type:'cross'};
 function verify(p){const proof=spatialProof(p);assert.ok(p.solved,p.operation);assert.ok(validSpatialProof(p.operation,proof));assert.equal(validSpatialProof(p.operation,{...proof,trace:[]}),false);return proof;}
-for(const route of [2,3]){
- const p=newSpatial('puzzle:moonleaf-crossing');assert.deepEqual(bridgeReachable(p),[1]);assert.equal(spatialInput(p,step(4)),false);assert.equal(p.node,0);
- for(const i of [1,route,4]){
-  assert.ok(startBridgeWalk(p,step(i)));assert.equal(spatialInput(p,step(4)),false);
-  advanceBridgeWalk(p,.1);assert.ok(bridgeWalkPosition(p).every(Number.isFinite));while(p.walk)advanceBridgeWalk(p,.02);
-  if(i===1){assert.deepEqual(bridgeReachable(p),[2,3]);assert.ok(spatialControls(p).some(x=>x.action.i===3));}
-  if(i===3)spatialInput(p,{type:'rescue'});
- }
- const proof=verify(p);assert.ok(proof.discoveries.includes(route===2?'garden-view':'rescued-kitten'));assert.equal(validSpatialProof(p.operation,{...proof,discoveries:[]}),false);
+{
+ const p=newSpatial('puzzle:moonleaf-crossing');assert.deepEqual(bridgeReachable(p),[1]);assert.equal(startBridgeWalk(p,step(4)),false);
+ const walk=i=>{assert.ok(startBridgeWalk(p,step(i)));assert.ok(p.walk.duration>=.6);while(p.walk)advanceBridgeWalk(p,.02);};
+ walk(1);assert.deepEqual(bridgeReachable(p),[2]);assert.equal(startBridgeWalk(p,step(3)),false);
+ walk(2);assert.deepEqual(bridgeReachable(p),[1]);assert.equal(startBridgeWalk(p,step(4)),false);walk(1);
+ spatialInput(p,{type:'leaf'});assert.deepEqual(bridgeReachable(p),[3]);assert.ok(spatialControls(p).some(x=>x.action.i===3));
+ walk(3);assert.equal(startBridgeWalk(p,step(4)),false);assert.equal(p.solved,false);
+ spatialInput(p,{type:'rescue'});walk(4);const proof=verify(p);assert.ok(proof.discoveries.includes('rescued-kitten'));assert.ok(proof.discoveries.includes('garden-view'));assert.equal(validSpatialProof(p.operation,{...proof,discoveries:[]}),false);
+ const direct=newSpatial('puzzle:moonleaf-crossing');for(const a of [step(1),{type:'leaf'},step(3),{type:'rescue'},step(4)])spatialInput(direct,a);verify(direct);
 }
 const badRescue=newSpatial('puzzle:moonleaf-crossing');spatialInput(badRescue,{type:'rescue'});assert.equal(badRescue.trace.length,0);
 const bell=newSpatial('puzzle:chime-chase');
@@ -29,4 +29,4 @@ for(const route of [[1,3,5,7],[2,4,6,7]]){
  for(const i of route){const q=spatialNodes(p)[i];assert.deepEqual(spatialTap(p,...q),step(i));assert.ok(startBridgeWalk(p,step(i)));advanceBridgeWalk(p,.1);assert.ok(spatialTravelPose(p).lift>0);while(p.walk){animateStarPlatforms(p,.02);advanceBridgeWalk(p,.02);}}
  assert.deepEqual(p.visited,[0,...route]);assert.ok(verify(p).discoveries.some(x=>x.startsWith('starlight-')));
 }
-console.log('PASS: bell-pattern restoration and invalid proof rejection, both forest routes, optional rescue, shadow hunt, theater, moving starstones and forged-proof rejection');
+console.log('PASS: bell-pattern restoration and invalid proof rejection, forest dead-end, moonleaf switch, mandatory rescue, shadow hunt, theater, moving starstones and forged-proof rejection');
