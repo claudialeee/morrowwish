@@ -58,7 +58,7 @@ const UI = {
     // to the clipboard (+ console) for export. Never shown to normal players (stays hidden).
     const dbgBtn=document.getElementById('btn-debug');
     if(dbgBtn)dbgBtn.addEventListener('click',()=>{
-      const b=this.game.battle; if(!b||!b._debugAvailable)return;
+      const b=this.game.battle; if(window.__STARBELL_DEVELOPER__!==true||dbgBtn.hidden||!b||!b._debugAvailable)return;
       // If we already have a captured log (recording was on and/or fight ended), this click EXPORTS it.
       if(b._dbgLog&&b._dbgLog.length&&(!b._debug||b.done)){
         if(b.copyDebugLog())this.game.toast?.('🐛 战斗日志已复制到剪贴板');

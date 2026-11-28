@@ -5562,3 +5562,6 @@ body.cb-exploring #stage #yard-actions{
  #stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"]){padding-top:48px!important}
  #stage:has(.rw-world:not([hidden])) #panel.open:not([data-mandatory="true"])>.panel-dismiss{width:44px;height:44px;min-width:44px;min-height:44px}
 }
+
+/* Developer-only battle recorder: explicit display wins over segmented tool-rail flex styles, in every orientation. */
+#stage #battle-ui #btn-debug[hidden]{display:none!important}
