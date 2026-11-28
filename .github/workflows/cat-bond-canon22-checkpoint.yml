@@ -1,7 +1,7 @@
 name: Canon 2.2 implementation checkpoint
 on:
   push:
-    branches: [review/starbell-canon13-player-experience]
+    branches: [starbell-echoes]
     paths:
       - 'public/cat-bond/**'
       - 'scripts/test-cat-bond-canon22-*.mjs'
