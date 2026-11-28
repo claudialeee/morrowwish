@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   integrated:
-    if: github.event_name == 'push' || github.head_ref == 'fix/starbell-quality-dialogue-20261127'
+    if: github.event_name == 'push' || github.head_ref == 'fix/starbell-quality-dialogue-20261127' || github.head_ref == 'fix/starbell-bell-pattern-camera-20261127'
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     strategy:
