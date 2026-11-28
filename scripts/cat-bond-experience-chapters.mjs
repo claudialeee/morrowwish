@@ -412,16 +412,14 @@ async function run(chapter){
    assert.equal(chapter,'harbor');await page.locator('#intro-start').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene('prologue:P-05');
    await page.locator('#cb-player-first-intro').getByRole('button',{name:local('Start exploring'),exact:true}).click();
    // Start from a new slot, no fixture or direct state mutation.
-   if(locale==='zh'){
-    await shot('prologue-intro');
-    await page.locator('[data-npc-talk="muling"]').click();const encounter=page.locator('#cb-traveler-encounter');
-    await encounter.getByRole('button',{name:'寻找航图',exact:true}).click();await encounter.waitFor({state:'detached'});
-    for(const id of ['chart-0','chart-echo','chart-1']){await page.locator('[data-garden-explore="'+id+'"]').click();await page.waitForFunction(id=>{const s=GardenExploration.read(State.S);return id==='chart-echo'?s.chartEcho:s.parts.includes(Number(id.at(-1)));},id);await shot('prologue-'+id);}
-    await page.locator('[data-npc-talk="muling"]').click();await shot('prologue-encounter');
-    await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'回答',exact:true}).click();assert.match(await encounter.locator('.res-line').innerText(),/我也不知道/);await encounter.getByRole('button',{name:'继续',exact:true}).click();await encounter.getByRole('button',{name:'告别',exact:true}).click();
-    await encounter.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);await shot('prologue-garden');
-   }
-   await page.locator('.sg-prologue-guide .sg-quest-toggle').click();await page.locator('.sg-prologue-guide').getByRole('button',{name:locale==='zh'?/下一场景/:/^Skip this encounter$/}).click();await scene(start);
+   await shot('prologue-intro');
+   assert.equal(await page.locator('[data-garden-explore^="chart-"]:visible').count(),0,'No compulsory chart or singing-bell hunt');
+   await page.locator('[data-npc-talk="muling"]').click();const encounter=page.locator('#cb-traveler-encounter');await encounter.waitFor();
+   await shot('prologue-encounter');
+   for(let i=0;i<6;i++)await encounter.getByRole('button',{name:local('Continue'),exact:true}).click();
+   await encounter.getByRole('button',{name:locale==='zh'?'告别':'Say goodbye',exact:true}).click();
+   await encounter.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>CatBondResonance.view().openingMet),true);await shot('prologue-garden');
+   await page.locator('.sg-prologue-guide .sg-quest-toggle').click();await page.locator('.sg-prologue-guide').getByRole('button',{name:locale==='zh'?/下一场景/:/Next scene/}).click();await scene(start);
   }else{await page.locator('#intro-continue').click();await page.locator('#intro-slot-list [data-slot="slot1"]').click();await scene(start);}
   assert.ok(start==='epilogue:E-01'||!(await view()).completed.includes(start),'Chapter start is not already completed');
   await page.waitForFunction(()=>['map','yard'].includes(__game.scene));
