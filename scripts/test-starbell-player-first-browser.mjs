@@ -57,10 +57,10 @@ try{for(const [region,scene,op] of cases){
   await press(page.locator('[data-next-scene="'+scene+'"]:visible'));
   await page.waitForFunction(()=>document.querySelector('.rw-world')?.dataset.artReady==='true');
   if(op==='puzzle:chime-chase'){
-   const follow=page.locator('[data-chase-follow]'),shortcut=page.locator('[data-chase-shortcut]');
-   await follow.waitFor();await press(follow);await press(portrait?shortcut:follow);await press(follow);
-   await page.waitForFunction(()=>{const e=document.querySelector('[data-chase-follow]');return e&&!e.disabled&&/Pounce|扑住/.test(e.textContent)});
-   await press(follow);
+   await row.waitFor();
+   const choose=(glyph)=>row.getByRole('button',{name:new RegExp(glyph)});
+   await press(choose('✦'));await page.waitForFunction(()=>/0\/3/.test(document.querySelector('.rw-minigame-progress')?.textContent||''));
+   for(const glyph of ['☾','☀','✦'])await press(choose(glyph));
   }else{
    await row.waitFor();const click=(zh,en)=>press(button(zh,en,row));
    if(op==='puzzle:moonleaf-crossing'){await click('岔路','Fork');await click(portrait?'地下':'树冠',portrait?'Roots':'Canopy');if(portrait)await click('帮小猫离开根丛','Free the trapped kitten');await click('对岸','Far bank');}
