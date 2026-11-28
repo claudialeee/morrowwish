@@ -8,8 +8,8 @@ import {portraitAsset,projectPortrait,unprojectPortrait,projectFarwindLandscape,
 import {hasPendingDialogue} from "./dialogue-ui.mjs";
 import { openFinaleLatch } from "./finale-latch.mjs";
 import { createWorldBridge } from "./world-bridge.mjs?v=exploration-craft-20261127";
-import {availableSideEvents} from "./side-adventures.mjs?v=exploration-craft-20261127";
-import {mountSideAdventure} from "./adventure-play.mjs?v=illustrated-activities-20261127";
+import {availableSideEvents} from "./side-adventures.mjs?v=regional-depth-20261127";
+import {mountSideAdventure} from "./adventure-play.mjs?v=regional-depth-20261127";
 import {availableDiscoveries,layoutDiscoveries,paintDiscovery} from "./regional-discoveries.mjs";
 import {markerMetrics,layoutMarkerLabels,pickMarker,discoveryNames} from "./map-affordances.mjs?v=npc-talk-bubble-1";
 import { createExplorer,layouts,exchangeOptions,distance } from "./world-exploration.mjs?v=local-exploration-20261127";
