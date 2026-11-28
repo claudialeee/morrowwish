@@ -178,8 +178,19 @@ function wishes(result=null){
 function records(){
  const s=state(),host=shell();host.setAttribute("translate","no");host.append(node("h2","",tr("冒险成就","Adventure records")));
  const rows=node("div","rb-inventory"),discovered=Object.values(s.dex||{}).filter(n=>n>0).length;
- for(const [zh,en,v] of [["发现品种","Breeds discovered",discovered+"/"+window.GameData.SPECIES.length],["金爪徽章","Golden Paw medals",Object.values(s.masteryBadges||{}).filter(Boolean).length],["捕捉次数","Captures",s.catchCount||0],["猫咪互动","Cat interactions",s.petCount||0],["恢复圣所","Restored sanctuaries",(s.resonance?.sanctuaries?.length||0)+"/6"],["旋律","Melodies",(s.resonance?.melodies?.length||0)+"/6"]])rows.append(stat(tr(zh,en),v));
+ for(const [zh,en,v] of [["发现品种","Breeds discovered",discovered+"/"+window.GameData.SPECIES.length],["金爪徽章","Golden Paw medals",Object.values(s.masteryBadges||{}).filter(Boolean).length],["捕捉次数","Captures",s.catchCount||0],["猫咪互动","Cat interactions",s.petCount||0],["恢复圣所","Restored sanctuaries",(s.resonance?.sanctuaries?.length||0)+"/6"],["古铃已恢复","Bells restored",(s.resonance?.melodies?.length||0)+"/6"]])rows.append(stat(tr(zh,en),v));
  host.append(rows,node("p","",tr("品种与战斗评级奖励仍可在图鉴查看和领取。","Collection and battle-grade rewards remain available in Catdex.")),button(tr("查看图鉴","Open Catdex"),()=>select("dex")));
+ const completed=new Set(s.resonance?.completed||[]),clues=[
+ ["harbor:H-03","金色的巡铃人","A golden bellkeeper","檐灯记得金猫订过阳光花园的门牌。毛色相同还不足以认定身份。","Alder remembers a golden cat ordering the garden sign. Matching fur alone does not prove who you are."],
+ ["harbor:H-05","旧地图","The old map","金猫把阳光花园标为家，第一站是眠根林。","The golden cat marked Sunlit Garden as home. Their first stop was Rootsleep."],
+ ["forest:R-04","没完成的旅程","An unfinished journey","榆川说金猫要修好六地古铃，并去千灯城找烬婆制作灯匣。","Rowan remembers the golden cat trying to fix all six bells and visiting Ember for a case."],
+ ["forge:E-04","留给自己的线索？","A trail for yourself?","烬婆受托把灯匣交给带来旧地图的猫。书库保管巡铃人的画像。","Ember was asked to give the case to whoever brought the old map. The library holds bellkeeper portraits."],
+ ["sky:S-04","多出来的杯子","The extra cup","暮铃曾住在阳光花园，一直等一位没回来的朋友。","Luna once lived in Sunlit Garden and has been waiting for a friend."],
+ ["library:M-03","曾经的家","The home you shared","画像与暮铃的证词证实，你是当年的守铃人，她和你一起住在花园。","The portrait and Luna's account confirm you were the bellkeeper and shared the garden."],
+ ["library:M-04","失忆再次发生的原因","Why the forgetting returned","暮铃打开封印想唤醒你，却使星铃再次夺走记忆。","Luna opened the seal to wake you, allowing the Star Bell to steal memories again."],
+ ["library:M-05","新的办法","A different way","修好六座古铃并安全打开中央封印，就能让记忆回到原主人。","Restore all six local bells and safely open the central seal to return memories to their owners."],
+ ["finale:B-04","找回名字","Your name","你找回了自己的名字和过去，也记得旅途中的朋友。","You recovered your name and past without forgetting your new friends."]
+ ].filter(([id])=>completed.has(id));if(clues.length){host.append(node("h3","",""+tr("寻名线索","Clues to your identity")));for(const [id,zh,en,detailZh,detailEn] of clues){const row=node("section","rb-dex-entry");row.dataset.identityClue=id;row.append(node("strong","",tr(zh,en)),node("p","",tr(detailZh,detailEn)));host.append(row);}}
  const keeps=earnedKeepsakes(s.resonanceExploration?.interactions),gardenNames={"ear-flower":["耳尖的小花","Little flower"],"golden-seed":["浅金色种子","Golden seed"],"fish-cake":["鱼饼","Fish cake"],"old-garden-postcard":["旧花园明信片","Old garden postcard"],"windblown-chart":["风中的航图","Windblown chart"],"revisit-qilan":["栖蓝的新航图","Skye’s new route chart"],"revisit-yahe":["芽禾的月叶新芽","Fern’s moonleaf sprout"],"revisit-xiaomao":["小栗的歪耳灯","Pip’s crooked-ear lantern"]};
  const garden=(s.sunlitGarden?.exploration?.keepsakes||[]).map(id=>gardenNames[id]).filter(Boolean);
  const names=[...garden,...keeps.map(k=>k.name)];
