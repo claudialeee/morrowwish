@@ -67,6 +67,7 @@ try{
       b.skillStrokes=[];b.vfx.clear();
       const support=sk.kind==='heal'||sk.kind==='buff';
       const melee=sk.kind==='melee';
+      const physicalBeam=['waterJet','shadowTendrils'].includes(id);
       const emitted=support?CatBondSkillFX.support(b,f,sk):
         CatBondSkillFX.cast(b,f,sk,0);
       if(!emitted)throw Error('Cast signature failed '+id);
@@ -87,6 +88,18 @@ try{
         // Sample mid-sweep; the first frame correctly contains no teleporting
         // fully painted slash, and the last frame is almost transparent.
         b.vfx.update(.055);
+      }else if(physicalBeam){
+        // Exercise the actual channel, damage ticks and contact, not a fake cast glyph.
+        target.x=f.x+Math.min(150,sk.reach-30);target.y=f.y;
+        b.aim=0;
+        const before=target.hp;
+        b.castBeam(f,0,sk,192,'#e6b7fa');
+        for(let i=0;i<12;i++)b.tickBeams(1/60);
+        if(!(target.hp<before)||!b.beams.some(v=>v.sk.id===id&&v.t>0)||!(f._beamRoot>0))
+          throw Error('Real channel damage/root failed '+id);
+        const contactKind=id==='waterJet'?'waterPierce':'shadowBindHit';
+        if(!b.skillStrokes.some(v=>v.skillId===id&&v.kind===contactKind&&v.life>0))
+          throw Error('Missing physical channel contact '+id);
       }else if(!support&&!CatBondSkillFX.hit(b,target,sk,24,false)){
         throw Error('Contact art failed '+id);
       }
@@ -98,7 +111,13 @@ try{
       const isMirror=id==='mirrorWall';
       if(isMirror)f.reflectT=3;
       const original=CatBondSkillFX.draw,originalWard=window.CatBondWardArt?.draw;
-      let drawn=0,wardDrawn=0,meleeContactDrawn=0;
+      let drawn=0,wardDrawn=0,meleeContactDrawn=0,beamDrawn=0;
+      const originalBeam=CatBondSkillFX.drawCombatBeam;
+      if(physicalBeam)CatBondSkillFX.drawCombatBeam=function(ctx,beam,...args){
+        const result=originalBeam.call(this,ctx,beam,...args);
+        if(beam.sk?.id===id&&result)beamDrawn++;
+        return result;
+      };
       CatBondSkillFX.draw=function(ctx,s,time){
         if(s?.skillId===id){drawn++;if(s.kind==='signatureHit')meleeContactDrawn++;}
         return original.apply(this,arguments);
@@ -109,10 +128,13 @@ try{
       };
       try{g.draw()}finally{
         CatBondSkillFX.draw=original;
+        if(physicalBeam)CatBondSkillFX.drawCombatBeam=originalBeam;
         if(isMirror&&originalWard)CatBondWardArt.draw=originalWard;
       }
       if(isMirror){
         if(wardDrawn<2||!f.reflectT)throw Error('Physical mirror wall not in real battle '+id+': '+wardDrawn);
+      }else if(physicalBeam){
+        if(beamDrawn<1||drawn<1)throw Error('Physical channel/contact not rendered '+id+': '+beamDrawn+'/'+drawn);
       }else if(melee&&meleeContactDrawn!==1){
         throw Error('Expected exactly one authored melee contact draw '+id+': '+meleeContactDrawn);
       }else if(drawn<(support||melee?1:2)){
