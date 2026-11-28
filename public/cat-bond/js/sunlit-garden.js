@@ -100,20 +100,20 @@
   }
   function refreshOpeningQuest(v){
     const en=isEnglish(),p=window.GardenExploration?.read?.(state()),met=!!v.openingMet;
-    const phase=met?'depart':!p?.chartStarted?'meet':!p.parts.includes(0)?'chart':!p.chartEcho?'bell':'return';
+    const phase=met?'depart':'meet';
     const key='opening|'+phase+'|'+en;
     if(key===guideKey)return;guideKey=key;openingQuestOpen=false;
     guide.classList.remove('sg-minimal-opening','sg-postgame-guide');guide.classList.add('sg-opening-quest');
     guide.replaceChildren();
-    const toggle=document.createElement('button');toggle.type='button';toggle.className='sg-quest-toggle';toggle.textContent=en?'Main quest':'主线任务';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','sg-opening-quest-detail');
+    const toggle=document.createElement('button');toggle.type='button';toggle.className='sg-quest-toggle';toggle.textContent=met?(en?'Find Alder in Windchime Town':'去风铃镇找檐灯'):(en?'Find your name':'寻找自己的名字');toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','sg-opening-quest-detail');
     const detail=document.createElement('div');detail.id='sg-opening-quest-detail';detail.className='sg-quest-detail';detail.hidden=true;
     const title=document.createElement('strong'),hint=document.createElement('span'),row=document.createElement('div');detail.append(title,hint,row);
     const copy={
-      meet:['和陌生猫聊聊','Talk to the stranger','花园里有一只陌生猫，去看看它想说什么。','A stranger is in the garden. See what they have to say.'],
+      meet:['寻找自己的名字','Find your name','看看门口的旧木牌，或和花园里的陌生猫聊聊。','Inspect the old nameplates or talk to the cat in the garden.'],
       chart:['找回飞走的航图','Find the windblown chart','寻找被风吹走的航图片段。','Look for the chart piece carried off by the wind.'],
       bell:['看看旧铃','Investigate the old bell','旧铃突然响了，去看看发生了什么。','The old bell suddenly rang. Go see what happened.'],
       return:['回去找陌生猫','Return to the stranger','把旧铃的奇怪回应告诉那只猫，听它把话说完。','Tell the stranger how the bell answered and hear them out.'],
-      depart:['寻找自己的名字','Find your name','暮铃说风铃镇也许有线索。准备好再出发，也可以继续在花园探索。','Luna says there may be a clue in Windchime Town. Leave when ready, or keep exploring the garden.']
+      depart:['寻找自己的名字','Find your name','风铃镇的檐灯做过花园的名牌，去问问他还记不记得订牌的猫。','Alder made the garden nameplates. Ask him who ordered them.']
     }[phase];
     title.textContent=copy[en?1:0];hint.textContent=copy[en?3:2];
     const close=()=>{openingQuestOpen=false;detail.hidden=true;toggle.setAttribute('aria-expanded','false');};
@@ -149,7 +149,7 @@
     if(!width||!height||!r.width||!r.height)return;
     const b=getTalkMarker(npc),en=isEnglish(),raw=npc.name,profileName=typeof raw==='string'?raw:raw?.[en?'en':'zh'];
     const label=npc.id==='muling'&&window.CatBondResonance?.view?.().current?.id==='prologue:P-05'?(en?'Stranger':'陌生猫'):(profileName||npc.id);
-    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const progress=window.GardenExploration?.read?.(state()),main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.id==='prologue:P-05'?(!v.openingMet&&(!progress?.chartStarted||!!progress?.chartEcho)):(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length);b.dataset.questPrimary=String(main);b.title=main?(en?'Main quest':'主线任务'):'';if(!main&&!v?.ending&&npc.id!=='muling'&&!game.yardNear?.(x,y,.25)){b.hidden=true;return;}b.hidden=false;
+    b.querySelector('span').textContent=label;b.setAttribute('aria-label',en?'Talk to '+label:'与'+label+'对话');b.classList.toggle('sg-guest-marker',!!cell);const v=window.CatBondResonance?.view?.();const progress=window.GardenExploration?.read?.(state()),main=npc.id==='muling'&&!v?.ending&&!!v?.current&&(v.current.id==='prologue:P-05'?(!v.openingMet):(v.current.chapter==='prologue'||v.current.chapter==='epilogue')&&v.cursor<v.current.lines.length);b.dataset.questPrimary=String(main);b.title=main?(en?'Main quest':'主线任务'):'';if(!main&&!v?.ending&&npc.id!=='muling'&&!game.yardNear?.(x,y,.25)){b.hidden=true;return;}b.hidden=false;
     if(cell){b.style.left=cell.x+'px';b.style.top=cell.box.bottom+'px';return;}
     const px=canvasRect.left-r.left+x/width*canvasRect.width,py=canvasRect.top-r.top+(y-112*scale)/height*canvasRect.height;
     const bw=Math.max(44,b.offsetWidth||72),bh=Math.max(44,b.offsetHeight||44);
