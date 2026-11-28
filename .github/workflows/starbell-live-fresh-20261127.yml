@@ -78,6 +78,13 @@ jobs:
              const key=page.locator('.res-key-panel:visible button');if(await key.count()&&await key.isVisible()){await press(key);await page.waitForTimeout(100);continue;}
              const finalResult=page.locator('#cb-finale-result:visible');if(await finalResult.count()){assert.equal(await finalResult.getAttribute('data-finale-outcome'),'saved');await press(finalResult.locator('[data-finale-return]'));continue;}
              const reward=page.locator('#library-battle-ok:visible');if(await reward.count()){await press(reward);continue;}
+             // Tea rest is a real player interaction: dialogue stays gated until sitting or walking.
+             const lookout=page.locator('.sky-lookout-view[data-pose="arrival"]:visible');
+             if(id==='sky:S-04'&&await lookout.count()){
+              await press(page.getByRole('button',{name:'坐到暮铃身边',exact:true}));
+              await page.waitForFunction(()=>document.querySelector('.sky-lookout-view')?.dataset.pose==='sit');
+              console.log('LIVE TEA REST INPUT',lang);continue;
+             }
              const choices=page.locator('.res-host:visible .res-choices button:visible');if(await choices.count()){await press(choices.first());continue;}
              const line=page.locator('.res-host:visible .res-line:visible');if(await line.count()&&v.lineReady&&v.cursor<v.current.lines.length){await press(line);await page.waitForTimeout(50);continue;}
              const prep=page.locator('#bp-go:visible');if(await prep.count()){const mode=page.locator('[data-battle-auto="true"]:visible');await press(mode);await press(prep);continue;}
