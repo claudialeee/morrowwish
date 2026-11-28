@@ -1,4 +1,5 @@
 name: Starbell Canon 3 narrative acceptance
+# Canonical development branch: starbell-echoes; validate the exact SHA before publishing existing preview aliases.
 on:
   push:
     branches: [starbell-echoes]
