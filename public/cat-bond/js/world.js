@@ -688,6 +688,7 @@ class YardScene {
     const mouse = this.game.mouse;
     // A cat heading to a structure steers itself first, then runs normal motion.
     for(const e of this.entities){
+      if(e._lifeUntil>this.game.t){e.update(dt,null);continue;}
       if(e._buildTarget)this.stepBuildTarget(e,dt);
       // Cursor-following must never steal a cat from the structure it is
       // walking toward or playing at. Regular petting still works normally.
@@ -699,7 +700,7 @@ class YardScene {
     if(duo.length===2){
       const a=this.entities.find(e=>e.cat.uid===duo[0].uid);
       const b=this.entities.find(e=>e.cat.uid===duo[1].uid);
-      if(a&&b){
+      if(a&&b&&!(a._lifeUntil>this.game.t)&&!(b._lifeUntil>this.game.t)){
         const sulky=CatRelations.mood(duo[0],duo[1])==='sulky';
         const dist=Math.hypot(a.x-b.x,a.y-b.y);
         if(this.game.t>(this._nextDuoEmote||0)){
@@ -1017,13 +1018,28 @@ class YardScene {
     if(life.day===day)return;
     const idle=cats.filter(e=>!e._buildTarget&&!(e._playBuildT>0));
     if(idle.length<2)return;
-    const chosen=window.CatRelations?.chosen?.()||[];
-    const a=idle.find(e=>e.cat.uid===chosen[0]?.uid)||idle.find(e=>e.cat.personality==='gentle')||idle[0];
-    const b=idle.find(e=>e!==a&&e.cat.uid===chosen[1]?.uid)||idle.find(e=>e!==a);
-    if(!b||Math.hypot(a.x-b.x,a.y-b.y)>110)return;
-    if(window.CatRelations?.mood(a.cat,b.cat)==='sulky')return;
-    const kind=a.cat.personality==='lazy'||b.cat.personality==='lazy'?'nap':a.cat.personality==='mischievous'||b.cat.personality==='mischievous'?'play':'friend';
-    const id='yard-life-'+kind;
+    const history=Array.isArray(life.history)?life.history:[];
+    const candidates=[];
+    for(let i=0;i<idle.length;i++)for(let j=i+1;j<idle.length;j++){
+      const a=idle[i],b=idle[j];
+      if(a.cat.uid===b.cat.uid||window.CatRelations?.mood(a.cat,b.cat)==='sulky')continue;
+      const distance=Math.hypot(a.x-b.x,a.y-b.y);
+      if(distance>110)continue;
+      const kinds=['friend'];
+      if([a,b].some(e=>e.cat.personality==='lazy'))kinds.push('nap');
+      if([a,b].some(e=>e.cat.personality==='mischievous'))kinds.push('play');
+      for(const kind of kinds){
+        const id='yard-life-'+kind;
+        const seen=history.filter(h=>h.id===id&&h.cats?.includes(a.cat.uid)&&h.cats?.includes(b.cat.uid)).length;
+        const recent=history.slice(-3).filter(h=>h.id===id).length;
+        candidates.push({a,b,kind,id,score:seen*10+recent*4+distance/110});
+      }
+    }
+    candidates.sort((a,b)=>a.score-b.score);
+    if(!candidates.length)return;
+    const {a,b,kind,id}=candidates[0];
+    this._nextDuoEmote=Math.max(this._nextDuoEmote||0,this.game.t+5);
+    a._lifeUntil=b._lifeUntil=this.game.t+4;
     const en=window.MorrowwishI18n?.get?.()!=='zh';
     const names=State.catName(a.cat)+(en?' & ':' 和 ')+State.catName(b.cat);
     a.vx=a.vy=b.vx=b.vy=0;
@@ -1040,7 +1056,7 @@ class YardScene {
   // Invite an actual visible kitten to a specific facility immediately.
   inviteCatToBuilding(b){
     if(!(State.S.yardBuildings||[]).includes(b)||!this.entities?.length)return false;
-    const available=this.entities.filter(e=>!(e._playBuildT>0));
+    const available=this.entities.filter(e=>!(e._playBuildT>0)&&!(e._lifeUntil>this.game.t)&&!e._buildTarget);
     if(!available.length)return false;
     const nearest=available.sort((a,c)=>
       Math.hypot(a.x-b.x,a.y-b.y)-Math.hypot(c.x-b.x,c.y-b.y))[0];
